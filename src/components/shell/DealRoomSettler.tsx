@@ -8,7 +8,7 @@ import { activeExtraSpaces, readSpacePage } from '../../utils/spaces';
 /** Keeps every group-goal DealRoom in this workspace settled (D54). Renders nothing. */
 export function DealRoomSettler() {
   const { current, currentSpace } = useWorkspace();
-  const { data, apply } = useCommerce();
+  const { data, applySystem: apply } = useCommerce();
   const { state } = useEditor();
   const rooms = useMemo(
     () =>

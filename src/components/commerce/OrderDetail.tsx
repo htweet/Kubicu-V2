@@ -17,6 +17,8 @@ import { DisputePanel } from './DisputePanel';
 import { RefundDialog } from './RefundDialog';
 import { TestModeStrip } from './TestModeStrip';
 import { cn } from '../../utils/cn';
+import { useTeam } from '../../contexts/TeamContext';
+import { AssigneeSelect } from '../team/AssigneeSelect';
 
 const steps: {status: OrderStatus;label: string;}[] = [
 { status: 'new', label: 'Placed' },
@@ -42,6 +44,7 @@ function nextStep(o: Order): {label: string;status: OrderStatus;icon: typeof Pac
 
 export function OrderDetail({ orderId, onClose }: {orderId: string | null;onClose: () => void;}) {
   const { data, apply } = useCommerce();
+  const team = useTeam();
   const order = orderId ? data.orders.find((o) => o.id === orderId) : undefined;
   const [dialog, setDialog] = useState<'refund' | 'cancel' | null>(null);
   const [note, setNote] = useState('');
@@ -59,7 +62,9 @@ export function OrderDetail({ orderId, onClose }: {orderId: string | null;onClos
 
   const advance = () => {
     if (!next) return;
-    if (apply((d) => setOrderStatus(d, order.id, next.status))) toast(`Order #${order.number}: ${next.label.replace(/^Mark /, '').replace(/^Start /, '')}`, { description: 'The customer would get an update (preview only).' });
+    if (!apply((d) => setOrderStatus(d, order.id, next.status))) return;
+    team.log('commerce', `${next.label.toLowerCase().replace(/^mark /, 'marked ').replace(/^start /, 'started ')} on order #${order.number}`, `/app/commerce/orders?order=${order.id}`);
+    toast(`Order #${order.number}: ${next.label.replace(/^Mark /, '').replace(/^Start /, '')}`, { description: 'The customer would get an update (preview only).' });
   };
 
   return (
@@ -104,6 +109,18 @@ export function OrderDetail({ orderId, onClose }: {orderId: string | null;onClos
             {order.sample && <SampleTag />}
           </div>
           <TestModeStrip />
+
+          <AssigneeSelect
+            id={`ord-assignee-${order.id}`}
+            value={order.assigneeId}
+            onChange={(assigneeId) => {
+              if (apply((d) => ({ ...d, orders: d.orders.map((o) => o.id === order.id ? { ...o, assigneeId } : o) }))) {
+                const who = team.data.members.find((m) => m.id === assigneeId)?.name;
+                team.log('commerce', who ? `assigned order #${order.number} to ${who}` : `unassigned order #${order.number}`, `/app/commerce/orders?order=${order.id}`);
+              }
+            }}
+            className="max-w-xs" />
+          
 
           {order.status === 'new' &&
           <p className="rounded-md bg-info-soft px-3 py-2.5 text-label text-info">

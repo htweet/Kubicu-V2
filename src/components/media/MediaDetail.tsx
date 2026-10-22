@@ -84,7 +84,8 @@ export function MediaDetail({ asset, uses, onClose }: MediaDetailProps) {
     try {
       if (containsString(state.site, ref)) actions.transformDocument((doc) => mapStrings(doc, (s) => s === ref ? '' : s));
       if (commerce.data.products.some((p) => containsString(p.images, ref))) {
-        commerce.apply((d) => ({ ...d, products: d.products.map((p) => containsString(p.images, ref) ? { ...p, images: p.images.filter((i) => i.url !== ref) } : p) }));
+        // Removing a deleted image from products is part of the media action, allowed by media.manage.
+        commerce.applySystem((d) => ({ ...d, products: d.products.map((p) => containsString(p.images, ref) ? { ...p, images: p.images.filter((i) => i.url !== ref) } : p) }));
       }
       const keep = needsKeeping(asset.id, state) || sections.some((s) => containsString(s.blocks, ref));
       const removed = await media.remove(asset.id, keep);

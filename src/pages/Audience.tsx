@@ -25,11 +25,13 @@ import { DuplicatesDialog } from '../components/audience/DuplicatesDialog';
 import { SampleTag } from '../components/commerce/StatusBadges';
 import { cn } from '../utils/cn';
 import { useMediaQuery } from '../hooks/useMediaQuery';
+import { useTeam } from '../contexts/TeamContext';
+import { AssigneeChip, MineToggle } from '../components/team/AssigneeSelect';
 
 type View = 'list' | 'pipeline';
 
 export function Audience() {
-  const { data, apply, loadSample } = useOps();
+  const { data, apply, applySystem, loadSample } = useOps();
   const commerce = useCommerce().data;
   const [params, setParams] = useSearchParams();
   const [view, setView] = useState<View>('list');
@@ -44,10 +46,18 @@ export function Audience() {
 
   // Paid orders become contacts once each.
   useEffect(() => {
-    apply((d) => syncOrdersToContacts(d, commerce));
-  }, [commerce, apply]);
+    applySystem((d) => syncOrdersToContacts(d, commerce));
+  }, [commerce, applySystem]);
 
-  const rows = useMemo(() => data.contacts.filter((c) => (source === 'all' || c.sources.includes(source)) && (consent === 'all' || c.consent === consent)), [data.contacts, source, consent]);
+  // “Mine”: contacts I look after, or with an open follow-up for me (D60).
+  const { me } = useTeam();
+  const [mine, setMine] = useState(false);
+  const isMine = (c: Contact) => c.assigneeId === me.id || c.tasks.some((t) => !t.done && t.assigneeId === me.id);
+  const mineCount = data.contacts.filter(isMine).length;
+  const rows = useMemo(
+    () => data.contacts.filter((c) => (source === 'all' || c.sources.includes(source)) && (consent === 'all' || c.consent === consent) && (!mine || c.assigneeId === me.id || c.tasks.some((t) => !t.done && t.assigneeId === me.id))),
+    [data.contacts, source, consent, mine, me.id]
+  );
   const dupes = duplicatePairs(data.contacts).length;
   const subscribed = data.contacts.filter((c) => c.consent === 'subscribed').length;
   const openTasks = data.contacts.reduce((s, c) => s + c.tasks.filter((t) => !t.done).length, 0);
@@ -83,6 +93,7 @@ export function Audience() {
   { key: 'source', header: 'Came from', hideOnMobile: true, render: (c) => <span className="text-fg-muted">{c.sources.map((s) => sourceLabels[s]).join(', ')}</span> },
   { key: 'tags', header: 'Tags', hideOnMobile: true, render: (c) => <span className="text-fg-muted">{c.tags.join(', ') || '—'}</span> },
   { key: 'stage', header: 'Stage', hideOnMobile: true, sortValue: (c) => c.stage, render: (c) => <span className="text-fg-muted">{stageLabels[c.stage]}</span> },
+  { key: 'owner', header: 'Looked after by', hideOnMobile: true, render: (c) => <AssigneeChip memberId={c.assigneeId} /> },
   { key: 'last', header: 'Last activity', align: 'right', sortValue: (c) => Date.parse(c.activity[0]?.at ?? c.createdAt), render: (c) => <span className="text-fg-muted">{formatRelative(c.activity[0]?.at ?? c.createdAt)}</span> }];
 
 
@@ -149,7 +160,10 @@ export function Audience() {
           </dl>
 
           <div className="mt-6 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-            <Segmented<View> ariaLabel="View" value={view} onChange={setView} options={[{ value: 'list', label: 'List' }, { value: 'pipeline', label: 'Pipeline' }]} />
+            <div className="flex items-center gap-2">
+              <Segmented<View> ariaLabel="View" value={view} onChange={setView} options={[{ value: 'list', label: 'List' }, { value: 'pipeline', label: 'Pipeline' }]} />
+              <MineToggle mine={mine} count={mineCount} onChange={setMine} />
+            </div>
             <div className="grid grid-cols-2 gap-3 md:flex">
               <div className="md:w-44">
                 <SelectInput id="aud-src" label="Came from" value={source} onChange={setSource} options={[{ value: 'all', label: 'Anywhere' }, ...(Object.keys(sourceLabels) as ContactSource[]).map((s) => ({ value: s, label: sourceLabels[s] }))]} />

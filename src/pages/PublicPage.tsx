@@ -6,7 +6,10 @@ import { upsertContact } from '../utils/ops/ops';
 import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { SiteNav } from '../components/blocks/SiteNav';
 import { findPage, navItems, pageHref, pageView, resolvePath, type NavItem } from '../utils/sitePages';
-import { STOREFRONT_PATH, storefrontAvailable, storefrontOrdering } from '../utils/commerce/storefront';
+import { STOREFRONT_PATH, findShopProduct, productSlug, storefrontAvailable, storefrontOrdering } from '../utils/commerce/storefront';
+import { readDomains } from '../utils/domains/storage';
+import { spaceHandle } from '../utils/domains/links';
+import { ExternalRedirect } from '../components/domains/ExternalRedirect';
 import { StorefrontView } from '../components/storefront/StorefrontView';
 import { ProductDetailView } from '../components/storefront/ProductDetailView';
 import { sellerPhone } from '../hooks/useResolvedPage';
@@ -33,6 +36,11 @@ import type { CampaignPhase, PageDocument } from '../types/page';
 import { blockInPhase, campaignPhase, phaseLabels, phaseOrder } from '../utils/campaign';
 import { cn } from '../utils/cn';
 import type { PlanInfo } from '../data/plans';
+import { TrackProvider, createTracker, useTrack } from '../contexts/TrackContext';
+import { visitSource } from '../utils/analytics/track';
+import { intentSources, showsForSource } from '../utils/intentflow';
+import type { SourceId } from '../types/analytics';
+import { blockName } from '../utils/blocks';
 
 export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
   const { handle = '', pagePath: rawPath, productId } = useParams();
@@ -44,22 +52,52 @@ export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
   const ops = usePageOps(resolved?.workspaceId ?? null, !!resolved?.isOwn);
   const [bookingService, setBookingService] = useState<string | null>(null);
 
+  // Visitor analytics (D61): where this visit came from, and a tracker for this page.
+  const visit = useMemo(() => visitSource(params), [params]);
+  const trackPageId = view === 'shop' ? 'shop' : resolved && rawPath ? (resolvePath(resolved.doc, rawPath) as {pageId?: string | null;} | null)?.pageId ?? null : null;
+  const track = useMemo(
+    () => createTracker({ workspaceId: resolved?.example ? null : resolved?.workspaceId ?? null, handle, pageId: trackPageId, source: visit, disabled: isDraft, isOwner: !!resolved?.isOwn }),
+    [resolved?.example, resolved?.workspaceId, resolved?.isOwn, handle, trackPageId, visit, isDraft]
+  );
+  const viewKey = resolved ? `${handle}/${view}/${rawPath ?? ''}/${productId ?? ''}` : null;
+  useEffect(() => {
+    if (!viewKey) return;
+    track('view');
+    if (view === 'shop' && productId) track('product_view', { label: productId });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viewKey]);
+
   const opsActions = useMemo<PageOpsActions | null>(() => {
     if (!resolved || resolved.example) return null;
     return {
-      submitLead: (v, formTitle, consent) =>
-      ops.apply((d) => upsertContact(d, { name: v.name, email: v.email, phone: v.phone }, 'form', `Sent “${formTitle}”${v.message ? `: ${v.message.slice(0, 140)}` : ''}`, { consent: consent ? 'subscribed' : 'transactional' })),
-      subscribe: (v, title) => ops.apply((d) => upsertContact(d, { name: '', email: v.email, phone: '' }, 'newsletter', `Subscribed via “${title}”`, { consent: 'subscribed' })),
-      openBooking: (id) => setBookingService(id)
+      submitLead: (v, formTitle, consent) => {
+        track('lead', { label: formTitle });
+        return ops.apply((d) => upsertContact(d, { name: v.name, email: v.email, phone: v.phone }, 'form', `Sent “${formTitle}”${v.message ? `: ${v.message.slice(0, 140)}` : ''}`, { consent: consent ? 'subscribed' : 'transactional' }));
+      },
+      subscribe: (v, title) => {
+        track('signup', { label: title });
+        return ops.apply((d) => upsertContact(d, { name: '', email: v.email, phone: '' }, 'newsletter', `Subscribed via “${title}”`, { consent: 'subscribed' }));
+      },
+      openBooking: (id) => {
+        track('booking_open', { label: id });
+        setBookingService(id);
+      }
     };
-  }, [resolved, ops]);
+  }, [resolved, ops, track]);
 
   // The storefront answers /shop unless it's off or a page of the site already uses that address (D53).
   const shopData = resolved && !resolved.example ? commerce.data : null;
   const shopOn = !!resolved && storefrontAvailable(resolved.doc, shopData);
   const wantShop = view === 'shop' && shopOn;
   const pagePath = view === 'shop' && !shopOn ? productId ? '\u0000missing' : STOREFRONT_PATH : rawPath;
-  const shopProduct = wantShop && productId ? shopData?.products.find((p) => p.id === productId && p.status === 'active') : undefined;
+  const shopProduct = wantShop && productId ? findShopProduct(shopData, productId) : undefined;
+  // Custom domains (D62): a live domain turns on readable product addresses; your own redirects apply to unknown paths.
+  const domainsData = resolved?.workspaceId ? readDomains(resolved.workspaceId) : null;
+  const readableProducts = !!domainsData?.domains.some((d) => d.status === 'live');
+  const customRedirect =
+  resolved?.workspaceId && view === 'page' && rawPath ?
+  domainsData?.redirects.find((r) => r.from === rawPath && spaceHandle(resolved.workspaceId as string, r.spaceId) === handle) :
+  undefined;
   const route = resolved ? wantShop ? { pageId: null } : resolvePath(resolved.doc, pagePath) : null;
   const pageId = route && 'pageId' in route ? route.pageId : null;
   const sub = resolved ? findPage(resolved.doc, pageId) : undefined;
@@ -83,6 +121,12 @@ export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
   if (resolved.redirectTo && resolved.redirectTo !== handle) return <Navigate to={pageHref(resolved.redirectTo, '')} replace />;
   // Renamed or removed pages forward to their new address.
   if (route && 'redirect' in route) return <Navigate to={`${pageHref(handle, route.redirect)}${isDraft ? '?draft=1' : ''}`} replace />;
+  if (!route && customRedirect)
+  return /^https?:\/\//.test(customRedirect.to) ?
+  <ExternalRedirect url={customRedirect.to} /> :
+
+  <Navigate to={`${pageHref(handle, customRedirect.to)}${isDraft ? '?draft=1' : ''}`} replace />;
+
   if (!route)
   return (
     <Unavailable
@@ -112,7 +156,10 @@ export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
   const nav: NavItem[] = [...navItems(doc), ...(shopOn && sf?.showInMenu ? [{ id: SHOP_NAV_ID, label: sf.menuLabel || 'Shop', path: STOREFRONT_PATH }] : [])];
   const roomCheckout = doc.dealRoom && catalog ? dealRoomCheckout(doc.dealRoom, handle, catalog) : undefined;
   const navHref = (item: NavItem) => `${pageHref(handle, item.path)}${draftQs}`;
-  const productHref = (id: string) => `${pageHref(handle, `${STOREFRONT_PATH}/${id}`)}${draftQs}`;
+  const productHref = (id: string) => {
+    const p = readableProducts ? catalog?.products.find((x) => x.id === id) : undefined;
+    return `${pageHref(handle, `${STOREFRONT_PATH}/${p && catalog ? productSlug(p, catalog.products) : id}`)}${draftQs}`;
+  };
   // Campaigns show the version for the current phase; draft previews can pick one (D52).
   const previewPhase = params.get('phase');
   const phase: CampaignPhase | null = doc.campaign ?
@@ -166,28 +213,29 @@ export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
           </span>
         </div>
       }
+      <TrackProvider value={track}>
       <RenderPlanProvider plan={plan}>
         <CatalogProvider data={catalog}>
           <PageOpsProvider value={{ data: example ? null : ops.data, actions: isDraft ? null : opsActions }}>
             <CartProvider pageKey={`${resolved.workspaceId ?? 'example'}:${handle}`}>
               {wantShop && catalog ?
-              <main>
+                <main>
                   <PageSurface
-                  theme={doc.theme}
-                  columnClassName="max-w-[1120px] md:px-8"
-                  footer={showsKubicuBadge(doc, plan) ? <MadeWithKubicu theme={doc.theme} mode="live" /> : <div className="pb-10" />}
-                  header={nav.length > 1 ? <SiteNav theme={doc.theme} title={doc.title} items={nav} activeId={SHOP_NAV_ID} hrefFor={navHref} /> : undefined}>
-                  
+                    theme={doc.theme}
+                    columnClassName="max-w-[1120px] md:px-8"
+                    footer={showsKubicuBadge(doc, plan) ? <MadeWithKubicu theme={doc.theme} mode="live" /> : <div className="pb-10" />}
+                    header={nav.length > 1 ? <SiteNav theme={doc.theme} title={doc.title} items={nav} activeId={SHOP_NAV_ID} hrefFor={navHref} /> : undefined}>
+                    
                     {shopProduct ?
-                  <ProductDetailView theme={doc.theme} data={catalog} product={shopProduct} ordering={storefrontOrdering(catalog, plan.id)} whatsappPhone={catalog.storefront.whatsappPhone || sellerPhone(doc)} shopHref={shopHref} productHref={productHref} /> :
+                    <ProductDetailView theme={doc.theme} data={catalog} product={shopProduct} ordering={storefrontOrdering(catalog, plan.id)} whatsappPhone={catalog.storefront.whatsappPhone || sellerPhone(doc)} shopHref={shopHref} productHref={productHref} /> :
 
-                  <StorefrontView theme={doc.theme} data={catalog} productHref={productHref} />
-                  }
+                    <StorefrontView theme={doc.theme} data={catalog} productHref={productHref} />
+                    }
                   </PageSurface>
                 </main> :
 
-              <PageBody site={doc} pageId={pageId} plan={plan} isDraft={isDraft} phase={phase} nav={nav} navHref={navHref} handle={handle} />
-              }
+                <PageBody site={doc} pageId={pageId} plan={plan} isDraft={isDraft} phase={phase} nav={nav} navHref={navHref} handle={handle} />
+                }
               {catalog && <CheckoutSheet theme={doc.theme} commerce={commerce} ownerPlan={plan.id} handle={handle} defaultCode={phase === 'live' ? campaignCode : undefined} dealRoom={roomCheckout} />}
               <CartButton theme={doc.theme} />
             </CartProvider>
@@ -195,6 +243,7 @@ export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
           </PageOpsProvider>
         </CatalogProvider>
       </RenderPlanProvider>
+      </TrackProvider>
     </div>);
 
 }
@@ -219,8 +268,13 @@ function PageBody({
 
 }: {site: PageDocument;pageId: string | null;plan: PlanInfo;isDraft: boolean;phase: CampaignPhase | null;nav: NavItem[];navHref: (item: NavItem) => string;handle: string;}) {
   const doc = pageView(site, pageId);
+  const track = useTrack();
   // Draft preview shows scheduled blocks too, so owners can check them before their window opens.
-  const visible = doc.blocks.filter((b) => (isDraft ? !b.visibility.hidden : isLiveNow(b.visibility)) && (!phase || blockInPhase(b, phase)));
+  // IntentFlow (D64): blocks follow the visit's source; draft previews can pick one with ?as=.
+  const [params] = useSearchParams();
+  const asParam = isDraft ? params.get('as') as SourceId | null : null;
+  const source: SourceId = asParam && intentSources.includes(asParam) ? asParam : visitSource(params).source;
+  const visible = doc.blocks.filter((b) => (isDraft ? !b.visibility.hidden : isLiveNow(b.visibility)) && (!phase || blockInPhase(b, phase)) && showsForSource(b.visibility, source));
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [pageId]);
@@ -237,7 +291,16 @@ function PageBody({
           </div>
         }
         {visible.map((block) =>
-        <div key={block.id} className={spacingClass[block.layout.spacing]}>
+        <div
+          key={block.id}
+          className={spacingClass[block.layout.spacing]}
+          // Taps on any link or button inside a block are counted for that block (D61).
+          onClickCapture={(e) => {
+            const el = (e.target as HTMLElement).closest('a,button');
+            if (!el) return;
+            track('tap', { blockId: block.id, label: (el.getAttribute('aria-label') || el.textContent || blockName(block)).trim().slice(0, 80) });
+          }}>
+          
             <BlockRenderer block={block} theme={doc.theme} mode="live" />
           </div>
         )}

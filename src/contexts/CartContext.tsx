@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { CartLine } from '../types/commerce';
+import { useTrack } from './TrackContext';
 
 interface CartValue {
   lines: CartLine[];
@@ -31,6 +32,7 @@ export function CartProvider({ pageKey, children }: {pageKey: string;children: R
   });
   const [open, setOpen] = useState(false);
   const [choosing, setChoosing] = useState<string | null>(null);
+  const track = useTrack();
 
   useEffect(() => {
     try {
@@ -50,9 +52,10 @@ export function CartProvider({ pageKey, children }: {pageKey: string;children: R
       const found = prev.find((l) => l.variantId === variantId);
       return found ? prev.map((l) => l.variantId === variantId ? { ...l, qty: Math.min(20, l.qty + 1) } : l) : [...prev, { productId, variantId, qty: 1 }];
     });
+    track('cart_add', { label: productId });
     setChoosing(null);
     setOpen(true);
-  }, []);
+  }, [track]);
 
   const setQty = useCallback((variantId: string, qty: number) => {
     setLines((prev) => qty <= 0 ? prev.filter((l) => l.variantId !== variantId) : prev.map((l) => l.variantId === variantId ? { ...l, qty: Math.min(20, qty) } : l));

@@ -4,7 +4,8 @@ import type { OnboardingState } from '../../hooks/useOnboarding';
 import { examplePages } from '../../data/examples';
 import { blankTemplateDoc } from '../../data/templates';
 import { TemplateThumb } from '../templates/TemplateThumb';
-import { PlanLock } from '../ui/PlanLock';
+import { AiPreviewTag } from '../ai/AiPreviewTag';
+import { AiKitDialog } from './AiKitDialog';
 import { Button } from '../ui/Button';
 import { ChoiceCard, StepHeading, StepNav } from './OnboardingLayout';
 
@@ -16,6 +17,7 @@ interface StepProps {
 
 export function KitStep({ state, update, go }: StepProps) {
   const [showAll, setShowAll] = useState(false);
+  const [aiOpen, setAiOpen] = useState(false);
   const goal = state.goal;
   const matched = goal && goal !== 'other' ? examplePages.filter((e) => e.goals.includes(goal)) : [];
   const list = showAll || matched.length === 0 ? examplePages : matched.slice(0, 4);
@@ -41,14 +43,13 @@ export function KitStep({ state, update, go }: StepProps) {
           <ChoiceCard
             name="kit"
             selected={false}
-            disabled
-            onSelect={() => undefined}
+            onSelect={() => setAiOpen(true)}
             title="Describe it with AI"
-            description="Tell us about your business and review a draft."
-            aside={<PlanLock kind="planned">Batch 5</PlanLock>}>
+            description="Tell us about your business and we’ll pick a starter."
+            aside={<AiPreviewTag />}>
             
-            <span className="mb-3 flex h-[170px] items-center justify-center rounded-[14px] bg-sunken text-fg-subtle">
-              <SparklesIcon size={22} aria-hidden />
+            <span className="ai-fill mb-3 flex h-[170px] items-center justify-center rounded-[14px] text-white">
+              <SparklesIcon size={26} aria-hidden />
             </span>
           </ChoiceCard>
         </div>
@@ -58,6 +59,14 @@ export function KitStep({ state, update, go }: StepProps) {
           Show all {examplePages.length} starters
         </Button>
       }
+      <AiKitDialog
+        open={aiOpen}
+        onClose={() => setAiOpen(false)}
+        onUse={({ kitId, bio, name, city }) => {
+          update({ kitId, bio: state.bio || bio, name: state.name || name || '', city: state.city || city || '' });
+          setAiOpen(false);
+        }} />
+      
       <StepNav onBack={() => go(0)} onSkip={() => update({ kitId: 'blank', step: 2 })} skipLabel="Start blank" onNext={() => go(2)} nextDisabled={!state.kitId} />
     </>);
 

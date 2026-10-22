@@ -20,6 +20,9 @@ import { useCampaignPreview } from '../../contexts/CampaignPreviewContext';
 import { blockInPhase, campaignPhase, phaseLabels } from '../../utils/campaign';
 import { CampaignPhaseBar } from './CampaignPhaseBar';
 import { DealRoomPanel } from '../dealroom/DealRoomPanel';
+import { SourcePreviewBar } from './SourcePreviewBar';
+import { showsForSource } from '../../utils/intentflow';
+import { allBlocks } from '../../utils/sitePages';
 
 export const viewportWidths: Record<Viewport, number> = {
   phone: 390,
@@ -52,11 +55,20 @@ export function Artboard({ viewport = 'phone', framed = true, touch = false, onE
   const campaign = state.site.campaign;
   const phase: CampaignPhase | null = campaign ? preview.phase ?? campaignPhase(campaign) : null;
   // Campaigns show only the blocks for the previewed phase; reordering keeps the others in place.
-  const blocks = phase ? draft.blocks.filter((b) => blockInPhase(b, phase)) : draft.blocks;
+  // IntentFlow preview (D64): show only what visitors from one source would see.
+  const source = preview.source;
+  const blocks = draft.blocks.filter((b) => (!phase || blockInPhase(b, phase)) && (!source || showsForSource(b.visibility, source)));
+  const filtered = !!phase || !!source;
   const allIds = draft.blocks.map((b) => b.id);
   const ids = blocks.map((b) => b.id);
+  const hasRules = allBlocks(state.site).some((b) => !!b.visibility.sources);
+  const sourceHidden = source ? draft.blocks.filter((b) => (!phase || blockInPhase(b, phase)) && !showsForSource(b.visibility, source)).length : 0;
+  const sourceBar =
+  hasRules || source ?
+  <SourcePreviewBar source={source} onChange={preview.setSource} hiddenCount={sourceHidden} className={framed ? 'mx-auto mb-4 w-full' : 'mx-3 mb-3 mt-3'} /> :
+  null;
   const onReorder = (next: string[]) => {
-    if (!phase) return actions.reorderBlocks(next);
+    if (!filtered) return actions.reorderBlocks(next);
     const shown = new Set(ids);
     let k = 0;
     actions.reorderBlocks(allIds.map((id) => shown.has(id) ? next[k++] : id));
@@ -108,6 +120,11 @@ export function Artboard({ viewport = 'phone', framed = true, touch = false, onE
               </p>
             </div>
       }
+          {blocks.length === 0 && source && !phase &&
+      <p className="mx-auto my-12 max-w-xs text-center text-[14px]" style={{ color: draft.theme.mutedText }}>
+              Visitors from this source would see nothing on this page. Remove a rule so every visitor sees at least one block.
+            </p>
+      }
           {blocks.length === 0 && phase &&
       <p className="mx-auto my-12 max-w-xs text-center text-[14px]" style={{ color: draft.theme.mutedText }}>
               Nothing shows in the {phaseLabels[phase]} phase yet. Select a block and tick “{phaseLabels[phase]}” under Visibility, or add a new one.
@@ -150,6 +167,7 @@ export function Artboard({ viewport = 'phone', framed = true, touch = false, onE
     return (
       <div className="min-h-full" onClick={() => actions.select(null)}>
         {phaseBar}
+        {sourceBar}
         {page}
       </div>);
 
@@ -162,6 +180,7 @@ export function Artboard({ viewport = 'phone', framed = true, touch = false, onE
     <div className="scroll-quiet h-full overflow-auto bg-stage" onClick={() => actions.select(null)}>
       <div className="flex min-h-full flex-col items-center px-8 py-10">
         {phaseBar && <div style={{ maxWidth: Math.max(width, 560) }} className="w-full">{phaseBar}</div>}
+        {sourceBar && <div style={{ maxWidth: Math.max(width, 560) }} className="w-full">{sourceBar}</div>}
         <div
           className={cn(
             'relative h-fit w-full overflow-hidden border border-line-strong shadow-3 transition-[max-width] duration-300 ease-out',

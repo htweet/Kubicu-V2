@@ -15,6 +15,8 @@ import { SelectInput } from '../ui/SelectInput';
 import { InlineAlert } from '../ui/InlineAlert';
 import { RunSteps } from './RunSteps';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
+import { useTeam } from '../../contexts/TeamContext';
+import { AssigneeSelect } from '../team/AssigneeSelect';
 
 export function newAutomation(recipeId: string | null): Automation {
   const r = recipes.find((x) => x.id === recipeId);
@@ -34,6 +36,7 @@ export function newAutomation(recipeId: string | null): Automation {
 /** Readable top-to-bottom builder: Trigger → Conditions → Actions/Delays → Outcome. */
 export function AutomationBuilder({ automation, onClose }: {automation: Automation | null;onClose: () => void;}) {
   const { data, apply } = useOps();
+  const team = useTeam();
   const [draft, setDraft] = useState<Automation | null>(automation);
   const [lastRun, setLastRun] = useState<AutomationRun | null>(null);
   useEffect(() => {
@@ -70,7 +73,7 @@ export function AutomationBuilder({ automation, onClose }: {automation: Automati
   };
 
   const runTest = () => {
-    const run = testRun(draft, data.automationsPaused);
+    const run = testRun(draft, data.automationsPaused, (id) => team.data.members.find((m) => m.id === id)?.name ?? 'a former member');
     setLastRun(run);
     if (exists) apply((d) => addRun(d, draft.id, run));
   };
@@ -164,6 +167,9 @@ export function AutomationBuilder({ automation, onClose }: {automation: Automati
 
             <div className="mt-1 flex flex-col gap-2">
                   <SelectInput<ActionId> id={`act-${s.id}`} label="Action" value={s.action ?? 'notify_owner'} options={(Object.keys(actionLabels) as ActionId[]).map((a) => ({ value: a, label: actionLabels[a].label }))} onChange={(action) => setStep(s.id, { action })} />
+                  {(s.action === 'notify_member' || s.action === 'create_task') &&
+              <AssigneeSelect id={`who-${s.id}`} label={s.action === 'notify_member' ? 'Who to notify' : 'Assign the follow-up to'} value={s.memberId} onChange={(memberId) => setStep(s.id, { memberId })} />
+              }
                   {s.action === 'add_tag' || s.action === 'create_task' ?
               <TextInput id={`val-${s.id}`} label={s.action === 'add_tag' ? 'Tag' : 'Task'} value={s.value} placeholder={actionLabels[s.action].placeholder} onChange={(e) => setStep(s.id, { value: e.target.value })} /> :
 

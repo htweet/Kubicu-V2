@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronsUpDownIcon, LayoutGridIcon } from 'lucide-react';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
+import { useTeam } from '../../contexts/TeamContext';
 import { spaceKinds } from '../../data/spaceKinds';
 import { readSpacePage, workspaceSpaces } from '../../utils/spaces';
 import { publicUrl } from '../../utils/format';
@@ -12,7 +13,9 @@ import { cn } from '../../utils/cn';
 export function SpaceSwitcher({ className, compact }: {className?: string;compact?: boolean;}) {
   const { current, currentSpace, switchSpace } = useWorkspace();
   const navigate = useNavigate();
-  const spaces = workspaceSpaces(current).filter((s) => !s.archivedAt);
+  const { canAccessSpace } = useTeam();
+  // Only the spaces you can edit (D57).
+  const spaces = workspaceSpaces(current).filter((s) => !s.archivedAt && canAccessSpace(s.id));
   const Kind = spaceKinds[currentSpace.kind].icon;
 
   const items: MenuItem[] = [

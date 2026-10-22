@@ -6,10 +6,16 @@ import { DEMO_WORKSPACE_ID } from '../utils/workspaceStorage';
 import { emptyOps, opsKey, readOps, writeOps } from '../utils/ops/storage';
 import { clearOpsSample } from '../utils/ops/ops';
 import { withOpsSample } from '../data/opsSeed';
+import { useOptionalTeam } from './TeamContext';
+import type { Permission } from '../types/team';
+
+const OPS_WRITE: Permission[] = ['bookings.manage', 'contacts.manage', 'automations.manage'];
 
 interface OpsValue {
   data: OpsData;
   apply: (fn: (d: OpsData) => OpsData) => boolean;
+  /** Not tied to the signed-in member: visitors' bookings, forms and order syncing. */
+  applySystem: (fn: (d: OpsData) => OpsData) => boolean;
   loadSample: () => void;
   clearSample: () => void;
   hasSample: boolean;
@@ -47,7 +53,7 @@ export function OpsProvider({ children }: {children: React.ReactNode;}) {
     return () => window.removeEventListener('storage', onStorage);
   }, [workspaceId]);
 
-  const apply = useCallback(
+  const applySystem = useCallback(
     (fn: (d: OpsData) => OpsData) => {
       const next = fn(ref.current);
       if (next === ref.current) return true;
@@ -64,6 +70,20 @@ export function OpsProvider({ children }: {children: React.ReactNode;}) {
     [workspaceId]
   );
 
+  // Team members' changes follow their role (D57); visitors' bookings and sign-ups use applySystem.
+  const team = useOptionalTeam();
+  const writer = team ? OPS_WRITE.find((p) => team.can(p).allowed) : 'bookings.manage';
+  const apply = useCallback(
+    (fn: (d: OpsData) => OpsData) => {
+      if (!writer) {
+        toast.error('Your role can’t change this', { description: team?.can('contacts.manage').reason });
+        return false;
+      }
+      return applySystem(fn);
+    },
+    [applySystem, writer, team]
+  );
+
   const loadSample = useCallback(() => {
     if (apply((d) => withOpsSample(clearOpsSample(d)))) toast('Sample data added', { description: 'Sample records are labelled and can be cleared.' });
   }, [apply]);
@@ -72,7 +92,7 @@ export function OpsProvider({ children }: {children: React.ReactNode;}) {
   }, [apply]);
 
   const hasSample = useMemo(() => data.services.some((s) => s.sample) || data.bookings.some((b) => b.sample) || data.contacts.some((c) => c.sample) || data.automations.some((a) => a.sample), [data]);
-  const value = useMemo(() => ({ data, apply, loadSample, clearSample, hasSample }), [data, apply, loadSample, clearSample, hasSample]);
+  const value = useMemo(() => ({ data, apply, applySystem, loadSample, clearSample, hasSample }), [data, apply, applySystem, loadSample, clearSample, hasSample]);
   return <OpsContext.Provider value={value}>{children}</OpsContext.Provider>;
 }
 

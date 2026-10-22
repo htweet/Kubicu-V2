@@ -13,7 +13,8 @@ export const actionLabels: Record<ActionId, {label: string;needsConsent: boolean
   send_whatsapp: { label: 'Send a WhatsApp message', needsConsent: false, placeholder: 'Hi {first_name}, …' },
   create_task: { label: 'Create a follow-up task', needsConsent: false, placeholder: 'e.g. Call to confirm sizing' },
   add_tag: { label: 'Tag the contact', needsConsent: false, placeholder: 'e.g. VIP' },
-  notify_owner: { label: 'Notify me', needsConsent: false, placeholder: 'e.g. Restock {product}' }
+  notify_owner: { label: 'Notify me', needsConsent: false, placeholder: 'e.g. Restock {product}' },
+  notify_member: { label: 'Notify a team member', needsConsent: false, placeholder: 'e.g. Pack order {order_number} today' }
 };
 
 export const conditionLabels: Record<AutomationCondition['field'], string> = {

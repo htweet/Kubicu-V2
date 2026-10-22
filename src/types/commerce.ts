@@ -189,6 +189,8 @@ export interface Order {
   /** DealRoom buyers get their own share code; orders placed through it record it in `referredBy` (D54). */
   referralCode?: string;
   referredBy?: string;
+  /** Team member looking after this order (D60). */
+  assigneeId?: string | null;
 }
 
 export interface OrderDiscount {

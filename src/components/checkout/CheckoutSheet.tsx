@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { MediaImage } from '../media/MediaImage';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { DiscountCodeField } from './DiscountCodeField';
+import { useTrack } from '../../contexts/TrackContext';
 import { unitsBoughtBy, type DealRoomCheckout } from '../../utils/dealRoom';
 import { discountLineLabel, normaliseCode, resolveDiscount } from '../../utils/commerce/discounts';
 import { AlertTriangleIcon, ArrowLeftIcon, Loader2Icon, MinusIcon, PlusIcon, ShoppingBagIcon, Trash2Icon, XCircleIcon } from 'lucide-react';
@@ -42,6 +43,7 @@ interface CheckoutSheetProps {
 export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode, dealRoom }: CheckoutSheetProps) {
   const cart = useCart();
   const navigate = useNavigate();
+  const track = useTrack();
   const [step, setStep] = useState<Step>('cart');
   const [customer, setCustomer] = useState({ name: '', phone: '', email: '' });
   const [method, setMethod] = useState<string>('');
@@ -169,6 +171,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
           setStep('failed');
           return;
         }
+        if (r.order.paymentStatus === 'paid') track('order_paid', { valueNgn: r.order.subtotalNgn - r.order.discountNgn + r.order.deliveryNgn, label: `#${r.order.number}` });
         cart.clear();
         cart.setOpen(false);
         navigate(`/p/${handle}/order/${r.order.id}`);
@@ -326,7 +329,14 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
                   Unavailable items won’t be ordered.
                 </p>
             }
-              <PrimaryButton theme={theme} disabled={subtotal === 0} onClick={() => setStep('details')}>
+              <PrimaryButton
+              theme={theme}
+              disabled={subtotal === 0}
+              onClick={() => {
+                track('checkout_start');
+                setStep('details');
+              }}>
+              
                 Checkout
               </PrimaryButton>
             </>

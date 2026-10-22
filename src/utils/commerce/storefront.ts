@@ -47,6 +47,30 @@ export function sortProducts(list: Product[], sort: StorefrontSort): Product[] {
   return copy.sort((a, b) => Number(isSoldOut(a)) - Number(isSoldOut(b)));
 }
 
+function baseSlug(name: string): string {
+  return name.
+  toLowerCase().
+  normalize('NFKD').
+  replace(/[\u0300-\u036f]/g, '').
+  replace(/[^a-z0-9]+/g, '-').
+  replace(/^-+|-+$/g, '').
+  slice(0, 60) || 'product';
+}
+
+/** Readable product address used on custom domains (D62): /shop/ankara-wrap-dress. Same names get a short suffix. */
+export function productSlug(p: Product, all: Product[]): string {
+  const base = baseSlug(p.name);
+  const clash = all.some((o) => o.id !== p.id && o.status === 'active' && baseSlug(o.name) === base);
+  return clash ? `${base}-${p.id.slice(-4).toLowerCase()}` : base;
+}
+
+/** An active product by id or readable address. */
+export function findShopProduct(data: CommerceData | null, ref: string): Product | undefined {
+  if (!data) return undefined;
+  const active = data.products.filter((p) => p.status === 'active');
+  return active.find((p) => p.id === ref) ?? active.find((p) => productSlug(p, data.products) === ref);
+}
+
 /** The variant matching a set of chosen option values, if every option is chosen. */
 export function matchVariant(product: Product, chosen: Record<string, string>): ProductVariant | undefined {
   if (product.variants.length === 1) return product.variants[0];

@@ -19,7 +19,8 @@
     "tailwind-merge": "latest",
     "framer-motion": "^11.5.4",
     "sonner": "^2.0.1",
-    "recharts": "^2.12.7"
+    "recharts": "^2.12.7",
+    "qrcode-generator": "latest"
   },
   "devDependencies": {
     "@types/node": "^20.11.18",

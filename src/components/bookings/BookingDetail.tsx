@@ -12,6 +12,8 @@ import { TextInput } from '../ui/TextInput';
 import { Dialog } from '../ui/Dialog';
 import { SampleTag } from '../commerce/StatusBadges';
 import { OwnerSlotPicker } from './OwnerSlotPicker';
+import { useTeam } from '../../contexts/TeamContext';
+import { AssigneeSelect } from '../team/AssigneeSelect';
 
 export const bookingStatusCopy = {
   confirmed: { label: 'Confirmed', tone: 'success' as const },
@@ -23,6 +25,7 @@ export const bookingStatusCopy = {
 
 export function BookingDetail({ bookingId, onClose }: {bookingId: string | null;onClose: () => void;}) {
   const { data, apply } = useOps();
+  const team = useTeam();
   const b = data.bookings.find((x) => x.id === bookingId);
   const [dialog, setDialog] = useState<'cancel' | 'reschedule' | null>(null);
   const [reason, setReason] = useState('');
@@ -83,6 +86,17 @@ export function BookingDetail({ bookingId, onClose }: {bookingId: string | null;
             </Badge>
             {b.sample && <SampleTag />}
           </div>
+          <AssigneeSelect
+            id={`bk-assignee-${b.id}`}
+            value={b.assigneeId}
+            className="max-w-xs"
+            onChange={(assigneeId) => {
+              if (apply((d) => ({ ...d, bookings: d.bookings.map((x) => x.id === b.id ? { ...x, assigneeId } : x) }))) {
+                const who = team.data.members.find((m) => m.id === assigneeId)?.name;
+                team.log('bookings', who ? `assigned booking ${b.ref} to ${who}` : `unassigned booking ${b.ref}`, `/app/bookings?booking=${b.id}`);
+              }
+            }} />
+          
           <dl className="grid grid-cols-2 gap-4 text-label">
             <div>
               <dt className="text-caption text-fg-subtle">When</dt>

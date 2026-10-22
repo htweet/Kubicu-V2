@@ -6,6 +6,7 @@ import { useEditor } from '../contexts/EditorContext';
 import { useCommerce } from '../contexts/CommerceContext';
 import { useLibrary } from '../contexts/LibraryContext';
 import { usePlan } from '../contexts/PlanContext';
+import { useCan } from '../contexts/TeamContext';
 import { ACCEPTED_IMAGE_TYPES } from '../utils/image';
 import { formatBytes, mediaRef } from '../utils/media/refs';
 import { findUses, isInUse } from '../utils/media/usage';
@@ -29,6 +30,7 @@ export function Media() {
   const products = useCommerce().data.products;
   const { sections } = useLibrary();
   const fileRef = useRef<HTMLInputElement>(null);
+  const mediaAllowed = useCan('media.manage');
   const [filter, setFilter] = useState<Filter>('all');
   const [query, setQuery] = useState('');
   const [openId, setOpenId] = useState<string | null>(null);
@@ -55,6 +57,10 @@ export function Media() {
   const uploadMany = async (files: FileList | File[] | null) => {
     const list = Array.from(files ?? []);
     if (list.length === 0) return;
+    if (!mediaAllowed.allowed) {
+      toast.error('You can’t upload here', { description: mediaAllowed.reason });
+      return;
+    }
     setUploading({ done: 0, total: list.length });
     let added = 0;
     let dupes = 0;
@@ -99,7 +105,7 @@ export function Media() {
         title="Media"
         description="Every photo you upload, in one place. Reuse it anywhere, and see where each one is used."
         actions={
-        <Button leadingIcon={UploadIcon} disabled={!media.available || full || !!uploading} onClick={() => fileRef.current?.click()}>
+        <Button leadingIcon={UploadIcon} disabled={!media.available || full || !!uploading || !mediaAllowed.allowed} title={mediaAllowed.allowed ? undefined : mediaAllowed.reason} onClick={() => fileRef.current?.click()}>
             Upload
           </Button>
         } />
@@ -132,8 +138,10 @@ export function Media() {
           {media.assets.length === 0 ?
         <button
           type="button"
+          disabled={!mediaAllowed.allowed}
           onClick={() => fileRef.current?.click()}
           className={cn(
+            'disabled:cursor-not-allowed disabled:opacity-60',
             'mt-8 flex w-full flex-col items-center gap-3 rounded-lg border-2 border-dashed px-6 py-16 text-center transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
             dragOver ? 'border-action bg-action-soft' : 'border-line-strong hover:bg-sunken'
           )}>

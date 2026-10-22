@@ -6,11 +6,17 @@ import { DEMO_WORKSPACE_ID } from '../utils/workspaceStorage';
 import { commerceKey, emptyCommerce, readCommerce, writeCommerce } from '../utils/commerce/storage';
 import { withSampleData } from '../data/commerceSeed';
 import { clearSample } from '../utils/commerce/ops';
+import { useOptionalTeam } from './TeamContext';
+import type { Permission } from '../types/team';
+
+const COMMERCE_WRITE: Permission[] = ['orders.manage', 'products.edit', 'discounts.manage', 'commerce.settings'];
 
 interface CommerceValue {
   data: CommerceData;
   /** Applies a pure update and saves it. Returns false if saving failed. */
   apply: (fn: (data: CommerceData) => CommerceData) => boolean;
+  /** Not tied to the signed-in member: visitor checkouts and automatic DealRoom settlement. */
+  applySystem: (fn: (data: CommerceData) => CommerceData) => boolean;
   loadSample: () => void;
   clearSampleData: () => void;
   hasSample: boolean;
@@ -53,7 +59,7 @@ export function CommerceProvider({ children }: {children: React.ReactNode;}) {
     return () => window.removeEventListener('storage', onStorage);
   }, [workspaceId]);
 
-  const apply = useCallback(
+  const applySystem = useCallback(
     (fn: (d: CommerceData) => CommerceData) => {
       const next = fn(dataRef.current);
       try {
@@ -69,6 +75,20 @@ export function CommerceProvider({ children }: {children: React.ReactNode;}) {
     [workspaceId]
   );
 
+  // Team members' changes go through their role (D57). Visitors' checkouts and automatic settlement use applySystem.
+  const team = useOptionalTeam();
+  const writer = team ? COMMERCE_WRITE.find((p) => team.can(p).allowed) : 'orders.manage';
+  const apply = useCallback(
+    (fn: (d: CommerceData) => CommerceData) => {
+      if (!writer) {
+        toast.error('Your role can’t change Commerce', { description: team?.can('orders.manage').reason });
+        return false;
+      }
+      return applySystem(fn);
+    },
+    [applySystem, writer, team]
+  );
+
   const loadSample = useCallback(() => {
     if (apply((d) => withSampleData(clearSample(d)))) toast('Sample data added', { description: 'Everything sample is labelled. Clear it any time from Commerce settings.' });
   }, [apply]);
@@ -79,7 +99,7 @@ export function CommerceProvider({ children }: {children: React.ReactNode;}) {
 
   const hasSample = useMemo(() => data.products.some((p) => p.sample) || data.orders.some((o) => o.sample), [data]);
 
-  const value = useMemo(() => ({ data, apply, loadSample, clearSampleData, hasSample }), [data, apply, loadSample, clearSampleData, hasSample]);
+  const value = useMemo(() => ({ data, apply, applySystem, loadSample, clearSampleData, hasSample }), [data, apply, applySystem, loadSample, clearSampleData, hasSample]);
   return <CommerceContext.Provider value={value}>{children}</CommerceContext.Provider>;
 }
 

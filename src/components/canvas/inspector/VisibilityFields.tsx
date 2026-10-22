@@ -7,7 +7,7 @@ import { useEditor } from '../../../contexts/EditorContext';
 import { issuesByBlock } from '../../../utils/validation';
 import { formatSchedule, windowState } from '../../../utils/schedule';
 import { Switch } from '../../ui/Switch';
-import { PlanLock } from '../../ui/PlanLock';
+import { SourceRuleFields } from './SourceRuleFields';
 import { DateTimeInput } from '../../ui/DateTimeInput';
 import { Badge } from '../../ui/Badge';
 
@@ -101,13 +101,7 @@ export function VisibilityFields({ block }: {block: Block;}) {
         <p className="text-caption text-fg-muted">{summary}</p>
       </section>
 
-      <div className="flex items-start justify-between gap-3 border-t border-line pt-5 opacity-70">
-        <div>
-          <p className="text-label font-medium text-fg">Show by visitor source</p>
-          <p className="mt-0.5 text-caption text-fg-subtle">IntentFlow: different blocks for TikTok, WhatsApp or QR visitors.</p>
-        </div>
-        <PlanLock kind="planned">Later phase</PlanLock>
-      </div>
+      <SourceRuleFields block={block} />
     </div>);
 
 }

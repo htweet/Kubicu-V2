@@ -11,6 +11,7 @@ import { CurrencyInput } from '../ui/CurrencyInput';
 import { TextInput } from '../ui/TextInput';
 import { Switch } from '../ui/Switch';
 import { InlineAlert } from '../ui/InlineAlert';
+import { useTeam } from '../../contexts/TeamContext';
 
 interface Props {
   order: Order | null;
@@ -37,7 +38,17 @@ export function RefundDialog({ order, mode, onClose }: Props) {
     setTried(false);
   }, [order, mode]);
 
-  const amountError = mode === 'refund' && (amount === null || amount <= 0 || amount > max) ? `Enter an amount between ₦1 and ${formatNgn(max)}` : undefined;
+  // Sales can refund up to the workspace limit; bigger refunds need an Admin or the Owner (D57).
+  const team = useTeam();
+  const limit = team.role === 'sales' ? team.data.salesRefundLimitNgn : Infinity;
+  const refundAmount = mode === 'cancel' ? paid ? max : 0 : amount ?? 0;
+  const overLimit = refundAmount > limit;
+  const amountError =
+  mode === 'refund' && (amount === null || amount <= 0 || amount > max) ?
+  `Enter an amount between ₦1 and ${formatNgn(max)}` :
+  overLimit ?
+  `Sales can refund up to ${formatNgn(limit)}. Ask an Admin or the Owner for anything bigger.` :
+  undefined;
   const reasonError = !reason.trim() ? 'Add a reason — it goes in the order timeline' : undefined;
 
   const submit = () => {
@@ -51,6 +62,7 @@ export function RefundDialog({ order, mode, onClose }: Props) {
       return refundOrder(d, order.id, amount ?? 0, reason.trim(), physical && restock);
     });
     if (ok) {
+      team.log('commerce', mode === 'cancel' ? `cancelled order #${order.number}` : `refunded ${formatNgn(amount ?? 0)} on order #${order.number}`, '/app/commerce/orders');
       toast(mode === 'cancel' ? `Order #${order.number} cancelled` : `Refund of ${formatNgn(amount ?? 0)} sent (test mode)`, {
         description: paid ? 'In live mode the customer’s bank usually shows it within 5–10 working days.' : undefined
       });
@@ -101,6 +113,7 @@ export function RefundDialog({ order, mode, onClose }: Props) {
         <Switch id="rf-restock" label="Put items back in stock" description="Turn off if the items weren’t returned or can’t be resold." checked={restock} onChange={setRestock} />
         }
         {mode === 'cancel' && physical && <p className="text-caption text-fg-subtle">Reserved stock goes back to inventory.</p>}
+        {mode === 'cancel' && overLimit && <p className="text-caption font-medium text-danger">{amountError}</p>}
         <div>
           <p className="text-label font-medium text-fg">Message to the customer</p>
           <p className="mt-1.5 rounded-md bg-sunken px-3 py-2.5 text-label text-fg-muted">{notification}</p>

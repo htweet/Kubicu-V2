@@ -22,6 +22,9 @@ import { Button } from '../ui/Button';
 import { TextInput } from '../ui/TextInput';
 import { InlineAlert } from '../ui/InlineAlert';
 import { UpgradeButton } from '../ui/UpgradeButton';
+import { useTeam } from '../../contexts/TeamContext';
+import { useWorkspace } from '../../contexts/WorkspaceContext';
+import { SendIcon } from 'lucide-react';
 import { Segmented } from '../ui/Segmented';
 import { DateTimeInput } from '../ui/DateTimeInput';
 import { formatSchedule, timeZoneLabel } from '../../utils/schedule';
@@ -34,7 +37,7 @@ interface PublishDialogProps {
   onOpenTheme?: () => void;
 }
 
-type Phase = 'review' | 'success' | 'scheduled' | 'failed';
+type Phase = 'review' | 'success' | 'scheduled' | 'failed' | 'sent';
 type Mode = 'now' | 'schedule';
 
 function tomorrowAtNine(): string {
@@ -73,8 +76,19 @@ export function PublishDialog({ open, onClose, onGoToBlock, onOpenTheme }: Publi
 
   const schedule = () => {
     if (!when || whenError) return;
+    if (team.needsReview) return sendForReview(when);
     const ok = actions.schedulePublish(when, note);
+    if (ok) team.log('pages', `scheduled ${currentSpace.name} to publish`, '/app/spaces');
     setPhase(ok ? 'scheduled' : 'failed');
+  };
+
+  // Approvals (D58): Editors send the exact site for review instead of publishing.
+  const team = useTeam();
+  const { currentSpace } = useWorkspace();
+  const pendingMine = team.data.reviews.find((r) => r.spaceId === currentSpace.id && r.status === 'pending');
+  const sendForReview = (scheduleAt: string | null) => {
+    team.requestReview({ spaceId: currentSpace.id, spaceName: currentSpace.name, handle: state.site.handle, doc: state.site, live: state.published, note: note.trim(), scheduleAt });
+    setPhase('sent');
   };
 
   const errors = issues.filter((i) => i.severity === 'error');
@@ -82,9 +96,11 @@ export function PublishDialog({ open, onClose, onGoToBlock, onOpenTheme }: Publi
   const url = publicUrl(state.draft.handle);
 
   const publish = () => {
+    if (team.needsReview) return sendForReview(null);
     setBusy(true);
     window.setTimeout(() => {
       const ok = actions.publish(note);
+      if (ok) team.log('pages', `published ${currentSpace.name}`, `/p/${state.draft.handle}`);
       setBusy(false);
       setPhase(ok ? 'success' : 'failed');
     }, 450);
@@ -163,6 +179,29 @@ export function PublishDialog({ open, onClose, onGoToBlock, onOpenTheme }: Publi
 
   }
 
+  if (phase === 'sent') {
+    return (
+      <Dialog
+        open={open}
+        onClose={onClose}
+        title="Sent for review"
+        footer={
+        <Button onClick={onClose} data-autofocus>
+            Keep editing
+          </Button>
+        }>
+        
+        <div className="flex flex-col gap-3 pb-2">
+          <div className="flex items-center gap-3 rounded-md bg-info-soft px-3.5 py-3 text-info">
+            <SendIcon size={18} aria-hidden />
+            <p className="text-label font-semibold">An Owner or Admin will review it{mode === 'schedule' && when ? ` — you asked for it to go live ${formatSchedule(when)}` : ''}.</p>
+          </div>
+          <p className="text-label text-fg-muted">Your live page doesn’t change until it’s approved. You can keep editing — the request updates with your latest draft, and the reviewer is told.</p>
+        </div>
+      </Dialog>);
+
+  }
+
   if (phase === 'success') {
     return (
       <Dialog
@@ -213,12 +252,12 @@ export function PublishDialog({ open, onClose, onGoToBlock, onOpenTheme }: Publi
           </Button>
           {hasUnpublishedChanges ?
         mode === 'schedule' ?
-        <Button onClick={schedule} disabled={errors.length > 0 || !!whenError} leadingIcon={CalendarClockIcon}>
-                {errors.length > 0 ? `Fix ${errors.length} to schedule` : state.scheduled ? 'Reschedule' : 'Schedule publish'}
+        <Button onClick={schedule} disabled={errors.length > 0 || !!whenError} leadingIcon={team.needsReview ? SendIcon : CalendarClockIcon}>
+                {errors.length > 0 ? `Fix ${errors.length} to schedule` : team.needsReview ? 'Send for review' : state.scheduled ? 'Reschedule' : 'Schedule publish'}
               </Button> :
 
-        <Button onClick={publish} loading={busy} disabled={errors.length > 0}>
-                {busy ? 'Publishing…' : errors.length > 0 ? `Fix ${errors.length} to publish` : 'Publish now'}
+        <Button onClick={publish} loading={busy} disabled={errors.length > 0} leadingIcon={team.needsReview ? SendIcon : undefined}>
+                {busy ? 'Publishing…' : errors.length > 0 ? `Fix ${errors.length} to ${team.needsReview ? 'send' : 'publish'}` : team.needsReview ? pendingMine ? 'Send again' : 'Send for review' : 'Publish now'}
               </Button> :
 
 
@@ -233,6 +272,12 @@ export function PublishDialog({ open, onClose, onGoToBlock, onOpenTheme }: Publi
         {phase === 'failed' &&
         <InlineAlert tone="danger" title="We couldn’t publish">
             Your draft is safe on this device and your live page hasn’t changed. Check your storage space and try again.
+          </InlineAlert>
+        }
+
+        {team.needsReview && hasUnpublishedChanges &&
+        <InlineAlert tone="info" title={pendingMine ? `Waiting for review since ${formatRelative(pendingMine.createdAt)}` : 'Approvals are on for this workspace'}>
+            {pendingMine ? 'Sending again replaces that request with your latest draft.' : 'You send it to an Owner or Admin, who publishes it. Your live page stays as it is until then.'}
           </InlineAlert>
         }
 

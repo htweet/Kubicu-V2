@@ -29,7 +29,7 @@ export function Tabs<T extends string>({ items, value, onChange, ariaLabel, idPr
   };
 
   return (
-    <div role="tablist" aria-label={ariaLabel} className={cn('flex gap-1 border-b border-line', className)}>
+    <div role="tablist" aria-label={ariaLabel} className={cn('flex gap-1 shadow-[inset_0_-1px_0_0_rgb(var(--border-subtle))]', className)}>
       {items.map((item, i) => {
         const selected = item.id === value;
         return (
@@ -45,7 +45,7 @@ export function Tabs<T extends string>({ items, value, onChange, ariaLabel, idPr
             onClick={() => onChange(item.id)}
             onKeyDown={(e) => onKeyDown(e, i)}
             className={cn(
-              'relative -mb-px inline-flex h-10 items-center justify-center gap-1.5 whitespace-nowrap border-b-2 px-2.5 text-label font-medium',
+              'relative inline-flex h-10 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap border-b-2 px-2.5 text-label font-medium',
               'transition-colors duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus',
               fullWidth && 'flex-1',
               selected ? 'border-action text-fg' : 'border-transparent text-fg-subtle hover:text-fg'

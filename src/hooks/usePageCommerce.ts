@@ -40,6 +40,7 @@ export function usePageCommerce(workspaceId: string | null, isOwn: boolean): Pag
     [workspaceId]
   );
 
-  if (isOwn) return { data: own.data, apply: own.apply };
+  // Visitors' checkouts aren't limited by the signed-in member's role.
+  if (isOwn) return { data: own.data, apply: own.applySystem };
   return { data: other, apply: applyOther };
 }

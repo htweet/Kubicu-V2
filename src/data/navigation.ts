@@ -11,7 +11,8 @@ import {
   GlobeIcon,
   PuzzleIcon,
   SettingsIcon,
-  ImagesIcon } from
+  ImagesIcon,
+  SplitIcon } from
 'lucide-react';
 
 export interface NavItem {
@@ -34,10 +35,11 @@ export const workspaceNav: NavItem[] = [
 { id: 'bookings', label: 'Bookings', to: '/app/bookings', icon: CalendarIcon, group: 'business' },
 { id: 'audience', label: 'Audience', to: '/app/audience', icon: UsersIcon, group: 'business' },
 { id: 'automations', label: 'Automations', to: '/app/automations', icon: WorkflowIcon, group: 'business' },
-{ id: 'analytics', label: 'Analytics', to: '/app/analytics', icon: BarChart3Icon, group: 'business', batch: 5 },
-{ id: 'domains', label: 'Domains & QR', to: '/app/domains', icon: GlobeIcon, group: 'business', batch: 5 },
+{ id: 'analytics', label: 'Analytics', to: '/app/analytics', icon: BarChart3Icon, group: 'business' },
+{ id: 'intentflow', label: 'IntentFlow', to: '/app/intentflow', icon: SplitIcon, group: 'business' },
+{ id: 'domains', label: 'Domains & QR', to: '/app/domains', icon: GlobeIcon, group: 'business' },
 { id: 'extensions', label: 'Extensions', to: '/app/extensions', icon: PuzzleIcon, group: 'business', batch: 6 },
-{ id: 'settings', label: 'Settings', to: '/app/settings', icon: SettingsIcon, group: 'business', batch: 6 }];
+{ id: 'settings', label: 'Settings', to: '/app/settings', icon: SettingsIcon, group: 'business' }];
 
 
 export const mobilePrimaryNavIds = ['overview', 'spaces', 'canvas'];

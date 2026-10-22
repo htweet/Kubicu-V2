@@ -1,0 +1,406 @@
+import React, { useMemo, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { ArrowDownRightIcon, ArrowUpRightIcon, BarChart3Icon, DownloadIcon, LightbulbIcon, LockIcon, XIcon } from 'lucide-react';
+import { useAnalytics } from '../contexts/AnalyticsContext';
+import { useEditor } from '../contexts/EditorContext';
+import { useWorkspace } from '../contexts/WorkspaceContext';
+import { useCan } from '../contexts/TeamContext';
+import { useDomains } from '../contexts/DomainsContext';
+import { campaignStats, change, funnels, hasSample, headline, inRange, insights, rangeFor, sources, topLinks, visitsByDay, type Range } from '../utils/analytics/aggregate';
+import { sourceLabels } from '../utils/analytics/track';
+import { activeExtraSpaces, readSpacePage } from '../utils/spaces';
+import { allBlocks } from '../utils/sitePages';
+import { blockName } from '../utils/blocks';
+import { downloadCsv, toCsv } from '../utils/csv';
+import { formatNgn } from '../utils/format';
+import { PageHeader } from '../components/shell/PageHeader';
+import { Button } from '../components/ui/Button';
+import { Segmented } from '../components/ui/Segmented';
+import { Switch } from '../components/ui/Switch';
+import { Badge } from '../components/ui/Badge';
+import { EmptyState } from '../components/ui/EmptyState';
+import { Tabs } from '../components/ui/Tabs';
+import { VisitsChart } from '../components/analytics/VisitsChart';
+import { FunnelView } from '../components/analytics/FunnelView';
+import { cn } from '../utils/cn';
+
+type Period = '7' | '30' | '90' | 'custom';
+type FunnelTab = 'shop' | 'booking' | 'leads';
+
+const pct = (n: number) => `${Math.round(n * 100)}%`;
+
+/** Analytics (D61): what visitors do, from real visits on this device plus labelled sample history. */
+export function Analytics() {
+  const allowed = useCan('analytics.view');
+  const { data, dismissInsight, clearSample } = useAnalytics();
+  const { state } = useEditor();
+  const { current } = useWorkspace();
+  const navigate = useNavigate();
+  const [period, setPeriod] = useState<Period>('30');
+  const [from, setFrom] = useState(() => new Date(Date.now() - 13 * 86400000).toISOString().slice(0, 10));
+  const [to, setTo] = useState(() => new Date().toISOString().slice(0, 10));
+  const [compare, setCompare] = useState(true);
+  const [handle, setHandle] = useState<string>('all');
+  const [funnelTab, setFunnelTab] = useState<FunnelTab>('shop');
+
+  const mainHandle = state.published?.handle ?? state.site.handle;
+  const spaceOptions = useMemo(
+    () => [
+    { value: 'all', label: 'All spaces' },
+    { value: mainHandle, label: `Main page · ${mainHandle}` },
+    ...activeExtraSpaces(current).
+    map((s) => readSpacePage(current.id, s.id)?.published?.handle ?? readSpacePage(current.id, s.id)?.draft.handle).
+    filter((h): h is string => !!h).
+    map((h) => ({ value: h, label: h }))],
+
+    [current, mainHandle]
+  );
+
+  const ranges = useMemo((): {current: Range;previous: Range;days: number;} => {
+    if (period !== 'custom') {
+      const d = Number(period);
+      return { ...rangeFor(d), days: d };
+    }
+    const a = Date.parse(from);
+    const b = Date.parse(to) + 86400000;
+    const span = Math.max(86400000, b - a);
+    return { current: { from: a, to: b }, previous: { from: a - span, to: a }, days: Math.round(span / 86400000) };
+  }, [period, from, to]);
+
+  const filter = { handle: handle === 'all' ? null : handle };
+  const cur = useMemo(() => inRange(data.events, ranges.current, filter), [data.events, ranges, handle]); // eslint-disable-line react-hooks/exhaustive-deps
+  const prev = useMemo(() => inRange(data.events, ranges.previous, filter), [data.events, ranges, handle]); // eslint-disable-line react-hooks/exhaustive-deps
+  const h = headline(cur);
+  const hp = headline(prev);
+  const days = visitsByDay(cur, ranges.current);
+  const prevDays = visitsByDay(prev, ranges.previous);
+  const chart = days.map((d, i) => ({ label: d.label, value: d.value, previous: prevDays[i]?.value ?? 0 }));
+  const links = topLinks(cur, h.visits).slice(0, 8);
+  const src = sources(cur);
+  const f = funnels(cur);
+  const sample = hasSample(cur);
+  const { data: domainsData } = useDomains();
+  const camp = campaignStats(cur);
+  const domainLinks = domainsData.links.filter((l) => !l.archivedAt || camp.has(l.slug));
+
+  const mainBlocks = allBlocks(state.site);
+  const ideas = insights(cur, state.site.blocks.map((b) => b.id), (id) => {
+    const b = mainBlocks.find((x) => x.id === id);
+    return b ? blockName(b) : '';
+  }).filter((i) => !data.dismissedInsights.includes(i.id));
+
+  if (!allowed.allowed)
+  return (
+    <div className="mx-auto w-full max-w-[1200px] px-5 py-8 md:px-10 md:py-12">
+        <PageHeader title="Analytics" />
+        <div className="mt-8 rounded-lg border border-line bg-raised">
+          <EmptyState icon={LockIcon} title="You can’t see analytics" description={allowed.reason} />
+        </div>
+      </div>);
+
+
+  const exportCsv = () =>
+  downloadCsv(
+    `kubicu-analytics-${new Date().toISOString().slice(0, 10)}.csv`,
+    toCsv(['when', 'event', 'link', 'page', 'source', 'campaign', 'block', 'label', 'value_ngn', 'sample'], cur.map((e) => [e.at, e.type, e.handle, e.pageId ?? 'home', e.source, e.campaign ?? '', e.blockId ?? '', e.label ?? '', e.valueNgn ?? '', e.sample ? 'yes' : '']))
+  );
+
+  const rangeText = period === 'custom' ? `${from} – ${to}` : `Last ${period} days`;
+  const delta = (c: number, p: number) => {
+    if (!compare) return null;
+    const ch = change(c, p);
+    if (ch === null) return <span className="text-caption text-fg-subtle">new</span>;
+    const up = ch >= 0;
+    const Icon = up ? ArrowUpRightIcon : ArrowDownRightIcon;
+    return (
+      <span className={cn('inline-flex items-center gap-0.5 text-caption font-semibold', up ? 'text-success' : 'text-danger')}>
+        <Icon size={13} aria-hidden />
+        {up ? '+' : ''}
+        {Math.round(ch * 100)}%<span className="sr-only"> vs previous period</span>
+      </span>);
+
+  };
+
+  return (
+    <div className="mx-auto w-full max-w-[1200px] px-5 py-8 md:px-10 md:py-12">
+      <PageHeader
+        title="Analytics"
+        description="What visitors do on your pages — recorded on this device, nothing personal kept."
+        actions={
+        <Button variant="secondary" leadingIcon={DownloadIcon} onClick={exportCsv} disabled={cur.length === 0}>
+            Export CSV
+          </Button>
+        } />
+      
+
+      <div className="mt-6 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+        <div className="flex flex-wrap items-end gap-3">
+          <Segmented<Period>
+            ariaLabel="Period"
+            value={period}
+            onChange={setPeriod}
+            options={[
+            { value: '7', label: '7 days' },
+            { value: '30', label: '30 days' },
+            { value: '90', label: '90 days' },
+            { value: 'custom', label: 'Custom' }]
+            } />
+          
+          {period === 'custom' &&
+          <div className="flex items-center gap-2">
+              <label className="sr-only" htmlFor="an-from">From</label>
+              <input id="an-from" type="date" value={from} max={to} onChange={(e) => setFrom(e.target.value)} className="h-9 rounded-md border border-line bg-raised px-2.5 text-label text-fg" />
+              <span className="text-caption text-fg-subtle">to</span>
+              <label className="sr-only" htmlFor="an-to">To</label>
+              <input id="an-to" type="date" value={to} min={from} onChange={(e) => setTo(e.target.value)} className="h-9 rounded-md border border-line bg-raised px-2.5 text-label text-fg" />
+            </div>
+          }
+          <div className="min-w-[200px]">
+            <label htmlFor="an-space" className="sr-only">
+              Space
+            </label>
+            <select id="an-space" value={handle} onChange={(e) => setHandle(e.target.value)} className="h-9 w-full rounded-md border border-line bg-raised px-2.5 text-label text-fg">
+              {spaceOptions.map((o) =>
+              <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              )}
+            </select>
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          {sample &&
+          <span className="inline-flex items-center gap-2">
+              <Badge tone="neutral">Includes sample visits</Badge>
+              <button type="button" onClick={clearSample} className="text-caption font-medium text-fg-muted underline underline-offset-2 hover:text-fg">
+                Clear sample
+              </button>
+            </span>
+          }
+          <div className="w-52">
+            <Switch id="an-compare" label="Compare to previous period" checked={compare} onChange={setCompare} />
+          </div>
+        </div>
+      </div>
+
+      {h.visits === 0 && hp.visits === 0 ?
+      <div className="mt-8 rounded-lg border border-line bg-raised">
+          <EmptyState icon={BarChart3Icon} title="No visits in this period" description="Share your link or print a QR code. Visits, taps and where people came from show up here as they happen." />
+        </div> :
+
+      <>
+          {/* Headline: visits leads; the rest support it. */}
+          <section aria-label={`Summary, ${rangeText}`} className="mt-8 grid gap-6 border-b border-line pb-8 md:grid-cols-[minmax(0,1.3fr)_repeat(3,minmax(0,1fr))]">
+            <div>
+              <p className="text-label text-fg-muted">Visits</p>
+              <p className="mt-1 flex items-baseline gap-2 text-[2.75rem] font-semibold leading-none tracking-[-0.03em] tabular-nums text-fg">
+                {h.visits.toLocaleString()} {delta(h.visits, hp.visits)}
+              </p>
+              <p className="mt-2 text-caption text-fg-subtle">{rangeText} · a visit is one browser session (30 min)</p>
+            </div>
+            <div>
+              <p className="text-label text-fg-muted">Visitors (estimated)</p>
+              <p className="mt-1 flex items-baseline gap-2 text-title font-semibold tabular-nums text-fg">
+                {h.visitors.toLocaleString()} {delta(h.visitors, hp.visitors)}
+              </p>
+              <p className="mt-1 text-caption text-fg-subtle">Distinct browsers — people on two devices count twice</p>
+            </div>
+            <div>
+              <p className="text-label text-fg-muted">Tapped something</p>
+              <p className="mt-1 flex items-baseline gap-2 text-title font-semibold tabular-nums text-fg">
+                {pct(h.tapRate)} {delta(h.tapRate, hp.tapRate)}
+              </p>
+              <p className="mt-1 text-caption text-fg-subtle">Share of visits with at least one tap</p>
+            </div>
+            <div>
+              <p className="text-label text-fg-muted">From your pages</p>
+              <p className="mt-1 flex items-baseline gap-2 text-title font-semibold tabular-nums text-fg">
+                {formatNgn(h.revenueNgn)} {delta(h.revenueNgn, hp.revenueNgn)}
+              </p>
+              <p className="mt-1 text-caption text-fg-subtle">
+                {h.orders} paid order{h.orders === 1 ? '' : 's'} · test mode
+              </p>
+            </div>
+          </section>
+
+          <section aria-labelledby="visits-chart" className="mt-8">
+            <h2 id="visits-chart" className="text-heading font-semibold text-fg">
+              Visits over time
+            </h2>
+            <div className="mt-3">
+              <VisitsChart
+              data={chart}
+              compare={compare}
+              summary={`${h.visits.toLocaleString()} visits ${rangeText.toLowerCase()}${compare ? `, compared with ${hp.visits.toLocaleString()} in the period before (dashed)` : ''}. Busiest day: ${days.reduce((a, b) => b.value > a.value ? b : a, days[0])?.label ?? '—'}.`} />
+            
+            </div>
+          </section>
+
+          <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_320px]">
+            <section aria-labelledby="links-heading">
+              <h2 id="links-heading" className="text-label font-semibold text-fg">
+                Top links and buttons
+              </h2>
+              {links.length === 0 ?
+            <p className="mt-3 text-label text-fg-muted">No taps yet in this period.</p> :
+
+            <table className="mt-3 w-full text-label">
+                  <thead>
+                    <tr className="border-b border-line text-caption text-fg-subtle">
+                      <th className="py-2 text-left font-medium">Link</th>
+                      <th className="py-2 text-right font-medium">Taps</th>
+                      <th className="py-2 text-right font-medium">Of visits</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {links.map((l) =>
+                <tr key={l.id} className="border-b border-line">
+                        <td className="max-w-0 truncate py-2 pr-3 text-fg">{l.label}</td>
+                        <td className="py-2 text-right tabular-nums text-fg">{l.taps}</td>
+                        <td className="py-2 text-right tabular-nums text-fg-muted">{pct(l.share)}</td>
+                      </tr>
+                )}
+                  </tbody>
+                </table>
+            }
+            </section>
+
+            <section aria-labelledby="sources-heading">
+              <h2 id="sources-heading" className="text-label font-semibold text-fg">
+                Where visitors come from
+              </h2>
+              <table className="mt-3 w-full text-label">
+                <thead>
+                  <tr className="border-b border-line text-caption text-fg-subtle">
+                    <th className="py-2 text-left font-medium">Source</th>
+                    <th className="py-2 text-right font-medium">Visits</th>
+                    <th className="py-2 text-right font-medium" title="Paid orders, bookings, forms and sign-ups">Converted</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {src.map((s) =>
+                <tr key={s.id} className="border-b border-line">
+                      <td className="py-2 pr-3 text-fg">
+                        {sourceLabels[s.id]} <span className="text-caption text-fg-subtle">{pct(s.share)}</span>
+                      </td>
+                      <td className="py-2 text-right tabular-nums text-fg">{s.visits}</td>
+                      <td className="py-2 text-right tabular-nums text-fg-muted">
+                        {s.conversions} <span className="text-caption">({pct(s.rate)})</span>
+                      </td>
+                    </tr>
+                )}
+                </tbody>
+              </table>
+              <p className="mt-2 text-caption text-fg-subtle">From the link used (QR codes and campaign links tag themselves) or the site that sent them.</p>
+            </section>
+
+            <aside aria-labelledby="ideas-heading" className="rounded-lg border border-line bg-raised p-4">
+              <h2 id="ideas-heading" className="flex items-center gap-2 text-label font-semibold text-fg">
+                <LightbulbIcon size={15} className="text-action" aria-hidden /> Link Intelligence
+              </h2>
+              {ideas.length === 0 ?
+            <p className="mt-2 text-caption text-fg-muted">{h.visits < 30 ? `Suggestions appear after 30 visits in a period (${h.visits} so far).` : 'Nothing stands out right now.'}</p> :
+
+            <ul className="mt-3 flex flex-col gap-4">
+                  {ideas.map((i) =>
+              <li key={i.id} className="border-t border-line pt-3 first:border-0 first:pt-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="text-label font-medium text-fg">{i.title}</p>
+                        <button type="button" aria-label="Dismiss suggestion" onClick={() => dismissInsight(i.id)} className="shrink-0 rounded p-0.5 text-fg-subtle hover:text-fg">
+                          <XIcon size={14} aria-hidden />
+                        </button>
+                      </div>
+                      <p className="mt-1 text-caption text-fg-muted">{i.evidence}</p>
+                      {i.blockId && mainBlocks.some((b) => b.id === i.blockId) &&
+                <Button size="sm" variant="secondary" className="mt-2" onClick={() => navigate(`/app/canvas/${state.site.id}?block=${i.blockId}`)}>
+                          Open in canvas
+                        </Button>
+                }
+                    </li>
+              )}
+                </ul>
+            }
+              <p className="mt-4 text-caption text-fg-subtle">Observations, not proof — a pattern doesn’t show what caused it.</p>
+            </aside>
+          </div>
+
+          <section aria-labelledby="campaigns-heading" className="mt-10">
+            <div className="flex items-baseline justify-between gap-3">
+              <h2 id="campaigns-heading" className="text-heading font-semibold text-fg">
+                Campaign links and QR codes
+              </h2>
+              <Link to="/app/domains/links" className="text-label font-medium text-action hover:underline">
+                Manage
+              </Link>
+            </div>
+            {domainLinks.length === 0 ?
+          <p className="mt-2 text-label text-fg-muted">
+                Make a short link for each place you share, or a QR code for print, to see which brings visitors. <Link to="/app/domains/links" className="underline underline-offset-2">Create one</Link>
+              </p> :
+
+          <table className="mt-3 w-full max-w-3xl text-label">
+                <thead>
+                  <tr className="border-b border-line text-caption text-fg-subtle">
+                    <th className="py-2 text-left font-medium">Link</th>
+                    <th className="py-2 text-right font-medium">Visits / scans</th>
+                    <th className="py-2 text-right font-medium">Orders</th>
+                    <th className="hidden py-2 text-right font-medium sm:table-cell">Revenue</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {domainLinks.map((l) => {
+                const s = camp.get(l.slug) ?? { visits: 0, orders: 0, revenueNgn: 0 };
+                return (
+                  <tr key={l.id} className="border-b border-line">
+                        <td className="max-w-0 truncate py-2 pr-3 text-fg">
+                          {l.name} <span className="text-caption text-fg-subtle">{l.source === 'qr' ? 'QR' : sourceLabels[l.source]}</span>
+                        </td>
+                        <td className="py-2 text-right tabular-nums text-fg">{s.visits}</td>
+                        <td className="py-2 text-right tabular-nums text-fg-muted">{s.orders}</td>
+                        <td className="hidden py-2 text-right tabular-nums text-fg-muted sm:table-cell">{formatNgn(s.revenueNgn)}</td>
+                      </tr>);
+
+              })}
+                </tbody>
+              </table>
+          }
+          </section>
+
+          <section aria-labelledby="funnels-heading" className="mt-10">
+            <h2 id="funnels-heading" className="text-heading font-semibold text-fg">
+              From visit to sale
+            </h2>
+            <div className="mt-3">
+              <Tabs<FunnelTab>
+              items={[
+              { id: 'shop', label: 'Shop' },
+              { id: 'booking', label: 'Bookings' },
+              { id: 'leads', label: 'Leads' }]
+              }
+              value={funnelTab}
+              onChange={setFunnelTab}
+              ariaLabel="Funnel"
+              idPrefix="funnel" />
+            
+            </div>
+            <div className="mt-4 max-w-3xl" role="tabpanel" id={`funnel-panel-${funnelTab}`} aria-labelledby={`funnel-tab-${funnelTab}`}>
+              {funnelTab === 'shop' && <FunnelView steps={f.shop[0].count ? f.shop : f.shopFromCart} emptyText="No product views or carts in this period." />}
+              {funnelTab === 'booking' && <FunnelView steps={f.booking} emptyText="Nobody opened a booking in this period." />}
+              {funnelTab === 'leads' &&
+            <FunnelView
+              steps={[f.leads[0], { label: 'Sent a form or signed up', count: new Set(cur.filter((e) => e.type === 'lead' || e.type === 'signup').map((e) => e.session)).size }]}
+              emptyText="No visits in this period." />
+
+            }
+              <p className="mt-3 text-caption text-fg-subtle">Each step counts visits that also did every step before it. Percentages are kept from the step above.</p>
+            </div>
+          </section>
+
+          <p className="mt-10 text-caption text-fg-subtle">
+            Your own visits {data.settings.excludeOwn ? 'aren’t' : 'are'} counted on this device — change it in <Link to="/app/settings/privacy" className="underline underline-offset-2">Settings → Privacy</Link>.
+          </p>
+        </>
+      }
+    </div>);
+
+}

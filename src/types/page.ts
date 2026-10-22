@@ -1,3 +1,5 @@
+import type { SourceId } from './analytics';
+
 export type BlockType =
 'profile' |
 'heading' |
@@ -254,7 +256,20 @@ export interface BlockBehaviour {
   openInNewTab: boolean;
 }
 
+export type IntentGoal = 'tap' | 'order' | 'lead' | 'booking';
+
+/** IntentFlow (D64): show a block only to — or to everyone except — visits from these sources. */
+export interface SourceRule {
+  mode: 'only' | 'except';
+  ids: SourceId[];
+  goal: IntentGoal;
+  /** Paused rules show the block to everyone. */
+  paused?: boolean;
+  createdAt: string;
+}
+
 export interface BlockVisibility {
+  sources?: SourceRule;
   hidden: boolean;
   /** ISO time the block starts showing on the live page. Null = no start limit. */
   showFrom?: string | null;

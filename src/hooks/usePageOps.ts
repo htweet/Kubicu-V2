@@ -36,5 +36,5 @@ export function usePageOps(workspaceId: string | null, isOwn: boolean): PageOps 
     [workspaceId]
   );
 
-  return isOwn ? { data: own.data, apply: own.apply } : { data: other, apply: applyOther };
+  return isOwn ? { data: own.data, apply: own.applySystem } : { data: other, apply: applyOther };
 }

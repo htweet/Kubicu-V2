@@ -5,6 +5,7 @@ import { MAIN_SPACE_ID } from '../../utils/spaces';
 import { Sidebar } from './Sidebar';
 import { MobileNav } from './MobileNav';
 import { KubicuLogo } from './KubicuLogo';
+import { RoleBanner } from './RoleBanner';
 
 export function AppShell() {
   const { currentSpace, switchSpace } = useWorkspace();
@@ -22,6 +23,7 @@ export function AppShell() {
         <header className="flex h-14 items-center border-b border-line bg-raised px-4 md:hidden">
           <KubicuLogo />
         </header>
+        <RoleBanner />
         <main className="flex-1 pb-24 md:pb-0">{needsMain ? null : <Outlet />}</main>
       </div>
       <MobileNav />

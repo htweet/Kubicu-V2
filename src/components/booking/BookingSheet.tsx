@@ -11,6 +11,7 @@ import { createBooking } from '../../utils/ops/ops';
 import { dayLabel, durationLabel, timeLabel, visitorTimeZone } from '../../utils/ops/slots';
 import { isValidEmail, isValidPhone } from '../../utils/validation';
 import { formatNgn } from '../../utils/format';
+import { useTrack } from '../../contexts/TrackContext';
 
 type Step = 'time' | 'details' | 'confirm' | 'working' | 'problem';
 
@@ -33,6 +34,12 @@ export function BookingSheet({ theme, ops, serviceId, handle, onClose }: Booking
   const [simulateTaken, setSimulateTaken] = useState(false);
   const [problem, setProblem] = useState<{kind: 'taken' | 'failed';message: string;} | null>(null);
   const [tried, setTried] = useState(false);
+  const track = useTrack();
+  // Booking funnel: a time was chosen (D61).
+  useEffect(() => {
+    if (step === 'details' && serviceId) track('booking_time', { label: serviceId });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step]);
 
   useEffect(() => {
     if (!serviceId) return;
@@ -89,6 +96,7 @@ export function BookingSheet({ theme, ops, serviceId, handle, onClose }: Booking
         setStep('problem');
         return;
       }
+      track('booking_confirmed', { label: service.name, valueNgn: r.booking.depositPaidNgn || undefined });
       onClose();
       navigate(`/p/${handle}/booking/${r.booking.id}`);
     }, 1100);

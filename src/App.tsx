@@ -11,6 +11,19 @@ import { CommerceProvider } from './contexts/CommerceContext';
 import { OpsProvider } from './contexts/OpsContext';
 import { WorkspaceProvider, useWorkspace } from './contexts/WorkspaceContext';
 import { UpgradeProvider } from './contexts/UpgradeContext';
+import { TeamProvider } from './contexts/TeamContext';
+import { AnalyticsProvider } from './contexts/AnalyticsContext';
+import { Analytics } from './pages/Analytics';
+import { IntentFlow } from './pages/IntentFlow';
+import { DomainsProvider } from './contexts/DomainsContext';
+import { DomainsLayout } from './components/domains/DomainsLayout';
+import { Domains } from './pages/domains/Domains';
+import { QrCodes } from './pages/domains/QrCodes';
+import { CampaignLinks } from './pages/domains/CampaignLinks';
+import { Redirects } from './pages/domains/Redirects';
+import { ShortLink } from './pages/ShortLink';
+import { Settings } from './pages/settings/Settings';
+import { AcceptInvite } from './pages/AcceptInvite';
 import { DealRoomSettler } from './components/shell/DealRoomSettler';
 import { AppShell } from './components/shell/AppShell';
 import { AdminShell } from './components/admin/AdminShell';
@@ -60,17 +73,21 @@ import { AdminPlannedArea } from './pages/admin/AdminPlannedArea';
 type VisualDirectionOption = 'darkStudio' | 'inkCobalt' | 'inkViolet' | 'navyClay';
 type WorkspacePlanOption = 'free' | 'creator' | 'pro' | 'business' | 'agency' | 'enterprise';
 
+type ViewingAsOption = 'owner' | 'admin' | 'editor' | 'sales' | 'viewer';
+
 interface AppProps {
   visualDirection?: VisualDirectionOption;
   workspacePlan?: WorkspacePlanOption;
+  /** Experience the workspace as a team member with this role (D57). */
+  viewingAs?: ViewingAsOption;
 }
 
-export function App({ visualDirection = 'darkStudio', workspacePlan = 'free' }: AppProps) {
+export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', viewingAs = 'owner' }: AppProps) {
   return (
     <BrowserRouter>
       <AppearancePolicyProvider initialDefault={visualDirection}>
         <WorkspaceProvider planControl={workspacePlan}>
-          <WorkspaceScope visualDirection={visualDirection}>
+          <WorkspaceScope visualDirection={visualDirection} viewingAs={viewingAs}>
             <Routes>
               <Route element={<MarketingLayout />}>
                 <Route index element={<Home />} />
@@ -84,6 +101,7 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free' }: 
               <Route path="/reset" element={<ResetPassword />} />
               <Route path="/verify" element={<VerifyEmail />} />
               <Route path="/start" element={<Onboarding />} />
+              <Route path="/invite/:token" element={<AcceptInvite />} />
 
               <Route path="/app" element={<AppShell />}>
                 <Route index element={<Overview />} />
@@ -109,6 +127,16 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free' }: 
                   <Route path="reports" element={<Reports />} />
                   <Route path="settings" element={<CommerceSettings />} />
                 </Route>
+                <Route path="analytics" element={<Analytics />} />
+                <Route path="intentflow" element={<IntentFlow />} />
+                <Route path="domains" element={<DomainsLayout />}>
+                  <Route index element={<Domains />} />
+                  <Route path="qr" element={<QrCodes />} />
+                  <Route path="links" element={<CampaignLinks />} />
+                  <Route path="redirects" element={<Redirects />} />
+                </Route>
+                <Route path="settings" element={<Settings />} />
+                <Route path="settings/:tab" element={<Settings />} />
                 <Route path=":module" element={<PlannedModule />} />
               </Route>
               <Route path="/app/canvas/:pageId" element={<CanvasPage />} />
@@ -122,6 +150,7 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free' }: 
               <Route path="/p/:handle" element={<PublicPage />} />
               <Route path="/p/:handle/shop" element={<PublicPage view="shop" />} />
               <Route path="/p/:handle/shop/:productId" element={<PublicPage view="shop" />} />
+              <Route path="/p/:handle/s/:slug" element={<ShortLink />} />
               <Route path="/p/:handle/:pagePath" element={<PublicPage />} />
             <Route path="/p/:handle/order/:orderId" element={<OrderStatus />} />
               <Route path="/p/:handle/download/:token" element={<DownloadPage />} />
@@ -143,11 +172,14 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free' }: 
 }
 
 /** Everything that belongs to one workspace remounts when you switch workspaces. */
-function WorkspaceScope({ visualDirection, children }: {visualDirection: VisualDirectionOption;children: React.ReactNode;}) {
+function WorkspaceScope({ visualDirection, viewingAs, children }: {visualDirection: VisualDirectionOption;viewingAs: ViewingAsOption;children: React.ReactNode;}) {
   const { current, currentSpace } = useWorkspace();
   return (
     <DirectionProvider key={current.id} direction={visualDirection}>
       <PlanProvider plan={current.plan}>
+       <TeamProvider viewingAs={viewingAs}>
+       <AnalyticsProvider>
+       <DomainsProvider>
         <MediaProvider>
           <LibraryProvider>
             <CommerceProvider>
@@ -163,6 +195,9 @@ function WorkspaceScope({ visualDirection, children }: {visualDirection: VisualD
             </CommerceProvider>
           </LibraryProvider>
         </MediaProvider>
+       </DomainsProvider>
+       </AnalyticsProvider>
+       </TeamProvider>
       </PlanProvider>
     </DirectionProvider>);
 

@@ -65,6 +65,8 @@ export interface Booking {
   customerTimeZone: string;
   events: BookingEvent[];
   sample?: boolean;
+  /** Team member looking after this booking (D60). */
+  assigneeId?: string | null;
 }
 
 export type ContactSource = 'order' | 'booking' | 'form' | 'newsletter' | 'import' | 'manual';
@@ -83,6 +85,7 @@ export interface ContactTask {
   text: string;
   due: string | null;
   done: boolean;
+  assigneeId?: string | null;
 }
 
 export interface Contact {
@@ -101,10 +104,12 @@ export interface Contact {
   linked: string[];
   createdAt: string;
   sample?: boolean;
+  /** Team member who owns the relationship (D60). */
+  assigneeId?: string | null;
 }
 
 export type TriggerId = 'order_paid' | 'booking_created' | 'checkout_abandoned' | 'lead_submitted' | 'stock_low';
-export type ActionId = 'send_email' | 'send_whatsapp' | 'create_task' | 'add_tag' | 'notify_owner';
+export type ActionId = 'send_email' | 'send_whatsapp' | 'create_task' | 'add_tag' | 'notify_owner' | 'notify_member';
 
 export interface AutomationStep {
   id: string;
@@ -113,6 +118,8 @@ export interface AutomationStep {
   /** Message body, task text, tag name… */
   value: string;
   delayHours?: number;
+  /** “Notify a team member” / “Create a follow-up”: who it goes to (D60). */
+  memberId?: string | null;
 }
 
 export interface AutomationCondition {

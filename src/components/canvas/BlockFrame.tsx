@@ -1,13 +1,16 @@
 import React, { useEffect, useRef } from 'react';
 import { Reorder, useDragControls } from 'framer-motion';
-import { AlertCircleIcon, AlertTriangleIcon, CalendarClockIcon, EyeOffIcon, LockIcon } from 'lucide-react';
+import { AlertCircleIcon, AlertTriangleIcon, CalendarClockIcon, EyeOffIcon, LockIcon, SplitIcon } from 'lucide-react';
 import { windowState } from '../../utils/schedule';
+import { activeRule, ruleText } from '../../utils/intentflow';
 import type { Block, PageTheme } from '../../types/page';
 import type { ValidationIssue } from '../../utils/validation';
 import { BlockRenderer, spacingClass } from '../blocks/BlockRenderer';
 import { BlockToolbar } from './BlockToolbar';
 import { blockName } from '../../utils/blocks';
 import { cn } from '../../utils/cn';
+import { toast } from 'sonner';
+import { usePresence } from '../../contexts/PresenceContext';
 
 interface BlockFrameProps {
   block: Block;
@@ -51,12 +54,15 @@ export function BlockFrame({
 }: BlockFrameProps) {
   const dragControls = useDragControls();
   const ref = useRef<HTMLDivElement>(null);
+  // Simulated: a teammate “editing” this block (D60).
+  const other = usePresence().find((p) => p.blockId === block.id);
   const name = blockName(block);
   const hidden = block.visibility.hidden;
   const locked = !!block.locked;
   const hasError = issues.some((i) => i.severity === 'error');
   const hasWarning = !hasError && issues.length > 0;
   const schedule = windowState(block.visibility);
+  const sourceRule = activeRule(block.visibility);
   const scheduleLabel = schedule === 'upcoming' ? 'Scheduled' : schedule === 'ended' ? 'Ended' : schedule === 'active' ? 'Timed' : null;
 
   useEffect(() => {
@@ -91,6 +97,7 @@ export function BlockFrame({
         aria-label={`${name} block${groupName ? `, in ${groupName}` : ''}${locked ? ', locked' : ''}${hidden ? ', hidden from live page' : ''}${hasError ? ', needs attention' : ''}`}
         onClick={(e) => {
           e.stopPropagation();
+          if (other && !selected) toast(`${other.member.name.split(' ')[0]} is editing this block too`, { description: 'Simulated presence. In the real product your changes would merge, and you’d see theirs live.' });
           onSelect(block.id);
         }}
         onKeyDown={(e) => {
@@ -105,6 +112,14 @@ export function BlockFrame({
         <div className={cn(spacingClass[block.layout.spacing], hidden && 'opacity-40')}>
           <BlockRenderer block={block} theme={theme} mode="edit" />
         </div>
+        {other &&
+        <>
+            <span aria-hidden className="pointer-events-none absolute -inset-x-2 inset-y-0 rounded-[12px] border-2" style={{ borderColor: other.colour }} />
+            <span className="pointer-events-none absolute -top-2.5 right-0 z-10 rounded-full px-2 py-0.5 text-[11px] font-semibold text-white" style={{ background: other.colour }}>
+              {other.member.name.split(' ')[0]} · simulated
+            </span>
+          </>
+        }
         <span
           aria-hidden
           className={cn(
@@ -126,8 +141,13 @@ export function BlockFrame({
             </span>
           </span>
         }
-        {(hidden || locked || hasError || hasWarning || scheduleLabel) &&
+        {(hidden || locked || hasError || hasWarning || scheduleLabel || sourceRule) &&
         <span className="pointer-events-none absolute -right-1 top-1 flex gap-1">
+            {sourceRule && !hidden &&
+          <span className="inline-flex h-5 items-center gap-1 rounded-full bg-info-soft px-1.5 text-meta font-medium text-info ring-1 ring-info/30" title={ruleText(sourceRule)}>
+                <SplitIcon size={10} aria-hidden /> {sourceRule.mode === 'only' ? 'Some sources' : 'Not all sources'}
+              </span>
+          }
             {scheduleLabel && !hidden &&
           <span className="inline-flex h-5 items-center gap-1 rounded-full bg-info-soft px-1.5 text-meta font-medium text-info ring-1 ring-info/30">
                 <CalendarClockIcon size={10} aria-hidden /> {scheduleLabel}

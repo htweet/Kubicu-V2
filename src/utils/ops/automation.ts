@@ -27,6 +27,7 @@ export function automationProblems(a: Automation): string[] {
   if (a.steps.filter((s) => s.kind === 'action').length === 0) out.push('Add at least one action');
   a.steps.forEach((s, i) => {
     if (s.kind === 'action' && !s.value.trim()) out.push(`Step ${i + 1} needs ${s.action === 'add_tag' ? 'a tag' : 'some text'}`);
+    if (s.kind === 'action' && s.action === 'notify_member' && !s.memberId) out.push(`Step ${i + 1}: choose who to notify`);
     if (s.kind === 'delay' && (!s.delayHours || s.delayHours < 1)) out.push(`Step ${i + 1}: delay must be at least 1 hour`);
   });
   if (a.steps[a.steps.length - 1]?.kind === 'delay') out.push('End with an action, not a delay');
@@ -34,7 +35,7 @@ export function automationProblems(a: Automation): string[] {
 }
 
 /** Runs the automation against a sample event, step by step, without sending anything. */
-export function testRun(a: Automation, paused: boolean): AutomationRun {
+export function testRun(a: Automation, paused: boolean, memberName: (id: string | null | undefined) => string = () => 'a team member'): AutomationRun {
   const s = sampleSubject[a.trigger];
   const steps: AutomationRunStep[] = [{ label: triggerLabels[a.trigger].label, status: 'done', detail: s.subject }];
   let blocked = false;
@@ -53,6 +54,8 @@ export function testRun(a: Automation, paused: boolean): AutomationRun {
   if (!blocked) {
     for (const step of a.steps) {
       if (step.kind === 'delay') steps.push({ label: stepLabel(step), status: 'done', detail: 'Skipped in test runs' });else
+      if (step.action === 'notify_member') steps.push({ label: stepLabel(step), status: 'done', detail: `Preview: ${memberName(step.memberId)} would get “${fill(step.value, s.vars)}” in KUBICU — not sent` });else
+      if (step.action === 'create_task' && step.memberId) steps.push({ label: stepLabel(step), status: 'done', detail: `Preview: follow-up “${fill(step.value, s.vars)}” for ${memberName(step.memberId)} — not created` });else
       steps.push({ label: stepLabel(step), status: 'done', detail: `Preview: “${fill(step.value, s.vars)}” — not sent` });
     }
   }

@@ -9,7 +9,9 @@ import { catalogLinkIssues } from '../utils/commerce/linkIssues';
 import { opsLinkIssues } from '../utils/ops/linkIssues';
 import type { PageDocument } from '../types/page';
 import type { ValidationIssue } from '../utils/validation';
-import { pageCount, pageLimits } from '../utils/sitePages';
+import { allBlocks, pageCount, pageLimits } from '../utils/sitePages';
+import { hasPlaceholder } from '../utils/ai/draft';
+import { intentIssues } from '../utils/intentflow';
 import { activeExtraSpaces, extraSpaceLimits, MAIN_SPACE_ID, spaceStorageId } from '../utils/spaces';
 import { spaceKinds } from '../data/spaceKinds';
 import { planAtLeast, planOrder, plans } from '../data/plans';
@@ -57,6 +59,12 @@ export function EditorProvider({ children }: {children: React.ReactNode;}) {
           upgradeFeature: 'Publishing campaigns and DealRooms'
         });
       }
+      // AI drafts mark gaps as "[Add …]" — they must be replaced with the owner's own words (D63).
+      allBlocks(doc).forEach((b) => {
+        if (!b.visibility.hidden && hasPlaceholder(b))
+        out.push({ id: `ai:placeholder:${b.id}`, blockId: b.id, severity: 'error', message: 'Replace the [Add …] placeholder with your own words before publishing.' });
+      });
+      out.push(...intentIssues(doc));
       if (doc.campaign) out.push(...campaignIssues(doc.campaign, doc.blocks, data));
       if (doc.dealRoom) {
         out.push(...dealRoomIssues(doc.dealRoom, doc.blocks, data, roomOrders(data, doc.handle).length));

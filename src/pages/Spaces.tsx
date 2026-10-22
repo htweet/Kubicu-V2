@@ -12,10 +12,14 @@ import {
   MoreHorizontalIcon,
   PenToolIcon,
   PlusIcon,
+  UsersIcon,
   XCircleIcon } from
 'lucide-react';
 import { useEditor } from '../contexts/EditorContext';
 import { useWorkspace } from '../contexts/WorkspaceContext';
+import { useCan, useTeam } from '../contexts/TeamContext';
+import { SpaceAccessDialog } from '../components/spaces/SpaceAccessDialog';
+import type { Space } from '../types/workspace';
 import { PageHeader } from '../components/shell/PageHeader';
 import { PageStatusBadge } from '../components/canvas/PageStatusBadge';
 import { PageMiniPreview } from '../components/overview/PageMiniPreview';
@@ -40,6 +44,10 @@ export function Spaces() {
   const { workspaces, current, switchTo, switchSpace, create, setSpaceArchived } = useWorkspace();
   const [newSpace, setNewSpace] = useState<{kind: 'campaign' | 'dealroom' | null;} | null>(null);
   const [archiving, setArchiving] = useState<SpaceRow | null>(null);
+  const spacesAllowed = useCan('spaces.manage');
+  const teamAllowed = useCan('team.manage');
+  const team = useTeam();
+  const [accessFor, setAccessFor] = useState<Space | null>(null);
   const extras = current.spaces ?? [];
   const { draft } = state;
   const visibleCount = draft.blocks.filter((b) => !b.visibility.hidden).length;
@@ -67,6 +75,10 @@ export function Spaces() {
     [workspaces, current.id, draft, state, hasUnpublishedChanges]
   );
 
+  // Spaces you can't edit in this workspace aren't listed for you (D57).
+  const visibleRows = rows.filter((r) => !r.inCurrentWorkspace || team.canAccessSpace(r.space.id));
+  const hiddenCount = rows.length - visibleRows.length;
+
   const openRow = (r: SpaceRow) => {
     if (r.inCurrentWorkspace) {
       if (r.space.id === MAIN_SPACE_ID) return navigate(canvas);
@@ -79,11 +91,23 @@ export function Spaces() {
     toast(`Switched to ${r.workspace.name}`);
   };
 
+  const accessItem = (r: SpaceRow) => ({
+    id: 'access',
+    label: 'Who can edit',
+    icon: UsersIcon,
+    disabled: !teamAllowed.allowed,
+    reason: teamAllowed.reason,
+    onSelect: () => setAccessFor(r.space)
+  });
+
   const rowMenu = (r: SpaceRow) =>
-  r.inCurrentWorkspace && r.space.kind !== 'main' ?
+  r.inCurrentWorkspace && r.space.kind === 'main' ?
+  <Menu align="end" items={[accessItem(r)]} trigger={(props) => <IconButton {...props} size="sm" icon={MoreHorizontalIcon} label={`More actions for ${r.space.name}`} />} /> :
+  r.inCurrentWorkspace ?
   <Menu
     align="end"
     items={[
+    accessItem(r),
     {
       id: 'live',
       label: 'View live',
@@ -94,7 +118,7 @@ export function Spaces() {
     },
     r.status === 'ended' ?
     { id: 'restore', label: 'Restore', icon: ArchiveRestoreIcon, onSelect: () => restore(r) } :
-    { id: 'archive', label: 'Archive', icon: ArchiveIcon, destructive: true, onSelect: () => setArchiving(r) }]
+    { id: 'archive', label: 'Archive', icon: ArchiveIcon, destructive: true, disabled: !spacesAllowed.allowed, reason: spacesAllowed.reason, onSelect: () => setArchiving(r) }]
     }
     trigger={(props) => <IconButton {...props} size="sm" icon={MoreHorizontalIcon} label={`More actions for ${r.space.name}`} />} /> :
 
@@ -166,7 +190,7 @@ export function Spaces() {
         title="My Spaces"
         description="Your main page plus campaigns and DealRooms. Each has its own link, look and publishing; all share this workspace’s products, orders and contacts."
         actions={
-        <Button leadingIcon={PlusIcon} onClick={() => setNewSpace({ kind: null })}>
+        <Button leadingIcon={PlusIcon} disabled={!spacesAllowed.allowed} title={spacesAllowed.allowed ? undefined : spacesAllowed.reason} onClick={() => setNewSpace({ kind: null })}>
             New space
           </Button>
         } />
@@ -273,7 +297,13 @@ export function Spaces() {
         </section>
       }
 
-      <SpacesList rows={rows} onOpen={openRow} menuFor={rowMenu} />
+      <SpacesList rows={visibleRows} onOpen={openRow} menuFor={rowMenu} />
+      {hiddenCount > 0 &&
+      <p className="mt-3 text-caption text-fg-subtle">
+          {hiddenCount} space{hiddenCount === 1 ? ' is' : 's are'} limited to other people on the team. Ask an Admin if you need access.
+        </p>
+      }
+      <SpaceAccessDialog space={accessFor} onClose={() => setAccessFor(null)} />
 
       <NewSpaceDialog open={!!newSpace} onClose={() => setNewSpace(null)} mainDoc={draft} initialKind={newSpace?.kind ?? null} />
 

@@ -15,6 +15,8 @@ import { orderMoney } from '../../utils/commerce/money';
 import { downloadCsv, toCsv } from '../../utils/csv';
 import { formatNgn, formatRelative } from '../../utils/format';
 import { cn } from '../../utils/cn';
+import { useTeam } from '../../contexts/TeamContext';
+import { AssigneeChip, MineToggle } from '../../components/team/AssigneeSelect';
 
 type Tab = 'all' | OrderStatus;
 const tabs: Tab[] = ['all', 'new', 'paid', 'packing', 'out_for_delivery', 'completed', 'cancelled', 'refunded'];
@@ -31,7 +33,11 @@ export function Orders() {
     return c;
   }, [data.orders]);
 
-  const rows = tab === 'all' ? data.orders : data.orders.filter((o) => o.status === tab);
+  // “Mine”: orders assigned to the signed-in member (D60).
+  const { me } = useTeam();
+  const mine = params.get('mine') === '1';
+  const mineCount = data.orders.filter((o) => o.assigneeId === me.id).length;
+  const rows = (tab === 'all' ? data.orders : data.orders.filter((o) => o.status === tab)).filter((o) => !mine || o.assigneeId === me.id);
   const set = (patch: Record<string, string | null>) => {
     const next = new URLSearchParams(params);
     Object.entries(patch).forEach(([k, v]) => v === null ? next.delete(k) : next.set(k, v));
@@ -83,6 +89,7 @@ export function Orders() {
   },
   { key: 'payment', header: 'Payment', hideOnMobile: true, render: (o) => <PaymentBadge status={o.paymentStatus} /> },
   { key: 'status', header: 'Status', render: (o) => <OrderStatusBadge status={o.status} pickup={o.fulfilment.method === 'pickup'} /> },
+  { key: 'assignee', header: 'Assigned', hideOnMobile: true, render: (o) => <AssigneeChip memberId={o.assigneeId} /> },
   { key: 'total', header: 'Total', align: 'right', sortValue: (o) => orderMoney(o).gross, render: (o) => <span className="font-semibold">{formatNgn(orderMoney(o).gross)}</span> }];
 
 
@@ -107,6 +114,10 @@ export function Orders() {
       <>
           <nav aria-label="Order status" className="scroll-quiet -mx-1 mt-6 overflow-x-auto px-1 pb-1">
             <ul className="flex gap-1.5">
+              <li>
+                <MineToggle mine={mine} count={mineCount} onChange={(v) => set({ mine: v ? '1' : null })} />
+              </li>
+              <li aria-hidden className="mx-1 w-px self-stretch bg-line" />
               {tabs.map((t) =>
             <li key={t}>
                   <button

@@ -22,6 +22,8 @@ import { cn } from "../../utils/cn";
 import { FilesIcon } from "lucide-react";
 import { PagesPanel } from "./PagesPanel";
 import { SpaceSwitcher } from "./SpaceSwitcher";
+import { ReviewBadge } from "./ReviewStatus";
+import { PresenceAvatars } from "./PresenceAvatars";
 import { findPage, pageHref, pageTitle } from "../../utils/sitePages";
 type MobileSheet = 'blocks' | 'design' | 'layers' | 'pages' | 'settings' | 'block' | 'versions' | null;
 const tabs: {
@@ -130,6 +132,8 @@ export function MobileEditor() {
           <div className="flex items-center justify-between rounded-md border border-line px-3.5 py-3">
             <span className="text-label text-fg-muted">Status</span>
             <PageStatusBadge />
+            <ReviewBadge />
+            <PresenceAvatars />
           </div>
           <PageSettingsPanel />
           <AiSuggestEntry />

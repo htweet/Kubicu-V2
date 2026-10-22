@@ -32,7 +32,10 @@ import { cn } from '../../utils/cn';
 import { findPage, pageHref } from '../../utils/sitePages';
 import { PageSwitcher } from './PageSwitcher';
 import { SpaceSwitcher } from './SpaceSwitcher';
+import { ReviewBadge } from './ReviewStatus';
+import { PresenceAvatars } from './PresenceAvatars';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
+import { useCampaignPreview } from '../../contexts/CampaignPreviewContext';
 
 interface EditorTopBarProps {
   viewport: Viewport;
@@ -54,6 +57,7 @@ export function EditorTopBar({ viewport, onViewportChange, onOpenVersions, onOpe
   const activePath = findPage(state.site, state.activePageId)?.path ?? '';
   // Campaigns and DealRooms have one page; only the main space grows into a site.
   const isMain = useWorkspace().currentSpace.kind === 'main';
+  const previewSource = useCampaignPreview().source;
 
   return (
     <header className="grid h-14 shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-4 border-b border-line bg-raised px-3">
@@ -82,6 +86,8 @@ export function EditorTopBar({ viewport, onViewportChange, onOpenVersions, onOpe
         </button>
         {onManagePages && isMain && <PageSwitcher onManage={onManagePages} className="shrink-0" />}
         <PageStatusBadge />
+        <ReviewBadge />
+        <PresenceAvatars />
       </div>
 
       <div className="flex items-center gap-2">
@@ -160,7 +166,7 @@ export function EditorTopBar({ viewport, onViewportChange, onOpenVersions, onOpe
           <IconButton icon={SearchIcon} label="Search blocks and actions" title="" onClick={onOpenCommand} />
         </Tooltip>
         <IconButton icon={HistoryIcon} label="Version history" onClick={onOpenVersions} />
-        <Button variant="secondary" leadingIcon={EyeIcon} onClick={() => navigate(`${pageHref(draft.handle, activePath)}?draft=1`)}>
+        <Button variant="secondary" leadingIcon={EyeIcon} onClick={() => navigate(`${pageHref(draft.handle, activePath)}?draft=1${previewSource ? `&as=${previewSource}` : ''}`)}>
           Preview
         </Button>
         {hasUnpublishedChanges ?

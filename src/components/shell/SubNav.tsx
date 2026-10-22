@@ -21,8 +21,9 @@ export function SubNav({ label, items }: {label: string;items: SubNavItem[];}) {
   }, [pathname]);
 
   return (
-    <nav ref={ref} aria-label={label} className="scroll-quiet -mx-5 overflow-x-auto border-b border-line px-5 md:mx-0 md:px-0">
-      <ul className="flex gap-1">
+    // Sideways only: the hairline is drawn inside the list, so nothing spills over and the bar never scrolls vertically.
+    <nav ref={ref} aria-label={label} className="scroll-quiet -mx-5 overflow-x-auto overflow-y-hidden px-5 md:mx-0 md:px-0">
+      <ul className="flex min-w-max gap-1 shadow-[inset_0_-1px_0_0_rgb(var(--border-subtle))]">
         {items.map((n) =>
         <li key={n.to} className="shrink-0">
             <NavLink
@@ -30,7 +31,7 @@ export function SubNav({ label, items }: {label: string;items: SubNavItem[];}) {
             end={n.end}
             className={({ isActive }) =>
             cn(
-              'relative -mb-px inline-flex h-11 items-center gap-1.5 whitespace-nowrap border-b-2 px-3 text-label font-medium transition-colors duration-150',
+              'relative inline-flex h-11 items-center gap-1.5 whitespace-nowrap border-b-2 px-3 text-label font-medium transition-colors duration-150',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus',
               isActive ? 'border-action text-fg' : 'border-transparent text-fg-subtle hover:text-fg'
             )

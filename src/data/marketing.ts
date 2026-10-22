@@ -5,8 +5,8 @@ export const capabilityStatus = [
 { name: 'Products, orders and checkout', detail: 'Stock, fulfilment, refunds, digital downloads — payments in test mode', status: 'Ready in prototype', ready: true },
 { name: 'Bookings, contacts and automations', detail: 'Services, availability, deposits, CRM, reminder previews', status: 'Ready in prototype', ready: true },
 { name: 'Multi-page sites and media library', detail: 'Shop, About and Book pages under one link', status: 'Ready in prototype', ready: true },
-{ name: 'Custom domains, QR codes and analytics', detail: 'Connect your own domain, see what works', status: 'Planned', ready: false },
-{ name: 'AI page setup', detail: 'Describe your business, review a draft', status: 'Planned', ready: false }];
+{ name: 'Custom domains, QR codes and analytics', detail: 'Connect your own domain, see what works', status: 'Ready in prototype', ready: true },
+{ name: 'AI page setup', detail: 'Describe your business, review a draft — never invents prices or reviews', status: 'Preview in prototype', ready: true }];
 
 
 export const legalTopics: Record<string, {title: string;summary: string;}> = {

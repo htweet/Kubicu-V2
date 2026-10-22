@@ -9,12 +9,17 @@ import { spaceForPageId } from '../utils/spaces';
 import { useWorkspace } from '../contexts/WorkspaceContext';
 import { NotFound } from './NotFound';
 import { CampaignPreviewProvider } from '../contexts/CampaignPreviewContext';
+import { useCan } from '../contexts/TeamContext';
+import { CanvasNoAccess } from '../components/canvas/CanvasNoAccess';
+import { ReviewSync } from '../components/canvas/ReviewStatus';
+import { PresenceProvider } from '../contexts/PresenceContext';
 
 export function CanvasPage() {
   const { pageId } = useParams();
   const [params, setParams] = useSearchParams();
   const { state, actions } = useEditor();
   const { current, currentSpace, switchSpace } = useWorkspace();
+  const editAllowed = useCan('pages.edit', currentSpace.id);
   const isDesktop = useMediaQuery('(min-width: 1024px)');
   const blockParam = params.get('block');
   const pageParam = params.get('page');
@@ -41,5 +46,14 @@ export function CanvasPage() {
 
   // A page from another workspace (e.g. after switching): open this workspace's page instead.
   if (pageId !== state.draft.id) return pageId?.startsWith('page_') ? <Navigate to={`/app/canvas/${state.draft.id}`} replace /> : <NotFound />;
-  return <CampaignPreviewProvider>{isDesktop ? <DesktopEditor /> : <MobileEditor />}</CampaignPreviewProvider>;
+  // Roles that can't edit (or can't edit this space) get a read-only door instead of the editor (D57).
+  if (!editAllowed.allowed) return <CanvasNoAccess reason={editAllowed.reason} handle={state.draft.handle} title={currentSpace.name} />;
+  return (
+    <CampaignPreviewProvider>
+      <PresenceProvider>
+        <ReviewSync />
+        {isDesktop ? <DesktopEditor /> : <MobileEditor />}
+      </PresenceProvider>
+    </CampaignPreviewProvider>);
+
 }

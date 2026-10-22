@@ -3,6 +3,7 @@ import { ArchiveIcon, CheckIcon, RotateCcwIcon, Trash2Icon } from 'lucide-react'
 import { toast } from 'sonner';
 import type { Product, ProductKind } from '../../types/commerce';
 import { useCommerce } from '../../contexts/CommerceContext';
+import { useCan } from '../../contexts/TeamContext';
 import { upsertProduct } from '../../utils/commerce/ops';
 import { regenerateVariants } from '../../utils/commerce/catalog';
 import { uid } from '../../utils/id';
@@ -58,6 +59,8 @@ export function blankProduct(kind: ProductKind): Product {
 
 export function ProductEditor({ open, productId, kind, onClose }: ProductEditorProps) {
   const { data, apply } = useCommerce();
+  // Sales can change stock and details, not prices (D57).
+  const pricesAllowed = useCan('prices.edit');
   const existing = productId ? data.products.find((p) => p.id === productId) : undefined;
   const [draft, setDraft] = useState<Product>(() => existing ?? blankProduct(kind));
   const [confirmClose, setConfirmClose] = useState(false);
@@ -185,8 +188,8 @@ export function ProductEditor({ open, productId, kind, onClose }: ProductEditorP
           <TextArea id="prd-desc" label="Description" optional rows={3} value={draft.description} onChange={(e) => patch({ description: e.target.value })} />
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <CurrencyInput id="prd-price" label="Price" value={draft.priceNgn} placeholder="Price on request" hint={priceWarning ? 'No price — checkout can’t sell it until you add one.' : undefined} onChange={(priceNgn) => patch({ priceNgn })} />
-            <CurrencyInput id="prd-compare" label="Compare-at price" optional value={draft.compareAtNgn} hint="Shown struck through, e.g. before a sale." onChange={(compareAtNgn) => patch({ compareAtNgn })} />
+            <CurrencyInput id="prd-price" label="Price" value={draft.priceNgn} placeholder="Price on request" disabled={!pricesAllowed.allowed} hint={!pricesAllowed.allowed ? pricesAllowed.reason : priceWarning ? 'No price — checkout can’t sell it until you add one.' : undefined} onChange={(priceNgn) => patch({ priceNgn })} />
+            <CurrencyInput id="prd-compare" label="Compare-at price" optional value={draft.compareAtNgn} disabled={!pricesAllowed.allowed} hint="Shown struck through, e.g. before a sale." onChange={(compareAtNgn) => patch({ compareAtNgn })} />
           </div>
           </MobileSection>
 

@@ -4,6 +4,6 @@ export const roadmapBatches = [
 { batch: 2, name: 'Canvas', done: true },
 { batch: 3, name: 'Pages & onboarding', done: true },
 { batch: 4, name: 'Commerce & customers', done: false },
-{ batch: 5, name: 'Analytics, domains & AI', done: false },
+{ batch: 5, name: 'Analytics, domains & AI', done: true },
 { batch: 6, name: 'Admin & marketplace', done: false },
 { batch: 7, name: 'QA & refinement', done: false }];

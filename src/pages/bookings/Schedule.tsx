@@ -15,6 +15,8 @@ import { SampleTag } from '../../components/commerce/StatusBadges';
 import { addDaysKey, dateKeyInTz, dayLabel, formatInTz, hoursFor, timeLabel, weekdayOfKey, zonedToUtc } from '../../utils/ops/slots';
 import { cn } from '../../utils/cn';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
+import { useTeam } from '../../contexts/TeamContext';
+import { AssigneeChip, MineToggle } from '../../components/team/AssigneeSelect';
 
 type View = 'upcoming' | 'past' | 'week';
 
@@ -29,7 +31,11 @@ export function Schedule() {
   const tz = data.availability.timeZone;
   const openId = params.get('booking');
 
-  const sorted = useMemo(() => [...data.bookings].sort((a, b) => Date.parse(a.start) - Date.parse(b.start)), [data.bookings]);
+  // “Mine”: bookings assigned to the signed-in member (D60).
+  const { me } = useTeam();
+  const [mine, setMine] = useState(false);
+  const mineCount = data.bookings.filter((b) => b.assigneeId === me.id && b.status !== 'cancelled' && Date.parse(b.end) >= Date.now()).length;
+  const sorted = useMemo(() => [...data.bookings].filter((b) => !mine || b.assigneeId === me.id).sort((a, b) => Date.parse(a.start) - Date.parse(b.start)), [data.bookings, mine, me.id]);
   const upcoming = sorted.filter((b) => Date.parse(b.end) >= Date.now() && b.status !== 'cancelled');
   const past = sorted.filter((b) => Date.parse(b.end) < Date.now() || b.status === 'cancelled').reverse();
 
@@ -79,6 +85,11 @@ export function Schedule() {
               {b.serviceName} · {b.ref}
             </span>
           </span>
+          {b.assigneeId &&
+          <span className="hidden sm:inline-flex">
+              <AssigneeChip memberId={b.assigneeId} />
+            </span>
+          }
           <Badge tone={bookingStatusCopy[b.status].tone}>{bookingStatusCopy[b.status].label}</Badge>
         </button>
       </li>);
@@ -106,16 +117,19 @@ export function Schedule() {
       
       <BookingsPlanNote />
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-2">
+        <MineToggle mine={mine} count={mineCount} onChange={setMine} />
         <Segmented<View>
-          ariaLabel="View"
-          value={view}
-          onChange={setView}
-          options={[
-          { value: 'upcoming', label: 'Upcoming' },
-          { value: 'week', label: 'Week' },
-          { value: 'past', label: wide ? 'Past & cancelled' : 'Past' }]
-          } />
-        
+            ariaLabel="View"
+            value={view}
+            onChange={setView}
+            options={[
+            { value: 'upcoming', label: 'Upcoming' },
+            { value: 'week', label: 'Week' },
+            { value: 'past', label: wide ? 'Past & cancelled' : 'Past' }]
+            } />
+          
+        </div>
         {view === 'week' &&
         <div className="flex items-center gap-1">
             <IconButton icon={ChevronLeftIcon} label="Previous week" onClick={() => setWeekOffset((w) => w - 1)} />

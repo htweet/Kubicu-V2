@@ -8,9 +8,13 @@ import { WorkspaceSwitcher } from './WorkspaceSwitcher';
 import { AppearancePicker } from './AppearancePicker';
 import { SidebarItem, SidebarGroupLabel } from './SidebarItem';
 import { cn } from '../../utils/cn';
+import { useTeam } from '../../contexts/TeamContext';
+import { roleInfo } from '../../data/permissions';
 
 export function Sidebar() {
   const { collapsed, toggle } = useSidebarCollapsed();
+  const team = useTeam();
+  const reviewsWaiting = team.can('approvals.review').allowed ? team.data.reviews.filter((r) => r.status === 'pending').length : 0;
   const tip = useSideTip();
   const built = workspaceNav.filter((n) => n.group === 'build');
   const planned = workspaceNav.filter((n) => n.group === 'business');
@@ -66,7 +70,7 @@ export function Sidebar() {
           <ul className="flex flex-col gap-0.5">
             {planned.map((item) =>
             <li key={item.id}>
-                <SidebarItem to={item.to} label={item.label} icon={item.icon} soon={!!item.batch} collapsed={collapsed} tip={tip} />
+                <SidebarItem to={item.to} label={item.label} icon={item.icon} soon={!!item.batch} collapsed={collapsed} tip={tip} badge={item.id === 'settings' ? reviewsWaiting : undefined} />
               </li>
             )}
           </ul>
@@ -74,6 +78,14 @@ export function Sidebar() {
       </nav>
 
       <div className={cn('flex shrink-0 flex-col gap-0.5 border-t border-line py-3', collapsed ? 'items-center px-0' : 'px-3')}>
+        {team.me.role !== 'owner' &&
+        <p
+          className={cn('mb-1 rounded-md bg-action-soft text-caption font-medium text-action', collapsed ? 'px-1.5 py-1 text-center' : 'px-2.5 py-1.5')}
+          title={`Viewing as ${team.me.name} (${roleInfo[team.role].label}) — change it in the Controls panel`}>
+          
+            {collapsed ? roleInfo[team.role].label.slice(0, 1) : `Viewing as ${team.me.name.split(' ')[0]} · ${roleInfo[team.role].label}`}
+          </p>
+        }
         <AppearancePicker collapsed={collapsed} tip={tip} />
         <SidebarItem to="/admin" label="Super admin" icon={ShieldCheckIcon} collapsed={collapsed} tip={tip} />
         {collapsed &&

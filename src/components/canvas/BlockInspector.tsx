@@ -13,6 +13,7 @@ import { StyleFields } from './inspector/StyleFields';
 import { BehaviourFields } from './inspector/BehaviourFields';
 import { VisibilityFields } from './inspector/VisibilityFields';
 import { IssueList } from './inspector/IssueList';
+import { BlockSuggest, supportsSuggest } from '../ai/BlockSuggest';
 import { cn } from '../../utils/cn';
 
 type InspectorTab = 'content' | 'style' | 'behaviour' | 'visibility';
@@ -105,6 +106,7 @@ export function BlockInspector({ block, showHeader = true }: {block: Block;showH
           <div className="flex flex-col gap-4">
               <IssueList issues={blockIssues} />
               <ContentFields block={block} issues={blockIssues} />
+              {supportsSuggest(block) && <BlockSuggest block={block} />}
             </div>
           }
           {tab === 'style' && <StyleFields block={block} />}

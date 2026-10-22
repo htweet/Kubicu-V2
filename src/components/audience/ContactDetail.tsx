@@ -17,6 +17,8 @@ import { Dialog } from '../ui/Dialog';
 import { SampleTag } from '../commerce/StatusBadges';
 import { cn } from '../../utils/cn';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
+import { useTeam } from '../../contexts/TeamContext';
+import { AssigneeChip, AssigneeSelect } from '../team/AssigneeSelect';
 
 export function ConsentBadge({ consent }: {consent: Contact['consent'];}) {
   return <Badge tone={consent === 'subscribed' ? 'success' : consent === 'unsubscribed' ? 'danger' : 'neutral'}>{consentLabels[consent]}</Badge>;
@@ -28,6 +30,8 @@ export function ContactDetail({ contactId, onClose }: {contactId: string | null;
   const [tag, setTag] = useState('');
   const [note, setNote] = useState('');
   const [task, setTask] = useState('');
+  const team = useTeam();
+  const [taskFor, setTaskFor] = useState<string | null>(team.me.id);
   const [confirm, setConfirm] = useState<'delete' | 'unsub' | null>(null);
   // Phones split the record into tabs instead of one long scroll.
   const [tab, setTab] = useState<'details' | 'followups' | 'activity'>('details');
@@ -87,6 +91,18 @@ export function ContactDetail({ contactId, onClose }: {contactId: string | null;
             <TextInput id="ct-email" label="Email" type="email" value={c.email} onChange={(e) => set({ email: e.target.value })} />
             <TextInput id="ct-phone" label="Phone" type="tel" value={c.phone} onChange={(e) => set({ phone: e.target.value })} />
           </div>
+
+          <AssigneeSelect
+              id="ct-assignee"
+              label="Looked after by"
+              value={c.assigneeId}
+              className="max-w-xs"
+              onChange={(assigneeId) => {
+                const who = team.data.members.find((m) => m.id === assigneeId)?.name;
+                set({ assigneeId }, { kind: 'note', label: who ? `Assigned to ${who}` : 'Unassigned' });
+                team.log('audience', who ? `assigned ${c.name || 'a contact'} to ${who}` : `unassigned ${c.name || 'a contact'}`, `/app/audience?contact=${c.id}`);
+              }} />
+            
 
           <section aria-labelledby="ct-consent" className="rounded-md border border-line p-4">
             <h3 id="ct-consent" className="text-label font-semibold text-fg">
@@ -163,6 +179,7 @@ export function ContactDetail({ contactId, onClose }: {contactId: string | null;
                     {t.done && <CheckIcon size={12} strokeWidth={3} aria-hidden />}
                   </button>
                   <span className={cn('flex-1 text-label', t.done ? 'text-fg-subtle line-through' : 'text-fg')}>{t.text}</span>
+                  {t.assigneeId && <AssigneeChip memberId={t.assigneeId} />}
                   {t.due && <span className={cn('text-caption', !t.done && Date.parse(t.due) < Date.now() ? 'font-semibold text-danger' : 'text-fg-subtle')}>Due {formatTimestamp(t.due)}</span>}
                   <IconButton icon={XIcon} size="sm" label="Remove task" onClick={() => set({ tasks: c.tasks.filter((x) => x.id !== t.id) })} />
                 </li>
@@ -173,7 +190,7 @@ export function ContactDetail({ contactId, onClose }: {contactId: string | null;
               onSubmit={(e) => {
                 e.preventDefault();
                 if (!task.trim()) return;
-                set({ tasks: [...c.tasks, { id: uid('task'), text: task.trim(), due: new Date(Date.now() + 86400000).toISOString(), done: false }] }, { kind: 'task', label: `Task added: ${task.trim()}` });
+                set({ tasks: [...c.tasks, { id: uid('task'), text: task.trim(), due: new Date(Date.now() + 86400000).toISOString(), done: false, assigneeId: taskFor }] }, { kind: 'task', label: `Task added: ${task.trim()}` });
                 setTask('');
               }}>
               
@@ -182,6 +199,7 @@ export function ContactDetail({ contactId, onClose }: {contactId: string | null;
                 Add
               </Button>
             </form>
+            <AssigneeSelect id="ct-task-who" label="For" value={taskFor} onChange={setTaskFor} className="mt-2 max-w-xs" />
           </section>
           }
 

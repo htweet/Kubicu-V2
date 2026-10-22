@@ -518,6 +518,10 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
         null
       ),
 
+      /** Replaces the current page's blocks (and optionally its look) in one undoable step — used by AI page setup (D63). */
+      replaceBlocks: (blocks: Block[], theme?: PageTheme) =>
+      mutate((doc) => ({ ...doc, blocks, theme: theme ? { ...theme } : doc.theme, updatedAt: new Date().toISOString() }), undefined, null),
+
       /** Whole-site change from outside the canvas (e.g. removing a deleted library image). Undoable. */
       transformDocument: (fn: (doc: PageDocument) => PageDocument) => mutateSite(fn),
 
@@ -632,8 +636,10 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
       undo: () => dispatch({ type: 'undo' }),
       redo: () => dispatch({ type: 'redo' }),
 
-      publish: (note: string): boolean => {
+      /** Publishes the draft — or exactly `doc` when an approved review is published (D58). */
+      publish: (note: string, doc?: PageDocument): boolean => {
         const s = stateRef.current;
+        const live = doc ?? s.draft;
         const at = new Date().toISOString();
         const count = s.versions.filter((v) => v.kind === 'published').length + 1;
         const version: PageVersion = {
@@ -642,14 +648,14 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
           note: note.trim(),
           createdAt: at,
           kind: 'published',
-          doc: s.draft
+          doc: live
         };
         try {
-          persist({ ...s, published: s.draft, publishedAt: at, versions: [version, ...s.versions], scheduled: null });
+          persist({ ...s, published: live, publishedAt: at, versions: [version, ...s.versions], scheduled: null });
         } catch {
           return false;
         }
-        dispatch({ type: 'publish', at, version, doc: s.draft });
+        dispatch({ type: 'publish', at, version, doc: live });
         if (s.scheduled) dispatch({ type: 'schedule', scheduled: null });
         return true;
       },
@@ -667,13 +673,13 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
       },
 
       /** Captures the current draft to go live at `at`. Replaces any earlier schedule. */
-      schedulePublish: (at: string, note: string): boolean => {
+      schedulePublish: (at: string, note: string, doc?: PageDocument): boolean => {
         const s = stateRef.current;
         const scheduled: ScheduledPublish = {
           id: uid('sch'),
           at,
           note: note.trim(),
-          doc: s.draft,
+          doc: doc ?? s.draft,
           createdAt: new Date().toISOString()
         };
         try {
@@ -716,6 +722,16 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
         dispatch({ type: 'saveStatus', status: 'saving' });
         save(true);
       },
+
+      /** Picks up a change written to storage outside the editor (e.g. pausing an IntentFlow rule, D64). */
+      reloadFromStorage: () => {
+        try {
+          const saved = parsePersistedPage(window.localStorage.getItem(storageKey));
+          if (saved) dispatch({ type: 'reset', persisted: saved });
+        } catch {
+
+          // Storage unavailable — nothing to reload.
+        }},
 
       /** Conflict: load the copy saved in the other tab. */
       loadTheirs: () => {
