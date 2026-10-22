@@ -2,8 +2,10 @@ export const commerceNav = [
 { to: '/app/commerce', label: 'Overview', end: true },
 { to: '/app/commerce/orders', label: 'Orders' },
 { to: '/app/commerce/products', label: 'Products' },
+{ to: '/app/commerce/storefront', label: 'Storefront' },
 { to: '/app/commerce/inventory', label: 'Inventory' },
 { to: '/app/commerce/digital', label: 'Digital' },
+{ to: '/app/commerce/discounts', label: 'Discounts' },
 { to: '/app/commerce/payments', label: 'Payments' },
 { to: '/app/commerce/reports', label: 'Reports' },
 { to: '/app/commerce/settings', label: 'Settings' }];

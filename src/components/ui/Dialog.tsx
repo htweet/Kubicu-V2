@@ -13,11 +13,13 @@ interface DialogProps {
   children?: React.ReactNode;
   footer?: React.ReactNode;
   size?: 'sm' | 'md' | 'lg';
+  /** Opens above other dialogs and sheets (e.g. the upgrade dialog). */
+  onTop?: boolean;
 }
 
 const widths = { sm: 'max-w-sm', md: 'max-w-md', lg: 'max-w-xl' };
 
-export function Dialog({ open, onClose, title, description, children, footer, size = 'md' }: DialogProps) {
+export function Dialog({ open, onClose, title, description, children, footer, size = 'md', onTop = false }: DialogProps) {
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
   const onCloseRef = useRef(onClose);
@@ -46,7 +48,7 @@ export function Dialog({ open, onClose, title, description, children, footer, si
   return createPortal(
     <AnimatePresence>
       {open &&
-      <div className="fixed inset-0 z-[80] flex items-end justify-center sm:items-center sm:p-6">
+      <div className={cn('fixed inset-0 flex items-end justify-center sm:items-center sm:p-6', onTop ? 'z-[95]' : 'z-[80]')}>
           <motion.div
           className="absolute inset-0 bg-black/55"
           initial={{ opacity: 0 }}
@@ -80,7 +82,7 @@ export function Dialog({ open, onClose, title, description, children, footer, si
               </div>
               <IconButton icon={XIcon} label="Close" size="sm" onClick={() => onCloseRef.current()} className="-mr-2 -mt-1" />
             </div>
-            {children && <div className="scroll-quiet min-h-0 flex-1 overflow-y-auto px-6 py-3">{children}</div>}
+            {children && <div className="scroll-quiet min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-6 py-3">{children}</div>}
             {footer &&
           <div className="flex flex-col-reverse gap-2 border-t border-line px-6 py-4 sm:flex-row sm:justify-end">{footer}</div>
           }

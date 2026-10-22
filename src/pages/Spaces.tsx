@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import {
   AlertTriangleIcon,
   ArchiveIcon,
+  ArchiveRestoreIcon,
   CheckCircle2Icon,
   CopyIcon,
   ExternalLinkIcon,
@@ -19,24 +20,27 @@ import { PageHeader } from '../components/shell/PageHeader';
 import { PageStatusBadge } from '../components/canvas/PageStatusBadge';
 import { PageMiniPreview } from '../components/overview/PageMiniPreview';
 import { CopyLinkButton } from '../components/overview/CopyLinkButton';
-import { SpacesList, type SpaceRow, type SpaceStatus } from '../components/spaces/SpacesList';
+import { SpacesList, type SpaceRow } from '../components/spaces/SpacesList';
+import { NewSpaceDialog } from '../components/spaces/NewSpaceDialog';
+import { spaceKinds } from '../data/spaceKinds';
+import { extraSpaceLimits, MAIN_SPACE_ID, readSpacePage, spaceStatus, workspaceSpaces } from '../utils/spaces';
 import { Button } from '../components/ui/Button';
 import { IconButton } from '../components/ui/IconButton';
 import { Menu } from '../components/ui/Menu';
 import { Dialog } from '../components/ui/Dialog';
 import { TextInput } from '../components/ui/TextInput';
-import { readPersistedPage } from '../utils/workspaceStorage';
 import { docSignature, cloneDocument } from '../utils/blocks';
 import { suggestHandles, takenHandles } from '../utils/handles';
 import { formatRelative, publicUrl } from '../utils/format';
 import { cn } from '../utils/cn';
 
-const comingNext = ['Campaign pages for a sale or launch', 'Micro-sites with several pages under one link', 'DealRooms for group buys'];
-
 export function Spaces() {
   const { state, actions, issues, hasUnpublishedChanges } = useEditor();
   const navigate = useNavigate();
-  const { workspaces, current, switchTo, create } = useWorkspace();
+  const { workspaces, current, switchTo, switchSpace, create, setSpaceArchived } = useWorkspace();
+  const [newSpace, setNewSpace] = useState<{kind: 'campaign' | 'dealroom' | null;} | null>(null);
+  const [archiving, setArchiving] = useState<SpaceRow | null>(null);
+  const extras = current.spaces ?? [];
   const { draft } = state;
   const visibleCount = draft.blocks.filter((b) => !b.visibility.hidden).length;
   const canvas = `/app/canvas/${draft.id}`;
@@ -46,24 +50,67 @@ export function Spaces() {
   const [dialog, setDialog] = useState<'unpublish' | 'duplicate' | null>(null);
   const [copyName, setCopyName] = useState('');
 
+  // Workspace screens always hold the main space in the editor; other spaces are read from storage.
   const rows: SpaceRow[] = useMemo(
     () =>
-    workspaces.map((w) => {
-      if (w.id === current.id) {
-        const status: SpaceStatus = !state.published ? 'draft' : hasUnpublishedChanges ? 'changes' : 'live';
-        return { id: w.id, workspace: w, doc: draft, status, current: true };
+    workspaces.flatMap((w) =>
+    workspaceSpaces(w).map((s) => {
+      const inCurrentWorkspace = w.id === current.id;
+      if (inCurrentWorkspace && s.id === MAIN_SPACE_ID) {
+        return { id: `${w.id}:${s.id}`, workspace: w, space: s, doc: draft, status: spaceStatus(s, state, hasUnpublishedChanges), inCurrentWorkspace };
       }
-      const page = readPersistedPage(w.id);
-      const status: SpaceStatus = !page?.published ? 'draft' : docSignature(page.draft) !== docSignature(page.published) ? 'changes' : 'live';
-      return { id: w.id, workspace: w, doc: page?.draft ?? null, status, current: false };
-    }),
-    [workspaces, current.id, draft, state.published, hasUnpublishedChanges]
+      const page = readSpacePage(w.id, s.id);
+      const changed = !!page?.published && docSignature(page.draft) !== docSignature(page.published);
+      return { id: `${w.id}:${s.id}`, workspace: w, space: s, doc: page?.draft ?? null, status: spaceStatus(s, page, changed), inCurrentWorkspace };
+    })
+    ),
+    [workspaces, current.id, draft, state, hasUnpublishedChanges]
   );
 
   const openRow = (r: SpaceRow) => {
-    if (r.current) return navigate(canvas);
-    switchTo(r.workspace.id);
+    if (r.inCurrentWorkspace) {
+      if (r.space.id === MAIN_SPACE_ID) return navigate(canvas);
+      if (r.status === 'ended') return;
+      switchSpace(r.space.id);
+      return navigate('/app/canvas');
+    }
+    switchTo(r.workspace.id, r.space.id);
+    if (r.space.id !== MAIN_SPACE_ID) navigate('/app/canvas');
     toast(`Switched to ${r.workspace.name}`);
+  };
+
+  const rowMenu = (r: SpaceRow) =>
+  r.inCurrentWorkspace && r.space.kind !== 'main' ?
+  <Menu
+    align="end"
+    items={[
+    {
+      id: 'live',
+      label: 'View live',
+      icon: ExternalLinkIcon,
+      disabled: !(r.status === 'live' || r.status === 'changes') || !r.doc,
+      reason: r.status === 'ended' ? 'Archived — its link forwards to your main page.' : 'Publish first.',
+      onSelect: () => r.doc && navigate(`/p/${r.doc.handle}`)
+    },
+    r.status === 'ended' ?
+    { id: 'restore', label: 'Restore', icon: ArchiveRestoreIcon, onSelect: () => restore(r) } :
+    { id: 'archive', label: 'Archive', icon: ArchiveIcon, destructive: true, onSelect: () => setArchiving(r) }]
+    }
+    trigger={(props) => <IconButton {...props} size="sm" icon={MoreHorizontalIcon} label={`More actions for ${r.space.name}`} />} /> :
+
+  null;
+
+  const archive = () => {
+    if (!archiving) return;
+    setSpaceArchived(archiving.space.id, true);
+    toast(`${archiving.space.name} archived`, { description: 'Its link now forwards to your main page. Orders and contacts are kept.' });
+    setArchiving(null);
+  };
+
+  const restore = (r: SpaceRow) => {
+    setSpaceArchived(r.space.id, false);
+    const over = extras.filter((s) => !s.archivedAt).length >= extraSpaceLimits[current.plan];
+    toast(`${r.space.name} restored`, { description: over ? 'It’s over your plan’s space limit, so it can be edited but not published.' : 'Publish it again when you’re ready.' });
   };
 
   const unpublish = () => {
@@ -117,9 +164,9 @@ export function Spaces() {
       <PageHeader
         context={current.name}
         title="My Spaces"
-        description="Your pages on KUBICU. Each space has its own link, theme and publishing history."
+        description="Your main page plus campaigns and DealRooms. Each has its own link, look and publishing; all share this workspace’s products, orders and contacts."
         actions={
-        <Button leadingIcon={PlusIcon} onClick={() => navigate('/start')}>
+        <Button leadingIcon={PlusIcon} onClick={() => setNewSpace({ kind: null })}>
             New space
           </Button>
         } />
@@ -205,11 +252,55 @@ export function Spaces() {
         </div>
       </article>
 
-      <SpacesList rows={rows} onOpen={openRow} />
+      {extras.length === 0 &&
+      <section aria-labelledby="more-spaces-heading" className="mt-8 grid gap-5 border-y border-line py-6 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
+          <div>
+            <h2 id="more-spaces-heading" className="text-label font-semibold text-fg">
+              Run a sale or a group buy on its own link
+            </h2>
+            <p className="mt-1 max-w-xl text-label text-fg-muted">Campaigns and DealRooms sell from the same products and stock as your main page, so orders and contacts all land in one place.</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {(['campaign', 'dealroom'] as const).map((k) => {
+            const K = spaceKinds[k];
+            return (
+              <Button key={k} variant="secondary" leadingIcon={K.icon} onClick={() => setNewSpace({ kind: k })}>
+                  {k === 'dealroom' ? 'New DealRoom' : 'New campaign'}
+                </Button>);
 
-      <p className="mt-10 border-t border-line pt-5 text-caption text-fg-subtle">
-        <span className="font-semibold text-fg-muted">Coming next:</span> {comingNext.join(' · ')}.
-      </p>
+          })}
+          </div>
+        </section>
+      }
+
+      <SpacesList rows={rows} onOpen={openRow} menuFor={rowMenu} />
+
+      <NewSpaceDialog open={!!newSpace} onClose={() => setNewSpace(null)} mainDoc={draft} initialKind={newSpace?.kind ?? null} />
+
+      <Dialog
+        open={!!archiving}
+        onClose={() => setArchiving(null)}
+        size="sm"
+        title={`Archive ${archiving?.space.name ?? 'this space'}?`}
+        description={archiving?.doc ? `${publicUrl(archiving.doc.handle)} will forward visitors to your main page.` : undefined}
+        footer={
+        <>
+            <Button variant="secondary" onClick={() => setArchiving(null)} data-autofocus>
+              Keep it
+            </Button>
+            <Button variant="destructive" onClick={archive}>
+              Archive
+            </Button>
+          </>
+        }>
+        
+        <ul className="flex flex-col gap-1.5 text-label text-fg-muted">
+          <li>Its orders, contacts and discount history are kept.</li>
+          <li>Its draft and versions are kept — you can restore it later.</li>
+          <li>It no longer counts towards your plan’s space limit.</li>
+        </ul>
+      </Dialog>
+
 
       <Dialog
         open={dialog === 'unpublish'}

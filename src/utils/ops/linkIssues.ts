@@ -15,14 +15,14 @@ export function opsLinkIssues(doc: PageDocument, data: OpsData | null, plan: Wor
   forEach((b) => {
     if (b.type === 'booking' && b.content.source === 'catalog') {
       const s = data?.services.find((x) => x.id === b.content.serviceId);
-      if (!allowed) issues.push({ id: `${b.id}:ops:plan`, blockId: b.id, severity: 'error', message: 'Built-in booking is on the Pro plan — switch to a link or upgrade', field: 'source' });
+      if (!allowed) issues.push({ id: `${b.id}:ops:plan`, blockId: b.id, severity: 'error', message: 'Built-in booking is on the Pro plan — switch to a link or upgrade', field: 'source', upgradeTo: BOOKINGS_PLAN, upgradeFeature: 'Built-in booking' });
       if (!s) issues.push({ id: `${b.id}:ops:svc`, blockId: b.id, severity: 'error', message: 'Choose a service from Bookings', field: 'serviceId' });else
       if (!s.active) issues.push({ id: `${b.id}:ops:off`, blockId: b.id, severity: 'warning', message: `“${s.name}” is switched off, so this block is hidden`, field: 'serviceId' });
     }
     if (b.type === 'pricing') {
       const missing = b.content.packages.filter((p) => p.serviceId && !data?.services.some((s) => s.id === p.serviceId));
       if (missing.length) issues.push({ id: `${b.id}:ops:pk`, blockId: b.id, severity: 'error', message: 'A package books a service that no longer exists', field: 'packages' });
-      if (!allowed && b.content.packages.some((p) => p.serviceId)) issues.push({ id: `${b.id}:ops:pkplan`, blockId: b.id, severity: 'error', message: 'Booking from packages is on the Pro plan', field: 'packages' });
+      if (!allowed && b.content.packages.some((p) => p.serviceId)) issues.push({ id: `${b.id}:ops:pkplan`, blockId: b.id, severity: 'error', message: 'Booking from packages is on the Pro plan', field: 'packages', upgradeTo: BOOKINGS_PLAN, upgradeFeature: 'Booking from packages' });
     }
   });
   return issues;

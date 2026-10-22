@@ -1,5 +1,6 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { ArrowLeftIcon } from 'lucide-react';
 import { KubicuLogo } from '../shell/KubicuLogo';
 import { Button } from '../ui/Button';
 import { PlatformLook } from '../marketing/PlatformLook';
@@ -16,13 +17,27 @@ interface OnboardingLayoutProps {
 /** Two columns on desktop: the step on the left, a live phone preview on the right. */
 export function OnboardingLayout({ step, onExit, preview, children }: OnboardingLayoutProps) {
   const total = ONBOARDING_STEPS.length - 1;
+  const navigate = useNavigate();
+  // Back to wherever they came from (e.g. My Spaces); straight to the workspace if this was the first page.
+  const goBack = () => {
+    const idx = (window.history.state as {idx?: number;} | null)?.idx ?? 0;
+    if (idx > 0) navigate(-1);else
+    navigate('/app');
+  };
   return (
     <PlatformLook>
       <div className="flex min-h-screen flex-col">
         <header className="flex h-16 shrink-0 items-center justify-between gap-4 border-b border-line px-5 md:px-8">
-          <Link to="/" aria-label="KUBICU home" className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-            <KubicuLogo />
-          </Link>
+          <div className="flex items-center gap-3">
+            {step === 0 &&
+            <Button variant="tertiary" size="sm" leadingIcon={ArrowLeftIcon} onClick={goBack} className="-ml-2">
+                Back
+              </Button>
+            }
+            <Link to="/" aria-label="KUBICU home" className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+              <KubicuLogo />
+            </Link>
+          </div>
           {step < total &&
           <Button variant="tertiary" onClick={onExit}>
               Save and exit

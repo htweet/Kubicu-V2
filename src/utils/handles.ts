@@ -1,6 +1,7 @@
 import type { Workspace } from '../types/workspace';
 import { examplePages } from '../data/examples';
 import { readPersistedPage } from './workspaceStorage';
+import { spaceStorageId, workspaceSpaces } from './spaces';
 
 /** Addresses KUBICU itself uses, so nobody can claim them. */
 export const RESERVED_HANDLES = [
@@ -19,17 +20,23 @@ export function slugifyHandle(value: string): string {
   slice(0, 30);
 }
 
-/** Every handle in use, optionally ignoring one workspace (the one being edited). */
-export function takenHandles(workspaces: Workspace[], exceptWorkspaceId?: string): Set<string> {
+/**
+ * Every handle in use across all spaces of all workspaces, optionally ignoring the space
+ * being edited (its storage id — for a main space that's the workspace id).
+ */
+export function takenHandles(workspaces: Workspace[], exceptStorageId?: string): Set<string> {
   const taken = new Set<string>([...RESERVED_HANDLES, ...examplePages.map((e) => e.doc.handle)]);
   workspaces.forEach((w) => {
-    if (w.id === exceptWorkspaceId) return;
-    const page = readPersistedPage(w.id);
-    if (page?.draft.handle) taken.add(page.draft.handle);
-    if (page?.published?.handle) taken.add(page.published.handle);
+    workspaceSpaces(w).forEach((s) => {
+      const id = spaceStorageId(w.id, s.id);
+      if (id === exceptStorageId) return;
+      const page = readPersistedPage(id);
+      if (page?.draft.handle) taken.add(page.draft.handle);
+      if (page?.published?.handle) taken.add(page.published.handle);
+    });
   });
   // The demo page's handle belongs to the demo workspace even before it's saved.
-  if (exceptWorkspaceId !== 'ws_adaeze') taken.add('adaeze');
+  if (exceptStorageId !== 'ws_adaeze') taken.add('adaeze');
   return taken;
 }
 

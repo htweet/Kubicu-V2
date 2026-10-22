@@ -17,6 +17,8 @@ import type { WorkspacePlan } from '../../types/plan';
 import { uid } from '../id';
 import { variantLabel, variantPrice } from './catalog';
 import { kubicuFee, providerFee, refundableNgn } from './money';
+import { orderDiscountRecord, resolveDiscount } from './discounts';
+import { formatNgn } from '../format';
 
 export const OWNER_ACTOR = 'You';
 
@@ -90,11 +92,42 @@ export interface CheckoutInput {
   deliveryNgn: number;
   outcome: TestPaymentOutcome;
   plan: WorkspacePlan;
+  /** Code the customer entered (may be empty). Discounts are re-checked here against live data. */
+  discountCode?: string;
+  /** Which link the order came from. */
+  sourceHandle?: string;
+  /** DealRoom checkout: room price for its product, and whether orders wait for the goal. */
+  dealRoom?: {productId: string;priceNgn: number | null;held: boolean;};
+  /** Share code from a DealRoom link (?ref=), checked against the room's real orders. */
+  referredBy?: string;
+}
+
+/** A short, readable share code for a DealRoom buyer, e.g. NGOZI-7K2. */
+export function makeReferralCode(name: string, taken: Set<string>): string {
+  const first = (name.trim().split(/\s+/)[0] ?? 'FRIEND').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8) || 'FRIEND';
+  for (let i = 0; i < 20; i++) {
+    const code = `${first}-${Math.random().toString(36).slice(2, 5).toUpperCase()}`;
+    if (!taken.has(code)) return code;
+  }
+  return `${first}-${Date.now().toString(36).toUpperCase().slice(-4)}`;
 }
 
 export type CheckoutResult =
 {ok: true;data: CommerceData;order: Order;} |
 {ok: false;reason: 'failed' | 'cancelled' | 'unavailable';message: string;};
+
+/** Gives a DealRoom buyer their own code, and credits the person whose link they used (never themselves). */
+function roomReferral(data: CommerceData, input: CheckoutInput): Pick<Order, 'referralCode' | 'referredBy'> {
+  const roomOrders = data.orders.filter((o) => o.sourceHandle === input.sourceHandle);
+  const digits = input.customer.phone.replace(/\D/g, '');
+  // Someone who already bought keeps the same code.
+  const existing = roomOrders.find((o) => o.referralCode && o.customer.phone.replace(/\D/g, '') === digits)?.referralCode;
+  const taken = new Set(data.orders.map((o) => o.referralCode).filter((c): c is string => !!c));
+  const code = existing ?? makeReferralCode(input.customer.name, taken);
+  const ref = input.referredBy?.trim().toUpperCase();
+  const referrer = ref ? roomOrders.find((o) => o.referralCode === ref && o.customer.phone.replace(/\D/g, '') !== digits) : undefined;
+  return { referralCode: code, referredBy: referrer ? ref : undefined };
+}
 
 /** Places a test-mode order. Failed or cancelled payments create no order and keep the cart. */
 export function placeOrder(data: CommerceData, input: CheckoutInput): CheckoutResult {
@@ -105,7 +138,8 @@ export function placeOrder(data: CommerceData, input: CheckoutInput): CheckoutRe
   for (const line of input.lines) {
     const product = data.products.find((p) => p.id === line.productId);
     const variant = product?.variants.find((v) => v.id === line.variantId);
-    const price = product && variant ? variantPrice(product, variant) : null;
+    const roomPrice = input.dealRoom && input.dealRoom.productId === line.productId ? input.dealRoom.priceNgn : null;
+    const price = product && variant ? roomPrice ?? variantPrice(product, variant) : null;
     if (!product || !variant || product.status !== 'active' || price === null) {
       return { ok: false, reason: 'unavailable', message: `${product?.name ?? 'An item'} is no longer available.` };
     }
@@ -125,16 +159,32 @@ export function placeOrder(data: CommerceData, input: CheckoutInput): CheckoutRe
   }
 
   const subtotal = items.reduce((s, i) => s + i.unitPriceNgn * i.qty, 0);
-  const gross = subtotal + input.deliveryNgn;
+  const { applied } = resolveDiscount(
+    data,
+    {
+      lines: items.map((i) => ({ productId: i.productId, collectionIds: data.products.find((p) => p.id === i.productId)?.collectionIds ?? [], amountNgn: i.unitPriceNgn * i.qty })),
+      subtotalNgn: subtotal,
+      deliveryNgn: input.deliveryNgn,
+      phone: input.customer.phone
+    },
+    input.discountCode ?? ''
+  );
+  const discountNgn = Math.min(applied?.amountNgn ?? 0, subtotal + input.deliveryNgn);
+  const gross = subtotal - discountNgn + input.deliveryNgn;
   const paid = input.outcome === 'success';
   const number = data.nextOrderNumber;
   const placedAt = now();
   const hasDigital = items.some((i) => i.kind === 'digital');
   const digitalOnly = items.every((i) => i.kind === 'digital');
   const events: OrderEvent[] = [event('placed', 'Order placed on your page', placedAt)];
+  if (applied && discountNgn > 0) {
+    const who = applied.discount.referrerName ? ` — referred by ${applied.discount.referrerName}` : '';
+    events.unshift(event('note', `${applied.discount.code ? `Code ${applied.discount.code}` : applied.discount.title} saved the customer ${formatNgn(discountNgn)}${who}`, placedAt));
+  }
   if (paid) events.unshift(event('paid', 'Payment confirmed by provider (test mode)'));
-  if (paid && digitalOnly) events.unshift(event('completed', 'Delivered by secure download link'));else
-  events.unshift(event('payment', input.outcome === 'timeout' ? 'Provider didn’t respond in time — awaiting confirmation' : 'Payment pending with provider'));
+  if (input.dealRoom?.held) events.unshift(event('note', 'Joined the group buy — held until the goal is reached, refunded automatically if it isn’t', placedAt));
+  if (paid && digitalOnly && !input.dealRoom?.held) events.unshift(event('completed', 'Delivered by secure download link'));else
+  if (!paid) events.unshift(event('payment', input.outcome === 'timeout' ? 'Provider didn’t respond in time — awaiting confirmation' : 'Payment pending with provider'));
 
   const order: Order = {
     id: uid('ord'),
@@ -144,11 +194,15 @@ export function placeOrder(data: CommerceData, input: CheckoutInput): CheckoutRe
     items,
     fulfilment: input.fulfilment,
     subtotalNgn: subtotal,
-    discountNgn: 0,
+    discountNgn,
+    discount: applied && discountNgn > 0 ? orderDiscountRecord(applied) : undefined,
+    sourceHandle: input.sourceHandle,
+    held: input.dealRoom?.held || undefined,
+    ...(input.dealRoom ? roomReferral(data, input) : {}),
     deliveryNgn: input.deliveryNgn,
     providerFeeNgn: providerFee(gross),
     kubicuFeeNgn: kubicuFee(gross, input.plan),
-    status: paid ? digitalOnly ? 'completed' : 'paid' : 'new',
+    status: paid ? digitalOnly && !input.dealRoom?.held ? 'completed' : 'paid' : 'new',
     paymentStatus: paid ? 'paid' : 'pending',
     paymentNote: input.outcome === 'timeout' ? 'Provider timed out' : undefined,
     refunds: [],
@@ -233,6 +287,8 @@ export function refundOrder(data: CommerceData, orderId: string, amountNgn: numb
       refunds: [...o.refunds, { id: uid('rf'), amountNgn: amount, reason, restocked: restock, at: now() }],
       paymentStatus: full ? 'refunded' as const : 'partially_refunded' as const,
       status: full ? 'refunded' as const : o.status,
+      // KUBICU returns its fee when an order is refunded in full; the provider fee stays (D55).
+      kubicuFeeNgn: full ? 0 : o.kubicuFeeNgn,
       events: [event('refund', `${full ? 'Refunded in full' : 'Partial refund'} — ₦${amount.toLocaleString('en-NG')}${reason ? ` · ${reason}` : ''}`), ...o.events]
     } :
     o
@@ -290,6 +346,7 @@ export function clearSample(data: CommerceData): CommerceData {
     products: data.products.filter((p) => !p.sample),
     collections: data.collections.filter((c) => !c.sample),
     movements: data.movements.filter((m) => !m.sample && !sampleProducts.has(m.productId)),
-    orders: data.orders.filter((o) => !o.sample)
+    orders: data.orders.filter((o) => !o.sample),
+    discounts: data.discounts.filter((d) => !d.sample)
   };
 }

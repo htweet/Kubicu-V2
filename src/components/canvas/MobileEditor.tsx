@@ -21,6 +21,7 @@ import { Button } from "../ui/Button";
 import { cn } from "../../utils/cn";
 import { FilesIcon } from "lucide-react";
 import { PagesPanel } from "./PagesPanel";
+import { SpaceSwitcher } from "./SpaceSwitcher";
 import { findPage, pageHref, pageTitle } from "../../utils/sitePages";
 type MobileSheet = 'blocks' | 'design' | 'layers' | 'pages' | 'settings' | 'block' | 'versions' | null;
 const tabs: {
@@ -66,6 +67,7 @@ export function MobileEditor() {
         <Link to="/app" aria-label="Back to workspace" className="flex h-11 w-11 items-center justify-center rounded-md text-fg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
           <ArrowLeftIcon size={19} aria-hidden />
         </Link>
+        <SpaceSwitcher compact />
         <div className="min-w-0 flex-1">
           <p className="truncate text-label font-semibold">
             {state.draft.title || 'Untitled page'}

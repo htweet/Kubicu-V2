@@ -1,9 +1,10 @@
 /** Honest availability shown on the website. Update as batches ship. */
 export const capabilityStatus = [
 { name: 'Pages, canvas editor and 26 blocks', detail: 'Design, publish, version history', status: 'Ready in prototype', ready: true },
-{ name: 'WhatsApp ordering and enquiry forms', detail: 'Forms don’t store submissions yet', status: 'Ready in prototype', ready: true },
-{ name: 'Products, orders and payments', detail: 'Checkout through a verified provider', status: 'Coming next', ready: false },
-{ name: 'Bookings and calendars', detail: 'Services, availability, reminders', status: 'Coming next', ready: false },
+{ name: 'WhatsApp ordering and enquiry forms', detail: 'Submissions land in your Audience with consent recorded', status: 'Ready in prototype', ready: true },
+{ name: 'Products, orders and checkout', detail: 'Stock, fulfilment, refunds, digital downloads — payments in test mode', status: 'Ready in prototype', ready: true },
+{ name: 'Bookings, contacts and automations', detail: 'Services, availability, deposits, CRM, reminder previews', status: 'Ready in prototype', ready: true },
+{ name: 'Multi-page sites and media library', detail: 'Shop, About and Book pages under one link', status: 'Ready in prototype', ready: true },
 { name: 'Custom domains, QR codes and analytics', detail: 'Connect your own domain, see what works', status: 'Planned', ready: false },
 { name: 'AI page setup', detail: 'Describe your business, review a draft', status: 'Planned', ready: false }];
 

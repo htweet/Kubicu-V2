@@ -5,7 +5,16 @@ import { usePageOps } from '../hooks/usePageOps';
 import { upsertContact } from '../utils/ops/ops';
 import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { SiteNav } from '../components/blocks/SiteNav';
-import { findPage, navItems, pageHref, pageView, resolvePath, showsNav } from '../utils/sitePages';
+import { findPage, navItems, pageHref, pageView, resolvePath, type NavItem } from '../utils/sitePages';
+import { STOREFRONT_PATH, storefrontAvailable, storefrontOrdering } from '../utils/commerce/storefront';
+import { StorefrontView } from '../components/storefront/StorefrontView';
+import { ProductDetailView } from '../components/storefront/ProductDetailView';
+import { sellerPhone } from '../hooks/useResolvedPage';
+
+import { DealRoomPanel } from '../components/dealroom/DealRoomPanel';
+import { dealRoomCheckout } from '../utils/dealRoom';
+
+const SHOP_NAV_ID = '__shop';
 import { ArrowLeftIcon, EyeIcon, InfoIcon } from 'lucide-react';
 import { RenderPlanProvider } from '../contexts/RenderPlanContext';
 import { CatalogProvider } from '../contexts/CatalogContext';
@@ -20,11 +29,13 @@ import { showsKubicuBadge } from '../utils/branding';
 import { isLiveNow } from '../utils/schedule';
 import { useResolvedPage } from '../hooks/useResolvedPage';
 import { usePageCommerce } from '../hooks/usePageCommerce';
-import type { PageDocument } from '../types/page';
+import type { CampaignPhase, PageDocument } from '../types/page';
+import { blockInPhase, campaignPhase, phaseLabels, phaseOrder } from '../utils/campaign';
+import { cn } from '../utils/cn';
 import type { PlanInfo } from '../data/plans';
 
-export function PublicPage() {
-  const { handle = '', pagePath } = useParams();
+export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
+  const { handle = '', pagePath: rawPath, productId } = useParams();
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const isDraft = params.get('draft') === '1';
@@ -43,39 +54,73 @@ export function PublicPage() {
     };
   }, [resolved, ops]);
 
-  const route = resolved ? resolvePath(resolved.doc, pagePath) : null;
+  // The storefront answers /shop unless it's off or a page of the site already uses that address (D53).
+  const shopData = resolved && !resolved.example ? commerce.data : null;
+  const shopOn = !!resolved && storefrontAvailable(resolved.doc, shopData);
+  const wantShop = view === 'shop' && shopOn;
+  const pagePath = view === 'shop' && !shopOn ? productId ? '\u0000missing' : STOREFRONT_PATH : rawPath;
+  const shopProduct = wantShop && productId ? shopData?.products.find((p) => p.id === productId && p.status === 'active') : undefined;
+  const route = resolved ? wantShop ? { pageId: null } : resolvePath(resolved.doc, pagePath) : null;
   const pageId = route && 'pageId' in route ? route.pageId : null;
   const sub = resolved ? findPage(resolved.doc, pageId) : undefined;
 
   useEffect(() => {
     const previous = document.title;
     const view = resolved ? pageView(resolved.doc, pageId) : null;
-    document.title = resolved && view ? view.seo.title || (sub ? `${sub.title} · ${resolved.doc.title}` : resolved.doc.title) : 'Page not available · KUBICU';
+    const shopTitle = wantShop && resolved ? `${shopProduct ? shopProduct.name : shopData?.storefront.title || 'Shop'} · ${resolved.doc.title}` : null;
+    document.title = shopTitle ?? (resolved && view ? view.seo.title || (sub ? `${sub.title} · ${resolved.doc.title}` : resolved.doc.title) : 'Page not available · KUBICU');
     const meta = document.querySelector('meta[name="description"]');
     const previousDescription = meta?.getAttribute('content') ?? null;
-    if (meta && view) meta.setAttribute('content', view.seo.description);
+    if (meta && view) meta.setAttribute('content', wantShop ? shopProduct?.description.slice(0, 160) ?? shopData?.storefront.intro ?? '' : view.seo.description);
     return () => {
       document.title = previous;
       if (meta && previousDescription !== null) meta.setAttribute('content', previousDescription);
     };
-  }, [resolved, pageId, sub]);
+  }, [resolved, pageId, sub, wantShop, shopProduct, shopData]);
 
   if (!resolved) return <Unavailable handle={handle} />;
+  // An archived campaign or DealRoom forwards to the main page (D50).
+  if (resolved.redirectTo && resolved.redirectTo !== handle) return <Navigate to={pageHref(resolved.redirectTo, '')} replace />;
   // Renamed or removed pages forward to their new address.
   if (route && 'redirect' in route) return <Navigate to={`${pageHref(handle, route.redirect)}${isDraft ? '?draft=1' : ''}`} replace />;
   if (!route)
   return (
     <Unavailable
-      handle={`${handle}/${pagePath ?? ''}`}
+      handle={`${handle}/${view === 'shop' ? STOREFRONT_PATH : rawPath ?? ''}`}
       title="This page doesn’t exist"
       body={`${resolved.doc.title} doesn’t have a page at this address. It may have been renamed or removed.`}
       homeHref={`${pageHref(handle, '')}${isDraft ? '?draft=1' : ''}`}
       homeLabel={`Go to ${resolved.doc.title}`} />);
 
 
+  const draftQs = isDraft ? '?draft=1' : '';
+  const shopHref = `${pageHref(handle, STOREFRONT_PATH)}${draftQs}`;
+  if (wantShop && productId && !shopProduct)
+  return (
+    <Unavailable
+      handle={`${handle}/${STOREFRONT_PATH}`}
+      title="This product isn’t available"
+      body="It may have sold out for good, been renamed or removed. Everything else is still in the shop."
+      homeHref={shopHref}
+      homeLabel="Back to the shop" />);
+
+
   const { doc, plan, example } = resolved;
   // Examples never sell anything; their catalogue is empty.
   const catalog = example ? null : commerce.data;
+  const sf = catalog?.storefront;
+  const nav: NavItem[] = [...navItems(doc), ...(shopOn && sf?.showInMenu ? [{ id: SHOP_NAV_ID, label: sf.menuLabel || 'Shop', path: STOREFRONT_PATH }] : [])];
+  const roomCheckout = doc.dealRoom && catalog ? dealRoomCheckout(doc.dealRoom, handle, catalog) : undefined;
+  const navHref = (item: NavItem) => `${pageHref(handle, item.path)}${draftQs}`;
+  const productHref = (id: string) => `${pageHref(handle, `${STOREFRONT_PATH}/${id}`)}${draftQs}`;
+  // Campaigns show the version for the current phase; draft previews can pick one (D52).
+  const previewPhase = params.get('phase');
+  const phase: CampaignPhase | null = doc.campaign ?
+  isDraft && (previewPhase === 'before' || previewPhase === 'live' || previewPhase === 'ended') ?
+  previewPhase :
+  campaignPhase(doc.campaign) :
+  null;
+  const campaignCode = doc.campaign?.discountId ? catalog?.discounts.find((d) => d.id === doc.campaign?.discountId)?.code || undefined : undefined;
 
   return (
     <div className="min-h-screen w-full" style={{ background: doc.theme.background }}>
@@ -88,9 +133,26 @@ export function PublicPage() {
               <span className="hidden text-fg-muted sm:inline"> — visitors still see your last published version</span>
             </span>
           </span>
-          <Button size="sm" variant="secondary" leadingIcon={ArrowLeftIcon} onClick={() => navigate(`/app/canvas/${doc.id}`)}>
-            Back to editor
-          </Button>
+          <div className="flex shrink-0 items-center gap-2">
+            {phase &&
+          <nav aria-label="Preview campaign phase" className="hidden items-center gap-0.5 rounded-md border border-line p-0.5 sm:flex">
+                {phaseOrder.map((p) =>
+            <Link
+              key={p}
+              to={`?draft=1&phase=${p}`}
+              replace
+              aria-current={p === phase ? 'true' : undefined}
+              className={cn('rounded-sm px-2.5 py-1 text-caption font-medium', p === phase ? 'bg-sunken text-fg' : 'text-fg-muted hover:text-fg')}>
+              
+                    {phaseLabels[p]}
+                  </Link>
+            )}
+              </nav>
+          }
+            <Button size="sm" variant="secondary" leadingIcon={ArrowLeftIcon} onClick={() => navigate(`/app/canvas/${doc.id}`)}>
+              Back to editor
+            </Button>
+          </div>
         </div>
       }
       {example &&
@@ -108,8 +170,25 @@ export function PublicPage() {
         <CatalogProvider data={catalog}>
           <PageOpsProvider value={{ data: example ? null : ops.data, actions: isDraft ? null : opsActions }}>
             <CartProvider pageKey={`${resolved.workspaceId ?? 'example'}:${handle}`}>
-              <PageBody site={doc} pageId={pageId} plan={plan} isDraft={isDraft} handle={handle} />
-              {catalog && <CheckoutSheet theme={doc.theme} commerce={commerce} ownerPlan={plan.id} handle={handle} />}
+              {wantShop && catalog ?
+              <main>
+                  <PageSurface
+                  theme={doc.theme}
+                  columnClassName="max-w-[1120px] md:px-8"
+                  footer={showsKubicuBadge(doc, plan) ? <MadeWithKubicu theme={doc.theme} mode="live" /> : <div className="pb-10" />}
+                  header={nav.length > 1 ? <SiteNav theme={doc.theme} title={doc.title} items={nav} activeId={SHOP_NAV_ID} hrefFor={navHref} /> : undefined}>
+                  
+                    {shopProduct ?
+                  <ProductDetailView theme={doc.theme} data={catalog} product={shopProduct} ordering={storefrontOrdering(catalog, plan.id)} whatsappPhone={catalog.storefront.whatsappPhone || sellerPhone(doc)} shopHref={shopHref} productHref={productHref} /> :
+
+                  <StorefrontView theme={doc.theme} data={catalog} productHref={productHref} />
+                  }
+                  </PageSurface>
+                </main> :
+
+              <PageBody site={doc} pageId={pageId} plan={plan} isDraft={isDraft} phase={phase} nav={nav} navHref={navHref} handle={handle} />
+              }
+              {catalog && <CheckoutSheet theme={doc.theme} commerce={commerce} ownerPlan={plan.id} handle={handle} defaultCode={phase === 'live' ? campaignCode : undefined} dealRoom={roomCheckout} />}
               <CartButton theme={doc.theme} />
             </CartProvider>
             <BookingSheet theme={doc.theme} ops={ops} serviceId={bookingService} handle={handle} onClose={() => setBookingService(null)} />
@@ -120,10 +199,28 @@ export function PublicPage() {
 
 }
 
-function PageBody({ site, pageId, plan, isDraft, handle }: {site: PageDocument;pageId: string | null;plan: PlanInfo;isDraft: boolean;handle: string;}) {
+function PageBody({
+  site,
+  pageId,
+  plan,
+  isDraft,
+  phase,
+  nav,
+  navHref,
+  handle
+
+
+
+
+
+
+
+
+
+}: {site: PageDocument;pageId: string | null;plan: PlanInfo;isDraft: boolean;phase: CampaignPhase | null;nav: NavItem[];navHref: (item: NavItem) => string;handle: string;}) {
   const doc = pageView(site, pageId);
   // Draft preview shows scheduled blocks too, so owners can check them before their window opens.
-  const visible = doc.blocks.filter((b) => isDraft ? !b.visibility.hidden : isLiveNow(b.visibility));
+  const visible = doc.blocks.filter((b) => (isDraft ? !b.visibility.hidden : isLiveNow(b.visibility)) && (!phase || blockInPhase(b, phase)));
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [pageId]);
@@ -132,12 +229,13 @@ function PageBody({ site, pageId, plan, isDraft, handle }: {site: PageDocument;p
       <PageSurface
         theme={doc.theme}
         footer={showsKubicuBadge(doc, plan) ? <MadeWithKubicu theme={doc.theme} mode="live" /> : <div className="pb-10" />}
-        header={
-        showsNav(site) ?
-        <SiteNav theme={doc.theme} title={site.title} items={navItems(site)} activeId={pageId} hrefFor={(item) => `${pageHref(handle, item.path)}${isDraft ? '?draft=1' : ''}`} /> :
-        undefined
-        }>
+        header={nav.length > 1 ? <SiteNav theme={doc.theme} title={site.title} items={nav} activeId={pageId} hrefFor={navHref} /> : undefined}>
         
+        {site.dealRoom && !pageId &&
+        <div className="mb-4">
+            <DealRoomPanel room={site.dealRoom} handle={handle} theme={doc.theme} mode="live" />
+          </div>
+        }
         {visible.map((block) =>
         <div key={block.id} className={spacingClass[block.layout.spacing]}>
             <BlockRenderer block={block} theme={doc.theme} mode="live" />

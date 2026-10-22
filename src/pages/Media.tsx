@@ -14,6 +14,7 @@ import { Button } from '../components/ui/Button';
 import { Segmented } from '../components/ui/Segmented';
 import { InlineAlert } from '../components/ui/InlineAlert';
 import { IllustrativeTag } from '../components/ui/IllustrativeTag';
+import { UpgradeButton } from '../components/ui/UpgradeButton';
 import { fieldControlClass } from '../components/ui/Field';
 import { MediaImage } from '../components/media/MediaImage';
 import { MediaDetail } from '../components/media/MediaDetail';
@@ -48,6 +49,7 @@ export function Media() {
   });
   const unusedCount = media.assets.filter((a) => !isInUse(usage.get(a.id) ?? [])).length;
   const pct = Math.min(100, media.usedBytes / media.quotaBytes * 100);
+  const nextStoragePlan = plan.id === 'free' ? 'creator' : plan.id === 'creator' ? 'pro' : plan.id === 'pro' ? 'business' : null;
   const full = media.usedBytes >= media.quotaBytes;
 
   const uploadMany = async (files: FileList | File[] | null) => {
@@ -122,7 +124,7 @@ export function Media() {
             </p>
           </div>
           {full &&
-        <InlineAlert tone="danger" title="Storage full" className="mt-4">
+        <InlineAlert tone="danger" title="Storage full" className="mt-4" action={nextStoragePlan ? <UpgradeButton plan={nextStoragePlan} feature="More media storage" /> : undefined}>
               New uploads are paused. {unusedCount > 0 ? `${unusedCount} image${unusedCount === 1 ? ' isn’t' : 's aren’t'} used anywhere — delete them to make room.` : 'Delete images you no longer need, or upgrade your plan.'}
             </InlineAlert>
         }

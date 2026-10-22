@@ -68,6 +68,29 @@ export function Payments() {
         </div>
       </section>
 
+      <section aria-labelledby="refund-fees-heading" className="mt-8 rounded-lg border border-line bg-raised p-5 md:p-6">
+        <div className="flex items-center gap-2">
+          <h2 id="refund-fees-heading" className="text-heading font-semibold text-fg">
+            Fees when you refund
+          </h2>
+          <IllustrativeTag note="Policy recommended for launch; confirm the provider’s refund-fee terms before going live." />
+        </div>
+        <dl className="mt-4 grid gap-4 md:grid-cols-3">
+          <div>
+            <dt className="text-label font-medium text-fg">Your customer</dt>
+            <dd className="mt-1 text-caption text-fg-muted">Always gets back exactly what they paid. Fees are never deducted from a refund.</dd>
+          </div>
+          <div>
+            <dt className="text-label font-medium text-fg">KUBICU fee</dt>
+            <dd className="mt-1 text-caption text-fg-muted">Returned to you on full refunds, and waived automatically on group buys that miss their goal.</dd>
+          </div>
+          <div>
+            <dt className="text-label font-medium text-fg">Provider fee</dt>
+            <dd className="mt-1 text-caption text-fg-muted">Most providers keep their processing fee when a payment is refunded, so it stays a cost to you. Reports show it on its own line.</dd>
+          </div>
+        </dl>
+      </section>
+
       <section aria-labelledby="provider-heading" className="mt-8">
         <div className="flex items-center gap-2">
           <h2 id="provider-heading" className="text-heading font-semibold text-fg">

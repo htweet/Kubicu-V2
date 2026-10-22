@@ -56,21 +56,25 @@ Phase: MVP · CR (commerce-ready) · Later
 | X-01 | Planned module screen | Shell | Owner | Both | Analytics, Domains & QR, Extensions, Settings | Back to page | — | — | — | ⏳ |
 | X-02 | Not found | Shell | Anyone | Both | Bad route | Go to overview | — | — | MVP | ✅ |
 
-## Families from design plan §6 not yet designed
+## Families from design plan §6 — status
+
+Built families point to their rows above (and to PROTOTYPE_STATUS.md for detail).
 
 | Family | Screens (design plan) | Batch | Status |
 |---|---|---|---|
-| A. Marketing website | Home, features, use cases, templates, pricing, marketplace teaser, stories, help, contact, auth, legal, mobile nav | 3 | ⬜ |
-| B. Onboarding | Welcome → goal → template → identity → photo → AI draft → starter blocks → first action → mobile preview → publish → checklist | 3 | ⬜ (checklist exists on Overview) |
-| C. Overview (full) | Recent actions, commerce summary, bookings, leads, failures, usage | 4–5 | 🟡 |
-| D. Page management (full) | Create, duplicate, unpublish, redirect/retire, permissions, health | 3/5 | 🟡 |
-| H. Themes & template marketplace | Gallery, filters, detail, apply, theme editor, licensing, reviews | 3/6 | 🟡 (in-canvas only) |
-| I. Commerce — physical | 16 screens | 4 | ⏳ |
-| J. Digital products | 10 screens | 4 | ⬜ |
-| K. Checkout & payment setup | 11 screens | 4 | ⬜ |
-| L. Bookings & services | 14 screens | 4 | ⏳ |
-| M. Audience / CRM | 11 screens | 4 | ⏳ |
-| N. Automations | 14 screens | 4–5 | ⏳ |
+| A. Marketing website | Home, templates, template detail, pricing, coming-soon, legal/help stubs, auth, mobile nav | 3 | ✅ (stories/marketplace teaser not built) |
+| B. Onboarding | Goal → kit → identity → first action → mobile preview → share; resume banner | 3 | ✅ (AI draft step disabled until Batch 5) |
+| C. Overview (full) | Needs attention, commerce/bookings/leads summary, recent changes, setup | 4–5 | 🟡 (visitor numbers wait for Analytics) |
+| D. Page management (full) | List/table, duplicate, unpublish, health; create space, retire/redirect, permissions | 3/5 | 🟡 (spaces per workspace in progress — D50) |
+| G-10. Multi-page site | Pages panel, page switcher, site menu, per-page SEO, redirects | 4 | ✅ |
+| H. Themes & template marketplace | Gallery, detail, apply; marketplace/licensing/reviews | 3/6 | 🟡 (marketplace Batch 6) |
+| I. Commerce — physical | Overview, products, variants, collections, import, inventory, orders, fulfilment, refunds, disputes, settings | 4 | ✅ (discounts in progress — D51) |
+| J. Digital products | File upload/scan, limits, expiry, secure download, log, revoke | 4 | ✅ |
+| K. Checkout & payment setup | Cart, details, delivery, review, test outcomes, order status, provider connect | 4 | ✅ |
+| L. Bookings & services | Services, availability, schedule (list/week), booking flow, reschedule/cancel | 4 | ✅ (calendar sync later) |
+| M. Audience / CRM | List, pipeline, contact detail, consent, import/export, duplicates | 4 | ✅ |
+| N. Automations | Recipes, builder, test run, pause, run history | 4–5 | ✅ |
+| Media library | Picker, Media page, usage, replace, safe delete | Gap closure | ✅ |
 | O. AI copilot & Voice-to-Store | 15 screens | 5 | ⬜ (disabled entry point) |
 | P. Analytics & Link Intelligence | 14 screens | 5 | ⏳ |
 | Q. Domains, links & QR | 15 screens | 5 | ⏳ |
@@ -79,5 +83,9 @@ Phase: MVP · CR (commerce-ready) · Later
 | T. Trust Passport & Proof-of-Work | 10 screens | Later | ⬜ |
 | U. Extensions & marketplace | 14 screens | 6 | ⏳ |
 | V. Teams, settings & billing | 16 screens | 6 | ⏳ |
+| Spaces: campaigns (D52) | New campaign, phase bar, campaign settings, live/before/ended public views | 4 (brought forward) | ✅ |
+| Spaces: DealRooms (D54) | New DealRoom, room panel (6 states), held orders, seller panel, extend/end dialogs | 4–5 (brought forward) | ✅ |
+| Commerce: discounts (D51) | Discounts list, discount editor, checkout code field | 4 | ✅ |
+| Commerce: storefront (D53) | Storefront settings, public shop, product page, unavailable product | 4 | ✅ |
 | W. Super-admin operations | Ops overview, tenants, plans, flags, modules, payments, AI ops, trust & support, system admin | 6 | ⬜ |
 | X. Public trust/legal/safety states | Report, appeal, suspension, consent, unsubscribe, export/deletion, disputes, warnings | 3/6 | ⬜ |

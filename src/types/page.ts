@@ -260,6 +260,59 @@ export interface BlockVisibility {
   showFrom?: string | null;
   /** ISO time the block stops showing on the live page. Null = no end limit. */
   showUntil?: string | null;
+  /** Campaign spaces: the phases this block shows in. Undefined = every phase (D52). */
+  phases?: CampaignPhase[];
+}
+
+export type CampaignPhase = 'before' | 'live' | 'ended';
+export type CampaignStarter = 'sale' | 'launch' | 'event';
+
+export type DealRoomType = 'drop' | 'goal';
+
+export interface DealRoomExtension {
+  at: string;
+  from: string;
+  to: string;
+  reason: string;
+}
+
+export interface DealRoomUpdate {
+  id: string;
+  at: string;
+  text: string;
+}
+
+/** A DealRoom (D54): one product on its own link, as a limited drop or a group goal. */
+export interface DealRoomSettings {
+  type: DealRoomType;
+  productId: string;
+  /** Room price per unit; null = the product's own price. */
+  priceNgn: number | null;
+  /** Limited drop: units for this room (taken from real stock). */
+  seats: number | null;
+  /** Group goal: minimum number of buyers by the deadline. */
+  goal: number | null;
+  perPersonLimit: number;
+  opensAt: string | null;
+  deadline: string | null;
+  /** Set when the seller ends the room early. */
+  endedAt: string | null;
+  extensions: DealRoomExtension[];
+  updates: DealRoomUpdate[];
+  /** What a buyer gets for bringing others in, honoured by the seller (nothing is paid automatically). */
+  referralReward?: string;
+}
+
+/** Campaign settings on a campaign space's document (D52). */
+export interface CampaignSettings {
+  starter: CampaignStarter;
+  /** Campaign window in absolute time; shown in the workspace time zone. */
+  startsAt: string | null;
+  endsAt: string | null;
+  /** A discount (code) from Commerce applied through the campaign link. */
+  discountId: string | null;
+  /** Products the campaign features (checked before publishing). */
+  productIds: string[];
 }
 
 export interface BlockAccessibility {
@@ -360,6 +413,10 @@ export interface PageDocument {
   /** Menu label for the home page. Defaults to “Home”. */
   homeLabel?: string;
   redirects?: PageRedirect[];
+  /** Present on campaign spaces only. */
+  campaign?: CampaignSettings;
+  /** Present on DealRoom spaces only (D54). */
+  dealRoom?: DealRoomSettings;
   updatedAt: string;
 }
 

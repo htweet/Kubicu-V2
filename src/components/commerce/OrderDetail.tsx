@@ -11,6 +11,7 @@ import { Sheet } from '../ui/Sheet';
 import { Button } from '../ui/Button';
 import { TextInput } from '../ui/TextInput';
 import { MoneyBreakdown } from './MoneyBreakdown';
+import { discountLineLabel } from '../../utils/commerce/discounts';
 import { OrderStatusBadge, PaymentBadge, SampleTag } from './StatusBadges';
 import { DisputePanel } from './DisputePanel';
 import { RefundDialog } from './RefundDialog';
@@ -48,7 +49,8 @@ export function OrderDetail({ orderId, onClose }: {orderId: string | null;onClos
   if (!order) return <Sheet open={!!orderId} onClose={onClose} side="right" size="lg" title="Order not found"><p className="p-5 text-label text-fg-muted">This order may have been cleared with the sample data.</p></Sheet>;
 
   const money = orderMoney(order);
-  const next = nextStep(order);
+  // Group-goal orders stay held until the goal is reached (D54).
+  const next = order.held ? null : nextStep(order);
   const pickup = order.fulfilment.method === 'pickup';
   const stepIndex = order.status === 'cancelled' || order.status === 'refunded' ? -1 : steps.findIndex((s) => s.status === order.status);
   const canCancel = ['new', 'paid', 'packing'].includes(order.status);
@@ -106,6 +108,12 @@ export function OrderDetail({ orderId, onClose }: {orderId: string | null;onClos
           {order.status === 'new' &&
           <p className="rounded-md bg-info-soft px-3 py-2.5 text-label text-info">
               {order.paymentNote ?? 'Payment pending'}. Don’t pack until the provider confirms — in live mode this updates automatically.
+            </p>
+          }
+
+          {order.held &&
+          <p className="rounded-md bg-warning-soft px-3 py-2.5 text-label text-warning">
+              Joined a group buy at kub.icu/{order.sourceHandle}. Paid, but waiting for the goal — don’t pack yet. If the goal is missed, it’s refunded in full automatically.
             </p>
           }
 
@@ -186,7 +194,8 @@ export function OrderDetail({ orderId, onClose }: {orderId: string | null;onClos
           </div>
 
           <section aria-label="Money" className="rounded-md bg-sunken px-4 py-3">
-            <MoneyBreakdown money={money} />
+            <MoneyBreakdown money={money} discountLabel={order.discount ? discountLineLabel(order.discount) : undefined} />
+            {order.discount?.referrerName && <p className="mt-1 text-caption text-fg-subtle">Referred by {order.discount.referrerName}.</p>}
           </section>
 
           <section aria-labelledby={`tl-${order.id}`}>

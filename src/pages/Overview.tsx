@@ -10,6 +10,7 @@ import { RecentActivity } from '../components/overview/RecentActivity';
 import { PageStatusBadge } from '../components/canvas/PageStatusBadge';
 import { ResumeOnboardingBanner } from '../components/onboarding/ResumeOnboardingBanner';
 import { NeedsAttention } from '../components/overview/NeedsAttention';
+import { SpacesStrip } from '../components/overview/SpacesStrip';
 import { Button } from '../components/ui/Button';
 import { fontPairs } from '../data/pageThemes';
 import { formatRelative } from '../utils/format';
@@ -66,7 +67,7 @@ export function Overview() {
           <div className="flex flex-col border-t border-line p-6 md:p-8 lg:border-l lg:border-t-0 lg:p-10">
             <div className="flex flex-wrap items-center gap-2">
               <PageStatusBadge />
-              <span className="text-caption text-fg-subtle">Your page</span>
+              <span className="text-caption text-fg-subtle">Main page</span>
             </div>
             <h2 id="page-heading" className="mt-4 font-display text-[1.75rem] font-semibold leading-tight tracking-[-0.022em] text-fg md:text-[2rem]">
               {draft.title}
@@ -114,6 +115,7 @@ export function Overview() {
           </div>
         </div>
       </section>
+      <SpacesStrip />
 
       <div className="mt-12 grid gap-12 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-14">
         <RecentActivity />

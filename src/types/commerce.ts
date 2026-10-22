@@ -180,6 +180,71 @@ export interface Order {
   downloads: DownloadRecord[];
   note: string;
   sample?: boolean;
+  /** The one discount applied to this order (D51). */
+  discount?: OrderDiscount;
+  /** Link the order was placed from (main page, campaign or DealRoom). */
+  sourceHandle?: string;
+  /** Group-goal DealRoom: paid but not to be fulfilled until the goal is reached (D54). */
+  held?: boolean;
+  /** DealRoom buyers get their own share code; orders placed through it record it in `referredBy` (D54). */
+  referralCode?: string;
+  referredBy?: string;
+}
+
+export interface OrderDiscount {
+  discountId: string;
+  kind: DiscountKind;
+  /** Code the customer used; empty for automatic offers. */
+  code: string;
+  label: string;
+  /** Referral codes: who referred this order. */
+  referrerName?: string;
+}
+
+export type DiscountKind = 'code' | 'automatic' | 'referral';
+
+export type DiscountValue = {type: 'percent';percent: number;} | {type: 'fixed';amountNgn: number;} | {type: 'free_delivery';};
+
+export type DiscountScope = {scope: 'all';} | {scope: 'products';productIds: string[];} | {scope: 'collections';collectionIds: string[];};
+
+export interface Discount {
+  id: string;
+  kind: DiscountKind;
+  /** Upper-case code for codes and referrals; empty for automatic offers. */
+  code: string;
+  /** What the customer sees, e.g. “Eid sale — 20% off”. */
+  title: string;
+  value: DiscountValue;
+  appliesTo: DiscountScope;
+  minSubtotalNgn: number | null;
+  startsAt: string | null;
+  endsAt: string | null;
+  /** Total uses allowed across all customers. */
+  usageLimit: number | null;
+  /** Uses allowed per customer phone number. */
+  perCustomerLimit: number | null;
+  /** Off = paused by the seller. */
+  active: boolean;
+  /** Referral codes: the person who shares it, and the reward the seller promised them (honoured by hand). */
+  referrerName?: string;
+  rewardNote?: string;
+  createdAt: string;
+  sample?: boolean;
+}
+
+/** The auto-built shop at /shop on the workspace's pages (D53). */
+export interface StorefrontSettings {
+  enabled: boolean;
+  title: string;
+  intro: string;
+  /** Adds “Shop” to the site menu. */
+  showInMenu: boolean;
+  menuLabel: string;
+  /** How visitors order. Checkout needs Pro; WhatsApp works on every plan. */
+  ordering: 'checkout' | 'whatsapp';
+  whatsappPhone: string;
+  /** Hide sold-out products instead of showing them as Sold out. */
+  hideSoldOut: boolean;
 }
 
 export interface DeliveryZone {
@@ -212,6 +277,10 @@ export interface CommerceData {
   collections: Collection[];
   movements: StockMovement[];
   orders: Order[];
+  discounts: Discount[];
+  storefront: StorefrontSettings;
+  /** Group-goal DealRooms already settled at their deadline, by link (D54). */
+  settledRooms?: Record<string, {at: string;outcome: 'reached' | 'missed';refunded: number;}>;
   fulfilment: FulfilmentSettings;
   payments: PaymentSettings;
   nextOrderNumber: number;

@@ -1,6 +1,21 @@
-import type { CommerceData } from '../../types/commerce';
+import type { CommerceData, StorefrontSettings } from '../../types/commerce';
+import { sampleDiscounts } from '../../data/sampleDiscounts';
+import { SAMPLE_ROOM_HANDLE, sampleRoomOrders } from '../../data/commerceSeed';
 
 export const commerceKey = (workspaceId: string) => `kubicu.commerce.${workspaceId}`;
+
+/** Workspaces saved before DealRooms existed get the sample group-buy orders if they still hold sample data. */
+function withRoomSamples(parsed: Partial<CommerceData>): CommerceData['orders'] {
+  const orders = Array.isArray(parsed.orders) ? parsed.orders : [];
+  const hasSample = Array.isArray(parsed.products) && parsed.products.some((p) => p.sample);
+  if (parsed.settledRooms !== undefined || !hasSample || orders.some((o) => o.sourceHandle === SAMPLE_ROOM_HANDLE)) return orders;
+  const used = new Set(orders.map((o) => o.number));
+  return [...sampleRoomOrders().filter((o) => !used.has(o.number)), ...orders].sort((a, b) => b.number - a.number);
+}
+
+export function defaultStorefront(enabled = false): StorefrontSettings {
+  return { enabled, title: 'Shop', intro: '', showInMenu: true, menuLabel: 'Shop', ordering: 'checkout', whatsappPhone: '', hideSoldOut: false };
+}
 
 export function emptyCommerce(): CommerceData {
   return {
@@ -8,6 +23,8 @@ export function emptyCommerce(): CommerceData {
     collections: [],
     movements: [],
     orders: [],
+    discounts: [],
+    storefront: defaultStorefront(),
     fulfilment: {
       pickupEnabled: false,
       pickupAddress: '',
@@ -33,10 +50,20 @@ export function readCommerce(workspaceId: string): CommerceData | null {
       ...parsed,
       fulfilment: { ...base.fulfilment, ...parsed.fulfilment },
       payments: { ...base.payments, ...parsed.payments },
+      // Saved before the storefront existed: switch it on for workspaces still holding sample products.
+      storefront: { ...defaultStorefront(!parsed.storefront && Array.isArray(parsed.products) && parsed.products.some((p) => p.sample)), ...parsed.storefront },
       products: Array.isArray(parsed.products) ? parsed.products : [],
       collections: Array.isArray(parsed.collections) ? parsed.collections : [],
       movements: Array.isArray(parsed.movements) ? parsed.movements : [],
-      orders: Array.isArray(parsed.orders) ? parsed.orders : []
+      orders: withRoomSamples(parsed),
+      settledRooms: parsed.settledRooms ?? {},
+      nextOrderNumber: Math.max(parsed.nextOrderNumber ?? base.nextOrderNumber, withRoomSamples(parsed).reduce((m, o) => Math.max(m, o.number + 1), 0)),
+      // Workspaces saved before discounts existed get the sample offers if they still hold sample data.
+      discounts: Array.isArray(parsed.discounts) ?
+      parsed.discounts :
+      Array.isArray(parsed.products) && parsed.products.some((p) => p.sample) ?
+      sampleDiscounts() :
+      []
     };
   } catch {
     return null;

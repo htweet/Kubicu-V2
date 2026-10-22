@@ -15,6 +15,11 @@ import { showsKubicuBadge } from '../../utils/branding';
 import { findGroup } from '../../utils/groups';
 import { navItems, pageTitle, showsNav } from '../../utils/sitePages';
 import { SiteNav } from '../blocks/SiteNav';
+import type { CampaignPhase } from '../../types/page';
+import { useCampaignPreview } from '../../contexts/CampaignPreviewContext';
+import { blockInPhase, campaignPhase, phaseLabels } from '../../utils/campaign';
+import { CampaignPhaseBar } from './CampaignPhaseBar';
+import { DealRoomPanel } from '../dealroom/DealRoomPanel';
 
 export const viewportWidths: Record<Viewport, number> = {
   phone: 390,
@@ -43,8 +48,24 @@ export function Artboard({ viewport = 'phone', framed = true, touch = false, onE
   const plan = usePlan();
   const removeBlock = useRemoveBlock();
   const byBlock = issuesByBlock(issues);
-  const ids = draft.blocks.map((b) => b.id);
+  const preview = useCampaignPreview();
+  const campaign = state.site.campaign;
+  const phase: CampaignPhase | null = campaign ? preview.phase ?? campaignPhase(campaign) : null;
+  // Campaigns show only the blocks for the previewed phase; reordering keeps the others in place.
+  const blocks = phase ? draft.blocks.filter((b) => blockInPhase(b, phase)) : draft.blocks;
+  const allIds = draft.blocks.map((b) => b.id);
+  const ids = blocks.map((b) => b.id);
+  const onReorder = (next: string[]) => {
+    if (!phase) return actions.reorderBlocks(next);
+    const shown = new Set(ids);
+    let k = 0;
+    actions.reorderBlocks(allIds.map((id) => shown.has(id) ? next[k++] : id));
+  };
   const activeGroupId = draft.blocks.find((b) => b.id === selectedId)?.groupId ?? null;
+  const phaseBar =
+  campaign && phase ?
+  <CampaignPhaseBar campaign={campaign} phase={phase} onChange={preview.setPhase} hiddenCount={draft.blocks.length - blocks.length} className={framed ? 'mx-auto mb-4 w-full' : 'mx-3 mb-3 mt-3'} /> :
+  null;
 
   const page =
   <PageSurface
@@ -78,8 +99,21 @@ export function Artboard({ viewport = 'phone', framed = true, touch = false, onE
           </div>
         </div> :
 
-    <Reorder.Group axis="y" values={ids} onReorder={actions.reorderBlocks} as="div" className="flex flex-col">
-          {draft.blocks.map((block, i) =>
+    <Reorder.Group axis="y" values={ids} onReorder={onReorder} as="div" className="flex flex-col">
+          {state.site.dealRoom && !state.activePageId &&
+      <div className="mb-4" onClick={(e) => e.stopPropagation()}>
+              <DealRoomPanel room={state.site.dealRoom} handle={state.site.handle} theme={draft.theme} mode="edit" />
+              <p className="mt-1.5 text-center text-[12px]" style={{ color: draft.theme.mutedText }}>
+                Room offer · edit it in Page settings
+              </p>
+            </div>
+      }
+          {blocks.length === 0 && phase &&
+      <p className="mx-auto my-12 max-w-xs text-center text-[14px]" style={{ color: draft.theme.mutedText }}>
+              Nothing shows in the {phaseLabels[phase]} phase yet. Select a block and tick “{phaseLabels[phase]}” under Visibility, or add a new one.
+            </p>
+      }
+          {blocks.map((block, i) =>
       <BlockFrame
         key={block.id}
         block={block}
@@ -87,14 +121,14 @@ export function Artboard({ viewport = 'phone', framed = true, touch = false, onE
         groupName={findGroup(draft, block.groupId)?.name}
         groupActive={!!block.groupId && block.groupId === activeGroupId}
         groupEdge={{
-          first: draft.blocks[i - 1]?.groupId !== block.groupId,
-          last: draft.blocks[i + 1]?.groupId !== block.groupId
+          first: blocks[i - 1]?.groupId !== block.groupId,
+          last: blocks[i + 1]?.groupId !== block.groupId
         }}
         onToggleLocked={actions.toggleLocked}
         selected={block.id === selectedId}
         issues={byBlock[block.id] ?? []}
         isFirst={i === 0}
-        isLast={i === draft.blocks.length - 1}
+        isLast={i === blocks.length - 1}
         touch={touch}
         onSelect={(id) => {
           actions.select(id);
@@ -115,6 +149,7 @@ export function Artboard({ viewport = 'phone', framed = true, touch = false, onE
   if (!framed) {
     return (
       <div className="min-h-full" onClick={() => actions.select(null)}>
+        {phaseBar}
         {page}
       </div>);
 
@@ -125,7 +160,8 @@ export function Artboard({ viewport = 'phone', framed = true, touch = false, onE
 
   return (
     <div className="scroll-quiet h-full overflow-auto bg-stage" onClick={() => actions.select(null)}>
-      <div className="flex min-h-full justify-center px-8 py-10">
+      <div className="flex min-h-full flex-col items-center px-8 py-10">
+        {phaseBar && <div style={{ maxWidth: Math.max(width, 560) }} className="w-full">{phaseBar}</div>}
         <div
           className={cn(
             'relative h-fit w-full overflow-hidden border border-line-strong shadow-3 transition-[max-width] duration-300 ease-out',

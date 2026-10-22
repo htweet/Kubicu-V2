@@ -15,7 +15,7 @@ import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { InlineAlert } from '../../components/ui/InlineAlert';
-import { PlanLock } from '../../components/ui/PlanLock';
+import { UpgradeButton } from '../../components/ui/UpgradeButton';
 import { Dialog } from '../../components/ui/Dialog';
 import { ProductEditor } from '../../components/commerce/ProductEditor';
 import { ProductStatusBadge, SampleTag } from '../../components/commerce/StatusBadges';
@@ -73,7 +73,7 @@ export function Digital() {
         } />
       
       {!allowed &&
-      <InlineAlert tone="info" title={`Selling files is on ${plans[CHECKOUT_PLAN].name}`} className="mt-6" action={<PlanLock kind="plan">{plans[CHECKOUT_PLAN].name}</PlanLock>}>
+      <InlineAlert tone="info" title={`Selling files is on ${plans[CHECKOUT_PLAN].name}`} className="mt-6" action={<UpgradeButton plan={CHECKOUT_PLAN} feature="Selling digital files" />}>
           You can set products up now; page blocks can’t publish them on {plan.name}.
         </InlineAlert>
       }

@@ -29,9 +29,9 @@ export function Reports() {
     orders.reduce(
       (t, o) => {
         const m = orderMoney(o);
-        return { gross: t.gross + m.gross, provider: t.provider + m.providerFee, kubicu: t.kubicu + m.kubicuFee, refunds: t.refunds + m.refunded, net: t.net + m.net, delivery: t.delivery + m.delivery };
+        return { gross: t.gross + m.gross, provider: t.provider + m.providerFee, kubicu: t.kubicu + m.kubicuFee, refunds: t.refunds + m.refunded, net: t.net + m.net, delivery: t.delivery + m.delivery, discount: t.discount + m.discount };
       },
-      { gross: 0, provider: 0, kubicu: 0, refunds: 0, net: 0, delivery: 0 }
+      { gross: 0, provider: 0, kubicu: 0, refunds: 0, net: 0, delivery: 0, discount: 0 }
     ),
     [orders]
   );
@@ -51,10 +51,10 @@ export function Reports() {
   downloadCsv(
     `kubicu-sales-${period}d.csv`,
     toCsv(
-      ['order', 'date', 'customer_paid', 'delivery', 'provider_fee', 'kubicu_fee', 'refunded', 'you_receive', 'sample'],
+      ['order', 'date', 'customer_paid', 'discount', 'discount_code', 'delivery', 'provider_fee', 'kubicu_fee', 'refunded', 'you_receive', 'sample'],
       orders.map((o) => {
         const m = orderMoney(o);
-        return [o.number, o.createdAt, m.gross, m.delivery, m.providerFee, m.kubicuFee, m.refunded, m.net, o.sample ? 'yes' : ''];
+        return [o.number, o.createdAt, m.gross, m.discount, o.discount?.code || o.discount?.label || '', m.delivery, m.providerFee, m.kubicuFee, m.refunded, m.net, o.sample ? 'yes' : ''];
       })
     )
   );
@@ -71,6 +71,7 @@ export function Reports() {
   const lines: [string, number, boolean?][] = [
   ['Customers paid', totals.gross],
   ['of which delivery', totals.delivery],
+  ...(totals.discount > 0 ? [['after discounts given', totals.discount]] as [string, number][] : []),
   ['Provider fees', -totals.provider],
   ['KUBICU fees', -totals.kubicu],
   ['Refunds', -totals.refunds]];
@@ -101,7 +102,7 @@ export function Reports() {
           <dl className="mt-6 flex flex-col border-t border-line pt-3">
             {lines.map(([label, value]) =>
             <div key={label} className="flex items-baseline justify-between gap-3 py-1.5">
-                <dt className={label.startsWith('of') ? 'pl-3 text-caption text-fg-subtle' : 'text-label text-fg-muted'}>{label}</dt>
+                <dt className={label.startsWith('of') || label.startsWith('after') ? 'pl-3 text-caption text-fg-subtle' : 'text-label text-fg-muted'}>{label}</dt>
                 <dd className="text-label tabular-nums text-fg">{value < 0 ? `−${formatNgn(-value)}` : formatNgn(value)}</dd>
               </div>
             )}

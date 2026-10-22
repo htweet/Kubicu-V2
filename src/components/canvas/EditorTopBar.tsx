@@ -31,6 +31,8 @@ import { publicUrl } from '../../utils/format';
 import { cn } from '../../utils/cn';
 import { findPage, pageHref } from '../../utils/sitePages';
 import { PageSwitcher } from './PageSwitcher';
+import { SpaceSwitcher } from './SpaceSwitcher';
+import { useWorkspace } from '../../contexts/WorkspaceContext';
 
 interface EditorTopBarProps {
   viewport: Viewport;
@@ -50,6 +52,8 @@ export function EditorTopBar({ viewport, onViewportChange, onOpenVersions, onOpe
   const navigate = useNavigate();
   const { draft } = state;
   const activePath = findPage(state.site, state.activePageId)?.path ?? '';
+  // Campaigns and DealRooms have one page; only the main space grows into a site.
+  const isMain = useWorkspace().currentSpace.kind === 'main';
 
   return (
     <header className="grid h-14 shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-4 border-b border-line bg-raised px-3">
@@ -63,6 +67,7 @@ export function EditorTopBar({ viewport, onViewportChange, onOpenVersions, onOpe
           <KubicuLogo withWordmark={false} />
         </Link>
         <span aria-hidden className="h-6 w-px bg-line" />
+        <SpaceSwitcher />
         <button
           type="button"
           onClick={() => actions.select(null)}
@@ -75,7 +80,7 @@ export function EditorTopBar({ viewport, onViewportChange, onOpenVersions, onOpe
             {activePath ? `/${activePath}` : ''}
           </span>
         </button>
-        {onManagePages && <PageSwitcher onManage={onManagePages} className="shrink-0" />}
+        {onManagePages && isMain && <PageSwitcher onManage={onManagePages} className="shrink-0" />}
         <PageStatusBadge />
       </div>
 

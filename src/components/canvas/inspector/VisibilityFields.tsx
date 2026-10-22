@@ -1,6 +1,8 @@
 import React from 'react';
-import { CalendarClockIcon } from 'lucide-react';
-import type { Block } from '../../../types/page';
+import { CalendarClockIcon, CheckIcon } from 'lucide-react';
+import type { Block, CampaignPhase } from '../../../types/page';
+import { phaseLabels, phaseOrder } from '../../../utils/campaign';
+import { cn } from '../../../utils/cn';
 import { useEditor } from '../../../contexts/EditorContext';
 import { issuesByBlock } from '../../../utils/validation';
 import { formatSchedule, windowState } from '../../../utils/schedule';
@@ -17,7 +19,7 @@ const stateCopy = {
 } as const;
 
 export function VisibilityFields({ block }: {block: Block;}) {
-  const { actions, issues } = useEditor();
+  const { state: editor, actions, issues } = useEditor();
   const v = block.visibility;
   const state = windowState(v);
   const badge = stateCopy[state];
@@ -32,8 +34,35 @@ export function VisibilityFields({ block }: {block: Block;}) {
   'The window has passed, so visitors no longer see it. It stays here for reuse.' :
   'Always visible once published.';
 
+  const campaign = editor.site.campaign;
+  const phases = v.phases && v.phases.length ? v.phases : phaseOrder;
+  const togglePhase = (p: CampaignPhase) => {
+    const next = phases.includes(p) ? phases.filter((x) => x !== p) : phaseOrder.filter((x) => x === p || phases.includes(x));
+    if (next.length === 0) return;
+    actions.updateMeta(block.id, { visibility: { phases: next.length === phaseOrder.length ? undefined : next } });
+  };
+
   return (
     <div className="flex flex-col gap-5">
+      {campaign &&
+      <fieldset className="flex flex-col gap-2 border-b border-line pb-5">
+          <legend className="text-label font-medium text-fg">Show during the campaign</legend>
+          <p className="mb-1 text-caption text-fg-subtle">Pick when visitors see this block. At least one phase.</p>
+          <div className="grid grid-cols-3 gap-2">
+            {phaseOrder.map((p) => {
+            const on = phases.includes(p);
+            return (
+              <label key={p} className={cn('flex min-h-[44px] cursor-pointer items-center justify-center gap-2 rounded-md border px-2 text-label font-medium transition-colors duration-150', on ? 'border-select bg-action-soft text-fg' : 'border-line text-fg-muted hover:bg-sunken')}>
+                  <input type="checkbox" className="sr-only" checked={on} disabled={on && phases.length === 1} onChange={() => togglePhase(p)} />
+                  {on && <CheckIcon size={14} aria-hidden />}
+                  {phaseLabels[p]}
+                </label>);
+
+          })}
+          </div>
+          <p className="text-caption text-fg-muted">{phases.length === 3 ? 'Shows in every phase.' : `Shows ${phases.map((p) => phaseLabels[p].toLowerCase()).join(' and ')} only.`}</p>
+        </fieldset>
+      }
       <Switch
         id={`${block.id}-hidden`}
         label="Hide from live page"

@@ -1,0 +1,119 @@
+import React from 'react';
+import { Link } from 'react-router-dom';
+import type { CampaignSettings, PageDocument } from '../../../types/page';
+import { useEditor } from '../../../contexts/EditorContext';
+import { useCommerce } from '../../../contexts/CommerceContext';
+import { DateTimeInput } from '../../ui/DateTimeInput';
+import { Badge } from '../../ui/Badge';
+import { fieldControlClass } from '../../ui/Field';
+import { campaignPhase, campaignTotals, phaseLabels, phaseSummary, starterLabels } from '../../../utils/campaign';
+import { discountStatus, discountStatusLabel, valueLabel } from '../../../utils/commerce/discounts';
+import { timeZoneLabel } from '../../../utils/schedule';
+import { formatNgn } from '../../../utils/format';
+import { cn } from '../../../utils/cn';
+
+/** Campaign window, linked discount, featured products and results (D52). */
+export function CampaignSettingsPanel() {
+  const { state, actions } = useEditor();
+  const { data } = useCommerce();
+  const c = state.site.campaign;
+  if (!c) return null;
+  const phase = campaignPhase(c);
+  const totals = campaignTotals(data, state.site.handle);
+  const codes = data.discounts.filter((d) => d.kind === 'code');
+  const products = data.products.filter((p) => p.status !== 'archived');
+
+  const update = (patch: Partial<CampaignSettings>) =>
+  actions.transformDocument((doc) => {
+    if (!doc.campaign) return doc;
+    const prev = doc.campaign;
+    const next = { ...prev, ...patch };
+    // Countdowns that pointed at the old start/end follow the new dates.
+    const retarget = (d: PageDocument['blocks']) =>
+    d.map((b) => {
+      if (b.type !== 'countdown') return b;
+      const t = b.content.target;
+      if ('startsAt' in patch && t === prev.startsAt) return { ...b, content: { ...b.content, target: next.startsAt } };
+      if ('endsAt' in patch && t === prev.endsAt) return { ...b, content: { ...b.content, target: next.endsAt } };
+      return b;
+    });
+    return { ...doc, campaign: next, blocks: retarget(doc.blocks) };
+  });
+
+  const toggleProduct = (id: string) => update({ productIds: c.productIds.includes(id) ? c.productIds.filter((x) => x !== id) : [...c.productIds, id] });
+
+  return (
+    <section aria-labelledby="campaign-heading" className="flex flex-col gap-4 border-b border-line pb-5">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h3 id="campaign-heading" className="text-label font-semibold text-fg">
+            Campaign
+          </h3>
+          <p className="mt-0.5 text-caption text-fg-subtle">{starterLabels[c.starter].label} · {phaseSummary(c)}</p>
+        </div>
+        <Badge tone={phase === 'live' ? 'success' : phase === 'before' ? 'info' : 'neutral'} dot>
+          {phaseLabels[phase]} now
+        </Badge>
+      </div>
+
+      <div className="grid gap-3">
+        <DateTimeInput id="camp-start" label="Starts" optional clearable value={c.startsAt} onChange={(startsAt) => update({ startsAt })} hint="Empty = starts as soon as it’s published." />
+        <DateTimeInput id="camp-end" label="Ends" clearable value={c.endsAt} onChange={(endsAt) => update({ endsAt })} error={c.startsAt && c.endsAt && Date.parse(c.endsAt) <= Date.parse(c.startsAt) ? 'End after it starts.' : !c.endsAt ? 'Needed to publish.' : undefined} />
+        <p className="text-caption text-fg-subtle">Times are in {timeZoneLabel()}. Visitors see the Before, Live and Ended versions automatically.</p>
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="camp-discount" className="text-label font-medium text-fg">
+          Discount code <span className="font-normal text-fg-subtle">· optional</span>
+        </label>
+        <select id="camp-discount" value={c.discountId ?? ''} onChange={(e) => update({ discountId: e.target.value || null })} className={cn(fieldControlClass, 'h-10')}>
+          <option value="">No discount</option>
+          {codes.map((d) =>
+          <option key={d.id} value={d.id}>
+              {d.code} — {valueLabel(d.value)} ({discountStatusLabel[discountStatus(d, data)]})
+            </option>
+          )}
+        </select>
+        <p className="text-caption text-fg-subtle">
+          Applied automatically at checkout while the campaign is live. <Link to="/app/commerce/discounts" className="font-medium text-fg underline underline-offset-2">Manage discounts</Link>
+        </p>
+      </div>
+
+      <fieldset>
+        <legend className="mb-1.5 text-label font-medium text-fg">Featured products</legend>
+        {products.length === 0 ?
+        <p className="text-caption text-fg-subtle">
+            No products yet. <Link to="/app/commerce/products" className="font-medium text-fg underline underline-offset-2">Add products</Link>
+          </p> :
+
+        <ul className="scroll-quiet flex max-h-44 flex-col overflow-y-auto rounded-md border border-line">
+            {products.map((p) =>
+          <li key={p.id} className="border-b border-line last:border-0">
+                <label className="flex min-h-[40px] cursor-pointer items-center gap-2.5 px-3 py-1.5 text-label text-fg hover:bg-sunken">
+                  <input type="checkbox" className="h-4 w-4" checked={c.productIds.includes(p.id)} onChange={() => toggleProduct(p.id)} />
+                  <span className="truncate">{p.name}</span>
+                </label>
+              </li>
+          )}
+          </ul>
+        }
+        <p className="mt-1.5 text-caption text-fg-subtle">Checked before publishing for stock and status. Add a Product grid block to show them.</p>
+      </fieldset>
+
+      <dl className="grid grid-cols-3 gap-2 rounded-md bg-sunken p-3">
+        <div>
+          <dt className="text-caption text-fg-subtle">Orders</dt>
+          <dd className="text-label font-semibold tabular-nums text-fg">{totals.orders}</dd>
+        </div>
+        <div>
+          <dt className="text-caption text-fg-subtle">Revenue</dt>
+          <dd className="text-label font-semibold tabular-nums text-fg">{formatNgn(totals.revenueNgn)}</dd>
+        </div>
+        <div>
+          <dt className="text-caption text-fg-subtle">Discounted</dt>
+          <dd className="text-label font-semibold tabular-nums text-fg">{totals.discountNgn ? `−${formatNgn(totals.discountNgn)}` : '—'}</dd>
+        </div>
+      </dl>
+    </section>);
+
+}

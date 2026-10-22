@@ -2,6 +2,7 @@ import React from 'react';
 import type { PageDocument } from '../../types/page';
 import { PageSurface } from '../blocks/PageSurface';
 import { BlockRenderer, spacingClass } from '../blocks/BlockRenderer';
+import { blockInPhase, campaignPhase } from '../../utils/campaign';
 
 const WIDTH = 390;
 
@@ -13,7 +14,9 @@ interface PageMiniPreviewProps {
 
 /** A scaled, non-interactive render of a page using the real block renderers. */
 export function PageMiniPreview({ doc, scale = 0.52, height = 420 }: PageMiniPreviewProps) {
-  const visible = doc.blocks.filter((b) => !b.visibility.hidden);
+  // Campaigns preview the version visitors see right now (D52).
+  const phase = doc.campaign ? campaignPhase(doc.campaign) : null;
+  const visible = doc.blocks.filter((b) => !b.visibility.hidden && (!phase || blockInPhase(b, phase)));
   return (
     <div
       aria-hidden

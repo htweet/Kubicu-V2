@@ -1,5 +1,6 @@
 import type { Collection, CommerceData, Order, OrderEvent, Product, StockMovement } from '../types/commerce';
 import { kubicuFee, providerFee } from '../utils/commerce/money';
+import { sampleDiscounts } from './sampleDiscounts';
 
 /**
  * SAMPLE commerce data for exploring the prototype. Every record is flagged `sample`
@@ -311,6 +312,41 @@ const sampleMovements = (): StockMovement[] => [
 { id: 'smv_4', productId: 'sp_wrap', variantId: 'wrap_L', delta: -1, after: 3, reason: 'damaged', note: 'Stain on the hem', by: 'You', at: ago(24 * 2), sample: true }];
 
 
+/** Sample DealRoom (group goal for the scarf) and campaign links, used by the sample spaces. */
+export const SAMPLE_ROOM_HANDLE = 'adaeze-scarf-group';
+export const SAMPLE_CAMPAIGN_HANDLE = 'adaeze-eid-sale';
+
+/** Four real (sample) orders that joined the sample group buy, held until the goal is reached. */
+export const sampleRoomOrders = (): Order[] =>
+[
+['Ngozi Eze', '+234 805 000 2101', 30],
+['Bisi Lawal', '+234 806 000 2102', 22],
+['Ifeoma Nwosu', '+234 807 000 2103', 9],
+['Kemi Ojo', '+234 808 000 2104', 3]].
+map(([name, phone, hours], i) =>
+order({
+  id: `so_room_${i + 1}`,
+  number: 1009 + i,
+  createdAt: ago(hours as number),
+  customer: { name: name as string, phone: phone as string, email: '' },
+  items: [item('sp_scarf', 'scarf_default', 'Adire silk scarf', '', 14000, 1)],
+  fulfilment: { method: 'pickup', address: 'Adaeze Atelier studio, Victoria Island (sample address)' },
+  deliveryNgn: 0,
+  status: 'paid',
+  paymentStatus: 'paid',
+  sourceHandle: SAMPLE_ROOM_HANDLE,
+  held: true,
+  referralCode: `${(name as string).split(' ')[0].toUpperCase()}-S${i + 1}`,
+  // Ifeoma and Kemi joined through Ngozi's link.
+  referredBy: i >= 2 ? 'NGOZI-S1' : undefined,
+  events: [
+  ev('note', 'Joined the group buy — held until the goal is reached, refunded automatically if it isn’t', hours as number),
+  ev('paid', 'Payment confirmed by provider (test mode)', hours as number),
+  ev('placed', 'Order placed on your page', hours as number)]
+
+})
+);
+
 /** Merges sample records into a workspace's commerce data. */
 export function withSampleData(data: CommerceData): CommerceData {
   return {
@@ -318,8 +354,11 @@ export function withSampleData(data: CommerceData): CommerceData {
     products: [...data.products, ...sampleProducts()],
     collections: [...data.collections, ...sampleCollections],
     movements: [...data.movements, ...sampleMovements()],
-    orders: [...data.orders, ...sampleOrders()].sort((a, b) => b.number - a.number),
-    nextOrderNumber: Math.max(data.nextOrderNumber, 1009),
+    orders: [...data.orders, ...sampleOrders(), ...sampleRoomOrders()].sort((a, b) => b.number - a.number),
+    discounts: [...(data.discounts ?? []), ...sampleDiscounts().filter((s) => !(data.discounts ?? []).some((d) => d.id === s.id))],
+    settledRooms: data.settledRooms ?? {},
+    nextOrderNumber: Math.max(data.nextOrderNumber, 1013),
+    storefront: data.storefront?.enabled ? data.storefront : { ...(data.storefront ?? {}), enabled: true, title: 'Shop the collection', intro: 'Made in small runs in Lekki. Delivery across Lagos, pickup from the studio.', showInMenu: true, menuLabel: 'Shop', ordering: 'checkout', whatsappPhone: data.storefront?.whatsappPhone ?? '', hideSoldOut: false },
     fulfilment: data.fulfilment.zones.length ?
     data.fulfilment :
     {

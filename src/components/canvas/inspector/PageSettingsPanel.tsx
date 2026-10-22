@@ -4,6 +4,9 @@ import { useEditor } from '../../../contexts/EditorContext';
 import { TextInput } from '../../ui/TextInput';
 import { TextArea } from '../../ui/TextArea';
 import { PlanLock } from '../../ui/PlanLock';
+import { UpgradeButton } from '../../ui/UpgradeButton';
+import { CampaignSettingsPanel } from './CampaignSettingsPanel';
+import { DealRoomSettingsPanel } from './DealRoomSettingsPanel';
 import { publicUrl } from '../../../utils/format';
 import { Switch } from '../../ui/Switch';
 import { usePlan } from '../../../contexts/PlanContext';
@@ -25,6 +28,8 @@ export function PageSettingsPanel() {
 
   return (
     <div className="flex flex-col gap-5">
+      <CampaignSettingsPanel />
+      <DealRoomSettingsPanel />
       {multi &&
       <p className="rounded-md bg-sunken px-3 py-2.5 text-caption text-fg-muted">
           Editing the <span className="font-semibold text-fg">{pageTitle(state.site, state.activePageId)}</span> page. Link, theme and branding are shared by every page; search & sharing below is for this page only.
@@ -67,6 +72,7 @@ export function PageSettingsPanel() {
           disabled={!plan.canHideBadge}
           onChange={(shown) => actions.updateBranding({ hideKubicuBadge: !shown })} />
         
+        {!plan.canHideBadge && <UpgradeButton plan="creator" feature="Removing “Made with KUBICU”" className="self-start" />}
         {!plan.canHideBadge && draft.branding?.hideKubicuBadge &&
         <p className="text-caption text-fg-subtle">
             Your earlier choice to hide it is saved and will apply again if you move to a paid plan.

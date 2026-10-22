@@ -1,6 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { MediaImage } from '../media/MediaImage';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { DiscountCodeField } from './DiscountCodeField';
+import { unitsBoughtBy, type DealRoomCheckout } from '../../utils/dealRoom';
+import { discountLineLabel, normaliseCode, resolveDiscount } from '../../utils/commerce/discounts';
 import { AlertTriangleIcon, ArrowLeftIcon, Loader2Icon, MinusIcon, PlusIcon, ShoppingBagIcon, Trash2Icon, XCircleIcon } from 'lucide-react';
 import type { PageTheme } from '../../types/page';
 import type { OrderFulfilment, TestPaymentOutcome } from '../../types/commerce';
@@ -30,9 +33,13 @@ interface CheckoutSheetProps {
   commerce: PageCommerce;
   ownerPlan: WorkspacePlan;
   handle: string;
+  /** A campaign's discount code, applied automatically (D52). */
+  defaultCode?: string;
+  /** DealRoom rules: room price, limits and the group-goal promise (D54). */
+  dealRoom?: DealRoomCheckout;
 }
 
-export function CheckoutSheet({ theme, commerce, ownerPlan, handle }: CheckoutSheetProps) {
+export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode, dealRoom }: CheckoutSheetProps) {
   const cart = useCart();
   const navigate = useNavigate();
   const [step, setStep] = useState<Step>('cart');
@@ -42,6 +49,9 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle }: CheckoutSh
   const [outcome, setOutcome] = useState<TestPaymentOutcome>('success');
   const [failure, setFailure] = useState('');
   const [tried, setTried] = useState(false);
+  // Campaign links can carry a code (?code=EID20); it's pre-filled and still checked (D51).
+  const [params] = useSearchParams();
+  const [code, setCode] = useState(() => normaliseCode(params.get('code') ?? defaultCode ?? ''));
 
   const data = commerce.data;
   const open = !!cart?.open;
@@ -54,14 +64,18 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle }: CheckoutSh
 
   const lines = useMemo(
     () =>
-    (cart?.lines ?? []).map((l) => {
+    (cart?.lines ?? []
+    // A DealRoom sells only its own product.
+    ).filter((l) => !dealRoom || l.productId === dealRoom.productId).
+    map((l) => {
       const product = data?.products.find((p) => p.id === l.productId);
       const variant = product?.variants.find((v) => v.id === l.variantId);
-      const price = product && variant ? variantPrice(product, variant) : null;
+      const roomPrice = dealRoom && dealRoom.priceNgn !== null ? dealRoom.priceNgn : null;
+      const price = product && variant ? roomPrice ?? variantPrice(product, variant) : null;
       const ok = !!product && !!variant && price !== null && canSell(product, variant) && (product.kind === 'digital' || !product.trackStock || variant.stock >= l.qty);
       return { ...l, product, variant, price, ok };
     }),
-    [cart?.lines, data]
+    [cart?.lines, data, dealRoom]
   );
 
   if (!cart || !data) return null;
@@ -72,7 +86,37 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle }: CheckoutSh
   const zone = f.zones.find((z) => z.id === method);
   const free = f.freeDeliveryOverNgn !== null && subtotal >= f.freeDeliveryOverNgn;
   const deliveryFee = method === 'pickup' || !zone ? 0 : free ? 0 : zone.feeNgn;
-  const total = subtotal + (physical ? deliveryFee : 0);
+  const resolution = resolveDiscount(
+    data,
+    {
+      lines: lines.filter((l) => l.ok && l.price !== null).map((l) => ({ productId: l.productId, collectionIds: l.product?.collectionIds ?? [], amountNgn: (l.price ?? 0) * l.qty })),
+      subtotalNgn: subtotal,
+      deliveryNgn: physical ? method ? deliveryFee : null : 0,
+      phone: customer.phone
+    },
+    code
+  );
+  const roomQty = lines.filter((l) => l.ok).reduce((t, l) => t + l.qty, 0);
+  const roomCap = dealRoom ? Math.min(dealRoom.perPersonLimit, dealRoom.remaining) : Infinity;
+  const priorUnits = dealRoom ? unitsBoughtBy(data, dealRoom.handle, customer.phone, dealRoom.productId) : 0;
+  const roomError = !dealRoom ?
+  '' :
+  !dealRoom.open ?
+  'This room isn’t taking orders right now.' :
+  roomQty > dealRoom.remaining ?
+  `Only ${dealRoom.remaining} left in this room.` :
+  priorUnits + roomQty > dealRoom.perPersonLimit ?
+  `The limit is ${dealRoom.perPersonLimit} per person${priorUnits ? ` — you’ve already bought ${priorUnits}` : ''}.` :
+  '';
+  const discount = Math.min(resolution.applied?.amountNgn ?? 0, subtotal + (physical ? deliveryFee : 0));
+  const total = subtotal - discount + (physical ? deliveryFee : 0);
+  const discountRow =
+  resolution.applied && (discount > 0 || resolution.applied.discount.value.type === 'free_delivery') ?
+  <div className="flex justify-between gap-3">
+        <dt style={{ color: theme.mutedText }}>{discountLineLabel(resolution.applied.discount)}</dt>
+        <dd className="shrink-0 font-semibold tabular-nums">{discount > 0 ? `−${formatNgn(discount)}` : 'At delivery step'}</dd>
+      </div> :
+  null;
   const choosingProduct = cart.choosing ? data.products.find((p) => p.id === cart.choosing) : undefined;
   const steps: Step[] = physical ? ['cart', 'details', 'delivery', 'review'] : ['cart', 'details', 'review'];
   const stepNo = Math.max(1, steps.indexOf(step) + 1);
@@ -106,7 +150,11 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle }: CheckoutSh
             fulfilment,
             deliveryNgn: physical ? deliveryFee : 0,
             outcome,
-            plan: ownerPlan
+            plan: ownerPlan,
+            discountCode: code,
+            sourceHandle: handle,
+            dealRoom: dealRoom ? { productId: dealRoom.productId, priceNgn: dealRoom.priceNgn, held: dealRoom.held } : undefined,
+            referredBy: dealRoom ? params.get('ref') ?? undefined : undefined
           });
           return result.ok ? result.data : d;
         });
@@ -142,7 +190,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle }: CheckoutSh
           <ul className="flex flex-col gap-2" role="list">
             {choosingProduct.variants.map((v) => {
               const available = canSell(choosingProduct, v);
-              const price = variantPrice(choosingProduct, v);
+              const price = (dealRoom && dealRoom.productId === choosingProduct.id ? dealRoom.priceNgn : null) ?? variantPrice(choosingProduct, v);
               return (
                 <li key={v.id}>
                   <button
@@ -246,7 +294,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle }: CheckoutSh
                       <button
                   type="button"
                   aria-label="One more"
-                  disabled={!!l.product.trackStock && !!l.variant && l.qty >= l.variant.stock}
+                  disabled={!!l.product.trackStock && !!l.variant && l.qty >= l.variant.stock || roomQty >= roomCap}
                   onClick={() => cart.setQty(l.variantId, l.qty + 1)}
                   className="flex h-9 w-9 items-center justify-center disabled:opacity-40"
                   style={{ borderRadius: buttonRadius(theme), background: mix(theme.text, 6) }}>
@@ -265,10 +313,14 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle }: CheckoutSh
           }
           {lines.length > 0 &&
           <>
-              <div className="flex items-baseline justify-between text-[15px]">
-                <span style={muted}>Subtotal</span>
-                <span className="font-semibold tabular-nums">{formatNgn(subtotal)}</span>
-              </div>
+              <dl className="flex flex-col gap-1.5 text-[15px]">
+                <div className="flex items-baseline justify-between">
+                  <dt style={muted}>Subtotal</dt>
+                  <dd className="font-semibold tabular-nums">{formatNgn(subtotal)}</dd>
+                </div>
+                {discountRow}
+              </dl>
+              <DiscountCodeField theme={theme} code={code} onApply={setCode} resolution={resolution} />
               {lines.some((l) => !l.ok) &&
             <p className="text-[12.5px]" style={muted}>
                   Unavailable items won’t be ordered.
@@ -399,6 +451,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle }: CheckoutSh
             <dt style={muted}>Subtotal</dt>
             <dd className="tabular-nums">{formatNgn(subtotal)}</dd>
           </div>
+          {discountRow}
           {physical &&
           <div className="flex justify-between">
               <dt style={muted}>{method === 'pickup' ? 'Pickup' : `Delivery · ${zone?.name ?? ''}`}</dt>
@@ -413,6 +466,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle }: CheckoutSh
             No extra fees are added at payment. Processing fees are paid by the seller.
           </p>
         </dl>
+        <DiscountCodeField theme={theme} code={code} onApply={setCode} resolution={resolution} />
         <fieldset className="flex flex-col gap-2">
           <legend className="mb-1 text-[13px] font-semibold">Test card — choose what happens</legend>
           {outcomes.map((o) =>
@@ -427,8 +481,18 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle }: CheckoutSh
             </label>
           )}
         </fieldset>
+        {dealRoom &&
+        <p className="rounded-md px-3 py-2.5 text-[13px] font-medium leading-snug" style={{ background: mix(theme.text, 6) }} role="note">
+            {dealRoom.notice}
+          </p>
+        }
+        {roomError &&
+        <p className="text-[13px] font-semibold" role="alert">
+            {roomError}
+          </p>
+        }
         <TestModeNote theme={theme} />
-        <PrimaryButton theme={theme} onClick={pay} disabled={okLines.length === 0}>
+        <PrimaryButton theme={theme} onClick={pay} disabled={okLines.length === 0 || !!roomError}>
           Pay {formatNgn(total)}
         </PrimaryButton>
       </div>);

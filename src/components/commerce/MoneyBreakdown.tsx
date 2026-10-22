@@ -9,10 +9,12 @@ interface MoneyBreakdownProps {
   /** Visitor view hides seller fees and net. */
   audience?: 'seller' | 'customer';
   className?: string;
+  /** Which discount was applied, e.g. “EID20 · Eid sale — 20% off”. */
+  discountLabel?: string;
 }
 
 /** Every money line shown separately, so fees and refunds are never hidden in a total. */
-export function MoneyBreakdown({ money, audience = 'seller', className }: MoneyBreakdownProps) {
+export function MoneyBreakdown({ money, audience = 'seller', className, discountLabel }: MoneyBreakdownProps) {
   const row = (label: React.ReactNode, value: number, opts: {negative?: boolean;strong?: boolean;muted?: boolean;} = {}) =>
   <div className={cn('flex items-baseline justify-between gap-4 py-1.5', opts.strong && 'border-t border-line pt-2.5')}>
       <dt className={cn('text-label', opts.strong ? 'font-semibold text-fg' : 'text-fg-muted')}>{label}</dt>
@@ -25,7 +27,7 @@ export function MoneyBreakdown({ money, audience = 'seller', className }: MoneyB
   return (
     <dl className={cn('flex flex-col', className)}>
       {row('Subtotal', money.subtotal)}
-      {money.discount > 0 && row('Discount', money.discount, { negative: true })}
+      {money.discount > 0 && row(discountLabel ? `Discount · ${discountLabel}` : 'Discount', money.discount, { negative: true })}
       {row('Delivery', money.delivery)}
       {row('Customer paid', money.gross, { strong: true })}
       {audience === 'seller' &&

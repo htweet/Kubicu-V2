@@ -12,7 +12,9 @@ export const CHECKOUT_PLAN: WorkspacePlan = 'pro';
 export function catalogLinkIssues(doc: PageDocument, data: CommerceData | null, plan: WorkspacePlan): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
   const push = (blockId: string, severity: ValidationIssue['severity'], message: string, field: string) =>
-  issues.push({ id: `${blockId}:catalog:${field}`, blockId, severity, message, field });
+  issues.push({ id: `${blockId}:catalog:${field}`, blockId, severity, message, field, upgradeTo: /Pro plan/.test(message) ? CHECKOUT_PLAN : undefined,
+    upgradeFeature: /^Checkout/.test(message) ? 'Checkout on your page' : 'Selling files with secure delivery'
+  });
   const checkoutAllowed = planAtLeast(plan, CHECKOUT_PLAN);
 
   doc.blocks.

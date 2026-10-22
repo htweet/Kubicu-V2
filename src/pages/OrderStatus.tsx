@@ -7,9 +7,12 @@ import { PageSurface } from '../components/blocks/PageSurface';
 import { cardStyle, mix } from '../components/blocks/pageStyle';
 import { CheckoutHeading, TestModeNote } from '../components/checkout/checkoutUi';
 import { MoneyBreakdown } from '../components/commerce/MoneyBreakdown';
+import { discountLineLabel } from '../utils/commerce/discounts';
 import { orderMoney } from '../utils/commerce/money';
 import { formatNgn, formatTimestamp, whatsappLink } from '../utils/format';
 import { Unavailable } from './PublicPage';
+import { ReferralShareCard } from '../components/dealroom/ReferralShareCard';
+import { roomProgress, roomReferrers } from '../utils/dealRoom';
 
 /** Visitor-facing order confirmation and receipt. */
 export function OrderStatus() {
@@ -22,6 +25,8 @@ export function OrderStatus() {
   if (!order) return <Unavailable handle={handle} title="We can’t find that order" body="The link may be incomplete, or the order was removed. Contact the seller with your order number." />;
 
   const t = page.doc.theme;
+  const room = page.doc.dealRoom;
+  const roomStats = room ? roomProgress(room, handle, commerce.data) : null;
   const muted = { color: t.mutedText };
   const phone = sellerPhone(page.doc);
   const pending = order.paymentStatus === 'pending';
@@ -75,7 +80,7 @@ export function OrderStatus() {
             </ul>
             <div className="border-t pt-2" style={{ borderColor: mix(t.text, 12) }}>
               <div style={{ color: t.text }} className="[&_dd]:!text-inherit [&_dt]:!text-inherit">
-                <MoneyBreakdown money={orderMoney(order)} audience="customer" />
+                <MoneyBreakdown money={orderMoney(order)} audience="customer" discountLabel={order.discount ? discountLineLabel(order.discount) : undefined} />
               </div>
               {order.refunds.length > 0 &&
               <p className="mt-2 flex items-center gap-1.5 text-[13px]" style={muted}>
@@ -92,6 +97,24 @@ export function OrderStatus() {
               </p>
             </div>
           </section>
+
+          {order.held && !refunded &&
+          <p className="rounded-md px-3 py-2.5 text-[13.5px] font-medium leading-snug" style={{ background: mix(t.text, 6) }}>
+              You’ve joined the group buy. Your order is packed once the goal is reached — if it isn’t reached by the deadline, you’re refunded in full automatically.
+            </p>
+          }
+
+          {order.referralCode && room && !refunded &&
+          <ReferralShareCard
+            theme={t}
+            handle={handle}
+            code={order.referralCode}
+            productName={order.items[0]?.name ?? 'this'}
+            joinedThroughYou={roomReferrers(commerce.data, handle).find((r) => r.code === order.referralCode)?.joined ?? 0}
+            reward={room.referralReward}
+            needed={roomStats && room.type === 'goal' && roomStats.remaining > 0 ? roomStats.remaining : null} />
+
+          }
 
           {order.downloadToken && !pending && !refunded &&
           <Link

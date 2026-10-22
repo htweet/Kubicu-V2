@@ -16,8 +16,9 @@ const rows: {label: string;note?: string;values: Record<WorkspacePlan, Cell>;}[]
 { label: 'All core blocks', note: 'Links, forms, menus, products, events and more', values: { free: true, creator: true, pro: true, business: true, agency: true, enterprise: true } },
 { label: 'Full photo galleries', note: 'Free shows the first photo', values: { free: false, creator: true, pro: true, business: true, agency: true, enterprise: true } },
 { label: 'Remove “Made with KUBICU”', values: { free: false, creator: true, pro: true, business: true, agency: true, enterprise: true } },
-{ label: 'Products and checkout', note: 'Coming next', values: { free: 'Limited', creator: 'Limited', pro: true, business: true, agency: true, enterprise: true } },
-{ label: 'Bookings', note: 'Coming next', values: { free: false, creator: false, pro: true, business: true, agency: true, enterprise: true } },
+{ label: 'Products and checkout', note: 'Free: 5 products, WhatsApp ordering. Pro adds checkout and digital sales', values: { free: 'Limited', creator: 'Limited', pro: true, business: true, agency: true, enterprise: true } },
+{ label: 'Bookings', note: 'Services, availability and deposits', values: { free: false, creator: false, pro: true, business: true, agency: true, enterprise: true } },
+{ label: 'Pages per site', note: 'Example limits', values: { free: '1', creator: '5', pro: '20', business: '20', agency: '20', enterprise: '20' } },
 { label: 'Custom domain', note: 'Planned', values: { free: false, creator: true, pro: true, business: true, agency: true, enterprise: true } },
 { label: 'Team members', note: 'Planned', values: { free: false, creator: false, pro: false, business: true, agency: true, enterprise: true } },
 { label: 'Client workspaces', note: 'Planned', values: { free: false, creator: false, pro: false, business: false, agency: true, enterprise: true } }];

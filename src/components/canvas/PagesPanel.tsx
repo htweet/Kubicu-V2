@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
 import { ArrowDownIcon, ArrowUpIcon, CopyIcon, EyeOffIcon, FileTextIcon, HomeIcon, MoreHorizontalIcon, PlusIcon, Trash2Icon } from 'lucide-react';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
+import { UpgradeButton } from '../ui/UpgradeButton';
 import { useEditor } from '../../contexts/EditorContext';
+import { useWorkspace } from '../../contexts/WorkspaceContext';
+import { spaceKinds } from '../../data/spaceKinds';
+import { MAIN_SPACE_ID } from '../../utils/spaces';
 import { usePlan } from '../../contexts/PlanContext';
 import { plans, planOrder } from '../../data/plans';
 import { homeLabel, pageCount, pageLimits, pathProblem, sitePages } from '../../utils/sitePages';
@@ -23,6 +28,8 @@ interface PagesPanelProps {
 /** Add, order and set up the pages of a space. The selected page is the one on the canvas. */
 export function PagesPanel({ touch, onOpened }: PagesPanelProps) {
   const { state, actions } = useEditor();
+  const { currentSpace, switchSpace } = useWorkspace();
+  const navigate = useNavigate();
   const plan = usePlan();
   const site = state.site;
   const pages = sitePages(site);
@@ -56,6 +63,25 @@ export function PagesPanel({ touch, onOpened }: PagesPanelProps) {
     touch ? 'min-h-[48px]' : 'min-h-[40px]',
     on ? 'bg-sunken' : 'hover:bg-sunken'
   );
+
+  if (currentSpace.kind !== 'main')
+  return (
+    <div className="flex flex-col gap-3 p-4">
+        <p className="text-label font-semibold text-fg">One page for this {spaceKinds[currentSpace.kind].label.toLowerCase()}</p>
+        <p className="text-caption text-fg-muted">Campaigns and DealRooms keep everything on one focused page with their own link. Only your main page can grow into a site with Shop, About and Book pages.</p>
+        <Button
+        variant="secondary"
+        size="sm"
+        className="self-start"
+        onClick={() => {
+          switchSpace(MAIN_SPACE_ID);
+          navigate('/app/canvas');
+        }}>
+        
+          Open main page
+        </Button>
+      </div>);
+
 
   return (
     <div className="flex flex-col gap-4 p-3">
@@ -175,6 +201,7 @@ export function PagesPanel({ touch, onOpened }: PagesPanelProps) {
               {plan.name} includes {limit} page{limit === 1 ? '' : 's'}.{nextPlan ? ` ${nextPlan.name} allows up to ${pageLimits[nextPlan.id]}.` : ''} Pages you already have are never removed.
             </p>
         }
+          {atLimit && nextPlan && <UpgradeButton plan={nextPlan.id} feature="More pages on your site" className="self-start" />}
         </div>
       }
 

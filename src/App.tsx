@@ -10,6 +10,8 @@ import { Media } from './pages/Media';
 import { CommerceProvider } from './contexts/CommerceContext';
 import { OpsProvider } from './contexts/OpsContext';
 import { WorkspaceProvider, useWorkspace } from './contexts/WorkspaceContext';
+import { UpgradeProvider } from './contexts/UpgradeContext';
+import { DealRoomSettler } from './components/shell/DealRoomSettler';
 import { AppShell } from './components/shell/AppShell';
 import { AdminShell } from './components/admin/AdminShell';
 import { AppToaster } from './components/ui/AppToaster';
@@ -46,6 +48,8 @@ import { Orders } from './pages/commerce/Orders';
 import { Products } from './pages/commerce/Products';
 import { Inventory } from './pages/commerce/Inventory';
 import { Digital } from './pages/commerce/Digital';
+import { Discounts } from './pages/commerce/Discounts';
+import { Storefront } from './pages/commerce/Storefront';
 import { Payments } from './pages/commerce/Payments';
 import { Reports } from './pages/commerce/Reports';
 import { CommerceSettings } from './pages/commerce/CommerceSettings';
@@ -99,6 +103,8 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free' }: 
                   <Route path="products" element={<Products />} />
                   <Route path="inventory" element={<Inventory />} />
                   <Route path="digital" element={<Digital />} />
+                  <Route path="discounts" element={<Discounts />} />
+                  <Route path="storefront" element={<Storefront />} />
                   <Route path="payments" element={<Payments />} />
                   <Route path="reports" element={<Reports />} />
                   <Route path="settings" element={<CommerceSettings />} />
@@ -114,6 +120,8 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free' }: 
               </Route>
 
               <Route path="/p/:handle" element={<PublicPage />} />
+              <Route path="/p/:handle/shop" element={<PublicPage view="shop" />} />
+              <Route path="/p/:handle/shop/:productId" element={<PublicPage view="shop" />} />
               <Route path="/p/:handle/:pagePath" element={<PublicPage />} />
             <Route path="/p/:handle/order/:orderId" element={<OrderStatus />} />
               <Route path="/p/:handle/download/:token" element={<DownloadPage />} />
@@ -136,7 +144,7 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free' }: 
 
 /** Everything that belongs to one workspace remounts when you switch workspaces. */
 function WorkspaceScope({ visualDirection, children }: {visualDirection: VisualDirectionOption;children: React.ReactNode;}) {
-  const { current } = useWorkspace();
+  const { current, currentSpace } = useWorkspace();
   return (
     <DirectionProvider key={current.id} direction={visualDirection}>
       <PlanProvider plan={current.plan}>
@@ -144,7 +152,13 @@ function WorkspaceScope({ visualDirection, children }: {visualDirection: VisualD
           <LibraryProvider>
             <CommerceProvider>
               <OpsProvider>
-                <EditorProvider>{children}</EditorProvider>
+                {/* The editor follows the space open in the canvas (D50). */}
+                <EditorProvider key={currentSpace.id}>
+                  <UpgradeProvider>
+                    {children}
+                    <DealRoomSettler />
+                  </UpgradeProvider>
+                </EditorProvider>
               </OpsProvider>
             </CommerceProvider>
           </LibraryProvider>

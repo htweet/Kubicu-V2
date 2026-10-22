@@ -1,4 +1,5 @@
 import type { Block, PageDocument, PageTheme } from '../types/page';
+import type { WorkspacePlan } from '../types/plan';
 import { CONTRAST_MIN_PUBLISH, CONTRAST_TARGET, contrastRatio, formatRatio } from './contrast';
 import { contrastCopy, suggestContrastFix, type ContrastKey } from './contrastFixes';
 import { getYouTubeId } from './video';
@@ -18,6 +19,10 @@ export interface ValidationIssue {
   fix?: {label: string;description: string;theme: Partial<PageTheme>;};
   /** Which page of the site the block is on (null/undefined = home). */
   pageId?: string | null;
+  /** A plan limit causes this; offer an upgrade to this plan. */
+  upgradeTo?: WorkspacePlan;
+  /** What the upgrade unlocks, in a few words (“Checkout on your page”). */
+  upgradeFeature?: string;
 }
 
 export function isValidUrl(value: string): boolean {

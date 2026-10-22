@@ -10,25 +10,65 @@ import { opsLinkIssues } from '../utils/ops/linkIssues';
 import type { PageDocument } from '../types/page';
 import type { ValidationIssue } from '../utils/validation';
 import { pageCount, pageLimits } from '../utils/sitePages';
+import { activeExtraSpaces, extraSpaceLimits, MAIN_SPACE_ID, spaceStorageId } from '../utils/spaces';
+import { spaceKinds } from '../data/spaceKinds';
+import { planAtLeast, planOrder, plans } from '../data/plans';
+import { CHECKOUT_PLAN } from '../utils/commerce/linkIssues';
+import { dealRoomIssues, roomOrders } from '../utils/dealRoom';
+import { campaignIssues } from '../utils/campaign';
+import type { WorkspacePlan } from '../types/plan';
+
+function nextPlanAbove(plan: WorkspacePlan): WorkspacePlan | undefined {
+  return planOrder[planOrder.indexOf(plan) + 1];
+}
 
 const EditorContext = createContext<EditorStore | null>(null);
 
-/** The current workspace's page editor. Remount (key by workspace id) when switching. */
+/** The editor for the space open in this workspace. Remount (key by space id) when switching. */
 export function EditorProvider({ children }: {children: React.ReactNode;}) {
-  const { current, workspaces } = useWorkspace();
+  const { current, currentSpace, workspaces } = useWorkspace();
   const { data } = useCommerce();
   const ops = useOps().data;
   const plan = usePlan();
-  const taken = useMemo(() => takenHandles(workspaces, current.id), [workspaces, current.id]);
+  const storageId = spaceStorageId(current.id, currentSpace.id);
+  const isMain = currentSpace.id === MAIN_SPACE_ID;
+  const spaceIndex = activeExtraSpaces(current).findIndex((s) => s.id === currentSpace.id);
+  const taken = useMemo(() => takenHandles(workspaces, storageId), [workspaces, storageId]);
   const extra = useCallback((doc: PageDocument) => [...catalogLinkIssues(doc, data, plan.id), ...opsLinkIssues(doc, ops, plan.id)], [data, ops, plan.id]);
-  const siteLevel = useCallback((doc: PageDocument): ValidationIssue[] => {
-    const limit = pageLimits[plan.id];
-    const count = pageCount(doc);
-    return count > limit ?
-    [{ id: 'site:limit', blockId: null, severity: 'error', message: `Your ${plan.name} plan includes ${limit} page${limit === 1 ? '' : 's'}. This site has ${count}. Remove pages or upgrade to publish.` }] :
-    [];
-  }, [plan.id, plan.name]);
-  const store = useEditorStore(current.id, taken, extra, siteLevel);
+  const siteLevel = useCallback(
+    (doc: PageDocument): ValidationIssue[] => {
+      const out: ValidationIssue[] = [];
+      const count = pageCount(doc);
+      if (!isMain && count > 1) {
+        out.push({ id: 'site:space-pages', blockId: null, severity: 'error', message: `A ${spaceKinds[currentSpace.kind].label.toLowerCase()} has one page. Move extra pages to your main page to publish.` });
+      } else {
+        const limit = pageLimits[plan.id];
+        if (count > limit) out.push({ id: 'site:limit', blockId: null, severity: 'error', message: `Your ${plan.name} plan includes ${limit} page${limit === 1 ? '' : 's'}. This site has ${count}. Remove pages or upgrade to publish.`, upgradeTo: nextPlanAbove(plan.id), upgradeFeature: 'More pages on your site' });
+      }
+      // Spaces over the plan's allowance stay editable but can't go live (nothing is deleted).
+      if (!isMain && spaceIndex >= extraSpaceLimits[plan.id]) {
+        const limit = extraSpaceLimits[plan.id];
+        out.push({
+          id: 'site:space-limit',
+          blockId: null,
+          severity: 'error',
+          message: limit === 0 ? `Your ${plan.name} plan includes your main page only. Upgrade to publish campaigns and DealRooms.` : `Your ${plan.name} plan includes ${limit} campaigns and DealRooms. Archive one or upgrade to publish this.`,
+          upgradeTo: nextPlanAbove(plan.id),
+          upgradeFeature: 'Publishing campaigns and DealRooms'
+        });
+      }
+      if (doc.campaign) out.push(...campaignIssues(doc.campaign, doc.blocks, data));
+      if (doc.dealRoom) {
+        out.push(...dealRoomIssues(doc.dealRoom, doc.blocks, data, roomOrders(data, doc.handle).length));
+        // DealRooms take payment through checkout (D54).
+        if (!planAtLeast(plan.id, CHECKOUT_PLAN))
+        out.push({ id: 'room:plan', blockId: null, severity: 'error', message: `DealRooms take payment at checkout, which is on the ${plans[CHECKOUT_PLAN].name} plan.`, upgradeTo: CHECKOUT_PLAN, upgradeFeature: 'DealRooms with checkout' });
+      }
+      return out;
+    },
+    [plan.id, plan.name, isMain, spaceIndex, currentSpace.kind, data]
+  );
+  const store = useEditorStore(storageId, taken, extra, siteLevel);
   return <EditorContext.Provider value={store}>{children}</EditorContext.Provider>;
 }
 

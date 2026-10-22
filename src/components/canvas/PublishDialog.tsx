@@ -21,6 +21,7 @@ import { Dialog } from '../ui/Dialog';
 import { Button } from '../ui/Button';
 import { TextInput } from '../ui/TextInput';
 import { InlineAlert } from '../ui/InlineAlert';
+import { UpgradeButton } from '../ui/UpgradeButton';
 import { Segmented } from '../ui/Segmented';
 import { DateTimeInput } from '../ui/DateTimeInput';
 import { formatSchedule, timeZoneLabel } from '../../utils/schedule';
@@ -333,6 +334,7 @@ function IssueGroup({ title, tone, issues, describe, onGo, onApplyFix, onOpenThe
                   </Button>
                 }
               </div>
+              {issue.upgradeTo && <UpgradeButton plan={issue.upgradeTo} feature={issue.upgradeFeature ?? 'This feature'} className="self-start" />}
               {issue.guidance && tone === 'error' &&
               <p className="max-w-prose text-caption text-fg-muted">
                   <span className="font-semibold text-fg">Why it matters: </span>

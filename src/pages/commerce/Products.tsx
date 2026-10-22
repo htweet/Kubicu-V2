@@ -12,6 +12,7 @@ import { SelectInput } from '../../components/ui/SelectInput';
 import { DataTable, type DataColumn } from '../../components/ui/DataTable';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { InlineAlert } from '../../components/ui/InlineAlert';
+import { UpgradeButton } from '../../components/ui/UpgradeButton';
 import { ProductEditor } from '../../components/commerce/ProductEditor';
 import { CollectionsSheet } from '../../components/commerce/CollectionsSheet';
 import { ImportProductsDialog } from '../../components/commerce/ImportProductsDialog';
@@ -124,7 +125,7 @@ export function Products() {
       
 
       {remaining !== null &&
-      <InlineAlert tone={atLimit ? 'warning' : 'info'} title={atLimit ? `You’ve reached ${productLimit(plan.id)} products on ${plan.name}` : `${remaining} of ${productLimit(plan.id)} products left on ${plan.name}`} className="mt-6">
+      <InlineAlert tone={atLimit ? 'warning' : 'info'} title={atLimit ? `You’ve reached ${productLimit(plan.id)} products on ${plan.name}` : `${remaining} of ${productLimit(plan.id)} products left on ${plan.name}`} className="mt-6" action={<UpgradeButton plan="creator" feature="Unlimited products" variant={atLimit ? 'primary' : 'secondary'} />}>
           {atLimit ? 'Archive a product or upgrade to Creator for unlimited products.' : 'Limits are being tested and may change.'}
         </InlineAlert>
       }
