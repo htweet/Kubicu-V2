@@ -5,6 +5,7 @@ import { useTeam } from '../../contexts/TeamContext';
 import { useCommerce } from '../../contexts/CommerceContext';
 import { useOps } from '../../contexts/OpsContext';
 import { isLowStock, isSoldOut } from '../../utils/commerce/catalog';
+import { useNotifications } from '../../contexts/NotificationsContext';
 
 /** Compact row of things to act on today. Hidden when there's nothing to do. */
 export function NeedsAttention() {
@@ -22,6 +23,7 @@ export function NeedsAttention() {
   const team = useTeam();
   const reviews = team.can('approvals.review').allowed ? team.data.reviews.filter((r) => r.status === 'pending').length : 0;
   const unseen = team.myNotices.filter((n) => !n.seen);
+  const notifications = useNotifications();
 
   const items = [
   reviews > 0 && { id: 'reviews', icon: SendIcon, label: `${reviews} change${reviews === 1 ? '' : 's'} to review`, to: '/app/settings/approvals' },
@@ -39,9 +41,14 @@ export function NeedsAttention() {
 
   return (
     <section aria-labelledby="attention-heading" className="mt-8">
-      <h2 id="attention-heading" className="text-label font-semibold text-fg-subtle">
-        Needs attention
-      </h2>
+      <div className="flex items-center justify-between gap-3">
+        <h2 id="attention-heading" className="text-label font-semibold text-fg-subtle">
+          Needs attention
+        </h2>
+        <button type="button" onClick={() => notifications.setOpen(true)} className="inline-flex items-center gap-1 rounded text-caption font-medium text-fg-muted hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+          See all{notifications.unread ? ` · ${notifications.unread} unread` : ''} <ArrowRightIcon size={13} aria-hidden />
+        </button>
+      </div>
       <ul className="mt-2 flex flex-wrap gap-2">
         {items.map((i) =>
         <li key={i.id}>

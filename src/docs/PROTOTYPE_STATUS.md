@@ -124,6 +124,16 @@
 - [x] **Pass D — IntentFlow, source-based blocks and preview-as (D64)**: per-block source rules in Visibility (Everyone / Only / All except, 10 sources, goal, pause), "Some sources" chip on canvas blocks, "Preview as" bar in the canvas (desktop and phone) when rules exist and `?as=` on the draft preview, live pages filter by the visit's source; safeguards in publish checks (a block for everyone on every page; no rule hiding a block from all sources); IntentFlow screen in the sidebar with live status, results vs everyone else (≥30 visits each side), and instant Pause / Resume / Roll back with Undo
 - [x] AI surfaces use the reserved AI gradient (D63a): AI buttons, "AI preview" tag, AI cards, drafts, suggestions and the credit meter
 
+### Batch 6 part 2 (plan: Billing, notifications, marketplaces, Super-admin operations)
+- [x] **Pass A — Plan & billing and the notifications centre (D65, D66)**: Settings → Plan & billing (current plan with status and renewal, usage meters with upgrade at 80/100%, test card, invoices with printable view, VAT line, watermark and CSV, prototype "skip ahead" controls); one plan-change flow behind every upgrade button (monthly/yearly compare, prorated charge preview, test-card payment with bank confirmation, downgrades scheduled for renewal with an exact impact list, Enterprise "Talk to us"); cancel with reason and resume; failed renewal → 7-day grace with app-wide banner, retry and update card, then Free; 14-day Pro trial from Free; Controls "Simulate next renewal". Notifications bell (sidebar and phone top bar) with an inbox grouped Needs action / Updates, area filters and read state, role-aware sources across orders, stock, bookings, audience, reviews, team notices, billing, AI credits, domains, DealRooms and campaigns; Settings → Notifications (event × channel, digest, quiet hours; email/WhatsApp marked preview); Overview "See all"
+- [x] **Pass B — Extension and template marketplaces (D67)**: Extensions screen live in the sidebar (staff picks, search, categories, Installed tab, detail sheet with permissions, versions + roll back, reviews), install flow (permissions → test-card payment for paid add-ons → setup → done), pause / settings / uninstall with activity-log entries; working effects — draft abandoned-checkout automation, cookie notice for Meta Pixel / Google tag on public pages, partner delivery zones, Invoice button on orders — and previews from real data (review requests, WhatsApp catalogue sync, bank transfer). Templates screen (`/app/templates`, Build group) with type / region / mood / price filters, phone and desktop preview, apply to main page (undoable) or start a campaign from a template, premium purchase per workspace (invoice), private share codes for saved themes and sections; canvas Templates panel shows premium locks; public Templates page gets Premium tags plus price and region filters
+
+### Batch 6 (part 3) — subscriptions, template selling, Super-admin
+- [x] **Pass A — Subscription history (D68)**: Plan & billing has a "What's coming" line and a dated Subscription history (who, when, linked invoice) for trials, plan and cycle changes, scheduled downgrades, cancel/resume, renewals paid or failed, grace period, retries, move to Free, card changes and one-off purchases; filters and CSV export; sample history for the demo workspace
+- [ ] Pass B — Customer subscriptions (memberships + product boxes), Subscription block, subscriber portal
+- [ ] Pass C — Creators sell reviewed templates, earnings and payouts
+- [ ] Pass D — Super-admin operations
+
 ## Honest limits
 - **Front-end only.** No sign-in, server storage, payments, domains or real analytics. Data lives in this browser.
 - **Scheduled publishing** fires while KUBICU is open in this browser; in production it runs server-side. Said in the UI.
@@ -135,7 +145,6 @@
 ## Remaining items and why they wait
 | Item | Why it waits | Plan |
 |---|---|---|
-| Visibility by visitor source | IntentFlow, later phase | Batch 5+ |
 | Full accessibility audit | By plan | Batch 7 |
 
 ## Needs founder confirmation

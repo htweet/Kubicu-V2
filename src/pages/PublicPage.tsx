@@ -27,6 +27,7 @@ import { BlockRenderer, spacingClass } from '../components/blocks/BlockRenderer'
 import { MadeWithKubicu } from '../components/blocks/MadeWithKubicu';
 import { CheckoutSheet } from '../components/checkout/CheckoutSheet';
 import { CartButton } from '../components/checkout/CartButton';
+import { ConsentStrip } from '../components/blocks/ConsentStrip';
 import { Button } from '../components/ui/Button';
 import { showsKubicuBadge } from '../utils/branding';
 import { isLiveNow } from '../utils/schedule';
@@ -238,6 +239,7 @@ export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
                 }
               {catalog && <CheckoutSheet theme={doc.theme} commerce={commerce} ownerPlan={plan.id} handle={handle} defaultCode={phase === 'live' ? campaignCode : undefined} dealRoom={roomCheckout} />}
               <CartButton theme={doc.theme} />
+              {resolved?.workspaceId && !resolved.example && !isDraft && <ConsentStrip workspaceId={resolved.workspaceId} theme={doc.theme} />}
             </CartProvider>
             <BookingSheet theme={doc.theme} ops={ops} serviceId={bookingService} handle={handle} onClose={() => setBookingService(null)} />
           </PageOpsProvider>

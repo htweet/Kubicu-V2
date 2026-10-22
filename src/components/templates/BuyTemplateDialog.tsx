@@ -1,0 +1,55 @@
+import React, { useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import { Dialog } from '../ui/Dialog';
+import { PaymentStep } from '../billing/PaymentStep';
+import { TemplateThumb } from './TemplateThumb';
+import { useBilling } from '../../contexts/BillingContext';
+import { useMarketplace } from '../../contexts/MarketplaceContext';
+import { useWorkspace } from '../../contexts/WorkspaceContext';
+import { useTeam } from '../../contexts/TeamContext';
+import type { ExamplePage } from '../../data/examples/build';
+import { templatePrice } from '../../data/templateMarket';
+import { withVat } from '../../utils/billing';
+import { formatNgn } from '../../utils/format';
+
+/** One-off premium template purchase; licence for this workspace (D67). */
+export function BuyTemplateDialog({ template, onClose, onBought }: {template: ExamplePage | null;onClose: () => void;onBought?: (t: ExamplePage) => void;}) {
+  const billing = useBilling();
+  const market = useMarketplace();
+  const { current } = useWorkspace();
+  const can = useTeam().can('billing.manage');
+  const [key, setKey] = useState(0);
+  useEffect(() => setKey((k) => k + 1), [template?.id]);
+  if (!template) return <Dialog open={false} onClose={onClose} title="" />;
+  const price = templatePrice(template.id);
+  const total = withVat(price).total;
+
+  return (
+    <Dialog open={!!template} onClose={onClose} title={`Buy “${template.category}” template`} description={`${formatNgn(price)} + VAT, once. Use it on any space in ${current.name}.`}>
+      <div className="flex flex-col gap-5 sm:flex-row">
+        <div className="shrink-0 self-center overflow-hidden rounded-[14px]">
+          <TemplateThumb doc={template.doc} width={120} height={180} />
+        </div>
+        <div className="min-w-0 flex-1">
+          {can.allowed ?
+          <PaymentStep
+            key={key}
+            payLabel={`Pay ${formatNgn(total)}`}
+            savedCard={billing.data.card}
+            defaultHolder={current.ownerName}
+            onPaid={(card) => {
+              billing.charge([{ label: `Premium template: ${template.category} (${template.name})`, amountNgn: price }], card);
+              market.addLicence(template.id);
+              toast.success('Template bought', { description: 'It’s yours for this workspace. The invoice is in Plan & billing.' });
+              onBought?.(template);
+              onClose();
+            }} /> :
+
+
+          <p className="text-label text-fg-muted">{can.reason} Ask the Owner to buy it.</p>
+          }
+        </div>
+      </div>
+    </Dialog>);
+
+}

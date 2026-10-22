@@ -31,6 +31,7 @@ export const permissionRows: {id: Permission;label: string;}[] = [
 { id: 'domains.manage', label: 'Connect and manage domains' },
 { id: 'team.manage', label: 'Invite people and change roles' },
 { id: 'approvals.review', label: 'Approve changes' },
+{ id: 'extensions.manage', label: 'Install and manage extensions' },
 { id: 'billing.manage', label: 'Change plan and billing' },
 { id: 'ownership.transfer', label: 'Transfer ownership' },
 { id: 'workspace.delete', label: 'Delete the workspace' }];

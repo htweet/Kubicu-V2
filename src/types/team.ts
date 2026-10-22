@@ -18,6 +18,7 @@ export type Permission =
 'domains.manage' |
 'team.manage' |
 'approvals.review' |
+'extensions.manage' |
 'billing.manage' |
 'ownership.transfer' |
 'workspace.delete';

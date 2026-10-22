@@ -19,6 +19,10 @@ import { TestModeStrip } from './TestModeStrip';
 import { cn } from '../../utils/cn';
 import { useTeam } from '../../contexts/TeamContext';
 import { AssigneeSelect } from '../team/AssigneeSelect';
+import { FileTextIcon } from 'lucide-react';
+import { useMarketplace } from '../../contexts/MarketplaceContext';
+import { useWorkspace } from '../../contexts/WorkspaceContext';
+import { printOrderInvoice } from '../../utils/orderInvoice';
 
 const steps: {status: OrderStatus;label: string;}[] = [
 { status: 'new', label: 'Placed' },
@@ -45,6 +49,8 @@ function nextStep(o: Order): {label: string;status: OrderStatus;icon: typeof Pac
 export function OrderDetail({ orderId, onClose }: {orderId: string | null;onClose: () => void;}) {
   const { data, apply } = useCommerce();
   const team = useTeam();
+  const invoices = useMarketplace().isActive('invoice-generator');
+  const { current } = useWorkspace();
   const order = orderId ? data.orders.find((o) => o.id === orderId) : undefined;
   const [dialog, setDialog] = useState<'refund' | 'cancel' | null>(null);
   const [note, setNote] = useState('');
@@ -79,6 +85,18 @@ export function OrderDetail({ orderId, onClose }: {orderId: string | null;onClos
         footer={
         <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex gap-1">
+              {invoices &&
+            <Button
+              variant="tertiary"
+              size="sm"
+              leadingIcon={FileTextIcon}
+              onClick={() => {
+                if (!printOrderInvoice(order, current.name)) toast.error('Your browser blocked the print window', { description: 'Allow pop-ups for KUBICU and try again.' });
+              }}>
+              
+                  Invoice
+                </Button>
+            }
               {canCancel &&
             <Button variant="tertiary" size="sm" leadingIcon={BanIcon} onClick={() => setDialog('cancel')}>
                   Cancel order

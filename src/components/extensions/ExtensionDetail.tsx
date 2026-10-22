@@ -1,0 +1,192 @@
+import React, { useState } from 'react';
+import { toast } from 'sonner';
+import { BadgeCheckIcon, CheckIcon, PauseIcon, PlayIcon, RotateCcwIcon, SettingsIcon, StarIcon, Trash2Icon } from 'lucide-react';
+import type { ExtensionInfo } from '../../types/marketplace';
+import { Sheet } from '../ui/Sheet';
+import { Button } from '../ui/Button';
+import { Badge } from '../ui/Badge';
+import { Dialog } from '../ui/Dialog';
+import { UpgradeButton } from '../ui/UpgradeButton';
+import { ExtensionPreview } from './ExtensionPreview';
+import { ExtensionIcon } from './ExtensionIcon';
+import { useMarketplace } from '../../contexts/MarketplaceContext';
+import { usePlan } from '../../contexts/PlanContext';
+import { useTeam } from '../../contexts/TeamContext';
+import { averageRating, extensionCategories } from '../../data/extensions';
+import { planAtLeast, plans } from '../../data/plans';
+import { formatDate } from '../../utils/billing';
+import { formatNgn } from '../../utils/format';
+
+interface Props {
+  ext: ExtensionInfo | null;
+  onClose: () => void;
+  onInstall: (ext: ExtensionInfo, mode: 'install' | 'settings') => void;
+}
+
+/** What it does, versions, plans, price, reviews — and install / manage (D67). */
+export function ExtensionDetail({ ext, onClose, onInstall }: Props) {
+  const market = useMarketplace();
+  const plan = usePlan();
+  const can = useTeam().can('extensions.manage');
+  const [confirmRemove, setConfirmRemove] = useState(false);
+  if (!ext) return <Sheet open={false} onClose={onClose} title="">{null}</Sheet>;
+
+  const rec = market.data.installed[ext.id];
+  const allowedPlan = planAtLeast(plan.id, ext.minPlan);
+  const rating = averageRating(ext);
+  const canRollback = !!rec && rec.version === ext.version && ext.versions.length > 1;
+
+  const footer = rec ?
+  <div className="flex flex-wrap items-center gap-2">
+      {ext.setup &&
+    <Button variant="secondary" size="sm" leadingIcon={SettingsIcon} disabled={!can.allowed} onClick={() => onInstall(ext, 'settings')}>
+          Settings
+        </Button>
+    }
+      <Button variant="secondary" size="sm" leadingIcon={rec.paused ? PlayIcon : PauseIcon} disabled={!can.allowed} onClick={() => market.setPaused(ext.id, !rec.paused)}>
+        {rec.paused ? 'Resume' : 'Pause'}
+      </Button>
+      <Button variant="tertiary" size="sm" leadingIcon={Trash2Icon} disabled={!can.allowed} onClick={() => setConfirmRemove(true)} className="ml-auto">
+        Uninstall
+      </Button>
+    </div> :
+
+  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      <span className="text-caption text-fg-muted">{!can.allowed ? can.reason : !allowedPlan ? `Needs ${plans[ext.minPlan].name} or above.` : ext.priceNgn ? `${formatNgn(ext.priceNgn)}/month + VAT` : 'Free'}</span>
+      {allowedPlan ?
+    <Button disabled={!can.allowed} onClick={() => onInstall(ext, 'install')}>
+          {ext.preview ? 'Install preview' : 'Install'}
+        </Button> :
+
+    <UpgradeButton plan={ext.minPlan} feature={ext.name} variant="primary" />
+    }
+    </div>;
+
+
+  return (
+    <>
+      <Sheet open={!!ext} onClose={onClose} side="right" size="lg" title={ext.name} description={ext.summary} footer={footer}>
+        <div className="flex flex-col gap-7 p-5">
+          <div className="flex items-start gap-4">
+            <ExtensionIcon ext={ext} size="lg" />
+            <div className="min-w-0 flex-1">
+              <p className="flex items-center gap-1.5 text-label text-fg">
+                {ext.publisher}
+                {ext.verified === 'kubicu' ? <BadgeCheckIcon size={15} className="text-action" aria-label="Built by KUBICU" /> : <Badge tone="neutral">Reviewed partner</Badge>}
+              </p>
+              <p className="mt-1 text-caption text-fg-muted">
+                {extensionCategories[ext.category]} · v{rec?.version ?? ext.version} · {plans[ext.minPlan].name} and above
+                {rating !== null && ` · ★ ${rating.toFixed(1)} (${ext.reviews.length})`}
+              </p>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {rec && <Badge tone={rec.paused ? 'warning' : 'success'} dot>{rec.paused ? 'Paused' : 'Installed'}</Badge>}
+                {ext.preview && <Badge tone="info">Preview</Badge>}
+              </div>
+            </div>
+          </div>
+
+          <p className="text-body text-fg">{ext.description}</p>
+
+          <section aria-label="What it adds" className="rounded-lg bg-sunken p-4">
+            <h3 className="text-label font-semibold text-fg">What it adds</h3>
+            <ul className="mt-2 flex flex-col gap-1.5">
+              {ext.adds.map((a) =>
+              <li key={a} className="flex items-start gap-2 text-label text-fg">
+                  <CheckIcon size={14} className="mt-0.5 shrink-0 text-success" aria-hidden />
+                  {a}
+                </li>
+              )}
+            </ul>
+          </section>
+
+          {ext.preview && rec && <ExtensionPreview id={ext.id} />}
+
+          <section aria-label="Permissions">
+            <h3 className="text-label font-semibold text-fg">Permissions</h3>
+            <ul className="mt-2 list-disc pl-5 text-label text-fg-muted">
+              {ext.permissions.map((p) =>
+              <li key={p}>{p}</li>
+              )}
+            </ul>
+          </section>
+
+          <section aria-label="Versions">
+            <div className="flex items-center justify-between gap-3">
+              <h3 className="text-label font-semibold text-fg">Versions</h3>
+              {canRollback &&
+              <Button
+                size="sm"
+                variant="tertiary"
+                leadingIcon={RotateCcwIcon}
+                disabled={!can.allowed}
+                onClick={() => {
+                  market.rollback(ext.id);
+                  toast(`${ext.name} rolled back to ${ext.versions[1].version}`, { description: 'Use this if the latest version caused a problem.' });
+                }}>
+                
+                  Roll back to {ext.versions[1].version}
+                </Button>
+              }
+            </div>
+            <ol className="mt-2 flex flex-col gap-2">
+              {ext.versions.map((v) =>
+              <li key={v.version} className="text-label">
+                  <span className="font-medium text-fg">{v.version}</span> <span className="text-caption text-fg-subtle">· {formatDate(v.date)}</span>
+                  {rec?.version === v.version && <span className="text-caption text-action"> · running</span>}
+                  <p className="text-caption text-fg-muted">{v.notes}</p>
+                </li>
+              )}
+            </ol>
+          </section>
+
+          <section aria-label="Reviews">
+            <h3 className="text-label font-semibold text-fg">Reviews</h3>
+            {ext.reviews.length === 0 ?
+            <p className="mt-1 text-caption text-fg-muted">No reviews yet.</p> :
+
+            <ul className="mt-2 flex flex-col gap-3">
+                {ext.reviews.map((r) =>
+              <li key={r.name}>
+                    <p className="flex items-center gap-1 text-caption text-fg-subtle">
+                      <span className="flex" aria-label={`${r.rating} out of 5`}>
+                        {Array.from({ length: 5 }, (_, i) =>
+                    <StarIcon key={i} size={12} className={i < r.rating ? 'fill-current text-warning' : 'text-line-strong'} aria-hidden />
+                    )}
+                      </span>
+                      {r.name} · {r.business}
+                    </p>
+                    <p className="mt-0.5 text-label text-fg">{r.text}</p>
+                  </li>
+              )}
+              </ul>
+            }
+            <p className="mt-2 text-caption text-fg-subtle">Reviews are checked by KUBICU before they show. Sample reviews.</p>
+          </section>
+        </div>
+      </Sheet>
+      <Dialog
+        open={confirmRemove}
+        onClose={() => setConfirmRemove(false)}
+        title={`Uninstall ${ext.name}?`}
+        description={ext.uninstallNote}
+        footer={
+        <>
+            <Button variant="secondary" onClick={() => setConfirmRemove(false)}>
+              Keep it
+            </Button>
+            <Button
+            variant="destructive"
+            onClick={() => {
+              market.uninstall(ext.id);
+              setConfirmRemove(false);
+              toast(`${ext.name} uninstalled`);
+            }}>
+            
+              Uninstall
+            </Button>
+          </>
+        } />
+      
+    </>);
+
+}

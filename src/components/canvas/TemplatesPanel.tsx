@@ -1,13 +1,17 @@
 import React, { useMemo, useState } from 'react';
-import { toast } from 'sonner';
+import { LockIcon } from 'lucide-react';
 import { examplePages, goalLabels, type ExampleGoal } from '../../data/examples';
+import type { ExamplePage } from '../../data/examples/build';
 import { blankTemplateDoc } from '../../data/templates';
-import { useEditor } from '../../contexts/EditorContext';
-import { prepareStarter } from '../../utils/starterKit';
+import { templatePrice } from '../../data/templateMarket';
+import { useMarketplace } from '../../contexts/MarketplaceContext';
+import { useApplyTemplate } from '../../hooks/useApplyTemplate';
 import type { PageDocument } from '../../types/page';
 import { Button } from '../ui/Button';
 import { Dialog } from '../ui/Dialog';
 import { TemplateThumb } from '../templates/TemplateThumb';
+import { BuyTemplateDialog } from '../templates/BuyTemplateDialog';
+import { formatNgn } from '../../utils/format';
 import { cn } from '../../utils/cn';
 
 interface PendingTemplate {
@@ -18,29 +22,22 @@ interface PendingTemplate {
 const goals: (ExampleGoal | 'all')[] = ['all', 'sell', 'book', 'audience', 'showcase', 'events', 'support'];
 
 export function TemplatesPanel() {
-  const { state, actions } = useEditor();
+  const applyTemplate = useApplyTemplate();
+  const market = useMarketplace();
   const [pending, setPending] = useState<PendingTemplate | null>(null);
+  const [buying, setBuying] = useState<ExamplePage | null>(null);
   const [goal, setGoal] = useState<ExampleGoal | 'all'>('all');
 
   const list = useMemo(() => examplePages.filter((e) => goal === 'all' || e.goals.includes(goal)), [goal]);
 
+  const pick = (e: ExamplePage) => {
+    if (templatePrice(e.id) > 0 && !market.hasLicence(e.id)) setBuying(e);else
+    setPending({ name: e.category, doc: e.doc });
+  };
+
   const apply = () => {
     if (!pending) return;
-    const profile = state.draft.blocks.find((b) => b.type === 'profile');
-    const identity =
-    profile?.type === 'profile' ?
-    { name: profile.content.name, tagline: profile.content.tagline, avatarUrl: profile.content.avatarUrl, location: profile.content.location } :
-    { name: state.draft.title };
-    const { doc, hidden } = prepareStarter(pending.doc, identity);
-    actions.saveSnapshot(`Before “${pending.name}” template`);
-    actions.applyTemplate({ ...doc, title: state.draft.title });
-    toast(`Applied “${pending.name}”`, {
-      description:
-      hidden.length > 0 ?
-      `${hidden.length} block${hidden.length === 1 ? ' is' : 's are'} hidden until you add your own links or details. Find them in Layers.` :
-      'Your previous draft is saved in version history.',
-      action: { label: 'Undo', onClick: () => actions.undo() }
-    });
+    applyTemplate(pending.name, pending.doc);
     setPending(null);
   };
 
@@ -73,11 +70,15 @@ export function TemplatesPanel() {
             <TemplateCard name="Blank page" meta="Start from scratch" doc={blankTemplateDoc} onUse={() => setPending({ name: 'Blank page', doc: blankTemplateDoc })} />
           </li>
         }
-        {list.map((e) =>
-        <li key={e.id}>
-            <TemplateCard name={e.category} meta={e.name} doc={e.doc} onUse={() => setPending({ name: e.category, doc: e.doc })} />
-          </li>
-        )}
+        {list.map((e) => {
+          const price = templatePrice(e.id);
+          const locked = price > 0 && !market.hasLicence(e.id);
+          return (
+            <li key={e.id}>
+              <TemplateCard name={e.category} meta={price > 0 ? locked ? `Premium · ${formatNgn(price)}` : 'Premium · owned' : e.name} doc={e.doc} locked={locked} onUse={() => pick(e)} />
+            </li>);
+
+        })}
       </ul>
 
       <Dialog
@@ -96,20 +97,26 @@ export function TemplatesPanel() {
           </>
         } />
       
+      <BuyTemplateDialog template={buying} onClose={() => setBuying(null)} onBought={(t) => setPending({ name: t.category, doc: t.doc })} />
     </div>);
 
 }
 
-function TemplateCard({ name, meta, doc, onUse }: {name: string;meta: string;doc: PageDocument;onUse: () => void;}) {
+function TemplateCard({ name, meta, doc, locked, onUse }: {name: string;meta: string;doc: PageDocument;locked?: boolean;onUse: () => void;}) {
   return (
     <button
       type="button"
       onClick={onUse}
       className="group flex w-full flex-col gap-2 rounded-md text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
-      aria-label={`Use the ${name} layout`}>
+      aria-label={locked ? `Buy the ${name} template` : `Use the ${name} layout`}>
       
-      <span className="block overflow-hidden rounded-[14px] transition-transform duration-150 ease-out group-hover:-translate-y-0.5">
+      <span className="relative block overflow-hidden rounded-[14px] transition-transform duration-150 ease-out group-hover:-translate-y-0.5">
         <TemplateThumb doc={doc} width={130} height={190} />
+        {locked &&
+        <span className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-inverse text-fg-inverse">
+            <LockIcon size={12} aria-hidden />
+          </span>
+        }
       </span>
       <span className="min-w-0">
         <span className="block truncate text-label font-semibold text-fg">{name}</span>

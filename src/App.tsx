@@ -11,6 +11,11 @@ import { CommerceProvider } from './contexts/CommerceContext';
 import { OpsProvider } from './contexts/OpsContext';
 import { WorkspaceProvider, useWorkspace } from './contexts/WorkspaceContext';
 import { UpgradeProvider } from './contexts/UpgradeContext';
+import { BillingProvider } from './contexts/BillingContext';
+import { NotificationsProvider } from './contexts/NotificationsContext';
+import { MarketplaceProvider } from './contexts/MarketplaceContext';
+import { Extensions } from './pages/Extensions';
+import { TemplatesMarket } from './pages/TemplatesMarket';
 import { TeamProvider } from './contexts/TeamContext';
 import { AnalyticsProvider } from './contexts/AnalyticsContext';
 import { Analytics } from './pages/Analytics';
@@ -74,20 +79,23 @@ type VisualDirectionOption = 'darkStudio' | 'inkCobalt' | 'inkViolet' | 'navyCla
 type WorkspacePlanOption = 'free' | 'creator' | 'pro' | 'business' | 'agency' | 'enterprise';
 
 type ViewingAsOption = 'owner' | 'admin' | 'editor' | 'sales' | 'viewer';
+type RenewalOption = 'succeeds' | 'fails';
 
 interface AppProps {
   visualDirection?: VisualDirectionOption;
   workspacePlan?: WorkspacePlanOption;
   /** Experience the workspace as a team member with this role (D57). */
   viewingAs?: ViewingAsOption;
+  /** What happens at the next plan renewal (D65, test mode). */
+  simulateNextRenewal?: RenewalOption;
 }
 
-export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', viewingAs = 'owner' }: AppProps) {
+export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', viewingAs = 'owner', simulateNextRenewal = 'succeeds' }: AppProps) {
   return (
     <BrowserRouter>
       <AppearancePolicyProvider initialDefault={visualDirection}>
         <WorkspaceProvider planControl={workspacePlan}>
-          <WorkspaceScope visualDirection={visualDirection} viewingAs={viewingAs}>
+          <WorkspaceScope visualDirection={visualDirection} viewingAs={viewingAs} renewal={simulateNextRenewal}>
             <Routes>
               <Route element={<MarketingLayout />}>
                 <Route index element={<Home />} />
@@ -135,6 +143,8 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
                   <Route path="links" element={<CampaignLinks />} />
                   <Route path="redirects" element={<Redirects />} />
                 </Route>
+                <Route path="extensions" element={<Extensions />} />
+                <Route path="templates" element={<TemplatesMarket />} />
                 <Route path="settings" element={<Settings />} />
                 <Route path="settings/:tab" element={<Settings />} />
                 <Route path=":module" element={<PlannedModule />} />
@@ -172,7 +182,7 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
 }
 
 /** Everything that belongs to one workspace remounts when you switch workspaces. */
-function WorkspaceScope({ visualDirection, viewingAs, children }: {visualDirection: VisualDirectionOption;viewingAs: ViewingAsOption;children: React.ReactNode;}) {
+function WorkspaceScope({ visualDirection, viewingAs, renewal, children }: {visualDirection: VisualDirectionOption;viewingAs: ViewingAsOption;renewal: RenewalOption;children: React.ReactNode;}) {
   const { current, currentSpace } = useWorkspace();
   return (
     <DirectionProvider key={current.id} direction={visualDirection}>
@@ -186,10 +196,16 @@ function WorkspaceScope({ visualDirection, viewingAs, children }: {visualDirecti
               <OpsProvider>
                 {/* The editor follows the space open in the canvas (D50). */}
                 <EditorProvider key={currentSpace.id}>
-                  <UpgradeProvider>
-                    {children}
-                    <DealRoomSettler />
-                  </UpgradeProvider>
+                  <BillingProvider renewalOutcome={renewal}>
+                    <UpgradeProvider>
+                      <MarketplaceProvider>
+                        <NotificationsProvider>
+                          {children}
+                          <DealRoomSettler />
+                        </NotificationsProvider>
+                      </MarketplaceProvider>
+                    </UpgradeProvider>
+                  </BillingProvider>
                 </EditorProvider>
               </OpsProvider>
             </CommerceProvider>

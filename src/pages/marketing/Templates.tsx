@@ -5,6 +5,9 @@ import { examplePages, goalLabels, type ExampleGoal, type ExampleStyle } from '.
 import { TemplateThumb } from '../../components/templates/TemplateThumb';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Button } from '../../components/ui/Button';
+import { Badge } from '../../components/ui/Badge';
+import { templatePrice } from '../../data/templateMarket';
+import { formatNgn } from '../../utils/format';
 import { cn } from '../../utils/cn';
 
 const styleLabels: Record<ExampleStyle, string> = { light: 'Light', dark: 'Dark', editorial: 'Editorial', bold: 'Bold' };
@@ -13,6 +16,9 @@ export function Templates() {
   const [goal, setGoal] = useState<ExampleGoal | 'all'>('all');
   const [style, setStyle] = useState<ExampleStyle | 'all'>('all');
   const [query, setQuery] = useState('');
+  const [region, setRegion] = useState('all');
+  const [price, setPrice] = useState<'all' | 'free' | 'premium'>('all');
+  const regions = useMemo(() => Array.from(new Set(examplePages.map((e) => e.city))).sort(), []);
 
   const list = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -20,14 +26,18 @@ export function Templates() {
       (e) =>
       (goal === 'all' || e.goals.includes(goal)) && (
       style === 'all' || e.styles.includes(style)) && (
+      region === 'all' || e.city === region) && (
+      price === 'all' || (price === 'premium' ? templatePrice(e.id) > 0 : templatePrice(e.id) === 0)) && (
       !q || [e.name, e.category, e.bestFor, e.description, e.city].some((s) => s.toLowerCase().includes(q)))
     );
-  }, [goal, style, query]);
+  }, [goal, style, query, region, price]);
 
   const reset = () => {
     setGoal('all');
     setStyle('all');
     setQuery('');
+    setRegion('all');
+    setPrice('all');
   };
 
   return (
@@ -57,6 +67,11 @@ export function Templates() {
         </div>
       </div>
 
+      <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+        <FilterRow label="Price" value={price} onChange={setPrice} options={[['all', 'Free and premium'], ['free', 'Free'], ['premium', 'Premium']]} />
+        <FilterRow label="Region" value={region} onChange={setRegion} options={[['all', 'Everywhere'], ...regions.map((r) => [r, r] as [string, string])]} />
+      </div>
+
       <p className="mt-6 text-caption text-fg-subtle" aria-live="polite">
         {list.length} template{list.length === 1 ? '' : 's'}
       </p>
@@ -70,8 +85,13 @@ export function Templates() {
           {list.map((e) =>
         <li key={e.id} className="flex flex-col">
               <Link to={`/templates/${e.id}`} className="group flex flex-1 flex-col rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-                <span className="block transition-transform duration-150 ease-out group-hover:-translate-y-1">
+                <span className="relative block transition-transform duration-150 ease-out group-hover:-translate-y-1">
                   <TemplateThumb doc={e.doc} width={220} height={330} />
+                  {templatePrice(e.id) > 0 &&
+              <span className="absolute left-2 top-2">
+                      <Badge tone="accent">Premium · {formatNgn(templatePrice(e.id))}</Badge>
+                    </span>
+              }
                 </span>
                 <span className="mt-4 text-caption font-medium text-fg-subtle">{e.category}</span>
                 <span className="mt-0.5 text-heading font-semibold text-fg">{e.name}</span>

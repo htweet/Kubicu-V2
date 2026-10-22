@@ -15,6 +15,7 @@ import { plans, planOrder } from '../../data/plans';
 import { spaceKinds } from '../../data/spaceKinds';
 import { activeExtraSpaces, extraSpaceLimits } from '../../utils/spaces';
 import { starterSpaceDoc } from '../../utils/spaceStarters';
+import { prepareStarter } from '../../utils/starterKit';
 import { handleStatus, suggestHandles, takenHandles } from '../../utils/handles';
 import { publicUrl } from '../../utils/format';
 import { Dialog } from '../ui/Dialog';
@@ -33,6 +34,8 @@ interface NewSpaceDialogProps {
   /** The main page — new spaces start with its look. */
   mainDoc: PageDocument;
   initialKind?: NewKind | null;
+  /** Start the new space from a marketplace template's layout and look (D67). */
+  template?: {name: string;doc: PageDocument;} | null;
 }
 
 const statusText: Record<string, string> = {
@@ -61,7 +64,7 @@ function toLink(value: string): string {
 }
 
 /** Pick a type, then a name and link. Opens the new space in the canvas (D50). */
-export function NewSpaceDialog({ open, onClose, mainDoc, initialKind = null }: NewSpaceDialogProps) {
+export function NewSpaceDialog({ open, onClose, mainDoc, initialKind = null, template = null }: NewSpaceDialogProps) {
   const { current, workspaces, createSpace, switchSpace } = useWorkspace();
   const plan = usePlan();
   const navigate = useNavigate();
@@ -153,7 +156,18 @@ export function NewSpaceDialog({ open, onClose, mainDoc, initialKind = null }: N
     const campaign: CampaignSettings | undefined = kind === 'campaign' ? { starter, startsAt, endsAt, discountId: discountId || null, productIds } : undefined;
     const discountCode = codes.find((d) => d.id === discountId)?.code;
     try {
-      const space = createSpace({ kind, name, buildDoc: ({ pageId }) => starterSpaceDoc(kind, mainDoc, { id: pageId, name: name.trim(), handle, campaign, discountCode, dealRoom }) });
+      const space = createSpace({
+        kind,
+        name,
+        buildDoc: ({ pageId }) => {
+          const built = starterSpaceDoc(kind, mainDoc, { id: pageId, name: name.trim(), handle, campaign, discountCode, dealRoom });
+          if (!template) return built;
+          const profile = mainDoc.blocks.find((b) => b.type === 'profile');
+          const identity = profile?.type === 'profile' ? { name: profile.content.name, tagline: profile.content.tagline, avatarUrl: profile.content.avatarUrl, location: profile.content.location } : { name: mainDoc.title };
+          const { doc } = prepareStarter(template.doc, identity);
+          return { ...built, theme: doc.theme, blocks: doc.blocks };
+        }
+      });
       switchSpace(space.id);
       onClose();
       navigate('/app/canvas');

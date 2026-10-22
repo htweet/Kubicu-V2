@@ -10,6 +10,7 @@ import { SidebarItem, SidebarGroupLabel } from './SidebarItem';
 import { cn } from '../../utils/cn';
 import { useTeam } from '../../contexts/TeamContext';
 import { roleInfo } from '../../data/permissions';
+import { NotificationBell } from '../notifications/NotificationBell';
 
 export function Sidebar() {
   const { collapsed, toggle } = useSidebarCollapsed();
@@ -37,15 +38,18 @@ export function Sidebar() {
       <div className={cn('flex h-16 shrink-0 items-center', collapsed ? 'justify-center' : 'justify-between pl-4 pr-2.5')}>
         <KubicuLogo withWordmark={!collapsed} />
         {!collapsed &&
-        <button
-          type="button"
-          onClick={onToggle}
-          aria-label={toggleLabel}
-          aria-expanded
-          className="flex h-8 w-8 items-center justify-center rounded-md text-fg-subtle transition-colors duration-150 hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-          
-            <ToggleIcon size={18} strokeWidth={2.1} aria-hidden />
-          </button>
+        <div className="flex items-center gap-0.5">
+            <NotificationBell />
+            <button
+            type="button"
+            onClick={onToggle}
+            aria-label={toggleLabel}
+            aria-expanded
+            className="flex h-8 w-8 items-center justify-center rounded-md text-fg-subtle transition-colors duration-150 hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+            
+              <ToggleIcon size={18} strokeWidth={2.1} aria-hidden />
+            </button>
+          </div>
         }
       </div>
 
@@ -86,6 +90,7 @@ export function Sidebar() {
             {collapsed ? roleInfo[team.role].label.slice(0, 1) : `Viewing as ${team.me.name.split(' ')[0]} · ${roleInfo[team.role].label}`}
           </p>
         }
+        {collapsed && <NotificationBell size="md" onMouseEnter={tip.show('Notifications')} onMouseLeave={tip.hide} onFocus={tip.show('Notifications')} onBlur={tip.hide} />}
         <AppearancePicker collapsed={collapsed} tip={tip} />
         <SidebarItem to="/admin" label="Super admin" icon={ShieldCheckIcon} collapsed={collapsed} tip={tip} />
         {collapsed &&
