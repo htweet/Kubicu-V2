@@ -1,0 +1,295 @@
+import type {
+  CartLine,
+  CommerceData,
+  Dispute,
+  Order,
+  OrderCustomer,
+  OrderEvent,
+  OrderEventKind,
+  OrderFulfilment,
+  OrderStatus,
+  Product,
+  StockMovement,
+  StockReason,
+  TestPaymentOutcome } from
+'../../types/commerce';
+import type { WorkspacePlan } from '../../types/plan';
+import { uid } from '../id';
+import { variantLabel, variantPrice } from './catalog';
+import { kubicuFee, providerFee, refundableNgn } from './money';
+
+export const OWNER_ACTOR = 'You';
+
+function event(kind: OrderEventKind, label: string, at = new Date().toISOString()): OrderEvent {
+  return { id: uid('ev'), kind, label, at };
+}
+
+function now() {
+  return new Date().toISOString();
+}
+
+/** Applies a stock change to one variant and records the movement. */
+export function moveStock(
+data: CommerceData,
+productId: string,
+variantId: string,
+delta: number,
+reason: StockReason,
+note = '',
+orderNumber?: number)
+: CommerceData {
+  let after = 0;
+  const products = data.products.map((p) => {
+    if (p.id !== productId || !p.trackStock || p.kind === 'digital') return p;
+    return {
+      ...p,
+      variants: p.variants.map((v) => {
+        if (v.id !== variantId) return v;
+        after = Math.max(0, v.stock + delta);
+        return { ...v, stock: after };
+      })
+    };
+  });
+  const product = data.products.find((p) => p.id === productId);
+  if (!product || !product.trackStock || product.kind === 'digital' || delta === 0) return data;
+  const movement: StockMovement = { id: uid('mv'), productId, variantId, delta, after, reason, note, by: reason === 'order' || reason === 'cancelled' ? 'Checkout' : OWNER_ACTOR, at: now(), orderNumber };
+  return { ...data, products, movements: [movement, ...data.movements].slice(0, 500) };
+}
+
+export function upsertProduct(data: CommerceData, product: Product): CommerceData {
+  const prev = data.products.find((p) => p.id === product.id);
+  const next = { ...product, updatedAt: now() };
+  let out: CommerceData = { ...data, products: prev ? data.products.map((p) => p.id === product.id ? next : p) : [next, ...data.products] };
+  // Record stock differences as corrections so the history stays complete.
+  if (next.trackStock && next.kind === 'physical') {
+    next.variants.forEach((v) => {
+      const before = prev?.variants.find((pv) => pv.id === v.id)?.stock ?? 0;
+      if (before !== v.stock) {
+        const movement: StockMovement = {
+          id: uid('mv'),
+          productId: next.id,
+          variantId: v.id,
+          delta: v.stock - before,
+          after: v.stock,
+          reason: prev ? 'correction' : 'created',
+          note: prev ? 'Edited in product' : 'Opening stock',
+          by: OWNER_ACTOR,
+          at: now()
+        };
+        out = { ...out, movements: [movement, ...out.movements] };
+      }
+    });
+  }
+  return out;
+}
+
+export interface CheckoutInput {
+  lines: CartLine[];
+  customer: OrderCustomer;
+  fulfilment: OrderFulfilment;
+  deliveryNgn: number;
+  outcome: TestPaymentOutcome;
+  plan: WorkspacePlan;
+}
+
+export type CheckoutResult =
+{ok: true;data: CommerceData;order: Order;} |
+{ok: false;reason: 'failed' | 'cancelled' | 'unavailable';message: string;};
+
+/** Places a test-mode order. Failed or cancelled payments create no order and keep the cart. */
+export function placeOrder(data: CommerceData, input: CheckoutInput): CheckoutResult {
+  if (input.outcome === 'failed') return { ok: false, reason: 'failed', message: 'The test card was declined. No money moved and nothing was ordered.' };
+  if (input.outcome === 'cancelled') return { ok: false, reason: 'cancelled', message: 'Payment was cancelled before it finished. Your cart is still here.' };
+
+  const items = [];
+  for (const line of input.lines) {
+    const product = data.products.find((p) => p.id === line.productId);
+    const variant = product?.variants.find((v) => v.id === line.variantId);
+    const price = product && variant ? variantPrice(product, variant) : null;
+    if (!product || !variant || product.status !== 'active' || price === null) {
+      return { ok: false, reason: 'unavailable', message: `${product?.name ?? 'An item'} is no longer available.` };
+    }
+    if (product.kind === 'physical' && product.trackStock && variant.stock < line.qty) {
+      return { ok: false, reason: 'unavailable', message: `Only ${variant.stock} of ${product.name} (${variantLabel(variant)}) left.` };
+    }
+    items.push({
+      productId: product.id,
+      variantId: variant.id,
+      name: product.name,
+      variantLabel: Object.keys(variant.options).length ? variantLabel(variant) : '',
+      unitPriceNgn: price,
+      qty: line.qty,
+      imageUrl: product.images[0]?.url ?? '',
+      kind: product.kind
+    });
+  }
+
+  const subtotal = items.reduce((s, i) => s + i.unitPriceNgn * i.qty, 0);
+  const gross = subtotal + input.deliveryNgn;
+  const paid = input.outcome === 'success';
+  const number = data.nextOrderNumber;
+  const placedAt = now();
+  const hasDigital = items.some((i) => i.kind === 'digital');
+  const digitalOnly = items.every((i) => i.kind === 'digital');
+  const events: OrderEvent[] = [event('placed', 'Order placed on your page', placedAt)];
+  if (paid) events.unshift(event('paid', 'Payment confirmed by provider (test mode)'));
+  if (paid && digitalOnly) events.unshift(event('completed', 'Delivered by secure download link'));else
+  events.unshift(event('payment', input.outcome === 'timeout' ? 'Provider didn’t respond in time — awaiting confirmation' : 'Payment pending with provider'));
+
+  const order: Order = {
+    id: uid('ord'),
+    number,
+    createdAt: placedAt,
+    customer: input.customer,
+    items,
+    fulfilment: input.fulfilment,
+    subtotalNgn: subtotal,
+    discountNgn: 0,
+    deliveryNgn: input.deliveryNgn,
+    providerFeeNgn: providerFee(gross),
+    kubicuFeeNgn: kubicuFee(gross, input.plan),
+    status: paid ? digitalOnly ? 'completed' : 'paid' : 'new',
+    paymentStatus: paid ? 'paid' : 'pending',
+    paymentNote: input.outcome === 'timeout' ? 'Provider timed out' : undefined,
+    refunds: [],
+    events,
+    downloadToken: hasDigital ? uid('dl') : undefined,
+    downloads: [],
+    note: ''
+  };
+
+  let next: CommerceData = { ...data, orders: [order, ...data.orders], nextOrderNumber: number + 1 };
+  items.forEach((i) => {
+    next = moveStock(next, i.productId, i.variantId, -i.qty, 'order', 'Reserved by order', number);
+  });
+  return { ok: true, data: next, order };
+}
+
+const statusEvent: Partial<Record<OrderStatus, [OrderEventKind, string]>> = {
+  paid: ['paid', 'Payment confirmed'],
+  packing: ['packing', 'Marked as packing'],
+  out_for_delivery: ['shipped', 'Out for delivery'],
+  completed: ['completed', 'Marked as completed']
+};
+
+export function setOrderStatus(data: CommerceData, orderId: string, status: OrderStatus, label?: string): CommerceData {
+  return {
+    ...data,
+    orders: data.orders.map((o) => {
+      if (o.id !== orderId) return o;
+      const ev = statusEvent[status];
+      const pickupReady = status === 'out_for_delivery' && o.fulfilment.method === 'pickup';
+      const e = ev ? event(pickupReady ? 'ready' : ev[0], label ?? (pickupReady ? 'Ready for pickup' : ev[1])) : null;
+      return {
+        ...o,
+        status,
+        paymentStatus: status === 'paid' && o.paymentStatus === 'pending' ? 'paid' : o.paymentStatus,
+        events: e ? [e, ...o.events] : o.events
+      };
+    })
+  };
+}
+
+/** Simulates the provider's delayed webhook. Digital-only orders complete straight away. */
+export function confirmPayment(data: CommerceData, orderId: string): CommerceData {
+  const order = data.orders.find((o) => o.id === orderId);
+  const next = setOrderStatus(data, orderId, 'paid', 'Payment confirmed by provider (test mode)');
+  if (order && order.items.every((i) => i.kind === 'digital')) return setOrderStatus(next, orderId, 'completed', 'Delivered by secure download link');
+  return next;
+}
+
+export function cancelOrder(data: CommerceData, orderId: string, reason: string, restock: boolean): CommerceData {
+  const order = data.orders.find((o) => o.id === orderId);
+  if (!order) return data;
+  let next: CommerceData = {
+    ...data,
+    orders: data.orders.map((o) =>
+    o.id === orderId ?
+    {
+      ...o,
+      status: 'cancelled' as const,
+      paymentStatus: o.paymentStatus === 'pending' ? 'cancelled' as const : o.paymentStatus,
+      events: [event('cancelled', `Cancelled${reason ? ` — ${reason}` : ''}`), ...o.events]
+    } :
+    o
+    )
+  };
+  if (restock) order.items.forEach((i) => next = moveStock(next, i.productId, i.variantId, i.qty, 'cancelled', 'Released by cancellation', order.number));
+  return next;
+}
+
+export function refundOrder(data: CommerceData, orderId: string, amountNgn: number, reason: string, restock: boolean): CommerceData {
+  const order = data.orders.find((o) => o.id === orderId);
+  if (!order) return data;
+  const amount = Math.min(amountNgn, refundableNgn(order));
+  if (amount <= 0) return data;
+  const full = amount >= refundableNgn(order);
+  let next: CommerceData = {
+    ...data,
+    orders: data.orders.map((o) =>
+    o.id === orderId ?
+    {
+      ...o,
+      refunds: [...o.refunds, { id: uid('rf'), amountNgn: amount, reason, restocked: restock, at: now() }],
+      paymentStatus: full ? 'refunded' as const : 'partially_refunded' as const,
+      status: full ? 'refunded' as const : o.status,
+      events: [event('refund', `${full ? 'Refunded in full' : 'Partial refund'} — ₦${amount.toLocaleString('en-NG')}${reason ? ` · ${reason}` : ''}`), ...o.events]
+    } :
+    o
+    )
+  };
+  if (restock) order.items.forEach((i) => next = moveStock(next, i.productId, i.variantId, i.qty, 'returned', 'Returned with refund', order.number));
+  return next;
+}
+
+export function updateDispute(data: CommerceData, orderId: string, patch: Partial<Dispute>, label?: string): CommerceData {
+  return {
+    ...data,
+    orders: data.orders.map((o) =>
+    o.id === orderId && o.dispute ? { ...o, dispute: { ...o.dispute, ...patch }, events: label ? [event('dispute', label), ...o.events] : o.events } : o
+    )
+  };
+}
+
+export function addOrderNote(data: CommerceData, orderId: string, note: string): CommerceData {
+  return { ...data, orders: data.orders.map((o) => o.id === orderId ? { ...o, events: [event('note', note), ...o.events] } : o) };
+}
+
+export type DownloadCheck =
+{ok: true;remaining: number | null;expiresAt: string | null;} |
+{ok: false;reason: 'revoked' | 'limit' | 'expired' | 'not_ready' | 'pending';};
+
+export function checkDownload(order: Order, product: Product): DownloadCheck {
+  const asset = product.digital;
+  if (!asset || asset.status !== 'ready') return { ok: false, reason: 'not_ready' };
+  if (order.paymentStatus === 'pending') return { ok: false, reason: 'pending' };
+  if (order.paymentStatus === 'refunded' || order.status === 'cancelled') return { ok: false, reason: 'revoked' };
+  const expiresAt = asset.expiryDays ? new Date(Date.parse(order.createdAt) + asset.expiryDays * 86400000).toISOString() : null;
+  if (expiresAt && Date.parse(expiresAt) < Date.now()) return { ok: false, reason: 'expired' };
+  const used = order.downloads.filter((d) => d.productId === product.id).length;
+  if (asset.downloadLimit !== null && used >= asset.downloadLimit) return { ok: false, reason: 'limit' };
+  return { ok: true, remaining: asset.downloadLimit === null ? null : asset.downloadLimit - used, expiresAt };
+}
+
+export function recordDownload(data: CommerceData, orderId: string, productId: string): CommerceData {
+  return {
+    ...data,
+    orders: data.orders.map((o) =>
+    o.id === orderId ?
+    { ...o, downloads: [...o.downloads, { id: uid('dlr'), productId, at: now() }], events: [event('download', 'Customer downloaded their file'), ...o.events] } :
+    o
+    )
+  };
+}
+
+/** Removes everything marked as sample. */
+export function clearSample(data: CommerceData): CommerceData {
+  const sampleProducts = new Set(data.products.filter((p) => p.sample).map((p) => p.id));
+  return {
+    ...data,
+    products: data.products.filter((p) => !p.sample),
+    collections: data.collections.filter((c) => !c.sample),
+    movements: data.movements.filter((m) => !m.sample && !sampleProducts.has(m.productId)),
+    orders: data.orders.filter((o) => !o.sample)
+  };
+}

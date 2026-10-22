@@ -1,0 +1,169 @@
+import React, { useEffect, useState } from 'react';
+import { FilesIcon, LayersIcon, LayoutTemplateIcon, PaletteIcon, PlusSquareIcon, SlidersHorizontalIcon } from 'lucide-react';
+import { pageCount } from '../../utils/sitePages';
+import type { Viewport } from '../../types/page';
+import { useEditor } from '../../contexts/EditorContext';
+import { useCanvasShortcuts } from '../../hooks/useCanvasShortcuts';
+import { useCanvasPanels } from '../../hooks/useCanvasPanels';
+import { useRemoveBlock } from '../../hooks/useRemoveBlock';
+import { blockDefinitions } from '../../data/blockRegistry';
+import { EditorTopBar } from './EditorTopBar';
+import { LeftPanel, type LeftTab } from './LeftPanel';
+import { Artboard } from './Artboard';
+import { Inspector, type PageTab } from './Inspector';
+import { PanelRail } from './PanelRail';
+import { PublishDialog } from './PublishDialog';
+import { VersionHistory } from './VersionHistory';
+import { CommandPalette } from './CommandPalette';
+import { ConflictBanner } from './ConflictBanner';
+import { Sheet } from '../ui/Sheet';
+import { cn } from '../../utils/cn';
+
+const RAIL = 56;
+const LEFT_W = 280;
+const RIGHT_W = 340;
+const panelMotion = 'transition-[width] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none';
+
+export function DesktopEditor() {
+  const { state, actions } = useEditor();
+  const removeBlock = useRemoveBlock();
+  const panels = useCanvasPanels();
+  const [viewport, setViewport] = useState<Viewport>('phone');
+  const [leftTab, setLeftTab] = useState<LeftTab>('blocks');
+  const [pageTab, setPageTab] = useState<PageTab>('theme');
+  const [publishOpen, setPublishOpen] = useState(false);
+  const [versionsOpen, setVersionsOpen] = useState(false);
+  const [commandOpen, setCommandOpen] = useState(false);
+
+  const selected = state.draft.blocks.find((b) => b.id === state.selectedId);
+  const selectedDef = selected ? blockDefinitions[selected.type] : null;
+
+  useCanvasShortcuts({
+    onUndo: actions.undo,
+    onRedo: actions.redo,
+    onDelete: () => state.selectedId && removeBlock(state.selectedId),
+    onDuplicate: () => state.selectedId && actions.duplicateBlock(state.selectedId),
+    onEscape: () => actions.select(null),
+    onCommand: () => setCommandOpen(true)
+  });
+
+  // ⌘\ / Ctrl+\ hides both panels for a clear view of the page, and brings them back.
+  const { toggleFocus } = panels;
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === '\\') {
+        if (document.querySelector('[role="dialog"]')) return;
+        e.preventDefault();
+        toggleFocus();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [toggleFocus]);
+
+  const openLeft = (tab: LeftTab) => {
+    setLeftTab(tab);
+    panels.setLeft(true);
+  };
+  const openPage = (tab: PageTab) => {
+    actions.select(null);
+    setPageTab(tab);
+    panels.setRight(true);
+  };
+
+  return (
+    <div className="flex h-screen flex-col bg-canvas text-fg">
+      <EditorTopBar
+        viewport={viewport}
+        onViewportChange={setViewport}
+        onOpenVersions={() => setVersionsOpen(true)}
+        onOpenPublish={() => setPublishOpen(true)}
+        onOpenCommand={() => setCommandOpen(true)}
+        leftOpen={panels.left}
+        rightOpen={panels.right}
+        onToggleLeft={panels.toggleLeft}
+        onToggleRight={panels.toggleRight}
+        onManagePages={() => openLeft('pages')} />
+      
+      <ConflictBanner />
+      <div className="flex min-h-0 flex-1">
+        <aside
+          aria-label="Blocks and layers"
+          className={cn('shrink-0 overflow-hidden border-r border-line bg-raised', panelMotion)}
+          style={{ width: panels.left ? LEFT_W : RAIL }}>
+          
+          {panels.left ?
+          <div className="h-full" style={{ width: LEFT_W }}>
+              <LeftPanel tab={leftTab} onTabChange={setLeftTab} onCollapse={() => panels.setLeft(false)} />
+            </div> :
+
+          <div className="h-full" style={{ width: RAIL }}>
+              <PanelRail
+              side="left"
+              expandLabel="Expand panel"
+              onExpand={() => panels.setLeft(true)}
+              items={[
+              { id: 'blocks', label: 'Add blocks', icon: PlusSquareIcon, onSelect: () => openLeft('blocks') },
+              { id: 'layers', label: 'Layers', icon: LayersIcon, badge: state.draft.blocks.length, onSelect: () => openLeft('layers') },
+              { id: 'pages', label: 'Pages', icon: FilesIcon, badge: pageCount(state.site), onSelect: () => openLeft('pages') },
+              { id: 'templates', label: 'Templates', icon: LayoutTemplateIcon, onSelect: () => openLeft('templates') }]
+              } />
+            
+            </div>
+          }
+        </aside>
+
+        <main aria-label="Canvas" className="min-w-0 flex-1">
+          <Artboard viewport={viewport} />
+        </main>
+
+        <aside
+          aria-label="Inspector"
+          className={cn('shrink-0 overflow-hidden border-l border-line bg-raised', panelMotion)}
+          style={{ width: panels.right ? RIGHT_W : RAIL }}>
+          
+          {panels.right ?
+          <div className="h-full" style={{ width: RIGHT_W }}>
+              <Inspector pageTab={pageTab} onPageTabChange={setPageTab} onCollapse={() => panels.setRight(false)} />
+            </div> :
+
+          <div className="h-full" style={{ width: RAIL }}>
+              <PanelRail
+              side="right"
+              expandLabel="Expand inspector"
+              onExpand={() => panels.setRight(true)}
+              items={[
+              ...(selected && selectedDef ?
+              [{ id: 'block', label: `Edit ${selectedDef.name}`, icon: selectedDef.icon ?? SlidersHorizontalIcon, active: true, onSelect: () => panels.setRight(true) }] :
+              []),
+              { id: 'theme', label: 'Theme', icon: PaletteIcon, active: !selected && pageTab === 'theme', onSelect: () => openPage('theme') },
+              { id: 'page', label: 'Page settings', icon: SlidersHorizontalIcon, active: !selected && pageTab === 'page', onSelect: () => openPage('page') }]
+              } />
+            
+            </div>
+          }
+        </aside>
+      </div>
+
+      <PublishDialog
+        open={publishOpen}
+        onClose={() => setPublishOpen(false)}
+        onGoToBlock={(id) => {
+          actions.select(id);
+          panels.setRight(true);
+        }}
+        onOpenTheme={() => openPage('theme')} />
+      
+      <Sheet open={versionsOpen} onClose={() => setVersionsOpen(false)} side="right" title="Version history" description="Publishes and snapshots, newest first">
+        <VersionHistory />
+      </Sheet>
+      <CommandPalette
+        open={commandOpen}
+        onClose={() => setCommandOpen(false)}
+        onPublish={() => setPublishOpen(true)}
+        onVersions={() => setVersionsOpen(true)}
+        onViewport={setViewport} />
+      
+    </div>);
+
+}

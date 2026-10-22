@@ -1,0 +1,318 @@
+import React, { useEffect, useMemo, useState } from 'react';
+import { ArchiveIcon, CheckIcon, RotateCcwIcon, Trash2Icon } from 'lucide-react';
+import { toast } from 'sonner';
+import type { Product, ProductKind } from '../../types/commerce';
+import { useCommerce } from '../../contexts/CommerceContext';
+import { upsertProduct } from '../../utils/commerce/ops';
+import { regenerateVariants } from '../../utils/commerce/catalog';
+import { uid } from '../../utils/id';
+import { Sheet } from '../ui/Sheet';
+import { Button } from '../ui/Button';
+import { TextInput } from '../ui/TextInput';
+import { TextArea } from '../ui/TextArea';
+import { CurrencyInput } from '../ui/CurrencyInput';
+import { Segmented } from '../ui/Segmented';
+import { Switch } from '../ui/Switch';
+import { Field } from '../ui/Field';
+import { Dialog } from '../ui/Dialog';
+import { InlineAlert } from '../ui/InlineAlert';
+import { ProductImagesField } from './ProductImagesField';
+import { VariantsField } from './VariantsField';
+import { DigitalFileField } from './DigitalFileField';
+import { cn } from '../../utils/cn';
+import { MobileSection } from '../ui/MobileSection';
+
+interface ProductEditorProps {
+  open: boolean;
+  /** Null creates a new product. */
+  productId: string | null;
+  kind: ProductKind;
+  onClose: () => void;
+}
+
+export function blankProduct(kind: ProductKind): Product {
+  const now = new Date().toISOString();
+  const base: Product = {
+    id: uid('prd'),
+    name: '',
+    description: '',
+    status: 'draft',
+    kind,
+    priceNgn: null,
+    compareAtNgn: null,
+    images: [],
+    options: [],
+    variants: [],
+    collectionIds: [],
+    trackStock: kind === 'physical',
+    lowStockAt: 2,
+    weightKg: null,
+    createdAt: now,
+    updatedAt: now
+  };
+  if (kind === 'digital') {
+    base.digital = { fileName: '', sizeBytes: 0, status: 'processing', version: 0, versions: [], downloadLimit: 3, expiryDays: 30, licence: '' };
+  }
+  return { ...base, variants: regenerateVariants(base) };
+}
+
+export function ProductEditor({ open, productId, kind, onClose }: ProductEditorProps) {
+  const { data, apply } = useCommerce();
+  const existing = productId ? data.products.find((p) => p.id === productId) : undefined;
+  const [draft, setDraft] = useState<Product>(() => existing ?? blankProduct(kind));
+  const [confirmClose, setConfirmClose] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [triedSave, setTriedSave] = useState(false);
+  // Phones show one section at a time.
+  const [section, setSection] = useState<'details' | 'photos' | 'stock' | 'collections'>('details');
+  const toggle = (s: typeof section) => setSection((cur) => cur === s ? cur : s);
+
+  useEffect(() => {
+    if (!open) return;
+    setDraft(existing ?? blankProduct(kind));
+    setTriedSave(false);
+    setSection('details');
+    // Only reset when a different product opens.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, productId, kind]);
+
+  const dirty = useMemo(() => JSON.stringify(draft) !== JSON.stringify(existing ?? null) && (!!existing || draft.name.trim() !== '' || draft.images.length > 0), [draft, existing]);
+  const referenced = !!existing && data.orders.some((o) => o.items.some((i) => i.productId === existing.id));
+  const patch = (p: Partial<Product>) => setDraft((d) => ({ ...d, ...p }));
+
+  const nameError = triedSave && !draft.name.trim() ? 'Give the product a name' : undefined;
+  const fileError = triedSave && draft.kind === 'digital' && draft.status === 'active' && draft.digital?.status !== 'ready' ? 'Upload a file and wait for the scan before making this active' : undefined;
+  const priceWarning = draft.status === 'active' && draft.priceNgn === null && draft.variants.every((v) => v.priceNgn === null);
+
+  const save = () => {
+    setTriedSave(true);
+    if (!draft.name.trim()) {
+      setSection('details');
+      return;
+    }
+    if (draft.digital && (draft.digital.status === 'processing' || draft.digital.status === 'scanning')) {
+      toast('Wait for the scan to finish', { description: 'It takes a couple of seconds.' });
+      return;
+    }
+    if (draft.kind === 'digital' && draft.status === 'active' && draft.digital?.status !== 'ready') {
+      setSection('stock');
+      return;
+    }
+    const next = { ...draft, name: draft.name.trim(), variants: draft.variants.length ? draft.variants : regenerateVariants(draft) };
+    if (apply((d) => upsertProduct(d, next))) {
+      toast(existing ? 'Product saved' : 'Product added', { description: existing ? 'Linked page blocks update straight away.' : 'Link it to a block on your page to start selling.' });
+      onClose();
+    }
+  };
+
+  const requestClose = () => dirty ? setConfirmClose(true) : onClose();
+
+  const archive = () => {
+    if (!existing) return;
+    const status = existing.status === 'archived' ? 'draft' : 'archived';
+    if (apply((d) => upsertProduct(d, { ...existing, status }))) {
+      toast(status === 'archived' ? 'Product archived' : 'Product restored as a draft', { description: status === 'archived' ? 'It’s hidden from your page. Past orders keep their details.' : undefined });
+      onClose();
+    }
+  };
+
+  const remove = () => {
+    if (!existing) return;
+    if (apply((d) => ({ ...d, products: d.products.filter((p) => p.id !== existing.id), movements: d.movements.filter((m) => m.productId !== existing.id) }))) {
+      toast('Product deleted');
+      setConfirmDelete(false);
+      onClose();
+    }
+  };
+
+  const title = existing ? `Edit ${existing.name}` : kind === 'digital' ? 'New digital product' : 'New product';
+
+  return (
+    <>
+      <Sheet
+        open={open}
+        onClose={requestClose}
+        side="right"
+        size="lg"
+        title={title}
+        description={dirty ? 'Unsaved changes' : existing ? 'All changes saved' : undefined}
+        footer={
+        <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex gap-1">
+              {existing &&
+            <Button variant="tertiary" size="sm" leadingIcon={existing.status === 'archived' ? RotateCcwIcon : ArchiveIcon} onClick={archive}>
+                  {existing.status === 'archived' ? 'Restore' : 'Archive'}
+                </Button>
+            }
+              {existing && !referenced &&
+            <Button variant="tertiary" size="sm" leadingIcon={Trash2Icon} className="text-danger hover:text-danger" onClick={() => setConfirmDelete(true)}>
+                  Delete
+                </Button>
+            }
+            </div>
+            <div className="flex gap-2">
+              <Button variant="secondary" onClick={requestClose}>
+                Cancel
+              </Button>
+              <Button leadingIcon={CheckIcon} onClick={save} disabled={!!existing && !dirty}>
+                {existing ? 'Save changes' : 'Add product'}
+              </Button>
+            </div>
+          </div>
+        }>
+        
+        <div className="flex flex-col gap-6 px-5 py-5 max-md:gap-0 max-md:py-0">
+          {existing?.status === 'archived' &&
+          <InlineAlert tone="info" title="This product is archived">
+              It’s hidden from your page and can’t be bought. Restore it to sell again.
+            </InlineAlert>
+          }
+
+          <MobileSection id="prd-sec-details" title="Details" summary={[draft.name || 'No name yet', draft.status === 'active' ? 'Active' : 'Draft', draft.priceNgn !== null ? `₦${draft.priceNgn.toLocaleString('en-NG')}` : 'No price'].join(' · ')} open={section === 'details'} onToggle={() => toggle('details')} invalid={!!nameError}>
+          <Field id="prd-status" label="Status" hint={draft.status === 'draft' ? 'Drafts never appear on your page.' : 'Visible on any page block that links to it.'}>
+            <Segmented
+                ariaLabel="Status"
+                value={draft.status === 'archived' ? 'draft' : draft.status}
+                onChange={(status) => patch({ status })}
+                options={[
+                { value: 'active', label: 'Active' },
+                { value: 'draft', label: 'Draft' }]
+                } />
+              
+          </Field>
+
+          <TextInput id="prd-name" label="Name" value={draft.name} error={nameError} placeholder={kind === 'digital' ? 'e.g. Lightroom preset pack' : 'e.g. Linen two-piece'} onChange={(e) => patch({ name: e.target.value })} />
+          <TextArea id="prd-desc" label="Description" optional rows={3} value={draft.description} onChange={(e) => patch({ description: e.target.value })} />
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <CurrencyInput id="prd-price" label="Price" value={draft.priceNgn} placeholder="Price on request" hint={priceWarning ? 'No price — checkout can’t sell it until you add one.' : undefined} onChange={(priceNgn) => patch({ priceNgn })} />
+            <CurrencyInput id="prd-compare" label="Compare-at price" optional value={draft.compareAtNgn} hint="Shown struck through, e.g. before a sale." onChange={(compareAtNgn) => patch({ compareAtNgn })} />
+          </div>
+          </MobileSection>
+
+          <MobileSection id="prd-sec-photos" title="Photos" summary={draft.images.length ? `${draft.images.length} photo${draft.images.length === 1 ? '' : 's'}` : 'No photos yet'} open={section === 'photos'} onToggle={() => toggle('photos')}>
+            <ProductImagesField images={draft.images} onChange={(images) => patch({ images })} />
+          </MobileSection>
+
+          <MobileSection
+            id="prd-sec-stock"
+            title={kind === 'digital' ? 'File & access' : 'Stock & options'}
+            summary={kind === 'digital' ? draft.digital?.fileName || 'No file yet' : draft.trackStock ? `${draft.variants.length} variant${draft.variants.length === 1 ? '' : 's'} · ${draft.variants.reduce((s, v) => s + v.stock, 0)} in stock` : 'Stock not tracked'}
+            open={section === 'stock'}
+            onToggle={() => toggle('stock')}
+            invalid={!!fileError}>
+            
+          {kind === 'digital' && draft.digital ?
+            <DigitalFileField product={draft} onChange={patch} error={fileError} /> :
+
+            <>
+              <Switch
+                id="prd-track"
+                label="Track stock"
+                description="Orders reduce stock automatically and the item shows Sold out at zero."
+                checked={draft.trackStock}
+                onChange={(trackStock) => patch({ trackStock })} />
+              
+              <VariantsField product={draft} onChange={patch} />
+              <div className="grid gap-4 sm:grid-cols-2">
+                {draft.trackStock &&
+                <TextInput
+                  id="prd-low"
+                  label="Low-stock alert at"
+                  inputMode="numeric"
+                  value={String(draft.lowStockAt)}
+                  hint="Per variant."
+                  onChange={(e) => patch({ lowStockAt: Number(e.target.value.replace(/[^0-9]/g, '').slice(0, 4) || '0') })} />
+
+                }
+                <TextInput
+                  id="prd-weight"
+                  label="Weight (kg)"
+                  optional
+                  inputMode="decimal"
+                  value={draft.weightKg === null ? '' : String(draft.weightKg)}
+                  hint="For your delivery partner."
+                  onChange={(e) => {
+                    const v = e.target.value.replace(/[^0-9.]/g, '');
+                    patch({ weightKg: v === '' ? null : Number(v) });
+                  }} />
+                
+              </div>
+            </>
+            }
+          </MobileSection>
+
+          {data.collections.length > 0 &&
+          <MobileSection id="prd-sec-coll" title="Collections" summary={draft.collectionIds.length ? data.collections.filter((c) => draft.collectionIds.includes(c.id)).map((c) => c.name).join(', ') : 'None'} open={section === 'collections'} onToggle={() => toggle('collections')}>
+            <fieldset>
+              <legend className="mb-2 text-label font-medium text-fg">Collections</legend>
+              <div className="flex flex-wrap gap-1.5">
+                {data.collections.map((c) => {
+                  const on = draft.collectionIds.includes(c.id);
+                  return (
+                    <button
+                      key={c.id}
+                      type="button"
+                      role="checkbox"
+                      aria-checked={on}
+                      onClick={() => patch({ collectionIds: on ? draft.collectionIds.filter((x) => x !== c.id) : [...draft.collectionIds, c.id] })}
+                      className={cn(
+                        'inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-label font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
+                        on ? 'border-transparent bg-fg text-canvas' : 'border-line-strong text-fg-muted hover:text-fg'
+                      )}>
+                      
+                      {on && <CheckIcon size={13} strokeWidth={3} aria-hidden />}
+                      {c.name}
+                    </button>);
+
+                })}
+              </div>
+            </fieldset>
+            </MobileSection>
+          }
+        </div>
+      </Sheet>
+
+      <Dialog
+        open={confirmClose}
+        onClose={() => setConfirmClose(false)}
+        size="sm"
+        title="Discard your changes?"
+        description="You have edits that haven’t been saved."
+        footer={
+        <>
+            <Button variant="secondary" onClick={() => setConfirmClose(false)} data-autofocus>
+              Keep editing
+            </Button>
+            <Button
+            variant="destructive"
+            onClick={() => {
+              setConfirmClose(false);
+              onClose();
+            }}>
+            
+              Discard
+            </Button>
+          </>
+        } />
+      
+      <Dialog
+        open={confirmDelete}
+        onClose={() => setConfirmDelete(false)}
+        size="sm"
+        title={`Delete “${existing?.name ?? ''}”?`}
+        description="This can’t be undone. Page blocks linked to it will show a warning until you pick another product."
+        footer={
+        <>
+            <Button variant="secondary" onClick={() => setConfirmDelete(false)} data-autofocus>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={remove}>
+              Delete product
+            </Button>
+          </>
+        } />
+      
+    </>);
+
+}

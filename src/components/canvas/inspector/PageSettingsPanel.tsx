@@ -1,0 +1,110 @@
+import React from 'react';
+import { MediaImage } from '../../media/MediaImage';
+import { useEditor } from '../../../contexts/EditorContext';
+import { TextInput } from '../../ui/TextInput';
+import { TextArea } from '../../ui/TextArea';
+import { PlanLock } from '../../ui/PlanLock';
+import { publicUrl } from '../../../utils/format';
+import { Switch } from '../../ui/Switch';
+import { usePlan } from '../../../contexts/PlanContext';
+import { badgeRemovalPlanName } from '../../../data/plans';
+import { showsKubicuBadge } from '../../../utils/branding';
+import { findPage, pageTitle, sitePages } from '../../../utils/sitePages';
+
+export function PageSettingsPanel() {
+  const { state, actions, issues } = useEditor();
+  const { draft } = state;
+  const handleError = issues.find((i) => i.id === 'page:handle')?.message;
+  const preview = draft.blocks.find((b) => b.type === 'profile');
+  const avatar = preview?.type === 'profile' ? preview.content.avatarUrl : '';
+  const plan = usePlan();
+  const badgeShown = showsKubicuBadge(draft, plan);
+  const multi = sitePages(state.site).length > 0;
+  const current = findPage(state.site, state.activePageId);
+  const shareUrl = `${publicUrl(draft.handle)}${current ? `/${current.path}` : ''}`;
+
+  return (
+    <div className="flex flex-col gap-5">
+      {multi &&
+      <p className="rounded-md bg-sunken px-3 py-2.5 text-caption text-fg-muted">
+          Editing the <span className="font-semibold text-fg">{pageTitle(state.site, state.activePageId)}</span> page. Link, theme and branding are shared by every page; search & sharing below is for this page only.
+        </p>
+      }
+      <TextInput id="page-title" label={multi ? 'Site name' : 'Page name'} value={draft.title} hint={multi ? 'Shown at the top of your site menu.' : 'Only you see this in the workspace.'} onChange={(e) => actions.updatePage({ title: e.target.value }, 'title')} />
+      <TextInput
+        id="page-handle"
+        label="Page link"
+        prefix="kub.icu/"
+        value={draft.handle}
+        error={handleError}
+        hint="Lowercase letters, numbers and hyphens."
+        onChange={(e) => actions.updatePage({ handle: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '') }, 'handle')} />
+      
+      <div className="flex items-start justify-between gap-3 rounded-md border border-dashed border-line-strong p-3">
+        <div>
+          <p className="text-label font-medium text-fg">Custom domain</p>
+          <p className="mt-0.5 text-caption text-fg-subtle">Use your own address, like adaezeatelier.com.</p>
+        </div>
+        <PlanLock kind="planned">Batch 5</PlanLock>
+      </div>
+
+      <section className="flex flex-col gap-3 border-t border-line pt-5" aria-labelledby="branding-heading">
+        <div className="flex items-start justify-between gap-3">
+          <h3 id="branding-heading" className="text-label font-medium text-fg">
+            Branding
+          </h3>
+          {!plan.canHideBadge && <PlanLock kind="plan">{badgeRemovalPlanName} plan</PlanLock>}
+        </div>
+        <Switch
+          id="branding-badge"
+          label="Show “Made with KUBICU”"
+          description={
+          plan.canHideBadge ?
+          'A small footer at the bottom of your page. Your plan lets you turn it off.' :
+          `Free pages always show it. Upgrade to ${badgeRemovalPlanName} or above to remove it.`
+          }
+          checked={badgeShown}
+          disabled={!plan.canHideBadge}
+          onChange={(shown) => actions.updateBranding({ hideKubicuBadge: !shown })} />
+        
+        {!plan.canHideBadge && draft.branding?.hideKubicuBadge &&
+        <p className="text-caption text-fg-subtle">
+            Your earlier choice to hide it is saved and will apply again if you move to a paid plan.
+          </p>
+        }
+      </section>
+
+      <section className="flex flex-col gap-4 border-t border-line pt-5" aria-labelledby="seo-heading">
+        <div>
+          <h3 id="seo-heading" className="text-label font-medium text-fg">
+            Search & sharing
+          </h3>
+          <p className="text-caption text-fg-subtle">How your page appears on Google and when shared on WhatsApp or X.</p>
+        </div>
+        <TextInput id="seo-title" label="Title" value={draft.seo.title} onChange={(e) => actions.updatePage({ seo: { title: e.target.value } }, 'seoTitle')} />
+        <TextArea
+          id="seo-desc"
+          label="Description"
+          rows={3}
+          value={draft.seo.description}
+          hint={`${draft.seo.description.length}/160 characters`}
+          onChange={(e) => actions.updatePage({ seo: { description: e.target.value } }, 'seoDesc')} />
+        
+        <div className="overflow-hidden rounded-md border border-line bg-canvas" aria-label="Share preview">
+          <div className="flex gap-3 p-3">
+            {avatar ?
+            <MediaImage src={avatar} alt="" className="h-14 w-14 shrink-0 rounded-sm object-cover" /> :
+
+            <div className="h-14 w-14 shrink-0 rounded-sm bg-sunken" aria-hidden />
+            }
+            <div className="min-w-0">
+              <p className="truncate text-caption text-fg-subtle">{shareUrl}</p>
+              <p className="truncate text-label font-semibold text-fg">{draft.seo.title || (current ? `${current.title} · ${draft.title}` : draft.title)}</p>
+              <p className="line-clamp-2 text-caption text-fg-muted">{draft.seo.description || 'Add a description to improve how your link looks when shared.'}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>);
+
+}

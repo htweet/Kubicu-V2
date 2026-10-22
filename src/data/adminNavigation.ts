@@ -1,0 +1,79 @@
+import type { LucideIcon } from 'lucide-react';
+import {
+  ActivityIcon,
+  BadgeDollarSignIcon,
+  BarChart3Icon,
+  BellIcon,
+  BotIcon,
+  BuildingIcon,
+  CreditCardIcon,
+  FileLockIcon,
+  FlagIcon,
+  GlobeIcon,
+  LifeBuoyIcon,
+  PackageIcon,
+  ReceiptIcon,
+  ScrollTextIcon,
+  ServerCogIcon,
+  ShieldAlertIcon,
+  SlidersHorizontalIcon,
+  SwatchBookIcon } from
+'lucide-react';
+
+export interface AdminNavItem {
+  id: string;
+  label: string;
+  icon: LucideIcon;
+  /** What the area will let staff do — shown on its planned screen. */
+  summary: string;
+  built?: boolean;
+}
+
+export interface AdminNavGroup {
+  label: string;
+  items: AdminNavItem[];
+}
+
+/** Super-admin areas from the design plan §5.2. Only Design system is built in this pass. */
+export const adminNav: AdminNavGroup[] = [
+{
+  label: 'Platform',
+  items: [
+  { id: 'overview', label: 'Operations overview', icon: ActivityIcon, summary: 'Platform health, queues, alerts and recent privileged actions in one place.' },
+  { id: 'tenants', label: 'Users & tenants', icon: BuildingIcon, summary: 'Find a workspace, see its lifecycle, members, pages and limits, and suspend or restore with a reason.' },
+  { id: 'pages', label: 'Pages & domains', icon: GlobeIcon, summary: 'Review published pages and connected domains, and act on risky links.' },
+  { id: 'design-system', label: 'Design system', icon: SwatchBookIcon, summary: 'Control which appearances workspaces can use, and inspect tokens and components.', built: true }]
+
+},
+{
+  label: 'Commercial',
+  items: [
+  { id: 'plans', label: 'Plans & entitlements', icon: BadgeDollarSignIcon, summary: 'Plan catalogue, feature matrix, trials, credits and entitlement overrides with reasons.' },
+  { id: 'flags', label: 'Feature flags', icon: FlagIcon, summary: 'Target releases by plan, cohort or percentage, with a kill switch and full history.' },
+  { id: 'modules', label: 'Modules & marketplace', icon: PackageIcon, summary: 'Review extension permissions and versions, approve, pause or roll back.' },
+  { id: 'payments', label: 'Payments & providers', icon: CreditCardIcon, summary: 'Provider health, webhook events and reconciliation exceptions. Never shows secrets.' },
+  { id: 'orders', label: 'Orders & disputes', icon: ReceiptIcon, summary: 'Support sellers with refunds and disputes, with notes and an audit trail.' }]
+
+},
+{
+  label: 'Trust & support',
+  items: [
+  { id: 'ai', label: 'AI operations', icon: BotIcon, summary: 'Providers, budgets, rate limits and failure rates, without exposing private content.' },
+  { id: 'moderation', label: 'Moderation & trust', icon: ShieldAlertIcon, summary: 'Abuse reports, evidence, proportionate actions and appeals with human review.' },
+  { id: 'support', label: 'Support & announcements', icon: LifeBuoyIcon, summary: 'Tickets, internal notes, knowledge base and platform announcements.' },
+  { id: 'reporting', label: 'Business reporting', icon: BarChart3Icon, summary: 'Growth, revenue and usage reports with clear definitions.' },
+  { id: 'notifications', label: 'Integrations & notifications', icon: BellIcon, summary: 'Email templates, notification channels and integration status.' }]
+
+},
+{
+  label: 'Governance',
+  items: [
+  { id: 'audit', label: 'Audit log & access', icon: ScrollTextIcon, summary: 'Every privileged action, staff roles, MFA and access reviews.' },
+  { id: 'data-requests', label: 'Data requests', icon: FileLockIcon, summary: 'Export and deletion requests with status and deadlines.' },
+  { id: 'settings', label: 'Localisation & policies', icon: SlidersHorizontalIcon, summary: 'Currencies, locales and policy versions.' },
+  { id: 'health', label: 'Security & health', icon: ServerCogIcon, summary: 'Incidents, backups, runbooks, alert rules and the status page.' }]
+
+}];
+
+
+export const adminNavItems = adminNav.flatMap((g) => g.items);

@@ -1,0 +1,86 @@
+import React, { useState } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { MenuIcon, ShieldCheckIcon, ChevronRightIcon } from 'lucide-react';
+import { useAppearancePolicy } from '../../contexts/AppearancePolicyContext';
+import { useWorkspace } from '../../contexts/WorkspaceContext';
+import { WorkspaceSwitcher } from './WorkspaceSwitcher';
+import { workspaceNav, mobilePrimaryNavIds } from '../../data/navigation';
+import { Sheet } from '../ui/Sheet';
+import { cn } from '../../utils/cn';
+import { DirectionSwitcher } from './DirectionSwitcher';
+
+export function MobileNav() {
+  const [moreOpen, setMoreOpen] = useState(false);
+  const navigate = useNavigate();
+  const primary = workspaceNav.filter((n) => mobilePrimaryNavIds.includes(n.id));
+  const rest = workspaceNav.filter((n) => !mobilePrimaryNavIds.includes(n.id));
+  const canChoose = useAppearancePolicy().enabled.length > 1;
+  const currentWorkspace = useWorkspace().current;
+
+  const itemCls = 'flex h-full w-full flex-col items-center justify-center gap-1 text-caption font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus';
+
+  return (
+    <>
+      <nav aria-label="Workspace" className="safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-line bg-raised md:hidden">
+        <ul className="grid h-16 grid-cols-4">
+          {primary.map((item) => {
+            const Icon = item.icon;
+            return (
+              <li key={item.id}>
+                <NavLink to={item.to} end={item.to === '/app'} className={({ isActive }) => cn(itemCls, isActive ? 'text-action' : 'text-fg-subtle')}>
+                  <Icon size={20} aria-hidden />
+                  {item.label === 'My Spaces' ? 'Spaces' : item.label}
+                </NavLink>
+              </li>);
+
+          })}
+          <li>
+            <button type="button" onClick={() => setMoreOpen(true)} className={cn(itemCls, 'text-fg-subtle')} aria-haspopup="dialog">
+              <MenuIcon size={20} aria-hidden />
+              More
+            </button>
+          </li>
+        </ul>
+      </nav>
+
+      <Sheet open={moreOpen} onClose={() => setMoreOpen(false)} title="More">
+        <div className="border-b border-line p-2">
+          <WorkspaceSwitcher onNavigate={() => setMoreOpen(false)} />
+        </div>
+        {canChoose &&
+        <section aria-labelledby="mobile-appearance" className="border-b border-line p-2 pb-3">
+            <h3 id="mobile-appearance" className="px-3 pt-2 text-label font-medium text-fg">
+              Workspace appearance
+            </h3>
+            <p className="px-3 pb-2 text-caption text-fg-subtle">
+              Applies to everyone in {currentWorkspace.name}. Your public page keeps its own theme.
+            </p>
+            <DirectionSwitcher variant="list" />
+          </section>
+        }
+        <ul className="flex flex-col p-2">
+          {[...rest, { id: 'admin', label: 'Super admin', to: '/admin', icon: ShieldCheckIcon, batch: undefined }].map((item) => {
+            const Icon = item.icon;
+            return (
+              <li key={item.id}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMoreOpen(false);
+                    navigate(item.to);
+                  }}
+                  className="flex min-h-[52px] w-full items-center gap-3 rounded-md px-3 text-left text-body text-fg hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+                  
+                  <Icon size={19} className="text-fg-subtle" aria-hidden />
+                  <span className="flex-1">{item.label}</span>
+                  {item.batch && <span className="text-caption text-fg-subtle">Batch {item.batch}</span>}
+                  <ChevronRightIcon size={16} className="text-fg-subtle" aria-hidden />
+                </button>
+              </li>);
+
+          })}
+        </ul>
+      </Sheet>
+    </>);
+
+}

@@ -1,0 +1,83 @@
+# KUBICU — Screen Inventory
+
+Status: ✅ Designed & interactive · 🟡 Partial · ⏳ Planned screen in place · ⬜ Not started
+Phase: MVP · CR (commerce-ready) · Later
+
+| Screen ID | Screen | Area | Primary user | Desktop / mobile | Entry point | Primary action | Key states | Dependencies | Phase | Status |
+|---|---|---|---|---|---|---|---|---|---|---|
+| DS-01 | Super admin → Design system `/admin/design-system` | Super admin | Platform design admin | Both | Super admin nav | Control workspace appearances (available / default), inspect tokens & components | Withdraw confirmation, default locked on, change history, all control states | — | MVP | ✅ |
+| SA-00 | Super admin shell `/admin` | Super admin | Staff | Both | Workspace sidebar → Super admin | Navigate the 18 ops areas | Planned-area screens (Batch 6) | Staff auth (backend) | MVP foundation | ✅ shell |
+| WS-AP | Workspace Appearance picker | Workspace | Owner/member | Both | Sidebar footer, More sheet | Choose how KUBICU looks for me | Hidden when only one appearance is available; falls back to default if withdrawn | DS-01 policy | MVP | ✅ |
+| SH-01 | Workspace sidebar (full + icon rail) | Shell | Owner | Desktop / laptop | Any workspace route | Navigate | Active, planned ("Soon") | — | MVP | ✅ |
+| SH-02 | Mobile bottom nav + More sheet | Shell | Owner | Mobile | Any workspace route | Navigate | Active, planned (Batch N) | — | MVP | ✅ |
+| SH-03 | Workspace switcher | Shell | Owner | Both | Sidebar footer | Switch workspace | Single workspace, disabled create | Teams (B6) | MVP | 🟡 |
+| C-01 | Overview `/` | Workspace | Owner | Both | Logo, nav | Open canvas | Live / unpublished / draft, issues, no-analytics | Analytics (B5) | MVP | 🟡 light version |
+| C-02 | Setup checklist | Workspace | Owner | Both | Overview | Next setup step | Done / to do / planned | — | MVP | ✅ |
+| D-01 | My Spaces `/spaces` | Pages | Owner | Both (table → card) | Nav | Open canvas | Live / changes / draft, health, search & filter, cards/table, duplicate, unpublish confirm, no matches | Retire with redirect (B5), multiple pages per workspace (later) | MVP | ✅ |
+| E-01 | Desktop canvas `/canvas/:id` | Canvas | Owner | Desktop ≥1024 | Nav, Overview, Spaces | Edit & publish | Selected, hover, hidden, error, warning, empty page, drag | — | MVP | ✅ |
+| E-02 | Editor top bar | Canvas | Owner | Desktop | — | Publish | Saved/saving/offline/failed, unpublished/live, undo availability | — | MVP | ✅ |
+| E-03 | Block library (search, categories, planned) | Canvas | Owner | Both | Left panel / Add block | Add block | No results, locked, planned | — | MVP | ✅ |
+| E-04 | Layers list | Canvas | Owner | Both | Left panel / Layers tab | Reorder | Drag, Alt+↑/↓, up/down (touch), hidden, issues | — | MVP | ✅ |
+| E-05 | Templates panel + replace confirm | Canvas | Owner | Desktop | Left panel | Apply template | Confirm, snapshot-before-apply, undo | — | MVP | ✅ |
+| E-06 | Block inspector (Content/Style/Behaviour/Visibility) | Canvas | Owner | Both | Select block | Edit | Field errors, warnings, info notes, planned controls | — | MVP | ✅ |
+| E-07 | Page theme panel | Canvas | Owner | Both | Nothing selected / Design tab | Choose theme | Presets, custom, contrast pass/low | — | MVP | ✅ |
+| E-08 | Page settings (name, handle, SEO, share preview) | Canvas | Owner | Both | Inspector / Settings tab | Edit settings | Handle error, domain planned | Domains (B5) | MVP | ✅ |
+| E-09 | Publish review dialog | Canvas | Owner | Both | Publish | Publish now | Up to date, errors block, warnings, publishing, success, failure | — | MVP | ✅ |
+| E-10 | Version history | Canvas | Owner | Both | History icon / Settings | Restore to draft | Live, published, snapshot, empty | — | MVP | ✅ |
+| E-11 | Mobile editor | Canvas | Owner | Mobile <1024 | Same | Edit & publish | Sheets for blocks/design/layers/settings/block, FAB | — | MVP | ✅ |
+| E-12 | Draft preview `/p/:handle?draft=1` | Canvas | Owner | Both | Preview | Back to editor | Draft banner | — | MVP | ✅ |
+| G-01 | Public page — Adaeze Atelier `/p/adaeze` | Public | Visitor | Mobile-first | Shared link | Order on WhatsApp | Live, form success/error, newsletter success/error | — | MVP | ✅ |
+| G-02 | Public page unavailable | Public | Visitor | Both | Wrong/unpublished handle | Create own page | — | — | MVP | ✅ |
+| G-03…10 | Creator, freelancer, retail, food, service, event, digital, professional, micro-site pages | Public | Visitor | Mobile-first | — | — | — | Batch 3 | MVP/Later | ⬜ (freelancer exists as template only) |
+| I-01 | Commerce overview `/app/commerce` | Commerce | Owner | Both | Sidebar | Act on orders | Empty + sample data, setup, caught up | — | CR | ✅ |
+| I-02 | Products + editor + collections + CSV import | Commerce | Owner | Both (side sheet → full screen) | Commerce nav | Add / edit product | Empty, filters, low/sold out, archived, unsaved, import errors, Free limit | — | CR | ✅ |
+| I-03 | Inventory + adjust stock | Commerce | Owner | Both | Commerce nav | Adjust stock | Low, out, history, reason required | — | CR | ✅ |
+| I-04 | Orders + order detail | Commerce | Owner | Both | Commerce nav, Overview | Advance fulfilment | Pending payment, paid, packing, shipped/ready, completed, cancelled, refunded, dispute | — | CR | ✅ |
+| I-05 | Refund / cancel dialog, dispute panel | Commerce | Owner | Both | Order detail | Refund | Partial, full, restock, evidence, deadline, won/lost | Provider | CR | ✅ |
+| J-01 | Digital products + access records | Commerce | Owner | Both | Commerce nav | Add file | Uploading, scanning, ready, failed, limits, expiry, versions, storage | Pro | CR | ✅ |
+| K-01 | Payments setup | Commerce | Owner | Both | Commerce nav | Connect provider | Not connected, connecting, success, error, live locked | Provider (EPIC H) | CR | ✅ illustrative |
+| I-06 | Sales report | Commerce | Owner | Both | Commerce nav | Export CSV | Periods, empty | — | CR | ✅ |
+| I-07 | Commerce settings (fulfilment, sample data) | Commerce | Owner | Both | Commerce nav | Save zones | Validation, clear sample confirm | — | CR | ✅ |
+| K-02 | Visitor checkout sheet | Public | Visitor | Mobile-first | Add to cart on page | Pay | Option choice, empty cart, stock limits, details/delivery errors, paying, declined, cancelled, pending, timeout | — | CR | ✅ test mode |
+| K-03 | Order confirmation `/p/:handle/order/:id` | Public | Visitor | Mobile-first | After payment | Message seller | Confirmed, pending, timeout, cancelled, refunded, not found | — | CR | ✅ |
+| J-02 | Secure download `/p/:handle/download/:token` | Public | Visitor | Mobile-first | Receipt | Download | Remaining, expired, limit reached, revoked, pending, invalid link | — | CR | ✅ |
+| P-01 | Media library `/app/media` + image detail | Media | Owner | Both | Sidebar (Build) | Upload / reuse | Empty, uploading, duplicate, too large/wrong type, storage full, in use / not used, replace preview, delete in use, unavailable storage | CDN (engineering) | MVP | ✅ |
+| P-02 | Image picker dialog (every image field) | Media | Owner | Both | Any image field | Choose image | Your uploads / Upload / Link, shape filter, search, crop copy | — | MVP | ✅ |
+| P-03 | Pages manager (canvas Pages tab / mobile sheet) + page switcher | Canvas | Owner | Both | Canvas top bar, left rail | Add / organise pages | One page, many pages, editing a page, bad or duplicate address, address change with redirect note, at plan limit, delete confirm with undo, make home | — | MVP | ✅ |
+| P-04 | Site menu + missing page (public) | Public | Visitor | Both | `/p/:handle/:path` | Move between pages | Menu on/off, hidden pages, redirected address, page doesn’t exist | — | MVP | ✅ |
+| L-01 | Bookings schedule (upcoming / week / past) + detail | Bookings | Owner | Both | Sidebar | Manage bookings | Empty, today, reschedule, cancel, no-show, completed | — | CR | ✅ |
+| L-02 | Services + editor | Bookings | Owner | Both | Bookings nav | Add service | Off, deposit > price | — | CR | ✅ |
+| L-03 | Availability & policy | Bookings | Owner | Both | Bookings nav | Save hours | Hours error, date changes, reminders preview | Calendar sync (later) | CR | ✅ |
+| L-04 | Visitor booking sheet | Public | Visitor | Mobile-first | Booking block / pricing | Book | No availability, slot taken, deposit failed, time zones | — | CR | ✅ test mode |
+| L-05 | Booking confirmation `/p/:handle/booking/:id` | Public | Visitor | Mobile-first | After booking | Reschedule / cancel | Within/outside policy window, cancelled, past | — | CR | ✅ |
+| M-01 | Audience list + pipeline + contact detail | Audience | Owner | Both | Sidebar | Follow up | Empty, consent states, duplicates, tasks due | — | CR | ✅ |
+| M-02 | Import contacts / duplicates review | Audience | Owner | Both | Audience | Import / merge | Mapping, row errors, lawful-basis confirm | — | CR | ✅ |
+| N-01 | Automations overview, recipes, builder, run history | Automations | Owner | Both | Sidebar | Turn on | Draft, on, paused, global pause, problems, test run, failed + retry | Messaging (later) | Later | ✅ |
+| X-01 | Planned module screen | Shell | Owner | Both | Analytics, Domains & QR, Extensions, Settings | Back to page | — | — | — | ⏳ |
+| X-02 | Not found | Shell | Anyone | Both | Bad route | Go to overview | — | — | MVP | ✅ |
+
+## Families from design plan §6 not yet designed
+
+| Family | Screens (design plan) | Batch | Status |
+|---|---|---|---|
+| A. Marketing website | Home, features, use cases, templates, pricing, marketplace teaser, stories, help, contact, auth, legal, mobile nav | 3 | ⬜ |
+| B. Onboarding | Welcome → goal → template → identity → photo → AI draft → starter blocks → first action → mobile preview → publish → checklist | 3 | ⬜ (checklist exists on Overview) |
+| C. Overview (full) | Recent actions, commerce summary, bookings, leads, failures, usage | 4–5 | 🟡 |
+| D. Page management (full) | Create, duplicate, unpublish, redirect/retire, permissions, health | 3/5 | 🟡 |
+| H. Themes & template marketplace | Gallery, filters, detail, apply, theme editor, licensing, reviews | 3/6 | 🟡 (in-canvas only) |
+| I. Commerce — physical | 16 screens | 4 | ⏳ |
+| J. Digital products | 10 screens | 4 | ⬜ |
+| K. Checkout & payment setup | 11 screens | 4 | ⬜ |
+| L. Bookings & services | 14 screens | 4 | ⏳ |
+| M. Audience / CRM | 11 screens | 4 | ⏳ |
+| N. Automations | 14 screens | 4–5 | ⏳ |
+| O. AI copilot & Voice-to-Store | 15 screens | 5 | ⬜ (disabled entry point) |
+| P. Analytics & Link Intelligence | 14 screens | 5 | ⏳ |
+| Q. Domains, links & QR | 15 screens | 5 | ⏳ |
+| R. IntentFlow | 10 screens | 5 (concept) | ⬜ (visibility control placeholder) |
+| S. DealRoom | 10 screens | 5 (concept) | ⬜ |
+| T. Trust Passport & Proof-of-Work | 10 screens | Later | ⬜ |
+| U. Extensions & marketplace | 14 screens | 6 | ⏳ |
+| V. Teams, settings & billing | 16 screens | 6 | ⏳ |
+| W. Super-admin operations | Ops overview, tenants, plans, flags, modules, payments, AI ops, trust & support, system admin | 6 | ⬜ |
+| X. Public trust/legal/safety states | Report, appeal, suspension, consent, unsubscribe, export/deletion, disputes, warnings | 3/6 | ⬜ |

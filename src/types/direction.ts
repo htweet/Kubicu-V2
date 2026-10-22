@@ -1,0 +1,1 @@
+export type VisualDirection = 'darkStudio' | 'inkCobalt' | 'inkViolet' | 'navyClay';
