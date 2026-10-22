@@ -10,7 +10,8 @@ import { useCan, useTeam } from '../../contexts/TeamContext';
 import { useMainLink } from '../../hooks/useMainLink';
 import type { QrDesign } from '../../types/domains';
 import { campaignStats } from '../../utils/analytics/aggregate';
-import { destinationExists, destinationLabel, shortDisplay, shortUrl } from '../../utils/domains/links';
+import { destinationExists, destinationLabel, fallbackDestination, shortDisplay, shortUrl } from '../../utils/domains/links';
+import { useOps } from '../../contexts/OpsContext';
 import { downloadPng, qrChecks, qrSvg, styleOf } from '../../utils/domains/qr';
 import { PageHeader } from '../../components/shell/PageHeader';
 import { Button } from '../../components/ui/Button';
@@ -28,6 +29,7 @@ export function QrCodes() {
   const { current } = useWorkspace();
   const { data: commerce } = useCommerce();
   const { data: analytics } = useAnalytics();
+  const { data: ops } = useOps();
   const can = useCan('pages.edit');
   const team = useTeam();
   const { mainHandle, host } = useMainLink();
@@ -37,18 +39,22 @@ export function QrCodes() {
   const stats = useMemo(() => campaignStats(analytics.events), [analytics.events]);
   const presetId = params.get('link');
   const presetLink = presetId ? data.links.find((l) => l.id === presetId) : undefined;
+  // “Get QR code” shortcuts elsewhere in the app open a new code already pointing at their page, product or block (D72).
+  const presetDest = params.get('dest') ?? undefined;
+  const presetName = params.get('name') ?? undefined;
 
   useEffect(() => {
-    if (presetLink && can.allowed) {
+    if (!can.allowed) return;
+    if (presetLink) {
       const existing = data.qrs.find((q) => q.linkId === presetLink.id);
       setEditing(existing ?? 'new');
-    }
+    } else if (presetDest) setEditing('new');
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [presetId]);
+  }, [presetId, presetDest]);
 
   const close = () => {
     setEditing(null);
-    if (presetId) setParams({}, { replace: true });
+    if (presetId || presetDest) setParams({}, { replace: true });
   };
 
   const initials = initialsOf(current.name);
@@ -107,7 +113,9 @@ export function QrCodes() {
                     {q.id.startsWith('qr_sample') && <IllustrativeTag note="Sample QR code — scans come from sample history." />}
                   </p>
                   <p className="truncate text-caption text-fg-muted">{shortDisplay(mainHandle, link.slug, host)}</p>
-                  <p className={ok ? 'truncate text-caption text-fg-subtle' : 'text-caption text-danger'}>→ {ok ? destinationLabel(current, commerce, link.destination) : 'Page removed — choose a new one'}</p>
+                  <p className={ok ? 'truncate text-caption text-fg-subtle' : 'text-caption text-danger'}>
+                    → {ok ? destinationLabel(current, commerce, link.destination, ops.services) : `Destination removed — scans go to ${destinationLabel(current, commerce, fallbackDestination(current, commerce, link.destination), ops.services)} until you choose a new one`}
+                  </p>
                   <div className="mt-2 flex flex-wrap items-center gap-2">
                     <span className="text-label font-semibold tabular-nums text-fg">{scans.toLocaleString()}</span>
                     <span className="text-caption text-fg-subtle">scans</span>
@@ -129,7 +137,14 @@ export function QrCodes() {
         </ul>
       }
 
-      <QrDesigner open={editing !== null} onClose={close} qr={editing && editing !== 'new' ? editing : undefined} presetLink={editing === 'new' ? presetLink : undefined} />
+      <QrDesigner
+        open={editing !== null}
+        onClose={close}
+        qr={editing && editing !== 'new' ? editing : undefined}
+        presetLink={editing === 'new' ? presetLink : undefined}
+        presetDest={editing === 'new' && !presetLink ? presetDest : undefined}
+        presetName={editing === 'new' && !presetLink ? presetName : undefined} />
+      
 
       <Dialog
         open={!!removing}

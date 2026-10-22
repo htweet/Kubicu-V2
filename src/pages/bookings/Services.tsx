@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { CalendarIcon, PlusIcon } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { CalendarIcon, PlusIcon, QrCodeIcon } from 'lucide-react';
+import { useWorkspace } from '../../contexts/WorkspaceContext';
+import { blockDestination, qrHref, spaceDoc } from '../../utils/domains/links';
+import { MAIN_SPACE_ID, activeExtraSpaces } from '../../utils/spaces';
+import { allBlocks } from '../../utils/sitePages';
+import { IconButton } from '../../components/ui/IconButton';
+import { Tooltip } from '../../components/ui/Tooltip';
 import { toast } from 'sonner';
 import type { Service } from '../../types/ops';
 import { useOps } from '../../contexts/OpsContext';
@@ -27,6 +33,8 @@ const durations = [15, 30, 45, 60, 90, 120, 180].map((m) => ({ value: String(m),
 
 export function Services() {
   const { data, apply } = useOps();
+  const { current } = useWorkspace();
+  const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const editId = params.get('edit');
   const creating = params.get('new') === '1';
@@ -56,6 +64,18 @@ export function Services() {
     }
   };
 
+  // A booking QR opens the published Booking block that uses this service, and its booking sheet (D72).
+  const serviceDestination = (serviceId: string) => {
+    const spaces = [MAIN_SPACE_ID, ...activeExtraSpaces(current).map((x) => x.id)];
+    for (const spaceId of spaces) {
+      const doc = spaceDoc(current.id, spaceId);
+      if (!doc) continue;
+      const block = allBlocks(doc).find((b) => b.type === 'booking' && !b.visibility.hidden && (b.content as {source?: string;serviceId?: string | null;}).source === 'catalog' && (b.content as {serviceId?: string | null;}).serviceId === serviceId);
+      if (block) return blockDestination(spaceId, doc, block.id);
+    }
+    return null;
+  };
+
   const upcomingFor = (id: string) => data.bookings.filter((b) => b.serviceId === id && b.status === 'confirmed' && Date.parse(b.start) > Date.now()).length;
 
   return (
@@ -76,9 +96,11 @@ export function Services() {
         </div> :
 
       <ul className="mt-8 flex flex-col divide-y divide-line rounded-lg border border-line bg-raised">
-          {data.services.map((s) =>
-        <li key={s.id}>
-              <button type="button" onClick={() => setParams({ edit: s.id })} className="flex w-full flex-col gap-2 px-5 py-4 text-left transition-colors duration-150 hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus sm:flex-row sm:items-center">
+          {data.services.map((s) => {
+          const dest = serviceDestination(s.id);
+          return (
+            <li key={s.id} className="flex items-center pr-3">
+              <button type="button" onClick={() => setParams({ edit: s.id })} className="flex min-w-0 flex-1 flex-col gap-2 px-5 py-4 text-left transition-colors duration-150 hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus sm:flex-row sm:items-center">
                 <span className="min-w-0 flex-1">
                   <span className="flex items-center gap-2">
                     <span className="text-label font-semibold text-fg">{s.name}</span>
@@ -94,8 +116,18 @@ export function Services() {
                   <Badge tone={s.active ? 'success' : 'neutral'}>{s.active ? 'Bookable' : 'Off'}</Badge>
                 </span>
               </button>
-            </li>
-        )}
+              <Tooltip content={dest ? 'QR code that opens booking for this service' : 'Add a Booking block for this service to a page and publish it first'}>
+                <IconButton
+                  icon={QrCodeIcon}
+                  size="sm"
+                  label={`QR code for ${s.name}`}
+                  disabled={!dest || !s.active}
+                  onClick={() => dest && navigate(qrHref(dest, `Book: ${s.name}`))} />
+                
+              </Tooltip>
+            </li>);
+
+        })}
         </ul>
       }
 

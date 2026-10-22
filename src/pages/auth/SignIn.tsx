@@ -34,6 +34,12 @@ export function SignIn() {
           <Link to="/signup" className="font-semibold text-action hover:underline">
             Create an account
           </Link>
+          <span className="mt-3 block text-caption text-fg-subtle">
+            KUBICU team?{' '}
+            <Link to="/admin" className="font-medium text-fg-muted underline underline-offset-2 hover:text-fg">
+              Staff console
+            </Link>
+          </span>
         </>
       }>
       

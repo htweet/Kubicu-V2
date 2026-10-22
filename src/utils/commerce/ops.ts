@@ -347,6 +347,8 @@ export function clearSample(data: CommerceData): CommerceData {
     collections: data.collections.filter((c) => !c.sample),
     movements: data.movements.filter((m) => !m.sample && !sampleProducts.has(m.productId)),
     orders: data.orders.filter((o) => !o.sample),
-    discounts: data.discounts.filter((d) => !d.sample)
+    discounts: data.discounts.filter((d) => !d.sample),
+    subPlans: data.subPlans.filter((p) => !p.sample),
+    subscriptions: data.subscriptions.filter((s) => !s.sample)
   };
 }

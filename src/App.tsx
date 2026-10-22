@@ -30,6 +30,10 @@ import { ShortLink } from './pages/ShortLink';
 import { Settings } from './pages/settings/Settings';
 import { AcceptInvite } from './pages/AcceptInvite';
 import { DealRoomSettler } from './components/shell/DealRoomSettler';
+import { SubscriptionRenewer } from './components/shell/SubscriptionRenewer';
+import { Subscriptions } from './pages/commerce/Subscriptions';
+import { SubscriptionPortal } from './pages/SubscriptionPortal';
+import { AdminMarketplace } from './pages/admin/AdminMarketplace';
 import { AppShell } from './components/shell/AppShell';
 import { AdminShell } from './components/admin/AdminShell';
 import { AppToaster } from './components/ui/AppToaster';
@@ -132,6 +136,7 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
                   <Route path="discounts" element={<Discounts />} />
                   <Route path="storefront" element={<Storefront />} />
                   <Route path="payments" element={<Payments />} />
+                  <Route path="subscriptions" element={<Subscriptions />} />
                   <Route path="reports" element={<Reports />} />
                   <Route path="settings" element={<CommerceSettings />} />
                 </Route>
@@ -154,6 +159,7 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
               <Route path="/admin" element={<AdminShell />}>
                 <Route index element={<Navigate to="design-system" replace />} />
                 <Route path="design-system" element={<AdminDesignSystem />} />
+                <Route path="modules" element={<AdminMarketplace />} />
                 <Route path=":area" element={<AdminPlannedArea />} />
               </Route>
 
@@ -165,6 +171,7 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
             <Route path="/p/:handle/order/:orderId" element={<OrderStatus />} />
               <Route path="/p/:handle/download/:token" element={<DownloadPage />} />
               <Route path="/p/:handle/booking/:bookingId" element={<BookingStatus />} />
+              <Route path="/p/:handle/subscription/:token" element={<SubscriptionPortal />} />
 
               {/* Earlier addresses */}
               <Route path="/design-system" element={<Navigate to="/admin/design-system" replace />} />
@@ -202,6 +209,7 @@ function WorkspaceScope({ visualDirection, viewingAs, renewal, children }: {visu
                         <NotificationsProvider>
                           {children}
                           <DealRoomSettler />
+                          <SubscriptionRenewer />
                         </NotificationsProvider>
                       </MarketplaceProvider>
                     </UpgradeProvider>

@@ -14,6 +14,7 @@ import { MediaPicker } from '../../media/MediaPicker';
 import { ExtendedContentFields } from './ExtendedContentFields';
 import { ProductFields } from './ProductFields';
 import { BookingFields } from './BookingFields';
+import { SubscriptionFields } from './SubscriptionFields';
 
 interface ContentFieldsProps {
   block: Block;
@@ -253,6 +254,8 @@ export function ContentFields({ block, issues }: ContentFieldsProps) {
       return <ProductFields block={block} issues={issues} />;
     case 'booking':
       return <BookingFields block={block} issues={issues} />;
+    case 'subscription':
+      return <SubscriptionFields block={block} issues={issues} />;
     case 'whatsapp':{
         const c = block.content;
         const set = setter('whatsapp');

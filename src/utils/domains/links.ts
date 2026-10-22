@@ -1,11 +1,12 @@
-import type { PageDocument } from '../../types/page';
+import type { Block, BlockContentMap, PageDocument } from '../../types/page';
+import { blockName } from '../blocks';
 import type { Workspace } from '../../types/workspace';
 import type { CampaignLink, DomainsData, LinkDestination } from '../../types/domains';
 import type { CommerceData } from '../../types/commerce';
 import { samplePage } from '../../data/samplePage';
 import { DEMO_WORKSPACE_ID } from '../workspaceStorage';
 import { MAIN_SPACE_ID, activeExtraSpaces, readSpacePage } from '../spaces';
-import { pageHref, sitePages } from '../sitePages';
+import { pageHref, pageOfBlock, sitePages } from '../sitePages';
 import { STOREFRONT_PATH, storefrontAvailable } from '../commerce/storefront';
 
 /** The page saved for a space: published first, then the draft. The demo main page counts before its first save. */
@@ -47,6 +48,7 @@ export function landingHref(workspaceId: string, link: CampaignLink): string | n
   const qs = new URLSearchParams();
   if (link.source !== 'campaign') qs.set('src', link.source);
   qs.set('c', link.slug);
+  if (link.destination.anchor) qs.set('b', link.destination.anchor);
   return `${pageHref(handle, link.destination.path)}?${qs.toString()}`;
 }
 
@@ -76,14 +78,31 @@ export interface DestinationOption {
   group: string;
 }
 
-export const encodeDestination = (d: LinkDestination) => `${d.spaceId}|${d.path}`;
+export const encodeDestination = (d: LinkDestination) => `${d.spaceId}|${d.path}${d.anchor ? `#${d.anchor}` : ''}`;
 export function decodeDestination(v: string): LinkDestination {
   const i = v.indexOf('|');
-  return { spaceId: v.slice(0, i), path: v.slice(i + 1) };
+  const rest = v.slice(i + 1);
+  const h = rest.indexOf('#');
+  return h === -1 ? { spaceId: v.slice(0, i), path: rest } : { spaceId: v.slice(0, i), path: rest.slice(0, h), anchor: rest.slice(h + 1) };
 }
 
-/** Every place a link or QR code can point: each space's home and pages, the shop and its products. */
-export function destinationOptions(workspace: Workspace, commerce: CommerceData | null): DestinationOption[] {
+/** Blocks a QR code can open straight onto. Booking blocks also open the booking sheet on arrival. */
+const anchorKinds: Partial<Record<Block['type'], string>> = { event: 'Event', booking: 'Booking', subscription: 'Subscription' };
+
+export type ServiceNames = {id: string;name: string;}[];
+
+function anchorLabel(block: Block, services?: ServiceNames): string {
+  const kind = anchorKinds[block.type] ?? 'Block';
+  if (block.type === 'booking') {
+    const c = block.content as BlockContentMap['booking'];
+    const svc = c.source === 'catalog' ? services?.find((s) => s.id === c.serviceId)?.name : undefined;
+    return `${kind} · ${c.title || svc || blockName(block)}`;
+  }
+  return `${kind} · ${blockName(block)}`;
+}
+
+/** Every place a link or QR code can point: each space's home and pages, the shop and its products, plus events, bookings and subscription plans on those pages. */
+export function destinationOptions(workspace: Workspace, commerce: CommerceData | null, services?: ServiceNames): DestinationOption[] {
   const out: DestinationOption[] = [];
   const spaces = [{ id: MAIN_SPACE_ID, name: 'Main page' }, ...activeExtraSpaces(workspace).map((s) => ({ id: s.id, name: s.name }))];
   spaces.forEach((s) => {
@@ -98,12 +117,51 @@ export function destinationOptions(workspace: Workspace, commerce: CommerceData 
       filter((p) => p.status === 'active').
       forEach((p) => out.push({ value: encodeDestination({ spaceId: s.id, path: `${STOREFRONT_PATH}/${p.id}` }), label: `Shop · ${p.name}`, group }));
     }
+    const anchorGroup = `${s.id === MAIN_SPACE_ID ? 'Main page' : s.name} · events, bookings & plans`;
+    const pages = [{ path: '', title: '', blocks: doc.blocks }, ...sitePages(doc)];
+    pages.forEach((p) =>
+    p.blocks.
+    filter((b) => anchorKinds[b.type] && !b.visibility.hidden).
+    forEach((b) =>
+    out.push({
+      value: encodeDestination({ spaceId: s.id, path: p.path, anchor: b.id }),
+      label: `${anchorLabel(b, services)}${p.path ? ` (on ${p.title || p.path})` : ''}`,
+      group: anchorGroup
+    })
+    )
+    );
   });
   return out;
 }
 
-export function destinationLabel(workspace: Workspace, commerce: CommerceData | null, d: LinkDestination): string {
-  const hit = destinationOptions(workspace, commerce).find((o) => o.value === encodeDestination(d));
+/** The destination for one block, as a QR code would open it. */
+export function blockDestination(spaceId: string, doc: PageDocument, blockId: string): LinkDestination | null {
+  const pageId = pageOfBlock(doc, blockId);
+  if (pageId === undefined) return null;
+  const path = pageId ? sitePages(doc).find((p) => p.id === pageId)?.path ?? '' : '';
+  return { spaceId, path, anchor: blockId };
+}
+
+/**
+ * Where a scan lands when the destination is gone, so printed codes never dead-end:
+ * a removed block → its page; a removed page, product or archived space → that space's home → the main page.
+ */
+export function fallbackDestination(workspace: Workspace, commerce: CommerceData | null, d: LinkDestination): LinkDestination {
+  if (destinationExists(workspace, commerce, d)) return d;
+  if (d.anchor && destinationExists(workspace, commerce, { spaceId: d.spaceId, path: d.path })) return { spaceId: d.spaceId, path: d.path };
+  if (d.path.startsWith(`${STOREFRONT_PATH}/`) && destinationExists(workspace, commerce, { spaceId: d.spaceId, path: STOREFRONT_PATH })) return { spaceId: d.spaceId, path: STOREFRONT_PATH };
+  if (destinationExists(workspace, commerce, { spaceId: d.spaceId, path: '' })) return { spaceId: d.spaceId, path: '' };
+  return { spaceId: MAIN_SPACE_ID, path: '' };
+}
+
+/** Opens Domains & QR with a new code already pointing at this destination. */
+export function qrHref(d: LinkDestination, name: string): string {
+  const qs = new URLSearchParams({ dest: encodeDestination(d), name });
+  return `/app/domains/qr?${qs.toString()}`;
+}
+
+export function destinationLabel(workspace: Workspace, commerce: CommerceData | null, d: LinkDestination, services?: ServiceNames): string {
+  const hit = destinationOptions(workspace, commerce, services).find((o) => o.value === encodeDestination(d));
   if (hit) return hit.group.startsWith('Main page') ? hit.label : `${hit.group.split(' · ')[0]} · ${hit.label}`;
   return 'Missing page';
 }

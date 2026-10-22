@@ -11,6 +11,8 @@ import type { ExamplePage } from '../../data/examples/build';
 import { templatePrice } from '../../data/templateMarket';
 import { withVat } from '../../utils/billing';
 import { formatNgn } from '../../utils/format';
+import { creatorShare, findListing, updateTemplateStore } from '../../utils/templateListings';
+import { uid } from '../../utils/id';
 
 /** One-off premium template purchase; licence for this workspace (D67). */
 export function BuyTemplateDialog({ template, onClose, onBought }: {template: ExamplePage | null;onClose: () => void;onBought?: (t: ExamplePage) => void;}) {
@@ -38,8 +40,17 @@ export function BuyTemplateDialog({ template, onClose, onBought }: {template: Ex
             savedCard={billing.data.card}
             defaultHolder={current.ownerName}
             onPaid={(card) => {
-              billing.charge([{ label: `Premium template: ${template.category} (${template.name})`, amountNgn: price }], card);
+              const listing = findListing(template.id);
+              billing.charge([{ label: listing ? `Template by ${listing.creatorName}: ${listing.name}` : `Premium template: ${template.category} (${template.name})`, amountNgn: price }], card);
               market.addLicence(template.id);
+              // Creator templates (D70): record the sale with the version bought; the creator earns their share.
+              if (listing?.listedDoc) {
+                const doc = listing.listedDoc;
+                updateTemplateStore((s) => ({
+                  ...s,
+                  sales: [{ id: uid('sale'), listingId: listing.id, buyerWorkspaceId: current.id, buyerName: current.name, priceNgn: price, creatorShareNgn: creatorShare(price), version: listing.listedVersion, doc, at: new Date().toISOString(), refundedAt: null }, ...s.sales]
+                }));
+              }
               toast.success('Template bought', { description: 'It’s yours for this workspace. The invoice is in Plan & billing.' });
               onBought?.(template);
               onClose();

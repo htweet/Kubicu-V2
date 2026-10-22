@@ -24,7 +24,8 @@ import { InlineAlert } from '../ui/InlineAlert';
 import { UpgradeButton } from '../ui/UpgradeButton';
 import { useTeam } from '../../contexts/TeamContext';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
-import { SendIcon } from 'lucide-react';
+import { QrCodeIcon, SendIcon } from 'lucide-react';
+import { qrHref } from '../../utils/domains/links';
 import { Segmented } from '../ui/Segmented';
 import { DateTimeInput } from '../ui/DateTimeInput';
 import { formatSchedule, timeZoneLabel } from '../../utils/schedule';
@@ -230,6 +231,17 @@ export function PublishDialog({ open, onClose, onGoToBlock, onOpenTheme }: Publi
               Copy
             </Button>
           </div>
+          <button
+            type="button"
+            onClick={() => {
+              onClose();
+              navigate(qrHref({ spaceId: currentSpace.id, path: '' }, currentSpace.kind === 'main' ? 'Main page' : currentSpace.name));
+            }}
+            className="flex items-center gap-2 self-start rounded-sm text-label font-medium text-action hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+            
+            <QrCodeIcon size={16} aria-hidden />
+            Make a QR code for flyers and your counter
+          </button>
           <p className="text-caption text-fg-subtle">
             Prototype note: the kub.icu address is yours, but hosting isn’t connected yet. “Open live page” shows the published version inside this prototype.
           </p>

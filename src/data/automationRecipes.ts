@@ -5,7 +5,10 @@ export const triggerLabels: Record<TriggerId, {label: string;hint: string;}> = {
   booking_created: { label: 'Someone books', hint: 'Any service' },
   checkout_abandoned: { label: 'A checkout is left unfinished', hint: 'Details entered, no payment after 1 hour' },
   lead_submitted: { label: 'A form is submitted', hint: 'Enquiry or lead form blocks' },
-  stock_low: { label: 'Stock runs low', hint: 'Below a product’s alert level' }
+  stock_low: { label: 'Stock runs low', hint: 'Below a product’s alert level' },
+  sub_started: { label: 'A subscription starts', hint: 'New subscriber or free trial' },
+  sub_failed: { label: 'A subscription payment fails', hint: 'Before automatic retries' },
+  sub_cancelled: { label: 'A subscription is cancelled', hint: 'By the subscriber or by you' }
 };
 
 export const actionLabels: Record<ActionId, {label: string;needsConsent: boolean;placeholder: string;}> = {

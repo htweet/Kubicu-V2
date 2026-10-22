@@ -1,3 +1,5 @@
+import type { SubPlan, Subscription } from './subscriptions';
+
 export type ProductStatus = 'active' | 'draft' | 'archived';
 export type ProductKind = 'physical' | 'digital';
 
@@ -191,6 +193,8 @@ export interface Order {
   referredBy?: string;
   /** Team member looking after this order (D60). */
   assigneeId?: string | null;
+  /** Product box renewal: the subscription that created this order (D69). */
+  subscriptionId?: string;
 }
 
 export interface OrderDiscount {
@@ -285,6 +289,9 @@ export interface CommerceData {
   settledRooms?: Record<string, {at: string;outcome: 'reached' | 'missed';refunded: number;}>;
   fulfilment: FulfilmentSettings;
   payments: PaymentSettings;
+  /** Customer subscriptions (D69). */
+  subPlans: SubPlan[];
+  subscriptions: Subscription[];
   nextOrderNumber: number;
   /** True once sample data has been offered/seeded, so clearing it doesn't bring it back. */
   sampleSeeded: boolean;

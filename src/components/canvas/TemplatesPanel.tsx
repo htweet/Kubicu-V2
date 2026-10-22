@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { LockIcon } from 'lucide-react';
 import { examplePages, goalLabels, type ExampleGoal } from '../../data/examples';
 import type { ExamplePage } from '../../data/examples/build';
@@ -80,6 +81,15 @@ export function TemplatesPanel() {
 
         })}
       </ul>
+
+      <div className="flex flex-col gap-1 border-t border-line pt-4">
+        <Link to="/app/templates" className="text-caption font-semibold text-action hover:underline">
+          More templates, including creators’ →
+        </Link>
+        <Link to="/app/templates?tab=mine&sell=1" className="text-caption font-semibold text-action hover:underline">
+          Sell this page as a template →
+        </Link>
+      </div>
 
       <Dialog
         open={!!pending}

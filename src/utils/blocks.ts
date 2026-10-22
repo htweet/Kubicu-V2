@@ -124,6 +124,8 @@ export function summarizeBlock(block: Block): string {
       return `${block.content.items.filter((i) => i.title).length} projects`;
     case 'location':
       return block.content.name || block.content.address || 'No address yet';
+    case 'subscription':
+      return `${block.content.planIds.length} plan${block.content.planIds.length === 1 ? '' : 's'}`;
     default:
       return '';
   }

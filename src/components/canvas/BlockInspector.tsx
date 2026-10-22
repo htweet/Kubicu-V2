@@ -1,6 +1,12 @@
 import React, { useState } from 'react';
-import { GroupIcon, LockIcon, LockOpenIcon } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { GroupIcon, LockIcon, LockOpenIcon, QrCodeIcon } from 'lucide-react';
 import type { Block } from '../../types/page';
+import { useWorkspace } from '../../contexts/WorkspaceContext';
+import { blockDestination, qrHref } from '../../utils/domains/links';
+import { blockName } from '../../utils/blocks';
+
+const qrBlockTypes: Block['type'][] = ['event', 'booking', 'subscription'];
 import { blockDefinitions } from '../../data/blockRegistry';
 import { useEditor } from '../../contexts/EditorContext';
 import { issuesByBlock } from '../../utils/validation';
@@ -26,6 +32,10 @@ export function BlockInspector({ block, showHeader = true }: {block: Block;showH
   const Icon = def.icon;
   const locked = !!block.locked;
   const group = findGroup(state.draft, block.groupId);
+  const { currentSpace } = useWorkspace();
+  const navigate = useNavigate();
+  // Events, bookings and subscription plans can have a QR code that opens straight onto them (D72).
+  const qrDest = qrBlockTypes.includes(block.type) ? blockDestination(currentSpace.id, state.site, block.id) : null;
 
   return (
     <div className="flex h-full flex-col">
@@ -38,6 +48,14 @@ export function BlockInspector({ block, showHeader = true }: {block: Block;showH
             <h2 className="text-label font-semibold text-fg">{def.name}</h2>
             <p className="truncate text-caption text-fg-subtle">{def.description}</p>
           </div>
+          {qrDest &&
+        <IconButton
+          icon={QrCodeIcon}
+          label={`QR code that opens this ${def.name.toLowerCase()}`}
+          size="sm"
+          onClick={() => navigate(qrHref(qrDest, blockName(block)))} />
+
+        }
           <IconButton
           icon={locked ? LockIcon : LockOpenIcon}
           label={locked ? 'Unlock block' : 'Lock block'}

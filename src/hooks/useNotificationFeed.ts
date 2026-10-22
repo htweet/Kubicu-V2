@@ -15,6 +15,8 @@ import { campaignPhase } from '../utils/campaign';
 import { daysUntil, formatDate, isPaidPlan } from '../utils/billing';
 import { formatNgn } from '../utils/format';
 import { TRIAL_REMINDER_DAYS } from '../data/billing';
+import { readTemplateStore } from '../utils/templateListings';
+import { destinationExists, destinationLabel, encodeDestination, fallbackDestination } from '../utils/domains/links';
 
 const DAY = 86400000;
 const startOfToday = () => {
@@ -45,6 +47,26 @@ export function useNotificationFeed(): AppNotification[] {
       if (o.status === 'new') out.push({ id: `order_pending:${o.id}`, event: 'order_pending', area: 'orders', kind: 'update', text: `Order #${o.number} from ${o.customer.name} is waiting for payment`, href: '/app/commerce/orders?status=new', at: o.createdAt });
       if (o.dispute?.status === 'needs_response')
       out.push({ id: `dispute:${o.dispute.id}`, event: 'dispute', area: 'orders', kind: 'action', text: `Dispute on order #${o.number} (${formatNgn(o.dispute.amountNgn)}) — respond by ${formatDate(o.dispute.respondBy)}`, href: '/app/commerce/orders', at: o.dispute.openedAt });
+    }
+
+    // Template review outcomes for this workspace's listings (D70).
+    for (const l of readTemplateStore().listings) {
+      if (l.workspaceId !== current.id) continue;
+      const decision = l.events.find((e) => e.by === 'staff');
+      if (decision && now - Date.parse(decision.at) <= 14 * 86400000)
+      out.push({ id: `tpl_review:${decision.id}`, event: 'team_notice', area: 'team', kind: l.status === 'changes_requested' ? 'action' : 'update', text: `Template “${l.name}”: ${decision.label}`, href: '/app/templates?tab=mine', at: decision.at });
+    }
+
+    // Customer subscriptions (D69).
+    for (const s of commerce.subscriptions ?? []) {
+      const planName = commerce.subPlans.find((p) => p.id === s.planId)?.name ?? 'a plan';
+      if (now - Date.parse(s.startedAt) <= 7 * 86400000)
+      out.push({ id: `sub_new:${s.id}`, event: 'sub_new', area: 'orders', kind: 'update', text: `${s.customer.name} ${s.trialEndsAt ? 'started a trial of' : 'subscribed to'} ${planName}`, href: '/app/commerce/subscriptions', at: s.startedAt });
+      if (s.status === 'past_due' && s.failedAt)
+      out.push({ id: `sub_failed:${s.id}:${s.failedAt}`, event: 'sub_failed', area: 'orders', kind: 'action', text: `${s.customer.name}’s ${planName} payment failed — retrying automatically`, href: '/app/commerce/subscriptions', at: s.failedAt });
+      const cancelled = s.events.find((e) => e.label.startsWith('Cancelled'));
+      if ((s.status === 'cancelling' || s.status === 'ended') && cancelled && now - Date.parse(cancelled.at) <= 14 * 86400000)
+      out.push({ id: `sub_cancelled:${s.id}`, event: 'sub_cancelled', area: 'orders', kind: 'update', text: `${s.customer.name} cancelled ${planName}${s.cancelReason ? ` — “${s.cancelReason}”` : ''}`, href: '/app/commerce/subscriptions', at: cancelled.at });
     }
 
     for (const p of commerce.products) {
@@ -90,6 +112,22 @@ export function useNotificationFeed(): AppNotification[] {
     for (const dmn of domains.domains) {
       if (dmn.status === 'problem') out.push({ id: `domain_status:${dmn.id}:problem`, event: 'domain_status', area: 'domains', kind: 'action', text: `${dmn.host} needs attention — the DNS record doesn’t match`, href: '/app/domains', at: dmn.checkedAt ?? dmn.createdAt });
       if (dmn.status === 'live' && dmn.liveAt && now - Date.parse(dmn.liveAt) < 7 * DAY) out.push({ id: `domain_status:${dmn.id}:live`, event: 'domain_status', area: 'domains', kind: 'update', text: `${dmn.host} is live`, href: '/app/domains', at: dmn.liveAt });
+    }
+
+    // Links and QR codes whose page, product, block or space was removed (D72). Scans fall back, but the owner should re-point them.
+    for (const l of domains.links) {
+      if (l.archivedAt || destinationExists(current, commerce, l.destination)) continue;
+      const qr = domains.qrs.find((q) => q.linkId === l.id);
+      const to = destinationLabel(current, commerce, fallbackDestination(current, commerce, l.destination), ops.services);
+      out.push({
+        id: `link_broken:${l.id}:${encodeDestination(l.destination)}`,
+        event: 'domain_status',
+        area: 'domains',
+        kind: 'action',
+        text: `${qr ? 'QR code' : 'Link'} “${l.name}” points to something you removed — scans go to ${to} until you choose a new destination`,
+        href: qr ? `/app/domains/qr?link=${l.id}` : '/app/domains/links',
+        at: today
+      });
     }
 
     for (const s of current.spaces ?? []) {

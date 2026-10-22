@@ -9,6 +9,7 @@ import { DataTable, type DataColumn } from '../../components/ui/DataTable';
 import { IllustrativeTag } from '../../components/ui/IllustrativeTag';
 import { SampleTag } from '../../components/commerce/StatusBadges';
 import { orderMoney } from '../../utils/commerce/money';
+import { mrr } from '../../utils/commerce/subscriptions';
 import { downloadCsv, toCsv } from '../../utils/csv';
 import { formatNgn, formatTimestamp } from '../../utils/format';
 
@@ -35,6 +36,11 @@ export function Reports() {
     ),
     [orders]
   );
+
+  const subPaid = useMemo(() => {
+    const since = period === 'all' ? 0 : Date.now() - Number(period) * 86400000;
+    return (data.subscriptions ?? []).flatMap((s) => s.payments).filter((p) => p.status === 'paid' && Date.parse(p.at) >= since).reduce((t, p) => t + p.amountNgn, 0);
+  }, [data.subscriptions, period]);
 
   const topProducts = useMemo(() => {
     const map = new Map<string, {name: string;qty: number;revenue: number;}>();
@@ -112,18 +118,34 @@ export function Reports() {
           </p>
         </section>
 
-        <section aria-labelledby="top-heading" className="rounded-lg border border-line bg-raised p-6">
+        <section aria-labelledby="top-heading" className="flex flex-col gap-6 rounded-lg border border-line bg-raised p-6">
+          {(data.subscriptions ?? []).length > 0 &&
+          <div aria-labelledby="recurring-heading" className="border-b border-line pb-5">
+              <h2 id="recurring-heading" className="text-label font-semibold text-fg-muted">
+                Recurring revenue
+              </h2>
+              <div className="mt-2 flex flex-wrap items-baseline gap-x-6 gap-y-1">
+                <p className="text-heading font-semibold tabular-nums text-fg">
+                  {formatNgn(mrr(data))}
+                  <span className="text-label font-normal text-fg-muted"> /month</span>
+                </p>
+                <p className="text-label tabular-nums text-fg-muted">{formatNgn(subPaid)} taken from subscribers in this period</p>
+              </div>
+              <p className="mt-1 text-caption text-fg-subtle">Product box renewals are also counted as orders above. Memberships are subscription payments only.</p>
+            </div>
+          }
+          <div>
           <h2 id="top-heading" className="text-label font-semibold text-fg-muted">
             Best sellers
           </h2>
           {topProducts.length === 0 ?
-          <p className="mt-4 text-label text-fg-muted">No sales in this period.</p> :
+            <p className="mt-4 text-label text-fg-muted">No sales in this period.</p> :
 
-          <ol className="mt-4 flex flex-col gap-3">
+            <ol className="mt-4 flex flex-col gap-3">
               {topProducts.map((p, i) => {
-              const pct = p.revenue / topProducts[0].revenue * 100;
-              return (
-                <li key={p.name}>
+                const pct = p.revenue / topProducts[0].revenue * 100;
+                return (
+                  <li key={p.name}>
                     <div className="flex items-baseline justify-between gap-3 text-label">
                       <span className="min-w-0 truncate font-medium text-fg">
                         <span className="mr-2 tabular-nums text-fg-subtle">{i + 1}</span>
@@ -138,9 +160,10 @@ export function Reports() {
                     </div>
                   </li>);
 
-            })}
+              })}
             </ol>
-          }
+            }
+          </div>
         </section>
       </div>
 

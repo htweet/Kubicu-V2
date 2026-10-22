@@ -72,7 +72,8 @@ export function AdminShell() {
     tip.hide();
     toggle();
   };
-  const back = 'Back to workspace';
+  // Staff console is separate from any customer workspace; this opens the customer app preview.
+  const back = 'Open customer app';
 
   return (
     <div className="flex min-h-screen w-full bg-canvas text-fg">

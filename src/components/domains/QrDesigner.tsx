@@ -15,6 +15,7 @@ import { useDomains } from '../../contexts/DomainsContext';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
 import { useCommerce } from '../../contexts/CommerceContext';
 import { useTeam } from '../../contexts/TeamContext';
+import { useOps } from '../../contexts/OpsContext';
 import { useMainLink } from '../../hooks/useMainLink';
 import type { CampaignLink, QrCentreKind, QrDesign, QrErrorLevel, QrExportSize, QrEyeStyle, QrFrame, QrModuleStyle, QrSize } from '../../types/domains';
 import { decodeDestination, destinationOptions, encodeDestination, shortDisplay, shortUrl, slugError, slugify } from '../../utils/domains/links';
@@ -30,6 +31,9 @@ interface Props {
   qr?: QrDesign;
   /** Making a code for an existing campaign link. */
   presetLink?: CampaignLink;
+  /** “Get QR code” from a product, space, block or service: a new code already pointing there (D72). */
+  presetDest?: string;
+  presetName?: string;
 }
 
 type Section = 'link' | 'pattern' | 'centre' | 'caption' | 'export';
@@ -68,13 +72,14 @@ function lookFrom(qr: QrDesign | undefined, initials: string): Look {
 }
 
 /** Design, test and download a QR code that encodes a tracked short link (D62). */
-export function QrDesigner({ open, onClose, qr, presetLink }: Props) {
+export function QrDesigner({ open, onClose, qr, presetLink, presetDest, presetName }: Props) {
   const { data, saveQr } = useDomains();
   const { current } = useWorkspace();
   const { data: commerce } = useCommerce();
+  const { data: ops } = useOps();
   const team = useTeam();
   const { mainHandle, host } = useMainLink();
-  const options = useMemo(() => destinationOptions(current, commerce), [current, commerce]);
+  const options = useMemo(() => destinationOptions(current, commerce, ops.services), [current, commerce, ops.services]);
   const existingLink = qr ? data.links.find((l) => l.id === qr.linkId) : presetLink;
   const initials = initialsOf(current.name);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -94,8 +99,8 @@ export function QrDesigner({ open, onClose, qr, presetLink }: Props) {
   useEffect(() => {
     if (!open) return;
     setSection('link');
-    setName(existingLink?.name ?? '');
-    setDest(existingLink ? encodeDestination(existingLink.destination) : options[0]?.value ?? encodeDestination({ spaceId: MAIN_SPACE_ID, path: '' }));
+    setName(existingLink?.name ?? presetName ?? '');
+    setDest(existingLink ? encodeDestination(existingLink.destination) : presetDest && options.some((o) => o.value === presetDest) ? presetDest : options[0]?.value ?? encodeDestination({ spaceId: MAIN_SPACE_ID, path: '' }));
     setSlug(existingLink?.slug ?? '');
     setSlugTouched(!!existingLink);
     const l = lookFrom(qr, initials);
@@ -103,7 +108,7 @@ export function QrDesigner({ open, onClose, qr, presetLink }: Props) {
     setEyeMatches(l.eyeColor.toUpperCase() === l.fg.toUpperCase());
     setTried(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, qr?.id, presetLink?.id]);
+  }, [open, qr?.id, presetLink?.id, presetDest]);
 
   const set = (p: Partial<Look>) => setLook((l) => ({ ...l, ...p, ...(eyeMatches && p.fg ? { eyeColor: p.fg } : {}), ...(p.fg && l.captionColor === l.fg ? { captionColor: p.fg } : {}) }));
   const style: QrStyle = { ...look, centreText: look.centreKind === 'initials' ? initials : look.centreText };
@@ -211,6 +216,11 @@ export function QrDesigner({ open, onClose, qr, presetLink }: Props) {
           <div role="tabpanel" id={`qr-panel-${section}`} aria-labelledby={`qr-tab-${section}`} className="flex flex-col gap-5">
             {section === 'link' &&
             <>
+                {!!presetDest && !qr && !options.some((o) => o.value === presetDest) &&
+              <InlineAlert tone="warning" title="That isn’t live yet">
+                    Codes can only open what’s published. Publish it first, or pick somewhere else for now — you can change where the code goes later without reprinting.
+                  </InlineAlert>
+              }
                 <TextInput id="qr-name" label="Name" placeholder="Market flyer, Shop counter…" value={name} onChange={(e) => setName(e.target.value)} error={tried ? errors.name : undefined} />
                 <DestinationSelect id="qr-dest" label="Opens" value={dest} options={options} onChange={setDest} error={tried ? errors.dest : undefined} hint="You can change this later without reprinting." />
                 {existingLink ?

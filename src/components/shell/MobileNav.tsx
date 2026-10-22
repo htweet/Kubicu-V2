@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { MenuIcon, ShieldCheckIcon, ChevronRightIcon } from 'lucide-react';
+import { MenuIcon, ChevronRightIcon } from 'lucide-react';
 import { useAppearancePolicy } from '../../contexts/AppearancePolicyContext';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
 import { WorkspaceSwitcher } from './WorkspaceSwitcher';
@@ -59,7 +59,7 @@ export function MobileNav() {
           </section>
         }
         <ul className="flex flex-col p-2">
-          {[...rest, { id: 'admin', label: 'Super admin', to: '/admin', icon: ShieldCheckIcon, batch: undefined }].map((item) => {
+          {rest.map((item) => {
             const Icon = item.icon;
             return (
               <li key={item.id}>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { PanelLeftCloseIcon, PanelLeftOpenIcon, ShieldCheckIcon } from 'lucide-react';
+import { PanelLeftCloseIcon, PanelLeftOpenIcon } from 'lucide-react';
 import { workspaceNav } from '../../data/navigation';
 import { useSidebarCollapsed } from '../../hooks/useSidebarCollapsed';
 import { useSideTip } from '../../hooks/useSideTip';
@@ -92,7 +92,6 @@ export function Sidebar() {
         }
         {collapsed && <NotificationBell size="md" onMouseEnter={tip.show('Notifications')} onMouseLeave={tip.hide} onFocus={tip.show('Notifications')} onBlur={tip.hide} />}
         <AppearancePicker collapsed={collapsed} tip={tip} />
-        <SidebarItem to="/admin" label="Super admin" icon={ShieldCheckIcon} collapsed={collapsed} tip={tip} />
         {collapsed &&
         <button
           type="button"

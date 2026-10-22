@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { PageOpsProvider, type PageOpsActions } from '../contexts/PageOpsContext';
+import { PageOpsProvider, usePageOpsContext, type PageOpsActions } from '../contexts/PageOpsContext';
 import { BookingSheet } from '../components/booking/BookingSheet';
+import { SubscribeSheet } from '../components/subscriptions/SubscribeSheet';
+import { SubscribeProvider } from '../contexts/SubscribeContext';
 import { usePageOps } from '../hooks/usePageOps';
 import { upsertContact } from '../utils/ops/ops';
 import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
@@ -52,6 +54,7 @@ export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
   const commerce = usePageCommerce(resolved?.workspaceId ?? null, !!resolved?.isOwn);
   const ops = usePageOps(resolved?.workspaceId ?? null, !!resolved?.isOwn);
   const [bookingService, setBookingService] = useState<string | null>(null);
+  const [subPlanId, setSubPlanId] = useState<string | null>(null);
 
   // Visitor analytics (D61): where this visit came from, and a tracker for this page.
   const visit = useMemo(() => visitSource(params), [params]);
@@ -218,30 +221,52 @@ export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
       <RenderPlanProvider plan={plan}>
         <CatalogProvider data={catalog}>
           <PageOpsProvider value={{ data: example ? null : ops.data, actions: isDraft ? null : opsActions }}>
+          <SubscribeProvider
+                open={
+                isDraft || example || !catalog ?
+                null :
+                (id) => {
+                  track('subscribe_open', { label: id });
+                  setSubPlanId(id);
+                }
+                }>
+                
             <CartProvider pageKey={`${resolved.workspaceId ?? 'example'}:${handle}`}>
               {wantShop && catalog ?
-                <main>
+                  <main>
                   <PageSurface
-                    theme={doc.theme}
-                    columnClassName="max-w-[1120px] md:px-8"
-                    footer={showsKubicuBadge(doc, plan) ? <MadeWithKubicu theme={doc.theme} mode="live" /> : <div className="pb-10" />}
-                    header={nav.length > 1 ? <SiteNav theme={doc.theme} title={doc.title} items={nav} activeId={SHOP_NAV_ID} hrefFor={navHref} /> : undefined}>
-                    
+                      theme={doc.theme}
+                      columnClassName="max-w-[1120px] md:px-8"
+                      footer={showsKubicuBadge(doc, plan) ? <MadeWithKubicu theme={doc.theme} mode="live" /> : <div className="pb-10" />}
+                      header={nav.length > 1 ? <SiteNav theme={doc.theme} title={doc.title} items={nav} activeId={SHOP_NAV_ID} hrefFor={navHref} /> : undefined}>
+                      
                     {shopProduct ?
-                    <ProductDetailView theme={doc.theme} data={catalog} product={shopProduct} ordering={storefrontOrdering(catalog, plan.id)} whatsappPhone={catalog.storefront.whatsappPhone || sellerPhone(doc)} shopHref={shopHref} productHref={productHref} /> :
+                      <ProductDetailView theme={doc.theme} data={catalog} product={shopProduct} ordering={storefrontOrdering(catalog, plan.id)} whatsappPhone={catalog.storefront.whatsappPhone || sellerPhone(doc)} shopHref={shopHref} productHref={productHref} /> :
 
-                    <StorefrontView theme={doc.theme} data={catalog} productHref={productHref} />
-                    }
+                      <StorefrontView theme={doc.theme} data={catalog} productHref={productHref} />
+                      }
                   </PageSurface>
                 </main> :
 
-                <PageBody site={doc} pageId={pageId} plan={plan} isDraft={isDraft} phase={phase} nav={nav} navHref={navHref} handle={handle} />
-                }
+                  <PageBody site={doc} pageId={pageId} plan={plan} isDraft={isDraft} phase={phase} nav={nav} navHref={navHref} handle={handle} />
+                  }
               {catalog && <CheckoutSheet theme={doc.theme} commerce={commerce} ownerPlan={plan.id} handle={handle} defaultCode={phase === 'live' ? campaignCode : undefined} dealRoom={roomCheckout} />}
               <CartButton theme={doc.theme} />
               {resolved?.workspaceId && !resolved.example && !isDraft && <ConsentStrip workspaceId={resolved.workspaceId} theme={doc.theme} />}
             </CartProvider>
             <BookingSheet theme={doc.theme} ops={ops} serviceId={bookingService} handle={handle} onClose={() => setBookingService(null)} />
+            {catalog &&
+                <SubscribeSheet
+                  theme={doc.theme}
+                  commerce={commerce}
+                  planId={subPlanId}
+                  handle={handle}
+                  ownerPlan={plan.id}
+                  onClose={() => setSubPlanId(null)}
+                  onSubscribed={(c, planName, consent) => ops.apply((d) => upsertContact(d, c, 'order', `Subscribed to ${planName}`, { consent: consent ? 'subscribed' : 'transactional' }))} />
+
+                }
+          </SubscribeProvider>
           </PageOpsProvider>
         </CatalogProvider>
       </RenderPlanProvider>
@@ -277,9 +302,32 @@ function PageBody({
   const asParam = isDraft ? params.get('as') as SourceId | null : null;
   const source: SourceId = asParam && intentSources.includes(asParam) ? asParam : visitSource(params).source;
   const visible = doc.blocks.filter((b) => (isDraft ? !b.visibility.hidden : isLiveNow(b.visibility)) && (!phase || blockInPhase(b, phase)) && showsForSource(b.visibility, source));
+  // QR codes and links can open onto one block (D72): scroll to it, mark it briefly, and open booking straight away.
+  const anchor = params.get('b');
+  const [marked, setMarked] = useState<string | null>(null);
+  const opsCtx = usePageOpsContext();
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [pageId]);
+    const target = anchor ? visible.find((b) => b.id === anchor) : undefined;
+    if (!target) {
+      window.scrollTo(0, 0);
+      return;
+    }
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const t = window.setTimeout(() => {
+      document.getElementById(`b-${target.id}`)?.scrollIntoView({ block: 'center', behavior: reduce ? 'auto' : 'smooth' });
+      setMarked(target.id);
+      if (target.type === 'booking') {
+        const c = target.content as {source?: string;serviceId?: string | null;};
+        if (c.source === 'catalog' && c.serviceId && opsCtx.data?.services.some((s) => s.id === c.serviceId && s.active)) opsCtx.actions?.openBooking(c.serviceId);
+      }
+    }, 120);
+    const clear = window.setTimeout(() => setMarked(null), 1900);
+    return () => {
+      window.clearTimeout(t);
+      window.clearTimeout(clear);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pageId, anchor]);
   return (
     <main>
       <PageSurface
@@ -295,7 +343,9 @@ function PageBody({
         {visible.map((block) =>
         <div
           key={block.id}
-          className={spacingClass[block.layout.spacing]}
+          id={`b-${block.id}`}
+          className={cn(spacingClass[block.layout.spacing], 'scroll-mt-20 rounded-[14px] transition-[outline-color] duration-300 ease-out')}
+          style={{ outline: '2px solid', outlineOffset: 4, outlineColor: marked === block.id ? doc.theme.text : 'transparent' }}
           // Taps on any link or button inside a block are counted for that block (D61).
           onClickCapture={(e) => {
             const el = (e.target as HTMLElement).closest('a,button');

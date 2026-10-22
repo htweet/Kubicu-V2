@@ -26,7 +26,8 @@ import {
   CalendarDaysIcon,
   UtensilsIcon,
   BriefcaseIcon,
-  MapPinIcon } from
+  MapPinIcon,
+  RepeatIcon } from
 'lucide-react';
 import type { BlockContentMap, BlockType } from '../types/page';
 import type { WorkspacePlan } from '../types/plan';
@@ -440,6 +441,19 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
       coverUrl: '',
       coverAlt: ''
     })
+  },
+  subscription: {
+    type: 'subscription',
+    name: 'Subscription',
+    description: 'Memberships or product boxes people pay for every week, month or year.',
+    category: 'Commerce',
+    icon: RepeatIcon,
+    keywords: ['membership', 'recurring', 'monthly', 'subscribe', 'box', 'club', 'plan'],
+    defaultAlign: 'left',
+    supportsEmphasis: false,
+    clickable: true,
+    minPlan: 'pro',
+    defaults: () => ({ title: 'Join', intro: '', planIds: [], ctaLabel: 'Subscribe', highlightPlanId: null })
   }
 };
 
@@ -471,6 +485,7 @@ export const blockOrder: BlockType[] = [
 'productGrid',
 'menu',
 'pricing',
+'subscription',
 'download'];
 
 

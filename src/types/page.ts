@@ -26,7 +26,8 @@ export type BlockType =
 'countdown' |
 'download' |
 'portfolio' |
-'location';
+'location' |
+'subscription';
 
 export interface GalleryImage {
   id: string;
@@ -240,6 +241,8 @@ export interface BlockContentMap {
   };
   portfolio: {title: string;items: PortfolioItem[];};
   location: {name: string;address: string;timeZone: string;hours: OpeningHours[];note: string;};
+  /** Recurring plans from Commerce → Subscriptions, one to three side by side (D69). */
+  subscription: {title: string;intro: string;planIds: string[];ctaLabel: string;highlightPlanId: string | null;};
 }
 
 export interface BlockStyle {

@@ -1,13 +1,15 @@
+import type { LucideIcon } from 'lucide-react';
+import { CalendarCheckIcon, HandHeartIcon, MegaphoneIcon, PaletteIcon, ShoppingBagIcon, SparklesIcon, TicketIcon } from 'lucide-react';
 import type { FirstActionType, OnboardingGoal } from '../hooks/useOnboarding';
 
-export const onboardingGoals: {id: OnboardingGoal;label: string;description: string;}[] = [
-{ id: 'sell', label: 'Sell products', description: 'Clothes, food, books, crafts — with WhatsApp ordering' },
-{ id: 'book', label: 'Take bookings', description: 'Appointments, calls, quotes and services' },
-{ id: 'audience', label: 'Grow an audience', description: 'Links, content, newsletter and brand deals' },
-{ id: 'showcase', label: 'Show my work', description: 'Portfolio, case studies and enquiries' },
-{ id: 'events', label: 'Run an event', description: 'Dates, tickets, venue and countdown' },
-{ id: 'support', label: 'Raise support', description: 'Donations, volunteers and community' },
-{ id: 'other', label: 'Something else', description: 'Start from any layout' }];
+export const onboardingGoals: {id: OnboardingGoal;label: string;description: string;icon: LucideIcon;}[] = [
+{ id: 'sell', label: 'Sell products', description: 'Clothes, food, books, crafts — with WhatsApp ordering', icon: ShoppingBagIcon },
+{ id: 'book', label: 'Take bookings', description: 'Appointments, calls, quotes and services', icon: CalendarCheckIcon },
+{ id: 'audience', label: 'Grow an audience', description: 'Links, content, newsletter and brand deals', icon: MegaphoneIcon },
+{ id: 'showcase', label: 'Show my work', description: 'Portfolio, case studies and enquiries', icon: PaletteIcon },
+{ id: 'events', label: 'Run an event', description: 'Dates, tickets, venue and countdown', icon: TicketIcon },
+{ id: 'support', label: 'Raise support', description: 'Donations, volunteers and community', icon: HandHeartIcon },
+{ id: 'other', label: 'Something else', description: 'Start from any layout', icon: SparklesIcon }];
 
 
 /** Suggested first action per goal — the "one real action" a new page needs. */

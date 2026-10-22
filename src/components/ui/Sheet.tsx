@@ -86,12 +86,12 @@ export function Sheet({
           )}>
           
             {isBottom && !fullScreen && <div aria-hidden className="mx-auto mt-2 h-1 w-10 shrink-0 rounded-full bg-line-strong" />}
-            <div className={cn('flex items-center justify-between gap-3 border-b border-line py-3', fullScreen ? 'pl-5 pr-2' : 'px-5')}>
+            <div className={cn('flex shrink-0 items-start justify-between gap-3 border-b border-line py-3', fullScreen ? 'pl-5 pr-2' : 'px-5')}>
               <div className="min-w-0">
                 <h2 id={titleId} className="truncate text-heading font-semibold">
                   {title}
                 </h2>
-                {description && <p className="truncate text-caption text-fg-subtle">{description}</p>}
+                {description && <p className="line-clamp-2 text-caption text-fg-subtle">{description}</p>}
               </div>
               <div className="flex items-center gap-1">
                 {headerActions}
@@ -99,7 +99,7 @@ export function Sheet({
               </div>
             </div>
             <div className={cn('scroll-quiet min-h-0 flex-1 overflow-y-auto', bodyClassName)}>{children}</div>
-            {footer && <div className={cn('border-t border-line bg-overlay px-5 py-3', fullScreen && '[&_button]:min-h-[44px]')}>{footer}</div>}
+            {footer && <div className={cn('shrink-0 border-t border-line bg-overlay px-5 py-3', fullScreen && '[&_button]:min-h-[44px]')}>{footer}</div>}
           </motion.div>
         </div>
       }

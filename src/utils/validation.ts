@@ -163,6 +163,13 @@ export function validateBlock(block: Block): ValidationIssue[] {
         if (pk.some((p) => !p.url && !p.serviceId)) push('warning', 'Some package buttons have no link or service yet', 'packages');
         break;
       }
+    case 'subscription':{
+        const c = block.content;
+        if (c.planIds.length === 0) push('error', 'Choose at least one plan from Commerce → Subscriptions', 'planIds');
+        if (c.planIds.length > 3) push('warning', 'More than three plans is hard to compare on a phone', 'planIds');
+        if (!c.ctaLabel.trim()) push('warning', 'Add a button label', 'ctaLabel');
+        break;
+      }
     case 'testimonial':{
         const c = block.content;
         if (!c.quote.trim()) push('error', 'Add the customer’s words', 'quote');

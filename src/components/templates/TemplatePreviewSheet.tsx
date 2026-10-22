@@ -19,10 +19,12 @@ interface Props {
   onApply: (t: ExamplePage) => void;
   onNewSpace: (t: ExamplePage) => void;
   onBuy: (t: ExamplePage) => void;
+  /** Creator credit, reviews and refund for creator templates (D70). */
+  extra?: React.ReactNode;
 }
 
 /** Full-page preview on phone or desktop, then apply to this page or start a campaign with it (D67). */
-export function TemplatePreviewSheet({ template, owned, canEdit, onClose, onApply, onNewSpace, onBuy }: Props) {
+export function TemplatePreviewSheet({ template, owned, canEdit, onClose, onApply, onNewSpace, onBuy, extra }: Props) {
   const [device, setDevice] = useState<'phone' | 'desktop'>('phone');
   if (!template) return <Sheet open={false} onClose={onClose} title="">{null}</Sheet>;
   const price = templatePrice(template.id);
@@ -59,7 +61,7 @@ export function TemplatePreviewSheet({ template, owned, canEdit, onClose, onAppl
       <div className="flex flex-col gap-5 p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap gap-1.5">
-            {price > 0 ? <Badge tone="accent">{owned ? 'Premium · owned' : 'Premium'}</Badge> : <Badge tone="neutral">Free</Badge>}
+            {price > 0 ? <Badge tone="accent">{owned ? `${formatNgn(price)} · owned` : 'Premium'}</Badge> : <Badge tone="neutral">Free</Badge>}
             {template.goals.map((g) =>
             <Badge key={g} tone="neutral">
                 {goalLabels[g]}
@@ -86,6 +88,7 @@ export function TemplatePreviewSheet({ template, owned, canEdit, onClose, onAppl
         <p className="text-caption text-fg-muted">
           Applying keeps your name, photo, products, links and contact details, and removes the example’s prices, links and quotes. Best on {plans[template.plan].name} or above. Undo any time from version history.
         </p>
+        {extra}
       </div>
     </Sheet>);
 

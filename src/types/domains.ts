@@ -31,6 +31,8 @@ export interface CustomDomain {
 export interface LinkDestination {
   spaceId: string;
   path: string;
+  /** A block on that page to scroll to — an event, a booking or a subscription block. */
+  anchor?: string;
 }
 
 /** A tracked short link: kub.icu/{main handle}/s/{slug} (D62). */

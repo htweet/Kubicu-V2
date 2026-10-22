@@ -2,17 +2,22 @@ import React from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { LinkIcon } from 'lucide-react';
 import { useWorkspace } from '../contexts/WorkspaceContext';
-import { findShortLink, landingHref, spaceHandle } from '../utils/domains/links';
+import { fallbackDestination, findShortLink, landingHref, spaceHandle } from '../utils/domains/links';
 import { readDomains } from '../utils/domains/storage';
+import { readCommerce } from '../utils/commerce/storage';
 import { MAIN_SPACE_ID } from '../utils/spaces';
 import { pageHref } from '../utils/sitePages';
 
-/** kub.icu/{handle}/s/{slug}: a campaign link or QR scan lands on its destination, tagged for Analytics (D62). */
+/**
+ * kub.icu/{handle}/s/{slug}: a campaign link or QR scan lands on its destination, tagged for Analytics (D62).
+ * If the destination was removed, the scan falls back to the nearest page that still exists (D72) — printed codes never dead-end.
+ */
 export function ShortLink() {
   const { handle = '', slug = '' } = useParams();
   const { workspaces } = useWorkspace();
   const hit = findShortLink(workspaces, handle, slug, readDomains);
-  const target = hit && !hit.link.archivedAt ? landingHref(hit.workspace.id, hit.link) : null;
+  const link = hit && !hit.link.archivedAt ? { ...hit.link, destination: fallbackDestination(hit.workspace, readCommerce(hit.workspace.id), hit.link.destination) } : null;
+  const target = hit && link ? landingHref(hit.workspace.id, link) : null;
   if (target) return <Navigate to={target} replace />;
   const home = hit ? spaceHandle(hit.workspace.id, MAIN_SPACE_ID) : handle;
   return (

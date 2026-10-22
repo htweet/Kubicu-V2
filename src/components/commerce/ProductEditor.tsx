@@ -1,6 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ArchiveIcon, CheckIcon, RotateCcwIcon, Trash2Icon } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { ArchiveIcon, CheckIcon, QrCodeIcon, RotateCcwIcon, Trash2Icon } from 'lucide-react';
 import { toast } from 'sonner';
+import { useWorkspace } from '../../contexts/WorkspaceContext';
+import { destinationExists, qrHref } from '../../utils/domains/links';
+import { MAIN_SPACE_ID } from '../../utils/spaces';
+import { STOREFRONT_PATH } from '../../utils/commerce/storefront';
 import type { Product, ProductKind } from '../../types/commerce';
 import { useCommerce } from '../../contexts/CommerceContext';
 import { useCan } from '../../contexts/TeamContext';
@@ -59,6 +64,8 @@ export function blankProduct(kind: ProductKind): Product {
 
 export function ProductEditor({ open, productId, kind, onClose }: ProductEditorProps) {
   const { data, apply } = useCommerce();
+  const { current } = useWorkspace();
+  const navigate = useNavigate();
   // Sales can change stock and details, not prices (D57).
   const pricesAllowed = useCan('prices.edit');
   const existing = productId ? data.products.find((p) => p.id === productId) : undefined;
@@ -129,6 +136,9 @@ export function ProductEditor({ open, productId, kind, onClose }: ProductEditorP
   };
 
   const title = existing ? `Edit ${existing.name}` : kind === 'digital' ? 'New digital product' : 'New product';
+  // “QR code” opens Domains & QR with a code already pointing at this product's shop page (D72).
+  const productDest = existing ? { spaceId: MAIN_SPACE_ID, path: `${STOREFRONT_PATH}/${existing.id}` } : null;
+  const productQr = productDest && destinationExists(current, data, productDest) ? productDest : null;
 
   return (
     <>
@@ -145,6 +155,18 @@ export function ProductEditor({ open, productId, kind, onClose }: ProductEditorP
               {existing &&
             <Button variant="tertiary" size="sm" leadingIcon={existing.status === 'archived' ? RotateCcwIcon : ArchiveIcon} onClick={archive}>
                   {existing.status === 'archived' ? 'Restore' : 'Archive'}
+                </Button>
+            }
+              {existing &&
+            <Button
+              variant="tertiary"
+              size="sm"
+              leadingIcon={QrCodeIcon}
+              disabled={!productQr}
+              title={productQr ? 'A printable code that opens this product in your shop' : existing.status !== 'active' ? 'Make the product active first.' : 'Turn on the storefront to give products their own page.'}
+              onClick={() => productQr && navigate(qrHref(productQr, existing.name))}>
+              
+                  QR code
                 </Button>
             }
               {existing && !referenced &&

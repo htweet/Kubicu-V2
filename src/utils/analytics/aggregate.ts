@@ -194,6 +194,10 @@ export function funnels(events: AnalyticsEvent[]) {
     leads: funnel(events, [
     ['Visited', 'view'],
     ['Sent a form or signed up', 'lead']]
+    ),
+    subscriptions: funnel(events, [
+    ['Opened a plan', 'subscribe_open'],
+    ['Subscribed or started a trial', 'subscribe_started']]
     )
   };
 }

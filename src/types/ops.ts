@@ -108,7 +108,7 @@ export interface Contact {
   assigneeId?: string | null;
 }
 
-export type TriggerId = 'order_paid' | 'booking_created' | 'checkout_abandoned' | 'lead_submitted' | 'stock_low';
+export type TriggerId = 'order_paid' | 'booking_created' | 'checkout_abandoned' | 'lead_submitted' | 'stock_low' | 'sub_started' | 'sub_failed' | 'sub_cancelled';
 export type ActionId = 'send_email' | 'send_whatsapp' | 'create_task' | 'add_tag' | 'notify_owner' | 'notify_member';
 
 export interface AutomationStep {

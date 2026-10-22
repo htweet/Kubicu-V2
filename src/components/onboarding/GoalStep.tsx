@@ -3,6 +3,7 @@ import type { OnboardingState } from '../../hooks/useOnboarding';
 import { onboardingGoals, defaultActionFor } from '../../data/onboarding';
 import { TextInput } from '../ui/TextInput';
 import { ChoiceCard, StepHeading, StepNav } from './OnboardingLayout';
+import { cn } from '../../utils/cn';
 
 interface StepProps {
   state: OnboardingState;
@@ -17,16 +18,30 @@ export function GoalStep({ state, update, go }: StepProps) {
       <fieldset className="mt-8">
         <legend className="sr-only">Main goal</legend>
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {onboardingGoals.map((g) =>
-          <ChoiceCard
-            key={g.id}
-            name="goal"
-            selected={state.goal === g.id}
-            onSelect={() => update({ goal: g.id, actionType: state.actionType ?? defaultActionFor[g.id], kitId: null })}
-            title={g.label}
-            description={g.description} />
+          {onboardingGoals.map((g) => {
+            const selected = state.goal === g.id;
+            const Icon = g.icon;
+            return (
+              <ChoiceCard
+                key={g.id}
+                name="goal"
+                selected={selected}
+                onSelect={() => update({ goal: g.id, actionType: state.actionType ?? defaultActionFor[g.id], kitId: null })}
+                title={g.label}
+                description={g.description}>
+                
+                <span
+                  aria-hidden
+                  className={cn(
+                    'mb-3 flex h-10 w-10 items-center justify-center rounded-md transition-colors duration-150',
+                    selected ? 'bg-action text-action-fg' : 'bg-sunken text-fg-muted'
+                  )}>
+                  
+                  <Icon size={20} strokeWidth={2.25} />
+                </span>
+              </ChoiceCard>);
 
-          )}
+          })}
         </div>
       </fieldset>
       <div className="mt-8 max-w-sm">

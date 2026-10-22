@@ -17,7 +17,10 @@ export type NotifEventId =
 'ai_low' |
 'domain_status' |
 'dealroom_result' |
-'campaign_phase';
+'campaign_phase' |
+'sub_new' |
+'sub_failed' |
+'sub_cancelled';
 
 export type NotifChannel = 'app' | 'email' | 'whatsapp';
 

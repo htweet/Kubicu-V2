@@ -12,6 +12,7 @@ import {
   MoreHorizontalIcon,
   PenToolIcon,
   PlusIcon,
+  QrCodeIcon,
   UsersIcon,
   XCircleIcon } from
 'lucide-react';
@@ -37,6 +38,7 @@ import { docSignature, cloneDocument } from '../utils/blocks';
 import { suggestHandles, takenHandles } from '../utils/handles';
 import { formatRelative, publicUrl } from '../utils/format';
 import { cn } from '../utils/cn';
+import { qrHref } from '../utils/domains/links';
 
 export function Spaces() {
   const { state, actions, issues, hasUnpublishedChanges } = useEditor();
@@ -46,6 +48,7 @@ export function Spaces() {
   const [archiving, setArchiving] = useState<SpaceRow | null>(null);
   const spacesAllowed = useCan('spaces.manage');
   const teamAllowed = useCan('team.manage');
+  const qrAllowed = useCan('pages.edit');
   const team = useTeam();
   const [accessFor, setAccessFor] = useState<Space | null>(null);
   const extras = current.spaces ?? [];
@@ -100,13 +103,24 @@ export function Spaces() {
     onSelect: () => setAccessFor(r.space)
   });
 
+  // A printable code for any space — main page, campaign or DealRoom (D72).
+  const qrItem = (r: SpaceRow) => ({
+    id: 'qr',
+    label: 'Get QR code',
+    icon: QrCodeIcon,
+    disabled: r.status === 'ended' || !r.doc || !qrAllowed.allowed,
+    reason: r.status === 'ended' ? 'Archived — its link forwards to your main page.' : !r.doc ? 'Save the space first.' : qrAllowed.reason,
+    onSelect: () => navigate(qrHref({ spaceId: r.space.id, path: '' }, r.space.kind === 'main' ? 'Main page' : r.space.name))
+  });
+
   const rowMenu = (r: SpaceRow) =>
   r.inCurrentWorkspace && r.space.kind === 'main' ?
-  <Menu align="end" items={[accessItem(r)]} trigger={(props) => <IconButton {...props} size="sm" icon={MoreHorizontalIcon} label={`More actions for ${r.space.name}`} />} /> :
+  <Menu align="end" items={[qrItem(r), accessItem(r)]} trigger={(props) => <IconButton {...props} size="sm" icon={MoreHorizontalIcon} label={`More actions for ${r.space.name}`} />} /> :
   r.inCurrentWorkspace ?
   <Menu
     align="end"
     items={[
+    qrItem(r),
     accessItem(r),
     {
       id: 'live',

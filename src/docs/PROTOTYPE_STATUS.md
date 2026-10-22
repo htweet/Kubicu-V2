@@ -130,8 +130,12 @@
 
 ### Batch 6 (part 3) — subscriptions, template selling, Super-admin
 - [x] **Pass A — Subscription history (D68)**: Plan & billing has a "What's coming" line and a dated Subscription history (who, when, linked invoice) for trials, plan and cycle changes, scheduled downgrades, cancel/resume, renewals paid or failed, grace period, retries, move to Free, card changes and one-off purchases; filters and CSV export; sample history for the demo workspace
-- [ ] Pass B — Customer subscriptions (memberships + product boxes), Subscription block, subscriber portal
-- [ ] Pass C — Creators sell reviewed templates, earnings and payouts
+- [x] **Pass B — Customer subscriptions (D69)**: Commerce → Subscriptions (plans editor for memberships and product boxes, subscribers list and detail, MRR/joined/left/failing, prototype "Run renewals now"); Subscription block with inspector and publish checks; visitor sign-up sheet (details → delivery → review & pay with renewal terms; card works / bank confirmation / declined); subscriber portal (pause, skip, change plan, update card, cancel/resume); automatic renewals, trial ends, retries on days 1/3/5 and 7-day grace while the app is open; box renewals create orders and take stock; Reports recurring revenue; notifications, automation triggers and Analytics funnel; sample plans and subscribers for the demo workspace
+- [x] **Pass C — Creators sell reviewed templates (D70)**: Templates gets Browse / My templates tabs; creator listings in Browse (credit, rating, reviews, Made by filter, buy, refund within 7 days, buyers keep the version bought); Sell / Update dialog with a side-by-side "what buyers get" check; My templates with statuses, review notes, sales, pending / available / lifetime earnings and test-mode payouts; Super admin → Modules & marketplace review queue with checklist, approve / ask for changes / don't approve, listed and sent-back tabs, unlist; review outcomes in notifications; canvas Templates panel links to more templates and to selling; sample creators and one template waiting for review
+- [x] **QR reach and fallbacks (D72)**: QR/campaign link destinations include event, booking and subscription blocks; "Get QR code" from My Spaces, publish success, product editor, Services and the block inspector; removed destinations fall back to the nearest live page with a notification
+- [x] Right-side sheets: Discount, Subscription plan, Subscriber and template-review panels get proper padding; sheet descriptions wrap to two lines; header and footer no longer shrink
+- [x] Onboarding first step: each goal card has an icon
+- [x] Staff console separated from the customer app (D71a): no Super admin link in the workspace sidebar or phone menu; entry from the sign-in page
 - [ ] Pass D — Super-admin operations
 
 ## Honest limits

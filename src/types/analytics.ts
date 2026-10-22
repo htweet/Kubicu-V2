@@ -9,7 +9,9 @@ export type EventType =
 'booking_time' |
 'booking_confirmed' |
 'lead' |
-'signup';
+'signup' |
+'subscribe_open' |
+'subscribe_started';
 
 export type SourceId = 'whatsapp' | 'instagram' | 'tiktok' | 'facebook' | 'x' | 'google' | 'qr' | 'campaign' | 'direct' | 'other';
 

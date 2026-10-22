@@ -25,7 +25,7 @@ import { FunnelView } from '../components/analytics/FunnelView';
 import { cn } from '../utils/cn';
 
 type Period = '7' | '30' | '90' | 'custom';
-type FunnelTab = 'shop' | 'booking' | 'leads';
+type FunnelTab = 'shop' | 'booking' | 'leads' | 'subscriptions';
 
 const pct = (n: number) => `${Math.round(n * 100)}%`;
 
@@ -375,7 +375,8 @@ export function Analytics() {
               items={[
               { id: 'shop', label: 'Shop' },
               { id: 'booking', label: 'Bookings' },
-              { id: 'leads', label: 'Leads' }]
+              { id: 'leads', label: 'Leads' },
+              { id: 'subscriptions', label: 'Subscriptions' }]
               }
               value={funnelTab}
               onChange={setFunnelTab}
@@ -386,6 +387,7 @@ export function Analytics() {
             <div className="mt-4 max-w-3xl" role="tabpanel" id={`funnel-panel-${funnelTab}`} aria-labelledby={`funnel-tab-${funnelTab}`}>
               {funnelTab === 'shop' && <FunnelView steps={f.shop[0].count ? f.shop : f.shopFromCart} emptyText="No product views or carts in this period." />}
               {funnelTab === 'booking' && <FunnelView steps={f.booking} emptyText="Nobody opened a booking in this period." />}
+              {funnelTab === 'subscriptions' && <FunnelView steps={f.subscriptions} emptyText="Nobody opened a subscription plan in this period." />}
               {funnelTab === 'leads' &&
             <FunnelView
               steps={[f.leads[0], { label: 'Sent a form or signed up', count: new Set(cur.filter((e) => e.type === 'lead' || e.type === 'signup').map((e) => e.session)).size }]}

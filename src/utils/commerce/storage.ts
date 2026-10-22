@@ -1,6 +1,7 @@
 import type { CommerceData, StorefrontSettings } from '../../types/commerce';
 import { sampleDiscounts } from '../../data/sampleDiscounts';
 import { SAMPLE_ROOM_HANDLE, sampleRoomOrders } from '../../data/commerceSeed';
+import { sampleSubPlans, sampleSubscriptions } from '../../data/sampleSubscriptions';
 
 export const commerceKey = (workspaceId: string) => `kubicu.commerce.${workspaceId}`;
 
@@ -34,6 +35,8 @@ export function emptyCommerce(): CommerceData {
       freeDeliveryOverNgn: null
     },
     payments: { provider: null, connectedAt: null, businessName: '', methods: ['Card', 'Bank transfer', 'USSD'] },
+    subPlans: [],
+    subscriptions: [],
     nextOrderNumber: 1001,
     sampleSeeded: false
   };
@@ -63,12 +66,17 @@ export function readCommerce(workspaceId: string): CommerceData | null {
       parsed.discounts :
       Array.isArray(parsed.products) && parsed.products.some((p) => p.sample) ?
       sampleDiscounts() :
-      []
+      [],
+      // Saved before subscriptions existed (D69): workspaces holding sample data get the sample plans.
+      subPlans: Array.isArray(parsed.subPlans) ? parsed.subPlans : hasSampleProducts(parsed) ? sampleSubPlans() : [],
+      subscriptions: Array.isArray(parsed.subscriptions) ? parsed.subscriptions : hasSampleProducts(parsed) ? sampleSubscriptions() : []
     };
   } catch {
     return null;
   }
 }
+
+const hasSampleProducts = (parsed: Partial<CommerceData>) => Array.isArray(parsed.products) && parsed.products.some((p) => p.sample);
 
 /** Throws when storage is full so callers can show a real error. */
 export function writeCommerce(workspaceId: string, data: CommerceData): void {

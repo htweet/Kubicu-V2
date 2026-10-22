@@ -1,6 +1,7 @@
 import type { Collection, CommerceData, Order, OrderEvent, Product, StockMovement } from '../types/commerce';
 import { kubicuFee, providerFee } from '../utils/commerce/money';
 import { sampleDiscounts } from './sampleDiscounts';
+import { sampleSubPlans, sampleSubscriptions } from './sampleSubscriptions';
 
 /**
  * SAMPLE commerce data for exploring the prototype. Every record is flagged `sample`
@@ -357,6 +358,8 @@ export function withSampleData(data: CommerceData): CommerceData {
     orders: [...data.orders, ...sampleOrders(), ...sampleRoomOrders()].sort((a, b) => b.number - a.number),
     discounts: [...(data.discounts ?? []), ...sampleDiscounts().filter((s) => !(data.discounts ?? []).some((d) => d.id === s.id))],
     settledRooms: data.settledRooms ?? {},
+    subPlans: [...(data.subPlans ?? []), ...sampleSubPlans().filter((s) => !(data.subPlans ?? []).some((p) => p.id === s.id))],
+    subscriptions: [...(data.subscriptions ?? []), ...sampleSubscriptions().filter((s) => !(data.subscriptions ?? []).some((x) => x.id === s.id))],
     nextOrderNumber: Math.max(data.nextOrderNumber, 1013),
     storefront: data.storefront?.enabled ? data.storefront : { ...(data.storefront ?? {}), enabled: true, title: 'Shop the collection', intro: 'Made in small runs in Lekki. Delivery across Lagos, pickup from the studio.', showInMenu: true, menuLabel: 'Shop', ordering: 'checkout', whatsappPhone: data.storefront?.whatsappPhone ?? '', hideSoldOut: false },
     fulfilment: data.fulfilment.zones.length ?

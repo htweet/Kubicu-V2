@@ -183,7 +183,7 @@ export function DiscountEditor({ target, onClose }: DiscountEditorProps) {
         </div>
       }>
       
-      <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-5 px-5 py-5">
         {existing && uses > 0 &&
         <InlineAlert tone="info" title={`Used on ${uses} order${uses === 1 ? '' : 's'}`}>
             Changes apply to new orders only. Discounts with orders can be paused but not deleted, so your records stay complete.
@@ -275,7 +275,7 @@ export function DiscountEditor({ target, onClose }: DiscountEditorProps) {
           <CurrencyInput id="disc-min" label="Minimum spend" optional value={form.minSubtotalNgn} error={err('minSubtotalNgn')} onChange={(v) => set('minSubtotalNgn', v)} hint="Based on the items’ total before delivery." />
         </fieldset>
 
-        <fieldset className="grid gap-4 sm:grid-cols-2">
+        <fieldset className="flex flex-col gap-4">
           <legend className="mb-2 text-label font-medium text-fg">When</legend>
           <DateTimeInput id="disc-start" label="Starts" optional clearable value={form.startsAt} onChange={(v) => set('startsAt', v)} hint="Empty = now" />
           <DateTimeInput id="disc-end" label="Ends" optional clearable value={form.endsAt} error={err('endsAt')} onChange={(v) => set('endsAt', v)} hint="Empty = no end" />
