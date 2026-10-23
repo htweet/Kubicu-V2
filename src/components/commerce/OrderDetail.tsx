@@ -25,6 +25,8 @@ import { useWorkspace } from '../../contexts/WorkspaceContext';
 import { printOrderInvoice } from '../../utils/orderInvoice';
 import { useEditor } from '../../contexts/EditorContext';
 import { EscrowPanel } from '../money/EscrowPanel';
+import { OrderBalancePanel } from './OrderBalancePanel';
+import { dispatchBlocked } from '../../utils/commerce/deposit';
 
 const steps: {status: OrderStatus;label: string;}[] = [
 { status: 'new', label: 'Placed' },
@@ -116,6 +118,10 @@ export function OrderDetail({ orderId, onClose }: {orderId: string | null;onClos
           <Button leadingIcon={ReceiptIcon} onClick={() => apply((d) => confirmPayment(d, order.id)) && toast('Payment confirmed (simulated provider update)')}>
                 Mark payment confirmed
               </Button> :
+          next && (next.status === 'out_for_delivery' || next.status === 'completed') && dispatchBlocked(order) ?
+          <Button disabled leadingIcon={next.icon} title="Waiting for the balance">
+                Waiting for balance
+              </Button> :
           next ?
           <Button leadingIcon={next.icon} onClick={advance}>
                 {next.label}
@@ -155,6 +161,8 @@ export function OrderDetail({ orderId, onClose }: {orderId: string | null;onClos
               Joined a group buy at kub.icu/{order.sourceHandle}. Paid, but waiting for the goal — don’t pack yet. If the goal is missed, it’s refunded in full automatically.
             </p>
           }
+
+          <OrderBalancePanel order={order} handle={handle} business={current.name} apply={apply} />
 
           {stepIndex >= 0 && !digitalOnly &&
           // Phones: a vertical tracker; wider screens: a five-part bar.

@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ArrowLeftIcon, CheckCircle2Icon, MinusIcon, PlusIcon, ShieldCheckIcon, XCircleIcon } from 'lucide-react';
 import type { MoneyData, PaymentLink } from '../types/money';
+import type { PageTheme } from '../types/page';
 import { useResolvedPage } from '../hooks/useResolvedPage';
 import { buyerEscrowFee, inspectionDays, linkMethod, linkView, MONEY_EVENT, readMoney, recordLinkPayment, writeMoney } from '../utils/money/store';
 import { formatNgn, formatTimestamp } from '../utils/format';
@@ -9,6 +10,7 @@ import { PageSurface } from '../components/blocks/PageSurface';
 import { cardStyle, mix } from '../components/blocks/pageStyle';
 import { CheckoutHeading, PrimaryButton, SecondaryButton, TestModeNote, ThemedField } from '../components/checkout/checkoutUi';
 import { Unavailable } from './PublicPage';
+import { isStaged, linkStageAmounts, nextLinkStage, stagePaidOn } from '../utils/money/linkStages';
 
 type Step = 'details' | 'pay' | 'done' | 'declined';
 type CardOutcome = 'success' | 'declined';
@@ -28,7 +30,7 @@ export function PayLinkPage() {
   const [outcome, setOutcome] = useState<CardOutcome>('success');
   const [tried, setTried] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [receipt, setReceipt] = useState<{number: string;at: string;amount: number;} | null>(null);
+  const [receipt, setReceipt] = useState<{number: string;at: string;amount: number;stage?: string;} | null>(null);
 
   useEffect(() => {
     if (!workspaceId) return;
@@ -50,12 +52,24 @@ export function PayLinkPage() {
     writeMoney(workspaceId, { ...d, links: d.links.map((l) => l.id === link.id ? { ...l, views: l.views + 1 } : l) });
   }, [workspaceId, link?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const stage = link && isStaged(link) ? nextLinkStage(link) : null;
+  const stageAmounts = link && isStaged(link) ? linkStageAmounts(link) : {};
+
+  // Later stages: the same payer, so carry their details over.
+  useEffect(() => {
+    const first = link && isStaged(link) ? link.payments.find((p) => p.stageId) : undefined;
+    if (!first) return;
+    setName((n) => n || first.payerName);
+    setPhone((p) => p || first.payerPhone);
+  }, [link?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const subtotal = useMemo(() => {
     if (!link) return 0;
+    if (link.kind === 'fixed' && stage) return stageAmounts[stage.id] ?? 0;
     if (link.kind === 'fixed') return link.amountNgn;
     if (link.kind === 'open') return Number(amount) || 0;
     return link.items.reduce((s, i) => s + (qty[i.id] ?? 0) * i.unitNgn, 0);
-  }, [link, amount, qty]);
+  }, [link, amount, qty, stage?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!page) return <Unavailable handle={handle} />;
   if (!money || !workspaceId) return null;
@@ -88,16 +102,16 @@ export function PayLinkPage() {
       if (outcome === 'declined') return setStep('declined');
       const d = readMoney(workspaceId);
       const items = link.kind === 'items' ? link.items.filter((i) => (qty[i.id] ?? 0) > 0).map((i) => ({ label: i.label, qty: qty[i.id], unitNgn: i.unitNgn })) : undefined;
-      const res = recordLinkPayment(d, link.id, { amountNgn: subtotal, payerName: name.trim(), payerPhone: phone.trim(), note: note.trim(), items });
+      const res = recordLinkPayment(d, link.id, { amountNgn: subtotal, payerName: name.trim(), payerPhone: phone.trim(), note: note.trim(), items, stageId: stage?.id });
       if (!res) return setStep('declined');
       writeMoney(workspaceId, res.data);
-      setReceipt({ number: res.payment.receipt, at: res.payment.at, amount: total });
+      setReceipt({ number: res.payment.receipt, at: res.payment.at, amount: total, stage: stage?.label });
       setStep('done');
     }, 1100);
   };
 
   const closedCopy =
-  view === 'paused' ? `${business} isn’t taking payments on this link right now.` : view === 'expired' ? `This link closed on ${link.expiresAt ? formatTimestamp(link.expiresAt) : 'its end date'}.` : view === 'used_up' ? 'This link has reached its limit and is closed.' : null;
+  view === 'paused' ? `${business} isn’t taking payments on this link right now.` : view === 'expired' ? `This link closed on ${link.expiresAt ? formatTimestamp(link.expiresAt) : 'its end date'}.` : view === 'used_up' ? isStaged(link) ? 'Every stage is paid — thank you. Nothing more is due on this link.' : 'This link has reached its limit and is closed.' : null;
 
   return (
     <div className="min-h-screen w-full" style={{ background: t.background }}>
@@ -114,7 +128,7 @@ export function PayLinkPage() {
                 Payment received
               </CheckoutHeading>
               <section aria-label="Receipt" className="flex flex-col gap-2 p-5 text-[14.5px]" style={{ ...cardStyle(t), color: t.text }}>
-                <Row label="For" value={link.title} />
+                <Row label="For" value={receipt.stage ? `${link.title} · ${receipt.stage}` : link.title} />
                 <Row label="Amount" value={formatNgn(receipt.amount)} strong />
                 <Row label="Receipt" value={receipt.number} />
                 <Row label="Paid" value={formatTimestamp(receipt.at)} />
@@ -124,6 +138,12 @@ export function PayLinkPage() {
                   </p>
               }
               </section>
+              {isStaged(link) && <StagePlan link={link} amounts={stageAmounts} theme={t} />}
+              {isStaged(link) && nextLinkStage(link) &&
+            <SecondaryButton theme={t} onClick={() => {setReceipt(null);setStep('details');setTried(false);}}>
+                  Pay the next stage now
+                </SecondaryButton>
+            }
               <TestModeNote theme={t} />
             </> :
           step === 'declined' ?
@@ -147,9 +167,12 @@ export function PayLinkPage() {
                 </p>
             }
 
+              {isStaged(link) && <StagePlan link={link} amounts={stageAmounts} theme={t} />}
+
               {!closedCopy && step === 'details' &&
             <section aria-label="Payment details" className="flex flex-col gap-4 p-5" style={cardStyle(t)}>
-                  {link.kind === 'fixed' && <Row label="Amount" value={formatNgn(link.amountNgn)} strong color={t.text} />}
+                  {link.kind === 'fixed' && stage && <Row label={`Now: ${stage.label}`} value={formatNgn(subtotal)} strong color={t.text} />}
+                  {link.kind === 'fixed' && !stage && <Row label="Amount" value={formatNgn(link.amountNgn)} strong color={t.text} />}
                   {link.kind === 'open' && <ThemedField theme={t} label={`Amount (from ${formatNgn(link.minNgn)})`} inputMode="numeric" value={amount} onChange={(v) => setAmount(v.replace(/\D/g, ''))} error={tried ? errors.amount : undefined} placeholder="0" />}
                   {link.kind === 'items' &&
               <ul className="flex flex-col">
@@ -196,7 +219,7 @@ export function PayLinkPage() {
               {!closedCopy && step === 'pay' &&
             <section aria-label="Pay" className="flex flex-col gap-4 p-5" style={cardStyle(t)}>
                   <div className="flex flex-col gap-1.5 text-[14.5px]" style={{ color: t.text }}>
-                    <Row label="Subtotal" value={formatNgn(subtotal)} />
+                    <Row label={stage ? stage.label : 'Subtotal'} value={formatNgn(subtotal)} />
                     {buyerFee > 0 && <Row label="Escrow protection fee" value={formatNgn(buyerFee)} />}
                     <Row label="You pay" value={formatNgn(total)} strong />
                   </div>
@@ -243,6 +266,46 @@ function Row({ label, value, strong, color }: {label: string;value: string;stron
       <span>{label}</span>
       <span className="tabular-nums">{value}</span>
     </div>);
+
+}
+
+/** The whole plan for a staged link: what's paid and what's next. */
+function StagePlan({ link, amounts, theme }: {link: PaymentLink;amounts: Record<string, number>;theme: PageTheme;}) {
+  const next = nextLinkStage(link);
+  const paidTotal = (link.stages ?? []).reduce((s, x) => s + (stagePaidOn(link, x.id) ? amounts[x.id] ?? 0 : 0), 0);
+  return (
+    <section aria-labelledby="stage-plan-h" className="flex flex-col gap-3 p-5" style={{ ...cardStyle(theme), color: theme.text }}>
+      <div className="flex items-baseline justify-between gap-3">
+        <h2 id="stage-plan-h" className="text-[14.5px] font-semibold">
+          Paid in {link.stages?.length} stages
+        </h2>
+        <span className="text-[13px] tabular-nums" style={{ color: theme.mutedText }}>
+          {formatNgn(paidTotal)} of {formatNgn(link.amountNgn)}
+        </span>
+      </div>
+      <ol className="flex flex-col">
+        {(link.stages ?? []).map((s) => {
+          const paid = stagePaidOn(link, s.id);
+          const current = next?.id === s.id;
+          return (
+            <li key={s.id} className="flex items-center justify-between gap-3 border-t py-2.5 text-[14px]" style={{ borderColor: mix(theme.text, 10) }}>
+              <span className="flex min-w-0 items-center gap-2">
+                {paid ? <CheckCircle2Icon size={15} aria-hidden className="shrink-0" /> : <span aria-hidden className="h-[15px] w-[15px] shrink-0 rounded-full" style={{ border: `1.5px solid ${mix(theme.text, current ? 70 : 25)}` }} />}
+                <span className={current ? 'font-semibold' : undefined}>
+                  {s.label} <span style={{ color: theme.mutedText }}>· {s.pct}%</span>
+                </span>
+              </span>
+              <span className="shrink-0 text-right tabular-nums">
+                {formatNgn(amounts[s.id] ?? 0)}
+                <span className="block text-[12px]" style={{ color: theme.mutedText }}>
+                  {paid ? `Paid ${formatTimestamp(paid.at)}` : current ? 'Due now' : 'Later'}
+                </span>
+              </span>
+            </li>);
+
+        })}
+      </ol>
+    </section>);
 
 }
 

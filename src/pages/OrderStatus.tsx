@@ -15,6 +15,7 @@ import { ReferralShareCard } from '../components/dealroom/ReferralShareCard';
 import { roomProgress, roomReferrers } from '../utils/dealRoom';
 import { OrderTickets } from '../components/tickets/OrderTickets';
 import { EscrowNotice } from '../components/checkout/EscrowNotice';
+import { OrderBalanceCard } from '../components/checkout/OrderBalanceCard';
 
 /** Visitor-facing order confirmation and receipt. */
 export function OrderStatus() {
@@ -45,6 +46,8 @@ export function OrderStatus() {
   'Your tickets are below and in your receipt email. Open each one to show its QR code at the door.' :
   order.fulfilment.method === 'digital' ?
   'Your files are ready. Your download link is below and in your receipt email.' :
+  order.balance && !order.balance.paidAt ?
+  'Your deposit is confirmed and your order is being made. Pay the balance below before it’s sent out.' :
   order.fulfilment.method === 'pickup' ?
   'The seller will let you know when it’s ready to collect.' :
   `Expected delivery: ${order.fulfilment.eta ?? 'the seller will confirm'}.`;
@@ -101,6 +104,8 @@ export function OrderStatus() {
               </p>
             </div>
           </section>
+
+          {order.balance && !pending && !refunded && <OrderBalanceCard theme={t} order={order} data={commerce.data} workspaceId={page.workspaceId ?? null} apply={commerce.apply} />}
 
           {page.workspaceId && !pending && <EscrowNotice workspaceId={page.workspaceId} handle={handle} orderId={order.id} theme={t} />}
 

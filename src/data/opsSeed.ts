@@ -8,7 +8,7 @@ const TZ = 'Africa/Lagos';
 
 const services: Service[] = [
 { id: 'ss_fitting', name: 'Studio fitting', description: 'Try the collection on and have adjustments pinned by our tailor.', durationMin: 45, priceNgn: 10000, depositNgn: 5000, location: 'studio', locationNote: 'Victoria Island studio (sample address)', bufferMin: 15, active: true, sample: true },
-{ id: 'ss_bespoke', name: 'Bespoke consultation', description: 'Talk through a made-to-measure piece: fabric, fit and timeline.', durationMin: 60, priceNgn: 25000, depositNgn: 10000, location: 'studio', locationNote: 'Victoria Island studio (sample address)', bufferMin: 15, active: true, sample: true },
+{ id: 'ss_bespoke', name: 'Bespoke consultation', description: 'Talk through a made-to-measure piece: fabric, fit and timeline.', durationMin: 60, priceNgn: 25000, depositNgn: 10000, balanceOnline: true, balanceHoursBefore: 24, location: 'studio', locationNote: 'Victoria Island studio (sample address)', bufferMin: 15, active: true, sample: true },
 { id: 'ss_video', name: 'Video styling call', description: 'A styling session over video for anywhere in Nigeria.', durationMin: 30, priceNgn: 8000, depositNgn: null, location: 'online', locationNote: 'Google Meet link sent after booking', bufferMin: 10, active: true, sample: true }];
 
 

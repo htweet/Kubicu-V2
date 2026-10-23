@@ -11,6 +11,7 @@ import { useCommerce } from '../../contexts/CommerceContext';
 import { useCan } from '../../contexts/TeamContext';
 import { upsertProduct } from '../../utils/commerce/ops';
 import { regenerateVariants } from '../../utils/commerce/catalog';
+import { DEFAULT_DEPOSIT_PCT, DEFAULT_LEAD_DAYS, depositPctOptions } from '../../utils/commerce/deposit';
 import { uid } from '../../utils/id';
 import { Sheet } from '../ui/Sheet';
 import { Button } from '../ui/Button';
@@ -238,6 +239,43 @@ export function ProductEditor({ open, productId, kind, onClose }: ProductEditorP
                 checked={draft.trackStock}
                 onChange={(trackStock) => patch({ trackStock })} />
               
+              {kind === 'physical' &&
+              <div className="flex flex-col gap-4 border-t border-border pt-4">
+                  <Switch
+                  id="prd-mto"
+                  label="Made to order — take a deposit"
+                  description="Buyers pay a deposit at checkout and the rest before you send it out. You can’t mark it out for delivery until the balance is in."
+                  checked={!!draft.madeToOrder}
+                  onChange={(on) => patch({ madeToOrder: on ? { depositPct: DEFAULT_DEPOSIT_PCT, leadDays: DEFAULT_LEAD_DAYS } : undefined })} />
+                
+                  {draft.madeToOrder &&
+                <div className="grid gap-4 sm:grid-cols-2">
+                      <Field id="prd-mto-pct" label="Deposit at checkout" hint={draft.priceNgn ? `₦${Math.round(draft.priceNgn * draft.madeToOrder.depositPct / 100).toLocaleString('en-NG')} now, ₦${(draft.priceNgn - Math.round(draft.priceNgn * draft.madeToOrder.depositPct / 100)).toLocaleString('en-NG')} before dispatch` : 'Share of the price paid now.'}>
+                        <select
+                      id="prd-mto-pct"
+                      className="h-10 w-full rounded-md border border-border-strong bg-surface px-3 text-body text-fg"
+                      value={draft.madeToOrder.depositPct}
+                      onChange={(e) => patch({ madeToOrder: { ...draft.madeToOrder!, depositPct: Number(e.target.value) } })}>
+                      
+                          {depositPctOptions.map((p) =>
+                      <option key={p} value={p}>
+                              {p}%
+                            </option>
+                      )}
+                        </select>
+                      </Field>
+                      <TextInput
+                    id="prd-mto-days"
+                    label="Usually ready in (days)"
+                    inputMode="numeric"
+                    value={String(draft.madeToOrder.leadDays)}
+                    hint="Shown to buyers at checkout."
+                    onChange={(e) => patch({ madeToOrder: { ...draft.madeToOrder!, leadDays: Math.min(90, Number(e.target.value.replace(/[^0-9]/g, '').slice(0, 2) || '0')) } })} />
+                  
+                    </div>
+                }
+                </div>
+              }
               <VariantsField product={draft} onChange={patch} />
               <div className="grid gap-4 sm:grid-cols-2">
                 {draft.trackStock &&

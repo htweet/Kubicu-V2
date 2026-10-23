@@ -20,6 +20,7 @@ import { kubicuFee, providerFee, refundableNgn } from './money';
 import { orderDiscountRecord, resolveDiscount } from './discounts';
 import { formatNgn } from '../format';
 import { issueTickets, orderCapacityIssue, ticketLineIssue } from './tickets';
+import { cartBalanceNgn, dispatchBlocked } from './deposit';
 
 export const OWNER_ACTOR = 'You';
 
@@ -183,7 +184,16 @@ export function placeOrder(data: CommerceData, input: CheckoutInput): CheckoutRe
     input.discountCode ?? ''
   );
   const discountNgn = Math.min(applied?.amountNgn ?? 0, subtotal + input.deliveryNgn);
-  const gross = subtotal - discountNgn + input.deliveryNgn;
+  const fullTotal = subtotal - discountNgn + input.deliveryNgn;
+  // Made-to-order items: only the deposit is charged now; the rest before dispatch (D95). Not for DealRooms.
+  const balanceNgn = input.dealRoom ?
+  0 :
+  cartBalanceNgn(
+    data.products,
+    items.map((i) => ({ productId: i.productId, amountNgn: i.unitPriceNgn * i.qty })),
+    fullTotal
+  );
+  const gross = fullTotal - balanceNgn;
   const paid = input.outcome === 'success';
   const number = data.nextOrderNumber;
   const placedAt = now();
@@ -197,7 +207,7 @@ export function placeOrder(data: CommerceData, input: CheckoutInput): CheckoutRe
     const who = applied.discount.referrerName ? ` — referred by ${applied.discount.referrerName}` : '';
     events.unshift(event('note', `${applied.discount.code ? `Code ${applied.discount.code}` : applied.discount.title} saved the customer ${formatNgn(discountNgn)}${who}`, placedAt));
   }
-  if (paid) events.unshift(event('paid', 'Payment confirmed by provider (test mode)'));
+  if (paid) events.unshift(event('paid', balanceNgn ? `Deposit of ${formatNgn(gross)} confirmed (test mode) — ${formatNgn(balanceNgn)} due before dispatch` : 'Payment confirmed by provider (test mode)'));
   if (input.dealRoom?.held) events.unshift(event('note', 'Joined the group buy — held until the goal is reached, refunded automatically if it isn’t', placedAt));
   if (paid && digitalOnly && !input.dealRoom?.held) events.unshift(event('completed', deliveredLabel));else
   if (!paid) events.unshift(event('payment', input.outcome === 'timeout' ? 'Provider didn’t respond in time — awaiting confirmation' : 'Payment pending with provider'));
@@ -226,7 +236,8 @@ export function placeOrder(data: CommerceData, input: CheckoutInput): CheckoutRe
     downloadToken: hasDigital ? uid('dl') : undefined,
     downloads: [],
     note: '',
-    tickets: hasTickets ? issueTickets(data, items, input.customer.name, input.guestNames) : undefined
+    tickets: hasTickets ? issueTickets(data, items, input.customer.name, input.guestNames) : undefined,
+    balance: balanceNgn > 0 ? { dueNgn: balanceNgn } : undefined
   };
 
   let next: CommerceData = { ...data, orders: [order, ...data.orders], nextOrderNumber: number + 1 };
@@ -248,6 +259,8 @@ export function setOrderStatus(data: CommerceData, orderId: string, status: Orde
     ...data,
     orders: data.orders.map((o) => {
       if (o.id !== orderId) return o;
+      // Made-to-order: nothing goes out until the balance is in (D95).
+      if ((status === 'out_for_delivery' || status === 'completed') && dispatchBlocked(o)) return o;
       const ev = statusEvent[status];
       const pickupReady = status === 'out_for_delivery' && o.fulfilment.method === 'pickup';
       const e = ev ? event(pickupReady ? 'ready' : ev[0], label ?? (pickupReady ? 'Ready for pickup' : ev[1])) : null;

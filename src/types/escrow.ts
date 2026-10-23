@@ -21,7 +21,7 @@ export type EscrowIssue = 'not_received' | 'not_as_described' | 'damaged' | 'inc
 
 export type EscrowOutcome = 'released' | 'refunded' | 'partial';
 
-export type ReleaseReason = 'buyer_confirmed' | 'window_ended' | 'goal_reached' | 'dispute_withdrawn' | 'staff' | 'goal_missed' | 'seller_refund';
+export type ReleaseReason = 'buyer_confirmed' | 'window_ended' | 'goal_reached' | 'dispute_withdrawn' | 'staff' | 'goal_missed' | 'seller_refund' | 'delivery_code';
 
 export interface EscrowFile {
   id: string;

@@ -84,6 +84,24 @@ export const extensions: ExtensionInfo[] = [
   uninstallNote: 'Your reviews and delivered work are kept, and Proof blocks already on your pages keep showing them. The screen leaves your sidebar until you reinstall.'
 },
 {
+  id: 'local-fulfilment',
+  name: 'Deliveries',
+  publisher: 'KUBICU',
+  verified: 'kubicu',
+  category: 'apps',
+  summary: 'Book a rider for paid orders, track them to the door, and hand over only with the customer’s code.',
+  description:
+  'Compare courier quotes for each order’s address, or use your own rider. The customer is texted a 4-digit code and the rider only hands over when it matches — for escrow orders, a matching code releases the payment to your wallet straight away. Orders move to Packing, Out for delivery and Completed on their own. Courier partners are simulated until real partners are connected.',
+  adds: ['A Deliveries screen in your sidebar', 'Courier quotes per address, or your own rider', 'Delivery codes that confirm handover', 'Escrow released when the code matches'],
+  permissions: ['Read paid delivery orders and their addresses', 'Update order status as the rider moves', 'Release escrow payments when the customer’s code matches', 'Share the customer’s name, phone and address with the courier you choose'],
+  minPlan: 'free',
+  priceNgn: 0,
+  version: '1.0.0',
+  versions: [{ version: '1.0.0', date: '2026-10-23', notes: 'First release: quotes, riders, delivery codes and escrow release. Couriers simulated.' }],
+  reviews: [],
+  uninstallNote: 'Your delivery history is kept. Deliveries already on the way keep their status, but you’ll update orders by hand until you reinstall.'
+},
+{
   id: 'opportunities',
   name: 'Opportunities',
   publisher: 'KUBICU',

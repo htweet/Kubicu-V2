@@ -68,9 +68,26 @@ export interface Product {
   digital?: DigitalAsset;
   /** Ticket products: the event that owns them. */
   eventId?: string;
+  /** Physical products made after ordering: a deposit at checkout, the balance before dispatch (D95). */
+  madeToOrder?: MadeToOrder;
   sample?: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface MadeToOrder {
+  /** Share of the item price taken at checkout, 10–90%. */
+  depositPct: number;
+  /** Typical days to make it, shown to buyers. */
+  leadDays: number;
+}
+
+/** What's left to pay on a made-to-order order before it can be dispatched (D95). */
+export interface OrderBalance {
+  dueNgn: number;
+  requestedAt?: string;
+  paidAt?: string;
+  how?: 'online' | 'recorded';
 }
 
 export type EventStatus = 'draft' | 'on_sale' | 'paused' | 'cancelled';
@@ -256,6 +273,8 @@ export interface Order {
   subscriptionId?: string;
   /** Event tickets issued by this order, one per seat (D73). */
   tickets?: IssuedTicket[];
+  /** Made-to-order: the deposit was charged at checkout; this is the rest (D95). */
+  balance?: OrderBalance;
 }
 
 export interface OrderDiscount {

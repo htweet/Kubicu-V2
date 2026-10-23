@@ -13,6 +13,8 @@ import { PageStack, Section } from '../../components/ui/layout/Section';
 import { Stat, StatGroup } from '../../components/ui/layout/Stat';
 import { orderMoney } from '../../utils/commerce/money';
 import { mrr } from '../../utils/commerce/subscriptions';
+import { useWorkspace } from '../../contexts/WorkspaceContext';
+import { useMoney } from '../../hooks/useMoney';
 import { downloadCsv, toCsv } from '../../utils/csv';
 import { formatNgn, formatTimestamp } from '../../utils/format';
 
@@ -21,6 +23,8 @@ type Period = '7' | '30' | '90' | 'all';
 /** Sales and fee report. Only orders where payment was confirmed count. */
 export function Reports() {
   const { data } = useCommerce();
+  const { current } = useWorkspace();
+  const money = useMoney(current.id).data;
   const [period, setPeriod] = useState<Period>('30');
 
   const orders = useMemo(() => {
@@ -44,6 +48,15 @@ export function Reports() {
     const since = period === 'all' ? 0 : Date.now() - Number(period) * 86400000;
     return (data.subscriptions ?? []).flatMap((s) => s.payments).filter((p) => p.status === 'paid' && Date.parse(p.at) >= since).reduce((t, p) => t + p.amountNgn, 0);
   }, [data.subscriptions, period]);
+
+  // Staged payments (D95): made-to-order balances and staged payment links.
+  const staged = useMemo(() => {
+    const since = period === 'all' ? 0 : Date.now() - Number(period) * 86400000;
+    const open = data.orders.filter((o) => o.balance && !o.balance.paidAt && o.status !== 'cancelled' && o.status !== 'refunded' && o.paymentStatus !== 'pending' && o.paymentStatus !== 'cancelled');
+    const collected = data.orders.filter((o) => o.balance?.paidAt && Date.parse(o.balance.paidAt) >= since).reduce((t, o) => t + (o.balance?.dueNgn ?? 0), 0);
+    const linkStages = money.links.flatMap((l) => l.payments).filter((p) => p.stageId && Date.parse(p.at) >= since).reduce((t, p) => t + p.amountNgn, 0);
+    return { owed: open.reduce((t, o) => t + (o.balance?.dueNgn ?? 0), 0), owedCount: open.length, collected, linkStages, any: data.orders.some((o) => o.balance) || money.links.some((l) => l.stages?.length) };
+  }, [data.orders, money.links, period]);
 
   const topProducts = useMemo(() => {
     const map = new Map<string, {name: string;qty: number;revenue: number;}>();
@@ -126,6 +139,15 @@ export function Reports() {
               <StatGroup columns={2}>
                 <Stat label="Monthly recurring" value={<>{formatNgn(mrr(data))}<span className="text-label font-normal text-fg-muted"> /mo</span></>} />
                 <Stat label="Taken this period" value={formatNgn(subPaid)} />
+              </StatGroup>
+            </Card>
+            }
+          {staged.any &&
+            <Card id="staged" title="Staged payments" description="Made-to-order balances and payment links paid in stages. Owed is money not yet collected — it isn’t in “You receive”.">
+              <StatGroup columns={3}>
+                <Stat label="Still owed" value={formatNgn(staged.owed)} hint={`${staged.owedCount} order${staged.owedCount === 1 ? '' : 's'} waiting`} />
+                <Stat label="Balances collected" value={formatNgn(staged.collected)} hint="This period" />
+                <Stat label="Link stages paid" value={formatNgn(staged.linkStages)} hint="This period" />
               </StatGroup>
             </Card>
             }

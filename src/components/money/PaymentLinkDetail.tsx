@@ -39,6 +39,7 @@ export function PaymentLinkDetail({ link, data, handle, canEdit, onClose, onEdit
       onClose={onClose}
       title={link.title}
       description={`${short} · ${methodLabels[linkMethod(data, link)]}`}
+      side="right"
       size="lg"
       footer={
       canEdit ?
@@ -66,7 +67,7 @@ export function PaymentLinkDetail({ link, data, handle, canEdit, onClose, onEdit
       undefined
       }>
       
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-6 p-5">
         <div className="flex flex-wrap items-center gap-2">
           <Badge tone={linkViewTones[view]} dot>
             {linkViewLabels[view]}
@@ -111,10 +112,10 @@ export function PaymentLinkDetail({ link, data, handle, canEdit, onClose, onEdit
           {link.payments.length === 0 ?
           <p className="text-label text-fg-muted">No one has paid yet. Payments show here as they come in.</p> :
 
-          <ul className="-mx-1 divide-y divide-line">
+          <ul className="divide-y divide-line">
               {link.payments.map((p) =>
-            <li key={p.id} className="flex items-start justify-between gap-3 px-1 py-3">
-                  <span className="min-w-0">
+            <li key={p.id} className="flex items-start justify-between gap-3 py-3">
+                  <span className="min-w-0 flex-1">
                     <span className="flex items-center gap-2 text-label font-medium text-fg">
                       {p.payerName || 'Payer'} {p.sample && <SampleTag />}
                     </span>

@@ -1,5 +1,6 @@
 import React from 'react';
-import { PanelLeftCloseIcon, PanelLeftOpenIcon } from 'lucide-react';
+import { PanelLeftCloseIcon, PanelLeftOpenIcon, ShieldCheckIcon } from 'lucide-react';
+import { useStaffSession } from '../../hooks/useStaffSession';
 import { workspaceNav } from '../../data/navigation';
 import { useSidebarCollapsed } from '../../hooks/useSidebarCollapsed';
 import { useSideTip } from '../../hooks/useSideTip';
@@ -21,6 +22,7 @@ export function Sidebar() {
   const reviewsWaiting = team.can('approvals.review').allowed ? team.data.reviews.filter((r) => r.status === 'pending').length : 0;
   const tip = useSideTip();
   const market = useMarketplace();
+  const superAdmin = useStaffSession()?.role === 'lead';
   // Apps that aren't installed stay out of the sidebar (D87).
   const visible = workspaceNav.filter((n) => !n.appId || market.isActive(n.appId));
   const built = visible.filter((n) => n.group === 'build');
@@ -85,6 +87,17 @@ export function Sidebar() {
             )}
           </ul>
         </div>
+        {/* Staff console: only for a signed-in Platform lead (D83 roles), never for workspace members. */}
+        {superAdmin &&
+        <div>
+            <SidebarGroupLabel collapsed={collapsed}>KUBICU staff</SidebarGroupLabel>
+            <ul className="flex flex-col gap-0.5">
+              <li>
+                <SidebarItem to="/admin" label="Super admin" icon={ShieldCheckIcon} collapsed={collapsed} tip={tip} />
+              </li>
+            </ul>
+          </div>
+        }
       </nav>
 
       <div className={cn('flex shrink-0 flex-col gap-0.5 border-t border-line py-3', collapsed ? 'items-center px-0' : 'px-3')}>

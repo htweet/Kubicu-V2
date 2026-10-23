@@ -11,7 +11,8 @@ const sampleSubject: Record<Automation['trigger'], {subject: string;vars: Record
   stock_low: { subject: 'Test: Voile wrap blouse low', vars: { product: 'Voile wrap blouse', stock: '2' }, total: 0, source: 'order', subscribed: false },
   sub_started: { subject: 'Test: Ada Test joined Atelier Circle', vars: { first_name: 'Ada', plan: 'Atelier Circle' }, total: 5000, source: 'order', subscribed: false },
   sub_failed: { subject: 'Test: Ada Test’s renewal was declined', vars: { first_name: 'Ada', plan: 'Atelier Circle', amount: '₦5,000' }, total: 5000, source: 'order', subscribed: false },
-  sub_cancelled: { subject: 'Test: Ada Test cancelled Atelier Circle', vars: { first_name: 'Ada', plan: 'Atelier Circle' }, total: 0, source: 'order', subscribed: false }
+  sub_cancelled: { subject: 'Test: Ada Test cancelled Atelier Circle', vars: { first_name: 'Ada', plan: 'Atelier Circle' }, total: 0, source: 'order', subscribed: false },
+  stage_due: { subject: 'Test: “Trial session” is due on Ada Test’s bridal quote', vars: { first_name: 'Ada', stage: 'Trial session', amount: '₦48,000', pay_link: 'kub.icu/ada/pay/…' }, total: 48000, source: 'order', subscribed: false }
 };
 
 function fill(text: string, vars: Record<string, string>): string {

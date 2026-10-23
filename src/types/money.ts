@@ -124,7 +124,16 @@ export interface LinkPayment {
   method: PayMethod;
   items?: {label: string;qty: number;unitNgn: number;}[];
   receipt: string;
+  /** Staged links: which stage this payment covered (D95). */
+  stageId?: string;
   sample?: boolean;
+}
+
+/** One stage of a staged fixed-amount link, e.g. "Deposit 50%". */
+export interface LinkStage {
+  id: string;
+  label: string;
+  pct: number;
 }
 
 export interface PaymentLink {
@@ -148,6 +157,8 @@ export interface PaymentLink {
   views: number;
   createdAt: string;
   payments: LinkPayment[];
+  /** Fixed links only: pay the amount in stages, one payer, in order (D95). */
+  stages?: LinkStage[];
   sample?: boolean;
 }
 

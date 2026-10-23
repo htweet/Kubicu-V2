@@ -33,6 +33,7 @@ import { ServiceOs } from './pages/ServiceOs';
 import { QuoteView } from './pages/QuoteView';
 import { InvoicePayPage } from './pages/InvoicePayPage';
 import { Proof } from './pages/Proof';
+import { Deliveries } from './pages/Deliveries';
 import { ReviewSubmit } from './pages/ReviewSubmit';
 import { ShortLink } from './pages/ShortLink';
 import { Settings } from './pages/settings/Settings';
@@ -203,6 +204,7 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
                 <Route path="opportunities" element={<Opportunities />} />
                 <Route path="services" element={<ServiceOs />} />
                 <Route path="proof" element={<Proof />} />
+                <Route path="deliveries" element={<Deliveries />} />
                 <Route path="account" element={<Account />} />
                 <Route path="account/:tab" element={<Account />} />
                 <Route path="settings" element={<Settings />} />

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { MenuIcon, ChevronRightIcon, LogOutIcon } from 'lucide-react';
+import { MenuIcon, ChevronRightIcon, LogOutIcon, ShieldCheckIcon } from 'lucide-react';
+import { useStaffSession } from '../../hooks/useStaffSession';
 import { toast } from 'sonner';
 import { useAccount } from '../../utils/account/store';
 import { AccountAvatar } from '../account/AccountAvatar';
@@ -23,6 +24,7 @@ export function MobileNav() {
   const canChoose = useAppearancePolicy().enabled.length > 1;
   const currentWorkspace = useWorkspace().current;
   const account = useAccount();
+  const superAdmin = useStaffSession()?.role === 'lead';
 
   const itemCls = 'flex h-full w-full flex-col items-center justify-center gap-1 text-caption font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus';
 
@@ -103,6 +105,23 @@ export function MobileNav() {
               </li>);
 
           })}
+          {superAdmin &&
+          <li className="mt-1 border-t border-line pt-1">
+              <button
+              type="button"
+              onClick={() => {
+                setMoreOpen(false);
+                navigate('/admin');
+              }}
+              className="flex min-h-[52px] w-full items-center gap-3 rounded-md px-3 text-left text-body text-fg hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+              
+                <ShieldCheckIcon size={19} className="text-fg-subtle" aria-hidden />
+                <span className="flex-1">Super admin</span>
+                <span className="text-caption text-fg-subtle">KUBICU staff</span>
+                <ChevronRightIcon size={16} className="text-fg-subtle" aria-hidden />
+              </button>
+            </li>
+          }
         </ul>
         {/* Support is reachable on phones too (D76). */}
         <div className="border-t border-line p-2">

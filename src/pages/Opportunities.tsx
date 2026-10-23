@@ -6,6 +6,9 @@ import { useOps } from '../contexts/OpsContext';
 import { useWorkspace } from '../contexts/WorkspaceContext';
 import { buildOpportunities, groupLabels, type OpportunityGroup } from '../utils/opportunities';
 import { useOpportunityState } from '../hooks/useOpportunityState';
+import { useMarketplace } from '../contexts/MarketplaceContext';
+import { useServiceOs } from '../hooks/useServiceOs';
+import { SERVICE_OS_APP_ID } from '../utils/serviceOs';
 import { formatNgn } from '../utils/format';
 import { PageHeader } from '../components/shell/PageHeader';
 import { PageStack } from '../components/ui/layout/Section';
@@ -27,7 +30,9 @@ export function Opportunities() {
   const [filter, setFilter] = useState<Filter>('all');
   const [view, setView] = useState<View>('open');
 
-  const all = useMemo(() => buildOpportunities(commerce, ops, current.name), [commerce, ops, current.name]);
+  const quotesActive = useMarketplace().isActive(SERVICE_OS_APP_ID);
+  const serviceOs = useServiceOs(current.id).data;
+  const all = useMemo(() => buildOpportunities(commerce, ops, current.name, Date.now(), quotesActive ? serviceOs : null), [commerce, ops, current.name, quotesActive, serviceOs]);
   const open = all.filter((o) => !isHidden(o.id));
   const hidden = all.filter((o) => isHidden(o.id));
   const list = (view === 'open' ? open : hidden).filter((o) => filter === 'all' || o.group === filter);

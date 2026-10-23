@@ -11,6 +11,8 @@ const kindIcons: Record<OpportunityKind, BoxIcon> = {
   unpaid: BanknoteIcon,
   renewal: CreditCardIcon,
   deposit: CalendarXIcon,
+  balance: AlarmClockIcon,
+  stage: BanknoteIcon,
   noshow: CalendarXIcon,
   lead: UserRoundIcon,
   followup: ListTodoIcon,

@@ -13,6 +13,7 @@ import { useOps } from '../../contexts/OpsContext';
 import { uid } from '../../utils/id';
 import { durationLabel } from '../../utils/ops/slots';
 import { formatNgn } from '../../utils/format';
+import { balanceHourOptions } from '../../utils/ops/balance';
 import { PageHeader } from '../../components/shell/PageHeader';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
@@ -163,6 +164,22 @@ export function Services() {
             <CurrencyInput id="svc-price" label="Price" value={draft.priceNgn} placeholder="On request" onChange={(priceNgn) => patch({ priceNgn })} />
             <CurrencyInput id="svc-dep" label="Deposit to hold the time" optional value={draft.depositNgn} placeholder="No deposit" error={tried ? depositError || undefined : undefined} hint="Taken at booking through your payment provider." onChange={(depositNgn) => patch({ depositNgn })} />
           </div>
+          {draft.priceNgn !== null && draft.priceNgn > (draft.depositNgn ?? 0) &&
+            <div className="flex flex-col gap-3 border-t border-line pt-4">
+              <Switch
+                id="svc-balance"
+                label="Ask for the rest online before the appointment"
+                description={`The customer gets a link to pay ${formatNgn(draft.priceNgn - (draft.depositNgn ?? 0))} before they arrive, instead of paying on the day.`}
+                checked={!!draft.balanceOnline}
+                onChange={(balanceOnline) => patch({ balanceOnline, balanceHoursBefore: draft.balanceHoursBefore ?? 24 })} />
+              
+              {draft.balanceOnline &&
+              <div className="sm:max-w-[50%]">
+                  <SelectInput id="svc-balance-hours" label="Due" value={String(draft.balanceHoursBefore ?? 24)} options={balanceHourOptions.map((h) => ({ value: String(h), label: `${h} hours before` }))} onChange={(v) => patch({ balanceHoursBefore: Number(v) })} />
+                </div>
+              }
+            </div>
+            }
           </DetailSection>
           <DetailSection title="Location">
           <Field id="svc-loc" label="Where">

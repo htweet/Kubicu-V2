@@ -2,9 +2,12 @@ import type { CommerceData } from '../types/commerce';
 import type { OpsData } from '../types/ops';
 import { orderMoney } from './commerce/money';
 import { isSoldOut } from './commerce/catalog';
+import type { ServiceOsData } from '../types/serviceOs';
+import { bookingBalance } from './ops/balance';
+import { dueUnrequested, hasStages } from './milestones';
 
 /** Opportunity Inbox (concept 12, D81): money and customers that still need one small action. */
-export type OpportunityKind = 'unpaid' | 'renewal' | 'deposit' | 'noshow' | 'lead' | 'followup' | 'soldout' | 'automation';
+export type OpportunityKind = 'unpaid' | 'renewal' | 'deposit' | 'balance' | 'stage' | 'noshow' | 'lead' | 'followup' | 'soldout' | 'automation';
 export type OpportunityGroup = 'payments' | 'customers' | 'bookings' | 'stock';
 
 export interface Opportunity {
@@ -29,6 +32,8 @@ export const kindLabels: Record<OpportunityKind, string> = {
   unpaid: 'Unpaid checkout',
   renewal: 'Failed renewal',
   deposit: 'Deposit not paid',
+  balance: 'Booking balance due',
+  stage: 'Payment stage due',
   noshow: 'No-show',
   lead: 'Unanswered lead',
   followup: 'Follow-up overdue',
@@ -48,8 +53,63 @@ const DAY = 24 * HOUR;
 const first = (name: string) => name.trim().split(/\s+/)[0] || 'there';
 
 /** Builds the inbox from real records only — nothing here is estimated or invented. */
-export function buildOpportunities(commerce: CommerceData, ops: OpsData, business: string, now = Date.now()): Opportunity[] {
+export function buildOpportunities(commerce: CommerceData, ops: OpsData, business: string, now = Date.now(), serviceOs?: ServiceOsData | null): Opportunity[] {
   const out: Opportunity[] = [];
+
+  // D95: booking balances asked for online that are due or overdue.
+  ops.bookings.forEach((b) => {
+    if (b.status !== 'confirmed' && b.status !== 'pending_deposit') return;
+    const service = ops.services.find((s) => s.id === b.serviceId);
+    const bal = bookingBalance(b, service, now);
+    if (bal.state !== 'due' && bal.state !== 'overdue') return;
+    out.push({
+      id: `balance:${b.id}`,
+      kind: 'balance',
+      group: 'bookings',
+      title: `${b.customer.name} · ${b.serviceName}`,
+      reason: bal.state === 'overdue' ? 'Balance overdue — the appointment is coming up' : 'Balance due before the appointment',
+      valueNgn: bal.amount,
+      since: b.start,
+      to: `/app/bookings?booking=${b.id}`,
+      nudge: b.customer.phone ? { phone: b.customer.phone, message: `Hi ${first(b.customer.name)}, it's ${business}. Your ${b.serviceName} balance of ₦${bal.amount.toLocaleString('en-NG')} is due before your appointment — you can pay it from your booking link. See you soon!` } : undefined,
+      sample: b.sample
+    });
+  });
+
+  // D95: made-to-order balances still to collect before dispatch.
+  commerce.orders.forEach((o) => {
+    if (!o.balance || o.balance.paidAt || o.status === 'cancelled' || o.status === 'refunded' || o.paymentStatus === 'pending' || o.paymentStatus === 'cancelled') return;
+    out.push({
+      id: `mto:${o.id}`,
+      kind: 'balance',
+      group: 'payments',
+      title: `${o.customer.name || 'Customer'} · order #${o.number}`,
+      reason: o.balance.requestedAt ? 'Made-to-order balance requested — not paid yet' : 'Made-to-order balance not requested yet',
+      valueNgn: o.balance.dueNgn,
+      since: o.balance.requestedAt ?? o.createdAt,
+      to: `/app/commerce/orders?order=${o.id}`,
+      nudge: o.customer.phone ? { phone: o.customer.phone, message: `Hi ${first(o.customer.name)}, it's ${business}. Your order #${o.number} is nearly ready! The balance is ₦${o.balance.dueNgn.toLocaleString('en-NG')} — pay it from your order page and we'll send it out.` } : undefined,
+      sample: o.sample
+    });
+  });
+
+  // D95: quote payment stages that are due but not yet requested.
+  serviceOs?.quotes.forEach((q) => {
+    if (!hasStages(q)) return;
+    dueUnrequested(serviceOs, q).forEach((r) => {
+      out.push({
+        id: `stage:${q.id}:${r.m.id}`,
+        kind: 'stage',
+        group: 'payments',
+        title: `${q.client.name} · ${r.m.label}`,
+        reason: `Stage is due on ${q.title} — send the pay link`,
+        valueNgn: r.amount,
+        since: q.decidedAt ?? q.createdAt,
+        to: '/app/services',
+        sample: q.sample
+      });
+    });
+  });
 
   // Checkouts with details but no payment: older than an hour, newer than two weeks.
   commerce.orders.forEach((o) => {

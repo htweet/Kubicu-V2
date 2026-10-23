@@ -17,7 +17,8 @@ import {
   ClipboardListIcon,
   HandCoinsIcon,
   BriefcaseIcon,
-  BadgeCheckIcon } from
+  BadgeCheckIcon,
+  TruckIcon } from
 'lucide-react';
 
 export interface NavItem {
@@ -41,6 +42,7 @@ export const workspaceNav: NavItem[] = [
 { id: 'templates', label: 'Templates', to: '/app/templates', icon: LayoutTemplateIcon, group: 'build' },
 { id: 'opportunities', label: 'Opportunities', to: '/app/opportunities', icon: HandCoinsIcon, group: 'business', appId: 'opportunities' },
 { id: 'commerce', label: 'Commerce', to: '/app/commerce', icon: ShoppingBagIcon, group: 'business' },
+{ id: 'deliveries', label: 'Deliveries', to: '/app/deliveries', icon: TruckIcon, group: 'business', appId: 'local-fulfilment' },
 { id: 'bookings', label: 'Bookings', to: '/app/bookings', icon: CalendarIcon, group: 'business', appId: 'bookings' },
 { id: 'services', label: 'Quotes & jobs', to: '/app/services', icon: BriefcaseIcon, group: 'business', appId: 'service-os' },
 { id: 'proof', label: 'Proof of work', to: '/app/proof', icon: BadgeCheckIcon, group: 'business', appId: 'proof' },

@@ -10,6 +10,10 @@ export interface Service {
   priceNgn: number | null;
   /** Null = no deposit; full price is paid at the appointment. */
   depositNgn: number | null;
+  /** D95: ask for the rest online before the appointment instead of at it. */
+  balanceOnline?: boolean;
+  /** Hours before the start the online balance is due. */
+  balanceHoursBefore?: number;
   location: ServiceLocation;
   locationNote: string;
   bufferMin: number;
@@ -61,6 +65,13 @@ export interface Booking {
   status: BookingStatus;
   depositPaidNgn: number;
   priceNgn: number | null;
+  /** D95: balance paid before the appointment (online or recorded by the seller). */
+  balancePaidNgn?: number;
+  balancePaidAt?: string;
+  balancePaidHow?: 'online' | 'recorded';
+  /** Copied from the service at booking so later service edits don't change the deal. */
+  balanceOnline?: boolean;
+  balanceHoursBefore?: number;
   /** Visitor’s own time zone at booking, for reminders. */
   customerTimeZone: string;
   events: BookingEvent[];
@@ -108,7 +119,7 @@ export interface Contact {
   assigneeId?: string | null;
 }
 
-export type TriggerId = 'order_paid' | 'booking_created' | 'checkout_abandoned' | 'lead_submitted' | 'stock_low' | 'sub_started' | 'sub_failed' | 'sub_cancelled';
+export type TriggerId = 'order_paid' | 'booking_created' | 'checkout_abandoned' | 'lead_submitted' | 'stock_low' | 'sub_started' | 'sub_failed' | 'sub_cancelled' | 'stage_due';
 export type ActionId = 'send_email' | 'send_whatsapp' | 'create_task' | 'add_tag' | 'notify_owner' | 'notify_member';
 
 export interface AutomationStep {

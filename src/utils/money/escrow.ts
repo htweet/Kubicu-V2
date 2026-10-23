@@ -53,7 +53,8 @@ export const releaseLabels: Record<ReleaseReason, string> = {
   dispute_withdrawn: 'Buyer withdrew their problem',
   staff: 'Decided by KUBICU',
   goal_missed: 'Group goal missed — refunded automatically',
-  seller_refund: 'Seller refunded the order'
+  seller_refund: 'Seller refunded the order',
+  delivery_code: 'Buyer gave the rider their delivery code'
 };
 
 export const isOpen = (c: EscrowCase) => c.stage !== 'closed';

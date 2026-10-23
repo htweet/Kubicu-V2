@@ -1,5 +1,5 @@
 import type { Order } from '../../types/commerce';
-import type { BankAccount, KycTier, LedgerEntry, LinkPayment, MoneyData, PayArea, PayMethod, Payout, PaymentLink } from '../../types/money';
+import type { BankAccount, KycTier, LedgerEntry, LedgerRefType, LinkPayment, MoneyData, PayArea, PayMethod, Payout, PaymentLink } from '../../types/money';
 import { readCommerce } from '../commerce/storage';
 import { orderMoney } from '../commerce/money';
 import { uid } from '../id';
@@ -314,7 +314,8 @@ export type LinkView = 'active' | 'paused' | 'archived' | 'expired' | 'used_up';
 export function linkView(l: PaymentLink): LinkView {
   if (l.status !== 'active') return l.status;
   if (l.expiresAt && Date.parse(l.expiresAt) < Date.now()) return 'expired';
-  const cap = l.reusable ? l.maxUses : 1;
+  // Staged links close once every stage is paid (D95).
+  const cap = l.kind === 'fixed' && l.stages && l.stages.length > 1 ? l.stages.length : l.reusable ? l.maxUses : 1;
   if (cap !== null && linkUses(l) >= cap) return 'used_up';
   return 'active';
 }
@@ -399,20 +400,32 @@ export function recordInvoicePayment(
 d: MoneyData,
 p: {invoiceId: string;label: string;amountNgn: number;milestone: boolean;})
 : {data: MoneyData;receipt: string;method: PayMethod;} {
-  const method = methodFor(d, 'quotes');
+  return recordStagePayment(d, 'quotes', { type: 'invoice', id: p.invoiceId }, p.label, p.amountNgn, p.milestone);
+}
+
+/** A staged payment (quote stage, booking balance, made-to-order balance) following that area's payment setting (D95). */
+export function recordStagePayment(
+d: MoneyData,
+area: PayArea,
+refBase: {type: LedgerRefType;id: string;},
+label: string,
+amountNgn: number,
+milestone = true)
+: {data: MoneyData;receipt: string;method: PayMethod;} {
+  const method = methodFor(d, area);
   const n = d.counters.receipt + 1;
   const receipt = `R-${String(n).padStart(5, '0')}`;
   const at = new Date().toISOString();
-  const net = p.amountNgn - linkProviderFee(p.amountNgn);
-  const kind = p.milestone ? 'milestone' : 'sale';
-  const ref = { type: 'invoice' as const, id: p.invoiceId, label: receipt };
+  const net = amountNgn - linkProviderFee(amountNgn);
+  const kind = milestone ? 'milestone' : 'sale';
+  const ref = { ...refBase, label: receipt };
   const entries: LedgerEntry[] = [];
-  if (method === 'wallet') entries.push({ id: uid('led'), at, kind, amountNgn: net, state: 'pending', availableAt: iso(Date.now() + SETTLE_HOURS * HOUR), label: p.label, ref });
+  if (method === 'wallet') entries.push({ id: uid('led'), at, kind, amountNgn: net, state: 'pending', availableAt: iso(Date.now() + SETTLE_HOURS * HOUR), label, ref });
   if (method === 'escrow') {
-    const until = iso(Date.now() + inspectionDays.quotes * DAY);
-    entries.push({ id: uid('led'), at, kind, amountNgn: net, state: 'held', availableAt: until, label: `${p.label} · in escrow`, ref });
-    const fee = sellerEscrowFee(d, p.amountNgn);
-    if (fee) entries.push({ id: uid('led'), at, kind: 'fee', amountNgn: -fee, state: 'held', availableAt: until, label: `Escrow fee · ${receipt}`, ref: { type: 'invoice', id: p.invoiceId } });
+    const until = iso(Date.now() + inspectionDays[area] * DAY);
+    entries.push({ id: uid('led'), at, kind, amountNgn: net, state: 'held', availableAt: until, label: `${label} · in escrow`, ref });
+    const fee = sellerEscrowFee(d, amountNgn);
+    if (fee) entries.push({ id: uid('led'), at, kind: 'fee', amountNgn: -fee, state: 'held', availableAt: until, label: `Escrow fee · ${receipt}`, ref: refBase });
   }
   return { data: { ...d, counters: { receipt: n }, ledger: [...entries, ...d.ledger] }, receipt, method };
 }

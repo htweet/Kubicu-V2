@@ -18,7 +18,8 @@ const icons: Record<string, BoxIcon> = {
   intentflow: SplitIcon,
   forms: ClipboardListIcon,
   'service-os': BriefcaseIcon,
-  proof: BadgeCheckIcon
+  proof: BadgeCheckIcon,
+  'local-fulfilment': TruckIcon
 };
 export function ExtensionIcon({
   ext,

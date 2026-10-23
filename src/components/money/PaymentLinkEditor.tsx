@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { PlusIcon, Trash2Icon } from 'lucide-react';
-import type { LinkKind, MoneyData, PayMethod, PaymentLink } from '../../types/money';
+import type { LinkKind, LinkStage, MoneyData, PayMethod, PaymentLink } from '../../types/money';
+import { MAX_LINK_STAGES, defaultLinkStages, linkStageAmounts, linkStageProblems, linkStageTemplates, stagesFromLinkTemplate } from '../../utils/money/linkStages';
 import { blankLink, linkProviderFee, methodFor, methodLabels, uniqueSlug } from '../../utils/money/store';
 import { uid } from '../../utils/id';
 import { formatNgn } from '../../utils/format';
@@ -43,6 +44,7 @@ export function PaymentLinkEditor({ open, link, data, escrowAllowed, onClose, on
   }, [open, link]);
 
   const set = (patch: Partial<PaymentLink>) => setDraft((d) => ({ ...d, ...patch }));
+  const staged = draft.kind === 'fixed' && !!draft.stages;
   const slug = slugTouched ? draft.slug : uniqueSlug(data, draft.title, draft.id);
 
   const errors = {
@@ -51,14 +53,18 @@ export function PaymentLinkEditor({ open, link, data, escrowAllowed, onClose, on
     min: draft.kind === 'open' && draft.minNgn < 100 ? 'The minimum must be at least ₦100.' : undefined,
     items: draft.kind === 'items' && (!draft.items.length || draft.items.some((i) => !i.label.trim() || i.unitNgn < 100)) ? 'Each item needs a name and a price of at least ₦100.' : undefined,
     slug: !/^[a-z0-9-]{3,40}$/.test(slug) ? 'Use 3–40 lowercase letters, numbers or dashes.' : data.links.some((l) => l.slug === slug && l.id !== draft.id) ? 'Another link already uses this address.' : undefined,
-    maxUses: draft.reusable && draft.maxUses !== null && draft.maxUses < 1 ? 'Enter at least 1, or leave it empty for no limit.' : undefined
+    maxUses: draft.reusable && !staged && draft.maxUses !== null && draft.maxUses < 1 ? 'Enter at least 1, or leave it empty for no limit.' : undefined,
+    stages: staged ? linkStageProblems(draft.stages ?? []) : undefined
   };
+  const stageAmounts = staged ? linkStageAmounts(draft) : {};
+  const lockedStages = !!link && link.payments.some((p) => p.stageId);
+  const setStages = (stages: LinkStage[] | undefined) => set({ stages, reusable: stages ? false : draft.reusable });
   const ok = Object.values(errors).every((e) => !e);
 
   const save = () => {
     setTried(true);
     if (!ok) return;
-    onSave({ ...draft, title: draft.title.trim(), description: draft.description.trim(), slug });
+    onSave({ ...draft, title: draft.title.trim(), description: draft.description.trim(), slug, stages: staged ? draft.stages?.map((s) => ({ ...s, label: s.label.trim() })) : undefined, reusable: staged ? false : draft.reusable });
   };
 
   const example = draft.kind === 'fixed' ? draft.amountNgn : draft.kind === 'open' ? draft.minNgn : draft.items.reduce((s, i) => s + i.unitNgn, 0);
@@ -71,6 +77,7 @@ export function PaymentLinkEditor({ open, link, data, escrowAllowed, onClose, on
       onClose={onClose}
       title={link ? 'Edit payment link' : 'New payment link'}
       description="Share it on WhatsApp, Instagram or as a QR code. Payers don’t need an account."
+      side="right"
       size="lg"
       footer={
       <div className="flex w-full justify-end gap-2">
@@ -81,7 +88,7 @@ export function PaymentLinkEditor({ open, link, data, escrowAllowed, onClose, on
         </div>
       }>
       
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-6 p-5">
         <section className="flex flex-col gap-4" aria-labelledby="pl-what">
           <h3 id="pl-what" className="text-label font-semibold text-fg">
             What it’s for
@@ -106,7 +113,56 @@ export function PaymentLinkEditor({ open, link, data, escrowAllowed, onClose, on
             } />
           
           <p className="-mt-2 text-caption text-fg-subtle">{kindHelp[draft.kind]}</p>
-          {draft.kind === 'fixed' && <TextInput id="pl-amount-v" label="Amount" prefix="₦" inputMode="numeric" value={draft.amountNgn ? String(draft.amountNgn) : ''} onChange={(e) => set({ amountNgn: Number(e.target.value.replace(/\D/g, '')) || 0 })} error={err('amount')} />}
+          {draft.kind === 'fixed' && <TextInput id="pl-amount-v" label={staged ? 'Total amount' : 'Amount'} prefix="₦" inputMode="numeric" value={draft.amountNgn ? String(draft.amountNgn) : ''} disabled={lockedStages} hint={lockedStages ? 'A stage has been paid, so the total and stages are locked.' : undefined} onChange={(e) => set({ amountNgn: Number(e.target.value.replace(/\D/g, '')) || 0 })} error={err('amount')} />}
+          {draft.kind === 'fixed' &&
+          <div className="flex flex-col gap-3 rounded-md border border-line p-4">
+              <Switch
+              id="pl-staged"
+              checked={staged}
+              disabled={lockedStages}
+              onChange={(on) => setStages(on ? defaultLinkStages() : undefined)}
+              label="Pay in stages"
+              description="One payer pays the total in parts, in order — e.g. half now, half on delivery. The link closes when every stage is paid." />
+            
+              {staged &&
+            <>
+                  <SelectInput<string>
+                id="pl-stage-template"
+                label="Start from a split"
+                value=""
+                disabled={lockedStages}
+                options={[{ value: '', label: 'Choose a split…' }, ...linkStageTemplates.map((t) => ({ value: t.id, label: t.name }))]}
+                onChange={(id) => {
+                  const next = stagesFromLinkTemplate(id);
+                  if (next) setStages(next);
+                }} />
+              
+                  <ol className="flex flex-col gap-3" aria-label="Stages">
+                    {(draft.stages ?? []).map((s, idx) =>
+                <li key={s.id} className="flex flex-col gap-1">
+                        <div className="grid grid-cols-[minmax(0,1fr)_96px_auto] items-end gap-2">
+                          <TextInput id={`pls-label-${s.id}`} label={`Stage ${idx + 1}`} value={s.label} disabled={lockedStages} placeholder="e.g. Deposit" onChange={(e) => setStages((draft.stages ?? []).map((x) => x.id === s.id ? { ...x, label: e.target.value.slice(0, 40) } : x))} />
+                          <TextInput id={`pls-pct-${s.id}`} label="Share (%)" inputMode="numeric" value={String(s.pct)} disabled={lockedStages} onChange={(e) => setStages((draft.stages ?? []).map((x) => x.id === s.id ? { ...x, pct: Math.min(95, Number(e.target.value.replace(/\D/g, '')) || 0) } : x))} />
+                          <IconButton label={`Remove ${s.label || `stage ${idx + 1}`}`} icon={Trash2Icon} disabled={lockedStages || (draft.stages ?? []).length <= 2} onClick={() => setStages((draft.stages ?? []).filter((x) => x.id !== s.id))} />
+                        </div>
+                        {draft.amountNgn > 0 && <p className="text-caption tabular-nums text-fg-subtle">{formatNgn(stageAmounts[s.id] ?? 0)}{idx === 0 ? ' · paid first' : ''}</p>}
+                      </li>
+                )}
+                  </ol>
+                  {(draft.stages ?? []).length < MAX_LINK_STAGES && !lockedStages &&
+              <Button size="sm" variant="tertiary" leadingIcon={PlusIcon} className="self-start" onClick={() => setStages([...(draft.stages ?? []), { id: uid('pls'), label: '', pct: 0 }])}>
+                      Add stage
+                    </Button>
+              }
+                  {err('stages') &&
+              <p className="text-caption font-medium text-danger" role="alert">
+                      {err('stages')}
+                    </p>
+              }
+                </>
+            }
+            </div>
+          }
           {draft.kind === 'open' && <TextInput id="pl-min" label="Minimum" prefix="₦" inputMode="numeric" value={draft.minNgn ? String(draft.minNgn) : ''} onChange={(e) => set({ minNgn: Number(e.target.value.replace(/\D/g, '')) || 0 })} error={err('min')} />}
           {draft.kind === 'items' &&
           <Field id="pl-items" label="Items" error={err('items')}>
@@ -138,8 +194,8 @@ export function PaymentLinkEditor({ open, link, data, escrowAllowed, onClose, on
           <h3 id="pl-rules" className="text-label font-semibold text-fg">
             Who can pay, and how often
           </h3>
-          <Switch id="pl-reusable" checked={draft.reusable} onChange={(reusable) => set({ reusable })} label="Reusable" description={draft.reusable ? 'Many people can pay through the same link.' : 'Closes after one payment — good for a single invoice or deposit.'} />
-          {draft.reusable &&
+          <Switch id="pl-reusable" checked={draft.reusable && !staged} disabled={staged} onChange={(reusable) => set({ reusable })} label="Reusable" description={staged ? 'Staged links are for one payer, so they can’t be reused.' : draft.reusable ? 'Many people can pay through the same link.' : 'Closes after one payment — good for a single invoice or deposit.'} />
+          {draft.reusable && !staged &&
           <TextInput id="pl-max" label="Limit on payments" optional inputMode="numeric" value={draft.maxUses === null ? '' : String(draft.maxUses)} onChange={(e) => set({ maxUses: e.target.value ? Number(e.target.value.replace(/\D/g, '')) : null })} error={err('maxUses')} hint="e.g. 12 seats. Leave empty for no limit." />
           }
           <TextInput id="pl-expiry" label="Closes on" optional type="date" value={draft.expiresAt ? draft.expiresAt.slice(0, 10) : ''} onChange={(e) => set({ expiresAt: e.target.value ? `${e.target.value}T23:59:00` : null })} />

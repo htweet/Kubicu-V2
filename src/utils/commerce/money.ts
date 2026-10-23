@@ -43,7 +43,9 @@ export interface OrderMoney {
 }
 
 export function orderMoney(order: Order): OrderMoney {
-  const gross = order.subtotalNgn - order.discountNgn + order.deliveryNgn;
+  // Made-to-order: an unpaid balance isn't money the customer has paid yet (D95).
+  const owed = order.balance && !order.balance.paidAt ? order.balance.dueNgn : 0;
+  const gross = order.subtotalNgn - order.discountNgn + order.deliveryNgn - owed;
   const refunded = order.refunds.reduce((s, r) => s + r.amountNgn, 0);
   const paid = order.paymentStatus !== 'pending' && order.paymentStatus !== 'cancelled';
   const providerFeeNgn = paid ? order.providerFeeNgn : 0;

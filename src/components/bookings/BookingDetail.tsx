@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
-import { BanIcon, CalendarClockIcon, CheckCircle2Icon, MessageCircleIcon, UserXIcon } from 'lucide-react';
+import { BanIcon, CalendarClockIcon, CheckCircle2Icon, CopyIcon, MessageCircleIcon, UserXIcon } from 'lucide-react';
+import { bookingBalance, balanceLabels, payBookingBalance } from '../../utils/ops/balance';
+import { useMainLink } from '../../hooks/useMainLink';
+import { cn } from '../../utils/cn';
 import { toast } from 'sonner';
 import { useOps } from '../../contexts/OpsContext';
 import { cancelBooking, rescheduleBooking, setBookingStatus } from '../../utils/ops/ops';
@@ -26,6 +29,7 @@ export const bookingStatusCopy = {
 export function BookingDetail({ bookingId, onClose }: {bookingId: string | null;onClose: () => void;}) {
   const { data, apply } = useOps();
   const team = useTeam();
+  const { mainHandle } = useMainLink();
   const b = data.bookings.find((x) => x.id === bookingId);
   const [dialog, setDialog] = useState<'cancel' | 'reschedule' | null>(null);
   const [reason, setReason] = useState('');
@@ -37,6 +41,8 @@ export function BookingDetail({ bookingId, onClose }: {bookingId: string | null;
   const start = Date.parse(b.start);
   const past = start < Date.now();
   const open = b.status === 'confirmed' || b.status === 'pending_deposit';
+  const bal = bookingBalance(b, service);
+  const balanceLink = `${window.location.origin}/p/${mainHandle}/booking/${b.id}`;
 
   const reschedule = () => {
     if (!service || newStart === null) return;
@@ -108,7 +114,27 @@ export function BookingDetail({ bookingId, onClose }: {bookingId: string | null;
             <div>
               <dt className="text-caption text-fg-subtle">Money</dt>
               <dd className="font-semibold text-fg">{b.priceNgn !== null ? formatNgn(b.priceNgn) : 'Price on request'}</dd>
-              <dd className="text-caption text-fg-subtle">{b.depositPaidNgn ? `${formatNgn(b.depositPaidNgn)} deposit paid (test)` : 'No deposit'}</dd>
+              <dd className="text-caption text-fg-subtle">{b.depositPaidNgn ? `${formatNgn(b.depositPaidNgn)} booking fee paid (test)` : 'No deposit'}</dd>
+              {bal.state !== 'none' &&
+              <dd className={cn('text-caption', bal.state === 'overdue' ? 'font-medium text-danger' : bal.state === 'paid' ? 'text-success' : 'text-fg-subtle')}>
+                  {balanceLabels[bal.state]}
+                  {bal.state !== 'paid' && ` · ${formatNgn(bal.amount)}`}
+                  {bal.dueAt && bal.state !== 'paid' && ` · by ${dayLabel(bal.dueAt, tz)}, ${timeLabel(bal.dueAt, tz)}`}
+                  {bal.state === 'paid' && b.balancePaidHow === 'recorded' && ' (recorded by you)'}
+                </dd>
+              }
+              {open && (bal.state === 'upcoming' || bal.state === 'due' || bal.state === 'overdue' || bal.state === 'at_appointment') &&
+              <dd className="mt-1.5 flex flex-wrap gap-1.5">
+                  {bal.state !== 'at_appointment' &&
+                <Button size="sm" variant="secondary" leadingIcon={CopyIcon} onClick={() => navigator.clipboard?.writeText(balanceLink).then(() => toast.success('Balance link copied'))}>
+                      Pay link
+                    </Button>
+                }
+                  <Button size="sm" variant="tertiary" onClick={() => apply((d) => payBookingBalance(d, b.id, 'recorded')) && toast.success('Balance recorded as paid')}>
+                    Record as paid
+                  </Button>
+                </dd>
+              }
             </div>
             <div className="col-span-2">
               <dt className="text-caption text-fg-subtle">Customer</dt>

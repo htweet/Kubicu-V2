@@ -10,6 +10,10 @@ import { usePlan } from '../contexts/PlanContext';
 import { useAiUsage } from './useAiUsage';
 import { useFormsStore } from './useFormsStore';
 import { useMoney } from './useMoney';
+import { useServiceOs } from './useServiceOs';
+import { SERVICE_OS_APP_ID } from '../utils/serviceOs';
+import { dueUnrequested, hasStages } from '../utils/milestones';
+import { bookingBalance } from '../utils/ops/balance';
 import { useMarketplace } from '../contexts/MarketplaceContext';
 import { FORMS_EXTENSION_ID } from '../utils/forms/storage';
 import { isLowStock, isSoldOut } from '../utils/commerce/catalog';
@@ -42,6 +46,8 @@ export function useNotificationFeed(): AppNotification[] {
   const formsActive = useMarketplace().isActive(FORMS_EXTENSION_ID);
   const forms = useFormsStore(formsActive ? current.id : null).data;
   const money = useMoney(current.id).data;
+  const quotesActive = useMarketplace().isActive(SERVICE_OS_APP_ID);
+  const serviceOs = useServiceOs(current.id).data;
 
   return useMemo(() => {
     const out: AppNotification[] = [];
@@ -54,6 +60,20 @@ export function useNotificationFeed(): AppNotification[] {
       if (o.status === 'new') out.push({ id: `order_pending:${o.id}`, event: 'order_pending', area: 'orders', kind: 'update', text: `Order #${o.number} from ${o.customer.name} is waiting for payment`, href: '/app/commerce/orders?status=new', at: o.createdAt });
       if (o.dispute?.status === 'needs_response')
       out.push({ id: `dispute:${o.dispute.id}`, event: 'dispute', area: 'orders', kind: 'action', text: `Dispute on order #${o.number} (${formatNgn(o.dispute.amountNgn)}) — respond by ${formatDate(o.dispute.respondBy)}`, href: '/app/commerce/orders', at: o.dispute.openedAt });
+    }
+
+    // Milestone payments (D95): quote stages due but not requested, booking balances due.
+    if (quotesActive)
+    for (const q of serviceOs.quotes) {
+      if (!hasStages(q)) continue;
+      for (const r of dueUnrequested(serviceOs, q))
+      out.push({ id: `stage_due:${q.id}:${r.m.id}`, event: 'stage_due', area: 'orders', kind: 'action', text: `“${r.m.label}” (${formatNgn(r.amount)}) is due on ${q.client.name}’s quote — request payment`, href: '/app/services', at: q.decidedAt ?? q.createdAt });
+    }
+    for (const b of ops.bookings) {
+      if (b.status !== 'confirmed' && b.status !== 'pending_deposit') continue;
+      const bal = bookingBalance(b, ops.services.find((s) => s.id === b.serviceId), now);
+      if (bal.state === 'overdue')
+      out.push({ id: `balance_due:${b.id}`, event: 'stage_due', area: 'bookings', kind: 'action', text: `${b.customer.name}’s ${b.serviceName} balance (${formatNgn(bal.amount)}) is overdue`, href: `/app/bookings?booking=${b.id}`, at: new Date(bal.dueAt ?? now).toISOString() });
     }
 
     // Escrow: buyer problems to answer, and KUBICU decisions (D94).
@@ -188,5 +208,5 @@ export function useNotificationFeed(): AppNotification[] {
     }
 
     return out.sort((a, b) => Date.parse(b.at) - Date.parse(a.at));
-  }, [commerce, money, ops, forms, team.data.reviews, team.myNotices, team.me.id, billing, domains, current, plan, ai.limit, ai.remaining, ai.resetsOn]);
+  }, [commerce, money, serviceOs, quotesActive, ops, forms, team.data.reviews, team.myNotices, team.me.id, billing, domains, current, plan, ai.limit, ai.remaining, ai.resetsOn]);
 }

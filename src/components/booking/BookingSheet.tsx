@@ -203,7 +203,7 @@ export function BookingSheet({ theme, ops, serviceId, handle, onClose }: Booking
           </div>
           {service.priceNgn !== null &&
           <div className="flex justify-between gap-3">
-              <dt style={muted}>At the appointment</dt>
+              <dt style={muted}>{service.balanceOnline ? `Online, ${service.balanceHoursBefore ?? 24}h before` : 'At the appointment'}</dt>
               <dd className="text-right tabular-nums">{formatNgn(Math.max(0, service.priceNgn - (service.depositNgn ?? 0)))}</dd>
             </div>
           }

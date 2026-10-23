@@ -155,6 +155,8 @@ export function createBooking(data: OpsData, input: BookingInput): BookingResult
     status: 'confirmed',
     depositPaidNgn: input.depositOutcome === 'paid' ? input.service.depositNgn ?? 0 : 0,
     priceNgn: input.service.priceNgn,
+    balanceOnline: input.service.balanceOnline || undefined,
+    balanceHoursBefore: input.service.balanceOnline ? input.service.balanceHoursBefore ?? 24 : undefined,
     customerTimeZone: input.customerTimeZone,
     events: [
     ...(input.depositOutcome === 'paid' ? [{ id: uid('bev'), at, label: `Deposit paid (test mode)` }] : []),

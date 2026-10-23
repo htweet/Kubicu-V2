@@ -17,6 +17,7 @@ import { buttonRadius, cardStyle, mix } from '../blocks/pageStyle';
 import { CheckoutHeading, PrimaryButton, SecondaryButton, SheetActions, StepDots, TestModeNote, ThemedField } from './checkoutUi';
 import { canSell, variantLabel, variantPrice } from '../../utils/commerce/catalog';
 import { placeOrder } from '../../utils/commerce/ops';
+import { cartBalanceNgn, isMadeToOrder } from '../../utils/commerce/deposit';
 import { HOLD_MINUTES, extendHolds, findEvent, holdExpiry, holderId, placeHolds, releaseHolds, ticketLineIssue } from '../../utils/commerce/tickets';
 import { useNow } from '../../hooks/useNow';
 import { isValidEmail, isValidPhone } from '../../utils/validation';
@@ -139,6 +140,16 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
   '';
   const discount = Math.min(resolution.applied?.amountNgn ?? 0, subtotal + (physical ? deliveryFee : 0));
   const total = subtotal - discount + (physical ? deliveryFee : 0);
+  // Made-to-order items: deposit now, the rest before dispatch (D95).
+  const balanceLater = dealRoom ?
+  0 :
+  cartBalanceNgn(
+    data.products,
+    lines.filter((l) => l.ok && l.price !== null).map((l) => ({ productId: l.productId, amountNgn: (l.price ?? 0) * l.qty })),
+    total
+  );
+  const payNow = total - balanceLater;
+  const leadDays = lines.reduce((m, l) => l.ok && isMadeToOrder(l.product) ? Math.max(m, l.product.madeToOrder.leadDays) : m, 0);
   const discountRow =
   resolution.applied && (discount > 0 || resolution.applied.discount.value.type === 'free_delivery') ?
   <div className="flex justify-between gap-3">
@@ -165,7 +176,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
   const pay = () => {
     setStep('paying');
     // Nothing to charge: the test-card choice doesn't apply.
-    const outcome = total > 0 ? chosenOutcome : 'success';
+    const outcome = payNow > 0 ? chosenOutcome : 'success';
     const fulfilment: OrderFulfilment = !physical ?
     { method: ticketsOnly ? 'tickets' : 'digital' } :
     method === 'pickup' ?
@@ -203,7 +214,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
           return;
         }
         if (r.order.paymentStatus === 'paid') {
-          track('order_paid', { valueNgn: r.order.subtotalNgn - r.order.discountNgn + r.order.deliveryNgn, label: `#${r.order.number}` });
+          track('order_paid', { valueNgn: r.order.subtotalNgn - r.order.discountNgn + r.order.deliveryNgn - (r.order.balance?.dueNgn ?? 0), label: `#${r.order.number}` });
           const ticketValue = r.order.items.filter((i) => i.kind === 'ticket').reduce((s, i) => s + i.unitPriceNgn * i.qty, 0);
           if (r.order.items.some((i) => i.kind === 'ticket')) track('ticket_paid', { valueNgn: ticketValue, label: `#${r.order.number}` });
         }
@@ -572,16 +583,31 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
               <dd className="tabular-nums">{deliveryFee === 0 ? 'Free' : formatNgn(deliveryFee)}</dd>
             </div>
           }
-          <div className="flex justify-between pt-1 text-[16px] font-semibold">
+          <div className={balanceLater ? 'flex justify-between pt-1' : 'flex justify-between pt-1 text-[16px] font-semibold'}>
             <dt>Total</dt>
             <dd className="tabular-nums">{formatNgn(total)}</dd>
           </div>
+          {balanceLater > 0 &&
+          <>
+              <div className="flex justify-between pt-1 text-[16px] font-semibold">
+                <dt>Deposit to pay now</dt>
+                <dd className="tabular-nums">{formatNgn(payNow)}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt style={muted}>Balance before dispatch</dt>
+                <dd className="tabular-nums">{formatNgn(balanceLater)}</dd>
+              </div>
+              <p className="rounded-md px-3 py-2.5 text-[13px] leading-snug" style={{ background: mix(theme.text, 6) }} role="note">
+                Made to order{leadDays ? ` — usually ready in about ${leadDays} day${leadDays === 1 ? '' : 's'}` : ''}. You’ll get a link to pay the balance from your order page; nothing is sent until it’s paid.
+              </p>
+            </>
+          }
           <p className="text-[12px]" style={muted}>
             No extra fees are added at payment. Processing fees are paid by the seller.
           </p>
         </dl>
         <DiscountCodeField theme={theme} code={code} onApply={setCode} resolution={resolution} />
-        {total > 0 &&
+        {payNow > 0 &&
         <fieldset className="flex flex-col gap-2">
           <legend className="mb-1 text-[13px] font-semibold">Test card — choose what happens</legend>
           {outcomes.map((o) =>
@@ -610,7 +636,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
         <TestModeNote theme={theme} />
         <SheetActions theme={theme}>
           <PrimaryButton theme={theme} onClick={pay} disabled={okLines.length === 0 || !!roomError}>
-            {total > 0 ? `Pay ${formatNgn(total)}` : ticketsOnly ? 'Get free tickets' : 'Place free order'}
+            {payNow > 0 ? balanceLater ? `Pay ${formatNgn(payNow)} deposit` : `Pay ${formatNgn(payNow)}` : ticketsOnly ? 'Get free tickets' : 'Place free order'}
           </PrimaryButton>
         </SheetActions>
       </div>);

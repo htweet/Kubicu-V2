@@ -19,6 +19,7 @@ export const notifEvents: NotifEventInfo[] = [
 { id: 'order_paid', label: 'New paid order', area: 'orders', permission: 'orders.manage', defaults: urgent },
 { id: 'order_pending', label: 'Order waiting for payment', area: 'orders', permission: 'orders.manage', defaults: appOnly },
 { id: 'dispute', label: 'Payment dispute opened', area: 'orders', permission: 'orders.refund', defaults: urgent },
+{ id: 'stage_due', label: 'Payment stage or booking balance due', area: 'orders', permission: 'orders.manage', defaults: urgent },
 { id: 'escrow', label: 'Escrow: buyer problem or KUBICU decision', area: 'orders', permission: 'orders.refund', defaults: urgent },
 { id: 'sub_new', label: 'New subscriber or trial', area: 'orders', permission: 'orders.manage', defaults: on },
 { id: 'sub_failed', label: 'Subscription payment failed', area: 'orders', permission: 'orders.manage', defaults: urgent },

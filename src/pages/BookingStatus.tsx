@@ -10,6 +10,8 @@ import { SlotPicker } from '../components/booking/SlotPicker';
 import { cancelBooking, rescheduleBooking } from '../utils/ops/ops';
 import { dayLabel, durationLabel, timeLabel } from '../utils/ops/slots';
 import { formatNgn, whatsappLink } from '../utils/format';
+import { bookingBalance, payBookingBalance } from '../utils/ops/balance';
+import { readMoney, recordStagePayment, writeMoney } from '../utils/money/store';
 import { Unavailable } from './PublicPage';
 
 /** The customer’s booking confirmation, with reschedule and cancel under the shown policy. */
@@ -17,9 +19,11 @@ export function BookingStatus() {
   const { handle = '', bookingId = '' } = useParams();
   const page = useResolvedPage(handle);
   const ops = usePageOps(page?.workspaceId ?? null, !!page?.isOwn);
-  const [mode, setMode] = useState<'view' | 'reschedule' | 'cancel'>('view');
+  const [mode, setMode] = useState<'view' | 'reschedule' | 'cancel' | 'balance'>('view');
   const [newStart, setNewStart] = useState<number | null>(null);
   const [error, setError] = useState('');
+  const [cardOutcome, setCardOutcome] = useState<'success' | 'declined'>('success');
+  const [paying, setPaying] = useState(false);
 
   const booking = ops.data?.bookings.find((b) => b.id === bookingId);
   if (!page) return <Unavailable handle={handle} />;
@@ -34,6 +38,23 @@ export function BookingStatus() {
   const upcoming = start > Date.now() && (booking.status === 'confirmed' || booking.status === 'pending_deposit');
   const freeWindow = start - Date.now() >= a.cancelHours * 3600000;
   const phone = sellerPhone(page.doc);
+  const bal = bookingBalance(booking, service);
+
+  const payBalance = () => {
+    setPaying(true);
+    window.setTimeout(() => {
+      setPaying(false);
+      if (cardOutcome === 'declined') return setError('Your card was declined (test). Nothing was charged.');
+      const ok = ops.apply((d) => payBookingBalance(d, booking.id, 'online'));
+      if (!ok) return setError('Couldn’t take the payment. Please try again.');
+      if (page.workspaceId) {
+        const res = recordStagePayment(readMoney(page.workspaceId), 'bookings', { type: 'booking', id: booking.id }, `Balance · ${booking.serviceName} · ${booking.customer.name}`, bal.amount);
+        writeMoney(page.workspaceId, res.data);
+      }
+      setError('');
+      setMode('view');
+    }, 1000);
+  };
 
   const reschedule = () => {
     if (!service || newStart === null) return;
@@ -92,11 +113,58 @@ export function BookingStatus() {
             </div>
             {booking.depositPaidNgn > 0 &&
             <div className="flex justify-between gap-3 border-t pt-2" style={{ borderColor: mix(t.text, 12) }}>
-                <dt style={muted}>Deposit paid</dt>
+                <dt style={muted}>Booking fee paid</dt>
                 <dd className="tabular-nums">{formatNgn(booking.depositPaidNgn)}</dd>
               </div>
             }
+            {bal.state !== 'none' && booking.status !== 'cancelled' &&
+            <div className="flex justify-between gap-3">
+                <dt style={muted}>{bal.state === 'paid' ? 'Balance paid' : bal.state === 'at_appointment' ? 'Pay at the appointment' : 'Balance'}</dt>
+                <dd className="text-right tabular-nums">
+                  {formatNgn(bal.amount)}
+                  {bal.dueAt && bal.state !== 'paid' &&
+                <span className="block text-[12px]" style={muted}>
+                      Due by {dayLabel(bal.dueAt, tz)}, {timeLabel(bal.dueAt, tz)}
+                    </span>
+                }
+                </dd>
+              </div>
+            }
           </dl>
+
+          {upcoming && mode === 'view' && (bal.state === 'due' || bal.state === 'overdue' || bal.state === 'upcoming') &&
+          <PrimaryButton theme={t} onClick={() => setMode('balance')}>
+              Pay the balance · {formatNgn(bal.amount)}
+            </PrimaryButton>
+          }
+
+          {mode === 'balance' &&
+          <section aria-labelledby="bs-balance" className="flex flex-col gap-4 p-5" style={cardStyle(t)}>
+              <h2 id="bs-balance" className="text-[15px] font-semibold">
+                Pay {formatNgn(bal.amount)} for {booking.serviceName}
+              </h2>
+              <fieldset className="flex flex-col gap-2">
+                <legend className="mb-1 text-[13px] font-medium">Test card</legend>
+                {(['success', 'declined'] as const).map((o) =>
+              <label key={o} className="flex cursor-pointer items-center gap-2.5 rounded-md px-3 py-2.5 text-[14px]" style={{ border: `1px solid ${mix(t.text, cardOutcome === o ? 40 : 14)}` }}>
+                    <input type="radio" name="balance-card" checked={cardOutcome === o} onChange={() => setCardOutcome(o)} />
+                    {o === 'success' ? '4242 4242 4242 4242 — payment works' : '4000 0000 0000 0002 — declined'}
+                  </label>
+              )}
+              </fieldset>
+              {error &&
+            <p className="text-[13px] font-semibold" role="alert">
+                  {error}
+                </p>
+            }
+              <PrimaryButton theme={t} disabled={paying} onClick={payBalance}>
+                {paying ? 'Paying…' : `Pay ${formatNgn(bal.amount)}`}
+              </PrimaryButton>
+              <SecondaryButton theme={t} onClick={() => (setMode('view'), setError(''))}>
+                Back
+              </SecondaryButton>
+            </section>
+          }
 
           {upcoming && mode === 'view' &&
           <div className="flex flex-col gap-2">
@@ -138,6 +206,7 @@ export function BookingStatus() {
               `Your ${formatNgn(booking.depositPaidNgn)} deposit will be refunded.` :
               `It’s within ${a.cancelHours} hours, so under the policy the ${formatNgn(booking.depositPaidNgn)} deposit isn’t refunded.` :
               'Nothing was paid, so there’s nothing to refund.'}
+                {bal.state === 'paid' && ` The ${formatNgn(booking.balancePaidNgn ?? 0)} balance you paid is refunded in full.`}
               </p>
               <PrimaryButton
               theme={t}
