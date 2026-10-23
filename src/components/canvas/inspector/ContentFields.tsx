@@ -16,6 +16,7 @@ import { ProductFields } from './ProductFields';
 import { BookingFields } from './BookingFields';
 import { SubscriptionFields } from './SubscriptionFields';
 import { FormBlockFields } from './FormBlockFields';
+import { ProofFields } from './ProofFields';
 
 interface ContentFieldsProps {
   block: Block;
@@ -268,6 +269,8 @@ export function ContentFields({ block, issues }: ContentFieldsProps) {
       return <SubscriptionFields block={block} issues={issues} />;
     case 'form':
       return <FormBlockFields block={block} issues={issues} />;
+    case 'proof':
+      return <ProofFields block={block} />;
     case 'whatsapp':{
         const c = block.content;
         const set = setter('whatsapp');

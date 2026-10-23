@@ -13,7 +13,7 @@ _Audited 22 Oct 2026 against the code and every doc in `docs/`. Source of truth 
 |---|---|---|
 | Unbuilt screens inside finished batches | 8 open (of 20) | 9 Super-admin areas (one row each, G5–G13), visitor unsubscribe page, staff roles. Legal & trust (G1–G3), Forms (G4), account export/deletion (G15) and the personal account (G20) are now built |
 | Blueprint concepts not started | 9 | Trust Passport, Voice-to-Store, WhatsApp Commerce Bridge, Creator Collaboration Graph |
-| Blueprint concepts partly there | 9 | Link Intelligence, Service OS, Business-in-a-Box, Open module exchange |
+| Blueprint concepts partly there | 7 | Link Intelligence, Open module exchange (Service OS and Business-in-a-Box completed in Batch 9 — D89, D90) |
 | Simulated by design | 10 | Sign-in, payments, files, domains, messages, calendar sync, presence |
 | Waiting on founder / legal | ~55 decisions + 14 example figures + 9 wording items | Prices, fees, limits, refund and consent wording |
 | Docs out of date (fixed in this pass) | 3 | Screen inventory, traceability matrix, prototype status |
@@ -53,20 +53,20 @@ _Audited 22 Oct 2026 against the code and every doc in `docs/`. Source of truth 
 | 2 | Link Intelligence | 🟡 | Up to 3 evidence-based suggestions in Analytics | Weekly digest, applying a suggestion as a one-click change | R1 |
 | 3 | DealRoom | ✅ | Drops and group goals, referrals, refunds (D54, D55) | — | — |
 | 4 | Trust Passport | ⬜ | — | Verified identity, business proof, review history badge | R2 (verification partner) |
-| 5 | Proof-of-Work Portfolio | ⬜ | Portfolio block only | Verified client testimonials, delivered-work timeline | R1 |
+| 5 | Proof-of-Work Portfolio | ✅ | Proof of work app (D91): verified reviews from real records, delivered-work timeline, Proof block | Certificates, case-study pages, AI case-study drafts | R1 |
 | 6 | Voice-to-Store | ⬜ | Text brief → AI page setup | Voice capture, Pidgin/Yorùbá/Igbo/Hausa transcription | R3 |
 | 7 | WhatsApp Commerce Bridge | ⬜ | `wa.me` ordering links | Official API catalogue sync, order capture from chats | R3 |
 | 8 | Local Trust & Fulfilment | ⬜ | Delivery zones; "Lagos delivery partners" extension stub | Rider booking, tracking, pickup points | R3 |
 | 9 | Community Commerce | 🟡 | DealRoom group goals | Community storefronts, co-op selling | R2 |
 | 10 | Digital Product Protection | 🟡 | Expiring links, download limits, log | Watermarking, licence keys | R2 |
-| 11 | Service OS | 🟡 | Bookings, deposits, reminders | Quotes → invoices → job tracking for service businesses | R1 |
+| 11 | Service OS | ✅ | Bookings, deposits, reminders; Quotes & jobs app (D89): client accept/decline links, deposit + balance invoices, payment records, job checklists and updates | Online invoice payment, PDF export, linking clients to Audience | R1 |
 | 12 | Opportunity Inbox | ✅ | `/app/opportunities` (D81): unpaid checkouts, failed renewals, unpaid deposits, no-shows, unanswered leads, overdue follow-ups, sold-out products, failed automations; WhatsApp nudge, snooze, handled | Anonymous abandoned carts (no details captured), weekly digest | — |
 | 13 | Offline-to-Online Identity | ✅ | QR codes, campaign links, fallbacks, printed identity kit (D86) | Ordering prints through a partner print shop (later) | R1 |
 | 14 | Micro-website mode | 🟡 | Multi-page sites (D48) | Vertical site kits | R1 |
 | 15 | Creator Collaboration Graph | ⬜ | Template selling (adjacent) | Co-branded pages, partner bundles, shared referral payouts | R2 (payout rules) |
 | 16 | Smart Accessibility | 🟡 | Manual audit, contrast safety net (D76) | Automated in-canvas checker | R1 |
 | 17 | Lightweight Mode | 🟡 | Visitor data saver (D85): auto-on for Data Saver/2G, footer toggle, photos and videos load on request, reduced motion | Owner "start lightweight" setting, compressed image variants, offline caching (need image pipeline) | R1 |
-| 18 | Business-in-a-Box | 🟡 | Starter kits with sample blocks | Kits that also install policies, automations, products | R1 |
+| 18 | Business-in-a-Box | ✅ | Starter kits; Business kits (D90) add draft products/services, draft policies, draft automations and apps alongside the page | Kits in onboarding, more business types, a policies block | R1 |
 | 19 | AI Business Coach | ⬜ | — | Weekly plain-language advice from real numbers | R2 (AI provider) |
 | 20 | Open Module Exchange | 🟡 | Curated Extensions (D67) | Third-party developer submissions, SDK, review queue for code | R3 |
 
@@ -107,5 +107,5 @@ _Audited 22 Oct 2026 against the code and every doc in `docs/`. Source of truth 
 - **Built since the audit:** legal, trust and company pages (D78), the Forms add-on (D79), and the personal **Account** area (D80) — profile and photo, email and phone verification, password, two-step sign-in with backup codes, devices and sign-in history, Google/Apple logins, language/time zone/date format, text size and motion, start screen, workspaces list, data export and scheduled account deletion. Sign out sits in the sidebar account menu and the phone "More" sheet.
 - **Workspace vs personal settings:** `/app/settings` is now strictly the workspace (team, roles, approvals, billing, per-workspace notifications, activity, privacy); `/app/account` is strictly the person. Super-admin controls live only in the staff console (D71a).
 - **Still open from this round:** Contact page on the Forms engine; Account preferences for date format and time zone are applied in Account screens and sign-in history, not yet across every app screen; non-English languages are listed as "coming soon".
-2. **Batch 9 — Differentiation (R1/R2):** Service OS, Business-in-a-Box kits, Lightweight mode, Proof-of-Work, printed identity kit.
+2. **Batch 9 — Differentiation (R1/R2): ✅ done** — Service OS (D89), Business-in-a-Box kits (D90/D90a), Lightweight mode (D84/D88), Proof-of-Work (D91), printed identity kit (D86).
 3. **Partner-dependent (R3):** WhatsApp Commerce Bridge, local fulfilment, Voice-to-Store, Open Module Exchange — design once partners are chosen.

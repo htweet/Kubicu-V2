@@ -29,6 +29,11 @@ import { QrCodes } from './pages/domains/QrCodes';
 import { CampaignLinks } from './pages/domains/CampaignLinks';
 import { Redirects } from './pages/domains/Redirects';
 import { PrintKit } from './pages/domains/PrintKit';
+import { ServiceOs } from './pages/ServiceOs';
+import { QuoteView } from './pages/QuoteView';
+import { InvoicePayPage } from './pages/InvoicePayPage';
+import { Proof } from './pages/Proof';
+import { ReviewSubmit } from './pages/ReviewSubmit';
 import { ShortLink } from './pages/ShortLink';
 import { Settings } from './pages/settings/Settings';
 import { AcceptInvite } from './pages/AcceptInvite';
@@ -86,6 +91,13 @@ import { Digital } from './pages/commerce/Digital';
 import { Discounts } from './pages/commerce/Discounts';
 import { Storefront } from './pages/commerce/Storefront';
 import { Payments } from './pages/commerce/Payments';
+import { Wallet } from './pages/commerce/Wallet';
+import { Verification } from './pages/commerce/Verification';
+import { PaymentLinks } from './pages/commerce/PaymentLinks';
+import { PayLinkPage } from './pages/PayLinkPage';
+import { AdminPayments } from './pages/admin/AdminPayments';
+import { BuyerProtection } from './pages/BuyerProtection';
+import { AdminEscrow } from './pages/admin/AdminEscrow';
 import { Reports } from './pages/commerce/Reports';
 import { CommerceSettings } from './pages/commerce/CommerceSettings';
 import { NotFound } from './pages/NotFound';
@@ -167,6 +179,9 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
                   <Route path="discounts" element={<Discounts />} />
                   <Route path="storefront" element={<Storefront />} />
                   <Route path="payments" element={<Payments />} />
+                  <Route path="wallet" element={<Wallet />} />
+                  <Route path="verification" element={<Verification />} />
+                  <Route path="payment-links" element={<PaymentLinks />} />
                   <Route path="subscriptions" element={<Subscriptions />} />
                   <Route path="events" element={<Events />} />
                   <Route path="events/:eventId/guests" element={<GuestList />} />
@@ -186,6 +201,8 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
                 <Route path="extensions" element={<Extensions />} />
                 <Route path="templates" element={<TemplatesMarket />} />
                 <Route path="opportunities" element={<Opportunities />} />
+                <Route path="services" element={<ServiceOs />} />
+                <Route path="proof" element={<Proof />} />
                 <Route path="account" element={<Account />} />
                 <Route path="account/:tab" element={<Account />} />
                 <Route path="settings" element={<Settings />} />
@@ -210,6 +227,8 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
                 <Route path="support" element={<AdminSupport />} />
                 <Route path="audit" element={<AdminAudit />} />
                 <Route path="health" element={<AdminHealth />} />
+                <Route path="payments" element={<AdminPayments />} />
+                <Route path="escrow" element={<AdminEscrow />} />
                 <Route path=":area" element={<AdminPlannedArea />} />
               </Route>
 
@@ -224,6 +243,11 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
               <Route path="/p/:handle/booking/:bookingId" element={<BookingStatus />} />
               <Route path="/p/:handle/subscription/:token" element={<SubscriptionPortal />} />
               <Route path="/p/:handle/preferences/:contactId" element={<EmailPreferences />} />
+              <Route path="/p/:handle/quote/:quoteId" element={<QuoteView />} />
+        <Route path="/p/:handle/invoice/:invoiceId" element={<InvoicePayPage />} />
+              <Route path="/p/:handle/review/:token" element={<ReviewSubmit />} />
+              <Route path="/p/:handle/pay/:slug" element={<PayLinkPage />} />
+              <Route path="/p/:handle/protect/:orderId" element={<BuyerProtection />} />
 
               {/* Earlier addresses */}
               <Route path="/design-system" element={<Navigate to="/admin/design-system" replace />} />

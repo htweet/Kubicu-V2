@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import type { CommerceData } from '../types/commerce';
 import { useWorkspace } from './WorkspaceContext';
 import { DEMO_WORKSPACE_ID } from '../utils/workspaceStorage';
-import { commerceKey, emptyCommerce, readCommerce, writeCommerce } from '../utils/commerce/storage';
+import { COMMERCE_EVENT, commerceKey, emptyCommerce, readCommerce, writeCommerce } from '../utils/commerce/storage';
 import { withSampleData } from '../data/commerceSeed';
 import { clearSample } from '../utils/commerce/ops';
 import { useOptionalTeam } from './TeamContext';
@@ -55,8 +55,20 @@ export function CommerceProvider({ children }: {children: React.ReactNode;}) {
       const next = readCommerce(workspaceId);
       if (next) setData(next);
     };
+    // Same-tab writes from outside this context (escrow refunds, staff decisions).
+    const onLocal = () => {
+      const next = readCommerce(workspaceId);
+      if (next) {
+        dataRef.current = next;
+        setData(next);
+      }
+    };
     window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
+    window.addEventListener(COMMERCE_EVENT, onLocal);
+    return () => {
+      window.removeEventListener('storage', onStorage);
+      window.removeEventListener(COMMERCE_EVENT, onLocal);
+    };
   }, [workspaceId]);
 
   const applySystem = useCallback(

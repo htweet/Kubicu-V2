@@ -9,6 +9,9 @@ export const commerceNav = [
 { to: '/app/commerce/subscriptions', label: 'Subscriptions' },
 { to: '/app/commerce/discounts', label: 'Discounts' },
 { to: '/app/commerce/payments', label: 'Payments' },
+{ to: '/app/commerce/wallet', label: 'Wallet' },
+{ to: '/app/commerce/verification', label: 'Verification' },
+{ to: '/app/commerce/payment-links', label: 'Payment links' },
 { to: '/app/commerce/reports', label: 'Reports' },
 { to: '/app/commerce/settings', label: 'Settings' }];
 

@@ -12,13 +12,15 @@ interface DataSaverValue {
   on: boolean;
   /** True when it turned on because of the connection rather than the visitor's choice. */
   auto: boolean;
+  /** Why it's on when the visitor didn't choose it (D88). */
+  reason: 'network' | 'seller' | null;
   /** Images revealed for this visit while staying in data saver. */
   imagesShown: boolean;
   setOn: (on: boolean) => void;
   showImages: () => void;
 }
 
-const DataSaverContext = createContext<DataSaverValue>({ on: false, auto: false, imagesShown: true, setOn: () => {}, showImages: () => {} });
+const DataSaverContext = createContext<DataSaverValue>({ on: false, auto: false, reason: null, imagesShown: true, setOn: () => {}, showImages: () => {} });
 
 interface NetworkInformationLike {
   saveData?: boolean;
@@ -39,12 +41,14 @@ function readChoice(): 'on' | 'off' | null {
   }
 }
 
-export function DataSaverProvider({ children, disabled = false }: {children: React.ReactNode;disabled?: boolean;}) {
+export function DataSaverProvider({ children, disabled = false, sellerDefault = false }: {children: React.ReactNode;disabled?: boolean;sellerDefault?: boolean;}) {
   const [choice, setChoice] = useState<'on' | 'off' | null>(() => readChoice());
   const [slow] = useState(() => connectionIsSlow());
   const [imagesShown, setImagesShown] = useState(false);
 
-  const on = !disabled && (choice ? choice === 'on' : slow);
+  // The visitor's own choice always wins; otherwise the connection, then the seller's default.
+  const on = !disabled && (choice ? choice === 'on' : slow || sellerDefault);
+  const reason: DataSaverValue['reason'] = on && !choice ? slow ? 'network' : 'seller' : null;
   const setOn = useCallback((next: boolean) => {
     setChoice(next ? 'on' : 'off');
     setImagesShown(false);
@@ -56,7 +60,7 @@ export function DataSaverProvider({ children, disabled = false }: {children: Rea
     }}, []);
   const showImages = useCallback(() => setImagesShown(true), []);
 
-  const value = useMemo(() => ({ on, auto: on && !choice, imagesShown: !on || imagesShown, setOn, showImages }), [on, choice, imagesShown, setOn, showImages]);
+  const value = useMemo(() => ({ on, auto: reason === 'network', reason, imagesShown: !on || imagesShown, setOn, showImages }), [on, reason, imagesShown, setOn, showImages]);
   return (
     <DataSaverContext.Provider value={value}>
       {on ? <MotionConfig reducedMotion="always">{children}</MotionConfig> : children}

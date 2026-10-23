@@ -28,7 +28,8 @@ export type BlockType =
 'portfolio' |
 'location' |
 'subscription' |
-'form';
+'form' |
+'proof';
 
 export interface GalleryImage {
   id: string;
@@ -250,6 +251,8 @@ export interface BlockContentMap {
   subscription: {title: string;intro: string;planIds: string[];ctaLabel: string;highlightPlanId: string | null;};
   /** A saved form from the Forms add-on (D79). */
   form: {formId: string | null;showTitle: boolean;};
+  /** Verified reviews and delivered work from Proof of work (D91). */
+  proof: {title: string;show: 'both' | 'reviews' | 'work';limit: number;};
 }
 
 export interface BlockStyle {
@@ -368,6 +371,8 @@ export interface BlockGroup {
 export interface PageBranding {
   /** Owner's preference. Only honoured on plans that allow removing the badge. */
   hideKubicuBadge: boolean;
+  /** Seller choice: every visitor starts in Lightweight mode; they can still turn it off (D88). */
+  startLightweight?: boolean;
 }
 
 export type Block = { [K in

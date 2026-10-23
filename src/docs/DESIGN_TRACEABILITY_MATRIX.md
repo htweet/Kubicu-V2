@@ -45,7 +45,7 @@ Prototype status: ✅ interactive · 🟡 partial · ⏳ planned placeholder · 
 | IB-U / DP-8 | NGN, local phone formats, African market fit | P1 | Owner | Product, WhatsApp | formatNgn, phone validation | — | 🟡 | Multi-currency later |
 | IB-V / MB-A1 | IntentFlow | P2 | Owner | Visibility tab, IntentFlow | SourceRuleFields | live, paused, rolled back | ✅ | D64 |
 | IB-W / MB-A3 | DealRoom | P2 | Owner | Spaces, DealRoom panel | utils/dealRoom | drop, group goal, refunds | ✅ | D54 |
-| IB-X / MB-A4–5 | Trust Passport, Proof-of-Work | P2 | Owner | — | — | — | ⬜ | Concept (later) |
+| IB-X / MB-A4–5 | Trust Passport, Proof-of-Work | P2 | Owner | — | pages/Proof.tsx, pages/ReviewSubmit.tsx, components/blocks/ProofBlock.tsx | empty, verified, hidden, rating-only | 🟡 | Proof-of-Work built (D91); Trust Passport later |
 | IB-Y / MB-A8 | Local fulfilment layer | P2 | Owner | FAQ copy only | — | — | ⬜ | Later |
 | IB-Z | Developer API | P2 | Dev | — | — | — | ⬜ | Later |
 | MB-A6 | Voice-to-Store | P2 | Owner | — | — | — | ⬜ | Batch 5 concept |

@@ -15,7 +15,9 @@ import {
   SplitIcon,
   LayoutTemplateIcon,
   ClipboardListIcon,
-  HandCoinsIcon } from
+  HandCoinsIcon,
+  BriefcaseIcon,
+  BadgeCheckIcon } from
 'lucide-react';
 
 export interface NavItem {
@@ -40,6 +42,8 @@ export const workspaceNav: NavItem[] = [
 { id: 'opportunities', label: 'Opportunities', to: '/app/opportunities', icon: HandCoinsIcon, group: 'business', appId: 'opportunities' },
 { id: 'commerce', label: 'Commerce', to: '/app/commerce', icon: ShoppingBagIcon, group: 'business' },
 { id: 'bookings', label: 'Bookings', to: '/app/bookings', icon: CalendarIcon, group: 'business', appId: 'bookings' },
+{ id: 'services', label: 'Quotes & jobs', to: '/app/services', icon: BriefcaseIcon, group: 'business', appId: 'service-os' },
+{ id: 'proof', label: 'Proof of work', to: '/app/proof', icon: BadgeCheckIcon, group: 'business', appId: 'proof' },
 { id: 'audience', label: 'Audience', to: '/app/audience', icon: UsersIcon, group: 'business' },
 { id: 'forms', label: 'Forms', to: '/app/forms', icon: ClipboardListIcon, group: 'business', appId: 'forms' },
 { id: 'automations', label: 'Automations', to: '/app/automations', icon: WorkflowIcon, group: 'business', appId: 'automations' },

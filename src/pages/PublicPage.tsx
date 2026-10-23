@@ -248,7 +248,7 @@ export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
           </span>
         </div>
       }
-      <DataSaverProvider disabled={isDraft}>
+      <DataSaverProvider disabled={isDraft} sellerDefault={!!doc.branding?.startLightweight}>
       <DataSaverBar theme={doc.theme} />
       <TrackProvider value={track}>
       <RenderPlanProvider plan={plan}>

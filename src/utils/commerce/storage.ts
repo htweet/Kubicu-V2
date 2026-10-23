@@ -88,6 +88,14 @@ export function writeCommerce(workspaceId: string, data: CommerceData): void {
   window.localStorage.setItem(commerceKey(workspaceId), JSON.stringify(data));
 }
 
+export const COMMERCE_EVENT = 'kubicu:commerce';
+
+/** For writes made outside CommerceContext (e.g. escrow refunds) — tells the open app to reload. */
+export function writeCommerceExternal(workspaceId: string, data: CommerceData): void {
+  writeCommerce(workspaceId, data);
+  window.dispatchEvent(new CustomEvent(COMMERCE_EVENT));
+}
+
 export function commerceStorageBytes(data: CommerceData): number {
   try {
     return new Blob([JSON.stringify(data)]).size;

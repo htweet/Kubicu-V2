@@ -128,6 +128,8 @@ export function summarizeBlock(block: Block): string {
       return `${block.content.planIds.length} plan${block.content.planIds.length === 1 ? '' : 's'}`;
     case 'form':
       return block.content.formId ? 'Form' : 'No form chosen';
+    case 'proof':
+      return block.content.title || { both: 'Reviews and work', reviews: 'Verified reviews', work: 'Delivered work' }[block.content.show];
     default:
       return '';
   }

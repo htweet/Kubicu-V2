@@ -13,6 +13,7 @@ import { BuyTemplateDialog } from '../components/templates/BuyTemplateDialog';
 import { SharedLibrary } from '../components/templates/SharedLibrary';
 import { CreatorListingInfo } from '../components/templates/CreatorListingInfo';
 import { MyTemplates } from '../components/templates/MyTemplates';
+import { BusinessKits } from '../components/templates/BusinessKits';
 import { NewSpaceDialog } from '../components/spaces/NewSpaceDialog';
 import { Dialog } from '../components/ui/Dialog';
 import { Button } from '../components/ui/Button';
@@ -30,7 +31,7 @@ import { formatNgn } from '../utils/format';
 
 type Price = 'all' | 'free' | 'premium';
 type Source = 'all' | 'kubicu' | 'creators';
-type Tab = 'browse' | 'mine';
+type Tab = 'browse' | 'kits' | 'mine';
 
 interface Item {
   ex: ExamplePage;
@@ -49,7 +50,8 @@ export function TemplatesMarket() {
   const applyTemplate = useApplyTemplate();
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
-  const tab: Tab = params.get('tab') === 'mine' ? 'mine' : 'browse';
+  const rawTab = params.get('tab');
+  const tab: Tab = rawTab === 'mine' || rawTab === 'kits' ? rawTab : 'browse';
   const [sellOpen, setSellOpen] = useState(params.get('sell') === '1');
   const [store, update] = useTemplateStore();
   const [q, setQ] = useState('');
@@ -88,7 +90,7 @@ export function TemplatesMarket() {
 
   });
 
-  const setTab = (t: Tab) => setParams(t === 'mine' ? { tab: 'mine' } : {}, { replace: true });
+  const setTab = (t: Tab) => setParams(t === 'browse' ? {} : { tab: t }, { replace: true });
 
   return (
     <div className="mx-auto w-full max-w-[1200px] px-5 pb-16 pt-6 md:px-10 md:pt-8">
@@ -98,6 +100,7 @@ export function TemplatesMarket() {
         <Tabs<Tab>
           items={[
           { id: 'browse', label: 'Browse' },
+          { id: 'kits', label: 'Business kits' },
           { id: 'mine', label: 'My templates' }]
           }
           value={tab}
@@ -107,7 +110,11 @@ export function TemplatesMarket() {
         
       </div>
 
-      {tab === 'mine' ?
+      {tab === 'kits' ?
+      <div className="mt-8" role="tabpanel" id="tpl-panel-kits" aria-labelledby="tpl-tab-kits">
+          <BusinessKits />
+        </div> :
+      tab === 'mine' ?
       <div className="mt-8" role="tabpanel" id="tpl-panel-mine" aria-labelledby="tpl-tab-mine">
           <MyTemplates sellOpen={sellOpen} setSellOpen={setSellOpen} />
         </div> :

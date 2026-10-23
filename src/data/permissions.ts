@@ -25,6 +25,8 @@ export const permissionRows: {id: Permission;label: string;}[] = [
 { id: 'tickets.checkin', label: 'Check in guests at events' },
 { id: 'discounts.manage', label: 'Create discounts' },
 { id: 'commerce.settings', label: 'Payments, delivery and storefront settings' },
+{ id: 'payouts.manage', label: 'Pay out from the wallet and change bank accounts' },
+{ id: 'paylinks.manage', label: 'Create payment links' },
 { id: 'bookings.manage', label: 'Manage bookings and services' },
 { id: 'contacts.manage', label: 'Manage contacts and follow-ups' },
 { id: 'automations.manage', label: 'Build and switch on automations' },
@@ -42,9 +44,10 @@ const all = permissionRows.map((r) => r.id);
 
 export const rolePermissions: Record<Role, Set<Permission>> = {
   owner: new Set(all),
-  admin: new Set(all.filter((p) => p !== 'billing.manage' && p !== 'ownership.transfer' && p !== 'workspace.delete')),
+  // Payouts stay with the Owner unless they allow Admins in Wallet settings (D92).
+  admin: new Set(all.filter((p) => p !== 'billing.manage' && p !== 'ownership.transfer' && p !== 'workspace.delete' && p !== 'payouts.manage')),
   editor: new Set<Permission>(['pages.edit', 'pages.publish', 'spaces.manage', 'media.manage', 'analytics.view']),
-  sales: new Set<Permission>(['products.edit', 'orders.manage', 'orders.refund', 'tickets.checkin', 'bookings.manage', 'contacts.manage', 'analytics.view']),
+  sales: new Set<Permission>(['products.edit', 'orders.manage', 'orders.refund', 'tickets.checkin', 'bookings.manage', 'contacts.manage', 'analytics.view', 'paylinks.manage']),
   viewer: new Set<Permission>()
 };
 

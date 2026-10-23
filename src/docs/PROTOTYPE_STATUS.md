@@ -155,7 +155,20 @@
 - [x] **Lightweight mode, visitor side (D85)**: data saver on public pages — auto for Data Saver/2G, footer toggle, photos/videos on request, reduced motion
 - [x] **Printed identity kit (D86)**: Domains & QR → Print kit — business cards, stickers, package inserts, receipt footer from a tracked QR code
 - [x] **Lean workspace (D87)**: Domains & QR, Bookings, Opportunities, Automations and IntentFlow are free apps installed from Extensions; first-visit tour requires installing one
-- [ ] Batch 9 still open: Service OS, Business-in-a-Box kits, Proof-of-Work; owner-side lightweight setting
+- [x] **Seller data-saver default + app-only blocks (D88)**
+- [x] **Service OS — Quotes & jobs (D89)**: quotes with client accept/decline link, deposit + balance invoices with payment records, jobs with checklists and updates
+- [x] **Business-in-a-Box kits (D90)**: Templates → Business kits; page + draft products/services + draft policies + draft automations + apps, removable when untouched
+- [x] **Kit policies: six fields (D90a)**: Instructions, Guides and Disclaimer added; empty boxes hide; "Add to page as FAQ"
+- [x] **Proof-of-Work (D91)**: one-time review links from completed records, verified labels, reply/hide (hidden still counts), delivered-work timeline with record matching, Proof block
+- [x] Batch 9 complete
+- [x] **Batch 10 · Pass A — Money foundation (D92)**: How you get paid (direct / wallet / escrow + per-area overrides), Wallet (balances, ledger, payouts, bank accounts with safety wait, schedules, verification tiers, top-up), Payment links + public pay page, Super admin → Payments & providers
+- [x] **Batch 10 · Full KYC/KYB verification (D93)**: Commerce → Verification (branching steps for individuals, BNs and companies, simulated partner checks, review & submit, status/history), payouts blocked until approved, Wallet banner + card, Super admin → Payments & providers → Verification review sheet (approve / ask for changes per step / reject). Not yet: notifications for decisions, re-verification when details change after approval.
+- [~] **Batch 10 · Pass C — Milestone payments (D95)**: done for Quotes & jobs (stage editor + templates, stage schedule on quote and job, step-ticked prompts, per-stage pay links, public invoice pay page, wallet "Milestone" credits, migrated bridal sample). Not yet: Bookings booking-fee + balance, made-to-order deposits, staged payment links, Opportunities/Automations/Notifications/Reports hooks.
+- [x] **Batch 10 · Pass B — Escrow lifecycle (D94)**: escrow case per order (held → delivered → inspection → released), seller panel in the order sheet (mark delivered with note/proof, reply to problems: full refund / partial offer / disagree, ask KUBICU), buyer protection page with phone-digit check (confirm, report a problem, accept offer, escalate, withdraw), Reserved balance while disputed, automatic escalation after 48 h, Super admin → Escrow cases (decide release / refund / split, audited), DealRoom group-goal money held until the goal is decided, notifications, prototype time-skip buttons. Not yet: real file uploads, buyer sign-in.
+- [ ] Batch 10 · Pass C — Milestone payments (quotes, bookings, made-to-order, payment links) + automations, notifications, reports
+- [ ] Batch 10 · Pass D — Partner concepts (simulated)
+- [ ] Batch 10 · Pass E — Decision sign-off with the founder
+- [ ] Batch 10 · Pass F — Phones, accessibility, docs
 - [ ] Not yet: dual approval for high-risk staff actions, staff backup codes, real staff identity provider
 - [ ] Forms: contact page on the website still uses its own form (not yet on the Forms engine); file fields store the file name only
 

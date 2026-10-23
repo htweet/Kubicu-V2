@@ -23,6 +23,8 @@ import { FileTextIcon } from 'lucide-react';
 import { useMarketplace } from '../../contexts/MarketplaceContext';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
 import { printOrderInvoice } from '../../utils/orderInvoice';
+import { useEditor } from '../../contexts/EditorContext';
+import { EscrowPanel } from '../money/EscrowPanel';
 
 const steps: {status: OrderStatus;label: string;}[] = [
 { status: 'new', label: 'Placed' },
@@ -51,6 +53,8 @@ export function OrderDetail({ orderId, onClose }: {orderId: string | null;onClos
   const team = useTeam();
   const invoices = useMarketplace().isActive('invoice-generator');
   const { current } = useWorkspace();
+  const { state: editor } = useEditor();
+  const handle = editor.published?.handle ?? editor.site.handle;
   const order = orderId ? data.orders.find((o) => o.id === orderId) : undefined;
   const [dialog, setDialog] = useState<'refund' | 'cancel' | null>(null);
   const [note, setNote] = useState('');
@@ -169,6 +173,7 @@ export function OrderDetail({ orderId, onClose }: {orderId: string | null;onClos
           }
 
           {order.dispute && <DisputePanel order={order} />}
+          <EscrowPanel workspaceId={current.id} orderId={order.id} handle={order.sourceHandle ?? handle} />
 
           <section aria-label="Items">
             <ul className="flex flex-col divide-y divide-line border-y border-line">

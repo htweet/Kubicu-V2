@@ -14,6 +14,7 @@ import { Unavailable } from './PublicPage';
 import { ReferralShareCard } from '../components/dealroom/ReferralShareCard';
 import { roomProgress, roomReferrers } from '../utils/dealRoom';
 import { OrderTickets } from '../components/tickets/OrderTickets';
+import { EscrowNotice } from '../components/checkout/EscrowNotice';
 
 /** Visitor-facing order confirmation and receipt. */
 export function OrderStatus() {
@@ -100,6 +101,8 @@ export function OrderStatus() {
               </p>
             </div>
           </section>
+
+          {page.workspaceId && !pending && <EscrowNotice workspaceId={page.workspaceId} handle={handle} orderId={order.id} theme={t} />}
 
           {order.tickets && order.tickets.length > 0 && !pending && <OrderTickets theme={t} tickets={order.tickets} data={commerce.data} handle={handle} />}
 

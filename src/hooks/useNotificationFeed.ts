@@ -9,6 +9,7 @@ import { useWorkspace } from '../contexts/WorkspaceContext';
 import { usePlan } from '../contexts/PlanContext';
 import { useAiUsage } from './useAiUsage';
 import { useFormsStore } from './useFormsStore';
+import { useMoney } from './useMoney';
 import { useMarketplace } from '../contexts/MarketplaceContext';
 import { FORMS_EXTENSION_ID } from '../utils/forms/storage';
 import { isLowStock, isSoldOut } from '../utils/commerce/catalog';
@@ -40,6 +41,7 @@ export function useNotificationFeed(): AppNotification[] {
   const ai = useAiUsage();
   const formsActive = useMarketplace().isActive(FORMS_EXTENSION_ID);
   const forms = useFormsStore(formsActive ? current.id : null).data;
+  const money = useMoney(current.id).data;
 
   return useMemo(() => {
     const out: AppNotification[] = [];
@@ -52,6 +54,19 @@ export function useNotificationFeed(): AppNotification[] {
       if (o.status === 'new') out.push({ id: `order_pending:${o.id}`, event: 'order_pending', area: 'orders', kind: 'update', text: `Order #${o.number} from ${o.customer.name} is waiting for payment`, href: '/app/commerce/orders?status=new', at: o.createdAt });
       if (o.dispute?.status === 'needs_response')
       out.push({ id: `dispute:${o.dispute.id}`, event: 'dispute', area: 'orders', kind: 'action', text: `Dispute on order #${o.number} (${formatNgn(o.dispute.amountNgn)}) — respond by ${formatDate(o.dispute.respondBy)}`, href: '/app/commerce/orders', at: o.dispute.openedAt });
+    }
+
+    // Escrow: buyer problems to answer, and KUBICU decisions (D94).
+    for (const c of money.escrow) {
+      const d = c.dispute;
+      if (!d) continue;
+      const href = `/app/commerce/orders?order=${c.orderId}`;
+      if (c.stage === 'disputed' && !d.response)
+      out.push({ id: `escrow_dispute:${d.id}`, event: 'escrow', area: 'orders', kind: 'action', text: `${c.buyerName} reported a problem with order #${c.orderNumber} (${formatNgn(c.grossNgn)} in escrow) — reply by ${formatDate(d.respondBy)}`, href, at: d.openedAt });
+      if (c.stage === 'escalated' && d.escalatedAt)
+      out.push({ id: `escrow_escalated:${d.id}`, event: 'escrow', area: 'orders', kind: 'update', text: `Order #${c.orderNumber}’s escrow problem is with KUBICU to decide`, href, at: d.escalatedAt });
+      if (d.decision)
+      out.push({ id: `escrow_decided:${d.id}`, event: 'escrow', area: 'orders', kind: 'update', text: `KUBICU decided order #${c.orderNumber}: ${d.decision.outcome === 'release' ? 'released to you' : d.decision.outcome === 'refund' ? 'refunded to the buyer' : `${formatNgn(d.decision.partialNgn ?? 0)} back to the buyer`}`, href, at: d.decision.at });
     }
 
     // Template review outcomes for this workspace's listings (D70).
@@ -173,5 +188,5 @@ export function useNotificationFeed(): AppNotification[] {
     }
 
     return out.sort((a, b) => Date.parse(b.at) - Date.parse(a.at));
-  }, [commerce, ops, forms, team.data.reviews, team.myNotices, team.me.id, billing, domains, current, plan, ai.limit, ai.remaining, ai.resetsOn]);
+  }, [commerce, money, ops, forms, team.data.reviews, team.myNotices, team.me.id, billing, domains, current, plan, ai.limit, ai.remaining, ai.resetsOn]);
 }

@@ -84,7 +84,7 @@ export interface AuditEntry {
   id: string;
   at: string;
   actor: string;
-  area: 'tenants' | 'flags' | 'moderation' | 'support' | 'announcements' | 'pages' | 'orders' | 'data' | 'staff' | 'appeals';
+  area: 'tenants' | 'flags' | 'moderation' | 'support' | 'announcements' | 'pages' | 'orders' | 'data' | 'staff' | 'appeals' | 'payments' | 'escrow';
   action: string;
   target: string;
   reason: string;

@@ -48,6 +48,42 @@ export const extensions: ExtensionInfo[] = [
   uninstallNote: 'Your services and bookings are kept, and booking blocks already on your pages keep working. The screen leaves your sidebar until you reinstall.'
 },
 {
+  id: 'service-os',
+  name: 'Quotes & jobs',
+  publisher: 'KUBICU',
+  verified: 'kubicu',
+  category: 'apps',
+  summary: 'Send quotes clients accept from a link, invoice the deposit and balance, and track each job.',
+  description:
+  'For makeup artists, photographers, tailors, cleaners, builders — anyone who prices work before doing it. Build a quote from priced items with an optional deposit and expiry date. Your client opens the link, then accepts by typing their name or declines with a reason. From an accepted quote, invoice the deposit and later the balance, record payments as they come in, and run the job with a checklist and dated updates you can send on WhatsApp.',
+  adds: ['A Quotes & jobs screen in your sidebar', 'Quote links clients accept or decline', 'Deposit and balance invoices with payment records', 'Jobs with checklists and client updates'],
+  permissions: ['Create quotes, invoices and jobs', 'Show quotes to anyone with the link', 'Open WhatsApp with messages you can edit (nothing is sent automatically)'],
+  minPlan: 'free',
+  priceNgn: 0,
+  version: '1.0.0',
+  versions: [{ version: '1.0.0', date: '2026-10-23', notes: 'First release: quotes, invoices and jobs.' }],
+  reviews: [],
+  uninstallNote: 'Your quotes, invoices and jobs are kept, and quote links keep working for clients. The screen leaves your sidebar until you reinstall.'
+},
+{
+  id: 'proof',
+  name: 'Proof of work',
+  publisher: 'KUBICU',
+  verified: 'kubicu',
+  category: 'apps',
+  summary: 'Reviews that can only come from real orders, bookings and jobs, plus a timeline of work you’ve delivered.',
+  description:
+  'Ask a customer with a completed order, completed booking or finished job for a review. They get a one-time link, and their review is labelled verified because it’s tied to that record. You can reply or hide a review with a reason, but never change the words, and hidden reviews still count in your rating. Add delivered work with a photo and match it to a real record. A Proof block shows both on your page.',
+  adds: ['A Proof of work screen in your sidebar', 'One-time review links for real customers', 'A delivered-work timeline', 'A Proof block for your pages'],
+  permissions: ['Read completed orders, bookings and jobs to match reviews', 'Show reviews and work on your public pages', 'Open WhatsApp with messages you can edit (nothing is sent automatically)'],
+  minPlan: 'free',
+  priceNgn: 0,
+  version: '1.0.0',
+  versions: [{ version: '1.0.0', date: '2026-10-23', notes: 'First release: verified reviews, delivered work and the Proof block.' }],
+  reviews: [],
+  uninstallNote: 'Your reviews and delivered work are kept, and Proof blocks already on your pages keep showing them. The screen leaves your sidebar until you reinstall.'
+},
+{
   id: 'opportunities',
   name: 'Opportunities',
   publisher: 'KUBICU',

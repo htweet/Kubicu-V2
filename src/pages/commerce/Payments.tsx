@@ -13,6 +13,7 @@ import { Segmented } from '../../components/ui/Segmented';
 import { Field } from '../../components/ui/Field';
 import { IllustrativeTag } from '../../components/ui/IllustrativeTag';
 import { TestModeStrip } from '../../components/commerce/TestModeStrip';
+import { PaymentMethodsSection } from '../../components/money/PaymentMethodsSection';
 import { Card } from '../../components/ui/layout/Card';
 import { PageStack, Section } from '../../components/ui/layout/Section';
 import { formatTimestamp } from '../../utils/format';
@@ -52,10 +53,11 @@ export function Payments() {
 
   return (
     <>
-      <PageHeader title="Payments" description="How customers pay at checkout. Money goes from your provider straight to your bank." />
+      <PageHeader title="Payments" description="How customers pay, and where the money goes: straight to your bank, into your wallet, or through escrow." />
       <TestModeStrip className="mt-6" />
 
       <PageStack>
+      <PaymentMethodsSection />
       <Section id="provider" title={<span className="flex items-center gap-2">Payment provider <IllustrativeTag note="Provider names and methods are illustrative. KUBICU hasn’t chosen or integrated a provider yet." /></span>} description={provider ? `One provider at a time. Disconnect ${provider.name} to switch.` : 'Connect one provider. Methods depend on the provider, your account and eligibility.'}>
         <ul className="grid gap-6 md:grid-cols-2">
           {paymentProviders.map((p) => {

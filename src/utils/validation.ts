@@ -176,6 +176,11 @@ export function validateBlock(block: Block): ValidationIssue[] {
         if (!block.content.formId) push('error', 'Choose a form from Forms', 'formId');
         break;
       }
+    case 'proof':{
+        // Contents come from Proof of work; an empty block simply doesn't show to visitors.
+        if (block.content.limit < 1) push('error', 'Show at least one item', 'limit');
+        break;
+      }
     case 'testimonial':{
         const c = block.content;
         if (!c.quote.trim()) push('error', 'Add the customer’s words', 'quote');

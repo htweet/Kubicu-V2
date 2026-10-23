@@ -28,6 +28,7 @@ import { PortfolioBlock } from './PortfolioBlock';
 import { LocationBlock } from './LocationBlock';
 import { SubscriptionBlock } from './SubscriptionBlock';
 import { FormBlock } from './FormBlock';
+import { ProofBlock } from './ProofBlock';
 
 interface BlockRendererProps {
   block: Block;
@@ -93,6 +94,8 @@ export function BlockRenderer({ block, theme, mode }: BlockRendererProps) {
       return <SubscriptionBlock block={block} theme={theme} mode={mode} />;
     case 'form':
       return <FormBlock block={block} theme={theme} mode={mode} />;
+    case 'proof':
+      return <ProofBlock block={block} theme={theme} mode={mode} />;
     default:
       return null;
   }

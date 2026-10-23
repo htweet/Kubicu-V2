@@ -4,6 +4,7 @@ export type NotifEventId =
 'order_paid' |
 'order_pending' |
 'dispute' |
+'escrow' |
 'stock' |
 'booking_today' |
 'booking_cancelled' |

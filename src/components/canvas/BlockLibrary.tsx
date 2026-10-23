@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { SearchIcon, SearchXIcon } from 'lucide-react';
 import type { BlockType } from '../../types/page';
 import { blockCategories, blockDefinitions, blockOrder, plannedBlocks } from '../../data/blockRegistry';
@@ -11,6 +12,7 @@ import { cn } from '../../utils/cn';
 import { SavedSectionsList } from './SavedSectionsList';
 import { usePlan } from '../../contexts/PlanContext';
 import { planAtLeast, plans } from '../../data/plans';
+import { useMarketplace } from '../../contexts/MarketplaceContext';
 
 interface BlockLibraryProps {
   onAdded?: (id: string) => void;
@@ -24,15 +26,18 @@ export function BlockLibrary({ onAdded, touch }: BlockLibraryProps) {
   const q = query.trim().toLowerCase();
   const selected = state.draft.blocks.find((b) => b.id === state.selectedId);
 
+  const market = useMarketplace();
   const matches = useMemo(
     () =>
     blockOrder.filter((type) => {
-      if (!q) return true;
       const def = blockDefinitions[type];
+      if (def.requiresApp && !market.isActive(def.requiresApp)) return false;
+      if (!q) return true;
       return [def.name, def.description, def.category, ...def.keywords].join(' ').toLowerCase().includes(q);
     }),
-    [q]
+    [q, market]
   );
+  const bookingsMissing = !market.isActive('bookings');
   const plannedMatches = plannedBlocks.filter((p) => !q || `${p.name} ${p.description}`.toLowerCase().includes(q));
 
   const add = (type: BlockType) => {
@@ -116,6 +121,15 @@ export function BlockLibrary({ onAdded, touch }: BlockLibraryProps) {
               </section>);
 
         })}
+
+          {bookingsMissing && !q &&
+        <p className="mx-2 rounded-md bg-sunken px-3 py-2.5 text-caption text-fg-muted">
+              Want customers to book a time? The Booking block comes with the free Bookings app.{' '}
+              <Link to="/app/extensions?ext=bookings" className="font-semibold text-fg underline-offset-2 hover:underline">
+                Get Bookings
+              </Link>
+            </p>
+        }
 
           {plannedMatches.length > 0 &&
         <section aria-labelledby="cat-later" className="border-t border-line pt-4">

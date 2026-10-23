@@ -92,6 +92,13 @@ export function PageSettingsPanel() {
           onChange={(shown) => actions.updateBranding({ hideKubicuBadge: !shown })} />
         
         {!plan.canHideBadge && <UpgradeButton plan="creator" feature="Removing “Made with KUBICU”" className="self-start" />}
+        <Switch
+          id="branding-lightweight"
+          label="Open in data saver for everyone"
+          description="Photos and videos wait until visitors tap them, and animations stay still — good if most customers are on mobile data. Visitors can turn it off, and slow connections get it anyway."
+          checked={!!draft.branding?.startLightweight}
+          onChange={(on) => actions.updateBranding({ startLightweight: on })} />
+        
         {!plan.canHideBadge && draft.branding?.hideKubicuBadge &&
         <p className="text-caption text-fg-subtle">
             Your earlier choice to hide it is saved and will apply again if you move to a paid plan.

@@ -6,6 +6,7 @@ import { BookmarkIcon, CornerDownLeftIcon, EyeIcon, HistoryIcon, MonitorIcon, Pa
 import { Viewport } from "../../types/page";
 import { useEditor } from "../../contexts/EditorContext";
 import { useLibrary } from "../../contexts/LibraryContext";
+import { useMarketplace } from "../../contexts/MarketplaceContext";
 import { blockDefinitions, blockOrder } from "../../data/blockRegistry";
 import { blockName, summarizeBlock } from "../../utils/blocks";
 import { Kbd } from "../ui/Kbd";
@@ -58,6 +59,7 @@ export function CommandPalette({
       previous?.focus();
     };
   }, [open]);
+  const market = useMarketplace();
   const commands = useMemo<Command[]>(() => {
     const list: Command[] = [{
       id: 'publish',
@@ -146,6 +148,7 @@ export function CommandPalette({
     });
     blockOrder.forEach((type) => {
       const def = blockDefinitions[type];
+      if (def.requiresApp && !market.isActive(def.requiresApp)) return;
       list.push({
         id: `add:${type}`,
         group: 'Add a block',
@@ -173,7 +176,7 @@ export function CommandPalette({
       run: () => actions.select(b.id)
     }));
     return list;
-  }, [actions, canRedo, canUndo, library.sections, navigate, onPublish, onVersions, onViewport, state.draft.blocks, state.draft.handle]);
+  }, [actions, canRedo, canUndo, library.sections, market, navigate, onPublish, onVersions, onViewport, state.draft.blocks, state.draft.handle]);
   const q = query.trim().toLowerCase();
   const results = q ? commands.filter((c) => `${c.label} ${c.hint ?? ''} ${c.keywords ?? ''} ${c.group}`.toLowerCase().includes(q)) : commands.filter((c) => c.group !== 'Go to block');
   useEffect(() => setActive(0), [q]);

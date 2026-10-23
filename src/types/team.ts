@@ -12,6 +12,8 @@ export type Permission =
 'tickets.checkin' |
 'discounts.manage' |
 'commerce.settings' |
+'payouts.manage' |
+'paylinks.manage' |
 'bookings.manage' |
 'contacts.manage' |
 'automations.manage' |

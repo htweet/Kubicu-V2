@@ -28,7 +28,8 @@ import {
   BriefcaseIcon,
   MapPinIcon,
   RepeatIcon,
-  ClipboardPenIcon } from
+  ClipboardPenIcon,
+  BadgeCheckIcon } from
 'lucide-react';
 import type { BlockContentMap, BlockType } from '../types/page';
 import type { WorkspacePlan } from '../types/plan';
@@ -49,6 +50,8 @@ export interface BlockDefinition<K extends BlockType = BlockType> {
   clickable: boolean;
   /** Lowest plan that unlocks the full block. Lower plans get a graceful fallback. */
   minPlan?: WorkspacePlan;
+  /** Offered in the library only while this KUBICU app is installed (D87). */
+  requiresApp?: string;
   defaults: () => BlockContentMap[K];
 }
 
@@ -217,6 +220,7 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
   },
   booking: {
     type: 'booking',
+    requiresApp: 'bookings',
     name: 'Booking CTA',
     description: 'Promote a service and link to where people book.',
     category: 'Conversion',
@@ -467,6 +471,19 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
     supportsEmphasis: false,
     clickable: false,
     defaults: () => ({ formId: null, showTitle: true })
+  },
+  proof: {
+    type: 'proof',
+    name: 'Proof of work',
+    description: 'Verified reviews and delivered work, matched to real records.',
+    category: 'Conversion',
+    icon: BadgeCheckIcon,
+    keywords: ['reviews', 'rating', 'portfolio', 'verified', 'trust', 'case study', 'testimonial'],
+    defaultAlign: 'left',
+    supportsEmphasis: false,
+    clickable: false,
+    requiresApp: 'proof',
+    defaults: () => ({ title: 'What clients say', show: 'both', limit: 3 })
   }
 };
 
@@ -494,6 +511,7 @@ export const blockOrder: BlockType[] = [
 'portfolio',
 'location',
 'testimonial',
+'proof',
 'countdown',
 'event',
 'productGrid',
