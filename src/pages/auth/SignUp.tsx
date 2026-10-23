@@ -75,7 +75,7 @@ export function SignUp() {
           </label>
           {submitted && errors.agreed && <p className="mt-1.5 text-caption text-danger">{errors.agreed}</p>}
         </div>
-        <Button type="submit" size="lg" fullWidth loading={loading} className="mt-2">
+        <Button type="submit" variant="brand" size="lg" fullWidth loading={loading} className="mt-2">
           Create account
         </Button>
       </form>

@@ -120,9 +120,9 @@ export function ChangePlanDialog({ open, onClose, feature, minPlan, initial }: P
           </div>
 
           {trialOffer &&
-        <div className="flex flex-col gap-3 rounded-lg border border-action bg-action-soft p-4 sm:flex-row sm:items-center">
-              <SparklesIcon size={18} className="shrink-0 text-action" aria-hidden />
-              <p className="flex-1 text-label text-fg">
+        <div className="flex flex-col gap-3 rounded-lg border border-action bg-action-soft p-4 sm:flex-row sm:items-center sm:gap-4 sm:px-5">
+              <SparklesIcon size={18} className="hidden shrink-0 text-action sm:block" aria-hidden />
+              <p className="min-w-0 flex-1 text-label text-fg">
                 <span className="font-semibold">Try {plans[TRIAL_PLAN].name} free for {TRIAL_DAYS} days.</span> No card needed. You’ll be reminded 3 days before it ends, then go back to Free unless you choose a plan.
               </p>
               <Button
@@ -146,30 +146,37 @@ export function ChangePlanDialog({ open, onClose, feature, minPlan, initial }: P
             const k = changeKind(plan.id, d.cycle, id, cycle, trialing);
             const price = priceFor(id, cycle);
             return (
-              <li key={id} className={cn('flex flex-col gap-3 p-4 md:flex-row md:items-center md:gap-6', unlocks && 'bg-action-soft')}>
-                  <div className="min-w-0 md:w-[34%]">
+              <li key={id} className={cn('grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-4 gap-y-3 p-4 sm:grid-cols-[minmax(0,1fr)_auto_7.5rem] sm:items-center sm:px-5', unlocks && 'bg-action-soft')}>
+                  <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="text-body font-semibold text-fg">{p.name}</span>
                       {id === plan.id && <Badge tone="neutral">{trialing ? 'Trial' : 'Current'}</Badge>}
                       {unlocks && <Badge tone="info">Unlocks this</Badge>}
                     </div>
                     <p className="mt-0.5 text-caption text-fg-muted">{p.intendedFor}</p>
+                    <ul className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-caption text-fg-muted">
+                      {planHighlights[id].slice(0, 3).map((h) =>
+                    <li key={h} className="flex items-center gap-1">
+                          <CheckIcon size={12} className="shrink-0 text-fg-subtle" aria-hidden />
+                          {h}
+                        </li>
+                    )}
+                    </ul>
                   </div>
-                  <div className="md:w-[22%]">
-                    <p className="font-display text-heading font-semibold tabular-nums text-fg">
+                  <div className="text-right sm:min-w-[7.5rem]">
+                    <p className="whitespace-nowrap font-display text-heading font-semibold tabular-nums text-fg">
                       {price === 0 ? '₦0' : formatNgn(price)}
-                      {price > 0 && <span className="text-caption font-normal text-fg-muted"> /{cycle === 'yearly' ? 'year' : 'month'}</span>}
+                      {price > 0 && <span className="text-caption font-normal text-fg-muted"> /{cycle === 'yearly' ? 'yr' : 'mo'}</span>}
                     </p>
-                    {cycle === 'yearly' && price > 0 && <p className="text-caption text-success">Save {formatNgn(yearlySaving(id))}</p>}
+                    {cycle === 'yearly' && price > 0 && <p className="whitespace-nowrap text-caption text-success">Save {formatNgn(yearlySaving(id))}</p>}
                   </div>
-                  <p className="min-w-0 flex-1 text-caption text-fg-muted">{planHighlights[id].slice(0, 3).join(' · ')}</p>
-                  <div className="md:w-[120px] md:text-right">
+                  <div className="col-span-2 sm:col-span-1 sm:text-right">
                     {isCurrent ?
                   <span className="inline-flex items-center gap-1 text-caption font-medium text-fg-subtle">
                         <CheckIcon size={13} aria-hidden /> Your plan
                       </span> :
 
-                  <Button size="sm" variant={unlocks || k === 'upgrade' && !minPlan && id === planOrder[planOrder.indexOf(plan.id) + 1] ? 'primary' : 'secondary'} disabled={!can.allowed || k === 'same'} onClick={() => choose(id)} className="w-full md:w-auto">
+                  <Button size="sm" variant={unlocks || k === 'upgrade' && !minPlan && id === planOrder[planOrder.indexOf(plan.id) + 1] ? 'primary' : 'secondary'} disabled={!can.allowed || k === 'same'} onClick={() => choose(id)} className="w-full sm:w-auto">
                         {k === 'downgrade' ? 'Downgrade' : trialing && id === plan.id ? 'Keep it' : 'Upgrade'}
                       </Button>
                   }
@@ -177,7 +184,7 @@ export function ChangePlanDialog({ open, onClose, feature, minPlan, initial }: P
                 </li>);
 
           })}
-            <li className="flex flex-col gap-2 p-4 md:flex-row md:items-center md:justify-between">
+            <li className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
               <div>
                 <span className="text-body font-semibold text-fg">{plans.enterprise.name}</span>
                 <p className="text-caption text-fg-muted">{plans.enterprise.intendedFor} — custom limits and contracts.</p>

@@ -58,6 +58,7 @@ export function BookingStatus() {
           </Link>
           {booking.status === 'cancelled' ? <CalendarXIcon size={30} aria-hidden /> : <CalendarCheck2Icon size={30} aria-hidden />}
           <CheckoutHeading
+            level={1}
             theme={t}
             sub={
             booking.status === 'cancelled' ?

@@ -12,6 +12,8 @@ import { TextInput } from '../../components/ui/TextInput';
 import { CurrencyInput } from '../../components/ui/CurrencyInput';
 import { Dialog } from '../../components/ui/Dialog';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
+import { Card } from '../../components/ui/layout/Card';
+import { AsideNote } from '../../components/ui/layout/AsideNote';
 
 export function CommerceSettings() {
   const wide = useMediaQuery('(min-width: 768px)');
@@ -48,30 +50,30 @@ export function CommerceSettings() {
         } />
       
 
-      <div className="mt-8 grid gap-10 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
-        <div className="flex flex-col gap-8">
-          {tried && errors.none && <p className="rounded-md bg-danger-soft px-3 py-2.5 text-label text-danger">{errors.none}</p>}
-
-          <section aria-labelledby="pickup-heading" className="rounded-lg border border-line bg-raised p-5">
-            <h2 id="pickup-heading" className="sr-only">
+      <div className="mt-8 grid items-start gap-10 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+        <Card id="fulfilment" emphasis="primary" title="How orders reach customers" description="Checkout offers whichever of these you turn on." body="flush">
+          {tried && errors.none && <p className="mx-5 mt-5 rounded-md bg-danger-soft px-3 py-2.5 text-label text-danger md:mx-6">{errors.none}</p>}
+          <div className="flex flex-col divide-y divide-line">
+          <section aria-labelledby="pickup-heading" className="px-5 py-5 md:px-6 md:py-6">
+            <h3 id="pickup-heading" className="sr-only">
               Pickup
-            </h2>
+            </h3>
             <Switch id="set-pickup" label="Customers can collect" description="Free for the customer. They see your address and hours at checkout." checked={draft.pickupEnabled} onChange={(pickupEnabled) => patch({ pickupEnabled })} />
             {draft.pickupEnabled &&
-            <div className="mt-5 grid gap-4 sm:grid-cols-2">
+              <div className="mt-5 grid gap-4 sm:grid-cols-2">
                 <TextInput id="set-pickup-addr" label="Pickup address" value={draft.pickupAddress} error={tried ? errors.pickup || undefined : undefined} onChange={(e) => patch({ pickupAddress: e.target.value })} />
                 <TextInput id="set-pickup-hours" label="Pickup hours" optional placeholder="e.g. Tue–Sat, 10am–6pm" value={draft.pickupHours} onChange={(e) => patch({ pickupHours: e.target.value })} />
               </div>
-            }
+              }
           </section>
 
-          <section aria-labelledby="delivery-heading" className="rounded-lg border border-line bg-raised p-5">
-            <h2 id="delivery-heading" className="sr-only">
+          <section aria-labelledby="delivery-heading" className="px-5 py-5 md:px-6 md:py-6">
+            <h3 id="delivery-heading" className="sr-only">
               Delivery
-            </h2>
+            </h3>
             <Switch id="set-delivery" label="Deliver to customers" description="Charge per zone. Customers pick their zone and see the fee before paying." checked={draft.deliveryEnabled} onChange={(deliveryEnabled) => patch({ deliveryEnabled })} />
             {draft.deliveryEnabled &&
-            <div className="mt-5 flex flex-col gap-4">
+              <div className="mt-5 flex flex-col gap-4">
                 <div className="overflow-x-auto rounded-md border border-line">
                   <table className="block w-full text-left md:table">
                     <caption className="sr-only">Delivery zones</caption>
@@ -87,8 +89,8 @@ export function CommerceSettings() {
                     </thead>
                     <tbody className="block divide-y divide-line md:table-row-group md:divide-y-0">
                       {draft.zones.map((z, i) =>
-                    // Phones: each zone stacks as a small form with visible labels.
-                    <tr key={z.id} className="grid grid-cols-[1fr_1fr_auto] items-end gap-2 p-3 align-top md:table-row md:border-t md:border-line md:p-0">
+                      // Phones: each zone stacks as a small form with visible labels.
+                      <tr key={z.id} className="grid grid-cols-[1fr_1fr_auto] items-end gap-2 p-3 align-top md:table-row md:border-t md:border-line md:p-0">
                           <td className="col-span-3 block md:table-cell md:px-3 md:py-2">
                             <TextInput id={`zone-n-${z.id}`} label="Zone name" className="h-11 md:h-9" fieldClassName="md:[&>div:first-child]:sr-only" value={z.name} error={tried ? zoneErrors[i] || undefined : undefined} placeholder="e.g. Lagos Mainland" onChange={(e) => patch({ zones: draft.zones.map((x) => x.id === z.id ? { ...x, name: e.target.value } : x) })} />
                           </td>
@@ -102,7 +104,7 @@ export function CommerceSettings() {
                             <IconButton icon={Trash2Icon} size={wide ? 'sm' : 'lg'} label={`Remove ${z.name || 'zone'}`} onClick={() => patch({ zones: draft.zones.filter((x) => x.id !== z.id) })} />
                           </td>
                         </tr>
-                    )}
+                      )}
                     </tbody>
                   </table>
                   {draft.zones.length === 0 && <p className="px-3 py-4 text-label text-fg-muted">No zones yet.</p>}
@@ -115,34 +117,24 @@ export function CommerceSettings() {
                   <CurrencyInput id="set-free" label="Free delivery over" optional value={draft.freeDeliveryOverNgn} placeholder="No free delivery" hint="Based on the items subtotal." onChange={(freeDeliveryOverNgn) => patch({ freeDeliveryOverNgn })} />
                 </div>
               </div>
-            }
-          </section>
-        </div>
-
-        <aside className="flex flex-col gap-6">
-          <section aria-labelledby="sample-heading" className="rounded-lg border border-dashed border-line-strong p-5">
-            <h2 id="sample-heading" className="text-label font-semibold text-fg">
-              Sample data
-            </h2>
-            <p className="mt-1 text-label text-fg-muted">
-              {hasSample ? 'Sample products and orders are labelled “Sample”. Clear them before you start selling.' : 'Add labelled sample products and orders to explore every screen.'}
-            </p>
-            <div className="mt-4">
-              {hasSample ?
-              <Button variant="destructive" size="sm" onClick={() => setConfirmClear(true)}>
-                  Clear sample data
-                </Button> :
-
-              <Button variant="secondary" size="sm" onClick={loadSample}>
-                  Add sample data
-                </Button>
               }
-            </div>
           </section>
-          <section className="rounded-lg border border-line p-5">
-            <h2 className="text-label font-semibold text-fg">Customer messages</h2>
-            <p className="mt-1 text-label text-fg-muted">Order confirmations, shipping and refund notices are previewed but not sent in this prototype. Email and WhatsApp sending arrive with Automations.</p>
-          </section>
+          </div>
+        </Card>
+
+        <aside className="flex flex-col divide-y divide-line">
+          <AsideNote id="sample" title="Sample data" text={hasSample ? 'Sample products and orders are labelled “Sample”. Clear them before you start selling.' : 'Add labelled sample products and orders to explore every screen.'}>
+            {hasSample ?
+            <Button variant="destructive" size="sm" onClick={() => setConfirmClear(true)}>
+                Clear sample data
+              </Button> :
+
+            <Button variant="secondary" size="sm" onClick={loadSample}>
+                Add sample data
+              </Button>
+            }
+          </AsideNote>
+          <AsideNote id="messages" title="Customer messages" text="Order confirmations, shipping and refund notices are previewed but not sent in this prototype. Email and WhatsApp sending arrive with Automations." />
         </aside>
       </div>
 

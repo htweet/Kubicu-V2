@@ -16,7 +16,10 @@ import { PublishDialog } from './PublishDialog';
 import { VersionHistory } from './VersionHistory';
 import { CommandPalette } from './CommandPalette';
 import { ConflictBanner } from './ConflictBanner';
+import { CanvasAnnouncer } from './CanvasAnnouncer';
+import { ShortcutsDialog } from './ShortcutsDialog';
 import { Sheet } from '../ui/Sheet';
+import { SkipLink } from '../ui/SkipLink';
 import { cn } from '../../utils/cn';
 
 const RAIL = 56;
@@ -34,6 +37,7 @@ export function DesktopEditor() {
   const [publishOpen, setPublishOpen] = useState(false);
   const [versionsOpen, setVersionsOpen] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
 
   const selected = state.draft.blocks.find((b) => b.id === state.selectedId);
   const selectedDef = selected ? blockDefinitions[selected.type] : null;
@@ -55,6 +59,10 @@ export function DesktopEditor() {
         if (document.querySelector('[role="dialog"]')) return;
         e.preventDefault();
         toggleFocus();
+      } else if ((e.metaKey || e.ctrlKey) && e.key === '/') {
+        if (document.querySelector('[role="dialog"]')) return;
+        e.preventDefault();
+        setShortcutsOpen(true);
       }
     };
     window.addEventListener('keydown', onKey);
@@ -73,6 +81,7 @@ export function DesktopEditor() {
 
   return (
     <div className="flex h-screen flex-col bg-canvas text-fg">
+      <SkipLink target="canvas-main" label="Skip to canvas" />
       <EditorTopBar
         viewport={viewport}
         onViewportChange={setViewport}
@@ -113,8 +122,10 @@ export function DesktopEditor() {
           }
         </aside>
 
-        <main aria-label="Canvas" className="min-w-0 flex-1">
+        <main id="canvas-main" tabIndex={-1} aria-label="Canvas" className="min-w-0 flex-1 focus:outline-none">
           <Artboard viewport={viewport} />
+          <CanvasAnnouncer />
+          <ShortcutsDialog open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
         </main>
 
         <aside

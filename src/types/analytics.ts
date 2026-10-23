@@ -11,7 +11,13 @@ export type EventType =
 'lead' |
 'signup' |
 'subscribe_open' |
-'subscribe_started';
+'subscribe_started' |
+'ticket_select' |
+'ticket_checkout' |
+'ticket_paid' |
+'form_view' |
+'form_start' |
+'form_submit';
 
 export type SourceId = 'whatsapp' | 'instagram' | 'tiktok' | 'facebook' | 'x' | 'google' | 'qr' | 'campaign' | 'direct' | 'other';
 

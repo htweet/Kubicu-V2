@@ -21,6 +21,8 @@ import { Segmented } from '../../components/ui/Segmented';
 import { InlineAlert } from '../../components/ui/InlineAlert';
 import { UpgradeButton } from '../../components/ui/UpgradeButton';
 import { MediaImage } from '../../components/media/MediaImage';
+import { Card } from '../../components/ui/layout/Card';
+import { Section } from '../../components/ui/layout/Section';
 
 /** Commerce → Storefront: the auto-built shop at /shop (D53). */
 export function Storefront() {
@@ -70,12 +72,9 @@ export function Storefront() {
         } />
       
 
-      <div className="mt-8 grid gap-10 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
-        <div className="flex flex-col gap-8">
-          <section aria-labelledby="sf-on" className="rounded-lg border border-line bg-raised p-5">
-            <h2 id="sf-on" className="sr-only">
-              Storefront on or off
-            </h2>
+      <div className="mt-8 grid items-start gap-8 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] lg:gap-10">
+        <div className="flex flex-col gap-6">
+          <Card emphasis="primary" as="div">
             <Switch id="sf-enabled" label="Show a storefront" description={`At ${publicUrl(`${handle}/${STOREFRONT_PATH}`)}. Draft and archived products never appear.`} checked={draft.enabled} onChange={(v) => set('enabled', v)} />
             {clash && draft.enabled &&
             <InlineAlert tone="warning" title={`Your “${clash}” page already uses /shop`} className="mt-4">
@@ -87,54 +86,49 @@ export function Storefront() {
                 Your main page isn’t published yet, so visitors can’t reach the shop. <Link to={`/app/canvas/${state.site.id}`} className="font-medium text-fg underline underline-offset-2">Open the canvas</Link>
               </p>
             }
-          </section>
+          </Card>
 
-          <section aria-labelledby="sf-content" className={`flex flex-col gap-4 rounded-lg border border-line bg-raised p-5 ${draft.enabled ? '' : 'opacity-60'}`}>
-            <h2 id="sf-content" className="text-label font-semibold text-fg">
-              What shoppers see
-            </h2>
+          <Card id="sf-content" title="What shoppers see" description="Title, intro and how the shop appears in your site menu." className={draft.enabled ? '' : 'opacity-60'}>
+            <div className="flex flex-col gap-4">
             <TextInput id="sf-title" label="Shop title" value={draft.title} error={tried ? titleError || undefined : undefined} disabled={!draft.enabled} onChange={(e) => set('title', e.target.value)} />
             <TextArea id="sf-intro" label="Intro" optional rows={2} value={draft.intro} disabled={!draft.enabled} placeholder="e.g. Made in small runs in Lekki. Delivery across Lagos." onChange={(e) => set('intro', e.target.value)} />
             <Switch id="sf-menu" label="Add to the site menu" description="Shoppers can get to the shop from any of your pages." checked={draft.showInMenu} disabled={!draft.enabled} onChange={(v) => set('showInMenu', v)} />
             {draft.showInMenu && <TextInput id="sf-menu-label" label="Menu label" value={draft.menuLabel} disabled={!draft.enabled} fieldClassName="max-w-[220px]" onChange={(e) => set('menuLabel', e.target.value)} />}
             <Switch id="sf-soldout" label="Hide sold-out products" description="Off shows them with a Sold out label, so people know to come back." checked={draft.hideSoldOut} disabled={!draft.enabled} onChange={(v) => set('hideSoldOut', v)} />
-          </section>
+            </div>
+          </Card>
 
-          <section aria-labelledby="sf-order" className={`flex flex-col gap-4 rounded-lg border border-line bg-raised p-5 ${draft.enabled ? '' : 'opacity-60'}`}>
-            <h2 id="sf-order" className="text-label font-semibold text-fg">
-              How people order
-            </h2>
+          <Card id="sf-order" title="How people order" className={draft.enabled ? '' : 'opacity-60'}>
+            <div className="flex flex-col gap-4">
             <Segmented<StorefrontSettings['ordering']>
-              ariaLabel="How people order"
-              fullWidth
-              value={draft.ordering}
-              onChange={(v) => set('ordering', v)}
-              options={[
-              { value: 'checkout', label: 'Cart and checkout' },
-              { value: 'whatsapp', label: 'WhatsApp' }]
-              } />
-            
+                ariaLabel="How people order"
+                fullWidth
+                value={draft.ordering}
+                onChange={(v) => set('ordering', v)}
+                options={[
+                { value: 'checkout', label: 'Cart and checkout' },
+                { value: 'whatsapp', label: 'WhatsApp' }]
+                } />
+              
             {draft.ordering === 'checkout' && !checkoutAllowed &&
-            <InlineAlert tone="info" title={`Checkout is on ${plans[CHECKOUT_PLAN].name}`} action={<UpgradeButton plan={CHECKOUT_PLAN} feature="Checkout in your storefront" />}>
+              <InlineAlert tone="info" title={`Checkout is on ${plans[CHECKOUT_PLAN].name}`} action={<UpgradeButton plan={CHECKOUT_PLAN} feature="Checkout in your storefront" />}>
                 Until then, the shop uses WhatsApp ordering.
               </InlineAlert>
-            }
+              }
             {usesWhatsApp &&
-            <TextInput id="sf-phone" label="WhatsApp number" type="tel" inputMode="tel" value={draft.whatsappPhone} placeholder="+234 …" error={tried ? phoneError || undefined : undefined} hint="Each product sends a pre-filled message with the chosen option and price." onChange={(e) => set('whatsappPhone', e.target.value)} />
-            }
+              <TextInput id="sf-phone" label="WhatsApp number" type="tel" inputMode="tel" value={draft.whatsappPhone} placeholder="+234 …" error={tried ? phoneError || undefined : undefined} hint="Each product sends a pre-filled message with the chosen option and price." onChange={(e) => set('whatsappPhone', e.target.value)} />
+              }
             {!usesWhatsApp && <p className="text-caption text-fg-muted">Shoppers add to a cart and pay at checkout, with your delivery options and discount codes.</p>}
-          </section>
+            </div>
+          </Card>
         </div>
 
-        <aside aria-labelledby="sf-preview" className="flex flex-col gap-4">
-          <h2 id="sf-preview" className="text-label font-semibold text-fg">
-            In the shop
-          </h2>
-          <p className="text-caption text-fg-muted">
-            <span className="font-semibold tabular-nums text-fg">{products.length}</span> product{products.length === 1 ? '' : 's'}
-            {soldOutCount ? ` · ${soldOutCount} sold out` : ''}
-            {draftCount ? ` · ${draftCount} draft${draftCount === 1 ? '' : 's'} not shown` : ''}
-          </p>
+        <Section
+          id="sf-preview"
+          title="In the shop"
+          className="lg:sticky lg:top-6"
+          description={`${products.length} product${products.length === 1 ? '' : 's'}${soldOutCount ? ` · ${soldOutCount} sold out` : ''}${draftCount ? ` · ${draftCount} draft${draftCount === 1 ? '' : 's'} not shown` : ''}`}>
+          
           {products.length === 0 ?
           <div className="flex flex-col items-start gap-3 rounded-lg border border-dashed border-line-strong p-5">
               <StoreIcon size={20} className="text-fg-subtle" aria-hidden />
@@ -154,7 +148,7 @@ export function Storefront() {
             </ul>
           }
           <p className="text-caption text-fg-subtle">Collections become filter tabs. Product pages show every photo, option and stock level.</p>
-        </aside>
+        </Section>
       </div>
     </>);
 

@@ -15,6 +15,7 @@ import { SaveIndicator } from "./SaveIndicator";
 import { PageStatusBadge } from "./PageStatusBadge";
 import { AiSuggestEntry } from "./AiSuggestEntry";
 import { ConflictBanner } from "./ConflictBanner";
+import { CanvasAnnouncer } from "./CanvasAnnouncer";
 import { Sheet } from "../ui/Sheet";
 import { IconButton } from "../ui/IconButton";
 import { Button } from "../ui/Button";
@@ -86,8 +87,9 @@ export function MobileEditor() {
       </header>
 
       <ConflictBanner />
-      <main aria-label="Canvas" className="scroll-quiet relative min-h-0 flex-1 overflow-y-auto">
+      <main id="canvas-main" tabIndex={-1} aria-label="Canvas" className="scroll-quiet relative min-h-0 flex-1 overflow-y-auto focus:outline-none">
         <Artboard framed={false} touch onEditBlock={() => setSheet('block')} />
+        <CanvasAnnouncer />
       </main>
 
       <Button size="lg" leadingIcon={PlusIcon} onClick={() => setSheet('blocks')} className="fixed bottom-[calc(76px+env(safe-area-inset-bottom))] right-4 z-30 rounded-full shadow-3">

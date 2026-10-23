@@ -13,7 +13,7 @@ export function NeedsAttention() {
   const toFulfil = data.orders.filter((o) => o.status === 'paid' || o.status === 'packing').length;
   const toConfirm = data.orders.filter((o) => o.status === 'new').length;
   const disputes = data.orders.filter((o) => o.dispute?.status === 'needs_response').length;
-  const stock = data.products.filter((p) => p.status === 'active' && (isSoldOut(p) || isLowStock(p))).length;
+  const stock = data.products.filter((p) => p.status === 'active' && p.kind !== 'ticket' && (isSoldOut(p) || isLowStock(p))).length;
   const ops = useOps().data;
   const todayKey = new Date().toDateString();
   const todayBookings = ops.bookings.filter((b) => b.status === 'confirmed' && new Date(b.start).toDateString() === todayKey).length;

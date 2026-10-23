@@ -30,6 +30,23 @@ export const contrastCopy: Record<ContrastKey, {name: string;guidance: string;}>
   }
 };
 
+/**
+ * Live-page safety net (D76): returns a theme whose text, secondary text and featured-button
+ * text all reach 4.5:1, shifting only the colours that fall short. The saved theme is untouched.
+ */
+export function liveReadableTheme(theme: PageTheme): PageTheme {
+  const text = readableOn(readableOn(theme.text, theme.background), theme.surface);
+  const mutedText = readableOn(readableOn(theme.mutedText, theme.background), theme.surface);
+  let { accent, accentText } = theme;
+  if (contrastRatio(accentText, accent) < CONTRAST_TARGET) {
+    const fix = suggestContrastFix(theme, 'button').theme;
+    accent = fix.accent ?? accent;
+    accentText = fix.accentText ?? accentText;
+  }
+  if (text === theme.text && mutedText === theme.mutedText && accent === theme.accent && accentText === theme.accentText) return theme;
+  return { ...theme, text, mutedText, accent, accentText };
+}
+
 export function suggestContrastFix(theme: PageTheme, key: ContrastKey): ContrastFix {
   if (key === 'text') {
     const text = readableOn(theme.text, theme.background, CONTRAST_TARGET);

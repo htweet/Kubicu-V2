@@ -2,6 +2,7 @@ import type { CommerceData, StorefrontSettings } from '../../types/commerce';
 import { sampleDiscounts } from '../../data/sampleDiscounts';
 import { SAMPLE_ROOM_HANDLE, sampleRoomOrders } from '../../data/commerceSeed';
 import { sampleSubPlans, sampleSubscriptions } from '../../data/sampleSubscriptions';
+import { withSampleEvent } from '../../data/sampleEvents';
 
 export const commerceKey = (workspaceId: string) => `kubicu.commerce.${workspaceId}`;
 
@@ -37,6 +38,7 @@ export function emptyCommerce(): CommerceData {
     payments: { provider: null, connectedAt: null, businessName: '', methods: ['Card', 'Bank transfer', 'USSD'] },
     subPlans: [],
     subscriptions: [],
+    events: [],
     nextOrderNumber: 1001,
     sampleSeeded: false
   };
@@ -48,7 +50,7 @@ export function readCommerce(workspaceId: string): CommerceData | null {
     if (!raw) return null;
     const parsed = JSON.parse(raw) as Partial<CommerceData>;
     const base = emptyCommerce();
-    return {
+    const read: CommerceData = {
       ...base,
       ...parsed,
       fulfilment: { ...base.fulfilment, ...parsed.fulfilment },
@@ -69,8 +71,11 @@ export function readCommerce(workspaceId: string): CommerceData | null {
       [],
       // Saved before subscriptions existed (D69): workspaces holding sample data get the sample plans.
       subPlans: Array.isArray(parsed.subPlans) ? parsed.subPlans : hasSampleProducts(parsed) ? sampleSubPlans() : [],
-      subscriptions: Array.isArray(parsed.subscriptions) ? parsed.subscriptions : hasSampleProducts(parsed) ? sampleSubscriptions() : []
+      subscriptions: Array.isArray(parsed.subscriptions) ? parsed.subscriptions : hasSampleProducts(parsed) ? sampleSubscriptions() : [],
+      events: Array.isArray(parsed.events) ? parsed.events : []
     };
+    // Saved before ticketing existed (D73): workspaces holding sample data get the sample event once.
+    return !Array.isArray(parsed.events) && hasSampleProducts(parsed) ? withSampleEvent(read) : read;
   } catch {
     return null;
   }

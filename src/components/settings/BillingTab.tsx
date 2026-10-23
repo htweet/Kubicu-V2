@@ -103,8 +103,8 @@ export function BillingTab() {
         </InlineAlert>
       }
 
-      <div className="grid gap-10 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
-        <section aria-labelledby="billing-plan" className="flex flex-col gap-5 rounded-lg border border-line bg-raised p-6">
+      <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] lg:gap-10">
+        <section aria-labelledby="billing-plan" className="flex flex-col gap-5 rounded-lg border border-line bg-raised p-5 shadow-1 md:p-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <p className="text-caption font-medium text-fg-subtle">Current plan</p>

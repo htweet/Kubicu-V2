@@ -1,20 +1,27 @@
 import React, { useState } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
-import { ArrowLeftIcon, MenuIcon, PanelLeftCloseIcon, PanelLeftOpenIcon } from 'lucide-react';
-import { adminNav } from '../../data/adminNavigation';
-import { ADMIN_ACTOR } from '../../contexts/AppearancePolicyContext';
+import { Link, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { ArrowLeftIcon, LockIcon, LogOutIcon, MenuIcon, PanelLeftCloseIcon, PanelLeftOpenIcon } from 'lucide-react';
+import type { StaffMember } from '../../types/admin';
+import { adminNav, adminNavItems } from '../../data/adminNavigation';
+import { roleCanOpen, roleInfo } from '../../data/staffRoles';
+import { useStaffSession } from '../../hooks/useStaffSession';
+import { audit, updateAdminStore } from '../../utils/admin/store';
+import { endStaffSession } from '../../utils/admin/staffSession';
+import { StaffSignIn } from './StaffSignIn';
 import { useSidebarCollapsed } from '../../hooks/useSidebarCollapsed';
 import { useSideTip, type SideTip } from '../../hooks/useSideTip';
 import { KubicuLogo } from '../shell/KubicuLogo';
 import { SidebarItem, SidebarGroupLabel } from '../shell/SidebarItem';
 import { Sheet } from '../ui/Sheet';
 import { IconButton } from '../ui/IconButton';
+import { SkipLink } from '../ui/SkipLink';
 import { cn } from '../../utils/cn';
 
-function AdminNavList({ collapsed, tip, onNavigate }: {collapsed?: boolean;tip?: SideTip;onNavigate?: () => void;}) {
+function AdminNavList({ staff, collapsed, tip, onNavigate }: {staff: StaffMember;collapsed?: boolean;tip?: SideTip;onNavigate?: () => void;}) {
+  const groups = adminNav.map((g) => ({ ...g, items: g.items.filter((i) => roleCanOpen(staff.role, i.id)) })).filter((g) => g.items.length);
   return (
     <div className="flex flex-col gap-6">
-      {adminNav.map((group) =>
+      {groups.map((group) =>
       <div key={group.label}>
           <SidebarGroupLabel collapsed={collapsed}>{group.label}</SidebarGroupLabel>
           <ul className="flex flex-col gap-0.5">
@@ -30,27 +37,58 @@ function AdminNavList({ collapsed, tip, onNavigate }: {collapsed?: boolean;tip?:
 
 }
 
-const [actorName, actorRole] = ADMIN_ACTOR.split(' · ');
-const actorInitials = actorName.
-split(/\s+/).
-map((p) => p[0]).
-join('').
-slice(0, 2).
-toUpperCase();
-
-function ActorCard({ collapsed }: {collapsed?: boolean;}) {
+function ActorCard({ staff, collapsed }: {staff: StaffMember;collapsed?: boolean;}) {
+  const role = roleInfo(staff.role).label;
+  const initials = staff.name.
+  split(/\s+/).
+  map((p) => p[0]).
+  join('').
+  slice(0, 2).
+  toUpperCase();
   return (
-    <div className={cn('flex items-center gap-3', collapsed ? 'justify-center' : 'rounded-md border border-line bg-canvas p-2')} title={`${ADMIN_ACTOR} (illustrative staff account)`}>
+    <div className={cn('flex items-center gap-3', collapsed ? 'justify-center' : 'rounded-md border border-line bg-canvas p-2')} title={`${staff.name} · ${role}`}>
       <span aria-hidden className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-inverse text-label font-bold text-fg-inverse">
-        {actorInitials}
+        {initials}
       </span>
       {collapsed ?
-      <span className="sr-only">{ADMIN_ACTOR}</span> :
+      <span className="sr-only">
+          {staff.name}, {role}
+        </span> :
 
       <span className="min-w-0 flex-1">
-          <span className="block truncate text-label font-semibold text-fg">{actorName}</span>
-          <span className="block truncate text-caption text-fg-subtle">{actorRole}</span>
+          <span className="block truncate text-label font-semibold text-fg">{staff.name}</span>
+          <span className="block truncate text-caption text-fg-subtle">{role} · two-step on</span>
         </span>
+      }
+    </div>);
+
+}
+
+function signOut(staff: StaffMember) {
+  updateAdminStore((s) => audit(s, { area: 'staff', action: 'Signed out', target: staff.email, reason: 'Signed out of the staff console.' }));
+  endStaffSession();
+}
+
+/** Shown when a role opens an area it isn't allowed into (e.g. a bookmarked link). */
+function NoAccess({ staff, area }: {staff: StaffMember;area: string;}) {
+  const label = adminNavItems.find((i) => i.id === area)?.label ?? 'This area';
+  const first = adminNavItems.find((i) => roleCanOpen(staff.role, i.id));
+  return (
+    <div className="mx-auto flex w-full max-w-lg flex-col items-start px-5 py-16 md:px-10">
+      <span aria-hidden className="flex h-11 w-11 items-center justify-center rounded-full bg-sunken text-fg-muted">
+        <LockIcon size={20} />
+      </span>
+      <h1 className="mt-5 font-display text-title font-semibold text-fg">{label} isn’t part of your role</h1>
+      <p className="mt-2 text-body text-fg-muted">
+        As {roleInfo(staff.role).label}, you can open {roleInfo(staff.role).description.toLowerCase().replace(/\.$/, '')}. If you need access, ask a Platform lead to change your role — the change is recorded in the audit log.
+      </p>
+      {first &&
+      <Link
+        to={`/admin/${first.id}`}
+        className="mt-6 inline-flex h-10 items-center rounded-md border border-line-strong bg-raised px-4 text-label font-medium text-fg transition-colors duration-150 hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+        
+          Go to {first.label}
+        </Link>
       }
     </div>);
 
@@ -62,8 +100,17 @@ function AdminTag() {
 
 /** The protected super-admin console — visually related to the workspace, but clearly a separate staff area. */
 export function AdminShell() {
+  const staff = useStaffSession();
+  if (!staff) return <StaffSignIn />;
+  return <AdminConsole staff={staff} />;
+}
+
+function AdminConsole({ staff }: {staff: StaffMember;}) {
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const area = pathname.split('/')[2] ?? '';
+  const firstArea = adminNavItems.find((i) => roleCanOpen(staff.role, i.id))?.id ?? 'audit';
   const { collapsed, toggle } = useSidebarCollapsed();
   const tip = useSideTip();
   const ToggleIcon = collapsed ? PanelLeftOpenIcon : PanelLeftCloseIcon;
@@ -102,11 +149,25 @@ export function AdminShell() {
         </div>
 
         <nav aria-label="Super admin" className={cn('scroll-quiet min-h-0 flex-1 overflow-y-auto pb-4 pt-1', collapsed ? 'px-0' : 'px-3')}>
-          <AdminNavList collapsed={collapsed} tip={tip} />
+          <AdminNavList staff={staff} collapsed={collapsed} tip={tip} />
         </nav>
 
         <div className={cn('flex shrink-0 flex-col gap-1 border-t border-line py-3', collapsed ? 'items-center px-0' : 'px-3')}>
-          <ActorCard collapsed={collapsed} />
+          <ActorCard staff={staff} collapsed={collapsed} />
+          <button
+            type="button"
+            onClick={() => signOut(staff)}
+            aria-label={collapsed ? 'Sign out' : undefined}
+            onMouseEnter={collapsed ? tip.show('Sign out') : undefined}
+            onMouseLeave={tip.hide}
+            className={cn(
+              'mt-1 flex h-10 items-center gap-3 rounded-md text-label font-medium text-fg-muted transition-colors duration-150 hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
+              collapsed ? 'w-10 justify-center' : 'px-2.5'
+            )}>
+            
+            <LogOutIcon size={20} strokeWidth={2.1} aria-hidden />
+            {!collapsed && 'Sign out'}
+          </button>
           <button
             type="button"
             onClick={() => navigate('/app')}
@@ -146,15 +207,16 @@ export function AdminShell() {
             <AdminTag />
           </span>
         </header>
-        <main className="flex-1">
-          <Outlet />
+        <SkipLink />
+        <main id="main-content" tabIndex={-1} className="flex-1 focus:outline-none">
+          {area === '' ? <Navigate to={`/admin/${firstArea}`} replace /> : roleCanOpen(staff.role, area) ? <Outlet /> : <NoAccess staff={staff} area={area} />}
         </main>
       </div>
 
       <Sheet open={menuOpen} onClose={() => setMenuOpen(false)} title="Super admin">
         <div className="flex flex-col gap-5 p-3">
-          <ActorCard />
-          <AdminNavList onNavigate={() => setMenuOpen(false)} />
+          <ActorCard staff={staff} />
+          <AdminNavList staff={staff} onNavigate={() => setMenuOpen(false)} />
           <button
             type="button"
             onClick={() => {
@@ -165,6 +227,17 @@ export function AdminShell() {
             
             <ArrowLeftIcon size={20} strokeWidth={2.1} aria-hidden />
             {back}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setMenuOpen(false);
+              signOut(staff);
+            }}
+            className="flex min-h-[48px] items-center gap-3 rounded-md px-2.5 text-body font-medium text-fg-muted hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+            
+            <LogOutIcon size={20} strokeWidth={2.1} aria-hidden />
+            Sign out
           </button>
         </div>
       </Sheet>

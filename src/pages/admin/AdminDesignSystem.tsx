@@ -7,6 +7,7 @@ import { Foundations } from '../../components/design-system/Foundations';
 import { ControlGallery } from '../../components/design-system/ControlGallery';
 import { FeedbackGallery } from '../../components/design-system/FeedbackGallery';
 import { DataGallery } from '../../components/design-system/DataGallery';
+import { AccessibilityRules } from '../../components/design-system/AccessibilityRules';
 
 const sections = [
 { id: 'appearances', label: 'Workspace appearances' },
@@ -14,7 +15,8 @@ const sections = [
 { id: 'foundations', label: 'Type, space & motion' },
 { id: 'controls', label: 'Controls' },
 { id: 'data', label: 'Data' },
-{ id: 'feedback', label: 'Feedback & overlays' }];
+{ id: 'feedback', label: 'Feedback & overlays' },
+{ id: 'accessibility', label: 'Accessibility rules' }];
 
 
 export function AdminDesignSystem() {
@@ -61,6 +63,9 @@ export function AdminDesignSystem() {
           </DsSection>
           <DsSection id="feedback" title="Feedback & overlays" description="Empty, loading, success, warning, conflict and failure states are designed, not left to chance.">
             <FeedbackGallery />
+          </DsSection>
+          <DsSection id="accessibility" title="Accessibility rules" description="WCAG 2.1 AA, plus dragging alternatives and 24px targets from 2.2. The shared parts already follow these — new screens must too.">
+            <AccessibilityRules />
           </DsSection>
         </div>
       </div>

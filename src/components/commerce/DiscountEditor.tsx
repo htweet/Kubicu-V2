@@ -87,7 +87,9 @@ export function DiscountEditor({ target, onClose }: DiscountEditorProps) {
 
   const set = <K extends keyof Form,>(k: K, v: Form[K]) => setForm((f) => ({ ...f, [k]: v }));
   const uses = existing ? discountOrders(data, existing.id).length : 0;
+  // Event tickets are listed too, so a code can apply to one event (D73).
   const products = data.products.filter((p) => p.status !== 'archived');
+  const productLabel = (p: (typeof products)[number]) => p.kind === 'ticket' ? `Tickets · ${p.name}` : p.name;
 
   const errors = useMemo(() => {
     const e: Partial<Record<keyof Form, string>> = {};
@@ -248,14 +250,14 @@ export function DiscountEditor({ target, onClose }: DiscountEditorProps) {
             onChange={(v) => set('scope', v)}
             options={[
             { value: 'all', label: 'Everything' },
-            { value: 'products', label: 'Products' },
+            { value: 'products', label: 'Products & events' },
             { value: 'collections', label: 'Collections' }]
             } />
           
           {form.scope !== 'all' &&
           <div>
               <ul className="scroll-quiet flex max-h-56 flex-col overflow-y-auto rounded-md border border-line">
-                {(form.scope === 'products' ? products.map((p) => ({ id: p.id, name: p.name })) : data.collections.map((c) => ({ id: c.id, name: c.name }))).map((item) => {
+                {(form.scope === 'products' ? products.map((p) => ({ id: p.id, name: productLabel(p) })) : data.collections.map((c) => ({ id: c.id, name: c.name }))).map((item) => {
                 const key = form.scope === 'products' ? 'productIds' : 'collectionIds';
                 const checked = form[key].includes(item.id);
                 return (

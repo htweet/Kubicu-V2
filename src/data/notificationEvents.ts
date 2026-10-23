@@ -26,6 +26,7 @@ export const notifEvents: NotifEventInfo[] = [
 { id: 'booking_today', label: 'Bookings today', area: 'bookings', permission: 'bookings.manage', defaults: on },
 { id: 'booking_cancelled', label: 'Booking cancelled', area: 'bookings', permission: 'bookings.manage', defaults: on },
 { id: 'lead_new', label: 'New lead from a form', area: 'audience', permission: 'contacts.manage', defaults: on },
+{ id: 'form_response', label: 'New response to a form (Forms add-on)', area: 'audience', permission: 'contacts.manage', defaults: on },
 { id: 'task_due', label: 'Follow-up due', area: 'audience', permission: 'contacts.manage', defaults: appOnly },
 { id: 'review_pending', label: 'Change sent for review', area: 'pages', permission: 'approvals.review', defaults: on },
 { id: 'team_notice', label: 'Messages for you (reviews, invites)', area: 'team', permission: null, defaults: on },

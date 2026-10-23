@@ -24,6 +24,7 @@ import { ImportContactsDialog } from '../components/audience/ImportContactsDialo
 import { DuplicatesDialog } from '../components/audience/DuplicatesDialog';
 import { SampleTag } from '../components/commerce/StatusBadges';
 import { cn } from '../utils/cn';
+import { Stat, StatGroup } from '../components/ui/layout/Stat';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import { useTeam } from '../contexts/TeamContext';
 import { AssigneeChip, MineToggle } from '../components/team/AssigneeSelect';
@@ -137,29 +138,20 @@ export function Audience() {
         </div> :
 
       <>
-          <dl className="mt-8 flex flex-wrap gap-x-10 gap-y-3 border-b border-line pb-6">
-            <div>
-              <dt className="text-caption text-fg-subtle">Contacts</dt>
-              <dd className="text-title font-semibold tabular-nums text-fg">{data.contacts.length}</dd>
-            </div>
-            <div>
-              <dt className="text-caption text-fg-subtle">Can receive marketing</dt>
-              <dd className="text-title font-semibold tabular-nums text-fg">{subscribed}</dd>
-            </div>
-            <div>
-              <dt className="text-caption text-fg-subtle">Open follow-ups</dt>
-              <dd className="text-title font-semibold tabular-nums text-fg">{openTasks}</dd>
-            </div>
+          <div className="mt-8 flex flex-col gap-4 border-b border-line pb-6 md:flex-row md:items-end md:justify-between">
+            <StatGroup columns={3} className="flex-1 items-end">
+              <Stat primary label="Contacts" value={data.contacts.length} />
+              <Stat label="Can receive marketing" value={subscribed} hint={data.contacts.length ? `${Math.round(subscribed / data.contacts.length * 100)}% of contacts` : undefined} />
+              <Stat label="Open follow-ups" value={openTasks} />
+            </StatGroup>
             {dupes > 0 &&
-          <div className="self-end">
-                <Button size="sm" variant="secondary" leadingIcon={CopyIcon} onClick={() => setDialog('dupes')}>
-                  Review {dupes} possible duplicate{dupes === 1 ? '' : 's'}
-                </Button>
-              </div>
+          <Button size="sm" variant="secondary" leadingIcon={CopyIcon} className="self-start md:self-end" onClick={() => setDialog('dupes')}>
+                Review {dupes} possible duplicate{dupes === 1 ? '' : 's'}
+              </Button>
           }
-          </dl>
+          </div>
 
-          <div className="mt-6 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <div className="mt-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
             <div className="flex items-center gap-2">
               <Segmented<View> ariaLabel="View" value={view} onChange={setView} options={[{ value: 'list', label: 'List' }, { value: 'pipeline', label: 'Pipeline' }]} />
               <MineToggle mine={mine} count={mineCount} onChange={setMine} />

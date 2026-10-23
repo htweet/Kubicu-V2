@@ -85,7 +85,7 @@ export function Orders() {
     key: 'fulfilment',
     header: 'Fulfilment',
     hideOnMobile: true,
-    render: (o) => <span className="text-fg-muted">{o.fulfilment.method === 'pickup' ? 'Pickup' : o.fulfilment.method === 'digital' ? 'Download' : o.fulfilment.zoneName}</span>
+    render: (o) => <span className="text-fg-muted">{o.fulfilment.method === 'pickup' ? 'Pickup' : o.fulfilment.method === 'tickets' ? 'Tickets' : o.fulfilment.method === 'digital' ? 'Download' : o.fulfilment.zoneName}</span>
   },
   { key: 'payment', header: 'Payment', hideOnMobile: true, render: (o) => <PaymentBadge status={o.paymentStatus} /> },
   { key: 'status', header: 'Status', render: (o) => <OrderStatusBadge status={o.status} pickup={o.fulfilment.method === 'pickup'} /> },

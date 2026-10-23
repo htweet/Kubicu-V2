@@ -16,6 +16,7 @@ import { stockReasonLabels } from '../../data/commerceNav';
 import { variantLabel } from '../../utils/commerce/catalog';
 import { formatTimestamp } from '../../utils/format';
 import { cn } from '../../utils/cn';
+import { Section } from '../../components/ui/layout/Section';
 
 interface StockRow {
   id: string;
@@ -42,6 +43,9 @@ export function Inventory() {
     [tracked, view, productFilter]
   );
 
+  const allVariants = tracked.flatMap((p) => p.variants.map((v) => ({ p, v })));
+  const outCount = allVariants.filter(({ v }) => v.stock <= 0).length;
+  const lowCount = allVariants.filter(({ p, v }) => v.stock > 0 && v.stock <= p.lowStockAt).length;
   const movements = data.movements.filter((m) => productFilter === 'all' || m.productId === productFilter).slice(0, 40);
   const productName = (id: string) => data.products.find((p) => p.id === id)?.name ?? 'Deleted product';
   const variantName = (m: StockMovement) => {
@@ -102,9 +106,13 @@ export function Inventory() {
           <EmptyState icon={PackageIcon} title="No stock to track yet" description="Products with “Track stock” switched on appear here." action={<Link to="/app/commerce/products?new=1" className="text-label font-semibold text-action hover:underline">Add a product</Link>} />
         </div> :
 
-      <div className="mt-6 grid gap-10 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
-          <section aria-label="Stock levels">
-            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div className="mt-8 grid items-start gap-8 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] xl:gap-10">
+          <Section
+          id="stock"
+          title="Stock levels"
+          description={`${tracked.reduce((s, p) => s + p.variants.length, 0)} tracked items · ${outCount} out of stock · ${lowCount} low`}>
+          
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <Segmented<View>
               ariaLabel="Filter stock"
               value={view}
@@ -126,17 +134,13 @@ export function Inventory() {
               </div>
             </div>
             <DataTable caption="Stock levels" rows={rows} columns={columns} filterText={(r) => `${r.product.name} ${r.variant.sku}`} filterPlaceholder="Search item or SKU" emptyTitle="Nothing here" emptyDescription="No items match this filter." />
-          </section>
+          </Section>
 
-          <section aria-labelledby="moves-heading">
-            <h2 id="moves-heading" className="text-heading font-semibold text-fg">
-              Stock history
-            </h2>
-            <p className="mt-0.5 text-caption text-fg-subtle">Who changed what, when and why.</p>
+          <Section id="moves" title="Stock history" description="Who changed what, when and why.">
             {movements.length === 0 ?
-          <p className="mt-4 text-label text-fg-muted">No stock changes yet.</p> :
+          <p className="text-label text-fg-muted">No stock changes yet.</p> :
 
-          <ol className="mt-4 flex flex-col divide-y divide-line border-y border-line">
+          <ol className="flex flex-col divide-y divide-line border-y border-line">
                 {movements.map((m) =>
             <li key={m.id} className="flex items-start gap-3 py-3">
                     <span
@@ -170,7 +174,7 @@ export function Inventory() {
             )}
               </ol>
           }
-          </section>
+          </Section>
         </div>
       }
 

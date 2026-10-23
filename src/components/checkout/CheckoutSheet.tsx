@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { announce } from '../../utils/announce';
 import { MediaImage } from '../media/MediaImage';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { DiscountCodeField } from './DiscountCodeField';
@@ -13,9 +14,11 @@ import type { PageCommerce } from '../../hooks/usePageCommerce';
 import { useCart } from '../../contexts/CartContext';
 import { PageOverlay } from '../blocks/PageOverlay';
 import { buttonRadius, cardStyle, mix } from '../blocks/pageStyle';
-import { CheckoutHeading, PrimaryButton, SecondaryButton, StepDots, TestModeNote, ThemedField } from './checkoutUi';
+import { CheckoutHeading, PrimaryButton, SecondaryButton, SheetActions, StepDots, TestModeNote, ThemedField } from './checkoutUi';
 import { canSell, variantLabel, variantPrice } from '../../utils/commerce/catalog';
 import { placeOrder } from '../../utils/commerce/ops';
+import { HOLD_MINUTES, extendHolds, findEvent, holdExpiry, holderId, placeHolds, releaseHolds, ticketLineIssue } from '../../utils/commerce/tickets';
+import { useNow } from '../../hooks/useNow';
 import { isValidEmail, isValidPhone } from '../../utils/validation';
 import { formatNgn } from '../../utils/format';
 
@@ -48,21 +51,41 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
   const [customer, setCustomer] = useState({ name: '', phone: '', email: '' });
   const [method, setMethod] = useState<string>('');
   const [address, setAddress] = useState('');
-  const [outcome, setOutcome] = useState<TestPaymentOutcome>('success');
+  const [chosenOutcome, setOutcome] = useState<TestPaymentOutcome>('success');
+  const outcome = chosenOutcome;
   const [failure, setFailure] = useState('');
   const [tried, setTried] = useState(false);
   // Campaign links can carry a code (?code=EID20); it's pre-filled and still checked (D51).
   const [params] = useSearchParams();
   const [code, setCode] = useState(() => normaliseCode(params.get('code') ?? defaultCode ?? ''));
+  // Names printed on each ticket seat; blank seats use the buyer's name (D73).
+  const [guestNames, setGuestNames] = useState<Record<string, string[]>>({});
 
   const data = commerce.data;
   const open = !!cart?.open;
+  // Seats are reserved for HOLD_MINUTES once checkout starts (D73a).
+  const holder = useMemo(() => holderId(), []);
+  const now = useNow(1000);
+  const [holdNotice, setHoldNotice] = useState('');
+  const [holding, setHolding] = useState(false);
+  // One "Keep my seats" extension per checkout (example figure, D76).
+  const [extended, setExtended] = useState(false);
+  const holdUntil = holding ? holdExpiry(data, holder, now) : null;
   useEffect(() => {
     if (open) {
       setStep('cart');
       setTried(false);
+      setExtended(false);
     }
   }, [open]);
+  useEffect(() => {
+    // The hold ran out before payment: release and send the buyer back to the cart to re-check.
+    if (holding && !holdUntil && step !== 'cart' && step !== 'paying') {
+      setHolding(false);
+      setStep('cart');
+      setHoldNotice(`Your seats were released after ${HOLD_MINUTES} minutes. Check they’re still available and continue.`);
+    }
+  }, [holding, holdUntil, step]);
 
   const lines = useMemo(
     () =>
@@ -74,16 +97,20 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
       const variant = product?.variants.find((v) => v.id === l.variantId);
       const roomPrice = dealRoom && dealRoom.priceNgn !== null ? dealRoom.priceNgn : null;
       const price = product && variant ? roomPrice ?? variantPrice(product, variant) : null;
-      const ok = !!product && !!variant && price !== null && canSell(product, variant) && (product.kind === 'digital' || !product.trackStock || variant.stock >= l.qty);
-      return { ...l, product, variant, price, ok };
+      const ticketIssue = product?.kind === 'ticket' ? ticketLineIssue(data, l, Date.now(), holder) : '';
+      const ok = !!product && !!variant && price !== null && canSell(product, variant) && !ticketIssue && (product.kind === 'digital' || !product.trackStock || variant.stock >= l.qty);
+      const tt = product?.kind === 'ticket' ? findEvent(data, product.eventId)?.ticketTypes.find((t) => t.id === l.variantId) : undefined;
+      return { ...l, product, variant, price, ok, ticketIssue, maxQty: tt ? tt.maxPerOrder : 20 };
     }),
-    [cart?.lines, data, dealRoom]
+    [cart?.lines, data, dealRoom, holder]
   );
 
   if (!cart || !data) return null;
 
   const subtotal = lines.reduce((s, l) => s + (l.ok && l.price !== null ? l.price * l.qty : 0), 0);
   const physical = lines.some((l) => l.product?.kind === 'physical');
+  const ticketLines = lines.filter((l) => l.ok && l.product?.kind === 'ticket');
+  const ticketsOnly = lines.length > 0 && lines.every((l) => l.product?.kind === 'ticket');
   const f = data.fulfilment;
   const zone = f.zones.find((z) => z.id === method);
   const free = f.freeDeliveryOverNgn !== null && subtotal >= f.freeDeliveryOverNgn;
@@ -126,7 +153,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
   const detailErrors = {
     name: !customer.name.trim() ? 'Enter your name' : '',
     phone: !isValidPhone(customer.phone) ? 'Enter a phone number, e.g. +234 803 123 4567' : '',
-    email: (!physical || customer.email.trim()) && !isValidEmail(customer.email) ? 'Enter an email for your receipt and download link' : ''
+    email: (!physical || customer.email.trim()) && !isValidEmail(customer.email) ? ticketLines.length ? 'Enter an email for your receipt and tickets' : 'Enter an email for your receipt and download link' : ''
   };
   const deliveryError = !method ? 'Choose how you’ll get your order' : method !== 'pickup' && !address.trim() ? 'Enter the delivery address' : '';
 
@@ -137,8 +164,10 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
 
   const pay = () => {
     setStep('paying');
+    // Nothing to charge: the test-card choice doesn't apply.
+    const outcome = total > 0 ? chosenOutcome : 'success';
     const fulfilment: OrderFulfilment = !physical ?
-    { method: 'digital' } :
+    { method: ticketsOnly ? 'tickets' : 'digital' } :
     method === 'pickup' ?
     { method: 'pickup', address: f.pickupAddress } :
     { method: 'delivery', zoneId: zone?.id, zoneName: zone?.name, address: address.trim(), eta: zone?.eta };
@@ -156,9 +185,11 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
             discountCode: code,
             sourceHandle: handle,
             dealRoom: dealRoom ? { productId: dealRoom.productId, priceNgn: dealRoom.priceNgn, held: dealRoom.held } : undefined,
-            referredBy: dealRoom ? params.get('ref') ?? undefined : undefined
+            referredBy: dealRoom ? params.get('ref') ?? undefined : undefined,
+            guestNames,
+            holder
           });
-          return result.ok ? result.data : d;
+          return result.ok ? releaseHolds(result.data, holder) : d;
         });
         const r = result as ReturnType<typeof placeOrder> | null;
         if (!ok || !r) {
@@ -171,7 +202,12 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
           setStep('failed');
           return;
         }
-        if (r.order.paymentStatus === 'paid') track('order_paid', { valueNgn: r.order.subtotalNgn - r.order.discountNgn + r.order.deliveryNgn, label: `#${r.order.number}` });
+        if (r.order.paymentStatus === 'paid') {
+          track('order_paid', { valueNgn: r.order.subtotalNgn - r.order.discountNgn + r.order.deliveryNgn, label: `#${r.order.number}` });
+          const ticketValue = r.order.items.filter((i) => i.kind === 'ticket').reduce((s, i) => s + i.unitPriceNgn * i.qty, 0);
+          if (r.order.items.some((i) => i.kind === 'ticket')) track('ticket_paid', { valueNgn: ticketValue, label: `#${r.order.number}` });
+        }
+        setHolding(false);
         cart.clear();
         cart.setOpen(false);
         navigate(`/p/${handle}/order/${r.order.id}`);
@@ -192,7 +228,8 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
           </CheckoutHeading>
           <ul className="flex flex-col gap-2" role="list">
             {choosingProduct.variants.map((v) => {
-              const available = canSell(choosingProduct, v);
+              const ticketIssue = choosingProduct.kind === 'ticket' ? ticketLineIssue(data, { productId: choosingProduct.id, variantId: v.id, qty: 1 }, Date.now(), holder) : '';
+              const available = canSell(choosingProduct, v) && !ticketIssue;
               const price = (dealRoom && dealRoom.productId === choosingProduct.id ? dealRoom.priceNgn : null) ?? variantPrice(choosingProduct, v);
               return (
                 <li key={v.id}>
@@ -205,7 +242,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
                     
                     <span>{variantLabel(v)}</span>
                     <span className="text-[14px] tabular-nums" style={muted}>
-                      {!available ? 'Sold out' : price === null ? 'Price on request' : formatNgn(price)}
+                      {!available ? ticketIssue || 'Sold out' : price === null ? 'Price on request' : price === 0 && choosingProduct.kind === 'ticket' ? 'Free' : formatNgn(price)}
                       {available && choosingProduct.trackStock && v.stock <= choosingProduct.lowStockAt ? ` · ${v.stock} left` : ''}
                     </span>
                   </button>
@@ -213,9 +250,11 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
 
             })}
           </ul>
-          <SecondaryButton theme={theme} onClick={cart.doneChoosing}>
-            {cart.lines.length ? 'Back to cart' : 'Not now'}
-          </SecondaryButton>
+          <SheetActions theme={theme}>
+            <SecondaryButton theme={theme} onClick={cart.doneChoosing}>
+              {cart.lines.length ? 'Back to cart' : 'Not now'}
+            </SecondaryButton>
+          </SheetActions>
         </div>);
 
     }
@@ -242,12 +281,14 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
               {failure}
             </p>
           </div>
-          <PrimaryButton theme={theme} onClick={() => setStep('review')}>
-            Try again
-          </PrimaryButton>
-          <SecondaryButton theme={theme} onClick={() => setStep('cart')}>
-            Back to cart
-          </SecondaryButton>
+          <SheetActions theme={theme}>
+            <PrimaryButton theme={theme} onClick={() => setStep('review')}>
+              Try again
+            </PrimaryButton>
+            <SecondaryButton theme={theme} onClick={() => setStep('cart')}>
+              Back to cart
+            </SecondaryButton>
+          </SheetActions>
         </div>);
 
     }
@@ -282,11 +323,11 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
                     </p>
                     {!l.ok &&
                 <p className="mt-0.5 flex items-center gap-1 text-[12px] font-semibold">
-                        <AlertTriangleIcon size={12} aria-hidden /> {l.variant && l.product?.trackStock && l.variant.stock > 0 ? `Only ${l.variant.stock} left` : 'No longer available'}
+                        <AlertTriangleIcon size={12} aria-hidden /> {l.ticketIssue || (l.variant && l.product?.trackStock && l.variant.stock > 0 ? `Only ${l.variant.stock} left` : 'No longer available')}
                       </p>
                 }
                   </div>
-                  {l.product?.kind === 'physical' ?
+                  {l.product?.kind === 'physical' || l.product?.kind === 'ticket' ?
               <div className="flex items-center" role="group" aria-label={`Quantity of ${l.product.name}`}>
                       <button type="button" aria-label="One fewer" onClick={() => cart.setQty(l.variantId, l.qty - 1)} className="flex h-9 w-9 items-center justify-center" style={{ borderRadius: buttonRadius(theme), background: mix(theme.text, 6) }}>
                         {l.qty === 1 ? <Trash2Icon size={14} aria-hidden /> : <MinusIcon size={14} aria-hidden />}
@@ -297,7 +338,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
                       <button
                   type="button"
                   aria-label="One more"
-                  disabled={!!l.product.trackStock && !!l.variant && l.qty >= l.variant.stock || roomQty >= roomCap}
+                  disabled={!!l.product.trackStock && !!l.variant && l.qty >= l.variant.stock || roomQty >= roomCap || l.qty >= l.maxQty}
                   onClick={() => cart.setQty(l.variantId, l.qty + 1)}
                   className="flex h-9 w-9 items-center justify-center disabled:opacity-40"
                   style={{ borderRadius: buttonRadius(theme), background: mix(theme.text, 6) }}>
@@ -329,19 +370,49 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
                   Unavailable items won’t be ordered.
                 </p>
             }
+              {holdNotice &&
+            <p className="rounded-md px-3 py-2.5 text-[13px] font-semibold leading-snug" style={{ background: mix(theme.text, 6) }} role="alert">
+                  {holdNotice}
+                </p>
+            }
+              {ticketLines.length > 0 && !holdNotice &&
+            <p className="text-[12.5px]" style={muted}>
+                  We’ll hold your seats for {HOLD_MINUTES} minutes while you check out.
+                </p>
+            }
+              <TestModeNote theme={theme} />
+              <SheetActions theme={theme}>
               <PrimaryButton
-              theme={theme}
-              disabled={subtotal === 0}
-              onClick={() => {
-                track('checkout_start');
-                setStep('details');
-              }}>
-              
+                theme={theme}
+                disabled={!lines.some((l) => l.ok)}
+                onClick={() => {
+                  setHoldNotice('');
+                  if (ticketLines.length) {
+                    let issue = '';
+                    let until: string | null = null;
+                    commerce.apply((d) => {
+                      const r = placeHolds(d, holder, ticketLines.map(({ productId, variantId, qty }) => ({ productId, variantId, qty })));
+                      issue = r.issue;
+                      until = r.expiresAt;
+                      return r.data;
+                    });
+                    if (issue) {
+                      setHoldNotice(issue);
+                      return;
+                    }
+                    setHolding(!!until);
+                    track('ticket_checkout');
+                  }
+                  track('checkout_start');
+                  setStep('details');
+                }}>
+                
                 Checkout
               </PrimaryButton>
+              </SheetActions>
             </>
           }
-          <TestModeNote theme={theme} />
+          {lines.length === 0 && <TestModeNote theme={theme} />}
         </div>);
 
     }
@@ -366,12 +437,43 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
           <ThemedField theme={theme} label="Full name" autoComplete="name" value={customer.name} error={showErr('name')} onChange={(name) => setCustomer((c) => ({ ...c, name }))} />
           <ThemedField theme={theme} label="Phone (WhatsApp preferred)" type="tel" inputMode="tel" autoComplete="tel" placeholder="+234 …" value={customer.phone} error={showErr('phone')} onChange={(phone) => setCustomer((c) => ({ ...c, phone }))} />
           <ThemedField theme={theme} label="Email" type="email" inputMode="email" autoComplete="email" optional={physical} value={customer.email} error={showErr('email')} onChange={(email) => setCustomer((c) => ({ ...c, email }))} />
+          {ticketLines.some((l) => l.qty > 1) &&
+          <fieldset className="flex flex-col gap-3 pt-1">
+              <legend className="mb-1 text-[14px] font-semibold">
+                Names on tickets <span className="font-normal" style={muted}>· optional</span>
+              </legend>
+              <p className="-mt-1 text-[12.5px] leading-snug" style={muted}>
+                Each ticket gets its own QR code. Leave a name blank to use yours.
+              </p>
+              {ticketLines.flatMap((l) =>
+            Array.from({ length: l.qty }, (_, n) =>
+            <ThemedField
+              key={`${l.variantId}-${n}`}
+              theme={theme}
+              label={`${l.variant ? variantLabel(l.variant) : 'Ticket'} · seat ${n + 1}`}
+              autoComplete="off"
+              placeholder={customer.name || 'Your name'}
+              value={guestNames[l.variantId]?.[n] ?? ''}
+              onChange={(v) =>
+              setGuestNames((g) => {
+                const list = [...(g[l.variantId] ?? [])];
+                list[n] = v;
+                return { ...g, [l.variantId]: list };
+              })
+              } />
+
+            )
+            )}
+            </fieldset>
+          }
           <p className="text-[12px] leading-snug" style={muted}>
             Your details go to the seller to fulfil this order. See their page for how they handle personal data.
           </p>
-          <PrimaryButton theme={theme} type="submit">
-            Continue
-          </PrimaryButton>
+          <SheetActions theme={theme}>
+            <PrimaryButton theme={theme} type="submit">
+              Continue
+            </PrimaryButton>
+          </SheetActions>
         </form>);
 
     }
@@ -424,18 +526,20 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
               Choose how you’ll get your order.
             </p>
           }
+          <SheetActions theme={theme}>
           <PrimaryButton
-            theme={theme}
-            disabled={options.length === 0}
-            onClick={() => {
-              setTried(true);
-              if (deliveryError) return;
-              setTried(false);
-              setStep('review');
-            }}>
-            
+              theme={theme}
+              disabled={options.length === 0}
+              onClick={() => {
+                setTried(true);
+                if (deliveryError) return;
+                setTried(false);
+                setStep('review');
+              }}>
+              
             Continue
           </PrimaryButton>
+          </SheetActions>
         </div>);
 
     }
@@ -477,6 +581,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
           </p>
         </dl>
         <DiscountCodeField theme={theme} code={code} onApply={setCode} resolution={resolution} />
+        {total > 0 &&
         <fieldset className="flex flex-col gap-2">
           <legend className="mb-1 text-[13px] font-semibold">Test card — choose what happens</legend>
           {outcomes.map((o) =>
@@ -491,6 +596,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
             </label>
           )}
         </fieldset>
+        }
         {dealRoom &&
         <p className="rounded-md px-3 py-2.5 text-[13px] font-medium leading-snug" style={{ background: mix(theme.text, 6) }} role="note">
             {dealRoom.notice}
@@ -502,16 +608,18 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
           </p>
         }
         <TestModeNote theme={theme} />
-        <PrimaryButton theme={theme} onClick={pay} disabled={okLines.length === 0 || !!roomError}>
-          Pay {formatNgn(total)}
-        </PrimaryButton>
+        <SheetActions theme={theme}>
+          <PrimaryButton theme={theme} onClick={pay} disabled={okLines.length === 0 || !!roomError}>
+            {total > 0 ? `Pay ${formatNgn(total)}` : ticketsOnly ? 'Get free tickets' : 'Place free order'}
+          </PrimaryButton>
+        </SheetActions>
       </div>);
 
   };
 
   return (
     <PageOverlay open={open} onClose={close} theme={theme} label="Checkout">
-      <div className="flex flex-col gap-4 px-5 pb-6 pt-5">
+      <div className="flex flex-1 flex-col gap-4 px-5 pb-2 pt-5">
         {!choosingProduct && step !== 'paying' && step !== 'failed' &&
         <div className="flex items-center gap-3 pr-12">
             {step !== 'cart' &&
@@ -524,8 +632,65 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
             </div>
           </div>
         }
+        {holdUntil && step !== 'cart' && step !== 'failed' &&
+        <HoldTimer
+          theme={theme}
+          msLeft={Date.parse(holdUntil) - now}
+          canExtend={!extended && step !== 'paying'}
+          onExtend={() => {
+            let ok = false;
+            commerce.apply((d) => {
+              const r = extendHolds(d, holder);
+              ok = !!r.expiresAt;
+              return r.data;
+            });
+            if (ok) {
+              setExtended(true);
+              announce(`Your seats are held for another ${HOLD_MINUTES} minutes.`);
+            }
+          }} />
+
+        }
         {body()}
       </div>
     </PageOverlay>);
+
+}
+
+/**
+ * Countdown for reserved seats; turns emphatic in the last minute and offers one extension
+ * (WCAG 2.2.1, D76). The ticking digits are silent — the warning is announced once.
+ */
+function HoldTimer({ theme, msLeft, canExtend, onExtend }: {theme: PageTheme;msLeft: number;canExtend: boolean;onExtend: () => void;}) {
+  const s = Math.max(0, Math.ceil(msLeft / 1000));
+  const label = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+  const urgent = s <= 60;
+  const warned = useRef(false);
+  useEffect(() => {
+    if (urgent && !warned.current) {
+      warned.current = true;
+      announce(canExtend ? 'Your seats are released in about a minute. Choose Keep my seats if you need more time.' : 'Your seats are released in about a minute.', 'assertive');
+    }
+    if (!urgent) warned.current = false;
+  }, [urgent, canExtend]);
+  return (
+    <div className="flex flex-col gap-2 rounded-md px-3 py-2 text-[13px]" style={{ background: urgent ? theme.text : mix(theme.text, 6), color: urgent ? theme.background : theme.text }}>
+      <p className="flex items-center justify-between gap-3">
+        <span className="font-medium">{urgent && canExtend ? 'Need more time?' : 'Your seats are held'}</span>
+        <span role="timer" aria-live="off" aria-label={`${Math.ceil(s / 60)} minute${Math.ceil(s / 60) === 1 ? '' : 's'} left`} className="font-semibold tabular-nums">
+          {label}
+        </span>
+      </p>
+      {urgent && canExtend &&
+      <button
+        type="button"
+        onClick={onExtend}
+        className="min-h-[36px] self-start rounded-md px-3 text-[13px] font-semibold underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2"
+        style={{ background: theme.background, color: theme.text }}>
+        
+          Keep my seats for {HOLD_MINUTES} more minutes
+        </button>
+      }
+    </div>);
 
 }

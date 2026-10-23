@@ -27,7 +27,8 @@ export type BlockType =
 'download' |
 'portfolio' |
 'location' |
-'subscription';
+'subscription' |
+'form';
 
 export interface GalleryImage {
   id: string;
@@ -136,7 +137,8 @@ export interface BlockContentMap {
   text: {body: string;};
   link: {label: string;url: string;description: string;};
   social: {items: SocialItem[];};
-  image: {url: string;alt: string;caption: string;aspect: '1:1' | '4:5' | '16:9';};
+  /** `decorative` images are skipped by screen readers (empty alt, D76). */
+  image: {url: string;alt: string;caption: string;aspect: '1:1' | '4:5' | '16:9';decorative?: boolean;};
   video: {url: string;title: string;};
   divider: {label: string;};
   spacer: {size: 'sm' | 'md' | 'lg';};
@@ -221,6 +223,9 @@ export interface BlockContentMap {
     ctaLabel: string;
     tiers: TicketTier[];
     soldOut: boolean;
+    /** 'catalog' reads the event, ticket types and seats from Commerce → Events and sells through checkout (D73). */
+    source?: 'manual' | 'catalog';
+    eventId?: string | null;
   };
   countdown: {title: string;target: string | null;endedMessage: string;linkLabel: string;url: string;};
   download: {
@@ -243,6 +248,8 @@ export interface BlockContentMap {
   location: {name: string;address: string;timeZone: string;hours: OpeningHours[];note: string;};
   /** Recurring plans from Commerce → Subscriptions, one to three side by side (D69). */
   subscription: {title: string;intro: string;planIds: string[];ctaLabel: string;highlightPlanId: string | null;};
+  /** A saved form from the Forms add-on (D79). */
+  form: {formId: string | null;showTitle: boolean;};
 }
 
 export interface BlockStyle {
@@ -435,6 +442,8 @@ export interface PageDocument {
   campaign?: CampaignSettings;
   /** Present on DealRoom spaces only (D54). */
   dealRoom?: DealRoomSettings;
+  /** Language of the page content, as a BCP 47 tag (WCAG 3.1.1, D76). Defaults to "en". */
+  language?: string;
   updatedAt: string;
 }
 

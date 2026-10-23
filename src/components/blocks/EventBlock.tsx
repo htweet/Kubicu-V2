@@ -8,10 +8,15 @@ import { buttonRadius, buttonStyle, cardStyle, fontsFor, mix } from './pageStyle
 import { eventState, formatEventDate, formatEventTime } from '../../utils/eventTime';
 import { formatNgn } from '../../utils/format';
 import { useNow } from '../../hooks/useNow';
+import { useCatalog } from '../../contexts/CatalogContext';
+import { findEvent } from '../../utils/commerce/tickets';
+import { LinkedEvent } from './LinkedEvent';
 
 export function EventBlock({ block, theme, mode }: BlockProps<'event'>) {
   const c = block.content;
   const now = useNow(30_000);
+  const catalog = useCatalog();
+  if (c.source === 'catalog') return <LinkedEvent event={findEvent(catalog, c.eventId)} data={catalog} theme={theme} mode={mode} ctaLabel={c.ctaLabel} />;
   if (!c.title && !c.startsAt) {
     return mode === 'edit' ? <BlockPlaceholder icon={TicketIcon} title="Event details needed" hint="Name, date, venue and ticket link" theme={theme} tall /> : null;
   }

@@ -24,6 +24,7 @@ import { SelectInput } from '../../ui/SelectInput';
 import { useCommerce } from '../../../contexts/CommerceContext';
 import { useOps } from '../../../contexts/OpsContext';
 import { findProduct, priceRange } from '../../../utils/commerce/catalog';
+import { EventLinkFields } from './EventLinkFields';
 
 interface Props {
   block: Block;
@@ -369,8 +370,20 @@ export function ExtendedContentFields({ block, issues }: Props) {
     case 'event':{
         const c = block.content;
         const set = setter('event');
+        const source = c.source ?? 'manual';
+        const sourceSwitch = <SourceSwitch id={id('source')} value={source} catalogLabel="Commerce event" onChange={(v) => set({ source: v }, 'source')} />;
+        if (source === 'catalog') {
+          return (
+            <div className={stack}>
+            {sourceSwitch}
+            <EventLinkFields id={id('event')} eventId={c.eventId ?? null} error={err('eventId')} onChange={(eventId) => set({ eventId }, 'eventId')} />
+            <TextInput id={id('cta')} label="Button label" optional placeholder="Get tickets" value={c.ctaLabel} onChange={(e) => set({ ctaLabel: e.target.value }, 'ctaLabel')} />
+          </div>);
+
+        }
         return (
           <div className={stack}>
+          {sourceSwitch}
           <TextInput id={id('title')} label="Event name" value={c.title} error={err('title')} onChange={(e) => set({ title: e.target.value }, 'title')} />
           <DateTimeInput id={id('start')} label="Starts" value={c.startsAt} error={err('startsAt')} hint="Used for the date shown and the Event ended state." onChange={(startsAt) => set({ startsAt }, 'startsAt')} />
           <DateTimeInput id={id('end')} label="Ends" optional clearable value={c.endsAt} error={err('endsAt')} onChange={(endsAt) => set({ endsAt }, 'endsAt')} />
@@ -399,8 +412,8 @@ export function ExtendedContentFields({ block, issues }: Props) {
           <TextInput id={id('url')} label="Ticket link" type="url" inputMode="url" placeholder="https://" value={c.ticketUrl} error={err('ticketUrl')} onChange={(e) => set({ ticketUrl: e.target.value }, 'ticketUrl')} />
           <TextInput id={id('cta')} label="Button label" value={c.ctaLabel} onChange={(e) => set({ ctaLabel: e.target.value }, 'ctaLabel')} />
           <Switch id={id('soldout')} label="Whole event sold out" checked={c.soldOut} onChange={(soldOut) => set({ soldOut }, 'soldOut')} />
-          <InlineAlert tone="info" title="Ticket sales use your own link for now">
-            Selling tickets with seat limits on KUBICU arrives with Commerce in Batch 4.
+          <InlineAlert tone="info" title="Sell tickets on KUBICU instead">
+            Switch “Details come from” to Commerce event for real seat limits, checkout and QR tickets.
           </InlineAlert>
         </div>);
 

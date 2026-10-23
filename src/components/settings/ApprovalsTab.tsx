@@ -8,6 +8,7 @@ import { Switch } from '../ui/Switch';
 import { Badge } from '../ui/Badge';
 import { EmptyState } from '../ui/EmptyState';
 import { ReviewDetail } from './ReviewDetail';
+import { Card } from '../ui/layout/Card';
 
 const statusBadge = {
   pending: { tone: 'info', label: 'Waiting' },
@@ -59,10 +60,7 @@ export function ApprovalsTab() {
 
   return (
     <div className="flex flex-col gap-8">
-      <section aria-labelledby="approvals-switch" className="max-w-2xl rounded-lg border border-line bg-raised p-5">
-        <h2 id="approvals-switch" className="sr-only">
-          Approvals
-        </h2>
+      <Card as="div" emphasis="primary" className="max-w-2xl">
         <Switch
           id="approvals-on"
           label="Editors need approval to publish"
@@ -76,7 +74,7 @@ export function ApprovalsTab() {
           <li>Approving publishes exactly the version that was sent. If the Editor keeps editing, the request updates and the reviewer is told.</li>
           <li>Request changes needs a comment, which the Editor sees in the canvas.</li>
         </ul>
-      </section>
+      </Card>
 
       <section aria-labelledby="queue-heading">
         <h2 id="queue-heading" className="text-label font-semibold text-fg">

@@ -5,69 +5,63 @@ import { buttonStyle, cardStyle, fontsFor, inputStyle } from './pageStyle';
 import { isValidEmail } from '../../utils/validation';
 import { usePageOpsContext } from '../../contexts/PageOpsContext';
 
+type Key = 'name' | 'email' | 'phone' | 'message';
+
+const autoComplete: Record<Key, string> = { name: 'name', email: 'email', phone: 'tel', message: 'off' };
+
 export function LeadFormBlock({ block, theme, mode }: BlockProps<'leadForm'>) {
   const { title, description, fields, submitLabel, consentText } = block.content;
   const uid = useId();
   const [values, setValues] = useState({ name: '', email: '', phone: '', message: '' });
-  const [error, setError] = useState('');
+  const [error, setError] = useState<{field: Key | null;text: string;} | null>(null);
   const [sent, setSent] = useState(false);
   const [optIn, setOptIn] = useState(false);
   const { actions } = usePageOpsContext();
   const inert = mode === 'edit';
+  const errorId = `${uid}-error`;
+
+  // Errors name the field, mark it invalid and move focus to it (WCAG 3.3.1, D76).
+  const fail = (field: Key | null, text: string) => {
+    setError({ field, text });
+    if (field) window.setTimeout(() => document.getElementById(`${uid}-${field}`)?.focus(), 0);
+  };
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (inert) return;
-    if (fields.email && !isValidEmail(values.email)) {
-      setError('Please enter a valid email address.');
-      return;
-    }
-    if (fields.name && !values.name.trim()) {
-      setError('Please tell us your name.');
-      return;
-    }
-    if (fields.phone && !fields.email && !values.phone.trim()) {
-      setError('Please add a phone number so we can reply.');
-      return;
-    }
-    if (actions && !actions.submitLead(values, title || 'Form', optIn)) {
-      setError('Something went wrong. Please try again.');
-      return;
-    }
-    setError('');
+    if (fields.name && !values.name.trim()) return fail('name', 'Please tell us your name.');
+    if (fields.email && !isValidEmail(values.email)) return fail('email', 'Please enter a valid email address.');
+    if (fields.phone && !fields.email && !values.phone.trim()) return fail('phone', 'Please add a phone number so we can reply.');
+    if (actions && !actions.submitLead(values, title || 'Form', optIn)) return fail(null, 'Something went wrong. Please try again.');
+    setError(null);
     setSent(true);
   };
 
-  const input = (key: keyof typeof values, label: string, type = 'text') =>
-  <label className="flex flex-col gap-1.5" htmlFor={`${uid}-${key}`}>
-      <span className="text-[12.5px] font-medium" style={{ color: theme.text }}>
-        {label}
-      </span>
-      {key === 'message' ?
-    <textarea
-      id={`${uid}-${key}`}
-      rows={3}
-      readOnly={inert}
-      tabIndex={inert ? -1 : undefined}
-      value={values[key]}
-      onChange={(e) => setValues((v) => ({ ...v, [key]: e.target.value }))}
-      className="w-full resize-none px-3.5 py-2.5 text-[14.5px] outline-none focus:ring-2"
-      style={inputStyle(theme)} /> :
+  const input = (key: Key, label: string, type = 'text') => {
+    const invalid = error?.field === key;
+    const common = {
+      id: `${uid}-${key}`,
+      readOnly: inert,
+      tabIndex: inert ? -1 : undefined,
+      value: values[key],
+      autoComplete: autoComplete[key],
+      'aria-invalid': invalid || undefined,
+      'aria-describedby': invalid ? errorId : undefined,
+      style: inputStyle(theme)
+    };
+    return (
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor={`${uid}-${key}`} className="text-[12.5px] font-medium" style={{ color: theme.text }}>
+          {label}
+        </label>
+        {key === 'message' ?
+        <textarea {...common} rows={3} onChange={(e) => setValues((v) => ({ ...v, [key]: e.target.value }))} className="w-full resize-none px-3.5 py-2.5 text-[14.5px] outline-none focus:ring-2" /> :
 
+        <input {...common} type={type} inputMode={type === 'tel' ? 'tel' : type === 'email' ? 'email' : undefined} onChange={(e) => setValues((v) => ({ ...v, [key]: e.target.value }))} className="h-11 w-full px-3.5 text-[14.5px] outline-none focus:ring-2" />
+        }
+      </div>);
 
-    <input
-      id={`${uid}-${key}`}
-      type={type}
-      readOnly={inert}
-      tabIndex={inert ? -1 : undefined}
-      value={values[key]}
-      onChange={(e) => setValues((v) => ({ ...v, [key]: e.target.value }))}
-      className="h-11 w-full px-3.5 text-[14.5px] outline-none focus:ring-2"
-      style={inputStyle(theme)} />
-
-    }
-    </label>;
-
+  };
 
   return (
     <section className="flex flex-col gap-4 p-5" style={cardStyle(theme)}>
@@ -102,8 +96,8 @@ export function LeadFormBlock({ block, theme, mode }: BlockProps<'leadForm'>) {
             </p>
         }
           {error &&
-        <p className="text-[13px] font-medium" role="alert" style={{ color: theme.text }}>
-              {error}
+        <p id={errorId} className="text-[13px] font-medium" role="alert" style={{ color: theme.text }}>
+              {error.text}
             </p>
         }
           {consentText &&
@@ -111,16 +105,11 @@ export function LeadFormBlock({ block, theme, mode }: BlockProps<'leadForm'>) {
               {consentText}
             </p>
         }
-          <label className="flex items-start gap-2 text-[12.5px]" style={{ color: theme.mutedText }}>
-            <input type="checkbox" checked={optIn} disabled={inert} tabIndex={inert ? -1 : undefined} onChange={(e) => setOptIn(e.target.checked)} className="mt-0.5" style={{ accentColor: theme.text }} />
+          <label className="flex min-h-[24px] items-start gap-2 text-[12.5px]" style={{ color: theme.mutedText }}>
+            <input type="checkbox" checked={optIn} disabled={inert} tabIndex={inert ? -1 : undefined} onChange={(e) => setOptIn(e.target.checked)} className="mt-0.5 h-4 w-4" style={{ accentColor: theme.text }} />
             Also send me occasional updates (optional)
           </label>
-          <button
-          type="submit"
-          tabIndex={inert ? -1 : undefined}
-          className="mt-1 h-12 w-full text-[15px] font-semibold"
-          style={buttonStyle(theme, 'featured')}>
-          
+          <button type="submit" tabIndex={inert ? -1 : undefined} className="mt-1 h-12 w-full text-[15px] font-semibold" style={buttonStyle(theme, 'featured')}>
             {submitLabel || 'Send'}
           </button>
         </form>

@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { MenuIcon, ChevronRightIcon } from 'lucide-react';
+import { MenuIcon, ChevronRightIcon, LogOutIcon } from 'lucide-react';
+import { toast } from 'sonner';
+import { useAccount } from '../../utils/account/store';
+import { AccountAvatar } from '../account/AccountAvatar';
 import { useAppearancePolicy } from '../../contexts/AppearancePolicyContext';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
 import { WorkspaceSwitcher } from './WorkspaceSwitcher';
@@ -8,6 +11,7 @@ import { workspaceNav, mobilePrimaryNavIds } from '../../data/navigation';
 import { Sheet } from '../ui/Sheet';
 import { cn } from '../../utils/cn';
 import { DirectionSwitcher } from './DirectionSwitcher';
+import { HelpMenu } from './HelpMenu';
 
 export function MobileNav() {
   const [moreOpen, setMoreOpen] = useState(false);
@@ -16,6 +20,7 @@ export function MobileNav() {
   const rest = workspaceNav.filter((n) => !mobilePrimaryNavIds.includes(n.id));
   const canChoose = useAppearancePolicy().enabled.length > 1;
   const currentWorkspace = useWorkspace().current;
+  const account = useAccount();
 
   const itemCls = 'flex h-full w-full flex-col items-center justify-center gap-1 text-caption font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus';
 
@@ -44,6 +49,23 @@ export function MobileNav() {
       </nav>
 
       <Sheet open={moreOpen} onClose={() => setMoreOpen(false)} title="More">
+        <div className="border-b border-line p-2">
+          <button
+            type="button"
+            onClick={() => {
+              setMoreOpen(false);
+              navigate('/app/account');
+            }}
+            className="flex min-h-[60px] w-full items-center gap-3 rounded-md px-3 text-left hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+            
+            <AccountAvatar name={account.profile.name} photo={account.profile.photo} size="md" />
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-body font-semibold text-fg">{account.profile.name}</span>
+              <span className="block truncate text-caption text-fg-subtle">Your account · {account.profile.email}</span>
+            </span>
+            <ChevronRightIcon size={16} className="text-fg-subtle" aria-hidden />
+          </button>
+        </div>
         <div className="border-b border-line p-2">
           <WorkspaceSwitcher onNavigate={() => setMoreOpen(false)} />
         </div>
@@ -80,6 +102,22 @@ export function MobileNav() {
 
           })}
         </ul>
+        {/* Support is reachable on phones too (D76). */}
+        <div className="border-t border-line p-2">
+          <HelpMenu />
+          <button
+            type="button"
+            onClick={() => {
+              setMoreOpen(false);
+              navigate('/signin');
+              toast('Signed out', { description: 'Prototype — your data stays on this device.' });
+            }}
+            className="flex h-10 w-full items-center gap-3 rounded-md px-2 text-left text-label font-medium text-fg hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+            
+            <LogOutIcon size={18} className="text-fg-muted" aria-hidden />
+            Sign out
+          </button>
+        </div>
       </Sheet>
     </>);
 

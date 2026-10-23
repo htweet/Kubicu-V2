@@ -41,7 +41,7 @@ export function DownloadPage() {
           <Link to={`/p/${handle}/order/${order.id}`} className="inline-flex items-center gap-1.5 self-start text-[14px] font-medium" style={muted}>
             <ArrowLeftIcon size={15} aria-hidden /> Order #{order.number}
           </Link>
-          <CheckoutHeading theme={t} sub={`For ${order.customer.name}. Please don’t share this link — downloads are counted.`}>
+          <CheckoutHeading level={1} theme={t} sub={`For ${order.customer.name}. Please don’t share this link — downloads are counted.`}>
             Your downloads
           </CheckoutHeading>
           <TestModeNote theme={t} />

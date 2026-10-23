@@ -11,6 +11,8 @@ import { cn } from '../../utils/cn';
 import { useTeam } from '../../contexts/TeamContext';
 import { roleInfo } from '../../data/permissions';
 import { NotificationBell } from '../notifications/NotificationBell';
+import { HelpMenu } from './HelpMenu';
+import { AccountMenu } from './AccountMenu';
 
 export function Sidebar() {
   const { collapsed, toggle } = useSidebarCollapsed();
@@ -91,7 +93,11 @@ export function Sidebar() {
           </p>
         }
         {collapsed && <NotificationBell size="md" onMouseEnter={tip.show('Notifications')} onMouseLeave={tip.hide} onFocus={tip.show('Notifications')} onBlur={tip.hide} />}
+        <HelpMenu collapsed={collapsed} tip={tip} />
         <AppearancePicker collapsed={collapsed} tip={tip} />
+        <div className={cn('mt-1.5 border-t border-line pt-2', collapsed ? 'flex justify-center px-0' : '-mx-3 px-3')}>
+          <AccountMenu collapsed={collapsed} tip={tip} />
+        </div>
         {collapsed &&
         <button
           type="button"

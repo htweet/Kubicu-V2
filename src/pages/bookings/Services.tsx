@@ -27,6 +27,7 @@ import { Field } from '../../components/ui/Field';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { BookingsPlanNote } from '../../components/bookings/BookingsPlanNote';
 import { SampleTag } from '../../components/commerce/StatusBadges';
+import { DetailSection } from '../../components/ui/layout/DetailList';
 
 const blank = (): Service => ({ id: uid('svc'), name: '', description: '', durationMin: 60, priceNgn: null, depositNgn: null, location: 'studio', locationNote: '', bufferMin: 15, active: true });
 const durations = [15, 30, 45, 60, 90, 120, 180].map((m) => ({ value: String(m), label: durationLabel(m) }));
@@ -95,12 +96,12 @@ export function Services() {
           <EmptyState icon={CalendarIcon} title="No services yet" description="A fitting, a consultation, a lesson — anything with a time." action={<Button leadingIcon={PlusIcon} onClick={() => setParams({ new: '1' })}>Add service</Button>} />
         </div> :
 
-      <ul className="mt-8 flex flex-col divide-y divide-line rounded-lg border border-line bg-raised">
+      <ul aria-label="Services" className="mt-8 flex flex-col divide-y divide-line overflow-hidden rounded-lg border border-line bg-raised">
           {data.services.map((s) => {
           const dest = serviceDestination(s.id);
           return (
-            <li key={s.id} className="flex items-center pr-3">
-              <button type="button" onClick={() => setParams({ edit: s.id })} className="flex min-w-0 flex-1 flex-col gap-2 px-5 py-4 text-left transition-colors duration-150 hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus sm:flex-row sm:items-center">
+            <li key={s.id} className="flex min-h-[64px] items-center pr-3 md:pr-4">
+              <button type="button" onClick={() => setParams({ edit: s.id })} className="flex min-w-0 flex-1 flex-col gap-2 self-stretch px-5 py-4 text-left md:px-6 transition-colors duration-150 hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus sm:flex-row sm:items-center">
                 <span className="min-w-0 flex-1">
                   <span className="flex items-center gap-2">
                     <span className="text-label font-semibold text-fg">{s.name}</span>
@@ -145,32 +146,40 @@ export function Services() {
           </div>
         }>
         
-        <div className="flex flex-col gap-5 px-5 py-5">
-          <Switch id="svc-active" label="Bookable" description="Turn off to hide it from your page without deleting it." checked={draft.active} onChange={(active) => patch({ active })} />
-          <TextInput id="svc-name" label="Name" value={draft.name} error={tried && !draft.name.trim() ? 'Name the service' : undefined} placeholder="e.g. Studio fitting" onChange={(e) => patch({ name: e.target.value })} />
-          <TextArea id="svc-desc" label="Description" optional rows={2} value={draft.description} onChange={(e) => patch({ description: e.target.value })} />
+        <div className="flex flex-col gap-6 px-5 py-5 md:px-6">
+          <DetailSection title="Details">
+            <TextInput id="svc-name" label="Name" value={draft.name} error={tried && !draft.name.trim() ? 'Name the service' : undefined} placeholder="e.g. Studio fitting" onChange={(e) => patch({ name: e.target.value })} />
+            <TextArea id="svc-desc" label="Description" optional rows={2} value={draft.description} onChange={(e) => patch({ description: e.target.value })} />
+            <Switch id="svc-active" label="Bookable" description="Turn off to hide it from your page without deleting it." checked={draft.active} onChange={(active) => patch({ active })} />
+          </DetailSection>
+          <DetailSection title="Time">
           <div className="grid gap-4 sm:grid-cols-2">
             <SelectInput id="svc-dur" label="Duration" value={String(draft.durationMin)} options={durations} onChange={(v) => patch({ durationMin: Number(v) })} />
             <SelectInput id="svc-buf" label="Break after" value={String(draft.bufferMin)} options={[0, 5, 10, 15, 30, 60].map((m) => ({ value: String(m), label: m ? `${m} min` : 'None' }))} onChange={(v) => patch({ bufferMin: Number(v) })} />
           </div>
-          <div className="grid gap-4 sm:grid-cols-2">
+          </DetailSection>
+          <DetailSection title="Price">
+          <div className="grid items-start gap-4 sm:grid-cols-2">
             <CurrencyInput id="svc-price" label="Price" value={draft.priceNgn} placeholder="On request" onChange={(priceNgn) => patch({ priceNgn })} />
             <CurrencyInput id="svc-dep" label="Deposit to hold the time" optional value={draft.depositNgn} placeholder="No deposit" error={tried ? depositError || undefined : undefined} hint="Taken at booking through your payment provider." onChange={(depositNgn) => patch({ depositNgn })} />
           </div>
+          </DetailSection>
+          <DetailSection title="Location">
           <Field id="svc-loc" label="Where">
             <Segmented
-              ariaLabel="Where"
-              fullWidth
-              value={draft.location}
-              onChange={(location) => patch({ location })}
-              options={[
-              { value: 'studio', label: 'In person' },
-              { value: 'online', label: 'Online' },
-              { value: 'customer', label: 'Their address' }]
-              } />
-            
+                ariaLabel="Where"
+                fullWidth
+                value={draft.location}
+                onChange={(location) => patch({ location })}
+                options={[
+                { value: 'studio', label: 'In person' },
+                { value: 'online', label: 'Online' },
+                { value: 'customer', label: 'Their address' }]
+                } />
+              
           </Field>
           <TextInput id="svc-locnote" label={draft.location === 'online' ? 'How you’ll meet' : 'Address or area'} optional value={draft.locationNote} placeholder={draft.location === 'online' ? 'e.g. Google Meet link sent after booking' : 'e.g. Victoria Island studio'} onChange={(e) => patch({ locationNote: e.target.value })} />
+          </DetailSection>
         </div>
       </Sheet>
     </>);

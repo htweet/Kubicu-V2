@@ -5,6 +5,7 @@ import { SubscribeSheet } from '../components/subscriptions/SubscribeSheet';
 import { SubscribeProvider } from '../contexts/SubscribeContext';
 import { usePageOps } from '../hooks/usePageOps';
 import { upsertContact } from '../utils/ops/ops';
+import { contactFrom, recordSubmission } from '../utils/forms/submit';
 import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { SiteNav } from '../components/blocks/SiteNav';
 import { findPage, navItems, pageHref, pageView, resolvePath, type NavItem } from '../utils/sitePages';
@@ -26,7 +27,9 @@ import { CatalogProvider } from '../contexts/CatalogContext';
 import { CartProvider } from '../contexts/CartContext';
 import { PageSurface } from '../components/blocks/PageSurface';
 import { BlockRenderer, spacingClass } from '../components/blocks/BlockRenderer';
-import { MadeWithKubicu } from '../components/blocks/MadeWithKubicu';
+import { PublicFooter } from '../components/blocks/PublicFooter';
+import { SkipLink } from '../components/ui/SkipLink';
+import { flagOn, useAdminStore } from '../utils/admin/store';
 import { CheckoutSheet } from '../components/checkout/CheckoutSheet';
 import { CartButton } from '../components/checkout/CartButton';
 import { ConsentStrip } from '../components/blocks/ConsentStrip';
@@ -85,13 +88,28 @@ export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
       openBooking: (id) => {
         track('booking_open', { label: id });
         setBookingService(id);
-      }
+      },
+      // Forms add-on (D79): save the submission, add/update the contact (consent only if they ticked it), record it.
+      submitForm: (form, answers, paymentNgn) => {
+        const wid = resolved.workspaceId;
+        if (!wid) return false;
+        const sub = recordSubmission(wid, form, answers, paymentNgn, { source: visit.source, campaign: visit.campaign ?? null, handle });
+        track('form_submit', { label: form.id, valueNgn: paymentNgn ?? undefined });
+        const c = contactFrom(form, sub.answers);
+        if (c.email || c.phone) {
+          ops.apply((d) => upsertContact(d, { name: c.name, email: c.email, phone: c.phone }, 'form', `Sent “${form.name}”${paymentNgn ? ` and paid ₦${paymentNgn.toLocaleString()} (test)` : ''}`, { consent: c.consent ? 'subscribed' : 'transactional' }));
+        }
+        return true;
+      },
+      trackForm: (formId, stage) => track(stage === 'view' ? 'form_view' : 'form_start', { label: formId })
     };
-  }, [resolved, ops, track]);
+  }, [resolved, ops, track, visit, handle]);
 
   // The storefront answers /shop unless it's off or a page of the site already uses that address (D53).
   const shopData = resolved && !resolved.example ? commerce.data : null;
-  const shopOn = !!resolved && storefrontAvailable(resolved.doc, shopData);
+  // Super admin can switch the storefront off platform-wide (D75b).
+  const [adminStore] = useAdminStore();
+  const shopOn = !!resolved && flagOn(adminStore, 'storefront') && storefrontAvailable(resolved.doc, shopData);
   const wantShop = view === 'shop' && shopOn;
   const pagePath = view === 'shop' && !shopOn ? productId ? '\u0000missing' : STOREFRONT_PATH : rawPath;
   const shopProduct = wantShop && productId ? findShopProduct(shopData, productId) : undefined;
@@ -111,16 +129,27 @@ export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
     const view = resolved ? pageView(resolved.doc, pageId) : null;
     const shopTitle = wantShop && resolved ? `${shopProduct ? shopProduct.name : shopData?.storefront.title || 'Shop'} · ${resolved.doc.title}` : null;
     document.title = shopTitle ?? (resolved && view ? view.seo.title || (sub ? `${sub.title} · ${resolved.doc.title}` : resolved.doc.title) : 'Page not available · KUBICU');
+    // Page language for screen readers and translation (WCAG 3.1.1, D76).
+    const previousLang = document.documentElement.lang;
+    document.documentElement.lang = resolved?.doc.language || 'en';
     const meta = document.querySelector('meta[name="description"]');
     const previousDescription = meta?.getAttribute('content') ?? null;
     if (meta && view) meta.setAttribute('content', wantShop ? shopProduct?.description.slice(0, 160) ?? shopData?.storefront.intro ?? '' : view.seo.description);
     return () => {
       document.title = previous;
+      document.documentElement.lang = previousLang || 'en';
       if (meta && previousDescription !== null) meta.setAttribute('content', previousDescription);
     };
   }, [resolved, pageId, sub, wantShop, shopProduct, shopData]);
 
   if (!resolved) return <Unavailable handle={handle} />;
+  // Staff actions (D75b): a taken-down page or a suspended workspace isn't shown — the owner's own draft preview still is.
+  if (!resolved.example && !isDraft) {
+    if (adminStore.takedowns.some((t) => t.handle === handle))
+    return <Unavailable handle={handle} title="This page was removed" body="It was taken down for breaking KUBICU’s rules. If you own it, check your app for how to appeal." />;
+    if (resolved.workspaceId && adminStore.suspended[resolved.workspaceId])
+    return <Unavailable handle={handle} title="This page is temporarily unavailable" body="The account behind it is paused while KUBICU looks into something. Please try again later." />;
+  }
   // An archived campaign or DealRoom forwards to the main page (D50).
   if (resolved.redirectTo && resolved.redirectTo !== handle) return <Navigate to={pageHref(resolved.redirectTo, '')} replace />;
   // Renamed or removed pages forward to their new address.
@@ -220,7 +249,7 @@ export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
       <TrackProvider value={track}>
       <RenderPlanProvider plan={plan}>
         <CatalogProvider data={catalog}>
-          <PageOpsProvider value={{ data: example ? null : ops.data, actions: isDraft ? null : opsActions }}>
+          <PageOpsProvider value={{ data: example ? null : ops.data, actions: isDraft ? null : opsActions, workspaceId: example ? null : resolved.workspaceId ?? null }}>
           <SubscribeProvider
                 open={
                 isDraft || example || !catalog ?
@@ -234,12 +263,14 @@ export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
             <CartProvider pageKey={`${resolved.workspaceId ?? 'example'}:${handle}`}>
               {wantShop && catalog ?
                   <main>
+                  {nav.length > 1 && <SkipLink target="page-content" />}
                   <PageSurface
                       theme={doc.theme}
                       columnClassName="max-w-[1120px] md:px-8"
-                      footer={showsKubicuBadge(doc, plan) ? <MadeWithKubicu theme={doc.theme} mode="live" /> : <div className="pb-10" />}
+                      footer={<PublicFooter theme={doc.theme} badge={showsKubicuBadge(doc, plan)} handle={handle} workspaceId={resolved.workspaceId ?? null} />}
                       header={nav.length > 1 ? <SiteNav theme={doc.theme} title={doc.title} items={nav} activeId={SHOP_NAV_ID} hrefFor={navHref} /> : undefined}>
                       
+                    <span id="page-content" tabIndex={-1} className="sr-only">Page content</span>
                     {shopProduct ?
                       <ProductDetailView theme={doc.theme} data={catalog} product={shopProduct} ordering={storefrontOrdering(catalog, plan.id)} whatsappPhone={catalog.storefront.whatsappPhone || sellerPhone(doc)} shopHref={shopHref} productHref={productHref} /> :
 
@@ -330,11 +361,13 @@ function PageBody({
   }, [pageId, anchor]);
   return (
     <main>
+      {nav.length > 1 && <SkipLink target="page-content" />}
       <PageSurface
         theme={doc.theme}
-        footer={showsKubicuBadge(doc, plan) ? <MadeWithKubicu theme={doc.theme} mode="live" /> : <div className="pb-10" />}
+        footer={<PublicFooter theme={doc.theme} badge={showsKubicuBadge(doc, plan)} handle={handle} workspaceId={null} />}
         header={nav.length > 1 ? <SiteNav theme={doc.theme} title={site.title} items={nav} activeId={pageId} hrefFor={navHref} /> : undefined}>
         
+        <span id="page-content" tabIndex={-1} className="sr-only">Page content</span>
         {site.dealRoom && !pageId &&
         <div className="mb-4">
             <DealRoomPanel room={site.dealRoom} handle={handle} theme={doc.theme} mode="live" />

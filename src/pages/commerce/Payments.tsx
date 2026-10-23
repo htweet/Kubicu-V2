@@ -13,6 +13,8 @@ import { Segmented } from '../../components/ui/Segmented';
 import { Field } from '../../components/ui/Field';
 import { IllustrativeTag } from '../../components/ui/IllustrativeTag';
 import { TestModeStrip } from '../../components/commerce/TestModeStrip';
+import { Card } from '../../components/ui/layout/Card';
+import { PageStack, Section } from '../../components/ui/layout/Section';
 import { formatTimestamp } from '../../utils/format';
 import { cn } from '../../utils/cn';
 
@@ -53,29 +55,56 @@ export function Payments() {
       <PageHeader title="Payments" description="How customers pay at checkout. Money goes from your provider straight to your bank." />
       <TestModeStrip className="mt-6" />
 
-      <section aria-labelledby="mode-heading" className="mt-8 rounded-lg border border-line bg-raised p-5 md:p-6">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h2 id="mode-heading" className="text-heading font-semibold text-fg">
-              Checkout mode
-            </h2>
-            <p className="mt-0.5 max-w-lg text-label text-fg-muted">Test mode lets you try every payment outcome. Live mode needs a verified provider account and isn’t available in this prototype.</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <Segmented ariaLabel="Checkout mode" value="test" onChange={() => toast('Live mode is locked in the prototype', { description: 'It opens once a provider is integrated and your business is verified.' })} options={[{ value: 'test', label: 'Test' }, { value: 'live', label: 'Live' }]} />
-            <LockIcon size={15} className="text-fg-subtle" aria-label="Live mode locked" />
-          </div>
-        </div>
-      </section>
+      <PageStack>
+      <Section id="provider" title={<span className="flex items-center gap-2">Payment provider <IllustrativeTag note="Provider names and methods are illustrative. KUBICU hasn’t chosen or integrated a provider yet." /></span>} description={provider ? `One provider at a time. Disconnect ${provider.name} to switch.` : 'Connect one provider. Methods depend on the provider, your account and eligibility.'}>
+        <ul className="grid gap-6 md:grid-cols-2">
+          {paymentProviders.map((p) => {
+              const connected = data.payments.provider === p.id;
+              return (
+                <li key={p.id} className={cn('flex h-full flex-col rounded-lg border bg-raised p-5 md:p-6', connected ? 'border-success shadow-1' : 'border-line')}>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-heading font-semibold text-fg">{p.name}</p>
+                  {connected ? <Badge tone="success" dot>Connected · test</Badge> : <Badge tone="neutral">Not connected</Badge>}
+                </div>
+                <p className="mt-2 text-label text-fg-muted">{p.blurb}</p>
+                <div className="mb-5 mt-4 flex flex-wrap gap-1.5">
+                  {p.methods.map((m) =>
+                    <span key={m} className="rounded-full bg-sunken px-2.5 py-1 text-caption font-medium text-fg-muted">
+                      {m}
+                    </span>
+                    )}
+                </div>
+                <div className="mt-auto border-t border-line pt-4">
+                  {connected ?
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="text-caption text-fg-subtle">
+                        {data.payments.businessName} · since {data.payments.connectedAt ? formatTimestamp(data.payments.connectedAt) : '—'}
+                      </span>
+                      <Button size="sm" variant="tertiary" onClick={disconnect}>
+                        Disconnect
+                      </Button>
+                    </div> :
 
-      <section aria-labelledby="refund-fees-heading" className="mt-8 rounded-lg border border-line bg-raised p-5 md:p-6">
-        <div className="flex items-center gap-2">
-          <h2 id="refund-fees-heading" className="text-heading font-semibold text-fg">
-            Fees when you refund
-          </h2>
-          <IllustrativeTag note="Policy recommended for launch; confirm the provider’s refund-fee terms before going live." />
+                    <Button variant="secondary" leadingIcon={PlugIcon} onClick={() => startConnect(p.id)} disabled={!!provider}>
+                      Connect {p.name}
+                    </Button>
+                    }
+                </div>
+              </li>);
+
+            })}
+        </ul>
+      </Section>
+
+      <Card id="mode" title="Checkout mode" description="Test mode lets you try every payment outcome. Live mode needs a verified provider account and isn’t available in this prototype." actions={
+        <div className="flex items-center gap-3">
+          <Segmented ariaLabel="Checkout mode" value="test" onChange={() => toast('Live mode is locked in the prototype', { description: 'It opens once a provider is integrated and your business is verified.' })} options={[{ value: 'test', label: 'Test' }, { value: 'live', label: 'Live' }]} />
+          <LockIcon size={15} className="text-fg-subtle" aria-label="Live mode locked" />
         </div>
-        <dl className="mt-4 grid gap-4 md:grid-cols-3">
+        } />
+
+      <Card id="refund-fees" title={<span className="flex items-center gap-2">Fees when you refund <IllustrativeTag note="Policy recommended for launch; confirm the provider’s refund-fee terms before going live." /></span>}>
+        <dl className="grid gap-x-6 gap-y-4 md:grid-cols-3 md:divide-x md:divide-line [&>div]:md:pl-6 [&>div:first-child]:md:pl-0">
           <div>
             <dt className="text-label font-medium text-fg">Your customer</dt>
             <dd className="mt-1 text-caption text-fg-muted">Always gets back exactly what they paid. Fees are never deducted from a refund.</dd>
@@ -89,55 +118,8 @@ export function Payments() {
             <dd className="mt-1 text-caption text-fg-muted">Most providers keep their processing fee when a payment is refunded, so it stays a cost to you. Reports show it on its own line.</dd>
           </div>
         </dl>
-      </section>
-
-      <section aria-labelledby="provider-heading" className="mt-8">
-        <div className="flex items-center gap-2">
-          <h2 id="provider-heading" className="text-heading font-semibold text-fg">
-            Payment provider
-          </h2>
-          <IllustrativeTag note="Provider names and methods are illustrative. KUBICU hasn’t chosen or integrated a provider yet." />
-        </div>
-        <ul className="mt-4 grid gap-4 md:grid-cols-2">
-          {paymentProviders.map((p) => {
-            const connected = data.payments.provider === p.id;
-            return (
-              <li key={p.id} className={cn('flex h-full flex-col rounded-lg border bg-raised p-5', connected ? 'border-success' : 'border-line')}>
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-heading font-semibold text-fg">{p.name}</p>
-                  {connected ? <Badge tone="success" dot>Connected · test</Badge> : <Badge tone="neutral">Not connected</Badge>}
-                </div>
-                <p className="mt-2 text-label text-fg-muted">{p.blurb}</p>
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  {p.methods.map((m) =>
-                  <span key={m} className="rounded-full bg-sunken px-2.5 py-1 text-caption font-medium text-fg-muted">
-                      {m}
-                    </span>
-                  )}
-                </div>
-                <p className="mt-2 text-caption text-fg-subtle">Methods depend on the provider, your account and eligibility.</p>
-                <div className="mt-auto pt-5">
-                  {connected ?
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                      <span className="text-caption text-fg-subtle">
-                        {data.payments.businessName} · since {data.payments.connectedAt ? formatTimestamp(data.payments.connectedAt) : '—'}
-                      </span>
-                      <Button size="sm" variant="tertiary" onClick={disconnect}>
-                        Disconnect
-                      </Button>
-                    </div> :
-
-                  <Button variant="secondary" leadingIcon={PlugIcon} onClick={() => startConnect(p.id)} disabled={!!provider}>
-                      Connect {p.name}
-                    </Button>
-                  }
-                </div>
-              </li>);
-
-          })}
-        </ul>
-        {provider && <p className="mt-3 text-caption text-fg-subtle">One provider at a time. Disconnect {provider.name} to switch.</p>}
-      </section>
+      </Card>
+      </PageStack>
 
       <Dialog
         open={!!connecting}

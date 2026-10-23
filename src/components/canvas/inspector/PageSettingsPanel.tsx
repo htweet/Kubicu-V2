@@ -13,6 +13,17 @@ import { usePlan } from '../../../contexts/PlanContext';
 import { badgeRemovalPlanName } from '../../../data/plans';
 import { showsKubicuBadge } from '../../../utils/branding';
 import { findPage, pageTitle, sitePages } from '../../../utils/sitePages';
+import { SelectInput } from '../../ui/SelectInput';
+
+const pageLanguages = [
+{ value: 'en', label: 'English' },
+{ value: 'pcm', label: 'Nigerian Pidgin' },
+{ value: 'yo', label: 'Yorùbá' },
+{ value: 'ig', label: 'Igbo' },
+{ value: 'ha', label: 'Hausa' },
+{ value: 'fr', label: 'French' },
+{ value: 'sw', label: 'Swahili' }];
+
 
 export function PageSettingsPanel() {
   const { state, actions, issues } = useEditor();
@@ -36,6 +47,14 @@ export function PageSettingsPanel() {
         </p>
       }
       <TextInput id="page-title" label={multi ? 'Site name' : 'Page name'} value={draft.title} hint={multi ? 'Shown at the top of your site menu.' : 'Only you see this in the workspace.'} onChange={(e) => actions.updatePage({ title: e.target.value }, 'title')} />
+      <SelectInput<string>
+        id="page-language"
+        label="Page language"
+        value={state.site.language ?? 'en'}
+        options={pageLanguages}
+        onChange={(v) => actions.setLanguage(v)}
+        hint="Helps screen readers pronounce your page and browsers offer translation." />
+      
       <TextInput
         id="page-handle"
         label="Page link"

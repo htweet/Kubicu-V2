@@ -7,6 +7,7 @@ import { usePlan } from './PlanContext';
 import { takenHandles } from '../utils/handles';
 import { catalogLinkIssues } from '../utils/commerce/linkIssues';
 import { opsLinkIssues } from '../utils/ops/linkIssues';
+import { formLinkIssues } from '../utils/forms/linkIssues';
 import type { PageDocument } from '../types/page';
 import type { ValidationIssue } from '../utils/validation';
 import { allBlocks, pageCount, pageLimits } from '../utils/sitePages';
@@ -36,7 +37,10 @@ export function EditorProvider({ children }: {children: React.ReactNode;}) {
   const isMain = currentSpace.id === MAIN_SPACE_ID;
   const spaceIndex = activeExtraSpaces(current).findIndex((s) => s.id === currentSpace.id);
   const taken = useMemo(() => takenHandles(workspaces, storageId), [workspaces, storageId]);
-  const extra = useCallback((doc: PageDocument) => [...catalogLinkIssues(doc, data, plan.id), ...opsLinkIssues(doc, ops, plan.id)], [data, ops, plan.id]);
+  const extra = useCallback(
+    (doc: PageDocument) => [...catalogLinkIssues(doc, data, plan.id), ...opsLinkIssues(doc, ops, plan.id), ...formLinkIssues(doc, current.id)],
+    [data, ops, plan.id, current.id]
+  );
   const siteLevel = useCallback(
     (doc: PageDocument): ValidationIssue[] => {
       const out: ValidationIssue[] = [];

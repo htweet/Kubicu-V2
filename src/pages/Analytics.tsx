@@ -22,10 +22,12 @@ import { EmptyState } from '../components/ui/EmptyState';
 import { Tabs } from '../components/ui/Tabs';
 import { VisitsChart } from '../components/analytics/VisitsChart';
 import { FunnelView } from '../components/analytics/FunnelView';
+import { Stat, StatGroup } from '../components/ui/layout/Stat';
+import { Card } from '../components/ui/layout/Card';
 import { cn } from '../utils/cn';
 
 type Period = '7' | '30' | '90' | 'custom';
-type FunnelTab = 'shop' | 'booking' | 'leads' | 'subscriptions';
+type FunnelTab = 'shop' | 'booking' | 'leads' | 'subscriptions' | 'tickets' | 'forms';
 
 const pct = (n: number) => `${Math.round(n * 100)}%`;
 
@@ -245,11 +247,12 @@ export function Analytics() {
             <p className="mt-3 text-label text-fg-muted">No taps yet in this period.</p> :
 
             <table className="mt-3 w-full text-label">
+                  <caption className="sr-only">Top links and buttons in this period</caption>
                   <thead>
                     <tr className="border-b border-line text-caption text-fg-subtle">
-                      <th className="py-2 text-left font-medium">Link</th>
-                      <th className="py-2 text-right font-medium">Taps</th>
-                      <th className="py-2 text-right font-medium">Of visits</th>
+                      <th scope="col" className="py-2 text-left font-medium">Link</th>
+                      <th scope="col" className="py-2 text-right font-medium">Taps</th>
+                      <th scope="col" className="py-2 text-right font-medium">Of visits</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -270,11 +273,12 @@ export function Analytics() {
                 Where visitors come from
               </h2>
               <table className="mt-3 w-full text-label">
+                <caption className="sr-only">Visits and conversions by source</caption>
                 <thead>
                   <tr className="border-b border-line text-caption text-fg-subtle">
-                    <th className="py-2 text-left font-medium">Source</th>
-                    <th className="py-2 text-right font-medium">Visits</th>
-                    <th className="py-2 text-right font-medium" title="Paid orders, bookings, forms and sign-ups">Converted</th>
+                    <th scope="col" className="py-2 text-left font-medium">Source</th>
+                    <th scope="col" className="py-2 text-right font-medium">Visits</th>
+                    <th scope="col" className="py-2 text-right font-medium" title="Paid orders, bookings, forms and sign-ups">Converted</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -294,14 +298,18 @@ export function Analytics() {
               <p className="mt-2 text-caption text-fg-subtle">From the link used (QR codes and campaign links tag themselves) or the site that sent them.</p>
             </section>
 
-            <aside aria-labelledby="ideas-heading" className="rounded-lg border border-line bg-raised p-4">
-              <h2 id="ideas-heading" className="flex items-center gap-2 text-label font-semibold text-fg">
-                <LightbulbIcon size={15} className="text-action" aria-hidden /> Link Intelligence
-              </h2>
+            <Card
+            id="ideas"
+            as="div"
+            icon={LightbulbIcon}
+            title="Link Intelligence"
+            className="self-start"
+            footer={<p className="text-caption text-fg-subtle">Observations, not proof — a pattern doesn’t show what caused it.</p>}>
+            
               {ideas.length === 0 ?
-            <p className="mt-2 text-caption text-fg-muted">{h.visits < 30 ? `Suggestions appear after 30 visits in a period (${h.visits} so far).` : 'Nothing stands out right now.'}</p> :
+            <p className="text-caption text-fg-muted">{h.visits < 30 ? `Suggestions appear after 30 visits in a period (${h.visits} so far).` : 'Nothing stands out right now.'}</p> :
 
-            <ul className="mt-3 flex flex-col gap-4">
+            <ul className="flex flex-col gap-4">
                   {ideas.map((i) =>
               <li key={i.id} className="border-t border-line pt-3 first:border-0 first:pt-0">
                       <div className="flex items-start justify-between gap-2">
@@ -320,8 +328,7 @@ export function Analytics() {
               )}
                 </ul>
             }
-              <p className="mt-4 text-caption text-fg-subtle">Observations, not proof — a pattern doesn’t show what caused it.</p>
-            </aside>
+            </Card>
           </div>
 
           <section aria-labelledby="campaigns-heading" className="mt-10">
@@ -339,12 +346,13 @@ export function Analytics() {
               </p> :
 
           <table className="mt-3 w-full max-w-3xl text-label">
+                <caption className="sr-only">Campaign links and QR codes</caption>
                 <thead>
                   <tr className="border-b border-line text-caption text-fg-subtle">
-                    <th className="py-2 text-left font-medium">Link</th>
-                    <th className="py-2 text-right font-medium">Visits / scans</th>
-                    <th className="py-2 text-right font-medium">Orders</th>
-                    <th className="hidden py-2 text-right font-medium sm:table-cell">Revenue</th>
+                    <th scope="col" className="py-2 text-left font-medium">Link</th>
+                    <th scope="col" className="py-2 text-right font-medium">Visits / scans</th>
+                    <th scope="col" className="py-2 text-right font-medium">Orders</th>
+                    <th scope="col" className="hidden py-2 text-right font-medium sm:table-cell">Revenue</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -376,7 +384,9 @@ export function Analytics() {
               { id: 'shop', label: 'Shop' },
               { id: 'booking', label: 'Bookings' },
               { id: 'leads', label: 'Leads' },
-              { id: 'subscriptions', label: 'Subscriptions' }]
+              { id: 'subscriptions', label: 'Subscriptions' },
+              { id: 'tickets', label: 'Tickets' },
+              { id: 'forms', label: 'Forms' }]
               }
               value={funnelTab}
               onChange={setFunnelTab}
@@ -388,6 +398,26 @@ export function Analytics() {
               {funnelTab === 'shop' && <FunnelView steps={f.shop[0].count ? f.shop : f.shopFromCart} emptyText="No product views or carts in this period." />}
               {funnelTab === 'booking' && <FunnelView steps={f.booking} emptyText="Nobody opened a booking in this period." />}
               {funnelTab === 'subscriptions' && <FunnelView steps={f.subscriptions} emptyText="Nobody opened a subscription plan in this period." />}
+              {funnelTab === 'forms' && <FunnelView steps={f.forms} emptyText="No Forms add-on forms were seen in this period." />}
+              {funnelTab === 'tickets' &&
+            <>
+                  <FunnelView steps={f.tickets} emptyText="Nobody chose event tickets in this period." />
+                  {(() => {
+                const paid = cur.filter((e) => e.type === 'ticket_paid');
+                const revenue = paid.reduce((s, e) => s + (e.valueNgn ?? 0), 0);
+                const byEvent = new Map<string, number>();
+                cur.filter((e) => e.type === 'ticket_select' && e.label).forEach((e) => byEvent.set(e.label as string, (byEvent.get(e.label as string) ?? 0) + 1));
+                if (!paid.length && !byEvent.size) return null;
+                return (
+                  <StatGroup columns={3} divided className="mt-5">
+                        <Stat label="Ticket revenue" value={formatNgn(revenue)} />
+                        <Stat label="Orders with tickets" value={paid.length} />
+                        {byEvent.size > 0 && <Stat label="Most chosen event" value={<span className="block truncate">{[...byEvent.entries()].sort((a, b) => b[1] - a[1])[0][0]}</span>} />}
+                      </StatGroup>);
+
+              })()}
+                </>
+            }
               {funnelTab === 'leads' &&
             <FunnelView
               steps={[f.leads[0], { label: 'Sent a form or signed up', count: new Set(cur.filter((e) => e.type === 'lead' || e.type === 'signup').map((e) => e.session)).size }]}

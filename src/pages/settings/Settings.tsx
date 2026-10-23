@@ -1,5 +1,5 @@
 import React from 'react';
-import { Navigate, useParams } from 'react-router-dom';
+import { Link, Navigate, useParams } from 'react-router-dom';
 import { useTeam } from '../../contexts/TeamContext';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
 import { roleInfo } from '../../data/permissions';
@@ -50,8 +50,15 @@ export function Settings() {
       <PageHeader
         title="Settings"
         context={current.name}
-        description={`You’re signed in as ${me.name} — ${roleInfo[role].label}.`} />
+        description={`Settings for everyone in ${current.name}. You’re ${me.name} — ${roleInfo[role].label}.`} />
       
+      <p className="mt-2 text-caption text-fg-subtle">
+        Your own profile, password and preferences are in{' '}
+        <Link to="/app/account" className="font-medium text-fg underline-offset-2 hover:underline">
+          Your account
+        </Link>
+        .
+      </p>
       <div className="mt-6">
         <SubNav label="Settings" items={tabs.map(({ id, to, label, end }) => ({ to, label, end, badge: id === 'approvals' ? waiting : id === 'billing' ? billingAlert : undefined }))} />
       </div>

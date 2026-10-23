@@ -19,6 +19,7 @@ export function NewsletterBlock({ block, theme, mode }: BlockProps<'newsletter'>
     if (inert) return;
     if (!isValidEmail(email)) {
       setError('Please enter a valid email address.');
+      window.setTimeout(() => document.getElementById(id)?.focus(), 0);
       return;
     }
     if (actions && !actions.subscribe({ email: email.trim() }, title || 'Newsletter')) {
@@ -65,6 +66,8 @@ export function NewsletterBlock({ block, theme, mode }: BlockProps<'newsletter'>
             readOnly={inert}
             tabIndex={inert ? -1 : undefined}
             value={email}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? `${id}-error` : undefined}
             onChange={(e) => setEmail(e.target.value)}
             className="h-12 min-w-0 flex-1 px-3.5 text-[14.5px] outline-none focus:ring-2"
             style={inputStyle(theme)} />
@@ -79,7 +82,7 @@ export function NewsletterBlock({ block, theme, mode }: BlockProps<'newsletter'>
             </button>
           </div>
           {error &&
-        <p role="alert" className="text-[13px] font-medium" style={{ color: theme.text }}>
+        <p id={`${id}-error`} role="alert" className="text-[13px] font-medium" style={{ color: theme.text }}>
               {error}
             </p>
         }

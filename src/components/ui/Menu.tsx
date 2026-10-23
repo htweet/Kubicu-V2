@@ -57,6 +57,16 @@ export function Menu({
     };
   }, [open]);
   const onItemKey = (e: React.KeyboardEvent, index: number) => {
+    if (e.key === 'Home' || e.key === 'End') {
+      e.preventDefault();
+      const enabled = itemRefs.current.filter((el): el is HTMLButtonElement => !!el && !el.disabled);
+      (e.key === 'Home' ? enabled[0] : enabled[enabled.length - 1])?.focus();
+      return;
+    }
+    if (e.key === 'Tab') {
+      setOpen(false);
+      return;
+    }
     if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
     e.preventDefault();
     const step = e.key === 'ArrowDown' ? 1 : -1;

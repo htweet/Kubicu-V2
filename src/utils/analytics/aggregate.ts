@@ -198,6 +198,16 @@ export function funnels(events: AnalyticsEvent[]) {
     subscriptions: funnel(events, [
     ['Opened a plan', 'subscribe_open'],
     ['Subscribed or started a trial', 'subscribe_started']]
+    ),
+    tickets: funnel(events, [
+    ['Chose tickets', 'ticket_select'],
+    ['Started checkout', 'ticket_checkout'],
+    ['Got tickets', 'ticket_paid']]
+    ),
+    forms: funnel(events, [
+    ['Saw a form', 'form_view'],
+    ['Started filling in', 'form_start'],
+    ['Sent', 'form_submit']]
     )
   };
 }

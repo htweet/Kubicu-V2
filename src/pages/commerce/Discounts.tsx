@@ -17,6 +17,8 @@ import { InlineAlert } from '../../components/ui/InlineAlert';
 import { UpgradeButton } from '../../components/ui/UpgradeButton';
 import { DiscountEditor } from '../../components/commerce/DiscountEditor';
 import { SampleTag } from '../../components/commerce/StatusBadges';
+import { Card } from '../../components/ui/layout/Card';
+import { Stat, StatGroup } from '../../components/ui/layout/Stat';
 
 const statusTone: Record<DiscountStatus, BadgeTone> = { active: 'success', scheduled: 'info', expired: 'neutral', used_up: 'neutral', paused: 'warning' };
 const kindIcon = { code: TagIcon, automatic: SparklesIcon, referral: UsersIcon };
@@ -107,31 +109,23 @@ export function Discounts() {
         </div> :
 
       <>
-          <dl className="mt-8 flex flex-wrap gap-x-10 gap-y-4 border-b border-line pb-6">
-            <div>
-              <dt className="text-caption text-fg-subtle">Discounts given</dt>
-              <dd className="mt-1 text-[1.75rem] font-semibold leading-none tracking-[-0.02em] tabular-nums text-fg">{formatNgn(given)}</dd>
-            </div>
-            <div>
-              <dt className="text-caption text-fg-subtle">Active now</dt>
-              <dd className="mt-1 text-heading font-semibold tabular-nums text-fg">{live.length}</dd>
-            </div>
-            <div>
-              <dt className="text-caption text-fg-subtle">Orders with a discount</dt>
-              <dd className="mt-1 text-heading font-semibold tabular-nums text-fg">{rows.reduce((t, r) => t + r.uses, 0)}</dd>
-            </div>
-          </dl>
+          <StatGroup columns={3} className="mt-8 items-end border-b border-line pb-6">
+            <Stat primary label="Discounts given" value={formatNgn(given)} />
+            <Stat label="Active now" value={live.length} />
+            <Stat label="Orders with a discount" value={rows.reduce((t, r) => t + r.uses, 0)} />
+          </StatGroup>
 
-          <div className="mt-6 grid gap-8 xl:grid-cols-[minmax(0,1fr)_300px]">
+          <div className="mt-8 grid items-start gap-8 xl:grid-cols-[minmax(0,1fr)_300px]">
             <DataTable caption="Discounts" rows={rows} columns={columns} filterText={(r) => `${r.code} ${r.title} ${r.referrerName ?? ''}`} filterPlaceholder="Search codes" emptyTitle="No discounts match" />
-            <aside aria-labelledby="referrers-heading">
-              <h2 id="referrers-heading" className="text-label font-semibold text-fg">
-                Top referrers
-              </h2>
+            <Card
+            id="referrers"
+            title="Top referrers"
+            footer={<p className="text-caption text-fg-subtle">Rewards are notes for you to honour. KUBICU doesn’t pay anything out.</p>}>
+            
               {referrals.length === 0 ?
-            <p className="mt-2 text-caption text-fg-muted">Give a regular customer their own code. Each order they send shows up here.</p> :
+            <p className="text-caption text-fg-muted">Give a regular customer their own code. Each order they send shows up here.</p> :
 
-            <ol className="mt-3 flex flex-col divide-y divide-line">
+            <ol className="-my-2.5 flex flex-col divide-y divide-line">
                   {referrals.slice(0, 5).map((r) =>
               <li key={r.id} className="flex items-center justify-between gap-3 py-2.5">
                       <span className="min-w-0">
@@ -145,8 +139,7 @@ export function Discounts() {
               )}
                 </ol>
             }
-              <p className="mt-3 text-caption text-fg-subtle">Rewards are notes for you to honour. KUBICU doesn’t pay anything out.</p>
-            </aside>
+            </Card>
           </div>
         </>
       }

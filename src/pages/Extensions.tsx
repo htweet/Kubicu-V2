@@ -16,6 +16,7 @@ import { averageRating, extensionById, extensionCategories, extensions } from '.
 import { plans } from '../data/plans';
 import { formatNgn } from '../utils/format';
 import { cn } from '../utils/cn';
+import { Section } from '../components/ui/layout/Section';
 
 type View = 'browse' | 'installed';
 
@@ -49,11 +50,8 @@ export function Extensions() {
       <PageHeader title="Extensions" context={current.name} description="Add features to your workspace. Every extension is built by KUBICU or a partner we’ve reviewed, and shows exactly what it can do before you install." />
 
       {showPicks &&
-      <section aria-labelledby="ext-picks" className="mt-8">
-          <h2 id="ext-picks" className="text-label font-semibold text-fg">
-            Staff picks
-          </h2>
-          <ul className="mt-3 grid gap-4 md:grid-cols-3">
+      <Section id="ext-picks" title="Staff picks" description="Chosen by the KUBICU team for most new workspaces." className="mt-8">
+          <ul className="grid gap-4 md:grid-cols-3">
             {picks.map((e) =>
           <li key={e.id}>
                 <button type="button" onClick={() => setOpen(e.id)} className="flex h-full w-full flex-col gap-3 rounded-lg border border-line bg-raised p-5 text-left transition-colors duration-150 hover:border-line-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
@@ -70,7 +68,7 @@ export function Extensions() {
               </li>
           )}
           </ul>
-        </section>
+        </Section>
       }
 
       <section aria-label="All extensions" className="mt-10">

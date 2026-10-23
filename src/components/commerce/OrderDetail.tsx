@@ -64,7 +64,7 @@ export function OrderDetail({ orderId, onClose }: {orderId: string | null;onClos
   const stepIndex = order.status === 'cancelled' || order.status === 'refunded' ? -1 : steps.findIndex((s) => s.status === order.status);
   const canCancel = ['new', 'paid', 'packing'].includes(order.status);
   const canRefund = (order.paymentStatus === 'paid' || order.paymentStatus === 'partially_refunded') && refundableNgn(order) > 0 && order.status !== 'cancelled';
-  const digitalOnly = order.items.every((i) => i.kind === 'digital');
+  const digitalOnly = order.items.every((i) => i.kind === 'digital' || i.kind === 'ticket');
 
   const advance = () => {
     if (!next) return;
@@ -184,7 +184,7 @@ export function OrderDetail({ orderId, onClose }: {orderId: string | null;onClos
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-label font-semibold text-fg">{i.name}</p>
                     <p className="text-caption text-fg-subtle">
-                      {[i.variantLabel, i.kind === 'digital' ? 'Digital download' : null, `${i.qty} × ${formatNgn(i.unitPriceNgn)}`].filter(Boolean).join(' · ')}
+                      {[i.variantLabel, i.kind === 'digital' ? 'Digital download' : i.kind === 'ticket' ? 'Event ticket' : null, `${i.qty} × ${formatNgn(i.unitPriceNgn)}`].filter(Boolean).join(' · ')}
                     </p>
                   </div>
                   <span className="text-label font-semibold tabular-nums text-fg">{formatNgn(i.unitPriceNgn * i.qty)}</span>
@@ -215,7 +215,7 @@ export function OrderDetail({ orderId, onClose }: {orderId: string | null;onClos
                 Fulfilment
               </h3>
               <p className="mt-1 text-label font-semibold text-fg">
-                {order.fulfilment.method === 'pickup' ? 'Pickup' : order.fulfilment.method === 'digital' ? 'Download link' : `Delivery · ${order.fulfilment.zoneName}`}
+                {order.fulfilment.method === 'pickup' ? 'Pickup' : order.fulfilment.method === 'tickets' ? `Event tickets · ${order.tickets?.length ?? 0} issued` : order.fulfilment.method === 'digital' ? 'Download link' : `Delivery · ${order.fulfilment.zoneName}`}
               </p>
               {order.fulfilment.address && <p className="text-label text-fg-muted">{order.fulfilment.address}</p>}
               {order.fulfilment.eta && <p className="text-caption text-fg-subtle">Estimated {order.fulfilment.eta}</p>}

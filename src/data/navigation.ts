@@ -13,7 +13,9 @@ import {
   SettingsIcon,
   ImagesIcon,
   SplitIcon,
-  LayoutTemplateIcon } from
+  LayoutTemplateIcon,
+  ClipboardListIcon,
+  HandCoinsIcon } from
 'lucide-react';
 
 export interface NavItem {
@@ -33,9 +35,11 @@ export const workspaceNav: NavItem[] = [
 { id: 'canvas', label: 'Canvas', to: '/app/canvas', icon: PenToolIcon, group: 'build' },
 { id: 'media', label: 'Media', to: '/app/media', icon: ImagesIcon, group: 'build' },
 { id: 'templates', label: 'Templates', to: '/app/templates', icon: LayoutTemplateIcon, group: 'build' },
+{ id: 'opportunities', label: 'Opportunities', to: '/app/opportunities', icon: HandCoinsIcon, group: 'business' },
 { id: 'commerce', label: 'Commerce', to: '/app/commerce', icon: ShoppingBagIcon, group: 'business' },
 { id: 'bookings', label: 'Bookings', to: '/app/bookings', icon: CalendarIcon, group: 'business' },
 { id: 'audience', label: 'Audience', to: '/app/audience', icon: UsersIcon, group: 'business' },
+{ id: 'forms', label: 'Forms', to: '/app/forms', icon: ClipboardListIcon, group: 'business' },
 { id: 'automations', label: 'Automations', to: '/app/automations', icon: WorkflowIcon, group: 'business' },
 { id: 'analytics', label: 'Analytics', to: '/app/analytics', icon: BarChart3Icon, group: 'business' },
 { id: 'intentflow', label: 'IntentFlow', to: '/app/intentflow', icon: SplitIcon, group: 'business' },

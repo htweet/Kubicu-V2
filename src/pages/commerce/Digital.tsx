@@ -19,6 +19,8 @@ import { UpgradeButton } from '../../components/ui/UpgradeButton';
 import { Dialog } from '../../components/ui/Dialog';
 import { ProductEditor } from '../../components/commerce/ProductEditor';
 import { ProductStatusBadge, SampleTag } from '../../components/commerce/StatusBadges';
+import { Card } from '../../components/ui/layout/Card';
+import { Section } from '../../components/ui/layout/Section';
 
 const fileBadge = {
   processing: <Badge tone="neutral">Uploading</Badge>,
@@ -83,18 +85,38 @@ export function Digital() {
           <EmptyState icon={FileIcon} title="No digital products yet" description="E-books, presets, patterns, templates or courses — upload once and every buyer gets their own link." action={<Button leadingIcon={PlusIcon} onClick={() => setParams({ new: '1' })}>Add digital product</Button>} />
         </div> :
 
-      <div className="mt-8 grid gap-10 xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
-          <section aria-label="Digital products">
-            <ul className="flex flex-col divide-y divide-line rounded-lg border border-line bg-raised">
+      <div className="mt-8 grid items-start gap-8 xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+          <Card
+          id="digital-files"
+          emphasis="primary"
+          title="Files for sale"
+          description={`${digital.length} ${digital.length === 1 ? 'product' : 'products'}`}
+          body="flush"
+          footer={
+          <div>
+                <div className="flex items-baseline justify-between gap-3">
+                  <p className="text-label font-semibold text-fg">Storage</p>
+                  <p className="text-caption tabular-nums text-fg-subtle">
+                    {formatBytes(used)} of {formatBytes(STORAGE_LIMIT_BYTES)}
+                  </p>
+                </div>
+                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-sunken" role="progressbar" aria-label="Storage used" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(usedPct)}>
+                  <div className={usedPct > 85 ? 'h-full bg-warning' : 'h-full bg-action'} style={{ width: `${Math.max(usedPct, 1)}%` }} />
+                </div>
+                <p className="mt-2 text-caption text-fg-subtle">Includes old versions. Bandwidth isn’t metered in this prototype.</p>
+              </div>
+          }>
+          
+            <ul className="flex flex-col divide-y divide-line">
               {digital.map((p) => {
               const asset = p.digital!;
               const sold = buyers(p).length;
               return (
-                <li key={p.id} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
+                <li key={p.id} className="grid grid-cols-[3rem_minmax(0,1fr)] items-start gap-x-4 gap-y-3 px-5 py-4 sm:grid-cols-[3rem_minmax(0,1fr)_auto] sm:items-center md:px-6">
                     <span aria-hidden className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-sunken text-fg-muted">
-                      <FileIcon size={20} />
+                      <FileIcon size={20} strokeWidth={2.25} />
                     </span>
-                    <div className="min-w-0 flex-1">
+                    <div className="min-w-0">
                       <button type="button" onClick={() => setParams({ edit: p.id })} className="flex items-center gap-2 text-left text-label font-semibold text-fg hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
                         {p.name}
                         {p.sample && <SampleTag />}
@@ -106,44 +128,29 @@ export function Digital() {
                         {[asset.downloadLimit ? `${asset.downloadLimit} downloads` : 'Unlimited downloads', asset.expiryDays ? `${asset.expiryDays}-day link` : 'No expiry', `${sold} sold`].join(' · ')}
                       </p>
                     </div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <ProductStatusBadge product={p} />
-                      {fileBadge[asset.status]}
+                    <div className="col-span-2 flex flex-col gap-2 sm:col-span-1 sm:items-end">
                       <span className="text-label font-semibold tabular-nums text-fg">{p.priceNgn !== null ? formatNgn(p.priceNgn) : '—'}</span>
+                      <div className="flex flex-wrap items-center gap-1.5 sm:justify-end">
+                        <ProductStatusBadge product={p} />
+                        {fileBadge[asset.status]}
+                      </div>
+                      {sold > 0 && asset.version > 1 &&
+                    <Button size="sm" variant="tertiary" leadingIcon={BellIcon} onClick={() => setNotify(p)}>
+                          Tell buyers about v{asset.version}
+                        </Button>
+                    }
                     </div>
-                    {sold > 0 && asset.version > 1 &&
-                  <Button size="sm" variant="tertiary" leadingIcon={BellIcon} onClick={() => setNotify(p)}>
-                        Tell buyers about v{asset.version}
-                      </Button>
-                  }
                   </li>);
 
             })}
             </ul>
+          </Card>
 
-            <div className="mt-6 rounded-md border border-line p-4">
-              <div className="flex items-baseline justify-between gap-3">
-                <p className="text-label font-semibold text-fg">Storage</p>
-                <p className="text-caption tabular-nums text-fg-subtle">
-                  {formatBytes(used)} of {formatBytes(STORAGE_LIMIT_BYTES)}
-                </p>
-              </div>
-              <div className="mt-2 h-2 overflow-hidden rounded-full bg-sunken" role="progressbar" aria-label="Storage used" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(usedPct)}>
-                <div className={usedPct > 85 ? 'h-full bg-warning' : 'h-full bg-action'} style={{ width: `${Math.max(usedPct, 1)}%` }} />
-              </div>
-              <p className="mt-2 text-caption text-fg-subtle">Includes old versions. Bandwidth isn’t metered in this prototype.</p>
-            </div>
-          </section>
-
-          <section aria-labelledby="access-heading">
-            <h2 id="access-heading" className="text-heading font-semibold text-fg">
-              Who has access
-            </h2>
-            <p className="mt-0.5 text-caption text-fg-subtle">Each buyer’s link, downloads used and status.</p>
+          <Section id="access" title="Who has access" description="Each buyer’s link, downloads used and status.">
             {access.length === 0 ?
-          <p className="mt-4 text-label text-fg-muted">No one has bought a file yet.</p> :
+          <p className="text-label text-fg-muted">No one has bought a file yet.</p> :
 
-          <ul className="mt-4 flex flex-col divide-y divide-line border-y border-line">
+          <ul className="flex flex-col divide-y divide-line border-y border-line">
                 {access.map((a) => {
               const limit = a.product?.digital?.downloadLimit;
               return (
@@ -165,7 +172,7 @@ export function Digital() {
             })}
               </ul>
           }
-          </section>
+          </Section>
         </div>
       }
 

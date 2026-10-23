@@ -7,25 +7,28 @@ interface SelectInputProps<T extends string> {
   id: string;
   label: string;
   value: T;
-  options: {value: T;label: string;}[];
+  options: {value: T;label: string;disabled?: boolean;}[];
   onChange: (value: T) => void;
   hint?: string;
+  error?: string;
   disabled?: boolean;
 }
 
-export function SelectInput<T extends string>({ id, label, value, options, onChange, hint, disabled }: SelectInputProps<T>) {
+export function SelectInput<T extends string>({ id, label, value, options, onChange, hint, error, disabled }: SelectInputProps<T>) {
   return (
-    <Field id={id} label={label} hint={hint}>
+    <Field id={id} label={label} hint={hint} error={error}>
       <div className="relative">
         <select
           id={id}
           value={value}
           disabled={disabled}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? `${id}-error` : hint ? `${id}-hint` : undefined}
           onChange={(e) => onChange(e.target.value as T)}
           className={cn(fieldControlClass, 'h-10 appearance-none pr-9')}>
           
           {options.map((o) =>
-          <option key={o.value} value={o.value}>
+          <option key={o.value} value={o.value} disabled={o.disabled}>
               {o.label}
             </option>
           )}

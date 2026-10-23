@@ -15,6 +15,7 @@ import { ExtendedContentFields } from './ExtendedContentFields';
 import { ProductFields } from './ProductFields';
 import { BookingFields } from './BookingFields';
 import { SubscriptionFields } from './SubscriptionFields';
+import { FormBlockFields } from './FormBlockFields';
 
 interface ContentFieldsProps {
   block: Block;
@@ -133,12 +134,21 @@ export function ContentFields({ block, issues }: ContentFieldsProps) {
               error={err('url')}
               onChange={(url, meta) => set(meta?.alt && !c.alt.trim() ? { url, alt: meta.alt } : { url }, 'url')} />
             
-          <TextInput
+          {!c.decorative &&
+            <TextInput
               id={id('alt')}
               label="Image description"
               value={c.alt}
               hint={warn('alt') ?? 'Describe what’s in the photo for screen readers.'}
               onChange={(e) => set({ alt: e.target.value }, 'alt')} />
+
+            }
+          <Switch
+              id={id('decorative')}
+              label="Decorative only"
+              description="Turn on if the image adds no information (a texture or divider). Screen readers will skip it."
+              checked={!!c.decorative}
+              onChange={(decorative) => set({ decorative }, 'decorative')} />
             
           <TextInput id={id('caption')} label="Caption" optional value={c.caption} onChange={(e) => set({ caption: e.target.value }, 'caption')} />
           <Field id={id('aspect')} label="Shape">
@@ -256,6 +266,8 @@ export function ContentFields({ block, issues }: ContentFieldsProps) {
       return <BookingFields block={block} issues={issues} />;
     case 'subscription':
       return <SubscriptionFields block={block} issues={issues} />;
+    case 'form':
+      return <FormBlockFields block={block} issues={issues} />;
     case 'whatsapp':{
         const c = block.content;
         const set = setter('whatsapp');

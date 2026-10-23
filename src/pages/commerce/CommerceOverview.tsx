@@ -11,6 +11,10 @@ import { isLowStock, isSoldOut, totalStock } from '../../utils/commerce/catalog'
 import { orderMoney } from '../../utils/commerce/money';
 import { formatNgn, formatRelative } from '../../utils/format';
 import { cn } from '../../utils/cn';
+import { Card } from '../../components/ui/layout/Card';
+import { CardLink } from '../../components/ui/layout/CardLink';
+import { List, ListRow } from '../../components/ui/layout/ListRow';
+import { Stat, StatGroup } from '../../components/ui/layout/Stat';
 import type { Order } from '../../types/commerce';
 
 const queue: {id: string;label: string;match: (o: Order) => boolean;hint: string;}[] = [
@@ -35,7 +39,7 @@ export function CommerceOverview() {
     );
   }, [data.orders, weekAgo]);
 
-  const stockAlerts = data.products.filter((p) => p.status === 'active' && (isSoldOut(p) || isLowStock(p)));
+  const stockAlerts = data.products.filter((p) => p.status === 'active' && p.kind !== 'ticket' && (isSoldOut(p) || isLowStock(p)));
   const groups = queue.map((q) => ({ ...q, orders: data.orders.filter(q.match) }));
   const totalActionable = groups.reduce((s, g) => s + g.orders.length, 0);
 
@@ -107,19 +111,15 @@ export function CommerceOverview() {
         </section>
       }
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)]">
-        <section aria-labelledby="queue-heading" className="rounded-lg border border-line bg-raised shadow-1">
-          <div className="flex items-center justify-between gap-3 border-b border-line px-5 py-4 md:px-6">
-            <div>
-              <h2 id="queue-heading" className="text-heading font-semibold text-fg">
-                Orders needing action
-              </h2>
-              <p className="text-caption text-fg-subtle">{totalActionable === 0 ? 'You’re all caught up.' : `${totalActionable} order${totalActionable === 1 ? '' : 's'} across ${groups.filter((g) => g.orders.length).length} stages`}</p>
-            </div>
-            <Link to="/app/commerce/orders" className="inline-flex items-center gap-1 text-label font-semibold text-action hover:underline">
-              All orders <ArrowRightIcon size={14} aria-hidden />
-            </Link>
-          </div>
+      <div className="mt-8 grid items-start gap-6 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)]">
+        <Card
+          id="queue"
+          emphasis="primary"
+          body="flush"
+          title="Orders needing action"
+          description={totalActionable === 0 ? 'You’re all caught up.' : `${totalActionable} order${totalActionable === 1 ? '' : 's'} across ${groups.filter((g) => g.orders.length).length} stages`}
+          actions={<CardLink to="/app/commerce/orders">All orders</CardLink>}>
+          
           {totalActionable === 0 ?
           <p className="px-6 py-10 text-center text-label text-fg-muted">New orders from your page will appear here.</p> :
 
@@ -127,96 +127,69 @@ export function CommerceOverview() {
               {groups.
             filter((g) => g.orders.length).
             map((g) =>
-            <div key={g.id} className="px-5 py-4 md:px-6">
-                    <div className="flex items-baseline justify-between gap-3">
+            <div key={g.id} className="py-2">
+                    <div className="flex items-baseline justify-between gap-3 px-5 pb-1 pt-3 md:px-6">
                       <h3 className="text-label font-semibold text-fg">
                         {g.label} <span className="ml-1 tabular-nums text-fg-subtle">{g.orders.length}</span>
                       </h3>
-                      <span className="text-caption text-fg-subtle">{g.hint}</span>
+                      <span className="hidden text-caption text-fg-subtle sm:inline">{g.hint}</span>
                     </div>
-                    <ul className="mt-2 flex flex-col">
+                    <List>
                       {g.orders.slice(0, 4).map((o) =>
-                <li key={o.id}>
-                          <Link
-                    to={`/app/commerce/orders?order=${o.id}`}
-                    className="group -mx-2 flex items-center gap-3 rounded-md px-2 py-2.5 transition-colors duration-150 hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-                    
-                            <span className="w-12 shrink-0 font-mono text-caption text-fg-subtle">#{o.number}</span>
-                            <span className="min-w-0 flex-1">
-                              <span className="flex items-center gap-2">
-                                <span className="truncate text-label font-semibold text-fg">{o.customer.name}</span>
-                                {o.sample && <SampleTag />}
-                              </span>
-                              <span className="block truncate text-caption text-fg-subtle">
-                                {o.items.map((i) => `${i.qty}× ${i.name}`).join(', ')} · {formatRelative(o.createdAt)}
-                              </span>
+                <ListRow
+                  key={o.id}
+                  to={`/app/commerce/orders?order=${o.id}`}
+                  leading={<span className="w-12 font-mono text-caption text-fg-subtle">#{o.number}</span>}
+                  title={
+                  <span className="flex items-center gap-2">
+                              <span className="truncate">{o.customer.name}</span>
+                              {o.sample && <SampleTag />}
                             </span>
-                            <span className="hidden sm:block">{o.status === 'new' ? <PaymentBadge status={o.paymentStatus} /> : <OrderStatusBadge status={o.status} pickup={o.fulfilment.method === 'pickup'} />}</span>
-                            <span className="w-20 shrink-0 text-right text-label font-semibold tabular-nums text-fg">{formatNgn(orderMoney(o).gross)}</span>
-                          </Link>
-                        </li>
+                  }
+                  meta={`${o.items.map((i) => `${i.qty}× ${i.name}`).join(', ')} · ${formatRelative(o.createdAt)}`}
+                  trailing={
+                  <>
+                              <span className="hidden sm:block">{o.status === 'new' ? <PaymentBadge status={o.paymentStatus} /> : <OrderStatusBadge status={o.status} pickup={o.fulfilment.method === 'pickup'} />}</span>
+                              <span className="w-20 text-label font-semibold tabular-nums text-fg">{formatNgn(orderMoney(o).gross)}</span>
+                            </>
+                  } />
+
                 )}
-                    </ul>
+                    </List>
                   </div>
             )}
             </div>
           }
-        </section>
+        </Card>
 
         <div className="flex flex-col gap-6">
-          <section aria-labelledby="stock-heading" className="rounded-lg border border-line bg-raised p-5">
-            <div className="flex items-center justify-between gap-3">
-              <h2 id="stock-heading" className="flex items-center gap-2 text-heading font-semibold text-fg">
-                <PackageIcon size={18} strokeWidth={2.25} className="text-fg-subtle" aria-hidden />
-                Stock to watch
-              </h2>
-              <Link to="/app/commerce/inventory" className="text-label font-semibold text-action hover:underline">
-                Inventory
-              </Link>
-            </div>
+          <Card id="stock" icon={PackageIcon} title="Stock to watch" body="flush" actions={<CardLink to="/app/commerce/inventory">Inventory</CardLink>}>
             {stockAlerts.length === 0 ?
-            <p className="mt-3 text-label text-fg-muted">Nothing is low or sold out.</p> :
+            <p className="px-5 py-5 text-label text-fg-muted md:px-6">Nothing is low or sold out.</p> :
 
-            <ul className="mt-3 flex flex-col divide-y divide-line">
+            <List>
                 {stockAlerts.slice(0, 5).map((p) =>
-              <li key={p.id} className="flex items-center justify-between gap-3 py-2.5">
-                    <Link to={`/app/commerce/inventory?product=${p.id}`} className="min-w-0 truncate text-label font-medium text-fg hover:underline">
-                      {p.name}
-                    </Link>
-                    <span className={cn('shrink-0 text-caption font-semibold tabular-nums', isSoldOut(p) ? 'text-danger' : 'text-warning')}>
-                      {isSoldOut(p) ? 'Sold out' : `${totalStock(p)} left`}
-                    </span>
-                  </li>
-              )}
-              </ul>
-            }
-          </section>
+              <ListRow
+                key={p.id}
+                to={`/app/commerce/inventory?product=${p.id}`}
+                title={p.name}
+                trailing={<span className={cn('text-caption font-semibold tabular-nums', isSoldOut(p) ? 'text-danger' : 'text-warning')}>{isSoldOut(p) ? 'Sold out' : `${totalStock(p)} left`}</span>} />
 
-          <section aria-labelledby="week-heading" className="rounded-lg border border-line bg-raised p-5">
-            <div className="flex items-center justify-between gap-3">
-              <h2 id="week-heading" className="flex items-center gap-2 text-heading font-semibold text-fg">
-                <WalletIcon size={18} strokeWidth={2.25} className="text-fg-subtle" aria-hidden />
-                Last 7 days
-              </h2>
-              <Link to="/app/commerce/reports" className="text-label font-semibold text-action hover:underline">
-                Report
-              </Link>
-            </div>
-            <p className="mt-3 text-[1.75rem] font-semibold leading-none tracking-[-0.02em] tabular-nums text-fg">{formatNgn(week.net)}</p>
-            <p className="mt-1 text-caption text-fg-subtle">You receive, from {week.count} paid order{week.count === 1 ? '' : 's'}</p>
-            <dl className="mt-4 grid grid-cols-3 gap-3 border-t border-line pt-3">
-              {[
-              ['Customers paid', week.gross],
-              ['Fees', week.fees],
-              ['Refunds', week.refunds]].
-              map(([label, value]) =>
-              <div key={label as string}>
-                  <dt className="text-caption text-fg-subtle">{label}</dt>
-                  <dd className="mt-0.5 text-label font-semibold tabular-nums text-fg">{formatNgn(value as number)}</dd>
-                </div>
               )}
+              </List>
+            }
+          </Card>
+
+          <Card id="week" icon={WalletIcon} title="Last 7 days" actions={<CardLink to="/app/commerce/reports">Report</CardLink>}>
+            <dl>
+              <Stat primary label={`You receive, from ${week.count} paid order${week.count === 1 ? '' : 's'}`} value={formatNgn(week.net)} />
             </dl>
-          </section>
+            <StatGroup columns={3} divided className="mt-4 !grid-cols-3">
+              <Stat label="Customers paid" value={<span className="text-label">{formatNgn(week.gross)}</span>} />
+              <Stat label="Fees" value={<span className="text-label">{formatNgn(week.fees)}</span>} />
+              <Stat label="Refunds" value={<span className="text-label">{formatNgn(week.refunds)}</span>} />
+            </StatGroup>
+          </Card>
 
           <Link
             to="/app/commerce/settings"

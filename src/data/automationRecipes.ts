@@ -4,7 +4,7 @@ export const triggerLabels: Record<TriggerId, {label: string;hint: string;}> = {
   order_paid: { label: 'An order is paid', hint: 'From checkout on your page' },
   booking_created: { label: 'Someone books', hint: 'Any service' },
   checkout_abandoned: { label: 'A checkout is left unfinished', hint: 'Details entered, no payment after 1 hour' },
-  lead_submitted: { label: 'A form is submitted', hint: 'Enquiry or lead form blocks' },
+  lead_submitted: { label: 'A form is submitted', hint: 'Lead form blocks, or any form from the Forms add-on' },
   stock_low: { label: 'Stock runs low', hint: 'Below a product’s alert level' },
   sub_started: { label: 'A subscription starts', hint: 'New subscriber or free trial' },
   sub_failed: { label: 'A subscription payment fails', hint: 'Before automatic retries' },

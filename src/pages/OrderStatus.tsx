@@ -13,6 +13,7 @@ import { formatNgn, formatTimestamp, whatsappLink } from '../utils/format';
 import { Unavailable } from './PublicPage';
 import { ReferralShareCard } from '../components/dealroom/ReferralShareCard';
 import { roomProgress, roomReferrers } from '../utils/dealRoom';
+import { OrderTickets } from '../components/tickets/OrderTickets';
 
 /** Visitor-facing order confirmation and receipt. */
 export function OrderStatus() {
@@ -39,6 +40,8 @@ export function OrderStatus() {
   'We’re waiting for the payment provider to confirm. You’ll get a confirmation when it does.' :
   order.status === 'cancelled' ?
   'Any payment has been refunded to your original payment method.' :
+  order.fulfilment.method === 'tickets' ?
+  'Your tickets are below and in your receipt email. Open each one to show its QR code at the door.' :
   order.fulfilment.method === 'digital' ?
   'Your files are ready. Your download link is below and in your receipt email.' :
   order.fulfilment.method === 'pickup' ?
@@ -54,7 +57,7 @@ export function OrderStatus() {
           </Link>
           <div className="flex flex-col items-start gap-3">
             <Icon size={30} aria-hidden />
-            <CheckoutHeading theme={t} sub={sub}>
+            <CheckoutHeading theme={t} sub={sub} level={1}>
               {title}
             </CheckoutHeading>
           </div>
@@ -89,7 +92,7 @@ export function OrderStatus() {
               }
             </div>
             <div className="border-t pt-3 text-[13.5px]" style={{ borderColor: mix(t.text, 12) }}>
-              <p className="font-semibold">{order.fulfilment.method === 'pickup' ? 'Pickup' : order.fulfilment.method === 'digital' ? 'Digital delivery' : `Delivery to ${order.fulfilment.zoneName}`}</p>
+              <p className="font-semibold">{order.fulfilment.method === 'pickup' ? 'Pickup' : order.fulfilment.method === 'tickets' ? 'Event tickets' : order.fulfilment.method === 'digital' ? 'Digital delivery' : `Delivery to ${order.fulfilment.zoneName}`}</p>
               {order.fulfilment.address && <p style={muted}>{order.fulfilment.address}</p>}
               <p style={muted}>
                 {order.customer.name} · {order.customer.phone}
@@ -97,6 +100,8 @@ export function OrderStatus() {
               </p>
             </div>
           </section>
+
+          {order.tickets && order.tickets.length > 0 && !pending && <OrderTickets theme={t} tickets={order.tickets} data={commerce.data} handle={handle} />}
 
           {order.held && !refunded &&
           <p className="rounded-md px-3 py-2.5 text-[13.5px] font-medium leading-snug" style={{ background: mix(t.text, 6) }}>

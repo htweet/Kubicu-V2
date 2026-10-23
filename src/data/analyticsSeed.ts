@@ -77,6 +77,13 @@ export function sampleAnalytics(now = Date.now()): AnalyticsEvent[] {
       }
       if (rand() < 0.012 * boost) ev('lead', 70);
       if (rand() < 0.01) ev('signup', 80);
+      if (rand() < 0.04) {
+        ev('ticket_select', 35, { label: 'Adaeze Atelier Trunk Show' });
+        if (rand() < 0.7) {
+          ev('ticket_checkout', 55);
+          if (rand() < 0.68 * Math.min(boost, 1.2)) ev('ticket_paid', 120, { valueNgn: rand() < 0.3 ? 25000 : 10000 });
+        }
+      }
     }
   }
   return out.sort((a, b) => Date.parse(a.at) - Date.parse(b.at));

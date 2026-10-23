@@ -8,6 +8,9 @@ import { Segmented } from '../../components/ui/Segmented';
 import { DataTable, type DataColumn } from '../../components/ui/DataTable';
 import { IllustrativeTag } from '../../components/ui/IllustrativeTag';
 import { SampleTag } from '../../components/commerce/StatusBadges';
+import { Card } from '../../components/ui/layout/Card';
+import { PageStack, Section } from '../../components/ui/layout/Section';
+import { Stat, StatGroup } from '../../components/ui/layout/Stat';
 import { orderMoney } from '../../utils/commerce/money';
 import { mrr } from '../../utils/commerce/subscriptions';
 import { downloadCsv, toCsv } from '../../utils/csv';
@@ -94,58 +97,47 @@ export function Reports() {
           </Button>
         } />
       
-      <div className="mt-6">
-        <Segmented<Period> ariaLabel="Period" value={period} onChange={setPeriod} options={[{ value: '7', label: '7 days' }, { value: '30', label: '30 days' }, { value: '90', label: '90 days' }, { value: 'all', label: 'All time' }]} />
-      </div>
+      <PageStack>
+      <Segmented<Period> ariaLabel="Period" value={period} onChange={setPeriod} options={[{ value: '7', label: '7 days' }, { value: '30', label: '30 days' }, { value: '90', label: '90 days' }, { value: 'all', label: 'All time' }]} />
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-        <section aria-labelledby="net-heading" className="rounded-lg border border-line bg-raised p-6">
-          <h2 id="net-heading" className="text-label font-semibold text-fg-muted">
-            You receive
-          </h2>
-          <p className="mt-2 text-[2.5rem] font-semibold leading-none tracking-[-0.03em] tabular-nums text-fg">{formatNgn(totals.net)}</p>
-          <p className="mt-2 text-caption text-fg-subtle">From {orders.length} paid order{orders.length === 1 ? '' : 's'} · test mode</p>
-          <dl className="mt-6 flex flex-col border-t border-line pt-3">
-            {lines.map(([label, value]) =>
-            <div key={label} className="flex items-baseline justify-between gap-3 py-1.5">
-                <dt className={label.startsWith('of') || label.startsWith('after') ? 'pl-3 text-caption text-fg-subtle' : 'text-label text-fg-muted'}>{label}</dt>
-                <dd className="text-label tabular-nums text-fg">{value < 0 ? `−${formatNgn(-value)}` : formatNgn(value)}</dd>
-              </div>
-            )}
-          </dl>
-          <p className="mt-3 flex items-center gap-1.5 text-caption text-fg-subtle">
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <Card id="net" emphasis="primary" title="You receive" description={`From ${orders.length} paid order${orders.length === 1 ? '' : 's'} · test mode`} footer={
+          <p className="flex items-center gap-1.5 text-caption text-fg-subtle">
             Fee rates are illustrative <IllustrativeTag note="Provider 1.5% + ₦100 (waived under ₦2,500, capped ₦2,000); KUBICU fee by plan. Not final." />
           </p>
-        </section>
-
-        <section aria-labelledby="top-heading" className="flex flex-col gap-6 rounded-lg border border-line bg-raised p-6">
-          {(data.subscriptions ?? []).length > 0 &&
-          <div aria-labelledby="recurring-heading" className="border-b border-line pb-5">
-              <h2 id="recurring-heading" className="text-label font-semibold text-fg-muted">
-                Recurring revenue
-              </h2>
-              <div className="mt-2 flex flex-wrap items-baseline gap-x-6 gap-y-1">
-                <p className="text-heading font-semibold tabular-nums text-fg">
-                  {formatNgn(mrr(data))}
-                  <span className="text-label font-normal text-fg-muted"> /month</span>
-                </p>
-                <p className="text-label tabular-nums text-fg-muted">{formatNgn(subPaid)} taken from subscribers in this period</p>
-              </div>
-              <p className="mt-1 text-caption text-fg-subtle">Product box renewals are also counted as orders above. Memberships are subscription payments only.</p>
-            </div>
-          }
-          <div>
-          <h2 id="top-heading" className="text-label font-semibold text-fg-muted">
-            Best sellers
-          </h2>
-          {topProducts.length === 0 ?
-            <p className="mt-4 text-label text-fg-muted">No sales in this period.</p> :
-
-            <ol className="mt-4 flex flex-col gap-3">
-              {topProducts.map((p, i) => {
-                const pct = p.revenue / topProducts[0].revenue * 100;
+          }>
+          <p className="text-[2.5rem] font-semibold leading-none tracking-[-0.03em] tabular-nums text-fg">{formatNgn(totals.net)}</p>
+          <dl className="mt-6 flex flex-col divide-y divide-line border-t border-line">
+            {lines.map(([label, value]) => {
+                const sub = label.startsWith('of') || label.startsWith('after');
                 return (
-                  <li key={p.name}>
+                  <div key={label} className="flex items-baseline justify-between gap-3 py-2.5">
+                  <dt className={sub ? 'pl-3 text-caption text-fg-subtle' : 'text-label text-fg-muted'}>{label}</dt>
+                  <dd className={sub ? 'text-caption tabular-nums text-fg-muted' : 'text-label tabular-nums text-fg'}>{value < 0 ? `−${formatNgn(-value)}` : formatNgn(value)}</dd>
+                </div>);
+
+              })}
+          </dl>
+        </Card>
+
+        <div className="flex flex-col gap-6">
+          {(data.subscriptions ?? []).length > 0 &&
+            <Card id="recurring" title="Recurring revenue" description="Product box renewals also count as orders. Memberships are subscription payments only.">
+              <StatGroup columns={2}>
+                <Stat label="Monthly recurring" value={<>{formatNgn(mrr(data))}<span className="text-label font-normal text-fg-muted"> /mo</span></>} />
+                <Stat label="Taken this period" value={formatNgn(subPaid)} />
+              </StatGroup>
+            </Card>
+            }
+          <Card id="top" title="Best sellers" description="By revenue, refunded orders excluded">
+          {topProducts.length === 0 ?
+              <p className="text-label text-fg-muted">No sales in this period.</p> :
+
+              <ol className="flex flex-col gap-4">
+              {topProducts.map((p, i) => {
+                  const pct = p.revenue / topProducts[0].revenue * 100;
+                  return (
+                    <li key={p.name}>
                     <div className="flex items-baseline justify-between gap-3 text-label">
                       <span className="min-w-0 truncate font-medium text-fg">
                         <span className="mr-2 tabular-nums text-fg-subtle">{i + 1}</span>
@@ -160,21 +152,17 @@ export function Reports() {
                     </div>
                   </li>);
 
-              })}
+                })}
             </ol>
-            }
-          </div>
-        </section>
+              }
+          </Card>
+        </div>
       </div>
 
-      <section aria-labelledby="tx-heading" className="mt-10">
-        <h2 id="tx-heading" className="text-heading font-semibold text-fg">
-          Transactions
-        </h2>
-        <div className="mt-4">
-          <DataTable caption="Transactions" rows={orders} columns={columns} emptyTitle="No paid orders in this period" emptyDescription="Try a longer period." />
-        </div>
-      </section>
+      <Section id="tx" title="Transactions" description="Every paid order in the period, with fees and refunds on their own columns.">
+        <DataTable caption="Transactions" rows={orders} columns={columns} emptyTitle="No paid orders in this period" emptyDescription="Try a longer period." />
+      </Section>
+      </PageStack>
     </>);
 
 }

@@ -1,5 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { MotionConfig } from 'framer-motion';
+import { LiveAnnouncer } from './components/ui/LiveAnnouncer';
 import { AppearancePolicyProvider } from './contexts/AppearancePolicyContext';
 import { DirectionProvider } from './contexts/DirectionContext';
 import { EditorProvider } from './contexts/EditorContext';
@@ -32,6 +34,10 @@ import { AcceptInvite } from './pages/AcceptInvite';
 import { DealRoomSettler } from './components/shell/DealRoomSettler';
 import { SubscriptionRenewer } from './components/shell/SubscriptionRenewer';
 import { Subscriptions } from './pages/commerce/Subscriptions';
+import { Events } from './pages/commerce/Events';
+import { GuestList } from './pages/commerce/GuestList';
+import { CheckIn } from './pages/commerce/CheckIn';
+import { TicketPage } from './pages/TicketPage';
 import { SubscriptionPortal } from './pages/SubscriptionPortal';
 import { AdminMarketplace } from './pages/admin/AdminMarketplace';
 import { AppShell } from './components/shell/AppShell';
@@ -43,7 +49,7 @@ import { Home } from './pages/marketing/Home';
 import { Templates } from './pages/marketing/Templates';
 import { TemplateDetail } from './pages/marketing/TemplateDetail';
 import { Pricing } from './pages/marketing/Pricing';
-import { ComingSoon } from './pages/marketing/ComingSoon';
+import { InfoPage } from './pages/marketing/InfoPage';
 import { SignUp } from './pages/auth/SignUp';
 import { SignIn } from './pages/auth/SignIn';
 import { ResetPassword } from './pages/auth/ResetPassword';
@@ -64,6 +70,12 @@ import { Services } from './pages/bookings/Services';
 import { Availability } from './pages/bookings/Availability';
 import { Audience } from './pages/Audience';
 import { Automations } from './pages/Automations';
+import { FormsList } from './pages/forms/FormsList';
+import { Account } from './pages/Account';
+import { Opportunities } from './pages/Opportunities';
+import { EmailPreferences } from './pages/EmailPreferences';
+import { useAccountEffects } from './hooks/useAccountEffects';
+import { FormEditor } from './pages/forms/FormEditor';
 import { CommerceLayout } from './components/commerce/CommerceLayout';
 import { CommerceOverview } from './pages/commerce/CommerceOverview';
 import { Orders } from './pages/commerce/Orders';
@@ -78,6 +90,18 @@ import { CommerceSettings } from './pages/commerce/CommerceSettings';
 import { NotFound } from './pages/NotFound';
 import { AdminDesignSystem } from './pages/admin/AdminDesignSystem';
 import { AdminPlannedArea } from './pages/admin/AdminPlannedArea';
+import { AdminTenants } from './pages/admin/AdminTenants';
+import { AdminPages } from './pages/admin/AdminPages';
+import { AdminOrders } from './pages/admin/AdminOrders';
+import { AdminReporting } from './pages/admin/AdminReporting';
+import { AdminDataRequests } from './pages/admin/AdminDataRequests';
+import { AdminStaff } from './pages/admin/AdminStaff';
+import { AdminAppeals } from './pages/admin/AdminAppeals';
+import { AdminFlags } from './pages/admin/AdminFlags';
+import { AdminModeration } from './pages/admin/AdminModeration';
+import { AdminSupport } from './pages/admin/AdminSupport';
+import { AdminAudit } from './pages/admin/AdminAudit';
+import { AdminHealth } from './pages/admin/AdminHealth';
 
 type VisualDirectionOption = 'darkStudio' | 'inkCobalt' | 'inkViolet' | 'navyClay';
 type WorkspacePlanOption = 'free' | 'creator' | 'pro' | 'business' | 'agency' | 'enterprise';
@@ -95,7 +119,11 @@ interface AppProps {
 }
 
 export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', viewingAs = 'owner', simulateNextRenewal = 'succeeds' }: AppProps) {
+  // Personal text size and motion preferences (D80).
+  const { reduceMotion } = useAccountEffects();
   return (
+    // Every framer-motion animation follows the device's "reduce motion" setting (D76), or the account's "Always reduce".
+    <MotionConfig reducedMotion={reduceMotion ? 'always' : 'user'}>
     <BrowserRouter>
       <AppearancePolicyProvider initialDefault={visualDirection}>
         <WorkspaceProvider planControl={workspacePlan}>
@@ -106,7 +134,7 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
                 <Route path="templates" element={<Templates />} />
                 <Route path="templates/:id" element={<TemplateDetail />} />
                 <Route path="pricing" element={<Pricing />} />
-                <Route path="about/:topic" element={<ComingSoon />} />
+                <Route path="about/:topic" element={<InfoPage />} />
               </Route>
               <Route path="/signup" element={<SignUp />} />
               <Route path="/signin" element={<SignIn />} />
@@ -127,6 +155,8 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
                 </Route>
                 <Route path="audience" element={<Audience />} />
                 <Route path="automations" element={<Automations />} />
+                <Route path="forms" element={<FormsList />} />
+                <Route path="forms/:formId" element={<FormEditor />} />
                 <Route path="commerce" element={<CommerceLayout />}>
                   <Route index element={<CommerceOverview />} />
                   <Route path="orders" element={<Orders />} />
@@ -137,6 +167,9 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
                   <Route path="storefront" element={<Storefront />} />
                   <Route path="payments" element={<Payments />} />
                   <Route path="subscriptions" element={<Subscriptions />} />
+                  <Route path="events" element={<Events />} />
+                  <Route path="events/:eventId/guests" element={<GuestList />} />
+                  <Route path="events/:eventId/check-in" element={<CheckIn />} />
                   <Route path="reports" element={<Reports />} />
                   <Route path="settings" element={<CommerceSettings />} />
                 </Route>
@@ -150,6 +183,9 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
                 </Route>
                 <Route path="extensions" element={<Extensions />} />
                 <Route path="templates" element={<TemplatesMarket />} />
+                <Route path="opportunities" element={<Opportunities />} />
+                <Route path="account" element={<Account />} />
+                <Route path="account/:tab" element={<Account />} />
                 <Route path="settings" element={<Settings />} />
                 <Route path="settings/:tab" element={<Settings />} />
                 <Route path=":module" element={<PlannedModule />} />
@@ -160,6 +196,18 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
                 <Route index element={<Navigate to="design-system" replace />} />
                 <Route path="design-system" element={<AdminDesignSystem />} />
                 <Route path="modules" element={<AdminMarketplace />} />
+                <Route path="tenants" element={<AdminTenants />} />
+                <Route path="pages" element={<AdminPages />} />
+                <Route path="orders" element={<AdminOrders />} />
+                <Route path="reporting" element={<AdminReporting />} />
+                <Route path="data-requests" element={<AdminDataRequests />} />
+                <Route path="staff" element={<AdminStaff />} />
+                <Route path="appeals" element={<AdminAppeals />} />
+                <Route path="flags" element={<AdminFlags />} />
+                <Route path="moderation" element={<AdminModeration />} />
+                <Route path="support" element={<AdminSupport />} />
+                <Route path="audit" element={<AdminAudit />} />
+                <Route path="health" element={<AdminHealth />} />
                 <Route path=":area" element={<AdminPlannedArea />} />
               </Route>
 
@@ -170,8 +218,10 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
               <Route path="/p/:handle/:pagePath" element={<PublicPage />} />
             <Route path="/p/:handle/order/:orderId" element={<OrderStatus />} />
               <Route path="/p/:handle/download/:token" element={<DownloadPage />} />
+              <Route path="/p/:handle/ticket/:ticketId" element={<TicketPage />} />
               <Route path="/p/:handle/booking/:bookingId" element={<BookingStatus />} />
               <Route path="/p/:handle/subscription/:token" element={<SubscriptionPortal />} />
+              <Route path="/p/:handle/preferences/:contactId" element={<EmailPreferences />} />
 
               {/* Earlier addresses */}
               <Route path="/design-system" element={<Navigate to="/admin/design-system" replace />} />
@@ -181,10 +231,12 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
               <Route path="*" element={<NotFound />} />
             </Routes>
             <AppToaster />
+            <LiveAnnouncer />
           </WorkspaceScope>
         </WorkspaceProvider>
       </AppearancePolicyProvider>
-    </BrowserRouter>);
+    </BrowserRouter>
+    </MotionConfig>);
 
 }
 

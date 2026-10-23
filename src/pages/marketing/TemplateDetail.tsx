@@ -28,20 +28,22 @@ export function TemplateDetail() {
 
       <div className="mt-8 grid gap-12 lg:grid-cols-[minmax(0,1fr)_400px] lg:gap-16">
         <div className="order-2 flex justify-center lg:order-1">
-          <div className="w-full max-w-[400px] overflow-hidden rounded-[32px] border border-line-strong shadow-3">
-            <div className="h-[720px] overflow-y-auto" style={{ background: doc.theme.background }} tabIndex={0} aria-label={`Scrollable preview of ${example.name}`}>
+          <div className="nm-frame nm-glow w-full max-w-[400px] rounded-[32px]">
+          <div className="overflow-hidden rounded-[31px]">
+            <div className="scroll-quiet h-[720px] overflow-y-auto" style={{ background: doc.theme.background }} tabIndex={0} aria-label={`Scrollable preview of ${example.name}`}>
               <RenderPlanProvider plan={plans[example.plan]}>
                 <PageSurface theme={doc.theme}>
                   {doc.blocks.
-                  filter((b) => !b.visibility.hidden).
-                  map((block) =>
-                  <div key={block.id} className={spacingClass[block.layout.spacing]}>
+                    filter((b) => !b.visibility.hidden).
+                    map((block) =>
+                    <div key={block.id} className={spacingClass[block.layout.spacing]}>
                         <BlockRenderer block={block} theme={doc.theme} mode="live" />
                       </div>
-                  )}
+                    )}
                 </PageSurface>
               </RenderPlanProvider>
             </div>
+          </div>
           </div>
         </div>
 
@@ -49,7 +51,7 @@ export function TemplateDetail() {
           <p className="text-label font-medium text-fg-subtle">
             {example.category} · {example.city}
           </p>
-          <h1 className="mt-1 font-display text-[34px] font-semibold leading-tight tracking-[-0.026em] text-fg">{example.name}</h1>
+          <h1 className="mt-2 font-display text-[40px] font-semibold leading-[1.05] tracking-[-0.03em] text-fg">{example.name}</h1>
           <p className="mt-4 text-body text-fg-muted">{example.description}</p>
           <div className="mt-5 flex flex-wrap gap-1.5">
             {example.goals.map((g) =>
@@ -58,7 +60,7 @@ export function TemplateDetail() {
           </div>
 
           <div className="mt-8 flex flex-col gap-2 sm:flex-row lg:flex-col">
-            <Button size="lg" fullWidth onClick={() => navigate(`/start?kit=${example.id}`)}>
+            <Button size="lg" variant="brand" fullWidth onClick={() => navigate(`/start?kit=${example.id}`)}>
               Use this template
             </Button>
             <Button size="lg" variant="secondary" fullWidth trailingIcon={ExternalLinkIcon} onClick={() => navigate(`/p/${doc.handle}`)}>

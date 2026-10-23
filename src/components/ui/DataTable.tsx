@@ -342,12 +342,18 @@ function Checkbox({ checked, mixed, onChange, label }: {checked: boolean;mixed?:
       aria-checked={mixed ? 'mixed' : checked}
       aria-label={label}
       onClick={onChange}
-      className={cn(
-        'flex h-4 w-4 items-center justify-center rounded-[4px] border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
-        checked || mixed ? 'border-action bg-action text-action-fg' : 'border-line-strong bg-field'
-      )}>
+      // 24px hit area around a 16px box (WCAG 2.5.8, D76).
+      className="-m-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
       
-      {checked ? <CheckIcon size={11} strokeWidth={3} aria-hidden /> : mixed ? <MinusIcon size={11} strokeWidth={3} aria-hidden /> : null}
+      <span
+        aria-hidden
+        className={cn(
+          'flex h-4 w-4 items-center justify-center rounded-[4px] border',
+          checked || mixed ? 'border-action bg-action text-action-fg' : 'border-line-strong bg-field'
+        )}>
+        
+        {checked ? <CheckIcon size={11} strokeWidth={3} /> : mixed ? <MinusIcon size={11} strokeWidth={3} /> : null}
+      </span>
     </button>);
 
 }

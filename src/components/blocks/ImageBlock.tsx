@@ -8,7 +8,8 @@ import { MediaImage } from '../media/MediaImage';
 const aspects = { '1:1': 'aspect-square', '4:5': 'aspect-[4/5]', '16:9': 'aspect-video' };
 
 export function ImageBlock({ block, theme, mode }: BlockProps<'image'>) {
-  const { url, alt, caption, aspect } = block.content;
+  const { url, caption, aspect, decorative } = block.content;
+  const alt = decorative ? '' : block.content.alt;
   if (!url) {
     return mode === 'edit' ?
     <BlockPlaceholder icon={ImageIcon} title="No image chosen" hint="Paste an image link in the inspector" theme={theme} tall /> :

@@ -21,7 +21,7 @@ export function CampaignSettingsPanel() {
   const phase = campaignPhase(c);
   const totals = campaignTotals(data, state.site.handle);
   const codes = data.discounts.filter((d) => d.kind === 'code');
-  const products = data.products.filter((p) => p.status !== 'archived');
+  const products = data.products.filter((p) => p.status !== 'archived' && p.kind !== 'ticket');
 
   const update = (patch: Partial<CampaignSettings>) =>
   actions.transformDocument((doc) => {

@@ -27,7 +27,8 @@ import {
   UtensilsIcon,
   BriefcaseIcon,
   MapPinIcon,
-  RepeatIcon } from
+  RepeatIcon,
+  ClipboardPenIcon } from
 'lucide-react';
 import type { BlockContentMap, BlockType } from '../types/page';
 import type { WorkspacePlan } from '../types/plan';
@@ -454,6 +455,18 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
     clickable: true,
     minPlan: 'pro',
     defaults: () => ({ title: 'Join', intro: '', planIds: [], ctaLabel: 'Subscribe', highlightPlanId: null })
+  },
+  form: {
+    type: 'form',
+    name: 'Form',
+    description: 'Multi-step forms with logic, uploads and payments. Forms add-on.',
+    category: 'Conversion',
+    icon: ClipboardPenIcon,
+    keywords: ['form', 'survey', 'quote', 'rsvp', 'application', 'questionnaire', 'intake'],
+    defaultAlign: 'left',
+    supportsEmphasis: false,
+    clickable: false,
+    defaults: () => ({ formId: null, showTitle: true })
   }
 };
 
@@ -472,6 +485,7 @@ export const blockOrder: BlockType[] = [
 'contact',
 'faq',
 'leadForm',
+'form',
 'whatsapp',
 'booking',
 'newsletter',

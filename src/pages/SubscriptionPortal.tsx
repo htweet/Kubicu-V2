@@ -90,7 +90,7 @@ export function SubscriptionPortal() {
           </Link>
           <div className="flex flex-col items-start gap-3">
             <Icon size={30} aria-hidden />
-            <CheckoutHeading theme={t} sub={sub_}>
+            <CheckoutHeading level={1} theme={t} sub={sub_}>
               {title}
             </CheckoutHeading>
           </div>

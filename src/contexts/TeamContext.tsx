@@ -33,6 +33,8 @@ interface TeamValue {
   setSpaces: (memberId: string, spaceIds: string[] | null) => void;
   removeMember: (memberId: string) => void;
   transferOwnership: (memberId: string) => void;
+  /** Keeps a member's name and contact in step with their personal account (D80). */
+  updateMember: (memberId: string, patch: Partial<Pick<Member, 'name' | 'contact'>>) => void;
   update: (patch: Partial<Pick<TeamData, 'approvalsOn' | 'salesRefundLimitNgn'>>) => void;
   log: (area: ActivityArea, text: string, href?: string) => void;
   /** Publishing needs a review for the signed-in member (approvals on, and not an Owner/Admin). */
@@ -208,6 +210,12 @@ export function TeamProvider({ viewingAs, children }: {viewingAs: Role;children:
     [apply, me.name]
   );
 
+  const updateMember = useCallback(
+    (memberId: string, patch: Partial<Pick<Member, 'name' | 'contact'>>) =>
+    apply((d) => d.members.some((m) => m.id === memberId) ? { ...d, members: d.members.map((m) => m.id === memberId ? { ...m, ...patch } : m) } : d),
+    [apply]
+  );
+
   const update = useCallback(
     (patch: Partial<Pick<TeamData, 'approvalsOn' | 'salesRefundLimitNgn'>>) =>
     apply((d) => ({ ...d, ...patch, activity: 'approvalsOn' in patch ? [activity(me.name, 'settings', patch.approvalsOn ? 'turned on approvals for publishing' : 'turned off approvals for publishing', '/app/settings/approvals'), ...d.activity] : d.activity })),
@@ -263,8 +271,8 @@ export function TeamProvider({ viewingAs, children }: {viewingAs: Role;children:
   const markNoticesSeen = useCallback(() => apply((d) => d.notices.some((n) => n.memberId === me.id && !n.seen) ? { ...d, notices: d.notices.map((n) => n.memberId === me.id ? { ...n, seen: true } : n) } : d), [apply, me.id]);
 
   const value = useMemo<TeamValue>(
-    () => ({ data, me, role, paused, seatLimit, seatsUsed: used, can, canAccessSpace, invite, cancelInvite, resendInvite, acceptInvite, changeRole, setSpaces, removeMember, transferOwnership, update, log, needsReview, requestReview, updateReviewDoc, withdrawReview, decideReview, myNotices, markNoticesSeen }),
-    [data, me, role, paused, seatLimit, used, can, canAccessSpace, invite, cancelInvite, resendInvite, acceptInvite, changeRole, setSpaces, removeMember, transferOwnership, update, log, needsReview, requestReview, updateReviewDoc, withdrawReview, decideReview, myNotices, markNoticesSeen]
+    () => ({ data, me, role, paused, seatLimit, seatsUsed: used, can, canAccessSpace, invite, cancelInvite, resendInvite, acceptInvite, changeRole, setSpaces, removeMember, transferOwnership, updateMember, update, log, needsReview, requestReview, updateReviewDoc, withdrawReview, decideReview, myNotices, markNoticesSeen }),
+    [data, me, role, paused, seatLimit, used, can, canAccessSpace, invite, cancelInvite, resendInvite, acceptInvite, changeRole, setSpaces, removeMember, transferOwnership, updateMember, update, log, needsReview, requestReview, updateReviewDoc, withdrawReview, decideReview, myNotices, markNoticesSeen]
   );
   return <TeamContext.Provider value={value}>{children}</TeamContext.Provider>;
 }

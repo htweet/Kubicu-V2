@@ -71,7 +71,8 @@ export function validateBlock(block: Block): ValidationIssue[] {
       break;
     case 'image':
       if (!block.content.url.trim()) push('error', 'Choose an image', 'url');else
-      if (!block.content.alt.trim()) push('warning', 'Add alt text so screen readers can describe this image', 'alt');
+      if (!block.content.decorative && !block.content.alt.trim())
+      push('warning', 'Describe this image for screen readers, or mark it as decorative', 'alt');
       break;
     case 'video':
       if (!block.content.url.trim()) push('error', 'Paste a YouTube link', 'url');else
@@ -170,6 +171,11 @@ export function validateBlock(block: Block): ValidationIssue[] {
         if (!c.ctaLabel.trim()) push('warning', 'Add a button label', 'ctaLabel');
         break;
       }
+    case 'form':{
+        // Missing/closed forms and the add-on itself are checked in utils/forms/linkIssues.
+        if (!block.content.formId) push('error', 'Choose a form from Forms', 'formId');
+        break;
+      }
     case 'testimonial':{
         const c = block.content;
         if (!c.quote.trim()) push('error', 'Add the customer’s words', 'quote');
@@ -179,6 +185,8 @@ export function validateBlock(block: Block): ValidationIssue[] {
       }
     case 'event':{
         const c = block.content;
+        // Linked events are checked against Commerce instead (linkIssues).
+        if (c.source === 'catalog') break;
         if (!c.title.trim()) push('error', 'Add the event name', 'title');
         if (!c.startsAt) push('error', 'Set the date and start time', 'startsAt');
         if (c.startsAt && c.endsAt && Date.parse(c.endsAt) <= Date.parse(c.startsAt)) push('error', 'End time must be after the start', 'endsAt');
@@ -298,16 +306,17 @@ export function validateTheme(theme: PageTheme): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
   checks.forEach(({ key, ratio, field }) => {
     if (ratio >= CONTRAST_TARGET) return;
-    const blocking = ratio < CONTRAST_MIN_PUBLISH;
+    // Live pages apply a readable shade automatically (D76), so low contrast warns instead of blocking.
+    const veryLow = ratio < CONTRAST_MIN_PUBLISH;
     const { name, guidance } = contrastCopy[key];
     const fix = suggestContrastFix(theme, key);
     issues.push({
       id: `theme:${key}`,
       blockId: null,
-      severity: blocking ? 'error' : 'warning',
-      message: blocking ?
-      `${name} is very hard to read (${formatRatio(ratio)}). Pages need at least ${CONTRAST_MIN_PUBLISH}:1 to publish.` :
-      `${name} contrast is ${formatRatio(ratio)} — aim for at least ${CONTRAST_TARGET}:1`,
+      severity: 'warning',
+      message: veryLow ?
+      `${name} is very hard to read (${formatRatio(ratio)}). Visitors will see ${fix.label.replace('Use ', '')} instead until you fix it.` :
+      `${name} contrast is ${formatRatio(ratio)} — visitors will see a slightly adjusted shade. Aim for at least ${CONTRAST_TARGET}:1.`,
       field,
       guidance,
       fix: { label: fix.label, description: `${fix.description} → ${formatRatio(fix.ratio)}`, theme: fix.theme }

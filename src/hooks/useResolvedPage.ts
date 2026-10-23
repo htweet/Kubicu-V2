@@ -8,6 +8,7 @@ import { usePlan } from '../contexts/PlanContext';
 import { resolvePublicPage } from '../utils/resolvePublicPage';
 import { allBlocks } from '../utils/sitePages';
 import { spaceStorageId } from '../utils/spaces';
+import { liveReadableTheme } from '../utils/contrastFixes';
 
 export interface ResolvedPage {
   doc: PageDocument;
@@ -32,13 +33,19 @@ export function useResolvedPage(handle: string, isDraft = false): ResolvedPage |
 
   return useMemo(() => {
     const own = isDraft ? state.site : state.published;
-    if (own && own.handle === handle && !currentSpace.archivedAt) return { doc: own, plan: workspacePlan, workspaceId: current.id, isOwn: true };
+    if (own && own.handle === handle && !currentSpace.archivedAt) return { doc: readable(own), plan: workspacePlan, workspaceId: current.id, isOwn: true };
     if (isDraft) return null;
     const other = resolvePublicPage(handle, workspaces, storageId);
     if (!other) return null;
     const sameWorkspace = other.workspaceId === current.id;
-    return { doc: other.doc, plan: sameWorkspace ? workspacePlan : plans[other.plan], workspaceId: other.workspaceId, isOwn: sameWorkspace, example: other.example, redirectTo: other.redirectTo };
+    return { doc: readable(other.doc), plan: sameWorkspace ? workspacePlan : plans[other.plan], workspaceId: other.workspaceId, isOwn: sameWorkspace, example: other.example, redirectTo: other.redirectTo };
   }, [isDraft, state.site, state.published, handle, workspacePlan, workspaces, current.id, currentSpace.archivedAt, storageId]);
+}
+
+/** Visitors always get readable colours, whatever the saved theme (D76). */
+function readable(doc: PageDocument): PageDocument {
+  const theme = liveReadableTheme(doc.theme);
+  return theme === doc.theme ? doc : { ...doc, theme };
 }
 
 /** The seller's WhatsApp number from any page of the site, for “message the seller” links. */

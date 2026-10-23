@@ -67,7 +67,7 @@ export function ThemePanel() {
           Readability
         </h3>
         <p className="mb-2.5 text-caption text-fg-subtle">
-          Aim for {CONTRAST_TARGET}:1 or more. Below {CONTRAST_MIN_PUBLISH}:1 the page can’t be published.
+          Aim for {CONTRAST_TARGET}:1 or more. Anything lower is shifted to a readable shade on your live page until you fix it.
         </p>
         <ul className="flex flex-col divide-y divide-line">
           {(
@@ -145,7 +145,7 @@ function ContrastRow({ label, ratio, guidance, fix, onApply }: ContrastRowProps)
   const pass = ratio >= CONTRAST_TARGET;
   const blocking = ratio < CONTRAST_MIN_PUBLISH;
   const Icon = pass ? CheckIcon : blocking ? AlertCircleIcon : AlertTriangleIcon;
-  const status = pass ? 'Pass' : blocking ? 'Blocks publishing' : 'Low';
+  const status = pass ? 'Pass' : blocking ? 'Adjusted for visitors' : 'Low';
 
   return (
     <li className="flex flex-col gap-2 py-2 first:pt-0 last:pb-0">

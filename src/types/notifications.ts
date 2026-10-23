@@ -20,7 +20,8 @@ export type NotifEventId =
 'campaign_phase' |
 'sub_new' |
 'sub_failed' |
-'sub_cancelled';
+'sub_cancelled' |
+'form_response';
 
 export type NotifChannel = 'app' | 'email' | 'whatsapp';
 

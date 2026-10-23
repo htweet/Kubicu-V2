@@ -8,6 +8,18 @@
 
 /* END TAILWIND IMPORTS — ALL OTHER CSS MUST GO BELOW THIS LINE */
 
+/* Personal preferences from Account → Preferences (D80). Sizes are in rem, so this scales the whole UI like a gentle zoom. */
+html[data-text-size='large'] {
+  font-size: 112.5%;
+}
+html[data-motion='reduce'] *,
+html[data-motion='reduce'] *::before,
+html[data-motion='reduce'] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
 /* ---------------------------------------------------------------
    KUBICU visual directions. Each block is a complete semantic
    token set (RGB channels). Only the app chrome uses these —
@@ -163,6 +175,88 @@
   --shadow-3: 0 28px 70px -20px rgb(19 33 61 / 0.28), 0 0 0 1px rgb(19 33 61 / 0.05);
   color-scheme: light;
 }
+/* Night market (D77): the KUBICU website, legal and sign-in pages only. Never the workspace app. */
+[data-direction='nightMarket'] {
+  --canvas: 16 14 26;
+  --raised: 27 24 40;
+  --sunken: 36 32 54;
+  --overlay: 30 27 45;
+  --inverse: 243 238 230;
+  --stage: 12 10 20;
+  --field: 22 20 34;
+  --border-subtle: 44 40 64;
+  --border-strong: 70 64 98;
+  --text-primary: 243 238 230;
+  --text-secondary: 190 184 206;
+  --text-muted: 156 150 178;
+  --text-inverse: 16 14 26;
+  --action: 120 162 255;
+  --action-hover: 146 182 255;
+  --action-pressed: 98 142 245;
+  --on-action: 16 14 26;
+  --action-soft: 30 38 72;
+  --accent: 255 138 61;
+  --accent-soft: 56 34 22;
+  --select: 120 162 255;
+  --on-select: 16 14 26;
+  --success: 92 214 154;
+  --success-soft: 18 43 31;
+  --warning: 242 184 75;
+  --warning-soft: 48 37 14;
+  --danger: 255 128 128;
+  --danger-soft: 56 22 24;
+  --info: 120 182 255;
+  --info-soft: 18 34 60;
+  --focus: 120 162 255;
+  --shadow-1: 0 1px 2px rgb(0 0 0 / 0.5);
+  --shadow-2: 0 12px 30px -10px rgb(0 0 0 / 0.7), 0 0 0 1px rgb(255 255 255 / 0.04);
+  --shadow-3: 0 30px 80px -20px rgb(0 0 0 / 0.8), 0 0 0 1px rgb(255 255 255 / 0.06);
+  --nm-1: 255 138 61;
+  --nm-2: 255 61 139;
+  --nm-3: 61 123 255;
+  color-scheme: dark;
+}
+/* Brand gradient. Text placed on .nm-fill must be dark ink, ≥18px semibold. */
+.nm-fill {
+  background-image: linear-gradient(115deg, rgb(var(--nm-1)) 0%, rgb(var(--nm-2)) 50%, rgb(var(--nm-3)) 100%);
+}
+.nm-text {
+  background-image: linear-gradient(115deg, rgb(var(--nm-1)) 0%, rgb(var(--nm-2)) 45%, rgb(var(--nm-3)) 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.nm-text-drift {
+  animation: nm-drift 12s ease-in-out infinite alternate;
+}
+@keyframes nm-drift {
+  from { background-position: 0% 50%; }
+  to { background-position: 100% 50%; }
+}
+/* Gradient hairline: content goes in a child with its own background. */
+.nm-frame {
+  padding: 1px;
+  background-image: linear-gradient(115deg, rgb(var(--nm-1) / 0.8) 0%, rgb(var(--nm-2) / 0.6) 50%, rgb(var(--nm-3) / 0.8) 100%);
+}
+.nm-edge {
+  padding: 1px;
+  background-image: linear-gradient(115deg, rgb(var(--border-subtle)) 0%, rgb(var(--border-subtle)) 100%);
+  transition: background-image 150ms ease-out;
+}
+.group:hover > .nm-edge,
+.nm-edge:hover,
+.group:focus-visible > .nm-edge {
+  background-image: linear-gradient(115deg, rgb(var(--nm-1) / 0.9) 0%, rgb(var(--nm-2) / 0.7) 50%, rgb(var(--nm-3) / 0.9) 100%);
+}
+.nm-rule {
+  height: 1px;
+  background-image: linear-gradient(90deg, transparent 0%, rgb(var(--nm-1) / 0.6) 20%, rgb(var(--nm-2) / 0.6) 50%, rgb(var(--nm-3) / 0.6) 80%, transparent 100%);
+}
+/* A soft lit floor behind product shots — a lighting effect anchored to content, not a free-floating blob. */
+.nm-glow {
+  box-shadow: 0 40px 120px -40px rgb(var(--nm-2) / 0.45), 0 20px 80px -50px rgb(var(--nm-3) / 0.5);
+}
 html,
 body,
 #root {
@@ -241,6 +335,26 @@ details.kb-faq > summary::-webkit-details-marker {
 .ai-frame {
   padding: 1px;
   background-image: linear-gradient(115deg, rgb(var(--ai-1) / 0.75) 0%, rgb(var(--ai-2) / 0.65) 55%, rgb(var(--ai-3) / 0.75) 100%);
+}
+/* Visitor sheets: a thin scrollbar tinted from the page theme (vars set on PageOverlay). */
+.page-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--sb-thumb, rgba(0, 0, 0, 0.2)) transparent;
+}
+.page-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+.page-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.page-scroll::-webkit-scrollbar-thumb {
+  background: var(--sb-thumb, rgba(0, 0, 0, 0.2));
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.page-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: var(--sb-thumb-hover, rgba(0, 0, 0, 0.35));
 }
 @media (prefers-reduced-motion: reduce) {
   *,

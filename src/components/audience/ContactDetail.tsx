@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { CheckIcon, MessageCircleIcon, PlusIcon, Trash2Icon, XIcon } from 'lucide-react';
+import { CheckIcon, LinkIcon, MessageCircleIcon, PlusIcon, Trash2Icon, XIcon } from 'lucide-react';
+import { useMainLink } from '../../hooks/useMainLink';
 import { toast } from 'sonner';
 import type { Contact, ContactStage } from '../../types/ops';
 import { useOps } from '../../contexts/OpsContext';
@@ -31,6 +32,7 @@ export function ContactDetail({ contactId, onClose }: {contactId: string | null;
   const [note, setNote] = useState('');
   const [task, setTask] = useState('');
   const team = useTeam();
+  const { mainHandle } = useMainLink();
   const [taskFor, setTaskFor] = useState<string | null>(team.me.id);
   const [confirm, setConfirm] = useState<'delete' | 'unsub' | null>(null);
   // Phones split the record into tabs instead of one long scroll.
@@ -115,11 +117,27 @@ export function ContactDetail({ contactId, onClose }: {contactId: string | null;
                 'Opted out. They’re excluded from every marketing message and automation. Only they can opt back in.' :
                 'Only messages about their orders and bookings. Don’t send them marketing.'}
             </p>
-            {c.consent !== 'unsubscribed' &&
-              <Button size="sm" variant="secondary" className="mt-3" onClick={() => setConfirm('unsub')}>
-                Record an opt-out
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              {c.consent !== 'unsubscribed' &&
+                <Button size="sm" variant="secondary" onClick={() => setConfirm('unsub')}>
+                  Record an opt-out
+                </Button>
+                }
+              <Button
+                  size="sm"
+                  variant="tertiary"
+                  leadingIcon={LinkIcon}
+                  onClick={() => {
+                    const url = `${window.location.origin}/p/${mainHandle}/preferences/${c.id}`;
+                    navigator.clipboard?.writeText(url).then(
+                      () => toast.success('Preferences link copied', { description: 'Put it at the bottom of every marketing message. They can unsubscribe or opt back in themselves.' }),
+                      () => toast.error('Couldn’t copy', { description: url })
+                    );
+                  }}>
+                  
+                Copy their preferences link
               </Button>
-              }
+            </div>
           </section>
 
           <div className="grid gap-6 sm:grid-cols-2">

@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { SearchIcon } from 'lucide-react';
 import { examplePages, goalLabels, type ExampleGoal, type ExampleStyle } from '../../data/examples';
 import { TemplateThumb } from '../../components/templates/TemplateThumb';
@@ -13,7 +13,9 @@ import { cn } from '../../utils/cn';
 const styleLabels: Record<ExampleStyle, string> = { light: 'Light', dark: 'Dark', editorial: 'Editorial', bold: 'Bold' };
 
 export function Templates() {
-  const [goal, setGoal] = useState<ExampleGoal | 'all'>('all');
+  const [params] = useSearchParams();
+  const initialGoal = params.get('goal');
+  const [goal, setGoal] = useState<ExampleGoal | 'all'>(initialGoal && initialGoal in goalLabels ? initialGoal as ExampleGoal : 'all');
   const [style, setStyle] = useState<ExampleStyle | 'all'>('all');
   const [query, setQuery] = useState('');
   const [region, setRegion] = useState('all');
@@ -41,9 +43,11 @@ export function Templates() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-5 pb-20 pt-12 md:px-8">
+    <div className="mx-auto w-full max-w-6xl px-5 pb-20 pt-14 md:px-8 md:pt-20">
       <header className="max-w-2xl">
-        <h1 className="font-display text-[36px] font-semibold leading-tight tracking-[-0.028em] text-fg md:text-[44px]">Start from a page built for your goal</h1>
+        <h1 className="font-display text-[40px] font-semibold leading-[1.05] tracking-[-0.032em] text-fg md:text-[56px]">
+          Start from a page <span className="nm-text">built for your goal</span>
+        </h1>
         <p className="mt-4 text-body text-fg-muted">
           Each template is a complete example for a fictional business. When you use one, we keep the layout and remove its prices, links and quotes, so only your details go live.
         </p>
@@ -85,8 +89,10 @@ export function Templates() {
           {list.map((e) =>
         <li key={e.id} className="flex flex-col">
               <Link to={`/templates/${e.id}`} className="group flex flex-1 flex-col rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-                <span className="relative block transition-transform duration-150 ease-out group-hover:-translate-y-1">
-                  <TemplateThumb doc={e.doc} width={220} height={330} />
+                <span className="nm-edge relative block rounded-[14px] transition-transform duration-150 ease-out group-hover:-translate-y-0.5">
+                  <span className="block overflow-hidden rounded-[13px]">
+                    <TemplateThumb doc={e.doc} width={220} height={330} />
+                  </span>
                   {templatePrice(e.id) > 0 &&
               <span className="absolute left-2 top-2">
                       <Badge tone="accent">Premium · {formatNgn(templatePrice(e.id))}</Badge>
@@ -116,7 +122,7 @@ function FilterRow<T extends string>({ label, value, onChange, options }: {label
         onClick={() => onChange(v)}
         className={cn(
           'h-8 rounded-full border px-3 text-label font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
-          value === v ? 'border-transparent bg-fg text-canvas' : 'border-line text-fg-muted hover:text-fg'
+          value === v ? 'nm-fill border-transparent font-semibold text-[rgb(16_14_26)]' : 'border-line text-fg-muted hover:border-line-strong hover:text-fg'
         )}>
         
           {text}

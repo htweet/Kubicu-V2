@@ -75,17 +75,22 @@ Built families point to their rows above (and to PROTOTYPE_STATUS.md for detail)
 | M. Audience / CRM | List, pipeline, contact detail, consent, import/export, duplicates | 4 | ✅ |
 | N. Automations | Recipes, builder, test run, pause, run history | 4–5 | ✅ |
 | Media library | Picker, Media page, usage, replace, safe delete | Gap closure | ✅ |
-| O. AI copilot & Voice-to-Store | 15 screens | 5 | ⬜ (disabled entry point) |
-| P. Analytics & Link Intelligence | 14 screens | 5 | ⏳ |
-| Q. Domains, links & QR | 15 screens | 5 | ⏳ |
-| R. IntentFlow | 10 screens | 5 (concept) | ⬜ (visibility control placeholder) |
-| S. DealRoom | 10 screens | 5 (concept) | ⬜ |
+| O. AI copilot & Voice-to-Store | 15 screens | 5 | 🟡 AI page setup, block suggestions, credits (D63) · Voice-to-Store and AI Business Coach ⬜ |
+| P. Analytics & Link Intelligence | 14 screens | 5 | ✅ (D61) · real data pipeline is engineering |
+| Q. Domains, links & QR | 15 screens | 5 | ✅ (D62, D71) · DNS checks simulated |
+| R. IntentFlow | 10 screens | 5 | ✅ (D64) |
+| S. DealRoom | 10 screens | 5 | ✅ (D54) |
 | T. Trust Passport & Proof-of-Work | 10 screens | Later | ⬜ |
-| U. Extensions & marketplace | 14 screens | 6 | ⏳ |
-| V. Teams, settings & billing | 16 screens | 6 | ⏳ |
+| U. Extensions & marketplace | 14 screens | 6 | ✅ curated (D67) · open developer submissions ⬜ · Forms add-on in progress (D79) |
+| V. Teams, settings & billing | 16 screens | 6 | ✅ (D57–D60, D65, D66, D68) |
+| Events & ticketing | Events, editor, ticket types, guest list, check-in, ticket page | 6 | ✅ (D73, D74) |
+| Subscriptions | Plans, subscribers, block, subscriber portal | 6 | ✅ (D69) |
+| Template selling | Sell flow, My templates, staff review | 6 | ✅ (D70) |
 | Spaces: campaigns (D52) | New campaign, phase bar, campaign settings, live/before/ended public views | 4 (brought forward) | ✅ |
 | Spaces: DealRooms (D54) | New DealRoom, room panel (6 states), held orders, seller panel, extend/end dialogs | 4–5 (brought forward) | ✅ |
 | Commerce: discounts (D51) | Discounts list, discount editor, checkout code field | 4 | ✅ |
 | Commerce: storefront (D53) | Storefront settings, public shop, product page, unavailable product | 4 | ✅ |
-| W. Super-admin operations | Ops overview, tenants, plans, flags, modules, payments, AI ops, trust & support, system admin | 6 | ⬜ |
-| X. Public trust/legal/safety states | Report, appeal, suspension, consent, unsubscribe, export/deletion, disputes, warnings | 3/6 | ⬜ |
+| W. Super-admin operations | Ops overview, tenants, plans, flags, modules, payments, AI ops, trust & support, system admin | 6 | 🟡 8 of 17 areas built (D75b) · Pages & domains, Plans & entitlements, Payments, Orders & disputes, AI ops, Reporting, Integrations, Data requests, Localisation ⏳ |
+| X. Public trust/legal/safety states | Report, appeal, suspension, consent, unsubscribe, export/deletion, disputes, warnings | 3/6 | 🟡 Report a page, takedown and suspension states built (D75b) · legal pages and trust centre in progress (D78) · unsubscribe, data export/deletion ⬜ |
+
+_Families table refreshed 22 Oct 2026 against the code. Full gap list: docs/DESIGN_GAP_AUDIT.md._

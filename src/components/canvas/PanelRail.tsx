@@ -36,9 +36,9 @@ export function PanelRail({
       {btn(expandLabel, onExpand, <ExpandIcon size={19} strokeWidth={2.1} aria-hidden />)}
       <span aria-hidden className="my-1.5 h-px w-6 bg-line" />
       {items.map((it) => <React.Fragment key={it.id}>
-          {btn(it.label, it.onSelect, <>
+          {btn(it.badge ? `${it.label}, ${it.badge}` : it.label, it.onSelect, <>
               <it.icon size={19} strokeWidth={2.1} aria-hidden />
-              {it.badge !== undefined && it.badge > 0 && <span className="absolute right-0.5 top-0.5 min-w-[16px] rounded-full bg-fg px-1 text-center text-[10px] font-semibold leading-4 text-canvas tabular-nums">{it.badge > 99 ? '99+' : it.badge}</span>}
+              {it.badge !== undefined && it.badge > 0 && <span aria-hidden className="absolute right-0 top-0 min-w-[18px] rounded-full bg-fg px-1 text-center text-[11px] font-semibold leading-[18px] text-canvas tabular-nums">{it.badge > 99 ? '99+' : it.badge}</span>}
             </>, it.active)}
         </React.Fragment>)}
       {tip.node}

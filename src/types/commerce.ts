@@ -1,7 +1,8 @@
 import type { SubPlan, Subscription } from './subscriptions';
 
 export type ProductStatus = 'active' | 'draft' | 'archived';
-export type ProductKind = 'physical' | 'digital';
+/** 'ticket' products are owned by a Commerce event (D73): one variant per ticket type, stock = seats left. Never listed as products. */
+export type ProductKind = 'physical' | 'digital' | 'ticket';
 
 export interface ProductImage {
   id: string;
@@ -65,9 +66,67 @@ export interface Product {
   lowStockAt: number;
   weightKg: number | null;
   digital?: DigitalAsset;
+  /** Ticket products: the event that owns them. */
+  eventId?: string;
   sample?: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+export type EventStatus = 'draft' | 'on_sale' | 'paused' | 'cancelled';
+
+export interface TicketType {
+  id: string;
+  name: string;
+  /** 0 = free. */
+  priceNgn: number;
+  /** Total seats of this type, including those already sold. */
+  quantity: number;
+  salesStart: string | null;
+  salesEnd: string | null;
+  minPerOrder: number;
+  maxPerOrder: number;
+  note: string;
+}
+
+/** An event sold through KUBICU checkout (D73). Its ticket types live on a linked 'ticket' product. */
+export interface CommerceEvent {
+  id: string;
+  name: string;
+  description: string;
+  imageUrl: string;
+  startsAt: string;
+  endsAt: string | null;
+  timeZone: string;
+  online: boolean;
+  venue: string;
+  address: string;
+  /** Overall seat limit across all ticket types. Null = only the per-type quantities apply. */
+  capacity: number | null;
+  refundPolicy: string;
+  status: EventStatus;
+  productId: string;
+  ticketTypes: TicketType[];
+  cancelledAt?: string;
+  createdAt: string;
+  updatedAt: string;
+  sample?: boolean;
+}
+
+/** One admission, issued per seat when a ticket order is placed. */
+export interface IssuedTicket {
+  id: string;
+  /** Short code printed under the QR, e.g. KUB-7K2Q. */
+  code: string;
+  eventId: string;
+  ticketTypeId: string;
+  typeName: string;
+  guestName: string;
+  status: 'valid' | 'void';
+  checkedInAt?: string;
+  checkedInBy?: string;
+  /** Added by the seller (complimentary). */
+  comp?: boolean;
 }
 
 export interface Collection {
@@ -96,7 +155,7 @@ export interface StockMovement {
 
 export type OrderStatus = 'new' | 'paid' | 'packing' | 'out_for_delivery' | 'completed' | 'cancelled' | 'refunded';
 export type PaymentStatus = 'pending' | 'paid' | 'partially_refunded' | 'refunded' | 'cancelled';
-export type FulfilmentMethod = 'pickup' | 'delivery' | 'digital';
+export type FulfilmentMethod = 'pickup' | 'delivery' | 'digital' | 'tickets';
 
 export interface OrderItem {
   productId: string;
@@ -195,6 +254,8 @@ export interface Order {
   assigneeId?: string | null;
   /** Product box renewal: the subscription that created this order (D69). */
   subscriptionId?: string;
+  /** Event tickets issued by this order, one per seat (D73). */
+  tickets?: IssuedTicket[];
 }
 
 export interface OrderDiscount {
@@ -292,12 +353,28 @@ export interface CommerceData {
   /** Customer subscriptions (D69). */
   subPlans: SubPlan[];
   subscriptions: Subscription[];
+  /** Events with KUBICU ticketing (D73). Optional for data saved before ticketing. */
+  events?: CommerceEvent[];
+  /** Seats reserved while a buyer is in checkout (D73a). Expired holds are ignored and pruned. */
+  ticketHolds?: TicketHold[];
   nextOrderNumber: number;
   /** True once sample data has been offered/seeded, so clearing it doesn't bring it back. */
   sampleSeeded: boolean;
 }
 
 /** One line in the visitor's cart. */
+export interface TicketHold {
+  id: string;
+  /** A random id for one browser's checkout — never personal data. */
+  holder: string;
+  eventId: string;
+  productId: string;
+  /** Ticket type id (the ticket product's variant id). */
+  variantId: string;
+  qty: number;
+  expiresAt: string;
+}
+
 export interface CartLine {
   productId: string;
   variantId: string;

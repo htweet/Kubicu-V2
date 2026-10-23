@@ -41,7 +41,12 @@ export function useCanvasShortcuts(handlers: Shortcuts) {
         e.preventDefault();
         ref.current.onDuplicate();
       } else if (key === 'delete' || key === 'backspace') {
-        ref.current.onDelete();
+        // Only when the block itself (or its layer row) has focus — never from another button (WCAG 2.1.4, D76).
+        const t = e.target as HTMLElement | null;
+        if (t && (t === document.body || t.matches('[data-block-id][aria-pressed="true"],[data-layer-row][aria-current="true"]'))) {
+          e.preventDefault();
+          ref.current.onDelete();
+        }
       } else if (key === 'escape') {
         ref.current.onEscape();
       }

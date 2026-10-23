@@ -19,6 +19,7 @@ import { variantLabel, variantPrice } from './catalog';
 import { kubicuFee, providerFee, refundableNgn } from './money';
 import { orderDiscountRecord, resolveDiscount } from './discounts';
 import { formatNgn } from '../format';
+import { issueTickets, orderCapacityIssue, ticketLineIssue } from './tickets';
 
 export const OWNER_ACTOR = 'You';
 
@@ -100,6 +101,10 @@ export interface CheckoutInput {
   dealRoom?: {productId: string;priceNgn: number | null;held: boolean;};
   /** Share code from a DealRoom link (?ref=), checked against the room's real orders. */
   referredBy?: string;
+  /** Optional names for each ticket seat, keyed by ticket type (variant) id (D73). */
+  guestNames?: Record<string, string[]>;
+  /** The buyer's seat-hold id, so their own held seats count as theirs (D73a). */
+  holder?: string;
 }
 
 /** A short, readable share code for a DealRoom buyer, e.g. NGOZI-7K2. */
@@ -146,6 +151,11 @@ export function placeOrder(data: CommerceData, input: CheckoutInput): CheckoutRe
     if (product.kind === 'physical' && product.trackStock && variant.stock < line.qty) {
       return { ok: false, reason: 'unavailable', message: `Only ${variant.stock} of ${product.name} (${variantLabel(variant)}) left.` };
     }
+    if (product.kind === 'ticket') {
+      // Seats are re-checked at payment so an event never oversells (D73).
+      const issue = ticketLineIssue(data, line, Date.now(), input.holder);
+      if (issue) return { ok: false, reason: 'unavailable', message: `${issue}. Nothing was charged.` };
+    }
     items.push({
       productId: product.id,
       variantId: variant.id,
@@ -157,6 +167,9 @@ export function placeOrder(data: CommerceData, input: CheckoutInput): CheckoutRe
       kind: product.kind
     });
   }
+
+  const capacityIssue = orderCapacityIssue(data, input.lines, input.holder);
+  if (capacityIssue) return { ok: false, reason: 'unavailable', message: `${capacityIssue}. Nothing was charged.` };
 
   const subtotal = items.reduce((s, i) => s + i.unitPriceNgn * i.qty, 0);
   const { applied } = resolveDiscount(
@@ -175,7 +188,10 @@ export function placeOrder(data: CommerceData, input: CheckoutInput): CheckoutRe
   const number = data.nextOrderNumber;
   const placedAt = now();
   const hasDigital = items.some((i) => i.kind === 'digital');
-  const digitalOnly = items.every((i) => i.kind === 'digital');
+  const hasTickets = items.some((i) => i.kind === 'ticket');
+  // Digital files and tickets are delivered the moment payment clears.
+  const digitalOnly = items.every((i) => i.kind === 'digital' || i.kind === 'ticket');
+  const deliveredLabel = hasTickets && !hasDigital ? 'Tickets issued' : hasTickets ? 'Tickets issued and download link sent' : 'Delivered by secure download link';
   const events: OrderEvent[] = [event('placed', 'Order placed on your page', placedAt)];
   if (applied && discountNgn > 0) {
     const who = applied.discount.referrerName ? ` — referred by ${applied.discount.referrerName}` : '';
@@ -183,7 +199,7 @@ export function placeOrder(data: CommerceData, input: CheckoutInput): CheckoutRe
   }
   if (paid) events.unshift(event('paid', 'Payment confirmed by provider (test mode)'));
   if (input.dealRoom?.held) events.unshift(event('note', 'Joined the group buy — held until the goal is reached, refunded automatically if it isn’t', placedAt));
-  if (paid && digitalOnly && !input.dealRoom?.held) events.unshift(event('completed', 'Delivered by secure download link'));else
+  if (paid && digitalOnly && !input.dealRoom?.held) events.unshift(event('completed', deliveredLabel));else
   if (!paid) events.unshift(event('payment', input.outcome === 'timeout' ? 'Provider didn’t respond in time — awaiting confirmation' : 'Payment pending with provider'));
 
   const order: Order = {
@@ -209,7 +225,8 @@ export function placeOrder(data: CommerceData, input: CheckoutInput): CheckoutRe
     events,
     downloadToken: hasDigital ? uid('dl') : undefined,
     downloads: [],
-    note: ''
+    note: '',
+    tickets: hasTickets ? issueTickets(data, items, input.customer.name, input.guestNames) : undefined
   };
 
   let next: CommerceData = { ...data, orders: [order, ...data.orders], nextOrderNumber: number + 1 };
@@ -248,8 +265,14 @@ export function setOrderStatus(data: CommerceData, orderId: string, status: Orde
 export function confirmPayment(data: CommerceData, orderId: string): CommerceData {
   const order = data.orders.find((o) => o.id === orderId);
   const next = setOrderStatus(data, orderId, 'paid', 'Payment confirmed by provider (test mode)');
-  if (order && order.items.every((i) => i.kind === 'digital')) return setOrderStatus(next, orderId, 'completed', 'Delivered by secure download link');
+  if (order && order.items.every((i) => i.kind === 'digital' || i.kind === 'ticket'))
+  return setOrderStatus(next, orderId, 'completed', order.items.some((i) => i.kind === 'ticket') ? 'Tickets issued' : 'Delivered by secure download link');
   return next;
+}
+
+/** Refunded or cancelled orders can't admit anyone. */
+function voidTickets(data: CommerceData, orderId: string): CommerceData {
+  return { ...data, orders: data.orders.map((o) => o.id === orderId && o.tickets ? { ...o, tickets: o.tickets.map((t) => ({ ...t, status: 'void' as const })) } : o) };
 }
 
 export function cancelOrder(data: CommerceData, orderId: string, reason: string, restock: boolean): CommerceData {
@@ -268,8 +291,11 @@ export function cancelOrder(data: CommerceData, orderId: string, reason: string,
     o
     )
   };
-  if (restock) order.items.forEach((i) => next = moveStock(next, i.productId, i.variantId, i.qty, 'cancelled', 'Released by cancellation', order.number));
-  return next;
+  // Ticket seats always go back on sale when an order is cancelled.
+  order.items.forEach((i) => {
+    if (restock || i.kind === 'ticket') next = moveStock(next, i.productId, i.variantId, i.qty, 'cancelled', 'Released by cancellation', order.number);
+  });
+  return voidTickets(next, orderId);
 }
 
 export function refundOrder(data: CommerceData, orderId: string, amountNgn: number, reason: string, restock: boolean): CommerceData {
@@ -294,8 +320,11 @@ export function refundOrder(data: CommerceData, orderId: string, amountNgn: numb
     o
     )
   };
-  if (restock) order.items.forEach((i) => next = moveStock(next, i.productId, i.variantId, i.qty, 'returned', 'Returned with refund', order.number));
-  return next;
+  // A full refund voids the order's tickets and frees their seats (D73).
+  order.items.forEach((i) => {
+    if (restock || full && i.kind === 'ticket') next = moveStock(next, i.productId, i.variantId, i.qty, 'returned', 'Returned with refund', order.number);
+  });
+  return full ? voidTickets(next, orderId) : next;
 }
 
 export function updateDispute(data: CommerceData, orderId: string, patch: Partial<Dispute>, label?: string): CommerceData {
@@ -349,6 +378,7 @@ export function clearSample(data: CommerceData): CommerceData {
     orders: data.orders.filter((o) => !o.sample),
     discounts: data.discounts.filter((d) => !d.sample),
     subPlans: data.subPlans.filter((p) => !p.sample),
-    subscriptions: data.subscriptions.filter((s) => !s.sample)
+    subscriptions: data.subscriptions.filter((s) => !s.sample),
+    events: (data.events ?? []).filter((e) => !e.sample)
   };
 }

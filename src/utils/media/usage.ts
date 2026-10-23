@@ -35,7 +35,7 @@ export function findUses(assetId: string, src: UsageSources): MediaUse[] {
     uses.push({ kind: 'live', label: 'Your live page', detail: 'Still shown until you next publish' });
   }
   src.products.forEach((p) => {
-    if (containsString(p.images, ref)) uses.push({ kind: 'product', label: p.name || 'Untitled product', detail: p.kind === 'digital' ? 'Digital product photo' : 'Product photo', to: `/app/commerce/${p.kind === 'digital' ? 'digital' : 'products'}?edit=${p.id}` });
+    if (containsString(p.images, ref)) uses.push({ kind: 'product', label: p.name || 'Untitled product', detail: p.kind === 'digital' ? 'Digital product photo' : 'Product photo', to: p.kind === 'ticket' ? `/app/commerce/events?edit=${p.eventId}` : `/app/commerce/${p.kind === 'digital' ? 'digital' : 'products'}?edit=${p.id}` });
   });
   src.sections.forEach((s) => {
     if (containsString(s.blocks, ref)) uses.push({ kind: 'section', label: s.name, detail: 'Saved section' });

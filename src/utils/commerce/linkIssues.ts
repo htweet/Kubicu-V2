@@ -5,6 +5,7 @@ import type { ValidationIssue } from '../validation';
 import { planAtLeast } from '../../data/plans';
 import { canSell, findProduct, isSoldOut, linkedGridProducts, priceRange } from './catalog';
 import { boxShortfall } from './subscriptions';
+import { eventPhase, eventSelling, findEvent, ticketTypeState } from './tickets';
 
 /** Plan that unlocks KUBICU checkout and digital delivery (hypothesis). */
 export const CHECKOUT_PLAN: WorkspacePlan = 'pro';
@@ -60,6 +61,24 @@ export function catalogLinkIssues(doc: PageDocument, data: CommerceData | null, 
       const p = findProduct(data, c.productId);
       if (!p || p.kind !== 'digital') return push(b.id, 'error', 'Pick a digital product from Commerce', 'productId');
       if (!canSell(p)) push(b.id, 'warning', `“${p.name}” isn’t ready to sell (needs to be active with a scanned file)`, 'productId');
+    }
+    if (b.type === 'event' && b.content.source === 'catalog') {
+      // Ticketing (D73): free registration on every plan, paid tickets on Pro.
+      const id = (f: string) => `${b.id}:event:${f}`;
+      const ev = findEvent(data, b.content.eventId);
+      if (!ev) {
+        issues.push({ id: id('missing'), blockId: b.id, severity: 'error', message: b.content.eventId ? 'The linked event no longer exists — pick another or switch to manual' : 'Pick an event from Commerce', field: 'eventId' });
+        return;
+      }
+      const now = Date.now();
+      if (ev.status === 'cancelled') issues.push({ id: id('cancelled'), blockId: b.id, severity: 'error', message: `“${ev.name}” was cancelled — remove this block or pick another event`, field: 'eventId' });else
+      if (eventPhase(ev, now) === 'past') issues.push({ id: id('past'), blockId: b.id, severity: 'warning', message: `“${ev.name}” has ended — visitors see an Event ended note`, field: 'eventId' });else
+      if (ev.status === 'draft') issues.push({ id: id('draft'), blockId: b.id, severity: 'error', message: `“${ev.name}” is a draft — put it on sale in Commerce → Events first`, field: 'eventId' });else
+      if (ev.status === 'paused') issues.push({ id: id('paused'), blockId: b.id, severity: 'warning', message: `Ticket sales for “${ev.name}” are paused`, field: 'eventId' });else
+      if (!eventSelling(data, ev, now) && !ev.ticketTypes.some((t) => ticketTypeState(data, ev, t, now) === 'not_yet'))
+      issues.push({ id: id('none'), blockId: b.id, severity: 'warning', message: `No ticket type for “${ev.name}” is on sale right now`, field: 'eventId' });
+      if (!checkoutAllowed && ev.ticketTypes.some((t) => t.priceNgn > 0))
+      issues.push({ id: id('plan'), blockId: b.id, severity: 'error', message: 'Paid tickets are on the Pro plan — make every ticket free or upgrade', field: 'eventId', upgradeTo: CHECKOUT_PLAN, upgradeFeature: 'Selling event tickets' });
     }
     if (b.type === 'subscription') {
       // Subscriptions (D69): Pro plan, live plans, and boxes that can be filled.

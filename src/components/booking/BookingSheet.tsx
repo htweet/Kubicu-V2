@@ -5,7 +5,7 @@ import type { PageTheme } from '../../types/page';
 import type { PageOps } from '../../hooks/usePageOps';
 import { PageOverlay } from '../blocks/PageOverlay';
 import { cardStyle, mix } from '../blocks/pageStyle';
-import { CheckoutHeading, PrimaryButton, SecondaryButton, StepDots, TestModeNote, ThemedField } from '../checkout/checkoutUi';
+import { CheckoutHeading, PrimaryButton, SecondaryButton, SheetActions, StepDots, TestModeNote, ThemedField } from '../checkout/checkoutUi';
 import { SlotPicker } from './SlotPicker';
 import { createBooking } from '../../utils/ops/ops';
 import { dayLabel, durationLabel, timeLabel, visitorTimeZone } from '../../utils/ops/slots';
@@ -120,9 +120,11 @@ export function BookingSheet({ theme, ops, serviceId, handle, onClose }: Booking
               {problem.message}
             </p>
           </div>
-          <PrimaryButton theme={theme} onClick={() => setStep(problem.kind === 'taken' ? 'time' : 'confirm')}>
-            {problem.kind === 'taken' ? 'Pick another time' : 'Try again'}
-          </PrimaryButton>
+          <SheetActions theme={theme}>
+            <PrimaryButton theme={theme} onClick={() => setStep(problem.kind === 'taken' ? 'time' : 'confirm')}>
+              {problem.kind === 'taken' ? 'Pick another time' : 'Try again'}
+            </PrimaryButton>
+          </SheetActions>
         </div>);
 
     if (step === 'time')
@@ -132,9 +134,11 @@ export function BookingSheet({ theme, ops, serviceId, handle, onClose }: Booking
             {service.name}
           </CheckoutHeading>
           <SlotPicker theme={theme} service={service} availability={a} bookings={data.bookings} value={start} onChange={setStart} />
-          <PrimaryButton theme={theme} disabled={start === null} onClick={() => setStep('details')}>
-            Continue
-          </PrimaryButton>
+          <SheetActions theme={theme}>
+            <PrimaryButton theme={theme} disabled={start === null} onClick={() => setStep('details')}>
+              Continue
+            </PrimaryButton>
+          </SheetActions>
         </div>);
 
     if (step === 'details')
@@ -164,9 +168,11 @@ export function BookingSheet({ theme, ops, serviceId, handle, onClose }: Booking
             <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5" style={{ accentColor: theme.text }} />
             Send me occasional updates and offers (optional). Booking reminders are sent either way.
           </label>
-          <PrimaryButton theme={theme} type="submit">
-            Continue
-          </PrimaryButton>
+          <SheetActions theme={theme}>
+            <PrimaryButton theme={theme} type="submit">
+              Continue
+            </PrimaryButton>
+          </SheetActions>
         </form>);
 
     // confirm
@@ -222,19 +228,21 @@ export function BookingSheet({ theme, ops, serviceId, handle, onClose }: Booking
           Prototype: simulate someone else booking this time first
         </label>
         <TestModeNote theme={theme} />
-        <PrimaryButton theme={theme} onClick={book}>
-          {service.depositNgn ? `Pay ${formatNgn(service.depositNgn)} and book` : 'Book this time'}
-        </PrimaryButton>
-        <SecondaryButton theme={theme} onClick={() => setStep('time')}>
-          Change time
-        </SecondaryButton>
+        <SheetActions theme={theme}>
+          <PrimaryButton theme={theme} onClick={book}>
+            {service.depositNgn ? `Pay ${formatNgn(service.depositNgn)} and book` : 'Book this time'}
+          </PrimaryButton>
+          <SecondaryButton theme={theme} onClick={() => setStep('time')}>
+            Change time
+          </SecondaryButton>
+        </SheetActions>
       </div>);
 
   };
 
   return (
     <PageOverlay open={!!serviceId} onClose={onClose} theme={theme} label={`Book ${service.name}`}>
-      <div className="flex flex-col gap-4 px-5 pb-6 pt-5">
+      <div className="flex flex-1 flex-col gap-4 px-5 pb-2 pt-5">
         {steps.includes(step) &&
         <div className="flex items-center gap-3 pr-12">
             {step !== 'time' &&

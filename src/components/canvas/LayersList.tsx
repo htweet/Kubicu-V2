@@ -547,6 +547,8 @@ function LayerRow({
           onSelect();
         }}
         aria-current={selected && !selecting ? 'true' : undefined}
+        aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown Delete"
+        data-layer-row
         onKeyDown={(e) => {
           if (!selecting && e.altKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
             e.preventDefault();

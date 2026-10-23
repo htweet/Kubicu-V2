@@ -2,6 +2,7 @@ import type { Collection, CommerceData, Order, OrderEvent, Product, StockMovemen
 import { kubicuFee, providerFee } from '../utils/commerce/money';
 import { sampleDiscounts } from './sampleDiscounts';
 import { sampleSubPlans, sampleSubscriptions } from './sampleSubscriptions';
+import { withSampleEvent } from './sampleEvents';
 
 /**
  * SAMPLE commerce data for exploring the prototype. Every record is flagged `sample`
@@ -350,7 +351,7 @@ order({
 
 /** Merges sample records into a workspace's commerce data. */
 export function withSampleData(data: CommerceData): CommerceData {
-  return {
+  return withSampleEvent({
     ...data,
     products: [...data.products, ...sampleProducts()],
     collections: [...data.collections, ...sampleCollections],
@@ -377,5 +378,5 @@ export function withSampleData(data: CommerceData): CommerceData {
       freeDeliveryOverNgn: 150000
     },
     sampleSeeded: true
-  };
+  });
 }

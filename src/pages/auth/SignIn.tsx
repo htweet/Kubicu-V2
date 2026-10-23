@@ -4,6 +4,8 @@ import { AuthLayout } from '../../components/auth/AuthLayout';
 import { TextInput } from '../../components/ui/TextInput';
 import { Button } from '../../components/ui/Button';
 import { isValidEmail } from '../../utils/validation';
+import { readAccount } from '../../utils/account/store';
+import { startPageOptions } from '../../data/accountOptions';
 
 export function SignIn() {
   const navigate = useNavigate();
@@ -22,7 +24,9 @@ export function SignIn() {
     setSubmitted(true);
     if (errors.email || errors.password) return;
     setLoading(true);
-    window.setTimeout(() => navigate('/app'), 400);
+    // Lands on the start screen chosen in Account → Preferences (D80).
+    const start = startPageOptions.find((o) => o.value === readAccount().prefs.startPage)?.to ?? '/app';
+    window.setTimeout(() => navigate(start), 400);
   };
 
   return (
@@ -59,7 +63,7 @@ export function SignIn() {
             Forgot password?
           </Link>
         </div>
-        <Button type="submit" size="lg" fullWidth loading={loading} className="mt-2">
+        <Button type="submit" variant="brand" size="lg" fullWidth loading={loading} className="mt-2">
           Sign in
         </Button>
       </form>

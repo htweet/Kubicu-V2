@@ -39,7 +39,7 @@ export function ResetPassword() {
       
       <form onSubmit={submit} noValidate className="flex flex-col gap-4">
         <TextInput id="rp-email" label="Email" type="email" inputMode="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} error={submitted ? error || undefined : undefined} />
-        <Button type="submit" size="lg" fullWidth>
+        <Button type="submit" variant="brand" size="lg" fullWidth>
           Send reset link
         </Button>
       </form>

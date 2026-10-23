@@ -8,7 +8,7 @@ import type { Subscription } from '../../types/subscriptions';
 import type { PageCommerce } from '../../hooks/usePageCommerce';
 import { PageOverlay } from '../blocks/PageOverlay';
 import { cardStyle, mix } from '../blocks/pageStyle';
-import { CheckoutHeading, PrimaryButton, SecondaryButton, StepDots, TestModeNote, ThemedField } from '../checkout/checkoutUi';
+import { CheckoutHeading, PrimaryButton, SecondaryButton, SheetActions, StepDots, TestModeNote, ThemedField } from '../checkout/checkoutUi';
 import { dueToday, intervalWord, renewalTerms, startSubscription, type SignupOutcome } from '../../utils/commerce/subscriptions';
 import { isValidEmail, isValidPhone } from '../../utils/validation';
 import { formatNgn } from '../../utils/format';
@@ -135,9 +135,11 @@ export function SubscribeSheet({ theme, commerce, planId, handle, ownerPlan, onC
               {problem}
             </p>
           </div>
-          <PrimaryButton theme={theme} onClick={() => setStep('pay')}>
-            Try again
-          </PrimaryButton>
+          <SheetActions theme={theme}>
+            <PrimaryButton theme={theme} onClick={() => setStep('pay')}>
+              Try again
+            </PrimaryButton>
+          </SheetActions>
         </div>);
 
     if (step === 'bank')
@@ -149,12 +151,14 @@ export function SubscribeSheet({ theme, commerce, planId, handle, ownerPlan, onC
               Confirm with your bank
             </CheckoutHeading>
           </div>
-          <PrimaryButton theme={theme} onClick={() => finish('bank')}>
-            I’ve confirmed in my bank app
-          </PrimaryButton>
-          <SecondaryButton theme={theme} onClick={() => setStep('pay')}>
-            Cancel
-          </SecondaryButton>
+          <SheetActions theme={theme}>
+            <PrimaryButton theme={theme} onClick={() => finish('bank')}>
+              I’ve confirmed in my bank app
+            </PrimaryButton>
+            <SecondaryButton theme={theme} onClick={() => setStep('pay')}>
+              Cancel
+            </SecondaryButton>
+          </SheetActions>
         </div>);
 
     if (step === 'details')
@@ -180,9 +184,11 @@ export function SubscribeSheet({ theme, commerce, planId, handle, ownerPlan, onC
             <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5" style={{ accentColor: theme.text }} />
             Send me occasional updates and offers (optional). Receipts and renewal reminders are sent either way.
           </label>
-          <PrimaryButton theme={theme} type="submit">
-            Continue
-          </PrimaryButton>
+          <SheetActions theme={theme}>
+            <PrimaryButton theme={theme} type="submit">
+              Continue
+            </PrimaryButton>
+          </SheetActions>
         </form>);
 
     if (step === 'delivery')
@@ -236,9 +242,11 @@ export function SubscribeSheet({ theme, commerce, planId, handle, ownerPlan, onC
               {f.pickupHours && <span className="block text-[12.5px]" style={muted}>{f.pickupHours}</span>}
             </p>
         }
-          <PrimaryButton theme={theme} type="submit">
-            Continue
-          </PrimaryButton>
+          <SheetActions theme={theme}>
+            <PrimaryButton theme={theme} type="submit">
+              Continue
+            </PrimaryButton>
+          </SheetActions>
         </form>);
 
     // pay
@@ -292,16 +300,18 @@ export function SubscribeSheet({ theme, commerce, planId, handle, ownerPlan, onC
           I agree to be charged {formatNgn(plan.priceNgn + deliveryFee)} every {intervalWord[plan.interval]} until I cancel.
         </label>
         <TestModeNote theme={theme} />
-        <PrimaryButton theme={theme} disabled={!agree} onClick={() => outcome === 'bank' ? setStep('bank') : finish(outcome)}>
-          {today ? `Pay ${formatNgn(today)} and subscribe` : 'Start free trial'}
-        </PrimaryButton>
+        <SheetActions theme={theme}>
+          <PrimaryButton theme={theme} disabled={!agree} onClick={() => outcome === 'bank' ? setStep('bank') : finish(outcome)}>
+            {today ? `Pay ${formatNgn(today)} and subscribe` : 'Start free trial'}
+          </PrimaryButton>
+        </SheetActions>
       </div>);
 
   };
 
   return (
     <PageOverlay open={!!planId} onClose={onClose} theme={theme} label={`Subscribe to ${plan.name}`}>
-      <div className="flex flex-col gap-4 px-5 pb-6 pt-5">
+      <div className="flex flex-1 flex-col gap-4 px-5 pb-2 pt-5">
         {steps.includes(step) &&
         <div className="flex items-center gap-3 pr-12">
             {step !== 'details' &&

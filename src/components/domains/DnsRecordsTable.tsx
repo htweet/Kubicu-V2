@@ -8,11 +8,12 @@ export function DnsRecordsTable({ records }: {records: DnsRecord[];}) {
   return (
     <div className="overflow-hidden rounded-md border border-line">
       <table className="hidden w-full text-label md:table">
+        <caption className="sr-only">DNS records to add at your domain provider</caption>
         <thead>
           <tr className="border-b border-line bg-sunken text-caption text-fg-subtle">
-            <th className="px-3 py-2 text-left font-medium">Type</th>
-            <th className="px-3 py-2 text-left font-medium">Name / Host</th>
-            <th className="px-3 py-2 text-left font-medium">Value / Points to</th>
+            <th scope="col" className="px-3 py-2 text-left font-medium">Type</th>
+            <th scope="col" className="px-3 py-2 text-left font-medium">Name / Host</th>
+            <th scope="col" className="px-3 py-2 text-left font-medium">Value / Points to</th>
           </tr>
         </thead>
         <tbody>

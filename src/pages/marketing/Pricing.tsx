@@ -1,93 +1,224 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckIcon, MinusIcon } from 'lucide-react';
-import { plans, planOrder } from '../../data/plans';
+import { ArrowRightIcon, CheckIcon, MinusIcon, PuzzleIcon } from 'lucide-react';
+import { plans } from '../../data/plans';
+import { planHighlights } from '../../data/planHighlights';
+import { addOns, pricingFaq } from '../../data/marketing';
 import type { WorkspacePlan } from '../../types/plan';
+import type { BillingCycle } from '../../types/billing';
+import { priceFor, yearlySaving } from '../../utils/billing';
+import { formatNgn } from '../../utils/format';
 import { Button } from '../../components/ui/Button';
-import { InlineAlert } from '../../components/ui/InlineAlert';
+import { Segmented } from '../../components/ui/Segmented';
+import { FaqList } from '../../components/marketing/FaqList';
+import { SectionHeading } from '../../components/marketing/SectionHeading';
 import { cn } from '../../utils/cn';
 
 type Cell = boolean | string;
 
 const shown: WorkspacePlan[] = ['free', 'creator', 'pro', 'business', 'agency'];
+const featured: WorkspacePlan = 'pro';
+const all = (v: Cell): Record<WorkspacePlan, Cell> => ({ free: v, creator: v, pro: v, business: v, agency: v, enterprise: v });
 
-const rows: {label: string;note?: string;values: Record<WorkspacePlan, Cell>;}[] = [
-{ label: 'Pages and canvas editor', values: { free: true, creator: true, pro: true, business: true, agency: true, enterprise: true } },
-{ label: 'All core blocks', note: 'Links, forms, menus, products, events and more', values: { free: true, creator: true, pro: true, business: true, agency: true, enterprise: true } },
-{ label: 'Full photo galleries', note: 'Free shows the first photo', values: { free: false, creator: true, pro: true, business: true, agency: true, enterprise: true } },
-{ label: 'Remove “Made with KUBICU”', values: { free: false, creator: true, pro: true, business: true, agency: true, enterprise: true } },
-{ label: 'Products and checkout', note: 'Free: 5 products, WhatsApp ordering. Pro adds checkout and digital sales', values: { free: 'Limited', creator: 'Limited', pro: true, business: true, agency: true, enterprise: true } },
-{ label: 'Bookings', note: 'Services, availability and deposits', values: { free: false, creator: false, pro: true, business: true, agency: true, enterprise: true } },
-{ label: 'Pages per site', note: 'Example limits', values: { free: '1', creator: '5', pro: '20', business: '20', agency: '20', enterprise: '20' } },
-{ label: 'Custom domain', note: 'Planned', values: { free: false, creator: true, pro: true, business: true, agency: true, enterprise: true } },
-{ label: 'Team members', note: 'Planned', values: { free: false, creator: false, pro: false, business: true, agency: true, enterprise: true } },
-{ label: 'Client workspaces', note: 'Planned', values: { free: false, creator: false, pro: false, business: false, agency: true, enterprise: true } }];
+const groups: {area: string;rows: {label: string;note?: string;values: Record<WorkspacePlan, Cell>;}[];}[] = [
+{
+  area: 'Build',
+  rows: [
+  { label: 'Canvas editor and all core blocks', values: all(true) },
+  { label: 'Pages per site', note: 'Example limits', values: { free: '1', creator: '5', pro: '20', business: '20', agency: '20', enterprise: 'Custom' } },
+  { label: 'Full photo galleries', note: 'Free shows the first photo', values: { ...all(true), free: false } },
+  { label: 'Remove “Made with KUBICU”', values: { ...all(true), free: false } },
+  { label: 'Custom domain', values: { ...all(true), free: false } }]
+
+},
+{
+  area: 'Sell',
+  rows: [
+  { label: 'Products', note: 'Free: 5 with WhatsApp ordering', values: { ...all('Unlimited'), free: '5' } },
+  { label: 'Checkout, digital files and subscriptions', values: { ...all(true), free: false, creator: false } },
+  { label: 'Paid event tickets', note: 'Free events work on every plan', values: { ...all(true), free: false, creator: false } },
+  { label: 'Campaign pages and DealRooms', values: { free: false, creator: '3', pro: '15', business: '15', agency: '15', enterprise: 'Custom' } }]
+
+},
+{
+  area: 'Serve & grow',
+  rows: [
+  { label: 'Built-in bookings with deposits', values: { ...all(true), free: false, creator: false } },
+  { label: 'Analytics, QR codes and campaign links', values: all(true) },
+  { label: 'Media storage', values: { free: '100 MB', creator: '1 GB', pro: '5 GB', business: '5 GB', agency: '5 GB', enterprise: 'Custom' } }]
+
+},
+{
+  area: 'Teams',
+  rows: [
+  { label: 'Team seats with roles and approvals', values: { free: false, creator: false, pro: false, business: '5', agency: '25', enterprise: 'Custom' } },
+  { label: 'Client workspaces', values: { ...all(false), agency: true, enterprise: true } }]
+
+}];
 
 
 export function Pricing() {
   const navigate = useNavigate();
+  const [cycle, setCycle] = useState<BillingCycle>('monthly');
+
   return (
-    <div className="mx-auto w-full max-w-6xl px-5 pb-20 pt-12 md:px-8">
-      <header className="max-w-2xl">
-        <h1 className="font-display text-[36px] font-semibold leading-tight tracking-[-0.028em] text-fg md:text-[44px]">Start free. Pay when it pays you.</h1>
-        <p className="mt-4 text-body text-fg-muted">Every plan includes the canvas and publishing. Upgrade for brand control, commerce and teams.</p>
+    <div className="mx-auto w-full max-w-6xl px-5 pb-24 pt-14 md:px-8 md:pt-20">
+      <header className="mx-auto max-w-2xl text-center">
+        <h1 className="font-display text-[40px] font-semibold leading-[1.05] tracking-[-0.032em] text-fg md:text-[56px]">
+          Start free. <span className="nm-text">Pay when it pays you.</span>
+        </h1>
+        <p className="mt-5 text-[17px] leading-relaxed text-fg-muted">Every plan includes the canvas and publishing. Upgrade for your own brand, checkout, bookings and teams.</p>
+        <div className="mt-8 flex flex-col items-center gap-2">
+          <Segmented
+            ariaLabel="Billing period"
+            value={cycle}
+            onChange={setCycle}
+            options={[
+            { value: 'monthly', label: 'Monthly' },
+            { value: 'yearly', label: 'Yearly · 2 months free' }]
+            } />
+          
+          <p className="text-caption text-fg-subtle">Example prices we’re testing. Nobody is charged in this prototype.</p>
+        </div>
       </header>
 
-      <InlineAlert tone="info" title="Prices are still being tested" className="mt-8 max-w-2xl">
-        The ranges below are what we’re testing with early users, not final prices. Nobody will be charged in this prototype. Enterprise pricing is agreed directly.
-      </InlineAlert>
-
-      <div className="mt-10 overflow-x-auto">
-        <table className="w-full min-w-[760px] border-collapse text-left">
-          <caption className="sr-only">Plan comparison</caption>
-          <thead>
-            <tr>
-              <th scope="col" className="w-[28%] pb-6 align-bottom text-label font-medium text-fg-subtle">Compare plans</th>
-              {shown.map((id) =>
-              <th key={id} scope="col" className={cn('px-3 pb-6 align-top', id === 'pro' && 'rounded-t-md bg-raised')}>
-                  <span className="block pt-3 text-heading font-semibold text-fg">{plans[id].name}</span>
-                  <span className="mt-1 block text-label font-semibold tabular-nums text-fg">{plans[id].priceHypothesis}</span>
-                  <span className="mt-1 block min-h-[34px] text-caption font-normal text-fg-subtle">{plans[id].intendedFor}</span>
-                  <Button size="sm" variant={id === 'free' ? 'primary' : 'secondary'} className="mt-3" onClick={() => navigate('/signup')}>
-                    {id === 'free' ? 'Start free' : `Choose ${plans[id].name}`}
-                  </Button>
-                </th>
+      {/* Plan cards */}
+      <ul className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        {shown.map((id) => {
+          const price = priceFor(id, cycle);
+          const isFeatured = id === featured;
+          const card =
+          <div className={cn('flex h-full flex-col rounded-2xl p-5', isFeatured ? 'rounded-[15px] bg-raised' : 'border border-line bg-raised/60')}>
+              <div className="flex min-h-[24px] items-center justify-between gap-2">
+                <h2 className="text-heading font-semibold text-fg">{plans[id].name}</h2>
+                {isFeatured && <span className="nm-fill rounded-full px-2 py-0.5 text-[11px] font-semibold text-[rgb(16_14_26)]">Most chosen</span>}
+              </div>
+              <p className="mt-1 min-h-[40px] text-caption text-fg-subtle">{plans[id].intendedFor}</p>
+              <p className="mt-5 flex items-baseline gap-1">
+                <span className="font-display text-[30px] font-semibold tabular-nums tracking-[-0.02em] text-fg">{price === 0 ? '₦0' : formatNgn(price)}</span>
+                {price > 0 && <span className="text-caption text-fg-muted">/{cycle === 'yearly' ? 'yr' : 'mo'}</span>}
+              </p>
+              <p className="min-h-[20px] text-caption text-success">{cycle === 'yearly' && price > 0 ? `Save ${formatNgn(yearlySaving(id))}` : ''}</p>
+              <Button variant={isFeatured ? 'brand' : id === 'free' ? 'primary' : 'secondary'} fullWidth className="mt-5" onClick={() => navigate('/signup')}>
+                {id === 'free' ? 'Start free' : `Choose ${plans[id].name}`}
+              </Button>
+              <ul className="mt-6 flex flex-col gap-2.5 border-t border-line pt-5">
+                {planHighlights[id].map((h) =>
+              <li key={h} className="flex gap-2 text-label text-fg-muted">
+                    <CheckIcon size={15} strokeWidth={2.4} className="mt-0.5 shrink-0 text-[rgb(var(--nm-1))]" aria-hidden />
+                    {h}
+                  </li>
               )}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) =>
-            <tr key={row.label} className="border-t border-line">
-                <th scope="row" className="py-3.5 pr-4 text-label font-medium text-fg">
-                  {row.label}
-                  {row.note && <span className="block text-caption font-normal text-fg-subtle">{row.note}</span>}
-                </th>
-                {shown.map((id) =>
-              <td key={id} className={cn('px-3 py-3.5 text-label', id === 'pro' && 'bg-raised')}>
-                    <CellValue value={row.values[id]} />
-                  </td>
-              )}
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+              </ul>
+            </div>;
 
-      <div className="mt-10 flex flex-col gap-2 border-t border-line pt-6 text-label text-fg-muted sm:flex-row sm:items-center sm:justify-between">
-        <p>
-          <span className="font-semibold text-fg">{plans.enterprise.name}</span> — {plans.enterprise.intendedFor.toLowerCase()}. {planOrder.length} plans in total.
+          return (
+            <li key={id} className={cn(isFeatured && 'nm-frame nm-glow rounded-2xl')}>
+              {card}
+            </li>);
+
+        })}
+      </ul>
+
+      <div className="mt-6 flex flex-col gap-3 rounded-2xl border border-line px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-label text-fg-muted">
+          <span className="font-semibold text-fg">{plans.enterprise.name}</span> — {plans.enterprise.intendedFor.toLowerCase()}. Custom limits, contracts and dedicated support.
         </p>
-        <Button variant="tertiary" onClick={() => navigate('/about/contact')}>
+        <Button variant="secondary" trailingIcon={ArrowRightIcon} onClick={() => navigate('/about/contact')}>
           Talk to us
         </Button>
       </div>
-      <p className="mt-6 text-caption text-fg-subtle">Downgrading never deletes your content. Features above your plan pause until you upgrade again.</p>
+
+      {/* Comparison */}
+      <section aria-labelledby="compare-heading" className="mt-24">
+        <SectionHeading id="compare-heading" title="Compare every plan" />
+        <div className="scroll-quiet mt-10 overflow-x-auto rounded-2xl border border-line">
+          <table className="w-full min-w-[820px] border-collapse text-left">
+            <caption className="sr-only">Plan comparison</caption>
+            <thead>
+              <tr className="border-b border-line bg-raised">
+                <th scope="col" className="w-[30%] px-5 py-4 text-label font-medium text-fg-subtle">Feature</th>
+                {shown.map((id) =>
+                <th key={id} scope="col" className={cn('px-4 py-4 text-label font-semibold text-fg', id === featured && 'bg-sunken')}>
+                    {plans[id].name}
+                  </th>
+                )}
+              </tr>
+            </thead>
+            {groups.map((g) =>
+            <tbody key={g.area}>
+                <tr>
+                  <th scope="rowgroup" colSpan={shown.length + 1} className="border-b border-line px-5 pb-2 pt-6 text-caption font-semibold text-fg">
+                    <span className="nm-text">{g.area}</span>
+                  </th>
+                </tr>
+                {g.rows.map((row) =>
+              <tr key={row.label} className="border-b border-line last:border-0">
+                    <th scope="row" className="px-5 py-3.5 text-label font-medium text-fg">
+                      {row.label}
+                      {row.note && <span className="block text-caption font-normal text-fg-subtle">{row.note}</span>}
+                    </th>
+                    {shown.map((id) =>
+                <td key={id} className={cn('px-4 py-3.5 text-label', id === featured && 'bg-sunken/50')}>
+                        <CellValue value={row.values[id]} />
+                      </td>
+                )}
+                  </tr>
+              )}
+              </tbody>
+            )}
+          </table>
+        </div>
+      </section>
+
+      {/* Add-ons */}
+      <section aria-labelledby="addons-heading" className="mt-24">
+        <SectionHeading id="addons-heading" title="Add-ons from the marketplace" lead="Install only what you need. Uninstalling never deletes your data." />
+        <ul className="mt-10 grid gap-4 md:grid-cols-3">
+          {addOns.map((a) =>
+          <li key={a.name} className="flex flex-col rounded-2xl border border-line bg-raised p-5">
+              <div className="flex items-center gap-3">
+                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-sunken">
+                  <PuzzleIcon size={18} strokeWidth={2.2} className="text-[rgb(var(--nm-3))]" aria-hidden />
+                </span>
+                <h3 className="text-heading font-semibold text-fg">{a.name}</h3>
+              </div>
+              <p className="mt-3 text-label leading-relaxed text-fg-muted">{a.text}</p>
+              <div className="mt-auto flex items-center justify-between border-t border-line pt-4 text-caption">
+                <span className="font-semibold text-fg">{a.price}</span>
+                <span className="text-fg-subtle">{a.plan}</span>
+              </div>
+            </li>
+          )}
+        </ul>
+      </section>
+
+      {/* Fees + FAQ */}
+      <section aria-labelledby="pricing-faq-heading" className="mt-24 grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)]">
+        <div>
+          <SectionHeading id="pricing-faq-heading" title="Fees and questions" />
+          <dl className="mt-8 flex flex-col gap-3 rounded-2xl border border-line bg-raised p-5 text-label">
+            <div className="flex justify-between gap-4">
+              <dt className="text-fg-muted">Payment provider</dt>
+              <dd className="font-semibold tabular-nums text-fg">1.5% + ₦100</dd>
+            </div>
+            <div className="flex justify-between gap-4">
+              <dt className="text-fg-muted">KUBICU fee</dt>
+              <dd className="font-semibold tabular-nums text-fg">0–2% by plan</dd>
+            </div>
+            <div className="border-t border-line pt-3 text-caption text-fg-subtle">Example rates until a payment provider is confirmed.</div>
+          </dl>
+        </div>
+        <FaqList items={pricingFaq} />
+      </section>
+
+      <p className="mt-12 text-center text-caption text-fg-subtle">Downgrading never deletes your content. Features above your plan pause until you upgrade again.</p>
     </div>);
 
 }
 
 function CellValue({ value }: {value: Cell;}) {
-  if (value === true) return <CheckIcon size={17} className="text-success" aria-label="Included" />;
+  if (value === true) return <CheckIcon size={17} strokeWidth={2.4} className="text-success" aria-label="Included" />;
   if (value === false) return <MinusIcon size={17} className="text-fg-subtle" aria-label="Not included" />;
-  return <span className="text-fg-muted">{value}</span>;
+  return <span className="tabular-nums text-fg-muted">{value}</span>;
 }

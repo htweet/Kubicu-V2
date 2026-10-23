@@ -16,6 +16,7 @@ import { InlineAlert } from '../ui/InlineAlert';
 import { TestModeStrip } from '../commerce/TestModeStrip';
 import { TemplateThumb } from './TemplateThumb';
 import { SellTemplateDialog } from './SellTemplateDialog';
+import { Stat, StatGroup } from '../ui/layout/Stat';
 
 const statusInfo: Record<ListingStatus, {label: string;tone: BadgeTone;}> = {
   in_review: { label: 'In review', tone: 'info' },
@@ -69,23 +70,13 @@ export function MyTemplates({ sellOpen, setSellOpen }: {sellOpen: boolean;setSel
     <div className="flex flex-col gap-8">
       <TestModeStrip />
 
-      <dl className="flex flex-wrap gap-x-10 gap-y-4 border-b border-line pb-6">
-        <div>
-          <dt className="text-caption text-fg-subtle">Available to pay out</dt>
-          <dd className="mt-1 text-[1.75rem] font-semibold leading-none tracking-[-0.02em] tabular-nums text-fg">{formatNgn(money.available)}</dd>
-          <dd className="mt-1 text-caption text-fg-subtle">Minimum {formatNgn(PAYOUT_MIN_NGN)} (example)</dd>
-        </div>
-        <div>
-          <dt className="text-caption text-fg-subtle">Pending</dt>
-          <dd className="mt-1 text-heading font-semibold tabular-nums text-fg">{formatNgn(money.pending)}</dd>
-          <dd className="mt-1 text-caption text-fg-subtle">Inside the {REFUND_DAYS}-day refund window</dd>
-        </div>
-        <div>
-          <dt className="text-caption text-fg-subtle">Earned all time</dt>
-          <dd className="mt-1 text-heading font-semibold tabular-nums text-fg">{formatNgn(money.lifetime)}</dd>
-          <dd className="mt-1 text-caption text-fg-subtle">{money.salesCount} sale{money.salesCount === 1 ? '' : 's'} · you keep 70%</dd>
-        </div>
-        <div className="flex items-end gap-2 sm:ml-auto">
+      <div className="flex flex-col gap-5 border-b border-line pb-6 lg:flex-row lg:items-end lg:justify-between">
+        <StatGroup columns={3} className="flex-1 items-end">
+          <Stat primary label="Available to pay out" value={formatNgn(money.available)} hint={`Minimum ${formatNgn(PAYOUT_MIN_NGN)} (example)`} />
+          <Stat label="Pending" value={formatNgn(money.pending)} hint={`Inside the ${REFUND_DAYS}-day refund window`} />
+          <Stat label="Earned all time" value={formatNgn(money.lifetime)} hint={`${money.salesCount} sale${money.salesCount === 1 ? '' : 's'} · you keep 70%`} />
+        </StatGroup>
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
           <Button variant="secondary" leadingIcon={BanknoteIcon} disabled={!team.can('billing.manage').allowed} onClick={() => setPayoutOpen(true)}>
             {money.available >= PAYOUT_MIN_NGN ? 'Pay out' : 'Payout account'}
           </Button>
@@ -93,7 +84,7 @@ export function MyTemplates({ sellOpen, setSellOpen }: {sellOpen: boolean;setSel
             Sell a template
           </Button>
         </div>
-      </dl>
+      </div>
 
       {mine.length === 0 ?
       <EmptyState icon={LayoutTemplateIcon} title="You haven’t listed a template yet" description="Turn one of your spaces into a template. KUBICU removes your details, reviews it, then lists it with your name on it." action={<Button leadingIcon={PlusIcon} onClick={() => setSellOpen(true)}>Sell a template</Button>} /> :

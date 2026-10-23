@@ -1,4 +1,5 @@
-import React, { useEffect, useId, useRef } from 'react';
+import React, { useId, useRef } from 'react';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { XIcon } from 'lucide-react';
@@ -25,25 +26,8 @@ export function Dialog({ open, onClose, title, description, children, footer, si
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
 
-  useEffect(() => {
-    if (!open) return;
-    const previous = document.activeElement as HTMLElement | null;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onCloseRef.current();
-    };
-    document.addEventListener('keydown', onKey);
-    const t = window.setTimeout(() => {
-      const target =
-      panelRef.current?.querySelector<HTMLElement>('[data-autofocus]') ??
-      panelRef.current?.querySelector<HTMLElement>('input, textarea');
-      (target ?? panelRef.current)?.focus();
-    }, 40);
-    return () => {
-      document.removeEventListener('keydown', onKey);
-      window.clearTimeout(t);
-      previous?.focus();
-    };
-  }, [open]);
+  // Focus moves in, Tab stays inside, Escape closes, focus returns to the opener (D76).
+  useFocusTrap(panelRef, open, () => onCloseRef.current());
 
   return createPortal(
     <AnimatePresence>

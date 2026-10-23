@@ -2,7 +2,8 @@ import React, { forwardRef } from "react";
 import { Loader2Icon, BoxIcon } from "lucide-react";
 import { cn } from "../../utils/cn";
 /** `ai` is reserved for actions that run AI (D63) — the gradient marks them everywhere. */
-export type ButtonVariant = 'primary' | 'secondary' | 'tertiary' | 'destructive' | 'ai';
+/** `brand` is the Night-market gradient, website/legal/sign-in only (D77). */
+export type ButtonVariant = 'primary' | 'secondary' | 'tertiary' | 'destructive' | 'ai' | 'brand';
 export type ButtonSize = 'sm' | 'md' | 'lg';
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
@@ -17,7 +18,8 @@ const variants: Record<ButtonVariant, string> = {
   secondary: 'bg-raised text-fg border border-line-strong hover:bg-sunken',
   tertiary: 'text-fg-muted hover:text-fg hover:bg-sunken',
   destructive: 'bg-danger-soft text-danger border border-danger/30 hover:border-danger/60',
-  ai: 'ai-fill text-white hover:brightness-110'
+  ai: 'ai-fill text-white hover:brightness-110',
+  brand: 'nm-fill font-semibold text-[rgb(16_14_26)] hover:brightness-110'
 };
 const sizes: Record<ButtonSize, string> = {
   sm: 'h-8 px-3 text-label rounded-sm gap-1.5',

@@ -21,15 +21,15 @@ export function Tabs<T extends string>({ items, value, onChange, ariaLabel, idPr
   const refs = useRef<Array<HTMLButtonElement | null>>([]);
 
   const onKeyDown = (e: React.KeyboardEvent, index: number) => {
-    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+    if (!['ArrowRight', 'ArrowLeft', 'Home', 'End'].includes(e.key)) return;
     e.preventDefault();
-    const next = (index + (e.key === 'ArrowRight' ? 1 : -1) + items.length) % items.length;
+    const next = e.key === 'Home' ? 0 : e.key === 'End' ? items.length - 1 : (index + (e.key === 'ArrowRight' ? 1 : -1) + items.length) % items.length;
     onChange(items[next].id);
     refs.current[next]?.focus();
   };
 
   return (
-    <div role="tablist" aria-label={ariaLabel} className={cn('flex gap-1 shadow-[inset_0_-1px_0_0_rgb(var(--border-subtle))]', className)}>
+    <div role="tablist" aria-label={ariaLabel} className={cn('scroll-quiet flex gap-1 overflow-x-auto shadow-[inset_0_-1px_0_0_rgb(var(--border-subtle))]', className)}>
       {items.map((item, i) => {
         const selected = item.id === value;
         return (

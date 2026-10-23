@@ -17,6 +17,8 @@ import { HoursEditor } from '../../components/canvas/inspector/HoursEditor';
 import { fieldControlClass } from '../../components/ui/Field';
 import { BookingsPlanNote } from '../../components/bookings/BookingsPlanNote';
 import { cn } from '../../utils/cn';
+import { Card } from '../../components/ui/layout/Card';
+import { AsideNote } from '../../components/ui/layout/AsideNote';
 
 const num = (v: string, max: number) => Math.min(max, Number(v.replace(/[^0-9]/g, '') || '0'));
 
@@ -44,34 +46,26 @@ export function Availability() {
         } />
       
       <BookingsPlanNote />
-      <div className="mt-8 grid gap-10 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
-        <div className="flex flex-col gap-8">
-          <section aria-labelledby="hours-h" className="rounded-lg border border-line bg-raised p-5">
-            <h2 id="hours-h" className="text-heading font-semibold text-fg">
-              Weekly hours
-            </h2>
-            <div className="mt-4 max-w-xs">
-              <TimezoneSelect id="av-tz" value={draft.timeZone as TimeZoneId} onChange={(timeZone) => patch({ timeZone })} hint="Slots are shown in this zone; visitors also see their own time." />
+      <div className="mt-8 grid items-start gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
+        <div className="flex flex-col gap-6">
+          <Card id="hours" emphasis="primary" title="Weekly hours" description="When people can book, in your time zone. Visitors also see their own time.">
+            <div className="max-w-xs">
+              <TimezoneSelect id="av-tz" value={draft.timeZone as TimeZoneId} onChange={(timeZone) => patch({ timeZone })} />
             </div>
-            <div className="mt-4">
+            <div className="mt-5 border-t border-line pt-5">
               <HoursEditor blockId="availability" hours={draft.weekly} onChange={(weekly) => patch({ weekly })} error={hoursError} />
             </div>
-          </section>
+          </Card>
 
-          <section aria-labelledby="ov-h" className="rounded-lg border border-line bg-raised p-5">
-            <div className="flex items-center justify-between gap-3">
-              <h2 id="ov-h" className="text-heading font-semibold text-fg">
-                Date changes
-              </h2>
-              <Button size="sm" variant="secondary" leadingIcon={PlusIcon} onClick={() => patch({ overrides: [...draft.overrides, { id: uid('ov'), date: addDaysKey(dateKeyInTz(Date.now(), draft.timeZone), 7), closed: true, open: '10:00', close: '14:00', note: '' }] })}>
+          <Card id="ov" title="Date changes" description="Holidays, travel or special hours. These override the weekly pattern." actions={
+          <Button size="sm" variant="secondary" leadingIcon={PlusIcon} onClick={() => patch({ overrides: [...draft.overrides, { id: uid('ov'), date: addDaysKey(dateKeyInTz(Date.now(), draft.timeZone), 7), closed: true, open: '10:00', close: '14:00', note: '' }] })}>
                 Add date
               </Button>
-            </div>
-            <p className="mt-1 text-caption text-fg-subtle">Holidays, travel or special hours. These override the weekly pattern.</p>
+          }>
             {draft.overrides.length === 0 ?
-            <p className="mt-4 text-label text-fg-muted">No date changes.</p> :
+            <p className="text-label text-fg-muted">No date changes.</p> :
 
-            <ul className="mt-4 flex flex-col divide-y divide-line border-y border-line">
+            <ul className="-my-3 flex flex-col divide-y divide-line">
                 {draft.overrides.map((o) => {
                 const set = (p: Partial<typeof o>) => patch({ overrides: draft.overrides.map((x) => x.id === o.id ? { ...x, ...p } : x) });
                 return (
@@ -92,50 +86,53 @@ export function Availability() {
               })}
               </ul>
             }
-          </section>
+          </Card>
         </div>
 
-        <div className="flex flex-col gap-8">
-          <section aria-labelledby="lim-h" className="rounded-lg border border-line bg-raised p-5">
-            <h2 id="lim-h" className="text-heading font-semibold text-fg">
+        <div className="flex flex-col gap-6">
+          <Card id="rules" title="Booking rules" body="flush">
+          <div className="flex flex-col divide-y divide-line">
+          <section aria-labelledby="lim-h" className="px-5 py-5 md:px-6">
+            <h3 id="lim-h" className="text-label font-semibold text-fg">
               Limits
-            </h2>
-            <div className="mt-4 grid gap-4 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
+            </h3>
+            <div className="mt-3 grid gap-4 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
               <TextInput id="av-notice" label="Minimum notice (hours)" inputMode="numeric" value={String(draft.minNoticeHours)} onChange={(e) => patch({ minNoticeHours: num(e.target.value, 336) })} />
               <TextInput id="av-max" label="Most bookings per day" inputMode="numeric" value={String(draft.maxPerDay)} onChange={(e) => patch({ maxPerDay: Math.max(1, num(e.target.value, 50)) })} />
               <TextInput id="av-horizon" label="Book up to (days ahead)" inputMode="numeric" value={String(draft.horizonDays)} onChange={(e) => patch({ horizonDays: Math.max(1, num(e.target.value, 365)) })} />
             </div>
           </section>
 
-          <section aria-labelledby="pol-h" className="rounded-lg border border-line bg-raised p-5">
-            <h2 id="pol-h" className="text-heading font-semibold text-fg">
+          <section aria-labelledby="pol-h" className="px-5 py-5 md:px-6">
+            <h3 id="pol-h" className="text-label font-semibold text-fg">
               Cancellation policy
-            </h2>
-            <div className="mt-4 flex flex-col gap-4">
+            </h3>
+            <div className="mt-3 flex flex-col gap-4">
               <TextInput id="av-cancel" label="Free changes until (hours before)" inputMode="numeric" value={String(draft.cancelHours)} hint="After this, customer cancellations keep the deposit. You can always refund yourself." onChange={(e) => patch({ cancelHours: num(e.target.value, 168) })} />
               <TextArea id="av-policy" label="Policy shown before booking" rows={3} value={draft.policy} onChange={(e) => patch({ policy: e.target.value })} />
             </div>
           </section>
 
-          <section aria-labelledby="rem-h" className="rounded-lg border border-line bg-raised p-5">
-            <h2 id="rem-h" className="sr-only">
+          <section aria-labelledby="rem-h" className="px-5 py-5 md:px-6 md:pb-6">
+            <h3 id="rem-h" className="sr-only">
               Reminders
-            </h2>
+            </h3>
             <Switch id="av-rem" label="Send booking reminders" description="WhatsApp or email in the customer’s own time zone. Preview only in this prototype." checked={draft.remindersOn} onChange={(remindersOn) => patch({ remindersOn })} />
             {draft.remindersOn &&
-            <>
+                <>
                 <div className="mt-4 max-w-[220px]">
                   <SelectInput id="av-remh" label="When" value={String(draft.reminderHours)} options={[2, 12, 24, 48].map((h) => ({ value: String(h), label: `${h} hours before` }))} onChange={(v) => patch({ reminderHours: Number(v) })} />
                 </div>
                 <p className="mt-3 rounded-md bg-sunken px-3 py-2.5 text-label text-fg-muted">“Hi Amaka, a reminder of your Studio fitting tomorrow at 11:00am (Lagos time). Need to move it? Use your booking link.”</p>
               </>
-            }
+                }
           </section>
+          </div>
+          </Card>
 
-          <section className="rounded-lg border border-dashed border-line-strong p-5">
-            <h2 className="text-label font-semibold text-fg">Calendar sync & sample data</h2>
-            <p className="mt-1 text-label text-fg-muted">Google and Outlook calendar sync is planned. {hasSample ? 'Sample services, bookings, contacts and automations are labelled.' : ''}</p>
-            <div className="mt-3">
+          <aside className="flex flex-col divide-y divide-line px-1 pt-2">
+            <AsideNote id="sync" title="Calendar sync" text="Google and Outlook calendar sync is planned. Until then, bookings live only in KUBICU." />
+            <AsideNote id="sample" title="Sample data" text={hasSample ? 'Sample services, bookings, contacts and automations are labelled “Sample”.' : 'Add labelled sample services and bookings to explore every screen.'}>
               {hasSample ?
               <Button size="sm" variant="destructive" onClick={clearSample}>
                   Clear sample data
@@ -145,8 +142,8 @@ export function Availability() {
                   Add sample data
                 </Button>
               }
-            </div>
-          </section>
+            </AsideNote>
+          </aside>
         </div>
       </div>
     </>);

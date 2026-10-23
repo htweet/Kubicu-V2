@@ -105,7 +105,7 @@ export function NewSpaceDialog({ open, onClose, mainDoc, initialKind = null, tem
   }, [open, initialKind]);
 
   const codes = commerce.discounts.filter((d) => d.kind === 'code');
-  const activeProducts = commerce.products.filter((p) => p.status === 'active');
+  const activeProducts = commerce.products.filter((p) => p.status === 'active' && p.kind !== 'ticket');
   const physicalProducts = activeProducts.filter((p) => p.kind === 'physical');
   const roomError = !roomProduct ?
   'Choose the product.' :

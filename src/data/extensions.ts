@@ -10,6 +10,28 @@ export const extensionCategories: Record<ExtensionCategory, string> = {
 /** Curated catalogue (D67). Partners and reviews are illustrative. */
 export const extensions: ExtensionInfo[] = [
 {
+  id: 'forms',
+  name: 'Forms',
+  publisher: 'KUBICU',
+  verified: 'kubicu',
+  category: 'operations',
+  summary: 'Build any form — quotes, RSVPs, orders, applications — with steps, rules and payments.',
+  description:
+  'A full form builder: 17 field types, multi-step forms, show-or-hide rules based on earlier answers, spam protection, honest marketing consent and an optional payment field (test mode). Add a Form block to any page; every response lands in that form’s inbox and in Audience, and can start an automation. The free Lead form and Newsletter blocks stay as they are.',
+  adds: ['A Forms screen with a builder and six starter forms', 'A Form block for your pages', 'An inbox for each form with assigning and CSV export', 'Responses feed Audience, Automations, Analytics and notifications'],
+  permissions: ['Create forms in your workspace', 'Save responses visitors send', 'Add or update contacts in Audience', 'Take test-mode payments on forms with a payment field'],
+  minPlan: 'creator',
+  priceNgn: 2500,
+  version: '1.0.0',
+  versions: [{ version: '1.0.0', date: '2026-10-20', notes: 'First release: builder, steps, rules, payment field and inbox.' }],
+  reviews: [
+  { name: 'Adaeze N.', business: 'Adaeze Bridal', rating: 5, text: 'The quote form with the wedding-date question only showing for bridal saved me hours of back and forth.' },
+  { name: 'Kunle B.', business: 'Kunle Events', rating: 4, text: 'RSVPs straight into Audience. Would love to email everyone from the inbox.' }],
+
+  staffPick: true,
+  uninstallNote: 'Your forms and responses are kept for 30 days in case you reinstall. Form blocks on your pages stop accepting responses straight away.'
+},
+{
   id: 'abandoned-cart',
   name: 'Abandoned-cart recovery',
   publisher: 'KUBICU',

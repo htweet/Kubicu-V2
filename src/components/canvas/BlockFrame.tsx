@@ -93,6 +93,7 @@ export function BlockFrame({
       <div
         role="button"
         tabIndex={0}
+        data-block-id={block.id}
         aria-pressed={selected}
         aria-label={`${name} block${groupName ? `, in ${groupName}` : ''}${locked ? ', locked' : ''}${hidden ? ', hidden from live page' : ''}${hasError ? ', needs attention' : ''}`}
         onClick={(e) => {

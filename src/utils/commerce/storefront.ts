@@ -34,7 +34,8 @@ export function storefrontOrdering(data: CommerceData, plan: WorkspacePlan): 'ch
 
 export function shopProducts(data: CommerceData | null): Product[] {
   if (!data) return [];
-  return data.products.filter((p) => p.status === 'active' && (!data.storefront.hideSoldOut || !isSoldOut(p)));
+  // Event tickets are sold from Event blocks, not the shop (D73).
+  return data.products.filter((p) => p.status === 'active' && p.kind !== 'ticket' && (!data.storefront.hideSoldOut || !isSoldOut(p)));
 }
 
 export function sortProducts(list: Product[], sort: StorefrontSort): Product[] {
@@ -67,7 +68,7 @@ export function productSlug(p: Product, all: Product[]): string {
 /** An active product by id or readable address. */
 export function findShopProduct(data: CommerceData | null, ref: string): Product | undefined {
   if (!data) return undefined;
-  const active = data.products.filter((p) => p.status === 'active');
+  const active = data.products.filter((p) => p.status === 'active' && p.kind !== 'ticket');
   return active.find((p) => p.id === ref) ?? active.find((p) => productSlug(p, data.products) === ref);
 }
 

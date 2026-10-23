@@ -24,6 +24,8 @@ import { SampleTag } from '../../components/commerce/StatusBadges';
 import { SubStatusBadge } from '../../components/subscriptions/SubStatusBadge';
 import { SubscriberDetail } from '../../components/subscriptions/SubscriberDetail';
 import { SubPlanEditor } from '../../components/subscriptions/SubPlanEditor';
+import { Card } from '../../components/ui/layout/Card';
+import { Stat, StatGroup } from '../../components/ui/layout/Stat';
 
 type Tab = 'subscribers' | 'plans';
 type StatusFilter = 'all' | SubStatus;
@@ -133,27 +135,20 @@ export function Subscriptions() {
         </InlineAlert>
       }
 
-      <dl className="mt-8 flex flex-wrap gap-x-10 gap-y-4 border-b border-line pb-6">
-        <div>
-          <dt className="text-caption text-fg-subtle">Monthly recurring revenue</dt>
-          <dd className="mt-1 text-[1.75rem] font-semibold leading-none tracking-[-0.02em] tabular-nums text-fg">{formatNgn(stats.mrr)}</dd>
-          <dd className="mt-1 text-caption text-fg-subtle">{stats.paying} paying · {stats.trials} on trial</dd>
+      <Card emphasis="primary" as="div" className="mt-8">
+        <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] md:items-end">
+          <dl>
+            <Stat primary label="Monthly recurring revenue" value={formatNgn(stats.mrr)} hint={`${stats.paying} paying · ${stats.trials} on trial`} />
+          </dl>
+          <StatGroup className="border-t border-line pt-4 md:border-l md:border-t-0 md:pl-6 md:pt-0">
+            <Stat label="Joined, 30 days" value={stats.joined} />
+            <Stat label="Left, 30 days" value={stats.left} />
+            <Stat label="Payments failing" value={<span className={stats.failing ? 'text-danger' : undefined}>{stats.failing}</span>} />
+          </StatGroup>
         </div>
-        <div>
-          <dt className="text-caption text-fg-subtle">Joined, 30 days</dt>
-          <dd className="mt-1 text-heading font-semibold tabular-nums text-fg">{stats.joined}</dd>
-        </div>
-        <div>
-          <dt className="text-caption text-fg-subtle">Left, 30 days</dt>
-          <dd className="mt-1 text-heading font-semibold tabular-nums text-fg">{stats.left}</dd>
-        </div>
-        <div>
-          <dt className="text-caption text-fg-subtle">Payments failing</dt>
-          <dd className={`mt-1 text-heading font-semibold tabular-nums ${stats.failing ? 'text-danger' : 'text-fg'}`}>{stats.failing}</dd>
-        </div>
-      </dl>
+      </Card>
 
-      <div className="mt-6 flex flex-wrap items-end justify-between gap-3">
+      <div className="mt-8 flex flex-wrap items-end justify-between gap-3">
         <Segmented<Tab>
           ariaLabel="Subscriptions view"
           value={tab}

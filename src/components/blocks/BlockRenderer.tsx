@@ -27,6 +27,7 @@ import { DownloadBlock } from './DownloadBlock';
 import { PortfolioBlock } from './PortfolioBlock';
 import { LocationBlock } from './LocationBlock';
 import { SubscriptionBlock } from './SubscriptionBlock';
+import { FormBlock } from './FormBlock';
 
 interface BlockRendererProps {
   block: Block;
@@ -90,6 +91,8 @@ export function BlockRenderer({ block, theme, mode }: BlockRendererProps) {
       return <LocationBlock block={block} theme={theme} mode={mode} />;
     case 'subscription':
       return <SubscriptionBlock block={block} theme={theme} mode={mode} />;
+    case 'form':
+      return <FormBlock block={block} theme={theme} mode={mode} />;
     default:
       return null;
   }

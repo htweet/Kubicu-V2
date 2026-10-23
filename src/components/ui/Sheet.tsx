@@ -1,4 +1,5 @@
-import React, { useEffect, useId, useRef } from 'react';
+import React, { useId, useRef } from 'react';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { XIcon } from 'lucide-react';
@@ -35,17 +36,11 @@ export function Sheet({
   size = 'md'
 }: SheetProps) {
   const titleId = useId();
+  const panelRef = useRef<HTMLDivElement>(null);
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
-
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onCloseRef.current();
-    };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [open]);
+  // Focus moves in, Tab stays inside, Escape closes, focus returns to the opener (D76).
+  useFocusTrap(panelRef, open, () => onCloseRef.current());
 
   // On phones, side panels open full-screen from the bottom so editors get the whole width (D49).
   const wide = useMediaQuery('(min-width: 768px)');
@@ -66,15 +61,17 @@ export function Sheet({
           aria-hidden />
         
           <motion.div
+          ref={panelRef}
           role="dialog"
           aria-modal="true"
           aria-labelledby={titleId}
+          tabIndex={-1}
           initial={isBottom ? { y: '100%' } : { x: '100%' }}
           animate={isBottom ? { y: 0 } : { x: 0 }}
           exit={isBottom ? { y: '100%' } : { x: '100%' }}
           transition={{ duration: 0.26, ease: [0.23, 1, 0.32, 1] }}
           className={cn(
-            'absolute flex flex-col border-line bg-overlay text-fg shadow-3',
+            'absolute flex flex-col border-line bg-overlay text-fg shadow-3 focus:outline-none',
             fullScreen ?
             'inset-0 pt-[env(safe-area-inset-top)] safe-bottom' :
             isBottom ?

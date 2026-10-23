@@ -64,11 +64,12 @@ export function UsageMeters() {
             <div className="flex items-baseline justify-between gap-3">
               <span className="text-label text-fg">{m.label}</span>
               <span className={cn('shrink-0 text-caption tabular-nums', tone === 'full' ? 'font-semibold text-danger' : tone === 'near' ? 'font-semibold text-warning' : 'text-fg-muted')}>
-                {fmt(m.used)} {m.limit === null ? '· unlimited' : `of ${fmt(m.limit)}`}
+                {fmt(m.used)} {m.limit === null ? '· unlimited' : `of ${fmt(m.limit)} · ${Math.round(pct)}% used`}
+                {tone === 'full' ? ' · Full' : tone === 'near' ? ' · Nearly full' : ''}
               </span>
             </div>
             {m.limit !== null &&
-            <div className="h-1.5 overflow-hidden rounded-full bg-sunken" role="progressbar" aria-label={m.label} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(pct)}>
+            <div className="h-1.5 overflow-hidden rounded-full bg-sunken" role="meter" aria-label={m.label} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(pct)} aria-valuetext={`${Math.round(pct)}% used`}>
                 <div className={cn('h-full rounded-full', tone === 'full' ? 'bg-danger' : tone === 'near' ? 'bg-warning' : 'bg-action')} style={{ width: `${Math.max(pct, m.used > 0 ? 2 : 0)}%` }} />
               </div>
             }

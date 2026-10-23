@@ -1,15 +1,27 @@
-import React, { useId } from 'react';
+import React, { useEffect, useId, useRef } from 'react';
 import type { PageTheme } from '../../types/page';
 import { buttonStyle, fontsFor, inputStyle, mix } from '../blocks/pageStyle';
 
 /** Small theme-styled pieces shared by checkout, order and download screens. */
 
-export function CheckoutHeading({ theme, children, sub }: {theme: PageTheme;children: React.ReactNode;sub?: React.ReactNode;}) {
+/**
+ * Step heading. Inside sheets (level 2) it takes focus when a new step appears, so screen-reader
+ * and keyboard users land at the top of each step (WCAG 2.4.3, D76). Standalone pages use level 1.
+ */
+export function CheckoutHeading({ theme, children, sub, level = 2 }: {theme: PageTheme;children: React.ReactNode;sub?: React.ReactNode;level?: 1 | 2;}) {
+  const ref = useRef<HTMLHeadingElement>(null);
+  const text = typeof children === 'string' ? children : ref.current?.textContent ?? '';
+  useEffect(() => {
+    if (level !== 2) return;
+    const t = window.setTimeout(() => ref.current?.focus({ preventScroll: true }), 50);
+    return () => window.clearTimeout(t);
+  }, [level, text]);
+  const Tag = level === 1 ? 'h1' : 'h2';
   return (
     <div className="pr-12">
-      <h2 className="text-[22px] font-medium leading-tight tracking-[-0.01em]" style={{ fontFamily: fontsFor(theme).display, color: theme.text }}>
+      <Tag ref={ref} tabIndex={-1} className="text-[22px] font-medium leading-tight tracking-[-0.01em] focus:outline-none" style={{ fontFamily: fontsFor(theme).display, color: theme.text }}>
         {children}
-      </h2>
+      </Tag>
       {sub &&
       <p className="mt-1 text-[13.5px] leading-relaxed" style={{ color: theme.mutedText }}>
           {sub}
@@ -90,6 +102,25 @@ export function SecondaryButton({ theme, children, onClick }: {theme: PageTheme;
     <button type="button" onClick={onClick} className="flex h-12 w-full items-center justify-center gap-2 text-[15px] font-semibold" style={buttonStyle(theme, 'default')}>
       {children}
     </button>);
+
+}
+
+/**
+ * Pins a sheet's main actions to the bottom edge while the content above scrolls.
+ * Must be the last child of a step inside PageOverlay (whose content wrapper uses px-5).
+ */
+export function SheetActions({ theme, children }: {theme: PageTheme;children: React.ReactNode;}) {
+  return (
+    <div
+      className="sticky bottom-0 z-[1] -mx-5 mt-auto flex flex-col gap-2 px-5 pt-3"
+      style={{
+        background: theme.background,
+        borderTop: `1px solid ${mix(theme.text, 10)}`,
+        paddingBottom: 'max(20px, env(safe-area-inset-bottom))'
+      }}>
+      
+      {children}
+    </div>);
 
 }
 

@@ -126,6 +126,8 @@ export function summarizeBlock(block: Block): string {
       return block.content.name || block.content.address || 'No address yet';
     case 'subscription':
       return `${block.content.planIds.length} plan${block.content.planIds.length === 1 ? '' : 's'}`;
+    case 'form':
+      return block.content.formId ? 'Form' : 'No form chosen';
     default:
       return '';
   }

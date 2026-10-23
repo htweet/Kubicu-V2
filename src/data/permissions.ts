@@ -22,6 +22,7 @@ export const permissionRows: {id: Permission;label: string;}[] = [
 { id: 'prices.edit', label: 'Change prices' },
 { id: 'orders.manage', label: 'Fulfil and cancel orders' },
 { id: 'orders.refund', label: 'Refund orders' },
+{ id: 'tickets.checkin', label: 'Check in guests at events' },
 { id: 'discounts.manage', label: 'Create discounts' },
 { id: 'commerce.settings', label: 'Payments, delivery and storefront settings' },
 { id: 'bookings.manage', label: 'Manage bookings and services' },
@@ -43,7 +44,7 @@ export const rolePermissions: Record<Role, Set<Permission>> = {
   owner: new Set(all),
   admin: new Set(all.filter((p) => p !== 'billing.manage' && p !== 'ownership.transfer' && p !== 'workspace.delete')),
   editor: new Set<Permission>(['pages.edit', 'pages.publish', 'spaces.manage', 'media.manage', 'analytics.view']),
-  sales: new Set<Permission>(['products.edit', 'orders.manage', 'orders.refund', 'bookings.manage', 'contacts.manage', 'analytics.view']),
+  sales: new Set<Permission>(['products.edit', 'orders.manage', 'orders.refund', 'tickets.checkin', 'bookings.manage', 'contacts.manage', 'analytics.view']),
   viewer: new Set<Permission>()
 };
 

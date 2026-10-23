@@ -511,6 +511,9 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
         `page:${field}`
       ),
 
+      /** The language visitors' browsers and screen readers use for the whole site (D76). */
+      setLanguage: (language: string) => mutateSite((doc) => ({ ...doc, language }), 'page:language'),
+
       applyTemplate: (template: PageDocument) =>
       mutate(
         (doc) => cloneDocument(template, { id: doc.id, handle: doc.handle, title: doc.title, branding: doc.branding }),

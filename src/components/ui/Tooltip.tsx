@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 import { cn } from '../../utils/cn';
 
 interface TooltipProps {
@@ -9,11 +9,17 @@ interface TooltipProps {
   className?: string;
 }
 
+/** Hover and keyboard-focus tooltip. The trigger is described by the tip so screen readers read it (D76). */
 export function Tooltip({ content, side = 'top', align = 'center', children, className }: TooltipProps) {
+  const tipId = useId();
+  const child = React.isValidElement<{'aria-describedby'?: string;}>(children) ?
+  React.cloneElement(children, { 'aria-describedby': cn(children.props['aria-describedby'], tipId) || undefined }) :
+  children;
   return (
     <span className={cn('group/tip relative inline-flex', className)}>
-      {children}
+      {child}
       <span
+        id={tipId}
         role="tooltip"
         className={cn(
           'pointer-events-none absolute z-50 w-max max-w-[240px] rounded-sm bg-inverse px-2.5 py-1.5 text-caption font-medium text-fg-inverse shadow-2',

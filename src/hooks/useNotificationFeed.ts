@@ -8,6 +8,9 @@ import { useDomains } from '../contexts/DomainsContext';
 import { useWorkspace } from '../contexts/WorkspaceContext';
 import { usePlan } from '../contexts/PlanContext';
 import { useAiUsage } from './useAiUsage';
+import { useFormsStore } from './useFormsStore';
+import { useMarketplace } from '../contexts/MarketplaceContext';
+import { FORMS_EXTENSION_ID } from '../utils/forms/storage';
 import { isLowStock, isSoldOut } from '../utils/commerce/catalog';
 import { readSpacePage } from '../utils/spaces';
 import { roomProgress } from '../utils/dealRoom';
@@ -35,6 +38,8 @@ export function useNotificationFeed(): AppNotification[] {
   const { current } = useWorkspace();
   const plan = usePlan();
   const ai = useAiUsage();
+  const formsActive = useMarketplace().isActive(FORMS_EXTENSION_ID);
+  const forms = useFormsStore(formsActive ? current.id : null).data;
 
   return useMemo(() => {
     const out: AppNotification[] = [];
@@ -72,6 +77,17 @@ export function useNotificationFeed(): AppNotification[] {
     for (const p of commerce.products) {
       if (p.status !== 'active') continue;
       const sold = isSoldOut(p);
+      if (p.kind === 'ticket') {
+        // Events (D73): a ticket type selling out, or seats running low.
+        const ev = (commerce.events ?? []).find((e) => e.id === p.eventId);
+        if (!ev) continue;
+        p.variants.forEach((v) => {
+          const name = ev.ticketTypes.find((t) => t.id === v.id)?.name ?? 'Tickets';
+          if (v.stock <= 0) out.push({ id: `stock:${p.id}:${v.id}:out`, event: 'stock', area: 'stock', kind: 'update', text: `${name} for ${ev.name} sold out`, href: `/app/commerce/events?edit=${ev.id}`, at: p.updatedAt });else
+          if (v.stock <= p.lowStockAt) out.push({ id: `stock:${p.id}:${v.id}:low`, event: 'stock', area: 'stock', kind: 'update', text: `Only ${v.stock} ${name} left for ${ev.name}`, href: `/app/commerce/events?edit=${ev.id}`, at: p.updatedAt });
+        });
+        continue;
+      }
       if (sold || isLowStock(p)) out.push({ id: `stock:${p.id}:${sold ? 'out' : 'low'}`, event: 'stock', area: 'stock', kind: 'action', text: sold ? `${p.name} is sold out` : `${p.name} is running low`, href: '/app/commerce/inventory', at: p.updatedAt });
     }
 
@@ -90,6 +106,16 @@ export function useNotificationFeed(): AppNotification[] {
       for (const t of c.tasks) {
         if (!t.done && t.due && Date.parse(t.due) < now + DAY && (!t.assigneeId || t.assigneeId === team.me.id))
         out.push({ id: `task_due:${t.id}`, event: 'task_due', area: 'audience', kind: 'action', text: `Follow up with ${c.name}: ${t.text}`, href: '/app/audience', at: t.due });
+      }
+    }
+
+    // Forms add-on responses (D79): unread responses from the last week.
+    if (forms) {
+      for (const s of forms.submissions) {
+        if (s.status !== 'new' || now - Date.parse(s.createdAt) > 7 * DAY) continue;
+        const form = forms.forms.find((f) => f.id === s.formId);
+        if (!form) continue;
+        out.push({ id: `form_response:${s.id}`, event: 'form_response', area: 'audience', kind: 'action', text: `${s.contactName || 'Someone'} sent “${form.name}”${s.payment ? ` and paid ${formatNgn(s.payment.amountNgn)} (test)` : ''}`, href: `/app/forms/${form.id}?tab=responses&response=${s.id}`, at: s.createdAt });
       }
     }
 
@@ -147,5 +173,5 @@ export function useNotificationFeed(): AppNotification[] {
     }
 
     return out.sort((a, b) => Date.parse(b.at) - Date.parse(a.at));
-  }, [commerce, ops, team.data.reviews, team.myNotices, team.me.id, billing, domains, current, plan, ai.limit, ai.remaining, ai.resetsOn]);
+  }, [commerce, ops, forms, team.data.reviews, team.myNotices, team.me.id, billing, domains, current, plan, ai.limit, ai.remaining, ai.resetsOn]);
 }

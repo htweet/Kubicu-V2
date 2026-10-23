@@ -6,6 +6,7 @@ import { blankTemplateDoc } from '../../data/templates';
 import { TemplateThumb } from '../templates/TemplateThumb';
 import { AiPreviewTag } from '../ai/AiPreviewTag';
 import { AiKitDialog } from './AiKitDialog';
+import { useFlag } from '../../utils/admin/store';
 import { Button } from '../ui/Button';
 import { ChoiceCard, StepHeading, StepNav } from './OnboardingLayout';
 
@@ -18,6 +19,8 @@ interface StepProps {
 export function KitStep({ state, update, go }: StepProps) {
   const [showAll, setShowAll] = useState(false);
   const [aiOpen, setAiOpen] = useState(false);
+  // New workspaces start on Free; Super admin can pause AI page setup (D75b).
+  const aiAllowed = useFlag('ai_page_setup', 'free');
   const goal = state.goal;
   const matched = goal && goal !== 'other' ? examplePages.filter((e) => e.goals.includes(goal)) : [];
   const list = showAll || matched.length === 0 ? examplePages : matched.slice(0, 4);
@@ -40,7 +43,7 @@ export function KitStep({ state, update, go }: StepProps) {
               <TemplateThumb doc={blankTemplateDoc} width={120} height={170} />
             </span>
           </ChoiceCard>
-          <ChoiceCard
+          {aiAllowed && <ChoiceCard
             name="kit"
             selected={false}
             onSelect={() => setAiOpen(true)}
@@ -51,7 +54,7 @@ export function KitStep({ state, update, go }: StepProps) {
             <span className="ai-fill mb-3 flex h-[170px] items-center justify-center rounded-[14px] text-white">
               <SparklesIcon size={26} aria-hidden />
             </span>
-          </ChoiceCard>
+          </ChoiceCard>}
         </div>
       </fieldset>
       {!showAll && matched.length > 0 && matched.length < examplePages.length &&

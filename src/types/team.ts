@@ -9,6 +9,7 @@ export type Permission =
 'prices.edit' |
 'orders.manage' |
 'orders.refund' |
+'tickets.checkin' |
 'discounts.manage' |
 'commerce.settings' |
 'bookings.manage' |
