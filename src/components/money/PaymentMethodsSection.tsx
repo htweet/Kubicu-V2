@@ -18,6 +18,7 @@ import { Switch } from "../ui/Switch";
 import { Badge } from "../ui/Badge";
 import { UpgradeButton } from "../ui/UpgradeButton";
 import { PartnerNote } from "./PartnerNote";
+import { PayOptionsCard } from "./PayOptionsCard";
 interface MethodInfo {
   id: PayMethod;
   icon: BoxIcon;
@@ -44,13 +45,7 @@ const methods: MethodInfo[] = [{
   body: 'The buyer’s money is held until they confirm delivery or the inspection window ends, then released to your wallet.',
   timing: 'Released after delivery'
 }];
-const later = [{
-  title: 'Pay on delivery',
-  body: 'Rider collects cash or card at the door. Needs a delivery partner.'
-}, {
-  title: 'Instalments',
-  body: 'Buyer pays over time through a lending partner; you’re paid upfront.'
-}];
+
 
 /** Commerce → Payments → How you get paid (D92). */
 export function PaymentMethodsSection() {
@@ -146,15 +141,7 @@ export function PaymentMethodsSection() {
         })}
         </div>
 
-        <ul className="grid gap-4 md:grid-cols-2" aria-label="Coming later">
-          {later.map((l) => <li key={l.title} className="flex items-start justify-between gap-4 rounded-lg border border-dashed border-line px-5 py-4">
-              <span>
-                <span className="block text-label font-medium text-fg-muted">{l.title}</span>
-                <span className="mt-0.5 block text-caption text-fg-subtle">{l.body}</span>
-              </span>
-              <Badge tone="neutral">Coming later</Badge>
-            </li>)}
-        </ul>
+        <PayOptionsCard />
 
         <Card title="By area" description="Override the default where it makes sense — for example escrow for big custom jobs, wallet for tickets." body="flush">
           <ul className="divide-y divide-line">

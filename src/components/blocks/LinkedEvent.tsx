@@ -1,5 +1,5 @@
-import React from 'react';
-import { CalendarIcon, LinkIcon, MapPinIcon, TicketIcon, VideoIcon } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArmchairIcon, CalendarIcon, LinkIcon, MapPinIcon, TicketIcon, VideoIcon } from 'lucide-react';
 import type { PageTheme, RenderMode } from '../../types/page';
 import type { CommerceData, CommerceEvent } from '../../types/commerce';
 import { BlockPlaceholder } from './BlockPlaceholder';
@@ -12,6 +12,9 @@ import { formatNgn } from '../../utils/format';
 import { useNow } from '../../hooks/useNow';
 import { LOW_SEATS_AT, availableForEvent, availableOfType, eventDisplay, eventPhase, eventProduct, holderId, ticketTypeState } from '../../utils/commerce/tickets';
 import { useTrack } from '../../contexts/TrackContext';
+import { useCart } from '../../contexts/CartContext';
+import { isSeatedType, repeatLabels, seriesDates } from '../../utils/commerce/seating';
+import { SeatPicker } from './SeatPicker';
 
 interface Props {
   event: CommerceEvent | undefined;
@@ -24,9 +27,15 @@ interface Props {
 const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
 
 /** Event block reading live from Commerce → Events: real seats, sales windows and checkout (D73). */
-export function LinkedEvent({ event: ev, data, theme, mode, ctaLabel }: Props) {
+export function LinkedEvent({ event: linked, data, theme, mode, ctaLabel }: Props) {
   const now = useNow(30_000);
   const track = useTrack();
+  const cart = useCart();
+  const [chosenId, setChosenId] = useState<string | null>(null);
+  const [seatsOpen, setSeatsOpen] = useState(false);
+  // Repeating events (D113): the block offers every upcoming date in the series.
+  const dates = linked?.series ? seriesDates(data, linked).filter((e) => e.status !== 'draft' && e.status !== 'cancelled' && eventPhase(e, now) !== 'past') : [];
+  const ev = dates.find((e) => e.id === chosenId) ?? (dates.length ? dates.find((e) => e.id === linked?.id) ?? dates[0] : linked);
   if (!ev || ev.status === 'draft' || ev.status === 'cancelled') {
     if (mode !== 'edit') return null;
     return (
@@ -51,6 +60,12 @@ export function LinkedEvent({ event: ev, data, theme, mode, ctaLabel }: Props) {
     cart.add(product?.id ?? '', variantId);
   };
   const muted = { color: theme.mutedText };
+  const seatedOnSale = !!ev.seating && onSale.some((t) => isSeatedType(ev, t.id));
+  const openSeats = () => {
+    if (mode !== 'edit') track('ticket_select', { label: ev.name });
+    setSeatsOpen(true);
+  };
+  const mySeats = cart && product ? cart.lines.filter((l) => l.productId === product.id).flatMap((l) => l.seats ?? []) : [];
 
   const chip =
   display === 'past' ?
@@ -100,6 +115,34 @@ export function LinkedEvent({ event: ev, data, theme, mode, ctaLabel }: Props) {
             </div>
           }
         </dl>
+        {dates.length > 1 &&
+        <div className="flex flex-col gap-2">
+            <p className="text-[13px] font-semibold" style={{ color: theme.text }}>
+              Choose a date <span className="font-normal" style={muted}>· {repeatLabels[ev.series?.every ?? 'weekly'].toLowerCase()}</span>
+            </p>
+            <div className="kb-scroll -mx-1 flex gap-2 overflow-x-auto overflow-y-hidden px-1 pb-1" role="group" aria-label="Dates">
+              {dates.map((d) => {
+              const selected = d.id === ev.id;
+              const full = availableForEvent(data, d, now, me) <= 0;
+              return (
+                <button
+                  key={d.id}
+                  type="button"
+                  aria-pressed={selected}
+                  onClick={() => setChosenId(d.id)}
+                  className="flex shrink-0 flex-col items-start px-3 py-2 text-left"
+                  style={{ borderRadius: buttonRadius(theme), background: selected ? theme.accent : 'transparent', color: selected ? theme.accentText : theme.text, border: `1px solid ${selected ? theme.accent : mix(theme.text, 16)}` }}>
+                  
+                    <span className="whitespace-nowrap text-[13.5px] font-semibold">{new Date(d.startsAt).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: d.timeZone })}</span>
+                    <span className="whitespace-nowrap text-[11.5px]" style={{ opacity: 0.8 }}>
+                      {full ? 'Sold out' : formatEventTime(d.startsAt, d.timeZone)}
+                    </span>
+                  </button>);
+
+            })}
+            </div>
+          </div>
+        }
         {ev.description &&
         <p className="text-[14px] leading-relaxed" style={muted}>
             {ev.description}
@@ -138,7 +181,7 @@ export function LinkedEvent({ event: ev, data, theme, mode, ctaLabel }: Props) {
                   <span className="shrink-0 text-right text-[14px] font-semibold tabular-nums" style={{ color: sellable ? theme.text : theme.mutedText }}>
                     {status ?? (tt.priceNgn === 0 ? 'Free' : formatNgn(tt.priceNgn))}
                   </span>
-                  {sellable && product && onSale.length > 1 &&
+                  {sellable && product && onSale.length > 1 && !isSeatedType(ev, tt.id) &&
                 <CheckoutButton
                   mode={mode}
                   showIcon={false}
@@ -160,6 +203,11 @@ export function LinkedEvent({ event: ev, data, theme, mode, ctaLabel }: Props) {
         <p className="text-[13px]" style={muted}>
             This event has finished. Thanks to everyone who came.
           </p> :
+        seatedOnSale && product && ev.status === 'on_sale' ?
+        <CheckoutButton mode={mode} showIcon={false} onAdd={openSeats} className="flex h-12 w-full items-center justify-center gap-2 text-[15px] font-semibold" style={buttonStyle(theme, 'featured')}>
+            <ArmchairIcon size={17} aria-hidden />
+            {mySeats.length ? `Change seats (${mySeats.length})` : ctaLabel || 'Choose seats'}
+          </CheckoutButton> :
         onSale.length > 0 && product && ev.status === 'on_sale' ?
         <CheckoutButton
           mode={mode}
@@ -182,6 +230,21 @@ export function LinkedEvent({ event: ev, data, theme, mode, ctaLabel }: Props) {
           </p>
         }
       </div>
+      {seatsOpen && cart && product && me &&
+      <SeatPicker
+        event={ev}
+        data={data}
+        theme={theme}
+        holder={me}
+        initial={mySeats}
+        onClose={() => setSeatsOpen(false)}
+        onConfirm={(byType) => {
+          Object.entries(byType).forEach(([ttId, seats]) => cart.setSeats(product.id, ttId, seats));
+          setSeatsOpen(false);
+          if (Object.values(byType).some((s) => s.length)) cart.setOpen(true);
+        }} />
+
+      }
     </article>);
 
 }

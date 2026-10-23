@@ -1,6 +1,7 @@
 import type { CommerceData, Order, OrderEvent, OrderEventKind, Product } from '../../types/commerce';
 import { uid } from '../id';
 import { providerFee } from './money';
+import { instalmentsBlockDispatch } from './payOptions';
 
 /** Made-to-order deposits (D95): a share at checkout, the rest before dispatch. */
 export const depositPctOptions = [20, 30, 40, 50, 60, 70, 80];
@@ -29,7 +30,8 @@ export function balanceOwed(o: Order): number {
 
 /** True while an unpaid balance should stop the order going out. */
 export function dispatchBlocked(o: Order): boolean {
-  return balanceOwed(o) > 0 && o.status !== 'cancelled' && o.status !== 'refunded';
+  if (o.status === 'cancelled' || o.status === 'refunded') return false;
+  return balanceOwed(o) > 0 || instalmentsBlockDispatch(o);
 }
 
 export function longestLeadDays(data: CommerceData, o: Order): number {

@@ -68,7 +68,10 @@ export function BookDeliverySheet({ order, escrow, savedRiders, onClose, onBook 
       description={`${order.customer.name || 'Customer'} · ${order.fulfilment.address || 'No address'}`}
       footer={
       <div className="flex w-full items-center justify-between gap-3">
-          <p className="text-caption text-fg-subtle">{chosen?.available ? chosen.feeNgn ? `${formatNgn(chosen.feeNgn)} partner fee` : 'No partner fee' : ''}</p>
+          <p className="text-caption text-fg-subtle">
+            {order.pod && !order.pod.collected && <span className="block font-semibold text-fg">Rider collects {formatNgn(order.pod.amountNgn)} at the door</span>}
+            {chosen?.available ? chosen.feeNgn ? `${formatNgn(chosen.feeNgn)} partner fee` : 'No partner fee' : ''}
+          </p>
           <span className="flex gap-2">
             <Button variant="secondary" onClick={onClose}>
               Cancel

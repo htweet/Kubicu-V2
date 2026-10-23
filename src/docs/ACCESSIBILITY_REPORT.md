@@ -49,7 +49,7 @@ Severity: **Critical** blocks a task · **Serious** makes a task very hard · **
 |---|---|---|---|---|---|
 | B1 | 10-minute seat hold couldn't be extended | 2.2.1 | Serious | Fixed | "Need more time?" in the last minute adds 10 minutes once, only while seats are still reserved |
 | B2 | Seat-hold timer re-announced every second in the last minute | 4.1.3, 2.2.2 | Serious | Fixed | Digits are silent; one assertive warning at one minute; extension announced |
-| B3 | A seller's colours could make their live page unreadable | 1.4.3 | Serious | Fixed | `liveReadableTheme` shifts only failing colours to the nearest 4.5:1 shade on live pages; saved theme unchanged; publish check now explains instead of blocking |
+| B3 | A seller's colours could make their live page unreadable | 1.4.3 | Serious | Fixed | `liveReadableTheme` shifts only failing colours to the nearest 4.5:1 shade on live pages; saved theme unchanged; since D108, anything below 3:1 also blocks publishing again |
 | B4 | Order, booking, download and subscription pages had no h1 | 1.3.1, 2.4.6 | Moderate | Fixed | `CheckoutHeading level={1}` on standalone pages |
 | B5 | No page language on public pages | 3.1.1 | Moderate | Fixed | Page settings → Page language (English default; Pidgin, Yorùbá, Igbo, Hausa, French, Swahili); sets `<html lang>` |
 | B6 | Moving between checkout steps left focus behind | 2.4.3 | Moderate | Fixed | Each sheet step's heading takes focus |

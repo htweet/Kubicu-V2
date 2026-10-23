@@ -17,6 +17,8 @@ import { BookingFields } from './BookingFields';
 import { SubscriptionFields } from './SubscriptionFields';
 import { FormBlockFields } from './FormBlockFields';
 import { ProofFields } from './ProofFields';
+import { MembersOnlyFields } from './MembersOnlyFields';
+import { TrustBadgeFields } from './TrustBadgeFields';
 
 interface ContentFieldsProps {
   block: Block;
@@ -271,6 +273,10 @@ export function ContentFields({ block, issues }: ContentFieldsProps) {
       return <FormBlockFields block={block} issues={issues} />;
     case 'proof':
       return <ProofFields block={block} />;
+    case 'membersOnly':
+      return <MembersOnlyFields block={block} issues={issues} />;
+    case 'trustBadge':
+      return <TrustBadgeFields block={block} />;
     case 'whatsapp':{
         const c = block.content;
         const set = setter('whatsapp');

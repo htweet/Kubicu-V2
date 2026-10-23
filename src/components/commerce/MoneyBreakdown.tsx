@@ -41,7 +41,7 @@ export function MoneyBreakdown({ money, audience = 'seller', className, discount
         )}
           {row(
           <span className="inline-flex items-center gap-1.5">
-              KUBICU fee <IllustrativeTag note="Illustrative platform fee by plan. Not final pricing." />
+              KUBICU fee
             </span>,
           money.kubicuFee,
           { negative: true }

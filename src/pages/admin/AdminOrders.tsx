@@ -55,7 +55,7 @@ export function AdminOrders() {
     (readCommerce(w.id)?.orders ?? []).map((o) => {
       const m = orderMoney(o);
       const recentBigRefund = o.refunds.some((r) => r.amountNgn >= LARGE_REFUND && now - Date.parse(r.at) < 30 * 86400000);
-      const stuck = o.paymentStatus === 'pending' && o.status !== 'cancelled' && now - Date.parse(o.createdAt) > STUCK_HOURS * 3600000;
+      const stuck = !o.pod && o.paymentStatus === 'pending' && o.status !== 'cancelled' && now - Date.parse(o.createdAt) > STUCK_HOURS * 3600000;
       const flag: Row['flag'] = o.dispute && (o.dispute.status === 'needs_response' || o.dispute.status === 'under_review') ? 'dispute' : recentBigRefund ? 'refund' : stuck ? 'stuck' : null;
       return { id: `${w.id}:${o.id}`, workspaceId: w.id, workspace: w.name, order: o, gross: m.gross, refunded: m.refunded, flag, dueAt: o.dispute?.status === 'needs_response' ? o.dispute.respondBy : null };
     })

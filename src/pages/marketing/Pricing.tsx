@@ -4,6 +4,7 @@ import { ArrowRightIcon, CheckIcon, MinusIcon, PuzzleIcon } from 'lucide-react';
 import { plans } from '../../data/plans';
 import { planHighlights } from '../../data/planHighlights';
 import { addOns, pricingFaq } from '../../data/marketing';
+import { featureStatusLabels, planMatrix, type PlanCell } from '../../data/planMatrix';
 import type { WorkspacePlan } from '../../types/plan';
 import type { BillingCycle } from '../../types/billing';
 import { priceFor, yearlySaving } from '../../utils/billing';
@@ -14,48 +15,11 @@ import { FaqList } from '../../components/marketing/FaqList';
 import { SectionHeading } from '../../components/marketing/SectionHeading';
 import { cn } from '../../utils/cn';
 
-type Cell = boolean | string;
+type Cell = PlanCell;
 
 const shown: WorkspacePlan[] = ['free', 'creator', 'pro', 'business', 'agency'];
 const featured: WorkspacePlan = 'pro';
-const all = (v: Cell): Record<WorkspacePlan, Cell> => ({ free: v, creator: v, pro: v, business: v, agency: v, enterprise: v });
-
-const groups: {area: string;rows: {label: string;note?: string;values: Record<WorkspacePlan, Cell>;}[];}[] = [
-{
-  area: 'Build',
-  rows: [
-  { label: 'Canvas editor and all core blocks', values: all(true) },
-  { label: 'Pages per site', note: 'Example limits', values: { free: '1', creator: '5', pro: '20', business: '20', agency: '20', enterprise: 'Custom' } },
-  { label: 'Full photo galleries', note: 'Free shows the first photo', values: { ...all(true), free: false } },
-  { label: 'Remove “Made with KUBICU”', values: { ...all(true), free: false } },
-  { label: 'Custom domain', values: { ...all(true), free: false } }]
-
-},
-{
-  area: 'Sell',
-  rows: [
-  { label: 'Products', note: 'Free: 5 with WhatsApp ordering', values: { ...all('Unlimited'), free: '5' } },
-  { label: 'Checkout, digital files and subscriptions', values: { ...all(true), free: false, creator: false } },
-  { label: 'Paid event tickets', note: 'Free events work on every plan', values: { ...all(true), free: false, creator: false } },
-  { label: 'Campaign pages and DealRooms', values: { free: false, creator: '3', pro: '15', business: '15', agency: '15', enterprise: 'Custom' } }]
-
-},
-{
-  area: 'Serve & grow',
-  rows: [
-  { label: 'Built-in bookings with deposits', values: { ...all(true), free: false, creator: false } },
-  { label: 'Analytics, QR codes and campaign links', values: all(true) },
-  { label: 'Media storage', values: { free: '100 MB', creator: '1 GB', pro: '5 GB', business: '5 GB', agency: '5 GB', enterprise: 'Custom' } }]
-
-},
-{
-  area: 'Teams',
-  rows: [
-  { label: 'Team seats with roles and approvals', values: { free: false, creator: false, pro: false, business: '5', agency: '25', enterprise: 'Custom' } },
-  { label: 'Client workspaces', values: { ...all(false), agency: true, enterprise: true } }]
-
-}];
-
+const groups = planMatrix;
 
 export function Pricing() {
   const navigate = useNavigate();
@@ -78,7 +42,7 @@ export function Pricing() {
             { value: 'yearly', label: 'Yearly · 2 months free' }]
             } />
           
-          <p className="text-caption text-fg-subtle">Example prices we’re testing. Nobody is charged in this prototype.</p>
+          <p className="text-caption text-fg-subtle">Launch prices. Nobody is charged in this prototype.</p>
         </div>
       </header>
 
@@ -131,7 +95,7 @@ export function Pricing() {
 
       {/* Comparison */}
       <section aria-labelledby="compare-heading" className="mt-24">
-        <SectionHeading id="compare-heading" title="Compare every plan" />
+        <SectionHeading id="compare-heading" title="Compare every plan" lead="Including what’s in preview and what’s coming, so you can plan ahead. Preview means it works, with a partner’s side simulated for now." />
         <div className="scroll-quiet mt-10 overflow-x-auto rounded-2xl border border-line">
           <table className="w-full min-w-[820px] border-collapse text-left">
             <caption className="sr-only">Plan comparison</caption>
@@ -155,7 +119,19 @@ export function Pricing() {
                 {g.rows.map((row) =>
               <tr key={row.label} className="border-b border-line last:border-0">
                     <th scope="row" className="px-5 py-3.5 text-label font-medium text-fg">
-                      {row.label}
+                      <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                        {row.label}
+                        {row.status !== 'live' &&
+                    <span
+                      className={cn(
+                        'rounded-full border px-1.5 py-px text-[11px] font-semibold leading-4',
+                        row.status === 'preview' ? 'border-[rgb(var(--nm-3)/0.5)] text-[rgb(var(--nm-3))]' : 'border-line-strong text-fg-subtle'
+                      )}>
+                      
+                            {featureStatusLabels[row.status]}
+                          </span>
+                    }
+                      </span>
                       {row.note && <span className="block text-caption font-normal text-fg-subtle">{row.note}</span>}
                     </th>
                     {shown.map((id) =>
@@ -206,7 +182,7 @@ export function Pricing() {
               <dt className="text-fg-muted">KUBICU fee</dt>
               <dd className="font-semibold tabular-nums text-fg">0–2% by plan</dd>
             </div>
-            <div className="border-t border-line pt-3 text-caption text-fg-subtle">Example rates until a payment provider is confirmed.</div>
+            <div className="border-t border-line pt-3 text-caption text-fg-subtle">KUBICU fees are confirmed. The provider rate is an example until a payment partner is chosen.</div>
           </dl>
         </div>
         <FaqList items={pricingFaq} />

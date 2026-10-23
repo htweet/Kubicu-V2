@@ -1,0 +1,161 @@
+import type { HelpCategory } from '../../types/help';
+
+export const startAndBuildHelp: HelpCategory[] = [
+{
+  id: 'getting-started',
+  title: 'Getting started',
+  summary: 'Claim your link, set up your first space and publish in minutes.',
+  icon: 'rocket',
+  group: 'Start',
+  articles: [
+  {
+    id: 'claim-link',
+    q: 'How do I claim my kub.icu link?',
+    a: 'Type the name you want in the box on the KUBICU home page. If it’s free we hold it for you for 30 minutes while you sign up. If it’s taken, we suggest up to three free alternatives.',
+    steps: ['Type your name in “Claim your link” on the home page.', 'Pick it, or one of the suggestions, and press “Claim it — free”.', 'Create your account. Your link is filled in for you during setup.']
+  },
+  {
+    id: 'first-page',
+    q: 'How do I create my first page?',
+    a: 'After signing up, onboarding asks what you want visitors to do (sell, book, collect leads and so on), your business name, link and main action. It then builds a starting page you can change on the canvas.',
+    steps: ['Choose your goal on the first step.', 'Add your name, link, photo and main button.', 'Pick a look, then press Publish.', 'Share your link on WhatsApp, Instagram or TikTok.']
+  },
+  {
+    id: 'templates',
+    q: 'Can I start from a template?',
+    a: 'Yes. Templates keeps the layout and design of an example business and removes its prices, links and quotes, so nothing false appears on your page.',
+    where: 'Templates'
+  },
+  {
+    id: 'business-kits',
+    q: 'What is a Business-in-a-Box kit?',
+    a: 'A kit sets up a whole business type at once: a page, starter products or services, draft policies and automations. Review each part before publishing. Policies you leave empty are hidden from your page.',
+    where: 'Templates → Business kits'
+  },
+  {
+    id: 'spaces',
+    q: 'What is a space?',
+    a: 'A space is one public site with its own link, theme and pages: your main page, a campaign, a DealRoom or a second brand. Your workspace can hold several spaces.',
+    where: 'Spaces'
+  },
+  {
+    id: 'extensions-first',
+    q: 'Why are some tools missing from my sidebar?',
+    a: 'To keep things simple, only the main tools are on when you start. Everything else lives in Extensions — install what you need and uninstall it any time. Your data stays if you uninstall.',
+    where: 'Extensions'
+  },
+  {
+    id: 'demo',
+    q: 'What are the “Sample” items I see?',
+    a: 'The demo workspace includes labelled sample orders, bookings, events and more so screens aren’t empty while you learn. Sample items never count in real totals and can be cleared.'
+  }]
+
+},
+{
+  id: 'canvas',
+  title: 'Building on the canvas',
+  summary: 'Add, move and style blocks, manage pages and publish safely.',
+  icon: 'layout',
+  group: 'Build',
+  articles: [
+  {
+    id: 'add-blocks',
+    q: 'How do I add or move blocks?',
+    a: 'Open the block library on the left and drag a block onto the page, or select it and press Enter. Move blocks by dragging, or select one and press Alt + ↑ / ↓. On phones, tap “Add a block”.',
+    where: 'Spaces → Edit'
+  },
+  { id: 'edit-block', q: 'How do I edit a block?', a: 'Select it on the canvas. The panel on the right has Content, Style and Visibility tabs. Changes show on the canvas as you type.' },
+  {
+    id: 'pages',
+    q: 'Can my site have more than one page?',
+    a: 'Yes. Open Pages in the canvas to add pages like Shop, About or Book. Each page has its own blocks, address and search settings and shares the space’s theme and menu.',
+    plan: 'Free 1 page · Creator 5 · Pro 20 per space'
+  },
+  {
+    id: 'publish-check',
+    q: 'Why can’t I publish?',
+    a: 'The publish check lists anything that would break your page or mislead visitors — an empty link, a deleted product, unreadable colours or a paid feature above your plan. Select an item to jump to it. Warnings don’t block publishing; problems do.'
+  },
+  {
+    id: 'contrast',
+    q: 'Why do my colours block publishing?',
+    a: 'Text or buttons below a 3:1 contrast ratio can’t be read by many visitors, especially outdoors on a phone. The check offers a one-tap readable colour close to yours.'
+  },
+  { id: 'undo', q: 'How do I undo a change?', a: 'Press ⌘Z (Ctrl+Z on Windows). Version history lets you restore any earlier published version or snapshot.' },
+  { id: 'shortcuts', q: 'Are there keyboard shortcuts?', a: 'Press ⌘/ (Ctrl+/) in the canvas to see every shortcut, including moving, duplicating and deleting blocks.' },
+  {
+    id: 'visibility',
+    q: 'Can I schedule or hide a block?',
+    a: 'Yes. In a block’s Visibility tab you can schedule when it shows, hide it on phones or desktop, show it only to visitors from a source (IntentFlow), or only during a campaign phase.'
+  },
+  {
+    id: 'saved',
+    q: 'Can I reuse sections and themes?',
+    a: 'Save any group of blocks as a section and any theme as a saved theme. Both appear in the library for every space in your workspace.'
+  },
+  {
+    id: 'ai-setup',
+    q: 'How does AI page setup work?',
+    a: 'Describe your business, answer up to four questions and get a draft page with a list of what was assumed. It never invents prices, reviews or promises — gaps become clearly marked placeholders. Accept the whole draft, block by block, or not at all.',
+    plan: 'Uses AI credits'
+  }]
+
+},
+{
+  id: 'blocks',
+  title: 'Blocks reference',
+  summary: 'What each block does and when to use it.',
+  icon: 'blocks',
+  group: 'Build',
+  articles: [
+  { id: 'b-links', q: 'Link, WhatsApp and social blocks', a: 'Buttons that open a website, a WhatsApp chat with a pre-filled message, or your social profiles. Set one as “Featured” to make it stand out.' },
+  { id: 'b-products', q: 'Product and Shop blocks', a: 'Show one product or a grid from Commerce. Shoppers add to cart and check out, or order on WhatsApp if checkout is off.' },
+  { id: 'b-booking', q: 'Booking and Pricing blocks', a: 'Let visitors pick a service, date and time, and pay a deposit if you ask for one. Pricing shows your packages side by side.' },
+  { id: 'b-event', q: 'Event block', a: 'Link it to an event in Commerce → Events to sell tickets with live seats left. Seated events show “Choose seats”; repeating events show a date picker.' },
+  { id: 'b-subscription', q: 'Subscription block', a: 'Offer memberships or product boxes from Commerce → Subscriptions. Renewal terms are spelled out before anyone pays.', plan: 'Pro and above' },
+  { id: 'b-members', q: 'Members-only section', a: 'Everything below it is shown only to signed-in subscribers. Others see your teaser and a Join button.', plan: 'Pro and above' },
+  { id: 'b-forms', q: 'Lead form, Newsletter and Form blocks', a: 'Lead form and Newsletter are free on every plan. The Form block uses forms from the Forms add-on, with steps, rules and payments.' },
+  { id: 'b-download', q: 'Download block', a: 'Sell or give away a file. Buyers get a protected download link after paying.' },
+  { id: 'b-trust', q: 'Trust Passport badge', a: 'Shows your trust level, worked out from real records every time the page opens. Needs the Trust Passport app.' },
+  { id: 'b-media', q: 'Gallery, Video, Portfolio, Testimonials, FAQ, Countdown, Location, Menu', a: 'Content blocks for showing your work, answering questions and building urgency. Mark images “Decorative only” if they add nothing for screen-reader users.' }]
+
+},
+{
+  id: 'design',
+  title: 'Design and appearance',
+  summary: 'Themes, fonts, colours and how your page looks on every phone.',
+  icon: 'palette',
+  group: 'Build',
+  articles: [
+  { id: 'theme', q: 'How do I change my page’s look?', a: 'In the canvas, open Theme to choose a preset or set colours, fonts, button shape and background. Every block follows the theme.' },
+  { id: 'dark', q: 'Does my page work in dark mode?', a: 'Your page uses the colours you choose, regardless of the visitor’s device. The app itself has light and dark appearances in Settings → Appearance.' },
+  { id: 'lightweight', q: 'What is Data saver (Lightweight mode)?', a: 'On slow connections or Data Saver, your page loads without photos and videos until the visitor asks for them. Visitors can also switch it on or off from your page footer.' },
+  { id: 'language', q: 'Can I set my page’s language?', a: 'Yes, in Page settings → Page language. It helps screen readers pronounce your page correctly.' }]
+
+},
+{
+  id: 'domains',
+  title: 'Links, domains and QR codes',
+  summary: 'Your own domain, tracked campaign links, QR codes and printed kits.',
+  icon: 'globe',
+  group: 'Build',
+  articles: [
+  {
+    id: 'domain',
+    q: 'How do I connect my own domain?',
+    a: 'Domains & QR → Connect a domain walks you through the DNS records to add at your registrar, then checks them. It only says “Live” once the security certificate is issued.',
+    plan: 'Creator and above',
+    steps: ['Enter your domain.', 'Add the records shown at your registrar.', 'Press Check now. Changes can take up to 48 hours.', 'Choose it as your main address once live.']
+  },
+  { id: 'campaign-links', q: 'What is a campaign link?', a: 'A short tracked link to any page, product or event. Each shows visits, orders and revenue, so you know which post or flyer worked.', where: 'Domains & QR → Campaign links' },
+  {
+    id: 'qr',
+    q: 'How do I make a QR code?',
+    a: 'Every QR code is a campaign link, so you can change where it goes without reprinting. Design colours, shapes, a logo or text in the middle and a caption, then download PNG, SVG or a print sheet.',
+    where: 'Domains & QR → QR codes'
+  },
+  { id: 'qr-shortcut', q: 'Can I get a QR code for a product, event or booking?', a: 'Yes. Look for “Get QR code” on products, events, DealRooms, spaces, the share step and booking services.' },
+  { id: 'qr-broken', q: 'What happens if a QR code’s destination is deleted?', a: 'You’re notified, and the code forwards to the fallback you chose (your main page by default) so printed codes never break.' },
+  { id: 'print-kit', q: 'How do I print business cards and stickers?', a: 'Print kit makes business cards, round stickers, package inserts and receipt footers with your tracked QR code. Print at 100% scale or save as PDF for a print shop.', where: 'Domains & QR → Print kit' }]
+
+}];

@@ -2,6 +2,7 @@ import type { CartLine, CommerceData, CommerceEvent, IssuedTicket, Order, OrderI
 import { uid } from '../id';
 import { cancelOrder, refundOrder } from './ops';
 import { refundableNgn } from './money';
+import { findSeat, seatsIssue, syncSeatQuantities } from './seating';
 
 /** Example figures (D73). */
 export const MAX_TICKET_TYPES = 8;
@@ -111,7 +112,7 @@ export function releaseHolds(data: CommerceData, holder: string, now = Date.now(
  * Reserves the ticket lines for this holder. Re-starting checkout keeps the original expiry,
  * so the timer can't be extended by going back and forth. Returns an issue when seats aren't there.
  */
-export function placeHolds(data: CommerceData, holder: string, lines: Pick<CartLine, 'productId' | 'variantId' | 'qty'>[], now = Date.now()): {data: CommerceData;issue: string;expiresAt: string | null;} {
+export function placeHolds(data: CommerceData, holder: string, lines: Pick<CartLine, 'productId' | 'variantId' | 'qty' | 'seats'>[], now = Date.now()): {data: CommerceData;issue: string;expiresAt: string | null;} {
   const ticketLines = lines.filter((l) => data.products.find((p) => p.id === l.productId)?.kind === 'ticket');
   if (!ticketLines.length) return { data: releaseHolds(data, holder, now), issue: '', expiresAt: null };
   for (const l of ticketLines) {
@@ -124,7 +125,7 @@ export function placeHolds(data: CommerceData, holder: string, lines: Pick<CartL
   const base = releaseHolds(data, holder, now);
   const holds: TicketHold[] = ticketLines.map((l) => {
     const product = data.products.find((p) => p.id === l.productId) as Product;
-    return { id: uid(), holder, eventId: product.eventId ?? '', productId: l.productId, variantId: l.variantId, qty: l.qty, expiresAt };
+    return { id: uid(), holder, eventId: product.eventId ?? '', productId: l.productId, variantId: l.variantId, qty: l.qty, expiresAt, seats: l.seats?.length ? l.seats : undefined };
   });
   return { data: { ...base, ticketHolds: [...(base.ticketHolds ?? []), ...holds] }, issue: '', expiresAt };
 }
@@ -179,7 +180,7 @@ export const eventDisplayLabel: Record<EventDisplay, string> = {
 };
 
 /** Why a ticket line can't be bought, or '' when it can. */
-export function ticketLineIssue(data: CommerceData | null | undefined, line: Pick<CartLine, 'productId' | 'variantId' | 'qty'>, now = Date.now(), holder?: string): string {
+export function ticketLineIssue(data: CommerceData | null | undefined, line: Pick<CartLine, 'productId' | 'variantId' | 'qty' | 'seats'>, now = Date.now(), holder?: string): string {
   const product = data?.products.find((p) => p.id === line.productId);
   if (!product || product.kind !== 'ticket') return '';
   const ev = findEvent(data, product.eventId);
@@ -199,7 +200,8 @@ export function ticketLineIssue(data: CommerceData | null | undefined, line: Pic
   if (line.qty > left) return `Only ${left} ${tt.name} left`;
   if (line.qty > tt.maxPerOrder) return `Up to ${tt.maxPerOrder} ${tt.name} per order`;
   if (line.qty < tt.minPerOrder) return `At least ${tt.minPerOrder} ${tt.name} per order`;
-  return '';
+  // Seated tickets: the exact seats must still be free (D113).
+  return seatsIssue(data, ev, tt.id, line.seats, line.qty, now, holder);
 }
 
 /** Checks the event capacity across every ticket type in one order. */
@@ -242,7 +244,8 @@ export function issueTickets(data: CommerceData, items: OrderItem[], buyerName: 
     for (let n = 0; n < i.qty; n++) {
       const code = ticketCode(taken);
       taken.add(code);
-      out.push({ id: uid('tkt'), code, eventId: ev.id, ticketTypeId: i.variantId, typeName: tt?.name ?? i.variantLabel, guestName: guestNames?.[i.variantId]?.[n]?.trim() || buyerName, status: 'valid' });
+      const seat = i.seats?.[n] ? findSeat(ev, i.seats[n]) : undefined;
+      out.push({ id: uid('tkt'), code, eventId: ev.id, ticketTypeId: i.variantId, typeName: tt?.name ?? i.variantLabel, guestName: guestNames?.[i.variantId]?.[n]?.trim() || buyerName, status: 'valid', seatId: seat?.id, seat: seat?.label });
     }
   });
   return out;
@@ -279,7 +282,8 @@ export function blankEvent(): CommerceEvent {
 }
 
 /** Saves an event and keeps its ticket product in step: one variant per type, seats left = quantity − sold. */
-export function upsertEvent(data: CommerceData, ev: CommerceEvent): CommerceData {
+export function upsertEvent(data: CommerceData, input: CommerceEvent): CommerceData {
+  const ev = syncSeatQuantities(input);
   const at = new Date().toISOString();
   const prevProduct = data.products.find((p) => p.id === ev.productId);
   const prevEvent = findEvent(data, ev.id);

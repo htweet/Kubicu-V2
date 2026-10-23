@@ -18,7 +18,12 @@ import {
   HandCoinsIcon,
   BriefcaseIcon,
   BadgeCheckIcon,
-  TruckIcon } from
+  TruckIcon,
+  MessageCircleIcon,
+  ShieldCheckIcon,
+  SparklesIcon,
+  HandshakeIcon,
+  MicIcon } from
 'lucide-react';
 
 export interface NavItem {
@@ -43,6 +48,11 @@ export const workspaceNav: NavItem[] = [
 { id: 'opportunities', label: 'Opportunities', to: '/app/opportunities', icon: HandCoinsIcon, group: 'business', appId: 'opportunities' },
 { id: 'commerce', label: 'Commerce', to: '/app/commerce', icon: ShoppingBagIcon, group: 'business' },
 { id: 'deliveries', label: 'Deliveries', to: '/app/deliveries', icon: TruckIcon, group: 'business', appId: 'local-fulfilment' },
+{ id: 'trust', label: 'Trust Passport', to: '/app/trust', icon: ShieldCheckIcon, group: 'business', appId: 'trust-passport' },
+{ id: 'coach', label: 'Business Coach', to: '/app/coach', icon: SparklesIcon, group: 'business', appId: 'ai-coach' },
+{ id: 'collabs', label: 'Collaborations', to: '/app/collabs', icon: HandshakeIcon, group: 'business', appId: 'collaborations' },
+{ id: 'voice', label: 'Voice-to-Store', to: '/app/voice', icon: MicIcon, group: 'business', appId: 'voice-to-store' },
+{ id: 'whatsapp', label: 'WhatsApp', to: '/app/whatsapp', icon: MessageCircleIcon, group: 'business', appId: 'whatsapp-catalogue' },
 { id: 'bookings', label: 'Bookings', to: '/app/bookings', icon: CalendarIcon, group: 'business', appId: 'bookings' },
 { id: 'services', label: 'Quotes & jobs', to: '/app/services', icon: BriefcaseIcon, group: 'business', appId: 'service-os' },
 { id: 'proof', label: 'Proof of work', to: '/app/proof', icon: BadgeCheckIcon, group: 'business', appId: 'proof' },

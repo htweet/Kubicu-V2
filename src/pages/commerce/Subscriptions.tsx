@@ -1,6 +1,9 @@
 import React, { useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { ChevronDownIcon, FlaskConicalIcon, PackageIcon, PlusIcon, RepeatIcon, UsersIcon } from 'lucide-react';
+import { ChevronDownIcon, FlaskConicalIcon, LockKeyholeIcon, PackageIcon, PlusIcon, RepeatIcon, UsersIcon } from 'lucide-react';
+import { useEditor } from '../../contexts/EditorContext';
+import { memberAreas } from '../../utils/members';
+import { sitePages } from '../../utils/sitePages';
 import type { SubPlan, SubPlanKind, Subscription, SubStatus } from '../../types/subscriptions';
 import { useCommerce } from '../../contexts/CommerceContext';
 import { useBilling } from '../../contexts/BillingContext';
@@ -47,6 +50,10 @@ export function Subscriptions() {
   const [openId, setOpenId] = useState<string | null>(null);
   const [editing, setEditing] = useState<{plan: SubPlan;} | {kind: SubPlanKind;} | null>(null);
   const allowed = planAtLeast(plan.id, CHECKOUT_PLAN);
+  // Members-only pages and sections each plan unlocks on the current space (D110).
+  const { state: editor } = useEditor();
+  const site = editor.site;
+  const areas = memberAreas([{ id: null, title: site.homeLabel || 'Home', blocks: site.blocks }, ...sitePages(site).map((p) => ({ id: p.id, title: p.title || 'Untitled', blocks: p.blocks, rule: p.membersOnly ?? null }))]);
   const canPlans = team.can('products.edit');
   const now = Date.now();
 
@@ -204,6 +211,15 @@ export function Subscriptions() {
                         {p.setupFeeNgn ? ` · ${formatNgn(p.setupFeeNgn)} setup` : ''}
                       </span>
                       {short.length > 0 && <span className="block text-caption font-medium text-warning">Not enough stock for the next box: {short.join(', ')}</span>}
+                      {(() => {
+                      const unlocks = areas.filter((a) => a.rule.access === 'any' || a.rule.planIds.includes(p.id));
+                      return unlocks.length > 0 ?
+                      <span className="mt-0.5 flex items-center gap-1 text-caption text-fg-muted">
+                            <LockKeyholeIcon size={12} aria-hidden className="shrink-0" />
+                            <span className="truncate">Content access: {unlocks.map((a) => a.label).join(' · ')}</span>
+                          </span> :
+                      null;
+                    })()}
                     </span>
                     <span className="text-label tabular-nums text-fg-muted">
                       {taken}

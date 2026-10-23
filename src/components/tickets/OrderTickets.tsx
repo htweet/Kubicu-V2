@@ -56,6 +56,7 @@ export function OrderTickets({ theme: t, tickets, data, handle }: Props) {
                       <span className="block truncate text-[14px] font-medium">{tk.guestName}</span>
                       <span className="block text-[12.5px]" style={muted}>
                         {tk.typeName}
+                        {tk.seat ? ` · ${tk.seat}` : ''}
                       </span>
                     </span>
                     <span className="shrink-0 text-right">

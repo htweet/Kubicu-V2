@@ -1,4 +1,4 @@
-import type { CommerceData, Product, ProductVariant } from '../../types/commerce';
+import type { CommerceData, Product, ProductVariant, StorefrontSettings } from '../../types/commerce';
 import type { PageDocument } from '../../types/page';
 import type { WorkspacePlan } from '../../types/plan';
 import { planAtLeast } from '../../data/plans';
@@ -12,7 +12,7 @@ export const STOREFRONT_PATH = 'shop';
 export type StorefrontSort = 'featured' | 'newest' | 'price_asc' | 'price_desc';
 
 export const sortLabels: Record<StorefrontSort, string> = {
-  featured: 'Featured',
+  featured: 'Featured first',
   newest: 'Newest',
   price_asc: 'Price: low to high',
   price_desc: 'Price: high to low'
@@ -32,20 +32,56 @@ export function storefrontOrdering(data: CommerceData, plan: WorkspacePlan): 'ch
   return data.storefront.ordering === 'checkout' && planAtLeast(plan, CHECKOUT_PLAN) ? 'checkout' : 'whatsapp';
 }
 
+export const MAX_FEATURED = 8;
+
+export type StorefrontConfig = Required<StorefrontSettings>;
+
+/** Storefront settings with every D98 option filled in, so older saved shops look exactly as before. */
+export function storefrontConfig(s: StorefrontSettings): StorefrontConfig {
+  return {
+    announcement: '',
+    bannerUrl: '',
+    bannerAlt: '',
+    columns: 4,
+    imageShape: 'portrait',
+    defaultSort: 'featured',
+    featuredIds: [],
+    showSearch: true,
+    showCollections: true,
+    showStockFilter: true,
+    showLowStock: true,
+    deliveryNote: '',
+    returnsNote: '',
+    seoTitle: '',
+    seoDescription: '',
+    ...s
+  } as StorefrontConfig;
+}
+
+export const imageShapeClass: Record<StorefrontConfig['imageShape'], string> = {
+  portrait: 'aspect-[4/5]',
+  square: 'aspect-square',
+  landscape: 'aspect-[4/3]'
+};
+
 export function shopProducts(data: CommerceData | null): Product[] {
   if (!data) return [];
   // Event tickets are sold from Event blocks, not the shop (D73).
   return data.products.filter((p) => p.status === 'active' && p.kind !== 'ticket' && (!data.storefront.hideSoldOut || !isSoldOut(p)));
 }
 
-export function sortProducts(list: Product[], sort: StorefrontSort): Product[] {
+export function sortProducts(list: Product[], sort: StorefrontSort, featuredIds: string[] = []): Product[] {
   const low = (p: Product) => priceRange(p)?.[0] ?? Number.POSITIVE_INFINITY;
   const copy = [...list];
   if (sort === 'newest') return copy.sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
   if (sort === 'price_asc') return copy.sort((a, b) => low(a) - low(b));
   if (sort === 'price_desc') return copy.sort((a, b) => (priceRange(b)?.[1] ?? -1) - (priceRange(a)?.[1] ?? -1));
-  // Featured: in-stock first, then the order products were added in Commerce.
-  return copy.sort((a, b) => Number(isSoldOut(a)) - Number(isSoldOut(b)));
+  // Featured: pinned products in the seller's order, then in-stock first, then the order products were added.
+  const pin = (p: Product) => {
+    const i = featuredIds.indexOf(p.id);
+    return i === -1 ? Number.POSITIVE_INFINITY : i;
+  };
+  return copy.sort((a, b) => pin(a) - pin(b) || Number(isSoldOut(a)) - Number(isSoldOut(b)));
 }
 
 function baseSlug(name: string): string {

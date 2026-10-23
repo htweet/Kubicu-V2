@@ -24,7 +24,7 @@ _Audited 22 Oct 2026 against the code and every doc in `docs/`. Source of truth 
 
 | # | Gap | Source | Batch | Status | Readiness | Depends on | Suggested |
 |---|---|---|---|---|---|---|---|
-| G1 | Legal pages (terms, privacy, cookies, acceptable use, refunds, seller terms) | DP §6 X, D35, `data/marketing.ts` | 3 | ✅ built (D78) · 👤 wording pending legal review | — | Legal review | Done |
+| G1 | Legal pages (terms, privacy, cookies, acceptable use, refunds, seller terms) | DP §6 X, D35, `data/marketing.ts` | 3 | ✅ built (D78) · wording confirmed (D109) | — | — | Done |
 | G2 | Trust centre, safety tips, takedown & appeals, security pages | IB EPIC T, D75b | 3/6 | ✅ built (D78) | — | — | Done |
 | G3 | Help centre, Contact, About | `data/marketing.ts` | 3 | ✅ built (D78) · Contact not yet on the Forms engine | R1 | — | Small follow-up |
 | G4 | Custom form builder (field types, logic, multi-step, file, payment, submissions inbox) | MB §10.2, IB EPIC K | 4 | ✅ built as a paid add-on (D79) · file answers keep the name only 🧪 | — | — | Done |

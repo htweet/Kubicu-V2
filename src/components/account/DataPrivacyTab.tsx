@@ -13,7 +13,6 @@ import { Dialog } from '../ui/Dialog';
 import { TextInput } from '../ui/TextInput';
 import { SelectInput } from '../ui/SelectInput';
 import { InlineAlert } from '../ui/InlineAlert';
-import { IllustrativeTag } from '../ui/IllustrativeTag';
 
 const EXPORT_DAYS = 7;
 const reasons = [
@@ -134,7 +133,7 @@ export function DataPrivacyTab() {
       <Card id="dp-delete" title="Delete your account" description="Permanently removes your account and every workspace you own.">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="flex max-w-xl flex-wrap items-center gap-1.5 text-caption text-fg-muted">
-            You get {DELETION_GRACE_DAYS} days to change your mind. Paid plans stop renewing straight away, and live pages show “This page is no longer available”. <IllustrativeTag note="Example grace period — confirm with legal before launch." />
+            You get {DELETION_GRACE_DAYS} days to change your mind. Paid plans stop renewing straight away, and live pages show “This page is no longer available”.
           </p>
           <Button variant="destructive" leadingIcon={Trash2Icon} disabled={!!account.deletion} onClick={() => setDeleting(true)} className="shrink-0">
             {account.deletion ? 'Deletion scheduled' : 'Delete account'}

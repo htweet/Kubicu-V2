@@ -175,7 +175,7 @@ html[data-motion='reduce'] *::after {
   --shadow-3: 0 28px 70px -20px rgb(19 33 61 / 0.28), 0 0 0 1px rgb(19 33 61 / 0.05);
   color-scheme: light;
 }
-/* Night market (D77): the KUBICU website, legal and sign-in pages only. Never the workspace app. */
+/* Night market (D77): the KUBICU website, legal and sign-in pages. The app borrows only its gradient (D108). */
 [data-direction='nightMarket'] {
   --canvas: 16 14 26;
   --raised: 27 24 40;
@@ -347,6 +347,19 @@ details.kb-faq > summary::-webkit-details-marker {
  * AI surfaces (D63). The only gradients in the product — reserved so anything AI suggests,
  * drafts or runs is recognisable at a glance. Stops are dark enough for white text (≥4.5:1).
  */
+/*
+ * Brand gradient in the workspace app (D108): plan highlights and onboarding progress only.
+ * Same stops as Night market so .nm-fill / .nm-frame work outside the website.
+ */
+:root {
+  --nm-1: 255 138 61;
+  --nm-2: 255 61 139;
+  --nm-3: 61 123 255;
+}
+/* Text on the brand gradient inside the app: always dark ink. */
+.nm-ink {
+  color: rgb(16 14 26);
+}
 :root {
   --ai-1: 109 40 217; /* violet-700 */
   --ai-2: 190 24 93; /* pink-700 */

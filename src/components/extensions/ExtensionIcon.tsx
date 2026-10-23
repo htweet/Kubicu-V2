@@ -1,5 +1,5 @@
 import React from "react";
-import { BarChart3Icon, FileTextIcon, LandmarkIcon, MessageCircleIcon, MessageSquareQuoteIcon, ShoppingCartIcon, TargetIcon, TruckIcon, BoxIcon, GlobeIcon, CalendarIcon, HandCoinsIcon, WorkflowIcon, SplitIcon, ClipboardListIcon, BriefcaseIcon, BadgeCheckIcon } from "lucide-react";
+import { BarChart3Icon, FileTextIcon, LandmarkIcon, MessageCircleIcon, MessageSquareQuoteIcon, ShoppingCartIcon, TargetIcon, TruckIcon, BoxIcon, GlobeIcon, CalendarIcon, HandCoinsIcon, WorkflowIcon, SplitIcon, ClipboardListIcon, BriefcaseIcon, BadgeCheckIcon, ShieldCheckIcon, SparklesIcon, HandshakeIcon, MicIcon } from "lucide-react";
 import { ExtensionInfo } from "../../types/marketplace";
 import { cn } from "../../utils/cn";
 const icons: Record<string, BoxIcon> = {
@@ -19,7 +19,11 @@ const icons: Record<string, BoxIcon> = {
   forms: ClipboardListIcon,
   'service-os': BriefcaseIcon,
   proof: BadgeCheckIcon,
-  'local-fulfilment': TruckIcon
+  'local-fulfilment': TruckIcon,
+  'trust-passport': ShieldCheckIcon,
+  'ai-coach': SparklesIcon,
+  collaborations: HandshakeIcon,
+  'voice-to-store': MicIcon
 };
 export function ExtensionIcon({
   ext,

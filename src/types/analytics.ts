@@ -17,7 +17,10 @@ export type EventType =
 'ticket_paid' |
 'form_view' |
 'form_start' |
-'form_submit';
+'form_submit' |
+'member_gate' |
+'member_signin' |
+'member_view';
 
 export type SourceId = 'whatsapp' | 'instagram' | 'tiktok' | 'facebook' | 'x' | 'google' | 'qr' | 'campaign' | 'direct' | 'other';
 

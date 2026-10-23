@@ -1,4 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
+import { LockKeyholeIcon, ShieldCheckIcon as TrustShieldIcon } from 'lucide-react';
 import {
   CircleUserRoundIcon,
   HeadingIcon,
@@ -23,7 +24,6 @@ import {
   QuoteIcon,
   TicketIcon,
   DownloadIcon,
-  CalendarDaysIcon,
   UtensilsIcon,
   BriefcaseIcon,
   MapPinIcon,
@@ -484,6 +484,32 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
     clickable: false,
     requiresApp: 'proof',
     defaults: () => ({ title: 'What clients say', show: 'both', limit: 3 })
+  },
+  membersOnly: {
+    type: 'membersOnly',
+    name: 'Members-only section',
+    description: 'Hides the blocks below it from anyone who isn’t a signed-in subscriber.',
+    category: 'Commerce',
+    icon: LockKeyholeIcon,
+    keywords: ['members', 'membership', 'private', 'locked', 'exclusive', 'subscribers', 'paywall', 'club', 'login'],
+    defaultAlign: 'left',
+    supportsEmphasis: false,
+    clickable: true,
+    minPlan: 'pro',
+    defaults: () => ({ title: 'For members', teaser: '', joinLabel: 'Become a member', access: 'any', planIds: [], covers: 0 })
+  },
+  trustBadge: {
+    type: 'trustBadge',
+    name: 'Trust Passport badge',
+    description: 'Your trust level from checked records, with a link to the full passport.',
+    category: 'Conversion',
+    icon: TrustShieldIcon,
+    keywords: ['trust', 'verified', 'badge', 'passport', 'safe', 'legit', 'reviews', 'escrow'],
+    defaultAlign: 'left',
+    supportsEmphasis: false,
+    clickable: true,
+    requiresApp: 'trust-passport',
+    defaults: () => ({ style: 'compact', showScore: true })
   }
 };
 
@@ -512,12 +538,14 @@ export const blockOrder: BlockType[] = [
 'location',
 'testimonial',
 'proof',
+'trustBadge',
 'countdown',
 'event',
 'productGrid',
 'menu',
 'pricing',
 'subscription',
+'membersOnly',
 'download'];
 
 
@@ -531,31 +559,9 @@ export interface PlannedBlock {
   note: string;
 }
 
-export const plannedBlocks: PlannedBlock[] = [
-{
-  id: 'calendar',
-  name: 'Booking calendar',
-  description: 'Live slot picker for your services.',
-  category: 'Conversion',
-  icon: CalendarDaysIcon,
-  availability: 'planned',
-  note: 'Needs Bookings · Batch 4'
-},
-{
-  id: 'checkout',
-  name: 'Checkout',
-  description: 'Take payment on the page through a licensed provider.',
-  category: 'Commerce',
-  icon: ShoppingBagIcon,
-  availability: 'planned',
-  note: 'Needs Commerce · Batch 4'
-},
-{
-  id: 'secureDownload',
-  name: 'Secure digital delivery',
-  description: 'Paid files delivered with expiring links.',
-  category: 'Commerce',
-  icon: DownloadIcon,
-  availability: 'planned',
-  note: 'Needs Commerce · Batch 4'
-}];
+/**
+ * Only blocks that are genuinely not built yet (status "Coming" in docs/PLAN_MATRIX.md).
+ * Booking, checkout (product/grid blocks) and secure downloads shipped and were removed.
+ */
+// Seating maps shipped inside the Event block (D113), so nothing is planned right now.
+export const plannedBlocks: PlannedBlock[] = [];

@@ -29,7 +29,15 @@ export type BlockType =
 'location' |
 'subscription' |
 'form' |
-'proof';
+'proof' |
+'membersOnly' |
+'trustBadge';
+
+/** Who may see members-only content (D110): any live subscriber, or subscribers of chosen plans. */
+export interface MemberRule {
+  access: 'any' | 'plans';
+  planIds: string[];
+}
 
 export interface GalleryImage {
   id: string;
@@ -253,6 +261,13 @@ export interface BlockContentMap {
   form: {formId: string | null;showTitle: boolean;};
   /** Verified reviews and delivered work from Proof of work (D91). */
   proof: {title: string;show: 'both' | 'reviews' | 'work';limit: number;};
+  /**
+   * Members-only section (D110): hides the blocks below it from anyone who isn't a signed-in subscriber.
+   * `covers` = how many blocks below it are hidden; 0 = everything below it on this page.
+   */
+  membersOnly: MemberRule & {title: string;teaser: string;joinLabel: string;covers: number;};
+  /** Trust Passport badge (D111): level and checked signals, worked out when the page is viewed. */
+  trustBadge: {style: 'compact' | 'full';showScore: boolean;};
 }
 
 export interface BlockStyle {
@@ -416,6 +431,8 @@ export interface SitePage {
   blocks: Block[];
   groups?: BlockGroup[];
   hideFromNav?: boolean;
+  /** Members-only page (D110). Home can't be members-only. */
+  membersOnly?: (MemberRule & {teaser: string;}) | null;
   createdAt: string;
 }
 

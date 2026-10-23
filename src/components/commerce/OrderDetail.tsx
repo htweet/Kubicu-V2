@@ -27,6 +27,9 @@ import { useEditor } from '../../contexts/EditorContext';
 import { EscrowPanel } from '../money/EscrowPanel';
 import { OrderBalancePanel } from './OrderBalancePanel';
 import { dispatchBlocked } from '../../utils/commerce/deposit';
+import { podAwaiting } from '../../utils/commerce/payOptions';
+import { OrderPodPanel } from './OrderPodPanel';
+import { OrderInstalmentsPanel } from './OrderInstalmentsPanel';
 
 const steps: {status: OrderStatus;label: string;}[] = [
 { status: 'new', label: 'Placed' },
@@ -39,6 +42,9 @@ const steps: {status: OrderStatus;label: string;}[] = [
 function nextStep(o: Order): {label: string;status: OrderStatus;icon: typeof PackageIcon;} | null {
   const pickup = o.fulfilment.method === 'pickup';
   switch (o.status) {
+    case 'new':
+      // Pay on delivery orders are fulfilled before payment (D112).
+      return o.pod && !o.pod.collected ? { label: 'Start packing', status: 'packing', icon: PackageIcon } : null;
     case 'paid':
       return { label: 'Start packing', status: 'packing', icon: PackageIcon };
     case 'packing':
@@ -60,6 +66,7 @@ export function OrderDetail({ orderId, onClose }: {orderId: string | null;onClos
   const order = orderId ? data.orders.find((o) => o.id === orderId) : undefined;
   const [dialog, setDialog] = useState<'refund' | 'cancel' | null>(null);
   const [note, setNote] = useState('');
+  const [collecting, setCollecting] = useState(false);
 
   if (!order) return <Sheet open={!!orderId} onClose={onClose} side="right" size="lg" title="Order not found"><p className="p-5 text-label text-fg-muted">This order may have been cleared with the sample data.</p></Sheet>;
 
@@ -114,7 +121,11 @@ export function OrderDetail({ orderId, onClose }: {orderId: string | null;onClos
                 </Button>
             }
             </div>
-            {order.status === 'new' ?
+            {next && next.status === 'completed' && podAwaiting(order) ?
+          <Button leadingIcon={next.icon} onClick={() => setCollecting(true)}>
+                {next.label}
+              </Button> :
+          order.status === 'new' && !order.pod ?
           <Button leadingIcon={ReceiptIcon} onClick={() => apply((d) => confirmPayment(d, order.id)) && toast('Payment confirmed (simulated provider update)')}>
                 Mark payment confirmed
               </Button> :
@@ -150,7 +161,7 @@ export function OrderDetail({ orderId, onClose }: {orderId: string | null;onClos
             className="max-w-xs" />
           
 
-          {order.status === 'new' &&
+          {order.status === 'new' && !order.pod &&
           <p className="rounded-md bg-info-soft px-3 py-2.5 text-label text-info">
               {order.paymentNote ?? 'Payment pending'}. Don’t pack until the provider confirms — in live mode this updates automatically.
             </p>
@@ -163,6 +174,8 @@ export function OrderDetail({ orderId, onClose }: {orderId: string | null;onClos
           }
 
           <OrderBalancePanel order={order} handle={handle} business={current.name} apply={apply} />
+          <OrderPodPanel order={order} data={data} apply={apply} collectOpen={collecting} onCollectOpen={setCollecting} />
+          <OrderInstalmentsPanel order={order} handle={handle} business={current.name} workspaceId={current.id} apply={apply} />
 
           {stepIndex >= 0 && !digitalOnly &&
           // Phones: a vertical tracker; wider screens: a five-part bar.

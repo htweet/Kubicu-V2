@@ -5,7 +5,6 @@ import { useTeam } from '../../contexts/TeamContext';
 import { Switch } from '../ui/Switch';
 import { Button } from '../ui/Button';
 import { Dialog } from '../ui/Dialog';
-import { IllustrativeTag } from '../ui/IllustrativeTag';
 import { Card } from '../ui/layout/Card';
 import { Section } from '../ui/layout/Section';
 
@@ -56,7 +55,7 @@ export function PrivacyTab() {
             <div>
               <p className="text-label font-medium text-fg">Kept for {s.retentionDays} days</p>
               <p className="flex items-center gap-1.5 text-caption text-fg-subtle">
-                Set by KUBICU for every workspace — older visits are deleted automatically. <IllustrativeTag note="Example retention period — confirm with legal before launch." />
+                Set by KUBICU for every workspace — older visits are deleted automatically.
               </p>
             </div>
           </div>
@@ -73,7 +72,7 @@ export function PrivacyTab() {
           <li>Owners see totals and patterns, never a person.</li>
           <li>Orders, bookings and forms are kept in their own screens — that’s what customers chose to share.</li>
         </ul>
-        <p className="text-caption text-fg-subtle">This notice is written by KUBICU and is the same on every workspace’s pages. Wording is a draft pending legal review.</p>
+        <p className="text-caption text-fg-subtle">This notice is written by KUBICU and is the same on every workspace’s pages.</p>
       </Section>
 
       <Dialog

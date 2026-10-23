@@ -32,7 +32,7 @@ export const kindLabels: Record<OpportunityKind, string> = {
   unpaid: 'Unpaid checkout',
   renewal: 'Failed renewal',
   deposit: 'Deposit not paid',
-  balance: 'Booking balance due',
+  balance: 'Balance or instalment due',
   stage: 'Payment stage due',
   noshow: 'No-show',
   lead: 'Unanswered lead',
@@ -93,6 +93,44 @@ export function buildOpportunities(commerce: CommerceData, ops: OpsData, busines
     });
   });
 
+  // D112: instalments that failed and are waiting on a retry, or used up their retries.
+  commerce.orders.forEach((o) => {
+    const inst = o.instalments;
+    if (!inst || inst.status !== 'active' && inst.status !== 'defaulted' || o.status === 'cancelled' || o.status === 'refunded') return;
+    const failed = inst.parts.find((p) => p.status === 'failed');
+    if (!failed) return;
+    out.push({
+      id: `inst:${o.id}:${failed.id}`,
+      kind: 'balance',
+      group: 'payments',
+      title: `${o.customer.name || 'Customer'} · order #${o.number}`,
+      reason: inst.status === 'defaulted' ? `Instalment ${failed.n} of ${inst.parts.length} unpaid after every retry` : `Instalment ${failed.n} of ${inst.parts.length} didn’t go through — retrying automatically`,
+      valueNgn: failed.amountNgn,
+      since: failed.failedAt ?? failed.dueAt,
+      to: `/app/commerce/orders?order=${o.id}`,
+      nudge: o.customer.phone ? { phone: o.customer.phone, message: `Hi ${first(o.customer.name)}, it’s ${business}. Part ${failed.n} of your order #${o.number} (₦${failed.amountNgn.toLocaleString('en-NG')}) didn’t go through. You can pay it or update your card from your order page.` } : undefined,
+      sample: o.sample
+    });
+  });
+
+  // D112: pay-on-delivery orders that came back unpaid and haven't been rebooked or cancelled.
+  commerce.orders.forEach((o) => {
+    if (!o.pod || o.pod.collected || !o.pod.failed?.length || o.status !== 'packing') return;
+    const last = o.pod.failed[o.pod.failed.length - 1];
+    out.push({
+      id: `pod:${o.id}:${last.at}`,
+      kind: 'unpaid',
+      group: 'payments',
+      title: `${o.customer.name || 'Customer'} · order #${o.number}`,
+      reason: 'Pay-on-delivery order came back unpaid — rebook or cancel to free the stock',
+      valueNgn: o.pod.amountNgn,
+      since: last.at,
+      to: `/app/commerce/orders?order=${o.id}`,
+      nudge: o.customer.phone && last.reason !== 'refused' ? { phone: o.customer.phone, message: `Hi ${first(o.customer.name)}, it’s ${business}. We tried to deliver order #${o.number} but couldn’t reach you. When’s a good time to try again?` } : undefined,
+      sample: o.sample
+    });
+  });
+
   // D95: quote payment stages that are due but not yet requested.
   serviceOs?.quotes.forEach((q) => {
     if (!hasStages(q)) return;
@@ -114,7 +152,7 @@ export function buildOpportunities(commerce: CommerceData, ops: OpsData, busines
   // Checkouts with details but no payment: older than an hour, newer than two weeks.
   commerce.orders.forEach((o) => {
     const age = now - Date.parse(o.createdAt);
-    if (o.status !== 'new' || o.paymentStatus !== 'pending' || age < HOUR || age > 14 * DAY) return;
+    if (o.pod || o.status !== 'new' || o.paymentStatus !== 'pending' || age < HOUR || age > 14 * DAY) return;
     out.push({
       id: `unpaid:${o.id}`,
       kind: 'unpaid',

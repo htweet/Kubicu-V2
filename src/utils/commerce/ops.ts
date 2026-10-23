@@ -21,6 +21,7 @@ import { orderDiscountRecord, resolveDiscount } from './discounts';
 import { formatNgn } from '../format';
 import { issueTickets, orderCapacityIssue, ticketLineIssue } from './tickets';
 import { cartBalanceNgn, dispatchBlocked } from './deposit';
+import { everyLabels, instalmentCheck, newParts, payOptionsOf, podAwaiting, podCheck } from './payOptions';
 
 export const OWNER_ACTOR = 'You';
 
@@ -106,6 +107,8 @@ export interface CheckoutInput {
   guestNames?: Record<string, string[]>;
   /** The buyer's seat-hold id, so their own held seats count as theirs (D73a). */
   holder?: string;
+  /** How the buyer pays (D112). Defaults to paying in full now. Rules are re-checked here. */
+  payWith?: 'now' | 'pod' | 'instalments';
 }
 
 /** A short, readable share code for a DealRoom buyer, e.g. NGOZI-7K2. */
@@ -137,6 +140,8 @@ function roomReferral(data: CommerceData, input: CheckoutInput): Pick<Order, 're
 
 /** Places a test-mode order. Failed or cancelled payments create no order and keep the cart. */
 export function placeOrder(data: CommerceData, input: CheckoutInput): CheckoutResult {
+  const pod = input.payWith === 'pod';
+  if (pod) input = { ...input, outcome: 'success' };
   if (input.outcome === 'failed') return { ok: false, reason: 'failed', message: 'The test card was declined. No money moved and nothing was ordered.' };
   if (input.outcome === 'cancelled') return { ok: false, reason: 'cancelled', message: 'Payment was cancelled before it finished. Your cart is still here.' };
 
@@ -165,7 +170,8 @@ export function placeOrder(data: CommerceData, input: CheckoutInput): CheckoutRe
       unitPriceNgn: price,
       qty: line.qty,
       imageUrl: product.images[0]?.url ?? '',
-      kind: product.kind
+      kind: product.kind,
+      seats: product.kind === 'ticket' && line.seats?.length ? line.seats : undefined
     });
   }
 
@@ -193,8 +199,23 @@ export function placeOrder(data: CommerceData, input: CheckoutInput): CheckoutRe
     items.map((i) => ({ productId: i.productId, amountNgn: i.unitPriceNgn * i.qty })),
     fullTotal
   );
-  const gross = fullTotal - balanceNgn;
-  const paid = input.outcome === 'success';
+  // Pay on delivery and instalments are re-checked against live settings (D112).
+  const productsInCart = items.map((i) => data.products.find((p) => p.id === i.productId));
+  if (pod) {
+    const zone = data.fulfilment.zones.find((z) => z.id === input.fulfilment.zoneId);
+    const check = podCheck(data, { total: fullTotal, zoneId: input.fulfilment.method === 'delivery' ? input.fulfilment.zoneId ?? null : null, zoneName: zone?.name, onlyPhysical: items.every((i) => i.kind === 'physical'), balanceLater: balanceNgn, dealRoom: !!input.dealRoom, phone: input.customer.phone });
+    if (!check.ok) return { ok: false, reason: 'unavailable', message: `${check.reason || 'Pay on delivery isn’t available for this order.'} Nothing was ordered.` };
+  }
+  let instalmentPlan: ReturnType<typeof instalmentCheck> | null = null;
+  if (input.payWith === 'instalments') {
+    // Later parts go on the same card, so the first payment has to confirm straight away.
+    if (input.outcome !== 'success') return { ok: false, reason: 'failed', message: 'Paying in parts needs a card that confirms straight away. Nothing was charged — try again or pay in full.' };
+    instalmentPlan = instalmentCheck(data, { products: productsInCart, total: fullTotal, balanceLater: balanceNgn, dealRoom: !!input.dealRoom });
+    if (!instalmentPlan.ok) return { ok: false, reason: 'unavailable', message: `${instalmentPlan.reason || 'Paying in parts isn’t available for this order.'} Nothing was charged.` };
+  }
+  const parts = instalmentPlan?.ok ? newParts(fullTotal, instalmentPlan.plan) : null;
+  const gross = pod ? 0 : parts ? parts[0].amountNgn : fullTotal - balanceNgn;
+  const paid = !pod && input.outcome === 'success';
   const number = data.nextOrderNumber;
   const placedAt = now();
   const hasDigital = items.some((i) => i.kind === 'digital');
@@ -207,10 +228,16 @@ export function placeOrder(data: CommerceData, input: CheckoutInput): CheckoutRe
     const who = applied.discount.referrerName ? ` — referred by ${applied.discount.referrerName}` : '';
     events.unshift(event('note', `${applied.discount.code ? `Code ${applied.discount.code}` : applied.discount.title} saved the customer ${formatNgn(discountNgn)}${who}`, placedAt));
   }
+  if (pod) {
+    const accept = payOptionsOf(data).pod.accept;
+    events.unshift(event('note', `Pay on delivery — collect ${formatNgn(fullTotal)} (${accept === 'cash' ? 'cash' : accept === 'transfer' ? 'transfer' : 'cash or transfer'}) at the door`, placedAt));
+  }
+  if (paid && parts && instalmentPlan?.ok)
+  events.unshift(event('paid', `Instalment 1 of ${parts.length} — ${formatNgn(gross)} paid (test mode). ${formatNgn(fullTotal - gross)} to be charged ${everyLabels[instalmentPlan.plan.every]}${instalmentPlan.plan.ship === 'last' ? '; sent once fully paid' : ''}`));else
   if (paid) events.unshift(event('paid', balanceNgn ? `Deposit of ${formatNgn(gross)} confirmed (test mode) — ${formatNgn(balanceNgn)} due before dispatch` : 'Payment confirmed by provider (test mode)'));
   if (input.dealRoom?.held) events.unshift(event('note', 'Joined the group buy — held until the goal is reached, refunded automatically if it isn’t', placedAt));
   if (paid && digitalOnly && !input.dealRoom?.held) events.unshift(event('completed', deliveredLabel));else
-  if (!paid) events.unshift(event('payment', input.outcome === 'timeout' ? 'Provider didn’t respond in time — awaiting confirmation' : 'Payment pending with provider'));
+  if (!paid && !pod) events.unshift(event('payment', input.outcome === 'timeout' ? 'Provider didn’t respond in time — awaiting confirmation' : 'Payment pending with provider'));
 
   const order: Order = {
     id: uid('ord'),
@@ -237,7 +264,9 @@ export function placeOrder(data: CommerceData, input: CheckoutInput): CheckoutRe
     downloads: [],
     note: '',
     tickets: hasTickets ? issueTickets(data, items, input.customer.name, input.guestNames) : undefined,
-    balance: balanceNgn > 0 ? { dueNgn: balanceNgn } : undefined
+    balance: balanceNgn > 0 && !parts ? { dueNgn: balanceNgn } : undefined,
+    pod: pod ? { amountNgn: fullTotal, accept: payOptionsOf(data).pod.accept } : undefined,
+    instalments: parts && instalmentPlan?.ok ? { every: instalmentPlan.plan.every, ship: instalmentPlan.plan.ship, card: { brand: 'Visa', last4: '4081' }, parts, status: 'active', agreedAt: placedAt } : undefined
   };
 
   let next: CommerceData = { ...data, orders: [order, ...data.orders], nextOrderNumber: number + 1 };
@@ -261,6 +290,8 @@ export function setOrderStatus(data: CommerceData, orderId: string, status: Orde
       if (o.id !== orderId) return o;
       // Made-to-order: nothing goes out until the balance is in (D95).
       if ((status === 'out_for_delivery' || status === 'completed') && dispatchBlocked(o)) return o;
+      // Pay on delivery (D112): completing needs the collection recorded (collectPod), never a silent "paid".
+      if ((status === 'completed' || status === 'paid') && podAwaiting(o)) return o;
       const ev = statusEvent[status];
       const pickupReady = status === 'out_for_delivery' && o.fulfilment.method === 'pickup';
       const e = ev ? event(pickupReady ? 'ready' : ev[0], label ?? (pickupReady ? 'Ready for pickup' : ev[1])) : null;

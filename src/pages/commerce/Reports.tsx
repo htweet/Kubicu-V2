@@ -13,6 +13,7 @@ import { PageStack, Section } from '../../components/ui/layout/Section';
 import { Stat, StatGroup } from '../../components/ui/layout/Stat';
 import { orderMoney } from '../../utils/commerce/money';
 import { mrr } from '../../utils/commerce/subscriptions';
+import { instalmentsOwed } from '../../utils/commerce/payOptions';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
 import { useMoney } from '../../hooks/useMoney';
 import { downloadCsv, toCsv } from '../../utils/csv';
@@ -57,6 +58,29 @@ export function Reports() {
     const linkStages = money.links.flatMap((l) => l.payments).filter((p) => p.stageId && Date.parse(p.at) >= since).reduce((t, p) => t + p.amountNgn, 0);
     return { owed: open.reduce((t, o) => t + (o.balance?.dueNgn ?? 0), 0), owedCount: open.length, collected, linkStages, any: data.orders.some((o) => o.balance) || money.links.some((l) => l.stages?.length) };
   }, [data.orders, money.links, period]);
+
+  // Pay on delivery and instalments (D112).
+  const payWays = useMemo(() => {
+    const since = period === 'all' ? 0 : Date.now() - Number(period) * 86400000;
+    const live = (o: Order) => o.status !== 'cancelled' && o.status !== 'refunded';
+    const podOrders = data.orders.filter((o) => o.pod);
+    const collected = podOrders.filter((o) => o.pod?.collected && Date.parse(o.pod.collected.at) >= since);
+    const awaiting = podOrders.filter((o) => live(o) && !o.pod?.collected);
+    const refused = podOrders.filter((o) => o.pod?.failed?.some((f) => f.reason === 'refused' && Date.parse(f.at) >= since)).length;
+    const inst = data.orders.filter((o) => o.instalments && live(o) && (o.instalments.status === 'active' || o.instalments.status === 'defaulted'));
+    const owed = inst.reduce((t, o) => t + instalmentsOwed(o), 0);
+    return {
+      any: podOrders.length > 0 || data.orders.some((o) => o.instalments),
+      collected: collected.reduce((t, o) => t + (o.pod?.amountNgn ?? 0), 0),
+      collectedCount: collected.length,
+      awaiting: awaiting.reduce((t, o) => t + (o.pod?.amountNgn ?? 0), 0),
+      awaitingCount: awaiting.length,
+      refused,
+      owed,
+      owedCount: inst.length,
+      defaulted: inst.filter((o) => o.instalments?.status === 'defaulted').length
+    };
+  }, [data.orders, period]);
 
   const topProducts = useMemo(() => {
     const map = new Map<string, {name: string;qty: number;revenue: number;}>();
@@ -116,7 +140,7 @@ export function Reports() {
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <Card id="net" emphasis="primary" title="You receive" description={`From ${orders.length} paid order${orders.length === 1 ? '' : 's'} · test mode`} footer={
           <p className="flex items-center gap-1.5 text-caption text-fg-subtle">
-            Fee rates are illustrative <IllustrativeTag note="Provider 1.5% + ₦100 (waived under ₦2,500, capped ₦2,000); KUBICU fee by plan. Not final." />
+            Provider rate is illustrative <IllustrativeTag note="Provider 1.5% + ₦100 (waived under ₦2,500, capped ₦2,000) until a payment partner is chosen. KUBICU fees are confirmed (D105)." />
           </p>
           }>
           <p className="text-[2.5rem] font-semibold leading-none tracking-[-0.03em] tabular-nums text-fg">{formatNgn(totals.net)}</p>
@@ -148,6 +172,15 @@ export function Reports() {
                 <Stat label="Still owed" value={formatNgn(staged.owed)} hint={`${staged.owedCount} order${staged.owedCount === 1 ? '' : 's'} waiting`} />
                 <Stat label="Balances collected" value={formatNgn(staged.collected)} hint="This period" />
                 <Stat label="Link stages paid" value={formatNgn(staged.linkStages)} hint="This period" />
+              </StatGroup>
+            </Card>
+            }
+          {payWays.any &&
+            <Card id="pay-ways" title="Pay on delivery and instalments" description="Cash and door transfers went to you directly. Money still to come isn’t in “You receive”.">
+              <StatGroup columns={3}>
+                <Stat label="Collected on delivery" value={formatNgn(payWays.collected)} hint={`${payWays.collectedCount} order${payWays.collectedCount === 1 ? '' : 's'} this period${payWays.refused ? ` · ${payWays.refused} refused` : ''}`} />
+                <Stat label="Out for collection" value={formatNgn(payWays.awaiting)} hint={`${payWays.awaitingCount} order${payWays.awaitingCount === 1 ? '' : 's'} not yet paid`} />
+                <Stat label="Owed in instalments" value={formatNgn(payWays.owed)} hint={`${payWays.owedCount} order${payWays.owedCount === 1 ? '' : 's'}${payWays.defaulted ? ` · ${payWays.defaulted} defaulted` : ''}`} />
               </StatGroup>
             </Card>
             }

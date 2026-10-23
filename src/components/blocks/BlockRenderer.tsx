@@ -29,6 +29,8 @@ import { LocationBlock } from './LocationBlock';
 import { SubscriptionBlock } from './SubscriptionBlock';
 import { FormBlock } from './FormBlock';
 import { ProofBlock } from './ProofBlock';
+import { MembersOnlyBlock } from './MembersOnlyBlock';
+import { TrustBadgeBlock } from './TrustBadgeBlock';
 
 interface BlockRendererProps {
   block: Block;
@@ -96,6 +98,10 @@ export function BlockRenderer({ block, theme, mode }: BlockRendererProps) {
       return <FormBlock block={block} theme={theme} mode={mode} />;
     case 'proof':
       return <ProofBlock block={block} theme={theme} mode={mode} />;
+    case 'membersOnly':
+      return <MembersOnlyBlock block={block} theme={theme} mode={mode} />;
+    case 'trustBadge':
+      return <TrustBadgeBlock block={block} theme={theme} mode={mode} />;
     default:
       return null;
   }

@@ -128,6 +128,8 @@ export function Events() {
                       <span className="flex flex-wrap items-center gap-2">
                         <span className="truncate text-label font-semibold text-fg">{ev.name || 'Untitled event'}</span>
                         {ev.sample && <SampleTag />}
+                        {ev.series && <Badge tone="neutral">Repeats</Badge>}
+                        {ev.seating && <Badge tone="neutral">Seated</Badge>}
                       </span>
                       <span className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-caption text-fg-subtle">
                         <span className="inline-flex items-center gap-1">

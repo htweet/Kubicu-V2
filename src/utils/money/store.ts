@@ -159,7 +159,8 @@ function syncNewSales(d: MoneyData, orders: Order[]): MoneyData {
   const newRefunds: string[] = [];
 
   for (const o of orders) {
-    if (o.sample || Date.parse(o.createdAt) < since) continue;
+    // Pay on delivery: cash and door transfers go straight to the seller, never through the wallet (D112).
+    if (o.sample || o.pod || Date.parse(o.createdAt) < since) continue;
     const paid = o.paymentStatus === 'paid' || o.paymentStatus === 'partially_refunded' || o.paymentStatus === 'refunded';
     if (!paid) continue;
     if (!seenOrders.has(o.id)) {
@@ -188,7 +189,9 @@ function syncNewSales(d: MoneyData, orders: Order[]): MoneyData {
     for (const r of o.refunds) {
       if (seenRefunds.has(r.id)) continue;
       newRefunds.push(r.id);
-      const credit = [...d.ledger, ...add].find((e) => e.ref?.type === 'order' && e.ref.id === o.id && e.kind === 'sale');
+      // Balances and instalments paid later count too, so refunding them takes the money back out (D112 fixes the D95 gap).
+      const credits = [...d.ledger, ...add].filter((e) => e.ref?.type === 'order' && e.ref.id === o.id && (e.kind === 'sale' || e.kind === 'milestone') && e.amountNgn > 0);
+      const credit = credits[credits.length - 1];
       if (!credit) continue; // paid direct to bank — the refund comes from the provider
       const state = credit.state === 'held' || credit.state === 'reserved' ? credit.state : 'available';
       add.push({ id: uid('led'), at: r.at, kind: 'refund', amountNgn: -r.amountNgn, state, availableAt: credit.availableAt, label: `Refund · order #${o.number}${state === 'held' ? ' · in escrow' : ''}`, ref: { type: 'order', id: o.id, label: `#${o.number}` } });

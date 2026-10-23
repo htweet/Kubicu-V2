@@ -21,6 +21,9 @@ import { TextInput } from '../../components/ui/TextInput';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { SampleTag } from '../../components/commerce/StatusBadges';
 import { Stat, StatGroup } from '../../components/ui/layout/Stat';
+import { SeatMapOverview } from '../../components/commerce/SeatMapOverview';
+import { TicketDetailSheet } from '../../components/commerce/TicketDetailSheet';
+import { EyeIcon } from 'lucide-react';
 
 type Filter = 'all' | TicketStatus;
 interface Row extends TicketRef {
@@ -41,12 +44,16 @@ export function GuestList() {
   const [filter, setFilter] = useState<Filter>('all');
   const [type, setType] = useState('all');
   const [adding, setAdding] = useState(false);
+  const [view, setView] = useState<'list' | 'map'>('list');
+  const [openId, setOpenId] = useState<string | null>(null);
   const canCheckIn = team.can('tickets.checkin');
 
   const rows: Row[] = useMemo(
     () => ev ? eventTickets(data, ev.id).map((r) => ({ ...r, id: r.ticket.id, status: ticketStatus(r, ev) })) : [],
     [data, ev]
   );
+  const bySeat = useMemo(() => new Map(rows.filter((r) => r.ticket.seatId && r.status !== 'void').map((r) => [r.ticket.seatId as string, r])), [rows]);
+  const opened = rows.find((r) => r.id === openId) ?? null;
   if (!ev) {
     return (
       <div className="mt-8 rounded-lg border border-line bg-raised">
@@ -71,7 +78,7 @@ export function GuestList() {
       `${ev.name.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}-guests.csv`,
       toCsv(
         ['ticket', 'guest', 'type', 'status', 'checked_in_at', 'checked_in_by', 'order', 'buyer', 'phone', 'email', 'complimentary'],
-        rows.map((r) => [r.ticket.code, r.ticket.guestName, r.ticket.typeName, ticketStatusLabel[r.status], r.ticket.checkedInAt ?? '', r.ticket.checkedInBy ?? '', `#${r.order.number}`, r.order.customer.name, r.order.customer.phone, r.order.customer.email, r.ticket.comp ? 'yes' : ''])
+        rows.map((r) => [r.ticket.code, r.ticket.guestName, r.ticket.seat ? `${r.ticket.typeName} — ${r.ticket.seat}` : r.ticket.typeName, ticketStatusLabel[r.status], r.ticket.checkedInAt ?? '', r.ticket.checkedInBy ?? '', `#${r.order.number}`, r.order.customer.name, r.order.customer.phone, r.order.customer.email, r.ticket.comp ? 'yes' : ''])
       )
     );
   };
@@ -84,7 +91,9 @@ export function GuestList() {
     render: (r) =>
     <span className="min-w-0">
           <span className="flex items-center gap-2">
-            <span className="truncate font-semibold text-fg">{r.ticket.guestName}</span>
+            <button type="button" onClick={() => setOpenId(r.id)} className="truncate text-left font-semibold text-fg hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus rounded-sm">
+              {r.ticket.guestName}
+            </button>
             {r.ticket.comp && <Badge tone="info">Comp</Badge>}
             {r.order.sample && <SampleTag />}
           </span>
@@ -92,7 +101,7 @@ export function GuestList() {
         </span>
 
   },
-  { key: 'type', header: 'Ticket', sortValue: (r) => r.ticket.typeName, render: (r) => <span className="text-fg-muted">{r.ticket.typeName}</span> },
+  { key: 'type', header: 'Ticket', sortValue: (r) => `${r.ticket.typeName} ${r.ticket.seat ?? ''}`, render: (r) => <span className="text-fg-muted">{r.ticket.typeName}{r.ticket.seat && <span className="block text-caption text-fg">{r.ticket.seat}</span>}</span> },
   {
     key: 'order',
     header: 'Order',
@@ -136,6 +145,7 @@ export function GuestList() {
           <Menu
         align="end"
         items={[
+        { id: 'view', label: 'View ticket', icon: EyeIcon, onSelect: () => setOpenId(r.id) },
         { id: 'resend', label: 'Resend ticket', icon: SendIcon, onSelect: () => toast('Ticket resent (preview)', { description: `Would go to ${r.order.customer.email || r.order.customer.phone}. Messages aren’t sent in the prototype.` }) },
         { id: 'order', label: 'Open order', icon: ReceiptIcon, onSelect: () => navigate(`/app/commerce/orders?order=${r.order.id}`) }]
         }
@@ -177,7 +187,25 @@ export function GuestList() {
         )}
       </StatGroup>
 
-      {rows.length === 0 ?
+      {ev.seating &&
+      <div className="mt-6">
+          <Segmented<'list' | 'map'>
+          ariaLabel="Guest list view"
+          value={view}
+          onChange={setView}
+          options={[
+          { value: 'list', label: 'Guest list' },
+          { value: 'map', label: 'Seat map' }]
+          } />
+        
+        </div>
+      }
+
+      {ev.seating && view === 'map' ?
+      <div className="mt-6">
+          <SeatMapOverview data={data} event={ev} bySeat={bySeat} onOpen={setOpenId} />
+        </div> :
+      rows.length === 0 ?
       <div className="mt-8 rounded-lg border border-line bg-raised">
           <EmptyState icon={UserPlusIcon} title="No guests yet" description="Tickets appear here the moment they’re bought. You can also add a guest yourself." action={<Button onClick={() => setAdding(true)}>Add guest</Button>} />
         </div> :
@@ -210,6 +238,7 @@ export function GuestList() {
       }
 
       <AddGuestDialog open={adding} event={ev} onClose={() => setAdding(false)} />
+      <TicketDetailSheet ticket={opened} event={ev} canCheckIn={canCheckIn.allowed} onToggleCheckIn={() => opened && toggle(opened)} onClose={() => setOpenId(null)} />
     </>);
 
 }

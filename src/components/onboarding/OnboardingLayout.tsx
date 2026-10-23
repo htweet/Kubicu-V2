@@ -47,7 +47,7 @@ export function OnboardingLayout({ step, onExit, preview, children }: Onboarding
         {step < total &&
         <div className="flex gap-1 px-5 pt-4 md:px-8" role="progressbar" aria-label="Setup progress" aria-valuemin={1} aria-valuemax={total} aria-valuenow={step + 1} aria-valuetext={`${ONBOARDING_STEPS[step]}, ${step + 1} of ${total}`}>
             {ONBOARDING_STEPS.slice(0, total).map((name, i) =>
-          <span key={name} className={cn('h-1 flex-1 rounded-full transition-colors duration-200', i <= step ? 'bg-action' : 'bg-sunken')} />
+          <span key={name} className={cn('h-1 flex-1 rounded-full transition-colors duration-200', i <= step ? 'nm-fill' : 'bg-sunken')} />
           )}
           </div>
         }

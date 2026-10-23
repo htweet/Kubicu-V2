@@ -70,9 +70,69 @@ export interface Product {
   eventId?: string;
   /** Physical products made after ordering: a deposit at checkout, the balance before dispatch (D95). */
   madeToOrder?: MadeToOrder;
+  /** Can be paid in parts at checkout when Instalments is on (D112). */
+  instalments?: ProductInstalments;
   sample?: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+/** Seller-run instalments on a product (D112): the first part at checkout, the rest charged to the same card. */
+export interface ProductInstalments {
+  parts: 2 | 3 | 4;
+  every: InstalmentEvery;
+  /** Send after the first part, or only once the last part is paid. */
+  ship: 'first' | 'last';
+}
+
+export type InstalmentEvery = 'week' | 'fortnight' | 'month';
+
+export interface InstalmentPart {
+  id: string;
+  /** 1-based. */
+  n: number;
+  dueAt: string;
+  amountNgn: number;
+  status: 'paid' | 'scheduled' | 'failed' | 'cancelled';
+  paidAt?: string;
+  how?: 'card' | 'online' | 'recorded';
+  /** First failed attempt of this part; retried on days 1, 3 and 5. */
+  failedAt?: string;
+  retries: number;
+}
+
+export interface OrderInstalments {
+  every: InstalmentEvery;
+  ship: 'first' | 'last';
+  card: {brand: 'Visa' | 'Mastercard' | 'Verve';last4: string;};
+  parts: InstalmentPart[];
+  status: 'active' | 'completed' | 'defaulted' | 'cancelled';
+  agreedAt: string;
+}
+
+/** Pay on delivery (D112): nothing is charged online; the rider or seller collects at the door. */
+export interface OrderPod {
+  amountNgn: number;
+  accept: 'cash' | 'transfer' | 'both';
+  collected?: {how: 'cash' | 'transfer';at: string;};
+  failed?: {at: string;reason: PodFailReason;note?: string;}[];
+}
+
+export type PodFailReason = 'refused' | 'not_home' | 'unreachable' | 'wrong_address' | 'other';
+
+/** Extra ways a buyer can pay at checkout (D112). Pro and above. */
+export interface PayOptions {
+  pod: {
+    enabled: boolean;
+    /** Largest order it's offered on. */
+    maxOrderNgn: number;
+    /** Delivery zones it's offered in; null = every zone. */
+    zoneIds: string[] | null;
+    accept: 'cash' | 'transfer' | 'both';
+    /** Buyers whose phone has refused a pay-on-delivery order before must pay online. */
+    blockAfterRefusal: boolean;
+  };
+  instalments: {enabled: boolean;};
 }
 
 export interface MadeToOrder {
@@ -106,8 +166,34 @@ export interface TicketType {
   note: string;
 }
 
+/** Seating maps (D113). A row is a theatre row or a banquet table; every seat in it sells as one ticket type. */
+export type SeatingLayout = 'theatre' | 'banquet' | 'stage';
+
+export interface SeatRow {
+  id: string;
+  /** "A" for rows, "Table 3" for tables. */
+  label: string;
+  seats: number;
+  ticketTypeId: string;
+}
+
+export interface SeatingMap {
+  layout: SeatingLayout;
+  rows: SeatRow[];
+}
+
+export type RepeatEvery = 'weekly' | 'fortnightly' | 'monthly';
+
+/** Repeating events (D113): each date is its own event with its own seats and guest list. */
+export interface EventSeries {
+  id: string;
+  every: RepeatEvery;
+}
+
 /** An event sold through KUBICU checkout (D73). Its ticket types live on a linked 'ticket' product. */
 export interface CommerceEvent {
+  seating?: SeatingMap;
+  series?: EventSeries;
   id: string;
   name: string;
   description: string;
@@ -144,6 +230,9 @@ export interface IssuedTicket {
   checkedInBy?: string;
   /** Added by the seller (complimentary). */
   comp?: boolean;
+  /** Assigned seat (D113): id for checks, label for people, e.g. "Row B, seat 4". */
+  seatId?: string;
+  seat?: string;
 }
 
 export interface Collection {
@@ -183,6 +272,8 @@ export interface OrderItem {
   qty: number;
   imageUrl: string;
   kind: ProductKind;
+  /** Chosen seats for seated tickets (D113). */
+  seats?: string[];
 }
 
 export interface OrderCustomer {
@@ -267,6 +358,8 @@ export interface Order {
   /** DealRoom buyers get their own share code; orders placed through it record it in `referredBy` (D54). */
   referralCode?: string;
   referredBy?: string;
+  /** Creator Collaboration partner code from the link the buyer arrived on (?partner=) (D103). */
+  partnerCode?: string;
   /** Team member looking after this order (D60). */
   assigneeId?: string | null;
   /** Product box renewal: the subscription that created this order (D69). */
@@ -275,6 +368,10 @@ export interface Order {
   tickets?: IssuedTicket[];
   /** Made-to-order: the deposit was charged at checkout; this is the rest (D95). */
   balance?: OrderBalance;
+  /** Pay on delivery (D112). */
+  pod?: OrderPod;
+  /** Paid in parts (D112). */
+  instalments?: OrderInstalments;
 }
 
 export interface OrderDiscount {
@@ -331,6 +428,26 @@ export interface StorefrontSettings {
   whatsappPhone: string;
   /** Hide sold-out products instead of showing them as Sold out. */
   hideSoldOut: boolean;
+  // ——— D98 additions (optional so older saved shops keep working; read through storefrontConfig) ———
+  /** One-line notice above the shop, e.g. “Free delivery in Lekki this week”. */
+  announcement?: string;
+  bannerUrl?: string;
+  bannerAlt?: string;
+  /** Products per row on desktop. Phones always show 2. */
+  columns?: 2 | 3 | 4;
+  imageShape?: 'portrait' | 'square' | 'landscape';
+  defaultSort?: 'featured' | 'newest' | 'price_asc' | 'price_desc';
+  /** Pinned to the top of the Featured order, in this order (max 8). */
+  featuredIds?: string[];
+  showSearch?: boolean;
+  showCollections?: boolean;
+  showStockFilter?: boolean;
+  /** “Only 3 left” labels. */
+  showLowStock?: boolean;
+  deliveryNote?: string;
+  returnsNote?: string;
+  seoTitle?: string;
+  seoDescription?: string;
 }
 
 export interface DeliveryZone {
@@ -376,6 +493,8 @@ export interface CommerceData {
   events?: CommerceEvent[];
   /** Seats reserved while a buyer is in checkout (D73a). Expired holds are ignored and pruned. */
   ticketHolds?: TicketHold[];
+  /** Pay on delivery and instalments (D112). Optional for data saved before them. */
+  payOptions?: PayOptions;
   nextOrderNumber: number;
   /** True once sample data has been offered/seeded, so clearing it doesn't bring it back. */
   sampleSeeded: boolean;
@@ -392,12 +511,16 @@ export interface TicketHold {
   variantId: string;
   qty: number;
   expiresAt: string;
+  /** Exact seats held, for seated events (D113). */
+  seats?: string[];
 }
 
 export interface CartLine {
   productId: string;
   variantId: string;
   qty: number;
+  /** Chosen seats for seated tickets; qty always equals seats.length (D113). */
+  seats?: string[];
 }
 
 export type TestPaymentOutcome = 'success' | 'pending' | 'failed' | 'cancelled' | 'timeout';

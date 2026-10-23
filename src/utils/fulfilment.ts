@@ -71,8 +71,10 @@ export function readyOrders(orders: Order[], data: FulfilmentData): Order[] {
   filter(
     (o) =>
     o.fulfilment.method === 'delivery' && (
-    o.status === 'paid' || o.status === 'packing') && (
-    o.paymentStatus === 'paid' || o.paymentStatus === 'partially_refunded') &&
+    // Pay on delivery orders go out before they're paid (D112).
+    o.pod && !o.pod.collected ?
+    o.status === 'new' || o.status === 'packing' :
+    (o.status === 'paid' || o.status === 'packing') && (o.paymentStatus === 'paid' || o.paymentStatus === 'partially_refunded')) &&
     !dispatchBlocked(o) &&
     !activeFor(data, o.id) &&
     !data.deliveries.some((d) => d.orderId === o.id && d.status === 'delivered')

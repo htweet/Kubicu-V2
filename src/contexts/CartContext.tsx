@@ -9,6 +9,8 @@ interface CartValue {
   choosing: string | null;
   add: (productId: string, variantId?: string, needsChoice?: boolean) => void;
   setQty: (variantId: string, qty: number) => void;
+  /** Seated tickets (D113): replaces the line with exactly these seats. Empty removes it. */
+  setSeats: (productId: string, variantId: string, seats: string[]) => void;
   remove: (variantId: string) => void;
   clear: () => void;
   setOpen: (open: boolean) => void;
@@ -58,15 +60,43 @@ export function CartProvider({ pageKey, children }: {pageKey: string;children: R
   }, [track]);
 
   const setQty = useCallback((variantId: string, qty: number) => {
-    setLines((prev) => qty <= 0 ? prev.filter((l) => l.variantId !== variantId) : prev.map((l) => l.variantId === variantId ? { ...l, qty: Math.min(20, qty) } : l));
+    setLines((prev) =>
+    qty <= 0 ?
+    prev.filter((l) => l.variantId !== variantId) :
+    prev.map((l) => {
+      if (l.variantId !== variantId) return l;
+      // Seated lines can only drop seats here; adding goes back through the seat map.
+      if (l.seats?.length) {
+        const seats = l.seats.slice(0, Math.min(qty, l.seats.length));
+        return { ...l, seats, qty: seats.length };
+      }
+      return { ...l, qty: Math.min(20, qty) };
+    })
+    );
   }, []);
+  const setSeats = useCallback(
+    (productId: string, variantId: string, seats: string[]) => {
+      setLines((prev) => {
+        const rest = prev.filter((l) => l.variantId !== variantId);
+        if (!seats.length) return rest;
+        const existingIndex = prev.findIndex((l) => l.variantId === variantId);
+        const line = { productId, variantId, qty: seats.length, seats };
+        if (existingIndex < 0) return [...rest, line];
+        const out = [...prev];
+        out[existingIndex] = line;
+        return out;
+      });
+      if (seats.length) track('cart_add', { label: productId });
+    },
+    [track]
+  );
   const remove = useCallback((variantId: string) => setLines((prev) => prev.filter((l) => l.variantId !== variantId)), []);
   const clear = useCallback(() => setLines([]), []);
   const doneChoosing = useCallback(() => setChoosing(null), []);
 
   const value = useMemo(
-    () => ({ lines, open, choosing, add, setQty, remove, clear, setOpen, doneChoosing, count: lines.reduce((s, l) => s + l.qty, 0) }),
-    [lines, open, choosing, add, setQty, remove, clear, doneChoosing]
+    () => ({ lines, open, choosing, add, setQty, setSeats, remove, clear, setOpen, doneChoosing, count: lines.reduce((s, l) => s + l.qty, 0) }),
+    [lines, open, choosing, add, setQty, setSeats, remove, clear, doneChoosing]
   );
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

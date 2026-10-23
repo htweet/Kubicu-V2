@@ -83,6 +83,11 @@ export function TicketPage() {
               <h1 className="text-[24px] font-medium leading-tight" style={{ fontFamily: fontsFor(t).display, color: t.text }}>
                 {ev.name}
               </h1>
+              {ref.ticket.seat &&
+              <p className="mt-1 text-[17px] font-semibold" style={{ color: t.text }}>
+                  {ref.ticket.seat}
+                </p>
+              }
               <p className="text-[15px] font-medium">{ref.ticket.guestName}</p>
             </div>
 

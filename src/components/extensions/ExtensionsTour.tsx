@@ -146,7 +146,7 @@ export function ExtensionsTour() {
             transition={{ duration: 0.2, ease: EASE }}
             className={cn(
               'flex flex-col overflow-hidden rounded-xl border border-line bg-raised shadow-lg focus:outline-none',
-              spotlight ? 'w-[360px]' : 'max-h-full w-full max-w-[520px]'
+              spotlight ? 'w-[min(360px,calc(100vw-24px))]' : 'max-h-full w-full max-w-[520px]'
             )}>
             
           <Progress step={step} />

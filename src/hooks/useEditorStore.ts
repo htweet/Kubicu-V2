@@ -564,6 +564,9 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
 
       setPageHidden: (id: string, hideFromNav: boolean) => updateSitePage(id, (p) => ({ ...p, hideFromNav })),
 
+      /** Members-only page (D110); null makes it public again. */
+      setPageMembers: (id: string, membersOnly: SitePage['membersOnly']) => updateSitePage(id, (p) => ({ ...p, membersOnly }), `pg:${id}:members`),
+
       setHomeLabel: (label: string) => mutateSite((doc) => ({ ...doc, homeLabel: label }), 'homeLabel'),
 
       movePage: (id: string, direction: -1 | 1) =>

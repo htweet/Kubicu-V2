@@ -12,7 +12,6 @@ import { Sheet } from '../../components/ui/Sheet';
 import { Segmented } from '../../components/ui/Segmented';
 import { DataTable, type DataColumn } from '../../components/ui/DataTable';
 import { Stat, StatGroup } from '../../components/ui/layout/Stat';
-import { IllustrativeTag } from '../../components/ui/IllustrativeTag';
 import { SampleTag } from '../../components/commerce/StatusBadges';
 import { ReasonDialog } from '../../components/admin/ReasonDialog';
 
@@ -166,7 +165,7 @@ export function AdminDataRequests() {
           value={<span className={overdue ? 'text-danger' : undefined}>{overdue}</span>}
           hint={
           <span className="inline-flex items-center gap-1.5">
-              {DATA_REQUEST_DAYS}-day deadline <IllustrativeTag note="Example figure — confirm the response window with legal under the NDPA." />
+              {DATA_REQUEST_DAYS}-day deadline
             </span>
           } />
         

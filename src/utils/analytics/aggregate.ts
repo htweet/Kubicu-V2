@@ -208,6 +208,12 @@ export function funnels(events: AnalyticsEvent[]) {
     ['Saw a form', 'form_view'],
     ['Started filling in', 'form_start'],
     ['Sent', 'form_submit']]
+    ),
+    // Members-only content (D110).
+    members: funnel(events, [
+    ['Reached members-only content', 'member_gate'],
+    ['Signed in', 'member_signin'],
+    ['Saw members content', 'member_view']]
     )
   };
 }

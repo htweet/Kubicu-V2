@@ -6,7 +6,7 @@ import { validateDocument, type ValidationIssue } from './validation';
 export const pageLimits: Record<WorkspacePlan, number> = { free: 1, creator: 5, pro: 20, business: 50, agency: 50, enterprise: 100 };
 
 /** Single-segment paths already used for order, download and booking pages. */
-export const RESERVED_PATHS = new Set(['order', 'download', 'booking', 'checkout', 'cart', 'admin', 'api', 'app']);
+export const RESERVED_PATHS = new Set(['order', 'download', 'booking', 'checkout', 'cart', 'admin', 'api', 'app', 'trust']);
 
 export interface NavItem {
   id: string | null;

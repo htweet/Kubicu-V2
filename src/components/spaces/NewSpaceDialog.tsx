@@ -22,7 +22,6 @@ import { Dialog } from '../ui/Dialog';
 import { Button } from '../ui/Button';
 import { TextInput } from '../ui/TextInput';
 import { InlineAlert } from '../ui/InlineAlert';
-import { IllustrativeTag } from '../ui/IllustrativeTag';
 import { UpgradeButton } from '../ui/UpgradeButton';
 import { cn } from '../../utils/cn';
 
@@ -242,7 +241,7 @@ export function NewSpaceDialog({ open, onClose, mainDoc, initialKind = null, tem
                 </>
             }
             </span>
-            <IllustrativeTag note="Example space limits per plan — not final pricing." />
+
           </div>
           {locked &&
         <InlineAlert

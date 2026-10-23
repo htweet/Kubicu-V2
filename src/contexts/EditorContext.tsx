@@ -20,6 +20,8 @@ import { CHECKOUT_PLAN } from '../utils/commerce/linkIssues';
 import { dealRoomIssues, roomOrders } from '../utils/dealRoom';
 import { campaignIssues } from '../utils/campaign';
 import type { WorkspacePlan } from '../types/plan';
+import { memberIssues } from '../utils/memberIssues';
+import { usePublicPassport } from '../hooks/usePublicPassport';
 
 function nextPlanAbove(plan: WorkspacePlan): WorkspacePlan | undefined {
   return planOrder[planOrder.indexOf(plan) + 1];
@@ -37,6 +39,9 @@ export function EditorProvider({ children }: {children: React.ReactNode;}) {
   const isMain = currentSpace.id === MAIN_SPACE_ID;
   const spaceIndex = activeExtraSpaces(current).findIndex((s) => s.id === currentSpace.id);
   const taken = useMemo(() => takenHandles(workspaces, storageId), [workspaces, storageId]);
+  // Trust Passport badge checks (D111) need the live level and whether the app is on.
+  const { passport, appOn: trustAppOn } = usePublicPassport(current.id, data.orders);
+  const trustLevel = passport.level;
   const extra = useCallback(
     (doc: PageDocument) => [...catalogLinkIssues(doc, data, plan.id), ...opsLinkIssues(doc, ops, plan.id), ...formLinkIssues(doc, current.id)],
     [data, ops, plan.id, current.id]
@@ -69,6 +74,7 @@ export function EditorProvider({ children }: {children: React.ReactNode;}) {
         out.push({ id: `ai:placeholder:${b.id}`, blockId: b.id, severity: 'error', message: 'Replace the [Add …] placeholder with your own words before publishing.' });
       });
       out.push(...intentIssues(doc));
+      out.push(...memberIssues(doc, data, plan.id, { appOn: trustAppOn, level: trustLevel }));
       if (doc.campaign) out.push(...campaignIssues(doc.campaign, doc.blocks, data));
       if (doc.dealRoom) {
         out.push(...dealRoomIssues(doc.dealRoom, doc.blocks, data, roomOrders(data, doc.handle).length));
@@ -78,7 +84,7 @@ export function EditorProvider({ children }: {children: React.ReactNode;}) {
       }
       return out;
     },
-    [plan.id, plan.name, isMain, spaceIndex, currentSpace.kind, data]
+    [plan.id, plan.name, isMain, spaceIndex, currentSpace.kind, data, trustAppOn, trustLevel]
   );
   const store = useEditorStore(storageId, taken, extra, siteLevel);
   return <EditorContext.Provider value={store}>{children}</EditorContext.Provider>;

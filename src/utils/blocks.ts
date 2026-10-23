@@ -130,6 +130,10 @@ export function summarizeBlock(block: Block): string {
       return block.content.formId ? 'Form' : 'No form chosen';
     case 'proof':
       return block.content.title || { both: 'Reviews and work', reviews: 'Verified reviews', work: 'Delivered work' }[block.content.show];
+    case 'membersOnly':
+      return `${block.content.covers === 0 ? 'Hides everything below' : `Hides the next ${block.content.covers}`} · ${block.content.access === 'any' ? 'any subscriber' : `${block.content.planIds.length} plan${block.content.planIds.length === 1 ? '' : 's'}`}`;
+    case 'trustBadge':
+      return block.content.style === 'compact' ? 'Compact badge' : 'Full badge';
     default:
       return '';
   }
@@ -147,7 +151,7 @@ export function docSignature(doc: PageDocument | null): string {
     branding: doc.branding ?? null,
     blocks: visible(doc.blocks),
     homeLabel: doc.homeLabel ?? null,
-    pages: (doc.pages ?? []).map((p) => ({ id: p.id, title: p.title, path: p.path, seo: p.seo, hideFromNav: !!p.hideFromNav, blocks: visible(p.blocks) })),
+    pages: (doc.pages ?? []).map((p) => ({ id: p.id, title: p.title, path: p.path, seo: p.seo, hideFromNav: !!p.hideFromNav, membersOnly: p.membersOnly ?? null, blocks: visible(p.blocks) })),
     redirects: doc.redirects ?? []
   });
 }

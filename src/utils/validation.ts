@@ -181,6 +181,15 @@ export function validateBlock(block: Block): ValidationIssue[] {
         if (block.content.limit < 1) push('error', 'Show at least one item', 'limit');
         break;
       }
+    case 'membersOnly':{
+        // Plans and the Pro plan are checked against Commerce in catalogLinkIssues.
+        const c = block.content;
+        if (c.access === 'plans' && c.planIds.length === 0) push('error', 'Choose which plans can see it, or switch to Any subscriber', 'planIds');
+        if (!c.joinLabel.trim()) push('warning', 'Add a label for the join button', 'joinLabel');
+        break;
+      }
+    case 'trustBadge':
+      break;
     case 'testimonial':{
         const c = block.content;
         if (!c.quote.trim()) push('error', 'Add the customer’s words', 'quote');
@@ -311,16 +320,16 @@ export function validateTheme(theme: PageTheme): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
   checks.forEach(({ key, ratio, field }) => {
     if (ratio >= CONTRAST_TARGET) return;
-    // Live pages apply a readable shade automatically (D76), so low contrast warns instead of blocking.
+    // D108: below 3:1 blocks publishing; 3–4.5:1 warns (live pages still nudge to a readable shade, D76).
     const veryLow = ratio < CONTRAST_MIN_PUBLISH;
     const { name, guidance } = contrastCopy[key];
     const fix = suggestContrastFix(theme, key);
     issues.push({
       id: `theme:${key}`,
       blockId: null,
-      severity: 'warning',
+      severity: veryLow ? 'error' : 'warning',
       message: veryLow ?
-      `${name} is very hard to read (${formatRatio(ratio)}). Visitors will see ${fix.label.replace('Use ', '')} instead until you fix it.` :
+      `${name} is too hard to read (${formatRatio(ratio)}). Publishing is off until it reaches ${CONTRAST_MIN_PUBLISH}:1 — try ${fix.label.replace('Use ', '')}.` :
       `${name} contrast is ${formatRatio(ratio)} — visitors will see a slightly adjusted shade. Aim for at least ${CONTRAST_TARGET}:1.`,
       field,
       guidance,

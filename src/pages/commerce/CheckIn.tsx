@@ -204,7 +204,7 @@ export function CheckIn() {
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-label font-semibold text-fg">{r.ticket.guestName}</span>
                       <span className="block truncate text-caption text-fg-subtle">
-                        {r.ticket.typeName} · <span className="font-mono">{r.ticket.code}</span>
+                        {r.ticket.typeName}{r.ticket.seat ? ` · ${r.ticket.seat}` : ''} · <span className="font-mono">{r.ticket.code}</span>
                         {st === 'checked_in' ? ` · in at ${time(r.ticket.checkedInAt)}` : st === 'void' ? ' · void' : st === 'pending' ? ' · payment pending' : ''}
                       </span>
                     </span>
@@ -291,7 +291,7 @@ function ResultCard({ outcome, onUndo }: {outcome: ScanOutcome;onUndo: () => voi
         <p className="text-[18px] font-semibold leading-tight">{title}</p>
         {ref &&
         <p className="truncate text-label font-medium">
-            {ref.ticket.typeName} · {ref.ticket.guestName}
+            {ref.ticket.typeName}{ref.ticket.seat ? ` · ${ref.ticket.seat}` : ''} · {ref.ticket.guestName}
           </p>
         }
         {detail && <p className="text-caption opacity-90">{detail}</p>}

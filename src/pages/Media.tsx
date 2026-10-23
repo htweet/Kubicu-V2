@@ -14,7 +14,6 @@ import { PageHeader } from '../components/shell/PageHeader';
 import { Button } from '../components/ui/Button';
 import { Segmented } from '../components/ui/Segmented';
 import { InlineAlert } from '../components/ui/InlineAlert';
-import { IllustrativeTag } from '../components/ui/IllustrativeTag';
 import { UpgradeButton } from '../components/ui/UpgradeButton';
 import { fieldControlClass } from '../components/ui/Field';
 import { MediaImage } from '../components/media/MediaImage';
@@ -126,7 +125,7 @@ export function Media() {
               <span>
                 <span className="font-semibold tabular-nums text-fg">{formatBytes(media.usedBytes)}</span> of {formatBytes(media.quotaBytes)} on {plan.name}
               </span>
-              <IllustrativeTag note="Example allowance — storage per plan isn’t confirmed yet." />
+
             </p>
           </div>
           {full &&

@@ -18,7 +18,10 @@ import { CheckoutHeading, PrimaryButton, SecondaryButton, SheetActions, StepDots
 import { canSell, variantLabel, variantPrice } from '../../utils/commerce/catalog';
 import { placeOrder } from '../../utils/commerce/ops';
 import { cartBalanceNgn, isMadeToOrder } from '../../utils/commerce/deposit';
+import { instalmentCheck, payOptionsOf, podCheck, schedule } from '../../utils/commerce/payOptions';
+import { PayWithChooser, type PayWith } from './PayWithChooser';
 import { HOLD_MINUTES, extendHolds, findEvent, holdExpiry, holderId, placeHolds, releaseHolds, ticketLineIssue } from '../../utils/commerce/tickets';
+import { describeSeats, findSeat } from '../../utils/commerce/seating';
 import { useNow } from '../../hooks/useNow';
 import { isValidEmail, isValidPhone } from '../../utils/validation';
 import { formatNgn } from '../../utils/format';
@@ -61,6 +64,9 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
   const [code, setCode] = useState(() => normaliseCode(params.get('code') ?? defaultCode ?? ''));
   // Names printed on each ticket seat; blank seats use the buyer's name (D73).
   const [guestNames, setGuestNames] = useState<Record<string, string[]>>({});
+  // Pay on delivery / instalments (D112).
+  const [payWithChoice, setPayWith] = useState<PayWith>('now');
+  const [agreed, setAgreed] = useState(false);
 
   const data = commerce.data;
   const open = !!cart?.open;
@@ -77,6 +83,8 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
       setStep('cart');
       setTried(false);
       setExtended(false);
+      setPayWith('now');
+      setAgreed(false);
     }
   }, [open]);
   useEffect(() => {
@@ -100,8 +108,10 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
       const price = product && variant ? roomPrice ?? variantPrice(product, variant) : null;
       const ticketIssue = product?.kind === 'ticket' ? ticketLineIssue(data, l, Date.now(), holder) : '';
       const ok = !!product && !!variant && price !== null && canSell(product, variant) && !ticketIssue && (product.kind === 'digital' || !product.trackStock || variant.stock >= l.qty);
-      const tt = product?.kind === 'ticket' ? findEvent(data, product.eventId)?.ticketTypes.find((t) => t.id === l.variantId) : undefined;
-      return { ...l, product, variant, price, ok, ticketIssue, maxQty: tt ? tt.maxPerOrder : 20 };
+      const ev = product?.kind === 'ticket' ? findEvent(data, product.eventId) : undefined;
+      const tt = ev?.ticketTypes.find((t) => t.id === l.variantId);
+      const seatText = describeSeats(ev, l.seats);
+      return { ...l, product, variant, price, ok, ticketIssue, seatText, maxQty: tt ? tt.maxPerOrder : 20 };
     }),
     [cart?.lines, data, dealRoom, holder]
   );
@@ -112,6 +122,10 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
   const physical = lines.some((l) => l.product?.kind === 'physical');
   const ticketLines = lines.filter((l) => l.ok && l.product?.kind === 'ticket');
   const ticketsOnly = lines.length > 0 && lines.every((l) => l.product?.kind === 'ticket');
+  const seatName = (eventId: string, seatId: string) => {
+    const ev = findEvent(data, eventId);
+    return ev ? findSeat(ev, seatId)?.label : undefined;
+  };
   const f = data.fulfilment;
   const zone = f.zones.find((z) => z.id === method);
   const free = f.freeDeliveryOverNgn !== null && subtotal >= f.freeDeliveryOverNgn;
@@ -148,7 +162,20 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
     lines.filter((l) => l.ok && l.price !== null).map((l) => ({ productId: l.productId, amountNgn: (l.price ?? 0) * l.qty })),
     total
   );
-  const payNow = total - balanceLater;
+  const okProducts = lines.filter((l) => l.ok).map((l) => l.product);
+  const podOption = podCheck(data, {
+    total,
+    zoneId: method && method !== 'pickup' && zone ? zone.id : null,
+    zoneName: zone?.name,
+    onlyPhysical: okProducts.length > 0 && okProducts.every((p) => p?.kind === 'physical'),
+    balanceLater,
+    dealRoom: !!dealRoom,
+    phone: customer.phone
+  });
+  const instOption = instalmentCheck(data, { products: okProducts, total, balanceLater, dealRoom: !!dealRoom });
+  const payWith: PayWith = payWithChoice === 'pod' && podOption.ok ? 'pod' : payWithChoice === 'instalments' && instOption.ok ? 'instalments' : 'now';
+  const firstPart = payWith === 'instalments' && instOption.ok ? schedule(total, instOption.plan)[0].amountNgn : 0;
+  const payNow = payWith === 'pod' ? 0 : payWith === 'instalments' ? firstPart : total - balanceLater;
   const leadDays = lines.reduce((m, l) => l.ok && isMadeToOrder(l.product) ? Math.max(m, l.product.madeToOrder.leadDays) : m, 0);
   const discountRow =
   resolution.applied && (discount > 0 || resolution.applied.discount.value.type === 'free_delivery') ?
@@ -187,7 +214,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
         let result: ReturnType<typeof placeOrder> | null = null;
         const ok = commerce.apply((d) => {
           result = placeOrder(d, {
-            lines: lines.filter((l) => l.ok).map(({ productId, variantId, qty }) => ({ productId, variantId, qty })),
+            lines: lines.filter((l) => l.ok).map(({ productId, variantId, qty, seats }) => ({ productId, variantId, qty, seats })),
             customer: { name: customer.name.trim(), phone: customer.phone.trim(), email: customer.email.trim() },
             fulfilment,
             deliveryNgn: physical ? deliveryFee : 0,
@@ -198,9 +225,15 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
             dealRoom: dealRoom ? { productId: dealRoom.productId, priceNgn: dealRoom.priceNgn, held: dealRoom.held } : undefined,
             referredBy: dealRoom ? params.get('ref') ?? undefined : undefined,
             guestNames,
-            holder
+            holder,
+            payWith
           });
-          return result.ok ? releaseHolds(result.data, holder) : d;
+          if (!result.ok) return d;
+          // Creator Collaboration (D103): remember which partner's link the buyer came from.
+          const partner = params.get('partner')?.trim().toUpperCase().replace(/[^A-Z0-9-]/g, '').slice(0, 20);
+          const placed = result.order;
+          const stamped = partner ? { ...result.data, orders: result.data.orders.map((o) => o.id === placed.id ? { ...o, partnerCode: partner } : o) } : result.data;
+          return releaseHolds(stamped, holder);
         });
         const r = result as ReturnType<typeof placeOrder> | null;
         if (!ok || !r) {
@@ -214,7 +247,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
           return;
         }
         if (r.order.paymentStatus === 'paid') {
-          track('order_paid', { valueNgn: r.order.subtotalNgn - r.order.discountNgn + r.order.deliveryNgn - (r.order.balance?.dueNgn ?? 0), label: `#${r.order.number}` });
+          track('order_paid', { valueNgn: r.order.subtotalNgn - r.order.discountNgn + r.order.deliveryNgn - (r.order.balance?.dueNgn ?? 0) - (r.order.instalments ? r.order.instalments.parts.filter((p) => p.status !== 'paid').reduce((s, p) => s + p.amountNgn, 0) : 0), label: `#${r.order.number}` });
           const ticketValue = r.order.items.filter((i) => i.kind === 'ticket').reduce((s, i) => s + i.unitPriceNgn * i.qty, 0);
           if (r.order.items.some((i) => i.kind === 'ticket')) track('ticket_paid', { valueNgn: ticketValue, label: `#${r.order.number}` });
         }
@@ -274,7 +307,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
       return (
         <div className="flex flex-col items-center gap-3 py-12 text-center" role="status" aria-live="polite">
           <Loader2Icon size={28} className="animate-spin" aria-hidden />
-          <p className="text-[16px] font-medium">{outcome === 'timeout' ? 'Waiting for the payment provider…' : 'Processing test payment…'}</p>
+          <p className="text-[16px] font-medium">{payWith === 'pod' ? 'Placing your order…' : outcome === 'timeout' ? 'Waiting for the payment provider…' : 'Processing test payment…'}</p>
           <p className="text-[13px]" style={muted}>
             Don’t close this window.
           </p>
@@ -287,7 +320,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
         <div className="flex flex-col gap-4">
           <div className="flex flex-col items-center gap-2 py-4 text-center" role="alert">
             <XCircleIcon size={30} aria-hidden />
-            <p className="text-[18px] font-medium">{outcome === 'cancelled' ? 'Payment cancelled' : 'Payment didn’t go through'}</p>
+            <p className="text-[18px] font-medium">{payWith === 'pod' ? 'We couldn’t place your order' : outcome === 'cancelled' ? 'Payment cancelled' : 'Payment didn’t go through'}</p>
             <p className="max-w-xs text-[13.5px]" style={muted}>
               {failure}
             </p>
@@ -332,6 +365,11 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
                     <p className="text-[12.5px]" style={muted}>
                       {[l.variant && Object.keys(l.variant.options).length ? variantLabel(l.variant) : null, l.price !== null ? formatNgn(l.price) : null].filter(Boolean).join(' · ')}
                     </p>
+                    {l.seatText &&
+                <p className="text-[12.5px] font-medium" style={{ color: theme.text }}>
+                        {l.seatText}
+                      </p>
+                }
                     {!l.ok &&
                 <p className="mt-0.5 flex items-center gap-1 text-[12px] font-semibold">
                         <AlertTriangleIcon size={12} aria-hidden /> {l.ticketIssue || (l.variant && l.product?.trackStock && l.variant.stock > 0 ? `Only ${l.variant.stock} left` : 'No longer available')}
@@ -349,7 +387,8 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
                       <button
                   type="button"
                   aria-label="One more"
-                  disabled={!!l.product.trackStock && !!l.variant && l.qty >= l.variant.stock || roomQty >= roomCap || l.qty >= l.maxQty}
+                  disabled={!!l.seats?.length || !!l.product.trackStock && !!l.variant && l.qty >= l.variant.stock || roomQty >= roomCap || l.qty >= l.maxQty}
+                  title={l.seats?.length ? 'Add seats from the seat map' : undefined}
                   onClick={() => cart.setQty(l.variantId, l.qty + 1)}
                   className="flex h-9 w-9 items-center justify-center disabled:opacity-40"
                   style={{ borderRadius: buttonRadius(theme), background: mix(theme.text, 6) }}>
@@ -402,7 +441,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
                     let issue = '';
                     let until: string | null = null;
                     commerce.apply((d) => {
-                      const r = placeHolds(d, holder, ticketLines.map(({ productId, variantId, qty }) => ({ productId, variantId, qty })));
+                      const r = placeHolds(d, holder, ticketLines.map(({ productId, variantId, qty, seats }) => ({ productId, variantId, qty, seats })));
                       issue = r.issue;
                       until = r.expiresAt;
                       return r.data;
@@ -461,7 +500,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
             <ThemedField
               key={`${l.variantId}-${n}`}
               theme={theme}
-              label={`${l.variant ? variantLabel(l.variant) : 'Ticket'} · seat ${n + 1}`}
+              label={`${l.variant ? variantLabel(l.variant) : 'Ticket'} · ${l.seats?.[n] && l.product?.eventId ? seatName(l.product.eventId, l.seats[n]) ?? `seat ${n + 1}` : `seat ${n + 1}`}`}
               autoComplete="off"
               placeholder={customer.name || 'Your name'}
               value={guestNames[l.variantId]?.[n] ?? ''}
@@ -607,10 +646,24 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
           </p>
         </dl>
         <DiscountCodeField theme={theme} code={code} onApply={setCode} resolution={resolution} />
+        <PayWithChooser
+          theme={theme}
+          value={payWith}
+          onChange={(v) => {
+            setPayWith(v);
+            if (v === 'instalments' && (chosenOutcome === 'pending' || chosenOutcome === 'timeout')) setOutcome('success');
+          }}
+          total={total}
+          pod={podOption}
+          podAccept={payOptionsOf(data).pod.accept}
+          instalments={instOption}
+          agreed={agreed}
+          onAgree={setAgreed} />
+        
         {payNow > 0 &&
         <fieldset className="flex flex-col gap-2">
           <legend className="mb-1 text-[13px] font-semibold">Test card — choose what happens</legend>
-          {outcomes.map((o) =>
+          {outcomes.filter((o) => payWith !== 'instalments' || o.value !== 'pending' && o.value !== 'timeout').map((o) =>
           <label key={o.value} className="flex cursor-pointer items-start gap-3 p-3" style={{ ...cardStyle(theme), border: `1.5px solid ${outcome === o.value ? theme.text : mix(theme.text, 12)}` }}>
               <input type="radio" name="test-outcome" value={o.value} checked={outcome === o.value} onChange={() => setOutcome(o.value)} className="mt-1" style={{ accentColor: theme.text }} />
               <span>
@@ -635,8 +688,18 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
         }
         <TestModeNote theme={theme} />
         <SheetActions theme={theme}>
-          <PrimaryButton theme={theme} onClick={pay} disabled={okLines.length === 0 || !!roomError}>
-            {payNow > 0 ? balanceLater ? `Pay ${formatNgn(payNow)} deposit` : `Pay ${formatNgn(payNow)}` : ticketsOnly ? 'Get free tickets' : 'Place free order'}
+          <PrimaryButton theme={theme} onClick={pay} disabled={okLines.length === 0 || !!roomError || payWith === 'instalments' && !agreed}>
+            {payWith === 'pod' ?
+            `Place order — pay ${formatNgn(total)} on delivery` :
+            payWith === 'instalments' ?
+            `Pay ${formatNgn(payNow)} today` :
+            payNow > 0 ?
+            balanceLater ?
+            `Pay ${formatNgn(payNow)} deposit` :
+            `Pay ${formatNgn(payNow)}` :
+            ticketsOnly ?
+            'Get free tickets' :
+            'Place free order'}
           </PrimaryButton>
         </SheetActions>
       </div>);

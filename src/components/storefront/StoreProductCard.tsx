@@ -8,12 +8,28 @@ import { PageChip } from '../blocks/BlockTitle';
 import { cardStyle, mix } from '../blocks/pageStyle';
 import { isLowStock, isSoldOut, priceRange, totalStock } from '../../utils/commerce/catalog';
 import { formatNgn } from '../../utils/format';
+import { imageShapeClass } from '../../utils/commerce/storefront';
 
 /** One product in the storefront grid. The whole card opens the product page. */
-export function StoreProductCard({ product, theme, href }: {product: Product;theme: PageTheme;href: string;}) {
+export function StoreProductCard({
+  product,
+  theme,
+  href,
+  shape = 'portrait',
+  showLowStock = true,
+  featured = false
+
+
+
+
+
+
+
+}: {product: Product;theme: PageTheme;href: string;shape?: 'portrait' | 'square' | 'landscape';showLowStock?: boolean;featured?: boolean;}) {
   const range = priceRange(product);
   const soldOut = isSoldOut(product);
-  const low = isLowStock(product);
+  const low = showLowStock && isLowStock(product);
+  const ratio = imageShapeClass[shape];
   const onSale = !!range && product.compareAtNgn !== null && product.compareAtNgn > range[0];
   const image = product.images[0];
 
@@ -30,16 +46,17 @@ export function StoreProductCard({ product, theme, href }: {product: Product;the
             src={image.url}
             alt={image.alt}
             loading="lazy"
-            className="aspect-[4/5] w-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.03]"
+            className={`${ratio} w-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.03]`}
             style={soldOut ? { filter: 'grayscale(0.7)', opacity: 0.7 } : undefined} /> :
 
 
-          <div className="flex aspect-[4/5] w-full items-center justify-center" style={{ background: mix(theme.text, 6), color: theme.mutedText }}>
+          <div className={`flex ${ratio} w-full items-center justify-center`} style={{ background: mix(theme.text, 6), color: theme.mutedText }}>
               <ShoppingBagIcon size={24} aria-hidden />
             </div>
           }
           <span className="absolute left-2 top-2 flex flex-wrap gap-1">
             {soldOut ? <PageChip theme={theme}>Sold out</PageChip> : onSale ? <PageChip theme={theme}>Sale</PageChip> : null}
+            {featured && !soldOut && <PageChip theme={theme}>Featured</PageChip>}
             {low && !soldOut && <PageChip theme={theme}>Only {totalStock(product)} left</PageChip>}
           </span>
         </div>

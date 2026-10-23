@@ -24,6 +24,7 @@ import { InvoiceStatusBadge } from '../billing/InvoiceStatusBadge';
 import { CancelPlanDialog } from '../billing/CancelPlanDialog';
 import { PaymentStep } from '../billing/PaymentStep';
 import { BillingHistory } from '../billing/BillingHistory';
+import { cn } from '../../utils/cn';
 
 /** Settings → Plan & billing (D65). Owner manages; Admins read only. */
 export function BillingTab() {
@@ -104,7 +105,8 @@ export function BillingTab() {
       }
 
       <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] lg:gap-10">
-        <section aria-labelledby="billing-plan" className="flex flex-col gap-5 rounded-lg border border-line bg-raised p-5 shadow-1 md:p-6">
+        <div className={cn('rounded-lg shadow-1', paid ? 'nm-frame' : 'border border-line')}>
+        <section aria-labelledby="billing-plan" className={cn('flex flex-col gap-5 bg-raised p-5 md:p-6', paid ? 'rounded-[calc(0.5rem-1px)]' : 'rounded-lg')}>
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <p className="text-caption font-medium text-fg-subtle">Current plan</p>
@@ -119,59 +121,60 @@ export function BillingTab() {
           </div>
 
           {paid && !d.trial &&
-          <p className="font-display text-heading font-semibold tabular-nums text-fg">
+            <p className="font-display text-heading font-semibold tabular-nums text-fg">
               {formatNgn(price)}
               <span className="text-label font-normal text-fg-muted"> /{d.cycle === 'yearly' ? 'year' : 'month'} + VAT</span>
             </p>
-          }
+            }
 
           <div className="flex items-start gap-2.5 text-label text-fg-muted">
             <CalendarClockIcon size={16} className="mt-0.5 shrink-0" aria-hidden />
             <span>
               {d.trial ?
-              `Free ${plans[TRIAL_PLAN].name} trial until ${formatDate(d.trial.endsAt)}. Then back to ${plans[d.trial.previousPlan].name} unless you choose a plan — no card needed.` :
-              !paid ?
-              plan.id === 'enterprise' ?
-              'Billed by contract. Talk to your account manager about changes.' :
-              'Free has no subscription. Upgrade any time — you only pay from the day you switch.' :
-              d.pendingPlan === 'free' ?
-              `Cancelled${d.cancelReason ? ` (“${d.cancelReason}”)` : ''}. You keep ${plan.name} until ${periodEnd}, then move to Free.` :
-              d.pendingPlan ?
-              `Moves to ${plans[d.pendingPlan].name} on ${periodEnd}, then ${formatNgn(nextTotal)} incl. VAT.` :
-              `Renews on ${periodEnd} for ${formatNgn(nextTotal)} incl. VAT.`}
+                `Free ${plans[TRIAL_PLAN].name} trial until ${formatDate(d.trial.endsAt)}. Then back to ${plans[d.trial.previousPlan].name} unless you choose a plan — no card needed.` :
+                !paid ?
+                plan.id === 'enterprise' ?
+                'Billed by contract. Talk to your account manager about changes.' :
+                'Free has no subscription. Upgrade any time — you only pay from the day you switch.' :
+                d.pendingPlan === 'free' ?
+                `Cancelled${d.cancelReason ? ` (“${d.cancelReason}”)` : ''}. You keep ${plan.name} until ${periodEnd}, then move to Free.` :
+                d.pendingPlan ?
+                `Moves to ${plans[d.pendingPlan].name} on ${periodEnd}, then ${formatNgn(nextTotal)} incl. VAT.` :
+                `Renews on ${periodEnd} for ${formatNgn(nextTotal)} incl. VAT.`}
             </span>
           </div>
 
           <div className="flex flex-wrap gap-2 border-t border-line pt-5">
             {plan.id !== 'enterprise' &&
-            <Button disabled={!can.allowed} onClick={() => openPlans()}>
+              <Button disabled={!can.allowed} onClick={() => openPlans()}>
                 {d.trial ? 'Choose a plan' : paid ? 'Change plan' : 'Upgrade'}
               </Button>
-            }
+              }
             {paid && !d.trial && d.cycle === 'monthly' && !d.pendingPlan &&
-            <Button variant="secondary" disabled={!can.allowed} onClick={() => openPlans({ plan: plan.id, cycle: 'yearly' })}>
+              <Button variant="secondary" disabled={!can.allowed} onClick={() => openPlans({ plan: plan.id, cycle: 'yearly' })}>
                 Switch to yearly · 2 months free
               </Button>
-            }
+              }
             {d.pendingPlan ?
-            <Button variant="secondary" disabled={!can.allowed} onClick={billing.cancelScheduled}>
+              <Button variant="secondary" disabled={!can.allowed} onClick={billing.cancelScheduled}>
                 {d.pendingPlan === 'free' ? `Resume ${plan.name}` : `Stay on ${plan.name}`}
               </Button> :
 
-            paid &&
-            !d.trial &&
-            <Button variant="tertiary" disabled={!can.allowed} onClick={() => setCancelOpen(true)} className="sm:ml-auto">
+              paid &&
+              !d.trial &&
+              <Button variant="tertiary" disabled={!can.allowed} onClick={() => setCancelOpen(true)} className="sm:ml-auto">
                   Cancel plan
                 </Button>
 
-            }
+              }
             {d.trial &&
-            <Button variant="tertiary" disabled={!can.allowed} onClick={billing.endTrialNow} className="sm:ml-auto">
+              <Button variant="tertiary" disabled={!can.allowed} onClick={billing.endTrialNow} className="sm:ml-auto">
                 End trial now
               </Button>
-            }
+              }
           </div>
         </section>
+        </div>
 
         <aside aria-labelledby="billing-usage" className="flex flex-col gap-4">
           <h2 id="billing-usage" className="text-label font-semibold text-fg">

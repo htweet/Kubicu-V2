@@ -25,6 +25,7 @@ import { Dialog } from '../ui/Dialog';
 import { InlineAlert } from '../ui/InlineAlert';
 import { ProductImagesField } from './ProductImagesField';
 import { VariantsField } from './VariantsField';
+import { ProductInstalmentsField } from './ProductInstalmentsField';
 import { DigitalFileField } from './DigitalFileField';
 import { cn } from '../../utils/cn';
 import { MobileSection } from '../ui/MobileSection';
@@ -246,6 +247,7 @@ export function ProductEditor({ open, productId, kind, onClose }: ProductEditorP
                   label="Made to order — take a deposit"
                   description="Buyers pay a deposit at checkout and the rest before you send it out. You can’t mark it out for delivery until the balance is in."
                   checked={!!draft.madeToOrder}
+                  disabled={!!draft.instalments}
                   onChange={(on) => patch({ madeToOrder: on ? { depositPct: DEFAULT_DEPOSIT_PCT, leadDays: DEFAULT_LEAD_DAYS } : undefined })} />
                 
                   {draft.madeToOrder &&
@@ -276,6 +278,7 @@ export function ProductEditor({ open, productId, kind, onClose }: ProductEditorP
                 }
                 </div>
               }
+              {kind === 'physical' && <ProductInstalmentsField product={draft} onChange={patch} />}
               <VariantsField product={draft} onChange={patch} />
               <div className="grid gap-4 sm:grid-cols-2">
                 {draft.trackStock &&

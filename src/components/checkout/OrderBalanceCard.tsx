@@ -46,11 +46,10 @@ export function OrderBalanceCard({ theme, order, data, workspaceId, apply }: Ord
     window.setTimeout(() => {
       setBusy(false);
       if (outcome === 'declined') return setError('Your card was declined (test). Nothing was charged — try again or use another card.');
+      // Wallet first: reading it syncs the original sale, which must not yet include this balance.
+      const before = workspaceId ? readMoney(workspaceId) : null;
       if (!apply((d) => payOrderBalance(d, order.id, 'online'))) return setError('Couldn’t take the payment. Please try again.');
-      if (workspaceId) {
-        const res = recordStagePayment(readMoney(workspaceId), 'shop', { type: 'order', id: order.id }, `Balance · order #${order.number} · ${order.customer.name || 'Customer'}`, balance.dueNgn);
-        writeMoney(workspaceId, res.data);
-      }
+      if (workspaceId && before) writeMoney(workspaceId, recordStagePayment(before, 'shop', { type: 'order', id: order.id }, `Balance · order #${order.number} · ${order.customer.name || 'Customer'}`, balance.dueNgn).data);
     }, 1000);
   };
 

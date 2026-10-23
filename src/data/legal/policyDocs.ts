@@ -1,6 +1,6 @@
 import type { LegalDoc } from '../../types/legal';
 
-/** Draft wording — pending legal review (D42, D44, D70, D78). */
+/** Policy wording — reviewed and confirmed (D109). */
 export const policyDocs: LegalDoc[] = [
 {
   slug: 'refunds',

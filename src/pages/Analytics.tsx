@@ -27,7 +27,7 @@ import { Card } from '../components/ui/layout/Card';
 import { cn } from '../utils/cn';
 
 type Period = '7' | '30' | '90' | 'custom';
-type FunnelTab = 'shop' | 'booking' | 'leads' | 'subscriptions' | 'tickets' | 'forms';
+type FunnelTab = 'shop' | 'booking' | 'leads' | 'subscriptions' | 'tickets' | 'forms' | 'members';
 
 const pct = (n: number) => `${Math.round(n * 100)}%`;
 
@@ -386,7 +386,8 @@ export function Analytics() {
               { id: 'leads', label: 'Leads' },
               { id: 'subscriptions', label: 'Subscriptions' },
               { id: 'tickets', label: 'Tickets' },
-              { id: 'forms', label: 'Forms' }]
+              { id: 'forms', label: 'Forms' },
+              { id: 'members', label: 'Members' }]
               }
               value={funnelTab}
               onChange={setFunnelTab}
@@ -399,6 +400,7 @@ export function Analytics() {
               {funnelTab === 'booking' && <FunnelView steps={f.booking} emptyText="Nobody opened a booking in this period." />}
               {funnelTab === 'subscriptions' && <FunnelView steps={f.subscriptions} emptyText="Nobody opened a subscription plan in this period." />}
               {funnelTab === 'forms' && <FunnelView steps={f.forms} emptyText="No Forms add-on forms were seen in this period." />}
+              {funnelTab === 'members' && <FunnelView steps={f.members} emptyText="Nobody reached members-only content in this period." />}
               {funnelTab === 'tickets' &&
             <>
                   <FunnelView steps={f.tickets} emptyText="Nobody chose event tickets in this period." />

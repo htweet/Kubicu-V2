@@ -11,6 +11,8 @@ import { useMoney } from '../hooks/useMoney';
 import { activeFor, assignRider, book, cancel, deliveryLabels, deliveryTones, enterCode, fail, isActive, pickedUp, readyOrders } from '../utils/fulfilment';
 import { caseForOrder, isOpen, markDelivered, release } from '../utils/money/escrow';
 import { setOrderStatus } from '../utils/commerce/ops';
+import { collectPod } from '../utils/commerce/payOptions';
+import { usePlan } from '../contexts/PlanContext';
 import { formatNgn, formatTimestamp } from '../utils/format';
 import { PageHeader } from '../components/shell/PageHeader';
 import { Button } from '../components/ui/Button';
@@ -32,6 +34,7 @@ export function Deliveries() {
   const commerce = useCommerce();
   const { data, update } = useFulfilment(current.id);
   const money = useMoney(current.id);
+  const plan = usePlan();
   const [tab, setTab] = useState<Tab>('ready');
   const [booking, setBooking] = useState<Order | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
@@ -56,7 +59,7 @@ export function Deliveries() {
       created = r.delivery;
       return rider && !d.riders.some((x) => x.phone === rider.phone) ? { ...r.data, riders: [rider, ...r.data.riders].slice(0, 5) } : r.data;
     });
-    if (o.status === 'paid') commerce.apply((c) => setOrderStatus(c, o.id, 'packing', `Delivery booked with ${q.name}`));
+    if (o.status === 'paid' || o.status === 'new' && o.pod) commerce.apply((c) => setOrderStatus(c, o.id, 'packing', `Delivery booked with ${q.name}`));
     setBooking(null);
     setTab('active');
     if (created) setOpenId((created as Delivery).id);
@@ -94,7 +97,12 @@ export function Deliveries() {
         return release(delivered, c.id, 'delivery_code', 'system');
       });
     }
-    commerce.apply((c) => setOrderStatus(c, d.orderId, 'completed', `Delivered — customer’s code matched (${d.partnerName})`));
+    // Pay on delivery (D112): the rider collected at handover.
+    const podOrder = commerce.data.orders.find((o) => o.id === d.orderId && o.pod && !o.pod.collected);
+    if (podOrder?.pod) {
+      const how = podOrder.pod.accept === 'transfer' ? 'transfer' : 'cash';
+      commerce.apply((c) => collectPod(c, d.orderId, how, plan.id, `Delivered — code matched and ${formatNgn(podOrder.pod!.amountNgn)} collected by the rider (${d.partnerName})`));
+    } else commerce.apply((c) => setOrderStatus(c, d.orderId, 'completed', `Delivered — customer’s code matched (${d.partnerName})`));
     toast.success('Delivered', { description: released ? 'The escrow payment was released to your wallet.' : 'The order is marked completed.' });
     return null;
   };

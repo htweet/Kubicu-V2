@@ -8,7 +8,6 @@ import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import { Segmented } from '../ui/Segmented';
 import { InlineAlert } from '../ui/InlineAlert';
-import { IllustrativeTag } from '../ui/IllustrativeTag';
 import { PaymentStep } from './PaymentStep';
 import { ImpactList } from './ImpactList';
 import { QuoteTable } from './QuoteTable';
@@ -116,25 +115,29 @@ export function ChangePlanDialog({ open, onClose, feature, minPlan, initial }: P
             { value: 'yearly', label: 'Yearly · 2 months free' }]
             } />
           
-            <IllustrativeTag note="Example prices from the pricing hypothesis — not final." />
+            <span className="text-caption text-fg-subtle">Prices exclude VAT · test mode</span>
           </div>
 
           {trialOffer &&
-        <div className="flex flex-col gap-3 rounded-lg border border-action bg-action-soft p-4 sm:flex-row sm:items-center sm:gap-4 sm:px-5">
-              <SparklesIcon size={18} className="hidden shrink-0 text-action sm:block" aria-hidden />
+        <div className="nm-frame rounded-lg">
+            <div className="flex flex-col gap-3 rounded-[calc(0.5rem-1px)] bg-raised p-4 sm:flex-row sm:items-center sm:gap-4 sm:px-5">
+              <span aria-hidden className="nm-fill hidden h-8 w-8 shrink-0 items-center justify-center rounded-full sm:flex">
+                <SparklesIcon size={16} className="nm-ink" />
+              </span>
               <p className="min-w-0 flex-1 text-label text-fg">
                 <span className="font-semibold">Try {plans[TRIAL_PLAN].name} free for {TRIAL_DAYS} days.</span> No card needed. You’ll be reminded 3 days before it ends, then go back to Free unless you choose a plan.
               </p>
               <Button
-            size="sm"
-            disabled={!can.allowed}
-            onClick={() => {
-              billing.startTrial();
-              onClose();
-            }}>
-            
+              size="sm"
+              disabled={!can.allowed}
+              onClick={() => {
+                billing.startTrial();
+                onClose();
+              }}>
+              
                 Start free trial
               </Button>
+            </div>
             </div>
         }
 
@@ -151,7 +154,7 @@ export function ChangePlanDialog({ open, onClose, feature, minPlan, initial }: P
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="text-body font-semibold text-fg">{p.name}</span>
                       {id === plan.id && <Badge tone="neutral">{trialing ? 'Trial' : 'Current'}</Badge>}
-                      {unlocks && <Badge tone="info">Unlocks this</Badge>}
+                      {unlocks && <span className="nm-fill nm-ink inline-flex h-5 items-center rounded-full px-2 text-meta font-semibold">Unlocks this</span>}
                     </div>
                     <p className="mt-0.5 text-caption text-fg-muted">{p.intendedFor}</p>
                     <ul className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-caption text-fg-muted">

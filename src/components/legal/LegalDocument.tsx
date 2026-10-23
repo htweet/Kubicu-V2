@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
-import { ChevronDownIcon, LinkIcon, PrinterIcon, ScaleIcon } from 'lucide-react';
+import { ChevronDownIcon, LinkIcon, PrinterIcon } from 'lucide-react';
 import type { LegalDoc } from '../../types/legal';
 import { allLegalDocs } from '../../data/legal';
 import { Button } from '../ui/Button';
@@ -62,13 +62,6 @@ export function LegalDocument({ doc }: {doc: LegalDoc;}) {
       
 
       <div className="mx-auto w-full max-w-6xl px-5 md:px-8">
-        <div role="note" className="mt-8 flex gap-3 rounded-2xl border border-warning/40 bg-warning-soft px-5 py-4">
-          <ScaleIcon size={18} className="mt-0.5 shrink-0 text-warning" aria-hidden />
-          <p className="text-label text-fg">
-            <span className="font-semibold">Draft — pending legal review.</span> <span className="text-fg-muted">This is plain-language working wording for the prototype, not final terms.</span>
-          </p>
-        </div>
-
         <div className="mt-12 grid gap-10 pb-12 lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-16">
           {/* Contents */}
           <nav aria-label="On this page" className="lg:sticky lg:top-24 lg:self-start">

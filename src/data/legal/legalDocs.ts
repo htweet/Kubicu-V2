@@ -1,6 +1,6 @@
 import type { LegalDoc } from '../../types/legal';
 
-/** Draft wording — pending legal review (D35, D78). Plain language first; not final terms. */
+/** Legal wording — reviewed and confirmed (D109). Plain language first. */
 export const legalDocs: LegalDoc[] = [
 {
   slug: 'terms',

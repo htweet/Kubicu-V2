@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { ArrowDownIcon, ArrowUpIcon, CopyIcon, EyeOffIcon, FileTextIcon, HomeIcon, MoreHorizontalIcon, PlusIcon, Trash2Icon } from 'lucide-react';
+import { ArrowDownIcon, ArrowUpIcon, CopyIcon, EyeOffIcon, FileTextIcon, HomeIcon, LockKeyholeIcon, MoreHorizontalIcon, PlusIcon, Trash2Icon } from 'lucide-react';
+import { PageMembersFields } from './PageMembersFields';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { UpgradeButton } from '../ui/UpgradeButton';
@@ -16,7 +17,6 @@ import { TextInput } from '../ui/TextInput';
 import { Switch } from '../ui/Switch';
 import { Menu } from '../ui/Menu';
 import { Dialog } from '../ui/Dialog';
-import { IllustrativeTag } from '../ui/IllustrativeTag';
 import { cn } from '../../utils/cn';
 
 interface PagesPanelProps {
@@ -89,7 +89,7 @@ export function PagesPanel({ touch, onOpened }: PagesPanelProps) {
         <p className="text-caption text-fg-muted">
           <span className="font-semibold tabular-nums text-fg">{count}</span> of {limit} page{limit === 1 ? '' : 's'} on {plan.name}
         </p>
-        <IllustrativeTag note="Example page limits per plan — not final pricing." />
+
       </div>
 
       <ul className="flex flex-col gap-0.5" aria-label="Pages">
@@ -120,6 +120,7 @@ export function PagesPanel({ touch, onOpened }: PagesPanelProps) {
                     <span className="block truncate text-label font-medium text-fg">{p.title || 'Untitled'}</span>
                     <span className={cn('block truncate text-caption', problem ? 'text-danger' : 'text-fg-subtle')}>/{p.path || '…'}</span>
                   </span>
+                  {p.membersOnly && <LockKeyholeIcon size={14} className="shrink-0 text-fg-subtle" aria-label="Members only" />}
                   {p.hideFromNav && <EyeOffIcon size={14} className="shrink-0 text-fg-subtle" aria-label="Not in site menu" />}
                 </button>
                 <Menu
@@ -166,6 +167,7 @@ export function PagesPanel({ touch, onOpened }: PagesPanelProps) {
                   onChange={(e) => actions.setPagePath(p.id, e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))} />
                 
                   <Switch id={`pg-nav-${p.id}`} label="Show in site menu" description="Hidden pages still open from their link." checked={!p.hideFromNav} onChange={(show) => actions.setPageHidden(p.id, !show)} />
+                  <PageMembersFields page={p} />
                 </div>
               }
             </li>);

@@ -34,6 +34,11 @@ import { QuoteView } from './pages/QuoteView';
 import { InvoicePayPage } from './pages/InvoicePayPage';
 import { Proof } from './pages/Proof';
 import { Deliveries } from './pages/Deliveries';
+import { WhatsApp } from './pages/WhatsApp';
+import { TrustPassport } from './pages/TrustPassport';
+import { BusinessCoach } from './pages/BusinessCoach';
+import { Collaborations } from './pages/Collaborations';
+import { VoiceToStore } from './pages/VoiceToStore';
 import { ReviewSubmit } from './pages/ReviewSubmit';
 import { ShortLink } from './pages/ShortLink';
 import { Settings } from './pages/settings/Settings';
@@ -68,6 +73,8 @@ import { CanvasPage } from './pages/CanvasPage';
 import { CanvasRedirect } from './pages/CanvasRedirect';
 import { LegacyRedirect } from './pages/LegacyRedirect';
 import { PublicPage } from './pages/PublicPage';
+import { PublicTrustPassport } from './pages/PublicTrustPassport';
+import { InstalmentCharger } from './components/shell/InstalmentCharger';
 import { OrderStatus } from './pages/OrderStatus';
 import { DownloadPage } from './pages/DownloadPage';
 import { BookingStatus } from './pages/BookingStatus';
@@ -205,6 +212,11 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
                 <Route path="services" element={<ServiceOs />} />
                 <Route path="proof" element={<Proof />} />
                 <Route path="deliveries" element={<Deliveries />} />
+                <Route path="whatsapp" element={<WhatsApp />} />
+                <Route path="trust" element={<TrustPassport />} />
+                <Route path="coach" element={<BusinessCoach />} />
+                <Route path="collabs" element={<Collaborations />} />
+                <Route path="voice" element={<VoiceToStore />} />
                 <Route path="account" element={<Account />} />
                 <Route path="account/:tab" element={<Account />} />
                 <Route path="settings" element={<Settings />} />
@@ -238,6 +250,7 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
               <Route path="/p/:handle/shop" element={<PublicPage view="shop" />} />
               <Route path="/p/:handle/shop/:productId" element={<PublicPage view="shop" />} />
               <Route path="/p/:handle/s/:slug" element={<ShortLink />} />
+              <Route path="/p/:handle/trust" element={<PublicTrustPassport />} />
               <Route path="/p/:handle/:pagePath" element={<PublicPage />} />
             <Route path="/p/:handle/order/:orderId" element={<OrderStatus />} />
               <Route path="/p/:handle/download/:token" element={<DownloadPage />} />
@@ -290,6 +303,7 @@ function WorkspaceScope({ visualDirection, viewingAs, renewal, children }: {visu
                           {children}
                           <DealRoomSettler />
                           <SubscriptionRenewer />
+                          <InstalmentCharger />
                         </NotificationsProvider>
                       </MarketplaceProvider>
                     </UpgradeProvider>

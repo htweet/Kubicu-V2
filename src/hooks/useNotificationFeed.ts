@@ -76,6 +76,13 @@ export function useNotificationFeed(): AppNotification[] {
       out.push({ id: `balance_due:${b.id}`, event: 'stage_due', area: 'bookings', kind: 'action', text: `${b.customer.name}’s ${b.serviceName} balance (${formatNgn(bal.amount)}) is overdue`, href: `/app/bookings?booking=${b.id}`, at: new Date(bal.dueAt ?? now).toISOString() });
     }
 
+    // Instalments that failed (D112).
+    for (const o of commerce.orders) {
+      const failed = o.instalments && (o.instalments.status === 'active' || o.instalments.status === 'defaulted') ? o.instalments.parts.find((p) => p.status === 'failed') : undefined;
+      if (failed && o.instalments)
+      out.push({ id: `inst_failed:${o.id}:${failed.id}:${failed.retries}`, event: 'stage_due', area: 'orders', kind: 'action', text: `Instalment ${failed.n} of ${o.instalments.parts.length} on order #${o.number} (${formatNgn(failed.amountNgn)}) ${o.instalments.status === 'defaulted' ? 'is unpaid after every retry' : 'didn’t go through — retrying'}`, href: `/app/commerce/orders?order=${o.id}`, at: failed.failedAt ?? failed.dueAt });
+    }
+
     // Escrow: buyer problems to answer, and KUBICU decisions (D94).
     for (const c of money.escrow) {
       const d = c.dispute;

@@ -44,7 +44,10 @@ export interface OrderMoney {
 
 export function orderMoney(order: Order): OrderMoney {
   // Made-to-order: an unpaid balance isn't money the customer has paid yet (D95).
-  const owed = order.balance && !order.balance.paidAt ? order.balance.dueNgn : 0;
+  const balanceOwed = order.balance && !order.balance.paidAt ? order.balance.dueNgn : 0;
+  // Instalments (D112): parts not yet paid — and cancelled parts that never will be — aren't money paid.
+  const partsOwed = order.instalments ? order.instalments.parts.filter((p) => p.status !== 'paid').reduce((s, p) => s + p.amountNgn, 0) : 0;
+  const owed = balanceOwed + partsOwed;
   const gross = order.subtotalNgn - order.discountNgn + order.deliveryNgn - owed;
   const refunded = order.refunds.reduce((s, r) => s + r.amountNgn, 0);
   const paid = order.paymentStatus !== 'pending' && order.paymentStatus !== 'cancelled';

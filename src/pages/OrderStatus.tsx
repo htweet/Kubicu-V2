@@ -16,6 +16,7 @@ import { roomProgress, roomReferrers } from '../utils/dealRoom';
 import { OrderTickets } from '../components/tickets/OrderTickets';
 import { EscrowNotice } from '../components/checkout/EscrowNotice';
 import { OrderBalanceCard } from '../components/checkout/OrderBalanceCard';
+import { OrderInstalmentsCard } from '../components/checkout/OrderInstalmentsCard';
 
 /** Visitor-facing order confirmation and receipt. */
 export function OrderStatus() {
@@ -32,11 +33,15 @@ export function OrderStatus() {
   const roomStats = room ? roomProgress(room, handle, commerce.data) : null;
   const muted = { color: t.mutedText };
   const phone = sellerPhone(page.doc);
-  const pending = order.paymentStatus === 'pending';
+  // Pay on delivery isn't "pending payment" for the buyer — it's a confirmed order paid at the door (D112).
+  const podDue = !!order.pod && !order.pod.collected && order.status !== 'cancelled';
+  const pending = order.paymentStatus === 'pending' && !order.pod;
   const refunded = order.paymentStatus === 'refunded' || order.status === 'cancelled';
   const Icon = refunded ? XCircleIcon : pending ? ClockIcon : CheckCircle2Icon;
   const title = order.status === 'cancelled' ? 'Order cancelled' : order.paymentStatus === 'refunded' ? 'Order refunded' : pending ? 'Order received — payment pending' : 'Thank you, your order is confirmed';
-  const sub = pending ?
+  const sub = podDue && order.pod ?
+  `Pay ${formatNgn(order.pod.amountNgn)} when it arrives (${order.pod.accept === 'cash' ? 'cash' : order.pod.accept === 'transfer' ? 'transfer' : 'cash or transfer'}). The seller will call before delivery — keep your phone on. Expected: ${order.fulfilment.eta ?? 'the seller will confirm'}.` :
+  pending ?
   order.paymentNote === 'Provider timed out' ?
   'Your bank didn’t confirm in time. If you were charged, the seller will see it once the provider updates — usually within minutes. Don’t pay twice.' :
   'We’re waiting for the payment provider to confirm. You’ll get a confirmation when it does.' :
@@ -104,6 +109,8 @@ export function OrderStatus() {
               </p>
             </div>
           </section>
+
+          {order.instalments && !refunded && <OrderInstalmentsCard theme={t} order={order} workspaceId={page.workspaceId ?? null} apply={commerce.apply} />}
 
           {order.balance && !pending && !refunded && <OrderBalanceCard theme={t} order={order} data={commerce.data} workspaceId={page.workspaceId ?? null} apply={commerce.apply} />}
 

@@ -82,7 +82,7 @@ export function AdminReporting() {
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <p className="flex items-center gap-2 text-caption text-fg-subtle">
-                Monthly recurring revenue <IllustrativeTag note="List prices from the example plan ladder (D65), before VAT and discounts." />
+                Monthly recurring revenue <IllustrativeTag note="List prices (D105), before VAT and discounts." />
               </p>
               <p className="mt-1 font-display text-[2.5rem] font-semibold leading-none tracking-[-0.025em] tabular-nums text-fg">{formatNgn(total('mrr'))}</p>
               <p className="mt-2 text-label text-fg-muted">

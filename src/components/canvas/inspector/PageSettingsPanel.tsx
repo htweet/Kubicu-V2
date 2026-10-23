@@ -1,4 +1,6 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
+import { ArrowUpRightIcon } from 'lucide-react';
 import { MediaImage } from '../../media/MediaImage';
 import { useEditor } from '../../../contexts/EditorContext';
 import { TextInput } from '../../ui/TextInput';
@@ -69,7 +71,9 @@ export function PageSettingsPanel() {
           <p className="text-label font-medium text-fg">Custom domain</p>
           <p className="mt-0.5 text-caption text-fg-subtle">Use your own address, like adaezeatelier.com.</p>
         </div>
-        <PlanLock kind="planned">Batch 5</PlanLock>
+        <Link to="/app/domains" className="inline-flex shrink-0 items-center gap-1 text-caption font-semibold text-action hover:underline">
+          Domains & QR <ArrowUpRightIcon size={12} aria-hidden />
+        </Link>
       </div>
 
       <section className="flex flex-col gap-3 border-t border-line pt-5" aria-labelledby="branding-heading">

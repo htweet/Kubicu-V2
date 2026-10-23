@@ -18,7 +18,6 @@ import { Badge } from '../ui/Badge';
 import { Menu } from '../ui/Menu';
 import { Dialog } from '../ui/Dialog';
 import { InlineAlert } from '../ui/InlineAlert';
-import { IllustrativeTag } from '../ui/IllustrativeTag';
 import { UpgradeButton } from '../ui/UpgradeButton';
 import { InviteDialog } from './InviteDialog';
 import { RolePicker } from './RolePicker';
@@ -99,7 +98,7 @@ export function TeamTab() {
             <div className={cn('h-full rounded-full', atLimit ? 'bg-warning' : 'bg-action')} style={{ width: `${Math.min(100, team.seatsUsed / team.seatLimit * 100)}%` }} />
           </div>
           <p className="mt-1.5 flex items-center gap-1.5 text-caption text-fg-subtle">
-            Pending invites use a seat. <IllustrativeTag note="Example seat limits: Free, Creator and Pro are owner-only; Business 5; Agency 25." />
+            Pending invites use a seat.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">

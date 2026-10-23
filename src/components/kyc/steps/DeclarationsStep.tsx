@@ -70,7 +70,7 @@ export function DeclarationsStep({ k, set, errors, disabled }: KycStepProps) {
           onChange={(terms) => setD({ terms })}
           error={errors.terms}
           disabled={disabled}
-          label="I agree that KUBICU’s licensed payment partner can check these details with NIBSS, NIMC, CAC and FIRS, and keep the results as the law requires. (Draft — pending legal review.)" />
+          label="I agree that KUBICU’s licensed payment partner can check these details with NIBSS, NIMC, CAC and FIRS, and keep the results as the law requires." />
         
       </section>
     </div>);
