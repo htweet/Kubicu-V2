@@ -12,12 +12,14 @@ import { Sheet } from '../ui/Sheet';
 import { cn } from '../../utils/cn';
 import { DirectionSwitcher } from './DirectionSwitcher';
 import { HelpMenu } from './HelpMenu';
+import { useMarketplace } from '../../contexts/MarketplaceContext';
 
 export function MobileNav() {
   const [moreOpen, setMoreOpen] = useState(false);
   const navigate = useNavigate();
   const primary = workspaceNav.filter((n) => mobilePrimaryNavIds.includes(n.id));
-  const rest = workspaceNav.filter((n) => !mobilePrimaryNavIds.includes(n.id));
+  const market = useMarketplace();
+  const rest = workspaceNav.filter((n) => !mobilePrimaryNavIds.includes(n.id) && (!n.appId || market.isActive(n.appId)));
   const canChoose = useAppearancePolicy().enabled.length > 1;
   const currentWorkspace = useWorkspace().current;
   const account = useAccount();

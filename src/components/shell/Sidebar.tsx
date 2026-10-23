@@ -13,14 +13,18 @@ import { roleInfo } from '../../data/permissions';
 import { NotificationBell } from '../notifications/NotificationBell';
 import { HelpMenu } from './HelpMenu';
 import { AccountMenu } from './AccountMenu';
+import { useMarketplace } from '../../contexts/MarketplaceContext';
 
 export function Sidebar() {
   const { collapsed, toggle } = useSidebarCollapsed();
   const team = useTeam();
   const reviewsWaiting = team.can('approvals.review').allowed ? team.data.reviews.filter((r) => r.status === 'pending').length : 0;
   const tip = useSideTip();
-  const built = workspaceNav.filter((n) => n.group === 'build');
-  const planned = workspaceNav.filter((n) => n.group === 'business');
+  const market = useMarketplace();
+  // Apps that aren't installed stay out of the sidebar (D87).
+  const visible = workspaceNav.filter((n) => !n.appId || market.isActive(n.appId));
+  const built = visible.filter((n) => n.group === 'build');
+  const planned = visible.filter((n) => n.group === 'business');
   const ToggleIcon = collapsed ? PanelLeftOpenIcon : PanelLeftCloseIcon;
   const toggleLabel = collapsed ? 'Expand sidebar' : 'Collapse sidebar';
 
@@ -75,7 +79,7 @@ export function Sidebar() {
           <SidebarGroupLabel collapsed={collapsed}>Business</SidebarGroupLabel>
           <ul className="flex flex-col gap-0.5">
             {planned.map((item) =>
-            <li key={item.id}>
+            <li key={item.id} data-tour={`nav-${item.id}`}>
                 <SidebarItem to={item.to} label={item.label} icon={item.icon} soon={!!item.batch} collapsed={collapsed} tip={tip} badge={item.id === 'settings' ? reviewsWaiting : undefined} />
               </li>
             )}

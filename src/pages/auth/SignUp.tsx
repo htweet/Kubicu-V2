@@ -3,7 +3,9 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { AuthLayout } from '../../components/auth/AuthLayout';
 import { TextInput } from '../../components/ui/TextInput';
 import { Button } from '../../components/ui/Button';
+import { CheckCircle2Icon } from 'lucide-react';
 import { isValidEmail } from '../../utils/validation';
+import { claimMinutesLeft, readHandleClaim } from '../../utils/handleClaim';
 
 export function SignUp() {
   const navigate = useNavigate();
@@ -14,6 +16,7 @@ export function SignUp() {
   const [agreed, setAgreed] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [claim] = useState(() => readHandleClaim());
 
   const errors = {
     name: name.trim() ? '' : 'Enter your name',
@@ -45,6 +48,14 @@ export function SignUp() {
         </>
       }>
       
+      {claim &&
+      <div className="mb-5 flex items-start gap-3 rounded-lg border border-success/40 bg-success-soft px-3.5 py-3">
+          <CheckCircle2Icon size={18} className="mt-0.5 shrink-0 text-success" aria-hidden />
+          <p className="text-label text-fg">
+            <span className="font-semibold">kub.icu/{claim.handle}</span> is held for you for {claimMinutesLeft(claim)} more minute{claimMinutesLeft(claim) === 1 ? '' : 's'}. Create your account to make it yours.
+          </p>
+        </div>
+      }
       <form onSubmit={submit} noValidate className="flex flex-col gap-4">
         <TextInput id="su-name" label="Your name" autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} error={submitted ? errors.name : undefined} />
         <TextInput id="su-email" label="Email" type="email" inputMode="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} error={submitted ? errors.email : undefined} />

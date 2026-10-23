@@ -1,6 +1,7 @@
 import type { ExtensionCategory, ExtensionInfo } from '../types/marketplace';
 
 export const extensionCategories: Record<ExtensionCategory, string> = {
+  apps: 'KUBICU apps',
   selling: 'Selling',
   marketing: 'Marketing',
   analytics: 'Analytics',
@@ -9,6 +10,97 @@ export const extensionCategories: Record<ExtensionCategory, string> = {
 
 /** Curated catalogue (D67). Partners and reviews are illustrative. */
 export const extensions: ExtensionInfo[] = [
+// KUBICU apps (D87): full workspace modules, free, uninstalled by default. Installing adds the screen to the sidebar.
+{
+  id: 'domains',
+  name: 'Domains & QR',
+  publisher: 'KUBICU',
+  verified: 'kubicu',
+  category: 'apps',
+  summary: 'QR codes for your counter and packaging, short campaign links, your own domain and a print kit.',
+  description:
+  'Make QR codes in your colours with your logo, short tracked links for each campaign or ad, and print business cards, stickers and package inserts that carry them. Connect your own domain on Creator and above. Every scan and click shows in Analytics.',
+  adds: ['A Domains & QR screen in your sidebar', 'QR codes, campaign links and redirects', 'A print kit for cards, stickers and inserts', 'Custom domains on Creator and above'],
+  permissions: ['Create QR codes and short links for your pages', 'Count scans and clicks in Analytics', 'Connect a domain you own (Creator and above)'],
+  minPlan: 'free',
+  priceNgn: 0,
+  version: '1.0.0',
+  versions: [{ version: '1.0.0', date: '2026-10-23', notes: 'Now an app you install from Extensions.' }],
+  reviews: [{ name: 'Bisi O.', business: 'Bisi’s Kitchen', rating: 5, text: 'The QR on my counter brings in most of my WhatsApp orders now.' }],
+  uninstallNote: 'Your QR codes and links keep working for customers, and nothing is deleted. The screen leaves your sidebar until you reinstall.'
+},
+{
+  id: 'bookings',
+  name: 'Bookings',
+  publisher: 'KUBICU',
+  verified: 'kubicu',
+  category: 'apps',
+  summary: 'Services, availability, deposits and a schedule — customers book a time from your page.',
+  description:
+  'Set up the services you offer, your weekly hours and buffers, and optional deposits. Add a Booking block to your page and customers pick a free time; you manage everything in a day or week schedule, with reschedules, cancellations and no-shows.',
+  adds: ['A Bookings screen in your sidebar', 'Services, availability and a schedule', 'Booking blocks that read your real free times', 'Deposits in test mode on Pro'],
+  permissions: ['Create services and availability', 'Save bookings customers make', 'Add people who book to Audience'],
+  minPlan: 'free',
+  priceNgn: 0,
+  version: '1.0.0',
+  versions: [{ version: '1.0.0', date: '2026-10-23', notes: 'Now an app you install from Extensions.' }],
+  reviews: [{ name: 'Funmi A.', business: 'Studio Funmi', rating: 5, text: 'No more “are you free Saturday?” messages.' }],
+  uninstallNote: 'Your services and bookings are kept, and booking blocks already on your pages keep working. The screen leaves your sidebar until you reinstall.'
+},
+{
+  id: 'opportunities',
+  name: 'Opportunities',
+  publisher: 'KUBICU',
+  verified: 'kubicu',
+  category: 'apps',
+  summary: 'One list of money and people still waiting on you — unpaid checkouts, failed renewals, quiet leads.',
+  description:
+  'Gathers what still needs a nudge from your real records: unpaid checkouts, failed subscription payments, bookings without deposits, enquiries with no reply and overdue follow-ups. Message from WhatsApp with a suggested note, or open the right screen.',
+  adds: ['An Opportunities screen in your sidebar', 'Biggest amounts first, never guessed', 'WhatsApp messages you edit before sending'],
+  permissions: ['Read your orders, bookings, subscriptions and contacts', 'Open WhatsApp with a message you can edit (nothing is sent automatically)'],
+  minPlan: 'free',
+  priceNgn: 0,
+  version: '1.0.0',
+  versions: [{ version: '1.0.0', date: '2026-10-23', notes: 'Now an app you install from Extensions.' }],
+  reviews: [],
+  uninstallNote: 'Nothing is deleted — items you handled or snoozed are remembered if you reinstall.'
+},
+{
+  id: 'automations',
+  name: 'Automations',
+  publisher: 'KUBICU',
+  verified: 'kubicu',
+  category: 'apps',
+  summary: 'When something happens, do something — thank-yous, reminders, follow-ups and stock alerts.',
+  description:
+  'Start from five ready-made recipes or build your own: a trigger, optional conditions, then actions and waits. Test on a sample event before turning it on, pause any time, and see every run in the history.',
+  adds: ['An Automations screen in your sidebar', 'Five ready-made recipes and a step builder', 'Test runs and run history'],
+  permissions: ['Read events from orders, bookings, forms and subscriptions', 'Message customers who agreed to marketing (preview — not sent)', 'Create tasks and notify your team'],
+  minPlan: 'free',
+  priceNgn: 0,
+  version: '1.0.0',
+  versions: [{ version: '1.0.0', date: '2026-10-23', notes: 'Now an app you install from Extensions.' }],
+  reviews: [],
+  uninstallNote: 'Your automations are kept but stop running until you reinstall.'
+},
+{
+  id: 'intentflow',
+  name: 'IntentFlow',
+  publisher: 'KUBICU',
+  verified: 'kubicu',
+  category: 'apps',
+  summary: 'Show different blocks to visitors from WhatsApp, Instagram, TikTok, QR codes or campaign links.',
+  description:
+  'Each block can show to everyone, only to chosen sources, or to everyone except them. Preview what each audience sees, set a goal, and compare results — it says “too early to tell” until there are enough visits. Rules only use where a visit came from, never anything about the person.',
+  adds: ['An IntentFlow screen in your sidebar', 'Pause, resume and roll back any rule', 'Results compared with everyone else'],
+  permissions: ['Read where each visit came from', 'Show or hide blocks on your live pages by source'],
+  minPlan: 'free',
+  priceNgn: 0,
+  version: '1.0.0',
+  versions: [{ version: '1.0.0', date: '2026-10-23', notes: 'Now an app you install from Extensions.' }],
+  reviews: [],
+  uninstallNote: 'Source rules on your blocks are kept and keep applying on your live pages. The screen leaves your sidebar until you reinstall.'
+},
 {
   id: 'forms',
   name: 'Forms',

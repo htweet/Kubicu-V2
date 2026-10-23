@@ -51,6 +51,6 @@ export const roadmapItems: {area: string;items: {name: string;status: RoadmapSta
   { name: 'Plans, billing and invoices', status: 'preview', note: 'Test mode' },
   { name: 'Report a page, takedowns, trust centre', status: 'live' },
   { name: 'Trust Passport and Proof-of-Work', status: 'planned' },
-  { name: 'Lightweight mode for low data', status: 'planned' }]
+  { name: 'Lightweight mode for low data', status: 'preview' }]
 
 }];

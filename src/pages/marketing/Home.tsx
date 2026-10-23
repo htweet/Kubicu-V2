@@ -5,6 +5,7 @@ import { Button } from '../../components/ui/Button';
 import { FaqList } from '../../components/marketing/FaqList';
 import { TemplateThumb } from '../../components/templates/TemplateThumb';
 import { SectionHeading } from '../../components/marketing/SectionHeading';
+import { HandleClaim } from '../../components/marketing/HandleClaim';
 import { examplePages, findExampleById } from '../../data/examples';
 import { businessTypes, capabilityStatus, homeFaq, howItWorks, localFeatures } from '../../data/marketing';
 import { cn } from '../../utils/cn';
@@ -37,15 +38,15 @@ export function Home() {
             <p className="mt-6 max-w-lg text-[18px] leading-relaxed text-fg-muted">
               One link that sells, takes bookings, sells tickets and collects enquiries — designed on a real canvas, made for phones and for how business works in Nigeria.
             </p>
-            <div className="mt-9 flex flex-wrap gap-3">
-              <Button size="lg" variant="brand" trailingIcon={ArrowRightIcon} onClick={() => navigate('/signup')}>
-                Create your page — free
-              </Button>
-              <Button size="lg" variant="secondary" onClick={() => navigate('/templates')}>
-                See example pages
-              </Button>
+            <div className="mt-9">
+              <HandleClaim />
             </div>
-            <p className="mt-4 text-caption text-fg-subtle">No card needed. Your page can be live in a few minutes.</p>
+            <Link
+              to="/templates"
+              className="mt-5 inline-flex items-center gap-1.5 text-label font-semibold text-fg underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+              
+              Or browse example pages <ArrowRightIcon size={15} aria-hidden />
+            </Link>
           </div>
 
           <figure className="relative">

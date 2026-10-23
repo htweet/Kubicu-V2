@@ -43,7 +43,7 @@ _Audited 22 Oct 2026 against the code and every doc in `docs/`. Source of truth 
 | G16 | Layout tidy-up: screens marked "not visually reviewed" | D75, D76 O4 | 7 | 🟡 | R1 | Browser review | Batch 8 QA |
 | G17 | Staff roles, two-step sign-in for staff, appeals inside admin | D75b notes | 6 | ✅ built (D83): staff sign-in with required two-step, 5 fixed roles gating nav and routes, Staff & access screen, owner appeals from the app banner decided by a different staff member · dual approval for high-risk actions still open | — | — | Done |
 | G18 | Theme marketplace licensing for *themes* (templates are done) | DP §6 H | 6 | 🟡 | R2 | Pricing | Later |
-| G19 | Printed identity kit (business cards, stickers, receipts with QR) | MB-A13 | 5 | 🟡 | R1 | — | Later |
+| G19 | Printed identity kit (business cards, stickers, receipts with QR) | MB-A13 | 5 | ✅ built (D86): Domains & QR → Print kit — business cards (10/A4), round stickers (12/A4), A6 package inserts (4/A4), 80 mm receipt footer, from any tracked QR code | — | — | Done |
 
 ## 3. Blueprint concepts (addendum, 20 total)
 
@@ -61,11 +61,11 @@ _Audited 22 Oct 2026 against the code and every doc in `docs/`. Source of truth 
 | 10 | Digital Product Protection | 🟡 | Expiring links, download limits, log | Watermarking, licence keys | R2 |
 | 11 | Service OS | 🟡 | Bookings, deposits, reminders | Quotes → invoices → job tracking for service businesses | R1 |
 | 12 | Opportunity Inbox | ✅ | `/app/opportunities` (D81): unpaid checkouts, failed renewals, unpaid deposits, no-shows, unanswered leads, overdue follow-ups, sold-out products, failed automations; WhatsApp nudge, snooze, handled | Anonymous abandoned carts (no details captured), weekly digest | — |
-| 13 | Offline-to-Online Identity | 🟡 | QR codes, campaign links, fallbacks | Printed identity kit (G19) | R1 |
+| 13 | Offline-to-Online Identity | ✅ | QR codes, campaign links, fallbacks, printed identity kit (D86) | Ordering prints through a partner print shop (later) | R1 |
 | 14 | Micro-website mode | 🟡 | Multi-page sites (D48) | Vertical site kits | R1 |
 | 15 | Creator Collaboration Graph | ⬜ | Template selling (adjacent) | Co-branded pages, partner bundles, shared referral payouts | R2 (payout rules) |
 | 16 | Smart Accessibility | 🟡 | Manual audit, contrast safety net (D76) | Automated in-canvas checker | R1 |
-| 17 | Lightweight Mode | ⬜ | Lazy images | Low-data profile, image budgets, text-first rendering | R1 |
+| 17 | Lightweight Mode | 🟡 | Visitor data saver (D85): auto-on for Data Saver/2G, footer toggle, photos and videos load on request, reduced motion | Owner "start lightweight" setting, compressed image variants, offline caching (need image pipeline) | R1 |
 | 18 | Business-in-a-Box | 🟡 | Starter kits with sample blocks | Kits that also install policies, automations, products | R1 |
 | 19 | AI Business Coach | ⬜ | — | Weekly plain-language advice from real numbers | R2 (AI provider) |
 | 20 | Open Module Exchange | 🟡 | Curated Extensions (D67) | Third-party developer submissions, SDK, review queue for code | R3 |

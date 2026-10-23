@@ -151,6 +151,11 @@
 - [x] **Forms preview panel**: padded framed surface, "Start over" and Close in a fixed footer, empty-form message
 - [x] **Super admin (D82)**: Pages & domains, Orders & disputes, Business reporting, Data requests — working screens with reasons and audit log
 - [x] **Staff access & appeals (D83)**: staff console sign-in with required two-step, 5 roles (Platform lead, Trust & safety, Support, Finance, Engineering) gating nav and screens, Staff & access screen, audit entries name the real staff member; owners appeal takedowns/suspensions from the app banner, a different staff member decides in Appeals
+- [x] **Claim your link (D84)**: Home hero handle field with live availability and alternatives, 30-minute hold on this device, carried through sign-up into onboarding
+- [x] **Lightweight mode, visitor side (D85)**: data saver on public pages — auto for Data Saver/2G, footer toggle, photos/videos on request, reduced motion
+- [x] **Printed identity kit (D86)**: Domains & QR → Print kit — business cards, stickers, package inserts, receipt footer from a tracked QR code
+- [x] **Lean workspace (D87)**: Domains & QR, Bookings, Opportunities, Automations and IntentFlow are free apps installed from Extensions; first-visit tour requires installing one
+- [ ] Batch 9 still open: Service OS, Business-in-a-Box kits, Proof-of-Work; owner-side lightweight setting
 - [ ] Not yet: dual approval for high-risk staff actions, staff backup codes, real staff identity provider
 - [ ] Forms: contact page on the website still uses its own form (not yet on the Forms engine); file fields store the file name only
 

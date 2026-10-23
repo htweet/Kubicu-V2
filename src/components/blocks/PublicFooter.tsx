@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { FlagIcon } from 'lucide-react';
+import { FeatherIcon, FlagIcon } from 'lucide-react';
+import { useDataSaver } from '../../contexts/DataSaverContext';
 import type { PageTheme } from '../../types/page';
 import { MadeWithKubicu } from './MadeWithKubicu';
 import { ReportPageDialog } from './ReportPageDialog';
@@ -7,6 +8,7 @@ import { ReportPageDialog } from './ReportPageDialog';
 /** Bottom of every live page: the KUBICU badge (plan permitting) and “Report this page” (D75b). */
 export function PublicFooter({ theme, badge, handle, workspaceId }: {theme: PageTheme;badge: boolean;handle: string;workspaceId: string | null;}) {
   const [open, setOpen] = useState(false);
+  const dataSaver = useDataSaver();
   return (
     <div className="flex flex-col items-center gap-3 pb-10">
       {badge &&
@@ -23,6 +25,16 @@ export function PublicFooter({ theme, badge, handle, workspaceId }: {theme: Page
         <a href="/about/safety" className="rounded px-1 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2">
           Buyer safety
         </a>
+        <span aria-hidden>·</span>
+        <button
+          type="button"
+          onClick={() => dataSaver.setOn(!dataSaver.on)}
+          aria-pressed={dataSaver.on}
+          className="inline-flex items-center gap-1.5 rounded px-1 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2">
+          
+          <FeatherIcon size={12} aria-hidden />
+          Data saver: {dataSaver.on ? 'on' : 'off'}
+        </button>
         <span aria-hidden>·</span>
         <a href="/about/privacy" className="rounded px-1 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2">
           Privacy

@@ -28,6 +28,7 @@ import { Domains } from './pages/domains/Domains';
 import { QrCodes } from './pages/domains/QrCodes';
 import { CampaignLinks } from './pages/domains/CampaignLinks';
 import { Redirects } from './pages/domains/Redirects';
+import { PrintKit } from './pages/domains/PrintKit';
 import { ShortLink } from './pages/ShortLink';
 import { Settings } from './pages/settings/Settings';
 import { AcceptInvite } from './pages/AcceptInvite';
@@ -180,6 +181,7 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
                   <Route path="qr" element={<QrCodes />} />
                   <Route path="links" element={<CampaignLinks />} />
                   <Route path="redirects" element={<Redirects />} />
+                  <Route path="kit" element={<PrintKit />} />
                 </Route>
                 <Route path="extensions" element={<Extensions />} />
                 <Route path="templates" element={<TemplatesMarket />} />

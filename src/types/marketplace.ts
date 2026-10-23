@@ -1,7 +1,8 @@
 import type { WorkspacePlan } from './plan';
 import type { Block, PageTheme } from './page';
 
-export type ExtensionCategory = 'selling' | 'marketing' | 'analytics' | 'operations';
+/** 'apps' = KUBICU's own workspace modules, off until installed so the sidebar stays lean (D87). */
+export type ExtensionCategory = 'apps' | 'selling' | 'marketing' | 'analytics' | 'operations';
 
 export interface ExtensionSetupField {
   id: string;

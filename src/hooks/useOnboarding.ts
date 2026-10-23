@@ -1,5 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { ExampleGoal } from '../data/examples';
+import { clearHandleClaim, readHandleClaim } from '../utils/handleClaim';
+
+/** A handle claimed on the website fills the Identity step unless the owner already chose one (D84). */
+function withClaim(state: OnboardingState): OnboardingState {
+  if (state.handleEdited || state.workspaceId) return state;
+  const claim = readHandleClaim();
+  return claim ? { ...state, handle: claim.handle, handleEdited: true } : state;
+}
 
 export const ONBOARDING_KEY = 'kubicu.onboarding.v1';
 
@@ -81,13 +89,18 @@ export function hasUnfinishedOnboarding(): boolean {
 export function useOnboarding(initialKit: string | null) {
   const [state, setState] = useState<OnboardingState>(() => {
     const saved = readOnboarding();
-    const fresh = initialKit ? { ...initialOnboarding, kitId: initialKit, step: 2 } : initialOnboarding;
+    const fresh = withClaim(initialKit ? { ...initialOnboarding, kitId: initialKit, step: 2 } : initialOnboarding);
     if (!saved) return fresh;
     // Just finished: stay on the share screen (the app remounts when the workspace is created).
     if (saved.workspaceId) return saved.step === 5 ? saved : fresh;
     // Unfinished: resume where they left off.
-    return initialKit ? { ...saved, kitId: initialKit, step: Math.max(saved.step, 2) } : saved;
+    return withClaim(initialKit ? { ...saved, kitId: initialKit, step: Math.max(saved.step, 2) } : saved);
   });
+
+  // Once the workspace exists, the claimed handle is theirs for real.
+  useEffect(() => {
+    if (state.workspaceId) clearHandleClaim();
+  }, [state.workspaceId]);
 
   useEffect(() => writeOnboarding(state), [state]);
 

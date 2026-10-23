@@ -23,6 +23,8 @@ import { dealRoomCheckout } from '../utils/dealRoom';
 const SHOP_NAV_ID = '__shop';
 import { ArrowLeftIcon, EyeIcon, InfoIcon } from 'lucide-react';
 import { RenderPlanProvider } from '../contexts/RenderPlanContext';
+import { DataSaverProvider } from '../contexts/DataSaverContext';
+import { DataSaverBar } from '../components/blocks/DataSaverBar';
 import { CatalogProvider } from '../contexts/CatalogContext';
 import { CartProvider } from '../contexts/CartContext';
 import { PageSurface } from '../components/blocks/PageSurface';
@@ -246,62 +248,65 @@ export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
           </span>
         </div>
       }
+      <DataSaverProvider disabled={isDraft}>
+      <DataSaverBar theme={doc.theme} />
       <TrackProvider value={track}>
       <RenderPlanProvider plan={plan}>
         <CatalogProvider data={catalog}>
           <PageOpsProvider value={{ data: example ? null : ops.data, actions: isDraft ? null : opsActions, workspaceId: example ? null : resolved.workspaceId ?? null }}>
           <SubscribeProvider
-                open={
-                isDraft || example || !catalog ?
-                null :
-                (id) => {
-                  track('subscribe_open', { label: id });
-                  setSubPlanId(id);
-                }
-                }>
-                
+                  open={
+                  isDraft || example || !catalog ?
+                  null :
+                  (id) => {
+                    track('subscribe_open', { label: id });
+                    setSubPlanId(id);
+                  }
+                  }>
+                  
             <CartProvider pageKey={`${resolved.workspaceId ?? 'example'}:${handle}`}>
               {wantShop && catalog ?
-                  <main>
+                    <main>
                   {nav.length > 1 && <SkipLink target="page-content" />}
                   <PageSurface
-                      theme={doc.theme}
-                      columnClassName="max-w-[1120px] md:px-8"
-                      footer={<PublicFooter theme={doc.theme} badge={showsKubicuBadge(doc, plan)} handle={handle} workspaceId={resolved.workspaceId ?? null} />}
-                      header={nav.length > 1 ? <SiteNav theme={doc.theme} title={doc.title} items={nav} activeId={SHOP_NAV_ID} hrefFor={navHref} /> : undefined}>
-                      
+                        theme={doc.theme}
+                        columnClassName="max-w-[1120px] md:px-8"
+                        footer={<PublicFooter theme={doc.theme} badge={showsKubicuBadge(doc, plan)} handle={handle} workspaceId={resolved.workspaceId ?? null} />}
+                        header={nav.length > 1 ? <SiteNav theme={doc.theme} title={doc.title} items={nav} activeId={SHOP_NAV_ID} hrefFor={navHref} /> : undefined}>
+                        
                     <span id="page-content" tabIndex={-1} className="sr-only">Page content</span>
                     {shopProduct ?
-                      <ProductDetailView theme={doc.theme} data={catalog} product={shopProduct} ordering={storefrontOrdering(catalog, plan.id)} whatsappPhone={catalog.storefront.whatsappPhone || sellerPhone(doc)} shopHref={shopHref} productHref={productHref} /> :
+                        <ProductDetailView theme={doc.theme} data={catalog} product={shopProduct} ordering={storefrontOrdering(catalog, plan.id)} whatsappPhone={catalog.storefront.whatsappPhone || sellerPhone(doc)} shopHref={shopHref} productHref={productHref} /> :
 
-                      <StorefrontView theme={doc.theme} data={catalog} productHref={productHref} />
-                      }
+                        <StorefrontView theme={doc.theme} data={catalog} productHref={productHref} />
+                        }
                   </PageSurface>
                 </main> :
 
-                  <PageBody site={doc} pageId={pageId} plan={plan} isDraft={isDraft} phase={phase} nav={nav} navHref={navHref} handle={handle} />
-                  }
+                    <PageBody site={doc} pageId={pageId} plan={plan} isDraft={isDraft} phase={phase} nav={nav} navHref={navHref} handle={handle} />
+                    }
               {catalog && <CheckoutSheet theme={doc.theme} commerce={commerce} ownerPlan={plan.id} handle={handle} defaultCode={phase === 'live' ? campaignCode : undefined} dealRoom={roomCheckout} />}
               <CartButton theme={doc.theme} />
               {resolved?.workspaceId && !resolved.example && !isDraft && <ConsentStrip workspaceId={resolved.workspaceId} theme={doc.theme} />}
             </CartProvider>
             <BookingSheet theme={doc.theme} ops={ops} serviceId={bookingService} handle={handle} onClose={() => setBookingService(null)} />
             {catalog &&
-                <SubscribeSheet
-                  theme={doc.theme}
-                  commerce={commerce}
-                  planId={subPlanId}
-                  handle={handle}
-                  ownerPlan={plan.id}
-                  onClose={() => setSubPlanId(null)}
-                  onSubscribed={(c, planName, consent) => ops.apply((d) => upsertContact(d, c, 'order', `Subscribed to ${planName}`, { consent: consent ? 'subscribed' : 'transactional' }))} />
+                  <SubscribeSheet
+                    theme={doc.theme}
+                    commerce={commerce}
+                    planId={subPlanId}
+                    handle={handle}
+                    ownerPlan={plan.id}
+                    onClose={() => setSubPlanId(null)}
+                    onSubscribed={(c, planName, consent) => ops.apply((d) => upsertContact(d, c, 'order', `Subscribed to ${planName}`, { consent: consent ? 'subscribed' : 'transactional' }))} />
 
-                }
+                  }
           </SubscribeProvider>
           </PageOpsProvider>
         </CatalogProvider>
       </RenderPlanProvider>
       </TrackProvider>
+      </DataSaverProvider>
     </div>);
 
 }
