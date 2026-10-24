@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
 import { toast } from 'sonner';
-import { KeyRoundIcon, MoreHorizontalIcon, PowerIcon, UserCogIcon, UserPlusIcon, XIcon } from 'lucide-react';
-import type { StaffMember, StaffRole } from '../../types/admin';
-import { audit, useAdminStore } from '../../utils/admin/store';
+import { CheckIcon, KeyRoundIcon, MoreHorizontalIcon, PowerIcon, UserCogIcon, UserPlusIcon, XIcon } from 'lucide-react';
+
+const approvalStatusLabels: Record<PendingApproval['status'], string> = { pending: 'Waiting', approved: 'Approved', rejected: 'Rejected', withdrawn: 'Withdrawn', expired: 'Expired' };
+import type { PendingApproval, StaffMember, StaffRole } from '../../types/admin';
+import { audit, staffActor, useAdminStore } from '../../utils/admin/store';
+import { APPROVAL_HOURS, STAFF_KINDS, applyApproval, approvalSummary, effectiveStatus } from '../../utils/admin/approvals';
+import { AccessReviewSection } from '../../components/admin/AccessReviewSection';
 import { useStaffSession } from '../../hooks/useStaffSession';
 import { adminNavItems } from '../../data/adminNavigation';
 import { roleInfo, staffRoles } from '../../data/staffRoles';
@@ -41,6 +45,33 @@ export function AdminStaff() {
   const invited = staff.filter((m) => m.status === 'invited').length;
 
   const isLastLead = (m: StaffMember) => m.role === 'lead' && m.status === 'active' && activeLeads.length <= 1;
+  const staffApprovals = store.approvals.filter((a) => STAFF_KINDS.includes(a.kind));
+  const pending = staffApprovals.filter((a) => effectiveStatus(a) === 'pending');
+  const recentDecided = staffApprovals.filter((a) => effectiveStatus(a) !== 'pending').slice(0, 5);
+  const waitingFor = (m: StaffMember) => pending.some((a) => a.targetId === m.id);
+  const [rejecting, setRejecting] = useState<PendingApproval | null>(null);
+
+  const approve = (a: PendingApproval) => {
+    let error: string | undefined;
+    setStore((s) => {
+      const r = applyApproval(s, a, staffActor(s));
+      error = r.error;
+      return r.store;
+    });
+    if (error) toast.error('Couldn’t approve', { description: error });else
+    toast.success('Approved and applied', { description: a.summary });
+  };
+  const reject = (note: string) => {
+    if (!rejecting) return;
+    const a = rejecting;
+    setStore((s) => audit({ ...s, approvals: s.approvals.map((x) => x.id === a.id ? { ...x, status: 'rejected', decidedBy: staffActor(s), decidedAt: new Date().toISOString(), decisionNote: note } : x) }, { area: 'approvals', action: `Rejected: ${a.summary}`, target: a.targetEmail, reason: note }));
+    toast('Request rejected', { description: 'Nothing was changed. The requester sees your note.' });
+    setRejecting(null);
+  };
+  const withdraw = (a: PendingApproval) => {
+    setStore((s) => audit({ ...s, approvals: s.approvals.map((x) => x.id === a.id ? { ...x, status: 'withdrawn', decidedBy: staffActor(s), decidedAt: new Date().toISOString() } : x) }, { area: 'approvals', action: `Withdrew: ${a.summary}`, target: a.targetEmail, reason: 'Withdrawn by the requester.' }));
+    toast('Request withdrawn');
+  };
 
   const openInvite = () => {
     setName('');
@@ -63,16 +94,37 @@ export function AdminStaff() {
     }
     const m = action.member;
     const patch = (p: Partial<StaffMember>) => (s: typeof store) => ({ ...s, staff: s.staff.map((x) => x.id === m.id ? { ...x, ...p } : x) });
+    // Role changes, disabling and two-step resets on active accounts need a second Platform lead (D129).
+    if ((action.kind === 'role' || action.kind === 'reset' || action.kind === 'disable') && m.status === 'active') {
+      if (action.kind === 'role' && role === m.role) return setAction(null);
+      const kind = action.kind === 'role' ? 'staff_role' : action.kind === 'reset' ? 'staff_reset' : 'staff_disable';
+      const now = new Date();
+      const request: PendingApproval = {
+        id: uid('apr'),
+        kind,
+        summary: approvalSummary(kind, m, action.kind === 'role' ? role : undefined),
+        targetId: m.id,
+        targetEmail: m.email,
+        role: action.kind === 'role' ? role : undefined,
+        reason,
+        requestedById: me?.id ?? '',
+        requestedBy: staffActor(store),
+        requestedAt: now.toISOString(),
+        expiresAt: new Date(now.getTime() + APPROVAL_HOURS * 3600000).toISOString(),
+        status: 'pending',
+        decidedBy: null,
+        decidedAt: null,
+        decisionNote: null
+      };
+      setStore((s) => audit({ ...s, approvals: [request, ...s.approvals] }, { area: 'approvals', action: `Requested: ${request.summary}`, target: m.email, reason }));
+      toast.success('Sent for a second approval', { description: `Another Platform lead must approve within ${APPROVAL_HOURS} hours. Nothing changes until then.` });
+      setAction(null);
+      return;
+    }
     if (action.kind === 'role') {
       if (role === m.role) return setAction(null);
       setStore((s) => audit(patch({ role })(s), { area: 'staff', action: `Changed role: ${roleInfo(m.role).label} → ${roleInfo(role).label}`, target: m.email, reason }));
-      toast.success(`${m.name.split(' ')[0]} is now ${roleInfo(role).label}`);
-    } else if (action.kind === 'reset') {
-      setStore((s) => audit(patch({ twoStep: false })(s), { area: 'staff', action: 'Reset two-step sign-in', target: m.email, reason }));
-      toast.success('Two-step reset', { description: 'They must set it up again before they can use the console.' });
-    } else if (action.kind === 'disable') {
-      setStore((s) => audit(patch({ status: 'disabled' })(s), { area: 'staff', action: 'Disabled staff account', target: m.email, reason }));
-      toast.success('Account disabled', { description: 'They’re signed out everywhere straight away.' });
+      toast.success(`${m.name.split(' ')[0]} will join as ${roleInfo(role).label}`);
     } else if (action.kind === 'enable') {
       setStore((s) => audit(patch({ status: m.twoStep ? 'active' : 'invited' })(s), { area: 'staff', action: 'Turned staff account back on', target: m.email, reason }));
       toast.success('Account turned back on');
@@ -131,7 +183,7 @@ export function AdminStaff() {
     render: (m) => {
       const self = m.id === me?.id;
       const lastLead = isLastLead(m);
-      const guard = self ? 'You can’t change your own access' : lastLead ? 'Keep at least one active Platform lead' : undefined;
+      const guard = self ? 'You can’t change your own access' : lastLead ? 'Keep at least one active Platform lead' : waitingFor(m) ? 'A change is already waiting for approval' : undefined;
       return (
         <Menu
           items={
@@ -144,7 +196,7 @@ export function AdminStaff() {
           [{ id: 'enable', label: 'Turn back on…', icon: PowerIcon, onSelect: () => setAction({ kind: 'enable', member: m }) }] :
           [
           { id: 'role', label: 'Change role…', icon: UserCogIcon, disabled: !!guard, reason: guard, onSelect: () => (setRole(m.role), setAction({ kind: 'role', member: m })) },
-          { id: 'reset', label: 'Reset two-step…', icon: KeyRoundIcon, disabled: self, reason: self ? 'Ask another Platform lead' : undefined, onSelect: () => setAction({ kind: 'reset', member: m }) },
+          { id: 'reset', label: 'Reset two-step…', icon: KeyRoundIcon, disabled: self || waitingFor(m), reason: self ? 'Ask another Platform lead' : waitingFor(m) ? 'A change is already waiting for approval' : undefined, onSelect: () => setAction({ kind: 'reset', member: m }) },
           { id: 'disable', label: 'Disable account…', icon: PowerIcon, destructive: true, disabled: !!guard, reason: guard, onSelect: () => setAction({ kind: 'disable', member: m }) }]
 
           }
@@ -161,11 +213,13 @@ export function AdminStaff() {
     const first = action.member.name.split(' ')[0];
     switch (action.kind) {
       case 'role':
-        return { title: `Change ${first}’s role`, description: 'The new role applies the next time they open a screen.', confirmLabel: 'Change role' };
+        return action.member.status === 'active' ?
+        { title: `Change ${first}’s role`, description: `Another Platform lead must approve this within ${APPROVAL_HOURS} hours. The new role applies once they do.`, confirmLabel: 'Send for approval' } :
+        { title: `Change ${first}’s role`, description: 'They haven’t signed in yet, so this applies straight away.', confirmLabel: 'Change role' };
       case 'reset':
-        return { title: `Reset ${first}’s two-step sign-in?`, description: 'Use this when they lose their phone. They’re locked out of the console until they set it up again.', confirmLabel: 'Reset' };
+        return { title: `Reset ${first}’s two-step sign-in?`, description: `Use this when they lose their phone and backup codes. Another Platform lead must approve. Once approved they’re locked out until they set it up again.`, confirmLabel: 'Send for approval' };
       case 'disable':
-        return { title: `Disable ${first}’s account?`, description: 'They’re signed out straight away and can’t sign in. Their audit history stays.', confirmLabel: 'Disable' };
+        return { title: `Disable ${first}’s account?`, description: `Another Platform lead must approve. Once approved they’re signed out straight away; their audit history stays.`, confirmLabel: 'Send for approval' };
       case 'enable':
         return { title: `Turn ${first}’s account back on?`, description: 'They can sign in again with their password and two-step code.', confirmLabel: 'Turn on' };
       case 'cancel':
@@ -191,12 +245,81 @@ export function AdminStaff() {
         <Stat label="Invitations waiting" value={invited} />
       </StatGroup>
 
+      {pending.length > 0 &&
+      <section aria-labelledby="approvals-heading" className="mt-8 rounded-lg border border-warning/40 bg-warning-soft">
+          <header className="px-5 pb-3 pt-4 md:px-6">
+            <h2 id="approvals-heading" className="text-heading font-semibold text-fg">
+              Waiting for a second Platform lead · {pending.length}
+            </h2>
+            <p className="mt-0.5 text-caption text-fg-muted">High-risk access changes need two people. Whoever asked can’t approve their own request.</p>
+          </header>
+          <ul className="divide-y divide-line border-t border-line bg-raised">
+            {pending.map((a) => {
+            const mine = a.requestedById === me?.id;
+            return (
+              <li key={a.id} className="flex flex-col gap-3 px-5 py-4 md:flex-row md:items-start md:gap-6 md:px-6">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-label font-semibold text-fg">{a.summary}</p>
+                    <p className="mt-0.5 text-caption text-fg-subtle">
+                      Asked by {a.requestedBy} · {formatRelative(a.requestedAt)} · expires {formatRelative(a.expiresAt)}
+                    </p>
+                    <p className="mt-2 text-label text-fg-muted">“{a.reason}”</p>
+                  </div>
+                  <div className="flex shrink-0 gap-2">
+                    {mine ?
+                  <>
+                        <span className="self-center text-caption text-fg-subtle">Waiting for another lead</span>
+                        <Button size="sm" variant="secondary" onClick={() => withdraw(a)}>
+                          Withdraw
+                        </Button>
+                      </> :
+
+                  <>
+                        <Button size="sm" variant="secondary" onClick={() => setRejecting(a)}>
+                          Reject
+                        </Button>
+                        <Button size="sm" leadingIcon={CheckIcon} onClick={() => approve(a)}>
+                          Approve
+                        </Button>
+                      </>
+                  }
+                  </div>
+                </li>);
+
+          })}
+          </ul>
+        </section>
+      }
+
       <section aria-labelledby="staff-list" className="mt-8">
         <h2 id="staff-list" className="sr-only">
           Staff accounts
         </h2>
         <DataTable caption="Staff accounts" rows={staff} columns={columns} filterText={(m) => `${m.name} ${m.email} ${roleInfo(m.role).label}`} filterPlaceholder="Search name, email or role" emptyTitle="No staff match" />
       </section>
+
+      {recentDecided.length > 0 &&
+      <section aria-labelledby="decided-heading" className="mt-8">
+          <h2 id="decided-heading" className="text-label font-semibold text-fg">
+            Recent approval decisions
+          </h2>
+          <ul className="mt-2 divide-y divide-line border-y border-line">
+            {recentDecided.map((a) => {
+            const st = effectiveStatus(a);
+            return (
+              <li key={a.id} className="flex flex-wrap items-center gap-x-4 gap-y-1 py-2.5">
+                  <span className="min-w-0 flex-1 text-label text-fg">{a.summary}</span>
+                  <span className="text-caption text-fg-subtle">{st === 'expired' ? `Expired ${formatRelative(a.expiresAt)}` : `${a.decidedBy ?? ''} · ${a.decidedAt ? formatRelative(a.decidedAt) : ''}`}</span>
+                  <Badge tone={st === 'approved' ? 'success' : st === 'rejected' ? 'danger' : 'neutral'}>{approvalStatusLabels[st]}</Badge>
+                  {a.decisionNote && <p className="w-full text-caption text-fg-muted">“{a.decisionNote}”</p>}
+                </li>);
+
+          })}
+          </ul>
+        </section>
+      }
+
+      <AccessReviewSection />
 
       <section aria-labelledby="roles-heading" className="mt-12 border-t border-line pt-8">
         <h2 id="roles-heading" className="text-heading font-semibold text-fg">
@@ -236,6 +359,7 @@ export function AdminStaff() {
         }
         {(action?.kind === 'invite' || action?.kind === 'role') && <SelectInput<StaffRole> id="staff-role" label="Role" value={role} options={roleOptions} onChange={setRole} hint={roleInfo(role).description} />}
       </ReasonDialog>
+      <ReasonDialog open={!!rejecting} onClose={() => setRejecting(null)} onConfirm={reject} destructive title="Reject this request?" description={rejecting ? `${rejecting.summary}. Nothing changes; ${rejecting.requestedBy.split(' ·')[0]} sees your note.` : ''} confirmLabel="Reject" />
     </div>);
 
 }

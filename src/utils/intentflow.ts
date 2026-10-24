@@ -72,7 +72,7 @@ export interface IntentResult {
   enough: boolean;
 }
 
-const goalTypes: Record<Exclude<IntentGoal, 'tap'>, AnalyticsEvent['type'][]> = {
+export const goalTypes: Record<Exclude<IntentGoal, 'tap'>, AnalyticsEvent['type'][]> = {
   order: ['order_paid'],
   lead: ['lead', 'signup'],
   booking: ['booking_confirmed']

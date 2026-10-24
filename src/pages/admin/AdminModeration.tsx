@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
+import { useWorkspace } from '../../contexts/WorkspaceContext';
+import { autoFlagRules, scanPublishedPages, type AutoFlag } from '../../utils/admin/autoFlags';
+import { uid } from '../../utils/id';
 import { toast } from 'sonner';
 import { ExternalLinkIcon, ShieldCheckIcon } from 'lucide-react';
 import type { PageReport, ReportStatus } from '../../types/admin';
 import { reportReasonLabels } from '../../data/featureFlags';
-import { audit, useAdminStore } from '../../utils/admin/store';
+import { audit, staffActor, useAdminStore } from '../../utils/admin/store';
 import { formatRelative, formatTimestamp } from '../../utils/format';
 import { PageHeader } from '../../components/shell/PageHeader';
 import { Tabs } from '../../components/ui/Tabs';
@@ -14,7 +17,7 @@ import { EmptyState } from '../../components/ui/EmptyState';
 import { SampleTag } from '../../components/commerce/StatusBadges';
 import { ReasonDialog } from '../../components/admin/ReasonDialog';
 
-type Tab = 'open' | 'decided' | 'takedowns';
+type Tab = 'open' | 'auto' | 'decided' | 'takedowns';
 type Decision = {kind: 'takedown' | 'dismiss';report: PageReport;} | {kind: 'restore';handle: string;} | null;
 
 /** Super admin → Moderation & trust: reports from “Report this page”, takedowns and restores (D75b). */
@@ -28,6 +31,29 @@ export function AdminModeration() {
   const decided = store.reports.filter((r) => r.status !== 'open');
   const list = tab === 'open' ? openReports : decided;
   const reportsFor = (handle: string) => store.reports.filter((r) => r.handle === handle).length;
+  const { workspaces } = useWorkspace();
+  const allFlags = useMemo(() => scanPublishedPages(workspaces), [workspaces]);
+  const flags = allFlags.filter((f) => !store.autoFlagsCleared[f.key] && !store.takedowns.some((t) => t.handle === f.handle));
+  const [clearing, setClearing] = useState<AutoFlag | null>(null);
+
+  const raiseReport = (f: AutoFlag) => {
+    if (store.reports.some((r) => r.handle === f.handle && r.status === 'open')) {
+      toast('This page already has an open report', { description: 'Review it in Open reports.' });
+      setTab('open');
+      return;
+    }
+    const report: PageReport = { id: uid('rep'), handle: f.handle, workspaceId: f.workspaceId, reason: f.rule.reason, details: `Automatic check — ${f.rule.label}: “${f.snippet}”`, reporterEmail: '', createdAt: new Date().toISOString(), status: 'open', decision: null, decidedAt: null, sample: f.sample };
+    setStore((s) => audit({ ...s, reports: [report, ...s.reports] }, { area: 'moderation', action: `Opened a report from an automatic flag (${f.rule.label})`, target: `kub.icu/${f.handle}`, reason: 'A staff member reviewed the flag and wants it decided as a report.' }));
+    toast.success('Report opened', { description: 'Decide it like any visitor report — check the page yourself first.' });
+    setTab('open');
+  };
+  const clearFlag = (reason: string) => {
+    if (!clearing) return;
+    const f = clearing;
+    setStore((s) => audit({ ...s, autoFlagsCleared: { ...s.autoFlagsCleared, [f.key]: { at: new Date().toISOString(), by: staffActor(s), reason } } }, { area: 'moderation', action: `Cleared automatic flag (${f.rule.label})`, target: `kub.icu/${f.handle}`, reason }));
+    toast('Flag cleared', { description: 'It won’t come back for this page unless the wording matches a different check.' });
+    setClearing(null);
+  };
 
   const confirm = (reason: string) => {
     if (!decision) return;
@@ -65,6 +91,7 @@ export function AdminModeration() {
           onChange={setTab}
           items={[
           { id: 'open', label: 'Open reports', badge: openReports.length || undefined },
+          { id: 'auto', label: 'Automatic flags', badge: flags.length || undefined },
           { id: 'decided', label: 'Decided' },
           { id: 'takedowns', label: 'Taken down', badge: store.takedowns.length || undefined }]
           } />
@@ -72,7 +99,56 @@ export function AdminModeration() {
       </div>
 
       <div className="mt-6" role="tabpanel" id={`mod-panel-${tab}`} aria-labelledby={`mod-tab-${tab}`}>
-        {tab === 'takedowns' ?
+        {tab === 'auto' ?
+        <>
+            <p className="mb-4 max-w-3xl text-label text-fg-muted">
+              Live pages are checked for wording common in scams and fakes. A flag is only a prompt to look — it never takes a page down, and the owner isn’t told. Open it as a report to decide it, or clear it if it’s fine.
+            </p>
+            {flags.length === 0 ?
+          <EmptyState icon={ShieldCheckIcon} title="No automatic flags" description="Nothing on live pages matches the checks right now." /> :
+
+          <ul className="flex flex-col divide-y divide-line border-y border-line">
+                {flags.map((f) =>
+            <li key={f.key} className="flex flex-col gap-3 py-4 md:flex-row md:items-start md:gap-6">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-semibold text-fg">kub.icu/{f.handle}</span>
+                        <Badge tone={f.rule.reason === 'scam' ? 'danger' : 'warning'}>{f.rule.label}</Badge>
+                        {f.sample && <SampleTag />}
+                        {store.reports.some((r) => r.handle === f.handle && r.status === 'open') && <Badge tone="info">Also reported by visitors</Badge>}
+                      </div>
+                      <p className="mt-0.5 text-caption text-fg-subtle">
+                        {f.workspaceName} · {f.rule.why}
+                      </p>
+                      <blockquote className="mt-2 rounded-md bg-sunken px-3 py-2 text-label text-fg">{f.snippet}</blockquote>
+                    </div>
+                    <div className="flex shrink-0 flex-wrap gap-2">
+                      <Button size="sm" variant="tertiary" leadingIcon={ExternalLinkIcon} onClick={() => window.open(`/p/${f.handle}`, '_blank', 'noopener')}>
+                        Open page
+                      </Button>
+                      <Button size="sm" variant="secondary" onClick={() => setClearing(f)}>
+                        Not a problem…
+                      </Button>
+                      <Button size="sm" onClick={() => raiseReport(f)}>
+                        Open as report
+                      </Button>
+                    </div>
+                  </li>
+            )}
+              </ul>
+          }
+            <details className="mt-6 text-label">
+              <summary className="cursor-pointer font-medium text-fg">What the checks look for</summary>
+              <ul className="mt-3 flex flex-col gap-2">
+                {autoFlagRules.map((r) =>
+              <li key={r.id}>
+                    <span className="font-medium text-fg">{r.label}</span> <span className="text-fg-muted">— {r.why}</span>
+                  </li>
+              )}
+              </ul>
+            </details>
+          </> :
+        tab === 'takedowns' ?
         store.takedowns.length === 0 ?
         <EmptyState icon={ShieldCheckIcon} title="No pages taken down" description="Pages you take down are listed here so they can be restored after an appeal." /> :
 
@@ -188,6 +264,7 @@ export function AdminModeration() {
         }
         confirmLabel={decision?.kind === 'takedown' ? 'Take down' : decision?.kind === 'dismiss' ? 'Dismiss' : 'Restore'} />
       
+      <ReasonDialog open={!!clearing} onClose={() => setClearing(null)} onConfirm={clearFlag} title="Clear this flag?" description={clearing ? `kub.icu/${clearing.handle} — ${clearing.rule.label}. Say why it’s fine, e.g. “Sells phone cases, not phones”.` : ''} confirmLabel="Clear flag" />
     </div>);
 
 }

@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useMemo } from 'react';
+import { PageCheckPanel } from './PageCheckPanel';
+import { a11yFindings } from '../../utils/pageCheck';
 import { PanelLeftCloseIcon } from 'lucide-react';
 import { Tabs } from '../ui/Tabs';
 import { IconButton } from '../ui/IconButton';
@@ -9,7 +11,7 @@ import { useEditor } from '../../contexts/EditorContext';
 import { PagesPanel } from './PagesPanel';
 import { pageCount } from '../../utils/sitePages';
 
-export type LeftTab = 'blocks' | 'layers' | 'pages' | 'templates';
+export type LeftTab = 'blocks' | 'layers' | 'pages' | 'templates' | 'check';
 
 interface LeftPanelProps {
   tab: LeftTab;
@@ -18,7 +20,8 @@ interface LeftPanelProps {
 }
 
 export function LeftPanel({ tab, onTabChange, onCollapse }: LeftPanelProps) {
-  const { state } = useEditor();
+  const { state, issues } = useEditor();
+  const fixCount = useMemo(() => a11yFindings(state.draft.blocks, issues).filter((f) => f.level === 'fix').length, [state.draft.blocks, issues]);
 
   return (
     <div className="flex h-full flex-col bg-raised">
@@ -34,7 +37,8 @@ export function LeftPanel({ tab, onTabChange, onCollapse }: LeftPanelProps) {
           { id: 'blocks', label: 'Blocks' },
           { id: 'layers', label: 'Layers' },
           { id: 'pages', label: pageCount(state.site) > 1 ? `Pages ${pageCount(state.site)}` : 'Pages' },
-          { id: 'templates', label: 'Templates' }]
+          { id: 'templates', label: 'Templates' },
+          { id: 'check', label: fixCount ? `Check ${fixCount}` : 'Check' }]
           } />
         
         {onCollapse && <IconButton icon={PanelLeftCloseIcon} size="sm" label="Collapse panel" onClick={onCollapse} />}
@@ -49,6 +53,7 @@ export function LeftPanel({ tab, onTabChange, onCollapse }: LeftPanelProps) {
         {tab === 'layers' && <LayersList />}
         {tab === 'pages' && <PagesPanel />}
         {tab === 'templates' && <TemplatesPanel />}
+        {tab === 'check' && <PageCheckPanel />}
       </div>
     </div>);
 

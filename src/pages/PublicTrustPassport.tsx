@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeftIcon, CheckIcon, CircleIcon, ShieldCheckIcon } from 'lucide-react';
+import { ArrowLeftIcon, CheckIcon, CircleIcon, FlagIcon, ShieldCheckIcon } from 'lucide-react';
+import { ReportPageDialog } from '../components/blocks/ReportPageDialog';
 import { useResolvedPage } from '../hooks/useResolvedPage';
 import { usePageCommerce } from '../hooks/usePageCommerce';
 import { usePublicPassport } from '../hooks/usePublicPassport';
@@ -16,6 +17,7 @@ export function PublicTrustPassport() {
   const wid = resolved && !resolved.example ? resolved.workspaceId ?? '' : '';
   const commerce = usePageCommerce(wid || null, !!resolved?.isOwn);
   const { passport, appOn } = usePublicPassport(wid, commerce.data?.orders ?? []);
+  const [reporting, setReporting] = useState(false);
 
   useEffect(() => {
     const prev = document.title;
@@ -80,6 +82,11 @@ export function PublicTrustPassport() {
                     <span className="block text-[13.5px]" style={{ color: t.mutedText }}>
                       {s.evidence}
                     </span>
+                    {s.validUntil &&
+                <span className="mt-0.5 block text-[12.5px]" style={{ color: t.mutedText }}>
+                        Valid until {new Date(s.validUntil).toLocaleDateString('en-NG', { day: 'numeric', month: 'long', year: 'numeric' })}
+                      </span>
+                }
                   </span>
                 </li>
             )}
@@ -102,6 +109,17 @@ export function PublicTrustPassport() {
             Safety tips for buying online
           </Link>
         </section>
+
+        <section aria-labelledby="tp-report" className="flex flex-col items-start gap-2 pt-4 text-[14px]" style={{ borderTop: `1px solid ${mix(t.text, 10)}`, color: t.mutedText }}>
+          <h2 id="tp-report" className="text-[16px] font-medium" style={{ color: t.text }}>
+            Something doesn’t add up?
+          </h2>
+          <p>If you paid this business and didn’t get what you ordered, or you think this passport is misleading, tell KUBICU’s trust team. We check every report against our records.</p>
+          <button type="button" onClick={() => setReporting(true)} className="inline-flex min-h-[44px] items-center gap-1.5 font-semibold underline underline-offset-2" style={{ color: t.text }}>
+            <FlagIcon size={15} aria-hidden /> Report a problem with this business
+          </button>
+        </section>
+        <ReportPageDialog open={reporting} onClose={() => setReporting(false)} handle={handle} workspaceId={wid} />
       </div>
     </main>);
 

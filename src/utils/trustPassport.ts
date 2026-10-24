@@ -18,6 +18,18 @@ export interface TrustSignal {
   /** What to do next when not met. */
   next: string;
   to: string;
+  /** D126: when this check lapses unless renewed (verification) or refreshed (reviews). ISO date. */
+  validUntil?: string;
+}
+
+/** Verification is re-checked yearly; only reviews from the last 12 months count (D126). */
+export const VERIFY_VALID_DAYS = 365;
+export const REVIEW_WINDOW_DAYS = 365;
+const DAY = 86_400_000;
+
+/** Lapsing within 30 days — the owner is nudged to renew. */
+export function lapsingSoon(s: TrustSignal, now = Date.now()): boolean {
+  return !!s.validUntil && s.met && Date.parse(s.validUntil) - now < 30 * DAY;
 }
 
 export type TrustLevel = 'starting' | 'building' | 'established' | 'trusted';
@@ -57,7 +69,11 @@ export function computePassport(orders: Order[], money: MoneyData, proof: ProofD
   const real = orders.filter((o) => !o.sample);
   const completed = real.filter((o) => o.status === 'completed');
   const issues = real.filter((o) => o.refunds.length > 0 || !!o.dispute).length;
-  const reviews = (proof?.reviews ?? []).filter((r) => !r.sample);
+  // Only reviews from the last 12 months count, so an old record can't carry the score forever (D126).
+  const reviews = (proof?.reviews ?? []).filter((r) => !r.sample && now - Date.parse(r.createdAt) < REVIEW_WINDOW_DAYS * DAY).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  // The review that keeps the count at the minimum; when it ages out, the check may lapse.
+  const keyReview = reviews[MIN_REVIEWS - 1];
+  const reviewsUntil = keyReview ? new Date(Date.parse(keyReview.createdAt) + REVIEW_WINDOW_DAYS * DAY).toISOString() : undefined;
   const avg = reviews.length ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : 0;
   const escrowClosed = money.escrow.filter((c) => c.stage === 'closed');
   const escrowReleased = escrowClosed.filter((c) => c.outcome === 'released').length;
@@ -65,6 +81,8 @@ export function computePassport(orders: Order[], money: MoneyData, proof: ProofD
   const first = real.reduce<string | null>((m, o) => !m || o.createdAt < m ? o.createdAt : m, null);
   const days = first ? Math.floor((now - new Date(first).getTime()) / 86_400_000) : 0;
   const kyc = money.kyc;
+  const verifiedUntil = kyc.status === 'approved' && kyc.decidedAt ? new Date(Date.parse(kyc.decidedAt) + VERIFY_VALID_DAYS * DAY).toISOString() : undefined;
+  const verifiedLapsed = !!verifiedUntil && Date.parse(verifiedUntil) <= now;
   const rate = completed.length ? issues / completed.length : 0;
 
   const signals: TrustSignal[] = [
@@ -72,19 +90,27 @@ export function computePassport(orders: Order[], money: MoneyData, proof: ProofD
     id: 'verified',
     title: 'Business verified',
     points: 30,
-    met: kyc.status === 'approved',
-    evidence: kyc.status === 'approved' ? `${kyc.entity ? entityLabels[kyc.entity] : 'Verified'} · checked by KUBICU` : kyc.status === 'in_review' ? 'In review' : 'Not verified yet',
-    next: 'Complete business verification.',
-    to: '/app/commerce/verification'
+    met: kyc.status === 'approved' && !verifiedLapsed,
+    evidence: verifiedLapsed ?
+    'Verification is over a year old and needs renewing' :
+    kyc.status === 'approved' ?
+    `${kyc.entity ? entityLabels[kyc.entity] : 'Verified'} · checked by KUBICU` :
+    kyc.status === 'in_review' ?
+    'In review' :
+    'Not verified yet',
+    next: verifiedLapsed ? 'Renew verification: confirm your details are still correct.' : 'Complete business verification.',
+    to: '/app/commerce/verification',
+    validUntil: verifiedUntil
   },
   {
     id: 'reviews',
     title: 'Verified reviews',
     points: 20,
     met: reviews.length >= MIN_REVIEWS && avg >= MIN_RATING,
-    evidence: reviews.length ? `${reviews.length} review${reviews.length === 1 ? '' : 's'} · ${avg.toFixed(1)} average` : 'No verified reviews yet',
-    next: `Ask customers for reviews: at least ${MIN_REVIEWS}, averaging ${MIN_RATING}+.`,
-    to: '/app/proof'
+    evidence: reviews.length ? `${reviews.length} review${reviews.length === 1 ? '' : 's'} in the last 12 months · ${avg.toFixed(1)} average` : 'No verified reviews in the last 12 months',
+    next: `Ask customers for reviews: at least ${MIN_REVIEWS} in the last 12 months, averaging ${MIN_RATING}+.`,
+    to: '/app/proof',
+    validUntil: reviews.length >= MIN_REVIEWS ? reviewsUntil : undefined
   },
   {
     id: 'orders',
@@ -132,7 +158,7 @@ export function computePassport(orders: Order[], money: MoneyData, proof: ProofD
  * Met signals in words safe to show buyers on a public page (D111): counts and checks only —
  * never revenue, refund amounts or anything still in progress.
  */
-export function publicSignals(p: ReturnType<typeof computePassport>): {id: SignalId;title: string;evidence: string;}[] {
+export function publicSignals(p: ReturnType<typeof computePassport>): {id: SignalId;title: string;evidence: string;validUntil?: string;}[] {
   const s = p.stats;
   const words: Record<SignalId, string> = {
     verified: 'Identity and business details checked by KUBICU',
@@ -142,7 +168,7 @@ export function publicSignals(p: ReturnType<typeof computePassport>): {id: Signa
     issues: 'Few refunds and disputes',
     tenure: `Selling on KUBICU for ${s.days}+ days`
   };
-  return p.signals.filter((x) => x.met).map((x) => ({ id: x.id, title: x.title, evidence: words[x.id] }));
+  return p.signals.filter((x) => x.met).map((x) => ({ id: x.id, title: x.title, evidence: words[x.id], validUntil: x.id === 'verified' ? x.validUntil : undefined }));
 }
 
 export function passportSummary(business: string, url: string, p: ReturnType<typeof computePassport>): string {

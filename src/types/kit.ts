@@ -7,6 +7,8 @@ export type KitPart = 'page' | 'products' | 'services' | 'policies' | 'automatio
 export interface KitProduct {
   name: string;
   description: string;
+  /** Defaults to a physical product (D126 adds digital kits). */
+  kind?: 'physical' | 'digital';
 }
 
 export interface KitService {

@@ -19,6 +19,8 @@ export interface OnboardingState {
   goal: OnboardingGoal | null;
   businessType: string;
   kitId: string | null;
+  /** A Business kit picked on the Starter step; its products, services and policies are offered after setup (D126). */
+  businessKitId?: string | null;
   name: string;
   handle: string;
   /** True once the owner edits the handle, so we stop auto-suggesting it. */

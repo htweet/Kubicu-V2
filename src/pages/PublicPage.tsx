@@ -32,6 +32,8 @@ import { PageSurface } from '../components/blocks/PageSurface';
 import { BlockRenderer, spacingClass } from '../components/blocks/BlockRenderer';
 import { PublicFooter } from '../components/blocks/PublicFooter';
 import { SkipLink } from '../components/ui/SkipLink';
+import { LocaleProvider } from '../contexts/LocaleContext';
+import { useVisitorLang } from '../hooks/useVisitorLang';
 import { flagOn, useAdminStore } from '../utils/admin/store';
 import { CheckoutSheet } from '../components/checkout/CheckoutSheet';
 import { CartButton } from '../components/checkout/CartButton';
@@ -46,7 +48,8 @@ import { blockInPhase, campaignPhase, phaseLabels, phaseOrder } from '../utils/c
 import { cn } from '../utils/cn';
 import type { PlanInfo } from '../data/plans';
 import { TrackProvider, createTracker, useTrack } from '../contexts/TrackContext';
-import { visitSource } from '../utils/analytics/track';
+import { sessionId, visitSource } from '../utils/analytics/track';
+import { showsForArm } from '../utils/abTest';
 import { intentSources, showsForSource } from '../utils/intentflow';
 import type { SourceId } from '../types/analytics';
 import { blockName } from '../utils/blocks';
@@ -68,6 +71,8 @@ export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
   const ops = usePageOps(resolved?.workspaceId ?? null, !!resolved?.isOwn);
   const [bookingService, setBookingService] = useState<string | null>(null);
   const [subPlanId, setSubPlanId] = useState<string | null>(null);
+  // Visitor language (D133): their own pick on this device, else the page's language.
+  const [visitorLang, setVisitorLang] = useVisitorLang(resolved?.doc.language);
   // Members-only content (D110): the member's session on this device, and the sign-in sheet.
   const memberWid = resolved && !resolved.example ? resolved.workspaceId ?? null : null;
   const [memberSession, setMemberSession] = useState<MemberSession | null>(() => memberWid ? readSession(memberWid) : null);
@@ -149,7 +154,7 @@ export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
     document.title = shopTitle ?? (resolved && view ? view.seo.title || (sub ? `${sub.title} · ${resolved.doc.title}` : resolved.doc.title) : 'Page not available · KUBICU');
     // Page language for screen readers and translation (WCAG 3.1.1, D76).
     const previousLang = document.documentElement.lang;
-    document.documentElement.lang = resolved?.doc.language || 'en';
+    document.documentElement.lang = visitorLang !== 'en' ? visitorLang : resolved?.doc.language || 'en';
     const meta = document.querySelector('meta[name="description"]');
     const previousDescription = meta?.getAttribute('content') ?? null;
     if (meta && view) meta.setAttribute('content', wantShop ? shopProduct?.description.slice(0, 160) ?? (shopData?.storefront.seoDescription?.trim() || shopData?.storefront.intro || '') : view.seo.description);
@@ -167,7 +172,7 @@ export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
       document.documentElement.lang = previousLang || 'en';
       if (meta && previousDescription !== null) meta.setAttribute('content', previousDescription);
     };
-  }, [resolved, pageId, sub, wantShop, shopProduct, shopData]);
+  }, [resolved, pageId, sub, wantShop, shopProduct, shopData, visitorLang]);
 
   if (!resolved) return <Unavailable handle={handle} />;
   // Staff actions (D75b): a taken-down page or a suspended workspace isn't shown — the owner's own draft preview still is.
@@ -257,9 +262,10 @@ export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
   };
 
   return (
+    <LocaleProvider lang={visitorLang} setLang={setVisitorLang}>
     <div className="min-h-screen w-full" style={{ background: doc.theme.background }}>
       {isDraft &&
-      <div className="sticky top-0 z-40 flex items-center justify-between gap-3 border-b border-line bg-raised px-3 py-2 text-fg shadow-1">
+        <div className="sticky top-0 z-40 flex items-center justify-between gap-3 border-b border-line bg-raised px-3 py-2 text-fg shadow-1">
           <span className="inline-flex min-w-0 items-center gap-2 text-label">
             <EyeIcon size={15} className="shrink-0 text-action" aria-hidden />
             <span className="truncate">
@@ -269,43 +275,43 @@ export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
           </span>
           <div className="flex shrink-0 items-center gap-2">
             {hasMemberContent &&
-          <nav aria-label="View members-only content as" className="flex items-center gap-0.5 rounded-md border border-line p-0.5">
+            <nav aria-label="View members-only content as" className="flex items-center gap-0.5 rounded-md border border-line p-0.5">
                 {([false, true] as const).map((m) =>
-            <Link
-              key={String(m)}
-              to={memberQs(m)}
-              replace
-              aria-current={memberPreview === 'member' === m ? 'true' : undefined}
-              className={cn('whitespace-nowrap rounded-sm px-2.5 py-1 text-caption font-medium', memberPreview === 'member' === m ? 'bg-sunken text-fg' : 'text-fg-muted hover:text-fg')}>
-              
+              <Link
+                key={String(m)}
+                to={memberQs(m)}
+                replace
+                aria-current={memberPreview === 'member' === m ? 'true' : undefined}
+                className={cn('whitespace-nowrap rounded-sm px-2.5 py-1 text-caption font-medium', memberPreview === 'member' === m ? 'bg-sunken text-fg' : 'text-fg-muted hover:text-fg')}>
+                
                     {m ? 'Member' : 'Visitor'}
                   </Link>
-            )}
+              )}
               </nav>
-          }
+            }
             {phase &&
-          <nav aria-label="Preview campaign phase" className="hidden items-center gap-0.5 rounded-md border border-line p-0.5 sm:flex">
+            <nav aria-label="Preview campaign phase" className="hidden items-center gap-0.5 rounded-md border border-line p-0.5 sm:flex">
                 {phaseOrder.map((p) =>
-            <Link
-              key={p}
-              to={`?draft=1&phase=${p}`}
-              replace
-              aria-current={p === phase ? 'true' : undefined}
-              className={cn('rounded-sm px-2.5 py-1 text-caption font-medium', p === phase ? 'bg-sunken text-fg' : 'text-fg-muted hover:text-fg')}>
-              
+              <Link
+                key={p}
+                to={`?draft=1&phase=${p}`}
+                replace
+                aria-current={p === phase ? 'true' : undefined}
+                className={cn('rounded-sm px-2.5 py-1 text-caption font-medium', p === phase ? 'bg-sunken text-fg' : 'text-fg-muted hover:text-fg')}>
+                
                     {phaseLabels[p]}
                   </Link>
-            )}
+              )}
               </nav>
-          }
+            }
             <Button size="sm" variant="secondary" leadingIcon={ArrowLeftIcon} onClick={() => navigate(`/app/canvas/${doc.id}`)}>
               Back to editor
             </Button>
           </div>
         </div>
-      }
+        }
       {example &&
-      <div className="flex items-center justify-center gap-2 px-4 py-2 text-center text-[12px] font-medium" style={{ background: doc.theme.text, color: doc.theme.background }}>
+        <div className="flex items-center justify-center gap-2 px-4 py-2 text-center text-[12px] font-medium" style={{ background: doc.theme.text, color: doc.theme.background }}>
           <InfoIcon size={13} aria-hidden className="shrink-0" />
           <span>
             Example page — {example.name} is a fictional business.{' '}
@@ -314,7 +320,7 @@ export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
             </Link>
           </span>
         </div>
-      }
+        }
       <DataSaverProvider disabled={isDraft} sellerDefault={!!doc.branding?.startLightweight}>
       <DataSaverBar theme={doc.theme} />
       <TrackProvider value={track}>
@@ -322,82 +328,83 @@ export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
         <CatalogProvider data={catalog}>
           <PageOpsProvider value={{ data: example ? null : ops.data, actions: isDraft ? null : opsActions, workspaceId: example ? null : resolved.workspaceId ?? null }}>
           <SubscribeProvider
-                  open={
-                  isDraft || example || !catalog ?
-                  null :
-                  (id) => {
-                    track('subscribe_open', { label: id });
-                    setSubPlanId(id);
-                  }
-                  }>
-                  
+                    open={
+                    isDraft || example || !catalog ?
+                    null :
+                    (id) => {
+                      track('subscribe_open', { label: id });
+                      setSubPlanId(id);
+                    }
+                    }>
+                    
             <MembersProvider value={membersValue}>
             <CartProvider pageKey={`${resolved.workspaceId ?? 'example'}:${handle}`}>
               {wantShop && catalog ?
-                      <main>
+                        <main>
                   {nav.length > 1 && <SkipLink target="page-content" />}
                   <PageSurface
-                          theme={doc.theme}
-                          columnClassName="max-w-[1120px] md:px-8"
-                          footer={<PublicFooter theme={doc.theme} badge={showsKubicuBadge(doc, plan)} handle={handle} workspaceId={resolved.workspaceId ?? null} />}
-                          header={nav.length > 1 ? <SiteNav theme={doc.theme} title={doc.title} items={nav} activeId={SHOP_NAV_ID} hrefFor={navHref} /> : undefined}>
-                          
+                            theme={doc.theme}
+                            columnClassName="max-w-[1120px] md:px-8"
+                            footer={<PublicFooter theme={doc.theme} badge={showsKubicuBadge(doc, plan)} handle={handle} workspaceId={resolved.workspaceId ?? null} />}
+                            header={nav.length > 1 ? <SiteNav theme={doc.theme} title={doc.title} items={nav} activeId={SHOP_NAV_ID} hrefFor={navHref} /> : undefined}>
+                            
                     <span id="page-content" tabIndex={-1} className="sr-only">Page content</span>
                     {shopProduct ?
-                          <ProductDetailView theme={doc.theme} data={catalog} product={shopProduct} ordering={storefrontOrdering(catalog, plan.id)} whatsappPhone={catalog.storefront.whatsappPhone || sellerPhone(doc)} shopHref={shopHref} productHref={productHref} /> :
+                            <ProductDetailView theme={doc.theme} data={catalog} product={shopProduct} ordering={storefrontOrdering(catalog, plan.id)} whatsappPhone={catalog.storefront.whatsappPhone || sellerPhone(doc)} shopHref={shopHref} productHref={productHref} /> :
 
-                          <StorefrontView theme={doc.theme} data={catalog} productHref={productHref} />
-                          }
+                            <StorefrontView theme={doc.theme} data={catalog} productHref={productHref} />
+                            }
                   </PageSurface>
                 </main> :
 
-                      <PageBody site={doc} pageId={pageId} plan={plan} isDraft={isDraft} phase={phase} nav={nav} navHref={navHref} handle={handle} />
-                      }
+                        <PageBody site={doc} pageId={pageId} plan={plan} isDraft={isDraft} phase={phase} nav={nav} navHref={navHref} handle={handle} />
+                        }
               {catalog && <CheckoutSheet theme={doc.theme} commerce={commerce} ownerPlan={plan.id} handle={handle} defaultCode={phase === 'live' ? campaignCode : undefined} dealRoom={roomCheckout} />}
               <CartButton theme={doc.theme} />
               {resolved?.workspaceId && !resolved.example && !isDraft && <ConsentStrip workspaceId={resolved.workspaceId} theme={doc.theme} />}
             </CartProvider>
             {hasMemberContent && !isDraft && !example &&
-                    <MemberSignInSheet
-                      open={signInOpen}
-                      onClose={() => setSignInOpen(false)}
-                      theme={doc.theme}
-                      data={catalog}
-                      business={doc.title}
-                      onJoin={membersValue.join ? () => {
-                        setSignInOpen(false);
-                        const first = catalog?.subPlans.find((p) => p.status === 'active');
-                        if (first) membersValue.join?.(first.id);
-                      } : null}
-                      onSignedIn={(s) => {
-                        if (memberWid) writeSession(memberWid, s);
-                        setMemberSession(s);
-                        setSignInOpen(false);
-                        track('member_signin');
-                        announce(`Signed in as ${maskContact(s.contact, s.channel)}. Members-only content is now showing.`);
-                      }} />
+                      <MemberSignInSheet
+                        open={signInOpen}
+                        onClose={() => setSignInOpen(false)}
+                        theme={doc.theme}
+                        data={catalog}
+                        business={doc.title}
+                        onJoin={membersValue.join ? () => {
+                          setSignInOpen(false);
+                          const first = catalog?.subPlans.find((p) => p.status === 'active');
+                          if (first) membersValue.join?.(first.id);
+                        } : null}
+                        onSignedIn={(s) => {
+                          if (memberWid) writeSession(memberWid, s);
+                          setMemberSession(s);
+                          setSignInOpen(false);
+                          track('member_signin');
+                          announce(`Signed in as ${maskContact(s.contact, s.channel)}. Members-only content is now showing.`);
+                        }} />
 
-                    }
+                      }
             </MembersProvider>
             <BookingSheet theme={doc.theme} ops={ops} serviceId={bookingService} handle={handle} onClose={() => setBookingService(null)} />
             {catalog &&
-                  <SubscribeSheet
-                    theme={doc.theme}
-                    commerce={commerce}
-                    planId={subPlanId}
-                    handle={handle}
-                    ownerPlan={plan.id}
-                    onClose={() => setSubPlanId(null)}
-                    onSubscribed={(c, planName, consent) => ops.apply((d) => upsertContact(d, c, 'order', `Subscribed to ${planName}`, { consent: consent ? 'subscribed' : 'transactional' }))} />
+                    <SubscribeSheet
+                      theme={doc.theme}
+                      commerce={commerce}
+                      planId={subPlanId}
+                      handle={handle}
+                      ownerPlan={plan.id}
+                      onClose={() => setSubPlanId(null)}
+                      onSubscribed={(c, planName, consent) => ops.apply((d) => upsertContact(d, c, 'order', `Subscribed to ${planName}`, { consent: consent ? 'subscribed' : 'transactional' }))} />
 
-                  }
+                    }
           </SubscribeProvider>
           </PageOpsProvider>
         </CatalogProvider>
       </RenderPlanProvider>
       </TrackProvider>
       </DataSaverProvider>
-    </div>);
+    </div>
+    </LocaleProvider>);
 
 }
 
@@ -427,7 +434,11 @@ function PageBody({
   const [params] = useSearchParams();
   const asParam = isDraft ? params.get('as') as SourceId | null : null;
   const source: SourceId = asParam && intentSources.includes(asParam) ? asParam : visitSource(params).source;
-  const visible = doc.blocks.filter((b) => (isDraft ? !b.visibility.hidden : isLiveNow(b.visibility)) && (!phase || blockInPhase(b, phase)) && showsForSource(b.visibility, source));
+  // A/B tests (D127): each visit sees one version; draft previews show A, or B with ?arm=B.
+  const armParam = isDraft ? params.get('arm') === 'B' ? 'B' : 'A' : null;
+  const [visit] = useState(() => sessionId());
+  const inArm = (b: (typeof doc.blocks)[number]) => armParam ? !b.visibility.abTest || b.visibility.abTest.arm === armParam : showsForArm(b.visibility, visit);
+  const visible = doc.blocks.filter((b) => (isDraft ? !b.visibility.hidden : isLiveNow(b.visibility)) && (!phase || blockInPhase(b, phase)) && showsForSource(b.visibility, source) && inArm(b));
   // Members-only (D110): a members-only page shows one sign-in card; a section hides the blocks below it.
   const members = useMembers();
   const pageRule = pageId ? findPage(site, pageId)?.membersOnly ?? null : null;

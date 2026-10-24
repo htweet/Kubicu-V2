@@ -34,6 +34,8 @@ export interface TemplateListing {
   /** 0 = free. */
   priceNgn: number;
   licence: TemplateLicence;
+  /** D128: a whole page template, or a theme (look only: colours, fonts, buttons, background). Missing = page. */
+  kind?: 'page' | 'theme';
   status: ListingStatus;
   /** What buyers get now (null until first approval). */
   listedDoc: PageDocument | null;

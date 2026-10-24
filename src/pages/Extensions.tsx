@@ -17,6 +17,7 @@ import { plans } from '../data/plans';
 import { formatNgn } from '../utils/format';
 import { cn } from '../utils/cn';
 import { Section } from '../components/ui/layout/Section';
+import { listedCommunity, useSubmissions } from '../utils/extensionSubmissions';
 
 type View = 'browse' | 'installed';
 
@@ -29,25 +30,27 @@ export function Extensions() {
   const [q, setQ] = useState('');
   const [cat, setCat] = useState<ExtensionCategory | 'all'>('all');
   const [install, setInstall] = useState<{ext: ExtensionInfo;mode: 'install' | 'settings';} | null>(null);
+  const [subs] = useSubmissions();
   const open = params.get('ext') ? extensionById[params.get('ext')!] ?? null : null;
   const setOpen = (id: string | null) => setParams(id ? { ext: id } : {}, { replace: true });
 
   const installedCount = Object.keys(market.data.installed).length;
+  const catalogue = useMemo(() => [...extensions, ...listedCommunity(subs)], [subs]);
   const list = useMemo(() => {
     const term = q.trim().toLowerCase();
-    return extensions.filter(
+    return catalogue.filter(
       (e) =>
       (view === 'browse' || market.data.installed[e.id]) && (
       cat === 'all' || e.category === cat) && (
       !term || `${e.name} ${e.summary} ${e.publisher}`.toLowerCase().includes(term))
     );
-  }, [q, cat, view, market.data.installed]);
+  }, [q, cat, view, market.data.installed, catalogue]);
   const picks = extensions.filter((e) => e.staffPick);
   const showPicks = view === 'browse' && !q && cat === 'all';
 
   return (
     <div className="mx-auto w-full max-w-[1100px] px-5 pb-16 pt-6 md:px-10 md:pt-8">
-      <PageHeader title="Extensions" context={current.name} description="Add features to your workspace. Every extension is built by KUBICU or a partner we’ve reviewed, and shows exactly what it can do before you install." />
+      <PageHeader title="Extensions" context={current.name} description="Add features to your workspace. Every extension is built by KUBICU or reviewed by our team before it’s listed, and shows exactly what it can do before you install." />
 
       {showPicks &&
       <Section id="ext-picks" title="Staff picks" description="Chosen by the KUBICU team for most new workspaces." className="mt-8">
@@ -115,7 +118,7 @@ export function Extensions() {
                     <span className="min-w-0 flex-1">
                       <span className="flex flex-wrap items-center gap-2">
                         <span className="text-label font-semibold text-fg">{e.name}</span>
-                        {e.preview && <Badge tone="info">Preview</Badge>}
+                        {e.verified === 'community' ? <Badge tone="neutral">By {e.publisher}</Badge> : e.preview && <Badge tone="info">Preview</Badge>}
                       </span>
                       <span className="mt-0.5 block truncate text-caption text-fg-muted">{e.summary}</span>
                       <span className="mt-0.5 block text-caption text-fg-subtle">

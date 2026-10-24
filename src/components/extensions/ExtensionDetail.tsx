@@ -16,6 +16,7 @@ import { averageRating, extensionCategories } from '../../data/extensions';
 import { planAtLeast, plans } from '../../data/plans';
 import { formatDate } from '../../utils/billing';
 import { formatNgn } from '../../utils/format';
+import { useAdminStore } from '../../utils/admin/store';
 
 interface Props {
   ext: ExtensionInfo | null;
@@ -29,12 +30,14 @@ export function ExtensionDetail({ ext, onClose, onInstall }: Props) {
   const plan = usePlan();
   const can = useTeam().can('extensions.manage');
   const [confirmRemove, setConfirmRemove] = useState(false);
+  const [adminStore] = useAdminStore();
   if (!ext) return <Sheet open={false} onClose={onClose} title="">{null}</Sheet>;
 
   const rec = market.data.installed[ext.id];
   const allowedPlan = planAtLeast(plan.id, ext.minPlan);
   const rating = averageRating(ext);
-  const canRollback = !!rec && rec.version === ext.version && ext.versions.length > 1;
+  const pull = adminStore.extensionPulls[ext.id];
+  const canRollback = !!rec && rec.version === ext.version && ext.versions.length > 1 && pull?.pulledVersion !== ext.version;
 
   const footer = rec ?
   <div className="flex flex-wrap items-center gap-2">
@@ -72,7 +75,7 @@ export function ExtensionDetail({ ext, onClose, onInstall }: Props) {
             <div className="min-w-0 flex-1">
               <p className="flex items-center gap-1.5 text-label text-fg">
                 {ext.publisher}
-                {ext.verified === 'kubicu' ? <BadgeCheckIcon size={15} className="text-action" aria-label="Built by KUBICU" /> : <Badge tone="neutral">Reviewed partner</Badge>}
+                {ext.verified === 'kubicu' ? <BadgeCheckIcon size={15} className="text-action" aria-label="Built by KUBICU" /> : <Badge tone="neutral">{ext.verified === 'community' ? 'Independent developer · reviewed' : 'Reviewed partner'}</Badge>}
               </p>
               <p className="mt-1 text-caption text-fg-muted">
                 {extensionCategories[ext.category]} · v{rec?.version ?? ext.version} · {plans[ext.minPlan].name} and above
@@ -111,6 +114,11 @@ export function ExtensionDetail({ ext, onClose, onInstall }: Props) {
           </section>
 
           <section aria-label="Versions">
+            {pull &&
+            <p className="mb-3 rounded-md border border-warning/40 bg-warning-soft px-3 py-2.5 text-caption text-fg">
+                <span className="font-semibold">KUBICU withdrew {pull.pulledVersion}</span> on {formatDate(pull.at)} and moved everyone to {pull.to}. Reason: {pull.reason}
+              </p>
+            }
             <div className="flex items-center justify-between gap-3">
               <h3 className="text-label font-semibold text-fg">Versions</h3>
               {canRollback &&
@@ -133,6 +141,7 @@ export function ExtensionDetail({ ext, onClose, onInstall }: Props) {
               <li key={v.version} className="text-label">
                   <span className="font-medium text-fg">{v.version}</span> <span className="text-caption text-fg-subtle">· {formatDate(v.date)}</span>
                   {rec?.version === v.version && <span className="text-caption text-action"> · running</span>}
+                  {pull?.pulledVersion === v.version && <span className="text-caption font-medium text-warning"> · withdrawn by KUBICU</span>}
                   <p className="text-caption text-fg-muted">{v.notes}</p>
                 </li>
               )}

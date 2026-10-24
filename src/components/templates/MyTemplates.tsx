@@ -106,7 +106,7 @@ export function MyTemplates({ sellOpen, setSellOpen }: {sellOpen: boolean;setSel
                     {l.pendingVersion && l.status === 'listed' && <Badge tone="info">v{l.pendingVersion} in review</Badge>}
                   </div>
                   <p className="mt-0.5 text-caption text-fg-subtle">
-                    {l.category} · {l.region} · {l.priceNgn ? formatNgn(l.priceNgn) : 'Free'}
+                    {l.kind === 'theme' ? 'Theme · ' : ''}{l.category} · {l.region} · {l.priceNgn ? formatNgn(l.priceNgn) : 'Free'}
                     {l.listedVersion ? ` · v${l.listedVersion} on sale` : ''}
                   </p>
                   {l.reviewNote && (l.status === 'changes_requested' || l.status === 'rejected') &&

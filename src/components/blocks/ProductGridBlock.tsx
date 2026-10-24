@@ -1,3 +1,4 @@
+import { useT } from '../../contexts/LocaleContext';
 import React from 'react';
 import { LayoutGridIcon, ShoppingBagIcon } from 'lucide-react';
 import type { BlockProps } from './blockProps';
@@ -16,6 +17,7 @@ import { formatNgn, whatsappLink } from '../../utils/format';
 type GridView = GridProduct & {product?: Product;from?: boolean;};
 
 export function ProductGridBlock({ block, theme, mode }: BlockProps<'productGrid'>) {
+  const { t: tr } = useT();
   const c = block.content;
   const catalog = useCatalog();
   const linked = c.source === 'catalog';
@@ -112,7 +114,7 @@ export function ProductGridBlock({ block, theme, mode }: BlockProps<'productGrid
                   className={buttonCls}
                   style={buttonCss}>
                   
-                    {c.ctaLabel || 'Add to cart'}
+                    {tr(c.ctaLabel || 'Add to cart')}
                   </CheckoutButton> :
 
                 <PageAction mode={mode} href={href} ariaLabel={`${c.ctaLabel || 'Order'} ${item.name}`} className={buttonCls} style={buttonCss}>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { ArrowDownIcon, ArrowUpIcon, CopyIcon, EyeOffIcon, FileTextIcon, HomeIcon, LockKeyholeIcon, MoreHorizontalIcon, PlusIcon, Trash2Icon } from 'lucide-react';
+import { ArrowDownIcon, ArrowUpIcon, CopyIcon, EyeOffIcon, FileTextIcon, HomeIcon, LayoutTemplateIcon, LockKeyholeIcon, MoreHorizontalIcon, PlusIcon, Trash2Icon } from 'lucide-react';
+import { SiteKitDialog } from './SiteKitDialog';
 import { PageMembersFields } from './PageMembersFields';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
@@ -40,6 +41,7 @@ export function PagesPanel({ touch, onOpened }: PagesPanelProps) {
   const [adding, setAdding] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [removing, setRemoving] = useState<string | null>(null);
+  const [kitOpen, setKitOpen] = useState(false);
   const active = state.activePageId;
   const removingPage = pages.find((p) => p.id === removing);
   const livePath = (id: string) => state.published?.pages?.find((p) => p.id === id)?.path;
@@ -198,6 +200,9 @@ export function PagesPanel({ touch, onOpened }: PagesPanelProps) {
           <Button variant="secondary" leadingIcon={PlusIcon} disabled={atLimit} onClick={() => setAdding(true)} fullWidth>
             Add a page
           </Button>
+          <Button variant="tertiary" leadingIcon={LayoutTemplateIcon} onClick={() => setKitOpen(true)} fullWidth>
+            Add a ready-made site
+          </Button>
           {atLimit &&
         <p className="px-1 text-caption text-fg-subtle">
               {plan.name} includes {limit} page{limit === 1 ? '' : 's'}.{nextPlan ? ` ${nextPlan.name} allows up to ${pageLimits[nextPlan.id]}.` : ''} Pages you already have are never removed.
@@ -209,6 +214,7 @@ export function PagesPanel({ touch, onOpened }: PagesPanelProps) {
 
       <p className="px-1 text-caption text-fg-subtle">Every page shares your link, theme and menu, and they all publish together.</p>
 
+      <SiteKitDialog open={kitOpen} onClose={() => setKitOpen(false)} room={Math.max(0, limit - count)} nextPlan={nextPlan ? { id: nextPlan.id, name: nextPlan.name } : undefined} />
       <Dialog
         open={!!removingPage}
         onClose={() => setRemoving(null)}

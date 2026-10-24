@@ -11,6 +11,7 @@ import { PageStatusBadge } from '../components/canvas/PageStatusBadge';
 import { ResumeOnboardingBanner } from '../components/onboarding/ResumeOnboardingBanner';
 import { NeedsAttention } from '../components/overview/NeedsAttention';
 import { SpacesStrip } from '../components/overview/SpacesStrip';
+import { PendingKitCard } from '../components/overview/PendingKitCard';
 import { Button } from '../components/ui/Button';
 import { fontPairs } from '../data/pageThemes';
 import { formatRelative } from '../utils/format';
@@ -50,6 +51,7 @@ export function Overview() {
         <h1 className="font-display text-title font-semibold text-fg md:text-display">Your corner of the internet</h1>
       </header>
       <ResumeOnboardingBanner />
+      <PendingKitCard />
       <NeedsAttention />
 
       <section aria-labelledby="page-heading" className="mt-8 overflow-hidden rounded-lg border border-line bg-raised shadow-1">

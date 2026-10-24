@@ -1,6 +1,13 @@
 import React, { useEffect, useId, useRef } from 'react';
 import type { PageTheme } from '../../types/page';
 import { buttonStyle, fontsFor, inputStyle, mix } from '../blocks/pageStyle';
+import { useT } from '../../contexts/LocaleContext';
+
+/** Plain-text children follow the visitor's language (D133); anything richer is left as written. */
+const useTx = () => {
+  const { t } = useT();
+  return (node: React.ReactNode) => typeof node === 'string' ? t(node) : node;
+};
 
 /** Small theme-styled pieces shared by checkout, order and download screens. */
 
@@ -10,6 +17,9 @@ import { buttonStyle, fontsFor, inputStyle, mix } from '../blocks/pageStyle';
  */
 export function CheckoutHeading({ theme, children, sub, level = 2 }: {theme: PageTheme;children: React.ReactNode;sub?: React.ReactNode;level?: 1 | 2;}) {
   const ref = useRef<HTMLHeadingElement>(null);
+  const tx = useTx();
+  children = tx(children);
+  sub = tx(sub);
   const text = typeof children === 'string' ? children : ref.current?.textContent ?? '';
   useEffect(() => {
     if (level !== 2) return;
@@ -55,11 +65,14 @@ export function ThemedField({
 
 }: {theme: PageTheme;label: string;value: string;onChange: (v: string) => void;type?: string;error?: string;placeholder?: string;autoComplete?: string;inputMode?: React.HTMLAttributes<HTMLInputElement>['inputMode'];optional?: boolean;}) {
   const id = useId();
+  const { t } = useT();
+  label = t(label);
+  if (error) error = t(error);
   return (
     <div className="flex flex-col gap-1.5">
       <label htmlFor={id} className="text-[13px] font-medium" style={{ color: theme.text }}>
         {label}
-        {optional && <span style={{ color: theme.mutedText, fontWeight: 400 }}> · optional</span>}
+        {optional && <span style={{ color: theme.mutedText, fontWeight: 400 }}> · {t('optional')}</span>}
       </label>
       <input
         id={id}
@@ -84,6 +97,7 @@ export function ThemedField({
 }
 
 export function PrimaryButton({ theme, children, onClick, disabled, type = 'button' }: {theme: PageTheme;children: React.ReactNode;onClick?: () => void;disabled?: boolean;type?: 'button' | 'submit';}) {
+  children = useTx()(children);
   return (
     <button
       type={type}
@@ -98,6 +112,7 @@ export function PrimaryButton({ theme, children, onClick, disabled, type = 'butt
 }
 
 export function SecondaryButton({ theme, children, onClick }: {theme: PageTheme;children: React.ReactNode;onClick: () => void;}) {
+  children = useTx()(children);
   return (
     <button type="button" onClick={onClick} className="flex h-12 w-full items-center justify-center gap-2 text-[15px] font-semibold" style={buttonStyle(theme, 'default')}>
       {children}
@@ -125,16 +140,18 @@ export function SheetActions({ theme, children }: {theme: PageTheme;children: Re
 }
 
 export function TestModeNote({ theme }: {theme: PageTheme;}) {
+  const { t } = useT();
   return (
     <p className="rounded-md px-3 py-2 text-[12.5px] font-medium" style={{ background: mix('#d9a400', 16, theme.background), color: theme.text }} role="note">
-      Test mode — this is a KUBICU prototype. No real money moves.
+      {t('Test mode — this is a KUBICU prototype. No real money moves.')}
     </p>);
 
 }
 
 export function StepDots({ theme, step, total }: {theme: PageTheme;step: number;total: number;}) {
+  const { t } = useT();
   return (
-    <div className="flex gap-1.5" role="progressbar" aria-label="Checkout progress" aria-valuemin={1} aria-valuemax={total} aria-valuenow={step}>
+    <div className="flex gap-1.5" role="progressbar" aria-label={t('Checkout progress')} aria-valuemin={1} aria-valuemax={total} aria-valuenow={step}>
       {Array.from({ length: total }).map((_, i) =>
       <span key={i} aria-hidden className="h-1 flex-1 rounded-full" style={{ background: i < step ? theme.text : mix(theme.text, 14) }} />
       )}

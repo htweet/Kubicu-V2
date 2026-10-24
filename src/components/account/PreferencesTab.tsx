@@ -29,10 +29,15 @@ export function PreferencesTab() {
             id="pref-lang"
             label="Language"
             value={p.language}
-            hint="Naijá, Yorùbá, Hausa, Igbo and French are being translated."
-            options={languageOptions.map((o) => ({ value: o.value, label: o.ready ? o.label : `${o.label} — coming soon`, disabled: !o.ready }))}
+            hint="Naijá, Yorùbá, Hausa and Igbo are drafts: menus, screen names and buttons change first, and anything not translated yet stays in English. French is coming later."
+            options={languageOptions.map((o) => ({ value: o.value, label: o.ready ? o.label : o.draft ? `${o.label} — draft` : `${o.label} — coming soon`, disabled: !o.ready && !o.draft }))}
             onChange={(language) => set({ language }, 'Language saved')} />
           
+          {!!languageOptions.find((o) => o.value === p.language)?.draft &&
+          <p className="rounded-md bg-sunken px-3 py-2.5 text-caption text-fg-muted">
+              These words were drafted and haven’t been checked by a native speaker yet. If something reads wrong, tell us from Help → Contact support. Your customers choose their own language at the bottom of your page.
+            </p>
+          }
           <TimezoneSelect id="pref-tz" value={p.timeZone} onChange={(timeZone) => set({ timeZone }, 'Time zone saved')} hint="Used for your sign-in history and scheduled times you see." />
           <SelectInput id="pref-date" label="Date format" value={p.dateFormat} options={dateFormatOptions} onChange={(dateFormat) => set({ dateFormat }, 'Date format saved')} />
           <p className="rounded-md bg-sunken px-3 py-2.5 text-caption text-fg-muted">

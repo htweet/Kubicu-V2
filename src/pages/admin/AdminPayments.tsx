@@ -7,6 +7,10 @@ import { entityInfo, kycRisks, REVIEW_HOURS, statusLabels, statusTones, withEven
 import { KycReviewSheet } from '../../components/admin/KycReviewSheet';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
 import { audit, staffActor, useAdminStore } from '../../utils/admin/store';
+import { effectiveStatus, newApproval } from '../../utils/admin/approvals';
+import { useStaffSession } from '../../hooks/useStaffSession';
+import { ApprovalQueue } from '../../components/admin/ApprovalQueue';
+import type { PendingApproval } from '../../types/admin';
 import { balances, readMoney, tierInfo, writeMoney } from '../../utils/money/store';
 import { uid } from '../../utils/id';
 import { formatNgn, formatRelative } from '../../utils/format';
@@ -52,7 +56,13 @@ const providers = [
 /** Super admin → Payments & providers (D92): payout queue, wallet freezes, identity reviews and provider health. */
 export function AdminPayments() {
   const { workspaces } = useWorkspace();
-  const [, setStore] = useAdminStore();
+  const [adminStore, setStore] = useAdminStore();
+  const me = useStaffSession();
+  const releaseApproved = (a: PendingApproval) => {
+    if (!a.workspaceId || !a.payoutId) return;
+    writeMoney(a.workspaceId, ((d: MoneyData) => ({ ...d, payouts: d.payouts.map((p) => p.id === a.payoutId ? { ...p, status: 'processing' as const, holdReason: null, createdAt: new Date().toISOString() } : p) }))(readMoney(a.workspaceId)));
+    setTick((t) => t + 1);
+  };
   const [tab, setTab] = useState<Tab>('queue');
   const [tick, setTick] = useState(0);
   const [pending, setPending] = useState<Pending | null>(null);
@@ -90,6 +100,19 @@ export function AdminPayments() {
     if (!pending) return;
     const by = staffActor();
     const now = new Date().toISOString();
+    if (pending.kind === 'release' && pending.row.payout.amountNgn >= LARGE_PAYOUT) {
+      // Large releases need a second Finance or Platform lead (D130).
+      const { row } = pending;
+      if (adminStore.approvals.some((a) => a.kind === 'payout_release' && a.payoutId === row.payout.id && effectiveStatus(a) === 'pending')) {
+        toast('This release is already waiting for approval');
+      } else {
+        const req = newApproval({ kind: 'payout_release', summary: `Release ${formatNgn(row.payout.amountNgn)} payout · ${row.workspace}`, targetId: row.id, targetEmail: `${row.workspace} · ${formatNgn(row.payout.amountNgn)}`, workspaceId: row.workspaceId, payoutId: row.payout.id, amountNgn: row.payout.amountNgn, reason, requestedById: me?.id ?? '', requestedBy: staffActor() });
+        setStore((s) => audit({ ...s, approvals: [req, ...s.approvals] }, { area: 'approvals', action: `Requested: ${req.summary}`, target: req.targetEmail, reason }));
+        toast.success('Sent for a second approval', { description: `Payouts of ${formatNgn(LARGE_PAYOUT)} or more need another Finance or Platform lead. It stays on hold until then.` });
+      }
+      setPending(null);
+      return;
+    }
     if (pending.kind === 'hold' || pending.kind === 'release' || pending.kind === 'return') {
       const { row } = pending;
       change(row.workspaceId, (d) => {
@@ -207,7 +230,10 @@ export function AdminPayments() {
 
   const dialogCopy: Record<Pending['kind'], {title: string;label: string;destructive?: boolean;description: string;}> = {
     hold: { title: 'Hold this payout', label: 'Hold payout', description: 'The owner sees that KUBICU is checking it, with your reason.' },
-    release: { title: 'Release this payout', label: 'Release', description: 'It goes to the bank straight away.' },
+    release:
+    pending?.kind === 'release' && pending.row.payout.amountNgn >= LARGE_PAYOUT ?
+    { title: 'Release this payout', label: 'Send for approval', description: `Payouts of ${formatNgn(LARGE_PAYOUT)} or more need a second Finance or Platform lead. It stays on hold until they approve.` } :
+    { title: 'Release this payout', label: 'Release', description: 'It goes to the bank straight away.' },
     return: { title: 'Return payout to the wallet', label: 'Return to wallet', destructive: true, description: 'The money goes back to the seller’s available balance. Nothing is lost.' },
     freeze: { title: 'Pause payouts for this workspace', label: 'Pause payouts', destructive: true, description: 'Sales keep arriving; only payouts stop. The owner sees your reason word for word.' },
     unfreeze: { title: 'Resume payouts', label: 'Resume payouts', description: 'Payouts and schedules start working again.' }
@@ -262,6 +288,8 @@ export function AdminPayments() {
   return (
     <div className="mx-auto w-full max-w-6xl px-5 py-8 md:px-10 md:py-12">
       <PageHeader title="Payments & providers" description="Watch payouts, pause a wallet that looks wrong and review identity checks. Staff never move money into or out of a seller’s wallet themselves." />
+
+      <ApprovalQueue kinds={['payout_release']} title="Large payouts waiting for a second person" description={`Releasing a held payout of ${formatNgn(LARGE_PAYOUT)} or more needs another Finance or Platform lead.`} onApproved={releaseApproved} />
 
       <StatGroup columns={4} className="mt-8 items-end border-b border-line pb-6">
         <Stat primary label="Payouts in the queue" value={queue.length} hint={`${queue.filter((r) => r.risks.length).length} flagged`} />

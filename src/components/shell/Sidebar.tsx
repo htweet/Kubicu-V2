@@ -17,6 +17,8 @@ import { NotificationBell } from '../notifications/NotificationBell';
 import { HelpMenu } from './HelpMenu';
 import { AccountMenu } from './AccountMenu';
 import { useMarketplace } from '../../contexts/MarketplaceContext';
+import { useT } from '../../contexts/LocaleContext';
+import { uiLanguages } from '../../data/translations';
 
 export function Sidebar() {
   const { collapsed, toggle } = useSidebarCollapsed();
@@ -30,7 +32,8 @@ export function Sidebar() {
   const groups = useNavGroups();
   const reduce = useReducedMotion();
   const ToggleIcon = collapsed ? PanelLeftOpenIcon : PanelLeftCloseIcon;
-  const toggleLabel = collapsed ? 'Expand sidebar' : 'Collapse sidebar';
+  const { t, lang } = useT();
+  const toggleLabel = t(collapsed ? 'Expand sidebar' : 'Collapse sidebar');
 
   const onToggle = () => {
     tip.hide();
@@ -115,7 +118,7 @@ export function Sidebar() {
         {/* Staff console: only for a signed-in Platform lead (D83 roles), never for workspace members. */}
         {superAdmin &&
         <div>
-            <SidebarGroupLabel collapsed={collapsed}>KUBICU staff</SidebarGroupLabel>
+            <SidebarGroupLabel collapsed={collapsed}>{t('KUBICU staff')}</SidebarGroupLabel>
             <ul className="flex flex-col gap-0.5">
               <li>
                 <SidebarItem to="/admin" label="Super admin" icon={ShieldCheckIcon} collapsed={collapsed} tip={tip} />
@@ -134,7 +137,12 @@ export function Sidebar() {
             {collapsed ? roleInfo[team.role].label.slice(0, 1) : `Viewing as ${team.me.name.split(' ')[0]} · ${roleInfo[team.role].label}`}
           </p>
         }
-        {collapsed && <NotificationBell size="md" onMouseEnter={tip.show('Notifications')} onMouseLeave={tip.hide} onFocus={tip.show('Notifications')} onBlur={tip.hide} />}
+        {lang !== 'en' && !collapsed &&
+        <p className="mb-1 px-2.5 text-meta text-fg-subtle" title="Drafted translations, waiting for a native speaker to check them. Screens without a draft stay in English.">
+            {t('Draft translation')} · {uiLanguages.find((l) => l.value === lang)?.native}
+          </p>
+        }
+        {collapsed && <NotificationBell size="md" onMouseEnter={tip.show(t('Notifications'))} onMouseLeave={tip.hide} onFocus={tip.show(t('Notifications'))} onBlur={tip.hide} />}
         <HelpMenu collapsed={collapsed} tip={tip} />
         <AppearancePicker collapsed={collapsed} tip={tip} />
         <div className={cn('mt-1.5 border-t border-line pt-2', collapsed ? 'flex justify-center px-0' : '-mx-3 px-3')}>

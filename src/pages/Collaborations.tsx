@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { HandshakeIcon, LockIcon, UserPlusIcon } from 'lucide-react';
+import { HandshakeIcon, LockIcon, StoreIcon, UserPlusIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { useWorkspace } from '../contexts/WorkspaceContext';
 import { useCommerce } from '../contexts/CommerceContext';
@@ -28,8 +28,11 @@ import { emptyPartnerships, PARTNERSHIP_PLAN, partnershipKey, seedPartnerships, 
 import { WorkTogetherSheet } from '../components/partners/WorkTogetherSheet';
 import { PartnershipDetail } from '../components/partners/PartnershipDetail';
 import { BusinessPartners } from '../components/partners/BusinessPartners';
+import { SharedShops } from '../components/partners/SharedShops';
+import { SharedShopDialog } from '../components/partners/SharedShopDialog';
+import { SHARED_SHOP_PLAN } from '../utils/sharedShops';
 
-type CollabTab = 'business' | 'referral';
+type CollabTab = 'business' | 'shops' | 'referral';
 
 /** Collaborations: business partners who sell with you (D120) and referral partners who earn commission (D103). */
 export function Collaborations() {
@@ -48,6 +51,9 @@ export function Collaborations() {
   const [tab, setTab] = useState<CollabTab>('business');
   const [working, setWorking] = useState(false);
   const [openPns, setOpenPns] = useState<string | null>(null);
+  const [shopOpen, setShopOpen] = useState(false);
+  const { workspaces } = useWorkspace();
+  const startShop = () => planAtLeast(plan.id, SHARED_SHOP_PLAN) ? setShopOpen(true) : openUpgrade({ plan: SHARED_SHOP_PLAN, feature: 'Shared shops' });
   const team = useTeam();
   const partnerships = useLocalStore(partnershipKey(current.id), emptyPartnerships);
 
@@ -119,8 +125,12 @@ export function Collaborations() {
       <PageHeader
         title="Collaborations"
         context={current.name}
-        description={tab === 'business' ? 'Run a page and sell bundles with another business. Each of you is paid your own part, the moment the customer pays.' : 'Creators and resellers share your link and earn a commission on what they sell. Every naira is worked out from real orders.'}
+        description={tab === 'shops' ? 'One shop link for a group of sellers. Customers browse everyone’s products; each seller takes their own orders, money and delivery.' : tab === 'business' ? 'Run a page and sell bundles with another business. Each of you is paid your own part, the moment the customer pays.' : 'Creators and resellers share your link and earn a commission on what they sell. Every naira is worked out from real orders.'}
         actions={
+        tab === 'shops' ?
+        <Button leadingIcon={planAtLeast(plan.id, SHARED_SHOP_PLAN) ? StoreIcon : LockIcon} disabled={!can.allowed} title={can.allowed ? undefined : can.reason} onClick={startShop}>
+              New shared shop
+            </Button> :
         tab === 'business' ?
         <Button leadingIcon={unlocked ? HandshakeIcon : LockIcon} disabled={!can.allowed} title={can.allowed ? undefined : can.reason} onClick={startWorkTogether}>
               Work together
@@ -156,11 +166,16 @@ export function Collaborations() {
         onChange={setTab}
         items={[
         { id: 'business', label: 'Business partners', badge: invitesWaiting || undefined },
+        { id: 'shops', label: 'Shared shops' },
         { id: 'referral', label: 'Referral partners' }]
         } />
       
 
-      {tab === 'business' ?
+      <SharedShopDialog open={shopOpen} onClose={() => setShopOpen(false)} host={current} hostHandle={handle} partners={partnerships.data.partnerships} workspaces={workspaces} />
+
+      {tab === 'shops' ?
+      <SharedShops workspaceId={current.id} canEdit={can.allowed} onCreate={startShop} /> :
+      tab === 'business' ?
       <BusinessPartners
         rows={partnerships.data.partnerships}
         leadName={current.name}

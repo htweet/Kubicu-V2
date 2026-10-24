@@ -40,7 +40,8 @@ const footer = [
   { to: '/about/about', label: 'About' },
   { to: '/about/help', label: 'Help centre' },
   { to: '/about/contact', label: 'Contact' },
-  { to: '/about/trust', label: 'Trust centre' }]
+  { to: '/about/trust', label: 'Trust centre' },
+  { to: '/developers', label: 'Developers' }]
 
 },
 {

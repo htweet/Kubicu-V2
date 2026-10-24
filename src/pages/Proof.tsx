@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { BadgeCheckIcon, CopyIcon, HammerIcon, MessageCircleIcon, PlusIcon, StarIcon } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { AwardIcon, BadgeCheckIcon, CopyIcon, HammerIcon, MessageCircleIcon, PlusIcon, StarIcon } from 'lucide-react';
+import { certificateCode } from '../utils/proofCertificate';
 import { toast } from 'sonner';
 import type { WorkItem } from '../types/proof';
 import { useWorkspace } from '../contexts/WorkspaceContext';
@@ -174,6 +176,24 @@ export function Proof() {
                       </span>
                     </span>
                   </button>
+                  {w.source && w.published && mainHandle &&
+            <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 pl-1 text-caption">
+                      <span className="font-mono text-fg-subtle">{certificateCode(w.id)}</span>
+                      <Link to={`/p/${mainHandle}/work/${w.id}`} target="_blank" className="inline-flex items-center gap-1 font-medium text-action hover:underline">
+                        <AwardIcon size={13} aria-hidden /> Certificate
+                      </Link>
+                      <button
+                type="button"
+                className="font-medium text-fg-muted hover:text-fg hover:underline"
+                onClick={() => {
+                  void navigator.clipboard?.writeText(`${window.location.origin}/p/${mainHandle}/work/${w.id}`);
+                  toast('Certificate link copied', { description: 'Send it to a client or a new customer who wants proof.' });
+                }}>
+                
+                        Copy link
+                      </button>
+                    </div>
+            }
                 </li>
           )}
             </ol>)

@@ -10,6 +10,8 @@ import { PageSurface } from '../components/blocks/PageSurface';
 import { cardStyle, mix } from '../components/blocks/pageStyle';
 import { CheckoutHeading, PrimaryButton, SecondaryButton, TestModeNote, ThemedField } from '../components/checkout/checkoutUi';
 import { Unavailable } from './PublicPage';
+import { useVisitorLang } from '../hooks/useVisitorLang';
+import { LocaleProvider, translatorFor, useT } from '../contexts/LocaleContext';
 import { isStaged, linkStageAmounts, nextLinkStage, stagePaidOn } from '../utils/money/linkStages';
 
 type Step = 'details' | 'pay' | 'done' | 'declined';
@@ -33,6 +35,9 @@ export function PayLinkPage() {
   const [tried, setTried] = useState(false);
   const [busy, setBusy] = useState(false);
   const [receipt, setReceipt] = useState<{number: string;at: string;amount: number;stage?: string;} | null>(null);
+  // Visitor language (D133): the payer's pick on this device, else the page's language.
+  const [lang] = useVisitorLang(page?.doc.language);
+  const tx = translatorFor(lang);
 
   useEffect(() => {
     if (!workspaceId) return;
@@ -75,7 +80,7 @@ export function PayLinkPage() {
 
   if (!page) return <Unavailable handle={handle} />;
   if (!money || !workspaceId) return null;
-  if (!link || link.status === 'archived') return <Unavailable handle={handle} title="We can’t find this payment link" body="The link may be mistyped or no longer used. Ask the business for a new one." />;
+  if (!link || link.status === 'archived') return <Unavailable handle={handle} title={tx('We can’t find this payment link')} body={tx('The link may be mistyped or no longer used. Ask the business for a new one.')} />;
 
   const t = page.doc.theme;
   const muted = { color: t.mutedText };
@@ -86,9 +91,9 @@ export function PayLinkPage() {
   const total = subtotal + buyerFee;
 
   const errors = {
-    amount: link.kind === 'open' && subtotal < link.minNgn ? `Enter at least ${formatNgn(link.minNgn)}.` : link.kind === 'items' && subtotal === 0 ? 'Choose at least one item.' : undefined,
-    name: link.fields.name && name.trim().length < 2 ? 'Enter your name.' : undefined,
-    phone: link.fields.phone && phone.replace(/\D/g, '').length < 10 ? 'Enter a phone number the business can reach you on.' : undefined
+    amount: link.kind === 'open' && subtotal < link.minNgn ? tx('Enter at least {amount}.', { amount: formatNgn(link.minNgn) }) : link.kind === 'items' && subtotal === 0 ? tx('Choose at least one item.') : undefined,
+    name: link.fields.name && name.trim().length < 2 ? tx('Enter your name.') : undefined,
+    phone: link.fields.phone && phone.replace(/\D/g, '').length < 10 ? tx('Enter a phone number the business can reach you on.') : undefined
   };
 
   const next = () => {
@@ -113,9 +118,16 @@ export function PayLinkPage() {
   };
 
   const closedCopy =
-  view === 'paused' ? `${business} isn’t taking payments on this link right now.` : view === 'expired' ? `This link closed on ${link.expiresAt ? formatTimestamp(link.expiresAt) : 'its end date'}.` : view === 'used_up' ? isStaged(link) ? 'Every stage is paid — thank you. Nothing more is due on this link.' : 'This link has reached its limit and is closed.' : null;
+  view === 'paused' ?
+  tx('{business} isn’t taking payments on this link right now.', { business }) :
+  view === 'expired' ?
+  tx('This link closed on {when}.', { when: link.expiresAt ? formatTimestamp(link.expiresAt) : tx('its end date') }) :
+  view === 'used_up' ?
+  tx(isStaged(link) ? 'Every stage is paid — thank you. Nothing more is due on this link.' : 'This link has reached its limit and is closed.') :
+  null;
 
   return (
+    <LocaleProvider lang={lang}>
     <div className="min-h-screen w-full" style={{ background: t.background }}>
       <PageSurface theme={t}>
         <main className="flex flex-col gap-5 py-6">
@@ -124,32 +136,32 @@ export function PayLinkPage() {
           </Link>
 
           {step === 'done' && receipt ?
-          <>
+            <>
               <CheckCircle2Icon size={30} aria-hidden style={{ color: t.text }} />
-              <CheckoutHeading theme={t} level={1} sub={`${business} has been told. Keep this page as your receipt.`}>
+              <CheckoutHeading theme={t} level={1} sub={tx('{business} has been told. Keep this page as your receipt.', { business })}>
                 Payment received
               </CheckoutHeading>
-              <section aria-label="Receipt" className="flex flex-col gap-2 p-5 text-[14.5px]" style={{ ...cardStyle(t), color: t.text }}>
+              <section aria-label={tx('Receipt')} className="flex flex-col gap-2 p-5 text-[14.5px]" style={{ ...cardStyle(t), color: t.text }}>
                 <Row label="For" value={receipt.stage ? `${link.title} · ${receipt.stage}` : link.title} />
                 <Row label="Amount" value={formatNgn(receipt.amount)} strong />
                 <Row label="Receipt" value={receipt.number} />
                 <Row label="Paid" value={formatTimestamp(receipt.at)} />
                 {method === 'escrow' &&
-              <p className="mt-2 flex items-start gap-2 text-[13px] leading-relaxed" style={muted}>
-                    <ShieldCheckIcon size={15} className="mt-0.5 shrink-0" aria-hidden /> Your money is held by our licensed payment partner and released to {business} after {inspectionDays.links} days, unless you report a problem.
+                <p className="mt-2 flex items-start gap-2 text-[13px] leading-relaxed" style={muted}>
+                    <ShieldCheckIcon size={15} className="mt-0.5 shrink-0" aria-hidden /> {tx('Your money is held by our licensed payment partner and released to {business} after {n} days, unless you report a problem.', { business, n: inspectionDays.links })}
                   </p>
-              }
+                }
               </section>
               {isStaged(link) && <StagePlan link={link} amounts={stageAmounts} theme={t} />}
               {isStaged(link) && nextLinkStage(link) &&
-            <SecondaryButton theme={t} onClick={() => {setReceipt(null);setStep('details');setTried(false);}}>
+              <SecondaryButton theme={t} onClick={() => {setReceipt(null);setStep('details');setTried(false);}}>
                   Pay the next stage now
                 </SecondaryButton>
-            }
+              }
               <TestModeNote theme={t} />
             </> :
-          step === 'declined' ?
-          <>
+            step === 'declined' ?
+            <>
               <XCircleIcon size={30} aria-hidden style={{ color: t.text }} />
               <CheckoutHeading theme={t} level={1} sub="Your card was declined (test). Nothing was charged.">
                 Payment didn’t go through
@@ -159,29 +171,29 @@ export function PayLinkPage() {
               </PrimaryButton>
             </> :
 
-          <>
-              <CheckoutHeading theme={t} level={1} sub={closedCopy ?? `Pay ${business} securely. You don’t need an account.`}>
+            <>
+              <CheckoutHeading theme={t} level={1} sub={closedCopy ?? tx('Pay {business} securely. You don’t need an account.', { business })}>
                 {link.title}
               </CheckoutHeading>
               {link.description &&
-            <p className="whitespace-pre-line text-[14.5px] leading-relaxed" style={muted}>
+              <p className="whitespace-pre-line text-[14.5px] leading-relaxed" style={muted}>
                   {link.description}
                 </p>
-            }
+              }
 
               {isStaged(link) && <StagePlan link={link} amounts={stageAmounts} theme={t} />}
 
               {!closedCopy && step === 'details' &&
-            <section aria-label="Payment details" className="flex flex-col gap-4 p-5" style={cardStyle(t)}>
-                  {link.kind === 'fixed' && stage && <Row label={`Now: ${stage.label}`} value={formatNgn(subtotal)} strong color={t.text} />}
+              <section aria-label={tx('Payment details')} className="flex flex-col gap-4 p-5" style={cardStyle(t)}>
+                  {link.kind === 'fixed' && stage && <Row label={tx('Now: {stage}', { stage: stage.label })} value={formatNgn(subtotal)} strong color={t.text} />}
                   {link.kind === 'fixed' && !stage && <Row label="Amount" value={formatNgn(link.amountNgn)} strong color={t.text} />}
-                  {link.kind === 'open' && <ThemedField theme={t} label={`Amount (from ${formatNgn(link.minNgn)})`} inputMode="numeric" value={amount} onChange={(v) => setAmount(v.replace(/\D/g, ''))} error={tried ? errors.amount : undefined} placeholder="0" />}
+                  {link.kind === 'open' && <ThemedField theme={t} label={tx('Amount (from {amount})', { amount: formatNgn(link.minNgn) })} inputMode="numeric" value={amount} onChange={(v) => setAmount(v.replace(/\D/g, ''))} error={tried ? errors.amount : undefined} placeholder="0" />}
                   {link.kind === 'items' &&
-              <ul className="flex flex-col">
+                <ul className="flex flex-col">
                       {link.items.map((i) => {
-                  const n = qty[i.id] ?? 0;
-                  return (
-                    <li key={i.id} className="flex items-center justify-between gap-3 border-b py-3 last:border-b-0" style={{ borderColor: mix(t.text, 10) }}>
+                    const n = qty[i.id] ?? 0;
+                    return (
+                      <li key={i.id} className="flex items-center justify-between gap-3 border-b py-3 last:border-b-0" style={{ borderColor: mix(t.text, 10) }}>
                             <span style={{ color: t.text }}>
                               <span className="block text-[14.5px] font-medium">{i.label}</span>
                               <span className="block text-[13px]" style={muted}>
@@ -189,80 +201,82 @@ export function PayLinkPage() {
                               </span>
                             </span>
                             <span className="flex items-center gap-2" style={{ color: t.text }}>
-                              <QtyButton label={`One less ${i.label}`} onClick={() => setQty({ ...qty, [i.id]: Math.max(0, n - 1) })} disabled={n === 0} theme={t}>
+                              <QtyButton label={tx('One less {item}', { item: i.label })} onClick={() => setQty({ ...qty, [i.id]: Math.max(0, n - 1) })} disabled={n === 0} theme={t}>
                                 <MinusIcon size={15} aria-hidden />
                               </QtyButton>
                               <span className="w-6 text-center tabular-nums" aria-live="polite">
                                 {n}
                               </span>
-                              <QtyButton label={`One more ${i.label}`} onClick={() => setQty({ ...qty, [i.id]: Math.min(i.maxQty, n + 1) })} disabled={n >= i.maxQty} theme={t}>
+                              <QtyButton label={tx('One more {item}', { item: i.label })} onClick={() => setQty({ ...qty, [i.id]: Math.min(i.maxQty, n + 1) })} disabled={n >= i.maxQty} theme={t}>
                                 <PlusIcon size={15} aria-hidden />
                               </QtyButton>
                             </span>
                           </li>);
 
-                })}
+                  })}
                       {tried && errors.amount &&
-                <li className="pt-2 text-[12.5px] font-medium" style={{ color: t.text }} role="alert">
+                  <li className="pt-2 text-[12.5px] font-medium" style={{ color: t.text }} role="alert">
                           {errors.amount}
                         </li>
-                }
+                  }
                     </ul>
-              }
+                }
                   {link.fields.name && <ThemedField theme={t} label="Your name" autoComplete="name" value={name} onChange={setName} error={tried ? errors.name : undefined} />}
                   {link.fields.phone && <ThemedField theme={t} label="Phone or WhatsApp" type="tel" autoComplete="tel" value={phone} onChange={setPhone} error={tried ? errors.phone : undefined} />}
                   {link.fields.note && <ThemedField theme={t} label="Note for the business" optional value={note} onChange={setNote} />}
                   <PrimaryButton theme={t} onClick={next}>
-                    Continue{subtotal > 0 ? ` · ${formatNgn(total)}` : ''}
+                    {tx('Continue')}{subtotal > 0 ? ` · ${formatNgn(total)}` : ''}
                   </PrimaryButton>
                 </section>
-            }
+              }
 
               {!closedCopy && step === 'pay' &&
-            <section aria-label="Pay" className="flex flex-col gap-4 p-5" style={cardStyle(t)}>
+              <section aria-label={tx('Pay')} className="flex flex-col gap-4 p-5" style={cardStyle(t)}>
                   <div className="flex flex-col gap-1.5 text-[14.5px]" style={{ color: t.text }}>
                     <Row label={stage ? stage.label : 'Subtotal'} value={formatNgn(subtotal)} />
                     {buyerFee > 0 && <Row label="Escrow protection fee" value={formatNgn(buyerFee)} />}
                     <Row label="You pay" value={formatNgn(total)} strong />
                   </div>
                   {method === 'escrow' &&
-              <p className="flex items-start gap-2 rounded-md px-3 py-2 text-[13px] leading-relaxed" style={{ background: mix(t.text, 6), color: t.text }}>
-                      <ShieldCheckIcon size={15} className="mt-0.5 shrink-0" aria-hidden /> Protected by escrow: your money is held by our licensed partner for {inspectionDays.links} days before {business} receives it.
+                <p className="flex items-start gap-2 rounded-md px-3 py-2 text-[13px] leading-relaxed" style={{ background: mix(t.text, 6), color: t.text }}>
+                      <ShieldCheckIcon size={15} className="mt-0.5 shrink-0" aria-hidden /> {tx('Protected by escrow: your money is held by our licensed partner for {n} days before {business} receives it.', { n: inspectionDays.links, business })}
                     </p>
-              }
+                }
                   <fieldset className="flex flex-col gap-2">
                     <legend className="mb-1 text-[13px] font-medium" style={{ color: t.text }}>
-                      Test card
+                      {tx('Test card')}
                     </legend>
                     {(['success', 'declined'] as const).map((o) =>
-                <label key={o} className="flex cursor-pointer items-center gap-2.5 rounded-md px-3 py-2.5 text-[14px]" style={{ border: `1px solid ${mix(t.text, outcome === o ? 40 : 14)}`, color: t.text }}>
+                  <label key={o} className="flex cursor-pointer items-center gap-2.5 rounded-md px-3 py-2.5 text-[14px]" style={{ border: `1px solid ${mix(t.text, outcome === o ? 40 : 14)}`, color: t.text }}>
                         <input type="radio" name="paylink-card" checked={outcome === o} onChange={() => setOutcome(o)} />
-                        {o === 'success' ? '4242 4242 4242 4242 — payment works' : '4000 0000 0000 0002 — declined'}
+                        {o === 'success' ? `4242 4242 4242 4242 — ${tx('payment works')}` : `4000 0000 0000 0002 — ${tx('declined')}`}
                       </label>
-                )}
+                  )}
                   </fieldset>
                   <TestModeNote theme={t} />
                   <PrimaryButton theme={t} onClick={pay} disabled={busy}>
-                    {busy ? 'Paying…' : `Pay ${formatNgn(total)}`}
+                    {busy ? tx('Paying…') : tx('Pay {amount}', { amount: formatNgn(total) })}
                   </PrimaryButton>
                   <SecondaryButton theme={t} onClick={() => setStep('details')}>
                     Back
                   </SecondaryButton>
                 </section>
-            }
+              }
             </>
-          }
+            }
 
           <p className="text-[12.5px] leading-relaxed" style={muted}>
-            Payment link from {business}, powered by KUBICU. Money is handled by our licensed payment partner.
+            {tx('Payment link from {business}, powered by KUBICU. Money is handled by our licensed payment partner.', { business })}
           </p>
         </main>
       </PageSurface>
-    </div>);
+    </div>
+    </LocaleProvider>);
 
 }
 
 function Row({ label, value, strong, color }: {label: string;value: string;strong?: boolean;color?: string;}) {
+  label = useT().t(label);
   return (
     <div className={strong ? 'flex items-baseline justify-between gap-4 text-[16px] font-semibold' : 'flex items-baseline justify-between gap-4'} style={color ? { color } : undefined}>
       <span>{label}</span>
@@ -274,15 +288,16 @@ function Row({ label, value, strong, color }: {label: string;value: string;stron
 /** The whole plan for a staged link: what's paid and what's next. */
 function StagePlan({ link, amounts, theme }: {link: PaymentLink;amounts: Record<string, number>;theme: PageTheme;}) {
   const next = nextLinkStage(link);
+  const { t: tx } = useT();
   const paidTotal = (link.stages ?? []).reduce((s, x) => s + (stagePaidOn(link, x.id) ? amounts[x.id] ?? 0 : 0), 0);
   return (
     <section aria-labelledby="stage-plan-h" className="flex flex-col gap-3 p-5" style={{ ...cardStyle(theme), color: theme.text }}>
       <div className="flex items-baseline justify-between gap-3">
         <h2 id="stage-plan-h" className="text-[14.5px] font-semibold">
-          Paid in {link.stages?.length} stages
+          {tx('Paid in {n} stages', { n: link.stages?.length ?? 0 })}
         </h2>
         <span className="text-[13px] tabular-nums" style={{ color: theme.mutedText }}>
-          {formatNgn(paidTotal)} of {formatNgn(link.amountNgn)}
+          {tx('{paid} of {total}', { paid: formatNgn(paidTotal), total: formatNgn(link.amountNgn) })}
         </span>
       </div>
       <ol className="flex flex-col">
@@ -300,7 +315,7 @@ function StagePlan({ link, amounts, theme }: {link: PaymentLink;amounts: Record<
               <span className="shrink-0 text-right tabular-nums">
                 {formatNgn(amounts[s.id] ?? 0)}
                 <span className="block text-[12px]" style={{ color: theme.mutedText }}>
-                  {paid ? `Paid ${formatTimestamp(paid.at)}` : current ? 'Due now' : 'Later'}
+                  {paid ? tx('Paid {when}', { when: formatTimestamp(paid.at) }) : tx(current ? 'Due now' : 'Later')}
                 </span>
               </span>
             </li>);

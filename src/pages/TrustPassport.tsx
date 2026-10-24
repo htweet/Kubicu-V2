@@ -7,8 +7,8 @@ import { useCommerce } from '../contexts/CommerceContext';
 import { useEditor } from '../contexts/EditorContext';
 import { useMoney } from '../hooks/useMoney';
 import { useProof } from '../hooks/useProof';
-import { computePassport, levelLabels, levelTones, passportSummary } from '../utils/trustPassport';
-import { publicUrl, whatsappLink } from '../utils/format';
+import { computePassport, lapsingSoon, levelLabels, levelTones, passportSummary } from '../utils/trustPassport';
+import { formatDate, publicUrl, whatsappLink } from '../utils/format';
 import { PageHeader } from '../components/shell/PageHeader';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
@@ -124,6 +124,7 @@ export function TrustPassport() {
 }
 
 function SignalRow({ signal: s }: {signal: ReturnType<typeof computePassport>['signals'][number];}) {
+  const soon = lapsingSoon(s);
   return (
     <li className="flex items-start gap-3 px-4 py-4">
       {s.met ? <CheckCircle2Icon size={18} className="mt-0.5 shrink-0 text-success" aria-hidden /> : <CircleIcon size={18} className="mt-0.5 shrink-0 text-fg-subtle" aria-hidden />}
@@ -133,9 +134,15 @@ function SignalRow({ signal: s }: {signal: ReturnType<typeof computePassport>['s
           <Badge tone={s.met ? 'success' : 'neutral'}>{`${s.met ? '+' : ''}${s.points} pts`}</Badge>
         </p>
         <p className="mt-0.5 text-caption text-fg-muted">{s.evidence}</p>
+        {s.met && s.validUntil &&
+        <p className={cn('mt-1 text-caption', soon ? 'font-medium text-warning' : 'text-fg-subtle')}>
+            {soon ? 'Lapses' : 'Valid until'} {formatDate(s.validUntil)}
+            {soon && (s.id === 'verified' ? ' — renew verification to keep these points.' : ' — ask recent customers for reviews to keep these points.')}
+          </p>
+        }
         {!s.met && <p className="mt-1 text-caption text-fg">{s.next}</p>}
       </div>
-      {!s.met &&
+      {(!s.met || soon) &&
       <Link to={s.to} className={cn('inline-flex shrink-0 items-center gap-1 self-center text-label font-medium text-fg underline-offset-2 hover:underline')}>
           Open <ArrowRightIcon size={14} aria-hidden />
           <span className="sr-only">{s.title}</span>

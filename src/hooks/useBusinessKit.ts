@@ -46,7 +46,7 @@ export function useBusinessKit() {
         if (ex) applyTemplate(kit.name, ex.doc);
       }
       if (has('products') && kit.products.length) {
-        const products: Product[] = kit.products.map((p) => ({ ...blankProduct('physical'), name: p.name, description: p.description }));
+        const products: Product[] = kit.products.map((p) => ({ ...blankProduct(p.kind ?? 'physical'), name: p.name, description: p.description }));
         commerce.apply((d) => ({ ...d, products: [...products, ...d.products] }));
         record.productIds = products.map((p) => p.id);
       }

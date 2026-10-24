@@ -58,6 +58,7 @@ export const planMatrix: PlanFeatureGroup[] = [
   { label: 'Discount codes, automatic offers and referrals', status: 'live', values: all(true) },
   { label: 'Checkout with card and transfer', status: 'live', values: from('pro') },
   { label: 'Digital downloads', status: 'live', values: from('pro') },
+  { label: 'Shared shops for groups of sellers', note: 'Host needs Pro; each seller checks out separately', status: 'live', values: from('pro') },
   { label: 'Licence keys and buyer-stamped PDFs', note: 'With digital downloads; stamping simulated', status: 'live', values: from('pro') },
   { label: 'Printable invoices with bank details (Quotes & jobs)', status: 'live', values: all(true) },
   { label: 'Customer subscriptions and product boxes', status: 'live', values: from('pro') },
@@ -81,6 +82,9 @@ export const planMatrix: PlanFeatureGroup[] = [
   { label: 'Analytics and Link Intelligence', status: 'live', values: all(true) },
   { label: 'Automations', status: 'live', values: all(true) },
   { label: 'IntentFlow — blocks by visitor source', status: 'live', values: all(true) },
+  { label: 'A/B tests on blocks', status: 'live', values: from('pro') },
+  { label: 'Ready-made site kits (extra pages)', note: 'Within each plan’s page limit', status: 'live', values: all(true) },
+  { label: 'Canvas Check — accessibility and page weight', status: 'live', values: all(true) },
   { label: 'Opportunities inbox', status: 'live', values: all(true) },
   { label: 'Lightweight mode for slow connections', status: 'live', values: all(true) }]
 
@@ -98,6 +102,9 @@ export const planMatrix: PlanFeatureGroup[] = [
   { label: 'AI Business Coach', note: 'Uses AI credits', status: 'preview', values: from('creator') },
   { label: 'Ordering prints from a partner print shop', status: 'preview', values: all(true) },
   { label: 'Co-branded spaces with a business partner', note: 'Needed by the business that sets it up', status: 'live', values: from('pro') },
+  { label: 'Webhooks with signed events, delivery log and retries', note: 'Developer preview', status: 'preview', values: from('pro') },
+  { label: 'API keys and connected apps', note: 'Developer preview', status: 'preview', values: from('business') },
+  { label: 'Sell your own extensions — highest monthly price', note: 'Reviewed by KUBICU · you keep 80% · example caps', status: 'live', values: each(false, '₦5,000', '₦15,000', '₦25,000', '₦50,000', '₦100,000') },
   { label: 'Partner bundles — sell with another business, split at payment', note: 'Split payments simulated until a payment partner is chosen', status: 'preview', values: from('pro') }]
 
 },

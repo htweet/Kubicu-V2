@@ -8,6 +8,7 @@ import { issuesByBlock } from '../../../utils/validation';
 import { formatSchedule, windowState } from '../../../utils/schedule';
 import { Switch } from '../../ui/Switch';
 import { SourceRuleFields } from './SourceRuleFields';
+import { AbTestFields } from './AbTestFields';
 import { DateTimeInput } from '../../ui/DateTimeInput';
 import { Badge } from '../../ui/Badge';
 
@@ -102,6 +103,7 @@ export function VisibilityFields({ block }: {block: Block;}) {
       </section>
 
       <SourceRuleFields block={block} />
+      <AbTestFields block={block} />
     </div>);
 
 }

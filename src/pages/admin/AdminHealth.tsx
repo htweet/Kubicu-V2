@@ -8,15 +8,11 @@ import { IllustrativeTag } from '../../components/ui/IllustrativeTag';
 import { Card } from '../../components/ui/layout/Card';
 import { List, ListRow } from '../../components/ui/layout/ListRow';
 import { Stat, StatGroup } from '../../components/ui/layout/Stat';
+import { IncidentsCard } from '../../components/admin/IncidentsCard';
+import { platformServices } from '../../data/platformServices';
+import { serviceStateLabels, serviceStates, type ServiceState } from '../../utils/admin/incidents';
 
-/** Services the real platform depends on. The prototype has no servers, so these are illustrative. */
-const services = [
-{ name: 'Public pages', note: 'Serving kub.icu and custom domains' },
-{ name: 'Checkout & payments', note: 'Test mode — no provider connected' },
-{ name: 'Media storage', note: 'Images are kept in this browser' },
-{ name: 'Email & WhatsApp', note: 'Not connected — messages are previews' },
-{ name: 'AI page setup', note: 'Rule-based preview, no AI provider' }];
-
+const stateTone: Record<ServiceState, 'success' | 'warning' | 'danger'> = { operational: 'success', minor: 'warning', major: 'danger', outage: 'danger' };
 
 function storageUsedKb(): number {
   try {
@@ -39,6 +35,7 @@ export function AdminHealth() {
   const openReports = store.reports.filter((r) => r.status === 'open').length;
   const openTickets = store.tickets.filter((t) => t.status === 'open').length;
   const flagsOff = Object.values(store.flags).filter((f) => !f.on).length;
+  const states = serviceStates(store.incidents);
 
   return (
     <div className="mx-auto w-full max-w-5xl px-5 py-8 md:px-10 md:py-12">
@@ -53,11 +50,24 @@ export function AdminHealth() {
         </StatGroup>
       </Card>
 
+      <div className="mt-8">
+        <IncidentsCard />
+      </div>
+
       <div className="mt-8 grid items-start gap-8 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
-        <Card id="services" title="Services" description="Prototype: no servers run behind this app, so statuses describe how each part is simulated." actions={<IllustrativeTag note="Illustrative statuses — real monitoring comes with the engineering build." />} body="flush">
+        <Card id="services" title="Services" description="Statuses follow open incidents. No servers run behind the prototype, so notes describe how each part is simulated." actions={<IllustrativeTag note="Real monitoring comes with the engineering build. Here, a service changes only when staff declare an incident." />} body="flush">
           <List>
-            {services.map((s) =>
-            <ListRow key={s.name} title={s.name} meta={s.note} trailing={<Badge tone="success" dot>Operational</Badge>} />
+            {platformServices.map((s) =>
+            <ListRow
+              key={s.name}
+              title={s.name}
+              meta={s.note}
+              trailing={
+              <Badge tone={stateTone[states[s.name] ?? 'operational']} dot>
+                    {serviceStateLabels[states[s.name] ?? 'operational']}
+                  </Badge>
+              } />
+
             )}
           </List>
         </Card>

@@ -1,12 +1,13 @@
 import type { DateFormatId, LanguageId, StartPageId } from '../types/account';
 
-export const languageOptions: {value: LanguageId;label: string;ready: boolean;}[] = [
+/** `draft`: selectable, with drafted translations that still need a native speaker's check (D133). */
+export const languageOptions: {value: LanguageId;label: string;ready: boolean;draft?: boolean;}[] = [
 { value: 'en-NG', label: 'English (Nigeria)', ready: true },
 { value: 'en-GB', label: 'English (UK)', ready: true },
-{ value: 'pcm', label: 'Naijá (Nigerian Pidgin)', ready: false },
-{ value: 'yo', label: 'Yorùbá', ready: false },
-{ value: 'ha', label: 'Hausa', ready: false },
-{ value: 'ig', label: 'Igbo', ready: false },
+{ value: 'pcm', label: 'Naijá (Nigerian Pidgin)', ready: false, draft: true },
+{ value: 'yo', label: 'Yorùbá', ready: false, draft: true },
+{ value: 'ha', label: 'Hausa', ready: false, draft: true },
+{ value: 'ig', label: 'Igbo', ready: false, draft: true },
 { value: 'fr', label: 'Français', ready: false }];
 
 

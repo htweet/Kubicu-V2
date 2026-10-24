@@ -1,4 +1,5 @@
 import React from 'react';
+import { useT } from '../../contexts/LocaleContext';
 
 interface PageHeaderProps {
   title: string;
@@ -8,7 +9,9 @@ interface PageHeaderProps {
   context?: React.ReactNode;
 }
 
-export function PageHeader({ title, description, actions, context }: PageHeaderProps) {
+export function PageHeader({ title: rawTitle, description, actions, context }: PageHeaderProps) {
+  // Screen names follow the person's language where a draft exists (D133).
+  const title = useT().t(rawTitle);
   return (
     <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
       <div className="min-w-0">

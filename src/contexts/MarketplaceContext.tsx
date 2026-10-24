@@ -9,6 +9,11 @@ import { extensionById, partnerZones } from '../data/extensions';
 import { emptyMarketplace, extensionActive, marketplaceKey, readMarketplace, writeMarketplace } from '../utils/marketplace';
 import { newAutomation } from '../components/automations/AutomationBuilder';
 import { uid } from '../utils/id';
+import { useAdminStore } from '../utils/admin/store';
+import { readSubmissions } from '../utils/extensionSubmissions';
+
+// Listed developer extensions join the catalogue lookup before anything reads installed records (D132).
+if (typeof window !== 'undefined') readSubmissions();
 
 interface MarketplaceValue {
   data: MarketplaceData;
@@ -58,13 +63,27 @@ export function MarketplaceProvider({ children }: {children: React.ReactNode;}) 
 
   const patch = useCallback((id: string, p: Partial<InstalledExtension>) => apply((d) => d.installed[id] ? { ...d, installed: { ...d.installed, [id]: { ...d.installed[id], ...p } } } : d), [apply]);
 
+  // KUBICU pulled a version platform-wide (D130): move this workspace off it and say why.
+  const [adminStore] = useAdminStore();
+  const pulls = adminStore.extensionPulls;
+  useEffect(() => {
+    Object.values(data.installed).forEach((rec) => {
+      const pull = pulls[rec.id];
+      if (pull && rec.version === pull.pulledVersion) {
+        patch(rec.id, { version: pull.to });
+        toast(`${extensionById[rec.id]?.name ?? 'An extension'} moved to ${pull.to}`, { description: `KUBICU withdrew ${pull.pulledVersion}: ${pull.reason}` });
+      }
+    });
+  }, [pulls, data.installed, patch]);
+
   const value = useMemo<MarketplaceValue>(
     () => ({
       data,
       isActive: (id) => extensionActive(data, id),
       install: (id, settings) => {
         const info = extensionById[id];
-        const record: InstalledExtension = { id, version: info.version, installedAt: new Date().toISOString(), paused: false, settings };
+        const pull = pulls[id];
+        const record: InstalledExtension = { id, version: pull && pull.pulledVersion === info.version ? pull.to : info.version, installedAt: new Date().toISOString(), paused: false, settings };
         // What installing genuinely changes in the workspace.
         if (id === 'abandoned-cart') {
           const automation = { ...newAutomation('abandoned'), status: 'draft' as const };
@@ -111,7 +130,7 @@ export function MarketplaceProvider({ children }: {children: React.ReactNode;}) 
       hasLicence: (templateId) => data.templateLicences.includes(templateId),
       addLicence: (templateId) => apply((d) => ({ ...d, templateLicences: Array.from(new Set([...d.templateLicences, templateId])) }))
     }),
-    [data, apply, patch, ops, commerce, team]
+    [data, apply, patch, ops, commerce, team, pulls]
   );
 
   return <MarketplaceContext.Provider value={value}>{children}</MarketplaceContext.Provider>;

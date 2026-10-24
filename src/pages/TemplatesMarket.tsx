@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { BadgeCheckIcon, LayoutTemplateIcon, LockIcon, SearchIcon, StarIcon } from 'lucide-react';
+import { BadgeCheckIcon, LayoutTemplateIcon, LockIcon, PaletteIcon, SearchIcon, StarIcon } from 'lucide-react';
 import { PageHeader } from '../components/shell/PageHeader';
 import { TextInput } from '../components/ui/TextInput';
 import { SelectInput } from '../components/ui/SelectInput';
@@ -30,7 +30,7 @@ import { activeSale, averageStars, listingAsExample, useTemplateStore } from '..
 import { formatNgn } from '../utils/format';
 
 type Price = 'all' | 'free' | 'premium';
-type Source = 'all' | 'kubicu' | 'creators';
+type Source = 'all' | 'kubicu' | 'creators' | 'themes';
 type Tab = 'browse' | 'kits' | 'mine';
 
 interface Item {
@@ -43,7 +43,7 @@ interface Item {
 export function TemplatesMarket() {
   const market = useMarketplace();
   const { current } = useWorkspace();
-  const { state } = useEditor();
+  const { state, actions } = useEditor();
   const team = useTeam();
   const canEdit = team.can('pages.edit').allowed;
   const canBuy = team.can('billing.manage').allowed;
@@ -85,11 +85,12 @@ export function TemplatesMarket() {
       region === 'all' || ex.city === region) && (
       mood === 'all' || templateMood(ex) === mood) && (
       price === 'all' || (price === 'premium' ? p > 0 : p === 0)) && (
-      source === 'all' || (source === 'creators' ? !!listing : !listing)) && (
+      source === 'all' || (source === 'themes' ? listing?.kind === 'theme' : source === 'creators' ? !!listing : !listing)) && (
       !term || `${ex.name} ${ex.category} ${ex.bestFor} ${ex.description} ${listing?.creatorName ?? ''}`.toLowerCase().includes(term)));
 
   });
 
+  const confirmIsTheme = !!confirm && items.find((i) => i.ex.id === confirm.id)?.listing?.kind === 'theme';
   const setTab = (t: Tab) => setParams(t === 'browse' ? {} : { tab: t }, { replace: true });
 
   return (
@@ -144,7 +145,8 @@ export function TemplatesMarket() {
             options={[
             { value: 'all', label: 'Everyone' },
             { value: 'kubicu', label: 'KUBICU' },
-            { value: 'creators', label: 'Creators' }]
+            { value: 'creators', label: 'Creators' },
+            { value: 'themes', label: 'Themes only' }]
             } />
           
           </div>
@@ -163,6 +165,13 @@ export function TemplatesMarket() {
                     <button type="button" onClick={() => setPreview(it)} className="group flex w-full flex-col gap-3 rounded-md text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
                       <span className="relative block overflow-hidden rounded-[16px] transition-transform duration-150 ease-out group-hover:-translate-y-0.5">
                         <TemplateThumb doc={ex.doc} width={240} height={340} />
+                        {listing?.kind === 'theme' &&
+                    <span className="absolute right-2 top-2">
+                            <Badge tone="info" icon={PaletteIcon}>
+                              Theme
+                            </Badge>
+                          </span>
+                    }
                         {p > 0 &&
                     <span className="absolute left-2 top-2">
                             <Badge tone="accent" icon={owned ? undefined : LockIcon}>
@@ -229,8 +238,12 @@ export function TemplatesMarket() {
       <Dialog
         open={!!confirm}
         onClose={() => setConfirm(null)}
-        title={confirm ? `Apply “${confirm.category}” to your main page?` : ''}
-        description="Your current draft is saved as a snapshot first. Your live page doesn’t change until you publish."
+        title={confirm ? confirmIsTheme ? `Use the “${confirm.category}” theme?` : `Apply “${confirm.category}” to your main page?` : ''}
+        description={
+        confirmIsTheme ?
+        'Only the look changes — colours, fonts, button shape and background. Your blocks and words stay. You can undo in the canvas, and your live page doesn’t change until you publish.' :
+        'Your current draft is saved as a snapshot first. Your live page doesn’t change until you publish.'
+        }
         footer={
         <>
             <Button variant="secondary" onClick={() => setConfirm(null)}>
@@ -239,13 +252,14 @@ export function TemplatesMarket() {
             <Button
             onClick={() => {
               if (!confirm) return;
+              if (confirmIsTheme) actions.replaceBlocks(state.draft.blocks, confirm.doc.theme);else
               applyTemplate(confirm.category, confirm.doc);
               setConfirm(null);
               setPreview(null);
               navigate('/app/canvas');
             }}>
             
-              Apply and open canvas
+              {confirmIsTheme ? 'Use theme and open canvas' : 'Apply and open canvas'}
             </Button>
           </>
         } />

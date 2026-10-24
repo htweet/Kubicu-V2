@@ -342,6 +342,17 @@ export interface BlockVisibility {
   showUntil?: string | null;
   /** Campaign spaces: the phases this block shows in. Undefined = every phase (D52). */
   phases?: CampaignPhase[];
+  /** A/B test (D127): two blocks share a test id; each visit sees one version. */
+  abTest?: AbTest;
+}
+
+export interface AbTest {
+  id: string;
+  arm: 'A' | 'B';
+  goal: IntentGoal;
+  startedAt: string;
+  /** Paused tests show version A to everyone. */
+  paused?: boolean;
 }
 
 export type CampaignPhase = 'before' | 'live' | 'ended';

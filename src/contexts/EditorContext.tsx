@@ -13,6 +13,7 @@ import type { ValidationIssue } from '../utils/validation';
 import { allBlocks, pageCount, pageLimits } from '../utils/sitePages';
 import { hasPlaceholder } from '../utils/ai/draft';
 import { intentIssues } from '../utils/intentflow';
+import { abIssues } from '../utils/abTest';
 import { activeExtraSpaces, extraSpaceLimits, MAIN_SPACE_ID, spaceStorageId } from '../utils/spaces';
 import { spaceKinds } from '../data/spaceKinds';
 import { planAtLeast, planOrder, plans } from '../data/plans';
@@ -79,6 +80,7 @@ export function EditorProvider({ children }: {children: React.ReactNode;}) {
         out.push({ id: `ai:placeholder:${b.id}`, blockId: b.id, severity: 'error', message: 'Replace the [Add …] placeholder with your own words before publishing.' });
       });
       out.push(...intentIssues(doc));
+      out.push(...abIssues(allBlocks(doc)));
       out.push(...memberIssues(doc, data, plan.id, { appOn: trustAppOn, level: trustLevel }));
       if (doc.campaign) out.push(...campaignIssues(doc.campaign, doc.blocks, data));
       // Co-branded spaces (D121): partnership must be live and the partner must approve.

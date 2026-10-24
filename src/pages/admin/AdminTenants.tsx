@@ -5,7 +5,10 @@ import type { WorkspacePlan } from '../../types/plan';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
 import { planOrder, plans } from '../../data/plans';
 import { readPersistedPage } from '../../utils/workspaceStorage';
-import { audit, useAdminStore } from '../../utils/admin/store';
+import { audit, staffActor, useAdminStore } from '../../utils/admin/store';
+import { APPROVAL_HOURS, effectiveStatus, newApproval } from '../../utils/admin/approvals';
+import { useStaffSession } from '../../hooks/useStaffSession';
+import { ApprovalQueue } from '../../components/admin/ApprovalQueue';
 import { formatTimestamp } from '../../utils/format';
 import { PageHeader } from '../../components/shell/PageHeader';
 import { Badge } from '../../components/ui/Badge';
@@ -36,6 +39,7 @@ export function AdminTenants() {
   const [store, setStore] = useAdminStore();
   const [action, setAction] = useState<Action>(null);
   const [newPlan, setNewPlan] = useState<WorkspacePlan>('free');
+  const me = useStaffSession();
 
   const rows: Row[] = useMemo(
     () =>
@@ -65,8 +69,14 @@ export function AdminTenants() {
       setStore((s) => audit(s, { area: 'tenants', action: `Changed plan ${plans[row.plan].name} → ${plans[newPlan].name}`, target: row.name, reason }));
       toast.success(`${row.name} is now on ${plans[newPlan].name}`, { description: 'Entitlement override — no charge or refund is made.' });
     } else if (action.kind === 'suspend') {
-      setStore((s) => audit({ ...s, suspended: { ...s.suspended, [row.id]: { reason, at: new Date().toISOString() } } }, { area: 'tenants', action: 'Suspended workspace', target: row.name, reason }));
-      toast.success(`${row.name} suspended`, { description: 'Its pages show “temporarily unavailable” and the owner sees a banner.' });
+      // Suspending takes a whole business offline, so a second staff member must approve (D130).
+      if (store.approvals.some((a) => a.kind === 'workspace_suspend' && a.workspaceId === row.id && effectiveStatus(a) === 'pending')) {
+        toast('A suspension for this workspace is already waiting for approval');
+      } else {
+        const req = newApproval({ kind: 'workspace_suspend', summary: `Suspend ${row.name}`, targetId: row.id, targetEmail: row.name, workspaceId: row.id, reason, requestedById: me?.id ?? '', requestedBy: staffActor(store) });
+        setStore((s) => audit({ ...s, approvals: [req, ...s.approvals] }, { area: 'approvals', action: `Requested: ${req.summary}`, target: row.name, reason }));
+        toast.success('Sent for a second approval', { description: `Another staff member who can open Users & tenants must approve within ${APPROVAL_HOURS} hours. Use Moderation to take a single page down straight away.` });
+      }
     } else {
       setStore((s) => {
         const { [row.id]: _gone, ...rest } = s.suspended;
@@ -148,6 +158,8 @@ export function AdminTenants() {
         <Stat label="Suspended" value={<span className={Object.keys(store.suspended).length ? 'text-danger' : undefined}>{Object.keys(store.suspended).length}</span>} />
       </StatGroup>
 
+      <ApprovalQueue kinds={['workspace_suspend']} title="Suspensions waiting for a second person" description="Suspending takes a whole business offline. Whoever asked can’t approve their own request." />
+
       <div className="mt-8">
         <DataTable caption="Workspaces" rows={rows} columns={columns} filterText={(r) => `${r.name} ${r.owner} ${r.handle}`} filterPlaceholder="Search name, owner or link" emptyTitle="No workspaces match" />
       </div>
@@ -162,10 +174,10 @@ export function AdminTenants() {
         action?.kind === 'plan' ?
         'Use for goodwill upgrades, partner deals or fixing a billing error. Their billing history isn’t changed.' :
         action?.kind === 'suspend' ?
-        'Their public pages show “temporarily unavailable” and the owner sees why in the app. Nothing is deleted, and you can restore at any time.' :
+        `A second staff member must approve within ${APPROVAL_HOURS} hours. Once approved, their public pages show “temporarily unavailable” and the owner sees why in the app. Nothing is deleted, and you can restore at any time.` :
         'Their pages come back straight away.'
         }
-        confirmLabel={action?.kind === 'plan' ? 'Change plan' : action?.kind === 'suspend' ? 'Suspend' : 'Restore'}>
+        confirmLabel={action?.kind === 'plan' ? 'Change plan' : action?.kind === 'suspend' ? 'Send for approval' : 'Restore'}>
         
         {action?.kind === 'plan' && <SelectInput<WorkspacePlan> id="admin-plan" label="New plan" value={newPlan} onChange={setNewPlan} options={planOrder.map((p) => ({ value: p, label: plans[p].name }))} />}
       </ReasonDialog>

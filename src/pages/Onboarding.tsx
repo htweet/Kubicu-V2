@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { clearOnboarding, useOnboarding, writeOnboarding } from '../hooks/useOnboarding';
 import { useWorkspace } from '../contexts/WorkspaceContext';
 import { buildOnboardingPage } from '../utils/onboardingDoc';
+import { writePendingKit } from '../utils/kits';
 import { OnboardingLayout } from '../components/onboarding/OnboardingLayout';
 import { GoalStep } from '../components/onboarding/GoalStep';
 import { KitStep } from '../components/onboarding/KitStep';
@@ -28,6 +29,7 @@ export function Onboarding() {
       writeOnboarding(next);
       const workspace = create({ name: state.name.trim() || 'My page', ownerName: state.name, doc: built.doc, publish });
       writeOnboarding({ ...next, workspaceId: workspace.id });
+      if (state.businessKitId) writePendingKit(workspace.id, state.businessKitId);
       if (!publish) {
         clearOnboarding();
         navigate(`/app/canvas/${workspace.pageId}`);

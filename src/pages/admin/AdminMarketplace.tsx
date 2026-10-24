@@ -13,8 +13,12 @@ import { TemplateThumb } from '../../components/templates/TemplateThumb';
 import { licenceLabels } from '../../components/templates/CreatorListingInfo';
 import { averageStars, creatorShare, listingEvent, useTemplateStore } from '../../utils/templateListings';
 import { formatNgn, formatTimestamp } from '../../utils/format';
+import { Segmented } from '../../components/ui/Segmented';
+import { ExtensionReviews } from '../../components/admin/ExtensionReviews';
+import { useSubmissions } from '../../utils/extensionSubmissions';
 
 type Tab = 'queue' | 'listed' | 'closed';
+type Kind = 'templates' | 'extensions';
 
 const checklist = [
 { id: 'original', label: 'Original work — not a copy of another template or brand' },
@@ -29,6 +33,9 @@ const tabStatuses: Record<Tab, ListingStatus[]> = { queue: ['in_review'], listed
 export function AdminMarketplace() {
   const [store, update] = useTemplateStore();
   const [tab, setTab] = useState<Tab>('queue');
+  const [kind, setKind] = useState<Kind>('templates');
+  const [subs] = useSubmissions();
+  const extQueue = subs.submissions.filter((s) => s.status === 'in_review' || s.status === 'listed' && s.pending).length;
   const [openId, setOpenId] = useState<string | null>(null);
   const [checks, setChecks] = useState<Record<string, boolean>>({});
   const [note, setNote] = useState('');
@@ -93,32 +100,42 @@ export function AdminMarketplace() {
 
   return (
     <div className="mx-auto w-full max-w-6xl px-5 py-8 md:px-10 md:py-12">
-      <PageHeader title="Modules & marketplace" description="Review creator templates before they’re sold. Extension listings and versions arrive with the rest of the staff tools." />
+      <PageHeader title="Modules & marketplace" description="Review creator templates and developer extensions before any workspace can buy or install them." />
 
       <div className="mt-6">
+        <Segmented<Kind> ariaLabel="What to review" value={kind} onChange={setKind} options={[{ value: 'templates', label: 'Templates' }, { value: 'extensions', label: `Extensions${extQueue ? ` (${extQueue})` : ''}` }]} />
+      </div>
+
+      {kind === 'extensions' ?
+      <div className="mt-6">
+          <ExtensionReviews />
+        </div> :
+
+      <>
+      <div className="mt-6">
         <Tabs<Tab>
-          items={[
-          { id: 'queue', label: `Review queue (${queue.length})` },
-          { id: 'listed', label: 'Listed' },
-          { id: 'closed', label: 'Sent back' }]
-          }
-          value={tab}
-          onChange={setTab}
-          ariaLabel="Template reviews"
-          idPrefix="adm-tpl" />
-        
+            items={[
+            { id: 'queue', label: `Review queue (${queue.length})` },
+            { id: 'listed', label: 'Listed' },
+            { id: 'closed', label: 'Sent back' }]
+            }
+            value={tab}
+            onChange={setTab}
+            ariaLabel="Template reviews"
+            idPrefix="adm-tpl" />
+          
       </div>
 
       <div className="mt-6" role="tabpanel" id={`adm-tpl-panel-${tab}`} aria-labelledby={`adm-tpl-tab-${tab}`}>
         {rows.length === 0 ?
-        <EmptyState icon={InboxIcon} title={tab === 'queue' ? 'Nothing waiting for review' : 'Nothing here'} description={tab === 'queue' ? 'New templates and updates from creators appear here.' : undefined} /> :
+          <EmptyState icon={InboxIcon} title={tab === 'queue' ? 'Nothing waiting for review' : 'Nothing here'} description={tab === 'queue' ? 'New templates and updates from creators appear here.' : undefined} /> :
 
-        <ul className="divide-y divide-line rounded-lg border border-line bg-raised">
+          <ul className="divide-y divide-line rounded-lg border border-line bg-raised">
             {rows.map((l) => {
-            const doc = (tab === 'queue' ? l.pendingDoc : l.listedDoc) ?? l.pendingDoc ?? l.listedDoc;
-            const s = sold(l.id);
-            return (
-              <li key={l.id}>
+              const doc = (tab === 'queue' ? l.pendingDoc : l.listedDoc) ?? l.pendingDoc ?? l.listedDoc;
+              const s = sold(l.id);
+              return (
+                <li key={l.id}>
                   <button type="button" onClick={() => openListing(l)} className="flex w-full items-center gap-4 px-4 py-3 text-left transition-colors duration-150 hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus">
                     <span className="shrink-0 overflow-hidden rounded-[10px] border border-line">{doc && <TemplateThumb doc={doc} width={56} height={86} />}</span>
                     <span className="min-w-0 flex-1">
@@ -131,17 +148,19 @@ export function AdminMarketplace() {
                         {l.sample && <Badge tone="neutral">Sample</Badge>}
                       </span>
                       <span className="block truncate text-caption text-fg-subtle">
-                        {l.creatorName} · {l.category} · {l.region} · {l.priceNgn ? formatNgn(l.priceNgn) : 'Free'} · submitted {formatTimestamp(l.submittedAt)}
+                        {l.kind === 'theme' ? 'Theme · ' : ''}{l.creatorName} · {l.category} · {l.region} · {l.priceNgn ? formatNgn(l.priceNgn) : 'Free'} · submitted {formatTimestamp(l.submittedAt)}
                       </span>
                     </span>
                     {tab === 'listed' && <span className="text-label tabular-nums text-fg-muted">{s.length} sold</span>}
                   </button>
                 </li>);
 
-          })}
+            })}
           </ul>
-        }
+          }
       </div>
+      </>
+      }
 
       <Sheet
         open={!!open}
@@ -149,7 +168,7 @@ export function AdminMarketplace() {
         side="right"
         size="lg"
         title={open?.name ?? ''}
-        description={open ? `${open.creatorName} · ${open.category} · ${open.region}` : undefined}
+        description={open ? `${open.kind === 'theme' ? 'Theme (look only) · ' : ''}${open.creatorName} · ${open.category} · ${open.region}` : undefined}
         footer={
         reviewing ?
         <div className="flex w-full flex-wrap items-center justify-between gap-2">

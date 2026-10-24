@@ -12,23 +12,32 @@ import { PageSurface } from '../components/blocks/PageSurface';
 import { cardStyle, mix } from '../components/blocks/pageStyle';
 import { CheckoutHeading, PrimaryButton, SecondaryButton, TestModeNote, ThemedField } from '../components/checkout/checkoutUi';
 import { Unavailable } from './PublicPage';
+import { useVisitorLang } from '../hooks/useVisitorLang';
+import { LocaleProvider, useT } from '../contexts/LocaleContext';
 
 /** Buyer protection page for an escrow order (D94): confirm delivery, report a problem, follow the case. */
 export function BuyerProtection() {
   const { handle = '', orderId = '' } = useParams();
   const page = useResolvedPage(handle);
+  // Visitor language (D133): the buyer's pick on this device, else the page's language.
+  const [lang] = useVisitorLang(page?.doc.language);
   if (!page?.workspaceId) return <Unavailable handle={handle} />;
-  return <Body workspaceId={page.workspaceId} handle={handle} orderId={orderId} theme={page.doc.theme} business={page.doc.title} />;
+  return (
+    <LocaleProvider lang={lang}>
+      <Body workspaceId={page.workspaceId} handle={handle} orderId={orderId} theme={page.doc.theme} business={page.doc.title} />
+    </LocaleProvider>);
+
 }
 
 function Body({ workspaceId, handle, orderId, theme: t, business }: {workspaceId: string;handle: string;orderId: string;theme: PageTheme;business: string;}) {
   const { data, update } = useMoney(workspaceId);
+  const { t: tx } = useT();
   const c = data.escrow.find((x) => x.orderId === orderId);
   const order = readCommerce(workspaceId)?.orders.find((o) => o.id === orderId);
   const [unlocked, setUnlocked] = useState(false);
   const muted = { color: t.mutedText };
 
-  if (!c || !order) return <Unavailable handle={handle} title="This order isn’t protected by escrow" body="Only orders paid into escrow have a protection page. Your order page has the seller’s contact details." />;
+  if (!c || !order) return <Unavailable handle={handle} title={tx('This order isn’t protected by escrow')} body={tx('Only orders paid into escrow have a protection page. Your order page has the seller’s contact details.')} />;
 
   const phoneDigits = order.customer.phone.replace(/\D/g, '').slice(-4);
 
@@ -37,28 +46,28 @@ function Body({ workspaceId, handle, orderId, theme: t, business }: {workspaceId
       <PageSurface theme={t}>
         <main className="flex flex-col gap-5 py-6">
           <Link to={`/p/${handle}/order/${orderId}`} className="inline-flex items-center gap-1.5 self-start text-[14px] font-medium" style={muted}>
-            <ArrowLeftIcon size={15} aria-hidden /> Order #{c.orderNumber}
+            <ArrowLeftIcon size={15} aria-hidden /> {tx('Order #{n}', { n: c.orderNumber })}
           </Link>
           <div className="flex flex-col items-start gap-3">
             {c.stage === 'disputed' || c.stage === 'escalated' ? <ShieldAlertIcon size={30} aria-hidden /> : <ShieldCheckIcon size={30} aria-hidden />}
             <CheckoutHeading theme={t} level={1} sub={caseSummary(c)}>
-              {headline(c, business)}
+              {headline(c, business, tx)}
             </CheckoutHeading>
           </div>
 
-          <section aria-label="Protected payment" className="flex flex-col gap-2 p-5 text-[14.5px]" style={{ ...cardStyle(t), color: t.text }}>
+          <section aria-label={tx('Protected payment')} className="flex flex-col gap-2 p-5 text-[14.5px]" style={{ ...cardStyle(t), color: t.text }}>
             <Row label="You paid" value={formatNgn(c.grossNgn)} strong />
             <Row label="Paid" value={formatTimestamp(c.heldAt)} />
             {c.deliveredAt && <Row label="Marked delivered" value={formatTimestamp(c.deliveredAt)} />}
             {c.stage === 'delivered' && c.inspectUntil && <Row label="Released to seller" value={formatTimestamp(c.inspectUntil)} />}
             {c.deliveryNote &&
             <p className="mt-1 text-[13.5px]" style={muted}>
-                Seller’s note: “{c.deliveryNote}”
+                {tx('Seller’s note:')} “{c.deliveryNote}”
               </p>
             }
             {c.proof.length > 0 && <Files theme={t} label="Seller’s proof of delivery" names={c.proof.map((f) => f.name)} />}
             <p className="mt-2 border-t pt-3 text-[12.5px] leading-relaxed" style={{ ...muted, borderColor: mix(t.text, 12) }}>
-              Your money is held by our licensed payment partner, not by {business}. It’s only released when you confirm, when the checking window ends, or when KUBICU decides a reported problem.
+              {tx('Your money is held by our licensed payment partner, not by {business}. It’s only released when you confirm, when the checking window ends, or when KUBICU decides a reported problem.', { business })}
             </p>
           </section>
 
@@ -66,9 +75,9 @@ function Body({ workspaceId, handle, orderId, theme: t, business }: {workspaceId
           {unlocked && <Actions c={c} theme={t} business={business} workspaceId={workspaceId} update={update} />}
 
           {c.stage === 'closed' && c.dispute?.decision &&
-          <section aria-label="KUBICU decision" className="flex flex-col gap-2 p-5" style={{ ...cardStyle(t), color: t.text }}>
+          <section aria-label={tx('KUBICU’s decision')} className="flex flex-col gap-2 p-5" style={{ ...cardStyle(t), color: t.text }}>
               <p className="flex items-center gap-2 text-[15px] font-semibold">
-                <GavelIcon size={16} aria-hidden /> KUBICU’s decision
+                <GavelIcon size={16} aria-hidden /> {tx('KUBICU’s decision')}
               </p>
               <p className="text-[14px]" style={muted}>
                 “{c.dispute.decision.note}”
@@ -83,20 +92,20 @@ function Body({ workspaceId, handle, orderId, theme: t, business }: {workspaceId
 
 }
 
-function headline(c: EscrowCase, business: string): string {
+function headline(c: EscrowCase, business: string, tx: (s: string, v?: Record<string, string | number>) => string): string {
   switch (c.stage) {
     case 'awaiting_goal':
-      return 'Your payment is protected';
+      return tx('Your payment is protected');
     case 'held':
-      return `Waiting for ${business} to deliver`;
+      return tx('Waiting for {business} to deliver', { business });
     case 'delivered':
-      return 'Did everything arrive as expected?';
+      return tx('Did everything arrive as expected?');
     case 'disputed':
-      return 'You reported a problem';
+      return tx('You reported a problem');
     case 'escalated':
-      return 'KUBICU is reviewing your case';
+      return tx('KUBICU is reviewing your case');
     case 'closed':
-      return c.outcome === 'released' ? 'Payment released' : c.outcome === 'refunded' ? 'You’ve been refunded' : 'Partly refunded';
+      return tx(c.outcome === 'released' ? 'Payment released' : c.outcome === 'refunded' ? 'You’ve been refunded' : 'Partly refunded');
   }
 }
 
@@ -104,6 +113,7 @@ function headline(c: EscrowCase, business: string): string {
 function Unlock({ theme: t, digits, onUnlock }: {theme: PageTheme;digits: string;onUnlock: () => void;}) {
   const [value, setValue] = useState('');
   const [error, setError] = useState('');
+  const { t: tx } = useT();
   return (
     <form
       className="flex flex-col gap-3 p-5"
@@ -115,7 +125,7 @@ function Unlock({ theme: t, digits, onUnlock }: {theme: PageTheme;digits: string
       }}>
       
       <p className="flex items-center gap-2 text-[15px] font-semibold" style={{ color: t.text }}>
-        <LockIcon size={16} aria-hidden /> Confirm it’s you
+        <LockIcon size={16} aria-hidden /> {tx('Confirm it’s you')}
       </p>
       <ThemedField theme={t} label="Last 4 digits of the phone you ordered with" inputMode="numeric" value={value} onChange={(v) => setValue(v.replace(/\D/g, '').slice(0, 4))} error={error} />
       <PrimaryButton theme={t} type="submit" disabled={value.length < 4}>
@@ -322,11 +332,12 @@ function ThemedTextArea({ theme: t, label, value, onChange, error, optional }: {
 }
 
 function Files({ theme: t, label, names }: {theme: PageTheme;label?: string;names: string[];}) {
+  const { t: tx } = useT();
   return (
     <div className="mt-1">
       {label &&
       <p className="text-[12.5px] font-semibold" style={{ color: t.mutedText }}>
-          {label}
+          {tx(label)}
         </p>
       }
       <ul className="mt-1 flex flex-wrap gap-1.5">
@@ -341,6 +352,7 @@ function Files({ theme: t, label, names }: {theme: PageTheme;label?: string;name
 }
 
 function Row({ label, value, strong }: {label: string;value: string;strong?: boolean;}) {
+  label = useT().t(label);
   return (
     <div className={strong ? 'flex items-baseline justify-between gap-4 text-[16px] font-semibold' : 'flex items-baseline justify-between gap-4'}>
       <span>{label}</span>

@@ -18,6 +18,7 @@ function seed(): AdminStore {
   return {
     staff: [
     { id: 'stf-tolu', name: 'Tolu Bakare', email: 'tolu@kubicu.com', role: 'lead', status: 'active', twoStep: true, lastActiveAt: ago(1), invitedAt: ago(24 * 200) },
+    SECOND_LEAD,
     { id: 'stf-ifeanyi', name: 'Ifeanyi Okafor', email: 'ifeanyi@kubicu.com', role: 'trust', status: 'active', twoStep: true, lastActiveAt: ago(6), invitedAt: ago(24 * 120) },
     { id: 'stf-kemi', name: 'Kemi Adeyemi', email: 'kemi@kubicu.com', role: 'support', status: 'active', twoStep: true, lastActiveAt: ago(3), invitedAt: ago(24 * 90) },
     { id: 'stf-dayo', name: 'Dayo Ajayi', email: 'dayo@kubicu.com', role: 'engineering', status: 'active', twoStep: true, lastActiveAt: ago(30), invitedAt: ago(24 * 60) },
@@ -144,10 +145,33 @@ function seed(): AdminStore {
       outcome: null,
       closedAt: null,
       sample: true
+    }],
+
+    approvals: [],
+    accessReviews: [],
+    extensionPulls: {},
+    autoFlagsCleared: {},
+    incidents: [
+    {
+      id: 'inc-sample-1',
+      title: 'Slow image uploads',
+      impact: 'minor',
+      services: ['Media storage'],
+      status: 'resolved',
+      startedAt: ago(24 * 4 + 3),
+      resolvedAt: ago(24 * 4 + 1),
+      updates: [
+      { id: 'incu-s1', at: ago(24 * 4 + 3), status: 'investigating', message: 'Some sellers are seeing slow photo uploads in the canvas. Pages and checkout are not affected.', by: 'Dayo (KUBICU staff)' },
+      { id: 'incu-s2', at: ago(24 * 4 + 1), status: 'resolved', message: 'Uploads are back to normal. Photos that failed can be added again — nothing already saved was lost.', by: 'Dayo (KUBICU staff)' }],
+
+      sample: true
     }]
 
   };
 }
+
+/** A second Platform lead so two-person approval can be tried in the prototype (D129). */
+const SECOND_LEAD = { id: 'stf-ngozi', name: 'Ngozi Eze', email: 'ngozi@kubicu.com', role: 'lead' as const, status: 'active' as const, twoStep: true, lastActiveAt: ago(9), invitedAt: ago(24 * 180) };
 
 /** Days to answer a personal-data request. Example figure — confirm against NDPA guidance (D82). */
 export const DATA_REQUEST_DAYS = 30;
@@ -158,7 +182,22 @@ export function readAdminStore(): AdminStore {
     if (raw) {
       const parsed = JSON.parse(raw) as AdminStore;
       const base = seed();
-      return { ...base, ...parsed, flags: { ...base.flags, ...parsed.flags }, orderNotes: parsed.orderNotes ?? {}, dataRequests: parsed.dataRequests ?? base.dataRequests, staff: parsed.staff ?? base.staff, appeals: parsed.appeals ?? base.appeals };
+      // Older saved stores get the second sample lead once, so approvals have someone to approve them.
+      const staff = parsed.staff ? parsed.staff.some((m) => m.id === SECOND_LEAD.id) ? parsed.staff : [...parsed.staff, SECOND_LEAD] : base.staff;
+      return {
+        ...base,
+        ...parsed,
+        flags: { ...base.flags, ...parsed.flags },
+        orderNotes: parsed.orderNotes ?? {},
+        dataRequests: parsed.dataRequests ?? base.dataRequests,
+        staff,
+        appeals: parsed.appeals ?? base.appeals,
+        approvals: parsed.approvals ?? [],
+        accessReviews: parsed.accessReviews ?? [],
+        incidents: parsed.incidents ?? base.incidents,
+        extensionPulls: parsed.extensionPulls ?? {},
+        autoFlagsCleared: parsed.autoFlagsCleared ?? {}
+      };
     }
   } catch {
 

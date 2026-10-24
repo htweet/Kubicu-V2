@@ -1,3 +1,4 @@
+import { useT } from '../../contexts/LocaleContext';
 import React, { useState } from 'react';
 import { MediaImage } from '../media/MediaImage';
 import { LinkIcon, MessageCircleIcon, ShoppingBagIcon } from 'lucide-react';
@@ -11,6 +12,7 @@ import { canSell, findProduct, isSoldOut, priceRange } from '../../utils/commerc
 import { formatNgn, whatsappLink } from '../../utils/format';
 
 export function ProductBlock({ block, theme, mode }: BlockProps<'product'>) {
+  const { t: tr } = useT();
   const p = block.content;
   const catalog = useCatalog();
   const linked = p.source === 'catalog';
@@ -57,7 +59,7 @@ export function ProductBlock({ block, theme, mode }: BlockProps<'product'>) {
   whatsappLink(p.whatsappPhone, `Hi! I’d like to order the ${view.name}${selected ? ` (${Object.values(selected.options).join(' / ')})` : ''}${shownPrice !== null ? ` (${formatNgn(shownPrice)})` : ''}.`) :
   p.url;
   const radius = cardRadius(theme);
-  const badge = view.soldOut ? 'Sold out' : p.badge;
+  const badge = view.soldOut ? tr('Sold out') : p.badge;
 
   return (
     <article className="overflow-hidden" style={cardStyle(theme)}>
@@ -137,7 +139,7 @@ export function ProductBlock({ block, theme, mode }: BlockProps<'product'>) {
           className="mt-1 flex h-12 w-full items-center justify-center gap-2 text-[15px] font-semibold"
           style={buttonStyle(theme, 'featured')}>
           
-            {view.soldOut ? 'Sold out' : multi && !selected ? `Choose ${optionName.toLowerCase()}` : p.ctaLabel || 'Add to cart'}
+            {view.soldOut ? tr('Sold out') : multi && !selected ? `Choose ${optionName.toLowerCase()}` : tr(p.ctaLabel || 'Add to cart')}
           </CheckoutButton> :
         view.soldOut ?
         <span className="mt-1 flex h-12 w-full items-center justify-center text-[15px] font-medium" style={{ color: theme.mutedText, borderRadius: buttonRadius(theme), border: `1px dashed ${mix(theme.text, 20)}` }}>

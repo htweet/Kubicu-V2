@@ -1,3 +1,4 @@
+import { useT } from '../../contexts/LocaleContext';
 import React, { useState } from 'react';
 import { ArmchairIcon, CalendarIcon, LinkIcon, MapPinIcon, TicketIcon, VideoIcon } from 'lucide-react';
 import type { PageTheme, RenderMode } from '../../types/page';
@@ -28,6 +29,7 @@ const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-GB', { d
 
 /** Event block reading live from Commerce → Events: real seats, sales windows and checkout (D73). */
 export function LinkedEvent({ event: linked, data, theme, mode, ctaLabel }: Props) {
+  const { t: tr } = useT();
   const now = useNow(30_000);
   const track = useTrack();
   const cart = useCart();
@@ -73,7 +75,7 @@ export function LinkedEvent({ event: linked, data, theme, mode, ctaLabel }: Prop
   phase === 'live' ?
   <PageChip theme={theme} tone="strong">Happening now</PageChip> :
   display === 'sold_out' ?
-  <PageChip theme={theme}>Sold out</PageChip> :
+  <PageChip theme={theme}>{tr('Sold out')}</PageChip> :
   left > 0 && left <= LOW_SEATS_AT && display === 'on_sale' ?
   <PageChip theme={theme} tone="strong">Only {left} left</PageChip> :
   null;
@@ -217,7 +219,7 @@ export function LinkedEvent({ event: linked, data, theme, mode, ctaLabel }: Prop
           style={buttonStyle(theme, 'featured')}>
           
             <TicketIcon size={17} aria-hidden />
-            {ctaLabel || (onSale.every((t) => t.priceNgn === 0) ? 'Register free' : 'Get tickets')}
+            {tr(ctaLabel || (onSale.every((t) => t.priceNgn === 0) ? 'Register free' : 'Get tickets'))}
           </CheckoutButton> :
 
         <span className="flex h-12 items-center justify-center text-[14px] font-medium" style={{ color: theme.mutedText, borderRadius: buttonRadius(theme), border: `1px dashed ${mix(theme.text, 22)}` }}>

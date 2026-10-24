@@ -47,6 +47,7 @@ export function SellTemplateDialog({ open, onClose, listing = null }: Props) {
   const [licence, setLicence] = useState<TemplateLicence>('standard');
   const [photosOk, setPhotosOk] = useState(false);
   const [tried, setTried] = useState(false);
+  const [kind, setKind] = useState<'page' | 'theme'>('page');
 
   useEffect(() => {
     if (!open) return;
@@ -61,6 +62,7 @@ export function SellTemplateDialog({ open, onClose, listing = null }: Props) {
     setPaid(listing && listing.priceNgn === 0 ? 'free' : 'paid');
     setPrice(listing?.priceNgn || 3000);
     setLicence(listing?.licence ?? 'standard');
+    setKind(listing?.kind ?? 'page');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
@@ -99,6 +101,7 @@ export function SellTemplateDialog({ open, onClose, listing = null }: Props) {
             description: description.trim(),
             priceNgn: finalPrice,
             licence,
+            kind,
             sourceSpaceId: spaceId,
             pendingDoc: clean,
             pendingVersion: nextVersion,
@@ -122,6 +125,7 @@ export function SellTemplateDialog({ open, onClose, listing = null }: Props) {
         description: description.trim(),
         priceNgn: finalPrice,
         licence,
+        kind,
         status: 'in_review',
         listedDoc: null,
         listedVersion: 0,
@@ -182,6 +186,23 @@ export function SellTemplateDialog({ open, onClose, listing = null }: Props) {
       
       {step === 'details' ?
       <div className="flex flex-col gap-4">
+          <fieldset className="flex flex-col gap-2">
+            <legend className="mb-1 text-label font-medium text-fg">What you’re selling</legend>
+            <Segmented<'page' | 'theme'>
+            ariaLabel="What you’re selling"
+            value={kind}
+            onChange={setKind}
+            options={[
+            { value: 'page', label: 'Whole template' },
+            { value: 'theme', label: 'Theme (look only)' }]
+            } />
+          
+            <p className="text-caption text-fg-muted">
+              {kind === 'theme' ?
+            'Buyers get your colours, fonts, button shape and background. Their own blocks and words stay exactly as they are.' :
+            'Buyers get your layout, blocks and look, with your details removed.'}
+            </p>
+          </fieldset>
           <SelectInput<string> id="sell-space" label="Space to share" value={spaceId} onChange={setSpaceId} options={spaces.map((s) => ({ value: s.id, label: s.kind === 'main' ? `${s.name} (main page)` : s.name }))} />
           {err('source') && <p className="-mt-2 text-caption font-medium text-danger">{err('source')}</p>}
           <TextInput id="sell-name" label="Template name" value={name} error={err('name')} placeholder="e.g. Bukka menu" onChange={(e) => setName(e.target.value)} />
@@ -220,6 +241,11 @@ export function SellTemplateDialog({ open, onClose, listing = null }: Props) {
               <figcaption className="text-caption font-medium text-fg">What buyers get</figcaption>
             </figure>
           </div>
+          {kind === 'theme' &&
+        <p className="rounded-md bg-sunken px-3 py-2 text-caption text-fg-muted">
+              This is a theme: buyers apply only the look. The preview above shows it on your sample layout so buyers can judge it.
+            </p>
+        }
           <ul className="flex flex-col gap-1.5 text-label text-fg-muted">
             {['Your name, tagline, profile photo and location', 'Prices, dates and countdowns', 'Phone, WhatsApp, email, address and every link', 'Customer quotes', 'Links to your products, services, plans and discounts'].map((t) =>
           <li key={t} className="flex items-start gap-2">

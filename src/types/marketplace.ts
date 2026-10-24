@@ -18,8 +18,8 @@ export interface ExtensionInfo {
   id: string;
   name: string;
   publisher: string;
-  /** KUBICU-built or a reviewed partner (curated catalogue, D67). */
-  verified: 'kubicu' | 'partner';
+  /** KUBICU-built, a reviewed partner (curated catalogue, D67), or a reviewed independent developer (D132). */
+  verified: 'kubicu' | 'partner' | 'community';
   category: ExtensionCategory;
   summary: string;
   description: string;

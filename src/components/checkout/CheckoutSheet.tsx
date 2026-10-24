@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useT } from '../../contexts/LocaleContext';
 import { announce } from '../../utils/announce';
 import { MediaImage } from '../media/MediaImage';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -48,6 +49,7 @@ interface CheckoutSheetProps {
 }
 
 export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode, dealRoom }: CheckoutSheetProps) {
+  const { t: tr } = useT();
   const cart = useCart();
   const navigate = useNavigate();
   const track = useTrack();
@@ -410,7 +412,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
           <>
               <dl className="flex flex-col gap-1.5 text-[15px]">
                 <div className="flex items-baseline justify-between">
-                  <dt style={muted}>Subtotal</dt>
+                  <dt style={muted}>{tr('Subtotal')}</dt>
                   <dd className="font-semibold tabular-nums">{formatNgn(subtotal)}</dd>
                 </div>
                 {discountRow}
@@ -418,7 +420,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
               <DiscountCodeField theme={theme} code={code} onApply={setCode} resolution={resolution} />
               {lines.some((l) => !l.ok) &&
             <p className="text-[12.5px]" style={muted}>
-                  Unavailable items won’t be ordered.
+                  {tr('Unavailable items won’t be ordered.')}
                 </p>
             }
               {holdNotice &&
@@ -428,7 +430,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
             }
               {ticketLines.length > 0 && !holdNotice &&
             <p className="text-[12.5px]" style={muted}>
-                  We’ll hold your seats for {HOLD_MINUTES} minutes while you check out.
+                  {tr('We’ll hold your seats for {n} minutes while you check out.', { n: HOLD_MINUTES })}
                 </p>
             }
               <TestModeNote theme={theme} />
@@ -491,10 +493,10 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
           {ticketLines.some((l) => l.qty > 1) &&
           <fieldset className="flex flex-col gap-3 pt-1">
               <legend className="mb-1 text-[14px] font-semibold">
-                Names on tickets <span className="font-normal" style={muted}>· optional</span>
+                {tr('Names on tickets')} <span className="font-normal" style={muted}>· {tr('optional')}</span>
               </legend>
               <p className="-mt-1 text-[12.5px] leading-snug" style={muted}>
-                Each ticket gets its own QR code. Leave a name blank to use yours.
+                {tr('Each ticket gets its own QR code. Leave a name blank to use yours.')}
               </p>
               {ticketLines.flatMap((l) =>
             Array.from({ length: l.qty }, (_, n) =>
@@ -518,7 +520,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
             </fieldset>
           }
           <p className="text-[12px] leading-snug" style={muted}>
-            Your details go to the seller to fulfil this order. See their page for how they handle personal data.
+            {tr('Your details go to the seller to fulfil this order. See their page for how they handle personal data.')}
           </p>
           <SheetActions theme={theme}>
             <PrimaryButton theme={theme} type="submit">
@@ -531,17 +533,17 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
 
     if (step === 'delivery') {
       const options = [
-      ...(f.pickupEnabled ? [{ id: 'pickup', title: 'Pickup', detail: [f.pickupAddress, f.pickupHours].filter(Boolean).join(' · '), fee: 0 }] : []),
-      ...(f.deliveryEnabled ? f.zones.map((z) => ({ id: z.id, title: `Delivery · ${z.name}`, detail: z.eta ? `Usually ${z.eta}` : '', fee: free ? 0 : z.feeNgn })) : [])];
+      ...(f.pickupEnabled ? [{ id: 'pickup', title: tr('Pickup'), detail: [f.pickupAddress, f.pickupHours].filter(Boolean).join(' · '), fee: 0 }] : []),
+      ...(f.deliveryEnabled ? f.zones.map((z) => ({ id: z.id, title: `${tr('Delivery')} · ${z.name}`, detail: z.eta ? `${tr('Usually')} ${z.eta}` : '', fee: free ? 0 : z.feeNgn })) : [])];
 
       return (
         <div className="flex flex-col gap-4">
-          <CheckoutHeading theme={theme} sub={f.freeDeliveryOverNgn !== null ? free ? 'You qualify for free delivery.' : `Free delivery over ${formatNgn(f.freeDeliveryOverNgn)}.` : undefined}>
+          <CheckoutHeading theme={theme} sub={f.freeDeliveryOverNgn !== null ? free ? tr('You qualify for free delivery.') : tr('Free delivery over {amount}.', { amount: formatNgn(f.freeDeliveryOverNgn) }) : undefined}>
             How do you want it?
           </CheckoutHeading>
           {options.length === 0 ?
           <p className="rounded-md p-3 text-[14px]" style={cardStyle(theme)}>
-              This seller hasn’t set up pickup or delivery yet. Please message them before ordering.
+              {tr('This seller hasn’t set up pickup or delivery yet. Please message them before ordering.')}
             </p> :
 
           <div role="radiogroup" aria-label="Delivery options" className="flex flex-col gap-2">
@@ -565,7 +567,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
                         </span>
                     }
                     </span>
-                    <span className="shrink-0 text-[14px] font-semibold tabular-nums">{o.fee === 0 ? 'Free' : formatNgn(o.fee)}</span>
+                    <span className="shrink-0 text-[14px] font-semibold tabular-nums">{o.fee === 0 ? tr('Free') : formatNgn(o.fee)}</span>
                   </button>);
 
             })}
@@ -574,7 +576,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
           {method && method !== 'pickup' && <ThemedField theme={theme} label="Delivery address" autoComplete="street-address" value={address} error={tried && !address.trim() ? 'Enter the delivery address' : undefined} onChange={setAddress} />}
           {tried && !method &&
           <p className="text-[12.5px] font-medium" role="alert">
-              Choose how you’ll get your order.
+              {tr('Choose how you’ll get your order.')}
             </p>
           }
           <SheetActions theme={theme}>
@@ -613,28 +615,28 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
         </ul>
         <dl className="flex flex-col gap-1.5 border-t pt-3 text-[14px]" style={{ borderColor: mix(theme.text, 12) }}>
           <div className="flex justify-between">
-            <dt style={muted}>Subtotal</dt>
+            <dt style={muted}>{tr('Subtotal')}</dt>
             <dd className="tabular-nums">{formatNgn(subtotal)}</dd>
           </div>
           {discountRow}
           {physical &&
           <div className="flex justify-between">
-              <dt style={muted}>{method === 'pickup' ? 'Pickup' : `Delivery · ${zone?.name ?? ''}`}</dt>
-              <dd className="tabular-nums">{deliveryFee === 0 ? 'Free' : formatNgn(deliveryFee)}</dd>
+              <dt style={muted}>{method === 'pickup' ? tr('Pickup') : `${tr('Delivery')} · ${zone?.name ?? ''}`}</dt>
+              <dd className="tabular-nums">{deliveryFee === 0 ? tr('Free') : formatNgn(deliveryFee)}</dd>
             </div>
           }
           <div className={balanceLater ? 'flex justify-between pt-1' : 'flex justify-between pt-1 text-[16px] font-semibold'}>
-            <dt>Total</dt>
+            <dt>{tr('Total')}</dt>
             <dd className="tabular-nums">{formatNgn(total)}</dd>
           </div>
           {balanceLater > 0 &&
           <>
               <div className="flex justify-between pt-1 text-[16px] font-semibold">
-                <dt>Deposit to pay now</dt>
+                <dt>{tr('Deposit to pay now')}</dt>
                 <dd className="tabular-nums">{formatNgn(payNow)}</dd>
               </div>
               <div className="flex justify-between">
-                <dt style={muted}>Balance before dispatch</dt>
+                <dt style={muted}>{tr('Balance before dispatch')}</dt>
                 <dd className="tabular-nums">{formatNgn(balanceLater)}</dd>
               </div>
               <p className="rounded-md px-3 py-2.5 text-[13px] leading-snug" style={{ background: mix(theme.text, 6) }} role="note">
@@ -643,7 +645,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
             </>
           }
           <p className="text-[12px]" style={muted}>
-            No extra fees are added at payment. Processing fees are paid by the seller.
+            {tr('No extra fees are added at payment. Processing fees are paid by the seller.')}
           </p>
         </dl>
         <DiscountCodeField theme={theme} code={code} onApply={setCode} resolution={resolution} />
@@ -663,7 +665,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
         
         {payNow > 0 &&
         <fieldset className="flex flex-col gap-2">
-          <legend className="mb-1 text-[13px] font-semibold">Test card — choose what happens</legend>
+          <legend className="mb-1 text-[13px] font-semibold">{tr('Test card — choose what happens')}</legend>
           {outcomes.filter((o) => payWith !== 'instalments' || o.value !== 'pending' && o.value !== 'timeout').map((o) =>
           <label key={o.value} className="flex cursor-pointer items-start gap-3 p-3" style={{ ...cardStyle(theme), border: `1.5px solid ${outcome === o.value ? theme.text : mix(theme.text, 12)}` }}>
               <input type="radio" name="test-outcome" value={o.value} checked={outcome === o.value} onChange={() => setOutcome(o.value)} className="mt-1" style={{ accentColor: theme.text }} />
@@ -691,16 +693,16 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
         <SheetActions theme={theme}>
           <PrimaryButton theme={theme} onClick={pay} disabled={okLines.length === 0 || !!roomError || payWith === 'instalments' && !agreed}>
             {payWith === 'pod' ?
-            `Place order — pay ${formatNgn(total)} on delivery` :
+            tr('Place order — pay {amount} on delivery', { amount: formatNgn(total) }) :
             payWith === 'instalments' ?
-            `Pay ${formatNgn(payNow)} today` :
+            tr('Pay {amount} today', { amount: formatNgn(payNow) }) :
             payNow > 0 ?
             balanceLater ?
-            `Pay ${formatNgn(payNow)} deposit` :
-            `Pay ${formatNgn(payNow)}` :
+            tr('Pay {amount} deposit', { amount: formatNgn(payNow) }) :
+            tr('Pay {amount}', { amount: formatNgn(payNow) }) :
             ticketsOnly ?
-            'Get free tickets' :
-            'Place free order'}
+            tr('Get free tickets') :
+            tr('Place free order')}
           </PrimaryButton>
         </SheetActions>
       </div>);
@@ -708,7 +710,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
   };
 
   return (
-    <PageOverlay open={open} onClose={close} theme={theme} label="Checkout">
+    <PageOverlay open={open} onClose={close} theme={theme} label={tr('Checkout')}>
       <div className="flex flex-1 flex-col gap-4 px-5 pb-2 pt-5">
         {!choosingProduct && step !== 'paying' && step !== 'failed' &&
         <div className="flex items-center gap-3 pr-12">

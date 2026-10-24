@@ -84,7 +84,7 @@ export interface AuditEntry {
   id: string;
   at: string;
   actor: string;
-  area: 'tenants' | 'flags' | 'moderation' | 'support' | 'announcements' | 'pages' | 'orders' | 'data' | 'staff' | 'appeals' | 'payments' | 'escrow';
+  area: 'tenants' | 'flags' | 'moderation' | 'support' | 'announcements' | 'pages' | 'orders' | 'data' | 'staff' | 'appeals' | 'payments' | 'escrow' | 'incidents' | 'approvals' | 'access' | 'extensions';
   action: string;
   target: string;
   reason: string;
@@ -137,6 +137,72 @@ export interface StaffMember {
   twoStep: boolean;
   lastActiveAt: string | null;
   invitedAt: string;
+  /** One-time backup codes for a lost phone (D129). Each works once; resetting two-step clears them. */
+  backupCodes?: string[];
+}
+
+/** High-risk staff actions wait for a second Platform lead (D129). */
+export type ApprovalKind = 'staff_role' | 'staff_disable' | 'staff_reset' | 'workspace_suspend' | 'payout_release';
+export type ApprovalStatus = 'pending' | 'approved' | 'rejected' | 'withdrawn' | 'expired';
+
+export interface PendingApproval {
+  id: string;
+  kind: ApprovalKind;
+  /** Plain-words description, e.g. "Change Dayo Ajayi: Engineering → Platform lead". */
+  summary: string;
+  targetId: string;
+  targetEmail: string;
+  /** New role for role changes. */
+  role?: StaffRole;
+  /** For workspace suspensions and payout releases. */
+  workspaceId?: string;
+  payoutId?: string;
+  amountNgn?: number;
+  reason: string;
+  requestedById: string;
+  requestedBy: string;
+  requestedAt: string;
+  expiresAt: string;
+  status: ApprovalStatus;
+  decidedBy: string | null;
+  decidedAt: string | null;
+  decisionNote: string | null;
+}
+
+/** A periodic check that every staff member still needs the access they have (D129). */
+export interface AccessReview {
+  id: string;
+  startedAt: string;
+  startedBy: string;
+  completedAt: string | null;
+  /** staffId → keep, or flagged for a change (made separately, with a second lead). */
+  decisions: Record<string, 'keep' | 'change'>;
+}
+
+export type IncidentStatus = 'investigating' | 'identified' | 'monitoring' | 'resolved';
+export type IncidentImpact = 'minor' | 'major' | 'outage';
+
+export interface IncidentUpdate {
+  id: string;
+  at: string;
+  status: IncidentStatus;
+  /** Public — shown on /status word for word. */
+  message: string;
+  by: string;
+}
+
+/** A platform incident shown on the public status page (D129). */
+export interface Incident {
+  id: string;
+  title: string;
+  impact: IncidentImpact;
+  /** Names from data/platformServices. */
+  services: string[];
+  status: IncidentStatus;
+  startedAt: string;
+  resolvedAt: string | null;
+  updates: IncidentUpdate[];
+  sample?: boolean;
 }
 
 export type AppealKind = 'takedown' | 'suspension';
@@ -177,4 +243,20 @@ export interface AdminStore {
   audit: AuditEntry[];
   orderNotes: Record<string, OrderStaffNote[]>;
   dataRequests: DataRequest[];
+  approvals: PendingApproval[];
+  accessReviews: AccessReview[];
+  incidents: Incident[];
+  /** Extension versions KUBICU has pulled platform-wide (D130). Keyed by extension id. */
+  extensionPulls: Record<string, ExtensionPull>;
+  /** Automatic moderation flags staff marked as fine. Keyed `${handle}:${ruleId}`. */
+  autoFlagsCleared: Record<string, {at: string;by: string;reason: string;}>;
+}
+
+export interface ExtensionPull {
+  pulledVersion: string;
+  /** The version every workspace running the pulled one is moved to. */
+  to: string;
+  reason: string;
+  at: string;
+  by: string;
 }

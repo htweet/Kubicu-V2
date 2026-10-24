@@ -14,6 +14,7 @@ import { cn } from '../../utils/cn';
 import { DirectionSwitcher } from './DirectionSwitcher';
 import { HelpMenu } from './HelpMenu';
 import { useMarketplace } from '../../contexts/MarketplaceContext';
+import { useT } from '../../contexts/LocaleContext';
 
 export function MobileNav() {
   const [moreOpen, setMoreOpen] = useState(false);
@@ -25,6 +26,7 @@ export function MobileNav() {
   const currentWorkspace = useWorkspace().current;
   const account = useAccount();
   const superAdmin = useStaffSession()?.role === 'lead';
+  const { t } = useT();
 
   const itemCls = 'flex h-full w-full flex-col items-center justify-center gap-1 text-caption font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus';
 
@@ -38,7 +40,7 @@ export function MobileNav() {
               <li key={item.id}>
                 <NavLink to={item.to} end={item.to === '/app'} className={({ isActive }) => cn(itemCls, isActive ? 'text-action' : 'text-fg-subtle')}>
                   <Icon size={20} aria-hidden />
-                  {item.label === 'My Spaces' ? 'Spaces' : item.label}
+                  {t(item.label === 'My Spaces' ? 'Spaces' : item.label)}
                 </NavLink>
               </li>);
 
@@ -46,13 +48,13 @@ export function MobileNav() {
           <li>
             <button type="button" onClick={() => setMoreOpen(true)} className={cn(itemCls, 'text-fg-subtle')} aria-haspopup="dialog">
               <MenuIcon size={20} aria-hidden />
-              More
+              {t('More')}
             </button>
           </li>
         </ul>
       </nav>
 
-      <Sheet open={moreOpen} onClose={() => setMoreOpen(false)} title="More">
+      <Sheet open={moreOpen} onClose={() => setMoreOpen(false)} title={t('More')}>
         <div className="border-b border-line p-2">
           <button
             type="button"
@@ -65,7 +67,7 @@ export function MobileNav() {
             <AccountAvatar name={account.profile.name} photo={account.profile.photo} size="md" />
             <span className="min-w-0 flex-1">
               <span className="block truncate text-body font-semibold text-fg">{account.profile.name}</span>
-              <span className="block truncate text-caption text-fg-subtle">Your account · {account.profile.email}</span>
+              <span className="block truncate text-caption text-fg-subtle">{t('Your account')} · {account.profile.email}</span>
             </span>
             <ChevronRightIcon size={16} className="text-fg-subtle" aria-hidden />
           </button>
@@ -76,7 +78,7 @@ export function MobileNav() {
         {canChoose &&
         <section aria-labelledby="mobile-appearance" className="border-b border-line p-2 pb-3">
             <h3 id="mobile-appearance" className="px-3 pt-2 text-label font-medium text-fg">
-              Workspace appearance
+              {t('Workspace appearance')}
             </h3>
             <p className="px-3 pb-2 text-caption text-fg-subtle">
               Applies to everyone in {currentWorkspace.name}. Your public page keeps its own theme.
@@ -90,7 +92,7 @@ export function MobileNav() {
             if (!items.length) return [];
             return [
             <li key={`h-${g.id}`} role="presentation" className="px-3 pb-1 pt-3 text-caption font-semibold text-fg-subtle first:pt-1">
-                {g.label}
+                {t(g.label)}
               </li>,
             ...items.map((item) => {
               const Icon = item.icon;
@@ -105,7 +107,7 @@ export function MobileNav() {
                     className="flex min-h-[52px] w-full items-center gap-3 rounded-md px-3 text-left text-body text-fg hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
                     
                   <Icon size={19} className="text-fg-subtle" aria-hidden />
-                  <span className="flex-1">{item.label}</span>
+                  <span className="flex-1">{t(item.label)}</span>
                   {item.batch && <span className="text-caption text-fg-subtle">Batch {item.batch}</span>}
                   <ChevronRightIcon size={16} className="text-fg-subtle" aria-hidden />
                 </button>
@@ -125,8 +127,8 @@ export function MobileNav() {
               className="flex min-h-[52px] w-full items-center gap-3 rounded-md px-3 text-left text-body text-fg hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
               
                 <ShieldCheckIcon size={19} className="text-fg-subtle" aria-hidden />
-                <span className="flex-1">Super admin</span>
-                <span className="text-caption text-fg-subtle">KUBICU staff</span>
+                <span className="flex-1">{t('Super admin')}</span>
+                <span className="text-caption text-fg-subtle">{t('KUBICU staff')}</span>
                 <ChevronRightIcon size={16} className="text-fg-subtle" aria-hidden />
               </button>
             </li>
@@ -145,7 +147,7 @@ export function MobileNav() {
             className="flex h-10 w-full items-center gap-3 rounded-md px-2 text-left text-label font-medium text-fg hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
             
             <LogOutIcon size={18} className="text-fg-muted" aria-hidden />
-            Sign out
+            {t('Sign out')}
           </button>
         </div>
       </Sheet>

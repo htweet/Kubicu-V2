@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { MotionConfig } from 'framer-motion';
+import { LocaleProvider } from './contexts/LocaleContext';
 import { LiveAnnouncer } from './components/ui/LiveAnnouncer';
 import { AppearancePolicyProvider } from './contexts/AppearancePolicyContext';
 import { DirectionProvider } from './contexts/DirectionContext';
@@ -63,6 +64,7 @@ import { Templates } from './pages/marketing/Templates';
 import { TemplateDetail } from './pages/marketing/TemplateDetail';
 import { Pricing } from './pages/marketing/Pricing';
 import { InfoPage } from './pages/marketing/InfoPage';
+import { Developers } from './pages/marketing/Developers';
 import { SignUp } from './pages/auth/SignUp';
 import { SignIn } from './pages/auth/SignIn';
 import { ResetPassword } from './pages/auth/ResetPassword';
@@ -75,6 +77,14 @@ import { CanvasRedirect } from './pages/CanvasRedirect';
 import { LegacyRedirect } from './pages/LegacyRedirect';
 import { PublicPage } from './pages/PublicPage';
 import { PublicTrustPassport } from './pages/PublicTrustPassport';
+import { PublicWorkCertificate } from './pages/PublicWorkCertificate';
+import { PublicSharedShop } from './pages/PublicSharedShop';
+import { PublicStatus } from './pages/PublicStatus';
+import { AdminOverview } from './pages/admin/AdminOverview';
+import { AdminPlans } from './pages/admin/AdminPlans';
+import { AdminAi } from './pages/admin/AdminAi';
+import { AdminIntegrations } from './pages/admin/AdminIntegrations';
+import { AdminLocalisation } from './pages/admin/AdminLocalisation';
 import { InstalmentCharger } from './components/shell/InstalmentCharger';
 import { OrderStatus } from './pages/OrderStatus';
 import { DownloadPage } from './pages/DownloadPage';
@@ -142,9 +152,10 @@ interface AppProps {
 
 export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', viewingAs = 'owner', simulateNextRenewal = 'succeeds' }: AppProps) {
   // Personal text size and motion preferences (D80).
-  const { reduceMotion } = useAccountEffects();
+  const { reduceMotion, lang } = useAccountEffects();
   return (
     // Every framer-motion animation follows the device's "reduce motion" setting (D76), or the account's "Always reduce".
+    <LocaleProvider lang={lang}>
     <MotionConfig reducedMotion={reduceMotion ? 'always' : 'user'}>
     <BrowserRouter>
       <AppearancePolicyProvider initialDefault={visualDirection}>
@@ -157,6 +168,7 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
                 <Route path="templates/:id" element={<TemplateDetail />} />
                 <Route path="pricing" element={<Pricing />} />
                 <Route path="about/:topic" element={<InfoPage />} />
+                <Route path="developers" element={<Developers />} />
               </Route>
               <Route path="/signup" element={<SignUp />} />
               <Route path="/signin" element={<SignIn />} />
@@ -227,7 +239,8 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
               <Route path="/app/canvas/:pageId" element={<CanvasPage />} />
 
               <Route path="/admin" element={<AdminShell />}>
-                <Route index element={<Navigate to="design-system" replace />} />
+                <Route index element={<Navigate to="overview" replace />} />
+                <Route path="overview" element={<AdminOverview />} />
                 <Route path="design-system" element={<AdminDesignSystem />} />
                 <Route path="modules" element={<AdminMarketplace />} />
                 <Route path="tenants" element={<AdminTenants />} />
@@ -244,6 +257,10 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
                 <Route path="health" element={<AdminHealth />} />
                 <Route path="payments" element={<AdminPayments />} />
                 <Route path="escrow" element={<AdminEscrow />} />
+                <Route path="plans" element={<AdminPlans />} />
+                <Route path="ai" element={<AdminAi />} />
+                <Route path="notifications" element={<AdminIntegrations />} />
+                <Route path="settings" element={<AdminLocalisation />} />
                 <Route path=":area" element={<AdminPlannedArea />} />
               </Route>
 
@@ -252,6 +269,9 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
               <Route path="/p/:handle/shop/:productId" element={<PublicPage view="shop" />} />
               <Route path="/p/:handle/s/:slug" element={<ShortLink />} />
               <Route path="/p/:handle/trust" element={<PublicTrustPassport />} />
+              <Route path="/p/:handle/work/:id" element={<PublicWorkCertificate />} />
+              <Route path="/m/:slug" element={<PublicSharedShop />} />
+              <Route path="/status" element={<PublicStatus />} />
               <Route path="/p/:handle/:pagePath" element={<PublicPage />} />
             <Route path="/p/:handle/order/:orderId" element={<OrderStatus />} />
               <Route path="/p/:handle/download/:token" element={<DownloadPage />} />
@@ -279,7 +299,8 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
         </WorkspaceProvider>
       </AppearancePolicyProvider>
     </BrowserRouter>
-    </MotionConfig>);
+    </MotionConfig>
+    </LocaleProvider>);
 
 }
 

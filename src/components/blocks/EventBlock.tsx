@@ -1,3 +1,4 @@
+import { useT } from '../../contexts/LocaleContext';
 import React from 'react';
 import { CalendarIcon, MapPinIcon, TicketIcon } from 'lucide-react';
 import type { BlockProps } from './blockProps';
@@ -13,6 +14,7 @@ import { findEvent } from '../../utils/commerce/tickets';
 import { LinkedEvent } from './LinkedEvent';
 
 export function EventBlock({ block, theme, mode }: BlockProps<'event'>) {
+  const { t: tr } = useT();
   const c = block.content;
   const now = useNow(30_000);
   const catalog = useCatalog();
@@ -68,7 +70,7 @@ export function EventBlock({ block, theme, mode }: BlockProps<'event'>) {
                   {t.note && <span className="block text-[12px]" style={{ color: theme.mutedText }}>{t.note}</span>}
                 </span>
                 <span className="shrink-0 text-[14px] font-semibold tabular-nums" style={{ color: t.soldOut ? theme.mutedText : theme.text }}>
-                  {t.soldOut ? 'Sold out' : t.priceNgn === null ? 'TBC' : t.priceNgn === 0 ? 'Free' : formatNgn(t.priceNgn)}
+                  {t.soldOut ? tr('Sold out') : t.priceNgn === null ? 'TBC' : t.priceNgn === 0 ? tr('Free') : formatNgn(t.priceNgn)}
                 </span>
               </li>
           )}
@@ -83,7 +85,7 @@ export function EventBlock({ block, theme, mode }: BlockProps<'event'>) {
 
         <PageAction mode={mode} href={c.ticketUrl} className="flex h-12 w-full items-center justify-center gap-2 text-[15px] font-semibold" style={buttonStyle(theme, 'featured')}>
             <TicketIcon size={17} aria-hidden />
-            {c.ctaLabel || 'Get tickets'}
+            {tr(c.ctaLabel || 'Get tickets')}
           </PageAction>
         }
       </div>

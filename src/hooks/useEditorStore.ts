@@ -6,6 +6,7 @@ import type {
   PageBranding,
   BlockMeta,
   BlockType,
+  IntentGoal,
   PageDocument,
   PageSeo,
   PageTheme,
@@ -431,10 +432,41 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
         return { ...doc, blocks };
       }, 'reorder'),
 
+      /** A/B test (D127): marks this block as version A and adds a copy below it as version B. */
+      startAbTest: (id: string, goal: IntentGoal) => {
+        const source = viewOf(stateRef.current).blocks.find((b) => b.id === id);
+        if (!source || source.visibility.abTest) return;
+        const test = { id: uid('ab'), goal, startedAt: new Date().toISOString() };
+        const copy = cloneBlock(source);
+        const b = { ...copy, visibility: { ...copy.visibility, abTest: { ...test, arm: 'B' as const } } } as Block;
+        mutate(
+          (doc) => {
+            const i = doc.blocks.findIndex((x) => x.id === id);
+            const blocks = doc.blocks.map((x) => x.id === id ? { ...x, visibility: { ...x.visibility, abTest: { ...test, arm: 'A' as const } } } as Block : x);
+            blocks.splice(i + 1, 0, b);
+            return { ...doc, blocks };
+          },
+          undefined,
+          b.id
+        );
+      },
+
+      /** Ends an A/B test, keeping one version for everyone and removing the other. */
+      endAbTest: (testId: string, keep: 'A' | 'B') => {
+        mutate((doc) => {
+          const blocks = doc.blocks.
+          filter((x) => !(x.visibility.abTest?.id === testId && x.visibility.abTest.arm !== keep)).
+          map((x) => x.visibility.abTest?.id === testId ? { ...x, visibility: { ...x.visibility, abTest: undefined } } as Block : x);
+          return { ...doc, blocks };
+        });
+      },
+
       duplicateBlock: (id: string) => {
         const source = viewOf(stateRef.current).blocks.find((b) => b.id === id);
         if (!source) return;
-        const copy = cloneBlock(source);
+        const cloned = cloneBlock(source);
+        // A copy of a test version isn't part of the test (D127).
+        const copy = cloned.visibility.abTest ? { ...cloned, visibility: { ...cloned.visibility, abTest: undefined } } as Block : cloned;
         mutate(
           (doc) => {
             const i = doc.blocks.findIndex((b) => b.id === id);
@@ -542,6 +574,21 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
         }));
         dispatch({ type: 'setPage', id });
         return id;
+      },
+
+      /** Adds several ready-made pages in one undoable step (site kits, D127). Titles already used are skipped. */
+      addPages: (list: {title: string;blocks: Block[];}[]): number => {
+        const existing = new Set(sitePages(stateRef.current.draft).map((p) => p.title.trim().toLowerCase()));
+        const fresh = list.filter((p) => !existing.has(p.title.trim().toLowerCase()));
+        if (!fresh.length) return 0;
+        mutateSite((doc) => {
+          let next = doc;
+          for (const p of fresh) {
+            next = { ...next, pages: [...sitePages(next), { id: uid('pg'), title: p.title, path: uniquePath(next, p.title), seo: { title: '', description: '' }, blocks: p.blocks, createdAt: new Date().toISOString() }] };
+          }
+          return next;
+        });
+        return fresh.length;
       },
 
       renamePage: (id: string, title: string) => updateSitePage(id, (p) => ({ ...p, title }), `pg:${id}:title`),

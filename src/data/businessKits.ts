@@ -1,4 +1,4 @@
-import { ScissorsIcon, ShirtIcon, UtensilsIcon, WrenchIcon } from 'lucide-react';
+import { BriefcaseIcon, CameraIcon, DownloadIcon, MusicIcon, PartyPopperIcon, ScissorsIcon, ShirtIcon, StoreIcon, UtensilsIcon, WrenchIcon } from 'lucide-react';
 import type { BusinessKit, KitPart } from '../types/kit';
 
 export const kitPartLabels: Record<KitPart, {label: string;description: string;}> = {
@@ -11,7 +11,7 @@ export const kitPartLabels: Record<KitPart, {label: string;description: string;}
 };
 
 /**
- * Four kits for the commonest business types (D90). Products and services carry no prices
+ * Ten kits for the commonest business types (D90, six more in D126). Products and services carry no prices
  * and policies are clearly drafts — a kit never invents facts about the business.
  */
 export const businessKits: BusinessKit[] = [
@@ -108,6 +108,144 @@ export const businessKits: BusinessKit[] = [
   },
   recipes: ['lead', 'reminder'],
   apps: ['service-os', 'bookings', 'automations']
+},
+// ---- Six more business types (D126) ----
+{
+  id: 'events',
+  name: 'Events & owambe',
+  forWho: 'Event planners, party hosts, brunches, concerts and award nights',
+  summary: 'An event-first page, a consultation to plan bigger parties, clear ticket refund wording and reminders before the day.',
+  icon: PartyPopperIcon,
+  templateId: 'afrobeats-brunch',
+  products: [],
+  services: [{ name: 'Event planning consultation', description: 'Tell us the date, venue, guest count and budget, and we’ll plan it with you.', durationMin: 45, location: 'online' }],
+  policies: {
+    refunds: 'Tickets are refunded in full if the event is cancelled or moved and you can’t make the new date. Otherwise tickets can be passed to a friend but not refunded within [7] days of the event.',
+    delivery: 'Tickets arrive instantly on your order page and by WhatsApp. Show the QR code at the door — screenshots work.',
+    cancellation: 'Planning deposits are refundable until we book vendors for you. After that, what we’ve already paid out is kept.',
+    instructions: 'Doors open [1 hour] before start. Bring the ticket on your phone and a valid ID for age-restricted events.',
+    guides: 'Booking a table? One table seats [8–10]. Book together so your group sits together.',
+    disclaimer: 'Line-ups and timings can change. We’ll tell ticket holders on WhatsApp as soon as anything changes.',
+    cancelHours: 48
+  },
+  recipes: ['reminder', 'thanks'],
+  apps: ['bookings', 'automations']
+},
+{
+  id: 'photography',
+  name: 'Photography & studio',
+  forWho: 'Photographers, videographers, studios and content creators for hire',
+  summary: 'A portfolio-led page, session bookings with deposits, quotes for weddings and shoots, and proof of past work.',
+  icon: CameraIcon,
+  templateId: 'studio-nnamdi',
+  products: [],
+  services: [
+  { name: 'Studio session (rename me)', description: 'How long, how many outfits, how many edited photos.', durationMin: 60, location: 'studio' },
+  { name: 'Outdoor or event shoot (rename me)', description: 'Say which areas you cover and how travel is charged.', durationMin: 180, location: 'customer' }],
+
+  policies: {
+    refunds: 'Deposits secure your date and aren’t refundable within [14] days of the shoot. If we have to cancel, you get every naira back.',
+    delivery: 'Edited photos are delivered in an online gallery within [7] working days. Wedding galleries take up to [4] weeks.',
+    cancellation: 'Reschedule free once up to [72] hours before. Late changes or no-shows lose the deposit.',
+    instructions: 'Bring outfits ironed and on hangers. Arrive [15] minutes early for makeup touch-ups.',
+    guides: 'Planning a wedding? Book [3] months ahead for Saturdays in December and Easter season.',
+    disclaimer: 'We may share a few photos in our portfolio unless you ask us not to when booking.',
+    cancelHours: 72
+  },
+  recipes: ['reminder', 'lead'],
+  apps: ['bookings', 'service-os', 'proof']
+},
+{
+  id: 'digital-creator',
+  name: 'Digital creator',
+  forWho: 'Presets, e-books, courses, templates and other downloads',
+  summary: 'A download-first page, starter digital products, clear licence wording and thank-you follow-ups.',
+  icon: DownloadIcon,
+  templateId: 'kemi-presets',
+  products: [
+  { name: 'Digital download (rename me)', description: 'What’s in the file, which apps it works with and how to use it.', kind: 'digital' },
+  { name: 'Bundle (rename me)', description: 'Several downloads together at a better price.', kind: 'digital' }],
+
+  services: [],
+  policies: {
+    refunds: 'Because downloads can’t be returned, we refund only if the file is faulty and we can’t fix it within [3] days.',
+    delivery: 'Your download link appears straight after payment and is also sent to your email. Links work [5] times over [30] days.',
+    cancellation: 'Orders can’t be cancelled once the download link has been opened.',
+    instructions: 'Download on Wi-Fi if you can — some files are large. Unzip before importing.',
+    guides: 'Not sure which pack suits you? Message us a photo you want to edit and we’ll recommend one.',
+    disclaimer: 'For personal use unless you buy the extended licence. Don’t share or resell the files.'
+  },
+  recipes: ['thanks', 'abandoned'],
+  apps: ['automations']
+},
+{
+  id: 'retail',
+  name: 'Shop & retail',
+  forWho: 'Bookshops, gadget stores, provision shops and gift stores',
+  summary: 'A catalogue page, starter products, pickup and delivery wording, and restock alerts.',
+  icon: StoreIcon,
+  templateId: 'lagos-bookshelf',
+  products: [
+  { name: 'Best seller (rename me)', description: 'What it is, the condition (new or used) and what’s in the box.' },
+  { name: 'New arrival (rename me)', description: 'Something just in stock.' },
+  { name: 'Gift item (rename me)', description: 'Popular for birthdays and festive seasons.' }],
+
+  services: [],
+  policies: {
+    refunds: 'Return unused items in their original packaging within [7] days for an exchange or refund. Opened gadgets are exchanged only if faulty.',
+    delivery: 'Orders placed before [2pm] go out the same day within [your city]. Pickup from our shop is free.',
+    cancellation: 'Cancel any time before your order leaves the shop for a full refund.',
+    instructions: 'Check your item when the rider arrives. Tell us within [24] hours if anything is missing or damaged.',
+    guides: 'Can’t find something? Send us a photo on WhatsApp and we’ll check if we can get it.',
+    disclaimer: 'Stock moves fast. If an item sells out after you pay, we’ll refund you or offer an alternative.'
+  },
+  recipes: ['thanks', 'stock', 'abandoned'],
+  apps: ['automations']
+},
+{
+  id: 'consulting',
+  name: 'Consulting & professional',
+  forWho: 'Lawyers, accountants, coaches, tutors and consultants',
+  summary: 'A credibility-first page, paid consultations, quotes for bigger work and follow-ups on enquiries.',
+  icon: BriefcaseIcon,
+  templateId: 'bello-and-co',
+  products: [],
+  services: [
+  { name: 'First consultation', description: 'A short call to understand what you need and how we can help.', durationMin: 30, location: 'online' },
+  { name: 'Working session (rename me)', description: 'What’s covered and what you’ll leave with.', durationMin: 60, location: 'online' }],
+
+  policies: {
+    refunds: 'Consultation fees are refundable if you cancel at least [24] hours before. Project deposits are refundable until work begins.',
+    delivery: 'Sessions take place on [Google Meet / Zoom / phone] or at our office. Written work is delivered by the date on your quote.',
+    cancellation: 'Reschedule free up to [24] hours before. Late cancellations are charged in full.',
+    instructions: 'Send any documents at least [1] day before so we can prepare.',
+    guides: 'Not sure what you need? Book the first consultation — we’ll tell you honestly if we’re the right fit.',
+    disclaimer: 'General information on this page isn’t professional advice for your situation. Advice is given only in a paid session.',
+    cancelHours: 24
+  },
+  recipes: ['lead', 'reminder'],
+  apps: ['bookings', 'service-os', 'automations']
+},
+{
+  id: 'music',
+  name: 'Music & performance',
+  forWho: 'Musicians, DJs, MCs, comedians and live performers',
+  summary: 'A music-first page, bookings for shows, merch to sell and a newsletter for fans.',
+  icon: MusicIcon,
+  templateId: 'ife-sounds',
+  products: [{ name: 'Merch item (rename me)', description: 'T-shirt, cap or signed copy — sizes and colours.' }],
+  services: [{ name: 'Booking enquiry: show or event', description: 'Date, venue, set length and budget. We’ll reply with availability and a quote.', durationMin: 30, location: 'online' }],
+  policies: {
+    refunds: 'Booking deposits are refundable if you cancel at least [14] days before the event. Merch can be exchanged within [7] days if unworn.',
+    delivery: 'Merch ships within [3] working days. Show bookings are confirmed in writing with the agreed set time.',
+    cancellation: 'Cancellations under [14] days before the show keep the deposit. If we cancel, you get every naira back.',
+    instructions: 'For shows, please share the venue address, sound setup and a contact person on the day.',
+    guides: 'Booking for a wedding or owambe? Tell us the crowd size and the vibe you want.',
+    disclaimer: 'Travel outside [your city] and accommodation are quoted separately.',
+    cancelHours: 336
+  },
+  recipes: ['lead', 'thanks'],
+  apps: ['bookings', 'automations']
 }];
 
 
