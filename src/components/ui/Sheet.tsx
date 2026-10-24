@@ -6,6 +6,7 @@ import { XIcon } from 'lucide-react';
 import { IconButton } from './IconButton';
 import { cn } from '../../utils/cn';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
+import { useT } from '../../contexts/LocaleContext';
 
 interface SheetProps {
   open: boolean;
@@ -41,6 +42,9 @@ export function Sheet({
   onCloseRef.current = onClose;
   // Focus moves in, Tab stays inside, Escape closes, focus returns to the opener (D76).
   useFocusTrap(panelRef, open, () => onCloseRef.current());
+  const { t } = useT();
+  title = t(title);
+  description = description && t(description);
 
   // On phones, side panels open full-screen from the bottom so editors get the whole width (D49).
   const wide = useMediaQuery('(min-width: 768px)');

@@ -14,6 +14,7 @@ import { SelectInput } from '../ui/SelectInput';
 import { Switch } from '../ui/Switch';
 import { Field } from '../ui/Field';
 import { IconButton } from '../ui/IconButton';
+import { useT } from '../../contexts/LocaleContext';
 
 interface PaymentLinkEditorProps {
   open: boolean;
@@ -32,6 +33,7 @@ const kindHelp: Record<LinkKind, string> = {
 
 /** Create or edit a payment link (D92). */
 export function PaymentLinkEditor({ open, link, data, escrowAllowed, onClose, onSave }: PaymentLinkEditorProps) {
+  const { t: tr } = useT();
   const [draft, setDraft] = useState<PaymentLink>(blankLink());
   const [tried, setTried] = useState(false);
   const [slugTouched, setSlugTouched] = useState(false);
@@ -91,15 +93,15 @@ export function PaymentLinkEditor({ open, link, data, escrowAllowed, onClose, on
       <div className="flex flex-col gap-6 p-5">
         <section className="flex flex-col gap-4" aria-labelledby="pl-what">
           <h3 id="pl-what" className="text-label font-semibold text-fg">
-            What it’s for
+            {tr('What it’s for')}
           </h3>
-          <TextInput id="pl-title" label="Name" value={draft.title} onChange={(e) => set({ title: e.target.value })} error={err('title')} placeholder="e.g. Gele masterclass — one seat" />
-          <TextArea id="pl-desc" label="Description" optional rows={3} value={draft.description} onChange={(e) => set({ description: e.target.value })} placeholder="What the payer gets, when and where." />
+          <TextInput id="pl-title" label="Name" value={draft.title} onChange={(e) => set({ title: e.target.value })} error={err('title')} placeholder={tr('e.g. Gele masterclass — one seat')} />
+          <TextArea id="pl-desc" label="Description" optional rows={3} value={draft.description} onChange={(e) => set({ description: e.target.value })} placeholder={tr('What the payer gets, when and where.')} />
         </section>
 
         <section className="flex flex-col gap-4 border-t border-line pt-6" aria-labelledby="pl-amount">
           <h3 id="pl-amount" className="text-label font-semibold text-fg">
-            Amount
+            {tr('Amount')}
           </h3>
           <Segmented<LinkKind>
             ariaLabel="How the amount is set"
@@ -112,7 +114,7 @@ export function PaymentLinkEditor({ open, link, data, escrowAllowed, onClose, on
             { value: 'items', label: 'Items' }]
             } />
           
-          <p className="-mt-2 text-caption text-fg-subtle">{kindHelp[draft.kind]}</p>
+          <p className="-mt-2 text-caption text-fg-subtle">{tr(kindHelp[draft.kind])}</p>
           {draft.kind === 'fixed' && <TextInput id="pl-amount-v" label={staged ? 'Total amount' : 'Amount'} prefix="₦" inputMode="numeric" value={draft.amountNgn ? String(draft.amountNgn) : ''} disabled={lockedStages} hint={lockedStages ? 'A stage has been paid, so the total and stages are locked.' : undefined} onChange={(e) => set({ amountNgn: Number(e.target.value.replace(/\D/g, '')) || 0 })} error={err('amount')} />}
           {draft.kind === 'fixed' &&
           <div className="flex flex-col gap-3 rounded-md border border-line p-4">
@@ -131,32 +133,32 @@ export function PaymentLinkEditor({ open, link, data, escrowAllowed, onClose, on
                 label="Start from a split"
                 value=""
                 disabled={lockedStages}
-                options={[{ value: '', label: 'Choose a split…' }, ...linkStageTemplates.map((t) => ({ value: t.id, label: t.name }))]}
+                options={[{ value: '', label: tr('Choose a split…') }, ...linkStageTemplates.map((t) => ({ value: t.id, label: tr(t.name) }))]}
                 onChange={(id) => {
                   const next = stagesFromLinkTemplate(id);
                   if (next) setStages(next);
                 }} />
               
-                  <ol className="flex flex-col gap-3" aria-label="Stages">
+                  <ol className="flex flex-col gap-3" aria-label={tr('Stages')}>
                     {(draft.stages ?? []).map((s, idx) =>
                 <li key={s.id} className="flex flex-col gap-1">
                         <div className="grid grid-cols-[minmax(0,1fr)_96px_auto] items-end gap-2">
-                          <TextInput id={`pls-label-${s.id}`} label={`Stage ${idx + 1}`} value={s.label} disabled={lockedStages} placeholder="e.g. Deposit" onChange={(e) => setStages((draft.stages ?? []).map((x) => x.id === s.id ? { ...x, label: e.target.value.slice(0, 40) } : x))} />
+                          <TextInput id={`pls-label-${s.id}`} label={tr('Stage {n}', { n: idx + 1 })} value={s.label} disabled={lockedStages} placeholder={tr('e.g. Deposit')} onChange={(e) => setStages((draft.stages ?? []).map((x) => x.id === s.id ? { ...x, label: e.target.value.slice(0, 40) } : x))} />
                           <TextInput id={`pls-pct-${s.id}`} label="Share (%)" inputMode="numeric" value={String(s.pct)} disabled={lockedStages} onChange={(e) => setStages((draft.stages ?? []).map((x) => x.id === s.id ? { ...x, pct: Math.min(95, Number(e.target.value.replace(/\D/g, '')) || 0) } : x))} />
-                          <IconButton label={`Remove ${s.label || `stage ${idx + 1}`}`} icon={Trash2Icon} disabled={lockedStages || (draft.stages ?? []).length <= 2} onClick={() => setStages((draft.stages ?? []).filter((x) => x.id !== s.id))} />
+                          <IconButton label={tr('Remove {name}', { name: s.label || tr('Stage {n}', { n: idx + 1 }) })} icon={Trash2Icon} disabled={lockedStages || (draft.stages ?? []).length <= 2} onClick={() => setStages((draft.stages ?? []).filter((x) => x.id !== s.id))} />
                         </div>
-                        {draft.amountNgn > 0 && <p className="text-caption tabular-nums text-fg-subtle">{formatNgn(stageAmounts[s.id] ?? 0)}{idx === 0 ? ' · paid first' : ''}</p>}
+                        {draft.amountNgn > 0 && <p className="text-caption tabular-nums text-fg-subtle">{formatNgn(stageAmounts[s.id] ?? 0)}{idx === 0 ? ` · ${tr('paid first')}` : ''}</p>}
                       </li>
                 )}
                   </ol>
                   {(draft.stages ?? []).length < MAX_LINK_STAGES && !lockedStages &&
               <Button size="sm" variant="tertiary" leadingIcon={PlusIcon} className="self-start" onClick={() => setStages([...(draft.stages ?? []), { id: uid('pls'), label: '', pct: 0 }])}>
-                      Add stage
+                      {tr('Add stage')}
                     </Button>
               }
                   {err('stages') &&
               <p className="text-caption font-medium text-danger" role="alert">
-                      {err('stages')}
+                      {tr(err('stages') as string)}
                     </p>
               }
                 </>
@@ -169,30 +171,30 @@ export function PaymentLinkEditor({ open, link, data, escrowAllowed, onClose, on
               <ul className="flex flex-col gap-2">
                 {draft.items.map((it, idx) =>
               <li key={it.id} className="grid grid-cols-[minmax(0,1fr)_120px_80px_auto] items-end gap-2">
-                    <TextInput id={`pli-label-${it.id}`} label={idx === 0 ? 'Name' : `Item ${idx + 1} name`} value={it.label} onChange={(e) => set({ items: draft.items.map((x) => x.id === it.id ? { ...x, label: e.target.value } : x) })} />
+                    <TextInput id={`pli-label-${it.id}`} label={idx === 0 ? 'Name' : tr('Item {n} name', { n: idx + 1 })} value={it.label} onChange={(e) => set({ items: draft.items.map((x) => x.id === it.id ? { ...x, label: e.target.value } : x) })} />
                     <TextInput id={`pli-price-${it.id}`} label="Price" prefix="₦" inputMode="numeric" value={it.unitNgn ? String(it.unitNgn) : ''} onChange={(e) => set({ items: draft.items.map((x) => x.id === it.id ? { ...x, unitNgn: Number(e.target.value.replace(/\D/g, '')) || 0 } : x) })} />
                     <TextInput id={`pli-max-${it.id}`} label="Max qty" inputMode="numeric" value={String(it.maxQty)} onChange={(e) => set({ items: draft.items.map((x) => x.id === it.id ? { ...x, maxQty: Math.max(1, Math.min(99, Number(e.target.value.replace(/\D/g, '')) || 1)) } : x) })} />
-                    <IconButton label={`Remove ${it.label || 'item'}`} icon={Trash2Icon} onClick={() => set({ items: draft.items.filter((x) => x.id !== it.id) })} disabled={draft.items.length === 1} />
+                    <IconButton label={tr('Remove {name}', { name: it.label || tr('item') })} icon={Trash2Icon} onClick={() => set({ items: draft.items.filter((x) => x.id !== it.id) })} disabled={draft.items.length === 1} />
                   </li>
               )}
               </ul>
               {draft.items.length < 8 &&
             <Button className="mt-2" size="sm" variant="tertiary" leadingIcon={PlusIcon} onClick={() => set({ items: [...draft.items, { id: uid('pli'), label: '', unitNgn: 0, maxQty: 10 }] })}>
-                  Add item
+                  {tr('Add item')}
                 </Button>
             }
             </Field>
           }
           {example >= 100 &&
           <p className="rounded-md bg-sunken px-3 py-2 text-caption text-fg-muted">
-              On a {formatNgn(example)} payment you receive about {formatNgn(example - linkProviderFee(example))} after the processing fee (1.5% + ₦100, example).
+              {tr('On a {amount} payment you receive about {net} after the processing fee (1.5% + ₦100, example).', { amount: formatNgn(example), net: formatNgn(example - linkProviderFee(example)) })}
             </p>
           }
         </section>
 
         <section className="flex flex-col gap-4 border-t border-line pt-6" aria-labelledby="pl-rules">
           <h3 id="pl-rules" className="text-label font-semibold text-fg">
-            Who can pay, and how often
+            {tr('Who can pay, and how often')}
           </h3>
           <Switch id="pl-reusable" checked={draft.reusable && !staged} disabled={staged} onChange={(reusable) => set({ reusable })} label="Reusable" description={staged ? 'Staged links are for one payer, so they can’t be reused.' : draft.reusable ? 'Many people can pay through the same link.' : 'Closes after one payment — good for a single invoice or deposit.'} />
           {draft.reusable && !staged &&
@@ -210,7 +212,7 @@ export function PaymentLinkEditor({ open, link, data, escrowAllowed, onClose, on
 
         <section className="flex flex-col gap-4 border-t border-line pt-6" aria-labelledby="pl-where">
           <h3 id="pl-where" className="text-label font-semibold text-fg">
-            Where the money goes
+            {tr('Where the money goes')}
           </h3>
           <SelectInput<PayMethod | 'default'>
             id="pl-method"
@@ -218,10 +220,10 @@ export function PaymentLinkEditor({ open, link, data, escrowAllowed, onClose, on
             value={draft.method}
             onChange={(method) => set({ method })}
             options={[
-            { value: 'default', label: `Payment links setting (${methodLabels[areaMethod]})` },
-            { value: 'direct', label: methodLabels.direct },
-            { value: 'wallet', label: methodLabels.wallet },
-            { value: 'escrow', label: escrowAllowed ? `${methodLabels.escrow} — held 2 days after payment` : 'Escrow — Pro plan', disabled: !escrowAllowed }]
+            { value: 'default', label: tr('Payment links setting ({method})', { method: tr(methodLabels[areaMethod]) }) },
+            { value: 'direct', label: tr(methodLabels.direct) },
+            { value: 'wallet', label: tr(methodLabels.wallet) },
+            { value: 'escrow', label: escrowAllowed ? tr('Escrow — held 2 days after payment') : tr('Escrow — Pro plan'), disabled: !escrowAllowed }]
             } />
           
           <TextInput id="pl-slug" label="Link address" prefix="kub.icu/pay/" value={slug} onChange={(e) => (setSlugTouched(true), set({ slug: e.target.value.toLowerCase() }))} error={err('slug')} />

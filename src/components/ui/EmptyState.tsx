@@ -1,6 +1,7 @@
 import React from "react";
 import { cn } from "../../utils/cn";
 import { BoxIcon } from "lucide-react";
+import { useT } from "../../contexts/LocaleContext";
 interface EmptyStateProps {
   icon: BoxIcon;
   title: string;
@@ -15,6 +16,9 @@ export function EmptyState({
   action,
   className
 }: EmptyStateProps) {
+  const { t } = useT();
+  title = t(title);
+  description = t(description);
   return <div className={cn('flex flex-col items-center px-6 py-10 text-center', className)}>
       <span className="flex h-11 w-11 items-center justify-center rounded-md border border-line bg-sunken text-fg-muted">
         <Icon size={20} aria-hidden />

@@ -17,12 +17,14 @@ import { formatNgn, formatRelative } from '../../utils/format';
 import { cn } from '../../utils/cn';
 import { useTeam } from '../../contexts/TeamContext';
 import { AssigneeChip, MineToggle } from '../../components/team/AssigneeSelect';
+import { useT } from '../../contexts/LocaleContext';
 
 type Tab = 'all' | OrderStatus;
 const tabs: Tab[] = ['all', 'new', 'paid', 'packing', 'out_for_delivery', 'completed', 'cancelled', 'refunded'];
 
 export function Orders() {
   const { data } = useCommerce();
+  const { t: tr } = useT();
   const [params, setParams] = useSearchParams();
   const tab = params.get('status') as Tab || 'all';
   const openId = params.get('order');
@@ -85,7 +87,7 @@ export function Orders() {
     key: 'fulfilment',
     header: 'Fulfilment',
     hideOnMobile: true,
-    render: (o) => <span className="text-fg-muted">{o.fulfilment.method === 'pickup' ? 'Pickup' : o.fulfilment.method === 'tickets' ? 'Tickets' : o.fulfilment.method === 'digital' ? 'Download' : o.fulfilment.zoneName}</span>
+    render: (o) => <span className="text-fg-muted">{o.fulfilment.method === 'pickup' ? tr('Pickup') : o.fulfilment.method === 'tickets' ? tr('Tickets') : o.fulfilment.method === 'digital' ? tr('Download') : o.fulfilment.zoneName}</span>
   },
   { key: 'payment', header: 'Payment', hideOnMobile: true, render: (o) => <PaymentBadge status={o.paymentStatus} /> },
   { key: 'status', header: 'Status', render: (o) => <OrderStatusBadge status={o.status} pickup={o.fulfilment.method === 'pickup'} /> },
@@ -112,7 +114,7 @@ export function Orders() {
         </div> :
 
       <>
-          <nav aria-label="Order status" className="scroll-quiet -mx-1 mt-6 overflow-x-auto px-1 pb-1">
+          <nav aria-label={tr('Order status')} className="scroll-quiet -mx-1 mt-6 overflow-x-auto px-1 pb-1">
             <ul className="flex gap-1.5">
               <li>
                 <MineToggle mine={mine} count={mineCount} onChange={(v) => set({ mine: v ? '1' : null })} />
@@ -129,7 +131,7 @@ export function Orders() {
                   tab === t ? 'border-transparent bg-fg text-canvas' : 'border-line text-fg-muted hover:text-fg'
                 )}>
                 
-                    {t === 'all' ? 'All' : orderStatusLabels[t]}
+                    {tr(t === 'all' ? 'All' : orderStatusLabels[t])}
                     <span className={cn('tabular-nums', tab === t ? 'opacity-70' : 'text-fg-subtle')}>{counts[t] ?? 0}</span>
                   </button>
                 </li>
@@ -143,7 +145,7 @@ export function Orders() {
             columns={columns}
             filterText={(o) => `${o.number} ${o.customer.name} ${o.customer.phone} ${o.customer.email} ${o.items.map((i) => i.name).join(' ')}`}
             filterPlaceholder="Search order, customer or item"
-            emptyTitle={`No ${tab === 'all' ? '' : orderStatusLabels[tab as OrderStatus].toLowerCase() + ' '}orders`}
+            emptyTitle={tab === 'all' ? 'No orders' : tr('No orders with status “{status}”', { status: tr(orderStatusLabels[tab as OrderStatus]) })}
             emptyDescription="Orders move here as their status changes." />
           
           </div>

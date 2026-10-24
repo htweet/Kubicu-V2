@@ -1,6 +1,7 @@
 import React, { useRef } from "react";
 import { cn } from "../../utils/cn";
 import { BoxIcon } from "lucide-react";
+import { useT } from "../../contexts/LocaleContext";
 export interface SegmentedOption<T extends string> {
   value: T;
   label: string;
@@ -24,6 +25,8 @@ export function Segmented<T extends string>({
   fullWidth
 }: SegmentedProps<T>) {
   const refs = useRef<Array<HTMLButtonElement | null>>([]);
+  const { t } = useT();
+  options = options.map((o) => ({ ...o, label: t(o.label) }));
   const onKeyDown = (e: React.KeyboardEvent, index: number) => {
     if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
     e.preventDefault();

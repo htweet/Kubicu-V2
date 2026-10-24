@@ -1,6 +1,7 @@
 import React from 'react';
 import { AlertTriangleIcon, CheckCircle2Icon, InfoIcon, XCircleIcon } from 'lucide-react';
 import { cn } from '../../utils/cn';
+import { useT } from '../../contexts/LocaleContext';
 
 type Tone = 'info' | 'success' | 'warning' | 'danger';
 
@@ -21,6 +22,9 @@ interface InlineAlertProps {
 
 export function InlineAlert({ tone = 'info', title, children, action, className }: InlineAlertProps) {
   const { icon: Icon, cls } = config[tone];
+  const { t } = useT();
+  title = t(title);
+  if (typeof children === 'string') children = t(children);
   return (
     <div role={tone === 'danger' ? 'alert' : 'status'} className={cn('flex gap-3 rounded-md px-3.5 py-3', cls, className)}>
       <Icon size={16} className="mt-0.5 shrink-0" aria-hidden />

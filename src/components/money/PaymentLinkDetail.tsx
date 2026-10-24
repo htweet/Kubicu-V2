@@ -10,6 +10,7 @@ import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import { Stat, StatGroup } from '../ui/layout/Stat';
 import { SampleTag } from '../commerce/StatusBadges';
+import { useT } from '../../contexts/LocaleContext';
 
 interface PaymentLinkDetailProps {
   link: PaymentLink | null;
@@ -25,6 +26,7 @@ export const payLinkPath = (handle: string, slug: string) => `/p/${handle}/pay/$
 
 /** One payment link: share it, see who paid, pause or archive it (D92). */
 export function PaymentLinkDetail({ link, data, handle, canEdit, onClose, onEdit, onStatus }: PaymentLinkDetailProps) {
+  const { t: tr } = useT();
   if (!link) return <Sheet open={false} onClose={onClose} title="">{null}</Sheet>;
   const view = linkView(link);
   const short = `kub.icu/pay/${link.slug}`;
@@ -38,7 +40,7 @@ export function PaymentLinkDetail({ link, data, handle, canEdit, onClose, onEdit
       open={!!link}
       onClose={onClose}
       title={link.title}
-      description={`${short} · ${methodLabels[linkMethod(data, link)]}`}
+      description={`${short} · ${tr(methodLabels[linkMethod(data, link)])}`}
       side="right"
       size="lg"
       footer={
@@ -73,22 +75,22 @@ export function PaymentLinkDetail({ link, data, handle, canEdit, onClose, onEdit
             {linkViewLabels[view]}
           </Badge>
           {link.sample && <SampleTag />}
-          <span className="text-caption text-fg-subtle">Created {formatTimestamp(link.createdAt)}</span>
+          <span className="text-caption text-fg-subtle">{tr('Created {date}', { date: formatTimestamp(link.createdAt) })}</span>
         </div>
 
         <StatGroup columns={3}>
           <Stat label="Collected" value={formatNgn(total)} hint="Before fees" />
           <Stat label="Payments" value={`${link.payments.length}${link.reusable && link.maxUses ? ` / ${link.maxUses}` : ''}`} />
-          <Stat label="Paid after viewing" value={`${conversion}%`} hint={`${link.views} views`} />
+          <Stat label="Paid after viewing" value={`${conversion}%`} hint={tr('{n} views', { n: link.views })} />
         </StatGroup>
 
         <section aria-labelledby="pl-share" className="flex flex-col gap-3 border-t border-line pt-6">
           <h3 id="pl-share" className="text-label font-semibold text-fg">
-            Share
+            {tr('Share')}
           </h3>
           <div className="flex items-center justify-between gap-3 rounded-md bg-sunken px-4 py-3">
             <span className="truncate text-label font-medium text-fg">{short}</span>
-            <Button size="sm" variant="tertiary" leadingIcon={CopyIcon} onClick={() => (void navigator.clipboard?.writeText(`https://${short}`), toast('Link copied'))}>
+            <Button size="sm" variant="tertiary" leadingIcon={CopyIcon} onClick={() => (void navigator.clipboard?.writeText(`https://${short}`), toast(tr('Link copied')))}>
               Copy
             </Button>
           </div>
@@ -97,27 +99,27 @@ export function PaymentLinkDetail({ link, data, handle, canEdit, onClose, onEdit
               WhatsApp
             </Button>
             <Link to="/app/domains/qr" className="inline-flex h-8 items-center gap-1.5 rounded-md border border-line-strong bg-raised px-3 text-label font-medium text-fg transition-colors duration-150 hover:bg-sunken">
-              <QrCodeIcon size={15} aria-hidden /> QR code
+              <QrCodeIcon size={15} aria-hidden /> {tr('QR code')}
             </Link>
             <Link to={path} target="_blank" className="inline-flex h-8 items-center gap-1.5 rounded-md px-3 text-label font-medium text-fg-muted transition-colors duration-150 hover:bg-sunken hover:text-fg">
-              <ExternalLinkIcon size={15} aria-hidden /> Open payer page
+              <ExternalLinkIcon size={15} aria-hidden /> {tr('Open payer page')}
             </Link>
           </div>
         </section>
 
         <section aria-labelledby="pl-payments" className="flex flex-col gap-3 border-t border-line pt-6">
           <h3 id="pl-payments" className="text-label font-semibold text-fg">
-            Payments
+            {tr('Payments')}
           </h3>
           {link.payments.length === 0 ?
-          <p className="text-label text-fg-muted">No one has paid yet. Payments show here as they come in.</p> :
+          <p className="text-label text-fg-muted">{tr('No one has paid yet. Payments show here as they come in.')}</p> :
 
           <ul className="divide-y divide-line">
               {link.payments.map((p) =>
             <li key={p.id} className="flex items-start justify-between gap-3 py-3">
                   <span className="min-w-0 flex-1">
                     <span className="flex items-center gap-2 text-label font-medium text-fg">
-                      {p.payerName || 'Payer'} {p.sample && <SampleTag />}
+                      {p.payerName || tr('Payer')} {p.sample && <SampleTag />}
                     </span>
                     <span className="block truncate text-caption text-fg-subtle">
                       {p.receipt} · {formatTimestamp(p.at)}
@@ -128,7 +130,7 @@ export function PaymentLinkDetail({ link, data, handle, canEdit, onClose, onEdit
                   </span>
                   <span className="flex shrink-0 flex-col items-end gap-1">
                     <span className="text-label font-semibold tabular-nums text-fg">{formatNgn(p.amountNgn)}</span>
-                    <span className="text-caption text-fg-subtle">{methodLabels[p.method]}</span>
+                    <span className="text-caption text-fg-subtle">{tr(methodLabels[p.method])}</span>
                   </span>
                 </li>
             )}

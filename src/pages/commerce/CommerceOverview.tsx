@@ -16,6 +16,7 @@ import { CardLink } from '../../components/ui/layout/CardLink';
 import { List, ListRow } from '../../components/ui/layout/ListRow';
 import { Stat, StatGroup } from '../../components/ui/layout/Stat';
 import type { Order } from '../../types/commerce';
+import { useT } from '../../contexts/LocaleContext';
 
 const queue: {id: string;label: string;match: (o: Order) => boolean;hint: string;}[] = [
 { id: 'confirm', label: 'To confirm', match: (o) => o.status === 'new', hint: 'Payment pending — check before packing' },
@@ -26,6 +27,7 @@ const queue: {id: string;label: string;match: (o: Order) => boolean;hint: string
 export function CommerceOverview() {
   const { data, loadSample } = useCommerce();
   const navigate = useNavigate();
+  const { t: tr } = useT();
 
   const weekAgo = Date.now() - 7 * 86400000;
   const week = useMemo(() => {
@@ -89,8 +91,8 @@ export function CommerceOverview() {
       <TestModeStrip className="mt-6" />
 
       {!setupDone &&
-      <section aria-label="Commerce setup" className="mt-6 flex flex-col gap-3 rounded-md border border-line bg-raised p-4 md:flex-row md:items-center md:gap-6">
-          <p className="shrink-0 text-label font-semibold text-fg">Finish setting up</p>
+      <section aria-label={tr('Commerce setup')} className="mt-6 flex flex-col gap-3 rounded-md border border-line bg-raised p-4 md:flex-row md:items-center md:gap-6">
+          <p className="shrink-0 text-label font-semibold text-fg">{tr('Finish setting up')}</p>
           <ol className="flex flex-1 flex-wrap gap-2">
             {setup.map((s) =>
           <li key={s.id}>
@@ -102,8 +104,8 @@ export function CommerceOverview() {
               )}>
               
                   {s.done ? <CheckIcon size={14} strokeWidth={3} aria-hidden /> : <span aria-hidden className="h-3.5 w-3.5 rounded-full border-2 border-line-strong" />}
-                  <span className="sr-only">{s.done ? 'Done: ' : 'To do: '}</span>
-                  {s.label}
+                  <span className="sr-only">{tr(s.done ? 'Done:' : 'To do:')} </span>
+                  {tr(s.label)}
                 </Link>
               </li>
           )}
@@ -117,11 +119,11 @@ export function CommerceOverview() {
           emphasis="primary"
           body="flush"
           title="Orders needing action"
-          description={totalActionable === 0 ? 'You’re all caught up.' : `${totalActionable} order${totalActionable === 1 ? '' : 's'} across ${groups.filter((g) => g.orders.length).length} stages`}
-          actions={<CardLink to="/app/commerce/orders">All orders</CardLink>}>
+          description={totalActionable === 0 ? 'You’re all caught up.' : tr(totalActionable === 1 ? '{n} order across {stages} stages' : '{n} orders across {stages} stages', { n: totalActionable, stages: groups.filter((g) => g.orders.length).length })}
+          actions={<CardLink to="/app/commerce/orders">{tr('All orders')}</CardLink>}>
           
           {totalActionable === 0 ?
-          <p className="px-6 py-10 text-center text-label text-fg-muted">New orders from your page will appear here.</p> :
+          <p className="px-6 py-10 text-center text-label text-fg-muted">{tr('New orders from your page will appear here.')}</p> :
 
           <div className="divide-y divide-line">
               {groups.
@@ -130,9 +132,9 @@ export function CommerceOverview() {
             <div key={g.id} className="py-2">
                     <div className="flex items-baseline justify-between gap-3 px-5 pb-1 pt-3 md:px-6">
                       <h3 className="text-label font-semibold text-fg">
-                        {g.label} <span className="ml-1 tabular-nums text-fg-subtle">{g.orders.length}</span>
+                        {tr(g.label)} <span className="ml-1 tabular-nums text-fg-subtle">{g.orders.length}</span>
                       </h3>
-                      <span className="hidden text-caption text-fg-subtle sm:inline">{g.hint}</span>
+                      <span className="hidden text-caption text-fg-subtle sm:inline">{tr(g.hint)}</span>
                     </div>
                     <List>
                       {g.orders.slice(0, 4).map((o) =>
@@ -163,9 +165,9 @@ export function CommerceOverview() {
         </Card>
 
         <div className="flex flex-col gap-6">
-          <Card id="stock" icon={PackageIcon} title="Stock to watch" body="flush" actions={<CardLink to="/app/commerce/inventory">Inventory</CardLink>}>
+          <Card id="stock" icon={PackageIcon} title="Stock to watch" body="flush" actions={<CardLink to="/app/commerce/inventory">{tr('Inventory')}</CardLink>}>
             {stockAlerts.length === 0 ?
-            <p className="px-5 py-5 text-label text-fg-muted md:px-6">Nothing is low or sold out.</p> :
+            <p className="px-5 py-5 text-label text-fg-muted md:px-6">{tr('Nothing is low or sold out.')}</p> :
 
             <List>
                 {stockAlerts.slice(0, 5).map((p) =>
@@ -173,16 +175,16 @@ export function CommerceOverview() {
                 key={p.id}
                 to={`/app/commerce/inventory?product=${p.id}`}
                 title={p.name}
-                trailing={<span className={cn('text-caption font-semibold tabular-nums', isSoldOut(p) ? 'text-danger' : 'text-warning')}>{isSoldOut(p) ? 'Sold out' : `${totalStock(p)} left`}</span>} />
+                trailing={<span className={cn('text-caption font-semibold tabular-nums', isSoldOut(p) ? 'text-danger' : 'text-warning')}>{isSoldOut(p) ? tr('Sold out') : tr('{n} left', { n: totalStock(p) })}</span>} />
 
               )}
               </List>
             }
           </Card>
 
-          <Card id="week" icon={WalletIcon} title="Last 7 days" actions={<CardLink to="/app/commerce/reports">Report</CardLink>}>
+          <Card id="week" icon={WalletIcon} title="Last 7 days" actions={<CardLink to="/app/commerce/reports">{tr('Report')}</CardLink>}>
             <dl>
-              <Stat primary label={`You receive, from ${week.count} paid order${week.count === 1 ? '' : 's'}`} value={formatNgn(week.net)} />
+              <Stat primary label={tr(week.count === 1 ? 'You receive, from {n} paid order' : 'You receive, from {n} paid orders', { n: week.count })} value={formatNgn(week.net)} />
             </dl>
             <StatGroup columns={3} divided className="mt-4 !grid-cols-3">
               <Stat label="Customers paid" value={<span className="text-label">{formatNgn(week.gross)}</span>} />
@@ -197,8 +199,8 @@ export function CommerceOverview() {
             
             <TruckIcon size={17} strokeWidth={2.25} aria-hidden />
             <span className="flex-1">
-              {data.fulfilment.zones.length} delivery zone{data.fulfilment.zones.length === 1 ? '' : 's'}
-              {data.fulfilment.pickupEnabled ? ' · pickup on' : ''}
+              {tr(data.fulfilment.zones.length === 1 ? '{n} delivery zone' : '{n} delivery zones', { n: data.fulfilment.zones.length })}
+              {data.fulfilment.pickupEnabled ? ` · ${tr('pickup on')}` : ''}
             </span>
             <ArrowRightIcon size={14} aria-hidden />
           </Link>

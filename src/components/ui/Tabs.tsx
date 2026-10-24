@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
 import { cn } from '../../utils/cn';
+import { useT } from '../../contexts/LocaleContext';
 
 export interface TabItem<T extends string> {
   id: T;
@@ -19,6 +20,7 @@ interface TabsProps<T extends string> {
 
 export function Tabs<T extends string>({ items, value, onChange, ariaLabel, idPrefix, fullWidth, className }: TabsProps<T>) {
   const refs = useRef<Array<HTMLButtonElement | null>>([]);
+  const { t } = useT();
 
   const onKeyDown = (e: React.KeyboardEvent, index: number) => {
     if (!['ArrowRight', 'ArrowLeft', 'Home', 'End'].includes(e.key)) return;
@@ -51,7 +53,7 @@ export function Tabs<T extends string>({ items, value, onChange, ariaLabel, idPr
               selected ? 'border-action text-fg' : 'border-transparent text-fg-subtle hover:text-fg'
             )}>
             
-            {item.label}
+            {t(item.label)}
             {item.badge ?
             <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-warning-soft px-1 text-meta font-semibold text-warning">
                 {item.badge}

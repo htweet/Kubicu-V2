@@ -33,6 +33,7 @@ import { OrderPodPanel } from './OrderPodPanel';
 import { OrderInstalmentsPanel } from './OrderInstalmentsPanel';
 import { OrderPartnerSplit } from './OrderPartnerSplit';
 import { OrderLicenceKeys } from './OrderLicenceKeys';
+import { useT } from '../../contexts/LocaleContext';
 
 const steps: {status: OrderStatus;label: string;}[] = [
 { status: 'new', label: 'Placed' },
@@ -70,6 +71,7 @@ export function OrderDetail({ orderId, onClose }: {orderId: string | null;onClos
   const [dialog, setDialog] = useState<'refund' | 'cancel' | null>(null);
   const [note, setNote] = useState('');
   const [collecting, setCollecting] = useState(false);
+  const { t: tr } = useT();
 
   if (!order) return <Sheet open={!!orderId} onClose={onClose} side="right" size="lg" title="Order not found"><p className="p-5 text-label text-fg-muted">This order may have been cleared with the sample data.</p></Sheet>;
 
@@ -96,8 +98,8 @@ export function OrderDetail({ orderId, onClose }: {orderId: string | null;onClos
         onClose={onClose}
         side="right"
         size="lg"
-        title={`Order #${order.number}`}
-        description={`${formatTimestamp(order.createdAt)}${order.sample ? ' · Sample' : ''}`}
+        title={tr('Order #{n}', { n: order.number })}
+        description={`${formatTimestamp(order.createdAt)}${order.sample ? ` · ${tr('Sample')}` : ''}`}
         footer={
         <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex gap-1">
@@ -166,13 +168,13 @@ export function OrderDetail({ orderId, onClose }: {orderId: string | null;onClos
 
           {order.status === 'new' && !order.pod &&
           <p className="rounded-md bg-info-soft px-3 py-2.5 text-label text-info">
-              {order.paymentNote ?? 'Payment pending'}. Don’t pack until the provider confirms — in live mode this updates automatically.
+              {order.paymentNote ?? tr('Payment pending')}. {tr('Don’t pack until the provider confirms — in live mode this updates automatically.')}
             </p>
           }
 
           {order.held &&
           <p className="rounded-md bg-warning-soft px-3 py-2.5 text-label text-warning">
-              Joined a group buy at kub.icu/{order.sourceHandle}. Paid, but waiting for the goal — don’t pack yet. If the goal is missed, it’s refunded in full automatically.
+              {tr('Joined a group buy at kub.icu/{handle}. Paid, but waiting for the goal — don’t pack yet. If the goal is missed, it’s refunded in full automatically.', { handle: order.sourceHandle ?? '' })}
             </p>
           }
 
@@ -182,14 +184,14 @@ export function OrderDetail({ orderId, onClose }: {orderId: string | null;onClos
 
           {stepIndex >= 0 && !digitalOnly &&
           // Phones: a vertical tracker; wider screens: a five-part bar.
-          <ol className="relative flex flex-col gap-3 sm:grid sm:grid-cols-5 sm:gap-1.5" aria-label="Order progress">
+          <ol className="relative flex flex-col gap-3 sm:grid sm:grid-cols-5 sm:gap-1.5" aria-label={tr('Order progress')}>
               <span aria-hidden className="absolute bottom-1.5 left-[5px] top-1.5 w-px bg-line sm:hidden" />
               {steps.map((s, i) =>
             <li key={s.status} className="relative flex items-center gap-3 sm:block">
                   <span aria-hidden className={cn('block h-[11px] w-[11px] shrink-0 rounded-full ring-4 ring-overlay sm:h-1.5 sm:w-auto sm:ring-0', i <= stepIndex ? 'bg-action' : 'bg-line-strong sm:bg-sunken')} />
                   <span className={cn('block text-label sm:mt-1.5 sm:text-caption', i <= stepIndex ? 'font-semibold text-fg' : 'text-fg-subtle', i === stepIndex && 'max-sm:text-action')}>
-                    <span className="sr-only">{i <= stepIndex ? 'Done: ' : 'Next: '}</span>
-                    {s.status === 'out_for_delivery' && pickup ? 'Ready' : s.status === 'completed' && pickup ? 'Collected' : s.label}
+                    <span className="sr-only">{tr(i <= stepIndex ? 'Done:' : 'Next:')} </span>
+                    {tr(s.status === 'out_for_delivery' && pickup ? 'Ready' : s.status === 'completed' && pickup ? 'Collected' : s.label)}
                   </span>
                 </li>
             )}
@@ -200,7 +202,7 @@ export function OrderDetail({ orderId, onClose }: {orderId: string | null;onClos
           <EscrowPanel workspaceId={current.id} orderId={order.id} handle={order.sourceHandle ?? handle} />
           <OrderPartnerSplit order={order} leadName={current.name} />
 
-          <section aria-label="Items">
+          <section aria-label={tr('Items')}>
             <ul className="flex flex-col divide-y divide-line border-y border-line">
               {order.items.map((i) =>
               <li key={i.variantId} className="flex items-center gap-3 py-3">
@@ -214,7 +216,7 @@ export function OrderDetail({ orderId, onClose }: {orderId: string | null;onClos
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-label font-semibold text-fg">{i.name}</p>
                     <p className="text-caption text-fg-subtle">
-                      {[i.variantLabel, i.kind === 'digital' ? 'Digital download' : i.kind === 'ticket' ? 'Event ticket' : null, `${i.qty} × ${formatNgn(i.unitPriceNgn)}`].filter(Boolean).join(' · ')}
+                      {[i.variantLabel, i.kind === 'digital' ? tr('Digital download') : i.kind === 'ticket' ? tr('Event ticket') : null, `${i.qty} × ${formatNgn(i.unitPriceNgn)}`].filter(Boolean).join(' · ')}
                     </p>
                   </div>
                   <span className="text-label font-semibold tabular-nums text-fg">{formatNgn(i.unitPriceNgn * i.qty)}</span>
@@ -226,7 +228,7 @@ export function OrderDetail({ orderId, onClose }: {orderId: string | null;onClos
           <div className="grid gap-6 sm:grid-cols-2">
             <section aria-labelledby={`cust-${order.id}`}>
               <h3 id={`cust-${order.id}`} className="text-caption font-semibold text-fg-subtle">
-                Customer
+                {tr('Customer')}
               </h3>
               <p className="mt-1 text-label font-semibold text-fg">{order.customer.name}</p>
               <p className="text-label text-fg-muted">{order.customer.phone}</p>
@@ -237,36 +239,36 @@ export function OrderDetail({ orderId, onClose }: {orderId: string | null;onClos
                 rel="noopener noreferrer"
                 className="mt-2 inline-flex items-center gap-1.5 text-label font-semibold text-action hover:underline">
                 
-                <MessageCircleIcon size={14} aria-hidden /> Message on WhatsApp
+                <MessageCircleIcon size={14} aria-hidden /> {tr('Message on WhatsApp')}
               </a>
             </section>
             <section aria-labelledby={`ful-${order.id}`}>
               <h3 id={`ful-${order.id}`} className="text-caption font-semibold text-fg-subtle">
-                Fulfilment
+                {tr('Fulfilment')}
               </h3>
               <p className="mt-1 text-label font-semibold text-fg">
-                {order.fulfilment.method === 'pickup' ? 'Pickup' : order.fulfilment.method === 'tickets' ? `Event tickets · ${order.tickets?.length ?? 0} issued` : order.fulfilment.method === 'digital' ? 'Download link' : `Delivery · ${order.fulfilment.zoneName}`}
+                {order.fulfilment.method === 'pickup' ? tr('Pickup') : order.fulfilment.method === 'tickets' ? tr('Event tickets · {n} issued', { n: order.tickets?.length ?? 0 }) : order.fulfilment.method === 'digital' ? tr('Download link') : `${tr('Delivery')} · ${order.fulfilment.zoneName}`}
               </p>
               {order.fulfilment.address && <p className="text-label text-fg-muted">{order.fulfilment.address}</p>}
-              {order.fulfilment.eta && <p className="text-caption text-fg-subtle">Estimated {order.fulfilment.eta}</p>}
+              {order.fulfilment.eta && <p className="text-caption text-fg-subtle">{tr('Estimated {eta}', { eta: order.fulfilment.eta })}</p>}
               {order.downloadToken &&
               <p className="mt-1 text-caption text-fg-subtle">
-                  {order.downloads.length} download{order.downloads.length === 1 ? '' : 's'} so far
-                  {order.downloads[0] ? ` · last ${formatTimestamp(order.downloads[order.downloads.length - 1].at)}` : ''}
+                  {tr(order.downloads.length === 1 ? '{n} download so far' : '{n} downloads so far', { n: order.downloads.length })}
+                  {order.downloads[0] ? ` · ${tr('last {date}', { date: formatTimestamp(order.downloads[order.downloads.length - 1].at) })}` : ''}
                 </p>
               }
               <OrderLicenceKeys order={order} />
             </section>
           </div>
 
-          <section aria-label="Money" className="rounded-md bg-sunken px-4 py-3">
+          <section aria-label={tr('Money')} className="rounded-md bg-sunken px-4 py-3">
             <MoneyBreakdown money={money} discountLabel={order.discount ? discountLineLabel(order.discount) : undefined} />
-            {order.discount?.referrerName && <p className="mt-1 text-caption text-fg-subtle">Referred by {order.discount.referrerName}.</p>}
+            {order.discount?.referrerName && <p className="mt-1 text-caption text-fg-subtle">{tr('Referred by {name}.', { name: order.discount.referrerName })}</p>}
           </section>
 
           <section aria-labelledby={`tl-${order.id}`}>
             <h3 id={`tl-${order.id}`} className="text-label font-semibold text-fg">
-              Timeline
+              {tr('Timeline')}
             </h3>
             <form
               className="mt-3 flex items-end gap-2"
@@ -276,7 +278,7 @@ export function OrderDetail({ orderId, onClose }: {orderId: string | null;onClos
                 if (apply((d) => addOrderNote(d, order.id, note.trim()))) setNote('');
               }}>
               
-              <TextInput id={`note-${order.id}`} label="Add a private note" placeholder="Only you see this" value={note} fieldClassName="flex-1" onChange={(e) => setNote(e.target.value)} />
+              <TextInput id={`note-${order.id}`} label="Add a private note" placeholder={tr('Only you see this')} value={note} fieldClassName="flex-1" onChange={(e) => setNote(e.target.value)} />
               <Button type="submit" variant="secondary" leadingIcon={StickyNoteIcon} disabled={!note.trim()}>
                 Add
               </Button>

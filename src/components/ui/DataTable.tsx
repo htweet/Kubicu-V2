@@ -5,6 +5,7 @@ import { EmptyState } from './EmptyState';
 import { Skeleton } from './Skeleton';
 import { cn } from '../../utils/cn';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
+import { useT } from '../../contexts/LocaleContext';
 
 export interface DataColumn<T> {
   key: string;
@@ -50,6 +51,14 @@ export function DataTable<T extends {id: string;}>({
   emptyTitle = 'Nothing here yet',
   emptyDescription
 }: DataTableProps<T>) {
+  // Headers, search box and empty messages follow the interface language (D133e).
+  const { t } = useT();
+  caption = t(caption);
+  filterPlaceholder = t(filterPlaceholder);
+  emptyTitle = t(emptyTitle);
+  emptyDescription = emptyDescription && t(emptyDescription);
+  columns = useMemo(() => columns.map((c) => ({ ...c, header: t(c.header) })), [columns, t]);
+  bulkActions = bulkActions?.map((a) => ({ ...a, label: t(a.label) }));
   const [query, setQuery] = useState('');
   const [sort, setSort] = useState<Sort>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -112,7 +121,7 @@ export function DataTable<T extends {id: string;}>({
             {hasBulk ?
           selectedRows.length > 0 ?
           <div className="flex flex-wrap items-center gap-2" aria-live="polite">
-                  <span className="text-label font-medium text-fg">{selectedRows.length} selected</span>
+                  <span className="text-label font-medium text-fg">{t('{n} selected', { n: selectedRows.length })}</span>
                   {bulkActions!.map((a) =>
             <button
               key={a.label}
@@ -129,8 +138,8 @@ export function DataTable<T extends {id: string;}>({
                 </div> :
 
           <label className="flex h-11 items-center gap-2.5 text-label text-fg-muted">
-                  <Checkbox checked={allChecked} mixed={someChecked} onChange={toggleAll} label="Select all rows" />
-                  Select
+                  <Checkbox checked={allChecked} mixed={someChecked} onChange={toggleAll} label={t('Select all rows')} />
+                  {t('Select')}
                 </label> :
 
 
@@ -138,7 +147,7 @@ export function DataTable<T extends {id: string;}>({
           }
             {sortable.length > 0 &&
           <label className="flex items-center gap-2 text-caption text-fg-subtle">
-                Sort
+                {t('Sort')}
                 <select
               value={sort ? `${sort.key}:${sort.dir}` : ''}
               onChange={(e) => {
@@ -147,7 +156,7 @@ export function DataTable<T extends {id: string;}>({
               }}
               className={cn(fieldControlClass, 'h-9 w-auto py-0 pr-8 text-label')}>
               
-                  <option value="">Default</option>
+                  <option value="">{t('Default')}</option>
                   {sortable.flatMap((c) => [
               <option key={`${c.key}:asc`} value={`${c.key}:asc`}>
                       {c.header} ↑
@@ -206,7 +215,7 @@ export function DataTable<T extends {id: string;}>({
         </ul>
         {!loading && visible.length === 0 &&
         <div className="rounded-md border border-line">
-            <EmptyState icon={SearchXIcon} title={rows.length === 0 ? emptyTitle : 'No matches'} description={rows.length === 0 ? emptyDescription : `Nothing matches “${query}”.`} />
+            <EmptyState icon={SearchXIcon} title={rows.length === 0 ? emptyTitle : 'No matches'} description={rows.length === 0 ? emptyDescription ?? '' : t('Nothing matches “{query}”.', { query })} />
           </div>
         }
       </div>);
@@ -234,7 +243,7 @@ export function DataTable<T extends {id: string;}>({
         }
         {hasBulk && selectedRows.length > 0 &&
         <div className="flex items-center gap-2 sm:ml-auto" aria-live="polite">
-            <span className="text-label font-medium text-fg">{selectedRows.length} selected</span>
+            <span className="text-label font-medium text-fg">{t('{n} selected', { n: selectedRows.length })}</span>
             {bulkActions!.map((a) =>
           <button
             key={a.label}
@@ -326,7 +335,7 @@ export function DataTable<T extends {id: string;}>({
         <EmptyState
           icon={SearchXIcon}
           title={rows.length === 0 ? emptyTitle : 'No matches'}
-          description={rows.length === 0 ? emptyDescription : `Nothing matches “${query}”.`} />
+          description={rows.length === 0 ? emptyDescription ?? '' : t('Nothing matches “{query}”.', { query })} />
 
         }
       </div>

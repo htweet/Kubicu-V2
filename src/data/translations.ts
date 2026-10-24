@@ -7,6 +7,9 @@ import { checkoutHa, checkoutIg, checkoutPcm, checkoutYo } from './translationsC
 import { statusHa, statusIg, statusPcm, statusYo } from './translationsStatus';
 import { payHa, payIg, payPcm, payYo } from './translationsPayDownload';
 import { subsHa, subsIg, subsPcm, subsYo } from './translationsSubscriptions';
+import { commerceHa, commerceIg, commercePcm, commerceYo } from './translationsCommerce';
+import { commerceDetailHa, commerceDetailIg, commerceDetailPcm, commerceDetailYo } from './translationsCommerceDetail';
+import { commerceTabsHa, commerceTabsIg, commerceTabsPcm, commerceTabsYo } from './translationsCommerceTabs';
 
 export type UiLang = 'en' | 'pcm' | 'yo' | 'ha' | 'ig';
 
@@ -265,10 +268,11 @@ const ig: Dict = {
 };
 
 export const translations: Record<Exclude<UiLang, 'en'>, Dict> = {
-  pcm: { ...pcm, ...checkoutPcm, ...statusPcm, ...payPcm, ...subsPcm },
-  yo: { ...yo, ...checkoutYo, ...statusYo, ...payYo, ...subsYo },
-  ha: { ...ha, ...checkoutHa, ...statusHa, ...payHa, ...subsHa },
-  ig: { ...ig, ...checkoutIg, ...statusIg, ...payIg, ...subsIg }
+  // Earlier dictionaries win on overlap so screen names stay as already drafted.
+  pcm: { ...commerceTabsPcm, ...commerceDetailPcm, ...commercePcm, ...pcm, ...checkoutPcm, ...statusPcm, ...payPcm, ...subsPcm },
+  yo: { ...commerceTabsYo, ...commerceDetailYo, ...commerceYo, ...yo, ...checkoutYo, ...statusYo, ...payYo, ...subsYo },
+  ha: { ...commerceTabsHa, ...commerceDetailHa, ...commerceHa, ...ha, ...checkoutHa, ...statusHa, ...payHa, ...subsHa },
+  ig: { ...commerceTabsIg, ...commerceDetailIg, ...commerceIg, ...ig, ...checkoutIg, ...statusIg, ...payIg, ...subsIg }
 };
 
 export const uiLanguages: {value: UiLang;label: string;native: string;}[] = [

@@ -1,6 +1,7 @@
 import React, { forwardRef } from "react";
 import { Loader2Icon, BoxIcon } from "lucide-react";
 import { cn } from "../../utils/cn";
+import { useT } from "../../contexts/LocaleContext";
 /** `ai` is reserved for actions that run AI (D63) — the gradient marks them everywhere. */
 /** `brand` is the Night-market gradient, website/legal/sign-in only (D77). */
 export type ButtonVariant = 'primary' | 'secondary' | 'tertiary' | 'destructive' | 'ai' | 'brand';
@@ -40,6 +41,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
   ...rest
 }, ref) {
   const iconSize = size === 'sm' ? 14 : 16;
+  // Built-in wording follows the interface language (D133e); anything without a draft stays English.
+  const { t } = useT();
+  if (typeof children === 'string') children = t(children);
   return <button ref={ref} type={type} disabled={disabled || loading} aria-busy={loading || undefined} className={cn('inline-flex shrink-0 select-none items-center justify-center whitespace-nowrap font-medium', 'transition-[background-color,border-color,color,transform,filter] duration-150 ease-out active:scale-[0.98]', 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-canvas', 'disabled:pointer-events-none disabled:opacity-45', variants[variant], sizes[size], fullWidth && 'w-full', className)} {...rest}>
       {loading ? <Loader2Icon size={iconSize} className="animate-spin" aria-hidden /> : Leading && <Leading size={iconSize} aria-hidden />}
       {children}

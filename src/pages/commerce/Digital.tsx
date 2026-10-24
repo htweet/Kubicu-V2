@@ -22,6 +22,7 @@ import { ProductStatusBadge, SampleTag } from '../../components/commerce/StatusB
 import { Card } from '../../components/ui/layout/Card';
 import { Section } from '../../components/ui/layout/Section';
 import { KeyLookup } from '../../components/commerce/KeyLookup';
+import { useT } from '../../contexts/LocaleContext';
 
 const fileBadge = {
   processing: <Badge tone="neutral">Uploading</Badge>,
@@ -35,6 +36,7 @@ const accessCopy = { revoked: 'Revoked (refunded)', limit: 'Limit reached', expi
 export function Digital() {
   const { data } = useCommerce();
   const plan = usePlan();
+  const { t: tr } = useT();
   const [params, setParams] = useSearchParams();
   const [notify, setNotify] = useState<Product | null>(null);
   const allowed = planAtLeast(plan.id, CHECKOUT_PLAN);
@@ -71,19 +73,19 @@ export function Digital() {
         description="Sell files with secure, expiring download links."
         actions={
         <Button leadingIcon={PlusIcon} onClick={() => setParams({ new: '1' })}>
-            Add digital product
+            {tr('Add digital product')}
           </Button>
         } />
       
       {!allowed &&
-      <InlineAlert tone="info" title={`Selling files is on ${plans[CHECKOUT_PLAN].name}`} className="mt-6" action={<UpgradeButton plan={CHECKOUT_PLAN} feature="Selling digital files" />}>
-          You can set products up now; page blocks can’t publish them on {plan.name}.
+      <InlineAlert tone="info" title={tr('Selling files is on {plan}', { plan: plans[CHECKOUT_PLAN].name })} className="mt-6" action={<UpgradeButton plan={CHECKOUT_PLAN} feature="Selling digital files" />}>
+          {tr('You can set products up now; page blocks can’t publish them on {plan}.', { plan: plan.name })}
         </InlineAlert>
       }
 
       {digital.length === 0 ?
       <div className="mt-8 rounded-lg border border-line bg-raised">
-          <EmptyState icon={FileIcon} title="No digital products yet" description="E-books, presets, patterns, templates or courses — upload once and every buyer gets their own link." action={<Button leadingIcon={PlusIcon} onClick={() => setParams({ new: '1' })}>Add digital product</Button>} />
+          <EmptyState icon={FileIcon} title="No digital products yet" description="E-books, presets, patterns, templates or courses — upload once and every buyer gets their own link." action={<Button leadingIcon={PlusIcon} onClick={() => setParams({ new: '1' })}>{tr('Add digital product')}</Button>} />
         </div> :
 
       <div className="mt-8 grid items-start gap-8 xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
@@ -91,20 +93,20 @@ export function Digital() {
           id="digital-files"
           emphasis="primary"
           title="Files for sale"
-          description={`${digital.length} ${digital.length === 1 ? 'product' : 'products'}`}
+          description={tr(digital.length === 1 ? '{n} product' : '{n} products', { n: digital.length })}
           body="flush"
           footer={
           <div>
                 <div className="flex items-baseline justify-between gap-3">
-                  <p className="text-label font-semibold text-fg">Storage</p>
+                  <p className="text-label font-semibold text-fg">{tr('Storage')}</p>
                   <p className="text-caption tabular-nums text-fg-subtle">
-                    {formatBytes(used)} of {formatBytes(STORAGE_LIMIT_BYTES)}
+                    {tr('{used} of {total}', { used: formatBytes(used), total: formatBytes(STORAGE_LIMIT_BYTES) })}
                   </p>
                 </div>
-                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-sunken" role="progressbar" aria-label="Storage used" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(usedPct)}>
+                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-sunken" role="progressbar" aria-label={tr('Storage used')} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(usedPct)}>
                   <div className={usedPct > 85 ? 'h-full bg-warning' : 'h-full bg-action'} style={{ width: `${Math.max(usedPct, 1)}%` }} />
                 </div>
-                <p className="mt-2 text-caption text-fg-subtle">Includes old versions. Bandwidth isn’t metered in this prototype.</p>
+                <p className="mt-2 text-caption text-fg-subtle">{tr('Includes old versions. Bandwidth isn’t metered in this prototype.')}</p>
               </div>
           }>
           
@@ -123,10 +125,14 @@ export function Digital() {
                         {p.sample && <SampleTag />}
                       </button>
                       <p className="text-caption text-fg-subtle">
-                        {asset.fileName ? `${asset.fileName} · ${formatBytes(asset.sizeBytes)} · v${asset.version}` : 'No file yet'}
+                        {asset.fileName ? `${asset.fileName} · ${formatBytes(asset.sizeBytes)} · v${asset.version}` : tr('No file yet')}
                       </p>
                       <p className="text-caption text-fg-subtle">
-                        {[asset.downloadLimit ? `${asset.downloadLimit} downloads` : 'Unlimited downloads', asset.expiryDays ? `${asset.expiryDays}-day link` : 'No expiry', `${sold} sold`].join(' · ')}
+                        {[
+                      asset.downloadLimit ? tr('{n} downloads', { n: asset.downloadLimit }) : tr('Unlimited downloads'),
+                      asset.expiryDays ? tr('{n}-day link', { n: asset.expiryDays }) : tr('No expiry'),
+                      tr('{n} sold', { n: sold })].
+                      join(' · ')}
                       </p>
                     </div>
                     <div className="col-span-2 flex flex-col gap-2 sm:col-span-1 sm:items-end">
@@ -137,7 +143,7 @@ export function Digital() {
                       </div>
                       {sold > 0 && asset.version > 1 &&
                     <Button size="sm" variant="tertiary" leadingIcon={BellIcon} onClick={() => setNotify(p)}>
-                          Tell buyers about v{asset.version}
+                          {tr('Tell buyers about v{n}', { n: asset.version })}
                         </Button>
                     }
                     </div>
@@ -151,7 +157,7 @@ export function Digital() {
           <KeyLookup />
           <Section id="access" title="Who has access" description="Each buyer’s link, downloads used and status.">
             {access.length === 0 ?
-            <p className="text-label text-fg-muted">No one has bought a file yet.</p> :
+            <p className="text-label text-fg-muted">{tr('No one has bought a file yet.')}</p> :
 
             <ul className="flex flex-col divide-y divide-line border-y border-line">
                 {access.map((a) => {
@@ -163,12 +169,11 @@ export function Digital() {
                         {a.check?.ok ? <Badge tone="success">Active</Badge> : <Badge tone="neutral">{a.check ? accessCopy[a.check.reason] : 'Product deleted'}</Badge>}
                       </div>
                       <p className="text-caption text-fg-subtle">
-                        {a.item.name} · order #{a.order.number} · {formatTimestamp(a.order.createdAt)}
+                        {a.item.name} · {tr('order #{n}', { n: a.order.number })} · {formatTimestamp(a.order.createdAt)}
                       </p>
                       <p className="text-caption text-fg-subtle">
-                        {a.usedCount}
-                        {limit ? ` of ${limit}` : ''} downloads
-                        {a.check?.ok && a.check.expiresAt ? ` · expires ${formatTimestamp(a.check.expiresAt)}` : ''}
+                        {limit ? tr('{used} of {limit} downloads', { used: a.usedCount, limit }) : tr('{n} downloads', { n: a.usedCount })}
+                        {a.check?.ok && a.check.expiresAt ? ` · ${tr('expires {date}', { date: formatTimestamp(a.check.expiresAt) })}` : ''}
                       </p>
                     </li>);
 
@@ -185,20 +190,20 @@ export function Digital() {
       <Dialog
         open={!!notify}
         onClose={() => setNotify(null)}
-        title={`Tell ${notify ? buyers(notify).length : 0} buyers about the update?`}
-        description="Their existing download link now gives the new version, within the same download limit."
+        title={tr('Tell {n} buyers about the update?', { n: notify ? buyers(notify).length : 0 })}
+        description={tr('Their existing download link now gives the new version, within the same download limit.')}
         footer={
         <>
             <Button variant="secondary" onClick={() => setNotify(null)}>
-              Cancel
+              {tr('Cancel')}
             </Button>
             <Button
             onClick={() => {
-              toast('Update notice previewed', { description: 'Nothing is sent in this prototype.' });
+              toast(tr('Update notice previewed'), { description: tr('Nothing is sent in this prototype.') });
               setNotify(null);
             }}>
             
-              Send notice
+              {tr('Send notice')}
             </Button>
           </>
         }>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { cn } from '../../utils/cn';
+import { useT } from '../../contexts/LocaleContext';
 
 interface SwitchProps {
   id: string;
@@ -11,6 +12,9 @@ interface SwitchProps {
 }
 
 export function Switch({ id, checked, onChange, label, description, disabled }: SwitchProps) {
+  const { t } = useT();
+  label = t(label);
+  description = description && t(description);
   return (
     <div className={cn('flex items-start justify-between gap-4', disabled && 'opacity-50')}>
       <div className="min-w-0">

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { cn } from '../../utils/cn';
+import { useT } from '../../contexts/LocaleContext';
 
 export interface SubNavItem {
   to: string;
@@ -13,6 +14,7 @@ export interface SubNavItem {
 export function SubNav({ label, items }: {label: string;items: SubNavItem[];}) {
   const ref = useRef<HTMLElement>(null);
   const { pathname } = useLocation();
+  const { t } = useT();
 
   useEffect(() => {
     const el = ref.current?.querySelector<HTMLElement>('[aria-current="page"]');
@@ -22,7 +24,7 @@ export function SubNav({ label, items }: {label: string;items: SubNavItem[];}) {
 
   return (
     // Sideways only: the hairline is drawn inside the list, so nothing spills over and the bar never scrolls vertically.
-    <nav ref={ref} aria-label={label} className="scroll-quiet -mx-5 overflow-x-auto overflow-y-hidden px-5 md:mx-0 md:px-0">
+    <nav ref={ref} aria-label={t(label)} className="scroll-quiet -mx-5 overflow-x-auto overflow-y-hidden px-5 md:mx-0 md:px-0">
       <ul className="flex min-w-max gap-1 shadow-[inset_0_-1px_0_0_rgb(var(--border-subtle))]">
         {items.map((n) =>
         <li key={n.to} className="shrink-0">
@@ -37,7 +39,7 @@ export function SubNav({ label, items }: {label: string;items: SubNavItem[];}) {
             )
             }>
             
-              {n.label}
+              {t(n.label)}
               {!!n.badge && <span className="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-action px-1 text-meta font-bold text-action-fg">{n.badge}</span>}
             </NavLink>
           </li>

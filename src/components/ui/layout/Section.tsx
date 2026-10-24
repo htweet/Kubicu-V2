@@ -1,5 +1,6 @@
 import React from 'react';
 import { cn } from '../../../utils/cn';
+import { useT } from '../../../contexts/LocaleContext';
 
 interface SectionProps {
   title: React.ReactNode;
@@ -16,6 +17,9 @@ interface SectionProps {
  */
 export function Section({ title, description, actions, id, className, children }: SectionProps) {
   const headingId = id ? `${id}-title` : undefined;
+  const { t } = useT();
+  if (typeof title === 'string') title = t(title);
+  if (typeof description === 'string') description = t(description);
   return (
     <section id={id} aria-labelledby={headingId} className={cn('flex min-w-0 flex-col gap-4', className)}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">

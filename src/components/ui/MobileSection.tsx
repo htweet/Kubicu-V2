@@ -2,6 +2,7 @@ import React from 'react';
 import { ChevronDownIcon } from 'lucide-react';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { cn } from '../../utils/cn';
+import { useT } from '../../contexts/LocaleContext';
 
 interface MobileSectionProps {
   id: string;
@@ -21,6 +22,8 @@ interface MobileSectionProps {
  */
 export function MobileSection({ id, title, summary, open, onToggle, invalid, children }: MobileSectionProps) {
   const wide = useMediaQuery('(min-width: 768px)');
+  const { t } = useT();
+  title = t(title);
   if (wide) return <div className="flex flex-col gap-6">{children}</div>;
   return (
     <section className="-mx-5 border-b border-line">

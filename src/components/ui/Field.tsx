@@ -1,6 +1,7 @@
 import React from 'react';
 import { AlertCircleIcon } from 'lucide-react';
 import { cn } from '../../utils/cn';
+import { useT } from '../../contexts/LocaleContext';
 
 interface FieldProps {
   id: string;
@@ -14,12 +15,16 @@ interface FieldProps {
 }
 
 export function Field({ id, label, hint, error, optional, trailing, className, children }: FieldProps) {
+  const { t } = useT();
+  label = t(label);
+  hint = hint && t(hint);
+  error = error && t(error);
   return (
     <div className={cn('flex flex-col gap-1.5', className)}>
       <div className="flex items-center justify-between gap-2">
         <label htmlFor={id} className="text-label font-medium text-fg">
           {label}
-          {optional && <span className="ml-1.5 font-normal text-fg-subtle">Optional</span>}
+          {optional && <span className="ml-1.5 font-normal text-fg-subtle">{t('Optional')}</span>}
         </label>
         {trailing}
       </div>

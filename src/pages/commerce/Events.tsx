@@ -19,6 +19,7 @@ import { TextArea } from '../../components/ui/TextArea';
 import { SampleTag } from '../../components/commerce/StatusBadges';
 import { EventEditor } from '../../components/commerce/EventEditor';
 import { Stat, StatGroup } from '../../components/ui/layout/Stat';
+import { useT } from '../../contexts/LocaleContext';
 
 type Tab = 'upcoming' | 'live' | 'past' | 'drafts';
 
@@ -34,6 +35,7 @@ function tabOf(ev: CommerceEvent, now: number): Tab {
 /** Commerce → Events: events with ticket types, seats and revenue (D73). */
 export function Events() {
   const { data, apply } = useCommerce();
+  const { t: tr } = useT();
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>('upcoming');
@@ -88,7 +90,7 @@ export function Events() {
 
       <>
           <StatGroup columns={3} className="mt-8 items-end border-b border-line pb-6">
-            <Stat primary label="Tickets sold for coming events" value={upcomingSold} hint={`${counts.upcoming + counts.live} event${counts.upcoming + counts.live === 1 ? '' : 's'} on the calendar`} />
+            <Stat primary label="Tickets sold for coming events" value={upcomingSold} hint={tr(counts.upcoming + counts.live === 1 ? '{n} event on the calendar' : '{n} events on the calendar', { n: counts.upcoming + counts.live })} />
             <Stat label="Ticket revenue, all time" value={formatNgn(revenue)} />
             <Stat label="Drafts" value={counts.drafts} />
           </StatGroup>
@@ -99,16 +101,16 @@ export function Events() {
             value={tab}
             onChange={setTab}
             options={[
-            { value: 'upcoming', label: `Upcoming · ${counts.upcoming}` },
-            { value: 'live', label: `Happening now · ${counts.live}` },
-            { value: 'past', label: `Past · ${counts.past}` },
-            { value: 'drafts', label: `Drafts · ${counts.drafts}` }]
+            { value: 'upcoming', label: `${tr('Upcoming')} · ${counts.upcoming}` },
+            { value: 'live', label: `${tr('Happening now')} · ${counts.live}` },
+            { value: 'past', label: `${tr('Past')} · ${counts.past}` },
+            { value: 'drafts', label: `${tr('Drafts')} · ${counts.drafts}` }]
             } />
           
           </div>
 
           {shown.length === 0 ?
-        <p className="mt-6 rounded-lg border border-dashed border-line-strong px-5 py-8 text-center text-label text-fg-muted">Nothing here right now.</p> :
+        <p className="mt-6 rounded-lg border border-dashed border-line-strong px-5 py-8 text-center text-label text-fg-muted">{tr('Nothing here right now.')}</p> :
 
         <ul className="mt-4 flex flex-col divide-y divide-line rounded-lg border border-line bg-raised">
               {shown.map((ev) => {
@@ -126,7 +128,7 @@ export function Events() {
                     </span>
                     <button type="button" onClick={() => ev.status === 'draft' ? setParams({ edit: ev.id }) : navigate(`/app/commerce/events/${ev.id}/guests`)} className="min-w-0 flex-1 rounded-sm text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
                       <span className="flex flex-wrap items-center gap-2">
-                        <span className="truncate text-label font-semibold text-fg">{ev.name || 'Untitled event'}</span>
+                        <span className="truncate text-label font-semibold text-fg">{ev.name || tr('Untitled event')}</span>
                         {ev.sample && <SampleTag />}
                         {ev.series && <Badge tone="neutral">Repeats</Badge>}
                         {ev.seating && <Badge tone="neutral">Seated</Badge>}
@@ -138,18 +140,18 @@ export function Events() {
                         </span>
                         <span className="inline-flex items-center gap-1">
                           {ev.online ? <VideoIcon size={12} aria-hidden /> : <MapPinIcon size={12} aria-hidden />}
-                          {ev.online ? 'Online' : ev.venue || 'No venue'}
+                          {ev.online ? tr('Online') : ev.venue || tr('No venue')}
                         </span>
                       </span>
                     </button>
                     <div className="hidden w-44 shrink-0 md:block">
                       <div className="flex items-baseline justify-between text-caption">
                         <span className="tabular-nums text-fg">
-                          <span className="font-semibold">{sold}</span> <span className="text-fg-subtle">of {total}</span>
+                          <span className="font-semibold">{sold}</span> <span className="text-fg-subtle">{tr('of {n}', { n: total })}</span>
                         </span>
                         <span className="tabular-nums text-fg-subtle">{formatNgn(eventRevenue(data, ev))}</span>
                       </div>
-                      <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-sunken" role="progressbar" aria-valuemin={0} aria-valuemax={total} aria-valuenow={sold} aria-label={`${sold} of ${total} seats sold`}>
+                      <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-sunken" role="progressbar" aria-valuemin={0} aria-valuemax={total} aria-valuenow={sold} aria-label={tr('{sold} of {total} seats sold', { sold, total })}>
                         <div className="h-full rounded-full bg-action" style={{ width: `${pct}%` }} />
                       </div>
                     </div>
@@ -166,7 +168,7 @@ export function Events() {
                   ...((ev.status === 'paused' || ev.status === 'draft') && canCancel ? [{ id: 'resume', label: 'Put on sale', icon: PlayIcon, onSelect: () => setStatus(ev, 'on_sale') }] : []),
                   ...(canCancel ? [{ id: 'cancel', label: 'Cancel event…', icon: XCircleIcon, destructive: true, onSelect: () => setCancelling(ev) }] : [])]
                   }
-                  trigger={(props) => <IconButton {...props} size="sm" icon={MoreHorizontalIcon} label={`More actions for ${ev.name}`} />} />
+                  trigger={(props) => <IconButton {...props} size="sm" icon={MoreHorizontalIcon} label={tr('More actions for {name}', { name: ev.name })} />} />
                 
                   </li>);
 
@@ -181,7 +183,7 @@ export function Events() {
       <Dialog
         open={!!cancelling}
         onClose={() => setCancelling(null)}
-        title={`Cancel ${cancelling?.name ?? 'event'}?`}
+        title={tr('Cancel {name}?', { name: cancelling?.name ?? tr('event') })}
         description="Ticket sales stop and every paid ticket order is refunded in full. Unpaid orders are cancelled and all tickets stop working."
         footer={
         <div className="flex justify-end gap-2">
@@ -196,17 +198,20 @@ export function Events() {
         
         {cancelling &&
         <div className="flex flex-col gap-4">
-            <p className="text-label text-fg">
-              <span className="font-semibold tabular-nums">{ordersForEvent(data, cancelling).filter((o) => o.status !== 'cancelled' && o.status !== 'refunded').length}</span> orders ·{' '}
-              <span className="font-semibold tabular-nums">{eventSold(data, cancelling)}</span> tickets · <span className="font-semibold tabular-nums">{formatNgn(eventRevenue(data, cancelling))}</span> to refund
+            <p className="text-label font-semibold tabular-nums text-fg">
+              {tr('{orders} orders · {tickets} tickets · {amount} to refund', {
+              orders: ordersForEvent(data, cancelling).filter((o) => o.status !== 'cancelled' && o.status !== 'refunded').length,
+              tickets: eventSold(data, cancelling),
+              amount: formatNgn(eventRevenue(data, cancelling))
+            })}
             </p>
             <TextArea id="ev-cancel-reason" label="Reason guests will see" optional rows={2} value={reason} placeholder="e.g. The venue flooded. We’re so sorry." onChange={(e) => setReason(e.target.value)} />
             <div className="rounded-md border border-line bg-sunken px-3.5 py-3 text-caption text-fg-muted">
-              <p className="font-semibold text-fg">Message preview</p>
+              <p className="font-semibold text-fg">{tr('Message preview')}</p>
               <p className="mt-1">
                 “{cancelling.name} on {formatEventDate(cancelling.startsAt, cancelling.timeZone)} has been cancelled.{reason.trim() ? ` ${reason.trim()}` : ''} Your payment is being refunded in full and should arrive in 3–5 working days.”
               </p>
-              <p className="mt-1.5 text-fg-subtle">Preview only — messages aren’t sent in the prototype.</p>
+              <p className="mt-1.5 text-fg-subtle">{tr('Preview only — messages aren’t sent in the prototype.')}</p>
             </div>
           </div>
         }

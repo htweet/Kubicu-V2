@@ -29,6 +29,8 @@ import { SubscriberDetail } from '../../components/subscriptions/SubscriberDetai
 import { SubPlanEditor } from '../../components/subscriptions/SubPlanEditor';
 import { Card } from '../../components/ui/layout/Card';
 import { Stat, StatGroup } from '../../components/ui/layout/Stat';
+import { useT } from '../../contexts/LocaleContext';
+import { intervalWord } from '../../utils/commerce/subscriptions';
 
 type Tab = 'subscribers' | 'plans';
 type StatusFilter = 'all' | SubStatus;
@@ -45,6 +47,8 @@ export function Subscriptions() {
   const { renewalOutcome } = useBilling();
   const plan = usePlan();
   const team = useTeam();
+  const { t: tr } = useT();
+  const planPrice = (p: SubPlan) => tr('{amount} every {interval}', { amount: formatNgn(p.priceNgn), interval: tr(intervalWord[p.interval]) });
   const [tab, setTab] = useState<Tab>('subscribers');
   const [status, setStatus] = useState<StatusFilter>('all');
   const [openId, setOpenId] = useState<string | null>(null);
@@ -58,8 +62,8 @@ export function Subscriptions() {
   const now = Date.now();
 
   const rows: SubRow[] = useMemo(
-    () => data.subscriptions.map((s) => ({ ...s, planName: data.subPlans.find((p) => p.id === s.planId)?.name ?? 'Removed plan', next: nextDueAt(s) })).filter((s) => status === 'all' || s.status === status),
-    [data, status]
+    () => data.subscriptions.map((s) => ({ ...s, planName: data.subPlans.find((p) => p.id === s.planId)?.name ?? tr('Removed plan'), next: nextDueAt(s) })).filter((s) => status === 'all' || s.status === status),
+    [data, status, tr]
   );
   const recent = (iso: string | null) => !!iso && now - Date.parse(iso) <= 30 * DAY;
   const stats = {
@@ -80,7 +84,7 @@ export function Subscriptions() {
     }
     trigger={(props) =>
     <Button {...props} leadingIcon={PlusIcon} trailingIcon={ChevronDownIcon} disabled={!canPlans.allowed}>
-          New plan
+          {tr('New plan')}
         </Button>
     } />;
 
@@ -109,7 +113,15 @@ export function Subscriptions() {
     sortValue: (r) => r.next ? Date.parse(r.next) : Infinity,
     render: (r) =>
     <span className="text-fg-muted">
-          {r.status === 'ended' ? `Ended ${r.endedAt ? subDate(r.endedAt) : ''}` : r.status === 'cancelling' ? `Ends ${subDate(r.periodEnd)}` : r.status === 'past_due' ? `Retry ${r.next ? subDate(r.next) : ''}` : r.next ? subDate(r.next) : '—'}
+          {r.status === 'ended' ?
+      tr('Ended {date}', { date: r.endedAt ? subDate(r.endedAt) : '' }) :
+      r.status === 'cancelling' ?
+      tr('Ends {date}', { date: subDate(r.periodEnd) }) :
+      r.status === 'past_due' ?
+      tr('Retry {date}', { date: r.next ? subDate(r.next) : '' }) :
+      r.next ?
+      subDate(r.next) :
+      '—'}
         </span>
 
   },
@@ -129,7 +141,11 @@ export function Subscriptions() {
       count = r.count;
       return r.data;
     });
-    toast(count ? `Ran the next step for ${count} subscription${count === 1 ? '' : 's'}` : 'Nothing to run', { description: count ? `Renewals ${renewalOutcome === 'succeeds' ? 'succeeded' : 'failed'} (Simulate next renewal in the Controls panel). Sample subscribers are left alone.` : 'Sample subscribers are left alone — sign up from your page first.' });
+    toast(count ? tr(count === 1 ? 'Ran the next step for {n} subscription' : 'Ran the next step for {n} subscriptions', { n: count }) : tr('Nothing to run'), {
+      description: count ?
+      tr(renewalOutcome === 'succeeds' ? 'Renewals succeeded (Simulate next renewal in the Controls panel). Sample subscribers are left alone.' : 'Renewals failed (Simulate next renewal in the Controls panel). Sample subscribers are left alone.') :
+      tr('Sample subscribers are left alone — sign up from your page first.')
+    });
   };
 
   return (
@@ -137,15 +153,15 @@ export function Subscriptions() {
       <PageHeader title="Subscriptions" description="Memberships and product boxes your customers pay for every week, month or year. Subscribers manage their own plan from a personal link." actions={newMenu} />
 
       {!allowed &&
-      <InlineAlert tone="info" title={`Taking subscriptions needs ${plans[CHECKOUT_PLAN].name}`} className="mt-6" action={<UpgradeButton plan={CHECKOUT_PLAN} feature="Subscriptions and recurring payments" />}>
-          You can set up plans now. The Subscription block can’t be published on {plan.name}.
+      <InlineAlert tone="info" title={tr('Taking subscriptions needs {plan}', { plan: plans[CHECKOUT_PLAN].name })} className="mt-6" action={<UpgradeButton plan={CHECKOUT_PLAN} feature="Subscriptions and recurring payments" />}>
+          {tr('You can set up plans now. The Subscription block can’t be published on {plan}.', { plan: plan.name })}
         </InlineAlert>
       }
 
       <Card emphasis="primary" as="div" className="mt-8">
         <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] md:items-end">
           <dl>
-            <Stat primary label="Monthly recurring revenue" value={formatNgn(stats.mrr)} hint={`${stats.paying} paying · ${stats.trials} on trial`} />
+            <Stat primary label="Monthly recurring revenue" value={formatNgn(stats.mrr)} hint={tr('{paying} paying · {trials} on trial', { paying: stats.paying, trials: stats.trials })} />
           </dl>
           <StatGroup className="border-t border-line pt-4 md:border-l md:border-t-0 md:pl-6 md:pt-0">
             <Stat label="Joined, 30 days" value={stats.joined} />
@@ -161,13 +177,13 @@ export function Subscriptions() {
           value={tab}
           onChange={setTab}
           options={[
-          { value: 'subscribers', label: `Subscribers (${data.subscriptions.length})` },
-          { value: 'plans', label: `Plans (${data.subPlans.length})` }]
+          { value: 'subscribers', label: `${tr('Subscribers')} (${data.subscriptions.length})` },
+          { value: 'plans', label: `${tr('Plans')} (${data.subPlans.length})` }]
           } />
         
         {tab === 'subscribers' && data.subscriptions.length > 0 &&
         <div className="w-full sm:w-[220px]">
-            <SelectInput<StatusFilter> id="sub-status" label="Status" value={status} onChange={setStatus} options={[{ value: 'all', label: 'All statuses' }, ...(Object.keys(subStatusLabels) as SubStatus[]).map((s) => ({ value: s, label: subStatusLabels[s] }))]} />
+            <SelectInput<StatusFilter> id="sub-status" label="Status" value={status} onChange={setStatus} options={[{ value: 'all', label: tr('All statuses') }, ...(Object.keys(subStatusLabels) as SubStatus[]).map((s) => ({ value: s, label: tr(subStatusLabels[s]) }))]} />
           </div>
         }
       </div>
@@ -206,24 +222,24 @@ export function Subscriptions() {
                         {p.status === 'archived' && <Badge tone="neutral">Archived</Badge>}
                       </span>
                       <span className="block text-caption text-fg-subtle">
-                        {p.kind === 'box' ? 'Product box' : 'Membership'} · {priceLine(p)}
-                        {p.trialDays ? ` · ${p.trialDays}-day trial` : ''}
-                        {p.setupFeeNgn ? ` · ${formatNgn(p.setupFeeNgn)} setup` : ''}
+                        {tr(p.kind === 'box' ? 'Product box' : 'Membership')} · {planPrice(p)}
+                        {p.trialDays ? ` · ${tr('{n}-day trial', { n: p.trialDays })}` : ''}
+                        {p.setupFeeNgn ? ` · ${tr('{amount} setup', { amount: formatNgn(p.setupFeeNgn) })}` : ''}
                       </span>
-                      {short.length > 0 && <span className="block text-caption font-medium text-warning">Not enough stock for the next box: {short.join(', ')}</span>}
+                      {short.length > 0 && <span className="block text-caption font-medium text-warning">{tr('Not enough stock for the next box:')} {short.join(', ')}</span>}
                       {(() => {
                       const unlocks = areas.filter((a) => a.rule.access === 'any' || a.rule.planIds.includes(p.id));
                       return unlocks.length > 0 ?
                       <span className="mt-0.5 flex items-center gap-1 text-caption text-fg-muted">
                             <LockKeyholeIcon size={12} aria-hidden className="shrink-0" />
-                            <span className="truncate">Content access: {unlocks.map((a) => a.label).join(' · ')}</span>
+                            <span className="truncate">{tr('Content access:')} {unlocks.map((a) => a.label).join(' · ')}</span>
                           </span> :
                       null;
                     })()}
                     </span>
                     <span className="text-label tabular-nums text-fg-muted">
                       {taken}
-                      {p.memberCap !== null ? ` / ${p.memberCap}` : ''} subscriber{taken === 1 && p.memberCap === null ? '' : 's'}
+                      {p.memberCap !== null ? ` / ${p.memberCap}` : ''} {tr(taken === 1 && p.memberCap === null ? 'subscriber' : 'subscribers')}
                     </span>
                   </button>
                 </li>);
@@ -235,13 +251,14 @@ export function Subscriptions() {
 
       <section aria-labelledby="sub-proto" className="mt-10 flex flex-col gap-3 rounded-lg border border-dashed border-line-strong p-4">
         <h2 id="sub-proto" className="flex items-center gap-2 text-label font-semibold text-fg">
-          <FlaskConicalIcon size={15} aria-hidden /> Prototype: skip ahead in time
+          <FlaskConicalIcon size={15} aria-hidden /> {tr('Prototype: skip ahead in time')}
         </h2>
         <p className="text-caption text-fg-muted">
-          Renewals, trial ends and retries run by themselves while KUBICU is open. To see the next step now, run it here. Outcomes follow <span className="font-medium text-fg">Simulate next renewal</span> in the Controls panel (now: {renewalOutcome === 'succeeds' ? 'succeeds' : 'fails'}).
+          {tr('Renewals, trial ends and retries run by themselves while KUBICU is open. To see the next step now, run it here. Outcomes follow “Simulate next renewal” in the Controls panel.')}{' '}
+          <span className="font-medium text-fg">({tr(renewalOutcome === 'succeeds' ? 'now: succeeds' : 'now: fails')})</span>
         </p>
         <Button size="sm" variant="secondary" className="self-start" onClick={runNow}>
-          Run renewals now
+          {tr('Run renewals now')}
         </Button>
       </section>
 

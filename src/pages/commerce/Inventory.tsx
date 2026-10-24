@@ -17,6 +17,7 @@ import { variantLabel } from '../../utils/commerce/catalog';
 import { formatTimestamp } from '../../utils/format';
 import { cn } from '../../utils/cn';
 import { Section } from '../../components/ui/layout/Section';
+import { useT } from '../../contexts/LocaleContext';
 
 interface StockRow {
   id: string;
@@ -28,6 +29,7 @@ type View = 'all' | 'low' | 'out';
 
 export function Inventory() {
   const { data } = useCommerce();
+  const { t: tr } = useT();
   const [params, setParams] = useSearchParams();
   const [view, setView] = useState<View>('all');
   const [adjust, setAdjust] = useState<{product: Product;variantId: string;} | null>(null);
@@ -47,7 +49,7 @@ export function Inventory() {
   const outCount = allVariants.filter(({ v }) => v.stock <= 0).length;
   const lowCount = allVariants.filter(({ p, v }) => v.stock > 0 && v.stock <= p.lowStockAt).length;
   const movements = data.movements.filter((m) => productFilter === 'all' || m.productId === productFilter).slice(0, 40);
-  const productName = (id: string) => data.products.find((p) => p.id === id)?.name ?? 'Deleted product';
+  const productName = (id: string) => data.products.find((p) => p.id === id)?.name ?? tr('Deleted product');
   const variantName = (m: StockMovement) => {
     const v = data.products.find((p) => p.id === m.productId)?.variants.find((x) => x.id === m.variantId);
     return v && Object.keys(v.options).length ? variantLabel(v) : '';
@@ -62,7 +64,7 @@ export function Inventory() {
     <span className="flex items-center gap-2">
           <span className="min-w-0">
             <span className="block truncate font-semibold text-fg">{r.product.name}</span>
-            <span className="block text-caption text-fg-subtle">{Object.keys(r.variant.options).length ? variantLabel(r.variant) : 'Single item'}</span>
+            <span className="block text-caption text-fg-subtle">{Object.keys(r.variant.options).length ? variantLabel(r.variant) : tr('Single item')}</span>
           </span>
           {r.product.sample && <SampleTag />}
         </span>
@@ -83,7 +85,7 @@ export function Inventory() {
     header: 'Status',
     hideOnMobile: true,
     render: (r) =>
-    r.variant.stock <= 0 ? <Badge tone="danger">Out of stock</Badge> : r.variant.stock <= r.product.lowStockAt ? <Badge tone="warning">Low · alert at {r.product.lowStockAt}</Badge> : <Badge tone="success">In stock</Badge>
+    r.variant.stock <= 0 ? <Badge tone="danger">Out of stock</Badge> : r.variant.stock <= r.product.lowStockAt ? <Badge tone="warning">{tr('Low · alert at {n}', { n: r.product.lowStockAt })}</Badge> : <Badge tone="success">In stock</Badge>
   },
   {
     key: 'adjust',
@@ -103,14 +105,14 @@ export function Inventory() {
 
       {tracked.length === 0 ?
       <div className="mt-8 rounded-lg border border-line bg-raised">
-          <EmptyState icon={PackageIcon} title="No stock to track yet" description="Products with “Track stock” switched on appear here." action={<Link to="/app/commerce/products?new=1" className="text-label font-semibold text-action hover:underline">Add a product</Link>} />
+          <EmptyState icon={PackageIcon} title="No stock to track yet" description="Products with “Track stock” switched on appear here." action={<Link to="/app/commerce/products?new=1" className="text-label font-semibold text-action hover:underline">{tr('Add a product')}</Link>} />
         </div> :
 
       <div className="mt-8 grid items-start gap-8 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] xl:gap-10">
           <Section
           id="stock"
           title="Stock levels"
-          description={`${tracked.reduce((s, p) => s + p.variants.length, 0)} tracked items · ${outCount} out of stock · ${lowCount} low`}>
+          description={tr('{n} tracked items · {out} out of stock · {low} low', { n: tracked.reduce((s, p) => s + p.variants.length, 0), out: outCount, low: lowCount })}>
           
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <Segmented<View>
@@ -138,7 +140,7 @@ export function Inventory() {
 
           <Section id="moves" title="Stock history" description="Who changed what, when and why.">
             {movements.length === 0 ?
-          <p className="text-label text-fg-muted">No stock changes yet.</p> :
+          <p className="text-label text-fg-muted">{tr('No stock changes yet.')}</p> :
 
           <ol className="flex flex-col divide-y divide-line border-y border-line">
                 {movements.map((m) =>
@@ -155,8 +157,8 @@ export function Inventory() {
                         {variantName(m) && <span className="text-fg-muted"> · {variantName(m)}</span>}
                       </p>
                       <p className="text-caption text-fg-subtle">
-                        {stockReasonLabels[m.reason]}
-                        {m.orderNumber ? ` · order #${m.orderNumber}` : ''}
+                        {tr(stockReasonLabels[m.reason])}
+                        {m.orderNumber ? ` · ${tr('order #{n}', { n: m.orderNumber })}` : ''}
                         {m.note ? ` · ${m.note}` : ''}
                       </p>
                       <p className="text-caption text-fg-subtle">

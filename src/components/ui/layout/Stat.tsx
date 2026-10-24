@@ -1,5 +1,6 @@
 import React from 'react';
 import { cn } from '../../../utils/cn';
+import { useT } from '../../../contexts/LocaleContext';
 
 interface StatProps {
   label: React.ReactNode;
@@ -12,6 +13,9 @@ interface StatProps {
 
 /** Label above value, never the other way round. Values are tabular so columns line up. */
 export function Stat({ label, value, hint, primary }: StatProps) {
+  const { t } = useT();
+  if (typeof label === 'string') label = t(label);
+  if (typeof hint === 'string') hint = t(hint);
   return (
     <div className="min-w-0">
       <dt className="text-caption text-fg-subtle">{label}</dt>

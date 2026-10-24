@@ -3,6 +3,7 @@ import type { OrderStatus, PaymentStatus, Product } from '../../types/commerce';
 import { Badge, type BadgeTone } from '../ui/Badge';
 import { orderStatusLabels, paymentStatusLabels } from '../../data/commerceNav';
 import { displayStatus, isLowStock } from '../../utils/commerce/catalog';
+import { useT } from '../../contexts/LocaleContext';
 
 const orderTones: Record<OrderStatus, BadgeTone> = {
   new: 'info',
@@ -45,9 +46,10 @@ export function ProductStatusBadge({ product }: {product: Product;}) {
 }
 
 export function SampleTag() {
+  const { t } = useT();
   return (
-    <span className="rounded-sm border border-dashed border-line-strong px-1.5 py-px text-meta font-medium text-fg-subtle" title="Sample data — clear it from Commerce settings">
-      Sample
+    <span className="rounded-sm border border-dashed border-line-strong px-1.5 py-px text-meta font-medium text-fg-subtle" title={t('Sample data — clear it from Commerce settings')}>
+      {t('Sample')}
     </span>);
 
 }

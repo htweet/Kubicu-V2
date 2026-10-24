@@ -11,7 +11,9 @@ interface PageHeaderProps {
 
 export function PageHeader({ title: rawTitle, description, actions, context }: PageHeaderProps) {
   // Screen names follow the person's language where a draft exists (D133).
-  const title = useT().t(rawTitle);
+  const { t } = useT();
+  const title = t(rawTitle);
+  if (typeof description === 'string') description = t(description);
   return (
     <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
       <div className="min-w-0">

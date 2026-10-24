@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "../../utils/cn";
 import { BoxIcon, CheckIcon } from "lucide-react";
+import { useT } from "../../contexts/LocaleContext";
 export interface MenuItem {
   id: string;
   label: string;
@@ -37,6 +38,8 @@ export function Menu({
   className
 }: MenuProps) {
   const [open, setOpen] = useState(false);
+  const { t } = useT();
+  items = items.map((i) => ({ ...i, label: t(i.label), reason: i.reason && t(i.reason) }));
   const rootRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<Array<HTMLButtonElement | null>>([]);
   useEffect(() => {

@@ -33,6 +33,7 @@ import { ProductBundleField } from './ProductBundleField';
 import { useLocalStore } from '../../hooks/useLocalStore';
 import { emptyPartnerships, partnershipKey } from '../../utils/partnerships';
 import { bundleIssue } from '../../utils/commerce/bundles';
+import { useT } from '../../contexts/LocaleContext';
 
 interface ProductEditorProps {
   open: boolean;
@@ -74,6 +75,7 @@ export function ProductEditor({ open, productId, kind, onClose }: ProductEditorP
   const navigate = useNavigate();
   // Sales can change stock and details, not prices (D57).
   const pricesAllowed = useCan('prices.edit');
+  const { t: tr } = useT();
   const existing = productId ? data.products.find((p) => p.id === productId) : undefined;
   const [draft, setDraft] = useState<Product>(() => existing ?? blankProduct(kind));
   const [confirmClose, setConfirmClose] = useState(false);
@@ -98,8 +100,9 @@ export function ProductEditor({ open, productId, kind, onClose }: ProductEditorP
   const referenced = !!existing && data.orders.some((o) => o.items.some((i) => i.productId === existing.id));
   const patch = (p: Partial<Product>) => setDraft((d) => ({ ...d, ...p }));
 
+  // Errors pass through the field, which translates them (D133e).
   const nameError = triedSave && !draft.name.trim() ? 'Give the product a name' : undefined;
-  const fileError = triedSave && draft.kind === 'digital' && draft.status === 'active' && draft.digital?.status !== 'ready' ? 'Upload a file and wait for the scan before making this active' : undefined;
+  const fileError = triedSave && draft.kind === 'digital' && draft.status === 'active' && draft.digital?.status !== 'ready' ? tr('Upload a file and wait for the scan before making this active') : undefined;
   const priceWarning = draft.status === 'active' && draft.priceNgn === null && draft.variants.every((v) => v.priceNgn === null);
   const bundlePartnership = draft.bundle ? partnerships.find((p) => p.id === draft.bundle!.partnershipId) : undefined;
   const bundleError = triedSave && draft.bundle ? bundleIssue(draft.bundle, draft.priceNgn, draft.status, bundlePartnership) : null;
@@ -151,7 +154,7 @@ export function ProductEditor({ open, productId, kind, onClose }: ProductEditorP
     }
   };
 
-  const title = existing ? `Edit ${existing.name}` : kind === 'digital' ? 'New digital product' : 'New product';
+  const title = existing ? tr('Edit {name}', { name: existing.name }) : kind === 'digital' ? 'New digital product' : 'New product';
   // “QR code” opens Domains & QR with a code already pointing at this product's shop page (D72).
   const productDest = existing ? { spaceId: MAIN_SPACE_ID, path: `${STOREFRONT_PATH}/${existing.id}` } : null;
   const productQr = productDest && destinationExists(current, data, productDest) ? productDest : null;
@@ -179,7 +182,7 @@ export function ProductEditor({ open, productId, kind, onClose }: ProductEditorP
               size="sm"
               leadingIcon={QrCodeIcon}
               disabled={!productQr}
-              title={productQr ? 'A printable code that opens this product in your shop' : existing.status !== 'active' ? 'Make the product active first.' : 'Turn on the storefront to give products their own page.'}
+              title={tr(productQr ? 'A printable code that opens this product in your shop' : existing.status !== 'active' ? 'Make the product active first.' : 'Turn on the storefront to give products their own page.')}
               onClick={() => productQr && navigate(qrHref(productQr, existing.name))}>
               
                   QR code
@@ -209,7 +212,7 @@ export function ProductEditor({ open, productId, kind, onClose }: ProductEditorP
             </InlineAlert>
           }
 
-          <MobileSection id="prd-sec-details" title="Details" summary={[draft.name || 'No name yet', draft.status === 'active' ? 'Active' : 'Draft', draft.priceNgn !== null ? `₦${draft.priceNgn.toLocaleString('en-NG')}` : 'No price'].join(' · ')} open={section === 'details'} onToggle={() => toggle('details')} invalid={!!nameError}>
+          <MobileSection id="prd-sec-details" title="Details" summary={[draft.name || tr('No name yet'), tr(draft.status === 'active' ? 'Active' : 'Draft'), draft.priceNgn !== null ? `₦${draft.priceNgn.toLocaleString('en-NG')}` : tr('No price')].join(' · ')} open={section === 'details'} onToggle={() => toggle('details')} invalid={!!nameError}>
           <Field id="prd-status" label="Status" hint={draft.status === 'draft' ? 'Drafts never appear on your page.' : 'Visible on any page block that links to it.'}>
             <Segmented
                 ariaLabel="Status"
@@ -222,23 +225,23 @@ export function ProductEditor({ open, productId, kind, onClose }: ProductEditorP
               
           </Field>
 
-          <TextInput id="prd-name" label="Name" value={draft.name} error={nameError} placeholder={kind === 'digital' ? 'e.g. Lightroom preset pack' : 'e.g. Linen two-piece'} onChange={(e) => patch({ name: e.target.value })} />
+          <TextInput id="prd-name" label="Name" value={draft.name} error={nameError} placeholder={tr(kind === 'digital' ? 'e.g. Lightroom preset pack' : 'e.g. Linen two-piece')} onChange={(e) => patch({ name: e.target.value })} />
           <TextArea id="prd-desc" label="Description" optional rows={3} value={draft.description} onChange={(e) => patch({ description: e.target.value })} />
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <CurrencyInput id="prd-price" label="Price" value={draft.priceNgn} placeholder="Price on request" disabled={!pricesAllowed.allowed} hint={!pricesAllowed.allowed ? pricesAllowed.reason : priceWarning ? 'No price — checkout can’t sell it until you add one.' : undefined} onChange={(priceNgn) => patch({ priceNgn })} />
+            <CurrencyInput id="prd-price" label="Price" value={draft.priceNgn} placeholder={tr('Price on request')} disabled={!pricesAllowed.allowed} hint={!pricesAllowed.allowed ? pricesAllowed.reason : priceWarning ? 'No price — checkout can’t sell it until you add one.' : undefined} onChange={(priceNgn) => patch({ priceNgn })} />
             <CurrencyInput id="prd-compare" label="Compare-at price" optional value={draft.compareAtNgn} disabled={!pricesAllowed.allowed} hint="Shown struck through, e.g. before a sale." onChange={(compareAtNgn) => patch({ compareAtNgn })} />
           </div>
           </MobileSection>
 
-          <MobileSection id="prd-sec-photos" title="Photos" summary={draft.images.length ? `${draft.images.length} photo${draft.images.length === 1 ? '' : 's'}` : 'No photos yet'} open={section === 'photos'} onToggle={() => toggle('photos')}>
+          <MobileSection id="prd-sec-photos" title="Photos" summary={draft.images.length ? tr(draft.images.length === 1 ? '{n} photo' : '{n} photos', { n: draft.images.length }) : tr('No photos yet')} open={section === 'photos'} onToggle={() => toggle('photos')}>
             <ProductImagesField images={draft.images} onChange={(images) => patch({ images })} />
           </MobileSection>
 
           <MobileSection
             id="prd-sec-stock"
             title={kind === 'digital' ? 'File & access' : 'Stock & options'}
-            summary={kind === 'digital' ? draft.digital?.fileName || 'No file yet' : draft.trackStock ? `${draft.variants.length} variant${draft.variants.length === 1 ? '' : 's'} · ${draft.variants.reduce((s, v) => s + v.stock, 0)} in stock` : 'Stock not tracked'}
+            summary={kind === 'digital' ? draft.digital?.fileName || tr('No file yet') : draft.trackStock ? tr('{v} variants · {n} in stock', { v: draft.variants.length, n: draft.variants.reduce((s, v) => s + v.stock, 0) }) : tr('Stock not tracked')}
             open={section === 'stock'}
             onToggle={() => toggle('stock')}
             invalid={!!fileError}>
@@ -266,7 +269,7 @@ export function ProductEditor({ open, productId, kind, onClose }: ProductEditorP
                 
                   {draft.madeToOrder &&
                 <div className="grid gap-4 sm:grid-cols-2">
-                      <Field id="prd-mto-pct" label="Deposit at checkout" hint={draft.priceNgn ? `₦${Math.round(draft.priceNgn * draft.madeToOrder.depositPct / 100).toLocaleString('en-NG')} now, ₦${(draft.priceNgn - Math.round(draft.priceNgn * draft.madeToOrder.depositPct / 100)).toLocaleString('en-NG')} before dispatch` : 'Share of the price paid now.'}>
+                      <Field id="prd-mto-pct" label="Deposit at checkout" hint={draft.priceNgn ? tr('{now} now, {later} before dispatch', { now: `₦${Math.round(draft.priceNgn * draft.madeToOrder.depositPct / 100).toLocaleString('en-NG')}`, later: `₦${(draft.priceNgn - Math.round(draft.priceNgn * draft.madeToOrder.depositPct / 100)).toLocaleString('en-NG')}` }) : 'Share of the price paid now.'}>
                         <select
                       id="prd-mto-pct"
                       className="h-10 w-full rounded-md border border-border-strong bg-surface px-3 text-body text-fg"
@@ -293,7 +296,7 @@ export function ProductEditor({ open, productId, kind, onClose }: ProductEditorP
                 </div>
               }
               {kind === 'physical' && !draft.bundle && <ProductInstalmentsField product={draft} onChange={patch} />}
-              {kind === 'physical' && draft.bundle && <p className="border-t border-border pt-4 text-caption text-fg-muted">Deposits and instalments are off while this is sold with {draft.bundle.partnerName}.</p>}
+              {kind === 'physical' && draft.bundle && <p className="border-t border-border pt-4 text-caption text-fg-muted">{tr('Deposits and instalments are off while this is sold with {name}.', { name: draft.bundle.partnerName })}</p>}
               <VariantsField product={draft} onChange={patch} />
               <div className="grid gap-4 sm:grid-cols-2">
                 {draft.trackStock &&
@@ -326,7 +329,7 @@ export function ProductEditor({ open, productId, kind, onClose }: ProductEditorP
           <MobileSection
             id="prd-sec-partner"
             title="Sold with a partner"
-            summary={draft.bundle ? `With ${draft.bundle.partnerName} · ${draft.bundle.split === 'agreement' ? `${draft.bundle.leadSharePct}/${100 - draft.bundle.leadSharePct}` : 'exact amount'}` : 'Just you'}
+            summary={draft.bundle ? `${tr('With {name}', { name: draft.bundle.partnerName })} · ${draft.bundle.split === 'agreement' ? `${draft.bundle.leadSharePct}/${100 - draft.bundle.leadSharePct}` : tr('exact amount')}` : tr('Just you')}
             open={section === 'partner'}
             onToggle={() => toggle('partner')}
             invalid={!!bundleError}>
@@ -335,9 +338,9 @@ export function ProductEditor({ open, productId, kind, onClose }: ProductEditorP
           </MobileSection>
 
           {data.collections.length > 0 &&
-          <MobileSection id="prd-sec-coll" title="Collections" summary={draft.collectionIds.length ? data.collections.filter((c) => draft.collectionIds.includes(c.id)).map((c) => c.name).join(', ') : 'None'} open={section === 'collections'} onToggle={() => toggle('collections')}>
+          <MobileSection id="prd-sec-coll" title="Collections" summary={draft.collectionIds.length ? data.collections.filter((c) => draft.collectionIds.includes(c.id)).map((c) => c.name).join(', ') : tr('None')} open={section === 'collections'} onToggle={() => toggle('collections')}>
             <fieldset>
-              <legend className="mb-2 text-label font-medium text-fg">Collections</legend>
+              <legend className="mb-2 text-label font-medium text-fg">{tr('Collections')}</legend>
               <div className="flex flex-wrap gap-1.5">
                 {data.collections.map((c) => {
                   const on = draft.collectionIds.includes(c.id);
@@ -392,7 +395,7 @@ export function ProductEditor({ open, productId, kind, onClose }: ProductEditorP
         open={confirmDelete}
         onClose={() => setConfirmDelete(false)}
         size="sm"
-        title={`Delete “${existing?.name ?? ''}”?`}
+        title={tr('Delete “{name}”?', { name: existing?.name ?? '' })}
         description="This can’t be undone. Page blocks linked to it will show a warning until you pick another product."
         footer={
         <>

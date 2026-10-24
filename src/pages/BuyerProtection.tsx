@@ -121,7 +121,7 @@ function Unlock({ theme: t, digits, onUnlock }: {theme: PageTheme;digits: string
       onSubmit={(e) => {
         e.preventDefault();
         if (value === digits) onUnlock();else
-        setError('That doesn’t match the phone number on this order.');
+        setError(tx('That doesn’t match the phone number on this order.'));
       }}>
       
       <p className="flex items-center gap-2 text-[15px] font-semibold" style={{ color: t.text }}>
@@ -137,19 +137,20 @@ function Unlock({ theme: t, digits, onUnlock }: {theme: PageTheme;digits: string
 
 function Actions({ c, theme: t, business, workspaceId, update }: {c: EscrowCase;theme: PageTheme;business: string;workspaceId: string;update: ReturnType<typeof useMoney>['update'];}) {
   const [mode, setMode] = useState<'idle' | 'confirm' | 'report' | 'escalate'>('idle');
+  const { t: tx } = useT();
   const muted = { color: t.mutedText };
   const d = c.dispute;
 
   if (mode === 'report') return <ReportForm c={c} theme={t} onCancel={() => setMode('idle')} onSubmit={(input) => update((m) => openDispute(m, c.id, input))} />;
 
   return (
-    <section aria-label="What would you like to do?" className="flex flex-col gap-3 p-5" style={{ ...cardStyle(t), color: t.text }}>
+    <section aria-label={tx('What would you like to do?')} className="flex flex-col gap-3 p-5" style={{ ...cardStyle(t), color: t.text }}>
       {(c.stage === 'held' || c.stage === 'delivered') && mode === 'idle' &&
       <>
           {c.stage === 'delivered' && <PrimaryButton theme={t} onClick={() => setMode('confirm')}>Yes, I got it — release payment</PrimaryButton>}
           {c.stage === 'held' &&
         <p className="text-[14px]" style={muted}>
-              Nothing to do yet. If it never arrives, you can report it here.
+              {tx('Nothing to do yet. If it never arrives, you can report it here.')}
             </p>
         }
           <SecondaryButton theme={t} onClick={() => setMode('report')}>
@@ -160,9 +161,9 @@ function Actions({ c, theme: t, business, workspaceId, update }: {c: EscrowCase;
 
       {mode === 'confirm' &&
       <>
-          <p className="text-[14.5px] font-semibold">Release {formatNgn(c.grossNgn)} to {business}?</p>
+          <p className="text-[14.5px] font-semibold">{tx('Release {amount} to {business}?', { amount: formatNgn(c.grossNgn), business })}</p>
           <p className="text-[13.5px]" style={muted}>
-            Only do this if you have everything and it’s as described. Once released, problems go to the seller directly.
+            {tx('Only do this if you have everything and it’s as described. Once released, problems go to the seller directly.')}
           </p>
           <PrimaryButton theme={t} onClick={() => update((m) => confirmReceived(m, c.id))}>
             Release payment
@@ -176,19 +177,21 @@ function Actions({ c, theme: t, business, workspaceId, update }: {c: EscrowCase;
       {d && (c.stage === 'disputed' || c.stage === 'escalated') &&
       <>
           <div>
-            <p className="text-[14.5px] font-semibold">{issueLabels[d.issue]}</p>
+            <p className="text-[14.5px] font-semibold">{tx(issueLabels[d.issue])}</p>
             <p className="text-[13px]" style={muted}>
-              Reported {formatTimestamp(d.openedAt)} · you asked for {d.wants === 'full' ? 'a full refund' : `${formatNgn(d.partialNgn ?? 0)} back`}
+              {d.wants === 'full' ?
+            tx('Reported {date} · you asked for a full refund', { date: formatTimestamp(d.openedAt) }) :
+            tx('Reported {date} · you asked for {amount} back', { date: formatTimestamp(d.openedAt), amount: formatNgn(d.partialNgn ?? 0) })}
             </p>
           </div>
           {!d.response && c.stage === 'disputed' &&
         <p className="rounded-md px-3 py-2 text-[13.5px]" style={{ background: mix(t.text, 6) }}>
-              {business} has until {formatTimestamp(d.respondBy)} to reply. If they don’t, KUBICU takes over automatically.
+              {tx('{business} has until {date} to reply. If they don’t, KUBICU takes over automatically.', { business, date: formatTimestamp(d.respondBy) })}
             </p>
         }
           {d.response && d.response.kind !== 'full_refund' &&
         <div className="rounded-md px-3 py-2.5" style={{ background: mix(t.text, 6) }}>
-              <p className="text-[14px] font-semibold">{d.response.kind === 'partial' ? `${business} offers ${formatNgn(d.response.partialNgn ?? 0)} back` : `${business} disagrees`}</p>
+              <p className="text-[14px] font-semibold">{d.response.kind === 'partial' ? tx('{business} offers {amount} back', { business, amount: formatNgn(d.response.partialNgn ?? 0) }) : tx('{business} disagrees', { business })}</p>
               <p className="mt-1 text-[13.5px]" style={muted}>
                 “{d.response.text}”
               </p>
@@ -197,7 +200,7 @@ function Actions({ c, theme: t, business, workspaceId, update }: {c: EscrowCase;
         }
           {c.stage === 'disputed' && d.response?.kind === 'partial' && mode === 'idle' &&
         <PrimaryButton theme={t} onClick={() => update((m) => acceptOffer(workspaceId, m, c.id))}>
-              Accept {formatNgn(d.response.partialNgn ?? 0)} refund
+              {tx('Accept {amount} refund', { amount: formatNgn(d.response.partialNgn ?? 0) })}
             </PrimaryButton>
         }
           {c.stage === 'disputed' && d.response && mode === 'idle' &&
@@ -208,7 +211,7 @@ function Actions({ c, theme: t, business, workspaceId, update }: {c: EscrowCase;
           {mode === 'escalate' && <EscalateForm theme={t} onCancel={() => setMode('idle')} onSubmit={(note) => update((m) => escalate(m, c.id, 'buyer', note))} />}
           {mode === 'idle' &&
         <button type="button" className="self-start text-[13.5px] font-medium underline" style={muted} onClick={() => update((m) => withdrawDispute(m, c.id))}>
-              Problem solved — withdraw and release payment
+              {tx('Problem solved — withdraw and release payment')}
             </button>
         }
         </>
@@ -224,10 +227,11 @@ function ReportForm({ c, theme: t, onCancel, onSubmit }: {c: EscrowCase;theme: P
   const [amount, setAmount] = useState('');
   const [evidence, setEvidence] = useState<string[]>([]);
   const [tried, setTried] = useState(false);
+  const { t: tx } = useT();
   const partial = Number(amount) || 0;
   const errors = {
-    details: details.trim().length < 20 ? 'Tell us what happened in at least 20 characters.' : undefined,
-    amount: wants === 'partial' && (partial <= 0 || partial >= c.grossNgn) ? `Enter an amount below ${formatNgn(c.grossNgn)}.` : undefined
+    details: details.trim().length < 20 ? tx('Tell us what happened in at least 20 characters.') : undefined,
+    amount: wants === 'partial' && (partial <= 0 || partial >= c.grossNgn) ? tx('Enter an amount below {amount}.', { amount: formatNgn(c.grossNgn) }) : undefined
   };
   const issues: EscrowIssue[] = c.stage === 'held' ? ['not_received', 'other'] : ['not_received', 'not_as_described', 'damaged', 'incomplete', 'other'];
   const radio = (on: boolean) => ({ border: `1px solid ${mix(t.text, on ? 40 : 14)}`, color: t.text });
@@ -244,37 +248,37 @@ function ReportForm({ c, theme: t, onCancel, onSubmit }: {c: EscrowCase;theme: P
         onSubmit({ issue, details, wants, partialNgn: wants === 'partial' ? partial : undefined, evidence });
       }}>
       
-      <CheckoutHeading theme={t} sub={`Your money stays reserved while this is sorted out. The seller has ${RESPOND_HOURS} hours to reply.`}>
-        Report a problem
+      <CheckoutHeading theme={t} sub={tx('Your money stays reserved while this is sorted out. The seller has {hours} hours to reply.', { hours: RESPOND_HOURS })}>
+        {tx('Report a problem')}
       </CheckoutHeading>
       <fieldset className="flex flex-col gap-2">
-        <legend className="mb-1 text-[13px] font-medium">What went wrong?</legend>
+        <legend className="mb-1 text-[13px] font-medium">{tx('What went wrong?')}</legend>
         {issues.map((i) =>
         <label key={i} className="flex cursor-pointer items-center gap-2.5 rounded-md px-3 py-2.5 text-[14px]" style={radio(issue === i)}>
             <input type="radio" name="issue" checked={issue === i} onChange={() => setIssue(i)} />
-            {issueLabels[i]}
+            {tx(issueLabels[i])}
           </label>
         )}
       </fieldset>
-      <ThemedTextArea theme={t} label="What happened?" value={details} onChange={setDetails} error={tried ? errors.details : undefined} />
+      <ThemedTextArea theme={t} label={tx('What happened?')} value={details} onChange={setDetails} error={tried ? errors.details : undefined} />
       <fieldset className="flex flex-col gap-2">
-        <legend className="mb-1 text-[13px] font-medium">What would make it right?</legend>
+        <legend className="mb-1 text-[13px] font-medium">{tx('What would make it right?')}</legend>
         {(['full', 'partial'] as const).map((w) =>
         <label key={w} className="flex cursor-pointer items-center gap-2.5 rounded-md px-3 py-2.5 text-[14px]" style={radio(wants === w)}>
             <input type="radio" name="wants" checked={wants === w} onChange={() => setWants(w)} />
-            {w === 'full' ? `A full refund (${formatNgn(c.grossNgn)})` : 'Part of my money back'}
+            {w === 'full' ? tx('A full refund ({amount})', { amount: formatNgn(c.grossNgn) }) : tx('Part of my money back')}
           </label>
         )}
       </fieldset>
       {wants === 'partial' && <ThemedField theme={t} label="Amount (₦)" inputMode="numeric" value={amount} onChange={(v) => setAmount(v.replace(/\D/g, ''))} error={tried ? errors.amount : undefined} />}
       <div className="flex flex-col gap-1.5">
         <span className="text-[13px] font-medium">
-          Photos or documents <span style={{ color: t.mutedText, fontWeight: 400 }}>· optional, up to {MAX_FILES}</span>
+          {tx('Photos or documents')} <span style={{ color: t.mutedText, fontWeight: 400 }}>· {tx('optional, up to {n}', { n: MAX_FILES })}</span>
         </span>
         {evidence.length > 0 && <Files theme={t} names={evidence} />}
         {evidence.length < MAX_FILES &&
         <label className="inline-flex cursor-pointer items-center gap-1.5 self-start rounded-md px-3 py-2 text-[13.5px] font-medium" style={radio(false)}>
-            <PaperclipIcon size={14} aria-hidden /> Add files
+            <PaperclipIcon size={14} aria-hidden /> {tx('Add files')}
             <input type="file" multiple accept="image/*,.pdf" className="sr-only" onChange={(e) => setEvidence([...evidence, ...Array.from(e.target.files ?? []).map((f) => f.name)].slice(0, MAX_FILES))} />
           </label>
         }
@@ -291,9 +295,10 @@ function ReportForm({ c, theme: t, onCancel, onSubmit }: {c: EscrowCase;theme: P
 
 function EscalateForm({ theme: t, onCancel, onSubmit }: {theme: PageTheme;onCancel: () => void;onSubmit: (note: string) => void;}) {
   const [note, setNote] = useState('');
+  const { t: tx } = useT();
   return (
     <div className="flex flex-col gap-3">
-      <ThemedTextArea theme={t} label="Anything KUBICU should know?" optional value={note} onChange={setNote} />
+      <ThemedTextArea theme={t} label={tx('Anything KUBICU should know?')} optional value={note} onChange={setNote} />
       <PrimaryButton theme={t} onClick={() => onSubmit(note)}>
         Send to KUBICU
       </PrimaryButton>
@@ -306,11 +311,12 @@ function EscalateForm({ theme: t, onCancel, onSubmit }: {theme: PageTheme;onCanc
 
 function ThemedTextArea({ theme: t, label, value, onChange, error, optional }: {theme: PageTheme;label: string;value: string;onChange: (v: string) => void;error?: string;optional?: boolean;}) {
   const id = React.useId();
+  const { t: tx } = useT();
   return (
     <div className="flex flex-col gap-1.5">
       <label htmlFor={id} className="text-[13px] font-medium" style={{ color: t.text }}>
         {label}
-        {optional && <span style={{ color: t.mutedText, fontWeight: 400 }}> · optional</span>}
+        {optional && <span style={{ color: t.mutedText, fontWeight: 400 }}> · {tx('optional')}</span>}
       </label>
       <textarea
         id={id}

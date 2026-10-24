@@ -1,6 +1,7 @@
 import React from "react";
 import { cn } from "../../utils/cn";
 import { BoxIcon } from "lucide-react";
+import { useT } from "../../contexts/LocaleContext";
 export type BadgeTone = 'neutral' | 'action' | 'accent' | 'success' | 'warning' | 'danger' | 'info';
 const tones: Record<BadgeTone, string> = {
   neutral: 'bg-sunken text-fg-muted border-line',
@@ -25,6 +26,8 @@ export function Badge({
   children,
   className
 }: BadgeProps) {
+  const { t } = useT();
+  if (typeof children === 'string') children = t(children);
   return <span className={cn('inline-flex h-6 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-2 text-caption font-medium', tones[tone], className)}>
       {dot && <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-current" />}
       {Icon && <Icon size={12} aria-hidden />}

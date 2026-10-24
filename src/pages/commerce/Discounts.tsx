@@ -19,6 +19,7 @@ import { DiscountEditor } from '../../components/commerce/DiscountEditor';
 import { SampleTag } from '../../components/commerce/StatusBadges';
 import { Card } from '../../components/ui/layout/Card';
 import { Stat, StatGroup } from '../../components/ui/layout/Stat';
+import { useT } from '../../contexts/LocaleContext';
 
 const statusTone: Record<DiscountStatus, BadgeTone> = { active: 'success', scheduled: 'info', expired: 'neutral', used_up: 'neutral', paused: 'warning' };
 const kindIcon = { code: TagIcon, automatic: SparklesIcon, referral: UsersIcon };
@@ -32,6 +33,9 @@ interface Row extends Discount {
 export function Discounts() {
   const { data } = useCommerce();
   const plan = usePlan();
+  const { t: tr } = useT();
+  const valueText = (v: Discount['value']) =>
+  v.type === 'percent' ? tr('{v} off', { v: `${v.percent}%` }) : v.type === 'fixed' ? tr('{v} off', { v: formatNgn(v.amountNgn) }) : tr('Free delivery');
   const [target, setTarget] = useState<{discount: Discount;} | {kind: DiscountKind;} | null>(null);
   const checkoutAllowed = planAtLeast(plan.id, CHECKOUT_PLAN);
 
@@ -57,7 +61,7 @@ export function Discounts() {
     }
     trigger={(props) =>
     <Button {...props} leadingIcon={PlusIcon} trailingIcon={ChevronDownIcon}>
-          New discount
+          {tr('New discount')}
         </Button>
     } />;
 
@@ -80,15 +84,15 @@ export function Discounts() {
                 <span className={r.code ? 'font-mono font-semibold text-fg' : 'font-semibold text-fg'}>{r.code || r.title}</span>
                 {r.sample && <SampleTag />}
               </span>
-              <span className="block truncate text-caption text-fg-subtle">{r.code ? r.title : discountKindLabel[r.kind]}{r.referrerName ? ` · ${r.referrerName}` : ''}</span>
+              <span className="block truncate text-caption text-fg-subtle">{r.code ? r.title : tr(discountKindLabel[r.kind])}{r.referrerName ? ` · ${r.referrerName}` : ''}</span>
             </span>
           </button>);
 
     }
   },
-  { key: 'value', header: 'Value', hideOnMobile: true, render: (r) => <span className="text-fg-muted">{valueLabel(r.value)}{r.minSubtotalNgn ? ` over ${formatNgn(r.minSubtotalNgn)}` : ''}</span> },
+  { key: 'value', header: 'Value', hideOnMobile: true, render: (r) => <span className="text-fg-muted">{valueText(r.value)}{r.minSubtotalNgn ? ` ${tr('over {amount}', { amount: formatNgn(r.minSubtotalNgn) })}` : ''}</span> },
   { key: 'status', header: 'Status', sortValue: (r) => r.status, render: (r) => <Badge tone={statusTone[r.status]} dot>{discountStatusLabel[r.status]}</Badge> },
-  { key: 'ends', header: 'Ends', hideOnMobile: true, sortValue: (r) => r.endsAt ? Date.parse(r.endsAt) : Infinity, render: (r) => <span className="text-fg-muted">{r.endsAt ? formatTimestamp(r.endsAt) : 'No end'}</span> },
+  { key: 'ends', header: 'Ends', hideOnMobile: true, sortValue: (r) => r.endsAt ? Date.parse(r.endsAt) : Infinity, render: (r) => <span className="text-fg-muted">{r.endsAt ? formatTimestamp(r.endsAt) : tr('No end')}</span> },
   { key: 'uses', header: 'Uses', align: 'right', sortValue: (r) => r.uses, render: (r) => <span className="tabular-nums">{r.uses}{r.usageLimit !== null ? <span className="text-fg-subtle"> / {r.usageLimit}</span> : null}</span> },
   { key: 'total', header: 'Discounted', align: 'right', sortValue: (r) => r.totalNgn, render: (r) => <span className="tabular-nums text-fg-muted">{r.totalNgn ? `−${formatNgn(r.totalNgn)}` : '—'}</span> }];
 
@@ -98,8 +102,8 @@ export function Discounts() {
       <PageHeader title="Discounts" description="Codes, automatic offers and referral codes. One discount per order — customers always get whichever saves them more." actions={newMenu} />
 
       {!checkoutAllowed &&
-      <InlineAlert tone="info" title={`Discounts apply at checkout, which is on ${plans[CHECKOUT_PLAN].name}`} className="mt-6" action={<UpgradeButton plan={CHECKOUT_PLAN} feature="Checkout with discounts" />}>
-          You can set up codes now. WhatsApp orders on {plan.name} don’t apply them automatically.
+      <InlineAlert tone="info" title={tr('Discounts apply at checkout, which is on {plan}', { plan: plans[CHECKOUT_PLAN].name })} className="mt-6" action={<UpgradeButton plan={CHECKOUT_PLAN} feature="Checkout with discounts" />}>
+          {tr('You can set up codes now. WhatsApp orders on {plan} don’t apply them automatically.', { plan: plan.name })}
         </InlineAlert>
       }
 
@@ -120,10 +124,10 @@ export function Discounts() {
             <Card
             id="referrers"
             title="Top referrers"
-            footer={<p className="text-caption text-fg-subtle">Rewards are notes for you to honour. KUBICU doesn’t pay anything out.</p>}>
+            footer={<p className="text-caption text-fg-subtle">{tr('Rewards are notes for you to honour. KUBICU doesn’t pay anything out.')}</p>}>
             
               {referrals.length === 0 ?
-            <p className="text-caption text-fg-muted">Give a regular customer their own code. Each order they send shows up here.</p> :
+            <p className="text-caption text-fg-muted">{tr('Give a regular customer their own code. Each order they send shows up here.')}</p> :
 
             <ol className="-my-2.5 flex flex-col divide-y divide-line">
                   {referrals.slice(0, 5).map((r) =>
@@ -133,7 +137,7 @@ export function Discounts() {
                         <span className="block truncate text-caption text-fg-subtle">{r.rewardNote || r.code}</span>
                       </span>
                       <span className="shrink-0 text-label font-semibold tabular-nums text-fg">
-                        {r.uses} <span className="font-normal text-fg-subtle">order{r.uses === 1 ? '' : 's'}</span>
+                        {r.uses} <span className="font-normal text-fg-subtle">{tr(r.uses === 1 ? 'order' : 'orders')}</span>
                       </span>
                     </li>
               )}

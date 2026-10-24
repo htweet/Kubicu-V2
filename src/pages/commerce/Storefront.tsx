@@ -26,6 +26,7 @@ import { Card } from '../../components/ui/layout/Card';
 import { Section } from '../../components/ui/layout/Section';
 import { FeaturedPicker } from '../../components/commerce/storefront/FeaturedPicker';
 import { cn } from '../../utils/cn';
+import { useT } from '../../contexts/LocaleContext';
 
 const ANNOUNCEMENT_MAX = 90;
 const SEO_TITLE_MAX = 60;
@@ -37,6 +38,7 @@ export function Storefront() {
   const { data, apply } = useCommerce();
   const { state } = useEditor();
   const plan = usePlan();
+  const { t: tr } = useT();
   const saved = useMemo(() => storefrontConfig(data.storefront), [data.storefront]);
   const [draft, setDraft] = useState<StorefrontConfig>(saved);
   const [tried, setTried] = useState(false);
@@ -65,7 +67,7 @@ export function Storefront() {
   const save = () => {
     setTried(true);
     if (phoneError || titleError || bannerAltError) {
-      toast.error('Check the highlighted fields');
+      toast.error(tr('Check the highlighted fields'));
       return;
     }
     const clean: StorefrontConfig = {
@@ -81,7 +83,13 @@ export function Storefront() {
       featuredIds: draft.featuredIds.filter((id) => allShop.some((p) => p.id === id))
     };
     if (apply((d) => ({ ...d, storefront: clean })))
-    toast.success(draft.enabled ? 'Storefront saved' : 'Storefront turned off', { description: draft.enabled ? `Live at ${shopUrl}${live ? '' : ' once your page is published'}.` : 'The /shop address now shows “page doesn’t exist”.' });
+    toast.success(draft.enabled ? tr('Storefront saved') : tr('Storefront turned off'), {
+      description: draft.enabled ?
+      live ?
+      tr('Live at {url}.', { url: shopUrl }) :
+      tr('Live at {url} once your page is published.', { url: shopUrl }) :
+      tr('The /shop address now shows “page doesn’t exist”.')
+    });
   };
 
   return (
@@ -111,15 +119,15 @@ export function Storefront() {
       <div className="mt-8 grid items-start gap-8 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] lg:gap-10">
         <div className="flex flex-col gap-6">
           <Card emphasis="primary" as="div">
-            <Switch id="sf-enabled" label="Show a storefront" description={`At ${shopUrl}. Draft and archived products never appear.`} checked={draft.enabled} onChange={(v) => set('enabled', v)} />
+            <Switch id="sf-enabled" label="Show a storefront" description={tr('At {url}. Draft and archived products never appear.', { url: shopUrl })} checked={draft.enabled} onChange={(v) => set('enabled', v)} />
             {clash && draft.enabled &&
-            <InlineAlert tone="warning" title={`Your “${clash}” page already uses /shop`} className="mt-4">
-                The storefront stays hidden so that page keeps working. Change the page’s address in the canvas (Pages tab) to use the storefront instead.
+            <InlineAlert tone="warning" title={tr('Your “{page}” page already uses /shop', { page: clash })} className="mt-4">
+                {tr('The storefront stays hidden so that page keeps working. Change the page’s address in the canvas (Pages tab) to use the storefront instead.')}
               </InlineAlert>
             }
             {!live && draft.enabled &&
             <p className="mt-4 text-caption text-fg-muted">
-                Your main page isn’t published yet, so visitors can’t reach the shop. <Link to={`/app/canvas/${state.site.id}`} className="font-medium text-fg underline underline-offset-2">Open the canvas</Link>
+                {tr('Your main page isn’t published yet, so visitors can’t reach the shop.')} <Link to={`/app/canvas/${state.site.id}`} className="font-medium text-fg underline underline-offset-2">{tr('Open the canvas')}</Link>
               </p>
             }
           </Card>
@@ -127,7 +135,7 @@ export function Storefront() {
           <Card id="sf-content" title="What shoppers see first" description="The top of the shop: title, intro, a notice and an optional banner." className={offCls}>
             <div className="flex flex-col gap-4">
               <TextInput id="sf-title" label="Shop title" value={draft.title} error={tried ? titleError || undefined : undefined} disabled={off} onChange={(e) => set('title', e.target.value)} />
-              <TextArea id="sf-intro" label="Intro" optional rows={2} value={draft.intro} disabled={off} placeholder="e.g. Made in small runs in Lekki. Delivery across Lagos." onChange={(e) => set('intro', e.target.value)} />
+              <TextArea id="sf-intro" label="Intro" optional rows={2} value={draft.intro} disabled={off} placeholder={tr('e.g. Made in small runs in Lekki. Delivery across Lagos.')} onChange={(e) => set('intro', e.target.value)} />
               <TextInput
                 id="sf-announce"
                 label="Announcement"
@@ -136,16 +144,16 @@ export function Storefront() {
                 leadingIcon={MegaphoneIcon}
                 value={draft.announcement}
                 disabled={off}
-                placeholder="e.g. Free delivery in Lekki this week"
-                hint={`${draft.announcement.length}/${ANNOUNCEMENT_MAX}. A slim bar above the shop. Leave empty to hide it.`}
+                placeholder={tr('e.g. Free delivery in Lekki this week')}
+                hint={`${draft.announcement.length}/${ANNOUNCEMENT_MAX}. ${tr('A slim bar above the shop. Leave empty to hide it.')}`}
                 onChange={(e) => set('announcement', e.target.value)} />
               
               <MediaPicker id="sf-banner" label="Banner" optional aspect="16:9" value={draft.bannerUrl} disabled={off} hint="Wide photo across the top of the shop. Hidden when a collection is open." onChange={(src, meta) => setDraft((d) => ({ ...d, bannerUrl: src, bannerAlt: src ? d.bannerAlt || meta?.alt || '' : '' }))} />
-              {draft.bannerUrl && <TextInput id="sf-banner-alt" label="Banner description" value={draft.bannerAlt} disabled={off} error={tried ? bannerAltError || undefined : undefined} placeholder="e.g. Model wearing the wine gele in the studio" onChange={(e) => set('bannerAlt', e.target.value)} />}
+              {draft.bannerUrl && <TextInput id="sf-banner-alt" label="Banner description" value={draft.bannerAlt} disabled={off} error={tried ? bannerAltError || undefined : undefined} placeholder={tr('e.g. Model wearing the wine gele in the studio')} onChange={(e) => set('bannerAlt', e.target.value)} />}
             </div>
           </Card>
 
-          <Card id="sf-featured" title="Featured products" description={`Pinned to the top when the shop is in Featured order. Up to 8.`} className={offCls}>
+          <Card id="sf-featured" title="Featured products" description="Pinned to the top when the shop is in Featured order. Up to 8." className={offCls}>
             <FeaturedPicker products={allShop} value={draft.featuredIds} disabled={off} onChange={(ids) => set('featuredIds', ids)} />
           </Card>
 
@@ -154,7 +162,7 @@ export function Storefront() {
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="flex flex-col gap-1.5">
                   <span id="sf-cols-label" className="text-label font-medium text-fg">
-                    Products per row
+                    {tr('Products per row')}
                   </span>
                   <Segmented<'2' | '3' | '4'>
                     ariaLabel="Products per row on desktop"
@@ -167,10 +175,10 @@ export function Storefront() {
                     { value: '4', label: '4' }]
                     } />
                   
-                  <span className="text-caption text-fg-subtle">On desktop. Phones always show 2.</span>
+                  <span className="text-caption text-fg-subtle">{tr('On desktop. Phones always show 2.')}</span>
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <span className="text-label font-medium text-fg">Photo shape</span>
+                  <span className="text-label font-medium text-fg">{tr('Photo shape')}</span>
                   <Segmented<StorefrontConfig['imageShape']>
                     ariaLabel="Photo shape"
                     fullWidth
@@ -182,7 +190,7 @@ export function Storefront() {
                     { value: 'landscape', label: 'Wide' }]
                     } />
                   
-                  <span className="text-caption text-fg-subtle">Portrait suits fashion; square suits food and beauty.</span>
+                  <span className="text-caption text-fg-subtle">{tr('Portrait suits fashion; square suits food and beauty.')}</span>
                 </div>
               </div>
               <SelectInput<StorefrontSort>
@@ -192,7 +200,7 @@ export function Storefront() {
                 disabled={off}
                 hint="Shoppers can still change it."
                 onChange={(v) => set('defaultSort', v)}
-                options={(Object.keys(sortLabels) as StorefrontSort[]).map((o) => ({ value: o, label: sortLabels[o] }))} />
+                options={(Object.keys(sortLabels) as StorefrontSort[]).map((o) => ({ value: o, label: tr(sortLabels[o]) }))} />
               
               <div className="flex flex-col gap-4 border-t border-line pt-5">
                 <Switch id="sf-search" label="Search box" checked={draft.showSearch} disabled={off} onChange={(v) => set('showSearch', v)} />
@@ -217,8 +225,8 @@ export function Storefront() {
                 } />
               
               {draft.ordering === 'checkout' && !checkoutAllowed &&
-              <InlineAlert tone="info" title={`Checkout is on ${plans[CHECKOUT_PLAN].name}`} action={<UpgradeButton plan={CHECKOUT_PLAN} feature="Checkout in your storefront" />}>
-                  Until then, the shop uses WhatsApp ordering.
+              <InlineAlert tone="info" title={tr('Checkout is on {plan}', { plan: plans[CHECKOUT_PLAN].name })} action={<UpgradeButton plan={CHECKOUT_PLAN} feature="Checkout in your storefront" />}>
+                  {tr('Until then, the shop uses WhatsApp ordering.')}
                 </InlineAlert>
               }
               {usesWhatsApp &&
@@ -226,7 +234,10 @@ export function Storefront() {
               }
               {!usesWhatsApp &&
               <p className="text-caption text-fg-muted">
-                  Shoppers add to a cart and pay at checkout, with your <Link to="/app/commerce/settings" className="font-medium text-fg underline underline-offset-2">delivery options</Link>, discount codes and <Link to="/app/commerce/payments" className="font-medium text-fg underline underline-offset-2">payment settings</Link>.
+                  {tr('Shoppers add to a cart and pay at checkout, with your delivery options, discount codes and payment settings.')}{' '}
+                  <Link to="/app/commerce/settings" className="font-medium text-fg underline underline-offset-2">{tr('Delivery options')}</Link>
+                  {' · '}
+                  <Link to="/app/commerce/payments" className="font-medium text-fg underline underline-offset-2">{tr('Payment settings')}</Link>
                 </p>
               }
               <div className="flex flex-col gap-3 border-t border-line pt-5">
@@ -238,19 +249,19 @@ export function Storefront() {
 
           <Card id="sf-notes" title="Good to know" description="Short notes at the bottom of the shop. Leave one empty to hide it." className={offCls}>
             <div className="flex flex-col gap-4">
-              <TextArea id="sf-delivery" label="Delivery" optional rows={2} maxLength={300} value={draft.deliveryNote} disabled={off} placeholder="e.g. Same-day in Lagos if you order by 2pm. Nationwide in 2–4 days." onChange={(e) => set('deliveryNote', e.target.value)} />
-              <TextArea id="sf-returns" label="Returns & exchanges" optional rows={2} maxLength={300} value={draft.returnsNote} disabled={off} placeholder="e.g. Exchanges within 7 days on unworn items with tags." onChange={(e) => set('returnsNote', e.target.value)} />
+              <TextArea id="sf-delivery" label="Delivery" optional rows={2} maxLength={300} value={draft.deliveryNote} disabled={off} placeholder={tr('e.g. Same-day in Lagos if you order by 2pm. Nationwide in 2–4 days.')} onChange={(e) => set('deliveryNote', e.target.value)} />
+              <TextArea id="sf-returns" label="Returns & exchanges" optional rows={2} maxLength={300} value={draft.returnsNote} disabled={off} placeholder={tr('e.g. Exchanges within 7 days on unworn items with tags.')} onChange={(e) => set('returnsNote', e.target.value)} />
             </div>
           </Card>
 
           <Card id="sf-seo" title="Search and sharing" description="What Google and link previews show for your shop. Empty uses the title and intro." className={offCls}>
             <div className="flex flex-col gap-4">
               <TextInput id="sf-seo-title" label="Title" optional maxLength={SEO_TITLE_MAX} value={draft.seoTitle} disabled={off} placeholder={`${draft.title || 'Shop'} · ${state.site.title}`} hint={`${draft.seoTitle.length}/${SEO_TITLE_MAX}`} onChange={(e) => set('seoTitle', e.target.value)} />
-              <TextArea id="sf-seo-desc" label="Description" optional rows={2} maxLength={SEO_DESC_MAX} value={draft.seoDescription} disabled={off} placeholder={draft.intro || 'A sentence about what you sell.'} hint={`${draft.seoDescription.length}/${SEO_DESC_MAX}`} onChange={(e) => set('seoDescription', e.target.value)} />
-              <div className="rounded-md border border-line bg-sunken p-4" aria-label="Search result preview">
+              <TextArea id="sf-seo-desc" label="Description" optional rows={2} maxLength={SEO_DESC_MAX} value={draft.seoDescription} disabled={off} placeholder={draft.intro || tr('A sentence about what you sell.')} hint={`${draft.seoDescription.length}/${SEO_DESC_MAX}`} onChange={(e) => set('seoDescription', e.target.value)} />
+              <div className="rounded-md border border-line bg-sunken p-4" aria-label={tr('Search result preview')}>
                 <p className="truncate text-caption text-fg-subtle">{shopUrl}</p>
                 <p className="mt-0.5 truncate text-body font-medium text-info">{draft.seoTitle || `${draft.title || 'Shop'} · ${state.site.title}`}</p>
-                <p className="mt-0.5 line-clamp-2 text-caption text-fg-muted">{draft.seoDescription || draft.intro || 'No description yet.'}</p>
+                <p className="mt-0.5 line-clamp-2 text-caption text-fg-muted">{draft.seoDescription || draft.intro || tr('No description yet.')}</p>
               </div>
             </div>
           </Card>
@@ -260,7 +271,13 @@ export function Storefront() {
           id="sf-preview"
           title="In the shop"
           className="lg:sticky lg:top-6"
-          description={`${products.length} product${products.length === 1 ? '' : 's'}${soldOutCount ? ` · ${soldOutCount} sold out` : ''}${draftCount ? ` · ${draftCount} draft${draftCount === 1 ? '' : 's'} not shown` : ''}`}>
+          description={[
+          tr(products.length === 1 ? '{n} product' : '{n} products', { n: products.length }),
+          soldOutCount ? tr('{n} sold out', { n: soldOutCount }) : '',
+          draftCount ? tr(draftCount === 1 ? '{n} draft not shown' : '{n} drafts not shown', { n: draftCount }) : ''].
+
+          filter(Boolean).
+          join(' · ')}>
           
           {draft.announcement.trim() &&
           <p className="flex items-center gap-2 rounded-md bg-sunken px-3 py-2 text-caption font-medium text-fg">
@@ -272,9 +289,9 @@ export function Storefront() {
           {products.length === 0 ?
           <div className="flex flex-col items-start gap-3 rounded-lg border border-dashed border-line-strong p-5">
               <StoreIcon size={20} className="text-fg-subtle" aria-hidden />
-              <p className="text-label text-fg-muted">No active products yet. Shoppers will see an empty shop.</p>
+              <p className="text-label text-fg-muted">{tr('No active products yet. Shoppers will see an empty shop.')}</p>
               <Link to="/app/commerce/products" className="text-label font-medium text-fg underline underline-offset-2">
-                Add products
+                {tr('Add products')}
               </Link>
             </div> :
 
@@ -283,7 +300,7 @@ export function Storefront() {
             <li key={p.id} className="overflow-hidden rounded-md border border-line bg-sunken">
                   {p.images[0] ? <MediaImage src={p.images[0].url} alt="" className={cn(imageShapeClass[draft.imageShape], 'w-full object-cover')} /> : <div className={cn(imageShapeClass[draft.imageShape], 'w-full')} />}
                   <p className="truncate px-2 py-1.5 text-caption text-fg">
-                    {draft.defaultSort === 'featured' && draft.featuredIds.includes(p.id) && <span className="sr-only">Featured: </span>}
+                    {draft.defaultSort === 'featured' && draft.featuredIds.includes(p.id) && <span className="sr-only">{tr('Featured:')} </span>}
                     {p.name}
                   </p>
                 </li>
@@ -292,13 +309,13 @@ export function Storefront() {
           }
           {(noPhoto > 0 || noPrice > 0) &&
           <InlineAlert tone="warning" title="Some products look unfinished">
-              {[noPhoto && `${noPhoto} without a photo`, noPrice && `${noPrice} without a price (shown as “Price on request”)`].filter(Boolean).join(' · ')}.{' '}
+              {[noPhoto && tr('{n} without a photo', { n: noPhoto }), noPrice && tr('{n} without a price (shown as “Price on request”)', { n: noPrice })].filter(Boolean).join(' · ')}.{' '}
               <Link to="/app/commerce/products" className="font-medium underline underline-offset-2">
-                Fix in Products
+                {tr('Fix in Products')}
               </Link>
             </InlineAlert>
           }
-          <p className="text-caption text-fg-subtle">Preview of the desktop layout. Product pages show every photo, option and stock level.</p>
+          <p className="text-caption text-fg-subtle">{tr('Preview of the desktop layout. Product pages show every photo, option and stock level.')}</p>
         </Section>
       </div>
     </>);

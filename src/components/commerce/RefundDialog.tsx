@@ -12,6 +12,7 @@ import { TextInput } from '../ui/TextInput';
 import { Switch } from '../ui/Switch';
 import { InlineAlert } from '../ui/InlineAlert';
 import { useTeam } from '../../contexts/TeamContext';
+import { useT } from '../../contexts/LocaleContext';
 
 interface Props {
   order: Order | null;
@@ -40,16 +41,17 @@ export function RefundDialog({ order, mode, onClose }: Props) {
 
   // Sales can refund up to the workspace limit; bigger refunds need an Admin or the Owner (D57).
   const team = useTeam();
+  const { t } = useT();
   const limit = team.role === 'sales' ? team.data.salesRefundLimitNgn : Infinity;
   const refundAmount = mode === 'cancel' ? paid ? max : 0 : amount ?? 0;
   const overLimit = refundAmount > limit;
   const amountError =
   mode === 'refund' && (amount === null || amount <= 0 || amount > max) ?
-  `Enter an amount between ₦1 and ${formatNgn(max)}` :
+  t('Enter an amount between ₦1 and {amount}', { amount: formatNgn(max) }) :
   overLimit ?
-  `Sales can refund up to ${formatNgn(limit)}. Ask an Admin or the Owner for anything bigger.` :
+  t('Sales can refund up to {amount}. Ask an Admin or the Owner for anything bigger.', { amount: formatNgn(limit) }) :
   undefined;
-  const reasonError = !reason.trim() ? 'Add a reason — it goes in the order timeline' : undefined;
+  const reasonError = !reason.trim() ? t('Add a reason — it goes in the order timeline') : undefined;
 
   const submit = () => {
     setTried(true);
@@ -79,15 +81,15 @@ export function RefundDialog({ order, mode, onClose }: Props) {
     <Dialog
       open={!!order}
       onClose={onClose}
-      title={mode === 'cancel' ? `Cancel order #${order?.number ?? ''}?` : `Refund order #${order?.number ?? ''}`}
-      description={mode === 'cancel' ? paid ? `It’s paid, so the full ${formatNgn(max)} is refunded.` : 'Payment hasn’t been confirmed, so nothing needs refunding.' : `Up to ${formatNgn(max)} can be refunded.`}
+      title={mode === 'cancel' ? t('Cancel order #{n}?', { n: order?.number ?? '' }) : t('Refund order #{n}', { n: order?.number ?? '' })}
+      description={mode === 'cancel' ? paid ? t('It’s paid, so the full {amount} is refunded.', { amount: formatNgn(max) }) : 'Payment hasn’t been confirmed, so nothing needs refunding.' : t('Up to {amount} can be refunded.', { amount: formatNgn(max) })}
       footer={
       <>
           <Button variant="secondary" onClick={onClose}>
             {mode === 'cancel' ? 'Keep order' : 'Cancel'}
           </Button>
           <Button variant={mode === 'cancel' ? 'destructive' : 'primary'} onClick={submit}>
-            {mode === 'cancel' ? 'Cancel order' : `Refund ${formatNgn(amount ?? 0)}`}
+            {mode === 'cancel' ? 'Cancel order' : t('Refund {amount}', { amount: formatNgn(amount ?? 0) })}
           </Button>
         </>
       }>
@@ -108,16 +110,16 @@ export function RefundDialog({ order, mode, onClose }: Props) {
             </div>
           </>
         }
-        <TextInput id="rf-reason" label="Reason" value={reason} placeholder={mode === 'cancel' ? 'e.g. Customer asked to cancel' : 'e.g. Wrong size, no exchange available'} error={tried ? reasonError : undefined} onChange={(e) => setReason(e.target.value)} />
+        <TextInput id="rf-reason" label="Reason" value={reason} placeholder={t(mode === 'cancel' ? 'e.g. Customer asked to cancel' : 'e.g. Wrong size, no exchange available')} error={tried ? reasonError : undefined} onChange={(e) => setReason(e.target.value)} />
         {mode === 'refund' && physical &&
         <Switch id="rf-restock" label="Put items back in stock" description="Turn off if the items weren’t returned or can’t be resold." checked={restock} onChange={setRestock} />
         }
-        {mode === 'cancel' && physical && <p className="text-caption text-fg-subtle">Reserved stock goes back to inventory.</p>}
+        {mode === 'cancel' && physical && <p className="text-caption text-fg-subtle">{t('Reserved stock goes back to inventory.')}</p>}
         {mode === 'cancel' && overLimit && <p className="text-caption font-medium text-danger">{amountError}</p>}
         <div>
-          <p className="text-label font-medium text-fg">Message to the customer</p>
+          <p className="text-label font-medium text-fg">{t('Message to the customer')}</p>
           <p className="mt-1.5 rounded-md bg-sunken px-3 py-2.5 text-label text-fg-muted">{notification}</p>
-          <p className="mt-1 text-caption text-fg-subtle">Preview only — nothing is sent in this prototype.</p>
+          <p className="mt-1 text-caption text-fg-subtle">{t('Preview only — nothing is sent in this prototype.')}</p>
         </div>
         <InlineAlert tone="info" title="Refunds go through your payment provider">
           KUBICU doesn’t hold funds. Fees already charged may not be returned by the provider.

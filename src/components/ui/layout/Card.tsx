@@ -1,6 +1,7 @@
 import React from "react";
 import { cn } from "../../../utils/cn";
 import { BoxIcon } from "lucide-react";
+import { useT } from "../../../contexts/LocaleContext";
 interface CardProps {
   title?: React.ReactNode;
   description?: React.ReactNode;
@@ -38,6 +39,9 @@ export function Card({
   className,
   children
 }: CardProps) {
+  const { t } = useT();
+  if (typeof title === 'string') title = t(title);
+  if (typeof description === 'string') description = t(description);
   const headingId = id ? `${id}-title` : undefined;
   const hasHeader = title || actions;
   return <Tag id={id} aria-labelledby={title && headingId ? headingId : undefined} className={cn('flex min-w-0 flex-col rounded-lg border border-line bg-raised', emphasis === 'primary' && 'shadow-1', className)}>
