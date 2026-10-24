@@ -29,6 +29,7 @@ import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { TextArea } from '../components/ui/TextArea';
 import { TextInput } from '../components/ui/TextInput';
+import { currencySymbol } from '../utils/currency';
 import { SelectInput } from '../components/ui/SelectInput';
 import { IconButton } from '../components/ui/IconButton';
 import { InlineAlert } from '../components/ui/InlineAlert';
@@ -242,7 +243,7 @@ export function VoiceToStore() {
                         <TextInput
                         id={`vd-p-${d.id}`}
                         label="Price"
-                        prefix="₦"
+                        prefix={currencySymbol()}
                         inputMode="numeric"
                         value={d.priceNgn ? String(d.priceNgn) : ''}
                         onChange={(e) => patch(d.id, { priceNgn: Number(e.target.value.replace(/\D/g, '')) || null })} />

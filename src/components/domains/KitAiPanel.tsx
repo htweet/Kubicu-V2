@@ -30,8 +30,9 @@ export function KitAiPanel({ details, spec, disabled, onApply }: KitAiPanelProps
     if (!ai.canSpend(aiCost.block)) return;
     setDraft(draftKitCopy(details.name, about, tone, !!details.photo));
     setUsed(new Set());
-    ai.spend(aiCost.block);
+    ai.spend(aiCost.block, 'Print kit writing helper');
   };
+  const paused = !ai.featureOn('print_writer');
 
   const apply = (key: string, patch: Partial<KitDetails>, what: string) => {
     onApply(patch, what);
@@ -62,7 +63,9 @@ export function KitAiPanel({ details, spec, disabled, onApply }: KitAiPanelProps
           <span className="text-caption text-fg-subtle">
             Uses {aiCost.block} AI credit · {ai.remaining} left this month
           </span>
-          {ai.canSpend(aiCost.block) ?
+          {paused ?
+          <span className="text-caption font-medium text-fg-muted">Paused by KUBICU for now</span> :
+          ai.canSpend(aiCost.block) ?
           <Button size="sm" variant="ai" leadingIcon={SparklesIcon} disabled={disabled || !details.name.trim()} onClick={run}>
               {draft ? 'Try again' : 'Write it for me'}
             </Button> :

@@ -9,7 +9,7 @@ import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import { Segmented } from '../ui/Segmented';
 import { TemplateThumb } from './TemplateThumb';
-import { formatNgn } from '../../utils/format';
+import { formatNaira as formatNgn } from '../../utils/format';
 
 interface Props {
   template: ExamplePage | null;

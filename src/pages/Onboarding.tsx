@@ -18,7 +18,7 @@ import { PageMiniPreview } from '../components/overview/PageMiniPreview';
 export function Onboarding() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const { create } = useWorkspace();
+  const { create, current } = useWorkspace();
   const { state, update, go } = useOnboarding(params.get('kit'));
   const built = useMemo(() => buildOnboardingPage(state), [state]);
 
@@ -32,7 +32,8 @@ export function Onboarding() {
       if (state.businessKitId) writePendingKit(workspace.id, state.businessKitId);
       if (!publish) {
         clearOnboarding();
-        navigate(`/app/canvas/${workspace.pageId}`);
+        // An industry page set chosen on the Starter step opens straight away in the canvas (D137).
+        navigate(`/app/canvas/${workspace.pageId}${state.siteKitId ? `?siteKit=${state.siteKitId}` : ''}`);
         toast('Your page is ready to edit', { description: 'Publish from the top bar when you’re happy with it.' });
       }
     } catch {
@@ -48,7 +49,7 @@ export function Onboarding() {
 
   const done = () => {
     clearOnboarding();
-    navigate('/app');
+    navigate(state.siteKitId ? `/app/canvas/${current.pageId}?siteKit=${state.siteKitId}` : '/app');
   };
 
   const livePreview = state.step <= 3 ?

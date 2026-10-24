@@ -50,7 +50,7 @@ export function UsageMeters() {
   { id: 'pages', label: 'Pages on your main site', used: main ? pageCount(main.draft) : 1, limit: pageLimits[plan.id], feature: 'More pages per site', next: nextHigher(plan.id, pageLimits) },
   { id: 'seats', label: 'Team seats', used: team.seatsUsed, limit: seatLimits[plan.id], feature: 'More team seats', next: nextHigher(plan.id, seatLimits) },
   { id: 'storage', label: 'Media storage', used: media.usedBytes, limit: mediaQuota[plan.id], format: formatBytes, feature: 'More media storage', next: nextHigher(plan.id, mediaQuota) },
-  { id: 'ai', label: `AI credits (resets ${ai.resetsOn})`, used: ai.used, limit: aiCredits[plan.id], feature: 'More AI credits', next: nextHigher(plan.id, aiCredits) }];
+  { id: 'ai', label: `AI credits (resets ${ai.resetsOn})`, used: ai.used, limit: ai.limit, feature: 'More AI credits', next: nextHigher(plan.id, aiCredits) }];
 
 
   return (

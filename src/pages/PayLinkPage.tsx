@@ -13,6 +13,8 @@ import { Unavailable } from './PublicPage';
 import { useVisitorLang } from '../hooks/useVisitorLang';
 import { LocaleProvider, translatorFor, useT } from '../contexts/LocaleContext';
 import { isStaged, linkStageAmounts, nextLinkStage, stagePaidOn } from '../utils/money/linkStages';
+import { isNaira } from '../utils/currency';
+import { UssdPay } from '../components/checkout/UssdPay';
 
 type Step = 'details' | 'pay' | 'done' | 'declined';
 type CardOutcome = 'success' | 'declined';
@@ -34,6 +36,7 @@ export function PayLinkPage() {
   const [outcome, setOutcome] = useState<CardOutcome>('success');
   const [tried, setTried] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [ussd, setUssd] = useState(false);
   const [receipt, setReceipt] = useState<{number: string;at: string;amount: number;stage?: string;} | null>(null);
   // Visitor language (D133): the payer's pick on this device, else the page's language.
   const [lang] = useVisitorLang(page?.doc.language);
@@ -102,11 +105,12 @@ export function PayLinkPage() {
     setStep('pay');
   };
 
-  const pay = () => {
+  const pay = (byUssd = false) => {
     setBusy(true);
     window.setTimeout(() => {
       setBusy(false);
-      if (outcome === 'declined') return setStep('declined');
+      // USSD has already been approved by the bank on the payer's phone (D136).
+      if (!byUssd && outcome === 'declined') return setStep('declined');
       const d = readMoney(workspaceId);
       const items = link.kind === 'items' ? link.items.filter((i) => (qty[i.id] ?? 0) > 0).map((i) => ({ label: i.label, qty: qty[i.id], unitNgn: i.unitNgn })) : undefined;
       const res = recordLinkPayment(d, link.id, { amountNgn: subtotal, payerName: name.trim(), payerPhone: phone.trim(), note: note.trim(), items, stageId: stage?.id });
@@ -230,7 +234,13 @@ export function PayLinkPage() {
                 </section>
               }
 
-              {!closedCopy && step === 'pay' &&
+              {!closedCopy && step === 'pay' && ussd &&
+              <section aria-label={tx('Pay with USSD')} className="flex flex-col gap-4 p-5" style={{ ...cardStyle(t), color: t.text }}>
+                  <UssdPay inline theme={t} amount={total} onBack={() => setUssd(false)} onPaid={() => (setUssd(false), pay(true))} />
+                </section>
+              }
+
+              {!closedCopy && step === 'pay' && !ussd &&
               <section aria-label={tx('Pay')} className="flex flex-col gap-4 p-5" style={cardStyle(t)}>
                   <div className="flex flex-col gap-1.5 text-[14.5px]" style={{ color: t.text }}>
                     <Row label={stage ? stage.label : 'Subtotal'} value={formatNgn(subtotal)} />
@@ -254,9 +264,14 @@ export function PayLinkPage() {
                   )}
                   </fieldset>
                   <TestModeNote theme={t} />
-                  <PrimaryButton theme={t} onClick={pay} disabled={busy}>
+                  <PrimaryButton theme={t} onClick={() => pay()} disabled={busy}>
                     {busy ? tx('Paying…') : tx('Pay {amount}', { amount: formatNgn(total) })}
                   </PrimaryButton>
+                  {isNaira() && total > 0 &&
+                <SecondaryButton theme={t} onClick={() => setUssd(true)}>
+                      {tx('No card? Pay with a USSD code')}
+                    </SecondaryButton>
+                }
                   <SecondaryButton theme={t} onClick={() => setStep('details')}>
                     Back
                   </SecondaryButton>

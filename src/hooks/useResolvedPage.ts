@@ -9,6 +9,7 @@ import { resolvePublicPage } from '../utils/resolvePublicPage';
 import { allBlocks } from '../utils/sitePages';
 import { spaceStorageId } from '../utils/spaces';
 import { liveReadableTheme } from '../utils/contrastFixes';
+import { setActiveCurrency } from '../utils/currency';
 
 export interface ResolvedPage {
   doc: PageDocument;
@@ -31,7 +32,7 @@ export function useResolvedPage(handle: string, isDraft = false): ResolvedPage |
   const workspacePlan = usePlan();
   const storageId = spaceStorageId(current.id, currentSpace.id);
 
-  return useMemo(() => {
+  const resolved = useMemo(() => {
     const own = isDraft ? state.site : state.published;
     if (own && own.handle === handle && !currentSpace.archivedAt) return { doc: readable(own), plan: workspacePlan, workspaceId: current.id, isOwn: true };
     if (isDraft) return null;
@@ -40,6 +41,9 @@ export function useResolvedPage(handle: string, isDraft = false): ResolvedPage |
     const sameWorkspace = other.workspaceId === current.id;
     return { doc: readable(other.doc), plan: sameWorkspace ? workspacePlan : plans[other.plan], workspaceId: other.workspaceId, isOwn: sameWorkspace, example: other.example, redirectTo: other.redirectTo };
   }, [isDraft, state.site, state.published, handle, workspacePlan, workspaces, current.id, currentSpace.archivedAt, storageId]);
+  // Visitors see prices in the seller's own currency (D136). Examples are Nigerian, so naira.
+  setActiveCurrency(workspaces.find((w) => w.id === resolved?.workspaceId)?.currency);
+  return resolved;
 }
 
 /** Visitors always get readable colours, whatever the saved theme (D76). */

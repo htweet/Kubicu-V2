@@ -7,7 +7,7 @@ import { useMoney } from '../../hooks/useMoney';
 import { useLocalStore } from '../../hooks/useLocalStore';
 import { kitItems } from '../../utils/domains/printKit';
 import { canCancel, deliveryZones, emptyPrintOrders, estimateArrival, flowStages, PRINT_PARTNER, printOrdersKey, stageIndex, stageLabels, stageOf, stageTones, type PrintOrder } from '../../utils/domains/printOrders';
-import { formatNgn, formatRelative } from '../../utils/format';
+import { formatNaira as formatNgn, formatRelative } from '../../utils/format';
 import { uid } from '../../utils/id';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';

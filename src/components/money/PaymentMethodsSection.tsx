@@ -19,6 +19,7 @@ import { Badge } from "../ui/Badge";
 import { UpgradeButton } from "../ui/UpgradeButton";
 import { PartnerNote } from "./PartnerNote";
 import { PayOptionsCard } from "./PayOptionsCard";
+import { useT } from "../../contexts/LocaleContext";
 interface MethodInfo {
   id: PayMethod;
   icon: BoxIcon;
@@ -49,6 +50,7 @@ const methods: MethodInfo[] = [{
 
 /** Commerce → Payments → How you get paid (D92). */
 export function PaymentMethodsSection() {
+  const { t: tr } = useT();
   const {
     current
   } = useWorkspace();
@@ -73,8 +75,8 @@ export function PaymentMethodsSection() {
         default: id
       }
     }));
-    toast.success(`New payments go ${id === 'direct' ? 'straight to your bank' : id === 'wallet' ? 'to your wallet' : 'through escrow'}`, {
-      description: 'Payments already made aren’t changed.'
+    toast.success(tr(id === 'direct' ? 'New payments go straight to your bank' : id === 'wallet' ? 'New payments go to your wallet' : 'New payments go through escrow'), {
+      description: tr('Payments already made aren’t changed.')
     });
   };
   const setOverride = (area: PayArea, value: PayMethod | 'same') => {
@@ -94,26 +96,26 @@ export function PaymentMethodsSection() {
   };
   const overrideOptions = [{
     value: 'same' as const,
-    label: `Same as default (${methodLabels[m.default]})`
+    label: tr('Same as default ({method})', { method: tr(methodLabels[m.default]) })
   }, {
     value: 'direct' as const,
-    label: methodLabels.direct
+    label: tr(methodLabels.direct)
   }, {
     value: 'wallet' as const,
-    label: methodLabels.wallet
+    label: tr(methodLabels.wallet)
   }, {
     value: 'escrow' as const,
-    label: escrowAllowed ? methodLabels.escrow : 'Escrow — Pro plan',
+    label: escrowAllowed ? tr(methodLabels.escrow) : tr('Escrow — Pro plan'),
     disabled: !escrowAllowed
   }];
-  return <Section id="how-paid" title="How you get paid" description="Choose where money from each sale goes. You can set a different method for each part of your business.">
+  return <Section id="how-paid" title={tr('How you get paid')} description={tr('Choose where money from each sale goes. You can set a different method for each part of your business.')}>
       <div className="flex flex-col gap-6">
         <PartnerNote />
         {!escrowAllowed && escrowInUse && <p className="rounded-md bg-danger-soft px-3 py-2 text-label text-danger" role="alert">
-            Escrow is set somewhere below but your plan no longer includes it. New sales that use it still go through escrow until you change the setting or upgrade.
+            {tr('Escrow is set somewhere below but your plan no longer includes it. New sales that use it still go through escrow until you change the setting or upgrade.')}
           </p>}
 
-        <div role="radiogroup" aria-label="Default payment method" className="grid gap-4 md:grid-cols-3">
+        <div role="radiogroup" aria-label={tr('Default payment method')} className="grid gap-4 md:grid-cols-3">
           {methods.map((x) => {
           const selected = m.default === x.id;
           const locked = x.id === 'escrow' && !escrowAllowed;
@@ -125,14 +127,14 @@ export function PaymentMethodsSection() {
                       <Icon size={18} strokeWidth={2.25} aria-hidden />
                     </span>
                     {selected ? <Badge tone="action" icon={CheckIcon}>
-                        Default
+                        {tr('Default')}
                       </Badge> : locked ? <Badge tone="neutral" icon={LockIcon}>
                         Pro
                       </Badge> : null}
                   </span>
-                  <span className="mt-4 text-label font-semibold text-fg">{x.title}</span>
-                  <span className="mt-1 text-caption text-fg-muted">{x.body}</span>
-                  <span className="mt-auto pt-4 text-caption font-medium text-fg-subtle">{x.timing}</span>
+                  <span className="mt-4 text-label font-semibold text-fg">{tr(x.title)}</span>
+                  <span className="mt-1 text-caption text-fg-muted">{tr(x.body)}</span>
+                  <span className="mt-auto pt-4 text-caption font-medium text-fg-subtle">{tr(x.timing)}</span>
                 </button>
                 {locked && <div className="mt-4 border-t border-line pt-4">
                     <UpgradeButton plan="pro" feature="Escrow" variant="secondary" />
@@ -143,24 +145,24 @@ export function PaymentMethodsSection() {
 
         <PayOptionsCard />
 
-        <Card title="By area" description="Override the default where it makes sense — for example escrow for big custom jobs, wallet for tickets." body="flush">
+        <Card title={tr('By area')} description={tr('Override the default where it makes sense — for example escrow for big custom jobs, wallet for tickets.')} body="flush">
           <ul className="divide-y divide-line">
             {payAreas.map((area) => <li key={area} className="grid items-center gap-2 px-5 py-3.5 sm:grid-cols-[1fr_minmax(0,280px)] md:px-6">
                 <span>
-                  <span className="block text-label font-medium text-fg">{areaLabels[area]}</span>
+                  <span className="block text-label font-medium text-fg">{tr(areaLabels[area])}</span>
                   <span className="block text-caption text-fg-subtle">
-                    Uses {methodLabels[methodFor(data, area)].toLowerCase()}
-                    {methodFor(data, area) === 'escrow' ? ` · ${inspectionDays[area]}-day inspection window` : ''}
+                    {tr('Uses {method}', { method: tr(methodLabels[methodFor(data, area)]) })}
+                    {methodFor(data, area) === 'escrow' ? ` · ${tr('{n}-day inspection window', { n: inspectionDays[area] })}` : ''}
                   </span>
                 </span>
                 <div className="[&_label]:sr-only">
-                  <SelectInput id={`area-${area}`} label={`Method for ${areaLabels[area]}`} value={m.overrides[area] ?? 'same'} options={overrideOptions} onChange={(v) => setOverride(area, v)} disabled={!can.allowed} />
+                  <SelectInput id={`area-${area}`} label={tr('Method for {area}', { area: tr(areaLabels[area]) })} value={m.overrides[area] ?? 'same'} options={overrideOptions} onChange={(v) => setOverride(area, v)} disabled={!can.allowed} />
                 </div>
               </li>)}
           </ul>
         </Card>
 
-        <Card title="Escrow options" description={`Escrow fee: 1% of the payment, capped at ${formatNgn(5000)} (example figure). On a ${formatNgn(80000)} order that’s ${formatNgn(escrowFee(80000))}.`}>
+        <Card title={tr('Escrow options')} description={tr('Escrow fee: 1% of the payment, capped at {cap} (example figure). On a {order} order that’s {fee}.', { cap: formatNgn(5000), order: formatNgn(80000), fee: formatNgn(escrowFee(80000)) })}>
           <div className="flex flex-col gap-5">
             <Switch id="buyer-choice" checked={m.buyerChoice} disabled={!escrowAllowed || !can.allowed} onChange={(v) => update((d) => ({
             ...d,
@@ -168,13 +170,13 @@ export function PaymentMethodsSection() {
               ...d.methods,
               buyerChoice: v
             }
-          }))} label="Let buyers choose “Protect my payment”" description="Buyers can opt into escrow at checkout even when your method is direct or wallet. They pay the escrow fee." />
+          }))} label={tr('Let buyers choose “Protect my payment”')} description={tr('Buyers can opt into escrow at checkout even when your method is direct or wallet. They pay the escrow fee.')} />
             <div className="flex flex-col gap-2 border-t border-line pt-5 sm:flex-row sm:items-center sm:justify-between">
               <span>
-                <span className="block text-label font-medium text-fg">Who pays the escrow fee</span>
-                <span className="block text-caption text-fg-subtle">Shown to the buyer before they pay.</span>
+                <span className="block text-label font-medium text-fg">{tr('Who pays the escrow fee')}</span>
+                <span className="block text-caption text-fg-subtle">{tr('Shown to the buyer before they pay.')}</span>
               </span>
-              <Segmented<EscrowFeePayer> ariaLabel="Who pays the escrow fee" value={m.escrowFeePayer} onChange={(v) => can.allowed && update((d) => ({
+              <Segmented<EscrowFeePayer> ariaLabel={tr('Who pays the escrow fee')} value={m.escrowFeePayer} onChange={(v) => can.allowed && update((d) => ({
               ...d,
               methods: {
                 ...d.methods,
@@ -182,13 +184,13 @@ export function PaymentMethodsSection() {
               }
             }))} options={[{
               value: 'seller',
-              label: 'You'
+              label: tr('You')
             }, {
               value: 'split',
-              label: 'Split'
+              label: tr('Split')
             }, {
               value: 'buyer',
-              label: 'Buyer'
+              label: tr('Buyer')
             }]} />
             </div>
           </div>

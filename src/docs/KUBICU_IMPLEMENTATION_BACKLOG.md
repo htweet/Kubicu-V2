@@ -1,5 +1,7 @@
 # KUBICU — Implementation Backlog, Product Delivery Roadmap & Acceptance Gates
 
+> **Prototype status note (24 Oct 2026):** this is the source spec and is not edited for status. What the prototype has built against each epic is tracked in `docs/DESIGN_GAP_AUDIT.md` §6. Every Phase 6 candidate below (IntentFlow, AI recommendations and experiments, Voice-to-Store, DealRoom, Trust Passport and proof-of-work, local fulfilment, community commerce and collaboration) is **now built in the prototype**, with partner parts simulated.
+
 **Brand:** KUBICU  
 **Primary domain:** `www.kub.icu` (reported by founder; confirm registrar/DNS and domain control)  
 **Companion document:** `KUBICU_MASTER_BLUEPRINT.md`  

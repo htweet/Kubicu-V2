@@ -12,7 +12,7 @@ import { Button } from '../ui/Button';
 import { Dialog } from '../ui/Dialog';
 import { TemplateThumb } from '../templates/TemplateThumb';
 import { BuyTemplateDialog } from '../templates/BuyTemplateDialog';
-import { formatNgn } from '../../utils/format';
+import { formatNaira as formatNgn } from '../../utils/format';
 import { cn } from '../../utils/cn';
 
 interface PendingTemplate {

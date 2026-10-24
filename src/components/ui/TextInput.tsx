@@ -22,9 +22,12 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(function T
   leadingIcon: Icon,
   fieldClassName,
   className,
+  required,
   ...rest
 }, ref) {
   const describedBy = error ? `${id}-error` : hint ? `${id}-hint` : undefined;
+  // `required` is announced to screen readers; our own messages handle validation, not the browser's bubbles (D139).
+  rest = { ...rest, 'aria-required': rest['aria-required'] ?? (required || undefined) };
   return <Field id={id} label={label} hint={hint} error={error} optional={optional} className={fieldClassName}>
       <div className="relative flex items-center">
         {Icon && <Icon size={15} className="pointer-events-none absolute left-3 text-fg-subtle" aria-hidden />}

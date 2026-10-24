@@ -72,4 +72,8 @@ export interface BillingData {
   /** Newest first (D68). */
   history: BillingEvent[];
   sampleSeeded: boolean;
+  /** A coupon that keeps applying at every renewal (D135). */
+  coupon?: {code: string;kind: 'percent' | 'fixed';value: number;} | null;
+  /** Account credit from KUBICU already used on invoices (D135). */
+  creditUsedNgn?: number;
 }

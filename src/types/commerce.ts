@@ -50,6 +50,8 @@ export interface DigitalAsset {
   licence: string;
   /** D125: stamp each PDF page with the buyer's name, email and order number (simulated). */
   stamp?: boolean;
+  /** D136: tile a faint watermark with the buyer's details across image files (simulated). */
+  watermarkImages?: boolean;
   /** D125: issue a licence key per buyer, with a number of activations. */
   keys?: {enabled: boolean;prefix: string;activations: number;};
 }
@@ -375,6 +377,8 @@ export interface DownloadRecord {
   id: string;
   productId: string;
   at: string;
+  /** The buyer details stamped on this copy, when the file is watermarked (D136). */
+  copy?: string;
 }
 
 export interface Order {

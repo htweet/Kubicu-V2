@@ -10,7 +10,7 @@ import { useTeam } from '../../contexts/TeamContext';
 import type { ExamplePage } from '../../data/examples/build';
 import { templatePrice } from '../../data/templateMarket';
 import { withVat } from '../../utils/billing';
-import { formatNgn } from '../../utils/format';
+import { formatNaira as formatNgn } from '../../utils/format';
 import { creatorShare, findListing, updateTemplateStore } from '../../utils/templateListings';
 import { uid } from '../../utils/id';
 

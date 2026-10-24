@@ -47,6 +47,10 @@ export function BusinessCoach() {
       openUpgrade({ plan: COACH_PLAN, feature: 'AI Business Coach' });
       return false;
     }
+    if (!ai.featureOn('coach')) {
+      toast('Business Coach is paused by KUBICU', { description: 'This week’s brief still shows. Refreshing and questions are back soon.' });
+      return false;
+    }
     if (!ai.canSpend(COACH_COST)) {
       toast.error('Out of AI credits this month', { description: `They reset on ${ai.resetsOn}. Upgrade for more.` });
       return false;
@@ -56,7 +60,7 @@ export function BusinessCoach() {
 
   const refresh = () => {
     if (!gate()) return;
-    ai.spend(COACH_COST);
+    ai.spend(COACH_COST, 'Business Coach');
     update((d) => ({ ...d, briefAt: new Date().toISOString(), done: [], dismissed: [] }));
     toast.success('Brief refreshed', { description: `Used ${COACH_COST} AI credit.` });
   };
@@ -67,7 +71,7 @@ export function BusinessCoach() {
     window.setTimeout(() => {
       const a = answer(id, commerce.data, money.data);
       const q = coachQuestions.find((x) => x.id === id)?.label ?? '';
-      ai.spend(COACH_COST);
+      ai.spend(COACH_COST, 'Business Coach');
       update((d) => ({ ...d, answers: [{ id: `ca_${Date.now()}`, question: q, answer: a.answer, basis: a.basis, at: new Date().toISOString() }, ...d.answers].slice(0, 10) }));
       setAsking(null);
     }, 600);

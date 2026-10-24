@@ -19,8 +19,11 @@ import { useDowngradeImpact } from '../../hooks/useDowngradeImpact';
 import { planAtLeast, planOrder, plans } from '../../data/plans';
 import { planHighlights } from '../../data/planHighlights';
 import { TRIAL_DAYS, TRIAL_PLAN } from '../../data/billing';
-import { changeKind, formatDate, isPaidPlan, priceFor, quoteChange, yearlySaving } from '../../utils/billing';
-import { formatNgn } from '../../utils/format';
+import { changeKind, formatDate, isPaidPlan, priceFor, yearlySaving } from '../../utils/billing';
+import { checkCoupon, couponLabel } from '../../utils/planCatalogue';
+import type { Coupon } from '../../types/admin';
+import { TextInput } from '../ui/TextInput';
+import { formatNaira as formatNgn } from '../../utils/format';
 import { cn } from '../../utils/cn';
 
 interface Props {
@@ -48,6 +51,10 @@ export function ChangePlanDialog({ open, onClose, feature, minPlan, initial }: P
   const [cycle, setCycle] = useState<BillingCycle>(d.cycle);
   const [target, setTarget] = useState<WorkspacePlan>(plan.id);
   const [step, setStep] = useState<Step>('choose');
+  const [codeOpen, setCodeOpen] = useState(false);
+  const [code, setCode] = useState('');
+  const [codeError, setCodeError] = useState<string | undefined>();
+  const [coupon, setCoupon] = useState<Coupon | null>(null);
   const impact = useDowngradeImpact(target);
 
   useEffect(() => {
@@ -55,11 +62,27 @@ export function ChangePlanDialog({ open, onClose, feature, minPlan, initial }: P
     setCycle(initial?.cycle ?? d.cycle);
     setTarget(initial?.plan ?? plan.id);
     setStep(initial ? 'review' : 'choose');
+    setCodeOpen(false);
+    setCode('');
+    setCodeError(undefined);
+    setCoupon(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   const kind = changeKind(plan.id, d.cycle, target, cycle, trialing);
-  const quote = quoteChange(d, plan.id, target, cycle);
+  // A code chosen for one plan doesn't carry to a plan it doesn't cover (D135).
+  const activeCoupon = coupon && coupon.plans.includes(target) ? coupon : null;
+  const quote = billing.previewQuote(target, cycle, activeCoupon);
+  const applyCode = () => {
+    const r = checkCoupon(code, target);
+    if ('error' in r) {
+      setCodeError(r.error);
+      setCoupon(null);
+      return;
+    }
+    setCodeError(undefined);
+    setCoupon(r.coupon);
+  };
   const trialOffer = !d.trialUsed && plan.id === 'free' && (!minPlan || planAtLeast(TRIAL_PLAN, minPlan));
   const periodEnd = d.periodEnd ? formatDate(d.periodEnd) : 'your renewal date';
 
@@ -221,6 +244,30 @@ export function ChangePlanDialog({ open, onClose, feature, minPlan, initial }: P
       {step === 'review' && kind !== 'downgrade' &&
       <div className="flex flex-col gap-5">
           <QuoteTable quote={quote} />
+          <div className="flex flex-col gap-2">
+            {activeCoupon ?
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-md bg-success-soft px-3 py-2">
+                <span className="text-label text-fg">
+                  <span className="font-semibold">{activeCoupon.code}</span> · {couponLabel(activeCoupon)}
+                </span>
+                <button type="button" className="text-caption font-medium text-fg-muted hover:text-fg" onClick={() => (setCoupon(null), setCode(''))}>
+                  Remove
+                </button>
+              </div> :
+          codeOpen ?
+          <div className="flex items-start gap-2">
+                <TextInput id="plan-coupon" label="Code" placeholder="Enter a code" value={code} error={codeError} autoComplete="off" onChange={(e) => (setCode(e.target.value.toUpperCase()), setCodeError(undefined))} onKeyDown={(e) => e.key === 'Enter' && code.trim() && applyCode()} fieldClassName="flex-1 [&>div:first-child]:sr-only" />
+                <Button variant="secondary" disabled={!code.trim()} onClick={applyCode}>
+                  Apply
+                </Button>
+              </div> :
+
+          <button type="button" className="self-start text-label font-medium text-action hover:underline" onClick={() => setCodeOpen(true)}>
+                Have a code?
+              </button>
+          }
+            {billing.creditLeft > 0 && <p className="text-caption text-fg-muted">You have {formatNgn(billing.creditLeft)} account credit from KUBICU. It’s used before your card.</p>}
+          </div>
           <p className="text-caption text-fg-muted">
             Then {formatNgn(quote.renewTotal)} (incl. VAT) every {cycle === 'yearly' ? 'year' : 'month'}, next on {formatDate(quote.renewOn)}. Cancel any time — you keep the plan until the period ends.
           </p>
@@ -242,7 +289,7 @@ export function ChangePlanDialog({ open, onClose, feature, minPlan, initial }: P
         defaultHolder={current.ownerName}
         onBack={() => setStep('review')}
         onPaid={(card) => {
-          billing.checkout(target, cycle, card);
+          billing.checkout(target, cycle, card, activeCoupon);
           setStep('done');
         }} />
 

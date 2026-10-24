@@ -84,7 +84,7 @@ export function AiPageSetupDialog({ open, onClose }: Props) {
       try {
         if (simulate === 'fail') throw new DraftFailure('Simulated failure');
         const r = buildDraft(brief, answers, analysis);
-        usage.spend(aiCost.page);
+        usage.spend(aiCost.page, 'AI page setup');
         setResult(r);
         setPicked(new Set(r.doc.blocks.map((b) => b.id)));
         setUseLook(true);

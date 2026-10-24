@@ -64,6 +64,7 @@ export function WorkspaceSwitcher({ compact, onNavigate, side = 'bottom', tip }:
       {
         id: 'new',
         label: 'New workspace',
+        reason: 'Starts on Free, with its own plan, team and data',
         icon: PlusIcon,
         onSelect: () => {
           onNavigate?.();

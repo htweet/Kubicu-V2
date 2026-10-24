@@ -2,6 +2,7 @@ import type { CommerceData, InstalmentEvery, InstalmentPart, Order, OrderEvent, 
 import type { WorkspacePlan } from '../../types/plan';
 import { uid } from '../id';
 import { formatNgn } from '../format';
+import { isNaira } from '../currency';
 import { kubicuFee, providerFee } from './money';
 import { normalisePhone } from '../members';
 
@@ -60,6 +61,8 @@ data: CommerceData | null,
 ctx: {total: number;zoneId: string | null;zoneName?: string;onlyPhysical: boolean;balanceLater: number;dealRoom: boolean;phone: string;bundle?: boolean;})
 : OptionCheck {
   const o = payOptionsOf(data).pod;
+  // Pay on delivery is a Nigeria-only option (D136).
+  if (!isNaira()) return { ok: false, reason: '', hidden: true };
   if (!o.enabled || !ctx.onlyPhysical || ctx.dealRoom || ctx.balanceLater > 0) return { ok: false, reason: '', hidden: true };
   // Cash at the door can't be split between two businesses (D122).
   if (ctx.bundle) return { ok: false, reason: 'Not for things sold with a partner — pay online so each business gets its share.' };
@@ -118,6 +121,7 @@ export function instalmentCheck(
 data: CommerceData | null,
 ctx: {products: (Product | undefined)[];total: number;balanceLater: number;dealRoom: boolean;})
 : (OptionCheck & {ok: false;}) | {ok: true;plan: ProductInstalments;} {
+  if (!isNaira()) return { ok: false, reason: '', hidden: true };
   if (!payOptionsOf(data).instalments.enabled || ctx.dealRoom || ctx.balanceLater > 0 || ctx.products.length === 0) return { ok: false, reason: '', hidden: true };
   const plans = ctx.products.map((p) => p && p.kind !== 'ticket' ? p.instalments : undefined);
   if (plans.every((p) => !p)) return { ok: false, reason: '', hidden: true };

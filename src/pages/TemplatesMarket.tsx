@@ -27,7 +27,7 @@ import type { ExamplePage } from '../data/examples/build';
 import type { TemplateListing } from '../types/templateListing';
 import { moodLabels, templateMood, templatePrice, type ColourMood } from '../data/templateMarket';
 import { activeSale, averageStars, listingAsExample, useTemplateStore } from '../utils/templateListings';
-import { formatNgn } from '../utils/format';
+import { formatNaira as formatNgn } from '../utils/format';
 
 type Price = 'all' | 'free' | 'premium';
 type Source = 'all' | 'kubicu' | 'creators' | 'themes';

@@ -24,7 +24,8 @@ export type NotifEventId =
 'sub_failed' |
 'sub_cancelled' |
 'form_response' |
-'weekly_digest';
+'weekly_digest' |
+'automation';
 
 export type NotifChannel = 'app' | 'email' | 'whatsapp';
 

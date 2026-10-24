@@ -3,6 +3,7 @@ import { SparklesIcon } from 'lucide-react';
 import type { OnboardingState } from '../../hooks/useOnboarding';
 import { examplePages, findExampleById } from '../../data/examples';
 import { businessKits } from '../../data/businessKits';
+import { siteKits } from '../../data/siteKits';
 import { cn } from '../../utils/cn';
 import { blankTemplateDoc } from '../../data/templates';
 import { TemplateThumb } from '../templates/TemplateThumb';
@@ -112,6 +113,21 @@ export function KitStep({ state, update, go }: StepProps) {
           Show all {examplePages.length} starters
         </Button>
       }
+      <fieldset className="mt-8 border-t border-line pt-6">
+        <legend className="text-label font-semibold text-fg">Want a full website too? (optional)</legend>
+        <p className="mt-1 text-caption text-fg-muted">Add a set of extra pages for your industry after setup — you’ll preview every page first. Extra pages need Creator or above.</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {siteKits.map((k) => {
+            const on = state.siteKitId === k.id;
+            const Icon = k.icon;
+            return (
+              <button key={k.id} type="button" aria-pressed={on} onClick={() => update({ siteKitId: on ? null : k.id })} className={cn('inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-label font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus', on ? 'border-action bg-action-soft text-action' : 'border-line text-fg hover:border-line-strong')}>
+                <Icon size={15} aria-hidden /> {k.name}
+              </button>);
+
+          })}
+        </div>
+      </fieldset>
       <AiKitDialog
         open={aiOpen}
         onClose={() => setAiOpen(false)}

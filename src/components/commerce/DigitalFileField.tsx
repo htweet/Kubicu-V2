@@ -156,9 +156,17 @@ export function DigitalFileField({ product, onChange, error }: DigitalFileFieldP
         
         {asset.stamp &&
         <div className="rounded-sm border border-dashed border-line-strong bg-sunken px-3 py-2 text-caption text-fg-muted" aria-label="Stamp preview">
-            <span className="font-medium text-fg">Preview, bottom of each page:</span> Licensed to Chiamaka Obi · chiamaka@example.com · Order #1042 · Not for resale
+            <span className="font-medium text-fg">Preview, bottom of each page:</span> Licensed to Chiamaka Obi · chiamaka@example.com · Order #1042 · Not for resale. A faint copy of the buyer’s name also runs across each page.
           </div>
         }
+        <Switch
+          id="dig-watermark-images"
+          label="Watermark images with the buyer’s details"
+          description="A faint, repeating name and order number across photos, presets previews and artwork. JPG, PNG and WebP files only."
+          checked={!!asset.watermarkImages}
+          disabled={!protectionAllowed}
+          onChange={(watermarkImages) => setAsset({ watermarkImages })} />
+        
         <Switch
           id="dig-keys"
           label="Issue a licence key to each buyer"

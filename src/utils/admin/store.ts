@@ -151,6 +151,13 @@ function seed(): AdminStore {
     accessReviews: [],
     extensionPulls: {},
     autoFlagsCleared: {},
+    planOverrides: {},
+    coupons: [SAMPLE_COUPON],
+    grants: [],
+    aiOff: {},
+    integrationTests: {},
+    phraseReviews: {},
+    policyReleases: {},
     incidents: [
     {
       id: 'inc-sample-1',
@@ -169,6 +176,24 @@ function seed(): AdminStore {
 
   };
 }
+
+/** A sample launch code so the coupon field can be tried straight away (D135). */
+const SAMPLE_COUPON = {
+  id: 'cpn-sample-naija',
+  code: 'NAIJA20',
+  kind: 'percent' as const,
+  value: 20,
+  plans: ['creator', 'pro', 'business'] as WorkspacePlan[],
+  maxUses: 500,
+  uses: 37,
+  expiresAt: new Date(Date.now() + 60 * 86400000).toISOString(),
+  duration: 'first' as const,
+  active: true,
+  createdAt: ago(24 * 10),
+  createdBy: 'Tolu Bakare · Platform lead',
+  note: 'Launch offer for market traders’ association members.',
+  sample: true
+};
 
 /** A second Platform lead so two-person approval can be tried in the prototype (D129). */
 const SECOND_LEAD = { id: 'stf-ngozi', name: 'Ngozi Eze', email: 'ngozi@kubicu.com', role: 'lead' as const, status: 'active' as const, twoStep: true, lastActiveAt: ago(9), invitedAt: ago(24 * 180) };
@@ -196,7 +221,14 @@ export function readAdminStore(): AdminStore {
         accessReviews: parsed.accessReviews ?? [],
         incidents: parsed.incidents ?? base.incidents,
         extensionPulls: parsed.extensionPulls ?? {},
-        autoFlagsCleared: parsed.autoFlagsCleared ?? {}
+        autoFlagsCleared: parsed.autoFlagsCleared ?? {},
+        planOverrides: parsed.planOverrides ?? {},
+        coupons: parsed.coupons ?? base.coupons,
+        grants: parsed.grants ?? [],
+        aiOff: parsed.aiOff ?? {},
+        integrationTests: parsed.integrationTests ?? {},
+        phraseReviews: parsed.phraseReviews ?? {},
+        policyReleases: parsed.policyReleases ?? {}
       };
     }
   } catch {

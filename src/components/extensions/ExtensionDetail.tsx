@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { toast } from 'sonner';
-import { BadgeCheckIcon, CheckIcon, PauseIcon, PlayIcon, RotateCcwIcon, SettingsIcon, StarIcon, Trash2Icon } from 'lucide-react';
+import { BadgeCheckIcon, CheckIcon, EyeIcon, PauseIcon, PencilIcon, PlayIcon, RotateCcwIcon, SettingsIcon, ShieldAlertIcon, StarIcon, Trash2Icon } from 'lucide-react';
+import { groupPermissions } from '../../utils/extensionPermissions';
 import type { ExtensionInfo } from '../../types/marketplace';
 import { Sheet } from '../ui/Sheet';
 import { Button } from '../ui/Button';
@@ -15,7 +16,7 @@ import { useTeam } from '../../contexts/TeamContext';
 import { averageRating, extensionCategories } from '../../data/extensions';
 import { planAtLeast, plans } from '../../data/plans';
 import { formatDate } from '../../utils/billing';
-import { formatNgn } from '../../utils/format';
+import { formatNaira as formatNgn } from '../../utils/format';
 import { useAdminStore } from '../../utils/admin/store';
 
 interface Props {
@@ -37,6 +38,7 @@ export function ExtensionDetail({ ext, onClose, onInstall }: Props) {
   const allowedPlan = planAtLeast(plan.id, ext.minPlan);
   const rating = averageRating(ext);
   const pull = adminStore.extensionPulls[ext.id];
+  const perms = groupPermissions(ext.permissions);
   const canRollback = !!rec && rec.version === ext.version && ext.versions.length > 1 && pull?.pulledVersion !== ext.version;
 
   const footer = rec ?
@@ -104,13 +106,45 @@ export function ExtensionDetail({ ext, onClose, onInstall }: Props) {
 
           {ext.preview && rec && <ExtensionPreview id={ext.id} />}
 
-          <section aria-label="Permissions">
-            <h3 className="text-label font-semibold text-fg">Permissions</h3>
-            <ul className="mt-2 list-disc pl-5 text-label text-fg-muted">
-              {ext.permissions.map((p) =>
-              <li key={p}>{p}</li>
-              )}
-            </ul>
+          <section aria-labelledby="ext-access-h">
+            <h3 id="ext-access-h" className="text-label font-semibold text-fg">What it can access</h3>
+            <p className="mt-1 text-caption text-fg-subtle">Only what’s listed here. It never sees your password, card details or other workspaces.</p>
+            <div className="mt-3 grid gap-4 sm:grid-cols-2">
+              {(['see', 'change'] as const).map((k) => {
+                const list = perms[k];
+                const Icon = k === 'see' ? EyeIcon : PencilIcon;
+                return (
+                  <div key={k}>
+                    <h4 className="flex items-center gap-1.5 text-caption font-semibold text-fg">
+                      <Icon size={13} className="text-fg-muted" aria-hidden />
+                      {k === 'see' ? 'Can see' : 'Can change or do'}
+                    </h4>
+                    {list.length ?
+                    <ul className="mt-1.5 flex flex-col divide-y divide-line">
+                        {list.map((p) =>
+                      <li key={p.text} className="flex items-start justify-between gap-3 py-2 text-label text-fg">
+                            <span className="min-w-0">{p.text}</span>
+                            {p.sensitive &&
+                        <Badge tone="warning" className="shrink-0">
+                                Sensitive
+                              </Badge>
+                        }
+                          </li>
+                      )}
+                      </ul> :
+
+                    <p className="mt-1.5 text-label text-fg-subtle">Nothing</p>
+                    }
+                  </div>);
+
+              })}
+            </div>
+            {perms.see.concat(perms.change).some((p) => p.sensitive) &&
+            <p className="mt-3 flex items-start gap-1.5 text-caption text-fg-muted">
+                <ShieldAlertIcon size={13} className="mt-px shrink-0 text-warning" aria-hidden />
+                “Sensitive” means it touches customers’ personal details, money or your device. You can pause or uninstall it any time.
+              </p>
+            }
           </section>
 
           <section aria-label="Versions">

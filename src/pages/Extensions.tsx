@@ -14,7 +14,7 @@ import { useMarketplace } from '../contexts/MarketplaceContext';
 import { useWorkspace } from '../contexts/WorkspaceContext';
 import { averageRating, extensionById, extensionCategories, extensions } from '../data/extensions';
 import { plans } from '../data/plans';
-import { formatNgn } from '../utils/format';
+import { formatNaira as formatNgn } from '../utils/format';
 import { cn } from '../utils/cn';
 import { Section } from '../components/ui/layout/Section';
 import { listedCommunity, useSubmissions } from '../utils/extensionSubmissions';

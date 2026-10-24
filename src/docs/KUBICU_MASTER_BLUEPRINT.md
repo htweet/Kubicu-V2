@@ -1,5 +1,7 @@
 # KUBICU — Master Product, Market, Architecture & Implementation Blueprint
 
+> **Prototype status note (24 Oct 2026):** this is the source spec and is not edited for status. All 20 concept extensions are now built in the prototype (several with the partner part simulated); see `docs/DESIGN_GAP_AUDIT.md` §3 for each concept's status.
+
 **Product brand:** KUBICU (domain www.kub.icu is reported as available by the founder; verify ownership, DNS, trademark and social handles before launch)
 
 **Document type:** Product master blueprint and implementation brief for product design, engineering, AI-assisted development, commercial planning and launch.

@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Quote } from '../../utils/billing';
-import { formatNgn } from '../../utils/format';
+import { formatNaira as formatNgn } from '../../utils/format';
 
 /** Line-by-line charge preview: rest of the period, credit for unused time, VAT, total today. */
 export function QuoteTable({ quote }: {quote: Quote;}) {

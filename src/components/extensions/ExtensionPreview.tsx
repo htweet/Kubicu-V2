@@ -1,7 +1,7 @@
 import React from 'react';
 import { useCommerce } from '../../contexts/CommerceContext';
 import { canSell } from '../../utils/commerce/catalog';
-import { formatNgn } from '../../utils/format';
+import { formatNaira as formatNgn } from '../../utils/format';
 import { Badge } from '../ui/Badge';
 
 /** What a preview extension would do, using the workspace's real data (D67). */

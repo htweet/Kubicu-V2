@@ -1,5 +1,6 @@
 import type { PageDocument, PageVersion, ScheduledPublish } from './page';
 import type { WorkspacePlan } from './plan';
+import type { CurrencyCode } from '../utils/currency';
 
 /** What a space is for (D50). Every workspace has exactly one main space. */
 export type SpaceKind = 'main' | 'campaign' | 'dealroom';
@@ -27,6 +28,8 @@ export interface Workspace {
   /** Demo workspace only: the sample campaign and DealRoom have been added once. */
   sampleSpacesSeeded?: boolean;
   createdAt: string;
+  /** One currency for everything this workspace sells (D136). Missing = naira. */
+  currency?: CurrencyCode;
 }
 
 /** Everything saved for one space's page. */

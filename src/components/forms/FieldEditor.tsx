@@ -4,6 +4,7 @@ import type { FieldRule, FormField } from '../../types/forms';
 import { choiceTypes, fieldTypeInfo } from '../../utils/forms/fields';
 import { ruleSentence } from '../../utils/forms/logic';
 import { TextInput } from '../ui/TextInput';
+import { currencySymbol } from '../../utils/currency';
 import { TextArea } from '../ui/TextArea';
 import { SelectInput } from '../ui/SelectInput';
 import { Switch } from '../ui/Switch';
@@ -86,7 +87,7 @@ export function FieldEditor({ field, fields, isFirst, onChange, onRemove, disabl
             hint="Test mode — no real money moves." />
           
             {!field.amountFromFieldId &&
-          <TextInput id={`${p}-amt`} label="Amount (₦)" type="number" inputMode="numeric" min={100} prefix="₦" value={field.amountNgn ?? ''} onChange={(e) => onChange({ amountNgn: e.target.value ? Math.max(0, Math.round(Number(e.target.value))) : null })} error={field.amountNgn && field.amountNgn > 0 ? undefined : 'Enter an amount'} />
+          <TextInput id={`${p}-amt`} label="Amount" type="number" inputMode="numeric" min={100} prefix={currencySymbol()} value={field.amountNgn ?? ''} onChange={(e) => onChange({ amountNgn: e.target.value ? Math.max(0, Math.round(Number(e.target.value))) : null })} error={field.amountNgn && field.amountNgn > 0 ? undefined : 'Enter an amount'} />
           }
           </>
         }

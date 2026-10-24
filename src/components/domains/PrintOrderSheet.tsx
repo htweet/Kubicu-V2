@@ -24,7 +24,7 @@ import {
   type PrintOrder,
   type PrintPayMethod } from
 '../../utils/domains/printOrders';
-import { formatNgn } from '../../utils/format';
+import { formatNaira as formatNgn } from '../../utils/format';
 import { uid } from '../../utils/id';
 import { Sheet } from '../ui/Sheet';
 import { Button } from '../ui/Button';

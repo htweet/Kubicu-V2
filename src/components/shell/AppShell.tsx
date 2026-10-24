@@ -2,6 +2,8 @@ import React, { useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
 import { MAIN_SPACE_ID } from '../../utils/spaces';
+import { setActiveCurrency } from '../../utils/currency';
+import { useAutomationRunner } from '../../hooks/useAutomationRunner';
 import { Sidebar } from './Sidebar';
 import { MobileNav } from './MobileNav';
 import { KubicuLogo } from './KubicuLogo';
@@ -16,8 +18,12 @@ import { AppGate } from '../extensions/AppGate';
 import { ExtensionsTour } from '../extensions/ExtensionsTour';
 
 export function AppShell() {
-  const { currentSpace, switchSpace } = useWorkspace();
+  const { current, currentSpace, switchSpace } = useWorkspace();
   const { pathname } = useLocation();
+  // Every amount on workspace screens uses this workspace's currency (D136). Set before children render.
+  setActiveCurrency(current.currency);
+  // Campaign and quiet-contact automations run on real changes while the app is open (D137).
+  useAutomationRunner();
   // Workspace screens describe the main space; campaigns and DealRooms open only in the canvas.
   const needsMain = currentSpace.id !== MAIN_SPACE_ID && !pathname.startsWith('/app/canvas');
   useEffect(() => {

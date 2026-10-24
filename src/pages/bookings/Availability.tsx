@@ -19,19 +19,22 @@ import { BookingsPlanNote } from '../../components/bookings/BookingsPlanNote';
 import { cn } from '../../utils/cn';
 import { Card } from '../../components/ui/layout/Card';
 import { AsideNote } from '../../components/ui/layout/AsideNote';
+import { CalendarSyncCard } from '../../components/bookings/CalendarSyncCard';
 
 const num = (v: string, max: number) => Math.min(max, Number(v.replace(/[^0-9]/g, '') || '0'));
 
 export function Availability() {
   const { data, apply, hasSample, loadSample, clearSample } = useOps();
   const [draft, setDraft] = useState<AvailabilityT>(data.availability);
-  const dirty = JSON.stringify(draft) !== JSON.stringify(data.availability);
+  // Calendar connections save on their own (D137), so they never count as unsaved changes here.
+  const strip = (a: AvailabilityT) => JSON.stringify({ ...a, calendars: undefined });
+  const dirty = strip(draft) !== strip(data.availability);
   const patch = (p: Partial<AvailabilityT>) => setDraft((d) => ({ ...d, ...p }));
   const hoursError = draft.weekly.some((h) => !h.closed && h.close <= h.open) ? 'Closing time must be after opening time' : undefined;
 
   const save = () => {
     if (hoursError) return;
-    if (apply((d) => ({ ...d, availability: draft }))) toast('Availability saved', { description: 'Your booking calendar updates straight away. Existing bookings stay put.' });
+    if (apply((d) => ({ ...d, availability: { ...draft, calendars: d.availability.calendars } }))) toast('Availability saved', { description: 'Your booking calendar updates straight away. Existing bookings stay put.' });
   };
 
   return (
@@ -87,6 +90,8 @@ export function Availability() {
               </ul>
             }
           </Card>
+
+          <CalendarSyncCard />
         </div>
 
         <div className="flex flex-col gap-6">
@@ -131,7 +136,6 @@ export function Availability() {
           </Card>
 
           <aside className="flex flex-col divide-y divide-line px-1 pt-2">
-            <AsideNote id="sync" title="Calendar sync" text="Google and Outlook calendar sync is planned. Until then, bookings live only in KUBICU." />
             <AsideNote id="sample" title="Sample data" text={hasSample ? 'Sample services, bookings, contacts and automations are labelled “Sample”.' : 'Add labelled sample services and bookings to explore every screen.'}>
               {hasSample ?
               <Button size="sm" variant="destructive" onClick={clearSample}>

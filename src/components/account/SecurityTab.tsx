@@ -269,9 +269,12 @@ export function SecurityTab() {
             <Button
             variant="destructive"
             onClick={() => {
-              updateAccount((a) => ({ ...a, sessions: a.sessions.filter((x) => x.current) }));
-              toast.success('Signed out of other devices');
+              const n = others.length;
+              updateAccount((a) => signOutOthers(a, 'manual'));
+              toast.success(`Signed out of ${n} other ${n === 1 ? 'device' : 'devices'}`);
               setDialog(null);
+              // The confirmation at the top of this tab lists which devices (D139).
+              window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
             }}>
             
               Sign out others

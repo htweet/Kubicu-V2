@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { CheckIcon, ClipboardListIcon, PauseCircleIcon } from 'lucide-react';
 import { useMarketplace } from '../../contexts/MarketplaceContext';
 import { extensionById } from '../../data/extensions';
-import { formatNgn } from '../../utils/format';
+import { formatNaira as formatNgn } from '../../utils/format';
 import { FORMS_EXTENSION_ID } from '../../utils/forms/storage';
 import { PageHeader } from '../shell/PageHeader';
 import { Button } from '../ui/Button';

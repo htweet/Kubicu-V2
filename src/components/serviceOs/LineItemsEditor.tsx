@@ -3,6 +3,7 @@ import { PlusIcon, Trash2Icon } from 'lucide-react';
 import type { LineItem } from '../../types/serviceOs';
 import { blankItem, itemsTotal, lineTotal } from '../../utils/serviceOs';
 import { formatNgn } from '../../utils/format';
+import { currencySymbol } from '../../utils/currency';
 import { fieldControlClass } from '../ui/Field';
 import { Button } from '../ui/Button';
 import { IconButton } from '../ui/IconButton';
@@ -57,7 +58,7 @@ export function LineItemsEditor({ items, onChange, readOnly, footer }: Props) {
             
                 <div className="relative">
                   <span aria-hidden className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-label text-fg-subtle">
-                    ₦
+                    {currencySymbol()}
                   </span>
                   <input
                 aria-label={`Price each for item ${i + 1}`}
@@ -65,7 +66,8 @@ export function LineItemsEditor({ items, onChange, readOnly, footer }: Props) {
                 value={item.unitNgn ? grouped.format(item.unitNgn) : ''}
                 placeholder="0"
                 onChange={(e) => set(item.id, { unitNgn: Number(e.target.value.replace(/[^0-9]/g, '').slice(0, 10)) || 0 })}
-                className={cn(fieldControlClass, 'h-9 pl-6 text-right text-label tabular-nums')} />
+                className={cn(fieldControlClass, 'h-9 text-right text-label tabular-nums')}
+                style={{ paddingLeft: `calc(1rem + ${currencySymbol().length}ch)` }} />
               
                 </div>
                 <span className="flex h-9 items-center justify-end text-label font-medium tabular-nums text-fg">{formatNgn(lineTotal(item))}</span>

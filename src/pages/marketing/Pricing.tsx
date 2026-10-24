@@ -8,7 +8,7 @@ import { featureStatusLabels, planMatrix, type PlanCell } from '../../data/planM
 import type { WorkspacePlan } from '../../types/plan';
 import type { BillingCycle } from '../../types/billing';
 import { priceFor, yearlySaving } from '../../utils/billing';
-import { formatNgn } from '../../utils/format';
+import { formatNaira as formatNgn } from '../../utils/format';
 import { Button } from '../../components/ui/Button';
 import { Segmented } from '../../components/ui/Segmented';
 import { FaqList } from '../../components/marketing/FaqList';

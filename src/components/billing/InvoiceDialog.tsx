@@ -8,7 +8,7 @@ import { InvoiceStatusBadge } from './InvoiceStatusBadge';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
 import { kubicuBillingEntity } from '../../data/billing';
 import { formatDate } from '../../utils/billing';
-import { formatNgn } from '../../utils/format';
+import { formatNaira as formatNgn } from '../../utils/format';
 
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const money = (n: number) => n < 0 ? `−${formatNgn(-n)}` : formatNgn(n);

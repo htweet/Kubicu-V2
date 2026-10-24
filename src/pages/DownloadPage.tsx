@@ -11,6 +11,8 @@ import { buttonStyle, cardStyle, mix } from '../components/blocks/pageStyle';
 import { CheckoutHeading, TestModeNote } from '../components/checkout/checkoutUi';
 import { checkDownload, recordDownload } from '../utils/commerce/ops';
 import { formatBytes } from '../utils/commerce/catalog';
+import { copyLabel, watermarkKind } from '../utils/commerce/watermark';
+import { WatermarkPreview } from '../components/commerce/WatermarkPreview';
 import { formatTimestamp } from '../utils/format';
 import { Unavailable } from './PublicPage';
 
@@ -110,10 +112,13 @@ export function DownloadPage() {
                       {tx('Prototype: the file isn’t stored, so nothing downloads — but this counted as one download.')}
                     </p>
                     }
-                  {check.ok && asset.stamp && /\.pdf$/i.test(asset.fileName) &&
-                    <p className="text-[12.5px]" style={muted}>
-                      {tx('Your copy is stamped “{stamp}” on every page.', { stamp: `Licensed to ${order.customer.name}${order.customer.email ? ` · ${order.customer.email}` : ''} · Order #${order.number}` })}
-                    </p>
+                  {check.ok && watermarkKind(asset) &&
+                    <div className="flex flex-col gap-2 rounded-md p-3" style={{ background: mix(t.text, 4) }}>
+                      <WatermarkPreview theme={t} kind={watermarkKind(asset)!} label={copyLabel(order)} title={i.name} />
+                      <p className="text-[12.5px]" style={muted}>
+                        {watermarkKind(asset) === 'pdf' ? tx('Your copy is stamped “{stamp}” on every page.', { stamp: copyLabel(order) }) : tx('Your copy carries a faint “{stamp}” mark, so a shared copy points back to this order.', { stamp: copyLabel(order) })}
+                      </p>
+                    </div>
                     }
                   {(order.licenceKeys ?? []).filter((k) => k.productId === i.productId).map((k) =>
                     <div key={k.id} className="flex flex-col gap-1 rounded-md px-3 py-2.5" style={{ background: mix(t.text, 5), opacity: k.status === 'revoked' ? 0.6 : 1 }}>

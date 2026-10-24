@@ -1,23 +1,24 @@
 # KUBICU — Design gap audit
 
-_Re-audited 23 Oct 2026 against the code, every doc in `docs/`, the 20 blueprint concepts and a full pass of `docs/KUBICU_IMPLEMENTATION_BACKLOG.md` (epics A–Z and every non-epic section). This file is the source of truth for what is still missing. The public roadmap (`data/roadmap.ts`) and the plan list (`data/planMatrix.ts`) follow it._
+_Re-audited 24 Oct 2026 against the code, the decision register (through D134) and every doc in `docs/`. This file is the source of truth for what is still missing. The public roadmap (`data/roadmap.ts`) and the plan list (`data/planMatrix.ts`) follow it._
 
 **Status key:** ✅ built · 🟡 partial · ⬜ missing · 🧪 simulated by design (real work needs engineering or a partner) · 👤 waiting on founder/legal · ⚙ engineering-only (no screen to design)
-**Readiness:** **R1** ready to design now · **R2** needs a decision first · **R3** needs a partner for the real thing (the screens can still be designed and simulated)
 
-> **What changed in this re-audit.** The earlier version was out of date on several rows. Trust Passport (D99, D111), Voice-to-Store (D102), WhatsApp Commerce Bridge (D97, D100), Local fulfilment (D96) and AI Business Coach (D104) were marked "nothing built" but all exist with the partner part simulated. Super admin → Payments & providers was marked missing but is built (D92), plus Escrow cases (D94). Partner print-shop ordering is built (D114). The founder sign-off (D105–D109) closed the ~55 "Proposed" decisions. The implementation backlog has no status markers of its own; §6 below records its audit.
+> **What changed in this re-audit (Batch 13, Pass A).** The previous version stopped at the co-branded work (D123) and never recorded Batch 12. Batch 12 delivered: audio, playlist, collection and support/pay-what-you-want blocks, search-engine settings with sitemap and structured data, "Put back online" and moving a domain between spaces (D124); Service OS invoice PDF and Audience link, licence keys and PDF stamping, new automation triggers and actions, the Monday summary, anonymous carts, the Contact page on Forms and dates in the account's format everywhere (D125); ten business kits in onboarding, the canvas Check tab, page weight and "data saver for everyone", Trust Passport expiry and reporting, proof-of-work certificates (D126); multi-page site kits and A/B tests (D127); shared shops and theme selling (D128); staff Operations overview, second-person approval, staff backup codes, access reviews, incidents and `/status` (D129); the four remaining Super-admin areas as read-only screens, more approvals, extension rollback and automatic moderation flags (D130); developer tools, `/developers`, developer extension submissions and plan-based price caps (D131, D132, D134); and the translation layer with Pidgin, Yorùbá, Hausa and Igbo drafts (D133–D133r).
+>
+> The audit of 24 Oct also corrected itself: the four Super-admin areas are **not** placeholders (D130 built them read-only), and the automation triggers/actions **exist** (D125) but, like all automations, only run as test runs.
 
 ---
 
 ## 1. Summary
 
-| Group | Open | Biggest items |
+| Group | Open | Items |
 |---|---|---|
-| Not built — nothing in the app | 12 | 4 Super-admin areas (Plans & entitlements, AI operations, Integrations & notifications, Localisation & policies), developer tools (API keys, webhooks, connected apps), staff dual approval and access reviews, public status page and incidents, watermarking and licence keys, audio and playlist blocks, sitemap and structured data, USSD at checkout |
-| Partly built — specific pieces missing | 17 | Service OS invoices, Lightweight mode owner setting, Business kits in onboarding, Link Intelligence, Opportunities, automation triggers and actions, in-canvas accessibility checker, community storefronts, Contact page on Forms |
-| Waiting on outside partners (designed and simulated) | 13 | Payments and split settlement, WhatsApp, email/SMS, couriers, print shop, speech, identity/KYC, outside trust checks, AI, file storage, DNS, calendar sync, realtime |
-| Needs a hands-on check | 2 | Screens "not visually reviewed" at 320 px and 200% zoom; real phone with VoiceOver/TalkBack |
-| Waiting on founder / legal | small | Decisions logged after the sign-off (D110 onward), instalment and buyer-protection wording, example figures that depend on a partner |
+| Not built | 0 | Everything on the previous list was built in Batch 13 (D135–D138) — some parts simulated, listed in §4 |
+| Partly built — specific pieces missing | 6 | Translations of remaining screens; embeds beyond YouTube; video captions; Lightweight smaller image versions (needs CDN); per-staff booking availability; customer "agree to the new policy" prompt. (Closed in D139: extension access list, signed-out-devices confirmation, `aria-required`, workspace-currency price boxes.) |
+| Waiting on outside partners (designed and simulated) | 14 | See §4 |
+| Needs a hands-on check | 3 | Visual review at 320 px / 200%; real-phone screen readers; automated axe-core and contrast run |
+| Waiting on founder / legal | see §5 | Decisions D110–D134 "Proposed", example figures, legal wording |
 
 ---
 
@@ -26,121 +27,124 @@ _Re-audited 23 Oct 2026 against the code, every doc in `docs/`, the 20 blueprint
 | # | Screen | Status | Notes |
 |---|---|---|---|
 | G1–G2 | Legal, trust centre, takedown & appeals, security | ✅ | D78 · wording confirmed D109 |
-| G3 | Help centre, Contact, About | 🟡 | Built (D78, Help expanded D113b). **Contact page still uses its own simple form, not the Forms engine** |
+| G3 | Help centre, Contact, About | ✅ | D78, Help expanded D113b, Contact on Forms D125 |
 | G4 | Forms add-on | ✅ | D79 · file answers keep the name only 🧪 |
 | G5 | Super admin — Pages & domains | ✅ | D82 |
-| **G6** | **Super admin — Plans & entitlements** | ⬜ | Placeholder (`AdminPlannedArea`). Prices are now confirmed (D105), so this is R1 |
-| G7 | Super admin — Payments & providers | ✅ | D92: payout queue, wallet pause, identity reviews, provider health (illustrative). Escrow cases D94 |
+| G6 | Super admin — Plans & entitlements | ✅ | D130; catalogue changes with approval, trials, codes, credit grants (D135) |
+| G7 | Super admin — Payments & providers | ✅ | D92, escrow cases D94, payout approvals D130 |
 | G8 | Super admin — Orders & disputes | ✅ | D82 |
-| **G9** | **Super admin — AI operations** | ⬜ | Placeholder. Provider, budget, policy and usage screens can be designed now (R3 for real data) |
+| G9 | Super admin — AI operations | ✅ | D130; per-feature switches and redacted request log (D135) |
 | G10 | Super admin — Business reporting | ✅ | D82 |
-| **G11** | **Super admin — Integrations & notifications** | ⬜ | Placeholder. Message templates and channel health (R3 for real sending) |
+| G11 | Super admin — Integrations & notifications | ✅ 🧪 | D130; test sends and message previews in five languages (D135) |
 | G12 | Super admin — Data requests | ✅ | D82 |
-| **G13** | **Super admin — Localisation & policies** | ⬜ | Placeholder. Languages, currency, policy versions |
+| G13 | Super admin — Localisation & policies | ✅ | D130; native review queue and policy publishing (D135). Customer "agree again" prompt not yet blocking 🟡 |
 | G14 | Visitor unsubscribe and preferences | ✅ | D81 |
 | G15 | Account data export and deletion | ✅ | D80 |
 | G16 | Screens marked "not visually reviewed" | 🟡 | Needs a browser review at 320 px and 200% zoom |
-| G17 | Staff roles, staff two-step, appeals | 🟡 | Built (D83). **Second-person approval for high-risk actions, staff backup codes and periodic access reviews still missing** |
-| G18 | Selling full *themes* (templates are done) | 🟡 | Saved themes can be shared privately; no paid theme listings |
-| G19 | Printed identity kit | ✅ | D86, expanded D118–D119; print-shop ordering D114 |
-| G20 | Personal account | ✅ | D80 · date format and time zone not yet applied on every screen 🟡 |
+| G17 | Staff roles, two-step, approvals, backup codes, access reviews | ✅ | D83, D129, D130 |
+| G18 | Selling full themes | ✅ | D128 |
+| G19 | Printed identity kit | ✅ | D86, D114, D118–D119 |
+| G20 | Personal account | ✅ | D80 · dates follow the account format everywhere (D125) |
+| G21 | Operations overview, incidents, `/status` | ✅ | D129 |
+| G22 | Developer tools and `/developers` | ✅ 🧪 | D131, D132, D134 |
 
 ## 3. Blueprint concepts (addendum, 20 total)
 
-| # | Concept | Status | What exists | What's still missing | Readiness |
-|---|---|---|---|---|---|
-| 1 | IntentFlow | ✅ | Source rules, preview-as, results (D64) | A declared A/B test (metric + duration) beyond source variants | R1 |
-| 2 | Link Intelligence | 🟡 | Up to 3 evidence-based suggestions in Analytics | Weekly digest; apply a suggestion in one tap | R1 |
-| 3 | DealRoom | ✅ | Drops, group goals, referrals, refunds (D54–D56) | — | — |
-| 4 | Trust Passport | ✅ 🧪 | Score from six checked signals (D99), badge block and public passport (D111) | Outside checks (credit bureau, trade associations); per-check expiry/revocation view; "report a misleading claim" on the passport | R3 / R1 |
-| 5 | Proof-of-Work | ✅ | Verified reviews, work timeline, Proof block (D91) | Certificates, case-study pages | R1 |
-| 6 | Voice-to-Store | ✅ 🧪 | English speech or typed text → draft products (D102) | Pidgin, Yorùbá, Hausa, Igbo transcription | R3 |
-| 7 | WhatsApp Commerce Bridge | ✅ 🧪 | Chats, quick replies, send a product, catalogue, 24-hour rule (D97), automatic messages (D100) | Real sending, template approval, order-from-chat checkout, catalogue push | R3 |
-| 8 | Local Trust & Fulfilment | ✅ 🧪 | Deliveries app: quotes, own rider, delivery codes, escrow release (D96); pay on delivery (D112) | Real couriers, live tracking, proof-of-delivery photos, pickup points, areas beyond Lagos | R3 |
-| 9 | Community Commerce | 🟡 | DealRoom goals; partner bundles (D122) | Shared storefront for a group of sellers (co-op) | R1 |
-| 10 | Digital Product Protection | 🟡 | Expiring links, download limits, log | **Watermarking and licence keys** | R1 |
-| 11 | Service OS | 🟡 | Quotes & jobs (D89), milestones (D95) | **Client pays an invoice online, PDF export, clients linked to Audience** | R1 |
-| 12 | Opportunity Inbox | 🟡 | Opportunities (D81) | Anonymous abandoned carts; weekly digest | R1 |
-| 13 | Offline-to-Online Identity | ✅ | QR, campaign links, fallbacks, print kit, print-shop ordering (D86, D114, D118–D119) | Real print partner 🧪 | R3 |
-| 14 | Micro-website mode | 🟡 | Multi-page sites (D48) | Ready-made site kits per business type | R1 |
-| 15 | Creator Collaboration Graph | ✅ 🧪 | Referrals (D103), partnerships (D120), co-branded spaces (D121), bundles (D122), D123 | Real split settlement | R3 |
-| 16 | Smart Accessibility | 🟡 | Manual audit, contrast blocking (D76, D108) | **Automatic checker in the canvas** | R1 |
-| 17 | Lightweight Mode | 🟡 | Visitor data saver (D85, D88) | **Owner "start lightweight" setting**; smaller image versions and offline use (R3) | R1 / R3 |
-| 18 | Business-in-a-Box | 🟡 | Business kits (D90), six policies | **Kits offered during onboarding**, more business types | R1 |
-| 19 | AI Business Coach | ✅ 🧪 | Rule-based weekly brief and questions (D104) | A real AI provider | R3 |
-| 20 | Open Module Exchange | 🟡 | Curated Extensions (D67) | **Developer submissions, SDK, code review queue** | R1 (design) / R3 |
+| # | Concept | Status | What exists | Still missing |
+|---|---|---|---|---|
+| 1 | IntentFlow | ✅ | Source rules, preview-as, results (D64), A/B tests (D127) | — |
+| 2 | Link Intelligence | ✅ | Suggestions, one-tap "Move it up", Monday summary (D125) | — |
+| 3 | DealRoom | ✅ | D54–D56 | — |
+| 4 | Trust Passport | ✅ 🧪 | D99, D111, expiry and report (D126) | Outside checks (credit bureau, associations) 🧪 |
+| 5 | Proof-of-Work | ✅ | D91, certificates (D126) | — |
+| 6 | Voice-to-Store | ✅ 🧪 | D102 | Nigerian-language speech 🧪 |
+| 7 | WhatsApp Commerce Bridge | ✅ 🧪 | D97, D100 | Real sending and template approval 🧪 |
+| 8 | Local Trust & Fulfilment | ✅ 🧪 | D96, D112 | Real couriers, tracking beyond Lagos 🧪 |
+| 9 | Community Commerce | ✅ | DealRoom goals, bundles (D122), shared shops (D128) | — |
+| 10 | Digital Product Protection | ✅ 🧪 | Expiring links, limits, log, licence keys (D125), PDF and image watermark previews, per-copy download trace (D136) | Watermark burned into the real file needs storage 🧪 |
+| 11 | Service OS | ✅ | D89, D95, invoice PDF and Audience link (D125) | — |
+| 12 | Opportunity Inbox | ✅ | D81, anonymous carts and Monday summary (D125) | — |
+| 13 | Offline-to-Online Identity | ✅ | D86, D114, D118–D119 | Real print partner 🧪 |
+| 14 | Micro-website mode | ✅ | Multi-page sites (D48), seven industry page sets with previews, in onboarding (D127, D137) | — |
+| 15 | Creator Collaboration Graph | ✅ 🧪 | D103, D120–D123 | Real split settlement 🧪 |
+| 16 | Smart Accessibility | ✅ | D76, canvas Check tab (D126) | Not a full WCAG audit |
+| 17 | Lightweight Mode | ✅ | D85, D88, "data saver for everyone" (D126) | Smaller image versions need a CDN 🧪 |
+| 18 | Business-in-a-Box | ✅ | Ten kits, offered in onboarding (D90, D126) | — |
+| 19 | AI Business Coach | ✅ 🧪 | D104 | Real AI provider 🧪 |
+| 20 | Open Module Exchange | ✅ 🧪 | Curated extensions (D67), developer submissions (D132, D134) | Real code hosting and review 🧪 |
 
 ## 4. Simulated by design (needs a partner or engineering)
 
 | Area | What the prototype does | What the real thing needs |
 |---|---|---|
-| Accounts & sign-in, SSO | Codes, devices, SSO provider simulated (D80, D115) | Auth backend, MFA, SAML/OIDC provider |
-| Payments, wallet, escrow, splits | Test cards, simulated settlement (D92–D94, D122) | Licensed payment partner with split payouts |
+| Accounts, sign-in, SSO | Codes, devices, SSO simulated (D80, D115) | Auth backend, SAML/OIDC |
+| Payments, wallet, escrow, splits | Test cards, simulated settlement | Licensed payment partner with split payouts |
+| USSD | Batch 13 adds a simulated flow | Bank USSD via the payment partner |
 | Identity / KYC / KYB | Simulated checks and staff review | Identity verification partner |
-| Files | Name/size only; images in browser storage | Object storage, virus scan, image pipeline/CDN |
+| Files | Name/size only; images in browser storage | Object storage, virus scan, image pipeline/CDN, real watermarking |
 | Domains | Simulated DNS checks | DNS verification, certificates |
 | Messages | Previews (email, WhatsApp, SMS) | Messaging providers, WhatsApp Business API |
 | Couriers | Simulated quotes and riders | Courier partners |
 | Print shop | "Lagos Print Hub" simulated | Print partner |
 | Speech | English browser speech only | Speech partner for Nigerian languages |
 | AI | Rule-based drafts and coach | AI provider + safety review |
-| Calendar sync | **Not built** | Google/Outlook connection |
-| Presence, check-in across doors | One device | Realtime server, shared state |
+| Calendar sync | Batch 13 adds a simulated two-way connection | Google/Outlook OAuth and APIs |
+| Developer API and webhooks | Simulated keys, deliveries, sandbox (D131) | Real API and delivery service |
+| Presence, check-in across doors, shared shops | One device | Realtime server, shared state |
 | Analytics | On-device events | Event pipeline |
+| Translations | Drafts in four languages (D133) | Native-speaker review |
 
 ## 5. Waiting on founder or legal
 
-- **Signed off (D105–D109):** prices, limits, KUBICU fees, money fees and timings, retention, risk thresholds, commerce rules, partner-app plans. Low contrast blocks publishing; the Night-market gradient is allowed in four app places; legal wording confirmed.
-- **Still "Proposed":** decisions logged after the sign-off (D110 onward: members-only, instalments, seating, prints, SSO, comments, sidebar, print kit, partnerships).
-- **Still example figures:** payment provider fee (1.5% + ₦100), pay-on-delivery cap (₦100,000), instalment minimum (₦20,000), print prices, partnership invite (7 days) and notice (14 days).
-- **Needs legal review:** instalment wording, buyer-protection wording, partnership agreement wording.
+- **Signed off (D105–D109):** prices, limits, fees, timings, retention, risk thresholds, commerce rules, partner-app plans, legal wording.
+- **Still "Proposed":** D110–D134, including all translation parts (D133–D133r), partnerships (D120–D123), print kit (D114, D118–D119), shared shops (D128), staff safety (D129–D130) and developer tools (D131–D134).
+- **Example figures:** payment provider fee, pay-on-delivery cap (₦100,000), instalment minimum (₦20,000), print prices, partnership windows, webhook retry/auto-off, API rate limit, extension price caps and 80/20 split, staff approval expiry (24 h), access review cycle (90 days).
+- **Needs legal review:** instalments (D112), buyer protection (D94), partnership agreement (D120), support-block wording (D124), developer data-use declaration (D132).
 
 ## 6. Implementation backlog audit (`KUBICU_IMPLEMENTATION_BACKLOG.md`)
 
-The backlog is the pre-prototype engineering spec; it carries no status of its own. Every epic and section was checked against the code. Engineering-only criteria (⚙: server-side checks, idempotency, signatures, decimal maths, CSP, backups, test layers) are not design gaps and are listed only where they imply a screen.
-
-| Epic | Status | Design gaps found |
+| Epic | Status | Remaining design gaps |
 |---|---|---|
-| A Identity & onboarding | ✅ | 🟡 No automatic "other devices were signed out" confirmation after a password or two-step change |
-| B Canvas | ✅ | — (sanitisation, schema migration ⚙) |
-| C Blocks | 🟡 | ⬜ **Audio block**, ⬜ **Playlist block**, 🟡 dedicated **Collection** block, 🟡 **Donation / pay-what-you-want** block (payment links exist, no page block) |
-| D Themes & design system | ✅ | — |
-| E Publishing, URLs, QR, SEO | 🟡 | ⬜ **Sitemap and structured data** (only title/description today); 🟡 restore an unpublished page as its own action |
-| F Analytics | ✅ | 🟡 Retention shown in Privacy but no bot-filtering note (⚙) |
+| A Identity & onboarding | ✅ | — (D139) |
+| B Canvas | ✅ | — |
+| C Blocks | ✅ | 🟡 Embeds beyond YouTube |
+| D Themes | ✅ | — |
+| E Publishing, URLs, QR, SEO | ✅ | — (D124) |
+| F Analytics | ✅ | ⚙ bot filtering |
 | G Products & orders | ✅ | — |
-| H Payments | ✅ 🧪 | ⬜ **USSD** listed but not a checkout option; 🧪 webhooks ⚙ |
-| I Digital goods | ✅ | See concept 10 (watermarking, licence keys) |
-| J Bookings | ✅ | 🧪 Calendar sync not built |
+| H Payments | ✅ 🧪 | USSD and workspace currency (D136) |
+| I Digital goods | ✅ 🧪 | Watermarks (D136) |
+| J Bookings | ✅ 🧪 | Calendar sync simulated (D137); per-staff availability not built |
 | K Leads / CRM | ✅ | — |
-| L Automations | 🟡 | ⬜ Triggers: **campaign started/ended**, **lead inactive for N days**. ⬜ Actions: **AI draft**, **produce a report**, **call an approved webhook** |
-| M Custom domains | ✅ | 🟡 Move a domain between spaces as a guided step (today: disconnect + reconnect) |
-| N Plans & billing | 🟡 | ⬜ Staff **plan catalogue / trials / coupons / credits** (G6); 🟡 staff can swap a plan but can't grant a credit |
-| O Super admin | 🟡 | ⬜ G6, G9, G11, G13; ⬜ **dual approval / step-up** for high-risk actions; ⬜ **access reviews**; 🟡 **incidents and public status page** (Health is a snapshot only) |
-| P Module marketplace | 🟡 | 🟡 Extension detail doesn't show data access scope, events and outside services; 🟡 staff can't pause/roll back one extension per workspace or globally; ⬜ developer submissions (concept 20) |
-| Q AI | 🟡 | ⬜ Staff AI operations (G9) |
-| R Security & privacy | ✅ | 🟡 No general abuse/rate-limit view for staff (⚙ mostly) |
-| S Accessibility & resilience | 🟡 | ⬜ In-canvas checker (concept 16); 🟡 owner lightweight setting (concept 17) |
-| T Trust & safety | 🟡 | 🟡 Automated phishing/impersonation flags surfaced to moderators (reports are manual only) |
-| U Internationalisation | 🟡 | ⬜ Staff localisation (G13); 🟡 only English works — other languages "coming soon" (needs translation); 🟡 naira only, no currency setting |
-| V IntentFlow | ✅ | 🟡 Declared A/B test |
+| L Automations | ✅ 🧪 | Campaign and quiet-contact triggers fire on real changes while the app is open (D137); other triggers test-only; sending needs partners |
+| M Custom domains | ✅ | — |
+| N Plans & billing | ✅ | — (D135) |
+| O Super admin | ✅ | — (D135) |
+| P Module marketplace | ✅ | — (D139; scopes derived from wording until real manifests) |
+| Q AI | ✅ 🧪 | — (D135; AI provider simulated) |
+| R Security & privacy | ✅ | ⚙ rate limits |
+| S Accessibility & resilience | ✅ | Hands-on checks (§7) |
+| T Trust & safety | ✅ | Automatic flags (D130) |
+| U Internationalisation | 🟡 | 🟡 Remaining screens to translate (currency done, D136) |
+| V IntentFlow | ✅ | — |
 | W DealRoom | ✅ | — |
-| X Trust Passport & Proof | ✅ 🧪 | 🟡 Per-check expiry/revocation; passport-specific report |
-| Y Local fulfilment | ✅ 🧪 | 🟡 Delivery areas beyond Lagos; partner availability per area |
-| Z Developer API | ⬜ | ⬜ **API keys, webhook endpoints and delivery log, connected apps with revoke, developer docs/sandbox/changelog** |
-| §4 MVP, §7 commercial | ✅ | Staff plan catalogue (G6) |
-| §2, §5, §6, §8, §10–§13 | ⚙ / 👤 | Process, architecture, QA and research — no screens |
+| X Trust Passport & Proof | ✅ 🧪 | — |
+| Y Local fulfilment | ✅ 🧪 | 🧪 areas beyond Lagos |
+| Z Developer API | ✅ 🧪 | — (D131) |
+| Workspaces | ✅ | Unlimited, each on Free (D137) |
 
 ## 7. Everything still open, grouped
 
-**Not built (nothing in the app):** G6 Plans & entitlements · G9 AI operations · G11 Integrations & notifications · G13 Localisation & policies · staff dual approval, backup codes and access reviews · public status page and incidents · developer tools (API keys, webhooks, connected apps, docs) · watermarking and licence keys · audio and playlist blocks · sitemap and structured data · USSD at checkout · calendar sync.
+**Not built:** nothing. Batch 13 closed the list (D135 staff tools, D136 currency/USSD/watermarks, D137 calendar/automations/page sets/workspaces, D138 checks).
 
-**Partly built:** Contact on Forms · Service OS online invoice payment, PDF, Audience link · Lightweight owner setting · Business kits in onboarding and more types · micro-site kits · Link Intelligence digest and one-tap apply · Opportunities digest and anonymous carts · automation triggers and actions · in-canvas accessibility checker · community storefronts · collection and donation blocks · theme selling · extension detail scopes and staff rollback · Trust Passport expiry and report · declared A/B tests · signed-out-devices confirmation · account date/time format everywhere · developer submissions.
+**Partly built:** translations of Commerce Verification/Reports/Settings, Bookings, Audience, workspace Settings, canvas, marketing site and the payout/bank-account windows · embeds beyond YouTube · video captions guidance · per-staff booking availability · customer "agree to the new policy" prompt · automations other than campaign/quiet triggers still test-only.
 
-**Waiting on partners (designed and simulated):** payments and split settlement · WhatsApp sending · email/SMS · couriers and tracking · print shop · Nigerian-language speech · translation of the app · identity/KYC · outside trust checks · AI provider · file storage and image pipeline · DNS/certificates · realtime presence and shared check-in.
+**Waiting on partners:** see §4.
 
-**Hands-on:** G16 visual review; real-phone screen-reader checks (seat map, print ordering, @mentions, print designs, partner panel, Sold with a partner, guest partner page).
+**Hands-on:** G16 visual review; real-phone screen readers (seat map, print ordering, @mentions, print designs, partner panel, Sold with a partner, guest partner page, check-in result card); axe-core and status-colour contrast run.
 
 ## 8. History
 
-- Batches 1–7, 8 (D81–D83), 9 (D84–D91), 10 (D92–D109), 11 (D110–D117a), print kit (D118–D119) and co-branded spaces & bundles (D120–D123) are complete.
-- Earlier versions of this file: audit 22 Oct 2026; updates after Forms, the account area, Batch 8 and Batch 11.
+- Batches 1–11, print kit (D118–D119), co-branded spaces & bundles (D120–D123) and Batch 12 (D124–D134) are complete; Batch 12 translations continue in parts.
+- Batch 13 complete (D135–D138): docs reconciliation, staff editing tools, workspace currency, USSD, watermarks, calendar sync, live automations, seven industry page sets, multiple workspaces, checks.
+- Earlier versions of this file: 22 Oct 2026; updates after Forms, the account area, Batch 8, Batch 11 and 23 Oct 2026.

@@ -7,7 +7,7 @@ import { DiscountCodeField } from './DiscountCodeField';
 import { useTrack } from '../../contexts/TrackContext';
 import { unitsBoughtBy, type DealRoomCheckout } from '../../utils/dealRoom';
 import { discountLineLabel, normaliseCode, resolveDiscount } from '../../utils/commerce/discounts';
-import { AlertTriangleIcon, ArrowLeftIcon, Loader2Icon, MinusIcon, PlusIcon, ShoppingBagIcon, Trash2Icon, XCircleIcon } from 'lucide-react';
+import { AlertTriangleIcon, ArrowLeftIcon, CreditCardIcon, HashIcon, Loader2Icon, MinusIcon, PlusIcon, ShoppingBagIcon, Trash2Icon, XCircleIcon } from 'lucide-react';
 import type { PageTheme } from '../../types/page';
 import type { OrderFulfilment, TestPaymentOutcome } from '../../types/commerce';
 import type { WorkspacePlan } from '../../types/plan';
@@ -26,6 +26,8 @@ import { describeSeats, findSeat } from '../../utils/commerce/seating';
 import { useNow } from '../../hooks/useNow';
 import { isValidEmail, isValidPhone } from '../../utils/validation';
 import { formatNgn } from '../../utils/format';
+import { isNaira } from '../../utils/currency';
+import { UssdPay } from './UssdPay';
 
 type Step = 'cart' | 'details' | 'delivery' | 'review' | 'paying' | 'failed';
 
@@ -69,6 +71,12 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
   // Pay on delivery / instalments (D112).
   const [payWithChoice, setPayWith] = useState<PayWith>('now');
   const [agreed, setAgreed] = useState(false);
+  // Card or USSD for an immediate payment (D136).
+  const [payBy, setPayBy] = useState<'card' | 'ussd'>('card');
+  const [ussdOpen, setUssdOpen] = useState(false);
+  useEffect(() => {
+    if (step !== 'review') setUssdOpen(false);
+  }, [step]);
 
   const data = commerce.data;
   const open = !!cart?.open;
@@ -203,10 +211,10 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
     cart.doneChoosing();
   };
 
-  const pay = () => {
+  const pay = (override?: TestPaymentOutcome) => {
     setStep('paying');
-    // Nothing to charge: the test-card choice doesn't apply.
-    const outcome = payNow > 0 ? chosenOutcome : 'success';
+    // Nothing to charge: the test-card choice doesn't apply. USSD passes its own result (D136).
+    const outcome = payNow > 0 ? override ?? chosenOutcome : 'success';
     const fulfilment: OrderFulfilment = !physical ?
     { method: ticketsOnly ? 'tickets' : 'digital' } :
     method === 'pickup' ?
@@ -599,6 +607,23 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
 
     // review
     const okLines = lines.filter((l) => l.ok);
+    if (ussdOpen)
+    return (
+      <div className="flex flex-1 flex-col gap-4">
+          <UssdPay
+          theme={theme}
+          amount={payNow}
+          onBack={() => setUssdOpen(false)}
+          onPaid={(o) => {
+            setUssdOpen(false);
+            pay(o);
+          }} />
+        
+        </div>);
+
+    // USSD only for a single naira payment now — not for later instalment charges (D136).
+    const ussdAvailable = isNaira() && payNow > 0 && payWith === 'now';
+    const byUssd = ussdAvailable && payBy === 'ussd';
     return (
       <div className="flex flex-col gap-4">
         <CheckoutHeading theme={theme}>Review and pay</CheckoutHeading>
@@ -663,7 +688,31 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
           agreed={agreed}
           onAgree={setAgreed} />
         
-        {payNow > 0 &&
+        {ussdAvailable &&
+        <fieldset className="flex flex-col gap-2">
+            <legend className="mb-1 text-[14px] font-semibold">{tr('Pay with')}</legend>
+            <div className="grid grid-cols-2 gap-2">
+              {(
+            [
+            ['card', CreditCardIcon, tr('Card or transfer')],
+            ['ussd', HashIcon, tr('USSD code')]] as
+            const).
+            map(([v, Icon, label]) =>
+            <label key={v} className="flex cursor-pointer items-center gap-2.5 p-3 text-[14px] font-semibold focus-within:outline focus-within:outline-2 focus-within:outline-offset-2" style={{ ...cardStyle(theme), border: `1.5px solid ${payBy === v ? theme.text : mix(theme.text, 12)}` }}>
+                  <input type="radio" name="pay-by" className="sr-only" checked={payBy === v} onChange={() => setPayBy(v)} />
+                  <Icon size={17} aria-hidden />
+                  {label}
+                </label>
+            )}
+            </div>
+            {byUssd &&
+          <p className="text-[12.5px] leading-snug" style={muted}>
+                {tr('No card or data needed — dial a code from your bank phone and approve with your PIN.')}
+              </p>
+          }
+          </fieldset>
+        }
+        {payNow > 0 && !byUssd &&
         <fieldset className="flex flex-col gap-2">
           <legend className="mb-1 text-[13px] font-semibold">{tr('Test card — choose what happens')}</legend>
           {outcomes.filter((o) => payWith !== 'instalments' || o.value !== 'pending' && o.value !== 'timeout').map((o) =>
@@ -691,8 +740,10 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
         }
         <TestModeNote theme={theme} />
         <SheetActions theme={theme}>
-          <PrimaryButton theme={theme} onClick={pay} disabled={okLines.length === 0 || !!roomError || payWith === 'instalments' && !agreed}>
-            {payWith === 'pod' ?
+          <PrimaryButton theme={theme} onClick={() => byUssd ? setUssdOpen(true) : pay()} disabled={okLines.length === 0 || !!roomError || payWith === 'instalments' && !agreed}>
+            {byUssd ?
+            tr('Get a USSD code for {amount}', { amount: formatNgn(payNow) }) :
+            payWith === 'pod' ?
             tr('Place order — pay {amount} on delivery', { amount: formatNgn(total) }) :
             payWith === 'instalments' ?
             tr('Pay {amount} today', { amount: formatNgn(payNow) }) :

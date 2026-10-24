@@ -13,6 +13,8 @@ import { Card } from '../../components/ui/layout/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { ReasonDialog } from '../../components/admin/ReasonDialog';
+import { ServicesCard } from '../../components/admin/integrations/ServicesCard';
+import { MessageTemplatesCard } from '../../components/admin/integrations/MessageTemplatesCard';
 
 const channels = [
 { name: 'In-app notifications', state: 'Live', tone: 'success' as const, note: 'Delivered to the bell and inbox' },
@@ -66,7 +68,7 @@ export function AdminIntegrations() {
 
   return (
     <div className="mx-auto w-full max-w-6xl px-5 py-8 md:px-10 md:py-12">
-      <PageHeader title="Integrations & notifications" description="Which message channels are live, every event that can notify a seller, and the extension versions running in workspaces — with a way to withdraw a bad release." />
+      <PageHeader title="Integrations & notifications" description="Which channels are live, a test for every outside service, the messages KUBICU sends in each language, every event that can notify a seller, and the extension versions running in workspaces." />
 
       <div className="mt-8 grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
         <Card id="channels" title="Channels" body="flush">
@@ -120,6 +122,11 @@ export function AdminIntegrations() {
             })}
           </ul>
         </Card>
+      </div>
+
+      <div className="mt-8 grid items-start gap-8 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+        <ServicesCard />
+        <MessageTemplatesCard />
       </div>
 
       <Card id="events" title="Notification events" description="Default channels for each event. Sellers change their own in Settings → Notifications; each person only gets events their role can act on." body="flush" className="mt-8">

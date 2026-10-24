@@ -6,7 +6,7 @@ import { useWorkspace } from '../../contexts/WorkspaceContext';
 import { useTeam } from '../../contexts/TeamContext';
 import { PAYOUT_MIN_NGN, REFUND_DAYS, averageStars, earnings, listingEvent, useTemplateStore } from '../../utils/templateListings';
 import { uid } from '../../utils/id';
-import { formatNgn, formatTimestamp } from '../../utils/format';
+import { formatNaira as formatNgn, formatTimestamp } from '../../utils/format';
 import { Button } from '../ui/Button';
 import { Badge, type BadgeTone } from '../ui/Badge';
 import { Dialog } from '../ui/Dialog';

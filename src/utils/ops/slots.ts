@@ -1,5 +1,12 @@
 import type { Availability, Booking, Service } from '../../types/ops';
 
+/** Busy times that block bookings: events from calendars ticked "blocks", on working connections, not KUBICU's own (D137). */
+export function busyTimes(a: Availability): {start: number;end: number;}[] {
+  return (a.calendars ?? []).
+  filter((c) => c.status === 'ok').
+  flatMap((c) => c.events.filter((e) => !e.bookingId && c.calendars.find((x) => x.id === e.calendarId)?.blocks).map((e) => ({ start: Date.parse(e.start), end: Date.parse(e.end) })));
+}
+
 /** Milliseconds the zone is ahead of UTC at this instant. */
 function tzOffsetMs(instant: number, timeZone: string): number {
   const parts = new Intl.DateTimeFormat('en-GB', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' }).formatToParts(new Date(instant));
@@ -86,10 +93,12 @@ export function slotsFor(dateKey: string, service: Service, a: Availability, boo
   const taken = activeBookings(bookings, ignoreId);
   const sameDay = taken.filter((b) => dateKeyInTz(Date.parse(b.start), a.timeZone) === dateKey);
   if (sameDay.length >= a.maxPerDay) return [];
+  // Busy times from connected Google / Outlook calendars block slots too (D137).
+  const busy = busyTimes(a).filter((x) => x.end > open && x.start < close);
   const out: Slot[] = [];
   for (let t = open; t + dur <= close; t += STEP_MIN * 60000) {
     if (t < earliest) continue;
-    const clash = sameDay.some((b) => t < Date.parse(b.end) + buffer && t + dur + buffer > Date.parse(b.start));
+    const clash = sameDay.some((b) => t < Date.parse(b.end) + buffer && t + dur + buffer > Date.parse(b.start)) || busy.some((x) => t < x.end && t + dur > x.start);
     if (!clash) out.push({ start: t, end: t + dur });
   }
   return out;

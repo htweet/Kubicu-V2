@@ -3,6 +3,7 @@ import { CreditCardIcon, PaperclipIcon, StarIcon } from 'lucide-react';
 import type { FormField } from '../../types/forms';
 import type { FormSkin } from './formSkin';
 import { formatNgn } from '../../utils/format';
+import { currencySymbol } from '../../utils/currency';
 
 interface FormFieldInputProps {
   field: FormField;
@@ -165,10 +166,10 @@ export function FormFieldInput({ field, value, onChange, error, skin, inert, idP
             <div className="relative">
             {field.type === 'amount' &&
               <span aria-hidden className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[14.5px]" style={{ color: skin.muted }}>
-                ₦
+                {currencySymbol()}
               </span>
               }
-            <input {...common} type={type} inputMode={mode} autoComplete={auto} value={text} placeholder={field.placeholder || (field.type === 'phone' ? '+234' : '')} maxLength={field.maxLength ?? undefined} onChange={(e) => onChange(e.target.value)} className={`${inputCls} ${field.type === 'amount' ? 'pl-8' : ''}`} />
+            <input {...common} type={type} inputMode={mode} autoComplete={auto} value={text} placeholder={field.placeholder || (field.type === 'phone' ? '+234' : '')} maxLength={field.maxLength ?? undefined} onChange={(e) => onChange(e.target.value)} className={inputCls} style={field.type === 'amount' ? { ...skin.input, paddingLeft: `calc(1.25rem + ${currencySymbol().length}ch)` } : skin.input} />
           </div>);
 
         }

@@ -19,5 +19,6 @@ export function signOutOthers(a: AccountData, reason: Reason): AccountData {
 export const signOutReasonCopy: Record<Reason, string> = {
   password: 'you changed your password',
   two_step_on: 'you turned on two-step sign-in',
-  two_step_off: 'you turned off two-step sign-in'
+  two_step_off: 'you turned off two-step sign-in',
+  manual: 'you chose “Sign out others”'
 };

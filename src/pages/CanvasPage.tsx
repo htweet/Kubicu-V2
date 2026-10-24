@@ -13,6 +13,7 @@ import { useCan } from '../contexts/TeamContext';
 import { CanvasNoAccess } from '../components/canvas/CanvasNoAccess';
 import { ReviewSync } from '../components/canvas/ReviewStatus';
 import { PresenceProvider } from '../contexts/PresenceContext';
+import { SiteKitLauncher } from '../components/canvas/SiteKitLauncher';
 
 export function CanvasPage() {
   const { pageId } = useParams();
@@ -52,6 +53,7 @@ export function CanvasPage() {
     <CampaignPreviewProvider>
       <PresenceProvider>
         <ReviewSync />
+        <SiteKitLauncher />
         {isDesktop ? <DesktopEditor /> : <MobileEditor />}
       </PresenceProvider>
     </CampaignPreviewProvider>);

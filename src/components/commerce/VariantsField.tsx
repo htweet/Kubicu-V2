@@ -8,6 +8,7 @@ import { IconButton } from '../ui/IconButton';
 import { TextInput } from '../ui/TextInput';
 import { fieldControlClass } from '../ui/Field';
 import { cn } from '../../utils/cn';
+import { currencySymbol } from '../../utils/currency';
 
 interface VariantsFieldProps {
   product: Product;
@@ -140,7 +141,7 @@ export function VariantsField({ product, onChange }: VariantsFieldProps) {
                 <td className="block md:table-cell md:px-3 md:py-1.5">
                   <span aria-hidden className="mb-1 block text-caption text-fg-subtle md:hidden">Price</span>
                   <div className="relative w-full md:w-28">
-                    <span aria-hidden className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-caption text-fg-subtle">₦</span>
+                    <span aria-hidden className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-caption text-fg-subtle">{currencySymbol()}</span>
                     <input
                     aria-label={`Price for ${variantLabel(v)}`}
                     inputMode="numeric"
@@ -150,7 +151,8 @@ export function VariantsField({ product, onChange }: VariantsFieldProps) {
                       const d = e.target.value.replace(/[^0-9]/g, '').slice(0, 10);
                       updateVariant(v.id, { priceNgn: d === '' ? null : Number(d) });
                     }}
-                    className={cn(fieldControlClass, 'h-11 pl-6 text-caption tabular-nums md:h-8')} />
+                    className={cn(fieldControlClass, 'h-11 text-caption tabular-nums md:h-8')}
+                    style={{ paddingLeft: `calc(1rem + ${currencySymbol().length}ch)` }} />
                   
                   </div>
                 </td>

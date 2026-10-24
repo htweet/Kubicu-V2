@@ -215,6 +215,18 @@ export function useNotificationFeed(): AppNotification[] {
       }
     }
 
+    // Live automation runs (D137): drafts waiting for approval, reports and owner notices from the last week.
+    for (const a of ops.automations) {
+      for (const r of a.runs) {
+        if (r.test || now - Date.parse(r.at) > 7 * DAY) continue;
+        r.steps.forEach((s, i) => {
+          if (s.status === 'waiting') out.push({ id: `automation:${r.id}:${i}`, event: 'automation', area: 'audience', kind: 'action', text: `“${a.name}” wrote a message for ${r.subject.replace(/ has been quiet.*$/, '')} — approve, edit or discard it`, href: '/app/automations#drafts', at: r.at });else
+          if (s.status === 'done' && /^(Send me a report|Notify)/.test(s.label)) out.push({ id: `automation:${r.id}:${i}`, event: 'automation', area: 'audience', kind: 'update', text: s.detail.replace(/^In your notifications: /, ''), href: '/app/automations', at: r.at });
+        });
+        if (r.status === 'failed') out.push({ id: `automation:${r.id}:failed`, event: 'automation', area: 'audience', kind: 'action', text: `“${a.name}” failed for ${r.subject} — open it to retry`, href: '/app/automations', at: r.at });
+      }
+    }
+
     // Monday summary (D125): last 7 days against the 7 before, plus what's waiting.
     {
       const monday = new Date();

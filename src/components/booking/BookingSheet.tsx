@@ -11,6 +11,8 @@ import { createBooking } from '../../utils/ops/ops';
 import { dayLabel, durationLabel, timeLabel, visitorTimeZone } from '../../utils/ops/slots';
 import { isValidEmail, isValidPhone } from '../../utils/validation';
 import { formatNgn } from '../../utils/format';
+import { isNaira } from '../../utils/currency';
+import { UssdPay } from '../checkout/UssdPay';
 import { useTrack } from '../../contexts/TrackContext';
 
 type Step = 'time' | 'details' | 'confirm' | 'working' | 'problem';
@@ -32,6 +34,7 @@ export function BookingSheet({ theme, ops, serviceId, handle, onClose }: Booking
   const [consent, setConsent] = useState(false);
   const [deposit, setDeposit] = useState<'paid' | 'failed'>('paid');
   const [simulateTaken, setSimulateTaken] = useState(false);
+  const [ussd, setUssd] = useState(false);
   const [problem, setProblem] = useState<{kind: 'taken' | 'failed';message: string;} | null>(null);
   const [tried, setTried] = useState(false);
   const track = useTrack();
@@ -62,7 +65,7 @@ export function BookingSheet({ theme, ops, serviceId, handle, onClose }: Booking
     email: !isValidEmail(customer.email) ? 'Enter an email for your confirmation' : ''
   };
 
-  const book = () => {
+  const book = (byUssd = false) => {
     if (start === null) return;
     setStep('working');
     window.setTimeout(() => {
@@ -77,7 +80,7 @@ export function BookingSheet({ theme, ops, serviceId, handle, onClose }: Booking
           start,
           customer: { name: customer.name.trim(), phone: customer.phone.trim(), email: customer.email.trim() },
           intake: intake.trim(),
-          depositOutcome: service.depositNgn ? deposit : 'none',
+          depositOutcome: service.depositNgn ? byUssd ? 'paid' : deposit : 'none',
           customerTimeZone: visitorTimeZone(),
           marketingConsent: consent
         });
@@ -103,6 +106,13 @@ export function BookingSheet({ theme, ops, serviceId, handle, onClose }: Booking
   };
 
   const body = () => {
+    // Deposit by USSD (D136).
+    if (ussd && step === 'confirm' && service.depositNgn)
+    return (
+      <div className="flex flex-1 flex-col gap-4">
+          <UssdPay theme={theme} amount={service.depositNgn} onBack={() => setUssd(false)} onPaid={() => (setUssd(false), book(true))} />
+        </div>);
+
     if (step === 'working')
     return (
       <div className="flex flex-col items-center gap-3 py-12 text-center" role="status">
@@ -229,9 +239,14 @@ export function BookingSheet({ theme, ops, serviceId, handle, onClose }: Booking
         </label>
         <TestModeNote theme={theme} />
         <SheetActions theme={theme}>
-          <PrimaryButton theme={theme} onClick={book}>
+          <PrimaryButton theme={theme} onClick={() => book()}>
             {service.depositNgn ? `Pay ${formatNgn(service.depositNgn)} and book` : 'Book this time'}
           </PrimaryButton>
+          {service.depositNgn && isNaira() ?
+          <SecondaryButton theme={theme} onClick={() => setUssd(true)}>
+              No card? Pay the deposit with USSD
+            </SecondaryButton> :
+          null}
           <SecondaryButton theme={theme} onClick={() => setStep('time')}>
             Change time
           </SecondaryButton>

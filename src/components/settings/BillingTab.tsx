@@ -10,7 +10,7 @@ import { useUpgrade } from '../../contexts/UpgradeContext';
 import { plans } from '../../data/plans';
 import { TRIAL_PLAN } from '../../data/billing';
 import { daysUntil, formatDate, isPaidPlan, priceFor, withVat } from '../../utils/billing';
-import { formatNgn } from '../../utils/format';
+import { formatNaira as formatNgn } from '../../utils/format';
 import { downloadCsv, toCsv } from '../../utils/csv';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
@@ -125,6 +125,21 @@ export function BillingTab() {
               {formatNgn(price)}
               <span className="text-label font-normal text-fg-muted"> /{d.cycle === 'yearly' ? 'year' : 'month'} + VAT</span>
             </p>
+            }
+
+          {(billing.creditLeft > 0 || d.coupon) &&
+            <ul className="flex flex-col gap-1.5 rounded-md bg-success-soft px-3 py-2.5 text-label text-fg">
+              {billing.creditLeft > 0 &&
+              <li>
+                  <span className="font-semibold">{formatNgn(billing.creditLeft)} account credit</span> from KUBICU — used before your card on the next invoice.
+                </li>
+              }
+              {d.coupon &&
+              <li>
+                  Code <span className="font-semibold">{d.coupon.code}</span> keeps applying at every renewal while you stay on {plan.name}.
+                </li>
+              }
+            </ul>
             }
 
           <div className="flex items-start gap-2.5 text-label text-fg-muted">

@@ -1,14 +1,15 @@
 import { formatDistanceToNow, format } from 'date-fns';
+import { formatMoney } from './currency';
 
-const ngn = new Intl.NumberFormat('en-NG', {
-  style: 'currency',
-  currency: 'NGN',
-  maximumFractionDigits: 0
-});
-
+/**
+ * Formats a seller's amount in the currency of the workspace on screen (D136).
+ * The name is kept from when every workspace used naira; KUBICU's own prices use formatNaira.
+ */
 export function formatNgn(amount: number): string {
-  return ngn.format(amount);
+  return formatMoney(amount);
 }
+
+export { formatNaira } from './currency';
 
 export function formatRelative(iso: string): string {
   return formatDistanceToNow(new Date(iso), { addSuffix: true });

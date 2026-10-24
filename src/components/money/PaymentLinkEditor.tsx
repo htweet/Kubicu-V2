@@ -8,6 +8,9 @@ import { formatNgn } from '../../utils/format';
 import { Sheet } from '../ui/Sheet';
 import { Button } from '../ui/Button';
 import { TextInput } from '../ui/TextInput';
+import { currencySymbol } from '../../utils/currency';
+
+const sym = currencySymbol;
 import { TextArea } from '../ui/TextArea';
 import { Segmented } from '../ui/Segmented';
 import { SelectInput } from '../ui/SelectInput';
@@ -115,7 +118,7 @@ export function PaymentLinkEditor({ open, link, data, escrowAllowed, onClose, on
             } />
           
           <p className="-mt-2 text-caption text-fg-subtle">{tr(kindHelp[draft.kind])}</p>
-          {draft.kind === 'fixed' && <TextInput id="pl-amount-v" label={staged ? 'Total amount' : 'Amount'} prefix="₦" inputMode="numeric" value={draft.amountNgn ? String(draft.amountNgn) : ''} disabled={lockedStages} hint={lockedStages ? 'A stage has been paid, so the total and stages are locked.' : undefined} onChange={(e) => set({ amountNgn: Number(e.target.value.replace(/\D/g, '')) || 0 })} error={err('amount')} />}
+          {draft.kind === 'fixed' && <TextInput id="pl-amount-v" label={staged ? 'Total amount' : 'Amount'} prefix={sym()} inputMode="numeric" value={draft.amountNgn ? String(draft.amountNgn) : ''} disabled={lockedStages} hint={lockedStages ? 'A stage has been paid, so the total and stages are locked.' : undefined} onChange={(e) => set({ amountNgn: Number(e.target.value.replace(/\D/g, '')) || 0 })} error={err('amount')} />}
           {draft.kind === 'fixed' &&
           <div className="flex flex-col gap-3 rounded-md border border-line p-4">
               <Switch
@@ -165,14 +168,14 @@ export function PaymentLinkEditor({ open, link, data, escrowAllowed, onClose, on
             }
             </div>
           }
-          {draft.kind === 'open' && <TextInput id="pl-min" label="Minimum" prefix="₦" inputMode="numeric" value={draft.minNgn ? String(draft.minNgn) : ''} onChange={(e) => set({ minNgn: Number(e.target.value.replace(/\D/g, '')) || 0 })} error={err('min')} />}
+          {draft.kind === 'open' && <TextInput id="pl-min" label="Minimum" prefix={sym()} inputMode="numeric" value={draft.minNgn ? String(draft.minNgn) : ''} onChange={(e) => set({ minNgn: Number(e.target.value.replace(/\D/g, '')) || 0 })} error={err('min')} />}
           {draft.kind === 'items' &&
           <Field id="pl-items" label="Items" error={err('items')}>
               <ul className="flex flex-col gap-2">
                 {draft.items.map((it, idx) =>
               <li key={it.id} className="grid grid-cols-[minmax(0,1fr)_120px_80px_auto] items-end gap-2">
                     <TextInput id={`pli-label-${it.id}`} label={idx === 0 ? 'Name' : tr('Item {n} name', { n: idx + 1 })} value={it.label} onChange={(e) => set({ items: draft.items.map((x) => x.id === it.id ? { ...x, label: e.target.value } : x) })} />
-                    <TextInput id={`pli-price-${it.id}`} label="Price" prefix="₦" inputMode="numeric" value={it.unitNgn ? String(it.unitNgn) : ''} onChange={(e) => set({ items: draft.items.map((x) => x.id === it.id ? { ...x, unitNgn: Number(e.target.value.replace(/\D/g, '')) || 0 } : x) })} />
+                    <TextInput id={`pli-price-${it.id}`} label="Price" prefix={sym()} inputMode="numeric" value={it.unitNgn ? String(it.unitNgn) : ''} onChange={(e) => set({ items: draft.items.map((x) => x.id === it.id ? { ...x, unitNgn: Number(e.target.value.replace(/\D/g, '')) || 0 } : x) })} />
                     <TextInput id={`pli-max-${it.id}`} label="Max qty" inputMode="numeric" value={String(it.maxQty)} onChange={(e) => set({ items: draft.items.map((x) => x.id === it.id ? { ...x, maxQty: Math.max(1, Math.min(99, Number(e.target.value.replace(/\D/g, '')) || 1)) } : x) })} />
                     <IconButton label={tr('Remove {name}', { name: it.label || tr('item') })} icon={Trash2Icon} onClick={() => set({ items: draft.items.filter((x) => x.id !== it.id) })} disabled={draft.items.length === 1} />
                   </li>

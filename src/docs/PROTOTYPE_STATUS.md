@@ -168,8 +168,8 @@
 - [x] Batch 10 · Pass D — Partner concepts (simulated), complete with WhatsApp Bridge (D97, D100), Trust Passport (D99), Voice-to-Store (D102), Creator Collaboration (D103) and AI Business Coach (D104). First app: **Deliveries / Local Fulfilment (D96)** — free app; Ready to send / On the way / History; simulated courier quotes by address area (or your own rider, saved); pickup slots; 4-digit delivery code texted to the customer (simulated), 3 tries; a matching code completes the order and releases an escrow case straight away (`delivery_code` release reason); failed deliveries return the order to Packing for rebooking; orders move Packing → Out for delivery → Completed. Also this round: Super admin back in the workspace sidebar/phone menu, shown only to a signed-in Platform lead; app-wide scrollbars hidden until hover/focus; payment-link sheets fixed (right side, padded). Still to do in Pass D: WhatsApp Commerce Bridge, Trust Passport, Creator Collaboration, Voice-to-Store, AI Business Coach.
 - [x] Batch 10 · Pass E — Decision sign-off with the founder (see D105–D109 below)
 - [x] Batch 10 · Pass F — Phones, accessibility, docs: code check of every Batch 10 screen for phone layouts (no fixed multi-column grids, raw tables or over-wide elements found; lists use DataTable cards and side panels use Sheet); Extensions tour spotlight now fits 320px screens; canvas "Coming later" blocks cleaned up — Booking calendar, Checkout and Secure digital delivery were already built and are removed, replaced by the genuinely upcoming Members-only section, Seating map and Trust Passport badge. Still needs a hands-on pass on a real phone.
-- [ ] Not yet: dual approval for high-risk staff actions, staff backup codes, real staff identity provider
-- [ ] Forms: contact page on the website still uses its own form (not yet on the Forms engine); file fields store the file name only
+- [x] Dual approval for high-risk staff actions and staff backup codes (D129, D130). Not yet: real staff identity provider
+- [x] Forms: contact page runs on the Forms engine (D125); file fields store the file name only
 
 ## Honest limits
 - **Front-end only.** No sign-in, server storage, payments, domains or real analytics. Data lives in this browser.
@@ -180,9 +180,7 @@
 - **Forms and newsletter** on your own pages save submissions to Audience on this device (D45); on template example pages they confirm but store nothing, and say so. Forms add-on responses (D79) save to that form's inbox too; file answers keep only the file name.
 
 ## Remaining items and why they wait
-| Item | Why it waits | Plan |
-|---|---|---|
-| Full accessibility audit | By plan | Batch 7 |
+The full list lives in `docs/DESIGN_GAP_AUDIT.md`. In short: Batch 13 closes the last unbuilt items; partner-dependent work stays simulated; hands-on phone and automated accessibility checks need a real device and browser.
 
 ### Batch 11 — everything still marked "Coming"
 - [x] **Pass A — Members-only content (D110)**: Members-only section block and members-only pages; phone/WhatsApp/SMS/email code sign-in (simulated); access follows subscription status; Visitor/Member draft preview; Content access on Subscriptions; Analytics → Members; publish checks
@@ -196,6 +194,23 @@
 
 ### Batch 11 is complete.
 
+### Batch 12 — close every open gap (D124–D134)
+- [x] **Pass A — Page blocks and publishing (D124)**: audio, playlist, collection and support/pay-what-you-want blocks; search engine settings with sitemap and structured data previews; put a space back online; move a domain to another space
+- [x] **Pass B — Seller operations (D125)**: invoice Print/PDF and Audience link; licence keys and PDF stamping (simulated); automation triggers (campaign live/ended, contact goes quiet) and actions (AI draft, report, webhook) as test runs; Monday summary; anonymous carts; Contact on Forms; account date format everywhere
+- [x] **Pass C — Guidance and quality (D126–D128)**: ten business kits in onboarding; canvas Check tab and page weight; Trust Passport expiry and report; proof-of-work certificates; four multi-page site kits; A/B tests; shared shops; theme selling
+- [x] **Pass D — Super admin (D129, D130)**: Operations overview, second-person approval, backup codes, access reviews, incidents and `/status`; Plans & entitlements, AI operations, Integrations & notifications, Localisation & policies as read-only screens; extension rollback; automatic moderation flags
+- [x] **Pass E — Developer tools (D131, D132, D134)**: webhooks, API keys, connected apps, `/developers` with sandbox, developer extension submissions with plan-based price caps
+- [~] **Pass F — Translations (D133–D133r)**: translation layer; Pidgin, Yorùbá, Hausa, Igbo drafts (~1,490 phrases each) across every customer page and most of Commerce. Still English: payout and bank-account windows, Commerce Verification/Reports/Settings, Bookings, Audience, workspace Settings, canvas, marketing site. All drafts need native review.
+
+### Batch 13 — docs reconciliation and the last unbuilt items
+- [x] **Pass A — Docs brought up to date**: gap audit, screen inventory, traceability matrix, this file, accessibility report, status notes on the three source specs
+- [x] **Pass B — Staff editing tools (D135)**: plan catalogue changes with second approval, trials, codes (with "Have a code?" for customers), account and AI credit grants; AI feature switches and redacted request log; integration test sends and platform message previews; translation review queue and policy publishing
+- [x] **Pass C — Workspace currency, USSD, watermarks (D136)**: Settings → Business currency (7 currencies, locked after first paid order, naira-only options hidden elsewhere, KUBICU prices stay ₦); USSD in checkout, booking deposits and payment links; PDF and image watermark previews with per-copy download records
+- [x] **Pass D — Calendar sync, live automations, industry page sets, workspaces (D137)**: simulated two-way Google/Outlook sync blocking slots and mirroring bookings; campaign and quiet-contact automations firing on real changes with drafts to approve; seven industry page sets with page previews, offered in onboarding; multiple workspaces confirmed
+- [x] **Pass E — Checks and docs (D138)**: phone and accessibility code pass, translations of new customer text, final gap audit
+
+### Batch 13 is complete.
+
 ## Needs founder confirmation
 1. Plan prices (deferred by founder).
 
@@ -206,7 +221,7 @@
 - **Payments** are always test mode; fee rates are illustrative. Digital files keep only name and size — nothing is uploaded or downloaded.
 - **Customer messages** (receipts, shipping, refunds) are previews; nothing is sent.
 
-- **Bookings and automations** never send real messages; reminders and runs are previews. Calendar sync is planned.
+- **Bookings and automations** never send real messages; reminders and runs are previews. Calendar sync is being added as a simulated connection in Batch 13.
 
 ## Next
-Batch 5 — analytics, domains & QR, AI page setup.
+Remaining partial items in `docs/DESIGN_GAP_AUDIT.md` §7 (translations of remaining screens first), hands-on device checks, and partner selection.

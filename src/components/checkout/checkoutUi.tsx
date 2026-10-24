@@ -82,6 +82,7 @@ export function ThemedField({
         autoComplete={autoComplete}
         inputMode={inputMode}
         aria-invalid={error ? true : undefined}
+        aria-required={optional ? undefined : true}
         aria-describedby={error ? `${id}-err` : undefined}
         onChange={(e) => onChange(e.target.value)}
         className="h-12 w-full px-3.5 text-[15px] outline-none focus:ring-2"

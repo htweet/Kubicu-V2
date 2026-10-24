@@ -9,7 +9,7 @@ import { PaymentStep } from '../billing/PaymentStep';
 import { useMarketplace } from '../../contexts/MarketplaceContext';
 import { useBilling } from '../../contexts/BillingContext';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
-import { formatNgn } from '../../utils/format';
+import { formatNaira as formatNgn } from '../../utils/format';
 import { withVat } from '../../utils/billing';
 
 type Step = 'permissions' | 'pay' | 'setup' | 'done';

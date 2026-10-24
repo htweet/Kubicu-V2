@@ -1,3 +1,4 @@
+import { copyLabel, watermarkKind } from './watermark';
 import type {
   CartLine,
   CommerceData,
@@ -409,13 +410,15 @@ export function checkDownload(order: Order, product: Product): DownloadCheck {
 }
 
 export function recordDownload(data: CommerceData, orderId: string, productId: string): CommerceData {
+  const asset = data.products.find((p) => p.id === productId)?.digital;
   return {
     ...data,
-    orders: data.orders.map((o) =>
-    o.id === orderId ?
-    { ...o, downloads: [...o.downloads, { id: uid('dlr'), productId, at: now() }], events: [event('download', 'Customer downloaded their file'), ...o.events] } :
-    o
-    )
+    orders: data.orders.map((o) => {
+      if (o.id !== orderId) return o;
+      // Watermarked files record whose copy left the shop, so a leaked file can be traced (D136).
+      const copy = asset && watermarkKind(asset) ? copyLabel(o) : undefined;
+      return { ...o, downloads: [...o.downloads, { id: uid('dlr'), productId, at: now(), copy }], events: [event('download', copy ? `Customer downloaded their stamped copy (${copy})` : 'Customer downloaded their file'), ...o.events] };
+    })
   };
 }
 

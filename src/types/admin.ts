@@ -84,7 +84,7 @@ export interface AuditEntry {
   id: string;
   at: string;
   actor: string;
-  area: 'tenants' | 'flags' | 'moderation' | 'support' | 'announcements' | 'pages' | 'orders' | 'data' | 'staff' | 'appeals' | 'payments' | 'escrow' | 'incidents' | 'approvals' | 'access' | 'extensions';
+  area: 'tenants' | 'flags' | 'moderation' | 'support' | 'announcements' | 'pages' | 'orders' | 'data' | 'staff' | 'appeals' | 'payments' | 'escrow' | 'incidents' | 'approvals' | 'access' | 'extensions' | 'plans' | 'ai' | 'integrations' | 'localisation';
   action: string;
   target: string;
   reason: string;
@@ -142,7 +142,7 @@ export interface StaffMember {
 }
 
 /** High-risk staff actions wait for a second Platform lead (D129). */
-export type ApprovalKind = 'staff_role' | 'staff_disable' | 'staff_reset' | 'workspace_suspend' | 'payout_release';
+export type ApprovalKind = 'staff_role' | 'staff_disable' | 'staff_reset' | 'workspace_suspend' | 'payout_release' | 'plan_change' | 'credit_grant';
 export type ApprovalStatus = 'pending' | 'approved' | 'rejected' | 'withdrawn' | 'expired';
 
 export interface PendingApproval {
@@ -158,6 +158,13 @@ export interface PendingApproval {
   workspaceId?: string;
   payoutId?: string;
   amountNgn?: number;
+  /** Plan catalogue changes (D135). */
+  plan?: WorkspacePlan;
+  priceNgn?: number;
+  aiCredits?: number;
+  /** Credit grants (D135): account credit in ₦, or AI credits. */
+  grantKind?: 'account' | 'ai';
+  workspaceName?: string;
   reason: string;
   requestedById: string;
   requestedBy: string;
@@ -250,6 +257,89 @@ export interface AdminStore {
   extensionPulls: Record<string, ExtensionPull>;
   /** Automatic moderation flags staff marked as fine. Keyed `${handle}:${ruleId}`. */
   autoFlagsCleared: Record<string, {at: string;by: string;reason: string;}>;
+  /** Approved catalogue changes (D135). Apply to new sign-ups and at each workspace's next renewal. */
+  planOverrides: Partial<Record<WorkspacePlan, PlanOverride>>;
+  coupons: Coupon[];
+  grants: CreditGrant[];
+  /** AI features staff have switched off for everyone (D135). */
+  aiOff: Partial<Record<AiFeatureId, {at: string;by: string;reason: string;}>>;
+  /** Last "Send test" per outside service (D135). */
+  integrationTests: Record<string, IntegrationTest>;
+  /** Native-speaker review of drafted phrases (D135). Keyed `${lang}::${english}`. */
+  phraseReviews: Record<string, PhraseReview>;
+  /** Policy versions staff published (D135). Keyed by legal doc slug, newest first. */
+  policyReleases: Record<string, PolicyRelease[]>;
+}
+
+export interface PlanOverride {
+  monthlyNgn: number;
+  aiCredits: number;
+  approvedAt: string;
+  approvedBy: string;
+  requestedBy: string;
+  reason: string;
+}
+
+export type CouponKind = 'percent' | 'fixed';
+
+/** A code customers enter in the plan-change window (D135). */
+export interface Coupon {
+  id: string;
+  code: string;
+  kind: CouponKind;
+  /** Percent (1–100) or naira off. */
+  value: number;
+  /** Plans it can be used on. */
+  plans: WorkspacePlan[];
+  maxUses: number | null;
+  uses: number;
+  expiresAt: string | null;
+  /** Only the first payment, or every renewal while the plan is kept. */
+  duration: 'first' | 'every';
+  active: boolean;
+  createdAt: string;
+  createdBy: string;
+  note: string;
+  sample?: boolean;
+}
+
+/** Account credit (₦, used before the card) or extra AI credits for this month, given by staff (D135). */
+export interface CreditGrant {
+  id: string;
+  workspaceId: string;
+  workspaceName: string;
+  kind: 'account' | 'ai';
+  amount: number;
+  reason: string;
+  at: string;
+  by: string;
+}
+
+export type AiFeatureId = 'block_suggest' | 'print_writer' | 'coach';
+
+export interface IntegrationTest {
+  at: string;
+  ok: boolean;
+  message: string;
+  by: string;
+}
+
+export interface PhraseReview {
+  status: 'approved' | 'edited';
+  /** The corrected wording when edited. */
+  text?: string;
+  by: string;
+  at: string;
+}
+
+export interface PolicyRelease {
+  version: string;
+  publishedAt: string;
+  by: string;
+  /** What changed, in plain words — shown to customers. */
+  summary: string;
+  /** Who must agree again before carrying on. */
+  reaccept: 'none' | 'paid' | 'all';
 }
 
 export interface ExtensionPull {

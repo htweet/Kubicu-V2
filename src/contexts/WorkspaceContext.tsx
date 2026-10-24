@@ -38,7 +38,7 @@ interface WorkspaceValue {
   /** Adds a campaign or DealRoom to the current workspace. Throws if storage fails. */
   createSpace: (input: CreateSpaceInput) => Space;
   setSpaceArchived: (spaceId: string, archived: boolean) => void;
-  update: (id: string, patch: Partial<Pick<Workspace, 'name' | 'ownerName' | 'plan'>>) => void;
+  update: (id: string, patch: Partial<Pick<Workspace, 'name' | 'ownerName' | 'plan' | 'currency'>>) => void;
 }
 
 const WorkspaceContext = createContext<WorkspaceValue | null>(null);
@@ -186,7 +186,7 @@ export function WorkspaceProvider({ planControl, children }: {planControl: Works
     [current.id]
   );
 
-  const update = useCallback((id: string, patch: Partial<Pick<Workspace, 'name' | 'ownerName' | 'plan'>>) => {
+  const update = useCallback((id: string, patch: Partial<Pick<Workspace, 'name' | 'ownerName' | 'plan' | 'currency'>>) => {
     setWorkspaces((list) => list.map((w) => w.id === id ? { ...w, ...patch } : w));
   }, []);
 

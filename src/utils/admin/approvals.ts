@@ -13,7 +13,7 @@ export function effectiveStatus(a: PendingApproval, now = Date.now()): PendingAp
 export const STAFF_KINDS: PendingApproval['kind'][] = ['staff_role', 'staff_disable', 'staff_reset'];
 
 /** Which Super-admin area a second approver must be able to open for each kind. */
-export const approvalArea: Record<PendingApproval['kind'], string> = { staff_role: 'staff', staff_disable: 'staff', staff_reset: 'staff', workspace_suspend: 'tenants', payout_release: 'payments' };
+export const approvalArea: Record<PendingApproval['kind'], string> = { staff_role: 'staff', staff_disable: 'staff', staff_reset: 'staff', workspace_suspend: 'tenants', payout_release: 'payments', plan_change: 'plans', credit_grant: 'plans' };
 
 export function approvalSummary(kind: PendingApproval['kind'], m: StaffMember, role?: PendingApproval['role']): string {
   if (kind === 'staff_role') return `Change ${m.name}: ${roleInfo(m.role).label} → ${roleInfo(role ?? m.role).label}`;
@@ -24,6 +24,18 @@ export function approvalSummary(kind: PendingApproval['kind'], m: StaffMember, r
 /** Applies an approved request. Re-checks the rules at approval time, since things may have changed. */
 export function applyApproval(s: AdminStore, a: PendingApproval, approver: string): {store: AdminStore;error?: string;} {
   const decidedAt = new Date().toISOString();
+  if (a.kind === 'plan_change' || a.kind === 'credit_grant') {
+    let next: AdminStore = { ...s, approvals: s.approvals.map((x) => x.id === a.id ? { ...a, status: 'approved', decidedBy: approver, decidedAt, decisionNote: null } : x) };
+    if (a.kind === 'plan_change') {
+      if (!a.plan || a.priceNgn === undefined || a.aiCredits === undefined) return { store: s, error: 'This request is missing the new values.' };
+      next = { ...next, planOverrides: { ...next.planOverrides, [a.plan]: { monthlyNgn: a.priceNgn, aiCredits: a.aiCredits, approvedAt: decidedAt, approvedBy: approver, requestedBy: a.requestedBy, reason: a.reason } } };
+    } else {
+      if (!a.workspaceId || !a.grantKind || !a.amountNgn) return { store: s, error: 'This request is missing the grant details.' };
+      next = { ...next, grants: [{ id: `grt_${Date.now().toString(36)}`, workspaceId: a.workspaceId, workspaceName: a.workspaceName ?? a.targetEmail, kind: a.grantKind, amount: a.amountNgn, reason: a.reason, at: decidedAt, by: `${a.requestedBy} (approved by ${approver.split(' ·')[0]})` }, ...next.grants] };
+    }
+    next = audit(next, { area: 'plans', action: `${a.summary} (approved — requested by ${a.requestedBy})`, target: a.targetEmail, reason: a.reason });
+    return { store: next };
+  }
   if (a.kind === 'workspace_suspend' || a.kind === 'payout_release') {
     // Payout money moves are applied by the caller (they live in the workspace's wallet, not here).
     let next: AdminStore = { ...s, approvals: s.approvals.map((x) => x.id === a.id ? { ...a, status: 'approved', decidedBy: approver, decidedAt, decisionNote: null } : x) };
@@ -49,7 +61,7 @@ export function applyApproval(s: AdminStore, a: PendingApproval, approver: strin
 }
 
 /** Builds a new request that expires after APPROVAL_HOURS. */
-export function newApproval(p: Pick<PendingApproval, 'kind' | 'summary' | 'targetId' | 'targetEmail' | 'reason' | 'requestedById' | 'requestedBy'> & Partial<Pick<PendingApproval, 'role' | 'workspaceId' | 'payoutId' | 'amountNgn'>>): PendingApproval {
+export function newApproval(p: Pick<PendingApproval, 'kind' | 'summary' | 'targetId' | 'targetEmail' | 'reason' | 'requestedById' | 'requestedBy'> & Partial<Pick<PendingApproval, 'role' | 'workspaceId' | 'payoutId' | 'amountNgn' | 'plan' | 'priceNgn' | 'aiCredits' | 'grantKind' | 'workspaceName'>>): PendingApproval {
   const now = Date.now();
   return { id: `apr_${now.toString(36)}${Math.random().toString(36).slice(2, 6)}`, ...p, requestedAt: new Date(now).toISOString(), expiresAt: new Date(now + APPROVAL_HOURS * 3600000).toISOString(), status: 'pending', decidedBy: null, decidedAt: null, decisionNote: null };
 }

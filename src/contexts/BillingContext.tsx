@@ -8,8 +8,11 @@ import { useTeam } from './TeamContext';
 import { planOrder, plans } from '../data/plans';
 import { GRACE_DAYS, TRIAL_DAYS, TRIAL_PLAN } from '../data/billing';
 import { DEMO_WORKSPACE_ID } from '../utils/workspaceStorage';
-import { addCycle, addDays, billingKey, emptyBilling, formatDate, isPaidPlan, makeInvoice, priceFor, quoteChange, readBilling, sampleHistory, sampleInvoices, withEvent, withVat, writeBilling } from '../utils/billing';
-import { formatNgn } from '../utils/format';
+import { addCycle, addDays, BILLING_EXTERNAL_EVENT, billingKey, emptyBilling, formatDate, isPaidPlan, makeInvoice, priceFor, quoteChange, readBilling, requote, sampleHistory, sampleInvoices, withEvent, withVat, writeBilling, type Quote } from '../utils/billing';
+import { adjustLines, creditAvailable } from '../utils/planCatalogue';
+import { updateAdminStore } from '../utils/admin/store';
+import type { Coupon } from '../types/admin';
+import { formatNaira as formatNgn } from '../utils/format';
 
 export type RenewalOutcome = 'succeeds' | 'fails';
 
@@ -17,8 +20,12 @@ const AUTO = 'Automatic';
 
 interface BillingValue {
   data: BillingData;
-  /** Pay now and switch plan (upgrades, cycle changes, keeping a trial plan). */
-  checkout: (target: WorkspacePlan, cycle: BillingCycle, card: PaymentCard) => void;
+  /** Pay now and switch plan (upgrades, cycle changes, keeping a trial plan). A coupon and any account credit apply first (D135). */
+  checkout: (target: WorkspacePlan, cycle: BillingCycle, card: PaymentCard, coupon?: Coupon | null) => void;
+  /** The exact charge checkout would make, with coupon and account credit applied. */
+  previewQuote: (target: WorkspacePlan, cycle: BillingCycle, coupon?: Coupon | null) => Quote;
+  /** Account credit from KUBICU not yet used. */
+  creditLeft: number;
   /** Downgrade at the renewal date. Nothing changes until then. */
   scheduleChange: (target: WorkspacePlan, cycle: BillingCycle) => void;
   cancelScheduled: () => void;
@@ -110,9 +117,33 @@ export function BillingProvider({ renewalOutcome, children }: {renewalOutcome: R
         setData(next);
       }
     };
+    // Staff changes from Super admin in this same tab (trials, D135).
+    const onExternal = (e: Event) => {
+      if ((e as CustomEvent<string>).detail !== current.id) return;
+      const next = readBilling(current.id);
+      if (next) {
+        ref.current = next;
+        setData(next);
+      }
+    };
     window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
+    window.addEventListener(BILLING_EXTERNAL_EVENT, onExternal);
+    return () => {
+      window.removeEventListener('storage', onStorage);
+      window.removeEventListener(BILLING_EXTERNAL_EVENT, onExternal);
+    };
   }, [current.id]);
+
+  const previewQuote = useCallback(
+    (target: WorkspacePlan, cycle: BillingCycle, coupon?: Coupon | null): Quote => {
+      const d = ref.current;
+      const q = quoteChange(d, planRef.current, target, cycle);
+      const adj = adjustLines(q.lines, { coupon, credit: creditAvailable(current.id, d.creditUsedNgn) });
+      const renewLines = adjustLines([{ label: 'renewal', amountNgn: priceFor(target, cycle) }], { coupon: coupon?.duration === 'every' ? coupon : null });
+      return requote(q, adj.lines, withVat(Math.max(0, renewLines.lines.reduce((s, l) => s + l.amountNgn, 0))).total);
+    },
+    [current.id]
+  );
 
   const endTrial = useCallback(() => {
     const t = ref.current.trial;
@@ -158,13 +189,16 @@ export function BillingProvider({ renewalOutcome, children }: {renewalOutcome: R
     const nextPlan = d.pendingPlan ?? cur;
     const nextCycle = d.pendingCycle ?? d.cycle;
     const start = d.periodEnd && Date.parse(d.periodEnd) < Date.now() ? d.periodEnd : new Date().toISOString();
-    const lines = [{ label: `${plans[nextPlan].name} (${nextCycle}) renewal`, amountNgn: priceFor(nextPlan, nextCycle) }];
-    const pays = !!d.card && renewalOutcome === 'succeeds';
     const changed = nextPlan !== cur || nextCycle !== d.cycle;
+    // A repeating coupon keeps applying while the plan is kept; account credit is used before the card (D135).
+    const adj = adjustLines([{ label: `${plans[nextPlan].name} (${nextCycle}) renewal`, amountNgn: priceFor(nextPlan, nextCycle) }], { coupon: nextPlan === cur ? d.coupon : null, credit: creditAvailable(current.id, d.creditUsedNgn) });
+    const lines = adj.lines;
+    const covered = lines.reduce((s, l) => s + l.amountNgn, 0) <= 0;
+    const pays = (covered || !!d.card) && renewalOutcome === 'succeeds';
     if (pays) {
       apply((x) => {
         const inv = makeInvoice(x, lines, 'paid', x.card);
-        let next: BillingData = { ...x, cycle: nextCycle, periodStart: start, periodEnd: addCycle(start, nextCycle), pendingPlan: null, pendingCycle: null, invoices: [inv, ...x.invoices] };
+        let next: BillingData = { ...x, cycle: nextCycle, periodStart: start, periodEnd: addCycle(start, nextCycle), pendingPlan: null, pendingCycle: null, invoices: [inv, ...x.invoices], creditUsedNgn: (x.creditUsedNgn ?? 0) + adj.creditUsed, coupon: nextPlan === cur ? x.coupon : null };
         if (changed) next = withEvent(next, { kind: 'plan', text: nextPlan !== cur ? `Downgrade applied — now on ${plans[nextPlan].name}` : `Switched to ${nextCycle} billing`, detail: 'The scheduled change took effect at renewal.', actor: AUTO, tone: 'neutral' });
         return withEvent(next, { kind: 'payment', text: `Renewed ${plans[nextPlan].name} (${nextCycle})`, detail: `Paid ${formatNgn(inv.totalNgn)} incl. VAT · next renewal ${formatDate(addCycle(start, nextCycle))}`, actor: AUTO, invoiceId: inv.id, tone: 'success' });
       });
@@ -181,7 +215,7 @@ export function BillingProvider({ renewalOutcome, children }: {renewalOutcome: R
       team.log('settings', 'Renewal payment failed', '/app/settings/billing');
       toast.error('Renewal payment failed', { description: `You have ${GRACE_DAYS} days to update the card before moving to Free.` });
     }
-  }, [apply, endTrial, renewalOutcome, setPlan, team]);
+  }, [apply, endTrial, renewalOutcome, setPlan, team, current.id]);
 
   // Anything already due (trial over, grace over, period ended) settles on open.
   useEffect(() => {
@@ -197,11 +231,17 @@ export function BillingProvider({ renewalOutcome, children }: {renewalOutcome: R
     () => ({
       data,
       renewalOutcome,
-      checkout: (target, cycle, card) => {
+      previewQuote,
+      creditLeft: creditAvailable(current.id, data.creditUsedNgn),
+      checkout: (target, cycle, card, coupon) => {
         const cur = planRef.current;
         const before = ref.current;
-        const q = quoteChange(before, cur, target, cycle);
-        const credit = -q.lines.filter((l) => l.amountNgn < 0).reduce((s, l) => s + l.amountNgn, 0);
+        const base = quoteChange(before, cur, target, cycle);
+        const credit = -base.lines.filter((l) => l.amountNgn < 0).reduce((s, l) => s + l.amountNgn, 0);
+        const adj = adjustLines(base.lines, { coupon, credit: creditAvailable(current.id, before.creditUsedNgn) });
+        const q = requote(base, adj.lines);
+        if (coupon && adj.couponOff > 0) updateAdminStore((s) => ({ ...s, coupons: s.coupons.map((c) => c.id === coupon.id ? { ...c, uses: c.uses + 1 } : c) }));
+        const extras = [adj.couponOff > 0 && `${formatNgn(adj.couponOff)} off with ${coupon?.code}`, adj.creditUsed > 0 && `${formatNgn(adj.creditUsed)} account credit used`].filter(Boolean).join(' · ');
         const wasTrial = !!before.trial;
         const text = wasTrial ?
         `Kept ${plans[target].name} after the trial (${cycle})` :
@@ -222,13 +262,15 @@ export function BillingProvider({ renewalOutcome, children }: {renewalOutcome: R
             pendingPlan: null,
             pendingCycle: null,
             cancelReason: null,
-            invoices: inv ? [inv, ...x.invoices] : x.invoices
+            invoices: inv ? [inv, ...x.invoices] : x.invoices,
+            creditUsedNgn: (x.creditUsedNgn ?? 0) + adj.creditUsed,
+            coupon: coupon && coupon.duration === 'every' && adj.couponOff > 0 ? { code: coupon.code, kind: coupon.kind, value: coupon.value } : target === cur ? x.coupon ?? null : null
           };
           if (cardChanged) next = withEvent(next, { kind: 'card', text: `Added ${card.brand} •••• ${card.last4}`, actor: me, tone: 'neutral' });
           return withEvent(next, {
             kind: 'plan',
             text,
-            detail: inv ? `Charged ${formatNgn(inv.totalNgn)} incl. VAT${credit > 0 ? ` after ${formatNgn(credit)} unused time` : ''} · renews ${formatDate(q.periodEnd)}` : `Nothing to pay today · renews ${formatDate(q.periodEnd)}`,
+            detail: `${inv ? `Charged ${formatNgn(inv.totalNgn)} incl. VAT${credit > 0 ? ` after ${formatNgn(credit)} unused time` : ''}` : 'Nothing to pay today'}${extras ? ` · ${extras}` : ''} · renews ${formatDate(q.periodEnd)}`,
             actor: me,
             invoiceId: inv?.id,
             tone: 'success'
@@ -314,7 +356,7 @@ export function BillingProvider({ renewalOutcome, children }: {renewalOutcome: R
       endTrialNow: endTrial,
       endGraceNow: endGrace
     }),
-    [data, renewalOutcome, apply, setPlan, team, me, runRenewal, endTrial, endGrace]
+    [data, renewalOutcome, apply, setPlan, team, me, runRenewal, endTrial, endGrace, previewQuote, current.id]
   );
 
   return <BillingContext.Provider value={value}>{children}</BillingContext.Provider>;

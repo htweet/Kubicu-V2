@@ -1,6 +1,6 @@
 # KUBICU — Accessibility report (Batch 7, D76)
 
-_Last updated: 22 Oct 2026. Standard: WCAG 2.1 AA, plus 2.5.7 Dragging movements and 2.5.8 Target size (minimum) from WCAG 2.2._
+_Last updated: 24 Oct 2026 (section 5b covers Batches 8–12). Standard: WCAG 2.1 AA, plus 2.5.7 Dragging movements and 2.5.8 Target size (minimum) from WCAG 2.2._
 
 ## 1. Summary
 
@@ -105,7 +105,28 @@ The AI gradient's lightest stops (orange-700, pink-700) carry white text at ≈ 
 | O3 | Soft status fills not measured in every appearance | 1.4.3 | Moderate | Needs an automated contrast pass in a browser |
 | O4 | Screens marked "not visually reviewed" (Products, Orders, Schedule, Automations, IntentFlow, Domains & QR, Media, Templates → Browse, Super admin) were checked in code for headings, labels and tables, not looked at at 320px and 200% zoom | 1.4.10, 1.4.4 | Moderate | Needs a browser |
 | O5 | Camera check-in relies on sight of the screen; result card is announced but not yet tested with VoiceOver/TalkBack | 4.1.3 | Moderate | Needs a real phone |
-| O6 | Required fields are shown by marking optional ones ("Optional"); no `aria-required` on required ones | 3.3.2 | Minor | Acceptable pattern; revisit with screen-reader testing |
+| O6 | Required fields are shown by marking optional ones ("Optional"); `aria-required` now set on checkout fields that aren't optional, on form-builder fields marked required, and on app text fields passed `required` (D139) | 3.3.2 | Minor | ✅ Fixed — confirm with a screen reader |
+
+## 5b. Screens added after Batch 7 (Batches 8–12)
+
+This report's findings above cover Batches 1–7. Later batches each ended with a code-reading pass (labels, headings, focus, phone layout) logged in their decision; none has had a browser or device check.
+
+| Area | Decisions | Checked by reading code | Still needs a device / browser |
+|---|---|---|---|
+| Opportunities, unsubscribe, account area | D80, D81 | ✅ | 320 px / 200% zoom |
+| Staff roles, appeals, moderation | D83 | ✅ | Screen reader |
+| Proof-of-Work, business kits, Service OS | D84–D91 | ✅ | 320 px / 200% zoom |
+| Wallet, escrow, verification, payment links, milestones | D92–D95 | ✅ (D117a-style pass in Batch 10 Pass F) | Screen reader on buyer protection |
+| Deliveries, WhatsApp Bridge, Trust Passport, Voice-to-Store, Collaboration, Coach | D96–D104 | ✅ | Voice-to-Store mic flow with a screen reader |
+| Members-only, instalments, seat maps, repeating events, print ordering, SSO, comments | D110–D117 | ✅ (D117a) | Seat map, print order panel, mention picker with TalkBack/VoiceOver |
+| Print kit expansion | D118–D119 | ✅ | Real print and contrast of sliders on dark |
+| Partnerships, co-branded spaces, bundles | D120–D123 | ✅ | Partner panel, Sold-with-a-partner editor, guest partner page on a phone |
+| New blocks, search settings, domain moves | D124 | ✅ (audio seek slider announces position) | Audio/playlist with a screen reader |
+| Canvas Check tab, site kits, A/B tests, shared shops | D126–D128 | ✅ | 320 px |
+| Ops overview, approvals, incidents, `/status` | D129, D130 | ✅ | 200% zoom |
+| Developer tools, `/developers` | D131, D132 | ✅ | Code samples at 320 px |
+| Batch 13: staff tools, Business tab, USSD, watermark preview, calendar sync, drafts panel, page-set preview | D135–D138 | ✅ (USSD timer has `role="timer"`, waiting is a status, declines are alerts; pay-by radios show focus; page-set block chips have a text label; bank list drops to one column under 360 px) | USSD flow with TalkBack; busy blocks on Schedule week at 200% zoom |
+| Translations | D133–D133r | `<html lang>` follows the chosen language | Screen-reader pronunciation of Yorùbá tone marks and Hausa/Igbo diacritics |
 
 ## 6. Manual test checklist (do these before launch)
 

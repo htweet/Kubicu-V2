@@ -2,7 +2,8 @@ import React, { useMemo, useState } from 'react';
 import type { WorkspacePlan } from '../../types/plan';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
 import { planOrder, plans } from '../../data/plans';
-import { monthlyPriceNgn, YEARLY_MONTHS } from '../../data/billing';
+import { YEARLY_MONTHS } from '../../data/billing';
+import { monthlyPrice } from '../../utils/planCatalogue';
 import { readBilling } from '../../utils/billing';
 import { readCommerce } from '../../utils/commerce/storage';
 import { readAnalytics } from '../../utils/analytics/storage';
@@ -41,7 +42,7 @@ export function AdminReporting() {
     const since = Date.now() - days * DAY;
     return workspaces.map((w) => {
       const billing = readBilling(w.id);
-      const price = monthlyPriceNgn[w.plan] ?? 0;
+      const price = monthlyPrice(w.plan) ?? 0;
       // Trials pay nothing yet; a pending cancellation still pays until the period ends.
       const ended = billing?.status === 'trialing';
       const mrr = ended ? 0 : billing?.cycle === 'yearly' ? Math.round(price * YEARLY_MONTHS / 12) : price;

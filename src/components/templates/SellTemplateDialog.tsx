@@ -9,7 +9,7 @@ import { useTeam } from '../../contexts/TeamContext';
 import { activeExtraSpaces, mainSpace, readSpacePage } from '../../utils/spaces';
 import { PRICE_MAX_NGN, PRICE_MIN_NGN, creatorShare, listingEvent, sanitiseForTemplate, updateTemplateStore } from '../../utils/templateListings';
 import { uid } from '../../utils/id';
-import { formatNgn } from '../../utils/format';
+import { formatNaira as formatNgn } from '../../utils/format';
 import { Dialog } from '../ui/Dialog';
 import { Button } from '../ui/Button';
 import { TextInput } from '../ui/TextInput';

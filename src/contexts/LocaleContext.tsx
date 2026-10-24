@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useMemo } from 'react';
 import { translations, type UiLang } from '../data/translations';
+import { phraseOverride } from '../utils/phraseOverrides';
 
 interface LocaleValue {
   lang: UiLang;
@@ -25,14 +26,15 @@ export function toUiLang(code?: string | null): UiLang {
 export function translatorFor(lang: UiLang): LocaleValue['t'] {
   if (lang === 'en') return fill;
   const dict = translations[lang];
-  return (text, vars) => fill(dict[text] ?? text, vars);
+  return (text, vars) => fill(phraseOverride(lang, text) ?? dict[text] ?? text, vars);
 }
 
 export function LocaleProvider({ lang, setLang, children }: {lang: UiLang;setLang?: (lang: UiLang) => void;children: React.ReactNode;}) {
   const value = useMemo<LocaleValue>(() => {
     if (lang === 'en') return { ...english, setLang };
     const dict = translations[lang];
-    return { lang, setLang, t: (text, vars) => fill(dict[text] ?? text, vars) };
+    // A native reviewer's correction wins over the draft (D135).
+    return { lang, setLang, t: (text, vars) => fill(phraseOverride(lang, text) ?? dict[text] ?? text, vars) };
   }, [lang, setLang]);
   return <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>;
 }

@@ -12,7 +12,7 @@ import { DEV_SHARE, priceCapFor, subEvent, updateSubmissions } from '../../../ut
 import { usePlan } from '../../../contexts/PlanContext';
 import { isValidEndpoint } from '../../../utils/developers';
 import { uid } from '../../../utils/id';
-import { formatNgn } from '../../../utils/format';
+import { formatNaira as formatNgn } from '../../../utils/format';
 import { Dialog } from '../../ui/Dialog';
 import { Button } from '../../ui/Button';
 import { TextInput } from '../../ui/TextInput';

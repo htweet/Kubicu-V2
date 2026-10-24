@@ -7,7 +7,7 @@ import { useTeam } from '../../../contexts/TeamContext';
 import type { ExtensionSubmission, SubmissionStatus } from '../../../types/extensionSubmission';
 import { priceCapFor, subEvent, useSubmissions } from '../../../utils/extensionSubmissions';
 import { usePlan } from '../../../contexts/PlanContext';
-import { formatNgn, formatRelative } from '../../../utils/format';
+import { formatNaira as formatNgn, formatRelative } from '../../../utils/format';
 import { Card } from '../../ui/layout/Card';
 import { Badge } from '../../ui/Badge';
 import { Button } from '../../ui/Button';

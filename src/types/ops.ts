@@ -43,6 +43,35 @@ export interface Availability {
   policy: string;
   remindersOn: boolean;
   reminderHours: number;
+  /** Connected Google / Outlook calendars (D137). Simulated two-way sync. */
+  calendars?: CalendarConnection[];
+}
+
+export interface BusyEvent {
+  id: string;
+  calendarId: string;
+  /** Only the owner sees titles; visitors just see the time as unavailable. */
+  title: string;
+  start: string;
+  end: string;
+  /** Put there by KUBICU for a booking. */
+  bookingId?: string;
+}
+
+export interface CalendarConnection {
+  id: string;
+  provider: 'google' | 'outlook';
+  account: string;
+  /** Team member whose calendar this is. */
+  memberName: string;
+  connectedAt: string;
+  status: 'ok' | 'revoked';
+  lastSyncedAt: string;
+  calendars: {id: string;name: string;blocks: boolean;}[];
+  /** Calendar new bookings are added to. */
+  addTo: string;
+  events: BusyEvent[];
+  log: {at: string;text: string;}[];
 }
 
 export type BookingStatus = 'confirmed' | 'pending_deposit' | 'cancelled' | 'completed' | 'no_show';
@@ -193,4 +222,6 @@ export interface OpsData {
   sampleSeeded: boolean;
   /** Orders already turned into contacts, so deleted contacts aren’t recreated. */
   syncedOrderIds?: string[];
+  /** Live-run keys already handled, so each campaign phase or quiet spell fires once (D137). */
+  firedKeys?: string[];
 }

@@ -1,8 +1,9 @@
 import type { WorkspacePlan } from '../types/plan';
 import type { BillingCycle, BillingData, BillingEvent, CardOutcome, Invoice, InvoiceLine, InvoiceStatus, PaymentCard } from '../types/billing';
-import { monthlyPriceNgn, testCards, VAT_RATE, YEARLY_MONTHS } from '../data/billing';
+import { testCards, VAT_RATE, YEARLY_MONTHS } from '../data/billing';
 import { planOrder, plans } from '../data/plans';
 import { uid } from './id';
+import { monthlyPrice } from './planCatalogue';
 
 const DAY = 86400000;
 
@@ -68,13 +69,14 @@ export function writeBilling(workspaceId: string, data: BillingData): void {
   window.localStorage.setItem(billingKey(workspaceId), JSON.stringify(data));
 }
 
+/** Uses the approved catalogue price (D135), so staff changes reach new quotes and renewals. */
 export function priceFor(plan: WorkspacePlan, cycle: BillingCycle): number {
-  const m = monthlyPriceNgn[plan] ?? 0;
+  const m = monthlyPrice(plan) ?? 0;
   return cycle === 'yearly' ? m * YEARLY_MONTHS : m;
 }
 
 export function yearlySaving(plan: WorkspacePlan): number {
-  const m = monthlyPriceNgn[plan] ?? 0;
+  const m = monthlyPrice(plan) ?? 0;
   return m * 12 - m * YEARLY_MONTHS;
 }
 
@@ -158,6 +160,19 @@ export function quoteChange(data: BillingData, current: WorkspacePlan, target: W
   const subtotal = Math.max(0, lines.reduce((s, l) => s + l.amountNgn, 0));
   const { vat, total } = withVat(subtotal);
   return { lines, subtotal, vat, total, periodStart, periodEnd, daysCharged, renewTotal: withVat(newPrice).total, renewOn: periodEnd };
+}
+
+/** Replaces a quote's lines (after a coupon or credit) and recomputes its totals. */
+export function requote(q: Quote, lines: InvoiceLine[], renewTotal = q.renewTotal): Quote {
+  const subtotal = Math.max(0, lines.reduce((s, l) => s + l.amountNgn, 0));
+  const { vat, total } = withVat(subtotal);
+  return { ...q, lines, subtotal, vat, total, renewTotal };
+}
+
+/** Fires when staff change a workspace's billing from Super admin, so an open app picks it up. */
+export const BILLING_EXTERNAL_EVENT = 'kubicu:billing-external';
+export function notifyBillingChanged(workspaceId: string) {
+  window.dispatchEvent(new CustomEvent(BILLING_EXTERNAL_EVENT, { detail: workspaceId }));
 }
 
 export function makeInvoice(data: BillingData, lines: InvoiceLine[], status: InvoiceStatus, card: PaymentCard | null, note?: string, at = new Date().toISOString()): Invoice {

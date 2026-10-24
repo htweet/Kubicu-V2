@@ -257,6 +257,20 @@ export function OrderDetail({ orderId, onClose }: {orderId: string | null;onClos
                   {order.downloads[0] ? ` · ${tr('last {date}', { date: formatTimestamp(order.downloads[order.downloads.length - 1].at) })}` : ''}
                 </p>
               }
+              {order.downloads.some((d) => d.copy) &&
+              <ul className="mt-2 flex flex-col gap-1 rounded-md bg-sunken px-3 py-2" aria-label={tr('Stamped copies downloaded')}>
+                  {order.downloads.
+                filter((d) => d.copy).
+                slice(-5).
+                reverse().
+                map((d) =>
+                <li key={d.id} className="text-caption text-fg-muted">
+                        <span className="font-medium text-fg">{tr('Stamped copy')}</span> · {formatTimestamp(d.at)}
+                        <span className="block truncate text-fg-subtle">{d.copy}</span>
+                      </li>
+                )}
+                </ul>
+              }
               <OrderLicenceKeys order={order} />
             </section>
           </div>

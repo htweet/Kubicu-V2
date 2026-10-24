@@ -64,7 +64,7 @@ export function BlockSuggest({ block }: {block: Supported;}) {
     } else {
       setOptions([productDescription(linkedProduct, commerce.data.collections, block.content.name)]);
     }
-    usage.spend(aiCost.block);
+    usage.spend(aiCost.block, 'Block suggestions');
   };
 
   const use = (value: string) => {
@@ -88,6 +88,12 @@ export function BlockSuggest({ block }: {block: Supported;}) {
   };
 
   if (!can.allowed) return null;
+  if (!usage.featureOn('block_suggest'))
+  return (
+    <section aria-label="AI suggestions" className="border-t border-line pt-4">
+        <p className="text-caption text-fg-subtle">AI suggestions are paused by KUBICU for now. Your blocks aren’t affected.</p>
+      </section>);
+
 
   return (
     <section aria-label="AI suggestions" className="flex flex-col gap-3 border-t border-line pt-4">

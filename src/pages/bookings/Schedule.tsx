@@ -40,6 +40,14 @@ export function Schedule() {
   const past = sorted.filter((b) => Date.parse(b.end) < Date.now() || b.status === 'cancelled').reverse();
 
   const open = (id: string) => setParams({ booking: id });
+  // Outside busy times that block booking, from connected calendars (D137).
+  const busy = useMemo(
+    () =>
+    (data.availability.calendars ?? []).
+    filter((c) => c.status === 'ok').
+    flatMap((c) => c.events.filter((e) => !e.bookingId && c.calendars.find((x) => x.id === e.calendarId)?.blocks).map((e) => ({ ...e, source: c.provider === 'google' ? 'Google' : 'Outlook' }))),
+    [data.availability.calendars]
+  );
 
   if (data.services.length === 0 && data.bookings.length === 0) {
     return (
@@ -221,6 +229,15 @@ export function Schedule() {
 
                 <span className="absolute inset-x-0 top-2 text-center text-caption text-fg-subtle">Closed</span>
                 }
+                  {/* Busy times from connected calendars (D137): grey, owner-only titles. */}
+                  {busy.
+                filter((e) => dateKeyInTz(Date.parse(e.start), tz) === k).
+                map((e) =>
+                <span key={e.id} className="absolute inset-x-1 overflow-hidden rounded-sm border border-line bg-sunken px-1.5 py-1 text-left" style={{ top: Math.max(0, top(Date.parse(e.start))), height: Math.max(20, top(Date.parse(e.end)) - Math.max(0, top(Date.parse(e.start)))) }}>
+                        <span className="block truncate text-meta font-medium text-fg-muted">{e.title}</span>
+                        <span className="block truncate text-meta text-fg-subtle">Busy · {e.source}</span>
+                      </span>
+                )}
                   {items.map((b) =>
                 <button
                   key={b.id}

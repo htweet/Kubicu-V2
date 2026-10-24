@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { blockDefinitions } from '../../data/blockRegistry';
 import { CheckIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { siteKits, type SiteKit } from '../../data/siteKits';
@@ -16,12 +17,19 @@ interface SiteKitDialogProps {
   /** Pages the plan still allows. */
   room: number;
   nextPlan?: {id: WorkspacePlan;name: string;};
+  /** Opened from onboarding with an industry already chosen (D137). */
+  initialKitId?: string | null;
 }
 
-/** Pages → "Add a ready-made site" (D127): pick a kit, untick pages you don't want, add them in one step. */
-export function SiteKitDialog({ open, onClose, room, nextPlan }: SiteKitDialogProps) {
+/** Pages → "Add a ready-made site" (D127, seven industry sets D137): pick a set, preview each page, add them in one step. */
+export function SiteKitDialog({ open, onClose, room, nextPlan, initialKitId }: SiteKitDialogProps) {
   const { state, actions } = useEditor();
   const [kit, setKit] = useState<SiteKit>(siteKits[0]);
+  useEffect(() => {
+    if (open && initialKitId) setKit(siteKits.find((k) => k.id === initialKitId) ?? siteKits[0]);
+  }, [open, initialKitId]);
+  // A preview of what each page is made of, built once per set.
+  const preview = useMemo(() => Object.fromEntries(kit.pages.map((p) => [p.title, p.build().map((b) => b.type)])), [kit]);
   const [picked, setPicked] = useState<Set<string>>(new Set());
   const taken = new Set(sitePages(state.site).map((p) => p.title.trim().toLowerCase()));
 
@@ -57,8 +65,9 @@ export function SiteKitDialog({ open, onClose, room, nextPlan }: SiteKitDialogPr
     <Dialog
       open={open}
       onClose={onClose}
+      size="lg"
       title="Add a ready-made site"
-      description="Extra pages laid out for your kind of business. Your home page isn’t changed."
+      description="A full set of pages laid out for your kind of business. Your home page isn’t changed."
       footer={
       <>
           <Button variant="secondary" onClick={onClose}>
@@ -83,8 +92,8 @@ export function SiteKitDialog({ open, onClose, room, nextPlan }: SiteKitDialogPr
         </div>
       }
       <fieldset>
-        <legend className="text-label font-semibold text-fg">Kind of site</legend>
-        <div className="mt-2 grid gap-2 sm:grid-cols-2">
+        <legend className="text-label font-semibold text-fg">Your industry</legend>
+        <div className="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {siteKits.map((k) => {
             const Icon = k.icon;
             const on = k.id === kit.id;
@@ -102,7 +111,11 @@ export function SiteKitDialog({ open, onClose, room, nextPlan }: SiteKitDialogPr
         </div>
       </fieldset>
 
-      <fieldset className="mt-6">
+      <p className="mt-5 rounded-md bg-sunken px-3 py-2.5 text-caption text-fg-muted">
+        <span className="font-semibold text-fg">{kit.name}:</span> {kit.why}
+      </p>
+
+      <fieldset className="mt-5">
         <legend className="flex w-full items-baseline justify-between gap-3 text-label font-semibold text-fg">
           <span>Pages to add</span>
           {!noRoom &&
@@ -135,6 +148,19 @@ export function SiteKitDialog({ open, onClose, room, nextPlan }: SiteKitDialogPr
                   <span className="min-w-0">
                     <span className="block text-label font-medium text-fg">{p.title}</span>
                     <span className="block text-caption text-fg-muted">{exists ? 'You already have a page with this name' : p.purpose}</span>
+                    <span className="mt-1.5 flex flex-wrap gap-1">
+                      <span className="sr-only">Blocks on this page:</span>
+                      {(preview[p.title] ?? []).map((type, i) => {
+                        const def = blockDefinitions[type];
+                        const Icon = def?.icon;
+                        return (
+                          <span key={`${type}-${i}`} className="inline-flex h-6 items-center gap-1 rounded-sm border border-line bg-raised px-1.5 text-meta text-fg-muted">
+                            {Icon && <Icon size={11} aria-hidden />}
+                            {def?.name ?? type}
+                          </span>);
+
+                      })}
+                    </span>
                   </span>
                   {on && <CheckIcon size={14} className="ml-auto mt-1 shrink-0 text-action" aria-hidden />}
                 </label>

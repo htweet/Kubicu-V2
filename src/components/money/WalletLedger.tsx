@@ -3,6 +3,7 @@ import { ArrowDownLeftIcon, ArrowUpRightIcon, DownloadIcon, LandmarkIcon } from 
 import type { LedgerEntry, LedgerKind, LedgerState, MoneyData, PayoutStatus } from '../../types/money';
 import { formatNgn, formatTimestamp } from '../../utils/format';
 import { cn } from '../../utils/cn';
+import { useT } from '../../contexts/LocaleContext';
 import { Card } from '../ui/layout/Card';
 import { Tabs } from '../ui/Tabs';
 import { Segmented } from '../ui/Segmented';
@@ -33,8 +34,9 @@ const stateTones = { available: 'success', pending: 'neutral', held: 'info', res
 const payoutLabels: Record<PayoutStatus, string> = { processing: 'Processing', on_hold: 'On hold', paid: 'Paid', failed: 'Returned' };
 const payoutTones = { processing: 'info', on_hold: 'warning', paid: 'success', failed: 'danger' } as const;
 
-/** Wallet history: every credit and debit with a running balance, and payouts on their own tab (D92). */
+/** Wallet history: every credit and debit with a running balance, and payouts on their own tab (D92). Follows the interface language (D133r); the CSV export stays English. */
 export function WalletLedger({ data }: {data: MoneyData;}) {
+  const { t: tr } = useT();
   const [tab, setTab] = useState<Tab>('activity');
   const [filter, setFilter] = useState<StateFilter>('all');
 
@@ -64,23 +66,23 @@ export function WalletLedger({ data }: {data: MoneyData;}) {
 
   return (
     <Card
-      title="History"
+      title={tr('History')}
       body="flush"
       actions={
       <Button size="sm" variant="tertiary" leadingIcon={DownloadIcon} onClick={exportCsv} disabled={!rows.length}>
-          Export CSV
+          {tr('Export CSV')}
         </Button>
       }>
       
       <div className="px-5 md:px-6">
         <Tabs
-          ariaLabel="Wallet history"
+          ariaLabel={tr('Wallet history')}
           idPrefix="wallet"
           value={tab}
           onChange={setTab}
           items={[
-          { id: 'activity', label: 'Activity' },
-          { id: 'payouts', label: 'Payouts', badge: data.payouts.filter((p) => p.status === 'processing' || p.status === 'on_hold').length || undefined }]
+          { id: 'activity', label: tr('Activity') },
+          { id: 'payouts', label: tr('Payouts'), badge: data.payouts.filter((p) => p.status === 'processing' || p.status === 'on_hold').length || undefined }]
           } />
         
       </div>
@@ -91,19 +93,19 @@ export function WalletLedger({ data }: {data: MoneyData;}) {
             <div className="scroll-quiet overflow-x-auto px-5 pt-4 md:px-6">
               <Segmented<StateFilter>
               size="sm"
-              ariaLabel="Filter by status"
+              ariaLabel={tr('Filter by status')}
               value={filter}
               onChange={setFilter}
               options={[
-              { value: 'all', label: 'All' },
-              { value: 'available', label: 'Available' },
-              { value: 'pending', label: 'Settling' },
-              { value: 'held', label: 'In escrow' }]
+              { value: 'all', label: tr('All') },
+              { value: 'available', label: tr('Available') },
+              { value: 'pending', label: tr('Settling') },
+              { value: 'held', label: tr('In escrow') }]
               } />
             
             </div>
             {shown.length === 0 ?
-          <EmptyState className="m-5" icon={LandmarkIcon} title="Nothing here yet" description="Sales paid into your wallet or through escrow appear here, with payouts and fees." /> :
+          <EmptyState className="m-5" icon={LandmarkIcon} title={tr('Nothing here yet')} description={tr('Sales paid into your wallet or through escrow appear here, with payouts and fees.')} /> :
 
           <ul className="mt-3 divide-y divide-line border-t border-line">
                 {shown.slice(0, 60).map(({ entry, balance }) =>
@@ -113,7 +115,7 @@ export function WalletLedger({ data }: {data: MoneyData;}) {
           }
           </> :
         data.payouts.length === 0 ?
-        <EmptyState className="m-5" icon={LandmarkIcon} title="No payouts yet" description="When you pay out, each transfer to your bank shows here with its status." /> :
+        <EmptyState className="m-5" icon={LandmarkIcon} title={tr('No payouts yet')} description={tr('When you pay out, each transfer to your bank shows here with its status.')} /> :
 
         <ul className="mt-3 divide-y divide-line border-t border-line">
             {data.payouts.map((p) =>
@@ -124,19 +126,21 @@ export function WalletLedger({ data }: {data: MoneyData;}) {
                 <span className="min-w-0 flex-1">
                   <span className="flex flex-wrap items-center gap-2">
                     <span className="truncate text-label font-semibold text-fg">{p.bankLabel}</span>
-                    {p.auto && <Badge tone="neutral">Scheduled</Badge>}
+                    {p.auto && <Badge tone="neutral">{tr('Scheduled')}</Badge>}
                     {p.sample && <SampleTag />}
                   </span>
                   <span className="block truncate text-caption text-fg-subtle">
-                    {formatTimestamp(p.createdAt)} · by {p.by}
-                    {p.feeNgn ? ` · fee ${formatNgn(p.feeNgn)}` : ' · no fee'}
+                    {formatTimestamp(p.createdAt)} · {tr('by {name}', { name: p.by })}
+                    {p.feeNgn ? ` · ${tr('fee {amount}', { amount: formatNgn(p.feeNgn) })}` : ` · ${tr('no fee')}`}
                   </span>
-                  {(p.failureReason || p.holdReason) && <span className="mt-0.5 block text-caption text-fg-muted">{p.failureReason ?? `KUBICU is checking this payout: ${p.holdReason}`}</span>}
+                  {(p.failureReason || p.holdReason) &&
+              <span className="mt-0.5 block text-caption text-fg-muted">{p.failureReason ? tr(p.failureReason) : tr('KUBICU is checking this payout: {reason}', { reason: p.holdReason ?? '' })}</span>
+              }
                 </span>
                 <span className="flex shrink-0 flex-col items-end gap-1">
                   <span className="text-label font-semibold tabular-nums text-fg">{formatNgn(p.amountNgn)}</span>
                   <Badge tone={payoutTones[p.status]} dot>
-                    {payoutLabels[p.status]}
+                    {tr(payoutLabels[p.status])}
                   </Badge>
                 </span>
               </li>
@@ -149,6 +153,7 @@ export function WalletLedger({ data }: {data: MoneyData;}) {
 }
 
 function LedgerRow({ entry, balance }: {entry: LedgerEntry;balance: number;}) {
+  const { t: tr } = useT();
   const credit = entry.amountNgn >= 0;
   return (
     <li className="flex items-center gap-3 px-5 py-3.5 md:px-6">
@@ -157,12 +162,12 @@ function LedgerRow({ entry, balance }: {entry: LedgerEntry;balance: number;}) {
       </span>
       <span className="min-w-0 flex-1">
         <span className="flex flex-wrap items-center gap-2">
-          <span className="truncate text-label font-medium text-fg">{entry.label}</span>
+          <span className="truncate text-label font-medium text-fg">{tr(entry.label)}</span>
           {entry.sample && <SampleTag />}
         </span>
         <span className="block truncate text-caption text-fg-subtle">
-          {kindLabels[entry.kind]} · {formatTimestamp(entry.at)}
-          {entry.state !== 'available' && entry.availableAt ? ` · available ${formatTimestamp(entry.availableAt)}` : ''}
+          {tr(kindLabels[entry.kind])} · {formatTimestamp(entry.at)}
+          {entry.state !== 'available' && entry.availableAt ? ` · ${tr('available {date}', { date: formatTimestamp(entry.availableAt) })}` : ''}
         </span>
       </span>
       <span className="flex shrink-0 flex-col items-end gap-1">
@@ -171,8 +176,8 @@ function LedgerRow({ entry, balance }: {entry: LedgerEntry;balance: number;}) {
           {formatNgn(Math.abs(entry.amountNgn))}
         </span>
         <span className="flex items-center gap-2">
-          {entry.state !== 'available' && <Badge tone={stateTones[entry.state]}>{stateLabels[entry.state]}</Badge>}
-          <span className="hidden text-caption tabular-nums text-fg-subtle sm:inline">Bal. {formatNgn(balance)}</span>
+          {entry.state !== 'available' && <Badge tone={stateTones[entry.state]}>{tr(stateLabels[entry.state])}</Badge>}
+          <span className="hidden text-caption tabular-nums text-fg-subtle sm:inline">{tr('Bal. {amount}', { amount: formatNgn(balance) })}</span>
         </span>
       </span>
     </li>);

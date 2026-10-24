@@ -6,6 +6,7 @@ import { roleInfo } from '../../data/permissions';
 import { PageHeader } from '../../components/shell/PageHeader';
 import { SubNav } from '../../components/shell/SubNav';
 import { TeamTab } from '../../components/settings/TeamTab';
+import { BusinessTab } from '../../components/settings/BusinessTab';
 import { RolesTab } from '../../components/settings/RolesTab';
 import { ApprovalsTab } from '../../components/settings/ApprovalsTab';
 import { ActivityTab } from '../../components/settings/ActivityTab';
@@ -18,6 +19,7 @@ import { useBilling } from '../../contexts/BillingContext';
 
 const tabs = [
 { id: 'team', label: 'Team', to: '/app/settings', end: true },
+{ id: 'business', label: 'Business', to: '/app/settings/business' },
 { id: 'roles', label: 'Roles', to: '/app/settings/roles' },
 { id: 'approvals', label: 'Approvals', to: '/app/settings/approvals' },
 { id: 'billing', label: 'Plan & billing', to: '/app/settings/billing' },
@@ -30,6 +32,7 @@ const tabs = [
 
 const panels: Record<string, () => React.ReactElement | null> = {
   team: TeamTab,
+  business: BusinessTab,
   roles: RolesTab,
   approvals: ApprovalsTab,
   billing: BillingTab,

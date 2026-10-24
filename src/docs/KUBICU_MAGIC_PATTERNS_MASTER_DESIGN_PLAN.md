@@ -1,5 +1,7 @@
 # KUBICU — Magic Patterns AI Master Design Plan
 
+> **Prototype status note (24 Oct 2026):** this is the source spec and is not edited for status. Every "later phase" item in §13 (advanced automation, marketplace and creator payouts, IntentFlow, DealRoom, Trust Passport, Proof-of-Work, Voice-to-Store, advanced Link Intelligence and experiments, partner fulfilment, developer API and extensions) is **now built in the prototype**, partner parts simulated. Current gaps: `docs/DESIGN_GAP_AUDIT.md`; screens: `docs/SCREEN_INVENTORY.md`.
+
 ## Canonical UI/UX Direction, Screen Inventory, Design System, Interaction Rules and Scope Guardrails
 
 **Product:** KUBICU  

@@ -13,6 +13,7 @@ import { InlineAlert } from '../components/ui/InlineAlert';
 import { Dialog } from '../components/ui/Dialog';
 import { AutomationBuilder, newAutomation } from '../components/automations/AutomationBuilder';
 import { RunSteps } from '../components/automations/RunSteps';
+import { PendingDrafts } from '../components/automations/PendingDrafts';
 import { SampleTag } from '../components/commerce/StatusBadges';
 
 const statusTone = { active: 'success', paused: 'warning', draft: 'neutral' } as const;
@@ -56,14 +57,16 @@ export function Automations() {
           </>
         } />
       
-      <InlineAlert tone="info" title="Messages are previews in this prototype" className="mt-6">
-        Runs are logged so you can see what would happen. Email and WhatsApp sending need connected accounts, which come later.
+      <InlineAlert tone="info" title="Campaign and quiet-contact automations run for real" className="mt-6">
+        While KUBICU is open, they fire when a campaign goes live or ends and when a contact goes quiet: tags and follow-ups are added, reports and notices land in your notifications, and AI drafts wait below for you. Customer emails and WhatsApp messages are written but not sent until a messaging partner is connected. Other triggers still run as tests.
       </InlineAlert>
       {data.automationsPaused &&
       <InlineAlert tone="warning" title="Everything is paused" className="mt-3">
           No automation runs until you resume. Useful while you change prices or close for a holiday.
         </InlineAlert>
       }
+
+      <PendingDrafts />
 
       <div className="mt-8 grid gap-10 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
         <div className="flex flex-col gap-10">
