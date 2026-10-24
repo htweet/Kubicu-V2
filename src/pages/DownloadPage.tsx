@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeftIcon, DownloadIcon, FileIcon, LockIcon, ShieldCheckIcon } from 'lucide-react';
+import { ArrowLeftIcon, CopyIcon, DownloadIcon, FileIcon, LockIcon, ShieldCheckIcon } from 'lucide-react';
+import { ensureLicenceKeys } from '../utils/commerce/licence';
 import { useResolvedPage } from '../hooks/useResolvedPage';
 import { usePageCommerce } from '../hooks/usePageCommerce';
 import { PageSurface } from '../components/blocks/PageSurface';
@@ -26,6 +27,12 @@ export function DownloadPage() {
   const commerce = usePageCommerce(page?.workspaceId ?? null, !!page?.isOwn);
   const order = commerce.data?.orders.find((o) => o.downloadToken === token);
   const [justDownloaded, setJustDownloaded] = useState<string | null>(null);
+  // Licence keys (D125) are issued the first time a paid buyer opens their downloads.
+  useEffect(() => {
+    if (!order) return;
+    const needs = order.items.some((i) => i.kind === 'digital' && commerce.data?.products.find((p) => p.id === i.productId)?.digital?.keys?.enabled && !(order.licenceKeys ?? []).some((k) => k.productId === i.productId));
+    if (needs) commerce.apply((d) => ensureLicenceKeys(d, order.id));
+  }, [order?.id, order?.paymentStatus]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!page) return <Unavailable handle={handle} />;
   if (!order) return <Unavailable handle={handle} title="This download link isn’t valid" body="Check you copied the whole link from your receipt, or contact the seller." />;
@@ -98,6 +105,25 @@ export function DownloadPage() {
                       Prototype: the file isn’t stored, so nothing downloads — but this counted as one download.
                     </p>
                   }
+                  {check.ok && asset.stamp && /\.pdf$/i.test(asset.fileName) &&
+                  <p className="text-[12.5px]" style={muted}>
+                      Your copy is stamped “Licensed to {order.customer.name}{order.customer.email ? ` · ${order.customer.email}` : ''} · Order #{order.number}” on every page.
+                    </p>
+                  }
+                  {(order.licenceKeys ?? []).filter((k) => k.productId === i.productId).map((k) =>
+                  <div key={k.id} className="flex flex-col gap-1 rounded-md px-3 py-2.5" style={{ background: mix(t.text, 5), opacity: k.status === 'revoked' ? 0.6 : 1 }}>
+                      <span className="text-[12px] font-medium" style={muted}>{k.status === 'revoked' ? 'Licence key — no longer valid' : 'Your licence key'}</span>
+                      <span className="flex items-center justify-between gap-2">
+                        <code className="select-all font-mono text-[15px] font-semibold tracking-wide" style={{ color: t.text, textDecoration: k.status === 'revoked' ? 'line-through' : undefined }}>{k.key}</code>
+                        {k.status === 'active' &&
+                      <button type="button" onClick={() => navigator.clipboard?.writeText(k.key)} aria-label={`Copy licence key ${k.key}`} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md focus-visible:outline-none focus-visible:ring-2" style={{ color: t.text }}>
+                            <CopyIcon size={14} aria-hidden />
+                          </button>
+                      }
+                      </span>
+                      {k.status === 'active' && <span className="text-[11.5px]" style={muted}>Works on up to {k.activationsAllowed} device{k.activationsAllowed === 1 ? '' : 's'}. Keep it private.</span>}
+                    </div>
+                  )}
                   {asset.licence &&
                   <p className="flex items-start gap-1.5 text-[12px]" style={muted}>
                       <ShieldCheckIcon size={12} className="mt-0.5 shrink-0" aria-hidden />

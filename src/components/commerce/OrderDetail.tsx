@@ -32,6 +32,7 @@ import { podAwaiting } from '../../utils/commerce/payOptions';
 import { OrderPodPanel } from './OrderPodPanel';
 import { OrderInstalmentsPanel } from './OrderInstalmentsPanel';
 import { OrderPartnerSplit } from './OrderPartnerSplit';
+import { OrderLicenceKeys } from './OrderLicenceKeys';
 
 const steps: {status: OrderStatus;label: string;}[] = [
 { status: 'new', label: 'Placed' },
@@ -254,6 +255,7 @@ export function OrderDetail({ orderId, onClose }: {orderId: string | null;onClos
                   {order.downloads[0] ? ` · last ${formatTimestamp(order.downloads[order.downloads.length - 1].at)}` : ''}
                 </p>
               }
+              <OrderLicenceKeys order={order} />
             </section>
           </div>
 

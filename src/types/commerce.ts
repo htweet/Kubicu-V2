@@ -48,6 +48,24 @@ export interface DigitalAsset {
   /** Days the link works after purchase. Null = no expiry. */
   expiryDays: number | null;
   licence: string;
+  /** D125: stamp each PDF page with the buyer's name, email and order number (simulated). */
+  stamp?: boolean;
+  /** D125: issue a licence key per buyer, with a number of activations. */
+  keys?: {enabled: boolean;prefix: string;activations: number;};
+}
+
+/** A licence key issued to one buyer for one digital product (D125). */
+export interface LicenceKey {
+  id: string;
+  productId: string;
+  key: string;
+  activationsAllowed: number;
+  activations: number;
+  status: 'active' | 'revoked';
+  issuedAt: string;
+  revokedAt?: string;
+  /** Set when this key replaced an earlier one. */
+  replaces?: string;
 }
 
 export interface Product {
@@ -380,6 +398,8 @@ export interface Order {
   events: OrderEvent[];
   downloadToken?: string;
   downloads: DownloadRecord[];
+  /** Licence keys issued for digital items in this order (D125). */
+  licenceKeys?: LicenceKey[];
   note: string;
   sample?: boolean;
   /** The one discount applied to this order (D51). */

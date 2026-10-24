@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { BanIcon, CopyIcon, MessageCircleIcon, SendIcon, WalletIcon } from 'lucide-react';
+import { BanIcon, CopyIcon, MessageCircleIcon, PrinterIcon, SendIcon, WalletIcon } from 'lucide-react';
+import { useWorkspace } from '../../contexts/WorkspaceContext';
+import { useEditor } from '../../contexts/EditorContext';
+import { useMoney } from '../../hooks/useMoney';
+import { printServiceInvoice } from '../../utils/serviceInvoicePrint';
+import { ClientAudienceLink } from './ClientAudienceLink';
 import { toast } from 'sonner';
 import type { Invoice, PaymentMethod, ServiceOsData } from '../../types/serviceOs';
 import { balanceOf, formatDay, invoiceLabels, invoiceTones, invoiceView, itemsTotal, manualMethods, methodLabels, paidOf, todayKey } from '../../utils/serviceOs';
@@ -35,6 +40,11 @@ export function InvoiceDetail({ invoice, businessName, canEdit, update, onClose,
   const [voiding, setVoiding] = useState(false);
   useEffect(() => setDraft(invoice), [invoice?.id, invoice?.status]); // eslint-disable-line react-hooks/exhaustive-deps
   const { mainHandle } = useMainLink();
+  const { current } = useWorkspace();
+  const { state } = useEditor();
+  const money = useMoney(current.id);
+  const profile = state.draft.blocks.find((b) => b.type === 'profile');
+  const logo = { url: profile?.type === 'profile' ? profile.content.avatarUrl : '', accent: state.draft.theme.accent };
 
   if (!invoice || !draft) return <Sheet open={false} onClose={onClose} title="">{null}</Sheet>;
 
@@ -55,6 +65,11 @@ export function InvoiceDetail({ invoice, businessName, canEdit, update, onClose,
     setAmount(null);
   };
   const payUrl = `${window.location.origin}${invoicePayPath(mainHandle, invoice.id)}`;
+  const print = () => {
+    const bank = money.data.banks.find((b) => b.primary) ?? money.data.banks[0];
+    const ok = printServiceInvoice(invoice, { business: businessName, bank, payUrl, accent: logo.accent, logoUrl: logo.url });
+    if (!ok) toast.error('Allow pop-ups to print', { description: 'Your browser blocked the print window.' });
+  };
   const remind = () => {
     const msg = `Hi ${invoice.client.name.split(' ')[0]}, a reminder from ${businessName}: invoice ${invoice.number} for ${invoice.title} has ${formatNgn(balance)} left to pay, due ${formatDay(invoice.dueDate)}. Pay securely here: ${payUrl} — thank you!`;
     window.open(whatsappLink(invoice.client.phone, msg), '_blank', 'noopener');
@@ -70,9 +85,12 @@ export function InvoiceDetail({ invoice, businessName, canEdit, update, onClose,
       </Button>
     </div> :
   invoice.status === 'sent' ?
-  <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center">
+  <div className="flex flex-col-reverse gap-2 sm:flex-row sm:flex-wrap sm:items-center">
       <Button variant="tertiary" leadingIcon={BanIcon} disabled={!canEdit || paidOf(invoice) > 0} title={paidOf(invoice) > 0 ? 'Invoices with payments can’t be voided' : undefined} onClick={() => setVoiding(true)} className="sm:mr-auto">
         Void
+      </Button>
+      <Button variant="secondary" leadingIcon={PrinterIcon} onClick={print}>
+        Print / PDF
       </Button>
       <Button variant="secondary" leadingIcon={CopyIcon} onClick={() => navigator.clipboard?.writeText(payUrl).then(() => toast.success('Pay link copied'))}>
         Pay link
@@ -84,7 +102,13 @@ export function InvoiceDetail({ invoice, businessName, canEdit, update, onClose,
         Record payment
       </Button>
     </div> :
-  undefined;
+
+  <div className="flex justify-end">
+      <Button variant="secondary" leadingIcon={PrinterIcon} onClick={print}>
+        Print / PDF
+      </Button>
+    </div>;
+
 
   return (
     <>
@@ -101,6 +125,8 @@ export function InvoiceDetail({ invoice, businessName, canEdit, update, onClose,
               </button>
             }
           </div>
+
+          <ClientAudienceLink client={invoice.client} label={`Invoice ${invoice.number}`} linkedId={invoice.id} canEdit={canEdit} />
 
           <section aria-labelledby="inv-items">
             <h3 id="inv-items" className="mb-2 text-label font-semibold text-fg">

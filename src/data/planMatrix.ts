@@ -45,7 +45,10 @@ export const planMatrix: PlanFeatureGroup[] = [
   { label: 'AI page setup and suggestions', note: 'Monthly AI credits', status: 'preview', values: each('10', '60', '200', '500', '1,500', '5,000') },
   { label: 'Media storage', status: 'live', values: each('100 MB', '1 GB', '5 GB', '5 GB', '5 GB', 'Custom') },
   { label: 'Sell your own templates', note: 'You keep 70%', status: 'live', values: all(true) },
-  { label: 'Members-only pages and sections (code sign-in)', status: 'live', values: from('pro') }]
+  { label: 'Members-only pages and sections (code sign-in)', status: 'live', values: from('pro') },
+  { label: 'Audio and playlist blocks', note: 'Sell tracks as downloads on Pro', status: 'live', values: all(true) },
+  { label: 'Collection block', status: 'live', values: all(true) },
+  { label: 'Search engine settings, sitemap and structured data', status: 'live', values: all(true) }]
 
 },
 {
@@ -55,10 +58,13 @@ export const planMatrix: PlanFeatureGroup[] = [
   { label: 'Discount codes, automatic offers and referrals', status: 'live', values: all(true) },
   { label: 'Checkout with card and transfer', status: 'live', values: from('pro') },
   { label: 'Digital downloads', status: 'live', values: from('pro') },
+  { label: 'Licence keys and buyer-stamped PDFs', note: 'With digital downloads; stamping simulated', status: 'live', values: from('pro') },
+  { label: 'Printable invoices with bank details (Quotes & jobs)', status: 'live', values: all(true) },
   { label: 'Customer subscriptions and product boxes', status: 'live', values: from('pro') },
   { label: 'Paid event tickets and door check-in', note: 'Free events work on every plan', status: 'live', values: from('pro') },
   { label: 'Made-to-order deposits', status: 'live', values: from('pro') },
   { label: 'Payment links, including staged links', status: 'live', values: all(true) },
+  { label: 'Support / pay-what-you-want block', note: 'A payment, not a tax-deductible donation', status: 'live', values: all(true) },
   { label: 'KUBICU wallet and payouts', note: 'After business verification', status: 'preview', values: all(true) },
   { label: 'Escrow buyer protection', status: 'preview', values: from('pro') },
   { label: 'Pay on delivery and instalments (seller-run)', status: 'live', values: from('pro') },

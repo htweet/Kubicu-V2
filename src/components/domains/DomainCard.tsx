@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CheckIcon, ChevronDownIcon, ExternalLinkIcon, Loader2Icon, LockIcon, Trash2Icon } from 'lucide-react';
+import { ArrowRightLeftIcon, CheckIcon, ChevronDownIcon, ExternalLinkIcon, Loader2Icon, LockIcon, Trash2Icon } from 'lucide-react';
 import type { CheckOutcome, CustomDomain } from '../../types/domains';
 import { useDomains } from '../../contexts/DomainsContext';
 import { useTeam } from '../../contexts/TeamContext';
@@ -11,12 +11,15 @@ import { Button } from '../ui/Button';
 import { Dialog } from '../ui/Dialog';
 import { Switch } from '../ui/Switch';
 import { InlineAlert } from '../ui/InlineAlert';
+import { SelectInput } from '../ui/SelectInput';
 import { DnsRecordsTable } from './DnsRecordsTable';
 import { outcomeOptions } from './ConnectDomainDialog';
 
 interface Props {
   domain: CustomDomain;
   spaceLabel: string;
+  /** Spaces this domain could point to, for "Move to another space" (D124). */
+  spaces?: {id: string;label: string;short: string;}[];
   canManage: boolean;
   reason: string;
 }
@@ -32,12 +35,30 @@ const badge: Record<CustomDomain['status'], {tone: BadgeTone;label: string;}> = 
 const stepIndex = (d: CustomDomain) => d.status === 'problem' ? 1 : statusSteps.findIndex((s) => s.id === d.status);
 
 /** One connected domain: where it is in the process, what to do next, and its settings once live (D62). */
-export function DomainCard({ domain: d, spaceLabel, canManage, reason }: Props) {
-  const { apply, checkDomain, removeDomain } = useDomains();
+export function DomainCard({ domain: d, spaceLabel, spaces = [], canManage, reason }: Props) {
+  const { apply, checkDomain, removeDomain, data } = useDomains();
   const team = useTeam();
   const [showRecords, setShowRecords] = useState(d.status !== 'live');
   const [outcome, setOutcome] = useState<CheckOutcome>('success');
   const [confirm, setConfirm] = useState(false);
+  const [moving, setMoving] = useState(false);
+  const targets = spaces.filter((s) => s.id !== d.spaceId);
+  const [target, setTarget] = useState('');
+  const targetSpace = targets.find((s) => s.id === target);
+  const targetHasPrimary = data.domains.some((x) => x.spaceId === target && x.primary && x.id !== d.id);
+  const keepRedirects = data.redirects.filter((r) => r.spaceId === d.spaceId).length;
+
+  // Moving keeps the domain live and verified — only what it shows changes (D124).
+  const move = () => {
+    if (!targetSpace) return;
+    apply((x) => ({
+      ...x,
+      domains: x.domains.map((dom) => dom.id === d.id ? { ...dom, spaceId: target, primary: targetHasPrimary ? false : dom.primary, redirectKubicu: targetHasPrimary ? false : dom.redirectKubicu } : dom)
+    }));
+    team.log('settings', `moved ${d.host} from ${spaceLabel} to ${targetSpace.short}`, '/app/domains');
+    setMoving(false);
+    setTarget('');
+  };
   const busy = d.status === 'verifying' || d.status === 'issuing';
   const current = stepIndex(d);
 
@@ -154,7 +175,12 @@ export function DomainCard({ domain: d, spaceLabel, canManage, reason }: Props) 
           }
         </div>
 
-        <div className="flex justify-end">
+        <div className="flex flex-wrap justify-end gap-2">
+          {targets.length > 0 &&
+          <Button variant="tertiary" size="sm" leadingIcon={canManage ? ArrowRightLeftIcon : LockIcon} disabled={!canManage} title={canManage ? undefined : reason} onClick={() => {setTarget(targets[0].id);setMoving(true);}}>
+              Move to another space
+            </Button>
+          }
           <Button variant="tertiary" size="sm" leadingIcon={canManage ? Trash2Icon : LockIcon} disabled={!canManage} title={canManage ? undefined : reason} onClick={() => setConfirm(true)}>
             Disconnect
           </Button>
@@ -191,6 +217,34 @@ export function DomainCard({ domain: d, spaceLabel, canManage, reason }: Props) 
           {d.redirectKubicu && <li>Your kub.icu link stops forwarding and shows your page again.</li>}
           <li>Your kub.icu link, orders and analytics aren’t affected.</li>
         </ul>
+      </Dialog>
+
+      <Dialog
+        open={moving}
+        onClose={() => setMoving(false)}
+        size="sm"
+        title={`Move ${d.host}`}
+        description="The domain stays verified and secure — no new DNS records needed."
+        footer={
+        <>
+            <Button variant="secondary" onClick={() => setMoving(false)}>
+              Cancel
+            </Button>
+            <Button onClick={move} disabled={!targetSpace}>
+              Move domain
+            </Button>
+          </>
+        }>
+        
+        <div className="flex flex-col gap-4">
+          <SelectInput id={`dom-move-${d.id}`} label="Show this space instead" value={target} onChange={setTarget} options={targets.map((s) => ({ value: s.id, label: s.label }))} />
+          <ul className="flex list-disc flex-col gap-1.5 pl-5 text-label text-fg-muted">
+            <li>Visitors to {d.host} see {targetSpace?.short ?? 'the new space'} straight away.</li>
+            <li>{spaceLabel} keeps its kub.icu link{keepRedirects ? ` and its ${keepRedirects} redirect${keepRedirects === 1 ? '' : 's'}` : ''}, so old links still land somewhere.</li>
+            <li>Printed QR codes that use {d.host} now open {targetSpace?.short ?? 'the new space'} — update their destination in Domains &amp; QR if that’s not what you want.</li>
+            {d.primary && (targetHasPrimary ? <li>{targetSpace?.short} already has a primary domain, so this one joins as a second address.</li> : <li>It stays the primary address, now for {targetSpace?.short}.</li>)}
+          </ul>
+        </div>
       </Dialog>
     </article>);
 

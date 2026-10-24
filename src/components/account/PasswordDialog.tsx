@@ -5,6 +5,7 @@ import { Dialog } from '../ui/Dialog';
 import { TextInput } from '../ui/TextInput';
 import { Button } from '../ui/Button';
 import { cn } from '../../utils/cn';
+import { signOutOthers } from '../../utils/account/signOutOthers';
 
 const barTone = ['bg-danger', 'bg-danger', 'bg-warning', 'bg-success', 'bg-success'];
 
@@ -32,11 +33,10 @@ export function PasswordDialog({ open, onClose }: {open: boolean;onClose: () => 
   const save = () => {
     setTried(true);
     if (errors.current || errors.next || errors.confirm) return;
-    updateAccount((a) => ({
-      ...a,
-      security: { ...a.security, passwordSetAt: new Date().toISOString() },
-      sessions: f.signOutOthers ? a.sessions.filter((s) => s.current) : a.sessions
-    }));
+    updateAccount((a) => {
+      const next = { ...a, security: { ...a.security, passwordSetAt: new Date().toISOString() } };
+      return f.signOutOthers ? signOutOthers(next, 'password') : next;
+    });
     toast.success('Password changed', { description: f.signOutOthers && others ? `Signed out of ${others} other ${others === 1 ? 'device' : 'devices'}.` : 'You’ll use it next time you sign in.' });
     onClose();
   };

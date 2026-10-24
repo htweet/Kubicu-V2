@@ -23,7 +23,8 @@ export type NotifEventId =
 'sub_new' |
 'sub_failed' |
 'sub_cancelled' |
-'form_response';
+'form_response' |
+'weekly_digest';
 
 export type NotifChannel = 'app' | 'email' | 'whatsapp';
 

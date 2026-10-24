@@ -58,7 +58,19 @@ export function Spaces() {
   const errors = issues.filter((i) => i.severity === 'error');
   const warnings = issues.filter((i) => i.severity === 'warning');
 
-  const [dialog, setDialog] = useState<'unpublish' | 'duplicate' | null>(null);
+  const [dialog, setDialog] = useState<'unpublish' | 'duplicate' | 'restore' | null>(null);
+  // Put back online (D124): the last version that was live, not the current draft.
+  const lastLive = state.published ? null : state.versions.find((v) => v.kind === 'published') ?? null;
+  const restoreLive = () => {
+    if (!lastLive) return;
+    if (actions.publish(`Put back online (${lastLive.label})`, lastLive.doc)) {
+      toast('Back online', { description: `${publicUrl(lastLive.doc.handle)} shows ${lastLive.label} again. Your draft is unchanged.` });
+      team.log('pages', `put ${draft.title} back online with ${lastLive.label}`, '/app/spaces');
+      setDialog(null);
+    } else {
+      toast.error('Couldn’t put it back online', { description: 'Your browser storage is unavailable. Try again.' });
+    }
+  };
   const [copyName, setCopyName] = useState('');
 
   // Workspace screens always hold the main space in the editor; other spaces are read from storage.
@@ -184,8 +196,9 @@ export function Spaces() {
         setDialog('duplicate');
       }
     },
-    { id: 'unpub', label: 'Unpublish', icon: EyeOffIcon, disabled: !state.published, reason: 'Not published.', destructive: true, onSelect: () => setDialog('unpublish') },
-    { id: 'retire', label: 'Retire with redirect', icon: ArchiveIcon, disabled: true, reason: 'Arrives with redirects in Batch 5.' }]
+    state.published ?
+    { id: 'unpub', label: 'Unpublish', icon: EyeOffIcon, destructive: true, onSelect: () => setDialog('unpublish') } :
+    { id: 'restore', label: 'Put back online', icon: ArchiveRestoreIcon, disabled: !lastLive, reason: 'It hasn’t been published before.', onSelect: () => setDialog('restore') }]
     }
     trigger={(props) => <IconButton {...props} icon={MoreHorizontalIcon} label={`More actions for ${draft.title}`} />} />;
 
@@ -367,6 +380,28 @@ export function Spaces() {
           <li>Your draft, theme and all {state.versions.length} versions are kept.</li>
           <li>Your link stays reserved for you.</li>
           {state.scheduled && <li className="font-medium text-fg">Your scheduled publish is cancelled.</li>}
+        </ul>
+      </Dialog>
+
+      <Dialog
+        open={dialog === 'restore' && !!lastLive}
+        onClose={() => setDialog(null)}
+        size="sm"
+        title="Put this page back online?"
+        description={lastLive ? `${publicUrl(lastLive.doc.handle)} will show ${lastLive.label}, last live ${formatRelative(lastLive.createdAt)}.` : undefined}
+        footer={
+        <>
+            <Button variant="secondary" onClick={() => setDialog(null)}>
+              Cancel
+            </Button>
+            <Button onClick={restoreLive}>Put back online</Button>
+          </>
+        }>
+        
+        <ul className="flex flex-col gap-1.5 text-label text-fg-muted">
+          <li>Visitors see exactly what was live before you unpublished it.</li>
+          <li>Your draft stays as it is{hasUnpublishedChanges ? ' — its newer changes still need publishing' : ''}.</li>
+          <li>It’s added to your version history.</li>
         </ul>
       </Dialog>
 

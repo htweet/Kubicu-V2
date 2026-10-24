@@ -43,6 +43,7 @@ export function cloneBlock(block: Block): Block {
   if (copy.type === 'productGrid') copy.content.items = copy.content.items.map((i) => ({ ...i, id: uid('gp') }));
   if (copy.type === 'pricing') copy.content.packages = copy.content.packages.map((p) => ({ ...p, id: uid('pk') }));
   if (copy.type === 'event') copy.content.tiers = copy.content.tiers.map((t) => ({ ...t, id: uid('tier') }));
+  if (copy.type === 'playlist') copy.content.tracks = copy.content.tracks.map((t) => ({ ...t, id: uid('tr') }));
   if (copy.type === 'portfolio') copy.content.items = copy.content.items.map((i) => ({ ...i, id: uid('pf') }));
   if (copy.type === 'menu')
   copy.content.categories = copy.content.categories.map((cat) => ({
@@ -134,6 +135,16 @@ export function summarizeBlock(block: Block): string {
       return `${block.content.covers === 0 ? 'Hides everything below' : `Hides the next ${block.content.covers}`} · ${block.content.access === 'any' ? 'any subscriber' : `${block.content.planIds.length} plan${block.content.planIds.length === 1 ? '' : 's'}`}`;
     case 'trustBadge':
       return block.content.style === 'compact' ? 'Compact badge' : 'Full badge';
+    case 'audio':
+      return block.content.title || (block.content.url ? 'Audio track' : 'No track yet');
+    case 'playlist':{
+        const n = block.content.tracks.filter((t) => t.url).length;
+        return `${block.content.title ? `${block.content.title} · ` : ''}${n} track${n === 1 ? '' : 's'}`;
+      }
+    case 'collection':
+      return block.content.collectionId ? block.content.title || 'Collection' : 'No collection chosen';
+    case 'support':
+      return block.content.amounts.length ? block.content.amounts.map((a) => formatNgn(a)).join(' · ') : 'Any amount';
     default:
       return '';
   }

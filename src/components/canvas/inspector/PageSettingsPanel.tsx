@@ -17,6 +17,7 @@ import { badgeRemovalPlanName } from '../../../data/plans';
 import { showsKubicuBadge } from '../../../utils/branding';
 import { findPage, pageTitle, sitePages } from '../../../utils/sitePages';
 import { SelectInput } from '../../ui/SelectInput';
+import { SearchEnginesSection } from './SearchEnginesSection';
 
 const pageLanguages = [
 { value: 'en', label: 'English' },
@@ -143,6 +144,8 @@ export function PageSettingsPanel() {
           </div>
         </div>
       </section>
+
+      <SearchEnginesSection />
     </div>);
 
 }

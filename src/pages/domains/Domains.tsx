@@ -103,7 +103,7 @@ export function Domains() {
 
         <div className="flex flex-col gap-4">
               {data.domains.map((d) =>
-          <DomainCard key={d.id} domain={d} spaceLabel={labelFor(d.spaceId)} canManage={can.allowed} reason={can.reason} />
+          <DomainCard key={d.id} domain={d} spaceLabel={labelFor(d.spaceId)} spaces={spaces.map((s) => ({ id: s.id, label: s.label, short: s.short }))} canManage={can.allowed} reason={can.reason} />
           )}
             </div>
         }

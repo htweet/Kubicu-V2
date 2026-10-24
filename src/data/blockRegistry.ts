@@ -29,7 +29,11 @@ import {
   MapPinIcon,
   RepeatIcon,
   ClipboardPenIcon,
-  BadgeCheckIcon } from
+  BadgeCheckIcon,
+  MusicIcon,
+  ListMusicIcon,
+  LibraryBigIcon,
+  HandHeartIcon } from
 'lucide-react';
 import type { BlockContentMap, BlockType } from '../types/page';
 import type { WorkspacePlan } from '../types/plan';
@@ -54,6 +58,29 @@ export interface BlockDefinition<K extends BlockType = BlockType> {
   requiresApp?: string;
   defaults: () => BlockContentMap[K];
 }
+
+const supportBase = {
+  type: 'support' as const,
+  name: 'Support / pay what you want',
+  description: 'Let fans and customers send any amount. A payment, not a tax-deductible donation.',
+  category: 'Commerce' as const,
+  icon: HandHeartIcon,
+  keywords: ['tip', 'donate', 'donation', 'support', 'pay what you want', 'gift', 'appreciation', 'spray', 'church', 'fundraise'],
+  defaultAlign: 'center' as const,
+  supportsEmphasis: false,
+  clickable: true,
+  defaults: (): BlockContentMap['support'] => ({
+    title: 'Support my work',
+    intro: '',
+    wording: 'support',
+    amounts: [1000, 2000, 5000],
+    allowOther: true,
+    minNgn: 500,
+    askName: true,
+    askMessage: true,
+    linkId: null
+  })
+};
 
 export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
   profile: {
@@ -510,7 +537,44 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
     clickable: true,
     requiresApp: 'trust-passport',
     defaults: () => ({ style: 'compact', showScore: true })
-  }
+  },
+  audio: {
+    type: 'audio',
+    name: 'Audio',
+    description: 'One track, voice note or episode with a player.',
+    category: 'Foundation',
+    icon: MusicIcon,
+    keywords: ['music', 'song', 'podcast', 'voice note', 'mp3', 'sound', 'beat', 'sermon'],
+    defaultAlign: 'left',
+    supportsEmphasis: false,
+    clickable: false,
+    defaults: () => ({ title: '', artist: '', url: '', fileName: '', coverUrl: '', coverAlt: '', allowDownload: false, transcript: '' })
+  },
+  playlist: {
+    type: 'playlist',
+    name: 'Playlist',
+    description: 'Several tracks with a track list. Sell any track as a download.',
+    category: 'Foundation',
+    icon: ListMusicIcon,
+    keywords: ['music', 'album', 'ep', 'mixtape', 'podcast', 'episodes', 'tracks'],
+    defaultAlign: 'left',
+    supportsEmphasis: false,
+    clickable: true,
+    defaults: () => ({ title: '', artist: '', coverUrl: '', coverAlt: '', allowDownload: false, tracks: [{ id: uid('tr'), title: '', artist: '', url: '', fileName: '', duration: '', productId: null }] })
+  },
+  collection: {
+    type: 'collection',
+    name: 'Collection',
+    description: 'One shop collection as a strip or grid, with “See all”.',
+    category: 'Commerce',
+    icon: LibraryBigIcon,
+    keywords: ['shop', 'category', 'new arrivals', 'range', 'catalogue', 'collection'],
+    defaultAlign: 'left',
+    supportsEmphasis: false,
+    clickable: true,
+    defaults: () => ({ title: '', collectionId: null, layout: 'strip', limit: 8, showSeeAll: true })
+  },
+  support: supportBase
 };
 
 export const blockCategories: BlockCategory[] = ['Foundation', 'Conversion', 'Commerce'];
@@ -523,6 +587,8 @@ export const blockOrder: BlockType[] = [
 'social',
 'image',
 'video',
+'audio',
+'playlist',
 'divider',
 'spacer',
 'contact',
@@ -542,8 +608,10 @@ export const blockOrder: BlockType[] = [
 'countdown',
 'event',
 'productGrid',
+'collection',
 'menu',
 'pricing',
+'support',
 'subscription',
 'membersOnly',
 'download'];

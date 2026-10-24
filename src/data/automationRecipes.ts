@@ -9,7 +9,10 @@ export const triggerLabels: Record<TriggerId, {label: string;hint: string;}> = {
   sub_started: { label: 'A subscription starts', hint: 'New subscriber or free trial' },
   sub_failed: { label: 'A subscription payment fails', hint: 'Before automatic retries' },
   sub_cancelled: { label: 'A subscription is cancelled', hint: 'By the subscriber or by you' },
-  stage_due: { label: 'A payment stage or balance is due', hint: 'Quote stages, booking balances and made-to-order balances' }
+  stage_due: { label: 'A payment stage or balance is due', hint: 'Quote stages, booking balances and made-to-order balances' },
+  campaign_started: { label: 'A campaign goes live', hint: 'When a campaign space reaches its start time' },
+  campaign_ended: { label: 'A campaign ends', hint: 'When a campaign space passes its end time' },
+  contact_quiet: { label: 'A contact goes quiet', hint: 'No order, booking or message for the number of days you choose' }
 };
 
 export const actionLabels: Record<ActionId, {label: string;needsConsent: boolean;placeholder: string;}> = {
@@ -18,8 +21,19 @@ export const actionLabels: Record<ActionId, {label: string;needsConsent: boolean
   create_task: { label: 'Create a follow-up task', needsConsent: false, placeholder: 'e.g. Call to confirm sizing' },
   add_tag: { label: 'Tag the contact', needsConsent: false, placeholder: 'e.g. VIP' },
   notify_owner: { label: 'Notify me', needsConsent: false, placeholder: 'e.g. Restock {product}' },
-  notify_member: { label: 'Notify a team member', needsConsent: false, placeholder: 'e.g. Pack order {order_number} today' }
+  notify_member: { label: 'Notify a team member', needsConsent: false, placeholder: 'e.g. Pack order {order_number} today' },
+  ai_draft: { label: 'Draft a message with AI (you approve)', needsConsent: false, placeholder: 'e.g. A warm note inviting {first_name} back, mention new arrivals' },
+  send_report: { label: 'Send me a report', needsConsent: false, placeholder: 'e.g. Campaign results' },
+  call_webhook: { label: 'Call a webhook', needsConsent: false, placeholder: 'https://example.com/hooks/kubicu' }
 };
+
+/** What "Send me a report" can include (D125). */
+export const reportOptions = [
+{ value: 'Sales summary', label: 'Sales summary' },
+{ value: 'Campaign results', label: 'Campaign results' },
+{ value: 'New contacts', label: 'New contacts' },
+{ value: 'Stock to reorder', label: 'Stock to reorder' }];
+
 
 export const conditionLabels: Record<AutomationCondition['field'], string> = {
   total_over: 'Order total is over (₦)',

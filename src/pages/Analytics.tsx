@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowDownRightIcon, ArrowUpRightIcon, BarChart3Icon, DownloadIcon, LightbulbIcon, LockIcon, XIcon } from 'lucide-react';
+import { toast } from 'sonner';
 import { useAnalytics } from '../contexts/AnalyticsContext';
 import { useEditor } from '../contexts/EditorContext';
 import { useWorkspace } from '../contexts/WorkspaceContext';
@@ -35,7 +36,7 @@ const pct = (n: number) => `${Math.round(n * 100)}%`;
 export function Analytics() {
   const allowed = useCan('analytics.view');
   const { data, dismissInsight, clearSample } = useAnalytics();
-  const { state } = useEditor();
+  const { state, actions } = useEditor();
   const { current } = useWorkspace();
   const navigate = useNavigate();
   const [period, setPeriod] = useState<Period>('30');
@@ -90,6 +91,21 @@ export function Analytics() {
     const b = mainBlocks.find((x) => x.id === id);
     return b ? blockName(b) : '';
   }).filter((i) => !data.dismissedInsights.includes(i.id));
+
+  // One-tap apply (D125): move a much-tapped link near the top of the draft, with Undo.
+  const canApply = useCan('pages.edit').allowed;
+  const applyMove = (insightId: string, blockId: string) => {
+    const before = state.draft.blocks.map((b) => b.id);
+    const lead = state.draft.blocks[0]?.type === 'profile' ? 1 : 0;
+    const rest = before.filter((id) => id !== blockId);
+    const next = [...rest.slice(0, lead), blockId, ...rest.slice(lead)];
+    actions.reorderBlocks(next);
+    dismissInsight(insightId);
+    toast.success('Moved it up in your draft', {
+      description: 'Publish when you’re ready for visitors to see it.',
+      action: { label: 'Undo', onClick: () => actions.reorderBlocks(before) }
+    });
+  };
 
   if (!allowed.allowed)
   return (
@@ -320,9 +336,16 @@ export function Analytics() {
                       </div>
                       <p className="mt-1 text-caption text-fg-muted">{i.evidence}</p>
                       {i.blockId && mainBlocks.some((b) => b.id === i.blockId) &&
-                <Button size="sm" variant="secondary" className="mt-2" onClick={() => navigate(`/app/canvas/${state.site.id}?block=${i.blockId}`)}>
-                          Open in canvas
-                        </Button>
+                <div className="mt-2 flex flex-wrap gap-2">
+                          {i.id.startsWith('move-') && canApply && state.draft.blocks.some((b) => b.id === i.blockId) &&
+                  <Button size="sm" onClick={() => applyMove(i.id, i.blockId!)}>
+                              Move it up
+                            </Button>
+                  }
+                          <Button size="sm" variant="secondary" onClick={() => navigate(`/app/canvas/${state.site.id}?block=${i.blockId}`)}>
+                            Open in canvas
+                          </Button>
+                        </div>
                 }
                     </li>
               )}

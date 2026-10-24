@@ -119,8 +119,20 @@ export interface Contact {
   assigneeId?: string | null;
 }
 
-export type TriggerId = 'order_paid' | 'booking_created' | 'checkout_abandoned' | 'lead_submitted' | 'stock_low' | 'sub_started' | 'sub_failed' | 'sub_cancelled' | 'stage_due';
-export type ActionId = 'send_email' | 'send_whatsapp' | 'create_task' | 'add_tag' | 'notify_owner' | 'notify_member';
+export type TriggerId =
+'order_paid' |
+'booking_created' |
+'checkout_abandoned' |
+'lead_submitted' |
+'stock_low' |
+'sub_started' |
+'sub_failed' |
+'sub_cancelled' |
+'stage_due' |
+'campaign_started' |
+'campaign_ended' |
+'contact_quiet';
+export type ActionId = 'send_email' | 'send_whatsapp' | 'create_task' | 'add_tag' | 'notify_owner' | 'notify_member' | 'ai_draft' | 'send_report' | 'call_webhook';
 
 export interface AutomationStep {
   id: string;
@@ -160,6 +172,8 @@ export interface Automation {
   recipeId: string | null;
   status: 'draft' | 'active' | 'paused';
   trigger: TriggerId;
+  /** "Contact quiet for N days" (D125). */
+  triggerDays?: number;
   conditions: AutomationCondition[];
   steps: AutomationStep[];
   runs: AutomationRun[];

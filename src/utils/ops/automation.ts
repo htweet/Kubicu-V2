@@ -12,8 +12,19 @@ const sampleSubject: Record<Automation['trigger'], {subject: string;vars: Record
   sub_started: { subject: 'Test: Ada Test joined Atelier Circle', vars: { first_name: 'Ada', plan: 'Atelier Circle' }, total: 5000, source: 'order', subscribed: false },
   sub_failed: { subject: 'Test: Ada Test’s renewal was declined', vars: { first_name: 'Ada', plan: 'Atelier Circle', amount: '₦5,000' }, total: 5000, source: 'order', subscribed: false },
   sub_cancelled: { subject: 'Test: Ada Test cancelled Atelier Circle', vars: { first_name: 'Ada', plan: 'Atelier Circle' }, total: 0, source: 'order', subscribed: false },
-  stage_due: { subject: 'Test: “Trial session” is due on Ada Test’s bridal quote', vars: { first_name: 'Ada', stage: 'Trial session', amount: '₦48,000', pay_link: 'kub.icu/ada/pay/…' }, total: 48000, source: 'order', subscribed: false }
+  stage_due: { subject: 'Test: “Trial session” is due on Ada Test’s bridal quote', vars: { first_name: 'Ada', stage: 'Trial session', amount: '₦48,000', pay_link: 'kub.icu/ada/pay/…' }, total: 48000, source: 'order', subscribed: false },
+  campaign_started: { subject: 'Test: “Owambe Season Drop” went live', vars: { campaign: 'Owambe Season Drop', link: 'kub.icu/…/owambe' }, total: 0, source: 'order', subscribed: true },
+  campaign_ended: { subject: 'Test: “Owambe Season Drop” ended — 14 orders, ₦486,000', vars: { campaign: 'Owambe Season Drop', orders: '14', revenue: '₦486,000' }, total: 486000, source: 'order', subscribed: true },
+  contact_quiet: { subject: 'Test: Ada Test hasn’t bought in 45 days', vars: { first_name: 'Ada', days: '45', last_item: 'Ankara wrap dress' }, total: 0, source: 'order', subscribed: true }
 };
+
+/** Rule-based "AI preview" draft for test runs (D125) — never sent without the owner's approval. */
+function aiDraft(instruction: string, vars: Record<string, string>): string {
+  const name = vars.first_name ?? 'there';
+  const item = vars.last_item ? ` We’ve added pieces like the ${vars.last_item} you loved.` : '';
+  const topic = instruction.trim() ? ` (${instruction.trim().slice(0, 60)})` : '';
+  return `Hi ${name}, it’s been a while! ${item.trim()} Reply here if you’d like us to set something aside for you.${topic}`.replace(/\s+/g, ' ');
+}
 
 function fill(text: string, vars: Record<string, string>): string {
   return text.replace(/\{(\w+)\}/g, (_, k: string) => vars[k] ?? `{${k}}`);
@@ -29,8 +40,10 @@ export function automationProblems(a: Automation): string[] {
   const out: string[] = [];
   if (!a.name.trim()) out.push('Give it a name');
   if (a.steps.filter((s) => s.kind === 'action').length === 0) out.push('Add at least one action');
+  if (a.trigger === 'contact_quiet' && (!a.triggerDays || a.triggerDays < 7)) out.push('Choose how many quiet days count (at least 7)');
   a.steps.forEach((s, i) => {
-    if (s.kind === 'action' && !s.value.trim()) out.push(`Step ${i + 1} needs ${s.action === 'add_tag' ? 'a tag' : 'some text'}`);
+    if (s.kind === 'action' && !s.value.trim()) out.push(`Step ${i + 1} needs ${s.action === 'add_tag' ? 'a tag' : s.action === 'call_webhook' ? 'a webhook address' : s.action === 'send_report' ? 'a report to send' : 'some text'}`);
+    if (s.kind === 'action' && s.action === 'call_webhook' && s.value.trim() && !/^https:\/\/[^\s/]+\.[^\s]+/.test(s.value.trim())) out.push(`Step ${i + 1}: the webhook address must start with https://`);
     if (s.kind === 'action' && s.action === 'notify_member' && !s.memberId) out.push(`Step ${i + 1}: choose who to notify`);
     if (s.kind === 'delay' && (!s.delayHours || s.delayHours < 1)) out.push(`Step ${i + 1}: delay must be at least 1 hour`);
   });
@@ -60,6 +73,9 @@ export function testRun(a: Automation, paused: boolean, memberName: (id: string 
       if (step.kind === 'delay') steps.push({ label: stepLabel(step), status: 'done', detail: 'Skipped in test runs' });else
       if (step.action === 'notify_member') steps.push({ label: stepLabel(step), status: 'done', detail: `Preview: ${memberName(step.memberId)} would get “${fill(step.value, s.vars)}” in KUBICU — not sent` });else
       if (step.action === 'create_task' && step.memberId) steps.push({ label: stepLabel(step), status: 'done', detail: `Preview: follow-up “${fill(step.value, s.vars)}” for ${memberName(step.memberId)} — not created` });else
+      if (step.action === 'ai_draft') steps.push({ label: stepLabel(step), status: 'waiting', detail: `AI preview draft: “${aiDraft(step.value, s.vars)}” — waits in your notifications for you to approve, edit or discard. Uses 1 AI credit on live runs.` });else
+      if (step.action === 'send_report') steps.push({ label: stepLabel(step), status: 'done', detail: `Preview: “${step.value}” for ${s.subject.replace(/^Test:\s*/, '')} would arrive in your notifications — not sent` });else
+      if (step.action === 'call_webhook') steps.push({ label: stepLabel(step), status: 'done', detail: `Preview: POST ${step.value.trim()} with the ${a.trigger} event, signed with your webhook secret — not called in test runs` });else
       steps.push({ label: stepLabel(step), status: 'done', detail: `Preview: “${fill(step.value, s.vars)}” — not sent` });
     }
   }

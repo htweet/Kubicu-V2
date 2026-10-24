@@ -7,6 +7,10 @@ import { Button } from '../ui/Button';
 import { TextInput } from '../ui/TextInput';
 import { TextArea } from '../ui/TextArea';
 import { InlineAlert } from '../ui/InlineAlert';
+import { Switch } from '../ui/Switch';
+import { PlanLock } from '../ui/PlanLock';
+import { usePlan } from '../../contexts/PlanContext';
+import { planAtLeast } from '../../data/plans';
 
 const MAX_BYTES = 500 * 1024 * 1024;
 const statusCopy = {
@@ -35,6 +39,8 @@ export function DigitalFileField({ product, onChange, error }: DigitalFileFieldP
   useEffect(() => () => timers.current.forEach((t) => window.clearTimeout(t)), []);
 
   const setAsset = (patch: Partial<typeof asset>) => onChange({ digital: { ...asset, ...patch } });
+  const plan = usePlan();
+  const protectionAllowed = planAtLeast(plan.id, 'creator');
 
   const onFile = (file: File) => {
     setSizeError('');
@@ -134,6 +140,55 @@ export function DigitalFileField({ product, onChange, error }: DigitalFileFieldP
         
       </div>
       <TextArea id="dig-licence" label="Licence note" optional rows={2} value={asset.licence} placeholder="e.g. For personal use only. Please don’t resell or share." hint="Shown on the receipt and download page." onChange={(e) => setAsset({ licence: e.target.value })} />
+
+      <div className="flex flex-col gap-4 rounded-md border border-line p-4">
+        <div className="flex items-start justify-between gap-3">
+          <p className="text-label font-medium text-fg">Extra protection</p>
+          {!protectionAllowed && <PlanLock kind="plan">Creator plan</PlanLock>}
+        </div>
+        <Switch
+          id="dig-stamp"
+          label="Stamp PDFs with the buyer’s details"
+          description="Every page carries their name, email and order number in the footer, so a shared copy points back to them. PDF files only."
+          checked={!!asset.stamp}
+          disabled={!protectionAllowed}
+          onChange={(stamp) => setAsset({ stamp })} />
+        
+        {asset.stamp &&
+        <div className="rounded-sm border border-dashed border-line-strong bg-sunken px-3 py-2 text-caption text-fg-muted" aria-label="Stamp preview">
+            <span className="font-medium text-fg">Preview, bottom of each page:</span> Licensed to Chiamaka Obi · chiamaka@example.com · Order #1042 · Not for resale
+          </div>
+        }
+        <Switch
+          id="dig-keys"
+          label="Issue a licence key to each buyer"
+          description="For presets, software, courses and templates. Keys show on the buyer’s download page; you can revoke or replace them."
+          checked={!!asset.keys?.enabled}
+          disabled={!protectionAllowed}
+          onChange={(enabled) => setAsset({ keys: { prefix: asset.keys?.prefix ?? '', activations: asset.keys?.activations ?? 2, enabled } })} />
+        
+        {asset.keys?.enabled &&
+        <div className="grid gap-4 sm:grid-cols-2">
+            <TextInput
+            id="dig-key-prefix"
+            label="Key starts with"
+            optional
+            value={asset.keys.prefix}
+            placeholder="e.g. ADAZ"
+            hint={`Looks like ${asset.keys.prefix.trim().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6) || ''}${asset.keys.prefix.trim() ? '-' : ''}7K2Q-M4XP-9WTR`}
+            onChange={(e) => setAsset({ keys: { ...asset.keys!, prefix: e.target.value.slice(0, 6) } })} />
+          
+            <TextInput
+            id="dig-key-acts"
+            label="Devices per key"
+            inputMode="numeric"
+            value={String(asset.keys.activations)}
+            hint="How many devices one buyer can use it on."
+            onChange={(e) => setAsset({ keys: { ...asset.keys!, activations: Math.min(50, Math.max(1, Number(e.target.value.replace(/[^0-9]/g, '') || '1'))) } })} />
+          
+          </div>
+        }
+      </div>
 
       <InlineAlert tone="info" title="What protection really means">
         Limits and expiring links reduce casual sharing, but once someone downloads a file they can copy it. Your licence note sets expectations.

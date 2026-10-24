@@ -37,6 +37,8 @@ export interface AccountSecurity {
   backupCodes: string[];
   /** Email me when there's a sign-in from a new device. */
   signInAlerts: boolean;
+  /** D125: the last time a security change signed out other devices, shown as a confirmation. */
+  lastSignOut?: {at: string;reason: 'password' | 'two_step_on' | 'two_step_off';devices: string[];seen?: boolean;} | null;
 }
 
 export interface AccountSession {

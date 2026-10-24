@@ -22,6 +22,7 @@ import { roomProgress } from '../utils/dealRoom';
 import { campaignPhase } from '../utils/campaign';
 import { daysUntil, formatDate, isPaidPlan } from '../utils/billing';
 import { formatNgn } from '../utils/format';
+import { orderMoney } from '../utils/commerce/money';
 import { TRIAL_REMINDER_DAYS } from '../data/billing';
 import { readTemplateStore } from '../utils/templateListings';
 import { destinationExists, destinationLabel, encodeDestination, fallbackDestination } from '../utils/domains/links';
@@ -211,6 +212,26 @@ export function useNotificationFeed(): AppNotification[] {
       if (pub.campaign) {
         const ph = campaignPhase(pub.campaign);
         if (ph !== 'before') out.push({ id: `campaign_phase:${s.id}:${ph}`, event: 'campaign_phase', area: 'pages', kind: 'update', text: ph === 'live' ? `${s.name} is live` : `${s.name} has ended`, href: '/app/spaces', at: page.publishedAt });
+      }
+    }
+
+    // Monday summary (D125): last 7 days against the 7 before, plus what's waiting.
+    {
+      const monday = new Date();
+      monday.setHours(8, 0, 0, 0);
+      monday.setDate(monday.getDate() - (monday.getDay() + 6) % 7);
+      if (Date.now() >= monday.getTime()) {
+        const since = monday.getTime() - 7 * DAY;
+        const paid = (from: number, to: number) => commerce.orders.filter((o) => !o.sample && o.paymentStatus === 'paid' && Date.parse(o.createdAt) >= from && Date.parse(o.createdAt) < to);
+        const week = paid(since, monday.getTime());
+        const before = paid(since - 7 * DAY, since);
+        const sum = (os: typeof week) => os.reduce((s, o) => s + orderMoney(o).gross, 0);
+        const unpaid = commerce.orders.filter((o) => !o.sample && o.paymentStatus === 'pending' && now - Date.parse(o.createdAt) > 3600000 && now - Date.parse(o.createdAt) < 14 * DAY).length;
+        const newContacts = ops.contacts.filter((c) => !c.sample && Date.parse(c.createdAt) >= since).length;
+        const trend = before.length ? sum(week) >= sum(before) ? 'up' : 'down' : null;
+        const parts = [`${week.length} paid order${week.length === 1 ? '' : 's'} · ${formatNgn(sum(week))}${trend ? ` (${trend} on the week before)` : ''}`, `${newContacts} new contact${newContacts === 1 ? '' : 's'}`];
+        if (unpaid) parts.push(`${unpaid} unpaid checkout${unpaid === 1 ? '' : 's'} to chase`);
+        out.push({ id: `weekly_digest:${monday.toISOString().slice(0, 10)}`, event: 'weekly_digest', area: 'pages', kind: 'update', text: `Your week: ${parts.join(' · ')}. See Link Intelligence for ideas.`, href: unpaid ? '/app/opportunities' : '/app/analytics#ideas', at: monday.toISOString() });
       }
     }
 

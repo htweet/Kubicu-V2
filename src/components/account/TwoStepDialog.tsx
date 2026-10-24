@@ -9,6 +9,7 @@ import { Dialog } from '../ui/Dialog';
 import { TextInput } from '../ui/TextInput';
 import { Button } from '../ui/Button';
 import { cn } from '../../utils/cn';
+import { signOutOthers } from '../../utils/account/signOutOthers';
 
 type Step = 'method' | 'setup' | 'codes';
 
@@ -44,7 +45,8 @@ export function TwoStepDialog({ open, onClose }: {open: boolean;onClose: () => v
   };
 
   const finish = () => {
-    updateAccount((a) => ({ ...a, security: { ...a.security, twoStep: method, twoStepSince: new Date().toISOString(), backupCodes: codes } }));
+    // Turning on two-step signs out other devices so they have to pass it too (D125).
+    updateAccount((a) => signOutOthers({ ...a, security: { ...a.security, twoStep: method, twoStepSince: new Date().toISOString(), backupCodes: codes } }, 'two_step_on'));
     toast.success('Two-step sign-in is on', { description: method === 'app' ? 'You’ll enter a code from your app when signing in on a new device.' : 'We’ll text you a code when signing in on a new device.' });
     onClose();
   };

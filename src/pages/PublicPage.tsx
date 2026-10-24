@@ -153,7 +153,16 @@ export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
     const meta = document.querySelector('meta[name="description"]');
     const previousDescription = meta?.getAttribute('content') ?? null;
     if (meta && view) meta.setAttribute('content', wantShop ? shopProduct?.description.slice(0, 160) ?? (shopData?.storefront.seoDescription?.trim() || shopData?.storefront.intro || '') : view.seo.description);
+    // Search engines (D124): honour "Show in search results" off with a noindex tag.
+    let robots: HTMLMetaElement | null = null;
+    if (resolved?.doc.branding?.hideFromSearch) {
+      robots = document.createElement('meta');
+      robots.name = 'robots';
+      robots.content = 'noindex, nofollow';
+      document.head.appendChild(robots);
+    }
     return () => {
+      robots?.remove();
       document.title = previous;
       document.documentElement.lang = previousLang || 'en';
       if (meta && previousDescription !== null) meta.setAttribute('content', previousDescription);

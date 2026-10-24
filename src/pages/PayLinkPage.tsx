@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { ArrowLeftIcon, CheckCircle2Icon, MinusIcon, PlusIcon, ShieldCheckIcon, XCircleIcon } from 'lucide-react';
 import type { MoneyData, PaymentLink } from '../types/money';
 import type { PageTheme } from '../types/page';
@@ -22,7 +22,9 @@ export function PayLinkPage() {
   const workspaceId = page?.workspaceId ?? null;
   const [money, setMoney] = useState<MoneyData | null>(null);
   const [step, setStep] = useState<Step>('details');
-  const [amount, setAmount] = useState('');
+  // Support blocks (D124) open the link with ?amount= filled in; the payer can still change it.
+  const [searchParams] = useSearchParams();
+  const [amount, setAmount] = useState(() => (searchParams.get('amount') ?? '').replace(/\D/g, ''));
   const [qty, setQty] = useState<Record<string, number>>({});
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');

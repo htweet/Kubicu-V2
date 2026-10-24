@@ -31,6 +31,10 @@ import { FormBlock } from './FormBlock';
 import { ProofBlock } from './ProofBlock';
 import { MembersOnlyBlock } from './MembersOnlyBlock';
 import { TrustBadgeBlock } from './TrustBadgeBlock';
+import { AudioBlock } from './AudioBlock';
+import { PlaylistBlock } from './PlaylistBlock';
+import { CollectionBlock } from './CollectionBlock';
+import { SupportBlock } from './SupportBlock';
 
 interface BlockRendererProps {
   block: Block;
@@ -102,6 +106,14 @@ export function BlockRenderer({ block, theme, mode }: BlockRendererProps) {
       return <MembersOnlyBlock block={block} theme={theme} mode={mode} />;
     case 'trustBadge':
       return <TrustBadgeBlock block={block} theme={theme} mode={mode} />;
+    case 'audio':
+      return <AudioBlock block={block} theme={theme} mode={mode} />;
+    case 'playlist':
+      return <PlaylistBlock block={block} theme={theme} mode={mode} />;
+    case 'collection':
+      return <CollectionBlock block={block} theme={theme} mode={mode} />;
+    case 'support':
+      return <SupportBlock block={block} theme={theme} mode={mode} />;
     default:
       return null;
   }

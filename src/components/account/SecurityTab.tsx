@@ -11,6 +11,8 @@ import { Switch } from '../ui/Switch';
 import { Dialog } from '../ui/Dialog';
 import { PasswordDialog } from './PasswordDialog';
 import { TwoStepDialog } from './TwoStepDialog';
+import { InlineAlert } from '../ui/InlineAlert';
+import { signOutOthers, signOutReasonCopy } from '../../utils/account/signOutOthers';
 
 const providerLabel: Record<LoginProvider, string> = { google: 'Google', apple: 'Apple' };
 const outcomeLabel = { ok: 'Signed in', wrong_password: 'Wrong password', blocked_two_step: 'Stopped at two-step' } as const;
@@ -29,8 +31,23 @@ export function SecurityTab() {
     toast.success(`${providerLabel[provider]} connected`, { description: 'Prototype — no real account was linked.' });
   };
 
+  const signedOut = s.lastSignOut && !s.lastSignOut.seen && Date.now() - Date.parse(s.lastSignOut.at) < 7 * 86400000 ? s.lastSignOut : null;
+
   return (
     <div className="flex flex-col gap-6">
+      {signedOut &&
+      <InlineAlert
+        tone="success"
+        title={`We signed out your ${signedOut.devices.length} other device${signedOut.devices.length === 1 ? '' : 's'}`}
+        action={
+        <Button size="sm" variant="secondary" onClick={() => updateAccount((a) => ({ ...a, security: { ...a.security, lastSignOut: a.security.lastSignOut ? { ...a.security.lastSignOut, seen: true } : null } }))}>
+              Got it
+            </Button>
+        }>
+        
+          Because {signOutReasonCopy[signedOut.reason]} {formatRelative(signedOut.at)}: {signedOut.devices.join(', ')}. They’ll need to sign in again{s.twoStep !== 'none' ? ' with your two-step code' : ''}. If you didn’t make this change, change your password now.
+        </InlineAlert>
+      }
       <Card
         id="sec-status"
         emphasis="primary"
@@ -201,7 +218,7 @@ export function SecurityTab() {
             <Button
             variant="destructive"
             onClick={() => {
-              updateAccount((a) => ({ ...a, security: { ...a.security, twoStep: 'none', twoStepSince: null, backupCodes: [] } }));
+              updateAccount((a) => signOutOthers({ ...a, security: { ...a.security, twoStep: 'none', twoStepSince: null, backupCodes: [] } }, 'two_step_off'));
               toast('Two-step sign-in is off');
               setDialog(null);
             }}>

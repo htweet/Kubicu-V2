@@ -21,6 +21,7 @@ import { ProductEditor } from '../../components/commerce/ProductEditor';
 import { ProductStatusBadge, SampleTag } from '../../components/commerce/StatusBadges';
 import { Card } from '../../components/ui/layout/Card';
 import { Section } from '../../components/ui/layout/Section';
+import { KeyLookup } from '../../components/commerce/KeyLookup';
 
 const fileBadge = {
   processing: <Badge tone="neutral">Uploading</Badge>,
@@ -146,15 +147,17 @@ export function Digital() {
             </ul>
           </Card>
 
+          <div className="flex flex-col gap-8">
+          <KeyLookup />
           <Section id="access" title="Who has access" description="Each buyer’s link, downloads used and status.">
             {access.length === 0 ?
-          <p className="text-label text-fg-muted">No one has bought a file yet.</p> :
+            <p className="text-label text-fg-muted">No one has bought a file yet.</p> :
 
-          <ul className="flex flex-col divide-y divide-line border-y border-line">
+            <ul className="flex flex-col divide-y divide-line border-y border-line">
                 {access.map((a) => {
-              const limit = a.product?.digital?.downloadLimit;
-              return (
-                <li key={a.key} className="py-3">
+                const limit = a.product?.digital?.downloadLimit;
+                return (
+                  <li key={a.key} className="py-3">
                       <div className="flex items-baseline justify-between gap-3">
                         <p className="min-w-0 truncate text-label font-semibold text-fg">{a.order.customer.name}</p>
                         {a.check?.ok ? <Badge tone="success">Active</Badge> : <Badge tone="neutral">{a.check ? accessCopy[a.check.reason] : 'Product deleted'}</Badge>}
@@ -169,10 +172,11 @@ export function Digital() {
                       </p>
                     </li>);
 
-            })}
+              })}
               </ul>
-          }
+            }
           </Section>
+          </div>
         </div>
       }
 

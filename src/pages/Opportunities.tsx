@@ -1,5 +1,8 @@
 import React, { useMemo, useState } from 'react';
-import { InboxIcon, PartyPopperIcon } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { InboxIcon, PartyPopperIcon, ShoppingCartIcon } from 'lucide-react';
+import { useAnalytics } from '../contexts/AnalyticsContext';
+import { anonymousCarts } from '../utils/analytics/anonymousCarts';
 import { toast } from 'sonner';
 import { useCommerce } from '../contexts/CommerceContext';
 import { useOps } from '../contexts/OpsContext';
@@ -37,6 +40,8 @@ export function Opportunities() {
   const hidden = all.filter((o) => isHidden(o.id));
   const list = (view === 'open' ? open : hidden).filter((o) => filter === 'all' || o.group === filter);
 
+  const analytics = useAnalytics().data;
+  const carts = useMemo(() => anonymousCarts(analytics.events, Date.now()), [analytics.events]);
   const atStake = open.reduce((s, o) => s + (o.valueNgn ?? 0), 0);
   const payments = open.filter((o) => o.group === 'payments');
   const people = open.filter((o) => o.group === 'customers' || o.group === 'bookings');
@@ -76,6 +81,21 @@ export function Opportunities() {
             </StatGroup>
           </div>
         </Card>
+
+        {carts.count > 0 &&
+        <div className="flex flex-col gap-3 rounded-lg border border-line bg-raised px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-3">
+              <ShoppingCartIcon size={18} className="mt-0.5 shrink-0 text-fg-subtle" aria-hidden />
+              <div>
+                <p className="text-label font-semibold text-fg">
+                  {carts.count} cart{carts.count === 1 ? '' : 's'}{carts.valueNgn ? `, ${formatNgn(carts.valueNgn)}` : ''}, left before checkout this week{carts.sample ? ' (includes sample visits)' : ''}
+                </p>
+                <p className="text-caption text-fg-muted">No name or number was left, so we can’t show who. Asking for a WhatsApp number earlier — or offering “Order on WhatsApp” — turns more of these into conversations.</p>
+              </div>
+            </div>
+            <Link to="/app/commerce/settings" className="shrink-0 text-caption font-semibold text-action hover:underline">Checkout settings</Link>
+          </div>
+        }
 
         <section aria-labelledby="opp-list-title" className="flex flex-col gap-4">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">

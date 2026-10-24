@@ -25,6 +25,7 @@ import { useCommerce } from '../../../contexts/CommerceContext';
 import { useOps } from '../../../contexts/OpsContext';
 import { findProduct, priceRange } from '../../../utils/commerce/catalog';
 import { EventLinkFields } from './EventLinkFields';
+import { MediaSupportFields } from './MediaSupportFields';
 
 interface Props {
   block: Block;
@@ -546,6 +547,6 @@ export function ExtendedContentFields({ block, issues }: Props) {
 
       }
     default:
-      return null;
+      return <MediaSupportFields block={block} issues={issues} />;
   }
 }

@@ -31,7 +31,23 @@ export type BlockType =
 'form' |
 'proof' |
 'membersOnly' |
-'trustBadge';
+'trustBadge' |
+'audio' |
+'playlist' |
+'collection' |
+'support';
+
+/** One track in a Playlist block (D124). `productId` sells it as a Commerce digital product. */
+export interface PlaylistTrack {
+  id: string;
+  title: string;
+  artist: string;
+  /** A link to an MP3/M4A/OGG file, or a small upload kept on this device in the prototype. */
+  url: string;
+  fileName: string;
+  duration: string;
+  productId: string | null;
+}
 
 /** Who may see members-only content (D110): any live subscriber, or subscribers of chosen plans. */
 export interface MemberRule {
@@ -268,6 +284,27 @@ export interface BlockContentMap {
   membersOnly: MemberRule & {title: string;teaser: string;joinLabel: string;covers: number;};
   /** Trust Passport badge (D111): level and checked signals, worked out when the page is viewed. */
   trustBadge: {style: 'compact' | 'full';showScore: boolean;};
+  /** One audio track (D124): a link or a small upload, with cover and optional transcript. */
+  audio: {title: string;artist: string;url: string;fileName: string;coverUrl: string;coverAlt: string;allowDownload: boolean;transcript: string;};
+  /** Several tracks with a now-playing bar (D124). */
+  playlist: {title: string;artist: string;coverUrl: string;coverAlt: string;tracks: PlaylistTrack[];allowDownload: boolean;};
+  /** One Commerce collection as a strip or grid, with "See all" into the shop filtered to it (D124). */
+  collection: {title: string;collectionId: string | null;layout: 'strip' | 'grid';limit: number;showSeeAll: boolean;};
+  /**
+   * Support / pay-what-you-want (D124). Paid through a payment link of kind "open" that the
+   * inspector creates and keeps in sync (`linkId`). It's a payment, never a tax-deductible donation.
+   */
+  support: {
+    title: string;
+    intro: string;
+    wording: 'support' | 'donate' | 'tip';
+    amounts: number[];
+    allowOther: boolean;
+    minNgn: number;
+    askName: boolean;
+    askMessage: boolean;
+    linkId: string | null;
+  };
 }
 
 export interface BlockStyle {
@@ -405,6 +442,8 @@ export interface PageBranding {
   hideKubicuBadge: boolean;
   /** Seller choice: every visitor starts in Lightweight mode; they can still turn it off (D88). */
   startLightweight?: boolean;
+  /** Ask search engines not to list this space (adds a noindex tag), D124. Links still work. */
+  hideFromSearch?: boolean;
 }
 
 export type Block = { [K in

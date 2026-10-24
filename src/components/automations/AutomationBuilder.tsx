@@ -3,7 +3,7 @@ import { ArrowDownIcon, ArrowUpIcon, ClockIcon, FlaskConicalIcon, PlusIcon, Tras
 import { toast } from 'sonner';
 import type { ActionId, Automation, AutomationCondition, AutomationRun, TriggerId } from '../../types/ops';
 import { useOps } from '../../contexts/OpsContext';
-import { actionLabels, conditionLabels, recipes, triggerLabels } from '../../data/automationRecipes';
+import { actionLabels, conditionLabels, recipes, reportOptions, triggerLabels } from '../../data/automationRecipes';
 import { addRun, automationProblems, stepLabel, testRun } from '../../utils/ops/automation';
 import { uid } from '../../utils/id';
 import { Sheet } from '../ui/Sheet';
@@ -123,7 +123,10 @@ export function AutomationBuilder({ automation, onClose }: {automation: Automati
               <ZapIcon size={14} strokeWidth={2.5} />
             </span>
             <p className="text-caption font-semibold text-fg-subtle">When</p>
-            <SelectInput<TriggerId> id="auto-trigger" label="Trigger" value={draft.trigger} options={(Object.keys(triggerLabels) as TriggerId[]).map((t) => ({ value: t, label: triggerLabels[t].label }))} hint={triggerLabels[draft.trigger].hint} onChange={(trigger) => patch({ trigger })} />
+            <SelectInput<TriggerId> id="auto-trigger" label="Trigger" value={draft.trigger} options={(Object.keys(triggerLabels) as TriggerId[]).map((t) => ({ value: t, label: triggerLabels[t].label }))} hint={triggerLabels[draft.trigger].hint} onChange={(trigger) => patch(trigger === 'contact_quiet' && !draft.triggerDays ? { trigger, triggerDays: 30 } : { trigger })} />
+            {draft.trigger === 'contact_quiet' &&
+            <TextInput id="auto-quiet-days" label="Quiet for (days)" inputMode="numeric" value={String(draft.triggerDays ?? '')} fieldClassName="mt-3 w-40" hint="Counted from their last order, booking or message. At least 7." onChange={(e) => patch({ triggerDays: Number(e.target.value.replace(/[^0-9]/g, '').slice(0, 3) || '0') })} />
+            }
           </li>
 
           <li className="relative pb-5 pl-9">
@@ -170,7 +173,15 @@ export function AutomationBuilder({ automation, onClose }: {automation: Automati
                   {(s.action === 'notify_member' || s.action === 'create_task') &&
               <AssigneeSelect id={`who-${s.id}`} label={s.action === 'notify_member' ? 'Who to notify' : 'Assign the follow-up to'} value={s.memberId} onChange={(memberId) => setStep(s.id, { memberId })} />
               }
-                  {s.action === 'add_tag' || s.action === 'create_task' ?
+                  {s.action === 'send_report' ?
+              <SelectInput id={`val-${s.id}`} label="Report" value={s.value || ''} options={[{ value: '', label: 'Choose…' }, ...reportOptions]} hint="Arrives in your notifications. Email delivery comes with a messaging partner." onChange={(value) => setStep(s.id, { value })} /> :
+              s.action === 'call_webhook' ?
+              <TextInput id={`val-${s.id}`} label="Webhook address" type="url" value={s.value} placeholder={actionLabels.call_webhook.placeholder} hint="We POST the event as JSON, signed with your secret from Settings → Developers. Retried 3 times on failure." onChange={(e) => setStep(s.id, { value: e.target.value.trim() })} /> :
+              s.action === 'ai_draft' ?
+              <div className="flex flex-col gap-1.5">
+                      <TextArea id={`val-${s.id}`} label="What should the message say?" rows={3} value={s.value} placeholder={actionLabels.ai_draft.placeholder} hint="AI preview: drafts from your real records and never invents prices or promises. Nothing is sent until you approve it." onChange={(e) => setStep(s.id, { value: e.target.value })} />
+                    </div> :
+              s.action === 'add_tag' || s.action === 'create_task' ?
               <TextInput id={`val-${s.id}`} label={s.action === 'add_tag' ? 'Tag' : 'Task'} value={s.value} placeholder={actionLabels[s.action].placeholder} onChange={(e) => setStep(s.id, { value: e.target.value })} /> :
 
               <TextArea id={`val-${s.id}`} label="Message" rows={3} value={s.value} placeholder={actionLabels[s.action ?? 'notify_owner'].placeholder} hint="Use {first_name}, {order_number}, {service}, {time}." onChange={(e) => setStep(s.id, { value: e.target.value })} />

@@ -38,7 +38,8 @@ export const notifEvents: NotifEventInfo[] = [
 { id: 'ai_low', label: 'AI credits running low', area: 'ai', permission: 'pages.edit', defaults: appOnly },
 { id: 'domain_status', label: 'Domain live or needs attention', area: 'domains', permission: 'domains.manage', defaults: on },
 { id: 'dealroom_result', label: 'DealRoom goal met or missed', area: 'pages', permission: 'pages.edit', defaults: on },
-{ id: 'campaign_phase', label: 'Campaign went live or ended', area: 'pages', permission: 'pages.edit', defaults: appOnly }];
+{ id: 'campaign_phase', label: 'Campaign went live or ended', area: 'pages', permission: 'pages.edit', defaults: appOnly },
+{ id: 'weekly_digest', label: 'Monday summary: sales, Link Intelligence and Opportunities', area: 'pages', permission: 'analytics.view', defaults: on }];
 
 
 export const notifEventById = Object.fromEntries(notifEvents.map((e) => [e.id, e])) as Record<NotifEventId, NotifEventInfo>;

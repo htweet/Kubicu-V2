@@ -3,6 +3,7 @@ import type { WorkspacePlan } from '../types/plan';
 import { CONTRAST_MIN_PUBLISH, CONTRAST_TARGET, contrastRatio, formatRatio } from './contrast';
 import { contrastCopy, suggestContrastFix, type ContrastKey } from './contrastFixes';
 import { getYouTubeId } from './video';
+import { formatNgn } from './format';
 import { socialPlatformLabels } from '../data/socialPlatforms';
 
 export type IssueSeverity = 'error' | 'warning';
@@ -228,6 +229,32 @@ export function validateBlock(block: Block): ValidationIssue[] {
         if (items.length === 0) push('error', 'Add at least one project', 'items');
         if (items.some((i) => i.coverUrl && !i.coverAlt.trim())) push('warning', 'Describe each cover image for screen readers', 'items');
         if (items.some((i) => i.url && !isValidUrl(i.url))) push('error', 'Project links must start with https://', 'items');
+        break;
+      }
+    case 'audio':{
+        const c = block.content;
+        if (!c.url.trim()) push('error', 'Add an audio link or upload a track', 'url');else
+        if (!c.url.startsWith('data:') && !isValidUrl(c.url)) push('error', 'The audio link must start with https://', 'url');
+        if (c.coverUrl && !c.coverAlt.trim()) push('warning', 'Describe the cover image for screen readers', 'coverAlt');
+        if (c.url && !c.transcript.trim()) push('warning', 'Add a transcript or short description so deaf visitors can follow', 'transcript');
+        break;
+      }
+    case 'playlist':{
+        const tracks = block.content.tracks.filter((t) => t.url.trim());
+        if (tracks.length === 0) push('error', 'Add at least one track with an audio link', 'tracks');
+        if (tracks.some((t) => !t.title.trim())) push('warning', 'Give every track a title', 'tracks');
+        if (tracks.some((t) => !t.url.startsWith('data:') && !isValidUrl(t.url))) push('error', 'Track links must start with https://', 'tracks');
+        if (block.content.coverUrl && !block.content.coverAlt.trim()) push('warning', 'Describe the cover image for screen readers', 'coverAlt');
+        break;
+      }
+    case 'collection':
+      if (!block.content.collectionId) push('error', 'Choose a collection', 'collectionId');
+      break;
+    case 'support':{
+        const c = block.content;
+        if (!c.linkId) push('error', 'The payment link for this block isn’t set up yet — open the block once to create it', 'amounts');
+        if (c.amounts.length === 0 && !c.allowOther) push('error', 'Add an amount or allow “Other amount”', 'amounts');
+        if (c.amounts.some((a) => a < c.minNgn)) push('warning', `Amounts below the ${formatNgn(c.minNgn)} minimum are hidden`, 'amounts');
         break;
       }
     case 'location':{
