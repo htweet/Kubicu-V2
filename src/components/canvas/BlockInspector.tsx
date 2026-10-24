@@ -21,6 +21,9 @@ import { VisibilityFields } from './inspector/VisibilityFields';
 import { IssueList } from './inspector/IssueList';
 import { BlockSuggest, supportsSuggest } from '../ai/BlockSuggest';
 import { cn } from '../../utils/cn';
+import { useCoBrand } from '../../hooks/useCoBrand';
+import { canEditBlock } from '../../utils/coBrand';
+import { CoBrandBlockBar } from './inspector/CoBrandBlockBar';
 
 type InspectorTab = 'content' | 'style' | 'behaviour' | 'visibility';
 
@@ -30,7 +33,9 @@ export function BlockInspector({ block, showHeader = true }: {block: Block;showH
   const blockIssues = issuesByBlock(issues)[block.id] ?? [];
   const def = blockDefinitions[block.type];
   const Icon = def.icon;
-  const locked = !!block.locked;
+  const coBrand = useCoBrand();
+  const partnerLocked = !canEditBlock(coBrand.cb, block, coBrand.actor);
+  const locked = !!block.locked || partnerLocked;
   const group = findGroup(state.draft, block.groupId);
   const { currentSpace } = useWorkspace();
   const navigate = useNavigate();
@@ -57,18 +62,20 @@ export function BlockInspector({ block, showHeader = true }: {block: Block;showH
 
         }
           <IconButton
-          icon={locked ? LockIcon : LockOpenIcon}
-          label={locked ? 'Unlock block' : 'Lock block'}
+          icon={block.locked ? LockIcon : LockOpenIcon}
+          label={block.locked ? 'Unlock block' : 'Lock block'}
           size="sm"
-          active={locked}
+          active={!!block.locked}
+          disabled={partnerLocked}
           onClick={() => actions.toggleLocked(block.id)} />
         
         </div>
       }
 
-      {(locked || group) &&
+      {(locked || group || coBrand.cb) &&
       <div className="flex flex-col gap-2 px-4 pb-3">
-          {locked &&
+          {coBrand.cb && <CoBrandBlockBar block={block} />}
+          {!!block.locked &&
         <div className="flex items-center gap-3 rounded-md bg-sunken px-3 py-2.5">
               <LockIcon size={15} className="shrink-0 text-fg-muted" aria-hidden />
               <p className="min-w-0 flex-1 text-caption text-fg">

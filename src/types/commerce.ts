@@ -72,9 +72,40 @@ export interface Product {
   madeToOrder?: MadeToOrder;
   /** Can be paid in parts at checkout when Instalments is on (D112). */
   instalments?: ProductInstalments;
+  /** Sold together with a business partner; money is split per seller at payment (D122). */
+  bundle?: ProductBundle;
   sample?: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+/** A partner bundle (D122): one product, two sellers, one checkout. */
+export interface ProductBundle {
+  partnershipId: string;
+  partnerName: string;
+  partnerKind: 'connected' | 'guest';
+  /** What the partner brings, shown to buyers, e.g. "Gele tying on the day". */
+  partnerPart: string;
+  /** The agreed percentage, or an exact naira amount per item. */
+  split: 'agreement' | 'fixed';
+  /** Snapshot of the agreement's lead share, refreshed on every save. */
+  leadSharePct: number;
+  partnerFixedNgn?: number;
+  /** Exact amounts need the partner's acceptance before the product can be active. */
+  partnerAcceptedAt?: string;
+  /** Connected partners only: hold their share in escrow until delivery. */
+  partnerEscrow?: boolean;
+}
+
+/** The partner's part of one order line, frozen at payment (D122). */
+export interface OrderItemBundle {
+  partnershipId: string;
+  partnerName: string;
+  partnerKind: 'connected' | 'guest';
+  partnerPart: string;
+  /** Naira per unit before any discount. */
+  partnerUnitNgn: number;
+  escrow?: boolean;
 }
 
 /** Seller-run instalments on a product (D112): the first part at checkout, the rest charged to the same card. */
@@ -274,6 +305,8 @@ export interface OrderItem {
   kind: ProductKind;
   /** Chosen seats for seated tickets (D113). */
   seats?: string[];
+  /** Partner bundle line: the partner's share, frozen at payment (D122). */
+  bundle?: OrderItemBundle;
 }
 
 export interface OrderCustomer {

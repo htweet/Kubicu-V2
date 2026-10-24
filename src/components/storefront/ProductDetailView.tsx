@@ -181,6 +181,13 @@ export function ProductDetailView({ theme, data, product, ordering, whatsappPhon
             </a>
           }
 
+          {product.bundle &&
+          <p className="text-[14px] leading-snug" style={{ color: theme.mutedText }}>
+              Made together with <strong style={{ color: theme.text }}>{product.bundle.partnerName}</strong>
+              {product.bundle.partnerPart ? ` — ${product.bundle.partnerPart}` : ''}. One payment; each business is paid its own part.
+            </p>
+          }
+
           {product.description &&
           <div className="border-t pt-5 text-[15px] leading-relaxed" style={{ borderColor: mix(theme.text, 12) }}>
               {product.description.split('\n').filter(Boolean).map((para, i) =>

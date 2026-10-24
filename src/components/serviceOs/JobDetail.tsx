@@ -181,6 +181,8 @@ export function JobDetail({ job, data, onOpenInvoice, businessName, canEdit, upd
             )}
           </ol>
         </section>
+
+        <CommentThread subject={`job:${job.id}`} subjectLabel={`the “${job.title}” job`} href="/app/services/jobs" area="bookings" className="border-t border-line pt-6" />
       </div>
     </Sheet>);
 

@@ -34,6 +34,7 @@ import { Button } from '../ui/Button';
 import { Menu } from '../ui/Menu';
 import { cn } from '../../utils/cn';
 import { SaveSectionDialog } from './SaveSectionDialog';
+import { useCoBrandGuard } from '../../hooks/useCoBrandGuard';
 
 interface LayersListProps {
   touch?: boolean;
@@ -49,6 +50,7 @@ cn(
 
 export function LayersList({ touch = false, onPick }: LayersListProps) {
   const { state, actions, issues } = useEditor();
+  const guard = useCoBrandGuard();
   const [selecting, setSelecting] = useState(false);
   const [checked, setChecked] = useState<string[]>([]);
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
@@ -94,7 +96,11 @@ export function LayersList({ touch = false, onPick }: LayersListProps) {
       actions.select(block.id);
       onPick?.(block.id);
     }}
-    onMove={(d) => opts.inGroup ? actions.moveWithinGroup(block.id, d) : actions.moveBlock(block.id, d)}
+    onMove={(d) => {
+      if (!guard.canTouch(block.id)) return;
+      if (opts.inGroup) actions.moveWithinGroup(block.id, d);else
+      actions.moveBlock(block.id, d);
+    }}
     onToggleHidden={() => actions.toggleHidden(block.id)}
     onToggleLocked={() => actions.toggleLocked(block.id)} />;
 
@@ -147,7 +153,13 @@ export function LayersList({ touch = false, onPick }: LayersListProps) {
         </div>
       }
 
-      <Reorder.Group axis="y" values={units.map((u) => u.key)} onReorder={actions.reorderUnits} as="ol" className="flex flex-col gap-0.5">
+      <Reorder.Group
+        axis="y"
+        values={units.map((u) => u.key)}
+        onReorder={(next: string[]) => {
+          if (guard.canReorder(units.map((u) => u.key), next)) actions.reorderUnits(next);
+        }}
+        as="ol" className="flex flex-col gap-0.5">
         {units.map((unit, unitIndex) =>
         unit.kind === 'block' ?
         <UnitItem key={unit.key} value={unit.key} locked={!!unit.block.locked} selecting={selecting}>

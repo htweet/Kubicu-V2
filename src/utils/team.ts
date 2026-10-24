@@ -11,6 +11,7 @@ export function emptyTeam(w: Workspace): TeamData {
   return {
     members: [{ id: OWNER_ID, name: w.ownerName || 'You', contact: '', role: 'owner', spaceIds: null, joinedAt: w.createdAt, lastActiveAt: new Date().toISOString() }],
     invites: [],
+    comments: [],
     approvalsOn: false,
     reviews: [],
     notices: [],
@@ -29,6 +30,7 @@ export function readTeam(workspaceId: string): TeamData | null {
     return {
       members: parsed.members,
       invites: Array.isArray(parsed.invites) ? parsed.invites : [],
+      comments: Array.isArray(parsed.comments) ? parsed.comments : [],
       approvalsOn: !!parsed.approvalsOn,
       reviews: Array.isArray(parsed.reviews) ? parsed.reviews : [],
       notices: Array.isArray(parsed.notices) ? parsed.notices : [],
@@ -95,6 +97,15 @@ export function effectiveRole(m: Member, paused: Set<string>): Role {
 
 export function activity(actor: string, area: ActivityArea, text: string, href?: string): ActivityEntry {
   return { id: uid('act'), at: new Date().toISOString(), actor, area, text, href };
+}
+
+/** Members whose full name follows an @ in the text (D116). Longest names first so "Ada Obi" beats "Ada". */
+export function mentionedIds(text: string, members: Member[]): string[] {
+  const lower = text.toLowerCase();
+  return [...members].
+  sort((a, b) => b.name.length - a.name.length).
+  filter((m) => lower.includes(`@${m.name.toLowerCase()}`)).
+  map((m) => m.id);
 }
 
 export function initials(name: string): string {

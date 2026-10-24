@@ -8,7 +8,7 @@ import { AccountAvatar } from '../account/AccountAvatar';
 import { useAppearancePolicy } from '../../contexts/AppearancePolicyContext';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
 import { WorkspaceSwitcher } from './WorkspaceSwitcher';
-import { workspaceNav, mobilePrimaryNavIds } from '../../data/navigation';
+import { navGroups, workspaceNav, mobilePrimaryNavIds } from '../../data/navigation';
 import { Sheet } from '../ui/Sheet';
 import { cn } from '../../utils/cn';
 import { DirectionSwitcher } from './DirectionSwitcher';
@@ -85,24 +85,33 @@ export function MobileNav() {
           </section>
         }
         <ul className="flex flex-col p-2">
-          {rest.map((item) => {
-            const Icon = item.icon;
-            return (
-              <li key={item.id}>
+          {navGroups.flatMap((g) => {
+            const items = rest.filter((n) => n.group === g.id);
+            if (!items.length) return [];
+            return [
+            <li key={`h-${g.id}`} role="presentation" className="px-3 pb-1 pt-3 text-caption font-semibold text-fg-subtle first:pt-1">
+                {g.label}
+              </li>,
+            ...items.map((item) => {
+              const Icon = item.icon;
+              return (
+                <li key={item.id}>
                 <button
-                  type="button"
-                  onClick={() => {
-                    setMoreOpen(false);
-                    navigate(item.to);
-                  }}
-                  className="flex min-h-[52px] w-full items-center gap-3 rounded-md px-3 text-left text-body text-fg hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-                  
+                    type="button"
+                    onClick={() => {
+                      setMoreOpen(false);
+                      navigate(item.to);
+                    }}
+                    className="flex min-h-[52px] w-full items-center gap-3 rounded-md px-3 text-left text-body text-fg hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+                    
                   <Icon size={19} className="text-fg-subtle" aria-hidden />
                   <span className="flex-1">{item.label}</span>
                   {item.batch && <span className="text-caption text-fg-subtle">Batch {item.batch}</span>}
                   <ChevronRightIcon size={16} className="text-fg-subtle" aria-hidden />
                 </button>
               </li>);
+
+            })];
 
           })}
           {superAdmin &&

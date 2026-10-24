@@ -101,8 +101,32 @@ export interface Notice {
   seen: boolean;
 }
 
+/**
+ * A team comment on a piece of shared work (D116). `subject` is `<kind>:<id>`, e.g. `order:ord_12`.
+ * Top-level comments start a thread; replies point at it with `parentId`. Threads can be resolved.
+ */
+export interface TeamComment {
+  id: string;
+  subject: string;
+  /** What the comment is on, for notifications and the activity log, e.g. "Order #1007". */
+  subjectLabel: string;
+  href?: string;
+  authorId: string;
+  authorName: string;
+  text: string;
+  /** Member ids @mentioned in the text. */
+  mentions: string[];
+  at: string;
+  parentId?: string;
+  editedAt?: string;
+  deletedAt?: string;
+  resolvedAt?: string;
+  resolvedBy?: string;
+}
+
 export interface TeamData {
   members: Member[];
+  comments: TeamComment[];
   invites: Invite[];
   approvalsOn: boolean;
   reviews: ReviewRequest[];

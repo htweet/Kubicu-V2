@@ -4,6 +4,7 @@ import { CircleUserRoundIcon, Link2Icon, MessageCircleIcon, ShoppingBagIcon, Spa
 import type { BlockType, Viewport } from '../../types/page';
 import { useEditor } from '../../contexts/EditorContext';
 import { useRemoveBlock } from '../../hooks/useRemoveBlock';
+import { useCoBrandGuard } from '../../hooks/useCoBrandGuard';
 import { issuesByBlock } from '../../utils/validation';
 import { PageSurface } from '../blocks/PageSurface';
 import { BlockFrame } from './BlockFrame';
@@ -15,6 +16,7 @@ import { showsKubicuBadge } from '../../utils/branding';
 import { findGroup } from '../../utils/groups';
 import { navItems, pageTitle, showsNav } from '../../utils/sitePages';
 import { SiteNav } from '../blocks/SiteNav';
+import { CoBrandStrip } from '../blocks/CoBrandStrip';
 import type { CampaignPhase } from '../../types/page';
 import { useCampaignPreview } from '../../contexts/CampaignPreviewContext';
 import { blockInPhase, campaignPhase, phaseLabels } from '../../utils/campaign';
@@ -50,6 +52,7 @@ export function Artboard({ viewport = 'phone', framed = true, touch = false, onE
   const { draft, selectedId } = state;
   const plan = usePlan();
   const removeBlock = useRemoveBlock();
+  const guard = useCoBrandGuard();
   const byBlock = issuesByBlock(issues);
   const preview = useCampaignPreview();
   const campaign = state.site.campaign;
@@ -68,6 +71,7 @@ export function Artboard({ viewport = 'phone', framed = true, touch = false, onE
   <SourcePreviewBar source={source} onChange={preview.setSource} hiddenCount={sourceHidden} className={framed ? 'mx-auto mb-4 w-full' : 'mx-3 mb-3 mt-3'} /> :
   null;
   const onReorder = (next: string[]) => {
+    if (!guard.canReorder(ids, next)) return;
     if (!filtered) return actions.reorderBlocks(next);
     const shown = new Set(ids);
     let k = 0;
@@ -86,8 +90,11 @@ export function Artboard({ viewport = 'phone', framed = true, touch = false, onE
     columnClassName={touch ? 'pb-28' : undefined}
     footer={draft.blocks.length > 0 && showsKubicuBadge(draft, plan) ? <MadeWithKubicu theme={draft.theme} mode="edit" /> : undefined}
     header={
-    showsNav(state.site) ?
-    <SiteNav theme={draft.theme} title={state.site.title} items={navItems(state.site)} activeId={state.activePageId} onSelect={actions.setPage} /> :
+    showsNav(state.site) || state.site.coBrand ?
+    <>
+            {state.site.coBrand && <CoBrandStrip coBrand={state.site.coBrand} theme={draft.theme} />}
+            {showsNav(state.site) && <SiteNav theme={draft.theme} title={state.site.title} items={navItems(state.site)} activeId={state.activePageId} onSelect={actions.setPage} />}
+          </> :
     undefined
     }>
     

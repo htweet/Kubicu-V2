@@ -2,15 +2,18 @@ import { useCallback } from 'react';
 import { toast } from 'sonner';
 import { useEditor } from '../contexts/EditorContext';
 import { blockName } from '../utils/blocks';
+import { useCoBrandGuard } from './useCoBrandGuard';
 
 /** Deletes a block and offers a one-tap restore that puts it back exactly where it was. */
 export function useRemoveBlock() {
   const { state, actions } = useEditor();
+  const { canTouch } = useCoBrandGuard();
   return useCallback(
     (id: string) => {
       const index = state.draft.blocks.findIndex((b) => b.id === id);
       const block = state.draft.blocks[index];
       if (!block) return;
+      if (!canTouch(id, 'delete')) return;
       if (block.locked) {
         toast(`${blockName(block)} is locked`, {
           description: 'Unlock it to delete.',
@@ -23,6 +26,6 @@ export function useRemoveBlock() {
         action: { label: 'Undo', onClick: () => actions.restoreBlock(block, index) }
       });
     },
-    [state.draft.blocks, actions]
+    [state.draft.blocks, actions, canTouch]
   );
 }

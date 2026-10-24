@@ -12,6 +12,7 @@ import { ActivityTab } from '../../components/settings/ActivityTab';
 import { PrivacyTab } from '../../components/settings/PrivacyTab';
 import { BillingTab } from '../../components/settings/BillingTab';
 import { NotificationsTab } from '../../components/settings/NotificationsTab';
+import { SsoTab } from '../../components/settings/SsoTab';
 import { useBilling } from '../../contexts/BillingContext';
 
 const tabs = [
@@ -21,7 +22,8 @@ const tabs = [
 { id: 'billing', label: 'Plan & billing', to: '/app/settings/billing' },
 { id: 'notifications', label: 'Notifications', to: '/app/settings/notifications' },
 { id: 'activity', label: 'Activity', to: '/app/settings/activity' },
-{ id: 'privacy', label: 'Privacy', to: '/app/settings/privacy' }];
+{ id: 'privacy', label: 'Privacy', to: '/app/settings/privacy' },
+{ id: 'sso', label: 'Single sign-on', to: '/app/settings/sso' }];
 
 
 const panels: Record<string, () => React.ReactElement | null> = {
@@ -31,7 +33,8 @@ const panels: Record<string, () => React.ReactElement | null> = {
   billing: BillingTab,
   notifications: NotificationsTab,
   activity: ActivityTab,
-  privacy: PrivacyTab
+  privacy: PrivacyTab,
+  sso: SsoTab
 };
 
 /** Workspace settings. Team and Roles now; approvals and the activity log follow (D57–D59). */

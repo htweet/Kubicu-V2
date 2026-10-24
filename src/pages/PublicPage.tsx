@@ -8,6 +8,7 @@ import { upsertContact } from '../utils/ops/ops';
 import { contactFrom, recordSubmission } from '../utils/forms/submit';
 import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { SiteNav } from '../components/blocks/SiteNav';
+import { CoBrandStrip } from '../components/blocks/CoBrandStrip';
 import { findPage, navItems, pageHref, pageView, resolvePath, type NavItem } from '../utils/sitePages';
 import { STOREFRONT_PATH, findShopProduct, productSlug, storefrontAvailable, storefrontOrdering } from '../utils/commerce/storefront';
 import { readDomains } from '../utils/domains/storage';
@@ -456,7 +457,14 @@ function PageBody({
       <PageSurface
         theme={doc.theme}
         footer={<PublicFooter theme={doc.theme} badge={showsKubicuBadge(doc, plan)} handle={handle} workspaceId={null} />}
-        header={nav.length > 1 ? <SiteNav theme={doc.theme} title={site.title} items={nav} activeId={pageId} hrefFor={navHref} /> : undefined}>
+        header={
+        nav.length > 1 || site.coBrand ?
+        <>
+              {site.coBrand && <CoBrandStrip coBrand={site.coBrand} theme={doc.theme} />}
+              {nav.length > 1 && <SiteNav theme={doc.theme} title={site.title} items={nav} activeId={pageId} hrefFor={navHref} />}
+            </> :
+        undefined
+        }>
         
         <span id="page-content" tabIndex={-1} className="sr-only">Page content</span>
         {site.dealRoom && !pageId &&

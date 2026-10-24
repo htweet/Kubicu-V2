@@ -17,6 +17,7 @@ import { SampleTag } from '../commerce/StatusBadges';
 import { OwnerSlotPicker } from './OwnerSlotPicker';
 import { useTeam } from '../../contexts/TeamContext';
 import { AssigneeSelect } from '../team/AssigneeSelect';
+import { CommentThread } from '../team/CommentThread';
 
 export const bookingStatusCopy = {
   confirmed: { label: 'Confirmed', tone: 'success' as const },
@@ -167,6 +168,8 @@ export function BookingDetail({ bookingId, onClose }: {bookingId: string | null;
               )}
             </ol>
           </section>
+
+          <CommentThread subject={`booking:${b.id}`} subjectLabel={`${b.customer.name}’s ${b.serviceName} booking`} href={`/app/bookings?booking=${b.id}`} area="bookings" className="border-t border-line pt-6" />
         </div>
       </Sheet>
 

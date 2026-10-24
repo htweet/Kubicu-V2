@@ -25,6 +25,7 @@ import { PagesPanel } from "./PagesPanel";
 import { SpaceSwitcher } from "./SpaceSwitcher";
 import { ReviewBadge } from "./ReviewStatus";
 import { PresenceAvatars } from "./PresenceAvatars";
+import { CoBrandChip } from "./CoBrandChip";
 import { findPage, pageHref, pageTitle } from "../../utils/sitePages";
 type MobileSheet = 'blocks' | 'design' | 'layers' | 'pages' | 'settings' | 'block' | 'versions' | null;
 const tabs: {
@@ -78,6 +79,7 @@ export function MobileEditor() {
           </p>
           <SaveIndicator compact status={state.saveStatus} lastSavedAt={state.lastSavedAt} onRetry={actions.retrySave} />
         </div>
+        <CoBrandChip compact />
         <IconButton icon={Undo2Icon} label="Undo" size="lg" disabled={!canUndo} onClick={actions.undo} />
         <IconButton icon={Redo2Icon} label="Redo" size="lg" disabled={!canRedo} onClick={actions.redo} />
         <IconButton icon={EyeIcon} label="Preview" size="lg" onClick={() => navigate(`${pageHref(state.draft.handle, findPage(state.site, state.activePageId)?.path ?? '')}?draft=1`)} />

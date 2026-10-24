@@ -142,7 +142,8 @@ export function summarizeBlock(block: Block): string {
 export function docSignature(doc: PageDocument | null): string {
   if (!doc) return '';
   // Locks and groups are editor-only organisation; visitors never see them.
-  const visible = (blocks: Block[]) => blocks.map(({ createdAt: _c, updatedAt: _u, locked: _l, groupId: _g, ...rest }) => rest);
+  // Co-brand ownership (D121) is editor-only too; the partner strip visitors see is compared below.
+  const visible = (blocks: Block[]) => blocks.map(({ createdAt: _c, updatedAt: _u, locked: _l, groupId: _g, owner: _o, ...rest }) => rest);
   return JSON.stringify({
     title: doc.title,
     handle: doc.handle,
@@ -152,6 +153,7 @@ export function docSignature(doc: PageDocument | null): string {
     blocks: visible(doc.blocks),
     homeLabel: doc.homeLabel ?? null,
     pages: (doc.pages ?? []).map((p) => ({ id: p.id, title: p.title, path: p.path, seo: p.seo, hideFromNav: !!p.hideFromNav, membersOnly: p.membersOnly ?? null, blocks: visible(p.blocks) })),
-    redirects: doc.redirects ?? []
+    redirects: doc.redirects ?? [],
+    coBrand: doc.coBrand ? { p: doc.coBrand.partnershipId, n: doc.coBrand.partnerName, l: doc.coBrand.leadName } : null
   });
 }

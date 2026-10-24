@@ -22,6 +22,7 @@ import { formatNgn } from '../format';
 import { issueTickets, orderCapacityIssue, ticketLineIssue } from './tickets';
 import { cartBalanceNgn, dispatchBlocked } from './deposit';
 import { everyLabels, instalmentCheck, newParts, payOptionsOf, podAwaiting, podCheck } from './payOptions';
+import { bundleLineFor, partnerGrossFor } from './bundles';
 
 export const OWNER_ACTOR = 'You';
 
@@ -171,7 +172,8 @@ export function placeOrder(data: CommerceData, input: CheckoutInput): CheckoutRe
       qty: line.qty,
       imageUrl: product.images[0]?.url ?? '',
       kind: product.kind,
-      seats: product.kind === 'ticket' && line.seats?.length ? line.seats : undefined
+      seats: product.kind === 'ticket' && line.seats?.length ? line.seats : undefined,
+      bundle: bundleLineFor(product, price)
     });
   }
 
@@ -203,7 +205,7 @@ export function placeOrder(data: CommerceData, input: CheckoutInput): CheckoutRe
   const productsInCart = items.map((i) => data.products.find((p) => p.id === i.productId));
   if (pod) {
     const zone = data.fulfilment.zones.find((z) => z.id === input.fulfilment.zoneId);
-    const check = podCheck(data, { total: fullTotal, zoneId: input.fulfilment.method === 'delivery' ? input.fulfilment.zoneId ?? null : null, zoneName: zone?.name, onlyPhysical: items.every((i) => i.kind === 'physical'), balanceLater: balanceNgn, dealRoom: !!input.dealRoom, phone: input.customer.phone });
+    const check = podCheck(data, { total: fullTotal, zoneId: input.fulfilment.method === 'delivery' ? input.fulfilment.zoneId ?? null : null, zoneName: zone?.name, onlyPhysical: items.every((i) => i.kind === 'physical'), balanceLater: balanceNgn, dealRoom: !!input.dealRoom, phone: input.customer.phone, bundle: items.some((i) => !!i.bundle) });
     if (!check.ok) return { ok: false, reason: 'unavailable', message: `${check.reason || 'Pay on delivery isn’t available for this order.'} Nothing was ordered.` };
   }
   let instalmentPlan: ReturnType<typeof instalmentCheck> | null = null;
@@ -216,6 +218,8 @@ export function placeOrder(data: CommerceData, input: CheckoutInput): CheckoutRe
   const parts = instalmentPlan?.ok ? newParts(fullTotal, instalmentPlan.plan) : null;
   const gross = pod ? 0 : parts ? parts[0].amountNgn : fullTotal - balanceNgn;
   const paid = !pod && input.outcome === 'success';
+  // Partner bundles (D122): each business pays its own KUBICU fee on its own share.
+  const partnerGross = partnerGrossFor(items, subtotal, discountNgn);
   const number = data.nextOrderNumber;
   const placedAt = now();
   const hasDigital = items.some((i) => i.kind === 'digital');
@@ -236,6 +240,10 @@ export function placeOrder(data: CommerceData, input: CheckoutInput): CheckoutRe
   events.unshift(event('paid', `Instalment 1 of ${parts.length} — ${formatNgn(gross)} paid (test mode). ${formatNgn(fullTotal - gross)} to be charged ${everyLabels[instalmentPlan.plan.every]}${instalmentPlan.plan.ship === 'last' ? '; sent once fully paid' : ''}`));else
   if (paid) events.unshift(event('paid', balanceNgn ? `Deposit of ${formatNgn(gross)} confirmed (test mode) — ${formatNgn(balanceNgn)} due before dispatch` : 'Payment confirmed by provider (test mode)'));
   if (input.dealRoom?.held) events.unshift(event('note', 'Joined the group buy — held until the goal is reached, refunded automatically if it isn’t', placedAt));
+  if (paid && partnerGross > 0) {
+    const names = [...new Set(items.filter((i) => i.bundle).map((i) => i.bundle!.partnerName))].join(' and ');
+    events.unshift(event('note', `Sold with ${names} — their share of ${formatNgn(partnerGross)} was split off at payment, as agreed`, placedAt));
+  }
   if (paid && digitalOnly && !input.dealRoom?.held) events.unshift(event('completed', deliveredLabel));else
   if (!paid && !pod) events.unshift(event('payment', input.outcome === 'timeout' ? 'Provider didn’t respond in time — awaiting confirmation' : 'Payment pending with provider'));
 
@@ -254,7 +262,7 @@ export function placeOrder(data: CommerceData, input: CheckoutInput): CheckoutRe
     ...(input.dealRoom ? roomReferral(data, input) : {}),
     deliveryNgn: input.deliveryNgn,
     providerFeeNgn: providerFee(gross),
-    kubicuFeeNgn: kubicuFee(gross, input.plan),
+    kubicuFeeNgn: kubicuFee(Math.max(0, gross - partnerGross), input.plan),
     status: paid ? digitalOnly && !input.dealRoom?.held ? 'completed' : 'paid' : 'new',
     paymentStatus: paid ? 'paid' : 'pending',
     paymentNote: input.outcome === 'timeout' ? 'Provider timed out' : undefined,

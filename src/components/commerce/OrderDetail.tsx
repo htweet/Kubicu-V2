@@ -19,6 +19,7 @@ import { TestModeStrip } from './TestModeStrip';
 import { cn } from '../../utils/cn';
 import { useTeam } from '../../contexts/TeamContext';
 import { AssigneeSelect } from '../team/AssigneeSelect';
+import { CommentThread } from '../team/CommentThread';
 import { FileTextIcon } from 'lucide-react';
 import { useMarketplace } from '../../contexts/MarketplaceContext';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
@@ -30,6 +31,7 @@ import { dispatchBlocked } from '../../utils/commerce/deposit';
 import { podAwaiting } from '../../utils/commerce/payOptions';
 import { OrderPodPanel } from './OrderPodPanel';
 import { OrderInstalmentsPanel } from './OrderInstalmentsPanel';
+import { OrderPartnerSplit } from './OrderPartnerSplit';
 
 const steps: {status: OrderStatus;label: string;}[] = [
 { status: 'new', label: 'Placed' },
@@ -195,6 +197,7 @@ export function OrderDetail({ orderId, onClose }: {orderId: string | null;onClos
 
           {order.dispute && <DisputePanel order={order} />}
           <EscrowPanel workspaceId={current.id} orderId={order.id} handle={order.sourceHandle ?? handle} />
+          <OrderPartnerSplit order={order} leadName={current.name} />
 
           <section aria-label="Items">
             <ul className="flex flex-col divide-y divide-line border-y border-line">
@@ -287,6 +290,8 @@ export function OrderDetail({ orderId, onClose }: {orderId: string | null;onClos
               )}
             </ol>
           </section>
+
+          <CommentThread subject={`order:${order.id}`} subjectLabel={`Order #${order.number}`} href={`/app/commerce/orders?order=${order.id}`} area="commerce" className="border-t border-line pt-6" />
         </div>
       </Sheet>
       <RefundDialog order={dialog ? order : null} mode={dialog ?? 'refund'} onClose={() => setDialog(null)} />

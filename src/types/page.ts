@@ -374,8 +374,25 @@ export interface BaseBlock {
   locked?: boolean;
   /** Blocks sharing a groupId form one contiguous group. */
   groupId?: string | null;
+  /** Co-branded spaces only (D121): who looks after this block. Missing = the business that set it up. */
+  owner?: BlockOwner;
   createdAt: string;
   updatedAt: string;
+}
+
+export type BlockOwner = 'lead' | 'partner' | 'shared';
+
+/** A space two businesses run together (D121). Lives in the lead business's workspace. */
+export interface CoBrandSettings {
+  partnershipId: string;
+  leadName: string;
+  partnerName: string;
+  partnerHandle?: string;
+  /** "sections": each block is Yours, Theirs or Shared. "open": both can change anything; changes are listed and undoable. */
+  mode: 'sections' | 'open';
+  /** The partner's sign-off on a version of the page; tied to a fingerprint so any later change needs it again. */
+  partnerApproval?: {sig: string;partnerSig: string;at: string;} | null;
+  startedAt: string;
 }
 
 export interface BlockGroup {
@@ -464,6 +481,8 @@ export interface PageDocument {
   campaign?: CampaignSettings;
   /** Present on DealRoom spaces only (D54). */
   dealRoom?: DealRoomSettings;
+  /** Present on co-branded campaign spaces only (D121). */
+  coBrand?: CoBrandSettings | null;
   /** Language of the page content, as a BCP 47 tag (WCAG 3.1.1, D76). Defaults to "en". */
   language?: string;
   updatedAt: string;

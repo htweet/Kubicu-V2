@@ -14,6 +14,10 @@ export function formatRelative(iso: string): string {
   return formatDistanceToNow(new Date(iso), { addSuffix: true });
 }
 
+export function formatDate(iso: string): string {
+  return format(new Date(iso), 'd MMM yyyy');
+}
+
 export function formatTimestamp(iso: string): string {
   return format(new Date(iso), "d MMM yyyy, HH:mm");
 }

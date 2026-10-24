@@ -29,6 +29,10 @@ import { ProductInstalmentsField } from './ProductInstalmentsField';
 import { DigitalFileField } from './DigitalFileField';
 import { cn } from '../../utils/cn';
 import { MobileSection } from '../ui/MobileSection';
+import { ProductBundleField } from './ProductBundleField';
+import { useLocalStore } from '../../hooks/useLocalStore';
+import { emptyPartnerships, partnershipKey } from '../../utils/partnerships';
+import { bundleIssue } from '../../utils/commerce/bundles';
 
 interface ProductEditorProps {
   open: boolean;
@@ -76,7 +80,9 @@ export function ProductEditor({ open, productId, kind, onClose }: ProductEditorP
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [triedSave, setTriedSave] = useState(false);
   // Phones show one section at a time.
-  const [section, setSection] = useState<'details' | 'photos' | 'stock' | 'collections'>('details');
+  const [section, setSection] = useState<'details' | 'photos' | 'stock' | 'partner' | 'collections'>('details');
+  const partnerStore = useLocalStore(partnershipKey(current.id), emptyPartnerships);
+  const partnerships = partnerStore.data.partnerships;
   const toggle = (s: typeof section) => setSection((cur) => cur === s ? cur : s);
 
   useEffect(() => {
@@ -95,6 +101,8 @@ export function ProductEditor({ open, productId, kind, onClose }: ProductEditorP
   const nameError = triedSave && !draft.name.trim() ? 'Give the product a name' : undefined;
   const fileError = triedSave && draft.kind === 'digital' && draft.status === 'active' && draft.digital?.status !== 'ready' ? 'Upload a file and wait for the scan before making this active' : undefined;
   const priceWarning = draft.status === 'active' && draft.priceNgn === null && draft.variants.every((v) => v.priceNgn === null);
+  const bundlePartnership = draft.bundle ? partnerships.find((p) => p.id === draft.bundle!.partnershipId) : undefined;
+  const bundleError = triedSave && draft.bundle ? bundleIssue(draft.bundle, draft.priceNgn, draft.status, bundlePartnership) : null;
 
   const save = () => {
     setTriedSave(true);
@@ -110,7 +118,13 @@ export function ProductEditor({ open, productId, kind, onClose }: ProductEditorP
       setSection('stock');
       return;
     }
-    const next = { ...draft, name: draft.name.trim(), variants: draft.variants.length ? draft.variants : regenerateVariants(draft) };
+    if (draft.bundle && bundleIssue(draft.bundle, draft.priceNgn, draft.status, bundlePartnership)) {
+      setSection('partner');
+      return;
+    }
+    // The agreed split is re-read on every save so new sales follow the current agreement (D122).
+    const bundle = draft.bundle && bundlePartnership ? { ...draft.bundle, partnerName: bundlePartnership.partner.name, partnerKind: bundlePartnership.kind, leadSharePct: bundlePartnership.agreement.leadSharePct, partnerPart: draft.bundle.partnerPart.trim() } : draft.bundle;
+    const next = { ...draft, bundle, name: draft.name.trim(), variants: draft.variants.length ? draft.variants : regenerateVariants(draft) };
     if (apply((d) => upsertProduct(d, next))) {
       toast(existing ? 'Product saved' : 'Product added', { description: existing ? 'Linked page blocks update straight away.' : 'Link it to a block on your page to start selling.' });
       onClose();
@@ -247,7 +261,7 @@ export function ProductEditor({ open, productId, kind, onClose }: ProductEditorP
                   label="Made to order — take a deposit"
                   description="Buyers pay a deposit at checkout and the rest before you send it out. You can’t mark it out for delivery until the balance is in."
                   checked={!!draft.madeToOrder}
-                  disabled={!!draft.instalments}
+                  disabled={!!draft.instalments || !!draft.bundle}
                   onChange={(on) => patch({ madeToOrder: on ? { depositPct: DEFAULT_DEPOSIT_PCT, leadDays: DEFAULT_LEAD_DAYS } : undefined })} />
                 
                   {draft.madeToOrder &&
@@ -278,7 +292,8 @@ export function ProductEditor({ open, productId, kind, onClose }: ProductEditorP
                 }
                 </div>
               }
-              {kind === 'physical' && <ProductInstalmentsField product={draft} onChange={patch} />}
+              {kind === 'physical' && !draft.bundle && <ProductInstalmentsField product={draft} onChange={patch} />}
+              {kind === 'physical' && draft.bundle && <p className="border-t border-border pt-4 text-caption text-fg-muted">Deposits and instalments are off while this is sold with {draft.bundle.partnerName}.</p>}
               <VariantsField product={draft} onChange={patch} />
               <div className="grid gap-4 sm:grid-cols-2">
                 {draft.trackStock &&
@@ -306,6 +321,17 @@ export function ProductEditor({ open, productId, kind, onClose }: ProductEditorP
               </div>
             </>
             }
+          </MobileSection>
+
+          <MobileSection
+            id="prd-sec-partner"
+            title="Sold with a partner"
+            summary={draft.bundle ? `With ${draft.bundle.partnerName} · ${draft.bundle.split === 'agreement' ? `${draft.bundle.leadSharePct}/${100 - draft.bundle.leadSharePct}` : 'exact amount'}` : 'Just you'}
+            open={section === 'partner'}
+            onToggle={() => toggle('partner')}
+            invalid={!!bundleError}>
+            
+            <ProductBundleField product={draft} onChange={patch} leadName={current.name} partnerships={partnerships} error={bundleError} disabled={!pricesAllowed.allowed} />
           </MobileSection>
 
           {data.collections.length > 0 &&

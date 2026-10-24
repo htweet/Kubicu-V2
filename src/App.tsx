@@ -50,6 +50,7 @@ import { Events } from './pages/commerce/Events';
 import { GuestList } from './pages/commerce/GuestList';
 import { CheckIn } from './pages/commerce/CheckIn';
 import { TicketPage } from './pages/TicketPage';
+import { PartnerPortal } from './pages/PartnerPortal';
 import { SubscriptionPortal } from './pages/SubscriptionPortal';
 import { AdminMarketplace } from './pages/admin/AdminMarketplace';
 import { AppShell } from './components/shell/AppShell';
@@ -263,6 +264,7 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
               <Route path="/p/:handle/review/:token" element={<ReviewSubmit />} />
               <Route path="/p/:handle/pay/:slug" element={<PayLinkPage />} />
               <Route path="/p/:handle/protect/:orderId" element={<BuyerProtection />} />
+              <Route path="/partner/:token" element={<PartnerPortal />} />
 
               {/* Earlier addresses */}
               <Route path="/design-system" element={<Navigate to="/admin/design-system" replace />} />

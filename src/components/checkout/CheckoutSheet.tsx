@@ -170,7 +170,8 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
     onlyPhysical: okProducts.length > 0 && okProducts.every((p) => p?.kind === 'physical'),
     balanceLater,
     dealRoom: !!dealRoom,
-    phone: customer.phone
+    phone: customer.phone,
+    bundle: okProducts.some((p) => !!p?.bundle)
   });
   const instOption = instalmentCheck(data, { products: okProducts, total, balanceLater, dealRoom: !!dealRoom });
   const payWith: PayWith = payWithChoice === 'pod' && podOption.ok ? 'pod' : payWithChoice === 'instalments' && instOption.ok ? 'instalments' : 'now';

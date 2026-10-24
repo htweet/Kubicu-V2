@@ -96,6 +96,8 @@ export function PartnerEditor({ open, partner, partners, products, onClose, onSa
     <Sheet
       open={open}
       onClose={onClose}
+      side="right"
+      size="lg"
       title={partner ? `Edit ${partner.name}` : 'Invite a partner'}
       description="Creators, stylists or resellers who share your link and earn a commission on what sells."
       footer={
@@ -107,7 +109,7 @@ export function PartnerEditor({ open, partner, partners, products, onClose, onSa
         </div>
       }>
       
-      <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-5 px-5 py-5 md:px-6">
         <TextInput id="pt-name" label="Name" value={f.name} maxLength={60} error={tried ? errors.name : undefined} onChange={(e) => set({ name: e.target.value })} />
         <div className="grid gap-4 sm:grid-cols-2">
           <SelectInput id="pt-platform" label="Where they post" value={f.platform} options={(Object.keys(platformLabels) as PartnerPlatform[]).map((v) => ({ value: v, label: platformLabels[v] }))} onChange={(v) => set({ platform: v })} />

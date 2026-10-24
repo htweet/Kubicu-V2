@@ -1,10 +1,10 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import type { ActivityArea, Invite, Member, Notice, Permission, ReviewRequest, Role, TeamData } from '../types/team';
+import type { ActivityArea, Invite, Member, Notice, Permission, ReviewRequest, Role, TeamComment, TeamData } from '../types/team';
 import { useWorkspace } from './WorkspaceContext';
 import { DEMO_WORKSPACE_ID } from '../utils/workspaceStorage';
 import { rolePermissions, permissionReason, roleInfo, seatLimits } from '../data/permissions';
-import { activity, effectiveRole, emptyTeam, INVITE_DAYS, inviteState, OWNER_ID, pausedMemberIds, readTeam, seatsUsed, teamKey, withSampleTeam, writeTeam } from '../utils/team';
+import { activity, effectiveRole, emptyTeam, INVITE_DAYS, inviteState, mentionedIds, OWNER_ID, pausedMemberIds, readTeam, seatsUsed, teamKey, withSampleTeam, writeTeam } from '../utils/team';
 import { MAIN_SPACE_ID } from '../utils/spaces';
 import { uid } from '../utils/id';
 
@@ -45,6 +45,11 @@ interface TeamValue {
   decideReview: (id: string, outcome: 'approved' | 'changes', comment: string) => void;
   myNotices: Notice[];
   markNoticesSeen: () => void;
+  /** Team comments (D116). */
+  addComment: (input: {subject: string;subjectLabel: string;href?: string;area: ActivityArea;text: string;parentId?: string;}) => TeamComment | null;
+  editComment: (id: string, text: string) => void;
+  deleteComment: (id: string) => void;
+  resolveThread: (id: string, resolved: boolean) => void;
 }
 
 const TeamContext = createContext<TeamValue | null>(null);
@@ -270,9 +275,67 @@ export function TeamProvider({ viewingAs, children }: {viewingAs: Role;children:
   const myNotices = useMemo(() => data.notices.filter((n) => n.memberId === me.id), [data.notices, me.id]);
   const markNoticesSeen = useCallback(() => apply((d) => d.notices.some((n) => n.memberId === me.id && !n.seen) ? { ...d, notices: d.notices.map((n) => n.memberId === me.id ? { ...n, seen: true } : n) } : d), [apply, me.id]);
 
+  // Team comments (D116): anyone in the workspace can comment; mentions and thread participants are told.
+  const addComment = useCallback(
+    (input: {subject: string;subjectLabel: string;href?: string;area: ActivityArea;text: string;parentId?: string;}) => {
+      const text = input.text.trim();
+      if (!text) return null;
+      const d0 = ref.current;
+      const mentions = mentionedIds(text, d0.members).filter((id) => id !== me.id);
+      const c: TeamComment = { id: uid('cmt'), subject: input.subject, subjectLabel: input.subjectLabel, href: input.href, authorId: me.id, authorName: me.name, text: text.slice(0, 1000), mentions, at: new Date().toISOString(), parentId: input.parentId };
+      // Everyone already in the thread hears about a reply, unless they were mentioned (that notice is enough).
+      const threadId = input.parentId;
+      const participants = threadId ? [...new Set(d0.comments.filter((x) => (x.id === threadId || x.parentId === threadId) && !x.deletedAt).map((x) => x.authorId))].filter((id) => id !== me.id && !mentions.includes(id)) : [];
+      const short = text.length > 80 ? `${text.slice(0, 80)}…` : text;
+      const ok = apply((d) => ({
+        ...d,
+        comments: [...d.comments, c],
+        notices: [
+        ...mentions.map((id) => notice(id, `${me.name} mentioned you on ${input.subjectLabel}: “${short}”`, input.href)),
+        ...participants.map((id) => notice(id, `${me.name} replied on ${input.subjectLabel}: “${short}”`, input.href)),
+        ...d.notices],
+
+        activity: [activity(me.name, input.area, `commented on ${input.subjectLabel}`, input.href), ...d.activity].slice(0, 500)
+      }));
+      return ok ? c : null;
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [apply, me.id, me.name]
+  );
+
+  const editComment = useCallback(
+    (id: string, text: string) => {
+      const t = text.trim();
+      if (!t) return;
+      apply((d) => ({ ...d, comments: d.comments.map((c) => c.id === id && c.authorId === me.id && !c.deletedAt ? { ...c, text: t.slice(0, 1000), mentions: mentionedIds(t, d.members).filter((m) => m !== me.id), editedAt: new Date().toISOString() } : c) }));
+    },
+    [apply, me.id]
+  );
+
+  // Authors delete their own; Owners and Admins can remove anyone's. The slot stays so replies keep their context.
+  const deleteComment = useCallback(
+    (id: string) => apply((d) => ({ ...d, comments: d.comments.map((c) => c.id === id && (c.authorId === me.id || role === 'owner' || role === 'admin') ? { ...c, text: '', mentions: [], deletedAt: new Date().toISOString() } : c) })),
+    [apply, me.id, role]
+  );
+
+  const resolveThread = useCallback(
+    (id: string, resolved: boolean) =>
+    apply((d) => {
+      const c = d.comments.find((x) => x.id === id && !x.parentId);
+      if (!c) return d;
+      return {
+        ...d,
+        comments: d.comments.map((x) => x.id === id ? { ...x, resolvedAt: resolved ? new Date().toISOString() : undefined, resolvedBy: resolved ? me.name : undefined } : x),
+        notices: resolved && c.authorId !== me.id ? [notice(c.authorId, `${me.name} resolved your comment on ${c.subjectLabel}`, c.href), ...d.notices] : d.notices
+      };
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [apply, me.id, me.name]
+  );
+
   const value = useMemo<TeamValue>(
-    () => ({ data, me, role, paused, seatLimit, seatsUsed: used, can, canAccessSpace, invite, cancelInvite, resendInvite, acceptInvite, changeRole, setSpaces, removeMember, transferOwnership, updateMember, update, log, needsReview, requestReview, updateReviewDoc, withdrawReview, decideReview, myNotices, markNoticesSeen }),
-    [data, me, role, paused, seatLimit, used, can, canAccessSpace, invite, cancelInvite, resendInvite, acceptInvite, changeRole, setSpaces, removeMember, transferOwnership, updateMember, update, log, needsReview, requestReview, updateReviewDoc, withdrawReview, decideReview, myNotices, markNoticesSeen]
+    () => ({ data, me, role, paused, seatLimit, seatsUsed: used, can, canAccessSpace, invite, cancelInvite, resendInvite, acceptInvite, changeRole, setSpaces, removeMember, transferOwnership, updateMember, update, log, needsReview, requestReview, updateReviewDoc, withdrawReview, decideReview, myNotices, markNoticesSeen, addComment, editComment, deleteComment, resolveThread }),
+    [data, me, role, paused, seatLimit, used, can, canAccessSpace, invite, cancelInvite, resendInvite, acceptInvite, changeRole, setSpaces, removeMember, transferOwnership, updateMember, update, log, needsReview, requestReview, updateReviewDoc, withdrawReview, decideReview, myNotices, markNoticesSeen, addComment, editComment, deleteComment, resolveThread]
   );
   return <TeamContext.Provider value={value}>{children}</TeamContext.Provider>;
 }

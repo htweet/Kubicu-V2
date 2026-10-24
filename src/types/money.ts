@@ -23,7 +23,7 @@ export interface MethodSettings {
   escrowFeePayer: EscrowFeePayer;
 }
 
-export type LedgerKind = 'sale' | 'link' | 'milestone' | 'escrow_release' | 'refund' | 'fee' | 'payout' | 'payout_returned' | 'commission' | 'topup';
+export type LedgerKind = 'sale' | 'link' | 'milestone' | 'escrow_release' | 'refund' | 'fee' | 'payout' | 'payout_returned' | 'commission' | 'topup' | 'purchase' | 'partner_share';
 
 /**
  * pending   — paid, still settling with the partner (becomes available at `availableAt`)

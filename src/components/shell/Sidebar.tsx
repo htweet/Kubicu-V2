@@ -1,13 +1,15 @@
 import React from 'react';
 import { PanelLeftCloseIcon, PanelLeftOpenIcon, ShieldCheckIcon } from 'lucide-react';
 import { useStaffSession } from '../../hooks/useStaffSession';
-import { workspaceNav } from '../../data/navigation';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { navGroups, workspaceNav } from '../../data/navigation';
 import { useSidebarCollapsed } from '../../hooks/useSidebarCollapsed';
+import { useNavGroups } from '../../hooks/useNavGroups';
 import { useSideTip } from '../../hooks/useSideTip';
 import { KubicuLogo } from './KubicuLogo';
 import { WorkspaceSwitcher } from './WorkspaceSwitcher';
 import { AppearancePicker } from './AppearancePicker';
-import { SidebarItem, SidebarGroupLabel } from './SidebarItem';
+import { SidebarItem, SidebarGroupLabel, SidebarGroupToggle } from './SidebarItem';
 import { cn } from '../../utils/cn';
 import { useTeam } from '../../contexts/TeamContext';
 import { roleInfo } from '../../data/permissions';
@@ -25,8 +27,8 @@ export function Sidebar() {
   const superAdmin = useStaffSession()?.role === 'lead';
   // Apps that aren't installed stay out of the sidebar (D87).
   const visible = workspaceNav.filter((n) => !n.appId || market.isActive(n.appId));
-  const built = visible.filter((n) => n.group === 'build');
-  const planned = visible.filter((n) => n.group === 'business');
+  const groups = useNavGroups();
+  const reduce = useReducedMotion();
   const ToggleIcon = collapsed ? PanelLeftOpenIcon : PanelLeftCloseIcon;
   const toggleLabel = collapsed ? 'Expand sidebar' : 'Collapse sidebar';
 
@@ -66,27 +68,50 @@ export function Sidebar() {
         <WorkspaceSwitcher compact={collapsed} tip={tip} />
       </div>
 
-      <nav aria-label="Workspace" className={cn('scroll-quiet flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto pb-4', collapsed ? 'px-0' : 'px-3')}>
-        <div>
-          <SidebarGroupLabel collapsed={collapsed}>Build</SidebarGroupLabel>
-          <ul className="flex flex-col gap-0.5">
-            {built.map((item) =>
-            <li key={item.id}>
-                <SidebarItem to={item.to} end={item.to === '/app'} label={item.label} icon={item.icon} collapsed={collapsed} tip={tip} />
-              </li>
-            )}
-          </ul>
-        </div>
-        <div>
-          <SidebarGroupLabel collapsed={collapsed}>Business</SidebarGroupLabel>
-          <ul className="flex flex-col gap-0.5">
-            {planned.map((item) =>
+      <nav aria-label="Workspace" className={cn(collapsed ? 'scroll-quiet flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pb-4' : 'scroll-quiet flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto pb-4', collapsed ? 'px-0' : 'px-3')}>
+        {navGroups.map((g) => {
+          const items = visible.filter((n) => n.group === g.id);
+          if (!items.length) return null;
+          const badgeOf = (id: string) => id === 'settings' ? reviewsWaiting : undefined;
+          const list =
+          <ul id={`nav-group-${g.id}`} className="flex flex-col gap-0.5">
+              {items.map((item) =>
             <li key={item.id} data-tour={`nav-${item.id}`}>
-                <SidebarItem to={item.to} label={item.label} icon={item.icon} soon={!!item.batch} collapsed={collapsed} tip={tip} badge={item.id === 'settings' ? reviewsWaiting : undefined} />
-              </li>
+                  <SidebarItem to={item.to} end={item.to === '/app'} label={item.label} icon={item.icon} soon={!!item.batch} collapsed={collapsed} tip={tip} badge={badgeOf(item.id)} />
+                </li>
             )}
-          </ul>
-        </div>
+            </ul>;
+
+          // Collapsed rail: every icon stays reachable, sections separated by a hairline.
+          if (collapsed)
+          return (
+            <div key={g.id}>
+                <SidebarGroupLabel collapsed>{g.label}</SidebarGroupLabel>
+                {list}
+              </div>);
+
+          const isOpen = groups.open.has(g.id);
+          const waiting = items.reduce((s, i) => s + (badgeOf(i.id) ?? 0), 0);
+          return (
+            <div key={g.id} data-tour={!isOpen && items.some((i) => i.id === 'extensions') ? 'nav-extensions' : undefined}>
+              <SidebarGroupToggle label={g.label} open={isOpen} onToggle={() => groups.toggle(g.id)} controls={`nav-group-${g.id}`} badge={waiting} active={groups.activeGroup === g.id} />
+              <AnimatePresence initial={false}>
+                {isOpen &&
+                <motion.div
+                  key="items"
+                  initial={reduce ? { opacity: 0 } : { height: 0, opacity: 0 }}
+                  animate={reduce ? { opacity: 1 } : { height: 'auto', opacity: 1 }}
+                  exit={reduce ? { opacity: 0 } : { height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+                  className="overflow-hidden">
+                  
+                    {list}
+                  </motion.div>
+                }
+              </AnimatePresence>
+            </div>);
+
+        })}
         {/* Staff console: only for a signed-in Platform lead (D83 roles), never for workspace members. */}
         {superAdmin &&
         <div>

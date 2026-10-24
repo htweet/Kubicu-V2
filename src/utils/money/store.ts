@@ -2,6 +2,7 @@ import type { Order } from '../../types/commerce';
 import type { BankAccount, KycTier, LedgerEntry, LedgerRefType, LinkPayment, MoneyData, PayArea, PayMethod, Payout, PaymentLink } from '../../types/money';
 import { readCommerce } from '../commerce/storage';
 import { orderMoney } from '../commerce/money';
+import { orderPartnerShares, partnerDebitNgn, partnerRatio } from '../commerce/bundles';
 import { uid } from '../id';
 import { blankKyc, normaliseKyc } from './kyc';
 import { newCase, syncEscrow } from './escrow';
@@ -174,15 +175,21 @@ function syncNewSales(d: MoneyData, orders: Order[]): MoneyData {
         const net = m.gross - m.providerFee - m.kubicuFee;
         const at = o.createdAt;
         const label = `Order #${o.number} · ${o.customer.name || 'Customer'}`;
+        // Partner bundles (D122): the partner's share is split off at payment, in the same state as the sale.
+        const partnerOut = partnerDebitNgn(o);
+        const partnerLabel = `${orderPartnerShares(o).map((s) => s.partnerName).join(' and ')}’s share · #${o.number}`;
         if (method === 'wallet') {
-          add.push({ id: uid('led'), at, kind: 'sale', amountNgn: net, state: 'pending', availableAt: iso(Date.parse(at) + SETTLE_HOURS * HOUR), label, ref: { type: 'order', id: o.id, label: `#${o.number}` } });
+          const availableAt = iso(Date.parse(at) + SETTLE_HOURS * HOUR);
+          add.push({ id: uid('led'), at, kind: 'sale', amountNgn: net, state: 'pending', availableAt, label, ref: { type: 'order', id: o.id, label: `#${o.number}` } });
+          if (partnerOut > 0) add.push({ id: uid('led'), at, kind: 'partner_share', amountNgn: -partnerOut, state: 'pending', availableAt, label: partnerLabel, ref: { type: 'order', id: o.id, label: `#${o.number}` } });
         } else {
           const days = area === 'shop' && o.items.every((i) => i.kind === 'digital') ? 1 : inspectionDays[area];
           // Held until delivery is confirmed or the inspection window ends — no fixed release date (D94).
           add.push({ id: uid('led'), at, kind: 'sale', amountNgn: net, state: 'held', label: `${label} · in escrow`, ref: { type: 'order', id: o.id, label: `#${o.number}` } });
           const fee = goal ? 0 : sellerEscrowFee(d, m.gross);
           if (fee) add.push({ id: uid('led'), at, kind: 'fee', amountNgn: -fee, state: 'held', label: `Escrow fee · #${o.number} · in escrow`, ref: { type: 'order', id: o.id } });
-          cases.push(newCase(o, goal ? 'goal' : 'order', net - fee, m.gross, days));
+          if (partnerOut > 0) add.push({ id: uid('led'), at, kind: 'partner_share', amountNgn: -partnerOut, state: 'held', label: `${partnerLabel} · in escrow`, ref: { type: 'order', id: o.id, label: `#${o.number}` } });
+          cases.push(newCase(o, goal ? 'goal' : 'order', net - fee - partnerOut, m.gross, days));
         }
       }
     }
@@ -195,6 +202,9 @@ function syncNewSales(d: MoneyData, orders: Order[]): MoneyData {
       if (!credit) continue; // paid direct to bank — the refund comes from the provider
       const state = credit.state === 'held' || credit.state === 'reserved' ? credit.state : 'available';
       add.push({ id: uid('led'), at: r.at, kind: 'refund', amountNgn: -r.amountNgn, state, availableAt: credit.availableAt, label: `Refund · order #${o.number}${state === 'held' ? ' · in escrow' : ''}`, ref: { type: 'order', id: o.id, label: `#${o.number}` } });
+      // Bundles: the partner's part of the refund comes back from their share, in proportion (D122).
+      const back = Math.round(r.amountNgn * partnerRatio(o));
+      if (back > 0) add.push({ id: uid('led'), at: r.at, kind: 'partner_share', amountNgn: back, state, availableAt: credit.availableAt, label: `Partner’s part of refund · #${o.number}`, ref: { type: 'order', id: o.id, label: `#${o.number}` } });
     }
   }
 

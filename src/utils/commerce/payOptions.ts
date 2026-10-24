@@ -57,10 +57,12 @@ export type OptionCheck = {ok: true;} | {ok: false;reason: string;hidden?: boole
 
 export function podCheck(
 data: CommerceData | null,
-ctx: {total: number;zoneId: string | null;zoneName?: string;onlyPhysical: boolean;balanceLater: number;dealRoom: boolean;phone: string;})
+ctx: {total: number;zoneId: string | null;zoneName?: string;onlyPhysical: boolean;balanceLater: number;dealRoom: boolean;phone: string;bundle?: boolean;})
 : OptionCheck {
   const o = payOptionsOf(data).pod;
   if (!o.enabled || !ctx.onlyPhysical || ctx.dealRoom || ctx.balanceLater > 0) return { ok: false, reason: '', hidden: true };
+  // Cash at the door can't be split between two businesses (D122).
+  if (ctx.bundle) return { ok: false, reason: 'Not for things sold with a partner — pay online so each business gets its share.' };
   if (!ctx.zoneId) return { ok: false, reason: 'Only for delivery — pay online for pickup.' };
   if (o.zoneIds && !o.zoneIds.includes(ctx.zoneId)) return { ok: false, reason: `Not offered for delivery to ${ctx.zoneName ?? 'this area'}.` };
   if (ctx.total > o.maxOrderNgn) return { ok: false, reason: `Only for orders up to ${formatNgn(o.maxOrderNgn)}.` };
@@ -119,6 +121,7 @@ ctx: {products: (Product | undefined)[];total: number;balanceLater: number;dealR
   if (!payOptionsOf(data).instalments.enabled || ctx.dealRoom || ctx.balanceLater > 0 || ctx.products.length === 0) return { ok: false, reason: '', hidden: true };
   const plans = ctx.products.map((p) => p && p.kind !== 'ticket' ? p.instalments : undefined);
   if (plans.every((p) => !p)) return { ok: false, reason: '', hidden: true };
+  if (ctx.products.some((p) => p?.bundle)) return { ok: false, reason: 'Not for things sold with a partner — pay online so each business gets its share.' };
   if (plans.some((p) => !p)) return { ok: false, reason: 'Only when everything in your cart can be paid in parts.' };
   if (ctx.total < INSTALMENT_MIN_NGN) return { ok: false, reason: `For orders of ${formatNgn(INSTALMENT_MIN_NGN)} or more.` };
   const list = plans as ProductInstalments[];

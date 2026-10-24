@@ -9,6 +9,7 @@ import { PlanLock } from '../../ui/PlanLock';
 import { UpgradeButton } from '../../ui/UpgradeButton';
 import { CampaignSettingsPanel } from './CampaignSettingsPanel';
 import { DealRoomSettingsPanel } from './DealRoomSettingsPanel';
+import { CoBrandSettingsPanel } from './CoBrandSettingsPanel';
 import { publicUrl } from '../../../utils/format';
 import { Switch } from '../../ui/Switch';
 import { usePlan } from '../../../contexts/PlanContext';
@@ -42,6 +43,7 @@ export function PageSettingsPanel() {
   return (
     <div className="flex flex-col gap-5">
       <CampaignSettingsPanel />
+      <CoBrandSettingsPanel />
       <DealRoomSettingsPanel />
       {multi &&
       <p className="rounded-md bg-sunken px-3 py-2.5 text-caption text-fg-muted">

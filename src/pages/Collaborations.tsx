@@ -22,8 +22,16 @@ import { InlineAlert } from '../components/ui/InlineAlert';
 import { SampleTag } from '../components/commerce/StatusBadges';
 import { PartnerEditor } from '../components/collabs/PartnerEditor';
 import { PartnerDetail } from '../components/collabs/PartnerDetail';
+import { Tabs } from '../components/ui/Tabs';
+import { useTeam } from '../contexts/TeamContext';
+import { emptyPartnerships, PARTNERSHIP_PLAN, partnershipKey, seedPartnerships, syncPartnerships } from '../utils/partnerships';
+import { WorkTogetherSheet } from '../components/partners/WorkTogetherSheet';
+import { PartnershipDetail } from '../components/partners/PartnershipDetail';
+import { BusinessPartners } from '../components/partners/BusinessPartners';
 
-/** Creator Collaboration (D103): partners share a tracked link and earn commission on real sales. */
+type CollabTab = 'business' | 'referral';
+
+/** Collaborations: business partners who sell with you (D120) and referral partners who earn commission (D103). */
 export function Collaborations() {
   const { current } = useWorkspace();
   const commerce = useCommerce();
@@ -37,11 +45,26 @@ export function Collaborations() {
   const { data, update } = useLocalStore(collabKey(current.id), emptyCollabs);
   const [editing, setEditing] = useState<Partner | 'new' | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
+  const [tab, setTab] = useState<CollabTab>('business');
+  const [working, setWorking] = useState(false);
+  const [openPns, setOpenPns] = useState<string | null>(null);
+  const team = useTeam();
+  const partnerships = useLocalStore(partnershipKey(current.id), emptyPartnerships);
 
   const orders = commerce.data.orders;
   useEffect(() => {
     if (!data.sampleSeeded) update((d) => seedCollabs(d, orders));
   }, [data.sampleSeeded, update, orders]);
+  useEffect(() => {
+    if (!partnerships.data.sampleSeeded) partnerships.update((d) => seedPartnerships(d));else
+    partnerships.update((d) => syncPartnerships(d));
+    // Seed once, then let notice periods run out.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [partnerships.data.sampleSeeded]);
+
+  const openPartnership = partnerships.data.partnerships.find((x) => x.id === openPns) ?? null;
+  const invitesWaiting = partnerships.data.partnerships.filter((x) => x.status === 'invited' || !!x.pending).length;
+  const startWorkTogether = () => unlocked ? setWorking(true) : openUpgrade({ plan: PARTNERSHIP_PLAN, feature: 'Working with another business' });
 
   const handle = editor.published?.handle ?? editor.site.handle;
   const linkFor = (p: Partner) => `https://${publicUrl(handle)}?partner=${p.code}`;
@@ -96,11 +119,17 @@ export function Collaborations() {
       <PageHeader
         title="Collaborations"
         context={current.name}
-        description="Creators and resellers share your link and earn a commission on what they sell. Every naira is worked out from real orders."
+        description={tab === 'business' ? 'Run a page and sell bundles with another business. Each of you is paid your own part, the moment the customer pays.' : 'Creators and resellers share your link and earn a commission on what they sell. Every naira is worked out from real orders.'}
         actions={
+        tab === 'business' ?
+        <Button leadingIcon={unlocked ? HandshakeIcon : LockIcon} disabled={!can.allowed} title={can.allowed ? undefined : can.reason} onClick={startWorkTogether}>
+              Work together
+            </Button> :
+
         <Button leadingIcon={unlocked ? UserPlusIcon : LockIcon} disabled={!can.allowed} title={can.allowed ? undefined : can.reason} onClick={() => unlocked ? setEditing('new') : openUpgrade({ plan: COLLAB_PLAN, feature: 'Creator Collaboration' })}>
-            Invite partner
-          </Button>
+              Invite referral partner
+            </Button>
+
         } />
       
 
@@ -115,10 +144,32 @@ export function Collaborations() {
             </Button>
         }>
         
-          The sample partners below show how it works. Inviting partners and paying commission need Pro.
+          The sample partners below show how it works. Working with another business, inviting partners and paying commission need Pro.
         </InlineAlert>
       }
 
+      <Tabs<CollabTab>
+        ariaLabel="Collaborations"
+        idPrefix="collab-tab"
+        className="mt-6"
+        value={tab}
+        onChange={setTab}
+        items={[
+        { id: 'business', label: 'Business partners', badge: invitesWaiting || undefined },
+        { id: 'referral', label: 'Referral partners' }]
+        } />
+      
+
+      {tab === 'business' ?
+      <BusinessPartners
+        rows={partnerships.data.partnerships}
+        leadName={current.name}
+        onOpen={setOpenPns}
+        onStart={startWorkTogether}
+        canStart={can.allowed} /> :
+
+
+      <>
       <section aria-label="Summary" className="mt-8 grid gap-6 border-b border-line pb-8 sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)]">
         <div>
           <p className="text-label text-fg-muted">Commission ready to pay</p>
@@ -142,16 +193,16 @@ export function Collaborations() {
           Partners
         </h2>
         {rows.length === 0 ?
-        <EmptyState icon={HandshakeIcon} title="No partners yet" description="Invite someone who already talks to your customers — a stylist, a creator or a reseller." /> :
+          <EmptyState icon={HandshakeIcon} title="No partners yet" description="Invite someone who already talks to your customers — a stylist, a creator or a reseller." /> :
 
-        <ul className="divide-y divide-line rounded-lg border border-line bg-raised">
+          <ul className="divide-y divide-line rounded-lg border border-line bg-raised">
             {rows.map(({ partner: p, totals }) =>
-          <li key={p.id}>
+            <li key={p.id}>
                 <button
-              type="button"
-              onClick={() => setOpenId(p.id)}
-              className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-2 px-4 py-3.5 text-left hover:bg-sunken focus-visible:bg-sunken focus-visible:outline-none sm:grid-cols-[minmax(0,1fr)_7rem_7rem_6rem]">
-              
+                type="button"
+                onClick={() => setOpenId(p.id)}
+                className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-2 px-4 py-3.5 text-left hover:bg-sunken focus-visible:bg-sunken focus-visible:outline-none sm:grid-cols-[minmax(0,1fr)_7rem_7rem_6rem]">
+                
                   <span className="min-w-0">
                     <span className="flex flex-wrap items-center gap-2">
                       <span className="text-label font-semibold text-fg">{p.name}</span>
@@ -176,11 +227,33 @@ export function Collaborations() {
                   </span>
                 </button>
               </li>
-          )}
+            )}
           </ul>
-        }
+          }
         <p className="text-caption text-fg-subtle">Commission becomes payable once an order is delivered, or 7 days after payment with no refund or dispute. Rates and the 7-day hold are example figures (D103).</p>
       </section>
+      </>
+      }
+
+      <WorkTogetherSheet
+        open={working}
+        onClose={() => setWorking(false)}
+        leadName={current.name}
+        takenHandles={partnerships.data.partnerships.filter((x) => x.status !== 'ended' && x.status !== 'declined' && x.partner.handle).map((x) => x.partner.handle as string)}
+        referralPartners={data.partners}
+        onCreate={(pn) => {
+          partnerships.update((d) => ({ ...d, partnerships: [pn, ...d.partnerships] }));
+          team.log('commerce', `invited ${pn.partner.name} to work together`, '/app/collaborations');
+        }} />
+      
+
+      <PartnershipDetail
+        partnership={openPartnership}
+        leadName={current.name}
+        canEdit={can.allowed && unlocked}
+        onClose={() => setOpenPns(null)}
+        onChange={(pn) => partnerships.update((d) => ({ ...d, partnerships: d.partnerships.map((x) => x.id === pn.id ? pn : x) }))} />
+      
 
       <PartnerEditor
         open={!!editing}

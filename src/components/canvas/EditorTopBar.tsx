@@ -34,6 +34,7 @@ import { PageSwitcher } from './PageSwitcher';
 import { SpaceSwitcher } from './SpaceSwitcher';
 import { ReviewBadge } from './ReviewStatus';
 import { PresenceAvatars } from './PresenceAvatars';
+import { CoBrandChip } from './CoBrandChip';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
 import { useCampaignPreview } from '../../contexts/CampaignPreviewContext';
 
@@ -87,6 +88,7 @@ export function EditorTopBar({ viewport, onViewportChange, onOpenVersions, onOpe
         {onManagePages && isMain && <PageSwitcher onManage={onManagePages} className="shrink-0" />}
         <PageStatusBadge />
         <ReviewBadge />
+        <CoBrandChip />
         <PresenceAvatars />
       </div>
 

@@ -81,6 +81,7 @@ export function SpacesList({ rows, onOpen, menuFor }: SpacesListProps) {
       <span className={cn('inline-flex items-center gap-1 text-caption font-medium', r.space.kind === 'main' ? 'text-fg-subtle' : 'text-action')}>
         <K.icon size={13} strokeWidth={2.25} aria-hidden />
         {K.label}
+        {r.doc?.coBrand && <span className="font-normal text-fg-muted">· with {r.doc.coBrand.partnerName}</span>}
       </span>);
 
   };

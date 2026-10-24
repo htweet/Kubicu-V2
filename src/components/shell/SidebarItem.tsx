@@ -2,7 +2,7 @@ import React from "react";
 import { NavLink } from "react-router-dom";
 import { SideTip } from "../../hooks/useSideTip";
 import { cn } from "../../utils/cn";
-import { BoxIcon } from "lucide-react";
+import { BoxIcon, ChevronDownIcon } from "lucide-react";
 interface SidebarItemProps {
   to: string;
   label: string;
@@ -48,6 +48,43 @@ export function SidebarItem({
         </>}
     </NavLink>;
 }
+/** Clickable section header that opens and closes its items (D117). */
+export function SidebarGroupToggle({
+  label,
+  open,
+  onToggle,
+  controls,
+  badge,
+  active
+
+
+
+
+
+
+
+
+}: {label: string;open: boolean;onToggle: () => void;controls: string;badge?: number; /** The current screen is inside this (closed) section. */active?: boolean;}) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-expanded={open}
+      aria-controls={controls}
+      className="group mb-0.5 flex h-8 w-full items-center gap-2 rounded-md px-2.5 text-left text-caption font-semibold text-fg-subtle transition-colors duration-150 hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+      
+      <span className="min-w-0 flex-1 truncate">{label}</span>
+      {!open && active && <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-action" />}
+      {!open && !!badge &&
+      <span className="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-action px-1 text-meta font-bold text-action-fg" aria-label={`${badge} waiting`}>
+          {badge}
+        </span>
+      }
+      <ChevronDownIcon size={14} strokeWidth={2.2} aria-hidden className={cn('shrink-0 transition-transform duration-200 ease-out', open ? 'rotate-0' : '-rotate-90')} />
+    </button>);
+
+}
+
 export function SidebarGroupLabel({
   children,
   collapsed

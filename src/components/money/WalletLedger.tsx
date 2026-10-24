@@ -24,7 +24,9 @@ const kindLabels: Record<LedgerKind, string> = {
   payout: 'Payout',
   payout_returned: 'Payout returned',
   commission: 'Commission',
-  topup: 'Top-up'
+  topup: 'Top-up',
+  purchase: 'Purchase',
+  partner_share: 'Partner share'
 };
 const stateLabels: Record<LedgerState, string> = { available: 'Available', pending: 'Settling', held: 'In escrow', reserved: 'Reserved' };
 const stateTones = { available: 'success', pending: 'neutral', held: 'info', reserved: 'warning' } as const;

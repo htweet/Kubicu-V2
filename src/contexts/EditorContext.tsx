@@ -22,6 +22,10 @@ import { campaignIssues } from '../utils/campaign';
 import type { WorkspacePlan } from '../types/plan';
 import { memberIssues } from '../utils/memberIssues';
 import { usePublicPassport } from '../hooks/usePublicPassport';
+import { useLocalStore } from '../hooks/useLocalStore';
+import { emptyPartnerships, partnershipKey } from '../utils/partnerships';
+import { coBrandIssues } from '../utils/coBrand';
+import { readPersistedPage } from '../utils/workspaceStorage';
 
 function nextPlanAbove(plan: WorkspacePlan): WorkspacePlan | undefined {
   return planOrder[planOrder.indexOf(plan) + 1];
@@ -42,6 +46,7 @@ export function EditorProvider({ children }: {children: React.ReactNode;}) {
   // Trust Passport badge checks (D111) need the live level and whether the app is on.
   const { passport, appOn: trustAppOn } = usePublicPassport(current.id, data.orders);
   const trustLevel = passport.level;
+  const partnerships = useLocalStore(partnershipKey(current.id), emptyPartnerships).data;
   const extra = useCallback(
     (doc: PageDocument) => [...catalogLinkIssues(doc, data, plan.id), ...opsLinkIssues(doc, ops, plan.id), ...formLinkIssues(doc, current.id)],
     [data, ops, plan.id, current.id]
@@ -76,6 +81,8 @@ export function EditorProvider({ children }: {children: React.ReactNode;}) {
       out.push(...intentIssues(doc));
       out.push(...memberIssues(doc, data, plan.id, { appOn: trustAppOn, level: trustLevel }));
       if (doc.campaign) out.push(...campaignIssues(doc.campaign, doc.blocks, data));
+      // Co-branded spaces (D121): partnership must be live and the partner must approve.
+      if (doc.coBrand) out.push(...coBrandIssues(doc, { hasLive: !!readPersistedPage(storageId)?.published, partnership: partnerships.partnerships.find((p) => p.id === doc.coBrand!.partnershipId), plan: plan.id }));
       if (doc.dealRoom) {
         out.push(...dealRoomIssues(doc.dealRoom, doc.blocks, data, roomOrders(data, doc.handle).length));
         // DealRooms take payment through checkout (D54).
@@ -84,7 +91,7 @@ export function EditorProvider({ children }: {children: React.ReactNode;}) {
       }
       return out;
     },
-    [plan.id, plan.name, isMain, spaceIndex, currentSpace.kind, data, trustAppOn, trustLevel]
+    [plan.id, plan.name, isMain, spaceIndex, currentSpace.kind, data, trustAppOn, trustLevel, partnerships, storageId]
   );
   const store = useEditorStore(storageId, taken, extra, siteLevel);
   return <EditorContext.Provider value={store}>{children}</EditorContext.Provider>;

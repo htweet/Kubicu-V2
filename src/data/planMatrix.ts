@@ -90,7 +90,9 @@ export const planMatrix: PlanFeatureGroup[] = [
   { label: 'Voice-to-Store — speak your products in', status: 'preview', values: from('creator') },
   { label: 'Creator Collaboration — partners and commissions', status: 'preview', values: from('pro') },
   { label: 'AI Business Coach', note: 'Uses AI credits', status: 'preview', values: from('creator') },
-  { label: 'Ordering prints from a partner print shop', status: 'planned', values: all(true) }]
+  { label: 'Ordering prints from a partner print shop', status: 'preview', values: all(true) },
+  { label: 'Co-branded spaces with a business partner', note: 'Needed by the business that sets it up', status: 'live', values: from('pro') },
+  { label: 'Partner bundles — sell with another business, split at payment', note: 'Split payments simulated until a payment partner is chosen', status: 'preview', values: from('pro') }]
 
 },
 {
@@ -98,9 +100,10 @@ export const planMatrix: PlanFeatureGroup[] = [
   rows: [
   { label: 'Team seats with roles and approvals', status: 'live', values: each(false, false, false, '5', '25', 'Custom') },
   { label: 'Assignments and activity log', status: 'live', values: from('business') },
+  { label: 'Team comments with @mentions and resolve', status: 'live', values: from('business') },
   { label: 'Client workspaces and handover', status: 'live', values: from('agency') },
   { label: 'Priority support', status: 'live', values: from('business') },
-  { label: 'Single sign-on (SSO)', status: 'planned', values: from('enterprise') }]
+  { label: 'Single sign-on (SSO)', status: 'preview', values: from('enterprise') }]
 
 }];
 

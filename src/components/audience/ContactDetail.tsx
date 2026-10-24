@@ -20,6 +20,7 @@ import { cn } from '../../utils/cn';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { useTeam } from '../../contexts/TeamContext';
 import { AssigneeChip, AssigneeSelect } from '../team/AssigneeSelect';
+import { CommentThread } from '../team/CommentThread';
 
 export function ConsentBadge({ consent }: {consent: Contact['consent'];}) {
   return <Badge tone={consent === 'subscribed' ? 'success' : consent === 'unsubscribed' ? 'danger' : 'neutral'}>{consentLabels[consent]}</Badge>;
@@ -252,6 +253,8 @@ export function ContactDetail({ contactId, onClose }: {contactId: string | null;
             </ol>
           </section>
           }
+
+          <CommentThread subject={`contact:${c.id}`} subjectLabel={c.name || c.email || c.phone || 'a contact'} href={`/app/audience?contact=${c.id}`} area="audience" className="border-t border-line pt-6" />
         </div>
       </Sheet>
 

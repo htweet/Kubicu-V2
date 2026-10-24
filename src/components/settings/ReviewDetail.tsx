@@ -13,6 +13,7 @@ import { Button } from '../ui/Button';
 import { TextArea } from '../ui/TextArea';
 import { InlineAlert } from '../ui/InlineAlert';
 import { PageMiniPreview } from '../overview/PageMiniPreview';
+import { CommentThread } from '../team/CommentThread';
 import { cn } from '../../utils/cn';
 
 const changeIcon = { added: PlusIcon, removed: MinusIcon, changed: PencilIcon };
@@ -166,8 +167,10 @@ export function ReviewDetail({ reviewId, onClose }: {reviewId: string | null;onC
         </section>
 
         {isPending && reviewer.allowed &&
-        <TextArea id="review-comment" label="Comment" optional={false} rows={3} value={comment} placeholder="Needed to request changes, e.g. “Use the new photo for the hero”" error={tried && !comment.trim() ? 'Say what needs changing.' : undefined} onChange={(e) => setComment(e.target.value)} />
+        <TextArea id="review-comment" label="Decision note" optional={false} rows={3} value={comment} placeholder="Needed to request changes, e.g. “Use the new photo for the hero”" error={tried && !comment.trim() ? 'Say what needs changing.' : undefined} onChange={(e) => setComment(e.target.value)} />
         }
+
+        <CommentThread subject={`review:${review.id}`} subjectLabel={`the ${review.spaceName} review`} href={`/app/settings/approvals?review=${review.id}`} area="pages" className="border-t border-line pt-6" />
       </div>
     </Sheet>);
 
