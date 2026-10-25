@@ -1,4 +1,4 @@
-import { BriefcaseIcon, CameraIcon, DownloadIcon, MusicIcon, PartyPopperIcon, ScissorsIcon, ShirtIcon, StoreIcon, UtensilsIcon, WrenchIcon } from 'lucide-react';
+import { BriefcaseIcon, CameraIcon, CompassIcon, DownloadIcon, GraduationCapIcon, HeartHandshakeIcon, HomeIcon, MapIcon, MicIcon, MusicIcon, PartyPopperIcon, ScissorsIcon, ShirtIcon, StoreIcon, UsersIcon, UtensilsIcon, WrenchIcon } from 'lucide-react';
 import type { BusinessKit, KitPart } from '../types/kit';
 
 export const kitPartLabels: Record<KitPart, {label: string;description: string;}> = {
@@ -246,8 +246,170 @@ export const businessKits: BusinessKit[] = [
   },
   recipes: ['lead', 'thanks'],
   apps: ['bookings', 'automations']
+},
+// D156 — kits for verticals the Elite library opened up. Each starts from a free page; the Elite template is an optional upgrade.
+{
+  id: 'podcast',
+  name: 'Podcast & media',
+  forWho: 'Podcasters, video show hosts and small media brands',
+  summary: 'An audience-first page, sponsor and guest enquiries, a newsletter and episode follow-ups.',
+  icon: MicIcon,
+  templateId: 'ife-sounds',
+  products: [],
+  services: [{ name: 'Sponsorship enquiry', description: 'Episode dates, audience and placement. We reply with availability.', durationMin: 30, location: 'online' }],
+  policies: {
+    refunds: 'Sponsorship fees are refundable if we cancel the episode. Once an episode is published with your message, fees aren’t refundable.',
+    delivery: 'Sponsor messages are read in the agreed episode and linked in the show notes.',
+    cancellation: 'Sponsors can move their slot up to [14] days before recording.',
+    guides: 'Pitching a guest? Tell us who they are and what they’d talk about for an hour.',
+    disclaimer: 'Guests share their own views, not the show’s.'
+  },
+  recipes: ['lead'],
+  apps: ['automations']
+},
+{
+  id: 'real-estate',
+  name: 'Real estate',
+  forWho: 'Agents, property consultants and small property businesses',
+  summary: 'A listings page, viewing appointments, clear inspection and fee wording, and enquiry follow-ups.',
+  icon: HomeIcon,
+  templateId: 'bello-and-co',
+  products: [],
+  services: [{ name: 'Property viewing', description: 'Say which areas you cover and how viewings are arranged.', durationMin: 60, location: 'customer' }],
+  policies: {
+    refunds: 'Inspection fees, where charged, are [refundable / not refundable]. Agency fees are only due after an agreement is signed.',
+    delivery: 'Viewings are arranged by appointment. Documents are shared after a viewing, on request.',
+    cancellation: 'Please give [24] hours’ notice to cancel a viewing.',
+    guides: 'Tell us your area, budget, size and move-in date so we can shortlist homes.',
+    disclaimer: 'Listings are subject to availability. Always verify title documents before paying anything.',
+    cancelHours: 24
+  },
+  recipes: ['lead', 'reminder'],
+  apps: ['bookings', 'automations']
+},
+{
+  id: 'courses',
+  name: 'Courses & tutoring',
+  forWho: 'Tutors, educators and course creators',
+  summary: 'A learning page with free resources kept apart from paid courses, class bookings and enrolment follow-ups.',
+  icon: GraduationCapIcon,
+  templateId: 'kemi-presets',
+  products: [{ name: 'Course (rename me)', description: 'What students learn, how long it takes and what’s included.', kind: 'digital' }],
+  services: [{ name: 'Tutoring session (rename me)', description: 'Subject, level and whether it’s online or in person.', durationMin: 60, location: 'online' }],
+  policies: {
+    refunds: 'Full refund within [7] days if you haven’t started the course. Live classes already attended aren’t refundable.',
+    delivery: 'Course access is sent by email straight after payment.',
+    cancellation: 'Reschedule a tutoring session free up to [24] hours before.',
+    guides: 'Not sure which course? Take the free placement check first.',
+    disclaimer: 'Exam results depend on each student’s work. We don’t guarantee grades.',
+    cancelHours: 24
+  },
+  recipes: ['thanks', 'reminder'],
+  apps: ['bookings', 'automations']
+},
+{
+  id: 'coaching',
+  name: 'Coaching',
+  forWho: 'Business and life coaches, mentors and trainers',
+  summary: 'A discovery-call page, starter sessions, honest no-guarantee wording and call reminders.',
+  icon: CompassIcon,
+  templateId: 'bello-and-co',
+  products: [],
+  services: [
+  { name: 'Discovery call', description: 'A free call to see if coaching is right for you.', durationMin: 30, location: 'online' },
+  { name: 'Coaching session (rename me)', description: 'What you cover and what the client leaves with.', durationMin: 60, location: 'online' }],
+
+  policies: {
+    refunds: 'Programmes can be cancelled within [7] days for a refund of unused sessions.',
+    delivery: 'Sessions are held by video unless agreed otherwise.',
+    cancellation: 'Reschedule free up to [24] hours before a session. Later changes count as a used session.',
+    guides: 'Before your first session, write down the one thing you most want to change.',
+    disclaimer: 'Coaching isn’t therapy, legal or financial advice, and results aren’t guaranteed.',
+    cancelHours: 24
+  },
+  recipes: ['reminder', 'lead'],
+  apps: ['bookings', 'automations']
+},
+{
+  id: 'travel',
+  name: 'Travel & experiences',
+  forWho: 'Tour operators, guides and experience providers',
+  summary: 'A trips page, trip enquiries, deposit and weather wording, and pre-trip reminders.',
+  icon: MapIcon,
+  templateId: 'afrobeats-brunch',
+  products: [{ name: 'Trip (rename me)', description: 'Dates, group size, what’s included and what isn’t.' }],
+  services: [{ name: 'Private trip planning call', description: 'Talk through dates, group size and interests.', durationMin: 30, location: 'online' }],
+  policies: {
+    refunds: 'Deposits are refundable up to [21] days before departure. After that, they can be moved to another date.',
+    delivery: 'Joining instructions are sent [7] days before the trip.',
+    cancellation: 'If we cancel for weather or safety, you choose a full refund or a new date.',
+    instructions: 'Bring comfortable shoes, a rain jacket and your ID.',
+    disclaimer: 'Activities carry some physical risk. Tell us about health conditions before booking.'
+  },
+  recipes: ['thanks', 'reminder'],
+  apps: ['automations']
+},
+{
+  id: 'community',
+  name: 'Community & membership',
+  forWho: 'Clubs, communities, networks and membership projects',
+  summary: 'A join page, membership tiers, meetup sign-ups and welcome follow-ups — with no invented member counts.',
+  icon: UsersIcon,
+  templateId: 'afrobeats-brunch',
+  products: [],
+  services: [],
+  policies: {
+    refunds: 'Monthly memberships can be cancelled any time and stop at the end of the month. No refunds for part months.',
+    delivery: 'New members are added to the group within [3] days.',
+    cancellation: 'Cancel your membership from the link in your welcome email.',
+    guides: 'Read the community guidelines before your first meetup.',
+    disclaimer: 'Members share their own views. We remove anyone who breaks the guidelines.'
+  },
+  recipes: ['thanks', 'lead'],
+  apps: ['automations']
+},
+{
+  id: 'nonprofit',
+  name: 'Nonprofit & impact',
+  forWho: 'Charities, campaigns, social enterprises and community initiatives',
+  summary: 'A mission page, volunteer sign-ups, clear support-payment wording and thank-yous.',
+  icon: HeartHandshakeIcon,
+  templateId: 'ikeja-food-bank',
+  products: [],
+  services: [],
+  policies: {
+    refunds: 'Support payments made by mistake can be refunded within [14] days — contact us.',
+    delivery: 'You’ll get an email receipt for every payment.',
+    cancellation: 'Regular supporters can stop at any time.',
+    guides: 'Want to volunteer? Tell us where you live and when you’re free.',
+    disclaimer: 'Payments are support payments, not tax-deductible donations, unless we tell you we’re registered to issue receipts.'
+  },
+  recipes: ['thanks'],
+  apps: ['automations']
 }];
 
+
+/** "Upgrade the look" (D156): the Elite template that best matches each kit. The kit's free page stays the default. */
+const eliteUpgrade: Record<string, string> = {
+  fashion: 'elite-boutique',
+  beauty: 'elite-beauty',
+  food: 'elite-food',
+  'home-services': 'elite-booking-hub',
+  events: 'elite-event',
+  photography: 'elite-photographer',
+  'digital-creator': 'elite-digital',
+  retail: 'elite-boutique',
+  consulting: 'elite-freelance',
+  music: 'elite-music-artist',
+  podcast: 'elite-podcast',
+  'real-estate': 'elite-real-estate',
+  courses: 'elite-educator',
+  coaching: 'elite-coach',
+  travel: 'elite-travel',
+  community: 'elite-community',
+  nonprofit: 'elite-nonprofit'
+};
+for (const k of businessKits) k.eliteTemplateId = eliteUpgrade[k.id];
 
 export const kitById = (id: string) => businessKits.find((k) => k.id === id);
 

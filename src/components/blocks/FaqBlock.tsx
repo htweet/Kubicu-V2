@@ -3,9 +3,12 @@ import { ChevronDownIcon } from 'lucide-react';
 import type { BlockProps } from './blockProps';
 import { cardStyle, fontsFor, mix } from './pageStyle';
 
-export function FaqBlock({ block, theme }: BlockProps<'faq'>) {
+/** Questions without an answer only show in the canvas; visitors never see a blank or "coming soon" answer. */
+export function FaqBlock({ block, theme, mode }: BlockProps<'faq'>) {
   const { title, items } = block.content;
-  const filled = items.filter((i) => i.question.trim());
+  const live = mode === 'live';
+  const filled = items.filter((i) => i.question.trim() && (!live || i.answer.trim()));
+  if (live && filled.length === 0) return null;
   return (
     <section className="flex flex-col gap-3">
       {title &&
@@ -20,25 +23,13 @@ export function FaqBlock({ block, theme }: BlockProps<'faq'>) {
           </p> :
 
         filled.map((item, i) =>
-        <details
-          key={item.id}
-          className="kb-faq group"
-          style={i > 0 ? { borderTop: `1px solid ${mix(theme.text, 8)}` } : undefined}>
-          
-              <summary
-            className="flex min-h-[52px] cursor-pointer items-center justify-between gap-3 px-4 py-3 text-[14.5px] font-medium"
-            style={{ color: theme.text }}>
-            
+        <details key={item.id} className="kb-faq group" style={i > 0 ? { borderTop: `1px solid ${mix(theme.text, 8)}` } : undefined}>
+              <summary className="flex min-h-[52px] cursor-pointer items-center justify-between gap-3 px-4 py-3 text-[14.5px] font-medium" style={{ color: theme.text }}>
                 {item.question}
-                <ChevronDownIcon
-              size={16}
-              className="shrink-0 transition-transform duration-200 ease-out group-open:rotate-180"
-              style={{ color: theme.mutedText }}
-              aria-hidden />
-            
+                <ChevronDownIcon size={16} className="shrink-0 transition-transform duration-200 ease-out group-open:rotate-180" style={{ color: theme.mutedText }} aria-hidden />
               </summary>
-              <p className="px-4 pb-4 text-[14px] leading-relaxed" style={{ color: theme.mutedText }}>
-                {item.answer || 'Answer coming soon.'}
+              <p className="px-4 pb-4 text-[14px] leading-relaxed" style={{ color: theme.mutedText, fontStyle: item.answer.trim() ? undefined : 'italic' }}>
+                {item.answer.trim() || 'No answer yet — visitors won’t see this question until you add one.'}
               </p>
             </details>
         )

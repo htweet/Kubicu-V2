@@ -86,7 +86,7 @@ export function DataGallery() {
           state={chartState}
           onRetry={() => setChartState('ready')}
           summary={`${total} taps this week. Busiest day was ${peak.label} with ${peak.value}.`}
-          footnote={<p className="text-caption text-fg-subtle">Illustrative data. Real analytics arrive in Batch 5 with clear metric definitions.</p>} />
+          footnote={<p className="text-caption text-fg-subtle">Illustrative data for this gallery. Real charts in Analytics show their date range, definition and how many visits they’re based on.</p>} />
         
         <div className="flex flex-col gap-2">
           <DsLabel>Chart states</DsLabel>

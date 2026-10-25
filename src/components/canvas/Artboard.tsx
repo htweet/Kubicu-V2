@@ -25,6 +25,7 @@ import { DealRoomPanel } from '../dealroom/DealRoomPanel';
 import { SourcePreviewBar } from './SourcePreviewBar';
 import { showsForSource } from '../../utils/intentflow';
 import { allBlocks } from '../../utils/sitePages';
+import { pageContentWidth } from '../../utils/pageLayout';
 
 export const viewportWidths: Record<Viewport, number> = {
   phone: 390,
@@ -83,8 +84,11 @@ export function Artboard({ viewport = 'phone', framed = true, touch = false, onE
   <CampaignPhaseBar campaign={campaign} phase={phase} onChange={preview.setPhase} hiddenCount={draft.blocks.length - blocks.length} className={framed ? 'mx-auto mb-4 w-full' : 'mx-3 mb-3 mt-3'} /> :
   null;
 
+  // Layout sections (D153): every block lays out its own width; columns keep today's reading width.
+  const columnPx = pageContentWidth(state.site);
   const page =
   <PageSurface
+    fluid
     theme={draft.theme}
     className={cn(framed ? 'min-h-[720px]' : 'min-h-full')}
     columnClassName={touch ? 'pb-28' : undefined}
@@ -99,7 +103,7 @@ export function Artboard({ viewport = 'phone', framed = true, touch = false, onE
     }>
     
       {draft.blocks.length === 0 ?
-    <div className="mx-auto my-16 flex max-w-xs flex-col items-center text-center" onClick={(e) => e.stopPropagation()}>
+    <div className="mx-auto my-16 flex max-w-xs flex-col items-center px-5 text-center" onClick={(e) => e.stopPropagation()}>
           <span className="flex h-12 w-12 items-center justify-center rounded-full bg-black/5" style={{ color: draft.theme.mutedText }}>
             <SparklesIcon size={20} aria-hidden />
           </span>
@@ -120,7 +124,7 @@ export function Artboard({ viewport = 'phone', framed = true, touch = false, onE
 
     <Reorder.Group axis="y" values={ids} onReorder={onReorder} as="div" className="flex flex-col">
           {state.site.dealRoom && !state.activePageId &&
-      <div className="mb-4" onClick={(e) => e.stopPropagation()}>
+      <div className="mx-auto mb-4 w-full px-5" style={{ maxWidth: columnPx }} onClick={(e) => e.stopPropagation()}>
               <DealRoomPanel room={state.site.dealRoom} handle={state.site.handle} theme={draft.theme} mode="edit" />
               <p className="mt-1.5 text-center text-[12px]" style={{ color: draft.theme.mutedText }}>
                 Room offer · edit it in Page settings
@@ -128,12 +132,12 @@ export function Artboard({ viewport = 'phone', framed = true, touch = false, onE
             </div>
       }
           {blocks.length === 0 && source && !phase &&
-      <p className="mx-auto my-12 max-w-xs text-center text-[14px]" style={{ color: draft.theme.mutedText }}>
+      <p className="mx-auto my-12 max-w-xs px-5 text-center text-[14px]" style={{ color: draft.theme.mutedText }}>
               Visitors from this source would see nothing on this page. Remove a rule so every visitor sees at least one block.
             </p>
       }
           {blocks.length === 0 && phase &&
-      <p className="mx-auto my-12 max-w-xs text-center text-[14px]" style={{ color: draft.theme.mutedText }}>
+      <p className="mx-auto my-12 max-w-xs px-5 text-center text-[14px]" style={{ color: draft.theme.mutedText }}>
               Nothing shows in the {phaseLabels[phase]} phase yet. Select a block and tick “{phaseLabels[phase]}” under Visibility, or add a new one.
             </p>
       }
@@ -142,6 +146,8 @@ export function Artboard({ viewport = 'phone', framed = true, touch = false, onE
         key={block.id}
         block={block}
         theme={draft.theme}
+        columnPx={columnPx}
+        pairedWithPrevious={!!blocks[i - 1]?.layout.pair}
         groupName={findGroup(draft, block.groupId)?.name}
         groupActive={!!block.groupId && block.groupId === activeGroupId}
         groupEdge={{
@@ -190,7 +196,8 @@ export function Artboard({ viewport = 'phone', framed = true, touch = false, onE
         {sourceBar && <div style={{ maxWidth: Math.max(width, 560) }} className="w-full">{sourceBar}</div>}
         <div
           className={cn(
-            'relative h-fit w-full overflow-hidden border border-line-strong shadow-3 transition-[max-width] duration-300 ease-out',
+            // A size container (D158): display type scales to the chosen device width, not the browser window.
+            'relative h-fit w-full overflow-hidden border border-line-strong shadow-3 transition-[max-width] duration-300 ease-out [container-type:inline-size]',
             isPhone ? 'rounded-[32px]' : viewport === 'tablet' ? 'rounded-[20px]' : 'rounded-[12px]'
           )}
           style={{ maxWidth: width }}

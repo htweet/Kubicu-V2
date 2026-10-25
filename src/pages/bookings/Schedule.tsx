@@ -17,11 +17,15 @@ import { cn } from '../../utils/cn';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { useTeam } from '../../contexts/TeamContext';
 import { AssigneeChip, MineToggle } from '../../components/team/AssigneeSelect';
+import { fieldControlClass } from '../../components/ui/Field';
+import { isAway } from '../../utils/ops/staff';
+import { useT } from '../../contexts/LocaleContext';
 
 type View = 'upcoming' | 'past' | 'week';
 
 export function Schedule() {
   const { data, loadSample } = useOps();
+  const { t: tr } = useT();
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const [view, setView] = useState<View>('upcoming');
@@ -34,8 +38,13 @@ export function Schedule() {
   // “Mine”: bookings assigned to the signed-in member (D60).
   const { me } = useTeam();
   const [mine, setMine] = useState(false);
+  // Person filter when the business books per person (D140).
+  const staff = (data.availability.staff ?? []).filter((s) => s.bookable || data.bookings.some((b) => b.assigneeId === s.memberId));
+  const [person, setPerson] = useState<string>('all');
   const mineCount = data.bookings.filter((b) => b.assigneeId === me.id && b.status !== 'cancelled' && Date.parse(b.end) >= Date.now()).length;
-  const sorted = useMemo(() => [...data.bookings].filter((b) => !mine || b.assigneeId === me.id).sort((a, b) => Date.parse(a.start) - Date.parse(b.start)), [data.bookings, mine, me.id]);
+  const visible = useMemo(() => data.bookings.filter((b) => (!mine || b.assigneeId === me.id) && (person === 'all' || (person === 'none' ? !b.assigneeId : b.assigneeId === person))), [data.bookings, mine, me.id, person]);
+  const sorted = useMemo(() => [...visible].sort((a, b) => Date.parse(a.start) - Date.parse(b.start)), [visible]);
+  const awayOn = (k: string) => (data.availability.staff ?? []).filter((s) => (person === 'all' || person === s.memberId) && isAway(s, k)).map((s) => ({ id: s.memberId, name: s.name.split(' ')[0] }));
   const upcoming = sorted.filter((b) => Date.parse(b.end) >= Date.now() && b.status !== 'cancelled');
   const past = sorted.filter((b) => Date.parse(b.end) < Date.now() || b.status === 'cancelled').reverse();
 
@@ -98,7 +107,7 @@ export function Schedule() {
               <AssigneeChip memberId={b.assigneeId} />
             </span>
           }
-          <Badge tone={bookingStatusCopy[b.status].tone}>{bookingStatusCopy[b.status].label}</Badge>
+          <Badge tone={bookingStatusCopy[b.status].tone}>{tr(bookingStatusCopy[b.status].label)}</Badge>
         </button>
       </li>);
 
@@ -116,7 +125,7 @@ export function Schedule() {
     <>
       <PageHeader
         title="Schedule"
-        description={`${upcoming.length} upcoming · times in ${tz}`}
+        description={tr('{n} upcoming · times in {tz}', { n: upcoming.length, tz })}
         actions={
         <Button variant="secondary" leadingIcon={PlusIcon} onClick={() => navigate('/app/bookings/services?new=1')}>
             Add service
@@ -127,6 +136,20 @@ export function Schedule() {
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
         <MineToggle mine={mine} count={mineCount} onChange={setMine} />
+        {staff.length > 0 &&
+          <label className="flex items-center gap-2 text-label text-fg-muted">
+            <span className="sr-only sm:not-sr-only">{tr('Person')}</span>
+            <select value={person} onChange={(e) => setPerson(e.target.value)} className={cn(fieldControlClass, 'h-9 w-auto pr-8 text-label')}>
+              <option value="all">{tr('Everyone')}</option>
+              {staff.map((s) =>
+              <option key={s.memberId} value={s.memberId}>
+                  {s.name}
+                </option>
+              )}
+              <option value="none">{tr('Not assigned')}</option>
+            </select>
+          </label>
+          }
         <Segmented<View>
             ariaLabel="View"
             value={view}
@@ -154,15 +177,16 @@ export function Schedule() {
       (() => {
         const selectedKey = dayKey && weekDays.includes(dayKey) ? dayKey : weekDays.includes(todayKey) ? todayKey : weekDays[0];
         const hours = hoursFor(selectedKey, data.availability);
-        const items = data.bookings.
+        const items = visible.
         filter((b) => b.status !== 'cancelled' && dateKeyInTz(Date.parse(b.start), tz) === selectedKey).
         sort((a, b) => Date.parse(a.start) - Date.parse(b.start));
+        const away = awayOn(selectedKey);
         return (
           <div className="mt-4">
-              <ul role="tablist" aria-label="Day" className="scroll-quiet -mx-5 flex gap-2 overflow-x-auto px-5 pb-1">
+              <ul role="tablist" aria-label={tr('Day')} className="scroll-quiet -mx-5 flex gap-2 overflow-x-auto px-5 pb-1">
                 {weekDays.map((k) => {
                 const on = k === selectedKey;
-                const count = data.bookings.filter((b) => b.status !== 'cancelled' && dateKeyInTz(Date.parse(b.start), tz) === k).length;
+                const count = visible.filter((b) => b.status !== 'cancelled' && dateKeyInTz(Date.parse(b.start), tz) === k).length;
                 const noon = zonedToUtc(k, '12:00', tz);
                 const dow = formatInTz(noon, tz, { weekday: 'short' });
                 return (
@@ -179,7 +203,7 @@ export function Schedule() {
                       
                         <span className={cn('text-meta font-semibold uppercase', on ? 'text-action-fg' : k === todayKey ? 'text-action' : 'text-fg-subtle')}>{dow}</span>
                         <span className="text-label font-semibold tabular-nums">{Number(k.slice(-2))}</span>
-                        <span aria-label={`${count} bookings`} className={cn('h-1.5 w-1.5 rounded-full', count ? on ? 'bg-action-fg' : 'bg-action' : 'bg-transparent')} />
+                        <span aria-label={tr(count === 1 ? '{n} booking' : '{n} bookings', { n: count })} className={cn('h-1.5 w-1.5 rounded-full', count ? on ? 'bg-action-fg' : 'bg-action' : 'bg-transparent')} />
                       </button>
                     </li>);
 
@@ -187,10 +211,11 @@ export function Schedule() {
               </ul>
               <div role="tabpanel" className="mt-4 rounded-lg border border-line bg-raised">
                 <p className="border-b border-line px-4 py-3 text-caption text-fg-muted">
-                  <span className="font-semibold text-fg">{dayLabel(zonedToUtc(selectedKey, '12:00', tz), tz)}</span> · {hours ? `Open ${hours.open}–${hours.close}` : 'Closed'}
+                  <span className="font-semibold text-fg">{dayLabel(zonedToUtc(selectedKey, '12:00', tz), tz)}</span> · {hours ? tr('Open {from}–{to}', { from: hours.open, to: hours.close }) : tr('Closed')}
+                  {away.length > 0 && <> · {tr('Away: {names}', { names: away.map((x) => x.name).join(', ') })}</>}
                 </p>
                 {items.length === 0 ?
-              <p className="px-4 py-8 text-center text-label text-fg-muted">{hours ? 'Nothing booked yet.' : 'You’re closed this day.'}</p> :
+              <p className="px-4 py-8 text-center text-label text-fg-muted">{tr(hours ? 'Nothing booked yet.' : 'You’re closed this day.')}</p> :
 
               <ul className="divide-y divide-line">{items.map(row)}</ul>
               }
@@ -217,8 +242,9 @@ export function Schedule() {
             {weekDays.map((k) => {
             const hours = hoursFor(k, data.availability);
             const dayStart = zonedToUtc(k, `${String(HOUR_START).padStart(2, '0')}:00`, tz);
-            const items = data.bookings.filter((b) => b.status !== 'cancelled' && dateKeyInTz(Date.parse(b.start), tz) === k);
+            const items = visible.filter((b) => b.status !== 'cancelled' && dateKeyInTz(Date.parse(b.start), tz) === k);
             const top = (ms: number) => (ms - dayStart) / 3600000 * PX_PER_HOUR;
+            const away = awayOn(k);
             return (
               <div key={k} className="relative border-l border-line" style={{ height: (HOUR_END - HOUR_START) * PX_PER_HOUR }}>
                   {Array.from({ length: HOUR_END - HOUR_START }).map((_, i) =>
@@ -227,7 +253,13 @@ export function Schedule() {
                   {hours ?
                 <span aria-hidden className="absolute inset-x-0 bg-action-soft/40" style={{ top: Math.max(0, top(zonedToUtc(k, hours.open, tz))), height: Math.max(0, top(zonedToUtc(k, hours.close, tz)) - Math.max(0, top(zonedToUtc(k, hours.open, tz)))) }} /> :
 
-                <span className="absolute inset-x-0 top-2 text-center text-caption text-fg-subtle">Closed</span>
+                <span className="absolute inset-x-0 top-2 text-center text-caption text-fg-subtle">{tr('Closed')}</span>
+                }
+                  {/* Time off (D140): a grey "Away" strip across the day. */}
+                  {away.length > 0 &&
+                <span className="absolute inset-x-1 bottom-1 top-1 z-0 rounded-sm border border-dashed border-line-strong bg-sunken/70 px-1.5 py-1">
+                      <span className="block truncate text-meta font-medium text-fg-muted">{tr('Away · {names}', { names: away.map((x) => x.name).join(', ') })}</span>
+                    </span>
                 }
                   {/* Busy times from connected calendars (D137): grey, owner-only titles. */}
                   {busy.
@@ -235,7 +267,7 @@ export function Schedule() {
                 map((e) =>
                 <span key={e.id} className="absolute inset-x-1 overflow-hidden rounded-sm border border-line bg-sunken px-1.5 py-1 text-left" style={{ top: Math.max(0, top(Date.parse(e.start))), height: Math.max(20, top(Date.parse(e.end)) - Math.max(0, top(Date.parse(e.start)))) }}>
                         <span className="block truncate text-meta font-medium text-fg-muted">{e.title}</span>
-                        <span className="block truncate text-meta text-fg-subtle">Busy · {e.source}</span>
+                        <span className="block truncate text-meta text-fg-subtle">{tr('Busy · {source}', { source: e.source })}</span>
                       </span>
                 )}
                   {items.map((b) =>
@@ -258,7 +290,7 @@ export function Schedule() {
 
       <div className="mt-4 rounded-lg border border-line bg-raised">
           {(view === 'upcoming' ? upcoming : past).length === 0 ?
-        <p className="px-6 py-10 text-center text-label text-fg-muted">{view === 'upcoming' ? 'No upcoming bookings. Share your page to get some.' : 'Nothing here yet.'}</p> :
+        <p className="px-6 py-10 text-center text-label text-fg-muted">{tr(view === 'upcoming' ? 'No upcoming bookings. Share your page to get some.' : 'Nothing here yet.')}</p> :
 
         <ul className="divide-y divide-line">{(view === 'upcoming' ? upcoming : past).map(row)}</ul>
         }

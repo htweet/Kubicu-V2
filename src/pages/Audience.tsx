@@ -28,11 +28,13 @@ import { Stat, StatGroup } from '../components/ui/layout/Stat';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import { useTeam } from '../contexts/TeamContext';
 import { AssigneeChip, MineToggle } from '../components/team/AssigneeSelect';
+import { useT } from '../contexts/LocaleContext';
 
 type View = 'list' | 'pipeline';
 
 export function Audience() {
   const { data, apply, applySystem, loadSample } = useOps();
+  const { t: tr } = useT();
   const commerce = useCommerce().data;
   const [params, setParams] = useSearchParams();
   const [view, setView] = useState<View>('list');
@@ -63,6 +65,11 @@ export function Audience() {
   const subscribed = data.contacts.filter((c) => c.consent === 'subscribed').length;
   const openTasks = data.contacts.reduce((s, c) => s + c.tasks.filter((t) => !t.done).length, 0);
 
+  const followUps = (c: Contact) => {
+    const n = c.tasks.filter((t) => !t.done).length;
+    return tr(n === 1 ? '{n} follow-up' : '{n} follow-ups', { n });
+  };
+
   const exportCsv = () =>
   downloadCsv(
     `kubicu-contacts-${new Date().toISOString().slice(0, 10)}.csv`,
@@ -83,7 +90,7 @@ export function Audience() {
     render: (c) =>
     <button type="button" onClick={() => setParams({ contact: c.id })} className={cn('group text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus', c.consent === 'unsubscribed' && 'opacity-60')}>
           <span className="flex items-center gap-2">
-            <span className="font-semibold text-fg group-hover:underline">{c.name || '(no name)'}</span>
+            <span className="font-semibold text-fg group-hover:underline">{c.name || tr('(no name)')}</span>
             {c.sample && <SampleTag />}
           </span>
           <span className="block text-caption text-fg-subtle">{[c.email, c.phone].filter(Boolean).join(' · ')}</span>
@@ -91,9 +98,9 @@ export function Audience() {
 
   },
   { key: 'consent', header: 'Consent', render: (c) => <ConsentBadge consent={c.consent} /> },
-  { key: 'source', header: 'Came from', hideOnMobile: true, render: (c) => <span className="text-fg-muted">{c.sources.map((s) => sourceLabels[s]).join(', ')}</span> },
+  { key: 'source', header: 'Came from', hideOnMobile: true, render: (c) => <span className="text-fg-muted">{c.sources.map((s) => tr(sourceLabels[s])).join(', ')}</span> },
   { key: 'tags', header: 'Tags', hideOnMobile: true, render: (c) => <span className="text-fg-muted">{c.tags.join(', ') || '—'}</span> },
-  { key: 'stage', header: 'Stage', hideOnMobile: true, sortValue: (c) => c.stage, render: (c) => <span className="text-fg-muted">{stageLabels[c.stage]}</span> },
+  { key: 'stage', header: 'Stage', hideOnMobile: true, sortValue: (c) => c.stage, render: (c) => <span className="text-fg-muted">{tr(stageLabels[c.stage])}</span> },
   { key: 'owner', header: 'Looked after by', hideOnMobile: true, render: (c) => <AssigneeChip memberId={c.assigneeId} /> },
   { key: 'last', header: 'Last activity', align: 'right', sortValue: (c) => Date.parse(c.activity[0]?.at ?? c.createdAt), render: (c) => <span className="text-fg-muted">{formatRelative(c.activity[0]?.at ?? c.createdAt)}</span> }];
 
@@ -141,12 +148,12 @@ export function Audience() {
           <div className="mt-8 flex flex-col gap-4 border-b border-line pb-6 md:flex-row md:items-end md:justify-between">
             <StatGroup columns={3} className="flex-1 items-end">
               <Stat primary label="Contacts" value={data.contacts.length} />
-              <Stat label="Can receive marketing" value={subscribed} hint={data.contacts.length ? `${Math.round(subscribed / data.contacts.length * 100)}% of contacts` : undefined} />
+              <Stat label="Can receive marketing" value={subscribed} hint={data.contacts.length ? tr('{n}% of contacts', { n: Math.round(subscribed / data.contacts.length * 100) }) : undefined} />
               <Stat label="Open follow-ups" value={openTasks} />
             </StatGroup>
             {dupes > 0 &&
           <Button size="sm" variant="secondary" leadingIcon={CopyIcon} className="self-start md:self-end" onClick={() => setDialog('dupes')}>
-                Review {dupes} possible duplicate{dupes === 1 ? '' : 's'}
+                {tr(dupes === 1 ? 'Review {n} possible duplicate' : 'Review {n} possible duplicates', { n: dupes })}
               </Button>
           }
           </div>
@@ -158,10 +165,10 @@ export function Audience() {
             </div>
             <div className="grid grid-cols-2 gap-3 md:flex">
               <div className="md:w-44">
-                <SelectInput id="aud-src" label="Came from" value={source} onChange={setSource} options={[{ value: 'all', label: 'Anywhere' }, ...(Object.keys(sourceLabels) as ContactSource[]).map((s) => ({ value: s, label: sourceLabels[s] }))]} />
+                <SelectInput id="aud-src" label="Came from" value={source} onChange={setSource} options={[{ value: 'all', label: tr('Anywhere') }, ...(Object.keys(sourceLabels) as ContactSource[]).map((s) => ({ value: s, label: tr(sourceLabels[s]) }))]} />
               </div>
               <div className="md:w-48">
-                <SelectInput id="aud-con" label="Consent" value={consent} onChange={setConsent} options={[{ value: 'all', label: 'Any' }, ...(Object.keys(consentLabels) as ConsentStatus[]).map((s) => ({ value: s, label: consentLabels[s] }))]} />
+                <SelectInput id="aud-con" label="Consent" value={consent} onChange={setConsent} options={[{ value: 'all', label: tr('Any') }, ...(Object.keys(consentLabels) as ConsentStatus[]).map((s) => ({ value: s, label: tr(consentLabels[s]) }))]} />
               </div>
             </div>
           </div>
@@ -173,7 +180,7 @@ export function Audience() {
         !wide ?
         // Phones: one stage at a time, switched with tabs that show each stage's count.
         <div className="mt-4">
-              <div role="tablist" aria-label="Stage" className="scroll-quiet -mx-5 flex gap-2 overflow-x-auto px-5 pb-1">
+              <div role="tablist" aria-label={tr('Stage')} className="scroll-quiet -mx-5 flex gap-2 overflow-x-auto px-5 pb-1">
                 {(Object.keys(stageLabels) as ContactStage[]).map((stage) => {
               const on = stage === stageTab;
               const n = rows.filter((c) => c.stage === stage).length;
@@ -189,12 +196,12 @@ export function Audience() {
                     on ? 'border-action bg-action-soft text-action' : 'border-line bg-raised text-fg-muted'
                   )}>
                   
-                      {stageLabels[stage]} <span className="tabular-nums opacity-70">{n}</span>
+                      {tr(stageLabels[stage])} <span className="tabular-nums opacity-70">{n}</span>
                     </button>);
 
             })}
               </div>
-              <ul role="tabpanel" aria-label={stageLabels[stageTab]} className="mt-3 divide-y divide-line overflow-hidden rounded-md border border-line bg-raised">
+              <ul role="tabpanel" aria-label={tr(stageLabels[stageTab])} className="mt-3 divide-y divide-line overflow-hidden rounded-md border border-line bg-raised">
                 {rows.
             filter((c) => c.stage === stageTab).
             map((c) =>
@@ -206,12 +213,12 @@ export function Audience() {
                         </span>
                         <span className="flex shrink-0 flex-col items-end gap-1">
                           <ConsentBadge consent={c.consent} />
-                          {c.tasks.some((t) => !t.done) && <span className="text-caption font-semibold text-action">{c.tasks.filter((t) => !t.done).length} follow-up</span>}
+                          {c.tasks.some((t) => !t.done) && <span className="text-caption font-semibold text-action">{followUps(c)}</span>}
                         </span>
                       </button>
                     </li>
             )}
-                {rows.every((c) => c.stage !== stageTab) && <li className="px-4 py-8 text-center text-label text-fg-muted">No one at this stage.</li>}
+                {rows.every((c) => c.stage !== stageTab) && <li className="px-4 py-8 text-center text-label text-fg-muted">{tr('No one at this stage.')}</li>}
               </ul>
             </div> :
 
@@ -219,9 +226,9 @@ export function Audience() {
               {(Object.keys(stageLabels) as ContactStage[]).map((stage) => {
             const list = rows.filter((c) => c.stage === stage);
             return (
-              <section key={stage} aria-label={stageLabels[stage]} className="flex flex-col rounded-lg border border-line bg-sunken p-3">
+              <section key={stage} aria-label={tr(stageLabels[stage])} className="flex flex-col rounded-lg border border-line bg-sunken p-3">
                     <h2 className="flex items-baseline justify-between px-1 text-label font-semibold text-fg">
-                      {stageLabels[stage]} <span className="tabular-nums text-fg-subtle">{list.length}</span>
+                      {tr(stageLabels[stage])} <span className="tabular-nums text-fg-subtle">{list.length}</span>
                     </h2>
                     <ul className="mt-3 flex flex-col gap-2">
                       {list.map((c) =>
@@ -229,18 +236,18 @@ export function Audience() {
                           <button type="button" onClick={() => setParams({ contact: c.id })} className="w-full rounded-md border border-line bg-raised p-3 text-left shadow-1 transition-colors duration-150 hover:border-line-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
                             <span className="block truncate text-label font-semibold text-fg">{c.name || c.email}</span>
                             <span className="block truncate text-caption text-fg-subtle">{c.activity[0]?.label}</span>
-                            {c.tasks.some((t) => !t.done) && <span className="mt-1.5 inline-block text-caption font-semibold text-action">{c.tasks.filter((t) => !t.done).length} follow-up</span>}
+                            {c.tasks.some((t) => !t.done) && <span className="mt-1.5 inline-block text-caption font-semibold text-action">{followUps(c)}</span>}
                           </button>
                         </li>
                   )}
-                      {list.length === 0 && <li className="px-1 text-caption text-fg-subtle">No one here.</li>}
+                      {list.length === 0 && <li className="px-1 text-caption text-fg-subtle">{tr('No one here.')}</li>}
                     </ul>
                   </section>);
 
           })}
             </div>
         }
-          <p className="mt-4 text-caption text-fg-subtle">Unsubscribed contacts are greyed and excluded from every marketing message and automation. Buying or booking isn’t marketing consent.</p>
+          <p className="mt-4 text-caption text-fg-subtle">{tr('Unsubscribed contacts are greyed and excluded from every marketing message and automation. Buying or booking isn’t marketing consent.')}</p>
         </>
       }
 
@@ -263,7 +270,7 @@ export function Audience() {
               setTried(true);
               if (Object.values(addErrors).some(Boolean)) return;
               if (apply((d) => upsertContact(d, newContact, 'manual', 'Added by you'))) {
-                toast('Contact added');
+                toast(tr('Contact added'));
                 setNewContact({ name: '', email: '', phone: '' });
                 setTried(false);
                 setDialog(null);

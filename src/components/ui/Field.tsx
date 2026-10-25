@@ -30,7 +30,7 @@ export function Field({ id, label, hint, error, optional, trailing, className, c
       </div>
       {children}
       {error ?
-      <p id={`${id}-error`} className="flex items-start gap-1.5 text-caption text-danger">
+      <p id={`${id}-error`} role="alert" className="flex items-start gap-1.5 text-caption text-danger">
           <AlertCircleIcon size={13} className="mt-px shrink-0" aria-hidden />
           {error}
         </p> :

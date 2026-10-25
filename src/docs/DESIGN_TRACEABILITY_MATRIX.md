@@ -20,8 +20,8 @@ Prototype status: ✅ interactive · 🟡 partial · ⏳ planned placeholder · 
 | MB-5.1 | Mobile-native editor (full-screen preview, FAB, bottom sheets, touch handles, list reorder) | P0 / MVP | Owner | E-11 | MobileEditor | sheets | ✅ | MVP-D · needs observed tests |
 | MB-5.2 | Block fields: id, type, schemaVersion, content, style, layout, behaviour, visibility, accessibility, dataBindings | P0 | — | — | `types/page.ts` | — | 🟡 | dataBindings arrive with Commerce/Bookings |
 | IB-C / MB-5.3 | MVP blocks (profile…newsletter) | P0 | Owner | E-03, G-01 | `components/blocks/*` | empty, invalid, live | ✅ | MVP-D (16 blocks, D8) · map/location → Batch 3 |
-| IB-C | P1 blocks (grid, gallery, countdown, pricing, testimonial, ticket, download, calendar…) | P1 | Owner | E-03 | components/blocks/* | live, locked, linked | ✅ | 27 blocks incl. event tickets, subscription; Form block arrives with Forms add-on (D79) |
-| IB-C | Embed allowlist & CSP | P0 | — | Video block | getYouTubeId | unsupported link | 🟡 | YouTube only (D9); CSP is engineering |
+| IB-C | P1 blocks (grid, gallery, countdown, pricing, testimonial, ticket, download, calendar…) | P1 | Owner | E-03 | components/blocks/* | live, locked, linked | ✅ | Blocks incl. event tickets, subscription, Form (with the Forms add-on, D79), audio, playlist, collection, support (D124), Video & embed for 11 sites (D142) |
+| IB-C | Embed allowlist & CSP | P0 | — | Video & embed block | parseEmbed (utils/embeds) | refused link with reason | ✅ | 11-site safe list, sandboxed frames (D142); CSP headers are engineering |
 | IB-D / MB-5.5 | Templates by goal; theme tokens; contrast preview; save theme | P0 | Owner | E-05, E-07 | ThemePanel | presets/custom/saved, pass/low | ✅ | Saved themes (D27) |
 | IB-D | Motion respects reduced motion | P0 | Visitor | All | `index.css` | — | ✅ | MVP-D |
 | MB-5.4 | Validation: empty URLs, alt text, contrast, form setup, missing price, payment config, domain setup | P0 | Owner | E-06, E-09 | `utils/validation.ts` | error blocks / warning allows | 🟡 | Payment & domain checks arrive with those modules |

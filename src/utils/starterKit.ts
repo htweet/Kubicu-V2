@@ -50,6 +50,13 @@ function scrubBlock(block: Block, phone: string): Block {
     return { ...block, content: { quote: '', name: '', role: '', source: '', avatarUrl: '', avatarAlt: '', permission: false } };
   }
   if (block.type === 'social') return { ...block, content: { items: block.content.items.map((i) => ({ ...i, url: '' })) } };
+  // Layout & showcase blocks (D153): keep photos and structure; drop the example's links, figures and listings data.
+  if (block.type === 'hero') {
+    const keep = (u: string) => u.startsWith('#') ? u : '';
+    return { ...block, content: { ...block.content, primaryUrl: keep(block.content.primaryUrl), secondaryUrl: keep(block.content.secondaryUrl), meta: '' } };
+  }
+  if (block.type === 'figures') return { ...block, content: { ...block.content, confirmed: false } };
+  if (block.type === 'listings') return { ...block, content: { ...block.content, items: block.content.items.map((i) => ({ ...i, url: '', price: '', example: true })) } };
   return { ...block, content: scrub(block.content, false, phone) } as Block;
 }
 
@@ -65,6 +72,7 @@ export function prepareStarter(example: PageDocument, identity: StarterIdentity 
 
   const blocks = base.blocks.map((raw) => {
     let block = scrubBlock(raw, phone);
+    if (block.type === 'hero' && block.content.variant === 'portrait' && identity.name?.trim()) block = { ...block, content: { ...block.content, title: identity.name.trim() } };
     if (block.type === 'profile') {
       block = {
         ...block,
@@ -91,6 +99,7 @@ export function prepareStarter(example: PageDocument, identity: StarterIdentity 
       ...base,
       blocks,
       groups: [],
+      layout: base.layout ? { ...base.layout, actionBar: base.layout.actionBar ? { ...base.layout.actionBar, url: '', enabled: !!base.layout.actionBar.blockId && base.layout.actionBar.enabled } : base.layout.actionBar } : undefined,
       title: identity.name?.trim() || base.title,
       seo: { title: identity.name?.trim() || base.title, description: identity.tagline?.trim() ?? '' }
     },

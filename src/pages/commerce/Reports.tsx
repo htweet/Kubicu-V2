@@ -18,13 +18,16 @@ import { useWorkspace } from '../../contexts/WorkspaceContext';
 import { useMoney } from '../../hooks/useMoney';
 import { downloadCsv, toCsv } from '../../utils/csv';
 import { formatNgn, formatTimestamp } from '../../utils/format';
+import { useT } from '../../contexts/LocaleContext';
 
 type Period = '7' | '30' | '90' | 'all';
 
 /** Sales and fee report. Only orders where payment was confirmed count. */
 export function Reports() {
   const { data } = useCommerce();
+  const { t: tr } = useT();
   const { current } = useWorkspace();
+  const ordersN = (n: number, one: string, many: string) => tr(n === 1 ? one : many, { n });
   const money = useMoney(current.id).data;
   const [period, setPeriod] = useState<Period>('30');
 
@@ -138,9 +141,9 @@ export function Reports() {
       <Segmented<Period> ariaLabel="Period" value={period} onChange={setPeriod} options={[{ value: '7', label: '7 days' }, { value: '30', label: '30 days' }, { value: '90', label: '90 days' }, { value: 'all', label: 'All time' }]} />
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-        <Card id="net" emphasis="primary" title="You receive" description={`From ${orders.length} paid order${orders.length === 1 ? '' : 's'} · test mode`} footer={
+        <Card id="net" emphasis="primary" title="You receive" description={ordersN(orders.length, 'From {n} paid order · test mode', 'From {n} paid orders · test mode')} footer={
           <p className="flex items-center gap-1.5 text-caption text-fg-subtle">
-            Provider rate is illustrative <IllustrativeTag note="Provider 1.5% + ₦100 (waived under ₦2,500, capped ₦2,000) until a payment partner is chosen. KUBICU fees are confirmed (D105)." />
+            {tr('Provider rate is illustrative')} <IllustrativeTag note="Provider 1.5% + ₦100 (waived under ₦2,500, capped ₦2,000) until a payment partner is chosen. KUBICU fees are confirmed (D105)." />
           </p>
           }>
           <p className="text-[2.5rem] font-semibold leading-none tracking-[-0.03em] tabular-nums text-fg">{formatNgn(totals.net)}</p>
@@ -149,7 +152,7 @@ export function Reports() {
                 const sub = label.startsWith('of') || label.startsWith('after');
                 return (
                   <div key={label} className="flex items-baseline justify-between gap-3 py-2.5">
-                  <dt className={sub ? 'pl-3 text-caption text-fg-subtle' : 'text-label text-fg-muted'}>{label}</dt>
+                  <dt className={sub ? 'pl-3 text-caption text-fg-subtle' : 'text-label text-fg-muted'}>{tr(label)}</dt>
                   <dd className={sub ? 'text-caption tabular-nums text-fg-muted' : 'text-label tabular-nums text-fg'}>{value < 0 ? `−${formatNgn(-value)}` : formatNgn(value)}</dd>
                 </div>);
 
@@ -161,7 +164,7 @@ export function Reports() {
           {(data.subscriptions ?? []).length > 0 &&
             <Card id="recurring" title="Recurring revenue" description="Product box renewals also count as orders. Memberships are subscription payments only.">
               <StatGroup columns={2}>
-                <Stat label="Monthly recurring" value={<>{formatNgn(mrr(data))}<span className="text-label font-normal text-fg-muted"> /mo</span></>} />
+                <Stat label="Monthly recurring" value={<>{formatNgn(mrr(data))}<span className="text-label font-normal text-fg-muted"> {tr('/mo')}</span></>} />
                 <Stat label="Taken this period" value={formatNgn(subPaid)} />
               </StatGroup>
             </Card>
@@ -169,7 +172,7 @@ export function Reports() {
           {staged.any &&
             <Card id="staged" title="Staged payments" description="Made-to-order balances and payment links paid in stages. Owed is money not yet collected — it isn’t in “You receive”.">
               <StatGroup columns={3}>
-                <Stat label="Still owed" value={formatNgn(staged.owed)} hint={`${staged.owedCount} order${staged.owedCount === 1 ? '' : 's'} waiting`} />
+                <Stat label="Still owed" value={formatNgn(staged.owed)} hint={ordersN(staged.owedCount, '{n} order waiting', '{n} orders waiting')} />
                 <Stat label="Balances collected" value={formatNgn(staged.collected)} hint="This period" />
                 <Stat label="Link stages paid" value={formatNgn(staged.linkStages)} hint="This period" />
               </StatGroup>
@@ -178,15 +181,15 @@ export function Reports() {
           {payWays.any &&
             <Card id="pay-ways" title="Pay on delivery and instalments" description="Cash and door transfers went to you directly. Money still to come isn’t in “You receive”.">
               <StatGroup columns={3}>
-                <Stat label="Collected on delivery" value={formatNgn(payWays.collected)} hint={`${payWays.collectedCount} order${payWays.collectedCount === 1 ? '' : 's'} this period${payWays.refused ? ` · ${payWays.refused} refused` : ''}`} />
-                <Stat label="Out for collection" value={formatNgn(payWays.awaiting)} hint={`${payWays.awaitingCount} order${payWays.awaitingCount === 1 ? '' : 's'} not yet paid`} />
-                <Stat label="Owed in instalments" value={formatNgn(payWays.owed)} hint={`${payWays.owedCount} order${payWays.owedCount === 1 ? '' : 's'}${payWays.defaulted ? ` · ${payWays.defaulted} defaulted` : ''}`} />
+                <Stat label="Collected on delivery" value={formatNgn(payWays.collected)} hint={ordersN(payWays.collectedCount, '{n} order this period', '{n} orders this period') + (payWays.refused ? ` · ${tr('{n} refused', { n: payWays.refused })}` : '')} />
+                <Stat label="Out for collection" value={formatNgn(payWays.awaiting)} hint={ordersN(payWays.awaitingCount, '{n} order not yet paid', '{n} orders not yet paid')} />
+                <Stat label="Owed in instalments" value={formatNgn(payWays.owed)} hint={ordersN(payWays.owedCount, '{n} order', '{n} orders') + (payWays.defaulted ? ` · ${tr('{n} defaulted', { n: payWays.defaulted })}` : '')} />
               </StatGroup>
             </Card>
             }
           <Card id="top" title="Best sellers" description="By revenue, refunded orders excluded">
           {topProducts.length === 0 ?
-              <p className="text-label text-fg-muted">No sales in this period.</p> :
+              <p className="text-label text-fg-muted">{tr('No sales in this period.')}</p> :
 
               <ol className="flex flex-col gap-4">
               {topProducts.map((p, i) => {
@@ -199,7 +202,7 @@ export function Reports() {
                         {p.name}
                       </span>
                       <span className="shrink-0 tabular-nums text-fg">
-                        {formatNgn(p.revenue)} <span className="text-fg-subtle">· {p.qty} sold</span>
+                        {formatNgn(p.revenue)} <span className="text-fg-subtle">· {tr('{n} sold', { n: p.qty })}</span>
                       </span>
                     </div>
                     <div aria-hidden className="mt-1.5 h-1.5 rounded-full bg-sunken">

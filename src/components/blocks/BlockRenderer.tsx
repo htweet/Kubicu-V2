@@ -35,6 +35,13 @@ import { AudioBlock } from './AudioBlock';
 import { PlaylistBlock } from './PlaylistBlock';
 import { CollectionBlock } from './CollectionBlock';
 import { SupportBlock } from './SupportBlock';
+import { HeroBlock } from './HeroBlock';
+import { FeatureGridBlock } from './FeatureGridBlock';
+import { StepsBlock } from './StepsBlock';
+import { LogoStripBlock } from './LogoStripBlock';
+import { FiguresBlock } from './FiguresBlock';
+import { MediaListBlock } from './MediaListBlock';
+import { ListingsBlock } from './ListingsBlock';
 
 interface BlockRendererProps {
   block: Block;
@@ -114,6 +121,20 @@ export function BlockRenderer({ block, theme, mode }: BlockRendererProps) {
       return <CollectionBlock block={block} theme={theme} mode={mode} />;
     case 'support':
       return <SupportBlock block={block} theme={theme} mode={mode} />;
+    case 'hero':
+      return <HeroBlock block={block} theme={theme} mode={mode} />;
+    case 'featureGrid':
+      return <FeatureGridBlock block={block} theme={theme} mode={mode} />;
+    case 'steps':
+      return <StepsBlock block={block} theme={theme} mode={mode} />;
+    case 'logoStrip':
+      return <LogoStripBlock block={block} theme={theme} mode={mode} />;
+    case 'figures':
+      return <FiguresBlock block={block} theme={theme} mode={mode} />;
+    case 'mediaList':
+      return <MediaListBlock block={block} theme={theme} mode={mode} />;
+    case 'listings':
+      return <ListingsBlock block={block} theme={theme} mode={mode} />;
     default:
       return null;
   }

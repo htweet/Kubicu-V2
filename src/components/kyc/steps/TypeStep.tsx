@@ -4,15 +4,17 @@ import type { EntityType } from '../../../types/kyc';
 import { entityInfo } from '../../../utils/money/kyc';
 import type { KycStepProps } from '../stepProps';
 import { cn } from '../../../utils/cn';
+import { useT } from '../../../contexts/LocaleContext';
 
 const icons: Record<EntityType, typeof UserIcon> = { individual: UserIcon, business_name: BriefcaseIcon, company: Building2Icon };
 
 /** Step 1: who is getting paid. Decides which checks apply (KYC vs KYB). */
 export function TypeStep({ k, set, errors, disabled }: KycStepProps) {
+  const { t: tr } = useT();
   const choose = (entity: EntityType) => set((c) => ({ ...c, entity, people: entity === 'individual' ? [] : c.people }));
   return (
     <fieldset aria-describedby={errors.entity ? 'kyc-entity-error' : undefined}>
-      <legend className="sr-only">How is your business set up?</legend>
+      <legend className="sr-only">{tr('How is your business set up?')}</legend>
       <div className="grid gap-3 md:grid-cols-3">
         {(Object.keys(entityInfo) as EntityType[]).map((id) => {
           const info = entityInfo[id];
@@ -34,13 +36,13 @@ export function TypeStep({ k, set, errors, disabled }: KycStepProps) {
                 </span>
                 {on && <CheckIcon size={18} className="text-action" aria-hidden />}
               </span>
-              <span className="mt-3 text-label font-semibold text-fg">{info.label}</span>
-              <span className="mt-1 text-caption text-fg-muted">{info.blurb}</span>
-              <span className="mt-3 border-t border-line pt-3 text-caption text-fg-subtle">You’ll need</span>
+              <span className="mt-3 text-label font-semibold text-fg">{tr(info.label)}</span>
+              <span className="mt-1 text-caption text-fg-muted">{tr(info.blurb)}</span>
+              <span className="mt-3 border-t border-line pt-3 text-caption text-fg-subtle">{tr('You’ll need')}</span>
               <ul className="mt-1.5 flex flex-col gap-1">
                 {info.needs.map((n) =>
                 <li key={n} className="text-caption text-fg-muted">
-                    · {n}
+                    · {tr(n)}
                   </li>
                 )}
               </ul>
@@ -50,10 +52,10 @@ export function TypeStep({ k, set, errors, disabled }: KycStepProps) {
       </div>
       {errors.entity &&
       <p id="kyc-entity-error" className="mt-2 text-caption font-medium text-danger">
-          {errors.entity}
+          {tr(errors.entity)}
         </p>
       }
-      <p className="mt-4 text-caption text-fg-subtle">Not sure? If you have a CAC certificate, choose the type printed on it. Registered businesses get higher payout limits.</p>
+      <p className="mt-4 text-caption text-fg-subtle">{tr('Not sure? If you have a CAC certificate, choose the type printed on it. Registered businesses get higher payout limits.')}</p>
     </fieldset>);
 
 }

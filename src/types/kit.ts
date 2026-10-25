@@ -38,8 +38,10 @@ export interface BusinessKit {
   forWho: string;
   summary: string;
   icon: LucideIcon;
-  /** Example page used as the page starter. */
+  /** Example page used as the page starter (always free). */
   templateId: string;
+  /** Optional paid Elite template offered as "Upgrade the look" (D156). The free starter stays the default. */
+  eliteTemplateId?: string;
   products: KitProduct[];
   services: KitService[];
   policies: KitPolicies;

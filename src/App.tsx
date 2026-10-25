@@ -71,7 +71,6 @@ import { ResetPassword } from './pages/auth/ResetPassword';
 import { VerifyEmail } from './pages/auth/VerifyEmail';
 import { Overview } from './pages/Overview';
 import { Spaces } from './pages/Spaces';
-import { PlannedModule } from './pages/PlannedModule';
 import { CanvasPage } from './pages/CanvasPage';
 import { CanvasRedirect } from './pages/CanvasRedirect';
 import { LegacyRedirect } from './pages/LegacyRedirect';
@@ -234,7 +233,7 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
                 <Route path="account/:tab" element={<Account />} />
                 <Route path="settings" element={<Settings />} />
                 <Route path="settings/:tab" element={<Settings />} />
-                <Route path=":module" element={<PlannedModule />} />
+                <Route path="*" element={<NotFound embedded />} />
               </Route>
               <Route path="/app/canvas/:pageId" element={<CanvasPage />} />
 

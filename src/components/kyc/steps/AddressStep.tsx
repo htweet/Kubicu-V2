@@ -5,9 +5,11 @@ import type { KycStepProps } from '../stepProps';
 import { TextInput } from '../../ui/TextInput';
 import { SelectInput } from '../../ui/SelectInput';
 import { DocUpload } from '../DocUpload';
+import { useT } from '../../../contexts/LocaleContext';
 
 /** Where the applicant lives or trades, with a recent proof of address. */
 export function AddressStep({ k, set, errors, disabled }: KycStepProps) {
+  const { t: tr } = useT();
   const a = k.address;
   const setA = (patch: Partial<KycAddress>) => set((c) => ({ ...c, address: { ...c.address, ...patch } }));
   const business = k.entity !== 'individual';
@@ -24,7 +26,7 @@ export function AddressStep({ k, set, errors, disabled }: KycStepProps) {
           label="Proof of address"
           value={a.proofType}
           onChange={(proofType) => setA({ proofType })}
-          options={(Object.keys(proofLabels) as KycAddress['proofType'][]).map((v) => ({ value: v, label: proofLabels[v] }))}
+          options={(Object.keys(proofLabels) as KycAddress['proofType'][]).map((v) => ({ value: v, label: tr(proofLabels[v]) }))}
           disabled={disabled}
           hint="It must show the same name and address as above." />
         

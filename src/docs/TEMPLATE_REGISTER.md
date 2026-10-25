@@ -1,0 +1,52 @@
+# KUBICU — Elite Template Register
+
+_Elite Template Library (D153 layout sections, D154 collection). Every template is a complete fictional sample page built from real blocks; prices are example figures (test mode), paid once per workspace, and were cut by one third and rounded to whole naira in D158. Using a template keeps layout, theme and photos and removes the sample business's links, prices, figures, listings, quotes and contact details (`utils/starterKit.ts`)._
+
+| # | Name | Audience | Main goal | Structural concept | Signature decision | Main blocks | Phone notes | Depends on | Price |
+|---|---|---|---|---|---|---|---|---|---|
+| 01 | Signature Creator (Tomi Ade) | Creators, influencers, personal brands | Grow audience | Identity first, ranked links | One featured link above three quieter ones; latest video beside a note | Hero (portrait), Link ×4, Image + Text pair, Social, Newsletter (tint) | Narrow width; pair stacks image first; sticky "Get the Sunday note" bar | — | ₦2,667 |
+| 02 | Editorial Creator (The Lagos Letter) | Writers, commentators | Subscribe | Reads like a magazine | Masthead nameplate; lead story photo beside its standfirst (3:2) | Hero (masthead), Image + Text pair, Media list (chapters), Text, Newsletter (inverted) | Narrow reading width; pair stacks photo first | Articles hosted elsewhere | ₦3,333 |
+| 03 | Creator Media Kit (Ife Cooks) | Creators working with brands | Brand enquiry | One-page media kit | Figures marked "Example figures" until confirmed; partner strip needs permission | Hero (split), Figures, Feature grid ×3, Logo strip (tint), Gallery, Lead form | Grids flow to one column | — | ₦5,000 |
+| 08 | Music Artist (Kemi Strings) | Singers, bands, DJs | Listen / book | Cinematic, dark | Edge-to-edge release cover with a solid scrim; inverted booking section | Hero (cover, full), Media list (tracks + stream links), Image + Text pair, Event, Lead form (inverted) | Cover crops to 4:5 | Ticket sales need Commerce → Events | ₦4,000 |
+| 09 | Podcast & Media (Naija Founders Show) | Podcasters, show hosts | Listen / sponsor | Show first, then episodes | Featured episode as a tinted 2:3 pair; sponsor and guest options as a 2-up grid | Hero (split), Image + Text pair (tint), Media list (episodes + listen-on), Feature grid ×2, Newsletter | Sticky "Listen to the latest" bar | Episodes hosted elsewhere | ₦4,000 |
+| 10 | Video Creator (Dami Explains) | YouTubers, educators | Watch / collab | Video first | Wide featured video; series as a 3-column grid; recent uploads with 16:9 thumbnails | Hero (masthead), Image (wide), Feature grid ×3, Media list (videos + community), Lead form (tint) | Thumbnails keep 16:9 | Real playback needs a Video & embed block | ₦3,333 |
+
+| 04 | Freelance Conversion Studio (Ngozi Eze) | Independent designers, developers, consultants | Discovery call | Value → services → proof → process | Fixed-scope services with starting prices; four-step process; one attributed (sample) quote | Hero (split), Feature grid ×3, Portfolio, Steps, Testimonial, Lead form (tint) | Sticky "Book a call" bar | — | ₦5,333 |
+| 05 | Creative Agency (Studio Ọ̀ṣun) | Small agencies and studios | Project brief | Compact agency site, dark | Masthead then an edge-to-edge project image; team photo beside studio story | Hero (masthead), Image (full), Portfolio, Feature grid ×4 (tint), Image + Text pair, Logo strip, Lead form (inverted) | Wide page width; 4-column grid → 2 → 1 | Client strip needs permission | ₦8,000 |
+| 06 | Design Portfolio (Seun Bakare) | UI/UX and product designers | Get in touch | Image-led case-study rows | Large project rows: image beside text (3:2) | Hero (masthead), 2× Image + Text pair, Feature grid ×3 (tint), Lead form | Each row stacks image first | — | ₦4,333 |
+| 07 | Photographer's Gallery (Adéọlá Lens) | Wedding, portrait, commercial photographers | Booking enquiry | Photographs lead, minimal chrome | Full-bleed cover; a full-bleed landscape as a pause between gallery and sessions | Hero (cover, full), Gallery, Image (full), Feature grid ×3, Lead form (tint) | Sticky "Check my dates" bar | — | ₦6,000 |
+| 11 | Fashion & Style Editorial (Zara Okon) | Stylists, models, fashion creators | Brand enquiry | Asymmetric editorial | Poster opening; tall look beside a manifesto (3:2); affiliate disclosure on picks | Hero (poster), Image + Text pair, Feature grid ×4 (tint), Gallery (carousel), Social, Lead form (inverted) | Carousel swipes; buttons still work without drag | Affiliate links labelled | ₦4,667 |
+| 19 | Author & Knowledge Expert (Dr Olúmídé Ajayi) | Authors, speakers, researchers | Subscribe / speaking | Typographic, calm | Portrait split hero followed by a tinted product hero for the book | Hero (split), Hero (product, tint), Media list (chapters), Feature grid ×3, Newsletter, Lead form (inverted) | Narrow reading width | Direct book sales need Commerce | ₦3,667 |
+
+| 12 | Beauty Professional (Glow by Temi) | Makeup artists, stylists, salons | Booking | Route to booking is obvious | Priced services up top; three booking steps; hours and service area | Hero (split), Feature grid ×3, Gallery, Steps (tint), Booking, Location, FAQ | Sticky "Book now" bar | Bookings module for on-page booking | ₦4,667 |
+| 13 | Food & Hospitality (Ẹwà Kitchen) | Restaurants, chefs, caterers | Order | Appetising and practical, dark | Full-bleed food cover; menu with ordering pause; catering pair | Hero (cover, full), Menu, Image + Text pair (tint), Location, WhatsApp | Sticky "Order now" bar jumps to menu | Paid ordering needs Commerce | ₦5,333 |
+| 14 | Boutique Storefront (Kánú Leather) | Independent retail | Shop | Product-led editorial shop | Product hero with price line; maker story pair; buying terms as a grid | Hero (product), Product grid, Image + Text pair, Feature grid ×3 (tint), FAQ | Grid → 2 columns → 1 | Checkout needs Commerce; else WhatsApp | ₦6,667 |
+| 15 | Digital Product Atelier (The Naira Planner) | Digital product sellers | Buy | Product → contents → bundles | Four-column "What's inside"; highlighted middle bundle; free sample before buying | Hero (product), Feature grid ×4, Image + Text pair (tint), Pricing, Download, FAQ | Bundles stack, highlighted first | Secure delivery needs Commerce → Digital | ₦5,000 |
+| 16 | Coach & Consultant (Funmi Adebayo) | Coaches, mentors, advisors | Discovery call | Audience → problems → programmes | "Sound familiar?" problem grid; no outcome promises; inverted booking | Hero (split), Feature grid ×3, Pricing (tint), Steps, Testimonial, Booking (inverted) | Sticky "Book a free call" bar | — | ₦6,000 |
+| 17 | Service Booking Hub (Restore Physio) | Clinics, studios, providers | Booking | Calm, dependable, no imagery needed | Bookable services as a tight list with duration and price | Hero (masthead), Booking ×3, Steps (tint), Location, FAQ | Sticky "Book an appointment" bar | Bookings module for time picking | ₦5,667 |
+
+| 18 | Event & Ticket Experience (Build Lagos 2026) | Conferences, workshops, launches | Get tickets | Poster → countdown → tickets → agenda | Poster hero with date/venue line; agenda as a timeline; access FAQ | Hero (poster), Countdown, Event (tiers), Steps (tint), Feature grid ×3, FAQ | Sticky "Get tickets" bar | Seat-limited QR tickets need Commerce → Events | ₦6,333 |
+| 20 | Educator & Course Creator (Maths with Bola) | Tutors, course creators | Enrol | Learning-first | Free resources and paid courses in separate, labelled sections | Hero (split), Feature grid ×3 (Free), Pricing (tint), Media list (videos), Steps, Lead form (inverted) | Free first, then paid | Paid courses via Commerce → Digital | ₦4,667 |
+| 21 | Real Estate & Property (Ada Okonkwo Properties) | Agents, property consultants | Viewing request | Property-first, wide | Every listing labelled "Example listing" until edited; interior beside agent profile | Hero (cover, full), Listings, Image + Text pair (tint), Steps, Lead form (inverted) | Wide page; listings → 1 column | — | ₦8,000 |
+| 22 | Travel & Experience (Cross River Wild) | Tour operators, travel creators | Trip enquiry | A sense of place | Full-bleed landscape; day-by-day itinerary; free packing guide | Hero (cover, full), Listings, Steps (tint), Image + Text pair, Download, Lead form (inverted) | Itinerary reads top to bottom | — | ₦6,000 |
+| 23 | Community & Membership (SheBuilds NG) | Communities, clubs, networks | Join | Purpose → activities → membership | No member counts or testimonials; free tier beside paid | Hero (split), Feature grid ×3, Pricing (tint), Event, Media list (chapters), Lead form (inverted) | — | Recurring billing via Subscriptions | ₦5,000 |
+| 24 | Nonprofit & Impact (Books for Kaduna) | Charities, campaigns, social enterprises | Support / volunteer | Mission-first, human-centred | Impact figures labelled until confirmed; support-payment wording; trust details | Hero (cover, full), Text + Image pair, Feature grid ×3 (tint), Figures, Feature grid ×3, Lead form (inverted), Contact, FAQ | Mission text before photo on phones | Never publish unverified registration or outcomes | ₦4,000 |
+
+## Artwork collection (D158)
+
+Classic single-column pages (profile, links, text, forms, FAQ, socials) set over an AI-generated background artwork that stays in view while the page scrolls. A veil of the theme's background colour keeps text readable; owners can adjust or remove it in Theme → Background artwork. Max ₦3,000.
+
+| Name | Artwork | Audience | Price |
+|---|---|---|---|
+| Nova Sounds | Aurora ribbons (dark) | DJs, producers | ₦2,500 |
+| Ada Bakes | Cut-paper collage (light) | Home bakers | ₦2,000 |
+| Kola Studio | Blueprint linework (cobalt) | Architects, consultants | ₦3,000 |
+| Wander Lagos | Sunset dunes (light) | Travel creators | ₦2,500 |
+| Verdant Wellness | Gold botanicals (dark) | Yoga, wellness coaches | ₦3,000 |
+| Glossy by Zara | Liquid chrome (light) | Nail and beauty studios | ₦2,500 |
+| Indigo House | Adire indigo (dark) | Textile and fashion sellers | ₦3,000 |
+| Mettle Design Club | Bauhaus geometry (light) | Meetups and clubs | ₦2,000 |
+
+All 24 are built. Business kits (D156): every kit keeps its free page as the default and offers its matching Elite template as an optional "Upgrade the look"; seven new kits — Podcast & media, Real estate, Courses & tutoring, Coaching, Travel & experiences, Community & membership, Nonprofit & impact.
+
+Remaining work: phone and accessibility checks across all 24, and a side-by-side design review.

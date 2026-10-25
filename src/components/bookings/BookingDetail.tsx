@@ -18,6 +18,7 @@ import { OwnerSlotPicker } from './OwnerSlotPicker';
 import { useTeam } from '../../contexts/TeamContext';
 import { AssigneeSelect } from '../team/AssigneeSelect';
 import { CommentThread } from '../team/CommentThread';
+import { useT } from '../../contexts/LocaleContext';
 
 export const bookingStatusCopy = {
   confirmed: { label: 'Confirmed', tone: 'success' as const },
@@ -29,13 +30,14 @@ export const bookingStatusCopy = {
 
 export function BookingDetail({ bookingId, onClose }: {bookingId: string | null;onClose: () => void;}) {
   const { data, apply } = useOps();
+  const { t: tr } = useT();
   const team = useTeam();
   const { mainHandle } = useMainLink();
   const b = data.bookings.find((x) => x.id === bookingId);
   const [dialog, setDialog] = useState<'cancel' | 'reschedule' | null>(null);
   const [reason, setReason] = useState('');
   const [newStart, setNewStart] = useState<number | null>(null);
-  if (!b) return <Sheet open={!!bookingId} onClose={onClose} side="right" title="Booking not found"><p className="p-5 text-label text-fg-muted">It may have been cleared with the sample data.</p></Sheet>;
+  if (!b) return <Sheet open={!!bookingId} onClose={onClose} side="right" title="Booking not found"><p className="p-5 text-label text-fg-muted">{tr('It may have been cleared with the sample data.')}</p></Sheet>;
 
   const tz = data.availability.timeZone;
   const service = data.services.find((s) => s.id === b.serviceId);
@@ -49,7 +51,7 @@ export function BookingDetail({ bookingId, onClose }: {bookingId: string | null;
     if (!service || newStart === null) return;
     let msg: string | undefined;
     if (apply((d) => {const r = rescheduleBooking(d, b.id, newStart, service, 'owner');msg = r.message;return r.data;}) && !msg) {
-      toast(`Moved to ${dayLabel(newStart, tz)}, ${timeLabel(newStart, tz)}`, { description: 'The customer would get an update (preview only).' });
+      toast(tr('Moved to {when}', { when: `${dayLabel(newStart, tz)}, ${timeLabel(newStart, tz)}` }), { description: tr('The customer would get an update (preview only).') });
       setDialog(null);
     } else if (msg) toast.error(msg);
   };
@@ -89,7 +91,7 @@ export function BookingDetail({ bookingId, onClose }: {bookingId: string | null;
         <div className="flex flex-col gap-6 px-5 py-5">
           <div className="flex flex-wrap items-center gap-2">
             <Badge tone={bookingStatusCopy[b.status].tone} dot>
-              {bookingStatusCopy[b.status].label}
+              {tr(bookingStatusCopy[b.status].label)}
             </Badge>
             {b.sample && <SampleTag />}
           </div>
@@ -106,63 +108,63 @@ export function BookingDetail({ bookingId, onClose }: {bookingId: string | null;
           
           <dl className="grid grid-cols-2 gap-4 text-label">
             <div>
-              <dt className="text-caption text-fg-subtle">When</dt>
+              <dt className="text-caption text-fg-subtle">{tr('When')}</dt>
               <dd className="font-semibold text-fg">
                 {dayLabel(start, tz)}, {timeLabel(start, tz)}
               </dd>
               <dd className="text-caption text-fg-subtle">{service ? durationLabel(service.durationMin) : ''} · {tz}</dd>
             </div>
             <div>
-              <dt className="text-caption text-fg-subtle">Money</dt>
-              <dd className="font-semibold text-fg">{b.priceNgn !== null ? formatNgn(b.priceNgn) : 'Price on request'}</dd>
-              <dd className="text-caption text-fg-subtle">{b.depositPaidNgn ? `${formatNgn(b.depositPaidNgn)} booking fee paid (test)` : 'No deposit'}</dd>
+              <dt className="text-caption text-fg-subtle">{tr('Money')}</dt>
+              <dd className="font-semibold text-fg">{b.priceNgn !== null ? formatNgn(b.priceNgn) : tr('Price on request')}</dd>
+              <dd className="text-caption text-fg-subtle">{b.depositPaidNgn ? tr('{amount} booking fee paid (test)', { amount: formatNgn(b.depositPaidNgn) }) : tr('No deposit')}</dd>
               {bal.state !== 'none' &&
               <dd className={cn('text-caption', bal.state === 'overdue' ? 'font-medium text-danger' : bal.state === 'paid' ? 'text-success' : 'text-fg-subtle')}>
-                  {balanceLabels[bal.state]}
+                  {tr(balanceLabels[bal.state])}
                   {bal.state !== 'paid' && ` · ${formatNgn(bal.amount)}`}
-                  {bal.dueAt && bal.state !== 'paid' && ` · by ${dayLabel(bal.dueAt, tz)}, ${timeLabel(bal.dueAt, tz)}`}
-                  {bal.state === 'paid' && b.balancePaidHow === 'recorded' && ' (recorded by you)'}
+                  {bal.dueAt && bal.state !== 'paid' && ` · ${tr('by {when}', { when: `${dayLabel(bal.dueAt, tz)}, ${timeLabel(bal.dueAt, tz)}` })}`}
+                  {bal.state === 'paid' && b.balancePaidHow === 'recorded' && ` ${tr('(recorded by you)')}`}
                 </dd>
               }
               {open && (bal.state === 'upcoming' || bal.state === 'due' || bal.state === 'overdue' || bal.state === 'at_appointment') &&
               <dd className="mt-1.5 flex flex-wrap gap-1.5">
                   {bal.state !== 'at_appointment' &&
-                <Button size="sm" variant="secondary" leadingIcon={CopyIcon} onClick={() => navigator.clipboard?.writeText(balanceLink).then(() => toast.success('Balance link copied'))}>
+                <Button size="sm" variant="secondary" leadingIcon={CopyIcon} onClick={() => navigator.clipboard?.writeText(balanceLink).then(() => toast.success(tr('Balance link copied')))}>
                       Pay link
                     </Button>
                 }
-                  <Button size="sm" variant="tertiary" onClick={() => apply((d) => payBookingBalance(d, b.id, 'recorded')) && toast.success('Balance recorded as paid')}>
+                  <Button size="sm" variant="tertiary" onClick={() => apply((d) => payBookingBalance(d, b.id, 'recorded')) && toast.success(tr('Balance recorded as paid'))}>
                     Record as paid
                   </Button>
                 </dd>
               }
             </div>
             <div className="col-span-2">
-              <dt className="text-caption text-fg-subtle">Customer</dt>
+              <dt className="text-caption text-fg-subtle">{tr('Customer')}</dt>
               <dd className="font-semibold text-fg">{b.customer.name}</dd>
               <dd className="text-fg-muted">
                 {b.customer.phone} · {b.customer.email}
               </dd>
-              {b.customerTimeZone !== tz && <dd className="text-caption text-fg-subtle">Their time zone: {b.customerTimeZone}</dd>}
+              {b.customerTimeZone !== tz && <dd className="text-caption text-fg-subtle">{tr('Their time zone: {tz}', { tz: b.customerTimeZone })}</dd>}
               {b.customer.phone &&
               <a href={whatsappLink(b.customer.phone, `Hi ${b.customer.name.split(' ')[0]}, about your ${b.serviceName} booking…`)} target="_blank" rel="noopener noreferrer" className="mt-1 inline-flex items-center gap-1.5 font-semibold text-action hover:underline">
-                  <MessageCircleIcon size={14} aria-hidden /> Message on WhatsApp
+                  <MessageCircleIcon size={14} aria-hidden /> {tr('Message on WhatsApp')}
                 </a>
               }
             </div>
             {b.intake &&
             <div className="col-span-2">
-                <dt className="text-caption text-fg-subtle">They told you</dt>
+                <dt className="text-caption text-fg-subtle">{tr('They told you')}</dt>
                 <dd className="rounded-md bg-sunken px-3 py-2 text-fg">{b.intake}</dd>
               </div>
             }
           </dl>
-          <section aria-label="History">
-            <h3 className="text-label font-semibold text-fg">History</h3>
+          <section aria-label={tr('History')}>
+            <h3 className="text-label font-semibold text-fg">{tr('History')}</h3>
             <ol className="mt-2 flex flex-col divide-y divide-line border-y border-line">
               {b.events.map((e) =>
               <li key={e.id} className="flex justify-between gap-3 py-2 text-label">
-                  <span className="text-fg">{e.label}</span>
+                  <span className="text-fg">{tr(e.label)}</span>
                   <span className="shrink-0 text-caption text-fg-subtle">{formatTimestamp(e.at)}</span>
                 </li>
               )}
@@ -177,8 +179,8 @@ export function BookingDetail({ bookingId, onClose }: {bookingId: string | null;
         open={dialog === 'cancel'}
         onClose={() => setDialog(null)}
         size="sm"
-        title={`Cancel ${b.customer.name}’s booking?`}
-        description={b.depositPaidNgn ? `When you cancel, the ${formatNgn(b.depositPaidNgn)} deposit is refunded in full (test mode).` : 'Nothing was paid.'}
+        title={tr('Cancel {name}’s booking?', { name: b.customer.name })}
+        description={b.depositPaidNgn ? tr('When you cancel, the {amount} deposit is refunded in full (test mode).', { amount: formatNgn(b.depositPaidNgn) }) : tr('Nothing was paid.')}
         footer={
         <>
             <Button variant="secondary" onClick={() => setDialog(null)}>
@@ -188,7 +190,7 @@ export function BookingDetail({ bookingId, onClose }: {bookingId: string | null;
             variant="destructive"
             onClick={() => {
               if (apply((d) => cancelBooking(d, b.id, 'owner', reason.trim()))) {
-                toast('Booking cancelled', { description: 'The customer would get a message (preview only).' });
+                toast(tr('Booking cancelled'), { description: tr('The customer would get a message (preview only).') });
                 setDialog(null);
                 setReason('');
               }
@@ -199,7 +201,7 @@ export function BookingDetail({ bookingId, onClose }: {bookingId: string | null;
           </>
         }>
         
-        <TextInput id="bk-cancel-reason" label="Reason for the customer" optional value={reason} placeholder="e.g. Studio closed for a family event" onChange={(e) => setReason(e.target.value)} />
+        <TextInput id="bk-cancel-reason" label="Reason for the customer" optional value={reason} placeholder={tr('e.g. Studio closed for a family event')} onChange={(e) => setReason(e.target.value)} />
       </Dialog>
 
       <Dialog
@@ -219,7 +221,7 @@ export function BookingDetail({ bookingId, onClose }: {bookingId: string | null;
           </>
         }>
         
-        {service ? <OwnerSlotPicker service={service} value={newStart} onChange={setNewStart} ignoreId={b.id} /> : <p className="text-label text-fg-muted">The service was deleted, so it can’t be rescheduled.</p>}
+        {service ? <OwnerSlotPicker service={service} value={newStart} onChange={setNewStart} ignoreId={b.id} /> : <p className="text-label text-fg-muted">{tr('The service was deleted, so it can’t be rescheduled.')}</p>}
       </Dialog>
     </>);
 

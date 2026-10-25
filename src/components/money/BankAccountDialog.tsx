@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import type { BankAccount, MoneyData } from '../../types/money';
 import { BANK_COOLDOWN_HOURS, nameMatchOf } from '../../utils/money/store';
 import { uid } from '../../utils/id';
+import { useT } from '../../contexts/LocaleContext';
 import { Dialog } from '../ui/Dialog';
 import { Button } from '../ui/Button';
 import { TextInput } from '../ui/TextInput';
@@ -24,6 +25,7 @@ interface BankAccountDialogProps {
 
 /** Add a payout account. The name on the account is checked against the business (D92). */
 export function BankAccountDialog({ open, onClose, data, update, businessName }: BankAccountDialogProps) {
+  const { t: tr } = useT();
   const [bank, setBank] = useState('GTBank');
   const [number, setNumber] = useState('');
   const [looked, setLooked] = useState<string | null>(null);
@@ -70,7 +72,7 @@ export function BankAccountDialog({ open, onClose, data, update, businessName }:
     update((d) => ({ ...d, banks: [...d.banks, account] }));
     setConfirming(false);
     onClose();
-    toast.success('Bank account added', { description: first ? 'You can pay out to it now.' : `For your safety it can receive payouts in ${BANK_COOLDOWN_HOURS} hours. We’ve emailed you about this change.` });
+    toast.success(tr('Bank account added'), { description: first ? tr('You can pay out to it now.') : tr('For your safety it can receive payouts in {n} hours. We’ve emailed you about this change.', { n: BANK_COOLDOWN_HOURS }) });
   };
 
   return (
@@ -98,10 +100,10 @@ export function BankAccountDialog({ open, onClose, data, update, businessName }:
         }>
         
         <div className="flex flex-col gap-4">
-          <SelectInput id="bank-name" label="Bank" value={bank} onChange={setBank} options={banks.map((b) => ({ value: b, label: b }))} />
-          <TextInput id="bank-number" label="Account number" inputMode="numeric" maxLength={10} value={number} onChange={(e) => setNumber(e.target.value.replace(/\D/g, ''))} hint="10 digits (NUBAN)" error={number.length > 0 && number.length !== 10 ? 'Account numbers have 10 digits.' : undefined} />
+          <SelectInput id="bank-name" label={tr('Bank')} value={bank} onChange={setBank} options={banks.map((b) => ({ value: b, label: b }))} />
+          <TextInput id="bank-number" label="Account number" inputMode="numeric" maxLength={10} value={number} onChange={(e) => setNumber(e.target.value.replace(/\D/g, ''))} hint={tr('10 digits (NUBAN)')} error={number.length > 0 && number.length !== 10 ? tr('Account numbers have 10 digits.') : undefined} />
           <Field id="bank-sim" label="Prototype: name on the account">
-            <Segmented ariaLabel="Simulated account name" value={simulate} onChange={setSimulate} options={[{ value: 'same', label: 'Business name' }, { value: 'different', label: 'Someone else' }]} />
+            <Segmented ariaLabel={tr('Simulated account name')} value={simulate} onChange={setSimulate} options={[{ value: 'same', label: 'Business name' }, { value: 'different', label: 'Someone else' }]} />
           </Field>
           {looked && match &&
           <div className={match === 'mismatch' ? 'rounded-md bg-danger-soft px-4 py-3 text-danger' : match === 'close' ? 'rounded-md bg-warning-soft px-4 py-3 text-warning' : 'rounded-md bg-success-soft px-4 py-3 text-success'} role="status">
@@ -111,17 +113,17 @@ export function BankAccountDialog({ open, onClose, data, update, businessName }:
               </p>
               <p className="mt-1 text-caption">
                 {match === 'match' ?
-              `Matches ${businessName}.` :
+              tr('Matches {name}.', { name: businessName }) :
               match === 'close' ?
-              `Partly matches ${businessName}. Payouts to this account may be checked by KUBICU first.` :
-              `Doesn’t match ${businessName}. Use an account in your business’s name, or update your business name in Settings.`}
+              tr('Partly matches {name}. Payouts to this account may be checked by KUBICU first.', { name: businessName }) :
+              tr('Doesn’t match {name}. Use an account in your business’s name, or update your business name in Settings.', { name: businessName })}
               </p>
             </div>
           }
-          {!first && <p className="text-caption text-fg-subtle">New accounts wait {BANK_COOLDOWN_HOURS} hours before they can receive payouts. This protects you if someone gets into your account.</p>}
+          {!first && <p className="text-caption text-fg-subtle">{tr('New accounts wait {n} hours before they can receive payouts. This protects you if someone gets into your account.', { n: BANK_COOLDOWN_HOURS })}</p>}
         </div>
       </Dialog>
-      <ConfirmMoneyDialog open={confirming} onClose={() => setConfirming(false)} title="Confirm new bank account" summary={`Add ${bank} ····${number.slice(-4)} for payouts.`} confirmLabel="Add account" onConfirm={save} />
+      <ConfirmMoneyDialog open={confirming} onClose={() => setConfirming(false)} title={tr('Confirm new bank account')} summary={tr('Add {bank} ····{last4} for payouts.', { bank, last4: number.slice(-4) })} confirmLabel={tr('Add account')} onConfirm={save} />
     </>);
 
 }

@@ -3,7 +3,7 @@ import { CheckIcon, RepeatIcon } from 'lucide-react';
 import type { BlockProps } from './blockProps';
 import { BlockPlaceholder } from './BlockPlaceholder';
 import { BlockTitle, PageChip } from './BlockTitle';
-import { buttonStyle, cardRadius, fontsFor, mix } from './pageStyle';
+import { borderColor, buttonStyle, cardRadius, cardStyle, fontsFor, mix } from './pageStyle';
 import { useCatalog } from '../../contexts/CatalogContext';
 import { useSubscribeOpener } from '../../contexts/SubscribeContext';
 import { intervalWord, planFull } from '../../utils/commerce/subscriptions';
@@ -40,7 +40,7 @@ export function SubscriptionBlock({ block, theme, mode }: BlockProps<'subscripti
             <li
               key={p.id}
               className="flex flex-col p-5"
-              style={{ background: theme.surface, borderRadius: cardRadius(theme), border: highlighted ? `2px solid ${theme.accent}` : `1px solid ${mix(theme.text, 10)}` }}>
+              style={{ ...cardStyle(theme), borderRadius: cardRadius(theme), border: highlighted ? `2px solid ${theme.accent}` : `1px solid ${theme.material ? borderColor(theme, 10) : mix(theme.text, 10)}` }}>
               
               <div className="flex items-start justify-between gap-3">
                 <h3 className="text-[18px] font-medium leading-tight" style={{ fontFamily: fontsFor(theme).display, color: theme.text }}>

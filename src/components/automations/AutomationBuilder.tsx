@@ -64,10 +64,12 @@ export function AutomationBuilder({ automation, onClose }: {automation: Automati
   };
 
   const save = (status?: Automation['status']) => {
-    const next = { ...draft, status: status ?? draft.status, updatedAt: new Date().toISOString() };
+    const at = new Date().toISOString();
+    const turningOn = status === 'active' && data.automations.find((a) => a.id === draft.id)?.status !== 'active';
+    const next = { ...draft, status: status ?? draft.status, updatedAt: at, liveSince: turningOn ? at : draft.liveSince ?? (draft.status === 'active' ? draft.updatedAt : undefined) };
     if (status === 'active' && problems.length) return;
     if (apply((d) => ({ ...d, automations: exists ? d.automations.map((a) => a.id === next.id ? { ...next, runs: a.runs } : a) : [next, ...d.automations] }))) {
-      toast(status === 'active' ? 'Automation is on' : status === 'paused' ? 'Automation paused' : 'Saved as draft', { description: status === 'active' ? 'Messages are previewed, not sent, in this prototype.' : undefined });
+      toast(status === 'active' ? 'Automation is on' : status === 'paused' ? 'Automation paused' : 'Saved as draft', { description: status === 'active' ? 'It reacts to things that happen from now on. Customer messages are written, not sent, in this prototype.' : undefined });
       onClose();
     }
   };

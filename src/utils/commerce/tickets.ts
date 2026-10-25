@@ -372,7 +372,7 @@ export type ScanOutcome =
 {kind: 'unknown';code: string;};
 
 /** What happens when a ticket is scanned at this event's door (D74). Admits valid tickets. */
-export function scanTicket(data: CommerceData, eventId: string, raw: string, by: string): {data: CommerceData;outcome: ScanOutcome;} {
+export function scanTicket(data: CommerceData, eventId: string, raw: string, by: string, door?: string, at?: string): {data: CommerceData;outcome: ScanOutcome;} {
   const code = parseTicketCode(raw);
   const ref = code ? findTicket(data, { code }) : undefined;
   if (!ref) return { data, outcome: { kind: 'unknown', code: code ?? raw.trim().slice(0, 24) } };
@@ -381,20 +381,39 @@ export function scanTicket(data: CommerceData, eventId: string, raw: string, by:
   if (status === 'void') return { data, outcome: { kind: 'void', ref } };
   if (status === 'pending') return { data, outcome: { kind: 'pending', ref } };
   if (status === 'checked_in') return { data, outcome: { kind: 'already', ref } };
-  const next = setCheckedIn(data, ref.ticket.id, by);
+  const next = setCheckedIn(data, ref.ticket.id, by, door, at);
   return { data: next, outcome: { kind: 'admitted', ref: findTicket(next, { id: ref.ticket.id })! } };
 }
 
-export function setCheckedIn(data: CommerceData, ticketId: string, by: string | null): CommerceData {
-  const at = new Date().toISOString();
+export function setCheckedIn(data: CommerceData, ticketId: string, by: string | null, door?: string, at = new Date().toISOString()): CommerceData {
   return {
     ...data,
     orders: data.orders.map((o) =>
     o.tickets?.some((t) => t.id === ticketId) ?
-    { ...o, tickets: o.tickets.map((t) => t.id === ticketId ? by ? { ...t, checkedInAt: at, checkedInBy: by } : { ...t, checkedInAt: undefined, checkedInBy: undefined } : t) } :
+    {
+      ...o,
+      tickets: o.tickets.map((t) =>
+      t.id === ticketId ? by ? { ...t, checkedInAt: at, checkedInBy: by, checkedInDoor: door } : { ...t, checkedInAt: undefined, checkedInBy: undefined, checkedInDoor: undefined } : t
+      )
+    } :
     o
     )
   };
+}
+
+/** Latest check-ins at every door, newest first. */
+export function recentCheckIns(data: CommerceData, eventId: string, limit = 6): TicketRef[] {
+  return eventTickets(data, eventId).
+  filter((r) => r.ticket.checkedInAt).
+  sort((a, b) => Date.parse(b.ticket.checkedInAt!) - Date.parse(a.ticket.checkedInAt!)).
+  slice(0, limit);
+}
+
+/** Check-ins per door name, for the doors panel. */
+export function checkInsByDoor(data: CommerceData, eventId: string): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const r of eventTickets(data, eventId)) if (r.ticket.checkedInAt) out[r.ticket.checkedInDoor || 'No door named'] = (out[r.ticket.checkedInDoor || 'No door named'] ?? 0) + 1;
+  return out;
 }
 
 export function eventTickets(data: CommerceData, eventId: string): TicketRef[] {

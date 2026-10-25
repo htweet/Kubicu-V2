@@ -35,7 +35,7 @@ export function FeedbackGallery() {
           </div>
           <div className="mt-5 flex flex-wrap items-center gap-4">
             <PlanLock kind="plan">Pro plan</PlanLock>
-            <PlanLock kind="planned">Batch 5</PlanLock>
+            <PlanLock kind="planned">Coming later</PlanLock>
             <IllustrativeTag />
           </div>
         </div>

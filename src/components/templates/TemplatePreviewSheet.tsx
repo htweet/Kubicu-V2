@@ -8,7 +8,7 @@ import { Sheet } from '../ui/Sheet';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import { Segmented } from '../ui/Segmented';
-import { TemplateThumb } from './TemplateThumb';
+import { TemplateLivePreview } from './TemplateLivePreview';
 import { formatNaira as formatNgn } from '../../utils/format';
 
 interface Props {
@@ -79,10 +79,8 @@ export function TemplatePreviewSheet({ template, owned, canEdit, onClose, onAppl
             } />
           
         </div>
-        <div className="flex justify-center overflow-hidden rounded-lg py-6" style={{ background: device === 'desktop' ? template.doc.theme.background : undefined }}>
-          <div className={device === 'phone' ? 'overflow-hidden rounded-[28px] border-[6px] border-inverse' : 'overflow-hidden rounded-md'}>
-            <TemplateThumb doc={template.doc} width={device === 'phone' ? 280 : 420} height={device === 'phone' ? 560 : 520} />
-          </div>
+        <div className="rounded-lg bg-sunken p-3">
+          <TemplateLivePreview doc={template.doc} plan={template.plan} device={device} name={template.name} height={600} />
         </div>
         <p className="text-label text-fg">{template.description}</p>
         <p className="text-caption text-fg-muted">

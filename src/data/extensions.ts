@@ -411,15 +411,17 @@ export const extensions: ExtensionInfo[] = [
   verified: 'kubicu',
   category: 'selling',
   summary: 'Let customers pay by transfer; you confirm.',
-  description: 'Adds “Pay by bank transfer” at checkout with your account details. The order waits as “awaiting payment” until you confirm the money arrived. Preview: account details are saved; the checkout option arrives with the next release.',
-  adds: ['Your bank details shown at checkout', '“I’ve paid” button for customers', 'You confirm before the order moves on'],
+  description: 'Adds “Bank transfer” at checkout with your account details. The order waits as “awaiting payment” with its order number as the transfer reference. Customers tap “I’ve sent the money”, and you confirm once it shows in your bank. Naira payments only; not used for DealRooms or instalments.',
+  adds: ['Your bank details shown at checkout and on the order page', '“I’ve sent the money” button for customers', 'You confirm before the order moves on'],
   permissions: ['Show your bank details at checkout', 'Create orders awaiting payment'],
   minPlan: 'free',
   priceNgn: 0,
-  version: '0.9.2',
-  versions: [{ version: '0.9.2', date: '2026-10-10', notes: 'Preview release.' }],
+  version: '1.0.0',
+  versions: [
+  { version: '1.0.0', date: '2026-10-24', notes: 'Bank transfer at checkout, order-number reference, “I’ve sent the money” and seller confirmation.' },
+  { version: '0.9.2', date: '2026-10-10', notes: 'Preview release.' }],
+
   reviews: [],
-  preview: true,
   setup: [
   { id: 'bank', label: 'Bank', placeholder: 'GTBank', hint: 'As customers know it.', pattern: /^.{2,40}$/, error: 'Enter the bank name.' },
   { id: 'account', label: 'Account number', placeholder: '0123456789', hint: '10-digit NUBAN.', pattern: /^\d{10}$/, error: 'NUBAN account numbers are 10 digits.' }],

@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import type { MoneyData } from '../../types/money';
 import { balances, createPayout, paidOutToday, payoutFee, tierInfo, usableBanks } from '../../utils/money/store';
 import { formatNgn } from '../../utils/format';
+import { useT } from '../../contexts/LocaleContext';
 import { Dialog } from '../ui/Dialog';
 import { Button } from '../ui/Button';
 import { TextInput } from '../ui/TextInput';
@@ -21,6 +22,7 @@ interface PayoutDialogProps {
 
 /** Pay out now: amount, bank, fee and arrival, then password + two-step code (D92). */
 export function PayoutDialog({ open, onClose, data, update, by }: PayoutDialogProps) {
+  const { t: tr } = useT();
   const banks = usableBanks(data);
   const available = balances(data).available;
   const fee = payoutFee(false);
@@ -44,12 +46,12 @@ export function PayoutDialog({ open, onClose, data, update, by }: PayoutDialogPr
 
   const value = Number(amount.replace(/[^\d]/g, '')) || 0;
   const bank = banks.find((b) => b.id === bankId);
-  const arrives = new Date().getHours() < 15 ? 'today, usually within 2 hours' : 'by 10am the next business day';
+  const arrives = tr(new Date().getHours() < 15 ? 'today, usually within 2 hours' : 'by 10am the next business day');
 
   const check = () => {
-    if (value < 1000) return setError('The smallest payout is ₦1,000.');
-    if (value > max) return setError(`You can pay out up to ${formatNgn(max)} right now${todayLeft < available - fee ? ' (today’s limit)' : ''}.`);
-    if (!bank) return setError('Choose a bank account.');
+    if (value < 1000) return setError(tr('The smallest payout is {amount}.', { amount: formatNgn(1000) }));
+    if (value > max) return setError(tr(todayLeft < available - fee ? 'You can pay out up to {amount} right now (today’s limit).' : 'You can pay out up to {amount} right now.', { amount: formatNgn(max) }));
+    if (!bank) return setError(tr('Choose a bank account.'));
     setError(null);
     setConfirming(true);
   };
@@ -63,7 +65,7 @@ export function PayoutDialog({ open, onClose, data, update, by }: PayoutDialogPr
     update(() => res.data);
     setConfirming(false);
     onClose();
-    toast.success(`Payout of ${formatNgn(value)} on its way`, { description: `To ${res.payout.bankLabel} · arrives ${arrives}.` });
+    toast.success(tr('Payout of {amount} on its way', { amount: formatNgn(value) }), { description: tr('To {bank} · arrives {when}.', { bank: res.payout.bankLabel, when: arrives }) });
   };
 
   return (
@@ -72,7 +74,7 @@ export function PayoutDialog({ open, onClose, data, update, by }: PayoutDialogPr
         open={open && !confirming}
         onClose={onClose}
         title="Pay out to your bank"
-        description={`${formatNgn(available)} available · up to ${formatNgn(todayLeft)} more today on ${tierInfo[data.verification.tier].label}.`}
+        description={tr('{available} available · up to {left} more today on {tier}.', { available: formatNgn(available), left: formatNgn(todayLeft), tier: tierInfo[data.verification.tier].label })}
         footer={
         <>
             <Button variant="secondary" onClick={onClose}>
@@ -94,38 +96,34 @@ export function PayoutDialog({ open, onClose, data, update, by }: PayoutDialogPr
             onChange={(e) => setAmount(e.target.value.replace(/[^\d]/g, ''))}
             error={error ?? undefined}
             fieldClassName="w-full"
-            hint={max >= 1000 ? `Most you can pay out now: ${formatNgn(max)}` : undefined} />
+            hint={max >= 1000 ? tr('Most you can pay out now: {amount}', { amount: formatNgn(max) }) : undefined} />
           
           {max >= 1000 && value !== max &&
           <button type="button" onClick={() => setAmount(String(max))} className="-mt-2 self-start text-caption font-medium text-action underline-offset-2 hover:underline">
-              Pay out {formatNgn(max)}
+              {tr('Pay out {amount}', { amount: formatNgn(max) })}
             </button>
           }
-          <SelectInput id="payout-bank" label="To" value={bankId} onChange={setBankId} options={banks.map((b) => ({ value: b.id, label: `${b.bankName} ····${b.last4} · ${b.accountName}` }))} />
+          <SelectInput id="payout-bank" label={tr('To')} value={bankId} onChange={setBankId} options={banks.map((b) => ({ value: b.id, label: `${b.bankName} ····${b.last4} · ${b.accountName}` }))} />
           <dl className="grid grid-cols-[1fr_auto] gap-x-4 gap-y-1.5 rounded-md bg-sunken px-4 py-3 text-label">
-            <dt className="text-fg-muted">You receive</dt>
+            <dt className="text-fg-muted">{tr('You receive')}</dt>
             <dd className="text-right font-semibold tabular-nums text-fg">{formatNgn(value)}</dd>
-            <dt className="text-fg-muted">Payout fee (example)</dt>
+            <dt className="text-fg-muted">{tr('Payout fee (example)')}</dt>
             <dd className="text-right tabular-nums text-fg">{formatNgn(fee)}</dd>
-            <dt className="text-fg-muted">Taken from wallet</dt>
+            <dt className="text-fg-muted">{tr('Taken from wallet')}</dt>
             <dd className="text-right tabular-nums text-fg">{formatNgn(value + fee)}</dd>
-            <dt className="col-span-2 mt-1 text-caption text-fg-subtle">Arrives {arrives}. Scheduled payouts are free.</dt>
+            <dt className="col-span-2 mt-1 text-caption text-fg-subtle">{tr('Arrives {when}. Scheduled payouts are free.', { when: arrives })}</dt>
           </dl>
           <Field id="payout-sim" label="Prototype: what the bank does">
-            <Segmented ariaLabel="Simulated bank result" value={outcome} onChange={setOutcome} options={[{ value: 'paid', label: 'Accepts' }, { value: 'failed', label: 'Returns it' }]} />
+            <Segmented ariaLabel={tr('Simulated bank result')} value={outcome} onChange={setOutcome} options={[{ value: 'paid', label: 'Accepts' }, { value: 'failed', label: 'Returns it' }]} />
           </Field>
         </div>
       </Dialog>
       <ConfirmMoneyDialog
         open={confirming}
         onClose={() => setConfirming(false)}
-        title="Confirm payout"
-        summary={
-        <>
-            Send {formatNgn(value)} to {bank ? `${bank.bankName} ····${bank.last4}` : 'your bank'}.
-          </>
-        }
-        confirmLabel="Pay out"
+        title={tr('Confirm payout')}
+        summary={<>{tr('Send {amount} to {bank}.', { amount: formatNgn(value), bank: bank ? `${bank.bankName} ····${bank.last4}` : tr('your bank') })}</>}
+        confirmLabel={tr('Pay out')}
         onConfirm={confirm} />
       
     </>);

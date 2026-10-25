@@ -3,6 +3,7 @@ export type NotifArea = 'orders' | 'stock' | 'bookings' | 'audience' | 'pages' |
 export type NotifEventId =
 'order_paid' |
 'order_pending' |
+'order_late' |
 'dispute' |
 'escrow' |
 'stage_due' |

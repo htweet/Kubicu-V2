@@ -35,7 +35,76 @@ export type BlockType =
 'audio' |
 'playlist' |
 'collection' |
-'support';
+'support' |
+'hero' |
+'featureGrid' |
+'steps' |
+'logoStrip' |
+'figures' |
+'mediaList' |
+'listings';
+
+/** Layout sections (D153): six designed openings for a page. */
+export type HeroVariant = 'portrait' | 'split' | 'cover' | 'masthead' | 'poster' | 'product';
+
+export interface FeatureItem {
+  id: string;
+  title: string;
+  text: string;
+  imageUrl: string;
+  imageAlt: string;
+  /** Small line under the title, e.g. "From ₦45,000" or "45 min · online". */
+  label: string;
+  url: string;
+}
+
+export interface StepItem {
+  id: string;
+  title: string;
+  text: string;
+}
+
+export interface LogoItem {
+  id: string;
+  name: string;
+  logoUrl: string;
+}
+
+export interface FigureItem {
+  id: string;
+  value: string;
+  label: string;
+}
+
+export interface MediaListItem {
+  id: string;
+  title: string;
+  /** Date, guest or format, e.g. "Ep. 42 · with Ada Nwosu". */
+  meta: string;
+  duration: string;
+  imageUrl: string;
+  url: string;
+}
+
+export interface ListingItem {
+  id: string;
+  title: string;
+  imageUrl: string;
+  imageAlt: string;
+  price: string;
+  /** Key facts on one line, e.g. "3 bed · 2 bath · 180 m²" or "Full day · up to 8 people". */
+  facts: string;
+  location: string;
+  url: string;
+  /** Sample cards are labelled "Example listing" until the seller edits them. */
+  example: boolean;
+}
+
+export interface LinkItem {
+  id: string;
+  label: string;
+  url: string;
+}
 
 /** One track in a Playlist block (D124). `productId` sells it as a Commerce digital product. */
 export interface PlaylistTrack {
@@ -159,12 +228,14 @@ export interface LeadFormFields {
 export interface BlockContentMap {
   profile: {name: string;tagline: string;avatarUrl: string;avatarAlt: string;location: string;};
   heading: {text: string;level: 'h2' | 'h3';};
-  text: {body: string;};
+  /** `editorial` (D157): first line becomes a display heading, an optional short kicker above it. */
+  text: {body: string;variant?: 'plain' | 'editorial';};
   link: {label: string;url: string;description: string;};
   social: {items: SocialItem[];};
   /** `decorative` images are skipped by screen readers (empty alt, D76). */
   image: {url: string;alt: string;caption: string;aspect: '1:1' | '4:5' | '16:9';decorative?: boolean;};
-  video: {url: string;title: string;};
+  /** Any link from the safe embed list (D142). `captioned` is the seller's own confirmation for video sites. */
+  video: {url: string;title: string;captioned?: boolean;};
   divider: {label: string;};
   spacer: {size: 'sm' | 'md' | 'lg';};
   contact: {phone: string;email: string;address: string;hours: string;};
@@ -305,6 +376,27 @@ export interface BlockContentMap {
     askMessage: boolean;
     linkId: string | null;
   };
+  hero: {
+    variant: HeroVariant;
+    eyebrow: string;
+    title: string;
+    subtitle: string;
+    imageUrl: string;
+    imageAlt: string;
+    focal: 'center' | 'top' | 'bottom';
+    primaryLabel: string;
+    primaryUrl: string;
+    secondaryLabel: string;
+    secondaryUrl: string;
+    /** Poster: date and venue line. Product: price line. Others: a short credit line. */
+    meta: string;
+  };
+  featureGrid: {title: string;intro: string;columns: 2 | 3 | 4;items: FeatureItem[];};
+  steps: {title: string;intro: string;items: StepItem[];};
+  logoStrip: {title: string;items: LogoItem[];permission: boolean;};
+  figures: {title: string;items: FigureItem[];confirmed: boolean;};
+  mediaList: {title: string;kind: 'episodes' | 'tracks' | 'videos' | 'chapters';items: MediaListItem[];links: LinkItem[];};
+  listings: {title: string;ctaLabel: string;items: ListingItem[];};
 }
 
 export interface BlockStyle {
@@ -314,6 +406,21 @@ export interface BlockStyle {
 
 export interface BlockLayout {
   spacing: 'tight' | 'normal' | 'loose';
+  /** Layout sections (D153). Missing = 'column', today's width. */
+  width?: 'column' | 'wide' | 'full';
+  /** Sit beside the next block on tablet and desktop. Missing = stacked. */
+  pair?: 'equal' | 'wide-first' | 'narrow-first' | null;
+  /** When paired: show this block second on phones. */
+  phoneSecond?: boolean;
+  /** Section background from the theme. Missing = 'none'. */
+  background?: 'none' | 'tint' | 'invert';
+}
+
+/** Page-wide layout settings (D153). */
+export interface PageLayoutSettings {
+  contentWidth?: 'narrow' | 'standard' | 'wide';
+  /** A sticky action bar on phones: one primary action. */
+  actionBar?: {enabled: boolean;label: string;blockId: string | null;url: string;} | null;
 }
 
 export interface BlockBehaviour {
@@ -465,7 +572,7 @@ export type BlockOf<K extends BlockType> = Extract<Block, {type: K;}>;
 
 export type BlockMeta = Pick<BaseBlock, 'style' | 'layout' | 'behaviour' | 'visibility' | 'accessibility'>;
 
-export type FontPair = 'editorial' | 'modern' | 'classic' | 'expressive' | 'statement' | 'warm';
+export type FontPair = 'editorial' | 'modern' | 'classic' | 'expressive' | 'statement' | 'warm' | 'luxe' | 'grotesk';
 export type ButtonShape = 'pill' | 'rounded' | 'square';
 export type ButtonStyle = 'solid' | 'outline' | 'soft';
 
@@ -480,6 +587,72 @@ export interface PageTheme {
   fontPair: FontPair;
   buttonShape: ButtonShape;
   buttonStyle: ButtonStyle;
+  /** Artwork behind the whole page (D158). Stays in view while content scrolls over it. */
+  backgroundImage?: string;
+  /** How much of the background colour sits over the artwork, 0–90 (%). Keeps text readable. */
+  backgroundVeil?: number;
+  /** Signature material layer (D161). Every field is optional and defaults to today's flat look. */
+  material?: ThemeMaterial;
+}
+
+export type SurfaceFinish = 'matte' | 'satin' | 'glass' | 'lacquer';
+export type ShadowLevel = 'none' | 'soft' | 'lifted' | 'glow';
+export type RadiusScale = 'sharp' | 'soft' | 'round' | 'generous';
+export type ButtonFinish = 'solid' | 'gradient' | 'gloss' | 'glow';
+export type ImageFrame = 'none' | 'hairline' | 'mat' | 'shadow';
+export type LinkStyle = 'underline' | 'accent' | 'arrow';
+export type ThemeFontId =
+'inter' | 'fraunces' | 'newsreader' | 'instrument' | 'archivo' | 'lora' | 'cormorant' | 'bricolage' |
+'manrope' | 'sora' | 'dmSerif' | 'playfair' | 'outfit' | 'syne';
+
+/**
+ * Material layer for Signature themes (D161): atmosphere, surface finish, depth, shape, button finish and type.
+ * Missing values fall back to the flat theme, so classic themes and existing pages render exactly as before.
+ */
+export interface ThemeMaterial {
+  /** Secondary brand colour, used in gradient actions and highlights. */
+  secondary?: string;
+  /** Subtle text (captions, metadata). Defaults to mutedText. */
+  subtleText?: string;
+  /** Hairline/border colour. Defaults to a mix of text. */
+  border?: string;
+  /** Focus ring colour. Defaults to accent. */
+  focus?: string;
+  success?: string;
+  warning?: string;
+  error?: string;
+  info?: string;
+  /** CSS background recipe for the page atmosphere (gradients, radial glows). Sits behind content; never under body text directly. */
+  backdrop?: string;
+  /** Lighter recipe used on phones. Defaults to `backdrop`. */
+  backdropMobile?: string;
+  /** The colours the backdrop can put behind text, so the readability check tests the worst case. */
+  backdropStops?: string[];
+  surfaceFinish?: SurfaceFinish;
+  /** Glass surface opacity, 0–100 (%). */
+  glassOpacity?: number;
+  /** Glass blur in px. Turned off for reduced transparency. */
+  glassBlur?: number;
+  shadow?: ShadowLevel;
+  /** Glow colour for `glow` shadows and button edges. Defaults to accent. */
+  glow?: string;
+  /** Border strength as % of text colour when `border` isn't set. */
+  borderStrength?: number;
+  /** Light-catching top edge on surfaces. */
+  edgeHighlight?: boolean;
+  radius?: RadiusScale;
+  buttonFinish?: ButtonFinish;
+  /** Explicit CSS gradient for primary actions; otherwise accent → secondary. */
+  buttonGradient?: string;
+  /** Short sheen sweep on primary actions (off for reduced motion). */
+  sheen?: boolean;
+  imageFrame?: ImageFrame;
+  linkStyle?: LinkStyle;
+  headingFont?: ThemeFontId;
+  bodyFont?: ThemeFontId;
+  headingWeight?: number;
+  /** Heading letter-spacing, e.g. '-0.02em'. */
+  headingTracking?: string;
 }
 
 export interface PageSeo {
@@ -535,6 +708,8 @@ export interface PageDocument {
   coBrand?: CoBrandSettings | null;
   /** Language of the page content, as a BCP 47 tag (WCAG 3.1.1, D76). Defaults to "en". */
   language?: string;
+  /** Page width and sticky action bar (D153). */
+  layout?: PageLayoutSettings;
   updatedAt: string;
 }
 

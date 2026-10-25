@@ -4,7 +4,7 @@ import type { BlockProps } from './blockProps';
 import { BlockPlaceholder } from './BlockPlaceholder';
 import { BlockTitle, PageChip } from './BlockTitle';
 import { PageAction } from './PageAction';
-import { buttonStyle, cardRadius, fontsFor, mix } from './pageStyle';
+import { borderColor, buttonStyle, cardRadius, cardStyle, fontsFor, mix } from './pageStyle';
 import { formatNgn } from '../../utils/format';
 import { usePageOpsContext } from '../../contexts/PageOpsContext';
 
@@ -28,9 +28,9 @@ export function PricingBlock({ block, theme, mode }: BlockProps<'pricing'>) {
               key={p.id}
               className="flex flex-col p-5"
               style={{
-                background: theme.surface,
+                ...cardStyle(theme),
                 borderRadius: cardRadius(theme),
-                border: p.highlighted ? `2px solid ${theme.accent}` : `1px solid ${mix(theme.text, 10)}`
+                border: p.highlighted ? `2px solid ${theme.accent}` : `1px solid ${theme.material ? borderColor(theme, 10) : mix(theme.text, 10)}`
               }}>
               
               <div className="flex items-start justify-between gap-3">

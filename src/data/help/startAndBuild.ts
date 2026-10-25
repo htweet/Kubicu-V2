@@ -66,6 +66,27 @@ export const startAndBuildHelp: HelpCategory[] = [
   },
   { id: 'edit-block', q: 'How do I edit a block?', a: 'Select it on the canvas. The panel on the right has Content, Style and Visibility tabs. Changes show on the canvas as you type.' },
   {
+    id: 'embeds',
+    q: 'Which videos, music and maps can I embed?',
+    a: 'The Video & embed block accepts links from YouTube, Vimeo, TikTok, Instagram (posts and reels), Facebook video, Loom, Spotify, SoundCloud, Audiomack, Google Maps and Calendly. Paste the link from the site’s Share button — even pasted embed code works, because we only keep the address inside it. Each one is shown in a locked-down frame so it can’t read your visitors’ data or change your page. Links from any other site are refused with the reason.',
+    steps: ['Add a Video & embed block.', 'Paste the link from the site’s Share button.', 'Give it a title that says what it is, for screen readers.', 'For videos, check the captions and tick “This video has captions”.'],
+    where: 'Spaces → Edit → Video & embed'
+  },
+  {
+    id: 'video-captions',
+    q: 'How do I add captions to my videos?',
+    a: 'Captions are added where the video is hosted — KUBICU can’t add them or read them. Many people watch with the sound off on buses and in shops, and Deaf visitors rely on them. Turn captions on at the site, check them, then tick “This video has captions” in the block. Until you do, the publish check and the Check tab remind you.',
+    steps: [
+    'YouTube: YouTube Studio → the video → Subtitles → Add language.',
+    'Vimeo: the video → Distribution → Subtitles.',
+    'TikTok and Instagram: turn on automatic captions when posting, then edit them.',
+    'Facebook: Meta Business Suite → the video → Subtitles & captions.',
+    'Loom: captions are automatic — make sure they’re on for viewers.',
+    'Check every spoken word is there, including names and Pidgin or local-language lines, and that sounds like [music] are described.'],
+
+    where: 'Spaces → Edit → Video & embed → Captions'
+  },
+  {
     id: 'pages',
     q: 'Can my site have more than one page?',
     a: 'Yes. Open Pages in the canvas to add pages like Shop, About or Book. Each page has its own blocks, address and search settings and shares the space’s theme and menu.',

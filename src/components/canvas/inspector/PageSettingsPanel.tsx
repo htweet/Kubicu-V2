@@ -18,6 +18,9 @@ import { showsKubicuBadge } from '../../../utils/branding';
 import { findPage, pageTitle, sitePages } from '../../../utils/sitePages';
 import { SelectInput } from '../../ui/SelectInput';
 import { SearchEnginesSection } from './SearchEnginesSection';
+import { Field } from '../../ui/Field';
+import { Segmented } from '../../ui/Segmented';
+import { blockName, summarizeBlock } from '../../../utils/blocks';
 
 const pageLanguages = [
 { value: 'en', label: 'English' },
@@ -40,6 +43,8 @@ export function PageSettingsPanel() {
   const multi = sitePages(state.site).length > 0;
   const current = findPage(state.site, state.activePageId);
   const shareUrl = `${publicUrl(draft.handle)}${current ? `/${current.path}` : ''}`;
+  const bar = state.site.layout?.actionBar ?? null;
+  const targets = draft.blocks.filter((b) => !b.visibility.hidden).map((b) => ({ value: b.id, label: `${blockName(b)} — ${summarizeBlock(b).slice(0, 32) || 'untitled'}` }));
 
   return (
     <div className="flex flex-col gap-5">
@@ -78,6 +83,45 @@ export function PageSettingsPanel() {
           Domains & QR <ArrowUpRightIcon size={12} aria-hidden />
         </Link>
       </div>
+
+      <section className="flex flex-col gap-4 border-t border-line pt-5" aria-labelledby="layout-heading">
+        <h3 id="layout-heading" className="text-label font-medium text-fg">
+          Layout
+        </h3>
+        <Field id="layout-width" label="Reading width" hint="How wide text columns are on computers. Blocks set to Wide or Edge to edge ignore it.">
+          <Segmented
+            ariaLabel="Reading width"
+            fullWidth
+            value={state.site.layout?.contentWidth ?? 'standard'}
+            onChange={(contentWidth) => actions.updateLayout({ contentWidth }, 'contentWidth')}
+            options={[
+            { value: 'narrow', label: 'Narrow' },
+            { value: 'standard', label: 'Standard' },
+            { value: 'wide', label: 'Wide' }]
+            } />
+          
+        </Field>
+        <Switch
+          id="layout-bar"
+          label="Sticky action bar on phones"
+          description="One main action pinned to the bottom of phone screens, like Book, Shop or Subscribe. It steps aside while the cart is open."
+          checked={!!bar?.enabled}
+          onChange={(enabled) => actions.updateLayout({ actionBar: { label: bar?.label ?? 'Book now', blockId: bar?.blockId ?? null, url: bar?.url ?? '', enabled } }, 'actionBar')} />
+        
+        {bar?.enabled &&
+        <div className="flex flex-col gap-3 border-l-2 border-line pl-3">
+            <TextInput id="layout-bar-label" label="Button label" value={bar.label} maxLength={28} error={bar.label.trim() ? undefined : 'Add a short label'} onChange={(e) => actions.updateLayout({ actionBar: { ...bar, label: e.target.value } }, 'actionBarLabel')} />
+            <SelectInput<string>
+            id="layout-bar-target"
+            label="Takes visitors to"
+            value={bar.blockId ?? '__url'}
+            options={[...targets, { value: '__url', label: 'A link…' }]}
+            onChange={(v) => actions.updateLayout({ actionBar: { ...bar, blockId: v === '__url' ? null : v } }, 'actionBarTarget')} />
+          
+            {!bar.blockId && <TextInput id="layout-bar-url" label="Link" placeholder="https://" value={bar.url} onChange={(e) => actions.updateLayout({ actionBar: { ...bar, url: e.target.value } }, 'actionBarUrl')} />}
+          </div>
+        }
+      </section>
 
       <section className="flex flex-col gap-3 border-t border-line pt-5" aria-labelledby="branding-heading">
         <div className="flex items-start justify-between gap-3">

@@ -19,6 +19,30 @@ export interface Service {
   bufferMin: number;
   active: boolean;
   sample?: boolean;
+  /** Team members who do this service (D140). Empty or missing = anyone bookable. */
+  staffIds?: string[];
+}
+
+export interface TimeOff {
+  id: string;
+  /** YYYY-MM-DD, inclusive, business time zone. */
+  from: string;
+  to: string;
+  /** Only the owner sees this. */
+  reason: string;
+}
+
+/** A team member customers can book (D140). Name and initials are copied so public pages can show them. */
+export interface StaffHours {
+  memberId: string;
+  name: string;
+  photo?: string | null;
+  bookable: boolean;
+  /** Null = follows the business hours. */
+  weekly: OpeningHours[] | null;
+  timeOff: TimeOff[];
+  /** A connected calendar (CalendarConnection.id) that blocks only this person. */
+  calendarId?: string | null;
 }
 
 export interface DateOverride {
@@ -45,6 +69,8 @@ export interface Availability {
   reminderHours: number;
   /** Connected Google / Outlook calendars (D137). Simulated two-way sync. */
   calendars?: CalendarConnection[];
+  /** Per-person hours, time off and calendar (D140). Empty = the business is booked as one. */
+  staff?: StaffHours[];
 }
 
 export interface BusyEvent {
@@ -207,6 +233,8 @@ export interface Automation {
   steps: AutomationStep[];
   runs: AutomationRun[];
   updatedAt: string;
+  /** When it was last switched on; only events after this start it (D141). */
+  liveSince?: string;
   sample?: boolean;
 }
 

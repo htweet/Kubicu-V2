@@ -52,7 +52,7 @@ Phase: MVP · CR (commerce-ready) · Later
 | L-05 | Booking confirmation `/p/:handle/booking/:id` | Public | Visitor | Mobile-first | After booking | Reschedule / cancel | Within/outside policy window, cancelled, past | — | CR | ✅ |
 | M-01 | Audience list + pipeline + contact detail | Audience | Owner | Both | Sidebar | Follow up | Empty, consent states, duplicates, tasks due | — | CR | ✅ |
 | M-02 | Import contacts / duplicates review | Audience | Owner | Both | Audience | Import / merge | Mapping, row errors, lawful-basis confirm | — | CR | ✅ |
-| N-01 | Automations overview, recipes, builder, run history | Automations | Owner | Both | Sidebar | Turn on | Draft, on, paused, global pause, problems, test run, failed + retry; campaign/quiet-contact triggers, AI draft/report/webhook actions (D125) | Messaging (partner) | Later | ✅ test runs · real-event runs in Batch 13 |
+| N-01 | Automations overview, recipes, builder, run history | Automations | Owner | Both | Sidebar | Turn on | Draft, on, paused, global pause, problems, test run, failed + retry; campaign/quiet-contact triggers, AI draft/report/webhook actions (D125) | Messaging (partner) | Later | ✅ every trigger runs on real events (D137, D141) |
 | X-01 | Planned module screen | Shell | Owner | Both | — (no planned modules remain) | Back to page | — | — | — | ✅ retired |
 | Y-01 | Wallet, payment links, escrow, verification | Commerce | Owner | Both | Commerce nav | Pay out / create link | D92–D95 | Payment partner | CR | ✅ 🧪 |
 | Y-02 | Collaborations, partnerships, shared shops | Growth | Owner | Both | Sidebar | Invite partner | D103, D120–D123, D128 | Split settlement | Later | ✅ 🧪 |

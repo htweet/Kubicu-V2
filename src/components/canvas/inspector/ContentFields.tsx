@@ -19,6 +19,7 @@ import { FormBlockFields } from './FormBlockFields';
 import { ProofFields } from './ProofFields';
 import { MembersOnlyFields } from './MembersOnlyFields';
 import { TrustBadgeFields } from './TrustBadgeFields';
+import { EmbedFields } from './EmbedFields';
 
 interface ContentFieldsProps {
   block: Block;
@@ -89,15 +90,29 @@ export function ContentFields({ block, issues }: ContentFieldsProps) {
       }
     case 'text':{
         const set = setter('text');
+        const editorial = block.content.variant === 'editorial';
         return (
+          <div className={stack}>
+          <Field id={id('variant')} label="Style">
+            <Segmented
+                ariaLabel="Text style"
+                value={editorial ? 'editorial' : 'plain'}
+                onChange={(variant) => set({ variant }, 'variant')}
+                options={[
+                { value: 'plain', label: 'Paragraph' },
+                { value: 'editorial', label: 'Editorial' }]
+                } />
+              
+          </Field>
           <TextArea
-            id={id('body')}
-            label="Text"
-            rows={7}
-            value={block.content.body}
-            hint={warn('body')}
-            onChange={(e) => set({ body: e.target.value }, 'body')} />);
-
+              id={id('body')}
+              label="Text"
+              rows={7}
+              value={block.content.body}
+              hint={warn('body') ?? (editorial ? 'First line becomes a large heading. Put a short line and a blank line before it to add a kicker above.' : undefined)}
+              onChange={(e) => set({ body: e.target.value }, 'body')} />
+            
+        </div>);
 
       }
     case 'link':{
@@ -169,26 +184,8 @@ export function ContentFields({ block, issues }: ContentFieldsProps) {
         </div>);
 
       }
-    case 'video':{
-        const c = block.content;
-        const set = setter('video');
-        return (
-          <div className={stack}>
-          <TextInput
-              id={id('url')}
-              label="YouTube link"
-              type="url"
-              inputMode="url"
-              placeholder="https://youtube.com/watch?v=…"
-              value={c.url}
-              error={err('url')}
-              hint="Only YouTube is allowed for now, so embeds stay safe and fast."
-              onChange={(e) => set({ url: e.target.value }, 'url')} />
-            
-          <TextInput id={id('title')} label="Video title" optional value={c.title} hint="Used by screen readers." onChange={(e) => set({ title: e.target.value }, 'title')} />
-        </div>);
-
-      }
+    case 'video':
+      return <EmbedFields block={block} error={err('url')} />;
     case 'divider':{
         const set = setter('divider');
         return <TextInput id={id('label')} label="Label" optional value={block.content.label} hint="Leave empty for a plain line." onChange={(e) => set({ label: e.target.value }, 'label')} />;

@@ -14,6 +14,8 @@ import { SharedLibrary } from '../components/templates/SharedLibrary';
 import { CreatorListingInfo } from '../components/templates/CreatorListingInfo';
 import { MyTemplates } from '../components/templates/MyTemplates';
 import { BusinessKits } from '../components/templates/BusinessKits';
+import { EliteCollection } from '../components/templates/EliteCollection';
+import { ArtworkCollection } from '../components/templates/ArtworkCollection';
 import { NewSpaceDialog } from '../components/spaces/NewSpaceDialog';
 import { Dialog } from '../components/ui/Dialog';
 import { Button } from '../components/ui/Button';
@@ -121,7 +123,10 @@ export function TemplatesMarket() {
         </div> :
 
       <div role="tabpanel" id="tpl-panel-browse" aria-labelledby="tpl-tab-browse">
-          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.4fr)_repeat(5,minmax(0,1fr))]">
+          <EliteCollection templates={examplePages} hrefFor={(e) => `/templates/${e.id}`} onOpen={(e) => setPreview({ ex: e, type: e.category })} />
+          <ArtworkCollection templates={examplePages} hrefFor={(e) => `/templates/${e.id}`} onOpen={(e) => setPreview({ ex: e, type: e.category })} />
+          <h2 className="mt-12 text-heading font-semibold text-fg">All templates</h2>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.4fr)_repeat(5,minmax(0,1fr))]">
             <TextInput id="tpl-search" label="Search" leadingIcon={SearchIcon} placeholder="Bakery, salon, creator…" value={q} onChange={(e) => setQ(e.target.value)} />
             <SelectInput<string> id="tpl-type" label="Business type" value={type} onChange={setType} options={[{ value: 'all', label: 'All types' }, ...types.map((t) => ({ value: t, label: t }))]} />
             <SelectInput<string> id="tpl-region" label="Region" value={region} onChange={setRegion} options={[{ value: 'all', label: 'Everywhere' }, ...regions.map((r) => ({ value: r, label: r }))]} />

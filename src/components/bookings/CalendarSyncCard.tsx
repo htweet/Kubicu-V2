@@ -15,12 +15,14 @@ import { SelectInput } from '../ui/SelectInput';
 import { Switch } from '../ui/Switch';
 import { TextInput } from '../ui/TextInput';
 import { IllustrativeTag } from '../ui/IllustrativeTag';
+import { useT } from '../../contexts/LocaleContext';
 
 type Provider = CalendarConnection['provider'];
 
 /** Bookings → Availability: two-way Google / Outlook sync, simulated (D137). */
 export function CalendarSyncCard() {
   const { data, apply } = useOps();
+  const { t: tr } = useT();
   const me = useTeam().me;
   const conns = data.availability.calendars ?? [];
   const [open, setOpen] = useState<Provider | null>(null);
@@ -51,14 +53,14 @@ export function CalendarSyncCard() {
     setStep('connecting');
     window.setTimeout(() => {
       const c = syncConnection(newConnection(open, account.trim(), me.name, data.availability.timeZone), data.bookings);
-      if (setConns((cs) => [...cs, c])) toast.success(`${providerName[open]} connected`, { description: 'Your busy times now block bookings, and KUBICU bookings appear in your calendar.' });
+      if (setConns((cs) => [...cs, c])) toast.success(tr('{provider} connected', { provider: providerName[open] }), { description: tr('Your busy times now block bookings, and KUBICU bookings appear in your calendar.') });
       setOpen(null);
     }, 1200);
   };
 
   const next = () => {
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(account.trim())) return setError('Enter the email address you use for this calendar.');
-    if (conns.some((c) => c.account.toLowerCase() === account.trim().toLowerCase() && c.provider === open)) return setError('This calendar is already connected.');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(account.trim())) return setError(tr('Enter the email address you use for this calendar.'));
+    if (conns.some((c) => c.account.toLowerCase() === account.trim().toLowerCase() && c.provider === open)) return setError(tr('This calendar is already connected.'));
     setStep('consent');
   };
 
@@ -66,7 +68,7 @@ export function CalendarSyncCard() {
     <>
       <Card id="calendar-sync" title="Calendar sync" icon={CalendarCheckIcon} description="Busy times in your own calendar block bookings, and every KUBICU booking appears there — new, moved and cancelled." actions={<IllustrativeTag note="Preview: no Google or Microsoft connection is made in the prototype. Busy times are sample events." />}>
         <div className="flex flex-col gap-5">
-          {conns.length === 0 && <p className="text-label text-fg-muted">Not connected. Bookings only live in KUBICU, so you could be double-booked if you also use another calendar.</p>}
+          {conns.length === 0 && <p className="text-label text-fg-muted">{tr('Not connected. Bookings only live in KUBICU, so you could be double-booked if you also use another calendar.')}</p>}
 
           {conns.map((c) =>
           <section key={c.id} aria-label={`${providerName[c.provider]} — ${c.account}`} className="flex flex-col gap-4 rounded-md border border-line p-4">
@@ -75,15 +77,15 @@ export function CalendarSyncCard() {
                   <p className="flex flex-wrap items-center gap-2 text-label font-semibold text-fg">
                     {providerName[c.provider]}
                     <Badge tone={c.status === 'ok' ? 'success' : 'danger'} dot>
-                      {c.status === 'ok' ? 'Connected' : 'Access removed'}
+                      {tr(c.status === 'ok' ? 'Connected' : 'Access removed')}
                     </Badge>
                   </p>
                   <p className="truncate text-caption text-fg-subtle">
-                    {c.account} · {c.memberName} · synced {formatRelative(c.lastSyncedAt)}
+                    {c.account} · {c.memberName} · {tr('synced {when}', { when: formatRelative(c.lastSyncedAt) })}
                   </p>
                 </div>
                 {c.status === 'ok' &&
-              <Button size="sm" variant="secondary" leadingIcon={RefreshCwIcon} onClick={() => update(c.id, (x) => ({ ...syncConnection(x, data.bookings), lastSyncedAt: new Date().toISOString() })) && toast('Synced', { description: 'Busy times and bookings are up to date.' })}>
+              <Button size="sm" variant="secondary" leadingIcon={RefreshCwIcon} onClick={() => update(c.id, (x) => ({ ...syncConnection(x, data.bookings), lastSyncedAt: new Date().toISOString() })) && toast(tr('Synced'), { description: tr('Busy times and bookings are up to date.') })}>
                     Sync now
                   </Button>
               }
@@ -99,16 +101,16 @@ export function CalendarSyncCard() {
                     </Button>
               }>
               
-                  Access was withdrawn from your {providerName[c.provider]} account. Its busy times no longer block bookings, so check your schedule for clashes.
+                  {tr('Access was withdrawn from your {provider} account. Its busy times no longer block bookings, so check your schedule for clashes.', { provider: providerName[c.provider] })}
                 </InlineAlert> :
 
             <>
                   <fieldset>
-                    <legend className="text-caption font-semibold text-fg-subtle">Which calendars block bookings</legend>
+                    <legend className="text-caption font-semibold text-fg-subtle">{tr('Which calendars block bookings')}</legend>
                     <ul className="mt-2 flex flex-col gap-3">
                       {c.calendars.map((cal) =>
                   <li key={cal.id}>
-                          <Switch id={`cal-${cal.id}`} label={cal.name} description={`${c.events.filter((e) => e.calendarId === cal.id && !e.bookingId && Date.parse(e.end) > Date.now()).length} busy times coming up`} checked={cal.blocks} onChange={(blocks) => update(c.id, (x) => ({ ...x, calendars: x.calendars.map((y) => y.id === cal.id ? { ...y, blocks } : y) }))} />
+                          <Switch id={`cal-${cal.id}`} label={cal.name} description={tr('{n} busy times coming up', { n: c.events.filter((e) => e.calendarId === cal.id && !e.bookingId && Date.parse(e.end) > Date.now()).length })} checked={cal.blocks} onChange={(blocks) => update(c.id, (x) => ({ ...x, calendars: x.calendars.map((y) => y.id === cal.id ? { ...y, blocks } : y) }))} />
                         </li>
                   )}
                     </ul>
@@ -121,11 +123,11 @@ export function CalendarSyncCard() {
 
               {c.log.length > 0 &&
             <details className="text-caption text-fg-muted">
-                  <summary className="cursor-pointer font-medium text-fg">Sync history</summary>
+                  <summary className="cursor-pointer font-medium text-fg">{tr('Sync history')}</summary>
                   <ul className="mt-2 flex flex-col gap-1">
                     {c.log.slice(0, 6).map((l, i) =>
                 <li key={i}>
-                        {formatTimestamp(l.at)} — {l.text}
+                        {formatTimestamp(l.at)} — {tr(l.text)}
                       </li>
                 )}
                   </ul>
@@ -138,7 +140,7 @@ export function CalendarSyncCard() {
                     Prototype: simulate access withdrawn
                   </Button>
               }
-                <Button size="sm" variant="tertiary" className="sm:ml-auto" onClick={() => setConns((cs) => cs.filter((x) => x.id !== c.id)) && toast('Disconnected', { description: 'KUBICU bookings were removed from that calendar. Bookings in KUBICU are unchanged.' })}>
+                <Button size="sm" variant="tertiary" className="sm:ml-auto" onClick={() => setConns((cs) => cs.filter((x) => x.id !== c.id)) && toast(tr('Disconnected'), { description: tr('KUBICU bookings were removed from that calendar. Bookings in KUBICU are unchanged.') })}>
                   Disconnect
                 </Button>
               </div>
@@ -160,8 +162,8 @@ export function CalendarSyncCard() {
         open={!!open}
         onClose={() => step !== 'connecting' && setOpen(null)}
         size="sm"
-        title={open ? `Connect ${providerName[open]}` : ''}
-        description={step === 'consent' ? `${providerName[open ?? 'google']} is asking you to allow KUBICU to:` : step === 'account' ? 'Sign in with the account your calendar is on.' : undefined}
+        title={open ? tr('Connect {provider}', { provider: providerName[open] }) : ''}
+        description={step === 'consent' ? tr('{provider} is asking you to allow KUBICU to:', { provider: providerName[open ?? 'google'] }) : step === 'account' ? tr('Sign in with the account your calendar is on.') : undefined}
         footer={
         step === 'connecting' ? undefined :
         <>
@@ -180,16 +182,16 @@ export function CalendarSyncCard() {
         <div className="flex flex-col gap-3">
             <ul className="flex flex-col gap-2.5 text-label text-fg">
               <li className="flex gap-2">
-                <ShieldCheckIcon size={16} className="mt-0.5 shrink-0 text-success" aria-hidden /> See when you’re busy on your calendars
+                <ShieldCheckIcon size={16} className="mt-0.5 shrink-0 text-success" aria-hidden /> {tr('See when you’re busy on your calendars')}
               </li>
               <li className="flex gap-2">
-                <ShieldCheckIcon size={16} className="mt-0.5 shrink-0 text-success" aria-hidden /> Add, change and remove the events KUBICU creates for bookings
+                <ShieldCheckIcon size={16} className="mt-0.5 shrink-0 text-success" aria-hidden /> {tr('Add, change and remove the events KUBICU creates for bookings')}
               </li>
             </ul>
-            <p className="text-caption text-fg-subtle">KUBICU never shows your event titles to customers — they only see a time as unavailable. You can remove access any time from your {providerName[open ?? 'google']} settings.</p>
+            <p className="text-caption text-fg-subtle">{tr('KUBICU never shows your event titles to customers — they only see a time as unavailable. You can remove access any time from your {provider} settings.', { provider: providerName[open ?? 'google'] })}</p>
           </div>
         }
-        {step === 'connecting' && <p className="py-4 text-center text-label text-fg-muted" role="status">Connecting and reading your busy times…</p>}
+        {step === 'connecting' && <p className="py-4 text-center text-label text-fg-muted" role="status">{tr('Connecting and reading your busy times…')}</p>}
       </Dialog>
     </>);
 

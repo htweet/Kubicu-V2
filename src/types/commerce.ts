@@ -279,6 +279,8 @@ export interface IssuedTicket {
   status: 'valid' | 'void';
   checkedInAt?: string;
   checkedInBy?: string;
+  /** Which door admitted them, e.g. "Main gate" (D143). */
+  checkedInDoor?: string;
   /** Added by the seller (complimentary). */
   comp?: boolean;
   /** Assigned seat (D113): id for checks, label for people, e.g. "Row B, seat 4". */
@@ -364,7 +366,32 @@ export interface Dispute {
   response: string;
 }
 
-export type OrderEventKind = 'placed' | 'payment' | 'paid' | 'packing' | 'shipped' | 'ready' | 'completed' | 'cancelled' | 'refund' | 'dispute' | 'note' | 'download';
+export type OrderEventKind = 'placed' | 'payment' | 'paid' | 'packing' | 'shipped' | 'ready' | 'completed' | 'cancelled' | 'refund' | 'dispute' | 'note' | 'download' | 'tracking';
+
+/** Shipping with a courier outside KUBICU Local Fulfilment, e.g. interstate (D144). */
+export interface TrackingCarrier {
+  name: string;
+  trackingNumber?: string;
+  url?: string;
+}
+
+export type TrackingMilestone = 'update' | 'in_transit' | 'out_for_delivery' | 'attempted';
+
+/** A seller update the customer sees on their tracking page (D144). */
+export interface TrackingUpdate {
+  id: string;
+  at: string;
+  label: string;
+  location?: string;
+  milestone: TrackingMilestone;
+}
+
+export interface OrderTracking {
+  /** Date the seller promised the customer; overrides the estimate. */
+  promisedBy?: string;
+  carrier?: TrackingCarrier;
+  updates: TrackingUpdate[];
+}
 
 export interface OrderEvent {
   id: string;
@@ -397,6 +424,8 @@ export interface Order {
   paymentStatus: PaymentStatus;
   /** Shown in the timeline when the provider was slow to confirm. */
   paymentNote?: string;
+  /** Paid by bank transfer to the seller's own account (D148); the seller confirms it arrived. */
+  bankTransfer?: {bank: string;account: string;accountName: string;sentAt?: string;};
   refunds: Refund[];
   dispute?: Dispute;
   events: OrderEvent[];
@@ -429,6 +458,8 @@ export interface Order {
   pod?: OrderPod;
   /** Paid in parts (D112). */
   instalments?: OrderInstalments;
+  /** Paid-to-delivered tracking: promise date, outside courier, public updates (D144). */
+  tracking?: OrderTracking;
 }
 
 export interface OrderDiscount {

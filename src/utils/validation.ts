@@ -2,7 +2,7 @@ import type { Block, PageDocument, PageTheme } from '../types/page';
 import type { WorkspacePlan } from '../types/plan';
 import { CONTRAST_MIN_PUBLISH, CONTRAST_TARGET, contrastRatio, formatRatio } from './contrast';
 import { contrastCopy, suggestContrastFix, type ContrastKey } from './contrastFixes';
-import { getYouTubeId } from './video';
+import { parseEmbed } from './embeds';
 import { formatNgn } from './format';
 import { socialPlatformLabels } from '../data/socialPlatforms';
 
@@ -76,8 +76,12 @@ export function validateBlock(block: Block): ValidationIssue[] {
       push('warning', 'Describe this image for screen readers, or mark it as decorative', 'alt');
       break;
     case 'video':
-      if (!block.content.url.trim()) push('error', 'Paste a YouTube link', 'url');else
-      if (!getYouTubeId(block.content.url)) push('error', 'Only YouTube links are supported right now', 'url');
+      if (!block.content.url.trim()) push('error', 'Paste a link to embed', 'url');else
+      {
+        const r = parseEmbed(block.content.url);
+        if (!r.ok) push('error', r.reason, 'url');else
+        if (r.kind === 'video' && !block.content.captioned) push('warning', 'Not marked as captioned — check the video has captions', 'captioned');
+      }
       break;
     case 'contact':{
         const c = block.content;
@@ -89,7 +93,7 @@ export function validateBlock(block: Block): ValidationIssue[] {
     case 'faq':
       if (block.content.items.length === 0) push('warning', 'Add at least one question', 'items');else
       if (block.content.items.some((i) => !i.question.trim() || !i.answer.trim()))
-      push('warning', 'Some questions are missing a question or an answer', 'items');
+      push('warning', 'Some questions are missing a question or an answer — visitors only see answered questions', 'items');
       break;
     case 'leadForm':{
         const f = block.content.fields;
@@ -263,9 +267,41 @@ export function validateBlock(block: Block): ValidationIssue[] {
         if (c.hours.some((h) => !h.closed && h.close <= h.open)) push('error', 'Closing time must be after opening time', 'hours');
         break;
       }
+    // ——— Layout & showcase (D153) ———
+    case 'hero':{
+        const c = block.content;
+        if (!c.title.trim()) push('error', 'Add a headline', 'title');
+        if (c.imageUrl && !c.imageAlt.trim()) push('warning', 'Describe the photo for screen readers', 'imageAlt');
+        if ((c.variant === 'cover' || c.variant === 'product') && !c.imageUrl) push('warning', 'This layout is designed around a photo — add one', 'imageUrl');
+        if (c.primaryLabel && c.primaryUrl && !c.primaryUrl.startsWith('#') && !isValidUrl(c.primaryUrl)) push('error', 'Main button link must start with https:// or #', 'primaryUrl');
+        break;
+      }
+    case 'featureGrid':
+      if (block.content.items.filter((i) => i.title.trim()).length < 2) push('warning', 'A grid reads best with at least two items', 'items');
+      if (block.content.items.some((i) => i.imageUrl && !i.imageAlt.trim())) push('warning', 'Describe each photo for screen readers', 'items');
+      break;
+    case 'steps':
+      if (block.content.items.filter((i) => i.title.trim()).length < 2) push('warning', 'Add at least two steps', 'items');
+      break;
+    case 'logoStrip':
+      if (block.content.items.length && !block.content.permission) push('warning', 'Hidden on your live page until you confirm you have permission to show these names', 'permission');
+      break;
+    case 'figures':
+      if (!block.content.confirmed) push('warning', 'Visitors see “Example figures” until you confirm these are real', 'confirmed');
+      break;
+    case 'mediaList':
+      if (block.content.items.filter((i) => i.title.trim()).length === 0) push('error', 'Add at least one item', 'items');
+      break;
+    case 'listings':
+      if (block.content.items.some((i) => i.example)) push('warning', 'Some listings are still examples — replace them with your own', 'items');
+      if (block.content.items.some((i) => i.imageUrl && !i.imageAlt.trim())) push('warning', 'Describe each listing photo for screen readers', 'items');
+      break;
     default:
       break;
   }
+
+  // Layout sections (D153): a block paired with nothing has no partner to sit beside.
+  if (block.layout.pair && block.visibility.hidden) push('warning', 'This block is hidden, so its side-by-side partner shows on its own', 'pair');
 
   // Responsive: button labels this long wrap to two lines on a 360px phone.
   const label = buttonLabelOf(block);
@@ -330,10 +366,16 @@ export interface ThemeContrast {
 }
 
 export function themeContrast(theme: PageTheme): ThemeContrast {
+  // Signature themes (D161): text is checked against the worst colour the atmosphere can put behind it,
+  // and button text against both ends of a gradient action — not just the flat colours.
+  const grounds = [theme.background, ...(theme.material?.backdropStops ?? [])];
+  const worst = (fg: string) => Math.min(...grounds.map((g) => contrastRatio(fg, g)));
+  const m = theme.material;
+  const actionStops = m && (m.buttonFinish === 'gradient' || m.buttonFinish === 'gloss') ? [theme.accent, m.secondary ?? theme.accent] : [theme.accent];
   return {
-    text: contrastRatio(theme.text, theme.background),
-    muted: contrastRatio(theme.mutedText, theme.background),
-    button: contrastRatio(theme.accentText, theme.accent)
+    text: worst(theme.text),
+    muted: worst(theme.mutedText),
+    button: Math.min(...actionStops.map((s) => contrastRatio(theme.accentText, s)))
   };
 }
 

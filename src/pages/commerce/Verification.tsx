@@ -8,6 +8,7 @@ import { useMoney } from '../../hooks/useMoney';
 import { nameMatchOf } from '../../utils/money/store';
 import { entityInfo, kycEditable, readyToSubmit, statusLabels, statusTones, stepDone, stepErrors, stepLabels, stepsFor, verifiedName, withEvent } from '../../utils/money/kyc';
 import { announce } from '../../utils/announce';
+import { useT } from '../../contexts/LocaleContext';
 import { PageHeader } from '../../components/shell/PageHeader';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
@@ -31,6 +32,7 @@ import { DeclarationsStep } from '../../components/kyc/steps/DeclarationsStep';
  */
 export function Verification() {
   const { current } = useWorkspace();
+  const { t: tr } = useT();
   const { data, update } = useMoney(current.id);
   const perm = useCan('payouts.manage');
   const k = data.kyc;
@@ -71,7 +73,8 @@ export function Verification() {
     const errs = stepErrors(k, step, banks);
     if (Object.keys(errs).length) {
       setTried((t) => new Set(t).add(step));
-      announce(`${Object.keys(errs).length} thing${Object.keys(errs).length === 1 ? '' : 's'} to fix on ${stepLabels[step].label}`, 'assertive');
+      const n = Object.keys(errs).length;
+      announce(tr(n === 1 ? '{n} thing to fix on {step}' : '{n} things to fix on {step}', { n, step: tr(stepLabels[step].label) }), 'assertive');
       window.requestAnimationFrame(() => cardRef.current?.querySelector<HTMLElement>('[aria-invalid="true"], [role="alert"]')?.focus());
       return;
     }
@@ -82,7 +85,7 @@ export function Verification() {
     const missing = readyToSubmit(k, banks);
     if (missing) {
       setTried((t) => new Set(t).add(missing));
-      toast.error(`Finish “${stepLabels[missing].label}” first`);
+      toast.error(tr('Finish “{step}” first', { step: tr(stepLabels[missing].label) }));
       return go(missing);
     }
     setSubmitting(true);
@@ -90,7 +93,7 @@ export function Verification() {
       setSubmitting(false);
       const resend = k.status === 'needs_info' || k.attempts > 0;
       set((c) => withEvent({ ...c, status: 'in_review', submittedAt: new Date().toISOString(), attempts: c.attempts + 1, requests: [], note: null }, resend ? 'Sent changes for review' : 'Sent for review'));
-      toast.success('Sent for review', { description: 'Most reviews finish within one business day. Sales keep arriving meanwhile.' });
+      toast.success(tr('Sent for review'), { description: tr('Most reviews finish within one business day. Sales keep arriving meanwhile.') });
     }, 1100);
   };
 
@@ -108,9 +111,9 @@ export function Verification() {
       <PageHeader
         title="Verification"
         description="Confirm who you are and who owns the business. Payouts turn on once KUBICU approves it — sales arrive in your wallet either way."
-        actions={<Badge tone={statusTones[k.status]} dot>{statusLabels[k.status]}</Badge>} />
+        actions={<Badge tone={statusTones[k.status]} dot>{tr(statusLabels[k.status])}</Badge>} />
       
-      <PartnerNote className="mt-6">Checks run through our licensed partner’s identity service (simulated). KUBICU keeps the results, not your documents.</PartnerNote>
+      <PartnerNote className="mt-6">{tr('Checks run through our licensed partner’s identity service (simulated). KUBICU keeps the results, not your documents.')}</PartnerNote>
 
       {!perm.allowed &&
       <InlineAlert className="mt-4" tone="info" title="Only the Owner can verify the business">
@@ -124,7 +127,7 @@ export function Verification() {
             {k.requests.map((r, i) =>
           <li key={i} className="flex flex-wrap items-baseline gap-x-2">
                 <button type="button" className="font-semibold text-fg underline underline-offset-2" onClick={() => go(r.step)}>
-                  {stepLabels[r.step].label}
+                  {tr(stepLabels[r.step].label)}
                 </button>
                 <span>“{r.message}”</span>
               </li>
@@ -139,7 +142,7 @@ export function Verification() {
             <KycStatusPanel k={k} canEdit={perm.allowed} onRestart={restart} />
             <section aria-labelledby="kyc-sent-title" className="rounded-lg border border-line bg-raised p-5 md:p-6">
               <h2 id="kyc-sent-title" className="mb-5 text-label font-semibold text-fg">
-                What you sent
+                {tr('What you sent')}
               </h2>
               <KycSummary k={k} banks={banks} />
             </section>
@@ -155,10 +158,10 @@ export function Verification() {
           <div ref={cardRef} className="scroll-mt-6 rounded-lg border border-line bg-raised">
             <header className="border-b border-line px-5 py-4 md:px-6">
               <h2 tabIndex={-1} className="text-heading font-semibold text-fg focus:outline-none">
-                {stepLabels[step].label}
+                {tr(stepLabels[step].label)}
               </h2>
               <p className="mt-0.5 text-caption text-fg-subtle">
-                {step === 'review' ? 'Check everything once more. You can’t edit while it’s being reviewed.' : step === 'type' ? 'This decides which checks apply.' : `${stepLabels[step].hint}. Saved as you type.`}
+                {step === 'review' ? tr('Check everything once more. You can’t edit while it’s being reviewed.') : step === 'type' ? tr('This decides which checks apply.') : `${tr(stepLabels[step].hint)}. ${tr('Saved as you type.')}`}
               </p>
             </header>
 
@@ -174,7 +177,7 @@ export function Verification() {
             <>
                   {readyToSubmit(k, banks) &&
               <InlineAlert className="mb-5" tone="warning" title="A few steps aren’t finished">
-                      Steps marked without a tick still need details.
+                      {tr('Steps marked without a tick still need details.')}
                     </InlineAlert>
               }
                   <KycSummary k={k} banks={banks} onEdit={editable ? go : undefined} flagged={flagged} />
@@ -188,7 +191,7 @@ export function Verification() {
               </Button>
               {!editable ?
             <span className="inline-flex items-center gap-1.5 text-caption text-fg-subtle">
-                  <LockIcon size={13} aria-hidden /> View only
+                  <LockIcon size={13} aria-hidden /> {tr('View only')}
                 </span> :
             step === 'review' ?
             <Button leadingIcon={SendIcon} onClick={submit} loading={submitting}>
@@ -210,21 +213,22 @@ export function Verification() {
 }
 
 function LimitsAside({ entity }: {entity: KycCase['entity'];}) {
+  const { t: tr } = useT();
   return (
     <aside aria-labelledby="kyc-limits-title" className="rounded-lg border border-line bg-raised p-5 md:p-6">
       <h2 id="kyc-limits-title" className="text-label font-semibold text-fg">
-        What verification unlocks
+        {tr('What verification unlocks')}
       </h2>
       <dl className="mt-4 flex flex-col divide-y divide-line">
         {(['individual', 'company'] as const).map((e) =>
         <div key={e} className="flex items-baseline justify-between gap-3 py-2.5 first:pt-0">
-            <dt className="text-caption text-fg-muted">{e === 'individual' ? 'Individuals' : 'Registered businesses'}</dt>
-            <dd className="text-right text-caption font-medium text-fg">{e === 'individual' ? '₦2m a day · ₦10m balance' : '₦20m a day · no balance limit'}</dd>
+            <dt className="text-caption text-fg-muted">{tr(e === 'individual' ? 'Individuals' : 'Registered businesses')}</dt>
+            <dd className="text-right text-caption font-medium text-fg">{tr(e === 'individual' ? '₦2m a day · ₦10m balance' : '₦20m a day · no balance limit')}</dd>
           </div>
         )}
       </dl>
-      {entity && <p className="mt-3 text-caption text-fg-subtle">You applied as: {entityInfo[entity].short}.</p>}
-      <p className="mt-3 text-caption text-fg-subtle">Example figures — final limits depend on the payment partner.</p>
+      {entity && <p className="mt-3 text-caption text-fg-subtle">{tr('You applied as: {type}.', { type: tr(entityInfo[entity].short) })}</p>}
+      <p className="mt-3 text-caption text-fg-subtle">{tr('Example figures — final limits depend on the payment partner.')}</p>
     </aside>);
 
 }

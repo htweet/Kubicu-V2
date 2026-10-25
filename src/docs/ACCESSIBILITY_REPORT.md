@@ -1,6 +1,6 @@
 # KUBICU — Accessibility report (Batch 7, D76)
 
-_Last updated: 24 Oct 2026 (section 5b covers Batches 8–12). Standard: WCAG 2.1 AA, plus 2.5.7 Dragging movements and 2.5.8 Target size (minimum) from WCAG 2.2._
+_Last updated: 24 Oct 2026 (section 5b covers Batches 8–14). Standard: WCAG 2.1 AA, plus 2.5.7 Dragging movements and 2.5.8 Target size (minimum) from WCAG 2.2._
 
 ## 1. Summary
 
@@ -101,7 +101,7 @@ The AI gradient's lightest stops (orange-700, pink-700) carry white text at ≈ 
 | # | Item | WCAG | Severity | Why open |
 |---|---|---|---|---|
 | O1 | Drag-reorder in the canvas still uses pointer drag as one option | 2.5.7 | — | Passes: equal keyboard and button alternatives exist. Recorded for clarity. |
-| O2 | Video blocks have no captions control | 1.2.2 | Moderate | Captions come from YouTube; KUBICU can't add them. Guidance should tell sellers to upload captioned videos. |
+| O2 | Video blocks have no captions control | 1.2.2 | Moderate | ✅ Mitigated (D142): "This video has captions" confirmation per video, site-specific how-to, captions checklist, publish warning and Check-tab finding, help article. Captions themselves still come from the host site. |
 | O3 | Soft status fills not measured in every appearance | 1.4.3 | Moderate | Needs an automated contrast pass in a browser |
 | O4 | Screens marked "not visually reviewed" (Products, Orders, Schedule, Automations, IntentFlow, Domains & QR, Media, Templates → Browse, Super admin) were checked in code for headings, labels and tables, not looked at at 320px and 200% zoom | 1.4.10, 1.4.4 | Moderate | Needs a browser |
 | O5 | Camera check-in relies on sight of the screen; result card is announced but not yet tested with VoiceOver/TalkBack | 4.1.3 | Moderate | Needs a real phone |
@@ -125,6 +125,7 @@ This report's findings above cover Batches 1–7. Later batches each ended with 
 | Canvas Check tab, site kits, A/B tests, shared shops | D126–D128 | ✅ | 320 px |
 | Ops overview, approvals, incidents, `/status` | D129, D130 | ✅ | 200% zoom |
 | Developer tools, `/developers` | D131, D132 | ✅ | Code samples at 320 px |
+| Batch 14: team hours, policy agreement, Video & embed, presence, multi-door check-in, order tracking, publish-screen QR, bank transfer | D140–D144, D148, D149 | ✅ (switches get a 44×44 tap area; time-off and hours errors and every form error are alerts; the remove-time-off button is full size; policy window can't be dismissed once overdue; embed frames always titled and fluid; presence avatars have a full text label and joins/leaves are announced; check-in offline state and "need a look" list are live regions, door chips and small text buttons are 44 px; tracking stages are an ordered list with the current step marked, Call/Track and "Show all updates" are 44 px with expanded state) | Seat map, door check-in and tracking page with TalkBack/VoiceOver; embeds from each site at 320 px (third-party content); the fixed orange "problem" stage colour against dark custom themes |
 | Batch 13: staff tools, Business tab, USSD, watermark preview, calendar sync, drafts panel, page-set preview | D135–D138 | ✅ (USSD timer has `role="timer"`, waiting is a status, declines are alerts; pay-by radios show focus; page-set block chips have a text label; bank list drops to one column under 360 px) | USSD flow with TalkBack; busy blocks on Schedule week at 200% zoom |
 | Translations | D133–D133r | `<html lang>` follows the chosen language | Screen-reader pronunciation of Yorùbá tone marks and Hausa/Igbo diacritics |
 

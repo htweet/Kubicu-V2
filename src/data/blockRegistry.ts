@@ -33,14 +33,21 @@ import {
   MusicIcon,
   ListMusicIcon,
   LibraryBigIcon,
-  HandHeartIcon } from
+  HandHeartIcon,
+  PanelTopIcon,
+  LayoutDashboardIcon,
+  ListOrderedIcon,
+  AwardIcon,
+  BarChart3Icon,
+  TvIcon,
+  HomeIcon } from
 'lucide-react';
 import type { BlockContentMap, BlockType } from '../types/page';
 import type { WorkspacePlan } from '../types/plan';
 import { uid } from '../utils/id';
 import { defaultHours } from '../utils/openHours';
 
-export type BlockCategory = 'Foundation' | 'Conversion' | 'Commerce';
+export type BlockCategory = 'Foundation' | 'Showcase' | 'Conversion' | 'Commerce';
 
 export interface BlockDefinition<K extends BlockType = BlockType> {
   type: K;
@@ -157,11 +164,11 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
   },
   video: {
     type: 'video',
-    name: 'Video embed',
-    description: 'Embed a YouTube video or short.',
+    name: 'Video & embed',
+    description: 'YouTube, Vimeo, TikTok, Instagram, Spotify, maps, Calendly and more — safely embedded.',
     category: 'Foundation',
     icon: VideoIcon,
-    keywords: ['youtube', 'film', 'media', 'embed'],
+    keywords: ['youtube', 'vimeo', 'tiktok', 'instagram', 'reel', 'facebook', 'loom', 'spotify', 'soundcloud', 'audiomack', 'music', 'podcast', 'map', 'google maps', 'calendly', 'film', 'media', 'embed'],
     defaultAlign: 'left',
     supportsEmphasis: false,
     clickable: false,
@@ -574,12 +581,145 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
     clickable: true,
     defaults: () => ({ title: '', collectionId: null, layout: 'strip', limit: 8, showSeeAll: true })
   },
-  support: supportBase
+  support: supportBase,
+  // ——— Layout & showcase (D153) ———
+  hero: {
+    type: 'hero',
+    name: 'Hero',
+    description: 'A designed opening: portrait, split, cover, masthead, poster or product.',
+    category: 'Showcase',
+    icon: PanelTopIcon,
+    keywords: ['header', 'banner', 'cover', 'intro', 'masthead', 'poster', 'landing', 'top'],
+    defaultAlign: 'left',
+    supportsEmphasis: false,
+    clickable: true,
+    defaults: () => ({
+      variant: 'split',
+      eyebrow: '',
+      title: 'Say what you do in one line',
+      subtitle: 'One or two sentences on who it’s for and why it matters.',
+      imageUrl: '',
+      imageAlt: '',
+      focal: 'center',
+      primaryLabel: 'Get in touch',
+      primaryUrl: '',
+      secondaryLabel: '',
+      secondaryUrl: '',
+      meta: ''
+    })
+  },
+  featureGrid: {
+    type: 'featureGrid',
+    name: 'Feature grid',
+    description: 'Two to four items side by side: services, programmes, formats or categories.',
+    category: 'Showcase',
+    icon: LayoutDashboardIcon,
+    keywords: ['services', 'features', 'grid', 'columns', 'cards', 'offer', 'programmes', 'categories'],
+    defaultAlign: 'left',
+    supportsEmphasis: false,
+    clickable: true,
+    defaults: () => ({
+      title: 'What I offer',
+      intro: '',
+      columns: 3,
+      items: [
+      { id: uid('ft'), title: 'First service', text: 'What it is and who it helps.', imageUrl: '', imageAlt: '', label: '', url: '' },
+      { id: uid('ft'), title: 'Second service', text: 'What it is and who it helps.', imageUrl: '', imageAlt: '', label: '', url: '' },
+      { id: uid('ft'), title: 'Third service', text: 'What it is and who it helps.', imageUrl: '', imageAlt: '', label: '', url: '' }]
+
+    })
+  },
+  steps: {
+    type: 'steps',
+    name: 'Steps',
+    description: 'A numbered process or timeline, for when the order matters.',
+    category: 'Showcase',
+    icon: ListOrderedIcon,
+    keywords: ['process', 'how it works', 'timeline', 'agenda', 'itinerary', 'steps', 'what happens next'],
+    defaultAlign: 'left',
+    supportsEmphasis: false,
+    clickable: false,
+    defaults: () => ({
+      title: 'How it works',
+      intro: '',
+      items: [
+      { id: uid('st'), title: 'Tell me what you need', text: '' },
+      { id: uid('st'), title: 'I send a plan and price', text: '' },
+      { id: uid('st'), title: 'We get started', text: '' }]
+
+    })
+  },
+  logoStrip: {
+    type: 'logoStrip',
+    name: 'Logo strip',
+    description: 'Clients, partners or press — shown only with their permission.',
+    category: 'Showcase',
+    icon: AwardIcon,
+    keywords: ['clients', 'partners', 'brands', 'press', 'featured in', 'logos', 'worked with'],
+    defaultAlign: 'center',
+    supportsEmphasis: false,
+    clickable: false,
+    defaults: () => ({ title: 'Worked with', items: [], permission: false })
+  },
+  figures: {
+    type: 'figures',
+    name: 'Figures',
+    description: 'Two to four labelled numbers. Marked illustrative until you confirm they’re real.',
+    category: 'Showcase',
+    icon: BarChart3Icon,
+    keywords: ['stats', 'numbers', 'metrics', 'audience', 'impact', 'results', 'figures'],
+    defaultAlign: 'center',
+    supportsEmphasis: false,
+    clickable: false,
+    defaults: () => ({
+      title: '',
+      items: [
+      { id: uid('fg'), value: '120+', label: 'Projects delivered' },
+      { id: uid('fg'), value: '6 yrs', label: 'In business' },
+      { id: uid('fg'), value: '4', label: 'Cities served' }],
+
+      confirmed: false
+    })
+  },
+  mediaList: {
+    type: 'mediaList',
+    name: 'Media list',
+    description: 'Episodes, releases, videos or chapters with thumbnails, dates and links.',
+    category: 'Showcase',
+    icon: TvIcon,
+    keywords: ['podcast', 'episodes', 'tracks', 'releases', 'videos', 'chapters', 'archive', 'stories'],
+    defaultAlign: 'left',
+    supportsEmphasis: false,
+    clickable: true,
+    defaults: () => ({
+      title: 'Latest episodes',
+      kind: 'episodes',
+      items: [{ id: uid('md'), title: 'Your first episode', meta: '', duration: '', imageUrl: '', url: '' }],
+      links: []
+    })
+  },
+  listings: {
+    type: 'listings',
+    name: 'Listings',
+    description: 'Properties, stays or experiences with key facts and an enquiry button.',
+    category: 'Showcase',
+    icon: HomeIcon,
+    keywords: ['property', 'real estate', 'rent', 'sale', 'apartment', 'tour', 'experience', 'stay', 'listing'],
+    defaultAlign: 'left',
+    supportsEmphasis: false,
+    clickable: true,
+    defaults: () => ({
+      title: 'Available now',
+      ctaLabel: 'Enquire',
+      items: [{ id: uid('ls'), title: 'Your first listing', imageUrl: '', imageAlt: '', price: '', facts: '', location: '', url: '', example: true }]
+    })
+  }
 };
 
-export const blockCategories: BlockCategory[] = ['Foundation', 'Conversion', 'Commerce'];
+export const blockCategories: BlockCategory[] = ['Foundation', 'Showcase', 'Conversion', 'Commerce'];
 
 export const blockOrder: BlockType[] = [
+'hero',
 'profile',
 'heading',
 'text',
@@ -614,7 +754,13 @@ export const blockOrder: BlockType[] = [
 'support',
 'subscription',
 'membersOnly',
-'download'];
+'download',
+'featureGrid',
+'steps',
+'logoStrip',
+'figures',
+'mediaList',
+'listings'];
 
 
 export interface PlannedBlock {

@@ -84,7 +84,7 @@ export function BlockLibrary({ onAdded, touch }: BlockLibraryProps) {
           return (
             <section key={category} aria-labelledby={`cat-${category}`}>
                 <h3 id={`cat-${category}`} className="px-2 pb-1.5 text-caption font-semibold text-fg-subtle">
-                  {category}
+                  {category === 'Showcase' ? 'Layout & showcase' : category}
                 </h3>
                 <ul className="flex flex-col">
                   {items.map((type) => {

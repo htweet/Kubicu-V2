@@ -1,5 +1,6 @@
 import type { Block } from '../types/page';
 import type { ValidationIssue } from './validation';
+import { parseEmbed, providerMeta } from './embeds';
 
 /**
  * Canvas "Check" tab (D126): an automatic accessibility pass and a page-weight estimate,
@@ -78,12 +79,18 @@ export function a11yFindings(blocks: Block[], editorIssues: ValidationIssue[]): 
           }
           break;
         }
-      case 'video':
-        if (b.content.url && !b.content.title.trim())
-        add({ id: `${b.id}:title`, level: 'fix', title: 'Video has no title', advice: 'Add a title so screen readers can announce what the video is.', wcag: '4.1.2' });
-        if (b.content.url)
-        add({ id: `${b.id}:captions`, level: 'improve', title: 'Check the video has captions', advice: 'Turn on captions on YouTube for this video. Many people watch on mute, on buses and in shops.', wcag: '1.2.2' });
-        break;
+      case 'video':{
+          const r = b.content.url ? parseEmbed(b.content.url) : null;
+          if (!r || !r.ok) break;
+          const what = r.kind === 'map' ? 'map' : r.kind === 'scheduler' ? 'booking calendar' : r.kind === 'audio' ? 'audio player' : 'video';
+          if (!b.content.title.trim())
+          add({ id: `${b.id}:title`, level: 'fix', title: `Embedded ${what} has no title`, advice: `Add a title so screen readers can announce what this ${r.name} ${what} is.`, wcag: '4.1.2' });
+          if (r.kind === 'video' && !b.content.captioned)
+          add({ id: `${b.id}:captions`, level: 'improve', title: 'Video isn’t marked as captioned', advice: `${providerMeta(r.provider).captionsHow ?? 'Turn on captions where the video is hosted.'} Then tick “This video has captions”. Many people watch on mute, on buses and in shops.`, wcag: '1.2.2' });
+          if (r.kind === 'audio')
+          add({ id: `${b.id}:transcript`, level: 'improve', title: 'Offer a transcript or lyrics', advice: 'For talks and podcasts, add a short summary or a link to a transcript in a Text block below, so Deaf visitors don’t miss out.', wcag: '1.2.1' });
+          break;
+        }
       default:
         break;
     }
@@ -167,8 +174,11 @@ export function pageWeight(blocks: Block[]): PageWeight {
         ((b.content as unknown as {items?: {coverUrl: string;title: string;}[];}).items ?? []).forEach((i) => push(b, i.title || 'Portfolio cover', i.coverUrl));
         break;
       case 'video':
-        // A YouTube player is ~800 KB but only loads when tapped in data saver.
-        if (b.content.url) deferredKb += 800;
+        // Embedded players load only when tapped in data saver. Rough weights per kind.
+        if (b.content.url) {
+          const r = parseEmbed(b.content.url);
+          if (r.ok) deferredKb += r.kind === 'video' ? 800 : r.kind === 'audio' ? 400 : 500;
+        }
         break;
       default:
         break;

@@ -20,11 +20,14 @@ import { cn } from '../../utils/cn';
 import { Card } from '../../components/ui/layout/Card';
 import { AsideNote } from '../../components/ui/layout/AsideNote';
 import { CalendarSyncCard } from '../../components/bookings/CalendarSyncCard';
+import { TeamHoursCard } from '../../components/bookings/TeamHoursCard';
+import { useT } from '../../contexts/LocaleContext';
 
 const num = (v: string, max: number) => Math.min(max, Number(v.replace(/[^0-9]/g, '') || '0'));
 
 export function Availability() {
   const { data, apply, hasSample, loadSample, clearSample } = useOps();
+  const { t: tr } = useT();
   const [draft, setDraft] = useState<AvailabilityT>(data.availability);
   // Calendar connections save on their own (D137), so they never count as unsaved changes here.
   const strip = (a: AvailabilityT) => JSON.stringify({ ...a, calendars: undefined });
@@ -34,7 +37,7 @@ export function Availability() {
 
   const save = () => {
     if (hoursError) return;
-    if (apply((d) => ({ ...d, availability: { ...draft, calendars: d.availability.calendars } }))) toast('Availability saved', { description: 'Your booking calendar updates straight away. Existing bookings stay put.' });
+    if (apply((d) => ({ ...d, availability: { ...draft, calendars: d.availability.calendars } }))) toast(tr('Availability saved'), { description: tr('Your booking calendar updates straight away. Existing bookings stay with whoever has them.') });
   };
 
   return (
@@ -56,7 +59,7 @@ export function Availability() {
               <TimezoneSelect id="av-tz" value={draft.timeZone as TimeZoneId} onChange={(timeZone) => patch({ timeZone })} />
             </div>
             <div className="mt-5 border-t border-line pt-5">
-              <HoursEditor blockId="availability" hours={draft.weekly} onChange={(weekly) => patch({ weekly })} error={hoursError} />
+              <HoursEditor blockId="availability" hours={draft.weekly} onChange={(weekly) => patch({ weekly })} error={hoursError && tr(hoursError)} />
             </div>
           </Card>
 
@@ -66,30 +69,32 @@ export function Availability() {
               </Button>
           }>
             {draft.overrides.length === 0 ?
-            <p className="text-label text-fg-muted">No date changes.</p> :
+            <p className="text-label text-fg-muted">{tr('No date changes.')}</p> :
 
             <ul className="-my-3 flex flex-col divide-y divide-line">
                 {draft.overrides.map((o) => {
                 const set = (p: Partial<typeof o>) => patch({ overrides: draft.overrides.map((x) => x.id === o.id ? { ...x, ...p } : x) });
                 return (
                   <li key={o.id} className="flex flex-wrap items-center gap-2 py-3">
-                      <label className="sr-only" htmlFor={`ov-d-${o.id}`}>Date</label>
+                      <label className="sr-only" htmlFor={`ov-d-${o.id}`}>{tr('Date')}</label>
                       <input id={`ov-d-${o.id}`} type="date" value={o.date} onChange={(e) => set({ date: e.target.value })} className={cn(fieldControlClass, 'h-9 w-40 text-label')} />
-                      <SelectInput id={`ov-s-${o.id}`} label="Status" value={o.closed ? 'closed' : 'open'} onChange={(v) => set({ closed: v === 'closed' })} options={[{ value: 'closed', label: 'Closed' }, { value: 'open', label: 'Special hours' }]} />
+                      <SelectInput id={`ov-s-${o.id}`} label="Status" value={o.closed ? 'closed' : 'open'} onChange={(v) => set({ closed: v === 'closed' })} options={[{ value: 'closed', label: tr('Closed') }, { value: 'open', label: tr('Special hours') }]} />
                       {!o.closed &&
                     <>
-                          <input aria-label="Opens" type="time" value={o.open} onChange={(e) => set({ open: e.target.value })} className={cn(fieldControlClass, 'h-9 w-28 text-label')} />
-                          <input aria-label="Closes" type="time" value={o.close} onChange={(e) => set({ close: e.target.value })} className={cn(fieldControlClass, 'h-9 w-28 text-label')} />
+                          <input aria-label={tr('Opens')} type="time" value={o.open} onChange={(e) => set({ open: e.target.value })} className={cn(fieldControlClass, 'h-9 w-28 text-label')} />
+                          <input aria-label={tr('Closes')} type="time" value={o.close} onChange={(e) => set({ close: e.target.value })} className={cn(fieldControlClass, 'h-9 w-28 text-label')} />
                         </>
                     }
-                      <input aria-label="Note" placeholder="Note (only you see it)" value={o.note} onChange={(e) => set({ note: e.target.value })} className={cn(fieldControlClass, 'h-9 min-w-[140px] flex-1 text-label')} />
-                      <IconButton icon={Trash2Icon} size="sm" label="Remove date" onClick={() => patch({ overrides: draft.overrides.filter((x) => x.id !== o.id) })} />
+                      <input aria-label={tr('Note')} placeholder={tr('Note (only you see it)')} value={o.note} onChange={(e) => set({ note: e.target.value })} className={cn(fieldControlClass, 'h-9 min-w-[140px] flex-1 text-label')} />
+                      <IconButton icon={Trash2Icon} label="Remove date" onClick={() => patch({ overrides: draft.overrides.filter((x) => x.id !== o.id) })} />
                     </li>);
 
               })}
               </ul>
             }
           </Card>
+
+          <TeamHoursCard draft={draft} bookings={data.bookings} onChange={(staff) => patch({ staff })} />
 
           <CalendarSyncCard />
         </div>
@@ -99,7 +104,7 @@ export function Availability() {
           <div className="flex flex-col divide-y divide-line">
           <section aria-labelledby="lim-h" className="px-5 py-5 md:px-6">
             <h3 id="lim-h" className="text-label font-semibold text-fg">
-              Limits
+              {tr('Limits')}
             </h3>
             <div className="mt-3 grid gap-4 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
               <TextInput id="av-notice" label="Minimum notice (hours)" inputMode="numeric" value={String(draft.minNoticeHours)} onChange={(e) => patch({ minNoticeHours: num(e.target.value, 336) })} />
@@ -110,7 +115,7 @@ export function Availability() {
 
           <section aria-labelledby="pol-h" className="px-5 py-5 md:px-6">
             <h3 id="pol-h" className="text-label font-semibold text-fg">
-              Cancellation policy
+              {tr('Cancellation policy')}
             </h3>
             <div className="mt-3 flex flex-col gap-4">
               <TextInput id="av-cancel" label="Free changes until (hours before)" inputMode="numeric" value={String(draft.cancelHours)} hint="After this, customer cancellations keep the deposit. You can always refund yourself." onChange={(e) => patch({ cancelHours: num(e.target.value, 168) })} />
@@ -120,15 +125,15 @@ export function Availability() {
 
           <section aria-labelledby="rem-h" className="px-5 py-5 md:px-6 md:pb-6">
             <h3 id="rem-h" className="sr-only">
-              Reminders
+              {tr('Reminders')}
             </h3>
             <Switch id="av-rem" label="Send booking reminders" description="WhatsApp or email in the customer’s own time zone. Preview only in this prototype." checked={draft.remindersOn} onChange={(remindersOn) => patch({ remindersOn })} />
             {draft.remindersOn &&
                 <>
                 <div className="mt-4 max-w-[220px]">
-                  <SelectInput id="av-remh" label="When" value={String(draft.reminderHours)} options={[2, 12, 24, 48].map((h) => ({ value: String(h), label: `${h} hours before` }))} onChange={(v) => patch({ reminderHours: Number(v) })} />
+                  <SelectInput id="av-remh" label="When" value={String(draft.reminderHours)} options={[2, 12, 24, 48].map((h) => ({ value: String(h), label: tr('{n} hours before', { n: h }) }))} onChange={(v) => patch({ reminderHours: Number(v) })} />
                 </div>
-                <p className="mt-3 rounded-md bg-sunken px-3 py-2.5 text-label text-fg-muted">“Hi Amaka, a reminder of your Studio fitting tomorrow at 11:00am (Lagos time). Need to move it? Use your booking link.”</p>
+                <p className="mt-3 rounded-md bg-sunken px-3 py-2.5 text-label text-fg-muted">{tr('“Hi Amaka, a reminder of your Studio fitting tomorrow at 11:00am (Lagos time). Need to move it? Use your booking link.”')}</p>
               </>
                 }
           </section>

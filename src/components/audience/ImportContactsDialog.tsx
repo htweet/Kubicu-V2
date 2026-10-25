@@ -9,6 +9,7 @@ import { Dialog } from '../ui/Dialog';
 import { Button } from '../ui/Button';
 import { SelectInput } from '../ui/SelectInput';
 import { Switch } from '../ui/Switch';
+import { useT } from '../../contexts/LocaleContext';
 
 type Target = 'skip' | 'name' | 'email' | 'phone' | 'tags';
 const targets: {value: Target;label: string;}[] = [
@@ -31,6 +32,7 @@ function guess(h: string): Target {
 /** CSV import: map columns, see row errors, confirm consent basis. Imported contacts are never auto-subscribed. */
 export function ImportContactsDialog({ open, onClose }: {open: boolean;onClose: () => void;}) {
   const { apply } = useOps();
+  const { t: tr } = useT();
   const [table, setTable] = useState<string[][] | null>(null);
   const [map, setMap] = useState<Target[]>([]);
   const [error, setError] = useState('');
@@ -46,9 +48,9 @@ export function ImportContactsDialog({ open, onClose }: {open: boolean;onClose: 
 
   const onFile = async (f: File) => {
     reset();
-    if (!/\.csv$/i.test(f.name)) return setError('Choose a .csv file.');
+    if (!/\.csv$/i.test(f.name)) return setError(tr('Choose a .csv file.'));
     const t = parseCsv(await f.text());
-    if (t.length < 2) return setError('The file has no rows under the header.');
+    if (t.length < 2) return setError(tr('The file has no rows under the header.'));
     setTable(t);
     setMap(t[0].map(guess));
   };
@@ -74,7 +76,7 @@ export function ImportContactsDialog({ open, onClose }: {open: boolean;onClose: 
     }, d)
     );
     if (ok) {
-      toast(`Imported ${valid.length} contact${valid.length === 1 ? '' : 's'}`, { description: 'Existing contacts were updated, not duplicated.' });
+      toast(tr(valid.length === 1 ? 'Imported {n} contact' : 'Imported {n} contacts', { n: valid.length }), { description: tr('Existing contacts were updated, not duplicated.') });
       reset();
       onClose();
     }
@@ -93,7 +95,7 @@ export function ImportContactsDialog({ open, onClose }: {open: boolean;onClose: 
       footer={
       table ?
       <Button onClick={run} disabled={valid.length === 0 || !lawful}>
-            Import {valid.length}
+            {tr('Import {n}', { n: valid.length })}
           </Button> :
 
       <Button leadingIcon={UploadIcon} onClick={() => ref.current?.click()} data-autofocus>
@@ -108,26 +110,26 @@ export function ImportContactsDialog({ open, onClose }: {open: boolean;onClose: 
           <AlertCircleIcon size={15} className="mt-0.5 shrink-0" aria-hidden /> {error}
         </p>
       }
-      {!table && !error && <p className="text-label text-fg-muted">Exports from Google Contacts, Excel or another tool work. Headers in the first row.</p>}
+      {!table && !error && <p className="text-label text-fg-muted">{tr('Exports from Google Contacts, Excel or another tool work. Headers in the first row.')}</p>}
       {table &&
       <div className="flex flex-col gap-4">
           <fieldset>
-            <legend className="mb-2 text-label font-semibold text-fg">Match columns</legend>
+            <legend className="mb-2 text-label font-semibold text-fg">{tr('Match columns')}</legend>
             <div className="grid gap-3 sm:grid-cols-2">
               {table[0].map((h, i) =>
-            <SelectInput key={i} id={`map-${i}`} label={h || `Column ${i + 1}`} value={map[i]} options={targets} onChange={(v) => setMap((m) => m.map((x, idx) => idx === i ? v : x))} />
+            <SelectInput key={i} id={`map-${i}`} label={h || tr('Column {n}', { n: i + 1 })} value={map[i]} options={targets.map((o) => ({ ...o, label: tr(o.label) }))} onChange={(v) => setMap((m) => m.map((x, idx) => idx === i ? v : x))} />
             )}
             </div>
           </fieldset>
           <p className="text-label text-fg" aria-live="polite">
-            <span className="font-semibold">{valid.length} ready</span>
-            {rows.length - valid.length > 0 && <span className="text-danger"> · {rows.length - valid.length} with errors (skipped)</span>}
+            <span className="font-semibold">{tr('{n} ready', { n: valid.length })}</span>
+            {rows.length - valid.length > 0 && <span className="text-danger"> · {tr('{n} with errors (skipped)', { n: rows.length - valid.length })}</span>}
           </p>
           {rows.some((r) => r.errors.length) &&
         <ul className="max-h-32 overflow-auto rounded-md border border-line text-caption">
               {rows.filter((r) => r.errors.length).map((r) =>
           <li key={r.line} className="border-t border-line px-3 py-1.5 first:border-t-0">
-                  <span className="font-mono text-fg-subtle">Row {r.line}</span> <span className="text-danger">{r.errors.join(' · ')}</span>
+                  <span className="font-mono text-fg-subtle">{tr('Row {n}', { n: r.line })}</span> <span className="text-danger">{r.errors.map((e) => tr(e)).join(' · ')}</span>
                 </li>
           )}
             </ul>

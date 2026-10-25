@@ -3,6 +3,7 @@ import { AlertTriangleIcon, CheckIcon } from 'lucide-react';
 import type { KycStepId } from '../../types/kyc';
 import { stepLabels } from '../../utils/money/kyc';
 import { cn } from '../../utils/cn';
+import { useT } from '../../contexts/LocaleContext';
 
 interface KycStepperProps {
   steps: KycStepId[];
@@ -16,20 +17,21 @@ interface KycStepperProps {
 
 /** Verification steps: a vertical list on desktop, a compact progress strip on phones. */
 export function KycStepper({ steps, current, done, flagged, locked, onSelect }: KycStepperProps) {
+  const { t: tr } = useT();
   const idx = steps.indexOf(current);
   const completed = steps.filter((s) => s !== 'review' && done(s)).length;
   const total = steps.length - 1;
 
   return (
-    <nav aria-label="Verification steps">
+    <nav aria-label={tr('Verification steps')}>
       {/* Phones */}
       <div className="lg:hidden">
         <div className="flex items-baseline justify-between gap-2 text-caption">
           <span className="font-semibold text-fg">
-            Step {idx + 1} of {steps.length} · {stepLabels[current].label}
+            {tr('Step {n} of {total}', { n: idx + 1, total: steps.length })} · {tr(stepLabels[current].label)}
           </span>
           <span className="text-fg-subtle">
-            {completed} of {total} done
+            {tr('{n} of {total} done', { n: completed, total })}
           </span>
         </div>
         <div className="mt-2 flex gap-1" aria-hidden>
@@ -69,9 +71,9 @@ export function KycStepper({ steps, current, done, flagged, locked, onSelect }: 
                   {isFlagged && !isCurrent ? <AlertTriangleIcon size={14} /> : isDone && !isCurrent ? <CheckIcon size={14} strokeWidth={3} /> : i + 1}
                 </span>
                 <span className="min-w-0 pt-0.5">
-                  <span className={cn('block text-label', isCurrent ? 'font-semibold text-fg' : 'font-medium text-fg-muted')}>{stepLabels[s].label}</span>
-                  <span className="block text-caption text-fg-subtle">{isFlagged ? 'Change requested' : stepLabels[s].hint}</span>
-                  <span className="sr-only">{isDone ? ' — done' : isFlagged ? ' — needs changes' : ''}</span>
+                  <span className={cn('block text-label', isCurrent ? 'font-semibold text-fg' : 'font-medium text-fg-muted')}>{tr(stepLabels[s].label)}</span>
+                  <span className="block text-caption text-fg-subtle">{tr(isFlagged ? 'Change requested' : stepLabels[s].hint)}</span>
+                  <span className="sr-only">{isDone ? ` — ${tr('done')}` : isFlagged ? ` — ${tr('needs changes')}` : ''}</span>
                 </span>
               </button>
             </li>);

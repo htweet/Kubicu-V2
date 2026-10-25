@@ -116,4 +116,7 @@ export const fontPairs: {id: PageTheme['fontPair'];name: string;display: string;
   body: "'Inter', system-ui, sans-serif"
 },
 { id: 'statement', name: 'Statement', display: "'Archivo', system-ui, sans-serif", body: "'Inter', system-ui, sans-serif" },
-{ id: 'warm', name: 'Warm', display: "'Lora', Georgia, serif", body: "'Inter', system-ui, sans-serif" }];
+{ id: 'warm', name: 'Warm', display: "'Lora', Georgia, serif", body: "'Inter', system-ui, sans-serif" },
+// D157 — two display faces for the Elite library: a high-contrast luxury serif and a characterful grotesk.
+{ id: 'luxe', name: 'Luxe', display: "'Cormorant Garamond', Georgia, serif", body: "'Inter', system-ui, sans-serif" },
+{ id: 'grotesk', name: 'Grotesk', display: "'Bricolage Grotesque', system-ui, sans-serif", body: "'Inter', system-ui, sans-serif" }];

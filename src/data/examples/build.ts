@@ -1,4 +1,4 @@
-import type { Block, BlockContentMap, BlockStyle, BlockType, PageDocument, PageTheme } from '../../types/page';
+import type { Block, BlockContentMap, BlockLayout, BlockStyle, BlockType, PageDocument, PageTheme } from '../../types/page';
 import type { WorkspacePlan } from '../../types/plan';
 
 export type ExampleGoal = 'sell' | 'book' | 'audience' | 'showcase' | 'events' | 'support';
@@ -17,6 +17,35 @@ export interface ExamplePage {
   /** The plan this fictional page is on (drives gallery + badge). */
   plan: WorkspacePlan;
   doc: PageDocument;
+  /** Elite Template Library (D154): paid, structurally distinct templates with their own register entry. */
+  elite?: EliteMeta;
+  /** Artwork collection (D158): classic single-column pages with an AI-generated background artwork. */
+  artwork?: ArtworkMeta;
+}
+
+export interface ArtworkMeta {
+  /** Example price in naira (test mode), never above ₦3,000. */
+  priceNgn: number;
+  /** Short name of the artwork style, e.g. "Aurora ribbons". */
+  art: string;
+}
+
+export type EliteUseCase = 'creators' | 'media' | 'professionals' | 'commerce' | 'services' | 'events' | 'impact';
+export type EliteGoal = 'audience' | 'enquiries' | 'sell' | 'bookings' | 'register';
+
+export interface EliteMeta {
+  /** 01–24, as in docs/TEMPLATE_REGISTER.md. */
+  number: number;
+  useCase: EliteUseCase;
+  goal: EliteGoal;
+  /** Example price in naira (test mode). */
+  priceNgn: number;
+  /** One line naming the structural concept, e.g. "Cover hero · media list · sticky Listen bar". */
+  structure: string;
+  /** Sections in order, as shown under "What's inside". */
+  inside: string[];
+  /** Honesty notes: what's sample, what needs a plan or module. */
+  goodToKnow: string[];
 }
 
 const stamp = '2026-10-10T09:00:00.000Z';
@@ -36,6 +65,12 @@ export function b<K extends BlockType>(id: string, type: K, content: BlockConten
     createdAt: stamp,
     updatedAt: stamp
   } as unknown as Block;
+}
+
+/** Same as `b`, with layout-section options (D153). */
+export function bl<K extends BlockType>(id: string, type: K, content: BlockContentMap[K], layout: Partial<BlockLayout> = {}, style: Partial<BlockStyle> = {}): Block {
+  const block = b(id, type, content, style);
+  return { ...block, layout: { ...block.layout, ...layout } } as Block;
 }
 
 export function doc(handle: string, title: string, seoDescription: string, theme: PageTheme, blocks: Block[]): PageDocument {

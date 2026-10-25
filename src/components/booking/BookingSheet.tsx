@@ -7,6 +7,9 @@ import { PageOverlay } from '../blocks/PageOverlay';
 import { cardStyle, mix } from '../blocks/pageStyle';
 import { CheckoutHeading, PrimaryButton, SecondaryButton, SheetActions, StepDots, TestModeNote, ThemedField } from '../checkout/checkoutUi';
 import { SlotPicker } from './SlotPicker';
+import { StaffPicker } from './StaffPicker';
+import { eligibleStaff } from '../../utils/ops/staff';
+import { useT } from '../../contexts/LocaleContext';
 import { createBooking } from '../../utils/ops/ops';
 import { dayLabel, durationLabel, timeLabel, visitorTimeZone } from '../../utils/ops/slots';
 import { isValidEmail, isValidPhone } from '../../utils/validation';
@@ -29,6 +32,7 @@ export function BookingSheet({ theme, ops, serviceId, handle, onClose }: Booking
   const navigate = useNavigate();
   const [step, setStep] = useState<Step>('time');
   const [start, setStart] = useState<number | null>(null);
+  const [staffId, setStaffId] = useState<string | null>(null);
   const [customer, setCustomer] = useState({ name: '', phone: '', email: '' });
   const [intake, setIntake] = useState('');
   const [consent, setConsent] = useState(false);
@@ -38,6 +42,7 @@ export function BookingSheet({ theme, ops, serviceId, handle, onClose }: Booking
   const [problem, setProblem] = useState<{kind: 'taken' | 'failed';message: string;} | null>(null);
   const [tried, setTried] = useState(false);
   const track = useTrack();
+  const { t } = useT();
   // Booking funnel: a time was chosen (D61).
   useEffect(() => {
     if (step === 'details' && serviceId) track('booking_time', { label: serviceId });
@@ -48,6 +53,7 @@ export function BookingSheet({ theme, ops, serviceId, handle, onClose }: Booking
     if (!serviceId) return;
     setStep('time');
     setStart(null);
+    setStaffId(null);
     setProblem(null);
     setTried(false);
   }, [serviceId]);
@@ -58,6 +64,8 @@ export function BookingSheet({ theme, ops, serviceId, handle, onClose }: Booking
   const a = data.availability;
   const tz = a.timeZone;
   const muted = { color: theme.mutedText };
+  const staff = eligibleStaff(service, a);
+  const chosen = staff.find((s) => s.memberId === staffId) ?? null;
   const steps: Step[] = ['time', 'details', 'confirm'];
   const errors = {
     name: !customer.name.trim() ? 'Enter your name' : '',
@@ -82,7 +90,8 @@ export function BookingSheet({ theme, ops, serviceId, handle, onClose }: Booking
           intake: intake.trim(),
           depositOutcome: service.depositNgn ? byUssd ? 'paid' : deposit : 'none',
           customerTimeZone: visitorTimeZone(),
-          marketingConsent: consent
+          marketingConsent: consent,
+          staffId: chosen?.memberId ?? null
         });
         return result.ok ? result.data : d;
       });
@@ -143,7 +152,8 @@ export function BookingSheet({ theme, ops, serviceId, handle, onClose }: Booking
           <CheckoutHeading theme={theme} sub={`${durationLabel(service.durationMin)} · ${service.priceNgn !== null ? formatNgn(service.priceNgn) : 'Price on request'}${service.depositNgn ? ` · ${formatNgn(service.depositNgn)} deposit to hold it` : ''}`}>
             {service.name}
           </CheckoutHeading>
-          <SlotPicker theme={theme} service={service} availability={a} bookings={data.bookings} value={start} onChange={setStart} />
+          {staff.length > 1 && <StaffPicker theme={theme} staff={staff} value={chosen?.memberId ?? null} onChange={(id) => (setStaffId(id), setStart(null))} />}
+          <SlotPicker key={chosen?.memberId ?? 'any'} theme={theme} service={service} availability={a} bookings={data.bookings} value={start} onChange={setStart} staffId={chosen?.memberId ?? null} />
           <SheetActions theme={theme}>
             <PrimaryButton theme={theme} disabled={start === null} onClick={() => setStep('details')}>
               Continue
@@ -203,6 +213,12 @@ export function BookingSheet({ theme, ops, serviceId, handle, onClose }: Booking
               </span>
             </dd>
           </div>
+          {staff.length > 0 &&
+          <div className="flex justify-between gap-3">
+              <dt style={muted}>{t('With')}</dt>
+              <dd className="text-right font-medium">{chosen ? chosen.name : staff.length === 1 ? staff[0].name : t('Anyone available')}</dd>
+            </div>
+          }
           <div className="flex justify-between gap-3">
             <dt style={muted}>Where</dt>
             <dd className="text-right font-medium">{service.location === 'online' ? 'Online' : service.location === 'customer' ? 'At your address' : 'In person'}{service.locationNote ? <span className="block text-[12px] font-normal" style={muted}>{service.locationNote}</span> : null}</dd>

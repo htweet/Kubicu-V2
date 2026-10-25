@@ -4,6 +4,7 @@ import type {
   BlockGroup,
   BlockContentMap,
   PageBranding,
+  PageLayoutSettings,
   BlockMeta,
   BlockType,
   IntentGoal,
@@ -545,6 +546,9 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
 
       /** The language visitors' browsers and screen readers use for the whole site (D76). */
       setLanguage: (language: string) => mutateSite((doc) => ({ ...doc, language }), 'page:language'),
+
+      /** Page width and the sticky action bar on phones (D153). Shared by every page of the site. */
+      updateLayout: (patch: Partial<PageLayoutSettings>, field = 'layout') => mutateSite((doc) => ({ ...doc, layout: { ...doc.layout, ...patch } }), `page:${field}`),
 
       applyTemplate: (template: PageDocument) =>
       mutate(

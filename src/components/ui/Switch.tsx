@@ -9,15 +9,17 @@ interface SwitchProps {
   label: string;
   description?: string;
   disabled?: boolean;
+  /** Keep the label for screen readers only (compact rows). */
+  hideLabel?: boolean;
 }
 
-export function Switch({ id, checked, onChange, label, description, disabled }: SwitchProps) {
+export function Switch({ id, checked, onChange, label, description, disabled, hideLabel }: SwitchProps) {
   const { t } = useT();
   label = t(label);
   description = description && t(description);
   return (
     <div className={cn('flex items-start justify-between gap-4', disabled && 'opacity-50')}>
-      <div className="min-w-0">
+      <div className={cn('min-w-0', hideLabel && 'sr-only')}>
         <label htmlFor={id} className="text-label font-medium text-fg">
           {label}
         </label>
@@ -31,7 +33,8 @@ export function Switch({ id, checked, onChange, label, description, disabled }: 
         disabled={disabled}
         onClick={() => onChange(!checked)}
         className={cn(
-          'relative mt-0.5 inline-flex h-5 w-9 shrink-0 items-center rounded-full border transition-colors duration-150 ease-out',
+          // The visible track is 20×36; an invisible ring widens the tap area to 44×44 (WCAG 2.5.8).
+          'relative mt-0.5 inline-flex h-5 w-9 shrink-0 items-center rounded-full border transition-colors duration-150 ease-out before:absolute before:-inset-x-1 before:-inset-y-3',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-canvas',
           'disabled:cursor-not-allowed',
           checked ? 'border-action bg-action' : 'border-line-strong bg-sunken'

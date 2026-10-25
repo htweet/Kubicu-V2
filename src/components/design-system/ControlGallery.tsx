@@ -74,7 +74,7 @@ export function ControlGallery() {
           <DsLabel>Validation & disabled</DsLabel>
           <TextInput id="ds-error" label="Destination" defaultValue="adaezeatelier" error="Destination must be a full link starting with https://" />
           <TextInput id="ds-optional" label="Location" optional placeholder="e.g. Lekki, Lagos" />
-          <TextInput id="ds-disabled" label="Custom domain" disabled placeholder="Available in Batch 5" />
+          <TextInput id="ds-disabled" label="Custom domain" disabled placeholder="Available on Creator and above" />
           <SelectInput
             id="ds-select"
             label="Heading size"

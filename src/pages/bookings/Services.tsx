@@ -29,12 +29,14 @@ import { EmptyState } from '../../components/ui/EmptyState';
 import { BookingsPlanNote } from '../../components/bookings/BookingsPlanNote';
 import { SampleTag } from '../../components/commerce/StatusBadges';
 import { DetailSection } from '../../components/ui/layout/DetailList';
+import { useT } from '../../contexts/LocaleContext';
 
 const blank = (): Service => ({ id: uid('svc'), name: '', description: '', durationMin: 60, priceNgn: null, depositNgn: null, location: 'studio', locationNote: '', bufferMin: 15, active: true });
 const durations = [15, 30, 45, 60, 90, 120, 180].map((m) => ({ value: String(m), label: durationLabel(m) }));
 
 export function Services() {
   const { data, apply } = useOps();
+  const { t: tr } = useT();
   const { current } = useWorkspace();
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
@@ -61,7 +63,7 @@ export function Services() {
     if (!draft.name.trim() || depositError) return;
     const s = { ...draft, name: draft.name.trim() };
     if (apply((d) => ({ ...d, services: existing ? d.services.map((x) => x.id === s.id ? s : x) : [...d.services, s] }))) {
-      toast(existing ? 'Service saved' : 'Service added', { description: existing ? undefined : 'Add a Booking block to your page and pick this service.' });
+      toast(tr(existing ? 'Service saved' : 'Service added'), { description: existing ? undefined : tr('Add a Booking block to your page and pick this service.') });
       setParams({});
     }
   };
@@ -77,6 +79,16 @@ export function Services() {
     }
     return null;
   };
+
+  // Who does this service (D140).
+  const bookableStaff = (data.availability.staff ?? []).filter((s) => s.bookable);
+  const nowIds = draft.staffIds ?? [];
+  const removedWithBookings = existing && nowIds.length ?
+  (existing.staffIds?.length ? existing.staffIds : bookableStaff.map((s) => s.memberId)).
+  filter((id) => !nowIds.includes(id)).
+  map((id) => ({ name: bookableStaff.find((s) => s.memberId === id)?.name ?? 'Someone', count: data.bookings.filter((b) => b.serviceId === existing.id && b.assigneeId === id && b.status === 'confirmed' && Date.parse(b.start) > Date.now()).length })).
+  filter((r) => r.count > 0) :
+  [];
 
   const upcomingFor = (id: string) => data.bookings.filter((b) => b.serviceId === id && b.status === 'confirmed' && Date.parse(b.start) > Date.now()).length;
 
@@ -97,7 +109,7 @@ export function Services() {
           <EmptyState icon={CalendarIcon} title="No services yet" description="A fitting, a consultation, a lesson — anything with a time." action={<Button leadingIcon={PlusIcon} onClick={() => setParams({ new: '1' })}>Add service</Button>} />
         </div> :
 
-      <ul aria-label="Services" className="mt-8 flex flex-col divide-y divide-line overflow-hidden rounded-lg border border-line bg-raised">
+      <ul aria-label={tr('Services')} className="mt-8 flex flex-col divide-y divide-line overflow-hidden rounded-lg border border-line bg-raised">
           {data.services.map((s) => {
           const dest = serviceDestination(s.id);
           return (
@@ -109,20 +121,20 @@ export function Services() {
                     {s.sample && <SampleTag />}
                   </span>
                   <span className="block text-caption text-fg-subtle">
-                    {durationLabel(s.durationMin)} · {s.location === 'online' ? 'Online' : s.location === 'customer' ? 'At customer’s address' : 'In person'} · {upcomingFor(s.id)} upcoming
+                    {durationLabel(s.durationMin)} · {tr(s.location === 'online' ? 'Online' : s.location === 'customer' ? 'At customer’s address' : 'In person')} · {tr('{n} upcoming', { n: upcomingFor(s.id) })}
                   </span>
                 </span>
                 <span className="flex items-center gap-3">
-                  <span className="text-label font-semibold tabular-nums text-fg">{s.priceNgn !== null ? formatNgn(s.priceNgn) : 'On request'}</span>
-                  {s.depositNgn ? <span className="text-caption text-fg-subtle">{formatNgn(s.depositNgn)} deposit</span> : null}
-                  <Badge tone={s.active ? 'success' : 'neutral'}>{s.active ? 'Bookable' : 'Off'}</Badge>
+                  <span className="text-label font-semibold tabular-nums text-fg">{s.priceNgn !== null ? formatNgn(s.priceNgn) : tr('On request')}</span>
+                  {s.depositNgn ? <span className="text-caption text-fg-subtle">{tr('{amount} deposit', { amount: formatNgn(s.depositNgn) })}</span> : null}
+                  <Badge tone={s.active ? 'success' : 'neutral'}>{tr(s.active ? 'Bookable' : 'Off')}</Badge>
                 </span>
               </button>
-              <Tooltip content={dest ? 'QR code that opens booking for this service' : 'Add a Booking block for this service to a page and publish it first'}>
+              <Tooltip content={tr(dest ? 'QR code that opens booking for this service' : 'Add a Booking block for this service to a page and publish it first')}>
                 <IconButton
                   icon={QrCodeIcon}
                   size="sm"
-                  label={`QR code for ${s.name}`}
+                  label={tr('QR code for {name}', { name: s.name })}
                   disabled={!dest || !s.active}
                   onClick={() => dest && navigate(qrHref(dest, `Book: ${s.name}`))} />
                 
@@ -137,7 +149,7 @@ export function Services() {
         open={open}
         onClose={() => setParams({})}
         side="right"
-        title={existing ? `Edit ${existing.name}` : 'New service'}
+        title={existing ? tr('Edit {name}', { name: existing.name }) : tr('New service')}
         footer={
         <div className="flex justify-end gap-2">
             <Button variant="secondary" onClick={() => setParams({})}>
@@ -156,9 +168,36 @@ export function Services() {
           <DetailSection title="Time">
           <div className="grid gap-4 sm:grid-cols-2">
             <SelectInput id="svc-dur" label="Duration" value={String(draft.durationMin)} options={durations} onChange={(v) => patch({ durationMin: Number(v) })} />
-            <SelectInput id="svc-buf" label="Break after" value={String(draft.bufferMin)} options={[0, 5, 10, 15, 30, 60].map((m) => ({ value: String(m), label: m ? `${m} min` : 'None' }))} onChange={(v) => patch({ bufferMin: Number(v) })} />
+            <SelectInput id="svc-buf" label="Break after" value={String(draft.bufferMin)} options={[0, 5, 10, 15, 30, 60].map((m) => ({ value: String(m), label: m ? tr('{n} min', { n: m }) : tr('None') }))} onChange={(v) => patch({ bufferMin: Number(v) })} />
           </div>
           </DetailSection>
+          {bookableStaff.length > 0 &&
+          <DetailSection title="Who does this">
+              <fieldset>
+                <legend className="text-caption text-fg-subtle">{tr('Leave everyone unticked and anyone bookable can do it.')}</legend>
+                <ul className="mt-2 flex flex-col divide-y divide-line rounded-md border border-line">
+                  {bookableStaff.map((s) => {
+                  const ids = draft.staffIds ?? [];
+                  const on = ids.includes(s.memberId);
+                  return (
+                    <li key={s.memberId}>
+                        <label className="flex min-h-[44px] cursor-pointer items-center gap-3 px-3 text-label text-fg">
+                          <input type="checkbox" checked={on} onChange={(e) => patch({ staffIds: e.target.checked ? [...ids, s.memberId] : ids.filter((x) => x !== s.memberId) })} className="h-4 w-4" />
+                          <span className="flex-1">{s.name}</span>
+                        </label>
+                      </li>);
+
+                })}
+                </ul>
+              </fieldset>
+              {removedWithBookings.length > 0 &&
+            <p className="mt-2 rounded-md bg-warning-soft px-3 py-2 text-caption text-fg">
+                  {removedWithBookings.map((r) => tr(r.count === 1 ? '{name} has {n} upcoming booking' : '{name} has {n} upcoming bookings', { name: r.name, n: r.count })).join('; ')}{' '}
+                  {tr('for this service. Those stay with them; only new bookings change.')}
+                </p>
+            }
+            </DetailSection>
+          }
           <DetailSection title="Price">
           <div className="grid items-start gap-4 sm:grid-cols-2">
             <CurrencyInput id="svc-price" label="Price" value={draft.priceNgn} placeholder="On request" onChange={(priceNgn) => patch({ priceNgn })} />
@@ -169,13 +208,13 @@ export function Services() {
               <Switch
                 id="svc-balance"
                 label="Ask for the rest online before the appointment"
-                description={`The customer gets a link to pay ${formatNgn(draft.priceNgn - (draft.depositNgn ?? 0))} before they arrive, instead of paying on the day.`}
+                description={tr('The customer gets a link to pay {amount} before they arrive, instead of paying on the day.', { amount: formatNgn(draft.priceNgn - (draft.depositNgn ?? 0)) })}
                 checked={!!draft.balanceOnline}
                 onChange={(balanceOnline) => patch({ balanceOnline, balanceHoursBefore: draft.balanceHoursBefore ?? 24 })} />
               
               {draft.balanceOnline &&
               <div className="sm:max-w-[50%]">
-                  <SelectInput id="svc-balance-hours" label="Due" value={String(draft.balanceHoursBefore ?? 24)} options={balanceHourOptions.map((h) => ({ value: String(h), label: `${h} hours before` }))} onChange={(v) => patch({ balanceHoursBefore: Number(v) })} />
+                  <SelectInput id="svc-balance-hours" label="Due" value={String(draft.balanceHoursBefore ?? 24)} options={balanceHourOptions.map((h) => ({ value: String(h), label: tr('{n} hours before', { n: h }) }))} onChange={(v) => patch({ balanceHoursBefore: Number(v) })} />
                 </div>
               }
             </div>
@@ -195,7 +234,7 @@ export function Services() {
                 } />
               
           </Field>
-          <TextInput id="svc-locnote" label={draft.location === 'online' ? 'How you’ll meet' : 'Address or area'} optional value={draft.locationNote} placeholder={draft.location === 'online' ? 'e.g. Google Meet link sent after booking' : 'e.g. Victoria Island studio'} onChange={(e) => patch({ locationNote: e.target.value })} />
+          <TextInput id="svc-locnote" label={draft.location === 'online' ? 'How you’ll meet' : 'Address or area'} optional value={draft.locationNote} placeholder={tr(draft.location === 'online' ? 'e.g. Google Meet link sent after booking' : 'e.g. Victoria Island studio')} onChange={(e) => patch({ locationNote: e.target.value })} />
           </DetailSection>
         </div>
       </Sheet>

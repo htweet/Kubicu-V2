@@ -24,8 +24,8 @@ export function BehaviourFields({ block }: {block: Block;}) {
       
       <Switch
         id={`${block.id}-track`}
-        label="Count clicks"
-        description="Will count anonymous clicks once Analytics launches in Batch 5. Nothing is tracked yet."
+        label="Count taps"
+        description="Counts anonymous taps on this block’s links and buttons for Analytics, IntentFlow and A/B goals. Turn off to stop counting this block."
         checked={block.behaviour.trackClicks}
         onChange={(trackClicks) => actions.updateMeta(block.id, { behaviour: { trackClicks } })} />
       

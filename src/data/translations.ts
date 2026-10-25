@@ -11,6 +11,13 @@ import { commerceHa, commerceIg, commercePcm, commerceYo } from './translationsC
 import { commerceDetailHa, commerceDetailIg, commerceDetailPcm, commerceDetailYo } from './translationsCommerceDetail';
 import { commerceTabsHa, commerceTabsIg, commerceTabsPcm, commerceTabsYo } from './translationsCommerceTabs';
 import { batch13Ha, batch13Ig, batch13Pcm, batch13Yo } from './translationsBatch13';
+import { batch14Ha, batch14Ig, batch14Pcm, batch14Yo } from './translationsBatch14';
+import { trackingHa, trackingIg, trackingPcm, trackingYo } from './translationsTracking';
+import { commerceMoneyHa, commerceMoneyIg, commerceMoneyPcm, commerceMoneyYo } from './translationsCommerceMoney';
+import { bookingsAudienceHa, bookingsAudienceIg, bookingsAudiencePcm, bookingsAudienceYo } from './translationsBookingsAudience';
+import { availabilityHa, availabilityIg, availabilityPcm, availabilityYo } from './translationsAvailability';
+import { panelsHa, panelsIg, panelsPcm, panelsYo } from './translationsPanels';
+import { kycHa, kycIg, kycPcm, kycYo } from './translationsKyc';
 
 export type UiLang = 'en' | 'pcm' | 'yo' | 'ha' | 'ig';
 
@@ -270,10 +277,10 @@ const ig: Dict = {
 
 export const translations: Record<Exclude<UiLang, 'en'>, Dict> = {
   // Earlier dictionaries win on overlap so screen names stay as already drafted.
-  pcm: { ...batch13Pcm, ...commerceTabsPcm, ...commerceDetailPcm, ...commercePcm, ...pcm, ...checkoutPcm, ...statusPcm, ...payPcm, ...subsPcm },
-  yo: { ...batch13Yo, ...commerceTabsYo, ...commerceDetailYo, ...commerceYo, ...yo, ...checkoutYo, ...statusYo, ...payYo, ...subsYo },
-  ha: { ...batch13Ha, ...commerceTabsHa, ...commerceDetailHa, ...commerceHa, ...ha, ...checkoutHa, ...statusHa, ...payHa, ...subsHa },
-  ig: { ...batch13Ig, ...commerceTabsIg, ...commerceDetailIg, ...commerceIg, ...ig, ...checkoutIg, ...statusIg, ...payIg, ...subsIg }
+  pcm: { ...kycPcm, ...panelsPcm, ...availabilityPcm, ...bookingsAudiencePcm, ...commerceMoneyPcm, ...trackingPcm, ...batch14Pcm, ...batch13Pcm, ...commerceTabsPcm, ...commerceDetailPcm, ...commercePcm, ...pcm, ...checkoutPcm, ...statusPcm, ...payPcm, ...subsPcm },
+  yo: { ...kycYo, ...panelsYo, ...availabilityYo, ...bookingsAudienceYo, ...commerceMoneyYo, ...trackingYo, ...batch14Yo, ...batch13Yo, ...commerceTabsYo, ...commerceDetailYo, ...commerceYo, ...yo, ...checkoutYo, ...statusYo, ...payYo, ...subsYo },
+  ha: { ...kycHa, ...panelsHa, ...availabilityHa, ...bookingsAudienceHa, ...commerceMoneyHa, ...trackingHa, ...batch14Ha, ...batch13Ha, ...commerceTabsHa, ...commerceDetailHa, ...commerceHa, ...ha, ...checkoutHa, ...statusHa, ...payHa, ...subsHa },
+  ig: { ...kycIg, ...panelsIg, ...availabilityIg, ...bookingsAudienceIg, ...commerceMoneyIg, ...trackingIg, ...batch14Ig, ...batch13Ig, ...commerceTabsIg, ...commerceDetailIg, ...commerceIg, ...ig, ...checkoutIg, ...statusIg, ...payIg, ...subsIg }
 };
 
 export const uiLanguages: {value: UiLang;label: string;native: string;}[] = [

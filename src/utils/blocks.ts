@@ -2,6 +2,7 @@ import { blockDefinitions } from '../data/blockRegistry';
 import type { Block, BlockOf, BlockType, PageDocument } from '../types/page';
 import { uid } from './id';
 import { formatNgn } from './format';
+import { parseEmbed } from './embeds';
 
 export function createBlock<K extends BlockType>(type: K): BlockOf<K> {
   const def = blockDefinitions[type];
@@ -45,6 +46,15 @@ export function cloneBlock(block: Block): Block {
   if (copy.type === 'event') copy.content.tiers = copy.content.tiers.map((t) => ({ ...t, id: uid('tier') }));
   if (copy.type === 'playlist') copy.content.tracks = copy.content.tracks.map((t) => ({ ...t, id: uid('tr') }));
   if (copy.type === 'portfolio') copy.content.items = copy.content.items.map((i) => ({ ...i, id: uid('pf') }));
+  if (copy.type === 'featureGrid') copy.content.items = copy.content.items.map((i) => ({ ...i, id: uid('ft') }));
+  if (copy.type === 'steps') copy.content.items = copy.content.items.map((i) => ({ ...i, id: uid('st') }));
+  if (copy.type === 'logoStrip') copy.content.items = copy.content.items.map((i) => ({ ...i, id: uid('lg') }));
+  if (copy.type === 'figures') copy.content.items = copy.content.items.map((i) => ({ ...i, id: uid('fg') }));
+  if (copy.type === 'listings') copy.content.items = copy.content.items.map((i) => ({ ...i, id: uid('ls') }));
+  if (copy.type === 'mediaList') {
+    copy.content.items = copy.content.items.map((i) => ({ ...i, id: uid('md') }));
+    copy.content.links = copy.content.links.map((l) => ({ ...l, id: uid('pl') }));
+  }
   if (copy.type === 'menu')
   copy.content.categories = copy.content.categories.map((cat) => ({
     ...cat,
@@ -56,10 +66,15 @@ export function cloneBlock(block: Block): Block {
 
 export function cloneDocument(doc: PageDocument, overrides: Partial<PageDocument> = {}): PageDocument {
   const copy = deepCopy(doc);
+  const blocks = copy.blocks.map(cloneBlock);
+  // The sticky action bar points at a block (D153): follow it to its new id.
+  const barIndex = copy.layout?.actionBar?.blockId ? copy.blocks.findIndex((b) => b.id === copy.layout?.actionBar?.blockId) : -1;
+  const layout = copy.layout?.actionBar && barIndex >= 0 ? { ...copy.layout, actionBar: { ...copy.layout.actionBar, blockId: blocks[barIndex].id } } : copy.layout;
   return {
     ...copy,
+    layout,
     ...overrides,
-    blocks: copy.blocks.map(cloneBlock),
+    blocks,
     pages: copy.pages?.map((p) => ({ ...p, blocks: p.blocks.map((b) => ({ ...cloneBlock(b), groupId: null })), groups: undefined })),
     updatedAt: new Date().toISOString()
   };
@@ -84,7 +99,7 @@ export function summarizeBlock(block: Block): string {
     case 'image':
       return block.content.alt || (block.content.url ? 'Image' : 'No image chosen');
     case 'video':
-      return block.content.title || (block.content.url ? 'YouTube video' : 'No video yet');
+      return block.content.title || (block.content.url ? (() => {const r = parseEmbed(block.content.url);return r.ok ? `${r.name} embed` : 'Link can’t be embedded';})() : 'Nothing embedded yet');
     case 'divider':
       return block.content.label || 'Hairline';
     case 'spacer':
@@ -145,6 +160,17 @@ export function summarizeBlock(block: Block): string {
       return block.content.collectionId ? block.content.title || 'Collection' : 'No collection chosen';
     case 'support':
       return block.content.amounts.length ? block.content.amounts.map((a) => formatNgn(a)).join(' · ') : 'Any amount';
+    case 'hero':
+      return block.content.title || 'Empty headline';
+    case 'featureGrid':
+    case 'steps':
+    case 'mediaList':
+    case 'listings':
+      return `${block.content.title ? `${block.content.title} · ` : ''}${block.content.items.length} item${block.content.items.length === 1 ? '' : 's'}`;
+    case 'logoStrip':
+      return block.content.items.map((i) => i.name).filter(Boolean).join(', ') || 'No names yet';
+    case 'figures':
+      return block.content.items.map((i) => i.value).filter(Boolean).join(' · ') || 'No figures yet';
     default:
       return '';
   }

@@ -9,9 +9,11 @@ import { SelectInput } from '../../ui/SelectInput';
 import { Button } from '../../ui/Button';
 import { CheckBadge } from '../CheckBadge';
 import { DocUpload } from '../DocUpload';
+import { useT } from '../../../contexts/LocaleContext';
 
 /** The person applying: name, date of birth, verified phone, BVN + NIN checks, ID document and a liveness selfie. */
 export function IdentityStep({ k, set, errors, disabled }: KycStepProps) {
+  const { t: tr } = useT();
   const i = k.identity;
   const [codeSent, setCodeSent] = useState(false);
   const [code, setCode] = useState('');
@@ -28,13 +30,13 @@ export function IdentityStep({ k, set, errors, disabled }: KycStepProps) {
   const setNin = (nin: string) => set((c) => ({ ...c, identity: { ...c.identity, nin, checks: { ...c.identity.checks, nin: simulateIdCheck(nin) } } }));
 
   const sendCode = () => {
-    if (!/^0\d{10}$/.test(i.phone.replace(/\s/g, ''))) return setCodeError('Enter your phone number first.');
+    if (!/^0\d{10}$/.test(i.phone.replace(/\s/g, ''))) return setCodeError(tr('Enter your phone number first.'));
     setCodeError('');
     setCodeSent(true);
-    toast('Code sent (simulated)', { description: 'Type any 6 digits except 000000.' });
+    toast(tr('Code sent (simulated)'), { description: tr('Type any 6 digits except 000000.') });
   };
   const confirmCode = () => {
-    if (!/^\d{6}$/.test(code) || code === '000000') return setCodeError('That code isn’t right. Check the message and try again.');
+    if (!/^\d{6}$/.test(code) || code === '000000') return setCodeError(tr('That code isn’t right. Check the message and try again.'));
     setCodeError('');
     setId({ phoneVerified: true });
     setCodeSent(false);
@@ -55,7 +57,7 @@ export function IdentityStep({ k, set, errors, disabled }: KycStepProps) {
     <div className="flex flex-col gap-8">
       <section aria-labelledby="kyc-id-person" className="flex flex-col gap-4">
         <h3 id="kyc-id-person" className="text-label font-semibold text-fg">
-          About you
+          {tr('About you')}
         </h3>
         <div className="grid gap-4 md:grid-cols-2">
           <TextInput id="kyc-legal-name" label="Full legal name" hint="Exactly as registered with your bank (BVN)." value={i.legalName} onChange={(e) => setName(e.target.value)} error={errors.legalName} disabled={disabled} autoComplete="name" />
@@ -77,11 +79,11 @@ export function IdentityStep({ k, set, errors, disabled }: KycStepProps) {
             
             {i.phoneVerified ?
             <span className="inline-flex h-10 items-center gap-1.5 text-label font-medium text-success">
-                <CheckCircle2Icon size={16} aria-hidden /> Confirmed
+                <CheckCircle2Icon size={16} aria-hidden /> {tr('Confirmed')}
               </span> :
 
             <Button variant="secondary" onClick={sendCode} disabled={disabled}>
-                {codeSent ? 'Send again' : 'Send code'}
+                {tr(codeSent ? 'Send again' : 'Send code')}
               </Button>
             }
           </div>
@@ -91,16 +93,16 @@ export function IdentityStep({ k, set, errors, disabled }: KycStepProps) {
               <Button onClick={confirmCode}>Confirm</Button>
             </div>
           }
-          {codeError && <p className="mt-1.5 text-caption font-medium text-danger">{codeError}</p>}
+          {codeError && <p role="alert" className="mt-1.5 text-caption font-medium text-danger">{codeError}</p>}
         </div>
       </section>
 
       <section aria-labelledby="kyc-id-numbers" className="flex flex-col gap-4 border-t border-line pt-6">
         <div>
           <h3 id="kyc-id-numbers" className="text-label font-semibold text-fg">
-            Identity numbers
+            {tr('Identity numbers')}
           </h3>
-          <p className="mt-0.5 text-caption text-fg-subtle">Checked with NIBSS and NIMC through our partner. We only see whether your details match — never your bank balance.</p>
+          <p className="mt-0.5 text-caption text-fg-subtle">{tr('Checked with NIBSS and NIMC through our partner. We only see whether your details match — never your bank balance.')}</p>
         </div>
         <div className="grid gap-4 md:grid-cols-2">
           <div className="flex flex-col gap-2">
@@ -108,36 +110,36 @@ export function IdentityStep({ k, set, errors, disabled }: KycStepProps) {
             {i.checks.bvn !== 'not_run' &&
             <div className="flex flex-wrap items-center gap-2">
                 <CheckBadge result={i.checks.bvn} />
-                {i.checks.nameOnBvn && <span className="text-caption text-fg-muted">Name on BVN: {i.checks.nameOnBvn}</span>}
+                {i.checks.nameOnBvn && <span className="text-caption text-fg-muted">{tr('Name on BVN: {name}', { name: i.checks.nameOnBvn })}</span>}
               </div>
             }
-            {i.checks.bvn === 'review' && <p className="text-caption text-fg-muted">The name is a partial match. You can continue — a reviewer will compare it with your ID.</p>}
+            {i.checks.bvn === 'review' && <p className="text-caption text-fg-muted">{tr('The name is a partial match. You can continue — a reviewer will compare it with your ID.')}</p>}
           </div>
           <div className="flex flex-col gap-2">
             <TextInput id="kyc-nin" label="NIN" inputMode="numeric" maxLength={11} value={i.nin} onChange={(e) => setNin(e.target.value.replace(/\D/g, ''))} error={errors.nin} disabled={disabled} hint="On your NIN slip or the NIMC app." />
             {i.checks.nin !== 'not_run' && <CheckBadge result={i.checks.nin} />}
           </div>
         </div>
-        <p className="text-caption text-fg-subtle">Prototype: numbers ending in 0000 fail; ending in 9 need a closer look.</p>
+        <p className="text-caption text-fg-subtle">{tr('Prototype: numbers ending in 0000 fail; ending in 9 need a closer look.')}</p>
       </section>
 
       <section aria-labelledby="kyc-id-doc" className="flex flex-col gap-4 border-t border-line pt-6">
         <h3 id="kyc-id-doc" className="text-label font-semibold text-fg">
-          Photo ID and selfie
+          {tr('Photo ID and selfie')}
         </h3>
         <div className="grid gap-4 md:grid-cols-3">
-          <SelectInput<IdType> id="kyc-id-type" label="ID type" value={i.idType} onChange={(idType) => setId({ idType })} options={(Object.keys(idTypeLabels) as IdType[]).map((v) => ({ value: v, label: idTypeLabels[v] }))} disabled={disabled} />
+          <SelectInput<IdType> id="kyc-id-type" label="ID type" value={i.idType} onChange={(idType) => setId({ idType })} options={(Object.keys(idTypeLabels) as IdType[]).map((v) => ({ value: v, label: tr(idTypeLabels[v]) }))} disabled={disabled} />
           <TextInput id="kyc-id-number" label="ID number" value={i.idNumber} onChange={(e) => setId({ idNumber: e.target.value })} error={errors.idNumber} disabled={disabled} />
           {needsExpiry && <TextInput id="kyc-id-expiry" label="Expiry date" type="date" value={i.idExpiry} onChange={(e) => setId({ idExpiry: e.target.value })} error={errors.idExpiry} disabled={disabled} />}
         </div>
         <DocUpload id="kyc-id-front" label="Photo of your ID" hint="All four corners visible, no glare. The photo page for passports." value={i.idFront} onChange={(idFront) => setId({ idFront })} error={errors.idFront} disabled={disabled} />
         <div>
-          <p className="text-label font-medium text-fg">Liveness selfie</p>
-          <p className="mt-0.5 text-caption text-fg-subtle">You’ll be asked to turn your head slowly. We compare it with your ID photo.</p>
+          <p className="text-label font-medium text-fg">{tr('Liveness selfie')}</p>
+          <p className="mt-0.5 text-caption text-fg-subtle">{tr('You’ll be asked to turn your head slowly. We compare it with your ID photo.')}</p>
           <div className="mt-2 flex flex-wrap items-center gap-3">
             {i.selfie ?
             <>
-                <CheckBadge result={i.checks.liveness} label="Liveness" />
+                <CheckBadge result={i.checks.liveness} label={tr('Liveness')} />
                 {!disabled &&
               <Button size="sm" variant="tertiary" leadingIcon={CameraIcon} onClick={liveness}>
                     Retake
@@ -146,11 +148,11 @@ export function IdentityStep({ k, set, errors, disabled }: KycStepProps) {
               </> :
 
             <Button variant="secondary" leadingIcon={ScanFaceIcon} onClick={liveness} loading={scanning} disabled={disabled}>
-                {scanning ? 'Checking…' : 'Start selfie check'}
+                {tr(scanning ? 'Checking…' : 'Start selfie check')}
               </Button>
             }
           </div>
-          {errors.selfie && <p className="mt-1.5 text-caption font-medium text-danger">{errors.selfie}</p>}
+          {errors.selfie && <p role="alert" className="mt-1.5 text-caption font-medium text-danger">{tr(errors.selfie)}</p>}
         </div>
       </section>
     </div>);

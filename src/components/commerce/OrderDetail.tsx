@@ -34,6 +34,7 @@ import { OrderInstalmentsPanel } from './OrderInstalmentsPanel';
 import { OrderPartnerSplit } from './OrderPartnerSplit';
 import { OrderLicenceKeys } from './OrderLicenceKeys';
 import { useT } from '../../contexts/LocaleContext';
+import { OrderTrackingPanel } from './OrderTrackingPanel';
 
 const steps: {status: OrderStatus;label: string;}[] = [
 { status: 'new', label: 'Placed' },
@@ -131,9 +132,15 @@ export function OrderDetail({ orderId, onClose }: {orderId: string | null;onClos
                 {next.label}
               </Button> :
           order.status === 'new' && !order.pod ?
+          order.bankTransfer ?
+          <Button leadingIcon={ReceiptIcon} onClick={() => apply((d) => confirmPayment(d, order.id)) && toast(tr('Transfer confirmed'), { description: tr('Only confirm once the money shows in your bank account.') })}>
+                  {tr(order.bankTransfer.sentAt ? 'Confirm transfer received' : 'Confirm transfer received (not marked sent)')}
+                </Button> :
+
           <Button leadingIcon={ReceiptIcon} onClick={() => apply((d) => confirmPayment(d, order.id)) && toast('Payment confirmed (simulated provider update)')}>
-                Mark payment confirmed
-              </Button> :
+                  Mark payment confirmed
+                </Button> :
+
           next && (next.status === 'out_for_delivery' || next.status === 'completed') && dispatchBlocked(order) ?
           <Button disabled leadingIcon={next.icon} title="Waiting for the balance">
                 Waiting for balance
@@ -182,7 +189,9 @@ export function OrderDetail({ orderId, onClose }: {orderId: string | null;onClos
           <OrderPodPanel order={order} data={data} apply={apply} collectOpen={collecting} onCollectOpen={setCollecting} />
           <OrderInstalmentsPanel order={order} handle={handle} business={current.name} workspaceId={current.id} apply={apply} />
 
-          {stepIndex >= 0 && !digitalOnly &&
+          {(order.fulfilment.method === 'delivery' || order.fulfilment.method === 'pickup') && stepIndex >= 0 && !digitalOnly ?
+          <OrderTrackingPanel order={order} handle={handle} /> :
+          stepIndex >= 0 && !digitalOnly &&
           // Phones: a vertical tracker; wider screens: a five-part bar.
           <ol className="relative flex flex-col gap-3 sm:grid sm:grid-cols-5 sm:gap-1.5" aria-label={tr('Order progress')}>
               <span aria-hidden className="absolute bottom-1.5 left-[5px] top-1.5 w-px bg-line sm:hidden" />

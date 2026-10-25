@@ -7,10 +7,15 @@ import { allLegalDocs } from '../../data/legal';
 import { Button } from '../ui/Button';
 import { InfoHero } from './InfoHero';
 import { cn } from '../../utils/cn';
+import { readAdminStore } from '../../utils/admin/store';
+import { formatDate } from '../../utils/billing';
+import { POLICY_GRACE_DAYS } from '../../utils/policyAgreements';
 
 /** Structured legal/policy page: draft banner, sticky contents, summary above every section (D78). */
 export function LegalDocument({ doc }: {doc: LegalDoc;}) {
   const [active, setActive] = useState(doc.sections[0]?.id);
+  // A version KUBICU staff published after this text was written (D135/D141).
+  const latest = readAdminStore().policyReleases[doc.slug]?.[0];
 
   useEffect(() => {
     const els = doc.sections.map((s) => document.getElementById(s.id)).filter((e): e is HTMLElement => !!e);
@@ -44,9 +49,9 @@ export function LegalDocument({ doc }: {doc: LegalDoc;}) {
         intro={doc.intro}
         meta={
         <>
-            <span>Last updated {doc.updated}</span>
+            <span>Last updated {latest ? formatDate(latest.publishedAt) : doc.updated}</span>
             <span aria-hidden>·</span>
-            <span>{doc.version}</span>
+            <span>{latest ? `Version ${latest.version}` : doc.version}</span>
           </>
         }
         actions={
@@ -79,6 +84,18 @@ export function LegalDocument({ doc }: {doc: LegalDoc;}) {
           </nav>
 
           <div className="flex min-w-0 max-w-3xl flex-col gap-14">
+            {latest &&
+            <aside aria-labelledby="what-changed-h" className="rounded-xl border border-line bg-raised px-5 py-4">
+                <h2 id="what-changed-h" className="text-label font-semibold text-fg">
+                  What changed in version {latest.version}
+                </h2>
+                <p className="mt-1.5 text-label text-fg-muted">{latest.summary}</p>
+                <p className="mt-2 text-caption text-fg-subtle">
+                  Published {formatDate(latest.publishedAt)}
+                  {latest.reaccept !== 'none' && ` · ${latest.reaccept === 'all' ? 'Every workspace' : 'Paid workspaces'} must agree within ${POLICY_GRACE_DAYS} days`}
+                </p>
+              </aside>
+            }
             {doc.sections.map((s, i) =>
             <section key={s.id} id={s.id} aria-labelledby={`${s.id}-h`} className="scroll-mt-24">
                 <h2 id={`${s.id}-h`} className="flex items-baseline gap-3 font-display text-[24px] font-semibold tracking-[-0.02em] text-fg">

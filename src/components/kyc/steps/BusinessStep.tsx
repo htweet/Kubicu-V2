@@ -7,9 +7,11 @@ import { TextArea } from '../../ui/TextArea';
 import { SelectInput } from '../../ui/SelectInput';
 import { CheckBadge } from '../CheckBadge';
 import { DocUpload } from '../DocUpload';
+import { useT } from '../../../contexts/LocaleContext';
 
 /** KYB: CAC registration, tax number, what the business does and its registration documents. */
 export function BusinessStep({ k, set, errors, disabled }: KycStepProps) {
+  const { t: tr } = useT();
   const b = k.business;
   const company = k.entity === 'company';
   const setB = (patch: Partial<KycBusiness>) => set((c) => ({ ...c, business: { ...c.business, ...patch } }));
@@ -26,7 +28,7 @@ export function BusinessStep({ k, set, errors, disabled }: KycStepProps) {
     <div className="flex flex-col gap-8">
       <section aria-labelledby="kyc-biz-reg" className="flex flex-col gap-4">
         <h3 id="kyc-biz-reg" className="text-label font-semibold text-fg">
-          CAC registration
+          {tr('CAC registration')}
         </h3>
         <TextInput id="kyc-reg-name" label="Registered name" hint="Exactly as printed on your CAC certificate." value={b.registeredName} onChange={(e) => setName(e.target.value)} error={errors.registeredName} disabled={disabled} />
         <div className="grid gap-4 md:grid-cols-2">
@@ -37,7 +39,7 @@ export function BusinessStep({ k, set, errors, disabled }: KycStepProps) {
                 <CheckBadge result={b.checks.cac} label="CAC" />
                 {b.checks.registeredNameOnCac &&
               <span className="text-caption text-fg-muted">
-                    {b.checks.registeredNameOnCac} · {b.checks.cac === 'review' ? 'shows as inactive' : 'active'}
+                    {b.checks.registeredNameOnCac} · {tr(b.checks.cac === 'review' ? 'shows as inactive' : 'active')}
                   </span>
               }
               </div>
@@ -52,20 +54,20 @@ export function BusinessStep({ k, set, errors, disabled }: KycStepProps) {
           </div>
           <TextInput id="kyc-website" label="Website or social page" optional value={b.website} onChange={(e) => setB({ website: e.target.value })} disabled={disabled} placeholder="instagram.com/yourbusiness" />
         </div>
-        <p className="text-caption text-fg-subtle">Prototype: CAC numbers ending in 000 aren’t found; ending in 7 show as inactive.</p>
+        <p className="text-caption text-fg-subtle">{tr('Prototype: CAC numbers ending in 000 aren’t found; ending in 7 show as inactive.')}</p>
       </section>
 
       <section aria-labelledby="kyc-biz-what" className="flex flex-col gap-4 border-t border-line pt-6">
         <h3 id="kyc-biz-what" className="text-label font-semibold text-fg">
-          What the business does
+          {tr('What the business does')}
         </h3>
-        <SelectInput id="kyc-industry" label="Industry" value={b.industry} onChange={(industry) => setB({ industry })} options={[{ value: '', label: 'Choose one', disabled: true }, ...industries.map((x) => ({ value: x, label: x }))]} error={errors.industry} disabled={disabled} />
+        <SelectInput id="kyc-industry" label="Industry" value={b.industry} onChange={(industry) => setB({ industry })} options={[{ value: '', label: tr('Choose one'), disabled: true }, ...industries.map((x) => ({ value: x, label: tr(x) }))]} error={errors.industry} disabled={disabled} />
         <TextArea id="kyc-desc" label="Describe what you sell and how" hint="For example: “Made-to-order Ankara dresses, sold on Instagram and delivered across Lagos.”" value={b.description} onChange={(e) => setB({ description: e.target.value })} error={errors.description} disabled={disabled} />
       </section>
 
       <section aria-labelledby="kyc-biz-docs" className="flex flex-col gap-5 border-t border-line pt-6">
         <h3 id="kyc-biz-docs" className="text-label font-semibold text-fg">
-          Documents
+          {tr('Documents')}
         </h3>
         <DocUpload id="kyc-cert" label="CAC certificate" value={b.certificate} onChange={(certificate) => setB({ certificate })} error={errors.certificate} disabled={disabled} />
         <DocUpload

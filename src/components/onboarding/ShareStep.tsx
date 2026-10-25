@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CopyIcon, ExternalLinkIcon, MessageCircleIcon, QrCodeIcon, InstagramIcon, CheckCircle2Icon } from 'lucide-react';
 import { toast } from 'sonner';
 import type { OnboardingState } from '../../hooks/useOnboarding';
 import { publicUrl } from '../../utils/format';
 import { Button } from '../ui/Button';
-import { PlanLock } from '../ui/PlanLock';
+import { ShareQrDialog } from './ShareQrDialog';
 
 interface ShareStepProps {
   state: OnboardingState;
@@ -23,6 +23,7 @@ async function copy(text: string, message: string) {
 
 export function ShareStep({ state, onDone }: ShareStepProps) {
   const navigate = useNavigate();
+  const [qrOpen, setQrOpen] = useState(false);
   const url = `https://${publicUrl(state.handle)}`;
   const shareText = `${state.name.trim()} — find everything here: ${url}`;
 
@@ -50,10 +51,11 @@ export function ShareStep({ state, onDone }: ShareStepProps) {
         <Button size="lg" variant="secondary" leadingIcon={ExternalLinkIcon} onClick={() => navigate(`/p/${state.handle}`)}>
           View my page
         </Button>
-        <div className="flex h-12 items-center justify-center gap-2 rounded-md border border-dashed border-line-strong text-label text-fg-muted">
-          <QrCodeIcon size={16} aria-hidden /> QR code <PlanLock kind="planned">Batch 5</PlanLock>
-        </div>
+        <Button size="lg" variant="secondary" leadingIcon={QrCodeIcon} onClick={() => setQrOpen(true)}>
+          Get a QR code
+        </Button>
       </div>
+      <ShareQrDialog open={qrOpen} onClose={() => setQrOpen(false)} handle={state.handle} name={state.name} />
 
       <p className="mt-6 text-label text-fg-muted">
         On your phone? Open <span className="font-mono text-fg">{publicUrl(state.handle)}</span> to see what visitors see.

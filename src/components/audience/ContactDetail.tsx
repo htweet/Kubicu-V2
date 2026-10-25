@@ -21,13 +21,16 @@ import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { useTeam } from '../../contexts/TeamContext';
 import { AssigneeChip, AssigneeSelect } from '../team/AssigneeSelect';
 import { CommentThread } from '../team/CommentThread';
+import { useT } from '../../contexts/LocaleContext';
 
 export function ConsentBadge({ consent }: {consent: Contact['consent'];}) {
-  return <Badge tone={consent === 'subscribed' ? 'success' : consent === 'unsubscribed' ? 'danger' : 'neutral'}>{consentLabels[consent]}</Badge>;
+  const { t } = useT();
+  return <Badge tone={consent === 'subscribed' ? 'success' : consent === 'unsubscribed' ? 'danger' : 'neutral'}>{t(consentLabels[consent])}</Badge>;
 }
 
 export function ContactDetail({ contactId, onClose }: {contactId: string | null;onClose: () => void;}) {
   const { data, apply } = useOps();
+  const { t: tr } = useT();
   const c = data.contacts.find((x) => x.id === contactId);
   const [tag, setTag] = useState('');
   const [note, setNote] = useState('');
@@ -40,7 +43,7 @@ export function ContactDetail({ contactId, onClose }: {contactId: string | null;
   const [tab, setTab] = useState<'details' | 'followups' | 'activity'>('details');
   const wide = useMediaQuery('(min-width: 768px)');
   const show = (t: typeof tab) => wide || tab === t;
-  if (!c) return <Sheet open={!!contactId} onClose={onClose} side="right" title="Contact not found"><p className="p-5 text-label text-fg-muted">It may have been merged or deleted.</p></Sheet>;
+  if (!c) return <Sheet open={!!contactId} onClose={onClose} side="right" title="Contact not found"><p className="p-5 text-label text-fg-muted">{tr('It may have been merged or deleted.')}</p></Sheet>;
 
   const set = (p: Partial<Contact>, activity?: {kind: Contact['activity'][number]['kind'];label: string;}) => apply((d) => patchContact(d, c.id, p, activity));
 
@@ -52,7 +55,7 @@ export function ContactDetail({ contactId, onClose }: {contactId: string | null;
         side="right"
         size="lg"
         title={c.name || c.email || c.phone}
-        description={`Since ${formatTimestamp(c.createdAt)}`}
+        description={tr('Since {date}', { date: formatTimestamp(c.createdAt) })}
         footer={
         <div className="flex justify-between">
             <Button variant="tertiary" size="sm" leadingIcon={Trash2Icon} className="text-danger hover:text-danger" onClick={() => setConfirm('delete')}>
@@ -74,7 +77,7 @@ export function ContactDetail({ contactId, onClose }: {contactId: string | null;
             onChange={setTab}
             options={[
             { value: 'details', label: 'Details' },
-            { value: 'followups', label: `Follow-ups${c.tasks.some((t) => !t.done) ? ` ${c.tasks.filter((t) => !t.done).length}` : ''}` },
+            { value: 'followups', label: `${tr('Follow-ups')}${c.tasks.some((t) => !t.done) ? ` ${c.tasks.filter((t) => !t.done).length}` : ''}` },
             { value: 'activity', label: 'Activity' }]
             } />
 
@@ -84,7 +87,7 @@ export function ContactDetail({ contactId, onClose }: {contactId: string | null;
           <div className="flex flex-wrap items-center gap-2">
             <ConsentBadge consent={c.consent} />
             {c.sources.map((s) =>
-              <Badge key={s}>{sourceLabels[s]}</Badge>
+              <Badge key={s}>{tr(sourceLabels[s])}</Badge>
               )}
             {c.sample && <SampleTag />}
           </div>
@@ -109,14 +112,16 @@ export function ContactDetail({ contactId, onClose }: {contactId: string | null;
 
           <section aria-labelledby="ct-consent" className="rounded-md border border-line p-4">
             <h3 id="ct-consent" className="text-label font-semibold text-fg">
-              Consent
+              {tr('Consent')}
             </h3>
             <p className="mt-1 text-caption text-fg-muted">
-              {c.consent === 'subscribed' ?
-                'Agreed to updates and offers. You can include them in marketing.' :
-                c.consent === 'unsubscribed' ?
-                'Opted out. They’re excluded from every marketing message and automation. Only they can opt back in.' :
-                'Only messages about their orders and bookings. Don’t send them marketing.'}
+              {tr(
+                  c.consent === 'subscribed' ?
+                  'Agreed to updates and offers. You can include them in marketing.' :
+                  c.consent === 'unsubscribed' ?
+                  'Opted out. They’re excluded from every marketing message and automation. Only they can opt back in.' :
+                  'Only messages about their orders and bookings. Don’t send them marketing.'
+                )}
             </p>
             <div className="mt-3 flex flex-wrap items-center gap-2">
               {c.consent !== 'unsubscribed' &&
@@ -131,8 +136,8 @@ export function ContactDetail({ contactId, onClose }: {contactId: string | null;
                   onClick={() => {
                     const url = `${window.location.origin}/p/${mainHandle}/preferences/${c.id}`;
                     navigator.clipboard?.writeText(url).then(
-                      () => toast.success('Preferences link copied', { description: 'Put it at the bottom of every marketing message. They can unsubscribe or opt back in themselves.' }),
-                      () => toast.error('Couldn’t copy', { description: url })
+                      () => toast.success(tr('Preferences link copied'), { description: tr('Put it at the bottom of every marketing message. They can unsubscribe or opt back in themselves.') }),
+                      () => toast.error(tr('Couldn’t copy'), { description: url })
                     );
                   }}>
                   
@@ -144,19 +149,19 @@ export function ContactDetail({ contactId, onClose }: {contactId: string | null;
           <div className="grid gap-6 sm:grid-cols-2">
             <section aria-labelledby="ct-stage">
               <h3 id="ct-stage" className="mb-2 text-label font-semibold text-fg">
-                Stage
+                {tr('Stage')}
               </h3>
               <Segmented<ContactStage> ariaLabel="Stage" value={c.stage} onChange={(stage) => set({ stage }, { kind: 'stage', label: `Moved to ${stageLabels[stage]}` })} options={(Object.keys(stageLabels) as ContactStage[]).map((s) => ({ value: s, label: stageLabels[s] }))} />
             </section>
             <section aria-labelledby="ct-tags">
               <h3 id="ct-tags" className="mb-2 text-label font-semibold text-fg">
-                Tags
+                {tr('Tags')}
               </h3>
               <div className="flex flex-wrap items-center gap-1.5">
                 {c.tags.map((t) =>
                   <span key={t} className="inline-flex h-7 items-center gap-1 rounded-full bg-sunken pl-2.5 pr-1 text-caption font-medium text-fg">
                     {t}
-                    <button type="button" aria-label={`Remove tag ${t}`} onClick={() => set({ tags: c.tags.filter((x) => x !== t) })} className="flex h-5 w-5 items-center justify-center rounded-full text-fg-subtle hover:text-fg">
+                    <button type="button" aria-label={tr('Remove tag {tag}', { tag: t })} onClick={() => set({ tags: c.tags.filter((x) => x !== t) })} className="flex h-5 w-5 items-center justify-center rounded-full text-fg-subtle hover:text-fg">
                       <XIcon size={11} aria-hidden />
                     </button>
                   </span>
@@ -170,8 +175,8 @@ export function ContactDetail({ contactId, onClose }: {contactId: string | null;
                       setTag('');
                     }}>
                     
-                  <label htmlFor="ct-tag" className="sr-only">Add tag</label>
-                  <input id="ct-tag" value={tag} onChange={(e) => setTag(e.target.value)} placeholder="+ Add tag" className="h-7 w-28 rounded-full border border-dashed border-line-strong bg-transparent px-2.5 text-caption text-fg placeholder:text-fg-subtle focus:border-action focus:outline-none" />
+                  <label htmlFor="ct-tag" className="sr-only">{tr('Add tag')}</label>
+                  <input id="ct-tag" value={tag} onChange={(e) => setTag(e.target.value)} placeholder={tr('+ Add tag')} className="h-7 w-28 rounded-full border border-dashed border-line-strong bg-transparent px-2.5 text-caption text-fg placeholder:text-fg-subtle focus:border-action focus:outline-none" />
                 </form>
               </div>
             </section>
@@ -182,7 +187,7 @@ export function ContactDetail({ contactId, onClose }: {contactId: string | null;
           {show('followups') &&
           <section aria-labelledby="ct-tasks">
             <h3 id="ct-tasks" className="text-label font-semibold text-fg">
-              Follow-ups
+              {tr('Follow-ups')}
             </h3>
             <ul className="mt-2 flex flex-col gap-1">
               {c.tasks.map((t) =>
@@ -191,7 +196,7 @@ export function ContactDetail({ contactId, onClose }: {contactId: string | null;
                   type="button"
                   role="checkbox"
                   aria-checked={t.done}
-                  aria-label={`Done: ${t.text}`}
+                  aria-label={tr('Done: {task}', { task: t.text })}
                   onClick={() => set({ tasks: c.tasks.map((x) => x.id === t.id ? { ...x, done: !x.done } : x) }, t.done ? undefined : { kind: 'task', label: `Done: ${t.text}` })}
                   className={cn('flex h-5 w-5 shrink-0 items-center justify-center rounded-[5px] border', t.done ? 'border-success bg-success text-canvas' : 'border-line-strong')}>
                   
@@ -199,7 +204,7 @@ export function ContactDetail({ contactId, onClose }: {contactId: string | null;
                   </button>
                   <span className={cn('flex-1 text-label', t.done ? 'text-fg-subtle line-through' : 'text-fg')}>{t.text}</span>
                   {t.assigneeId && <AssigneeChip memberId={t.assigneeId} />}
-                  {t.due && <span className={cn('text-caption', !t.done && Date.parse(t.due) < Date.now() ? 'font-semibold text-danger' : 'text-fg-subtle')}>Due {formatTimestamp(t.due)}</span>}
+                  {t.due && <span className={cn('text-caption', !t.done && Date.parse(t.due) < Date.now() ? 'font-semibold text-danger' : 'text-fg-subtle')}>{tr('Due {date}', { date: formatTimestamp(t.due) })}</span>}
                   <IconButton icon={XIcon} size="sm" label="Remove task" onClick={() => set({ tasks: c.tasks.filter((x) => x.id !== t.id) })} />
                 </li>
               )}
@@ -213,7 +218,7 @@ export function ContactDetail({ contactId, onClose }: {contactId: string | null;
                 setTask('');
               }}>
               
-              <TextInput id="ct-task" label="New follow-up" placeholder="e.g. Send fabric options (due tomorrow)" value={task} fieldClassName="flex-1 [&>div:first-child]:sr-only" onChange={(e) => setTask(e.target.value)} />
+              <TextInput id="ct-task" label="New follow-up" placeholder={tr('e.g. Send fabric options (due tomorrow)')} value={task} fieldClassName="flex-1 [&>div:first-child]:sr-only" onChange={(e) => setTask(e.target.value)} />
               <Button type="submit" variant="secondary" leadingIcon={PlusIcon} disabled={!task.trim()}>
                 Add
               </Button>
@@ -225,7 +230,7 @@ export function ContactDetail({ contactId, onClose }: {contactId: string | null;
           {show('activity') &&
           <section aria-labelledby="ct-act">
             <h3 id="ct-act" className="text-label font-semibold text-fg">
-              Activity
+              {tr('Activity')}
             </h3>
             <form
               className="mt-2 flex gap-2"
@@ -236,7 +241,7 @@ export function ContactDetail({ contactId, onClose }: {contactId: string | null;
                 setNote('');
               }}>
               
-              <TextInput id="ct-note" label="Add a note" placeholder="Only you see notes" value={note} fieldClassName="flex-1 [&>div:first-child]:sr-only" onChange={(e) => setNote(e.target.value)} />
+              <TextInput id="ct-note" label="Add a note" placeholder={tr('Only you see notes')} value={note} fieldClassName="flex-1 [&>div:first-child]:sr-only" onChange={(e) => setNote(e.target.value)} />
               <Button type="submit" variant="secondary" disabled={!note.trim()}>
                 Add note
               </Button>
@@ -285,7 +290,7 @@ export function ContactDetail({ contactId, onClose }: {contactId: string | null;
         open={confirm === 'delete'}
         onClose={() => setConfirm(null)}
         size="sm"
-        title={`Delete ${c.name || 'this contact'}?`}
+        title={c.name ? tr('Delete {name}?', { name: c.name }) : tr('Delete this contact?')}
         description="Their details, notes and tasks are removed. Orders and bookings keep the customer details they were placed with."
         footer={
         <>
@@ -296,7 +301,7 @@ export function ContactDetail({ contactId, onClose }: {contactId: string | null;
             variant="destructive"
             onClick={() => {
               if (apply((d) => ({ ...d, contacts: d.contacts.filter((x) => x.id !== c.id) }))) {
-                toast('Contact deleted');
+                toast(tr('Contact deleted'));
                 setConfirm(null);
                 onClose();
               }

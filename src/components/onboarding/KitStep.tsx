@@ -7,6 +7,10 @@ import { siteKits } from '../../data/siteKits';
 import { cn } from '../../utils/cn';
 import { blankTemplateDoc } from '../../data/templates';
 import { TemplateThumb } from '../templates/TemplateThumb';
+import { PreviewTemplateButton, TemplatePreviewDialog } from '../templates/TemplatePreviewDialog';
+import type { ExamplePage } from '../../data/examples/build';
+import { templatePrice } from '../../data/templateMarket';
+import { formatNaira as formatNgn } from '../../utils/format';
 import { AiPreviewTag } from '../ai/AiPreviewTag';
 import { AiKitDialog } from './AiKitDialog';
 import { useFlag } from '../../utils/admin/store';
@@ -23,6 +27,7 @@ export function KitStep({ state, update, go }: StepProps) {
   const [showAll, setShowAll] = useState(false);
   const [aiOpen, setAiOpen] = useState(false);
   const [showAllKits, setShowAllKits] = useState(false);
+  const [previewing, setPreviewing] = useState<ExamplePage | null>(null);
   // New workspaces start on Free; Super admin can pause AI page setup (D75b).
   const aiAllowed = useFlag('ai_page_setup', 'free');
   const goal = state.goal;
@@ -83,11 +88,16 @@ export function KitStep({ state, update, go }: StepProps) {
         <legend className="text-label font-semibold text-fg">Or just pick a page</legend>
         <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
           {list.map((e) =>
-          <ChoiceCard key={e.id} name="kit" selected={state.kitId === e.id && !state.businessKitId} onSelect={() => update({ kitId: e.id, businessKitId: null })} title={e.category} description={e.name}>
-              <span className="mb-3 flex justify-center">
-                <TemplateThumb doc={e.doc} width={120} height={170} />
+          <div key={e.id} className="flex flex-col">
+              <ChoiceCard name="kit" selected={state.kitId === e.id && !state.businessKitId} onSelect={() => update({ kitId: e.id, businessKitId: null })} title={e.category} description={e.elite || e.artwork ? `${e.name} · ${formatNgn(templatePrice(e.id))}` : e.name}>
+                <span className="mb-3 flex justify-center">
+                  <TemplateThumb doc={e.doc} width={120} height={170} />
+                </span>
+              </ChoiceCard>
+              <span className="mt-1 flex justify-center">
+                <PreviewTemplateButton name={e.name} onClick={() => setPreviewing(e)} />
               </span>
-            </ChoiceCard>
+            </div>
           )}
           <ChoiceCard name="kit" selected={state.kitId === 'blank'} onSelect={() => update({ kitId: 'blank', businessKitId: null })} title="Blank page" description="Just your profile">
             <span className="mb-3 flex justify-center">
@@ -128,6 +138,15 @@ export function KitStep({ state, update, go }: StepProps) {
           })}
         </div>
       </fieldset>
+      <TemplatePreviewDialog
+        template={previewing}
+        onClose={() => setPreviewing(null)}
+        useLabel="Choose this starting point"
+        onUse={(t) => {
+          update({ kitId: t.id, businessKitId: null });
+          setPreviewing(null);
+        }} />
+      
       <AiKitDialog
         open={aiOpen}
         onClose={() => setAiOpen(false)}

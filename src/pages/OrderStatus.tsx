@@ -19,6 +19,10 @@ import { OrderTickets } from '../components/tickets/OrderTickets';
 import { EscrowNotice } from '../components/checkout/EscrowNotice';
 import { OrderBalanceCard } from '../components/checkout/OrderBalanceCard';
 import { OrderInstalmentsCard } from '../components/checkout/OrderInstalmentsCard';
+import { OrderTrackingCard } from '../components/checkout/OrderTrackingCard';
+import { useFulfilment } from '../hooks/useFulfilment';
+import { buildTracking } from '../utils/commerce/tracking';
+import { markTransferSent } from '../utils/commerce/bankTransfer';
 
 /** Visitor-facing order confirmation and receipt. Follows the visitor's language (D133). */
 export function OrderStatus() {
@@ -28,6 +32,8 @@ export function OrderStatus() {
   const [lang] = useVisitorLang(page?.doc.language);
   const tx = translatorFor(lang);
   const order = commerce.data?.orders.find((o) => o.id === orderId);
+  const fulfilment = useFulfilment(page?.workspaceId ?? '__none').data;
+  const tracking = order ? buildTracking(order, page?.workspaceId ? fulfilment : null) : null;
 
   if (!page) return <Unavailable handle={handle} />;
   if (!order) return <Unavailable handle={handle} title={tx('We can’t find that order')} body={tx('The link may be incomplete, or the order was removed. Contact the seller with your order number.')} />;
@@ -51,6 +57,8 @@ export function OrderStatus() {
     eta
   }) :
   pending ?
+  order.bankTransfer ?
+  tx(order.bankTransfer.sentAt ? 'Thanks — the seller will confirm when your transfer arrives. Nothing is sent before then.' : 'Transfer the amount below using your order number as the reference. The seller confirms when it arrives.') :
   order.paymentNote === 'Provider timed out' ?
   tx('Your bank didn’t confirm in time. If you were charged, the seller will see it once the provider updates — usually within minutes. Don’t pay twice.') :
   tx('We’re waiting for the payment provider to confirm. You’ll get a confirmation when it does.') :
@@ -81,6 +89,45 @@ export function OrderStatus() {
             </CheckoutHeading>
           </div>
           <TestModeNote theme={t} />
+
+          {pending && order.bankTransfer &&
+            <section className="flex flex-col gap-3 p-5" style={cardStyle(t)} aria-label={tx('Bank transfer details')}>
+              <p className="text-[15px] font-semibold">{tx('Transfer {amount} to:', { amount: formatNgn(orderMoney(order).gross) })}</p>
+              <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-[14px]">
+                <dt style={muted}>{tx('Bank')}</dt>
+                <dd className="font-medium">{order.bankTransfer.bank}</dd>
+                <dt style={muted}>{tx('Account number')}</dt>
+                <dd className="font-mono font-medium tracking-wide">{order.bankTransfer.account}</dd>
+                {order.bankTransfer.accountName &&
+                <>
+                    <dt style={muted}>{tx('Account name')}</dt>
+                    <dd className="font-medium">{order.bankTransfer.accountName}</dd>
+                  </>
+                }
+                <dt style={muted}>{tx('Reference')}</dt>
+                <dd className="font-mono font-semibold">#{order.number}</dd>
+              </dl>
+              {order.bankTransfer.sentAt ?
+              <p className="flex items-center gap-1.5 text-[13.5px] font-medium">
+                  <CheckCircle2Icon size={15} aria-hidden /> {tx('You marked it as sent {when}.', { when: formatTimestamp(order.bankTransfer.sentAt) })}
+                </p> :
+
+              <button
+                type="button"
+                onClick={() => commerce.apply((d) => markTransferSent(d, order.id))}
+                className="h-11 self-start px-5 text-[14px] font-semibold focus-visible:outline-none focus-visible:ring-2"
+                style={{ background: t.accent, color: t.accentText, borderRadius: 999 }}>
+                
+                  {tx('I’ve sent the money')}
+                </button>
+              }
+              <p className="text-[12.5px]" style={muted}>
+                {tx('Only transfer to the account shown here. KUBICU doesn’t hold this money and can’t refund a transfer to the wrong account.')}
+              </p>
+            </section>
+            }
+
+          {tracking?.applies && !pending && <OrderTrackingCard theme={t} view={tracking} tx={tx} />}
 
           <section className="flex flex-col gap-3 p-5" style={cardStyle(t)} aria-label={tx('Receipt')}>
             <div className="flex items-baseline justify-between gap-3">

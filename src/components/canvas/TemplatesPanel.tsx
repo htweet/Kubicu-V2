@@ -12,6 +12,7 @@ import { Button } from '../ui/Button';
 import { Dialog } from '../ui/Dialog';
 import { TemplateThumb } from '../templates/TemplateThumb';
 import { BuyTemplateDialog } from '../templates/BuyTemplateDialog';
+import { TemplatePreviewDialog } from '../templates/TemplatePreviewDialog';
 import { formatNaira as formatNgn } from '../../utils/format';
 import { cn } from '../../utils/cn';
 
@@ -28,6 +29,7 @@ export function TemplatesPanel() {
   const [pending, setPending] = useState<PendingTemplate | null>(null);
   const [buying, setBuying] = useState<ExamplePage | null>(null);
   const [goal, setGoal] = useState<ExampleGoal | 'all'>('all');
+  const [previewing, setPreviewing] = useState<ExamplePage | null>(null);
 
   const list = useMemo(() => examplePages.filter((e) => goal === 'all' || e.goals.includes(goal)), [goal]);
 
@@ -45,7 +47,7 @@ export function TemplatesPanel() {
   return (
     <div className="flex flex-col gap-4 px-4 pb-6 pt-4">
       <p className="text-caption text-fg-subtle">
-        Layouts built around a goal. We keep your name and photo, and remove the example’s prices, links and quotes so nothing fictional goes live.
+        Layouts built around a goal. Tap one to preview the whole page first. We keep your name and photo, and remove the example’s prices, links and quotes so nothing fictional goes live.
       </p>
 
       <div role="group" aria-label="Filter by goal" className="-mx-1 flex flex-wrap gap-1.5">
@@ -76,7 +78,7 @@ export function TemplatesPanel() {
           const locked = price > 0 && !market.hasLicence(e.id);
           return (
             <li key={e.id}>
-              <TemplateCard name={e.category} meta={price > 0 ? locked ? `Premium · ${formatNgn(price)}` : 'Premium · owned' : e.name} doc={e.doc} locked={locked} onUse={() => pick(e)} />
+              <TemplateCard name={e.category} meta={price > 0 ? locked ? `Premium · ${formatNgn(price)}` : 'Premium · owned' : e.name} doc={e.doc} locked={locked} preview onUse={() => setPreviewing(e)} />
             </li>);
 
         })}
@@ -107,18 +109,31 @@ export function TemplatesPanel() {
           </>
         } />
       
+      <TemplatePreviewDialog
+        template={previewing}
+        onClose={() => setPreviewing(null)}
+        useLabel="Use this layout"
+        onUse={(t) => {
+          setPreviewing(null);
+          pick(t);
+        }}
+        onBuy={(t) => {
+          setPreviewing(null);
+          setBuying(t);
+        }} />
+      
       <BuyTemplateDialog template={buying} onClose={() => setBuying(null)} onBought={(t) => setPending({ name: t.category, doc: t.doc })} />
     </div>);
 
 }
 
-function TemplateCard({ name, meta, doc, locked, onUse }: {name: string;meta: string;doc: PageDocument;locked?: boolean;onUse: () => void;}) {
+function TemplateCard({ name, meta, doc, locked, preview, onUse }: {name: string;meta: string;doc: PageDocument;locked?: boolean;preview?: boolean;onUse: () => void;}) {
   return (
     <button
       type="button"
       onClick={onUse}
       className="group flex w-full flex-col gap-2 rounded-md text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
-      aria-label={locked ? `Buy the ${name} template` : `Use the ${name} layout`}>
+      aria-label={preview ? `Preview the ${name} template` : `Use the ${name} layout`}>
       
       <span className="relative block overflow-hidden rounded-[14px] transition-transform duration-150 ease-out group-hover:-translate-y-0.5">
         <TemplateThumb doc={doc} width={130} height={190} />

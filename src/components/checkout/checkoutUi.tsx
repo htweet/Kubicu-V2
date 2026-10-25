@@ -2,6 +2,8 @@ import React, { useEffect, useId, useRef } from 'react';
 import type { PageTheme } from '../../types/page';
 import { buttonStyle, fontsFor, inputStyle, mix } from '../blocks/pageStyle';
 import { useT } from '../../contexts/LocaleContext';
+import { readAdminStore } from '../../utils/admin/store';
+import { recentBuyerUpdates } from '../../utils/policyAgreements';
 
 /** Plain-text children follow the visitor's language (D133); anything richer is left as written. */
 const useTx = () => {
@@ -145,6 +147,27 @@ export function TestModeNote({ theme }: {theme: PageTheme;}) {
   return (
     <p className="rounded-md px-3 py-2 text-[12.5px] font-medium" style={{ background: mix('#d9a400', 16, theme.background), color: theme.text }} role="note">
       {t('Test mode — this is a KUBICU prototype. No real money moves.')}
+    </p>);
+
+}
+
+/** Shown for 30 days after KUBICU publishes a new Terms, Privacy or Refunds version (D141). */
+export function TermsUpdatedNote({ theme }: {theme: PageTheme;}) {
+  const { t } = useT();
+  const updates = recentBuyerUpdates(readAdminStore().policyReleases);
+  if (updates.length === 0) return null;
+  return (
+    <p className="text-[12.5px] leading-snug" style={{ color: mix(theme.text, 72, theme.background) }} role="note">
+      {t('Updated recently:')}{' '}
+      {updates.map((u, i) =>
+      <React.Fragment key={u.doc.slug}>
+          {i > 0 && ', '}
+          <a href={`/about/${u.doc.slug}`} target="_blank" rel="noreferrer" className="font-semibold underline underline-offset-2">
+            {u.doc.title} v{u.release.version}
+          </a>
+        </React.Fragment>
+      )}
+      . {t('By continuing you agree to the current versions.')}
     </p>);
 
 }

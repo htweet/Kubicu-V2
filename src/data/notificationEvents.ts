@@ -18,6 +18,7 @@ const urgent = { app: true, email: true, whatsapp: true };
 export const notifEvents: NotifEventInfo[] = [
 { id: 'order_paid', label: 'New paid order', area: 'orders', permission: 'orders.manage', defaults: urgent },
 { id: 'order_pending', label: 'Order waiting for payment', area: 'orders', permission: 'orders.manage', defaults: appOnly },
+{ id: 'order_late', label: 'Order running late or delivery failed', area: 'orders', permission: 'orders.manage', defaults: urgent },
 { id: 'dispute', label: 'Payment dispute opened', area: 'orders', permission: 'orders.refund', defaults: urgent },
 { id: 'stage_due', label: 'Payment stage or booking balance due', area: 'orders', permission: 'orders.manage', defaults: urgent },
 { id: 'escrow', label: 'Escrow: buyer problem or KUBICU decision', area: 'orders', permission: 'orders.refund', defaults: urgent },

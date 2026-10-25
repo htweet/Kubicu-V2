@@ -56,6 +56,61 @@ export function StyleFields({ block }: {block: Block;}) {
           } />
         
       </Field>
+      {/* Layout sections (D153) */}
+      <Field id={`${block.id}-width`} label="Width" hint="Edge to edge suits covers and galleries. Phones always use the full screen.">
+        <Segmented
+          ariaLabel="Width"
+          fullWidth
+          value={block.layout.width ?? 'column'}
+          onChange={(width) => actions.updateMeta(block.id, { layout: { width } })}
+          options={[
+          { value: 'column', label: 'Column' },
+          { value: 'wide', label: 'Wide' },
+          { value: 'full', label: 'Edge to edge' }]
+          } />
+        
+      </Field>
+      <Field id={`${block.id}-pair`} label="Sit beside the next block" hint="On tablets and computers. Phones stack them; open Preview to see it.">
+        <Segmented
+          ariaLabel="Side by side"
+          fullWidth
+          value={block.layout.pair ?? 'off'}
+          onChange={(v) => actions.updateMeta(block.id, { layout: { pair: v === 'off' ? null : v } })}
+          options={[
+          { value: 'off', label: 'Off' },
+          { value: 'equal', label: '1 : 1' },
+          { value: 'wide-first', label: '3 : 2' },
+          { value: 'narrow-first', label: '2 : 3' }]
+          } />
+        
+      </Field>
+      {block.layout.pair &&
+      <Field id={`${block.id}-phone`} label="On phones, show this block">
+          <Segmented
+          ariaLabel="Phone order"
+          fullWidth
+          value={block.layout.phoneSecond ? 'second' : 'first'}
+          onChange={(v) => actions.updateMeta(block.id, { layout: { phoneSecond: v === 'second' } })}
+          options={[
+          { value: 'first', label: 'First' },
+          { value: 'second', label: 'Second' }]
+          } />
+        
+        </Field>
+      }
+      <Field id={`${block.id}-bg`} label="Section background" hint="Taken from your theme, so it works with any theme.">
+        <Segmented
+          ariaLabel="Section background"
+          fullWidth
+          value={block.layout.background ?? 'none'}
+          onChange={(background) => actions.updateMeta(block.id, { layout: { background } })}
+          options={[
+          { value: 'none', label: 'Plain' },
+          { value: 'tint', label: 'Tint' },
+          { value: 'invert', label: 'Inverted' }]
+          } />
+        
+      </Field>
       <div className="rounded-md border border-line bg-sunken/60 p-3.5">
         <p className="text-label font-medium text-fg">Colours, fonts and button shape</p>
         <p className="mt-0.5 text-caption text-fg-subtle">These come from the page theme, so every block stays consistent.</p>

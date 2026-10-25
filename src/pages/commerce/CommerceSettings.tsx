@@ -14,9 +14,11 @@ import { Dialog } from '../../components/ui/Dialog';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { Card } from '../../components/ui/layout/Card';
 import { AsideNote } from '../../components/ui/layout/AsideNote';
+import { useT } from '../../contexts/LocaleContext';
 
 export function CommerceSettings() {
   const wide = useMediaQuery('(min-width: 768px)');
+  const { t: tr } = useT();
   const { data, apply, loadSample, clearSampleData, hasSample } = useCommerce();
   const [draft, setDraft] = useState<FulfilmentSettings>(data.fulfilment);
   const [tried, setTried] = useState(false);
@@ -35,7 +37,7 @@ export function CommerceSettings() {
   const save = () => {
     setTried(true);
     if (hasErrors) return;
-    if (apply((d) => ({ ...d, fulfilment: { ...draft, zones: draft.zones.map((z) => ({ ...z, name: z.name.trim() })) } }))) toast('Fulfilment settings saved', { description: 'Checkout uses them straight away.' });
+    if (apply((d) => ({ ...d, fulfilment: { ...draft, zones: draft.zones.map((z) => ({ ...z, name: z.name.trim() })) } }))) toast(tr('Fulfilment settings saved'), { description: tr('Checkout uses them straight away.') });
   };
 
   return (
@@ -52,11 +54,11 @@ export function CommerceSettings() {
 
       <div className="mt-8 grid items-start gap-10 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
         <Card id="fulfilment" emphasis="primary" title="How orders reach customers" description="Checkout offers whichever of these you turn on." body="flush">
-          {tried && errors.none && <p className="mx-5 mt-5 rounded-md bg-danger-soft px-3 py-2.5 text-label text-danger md:mx-6">{errors.none}</p>}
+          {tried && errors.none && <p className="mx-5 mt-5 rounded-md bg-danger-soft px-3 py-2.5 text-label text-danger md:mx-6">{tr(errors.none)}</p>}
           <div className="flex flex-col divide-y divide-line">
           <section aria-labelledby="pickup-heading" className="px-5 py-5 md:px-6 md:py-6">
             <h3 id="pickup-heading" className="sr-only">
-              Pickup
+              {tr('Pickup')}
             </h3>
             <Switch id="set-pickup" label="Customers can collect" description="Free for the customer. They see your address and hours at checkout." checked={draft.pickupEnabled} onChange={(pickupEnabled) => patch({ pickupEnabled })} />
             {draft.pickupEnabled &&
@@ -69,21 +71,21 @@ export function CommerceSettings() {
 
           <section aria-labelledby="delivery-heading" className="px-5 py-5 md:px-6 md:py-6">
             <h3 id="delivery-heading" className="sr-only">
-              Delivery
+              {tr('Delivery')}
             </h3>
             <Switch id="set-delivery" label="Deliver to customers" description="Charge per zone. Customers pick their zone and see the fee before paying." checked={draft.deliveryEnabled} onChange={(deliveryEnabled) => patch({ deliveryEnabled })} />
             {draft.deliveryEnabled &&
               <div className="mt-5 flex flex-col gap-4">
                 <div className="overflow-x-auto rounded-md border border-line">
                   <table className="block w-full text-left md:table">
-                    <caption className="sr-only">Delivery zones</caption>
+                    <caption className="sr-only">{tr('Delivery zones')}</caption>
                     <thead className="hidden bg-sunken text-caption font-semibold text-fg-muted md:table-header-group">
                       <tr>
-                        <th scope="col" className="px-3 py-2">Zone</th>
-                        <th scope="col" className="px-3 py-2">Fee</th>
-                        <th scope="col" className="px-3 py-2">Delivery time</th>
+                        <th scope="col" className="px-3 py-2">{tr('Zone')}</th>
+                        <th scope="col" className="px-3 py-2">{tr('Fee')}</th>
+                        <th scope="col" className="px-3 py-2">{tr('Delivery time')}</th>
                         <th scope="col" className="px-3 py-2">
-                          <span className="sr-only">Remove</span>
+                          <span className="sr-only">{tr('Remove')}</span>
                         </th>
                       </tr>
                     </thead>
@@ -101,15 +103,15 @@ export function CommerceSettings() {
                             <TextInput id={`zone-e-${z.id}`} label="Delivery time" className="h-11 md:h-9" fieldClassName="md:[&>div:first-child]:sr-only" placeholder="e.g. 1–2 days" value={z.eta} onChange={(e) => patch({ zones: draft.zones.map((x) => x.id === z.id ? { ...x, eta: e.target.value } : x) })} />
                           </td>
                           <td className="block pb-0.5 md:table-cell md:px-2 md:py-2">
-                            <IconButton icon={Trash2Icon} size={wide ? 'sm' : 'lg'} label={`Remove ${z.name || 'zone'}`} onClick={() => patch({ zones: draft.zones.filter((x) => x.id !== z.id) })} />
+                            <IconButton icon={Trash2Icon} size={wide ? 'sm' : 'lg'} label={tr('Remove {name}', { name: z.name || tr('zone') })} onClick={() => patch({ zones: draft.zones.filter((x) => x.id !== z.id) })} />
                           </td>
                         </tr>
                       )}
                     </tbody>
                   </table>
-                  {draft.zones.length === 0 && <p className="px-3 py-4 text-label text-fg-muted">No zones yet.</p>}
+                  {draft.zones.length === 0 && <p className="px-3 py-4 text-label text-fg-muted">{tr('No zones yet.')}</p>}
                 </div>
-                {tried && errors.zones && <p className="text-caption text-danger">{errors.zones}</p>}
+                {tried && errors.zones && <p className="text-caption text-danger">{tr(errors.zones)}</p>}
                 <Button size="sm" variant="secondary" leadingIcon={PlusIcon} className="self-start" onClick={() => patch({ zones: [...draft.zones, { id: uid('zone'), name: '', feeNgn: 0, eta: '' }] })}>
                   Add zone
                 </Button>
@@ -134,7 +136,7 @@ export function CommerceSettings() {
               </Button>
             }
           </AsideNote>
-          <AsideNote id="messages" title="Customer messages" text="Order confirmations, shipping and refund notices are previewed but not sent in this prototype. Email and WhatsApp sending arrive with Automations." />
+          <AsideNote id="messages" title="Customer messages" text="Order confirmations, delivery updates and refund notices are written and previewed, but not sent yet. Email, WhatsApp and SMS sending need a messaging partner." />
         </aside>
       </div>
 

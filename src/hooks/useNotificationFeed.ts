@@ -25,6 +25,8 @@ import { formatNgn } from '../utils/format';
 import { orderMoney } from '../utils/commerce/money';
 import { TRIAL_REMINDER_DAYS } from '../data/billing';
 import { readTemplateStore } from '../utils/templateListings';
+import { useFulfilment } from './useFulfilment';
+import { buildTracking, promiseLabel } from '../utils/commerce/tracking';
 import { destinationExists, destinationLabel, encodeDestination, fallbackDestination } from '../utils/domains/links';
 
 const DAY = 86400000;
@@ -49,6 +51,7 @@ export function useNotificationFeed(): AppNotification[] {
   const money = useMoney(current.id).data;
   const quotesActive = useMarketplace().isActive(SERVICE_OS_APP_ID);
   const serviceOs = useServiceOs(current.id).data;
+  const fulfilment = useFulfilment(current.id).data;
 
   return useMemo(() => {
     const out: AppNotification[] = [];
@@ -59,6 +62,18 @@ export function useNotificationFeed(): AppNotification[] {
       if (o.status === 'paid')
       out.push({ id: `order_paid:${o.id}`, event: 'order_paid', area: 'orders', kind: 'action', text: `Order #${o.number} from ${o.customer.name} is paid — ready to pack${o.held ? ' (held for DealRoom goal)' : ''}`, href: '/app/commerce/orders?status=paid', at: o.createdAt });
       if (o.status === 'new') out.push({ id: `order_pending:${o.id}`, event: 'order_pending', area: 'orders', kind: 'update', text: `Order #${o.number} from ${o.customer.name} is waiting for payment`, href: '/app/commerce/orders?status=new', at: o.createdAt });
+      // Delivery tracking (D144): late, or a failed delivery attempt.
+      const tv = buildTracking(o, fulfilment, now);
+      if (tv.applies && (tv.health === 'late' || tv.health === 'problem' && !o.dispute))
+      out.push({
+        id: `order_late:${o.id}:${tv.health}`,
+        event: 'order_late',
+        area: 'orders',
+        kind: 'action',
+        text: tv.health === 'late' && tv.promisedBy ? `Order #${o.number} for ${o.customer.name} is running late — promised by ${promiseLabel(tv.promisedBy)}` : `Delivery for order #${o.number} (${o.customer.name}) didn’t go through — arrange another try`,
+        href: `/app/commerce/orders?order=${o.id}`,
+        at: tv.promisedBy && tv.health === 'late' ? tv.promisedBy : tv.lastUpdateAt
+      });
       if (o.dispute?.status === 'needs_response')
       out.push({ id: `dispute:${o.dispute.id}`, event: 'dispute', area: 'orders', kind: 'action', text: `Dispute on order #${o.number} (${formatNgn(o.dispute.amountNgn)}) — respond by ${formatDate(o.dispute.respondBy)}`, href: '/app/commerce/orders', at: o.dispute.openedAt });
     }
@@ -248,5 +263,5 @@ export function useNotificationFeed(): AppNotification[] {
     }
 
     return out.sort((a, b) => Date.parse(b.at) - Date.parse(a.at));
-  }, [commerce, money, serviceOs, quotesActive, ops, forms, team.data.reviews, team.myNotices, team.me.id, billing, domains, current, plan, ai.limit, ai.remaining, ai.resetsOn]);
+  }, [commerce, fulfilment, money, serviceOs, quotesActive, ops, forms, team.data.reviews, team.myNotices, team.me.id, billing, domains, current, plan, ai.limit, ai.remaining, ai.resetsOn]);
 }

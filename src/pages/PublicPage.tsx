@@ -43,7 +43,10 @@ import { showsKubicuBadge } from '../utils/branding';
 import { isLiveNow } from '../utils/schedule';
 import { useResolvedPage } from '../hooks/useResolvedPage';
 import { usePageCommerce } from '../hooks/usePageCommerce';
-import type { CampaignPhase, PageDocument } from '../types/page';
+import type { CampaignPhase, PageDocument, PageTheme } from '../types/page';
+import { LayoutRow } from '../components/blocks/LayoutRow';
+import { StickyActionBar } from '../components/blocks/StickyActionBar';
+import { layoutRows, pageContentWidth, sectionTheme } from '../utils/pageLayout';
 import { blockInPhase, campaignPhase, phaseLabels, phaseOrder } from '../utils/campaign';
 import { cn } from '../utils/cn';
 import type { PlanInfo } from '../data/plans';
@@ -359,7 +362,7 @@ export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
 
                         <PageBody site={doc} pageId={pageId} plan={plan} isDraft={isDraft} phase={phase} nav={nav} navHref={navHref} handle={handle} />
                         }
-              {catalog && <CheckoutSheet theme={doc.theme} commerce={commerce} ownerPlan={plan.id} handle={handle} defaultCode={phase === 'live' ? campaignCode : undefined} dealRoom={roomCheckout} />}
+              {catalog && <CheckoutSheet theme={doc.theme} commerce={commerce} ownerPlan={plan.id} handle={handle} defaultCode={phase === 'live' ? campaignCode : undefined} dealRoom={roomCheckout} workspaceId={resolved && !resolved.example && !isDraft ? resolved.workspaceId : null} businessName={doc.title} />}
               <CartButton theme={doc.theme} />
               {resolved?.workspaceId && !resolved.example && !isDraft && <ConsentStrip workspaceId={resolved.workspaceId} theme={doc.theme} />}
             </CartProvider>
@@ -471,10 +474,42 @@ function PageBody({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pageId, anchor]);
+  // Layout sections (D153): rows of one block or two side by side, each with its own width and background.
+  const columnPx = pageContentWidth(site);
+  const column = (node: React.ReactNode) =>
+  <div className="mx-auto w-full px-5" style={{ maxWidth: columnPx }}>
+      {node}
+    </div>;
+
+  const renderBlock = (block: Block, theme: PageTheme) =>
+  <div
+    key={block.id}
+    id={`b-${block.id}`}
+    data-block-type={block.type}
+    className={cn(spacingClass[block.layout.spacing], 'scroll-mt-20 rounded-[14px] transition-[outline-color] duration-300 ease-out')}
+    style={{ outline: '2px solid', outlineOffset: 4, outlineColor: marked === block.id ? theme.text : 'transparent' }}
+    // Taps on any link or button inside a block are counted for that block (D61), unless the block's "Count taps" is off.
+    onClickCapture={(e) => {
+      const el = (e.target as HTMLElement).closest('a,button');
+      if (!el || block.behaviour.trackClicks === false) return;
+      track('tap', { blockId: block.id, label: (el.getAttribute('aria-label') || el.textContent || blockName(block)).trim().slice(0, 80) });
+    }}>
+    
+      <BlockRenderer block={block} theme={theme} mode="live" />
+    </div>;
+
+  const rows = layoutRows(
+    renderList,
+    (item) => item.kind === 'block' ? item.block : null,
+    (item) => item.block.id
+  );
+  const actionBar = site.layout?.actionBar?.enabled && site.layout.actionBar.label.trim() ? site.layout.actionBar : null;
   return (
     <main>
       {nav.length > 1 && <SkipLink target="page-content" />}
       <PageSurface
+        fluid
+        columnClassName={actionBar ? 'pb-28 md:pb-10' : undefined}
         theme={doc.theme}
         footer={<PublicFooter theme={doc.theme} badge={showsKubicuBadge(doc, plan)} handle={handle} workspaceId={null} />}
         header={
@@ -488,60 +523,53 @@ function PageBody({
         
         <span id="page-content" tabIndex={-1} className="sr-only">Page content</span>
         {site.dealRoom && !pageId &&
-        <div className="mb-4">
-            <DealRoomPanel room={site.dealRoom} handle={handle} theme={doc.theme} mode="live" />
-          </div>
-        }
-        {pageLocked && pageRule && members ?
-        <MembersLocked
-          theme={doc.theme}
-          rule={pageRule}
-          id={`page-${pageId}`}
-          kind="page"
-          title={`${findPage(site, pageId)?.title || 'This page'} is for members`}
-          teaser={pageRule.teaser}
-          joinLabel="Become a member"
-          hiddenCount={0}
-          access={pageAccess} /> :
+        column(
+          <div className="mb-4">
+              <DealRoomPanel room={site.dealRoom} handle={handle} theme={doc.theme} mode="live" />
+            </div>
+        )}
+        {pageLocked && pageRule && members ? column(
+          <MembersLocked
+            theme={doc.theme}
+            rule={pageRule}
+            id={`page-${pageId}`}
+            kind="page"
+            title={`${findPage(site, pageId)?.title || 'This page'} is for members`}
+            teaser={pageRule.teaser}
+            joinLabel="Become a member"
+            hiddenCount={0}
+            access={pageAccess} />
 
-
+        ) :
         <>
-            {pageRule && members && <div className="mb-3"><MembersOpenBar theme={doc.theme} title="Members-only page" id={`page-${pageId}`} access={pageAccess} /></div>}
-            {renderList.map((item) => {
-            if (item.kind === 'locked')
-            return (
-              <div key={item.block.id} id={`b-${item.block.id}`} className={cn(spacingClass[item.block.layout.spacing], 'scroll-mt-20')}>
-                    <MembersLocked theme={doc.theme} rule={item.block.content} id={item.block.id} kind="section" title={item.block.content.title} teaser={item.block.content.teaser} joinLabel={item.block.content.joinLabel} hiddenCount={item.hidden} access={item.access} />
-                  </div>);
+            {pageRule && members && column(<div className="mb-3"><MembersOpenBar theme={doc.theme} title="Members-only page" id={`page-${pageId}`} access={pageAccess} /></div>)}
+            {rows.map((row) => {
+            const themeFor = sectionTheme(doc.theme, row.background);
+            const nodes = row.items.map((item) => {
+              if (item.kind === 'locked')
+              return (
+                <div key={item.block.id} id={`b-${item.block.id}`} className={cn(spacingClass[item.block.layout.spacing], 'scroll-mt-20')}>
+                      <MembersLocked theme={doc.theme} rule={item.block.content} id={item.block.id} kind="section" title={item.block.content.title} teaser={item.block.content.teaser} joinLabel={item.block.content.joinLabel} hiddenCount={item.hidden} access={item.access} />
+                    </div>);
 
-            if (item.kind === 'open')
-            return (
-              <div key={item.block.id} id={`b-${item.block.id}`} className={cn(spacingClass[item.block.layout.spacing], 'scroll-mt-20')}>
-                    <MembersOpenBar theme={doc.theme} title={item.block.content.title} id={item.block.id} access={item.access} />
-                  </div>);
+              if (item.kind === 'open')
+              return (
+                <div key={item.block.id} id={`b-${item.block.id}`} className={cn(spacingClass[item.block.layout.spacing], 'scroll-mt-20')}>
+                      <MembersOpenBar theme={doc.theme} title={item.block.content.title} id={item.block.id} access={item.access} />
+                    </div>);
 
-            const block = item.block;
+              return renderBlock(item.block, themeFor);
+            });
             return (
-              <div
-                key={block.id}
-                id={`b-${block.id}`}
-                data-block-type={block.type}
-                className={cn(spacingClass[block.layout.spacing], 'scroll-mt-20 rounded-[14px] transition-[outline-color] duration-300 ease-out')}
-                style={{ outline: '2px solid', outlineOffset: 4, outlineColor: marked === block.id ? doc.theme.text : 'transparent' }}
-                // Taps on any link or button inside a block are counted for that block (D61).
-                onClickCapture={(e) => {
-                  const el = (e.target as HTMLElement).closest('a,button');
-                  if (!el) return;
-                  track('tap', { blockId: block.id, label: (el.getAttribute('aria-label') || el.textContent || blockName(block)).trim().slice(0, 80) });
-                }}>
-                
-            <BlockRenderer block={block} theme={doc.theme} mode="live" />
-          </div>);
+              <LayoutRow key={row.key} theme={doc.theme} columnPx={columnPx} width={row.width} background={row.background} ratio={row.ratio} firstSecondOnPhone={row.firstSecondOnPhone}>
+                  {nodes}
+                </LayoutRow>);
 
           })}
           </>
         }
       </PageSurface>
+      {actionBar && <StickyActionBar theme={doc.theme} label={actionBar.label} blockId={actionBar.blockId} url={actionBar.url} />}
     </main>);
 
 }

@@ -9,6 +9,7 @@ import { Button } from '../../ui/Button';
 import { Dialog } from '../../ui/Dialog';
 import { TextInput } from '../../ui/TextInput';
 import { cn } from '../../../utils/cn';
+import { buttonStyle, fontsFor } from '../../blocks/pageStyle';
 
 /** Workspace themes: save the current look once, reuse it on any page. */
 export function SavedThemes() {
@@ -106,23 +107,24 @@ export function SavedThemes() {
 }
 
 export function ThemeSwatch({ name, theme, active, onClick }: {name: string;theme: PageTheme;active: boolean;onClick: () => void;}) {
-  const display = fontPairs.find((f) => f.id === theme.fontPair)?.display;
+  const display = theme.material ? fontsFor(theme).display : fontPairs.find((f) => f.id === theme.fontPair)?.display;
+  const action = buttonStyle(theme, 'featured').background as string;
   return (
     <button
       type="button"
       aria-pressed={active}
       onClick={onClick}
       className={cn(
-        'flex w-full flex-col overflow-hidden rounded-md border text-left transition-[border-color] duration-150',
+        'flex w-full min-w-0 flex-col overflow-hidden rounded-md border text-left transition-[border-color] duration-150',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
         active ? 'border-select ring-1 ring-select' : 'border-line hover:border-line-strong'
       )}>
       
-      <span className="flex h-14 flex-col justify-between p-2" style={{ background: theme.background }}>
+      <span className="flex h-14 flex-col justify-between p-2" style={{ background: theme.material?.backdrop ?? theme.background }}>
         <span className="text-[15px] leading-none" style={{ fontFamily: display, color: theme.text }}>
           Aa
         </span>
-        <span className="h-2 w-full rounded-full" style={{ background: theme.accent }} />
+        <span className="h-2 w-full rounded-full" style={{ background: action ?? theme.accent }} />
       </span>
       <span className="flex items-center justify-between gap-1 bg-raised px-2 py-1.5 text-caption text-fg">
         <span className="truncate">{name}</span>

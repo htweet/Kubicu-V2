@@ -1,5 +1,5 @@
 /* @import url() FONT IMPORTS MUST ALWAYS BE AT THE VERY TOP OF THIS FILE, ABOVE THE TAILWIND IMPORTS — DO NOT DELETE THIS COMMENT */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Instrument+Serif&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=Archivo:wdth,wght@75..100,500..800&family=Lora:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Instrument+Serif&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=Archivo:wdth,wght@75..100,500..800&family=Lora:wght@400;500;600&family=Cormorant+Garamond:wght@500;600&family=Bricolage+Grotesque:opsz,wght@12..96,500..700&display=swap');
 
 /* CRITICAL: THE FOLLOWING TAILWIND IMPORTS MUST NEVER BE DELETED OR REORDERED — DO NOT DELETE THIS COMMENT */
 @import 'tailwindcss/base';
@@ -8,6 +8,28 @@
 
 /* END TAILWIND IMPORTS — ALL OTHER CSS MUST GO BELOW THIS LINE */
 
+/* Signature theme material layer (D161). Only pages wearing a Signature theme carry .kb-page. */
+.kb-page .kb-backdrop { background: var(--kb-backdrop-mobile); }
+@media (min-width: 768px) { .kb-page .kb-backdrop { background: var(--kb-backdrop); } }
+/* Glass is lighter on phones: less blur, same look. */
+@media (max-width: 640px) { .kb-page { --kb-blur: blur(10px) saturate(130%); } }
+/* Reduced transparency: glass becomes the theme's solid surface, blur switches off. */
+@media (prefers-reduced-transparency: reduce) {
+  .kb-page { --kb-blur: none !important; --kb-glass-override: var(--kb-surface-solid); }
+}
+/* Data saver (D85): no blur, solid surfaces, flat atmosphere. */
+.kb-page.kb-lite { --kb-blur: none !important; --kb-glass-override: var(--kb-surface-solid); }
+.kb-page.kb-lite .kb-backdrop { background: none !important; }
+.kb-page :focus-visible { outline: 2px solid var(--kb-focus); outline-offset: 2px; }
+/* Optional sheen sweep on primary actions — one short pass on hover, off for reduced motion. */
+.kb-page [style*='--kb-sheen'] { position: relative; overflow: hidden; isolation: isolate; }
+.kb-page [style*='--kb-sheen']::after {
+  content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,0.28) 50%, transparent 65%);
+  transform: translateX(-120%);
+}
+.kb-page [style*='--kb-sheen']:hover::after { transform: translateX(120%); transition: transform 280ms cubic-bezier(0.23, 1, 0.32, 1); }
+@media (prefers-reduced-motion: reduce) { .kb-page [style*='--kb-sheen']:hover::after { transition: none; transform: translateX(-120%); } }
 /* Personal preferences from Account → Preferences (D80). Sizes are in rem, so this scales the whole UI like a gentle zoom. */
 html[data-text-size='large'] {
   font-size: 112.5%;

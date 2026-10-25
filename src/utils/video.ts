@@ -1,14 +1,6 @@
-const YOUTUBE_PATTERNS = [
-/youtube\.com\/watch\?v=([\w-]{11})/i,
-/youtu\.be\/([\w-]{11})/i,
-/youtube\.com\/shorts\/([\w-]{11})/i,
-/youtube\.com\/embed\/([\w-]{11})/i];
+import { youTubeId } from './embeds';
 
-
+/** Kept for older callers; new code uses parseEmbed from utils/embeds (D142). */
 export function getYouTubeId(url: string): string | null {
-  for (const pattern of YOUTUBE_PATTERNS) {
-    const match = url.match(pattern);
-    if (match) return match[1];
-  }
-  return null;
+  return youTubeId(url);
 }

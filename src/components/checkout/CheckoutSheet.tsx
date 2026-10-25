@@ -7,7 +7,7 @@ import { DiscountCodeField } from './DiscountCodeField';
 import { useTrack } from '../../contexts/TrackContext';
 import { unitsBoughtBy, type DealRoomCheckout } from '../../utils/dealRoom';
 import { discountLineLabel, normaliseCode, resolveDiscount } from '../../utils/commerce/discounts';
-import { AlertTriangleIcon, ArrowLeftIcon, CreditCardIcon, HashIcon, Loader2Icon, MinusIcon, PlusIcon, ShoppingBagIcon, Trash2Icon, XCircleIcon } from 'lucide-react';
+import { AlertTriangleIcon, ArrowLeftIcon, CreditCardIcon, HashIcon, LandmarkIcon, Loader2Icon, MinusIcon, PlusIcon, ShoppingBagIcon, Trash2Icon, XCircleIcon } from 'lucide-react';
 import type { PageTheme } from '../../types/page';
 import type { OrderFulfilment, TestPaymentOutcome } from '../../types/commerce';
 import type { WorkspacePlan } from '../../types/plan';
@@ -15,7 +15,7 @@ import type { PageCommerce } from '../../hooks/usePageCommerce';
 import { useCart } from '../../contexts/CartContext';
 import { PageOverlay } from '../blocks/PageOverlay';
 import { buttonRadius, cardStyle, mix } from '../blocks/pageStyle';
-import { CheckoutHeading, PrimaryButton, SecondaryButton, SheetActions, StepDots, TestModeNote, ThemedField } from './checkoutUi';
+import { CheckoutHeading, PrimaryButton, SecondaryButton, SheetActions, StepDots, TermsUpdatedNote, TestModeNote, ThemedField } from './checkoutUi';
 import { canSell, variantLabel, variantPrice } from '../../utils/commerce/catalog';
 import { placeOrder } from '../../utils/commerce/ops';
 import { cartBalanceNgn, isMadeToOrder } from '../../utils/commerce/deposit';
@@ -28,6 +28,7 @@ import { isValidEmail, isValidPhone } from '../../utils/validation';
 import { formatNgn } from '../../utils/format';
 import { isNaira } from '../../utils/currency';
 import { UssdPay } from './UssdPay';
+import { stampTransfer, transferDetails } from '../../utils/commerce/bankTransfer';
 
 type Step = 'cart' | 'details' | 'delivery' | 'review' | 'paying' | 'failed';
 
@@ -48,9 +49,12 @@ interface CheckoutSheetProps {
   defaultCode?: string;
   /** DealRoom rules: room price, limits and the group-goal promise (D54). */
   dealRoom?: DealRoomCheckout;
+  /** For the "Bank transfer payments" extension (D148). */
+  workspaceId?: string | null;
+  businessName?: string;
 }
 
-export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode, dealRoom }: CheckoutSheetProps) {
+export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode, dealRoom, workspaceId, businessName = '' }: CheckoutSheetProps) {
   const { t: tr } = useT();
   const cart = useCart();
   const navigate = useNavigate();
@@ -72,7 +76,8 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
   const [payWithChoice, setPayWith] = useState<PayWith>('now');
   const [agreed, setAgreed] = useState(false);
   // Card or USSD for an immediate payment (D136).
-  const [payBy, setPayBy] = useState<'card' | 'ussd'>('card');
+  const [payBy, setPayBy] = useState<'card' | 'ussd' | 'transfer'>('card');
+  const transfer = useMemo(() => transferDetails(workspaceId, businessName), [workspaceId, businessName, cart?.open]);
   const [ussdOpen, setUssdOpen] = useState(false);
   useEffect(() => {
     if (step !== 'review') setUssdOpen(false);
@@ -211,7 +216,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
     cart.doneChoosing();
   };
 
-  const pay = (override?: TestPaymentOutcome) => {
+  const pay = (override?: TestPaymentOutcome, via?: 'transfer') => {
     setStep('paying');
     // Nothing to charge: the test-card choice doesn't apply. USSD passes its own result (D136).
     const outcome = payNow > 0 ? override ?? chosenOutcome : 'success';
@@ -243,7 +248,11 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
           // Creator Collaboration (D103): remember which partner's link the buyer came from.
           const partner = params.get('partner')?.trim().toUpperCase().replace(/[^A-Z0-9-]/g, '').slice(0, 20);
           const placed = result.order;
-          const stamped = partner ? { ...result.data, orders: result.data.orders.map((o) => o.id === placed.id ? { ...o, partnerCode: partner } : o) } : result.data;
+          const byTransfer = via === 'transfer' && transfer && placed.paymentStatus === 'pending';
+          const stamped =
+          partner || byTransfer ?
+          { ...result.data, orders: result.data.orders.map((o) => o.id === placed.id ? byTransfer && transfer ? stampTransfer({ ...o, partnerCode: partner || o.partnerCode }, transfer) : { ...o, partnerCode: partner } : o) } :
+          result.data;
           return releaseHolds(stamped, holder);
         });
         const r = result as ReturnType<typeof placeOrder> | null;
@@ -623,7 +632,15 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
 
     // USSD only for a single naira payment now — not for later instalment charges (D136).
     const ussdAvailable = isNaira() && payNow > 0 && payWith === 'now';
+    // Bank transfer to the seller (D148): naira, a payment now, not group buys (their refunds need the provider).
+    const transferAvailable = !!transfer && isNaira() && payNow > 0 && payWith === 'now' && !dealRoom;
     const byUssd = ussdAvailable && payBy === 'ussd';
+    const byTransfer = transferAvailable && payBy === 'transfer';
+    const payOptions = [
+    ['card', CreditCardIcon, tr('Card or transfer')],
+    ...(ussdAvailable ? [['ussd', HashIcon, tr('USSD code')] as const] : []),
+    ...(transferAvailable ? [['transfer', LandmarkIcon, tr('Bank transfer')] as const] : [])] as
+    const;
     return (
       <div className="flex flex-col gap-4">
         <CheckoutHeading theme={theme}>Review and pay</CheckoutHeading>
@@ -688,16 +705,11 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
           agreed={agreed}
           onAgree={setAgreed} />
         
-        {ussdAvailable &&
+        {payOptions.length > 1 &&
         <fieldset className="flex flex-col gap-2">
             <legend className="mb-1 text-[14px] font-semibold">{tr('Pay with')}</legend>
-            <div className="grid grid-cols-2 gap-2">
-              {(
-            [
-            ['card', CreditCardIcon, tr('Card or transfer')],
-            ['ussd', HashIcon, tr('USSD code')]] as
-            const).
-            map(([v, Icon, label]) =>
+            <div className={payOptions.length === 3 ? 'grid grid-cols-1 gap-2 min-[400px]:grid-cols-3' : 'grid grid-cols-2 gap-2'}>
+              {payOptions.map(([v, Icon, label]) =>
             <label key={v} className="flex cursor-pointer items-center gap-2.5 p-3 text-[14px] font-semibold focus-within:outline focus-within:outline-2 focus-within:outline-offset-2" style={{ ...cardStyle(theme), border: `1.5px solid ${payBy === v ? theme.text : mix(theme.text, 12)}` }}>
                   <input type="radio" name="pay-by" className="sr-only" checked={payBy === v} onChange={() => setPayBy(v)} />
                   <Icon size={17} aria-hidden />
@@ -710,9 +722,29 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
                 {tr('No card or data needed — dial a code from your bank phone and approve with your PIN.')}
               </p>
           }
+            {byTransfer && transfer &&
+          <div className="flex flex-col gap-2 p-3 text-[14px]" style={{ ...cardStyle(theme), background: mix(theme.text, 4) }}>
+                <p className="font-semibold">{tr('Transfer {amount} to:', { amount: formatNgn(payNow) })}</p>
+                <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
+                  <dt style={muted}>{tr('Bank')}</dt>
+                  <dd className="font-medium">{transfer.bank}</dd>
+                  <dt style={muted}>{tr('Account number')}</dt>
+                  <dd className="font-mono font-medium tracking-wide">{transfer.account}</dd>
+                  {transfer.accountName &&
+              <>
+                      <dt style={muted}>{tr('Account name')}</dt>
+                      <dd className="font-medium">{transfer.accountName}</dd>
+                    </>
+              }
+                </dl>
+                <p className="text-[12.5px] leading-snug" style={muted}>
+                  {tr('Place the order first — your order number is the reference. The seller confirms when the money arrives; nothing is sent before then.')}
+                </p>
+              </div>
+          }
           </fieldset>
         }
-        {payNow > 0 && !byUssd &&
+        {payNow > 0 && !byUssd && !byTransfer &&
         <fieldset className="flex flex-col gap-2">
           <legend className="mb-1 text-[13px] font-semibold">{tr('Test card — choose what happens')}</legend>
           {outcomes.filter((o) => payWith !== 'instalments' || o.value !== 'pending' && o.value !== 'timeout').map((o) =>
@@ -739,10 +771,13 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
           </p>
         }
         <TestModeNote theme={theme} />
+        <TermsUpdatedNote theme={theme} />
         <SheetActions theme={theme}>
-          <PrimaryButton theme={theme} onClick={() => byUssd ? setUssdOpen(true) : pay()} disabled={okLines.length === 0 || !!roomError || payWith === 'instalments' && !agreed}>
+          <PrimaryButton theme={theme} onClick={() => byUssd ? setUssdOpen(true) : byTransfer ? pay('pending', 'transfer') : pay()} disabled={okLines.length === 0 || !!roomError || payWith === 'instalments' && !agreed}>
             {byUssd ?
             tr('Get a USSD code for {amount}', { amount: formatNgn(payNow) }) :
+            byTransfer ?
+            tr('Place order — pay {amount} by transfer', { amount: formatNgn(payNow) }) :
             payWith === 'pod' ?
             tr('Place order — pay {amount} on delivery', { amount: formatNgn(total) }) :
             payWith === 'instalments' ?

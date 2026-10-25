@@ -12,12 +12,14 @@ interface SlotPickerProps {
   value: number | null;
   onChange: (start: number) => void;
   ignoreId?: string;
+  /** Only this person's times (D140). */
+  staffId?: string | null;
 }
 
 const DAYS_SHOWN = 14;
 
 /** Date chips then time slots, both in the business’s time zone, with the visitor’s local time alongside. */
-export function SlotPicker({ theme, service, availability, bookings, value, onChange, ignoreId }: SlotPickerProps) {
+export function SlotPicker({ theme, service, availability, bookings, value, onChange, ignoreId, staffId }: SlotPickerProps) {
   const tz = availability.timeZone;
   const local = visitorTimeZone();
   const differentZone = local !== tz && timeLabel(Date.now(), local) !== timeLabel(Date.now(), tz);
@@ -26,9 +28,9 @@ export function SlotPicker({ theme, service, availability, bookings, value, onCh
     () =>
     Array.from({ length: Math.min(DAYS_SHOWN, availability.horizonDays) }).map((_, i) => {
       const key = addDaysKey(today, i);
-      return { key, slots: slotsFor(key, service, availability, bookings, Date.now(), ignoreId) };
+      return { key, slots: slotsFor(key, service, availability, bookings, Date.now(), ignoreId, staffId) };
     }),
-    [today, service, availability, bookings, ignoreId]
+    [today, service, availability, bookings, ignoreId, staffId]
   );
   const firstOpen = days.find((d) => d.slots.length)?.key ?? days[0]?.key;
   const [day, setDay] = useState<string>(value ? dateKeyInTz(value, tz) : firstOpen);

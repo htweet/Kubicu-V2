@@ -10,6 +10,7 @@ import { KubicuLogo } from './KubicuLogo';
 import { RoleBanner } from './RoleBanner';
 import { BillingBanner } from './BillingBanner';
 import { PlatformBanner } from './PlatformBanner';
+import { PolicyAgreement } from './PolicyAgreement';
 import { NotificationBell } from '../notifications/NotificationBell';
 import { SkipLink } from '../ui/SkipLink';
 import { useMarketplace } from '../../contexts/MarketplaceContext';
@@ -45,6 +46,7 @@ export function AppShell() {
         </header>
         <PlatformBanner />
         <BillingBanner />
+        <PolicyAgreement />
         <RoleBanner />
         <main id="main-content" tabIndex={-1} className="flex-1 pb-24 focus:outline-none md:pb-0">
           {needsMain ? null : gatedApp ? <AppGate appId={gatedApp} /> : <Outlet />}

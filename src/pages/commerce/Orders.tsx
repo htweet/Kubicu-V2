@@ -1,6 +1,9 @@
 import React, { useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { DownloadIcon, ReceiptIcon } from 'lucide-react';
+import { AlertTriangleIcon, DownloadIcon, ReceiptIcon } from 'lucide-react';
+import { useWorkspace } from '../../contexts/WorkspaceContext';
+import { useFulfilment } from '../../hooks/useFulfilment';
+import { buildTracking, dayLabel, healthLabels, needsTrackingAttention } from '../../utils/commerce/tracking';
 import type { Order, OrderStatus } from '../../types/commerce';
 import { useCommerce } from '../../contexts/CommerceContext';
 import { PageHeader } from '../../components/shell/PageHeader';
@@ -39,7 +42,13 @@ export function Orders() {
   const { me } = useTeam();
   const mine = params.get('mine') === '1';
   const mineCount = data.orders.filter((o) => o.assigneeId === me.id).length;
-  const rows = (tab === 'all' ? data.orders : data.orders.filter((o) => o.status === tab)).filter((o) => !mine || o.assigneeId === me.id);
+  // Delivery tracking health per order (D144).
+  const { current } = useWorkspace();
+  const fulfilment = useFulfilment(current.id).data;
+  const views = useMemo(() => new Map(data.orders.map((o) => [o.id, buildTracking(o, fulfilment)])), [data.orders, fulfilment]);
+  const attention = params.get('track') === 'attention';
+  const attentionCount = data.orders.filter((o) => needsTrackingAttention(views.get(o.id)!)).length;
+  const rows = (tab === 'all' ? data.orders : data.orders.filter((o) => o.status === tab)).filter((o) => (!mine || o.assigneeId === me.id) && (!attention || needsTrackingAttention(views.get(o.id)!)));
   const set = (patch: Record<string, string | null>) => {
     const next = new URLSearchParams(params);
     Object.entries(patch).forEach(([k, v]) => v === null ? next.delete(k) : next.set(k, v));
@@ -90,7 +99,21 @@ export function Orders() {
     render: (o) => <span className="text-fg-muted">{o.fulfilment.method === 'pickup' ? tr('Pickup') : o.fulfilment.method === 'tickets' ? tr('Tickets') : o.fulfilment.method === 'digital' ? tr('Download') : o.fulfilment.zoneName}</span>
   },
   { key: 'payment', header: 'Payment', hideOnMobile: true, render: (o) => <PaymentBadge status={o.paymentStatus} /> },
-  { key: 'status', header: 'Status', render: (o) => <OrderStatusBadge status={o.status} pickup={o.fulfilment.method === 'pickup'} /> },
+  {
+    key: 'status',
+    header: 'Status',
+    render: (o) => {
+      const v = views.get(o.id);
+      const flag = v && needsTrackingAttention(v);
+      return (
+        <span className="flex flex-col items-start gap-0.5">
+            <OrderStatusBadge status={o.status} pickup={o.fulfilment.method === 'pickup'} />
+            {flag && v && <span className={cn('text-caption font-semibold', v.health === 'at_risk' ? 'text-warning' : 'text-danger')}>{tr(healthLabels[v.health])}</span>}
+            {!flag && v?.applies && v.promisedBy && v.health === 'on_track' && <span className="text-caption text-fg-subtle">{tr('Due {date}', { date: dayLabel(v.promisedBy) })}</span>}
+          </span>);
+
+    }
+  },
   { key: 'assignee', header: 'Assigned', hideOnMobile: true, render: (o) => <AssigneeChip memberId={o.assigneeId} /> },
   { key: 'total', header: 'Total', align: 'right', sortValue: (o) => orderMoney(o).gross, render: (o) => <span className="font-semibold">{formatNgn(orderMoney(o).gross)}</span> }];
 
@@ -119,6 +142,22 @@ export function Orders() {
               <li>
                 <MineToggle mine={mine} count={mineCount} onChange={(v) => set({ mine: v ? '1' : null })} />
               </li>
+              {attentionCount > 0 &&
+            <li>
+                  <button
+                type="button"
+                aria-pressed={attention}
+                onClick={() => set({ track: attention ? null : 'attention' })}
+                className={cn(
+                  'inline-flex h-8 items-center gap-1.5 whitespace-nowrap rounded-full border px-3 text-label font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
+                  attention ? 'border-transparent bg-danger text-white' : 'border-danger/40 text-danger hover:bg-danger-soft'
+                )}>
+                
+                    <AlertTriangleIcon size={13} aria-hidden /> {tr('Delivery needs attention')}
+                    <span className="tabular-nums opacity-80">{attentionCount}</span>
+                  </button>
+                </li>
+            }
               <li aria-hidden className="mx-1 w-px self-stretch bg-line" />
               {tabs.map((t) =>
             <li key={t}>

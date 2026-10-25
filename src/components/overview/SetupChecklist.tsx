@@ -5,6 +5,7 @@ import { useEditor } from '../../contexts/EditorContext';
 import { PlanLock } from '../ui/PlanLock';
 import { cn } from '../../utils/cn';
 import { allBlocks } from '../../utils/sitePages';
+import { useDomains } from '../../contexts/DomainsContext';
 
 interface Step {
   id: string;
@@ -13,12 +14,17 @@ interface Step {
   done: boolean;
   to?: string;
   planned?: string;
+  /** Shown and linked, but not counted towards setup progress. */
+  optional?: boolean;
 }
 
 export function SetupChecklist() {
   const { state, issues, hasUnpublishedChanges } = useEditor();
   const types = new Set(allBlocks(state.site).filter((b) => !b.visibility.hidden).map((b) => b.type));
   const canvas = `/app/canvas/${state.draft.id}`;
+  const domains = useDomains().data;
+  const hasDomain = domains.domains.some((d) => d.status === 'live');
+  const hasQr = domains.qrs.length > 0;
 
   const steps: Step[] = [
   { id: 'create', label: 'Create your page', hint: 'Your space on KUBICU exists.', done: true },
@@ -50,11 +56,11 @@ export function SetupChecklist() {
     done: !!state.published && !hasUnpublishedChanges,
     to: canvas
   },
-  { id: 'domain', label: 'Connect your own domain', hint: 'Guided DNS setup and SSL status.', done: false, planned: 'Batch 5' },
-  { id: 'qr', label: 'Print a QR code for your shop', hint: 'Dynamic codes you can redirect later.', done: false, planned: 'Batch 5' }];
+  { id: 'domain', label: 'Connect your own domain', hint: 'Guided DNS setup and security certificate status.', done: hasDomain, to: '/app/domains', optional: true },
+  { id: 'qr', label: 'Make a QR code for your shop', hint: 'Codes you can point somewhere else later, with scans in Analytics.', done: hasQr, to: '/app/domains/qr', optional: true }];
 
 
-  const countable = steps.filter((s) => !s.planned);
+  const countable = steps.filter((s) => !s.planned && !s.optional);
   const done = countable.filter((s) => s.done).length;
 
   return (
@@ -89,7 +95,10 @@ export function SetupChecklist() {
                   <span className="sr-only">{step.done ? 'Done: ' : 'To do: '}</span>
                   {step.label}
                 </span>
-                <span className="block text-caption text-fg-subtle">{step.hint}</span>
+                <span className="block text-caption text-fg-subtle">
+                  {step.optional && !step.done && <span className="font-medium text-fg-muted">Optional · </span>}
+                  {step.hint}
+                </span>
               </span>
               {step.planned ?
             <PlanLock kind="planned">{step.planned}</PlanLock> :

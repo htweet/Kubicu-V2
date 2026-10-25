@@ -1,5 +1,6 @@
 import type { ExamplePage } from './examples/build';
 import { findListing } from '../utils/templateListings';
+import { findExampleById } from './examples';
 
 /** Premium starters (example prices, D67). Licence is per workspace, bought once. */
 export const premiumTemplatePrices: Record<string, number> = {
@@ -18,5 +19,8 @@ export function templateMood(e: ExamplePage): ColourMood {
   return 'light';
 }
 
-/** KUBICU premium price, or a creator listing's price (D70). */
-export const templatePrice = (id: string): number => premiumTemplatePrices[id] ?? findListing(id)?.priceNgn ?? 0;
+/** KUBICU premium price, an Elite (D154) or Artwork (D158) template's price, or a creator listing's price (D70). */
+export const templatePrice = (id: string): number => {
+  const example = findExampleById(id);
+  return premiumTemplatePrices[id] ?? example?.elite?.priceNgn ?? example?.artwork?.priceNgn ?? findListing(id)?.priceNgn ?? 0;
+};

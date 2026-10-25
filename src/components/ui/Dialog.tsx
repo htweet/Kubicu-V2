@@ -17,15 +17,17 @@ interface DialogProps {
   size?: 'sm' | 'md' | 'lg';
   /** Opens above other dialogs and sheets (e.g. the upgrade dialog). */
   onTop?: boolean;
+  /** False hides the close button and ignores Escape and backdrop clicks (required decisions). */
+  dismissible?: boolean;
 }
 
 const widths = { sm: 'max-w-sm', md: 'max-w-md', lg: 'max-w-xl' };
 
-export function Dialog({ open, onClose, title, description, children, footer, size = 'md', onTop = false }: DialogProps) {
+export function Dialog({ open, onClose, title, description, children, footer, size = 'md', onTop = false, dismissible = true }: DialogProps) {
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
   const onCloseRef = useRef(onClose);
-  onCloseRef.current = onClose;
+  onCloseRef.current = dismissible ? onClose : () => undefined;
 
   // Focus moves in, Tab stays inside, Escape closes, focus returns to the opener (D76).
   useFocusTrap(panelRef, open, () => onCloseRef.current());
@@ -68,7 +70,7 @@ export function Dialog({ open, onClose, title, description, children, footer, si
                 </h2>
                 {description && <div className="mt-1 text-label text-fg-muted">{description}</div>}
               </div>
-              <IconButton icon={XIcon} label="Close" size="sm" onClick={() => onCloseRef.current()} className="-mr-2 -mt-1" />
+              {dismissible && <IconButton icon={XIcon} label="Close" size="sm" onClick={() => onCloseRef.current()} className="-mr-2 -mt-1" />}
             </div>
             {children && <div className="scroll-quiet min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-6 py-3">{children}</div>}
             {footer &&

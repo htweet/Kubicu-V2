@@ -211,6 +211,20 @@ The full list lives in `docs/DESIGN_GAP_AUDIT.md`. In short: Batch 13 closes the
 
 ### Batch 13 is complete.
 
+### Batch 14 — finish the partly built items, live editing and multi-door check-in
+- [x] **Pass A — Booking times per staff member (D140)**: Team hours (bookable switch, own hours, time off, personal calendar), Who does this on services, per-person slots, "Who would you like?" on the booking sheet, automatic assignment, Person filter and Away strips on Schedule
+- [x] **Pass B — Policy re-acceptance and automations on real events (D141)**: Owner agreement dialog with 14-day "Later", team strip, "What changed" on legal pages, checkout update note; every automation trigger runs on real events after it's switched on
+- [x] **Pass C — Safe embeds and captions (D142)**: Video & embed block with 11-site safe list, sandboxed frames, refusal reasons; captions confirmation, checklist, publish warning, Check-tab finding and help articles
+- [x] **Pass D — Live presence and multi-door check-in (D143)**: live presence between tabs with selected-block outlines, simulated teammates labelled; named doors, door on every check-in, doors list and latest feed, offline queue with conflict review
+- [x] **Order tracking, paid → delivered (D144)**: customer tracking card with stage icons, promise date, rider and delivery code, outside couriers and updates feed; seller tracking panel with health and reasons, change date, add courier, post update; "Delivery needs attention" filter and late-order notification
+- [x] **QR code on the publish screen**: "Get a QR code" with PNG/SVG download and A6 print; scans count as QR visits; Overview checklist links to Domains & QR
+- [ ] **Pass E — Translations, part 1** (in progress): tracking, payout and bank windows (D145); Payments card, Verification frame, Reports, Commerce settings (D146); Audience, Schedule, Services (D147). Still to do: Verification step fields, Availability, booking/contact panels, workspace Settings, Your account
+- [ ] Pass F — Translations, part 2 (canvas, marketing site)
+- [x] **Batch 14 checks (D149)**: phone fit and accessibility code-reading pass over every Batch 14 screen, fixes applied; accessibility report section 5b updated
+- [x] **Clean-up of buildable gaps (D148)**: "Count taps" respected; bank-transfer checkout via the extension; placeholder module pages removed; unanswered FAQ questions hidden; design-system batch labels removed
+- [ ] Pass E — Translations: Commerce leftovers, Bookings, Audience, Settings
+- [ ] Pass F — Translations: canvas and marketing site, checks and docs
+
 ## Needs founder confirmation
 1. Plan prices (deferred by founder).
 

@@ -1,6 +1,7 @@
 import type { Booking, BookingStatus, Contact, ContactSource, ConsentStatus, OpsData, Service } from '../../types/ops';
 import { uid } from '../id';
-import { isSlotFree } from './slots';
+import { dateKeyInTz, findSlot } from './slots';
+import { pickStaff, staffName } from './staff';
 
 const now = () => new Date().toISOString();
 
@@ -132,14 +133,20 @@ export interface BookingInput {
   depositOutcome: 'paid' | 'failed' | 'none';
   customerTimeZone: string;
   marketingConsent: boolean;
+  /** A chosen person, or null/undefined for "Anyone available" (D140). */
+  staffId?: string | null;
 }
 
 export type BookingResult = {ok: true;data: OpsData;booking: Booking;} | {ok: false;reason: 'taken' | 'failed';message: string;};
 
 export function createBooking(data: OpsData, input: BookingInput): BookingResult {
-  if (!isSlotFree(input.start, input.service, data.availability, data.bookings)) {
-    return { ok: false, reason: 'taken', message: 'Someone just booked that time. Please pick another.' };
+  const slot = findSlot(input.start, input.service, data.availability, data.bookings, undefined, input.staffId);
+  if (!slot) {
+    return { ok: false, reason: 'taken', message: input.staffId ? `${staffName(data.availability, input.staffId) ?? 'They'} just got booked at that time. Please pick another time or “Anyone available”.` : 'Someone just booked that time. Please pick another.' };
   }
+  // Per-person booking (D140): the chosen person, or whoever free has the fewest bookings that day.
+  const assigneeId = slot.staffIds ? input.staffId ?? pickStaff(slot.staffIds, data.availability, data.bookings, dateKeyInTz(input.start, data.availability.timeZone)) : undefined;
+  const assigneeName = staffName(data.availability, assigneeId);
   if (input.depositOutcome === 'failed') return { ok: false, reason: 'failed', message: 'The test deposit payment didn’t go through. Your time isn’t held yet.' };
   const at = now();
   const ref = `B${data.nextBookingRef}`;
@@ -158,9 +165,10 @@ export function createBooking(data: OpsData, input: BookingInput): BookingResult
     balanceOnline: input.service.balanceOnline || undefined,
     balanceHoursBefore: input.service.balanceOnline ? input.service.balanceHoursBefore ?? 24 : undefined,
     customerTimeZone: input.customerTimeZone,
+    assigneeId: assigneeId ?? undefined,
     events: [
     ...(input.depositOutcome === 'paid' ? [{ id: uid('bev'), at, label: `Deposit paid (test mode)` }] : []),
-    { id: uid('bev'), at, label: 'Booked on your page' }]
+    { id: uid('bev'), at, label: assigneeName ? `Booked on your page with ${assigneeName}${input.staffId ? '' : ' (anyone available)'}` : 'Booked on your page' }]
 
   };
   let next: OpsData = { ...data, bookings: [booking, ...data.bookings], nextBookingRef: data.nextBookingRef + 1 };
@@ -171,12 +179,23 @@ export function createBooking(data: OpsData, input: BookingInput): BookingResult
 export function rescheduleBooking(data: OpsData, bookingId: string, start: number, service: Service, by: 'customer' | 'owner'): {ok: boolean;data: OpsData;message?: string;} {
   const b = data.bookings.find((x) => x.id === bookingId);
   if (!b) return { ok: false, data, message: 'Booking not found' };
-  if (!isSlotFree(start, service, data.availability, data.bookings, bookingId)) return { ok: false, data, message: 'That time was just taken. Pick another.' };
+  const slot = findSlot(start, service, data.availability, data.bookings, bookingId);
+  if (!slot) return { ok: false, data, message: 'That time was just taken. Pick another.' };
+  // Keep the same person while they're free; otherwise hand it to whoever is (D140).
+  let assigneeId = b.assigneeId;
+  let moved = '';
+  if (slot.staffIds && !(b.assigneeId && slot.staffIds.includes(b.assigneeId))) {
+    assigneeId = pickStaff(slot.staffIds, data.availability, data.bookings, dateKeyInTz(start, data.availability.timeZone));
+    const from = staffName(data.availability, b.assigneeId);
+    const to = staffName(data.availability, assigneeId);
+    if (to) moved = from ? ` · ${from} isn’t free then, so now with ${to}` : ` · with ${to}`;
+  }
   const updated: Booking = {
     ...b,
+    assigneeId,
     start: new Date(start).toISOString(),
     end: new Date(start + service.durationMin * 60000).toISOString(),
-    events: [{ id: uid('bev'), at: now(), label: `Rescheduled by ${by === 'customer' ? 'customer' : 'you'}` }, ...b.events]
+    events: [{ id: uid('bev'), at: now(), label: `Rescheduled by ${by === 'customer' ? 'customer' : 'you'}${moved}` }, ...b.events]
   };
   return { ok: true, data: { ...data, bookings: data.bookings.map((x) => x.id === bookingId ? updated : x) } };
 }

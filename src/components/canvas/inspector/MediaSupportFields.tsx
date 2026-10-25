@@ -22,6 +22,7 @@ import { MediaPicker } from '../../media/MediaPicker';
 import { ItemListEditor } from './ItemListEditor';
 import { AudioFileField } from './AudioFileField';
 import { supportWordingLabels } from '../../blocks/SupportBlock';
+import { LayoutBlockFields } from './LayoutBlockFields';
 
 interface Props {
   block: Block;
@@ -141,7 +142,7 @@ export function MediaSupportFields({ block, issues }: Props) {
     case 'support':
       return <SupportFields block={block} issues={issues} />;
     default:
-      return null;
+      return <LayoutBlockFields block={block} />;
   }
 }
 

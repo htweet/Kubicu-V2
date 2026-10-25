@@ -6,9 +6,14 @@ import { useCommerce } from '../../contexts/CommerceContext';
 import { useTeam } from '../../contexts/TeamContext';
 import { useQrScanner } from '../../hooks/useQrScanner';
 import { checkedInCount, eventTickets, eventsOf, findEvent, parseTicketCode, scanTicket, setCheckedIn, ticketQrValue, ticketStatus, type ScanOutcome } from '../../utils/commerce/tickets';
+import { useDoor } from '../../hooks/useDoor';
 import { Button } from '../../components/ui/Button';
 import { IconButton } from '../../components/ui/IconButton';
 import { SelectInput } from '../../components/ui/SelectInput';
+import { Switch } from '../../components/ui/Switch';
+import { DoorsPanel, type SyncConflict } from '../../components/commerce/checkin/DoorsPanel';
+import { DoorNameForm } from '../../components/commerce/checkin/DoorNameForm';
+import { toast } from 'sonner';
 import { cn } from '../../utils/cn';
 
 const RESULT_MS = 2000;
@@ -30,25 +35,74 @@ export function CheckIn() {
   const timer = useRef<number>();
   const lastScan = useRef<{value: string;at: number;}>({ value: '', at: 0 });
   const allowed = team.can('tickets.checkin');
+  const doorState = useDoor(ev?.id ?? eventId, team.me.name);
+  const { door, connected, queue, enqueue, clearQueue } = doorState;
+  const [editingDoor, setEditingDoor] = useState(false);
+  const [offlineResult, setOfflineResult] = useState(false);
+  const [conflicts, setConflicts] = useState<SyncConflict[]>([]);
+
+  const show = useCallback((outcome: ScanOutcome, offline: boolean) => {
+    setResult(outcome);
+    setOfflineResult(offline);
+    if ('vibrate' in navigator) navigator.vibrate(outcome.kind === 'admitted' ? 60 : [80, 60, 80]);
+    window.clearTimeout(timer.current);
+    timer.current = window.setTimeout(() => setResult(null), RESULT_MS);
+  }, []);
 
   const handle = useCallback(
     (raw: string) => {
-      if (!ev || !allowed.allowed) return;
+      if (!ev || !allowed.allowed || !door) return;
+      if (!connected) {
+        // Offline: judge from this phone's last copy and queue the scan; nothing is written until it syncs.
+        const code = parseTicketCode(raw);
+        const queuedHere = code && queue.some((q) => parseTicketCode(q.raw) === code);
+        const preview = scanTicket(data, ev.id, raw, team.me.name, door).outcome;
+        if (queuedHere && preview.kind === 'admitted') {
+          show({ kind: 'already', ref: { ...preview.ref, ticket: { ...preview.ref.ticket, checkedInAt: queue.find((q) => parseTicketCode(q.raw) === code)!.at, checkedInBy: team.me.name, checkedInDoor: door } } }, true);
+          return;
+        }
+        if (preview.kind === 'admitted') enqueue(raw);
+        show(preview, true);
+        return;
+      }
       let found = null as ScanOutcome | null;
       apply((d) => {
-        const r = scanTicket(d, ev.id, raw, team.me.name);
+        const r = scanTicket(d, ev.id, raw, team.me.name, door);
         found = r.outcome;
         return r.data;
       });
-      const outcome = found;
-      if (!outcome) return;
-      setResult(outcome);
-      if ('vibrate' in navigator) navigator.vibrate(outcome.kind === 'admitted' ? 60 : [80, 60, 80]);
-      window.clearTimeout(timer.current);
-      timer.current = window.setTimeout(() => setResult(null), RESULT_MS);
+      if (found) show(found, false);
     },
-    [apply, ev, allowed.allowed, team.me.name]
+    [apply, data, ev, allowed.allowed, team.me.name, door, connected, queue, enqueue, show]
   );
+
+  // Back online: replay queued scans in order. Anything another door admitted meanwhile is flagged.
+  useEffect(() => {
+    if (!ev || !connected || queue.length === 0) return;
+    const found: SyncConflict[] = [];
+    let admitted = 0;
+    apply((d) =>
+    queue.reduce((acc, q) => {
+      const r = scanTicket(acc, ev.id, q.raw, team.me.name, door, q.at);
+      if (r.outcome.kind === 'admitted') admitted += 1;else
+      if ('ref' in r.outcome)
+      found.push({
+        code: r.outcome.ref.ticket.code,
+        guest: r.outcome.ref.ticket.guestName,
+        reason:
+        r.outcome.kind === 'already' ?
+        `also admitted at ${r.outcome.ref.ticket.checkedInDoor ?? 'another door'} at ${time(r.outcome.ref.ticket.checkedInAt)}${r.outcome.ref.ticket.checkedInBy ? ` by ${r.outcome.ref.ticket.checkedInBy}` : ''}` :
+        r.outcome.kind === 'void' ?
+        'refunded while you were offline' :
+        'couldn’t be confirmed'
+      });
+      return r.data;
+    }, d)
+    );
+    clearQueue();
+    if (found.length) setConflicts((c) => [...found, ...c]);
+    toast.success(`Back online — ${admitted} check-in${admitted === 1 ? '' : 's'} synced`, found.length ? { description: `${found.length} need a look.` } : undefined);
+  }, [connected, queue, ev, apply, team.me.name, door, clearQueue]);
 
   const onCameraCode = useCallback(
     (value: string) => {
@@ -114,7 +168,21 @@ export function CheckIn() {
         <IconButton icon={XIcon} label="Close check-in" onClick={close} />
         <div className="min-w-0 flex-1">
           <p className="truncate text-label font-semibold text-fg">{ev.name}</p>
-          <p className="text-caption text-fg-subtle">Checking in as {team.me.name}</p>
+          <p className="flex min-w-0 items-center gap-1 text-caption text-fg-subtle">
+            <span className="truncate">
+              {team.me.name}
+              {door ? ` · ${door}` : ''}
+            </span>
+            {door && !editingDoor &&
+            <button type="button" onClick={() => setEditingDoor(true)} aria-label="Change door name" className="-my-3 inline-flex min-h-[44px] shrink-0 items-center px-1.5 font-medium text-action focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+                Change
+              </button>
+            }
+            {/* Always mounted so going offline and back online is read out. */}
+            <span className="shrink-0 font-semibold text-warning" aria-live="polite">
+              {!connected ? '· Offline' : <span className="sr-only">Online</span>}
+            </span>
+          </p>
         </div>
         <p className="shrink-0 text-right tabular-nums" aria-live="polite">
           <span className="text-heading font-semibold text-fg">{inCount}</span>
@@ -129,45 +197,67 @@ export function CheckIn() {
           </p>
         }
 
+        {(!door || editingDoor) &&
+        <DoorNameForm
+          initial={door}
+          onSave={(name) => {
+            doorState.setDoor(name);
+            setEditingDoor(false);
+          }}
+          onCancel={door ? () => setEditingDoor(false) : undefined} />
+
+        }
+
+        {door && !editingDoor &&
+        <>
         <section aria-label="Camera" className="relative aspect-square w-full shrink-0 overflow-hidden rounded-lg bg-[#0b0b0c]">
           <video ref={scanner.videoRef} muted playsInline className={cn('h-full w-full object-cover', scanner.state !== 'on' && 'invisible')} />
           {scanner.state === 'on' ?
-          <div aria-hidden className="pointer-events-none absolute inset-[18%] rounded-xl border-[3px] border-white/90" /> :
+            <div aria-hidden className="pointer-events-none absolute inset-[18%] rounded-xl border-[3px] border-white/90" /> :
 
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-6 text-center">
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-6 text-center">
               {scanner.state === 'denied' || scanner.state === 'unavailable' ? <CameraOffIcon size={30} className="text-white/70" aria-hidden /> : <CameraIcon size={30} className="text-white/70" aria-hidden />}
               <p className="max-w-[260px] text-label text-white/85">
                 {scanner.state === 'denied' ?
-              'Camera access is blocked. Allow it in your browser settings, or search for guests below.' :
-              scanner.state === 'unavailable' ?
-              'No camera found on this device. Search for guests by name or code below.' :
-              'Point the camera at a guest’s QR ticket.'}
+                'Camera access is blocked. Allow it in your browser settings, or search for guests below.' :
+                scanner.state === 'unavailable' ?
+                'No camera found on this device. Search for guests by name or code below.' :
+                'Point the camera at a guest’s QR ticket.'}
               </p>
               {(scanner.state === 'idle' || scanner.state === 'starting') &&
-            <Button onClick={scanner.start} disabled={scanner.state === 'starting' || !allowed.allowed} leadingIcon={CameraIcon}>
+              <Button onClick={scanner.start} disabled={scanner.state === 'starting' || !allowed.allowed} leadingIcon={CameraIcon}>
                   {scanner.state === 'starting' ? 'Starting camera…' : 'Start camera'}
                 </Button>
-            }
+              }
             </div>
-          }
+            }
 
           <AnimatePresence>
             {result &&
-            <motion.div
-              key={`${result.kind}-${'ref' in result ? result.ref.ticket.id : result.code}`}
-              initial={reduce ? { opacity: 0 } : { opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.16, ease: [0.23, 1, 0.32, 1] }}
-              className="absolute inset-x-3 bottom-3">
-              
-                <ResultCard outcome={result} onUndo={() => {
-                if (result.kind !== 'admitted') return;
-                apply((d) => setCheckedIn(d, result.ref.ticket.id, null));
-                setResult(null);
-              }} />
+              <motion.div
+                key={`${result.kind}-${'ref' in result ? result.ref.ticket.id : result.code}`}
+                initial={reduce ? { opacity: 0 } : { opacity: 0, scale: 0.96 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.16, ease: [0.23, 1, 0.32, 1] }}
+                className="absolute inset-x-3 bottom-3">
+                
+                <ResultCard
+                  outcome={result}
+                  offline={offlineResult}
+                  onUndo={() => {
+                    if (result.kind !== 'admitted') return;
+                    if (offlineResult) {
+                      const code = result.ref.ticket.code;
+                      const rest = queue.filter((q) => parseTicketCode(q.raw) !== code);
+                      clearQueue();
+                      rest.forEach((q) => enqueue(q.raw));
+                    } else apply((d) => setCheckedIn(d, result.ref.ticket.id, null));
+                    setResult(null);
+                  }} />
+                
               </motion.div>
-            }
+              }
           </AnimatePresence>
         </section>
 
@@ -176,31 +266,31 @@ export function CheckIn() {
             Find a guest
           </h2>
           <form
-            className="relative"
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (parseTicketCode(query)) {
-                handle(query);
-                setQuery('');
-              }
-            }}>
-            
+              className="relative"
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (parseTicketCode(query)) {
+                  handle(query);
+                  setQuery('');
+                }
+              }}>
+              
             <SearchIcon size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-fg-subtle" aria-hidden />
             <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Name, phone or ticket code"
-              aria-label="Name, phone or ticket code"
-              className="h-12 w-full rounded-md border border-line bg-field pl-9 pr-3 text-body text-fg placeholder:text-fg-subtle focus:outline-none focus:ring-2 focus:ring-focus" />
-            
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Name, phone or ticket code"
+                aria-label="Name, phone or ticket code"
+                className="h-12 w-full rounded-md border border-line bg-field pl-9 pr-3 text-body text-fg placeholder:text-fg-subtle focus:outline-none focus:ring-2 focus:ring-focus" />
+              
           </form>
           {query.trim() &&
-          <ul className="flex flex-col divide-y divide-line rounded-md border border-line bg-raised">
+            <ul className="flex flex-col divide-y divide-line rounded-md border border-line bg-raised">
               {matches.length === 0 && <li className="px-4 py-3 text-label text-fg-muted">{parseTicketCode(query) ? 'Press Enter to check this code.' : 'No guest matches.'}</li>}
               {matches.map((r) => {
-              const st = ticketStatus(r, ev);
-              return (
-                <li key={r.ticket.id} className="flex items-center gap-3 px-4 py-3">
+                const st = ticketStatus(r, ev);
+                return (
+                  <li key={r.ticket.id} className="flex items-center gap-3 px-4 py-3">
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-label font-semibold text-fg">{r.ticket.guestName}</span>
                       <span className="block truncate text-caption text-fg-subtle">
@@ -209,25 +299,39 @@ export function CheckIn() {
                       </span>
                     </span>
                     {st === 'valid' ?
-                  <Button
-                    size="sm"
-                    disabled={!allowed.allowed}
-                    onClick={() => {
-                      handle(r.ticket.code);
-                      setQuery('');
-                    }}>
-                    
+                    <Button
+                      size="sm"
+                      disabled={!allowed.allowed}
+                      onClick={() => {
+                        handle(r.ticket.code);
+                        setQuery('');
+                      }}>
+                      
                         Check in
                       </Button> :
 
-                  <span className={cn('shrink-0 text-caption font-semibold', st === 'checked_in' ? 'text-success' : 'text-danger')}>{st === 'checked_in' ? 'In' : st === 'void' ? 'Void' : 'Unpaid'}</span>
-                  }
+                    <span className={cn('shrink-0 text-caption font-semibold', st === 'checked_in' ? 'text-success' : 'text-danger')}>{st === 'checked_in' ? 'In' : st === 'void' ? 'Void' : 'Unpaid'}</span>
+                    }
                   </li>);
 
-            })}
+              })}
             </ul>
-          }
+            }
         </section>
+
+        <DoorsPanel
+            data={data}
+            eventId={ev.id}
+            door={door}
+            me={team.me.name}
+            peers={doorState.peers}
+            connected={connected}
+            queue={queue}
+            conflicts={conflicts}
+            onDismissConflicts={() => setConflicts([])} />
+          
+        </>
+        }
 
         <section aria-labelledby="ci-sim" className="mt-auto flex flex-col gap-2 rounded-md border border-dashed border-line-strong p-3">
           <h2 id="ci-sim" className="flex items-center gap-1.5 text-caption font-semibold text-fg-muted">
@@ -248,19 +352,28 @@ export function CheckIn() {
               Scan
             </Button>
           </div>
+          <Switch
+            id="ci-sim-offline"
+            label="Simulate losing signal"
+            description={doorState.online ? 'Scans queue on this phone and sync when you switch it back. Open check-in in a second tab to act as another door.' : 'This device is actually offline.'}
+            checked={doorState.simOffline}
+            onChange={doorState.setSimOffline} />
+          
         </section>
       </div>
     </div>);
 
 }
 
-function ResultCard({ outcome, onUndo }: {outcome: ScanOutcome;onUndo: () => void;}) {
+function ResultCard({ outcome, offline, onUndo }: {outcome: ScanOutcome;offline?: boolean;onUndo: () => void;}) {
   const ok = outcome.kind === 'admitted';
   const warn = outcome.kind === 'already';
   const Icon = ok ? CheckCircle2Icon : warn ? AlertTriangleIcon : XCircleIcon;
   const ref = 'ref' in outcome ? outcome.ref : null;
   const title =
   outcome.kind === 'admitted' ?
+  offline ?
+  'Checked in (offline)' :
   'Checked in' :
   outcome.kind === 'already' ?
   'Already checked in' :
@@ -272,8 +385,10 @@ function ResultCard({ outcome, onUndo }: {outcome: ScanOutcome;onUndo: () => voi
   'Wrong event' :
   'Not a ticket we know';
   const detail =
+  outcome.kind === 'admitted' && offline ?
+  'Saved on this phone — syncs when you’re back online.' :
   outcome.kind === 'already' ?
-  `At ${time(outcome.ref.ticket.checkedInAt)}${outcome.ref.ticket.checkedInBy ? ` by ${outcome.ref.ticket.checkedInBy}` : ''}` :
+  `At ${time(outcome.ref.ticket.checkedInAt)}${outcome.ref.ticket.checkedInDoor ? ` at ${outcome.ref.ticket.checkedInDoor}` : ''}${outcome.ref.ticket.checkedInBy ? ` by ${outcome.ref.ticket.checkedInBy}` : ''}` :
   outcome.kind === 'void' ?
   'This ticket was refunded or its order cancelled.' :
   outcome.kind === 'pending' ?

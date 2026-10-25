@@ -3,6 +3,8 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { SearchIcon } from 'lucide-react';
 import { examplePages, goalLabels, type ExampleGoal, type ExampleStyle } from '../../data/examples';
 import { TemplateThumb } from '../../components/templates/TemplateThumb';
+import { EliteCollection } from '../../components/templates/EliteCollection';
+import { ArtworkCollection } from '../../components/templates/ArtworkCollection';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
@@ -53,7 +55,11 @@ export function Templates() {
         </p>
       </header>
 
-      <div className="mt-10 flex flex-col gap-4 border-b border-line pb-6 lg:flex-row lg:items-center lg:justify-between">
+      <EliteCollection templates={examplePages} hrefFor={(e) => `/templates/${e.id}`} />
+      <ArtworkCollection templates={examplePages} hrefFor={(e) => `/templates/${e.id}`} />
+
+      <h2 className="mt-16 font-display text-[28px] font-semibold leading-tight tracking-[-0.02em] text-fg">All templates</h2>
+      <div className="mt-6 flex flex-col gap-4 border-b border-line pb-6 lg:flex-row lg:items-center lg:justify-between">
         <FilterRow label="Goal" value={goal} onChange={setGoal} options={[['all', 'All goals'], ...(Object.entries(goalLabels) as [ExampleGoal, string][])]} />
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <FilterRow label="Style" value={style} onChange={setStyle} options={[['all', 'Any style'], ...(Object.entries(styleLabels) as [ExampleStyle, string][])]} />

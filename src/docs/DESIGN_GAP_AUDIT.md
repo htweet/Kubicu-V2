@@ -1,6 +1,6 @@
 # KUBICU — Design gap audit
 
-_Re-audited 24 Oct 2026 against the code, the decision register (through D134) and every doc in `docs/`. This file is the source of truth for what is still missing. The public roadmap (`data/roadmap.ts`) and the plan list (`data/planMatrix.ts`) follow it._
+_Re-audited 24 Oct 2026 against the code, the decision register (through D149) and every doc in `docs/`. This file is the source of truth for what is still missing. The public roadmap (`data/roadmap.ts`) and the plan list (`data/planMatrix.ts`) follow it._
 
 **Status key:** ✅ built · 🟡 partial · ⬜ missing · 🧪 simulated by design (real work needs engineering or a partner) · 👤 waiting on founder/legal · ⚙ engineering-only (no screen to design)
 
@@ -15,7 +15,7 @@ _Re-audited 24 Oct 2026 against the code, the decision register (through D134) a
 | Group | Open | Items |
 |---|---|---|
 | Not built | 0 | Everything on the previous list was built in Batch 13 (D135–D138) — some parts simulated, listed in §4 |
-| Partly built — specific pieces missing | 6 | Translations of remaining screens; embeds beyond YouTube; video captions; Lightweight smaller image versions (needs CDN); per-staff booking availability; customer "agree to the new policy" prompt. (Closed in D139: extension access list, signed-out-devices confirmation, `aria-required`, workspace-currency price boxes.) |
+| Partly built — specific pieces missing | 2 | Translations of remaining screens (Batch 14 Pass E/F, in progress — D145–D147 done); Lightweight smaller image versions (needs CDN, so really a partner item). (Closed in D139: extension access list, signed-out-devices confirmation, `aria-required`, workspace-currency price boxes. Closed in Batch 14: per-staff booking times D140, policy agreement prompt and live automation triggers D141, safe embeds and captions guidance D142, presence and multi-door check-in D143, order tracking D144. Closed in D148: "Count taps" respected, bank-transfer checkout, planned-module placeholder pages removed, unanswered FAQ questions hidden.) |
 | Waiting on outside partners (designed and simulated) | 14 | See §4 |
 | Needs a hands-on check | 3 | Visual review at 320 px / 200%; real-phone screen readers; automated axe-core and contrast run |
 | Waiting on founder / legal | see §5 | Decisions D110–D134 "Proposed", example figures, legal wording |
@@ -37,7 +37,7 @@ _Re-audited 24 Oct 2026 against the code, the decision register (through D134) a
 | G10 | Super admin — Business reporting | ✅ | D82 |
 | G11 | Super admin — Integrations & notifications | ✅ 🧪 | D130; test sends and message previews in five languages (D135) |
 | G12 | Super admin — Data requests | ✅ | D82 |
-| G13 | Super admin — Localisation & policies | ✅ | D130; native review queue and policy publishing (D135). Customer "agree again" prompt not yet blocking 🟡 |
+| G13 | Super admin — Localisation & policies | ✅ | D130; native review queue and policy publishing (D135); Owner agreement prompt, blocking after 14 days (D141) |
 | G14 | Visitor unsubscribe and preferences | ✅ | D81 |
 | G15 | Account data export and deletion | ✅ | D80 |
 | G16 | Screens marked "not visually reviewed" | 🟡 | Needs a browser review at 320 px and 200% zoom |
@@ -107,16 +107,16 @@ _Re-audited 24 Oct 2026 against the code, the decision register (through D134) a
 |---|---|---|
 | A Identity & onboarding | ✅ | — (D139) |
 | B Canvas | ✅ | — |
-| C Blocks | ✅ | 🟡 Embeds beyond YouTube |
+| C Blocks | ✅ | Safe embeds from 11 sites with sandboxed frames and captions confirmation (D142) |
 | D Themes | ✅ | — |
 | E Publishing, URLs, QR, SEO | ✅ | — (D124) |
 | F Analytics | ✅ | ⚙ bot filtering |
 | G Products & orders | ✅ | — |
 | H Payments | ✅ 🧪 | USSD and workspace currency (D136) |
 | I Digital goods | ✅ 🧪 | Watermarks (D136) |
-| J Bookings | ✅ 🧪 | Calendar sync simulated (D137); per-staff availability not built |
+| J Bookings | ✅ 🧪 | Calendar sync simulated (D137); per-staff availability built (D140) |
 | K Leads / CRM | ✅ | — |
-| L Automations | ✅ 🧪 | Campaign and quiet-contact triggers fire on real changes while the app is open (D137); other triggers test-only; sending needs partners |
+| L Automations | ✅ 🧪 | Every trigger fires on real changes while the app is open (D137, D141); sending needs partners |
 | M Custom domains | ✅ | — |
 | N Plans & billing | ✅ | — (D135) |
 | O Super admin | ✅ | — (D135) |
@@ -137,11 +137,19 @@ _Re-audited 24 Oct 2026 against the code, the decision register (through D134) a
 
 **Not built:** nothing. Batch 13 closed the list (D135 staff tools, D136 currency/USSD/watermarks, D137 calendar/automations/page sets/workspaces, D138 checks).
 
-**Partly built:** translations of Commerce Verification/Reports/Settings, Bookings, Audience, workspace Settings, canvas, marketing site and the payout/bank-account windows · embeds beyond YouTube · video captions guidance · per-staff booking availability · customer "agree to the new policy" prompt · automations other than campaign/quiet triggers still test-only.
+**Partly built:** translations still in English — pay-on-delivery/instalment order panels; workspace Settings; Your account; Automations, Forms, IntentFlow, Analytics, Domains & QR, Opportunities, Collaborations and Deliveries; the canvas; the marketing site; the remaining buyer-protection sentences. (Done in Batch 14 Pass E: tracking, payout and bank windows D145; Payments card, Verification frame, Reports, Commerce settings D146; Audience, Schedule, Services D147; Availability, Team hours, Calendar sync D150; booking and contact panels, import and duplicates D151; Verification step fields D152.) Smaller image versions for low-data mode need a CDN.
+
+**Closed in Batch 14:** per-staff booking times D140; policy agreement prompt and all automation triggers on real events D141; safe embeds beyond YouTube and captions guidance D142; presence between tabs and multi-door check-in D143; order tracking paid → delivered with stage icons D144; QR code on the publish screen.
+
+**Closed in the clean-up (D148):** the block "Count taps" switch now really stops counting; the "Bank transfer payments" extension adds bank transfer at checkout with order-number reference, "I’ve sent the money" and seller confirmation; the old "planned module" pages are gone (unknown addresses show "Page not found"); unanswered FAQ questions are hidden from visitors; the last "Batch 5" labels in the design system page are removed.
+
+**Checks (D149):** every Batch 14 screen read for phone fit and accessibility and fixed; what remains needs a real phone or browser (below).
+
+**Final buildable list after D149:** only the translations listed under "Partly built" above. Everything else is waiting on partners, real devices or sign-off.
 
 **Waiting on partners:** see §4.
 
-**Hands-on:** G16 visual review; real-phone screen readers (seat map, print ordering, @mentions, print designs, partner panel, Sold with a partner, guest partner page, check-in result card); axe-core and status-colour contrast run.
+**Hands-on:** G16 visual review at 320 px / 200%; real-phone screen readers (seat map, print ordering, @mentions, print designs, partner panel, Sold with a partner, guest partner page, check-in result card and doors panel, buyer tracking page, bank-transfer order page, USSD flow); axe-core and status-colour contrast run, including the tracking "problem" orange on dark custom themes; embeds from each of the 11 sites at 320 px.
 
 ## 8. History
 

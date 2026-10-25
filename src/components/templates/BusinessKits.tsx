@@ -18,6 +18,12 @@ import { Dialog } from '../ui/Dialog';
 import { InlineAlert } from '../ui/InlineAlert';
 import { TemplateThumb } from './TemplateThumb';
 import { ApplyKitDialog } from './ApplyKitDialog';
+import { TemplatePreviewDialog } from './TemplatePreviewDialog';
+import { BuyTemplateDialog } from './BuyTemplateDialog';
+import { useApplyTemplate } from '../../hooks/useApplyTemplate';
+import { templatePrice } from '../../data/templateMarket';
+import { formatNaira as formatNgn } from '../../utils/format';
+import type { ExamplePage } from '../../data/examples/build';
 import { formatDay } from '../../utils/serviceOs';
 
 const partLinks: Partial<Record<KitPart, {label: string;to: string;}>> = {
@@ -36,6 +42,11 @@ export function BusinessKits() {
   const { actions } = useEditor();
   const [choosing, setChoosing] = useState<BusinessKit | null>(null);
   const [confirmRemove, setConfirmRemove] = useState(false);
+  const [previewKit, setPreviewKit] = useState<{kit: BusinessKit;ex: ExamplePage;} | null>(null);
+  const [previewElite, setPreviewElite] = useState<ExamplePage | null>(null);
+  const [buyingElite, setBuyingElite] = useState<ExamplePage | null>(null);
+  const applyTemplate = useApplyTemplate();
+  const eliteOf = (kit: BusinessKit) => kit.eliteTemplateId ? findExampleById(kit.eliteTemplateId) : undefined;
   const [policies, setPolicies] = useState<KitPolicies | null>(applied?.policies ?? null);
   const appliedKit = applied ? kitById(applied.kitId) : undefined;
 
@@ -182,13 +193,21 @@ export function BusinessKits() {
                     <p className="mt-0.5 text-caption text-fg-subtle">{kit.forWho}</p>
                     <p className="mt-3 text-label text-fg-muted">{kit.summary}</p>
                     <p className="mt-3 text-caption text-fg-subtle">Includes: {kitParts(kit).map((p) => kitPartLabels[p].label.toLowerCase()).join(' · ')}</p>
+                    {eliteOf(kit) &&
+                    <p className="mt-2 text-caption text-fg-subtle">
+                        Upgrade the look (optional):{' '}
+                        <button type="button" onClick={() => setPreviewElite(eliteOf(kit)!)} className="font-semibold text-action hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+                          {eliteOf(kit)!.name} · {formatNgn(templatePrice(eliteOf(kit)!.id))}
+                        </button>
+                      </p>
+                    }
                     <div className="mt-auto flex flex-wrap gap-2 pt-5">
                       <Button size="sm" disabled={!can.allowed} onClick={() => setChoosing(kit)}>
                         Use this kit
                       </Button>
                       {ex &&
-                      <Button size="sm" variant="tertiary" onClick={() => navigate(`/p/${ex.doc.handle}`)}>
-                          See the page
+                      <Button size="sm" variant="tertiary" onClick={() => setPreviewKit({ kit, ex })}>
+                          Preview the page
                         </Button>
                       }
                     </div>
@@ -201,6 +220,30 @@ export function BusinessKits() {
         {!can.allowed && <p className="mt-4 text-caption text-fg-subtle">{can.reason}</p>}
       </section>
 
+      <TemplatePreviewDialog
+        template={previewKit?.ex ?? null}
+        onClose={() => setPreviewKit(null)}
+        useLabel={can.allowed ? 'Use this kit' : 'Close'}
+        onUse={() => {
+          const k = previewKit?.kit ?? null;
+          setPreviewKit(null);
+          if (can.allowed) setChoosing(k);
+        }} />
+      
+      <TemplatePreviewDialog
+        template={previewElite}
+        onClose={() => setPreviewElite(null)}
+        useLabel="Use this look on my page"
+        onUse={(t) => {
+          setPreviewElite(null);
+          if (can.allowed) applyTemplate(t.name, t.doc);
+        }}
+        onBuy={(t) => {
+          setPreviewElite(null);
+          setBuyingElite(t);
+        }} />
+      
+      <BuyTemplateDialog template={buyingElite} onClose={() => setBuyingElite(null)} onBought={(t) => can.allowed && applyTemplate(t.name, t.doc)} />
       <ApplyKitDialog kit={choosing} replacing={!!applied && !applied.removedAt} onClose={() => setChoosing(null)} onApply={onApply} />
       <Dialog
         open={confirmRemove}

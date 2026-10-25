@@ -57,8 +57,8 @@ export function Automations() {
           </>
         } />
       
-      <InlineAlert tone="info" title="Campaign and quiet-contact automations run for real" className="mt-6">
-        While KUBICU is open, they fire when a campaign goes live or ends and when a contact goes quiet: tags and follow-ups are added, reports and notices land in your notifications, and AI drafts wait below for you. Customer emails and WhatsApp messages are written but not sent until a messaging partner is connected. Other triggers still run as tests.
+      <InlineAlert tone="info" title="Automations that are on run for real" className="mt-6">
+        Every trigger reacts to real orders, bookings, forms, stock, subscriptions, due dates, unfinished checkouts, campaigns and quiet contacts — only things that happen after you switch it on. Tags and follow-ups are added, reports and notices land in your notifications, and AI drafts wait below for you. Customer emails and WhatsApp messages are written but not sent until a messaging partner is connected. In this prototype, runs happen while KUBICU is open in a tab.
       </InlineAlert>
       {data.automationsPaused &&
       <InlineAlert tone="warning" title="Everything is paused" className="mt-3">

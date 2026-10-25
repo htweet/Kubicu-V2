@@ -5,6 +5,7 @@ import { verifiedName } from '../../../utils/money/kyc';
 import type { KycStepProps } from '../stepProps';
 import { Button } from '../../ui/Button';
 import { cn } from '../../../utils/cn';
+import { useT } from '../../../contexts/LocaleContext';
 
 interface PayoutStepProps extends KycStepProps {
   /** Bank accounts with their name match worked out against the verified name. */
@@ -20,16 +21,17 @@ const matchCopy = {
 
 /** The account payouts go to. Its name must match the verified person or registered business. */
 export function PayoutStep({ k, set, errors, disabled, banks, onAddBank }: PayoutStepProps) {
+  const { t: tr } = useT();
   const name = verifiedName(k).trim();
   return (
     <div className="flex flex-col gap-4">
       <p className="text-label text-fg-muted">
-        Payouts can only go to an account in the name <span className="font-semibold text-fg">{name || '—'}</span>
-        {k.entity === 'company' ? '. Use a corporate account, not a personal one.' : '.'}
+        {tr('Payouts can only go to an account in the name')} <span className="font-semibold text-fg">{name || '—'}</span>
+        {k.entity === 'company' ? `. ${tr('Use a corporate account, not a personal one.')}` : '.'}
       </p>
       {banks.length > 0 ?
       <fieldset aria-describedby={errors.payoutBankId ? 'kyc-bank-error' : undefined}>
-          <legend className="sr-only">Payout account</legend>
+          <legend className="sr-only">{tr('Payout account')}</legend>
           <ul className="flex flex-col gap-2">
             {banks.map((b) => {
             const m = matchCopy[b.nameMatch];
@@ -55,7 +57,8 @@ export function PayoutStep({ k, set, errors, disabled, banks, onAddBank }: Payou
                       <span className="block truncate text-caption text-fg-subtle">{b.accountName}</span>
                     </span>
                     <span className={cn('flex shrink-0 items-center gap-1 text-caption font-medium', m.cls)}>
-                      <m.icon size={14} aria-hidden /> <span className="hidden sm:inline">{m.text}</span>
+                      <m.icon size={14} aria-hidden /> <span className="hidden sm:inline">{tr(m.text)}</span>
+                      <span className="sr-only sm:hidden">{tr(m.text)}</span>
                     </span>
                   </label>
                 </li>);
@@ -64,11 +67,11 @@ export function PayoutStep({ k, set, errors, disabled, banks, onAddBank }: Payou
           </ul>
         </fieldset> :
 
-      <p className="rounded-md bg-sunken px-4 py-3 text-label text-fg-muted">No bank accounts yet. Add one in the verified name.</p>
+      <p className="rounded-md bg-sunken px-4 py-3 text-label text-fg-muted">{tr('No bank accounts yet. Add one in the verified name.')}</p>
       }
       {errors.payoutBankId &&
-      <p id="kyc-bank-error" className="text-caption font-medium text-danger">
-          {errors.payoutBankId}
+      <p id="kyc-bank-error" role="alert" className="text-caption font-medium text-danger">
+          {tr(errors.payoutBankId)}
         </p>
       }
       {!disabled &&

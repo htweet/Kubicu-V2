@@ -14,17 +14,12 @@ import { SelectInput } from '../../ui/SelectInput';
 import { TextArea } from '../../ui/TextArea';
 import { TextInput } from '../../ui/TextInput';
 import { ReasonDialog } from '../ReasonDialog';
+import { versionBefore, versionParts } from '../../../utils/policyAgreements';
 
 const reacceptLabel: Record<PolicyRelease['reaccept'], string> = { none: 'Notice only', paid: 'Paid workspaces must agree again', all: 'Everyone must agree again' };
 
-const newer = (a: string, b: string) => {
-  const pa = a.split('.').map(Number);
-  const pb = b.split('.').map(Number);
-  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
-    if ((pa[i] ?? 0) !== (pb[i] ?? 0)) return (pa[i] ?? 0) > (pb[i] ?? 0);
-  }
-  return false;
-};
+/** Compares only the numbers, so "0.4" is newer than "Draft 0.3". */
+const newer = (a: string, b: string) => versionBefore(b, a);
 
 /** Policy versions with "Publish new version" (D135). Publishing posts a notice to every workspace. */
 export function PolicyReleasesCard() {
@@ -38,7 +33,7 @@ export function PolicyReleasesCard() {
   const currentVersion = (d: LegalDoc) => store.policyReleases[d.slug]?.[0]?.version ?? String(d.version);
 
   const open = (d: LegalDoc) => {
-    const cur = currentVersion(d).split('.').map(Number);
+    const cur = versionParts(currentVersion(d));
     setVersion(`${cur[0]}.${(cur[1] ?? 0) + 1}`);
     setSummary('');
     setReaccept('none');
@@ -50,7 +45,7 @@ export function PolicyReleasesCard() {
     if (!doc) return;
     const e: typeof errors = {};
     if (!/^\d+(\.\d+){0,2}$/.test(version)) e.version = 'Use numbers like 2.1.';else
-    if (!newer(version, currentVersion(doc))) e.version = `Must be newer than ${currentVersion(doc)}.`;
+    if (!newer(version, currentVersion(doc))) e.version = `Must be newer than ${versionParts(currentVersion(doc)).join('.')}.`;
     if (summary.trim().length < 20) e.summary = 'Explain the change in a sentence or two — customers read this.';
     setErrors(e);
     if (Object.keys(e).length) return;
@@ -72,7 +67,7 @@ export function PolicyReleasesCard() {
 
   return (
     <>
-      <Card id="policies" title="Policy versions" description="Publishing a new version posts a notice to every workspace and records who must agree again." body="flush">
+      <Card id="policies" title="Policy versions" description="Publishing posts a notice to every workspace. When agreement is required, each workspace Owner is asked to agree, with “Later” allowed for 14 days; checkout mentions Terms, Privacy and Refunds updates for 30 days." body="flush">
         <ul className="divide-y divide-line">
           {allLegalDocs.map((d) => {
             const last = store.policyReleases[d.slug]?.[0];

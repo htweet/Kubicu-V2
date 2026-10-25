@@ -8,7 +8,7 @@ const typeScale = [
 { token: 'body', cls: 'text-body', size: '15 / 1.55', sample: 'Changes appear on the canvas as you type.' },
 { token: 'label', cls: 'text-label font-medium', size: '13 / 1.35', sample: 'Button label' },
 { token: 'caption', cls: 'text-caption text-fg-muted', size: '12 / 1.4', sample: 'Read aloud by screen readers.' },
-{ token: 'meta', cls: 'text-meta text-fg-subtle', size: '11 / 1.3', sample: 'Batch 5' }];
+{ token: 'meta', cls: 'text-meta text-fg-subtle', size: '11 / 1.3', sample: 'Updated 2 min ago' }];
 
 
 const spacing = [4, 8, 12, 16, 24, 32, 48, 64];

@@ -30,7 +30,7 @@ export function HoursEditor({ blockId, hours, onChange, error }: HoursEditorProp
           Copy Monday to weekdays
         </button>
       </legend>
-      {error && <p className="text-caption text-danger">{error}</p>}
+      {error && <p role="alert" className="text-caption text-danger">{error}</p>}
       {order.map((day) => {
         const h = hours.find((x) => x.day === day);
         if (!h) return null;
