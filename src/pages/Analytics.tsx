@@ -24,6 +24,7 @@ import { Tabs } from '../components/ui/Tabs';
 import { VisitsChart } from '../components/analytics/VisitsChart';
 import { FunnelView } from '../components/analytics/FunnelView';
 import { Stat, StatGroup } from '../components/ui/layout/Stat';
+import { Section } from '../components/ui/layout/Section';
 import { Card } from '../components/ui/layout/Card';
 import { cn } from '../utils/cn';
 
@@ -111,9 +112,7 @@ export function Analytics() {
   return (
     <div className="mx-auto w-full max-w-[1200px] px-5 py-8 md:px-10 md:py-12">
         <PageHeader title="Analytics" />
-        <div className="mt-8 rounded-lg border border-line bg-raised">
-          <EmptyState icon={LockIcon} title="You can’t see analytics" description={allowed.reason} />
-        </div>
+        <EmptyState framed className="mt-8" icon={LockIcon} title="You can’t see analytics" description={allowed.reason} />
       </div>);
 
 
@@ -202,67 +201,36 @@ export function Analytics() {
       </div>
 
       {h.visits === 0 && hp.visits === 0 ?
-      <div className="mt-8 rounded-lg border border-line bg-raised">
-          <EmptyState icon={BarChart3Icon} title="No visits in this period" description="Share your link or print a QR code. Visits, taps and where people came from show up here as they happen." />
-        </div> :
+      <EmptyState framed className="mt-8" icon={BarChart3Icon} title="No visits in this period" description="Share your link or print a QR code. Visits, taps and where people came from show up here as they happen." /> :
 
       <>
           {/* Headline: visits leads; the rest support it. */}
-          <section aria-label={`Summary, ${rangeText}`} className="mt-8 grid gap-6 border-b border-line pb-8 md:grid-cols-[minmax(0,1.3fr)_repeat(3,minmax(0,1fr))]">
-            <div>
-              <p className="text-label text-fg-muted">Visits</p>
-              <p className="mt-1 flex items-baseline gap-2 text-[2.75rem] font-semibold leading-none tracking-[-0.03em] tabular-nums text-fg">
-                {h.visits.toLocaleString()} {delta(h.visits, hp.visits)}
-              </p>
-              <p className="mt-2 text-caption text-fg-subtle">{rangeText} · a visit is one browser session (30 min)</p>
-            </div>
-            <div>
-              <p className="text-label text-fg-muted">Visitors (estimated)</p>
-              <p className="mt-1 flex items-baseline gap-2 text-title font-semibold tabular-nums text-fg">
-                {h.visitors.toLocaleString()} {delta(h.visitors, hp.visitors)}
-              </p>
-              <p className="mt-1 text-caption text-fg-subtle">Distinct browsers — people on two devices count twice</p>
-            </div>
-            <div>
-              <p className="text-label text-fg-muted">Tapped something</p>
-              <p className="mt-1 flex items-baseline gap-2 text-title font-semibold tabular-nums text-fg">
-                {pct(h.tapRate)} {delta(h.tapRate, hp.tapRate)}
-              </p>
-              <p className="mt-1 text-caption text-fg-subtle">Share of visits with at least one tap</p>
-            </div>
-            <div>
-              <p className="text-label text-fg-muted">From your pages</p>
-              <p className="mt-1 flex items-baseline gap-2 text-title font-semibold tabular-nums text-fg">
-                {formatNgn(h.revenueNgn)} {delta(h.revenueNgn, hp.revenueNgn)}
-              </p>
-              <p className="mt-1 text-caption text-fg-subtle">
-                {h.orders} paid order{h.orders === 1 ? '' : 's'} · test mode
-              </p>
-            </div>
-          </section>
+          {/* Headline: visits leads; the rest support it (shared Stat, D188). */}
+          <div role="group" aria-label={`Summary, ${rangeText}`} className="mt-8 grid gap-6 border-b border-line pb-8 md:grid-cols-[minmax(0,1.3fr)_minmax(0,3fr)] md:items-end">
+            <dl>
+              <Stat primary label="Visits" value={<span className="flex items-baseline gap-2">{h.visits.toLocaleString()} {delta(h.visits, hp.visits)}</span>} hint={`${rangeText} · a visit is one browser session (30 min)`} />
+            </dl>
+            <StatGroup columns={3}>
+              <Stat label="Visitors (estimated)" value={<span className="flex items-baseline gap-2">{h.visitors.toLocaleString()} {delta(h.visitors, hp.visitors)}</span>} hint="Distinct browsers — people on two devices count twice" />
+              <Stat label="Tapped something" value={<span className="flex items-baseline gap-2">{pct(h.tapRate)} {delta(h.tapRate, hp.tapRate)}</span>} hint="Share of visits with at least one tap" />
+              <Stat label="From your pages" value={<span className="flex items-baseline gap-2">{formatNgn(h.revenueNgn)} {delta(h.revenueNgn, hp.revenueNgn)}</span>} hint={`${h.orders} paid order${h.orders === 1 ? '' : 's'} · test mode`} />
+            </StatGroup>
+          </div>
 
-          <section aria-labelledby="visits-chart" className="mt-8">
-            <h2 id="visits-chart" className="text-heading font-semibold text-fg">
-              Visits over time
-            </h2>
-            <div className="mt-3">
-              <VisitsChart
-              data={chart}
-              compare={compare}
-              summary={`${h.visits.toLocaleString()} visits ${rangeText.toLowerCase()}${compare ? `, compared with ${hp.visits.toLocaleString()} in the period before (dashed)` : ''}. Busiest day: ${days.reduce((a, b) => b.value > a.value ? b : a, days[0])?.label ?? '—'}.`} />
-            
-            </div>
-          </section>
+          <Section id="visits-chart" title="Visits over time" className="mt-8">
+            <VisitsChart
+            data={chart}
+            compare={compare}
+            summary={`${h.visits.toLocaleString()} visits ${rangeText.toLowerCase()}${compare ? `, compared with ${hp.visits.toLocaleString()} in the period before (dashed)` : ''}. Busiest day: ${days.reduce((a, b) => b.value > a.value ? b : a, days[0])?.label ?? '—'}.`} />
+          
+          </Section>
 
           <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_320px]">
-            <section aria-labelledby="links-heading">
-              <h2 id="links-heading" className="text-label font-semibold text-fg">
-                Top links and buttons
-              </h2>
+            <Section id="links" title="Top links and buttons" className="gap-3">
               {links.length === 0 ?
-            <p className="mt-3 text-label text-fg-muted">No taps yet in this period.</p> :
+            <p className="text-label text-fg-muted">No taps yet in this period.</p> :
 
-            <table className="mt-3 w-full text-label">
+            <table className="w-full text-label">
                   <caption className="sr-only">Top links and buttons in this period</caption>
                   <thead>
                     <tr className="border-b border-line text-caption text-fg-subtle">
@@ -282,13 +250,11 @@ export function Analytics() {
                   </tbody>
                 </table>
             }
-            </section>
+            </Section>
 
-            <section aria-labelledby="sources-heading">
-              <h2 id="sources-heading" className="text-label font-semibold text-fg">
-                Where visitors come from
-              </h2>
-              <table className="mt-3 w-full text-label">
+            <Section id="sources" title="Where visitors come from" className="gap-3">
+              <div>
+              <table className="w-full text-label">
                 <caption className="sr-only">Visits and conversions by source</caption>
                 <thead>
                   <tr className="border-b border-line text-caption text-fg-subtle">
@@ -299,7 +265,7 @@ export function Analytics() {
                 </thead>
                 <tbody>
                   {src.map((s) =>
-                <tr key={s.id} className="border-b border-line">
+                  <tr key={s.id} className="border-b border-line">
                       <td className="py-2 pr-3 text-fg">
                         {sourceLabels[s.id]} <span className="text-caption text-fg-subtle">{pct(s.share)}</span>
                       </td>
@@ -308,11 +274,12 @@ export function Analytics() {
                         {s.conversions} <span className="text-caption">({pct(s.rate)})</span>
                       </td>
                     </tr>
-                )}
+                  )}
                 </tbody>
               </table>
               <p className="mt-2 text-caption text-fg-subtle">From the link used (QR codes and campaign links tag themselves) or the site that sent them.</p>
-            </section>
+              </div>
+            </Section>
 
             <Card
             id="ideas"
@@ -354,21 +321,22 @@ export function Analytics() {
             </Card>
           </div>
 
-          <section aria-labelledby="campaigns-heading" className="mt-10">
-            <div className="flex items-baseline justify-between gap-3">
-              <h2 id="campaigns-heading" className="text-heading font-semibold text-fg">
-                Campaign links and QR codes
-              </h2>
-              <Link to="/app/domains/links" className="text-label font-medium text-action hover:underline">
+          <Section
+          id="campaigns"
+          title="Campaign links and QR codes"
+          className="mt-10 gap-3"
+          actions={
+          <Link to="/app/domains/links" className="text-label font-medium text-action hover:underline">
                 Manage
               </Link>
-            </div>
+          }>
+          
             {domainLinks.length === 0 ?
-          <p className="mt-2 text-label text-fg-muted">
+          <p className="text-label text-fg-muted">
                 Make a short link for each place you share, or a QR code for print, to see which brings visitors. <Link to="/app/domains/links" className="underline underline-offset-2">Create one</Link>
               </p> :
 
-          <table className="mt-3 w-full max-w-3xl text-label">
+          <table className="w-full max-w-3xl text-label">
                 <caption className="sr-only">Campaign links and QR codes</caption>
                 <thead>
                   <tr className="border-b border-line text-caption text-fg-subtle">
@@ -395,13 +363,10 @@ export function Analytics() {
                 </tbody>
               </table>
           }
-          </section>
+          </Section>
 
-          <section aria-labelledby="funnels-heading" className="mt-10">
-            <h2 id="funnels-heading" className="text-heading font-semibold text-fg">
-              From visit to sale
-            </h2>
-            <div className="mt-3">
+          <Section id="funnels" title="From visit to sale" className="mt-10 gap-3">
+            <div>
               <Tabs<FunnelTab>
               items={[
               { id: 'shop', label: 'Shop' },
@@ -418,7 +383,7 @@ export function Analytics() {
               idPrefix="funnel" />
             
             </div>
-            <div className="mt-4 max-w-3xl" role="tabpanel" id={`funnel-panel-${funnelTab}`} aria-labelledby={`funnel-tab-${funnelTab}`}>
+            <div className="mt-1 max-w-3xl" role="tabpanel" id={`funnel-panel-${funnelTab}`} aria-labelledby={`funnel-tab-${funnelTab}`}>
               {funnelTab === 'shop' && <FunnelView steps={f.shop[0].count ? f.shop : f.shopFromCart} emptyText="No product views or carts in this period." />}
               {funnelTab === 'booking' && <FunnelView steps={f.booking} emptyText="Nobody opened a booking in this period." />}
               {funnelTab === 'subscriptions' && <FunnelView steps={f.subscriptions} emptyText="Nobody opened a subscription plan in this period." />}
@@ -451,7 +416,7 @@ export function Analytics() {
             }
               <p className="mt-3 text-caption text-fg-subtle">Each step counts visits that also did every step before it. Percentages are kept from the step above.</p>
             </div>
-          </section>
+          </Section>
 
           <p className="mt-10 text-caption text-fg-subtle">
             Your own visits {data.settings.excludeOwn ? 'aren’t' : 'are'} counted on this device — change it in <Link to="/app/settings/privacy" className="underline underline-offset-2">Settings → Privacy</Link>.

@@ -4,6 +4,8 @@ import type { FormField } from '../../types/forms';
 import type { FormSkin } from './formSkin';
 import { formatNgn } from '../../utils/format';
 import { currencySymbol } from '../../utils/currency';
+import { RichFieldControl, richFieldTypes } from './RichFieldControl';
+import { MoreFieldControl, moreFieldTypes } from './MoreFieldControl';
 
 interface FormFieldInputProps {
   field: FormField;
@@ -43,6 +45,12 @@ export function FormFieldInput({ field, value, onChange, error, skin, inert, idP
 
 
   const control = (() => {
+    if ((moreFieldTypes as readonly string[]).includes(field.type)) {
+      return <MoreFieldControl field={field} value={value} onChange={onChange} skin={skin} inert={inert} id={id} labelId={`${id}-lbl`} describedBy={described} invalid={!!error} computed={amount} />;
+    }
+    if ((richFieldTypes as readonly string[]).includes(field.type)) {
+      return <RichFieldControl field={field} value={value} onChange={onChange} skin={skin} inert={inert} id={id} labelId={`${id}-lbl`} describedBy={described} invalid={!!error} />;
+    }
     switch (field.type) {
       case 'longText':
       case 'address':
@@ -160,8 +168,8 @@ export function FormFieldInput({ field, value, onChange, error, skin, inert, idP
 
       default:{
           const type = field.type === 'email' ? 'email' : field.type === 'phone' ? 'tel' : field.type === 'date' ? 'date' : field.type === 'time' ? 'time' : 'text';
-          const mode = field.type === 'number' || field.type === 'amount' ? 'decimal' : type === 'tel' ? 'tel' : type === 'email' ? 'email' : undefined;
-          const auto = field.type === 'email' ? 'email' : field.type === 'phone' ? 'tel' : /name/i.test(field.label) ? 'name' : 'off';
+          const mode = field.type === 'number' || field.type === 'amount' ? 'decimal' : type === 'tel' ? 'tel' : type === 'email' ? 'email' : field.type === 'website' ? 'url' : undefined;
+          const auto = field.type === 'email' ? 'email' : field.type === 'phone' ? 'tel' : field.type === 'website' ? 'url' : /name/i.test(field.label) ? 'name' : 'off';
           return (
             <div className="relative">
             {field.type === 'amount' &&
@@ -169,14 +177,29 @@ export function FormFieldInput({ field, value, onChange, error, skin, inert, idP
                 {currencySymbol()}
               </span>
               }
-            <input {...common} type={type} inputMode={mode} autoComplete={auto} value={text} placeholder={field.placeholder || (field.type === 'phone' ? '+234' : '')} maxLength={field.maxLength ?? undefined} onChange={(e) => onChange(e.target.value)} className={inputCls} style={field.type === 'amount' ? { ...skin.input, paddingLeft: `calc(1.25rem + ${currencySymbol().length}ch)` } : skin.input} />
+            <input {...common} type={type} inputMode={mode} autoComplete={auto} value={text} placeholder={field.placeholder || (field.type === 'phone' ? '+234' : field.type === 'website' ? 'example.com or @yourname' : '')} maxLength={field.maxLength ?? undefined} onChange={(e) => onChange(e.target.value)} className={inputCls} style={field.type === 'amount' ? { ...skin.input, paddingLeft: `calc(1.25rem + ${currencySymbol().length}ch)` } : skin.input} />
           </div>);
 
         }
     }
   })();
 
-  const grouped = field.type === 'choice' || field.type === 'checkboxes' || field.type === 'rating';
+  if (field.type === 'section') {
+    return (
+      <div className="flex flex-col gap-1 pt-2">
+        <h3 id={id} tabIndex={-1} className="text-[17px] font-semibold leading-snug outline-none" style={{ color: skin.text, fontFamily: skin.display }}>
+          {field.label}
+        </h3>
+        {field.help &&
+        <p className="text-[14px] leading-relaxed" style={{ color: skin.muted }}>
+            {field.help}
+          </p>
+        }
+      </div>);
+
+  }
+
+  const grouped = field.type === 'choice' || field.type === 'checkboxes' || field.type === 'rating' || (richFieldTypes as readonly string[]).includes(field.type) || (moreFieldTypes as readonly string[]).includes(field.type);
   return (
     <div className="flex flex-col gap-1.5">
       {field.type !== 'consent' && (

@@ -2,6 +2,7 @@ import type { Automation, Contact, OpsData } from '../../types/ops';
 import type { CommerceData, Order } from '../../types/commerce';
 import type { Workspace } from '../../types/workspace';
 import { readSpacePage } from '../spaces';
+import { readForms } from '../forms/storage';
 import { campaignPhase } from '../campaign';
 import { isLowStock, isSoldOut } from '../commerce/catalog';
 import { orderMoney } from '../commerce/money';
@@ -88,6 +89,28 @@ export function eventsFor(a: Automation, fired: Set<string>, ctx: Ctx): LiveEven
         }
       }
       break;
+
+    // Forms add-on (D195): every real response, optionally for one form only.
+    case 'form_sent':{
+        const forms = readForms(workspace.id);
+        const names = new Map(forms.forms.map((f) => [f.id, f.name]));
+        for (const s of forms.submissions) {
+          if (s.sample || !after(s.createdAt)) continue;
+          if (a.triggerFormId && s.formId !== a.triggerFormId) continue;
+          const formName = names.get(s.formId) ?? 'a form';
+          const c = findContact(ops, s.contactEmail, s.contactPhone ?? '');
+          push({
+            key: `${a.id}:form:${s.id}`,
+            subject: `${s.contactName || 'Someone'} sent “${formName}”`,
+            vars: { first_name: first(s.contactName), name: s.contactName, email: s.contactEmail, form: formName, total: s.payment ? formatNgn(s.payment.amountNgn) : '' },
+            total: s.payment?.amountNgn ?? 0,
+            source: s.source ?? 'form',
+            subscribed: s.marketingConsent,
+            contactId: c?.id
+          });
+        }
+        break;
+      }
 
     case 'stock_low':
       for (const p of commerce.products) {

@@ -11,6 +11,7 @@ import { PageHeader } from '../../components/shell/PageHeader';
 import { Badge } from '../../components/ui/Badge';
 import { Tabs } from '../../components/ui/Tabs';
 import { Sheet } from '../../components/ui/Sheet';
+import { DetailList, DetailSection } from '../../components/ui/layout/DetailList';
 import { Button } from '../../components/ui/Button';
 import { TextArea } from '../../components/ui/TextArea';
 import { TextInput } from '../../components/ui/TextInput';
@@ -175,46 +176,45 @@ function CaseReview({ row, onDecide }: {row: Row;onDecide: (r: Row, outcome: Out
   };
 
   return (
-    <div className="flex flex-col divide-y divide-line">
-      <dl className="grid grid-cols-2 gap-x-6 gap-y-4 px-5 py-5">
-        <Item label="Buyer" value={`${c.buyerName}${c.buyerPhone ? ` · ${c.buyerPhone}` : ''}`} />
-        <Item label="Buyer paid" value={formatNgn(c.grossNgn)} strong />
-        <Item label="Delivered" value={c.deliveredAt ? formatTimestamp(c.deliveredAt) : 'Not marked delivered'} />
-        <Item label="Escalated" value={d.escalatedAt ? `${formatRelative(d.escalatedAt)} · by ${d.escalatedBy === 'system' ? 'deadline' : d.escalatedBy}` : '—'} />
-      </dl>
+    <div className="flex flex-col gap-6 px-5 py-5">
+      <DetailSection title="Case">
+        <DetailList
+          items={[
+          { label: 'Buyer', value: `${c.buyerName}${c.buyerPhone ? ` · ${c.buyerPhone}` : ''}` },
+          { label: 'Buyer paid', value: <span className="font-semibold tabular-nums">{formatNgn(c.grossNgn)}</span> },
+          { label: 'Delivered', value: c.deliveredAt ? formatTimestamp(c.deliveredAt) : 'Not marked delivered' },
+          { label: 'Escalated', value: d.escalatedAt ? `${formatRelative(d.escalatedAt)} · by ${d.escalatedBy === 'system' ? 'deadline' : d.escalatedBy}` : '—' }]
+          } />
+        
+      </DetailSection>
 
-      <section aria-labelledby="ae-buyer" className="px-5 py-5">
-        <h3 id="ae-buyer" className="text-label font-semibold text-fg">
-          Buyer · {issueLabels[d.issue]}
-        </h3>
-        <p className="mt-0.5 text-caption text-fg-subtle">Asks for {d.wants === 'full' ? 'a full refund' : `${formatNgn(d.partialNgn ?? 0)} back`}</p>
+      <DetailSection title={`Buyer · ${issueLabels[d.issue]}`}>
+        <div>
+        <p className="text-caption text-fg-subtle">Asks for {d.wants === 'full' ? 'a full refund' : `${formatNgn(d.partialNgn ?? 0)} back`}</p>
         <blockquote className="mt-2 border-l-2 border-line-strong pl-3 text-label text-fg-muted">“{d.details}”</blockquote>
         {d.escalationNote && <p className="mt-2 text-label text-fg-muted">Escalation note: “{d.escalationNote}”</p>}
         <Files label="Buyer’s evidence" names={d.evidence.map((f) => f.name)} />
-      </section>
+        </div>
+      </DetailSection>
 
-      <section aria-labelledby="ae-seller" className="px-5 py-5">
-        <h3 id="ae-seller" className="text-label font-semibold text-fg">
-          Seller
-        </h3>
+      <DetailSection title="Seller">
+        <div>
         {d.response ?
-        <>
-            <p className="mt-0.5 text-caption text-fg-subtle">{d.response.kind === 'partial' ? `Offered ${formatNgn(d.response.partialNgn ?? 0)} back` : 'Disagrees'} · {formatTimestamp(d.response.at)}</p>
+          <>
+            <p className="text-caption text-fg-subtle">{d.response.kind === 'partial' ? `Offered ${formatNgn(d.response.partialNgn ?? 0)} back` : 'Disagrees'} · {formatTimestamp(d.response.at)}</p>
             <blockquote className="mt-2 border-l-2 border-line-strong pl-3 text-label text-fg-muted">“{d.response.text}”</blockquote>
             <Files label="Seller’s evidence" names={d.response.evidence.map((f) => f.name)} />
           </> :
 
-        <p className="mt-1 text-label text-warning">The seller didn’t reply within 48 hours.</p>
-        }
+          <p className="text-label text-warning">The seller didn’t reply within 48 hours.</p>
+          }
         {c.deliveryNote && <p className="mt-2 text-label text-fg-muted">Delivery note: “{c.deliveryNote}”</p>}
         <Files label="Proof of delivery" names={c.proof.map((f) => f.name)} />
-      </section>
+        </div>
+      </DetailSection>
 
       {c.stage === 'escalated' ?
-      <section aria-labelledby="ae-decide" className="flex flex-col gap-3 px-5 py-5">
-          <h3 id="ae-decide" className="flex items-center gap-2 text-label font-semibold text-fg">
-            <GavelIcon size={16} aria-hidden /> Decision
-          </h3>
+      <DetailSection title={<span className="flex items-center gap-2"><GavelIcon size={16} aria-hidden /> Decision</span>}>
           <fieldset className="flex flex-col gap-2">
             <legend className="sr-only">Outcome</legend>
             {(
@@ -224,7 +224,7 @@ function CaseReview({ row, onDecide }: {row: Row;onDecide: (r: Row, outcome: Out
           ['release', 'Release to the seller', 'The buyer’s problem isn’t upheld.']] as
           const).
           map(([k, title, desc]) =>
-          <label key={k} className={cn('flex cursor-pointer gap-3 rounded-md border px-3 py-2.5', outcome === k ? 'border-action bg-action-soft' : 'border-line')}>
+          <label key={k} className={cn('flex min-h-[44px] cursor-pointer gap-3 rounded-md border px-3 py-2.5 transition-colors duration-150', outcome === k ? 'border-action bg-action-soft' : 'border-line hover:bg-sunken')}>
                 <input type="radio" name="ae-outcome" className="mt-1" checked={outcome === k} onChange={() => setOutcome(k)} />
                 <span>
                   <span className="block text-label font-medium text-fg">{title}</span>
@@ -246,26 +246,16 @@ function CaseReview({ row, onDecide }: {row: Row;onDecide: (r: Row, outcome: Out
           
             {outcome === 'release' ? 'Release to seller' : outcome === 'refund' ? `Refund ${formatNgn(c.grossNgn)}` : 'Record split'}
           </Button>
-        </section> :
+        </DetailSection> :
       d.decision ?
-      <section className="px-5 py-5">
-          <h3 className="text-label font-semibold text-fg">Decided by {d.decision.by}</h3>
-          <p className="mt-1 text-label text-fg-muted">“{d.decision.note}”</p>
-        </section> :
+      <DetailSection title={`Decided by ${d.decision.by}`}>
+          <p className="text-label text-fg-muted">“{d.decision.note}”</p>
+        </DetailSection> :
       null}
 
-      <section aria-label="History" className="px-5 py-5">
+      <DetailSection title="History">
         <EscrowTimeline events={c.events} id={`ae-tl-${c.id}`} />
-      </section>
-    </div>);
-
-}
-
-function Item({ label, value, strong }: {label: string;value: string;strong?: boolean;}) {
-  return (
-    <div>
-      <dt className="text-caption text-fg-subtle">{label}</dt>
-      <dd className={cn('mt-0.5 text-label text-fg', strong && 'font-semibold tabular-nums')}>{value}</dd>
+      </DetailSection>
     </div>);
 
 }

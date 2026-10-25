@@ -9,8 +9,13 @@
 /* END TAILWIND IMPORTS — ALL OTHER CSS MUST GO BELOW THIS LINE */
 
 /* Signature theme material layer (D161). Only pages wearing a Signature theme carry .kb-page. */
-.kb-page .kb-backdrop { background: var(--kb-backdrop-mobile); }
-@media (min-width: 768px) { .kb-page .kb-backdrop { background: var(--kb-backdrop); } }
+.kb-bg .kb-backdrop { background: var(--kb-backdrop-mobile); }
+@media (min-width: 768px) { .kb-bg .kb-backdrop { background: var(--kb-backdrop); } }
+/* Owner-chosen backgrounds (D182): reduced transparency gets the plain colour; data saver skips gradients and images. */
+@media (prefers-reduced-transparency: reduce) {
+  .kb-bg-custom .kb-backdrop, .kb-bg-custom .kb-art { display: none; }
+}
+.kb-bg.kb-lite .kb-backdrop, .kb-bg.kb-lite .kb-art { display: none; }
 /* Glass is lighter on phones: less blur, same look. */
 @media (max-width: 640px) { .kb-page { --kb-blur: blur(10px) saturate(130%); } }
 /* Reduced transparency: glass becomes the theme's solid surface, blur switches off. */

@@ -30,10 +30,15 @@ import type { TemplateListing } from '../types/templateListing';
 import { moodLabels, templateMood, templatePrice, type ColourMood } from '../data/templateMarket';
 import { activeSale, averageStars, listingAsExample, useTemplateStore } from '../utils/templateListings';
 import { formatNaira as formatNgn } from '../utils/format';
+import { toast } from 'sonner';
+import { ThemeGallery } from '../components/themes/ThemeGallery';
+import { usePlan } from '../contexts/PlanContext';
+import { useUpgrade } from '../contexts/UpgradeContext';
+import { planAtLeast } from '../data/plans';
 
 type Price = 'all' | 'free' | 'premium';
 type Source = 'all' | 'kubicu' | 'creators' | 'themes';
-type Tab = 'browse' | 'kits' | 'mine';
+type Tab = 'browse' | 'themes' | 'kits' | 'mine';
 
 interface Item {
   ex: ExamplePage;
@@ -53,7 +58,9 @@ export function TemplatesMarket() {
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const rawTab = params.get('tab');
-  const tab: Tab = rawTab === 'mine' || rawTab === 'kits' ? rawTab : 'browse';
+  const tab: Tab = rawTab === 'mine' || rawTab === 'kits' || rawTab === 'themes' ? rawTab : 'browse';
+  const planId = usePlan().id;
+  const { openUpgrade } = useUpgrade();
   const [sellOpen, setSellOpen] = useState(params.get('sell') === '1');
   const [store, update] = useTemplateStore();
   const [q, setQ] = useState('');
@@ -103,6 +110,7 @@ export function TemplatesMarket() {
         <Tabs<Tab>
           items={[
           { id: 'browse', label: 'Browse' },
+          { id: 'themes', label: 'Themes' },
           { id: 'kits', label: 'Business kits' },
           { id: 'mine', label: 'My templates' }]
           }
@@ -113,7 +121,25 @@ export function TemplatesMarket() {
         
       </div>
 
-      {tab === 'kits' ?
+      {tab === 'themes' ?
+      <div role="tabpanel" id="tpl-panel-themes" aria-labelledby="tpl-tab-themes">
+          <ThemeGallery
+          myPage={state.draft}
+          canUse={(t) => !!t.free || planAtLeast(planId, 'creator')}
+          onUpgrade={() => openUpgrade({ plan: 'creator', feature: 'All 24 Signature themes' })}
+          onUse={
+          canEdit ?
+          (theme, t) => {
+            // Keeps every block; only the look changes (D164).
+            actions.replaceBlocks(state.draft.blocks, theme);
+            toast(`${t.name} applied to ${state.draft.title || 'your page'}`, { description: 'Undo from the canvas if you change your mind.' });
+            navigate('/app/canvas');
+          } :
+          undefined
+          } />
+        
+        </div> :
+      tab === 'kits' ?
       <div className="mt-8" role="tabpanel" id="tpl-panel-kits" aria-labelledby="tpl-tab-kits">
           <BusinessKits />
         </div> :

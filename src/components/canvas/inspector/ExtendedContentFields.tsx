@@ -65,7 +65,7 @@ export function ExtendedContentFields({ block, issues }: Props) {
             }
           <TextInput id={id('title')} label="Title" optional value={c.title} onChange={(e) => set({ title: e.target.value }, 'title')} />
           <Field id={id('layout')} label="Layout">
-            <Segmented ariaLabel="Gallery layout" value={c.layout} onChange={(layout) => set({ layout }, 'layout')} options={[{ value: 'grid', label: 'Grid' }, { value: 'carousel', label: 'Swipe' }]} />
+            <Segmented ariaLabel="Gallery layout" value={c.layout} onChange={(layout) => set({ layout }, 'layout')} options={[{ value: 'grid', label: 'Grid' }, { value: 'masonry', label: 'Masonry' }, { value: 'carousel', label: 'Swipe' }]} />
           </Field>
           <ItemListEditor
               legend="Photos"

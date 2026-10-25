@@ -20,6 +20,10 @@ import { ProofFields } from './ProofFields';
 import { MembersOnlyFields } from './MembersOnlyFields';
 import { TrustBadgeFields } from './TrustBadgeFields';
 import { EmbedFields } from './EmbedFields';
+import { ContainerFields } from './ContainerFields';
+import { StoryBlockFields, isStoryBlock } from './StoryBlockFields';
+import { Round2BlockFields, isRound2Block } from './Round2BlockFields';
+import { isContainer } from '../../../utils/containers';
 
 interface ContentFieldsProps {
   block: Block;
@@ -37,6 +41,11 @@ export function ContentFields({ block, issues }: ContentFieldsProps) {
   actions.updateContent(block.id, type, patch, field);
 
   const stack = 'flex flex-col gap-4';
+
+  // Containers (D167) have their own settings plus the blocks inside.
+  if (isContainer(block)) return <ContainerFields block={block} />;
+  if (isStoryBlock(block)) return <StoryBlockFields block={block} issues={issues} />;
+  if (isRound2Block(block)) return <Round2BlockFields block={block} issues={issues} />;
 
   switch (block.type) {
     case 'profile':{

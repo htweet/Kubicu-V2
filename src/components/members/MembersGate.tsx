@@ -97,10 +97,24 @@ export function MembersLocked({ theme: t, rule, title, teaser, joinLabel, hidden
         </p>
       }
       <div className="mt-2 flex w-full max-w-xs flex-col gap-2">
-        {canJoin && access.reason !== 'paused' && access.reason !== 'other_plan' &&
+        {canJoin && access.reason !== 'paused' && access.reason !== 'other_plan' && (
+        kind === 'page' && eligible.length > 1 ?
+        // A whole locked page has no Subscription block to scroll to, so offer each plan here.
+        <div role="group" aria-label={joinLabel || 'Become a member'} className="flex flex-col gap-2">
+              {eligible.map((p, i) =>
+          // Plan name and price sit on two deliberate lines so long names never wrap mid-label.
+          <button key={p.id} type="button" onClick={() => members?.join?.(p.id)} className="flex min-h-[52px] w-full flex-col items-center justify-center px-4 py-1.5" style={buttonStyle(t, i === 0 ? 'featured' : 'default')}>
+                  <span className="max-w-full truncate text-[15px] font-semibold">Join {p.name}</span>
+                  <span className="text-[12.5px] font-medium">
+                    ₦{p.priceNgn.toLocaleString()} a {p.interval}
+                  </span>
+                </button>
+          )}
+            </div> :
+
         <button type="button" onClick={join} className="flex h-12 w-full items-center justify-center text-[15px] font-semibold" style={buttonStyle(t, 'featured')}>
-            {joinLabel || 'Become a member'}
-          </button>
+              {joinLabel || 'Become a member'}
+            </button>)
         }
         {access.reason === 'signed_out' ?
         <p className="text-[13.5px]" style={muted}>

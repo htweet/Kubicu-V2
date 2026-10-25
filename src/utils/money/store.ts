@@ -7,6 +7,15 @@ import { uid } from '../id';
 import { blankKyc, normaliseKyc } from './kyc';
 import { newCase, syncEscrow } from './escrow';
 import type { EscrowCase } from '../../types/escrow';
+import { DEMO_WORKSPACE_ID } from '../workspaceStorage';
+import { SAMPLE_FUND_LINK_ID, sampleFundraiserLink } from '../../data/sampleFundraiser';
+
+/** The demo workspace gets the sample fundraiser's payment link once (D179); it can be deleted like any link. */
+function withSampleFundraiser(workspaceId: string, d: MoneyData): MoneyData {
+  if (workspaceId !== DEMO_WORKSPACE_ID || d.sampleFundraiserSeeded) return d;
+  const links = d.links.some((l) => l.id === SAMPLE_FUND_LINK_ID) ? d.links : [...d.links, sampleFundraiserLink(blankLink())];
+  return { ...d, links, sampleFundraiserSeeded: true };
+}
 
 /** Wallet, payouts, payment links and payment-method settings for one workspace (D92). */
 
@@ -76,12 +85,15 @@ export function readMoneyRaw(workspaceId: string): MoneyData {
       const migrated = !parsed.kyc;
       const kyc = normaliseKyc(parsed.kyc);
       const verification = migrated ? { tier: 0 as KycTier, pending: null, rejectedNote: null } : { ...base.verification, ...parsed.verification };
-      return { ...base, ...parsed, escrow: Array.isArray(parsed.escrow) ? parsed.escrow : [], kyc, verification, methods: { ...base.methods, ...parsed.methods }, synced: { ...base.synced, ...parsed.synced } };
+      const read: MoneyData = { ...base, ...parsed, escrow: Array.isArray(parsed.escrow) ? parsed.escrow : [], kyc, verification, methods: { ...base.methods, ...parsed.methods }, synced: { ...base.synced, ...parsed.synced } };
+      const withFund = withSampleFundraiser(workspaceId, read);
+      if (withFund !== read) persist(workspaceId, withFund);
+      return withFund;
     }
   } catch {
 
     /* fall through to a fresh store */}
-  const seeded = seedMoney();
+  const seeded = withSampleFundraiser(workspaceId, seedMoney());
   persist(workspaceId, seeded);
   return seeded;
 }
@@ -402,6 +414,23 @@ export function recordLinkPayment(d: MoneyData, linkId: string, p: Omit<LinkPaym
   return {
     data: { ...d, counters: { receipt: n }, ledger: [...entries, ...d.ledger], links: d.links.map((l) => l.id === linkId ? { ...l, payments: [payment, ...l.payments] } : l) },
     payment
+  };
+}
+
+/**
+ * The organiser refunds one fundraiser payment in full (D179). The payer gets back what they paid;
+ * the wallet records the refund, and the payment leaves the "raised" total. Test mode.
+ */
+export function refundLinkPayment(d: MoneyData, linkId: string, paymentId: string): MoneyData {
+  const link = d.links.find((l) => l.id === linkId);
+  const p = link?.payments.find((x) => x.id === paymentId);
+  if (!link || !p || p.refundedNgn) return d;
+  const at = new Date().toISOString();
+  const entry: LedgerEntry = { id: uid('led'), at, kind: 'refund', amountNgn: -p.amountNgn, state: 'available', availableAt: at, label: `Refund · ${link.title} · ${p.receipt}`, ref: { type: 'link', id: link.id, label: p.receipt } };
+  return {
+    ...d,
+    ledger: [entry, ...d.ledger],
+    links: d.links.map((l) => l.id === linkId ? { ...l, payments: l.payments.map((x) => x.id === paymentId ? { ...x, refundedNgn: x.amountNgn, refundedAt: at } : x) } : l)
   };
 }
 

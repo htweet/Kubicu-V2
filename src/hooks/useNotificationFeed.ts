@@ -25,6 +25,8 @@ import { formatNgn } from '../utils/format';
 import { orderMoney } from '../utils/commerce/money';
 import { TRIAL_REMINDER_DAYS } from '../data/billing';
 import { readTemplateStore } from '../utils/templateListings';
+import { readAdminStore } from '../utils/admin/store';
+import { fundraiserGoalFor } from '../utils/fundraiser';
 import { useFulfilment } from './useFulfilment';
 import { buildTracking, promiseLabel } from '../utils/commerce/tracking';
 import { destinationExists, destinationLabel, encodeDestination, fallbackDestination } from '../utils/domains/links';
@@ -110,6 +112,33 @@ export function useNotificationFeed(): AppNotification[] {
       out.push({ id: `escrow_escalated:${d.id}`, event: 'escrow', area: 'orders', kind: 'update', text: `Order #${c.orderNumber}’s escrow problem is with KUBICU to decide`, href, at: d.escalatedAt });
       if (d.decision)
       out.push({ id: `escrow_decided:${d.id}`, event: 'escrow', area: 'orders', kind: 'update', text: `KUBICU decided order #${c.orderNumber}: ${d.decision.outcome === 'release' ? 'released to you' : d.decision.outcome === 'refund' ? 'refunded to the buyer' : `${formatNgn(d.decision.partialNgn ?? 0)} back to the buyer`}`, href, at: d.decision.at });
+    }
+
+    // Fundraisers (D179): new gifts this week, goal reached, and staff pauses.
+    const pausedFunds = readAdminStore().pausedFundraisers ?? {};
+    for (const l of money.links) {
+      if (!l.fundraiser) continue;
+      const href = '/app/spaces';
+      l.payments.
+      filter((p) => !p.refundedNgn && now - Date.parse(p.at) <= 7 * 86400000).
+      forEach((p) => out.push({ id: `fund_gift:${p.id}`, event: 'fundraiser', area: 'pages', kind: 'update', text: `${p.showName && p.payerName ? p.payerName.split(' ')[0] : 'Someone'} gave ${formatNgn(p.amountNgn)} to ${l.title}`, href, at: p.at }));
+      const raised = l.payments.reduce((s, p) => s + p.amountNgn - (p.refundedNgn ?? 0), 0);
+      const goal = fundraiserGoalFor(current, l.fundraiser.handle);
+      if (goal && raised >= goal) {
+        // When the running total first crossed the goal.
+        let sum = 0;
+        let crossing: string | null = null;
+        for (const p of [...l.payments].sort((a, b) => Date.parse(a.at) - Date.parse(b.at))) {
+          sum += p.amountNgn - (p.refundedNgn ?? 0);
+          if (sum >= goal) {
+            crossing = p.at;
+            break;
+          }
+        }
+        out.push({ id: `fund_goal:${l.id}:${goal}`, event: 'fundraiser', area: 'pages', kind: 'update', text: `${l.title} reached its ${formatNgn(goal)} goal`, href, at: crossing ?? new Date(now).toISOString() });
+      }
+      const pause = pausedFunds[l.fundraiser.handle];
+      if (pause) out.push({ id: `fund_paused:${l.id}:${pause.at}`, event: 'fundraiser', area: 'pages', kind: 'action', text: `KUBICU paused ${l.title} while it reviews a report — visitors can’t pay until it’s resumed`, href, at: pause.at });
     }
 
     // Template review outcomes for this workspace's listings (D70).

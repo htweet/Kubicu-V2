@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
-import { CheckCircle2Icon, LockIcon, PlugIcon, XCircleIcon } from 'lucide-react';
+import { LockIcon, PlugIcon } from 'lucide-react';
+import { providerById } from '../../data/providers';
+import { maskSecret, useProviders } from '../../hooks/useProviders';
+import { ProviderConnectDialog } from '../../components/settings/integrations/ProviderConnectDialog';
 import { toast } from 'sonner';
 import type { PaymentProviderId } from '../../types/commerce';
 import { useCommerce } from '../../contexts/CommerceContext';
@@ -7,10 +10,8 @@ import { paymentProviders } from '../../data/commerceNav';
 import { PageHeader } from '../../components/shell/PageHeader';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
-import { Dialog } from '../../components/ui/Dialog';
 import { TextInput } from '../../components/ui/TextInput';
 import { Segmented } from '../../components/ui/Segmented';
-import { Field } from '../../components/ui/Field';
 import { IllustrativeTag } from '../../components/ui/IllustrativeTag';
 import { TestModeStrip } from '../../components/commerce/TestModeStrip';
 import { PaymentMethodsSection } from '../../components/money/PaymentMethodsSection';
@@ -20,38 +21,32 @@ import { formatTimestamp } from '../../utils/format';
 import { cn } from '../../utils/cn';
 import { useT } from '../../contexts/LocaleContext';
 
-type ConnectState = 'form' | 'connecting' | 'success' | 'error';
-
 export function Payments() {
   const { t: tr } = useT();
   const { data, apply } = useCommerce();
+  const providers = useProviders();
   const [connecting, setConnecting] = useState<PaymentProviderId | null>(null);
-  const [state, setState] = useState<ConnectState>('form');
   const [business, setBusiness] = useState('');
-  const [simulate, setSimulate] = useState<'success' | 'error'>('success');
   const provider = paymentProviders.find((p) => p.id === data.payments.provider);
 
   const startConnect = (id: PaymentProviderId) => {
     setConnecting(id);
-    setState('form');
     setBusiness(data.payments.businessName);
   };
 
-  const connect = () => {
-    if (!business.trim() || !connecting) return;
-    setState('connecting');
-    window.setTimeout(() => {
-      if (simulate === 'error') return setState('error');
-      const p = paymentProviders.find((x) => x.id === connecting)!;
-      if (apply((d) => ({ ...d, payments: { ...d.payments, provider: p.id, connectedAt: new Date().toISOString(), businessName: business.trim(), methods: p.methods } }))) setState('success');
-    }, 900);
+  // Keys are checked and stored by the shared provider dialog (D192); checkout reads the provider from Commerce.
+  const onConnected = () => {
+    const p = paymentProviders.find((x) => x.id === connecting);
+    if (!p) return;
+    apply((d) => ({ ...d, payments: { ...d.payments, provider: p.id, connectedAt: new Date().toISOString(), businessName: business.trim(), methods: p.methods } }));
   };
 
   const disconnect = () => {
-    if (apply((d) => ({ ...d, payments: { ...d.payments, provider: null, connectedAt: null } }))) toast(tr('Provider disconnected (prototype)'));
+    if (provider) providers.disconnect(provider.id);
+    if (apply((d) => ({ ...d, payments: { ...d.payments, provider: null, connectedAt: null } }))) toast(tr('Provider disconnected'), { description: tr('Its test keys were removed from this browser.') });
   };
 
-  const target = paymentProviders.find((p) => p.id === connecting);
+  const keys = provider ? providers.data.connections[provider.id]?.values : undefined;
 
   return (
     <>
@@ -60,12 +55,14 @@ export function Payments() {
 
       <PageStack>
       <PaymentMethodsSection />
-      <Section id="provider" title={<span className="flex items-center gap-2">{tr('Payment provider')} <IllustrativeTag note={tr('Provider names and methods are illustrative. KUBICU hasn’t chosen or integrated a provider yet.')} /></span>} description={provider ? tr('One provider at a time. Disconnect {name} to switch.', { name: provider.name }) : tr('Connect one provider. Methods depend on the provider, your account and eligibility.')}>
+      <Section id="provider" title={<span className="flex items-center gap-2">{tr('Payment provider')} <IllustrativeTag note={tr('Placeholder connections: test keys are format-checked and every payment is simulated. KUBICU hasn’t integrated a provider yet.')} /></span>} description={provider ? tr('One provider at a time. Disconnect {name} to switch.', { name: provider.name }) : tr('Connect one provider. Methods depend on the provider, your account and eligibility.')}>
         <ul className="grid gap-6 md:grid-cols-2">
           {paymentProviders.map((p) => {
               const connected = data.payments.provider === p.id;
               return (
-                <li key={p.id} className={cn('flex h-full flex-col rounded-lg border bg-raised p-5 md:p-6', connected ? 'border-success shadow-1' : 'border-line')}>
+                <li key={p.id} className="flex">
+                <Card as="article" className={cn('w-full', connected && 'border-success shadow-1')}>
+                <div className="flex h-full flex-col">
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-heading font-semibold text-fg">{p.name}</p>
                   {connected ? <Badge tone="success" dot>{tr('Connected · test')}</Badge> : <Badge tone="neutral">{tr('Not connected')}</Badge>}
@@ -73,27 +70,30 @@ export function Payments() {
                 <p className="mt-2 text-label text-fg-muted">{p.blurb}</p>
                 <div className="mb-5 mt-4 flex flex-wrap gap-1.5">
                   {p.methods.map((m) =>
-                    <span key={m} className="rounded-full bg-sunken px-2.5 py-1 text-caption font-medium text-fg-muted">
+                        <span key={m} className="rounded-full bg-sunken px-2.5 py-1 text-caption font-medium text-fg-muted">
                       {m}
                     </span>
-                    )}
+                        )}
                 </div>
                 <div className="mt-auto border-t border-line pt-4">
                   {connected ?
-                    <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
                       <span className="text-caption text-fg-subtle">
                         {data.payments.businessName} · {tr('since {date}', { date: data.payments.connectedAt ? formatTimestamp(data.payments.connectedAt) : '—' })}
+                        {keys?.publicKey || keys?.apiKey ? <span className="block font-mono">{maskSecret(keys.publicKey || keys.apiKey)}</span> : null}
                       </span>
                       <Button size="sm" variant="tertiary" onClick={disconnect}>
                         {tr('Disconnect')}
                       </Button>
                     </div> :
 
-                    <Button variant="secondary" leadingIcon={PlugIcon} onClick={() => startConnect(p.id)} disabled={!!provider}>
+                        <Button variant="secondary" leadingIcon={PlugIcon} onClick={() => startConnect(p.id)} disabled={!!provider}>
                       {tr('Connect {name}', { name: p.name })}
                     </Button>
-                    }
+                        }
                 </div>
+                </div>
+                </Card>
               </li>);
 
             })}
@@ -125,52 +125,22 @@ export function Payments() {
       </Card>
       </PageStack>
 
-      <Dialog
-        open={!!connecting}
+      <ProviderConnectDialog
+        def={providerById(connecting)}
         onClose={() => setConnecting(null)}
-        title={state === 'success' ? tr('{name} connected', { name: target?.name ?? '' }) : state === 'error' ? tr('Couldn’t connect') : tr('Connect {name}', { name: target?.name ?? '' })}
-        description={state === 'form' ? tr('In the live product you’d sign in to the provider and authorise KUBICU. Here we simulate it.') : undefined}
-        footer={
-        state === 'success' || state === 'error' ?
-        <>
-              {state === 'error' &&
-          <Button variant="secondary" onClick={() => setState('form')}>
-                  {tr('Try again')}
-                </Button>
-          }
-              <Button onClick={() => setConnecting(null)}>{tr('Done')}</Button>
-            </> :
+        extraValid={!!business.trim()}
+        onConnected={onConnected}
+        extra={
+        <TextInput
+          id="pay-business"
+          label={tr('Registered business name')}
+          value={business}
+          placeholder={tr('As it appears on your CAC certificate')}
+          hint={tr('Shown on your customers’ bank statements.')}
+          onChange={(e) => setBusiness(e.target.value)} />
 
-        <>
-              <Button variant="secondary" onClick={() => setConnecting(null)}>
-                {tr('Cancel')}
-              </Button>
-              <Button onClick={connect} loading={state === 'connecting'} disabled={!business.trim()}>
-                {tr('Connect')}
-              </Button>
-            </>
-
-        }>
-        
-        {state === 'success' ?
-        <p className="flex items-start gap-2 text-label text-fg-muted">
-            <CheckCircle2Icon size={18} className="mt-0.5 shrink-0 text-success" aria-hidden />
-            {tr('Test-mode connection ready. Checkout on your page now shows {methods}. No secret keys are stored — the live product never shows them either.', { methods: target?.methods.join(', ') ?? '' })}
-          </p> :
-        state === 'error' ?
-        <p className="flex items-start gap-2 text-label text-fg-muted">
-            <XCircleIcon size={18} className="mt-0.5 shrink-0 text-danger" aria-hidden />
-            {tr('The provider didn’t accept the connection (simulated). Common causes: business not yet verified, or the authorisation window was closed. Nothing was changed.')}
-          </p> :
-
-        <div className="flex flex-col gap-4">
-            <TextInput id="pay-business" label={tr('Registered business name')} value={business} placeholder={tr('As it appears on your CAC certificate')} onChange={(e) => setBusiness(e.target.value)} />
-            <Field id="pay-sim" label={tr('Prototype: simulate the result')}>
-              <Segmented ariaLabel={tr('Simulated result')} value={simulate} onChange={setSimulate} options={[{ value: 'success', label: tr('Success') }, { value: 'error', label: tr('Error') }]} />
-            </Field>
-          </div>
-        }
-      </Dialog>
+        } />
+      
     </>);
 
 }

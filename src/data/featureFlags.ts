@@ -25,6 +25,7 @@ export const reportReasonLabels = {
   adult: 'Adult or violent content',
   impersonation: 'Pretending to be someone else',
   copyright: 'Uses my work without permission',
+  fundraising: 'Fundraising scam or misuse',
   other: 'Something else'
 } as const;
 

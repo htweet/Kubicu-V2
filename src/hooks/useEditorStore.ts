@@ -26,6 +26,11 @@ import { DEMO_WORKSPACE_ID, editorStorageKey, parsePersistedPage, readPersistedP
 import { pageThemePresets } from '../data/pageThemes';
 import type { PersistedPage } from '../types/workspace';
 import * as groups from '../utils/groupOps';
+import type { BlockPreset } from '../data/blockCatalog';
+import { convertBlock as convertBlockType } from '../utils/blockConvert';
+import { withLook, type LookOption } from '../utils/blockLooks';
+import { fitsIn } from '../data/blockCompatibility';
+import { MAX_CHILDREN, childrenOf, expandTop, isContainer, moveInPage, normalizeContainerDoc, placementFor, relinkClones, topLevel } from '../utils/containers';
 
 const HISTORY_LIMIT = 100;
 const VERSION_LIMIT = 30;
@@ -147,7 +152,8 @@ function reducer(state: EditorState, action: Action): EditorState {
           const view = viewOf(state);
           const raw = action.fn(view);
           if (raw === view) return state;
-          next = writeView(state.draft, pid, normalizeGroups(raw));
+          // Containers (D167) first: they keep children after their container and out of groups.
+          next = writeView(state.draft, pid, normalizeGroups(normalizeContainerDoc(raw)));
         }
         const coalesce =
         !!action.coalesceKey && action.coalesceKey === state.lastKey && action.at - state.lastAt < COALESCE_MS;
@@ -379,12 +385,37 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
     return {
       select: (id: string | null) => dispatch({ type: 'select', id }),
 
-      addBlock: (type: BlockType, index?: number) => {
-        const block = createBlock(type);
+      /**
+       * Adds a block below the selection. Containers (D167): with a container (or one of its blocks) selected and room
+       * left, the new block goes inside. Pass `parentId` to add straight into a container.
+       */
+      addBlock: (type: BlockType, index?: number, parentId?: string, preset?: BlockPreset) => {
+        const fresh = createBlock(type);
+        // Ready-made looks (D171): the same block with different starting settings.
+        const created = preset ?
+        { ...fresh, content: { ...fresh.content, ...preset.content }, style: { ...fresh.style, ...preset.style }, layout: { ...fresh.layout, ...preset.layout } } as Block :
+        fresh;
         const { selectedId } = stateRef.current;
         const draft = viewOf(stateRef.current);
-        const selectedIndex = draft.blocks.findIndex((b) => b.id === selectedId);
-        const at = index ?? (selectedIndex >= 0 ? selectedIndex + 1 : draft.blocks.length);
+        let at: number;
+        let parent: string | null = null;
+        if (index !== undefined) {
+          at = index;
+          parent = parentId ?? null;
+        } else if (parentId && (() => {
+          const c = draft.blocks.find((b) => b.id === parentId);
+          return isContainer(c) && fitsIn(type, c.type).ok;
+        })()) {
+          const kids = childrenOf(draft.blocks, parentId);
+          const last = kids[kids.length - 1];
+          at = (last ? draft.blocks.indexOf(last) : draft.blocks.findIndex((b) => b.id === parentId)) + 1;
+          parent = parentId;
+        } else {
+          const p = placementFor(draft.blocks, selectedId, type);
+          at = p.index;
+          parent = p.parentId;
+        }
+        const block = parent ? { ...created, parentId: parent } as Block : created;
         mutate(
           (doc) => {
             const blocks = [...doc.blocks];
@@ -396,6 +427,108 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
         );
         return block.id;
       },
+
+      /** Change block type (D171): only safe pairs; keeps id, layout, visibility and container. Undoable. */
+      convertBlock: (id: string, to: BlockType) =>
+      mutate(
+        (doc) => {
+          const b = doc.blocks.find((x) => x.id === id);
+          if (!b || b.locked) return doc;
+          const next = convertBlockType(b, to);
+          return next ? { ...doc, blocks: doc.blocks.map((x) => x.id === id ? next : x) } : doc;
+        },
+        undefined,
+        id
+      ),
+
+      /** Switch an existing block's look (D177): shape only — words, photos and items stay. One undo step. */
+      applyLook: (id: string, look: LookOption) => updateBlock(id, (b) => b.locked ? b : withLook(b, look)),
+
+      /** Editor-only block name for Layers (D175). Empty clears it. */
+      renameBlock: (id: string, name: string) => updateBlock(id, (b) => ({ ...b, name: name.trim() || undefined }), `name:${id}`),
+
+      /** A tab's label, stored on the block inside Tabs (D167). */
+      updateBlockLabel: (id: string, slotLabel: string) => updateBlock(id, (b) => ({ ...b, slotLabel }), `label:${id}`),
+
+      /** Puts a page block inside a container (D167). It becomes the container's last block. */
+      moveIntoContainer: (id: string, containerId: string) =>
+      mutate((doc) => {
+        const b = doc.blocks.find((x) => x.id === id);
+        const c = doc.blocks.find((x) => x.id === containerId);
+        if (!b || b.locked || !isContainer(c) || isContainer(b) || b.parentId === containerId || !fitsIn(b.type, c.type).ok) return doc;
+        const rest = doc.blocks.filter((x) => x.id !== id);
+        const kids = childrenOf(rest, containerId);
+        if (kids.length >= MAX_CHILDREN) return doc;
+        const anchor = kids[kids.length - 1] ?? c;
+        rest.splice(rest.indexOf(anchor) + 1, 0, { ...b, parentId: containerId, groupId: null, layout: { ...b.layout, pair: null } } as Block);
+        return { ...doc, blocks: rest };
+      }),
+
+      /**
+       * Puts a block at an exact spot (D191): inside `parentId` (a container) or on the page (null),
+       * before `beforeId` — or at the end when null. Used by drag and drop; respects locks, fit and capacity.
+       */
+      placeBlock: (id: string, parentId: string | null, beforeId: string | null) =>
+      mutate((doc) => {
+        const b = doc.blocks.find((x) => x.id === id);
+        if (!b || b.locked) return doc;
+        const rest = doc.blocks.filter((x) => x.id !== id);
+        if (parentId) {
+          const c = rest.find((x) => x.id === parentId);
+          if (!isContainer(c) || isContainer(b) || !fitsIn(b.type, c.type).ok) return doc;
+          if (b.parentId !== parentId && childrenOf(rest, parentId).length >= MAX_CHILDREN) return doc;
+        }
+        const moved = (parentId ? { ...b, parentId, groupId: null, layout: { ...b.layout, pair: null } } : { ...b, parentId: null, slotLabel: undefined }) as Block;
+        let at = rest.length;
+        const before = beforeId ? rest.find((x) => x.id === beforeId) : undefined;
+        if (before) at = rest.indexOf(before);else
+        if (parentId) {
+          const kids = childrenOf(rest, parentId);
+          const anchor = kids[kids.length - 1] ?? rest.find((x) => x.id === parentId);
+          at = anchor ? rest.indexOf(anchor) + 1 : rest.length;
+        }
+        rest.splice(at, 0, moved);
+        return { ...doc, blocks: rest };
+      }),
+
+      /** Takes a block out of its container; it lands on the page just below the container. */
+      moveOutOfContainer: (id: string) =>
+      mutate((doc) => {
+        const b = doc.blocks.find((x) => x.id === id);
+        if (!b?.parentId || b.locked) return doc;
+        const parentId = b.parentId;
+        const rest = doc.blocks.filter((x) => x.id !== id);
+        const kids = childrenOf(rest, parentId);
+        const anchor = kids[kids.length - 1] ?? rest.find((x) => x.id === parentId);
+        rest.splice(anchor ? rest.indexOf(anchor) + 1 : rest.length, 0, { ...b, parentId: null, slotLabel: undefined } as Block);
+        return { ...doc, blocks: rest };
+      }),
+
+      /** Removes a container but keeps its blocks on the page, in place. */
+      unwrapContainer: (id: string) =>
+      mutate(
+        (doc) => {
+          const c = doc.blocks.find((x) => x.id === id);
+          if (!isContainer(c) || c.locked) return doc;
+          return { ...doc, blocks: doc.blocks.filter((x) => x.id !== id).map((x) => x.parentId === id ? { ...x, parentId: null, slotLabel: undefined } as Block : x) };
+        },
+        undefined,
+        null
+      ),
+
+      /** Puts back several blocks at once (a container and its contents) — the undo for deleting a container. */
+      restoreBlocks: (list: Block[], index: number) =>
+      mutate(
+        (doc) => {
+          const fresh = list.filter((b) => !doc.blocks.some((x) => x.id === b.id));
+          if (!fresh.length) return doc;
+          const blocks = [...doc.blocks];
+          blocks.splice(Math.min(index, blocks.length), 0, ...fresh);
+          return { ...doc, blocks };
+        },
+        undefined,
+        list[0]?.id ?? null
+      ),
 
       updateContent: <K extends BlockType,>(id: string, _type: K, patch: Partial<BlockContentMap[K]>, field = 'content') =>
       updateBlock(id, (b) => ({ ...b, content: { ...b.content, ...patch } }) as Block, `content:${id}:${field}`),
@@ -414,18 +547,21 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
         field ? `meta:${id}:${field}` : undefined
       ),
 
+      // Containers (D167): a child moves among its siblings; a page block moves past the next page block with its contents.
       moveBlock: (id: string, direction: -1 | 1) =>
       mutate((doc) => {
-        const i = doc.blocks.findIndex((b) => b.id === id);
-        const j = i + direction;
-        if (i < 0 || j < 0 || j >= doc.blocks.length || doc.blocks[i].locked) return doc;
-        const blocks = [...doc.blocks];
-        [blocks[i], blocks[j]] = [blocks[j], blocks[i]];
-        return { ...doc, blocks };
+        const blocks = moveInPage(doc.blocks, id, direction);
+        return blocks === doc.blocks ? doc : { ...doc, blocks };
       }),
 
       reorderBlocks: (ids: string[]) =>
       mutate((doc) => {
+        // The canvas drags page blocks only; containers carry their contents along.
+        if (ids.length !== doc.blocks.length && ids.length === topLevel(doc.blocks).length) {
+          if (ids.join('|') === topLevel(doc.blocks).map((b) => b.id).join('|')) return doc;
+          const blocks = expandTop(ids, doc.blocks);
+          return blocks === doc.blocks ? doc : { ...doc, blocks };
+        }
         if (ids.join('|') === doc.blocks.map((b) => b.id).join('|')) return doc;
         const byId = new Map(doc.blocks.map((b) => [b.id, b]));
         const blocks = ids.map((id) => byId.get(id)).filter((b): b is Block => !!b);
@@ -463,16 +599,21 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
       },
 
       duplicateBlock: (id: string) => {
-        const source = viewOf(stateRef.current).blocks.find((b) => b.id === id);
+        const all = viewOf(stateRef.current).blocks;
+        const source = all.find((b) => b.id === id);
         if (!source) return;
         const cloned = cloneBlock(source);
         // A copy of a test version isn't part of the test (D127).
         const copy = cloned.visibility.abTest ? { ...cloned, visibility: { ...cloned.visibility, abTest: undefined } } as Block : cloned;
+        // Containers (D167) copy with everything inside them.
+        const kids = isContainer(source) ? childrenOf(all, source.id) : [];
+        const copies = kids.length ? relinkClones([source, ...kids], [copy, ...kids.map(cloneBlock)]) : [copy];
         mutate(
           (doc) => {
-            const i = doc.blocks.findIndex((b) => b.id === id);
+            const last = kids.length ? kids[kids.length - 1].id : id;
+            const i = doc.blocks.findIndex((b) => b.id === last);
             const blocks = [...doc.blocks];
-            blocks.splice(i + 1, 0, copy);
+            blocks.splice(i + 1, 0, ...copies);
             return { ...doc, blocks };
           },
           undefined,
@@ -485,7 +626,8 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
 
       removeBlock: (id: string) =>
       mutate((doc) =>
-      doc.blocks.some((b) => b.id === id && b.locked) ? doc : { ...doc, blocks: doc.blocks.filter((b) => b.id !== id) }
+      // Deleting a container deletes what's inside it too (undo puts both back).
+      doc.blocks.some((b) => b.id === id && b.locked) ? doc : { ...doc, blocks: doc.blocks.filter((b) => b.id !== id && b.parentId !== id) }
       ),
 
       toggleLocked: (id: string) => updateBlock(id, (b) => ({ ...b, locked: !b.locked })),
@@ -531,7 +673,22 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
       updateTheme: (patch: Partial<PageTheme>, field = 'theme') =>
       mutate((doc) => ({ ...doc, theme: { ...doc.theme, ...patch } }), `theme:${field}`),
 
-      applyThemePreset: (theme: PageTheme) => mutate((doc) => ({ ...doc, theme: { ...theme } })),
+      // D182: an owner's own gradient or image background survives a theme change; "Theme default" pages take the new theme's.
+      applyThemePreset: (theme: PageTheme) =>
+      mutate((doc) => {
+        const own = doc.theme;
+        const keep = own.backgroundMode === 'gradient' || own.backgroundMode === 'image' || own.backgroundMode === 'solid';
+        if (!keep || theme.backgroundMode) return { ...doc, theme: { ...theme } };
+        return {
+          ...doc,
+          theme: {
+            ...theme,
+            backgroundMode: own.backgroundMode,
+            backgroundGradient: own.backgroundGradient,
+            ...(own.backgroundMode === 'image' ? { backgroundImage: own.backgroundImage, backgroundVeil: own.backgroundVeil, backgroundFocus: own.backgroundFocus, backgroundScroll: own.backgroundScroll, backgroundTone: own.backgroundTone } : {})
+          }
+        };
+      }),
 
       updatePage: (patch: {title?: string;handle?: string;seo?: Partial<PageSeo>;}, field: string) =>
       mutate(
@@ -762,7 +919,7 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
           at = (range ? range[1] : draft.blocks.indexOf(sel)) + 1;
         }
         const group: BlockGroup | null = source.length > 1 ? { id: uid('grp'), name: groupName ?? nextGroupName(draft) } : null;
-        const copies = source.map((b) => ({ ...cloneBlock(b), groupId: group?.id ?? null }));
+        const copies = relinkClones(source, source.map((b) => ({ ...cloneBlock(b), groupId: group?.id ?? null })));
         mutate(
           (doc) => {
             const blocks = [...doc.blocks];

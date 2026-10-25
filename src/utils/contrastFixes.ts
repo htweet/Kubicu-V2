@@ -1,5 +1,6 @@
 import type { PageTheme } from '../types/page';
 import { CONTRAST_TARGET, contrastRatio, readableOn } from './contrast';
+import { resolveBackground } from './pageBackground';
 
 export type ContrastKey = 'text' | 'muted' | 'button';
 
@@ -48,14 +49,18 @@ export function liveReadableTheme(theme: PageTheme): PageTheme {
 }
 
 export function suggestContrastFix(theme: PageTheme, key: ContrastKey): ContrastFix {
+  // D182: gradients and images add colours text can sit on, so a fix must clear all of them.
+  const grounds = [theme.background, ...resolveBackground(theme).stops];
+  const clearAll = (fg: string) => grounds.reduce((c, g) => readableOn(c, g, CONTRAST_TARGET), fg);
+  const worst = (fg: string) => Math.min(...grounds.map((g) => contrastRatio(fg, g)));
   if (key === 'text') {
-    const text = readableOn(theme.text, theme.background, CONTRAST_TARGET);
-    const ratio = contrastRatio(text, theme.background);
+    const text = clearAll(theme.text);
+    const ratio = worst(text);
     return { theme: { text, presetId: 'custom' }, label: `Use ${text}`, description: `Change text colour to ${text}`, ratio };
   }
   if (key === 'muted') {
-    const mutedText = readableOn(theme.mutedText, theme.background, CONTRAST_TARGET);
-    const ratio = contrastRatio(mutedText, theme.background);
+    const mutedText = clearAll(theme.mutedText);
+    const ratio = worst(mutedText);
     return {
       theme: { mutedText, presetId: 'custom' },
       label: `Use ${mutedText}`,

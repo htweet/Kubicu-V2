@@ -135,6 +135,8 @@ export interface BookingInput {
   marketingConsent: boolean;
   /** A chosen person, or null/undefined for "Anyone available" (D140). */
   staffId?: string | null;
+  /** The page or space handle the booking sheet was opened on (D191). */
+  sourceHandle?: string;
 }
 
 export type BookingResult = {ok: true;data: OpsData;booking: Booking;} | {ok: false;reason: 'taken' | 'failed';message: string;};
@@ -166,6 +168,7 @@ export function createBooking(data: OpsData, input: BookingInput): BookingResult
     balanceHoursBefore: input.service.balanceOnline ? input.service.balanceHoursBefore ?? 24 : undefined,
     customerTimeZone: input.customerTimeZone,
     assigneeId: assigneeId ?? undefined,
+    sourceHandle: input.sourceHandle || undefined,
     events: [
     ...(input.depositOutcome === 'paid' ? [{ id: uid('bev'), at, label: `Deposit paid (test mode)` }] : []),
     { id: uid('bev'), at, label: assigneeName ? `Booked on your page with ${assigneeName}${input.staffId ? '' : ' (anyone available)'}` : 'Booked on your page' }]

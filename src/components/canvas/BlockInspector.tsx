@@ -1,10 +1,15 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { GroupIcon, LockIcon, LockOpenIcon, QrCodeIcon } from 'lucide-react';
+import { ArrowRightLeftIcon, GroupIcon, LockIcon, LockOpenIcon, QrCodeIcon } from 'lucide-react';
+import { toast } from 'sonner';
+import { Menu } from '../ui/Menu';
+import { conversionsFor } from '../../utils/blockConvert';
+import { NextBlockSuggestions } from './inspector/NextBlockSuggestions';
+import { currentLook, looksFor } from '../../utils/blockLooks';
 import type { Block } from '../../types/page';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
 import { blockDestination, qrHref } from '../../utils/domains/links';
-import { blockName } from '../../utils/blocks';
+import { blockName, layerName } from '../../utils/blocks';
 
 const qrBlockTypes: Block['type'][] = ['event', 'booking', 'subscription'];
 import { blockDefinitions } from '../../data/blockRegistry';
@@ -24,6 +29,7 @@ import { cn } from '../../utils/cn';
 import { useCoBrand } from '../../hooks/useCoBrand';
 import { canEditBlock } from '../../utils/coBrand';
 import { CoBrandBlockBar } from './inspector/CoBrandBlockBar';
+import { ContainerMembership, containerMembershipApplies } from './inspector/ContainerMembership';
 
 type InspectorTab = 'content' | 'style' | 'behaviour' | 'visibility';
 
@@ -41,6 +47,10 @@ export function BlockInspector({ block, showHeader = true }: {block: Block;showH
   const navigate = useNavigate();
   // Events, bookings and subscription plans can have a QR code that opens straight onto them (D72).
   const qrDest = qrBlockTypes.includes(block.type) ? blockDestination(currentSpace.id, state.site, block.id) : null;
+  // Change block type (D171): safe pairs only, each saying what won't carry over.
+  const conversions = conversionsFor(block);
+  // Ready-made looks of this block (D177), switchable from the Style tab.
+  const looks = looksFor(block.type);
 
   return (
     <div className="flex h-full flex-col">
@@ -50,8 +60,8 @@ export function BlockInspector({ block, showHeader = true }: {block: Block;showH
             <Icon size={15} aria-hidden />
           </span>
           <div className="min-w-0 flex-1">
-            <h2 className="text-label font-semibold text-fg">{def.name}</h2>
-            <p className="truncate text-caption text-fg-subtle">{def.description}</p>
+            <h2 className="truncate text-label font-semibold text-fg">{layerName(block)}</h2>
+            <p className="truncate text-caption text-fg-subtle">{block.name ? `${def.name} · rename in Layers` : def.description}</p>
           </div>
           {qrDest &&
         <IconButton
@@ -59,6 +69,23 @@ export function BlockInspector({ block, showHeader = true }: {block: Block;showH
           label={`QR code that opens this ${def.name.toLowerCase()}`}
           size="sm"
           onClick={() => navigate(qrHref(qrDest, blockName(block)))} />
+
+        }
+          {conversions.length > 0 &&
+        <Menu
+          align="end"
+          header={<p className="px-3 pb-1 pt-2 text-caption font-medium text-fg-subtle">Change to…</p>}
+          items={conversions.map((c) => ({
+            id: c.to,
+            label: blockDefinitions[c.to].name,
+            icon: blockDefinitions[c.to].icon,
+            disabled: locked,
+            onSelect: () => {
+              actions.convertBlock(block.id, c.to);
+              toast(`Changed to ${blockDefinitions[c.to].name}`, { description: c.loses || 'Everything carried over.', action: { label: 'Undo', onClick: () => actions.undo() } });
+            }
+          }))}
+          trigger={(props) => <IconButton {...props} icon={ArrowRightLeftIcon} label="Change block type" size="sm" disabled={locked} />} />
 
         }
           <IconButton
@@ -72,6 +99,11 @@ export function BlockInspector({ block, showHeader = true }: {block: Block;showH
         </div>
       }
 
+      {containerMembershipApplies(state.draft.blocks, block) &&
+      <div className="px-4 pb-3">
+          <ContainerMembership block={block} disabled={locked} />
+        </div>
+      }
       {(locked || group || coBrand.cb) &&
       <div className="flex flex-col gap-2 px-4 pb-3">
           {coBrand.cb && <CoBrandBlockBar block={block} />}
@@ -129,9 +161,24 @@ export function BlockInspector({ block, showHeader = true }: {block: Block;showH
           <legend className="sr-only">{locked ? `${def.name} settings, locked` : `${def.name} settings`}</legend>
           {tab === 'content' &&
           <div className="flex flex-col gap-4">
+              {looks.length > 0 &&
+            <p className="flex items-center gap-2 text-caption text-fg-muted">
+                  <span className="min-w-0 flex-1 truncate">
+                    Look: <span className="font-medium text-fg">{currentLook(block, looks)?.name ?? 'Custom settings'}</span>
+                  </span>
+                  <button
+                type="button"
+                onClick={() => setTab('style')}
+                className="shrink-0 rounded-sm font-medium text-action hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+                
+                    Change look
+                  </button>
+                </p>
+            }
               <IssueList issues={blockIssues} />
               <ContentFields block={block} issues={blockIssues} />
               {supportsSuggest(block) && <BlockSuggest block={block} />}
+              {!locked && <NextBlockSuggestions block={block} />}
             </div>
           }
           {tab === 'style' && <StyleFields block={block} />}

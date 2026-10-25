@@ -82,18 +82,17 @@ export function QrCodes() {
       
 
       {data.qrs.length === 0 ?
-      <div className="rounded-lg border border-line bg-raised">
-          <EmptyState
-          icon={QrCodeIcon}
-          title="No QR codes yet"
-          description="Point one at your page, your shop or a single product. You can change where it goes later without reprinting."
-          action={
-          <Button leadingIcon={PlusIcon} disabled={!can.allowed} onClick={() => setEditing('new')}>
+      <EmptyState
+        framed
+        icon={QrCodeIcon}
+        title="No QR codes yet"
+        description="Point one at your page, your shop or a single product. You can change where it goes later without reprinting."
+        action={
+        <Button leadingIcon={PlusIcon} disabled={!can.allowed} onClick={() => setEditing('new')}>
                 New QR code
               </Button>
-          } />
-        
-        </div> :
+        } /> :
+
 
       <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {data.qrs.map((q) => {

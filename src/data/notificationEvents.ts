@@ -41,6 +41,7 @@ export const notifEvents: NotifEventInfo[] = [
 { id: 'domain_status', label: 'Domain live or needs attention', area: 'domains', permission: 'domains.manage', defaults: on },
 { id: 'dealroom_result', label: 'DealRoom goal met or missed', area: 'pages', permission: 'pages.edit', defaults: on },
 { id: 'campaign_phase', label: 'Campaign went live or ended', area: 'pages', permission: 'pages.edit', defaults: appOnly },
+{ id: 'fundraiser', label: 'Fundraiser: someone gave, goal reached or paused by KUBICU', area: 'pages', permission: 'pages.edit', defaults: on },
 { id: 'weekly_digest', label: 'Monday summary: sales, Link Intelligence and Opportunities', area: 'pages', permission: 'analytics.view', defaults: on }];
 
 

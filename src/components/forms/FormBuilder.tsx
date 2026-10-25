@@ -45,7 +45,12 @@ export function FormBuilder({ form, onChange, disabled }: FormBuilderProps) {
   const remove = (id: string) => {
     const i = fields.findIndex((f) => f.id === id);
     // Rules that pointed at the removed field are cleared so nothing silently hides.
-    onChange(fields.filter((f) => f.id !== id).map((f) => f.rule?.fieldId === id ? { ...f, rule: null } : f.amountFromFieldId === id ? { ...f, amountFromFieldId: null, amountNgn: 5000 } : f));
+    onChange(
+      fields.
+      filter((f) => f.id !== id).
+      map((f) => f.rule?.fieldId === id ? { ...f, rule: null } : f.amountFromFieldId === id ? { ...f, amountFromFieldId: null, amountNgn: 5000 } : f).
+      map((f) => f.calc?.fieldIds.includes(id) ? { ...f, calc: { ...f.calc, fieldIds: f.calc.fieldIds.filter((x) => x !== id) } } : f)
+    );
     setSelectedId(fields[i + 1]?.id ?? fields[i - 1]?.id ?? null);
   };
 

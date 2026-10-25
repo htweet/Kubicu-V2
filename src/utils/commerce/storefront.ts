@@ -54,6 +54,22 @@ export function storefrontConfig(s: StorefrontSettings): StorefrontConfig {
     returnsNote: '',
     seoTitle: '',
     seoDescription: '',
+    // D196: Classic grid with today's behaviour, so older saved shops don't move.
+    look: 'classic',
+    header: 'banner',
+    featuredStyle: 'none',
+    collectionsStyle: 'chips',
+    cardStyle: 'standard',
+    productPage: 'side',
+    stickyBuy: false,
+    addMode: 'page',
+    showSaleBadges: true,
+    savedItems: false,
+    recentlyViewed: false,
+    relatedProducts: true,
+    askWhatsApp: false,
+    shareButtons: false,
+    showReviews: false,
     ...s
   } as StorefrontConfig;
 }

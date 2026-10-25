@@ -95,13 +95,13 @@ export function PaymentLinks() {
 
 
       <>
-          <section aria-label={tr('Last 30 days')} className="mt-6 rounded-lg border border-line bg-raised p-5 md:p-6">
+          <Card emphasis="primary" as="div" className="mt-6">
             <StatGroup columns={3}>
               <Stat primary label="Collected in the last 30 days" value={formatNgn(last30.total)} hint="Before fees" />
               <Stat label="Payments" value={last30.count} />
               <Stat label="Links taking payments" value={data.links.filter((l) => linkView(l) === 'active').length} />
             </StatGroup>
-          </section>
+          </Card>
 
           <Card
           className="mt-8"

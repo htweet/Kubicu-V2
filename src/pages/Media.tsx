@@ -19,12 +19,15 @@ import { fieldControlClass } from '../components/ui/Field';
 import { MediaImage } from '../components/media/MediaImage';
 import { MediaDetail } from '../components/media/MediaDetail';
 import { cn } from '../utils/cn';
+import { Link } from 'react-router-dom';
+import { useProviders } from '../hooks/useProviders';
 
 type Filter = 'all' | 'used' | 'unused';
 
 export function Media() {
   const media = useMedia();
   const plan = usePlan();
+  const storage = useProviders().active('storage');
   const { state } = useEditor();
   const products = useCommerce().data.products;
   const { sections } = useLibrary();
@@ -124,6 +127,13 @@ export function Media() {
             <p className="flex items-center gap-2 text-caption text-fg-muted">
               <span>
                 <span className="font-semibold tabular-nums text-fg">{formatBytes(media.usedBytes)}</span> of {formatBytes(media.quotaBytes)} on {plan.name}
+              </span>
+              <span aria-hidden>·</span>
+              <span>
+                Stored in{' '}
+                <Link to="/app/settings/integrations" className="font-medium text-fg underline-offset-2 hover:underline">
+                  {!storage || storage.builtIn ? 'this browser' : `${storage.name} (simulated — files stay in this browser)`}
+                </Link>
               </span>
 
             </p>

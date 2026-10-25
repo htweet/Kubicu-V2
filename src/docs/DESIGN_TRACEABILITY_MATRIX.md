@@ -50,7 +50,7 @@ Prototype status: ✅ interactive · 🟡 partial · ⏳ planned placeholder · 
 | IB-Z | Developer API | P2 | Dev | Settings → Developers, `/developers` | — | keys, webhooks, sandbox | ✅ 🧪 | D131, D132, D134 |
 | MB-A6 | Voice-to-Store | P2 | Owner | Voice-to-Store app | — | listening, draft products | ✅ 🧪 | D102 · English speech only |
 | MB-A13 | Offline-to-online QR identity | P1 | Owner | Domains & QR, Print kit | QrDesigner, print kit | tracked scans, fallback, print ordering | ✅ | D62, D71, D86, D114, D118–D119 |
-| MB-A14 | Micro-website mode | Later | Owner | Pages panel | multi-page sites, site kits | — | 🟡 | D48, four site kits D127 · seven industry page sets in Batch 13 |
+| MB-A14 | Micro-website mode | Later | Owner | Pages panel | multi-page sites, site kits | — | ✅ | D48, D127, seven industry page sets D137 |
 | MB-A17 | Lightweight mode / low bandwidth | P0 | Visitor/Owner | Public page, canvas Check | data saver, page weight | — | ✅ | D85, D88, D126 · smaller image versions need a CDN |
 | DP-9/10 | Honest microcopy & mock data labelling | P0 | All | All | IllustrativeTag, demo notes | — | ✅ | MVP-D |
 | DP-11 | Every control works, is marked illustrative, or disabled with reason | P0 | All | All | Menu reasons, PlanLock, tooltips | — | ✅ | MVP-D |

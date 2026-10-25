@@ -11,6 +11,11 @@ import { useDomains } from '../../contexts/DomainsContext';
 import { useTeam } from '../../contexts/TeamContext';
 import type { CheckOutcome } from '../../types/domains';
 import { cleanHost, dnsRecords, guessKind, hostError, randomToken, registrars, subLabel, type RegistrarId } from '../../utils/domains/dns';
+import { toast } from 'sonner';
+import { InlineAlert } from '../ui/InlineAlert';
+import { useProviders } from '../../hooks/useProviders';
+import { providerById, registrarProvider } from '../../data/providers';
+import { addDnsRecords } from '../../utils/providers/adapters';
 
 interface Props {
   open: boolean;
@@ -44,6 +49,21 @@ export function ConnectDomainDialog({ open, onClose, spaces }: Props) {
   const kindError = effectiveKind === 'subdomain' && host && !subLabel(host) ? 'This looks like a root domain. Add the part before it, like shop.adaeze.com.' : undefined;
   const records = useMemo(() => dnsRecords({ host, kind: effectiveKind, token }), [host, effectiveKind, token]);
   const tip = registrars.find((r) => r.id === registrar)?.tip;
+  // A connected DNS integration for this registrar can add the records for you (D192, simulated).
+  const providers = useProviders();
+  const dnsId = registrarProvider[registrar];
+  const dnsDef = dnsId && providers.connected(dnsId) ? providerById(dnsId) : undefined;
+  const [adding, setAdding] = useState(false);
+  const addForMe = async () => {
+    if (!dnsDef) return;
+    setAdding(true);
+    const r = await addDnsRecords(dnsDef, host, records.length, 'success');
+    setAdding(false);
+    providers.log(dnsDef.id, `Add DNS records for ${host}`, r.ok, r.message);
+    if (!r.ok) return toast.error('Couldn’t add the records', { description: r.message });
+    toast(`Records added in ${dnsDef.name}`, { description: r.message });
+    finish();
+  };
 
   const close = () => {
     onClose();
@@ -144,6 +164,19 @@ export function ConnectDomainDialog({ open, onClose, spaces }: Props) {
               <IllustrativeTag note="Registrar steps are illustrative — menus differ and change over time." />
             </p>
           </div>
+          {dnsDef &&
+        <InlineAlert
+          tone="info"
+          title={`Your ${dnsDef.name} account is connected`}
+          action={
+          <Button size="sm" loading={adding} onClick={addForMe}>
+                  Add them for me
+                </Button>
+          }>
+          
+              KUBICU can add these records in {dnsDef.name} instead of you typing them. Simulated in the prototype.
+            </InlineAlert>
+        }
           <DnsRecordsTable records={records} />
           <p className="flex items-center gap-1.5 text-caption text-fg-subtle">
             Changes usually show within an hour, sometimes up to 48 hours. You can close this — we’ll keep the records on the domain card.

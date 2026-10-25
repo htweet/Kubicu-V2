@@ -16,6 +16,7 @@ import { Switch } from '../ui/Switch';
 import { TextArea } from '../ui/TextArea';
 import { TextInput } from '../ui/TextInput';
 import { UpgradeButton } from '../ui/UpgradeButton';
+import { Card } from '../ui/layout/Card';
 import { cn } from '../../utils/cn';
 
 type TestOutcome = 'success' | 'cert' | 'unassigned';
@@ -113,7 +114,7 @@ export function SsoTab() {
   return (
     <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_280px]">
       <div className="flex min-w-0 flex-col gap-10">
-        <div className={cn('flex flex-wrap items-center justify-between gap-4 rounded-lg border p-4', c.status === 'on' ? 'border-transparent bg-success-soft' : 'border-line bg-raised')}>
+        <div className={cn('flex flex-wrap items-center justify-between gap-4 rounded-lg border px-5 py-4 md:px-6', c.status === 'on' ? 'border-transparent bg-success-soft' : 'border-line bg-raised')}>
           <div className="flex items-start gap-3">
             <ShieldCheckIcon size={20} className={cn('mt-0.5 shrink-0', c.status === 'on' ? 'text-success' : 'text-fg-subtle')} aria-hidden />
             <div>
@@ -274,11 +275,8 @@ export function SsoTab() {
       </div>
 
       <aside className="flex flex-col gap-4 lg:sticky lg:top-6 lg:self-start">
-        <div className="rounded-lg border border-line bg-raised p-4">
-          <p className="flex items-center gap-2 text-label font-semibold text-fg">
-            <KeyRoundIcon size={15} className="text-fg-subtle" aria-hidden /> Progress
-          </p>
-          <ol className="mt-3 flex flex-col gap-2">
+        <Card id="sso-progress" as="div" icon={KeyRoundIcon} title="Progress">
+          <ol className="flex flex-col gap-2.5">
             {['Identity provider', 'Domain verified', 'Test passed', 'Turned on'].map((l, i) =>
             <li key={l} className={cn('flex items-center gap-2 text-label', steps[i] ? 'text-fg' : 'text-fg-subtle')}>
                 {steps[i] ? <CheckCircle2Icon size={15} className="text-success" aria-hidden /> : <span aria-hidden className="h-[15px] w-[15px] rounded-full border border-line-strong" />}
@@ -287,7 +285,7 @@ export function SsoTab() {
               </li>
             )}
           </ol>
-        </div>
+        </Card>
         <p className="text-caption text-fg-subtle">Simulated: domain checks, test sign-ins and the provider redirect are stand-ins until a real sign-in service is connected.</p>
       </aside>
     </div>);

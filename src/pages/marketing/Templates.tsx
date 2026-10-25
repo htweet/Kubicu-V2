@@ -11,6 +11,32 @@ import { Badge } from '../../components/ui/Badge';
 import { templatePrice } from '../../data/templateMarket';
 import { formatNaira as formatNgn } from '../../utils/format';
 import { cn } from '../../utils/cn';
+import { ThemeGallery } from '../../components/themes/ThemeGallery';
+
+/** Templates set the layout; themes set the look (D164). */
+function LibraryNav({ active }: {active: 'templates' | 'themes';}) {
+  const tabs = [
+  { id: 'templates', label: 'Templates', to: '/templates' },
+  { id: 'themes', label: 'Themes', to: '/templates?tab=themes' }] as
+  const;
+  return (
+    <nav aria-label="Library" className="flex gap-1 border-b border-line">
+      {tabs.map((t) =>
+      <Link
+        key={t.id}
+        to={t.to}
+        aria-current={active === t.id ? 'page' : undefined}
+        className={cn(
+          '-mb-px border-b-2 px-3 py-2.5 text-label font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
+          active === t.id ? 'border-fg text-fg' : 'border-transparent text-fg-muted hover:text-fg'
+        )}>
+        
+          {t.label}
+        </Link>
+      )}
+    </nav>);
+
+}
 
 const styleLabels: Record<ExampleStyle, string> = { light: 'Light', dark: 'Dark', editorial: 'Editorial', bold: 'Bold' };
 
@@ -23,6 +49,7 @@ export function Templates() {
   const [region, setRegion] = useState('all');
   const [price, setPrice] = useState<'all' | 'free' | 'premium'>('all');
   const regions = useMemo(() => Array.from(new Set(examplePages.map((e) => e.city))).sort(), []);
+  const showThemes = params.get('tab') === 'themes';
 
   const list = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -44,9 +71,27 @@ export function Templates() {
     setPrice('all');
   };
 
+  if (showThemes) {
+    return (
+      <div className="mx-auto w-full max-w-6xl px-5 pb-20 pt-14 md:px-8 md:pt-20">
+        <LibraryNav active="themes" />
+        <header className="mt-8 max-w-2xl">
+          <h1 className="font-display text-[40px] font-semibold leading-[1.05] tracking-[-0.032em] text-fg md:text-[56px]">
+            Choose the look, <span className="nm-text">keep your layout</span>
+          </h1>
+          <p className="mt-4 text-body text-fg-muted">
+            24 Signature themes — glass, gloss, editorial and quiet luxury. A theme changes colours, surfaces, buttons and type; your page’s content and layout stay exactly where they are.
+          </p>
+        </header>
+        <ThemeGallery signUpHref="/signup" />
+      </div>);
+
+  }
+
   return (
     <div className="mx-auto w-full max-w-6xl px-5 pb-20 pt-14 md:px-8 md:pt-20">
-      <header className="max-w-2xl">
+      <LibraryNav active="templates" />
+      <header className="mt-8 max-w-2xl">
         <h1 className="font-display text-[40px] font-semibold leading-[1.05] tracking-[-0.032em] text-fg md:text-[56px]">
           Start from a page <span className="nm-text">built for your goal</span>
         </h1>

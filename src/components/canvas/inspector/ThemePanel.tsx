@@ -1,5 +1,9 @@
 import React from 'react';
-import { CheckIcon, AlertTriangleIcon, AlertCircleIcon } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { CheckIcon, AlertTriangleIcon, AlertCircleIcon, LockIcon } from 'lucide-react';
+import { usePlan } from '../../../contexts/PlanContext';
+import { useUpgrade } from '../../../contexts/UpgradeContext';
+import { planAtLeast } from '../../../data/plans';
 import { CONTRAST_MIN_PUBLISH, CONTRAST_TARGET } from '../../../utils/contrast';
 import { contrastCopy, suggestContrastFix, type ContrastFix } from '../../../utils/contrastFixes';
 import { Button } from '../../ui/Button';
@@ -12,6 +16,8 @@ import { Field } from '../../ui/Field';
 import { Segmented } from '../../ui/Segmented';
 import { ColorField } from './ColorField';
 import { SavedThemes, ThemeSwatch } from './SavedThemes';
+import { PageBackgroundSection } from './PageBackgroundSection';
+import { backgroundMode } from '../../../utils/pageBackground';
 import { cn } from '../../../utils/cn';
 import { parseSignatureId, signatureTheme, signatureThemes, type ThemeMode } from '../../../data/signatureThemes';
 
@@ -27,6 +33,9 @@ export function ThemePanel() {
     actions.updateTheme(patch, key);
   };
 
+  const allThemes = planAtLeast(usePlan().id, 'creator');
+  const { openUpgrade } = useUpgrade();
+  const navigate = useNavigate();
   const signature = parseSignatureId(theme.presetId);
   const sigModes = signature ? Object.keys(signature.theme.modes) as ThemeMode[] : [];
 
@@ -41,16 +50,30 @@ export function ThemePanel() {
           <span className="text-caption text-fg-subtle">{signatureThemes.length}</span>
         </div>
         <div className="grid grid-cols-3 gap-2">
-          {signatureThemes.map((t) =>
-          <ThemeSwatch
-            key={t.id}
-            name={t.name}
-            theme={signatureTheme(t)}
-            active={signature?.theme.id === t.id}
-            onClick={() => actions.applyThemePreset(signatureTheme(t))} />
+          {signatureThemes.map((t) => {
+            const locked = !t.free && !allThemes;
+            return (
+              <div key={t.id} className="relative min-w-0">
+                <ThemeSwatch
+                  name={t.name}
+                  theme={signatureTheme(t)}
+                  active={signature?.theme.id === t.id}
+                  onClick={() => locked ? openUpgrade({ plan: 'creator', feature: `The ${t.name} theme` }) : actions.applyThemePreset(signatureTheme(t))} />
+                
+                {locked &&
+                <span className="pointer-events-none absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-overlay/90 text-fg-muted shadow-1" title="Creator plan and above">
+                    <LockIcon size={11} aria-label="Creator plan and above" />
+                  </span>
+                }
+              </div>);
 
-          )}
+          })}
         </div>
+        {!allThemes &&
+        <p className="mt-2 text-caption text-fg-subtle">
+            Signature themes need Creator or above; the Classic themes below work on every plan. <button type="button" className="font-medium text-fg underline underline-offset-2" onClick={() => navigate('/app/templates?tab=themes')}>Preview all 24</button>
+          </p>
+        }
         {signature &&
         <div className="mt-3 flex flex-col gap-2">
             <p className="text-caption text-fg-subtle">{signature.theme.personality}</p>
@@ -89,6 +112,9 @@ export function ThemePanel() {
         {theme.presetId === 'custom' &&
         <p className="mt-2 text-caption text-fg-subtle">Custom colours — save them below to reuse, or pick a theme to reset.</p>
         }
+        {backgroundMode(theme) !== 'theme' &&
+        <p className="mt-2 text-caption text-fg-subtle">Your own page background is kept when you switch theme. Set Page background to Theme to use the theme’s.</p>
+        }
       </section>
 
       <SavedThemes />
@@ -105,34 +131,8 @@ export function ThemePanel() {
         <ColorField id="c-accent-text" label="Featured button text" value={theme.accentText} onChange={setColor('accentText')} />
       </section>
 
-      {theme.backgroundImage &&
-      <section aria-labelledby="theme-artwork" className="flex flex-col gap-3 border-t border-line pt-5">
-          <h3 id="theme-artwork" className="text-label font-medium text-fg">
-            Background artwork
-          </h3>
-          <div className="flex items-center gap-3">
-            <img src={theme.backgroundImage} alt="" className="h-16 w-10 shrink-0 rounded-sm border border-line object-cover" />
-            <p className="min-w-0 flex-1 text-caption text-fg-subtle">Stays behind your page as visitors scroll. Raise the veil if text gets hard to read.</p>
-          </div>
-          <label htmlFor="theme-veil" className="flex items-center justify-between text-caption text-fg-muted">
-            <span>Veil</span>
-            <span className="tabular-nums">{theme.backgroundVeil ?? 40}%</span>
-          </label>
-          <input
-          id="theme-veil"
-          type="range"
-          min={0}
-          max={90}
-          step={5}
-          value={theme.backgroundVeil ?? 40}
-          onChange={(e) => actions.updateTheme({ backgroundVeil: Number(e.target.value) }, 'backgroundVeil')}
-          className="w-full accent-[var(--color-action,#2563eb)]" />
-        
-          <Button size="sm" variant="secondary" className="self-start" onClick={() => actions.updateTheme({ backgroundImage: undefined }, 'backgroundImage')}>
-            Remove artwork
-          </Button>
-        </section>
-      }
+      {/* D182: the owner's own background — Theme default, Solid, Gradient or Image (template artwork lives here too). */}
+      <PageBackgroundSection />
 
       <section aria-labelledby="theme-contrast" className="rounded-md border border-line p-3">
         <h3 id="theme-contrast" className="text-label font-medium text-fg">

@@ -16,6 +16,7 @@ import { Sheet } from '../../components/ui/Sheet';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { SampleTag } from '../../components/commerce/StatusBadges';
 import { ReasonDialog } from '../../components/admin/ReasonDialog';
+import { List } from '../../components/ui/layout/ListRow';
 
 type Tab = 'open' | 'auto' | 'decided' | 'takedowns';
 type Decision = {kind: 'takedown' | 'dismiss';report: PageReport;} | {kind: 'restore';handle: string;} | null;
@@ -107,7 +108,7 @@ export function AdminModeration() {
             {flags.length === 0 ?
           <EmptyState icon={ShieldCheckIcon} title="No automatic flags" description="Nothing on live pages matches the checks right now." /> :
 
-          <ul className="flex flex-col divide-y divide-line border-y border-line">
+          <List ruled label="Automatic flags">
                 {flags.map((f) =>
             <li key={f.key} className="flex flex-col gap-3 py-4 md:flex-row md:items-start md:gap-6">
                     <div className="min-w-0 flex-1">
@@ -135,7 +136,7 @@ export function AdminModeration() {
                     </div>
                   </li>
             )}
-              </ul>
+              </List>
           }
             <details className="mt-6 text-label">
               <summary className="cursor-pointer font-medium text-fg">What the checks look for</summary>
@@ -152,7 +153,7 @@ export function AdminModeration() {
         store.takedowns.length === 0 ?
         <EmptyState icon={ShieldCheckIcon} title="No pages taken down" description="Pages you take down are listed here so they can be restored after an appeal." /> :
 
-        <ul className="flex flex-col divide-y divide-line border-y border-line">
+        <List ruled label="Pages taken down">
               {store.takedowns.map((t) =>
           <li key={t.handle} className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
                   <span className="min-w-0">
@@ -166,12 +167,12 @@ export function AdminModeration() {
                   </Button>
                 </li>
           )}
-            </ul> :
+            </List> :
 
         list.length === 0 ?
         <EmptyState icon={ShieldCheckIcon} title={tab === 'open' ? 'No open reports' : 'Nothing decided yet'} description="Visitors report pages from the “Report this page” link at the bottom of every public page." /> :
 
-        <ul className="flex flex-col divide-y divide-line border-y border-line">
+        <List ruled label="Reports">
             {list.map((r) =>
           <li key={r.id}>
                 <button type="button" onClick={() => setOpenId(r.id)} className="flex w-full flex-col gap-1 py-4 text-left transition-colors duration-150 hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus sm:flex-row sm:items-center sm:gap-4 sm:px-2">
@@ -190,7 +191,7 @@ export function AdminModeration() {
                 </button>
               </li>
           )}
-          </ul>
+          </List>
         }
       </div>
 

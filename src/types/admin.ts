@@ -12,7 +12,7 @@ export interface FlagState {
   updatedAt: string;
 }
 
-export type ReportReason = 'scam' | 'counterfeit' | 'hate' | 'adult' | 'impersonation' | 'copyright' | 'other';
+export type ReportReason = 'scam' | 'counterfeit' | 'hate' | 'adult' | 'impersonation' | 'copyright' | 'fundraising' | 'other';
 export type ReportStatus = 'open' | 'actioned' | 'dismissed';
 
 export interface PageReport {
@@ -269,6 +269,10 @@ export interface AdminStore {
   phraseReviews: Record<string, PhraseReview>;
   /** Policy versions staff published (D135). Keyed by legal doc slug, newest first. */
   policyReleases: Record<string, PolicyRelease[]>;
+  /** Fundraisers staff paused while reviewing (D179). Keyed by page handle. */
+  pausedFundraisers?: Record<string, {reason: string;at: string;by: string;}>;
+  /** Fundraisers started on this device, so staff are told about new ones (D179). */
+  fundraisers?: {handle: string;workspaceId: string;workspaceName: string;name: string;goalNgn: number;createdAt: string;}[];
 }
 
 export interface PlanOverride {

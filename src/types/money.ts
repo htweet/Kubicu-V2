@@ -126,6 +126,11 @@ export interface LinkPayment {
   receipt: string;
   /** Staged links: which stage this payment covered (D95). */
   stageId?: string;
+  /** Fundraisers (D179): the payer agreed to show their first name on the page. Default anonymous. */
+  showName?: boolean;
+  /** Refunded by the organiser (D179). Refunded money leaves the "raised" total. */
+  refundedNgn?: number;
+  refundedAt?: string;
   sample?: boolean;
 }
 
@@ -159,6 +164,8 @@ export interface PaymentLink {
   payments: LinkPayment[];
   /** Fixed links only: pay the amount in stages, one payer, in order (D95). */
   stages?: LinkStage[];
+  /** The open link behind a Fundraiser space (D179): fixed wording and the "show my name" choice on the pay page. */
+  fundraiser?: {handle: string;organiser: string;};
   sample?: boolean;
 }
 
@@ -184,4 +191,6 @@ export interface MoneyData {
   walletSince: string;
   counters: {receipt: number;};
   seeded: boolean;
+  /** Demo workspace only: the sample fundraiser's payment link has been added once (D179). */
+  sampleFundraiserSeeded?: boolean;
 }

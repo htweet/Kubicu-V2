@@ -9,6 +9,11 @@ import { PlanLock } from '../../ui/PlanLock';
 import { UpgradeButton } from '../../ui/UpgradeButton';
 import { CampaignSettingsPanel } from './CampaignSettingsPanel';
 import { DealRoomSettingsPanel } from './DealRoomSettingsPanel';
+import { EventSpaceSettingsPanel } from './EventSpaceSettingsPanel';
+import { FundraiserSettingsPanel } from './FundraiserSettingsPanel';
+import { PopupSettingsPanel } from './PopupSettingsPanel';
+import { BookingPageSettingsPanel } from './BookingPageSettingsPanel';
+import { MembersAreaSettingsPanel } from './MembersAreaSettingsPanel';
 import { CoBrandSettingsPanel } from './CoBrandSettingsPanel';
 import { publicUrl } from '../../../utils/format';
 import { Switch } from '../../ui/Switch';
@@ -49,6 +54,11 @@ export function PageSettingsPanel() {
   return (
     <div className="flex flex-col gap-5">
       <CampaignSettingsPanel />
+      <EventSpaceSettingsPanel />
+      <FundraiserSettingsPanel />
+      <PopupSettingsPanel />
+      <BookingPageSettingsPanel />
+      <MembersAreaSettingsPanel />
       <CoBrandSettingsPanel />
       <DealRoomSettingsPanel />
       {multi &&
@@ -98,6 +108,18 @@ export function PageSettingsPanel() {
             { value: 'narrow', label: 'Narrow' },
             { value: 'standard', label: 'Standard' },
             { value: 'wide', label: 'Wide' }]
+            } />
+          
+        </Field>
+        <Field id="layout-density" label="Section spacing" hint="Space around wide sections and coloured bands, across every page. Roomy is the default.">
+          <Segmented
+            ariaLabel="Section spacing"
+            fullWidth
+            value={state.site.layout?.density ?? 'comfortable'}
+            onChange={(density) => actions.updateLayout({ density }, 'density')}
+            options={[
+            { value: 'comfortable', label: 'Roomy' },
+            { value: 'compact', label: 'Compact' }]
             } />
           
         </Field>

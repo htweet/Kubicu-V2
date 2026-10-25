@@ -56,13 +56,14 @@ export function CommerceOverview() {
     return (
       <>
         <PageHeader title="Commerce" description="Sell from your page: products, stock, orders and checkout." />
-        <div className="mt-8 rounded-lg border border-line bg-raised">
           <EmptyState
-            icon={ShoppingBagIcon}
-            title="Nothing for sale yet"
-            description="Add a product to start. Then link it to a block on your page so price and stock stay in sync."
-            action={
-            <div className="flex flex-wrap justify-center gap-2">
+          framed
+          className="mt-8"
+          icon={ShoppingBagIcon}
+          title="Nothing for sale yet"
+          description="Add a product to start. Then link it to a block on your page so price and stock stay in sync."
+          action={
+          <div className="flex flex-wrap justify-center gap-2">
                 <Button leadingIcon={PlusIcon} onClick={() => navigate('/app/commerce/products?new=1')}>
                   Add a product
                 </Button>
@@ -70,9 +71,8 @@ export function CommerceOverview() {
                   Explore with sample data
                 </Button>
               </div>
-            } />
-          
-        </div>
+          } />
+        
       </>);
 
   }

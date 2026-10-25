@@ -2,6 +2,7 @@ import type { FormDef, FormSubmission } from '../../types/forms';
 import type { SourceId } from '../../types/analytics';
 import { type Answers, answerText } from './logic';
 import { updateForms } from './storage';
+import { sendConfirmation } from './confirmation';
 import { uid } from '../id';
 
 export interface SubmissionContact {
@@ -13,11 +14,11 @@ export interface SubmissionContact {
 
 export function contactFrom(form: FormDef, answers: Answers): SubmissionContact {
   const pick = (pred: (label: string, type: string) => boolean) => {
-    const f = form.fields.find((x) => pred(x.label, x.type) && answerText(answers[x.id]).trim());
-    return f ? answerText(answers[f.id]).trim() : '';
+    const f = form.fields.find((x) => pred(x.label, x.type) && answerText(answers[x.id], x).trim());
+    return f ? answerText(answers[f.id], f).trim() : '';
   };
   return {
-    name: pick((l, t) => t === 'shortText' && /name/i.test(l)) || pick((_, t) => t === 'shortText'),
+    name: pick((_, t) => t === 'name') || pick((l, t) => t === 'shortText' && /name/i.test(l)) || pick((_, t) => t === 'shortText'),
     email: pick((_, t) => t === 'email'),
     phone: pick((_, t) => t === 'phone'),
     consent: form.fields.some((f) => f.type === 'consent' && answers[f.id] === 'yes')
@@ -50,9 +51,12 @@ ctx: {source: SourceId | null;handle: string | null;campaign?: string | null;})
     assigneeId: form.settings.assigneeId,
     contactName: c.name,
     contactEmail: c.email,
+    contactPhone: c.phone,
     marketingConsent: c.consent,
     createdAt: new Date().toISOString()
   };
+  const email = sendConfirmation(workspaceId, form, filled, c.email, c.name);
+  if (email) sub.email = email;
   updateForms(workspaceId, (d) => ({ ...d, submissions: [sub, ...d.submissions] }));
   return sub;
 }

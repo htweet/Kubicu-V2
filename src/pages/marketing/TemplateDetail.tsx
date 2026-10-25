@@ -4,6 +4,7 @@ import { ArrowLeftIcon, ExternalLinkIcon, InfoIcon, MonitorIcon, ShieldCheckIcon
 import { findExampleById, goalLabels } from '../../data/examples';
 import { eliteGoalLabels, eliteUseCaseLabels } from '../../data/eliteTemplates';
 import { pageThemePresets } from '../../data/pageThemes';
+import { signatureTheme, signatureThemes } from '../../data/signatureThemes';
 import { templatePrice } from '../../data/templateMarket';
 import { plans } from '../../data/plans';
 import { TemplateLivePreview } from '../../components/templates/TemplateLivePreview';
@@ -25,7 +26,15 @@ export function TemplateDetail() {
 
   const { doc, elite } = example;
   const price = templatePrice(example.id);
-  const tryThemes = [{ id: 'original', name: 'As designed', theme: doc.theme }, ...pageThemePresets.filter((p) => p.theme.presetId !== doc.theme.presetId).slice(0, 4)];
+  // Signature themes first (D164), then two classics — preview only, the template's layout never changes.
+  const tryThemes = [
+  { id: 'original', name: 'As designed', theme: doc.theme },
+  ...['aurora-glass', 'pearl-atelier', 'emerald-luxe', 'sunset-haze'].map((sid) => {
+    const s = signatureThemes.find((t) => t.id === sid)!;
+    return { id: s.id, name: s.name, theme: signatureTheme(s) };
+  }),
+  ...pageThemePresets.filter((p) => p.theme.presetId !== doc.theme.presetId).slice(0, 2)];
+
   const theme = tryThemes.find((t) => t.id === themeId)?.theme ?? doc.theme;
   const visible = doc.blocks.filter((b) => !b.visibility.hidden);
   const blockNames = Array.from(new Set(visible.map(blockName)));
@@ -61,7 +70,7 @@ export function TemplateDetail() {
                 className={cn('flex h-9 items-center gap-1.5 rounded-full border px-2.5 text-caption font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus', themeId === t.id ? 'border-fg text-fg' : 'border-line text-fg-muted hover:border-line-strong')}>
                 
                   <span aria-hidden className="flex h-4 w-6 overflow-hidden rounded-full border border-line">
-                    <span className="flex-1" style={{ background: t.theme.background }} />
+                    <span className="flex-1" style={{ background: t.theme.material?.backdrop ?? t.theme.background }} />
                     <span className="flex-1" style={{ background: t.theme.accent }} />
                   </span>
                   <span className="hidden sm:inline">{t.name}</span>

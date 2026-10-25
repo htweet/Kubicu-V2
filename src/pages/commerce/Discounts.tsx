@@ -18,6 +18,7 @@ import { UpgradeButton } from '../../components/ui/UpgradeButton';
 import { DiscountEditor } from '../../components/commerce/DiscountEditor';
 import { SampleTag } from '../../components/commerce/StatusBadges';
 import { Card } from '../../components/ui/layout/Card';
+import { List } from '../../components/ui/layout/ListRow';
 import { Stat, StatGroup } from '../../components/ui/layout/Stat';
 import { useT } from '../../contexts/LocaleContext';
 
@@ -108,9 +109,7 @@ export function Discounts() {
       }
 
       {rows.length === 0 ?
-      <div className="mt-8 rounded-lg border border-line bg-raised">
-          <EmptyState icon={TagIcon} title="No discounts yet" description="Create a code to share for a sale, an automatic offer for big orders, or a personal code for someone who sends you customers." action={newMenu} />
-        </div> :
+      <EmptyState framed className="mt-8" icon={TagIcon} title="No discounts yet" description="Create a code to share for a sale, an automatic offer for big orders, or a personal code for someone who sends you customers." action={newMenu} /> :
 
       <>
           <StatGroup columns={3} className="mt-8 items-end border-b border-line pb-6">
@@ -129,7 +128,7 @@ export function Discounts() {
               {referrals.length === 0 ?
             <p className="text-caption text-fg-muted">{tr('Give a regular customer their own code. Each order they send shows up here.')}</p> :
 
-            <ol className="-my-2.5 flex flex-col divide-y divide-line">
+            <List ordered label={tr('Top referrers')} className="-my-2.5">
                   {referrals.slice(0, 5).map((r) =>
               <li key={r.id} className="flex items-center justify-between gap-3 py-2.5">
                       <span className="min-w-0">
@@ -141,7 +140,7 @@ export function Discounts() {
                       </span>
                     </li>
               )}
-                </ol>
+                </List>
             }
             </Card>
           </div>

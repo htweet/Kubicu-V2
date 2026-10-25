@@ -3,7 +3,7 @@ import { CheckIcon, LockIcon } from 'lucide-react';
 import type { FormDef } from '../../types/forms';
 import type { FormSkin } from './formSkin';
 import { FormFieldInput } from './FormFieldInput';
-import { type Answers, fieldError, paymentAmount, splitSteps, visibleFields } from '../../utils/forms/logic';
+import { type Answers, calcValue, fieldError, paymentAmount, splitSteps, visibleFields } from '../../utils/forms/logic';
 import { bumpVisitor, visitorCount } from '../../utils/forms/storage';
 
 export interface RunnerSubmit {
@@ -60,7 +60,13 @@ export function FormRunner({ form, skin, mode, closed, onSubmit, onStart, showTi
       started.current = true;
       onStart?.();
     }
-    setAnswers((a) => ({ ...a, [id]: v }));
+    setAnswers((a) => {
+      const next = { ...a, [id]: v };
+      // Changing what the amount is based on after paying asks for payment again, so the charge always matches.
+      const pay = form.fields.find((f) => f.type === 'payment' && f.amountFromFieldId);
+      if (pay && pay.id !== id && next[pay.id] === 'paid' && paymentAmount(pay, next, form.fields) !== paymentAmount(pay, a, form.fields)) next[pay.id] = '';
+      return next;
+    });
     if (errors[id]) setErrors((e) => ({ ...e, [id]: '' }));
   };
 
@@ -100,7 +106,11 @@ export function FormRunner({ form, skin, mode, closed, onSubmit, onStart, showTi
     form.fields.forEach((f) => {
       if (visible.has(f.id) && answers[f.id] !== undefined) kept[f.id] = answers[f.id];
     });
-    const paymentNgn = paymentField && answers[paymentField.id] === 'paid' ? paymentAmount(paymentField, answers) : null;
+    // Calculated totals are worked out here, never typed by the visitor.
+    form.fields.forEach((f) => {
+      if (f.type === 'calculated' && visible.has(f.id)) kept[f.id] = String(calcValue(f, answers, form.fields));
+    });
+    const paymentNgn = paymentField && answers[paymentField.id] === 'paid' ? paymentAmount(paymentField, answers, form.fields) : null;
     if (onSubmit && !onSubmit({ answers: kept, paymentNgn })) return setFailure('Something went wrong. Please try again.');
     if (mode === 'live') bumpVisitor(form.id);
     setDone(true);
@@ -180,7 +190,7 @@ export function FormRunner({ form, skin, mode, closed, onSubmit, onStart, showTi
       }
 
       {step?.fields.map((f) =>
-      <FormFieldInput key={f.id} field={f} value={answers[f.id]} onChange={(v) => set(f.id, v)} error={errors[f.id]} skin={skin} inert={inert} idPrefix={uid} amount={f.type === 'payment' ? paymentAmount(f, answers) : undefined} />
+      <FormFieldInput key={f.id} field={f} value={answers[f.id]} onChange={(v) => set(f.id, v)} error={errors[f.id]} skin={skin} inert={inert} idPrefix={uid} amount={f.type === 'payment' ? paymentAmount(f, answers, form.fields) : f.type === 'calculated' ? calcValue(f, answers, form.fields) : undefined} />
       )}
 
       {/* Spam trap: invisible to people, tempting to bots. */}

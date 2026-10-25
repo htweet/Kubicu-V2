@@ -42,6 +42,41 @@ import { LogoStripBlock } from './LogoStripBlock';
 import { FiguresBlock } from './FiguresBlock';
 import { MediaListBlock } from './MediaListBlock';
 import { ListingsBlock } from './ListingsBlock';
+import { SectionBlock } from './SectionBlock';
+import { ColumnsBlock } from './ColumnsBlock';
+import { TabsBlock } from './TabsBlock';
+import { AnnouncementBlock } from './AnnouncementBlock';
+import { CtaBlock } from './CtaBlock';
+import { QuoteBlock } from './QuoteBlock';
+import { TimelineBlock } from './TimelineBlock';
+import { ComparisonBlock } from './ComparisonBlock';
+import { BeforeAfterBlock } from './BeforeAfterBlock';
+import { TeamBlock } from './TeamBlock';
+import { CredentialsBlock } from './CredentialsBlock';
+import { PressBlock } from './PressBlock';
+import { HoursBlock } from './HoursBlock';
+import { AgendaBlock } from './AgendaBlock';
+import { ContactActionsBlock } from './ContactActionsBlock';
+import { ShareBlock } from './ShareBlock';
+import { AnchorNavBlock } from './AnchorNavBlock';
+import { PoliciesBlock } from './PoliciesBlock';
+import { DeliveryBlock } from './DeliveryBlock';
+import { CarouselBlock } from './CarouselBlock';
+import { BrandHeaderBlock } from './BrandHeaderBlock';
+import { LinkCollectionBlock } from './LinkCollectionBlock';
+import { QrCodeBlock } from './QrCodeBlock';
+import { DocumentBlock } from './DocumentBlock';
+import { EmbedBlock } from './EmbedBlock';
+import { ShopCategoriesBlock } from './ShopCategoriesBlock';
+import { CheckoutButtonBlock } from './CheckoutButtonBlock';
+import { PollBlock } from './PollBlock';
+import { CommunityBlock } from './CommunityBlock';
+import { ReviewSummaryBlock } from './ReviewSummaryBlock';
+import { LanguageSwitchBlock } from './LanguageSwitchBlock';
+import { SmartButtonBlock } from './SmartButtonBlock';
+import { CampaignSpotlightBlock } from './CampaignSpotlightBlock';
+import { RecommendationsBlock } from './RecommendationsBlock';
+import { BackToTopBlock } from './BackToTopBlock';
 
 interface BlockRendererProps {
   block: Block;
@@ -135,6 +170,76 @@ export function BlockRenderer({ block, theme, mode }: BlockRendererProps) {
       return <MediaListBlock block={block} theme={theme} mode={mode} />;
     case 'listings':
       return <ListingsBlock block={block} theme={theme} mode={mode} />;
+    case 'section':
+      return <SectionBlock block={block} theme={theme} mode={mode} />;
+    case 'columns':
+      return <ColumnsBlock block={block} theme={theme} mode={mode} />;
+    case 'tabs':
+      return <TabsBlock block={block} theme={theme} mode={mode} />;
+    case 'announcement':
+      return <AnnouncementBlock block={block} theme={theme} mode={mode} />;
+    case 'cta':
+      return <CtaBlock block={block} theme={theme} mode={mode} />;
+    case 'quote':
+      return <QuoteBlock block={block} theme={theme} mode={mode} />;
+    case 'timeline':
+      return <TimelineBlock block={block} theme={theme} mode={mode} />;
+    case 'comparison':
+      return <ComparisonBlock block={block} theme={theme} mode={mode} />;
+    case 'beforeAfter':
+      return <BeforeAfterBlock block={block} theme={theme} mode={mode} />;
+    case 'team':
+      return <TeamBlock block={block} theme={theme} mode={mode} />;
+    case 'credentials':
+      return <CredentialsBlock block={block} theme={theme} mode={mode} />;
+    case 'press':
+      return <PressBlock block={block} theme={theme} mode={mode} />;
+    case 'hours':
+      return <HoursBlock block={block} theme={theme} mode={mode} />;
+    case 'agenda':
+      return <AgendaBlock block={block} theme={theme} mode={mode} />;
+    case 'contactActions':
+      return <ContactActionsBlock block={block} theme={theme} mode={mode} />;
+    case 'share':
+      return <ShareBlock block={block} theme={theme} mode={mode} />;
+    case 'anchorNav':
+      return <AnchorNavBlock block={block} theme={theme} mode={mode} />;
+    case 'policies':
+      return <PoliciesBlock block={block} theme={theme} mode={mode} />;
+    case 'delivery':
+      return <DeliveryBlock block={block} theme={theme} mode={mode} />;
+    case 'carousel':
+      return <CarouselBlock block={block} theme={theme} mode={mode} />;
+    case 'brandHeader':
+      return <BrandHeaderBlock block={block} theme={theme} mode={mode} />;
+    case 'linkCollection':
+      return <LinkCollectionBlock block={block} theme={theme} mode={mode} />;
+    case 'qrCode':
+      return <QrCodeBlock block={block} theme={theme} mode={mode} />;
+    case 'document':
+      return <DocumentBlock block={block} theme={theme} mode={mode} />;
+    case 'embed':
+      return <EmbedBlock block={block} theme={theme} mode={mode} />;
+    case 'shopCategories':
+      return <ShopCategoriesBlock block={block} theme={theme} mode={mode} />;
+    case 'checkoutButton':
+      return <CheckoutButtonBlock block={block} theme={theme} mode={mode} />;
+    case 'poll':
+      return <PollBlock block={block} theme={theme} mode={mode} />;
+    case 'community':
+      return <CommunityBlock block={block} theme={theme} mode={mode} />;
+    case 'reviewSummary':
+      return <ReviewSummaryBlock block={block} theme={theme} mode={mode} />;
+    case 'languageSwitch':
+      return <LanguageSwitchBlock block={block} theme={theme} mode={mode} />;
+    case 'smartButton':
+      return <SmartButtonBlock block={block} theme={theme} mode={mode} />;
+    case 'campaignSpotlight':
+      return <CampaignSpotlightBlock block={block} theme={theme} mode={mode} />;
+    case 'recommendations':
+      return <RecommendationsBlock block={block} theme={theme} mode={mode} />;
+    case 'backToTop':
+      return <BackToTopBlock block={block} theme={theme} mode={mode} />;
     default:
       return null;
   }

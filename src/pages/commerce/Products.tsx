@@ -133,13 +133,14 @@ export function Products() {
       }
 
       {physical.length === 0 ?
-      <div className="mt-8 rounded-lg border border-line bg-raised">
-          <EmptyState
-          icon={ShoppingBagIcon}
-          title="No products yet"
-          description="Add your first product, or import a list from a spreadsheet."
-          action={
-          <div className="flex flex-wrap justify-center gap-2">
+      <EmptyState
+        framed
+        className="mt-8"
+        icon={ShoppingBagIcon}
+        title="No products yet"
+        description="Add your first product, or import a list from a spreadsheet."
+        action={
+        <div className="flex flex-wrap justify-center gap-2">
                 <Button leadingIcon={PlusIcon} onClick={() => open(null)} disabled={atLimit}>
                   Add product
                 </Button>
@@ -147,9 +148,8 @@ export function Products() {
                   Import CSV
                 </Button>
               </div>
-          } />
-        
-        </div> :
+        } /> :
+
 
       <>
           <div className="mt-6 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">

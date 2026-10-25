@@ -2,9 +2,10 @@ import { useCallback } from 'react';
 import { toast } from 'sonner';
 import { useEditor } from '../contexts/EditorContext';
 import { blockName } from '../utils/blocks';
+import { childrenOf, isContainer } from '../utils/containers';
 import { useCoBrandGuard } from './useCoBrandGuard';
 
-/** Deletes a block and offers a one-tap restore that puts it back exactly where it was. */
+/** Deletes a block and offers a one-tap restore that puts it back exactly where it was. Containers go with their contents (D167). */
 export function useRemoveBlock() {
   const { state, actions } = useEditor();
   const { canTouch } = useCoBrandGuard();
@@ -21,7 +22,14 @@ export function useRemoveBlock() {
         });
         return;
       }
+      const kids = isContainer(block) ? childrenOf(state.draft.blocks, id) : [];
       actions.removeBlock(id);
+      if (kids.length) {
+        toast(`${blockName(block)} and ${kids.length} block${kids.length === 1 ? '' : 's'} inside deleted`, {
+          action: { label: 'Undo', onClick: () => actions.restoreBlocks([block, ...kids], index) }
+        });
+        return;
+      }
       toast(`${blockName(block)} deleted`, {
         action: { label: 'Undo', onClick: () => actions.restoreBlock(block, index) }
       });

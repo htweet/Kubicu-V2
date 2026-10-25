@@ -1,6 +1,7 @@
 import type { Block, PageDocument, PageTheme } from '../types/page';
 import type { WorkspacePlan } from '../types/plan';
 import { CONTRAST_MIN_PUBLISH, CONTRAST_TARGET, contrastRatio, formatRatio } from './contrast';
+import { resolveBackground } from './pageBackground';
 import { contrastCopy, suggestContrastFix, type ContrastKey } from './contrastFixes';
 import { parseEmbed } from './embeds';
 import { formatNgn } from './format';
@@ -368,7 +369,8 @@ export interface ThemeContrast {
 export function themeContrast(theme: PageTheme): ThemeContrast {
   // Signature themes (D161): text is checked against the worst colour the atmosphere can put behind it,
   // and button text against both ends of a gradient action — not just the flat colours.
-  const grounds = [theme.background, ...(theme.material?.backdropStops ?? [])];
+  // D182: an owner's gradient adds each of its colours; an uploaded image adds its average tone under the veil.
+  const grounds = [theme.background, ...resolveBackground(theme).stops];
   const worst = (fg: string) => Math.min(...grounds.map((g) => contrastRatio(fg, g)));
   const m = theme.material;
   const actionStops = m && (m.buttonFinish === 'gradient' || m.buttonFinish === 'gloss') ? [theme.accent, m.secondary ?? theme.accent] : [theme.accent];

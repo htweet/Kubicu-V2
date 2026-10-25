@@ -3,7 +3,7 @@ import type { WorkspacePlan } from './plan';
 import type { CurrencyCode } from '../utils/currency';
 
 /** What a space is for (D50). Every workspace has exactly one main space. */
-export type SpaceKind = 'main' | 'campaign' | 'dealroom';
+export type SpaceKind = 'main' | 'campaign' | 'dealroom' | 'event' | 'fundraiser' | 'popup' | 'booking' | 'members';
 
 /** One public space inside a workspace — its own link, theme, blocks and publishing. */
 export interface Space {
@@ -27,6 +27,10 @@ export interface Workspace {
   spaces?: Space[];
   /** Demo workspace only: the sample campaign and DealRoom have been added once. */
   sampleSpacesSeeded?: boolean;
+  /** Demo workspace only: the sample Event and Fundraiser spaces have been added once (D179). */
+  sampleSpaces2Seeded?: boolean;
+  /** Demo workspace only: the latest round of sample spaces added (3 = Pop-up shop, D183; 4 = Booking page and Members area, D186). */
+  sampleSpacesRound?: number;
   createdAt: string;
   /** One currency for everything this workspace sells (D136). Missing = naira. */
   currency?: CurrencyCode;

@@ -71,7 +71,20 @@ export function HeroBlock({ block, theme, mode }: BlockProps<'hero'>) {
                 {c.title}
               </h1>
               {c.subtitle && <p className="mt-6 max-w-[38ch] text-[17px] leading-relaxed md:text-[20px]" style={{ color: 'rgba(255,255,255,0.92)' }}>{c.subtitle}</p>}
-              <Actions c={c} theme={{ ...theme, accent: '#FFFFFF', accentText: '#111111', text: '#FFFFFF', surface: 'transparent', buttonStyle: 'outline' }} mode={mode} />
+              {/* Over a photo the action is always white-on-ink; a Signature theme's gradient or glow would fail contrast here (D165). */}
+              <Actions
+                c={c}
+                theme={{
+                  ...theme,
+                  accent: '#FFFFFF',
+                  accentText: '#111111',
+                  text: '#FFFFFF',
+                  surface: 'transparent',
+                  buttonStyle: 'outline',
+                  material: theme.material ? { ...theme.material, buttonFinish: 'solid', buttonGradient: undefined, border: undefined, sheen: false } : undefined
+                }}
+                mode={mode} />
+              
               {c.meta && <p className="mt-6 text-[14px]" style={{ color: 'rgba(255,255,255,0.86)' }}>{c.meta}</p>}
             </div>
           </div>

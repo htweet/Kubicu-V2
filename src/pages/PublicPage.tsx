@@ -47,7 +47,14 @@ import type { CampaignPhase, PageDocument, PageTheme } from '../types/page';
 import { LayoutRow } from '../components/blocks/LayoutRow';
 import { StickyActionBar } from '../components/blocks/StickyActionBar';
 import { layoutRows, pageContentWidth, sectionTheme } from '../utils/pageLayout';
-import { blockInPhase, campaignPhase, phaseLabels, phaseOrder } from '../utils/campaign';
+import { BlockChildrenProvider, type BlockChildrenValue } from '../contexts/BlockChildrenContext';
+import { blockInPhase, phaseOrder } from '../utils/campaign';
+import { docPhase, phaseCopy } from '../utils/eventSpace';
+import { EventSpaceNotice } from '../components/eventspace/EventSpaceNotice';
+import { PopupPanel } from '../components/popup/PopupPanel';
+import { BookingPagePanel } from '../components/bookingpage/BookingPagePanel';
+import { popupCheckout } from '../utils/popup';
+import { FundraiserPanel } from '../components/fundraiser/FundraiserPanel';
 import { cn } from '../utils/cn';
 import type { PlanInfo } from '../data/plans';
 import { TrackProvider, createTracker, useTrack } from '../contexts/TrackContext';
@@ -223,6 +230,8 @@ export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
   const sf = catalog?.storefront;
   const nav: NavItem[] = [...navItems(doc), ...(shopOn && sf?.showInMenu ? [{ id: SHOP_NAV_ID, label: sf.menuLabel || 'Shop', path: STOREFRONT_PATH }] : [])];
   const roomCheckout = doc.dealRoom && catalog ? dealRoomCheckout(doc.dealRoom, handle, catalog) : undefined;
+  // Pop-up shops (D183): pickup at the stall for a chosen session.
+  const stallCheckout = doc.popup && catalog ? popupCheckout(doc.popup, handle, catalog) : undefined;
   const navHref = (item: NavItem) => `${pageHref(handle, item.path)}${draftQs}`;
   const productHref = (id: string) => {
     const p = readableProducts ? catalog?.products.find((x) => x.id === id) : undefined;
@@ -230,13 +239,16 @@ export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
   };
   // Campaigns show the version for the current phase; draft previews can pick one (D52).
   const previewPhase = params.get('phase');
-  const phase: CampaignPhase | null = doc.campaign ?
+  // Event spaces (D178) follow the linked event's own times; the same phase field and preview links apply.
+  const livePhase = docPhase(doc, catalog);
+  const phase: CampaignPhase | null = livePhase ?
   isDraft && (previewPhase === 'before' || previewPhase === 'live' || previewPhase === 'ended') ?
   previewPhase :
-  campaignPhase(doc.campaign) :
+  livePhase :
   null;
+  const phaseNames = phaseCopy(doc).labels;
   const campaignCode = doc.campaign?.discountId ? catalog?.discounts.find((d) => d.id === doc.campaign?.discountId)?.code || undefined : undefined;
-  const hasMemberContent = memberAreas([{ id: null, title: '', blocks: doc.blocks }, ...sitePages(doc).map((p) => ({ id: p.id, title: p.title, blocks: p.blocks, rule: p.membersOnly ?? null }))]).length > 0;
+  const hasMemberContent = !!doc.membersArea || memberAreas([{ id: null, title: '', blocks: doc.blocks }, ...sitePages(doc).map((p) => ({ id: p.id, title: p.title, blocks: p.blocks, rule: p.membersOnly ?? null }))]).length > 0;
   const memberPreview: MembersValue['preview'] = isDraft ? params.get('member') === '1' ? 'member' : 'visitor' : null;
   const membersValue: MembersValue = {
     handle,
@@ -293,7 +305,7 @@ export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
               </nav>
             }
             {phase &&
-            <nav aria-label="Preview campaign phase" className="hidden items-center gap-0.5 rounded-md border border-line p-0.5 sm:flex">
+            <nav aria-label="Preview phase" className="hidden items-center gap-0.5 rounded-md border border-line p-0.5 sm:flex">
                 {phaseOrder.map((p) =>
               <Link
                 key={p}
@@ -302,7 +314,7 @@ export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
                 aria-current={p === phase ? 'true' : undefined}
                 className={cn('rounded-sm px-2.5 py-1 text-caption font-medium', p === phase ? 'bg-sunken text-fg' : 'text-fg-muted hover:text-fg')}>
                 
-                    {phaseLabels[p]}
+                    {phaseNames[p]}
                   </Link>
               )}
               </nav>
@@ -353,16 +365,16 @@ export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
                             
                     <span id="page-content" tabIndex={-1} className="sr-only">Page content</span>
                     {shopProduct ?
-                            <ProductDetailView theme={doc.theme} data={catalog} product={shopProduct} ordering={storefrontOrdering(catalog, plan.id)} whatsappPhone={catalog.storefront.whatsappPhone || sellerPhone(doc)} shopHref={shopHref} productHref={productHref} /> :
+                            <ProductDetailView theme={doc.theme} data={catalog} product={shopProduct} ordering={storefrontOrdering(catalog, plan.id)} whatsappPhone={catalog.storefront.whatsappPhone || sellerPhone(doc)} shopHref={shopHref} productHref={productHref} shopKey={`${resolved.workspaceId ?? 'example'}:${handle}`} /> :
 
-                            <StorefrontView theme={doc.theme} data={catalog} productHref={productHref} />
+                            <StorefrontView theme={doc.theme} data={catalog} productHref={productHref} ordering={storefrontOrdering(catalog, plan.id)} whatsappPhone={catalog.storefront.whatsappPhone || sellerPhone(doc)} shopKey={`${resolved.workspaceId ?? 'example'}:${handle}`} />
                             }
                   </PageSurface>
                 </main> :
 
                         <PageBody site={doc} pageId={pageId} plan={plan} isDraft={isDraft} phase={phase} nav={nav} navHref={navHref} handle={handle} />
                         }
-              {catalog && <CheckoutSheet theme={doc.theme} commerce={commerce} ownerPlan={plan.id} handle={handle} defaultCode={phase === 'live' ? campaignCode : undefined} dealRoom={roomCheckout} workspaceId={resolved && !resolved.example && !isDraft ? resolved.workspaceId : null} businessName={doc.title} />}
+              {catalog && <CheckoutSheet theme={doc.theme} commerce={commerce} ownerPlan={plan.id} handle={handle} defaultCode={phase === 'live' ? campaignCode : undefined} dealRoom={roomCheckout} popup={stallCheckout} workspaceId={resolved && !resolved.example && !isDraft ? resolved.workspaceId : null} businessName={doc.title} />}
               <CartButton theme={doc.theme} />
               {resolved?.workspaceId && !resolved.example && !isDraft && <ConsentStrip workspaceId={resolved.workspaceId} theme={doc.theme} />}
             </CartProvider>
@@ -444,10 +456,13 @@ function PageBody({
   const visible = doc.blocks.filter((b) => (isDraft ? !b.visibility.hidden : isLiveNow(b.visibility)) && (!phase || blockInPhase(b, phase)) && showsForSource(b.visibility, source) && inArm(b));
   // Members-only (D110): a members-only page shows one sign-in card; a section hides the blocks below it.
   const members = useMembers();
-  const pageRule = pageId ? findPage(site, pageId)?.membersOnly ?? null : null;
+  // Members area spaces (D185): the whole space sits behind one rule, with its own welcome card.
+  const area = site.membersArea && !pageId ? site.membersArea : null;
+  const pageRule = area ? area.rule : pageId ? findPage(site, pageId)?.membersOnly ?? null : null;
   const pageAccess = pageRule && members ? members.check(pageRule) : { ok: true };
   const pageLocked = !!pageRule && !pageAccess.ok;
-  const renderList = buildRenderList(visible, members);
+  // Containers (D167): page rows are the top-level blocks; each container draws the visible blocks inside it.
+  const renderList = buildRenderList(visible.filter((b) => !b.parentId), members);
   // QR codes and links can open onto one block (D72): scroll to it, mark it briefly, and open booking straight away.
   const anchor = params.get('b');
   const [marked, setMarked] = useState<string | null>(null);
@@ -498,6 +513,10 @@ function PageBody({
       <BlockRenderer block={block} theme={theme} mode="live" />
     </div>;
 
+  const childCtx: BlockChildrenValue = {
+    childrenOf: (id) => visible.filter((b) => b.parentId === id),
+    render: (child, theme) => renderBlock(child, theme)
+  };
   const rows = layoutRows(
     renderList,
     (item) => item.kind === 'block' ? item.block : null,
@@ -522,6 +541,15 @@ function PageBody({
         }>
         
         <span id="page-content" tabIndex={-1} className="sr-only">Page content</span>
+        {site.eventSpace && !pageId && column(<EventSpaceNotice eventId={site.eventSpace.eventId} theme={doc.theme} />)}
+        {site.popup && !pageId && column(<PopupPanel popup={site.popup} handle={handle} theme={doc.theme} mode="live" />)}
+        {site.bookingPage && !pageId && column(<BookingPagePanel settings={site.bookingPage} pageName={site.title} theme={doc.theme} mode="live" />)}
+        {site.fundraiser && !pageId &&
+        column(
+          <div className="mb-4">
+              <FundraiserPanel f={site.fundraiser} handle={handle} theme={doc.theme} mode="live" workspaceId={opsCtx.workspaceId} />
+            </div>
+        )}
         {site.dealRoom && !pageId &&
         column(
           <div className="mb-4">
@@ -532,17 +560,17 @@ function PageBody({
           <MembersLocked
             theme={doc.theme}
             rule={pageRule}
-            id={`page-${pageId}`}
+            id={area ? `area-${handle}` : `page-${pageId}`}
             kind="page"
-            title={`${findPage(site, pageId)?.title || 'This page'} is for members`}
-            teaser={pageRule.teaser}
-            joinLabel="Become a member"
+            title={area ? area.title : `${findPage(site, pageId)?.title || 'This page'} is for members`}
+            teaser={area ? area.teaser : pageRule.teaser}
+            joinLabel={area ? area.joinLabel : 'Become a member'}
             hiddenCount={0}
             access={pageAccess} />
 
         ) :
-        <>
-            {pageRule && members && column(<div className="mb-3"><MembersOpenBar theme={doc.theme} title="Members-only page" id={`page-${pageId}`} access={pageAccess} /></div>)}
+        <BlockChildrenProvider value={childCtx}>
+            {pageRule && members && column(<div className="mb-3"><MembersOpenBar theme={doc.theme} title={area ? site.title || 'Members area' : 'Members-only page'} id={area ? `area-${handle}` : `page-${pageId}`} access={pageAccess} /></div>)}
             {rows.map((row) => {
             const themeFor = sectionTheme(doc.theme, row.background);
             const nodes = row.items.map((item) => {
@@ -561,12 +589,12 @@ function PageBody({
               return renderBlock(item.block, themeFor);
             });
             return (
-              <LayoutRow key={row.key} theme={doc.theme} columnPx={columnPx} width={row.width} background={row.background} ratio={row.ratio} firstSecondOnPhone={row.firstSecondOnPhone}>
+              <LayoutRow key={row.key} theme={doc.theme} columnPx={columnPx} density={site.layout?.density} width={row.width} background={row.background} ratio={row.ratio} firstSecondOnPhone={row.firstSecondOnPhone}>
                   {nodes}
                 </LayoutRow>);
 
           })}
-          </>
+          </BlockChildrenProvider>
         }
       </PageSurface>
       {actionBar && <StickyActionBar theme={doc.theme} label={actionBar.label} blockId={actionBar.blockId} url={actionBar.url} />}

@@ -29,6 +29,7 @@ import { formatNgn } from '../../utils/format';
 import { isNaira } from '../../utils/currency';
 import { UssdPay } from './UssdPay';
 import { stampTransfer, transferDetails } from '../../utils/commerce/bankTransfer';
+import { reservedForStalls, type PopupCheckout } from '../../utils/popup';
 
 type Step = 'cart' | 'details' | 'delivery' | 'review' | 'paying' | 'failed';
 
@@ -52,9 +53,11 @@ interface CheckoutSheetProps {
   /** For the "Bank transfer payments" extension (D148). */
   workspaceId?: string | null;
   businessName?: string;
+  /** Pop-up shop (D183): pickup only at the stall, for a chosen session; optional pay at the stall. */
+  popup?: PopupCheckout;
 }
 
-export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode, dealRoom, workspaceId, businessName = '' }: CheckoutSheetProps) {
+export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode, dealRoom, workspaceId, businessName = '', popup }: CheckoutSheetProps) {
   const { t: tr } = useT();
   const cart = useCart();
   const navigate = useNavigate();
@@ -82,6 +85,14 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
   useEffect(() => {
     if (step !== 'review') setUssdOpen(false);
   }, [step]);
+  // Pop-up shop pickup (D183).
+  const [sessionId, setSessionId] = useState('');
+  const [stallChoice, setStallChoice] = useState(false);
+  const atStall = !!popup && (popup.payment === 'stall' || popup.payment === 'both' && stallChoice);
+  useEffect(() => {
+    if (popup?.sessions.length === 1) setSessionId(popup.sessions[0].id);
+    if (popup) setMethod('pickup');
+  }, [popup?.sessions.length, popup?.sessions[0]?.id, !!popup]);
 
   const data = commerce.data;
   const open = !!cart?.open;
@@ -114,21 +125,26 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
   const lines = useMemo(
     () =>
     (cart?.lines ?? []
-    // A DealRoom sells only its own product.
-    ).filter((l) => !dealRoom || l.productId === dealRoom.productId).
+    // A DealRoom sells only its own product; a pop-up only its chosen products.
+    ).filter((l) => (!dealRoom || l.productId === dealRoom.productId) && (!popup || popup.productIds.includes(l.productId))).
     map((l) => {
       const product = data?.products.find((p) => p.id === l.productId);
       const variant = product?.variants.find((v) => v.id === l.variantId);
       const roomPrice = dealRoom && dealRoom.priceNgn !== null ? dealRoom.priceNgn : null;
       const price = product && variant ? roomPrice ?? variantPrice(product, variant) : null;
-      const ticketIssue = product?.kind === 'ticket' ? ticketLineIssue(data, l, Date.now(), holder) : '';
+      const stallLeft = popup?.left[l.productId] ?? null;
+      // Units a pop-up has set aside can't be sold elsewhere (D191); the pop-up's own hold never blocks it.
+      const reserved = product?.kind === 'physical' && product.trackStock ? reservedForStalls(data, product.id, popup?.handle) : { qty: 0, labels: [] as string[] };
+      const unreserved = product && variant && reserved.qty > 0 ? Math.min(variant.stock, Math.max(0, product.variants.reduce((s, v) => s + Math.max(0, v.stock), 0) - reserved.qty)) : null;
+      const asideIssue = unreserved !== null && l.qty > unreserved ? unreserved === 0 ? `Set aside for ${reserved.labels[0]}` : `Only ${unreserved} available — the rest is set aside for ${reserved.labels[0]}` : '';
+      const ticketIssue = product?.kind === 'ticket' ? ticketLineIssue(data, l, Date.now(), holder) : stallLeft !== null && l.qty > stallLeft ? stallLeft === 0 ? 'Sold out at the stall' : `Only ${stallLeft} left at the stall` : asideIssue;
       const ok = !!product && !!variant && price !== null && canSell(product, variant) && !ticketIssue && (product.kind === 'digital' || !product.trackStock || variant.stock >= l.qty);
       const ev = product?.kind === 'ticket' ? findEvent(data, product.eventId) : undefined;
       const tt = ev?.ticketTypes.find((t) => t.id === l.variantId);
       const seatText = describeSeats(ev, l.seats);
       return { ...l, product, variant, price, ok, ticketIssue, seatText, maxQty: tt ? tt.maxPerOrder : 20 };
     }),
-    [cart?.lines, data, dealRoom, holder]
+    [cart?.lines, data, dealRoom, holder, popup]
   );
 
   if (!cart || !data) return null;
@@ -189,9 +205,11 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
     bundle: okProducts.some((p) => !!p?.bundle)
   });
   const instOption = instalmentCheck(data, { products: okProducts, total, balanceLater, dealRoom: !!dealRoom });
-  const payWith: PayWith = payWithChoice === 'pod' && podOption.ok ? 'pod' : payWithChoice === 'instalments' && instOption.ok ? 'instalments' : 'now';
+  // Pop-ups take payment now or at the stall only — no pay on delivery or instalments.
+  const payWith: PayWith = popup ? 'now' : payWithChoice === 'pod' && podOption.ok ? 'pod' : payWithChoice === 'instalments' && instOption.ok ? 'instalments' : 'now';
   const firstPart = payWith === 'instalments' && instOption.ok ? schedule(total, instOption.plan)[0].amountNgn : 0;
-  const payNow = payWith === 'pod' ? 0 : payWith === 'instalments' ? firstPart : total - balanceLater;
+  const payNow = atStall || payWith === 'pod' ? 0 : payWith === 'instalments' ? firstPart : total - balanceLater;
+  const chosenSession = popup?.sessions.find((s) => s.id === sessionId);
   const leadDays = lines.reduce((m, l) => l.ok && isMadeToOrder(l.product) ? Math.max(m, l.product.madeToOrder.leadDays) : m, 0);
   const discountRow =
   resolution.applied && (discount > 0 || resolution.applied.discount.value.type === 'free_delivery') ?
@@ -209,7 +227,15 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
     phone: !isValidPhone(customer.phone) ? 'Enter a phone number, e.g. +234 803 123 4567' : '',
     email: (!physical || customer.email.trim()) && !isValidEmail(customer.email) ? ticketLines.length ? 'Enter an email for your receipt and tickets' : 'Enter an email for your receipt and download link' : ''
   };
-  const deliveryError = !method ? 'Choose how you’ll get your order' : method !== 'pickup' && !address.trim() ? 'Enter the delivery address' : '';
+  const deliveryError = popup ?
+  !chosenSession ?
+  'Choose when you’ll collect' :
+  '' :
+  !method ?
+  'Choose how you’ll get your order' :
+  method !== 'pickup' && !address.trim() ?
+  'Enter the delivery address' :
+  '';
 
   const close = () => {
     cart.setOpen(false);
@@ -222,6 +248,8 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
     const outcome = payNow > 0 ? override ?? chosenOutcome : 'success';
     const fulfilment: OrderFulfilment = !physical ?
     { method: ticketsOnly ? 'tickets' : 'digital' } :
+    popup ?
+    { method: 'pickup', address: [popup.venue, popup.address].filter((s) => s.trim()).join(', ') } :
     method === 'pickup' ?
     { method: 'pickup', address: f.pickupAddress } :
     { method: 'delivery', zoneId: zone?.id, zoneName: zone?.name, address: address.trim(), eta: zone?.eta };
@@ -242,7 +270,9 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
             referredBy: dealRoom ? params.get('ref') ?? undefined : undefined,
             guestNames,
             holder,
-            payWith
+            payWith,
+            popup: popup && chosenSession ? { sessionId: chosenSession.id, sessionLabel: chosenSession.label, payAtStall: atStall } : undefined,
+            stallLeft: popup?.left
           });
           if (!result.ok) return d;
           // Creator Collaboration (D103): remember which partner's link the buyer came from.
@@ -548,6 +578,89 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
 
     }
 
+    if (step === 'delivery' && popup) {
+      return (
+        <div className="flex flex-col gap-4">
+          <CheckoutHeading theme={theme} sub={[popup.venue, popup.address].filter((s) => s.trim()).join(' · ')}>
+            {tr('When will you collect?')}
+          </CheckoutHeading>
+          <p className="text-[13px] leading-snug" style={muted}>
+            {tr('Pickup only — collect at the stall during the time you choose. Bring your order number.')}
+          </p>
+          {popup.sessions.length === 0 ?
+          <p className="rounded-md p-3 text-[14px]" style={cardStyle(theme)} role="alert">
+              {tr('This pop-up has no more sessions, so it isn’t taking orders.')}
+            </p> :
+
+          <div role="radiogroup" aria-label={tr('Pickup times')} className="flex flex-col gap-2">
+              {popup.sessions.map((s) => {
+              const active = sessionId === s.id;
+              return (
+                <button
+                  key={s.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={active}
+                  onClick={() => setSessionId(s.id)}
+                  className="flex items-center justify-between gap-3 p-4 text-left text-[15px] font-semibold"
+                  style={{ ...cardStyle(theme), border: `1.5px solid ${active ? theme.text : mix(theme.text, 12)}` }}>
+                  
+                    {s.when}
+                    <span className="shrink-0 text-[14px] font-semibold tabular-nums">{tr('Free')}</span>
+                  </button>);
+
+            })}
+            </div>
+          }
+          {popup.payment === 'both' &&
+          <fieldset className="flex flex-col gap-2">
+              <legend className="mb-1 text-[14px] font-semibold">{tr('When do you want to pay?')}</legend>
+              {(
+            [
+            [false, tr('Pay now'), tr('Quicker at the stall — just collect.')],
+            [true, tr('Pay at the stall'), tr('Pay when you collect. Your items are kept for you during your session.')]] as
+            const).
+            map(([v, label, hint]) =>
+            <label key={String(v)} className="flex cursor-pointer items-start gap-3 p-3" style={{ ...cardStyle(theme), border: `1.5px solid ${stallChoice === v ? theme.text : mix(theme.text, 12)}` }}>
+                  <input type="radio" name="pay-when" checked={stallChoice === v} onChange={() => setStallChoice(v)} className="mt-1" style={{ accentColor: theme.text }} />
+                  <span>
+                    <span className="block text-[14px] font-semibold">{label}</span>
+                    <span className="block text-[12px]" style={muted}>
+                      {hint}
+                    </span>
+                  </span>
+                </label>
+            )}
+            </fieldset>
+          }
+          {popup.payment === 'stall' &&
+          <p className="rounded-md px-3 py-2.5 text-[13px] leading-snug" style={{ background: mix(theme.text, 6) }} role="note">
+              {tr('You pay at the stall when you collect. Nothing is charged now.')}
+            </p>
+          }
+          {tried && deliveryError &&
+          <p className="text-[12.5px] font-medium" role="alert">
+              {tr(deliveryError)}
+            </p>
+          }
+          <SheetActions theme={theme}>
+            <PrimaryButton
+              theme={theme}
+              disabled={popup.sessions.length === 0}
+              onClick={() => {
+                setTried(true);
+                if (deliveryError) return;
+                setTried(false);
+                setStep('review');
+              }}>
+              
+              Continue
+            </PrimaryButton>
+          </SheetActions>
+        </div>);
+
+    }
+
     if (step === 'delivery') {
       const options = [
       ...(f.pickupEnabled ? [{ id: 'pickup', title: tr('Pickup'), detail: [f.pickupAddress, f.pickupHours].filter(Boolean).join(' · '), fee: 0 }] : []),
@@ -662,8 +775,8 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
           </div>
           {discountRow}
           {physical &&
-          <div className="flex justify-between">
-              <dt style={muted}>{method === 'pickup' ? tr('Pickup') : `${tr('Delivery')} · ${zone?.name ?? ''}`}</dt>
+          <div className="flex justify-between gap-3">
+              <dt style={muted}>{popup ? `${tr('Pickup')} · ${chosenSession?.when ?? ''}` : method === 'pickup' ? tr('Pickup') : `${tr('Delivery')} · ${zone?.name ?? ''}`}</dt>
               <dd className="tabular-nums">{deliveryFee === 0 ? tr('Free') : formatNgn(deliveryFee)}</dd>
             </div>
           }
@@ -691,7 +804,12 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
           </p>
         </dl>
         <DiscountCodeField theme={theme} code={code} onApply={setCode} resolution={resolution} />
-        <PayWithChooser
+        {atStall &&
+        <p className="rounded-md px-3 py-2.5 text-[13px] font-medium leading-snug" style={{ background: mix(theme.text, 6) }} role="note">
+            {tr('Pay {amount} at the stall when you collect. Nothing is charged now.', { amount: formatNgn(total) })}
+          </p>
+        }
+        {!popup && <PayWithChooser
           theme={theme}
           value={payWith}
           onChange={(v) => {
@@ -704,8 +822,8 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
           instalments={instOption}
           agreed={agreed}
           onAgree={setAgreed} />
-        
-        {payOptions.length > 1 &&
+        }
+        {payOptions.length > 1 && !atStall &&
         <fieldset className="flex flex-col gap-2">
             <legend className="mb-1 text-[14px] font-semibold">{tr('Pay with')}</legend>
             <div className={payOptions.length === 3 ? 'grid grid-cols-1 gap-2 min-[400px]:grid-cols-3' : 'grid grid-cols-2 gap-2'}>
@@ -778,6 +896,8 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
             tr('Get a USSD code for {amount}', { amount: formatNgn(payNow) }) :
             byTransfer ?
             tr('Place order — pay {amount} by transfer', { amount: formatNgn(payNow) }) :
+            atStall ?
+            tr('Place order — pay {amount} at the stall', { amount: formatNgn(total) }) :
             payWith === 'pod' ?
             tr('Place order — pay {amount} on delivery', { amount: formatNgn(total) }) :
             payWith === 'instalments' ?

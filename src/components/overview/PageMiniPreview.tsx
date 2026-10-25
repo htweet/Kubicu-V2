@@ -2,7 +2,9 @@ import React from 'react';
 import type { PageDocument } from '../../types/page';
 import { PageSurface } from '../blocks/PageSurface';
 import { PageLayoutView } from '../blocks/PageLayoutView';
-import { blockInPhase, campaignPhase } from '../../utils/campaign';
+import { blockInPhase } from '../../utils/campaign';
+import { docPhase } from '../../utils/eventSpace';
+import { useOptionalCommerce } from '../../contexts/CommerceContext';
 
 const WIDTH = 390;
 
@@ -14,8 +16,8 @@ interface PageMiniPreviewProps {
 
 /** A scaled, non-interactive render of a page using the real block renderers, in its phone arrangement. */
 export function PageMiniPreview({ doc, scale = 0.52, height = 420 }: PageMiniPreviewProps) {
-  // Campaigns preview the version visitors see right now (D52).
-  const phase = doc.campaign ? campaignPhase(doc.campaign) : null;
+  // Campaigns and Event spaces preview the version visitors see right now (D52, D178).
+  const phase = docPhase(doc, useOptionalCommerce()?.data ?? null);
   const visible = doc.blocks.filter((b) => !b.visibility.hidden && (!phase || blockInPhase(b, phase)));
   return (
     <div

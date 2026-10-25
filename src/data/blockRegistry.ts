@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
-import { LockKeyholeIcon, ShieldCheckIcon as TrustShieldIcon } from 'lucide-react';
+import { LockKeyholeIcon, ShieldCheckIcon as TrustShieldIcon, BotMessageSquareIcon, MicIcon } from 'lucide-react';
 import {
   CircleUserRoundIcon,
   HeadingIcon,
@@ -40,12 +40,17 @@ import {
   AwardIcon,
   BarChart3Icon,
   TvIcon,
-  HomeIcon } from
+  HomeIcon,
+  RectangleHorizontalIcon,
+  ColumnsIcon,
+  AppWindowIcon } from
 'lucide-react';
-import type { BlockContentMap, BlockType } from '../types/page';
+import type { BlockContentMap, BlockLayout, BlockType } from '../types/page';
 import type { WorkspacePlan } from '../types/plan';
 import { uid } from '../utils/id';
 import { defaultHours } from '../utils/openHours';
+import { storyBlockDefinitions, storyBlockOrder } from './blockRegistryStory';
+import { round2BlockDefinitions, round2BlockOrder } from './blockRegistryRound2';
 
 export type BlockCategory = 'Foundation' | 'Showcase' | 'Conversion' | 'Commerce';
 
@@ -63,6 +68,8 @@ export interface BlockDefinition<K extends BlockType = BlockType> {
   minPlan?: WorkspacePlan;
   /** Offered in the library only while this KUBICU app is installed (D87). */
   requiresApp?: string;
+  /** Layout a new block starts with, e.g. Columns start Wide (D167). */
+  defaultLayout?: Partial<BlockLayout>;
   defaults: () => BlockContentMap[K];
 }
 
@@ -713,7 +720,49 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
       ctaLabel: 'Enquire',
       items: [{ id: uid('ls'), title: 'Your first listing', imageUrl: '', imageAlt: '', price: '', facts: '', location: '', url: '', example: true }]
     })
-  }
+  },
+  /* Containers (D167) */
+  section: {
+    type: 'section',
+    name: 'Section',
+    description: 'Group up to 4 blocks under one heading, width and background.',
+    category: 'Showcase',
+    icon: RectangleHorizontalIcon,
+    keywords: ['section', 'group', 'container', 'wrapper', 'band'],
+    defaultAlign: 'left',
+    supportsEmphasis: false,
+    clickable: false,
+    defaults: () => ({ heading: '', intro: '', align: 'left' })
+  },
+  columns: {
+    type: 'columns',
+    name: 'Columns',
+    description: 'Put 2–4 blocks side by side. They stack on phones.',
+    category: 'Showcase',
+    icon: ColumnsIcon,
+    keywords: ['columns', 'side by side', 'grid', 'row', 'split'],
+    defaultAlign: 'left',
+    supportsEmphasis: false,
+    clickable: false,
+    minPlan: 'creator',
+    defaultLayout: { width: 'wide' },
+    defaults: () => ({ ratio: 'equal', gap: 'normal', valign: 'top', phoneReverse: false })
+  },
+  tabs: {
+    type: 'tabs',
+    name: 'Tabs',
+    description: 'Switch between up to 4 blocks. Becomes an accordion on phones.',
+    category: 'Showcase',
+    icon: AppWindowIcon,
+    keywords: ['tabs', 'switcher', 'panels', 'toggle'],
+    defaultAlign: 'left',
+    supportsEmphasis: false,
+    clickable: false,
+    minPlan: 'creator',
+    defaults: () => ({ style: 'underline', phoneStyle: 'accordion' })
+  },
+  ...storyBlockDefinitions,
+  ...round2BlockDefinitions
 };
 
 export const blockCategories: BlockCategory[] = ['Foundation', 'Showcase', 'Conversion', 'Commerce'];
@@ -760,7 +809,12 @@ export const blockOrder: BlockType[] = [
 'logoStrip',
 'figures',
 'mediaList',
-'listings'];
+'listings',
+'section',
+'columns',
+'tabs',
+...storyBlockOrder,
+...round2BlockOrder];
 
 
 export interface PlannedBlock {
@@ -778,4 +832,23 @@ export interface PlannedBlock {
  * Booking, checkout (product/grid blocks) and secure downloads shipped and were removed.
  */
 // Seating maps shipped inside the Event block (D113), so nothing is planned right now.
-export const plannedBlocks: PlannedBlock[] = [];
+// Canvas ecosystem (D170): the two smart blocks that need real AI/speech providers are shown as Planned only.
+export const plannedBlocks: PlannedBlock[] = [
+{
+  id: 'ai-faq',
+  name: 'AI FAQ assistant',
+  description: 'Answers visitor questions using only facts you’ve approved — never invents prices or policies.',
+  category: 'Conversion',
+  icon: BotMessageSquareIcon,
+  availability: 'planned',
+  note: 'Needs an AI provider connection'
+},
+{
+  id: 'voice-content',
+  name: 'Voice to content',
+  description: 'Speak, review the transcript, then turn it into a block. Typing always works too.',
+  category: 'Foundation',
+  icon: MicIcon,
+  availability: 'planned',
+  note: 'Needs a speech-to-text provider'
+}];

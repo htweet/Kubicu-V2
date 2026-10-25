@@ -96,7 +96,7 @@ export function Orders() {
     key: 'fulfilment',
     header: 'Fulfilment',
     hideOnMobile: true,
-    render: (o) => <span className="text-fg-muted">{o.fulfilment.method === 'pickup' ? tr('Pickup') : o.fulfilment.method === 'tickets' ? tr('Tickets') : o.fulfilment.method === 'digital' ? tr('Download') : o.fulfilment.zoneName}</span>
+    render: (o) => <span className="text-fg-muted">{o.popup ? tr('Pop-up pickup') : o.fulfilment.method === 'pickup' ? tr('Pickup') : o.fulfilment.method === 'tickets' ? tr('Tickets') : o.fulfilment.method === 'digital' ? tr('Download') : o.fulfilment.zoneName}</span>
   },
   { key: 'payment', header: 'Payment', hideOnMobile: true, render: (o) => <PaymentBadge status={o.paymentStatus} /> },
   {
@@ -132,9 +132,7 @@ export function Orders() {
       <TestModeStrip className="mt-6" />
 
       {data.orders.length === 0 ?
-      <div className="mt-8 rounded-lg border border-line bg-raised">
-          <EmptyState icon={ReceiptIcon} title="No orders yet" description="Link a product to a page block with Checkout, publish, then try buying it yourself — test mode never charges anyone." />
-        </div> :
+      <EmptyState framed className="mt-8" icon={ReceiptIcon} title="No orders yet" description="Link a product to a page block with Checkout, publish, then try buying it yourself — test mode never charges anyone." /> :
 
       <>
           <nav aria-label={tr('Order status')} className="scroll-quiet -mx-1 mt-6 overflow-x-auto px-1 pb-1">

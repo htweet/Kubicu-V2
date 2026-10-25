@@ -56,11 +56,15 @@ export function ListRow({ leading, title, meta, trailing, to, onClick, chevron, 
   return <li className={cn(rowBase, pad, className)}>{inner}</li>;
 }
 
-/** Hairline-divided list for ListRow children. */
-export function List({ label, className, children }: {label?: string;className?: string;children: React.ReactNode;}) {
+/**
+ * Hairline-divided list for ListRow children. `ruled` adds a hairline above and below for
+ * chrome-free lists that sit straight on the page (no Card); `ordered` renders an <ol>.
+ */
+export function List({ label, ruled, ordered, className, children }: {label?: string;ruled?: boolean;ordered?: boolean;className?: string;children: React.ReactNode;}) {
+  const Tag = ordered ? 'ol' : 'ul';
   return (
-    <ul aria-label={label} className={cn('flex flex-col divide-y divide-line', className)}>
+    <Tag aria-label={label} className={cn('flex flex-col divide-y divide-line', ruled && 'border-y border-line', className)}>
       {children}
-    </ul>);
+    </Tag>);
 
 }

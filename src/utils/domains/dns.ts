@@ -63,6 +63,7 @@ export const registrars = [
 { id: 'namecheap', name: 'Namecheap', tip: 'Domain List → Manage → Advanced DNS → Add New Record. Use “@” for the root.' },
 { id: 'godaddy', name: 'GoDaddy', tip: 'My Products → DNS → Add. GoDaddy adds your domain to the name automatically — type only the part shown.' },
 { id: 'cloudflare', name: 'Cloudflare', tip: 'DNS → Records → Add record. Turn the orange cloud off (DNS only) until the domain shows Live.' },
+{ id: 'hostinger', name: 'Hostinger', tip: 'hPanel → Domains → your domain → DNS / Nameservers → Manage DNS records. Delete any old A record for “@” first.' },
 { id: 'other', name: 'Somewhere else', tip: 'Look for “DNS”, “Zone editor” or “Manage records” where you bought the domain.' }] as
 const;
 

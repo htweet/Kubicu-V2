@@ -14,6 +14,7 @@ import { EmptyState } from '../../components/ui/EmptyState';
 import { InlineAlert } from '../../components/ui/InlineAlert';
 import { UpgradeButton } from '../../components/ui/UpgradeButton';
 import { DomainCard } from '../../components/domains/DomainCard';
+import { Card } from '../../components/ui/layout/Card';
 import { ConnectDomainDialog } from '../../components/domains/ConnectDomainDialog';
 
 /** Custom domains need Creator or above (example gating, D62). */
@@ -64,10 +65,11 @@ export function Domains() {
       </section>
 
       {!planOk && data.domains.length === 0 ?
-      <div className="grid gap-8 rounded-lg border border-line bg-raised p-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:p-8">
+      <Card id="domain-upsell" emphasis="primary">
+        <div className="grid gap-8 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           <div>
             <h2 className="text-heading font-semibold text-fg">Your own domain, on Creator</h2>
-            <p className="mt-2 text-body text-fg-muted">Customers remember adaeze.com more easily than a kub.icu link, and it looks established on flyers and invoices.</p>
+            <p className="mt-1 text-body text-fg-muted">Customers remember adaeze.com more easily than a kub.icu link, and it looks established on flyers and invoices.</p>
             <div className="mt-5">
               <UpgradeButton plan={DOMAIN_PLAN} feature="Custom domains" variant="primary" />
             </div>
@@ -79,7 +81,8 @@ export function Domains() {
             <li>Readable product links: /shop/ankara-wrap-dress.</li>
             <li className="text-caption text-fg-subtle">QR codes and campaign links are on every plan.</li>
           </ul>
-        </div> :
+        </div>
+        </Card> :
 
       <>
           {!planOk &&
@@ -88,18 +91,17 @@ export function Domains() {
             </InlineAlert>
         }
           {data.domains.length === 0 ?
-        <div className="rounded-lg border border-line bg-raised">
-              <EmptyState
-            icon={GlobeIcon}
-            title="No domains yet"
-            description="Bought a domain from Whogohost, Qservers, Namecheap or elsewhere? Connect it in about 5 minutes."
-            action={
-            <Button leadingIcon={PlusIcon} disabled={!can.allowed} onClick={() => setOpen(true)}>
+        <EmptyState
+          framed
+          icon={GlobeIcon}
+          title="No domains yet"
+          description="Bought a domain from Whogohost, Qservers, Namecheap or elsewhere? Connect it in about 5 minutes."
+          action={
+          <Button leadingIcon={PlusIcon} disabled={!can.allowed} onClick={() => setOpen(true)}>
                     Connect a domain
                   </Button>
-            } />
-          
-            </div> :
+          } /> :
+
 
         <div className="flex flex-col gap-4">
               {data.domains.map((d) =>

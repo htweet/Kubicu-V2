@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { toast } from 'sonner';
-import { CalendarClockIcon, CreditCardIcon, DownloadIcon, FlaskConicalIcon, ReceiptIcon } from 'lucide-react';
+import { CalendarClockIcon, CreditCardIcon, DownloadIcon, ReceiptIcon } from 'lucide-react';
+import { PrototypeNote } from '../ui/PrototypeNote';
+import { Card } from '../ui/layout/Card';
+import { List } from '../ui/layout/ListRow';
 import type { Invoice } from '../../types/billing';
 import { useBilling } from '../../contexts/BillingContext';
 import { usePlan } from '../../contexts/PlanContext';
@@ -251,9 +254,10 @@ export function BillingTab() {
         {d.invoices.length === 0 && !(paid && !d.trial) ?
         <EmptyState icon={ReceiptIcon} title="No invoices yet" description="Invoices appear here when you upgrade, renew or buy a premium template." /> :
 
-        <ul className="flex flex-col divide-y divide-line rounded-lg border border-line bg-raised">
+        <Card as="div" body="flush">
+          <List label="Invoices">
             {paid && !d.trial && d.status !== 'past_due' && d.pendingPlan !== 'free' && periodEnd &&
-          <li className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3">
+            <li className="flex flex-wrap items-center gap-x-4 gap-y-1 px-5 py-3 md:px-6">
                 <span className="w-[120px] text-label text-fg-muted">{periodEnd}</span>
                 <span className="min-w-0 flex-1 text-label text-fg">
                   {plans[d.pendingPlan ?? plan.id].name} ({d.pendingCycle ?? d.cycle}) renewal
@@ -261,14 +265,14 @@ export function BillingTab() {
                 <InvoiceStatusBadge status="upcoming" />
                 <span className="w-[110px] text-right text-label tabular-nums text-fg">{formatNgn(nextTotal)}</span>
               </li>
-          }
+            }
             {d.invoices.map((i) =>
-          <li key={i.id}>
+            <li key={i.id}>
                 <button
-              type="button"
-              onClick={() => setInvoice(i)}
-              className="flex w-full flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3 text-left transition-colors duration-150 hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus">
-              
+                type="button"
+                onClick={() => setInvoice(i)}
+                className="flex w-full flex-wrap items-center gap-x-4 gap-y-1 px-5 py-3 text-left md:px-6 transition-colors duration-150 hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus">
+                
                   <span className="w-[120px] text-label text-fg-muted">{formatDate(i.issuedAt)}</span>
                   <span className="min-w-0 flex-1 truncate text-label text-fg">
                     <span className="font-mono text-caption text-fg-subtle">{i.number}</span> · {i.lines[0]?.label}
@@ -278,8 +282,9 @@ export function BillingTab() {
                   <span className="w-[110px] text-right text-label tabular-nums text-fg">{formatNgn(i.totalNgn)}</span>
                 </button>
               </li>
-          )}
-          </ul>
+            )}
+          </List>
+          </Card>
         }
       </section>
 
@@ -294,22 +299,22 @@ export function BillingTab() {
         <BillingHistory history={d.history} invoices={d.invoices} workspaceName={current.name} onOpenInvoice={setInvoice} />
       </div>
 
-      <section aria-labelledby="billing-proto" className="flex flex-col gap-3 rounded-lg border border-dashed border-line-strong p-4">
-        <h2 id="billing-proto" className="flex items-center gap-2 text-label font-semibold text-fg">
-          <FlaskConicalIcon size={15} aria-hidden /> Prototype: skip ahead in time
-        </h2>
-        <p className="text-caption text-fg-muted">
-          Renewals follow <span className="font-medium text-fg">Simulate next renewal</span> in the Controls panel (now: {billing.renewalOutcome === 'succeeds' ? 'succeeds' : 'fails'}).
-        </p>
-        <div className="flex flex-wrap gap-2">
-          <Button size="sm" variant="secondary" disabled={!can.allowed || !paid} onClick={billing.runRenewal}>
-            {d.trial ? 'Reach trial end' : 'Run renewal now'}
-          </Button>
-          <Button size="sm" variant="secondary" disabled={!can.allowed || d.status !== 'past_due'} onClick={billing.endGraceNow}>
-            End grace period now
-          </Button>
-        </div>
-      </section>
+      <PrototypeNote
+        id="billing-proto"
+        title="Prototype: skip ahead in time"
+        actions={
+        <>
+            <Button size="sm" variant="secondary" disabled={!can.allowed || !paid} onClick={billing.runRenewal}>
+              {d.trial ? 'Reach trial end' : 'Run renewal now'}
+            </Button>
+            <Button size="sm" variant="secondary" disabled={!can.allowed || d.status !== 'past_due'} onClick={billing.endGraceNow}>
+              End grace period now
+            </Button>
+          </>
+        }>
+        
+        Renewals follow <span className="font-medium text-fg">Simulate next renewal</span> in the Controls panel (now: {billing.renewalOutcome === 'succeeds' ? 'succeeds' : 'fails'}).
+      </PrototypeNote>
 
       <InvoiceDialog invoice={invoice} onClose={() => setInvoice(null)} />
       <CancelPlanDialog open={cancelOpen} onClose={() => setCancelOpen(false)} />

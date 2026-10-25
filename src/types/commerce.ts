@@ -460,6 +460,16 @@ export interface Order {
   instalments?: OrderInstalments;
   /** Paid-to-delivered tracking: promise date, outside courier, public updates (D144). */
   tracking?: OrderTracking;
+  /** Pop-up shop pickup (D183): which session the buyer collects at, and whether they pay there. */
+  popup?: OrderPopup;
+}
+
+export interface OrderPopup {
+  sessionId: string;
+  /** e.g. "Sat 14 Dec, 10:00–18:00 · Ikoyi Christmas Market" — frozen at order time. */
+  sessionLabel: string;
+  payAtStall: boolean;
+  collectedAt?: string;
 }
 
 export interface OrderDiscount {
@@ -536,7 +546,33 @@ export interface StorefrontSettings {
   returnsNote?: string;
   seoTitle?: string;
   seoDescription?: string;
+  // ——— D196 shop looks, parts and feature switches (optional; defaults keep today's shop) ———
+  look?: ShopLook;
+  header?: ShopHeaderStyle;
+  featuredStyle?: ShopFeaturedStyle;
+  collectionsStyle?: ShopCollectionsStyle;
+  cardStyle?: ShopCardStyle;
+  productPage?: ShopProductPageStyle;
+  /** Price + buy button pinned to the bottom of product pages on phones. */
+  stickyBuy?: boolean;
+  /** How items go in the cart from the listing. */
+  addMode?: ShopAddMode;
+  showSaleBadges?: boolean;
+  savedItems?: boolean;
+  recentlyViewed?: boolean;
+  relatedProducts?: boolean;
+  askWhatsApp?: boolean;
+  shareButtons?: boolean;
+  showReviews?: boolean;
 }
+
+export type ShopLook = 'classic' | 'boutique' | 'catalogue' | 'lookbook' | 'quick' | 'spotlight';
+export type ShopHeaderStyle = 'banner' | 'title' | 'split' | 'none';
+export type ShopFeaturedStyle = 'none' | 'row' | 'hero' | 'spotlight';
+export type ShopCollectionsStyle = 'chips' | 'tabs' | 'side';
+export type ShopCardStyle = 'standard' | 'minimal' | 'overlay' | 'row';
+export type ShopProductPageStyle = 'side' | 'stacked' | 'full';
+export type ShopAddMode = 'page' | 'button' | 'stepper';
 
 export interface DeliveryZone {
   id: string;
@@ -554,7 +590,7 @@ export interface FulfilmentSettings {
   freeDeliveryOverNgn: number | null;
 }
 
-export type PaymentProviderId = 'paystack' | 'flutterwave';
+export type PaymentProviderId = 'paystack' | 'flutterwave' | 'monnify' | 'stripe';
 
 export interface PaymentSettings {
   provider: PaymentProviderId | null;
@@ -583,9 +619,23 @@ export interface CommerceData {
   ticketHolds?: TicketHold[];
   /** Pay on delivery and instalments (D112). Optional for data saved before them. */
   payOptions?: PayOptions;
+  /** Stock set aside for pop-up shops (D191). Synced from each pop-up's settings. */
+  stallHolds?: StallHold[];
   nextOrderNumber: number;
   /** True once sample data has been offered/seeded, so clearing it doesn't bring it back. */
   sampleSeeded: boolean;
+}
+
+/**
+ * Units of a product set aside for one pop-up (D191). What's still held is worked out live:
+ * `limit` minus what that pop-up has sold, until `until` (its last session's end) or it closes.
+ */
+export interface StallHold {
+  handle: string;
+  label: string;
+  productId: string;
+  limit: number;
+  until: string;
 }
 
 /** One line in the visitor's cart. */

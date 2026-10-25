@@ -9,6 +9,8 @@ import { IconButton } from '../../components/ui/IconButton';
 import { Segmented } from '../../components/ui/Segmented';
 import { Badge } from '../../components/ui/Badge';
 import { EmptyState } from '../../components/ui/EmptyState';
+import { Card } from '../../components/ui/layout/Card';
+import { List } from '../../components/ui/layout/ListRow';
 import { BookingDetail, bookingStatusCopy } from '../../components/bookings/BookingDetail';
 import { BookingsPlanNote } from '../../components/bookings/BookingsPlanNote';
 import { SampleTag } from '../../components/commerce/StatusBadges';
@@ -20,6 +22,7 @@ import { AssigneeChip, MineToggle } from '../../components/team/AssigneeSelect';
 import { fieldControlClass } from '../../components/ui/Field';
 import { isAway } from '../../utils/ops/staff';
 import { useT } from '../../contexts/LocaleContext';
+import { useBookingSources } from '../../hooks/useBookingSources';
 
 type View = 'upcoming' | 'past' | 'week';
 
@@ -42,7 +45,14 @@ export function Schedule() {
   const staff = (data.availability.staff ?? []).filter((s) => s.bookable || data.bookings.some((b) => b.assigneeId === s.memberId));
   const [person, setPerson] = useState<string>('all');
   const mineCount = data.bookings.filter((b) => b.assigneeId === me.id && b.status !== 'cancelled' && Date.parse(b.end) >= Date.now()).length;
-  const visible = useMemo(() => data.bookings.filter((b) => (!mine || b.assigneeId === me.id) && (person === 'all' || (person === 'none' ? !b.assigneeId : b.assigneeId === person))), [data.bookings, mine, me.id, person]);
+  // “From” filter: which page or space the booking was made on (D191).
+  const { sourceOf, options: sourceOptions } = useBookingSources(data.bookings);
+  const [source, setSource] = useState<string>('all');
+  const visible = useMemo(
+    () => data.bookings.filter((b) => (!mine || b.assigneeId === me.id) && (person === 'all' || (person === 'none' ? !b.assigneeId : b.assigneeId === person)) && (source === 'all' || sourceOf(b).handle === source)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [data.bookings, mine, me.id, person, source]
+  );
   const sorted = useMemo(() => [...visible].sort((a, b) => Date.parse(a.start) - Date.parse(b.start)), [visible]);
   const awayOn = (k: string) => (data.availability.staff ?? []).filter((s) => (person === 'all' || person === s.memberId) && isAway(s, k)).map((s) => ({ id: s.memberId, name: s.name.split(' ')[0] }));
   const upcoming = sorted.filter((b) => Date.parse(b.end) >= Date.now() && b.status !== 'cancelled');
@@ -63,13 +73,14 @@ export function Schedule() {
       <>
         <PageHeader title="Bookings" description="Let customers book you from your page, with deposits and reminders." />
         <BookingsPlanNote />
-        <div className="mt-8 rounded-lg border border-line bg-raised">
           <EmptyState
-            icon={CalendarIcon}
-            title="No services yet"
-            description="Add what people can book, set your hours, then add a Booking block to your page."
-            action={
-            <div className="flex flex-wrap justify-center gap-2">
+          framed
+          className="mt-8"
+          icon={CalendarIcon}
+          title="No services yet"
+          description="Add what people can book, set your hours, then add a Booking block to your page."
+          action={
+          <div className="flex flex-wrap justify-center gap-2">
                 <Button leadingIcon={PlusIcon} onClick={() => navigate('/app/bookings/services?new=1')}>
                   Add a service
                 </Button>
@@ -77,9 +88,8 @@ export function Schedule() {
                   Explore with sample data
                 </Button>
               </div>
-            } />
-          
-        </div>
+          } />
+        
       </>);
 
   }
@@ -88,7 +98,7 @@ export function Schedule() {
     const start = Date.parse(b.start);
     return (
       <li key={b.id}>
-        <button type="button" onClick={() => open(b.id)} className="flex w-full items-center gap-4 px-4 py-3 text-left transition-colors duration-150 hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus">
+        <button type="button" onClick={() => open(b.id)} className="flex min-h-[56px] w-full items-center gap-4 px-5 py-3 text-left md:px-6 transition-colors duration-150 hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus">
           <span className="w-16 shrink-0">
             <span className="block text-label font-semibold tabular-nums text-fg">{timeLabel(start, tz)}</span>
             <span className="block text-caption text-fg-subtle">{dayLabel(start, tz)}</span>
@@ -100,6 +110,10 @@ export function Schedule() {
             </span>
             <span className="block truncate text-caption text-fg-subtle">
               {b.serviceName} · {b.ref}
+              {(() => {
+                const s = sourceOf(b);
+                return s.handle && !s.main ? ` · ${tr('from {name}', { name: s.label })}` : '';
+              })()}
             </span>
           </span>
           {b.assigneeId &&
@@ -147,6 +161,19 @@ export function Schedule() {
                 </option>
               )}
               <option value="none">{tr('Not assigned')}</option>
+            </select>
+          </label>
+          }
+        {sourceOptions.length > 1 &&
+          <label className="flex items-center gap-2 text-label text-fg-muted">
+            <span className="sr-only sm:not-sr-only">{tr('From')}</span>
+            <select value={source} onChange={(e) => setSource(e.target.value)} className={cn(fieldControlClass, 'h-9 w-auto pr-8 text-label')}>
+              <option value="all">{tr('Every page')}</option>
+              {sourceOptions.map((o) =>
+              <option key={o.handle || 'none'} value={o.handle}>
+                  {o.handle ? o.label : tr('Not recorded (older bookings)')}
+                </option>
+              )}
             </select>
           </label>
           }
@@ -209,15 +236,15 @@ export function Schedule() {
 
               })}
               </ul>
-              <div role="tabpanel" className="mt-4 rounded-lg border border-line bg-raised">
-                <p className="border-b border-line px-4 py-3 text-caption text-fg-muted">
+              <div role="tabpanel" aria-label={dayLabel(zonedToUtc(selectedKey, '12:00', tz), tz)} className="mt-4 rounded-lg border border-line bg-raised">
+                <p className="border-b border-line px-5 py-3.5 text-caption text-fg-muted">
                   <span className="font-semibold text-fg">{dayLabel(zonedToUtc(selectedKey, '12:00', tz), tz)}</span> · {hours ? tr('Open {from}–{to}', { from: hours.open, to: hours.close }) : tr('Closed')}
                   {away.length > 0 && <> · {tr('Away: {names}', { names: away.map((x) => x.name).join(', ') })}</>}
                 </p>
                 {items.length === 0 ?
-              <p className="px-4 py-8 text-center text-label text-fg-muted">{tr(hours ? 'Nothing booked yet.' : 'You’re closed this day.')}</p> :
+              <p className="px-5 py-10 text-center text-label text-fg-muted">{tr(hours ? 'Nothing booked yet.' : 'You’re closed this day.')}</p> :
 
-              <ul className="divide-y divide-line">{items.map(row)}</ul>
+              <List>{items.map(row)}</List>
               }
               </div>
             </div>);
@@ -288,13 +315,13 @@ export function Schedule() {
           </div>
         </div> :
 
-      <div className="mt-4 rounded-lg border border-line bg-raised">
+      <Card as="div" body="flush" className="mt-4">
           {(view === 'upcoming' ? upcoming : past).length === 0 ?
         <p className="px-6 py-10 text-center text-label text-fg-muted">{tr(view === 'upcoming' ? 'No upcoming bookings. Share your page to get some.' : 'Nothing here yet.')}</p> :
 
-        <ul className="divide-y divide-line">{(view === 'upcoming' ? upcoming : past).map(row)}</ul>
+        <List label={tr(view === 'upcoming' ? 'Upcoming bookings' : 'Past bookings')}>{(view === 'upcoming' ? upcoming : past).map(row)}</List>
         }
-        </div>
+        </Card>
       }
 
       <BookingDetail bookingId={openId} onClose={() => setParams({})} />

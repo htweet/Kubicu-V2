@@ -17,6 +17,8 @@ import { Sheet } from '../ui/Sheet';
 import { IconButton } from '../ui/IconButton';
 import { SkipLink } from '../ui/SkipLink';
 import { cn } from '../../utils/cn';
+import { StaffNotificationsProvider } from '../../contexts/StaffNotificationsContext';
+import { StaffNotificationBell, StaffNotificationsPanel } from './StaffNotifications';
 
 function AdminNavList({ staff, collapsed, tip, onNavigate }: {staff: StaffMember;collapsed?: boolean;tip?: SideTip;onNavigate?: () => void;}) {
   const groups = adminNav.map((g) => ({ ...g, items: g.items.filter((i) => roleCanOpen(staff.role, i.id)) })).filter((g) => g.items.length);
@@ -103,7 +105,12 @@ function AdminTag() {
 export function AdminShell() {
   const staff = useStaffSession();
   if (!staff) return <StaffSignIn />;
-  return <AdminConsole staff={staff} />;
+  return (
+    <StaffNotificationsProvider staff={staff}>
+      <AdminConsole staff={staff} />
+      <StaffNotificationsPanel />
+    </StaffNotificationsProvider>);
+
 }
 
 function AdminConsole({ staff }: {staff: StaffMember;}) {
@@ -139,15 +146,18 @@ function AdminConsole({ staff }: {staff: StaffMember;}) {
             {!collapsed && <AdminTag />}
           </span>
           {!collapsed &&
-          <button
-            type="button"
-            onClick={onToggle}
-            aria-label={toggleLabel}
-            aria-expanded
-            className="flex h-8 w-8 items-center justify-center rounded-md text-fg-subtle transition-colors duration-150 hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-            
-              <ToggleIcon size={18} strokeWidth={2.1} aria-hidden />
-            </button>
+          <span className="flex items-center gap-0.5">
+              <StaffNotificationBell />
+              <button
+              type="button"
+              onClick={onToggle}
+              aria-label={toggleLabel}
+              aria-expanded
+              className="flex h-8 w-8 items-center justify-center rounded-md text-fg-subtle transition-colors duration-150 hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+              
+                <ToggleIcon size={18} strokeWidth={2.1} aria-hidden />
+              </button>
+            </span>
           }
         </div>
 
@@ -185,6 +195,7 @@ function AdminConsole({ staff }: {staff: StaffMember;}) {
             <ArrowLeftIcon size={20} strokeWidth={2.1} aria-hidden />
             {!collapsed && back}
           </button>
+          {collapsed && <StaffNotificationBell size="md" onMouseEnter={tip.show('Staff notifications')} onMouseLeave={tip.hide} />}
           {collapsed &&
           <button
             type="button"
@@ -206,8 +217,9 @@ function AdminConsole({ staff }: {staff: StaffMember;}) {
         <header className="flex h-14 items-center gap-2 border-b border-line bg-raised px-3 md:hidden">
           <IconButton icon={MenuIcon} label="Open super admin menu" onClick={() => setMenuOpen(true)} />
           <KubicuLogo />
-          <span className="ml-auto">
+          <span className="ml-auto flex items-center gap-2">
             <AdminTag />
+            <StaffNotificationBell size="md" />
           </span>
         </header>
         <SkipLink />

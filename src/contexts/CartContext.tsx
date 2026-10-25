@@ -7,7 +7,8 @@ interface CartValue {
   open: boolean;
   /** Product waiting for an option choice before it can go in the cart. */
   choosing: string | null;
-  add: (productId: string, variantId?: string, needsChoice?: boolean) => void;
+  /** `silent` adds without opening the cart (quick-order steppers, D196). */
+  add: (productId: string, variantId?: string, needsChoice?: boolean, opts?: {silent?: boolean;}) => void;
   setQty: (variantId: string, qty: number) => void;
   /** Seated tickets (D113): replaces the line with exactly these seats. Empty removes it. */
   setSeats: (productId: string, variantId: string, seats: string[]) => void;
@@ -44,7 +45,7 @@ export function CartProvider({ pageKey, children }: {pageKey: string;children: R
       // Session storage unavailable — cart lasts until refresh.
     }}, [lines, storageKey]);
 
-  const add = useCallback((productId: string, variantId?: string, needsChoice?: boolean) => {
+  const add = useCallback((productId: string, variantId?: string, needsChoice?: boolean, opts?: {silent?: boolean;}) => {
     if (!variantId || needsChoice) {
       setChoosing(productId);
       setOpen(true);
@@ -56,7 +57,7 @@ export function CartProvider({ pageKey, children }: {pageKey: string;children: R
     });
     track('cart_add', { label: productId });
     setChoosing(null);
-    setOpen(true);
+    if (!opts?.silent) setOpen(true);
   }, [track]);
 
   const setQty = useCallback((variantId: string, qty: number) => {

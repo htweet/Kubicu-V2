@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
+import { ResponseRecords } from './ResponseRecords';
 import { ArchiveIcon, ArchiveRestoreIcon, DownloadIcon, InboxIcon, MailIcon, MailOpenIcon } from 'lucide-react';
 import type { FormDef, FormSubmission } from '../../types/forms';
 import { useTeam } from '../../contexts/TeamContext';
@@ -33,6 +34,8 @@ export function ResponsesInbox({ form, submissions, onUpdate, disabled }: Respon
   const [params, setParams] = useSearchParams();
   const [filter, setFilter] = useState<Filter>('all');
   const [mine, setMine] = useState(false);
+  // Bank account numbers stay masked until someone chooses to see them (D194).
+  const [revealed, setRevealed] = useState<string | null>(null);
   const openId = params.get('response');
 
   const list = useMemo(
@@ -60,11 +63,11 @@ export function ResponsesInbox({ form, submissions, onUpdate, disabled }: Respon
   }, [open?.id]);
 
   const exportCsv = () => {
-    const cols = form.fields.filter((f) => f.type !== 'payment');
+    const cols = form.fields.filter((f) => f.type !== 'payment' && f.type !== 'section');
     const rows = submissions.
     filter((s) => s.formId === form.id).
-    map((s) => [s.createdAt, s.status, ...cols.map((f) => answerText(s.answers[f.id])), s.payment ? s.payment.amountNgn : '', s.source ?? '', s.marketingConsent ? 'yes' : 'no']);
-    downloadCsv(`${form.name.replace(/\W+/g, '-').toLowerCase()}-responses.csv`, toCsv(['Sent at', 'Status', ...cols.map((f) => f.label), 'Paid (₦, test)', 'Source', 'Marketing consent'], rows));
+    map((s) => [s.createdAt, s.status, ...cols.map((f) => answerText(s.answers[f.id], f)), s.payment ? s.payment.amountNgn : '', s.source ?? '', s.marketingConsent ? 'yes' : 'no', s.email ? s.email.status === 'sent' ? 'sent (simulated)' : 'not sent' : '', s.orderNumber ? `#${s.orderNumber}` : '', s.bookingRef ?? '']);
+    downloadCsv(`${form.name.replace(/\W+/g, '-').toLowerCase()}-responses.csv`, toCsv(['Sent at', 'Status', ...cols.map((f) => f.label), 'Paid (₦, test)', 'Source', 'Marketing consent', 'Confirmation email', 'Order', 'Booking'], rows));
   };
 
   const memberName = (id: string | null) => id ? team.data.members.find((m) => m.id === id)?.name ?? 'Former member' : null;
@@ -86,13 +89,24 @@ export function ResponsesInbox({ form, submissions, onUpdate, disabled }: Respon
 
       <dl className="flex flex-col divide-y divide-line border-y border-line">
         {form.fields.
-      filter((f) => f.type !== 'payment' && f.type !== 'consent').
+      filter((f) => f.type !== 'payment' && f.type !== 'consent' && f.type !== 'section').
       map((f) => {
-        const v = answerText(open.answers[f.id]);
+        const showFull = revealed === `${open.id}:${f.id}`;
+        const v = answerText(open.answers[f.id], f, { mask: f.type === 'bank' && !showFull });
+        const canReveal = f.type === 'bank' && !!v && !showFull;
+        const raw = open.answers[f.id];
+        const drawn = f.type === 'signature' && typeof raw === 'string' && raw.startsWith('data:image/') ? raw : null;
         return (
           <div key={f.id} className="grid gap-1 py-3 sm:grid-cols-[minmax(0,10rem)_minmax(0,1fr)] sm:gap-4">
                 <dt className="text-caption text-fg-subtle">{f.label}</dt>
-                <dd className={cn('whitespace-pre-wrap break-words text-label', v ? 'text-fg' : 'text-fg-subtle')}>{v || 'Not answered'}</dd>
+                <dd className={cn('whitespace-pre-wrap break-words text-label', v ? 'text-fg' : 'text-fg-subtle')}>
+                  {drawn ? <img src={drawn} alt={`Signature drawn by ${open.contactName || 'the sender'}`} className="h-16 w-auto max-w-full rounded-md border border-line bg-white p-1" /> : v || 'Not answered'}
+                  {canReveal &&
+              <button type="button" onClick={() => setRevealed(`${open.id}:${f.id}`)} className="ml-2 text-caption font-medium text-action underline-offset-2 hover:underline">
+                      Show number
+                    </button>
+              }
+                </dd>
               </div>);
 
       })}
@@ -122,13 +136,10 @@ export function ResponsesInbox({ form, submissions, onUpdate, disabled }: Respon
               </Button>
             </>
         }
-          <Link to="/app/audience">
-            <Button size="sm" variant="tertiary">
-              Find in Audience
-            </Button>
-          </Link>
         </div>
       </div>
+
+      <ResponseRecords form={form} submission={open} onUpdate={(patch) => onUpdate(open.id, patch)} disabled={disabled} />
     </div>;
 
 
@@ -157,9 +168,7 @@ export function ResponsesInbox({ form, submissions, onUpdate, disabled }: Respon
       </div>
 
       {list.length === 0 ?
-      <div className="rounded-lg border border-line bg-raised">
-          <EmptyState icon={InboxIcon} title={filter === 'archived' ? 'Nothing archived' : mine ? 'Nothing assigned to you' : 'No responses yet'} description={form.status === 'live' ? 'Responses appear here as soon as someone sends the form from your page.' : 'Set the form live and add a Form block to a page to start collecting responses.'} />
-        </div> :
+      <EmptyState framed icon={InboxIcon} title={filter === 'archived' ? 'Nothing archived' : mine ? 'Nothing assigned to you' : 'No responses yet'} description={form.status === 'live' ? 'Responses appear here as soon as someone sends the form from your page.' : 'Set the form live and add a Form block to a page to start collecting responses.'} /> :
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-start">
           <ul className="flex flex-col overflow-hidden rounded-lg border border-line bg-raised">

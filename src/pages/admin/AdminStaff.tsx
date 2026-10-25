@@ -22,6 +22,8 @@ import { SelectInput } from '../../components/ui/SelectInput';
 import { DataTable, type DataColumn } from '../../components/ui/DataTable';
 import { Stat, StatGroup } from '../../components/ui/layout/Stat';
 import { ReasonDialog } from '../../components/admin/ReasonDialog';
+import { Section } from '../../components/ui/layout/Section';
+import { List } from '../../components/ui/layout/ListRow';
 
 type Action = {kind: 'invite';} | {kind: 'role' | 'reset' | 'disable' | 'enable' | 'cancel';member: StaffMember;} | null;
 
@@ -299,15 +301,12 @@ export function AdminStaff() {
       </section>
 
       {recentDecided.length > 0 &&
-      <section aria-labelledby="decided-heading" className="mt-8">
-          <h2 id="decided-heading" className="text-label font-semibold text-fg">
-            Recent approval decisions
-          </h2>
-          <ul className="mt-2 divide-y divide-line border-y border-line">
+      <Section id="decided" title="Recent approval decisions" className="mt-8">
+          <List ruled label="Recent approval decisions">
             {recentDecided.map((a) => {
             const st = effectiveStatus(a);
             return (
-              <li key={a.id} className="flex flex-wrap items-center gap-x-4 gap-y-1 py-2.5">
+              <li key={a.id} className="flex min-h-[48px] flex-wrap items-center gap-x-4 gap-y-1 py-3">
                   <span className="min-w-0 flex-1 text-label text-fg">{a.summary}</span>
                   <span className="text-caption text-fg-subtle">{st === 'expired' ? `Expired ${formatRelative(a.expiresAt)}` : `${a.decidedBy ?? ''} · ${a.decidedAt ? formatRelative(a.decidedAt) : ''}`}</span>
                   <Badge tone={st === 'approved' ? 'success' : st === 'rejected' ? 'danger' : 'neutral'}>{approvalStatusLabels[st]}</Badge>
@@ -315,18 +314,19 @@ export function AdminStaff() {
                 </li>);
 
           })}
-          </ul>
-        </section>
+          </List>
+        </Section>
       }
 
       <AccessReviewSection />
 
-      <section aria-labelledby="roles-heading" className="mt-12 border-t border-line pt-8">
-        <h2 id="roles-heading" className="text-heading font-semibold text-fg">
-          What each role can open
-        </h2>
-        <p className="mt-1 max-w-2xl text-label text-fg-muted">Roles are fixed so access reviews stay simple. Every action inside an area still needs a written reason and lands in the audit log.</p>
-        <dl className="mt-6 divide-y divide-line">
+      <Section
+        id="roles"
+        title="What each role can open"
+        description="Roles are fixed so access reviews stay simple. Every action inside an area still needs a written reason and lands in the audit log."
+        className="mt-12 border-t border-line pt-8">
+        
+        <dl className="flex flex-col divide-y divide-line">
           {staffRoles.map((r) =>
           <div key={r.id} className="grid gap-2 py-4 md:grid-cols-[220px_1fr] md:gap-8">
               <dt>
@@ -348,7 +348,7 @@ export function AdminStaff() {
             </div>
           )}
         </dl>
-      </section>
+      </Section>
 
       <ReasonDialog open={!!action} onClose={() => setAction(null)} onConfirm={confirm} destructive={action?.kind === 'disable' || action?.kind === 'cancel' || action?.kind === 'reset'} {...dialog}>
         {action?.kind === 'invite' &&

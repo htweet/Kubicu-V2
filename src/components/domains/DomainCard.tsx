@@ -71,7 +71,7 @@ export function DomainCard({ domain: d, spaceLabel, spaces = [], canManage, reas
 
   return (
     <article className="rounded-lg border border-line bg-raised" aria-labelledby={`dom-${d.id}`}>
-      <header className="flex flex-col gap-3 p-5 sm:flex-row sm:items-start sm:justify-between">
+      <header className="flex flex-col gap-3 px-5 pb-4 pt-5 sm:flex-row sm:items-start sm:justify-between md:px-6 md:pt-6">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <h2 id={`dom-${d.id}`} className="break-all text-heading font-semibold text-fg">
@@ -94,7 +94,7 @@ export function DomainCard({ domain: d, spaceLabel, spaces = [], canManage, reas
         }
       </header>
 
-      <ol className="mx-5 grid grid-cols-4 gap-2" aria-label="Connection progress">
+      <ol className="mx-5 grid grid-cols-4 gap-2 md:mx-6" aria-label="Connection progress">
         {statusSteps.map((s, i) => {
           const done = i < current || d.status === 'live';
           const now = i === current && d.status !== 'live';
@@ -112,7 +112,7 @@ export function DomainCard({ domain: d, spaceLabel, spaces = [], canManage, reas
         })}
       </ol>
 
-      <div className="flex flex-col gap-4 p-5">
+      <div className="flex flex-col gap-4 p-5 md:p-6">
         <StatusMessage d={d} />
 
         {d.status !== 'live' &&

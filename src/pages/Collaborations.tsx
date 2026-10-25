@@ -18,6 +18,9 @@ import { PageHeader } from '../components/shell/PageHeader';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { EmptyState } from '../components/ui/EmptyState';
+import { Section } from '../components/ui/layout/Section';
+import { Card } from '../components/ui/layout/Card';
+import { List } from '../components/ui/layout/ListRow';
 import { InlineAlert } from '../components/ui/InlineAlert';
 import { SampleTag } from '../components/commerce/StatusBadges';
 import { PartnerEditor } from '../components/collabs/PartnerEditor';
@@ -203,21 +206,19 @@ export function Collaborations() {
         </div>
       </section>
 
-      <section aria-labelledby="partners-h" className="mt-8 flex flex-col gap-3">
-        <h2 id="partners-h" className="text-heading font-semibold text-fg">
-          Partners
-        </h2>
+      <Section id="partners" title="Partners" className="mt-8">
         {rows.length === 0 ?
-          <EmptyState icon={HandshakeIcon} title="No partners yet" description="Invite someone who already talks to your customers — a stylist, a creator or a reseller." /> :
+          <EmptyState framed icon={HandshakeIcon} title="No partners yet" description="Invite someone who already talks to your customers — a stylist, a creator or a reseller." /> :
 
-          <ul className="divide-y divide-line rounded-lg border border-line bg-raised">
+          <Card as="div" body="flush">
+          <List label="Partners">
             {rows.map(({ partner: p, totals }) =>
-            <li key={p.id}>
+              <li key={p.id}>
                 <button
-                type="button"
-                onClick={() => setOpenId(p.id)}
-                className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-2 px-4 py-3.5 text-left hover:bg-sunken focus-visible:bg-sunken focus-visible:outline-none sm:grid-cols-[minmax(0,1fr)_7rem_7rem_6rem]">
-                
+                  type="button"
+                  onClick={() => setOpenId(p.id)}
+                  className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-2 px-5 py-3.5 text-left transition-colors duration-150 hover:bg-sunken md:px-6 focus-visible:bg-sunken focus-visible:outline-none sm:grid-cols-[minmax(0,1fr)_7rem_7rem_6rem]">
+                  
                   <span className="min-w-0">
                     <span className="flex flex-wrap items-center gap-2">
                       <span className="text-label font-semibold text-fg">{p.name}</span>
@@ -242,11 +243,12 @@ export function Collaborations() {
                   </span>
                 </button>
               </li>
-            )}
-          </ul>
+              )}
+          </List>
+          </Card>
           }
         <p className="text-caption text-fg-subtle">Commission becomes payable once an order is delivered, or 7 days after payment with no refund or dispute. Rates and the 7-day hold are example figures (D103).</p>
-      </section>
+      </Section>
       </>
       }
 

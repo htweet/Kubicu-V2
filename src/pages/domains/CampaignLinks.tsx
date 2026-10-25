@@ -20,6 +20,7 @@ import { Segmented } from '../../components/ui/Segmented';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { IllustrativeTag } from '../../components/ui/IllustrativeTag';
 import { CampaignLinkDialog } from '../../components/domains/CampaignLinkDialog';
+import { List } from '../../components/ui/layout/ListRow';
 
 type View = 'active' | 'archived';
 
@@ -73,22 +74,21 @@ export function CampaignLinks() {
       }
 
       {list.length === 0 ?
-      <div className="rounded-lg border border-line bg-raised">
-          <EmptyState
-          icon={LinkIcon}
-          title={view === 'archived' ? 'No archived links' : 'No campaign links yet'}
-          description={view === 'archived' ? 'Links you stop using show here. Archived links tell visitors they’ve ended.' : 'Make one for your Instagram bio and one for a flyer, then compare them in Analytics.'}
-          action={
-          view === 'active' ?
-          <Button leadingIcon={PlusIcon} disabled={!can.allowed} onClick={() => setEditing('new')}>
+      <EmptyState
+        framed
+        icon={LinkIcon}
+        title={view === 'archived' ? 'No archived links' : 'No campaign links yet'}
+        description={view === 'archived' ? 'Links you stop using show here. Archived links tell visitors they’ve ended.' : 'Make one for your Instagram bio and one for a flyer, then compare them in Analytics.'}
+        action={
+        view === 'active' ?
+        <Button leadingIcon={PlusIcon} disabled={!can.allowed} onClick={() => setEditing('new')}>
                   New link
                 </Button> :
-          undefined
-          } />
-        
-        </div> :
+        undefined
+        } /> :
 
-      <ul className="divide-y divide-line border-y border-line">
+
+      <List ruled label="Campaign links">
           {list.map((l) => {
           const s = stats.get(l.slug) ?? { visits: 0, orders: 0, revenueNgn: 0 };
           const ok = destinationExists(current, commerce, l.destination);
@@ -107,9 +107,9 @@ export function CampaignLinks() {
                   </p>
                 </div>
                 <dl className="grid grid-cols-3 gap-3 md:contents">
-                  <Stat label={l.source === 'qr' ? 'Scans' : 'Visits'} value={s.visits.toLocaleString()} />
-                  <Stat label="Orders" value={s.orders.toLocaleString()} />
-                  <Stat label="Revenue" value={formatNgn(s.revenueNgn)} />
+                  <RowFigure label={l.source === 'qr' ? 'Scans' : 'Visits'} value={s.visits.toLocaleString()} />
+                  <RowFigure label="Orders" value={s.orders.toLocaleString()} />
+                  <RowFigure label="Revenue" value={formatNgn(s.revenueNgn)} />
                 </dl>
                 <div className="flex items-center gap-1 md:justify-end">
                   <IconButton icon={CopyIcon} label={`Copy ${l.name} link`} size="sm" onClick={() => copyToClipboard(shortUrl(mainHandle, l.slug, host), 'Link copied')} />
@@ -127,7 +127,7 @@ export function CampaignLinks() {
               </li>);
 
         })}
-        </ul>
+        </List>
       }
 
       <p className="text-caption text-fg-subtle">“Open” simulates a visit through the link, so it’s counted in Analytics. Turn on “Don’t count my own visits” in Settings → Privacy to stop that.</p>
@@ -137,7 +137,8 @@ export function CampaignLinks() {
 
 }
 
-function Stat({ label, value }: {label: string;value: string;}) {
+/** A figure inside a table-like row: label on phones, column caption on desktop. Not a stat strip, so not the shared Stat (D188). */
+function RowFigure({ label, value }: {label: string;value: string;}) {
   return (
     <div className="md:text-right">
       <dt className="text-caption text-fg-subtle md:sr-only">{label}</dt>

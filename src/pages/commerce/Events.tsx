@@ -1,12 +1,14 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { CalendarIcon, MapPinIcon, MoreHorizontalIcon, PauseIcon, PlayIcon, PlusIcon, ScanLineIcon, TicketIcon, UsersIcon, VideoIcon, XCircleIcon } from 'lucide-react';
+import { CalendarDaysIcon, CalendarIcon, MapPinIcon, MoreHorizontalIcon, PauseIcon, PlayIcon, PlusIcon, ScanLineIcon, TicketIcon, UsersIcon, VideoIcon, XCircleIcon } from 'lucide-react';
 import type { CommerceEvent } from '../../types/commerce';
 import { useCommerce } from '../../contexts/CommerceContext';
 import { cancelEventAndRefund, eventDisplay, eventDisplayLabel, eventPhase, eventRevenue, eventSold, eventTotalSeats, eventsOf, ordersForEvent, upsertEvent, type EventDisplay } from '../../utils/commerce/tickets';
 import { formatEventDate, formatEventTime } from '../../utils/eventTime';
-import { formatNgn } from '../../utils/format';
+import { formatNgn, publicUrl } from '../../utils/format';
+import { useWorkspace } from '../../contexts/WorkspaceContext';
+import { eventSpaceLinks } from '../../utils/eventSpace';
 import { PageHeader } from '../../components/shell/PageHeader';
 import { Button } from '../../components/ui/Button';
 import { IconButton } from '../../components/ui/IconButton';
@@ -19,6 +21,8 @@ import { TextArea } from '../../components/ui/TextArea';
 import { SampleTag } from '../../components/commerce/StatusBadges';
 import { EventEditor } from '../../components/commerce/EventEditor';
 import { Stat, StatGroup } from '../../components/ui/layout/Stat';
+import { Card } from '../../components/ui/layout/Card';
+import { List } from '../../components/ui/layout/ListRow';
 import { useT } from '../../contexts/LocaleContext';
 
 type Tab = 'upcoming' | 'live' | 'past' | 'drafts';
@@ -44,6 +48,9 @@ export function Events() {
   const now = Date.now();
 
   const target = params.get('new') ? 'new' : params.get('edit');
+  // Event spaces (D178): which events already have their own page.
+  const { current, switchSpace } = useWorkspace();
+  const pageFor = useMemo(() => new Map(eventSpaceLinks(current).map((l) => [l.eventId, l])), [current]);
   const events = eventsOf(data);
   const counts = useMemo(() => {
     const c: Record<Tab, number> = { upcoming: 0, live: 0, past: 0, drafts: 0 };
@@ -81,12 +88,10 @@ export function Events() {
 
   return (
     <>
-      <PageHeader title="Events" description="Sell tickets with real seat limits. Link an event from an Event block on any page — orders, refunds and reports work like any sale." actions={newButton} />
+      <PageHeader title="Events" description="Sell tickets with real seat limits. Link an event from an Event block on any page, or give it its own Event page in Spaces — orders, refunds and reports work like any sale." actions={newButton} />
 
       {events.length === 0 ?
-      <div className="mt-8 rounded-lg border border-line bg-raised">
-          <EmptyState icon={TicketIcon} title="No events yet" description="A pop-up, workshop, show or class. Set ticket types and seats, then link it from your page." action={newButton} />
-        </div> :
+      <EmptyState framed className="mt-8" icon={TicketIcon} title="No events yet" description="A pop-up, workshop, show or class. Set ticket types and seats, then link it from your page." action={newButton} /> :
 
       <>
           <StatGroup columns={3} className="mt-8 items-end border-b border-line pb-6">
@@ -112,16 +117,17 @@ export function Events() {
           {shown.length === 0 ?
         <p className="mt-6 rounded-lg border border-dashed border-line-strong px-5 py-8 text-center text-label text-fg-muted">{tr('Nothing here right now.')}</p> :
 
-        <ul className="mt-4 flex flex-col divide-y divide-line rounded-lg border border-line bg-raised">
+        <Card as="div" body="flush" className="mt-4">
+            <List label={tr('Events')}>
               {shown.map((ev) => {
-            const display = eventDisplay(data, ev, now);
-            const sold = eventSold(data, ev);
-            const total = eventTotalSeats(ev);
-            const pct = total ? Math.min(100, Math.round(sold / total * 100)) : 0;
-            const d = new Date(ev.startsAt);
-            const canCancel = ev.status !== 'cancelled' && eventPhase(ev, now) !== 'past';
-            return (
-              <li key={ev.id} className="flex items-center gap-4 px-4 py-4 sm:px-5">
+              const display = eventDisplay(data, ev, now);
+              const sold = eventSold(data, ev);
+              const total = eventTotalSeats(ev);
+              const pct = total ? Math.min(100, Math.round(sold / total * 100)) : 0;
+              const d = new Date(ev.startsAt);
+              const canCancel = ev.status !== 'cancelled' && eventPhase(ev, now) !== 'past';
+              return (
+                <li key={ev.id} className="flex items-center gap-4 px-5 py-4 md:px-6">
                     <span aria-hidden className="flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-md border border-line bg-sunken leading-none">
                       <span className="text-[11px] font-semibold uppercase text-fg-subtle">{d.toLocaleDateString('en-GB', { month: 'short' })}</span>
                       <span className="mt-1 text-[20px] font-semibold tabular-nums text-fg">{d.getDate()}</span>
@@ -132,6 +138,7 @@ export function Events() {
                         {ev.sample && <SampleTag />}
                         {ev.series && <Badge tone="neutral">Repeats</Badge>}
                         {ev.seating && <Badge tone="neutral">Seated</Badge>}
+                        {pageFor.has(ev.id) && <Badge tone="accent">Has an event page</Badge>}
                       </span>
                       <span className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-caption text-fg-subtle">
                         <span className="inline-flex items-center gap-1">
@@ -159,21 +166,35 @@ export function Events() {
                       {eventDisplayLabel[display]}
                     </Badge>
                     <Menu
-                  align="end"
-                  items={[
-                  { id: 'guests', label: 'Guest list', icon: UsersIcon, onSelect: () => navigate(`/app/commerce/events/${ev.id}/guests`) },
-                  ...(ev.status !== 'cancelled' && ev.status !== 'draft' ? [{ id: 'checkin', label: 'Check in guests', icon: ScanLineIcon, onSelect: () => navigate(`/app/commerce/events/${ev.id}/check-in`) }] : []),
-                  { id: 'edit', label: 'Edit event', icon: TicketIcon, onSelect: () => setParams({ edit: ev.id }) },
-                  ...(ev.status === 'on_sale' && canCancel ? [{ id: 'pause', label: 'Pause sales', icon: PauseIcon, onSelect: () => setStatus(ev, 'paused') }] : []),
-                  ...((ev.status === 'paused' || ev.status === 'draft') && canCancel ? [{ id: 'resume', label: 'Put on sale', icon: PlayIcon, onSelect: () => setStatus(ev, 'on_sale') }] : []),
-                  ...(canCancel ? [{ id: 'cancel', label: 'Cancel event…', icon: XCircleIcon, destructive: true, onSelect: () => setCancelling(ev) }] : [])]
-                  }
-                  trigger={(props) => <IconButton {...props} size="sm" icon={MoreHorizontalIcon} label={tr('More actions for {name}', { name: ev.name })} />} />
-                
+                    align="end"
+                    items={[
+                    { id: 'guests', label: 'Guest list', icon: UsersIcon, onSelect: () => navigate(`/app/commerce/events/${ev.id}/guests`) },
+                    ...(ev.status !== 'cancelled' && ev.status !== 'draft' ? [{ id: 'checkin', label: 'Check in guests', icon: ScanLineIcon, onSelect: () => navigate(`/app/commerce/events/${ev.id}/check-in`) }] : []),
+                    { id: 'edit', label: 'Edit event', icon: TicketIcon, onSelect: () => setParams({ edit: ev.id }) },
+                    ...(pageFor.has(ev.id) ?
+                    [
+                    {
+                      id: 'page',
+                      label: `Edit event page (${publicUrl(pageFor.get(ev.id)!.handle)})`,
+                      icon: CalendarDaysIcon,
+                      onSelect: () => {
+                        switchSpace(pageFor.get(ev.id)!.spaceId);
+                        navigate('/app/canvas');
+                      }
+                    }] :
+
+                    []),
+                    ...(ev.status === 'on_sale' && canCancel ? [{ id: 'pause', label: 'Pause sales', icon: PauseIcon, onSelect: () => setStatus(ev, 'paused') }] : []),
+                    ...((ev.status === 'paused' || ev.status === 'draft') && canCancel ? [{ id: 'resume', label: 'Put on sale', icon: PlayIcon, onSelect: () => setStatus(ev, 'on_sale') }] : []),
+                    ...(canCancel ? [{ id: 'cancel', label: 'Cancel event…', icon: XCircleIcon, destructive: true, onSelect: () => setCancelling(ev) }] : [])]
+                    }
+                    trigger={(props) => <IconButton {...props} size="sm" icon={MoreHorizontalIcon} label={tr('More actions for {name}', { name: ev.name })} />} />
+                  
                   </li>);
 
-          })}
-            </ul>
+            })}
+            </List>
+            </Card>
         }
         </>
       }

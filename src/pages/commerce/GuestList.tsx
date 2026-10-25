@@ -56,9 +56,7 @@ export function GuestList() {
   const opened = rows.find((r) => r.id === openId) ?? null;
   if (!ev) {
     return (
-      <div className="mt-8 rounded-lg border border-line bg-raised">
-        <EmptyState icon={ReceiptIcon} title="Event not found" description="It may have been deleted." action={<Button onClick={() => navigate('/app/commerce/events')}>Back to events</Button>} />
-      </div>);
+      <EmptyState framed className="mt-8" icon={ReceiptIcon} title="Event not found" description="It may have been deleted." action={<Button onClick={() => navigate('/app/commerce/events')}>Back to events</Button>} />);
 
   }
 
@@ -206,9 +204,7 @@ export function GuestList() {
           <SeatMapOverview data={data} event={ev} bySeat={bySeat} onOpen={setOpenId} />
         </div> :
       rows.length === 0 ?
-      <div className="mt-8 rounded-lg border border-line bg-raised">
-          <EmptyState icon={UserPlusIcon} title="No guests yet" description="Tickets appear here the moment they’re bought. You can also add a guest yourself." action={<Button onClick={() => setAdding(true)}>Add guest</Button>} />
-        </div> :
+      <EmptyState framed className="mt-8" icon={UserPlusIcon} title="No guests yet" description="Tickets appear here the moment they’re bought. You can also add a guest yourself." action={<Button onClick={() => setAdding(true)}>Add guest</Button>} /> :
 
       <>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">

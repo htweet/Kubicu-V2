@@ -1,4 +1,6 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
+import { useProviders } from '../../hooks/useProviders';
 import type { NotifArea, NotifChannel } from '../../types/notifications';
 import { useNotifications } from '../../contexts/NotificationsContext';
 import { useTeam } from '../../contexts/TeamContext';
@@ -8,6 +10,7 @@ import { Switch } from '../ui/Switch';
 import { Badge } from '../ui/Badge';
 import { TextInput } from '../ui/TextInput';
 import { Card } from '../ui/layout/Card';
+import { Section } from '../ui/layout/Section';
 
 const channels: NotifChannel[] = ['app', 'email', 'whatsapp'];
 
@@ -15,23 +18,22 @@ const channels: NotifChannel[] = ['app', 'email', 'whatsapp'];
 export function NotificationsTab() {
   const n = useNotifications();
   const team = useTeam();
+  const providers = useProviders();
+  const emailProvider = providers.active('email');
+  const waProvider = providers.active('whatsapp');
   const mine = notifEvents.filter((e) => !e.permission || team.can(e.permission).allowed);
   const hidden = notifEvents.length - mine.length;
   const grouped = mine.reduce<Partial<Record<NotifArea, typeof mine>>>((acc, e) => ({ ...acc, [e.area]: [...(acc[e.area] ?? []), e] }), {});
 
   return (
     <div className="grid gap-10 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
-      <section aria-labelledby="notif-table" className="flex flex-col gap-3">
-        <div>
-          <h2 id="notif-table" className="text-label font-semibold text-fg">
-            What reaches you, and where
-          </h2>
-          <p className="mt-1 text-caption text-fg-muted">
-            Your own settings, {team.me.name.split(' ')[0]}. {hidden > 0 && `${hidden} event${hidden === 1 ? '' : 's'} your role can’t act on ${hidden === 1 ? 'is' : 'are'} hidden.`}
-          </p>
-        </div>
-        <div className="overflow-hidden rounded-lg border border-line bg-raised">
-          <div className="hidden grid-cols-[minmax(0,1fr)_repeat(3,84px)] gap-2 border-b border-line bg-sunken px-4 py-2 text-caption font-semibold text-fg-subtle md:grid">
+      <Section
+        id="notif-table"
+        title="What reaches you, and where"
+        description={`Your own settings, ${team.me.name.split(' ')[0]}.${hidden > 0 ? ` ${hidden} event${hidden === 1 ? '' : 's'} your role can’t act on ${hidden === 1 ? 'is' : 'are'} hidden.` : ''}`}>
+        
+        <Card as="div" body="flush" className="overflow-hidden">
+          <div className="hidden grid-cols-[minmax(0,1fr)_repeat(3,84px)] gap-2 border-b border-line bg-sunken px-5 py-2 text-caption font-semibold text-fg-subtle md:grid md:px-6">
             <span>Event</span>
             {channels.map((c) =>
             <span key={c} className="text-center">
@@ -41,10 +43,10 @@ export function NotificationsTab() {
           </div>
           {(Object.keys(grouped) as NotifArea[]).map((area) =>
           <div key={area} className="border-b border-line last:border-0">
-              <p className="px-4 pb-1 pt-3 text-caption font-semibold text-fg-subtle">{notifAreas[area].label}</p>
-              <ul>
+              <p className="px-5 pb-1 pt-3 text-caption font-semibold text-fg-subtle md:px-6">{notifAreas[area].label}</p>
+              <ul aria-label={notifAreas[area].label}>
                 {grouped[area]!.map((e) =>
-              <li key={e.id} className="flex flex-col gap-2 px-4 py-2.5 md:grid md:grid-cols-[minmax(0,1fr)_repeat(3,84px)] md:items-center md:gap-2">
+              <li key={e.id} className="flex min-h-[44px] flex-col gap-2 px-5 py-2.5 md:grid md:px-6 md:grid-cols-[minmax(0,1fr)_repeat(3,84px)] md:items-center md:gap-2">
                     <span className="text-label text-fg">{e.label}</span>
                     <div className="flex flex-wrap gap-4 md:contents">
                       {channels.map((c) => {
@@ -64,12 +66,18 @@ export function NotificationsTab() {
               </ul>
             </div>
           )}
-        </div>
-      </section>
+        </Card>
+      </Section>
 
       <aside className="flex flex-col gap-6">
         <Card id="nt-channels" title="Email and WhatsApp" actions={<Badge tone="warning">Preview — not sent yet</Badge>}>
           <p className="text-caption text-fg-muted">Only in-app notifications are delivered in this prototype. Email and WhatsApp choices are saved so they work as soon as a messaging provider is connected.</p>
+          <p className="mt-3 text-caption text-fg-muted">
+            {emailProvider || waProvider ? `Connected: ${[emailProvider?.name, waProvider?.name].filter(Boolean).join(' and ')} (test, sends simulated). ` : 'No messaging provider connected. '}
+            <Link to="/app/settings/integrations" className="font-medium text-action hover:underline">
+              Integrations
+            </Link>
+          </p>
         </Card>
         <Card id="nt-timing" title="When messages arrive">
           <div className="flex flex-col gap-5">

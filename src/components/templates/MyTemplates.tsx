@@ -17,6 +17,8 @@ import { TestModeStrip } from '../commerce/TestModeStrip';
 import { TemplateThumb } from './TemplateThumb';
 import { SellTemplateDialog } from './SellTemplateDialog';
 import { Stat, StatGroup } from '../ui/layout/Stat';
+import { Card } from '../ui/layout/Card';
+import { List } from '../ui/layout/ListRow';
 
 const statusInfo: Record<ListingStatus, {label: string;tone: BadgeTone;}> = {
   in_review: { label: 'In review', tone: 'info' },
@@ -89,13 +91,14 @@ export function MyTemplates({ sellOpen, setSellOpen }: {sellOpen: boolean;setSel
       {mine.length === 0 ?
       <EmptyState icon={LayoutTemplateIcon} title="You haven’t listed a template yet" description="Turn one of your spaces into a template. KUBICU removes your details, reviews it, then lists it with your name on it." action={<Button leadingIcon={PlusIcon} onClick={() => setSellOpen(true)}>Sell a template</Button>} /> :
 
-      <ul className="flex flex-col divide-y divide-line rounded-lg border border-line bg-raised">
+      <Card as="div" body="flush">
+        <List label="Your templates">
           {mine.map((l) => {
-          const doc = l.listedDoc ?? l.pendingDoc;
-          const lSales = sales.filter((s) => s.listingId === l.id && !s.refundedAt);
-          const avg = averageStars(l);
-          return (
-            <li key={l.id} className="flex flex-col gap-4 p-4 sm:flex-row sm:items-start">
+            const doc = l.listedDoc ?? l.pendingDoc;
+            const lSales = sales.filter((s) => s.listingId === l.id && !s.refundedAt);
+            const avg = averageStars(l);
+            return (
+              <li key={l.id} className="flex flex-col gap-4 px-5 py-4 sm:flex-row sm:items-start md:px-6">
                 <div className="shrink-0 self-start overflow-hidden rounded-[12px] border border-line">{doc && <TemplateThumb doc={doc} width={84} height={130} />}</div>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
@@ -110,54 +113,52 @@ export function MyTemplates({ sellOpen, setSellOpen }: {sellOpen: boolean;setSel
                     {l.listedVersion ? ` · v${l.listedVersion} on sale` : ''}
                   </p>
                   {l.reviewNote && (l.status === 'changes_requested' || l.status === 'rejected') &&
-                <p className="mt-2 rounded-md bg-warning-soft px-3 py-2 text-caption text-fg">
+                  <p className="mt-2 rounded-md bg-warning-soft px-3 py-2 text-caption text-fg">
                       <span className="font-semibold">KUBICU review: </span>
                       {l.reviewNote}
                     </p>
-                }
+                  }
                   <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-caption text-fg-muted">
                     <span>{lSales.length} sale{lSales.length === 1 ? '' : 's'}</span>
                     <span>{formatNgn(lSales.reduce((t, s) => t + s.creatorShareNgn, 0))} earned</span>
                     {avg !== null &&
-                  <span className="flex items-center gap-1">
+                    <span className="flex items-center gap-1">
                         <StarIcon size={12} className="fill-current text-warning" aria-hidden /> {avg} ({l.reviews.length})
                       </span>
-                  }
+                    }
                     <span>Updated {formatTimestamp(l.events[0]?.at ?? l.submittedAt)}</span>
                   </p>
                 </div>
                 <div className="flex shrink-0 flex-wrap gap-2">
                   {l.status !== 'rejected' &&
-                <Button size="sm" variant="secondary" leadingIcon={PencilIcon} onClick={() => setEditing(l)}>
+                  <Button size="sm" variant="secondary" leadingIcon={PencilIcon} onClick={() => setEditing(l)}>
                       {l.status === 'changes_requested' ? 'Fix and resubmit' : 'Update'}
                     </Button>
-                }
+                  }
                   {l.status === 'listed' &&
-                <Button size="sm" variant="tertiary" leadingIcon={EyeOffIcon} onClick={() => setListed(l, false)}>
+                  <Button size="sm" variant="tertiary" leadingIcon={EyeOffIcon} onClick={() => setListed(l, false)}>
                       Unlist
                     </Button>
-                }
+                  }
                   {l.status === 'unlisted' && l.listedDoc &&
-                <Button size="sm" variant="tertiary" leadingIcon={RotateCcwIcon} onClick={() => setListed(l, true)}>
+                  <Button size="sm" variant="tertiary" leadingIcon={RotateCcwIcon} onClick={() => setListed(l, true)}>
                       List again
                     </Button>
-                }
+                  }
                 </div>
               </li>);
 
-        })}
-        </ul>
+          })}
+        </List>
+        </Card>
       }
 
       {(sales.length > 0 || payouts.length > 0) &&
       <div className="grid gap-8 lg:grid-cols-2">
-          <section aria-labelledby="tpl-sales">
-            <h2 id="tpl-sales" className="text-label font-semibold text-fg">
-              Sales
-            </h2>
-            <ul className="mt-2 divide-y divide-line rounded-lg border border-line bg-raised">
+          <Card id="tpl-sales" title="Sales" body="flush">
+            <List label="Sales">
               {sales.slice(0, 12).map((s) =>
-            <li key={s.id} className="flex items-center justify-between gap-3 px-4 py-2.5 text-label">
+            <li key={s.id} className="flex items-center justify-between gap-3 px-5 py-3 text-label md:px-6">
                   <span className="min-w-0">
                     <span className="block truncate text-fg">{s.buyerName}</span>
                     <span className="block text-caption text-fg-subtle">
@@ -167,16 +168,13 @@ export function MyTemplates({ sellOpen, setSellOpen }: {sellOpen: boolean;setSel
                   <span className={s.refundedAt ? 'tabular-nums text-fg-subtle line-through' : 'tabular-nums text-fg'}>+{formatNgn(s.creatorShareNgn)}</span>
                 </li>
             )}
-              {sales.length === 0 && <li className="px-4 py-3 text-caption text-fg-muted">No sales yet.</li>}
-            </ul>
-          </section>
-          <section aria-labelledby="tpl-payouts">
-            <h2 id="tpl-payouts" className="text-label font-semibold text-fg">
-              Payouts
-            </h2>
-            <ul className="mt-2 divide-y divide-line rounded-lg border border-line bg-raised">
+              {sales.length === 0 && <li className="px-5 py-3 text-caption text-fg-muted md:px-6">No sales yet.</li>}
+            </List>
+          </Card>
+          <Card id="tpl-payouts" title="Payouts" body="flush">
+            <List label="Payouts">
               {payouts.map((p) =>
-            <li key={p.id} className="flex items-center justify-between gap-3 px-4 py-2.5 text-label">
+            <li key={p.id} className="flex items-center justify-between gap-3 px-5 py-3 text-label md:px-6">
                   <span>
                     {p.bankName} •••• {p.accountLast4}
                     <span className="block text-caption text-fg-subtle">{formatTimestamp(p.at)} · test mode</span>
@@ -184,9 +182,9 @@ export function MyTemplates({ sellOpen, setSellOpen }: {sellOpen: boolean;setSel
                   <span className="tabular-nums text-fg">{formatNgn(p.amountNgn)}</span>
                 </li>
             )}
-              {payouts.length === 0 && <li className="px-4 py-3 text-caption text-fg-muted">No payouts yet.</li>}
-            </ul>
-          </section>
+              {payouts.length === 0 && <li className="px-5 py-3 text-caption text-fg-muted md:px-6">No payouts yet.</li>}
+            </List>
+          </Card>
         </div>
       }
 

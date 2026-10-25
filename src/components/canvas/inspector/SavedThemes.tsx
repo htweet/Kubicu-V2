@@ -8,6 +8,7 @@ import { fontPairs } from '../../../data/pageThemes';
 import { Button } from '../../ui/Button';
 import { Dialog } from '../../ui/Dialog';
 import { TextInput } from '../../ui/TextInput';
+import { backgroundPreview } from '../../../utils/pageBackground';
 import { cn } from '../../../utils/cn';
 import { buttonStyle, fontsFor } from '../../blocks/pageStyle';
 
@@ -120,7 +121,7 @@ export function ThemeSwatch({ name, theme, active, onClick }: {name: string;them
         active ? 'border-select ring-1 ring-select' : 'border-line hover:border-line-strong'
       )}>
       
-      <span className="flex h-14 flex-col justify-between p-2" style={{ background: theme.material?.backdrop ?? theme.background }}>
+      <span className="flex h-14 flex-col justify-between p-2" style={{ background: backgroundPreview(theme) }}>
         <span className="text-[15px] leading-none" style={{ fontFamily: display, color: theme.text }}>
           Aa
         </span>

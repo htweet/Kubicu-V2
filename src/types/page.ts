@@ -42,7 +42,64 @@ export type BlockType =
 'logoStrip' |
 'figures' |
 'mediaList' |
-'listings';
+'listings' |
+'section' |
+'columns' |
+'tabs' |
+'announcement' |
+'cta' |
+'quote' |
+'timeline' |
+'comparison' |
+'beforeAfter' |
+'team' |
+'credentials' |
+'press' |
+'hours' |
+'agenda' |
+'contactActions' |
+'share' |
+'anchorNav' |
+'policies' |
+'carousel' |
+'brandHeader' |
+'linkCollection' |
+'qrCode' |
+'document' |
+'embed' |
+'shopCategories' |
+'checkoutButton' |
+'poll' |
+'community' |
+'reviewSummary' |
+'languageSwitch' |
+'smartButton' |
+'campaignSpotlight' |
+'recommendations' |
+'backToTop' |
+'delivery';
+
+/* Delivery & returns (D181) */
+export interface DeliveryLine {id: string;area: string;price: string;time: string;}
+
+/* Canvas ecosystem, round 2 (D170) */
+export interface CarouselSlide {id: string;imageUrl: string;imageAlt: string;title: string;text: string;url: string;}
+export interface CollectionLink {id: string;label: string;url: string;description: string;}
+export interface LinkGroup {id: string;name: string;links: CollectionLink[];}
+export interface PollOption {id: string;label: string;}
+export interface SmartRule {id: string;source: SourceId;label: string;url: string;}
+export interface RecommendationItem {id: string;title: string;text: string;url: string;imageUrl: string;imageAlt: string;reason: string;}
+
+/* Canvas ecosystem, round 1 (D169) */
+export interface TimelineItem {id: string;date: string;title: string;text: string;}
+export interface CompareColumn {id: string;name: string;price: string;highlight: boolean;}
+export interface CompareRow {id: string;label: string;values: string[];}
+export interface TeamMember {id: string;name: string;role: string;bio: string;imageUrl: string;imageAlt: string;url: string;}
+export interface CredentialItem {id: string;title: string;org: string;year: string;text: string;}
+export interface PressItem {id: string;outlet: string;title: string;date: string;url: string;kind: 'article' | 'interview' | 'book' | 'podcast' | 'talk';}
+export interface AgendaItem {id: string;time: string;title: string;speaker: string;text: string;}
+export interface AnchorItem {id: string;label: string;blockId: string;}
+export interface PolicyItem {id: string;title: string;text: string;}
 
 /** Layout sections (D153): six designed openings for a page. */
 export type HeroVariant = 'portrait' | 'split' | 'cover' | 'masthead' | 'poster' | 'product';
@@ -276,7 +333,8 @@ export interface BlockContentMap {
   };
   whatsapp: {label: string;phone: string;message: string;};
   newsletter: {title: string;description: string;buttonLabel: string;consentText: string;};
-  gallery: {title: string;layout: 'grid' | 'carousel';images: GalleryImage[];};
+  /** `masonry` (D171): natural image heights in balanced columns. */
+  gallery: {title: string;layout: 'grid' | 'carousel' | 'masonry';images: GalleryImage[];};
   productGrid: {
     title: string;
     items: GridProduct[];
@@ -397,6 +455,45 @@ export interface BlockContentMap {
   figures: {title: string;items: FigureItem[];confirmed: boolean;};
   mediaList: {title: string;kind: 'episodes' | 'tracks' | 'videos' | 'chapters';items: MediaListItem[];links: LinkItem[];};
   listings: {title: string;ctaLabel: string;items: ListingItem[];};
+  /* Containers (D167): hold up to 4 child blocks, one level deep. Children live in the same flat list with `parentId`. */
+  section: {heading: string;intro: string;align: 'left' | 'center';};
+  columns: {ratio: 'equal' | 'wide-first' | 'narrow-first';gap: 'normal' | 'wide';valign: 'top' | 'center';phoneReverse: boolean;};
+  tabs: {style: 'underline' | 'pills';phoneStyle: 'accordion' | 'tabs';};
+  /* Round 1 blocks (D169) */
+  announcement: {text: string;linkLabel: string;url: string;tone: 'neutral' | 'accent' | 'invert';};
+  cta: {title: string;text: string;primaryLabel: string;primaryUrl: string;secondaryLabel: string;secondaryUrl: string;layout: 'band' | 'card' | 'split';};
+  quote: {text: string;name: string;role: string;style: 'editorial' | 'marked';};
+  timeline: {title: string;intro: string;items: TimelineItem[];};
+  comparison: {title: string;intro: string;columns: CompareColumn[];rows: CompareRow[];};
+  beforeAfter: {title: string;beforeUrl: string;beforeAlt: string;afterUrl: string;afterAlt: string;beforeLabel: string;afterLabel: string;caption: string;permission: boolean;};
+  team: {title: string;intro: string;variant: 'team' | 'speakers';items: TeamMember[];};
+  credentials: {title: string;variant: 'credentials' | 'resume';summary: string;items: CredentialItem[];cvUrl: string;};
+  press: {title: string;items: PressItem[];};
+  hours: {title: string;timeZone: string;hours: OpeningHours[];note: string;};
+  agenda: {title: string;date: string;items: AgendaItem[];};
+  contactActions: {title: string;phone: string;email: string;whatsapp: string;website: string;layout: 'row' | 'stack';};
+  share: {title: string;text: string;};
+  anchorNav: {title: string;items: AnchorItem[];};
+  policies: {title: string;intro: string;items: PolicyItem[];};
+  /** Delivery & returns (D181): rates from the shop's own settings, or written by hand. Returns are always the owner's words. */
+  delivery: {title: string;intro: string;source: 'shop' | 'own';zones: DeliveryLine[];pickup: string;returns: string;note: string;};
+  /* Round 2 blocks (D170) */
+  carousel: {title: string;slides: CarouselSlide[];aspect: 'wide' | 'square' | 'portrait';};
+  brandHeader: {logoUrl: string;logoAlt: string;name: string;tagline: string;ctaLabel: string;url: string;align: 'left' | 'center';};
+  linkCollection: {title: string;layout: 'list' | 'grid';groups: LinkGroup[];};
+  qrCode: {target: 'page' | 'url';url: string;caption: string;size: 'sm' | 'md' | 'lg';};
+  document: {title: string;description: string;url: string;coverUrl: string;coverAlt: string;fileType: string;pages: string;};
+  embed: {url: string;title: string;caption: string;};
+  shopCategories: {title: string;collectionIds: string[];layout: 'chips' | 'cards';};
+  checkoutButton: {mode: 'checkout' | 'link';productId: string | null;url: string;label: string;note: string;};
+  poll: {question: string;options: PollOption[];showResults: 'after' | 'never';};
+  community: {platform: 'whatsapp' | 'telegram' | 'discord' | 'facebook' | 'slack' | 'other';name: string;description: string;url: string;ctaLabel: string;rules: string;};
+  reviewSummary: {title: string;limit: number;};
+  languageSwitch: {label: string;};
+  smartButton: {label: string;url: string;rules: SmartRule[];};
+  campaignSpotlight: {title: string;text: string;ctaLabel: string;url: string;imageUrl: string;imageAlt: string;startsAt: string | null;endsAt: string | null;afterText: string;};
+  recommendations: {title: string;intro: string;items: RecommendationItem[];};
+  backToTop: {label: string;};
 }
 
 export interface BlockStyle {
@@ -419,6 +516,8 @@ export interface BlockLayout {
 /** Page-wide layout settings (D153). */
 export interface PageLayoutSettings {
   contentWidth?: 'narrow' | 'standard' | 'wide';
+  /** Spacing around wide sections and bands (D175). Missing = 'comfortable', today's spacing. */
+  density?: 'comfortable' | 'compact';
   /** A sticky action bar on phones: one primary action. */
   actionBar?: {enabled: boolean;label: string;blockId: string | null;url: string;} | null;
 }
@@ -501,6 +600,100 @@ export interface DealRoomSettings {
   referralReward?: string;
 }
 
+/**
+ * An Event space (D178): one Commerce event on its own link. Tickets, seats, guest list and check-in
+ * all live in Commerce → Events; the space only points at the event. Phases come from the event's times.
+ */
+export interface EventSpaceSettings {
+  eventId: string;
+}
+
+/**
+ * A Fundraiser space (D179). Money goes through one open payment link (`linkId`) — the same kind the
+ * Support block uses — and straight to the wallet: the goal is a target, never a condition.
+ */
+export interface FundraiserSettings {
+  linkId: string;
+  goalNgn: number;
+  /** Optional end; payments stop after it. */
+  endsAt: string | null;
+  /** Set when the organiser closes it early. */
+  closedAt: string | null;
+  organiser: string;
+  /** What the money is for. Required. */
+  purpose: string;
+  /** Who benefits (optional). */
+  beneficiary: string;
+  /** Suggested amounts, up to 4. */
+  amounts: number[];
+  minNgn: number;
+  askMessage: boolean;
+  updates: DealRoomUpdate[];
+  /** End-date extensions, with the reason shown on the page. */
+  extensions: DealRoomExtension[];
+}
+
+/** One opening of a pop-up shop, in the workspace's local time (D183). */
+export interface PopupSession {
+  id: string;
+  /** YYYY-MM-DD */
+  date: string;
+  /** HH:MM, 24-hour. */
+  from: string;
+  to: string;
+}
+
+/**
+ * A Pop-up shop space (D183): a place and 1–5 opening sessions. Orders from this space are pickup
+ * only at the stall for a chosen session. Products and stock stay in Commerce; `stallLimits`
+ * optionally caps how many of a product this pop-up may sell.
+ */
+export interface PopupSettings {
+  venue: string;
+  address: string;
+  sessions: PopupSession[];
+  productIds: string[];
+  /** productId → most units this pop-up may sell. Missing = no extra limit. */
+  stallLimits: Record<string, number>;
+  /** How buyers pay: online in advance, at the stall on pickup, or their choice. */
+  payment: 'online' | 'stall' | 'both';
+  /** Set when the owner closes it early. */
+  closedAt: string | null;
+  /**
+   * D191: set the stall limits aside, so your main shop and other spaces can't sell those units
+   * while the pop-up is on. Released automatically when it closes or its last session ends.
+   */
+  holdStock?: boolean;
+}
+
+/**
+ * A Booking page space (D184): one short link that opens straight onto chosen services and their
+ * next free times. Services, hours and rules stay in the Bookings app; booking uses the normal sheet.
+ */
+export interface BookingPageSettings {
+  /** Bookings services shown, in this order (1–12). */
+  serviceIds: string[];
+  /** Heading above the services. */
+  intro: string;
+  /** WhatsApp number offered when there are no free times. Empty = not offered. */
+  whatsapp: string;
+  /** The starter's waitlist sign-up block, linked from the panel when there are no free times. */
+  waitlistBlockId: string | null;
+}
+
+/**
+ * A Members area space (D185): the whole space opens only for active subscribers to the chosen
+ * membership plans. Everyone else sees a welcome card with Join and Sign in. Access is checked live
+ * against Subscriptions — paused, ended and lapsed subscriptions don't get in.
+ */
+export interface MembersAreaSettings {
+  rule: MemberRule;
+  /** Welcome card for non-members. */
+  title: string;
+  teaser: string;
+  joinLabel: string;
+}
+
 /** Campaign settings on a campaign space's document (D52). */
 export interface CampaignSettings {
   starter: CampaignStarter;
@@ -529,6 +722,12 @@ export interface BaseBlock {
   locked?: boolean;
   /** Blocks sharing a groupId form one contiguous group. */
   groupId?: string | null;
+  /** Containers (D167): the Section, Columns or Tabs block this block sits inside. Missing = on the page itself. */
+  parentId?: string | null;
+  /** Inside Tabs: the tab's label. */
+  slotLabel?: string;
+  /** Editor-only name for Layers and the canvas, e.g. "Services band" (D175). Visitors never see it. */
+  name?: string;
   /** Co-branded spaces only (D121): who looks after this block. Missing = the business that set it up. */
   owner?: BlockOwner;
   createdAt: string;
@@ -593,6 +792,31 @@ export interface PageTheme {
   backgroundVeil?: number;
   /** Signature material layer (D161). Every field is optional and defaults to today's flat look. */
   material?: ThemeMaterial;
+  /**
+   * The owner's own page background (D182). Missing or 'theme' = whatever the preset defines (today's behaviour).
+   * 'solid' = the background colour only (drops a Signature backdrop and any artwork).
+   */
+  backgroundMode?: PageBackgroundMode;
+  backgroundGradient?: PageGradient;
+  /** Image mode: which part of the image stays in view when cropped. */
+  backgroundFocus?: BackgroundFocus;
+  /** Image mode: scrolls with the page instead of staying put. */
+  backgroundScroll?: boolean;
+  /** Average colour of an uploaded image, measured on upload, so the readability check has something to test. */
+  backgroundTone?: string;
+}
+
+export type PageBackgroundMode = 'theme' | 'solid' | 'gradient' | 'image';
+export type BackgroundFocus = 'top left' | 'top' | 'top right' | 'left' | 'center' | 'right' | 'bottom left' | 'bottom' | 'bottom right';
+
+export interface PageGradient {
+  /** 2 or 3 colours, in order. */
+  stops: string[];
+  kind: 'linear' | 'radial';
+  /** Linear direction in degrees (0, 45 … 315). Radial uses it to place the light source. */
+  angle: number;
+  /** Phones get a gentler two-colour fade (default true). */
+  calmOnPhones: boolean;
 }
 
 export type SurfaceFinish = 'matte' | 'satin' | 'glass' | 'lacquer';
@@ -704,6 +928,16 @@ export interface PageDocument {
   campaign?: CampaignSettings;
   /** Present on DealRoom spaces only (D54). */
   dealRoom?: DealRoomSettings;
+  /** Present on Event spaces only (D178). */
+  eventSpace?: EventSpaceSettings;
+  /** Present on Fundraiser spaces only (D179). */
+  fundraiser?: FundraiserSettings;
+  /** Present on Pop-up shop spaces only (D183). */
+  popup?: PopupSettings;
+  /** Present on Booking page spaces only (D184). */
+  bookingPage?: BookingPageSettings;
+  /** Present on Members area spaces only (D185). */
+  membersArea?: MembersAreaSettings;
   /** Present on co-branded campaign spaces only (D121). */
   coBrand?: CoBrandSettings | null;
   /** Language of the page content, as a BCP 47 tag (WCAG 3.1.1, D76). Defaults to "en". */

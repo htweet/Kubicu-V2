@@ -23,11 +23,12 @@ import { SpaceAccessDialog } from '../components/spaces/SpaceAccessDialog';
 import type { Space } from '../types/workspace';
 import { PageHeader } from '../components/shell/PageHeader';
 import { PageStatusBadge } from '../components/canvas/PageStatusBadge';
+import { Stat, StatGroup } from '../components/ui/layout/Stat';
 import { PageMiniPreview } from '../components/overview/PageMiniPreview';
 import { CopyLinkButton } from '../components/overview/CopyLinkButton';
 import { SpacesList, type SpaceRow } from '../components/spaces/SpacesList';
 import { NewSpaceDialog } from '../components/spaces/NewSpaceDialog';
-import { spaceKinds } from '../data/spaceKinds';
+import { extraSpaceKindOrder, spaceKinds } from '../data/spaceKinds';
 import { extraSpaceLimits, MAIN_SPACE_ID, readSpacePage, spaceStatus, workspaceSpaces } from '../utils/spaces';
 import { Button } from '../components/ui/Button';
 import { IconButton } from '../components/ui/IconButton';
@@ -44,7 +45,7 @@ export function Spaces() {
   const { state, actions, issues, hasUnpublishedChanges } = useEditor();
   const navigate = useNavigate();
   const { workspaces, current, switchTo, switchSpace, create, setSpaceArchived } = useWorkspace();
-  const [newSpace, setNewSpace] = useState<{kind: 'campaign' | 'dealroom' | null;} | null>(null);
+  const [newSpace, setNewSpace] = useState<{kind: 'campaign' | 'dealroom' | 'event' | null;} | null>(null);
   const [archiving, setArchiving] = useState<SpaceRow | null>(null);
   const spacesAllowed = useCan('spaces.manage');
   const teamAllowed = useCan('team.manage');
@@ -252,27 +253,12 @@ export function Spaces() {
             </div>
             <CopyLinkButton handle={draft.handle} className="mt-4 self-start" />
 
-            <dl className="mt-6 grid grid-cols-2 gap-4 border-t border-line pt-5 sm:grid-cols-4">
-              <div>
-                <dt className="text-caption text-fg-subtle">Blocks</dt>
-                <dd className="mt-1 text-label font-semibold tabular-nums text-fg">
-                  {visibleCount}
-                  {visibleCount !== draft.blocks.length && <span className="font-normal text-fg-subtle"> · {draft.blocks.length - visibleCount} hidden</span>}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-caption text-fg-subtle">Versions</dt>
-                <dd className="mt-1 text-label font-semibold tabular-nums text-fg">{state.versions.length}</dd>
-              </div>
-              <div>
-                <dt className="text-caption text-fg-subtle">Published</dt>
-                <dd className="mt-1 text-label font-semibold text-fg">{state.publishedAt ? formatRelative(state.publishedAt) : 'Not yet'}</dd>
-              </div>
-              <div>
-                <dt className="text-caption text-fg-subtle">Last edited</dt>
-                <dd className="mt-1 text-label font-semibold text-fg">{formatRelative(draft.updatedAt)}</dd>
-              </div>
-            </dl>
+            <StatGroup columns={4} divided className="mt-6 pt-5">
+              <Stat label="Blocks" value={visibleCount} hint={visibleCount !== draft.blocks.length ? `${draft.blocks.length - visibleCount} hidden` : undefined} />
+              <Stat label="Versions" value={state.versions.length} />
+              <Stat label="Published" value={state.publishedAt ? formatRelative(state.publishedAt) : 'Not yet'} />
+              <Stat label="Last edited" value={formatRelative(draft.updatedAt)} />
+            </StatGroup>
 
             <section aria-labelledby="health-heading" className="mt-5 rounded-md bg-sunken px-4 py-3">
               <h3 id="health-heading" className="flex items-center gap-2 text-label font-semibold text-fg">
@@ -307,16 +293,16 @@ export function Spaces() {
       <section aria-labelledby="more-spaces-heading" className="mt-8 grid gap-5 border-y border-line py-6 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
           <div>
             <h2 id="more-spaces-heading" className="text-label font-semibold text-fg">
-              Run a sale or a group buy on its own link
+              Run a sale, group buy or event on its own link
             </h2>
-            <p className="mt-1 max-w-xl text-label text-fg-muted">Campaigns and DealRooms sell from the same products and stock as your main page, so orders and contacts all land in one place.</p>
+            <p className="mt-1 max-w-xl text-label text-fg-muted">Extra spaces sell from the same products, stock and events as your main page, so orders and contacts all land in one place.</p>
           </div>
           <div className="flex flex-wrap gap-2">
-            {(['campaign', 'dealroom'] as const).map((k) => {
+            {extraSpaceKindOrder.map((k) => {
             const K = spaceKinds[k];
             return (
               <Button key={k} variant="secondary" leadingIcon={K.icon} onClick={() => setNewSpace({ kind: k })}>
-                  {k === 'dealroom' ? 'New DealRoom' : 'New campaign'}
+                  New {K.label === 'DealRoom' ? K.label : K.label.toLowerCase()}
                 </Button>);
 
           })}

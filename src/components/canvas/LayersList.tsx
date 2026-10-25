@@ -25,7 +25,7 @@ import {
 import type { Block, BlockGroup } from '../../types/page';
 import { useEditor } from '../../contexts/EditorContext';
 import { blockDefinitions } from '../../data/blockRegistry';
-import { blockName, summarizeBlock } from '../../utils/blocks';
+import { blockName, layerName, summarizeBlock } from '../../utils/blocks';
 import { toUnits } from '../../utils/groups';
 import { issuesByBlock, type ValidationIssue } from '../../utils/validation';
 import { EmptyState } from '../ui/EmptyState';
@@ -141,7 +141,8 @@ export function LayersList({ touch = false, onPick }: LayersListProps) {
           leadingIcon={BookmarkPlusIcon}
           disabled={checked.length < 1}
           onClick={() => {
-            setSaving({ blocks: blocks.filter((b) => checked.includes(b.id)), name: '' });
+            // A saved container keeps what's inside it (D167).
+            setSaving({ blocks: blocks.filter((b) => checked.includes(b.id) || !!b.parentId && checked.includes(b.parentId)), name: '' });
             stopSelecting();
           }}>
           
@@ -164,9 +165,19 @@ export function LayersList({ touch = false, onPick }: LayersListProps) {
         unit.kind === 'block' ?
         <UnitItem key={unit.key} value={unit.key} locked={!!unit.block.locked} selecting={selecting}>
               {(startDrag) =>
-          <BlockRowShell startDrag={startDrag} touch={touch} locked={!!unit.block.locked} selecting={selecting} label={blockName(unit.block)}>
-                  {renderRow(unit.block, { inGroup: false, index: unitIndex, total: units.length })}
-                </BlockRowShell>
+          <>
+                  <BlockRowShell startDrag={startDrag} touch={touch} locked={!!unit.block.locked} selecting={selecting} label={blockName(unit.block)}>
+                    {renderRow(unit.block, { inGroup: false, index: unitIndex, total: units.length })}
+                  </BlockRowShell>
+                  {/* Containers (D167): the blocks inside, indented. Arrows move them among themselves. */}
+                  {unit.children.length > 0 &&
+            <ol aria-label={`Inside ${blockName(unit.block)}`} className={cn('flex flex-col gap-0.5 border-l border-line pl-2', touch ? 'ml-10' : 'ml-7')}>
+                      {unit.children.map((child, i) =>
+              <li key={child.id}>{renderRow(child, { inGroup: false, index: i, total: unit.children.length })}</li>
+              )}
+                    </ol>
+            }
+                </>
           }
             </UnitItem> :
 
@@ -526,6 +537,13 @@ function LayerRow({
   const hasError = issues.some((i) => i.severity === 'error');
   const btn = rowIconBtn(touch);
   const canCheck = selecting && !inGroup;
+  const { actions } = useEditor();
+  const [renaming, setRenaming] = useState(false);
+  const [draftName, setDraftName] = useState(block.name ?? '');
+  const commit = () => {
+    actions.renameBlock(block.id, draftName);
+    setRenaming(false);
+  };
 
   return (
     <div
@@ -546,8 +564,29 @@ function LayerRow({
           {checked && <CheckIcon size={11} strokeWidth={3} />}
         </span>
       }
+      {renaming ?
+      <input
+        autoFocus
+        aria-label={`Name for this ${blockName(block)} in Layers`}
+        placeholder={blockName(block)}
+        value={draftName}
+        maxLength={40}
+        onChange={(e) => setDraftName(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') commit();
+          if (e.key === 'Escape') {
+            setDraftName(block.name ?? '');
+            setRenaming(false);
+          }
+        }}
+        className="my-1 h-8 min-w-0 flex-1 rounded-sm border border-action bg-field px-2 text-label font-medium text-fg focus:outline-none focus:ring-2 focus:ring-action/25" /> :
+
+
       <button
         type="button"
+        onDoubleClick={() => !selecting && !locked && setRenaming(true)}
+        title="Double-click or press F2 to rename"
         role={canCheck ? 'checkbox' : undefined}
         aria-checked={canCheck ? checked : undefined}
         aria-disabled={selecting && inGroup ? true : undefined}
@@ -566,6 +605,11 @@ function LayerRow({
             e.preventDefault();
             onMove(e.key === 'ArrowUp' ? -1 : 1);
           }
+          if (!selecting && !locked && e.key === 'F2') {
+            e.preventDefault();
+            setDraftName(block.name ?? '');
+            setRenaming(true);
+          }
         }}
         className={cn(
           'flex min-w-0 flex-1 items-center gap-2.5 rounded-sm py-2 pl-1 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
@@ -575,8 +619,8 @@ function LayerRow({
         
         <Icon size={15} className="shrink-0 text-fg-muted" aria-hidden />
         <span className="min-w-0">
-          <span className="block truncate text-label font-medium text-fg">{blockName(block)}</span>
-          <span className="block truncate text-caption text-fg-subtle">{summarizeBlock(block)}</span>
+          <span className="block truncate text-label font-medium text-fg">{layerName(block)}</span>
+          <span className="block truncate text-caption text-fg-subtle">{block.name ? `${blockName(block)} · ${summarizeBlock(block)}` : summarizeBlock(block)}</span>
         </span>
         {issues.length > 0 && (
         hasError ?
@@ -585,6 +629,7 @@ function LayerRow({
         <AlertTriangleIcon size={14} className="ml-auto shrink-0 text-warning" aria-label="Worth checking" />)
         }
       </button>
+      }
       {!selecting &&
       <>
           {touch &&

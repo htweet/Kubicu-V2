@@ -9,6 +9,7 @@ import { Badge } from '../ui/Badge';
 import { EmptyState } from '../ui/EmptyState';
 import { ReviewDetail } from './ReviewDetail';
 import { Card } from '../ui/layout/Card';
+import { List } from '../ui/layout/ListRow';
 
 const statusBadge = {
   pending: { tone: 'info', label: 'Waiting' },
@@ -81,16 +82,14 @@ export function ApprovalsTab() {
           {reviewer ? 'Waiting for review' : 'Your requests'}
         </h2>
         {pending.length === 0 && recent.length === 0 ?
-        <div className="mt-3 rounded-lg border border-line bg-raised">
-            <EmptyState icon={SendIcon} title={reviewer ? 'Nothing to review' : 'No requests yet'} description={team.data.approvalsOn ? 'Requests appear here when an Editor sends a page, campaign or DealRoom for review.' : 'Turn on approvals to have Editors send their changes for review.'} />
-          </div> :
+        <EmptyState framed className="mt-3" icon={SendIcon} title={reviewer ? 'Nothing to review' : 'No requests yet'} description={team.data.approvalsOn ? 'Requests appear here when an Editor sends a page, campaign or DealRoom for review.' : 'Turn on approvals to have Editors send their changes for review.'} /> :
 
         <>
-            {pending.length > 0 ? <ul className="mt-3 flex flex-col divide-y divide-line border-y border-line">{pending.map(row)}</ul> : <p className="mt-2 text-caption text-fg-muted">Nothing waiting right now.</p>}
+            {pending.length > 0 ? <List ruled className="mt-3">{pending.map(row)}</List> : <p className="mt-2 text-caption text-fg-muted">Nothing waiting right now.</p>}
             {recent.length > 0 &&
           <>
                 <h3 className="mt-8 text-caption font-semibold text-fg-subtle">Recently decided</h3>
-                <ul className="mt-2 flex flex-col divide-y divide-line border-y border-line">{recent.map(row)}</ul>
+                <List ruled className="mt-2">{recent.map(row)}</List>
               </>
           }
           </>

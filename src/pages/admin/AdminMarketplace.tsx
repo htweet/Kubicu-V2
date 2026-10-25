@@ -9,6 +9,8 @@ import { Button } from '../../components/ui/Button';
 import { Sheet } from '../../components/ui/Sheet';
 import { TextArea } from '../../components/ui/TextArea';
 import { EmptyState } from '../../components/ui/EmptyState';
+import { Card } from '../../components/ui/layout/Card';
+import { List } from '../../components/ui/layout/ListRow';
 import { TemplateThumb } from '../../components/templates/TemplateThumb';
 import { licenceLabels } from '../../components/templates/CreatorListingInfo';
 import { averageStars, creatorShare, listingEvent, useTemplateStore } from '../../utils/templateListings';
@@ -130,13 +132,14 @@ export function AdminMarketplace() {
         {rows.length === 0 ?
           <EmptyState icon={InboxIcon} title={tab === 'queue' ? 'Nothing waiting for review' : 'Nothing here'} description={tab === 'queue' ? 'New templates and updates from creators appear here.' : undefined} /> :
 
-          <ul className="divide-y divide-line rounded-lg border border-line bg-raised">
+          <Card as="div" body="flush">
+          <List label="Templates">
             {rows.map((l) => {
-              const doc = (tab === 'queue' ? l.pendingDoc : l.listedDoc) ?? l.pendingDoc ?? l.listedDoc;
-              const s = sold(l.id);
-              return (
-                <li key={l.id}>
-                  <button type="button" onClick={() => openListing(l)} className="flex w-full items-center gap-4 px-4 py-3 text-left transition-colors duration-150 hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus">
+                const doc = (tab === 'queue' ? l.pendingDoc : l.listedDoc) ?? l.pendingDoc ?? l.listedDoc;
+                const s = sold(l.id);
+                return (
+                  <li key={l.id}>
+                  <button type="button" onClick={() => openListing(l)} className="flex w-full items-center gap-4 px-5 py-3 text-left md:px-6 transition-colors duration-150 hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus">
                     <span className="shrink-0 overflow-hidden rounded-[10px] border border-line">{doc && <TemplateThumb doc={doc} width={56} height={86} />}</span>
                     <span className="min-w-0 flex-1">
                       <span className="flex flex-wrap items-center gap-2">
@@ -155,8 +158,9 @@ export function AdminMarketplace() {
                   </button>
                 </li>);
 
-            })}
-          </ul>
+              })}
+          </List>
+          </Card>
           }
       </div>
       </>

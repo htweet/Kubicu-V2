@@ -15,6 +15,9 @@ import { AutomationBuilder, newAutomation } from '../components/automations/Auto
 import { RunSteps } from '../components/automations/RunSteps';
 import { PendingDrafts } from '../components/automations/PendingDrafts';
 import { SampleTag } from '../components/commerce/StatusBadges';
+import { Section } from '../components/ui/layout/Section';
+import { Card } from '../components/ui/layout/Card';
+import { List } from '../components/ui/layout/ListRow';
 
 const statusTone = { active: 'success', paused: 'warning', draft: 'neutral' } as const;
 const statusText = { active: 'On', paused: 'Paused', draft: 'Draft' } as const;
@@ -70,17 +73,15 @@ export function Automations() {
 
       <div className="mt-8 grid gap-10 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
         <div className="flex flex-col gap-10">
-          <section aria-labelledby="yours-h">
-            <h2 id="yours-h" className="text-heading font-semibold text-fg">
-              Your automations
-            </h2>
+          <Section id="yours" title="Your automations">
             {data.automations.length === 0 ?
-            <p className="mt-3 text-label text-fg-muted">None yet. Start from a recipe below.</p> :
+            <p className="text-label text-fg-muted">None yet. Start from a recipe below.</p> :
 
-            <ul className="mt-4 flex flex-col divide-y divide-line rounded-lg border border-line bg-raised">
+            <Card as="div" body="flush">
+              <List label="Your automations">
                 {data.automations.map((a) =>
-              <li key={a.id}>
-                    <button type="button" onClick={() => setEditing(a)} className="flex w-full flex-col gap-1.5 px-5 py-4 text-left transition-colors duration-150 hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus">
+                <li key={a.id}>
+                    <button type="button" onClick={() => setEditing(a)} className="flex w-full flex-col gap-1.5 px-5 py-4 text-left md:px-6 transition-colors duration-150 hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus">
                       <span className="flex flex-wrap items-center gap-2">
                         <span className="text-label font-semibold text-fg">{a.name}</span>
                         <Badge tone={statusTone[a.status]} dot>
@@ -96,16 +97,14 @@ export function Automations() {
                       </span>
                     </button>
                   </li>
-              )}
-              </ul>
+                )}
+              </List>
+              </Card>
             }
-          </section>
+          </Section>
 
-          <section aria-labelledby="recipes-h">
-            <h2 id="recipes-h" className="text-heading font-semibold text-fg">
-              Start from a recipe
-            </h2>
-            <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+          <Section id="recipes" title="Start from a recipe">
+            <ul className="grid gap-3 sm:grid-cols-2">
               {recipes.map((r) =>
               <li key={r.id}>
                   <button type="button" onClick={() => setEditing(newAutomation(r.id))} className="flex h-full w-full flex-col rounded-md border border-line p-4 text-left transition-colors duration-150 hover:border-line-strong hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
@@ -117,21 +116,14 @@ export function Automations() {
                 </li>
               )}
             </ul>
-          </section>
+          </Section>
         </div>
 
-        <section aria-labelledby="runs-h">
-          <h2 id="runs-h" className="text-heading font-semibold text-fg">
-            Run history
-          </h2>
-          <p className="mt-0.5 text-caption text-fg-subtle">
-            {liveRuns} run{liveRuns === 1 ? '' : 's'}
-            {failed > 0 ? ` · ${failed} failed` : ''} · usage isn’t billed in this prototype
-          </p>
+        <Section id="runs" title="Run history" description={`${liveRuns} run${liveRuns === 1 ? '' : 's'}${failed > 0 ? ` · ${failed} failed` : ''} · usage isn’t billed in this prototype`}>
           {runs.length === 0 ?
-          <p className="mt-4 text-label text-fg-muted">No runs yet. Use “Test run” in any automation.</p> :
+          <p className="text-label text-fg-muted">No runs yet. Use “Test run” in any automation.</p> :
 
-          <ul className="mt-4 flex flex-col divide-y divide-line border-y border-line">
+          <List ruled label="Run history">
               {runs.map(({ automation, run }) =>
             <li key={run.id}>
                   <button type="button" onClick={() => setRunView({ automation, run })} className="flex w-full items-start gap-3 py-3 text-left hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
@@ -144,9 +136,9 @@ export function Automations() {
                   </button>
                 </li>
             )}
-            </ul>
+            </List>
           }
-        </section>
+        </Section>
       </div>
 
       <AutomationBuilder automation={editing} onClose={() => setEditing(null)} />

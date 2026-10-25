@@ -17,6 +17,8 @@ interface LayoutRowProps {
    * true / false (canvas artboard): force the wide or phone arrangement, since the artboard isn't the window.
    */
   sideBySide?: 'responsive' | boolean;
+  /** Page section spacing (D175). */
+  density?: 'comfortable' | 'compact';
   children: React.ReactNode[];
 }
 
@@ -24,7 +26,8 @@ interface LayoutRowProps {
  * One row of a page (D153): a width, an optional theme-derived section background,
  * and either one block or two blocks side by side. Defaults reproduce today's single column exactly.
  */
-export function LayoutRow({ theme, columnPx, width, background, ratio, firstSecondOnPhone, sideBySide = 'responsive', children }: LayoutRowProps) {
+export function LayoutRow({ theme, columnPx, width, background, ratio, firstSecondOnPhone, sideBySide = 'responsive', density = 'comfortable', children }: LayoutRowProps) {
+  const compact = density === 'compact';
   const st = sectionTheme(theme, background);
   const maxWidth = width === 'column' ? columnPx : width === 'wide' ? WIDE_PX : undefined;
   const paired = children.length === 2 && ratio;
@@ -44,14 +47,14 @@ export function LayoutRow({ theme, columnPx, width, background, ratio, firstSeco
 
   // Wide sections get real breathing room (D157). Column rows keep today's spacing so existing pages don't move.
   const body =
-  <div className={cn('mx-auto w-full', width !== 'full' && 'px-5 md:px-8', width === 'wide' && background === 'none' && 'py-6 md:py-12')} style={{ maxWidth: maxWidth ? maxWidth + (width === 'wide' ? 64 : 0) : undefined }}>
+  <div className={cn('mx-auto w-full', width !== 'full' && 'px-5 md:px-8', width === 'wide' && background === 'none' && (compact ? 'py-3 md:py-6' : 'py-6 md:py-12'))} style={{ maxWidth: maxWidth ? maxWidth + (width === 'wide' ? 64 : 0) : undefined }}>
       {inner}
     </div>;
 
 
   if (background === 'none') return body;
   return (
-    <div className="w-full py-14 md:py-24" style={{ background: st.background, color: st.text }}>
+    <div className={cn('w-full', compact ? 'py-8 md:py-14' : 'py-14 md:py-24')} style={{ background: st.background, color: st.text }}>
       {body}
     </div>);
 

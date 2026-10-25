@@ -17,6 +17,7 @@ import { variantLabel } from '../../utils/commerce/catalog';
 import { formatTimestamp } from '../../utils/format';
 import { cn } from '../../utils/cn';
 import { Section } from '../../components/ui/layout/Section';
+import { List } from '../../components/ui/layout/ListRow';
 import { useT } from '../../contexts/LocaleContext';
 
 interface StockRow {
@@ -104,9 +105,7 @@ export function Inventory() {
       <PageHeader title="Inventory" description="Stock for every variant. Orders reserve stock automatically and cancellations put it back." />
 
       {tracked.length === 0 ?
-      <div className="mt-8 rounded-lg border border-line bg-raised">
-          <EmptyState icon={PackageIcon} title="No stock to track yet" description="Products with “Track stock” switched on appear here." action={<Link to="/app/commerce/products?new=1" className="text-label font-semibold text-action hover:underline">{tr('Add a product')}</Link>} />
-        </div> :
+      <EmptyState framed className="mt-8" icon={PackageIcon} title="No stock to track yet" description="Products with “Track stock” switched on appear here." action={<Link to="/app/commerce/products?new=1" className="text-label font-semibold text-action hover:underline">{tr('Add a product')}</Link>} /> :
 
       <div className="mt-8 grid items-start gap-8 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] xl:gap-10">
           <Section
@@ -142,7 +141,7 @@ export function Inventory() {
             {movements.length === 0 ?
           <p className="text-label text-fg-muted">{tr('No stock changes yet.')}</p> :
 
-          <ol className="flex flex-col divide-y divide-line border-y border-line">
+          <List ordered ruled label={tr('Stock history')}>
                 {movements.map((m) =>
             <li key={m.id} className="flex items-start gap-3 py-3">
                     <span
@@ -174,7 +173,7 @@ export function Inventory() {
                     </span>
                   </li>
             )}
-              </ol>
+              </List>
           }
           </Section>
         </div>

@@ -17,6 +17,8 @@ import { plans } from '../data/plans';
 import { formatNaira as formatNgn } from '../utils/format';
 import { cn } from '../utils/cn';
 import { Section } from '../components/ui/layout/Section';
+import { Card } from '../components/ui/layout/Card';
+import { List } from '../components/ui/layout/ListRow';
 import { listedCommunity, useSubmissions } from '../utils/extensionSubmissions';
 
 type View = 'browse' | 'installed';
@@ -107,13 +109,14 @@ export function Extensions() {
         {list.length === 0 ?
         <EmptyState className="mt-6" icon={PuzzleIcon} title={view === 'installed' && !installedCount ? 'Nothing installed yet' : 'No extensions match'} description={view === 'installed' && !installedCount ? 'Browse the catalogue to add features.' : 'Try another search or category.'} /> :
 
-        <ul className="mt-4 divide-y divide-line rounded-lg border border-line bg-raised">
+        <Card as="div" body="flush" className="mt-4">
+          <List label="Extensions">
             {list.map((e) => {
-            const rec = market.data.installed[e.id];
-            const rating = averageRating(e);
-            return (
-              <li key={e.id}>
-                  <button type="button" onClick={() => setOpen(e.id)} className="flex w-full items-center gap-4 px-4 py-4 text-left transition-colors duration-150 hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus">
+              const rec = market.data.installed[e.id];
+              const rating = averageRating(e);
+              return (
+                <li key={e.id}>
+                  <button type="button" onClick={() => setOpen(e.id)} className="flex w-full items-center gap-4 px-5 py-4 text-left md:px-6 transition-colors duration-150 hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus">
                     <ExtensionIcon ext={e} />
                     <span className="min-w-0 flex-1">
                       <span className="flex flex-wrap items-center gap-2">
@@ -128,20 +131,21 @@ export function Extensions() {
                     </span>
                     <span className="hidden shrink-0 text-right sm:block">
                       {rec ?
-                    <Badge tone={rec.paused ? 'warning' : 'success'} dot>
+                      <Badge tone={rec.paused ? 'warning' : 'success'} dot>
                           {rec.paused ? 'Paused' : 'Installed'}
                         </Badge> :
 
-                    <span className="text-caption text-fg-muted">
+                      <span className="text-caption text-fg-muted">
                           {e.priceNgn ? `${formatNgn(e.priceNgn)}/mo` : 'Free'} · {plans[e.minPlan].name}+
                         </span>
-                    }
+                      }
                     </span>
                   </button>
                 </li>);
 
-          })}
-          </ul>
+            })}
+          </List>
+          </Card>
         }
       </section>
 

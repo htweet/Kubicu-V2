@@ -5,7 +5,7 @@ import type { PersistedPage, Space, SpaceKind, Workspace } from '../types/worksp
 import { DEMO_WORKSPACE_ID, writePersistedPage } from '../utils/workspaceStorage';
 import { MAIN_SPACE_ID, mainSpace, spaceStorageId, workspaceSpaces } from '../utils/spaces';
 import { uid } from '../utils/id';
-import { seedSampleSpaces } from '../data/sampleSpaces';
+import { SAMPLE_SPACES_ROUND, seedSampleSpaces } from '../data/sampleSpaces';
 
 const LIST_KEY = 'kubicu.workspaces';
 const CURRENT_KEY = 'kubicu.workspace.current';
@@ -52,6 +52,8 @@ function demoWorkspace(plan: WorkspacePlan): Workspace {
     pageId: 'page_adaeze',
     spaces: seedSampleSpaces(),
     sampleSpacesSeeded: true,
+    sampleSpaces2Seeded: true,
+    sampleSpacesRound: SAMPLE_SPACES_ROUND,
     createdAt: '2026-10-14T09:00:00.000Z'
   };
 }
@@ -60,8 +62,12 @@ function readList(plan: WorkspacePlan): Workspace[] {
   try {
     const parsed = JSON.parse(window.localStorage.getItem(LIST_KEY) ?? 'null') as Workspace[] | null;
     if (Array.isArray(parsed) && parsed.some((w) => w.id === DEMO_WORKSPACE_ID))
-      // The demo workspace gets the sample campaign and DealRoom once (they can be archived like any space).
-      return parsed.map((w) => w.id === DEMO_WORKSPACE_ID && !w.sampleSpacesSeeded ? { ...w, spaces: [...(w.spaces ?? []), ...seedSampleSpaces().filter((s) => !(w.spaces ?? []).some((x) => x.id === s.id))], sampleSpacesSeeded: true } : w);
+      // The demo workspace gets each round of sample spaces once (they can be archived like any space).
+      return parsed.map((w) =>
+      w.id === DEMO_WORKSPACE_ID && (!w.sampleSpacesSeeded || !w.sampleSpaces2Seeded || (w.sampleSpacesRound ?? 2) < SAMPLE_SPACES_ROUND) ?
+      { ...w, spaces: [...(w.spaces ?? []), ...seedSampleSpaces().filter((s) => !(w.spaces ?? []).some((x) => x.id === s.id))], sampleSpacesSeeded: true, sampleSpaces2Seeded: true, sampleSpacesRound: SAMPLE_SPACES_ROUND } :
+      w
+      );
   } catch {
 
     // Fall through to the default list.

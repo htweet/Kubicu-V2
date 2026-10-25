@@ -70,6 +70,10 @@ export function OrderStatus() {
   tx('Your files are ready. Your download link is below and in your receipt email.') :
   order.balance && !order.balance.paidAt ?
   tx('Your deposit is confirmed and your order is being made. Pay the balance below before it’s sent out.') :
+  order.popup ?
+  order.popup.payAtStall && order.paymentStatus === 'pending' ?
+  tx('Collect at the stall: {when}. Pay when you collect and show your order number.', { when: order.popup.sessionLabel }) :
+  tx('Collect at the stall: {when}. Show your order number.', { when: order.popup.sessionLabel }) :
   order.fulfilment.method === 'pickup' ?
   tx('The seller will let you know when it’s ready to collect.') :
   tx('Expected delivery: {eta}.', { eta });
@@ -168,6 +172,8 @@ export function OrderStatus() {
                   tx('Delivery to {zone}', { zone: order.fulfilment.zoneName ?? '' })}
               </p>
               {order.fulfilment.address && <p style={muted}>{order.fulfilment.address}</p>}
+              {order.popup && <p style={muted}>{tx('Pop-up pickup · {when}', { when: order.popup.sessionLabel })}</p>}
+              {order.popup?.payAtStall && order.paymentStatus === 'pending' && <p className="font-semibold">{tx('Pay at the stall when you collect')}</p>}
               <p style={muted}>
                 {order.customer.name} · {order.customer.phone}
                 {order.customer.email ? ` · ${order.customer.email}` : ''}

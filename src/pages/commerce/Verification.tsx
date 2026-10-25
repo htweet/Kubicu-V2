@@ -25,6 +25,8 @@ import { BusinessStep } from '../../components/kyc/steps/BusinessStep';
 import { PeopleStep } from '../../components/kyc/steps/PeopleStep';
 import { PayoutStep } from '../../components/kyc/steps/PayoutStep';
 import { DeclarationsStep } from '../../components/kyc/steps/DeclarationsStep';
+import { Card } from '../../components/ui/layout/Card';
+import { DetailList } from '../../components/ui/layout/DetailList';
 
 /**
  * Commerce → Verification (D93): full KYC for individuals and KYB for registered businesses.
@@ -140,12 +142,9 @@ export function Verification() {
       <div className="mt-6 grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
           <div className="flex flex-col gap-6">
             <KycStatusPanel k={k} canEdit={perm.allowed} onRestart={restart} />
-            <section aria-labelledby="kyc-sent-title" className="rounded-lg border border-line bg-raised p-5 md:p-6">
-              <h2 id="kyc-sent-title" className="mb-5 text-label font-semibold text-fg">
-                {tr('What you sent')}
-              </h2>
+            <Card id="kyc-sent" title="What you sent">
               <KycSummary k={k} banks={banks} />
-            </section>
+            </Card>
           </div>
           <LimitsAside entity={k.entity} />
         </div> :
@@ -155,6 +154,7 @@ export function Verification() {
             <KycStepper steps={steps} current={step} done={(s) => stepDone(k, s, banks)} flagged={flagged} locked={(s) => s !== 'type' && !k.entity} onSelect={go} />
           </div>
 
+          {/* Same shell as Card (D75), hand-built only because the step needs a scroll/focus ref and a sticky footer. */}
           <div ref={cardRef} className="scroll-mt-6 rounded-lg border border-line bg-raised">
             <header className="border-b border-line px-5 py-4 md:px-6">
               <h2 tabIndex={-1} className="text-heading font-semibold text-fg focus:outline-none">
@@ -215,20 +215,15 @@ export function Verification() {
 function LimitsAside({ entity }: {entity: KycCase['entity'];}) {
   const { t: tr } = useT();
   return (
-    <aside aria-labelledby="kyc-limits-title" className="rounded-lg border border-line bg-raised p-5 md:p-6">
-      <h2 id="kyc-limits-title" className="text-label font-semibold text-fg">
-        {tr('What verification unlocks')}
-      </h2>
-      <dl className="mt-4 flex flex-col divide-y divide-line">
-        {(['individual', 'company'] as const).map((e) =>
-        <div key={e} className="flex items-baseline justify-between gap-3 py-2.5 first:pt-0">
-            <dt className="text-caption text-fg-muted">{tr(e === 'individual' ? 'Individuals' : 'Registered businesses')}</dt>
-            <dd className="text-right text-caption font-medium text-fg">{tr(e === 'individual' ? '₦2m a day · ₦10m balance' : '₦20m a day · no balance limit')}</dd>
-          </div>
-        )}
-      </dl>
-      {entity && <p className="mt-3 text-caption text-fg-subtle">{tr('You applied as: {type}.', { type: tr(entityInfo[entity].short) })}</p>}
-      <p className="mt-3 text-caption text-fg-subtle">{tr('Example figures — final limits depend on the payment partner.')}</p>
-    </aside>);
+    <Card id="kyc-limits" title="What verification unlocks">
+      <DetailList
+        items={(['individual', 'company'] as const).map((e) => ({
+          label: tr(e === 'individual' ? 'Individuals' : 'Registered businesses'),
+          value: tr(e === 'individual' ? '₦2m a day · ₦10m balance' : '₦20m a day · no balance limit')
+        }))} />
+      
+      {entity && <p className="mt-4 text-caption text-fg-subtle">{tr('You applied as: {type}.', { type: tr(entityInfo[entity].short) })}</p>}
+      <p className="mt-2 text-caption text-fg-subtle">{tr('Example figures — final limits depend on the payment partner.')}</p>
+    </Card>);
 
 }

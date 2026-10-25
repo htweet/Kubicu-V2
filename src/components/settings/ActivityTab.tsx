@@ -9,6 +9,7 @@ import { initials } from '../../utils/team';
 import { Button } from '../ui/Button';
 import { SelectInput } from '../ui/SelectInput';
 import { EmptyState } from '../ui/EmptyState';
+import { List } from '../ui/layout/ListRow';
 
 const areaLabels: Record<ActivityArea, string> = { team: 'Team', pages: 'Pages', commerce: 'Commerce', bookings: 'Bookings', audience: 'Audience', settings: 'Settings' };
 type Period = '1' | '7' | '30' | 'all';
@@ -62,15 +63,13 @@ export function ActivityTab() {
       </div>
 
       {rows.length === 0 ?
-      <div className="rounded-lg border border-line bg-raised">
-          <EmptyState icon={HistoryIcon} title="Nothing here" description={team.data.activity.length ? 'No activity matches these filters.' : 'Publishing, refunds, role changes and assignments show up here as people work.'} />
-        </div> :
+      <EmptyState framed icon={HistoryIcon} title="Nothing here" description={team.data.activity.length ? 'No activity matches these filters.' : 'Publishing, refunds, role changes and assignments show up here as people work.'} /> :
 
       <div className="flex flex-col gap-6">
           {groups.map((g) =>
         <section key={g.day} aria-label={g.day}>
               <h3 className="text-caption font-semibold text-fg-subtle">{g.day === today ? 'Today' : g.day === yesterday ? 'Yesterday' : new Date(g.day).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'short' })}</h3>
-              <ol className="mt-2 flex flex-col divide-y divide-line border-y border-line">
+              <List ordered ruled className="mt-2">
                 {g.items.map((a) =>
             <li key={a.id} className="flex items-start gap-3 py-2.5">
                     <span aria-hidden className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-action-soft text-caption font-semibold text-action">
@@ -86,7 +85,7 @@ export function ActivityTab() {
                     </div>
                   </li>
             )}
-              </ol>
+              </List>
             </section>
         )}
         </div>

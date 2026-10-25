@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { ChevronDownIcon, FlaskConicalIcon, LockKeyholeIcon, PackageIcon, PlusIcon, RepeatIcon, UsersIcon } from 'lucide-react';
+import { ChevronDownIcon, LockKeyholeIcon, PackageIcon, PlusIcon, RepeatIcon, UsersIcon } from 'lucide-react';
 import { useEditor } from '../../contexts/EditorContext';
 import { memberAreas } from '../../utils/members';
 import { sitePages } from '../../utils/sitePages';
@@ -29,6 +29,8 @@ import { SubscriberDetail } from '../../components/subscriptions/SubscriberDetai
 import { SubPlanEditor } from '../../components/subscriptions/SubPlanEditor';
 import { Card } from '../../components/ui/layout/Card';
 import { Stat, StatGroup } from '../../components/ui/layout/Stat';
+import { List } from '../../components/ui/layout/ListRow';
+import { PrototypeNote } from '../../components/ui/PrototypeNote';
 import { useT } from '../../contexts/LocaleContext';
 import { intervalWord } from '../../utils/commerce/subscriptions';
 
@@ -191,29 +193,27 @@ export function Subscriptions() {
       <div className="mt-4">
         {tab === 'subscribers' ?
         data.subscriptions.length === 0 ?
-        <div className="rounded-lg border border-line bg-raised">
-              <EmptyState
-            icon={RepeatIcon}
-            title="No subscribers yet"
-            description={data.subPlans.length ? 'Add a Subscription block to your page in the canvas. Sign-ups appear here.' : 'Create a membership or a product box, then add a Subscription block to your page.'}
-            action={data.subPlans.length ? undefined : newMenu} />
-          
-            </div> :
+        <EmptyState
+          framed
+          icon={RepeatIcon}
+          title="No subscribers yet"
+          description={data.subPlans.length ? 'Add a Subscription block to your page in the canvas. Sign-ups appear here.' : 'Create a membership or a product box, then add a Subscription block to your page.'}
+          action={data.subPlans.length ? undefined : newMenu} /> :
+
 
         <DataTable caption="Subscribers" rows={rows} columns={columns} filterText={(r) => `${r.customer.name} ${r.customer.phone} ${r.customer.email} ${r.planName}`} filterPlaceholder="Search subscribers" emptyTitle="No subscribers match" /> :
 
         data.subPlans.length === 0 ?
-        <div className="rounded-lg border border-line bg-raised">
-            <EmptyState icon={RepeatIcon} title="No plans yet" description="A membership for recurring access, or a product box that delivers from your catalogue every cycle." action={newMenu} />
-          </div> :
+        <EmptyState framed icon={RepeatIcon} title="No plans yet" description="A membership for recurring access, or a product box that delivers from your catalogue every cycle." action={newMenu} /> :
 
-        <ul className="divide-y divide-line rounded-lg border border-line bg-raised">
+        <Card as="div" body="flush">
+          <List label={tr('Plans')}>
             {data.subPlans.map((p) => {
-            const taken = seatsTaken(data, p.id);
-            const short = boxShortfall(data, p);
-            return (
-              <li key={p.id}>
-                  <button type="button" onClick={() => setEditing({ plan: p })} className="flex w-full flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3.5 text-left transition-colors duration-150 hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus">
+              const taken = seatsTaken(data, p.id);
+              const short = boxShortfall(data, p);
+              return (
+                <li key={p.id}>
+                  <button type="button" onClick={() => setEditing({ plan: p })} className="flex min-h-[56px] w-full flex-wrap items-center gap-x-4 gap-y-1 px-5 py-3.5 text-left md:px-6 transition-colors duration-150 hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus">
                     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-sunken text-fg-muted">{p.kind === 'box' ? <PackageIcon size={16} aria-hidden /> : <UsersIcon size={16} aria-hidden />}</span>
                     <span className="min-w-0 flex-1">
                       <span className="flex items-center gap-2">
@@ -228,14 +228,14 @@ export function Subscriptions() {
                       </span>
                       {short.length > 0 && <span className="block text-caption font-medium text-warning">{tr('Not enough stock for the next box:')} {short.join(', ')}</span>}
                       {(() => {
-                      const unlocks = areas.filter((a) => a.rule.access === 'any' || a.rule.planIds.includes(p.id));
-                      return unlocks.length > 0 ?
-                      <span className="mt-0.5 flex items-center gap-1 text-caption text-fg-muted">
+                        const unlocks = areas.filter((a) => a.rule.access === 'any' || a.rule.planIds.includes(p.id));
+                        return unlocks.length > 0 ?
+                        <span className="mt-0.5 flex items-center gap-1 text-caption text-fg-muted">
                             <LockKeyholeIcon size={12} aria-hidden className="shrink-0" />
                             <span className="truncate">{tr('Content access:')} {unlocks.map((a) => a.label).join(' · ')}</span>
                           </span> :
-                      null;
-                    })()}
+                        null;
+                      })()}
                     </span>
                     <span className="text-label tabular-nums text-fg-muted">
                       {taken}
@@ -244,23 +244,25 @@ export function Subscriptions() {
                   </button>
                 </li>);
 
-          })}
-          </ul>
+            })}
+          </List>
+          </Card>
         }
       </div>
 
-      <section aria-labelledby="sub-proto" className="mt-10 flex flex-col gap-3 rounded-lg border border-dashed border-line-strong p-4">
-        <h2 id="sub-proto" className="flex items-center gap-2 text-label font-semibold text-fg">
-          <FlaskConicalIcon size={15} aria-hidden /> {tr('Prototype: skip ahead in time')}
-        </h2>
-        <p className="text-caption text-fg-muted">
-          {tr('Renewals, trial ends and retries run by themselves while KUBICU is open. To see the next step now, run it here. Outcomes follow “Simulate next renewal” in the Controls panel.')}{' '}
-          <span className="font-medium text-fg">({tr(renewalOutcome === 'succeeds' ? 'now: succeeds' : 'now: fails')})</span>
-        </p>
-        <Button size="sm" variant="secondary" className="self-start" onClick={runNow}>
-          {tr('Run renewals now')}
-        </Button>
-      </section>
+      <PrototypeNote
+        id="sub-proto"
+        className="mt-10"
+        title="Prototype: skip ahead in time"
+        actions={
+        <Button size="sm" variant="secondary" onClick={runNow}>
+            {tr('Run renewals now')}
+          </Button>
+        }>
+        
+        {tr('Renewals, trial ends and retries run by themselves while KUBICU is open. To see the next step now, run it here. Outcomes follow “Simulate next renewal” in the Controls panel.')}{' '}
+        <span className="font-medium text-fg">({tr(renewalOutcome === 'succeeds' ? 'now: succeeds' : 'now: fails')})</span>
+      </PrototypeNote>
 
       <SubscriberDetail subId={openId} onClose={() => setOpenId(null)} />
       <SubPlanEditor target={editing} onClose={() => setEditing(null)} />

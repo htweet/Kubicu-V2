@@ -20,6 +20,7 @@ import { Dialog } from '../ui/Dialog';
 import { InlineAlert } from '../ui/InlineAlert';
 import { UpgradeButton } from '../ui/UpgradeButton';
 import { InviteDialog } from './InviteDialog';
+import { List } from '../ui/layout/ListRow';
 import { RolePicker } from './RolePicker';
 import { SpaceAccessField } from './SpaceAccessField';
 import { cn } from '../../utils/cn';
@@ -121,7 +122,7 @@ export function TeamTab() {
         <h2 id="members-heading" className="text-label font-semibold text-fg">
           Members
         </h2>
-        <ul className="mt-3 flex flex-col divide-y divide-line border-y border-line">
+        <List ruled className="mt-3">
           {team.data.members.map((m) => {
             const isPaused = team.paused.has(m.id);
             const isMe = m.id === team.me.id;
@@ -153,7 +154,7 @@ export function TeamTab() {
               </li>);
 
           })}
-        </ul>
+        </List>
       </section>
 
       {invites.length > 0 &&
@@ -161,7 +162,7 @@ export function TeamTab() {
           <h2 id="invites-heading" className="text-label font-semibold text-fg">
             Invitations
           </h2>
-          <ul className="mt-3 flex flex-col divide-y divide-line border-y border-line">
+          <List ruled className="mt-3">
             {invites.map((i) => {
             const state = inviteState(i);
             return (
@@ -196,7 +197,7 @@ export function TeamTab() {
                 </li>);
 
           })}
-          </ul>
+          </List>
         </section>
       }
 

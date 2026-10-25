@@ -15,6 +15,8 @@ import { LocaleProvider, translatorFor, useT } from '../contexts/LocaleContext';
 import { isStaged, linkStageAmounts, nextLinkStage, stagePaidOn } from '../utils/money/linkStages';
 import { isNaira } from '../utils/currency';
 import { UssdPay } from '../components/checkout/UssdPay';
+import { fundraiserBlocked, fundraiserTerms } from '../utils/fundraiser';
+import { readAdminStore } from '../utils/admin/store';
 
 type Step = 'details' | 'pay' | 'done' | 'declined';
 type CardOutcome = 'success' | 'declined';
@@ -33,6 +35,8 @@ export function PayLinkPage() {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [note, setNote] = useState('');
+  // Fundraisers (D179): supporters are anonymous unless they choose otherwise.
+  const [showName, setShowName] = useState(false);
   const [outcome, setOutcome] = useState<CardOutcome>('success');
   const [tried, setTried] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -113,7 +117,8 @@ export function PayLinkPage() {
       if (!byUssd && outcome === 'declined') return setStep('declined');
       const d = readMoney(workspaceId);
       const items = link.kind === 'items' ? link.items.filter((i) => (qty[i.id] ?? 0) > 0).map((i) => ({ label: i.label, qty: qty[i.id], unitNgn: i.unitNgn })) : undefined;
-      const res = recordLinkPayment(d, link.id, { amountNgn: subtotal, payerName: name.trim(), payerPhone: phone.trim(), note: note.trim(), items, stageId: stage?.id });
+      if (link.fundraiser && fundraiserBlocked(link, d, readAdminStore())) return setStep('declined');
+      const res = recordLinkPayment(d, link.id, { amountNgn: subtotal, payerName: name.trim(), payerPhone: phone.trim(), note: note.trim(), items, stageId: stage?.id, showName: link.fundraiser ? showName : undefined });
       if (!res) return setStep('declined');
       writeMoney(workspaceId, res.data);
       setReceipt({ number: res.payment.receipt, at: res.payment.at, amount: total, stage: stage?.label });
@@ -121,7 +126,9 @@ export function PayLinkPage() {
     }, 1100);
   };
 
-  const closedCopy =
+  const blocked = link.fundraiser ? fundraiserBlocked(link, money, readAdminStore()) : null;
+  const closedCopy = blocked ?
+  tx(blocked) :
   view === 'paused' ?
   tx('{business} isn’t taking payments on this link right now.', { business }) :
   view === 'expired' ?
@@ -227,7 +234,23 @@ export function PayLinkPage() {
                 }
                   {link.fields.name && <ThemedField theme={t} label="Your name" autoComplete="name" value={name} onChange={setName} error={tried ? errors.name : undefined} />}
                   {link.fields.phone && <ThemedField theme={t} label="Phone or WhatsApp" type="tel" autoComplete="tel" value={phone} onChange={setPhone} error={tried ? errors.phone : undefined} />}
-                  {link.fields.note && <ThemedField theme={t} label="Note for the business" optional value={note} onChange={setNote} />}
+                  {link.fields.note && <ThemedField theme={t} label={link.fundraiser ? 'Message for the organiser' : 'Note for the business'} optional value={note} onChange={setNote} />}
+                  {link.fundraiser &&
+                <label className="flex cursor-pointer items-start gap-2.5 text-[14px]" style={{ color: t.text }}>
+                      <input type="checkbox" className="mt-0.5 h-4 w-4" checked={showName} onChange={(e) => setShowName(e.target.checked)} />
+                      <span>
+                        {tx('Show my first name on the fundraiser')}
+                        <span className="block text-[12.5px]" style={muted}>
+                          {tx('Otherwise you appear as Anonymous. Your amount is shown either way.')}
+                        </span>
+                      </span>
+                    </label>
+                }
+                  {link.fundraiser &&
+                <p className="text-[12.5px] leading-relaxed" style={muted}>
+                      {fundraiserTerms(link.fundraiser.organiser)}
+                    </p>
+                }
                   <PrimaryButton theme={t} onClick={next}>
                     {tx('Continue')}{subtotal > 0 ? ` · ${formatNgn(total)}` : ''}
                   </PrimaryButton>
@@ -343,7 +366,7 @@ function StagePlan({ link, amounts, theme }: {link: PaymentLink;amounts: Record<
 
 function QtyButton({ label, onClick, disabled, theme, children }: {label: string;onClick: () => void;disabled: boolean;theme: {text: string;};children: React.ReactNode;}) {
   return (
-    <button type="button" aria-label={label} onClick={onClick} disabled={disabled} className="flex h-9 w-9 items-center justify-center rounded-full disabled:opacity-40" style={{ border: `1px solid ${mix(theme.text, 20)}` }}>
+    <button type="button" aria-label={label} onClick={onClick} disabled={disabled} className="flex h-11 w-11 items-center justify-center rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-40" style={{ border: `1px solid ${mix(theme.text, 20)}` }}>
       {children}
     </button>);
 

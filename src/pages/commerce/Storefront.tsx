@@ -7,7 +7,12 @@ import { useEditor } from '../../contexts/EditorContext';
 import { usePlan } from '../../contexts/PlanContext';
 import { planAtLeast, plans } from '../../data/plans';
 import { CHECKOUT_PLAN } from '../../utils/commerce/linkIssues';
-import { imageShapeClass, shopPathTaken, shopProducts, sortLabels, sortProducts, storefrontConfig, STOREFRONT_PATH, type StorefrontConfig, type StorefrontSort } from '../../utils/commerce/storefront';
+import { shopPathTaken, shopProducts, sortProducts, storefrontConfig, STOREFRONT_PATH, type StorefrontConfig } from '../../utils/commerce/storefront';
+import { isCustomised, lookDef, type ShopParts } from '../../utils/commerce/shopLooks';
+import { LookPicker } from '../../components/commerce/storefront/LookPicker';
+import { ShopPartsEditor } from '../../components/commerce/storefront/ShopPartsEditor';
+import { ShopFeatureSwitches } from '../../components/commerce/storefront/ShopFeatureSwitches';
+import { StorefrontLivePreview } from '../../components/commerce/storefront/StorefrontLivePreview';
 import { isSoldOut } from '../../utils/commerce/catalog';
 import { isValidPhone } from '../../utils/validation';
 import { publicUrl } from '../../utils/format';
@@ -16,24 +21,20 @@ import { Button } from '../../components/ui/Button';
 import { Switch } from '../../components/ui/Switch';
 import { TextInput } from '../../components/ui/TextInput';
 import { TextArea } from '../../components/ui/TextArea';
-import { SelectInput } from '../../components/ui/SelectInput';
 import { Segmented } from '../../components/ui/Segmented';
 import { InlineAlert } from '../../components/ui/InlineAlert';
 import { UpgradeButton } from '../../components/ui/UpgradeButton';
-import { MediaImage } from '../../components/media/MediaImage';
 import { MediaPicker } from '../../components/media/MediaPicker';
 import { Card } from '../../components/ui/layout/Card';
 import { Section } from '../../components/ui/layout/Section';
 import { FeaturedPicker } from '../../components/commerce/storefront/FeaturedPicker';
-import { cn } from '../../utils/cn';
 import { useT } from '../../contexts/LocaleContext';
 
 const ANNOUNCEMENT_MAX = 90;
 const SEO_TITLE_MAX = 60;
 const SEO_DESC_MAX = 160;
-const previewCols: Record<2 | 3 | 4, string> = { 2: 'grid-cols-2', 3: 'grid-cols-3', 4: 'grid-cols-4' };
 
-/** Commerce → Storefront: the auto-built shop at /shop (D53, D98). */
+/** Commerce → Storefront: the auto-built shop at /shop (D53, D98), in a chosen look with feature switches (D196). */
 export function Storefront() {
   const { data, apply } = useCommerce();
   const { state } = useEditor();
@@ -61,6 +62,8 @@ export function Storefront() {
   const draftCount = data.products.filter((p) => p.status === 'draft').length;
   const noPhoto = products.filter((p) => !p.images.length).length;
   const noPrice = products.filter((p) => !p.priceNgn).length;
+  const parts: ShopParts = { header: draft.header, featuredStyle: draft.featuredStyle, collectionsStyle: draft.collectionsStyle, cardStyle: draft.cardStyle, columns: draft.columns, imageShape: draft.imageShape, productPage: draft.productPage, stickyBuy: draft.stickyBuy, addMode: draft.addMode };
+  const customised = isCustomised({ ...parts, look: draft.look });
   const off = !draft.enabled;
   const offCls = off ? 'opacity-60' : '';
 
@@ -132,6 +135,22 @@ export function Storefront() {
             }
           </Card>
 
+          <Card id="sf-look" title="Look" description="Pick a complete layout, then fine-tune its parts. Colours and fonts come from your page’s theme. Free on every plan." className={offCls}>
+            <div className="flex flex-col gap-6">
+              <LookPicker value={draft.look} customised={customised} disabled={off} onPick={(l) => setDraft((d) => ({ ...d, look: l.id, ...l.parts }))} />
+              <ShopPartsEditor
+                parts={parts}
+                customised={customised}
+                disabled={off}
+                hasBanner={!!draft.bannerUrl}
+                hasFeatured={draft.featuredIds.length > 0}
+                usesWhatsApp={usesWhatsApp}
+                onChange={(k, v) => set(k, v as StorefrontConfig[typeof k])}
+                onReset={() => setDraft((d) => ({ ...d, ...lookDef(d.look).parts }))} />
+              
+            </div>
+          </Card>
+
           <Card id="sf-content" title="What shoppers see first" description="The top of the shop: title, intro, a notice and an optional banner." className={offCls}>
             <div className="flex flex-col gap-4">
               <TextInput id="sf-title" label="Shop title" value={draft.title} error={tried ? titleError || undefined : undefined} disabled={off} onChange={(e) => set('title', e.target.value)} />
@@ -157,59 +176,8 @@ export function Storefront() {
             <FeaturedPicker products={allShop} value={draft.featuredIds} disabled={off} onChange={(ids) => set('featuredIds', ids)} />
           </Card>
 
-          <Card id="sf-layout" title="Layout and browsing" description="How products are laid out, and what shoppers can filter by." className={offCls}>
-            <div className="flex flex-col gap-5">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="flex flex-col gap-1.5">
-                  <span id="sf-cols-label" className="text-label font-medium text-fg">
-                    {tr('Products per row')}
-                  </span>
-                  <Segmented<'2' | '3' | '4'>
-                    ariaLabel="Products per row on desktop"
-                    fullWidth
-                    value={String(draft.columns) as '2' | '3' | '4'}
-                    onChange={(v) => set('columns', Number(v) as 2 | 3 | 4)}
-                    options={[
-                    { value: '2', label: '2' },
-                    { value: '3', label: '3' },
-                    { value: '4', label: '4' }]
-                    } />
-                  
-                  <span className="text-caption text-fg-subtle">{tr('On desktop. Phones always show 2.')}</span>
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <span className="text-label font-medium text-fg">{tr('Photo shape')}</span>
-                  <Segmented<StorefrontConfig['imageShape']>
-                    ariaLabel="Photo shape"
-                    fullWidth
-                    value={draft.imageShape}
-                    onChange={(v) => set('imageShape', v)}
-                    options={[
-                    { value: 'portrait', label: 'Portrait' },
-                    { value: 'square', label: 'Square' },
-                    { value: 'landscape', label: 'Wide' }]
-                    } />
-                  
-                  <span className="text-caption text-fg-subtle">{tr('Portrait suits fashion; square suits food and beauty.')}</span>
-                </div>
-              </div>
-              <SelectInput<StorefrontSort>
-                id="sf-sort"
-                label="Order shoppers see first"
-                value={draft.defaultSort}
-                disabled={off}
-                hint="Shoppers can still change it."
-                onChange={(v) => set('defaultSort', v)}
-                options={(Object.keys(sortLabels) as StorefrontSort[]).map((o) => ({ value: o, label: tr(sortLabels[o]) }))} />
-              
-              <div className="flex flex-col gap-4 border-t border-line pt-5">
-                <Switch id="sf-search" label="Search box" checked={draft.showSearch} disabled={off} onChange={(v) => set('showSearch', v)} />
-                <Switch id="sf-colls" label="Collection tabs" description={data.collections.length ? 'Each collection with products becomes a tab.' : 'Add collections in Products to use this.'} checked={draft.showCollections} disabled={off} onChange={(v) => set('showCollections', v)} />
-                <Switch id="sf-stockfilter" label="“In stock only” filter" checked={draft.showStockFilter} disabled={off} onChange={(v) => set('showStockFilter', v)} />
-                <Switch id="sf-low" label="“Only N left” labels" description="Shown when stock reaches each product’s low-stock level." checked={draft.showLowStock} disabled={off} onChange={(v) => set('showLowStock', v)} />
-                <Switch id="sf-soldout" label="Hide sold-out products" description="Off shows them with a Sold out label, so people know to come back." checked={draft.hideSoldOut} disabled={off} onChange={(v) => set('hideSoldOut', v)} />
-              </div>
-            </div>
+          <Card id="sf-features" title="Features" description="Switch parts of the shop on or off. All free." className={offCls}>
+            <ShopFeatureSwitches draft={draft} disabled={off} hasCollections={data.collections.length > 0} checkoutOn={!usesWhatsApp} set={set} />
           </Card>
 
           <Card id="sf-order" title="How people order" className={offCls}>
@@ -279,13 +247,6 @@ export function Storefront() {
           filter(Boolean).
           join(' · ')}>
           
-          {draft.announcement.trim() &&
-          <p className="flex items-center gap-2 rounded-md bg-sunken px-3 py-2 text-caption font-medium text-fg">
-              <MegaphoneIcon size={13} aria-hidden className="shrink-0" />
-              <span className="truncate">{draft.announcement}</span>
-            </p>
-          }
-          {draft.bannerUrl && <MediaImage src={draft.bannerUrl} alt="" className="aspect-[16/6] w-full rounded-md object-cover" />}
           {products.length === 0 ?
           <div className="flex flex-col items-start gap-3 rounded-lg border border-dashed border-line-strong p-5">
               <StoreIcon size={20} className="text-fg-subtle" aria-hidden />
@@ -295,17 +256,7 @@ export function Storefront() {
               </Link>
             </div> :
 
-          <ul className={cn('grid gap-2', previewCols[draft.columns])}>
-              {products.slice(0, draft.columns * 3).map((p) =>
-            <li key={p.id} className="overflow-hidden rounded-md border border-line bg-sunken">
-                  {p.images[0] ? <MediaImage src={p.images[0].url} alt="" className={cn(imageShapeClass[draft.imageShape], 'w-full object-cover')} /> : <div className={cn(imageShapeClass[draft.imageShape], 'w-full')} />}
-                  <p className="truncate px-2 py-1.5 text-caption text-fg">
-                    {draft.defaultSort === 'featured' && draft.featuredIds.includes(p.id) && <span className="sr-only">{tr('Featured:')} </span>}
-                    {p.name}
-                  </p>
-                </li>
-            )}
-            </ul>
+          <StorefrontLivePreview theme={state.site.theme} data={{ ...data, storefront: draft }} ordering={usesWhatsApp ? 'whatsapp' : 'checkout'} whatsappPhone={draft.whatsappPhone} />
           }
           {(noPhoto > 0 || noPrice > 0) &&
           <InlineAlert tone="warning" title="Some products look unfinished">
@@ -315,7 +266,7 @@ export function Storefront() {
               </Link>
             </InlineAlert>
           }
-          <p className="text-caption text-fg-subtle">{tr('Preview of the desktop layout. Product pages show every photo, option and stock level.')}</p>
+          <p className="text-caption text-fg-subtle">{tr('Your real shop with unsaved changes, in your page’s theme. Save to make it live.')}</p>
         </Section>
       </div>
     </>);

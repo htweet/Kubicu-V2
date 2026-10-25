@@ -12,6 +12,8 @@ import { PageHeader } from '../../components/shell/PageHeader';
 import { Button } from '../../components/ui/Button';
 import { IconButton } from '../../components/ui/IconButton';
 import { RedirectDialog } from '../../components/domains/RedirectDialog';
+import { Section } from '../../components/ui/layout/Section';
+import { List } from '../../components/ui/layout/ListRow';
 
 /** Every forwarding address in one place: yours, plus the ones KUBICU made automatically (D62). */
 export function Redirects() {
@@ -69,14 +71,11 @@ export function Redirects() {
         } />
       
 
-      <section aria-labelledby="rd-yours">
-        <h2 id="rd-yours" className="text-heading font-semibold text-fg">
-          Your redirects
-        </h2>
+      <Section id="rd-yours" title="Your redirects">
         {data.redirects.length === 0 ?
-        <p className="mt-2 max-w-xl text-label text-fg-muted">None yet. For example, make kub.icu/{spaceHandle(current.id, MAIN_SPACE_ID)}/ig forward to your Instagram, or /menu to a page.</p> :
+        <p className="max-w-xl text-label text-fg-muted">None yet. For example, make kub.icu/{spaceHandle(current.id, MAIN_SPACE_ID)}/ig forward to your Instagram, or /menu to a page.</p> :
 
-        <ul className="mt-3 divide-y divide-line border-y border-line">
+        <List ruled label="Your redirects">
             {data.redirects.map((r) => {
             const h = spaceHandle(current.id, r.spaceId) ?? '…';
             const dest = pageTitle(r.spaceId, r.to);
@@ -105,19 +104,15 @@ export function Redirects() {
                 </li>);
 
           })}
-          </ul>
+          </List>
         }
-      </section>
+      </Section>
 
-      <section aria-labelledby="rd-auto">
-        <h2 id="rd-auto" className="text-heading font-semibold text-fg">
-          Made automatically
-        </h2>
-        <p className="mt-1 text-caption text-fg-subtle">KUBICU keeps these so old links keep working. Change them by editing the page or restoring the space.</p>
+      <Section id="rd-auto" title="Made automatically" description="KUBICU keeps these so old links keep working. Change them by editing the page or restoring the space.">
         {automatic.length === 0 ?
-        <p className="mt-3 text-label text-fg-muted">None yet.</p> :
+        <p className="text-label text-fg-muted">None yet.</p> :
 
-        <ul className="mt-3 divide-y divide-line border-y border-line">
+        <List ruled label="Made automatically">
             {automatic.map((r) =>
           <li key={r.key} className="flex flex-col gap-1 py-3 sm:flex-row sm:items-center sm:gap-4">
                 <p className="min-w-0 flex-1 truncate text-label text-fg">{r.from}</p>
@@ -131,9 +126,9 @@ export function Redirects() {
                 </p>
               </li>
           )}
-          </ul>
+          </List>
         }
-      </section>
+      </Section>
 
       <p className="text-caption text-fg-subtle">
         Short links (…/s/…) are managed on <Link to="/app/domains/links" className="underline underline-offset-2">Campaign links</Link>.

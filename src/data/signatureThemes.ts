@@ -18,7 +18,7 @@ export interface SignatureTheme {
   mood: ThemeMood;
   modes: Partial<Record<ThemeMode, PageTheme>>;
   defaultMode: ThemeMode;
-  /** Usable on the Free plan (D162); every theme can be previewed on any plan. */
+  /** Usable on the Free plan. None are since D191 — all 24 need Creator; every theme can still be previewed on any plan. */
   free?: boolean;
 }
 
@@ -93,7 +93,6 @@ export const signatureThemes: SignatureTheme[] = [
   personality: 'Ivory and pearl satin, champagne hairlines, a quiet serif.',
   mood: 'editorial',
   defaultMode: 'light',
-  free: true,
   modes: {
     light: mode('pearl-atelier', 'light',
     { background: '#F6F1E9', surface: '#FCFAF6', text: '#2A241D', mutedText: '#6B6052', accent: '#2A241D', accentText: '#F6F1E9', fontPair: 'luxe', buttonShape: 'pill', buttonStyle: 'solid' },
@@ -333,6 +332,288 @@ export const signatureThemes: SignatureTheme[] = [
       surfaceFinish: 'matte', shadow: 'lifted', radius: 'round',
       buttonFinish: 'gradient', buttonGradient: 'linear-gradient(135deg, #FF8A66, #E36A9A)',
       imageFrame: 'shadow', linkStyle: 'accent', headingFont: 'dmSerif', bodyFont: 'manrope', headingWeight: 400, headingTracking: '-0.01em'
+    })
+  }
+},
+// ── Pass C (D163) ──────────────────────────────────────────────
+{
+  id: 'monochrome-editorial',
+  number: 13,
+  name: 'Monochrome Editorial',
+  personality: 'No colour at all — proportion, rules and type do the work.',
+  mood: 'editorial',
+  defaultMode: 'light',
+  modes: {
+    light: mode('monochrome-editorial', 'light',
+    { background: '#FAFAF8', surface: '#FFFFFF', text: '#111111', mutedText: '#55554F', accent: '#111111', accentText: '#FAFAF8', fontPair: 'classic', buttonShape: 'square', buttonStyle: 'outline' },
+    {
+      secondary: '#111111', focus: '#111111', border: '#E2E2DE',
+      surfaceFinish: 'matte', shadow: 'none', radius: 'sharp', buttonFinish: 'solid',
+      imageFrame: 'none', linkStyle: 'underline', headingFont: 'newsreader', bodyFont: 'inter', headingWeight: 500, headingTracking: '-0.025em'
+    }),
+    dark: mode('monochrome-editorial', 'dark',
+    { background: '#0E0E0E', surface: '#171717', text: '#F2F0EB', mutedText: '#A8A59D', accent: '#F2F0EB', accentText: '#0E0E0E', fontPair: 'classic', buttonShape: 'square', buttonStyle: 'outline' },
+    {
+      secondary: '#F2F0EB', focus: '#F2F0EB', border: '#2A2A28',
+      surfaceFinish: 'matte', shadow: 'none', radius: 'sharp', buttonFinish: 'solid',
+      imageFrame: 'none', linkStyle: 'underline', headingFont: 'newsreader', bodyFont: 'inter', headingWeight: 500, headingTracking: '-0.025em'
+    })
+  }
+},
+{
+  id: 'soft-clay',
+  number: 14,
+  name: 'Soft Clay',
+  personality: 'Matte terracotta and sand. Tactile, warm and welcoming.',
+  mood: 'warm',
+  defaultMode: 'light',
+  modes: {
+    light: mode('soft-clay', 'light',
+    { background: '#F3E6DA', surface: '#FAF1E8', text: '#3B2418', mutedText: '#7A5642', accent: '#B5532F', accentText: '#FFFFFF', fontPair: 'warm', buttonShape: 'pill', buttonStyle: 'soft' },
+    {
+      secondary: '#9C4527', focus: '#B5532F', border: 'rgba(122,86,66,0.14)',
+      backdrop: 'radial-gradient(70% 50% at 50% 0%, rgba(217,139,95,0.18), transparent 70%), #F3E6DA',
+      backdropStops: ['#EED6C3'],
+      surfaceFinish: 'matte', shadow: 'soft', radius: 'generous', buttonFinish: 'solid',
+      imageFrame: 'none', linkStyle: 'accent', headingFont: 'lora', bodyFont: 'manrope', headingWeight: 600, headingTracking: '-0.01em'
+    })
+  }
+},
+{
+  id: 'neo-gloss-pop',
+  number: 15,
+  name: 'Neo-Gloss Pop',
+  personality: 'Vivid colour, graphic outlines and glossy pill actions.',
+  mood: 'bold',
+  defaultMode: 'light',
+  modes: {
+    light: mode('neo-gloss-pop', 'light',
+    { background: '#FFFBF2', surface: '#FFFFFF', text: '#141414', mutedText: '#4D4D4D', accent: '#FF6A4D', accentText: '#141414', fontPair: 'statement', buttonShape: 'pill', buttonStyle: 'outline' },
+    {
+      secondary: '#FF3D1F', focus: '#3C5AFF', border: '#141414',
+      backdrop: 'radial-gradient(40% 30% at 100% 0%, rgba(255,79,46,0.18), transparent 70%), radial-gradient(40% 30% at 0% 100%, rgba(60,90,255,0.14), transparent 70%), #FFFBF2',
+      backdropStops: ['#FFE3D6'],
+      surfaceFinish: 'matte', shadow: 'lifted', radius: 'round',
+      buttonFinish: 'gloss', buttonGradient: 'linear-gradient(180deg, #FF6A4D, #FF3D1F)',
+      imageFrame: 'hairline', linkStyle: 'arrow', headingFont: 'syne', bodyFont: 'outfit', headingWeight: 800, headingTracking: '-0.03em'
+    }),
+    dark: mode('neo-gloss-pop', 'dark',
+    { background: '#121214', surface: '#1D1D22', text: '#FFFFFF', mutedText: '#B5B5BE', accent: '#FFE066', accentText: '#121214', fontPair: 'statement', buttonShape: 'pill', buttonStyle: 'outline' },
+    {
+      secondary: '#FFB800', focus: '#FFE066', border: 'rgba(255,255,255,0.18)',
+      backdrop: 'radial-gradient(40% 30% at 100% 0%, rgba(255,79,46,0.22), transparent 70%), radial-gradient(40% 30% at 0% 100%, rgba(60,90,255,0.20), transparent 70%), #121214',
+      backdropStops: ['#2A1A1C'],
+      surfaceFinish: 'matte', shadow: 'lifted', radius: 'round',
+      buttonFinish: 'gloss', buttonGradient: 'linear-gradient(180deg, #FFE066, #FFB800)',
+      imageFrame: 'hairline', linkStyle: 'arrow', headingFont: 'syne', bodyFont: 'outfit', headingWeight: 800, headingTracking: '-0.03em'
+    })
+  }
+},
+{
+  id: 'citrus-studio',
+  number: 16,
+  name: 'Citrus Studio',
+  personality: 'Graphite and off-white with a sparing citron spark.',
+  mood: 'light',
+  defaultMode: 'light',
+  modes: {
+    light: mode('citrus-studio', 'light',
+    { background: '#F7F8F2', surface: '#FFFFFF', text: '#1C211A', mutedText: '#545C50', accent: '#D7F24A', accentText: '#1C211A', fontPair: 'modern', buttonShape: 'rounded', buttonStyle: 'outline' },
+    {
+      secondary: '#C4E534', focus: '#5C7A00', border: '#E1E4D8',
+      backdrop: 'radial-gradient(50% 35% at 100% 0%, rgba(215,242,74,0.32), transparent 70%), #F7F8F2',
+      backdropStops: ['#EEF5C8'],
+      surfaceFinish: 'matte', shadow: 'soft', radius: 'soft',
+      buttonFinish: 'gradient', buttonGradient: 'linear-gradient(135deg, #E3FA5F, #C4E534)',
+      imageFrame: 'none', linkStyle: 'arrow', headingFont: 'manrope', bodyFont: 'inter', headingWeight: 700, headingTracking: '-0.03em'
+    })
+  }
+},
+{
+  id: 'burgundy-velvet',
+  number: 17,
+  name: 'Burgundy Velvet',
+  personality: 'Wine and muted rose in soft tonal layers. Refined, editorial.',
+  mood: 'editorial',
+  defaultMode: 'light',
+  modes: {
+    light: mode('burgundy-velvet', 'light',
+    { background: '#F6EDE8', surface: '#FCF6F2', text: '#3A1018', mutedText: '#74424C', accent: '#6E1A2C', accentText: '#FCF6F2', fontPair: 'editorial', buttonShape: 'pill', buttonStyle: 'solid' },
+    {
+      secondary: '#8A2A40', focus: '#6E1A2C', border: 'rgba(110,26,44,0.14)',
+      backdrop: 'radial-gradient(70% 50% at 50% 0%, rgba(154,58,82,0.14), transparent 70%), #F6EDE8',
+      backdropStops: ['#F0DCD8'],
+      surfaceFinish: 'satin', shadow: 'soft', radius: 'soft', buttonFinish: 'solid',
+      imageFrame: 'mat', linkStyle: 'underline', headingFont: 'playfair', bodyFont: 'manrope', headingWeight: 500, headingTracking: '-0.01em'
+    }),
+    dark: mode('burgundy-velvet', 'dark',
+    { background: '#1E0A10', surface: '#2C1219', text: '#F6E6E3', mutedText: '#CFA7AE', accent: '#E7B9A8', accentText: '#2A0C13', fontPair: 'editorial', buttonShape: 'pill', buttonStyle: 'solid' },
+    {
+      secondary: '#D9A490', focus: '#E7B9A8', border: 'rgba(231,185,168,0.16)',
+      backdrop: 'radial-gradient(70% 50% at 50% 0%, rgba(140,30,60,0.38), transparent 70%), linear-gradient(180deg, #1E0A10, #16070B)',
+      backdropStops: ['#3E1220'],
+      surfaceFinish: 'lacquer', edgeHighlight: true, shadow: 'lifted', radius: 'soft',
+      buttonFinish: 'gloss', buttonGradient: 'linear-gradient(180deg, #F0CBBD, #D9A490)',
+      imageFrame: 'mat', linkStyle: 'underline', headingFont: 'playfair', bodyFont: 'manrope', headingWeight: 500, headingTracking: '-0.01em'
+    })
+  }
+},
+{
+  id: 'indigo-depth',
+  number: 18,
+  name: 'Indigo Depth',
+  personality: 'Quiet indigo depth. Dependable, intelligent, professional.',
+  mood: 'light',
+  defaultMode: 'light',
+  modes: {
+    light: mode('indigo-depth', 'light',
+    { background: '#F3F4FA', surface: '#FFFFFF', text: '#141A3A', mutedText: '#4A5078', accent: '#3B3FB5', accentText: '#FFFFFF', fontPair: 'modern', buttonShape: 'rounded', buttonStyle: 'solid' },
+    {
+      secondary: '#2B2F8F', focus: '#3B3FB5', border: '#DEE1F0',
+      backdrop: 'linear-gradient(180deg, #E6E9F8 0%, #F3F4FA 45%)',
+      backdropStops: ['#E6E9F8'],
+      surfaceFinish: 'matte', shadow: 'soft', radius: 'soft',
+      buttonFinish: 'gradient', buttonGradient: 'linear-gradient(135deg, #3B3FB5, #2B2F8F)',
+      imageFrame: 'hairline', linkStyle: 'arrow', headingFont: 'manrope', bodyFont: 'inter', headingWeight: 600, headingTracking: '-0.02em'
+    }),
+    dark: mode('indigo-depth', 'dark',
+    { background: '#0D1030', surface: '#161A44', text: '#ECEEFF', mutedText: '#A7ACD8', accent: '#8D93FF', accentText: '#0D1030', fontPair: 'modern', buttonShape: 'rounded', buttonStyle: 'solid' },
+    {
+      secondary: '#6E74F0', focus: '#8D93FF', border: 'rgba(141,147,255,0.18)',
+      backdrop: 'radial-gradient(80% 50% at 50% 0%, rgba(80,88,220,0.35), transparent 70%), #0D1030',
+      backdropStops: ['#1E2363'],
+      surfaceFinish: 'glass', glassOpacity: 60, glassBlur: 16, edgeHighlight: true, shadow: 'soft', radius: 'soft',
+      buttonFinish: 'gradient', buttonGradient: 'linear-gradient(135deg, #8D93FF, #6E74F0)',
+      imageFrame: 'hairline', linkStyle: 'arrow', headingFont: 'manrope', bodyFont: 'inter', headingWeight: 600, headingTracking: '-0.02em'
+    })
+  }
+},
+{
+  id: 'oceanic-glass',
+  number: 19,
+  name: 'Oceanic Glass',
+  personality: 'Teal sea-glass surfaces and calm, fluid light.',
+  mood: 'glass',
+  defaultMode: 'light',
+  modes: {
+    light: mode('oceanic-glass', 'light',
+    { background: '#EEF7F6', surface: '#FFFFFF', text: '#0C2A30', mutedText: '#3F5F63', accent: '#0E6E72', accentText: '#FFFFFF', fontPair: 'modern', buttonShape: 'pill', buttonStyle: 'solid' },
+    {
+      secondary: '#0B5A78', focus: '#0E6E72', border: 'rgba(12,42,48,0.10)',
+      backdrop: 'radial-gradient(60% 45% at 0% 0%, rgba(80,190,190,0.26), transparent 70%), radial-gradient(50% 40% at 100% 50%, rgba(60,140,200,0.18), transparent 70%), #EEF7F6',
+      backdropStops: ['#D6EEEC'],
+      surfaceFinish: 'glass', glassOpacity: 72, glassBlur: 16, edgeHighlight: true, shadow: 'soft', radius: 'round',
+      buttonFinish: 'gradient', buttonGradient: 'linear-gradient(135deg, #0E6E72, #0B5A78)',
+      imageFrame: 'shadow', linkStyle: 'arrow', headingFont: 'outfit', bodyFont: 'manrope', headingWeight: 600, headingTracking: '-0.02em'
+    }),
+    dark: mode('oceanic-glass', 'dark',
+    { background: '#04181D', surface: '#0B2A31', text: '#E6F7F5', mutedText: '#9CC3C1', accent: '#6FE3D2', accentText: '#04181D', fontPair: 'modern', buttonShape: 'pill', buttonStyle: 'solid' },
+    {
+      secondary: '#4FB8E0', focus: '#6FE3D2', border: 'rgba(111,227,210,0.16)',
+      backdrop: 'radial-gradient(60% 45% at 10% 0%, rgba(40,180,170,0.30), transparent 70%), radial-gradient(50% 40% at 100% 60%, rgba(30,110,170,0.25), transparent 70%), #04181D',
+      backdropStops: ['#0E3A40'],
+      surfaceFinish: 'glass', glassOpacity: 55, glassBlur: 20, edgeHighlight: true, shadow: 'soft', radius: 'round',
+      buttonFinish: 'gradient', buttonGradient: 'linear-gradient(135deg, #6FE3D2, #4FB8E0)',
+      imageFrame: 'shadow', linkStyle: 'arrow', headingFont: 'outfit', bodyFont: 'manrope', headingWeight: 600, headingTracking: '-0.02em'
+    })
+  }
+},
+{
+  id: 'sandstone-modern',
+  number: 20,
+  name: 'Sandstone Modern',
+  personality: 'Matte limestone, olive and graphite. Premium through restraint.',
+  mood: 'warm',
+  defaultMode: 'light',
+  modes: {
+    light: mode('sandstone-modern', 'light',
+    { background: '#EFE8DC', surface: '#F7F2EA', text: '#26241E', mutedText: '#5E5A4E', accent: '#4F5A35', accentText: '#FFFFFF', fontPair: 'statement', buttonShape: 'square', buttonStyle: 'solid' },
+    {
+      secondary: '#3E4729', focus: '#4F5A35', border: '#DDD3C3',
+      backdrop: 'linear-gradient(180deg, #F2ECE2, #EBE3D5)',
+      backdropStops: ['#EBE3D5'],
+      surfaceFinish: 'matte', shadow: 'none', radius: 'soft', buttonFinish: 'solid',
+      imageFrame: 'none', linkStyle: 'underline', headingFont: 'archivo', bodyFont: 'inter', headingWeight: 700, headingTracking: '-0.02em'
+    })
+  }
+},
+{
+  id: 'cyber-mint',
+  number: 21,
+  name: 'Cyber Mint',
+  personality: 'Deep ink with precise mint edges and a fine glow.',
+  mood: 'bold',
+  defaultMode: 'dark',
+  modes: {
+    dark: mode('cyber-mint', 'dark',
+    { background: '#0B0F12', surface: '#12191D', text: '#E8FFF7', mutedText: '#9DBDB3', accent: '#3DF5B4', accentText: '#04130D', fontPair: 'modern', buttonShape: 'square', buttonStyle: 'outline' },
+    {
+      secondary: '#3CD9F0', focus: '#3DF5B4', border: 'rgba(61,245,180,0.28)',
+      backdrop: 'radial-gradient(50% 35% at 100% 0%, rgba(61,245,180,0.18), transparent 70%), radial-gradient(45% 30% at 0% 100%, rgba(60,217,240,0.14), transparent 70%), #0B0F12',
+      backdropStops: ['#123028'],
+      surfaceFinish: 'glass', glassOpacity: 72, glassBlur: 14, shadow: 'glow', glow: '#3DF5B4', radius: 'sharp',
+      buttonFinish: 'glow',
+      imageFrame: 'hairline', linkStyle: 'arrow', headingFont: 'sora', bodyFont: 'inter', headingWeight: 600, headingTracking: '-0.01em'
+    })
+  }
+},
+{
+  id: 'lavender-mist',
+  number: 22,
+  name: 'Lavender Mist',
+  personality: 'Soft-focus lilac and periwinkle with deep violet type.',
+  mood: 'light',
+  defaultMode: 'light',
+  modes: {
+    light: mode('lavender-mist', 'light',
+    { background: '#F4F0FB', surface: '#FFFFFF', text: '#2A1F45', mutedText: '#5E5480', accent: '#5B3FB0', accentText: '#FFFFFF', fontPair: 'expressive', buttonShape: 'pill', buttonStyle: 'soft' },
+    {
+      secondary: '#4F5BC9', focus: '#5B3FB0', border: 'rgba(42,31,69,0.10)',
+      backdrop: 'radial-gradient(60% 45% at 20% 0%, rgba(190,170,240,0.40), transparent 70%), radial-gradient(50% 40% at 100% 50%, rgba(160,180,250,0.30), transparent 70%), #F4F0FB',
+      backdropStops: ['#E6DDF8'],
+      surfaceFinish: 'glass', glassOpacity: 74, glassBlur: 18, edgeHighlight: true, shadow: 'soft', radius: 'round',
+      buttonFinish: 'gradient', buttonGradient: 'linear-gradient(135deg, #5B3FB0, #4F5BC9)',
+      imageFrame: 'none', linkStyle: 'accent', headingFont: 'instrument', bodyFont: 'manrope', headingWeight: 400, headingTracking: '-0.01em'
+    })
+  }
+},
+{
+  id: 'copper-noir',
+  number: 23,
+  name: 'Copper Noir',
+  personality: 'Warm charcoal with copper as one deliberate accent.',
+  mood: 'dark',
+  defaultMode: 'dark',
+  modes: {
+    dark: mode('copper-noir', 'dark',
+    { background: '#0F0C0A', surface: '#1A1512', text: '#F3EAE0', mutedText: '#B9A897', accent: '#D4834A', accentText: '#140C06', fontPair: 'editorial', buttonShape: 'rounded', buttonStyle: 'solid' },
+    {
+      secondary: '#B5652E', focus: '#D4834A', border: 'rgba(212,131,74,0.20)',
+      backdrop: 'radial-gradient(60% 40% at 80% 0%, rgba(200,116,58,0.22), transparent 70%), #0F0C0A',
+      backdropStops: ['#2A1A10'],
+      surfaceFinish: 'lacquer', shadow: 'lifted', radius: 'soft',
+      buttonFinish: 'gloss', buttonGradient: 'linear-gradient(180deg, #E49A63, #B5652E)',
+      imageFrame: 'hairline', linkStyle: 'underline', headingFont: 'dmSerif', bodyFont: 'inter', headingWeight: 400, headingTracking: '-0.01em'
+    })
+  }
+},
+{
+  id: 'future-frost',
+  number: 24,
+  name: 'Future Frost',
+  personality: 'Frosted white, near-invisible borders, refined depth.',
+  mood: 'glass',
+  defaultMode: 'light',
+  modes: {
+    light: mode('future-frost', 'light',
+    { background: '#F6F8FB', surface: '#FFFFFF', text: '#121826', mutedText: '#4B5466', accent: '#121826', accentText: '#FFFFFF', fontPair: 'modern', buttonShape: 'pill', buttonStyle: 'solid' },
+    {
+      secondary: '#3A4560', focus: '#3A6BFF', border: 'rgba(18,24,38,0.06)',
+      backdrop: 'radial-gradient(70% 45% at 50% 0%, rgba(170,200,255,0.30), transparent 70%), radial-gradient(40% 30% at 100% 100%, rgba(200,210,230,0.40), transparent 70%), #F6F8FB',
+      backdropStops: ['#E6EEFB'],
+      surfaceFinish: 'glass', glassOpacity: 82, glassBlur: 24, edgeHighlight: true, shadow: 'soft', radius: 'generous',
+      buttonFinish: 'gradient', buttonGradient: 'linear-gradient(135deg, #121826, #3A4560)', sheen: true,
+      imageFrame: 'shadow', linkStyle: 'arrow', headingFont: 'outfit', bodyFont: 'inter', headingWeight: 500, headingTracking: '-0.025em'
     })
   }
 }];

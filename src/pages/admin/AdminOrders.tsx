@@ -14,6 +14,7 @@ import { Menu } from '../../components/ui/Menu';
 import { IconButton } from '../../components/ui/IconButton';
 import { Tabs } from '../../components/ui/Tabs';
 import { Sheet } from '../../components/ui/Sheet';
+import { DetailList, DetailSection } from '../../components/ui/layout/DetailList';
 import { Dialog } from '../../components/ui/Dialog';
 import { Button } from '../../components/ui/Button';
 import { TextArea } from '../../components/ui/TextArea';
@@ -206,50 +207,40 @@ export function AdminOrders() {
 
       <Sheet open={!!detail} onClose={() => setOpen(null)} side="right" title={detail ? `Order #${detail.order.number}` : 'Order'} description={detail ? `${detail.workspace} · ${formatTimestamp(detail.order.createdAt)}` : undefined}>
         {detail &&
-        <div className="flex flex-col divide-y divide-line">
-            <dl className="grid grid-cols-2 gap-x-6 gap-y-4 px-5 py-5">
-              <div>
-                <dt className="text-caption text-fg-subtle">Customer</dt>
-                <dd className="mt-0.5 text-label text-fg">{detail.order.customer.name || '—'}</dd>
-              </div>
-              <div>
-                <dt className="text-caption text-fg-subtle">Total</dt>
-                <dd className="mt-0.5 text-label font-semibold tabular-nums text-fg">{formatNgn(detail.gross)}</dd>
-              </div>
-              <div>
-                <dt className="text-caption text-fg-subtle">Payment</dt>
-                <dd className="mt-0.5 text-label capitalize text-fg">{detail.order.paymentStatus.replace('_', ' ')}</dd>
-              </div>
-              <div>
-                <dt className="text-caption text-fg-subtle">Refunded</dt>
-                <dd className="mt-0.5 text-label tabular-nums text-fg">{detail.refunded ? formatNgn(detail.refunded) : '—'}</dd>
-              </div>
-            </dl>
+        <div className="flex flex-col gap-6 px-5 py-5">
+            <DetailSection title="Order">
+              <DetailList
+              items={[
+              { label: 'Customer', value: detail.order.customer.name || '—' },
+              { label: 'Total', value: <span className="font-semibold tabular-nums">{formatNgn(detail.gross)}</span> },
+              { label: 'Payment', value: <span className="capitalize">{detail.order.paymentStatus.replace('_', ' ')}</span> },
+              { label: 'Refunded', value: <span className="tabular-nums">{detail.refunded ? formatNgn(detail.refunded) : '—'}</span> }]
+              } />
+            
+            </DetailSection>
             {detail.order.dispute &&
-          <section aria-labelledby="ao-dispute" className="px-5 py-5">
-                <h3 id="ao-dispute" className="text-label font-semibold text-fg">
-                  Dispute · {disputeLabels[detail.order.dispute.status]}
-                </h3>
-                <p className="mt-1 text-label text-fg-muted">“{detail.order.dispute.reason}”</p>
+          <DetailSection title={`Dispute · ${disputeLabels[detail.order.dispute.status]}`}>
+                <div>
+                <p className="text-label text-fg-muted">“{detail.order.dispute.reason}”</p>
                 <p className="mt-2 text-caption text-fg-subtle">
                   {formatNgn(detail.order.dispute.amountNgn)} · opened {formatRelative(detail.order.dispute.openedAt)} · {detail.order.dispute.evidence.length} file{detail.order.dispute.evidence.length === 1 ? '' : 's'} of evidence
                   {detail.order.dispute.response ? ' · seller has responded' : ' · no response yet'}
                 </p>
-              </section>
+                </div>
+              </DetailSection>
           }
-            <section aria-labelledby="ao-notes" className="px-5 py-5">
-              <div className="flex items-center justify-between gap-3">
-                <h3 id="ao-notes" className="text-label font-semibold text-fg">
-                  Staff notes
-                </h3>
-                <Button size="sm" variant="secondary" leadingIcon={StickyNoteIcon} onClick={() => setNoteFor(detail)}>
+            <DetailSection
+            title="Staff notes"
+            actions={
+            <Button size="sm" variant="secondary" leadingIcon={StickyNoteIcon} onClick={() => setNoteFor(detail)}>
                   Add note
                 </Button>
-              </div>
+            }>
+            
               {(store.orderNotes[detail.id] ?? []).length === 0 ?
-            <p className="mt-2 text-caption text-fg-subtle">No notes yet. Only staff can see notes.</p> :
+            <p className="text-caption text-fg-subtle">No notes yet. Only staff can see notes.</p> :
 
-            <ul className="mt-3 flex flex-col gap-3">
+            <ul className="flex flex-col gap-3">
                   {store.orderNotes[detail.id].map((n) =>
               <li key={n.id} className="text-label">
                       <p className="text-fg">{n.text}</p>
@@ -260,7 +251,7 @@ export function AdminOrders() {
               )}
                 </ul>
             }
-            </section>
+            </DetailSection>
           </div>
         }
       </Sheet>

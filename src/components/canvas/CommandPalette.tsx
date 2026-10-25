@@ -8,7 +8,8 @@ import { useEditor } from "../../contexts/EditorContext";
 import { useLibrary } from "../../contexts/LibraryContext";
 import { useMarketplace } from "../../contexts/MarketplaceContext";
 import { blockDefinitions, blockOrder } from "../../data/blockRegistry";
-import { blockName, summarizeBlock } from "../../utils/blocks";
+import { blockSearchText, libraryCategories, libraryCategoryOf } from "../../data/blockTaxonomy";
+import { layerName, summarizeBlock } from "../../utils/blocks";
 import { Kbd } from "../ui/Kbd";
 import { cn } from "../../utils/cn";
 interface CommandPaletteProps {
@@ -153,9 +154,10 @@ export function CommandPalette({
         id: `add:${type}`,
         group: 'Add a block',
         label: def.name,
-        hint: def.category,
+        hint: libraryCategories.find((c) => c.id === libraryCategoryOf(type))?.label ?? def.category,
         icon: def.icon,
-        keywords: `${def.description} ${def.keywords.join(' ')}`,
+        // Same search text as the picker, synonyms included (D166).
+        keywords: blockSearchText(type),
         run: () => actions.addBlock(type)
       });
     });
@@ -170,7 +172,7 @@ export function CommandPalette({
     state.draft.blocks.forEach((b) => list.push({
       id: `go:${b.id}`,
       group: 'Go to block',
-      label: blockName(b),
+      label: layerName(b),
       hint: summarizeBlock(b),
       icon: blockDefinitions[b.type].icon,
       run: () => actions.select(b.id)

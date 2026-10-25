@@ -21,6 +21,7 @@ import { ProductEditor } from '../../components/commerce/ProductEditor';
 import { ProductStatusBadge, SampleTag } from '../../components/commerce/StatusBadges';
 import { Card } from '../../components/ui/layout/Card';
 import { Section } from '../../components/ui/layout/Section';
+import { List } from '../../components/ui/layout/ListRow';
 import { KeyLookup } from '../../components/commerce/KeyLookup';
 import { useT } from '../../contexts/LocaleContext';
 
@@ -84,9 +85,7 @@ export function Digital() {
       }
 
       {digital.length === 0 ?
-      <div className="mt-8 rounded-lg border border-line bg-raised">
-          <EmptyState icon={FileIcon} title="No digital products yet" description="E-books, presets, patterns, templates or courses — upload once and every buyer gets their own link." action={<Button leadingIcon={PlusIcon} onClick={() => setParams({ new: '1' })}>{tr('Add digital product')}</Button>} />
-        </div> :
+      <EmptyState framed className="mt-8" icon={FileIcon} title="No digital products yet" description="E-books, presets, patterns, templates or courses — upload once and every buyer gets their own link." action={<Button leadingIcon={PlusIcon} onClick={() => setParams({ new: '1' })}>{tr('Add digital product')}</Button>} /> :
 
       <div className="mt-8 grid items-start gap-8 xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
           <Card
@@ -110,7 +109,7 @@ export function Digital() {
               </div>
           }>
           
-            <ul className="flex flex-col divide-y divide-line">
+            <List label={tr('Files for sale')}>
               {digital.map((p) => {
               const asset = p.digital!;
               const sold = buyers(p).length;
@@ -150,7 +149,7 @@ export function Digital() {
                   </li>);
 
             })}
-            </ul>
+            </List>
           </Card>
 
           <div className="flex flex-col gap-8">
@@ -159,7 +158,7 @@ export function Digital() {
             {access.length === 0 ?
             <p className="text-label text-fg-muted">{tr('No one has bought a file yet.')}</p> :
 
-            <ul className="flex flex-col divide-y divide-line border-y border-line">
+            <List ruled label={tr('Who has access')}>
                 {access.map((a) => {
                 const limit = a.product?.digital?.downloadLimit;
                 return (
@@ -178,7 +177,7 @@ export function Digital() {
                     </li>);
 
               })}
-              </ul>
+              </List>
             }
           </Section>
           </div>

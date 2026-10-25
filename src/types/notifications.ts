@@ -21,6 +21,7 @@ export type NotifEventId =
 'domain_status' |
 'dealroom_result' |
 'campaign_phase' |
+'fundraiser' |
 'sub_new' |
 'sub_failed' |
 'sub_cancelled' |

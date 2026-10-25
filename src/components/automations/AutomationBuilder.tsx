@@ -14,6 +14,7 @@ import { TextArea } from '../ui/TextArea';
 import { SelectInput } from '../ui/SelectInput';
 import { InlineAlert } from '../ui/InlineAlert';
 import { RunSteps } from './RunSteps';
+import { FormTriggerPicker } from './FormTriggerPicker';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { useTeam } from '../../contexts/TeamContext';
 import { AssigneeSelect } from '../team/AssigneeSelect';
@@ -126,6 +127,7 @@ export function AutomationBuilder({ automation, onClose }: {automation: Automati
             </span>
             <p className="text-caption font-semibold text-fg-subtle">When</p>
             <SelectInput<TriggerId> id="auto-trigger" label="Trigger" value={draft.trigger} options={(Object.keys(triggerLabels) as TriggerId[]).map((t) => ({ value: t, label: triggerLabels[t].label }))} hint={triggerLabels[draft.trigger].hint} onChange={(trigger) => patch(trigger === 'contact_quiet' && !draft.triggerDays ? { trigger, triggerDays: 30 } : { trigger })} />
+            {draft.trigger === 'form_sent' && <FormTriggerPicker value={draft.triggerFormId ?? null} onChange={(triggerFormId) => patch({ triggerFormId })} />}
             {draft.trigger === 'contact_quiet' &&
             <TextInput id="auto-quiet-days" label="Quiet for (days)" inputMode="numeric" value={String(draft.triggerDays ?? '')} fieldClassName="mt-3 w-40" hint="Counted from their last order, booking or message. At least 7." onChange={(e) => patch({ triggerDays: Number(e.target.value.replace(/[^0-9]/g, '').slice(0, 3) || '0') })} />
             }

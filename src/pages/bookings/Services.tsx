@@ -29,6 +29,8 @@ import { EmptyState } from '../../components/ui/EmptyState';
 import { BookingsPlanNote } from '../../components/bookings/BookingsPlanNote';
 import { SampleTag } from '../../components/commerce/StatusBadges';
 import { DetailSection } from '../../components/ui/layout/DetailList';
+import { Card } from '../../components/ui/layout/Card';
+import { List } from '../../components/ui/layout/ListRow';
 import { useT } from '../../contexts/LocaleContext';
 
 const blank = (): Service => ({ id: uid('svc'), name: '', description: '', durationMin: 60, priceNgn: null, depositNgn: null, location: 'studio', locationNote: '', bufferMin: 15, active: true });
@@ -105,15 +107,14 @@ export function Services() {
       
       <BookingsPlanNote />
       {data.services.length === 0 ?
-      <div className="mt-8 rounded-lg border border-line bg-raised">
-          <EmptyState icon={CalendarIcon} title="No services yet" description="A fitting, a consultation, a lesson — anything with a time." action={<Button leadingIcon={PlusIcon} onClick={() => setParams({ new: '1' })}>Add service</Button>} />
-        </div> :
+      <EmptyState framed className="mt-8" icon={CalendarIcon} title="No services yet" description="A fitting, a consultation, a lesson — anything with a time." action={<Button leadingIcon={PlusIcon} onClick={() => setParams({ new: '1' })}>Add service</Button>} /> :
 
-      <ul aria-label={tr('Services')} className="mt-8 flex flex-col divide-y divide-line overflow-hidden rounded-lg border border-line bg-raised">
+      <Card as="div" body="flush" className="mt-8 overflow-hidden">
+        <List label={tr('Services')}>
           {data.services.map((s) => {
-          const dest = serviceDestination(s.id);
-          return (
-            <li key={s.id} className="flex min-h-[64px] items-center pr-3 md:pr-4">
+            const dest = serviceDestination(s.id);
+            return (
+              <li key={s.id} className="flex min-h-[64px] items-center pr-3 md:pr-4">
               <button type="button" onClick={() => setParams({ edit: s.id })} className="flex min-w-0 flex-1 flex-col gap-2 self-stretch px-5 py-4 text-left md:px-6 transition-colors duration-150 hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus sm:flex-row sm:items-center">
                 <span className="min-w-0 flex-1">
                   <span className="flex items-center gap-2">
@@ -132,17 +133,18 @@ export function Services() {
               </button>
               <Tooltip content={tr(dest ? 'QR code that opens booking for this service' : 'Add a Booking block for this service to a page and publish it first')}>
                 <IconButton
-                  icon={QrCodeIcon}
-                  size="sm"
-                  label={tr('QR code for {name}', { name: s.name })}
-                  disabled={!dest || !s.active}
-                  onClick={() => dest && navigate(qrHref(dest, `Book: ${s.name}`))} />
-                
+                    icon={QrCodeIcon}
+                    size="sm"
+                    label={tr('QR code for {name}', { name: s.name })}
+                    disabled={!dest || !s.active}
+                    onClick={() => dest && navigate(qrHref(dest, `Book: ${s.name}`))} />
+                  
               </Tooltip>
             </li>);
 
-        })}
-        </ul>
+          })}
+        </List>
+        </Card>
       }
 
       <Sheet

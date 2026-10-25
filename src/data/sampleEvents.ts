@@ -3,10 +3,10 @@ import { kubicuFee, providerFee } from '../utils/commerce/money';
 import { upsertEvent } from '../utils/commerce/tickets';
 
 const DAY = 86400_000;
-const SAMPLE_EVENT_ID = 'sev_trunk';
+export const SAMPLE_EVENT_ID = 'sev_trunk';
 const SAMPLE_EVENT_PRODUCT = 'sp_trunk_tickets';
 
-function sampleEvent(): CommerceEvent {
+export function sampleEvent(): CommerceEvent {
   const start = new Date(Date.now() + 12 * DAY);
   start.setHours(16, 0, 0, 0);
   const at = new Date(Date.now() - 20 * DAY).toISOString();

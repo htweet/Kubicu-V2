@@ -28,8 +28,9 @@ export function SharedShops({ workspaceId, canEdit, onCreate }: Props) {
 
   if (!mine.length)
   return (
-    <div className="mt-8 rounded-lg border border-line bg-raised">
+    <div className="mt-8">
         <EmptyState
+        framed
         icon={StoreIcon}
         title="One shop link for a group of sellers"
         description="A market line, a designers’ collective, a church or school fair — show everyone’s products on one link. Each seller still takes their own orders and money."
@@ -50,7 +51,7 @@ export function SharedShops({ workspaceId, canEdit, onCreate }: Props) {
         const count = s.members.reduce((n, m) => n + memberItems(m).length, 0);
         return (
           <li key={s.id} className="rounded-lg border border-line bg-raised">
-            <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-start">
+            <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-start md:p-6">
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <h3 className="text-heading font-semibold text-fg">{s.name}</h3>
@@ -80,12 +81,12 @@ export function SharedShops({ workspaceId, canEdit, onCreate }: Props) {
               </div>
             </div>
 
-            <ul className="divide-y divide-line border-t border-line">
+            <ul aria-label={`Sellers in ${s.name}`} className="divide-y divide-line border-t border-line">
               {s.members.map((m) => {
                 const items = memberItems(m).length;
                 const self = m.workspaceId === workspaceId;
                 return (
-                  <li key={m.id} className="flex flex-wrap items-center gap-3 px-5 py-3">
+                  <li key={m.id} className="flex min-h-[56px] flex-wrap items-center gap-3 px-5 py-3 md:px-6">
                     <span className="min-w-0 flex-1">
                       <span className="block text-label font-medium text-fg">
                         {m.name}

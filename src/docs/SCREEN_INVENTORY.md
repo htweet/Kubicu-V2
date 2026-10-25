@@ -28,7 +28,7 @@ Phase: MVP · CR (commerce-ready) · Later
 | E-12 | Draft preview `/p/:handle?draft=1` | Canvas | Owner | Both | Preview | Back to editor | Draft banner | — | MVP | ✅ |
 | G-01 | Public page — Adaeze Atelier `/p/adaeze` | Public | Visitor | Mobile-first | Shared link | Order on WhatsApp | Live, form success/error, newsletter success/error | — | MVP | ✅ |
 | G-02 | Public page unavailable | Public | Visitor | Both | Wrong/unpublished handle | Create own page | — | — | MVP | ✅ |
-| G-03…10 | Creator, freelancer, retail, food, service, event, digital, professional, micro-site pages | Public | Visitor | Mobile-first | Templates, business kits, site kits | — | — | — | MVP/Later | 🟡 templates, ten business kits (D126) and four site kits (D127) exist; seven dedicated industry page sets in Batch 13 |
+| G-03…10 | Creator, freelancer, retail, food, service, event, digital, professional, micro-site pages | Public | Visitor | Mobile-first | Templates, business kits, site kits | — | — | — | MVP/Later | ✅ templates, ten business kits (D126) and seven industry page sets (D127, D137) |
 | I-01 | Commerce overview `/app/commerce` | Commerce | Owner | Both | Sidebar | Act on orders | Empty + sample data, setup, caught up | — | CR | ✅ |
 | I-02 | Products + editor + collections + CSV import | Commerce | Owner | Both (side sheet → full screen) | Commerce nav | Add / edit product | Empty, filters, low/sold out, archived, unsaved, import errors, Free limit | — | CR | ✅ |
 | I-03 | Inventory + adjust stock | Commerce | Owner | Both | Commerce nav | Adjust stock | Low, out, history, reason required | — | CR | ✅ |
@@ -99,6 +99,6 @@ Built families point to their rows above (and to PROTOTYPE_STATUS.md for detail)
 | W. Super-admin operations | Ops overview, tenants, plans, flags, modules, payments, AI ops, trust & support, system admin | 6 | 🟡 every area built (D75b, D82, D92, D129, D130) · editing tools for Plans, AI ops, Integrations and Localisation in Batch 13 |
 | X. Public trust/legal/safety states | Report, appeal, suspension, consent, unsubscribe, export/deletion, disputes, warnings | 3/6 | ✅ (D75b, D78, D80, D81, D94) |
 | Translations | Language switch, drafted Pidgin/Yorùbá/Hausa/Igbo | 12 | 🟡 customer pages and most of Commerce (D133–D133r); other screens to follow |
-| Industry page sets | Creator, Retail, Food, Service, Event, Digital, Professional | 13 | ⬜ Batch 13 |
+| Industry page sets | Creator, Retail, Food, Service, Event, Digital, Professional | 13 | ✅ (D137) |
 
 _Families table refreshed 24 Oct 2026 against the code (Batch 13, Pass A). Full gap list: docs/DESIGN_GAP_AUDIT.md._

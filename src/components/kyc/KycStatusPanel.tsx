@@ -26,7 +26,7 @@ export function KycStatusPanel({ k, canEdit, onRestart }: KycStatusPanelProps) {
   { icon: ClockIcon, tone: 'bg-info-soft text-info', title: 'With KUBICU for review', body: `Sent ${k.submittedAt ? formatRelative(k.submittedAt) : ''}. Most reviews finish within one business day${due ? ` — by ${formatTimestamp(due)}` : ''}. We’ll notify you either way.` };
 
   return (
-    <section aria-labelledby="kyc-status-title" className="rounded-lg border border-line bg-raised">
+    <section aria-labelledby="kyc-status-title" className="rounded-lg border border-line bg-raised shadow-1">
       <div className="flex flex-col gap-4 p-5 md:flex-row md:items-start md:p-6">
         <span className={cn('flex h-11 w-11 shrink-0 items-center justify-center rounded-full', head.tone)}>
           <head.icon size={22} strokeWidth={2.25} aria-hidden />
@@ -53,12 +53,12 @@ export function KycStatusPanel({ k, canEdit, onRestart }: KycStatusPanelProps) {
       </div>
 
       {k.history.length > 0 &&
-      <div className="border-t border-line px-5 py-4 md:px-6">
-          <h3 className="text-caption font-semibold text-fg-muted">History</h3>
-          <ol className="mt-3 flex flex-col gap-2.5">
+      <div className="border-t border-line px-5 py-5 md:px-6">
+          <h3 className="text-label font-semibold text-fg">History</h3>
+          <ol className="mt-3 flex flex-col divide-y divide-line">
             {k.history.slice(0, 8).map((e, i) =>
-          <li key={`${e.at}-${i}`} className="flex items-baseline justify-between gap-3 text-caption">
-                <span className="text-fg">{e.label}</span>
+          <li key={`${e.at}-${i}`} className="flex items-baseline justify-between gap-3 py-2.5 text-caption first:pt-0 last:pb-0">
+                <span className="text-label text-fg">{e.label}</span>
                 <span className="shrink-0 tabular-nums text-fg-subtle">{formatTimestamp(e.at)}</span>
               </li>
           )}

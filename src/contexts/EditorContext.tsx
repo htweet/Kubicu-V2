@@ -14,12 +14,21 @@ import { allBlocks, pageCount, pageLimits } from '../utils/sitePages';
 import { hasPlaceholder } from '../utils/ai/draft';
 import { intentIssues } from '../utils/intentflow';
 import { abIssues } from '../utils/abTest';
+import { containerIssues } from '../utils/containers';
+import { storyBlockIssues } from '../utils/storyBlockChecks';
 import { activeExtraSpaces, extraSpaceLimits, MAIN_SPACE_ID, spaceStorageId } from '../utils/spaces';
 import { spaceKinds } from '../data/spaceKinds';
 import { planAtLeast, planOrder, plans } from '../data/plans';
 import { CHECKOUT_PLAN } from '../utils/commerce/linkIssues';
 import { dealRoomIssues, roomOrders } from '../utils/dealRoom';
 import { campaignIssues } from '../utils/campaign';
+import { eventSpaceIssues, eventSpaceLinks } from '../utils/eventSpace';
+import { fundraiserIssues } from '../utils/fundraiser';
+import { popupIssues } from '../utils/popup';
+import { bookingPageIssues } from '../utils/bookingPage';
+import { membersAreaIssues } from '../utils/membersArea';
+import { extensionActive, readMarketplace } from '../utils/marketplace';
+import { isVerified, readMoney } from '../utils/money/store';
 import type { WorkspacePlan } from '../types/plan';
 import { memberIssues } from '../utils/memberIssues';
 import { usePublicPassport } from '../hooks/usePublicPassport';
@@ -69,9 +78,9 @@ export function EditorProvider({ children }: {children: React.ReactNode;}) {
           id: 'site:space-limit',
           blockId: null,
           severity: 'error',
-          message: limit === 0 ? `Your ${plan.name} plan includes your main page only. Upgrade to publish campaigns and DealRooms.` : `Your ${plan.name} plan includes ${limit} campaigns and DealRooms. Archive one or upgrade to publish this.`,
+          message: limit === 0 ? `Your ${plan.name} plan includes your main page only. Upgrade to publish extra spaces.` : `Your ${plan.name} plan includes ${limit} extra spaces. Archive one or upgrade to publish this.`,
           upgradeTo: nextPlanAbove(plan.id),
-          upgradeFeature: 'Publishing campaigns and DealRooms'
+          upgradeFeature: 'Publishing extra spaces'
         });
       }
       // AI drafts mark gaps as "[Add …]" — they must be replaced with the owner's own words (D63).
@@ -80,9 +89,24 @@ export function EditorProvider({ children }: {children: React.ReactNode;}) {
         out.push({ id: `ai:placeholder:${b.id}`, blockId: b.id, severity: 'error', message: 'Replace the [Add …] placeholder with your own words before publishing.' });
       });
       out.push(...intentIssues(doc));
+      out.push(...containerIssues(allBlocks(doc)));
+      out.push(...storyBlockIssues(allBlocks(doc)));
       out.push(...abIssues(allBlocks(doc)));
       out.push(...memberIssues(doc, data, plan.id, { appOn: trustAppOn, level: trustLevel }));
       if (doc.campaign) out.push(...campaignIssues(doc.campaign, doc.blocks, data));
+      // Event spaces (D178): the linked event must exist, and no other Event space may use it.
+      if (doc.eventSpace) out.push(...eventSpaceIssues(doc.eventSpace, doc.blocks, data, eventSpaceLinks(current).filter((l) => l.spaceId !== currentSpace.id)));
+      // Fundraisers (D179): verified workspaces only, with a purpose, organiser and goal.
+      if (doc.fundraiser) {
+        const money = readMoney(current.id);
+        out.push(...fundraiserIssues(doc.fundraiser, money.links.find((l) => l.id === doc.fundraiser!.linkId), isVerified(money), doc.blocks));
+      }
+      // Pop-up shops (D183): a place, sessions and products, with something showing in each phase.
+      if (doc.popup) out.push(...popupIssues(doc.popup, doc.blocks, data));
+      // Booking pages (D184): the Bookings app on, services chosen and switched on, never a dead end.
+      // Members areas (D185): Pro, a live membership plan, and a valid set of plans that get in.
+      if (doc.membersArea) out.push(...membersAreaIssues(doc.membersArea, data, plan.id));
+      if (doc.bookingPage) out.push(...bookingPageIssues(doc.bookingPage, doc.blocks, ops, extensionActive(readMarketplace(current.id), 'bookings')));
       // Co-branded spaces (D121): partnership must be live and the partner must approve.
       if (doc.coBrand) out.push(...coBrandIssues(doc, { hasLive: !!readPersistedPage(storageId)?.published, partnership: partnerships.partnerships.find((p) => p.id === doc.coBrand!.partnershipId), plan: plan.id }));
       if (doc.dealRoom) {
@@ -93,7 +117,7 @@ export function EditorProvider({ children }: {children: React.ReactNode;}) {
       }
       return out;
     },
-    [plan.id, plan.name, isMain, spaceIndex, currentSpace.kind, data, trustAppOn, trustLevel, partnerships, storageId]
+    [plan.id, plan.name, isMain, spaceIndex, currentSpace.kind, currentSpace.id, current, data, ops, trustAppOn, trustLevel, partnerships, storageId]
   );
   const store = useEditorStore(storageId, taken, extra, siteLevel);
   return <EditorContext.Provider value={store}>{children}</EditorContext.Provider>;

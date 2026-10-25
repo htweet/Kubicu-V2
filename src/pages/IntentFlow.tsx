@@ -12,6 +12,8 @@ import { PageHeader } from '../components/shell/PageHeader';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { EmptyState } from '../components/ui/EmptyState';
+import { List } from '../components/ui/layout/ListRow';
+import { Stat, StatGroup } from '../components/ui/layout/Stat';
 
 /** Every source rule in the workspace, its results, and instant pause / roll back (D64). */
 export function IntentFlow() {
@@ -58,20 +60,19 @@ export function IntentFlow() {
       </p>
 
       {entries.length === 0 ?
-      <div className="rounded-lg border border-line bg-raised">
-          <EmptyState
-          icon={SplitIcon}
-          title="No source rules yet"
-          description="In the canvas, select a block, open Visibility and choose “Show by visitor source”. For example, show a TikTok welcome only to TikTok visitors."
-          action={
-          <Link to="/app/canvas">
+      <EmptyState
+        framed
+        icon={SplitIcon}
+        title="No source rules yet"
+        description="In the canvas, select a block, open Visibility and choose “Show by visitor source”. For example, show a TikTok welcome only to TikTok visitors."
+        action={
+        <Link to="/app/canvas">
                 <Button>Open canvas</Button>
               </Link>
-          } />
-        
-        </div> :
+        } /> :
 
-      <ul className="divide-y divide-line border-y border-line">
+
+      <List ruled label="Source rules">
           {entries.map((e) => {
           const r = intentResult(data.events, e.handle, e.block.id, e.rule);
           const rateA = r.audienceVisits ? r.audienceHits / r.audienceVisits : 0;
@@ -104,18 +105,10 @@ export function IntentFlow() {
                     </> :
 
                 <>
-                      <dl className="grid grid-cols-2 gap-3">
-                        <div>
-                          <dt className="text-caption text-fg-subtle">Visits it targets</dt>
-                          <dd className="text-heading font-semibold tabular-nums text-fg">{Math.round(rateA * 100)}%</dd>
-                          <dd className="text-caption text-fg-muted">{r.audienceHits} of {r.audienceVisits}</dd>
-                        </div>
-                        <div>
-                          <dt className="text-caption text-fg-subtle">Everyone else</dt>
-                          <dd className="text-heading font-semibold tabular-nums text-fg-muted">{Math.round(rateB * 100)}%</dd>
-                          <dd className="text-caption text-fg-muted">{r.restHits} of {r.restVisits}</dd>
-                        </div>
-                      </dl>
+                      <StatGroup columns={2}>
+                        <Stat label="Visits it targets" value={`${Math.round(rateA * 100)}%`} hint={`${r.audienceHits} of ${r.audienceVisits}`} />
+                        <Stat label="Everyone else" value={`${Math.round(rateB * 100)}%`} hint={`${r.restHits} of ${r.restVisits}`} />
+                      </StatGroup>
                       <p className="mt-1 text-caption text-fg-subtle">Different audiences behave differently anyway — this shows a pattern, not proof the block caused it.</p>
                     </>
                 }
@@ -143,7 +136,7 @@ export function IntentFlow() {
               </li>);
 
         })}
-        </ul>
+        </List>
       }
       <p className="text-caption text-fg-subtle">“Roll back” removes the rule so everyone sees the block again. Check what each audience sees with “Preview as” in the canvas.</p>
     </div>);

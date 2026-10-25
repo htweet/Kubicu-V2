@@ -259,6 +259,13 @@ export function OrderDetail({ orderId, onClose }: {orderId: string | null;onClos
                 {order.fulfilment.method === 'pickup' ? tr('Pickup') : order.fulfilment.method === 'tickets' ? tr('Event tickets · {n} issued', { n: order.tickets?.length ?? 0 }) : order.fulfilment.method === 'digital' ? tr('Download link') : `${tr('Delivery')} · ${order.fulfilment.zoneName}`}
               </p>
               {order.fulfilment.address && <p className="text-label text-fg-muted">{order.fulfilment.address}</p>}
+              {order.popup &&
+              <p className="text-caption text-fg-subtle">
+                  {tr('Pop-up session')}: {order.popup.sessionLabel}
+                  {order.popup.payAtStall && order.paymentStatus === 'pending' ? ` · ${tr('pays at the stall')}` : ''}
+                  {order.popup.collectedAt ? ` · ${tr('collected')}` : ''}
+                </p>
+              }
               {order.fulfilment.eta && <p className="text-caption text-fg-subtle">{tr('Estimated {eta}', { eta: order.fulfilment.eta })}</p>}
               {order.downloadToken &&
               <p className="mt-1 text-caption text-fg-subtle">

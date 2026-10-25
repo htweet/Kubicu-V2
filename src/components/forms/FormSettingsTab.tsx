@@ -4,6 +4,7 @@ import { TextInput } from '../ui/TextInput';
 import { TextArea } from '../ui/TextArea';
 import { DateTimeInput } from '../ui/DateTimeInput';
 import { AssigneeSelect } from '../team/AssigneeSelect';
+import { ConfirmationSettings } from './ConfirmationSettings';
 
 interface FormSettingsTabProps {
   form: FormDef;
@@ -30,6 +31,10 @@ export function FormSettingsTab({ form, onChange, disabled }: FormSettingsTabPro
         <TextInput id="fs-st" label="Thank-you heading" value={s.successTitle} maxLength={60} onChange={(e) => set({ successTitle: e.target.value })} />
         <TextArea id="fs-sx" label="Thank-you message" rows={2} value={s.successText} maxLength={240} onChange={(e) => set({ successText: e.target.value })} />
         <TextInput id="fs-rd" label="Continue link" optional placeholder="https://" value={s.redirectUrl} onChange={(e) => set({ redirectUrl: e.target.value.trim() })} error={redirectBad ? 'Enter a full address starting with https://' : undefined} hint="Shown as a Continue button under the message." />
+      </Group>
+
+      <Group title="Confirmation email" text="A copy of their answers, sent to the person who filled in the form.">
+        <ConfirmationSettings form={form} onChange={(confirmation) => set({ confirmation })} />
       </Group>
 
       <Group title="Limits" text="The form closes itself when either is reached. Visitors see a clear closed message.">

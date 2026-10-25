@@ -8,6 +8,8 @@ _Re-audited 24 Oct 2026 against the code, the decision register (through D149) a
 >
 > The audit of 24 Oct also corrected itself: the four Super-admin areas are **not** placeholders (D130 built them read-only), and the automation triggers/actions **exist** (D125) but, like all automations, only run as test runs.
 
+> **Template & theme libraries (D153–D165).** Built: layout sections; Elite collection (24 paid templates, prices cut by a third in D158); Artwork collection (8 classic templates over AI artwork, ≤ ₦3,000, enriched D159); Elite polish (D160); Signature Theme Library — material layer, 24 themes / 35 versions, Themes gallery with compare and spec sheets, Free-plan set of 4 (D161–D165). Open: a visual browser pass of all 32 templates and 35 theme versions at phone and desktop, and real-device checks of glass/blur performance on low-end Android (both in §1 "Needs a hands-on check").
+
 ---
 
 ## 1. Summary

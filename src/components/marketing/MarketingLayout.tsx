@@ -21,6 +21,7 @@ const footer = [
   links: [
   { to: '/templates', label: 'Templates' },
   { to: '/pricing', label: 'Pricing' },
+  { to: '/ai', label: 'KUBICU AI' },
   { to: '/about/roadmap', label: 'Roadmap' },
   { to: '/signup', label: 'Create a page' }]
 

@@ -18,6 +18,7 @@ import { SelectInput } from '../../components/ui/SelectInput';
 import { TextInput } from '../../components/ui/TextInput';
 import { Card } from '../../components/ui/layout/Card';
 import { Stat, StatGroup } from '../../components/ui/layout/Stat';
+import { List } from '../../components/ui/layout/ListRow';
 import { PartnerNote } from '../../components/money/PartnerNote';
 import { WalletLedger } from '../../components/money/WalletLedger';
 import { PayoutDialog } from '../../components/money/PayoutDialog';
@@ -147,8 +148,8 @@ export function Wallet() {
         </p>
       }
 
-      <section aria-label={tr('Balances')} className="mt-6 rounded-lg border border-line bg-raised p-5 md:p-6">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+      <Card emphasis="primary" as="div" className="mt-6">
+        <div role="group" aria-label={tr('Balances')} className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <dl>
             <Stat
               primary
@@ -163,7 +164,7 @@ export function Wallet() {
             <Stat label={tr('Reserved')} value={formatNgn(b.reserved)} hint={tr('Open disputes')} />
           </StatGroup>
         </div>
-      </section>
+      </Card>
 
       <div className="mt-8 grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_340px]">
         <WalletLedger data={data} />
@@ -179,9 +180,9 @@ export function Wallet() {
             }>
             
             {data.banks.length === 0 ?
-            <p className="px-5 pb-5 text-label text-fg-muted md:px-6">{tr('Add an account in your business’s name to start paying out.')}</p> :
+            <p className="px-5 py-4 text-label text-fg-muted md:px-6">{tr('Add an account in your business’s name to start paying out.')}</p> :
 
-            <ul className="divide-y divide-line border-t border-line">
+            <List label={tr('Bank accounts')}>
                 {data.banks.map((bank) => {
                 const waiting = !usableBanks(data).some((u) => u.id === bank.id) && bank.nameMatch !== 'mismatch';
                 const acct = `${bank.bankName} ····${bank.last4}`;
@@ -236,7 +237,7 @@ export function Wallet() {
                     </li>);
 
               })}
-              </ul>
+              </List>
             }
           </Card>
 

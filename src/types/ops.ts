@@ -133,6 +133,8 @@ export interface Booking {
   sample?: boolean;
   /** Team member looking after this booking (D60). */
   assigneeId?: string | null;
+  /** Public handle of the page or space it was booked on (D191) — e.g. a Booking page. */
+  sourceHandle?: string;
 }
 
 export type ContactSource = 'order' | 'booking' | 'form' | 'newsletter' | 'import' | 'manual';
@@ -179,6 +181,7 @@ export type TriggerId =
 'booking_created' |
 'checkout_abandoned' |
 'lead_submitted' |
+'form_sent' |
 'stock_low' |
 'sub_started' |
 'sub_failed' |
@@ -229,6 +232,8 @@ export interface Automation {
   trigger: TriggerId;
   /** "Contact quiet for N days" (D125). */
   triggerDays?: number;
+  /** "A form response arrives": one form, or null for any form (D195). */
+  triggerFormId?: string | null;
   conditions: AutomationCondition[];
   steps: AutomationStep[];
   runs: AutomationRun[];

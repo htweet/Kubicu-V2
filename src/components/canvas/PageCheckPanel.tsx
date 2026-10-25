@@ -6,6 +6,7 @@ import { a11yFindings, CHECK_KINDS, formatKb, pageWeight } from '../../utils/pag
 import { formatNgn } from '../../utils/format';
 import { Switch } from '../ui/Switch';
 import { cn } from '../../utils/cn';
+import { CompositionPanel } from './CompositionPanel';
 
 const ratingCopy = {
   light: { label: 'Light', tone: 'text-success', note: 'Opens quickly even on 3G.' },
@@ -25,12 +26,13 @@ export function PageCheckPanel() {
 
   const labelFor = (id: string | null) => {
     const b = id ? blocks.find((x) => x.id === id) : null;
-    return b ? blockDefinitions[b.type].label : 'Theme';
+    return b ? blockDefinitions[b.type].name : 'Theme';
   };
 
   return (
     <div className="flex flex-col gap-6 p-4">
-      <section aria-labelledby="chk-a11y">
+      <CompositionPanel />
+      <section aria-labelledby="chk-a11y" className="border-t border-line pt-6">
         <div className="flex items-baseline justify-between gap-2">
           <h2 id="chk-a11y" className="text-label font-semibold text-fg">
             Accessibility

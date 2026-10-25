@@ -45,16 +45,21 @@ interface SpacesListProps {
 
 const title = (r: SpaceRow) => r.space.kind === 'main' ? r.doc?.title ?? r.workspace.name : r.space.name;
 
-/** Every space you own — main pages, campaigns and DealRooms across workspaces. */
+/** The current workspace's spaces; optionally every workspace you belong to (D176). */
 export function SpacesList({ rows, onOpen, menuFor }: SpacesListProps) {
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<Filter>('all');
   const [kind, setKind] = useState<KindFilter>('all');
   const [view, setView] = useState<View>('cards');
+  // Workspace boundary (D176): this workspace's spaces by default; your other workspaces only when you ask.
+  const [scope, setScope] = useState<'workspace' | 'all'>('workspace');
+  const workspaceCount = new Set(rows.map((r) => r.workspace.id)).size;
+  const currentName = rows.find((r) => r.inCurrentWorkspace)?.workspace.name ?? 'this workspace';
+  const scoped = useMemo(() => scope === 'all' ? rows : rows.filter((r) => r.inCurrentWorkspace), [rows, scope]);
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return rows.filter((r) => {
+    return scoped.filter((r) => {
       if (kind !== 'all' && r.space.kind !== kind) return false;
       if (filter === 'live' && !(r.status === 'live' || r.status === 'changes')) return false;
       if (filter === 'draft' && !(r.status === 'draft' || r.status === 'scheduled')) return false;
@@ -62,7 +67,7 @@ export function SpacesList({ rows, onOpen, menuFor }: SpacesListProps) {
       if (!q) return true;
       return `${title(r)} ${r.doc?.handle ?? ''} ${r.workspace.name}`.toLowerCase().includes(q);
     });
-  }, [rows, query, filter, kind]);
+  }, [scoped, query, filter, kind]);
 
   const action = (r: SpaceRow) =>
   r.inCurrentWorkspace ?
@@ -100,7 +105,7 @@ export function SpacesList({ rows, onOpen, menuFor }: SpacesListProps) {
   },
   { key: 'kind', header: 'Type', sortValue: (r) => r.space.kind, render: kindTag },
   { key: 'status', header: 'Status', sortValue: (r) => r.status, render: (r) => <Badge tone={spaceStatusBadge[r.status].tone} dot>{spaceStatusBadge[r.status].label}</Badge> },
-  { key: 'ws', header: 'Workspace', hideOnMobile: true, sortValue: (r) => r.workspace.name, render: (r) => <span className="text-fg-muted">{r.workspace.name}</span> },
+  ...(scope === 'all' ? [{ key: 'ws', header: 'Workspace', hideOnMobile: true, sortValue: (r: SpaceRow) => r.workspace.name, render: (r: SpaceRow) => <span className="text-fg-muted">{r.workspace.name}</span> }] : []),
   { key: 'edited', header: 'Last edited', hideOnMobile: true, sortValue: (r) => Date.parse(r.doc?.updatedAt ?? r.space.createdAt), render: (r) => <span className="text-fg-muted">{formatRelative(r.doc?.updatedAt ?? r.space.createdAt)}</span> },
   {
     key: 'go',
@@ -115,20 +120,31 @@ export function SpacesList({ rows, onOpen, menuFor }: SpacesListProps) {
   }];
 
 
-  const workspaceCount = new Set(rows.map((r) => r.workspace.id)).size;
-
   return (
     <section aria-labelledby="all-spaces-heading" className="mt-14">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <h2 id="all-spaces-heading" className="text-heading font-semibold text-fg">
-            All spaces <span className="font-normal tabular-nums text-fg-subtle">· {rows.length}</span>
+            {scope === 'all' ? 'Spaces in all your workspaces' : 'Spaces in this workspace'} <span className="font-normal tabular-nums text-fg-subtle">· {scoped.length}</span>
           </h2>
           <p className="mt-0.5 text-label text-fg-muted">
-            Spaces in a workspace share its products, orders and contacts.{workspaceCount > 1 ? ' Switching to another workspace’s space takes you into that workspace.' : ''}
+            {scope === 'all' ?
+            'Each workspace keeps its own spaces, products, orders and contacts — nothing is shared between them. This view only lists workspaces you belong to; opening another one switches you into it.' :
+            `Spaces in ${currentName} share its products, orders and contacts. Other workspaces can’t see them.`}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          {workspaceCount > 1 &&
+          <Segmented<'workspace' | 'all'>
+            ariaLabel="Which workspaces"
+            value={scope}
+            onChange={setScope}
+            options={[
+            { value: 'workspace', label: 'This workspace' },
+            { value: 'all', label: `All ${workspaceCount}` }]
+            } />
+
+          }
           <div className="relative w-full sm:w-56">
             <SearchIcon size={15} aria-hidden className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-fg-subtle" />
             <label htmlFor="spaces-search" className="sr-only">
@@ -142,9 +158,11 @@ export function SpacesList({ rows, onOpen, menuFor }: SpacesListProps) {
           <div className="relative">
             <select id="spaces-kind" value={kind} onChange={(e) => setKind(e.target.value as KindFilter)} className={cn(fieldControlClass, 'h-9 w-36 appearance-none pr-8 text-label')}>
               <option value="all">All types</option>
-              <option value="main">Main pages</option>
-              <option value="campaign">Campaigns</option>
-              <option value="dealroom">DealRooms</option>
+              {(Object.keys(spaceKinds) as SpaceKind[]).map((k) =>
+              <option key={k} value={k}>
+                  {spaceKinds[k].plural}
+                </option>
+              )}
             </select>
             <ChevronDownIcon size={14} aria-hidden className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-fg-subtle" />
           </div>
@@ -172,25 +190,25 @@ export function SpacesList({ rows, onOpen, menuFor }: SpacesListProps) {
       </div>
 
       {visible.length === 0 ?
-      <div className="mt-5 rounded-lg border border-line bg-raised">
-          <EmptyState
-          icon={SearchIcon}
-          title="No spaces match"
-          description="Try another name, type or status."
-          action={
-          <Button
-            variant="secondary"
-            onClick={() => {
-              setQuery('');
-              setFilter('all');
-              setKind('all');
-            }}>
-            
+      <EmptyState
+        framed
+        className="mt-5"
+        icon={SearchIcon}
+        title="No spaces match"
+        description="Try another name, type or status."
+        action={
+        <Button
+          variant="secondary"
+          onClick={() => {
+            setQuery('');
+            setFilter('all');
+            setKind('all');
+          }}>
+          
                 Clear filters
               </Button>
-          } />
-        
-        </div> :
+        } /> :
+
       view === 'table' ?
       <div className="mt-5">
           <DataTable caption="All spaces" rows={visible} columns={columns} emptyTitle="No spaces" />

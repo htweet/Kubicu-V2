@@ -19,6 +19,8 @@ import { BookingsPlanNote } from '../../components/bookings/BookingsPlanNote';
 import { cn } from '../../utils/cn';
 import { Card } from '../../components/ui/layout/Card';
 import { AsideNote } from '../../components/ui/layout/AsideNote';
+import { DetailSection } from '../../components/ui/layout/DetailList';
+import { List } from '../../components/ui/layout/ListRow';
 import { CalendarSyncCard } from '../../components/bookings/CalendarSyncCard';
 import { TeamHoursCard } from '../../components/bookings/TeamHoursCard';
 import { useT } from '../../contexts/LocaleContext';
@@ -71,7 +73,7 @@ export function Availability() {
             {draft.overrides.length === 0 ?
             <p className="text-label text-fg-muted">{tr('No date changes.')}</p> :
 
-            <ul className="-my-3 flex flex-col divide-y divide-line">
+            <List label={tr('Date changes')} className="-my-3">
                 {draft.overrides.map((o) => {
                 const set = (p: Partial<typeof o>) => patch({ overrides: draft.overrides.map((x) => x.id === o.id ? { ...x, ...p } : x) });
                 return (
@@ -90,7 +92,7 @@ export function Availability() {
                     </li>);
 
               })}
-              </ul>
+              </List>
             }
           </Card>
 
@@ -100,43 +102,36 @@ export function Availability() {
         </div>
 
         <div className="flex flex-col gap-6">
-          <Card id="rules" title="Booking rules" body="flush">
-          <div className="flex flex-col divide-y divide-line">
-          <section aria-labelledby="lim-h" className="px-5 py-5 md:px-6">
-            <h3 id="lim-h" className="text-label font-semibold text-fg">
-              {tr('Limits')}
-            </h3>
-            <div className="mt-3 grid gap-4 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
+          <Card id="rules" title="Booking rules">
+          <div className="flex flex-col gap-6">
+          <DetailSection title={tr('Limits')}>
+            <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
               <TextInput id="av-notice" label="Minimum notice (hours)" inputMode="numeric" value={String(draft.minNoticeHours)} onChange={(e) => patch({ minNoticeHours: num(e.target.value, 336) })} />
               <TextInput id="av-max" label="Most bookings per day" inputMode="numeric" value={String(draft.maxPerDay)} onChange={(e) => patch({ maxPerDay: Math.max(1, num(e.target.value, 50)) })} />
               <TextInput id="av-horizon" label="Book up to (days ahead)" inputMode="numeric" value={String(draft.horizonDays)} onChange={(e) => patch({ horizonDays: Math.max(1, num(e.target.value, 365)) })} />
             </div>
-          </section>
+          </DetailSection>
 
-          <section aria-labelledby="pol-h" className="px-5 py-5 md:px-6">
-            <h3 id="pol-h" className="text-label font-semibold text-fg">
-              {tr('Cancellation policy')}
-            </h3>
-            <div className="mt-3 flex flex-col gap-4">
+          <DetailSection title={tr('Cancellation policy')}>
+            <div className="flex flex-col gap-4">
               <TextInput id="av-cancel" label="Free changes until (hours before)" inputMode="numeric" value={String(draft.cancelHours)} hint="After this, customer cancellations keep the deposit. You can always refund yourself." onChange={(e) => patch({ cancelHours: num(e.target.value, 168) })} />
               <TextArea id="av-policy" label="Policy shown before booking" rows={3} value={draft.policy} onChange={(e) => patch({ policy: e.target.value })} />
             </div>
-          </section>
+          </DetailSection>
 
-          <section aria-labelledby="rem-h" className="px-5 py-5 md:px-6 md:pb-6">
-            <h3 id="rem-h" className="sr-only">
-              {tr('Reminders')}
-            </h3>
+          <DetailSection title={tr('Reminders')}>
+            <div>
             <Switch id="av-rem" label="Send booking reminders" description="WhatsApp or email in the customer’s own time zone. Preview only in this prototype." checked={draft.remindersOn} onChange={(remindersOn) => patch({ remindersOn })} />
             {draft.remindersOn &&
-                <>
+                  <>
                 <div className="mt-4 max-w-[220px]">
                   <SelectInput id="av-remh" label="When" value={String(draft.reminderHours)} options={[2, 12, 24, 48].map((h) => ({ value: String(h), label: tr('{n} hours before', { n: h }) }))} onChange={(v) => patch({ reminderHours: Number(v) })} />
                 </div>
                 <p className="mt-3 rounded-md bg-sunken px-3 py-2.5 text-label text-fg-muted">{tr('“Hi Amaka, a reminder of your Studio fitting tomorrow at 11:00am (Lagos time). Need to move it? Use your booking link.”')}</p>
               </>
-                }
-          </section>
+                  }
+            </div>
+          </DetailSection>
           </div>
           </Card>
 

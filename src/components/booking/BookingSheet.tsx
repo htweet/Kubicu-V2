@@ -91,7 +91,8 @@ export function BookingSheet({ theme, ops, serviceId, handle, onClose }: Booking
           depositOutcome: service.depositNgn ? byUssd ? 'paid' : deposit : 'none',
           customerTimeZone: visitorTimeZone(),
           marketingConsent: consent,
-          staffId: chosen?.memberId ?? null
+          staffId: chosen?.memberId ?? null,
+          sourceHandle: handle
         });
         return result.ok ? result.data : d;
       });

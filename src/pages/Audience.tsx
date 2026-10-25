@@ -25,6 +25,7 @@ import { DuplicatesDialog } from '../components/audience/DuplicatesDialog';
 import { SampleTag } from '../components/commerce/StatusBadges';
 import { cn } from '../utils/cn';
 import { Stat, StatGroup } from '../components/ui/layout/Stat';
+import { List, ListRow } from '../components/ui/layout/ListRow';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import { useTeam } from '../contexts/TeamContext';
 import { AssigneeChip, MineToggle } from '../components/team/AssigneeSelect';
@@ -126,13 +127,14 @@ export function Audience() {
       
 
       {data.contacts.length === 0 ?
-      <div className="mt-8 rounded-lg border border-line bg-raised">
-          <EmptyState
-          icon={UsersIcon}
-          title="No contacts yet"
-          description="Orders, bookings, enquiry forms and newsletter signups on your page add people here automatically."
-          action={
-          <div className="flex flex-wrap justify-center gap-2">
+      <EmptyState
+        framed
+        className="mt-8"
+        icon={UsersIcon}
+        title="No contacts yet"
+        description="Orders, bookings, enquiry forms and newsletter signups on your page add people here automatically."
+        action={
+        <div className="flex flex-wrap justify-center gap-2">
                 <Button leadingIcon={UploadIcon} variant="secondary" onClick={() => setDialog('import')}>
                   Import CSV
                 </Button>
@@ -140,9 +142,8 @@ export function Audience() {
                   Explore with sample data
                 </Button>
               </div>
-          } />
-        
-        </div> :
+        } /> :
+
 
       <>
           <div className="mt-8 flex flex-col gap-4 border-b border-line pb-6 md:flex-row md:items-end md:justify-between">
@@ -201,25 +202,30 @@ export function Audience() {
 
             })}
               </div>
-              <ul role="tabpanel" aria-label={tr(stageLabels[stageTab])} className="mt-3 divide-y divide-line overflow-hidden rounded-md border border-line bg-raised">
-                {rows.
-            filter((c) => c.stage === stageTab).
-            map((c) =>
-            <li key={c.id}>
-                      <button type="button" onClick={() => setParams({ contact: c.id })} className="flex min-h-[56px] w-full items-center gap-3 px-4 py-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus">
-                        <span className="min-w-0 flex-1">
-                          <span className="block truncate text-label font-semibold text-fg">{c.name || c.email}</span>
-                          <span className="block truncate text-caption text-fg-subtle">{c.activity[0]?.label}</span>
-                        </span>
-                        <span className="flex shrink-0 flex-col items-end gap-1">
-                          <ConsentBadge consent={c.consent} />
-                          {c.tasks.some((t) => !t.done) && <span className="text-caption font-semibold text-action">{followUps(c)}</span>}
-                        </span>
-                      </button>
-                    </li>
-            )}
-                {rows.every((c) => c.stage !== stageTab) && <li className="px-4 py-8 text-center text-label text-fg-muted">{tr('No one at this stage.')}</li>}
-              </ul>
+              <div role="tabpanel" aria-label={tr(stageLabels[stageTab])} className="mt-3 overflow-hidden rounded-lg border border-line bg-raised">
+                {rows.every((c) => c.stage !== stageTab) ?
+            <p className="px-5 py-10 text-center text-label text-fg-muted">{tr('No one at this stage.')}</p> :
+
+            <List>
+                    {rows.
+              filter((c) => c.stage === stageTab).
+              map((c) =>
+              <ListRow
+                key={c.id}
+                onClick={() => setParams({ contact: c.id })}
+                title={c.name || c.email}
+                meta={c.activity[0]?.label}
+                trailing={
+                <span className="flex flex-col items-end gap-1">
+                              <ConsentBadge consent={c.consent} />
+                              {c.tasks.some((t) => !t.done) && <span className="text-caption font-semibold text-action">{followUps(c)}</span>}
+                            </span>
+                } />
+
+              )}
+                  </List>
+            }
+              </div>
             </div> :
 
         <div className="scroll-quiet mt-4 grid auto-cols-[minmax(240px,1fr)] grid-flow-col gap-4 overflow-x-auto pb-2">

@@ -1,3 +1,6 @@
+import { providersIn } from './providers';
+import type { PaymentProviderId } from '../types/commerce';
+
 export const commerceNav = [
 { to: '/app/commerce', label: 'Overview', end: true },
 { to: '/app/commerce/orders', label: 'Orders' },
@@ -44,7 +47,5 @@ export const stockReasonLabels = {
   created: 'Opening stock'
 } as const;
 
-/** Illustrative payment providers — availability and methods depend on the provider and merchant. */
-export const paymentProviders = [
-{ id: 'paystack' as const, name: 'Paystack', blurb: 'Cards, bank transfer, USSD and Apple Pay for Nigerian businesses.', methods: ['Card', 'Bank transfer', 'USSD', 'Apple Pay'] },
-{ id: 'flutterwave' as const, name: 'Flutterwave', blurb: 'Cards, bank transfer, USSD and mobile money across Africa.', methods: ['Card', 'Bank transfer', 'USSD', 'Mobile money'] }];
+/** Payment providers, from the provider registry (D192) — availability and methods depend on the provider and merchant. */
+export const paymentProviders = providersIn('payments').map((p) => ({ id: p.id as PaymentProviderId, name: p.name, blurb: p.blurb, methods: p.tags }));

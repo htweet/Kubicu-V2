@@ -74,7 +74,16 @@ export const siteKits: SiteKit[] = [
   { title: 'Shop', purpose: 'All your products with checkout', build: () => [heading('Shop'), text(placeholder('what you sell and who it’s for')), plain('productGrid')] },
   { title: 'New in', purpose: 'One collection, e.g. new arrivals or a festive drop', build: () => [heading('New in'), plain('collection')] },
   { title: 'About', purpose: 'Your story and why customers trust you', build: () => [heading('Our story'), text(placeholder('how you started and what makes your products different')), plain('image'), plain('proof')] },
-  { title: 'Delivery & returns', purpose: 'Areas, fees, timings, pay on delivery and returns', build: () => [heading('Delivery & returns'), faq('Before you order', ['Which areas do you deliver to?', 'How much is delivery and how long does it take?', 'Can I pay on delivery?', 'How do returns and exchanges work?'])] },
+  {
+    title: 'Delivery & returns',
+    purpose: 'Areas, fees, timings, pay on delivery and returns',
+    // Rates follow the shop's delivery settings (D181); returns stay a gap only the owner can fill.
+    build: () => {
+      const d = createBlock('delivery');
+      d.content.returns = placeholder('your returns and exchanges policy');
+      return [heading('Delivery & returns'), d, faq('Before you order', ['Can I pay on delivery?', 'What if my order arrives damaged?'])];
+    }
+  },
   contactPage]
 
 },

@@ -111,6 +111,10 @@ export interface CheckoutInput {
   holder?: string;
   /** How the buyer pays (D112). Defaults to paying in full now. Rules are re-checked here. */
   payWith?: 'now' | 'pod' | 'instalments';
+  /** Pop-up shop pickup (D183): the chosen session, and whether the buyer pays at the stall. */
+  popup?: {sessionId: string;sessionLabel: string;payAtStall: boolean;};
+  /** Pop-up stall limits still available, re-checked here so a stall never oversells its allocation. */
+  stallLeft?: Record<string, number | null>;
 }
 
 /** A short, readable share code for a DealRoom buyer, e.g. NGOZI-7K2. */
@@ -143,7 +147,9 @@ function roomReferral(data: CommerceData, input: CheckoutInput): Pick<Order, 're
 /** Places a test-mode order. Failed or cancelled payments create no order and keep the cart. */
 export function placeOrder(data: CommerceData, input: CheckoutInput): CheckoutResult {
   const pod = input.payWith === 'pod';
-  if (pod) input = { ...input, outcome: 'success' };
+  // Pay at the stall (D183): nothing is charged now; the seller marks it paid when it's collected.
+  const atStall = !!input.popup?.payAtStall;
+  if (pod || atStall) input = { ...input, outcome: 'success' };
   if (input.outcome === 'failed') return { ok: false, reason: 'failed', message: 'The test card was declined. No money moved and nothing was ordered.' };
   if (input.outcome === 'cancelled') return { ok: false, reason: 'cancelled', message: 'Payment was cancelled before it finished. Your cart is still here.' };
 
@@ -176,6 +182,17 @@ export function placeOrder(data: CommerceData, input: CheckoutInput): CheckoutRe
       seats: product.kind === 'ticket' && line.seats?.length ? line.seats : undefined,
       bundle: bundleLineFor(product, price)
     });
+  }
+
+  if (input.stallLeft) {
+    for (const [productId, left] of Object.entries(input.stallLeft)) {
+      if (left === null) continue;
+      const qty = input.lines.filter((l) => l.productId === productId).reduce((t, l) => t + l.qty, 0);
+      if (qty > left) {
+        const name = data.products.find((p) => p.id === productId)?.name ?? 'An item';
+        return { ok: false, reason: 'unavailable', message: left === 0 ? `${name} has sold out at the stall. Nothing was charged.` : `Only ${left} of ${name} left at the stall. Nothing was charged.` };
+      }
+    }
   }
 
   const capacityIssue = orderCapacityIssue(data, input.lines, input.holder);
@@ -217,8 +234,8 @@ export function placeOrder(data: CommerceData, input: CheckoutInput): CheckoutRe
     if (!instalmentPlan.ok) return { ok: false, reason: 'unavailable', message: `${instalmentPlan.reason || 'Paying in parts isn’t available for this order.'} Nothing was charged.` };
   }
   const parts = instalmentPlan?.ok ? newParts(fullTotal, instalmentPlan.plan) : null;
-  const gross = pod ? 0 : parts ? parts[0].amountNgn : fullTotal - balanceNgn;
-  const paid = !pod && input.outcome === 'success';
+  const gross = pod || atStall ? 0 : parts ? parts[0].amountNgn : fullTotal - balanceNgn;
+  const paid = !pod && !atStall && input.outcome === 'success';
   // Partner bundles (D122): each business pays its own KUBICU fee on its own share.
   const partnerGross = partnerGrossFor(items, subtotal, discountNgn);
   const number = data.nextOrderNumber;
@@ -245,8 +262,9 @@ export function placeOrder(data: CommerceData, input: CheckoutInput): CheckoutRe
     const names = [...new Set(items.filter((i) => i.bundle).map((i) => i.bundle!.partnerName))].join(' and ');
     events.unshift(event('note', `Sold with ${names} — their share of ${formatNgn(partnerGross)} was split off at payment, as agreed`, placedAt));
   }
-  if (paid && digitalOnly && !input.dealRoom?.held) events.unshift(event('completed', deliveredLabel));else
-  if (!paid && !pod) events.unshift(event('payment', input.outcome === 'timeout' ? 'Provider didn’t respond in time — awaiting confirmation' : 'Payment pending with provider'));
+  if (paid && digitalOnly && !input.dealRoom?.held) events.unshift(event('completed', deliveredLabel));
+  if (input.popup) events.unshift(event('note', `Pop-up pickup — ${input.popup.sessionLabel}${atStall ? `. Collect ${formatNgn(fullTotal)} at the stall` : ''}`, placedAt));
+  if (!paid && !pod && !atStall) events.unshift(event('payment', input.outcome === 'timeout' ? 'Provider didn’t respond in time — awaiting confirmation' : 'Payment pending with provider'));
 
   const order: Order = {
     id: uid('ord'),
@@ -275,7 +293,8 @@ export function placeOrder(data: CommerceData, input: CheckoutInput): CheckoutRe
     tickets: hasTickets ? issueTickets(data, items, input.customer.name, input.guestNames) : undefined,
     balance: balanceNgn > 0 && !parts ? { dueNgn: balanceNgn } : undefined,
     pod: pod ? { amountNgn: fullTotal, accept: payOptionsOf(data).pod.accept } : undefined,
-    instalments: parts && instalmentPlan?.ok ? { every: instalmentPlan.plan.every, ship: instalmentPlan.plan.ship, card: { brand: 'Visa', last4: '4081' }, parts, status: 'active', agreedAt: placedAt } : undefined
+    instalments: parts && instalmentPlan?.ok ? { every: instalmentPlan.plan.every, ship: instalmentPlan.plan.ship, card: { brand: 'Visa', last4: '4081' }, parts, status: 'active', agreedAt: placedAt } : undefined,
+    popup: input.popup ? { ...input.popup } : undefined
   };
 
   let next: CommerceData = { ...data, orders: [order, ...data.orders], nextOrderNumber: number + 1 };

@@ -80,9 +80,7 @@ function FormsListInner() {
       
 
       {forms.length === 0 ?
-      <div className="rounded-lg border border-line bg-raised">
-          <EmptyState icon={ClipboardListIcon} title="No forms yet" description="Start from a quote request, RSVP, survey, order intake, onboarding or job application — or a blank form." action={<Button onClick={() => setCreating(true)}>New form</Button>} />
-        </div> :
+      <EmptyState framed icon={ClipboardListIcon} title="No forms yet" description="Start from a quote request, RSVP, survey, order intake, onboarding or job application — or a blank form." action={<Button onClick={() => setCreating(true)}>New form</Button>} /> :
 
       <ul className="divide-y divide-line border-y border-line">
           {forms.map((f) => {

@@ -8,6 +8,7 @@ const sampleSubject: Record<Automation['trigger'], {subject: string;vars: Record
   booking_created: { subject: 'Test booking for Ada Test', vars: { first_name: 'Ada', service: 'Fitting', time: 'Tue 10:00am' }, total: 0, source: 'booking', subscribed: false },
   checkout_abandoned: { subject: 'Test cart left by Ada Test', vars: { first_name: 'Ada', cart_link: 'kub.icu/…/cart' }, total: 32000, source: 'order', subscribed: true },
   lead_submitted: { subject: 'Test enquiry from Ada Test', vars: { first_name: 'Ada' }, total: 0, source: 'form', subscribed: false },
+  form_sent: { subject: 'Test: Ada Test sent “Bridal quote request”', vars: { first_name: 'Ada', name: 'Ada Test', email: 'ada@example.com', form: 'Bridal quote request', total: '' }, total: 0, source: 'form', subscribed: false },
   stock_low: { subject: 'Test: Voile wrap blouse low', vars: { product: 'Voile wrap blouse', stock: '2' }, total: 0, source: 'order', subscribed: false },
   sub_started: { subject: 'Test: Ada Test joined Atelier Circle', vars: { first_name: 'Ada', plan: 'Atelier Circle' }, total: 5000, source: 'order', subscribed: false },
   sub_failed: { subject: 'Test: Ada Test’s renewal was declined', vars: { first_name: 'Ada', plan: 'Atelier Circle', amount: '₦5,000' }, total: 5000, source: 'order', subscribed: false },

@@ -51,6 +51,13 @@ export function GalleryBlock({ block, theme, mode }: BlockProps<'gallery'>) {
         <Tile key={img.id} index={i} className="aspect-[4/5] w-[78%] shrink-0 snap-start" />
         )}
         </div> :
+      c.layout === 'masonry' && shown.length > 1 ?
+      // Masonry (D171): natural heights in columns, read top-to-bottom; tiles never split across columns.
+      <div className="columns-2 gap-2 md:columns-3">
+          {shown.map((img, i) =>
+        <Tile key={img.id} index={i} className="mb-2 block w-full break-inside-avoid [&_img]:h-auto" />
+        )}
+        </div> :
 
       <div className="grid grid-cols-2 gap-2">
           {shown.map((img, i) =>

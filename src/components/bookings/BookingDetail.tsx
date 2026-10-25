@@ -19,6 +19,7 @@ import { useTeam } from '../../contexts/TeamContext';
 import { AssigneeSelect } from '../team/AssigneeSelect';
 import { CommentThread } from '../team/CommentThread';
 import { useT } from '../../contexts/LocaleContext';
+import { useBookingSources } from '../../hooks/useBookingSources';
 
 export const bookingStatusCopy = {
   confirmed: { label: 'Confirmed', tone: 'success' as const },
@@ -34,12 +35,14 @@ export function BookingDetail({ bookingId, onClose }: {bookingId: string | null;
   const team = useTeam();
   const { mainHandle } = useMainLink();
   const b = data.bookings.find((x) => x.id === bookingId);
+  const { sourceOf } = useBookingSources(data.bookings);
   const [dialog, setDialog] = useState<'cancel' | 'reschedule' | null>(null);
   const [reason, setReason] = useState('');
   const [newStart, setNewStart] = useState<number | null>(null);
   if (!b) return <Sheet open={!!bookingId} onClose={onClose} side="right" title="Booking not found"><p className="p-5 text-label text-fg-muted">{tr('It may have been cleared with the sample data.')}</p></Sheet>;
 
   const tz = data.availability.timeZone;
+  const source = sourceOf(b);
   const service = data.services.find((s) => s.id === b.serviceId);
   const start = Date.parse(b.start);
   const past = start < Date.now();
@@ -94,6 +97,11 @@ export function BookingDetail({ bookingId, onClose }: {bookingId: string | null;
               {tr(bookingStatusCopy[b.status].label)}
             </Badge>
             {b.sample && <SampleTag />}
+            {source.handle &&
+            <span className="text-caption text-fg-subtle">
+                {tr('Booked on {name}', { name: source.label })}
+              </span>
+            }
           </div>
           <AssigneeSelect
             id={`bk-assignee-${b.id}`}

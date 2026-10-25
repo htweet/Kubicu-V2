@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Reorder, useDragControls } from 'framer-motion';
+import { Reorder, useDragControls, type PanInfo } from 'framer-motion';
 import { AlertCircleIcon, AlertTriangleIcon, CalendarClockIcon, ColumnsIcon, EyeOffIcon, LockIcon, SplitIcon } from 'lucide-react';
 import { WIDE_PX, sectionTheme, widthOf } from '../../utils/pageLayout';
 import { windowState } from '../../utils/schedule';
@@ -8,7 +8,7 @@ import type { Block, PageTheme } from '../../types/page';
 import type { ValidationIssue } from '../../utils/validation';
 import { BlockRenderer, spacingClass } from '../blocks/BlockRenderer';
 import { BlockToolbar } from './BlockToolbar';
-import { blockName } from '../../utils/blocks';
+import { layerName } from '../../utils/blocks';
 import { cn } from '../../utils/cn';
 import { toast } from 'sonner';
 import { usePresence } from '../../contexts/PresenceContext';
@@ -18,9 +18,13 @@ interface BlockFrameProps {
   theme: PageTheme;
   /** Page reading-column width (D153). */
   columnPx: number;
+  /** Page section spacing (D175). */
+  density?: 'comfortable' | 'compact';
   /** The block above pairs with this one on wider screens. */
   pairedWithPrevious?: boolean;
   selected: boolean;
+  /** Changed since the live version (D171). */
+  edited?: boolean;
   issues: ValidationIssue[];
   isFirst: boolean;
   isLast: boolean;
@@ -36,14 +40,21 @@ interface BlockFrameProps {
   onToggleLocked: (id: string) => void;
   onDelete: (id: string) => void;
   onEdit?: (id: string) => void;
+  /** Dragging into containers (D180): pointer position while this block is dragged, and on drop. */
+  onDragMove?: (id: string, info: PanInfo) => void;
+  onDragDone?: (id: string, info: PanInfo) => void;
+  /** Set while a dragged block hovers this frame: a container it would go into, or a page spot above/below (D191). */
+  dropTarget?: {ok: boolean;message: string;kind: 'into' | 'page';beforeId: string | null;} | null;
 }
 
 export function BlockFrame({
   block,
   theme: pageTheme,
   columnPx,
+  density,
   pairedWithPrevious,
   selected,
+  edited,
   issues,
   isFirst,
   isLast,
@@ -57,14 +68,17 @@ export function BlockFrame({
   onToggleHidden,
   onToggleLocked,
   onDelete,
-  onEdit
+  onEdit,
+  onDragMove,
+  onDragDone,
+  dropTarget
 }: BlockFrameProps) {
   const dragControls = useDragControls();
   const ref = useRef<HTMLDivElement>(null);
   // Someone else on this block: another tab (live) or a simulated teammate (D60, D143).
   const other = usePresence().find((p) => p.blockId === block.id);
   const otherFirst = other ? other.name.split(' (')[0].split(' ')[0] : '';
-  const name = blockName(block);
+  const name = layerName(block);
   const hidden = block.visibility.hidden;
   const locked = !!block.locked;
   const hasError = issues.some((i) => i.severity === 'error');
@@ -90,11 +104,34 @@ export function BlockFrame({
       dragControls={dragControls}
       as="div"
       ref={ref}
-      className={cn('group/block relative w-full', selected && 'z-10', background !== 'none' && 'py-6')}
+      className={cn('group/block relative w-full', selected && 'z-10', background !== 'none' && (density === 'compact' ? 'py-4' : 'py-6'))}
       style={background !== 'none' ? { background: theme.background, color: theme.text } : undefined}
       transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
-      whileDrag={{ scale: 1.015, zIndex: 30 }}>
+      whileDrag={{ scale: 1.015, zIndex: 30 }}
+      onDrag={onDragMove ? (_e, info) => onDragMove(block.id, info) : undefined}
+      onDragEnd={onDragDone ? (_e, info) => onDragDone(block.id, info) : undefined}>
       
+      {dropTarget?.kind === 'page' &&
+      <div aria-hidden className={cn('pointer-events-none absolute inset-x-2 z-20 flex justify-center', dropTarget.beforeId === block.id ? '-top-1' : '-bottom-1')}>
+          <span className={cn('absolute inset-x-0 top-1/2 h-[3px] -translate-y-1/2 rounded-full', dropTarget.ok ? 'bg-select' : 'bg-danger')} />
+          <span className={cn('relative -translate-y-1/2 rounded-full px-3 py-1 text-center text-[12.5px] font-semibold shadow-sm', dropTarget.ok ? 'bg-select text-white' : 'bg-danger text-white')}>
+            {dropTarget.message}
+          </span>
+        </div>
+      }
+      {dropTarget?.kind === 'into' &&
+      <div
+        aria-hidden
+        className={cn(
+          'pointer-events-none absolute inset-1 z-20 flex items-start justify-center rounded-[14px] border-2 border-dashed',
+          dropTarget.ok ? 'border-select bg-select/[0.06]' : 'border-danger bg-danger/[0.05]'
+        )}>
+        
+          <span className={cn('mt-2 max-w-[90%] rounded-full px-3 py-1.5 text-center text-[12.5px] font-semibold shadow-sm', dropTarget.ok ? 'bg-select text-white' : 'bg-danger text-white')}>
+            {dropTarget.message}
+          </span>
+        </div>
+      }
       <div className={cn('relative mx-auto w-full', width !== 'full' && 'px-5')} style={{ maxWidth }}>
       {groupActive &&
         <span
@@ -163,8 +200,13 @@ export function BlockFrame({
             </span>
           </span>
           }
-        {(hidden || locked || hasError || hasWarning || scheduleLabel || sourceRule || pairLabel) &&
+        {(hidden || locked || hasError || hasWarning || scheduleLabel || sourceRule || pairLabel || edited) &&
           <span className="pointer-events-none absolute -right-1 top-1 flex gap-1">
+            {edited && !hasError && !hasWarning &&
+            <span className="inline-flex h-5 items-center gap-1 rounded-full bg-sunken px-1.5 text-meta font-medium text-fg-muted ring-1 ring-line" title="Changed since you last published. Publish to put it live.">
+                <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-action" /> Unpublished
+              </span>
+            }
             {pairLabel && !hidden &&
             <span className="inline-flex h-5 items-center gap-1 rounded-full bg-sunken px-1.5 text-meta font-medium text-fg-muted ring-1 ring-line" title={`${pairLabel}. Open Preview to see it.`}>
                 <ColumnsIcon size={10} aria-hidden /> Side by side

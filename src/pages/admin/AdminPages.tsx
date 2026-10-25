@@ -1,10 +1,11 @@
 import React, { useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { BanIcon, ExternalLinkIcon, MoreHorizontalIcon, RotateCcwIcon } from 'lucide-react';
+import { BanIcon, ExternalLinkIcon, MoreHorizontalIcon, PauseCircleIcon, RotateCcwIcon } from 'lucide-react';
 import type { DomainStatus } from '../../types/domains';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
 import { workspaceSpaces, readSpacePage } from '../../utils/spaces';
 import { readDomains } from '../../utils/domains/storage';
+import { spaceKinds } from '../../data/spaceKinds';
 import { audit, useAdminStore } from '../../utils/admin/store';
 import { formatRelative } from '../../utils/format';
 import { PageHeader } from '../../components/shell/PageHeader';
@@ -27,6 +28,9 @@ interface PageRow {
   openReports: number;
   takenDown: boolean;
   suspended: boolean;
+  /** Fundraiser spaces (D179) and whether staff paused them. */
+  fundraiser: boolean;
+  fundPaused: boolean;
 }
 
 interface DomainRow {
@@ -49,7 +53,7 @@ const domainLabels: Record<DomainStatus, {label: string;tone: BadgeTone;}> = {
 };
 
 type Tab = 'pages' | 'domains';
-type Action = {kind: 'takedown' | 'restore';row: PageRow;} | null;
+type Action = {kind: 'takedown' | 'restore' | 'pause_fund' | 'resume_fund';row: PageRow;} | null;
 const STUCK_HOURS = 48;
 
 /** Super admin → Pages & domains: every published link and connected domain on the platform (D82). */
@@ -71,18 +75,20 @@ export function AdminPages() {
         id: `${w.id}:${s.id}`,
         workspace: w.name,
         space: s.name,
-        kind: s.kind === 'main' ? 'Main page' : s.kind === 'campaign' ? 'Campaign' : 'DealRoom',
+        kind: spaceKinds[s.kind].label,
         handle,
         live: !!p?.published,
         publishedAt: p?.publishedAt ?? null,
         openReports: store.reports.filter((r) => r.handle === handle && r.status === 'open').length,
         takenDown: store.takedowns.some((t) => t.handle === handle),
-        suspended: !!store.suspended[w.id]
+        suspended: !!store.suspended[w.id],
+        fundraiser: s.kind === 'fundraiser',
+        fundPaused: !!store.pausedFundraisers?.[handle]
       };
     }).
     filter((r) => r.handle)
     ),
-    [workspaces, store.reports, store.takedowns, store.suspended]
+    [workspaces, store.reports, store.takedowns, store.suspended, store.pausedFundraisers]
   );
 
   const domains: DomainRow[] = useMemo(
@@ -109,6 +115,21 @@ export function AdminPages() {
   const confirm = (reason: string) => {
     if (!action) return;
     const { row } = action;
+    if (action.kind === 'pause_fund') {
+      const at = new Date().toISOString();
+      setStore((s) => audit({ ...s, pausedFundraisers: { ...(s.pausedFundraisers ?? {}), [row.handle]: { reason, at, by: 'Staff' } } }, { area: 'pages', action: 'Paused fundraiser', target: `kub.icu/${row.handle}`, reason }));
+      toast.success(`Fundraiser kub.icu/${row.handle} paused`, { description: 'Visitors see “Paused while we review” and can’t pay. The page stays up.' });
+      return setAction(null);
+    }
+    if (action.kind === 'resume_fund') {
+      setStore((s) => {
+        const rest = { ...(s.pausedFundraisers ?? {}) };
+        delete rest[row.handle];
+        return audit({ ...s, pausedFundraisers: rest }, { area: 'pages', action: 'Resumed fundraiser', target: `kub.icu/${row.handle}`, reason });
+      });
+      toast.success(`Fundraiser kub.icu/${row.handle} resumed`);
+      return setAction(null);
+    }
     if (action.kind === 'takedown') {
       setStore((s) => audit({ ...s, takedowns: [...s.takedowns.filter((t) => t.handle !== row.handle), { handle: row.handle, reason, at: new Date().toISOString() }] }, { area: 'pages', action: 'Took down page', target: `kub.icu/${row.handle}`, reason }));
       toast.success(`kub.icu/${row.handle} taken down`, { description: 'Visitors now see “This page was removed”.' });
@@ -127,6 +148,10 @@ export function AdminPages() {
   r.suspended ?
   <Badge tone="danger" dot>
         Workspace suspended
+      </Badge> :
+  r.fundPaused ?
+  <Badge tone="warning" dot>
+        Fundraiser paused
       </Badge> :
   r.live ?
   <Badge tone="success" dot>
@@ -167,6 +192,13 @@ export function AdminPages() {
     <Menu
       items={[
       ...(r.live ? [{ id: 'open', label: 'Open live page', icon: ExternalLinkIcon, onSelect: () => window.open(`/p/${r.handle}`, '_blank', 'noopener') }] : []),
+      ...(r.fundraiser ?
+      [
+      r.fundPaused ?
+      { id: 'resume-fund', label: 'Resume fundraiser…', icon: RotateCcwIcon, onSelect: () => setAction({ kind: 'resume_fund', row: r }) } :
+      { id: 'pause-fund', label: 'Pause fundraiser…', icon: PauseCircleIcon, onSelect: () => setAction({ kind: 'pause_fund', row: r }) }] :
+
+      []),
       r.takenDown ?
       { id: 'restore', label: 'Restore page…', icon: RotateCcwIcon, onSelect: () => setAction({ kind: 'restore', row: r }) } :
       { id: 'takedown', label: 'Take down page…', icon: BanIcon, destructive: true, disabled: !r.live, reason: 'Only live pages can be taken down', onSelect: () => setAction({ kind: 'takedown', row: r }) }]
@@ -248,9 +280,25 @@ export function AdminPages() {
         onClose={() => setAction(null)}
         onConfirm={confirm}
         destructive={action?.kind === 'takedown'}
-        title={action?.kind === 'takedown' ? `Take down kub.icu/${action.row.handle}?` : `Restore kub.icu/${action?.row.handle}?`}
-        description={action?.kind === 'takedown' ? 'Visitors see “This page was removed”. Nothing is deleted and the owner can appeal. Open reports for this link stay in Moderation.' : 'The page is visible again straight away.'}
-        confirmLabel={action?.kind === 'takedown' ? 'Take down' : 'Restore'} />
+        title={
+        action?.kind === 'takedown' ?
+        `Take down kub.icu/${action.row.handle}?` :
+        action?.kind === 'pause_fund' ?
+        `Pause fundraiser kub.icu/${action.row.handle}?` :
+        action?.kind === 'resume_fund' ?
+        `Resume fundraiser kub.icu/${action.row.handle}?` :
+        `Restore kub.icu/${action?.row.handle}?`
+        }
+        description={
+        action?.kind === 'takedown' ?
+        'Visitors see “This page was removed”. Nothing is deleted and the owner can appeal. Open reports for this link stay in Moderation.' :
+        action?.kind === 'pause_fund' ?
+        'The page stays up with “Paused while KUBICU reviews this fundraiser”, and no one can pay. Money already raised isn’t touched. The organiser sees the pause in their canvas.' :
+        action?.kind === 'resume_fund' ?
+        'Visitors can give again straight away.' :
+        'The page is visible again straight away.'
+        }
+        confirmLabel={action?.kind === 'takedown' ? 'Take down' : action?.kind === 'pause_fund' ? 'Pause fundraiser' : action?.kind === 'resume_fund' ? 'Resume' : 'Restore'} />
       
     </div>);
 

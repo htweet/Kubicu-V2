@@ -22,6 +22,7 @@ import { TemplatesMarket } from './pages/TemplatesMarket';
 import { TeamProvider } from './contexts/TeamContext';
 import { AnalyticsProvider } from './contexts/AnalyticsContext';
 import { Analytics } from './pages/Analytics';
+import { AiFeatures } from './pages/marketing/AiFeatures';
 import { IntentFlow } from './pages/IntentFlow';
 import { DomainsProvider } from './contexts/DomainsContext';
 import { DomainsLayout } from './components/domains/DomainsLayout';
@@ -166,6 +167,7 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
                 <Route path="templates" element={<Templates />} />
                 <Route path="templates/:id" element={<TemplateDetail />} />
                 <Route path="pricing" element={<Pricing />} />
+                <Route path="ai" element={<AiFeatures />} />
                 <Route path="about/:topic" element={<InfoPage />} />
                 <Route path="developers" element={<Developers />} />
               </Route>
@@ -290,7 +292,8 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
               <Route path="/spaces" element={<Navigate to="/app/spaces" replace />} />
               <Route path="/canvas/:pageId" element={<LegacyRedirect />} />
               <Route path="/:module" element={<LegacyRedirect />} />
-              <Route path="*" element={<NotFound />} />
+              {/* Public addresses typed without /p (e.g. /adaeze-trunk-show/shop) still reach the page (D187). */}
+              <Route path="*" element={<LegacyRedirect />} />
             </Routes>
             <AppToaster />
             <LiveAnnouncer />
