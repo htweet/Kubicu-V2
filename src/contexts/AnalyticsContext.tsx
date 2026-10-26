@@ -2,7 +2,7 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useR
 import { toast } from 'sonner';
 import type { AnalyticsData, AnalyticsSettings } from '../types/analytics';
 import { useWorkspace } from './WorkspaceContext';
-import { DEMO_WORKSPACE_ID } from '../utils/workspaceStorage';
+import { seedsSample } from '../utils/workspaceStorage';
 import { analyticsKey, emptyAnalytics, readAnalytics, writeAnalytics } from '../utils/analytics/storage';
 import { sampleAnalytics } from '../data/analyticsSeed';
 
@@ -21,7 +21,7 @@ function initial(workspaceId: string): AnalyticsData {
   const stored = readAnalytics(workspaceId);
   if (stored) return stored;
   const base = emptyAnalytics();
-  return workspaceId === DEMO_WORKSPACE_ID ? { ...base, events: sampleAnalytics(), sampleSeeded: true } : base;
+  return seedsSample(workspaceId) ? { ...base, events: sampleAnalytics(), sampleSeeded: true } : base;
 }
 
 /** The workspace's recorded visits (D61). Public pages write; workspace screens read and refresh. */

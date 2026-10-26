@@ -16,18 +16,23 @@ export function totalStock(product: Product): number {
 }
 
 export function isSoldOut(product: Product): boolean {
+  // Pre-orders (D202) don't need stock; they sell out only when their own limit is reached.
+  if (product.kind === 'physical' && product.preorder) return product.preorder.limit !== null && product.preorder.taken >= product.preorder.limit;
   if (product.kind === 'digital' || !product.trackStock) return false;
   return totalStock(product) <= 0;
 }
 
 export function isLowStock(product: Product): boolean {
-  if (product.kind === 'digital' || !product.trackStock || isSoldOut(product)) return false;
+  if (product.preorder || product.kind === 'digital' || !product.trackStock || isSoldOut(product)) return false;
   return product.variants.some((v) => v.stock > 0 && v.stock <= product.lowStockAt);
 }
 
 export function canSell(product: Product, variant?: ProductVariant): boolean {
   if (product.status !== 'active') return false;
   if (product.kind === 'digital') return product.digital?.status === 'ready';
+  // Course products (D197) are active only while their course is published; there's no stock.
+  if (product.kind === 'course') return true;
+  if (product.kind === 'physical' && product.preorder) return !isSoldOut(product);
   if (!product.trackStock) return true;
   return variant ? variant.stock > 0 : totalStock(product) > 0;
 }

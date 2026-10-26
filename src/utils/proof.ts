@@ -3,6 +3,7 @@ import type { Order } from '../types/commerce';
 import type { Booking } from '../types/ops';
 import type { Job } from '../types/serviceOs';
 import { uid } from './id';
+import { seedsSample } from './workspaceStorage';
 
 export const PROOF_APP_ID = 'proof';
 export const PROOF_EVENT = 'kubicu:proof';
@@ -17,7 +18,7 @@ export function readProof(workspaceId: string): ProofData {
   } catch {
 
     /* fresh store */}
-  const seeded = seed();
+  const seeded = seedsSample(workspaceId) ? seed() : { ...empty(), seeded: true };
   writeProof(workspaceId, seeded);
   return seeded;
 }

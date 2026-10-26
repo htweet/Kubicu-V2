@@ -269,7 +269,7 @@ export function AdminPages() {
             filterText={(r) => `${r.host} ${r.workspace}`}
             filterPlaceholder="Search domain or workspace"
             emptyTitle="No custom domains yet"
-            emptyDescription="Domains appear here once a workspace starts connecting one in Domains & QR." />
+            emptyDescription="Domains appear here once a workspace starts connecting one in Domains." />
 
           }
         </div>

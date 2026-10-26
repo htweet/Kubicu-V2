@@ -25,6 +25,7 @@ import { SampleTag } from '../components/commerce/StatusBadges';
 import { ChatThread } from '../components/whatsapp/ChatThread';
 import { WhatsAppSetup } from '../components/whatsapp/WhatsAppSetup';
 import { cn } from '../utils/cn';
+import { seedsSample } from '../utils/workspaceStorage';
 
 type Tab = 'chats' | 'catalogue' | 'auto' | 'setup';
 
@@ -46,8 +47,8 @@ export function WhatsApp() {
   const autoUnlocked = planAtLeast(plan.id, WA_AUTOMATION_PLAN);
 
   useEffect(() => {
-    if (!data.sampleSeeded) update(seedSample);
-  }, [data.sampleSeeded, update]);
+    if (!data.sampleSeeded && seedsSample(current.id)) update(seedSample);
+  }, [data.sampleSeeded, update, current.id]);
 
   const connected = data.connection.status === 'connected';
   const chats = useMemo(() => sortChats(data.chats), [data.chats]);

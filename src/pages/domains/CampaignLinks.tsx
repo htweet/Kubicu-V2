@@ -42,7 +42,7 @@ export function CampaignLinks() {
 
   const setArchived = (l: CampaignLink, on: boolean) => {
     saveLink({ ...l, archivedAt: on ? new Date().toISOString() : null });
-    team.log('pages', `${on ? 'archived' : 'restored'} the campaign link ${shortDisplay(mainHandle, l.slug, host)}`, '/app/domains/links');
+    team.log('pages', `${on ? 'archived' : 'restored'} the campaign link ${shortDisplay(mainHandle, l.slug, host)}`, '/app/campaign-links');
   };
 
   return (
@@ -114,7 +114,7 @@ export function CampaignLinks() {
                 <div className="flex items-center gap-1 md:justify-end">
                   <IconButton icon={CopyIcon} label={`Copy ${l.name} link`} size="sm" onClick={() => copyToClipboard(shortUrl(mainHandle, l.slug, host), 'Link copied')} />
                   <IconButton icon={ExternalLinkIcon} label={`Open ${l.name} link (test visit)`} size="sm" onClick={() => window.open(shortHref(mainHandle, l.slug), '_blank')} />
-                  {!l.archivedAt && <IconButton icon={QrCodeIcon} label={`QR code for ${l.name}`} size="sm" onClick={() => navigate(`/app/domains/qr?link=${l.id}`)} />}
+                  {!l.archivedAt && <IconButton icon={QrCodeIcon} label={`QR code for ${l.name}`} size="sm" onClick={() => navigate(`/app/qr?link=${l.id}`)} />}
                   <IconButton icon={PencilIcon} label={`Edit ${l.name}`} size="sm" disabled={!can.allowed} onClick={() => setEditing(l)} />
                   <IconButton
                   icon={l.archivedAt ? ArchiveRestoreIcon : ArchiveIcon}

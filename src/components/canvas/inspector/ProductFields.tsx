@@ -96,7 +96,7 @@ export function ProductFields({ block, issues }: ProductFieldsProps) {
           onChange={(priceNgn) => set({ priceNgn }, 'priceNgn')} />
         
           <TextArea id={id('description')} label="Description" optional rows={3} value={c.description} onChange={(e) => set({ description: e.target.value }, 'description')} />
-          <MediaPicker id={id('image')} label="Product photo" aspect="4:5" value={c.imageUrl} hint={warn('imageUrl')} onChange={(imageUrl) => set({ imageUrl }, 'imageUrl')} />
+          <MediaPicker id={id('image')} label="Product photo" aspect="4:5" folder="products" value={c.imageUrl} hint={warn('imageUrl')} onChange={(imageUrl) => set({ imageUrl }, 'imageUrl')} />
           {c.imageUrl &&
         <TextInput id={id('imageAlt')} label="Photo description" value={c.imageAlt} hint={warn('imageAlt') ?? 'Read aloud by screen readers.'} onChange={(e) => set({ imageAlt: e.target.value }, 'imageAlt')} />
         }

@@ -9,6 +9,7 @@ import { useOptionalMedia } from '../../contexts/MediaContext';
 import { ACCEPTED_IMAGE_TYPES, aspectValue, isUploadedImage, processUpload, type AspectRatio } from '../../utils/image';
 import { isMediaRef, mediaRefId, resolveMediaSrc } from '../../utils/media/refs';
 import { cn } from '../../utils/cn';
+import type { SystemMediaFolderId } from '../../data/mediaFolders';
 
 interface MediaPickerProps {
   id: string;
@@ -23,12 +24,14 @@ interface MediaPickerProps {
   /** Round preview for avatars. */
   round?: boolean;
   disabled?: boolean;
+  /** Default folder new uploads from this field are filed in (e.g. 'brand' for logos, 'products' for product photos). */
+  folder?: SystemMediaFolderId;
 }
 
 const aspectLabels: Record<AspectRatio, string> = { '1:1': 'square', '4:5': 'portrait 4:5', '16:9': 'wide 16:9' };
 
 /** Image field: pick from your library, upload (saved to the library), crop a copy, or use a link. */
-export function MediaPicker({ id, label, value, onChange, aspect, optional, error, hint, round, disabled }: MediaPickerProps) {
+export function MediaPicker({ id, label, value, onChange, aspect, optional, error, hint, round, disabled, folder }: MediaPickerProps) {
   const media = useOptionalMedia();
   const fileRef = useRef<HTMLInputElement>(null);
   const [libraryOpen, setLibraryOpen] = useState(false);
@@ -52,7 +55,7 @@ export function MediaPicker({ id, label, value, onChange, aspect, optional, erro
     if (!crop) return;
     setCrop(null);
     try {
-      const stored = media ? await media.addDataUrl(dataUrl, `${crop.name} (${aspectLabels[aspect]})`, crop.alt) : { src: dataUrl };
+      const stored = media ? await media.addDataUrl(dataUrl, `${crop.name} (${aspectLabels[aspect]})`, crop.alt, folder) : { src: dataUrl };
       onChange(stored.src, { alt: crop.alt });
     } catch (e) {
       setProblem(e instanceof Error ? e.message : 'Couldn’t save the crop. Try again.');
@@ -75,8 +78,9 @@ export function MediaPicker({ id, label, value, onChange, aspect, optional, erro
     }
   };
 
+  const assetFolder = asset && media ? media.folderOf(asset) : undefined;
   const defaultHint = asset ?
-  `From your library · ${asset.name}` :
+  `From your library · ${assetFolder ? `${assetFolder.name} · ` : ''}${asset.name}` :
   uploaded ?
   'Stored with this page. Resized for fast loading.' :
   value ?
@@ -116,7 +120,7 @@ export function MediaPicker({ id, label, value, onChange, aspect, optional, erro
           }
         </div>
       </div>
-      {library && <MediaLibraryDialog open={libraryOpen} onClose={() => setLibraryOpen(false)} shapeLabel={aspectLabels[aspect]} onPick={onPick} />}
+      {library && <MediaLibraryDialog open={libraryOpen} onClose={() => setLibraryOpen(false)} shapeLabel={aspectLabels[aspect]} folder={folder} onPick={onPick} />}
       <ImageCropDialog open={!!crop} src={crop?.src ?? ''} aspect={aspectValue[aspect]} aspectLabel={aspectLabels[aspect]} onClose={() => setCrop(null)} onCropped={onCropped} />
     </Field>);
 

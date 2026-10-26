@@ -43,7 +43,8 @@ import {
   HomeIcon,
   RectangleHorizontalIcon,
   ColumnsIcon,
-  AppWindowIcon } from
+  AppWindowIcon,
+  GraduationCapIcon } from
 'lucide-react';
 import type { BlockContentMap, BlockLayout, BlockType } from '../types/page';
 import type { WorkspacePlan } from '../types/plan';
@@ -501,6 +502,19 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
     minPlan: 'pro',
     defaults: () => ({ title: 'Join', intro: '', planIds: [], ctaLabel: 'Subscribe', highlightPlanId: null })
   },
+  course: {
+    type: 'course',
+    name: 'Course',
+    description: 'A course from Commerce → Courses: what’s inside, the price or membership, and a button to start.',
+    category: 'Commerce',
+    icon: GraduationCapIcon,
+    keywords: ['course', 'class', 'lessons', 'tutorial', 'training', 'academy', 'learn', 'masterclass', 'workshop', 'teach'],
+    defaultAlign: 'left',
+    supportsEmphasis: false,
+    clickable: true,
+    minPlan: 'creator',
+    defaults: () => ({ courseId: null, style: 'card', ctaLabel: '' })
+  },
   form: {
     type: 'form',
     name: 'Form',
@@ -802,6 +816,7 @@ export const blockOrder: BlockType[] = [
 'pricing',
 'support',
 'subscription',
+'course',
 'membersOnly',
 'download',
 'featureGrid',

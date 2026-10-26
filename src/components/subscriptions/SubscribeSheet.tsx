@@ -24,6 +24,8 @@ interface Props {
   ownerPlan: WorkspacePlan;
   onClose: () => void;
   onSubscribed: (customer: OrderCustomer, planName: string, consent: boolean) => void;
+  /** Where to go after joining. Defaults to the subscriber portal. */
+  returnTo?: string;
 }
 
 const outcomes: {id: SignupOutcome;label: string;}[] = [
@@ -33,7 +35,7 @@ const outcomes: {id: SignupOutcome;label: string;}[] = [
 
 
 /** Visitor sign-up for a membership or product box (D69). Test mode. */
-export function SubscribeSheet({ theme, commerce, planId, handle, ownerPlan, onClose, onSubscribed }: Props) {
+export function SubscribeSheet({ theme, commerce, planId, handle, ownerPlan, onClose, onSubscribed, returnTo }: Props) {
   const navigate = useNavigate();
   const track = useTrack();
   const [step, setStep] = useState<Step>('details');
@@ -113,7 +115,7 @@ export function SubscribeSheet({ theme, commerce, planId, handle, ownerPlan, onC
       track('subscribe_started', { label: plan.name, valueNgn: today || undefined });
       onSubscribed(r.sub.customer, plan.name, consent);
       onClose();
-      navigate(`/p/${handle}/subscription/${r.sub.token}?welcome=1`);
+      navigate(returnTo ?? `/p/${handle}/subscription/${r.sub.token}?welcome=1`);
     }, 1100);
   };
 

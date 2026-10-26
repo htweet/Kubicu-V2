@@ -7,8 +7,8 @@ export function productLimit(plan: WorkspacePlan): number | null {
 }
 
 export function countedProducts(data: CommerceData): number {
-  // Event tickets don't count towards the product limit (D73).
-  return data.products.filter((p) => p.status !== 'archived' && p.kind !== 'ticket').length;
+  // Event tickets (D73) and course listings (D197) don't count towards the product limit.
+  return data.products.filter((p) => p.status !== 'archived' && p.kind !== 'ticket' && p.kind !== 'course').length;
 }
 
 export function productsRemaining(data: CommerceData, plan: WorkspacePlan): number | null {

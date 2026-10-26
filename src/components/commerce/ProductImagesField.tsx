@@ -51,6 +51,7 @@ export function ProductImagesField({ images, onChange }: {images: ProductImage[]
         id="product-add-photo"
         label={images.length ? 'Add another photo' : 'Add a photo'}
         aspect="4:5"
+        folder="products"
         value=""
         onChange={(url, meta) => url && onChange([...images, { id: uid('img'), url, alt: meta?.alt ?? '' }])}
         hint="Choose from your library or upload. Crop a portrait 4:5 copy for the best fit." />

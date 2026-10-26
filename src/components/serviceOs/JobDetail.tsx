@@ -14,6 +14,7 @@ import { TextInput } from '../ui/TextInput';
 import { TextArea } from '../ui/TextArea';
 import { Segmented } from '../ui/Segmented';
 import { SampleTag } from '../commerce/StatusBadges';
+import { CommentThread } from '../team/CommentThread';
 
 interface Props {
   job: Job | null;
@@ -27,10 +28,17 @@ interface Props {
 }
 
 /** Track one job: where it is, what's left, and a dated log of updates (D89). */
-export function JobDetail({ job, data, onOpenInvoice, businessName, canEdit, update, onClose, onOpenQuote }: Props) {
+export function JobDetail({ job: rawJob, data, onOpenInvoice, businessName, canEdit, update, onClose, onOpenQuote }: Props) {
   const [newItem, setNewItem] = useState('');
   const [note, setNote] = useState('');
-  if (!job) return <Sheet open={false} onClose={onClose} title="">{null}</Sheet>;
+  if (!rawJob) return <Sheet open={false} onClose={onClose} title="">{null}</Sheet>;
+  // Older or seeded jobs may lack a list or client detail — never let that blank the screen.
+  const job: Job = {
+    ...rawJob,
+    checklist: rawJob.checklist ?? [],
+    updates: rawJob.updates ?? [],
+    client: { ...rawJob.client, name: rawJob.client?.name || 'Client', phone: rawJob.client?.phone ?? '' }
+  };
 
   const quote = job.quoteId ? data.quotes.find((q) => q.id === job.quoteId) : undefined;
   const staged = !!quote && hasStages(quote);

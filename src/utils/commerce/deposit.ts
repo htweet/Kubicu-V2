@@ -14,8 +14,10 @@ export function isMadeToOrder(p: Product | undefined): p is Product & {madeToOrd
 
 /** The part of one line that waits until before dispatch. */
 export function lineBalanceNgn(p: Product | undefined, lineTotalNgn: number): number {
-  if (!isMadeToOrder(p)) return 0;
-  return Math.round(lineTotalNgn * (100 - p.madeToOrder.depositPct) / 100);
+  // Pre-orders with a part-payment (D202) work like made-to-order: the rest is due before dispatch.
+  const pct = isMadeToOrder(p) ? p.madeToOrder.depositPct : p?.kind === 'physical' && p.preorder?.depositPct ? p.preorder.depositPct : null;
+  if (pct === null) return 0;
+  return Math.round(lineTotalNgn * (100 - pct) / 100);
 }
 
 /** Balance for a set of lines, never more than the order total. */

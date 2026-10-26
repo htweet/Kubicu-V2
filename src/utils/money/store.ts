@@ -7,13 +7,16 @@ import { uid } from '../id';
 import { blankKyc, normaliseKyc } from './kyc';
 import { newCase, syncEscrow } from './escrow';
 import type { EscrowCase } from '../../types/escrow';
-import { DEMO_WORKSPACE_ID } from '../workspaceStorage';
+import { DEMO_WORKSPACE_ID, sampleHandle, seedsSample } from '../workspaceStorage';
 import { SAMPLE_FUND_LINK_ID, sampleFundraiserLink } from '../../data/sampleFundraiser';
 
 /** The demo workspace gets the sample fundraiser's payment link once (D179); it can be deleted like any link. */
 function withSampleFundraiser(workspaceId: string, d: MoneyData): MoneyData {
-  if (workspaceId !== DEMO_WORKSPACE_ID || d.sampleFundraiserSeeded) return d;
-  const links = d.links.some((l) => l.id === SAMPLE_FUND_LINK_ID) ? d.links : [...d.links, sampleFundraiserLink(blankLink())];
+  if (!seedsSample(workspaceId) || d.sampleFundraiserSeeded) return d;
+  const link = sampleFundraiserLink(blankLink());
+  // Demo-data workspaces (D200) point the link at their own sample fundraiser address.
+  const own = workspaceId === DEMO_WORKSPACE_ID || !link.fundraiser ? link : { ...link, fundraiser: { ...link.fundraiser, handle: sampleHandle(link.fundraiser.handle, workspaceId) } };
+  const links = d.links.some((l) => l.id === SAMPLE_FUND_LINK_ID) ? d.links : [...d.links, own];
   return { ...d, links, sampleFundraiserSeeded: true };
 }
 
@@ -93,7 +96,8 @@ export function readMoneyRaw(workspaceId: string): MoneyData {
   } catch {
 
     /* fall through to a fresh store */}
-  const seeded = withSampleFundraiser(workspaceId, seedMoney());
+  // A sample wallet history only for the demo workspace or one created with demo data (D200).
+  const seeded = withSampleFundraiser(workspaceId, seedsSample(workspaceId) ? seedMoney() : { ...emptyMoney(), seeded: true });
   persist(workspaceId, seeded);
   return seeded;
 }

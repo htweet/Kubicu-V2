@@ -6,6 +6,7 @@ import type { KitImage } from '../../utils/domains/printKit';
 import { Button } from '../ui/Button';
 import { SignaturePad } from './SignaturePad';
 import { cn } from '../../utils/cn';
+import { useOptionalMedia } from '../../contexts/MediaContext';
 
 const config: Record<KitImage, {maxPx: number;knockout: boolean;jpeg: boolean;label: string;hint: string;}> = {
   logo: { maxPx: 700, knockout: true, jpeg: false, label: 'Logo', hint: 'PNG with a clear background works best. Without one we use your initials.' },
@@ -23,6 +24,7 @@ interface KitImageFieldProps {
 /** Upload (or, for signatures, draw) an image for the print kit. Shrinks it and can lift a white background. */
 export function KitImageField({ kind, value, disabled, onChange }: KitImageFieldProps) {
   const c = config[kind];
+  const media = useOptionalMedia();
   const input = useRef<HTMLInputElement>(null);
   const original = useRef<HTMLImageElement | null>(null);
   const [knockout, setKnockout] = useState(c.knockout);
@@ -42,6 +44,10 @@ export function KitImageField({ kind, value, disabled, onChange }: KitImageField
       const im = await readImageFile(file);
       original.current = im;
       process(im, knockout);
+      // Logos are brand assets: keep the original in Media → Brand assets too.
+      if (kind === 'logo' && media?.available) {
+        void media.addFile(file, 'brand').catch(() => undefined);
+      }
     } catch (e) {
       toast.error('Couldn’t use that image', { description: e instanceof Error ? e.message : undefined });
     } finally {

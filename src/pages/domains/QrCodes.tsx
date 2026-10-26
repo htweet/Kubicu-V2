@@ -161,7 +161,7 @@ export function QrCodes() {
             onClick={() => {
               if (removing) {
                 deleteQr(removing.id);
-                team.log('pages', 'deleted a QR design', '/app/domains/qr');
+                team.log('pages', 'deleted a QR design', '/app/qr');
               }
               setRemoving(null);
             }}>

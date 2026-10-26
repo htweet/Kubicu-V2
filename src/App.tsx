@@ -10,6 +10,7 @@ import { PlanProvider } from './contexts/PlanContext';
 import { LibraryProvider } from './contexts/LibraryContext';
 import { MediaProvider } from './contexts/MediaContext';
 import { Media } from './pages/Media';
+import { Assistant } from './pages/Assistant';
 import { CommerceProvider } from './contexts/CommerceContext';
 import { OpsProvider } from './contexts/OpsContext';
 import { WorkspaceProvider, useWorkspace } from './contexts/WorkspaceContext';
@@ -26,6 +27,7 @@ import { AiFeatures } from './pages/marketing/AiFeatures';
 import { IntentFlow } from './pages/IntentFlow';
 import { DomainsProvider } from './contexts/DomainsContext';
 import { DomainsLayout } from './components/domains/DomainsLayout';
+import { GrowthToolLayout, MovedTo } from './components/domains/GrowthToolLayout';
 import { Domains } from './pages/domains/Domains';
 import { QrCodes } from './pages/domains/QrCodes';
 import { CampaignLinks } from './pages/domains/CampaignLinks';
@@ -49,6 +51,9 @@ import { DealRoomSettler } from './components/shell/DealRoomSettler';
 import { SubscriptionRenewer } from './components/shell/SubscriptionRenewer';
 import { Subscriptions } from './pages/commerce/Subscriptions';
 import { Events } from './pages/commerce/Events';
+import { Courses } from './pages/commerce/Courses';
+import { GiftCards } from './pages/commerce/GiftCards';
+import { LearnPage } from './pages/LearnPage';
 import { GuestList } from './pages/commerce/GuestList';
 import { CheckIn } from './pages/commerce/CheckIn';
 import { TicketPage } from './pages/TicketPage';
@@ -135,7 +140,7 @@ import { AdminSupport } from './pages/admin/AdminSupport';
 import { AdminAudit } from './pages/admin/AdminAudit';
 import { AdminHealth } from './pages/admin/AdminHealth';
 
-type VisualDirectionOption = 'darkStudio' | 'inkCobalt' | 'inkViolet' | 'navyClay';
+type VisualDirectionOption = 'darkStudio' | 'inkCobalt';
 type WorkspacePlanOption = 'free' | 'creator' | 'pro' | 'business' | 'agency' | 'enterprise';
 
 type ViewingAsOption = 'owner' | 'admin' | 'editor' | 'sales' | 'viewer';
@@ -205,6 +210,8 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
                   <Route path="verification" element={<Verification />} />
                   <Route path="payment-links" element={<PaymentLinks />} />
                   <Route path="subscriptions" element={<Subscriptions />} />
+                  <Route path="courses" element={<Courses />} />
+                  <Route path="gift-cards" element={<GiftCards />} />
                   <Route path="events" element={<Events />} />
                   <Route path="events/:eventId/guests" element={<GuestList />} />
                   <Route path="events/:eventId/check-in" element={<CheckIn />} />
@@ -215,10 +222,15 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
                 <Route path="intentflow" element={<IntentFlow />} />
                 <Route path="domains" element={<DomainsLayout />}>
                   <Route index element={<Domains />} />
-                  <Route path="qr" element={<QrCodes />} />
-                  <Route path="links" element={<CampaignLinks />} />
                   <Route path="redirects" element={<Redirects />} />
-                  <Route path="kit" element={<PrintKit />} />
+                </Route>
+                <Route path="domains/qr" element={<MovedTo to="/app/qr" />} />
+                <Route path="domains/links" element={<MovedTo to="/app/campaign-links" />} />
+                <Route path="domains/kit" element={<MovedTo to="/app/print-kit" />} />
+                <Route element={<GrowthToolLayout />}>
+                  <Route path="qr" element={<QrCodes />} />
+                  <Route path="print-kit" element={<PrintKit />} />
+                  <Route path="campaign-links" element={<CampaignLinks />} />
                 </Route>
                 <Route path="extensions" element={<Extensions />} />
                 <Route path="templates" element={<TemplatesMarket />} />
@@ -238,6 +250,7 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
                 <Route path="*" element={<NotFound embedded />} />
               </Route>
               <Route path="/app/canvas/:pageId" element={<CanvasPage />} />
+              <Route path="/app/assistant" element={<Assistant />} />
 
               <Route path="/admin" element={<AdminShell />}>
                 <Route index element={<Navigate to="overview" replace />} />
@@ -277,6 +290,7 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
             <Route path="/p/:handle/order/:orderId" element={<OrderStatus />} />
               <Route path="/p/:handle/download/:token" element={<DownloadPage />} />
               <Route path="/p/:handle/ticket/:ticketId" element={<TicketPage />} />
+              <Route path="/p/:handle/learn/:courseId" element={<LearnPage />} />
               <Route path="/p/:handle/booking/:bookingId" element={<BookingStatus />} />
               <Route path="/p/:handle/subscription/:token" element={<SubscriptionPortal />} />
               <Route path="/p/:handle/preferences/:contactId" element={<EmailPreferences />} />

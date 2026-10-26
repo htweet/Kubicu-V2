@@ -89,11 +89,13 @@ export function SlotPicker({ theme, service, availability, bookings, value, onCh
                 role="radio"
                 aria-checked={active}
                 onClick={() => onChange(s.start)}
-                className="flex h-12 flex-col items-center justify-center text-[14px] font-semibold tabular-nums"
+                aria-label={s.capacity ? `${timeLabel(s.start, tz)}, ${s.seatsLeft} of ${s.capacity} seats left` : undefined}
+                className={`flex ${s.capacity || differentZone ? 'min-h-[56px] py-1.5' : 'h-12'} flex-col items-center justify-center text-[14px] font-semibold tabular-nums`}
                 style={{ borderRadius: 10, border: `1.5px solid ${active ? theme.text : mix(theme.text, 12)}`, background: active ? theme.text : theme.surface, color: active ? theme.background : theme.text }}>
                 
                   {timeLabel(s.start, tz)}
                   {differentZone && <span className="text-[10.5px] font-medium opacity-70">({timeLabel(s.start, local)})</span>}
+                  {s.capacity && <span className="text-[10.5px] font-medium opacity-75">{s.seatsLeft === 1 ? '1 seat left' : `${s.seatsLeft} of ${s.capacity} left`}</span>}
                 </button>);
 
           })}

@@ -2,7 +2,6 @@ import type { LucideIcon } from 'lucide-react';
 import {
   LayoutDashboardIcon,
   LayersIcon,
-  PenToolIcon,
   ShoppingBagIcon,
   CalendarIcon,
   UsersIcon,
@@ -23,7 +22,10 @@ import {
   ShieldCheckIcon,
   SparklesIcon,
   HandshakeIcon,
-  MicIcon } from
+  MicIcon,
+  QrCodeIcon,
+  PrinterIcon,
+  Link2Icon } from
 'lucide-react';
 
 export type NavGroupId = 'studio' | 'business' | 'customers' | 'growth' | 'workspace';
@@ -49,12 +51,11 @@ export interface NavItem {
   appId?: string;
 }
 
-/** `/app/canvas` resolves to the current workspace's page. */
+/** The canvas isn't a sidebar item: open it from Overview or My Spaces (`/app/canvas` still resolves to the current page). */
 export const workspaceNav: NavItem[] = [
 // Studio — make and manage pages
 { id: 'overview', label: 'Overview', to: '/app', icon: LayoutDashboardIcon, group: 'studio' },
 { id: 'spaces', label: 'My Spaces', to: '/app/spaces', icon: LayersIcon, group: 'studio' },
-{ id: 'canvas', label: 'Canvas', to: '/app/canvas', icon: PenToolIcon, group: 'studio' },
 { id: 'media', label: 'Media', to: '/app/media', icon: ImagesIcon, group: 'studio' },
 { id: 'templates', label: 'Templates', to: '/app/templates', icon: LayoutTemplateIcon, group: 'studio' },
 // Business — what you sell and deliver
@@ -64,6 +65,8 @@ export const workspaceNav: NavItem[] = [
 { id: 'deliveries', label: 'Deliveries', to: '/app/deliveries', icon: TruckIcon, group: 'business', appId: 'local-fulfilment' },
 { id: 'voice', label: 'Voice-to-Store', to: '/app/voice', icon: MicIcon, group: 'business', appId: 'voice-to-store' },
 { id: 'proof', label: 'Proof of work', to: '/app/proof', icon: BadgeCheckIcon, group: 'business', appId: 'proof' },
+{ id: 'analytics', label: 'Analytics', to: '/app/analytics', icon: BarChart3Icon, group: 'business' },
+{ id: 'collabs', label: 'Collaborations', to: '/app/collabs', icon: HandshakeIcon, group: 'business', appId: 'collaborations' },
 // Customers — people, conversations and follow-up
 { id: 'audience', label: 'Audience', to: '/app/audience', icon: UsersIcon, group: 'customers' },
 { id: 'whatsapp', label: 'WhatsApp', to: '/app/whatsapp', icon: MessageCircleIcon, group: 'customers', appId: 'whatsapp-catalogue' },
@@ -71,10 +74,11 @@ export const workspaceNav: NavItem[] = [
 { id: 'forms', label: 'Forms', to: '/app/forms', icon: ClipboardListIcon, group: 'customers', appId: 'forms' },
 { id: 'automations', label: 'Automations', to: '/app/automations', icon: WorkflowIcon, group: 'customers', appId: 'automations' },
 // Growth — reach, insight and reputation
-{ id: 'analytics', label: 'Analytics', to: '/app/analytics', icon: BarChart3Icon, group: 'growth' },
 { id: 'intentflow', label: 'IntentFlow', to: '/app/intentflow', icon: SplitIcon, group: 'growth', appId: 'intentflow' },
-{ id: 'domains', label: 'Domains & QR', to: '/app/domains', icon: GlobeIcon, group: 'growth', appId: 'domains' },
-{ id: 'collabs', label: 'Collaborations', to: '/app/collabs', icon: HandshakeIcon, group: 'growth', appId: 'collaborations' },
+{ id: 'domains', label: 'Domains', to: '/app/domains', icon: GlobeIcon, group: 'growth', appId: 'domains' },
+{ id: 'qr', label: 'QR codes', to: '/app/qr', icon: QrCodeIcon, group: 'growth', appId: 'domains' },
+{ id: 'printkit', label: 'Print kit', to: '/app/print-kit', icon: PrinterIcon, group: 'growth', appId: 'domains' },
+{ id: 'links', label: 'Campaign links', to: '/app/campaign-links', icon: Link2Icon, group: 'growth', appId: 'domains' },
 { id: 'trust', label: 'Trust Passport', to: '/app/trust', icon: ShieldCheckIcon, group: 'growth', appId: 'trust-passport' },
 { id: 'coach', label: 'Business Coach', to: '/app/coach', icon: SparklesIcon, group: 'growth', appId: 'ai-coach' },
 // Workspace — tools and settings
@@ -82,7 +86,7 @@ export const workspaceNav: NavItem[] = [
 { id: 'settings', label: 'Settings', to: '/app/settings', icon: SettingsIcon, group: 'workspace' }];
 
 
-export const mobilePrimaryNavIds = ['overview', 'spaces', 'canvas'];
+export const mobilePrimaryNavIds = ['overview', 'spaces', 'commerce'];
 
 /** Old top-level addresses that now live under /app. */
-export const legacyModuleIds = workspaceNav.filter((n) => n.group !== 'studio').map((n) => n.id);
+export const legacyModuleIds = workspaceNav.filter((n) => n.group !== 'studio' && n.to === `/app/${n.id}`).map((n) => n.id);

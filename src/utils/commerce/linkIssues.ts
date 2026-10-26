@@ -6,6 +6,7 @@ import { planAtLeast } from '../../data/plans';
 import { canSell, findProduct, isSoldOut, linkedGridProducts, priceRange } from './catalog';
 import { boxShortfall } from './subscriptions';
 import { eventPhase, eventSelling, findEvent, ticketTypeState } from './tickets';
+import { COURSE_PLAN, findCourse } from './courses';
 
 /** Plan that unlocks KUBICU checkout and digital delivery (hypothesis). */
 export const CHECKOUT_PLAN: WorkspacePlan = 'pro';
@@ -94,6 +95,18 @@ export function catalogLinkIssues(doc: PageDocument, data: CommerceData | null, 
         if (data && boxShortfall(data, p).length) issues.push({ id: id(`stock-${p.id}`), blockId: b.id, severity: p.trialDays ? 'warning' : 'error', message: `“${p.name}” can’t fill a box right now: ${boxShortfall(data, p).join(', ')} out of stock`, field: 'planIds' });
       });
       if (plans.length > 0 && plans.every((p) => !p || p.status === 'archived')) issues.push({ id: id('none'), blockId: b.id, severity: 'error', message: 'None of the chosen plans can take sign-ups', field: 'planIds' });
+    }
+    if (b.type === 'course' && b.content.courseId) {
+      // Courses (D197): Creator for free/members courses, Pro when they're sold at checkout.
+      const id = (f: string) => `${b.id}:course:${f}`;
+      const course = findCourse(data, b.content.courseId);
+      if (!course) {
+        issues.push({ id: id('missing'), blockId: b.id, severity: 'error', message: 'The linked course no longer exists — pick another', field: 'courseId' });
+        return;
+      }
+      if (course.status !== 'published') issues.push({ id: id('draft'), blockId: b.id, severity: 'error', message: `“${course.title || 'This course'}” isn’t published — publish it in Commerce → Courses first`, field: 'courseId' });
+      if (!planAtLeast(plan, COURSE_PLAN)) issues.push({ id: id('plan'), blockId: b.id, severity: 'error', message: 'Courses are on the Creator plan — remove this block or upgrade', field: 'courseId', upgradeTo: COURSE_PLAN, upgradeFeature: 'Courses' });else
+      if (course.access === 'paid' && !checkoutAllowed) issues.push({ id: id('paid'), blockId: b.id, severity: 'error', message: 'Paid courses go through checkout, which is on the Pro plan — make it free or upgrade', field: 'courseId', upgradeTo: CHECKOUT_PLAN, upgradeFeature: 'Selling courses at checkout' });
     }
   });
   return issues;

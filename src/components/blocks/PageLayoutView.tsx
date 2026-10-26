@@ -32,7 +32,7 @@ export function PageLayoutView({ doc, blocks, theme, mode, wide }: PageLayoutVie
         return (
           <LayoutRow key={row.key} theme={theme} columnPx={columnPx} density={doc.layout?.density} width={row.width} background={row.background} ratio={row.ratio} firstSecondOnPhone={row.firstSecondOnPhone} sideBySide={wide}>
             {row.items.map((b) =>
-            <div key={b.id} className={spacingClass[b.layout.spacing]}>
+            <div key={b.id} data-preview-block={b.id} className={spacingClass[b.layout.spacing]}>
                 <BlockRenderer block={b} theme={t} mode={mode} />
               </div>
             )}

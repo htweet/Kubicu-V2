@@ -47,7 +47,7 @@ function readStored(fallbackDefault: VisualDirection): AppearancePolicy {
 
 /**
  * Platform-wide appearance policy, controlled from the super-admin Design system.
- * Decides which of the four directions workspace users may choose and which one is the default.
+ * Decides which of the directions workspace users may choose and which one is the default.
  */
 export function AppearancePolicyProvider({ initialDefault, children }: {initialDefault: VisualDirection;children: React.ReactNode;}) {
   const [policy, setPolicy] = useState<AppearancePolicy>(() => readStored(initialDefault));

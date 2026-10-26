@@ -10,6 +10,8 @@ import type { Product, ProductKind } from '../../types/commerce';
 import { useCommerce } from '../../contexts/CommerceContext';
 import { useCan } from '../../contexts/TeamContext';
 import { upsertProduct } from '../../utils/commerce/ops';
+import { bulkIssues } from '../../utils/commerce/sellModes';
+import { ProductSellModesField } from './ProductSellModesField';
 import { regenerateVariants } from '../../utils/commerce/catalog';
 import { DEFAULT_DEPOSIT_PCT, DEFAULT_LEAD_DAYS, depositPctOptions } from '../../utils/commerce/deposit';
 import { uid } from '../../utils/id';
@@ -118,6 +120,10 @@ export function ProductEditor({ open, productId, kind, onClose }: ProductEditorP
       return;
     }
     if (draft.kind === 'digital' && draft.status === 'active' && draft.digital?.status !== 'ready') {
+      setSection('stock');
+      return;
+    }
+    if (bulkIssues(draft) || draft.preorder && !draft.preorder.shipsBy) {
       setSection('stock');
       return;
     }
@@ -258,6 +264,13 @@ export function ProductEditor({ open, productId, kind, onClose }: ProductEditorP
                 onChange={(trackStock) => patch({ trackStock })} />
               
               {kind === 'physical' &&
+              <div id="prd-how-pay" className="border-t border-border pt-5">
+                  <h3 className="text-label font-semibold text-fg">{tr('How buyers pay')}</h3>
+                  <p className="mt-0.5 text-caption text-fg-muted">{tr('Pay in full is always on. Add instalments, a deposit or pre-orders for this product.')}</p>
+                </div>
+              }
+              {kind === 'physical' && !draft.bundle && <ProductInstalmentsField product={draft} onChange={patch} />}
+              {kind === 'physical' &&
               <div className="flex flex-col gap-4 border-t border-border pt-4">
                   <Switch
                   id="prd-mto"
@@ -295,7 +308,7 @@ export function ProductEditor({ open, productId, kind, onClose }: ProductEditorP
                 }
                 </div>
               }
-              {kind === 'physical' && !draft.bundle && <ProductInstalmentsField product={draft} onChange={patch} />}
+              {kind === 'physical' && !draft.giftCard && <ProductSellModesField product={draft} onChange={patch} pricesLocked={!pricesAllowed.allowed} showErrors={triedSave} />}
               {kind === 'physical' && draft.bundle && <p className="border-t border-border pt-4 text-caption text-fg-muted">{tr('Deposits and instalments are off while this is sold with {name}.', { name: draft.bundle.partnerName })}</p>}
               <VariantsField product={draft} onChange={patch} />
               <div className="grid gap-4 sm:grid-cols-2">

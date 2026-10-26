@@ -1,6 +1,7 @@
 import type { FormDef, FormSettings, FormsData, FormSubmission } from '../../types/forms';
 import { formTemplates } from '../../data/formTemplates';
 import { uid } from '../id';
+import { seedsSample } from '../workspaceStorage';
 
 export const formsKey = (workspaceId: string) => `kubicu.forms.${workspaceId}`;
 export const FORMS_EXTENSION_ID = 'forms';
@@ -62,7 +63,7 @@ export function readForms(workspaceId: string): FormsData {
   } catch {
 
     /* fall through */}
-  const fresh = seed();
+  const fresh: FormsData = seedsSample(workspaceId) ? seed() : { forms: [], submissions: [] };
   writeForms(workspaceId, fresh, false);
   return fresh;
 }

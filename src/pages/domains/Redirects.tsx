@@ -131,7 +131,7 @@ export function Redirects() {
       </Section>
 
       <p className="text-caption text-fg-subtle">
-        Short links (…/s/…) are managed on <Link to="/app/domains/links" className="underline underline-offset-2">Campaign links</Link>.
+        Short links (…/s/…) are managed on <Link to="/app/campaign-links" className="underline underline-offset-2">Campaign links</Link>.
       </p>
 
       <RedirectDialog open={editing !== null} onClose={() => setEditing(null)} redirect={editing && editing !== 'new' ? editing : undefined} workspaceId={current.id} spaces={spaces} />

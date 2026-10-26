@@ -153,7 +153,7 @@ export function PrintOrderSheet({ open, onClose, initialItem, kit, qrUrl, qrLink
       };
       if (method === 'wallet') money.update((m) => ({ ...m, ledger: [{ id: uid('led'), at, kind: 'purchase', amountNgn: -q.totalNgn, state: 'available', label: `Prints · ${order.ref}` }, ...m.ledger] }));
       store.update((d) => ({ ...d, orders: [order, ...d.orders] }));
-      team.log('pages', `ordered ${qty} ${spec.label.toLowerCase()} from the print shop (${formatNgn(q.totalNgn)})`, '/app/domains/kit');
+      team.log('pages', `ordered ${qty} ${spec.label.toLowerCase()} from the print shop (${formatNgn(q.totalNgn)})`, '/app/print-kit');
       setPaying(false);
       toast.success(`Print order ${order.ref} placed`, { description: `${PRINT_PARTNER} starts printing within the hour. Test mode.` });
       onPlaced(order);

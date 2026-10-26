@@ -157,7 +157,7 @@ export function fallbackDestination(workspace: Workspace, commerce: CommerceData
 /** Opens Domains & QR with a new code already pointing at this destination. */
 export function qrHref(d: LinkDestination, name: string): string {
   const qs = new URLSearchParams({ dest: encodeDestination(d), name });
-  return `/app/domains/qr?${qs.toString()}`;
+  return `/app/qr?${qs.toString()}`;
 }
 
 export function destinationLabel(workspace: Workspace, commerce: CommerceData | null, d: LinkDestination, services?: ServiceNames): string {

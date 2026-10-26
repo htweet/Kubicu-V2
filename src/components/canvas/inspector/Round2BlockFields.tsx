@@ -71,7 +71,7 @@ export function Round2BlockFields({ block, issues }: {block: Extract<Block, {typ
         const set = setter('brandHeader');
         return (
           <div className={stack}>
-          <MediaPicker id={id('logo')} label="Logo" optional aspect="1:1" hint="Transparent PNG or SVG. Shown at its own proportions." value={c.logoUrl} onChange={(logoUrl, meta) => set(meta?.alt && !c.logoAlt ? { logoUrl, logoAlt: meta.alt } : { logoUrl }, 'logoUrl')} />
+          <MediaPicker id={id('logo')} label="Logo" optional aspect="1:1" folder="brand" hint="Transparent PNG or SVG. Shown at its own proportions." value={c.logoUrl} onChange={(logoUrl, meta) => set(meta?.alt && !c.logoAlt ? { logoUrl, logoAlt: meta.alt } : { logoUrl }, 'logoUrl')} />
           <TextInput id={id('name')} label="Business name" value={c.name} onChange={(e) => set({ name: e.target.value }, 'name')} />
           <TextInput id={id('tagline')} label="Tagline" optional value={c.tagline} onChange={(e) => set({ tagline: e.target.value }, 'tagline')} />
           <TextInput id={id('ctaLabel')} label="Button" optional placeholder="e.g. Order now" value={c.ctaLabel} onChange={(e) => set({ ctaLabel: e.target.value }, 'ctaLabel')} />

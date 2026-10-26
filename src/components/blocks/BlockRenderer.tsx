@@ -27,6 +27,7 @@ import { DownloadBlock } from './DownloadBlock';
 import { PortfolioBlock } from './PortfolioBlock';
 import { LocationBlock } from './LocationBlock';
 import { SubscriptionBlock } from './SubscriptionBlock';
+import { CourseBlock } from './CourseBlock';
 import { FormBlock } from './FormBlock';
 import { ProofBlock } from './ProofBlock';
 import { MembersOnlyBlock } from './MembersOnlyBlock';
@@ -140,6 +141,8 @@ export function BlockRenderer({ block, theme, mode }: BlockRendererProps) {
       return <LocationBlock block={block} theme={theme} mode={mode} />;
     case 'subscription':
       return <SubscriptionBlock block={block} theme={theme} mode={mode} />;
+    case 'course':
+      return <CourseBlock block={block} theme={theme} mode={mode} />;
     case 'form':
       return <FormBlock block={block} theme={theme} mode={mode} />;
     case 'proof':

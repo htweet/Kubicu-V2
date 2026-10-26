@@ -66,7 +66,7 @@ const categoryOf: Partial<Record<BlockType, LibraryCategoryId>> = {
   image: 'images', gallery: 'images', logoStrip: 'images',
   video: 'media', audio: 'media', playlist: 'media', mediaList: 'media', download: 'media',
   portfolio: 'portfolio',
-  product: 'commerce', productGrid: 'commerce', collection: 'commerce', menu: 'commerce', listings: 'commerce', subscription: 'commerce', support: 'commerce', membersOnly: 'commerce',
+  product: 'commerce', productGrid: 'commerce', collection: 'commerce', menu: 'commerce', listings: 'commerce', subscription: 'commerce', course: 'commerce', support: 'commerce', membersOnly: 'commerce',
   booking: 'services', event: 'services', countdown: 'services',
   leadForm: 'forms', newsletter: 'forms', form: 'forms',
   proof: 'trust', trustBadge: 'trust',
@@ -148,7 +148,8 @@ const synonyms: Partial<Record<BlockType, string[]>> = {
   languageSwitch: ['translate', 'pidgin', 'yoruba', 'hausa', 'igbo'],
   smartButton: ['personalised button', 'dynamic button', 'by source'],
   campaignSpotlight: ['promo', 'sale banner', 'limited offer', 'countdown offer'],
-  recommendations: ['my picks', 'favourites', 'start here', 'gear', 'recommended']
+  recommendations: ['my picks', 'favourites', 'start here', 'gear', 'recommended'],
+  course: ['online course', 'tutorial class', 'lessons', 'e-learning', 'curriculum', 'modules', 'school', 'tutor']
 };
 
 export function blockSearchText(type: BlockType): string {
@@ -186,6 +187,7 @@ export function blockNeeds(type: BlockType): string[] {
     productGrid: 'Uses your products, or items you type in',
     collection: 'Uses a collection from Commerce',
     subscription: 'Uses plans from Commerce → Subscriptions',
+    course: 'Uses a course from Commerce → Courses',
     booking: 'Uses services from the Bookings app',
     event: 'Can link to an event in Commerce → Events',
     proof: 'Uses reviews from the Proof app',

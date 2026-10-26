@@ -32,6 +32,11 @@ export interface Workspace {
   /** Demo workspace only: the latest round of sample spaces added (3 = Pop-up shop, D183; 4 = Booking page and Members area, D186). */
   sampleSpacesRound?: number;
   createdAt: string;
+  /**
+   * Created with "Start with demo data" (D200): every module has labelled sample records until they're
+   * removed in Settings → Business, or automatically once `expiresAt` passes.
+   */
+  demoData?: {seededAt: string;expiresAt: string;} | null;
   /** One currency for everything this workspace sells (D136). Missing = naira. */
   currency?: CurrencyCode;
 }

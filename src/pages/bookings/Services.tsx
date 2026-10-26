@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 import type { Service } from '../../types/ops';
 import { useOps } from '../../contexts/OpsContext';
 import { uid } from '../../utils/id';
-import { durationLabel } from '../../utils/ops/slots';
+import { MAX_CLASS_SEATS, classAttendees, classCapacity, durationLabel } from '../../utils/ops/slots';
 import { formatNgn } from '../../utils/format';
 import { balanceHourOptions } from '../../utils/ops/balance';
 import { PageHeader } from '../../components/shell/PageHeader';
@@ -47,11 +47,13 @@ export function Services() {
   const existing = editId ? data.services.find((s) => s.id === editId) : undefined;
   const [draft, setDraft] = useState<Service>(blank);
   const [tried, setTried] = useState(false);
+  const [groupOn, setGroupOn] = useState(false);
   const open = creating || !!existing;
 
   useEffect(() => {
     if (open) {
       setDraft(existing ?? blank());
+      setGroupOn(!!existing && classCapacity(existing) > 1);
       setTried(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -60,10 +62,24 @@ export function Services() {
   const patch = (p: Partial<Service>) => setDraft((d) => ({ ...d, ...p }));
   const depositError = draft.depositNgn !== null && draft.priceNgn !== null && draft.depositNgn > draft.priceNgn ? 'The deposit can’t be more than the price' : '';
 
+  const fullestClass = existing ? Math.max(0, ...data.bookings.filter((b) => b.serviceId === existing.id && (b.status === 'confirmed' || b.status === 'pending_deposit') && Date.parse(b.end) > Date.now()).map((b) => classAttendees(data.bookings, existing.id, Date.parse(b.start)).length)) : 0;
+  const seatsError = !groupOn ?
+  fullestClass > 1 ?
+  `Coming classes already have up to ${fullestClass} people booked — keep it a group class` :
+  '' :
+  (draft.capacity ?? 0) < 2 || (draft.capacity ?? 0) > MAX_CLASS_SEATS ?
+  `Between 2 and ${MAX_CLASS_SEATS} seats` :
+  (draft.capacity ?? 0) < fullestClass ?
+  `A coming class already has ${fullestClass} people booked` :
+  '';
+
   const save = () => {
     setTried(true);
-    if (!draft.name.trim() || depositError) return;
-    const s = { ...draft, name: draft.name.trim() };
+    if (!draft.name.trim() || depositError || seatsError) {
+      if (seatsError && !groupOn) toast.error(seatsError);
+      return;
+    }
+    const s = { ...draft, name: draft.name.trim(), capacity: groupOn ? draft.capacity : undefined };
     if (apply((d) => ({ ...d, services: existing ? d.services.map((x) => x.id === s.id ? s : x) : [...d.services, s] }))) {
       toast(tr(existing ? 'Service saved' : 'Service added'), { description: existing ? undefined : tr('Add a Booking block to your page and pick this service.') });
       setParams({});
@@ -120,6 +136,7 @@ export function Services() {
                   <span className="flex items-center gap-2">
                     <span className="text-label font-semibold text-fg">{s.name}</span>
                     {s.sample && <SampleTag />}
+                    {classCapacity(s) > 1 && <Badge tone="info">{tr('Group · {n} seats', { n: classCapacity(s) })}</Badge>}
                   </span>
                   <span className="block text-caption text-fg-subtle">
                     {durationLabel(s.durationMin)} · {tr(s.location === 'online' ? 'Online' : s.location === 'customer' ? 'At customer’s address' : 'In person')} · {tr('{n} upcoming', { n: upcomingFor(s.id) })}
@@ -171,6 +188,32 @@ export function Services() {
           <div className="grid gap-4 sm:grid-cols-2">
             <SelectInput id="svc-dur" label="Duration" value={String(draft.durationMin)} options={durations} onChange={(v) => patch({ durationMin: Number(v) })} />
             <SelectInput id="svc-buf" label="Break after" value={String(draft.bufferMin)} options={[0, 5, 10, 15, 30, 60].map((m) => ({ value: String(m), label: m ? tr('{n} min', { n: m }) : tr('None') }))} onChange={(v) => patch({ bufferMin: Number(v) })} />
+          </div>
+          <div className="flex flex-col gap-3 border-t border-line pt-4">
+            <Switch
+                id="svc-group"
+                label="Group class"
+                description="Several people book the same time, each with their own seat — a class, workshop or tutorial group."
+                checked={groupOn}
+                onChange={(on) => {
+                  setGroupOn(on);
+                  if (on && classCapacity(draft) < 2) patch({ capacity: 10 });
+                }} />
+              
+            {groupOn &&
+              <div className="sm:max-w-[50%]">
+                <TextInput
+                  id="svc-seats"
+                  label="Seats per class"
+                  inputMode="numeric"
+                  value={String(draft.capacity ?? '')}
+                  error={tried && seatsError ? seatsError : undefined}
+                  hint={`2–${MAX_CLASS_SEATS}. Visitors see “6 of 10 left”.`}
+                  onChange={(e) => patch({ capacity: Number(e.target.value.replace(/\D/g, '').slice(0, 3)) || 0 })} />
+                
+              </div>
+              }
+            {groupOn && bookableStaff.length > 0 && <p className="text-caption text-fg-subtle">{tr('Classes are booked for the business as a whole, not a person, and block other bookings at that time.')}</p>}
           </div>
           </DetailSection>
           {bookableStaff.length > 0 &&

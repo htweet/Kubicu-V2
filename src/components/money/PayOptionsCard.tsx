@@ -15,6 +15,7 @@ import { Switch } from '../ui/Switch';
 import { SelectInput } from '../ui/SelectInput';
 import { Segmented } from '../ui/Segmented';
 import { UpgradeButton } from '../ui/UpgradeButton';
+import { InstalmentProductPicker } from './InstalmentProductPicker';
 
 const maxValues = [20_000, 50_000, 100_000, 200_000, 500_000];
 const acceptOptions: {value: PayOptions['pod']['accept'];label: string;}[] = [
@@ -140,12 +141,15 @@ export function PayOptionsCard() {
             onChange={(v) => set((p) => ({ ...p, instalments: { enabled: v } }))} />
           
           {o.instalments.enabled &&
-          <p className="border-l-2 border-line pl-4 text-caption text-fg-muted">
-              {productsWithParts ?
-            tr(productsWithParts === 1 ? '{n} active product can be paid in parts.' : '{n} active products can be paid in parts.', { n: productsWithParts }) :
-            tr('No products can be paid in parts yet — switch it on in a product’s Stock & options.')}{' '}
-              {tr('Failed charges retry on days 1, 3 and 5. Each part reaches your wallet like a sale when you use the wallet or escrow.')}
-            </p>
+          <div className="flex flex-col gap-3 border-l-2 border-line pl-4">
+              <p className="text-caption text-fg-muted">
+                {productsWithParts ?
+              tr(productsWithParts === 1 ? '{n} active product can be paid in parts.' : '{n} active products can be paid in parts.', { n: productsWithParts }) :
+              tr('No products can be paid in parts yet — choose them below.')}{' '}
+                {tr('Failed charges retry on days 1, 3 and 5. Each part reaches your wallet like a sale when you use the wallet or escrow.')}
+              </p>
+              <InstalmentProductPicker disabled={locked} />
+            </div>
           }
         </section>
       </div>

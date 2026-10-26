@@ -115,6 +115,7 @@ export const sellHelp: HelpCategory[] = [
   articles: [
   { id: 'sub-plans', q: 'How do I offer a subscription?', a: 'Create a membership or a product box with a weekly, monthly or yearly price, optional trial, setup fee and member limit, plus your rules for pausing, skipping and cancelling.', where: 'Commerce → Subscriptions', plan: 'Pro and above' },
   { id: 'sub-portal', q: 'Can subscribers manage their own subscription?', a: 'Yes. Each subscriber gets a page to pause, skip, change plan, update their card or cancel, within your rules.' },
+  { id: 'courses', q: 'Can I sell a course or tutorial classes?', a: 'Yes. Build modules of video, reading, file and quiz lessons, then make the course free, paid at checkout, or included in a membership. Learners sign in with a one-time code, see their progress and get a printable completion certificate (never called accredited). Add a Course block to any page to show it. Videos play from YouTube, Vimeo or Loom.', where: 'Commerce → Courses', plan: 'Creator and above; paid courses on Pro' },
   { id: 'sub-failed', q: 'What happens when a renewal fails?', a: 'It’s retried on days 1, 3 and 5, with a 7-day grace period before the subscription ends. You’re notified each time.' },
   { id: 'members-signin', q: 'How do members sign in to members-only content?', a: 'With their phone number and a 6-digit code sent by WhatsApp (or text or email). No passwords. They stay signed in on that phone for 30 days.' }]
 

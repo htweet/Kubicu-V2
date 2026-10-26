@@ -1,11 +1,11 @@
 import React, { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ClipboardListIcon, PlusIcon } from 'lucide-react';
+import { CheckIcon, ClipboardListIcon, PlusIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
 import { useCan, useTeam } from '../../contexts/TeamContext';
 import { useFormsStore } from '../../hooks/useFormsStore';
-import { formTemplates } from '../../data/formTemplates';
+import { formTemplateCategories, formTemplates, type FormTemplateCategory } from '../../data/formTemplates';
 import { createForm } from '../../utils/forms/storage';
 import { closedReason } from '../../utils/forms/logic';
 import type { FormDef } from '../../types/forms';
@@ -41,7 +41,11 @@ function FormsListInner() {
   const { data, update } = useFormsStore(current.id);
   const [creating, setCreating] = useState(false);
   const [templateId, setTemplateId] = useState('blank');
+  const [category, setCategory] = useState<FormTemplateCategory | 'all'>('all');
+  const shownTemplates = category === 'all' ? formTemplates : formTemplates.filter((t) => t.category === category);
   const [name, setName] = useState('');
+  const selected = formTemplates.find((t) => t.id === templateId) ?? formTemplates[0];
+  const selectedCount = useMemo(() => selected.fields().filter((f) => f.type !== 'hidden' && f.type !== 'section').length, [selected]);
 
   const counts = useMemo(() => {
     const m = new Map<string, {total: number;unread: number;last: string | null;}>();
@@ -115,9 +119,12 @@ function FormsListInner() {
         onClose={() => setCreating(false)}
         title="New form"
         description="Pick a starting point. Everything can be changed afterwards."
-        size="lg"
+        size="xl"
         footer={
         <>
+            <p className="min-w-0 text-caption text-fg-subtle sm:mr-auto sm:self-center" aria-live="polite">
+              <span className="font-medium text-fg">{selected.name}</span> · {selectedCount} question{selectedCount === 1 ? '' : 's'} to start with
+            </p>
             <Button variant="tertiary" onClick={() => setCreating(false)}>
               Cancel
             </Button>
@@ -125,22 +132,70 @@ function FormsListInner() {
           </>
         }>
         
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-5 pb-2">
+          <div className="sm:max-w-sm">
+            <TextInput id="new-form-name" label="Form name" optional placeholder={selected.name} value={name} onChange={(e) => setName(e.target.value)} maxLength={60} />
+          </div>
           <fieldset>
             <legend className="mb-2 text-label font-medium text-fg">Start from</legend>
-            <div className="grid gap-2 sm:grid-cols-2">
-              {formTemplates.map((t) =>
-              <label key={t.id} className={cn('flex cursor-pointer flex-col gap-0.5 rounded-md border p-3 transition-colors duration-150', templateId === t.id ? 'border-action bg-action-soft' : 'border-line hover:bg-sunken')}>
-                  <span className="flex items-center gap-2 text-label font-semibold text-fg">
-                    <input type="radio" name="form-template" value={t.id} checked={templateId === t.id} onChange={() => setTemplateId(t.id)} className="accent-[rgb(var(--action))]" />
-                    {t.name}
-                  </span>
-                  <span className="pl-5 text-caption text-fg-muted">{t.description}</span>
-                </label>
+            <div role="group" aria-label="Filter starting points" className="scroll-quiet sticky -top-3 z-10 -mx-6 mb-3 flex gap-1.5 overflow-x-auto overflow-y-hidden border-b border-line bg-overlay px-6 py-2.5">
+              {[{ id: 'all' as const, label: 'All' }, ...formTemplateCategories].map((c) =>
+              <button
+                key={c.id}
+                type="button"
+                aria-pressed={category === c.id}
+                onClick={() => setCategory(c.id)}
+                className={cn(
+                  'h-8 shrink-0 whitespace-nowrap rounded-full border px-3 text-caption font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
+                  category === c.id ? 'border-fg bg-fg text-canvas' : 'border-line text-fg-muted hover:bg-sunken hover:text-fg'
+                )}>
+                
+                  {c.label}
+                  <span className={cn('ml-1.5 tabular-nums', category === c.id ? 'opacity-70' : 'text-fg-subtle')}>{c.id === 'all' ? formTemplates.length : formTemplates.filter((t) => t.category === c.id).length}</span>
+                </button>
               )}
             </div>
+            <div className="grid gap-2.5 sm:grid-cols-2">
+              {shownTemplates.map((t) => {
+                const Icon = t.icon;
+                const on = templateId === t.id;
+                return (
+                  <label
+                    key={t.id}
+                    className={cn(
+                      'relative flex h-full cursor-pointer gap-3 rounded-lg border bg-raised p-4 transition-colors duration-150 focus-within:ring-2 focus-within:ring-focus',
+                      on ? 'border-action ring-1 ring-action' : 'border-line hover:border-line-strong'
+                    )}>
+                    
+                    <input type="radio" name="form-template" value={t.id} checked={on} onChange={() => setTemplateId(t.id)} className="sr-only" />
+                    <span aria-hidden className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-md transition-colors duration-150', on ? 'bg-action text-action-fg' : 'bg-sunken text-fg-muted')}>
+                      <Icon size={17} />
+                    </span>
+                    <span className="flex min-w-0 flex-1 flex-col gap-1 pr-5">
+                      <span className="text-label font-semibold leading-snug text-fg">{t.name}</span>
+                      <span className="line-clamp-2 text-caption leading-snug text-fg-muted">{t.description}</span>
+                      {t.highlights && t.highlights.length > 0 &&
+                      <span className="mt-auto flex flex-wrap gap-1 pt-1.5">
+                          {t.highlights.map((h) =>
+                        <span key={h} className="rounded-sm border border-line px-1.5 py-px text-[11px] font-medium leading-4 text-fg-muted">
+                              {h}
+                            </span>
+                        )}
+                        </span>
+                      }
+                      {t.setupNote && <span className="pt-0.5 text-[11.5px] leading-snug text-fg-subtle">{t.setupNote}</span>}
+                    </span>
+                    <span
+                      aria-hidden
+                      className={cn('absolute right-3.5 top-3.5 flex h-[18px] w-[18px] items-center justify-center rounded-full border transition-colors duration-150', on ? 'border-action bg-action text-action-fg' : 'border-line-strong bg-raised')}>
+                      
+                      {on && <CheckIcon size={11} strokeWidth={3} />}
+                    </span>
+                  </label>);
+
+              })}
+            </div>
           </fieldset>
-          <TextInput id="new-form-name" label="Form name" optional placeholder={formTemplates.find((t) => t.id === templateId)?.name} value={name} onChange={(e) => setName(e.target.value)} maxLength={60} />
         </div>
       </Dialog>
     </div>);

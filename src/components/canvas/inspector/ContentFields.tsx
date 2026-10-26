@@ -15,6 +15,7 @@ import { ExtendedContentFields } from './ExtendedContentFields';
 import { ProductFields } from './ProductFields';
 import { BookingFields } from './BookingFields';
 import { SubscriptionFields } from './SubscriptionFields';
+import { CourseFields } from './CourseFields';
 import { FormBlockFields } from './FormBlockFields';
 import { ProofFields } from './ProofFields';
 import { MembersOnlyFields } from './MembersOnlyFields';
@@ -58,6 +59,7 @@ export function ContentFields({ block, issues }: ContentFieldsProps) {
           <MediaPicker
               id={id('avatar')}
               label="Photo or logo"
+              folder="brand"
               optional
               round
               aspect="1:1"
@@ -275,6 +277,8 @@ export function ContentFields({ block, issues }: ContentFieldsProps) {
       return <BookingFields block={block} issues={issues} />;
     case 'subscription':
       return <SubscriptionFields block={block} issues={issues} />;
+    case 'course':
+      return <CourseFields block={block} issues={issues} />;
     case 'form':
       return <FormBlockFields block={block} issues={issues} />;
     case 'proof':

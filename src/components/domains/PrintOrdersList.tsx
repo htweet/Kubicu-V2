@@ -34,7 +34,7 @@ export function PrintOrdersList({ highlightId }: {highlightId?: string | null;})
     const at = new Date().toISOString();
     if (o.payMethod === 'wallet') money.update((m) => ({ ...m, ledger: [{ id: uid('led'), at, kind: 'purchase', amountNgn: o.totalNgn, state: 'available', label: `Print order cancelled · ${o.ref}` }, ...m.ledger] }));
     update((d) => ({ ...d, orders: d.orders.map((x) => x.id === o.id ? { ...x, cancelledAt: at, refundedTo: o.payMethod } : x) }));
-    team.log('pages', `cancelled print order ${o.ref}`, '/app/domains/kit');
+    team.log('pages', `cancelled print order ${o.ref}`, '/app/print-kit');
     toast.success(`${o.ref} cancelled`, { description: `${formatNgn(o.totalNgn)} refunded to your ${o.payMethod === 'wallet' ? 'wallet' : 'card'}.` });
   };
 

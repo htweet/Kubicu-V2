@@ -77,7 +77,8 @@ export type BlockType =
 'campaignSpotlight' |
 'recommendations' |
 'backToTop' |
-'delivery';
+'delivery' |
+'course';
 
 /* Delivery & returns (D181) */
 export interface DeliveryLine {id: string;area: string;price: string;time: string;}
@@ -402,6 +403,8 @@ export interface BlockContentMap {
   location: {name: string;address: string;timeZone: string;hours: OpeningHours[];note: string;};
   /** Recurring plans from Commerce → Subscriptions, one to three side by side (D69). */
   subscription: {title: string;intro: string;planIds: string[];ctaLabel: string;highlightPlanId: string | null;};
+  /** A course from Commerce → Courses, with its outline and the right button (D197). */
+  course: {courseId: string | null;style: 'card' | 'outline';ctaLabel: string;};
   /** A saved form from the Forms add-on (D79). */
   form: {formId: string | null;showTitle: boolean;};
   /** Verified reviews and delivered work from Proof of work (D91). */
@@ -977,6 +980,16 @@ export interface SavedTheme {
   id: string;
   name: string;
   theme: PageTheme;
+  createdAt: string;
+}
+
+/** A whole-page layout saved privately in the workspace, e.g. one the AI assistant composed (D211). */
+export interface SavedTemplate {
+  id: string;
+  name: string;
+  blocks: Block[];
+  theme: PageTheme;
+  origin: 'assistant' | 'manual';
   createdAt: string;
 }
 

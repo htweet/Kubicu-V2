@@ -2,7 +2,7 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useR
 import { toast } from 'sonner';
 import type { CampaignLink, CheckOutcome, CustomDomain, CustomRedirect, DomainsData, QrDesign } from '../types/domains';
 import { useWorkspace } from './WorkspaceContext';
-import { DEMO_WORKSPACE_ID } from '../utils/workspaceStorage';
+import { seedsSample } from '../utils/workspaceStorage';
 import { domainsKey, emptyDomains, readDomains, writeDomains } from '../utils/domains/storage';
 import { sampleDomains } from '../data/domainsSeed';
 import { uid } from '../utils/id';
@@ -27,7 +27,7 @@ const DomainsContext = createContext<DomainsValue | null>(null);
 function initial(workspaceId: string): DomainsData {
   const stored = readDomains(workspaceId);
   if (stored) return stored;
-  return workspaceId === DEMO_WORKSPACE_ID ? { ...emptyDomains(), ...sampleDomains(), sampleSeeded: true } : emptyDomains();
+  return seedsSample(workspaceId) ? { ...emptyDomains(), ...sampleDomains(), sampleSeeded: true } : emptyDomains();
 }
 
 /** A check interrupted by closing the app resumes sensibly: certificates finish, verification asks to check again. */

@@ -164,19 +164,19 @@ export const startAndBuildHelp: HelpCategory[] = [
   {
     id: 'domain',
     q: 'How do I connect my own domain?',
-    a: 'Domains & QR → Connect a domain walks you through the DNS records to add at your registrar, then checks them. It only says “Live” once the security certificate is issued.',
+    a: 'Growth → Domains → Connect a domain walks you through the DNS records to add at your registrar, then checks them. It only says “Live” once the security certificate is issued.',
     plan: 'Creator and above',
     steps: ['Enter your domain.', 'Add the records shown at your registrar.', 'Press Check now. Changes can take up to 48 hours.', 'Choose it as your main address once live.']
   },
-  { id: 'campaign-links', q: 'What is a campaign link?', a: 'A short tracked link to any page, product or event. Each shows visits, orders and revenue, so you know which post or flyer worked.', where: 'Domains & QR → Campaign links' },
+  { id: 'campaign-links', q: 'What is a campaign link?', a: 'A short tracked link to any page, product or event. Each shows visits, orders and revenue, so you know which post or flyer worked.', where: 'Growth → Campaign links' },
   {
     id: 'qr',
     q: 'How do I make a QR code?',
     a: 'Every QR code is a campaign link, so you can change where it goes without reprinting. Design colours, shapes, a logo or text in the middle and a caption, then download PNG, SVG or a print sheet.',
-    where: 'Domains & QR → QR codes'
+    where: 'Growth → QR codes'
   },
   { id: 'qr-shortcut', q: 'Can I get a QR code for a product, event or booking?', a: 'Yes. Look for “Get QR code” on products, events, DealRooms, spaces, the share step and booking services.' },
   { id: 'qr-broken', q: 'What happens if a QR code’s destination is deleted?', a: 'You’re notified, and the code forwards to the fallback you chose (your main page by default) so printed codes never break.' },
-  { id: 'print-kit', q: 'How do I print business cards and stickers?', a: 'Print kit makes business cards, round stickers, package inserts and receipt footers with your tracked QR code. Print at 100% scale or save as PDF for a print shop.', where: 'Domains & QR → Print kit' }]
+  { id: 'print-kit', q: 'How do I print business cards and stickers?', a: 'Print kit makes business cards, round stickers, package inserts and receipt footers with your tracked QR code. Print at 100% scale or save as PDF for a print shop.', where: 'Growth → Print kit' }]
 
 }];

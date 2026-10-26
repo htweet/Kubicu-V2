@@ -1,15 +1,15 @@
 import { useCallback, useEffect, useState } from 'react';
 
-const KEY = 'kubicu.sidebar.collapsed';
+// v2: the default changed to expanded (D210), so earlier auto-saved "collapsed" values are ignored.
+const KEY = 'kubicu.sidebar.collapsed.v2';
 
-/** Sidebar starts collapsed (icons only); the choice is remembered on this device. */
+/** Sidebar starts expanded (icons and labels); collapsing it is remembered on this device. */
 export function useSidebarCollapsed() {
   const [collapsed, setCollapsed] = useState<boolean>(() => {
     try {
-      const saved = window.localStorage.getItem(KEY);
-      return saved === null ? true : saved === '1';
+      return window.localStorage.getItem(KEY) === '1';
     } catch {
-      return true;
+      return false;
     }
   });
 

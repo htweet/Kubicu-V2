@@ -38,7 +38,7 @@ Prototype status: ✅ interactive · 🟡 partial · ⏳ planned placeholder · 
 | IB-N / MB-19 | Plans, billing, entitlements | P0 found. | Owner | Settings → Plan & billing | BillingContext | test mode | ✅ | D65, D68 · prices are example figures |
 | IB-O / MB-14 | Super-admin OS | P0 basic | Staff | /admin | pages/admin/* | approvals, incidents | 🟡 | All areas (D129, D130); staff plan editing, trials, coupons, credits, AI switches, test sends, translation review in Batch 13 |
 | IB-P / MB-18 | Modules & marketplace | P0 found. / P2 | Owner/Staff | Extensions, Templates | MarketplaceContext | install, pause, rollback | ✅ | D67, D70, staff rollback D130, developer submissions D132/D134 |
-| IB-Q / MB-11 | AI copilot (propose → approve) | P1 | Owner | Canvas, onboarding | AiPageSetupDialog, BlockSuggest | AI preview, credits | ✅ 🧪 | D63, Voice-to-Store D102, Coach D104 · rule-based simulation |
+| IB-Q / MB-11 | AI copilot (propose → approve) | P1 | Owner | Canvas, onboarding, Overview, My Spaces | AI page assistant (`/app/assistant`), BlockSuggest | AI preview, credits | ✅ 🧪 | D63, Voice-to-Store D102, Coach D104 · rule-based simulation |
 | IB-R / MB-21 | Security, privacy, trust | P0 | All | Settings → Privacy, legal pages | — | — | 🟡 | Privacy settings built; legal pages D78; backend security is engineering |
 | IB-S / DP-7 | Accessibility & performance (WCAG 2.2 AA target, 44px targets, alternatives to drag) | P0 | All | All | useFocusTrap, announce, SkipLink | — | 🟡 | Batch 7 code audit done (D76); automated + device testing open |
 | IB-T / DP-X | Trust & safety: report, appeal, suspension | P0/P1 | Visitor/Owner | Report dialog, Moderation | ReportPageDialog, AdminModeration | takedown, suspended | 🟡 | D75b · appeals process page D78 |

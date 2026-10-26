@@ -17,16 +17,16 @@ export function ProductInstalmentsField({ product, onChange }: {product: Product
   const example = plan && price >= INSTALMENT_MIN_NGN ? schedule(price, plan) : null;
 
   return (
-    <div className="flex flex-col gap-4 border-t border-border pt-4">
+    <div className="flex flex-col gap-4">
       <Switch
         id="prd-inst"
-        label="Can be paid in parts"
+        label="Pay in instalments"
         description={
         product.madeToOrder ?
-        'Turn off “Made to order” first — an order can’t use a deposit and instalments together.' :
+        'Turn off “Made to order” below first — an order can’t use a deposit and instalments together.' :
         on ?
         `Buyers choose 2–4 parts at checkout on orders of ${formatNgn(INSTALMENT_MIN_NGN)} or more.` :
-        'Switch on Instalments in Commerce → Payments for buyers to see it.'
+        'Instalments are off for your shop. Switch them on in Commerce → Payments for buyers to see this.'
         }
         checked={!!plan}
         disabled={!!product.madeToOrder}

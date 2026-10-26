@@ -6,6 +6,7 @@ import type { ExamplePage } from '../../data/examples/build';
 import { blankTemplateDoc } from '../../data/templates';
 import { templatePrice } from '../../data/templateMarket';
 import { useMarketplace } from '../../contexts/MarketplaceContext';
+import { useLibrary } from '../../contexts/LibraryContext';
 import { useApplyTemplate } from '../../hooks/useApplyTemplate';
 import type { PageDocument } from '../../types/page';
 import { Button } from '../ui/Button';
@@ -26,6 +27,7 @@ const goals: (ExampleGoal | 'all')[] = ['all', 'sell', 'book', 'audience', 'show
 export function TemplatesPanel() {
   const applyTemplate = useApplyTemplate();
   const market = useMarketplace();
+  const library = useLibrary();
   const [pending, setPending] = useState<PendingTemplate | null>(null);
   const [buying, setBuying] = useState<ExamplePage | null>(null);
   const [goal, setGoal] = useState<ExampleGoal | 'all'>('all');
@@ -66,6 +68,24 @@ export function TemplatesPanel() {
           </button>
         )}
       </div>
+
+      {library.templates.length > 0 && goal === 'all' &&
+      <section aria-labelledby="tpl-yours">
+          <h3 id="tpl-yours" className="mb-2 text-label font-semibold text-fg">
+            Your templates <span className="font-normal text-fg-subtle">· private</span>
+          </h3>
+          <ul className="grid grid-cols-2 gap-x-3 gap-y-5">
+            {library.templates.map((t) => {
+            const doc: PageDocument = { ...blankTemplateDoc, id: t.id, title: t.name, theme: t.theme, blocks: t.blocks };
+            return (
+              <li key={t.id}>
+                  <TemplateCard name={t.name} meta={t.origin === 'assistant' ? 'Composed by the AI assistant' : 'Saved by you'} doc={doc} onUse={() => setPending({ name: t.name, doc })} />
+                </li>);
+
+          })}
+          </ul>
+        </section>
+      }
 
       <ul className="grid grid-cols-2 gap-x-3 gap-y-5">
         {goal === 'all' &&

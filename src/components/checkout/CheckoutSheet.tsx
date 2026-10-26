@@ -4,6 +4,8 @@ import { announce } from '../../utils/announce';
 import { MediaImage } from '../media/MediaImage';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { DiscountCodeField } from './DiscountCodeField';
+import { GiftCardField } from './GiftCardField';
+import { bulkUnitPrice, isPreorder, preorderLeft, resolveGiftCard, shipsByLabel } from '../../utils/commerce/sellModes';
 import { useTrack } from '../../contexts/TrackContext';
 import { unitsBoughtBy, type DealRoomCheckout } from '../../utils/dealRoom';
 import { discountLineLabel, normaliseCode, resolveDiscount } from '../../utils/commerce/discounts';
@@ -73,6 +75,8 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
   // Campaign links can carry a code (?code=EID20); it's pre-filled and still checked (D51).
   const [params] = useSearchParams();
   const [code, setCode] = useState(() => normaliseCode(params.get('code') ?? defaultCode ?? ''));
+  // Gift card (D202).
+  const [giftCode, setGiftCode] = useState('');
   // Names printed on each ticket seat; blank seats use the buyer's name (D73).
   const [guestNames, setGuestNames] = useState<Record<string, string[]>>({});
   // Pay on delivery / instalments (D112).
@@ -122,35 +126,42 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
     }
   }, [holding, holdUntil, step]);
 
-  const lines = useMemo(
-    () =>
-    (cart?.lines ?? []
+  const lines = useMemo(() => {
+    const shown = (cart?.lines ?? []
     // A DealRoom sells only its own product; a pop-up only its chosen products.
-    ).filter((l) => (!dealRoom || l.productId === dealRoom.productId) && (!popup || popup.productIds.includes(l.productId))).
+    ).filter((l) => (!dealRoom || l.productId === dealRoom.productId) && (!popup || popup.productIds.includes(l.productId)));
+    // Bulk prices (D202) go by how many of each product are in the cart, across its variants.
+    const qtyByProduct = shown.reduce<Record<string, number>>((m, l) => ({ ...m, [l.productId]: (m[l.productId] ?? 0) + l.qty }), {});
+    return shown.
     map((l) => {
       const product = data?.products.find((p) => p.id === l.productId);
       const variant = product?.variants.find((v) => v.id === l.variantId);
       const roomPrice = dealRoom && dealRoom.priceNgn !== null ? dealRoom.priceNgn : null;
-      const price = product && variant ? roomPrice ?? variantPrice(product, variant) : null;
+      const basePrice = product && variant ? variantPrice(product, variant) : null;
+      const price = product && variant ? roomPrice ?? (basePrice !== null ? bulkUnitPrice(product, basePrice, qtyByProduct[product.id] ?? l.qty) : null) : null;
+      const bulk = roomPrice === null && basePrice !== null && price !== null && price < basePrice;
+      const preLeft = product && isPreorder(product) ? preorderLeft(product) : null;
+      const preIssue = preLeft !== null && (qtyByProduct[l.productId] ?? 0) > preLeft ? preLeft === 0 ? 'Pre-orders are full' : `Only ${preLeft} pre-order${preLeft === 1 ? '' : 's'} left` : '';
       const stallLeft = popup?.left[l.productId] ?? null;
       // Units a pop-up has set aside can't be sold elsewhere (D191); the pop-up's own hold never blocks it.
       const reserved = product?.kind === 'physical' && product.trackStock ? reservedForStalls(data, product.id, popup?.handle) : { qty: 0, labels: [] as string[] };
       const unreserved = product && variant && reserved.qty > 0 ? Math.min(variant.stock, Math.max(0, product.variants.reduce((s, v) => s + Math.max(0, v.stock), 0) - reserved.qty)) : null;
       const asideIssue = unreserved !== null && l.qty > unreserved ? unreserved === 0 ? `Set aside for ${reserved.labels[0]}` : `Only ${unreserved} available — the rest is set aside for ${reserved.labels[0]}` : '';
-      const ticketIssue = product?.kind === 'ticket' ? ticketLineIssue(data, l, Date.now(), holder) : stallLeft !== null && l.qty > stallLeft ? stallLeft === 0 ? 'Sold out at the stall' : `Only ${stallLeft} left at the stall` : asideIssue;
-      const ok = !!product && !!variant && price !== null && canSell(product, variant) && !ticketIssue && (product.kind === 'digital' || !product.trackStock || variant.stock >= l.qty);
+      const ticketIssue = product?.kind === 'ticket' ? ticketLineIssue(data, l, Date.now(), holder) : stallLeft !== null && l.qty > stallLeft ? stallLeft === 0 ? 'Sold out at the stall' : `Only ${stallLeft} left at the stall` : preIssue || asideIssue;
+      const ok = !!product && !!variant && price !== null && canSell(product, variant) && !ticketIssue && (product.kind === 'digital' || !product.trackStock || isPreorder(product) || variant.stock >= l.qty);
       const ev = product?.kind === 'ticket' ? findEvent(data, product.eventId) : undefined;
       const tt = ev?.ticketTypes.find((t) => t.id === l.variantId);
       const seatText = describeSeats(ev, l.seats);
-      return { ...l, product, variant, price, ok, ticketIssue, seatText, maxQty: tt ? tt.maxPerOrder : 20 };
-    }),
-    [cart?.lines, data, dealRoom, holder, popup]
-  );
+      return { ...l, product, variant, price, basePrice, bulk, ok, ticketIssue, seatText, maxQty: tt ? tt.maxPerOrder : 20 };
+    });
+  }, [cart?.lines, data, dealRoom, holder, popup]);
 
   if (!cart || !data) return null;
 
   const subtotal = lines.reduce((s, l) => s + (l.ok && l.price !== null ? l.price * l.qty : 0), 0);
-  const physical = lines.some((l) => l.product?.kind === 'physical');
+  // Gift cards (D202) are delivered as codes, so they never need delivery.
+  const physical = lines.some((l) => l.product?.kind === 'physical' && !l.product.giftCard);
+  const hasGiftItems = lines.some((l) => !!l.product?.giftCard);
   const ticketLines = lines.filter((l) => l.ok && l.product?.kind === 'ticket');
   const ticketsOnly = lines.length > 0 && lines.every((l) => l.product?.kind === 'ticket');
   const seatName = (eventId: string, seatId: string) => {
@@ -184,7 +195,16 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
   `The limit is ${dealRoom.perPersonLimit} per person${priorUnits ? ` — you’ve already bought ${priorUnits}` : ''}.` :
   '';
   const discount = Math.min(resolution.applied?.amountNgn ?? 0, subtotal + (physical ? deliveryFee : 0));
-  const total = subtotal - discount + (physical ? deliveryFee : 0);
+  const giftRes = resolveGiftCard(data, giftCode, subtotal - discount + (physical ? deliveryFee : 0), hasGiftItems);
+  const giftNgn = giftRes?.ok ? giftRes.amountNgn : 0;
+  const total = subtotal - discount - giftNgn + (physical ? deliveryFee : 0);
+  const giftRow = giftNgn > 0 ?
+  <div className="flex justify-between gap-3">
+      <dt style={{ color: theme.mutedText }}>Gift card</dt>
+      <dd className="shrink-0 font-semibold tabular-nums">−{formatNgn(giftNgn)}</dd>
+    </div> :
+  null;
+  const shipsBy = lines.map((l) => l.ok && isPreorder(l.product) ? l.product.preorder.shipsBy : '').filter(Boolean).sort().pop();
   // Made-to-order items: deposit now, the rest before dispatch (D95).
   const balanceLater = dealRoom ?
   0 :
@@ -272,7 +292,8 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
             holder,
             payWith,
             popup: popup && chosenSession ? { sessionId: chosenSession.id, sessionLabel: chosenSession.label, payAtStall: atStall } : undefined,
-            stallLeft: popup?.left
+            stallLeft: popup?.left,
+            giftCardCode: giftRes?.ok ? giftRes.card.code : undefined
           });
           if (!result.ok) return d;
           // Creator Collaboration (D103): remember which partner's link the buyer came from.
@@ -414,7 +435,13 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
                     <p className="truncate text-[14.5px] font-semibold">{l.product?.name ?? 'Unavailable item'}</p>
                     <p className="text-[12.5px]" style={muted}>
                       {[l.variant && Object.keys(l.variant.options).length ? variantLabel(l.variant) : null, l.price !== null ? formatNgn(l.price) : null].filter(Boolean).join(' · ')}
+                      {l.bulk && l.basePrice !== null && <s className="ml-1.5">{formatNgn(l.basePrice)}</s>}
                     </p>
+                    {(l.bulk || l.ok && isPreorder(l.product)) &&
+                <p className="text-[12px] font-semibold" style={{ color: theme.text }}>
+                        {[l.bulk ? 'Bulk price' : '', l.ok && isPreorder(l.product) ? `Pre-order · expected by ${shipsByLabel(l.product.preorder.shipsBy)}` : ''].filter(Boolean).join(' · ')}
+                      </p>
+                }
                     {l.seatText &&
                 <p className="text-[12.5px] font-medium" style={{ color: theme.text }}>
                         {l.seatText}
@@ -437,7 +464,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
                       <button
                   type="button"
                   aria-label="One more"
-                  disabled={!!l.seats?.length || !!l.product.trackStock && !!l.variant && l.qty >= l.variant.stock || roomQty >= roomCap || l.qty >= l.maxQty}
+                  disabled={!!l.seats?.length || !!l.product.trackStock && !isPreorder(l.product) && !!l.variant && l.qty >= l.variant.stock || roomQty >= roomCap || l.qty >= l.maxQty}
                   title={l.seats?.length ? 'Add seats from the seat map' : undefined}
                   onClick={() => cart.setQty(l.variantId, l.qty + 1)}
                   className="flex h-9 w-9 items-center justify-center disabled:opacity-40"
@@ -463,8 +490,10 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
                   <dd className="font-semibold tabular-nums">{formatNgn(subtotal)}</dd>
                 </div>
                 {discountRow}
+                {giftRow}
               </dl>
               <DiscountCodeField theme={theme} code={code} onApply={setCode} resolution={resolution} />
+              <GiftCardField theme={theme} code={giftCode} onApply={setGiftCode} resolution={giftRes} />
               {lines.some((l) => !l.ok) &&
             <p className="text-[12.5px]" style={muted}>
                   {tr('Unavailable items won’t be ordered.')}
@@ -774,6 +803,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
             <dd className="tabular-nums">{formatNgn(subtotal)}</dd>
           </div>
           {discountRow}
+          {giftRow}
           {physical &&
           <div className="flex justify-between gap-3">
               <dt style={muted}>{popup ? `${tr('Pickup')} · ${chosenSession?.when ?? ''}` : method === 'pickup' ? tr('Pickup') : `${tr('Delivery')} · ${zone?.name ?? ''}`}</dt>
@@ -795,7 +825,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
                 <dd className="tabular-nums">{formatNgn(balanceLater)}</dd>
               </div>
               <p className="rounded-md px-3 py-2.5 text-[13px] leading-snug" style={{ background: mix(theme.text, 6) }} role="note">
-                Made to order{leadDays ? ` — usually ready in about ${leadDays} day${leadDays === 1 ? '' : 's'}` : ''}. You’ll get a link to pay the balance from your order page; nothing is sent until it’s paid.
+                {shipsBy && !leadDays ? `Pre-order — expected by ${shipsByLabel(shipsBy)}` : `Made to order${leadDays ? ` — usually ready in about ${leadDays} day${leadDays === 1 ? '' : 's'}` : ''}`}. You’ll get a link to pay the balance from your order page; nothing is sent until it’s paid.
               </p>
             </>
           }
@@ -803,7 +833,13 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
             {tr('No extra fees are added at payment. Processing fees are paid by the seller.')}
           </p>
         </dl>
+        {shipsBy && !balanceLater &&
+        <p className="rounded-md px-3 py-2.5 text-[13px] leading-snug" style={{ background: mix(theme.text, 6) }} role="note">
+            Includes a pre-order — expected by {shipsByLabel(shipsBy)}. It’s sent as soon as it’s in.
+          </p>
+        }
         <DiscountCodeField theme={theme} code={code} onApply={setCode} resolution={resolution} />
+        <GiftCardField theme={theme} code={giftCode} onApply={setGiftCode} resolution={giftRes} />
         {atStall &&
         <p className="rounded-md px-3 py-2.5 text-[13px] font-medium leading-snug" style={{ background: mix(theme.text, 6) }} role="note">
             {tr('Pay {amount} at the stall when you collect. Nothing is charged now.', { amount: formatNgn(total) })}

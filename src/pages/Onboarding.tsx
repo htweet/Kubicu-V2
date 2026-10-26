@@ -27,14 +27,20 @@ export function Onboarding() {
       // Save progress first: creating the workspace switches to it and remounts this screen.
       const next = { ...state, step: publish ? 5 : state.step, published: publish, workspaceId: 'pending' };
       writeOnboarding(next);
-      const workspace = create({ name: state.name.trim() || 'My page', ownerName: state.name, doc: built.doc, publish });
+      const workspace = create({ name: state.name.trim() || 'My page', ownerName: state.name, doc: built.doc, publish, demoData: !!state.demoData });
       writeOnboarding({ ...next, workspaceId: workspace.id });
       if (state.businessKitId) writePendingKit(workspace.id, state.businessKitId);
       if (!publish) {
         clearOnboarding();
         // An industry page set chosen on the Starter step opens straight away in the canvas (D137).
+        if (state.useAssistant) {
+          navigate('/app/assistant');
+          return;
+        }
         navigate(`/app/canvas/${workspace.pageId}${state.siteKitId ? `?siteKit=${state.siteKitId}` : ''}`);
-        toast('Your page is ready to edit', { description: 'Publish from the top bar when you’re happy with it.' });
+        toast('Your page is ready to edit', {
+          description: state.demoData ? 'Demo data is in every area, labelled “Sample”. It’s removed automatically in 7 days.' : 'Publish from the top bar when you’re happy with it.'
+        });
       }
     } catch {
       writeOnboarding({ ...state, workspaceId: null });
@@ -49,7 +55,7 @@ export function Onboarding() {
 
   const done = () => {
     clearOnboarding();
-    navigate(state.siteKitId ? `/app/canvas/${current.pageId}?siteKit=${state.siteKitId}` : '/app');
+    navigate(state.useAssistant ? '/app/assistant' : state.siteKitId ? `/app/canvas/${current.pageId}?siteKit=${state.siteKitId}` : '/app');
   };
 
   const livePreview = state.step <= 3 ?
@@ -67,7 +73,7 @@ export function Onboarding() {
       {state.step === 1 && <KitStep {...stepProps} />}
       {state.step === 2 && <IdentityStep {...stepProps} />}
       {state.step === 3 && <ActionStep {...stepProps} />}
-      {state.step === 4 && <PreviewStep state={state} built={built} go={go} onFinish={finish} />}
+      {state.step === 4 && <PreviewStep state={state} update={update} built={built} go={go} onFinish={finish} />}
       {state.step === 5 && <ShareStep state={state} onDone={done} />}
     </OnboardingLayout>);
 

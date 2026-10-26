@@ -171,7 +171,15 @@ export function createBooking(data: OpsData, input: BookingInput): BookingResult
     sourceHandle: input.sourceHandle || undefined,
     events: [
     ...(input.depositOutcome === 'paid' ? [{ id: uid('bev'), at, label: `Deposit paid (test mode)` }] : []),
-    { id: uid('bev'), at, label: assigneeName ? `Booked on your page with ${assigneeName}${input.staffId ? '' : ' (anyone available)'}` : 'Booked on your page' }]
+    {
+      id: uid('bev'),
+      at,
+      label: slot.capacity ?
+      `Booked a seat on your page — seat ${slot.capacity - (slot.seatsLeft ?? 1) + 1} of ${slot.capacity}` :
+      assigneeName ?
+      `Booked on your page with ${assigneeName}${input.staffId ? '' : ' (anyone available)'}` :
+      'Booked on your page'
+    }]
 
   };
   let next: OpsData = { ...data, bookings: [booking, ...data.bookings], nextBookingRef: data.nextBookingRef + 1 };
@@ -215,6 +223,20 @@ export function cancelBooking(data: OpsData, bookingId: string, by: 'customer' |
       return { ...b, status: 'cancelled' as const, events: [{ id: uid('bev'), at: now(), label }, ...b.events] };
     })
   };
+}
+
+/** Cancels a whole group class time (D198): every attendee is cancelled by you, so every deposit is refunded. */
+export function cancelClass(data: OpsData, serviceId: string, start: number, reason: string): {data: OpsData;cancelled: number;refundedNgn: number;} {
+  const ids = activeBookingsFor(data, serviceId, start);
+  let next = data;
+  ids.forEach((b) => {
+    next = cancelBooking(next, b.id, 'owner', reason ? `Class cancelled — ${reason}` : 'Class cancelled');
+  });
+  return { data: next, cancelled: ids.length, refundedNgn: ids.reduce((s, b) => s + b.depositPaidNgn, 0) };
+}
+
+function activeBookingsFor(data: OpsData, serviceId: string, start: number): Booking[] {
+  return data.bookings.filter((b) => b.serviceId === serviceId && Date.parse(b.start) === start && (b.status === 'confirmed' || b.status === 'pending_deposit'));
 }
 
 export function setBookingStatus(data: OpsData, bookingId: string, status: BookingStatus, label: string): OpsData {

@@ -6,7 +6,7 @@ import { SAMPLE_CAMPAIGN_HANDLE, SAMPLE_ROOM_HANDLE } from './commerceSeed';
 import { SAMPLE_EVENT_ID, sampleEvent } from './sampleEvents';
 import { SAMPLE_FUND_HANDLE, sampleFundraiserSettings } from './sampleFundraiser';
 import { starterSpaceDoc } from '../utils/spaceStarters';
-import { readPersistedPage, writePersistedPage, DEMO_WORKSPACE_ID } from '../utils/workspaceStorage';
+import { readPersistedPage, writePersistedPage, DEMO_WORKSPACE_ID, sampleHandle } from '../utils/workspaceStorage';
 import { spaceStorageId } from '../utils/spaces';
 import { readCommerce } from '../utils/commerce/storage';
 
@@ -19,9 +19,12 @@ export const SAMPLE_POPUP_HANDLE = 'adaeze-market-stall';
 export const SAMPLE_SPACES_ROUND = 4;
 export const SAMPLE_BOOKING_HANDLE = 'adaeze-book';
 export const SAMPLE_MEMBERS_HANDLE = 'adaeze-circle';
+/** Every sample space id starts with this, so demo data can be found and removed (D200). */
+export const SAMPLE_SPACE_PREFIX = 'sp_sample_';
 
 /**
- * SAMPLE spaces for the demo workspace (labelled “sample” in their names):
+ * SAMPLE spaces (labelled “sample” in their names), for the built-in demo workspace and for
+ * workspaces created with demo data (D200, whose addresses get a short suffix):
  * - a live campaign with the EID20 code and a group buy with four sample orders out of 10;
  * - an Event space linked to the sample trunk show in Commerce → Events (D178);
  * - a Fundraiser whose counter reads labelled sample payments, one of them refunded (D179);
@@ -29,10 +32,12 @@ export const SAMPLE_MEMBERS_HANDLE = 'adaeze-circle';
  *   and a Members area for Atelier Circle subscribers (D185).
  * Each page is written once; an existing page is never overwritten.
  */
-export function seedSampleSpaces(): Space[] {
-  const created = '2026-10-18T09:00:00.000Z';
-  const created2 = '2026-10-24T09:00:00.000Z';
-  const created3 = '2026-10-25T09:00:00.000Z';
+export function seedSampleSpaces(workspaceId: string = DEMO_WORKSPACE_ID): Space[] {
+  const ws = workspaceId;
+  const h = (base: string) => sampleHandle(base, ws);
+  const created = ws === DEMO_WORKSPACE_ID ? '2026-10-18T09:00:00.000Z' : new Date().toISOString();
+  const created2 = ws === DEMO_WORKSPACE_ID ? '2026-10-24T09:00:00.000Z' : created;
+  const created3 = ws === DEMO_WORKSPACE_ID ? '2026-10-25T09:00:00.000Z' : created;
   const spaces: Space[] = [
   { id: 'sp_sample_eid', kind: 'campaign', name: 'Eid sale (sample)', createdAt: created, archivedAt: null },
   { id: 'sp_sample_room', kind: 'dealroom', name: 'Scarf group buy (sample)', createdAt: created, archivedAt: null },
@@ -44,30 +49,30 @@ export function seedSampleSpaces(): Space[] {
 
 
   const campaign = starterSpaceDoc('campaign', samplePage, {
-    id: `page_${DEMO_WORKSPACE_ID}_sp_sample_eid`,
+    id: `page_${ws}_sp_sample_eid`,
     name: 'Eid sale',
-    handle: SAMPLE_CAMPAIGN_HANDLE,
+    handle: h(SAMPLE_CAMPAIGN_HANDLE),
     campaign: { starter: 'sale', startsAt: iso(-1), endsAt: iso(5), discountId: 'sd_eid', productIds: ['sp_wrap', 'sp_ife', 'sp_scarf'] },
     discountCode: 'EID20'
   });
   const room = starterSpaceDoc('dealroom', samplePage, {
-    id: `page_${DEMO_WORKSPACE_ID}_sp_sample_room`,
+    id: `page_${ws}_sp_sample_room`,
     name: 'Adire scarf group buy',
-    handle: SAMPLE_ROOM_HANDLE,
+    handle: h(SAMPLE_ROOM_HANDLE),
     dealRoom: { type: 'goal', productId: 'sp_scarf', priceNgn: 14000, seats: null, goal: 10, perPersonLimit: 2, opensAt: null, deadline: iso(3), endedAt: null, extensions: [], updates: [], referralReward: 'Bring 3 friends and your scarf comes with free gift wrapping.' }
   });
   // Use the saved sample event when there is one, so the countdown and dates match Commerce → Events.
-  const event = readCommerce(DEMO_WORKSPACE_ID)?.events?.find((e) => e.id === SAMPLE_EVENT_ID) ?? sampleEvent();
+  const event = readCommerce(ws)?.events?.find((e) => e.id === SAMPLE_EVENT_ID) ?? sampleEvent();
   const eventDoc = starterSpaceDoc('event', samplePage, {
-    id: `page_${DEMO_WORKSPACE_ID}_sp_sample_event`,
+    id: `page_${ws}_sp_sample_event`,
     name: 'Adaeze Atelier Trunk Show',
-    handle: SAMPLE_EVENT_HANDLE,
+    handle: h(SAMPLE_EVENT_HANDLE),
     event
   });
   const fundDoc = starterSpaceDoc('fundraiser', samplePage, {
-    id: `page_${DEMO_WORKSPACE_ID}_sp_sample_fund`,
+    id: `page_${ws}_sp_sample_fund`,
     name: 'Sewing machines for our apprentices',
-    handle: SAMPLE_FUND_HANDLE,
+    handle: h(SAMPLE_FUND_HANDLE),
     fundraiser: sampleFundraiserSettings()
   });
 
@@ -77,9 +82,9 @@ export function seedSampleSpaces(): Space[] {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   };
   const popupDoc = starterSpaceDoc('popup', samplePage, {
-    id: `page_${DEMO_WORKSPACE_ID}_sp_sample_popup`,
+    id: `page_${ws}_sp_sample_popup`,
     name: 'Adaeze Atelier at the Christmas market',
-    handle: SAMPLE_POPUP_HANDLE,
+    handle: h(SAMPLE_POPUP_HANDLE),
     popup: {
       venue: 'Ikoyi Christmas Market, stall 14 (sample)',
       address: 'Sample address, Ikoyi, Lagos',
@@ -96,16 +101,16 @@ export function seedSampleSpaces(): Space[] {
 
   // Booking page (D184): the three sample services from Bookings, with WhatsApp as the fallback.
   const bookDoc = starterSpaceDoc('booking', samplePage, {
-    id: `page_${DEMO_WORKSPACE_ID}_sp_sample_book`,
+    id: `page_${ws}_sp_sample_book`,
     name: 'Book a fitting',
-    handle: SAMPLE_BOOKING_HANDLE,
+    handle: h(SAMPLE_BOOKING_HANDLE),
     bookingPage: { serviceIds: ['ss_fitting', 'ss_bespoke', 'ss_video'], intro: 'Book a fitting or styling session', whatsapp: '0803 000 0000', waitlistBlockId: null }
   });
   // Members area (D185): Atelier Circle subscribers only.
   const membersDoc = starterSpaceDoc('members', samplePage, {
-    id: `page_${DEMO_WORKSPACE_ID}_sp_sample_members`,
+    id: `page_${ws}_sp_sample_members`,
     name: 'Atelier Circle',
-    handle: SAMPLE_MEMBERS_HANDLE,
+    handle: h(SAMPLE_MEMBERS_HANDLE),
     membersArea: {
       rule: { access: 'plans', planIds: ['ssp_circle'] },
       title: 'Atelier Circle members only',
@@ -127,7 +132,7 @@ export function seedSampleSpaces(): Space[] {
   ), created3]];
 
   pages.forEach(([space, doc, at]) => {
-    const id = spaceStorageId(DEMO_WORKSPACE_ID, space.id);
+    const id = spaceStorageId(ws, space.id);
     if (readPersistedPage(id)) return;
     const page: PersistedPage = { draft: doc, published: doc, publishedAt: at, versions: [], lastSavedAt: at, scheduled: null };
     try {

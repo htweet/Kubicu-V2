@@ -24,6 +24,8 @@ import { issueTickets, orderCapacityIssue, ticketLineIssue } from './tickets';
 import { cartBalanceNgn, dispatchBlocked } from './deposit';
 import { everyLabels, instalmentCheck, newParts, payOptionsOf, podAwaiting, podCheck } from './payOptions';
 import { bundleLineFor, partnerGrossFor } from './bundles';
+import { enrolFromOrder } from './courses';
+import { bulkUnitPrice, isPreorder, issueGiftCardsForOrder, preorderLeft, resolveGiftCard, shipsByLabel, spendGiftCard } from './sellModes';
 
 export const OWNER_ACTOR = 'You';
 
@@ -115,6 +117,8 @@ export interface CheckoutInput {
   popup?: {sessionId: string;sessionLabel: string;payAtStall: boolean;};
   /** Pop-up stall limits still available, re-checked here so a stall never oversells its allocation. */
   stallLeft?: Record<string, number | null>;
+  /** Gift card code the buyer entered (D202), re-checked here against live balances. */
+  giftCardCode?: string;
 }
 
 /** A short, readable share code for a DealRoom buyer, e.g. NGOZI-7K2. */
@@ -154,15 +158,21 @@ export function placeOrder(data: CommerceData, input: CheckoutInput): CheckoutRe
   if (input.outcome === 'cancelled') return { ok: false, reason: 'cancelled', message: 'Payment was cancelled before it finished. Your cart is still here.' };
 
   const items = [];
+  // Bulk prices (D202) go by how many of each product are in the order, across its variants.
+  const qtyByProduct = input.lines.reduce<Record<string, number>>((m, l) => ({ ...m, [l.productId]: (m[l.productId] ?? 0) + l.qty }), {});
   for (const line of input.lines) {
     const product = data.products.find((p) => p.id === line.productId);
     const variant = product?.variants.find((v) => v.id === line.variantId);
     const roomPrice = input.dealRoom && input.dealRoom.productId === line.productId ? input.dealRoom.priceNgn : null;
-    const price = product && variant ? roomPrice ?? variantPrice(product, variant) : null;
+    const base = product && variant ? variantPrice(product, variant) : null;
+    const price = product && variant ? roomPrice ?? (base !== null ? bulkUnitPrice(product, base, qtyByProduct[product.id] ?? line.qty) : null) : null;
     if (!product || !variant || product.status !== 'active' || price === null) {
       return { ok: false, reason: 'unavailable', message: `${product?.name ?? 'An item'} is no longer available.` };
     }
-    if (product.kind === 'physical' && product.trackStock && variant.stock < line.qty) {
+    if (isPreorder(product)) {
+      const left = preorderLeft(product);
+      if (left !== null && (qtyByProduct[product.id] ?? 0) > left) return { ok: false, reason: 'unavailable', message: left === 0 ? `Pre-orders for ${product.name} are full. Nothing was charged.` : `Only ${left} pre-order${left === 1 ? '' : 's'} left for ${product.name}. Nothing was charged.` };
+    } else if (product.kind === 'physical' && product.trackStock && variant.stock < line.qty) {
       return { ok: false, reason: 'unavailable', message: `Only ${variant.stock} of ${product.name} (${variantLabel(variant)}) left.` };
     }
     if (product.kind === 'ticket') {
@@ -209,7 +219,13 @@ export function placeOrder(data: CommerceData, input: CheckoutInput): CheckoutRe
     },
     input.discountCode ?? ''
   );
-  const discountNgn = Math.min(applied?.amountNgn ?? 0, subtotal + input.deliveryNgn);
+  const codeDiscountNgn = Math.min(applied?.amountNgn ?? 0, subtotal + input.deliveryNgn);
+  // Gift card (D202): spent after any discount; the amount is part of the order's discount line.
+  const giftProducts = new Set(data.products.filter((p) => p.giftCard).map((p) => p.id));
+  const gift = resolveGiftCard(data, input.giftCardCode ?? '', subtotal - codeDiscountNgn + input.deliveryNgn, items.some((i) => giftProducts.has(i.productId)));
+  if (gift && !gift.ok) return { ok: false, reason: 'unavailable', message: `${gift.message} Nothing was charged.` };
+  const giftNgn = gift?.ok ? gift.amountNgn : 0;
+  const discountNgn = codeDiscountNgn + giftNgn;
   const fullTotal = subtotal - discountNgn + input.deliveryNgn;
   // Made-to-order items: only the deposit is charged now; the rest before dispatch (D95). Not for DealRooms.
   const balanceNgn = input.dealRoom ?
@@ -242,14 +258,27 @@ export function placeOrder(data: CommerceData, input: CheckoutInput): CheckoutRe
   const placedAt = now();
   const hasDigital = items.some((i) => i.kind === 'digital');
   const hasTickets = items.some((i) => i.kind === 'ticket');
-  // Digital files and tickets are delivered the moment payment clears.
-  const digitalOnly = items.every((i) => i.kind === 'digital' || i.kind === 'ticket');
-  const deliveredLabel = hasTickets && !hasDigital ? 'Tickets issued' : hasTickets ? 'Tickets issued and download link sent' : 'Delivered by secure download link';
+  const hasCourse = items.some((i) => i.kind === 'course');
+  const hasGiftCards = items.some((i) => giftProducts.has(i.productId));
+  // Digital files, tickets, courses (D197) and gift card codes (D202) are delivered the moment payment clears.
+  const digitalOnly = items.every((i) => i.kind === 'digital' || i.kind === 'ticket' || i.kind === 'course' || giftProducts.has(i.productId));
+  const deliveredLabel = [hasTickets ? 'Tickets issued' : '', hasDigital ? 'download link sent' : '', hasCourse ? 'course access opened' : '', hasGiftCards ? 'gift card codes issued' : ''].filter(Boolean).join(' and ').replace(/^./, (c) => c.toUpperCase()) || 'Delivered';
   const events: OrderEvent[] = [event('placed', 'Order placed on your page', placedAt)];
-  if (applied && discountNgn > 0) {
+  if (applied && codeDiscountNgn > 0) {
     const who = applied.discount.referrerName ? ` — referred by ${applied.discount.referrerName}` : '';
-    events.unshift(event('note', `${applied.discount.code ? `Code ${applied.discount.code}` : applied.discount.title} saved the customer ${formatNgn(discountNgn)}${who}`, placedAt));
+    events.unshift(event('note', `${applied.discount.code ? `Code ${applied.discount.code}` : applied.discount.title} saved the customer ${formatNgn(codeDiscountNgn)}${who}`, placedAt));
   }
+  if (gift?.ok && giftNgn > 0) events.unshift(event('note', `Gift card ${gift.card.code} paid ${formatNgn(giftNgn)} — ${formatNgn(gift.card.balanceNgn - giftNgn)} left on it`, placedAt));
+  const preProducts = items.map((i) => data.products.find((p) => p.id === i.productId)).filter(isPreorder);
+  const shipsBy = preProducts.map((p) => p.preorder.shipsBy).sort().pop();
+  if (shipsBy) events.unshift(event('note', `Pre-order — expected by ${shipsByLabel(shipsBy)}. Don’t send until it’s in stock`, placedAt));
+  const bulkLines = items.filter((i) => {
+    const p = data.products.find((x) => x.id === i.productId);
+    const v = p?.variants.find((x) => x.id === i.variantId);
+    const base = p && v ? variantPrice(p, v) : null;
+    return !input.dealRoom && base !== null && i.unitPriceNgn < base;
+  });
+  if (bulkLines.length) events.unshift(event('note', `Bulk price applied to ${bulkLines.map((i) => i.name).join(', ')}`, placedAt));
   if (pod) {
     const accept = payOptionsOf(data).pod.accept;
     events.unshift(event('note', `Pay on delivery — collect ${formatNgn(fullTotal)} (${accept === 'cash' ? 'cash' : accept === 'transfer' ? 'transfer' : 'cash or transfer'}) at the door`, placedAt));
@@ -275,7 +304,9 @@ export function placeOrder(data: CommerceData, input: CheckoutInput): CheckoutRe
     fulfilment: input.fulfilment,
     subtotalNgn: subtotal,
     discountNgn,
-    discount: applied && discountNgn > 0 ? orderDiscountRecord(applied) : undefined,
+    discount: applied && codeDiscountNgn > 0 ? orderDiscountRecord(applied) : undefined,
+    giftCard: gift?.ok && giftNgn > 0 ? { code: gift.card.code, amountNgn: giftNgn } : undefined,
+    preorder: shipsBy ? { shipsBy } : undefined,
     sourceHandle: input.sourceHandle,
     held: input.dealRoom?.held || undefined,
     ...(input.dealRoom ? roomReferral(data, input) : {}),
@@ -298,9 +329,18 @@ export function placeOrder(data: CommerceData, input: CheckoutInput): CheckoutRe
   };
 
   let next: CommerceData = { ...data, orders: [order, ...data.orders], nextOrderNumber: number + 1 };
+  const preIds = new Set(preProducts.map((p) => p.id));
   items.forEach((i) => {
+    // Pre-orders count against their own limit instead of stock (D202).
+    if (preIds.has(i.productId)) return;
     next = moveStock(next, i.productId, i.variantId, -i.qty, 'order', 'Reserved by order', number);
   });
+  if (preIds.size)
+  next = { ...next, products: next.products.map((p) => preIds.has(p.id) && p.preorder ? { ...p, preorder: { ...p.preorder, taken: p.preorder.taken + (qtyByProduct[p.id] ?? 0) } } : p) };
+  if (gift?.ok && giftNgn > 0) next = spendGiftCard(next, gift.card.code, giftNgn, order);
+  if (hasGiftCards) next = issueGiftCardsForOrder(next, order.id);
+  // Courses (D197): the buyer is enrolled now; access opens once the payment is confirmed.
+  if (hasCourse) next = enrolFromOrder(next, order);
   return { ok: true, data: next, order };
 }
 
@@ -312,6 +352,12 @@ const statusEvent: Partial<Record<OrderStatus, [OrderEventKind, string]>> = {
 };
 
 export function setOrderStatus(data: CommerceData, orderId: string, status: OrderStatus, label?: string): CommerceData {
+  const next = setOrderStatusOnly(data, orderId, status, label);
+  // A payment confirmed by hand (e.g. a bank transfer) issues any gift card codes too (D202).
+  return status === 'paid' ? issueGiftCardsForOrder(next, orderId) : next;
+}
+
+function setOrderStatusOnly(data: CommerceData, orderId: string, status: OrderStatus, label?: string): CommerceData {
   return {
     ...data,
     orders: data.orders.map((o) => {
@@ -336,9 +382,11 @@ export function setOrderStatus(data: CommerceData, orderId: string, status: Orde
 /** Simulates the provider's delayed webhook. Digital-only orders complete straight away. */
 export function confirmPayment(data: CommerceData, orderId: string): CommerceData {
   const order = data.orders.find((o) => o.id === orderId);
-  const next = setOrderStatus(data, orderId, 'paid', 'Payment confirmed by provider (test mode)');
-  if (order && order.items.every((i) => i.kind === 'digital' || i.kind === 'ticket'))
-  return setOrderStatus(next, orderId, 'completed', order.items.some((i) => i.kind === 'ticket') ? 'Tickets issued' : 'Delivered by secure download link');
+  // Gift card codes (D202) are issued once the payment is in.
+  const next = issueGiftCardsForOrder(setOrderStatus(data, orderId, 'paid', 'Payment confirmed by provider (test mode)'), orderId);
+  const gifts = new Set(data.products.filter((p) => p.giftCard).map((p) => p.id));
+  if (order && order.items.every((i) => i.kind === 'digital' || i.kind === 'ticket' || i.kind === 'course' || gifts.has(i.productId)))
+  return setOrderStatus(next, orderId, 'completed', order.items.some((i) => i.kind === 'ticket') ? 'Tickets issued' : order.items.some((i) => i.kind === 'course') ? 'Course access opened' : order.items.every((i) => gifts.has(i.productId)) ? 'Gift card codes issued' : 'Delivered by secure download link');
   return next;
 }
 
@@ -396,6 +444,21 @@ export function refundOrder(data: CommerceData, orderId: string, amountNgn: numb
   order.items.forEach((i) => {
     if (restock || full && i.kind === 'ticket') next = moveStock(next, i.productId, i.variantId, i.qty, 'returned', 'Returned with refund', order.number);
   });
+  // A full refund puts any gift card amount back on the card (D202); the card is never refunded as cash.
+  if (full && order.giftCard && order.giftCard.amountNgn > 0) {
+    const gc = order.giftCard;
+    next = {
+      ...next,
+      giftCards: (next.giftCards ?? []).map((g) =>
+      g.code === gc.code && g.uses.some((u) => u.orderId === order.id && u.amountNgn > 0) ?
+      { ...g, balanceNgn: Math.min(g.initialNgn, g.balanceNgn + gc.amountNgn), uses: [{ orderId: order.id, orderNumber: order.number, amountNgn: -gc.amountNgn, at: now() }, ...g.uses] } :
+      g
+      ),
+      orders: next.orders.map((o) => o.id === orderId ? { ...o, events: [event('note', `₦${gc.amountNgn.toLocaleString('en-NG')} put back on gift card ${gc.code}`), ...o.events] } : o)
+    };
+  }
+  // Refunding a gift card purchase turns its codes off so they can't be spent after the money is returned.
+  if (full) next = { ...next, giftCards: (next.giftCards ?? []).map((g) => g.orderId === orderId && g.status === 'active' ? { ...g, status: 'disabled' as const } : g) };
   return full ? voidTickets(next, orderId) : next;
 }
 
@@ -453,6 +516,9 @@ export function clearSample(data: CommerceData): CommerceData {
     discounts: data.discounts.filter((d) => !d.sample),
     subPlans: data.subPlans.filter((p) => !p.sample),
     subscriptions: data.subscriptions.filter((s) => !s.sample),
-    events: (data.events ?? []).filter((e) => !e.sample)
+    events: (data.events ?? []).filter((e) => !e.sample),
+    courses: (data.courses ?? []).filter((c) => !c.sample),
+    enrolments: (data.enrolments ?? []).filter((e) => !e.sample),
+    giftCards: (data.giftCards ?? []).filter((g) => !g.sample)
   };
 }

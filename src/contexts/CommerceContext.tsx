@@ -2,9 +2,9 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useR
 import { toast } from 'sonner';
 import type { CommerceData } from '../types/commerce';
 import { useWorkspace } from './WorkspaceContext';
-import { DEMO_WORKSPACE_ID } from '../utils/workspaceStorage';
+import { DEMO_WORKSPACE_ID, sampleHandle, seedsSample } from '../utils/workspaceStorage';
 import { COMMERCE_EVENT, commerceKey, emptyCommerce, readCommerce, writeCommerce } from '../utils/commerce/storage';
-import { withSampleData } from '../data/commerceSeed';
+import { SAMPLE_ROOM_HANDLE, withSampleCourses, withSampleData, withSampleSellModes } from '../data/commerceSeed';
 import { clearSample } from '../utils/commerce/ops';
 import { useOptionalTeam } from './TeamContext';
 import type { Permission } from '../types/team';
@@ -26,9 +26,20 @@ const CommerceContext = createContext<CommerceValue | null>(null);
 
 function initial(workspaceId: string): CommerceData {
   const stored = readCommerce(workspaceId);
-  if (stored) return stored;
+  // Sample data from before courses existed gets the sample courses once (D200).
+  if (stored) {
+    // Sample pre-order, bulk prices and gift cards arrive once in existing demo workspaces (D202).
+    if (!seedsSample(workspaceId) || !stored.products.some((p) => p.sample)) return stored;
+    const withCourses = stored.sampleCoursesSeeded ? stored : withSampleCourses(stored);
+    return withCourses.sampleSellModesSeeded ? withCourses : withSampleSellModes(withCourses);
+  }
   // The demo workspace starts with labelled sample data so every screen has something to show.
-  return workspaceId === DEMO_WORKSPACE_ID ? withSampleData(emptyCommerce()) : emptyCommerce();
+  if (!seedsSample(workspaceId)) return emptyCommerce();
+  const seeded = withSampleData(emptyCommerce());
+  if (workspaceId === DEMO_WORKSPACE_ID) return seeded;
+  // Demo-data workspaces (D200): sample group-buy orders point at this workspace's own sample room address.
+  const room = sampleHandle(SAMPLE_ROOM_HANDLE, workspaceId);
+  return { ...seeded, orders: seeded.orders.map((o) => o.sourceHandle === SAMPLE_ROOM_HANDLE ? { ...o, sourceHandle: room } : o) };
 }
 
 /** The current workspace's products, stock and orders, saved in this browser. */

@@ -57,7 +57,7 @@ export function SetupChecklist() {
     to: canvas
   },
   { id: 'domain', label: 'Connect your own domain', hint: 'Guided DNS setup and security certificate status.', done: hasDomain, to: '/app/domains', optional: true },
-  { id: 'qr', label: 'Make a QR code for your shop', hint: 'Codes you can point somewhere else later, with scans in Analytics.', done: hasQr, to: '/app/domains/qr', optional: true }];
+  { id: 'qr', label: 'Make a QR code for your shop', hint: 'Codes you can point somewhere else later, with scans in Analytics.', done: hasQr, to: '/app/qr', optional: true }];
 
 
   const countable = steps.filter((s) => !s.planned && !s.optional);

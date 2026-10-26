@@ -20,7 +20,7 @@ export const extensions: ExtensionInfo[] = [
   summary: 'QR codes for your counter and packaging, short campaign links, your own domain and a print kit.',
   description:
   'Make QR codes in your colours with your logo, short tracked links for each campaign or ad, and print business cards, stickers and package inserts that carry them. Connect your own domain on Creator and above. Every scan and click shows in Analytics.',
-  adds: ['A Domains & QR screen in your sidebar', 'QR codes, campaign links and redirects', 'A print kit for cards, stickers and inserts', 'Custom domains on Creator and above'],
+  adds: ['Domains, QR codes, Print kit and Campaign links in your sidebar', 'Redirects for old or moved addresses', 'A print kit for cards, stickers and inserts', 'Custom domains on Creator and above'],
   permissions: ['Create QR codes and short links for your pages', 'Count scans and clicks in Analytics', 'Connect a domain you own (Creator and above)'],
   minPlan: 'free',
   priceNgn: 0,

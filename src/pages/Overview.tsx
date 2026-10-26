@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ExternalLinkIcon, PenToolIcon, AlertTriangleIcon, ArrowRightIcon } from 'lucide-react';
+import { ExternalLinkIcon, PenToolIcon, AlertTriangleIcon, ArrowRightIcon, SparklesIcon } from 'lucide-react';
 import { useEditor } from '../contexts/EditorContext';
 import { useWorkspace } from '../contexts/WorkspaceContext';
 import { PageMiniPreview } from '../components/overview/PageMiniPreview';
@@ -103,6 +103,9 @@ export function Overview() {
             <div className="mt-auto flex flex-wrap gap-2 pt-8">
               <Button size="lg" leadingIcon={PenToolIcon} onClick={() => navigate(canvas)}>
                 Open canvas
+              </Button>
+              <Button size="lg" variant="ai" leadingIcon={SparklesIcon} onClick={() => navigate('/app/assistant')}>
+                Build with AI
               </Button>
               <Button
                 size="lg"

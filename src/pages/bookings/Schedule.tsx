@@ -13,6 +13,7 @@ import { Card } from '../../components/ui/layout/Card';
 import { List } from '../../components/ui/layout/ListRow';
 import { BookingDetail, bookingStatusCopy } from '../../components/bookings/BookingDetail';
 import { BookingsPlanNote } from '../../components/bookings/BookingsPlanNote';
+import { ClassSessions } from '../../components/bookings/ClassSessions';
 import { SampleTag } from '../../components/commerce/StatusBadges';
 import { addDaysKey, dateKeyInTz, dayLabel, formatInTz, hoursFor, timeLabel, weekdayOfKey, zonedToUtc } from '../../utils/ops/slots';
 import { cn } from '../../utils/cn';
@@ -147,6 +148,7 @@ export function Schedule() {
         } />
       
       <BookingsPlanNote />
+      {view === 'upcoming' && <ClassSessions onOpenBooking={open} />}
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
         <MineToggle mine={mine} count={mineCount} onChange={setMine} />

@@ -16,6 +16,7 @@ import { useWorkspace } from '../../contexts/WorkspaceContext';
 import { useCommerce } from '../../contexts/CommerceContext';
 import { useTeam } from '../../contexts/TeamContext';
 import { useOps } from '../../contexts/OpsContext';
+import { useOptionalMedia } from '../../contexts/MediaContext';
 import { useMainLink } from '../../hooks/useMainLink';
 import type { CampaignLink, QrCentreKind, QrDesign, QrErrorLevel, QrExportSize, QrEyeStyle, QrFrame, QrModuleStyle, QrSize } from '../../types/domains';
 import { decodeDestination, destinationOptions, encodeDestination, shortDisplay, shortUrl, slugError, slugify } from '../../utils/domains/links';
@@ -78,6 +79,7 @@ export function QrDesigner({ open, onClose, qr, presetLink, presetDest, presetNa
   const { data: commerce } = useCommerce();
   const { data: ops } = useOps();
   const team = useTeam();
+  const media = useOptionalMedia();
   const { mainHandle, host } = useMainLink();
   const options = useMemo(() => destinationOptions(current, commerce, ops.services), [current, commerce, ops.services]);
   const existingLink = qr ? data.links.find((l) => l.id === qr.linkId) : presetLink;
@@ -159,7 +161,7 @@ export function QrDesigner({ open, onClose, qr, presetLink, presetDest, presetNa
       exportSize: look.exportSize
     };
     if (!saveQr(design, link)) return;
-    team.log('pages', `${qr ? 'updated' : 'created'} the QR code “${link.name}”`, '/app/domains/qr');
+    team.log('pages', `${qr ? 'updated' : 'created'} the QR code “${link.name}”`, '/app/qr');
     toast.success(qr ? 'QR code saved' : 'QR code created', { description: 'Scans show in Analytics and on Campaign links.' });
     onClose();
   };
@@ -170,6 +172,8 @@ export function QrDesigner({ open, onClose, qr, presetLink, presetDest, presetNa
     try {
       const centreImage = await readCentreImage(file);
       set({ centreImage, centreKind: 'image' });
+      // A logo for a QR code is a brand asset: keep a copy in Media → Brand assets.
+      if (media?.available) void media.addDataUrl(centreImage, file.name.replace(/\.[^.]+$/, '') || 'QR centre image', '', 'brand').catch(() => undefined);
     } catch (e) {
       const why = (e as Error).message;
       toast.error('Couldn’t use that image', { description: why === 'size' ? 'Choose an image under 5 MB.' : why === 'type' ? 'Choose a PNG, JPG, SVG or WebP image.' : 'Try another image.' });

@@ -30,12 +30,19 @@ interface MediaLibraryDialogProps {
   onClose: () => void;
   /** Field shape, e.g. "square", used in copy and the crop button. */
   shapeLabel: string;
+  /** Default folder for this field: shown first, and where new uploads are filed. */
+  folder?: string;
   onPick: (result: PickResult) => void;
 }
 
+const ALL = '__all';
+const NONE = '__none';
+
 /** Choose an image for a field: from your uploads, a new upload, or a link. */
-export function MediaLibraryDialog({ open, onClose, shapeLabel, onPick }: MediaLibraryDialogProps) {
+export function MediaLibraryDialog({ open, onClose, shapeLabel, folder, onPick }: MediaLibraryDialogProps) {
   const media = useMedia();
+  const homeFolder = folder ? media.folders.find((f) => f.id === folder) : undefined;
+  const [folderFilter, setFolderFilter] = useState<string>(ALL);
   const fileRef = useRef<HTMLInputElement>(null);
   const [tab, setTab] = useState<Tab>('library');
   const [query, setQuery] = useState('');
@@ -50,6 +57,7 @@ export function MediaLibraryDialog({ open, onClose, shapeLabel, onPick }: MediaL
   useEffect(() => {
     if (!open) return;
     setTab(media.assets.length ? 'library' : 'upload');
+    setFolderFilter(homeFolder && media.assets.some((a) => a.folderId === homeFolder.id) ? homeFolder.id : ALL);
     setSelected(null);
     setProblem(null);
     setNotice(null);
@@ -60,8 +68,12 @@ export function MediaLibraryDialog({ open, onClose, shapeLabel, onPick }: MediaL
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return media.assets.filter((a) => (shape === 'all' || shapeOf(a.width, a.height) === shape) && (!q || `${a.name} ${a.alt}`.toLowerCase().includes(q)));
-  }, [media.assets, query, shape]);
+    return media.assets.filter((a) => {
+      const f = media.folderOf(a)?.id;
+      if (folderFilter === NONE ? !!f : folderFilter !== ALL && f !== folderFilter) return false;
+      return (shape === 'all' || shapeOf(a.width, a.height) === shape) && (!q || `${a.name} ${a.alt}`.toLowerCase().includes(q));
+    });
+  }, [media, query, shape, folderFilter]);
 
   const chosen = media.assets.find((a) => a.id === selected) ?? null;
 
@@ -71,17 +83,18 @@ export function MediaLibraryDialog({ open, onClose, shapeLabel, onPick }: MediaL
     setProblem(null);
     setNotice(null);
     try {
-      const stored = await media.addFile(file);
+      const stored = await media.addFile(file, homeFolder?.id);
       if (!stored.asset) {
         // Library unavailable: use the photo straight away, embedded in the page.
         onPick({ src: stored.src, alt: '', asset: null, crop: true });
         return;
       }
       setSelected(stored.asset.id);
-      setNotice(stored.duplicate ? 'Already in your library — selected it for you.' : 'Uploaded and selected.');
+      setNotice(stored.duplicate ? 'Already in your library — selected it for you.' : homeFolder ? `Uploaded to ${homeFolder.name} and selected.` : 'Uploaded and selected.');
       setTab('library');
       setShape('all');
       setQuery('');
+      setFolderFilter(ALL);
     } catch (e) {
       setProblem(e instanceof Error ? e.message : 'Upload failed. Try again.');
     } finally {
@@ -157,6 +170,18 @@ export function MediaLibraryDialog({ open, onClose, shapeLabel, onPick }: MediaL
                   </label>
                   <input id="media-pick-search" type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search name or description" className={cn(fieldControlClass, 'h-9 pl-9 text-label')} />
                 </div>
+                <label htmlFor="media-pick-folder" className="sr-only">
+                  Folder
+                </label>
+                <select id="media-pick-folder" value={folderFilter} onChange={(e) => setFolderFilter(e.target.value)} className={cn(fieldControlClass, 'h-9 text-label sm:w-44')}>
+                  <option value={ALL}>All folders</option>
+                  {media.folders.map((f) =>
+              <option key={f.id} value={f.id}>
+                      {f.name}
+                    </option>
+              )}
+                  <option value={NONE}>Not in a folder</option>
+                </select>
                 <Segmented<ShapeFilter>
               ariaLabel="Shape"
               value={shape}
@@ -218,7 +243,7 @@ export function MediaLibraryDialog({ open, onClose, shapeLabel, onPick }: MediaL
           
             {busy ? <Loader2Icon size={22} className="animate-spin text-fg-subtle" aria-label="Processing photo" /> : <UploadIcon size={22} className="text-fg-subtle" aria-hidden />}
             <p className="text-label font-medium text-fg">{busy ? 'Resizing for fast loading…' : 'Drop a photo here'}</p>
-            <p className="text-caption text-fg-subtle">JPG, PNG or WebP up to 10 MB. It’s saved to your library for reuse.</p>
+            <p className="text-caption text-fg-subtle">JPG, PNG or WebP up to 10 MB. {homeFolder ? `It’s saved to ${homeFolder.name} in Media for reuse.` : 'It’s saved to your library for reuse.'}</p>
             <Button variant="secondary" disabled={busy} onClick={() => fileRef.current?.click()}>
               Choose from device
             </Button>

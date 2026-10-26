@@ -73,11 +73,17 @@ function LookSketch({ id }: {id: ShopLook;}) {
       <span className="grid flex-1 grid-cols-[28%_1fr] gap-1.5">
           <span className="flex flex-col gap-1 pt-0.5">{[0, 1, 2, 3].map((i) => <span key={i} className="h-1 rounded-full bg-line-strong" />)}</span>
           <span className="flex flex-col gap-1">
-            {[0, 1, 2, 3, 4].map((i) =>
-          <span key={i} className="flex flex-1 items-center gap-1">
-                <span className={`${box} aspect-square h-full`} />
-                <span className="h-1 flex-1 rounded-full bg-line" />
-                <span className="h-2 w-3 rounded-sm bg-line-strong" />
+            {[0, 1].map((g) =>
+          <span key={g} className="flex flex-1 flex-col gap-0.5">
+                <span className="h-1.5 w-1/3 rounded-full bg-fg-subtle" />
+                <span className="h-px w-full bg-line-strong" />
+                {[0, 1].map((i) =>
+            <span key={i} className="flex flex-1 items-center gap-1">
+                    <span className="h-1 w-2/5 rounded-full bg-line-strong" />
+                    <span className="flex-1 border-b border-dotted border-line-strong" />
+                    <span className="h-1 w-2 rounded-full bg-line-strong" />
+                  </span>
+            )}
               </span>
           )}
           </span>

@@ -36,6 +36,10 @@ export interface OnboardingState {
   /** Set when the workspace has been created (publish or edit). */
   workspaceId: string | null;
   published: boolean;
+  /** Start the workspace with labelled sample data in every module, removed after 7 days (D200). Only offered here. */
+  demoData?: boolean;
+  /** Open the AI page assistant straight after setup (D211). */
+  useAssistant?: boolean;
 }
 
 export const ONBOARDING_STEPS = ['Goal', 'Starter', 'Identity', 'First action', 'Preview', 'Share'] as const;

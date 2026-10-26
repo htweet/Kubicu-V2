@@ -21,6 +21,8 @@ export interface Service {
   sample?: boolean;
   /** Team members who do this service (D140). Empty or missing = anyone bookable. */
   staffIds?: string[];
+  /** Group class (D198): seats per time. Missing or 1 = one-to-one. */
+  capacity?: number;
 }
 
 export interface TimeOff {
@@ -253,6 +255,8 @@ export interface OpsData {
   automationsPaused: boolean;
   nextBookingRef: number;
   sampleSeeded: boolean;
+  /** The sample group class was added once (D200); stays true after it's removed. */
+  sampleClassSeeded?: boolean;
   /** Orders already turned into contacts, so deleted contacts aren’t recreated. */
   syncedOrderIds?: string[];
   /** Live-run keys already handled, so each campaign phase or quiet spell fires once (D137). */

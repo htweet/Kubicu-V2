@@ -76,6 +76,21 @@ export interface Slot {
   end: number;
   /** People free at this time when the business books per person (D140). */
   staffIds?: string[];
+  /** Group classes (D198): seats still free at this time, and the class size. */
+  seatsLeft?: number;
+  capacity?: number;
+}
+
+export const MAX_CLASS_SEATS = 50;
+
+/** Seats per time: 1 for one-to-one services. */
+export function classCapacity(service: Pick<Service, 'capacity'>): number {
+  return Math.max(1, Math.min(MAX_CLASS_SEATS, service.capacity ?? 1));
+}
+
+/** People booked into one class time (same service, same start). */
+export function classAttendees(bookings: Booking[], serviceId: string, start: number): Booking[] {
+  return activeBookings(bookings).filter((b) => b.serviceId === serviceId && Date.parse(b.start) === start);
 }
 
 const STEP_MIN = 30;
@@ -99,9 +114,28 @@ export function slotsFor(dateKey: string, service: Service, a: Availability, boo
   const earliest = now + a.minNoticeHours * 3600000;
   const taken = activeBookings(bookings, ignoreId);
   const sameDay = taken.filter((b) => dateKeyInTz(Date.parse(b.start), a.timeZone) === dateKey);
-  if (sameDay.length >= a.maxPerDay) return [];
+  // Everyone in one group class counts as one appointment towards the daily limit (D198).
+  const sessions = new Set(sameDay.map((b) => `${b.serviceId}@${Date.parse(b.start)}`)).size;
   const clashes = (list: Booking[], t: number) => list.some((b) => t < Date.parse(b.end) + buffer && t + dur + buffer > Date.parse(b.start));
   const overlaps = (list: {start: number;end: number;}[], t: number) => list.some((x) => t < x.end && t + dur > x.start);
+
+  const cap = classCapacity(service);
+  if (cap > 1) {
+    // Group class: a time stays open until its seats are gone. Other bookings (and other class times) still clash.
+    const busy = busyTimes(a).filter((x) => x.end > open && x.start < close);
+    const out: Slot[] = [];
+    for (let t = open; t + dur <= close; t += STEP_MIN * 60000) {
+      if (t < earliest) continue;
+      const mine = sameDay.filter((b) => b.serviceId === service.id && Date.parse(b.start) === t);
+      if (mine.length >= cap) continue;
+      if (!mine.length && sessions >= a.maxPerDay) continue;
+      const others = sameDay.filter((b) => !(b.serviceId === service.id && Date.parse(b.start) === t));
+      if (clashes(others, t) || overlaps(busy, t)) continue;
+      out.push({ start: t, end: t + dur, seatsLeft: cap - mine.length, capacity: cap });
+    }
+    return out;
+  }
+  if (sessions >= a.maxPerDay) return [];
 
   const staff = eligibleStaff(service, a).filter((s) => !staffId || s.memberId === staffId);
   if (!usesStaff(a) || !staff.length && !staffId && !eligibleStaff(service, a).length) {

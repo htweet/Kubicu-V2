@@ -9,7 +9,9 @@ const TZ = 'Africa/Lagos';
 const services: Service[] = [
 { id: 'ss_fitting', name: 'Studio fitting', description: 'Try the collection on and have adjustments pinned by our tailor.', durationMin: 45, priceNgn: 10000, depositNgn: 5000, location: 'studio', locationNote: 'Victoria Island studio (sample address)', bufferMin: 15, active: true, sample: true },
 { id: 'ss_bespoke', name: 'Bespoke consultation', description: 'Talk through a made-to-measure piece: fabric, fit and timeline.', durationMin: 60, priceNgn: 25000, depositNgn: 10000, balanceOnline: true, balanceHoursBefore: 24, location: 'studio', locationNote: 'Victoria Island studio (sample address)', bufferMin: 15, active: true, sample: true },
-{ id: 'ss_video', name: 'Video styling call', description: 'A styling session over video for anywhere in Nigeria.', durationMin: 30, priceNgn: 8000, depositNgn: null, location: 'online', locationNote: 'Google Meet link sent after booking', bufferMin: 10, active: true, sample: true }];
+{ id: 'ss_video', name: 'Video styling call', description: 'A styling session over video for anywhere in Nigeria.', durationMin: 30, priceNgn: 8000, depositNgn: null, location: 'online', locationNote: 'Google Meet link sent after booking', bufferMin: 10, active: true, sample: true },
+// Group class (D198): 8 seats per class.
+{ id: 'ss_class', name: 'Adire tie-dye workshop', description: 'A hands-on group class: fold, tie and dye your own scarf to take home. Materials included.', durationMin: 120, priceNgn: 18000, depositNgn: 9000, location: 'studio', locationNote: 'Victoria Island studio (sample address)', bufferMin: 30, active: true, capacity: 8, sample: true }];
 
 
 function at(daysFromToday: number, hhmm: string): string {
@@ -45,7 +47,11 @@ booking('sb_1', 'B1996', services[0], 1, '11:00', 'Amaka Nwosu', '+234 811 000 2
 booking('sb_2', 'B1997', services[1], 2, '14:00', 'Tunde Bakare', '+234 812 000 2002', 'tunde@example.com', 'confirmed', true, 'Agbada for a naming ceremony'),
 booking('sb_3', 'B1998', services[2], 3, '10:00', 'Chiamaka Obi', '+234 803 000 1107', 'chiamaka@example.com', 'confirmed', false),
 booking('sb_4', 'B1994', services[0], -2, '12:00', 'Bisi Lawal', '+234 805 000 1106', 'bisi@example.com', 'completed', true),
-booking('sb_5', 'B1995', services[0], -1, '15:00', 'Femi Ojo', '+234 813 000 2005', 'femi@example.com', 'no_show', true)];
+booking('sb_5', 'B1995', services[0], -1, '15:00', 'Femi Ojo', '+234 813 000 2005', 'femi@example.com', 'no_show', true),
+// Three people in Saturday's workshop, so "Coming classes" shows 3 of 8 seats taken.
+booking('sb_6', 'B1999', services[3], 4, '10:00', 'Kemi Bello', '+234 818 000 2006', 'kemi@example.com', 'confirmed', true),
+booking('sb_7', 'B2000', services[3], 4, '10:00', 'Uche Nnamdi', '+234 819 000 2007', 'uche@example.com', 'confirmed', true),
+booking('sb_8', 'B2001', services[3], 4, '10:00', 'Halima Sani', '+234 810 000 2008', 'halima@example.com', 'confirmed', false)];
 
 
 function contact(id: string, name: string, email: string, phone: string, sources: Contact['sources'], consent: Contact['consent'], stage: Contact['stage'], tags: string[], hoursAgo: number, label: string): Contact {
@@ -113,6 +119,20 @@ const automations = (): Automation[] => [
 }];
 
 
+/** Adds the sample group class to workspaces seeded before group classes existed (once, D200). */
+export function withOpsClassSample(data: OpsData): OpsData {
+  if (data.sampleClassSeeded) return data;
+  const cls = services[3];
+  const classBookings = bookings().filter((b) => b.serviceId === cls.id);
+  return {
+    ...data,
+    services: data.services.some((s) => s.id === cls.id) ? data.services : [...data.services, cls],
+    bookings: [...data.bookings, ...classBookings.filter((b) => !data.bookings.some((x) => x.id === b.id))],
+    nextBookingRef: Math.max(data.nextBookingRef, 2002),
+    sampleClassSeeded: true
+  };
+}
+
 export function withOpsSample(data: OpsData): OpsData {
   return {
     ...data,
@@ -120,7 +140,8 @@ export function withOpsSample(data: OpsData): OpsData {
     bookings: [...data.bookings, ...bookings()],
     contacts: [...data.contacts, ...contacts()],
     automations: [...data.automations, ...automations()],
-    nextBookingRef: Math.max(data.nextBookingRef, 2001),
-    sampleSeeded: true
+    nextBookingRef: Math.max(data.nextBookingRef, 2002),
+    sampleSeeded: true,
+    sampleClassSeeded: true
   };
 }

@@ -177,6 +177,11 @@ export function validateBlock(block: Block): ValidationIssue[] {
         if (!c.ctaLabel.trim()) push('warning', 'Add a button label', 'ctaLabel');
         break;
       }
+    case 'course':{
+        // Unpublished or removed courses are checked against Commerce in catalogLinkIssues.
+        if (!block.content.courseId) push('error', 'Choose a course from Commerce → Courses', 'courseId');
+        break;
+      }
     case 'form':{
         // Missing/closed forms and the add-on itself are checked in utils/forms/linkIssues.
         if (!block.content.formId) push('error', 'Choose a form from Forms', 'formId');

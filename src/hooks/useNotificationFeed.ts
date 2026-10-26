@@ -238,7 +238,7 @@ export function useNotificationFeed(): AppNotification[] {
         area: 'domains',
         kind: 'action',
         text: `${qr ? 'QR code' : 'Link'} “${l.name}” points to something you removed — scans go to ${to} until you choose a new destination`,
-        href: qr ? `/app/domains/qr?link=${l.id}` : '/app/domains/links',
+        href: qr ? `/app/qr?link=${l.id}` : '/app/campaign-links',
         at: today
       });
     }

@@ -1,8 +1,9 @@
 import type { SubPlan, Subscription } from './subscriptions';
+import type { Course, Enrolment } from './courses';
 
 export type ProductStatus = 'active' | 'draft' | 'archived';
 /** 'ticket' products are owned by a Commerce event (D73): one variant per ticket type, stock = seats left. Never listed as products. */
-export type ProductKind = 'physical' | 'digital' | 'ticket';
+export type ProductKind = 'physical' | 'digital' | 'ticket' | 'course';
 
 export interface ProductImage {
   id: string;
@@ -88,15 +89,65 @@ export interface Product {
   digital?: DigitalAsset;
   /** Ticket products: the event that owns them. */
   eventId?: string;
+  /** Course products (D197): the paid course this product sells. */
+  courseId?: string;
   /** Physical products made after ordering: a deposit at checkout, the balance before dispatch (D95). */
   madeToOrder?: MadeToOrder;
   /** Can be paid in parts at checkout when Instalments is on (D112). */
   instalments?: ProductInstalments;
   /** Sold together with a business partner; money is split per seller at payment (D122). */
   bundle?: ProductBundle;
+  /** Pre-orders (D202): sold before stock arrives, with a date it's expected and an optional part-payment. */
+  preorder?: ProductPreorder;
+  /** Bulk prices (D202): a lower price per item from a quantity, applied in the cart. Up to 4 levels. */
+  bulkPrices?: BulkPrice[];
+  /** Gift card product (D202): each item bought issues a code worth its price. */
+  giftCard?: boolean;
   sample?: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface ProductPreorder {
+  /** YYYY-MM-DD it's expected to ship or be ready. */
+  shipsBy: string;
+  /** Most pre-orders taken; null = no limit. */
+  limit: number | null;
+  /** Share paid at checkout (10–90); null = paid in full. The rest is due before dispatch. */
+  depositPct: number | null;
+  /** Units pre-ordered so far. */
+  taken: number;
+}
+
+export interface BulkPrice {
+  /** From this many of the product in one order. */
+  minQty: number;
+  /** Price per item at that quantity. */
+  priceNgn: number;
+}
+
+/** A gift card code (D202). Sold at checkout or issued by the seller; spent at checkout. */
+export interface GiftCard {
+  id: string;
+  /** e.g. GIFT-7K2P-QX4M. Stored upper-case. */
+  code: string;
+  initialNgn: number;
+  balanceNgn: number;
+  source: 'sold' | 'issued';
+  /** The order that bought it (sold cards). */
+  orderId?: string;
+  orderNumber?: number;
+  buyerName: string;
+  recipientName: string;
+  message: string;
+  status: 'active' | 'disabled';
+  /** ISO; null = never expires. */
+  expiresAt: string | null;
+  uses: {orderId: string;orderNumber: number;amountNgn: number;at: string;}[];
+  /** Why it was issued by hand, e.g. "Store credit for order #1012". */
+  note?: string;
+  createdAt: string;
+  sample?: boolean;
 }
 
 /** A partner bundle (D122): one product, two sellers, one checkout. */
@@ -462,6 +513,10 @@ export interface Order {
   tracking?: OrderTracking;
   /** Pop-up shop pickup (D183): which session the buyer collects at, and whether they pay there. */
   popup?: OrderPopup;
+  /** Gift card spent on this order (D202). Its amount is included in discountNgn. */
+  giftCard?: {code: string;amountNgn: number;};
+  /** Pre-ordered items in this order and the latest expected date (D202). */
+  preorder?: {shipsBy: string;};
 }
 
 export interface OrderPopup {
@@ -570,7 +625,7 @@ export type ShopLook = 'classic' | 'boutique' | 'catalogue' | 'lookbook' | 'quic
 export type ShopHeaderStyle = 'banner' | 'title' | 'split' | 'none';
 export type ShopFeaturedStyle = 'none' | 'row' | 'hero' | 'spotlight';
 export type ShopCollectionsStyle = 'chips' | 'tabs' | 'side';
-export type ShopCardStyle = 'standard' | 'minimal' | 'overlay' | 'row';
+export type ShopCardStyle = 'standard' | 'minimal' | 'overlay' | 'row' | 'pricelist';
 export type ShopProductPageStyle = 'side' | 'stacked' | 'full';
 export type ShopAddMode = 'page' | 'button' | 'stepper';
 
@@ -621,6 +676,15 @@ export interface CommerceData {
   payOptions?: PayOptions;
   /** Stock set aside for pop-up shops (D191). Synced from each pop-up's settings. */
   stallHolds?: StallHold[];
+  /** Courses and who's enrolled (D197). Optional for data saved before courses. */
+  courses?: Course[];
+  enrolments?: Enrolment[];
+  /** Sample courses were added once (D200); stays true after they're removed. */
+  sampleCoursesSeeded?: boolean;
+  /** Sample pre-order, bulk prices and gift cards added (D202). */
+  sampleSellModesSeeded?: boolean;
+  /** Gift cards sold or issued (D202). */
+  giftCards?: GiftCard[];
   nextOrderNumber: number;
   /** True once sample data has been offered/seeded, so clearing it doesn't bring it back. */
   sampleSeeded: boolean;

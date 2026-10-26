@@ -12,7 +12,6 @@ import type { ExamplePage } from '../../data/examples/build';
 import { templatePrice } from '../../data/templateMarket';
 import { formatNaira as formatNgn } from '../../utils/format';
 import { AiPreviewTag } from '../ai/AiPreviewTag';
-import { AiKitDialog } from './AiKitDialog';
 import { useFlag } from '../../utils/admin/store';
 import { Button } from '../ui/Button';
 import { ChoiceCard, StepHeading, StepNav } from './OnboardingLayout';
@@ -25,7 +24,6 @@ interface StepProps {
 
 export function KitStep({ state, update, go }: StepProps) {
   const [showAll, setShowAll] = useState(false);
-  const [aiOpen, setAiOpen] = useState(false);
   const [showAllKits, setShowAllKits] = useState(false);
   const [previewing, setPreviewing] = useState<ExamplePage | null>(null);
   // New workspaces start on Free; Super admin can pause AI page setup (D75b).
@@ -60,7 +58,7 @@ export function KitStep({ state, update, go }: StepProps) {
                   selected ? 'border-action bg-action-soft' : 'border-line hover:border-line-strong'
                 )}>
                 
-                <input type="radio" name="kit" className="sr-only" checked={selected} onChange={() => update({ businessKitId: kit.id, kitId: kit.templateId })} />
+                <input type="radio" name="kit" className="sr-only" checked={selected} onChange={() => update({ businessKitId: kit.id, kitId: kit.templateId, useAssistant: false })} />
                 <span className={cn('flex size-9 shrink-0 items-center justify-center rounded-md', selected ? 'bg-action text-action-fg' : 'bg-sunken text-fg-muted')}>
                   <Icon size={18} strokeWidth={2.2} aria-hidden />
                 </span>
@@ -89,7 +87,7 @@ export function KitStep({ state, update, go }: StepProps) {
         <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
           {list.map((e) =>
           <div key={e.id} className="flex flex-col">
-              <ChoiceCard name="kit" selected={state.kitId === e.id && !state.businessKitId} onSelect={() => update({ kitId: e.id, businessKitId: null })} title={e.category} description={e.elite || e.artwork ? `${e.name} · ${formatNgn(templatePrice(e.id))}` : e.name}>
+              <ChoiceCard name="kit" selected={state.kitId === e.id && !state.businessKitId} onSelect={() => update({ kitId: e.id, businessKitId: null, useAssistant: false })} title={e.category} description={e.elite || e.artwork ? `${e.name} · ${formatNgn(templatePrice(e.id))}` : e.name}>
                 <span className="mb-3 flex justify-center">
                   <TemplateThumb doc={e.doc} width={120} height={170} />
                 </span>
@@ -99,17 +97,17 @@ export function KitStep({ state, update, go }: StepProps) {
               </span>
             </div>
           )}
-          <ChoiceCard name="kit" selected={state.kitId === 'blank'} onSelect={() => update({ kitId: 'blank', businessKitId: null })} title="Blank page" description="Just your profile">
+          <ChoiceCard name="kit" selected={state.kitId === 'blank' && !state.useAssistant} onSelect={() => update({ kitId: 'blank', businessKitId: null, useAssistant: false })} title="Blank page" description="Just your profile">
             <span className="mb-3 flex justify-center">
               <TemplateThumb doc={blankTemplateDoc} width={120} height={170} />
             </span>
           </ChoiceCard>
           {aiAllowed && <ChoiceCard
             name="kit"
-            selected={false}
-            onSelect={() => setAiOpen(true)}
-            title="Describe it with AI"
-            description="Tell us about your business and we’ll pick a starter."
+            selected={!!state.useAssistant}
+            onSelect={() => update({ kitId: 'blank', businessKitId: null, useAssistant: true })}
+            title="Build it with the assistant"
+            description="After setup, answer a few questions and watch your page build."
             aside={<AiPreviewTag />}>
             
             <span className="ai-fill mb-3 flex h-[170px] items-center justify-center rounded-[14px] text-white">
@@ -147,14 +145,11 @@ export function KitStep({ state, update, go }: StepProps) {
           setPreviewing(null);
         }} />
       
-      <AiKitDialog
-        open={aiOpen}
-        onClose={() => setAiOpen(false)}
-        onUse={({ kitId, bio, name, city }) => {
-          update({ kitId, businessKitId: null, bio: state.bio || bio, name: state.name || name || '', city: state.city || city || '' });
-          setAiOpen(false);
-        }} />
-      
+      {state.useAssistant &&
+      <p className="mt-4 text-caption text-fg-subtle" role="status">
+          You’ll start with a blank page, then the AI assistant opens straight after setup.
+        </p>
+      }
       <StepNav onBack={() => go(0)} onSkip={() => update({ kitId: 'blank', businessKitId: null, step: 2 })} skipLabel="Start blank" onNext={() => go(2)} nextDisabled={!state.kitId} />
     </>);
 

@@ -84,7 +84,7 @@ export function IdentityStep({ state, update, go }: StepProps) {
             </div>
           }
         </div>
-        <MediaPicker id="ob-avatar" label="Photo or logo" optional round aspect="1:1" value={state.avatarUrl} onChange={(avatarUrl) => update({ avatarUrl })} />
+        <MediaPicker id="ob-avatar" label="Photo or logo" optional round aspect="1:1" folder="brand" value={state.avatarUrl} onChange={(avatarUrl) => update({ avatarUrl })} />
         <TextArea
           id="ob-bio"
           label="Short description"

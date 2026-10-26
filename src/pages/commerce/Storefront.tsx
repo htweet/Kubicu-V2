@@ -167,7 +167,7 @@ export function Storefront() {
                 hint={`${draft.announcement.length}/${ANNOUNCEMENT_MAX}. ${tr('A slim bar above the shop. Leave empty to hide it.')}`}
                 onChange={(e) => set('announcement', e.target.value)} />
               
-              <MediaPicker id="sf-banner" label="Banner" optional aspect="16:9" value={draft.bannerUrl} disabled={off} hint="Wide photo across the top of the shop. Hidden when a collection is open." onChange={(src, meta) => setDraft((d) => ({ ...d, bannerUrl: src, bannerAlt: src ? d.bannerAlt || meta?.alt || '' : '' }))} />
+              <MediaPicker id="sf-banner" label="Banner" optional aspect="16:9" folder="brand" value={draft.bannerUrl} disabled={off} hint="Wide photo across the top of the shop. Hidden when a collection is open." onChange={(src, meta) => setDraft((d) => ({ ...d, bannerUrl: src, bannerAlt: src ? d.bannerAlt || meta?.alt || '' : '' }))} />
               {draft.bannerUrl && <TextInput id="sf-banner-alt" label="Banner description" value={draft.bannerAlt} disabled={off} error={tried ? bannerAltError || undefined : undefined} placeholder={tr('e.g. Model wearing the wine gele in the studio')} onChange={(e) => set('bannerAlt', e.target.value)} />}
             </div>
           </Card>

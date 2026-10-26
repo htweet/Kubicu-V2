@@ -10,6 +10,7 @@ import { useUpgrade } from '../contexts/UpgradeContext';
 import { planAtLeast } from '../data/plans';
 import { useLocalStore } from '../hooks/useLocalStore';
 import { useMoney } from '../hooks/useMoney';
+import { seedsSample } from '../utils/workspaceStorage';
 import { balances, isVerified } from '../utils/money/store';
 import { COLLAB_PLAN, collabKey, commissionLines, emptyCollabs, partnerStatusLabels, partnerStatusTones, partnerTotals, seedCollabs, type Partner } from '../utils/collabs';
 import { formatNgn, publicUrl } from '../utils/format';
@@ -62,10 +63,12 @@ export function Collaborations() {
 
   const orders = commerce.data.orders;
   useEffect(() => {
-    if (!data.sampleSeeded) update((d) => seedCollabs(d, orders));
-  }, [data.sampleSeeded, update, orders]);
+    if (!data.sampleSeeded && seedsSample(current.id)) update((d) => seedCollabs(d, orders));
+  }, [data.sampleSeeded, update, orders, current.id]);
   useEffect(() => {
-    if (!partnerships.data.sampleSeeded) partnerships.update((d) => seedPartnerships(d));else
+    if (!partnerships.data.sampleSeeded) {
+      if (seedsSample(current.id)) partnerships.update((d) => seedPartnerships(d));
+    } else
     partnerships.update((d) => syncPartnerships(d));
     // Seed once, then let notice periods run out.
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -90,7 +90,7 @@ export function PageSettingsPanel() {
           <p className="mt-0.5 text-caption text-fg-subtle">Use your own address, like adaezeatelier.com.</p>
         </div>
         <Link to="/app/domains" className="inline-flex shrink-0 items-center gap-1 text-caption font-semibold text-action hover:underline">
-          Domains & QR <ArrowUpRightIcon size={12} aria-hidden />
+          Domains <ArrowUpRightIcon size={12} aria-hidden />
         </Link>
       </div>
 

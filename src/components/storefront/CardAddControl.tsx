@@ -7,6 +7,7 @@ import { useCart } from '../../contexts/CartContext';
 import { buttonRadius, buttonStyle, mix } from '../blocks/pageStyle';
 import { canSell, isSoldOut, variantPrice } from '../../utils/commerce/catalog';
 import { formatNgn, whatsappLink } from '../../utils/format';
+import { isPreorder, preorderLeft } from '../../utils/commerce/sellModes';
 
 interface CardAddControlProps {
   product: Product;
@@ -62,7 +63,8 @@ export function CardAddControl({ product, theme, mode, ordering, whatsappPhone, 
 
   const line = cart?.lines.find((l) => l.variantId === single.id);
   const qty = line?.qty ?? 0;
-  const max = product.trackStock && product.kind === 'physical' ? Math.min(20, single.stock) : 20;
+  const preLeft = isPreorder(product) ? preorderLeft(product) : null;
+  const max = isPreorder(product) ? Math.min(20, preLeft ?? 20) : product.trackStock && product.kind === 'physical' ? Math.min(20, single.stock) : 20;
 
   if (mode === 'stepper' && qty > 0) {
     const stepBtn = 'flex h-10 w-10 items-center justify-center transition-opacity duration-150 hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 disabled:opacity-40';

@@ -3,6 +3,20 @@ import { kubicuFee, providerFee } from '../utils/commerce/money';
 import { sampleDiscounts } from './sampleDiscounts';
 import { sampleSubPlans, sampleSubscriptions } from './sampleSubscriptions';
 import { withSampleEvent } from './sampleEvents';
+import { sampleCourses, sampleEnrolments } from './sampleCourses';
+import { withSampleSellModes } from './sampleSellModes';
+export { withSampleSellModes };
+
+/** Adds sample courses to workspaces seeded before courses existed (once). */
+export function withSampleCourses(data: CommerceData): CommerceData {
+  if (data.sampleCoursesSeeded) return data;
+  return {
+    ...data,
+    courses: [...(data.courses ?? []), ...sampleCourses().filter((s) => !(data.courses ?? []).some((c) => c.id === s.id))],
+    enrolments: [...(data.enrolments ?? []), ...sampleEnrolments().filter((s) => !(data.enrolments ?? []).some((e) => e.id === s.id))],
+    sampleCoursesSeeded: true
+  };
+}
 
 /**
  * SAMPLE commerce data for exploring the prototype. Every record is flagged `sample`
@@ -351,7 +365,7 @@ order({
 
 /** Merges sample records into a workspace's commerce data. */
 export function withSampleData(data: CommerceData): CommerceData {
-  return withSampleEvent({
+  return withSampleSellModes(withSampleEvent({
     ...data,
     products: [...data.products, ...sampleProducts()],
     collections: [...data.collections, ...sampleCollections],
@@ -361,6 +375,9 @@ export function withSampleData(data: CommerceData): CommerceData {
     settledRooms: data.settledRooms ?? {},
     subPlans: [...(data.subPlans ?? []), ...sampleSubPlans().filter((s) => !(data.subPlans ?? []).some((p) => p.id === s.id))],
     subscriptions: [...(data.subscriptions ?? []), ...sampleSubscriptions().filter((s) => !(data.subscriptions ?? []).some((x) => x.id === s.id))],
+    courses: [...(data.courses ?? []), ...sampleCourses().filter((s) => !(data.courses ?? []).some((c) => c.id === s.id))],
+    enrolments: [...(data.enrolments ?? []), ...sampleEnrolments().filter((s) => !(data.enrolments ?? []).some((e) => e.id === s.id))],
+    sampleCoursesSeeded: true,
     nextOrderNumber: Math.max(data.nextOrderNumber, 1013),
     storefront: data.storefront?.enabled ? data.storefront : { ...(data.storefront ?? {}), enabled: true, title: 'Shop the collection', intro: 'Made in small runs in Lekki. Delivery across Lagos, pickup from the studio.', showInMenu: true, menuLabel: 'Shop', ordering: 'checkout', whatsappPhone: data.storefront?.whatsappPhone ?? '', hideSoldOut: false },
     fulfilment: data.fulfilment.zones.length ?
@@ -378,5 +395,5 @@ export function withSampleData(data: CommerceData): CommerceData {
       freeDeliveryOverNgn: 150000
     },
     sampleSeeded: true
-  });
+  }));
 }

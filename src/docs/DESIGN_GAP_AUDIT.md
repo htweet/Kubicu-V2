@@ -10,6 +10,25 @@ _Re-audited 24 Oct 2026 against the code, the decision register (through D149) a
 
 > **Template & theme libraries (D153–D165).** Built: layout sections; Elite collection (24 paid templates, prices cut by a third in D158); Artwork collection (8 classic templates over AI artwork, ≤ ₦3,000, enriched D159); Elite polish (D160); Signature Theme Library — material layer, 24 themes / 35 versions, Themes gallery with compare and spec sheets, Free-plan set of 4 (D161–D165). Open: a visual browser pass of all 32 templates and 35 theme versions at phone and desktop, and real-device checks of glass/blur performance on low-end Android (both in §1 "Needs a hands-on check").
 
+> **Re-audit, 26 Oct 2026 (D150–D212).** Everything built since D149 is recorded here so this file stays the source of truth.
+>
+> | Area | Decisions | Status |
+> |---|---|---|
+> | Template & theme libraries — layout sections, Elite (24), Artwork (8), Signature themes (24 / 35 versions), page backgrounds | D153–D165, D182 | ✅ (visual browser pass still open) |
+> | Canvas block ecosystem — 76 blocks, 3 containers, 50 looks, 24 ready-made sections, new picker, tidier settings and Look switcher | D166–D173, D177 | ✅ · AI FAQ assistant and Voice to content stay "Planned" 🧪 |
+> | Composition — container rules, Check tab composition hints, "Goes well after", section spacing, block names | D174–D175 | ✅ |
+> | Drag into containers — onto a container, at the pointed position, reorder inside, drag back out; buttons stay the keyboard route | D180, D191 | ✅ (previously listed as open — closed) |
+> | Delivery & returns as its own block | D181 | ✅ (previously listed as open — closed) |
+> | Spaces — Event, Fundraiser (verified only), Pop-up shop, Booking page, Members area, samples | D178–D179a, D183–D186 | ✅ 🧪 (payments, sign-in codes simulated) · 👤 fundraising wording |
+> | Selling — shop looks, courses, group classes, pre-orders, bulk prices, gift cards, instalments finder | D196–D204 | ✅ 🧪 |
+> | Forms — 31 field types, 24 starters, links to Automations, Commerce and Bookings | D193–D195, D199 | ✅ |
+> | Provider adapters (payments, SMS, WhatsApp, email, DNS, storage) | D192 | 🧪 single swap point for real server calls |
+> | Workspace demo data, removable demo workspace | D200–D201 | ✅ (expiry runs on open — no server) |
+> | App shell — appearances, sidebar regrouping, Canvas out of the sidebar, media folders | D205–D210 | ✅ |
+> | AI page assistant — question-led, plan approval, template or composed layout, business setup, chat changes with Keep/Discard, Remove everything, "Open in canvas" in the header | D211–D212 | ✅ 🧪 rule-based; real model per `docs/AI_ASSISTANT_INTEGRATION.md` |
+>
+> **Buildable gaps after this audit:** translations of the remaining screens (left out by the owner's choice). Nothing else is unbuilt; the rest is partners (§4), hands-on checks (§7) or sign-off (§5 — D110 onwards are still "Proposed").
+
 ---
 
 ## 1. Summary
@@ -149,6 +168,8 @@ _Re-audited 24 Oct 2026 against the code, the decision register (through D149) a
 
 **Final buildable list after D149:** only the translations listed under "Partly built" above. Everything else is waiting on partners, real devices or sign-off.
 
+**Still true after the 26 Oct re-audit (D212):** the same — translations only. Add to the hands-on list: all 32 templates and 35 theme versions at 320 px and desktop; glass/blur on a low-end Android; the AI assistant, courses, group classes, gift cards, fundraiser and event pages with VoiceOver/TalkBack; canvas drag into and out of containers on touch.
+
 **Waiting on partners:** see §4.
 
 **Hands-on:** G16 visual review at 320 px / 200%; real-phone screen readers (seat map, print ordering, @mentions, print designs, partner panel, Sold with a partner, guest partner page, check-in result card and doors panel, buyer tracking page, bank-transfer order page, USSD flow); axe-core and status-colour contrast run, including the tracking "problem" orange on dark custom themes; embeds from each of the 11 sites at 320 px.
@@ -157,4 +178,5 @@ _Re-audited 24 Oct 2026 against the code, the decision register (through D149) a
 
 - Batches 1–11, print kit (D118–D119), co-branded spaces & bundles (D120–D123) and Batch 12 (D124–D134) are complete; Batch 12 translations continue in parts.
 - Batch 13 complete (D135–D138): docs reconciliation, staff editing tools, workspace currency, USSD, watermarks, calendar sync, live automations, seven industry page sets, multiple workspaces, checks.
+- 26 Oct 2026 re-audit (D212): libraries, block ecosystem, spaces, selling, forms, providers, demo data and the AI assistant recorded; drag-into-container and Delivery & returns confirmed closed (D180, D181, D191).
 - Earlier versions of this file: 22 Oct 2026; updates after Forms, the account area, Batch 8, Batch 11 and 23 Oct 2026.

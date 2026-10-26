@@ -24,6 +24,10 @@ interface Props {
   business: string;
   onSignedIn: (s: MemberSession) => void;
   onJoin: (() => void) | null;
+  /** Learner sign-in (D197) reuses this sheet with its own wording and lookup. */
+  copy?: {title: string;intro: string;notFound: string;joinLabel: string;};
+  /** Whether this contact may get a code. Defaults to "has a subscription". */
+  canSignIn?: (contact: string, channel: Channel) => boolean;
 }
 
 /**
@@ -31,7 +35,7 @@ interface Props {
  * here are reached on WhatsApp; SMS for anyone without it (or whose line blocks promo texts),
  * and email as a fallback. Sending is simulated: the code is shown on screen.
  */
-export function MemberSignInSheet({ open, onClose, theme: t, data, business, onSignedIn, onJoin }: Props) {
+export function MemberSignInSheet({ open, onClose, theme: t, data, business, onSignedIn, onJoin, copy, canSignIn }: Props) {
   const [step, setStep] = useState<Step>('enter');
   const [channel, setChannel] = useState<Channel>('phone');
   const [delivery, setDelivery] = useState<Delivery>('whatsapp');
@@ -77,7 +81,7 @@ export function MemberSignInSheet({ open, onClose, theme: t, data, business, onS
     e.preventDefault();
     if (channel === 'phone' && !isNigerianMobile(value) && normalisePhone(value).length < 10) return setError('Enter the phone number you subscribed with, e.g. 0803 123 4567');
     if (channel === 'email' && !isValidEmail(value)) return setError('Enter the email you subscribed with');
-    if (membershipsFor(data, contact, channel).length === 0) {
+    if (canSignIn ? !canSignIn(contact, channel) : membershipsFor(data, contact, channel).length === 0) {
       setStep('none');
       return;
     }
@@ -100,12 +104,12 @@ export function MemberSignInSheet({ open, onClose, theme: t, data, business, onS
   const tab = (on: boolean) => ({ background: on ? t.surface : 'transparent', color: t.text, border: `1px solid ${on ? mix(t.text, 18) : 'transparent'}` });
 
   return (
-    <PageOverlay open={open} onClose={onClose} theme={t} label="Member sign-in">
+    <PageOverlay open={open} onClose={onClose} theme={t} label={copy?.title ?? 'Member sign-in'}>
       <div className="flex min-h-full flex-col gap-5 px-5 pt-6">
         {step === 'enter' &&
         <form onSubmit={submitContact} className="flex flex-1 flex-col gap-5" noValidate>
-            <CheckoutHeading theme={t} sub={`Use the phone number or email you subscribed to ${business} with. We’ll send a one-time code — no password needed.`}>
-              Member sign-in
+            <CheckoutHeading theme={t} sub={copy?.intro ?? `Use the phone number or email you subscribed to ${business} with. We’ll send a one-time code — no password needed.`}>
+              {copy?.title ?? 'Member sign-in'}
             </CheckoutHeading>
             <div role="radiogroup" aria-label="Sign in with" className="grid grid-cols-2 gap-1 rounded-full p-1" style={{ background: mix(t.text, 6) }}>
               {(
@@ -213,8 +217,8 @@ export function MemberSignInSheet({ open, onClose, theme: t, data, business, onS
 
         {step === 'none' &&
         <div className="flex flex-1 flex-col gap-5">
-            <CheckoutHeading theme={t} sub={`We couldn’t find a membership with ${business} for ${channel === 'phone' ? maskContact(contact, 'phone') : value.trim()}.`}>
-              No membership found
+            <CheckoutHeading theme={t} sub={`${copy?.notFound ?? `We couldn’t find a membership with ${business}`} for ${channel === 'phone' ? maskContact(contact, 'phone') : value.trim()}.`}>
+              {copy ? 'Not found' : 'No membership found'}
             </CheckoutHeading>
             <ul className="flex list-disc flex-col gap-1.5 pl-5 text-[14px] leading-relaxed" style={muted}>
               <li>Check it’s the {channel === 'phone' ? 'number' : 'email'} you used when you joined.</li>
@@ -224,7 +228,7 @@ export function MemberSignInSheet({ open, onClose, theme: t, data, business, onS
             <SheetActions theme={t}>
               {onJoin &&
             <PrimaryButton theme={t} onClick={onJoin}>
-                  Become a member
+                  {copy?.joinLabel ?? 'Become a member'}
                 </PrimaryButton>
             }
               <button type="button" onClick={() => setStep('enter')} className="flex h-11 items-center justify-center text-[14px] font-semibold underline underline-offset-2" style={{ color: t.text }}>

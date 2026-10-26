@@ -41,8 +41,8 @@ export const shopLooks: ShopLookDef[] = [
   id: 'catalogue',
   name: 'Catalogue',
   forWho: 'Many items: food, parts, groceries',
-  description: 'Compact rows with small photos, price on the right and an Add button.',
-  parts: { header: 'title', featuredStyle: 'none', collectionsStyle: 'side', cardStyle: 'row', columns: 2, imageShape: 'square', productPage: 'side', stickyBuy: false, addMode: 'button' }
+  description: 'A price list grouped under each collection: name and short description on the left, price and Add on the right.',
+  parts: { header: 'title', featuredStyle: 'none', collectionsStyle: 'side', cardStyle: 'pricelist', columns: 2, imageShape: 'square', productPage: 'side', stickyBuy: false, addMode: 'button' }
 },
 {
   id: 'lookbook',
@@ -55,8 +55,8 @@ export const shopLooks: ShopLookDef[] = [
   id: 'quick',
   name: 'Quick order',
   forWho: 'Market sellers and repeat orders',
-  description: 'Plus and minus on every item, with the cart always one tap away.',
-  parts: { header: 'title', featuredStyle: 'row', collectionsStyle: 'chips', cardStyle: 'row', columns: 2, imageShape: 'square', productPage: 'side', stickyBuy: true, addMode: 'stepper' }
+  description: 'A tight list with plus and minus on every item, and the cart always one tap away.',
+  parts: { header: 'title', featuredStyle: 'none', collectionsStyle: 'chips', cardStyle: 'row', columns: 2, imageShape: 'square', productPage: 'side', stickyBuy: true, addMode: 'stepper' }
 },
 {
   id: 'spotlight',
@@ -83,7 +83,7 @@ export const partLabels = {
   header: { banner: 'Banner and title', title: 'Title only', split: 'Photo beside title', none: 'None' } as Record<ShopHeaderStyle, string>,
   featuredStyle: { none: 'None', row: 'A row', hero: 'One big + two small', spotlight: 'One product up front' } as Record<ShopFeaturedStyle, string>,
   collectionsStyle: { chips: 'Chips', tabs: 'Tabs', side: 'Side list on desktop' } as Record<ShopCollectionsStyle, string>,
-  cardStyle: { standard: 'Standard', minimal: 'Minimal', overlay: 'Text over photo', row: 'List row' } as Record<ShopCardStyle, string>,
+  cardStyle: { standard: 'Standard', minimal: 'Minimal', overlay: 'Text over photo', row: 'List row', pricelist: 'Price list' } as Record<ShopCardStyle, string>,
   productPage: { side: 'Photos beside details', stacked: 'Stacked photos', full: 'Full-width photo' } as Record<ShopProductPageStyle, string>,
   addMode: { page: 'From the product page', button: 'Add button on each item', stepper: '+ and − on each item' } as Record<ShopAddMode, string>
 };

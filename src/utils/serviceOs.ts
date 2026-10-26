@@ -1,5 +1,6 @@
 import type { Invoice, InvoiceStatus, Job, JobStatus, LineItem, Milestone, Quote, QuoteStatus, ServiceClient, ServiceOsData } from '../types/serviceOs';
 import { uid } from './id';
+import { seedsSample } from './workspaceStorage';
 
 export const SERVICE_OS_APP_ID = 'service-os';
 const key = (workspaceId: string) => `kubicu.serviceos.${workspaceId}`;
@@ -14,7 +15,8 @@ export function readServiceOs(workspaceId: string): ServiceOsData {
   } catch {
 
     /* fall through to a fresh store */}
-  const seeded = seed();
+  // Sample quotes, invoices and jobs only for the demo workspace or one created with demo data (D200).
+  const seeded = seedsSample(workspaceId) ? seed() : { ...empty(), seeded: true };
   writeServiceOs(workspaceId, seeded);
   return seeded;
 }

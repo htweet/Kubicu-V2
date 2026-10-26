@@ -53,7 +53,9 @@ export function StoreProductCard({
 
   const badges =
   <>
-      {soldOut ? <PageChip theme={theme}>Sold out</PageChip> : onSale && showSale ? <PageChip theme={theme}>Sale</PageChip> : null}
+      {soldOut ? <PageChip theme={theme}>{product.preorder ? 'Pre-orders full' : 'Sold out'}</PageChip> : onSale && showSale ? <PageChip theme={theme}>Sale</PageChip> : null}
+      {product.preorder && !soldOut && <PageChip theme={theme}>Pre-order</PageChip>}
+      {(product.bulkPrices?.length ?? 0) > 0 && !soldOut && <PageChip theme={theme}>Bulk prices</PageChip>}
       {featured && !soldOut && <PageChip theme={theme}>Featured</PageChip>}
       {low && !soldOut && <PageChip theme={theme}>Only {totalStock(product)} left</PageChip>}
     </>;
@@ -92,7 +94,8 @@ export function StoreProductCard({
     </span>;
 
 
-  const add = addMode !== 'page' ? <CardAddControl product={product} theme={theme} mode={addMode} ordering={ordering} whatsappPhone={whatsappPhone} block={variant !== 'row'} /> : null;
+  const inline = variant === 'row' || variant === 'pricelist';
+  const add = addMode !== 'page' ? <CardAddControl product={product} theme={theme} mode={addMode} ordering={ordering} whatsappPhone={whatsappPhone} block={!inline} /> : null;
 
   const heart = saved &&
   <button
@@ -100,8 +103,8 @@ export function StoreProductCard({
     onClick={saved.toggle}
     aria-pressed={saved.on}
     aria-label={saved.on ? `Remove ${product.name} from saved` : `Save ${product.name}`}
-    className={cn('flex h-10 w-10 items-center justify-center rounded-full transition-transform duration-150 ease-out active:scale-95 focus-visible:outline-none focus-visible:ring-2', variant !== 'row' && 'absolute right-2 top-2 z-10')}
-    style={{ background: variant === 'row' ? 'transparent' : mix(theme.background, 88), color: theme.text }}>
+    className={cn('flex h-10 w-10 items-center justify-center rounded-full transition-transform duration-150 ease-out active:scale-95 focus-visible:outline-none focus-visible:ring-2', !inline && 'absolute right-2 top-2 z-10')}
+    style={{ background: inline ? 'transparent' : mix(theme.background, 88), color: theme.text }}>
     
       <HeartIcon size={17} aria-hidden fill={saved.on ? 'currentColor' : 'none'} />
     </button>;
@@ -109,11 +112,66 @@ export function StoreProductCard({
 
   const linkFocus = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2';
 
+  if (variant === 'pricelist') {
+    // Catalogue (D196c): a printed-menu style entry — name and one line of description, a dotted leader, then price and Add.
+    const blurb = product.description.split('\n').map((l) => l.trim()).find(Boolean) ?? '';
+    return (
+      <li className="flex items-start gap-3 py-3.5 md:gap-4" style={{ borderBottom: `1px dashed ${mix(theme.text, 14)}` }}>
+        {image && <span className="relative mt-0.5 hidden h-12 w-12 shrink-0 overflow-hidden rounded-md sm:block">{photo('h-full')}</span>}
+        <Link to={href} className={cn('group min-w-0 flex-1 rounded-sm', linkFocus)}>
+          <span className="flex items-baseline gap-2">
+            <span className="min-w-0 text-[15px] font-semibold leading-snug group-hover:underline group-hover:underline-offset-4" style={{ color: theme.text }}>
+              {product.name}
+            </span>
+            <span aria-hidden className="hidden min-w-[24px] flex-1 translate-y-[-3px] border-b border-dotted sm:block" style={{ borderColor: mix(theme.text, 30) }} />
+          </span>
+          {blurb &&
+          <span className="mt-0.5 line-clamp-1 block text-[13.5px] leading-snug" style={{ color: theme.mutedText }}>
+              {blurb}
+            </span>
+          }
+          {(soldOut || low || onSale && showSale || !!product.preorder || !!product.bulkPrices?.length) && <span className="mt-1.5 flex flex-wrap gap-1">{badges}</span>}
+        </Link>
+        <div className="flex shrink-0 flex-col items-end gap-1.5">
+          {price('md')}
+          <div className="flex items-center gap-0.5">
+            {heart}
+            {add}
+          </div>
+        </div>
+      </li>);
+
+  }
+
+  if (variant === 'row' && addMode === 'stepper') {
+    // Quick order (D196b): one tight line per item — photo, name and price, then the stepper. No second column.
+    return (
+      <li className="flex min-h-[72px] items-center gap-3 py-2" style={{ borderBottom: `1px solid ${mix(theme.text, 10)}` }}>
+        <Link to={href} className={cn('group flex min-w-0 flex-1 items-center gap-3 rounded-md', linkFocus)}>
+          <span className="relative block h-14 w-14 shrink-0 overflow-hidden rounded-md">{photo('h-full')}</span>
+          <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+            <span className="line-clamp-1 text-[15px] font-semibold leading-snug" style={{ color: theme.text }}>
+              {product.name}
+            </span>
+            <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+              {price('sm')}
+              {(soldOut || onSale && showSale || low || !!product.preorder) && <span className="flex flex-wrap gap-1">{badges}</span>}
+            </span>
+          </span>
+        </Link>
+        <div className="flex shrink-0 items-center gap-0.5">
+          {heart}
+          {add}
+        </div>
+      </li>);
+
+  }
+
   if (variant === 'row') {
     return (
       <li className="flex items-center gap-3 py-3" style={{ borderBottom: `1px solid ${mix(theme.text, 10)}` }}>
         <Link to={href} className={cn('group flex min-w-0 flex-1 items-center gap-3 rounded-md', linkFocus)}>
-          <span className="relative block h-[72px] w-[72px] shrink-0 overflow-hidden rounded-md">{photo('h-full')}</span>
+          <span className="relative block h-16 w-16 shrink-0 overflow-hidden rounded-md md:h-[72px] md:w-[72px]">{photo('h-full')}</span>
           <span className="flex min-w-0 flex-1 flex-col gap-0.5">
             <span className="line-clamp-2 text-[15px] font-semibold leading-snug" style={{ color: theme.text }}>
               {product.name}

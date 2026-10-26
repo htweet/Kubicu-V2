@@ -23,7 +23,7 @@ type FeatureKey = AiFeatureId | 'page_setup';
 const aiFeatures: {id: FeatureKey;name: string;where: string;cost: string;}[] = [
 { id: 'page_setup', name: 'AI page setup', where: 'Canvas → Page, onboarding, business-kit drafts', cost: `${aiCost.page} credits per draft` },
 { id: 'block_suggest', name: 'Block suggestions', where: 'Canvas block settings', cost: `${aiCost.block} credit each` },
-{ id: 'print_writer', name: 'Print kit writing helper', where: 'Domains & QR → Print kit', cost: '1 credit each' },
+{ id: 'print_writer', name: 'Print kit writing helper', where: 'Growth → Print kit', cost: '1 credit each' },
 { id: 'coach', name: 'Business Coach', where: 'Growth → Business Coach', cost: '1 credit per refresh or question' }];
 
 

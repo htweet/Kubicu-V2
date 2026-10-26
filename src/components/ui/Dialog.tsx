@@ -14,14 +14,14 @@ interface DialogProps {
   description?: React.ReactNode;
   children?: React.ReactNode;
   footer?: React.ReactNode;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | 'xl';
   /** Opens above other dialogs and sheets (e.g. the upgrade dialog). */
   onTop?: boolean;
   /** False hides the close button and ignores Escape and backdrop clicks (required decisions). */
   dismissible?: boolean;
 }
 
-const widths = { sm: 'max-w-sm', md: 'max-w-md', lg: 'max-w-xl' };
+const widths = { sm: 'max-w-sm', md: 'max-w-md', lg: 'max-w-xl', xl: 'max-w-3xl' };
 
 export function Dialog({ open, onClose, title, description, children, footer, size = 'md', onTop = false, dismissible = true }: DialogProps) {
   const titleId = useId();

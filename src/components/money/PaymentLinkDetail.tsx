@@ -98,7 +98,7 @@ export function PaymentLinkDetail({ link, data, handle, canEdit, onClose, onEdit
             <Button size="sm" variant="secondary" leadingIcon={MessageCircleIcon} onClick={() => window.open(whatsappLink('', shareText), '_blank', 'noopener')}>
               WhatsApp
             </Button>
-            <Link to="/app/domains/qr" className="inline-flex h-8 items-center gap-1.5 rounded-md border border-line-strong bg-raised px-3 text-label font-medium text-fg transition-colors duration-150 hover:bg-sunken">
+            <Link to="/app/qr" className="inline-flex h-8 items-center gap-1.5 rounded-md border border-line-strong bg-raised px-3 text-label font-medium text-fg transition-colors duration-150 hover:bg-sunken">
               <QrCodeIcon size={15} aria-hidden /> {tr('QR code')}
             </Link>
             <Link to={path} target="_blank" className="inline-flex h-8 items-center gap-1.5 rounded-md px-3 text-label font-medium text-fg-muted transition-colors duration-150 hover:bg-sunken hover:text-fg">

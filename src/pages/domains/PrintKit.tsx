@@ -106,7 +106,7 @@ export function PrintKit() {
   const print = () => {
     if (!ready || !qrUrl) return;
     if (!printKit(item, kit, qrUrl)) return toast.error('Your browser blocked the print window', { description: 'Allow pop-ups for KUBICU and try again.' });
-    team.log('pages', `printed ${spec.label.toLowerCase()}`, '/app/domains/kit');
+    team.log('pages', `printed ${spec.label.toLowerCase()}`, '/app/print-kit');
   };
 
   const reset = () => {
@@ -124,7 +124,7 @@ export function PrintKit() {
         title="Make a QR code first"
         description="Every printed piece uses one of your QR codes, so scans are counted and you can change where it goes without reprinting."
         action={
-        <Link to="/app/domains/qr" className="inline-flex h-10 items-center gap-2 rounded-md bg-action px-4 text-label font-semibold text-action-fg transition-colors duration-150 hover:bg-action-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+        <Link to="/app/qr" className="inline-flex h-10 items-center gap-2 rounded-md bg-action px-4 text-label font-semibold text-action-fg transition-colors duration-150 hover:bg-action-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
                 <PlusIcon size={16} aria-hidden /> New QR code
               </Link>
         } />

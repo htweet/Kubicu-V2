@@ -109,7 +109,7 @@ export function AppearancePolicyPanel() {
         </div>
         {policy.changes.length === 0 ?
         <p className="rounded-md border border-line px-4 py-3 text-caption text-fg-subtle">
-            No changes yet. All four appearances are available; the default is {defaultInfo?.name}.
+            No changes yet. Both appearances are available; the default is {defaultInfo?.name}.
           </p> :
 
         <ol className="divide-y divide-line overflow-hidden rounded-md border border-line">

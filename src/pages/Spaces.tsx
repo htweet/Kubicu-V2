@@ -6,6 +6,7 @@ import {
   ArchiveIcon,
   ArchiveRestoreIcon,
   CheckCircle2Icon,
+  ChevronRightIcon,
   CopyIcon,
   ExternalLinkIcon,
   EyeOffIcon,
@@ -13,6 +14,7 @@ import {
   PenToolIcon,
   PlusIcon,
   QrCodeIcon,
+  SparklesIcon,
   UsersIcon,
   XCircleIcon } from
 'lucide-react';
@@ -216,7 +218,7 @@ export function Spaces() {
       <PageHeader
         context={current.name}
         title="My Spaces"
-        description="Your main page plus campaigns and DealRooms. Each has its own link, look and publishing; all share this workspace’s products, orders and contacts."
+        description="Your main page plus any campaigns, events and other spaces. Each has its own link, look and publishing; all share this workspace’s products, orders and contacts."
         actions={
         <Button leadingIcon={PlusIcon} disabled={!spacesAllowed.allowed} title={spacesAllowed.allowed ? undefined : spacesAllowed.reason} onClick={() => setNewSpace({ kind: null })}>
             New space
@@ -281,6 +283,9 @@ export function Spaces() {
               <Button leadingIcon={PenToolIcon} onClick={() => navigate(canvas)}>
                 {errors.length ? 'Fix in canvas' : 'Open canvas'}
               </Button>
+              <Button variant="ai" leadingIcon={SparklesIcon} onClick={() => navigate('/app/assistant')}>
+                Build with AI
+              </Button>
               <Button variant="secondary" trailingIcon={ExternalLinkIcon} disabled={!state.published} onClick={() => navigate(`/p/${state.published?.handle ?? draft.handle}`)}>
                 View live
               </Button>
@@ -290,23 +295,37 @@ export function Spaces() {
       </article>
 
       {extras.length === 0 &&
-      <section aria-labelledby="more-spaces-heading" className="mt-8 grid gap-5 border-y border-line py-6 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
-          <div>
-            <h2 id="more-spaces-heading" className="text-label font-semibold text-fg">
-              Run a sale, group buy or event on its own link
-            </h2>
-            <p className="mt-1 max-w-xl text-label text-fg-muted">Extra spaces sell from the same products, stock and events as your main page, so orders and contacts all land in one place.</p>
-          </div>
-          <div className="flex flex-wrap gap-2">
+      <section aria-labelledby="more-spaces-heading" className="mt-12">
+          <h2 id="more-spaces-heading" className="text-heading font-semibold text-fg">
+            Give something its own link
+          </h2>
+          <p className="mt-1 max-w-2xl text-label text-fg-muted">Extra spaces sell from the same products, stock and events as your main page, so orders and contacts all land in one place.</p>
+          <ul className="mt-5 grid border-t border-line md:grid-cols-2 md:gap-x-10">
             {extraSpaceKindOrder.map((k) => {
             const K = spaceKinds[k];
+            const locked = !spacesAllowed.allowed;
             return (
-              <Button key={k} variant="secondary" leadingIcon={K.icon} onClick={() => setNewSpace({ kind: k })}>
-                  New {K.label === 'DealRoom' ? K.label : K.label.toLowerCase()}
-                </Button>);
+              <li key={k} className="border-b border-line">
+                  <button
+                  type="button"
+                  disabled={locked}
+                  title={locked ? spacesAllowed.reason : undefined}
+                  onClick={() => setNewSpace({ kind: k })}
+                  className="group flex w-full items-start gap-3.5 rounded-sm py-4 text-left transition-colors duration-150 ease-out hover:bg-sunken/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus disabled:cursor-not-allowed disabled:opacity-60 md:px-2">
+                  
+                    <span aria-hidden className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-sunken text-fg-muted transition-colors duration-150 ease-out group-hover:text-fg">
+                      <K.icon size={17} strokeWidth={2} />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-label font-semibold text-fg">{K.label}</span>
+                      <span className="mt-0.5 block text-caption text-fg-muted">{K.blurb}</span>
+                    </span>
+                    <ChevronRightIcon size={16} aria-hidden className="mt-2.5 shrink-0 text-fg-subtle transition-transform duration-150 ease-out group-hover:translate-x-0.5" />
+                  </button>
+                </li>);
 
           })}
-          </div>
+          </ul>
         </section>
       }
 

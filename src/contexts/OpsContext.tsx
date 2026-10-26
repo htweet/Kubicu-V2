@@ -2,10 +2,10 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useR
 import { toast } from 'sonner';
 import type { OpsData } from '../types/ops';
 import { useWorkspace } from './WorkspaceContext';
-import { DEMO_WORKSPACE_ID } from '../utils/workspaceStorage';
+import { seedsSample } from '../utils/workspaceStorage';
 import { emptyOps, opsKey, readOps, writeOps } from '../utils/ops/storage';
 import { clearOpsSample } from '../utils/ops/ops';
-import { withOpsSample } from '../data/opsSeed';
+import { withOpsClassSample, withOpsSample } from '../data/opsSeed';
 import { useOptionalTeam } from './TeamContext';
 import type { Permission } from '../types/team';
 
@@ -24,7 +24,9 @@ interface OpsValue {
 const OpsContext = createContext<OpsValue | null>(null);
 
 function initial(workspaceId: string): OpsData {
-  return readOps(workspaceId) ?? (workspaceId === DEMO_WORKSPACE_ID ? withOpsSample(emptyOps()) : emptyOps());
+  const stored = readOps(workspaceId);
+  if (stored) return seedsSample(workspaceId) && !stored.sampleClassSeeded && stored.services.some((s) => s.sample) ? withOpsClassSample(stored) : stored;
+  return seedsSample(workspaceId) ? withOpsSample(emptyOps()) : emptyOps();
 }
 
 /** Bookings, contacts and automations for the current workspace, saved in this browser. */

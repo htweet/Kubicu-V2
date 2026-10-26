@@ -56,6 +56,8 @@ export function SpacesList({ rows, onOpen, menuFor }: SpacesListProps) {
   const workspaceCount = new Set(rows.map((r) => r.workspace.id)).size;
   const currentName = rows.find((r) => r.inCurrentWorkspace)?.workspace.name ?? 'this workspace';
   const scoped = useMemo(() => scope === 'all' ? rows : rows.filter((r) => r.inCurrentWorkspace), [rows, scope]);
+  // A new workspace has one or two spaces — search, filters and a layout switch would be noise until there's a list to sort.
+  const showTools = scoped.length > 4 || query !== '' || filter !== 'all' || kind !== 'all' || view !== 'cards';
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -145,6 +147,8 @@ export function SpacesList({ rows, onOpen, menuFor }: SpacesListProps) {
             } />
 
           }
+          {showTools &&
+          <>
           <div className="relative w-full sm:w-56">
             <SearchIcon size={15} aria-hidden className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-fg-subtle" />
             <label htmlFor="spaces-search" className="sr-only">
@@ -159,33 +163,35 @@ export function SpacesList({ rows, onOpen, menuFor }: SpacesListProps) {
             <select id="spaces-kind" value={kind} onChange={(e) => setKind(e.target.value as KindFilter)} className={cn(fieldControlClass, 'h-9 w-36 appearance-none pr-8 text-label')}>
               <option value="all">All types</option>
               {(Object.keys(spaceKinds) as SpaceKind[]).map((k) =>
-              <option key={k} value={k}>
+                <option key={k} value={k}>
                   {spaceKinds[k].plural}
                 </option>
-              )}
+                )}
             </select>
             <ChevronDownIcon size={14} aria-hidden className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-fg-subtle" />
           </div>
           <Segmented<Filter>
-            ariaLabel="Status"
-            value={filter}
-            onChange={setFilter}
-            options={[
-            { value: 'all', label: 'All' },
-            { value: 'live', label: 'Live' },
-            { value: 'draft', label: 'Drafts' },
-            { value: 'ended', label: 'Ended' }]
-            } />
-          
+              ariaLabel="Status"
+              value={filter}
+              onChange={setFilter}
+              options={[
+              { value: 'all', label: 'All' },
+              { value: 'live', label: 'Live' },
+              { value: 'draft', label: 'Drafts' },
+              { value: 'ended', label: 'Ended' }]
+              } />
+            
           <Segmented<View>
-            ariaLabel="Layout"
-            value={view}
-            onChange={setView}
-            options={[
-            { value: 'cards', label: 'Cards', icon: LayoutGridIcon, iconOnly: true },
-            { value: 'table', label: 'Table', icon: ListIcon, iconOnly: true }]
-            } />
-          
+              ariaLabel="Layout"
+              value={view}
+              onChange={setView}
+              options={[
+              { value: 'cards', label: 'Cards', icon: LayoutGridIcon, iconOnly: true },
+              { value: 'table', label: 'Table', icon: ListIcon, iconOnly: true }]
+              } />
+            
+          </>
+          }
         </div>
       </div>
 

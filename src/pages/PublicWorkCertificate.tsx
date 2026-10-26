@@ -8,6 +8,8 @@ import { certificateCode } from '../utils/proofCertificate';
 import { MediaImage } from '../components/media/MediaImage';
 import { cardRadius, fontsFor, mix } from '../components/blocks/pageStyle';
 import { pageHref } from '../utils/sitePages';
+import { CertificateSheet } from '../components/certificates/CertificateSheet';
+import { initials } from '../utils/certificates';
 import { Unavailable } from './PublicPage';
 
 /**
@@ -47,7 +49,7 @@ export function PublicWorkCertificate() {
 
   return (
     <main className="cert-page min-h-screen w-full" style={{ background: t.background, color: t.text, fontFamily: fonts.body }}>
-      <div className="mx-auto flex w-full max-w-[640px] flex-col gap-5 px-5 pb-16 pt-6">
+      <div className="mx-auto flex w-full max-w-[1040px] flex-col gap-6 px-5 pb-16 pt-6">
         <div className="flex items-center justify-between gap-3 print:hidden">
           <Link to={pageHref(handle, '')} className="inline-flex min-h-[44px] items-center gap-1.5 text-[14px] font-semibold">
             <ArrowLeftIcon size={15} aria-hidden /> {page.doc.title}
@@ -57,20 +59,30 @@ export function PublicWorkCertificate() {
           </button>
         </div>
 
-        <article className="overflow-hidden" style={{ background: t.surface, borderRadius: cardRadius(t), border: `1px solid ${mix(t.text, 14)}` }}>
-          <header className="flex flex-col items-center gap-2 px-6 pb-6 pt-8 text-center" style={{ borderBottom: `1px solid ${mix(t.text, 10)}` }}>
-            <span className="flex h-12 w-12 items-center justify-center rounded-full" style={{ background: t.text, color: t.background }}>
-              <BadgeCheckIcon size={24} aria-hidden />
-            </span>
-            <p className="text-[12.5px] font-semibold uppercase tracking-[0.08em]" style={{ color: t.mutedText }}>
-              Certificate of delivered work
-            </p>
-            <h1 className="text-[26px] font-medium leading-tight" style={{ fontFamily: fonts.display }}>
-              {item.title}
-            </h1>
-            <p className="text-[15px]" style={{ color: t.mutedText }}>
-              by <span className="font-semibold" style={{ color: t.text }}>{page.doc.title}</span>
-            </p>
+        <h1 className="sr-only">Certificate of delivered work: {item.title}, by {page.doc.title}</h1>
+        <CertificateSheet
+          label="Certificate of delivered work"
+          kind="Delivered Work"
+          issuer={page.doc.title}
+          lead="This is to certify that"
+          recipient={page.doc.title}
+          statement={item.clientName ? `delivered the following work for ${item.clientName}` : 'delivered the following work'}
+          subject={item.title}
+          detail={`${matchedLabel[item.source.kind]} in KUBICU`}
+          date={{ label: 'Date delivered', value: delivered }}
+          signature={{ name: page.doc.title, role: 'Issued by' }}
+          seal={{ rim: 'Matched to a KUBICU record · Certified ·', mark: initials(page.doc.title) }}
+          code={code}
+          footnote={`KUBICU matched this work to a real ${item.source.kind === 'job' ? 'job' : item.source.kind} in ${page.doc.title}’s records. Open this certificate’s link and check the code to confirm a printed copy.`}
+          accent={t.accent} />
+        
+
+        <article className="overflow-hidden print:hidden" style={{ background: t.surface, borderRadius: cardRadius(t), border: `1px solid ${mix(t.text, 14)}` }}>
+          <header className="flex items-center gap-2.5 px-6 pb-4 pt-5" style={{ borderBottom: `1px solid ${mix(t.text, 10)}` }}>
+            <BadgeCheckIcon size={18} aria-hidden />
+            <h2 className="text-[17px] font-medium" style={{ fontFamily: fonts.display }}>
+              About this work
+            </h2>
           </header>
 
           {item.imageUrl && <MediaImage src={item.imageUrl} alt={item.imageAlt} className="aspect-[16/9] w-full object-cover" />}

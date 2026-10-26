@@ -121,6 +121,22 @@ export function StorefrontView({ theme, data, productHref, ordering, whatsappPho
 
 
   const rows = s.cardStyle === 'row';
+  const priceList = s.cardStyle === 'pricelist';
+  // Price list (Catalogue): grouped under collection headings when the shopper hasn't narrowed things down.
+  const groups = useMemo(() => {
+    if (!priceList || collection || q || featuredOnly || savedOnly || collections.length === 0) return null;
+    const used = new Set<string>();
+    const out = collections.
+    map((c) => {
+      const items = visible.filter((p) => !used.has(p.id) && p.collectionIds.includes(c.id));
+      items.forEach((p) => used.add(p.id));
+      return { id: c.id, name: c.name, items };
+    }).
+    filter((g) => g.items.length > 0);
+    const rest = visible.filter((p) => !used.has(p.id));
+    if (rest.length) out.push({ id: '__rest', name: 'More', items: rest });
+    return out;
+  }, [priceList, collection, q, featuredOnly, savedOnly, collections, visible]);
 
   return (
     <div className="flex flex-col gap-5">
@@ -208,8 +224,23 @@ export function StorefrontView({ theme, data, productHref, ordering, whatsappPho
                     </button>
               }
                 </div> :
+            priceList ?
+            groups ?
+            <div className="flex max-w-3xl flex-col gap-8">
+                    {groups.map((g) =>
+              <section key={g.id} aria-labelledby={`pl-${g.id}`}>
+                        <h2 id={`pl-${g.id}`} className="pb-1 text-[17px] font-semibold" style={{ color: theme.text, borderBottom: `2px solid ${theme.text}` }}>
+                          {g.name}
+                        </h2>
+                        <ul>{g.items.map(card)}</ul>
+                      </section>
+              )}
+                  </div> :
+
+            <ul className="max-w-3xl">{visible.map(card)}</ul> :
+
             rows ?
-            <ul className="grid grid-cols-1 md:grid-cols-2 md:gap-x-8">{visible.map(card)}</ul> :
+            <ul className={cn('grid grid-cols-1', s.addMode === 'stepper' ? 'md:grid-cols-2 md:gap-x-10 xl:grid-cols-3' : 'md:grid-cols-2 md:gap-x-8')}>{visible.map(card)}</ul> :
 
             <ul className={cn('grid grid-cols-2', s.cardStyle === 'minimal' ? 'gap-x-4 gap-y-8 md:gap-x-6 md:gap-y-10' : 'gap-3 md:gap-4', gridCols[s.columns])}>{visible.map(card)}</ul>
             }

@@ -3,6 +3,7 @@ import type { Delivery, DeliveryStatus, FailReason, FulfilmentData, Rider } from
 import { deliveryAreas, deliveryPartners, SIMULATED_RIDERS } from '../data/deliveryPartners';
 import { dispatchBlocked } from './commerce/deposit';
 import { uid } from './id';
+import { seedsSample } from './workspaceStorage';
 
 /** Local Fulfilment (D96) store and rules. The courier side is simulated and labelled. */
 
@@ -21,7 +22,46 @@ export function readFulfilment(workspaceId: string): FulfilmentData {
   } catch {
 
     /* fresh store */}
-  return emptyFulfilment();
+  // Demo data (D200): one sample delivery on sample order #1007, so Deliveries has something to try.
+  if (!seedsSample(workspaceId)) return emptyFulfilment();
+  const seeded = sampleFulfilment();
+  writeFulfilment(workspaceId, seeded);
+  return seeded;
+}
+
+function sampleFulfilment(): FulfilmentData {
+  const at = (h: number) => new Date(Date.now() - h * 3600000).toISOString();
+  return {
+    ...emptyFulfilment(),
+    pickupAddress: 'Adaeze Atelier studio, Victoria Island (sample address)',
+    pickupPhone: '0803 000 0000',
+    deliveries: [
+    {
+      id: 'dl_sample_1007',
+      orderId: 'so_1007',
+      orderNumber: '1007',
+      customerName: 'Chiamaka Obi',
+      customerPhone: '+234 803 000 1107',
+      address: '4 Example Street, Yaba',
+      partnerId: 'swiftrun',
+      partnerName: 'SwiftRun Logistics',
+      feeNgn: 2000,
+      etaLabel: 'Today, by 6pm',
+      pickupAt: at(-1),
+      status: 'assigned',
+      rider: SIMULATED_RIDERS[0],
+      code: '4821',
+      codeAttempts: 0,
+      escrow: false,
+      events: [
+      { id: 'dle_s2', at: at(1), label: `Rider assigned: ${SIMULATED_RIDERS[0].name}` },
+      { id: 'dle_s1', at: at(2), label: 'Delivery booked with SwiftRun Logistics (simulated)' }],
+
+      createdAt: at(2),
+      sample: true
+    }]
+
+  };
 }
 
 export function writeFulfilment(workspaceId: string, data: FulfilmentData): void {

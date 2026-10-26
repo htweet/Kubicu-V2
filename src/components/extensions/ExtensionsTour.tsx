@@ -1,7 +1,7 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { CheckCircle2Icon, PuzzleIcon, ShieldCheckIcon, Trash2Icon } from 'lucide-react';
+import { CheckCircle2Icon, PuzzleIcon, ShieldCheckIcon, Trash2Icon, XIcon } from 'lucide-react';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
 import { useTeam } from '../../contexts/TeamContext';
 import { useMarketplace } from '../../contexts/MarketplaceContext';
@@ -30,8 +30,8 @@ function readDone(workspaceId: string): boolean {
 
 /**
  * First visit to a workspace (D87): spotlights Extensions, then asks the person to install one
- * suggested app so they learn how installing — and removing — works. It can't be skipped, but
- * every suggestion is free and can be uninstalled straight after.
+ * suggested app so they learn how installing — and removing — works. Optional: the close button,
+ * Escape or "Skip for now" ends it for good on this workspace.
  */
 export function ExtensionsTour() {
   const { current } = useWorkspace();
@@ -83,6 +83,23 @@ export function ExtensionsTour() {
     };
   }, [open, step, desktop]);
 
+  // Escape closes the tour, like any dialog.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      e.preventDefault();
+      try {
+        window.localStorage.setItem(tourKey(current.id), 'done');
+      } catch {
+
+        /* ignore */}
+      setDone(true);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open, current.id]);
+
   if (!open) return null;
 
   const finish = (to?: string) => {
@@ -120,7 +137,7 @@ export function ExtensionsTour() {
   return (
     <div className="fixed inset-0 z-[80]">
       {/* Click shield + dimmer. With a spotlight, the cut-out's own shadow does the dimming. */}
-      <div className={cn('absolute inset-0', spotlight ? 'bg-transparent' : 'bg-[rgb(10_10_15/0.6)]')} />
+      <div className={cn('absolute inset-0', spotlight ? 'bg-transparent' : 'bg-[rgb(10_10_15/0.6)]')} onClick={() => finish()} aria-hidden />
       {spotlight &&
       <div
         aria-hidden
@@ -145,11 +162,21 @@ export function ExtensionsTour() {
             exit={{ opacity: 0, scale: 0.96 }}
             transition={{ duration: 0.2, ease: EASE }}
             className={cn(
-              'flex flex-col overflow-hidden rounded-xl border border-line bg-raised shadow-lg focus:outline-none',
+              'relative flex flex-col overflow-hidden rounded-xl border border-line bg-raised shadow-lg focus:outline-none',
               spotlight ? 'w-[min(360px,calc(100vw-24px))]' : 'max-h-full w-full max-w-[520px]'
             )}>
             
-          <Progress step={step} />
+          <button
+              type="button"
+              onClick={() => finish()}
+              aria-label="Close tour"
+              className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-md text-fg-muted transition-colors duration-150 hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+              
+            <XIcon size={18} aria-hidden />
+          </button>
+          <div className="pr-12">
+            <Progress step={step} />
+          </div>
 
           {step === 'intro' &&
             <div className="flex flex-col gap-4 p-6">
@@ -165,9 +192,14 @@ export function ExtensionsTour() {
                 </p>
                 {!spotlight && <p className="mt-2 text-label text-fg-muted">{desktop ? 'Find it in the sidebar under Business.' : 'On your phone it’s under More → Extensions.'}</p>}
               </div>
-              <Button data-autofocus onClick={goPick} className="self-start">
-                Open Extensions
-              </Button>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button data-autofocus onClick={goPick}>
+                  Open Extensions
+                </Button>
+                <Button variant="tertiary" onClick={() => finish()}>
+                  Skip for now
+                </Button>
+              </div>
             </div>
             }
 
@@ -228,10 +260,11 @@ export function ExtensionsTour() {
                   </div>
                 }
               </div>
-              <div className="border-t border-line px-6 py-4">
-                <Button fullWidth onClick={install}>
-                  Allow and install {chosen?.name}
+              <div className="flex flex-col-reverse gap-2 border-t border-line px-6 py-4 sm:flex-row sm:justify-end">
+                <Button variant="secondary" onClick={() => finish()}>
+                  Not now
                 </Button>
+                <Button onClick={install}>Allow and install {chosen?.name}</Button>
               </div>
             </div>
             }

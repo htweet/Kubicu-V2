@@ -7,12 +7,9 @@ export function DomainsLayout() {
   const problems = data.domains.filter((d) => d.status === 'problem').length;
   return (
     <ModuleLayout
-      label="Domains & QR"
+      label="Domains"
       items={[
       { to: '/app/domains', label: 'Domains', end: true, badge: problems },
-      { to: '/app/domains/qr', label: 'QR codes' },
-      { to: '/app/domains/kit', label: 'Print kit' },
-      { to: '/app/domains/links', label: 'Campaign links' },
       { to: '/app/domains/redirects', label: 'Redirects' }]
       } />);
 

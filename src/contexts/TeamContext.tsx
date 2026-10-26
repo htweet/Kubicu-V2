@@ -2,7 +2,7 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useR
 import { toast } from 'sonner';
 import type { ActivityArea, Invite, Member, Notice, Permission, ReviewRequest, Role, TeamComment, TeamData } from '../types/team';
 import { useWorkspace } from './WorkspaceContext';
-import { DEMO_WORKSPACE_ID } from '../utils/workspaceStorage';
+import { seedsSample } from '../utils/workspaceStorage';
 import { rolePermissions, permissionReason, roleInfo, seatLimits } from '../data/permissions';
 import { activity, effectiveRole, emptyTeam, INVITE_DAYS, inviteState, mentionedIds, OWNER_ID, pausedMemberIds, readTeam, seatsUsed, teamKey, withSampleTeam, writeTeam } from '../utils/team';
 import { MAIN_SPACE_ID } from '../utils/spaces';
@@ -60,7 +60,7 @@ export function TeamProvider({ viewingAs, children }: {viewingAs: Role;children:
   const [data, setData] = useState<TeamData>(() => {
     const stored = readTeam(current.id);
     const base = stored ?? emptyTeam(current);
-    return current.id === DEMO_WORKSPACE_ID && !base.sampleSeeded ? withSampleTeam(base) : base;
+    return seedsSample(current.id) && !base.sampleSeeded ? withSampleTeam(base) : base;
   });
   const ref = useRef(data);
   ref.current = data;

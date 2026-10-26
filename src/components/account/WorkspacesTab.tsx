@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PlusIcon } from 'lucide-react';
+import { FlaskConicalIcon, PlusIcon } from 'lucide-react';
+import { DEMO_WORKSPACE_ID } from '../../utils/workspaceStorage';
+import { RemoveDemoWorkspaceDialog } from '../settings/RemoveDemoWorkspaceDialog';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
 import { readTeam } from '../../utils/team';
 import { plans } from '../../data/plans';
@@ -12,8 +14,11 @@ import { Badge } from '../ui/Badge';
 
 /** Account → Workspaces: every workspace this account belongs to (D80). */
 export function WorkspacesTab() {
-  const { workspaces, current, switchTo } = useWorkspace();
+  const { workspaces, current, switchTo, restoreDemoWorkspace } = useWorkspace();
   const navigate = useNavigate();
+  const [removing, setRemoving] = useState(false);
+  const demoPresent = workspaces.some((w) => w.id === DEMO_WORKSPACE_ID);
+  const hasOwn = workspaces.some((w) => w.id !== DEMO_WORKSPACE_ID);
 
   const rows = workspaces.map((w) => {
     const team = readTeam(w.id);
@@ -48,6 +53,7 @@ export function WorkspacesTab() {
                     <span className="flex flex-wrap items-center gap-2">
                       <span className="truncate text-label font-semibold text-fg">{w.name}</span>
                       {isCurrent && <Badge tone="info">Open now</Badge>}
+                      {w.id === DEMO_WORKSPACE_ID && <Badge tone="neutral">Demo</Badge>}
                     </span>
                     <span className="block truncate text-caption text-fg-subtle">
                       {roleInfo[role].label} · {plans[w.plan].name} plan · {members} {members === 1 ? 'member' : 'members'}
@@ -67,9 +73,15 @@ export function WorkspacesTab() {
                       Open
                     </Button>
                   }
+                  {w.id === DEMO_WORKSPACE_ID ?
+                  <Button size="sm" variant="tertiary" disabled={!hasOwn} title={hasOwn ? undefined : 'Create your own workspace first'} onClick={() => setRemoving(true)}>
+                      Remove
+                    </Button> :
+
                   <Button size="sm" variant="tertiary" disabled title="Owners can’t leave. Transfer ownership in Settings → Team first.">
-                    Leave
-                  </Button>
+                      Leave
+                    </Button>
+                  }
                 </div>
               </li>);
 
@@ -79,6 +91,28 @@ export function WorkspacesTab() {
           Owners can’t leave a workspace. To hand one over, open it and use Settings → Team → Transfer ownership.
         </p>
       </Card>
+
+      <Card
+        id="acc-demo"
+        title="Demo workspace"
+        description={
+        demoPresent ?
+        'Adaeze Atelier is a ready-made workspace with labelled sample data in every area. Remove it when you’ve finished exploring.' :
+        'Want to explore again? Add a fresh copy of Adaeze Atelier, with labelled sample data in every area. It never takes real payments.'
+        }
+        actions={
+        demoPresent ?
+        <Button size="sm" variant="secondary" disabled={!hasOwn} title={hasOwn ? undefined : 'Create your own workspace first'} onClick={() => setRemoving(true)}>
+              Remove
+            </Button> :
+
+        <Button size="sm" variant="secondary" leadingIcon={FlaskConicalIcon} onClick={restoreDemoWorkspace}>
+              Add demo workspace
+            </Button>
+
+        } />
+      
+      <RemoveDemoWorkspaceDialog open={removing} onClose={() => setRemoving(false)} />
     </div>);
 
 }

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeftIcon, CheckCircle2Icon, ClockIcon, DownloadIcon, MessageCircleIcon, RotateCcwIcon, XCircleIcon } from 'lucide-react';
+import { ArrowLeftIcon, CheckCircle2Icon, ClockIcon, CopyIcon, DownloadIcon, GiftIcon, GraduationCapIcon, MessageCircleIcon, RotateCcwIcon, XCircleIcon } from 'lucide-react';
+import { learnUrl } from '../utils/commerce/courses';
 import { useResolvedPage, sellerPhone } from '../hooks/useResolvedPage';
 import { usePageCommerce } from '../hooks/usePageCommerce';
 import { useVisitorLang } from '../hooks/useVisitorLang';
@@ -216,6 +217,69 @@ export function OrderStatus() {
               <DownloadIcon size={17} aria-hidden /> {tx('Go to your downloads')}
             </Link>
             }
+
+          {(() => {
+              // Gift card codes (D202) appear once the payment is confirmed.
+              const codes = (commerce.data?.giftCards ?? []).filter((g) => g.orderId === order.id);
+              const hasGiftItems = order.items.some((i) => commerce.data?.products.find((p) => p.id === i.productId)?.giftCard);
+              if (!hasGiftItems || refunded) return null;
+              return (
+                <section aria-labelledby="order-gift-codes" className="p-5" style={{ ...cardStyle(t), borderRadius: 16 }}>
+                <h2 id="order-gift-codes" className="flex items-center gap-2 text-[15px] font-semibold">
+                  <GiftIcon size={16} aria-hidden /> {tx(codes.length === 1 ? 'Your gift card' : 'Your gift cards')}
+                </h2>
+                {pending || codes.length === 0 ?
+                  <p className="mt-1.5 text-[13.5px]" style={{ color: t.mutedText }}>
+                    {tx('Your code appears here as soon as the payment is confirmed.')}
+                  </p> :
+
+                  <>
+                    <p className="mt-1.5 text-[13.5px]" style={{ color: t.mutedText }}>
+                      {tx('Send the code to whoever it’s for. It works at this shop’s checkout; anything left over carries to the next order.')}
+                    </p>
+                    <ul className="mt-3 flex flex-col gap-2">
+                      {codes.map((g) =>
+                      <li key={g.id} className="flex items-center justify-between gap-3 rounded-md px-3 py-2.5" style={{ background: mix(t.text, 6) }}>
+                          <span className="min-w-0">
+                            <span className="block truncate font-mono text-[15px] font-semibold tracking-wide">{g.code}</span>
+                            <span className="text-[12.5px]" style={{ color: t.mutedText }}>
+                              {tx('{left} left of {total}', { left: formatNgn(g.balanceNgn), total: formatNgn(g.initialNgn) })}
+                            </span>
+                          </span>
+                          <button
+                          type="button"
+                          onClick={() => navigator.clipboard?.writeText(g.code).catch(() => undefined)}
+                          className="flex h-10 shrink-0 items-center gap-1.5 px-3.5 text-[13.5px] font-semibold focus-visible:outline-none focus-visible:ring-2"
+                          style={{ ...cardStyle(t), borderRadius: 999 }}
+                          aria-label={tx('Copy code {code}', { code: g.code })}>
+                          
+                            <CopyIcon size={14} aria-hidden /> {tx('Copy')}
+                          </button>
+                        </li>
+                      )}
+                    </ul>
+                  </>
+                  }
+              </section>);
+
+            })()}
+
+          {!pending && !refunded &&
+            order.items.
+            filter((i) => i.kind === 'course').
+            map((i) => {
+              const courseId = commerce.data?.products.find((p) => p.id === i.productId)?.courseId;
+              return courseId ?
+              <Link
+                key={i.productId}
+                to={learnUrl(handle, courseId)}
+                className="flex h-12 items-center justify-center gap-2 text-[15px] font-semibold"
+                style={{ background: t.accent, color: t.accentText, borderRadius: 999 }}>
+                
+                    <GraduationCapIcon size={17} aria-hidden /> {tx('Start learning: {name}', { name: i.name })}
+                  </Link> :
+              null;
+            })}
 
           {phone &&
             <a

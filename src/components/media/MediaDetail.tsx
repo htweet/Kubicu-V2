@@ -17,6 +17,7 @@ import { Button } from '../ui/Button';
 import { TextInput } from '../ui/TextInput';
 import { TextArea } from '../ui/TextArea';
 import { MediaImage } from './MediaImage';
+import { fieldControlClass } from '../ui/Field';
 
 interface MediaDetailProps {
   asset: MediaAsset | null;
@@ -142,6 +143,39 @@ export function MediaDetail({ asset, uses, onClose }: MediaDetailProps) {
               onChange={(e) => setAlt(e.target.value)}
               onBlur={() => alt !== asset.alt && media.update(asset.id, { alt: alt.trim() })} />
             
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="media-folder" className="text-label font-medium text-fg">
+                Folder
+              </label>
+              <select
+                id="media-folder"
+                value={media.folderOf(asset)?.id ?? ''}
+                onChange={(e) => {
+                  const target = media.folders.find((f) => f.id === e.target.value);
+                  void media.moveTo([asset.id], target?.id ?? null).then(() => toast(target ? `Moved to ${target.name}` : 'Taken out of its folder'));
+                }}
+                className={fieldControlClass}>
+                
+                <option value="">Not in a folder</option>
+                <optgroup label="Default folders">
+                  {media.folders.filter((f) => f.system).map((f) =>
+                  <option key={f.id} value={f.id}>
+                      {f.name}
+                    </option>
+                  )}
+                </optgroup>
+                {media.folders.some((f) => !f.system) &&
+                <optgroup label="Your folders">
+                    {media.folders.filter((f) => !f.system).map((f) =>
+                  <option key={f.id} value={f.id}>
+                        {f.name}
+                      </option>
+                  )}
+                  </optgroup>
+                }
+              </select>
+              <p className="text-caption text-fg-subtle">Moving it doesn’t change where it’s used.</p>
+            </div>
           </div>
 
           <section aria-labelledby="media-uses">

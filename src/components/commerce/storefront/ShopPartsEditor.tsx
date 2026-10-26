@@ -42,7 +42,7 @@ export function ShopPartsEditor({ parts, customised, disabled, hasBanner, hasFea
         <SelectInput id="sf-card" label="Product card" value={parts.cardStyle} disabled={disabled} onChange={(v) => onChange('cardStyle', v)} options={opts(partLabels.cardStyle)} />
       </div>
 
-      {parts.cardStyle !== 'row' &&
+      {parts.cardStyle !== 'row' && parts.cardStyle !== 'pricelist' &&
       <div className="grid gap-4 sm:grid-cols-2">
           <div className="flex flex-col gap-1.5">
             <span className="text-label font-medium text-fg">Products per row</span>

@@ -10,15 +10,17 @@ import { PageMiniPreview } from '../overview/PageMiniPreview';
 import { Button } from '../ui/Button';
 import { InlineAlert } from '../ui/InlineAlert';
 import { StepHeading } from './OnboardingLayout';
+import { DemoDataChoice } from './DemoDataChoice';
 
 interface PreviewStepProps {
   state: OnboardingState;
+  update: (patch: Partial<OnboardingState>) => void;
   built: BuiltOnboardingPage;
   go: (step: number) => void;
   onFinish: (publish: boolean) => void;
 }
 
-export function PreviewStep({ state, built, go, onFinish }: PreviewStepProps) {
+export function PreviewStep({ state, update, built, go, onFinish }: PreviewStepProps) {
   const { workspaces } = useWorkspace();
   const [busy, setBusy] = useState<'publish' | 'edit' | null>(null);
   const issues = useMemo(() => validateDocument(built.doc, takenHandles(workspaces, '__new__')), [built.doc, workspaces]);
@@ -70,6 +72,8 @@ export function PreviewStep({ state, built, go, onFinish }: PreviewStepProps) {
             You can still open the canvas and fix them there.
           </InlineAlert>
         }
+
+        <DemoDataChoice on={!!state.demoData} onChange={(on) => update({ demoData: on })} />
 
         <div className="mt-8 flex flex-col gap-2 sm:flex-row">
           <Button size="lg" leadingIcon={SendIcon} disabled={errors.length > 0 || !!busy} loading={busy === 'publish'} onClick={() => finish(true)}>

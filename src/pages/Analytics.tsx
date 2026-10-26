@@ -326,14 +326,14 @@ export function Analytics() {
           title="Campaign links and QR codes"
           className="mt-10 gap-3"
           actions={
-          <Link to="/app/domains/links" className="text-label font-medium text-action hover:underline">
+          <Link to="/app/campaign-links" className="text-label font-medium text-action hover:underline">
                 Manage
               </Link>
           }>
           
             {domainLinks.length === 0 ?
           <p className="text-label text-fg-muted">
-                Make a short link for each place you share, or a QR code for print, to see which brings visitors. <Link to="/app/domains/links" className="underline underline-offset-2">Create one</Link>
+                Make a short link for each place you share, or a QR code for print, to see which brings visitors. <Link to="/app/campaign-links" className="underline underline-offset-2">Create one</Link>
               </p> :
 
           <table className="w-full max-w-3xl text-label">

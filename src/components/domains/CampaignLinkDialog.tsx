@@ -70,7 +70,7 @@ export function CampaignLinkDialog({ open, onClose, link }: Props) {
     { ...link, name: name.trim(), source, destination: decodeDestination(dest) } :
     { id: uid('lnk'), slug: effectiveSlug, name: name.trim(), source, destination: decodeDestination(dest), createdAt: new Date().toISOString(), archivedAt: null };
     if (!saveLink(next)) return;
-    team.log('pages', `${link ? 'updated' : 'created'} the campaign link ${shortDisplay(mainHandle, next.slug, host)}`, '/app/domains/links');
+    team.log('pages', `${link ? 'updated' : 'created'} the campaign link ${shortDisplay(mainHandle, next.slug, host)}`, '/app/campaign-links');
     onClose();
   };
 

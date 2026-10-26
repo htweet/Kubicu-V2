@@ -14,6 +14,7 @@ import { matchVariant, shopProducts, storefrontConfig, valueAvailable } from '..
 import { formatNgn, whatsappLink } from '../../utils/format';
 import { isValidPhone } from '../../utils/validation';
 import { cn } from '../../utils/cn';
+import { bulkLevels, isPreorder, preorderLeft, shipsByLabel } from '../../utils/commerce/sellModes';
 
 interface ProductDetailViewProps {
   theme: PageTheme;
@@ -106,7 +107,7 @@ export function ProductDetailView({ theme, data, product, ordering, whatsappPhon
   ordering === 'checkout' ?
   <button type="button" onClick={buy} disabled={soldOut || !!variant && !available} className="flex h-12 w-full items-center justify-center gap-2 text-[15px] font-semibold transition-opacity duration-150 disabled:cursor-not-allowed disabled:opacity-50" style={primary}>
         <ShoppingBagIcon size={16} aria-hidden />
-        {soldOut ? 'Sold out' : 'Add to cart'}
+        {soldOut ? isPreorder(product) ? 'Pre-orders full' : 'Sold out' : isPreorder(product) ? 'Pre-order' : 'Add to cart'}
       </button> :
 
   <a
@@ -173,16 +174,53 @@ export function ProductDetailView({ theme, data, product, ordering, whatsappPhon
         </fieldset>
     )}
 
+      {bulkLevels(product).length > 0 && ordering === 'checkout' &&
+    <div className="rounded-md px-3.5 py-3" style={{ background: mix(theme.text, 5) }}>
+          <p className="text-[13.5px] font-semibold" style={{ color: theme.text }}>
+            Buy more, pay less
+          </p>
+          <ul className="mt-1.5 flex flex-col gap-1 text-[13.5px] tabular-nums" style={{ color: theme.mutedText }}>
+            {bulkLevels(product).map((b) =>
+        <li key={b.minQty} className="flex justify-between gap-4">
+                <span>{b.minQty}+ items</span>
+                <span className="font-semibold" style={{ color: theme.text }}>
+                  {formatNgn(b.priceNgn)} each
+                </span>
+              </li>
+        )}
+          </ul>
+          <p className="mt-1.5 text-[12px]" style={{ color: theme.mutedText }}>
+            Applied in the cart automatically{product.variants.length > 1 ? ', counting every option together' : ''}.
+          </p>
+        </div>
+    }
+
+      {isPreorder(product) && !soldOut &&
+    <p className="rounded-md px-3.5 py-3 text-[13.5px] leading-snug" style={{ background: mix(theme.text, 5), color: theme.text }}>
+          <span className="font-semibold">Pre-order</span> — expected by {shipsByLabel(product.preorder.shipsBy)}.
+          {product.preorder.depositPct ? ` Pay ${product.preorder.depositPct}% now and the rest before it’s sent.` : ' Paid in full now; sent as soon as it’s in.'}
+          {preorderLeft(product) !== null && ` ${preorderLeft(product)} left.`}
+        </p>
+    }
+
       <p className="text-[13.5px] font-medium" style={{ color: theme.mutedText }} aria-live="polite">
         {soldOut ?
+      isPreorder(product) ?
+      'Pre-orders are full.' :
       'Sold out right now.' :
       variant ?
       !available ?
       'This option is sold out — try another.' :
+      product.giftCard ?
+      'Your gift card code appears on your order page as soon as payment is confirmed.' :
+      isPreorder(product) ?
+      'Available to pre-order.' :
       product.trackStock && product.kind === 'physical' && variant.stock <= product.lowStockAt ?
       `Only ${variant.stock} left.` :
       product.kind === 'digital' ?
       'Instant download after payment.' :
+      product.kind === 'course' ?
+      'Online course — start learning straight after payment.' :
       'In stock.' :
       tried && missing.length ?
       `Choose ${missing.map((m) => m.name.toLowerCase()).join(' and ')}.` :
