@@ -79,6 +79,7 @@ import { Pricing } from './pages/marketing/Pricing';
 import { InfoPage } from './pages/marketing/InfoPage';
 import { Developers } from './pages/marketing/Developers';
 import { Solution } from './pages/marketing/Solution';
+import { ForCreators } from './pages/marketing/ForCreators';
 import { Features } from './pages/marketing/Features';
 import { MarketplaceHome } from './pages/marketing/marketplace/MarketplaceHome';
 import { MarketplaceCategory } from './pages/marketing/marketplace/MarketplaceCategory';
@@ -197,6 +198,7 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
                 <Route path="about/:topic" element={<InfoPage />} />
                 <Route path="developers" element={<Developers />} />
                 <Route path="copilot" element={<CopilotLanding />} />
+                <Route path="for/creators" element={<ForCreators />} />
                 <Route path="for/:segment" element={<Solution />} />
                 <Route path="marketplace" element={<MarketplaceHome />} />
                 <Route path="marketplace/apps" element={<MarketplaceCategory fixed="apps" />} />

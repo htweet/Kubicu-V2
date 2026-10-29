@@ -15,6 +15,8 @@ import { Segmented } from '../../components/ui/Segmented';
 import { Stat, StatGroup } from '../../components/ui/layout/Stat';
 import { Card } from '../../components/ui/layout/Card';
 import { IllustrativeTag } from '../../components/ui/IllustrativeTag';
+import { readMenuUsage } from '../../utils/siteMenuUsage';
+import { siteMenu } from '../../data/siteMenu';
 
 type Period = '7' | '30' | '90';
 const DAY = 86400000;
@@ -30,6 +32,75 @@ interface WsStats {
   orders: number;
   fees: number;
   visits: number;
+}
+
+/** Website menu usage (D273): anonymous counts of panel opens and link picks. */
+function MenuUsageCard({ days }: {days: number;}) {
+  const usage = useMemo(() => readMenuUsage(days), [days]);
+  const groupLabel = (id: string) => siteMenu.find((g) => g.id === id)?.label ?? id;
+  const maxOpen = Math.max(1, ...usage.opens.map((o) => o.total));
+  const top = usage.links.slice(0, 10);
+
+  return (
+    <Card
+      id="menu-usage"
+      className="mt-8"
+      title="Website menu"
+      description={`Which menu panels people open and which links they pick · last ${days} days · counts only, no personal data`}>
+      
+      {usage.totalOpens + usage.totalLinks === 0 ?
+      <p className="text-label text-fg-muted">No menu use recorded in this period. Open the KUBICU website menu on this device and pick a link to see it here.</p> :
+
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
+          <div>
+            <h3 className="text-label font-semibold text-fg">Panels opened</h3>
+            <p className="text-caption text-fg-subtle">{usage.totalOpens.toLocaleString('en-NG')} opens</p>
+            <ul className="mt-4 flex flex-col gap-3">
+              {usage.opens.map((o) =>
+            <li key={o.group} className="grid grid-cols-[6.5rem_minmax(0,1fr)_3rem] items-center gap-3 text-label">
+                  <span className="truncate text-fg">{groupLabel(o.group)}</span>
+                  <span className="h-2 overflow-hidden rounded-full bg-sunken" aria-hidden>
+                    <span className="block h-full rounded-full bg-action" style={{ width: `${o.total / maxOpen * 100}%` }} />
+                  </span>
+                  <span className="text-right tabular-nums text-fg-muted">{o.total}</span>
+                </li>
+            )}
+            </ul>
+          </div>
+          <div className="min-w-0">
+            <h3 className="text-label font-semibold text-fg">Links picked</h3>
+            <p className="text-caption text-fg-subtle">{usage.totalLinks.toLocaleString('en-NG')} picks · top {top.length}</p>
+            <div className="mt-3 overflow-x-auto">
+              <table className="w-full text-label">
+                <caption className="sr-only">Most-picked menu links</caption>
+                <thead>
+                  <tr className="text-caption text-fg-subtle">
+                    <th scope="col" className="py-2 pr-3 text-left font-medium">Link</th>
+                    <th scope="col" className="px-2 py-2 text-right font-medium">Computer</th>
+                    <th scope="col" className="px-2 py-2 text-right font-medium">Phone</th>
+                    <th scope="col" className="py-2 pl-2 text-right font-medium">Total</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-line border-t border-line">
+                  {top.map((l) =>
+                <tr key={l.to}>
+                      <th scope="row" className="py-2.5 pr-3 text-left font-medium text-fg">
+                        {l.title}
+                        <span className="block truncate font-mono text-caption font-normal text-fg-subtle">{l.to}</span>
+                      </th>
+                      <td className="px-2 py-2.5 text-right tabular-nums text-fg-muted">{l.desktop}</td>
+                      <td className="px-2 py-2.5 text-right tabular-nums text-fg-muted">{l.mobile}</td>
+                      <td className="py-2.5 pl-2 text-right font-semibold tabular-nums text-fg">{l.total}</td>
+                    </tr>
+                )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      }
+    </Card>);
+
 }
 
 /** Super admin → Business reporting: growth, revenue and usage across workspaces, each with its definition (D82). */
@@ -150,6 +221,8 @@ export function AdminReporting() {
         </Card>
       </div>
 
+      <MenuUsageCard days={days} />
+
       <section aria-labelledby="rep-defs" className="mt-10 border-t border-line pt-8">
         <h2 id="rep-defs" className="text-heading font-semibold text-fg">
           Definitions
@@ -161,6 +234,7 @@ export function AdminReporting() {
           ['KUBICU fees earned', 'The platform fee on those orders. Example rates (D40) — no real money moves in the prototype.'],
           ['Visits', 'Distinct visitor sessions (30 minutes) on public pages. Owner previews and template examples aren’t counted (D61).'],
           ['New workspaces', 'Workspaces created in the period. “Live page” means at least one space is published.'],
+          ['Website menu', 'How often each menu panel was opened and each menu link was picked on the KUBICU website, split by computer and phone menus. Only daily counts are kept, for 90 days: no session, browser ID or address. Browsers that send Do Not Track or Global Privacy Control aren’t counted (D273).'],
           ['Scope', 'Every workspace stored on this device. Production reporting will read the platform database and refresh hourly.']].
           map(([term, def]) =>
           <div key={term}>

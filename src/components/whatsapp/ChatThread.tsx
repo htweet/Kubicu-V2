@@ -141,9 +141,9 @@ export function ChatThread({ chat, canEdit, quickReplies, products, toCard, onCl
       title={chat.name}
       description={`${chat.phone} · Simulated WhatsApp chat`}
       footer={footer}
-      bodyClassName="flex flex-col gap-5">
+      bodyClassName="flex flex-col gap-5 px-5 py-5">
       
-      <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+      <div className="flex flex-col gap-3">
         <SelectInput<WaChatLabel>
           id="wa-label"
           label="Label"
@@ -152,11 +152,11 @@ export function ChatThread({ chat, canEdit, quickReplies, products, toCard, onCl
           onChange={(v) => onLabel(chat, v)}
           options={(Object.keys(chatLabels) as WaChatLabel[]).map((l) => ({ value: l, label: chatLabels[l] }))} />
         
-        <div className="flex flex-wrap gap-2">
+        <div className="grid grid-cols-2 gap-2 [&>button]:w-full">
           <Button size="sm" variant="secondary" leadingIcon={UserPlusIcon} disabled={!canEdit || chat.contactSaved} onClick={() => onSaveContact(chat)}>
             {chat.contactSaved ? 'In Audience' : 'Save to Audience'}
           </Button>
-          <Button size="sm" variant="tertiary" leadingIcon={ExternalLinkIcon} onClick={() => window.open(whatsappLink(chat.phone, ''), '_blank', 'noopener')}>
+          <Button size="sm" variant="secondary" leadingIcon={ExternalLinkIcon} onClick={() => window.open(whatsappLink(chat.phone, ''), '_blank', 'noopener')}>
             Open in WhatsApp
           </Button>
         </div>
@@ -177,7 +177,7 @@ export function ChatThread({ chat, canEdit, quickReplies, products, toCard, onCl
                   </div>
                 }
               </div>
-              <span className="text-caption text-fg-subtle">
+              <span className="px-1 text-caption text-fg-subtle">
                 {m.from === 'auto' ? 'Automatic · ' : ''}
                 {formatTimestamp(m.at)}
               </span>

@@ -87,7 +87,7 @@ export function Sheet({
           )}>
           
             {isBottom && !fullScreen && <div aria-hidden className="mx-auto mt-2 h-1 w-10 shrink-0 rounded-full bg-line-strong" />}
-            <div className={cn('flex shrink-0 items-start justify-between gap-3 border-b border-line py-3', fullScreen ? 'pl-5 pr-2' : 'px-5')}>
+            <div className={cn('flex shrink-0 items-start justify-between gap-3 border-b border-line py-4', fullScreen ? 'pl-5 pr-2' : 'pl-5 pr-3')}>
               <div className="min-w-0">
                 <h2 id={titleId} className="truncate text-heading font-semibold">
                   {title}

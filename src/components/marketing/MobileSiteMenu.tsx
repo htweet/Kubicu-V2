@@ -5,6 +5,7 @@ import { ArrowRightIcon, ChevronDownIcon } from 'lucide-react';
 import { siteMenu, siteMenuLinks } from '../../data/siteMenu';
 import { featureTone, isCurrentLink } from './MegaMenu';
 import { cn } from '../../utils/cn';
+import { recordMenuLink, recordMenuOpen } from '../../utils/siteMenuUsage';
 
 /** Phone and tablet menu (D268): each group is an accordion of the same items as the desktop panel. */
 export function MobileSiteMenu() {
@@ -24,7 +25,10 @@ export function MobileSiteMenu() {
                 type="button"
                 aria-expanded={isOpen}
                 aria-controls={`m-menu-${g.id}`}
-                onClick={() => setOpen(isOpen ? null : g.id)}
+                onClick={() => {
+                  if (!isOpen) recordMenuOpen(g.id, 'mobile');
+                  setOpen(isOpen ? null : g.id);
+                }}
                 className="flex h-14 w-full items-center justify-between rounded-2xl px-4 text-left text-[18px] font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
                 
                 {g.label}
@@ -49,6 +53,7 @@ export function MobileSiteMenu() {
                         <li key={i.to + i.title}>
                                 <Link
                             to={i.to}
+                            onClick={() => recordMenuLink(i.to, i.title, 'mobile')}
                             aria-current={isCurrentLink(i.to, pathname) ? 'page' : undefined}
                             className="flex min-h-[56px] items-center gap-3 rounded-2xl px-3 py-2 hover:bg-[rgb(246_243_236)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
                             
@@ -67,6 +72,7 @@ export function MobileSiteMenu() {
                     )}
                       <Link
                       to={g.feature.cta.to}
+                      onClick={() => recordMenuLink(g.feature.cta.to, g.feature.cta.label, 'mobile')}
                       style={{ backgroundColor: tone.bg, color: tone.fg }}
                       className="flex items-center justify-between gap-3 rounded-2xl px-4 py-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
                       
@@ -85,7 +91,7 @@ export function MobileSiteMenu() {
         })}
         {siteMenuLinks.map((l) =>
         <li key={l.to}>
-            <Link to={l.to} className="flex h-14 items-center justify-between rounded-2xl px-4 text-[18px] font-bold hover:bg-[rgb(238_233_221)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+            <Link to={l.to} onClick={() => recordMenuLink(l.to, l.label, 'mobile')} className="flex h-14 items-center justify-between rounded-2xl px-4 text-[18px] font-bold hover:bg-[rgb(238_233_221)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
               {l.label}
               <ArrowRightIcon size={18} aria-hidden className="text-[rgb(104_100_92)]" />
             </Link>

@@ -90,7 +90,7 @@ export function Solution() {
         </div>
       </section>
 
-      <PillarCrossLinks current={s.id === 'creators' ? 'creators' : undefined} />
+      <PillarCrossLinks />
       <ClosingCta />
     </>);
 

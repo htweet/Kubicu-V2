@@ -4,6 +4,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { ArrowRightIcon, ChevronDownIcon } from 'lucide-react';
 import { siteMenu, siteMenuLinks, type SiteMenuFeature, type SiteMenuGroup } from '../../data/siteMenu';
 import { cn } from '../../utils/cn';
+import { recordMenuLink, recordMenuOpen } from '../../utils/siteMenuUsage';
 
 const ink = 'text-[rgb(20_20_18)]';
 const trigger =
@@ -63,6 +64,11 @@ export function MegaMenu() {
   }, [openId, close]);
 
   useEffect(() => clearTimers, []);
+
+  // Anonymous tally of which panel opened (D273).
+  useEffect(() => {
+    if (openId) recordMenuOpen(openId, 'desktop');
+  }, [openId]);
 
   const hoverOpen = (id: string, e: React.PointerEvent) => {
     if (e.pointerType !== 'mouse') return;
@@ -129,6 +135,7 @@ export function MegaMenu() {
         <NavLink
           key={l.to}
           to={l.to}
+          onClick={() => recordMenuLink(l.to, l.label, 'desktop')}
           onPointerEnter={(e) => e.pointerType === 'mouse' && openId && close()}
           className={({ isActive }) =>
           cn(trigger, isActive ? `bg-[rgb(238_233_221)] ${ink}` : 'text-[rgb(70_68_62)] hover:bg-[rgb(238_233_221)] hover:text-[rgb(20_20_18)]')
@@ -171,7 +178,10 @@ function MegaPanel({ group, pathname, onNavigate }: {group: SiteMenuGroup;pathna
                     <li key={i.to + i.title}>
                         <Link
                         to={i.to}
-                        onClick={onNavigate}
+                        onClick={() => {
+                          recordMenuLink(i.to, i.title, 'desktop');
+                          onNavigate();
+                        }}
                         aria-current={current ? 'page' : undefined}
                         className={cn(
                           'group flex items-start gap-3 rounded-2xl p-3 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
@@ -196,7 +206,10 @@ function MegaPanel({ group, pathname, onNavigate }: {group: SiteMenuGroup;pathna
           {group.viewAll &&
           <Link
             to={group.viewAll.to}
-            onClick={onNavigate}
+            onClick={() => {
+              recordMenuLink(group.viewAll!.to, group.viewAll!.label, 'desktop');
+              onNavigate();
+            }}
             className="group mt-4 inline-flex items-center gap-1.5 self-start rounded-full px-3 py-2 text-[14px] font-bold hover:bg-[rgb(246_243_236)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
             
               {group.viewAll.label}
@@ -213,7 +226,10 @@ function MegaPanel({ group, pathname, onNavigate }: {group: SiteMenuGroup;pathna
           </div>
           <Link
             to={group.feature.cta.to}
-            onClick={onNavigate}
+            onClick={() => {
+              recordMenuLink(group.feature.cta.to, group.feature.cta.label, 'desktop');
+              onNavigate();
+            }}
             style={{ backgroundColor: tone.btnBg, color: tone.btnFg }}
             className="group mt-6 inline-flex h-11 items-center justify-center gap-1.5 self-start whitespace-nowrap rounded-full px-5 text-[14px] font-bold transition-transform duration-150 ease-out hover:scale-[1.03] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current focus-visible:ring-offset-2">
             
