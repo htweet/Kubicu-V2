@@ -1,16 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ExternalLinkIcon, FlaskConicalIcon, MaximizeIcon, MonitorIcon, RotateCcwIcon, SmartphoneIcon, XIcon } from 'lucide-react';
 import type { CopilotReply } from '../../types/copilot';
 import { PlatformLook } from '../../components/marketing/PlatformLook';
 import { KubicuLogo } from '../../components/shell/KubicuLogo';
+import { BackButton } from '../../components/shell/BackButton';
 import { CopilotThread } from '../../components/copilot/CopilotThread';
 import { CopilotComposer } from '../../components/copilot/CopilotComposer';
 import { TemplateLivePreview } from '../../components/templates/TemplateLivePreview';
 import { useCopilot } from '../../hooks/useCopilot';
 import { cn } from '../../utils/cn';
 import { previewPath } from '../../utils/copilot/links';
+import { startClaim } from '../../utils/copilot/claim';
 
 const ease = [0.23, 1, 0.32, 1] as const;
 
@@ -22,6 +24,7 @@ export function CopilotWeb() {
   const [confirmRestart, setConfirmRestart] = useState(false);
 
   const [params, setParams] = useSearchParams();
+  const navigate = useNavigate();
 
   useEffect(() => {
     document.title = 'KUBICU Copilot — tell us what you want to build';
@@ -47,6 +50,10 @@ export function CopilotWeb() {
     if (r.value === 'more') return send({ kind: 'more' });
     if (r.value === 'retry') return retry();
     if (r.value === 'open') return setFull('phone');
+    if (r.value === 'continue') {
+      if (session.draftId && startClaim(session.draftId)) navigate('/copilot/continue');
+      return undefined;
+    }
     return send({ kind: 'choice', value: r.value, label: r.label });
   };
 
@@ -54,7 +61,9 @@ export function CopilotWeb() {
     <PlatformLook night>
       <div className="flex h-[100dvh] flex-col bg-canvas">
         <header className="flex h-16 shrink-0 items-center justify-between gap-3 border-b border-line px-4 md:px-6">
-          <div className="flex min-w-0 items-center gap-3">
+          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+            <BackButton fallback="/copilot" compact />
+            <span className="h-5 w-px bg-line" aria-hidden />
             <Link to="/copilot" aria-label="KUBICU Copilot home" className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
               <KubicuLogo />
             </Link>

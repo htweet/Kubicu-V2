@@ -527,7 +527,7 @@ export function NewSpaceDialog({ open, onClose, mainDoc, initialKind = null, tem
           id="space-name"
           label="Name"
           value={name}
-          placeholder={kind === 'campaign' ? 'e.g. Eid sale' : kind === 'event' ? 'e.g. Lagos design meetup' : kind === 'popup' ? 'e.g. Christmas market stall' : kind === 'booking' ? 'e.g. Book a braids appointment' : kind === 'members' ? 'e.g. Sewing school members' : kind === 'fundraiser' ? 'e.g. Apprentice machines' : 'e.g. Ankara group buy'}
+          placeholder={kind === 'page' ? 'e.g. My portfolio' : kind === 'campaign' ? 'e.g. Eid sale' : kind === 'event' ? 'e.g. Lagos design meetup' : kind === 'popup' ? 'e.g. Christmas market stall' : kind === 'booking' ? 'e.g. Book a braids appointment' : kind === 'members' ? 'e.g. Sewing school members' : kind === 'fundraiser' ? 'e.g. Apprentice machines' : 'e.g. Ankara group buy'}
           error={tried && !name.trim() ? 'Give it a name.' : undefined}
           onChange={(e) => onName(e.target.value)} />
         

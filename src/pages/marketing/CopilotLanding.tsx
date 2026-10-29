@@ -4,6 +4,7 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { ArrowRightIcon, CheckCheckIcon, GlobeIcon, InfoIcon, MessageCircleIcon, ShieldCheckIcon } from 'lucide-react';
 import { RiseText } from '../../components/marketing/home/RiseText';
 import { KbShape } from '../../components/marketing/home/KbShape';
+import { BackButton } from '../../components/shell/BackButton';
 import { Reveal } from '../../components/marketing/Reveal';
 import { TemplateThumb } from '../../components/templates/TemplateThumb';
 import { findExampleById } from '../../data/examples';
@@ -35,9 +36,10 @@ export function CopilotLanding() {
   return (
     <>
       <section aria-labelledby="copilot-heading" className="relative -mt-[88px] overflow-hidden bg-[rgb(var(--kb-cobalt))] pt-[88px] text-white">
-        <KbShape kind="asterisk" color="rgb(var(--kb-lime))" size={88} motion="spin" className="absolute right-[4%] top-28 hidden lg:block" />
+        <KbShape kind="kube" color="rgb(var(--kb-lime))" size={88} motion="spin" className="absolute right-[4%] top-28 hidden lg:block" />
         <div className="mx-auto grid w-full max-w-7xl items-center gap-12 px-5 pb-20 pt-10 md:px-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:pt-16">
           <div className="max-w-2xl">
+            <BackButton fallback="/" className="-ml-2.5 mb-6 text-white/85 hover:bg-white/10 hover:text-white focus-visible:ring-white" />
             <p className="text-label font-bold text-white/80">KUBICU Copilot</p>
             <h1 id="copilot-heading" className="kb-display mt-3 text-[48px] leading-[0.95] sm:text-[68px] lg:text-[80px]">
               <RiseText text="Tell KUBICU what you want to build." />
@@ -79,8 +81,25 @@ export function CopilotLanding() {
             </div>
           </div>
 
-          <figure className="relative mx-auto w-full max-w-[420px]" aria-label="An example Copilot conversation">
-            <div className="flex flex-col gap-3 rounded-[32px] bg-[rgb(236_229_221)] p-4 text-[rgb(20_20_18)] shadow-3">
+          <figure className="relative mx-auto w-full max-w-[360px]" aria-label="An example Copilot conversation on a phone">
+            {/* Phone mock (D272): bezel, status bar, chat header, thread, composer. */}
+            <div className="rounded-[52px] bg-[rgb(18_18_20)] p-[11px] shadow-3 ring-1 ring-white/15">
+              <div className="relative flex h-[640px] flex-col overflow-hidden rounded-[42px] bg-[rgb(236_229_221)] text-[rgb(20_20_18)]">
+                <div aria-hidden className="absolute left-1/2 top-2.5 z-10 h-[26px] w-[96px] -translate-x-1/2 rounded-full bg-[rgb(18_18_20)]" />
+                <div aria-hidden className="flex h-11 shrink-0 items-end justify-between bg-[rgb(0_92_75)] px-7 pb-1 text-[12px] font-semibold text-white">
+                  <span>09:41</span>
+                  <span className="flex items-center gap-1">
+                    <span className="h-2.5 w-4 rounded-[3px] border border-white/90" />
+                  </span>
+                </div>
+                <div className="flex shrink-0 items-center gap-2.5 bg-[rgb(0_92_75)] px-4 pb-3 pt-1 text-white">
+                  <span aria-hidden className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[13px] font-extrabold text-[rgb(var(--kb-cobalt))]">K</span>
+                  <span className="min-w-0">
+                    <span className="block text-[15px] font-semibold leading-tight">KUBICU Copilot</span>
+                    <span className="block text-[11px] text-white/80">AI agent · business account</span>
+                  </span>
+                </div>
+            <div className="flex min-h-0 flex-1 flex-col justify-end gap-3 overflow-hidden p-3.5">
               <motion.p {...pop(0.2)} className="max-w-[85%] self-end rounded-2xl rounded-br-md bg-[rgb(217_253_211)] px-3.5 py-2 text-[14px]">
                 I make small chops and party trays in Lekki. People order on WhatsApp.
               </motion.p>
@@ -99,6 +118,15 @@ export function CopilotLanding() {
                   09:41 <CheckCheckIcon size={14} className="text-[rgb(83_189_235)]" aria-hidden />
                 </p>
               </motion.div>
+            </div>
+                <div aria-hidden className="flex shrink-0 items-center gap-2 px-2.5 pb-6 pt-1">
+                  <span className="flex h-10 flex-1 items-center rounded-full bg-white px-4 text-[14px] text-[rgb(104_100_92)]">Message</span>
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[rgb(0_168_132)] text-white">
+                    <MessageCircleIcon size={17} />
+                  </span>
+                </div>
+                <div aria-hidden className="absolute bottom-2 left-1/2 h-1 w-28 -translate-x-1/2 rounded-full bg-[rgb(20_20_18)]/70" />
+              </div>
             </div>
             <figcaption className="mt-3 text-center text-caption text-white/80">Example conversation · fictional business</figcaption>
           </figure>

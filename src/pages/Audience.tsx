@@ -25,16 +25,18 @@ import { TextInput } from '../components/ui/TextInput';
 import { ConsentBadge, ContactDetail } from '../components/audience/ContactDetail';
 import { ImportContactsDialog } from '../components/audience/ImportContactsDialog';
 import { DuplicatesDialog } from '../components/audience/DuplicatesDialog';
+import { SegmentBar, matchesSegment, noFilters, type SegmentFilters } from '../components/audience/SegmentBar';
+import { AudienceSources } from '../components/audience/AudienceSources';
+import { AudienceGrowth } from '../components/audience/AudienceGrowth';
 import { SampleTag } from '../components/commerce/StatusBadges';
 import { cn } from '../utils/cn';
-import { Stat, StatGroup } from '../components/ui/layout/Stat';
 import { List, ListRow } from '../components/ui/layout/ListRow';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import { useTeam } from '../contexts/TeamContext';
 import { AssigneeChip, MineToggle } from '../components/team/AssigneeSelect';
 import { useT } from '../contexts/LocaleContext';
 
-type View = 'list' | 'pipeline';
+type View = 'list' | 'pipeline' | 'sources';
 
 export function Audience() {
   const { data, apply, applySystem, loadSample } = useOps();
@@ -42,9 +44,11 @@ export function Audience() {
   const commerce = useCommerce().data;
   const [params, setParams] = useSearchParams();
   const [view, setView] = useState<View>('list');
-  const [source, setSource] = useState<ContactSource | 'all'>('all');
-  const [consent, setConsent] = useState<ConsentStatus | 'all'>('all');
-  const [tagFilter, setTagFilter] = useState<string>('all');
+  const [filters, setFilters] = useState<SegmentFilters>(noFilters);
+  const { source, consent, tag: tagFilter } = filters;
+  const setSource = (v: ContactSource | 'all') => setFilters((f) => ({ ...f, source: v }));
+  const setConsent = (v: ConsentStatus | 'all') => setFilters((f) => ({ ...f, consent: v }));
+  const setTagFilter = (v: string) => setFilters((f) => ({ ...f, tag: v }));
   const [dialog, setDialog] = useState<'import' | 'dupes' | 'add' | 'settings' | null>(null);
   const settings = opsSettingsOf(data);
   // Tag filter (D259): saved tags first, then any others in use.
@@ -61,13 +65,15 @@ export function Audience() {
   }, [commerce, applySystem]);
 
   // “Mine”: contacts I look after, or with an open follow-up for me (D60).
-  const { me } = useTeam();
+  const team = useTeam();
+  const { me } = team;
+  const canEdit = team.can('contacts.manage');
   const [mine, setMine] = useState(false);
   const isMine = (c: Contact) => c.assigneeId === me.id || c.tasks.some((t) => !t.done && t.assigneeId === me.id);
   const mineCount = data.contacts.filter(isMine).length;
   const rows = useMemo(
-    () => data.contacts.filter((c) => (source === 'all' || c.sources.includes(source)) && (consent === 'all' || c.consent === consent) && (tagFilter === 'all' || c.tags.includes(tagFilter)) && (!mine || c.assigneeId === me.id || c.tasks.some((t) => !t.done && t.assigneeId === me.id))),
-    [data.contacts, source, consent, tagFilter, mine, me.id]
+    () => data.contacts.filter((c) => matchesSegment(c, filters) && (!mine || c.assigneeId === me.id || c.tasks.some((t) => !t.done && t.assigneeId === me.id))),
+    [data.contacts, filters, mine, me.id]
   );
   const dupes = duplicatePairs(data.contacts).length;
   const subscribed = data.contacts.filter((c) => c.consent === 'subscribed').length;
@@ -78,14 +84,31 @@ export function Audience() {
     return tr(n === 1 ? '{n} follow-up' : '{n} follow-ups', { n });
   };
 
-  const exportCsv = () =>
-  downloadCsv(
-    `kubicu-contacts-${new Date().toISOString().slice(0, 10)}.csv`,
-    toCsv(
-      ['name', 'email', 'phone', 'consent', 'sources', 'tags', 'stage', 'created', ...settings.contactFields.map((f) => f.label)],
-      rows.map((c) => [c.name, c.email, c.phone, c.consent, c.sources.join('; '), c.tags.join('; '), c.stage, c.createdAt, ...settings.contactFields.map((f) => c.fields?.[f.id] ?? '')])
-    )
-  );
+  const exportCsv = () => {
+    downloadCsv(
+      `kubicu-contacts-${new Date().toISOString().slice(0, 10)}.csv`,
+      toCsv(
+        ['name', 'email', 'phone', 'consent', 'consent_wording', 'consent_at', 'sources', 'channel', 'short_link', 'tags', 'stage', 'created', ...settings.contactFields.map((f) => f.label)],
+        rows.map((c) => [
+        c.name,
+        c.email,
+        c.phone,
+        c.consent,
+        c.consentRecord?.wording ?? '',
+        c.consentRecord?.at ?? '',
+        c.sources.join('; '),
+        c.attribution?.channel ?? '',
+        c.attribution?.campaign ?? '',
+        c.tags.join('; '),
+        c.stage,
+        c.createdAt,
+        ...settings.contactFields.map((f) => c.fields?.[f.id] ?? '')]
+        )
+      )
+    );
+    // Exports leave the workspace, so each one is on the record (D268).
+    team.log('audience', `exported ${rows.length} contact${rows.length === 1 ? '' : 's'} as CSV`, '/app/audience');
+  };
 
   const addErrors = {
     contact: !newContact.email.trim() && !newContact.phone.trim() ? 'Add an email or phone' : '',
@@ -160,22 +183,24 @@ export function Audience() {
 
 
       <>
-          <div className="mt-8 flex flex-col gap-4 border-b border-line pb-6 md:flex-row md:items-end md:justify-between">
-            <StatGroup columns={3} className="flex-1 items-end">
-              <Stat primary label="Contacts" value={data.contacts.length} />
-              <Stat label="Can receive marketing" value={subscribed} hint={data.contacts.length ? tr('{n}% of contacts', { n: Math.round(subscribed / data.contacts.length * 100) }) : undefined} />
-              <Stat label="Open follow-ups" value={openTasks} />
-            </StatGroup>
-            {dupes > 0 &&
-          <Button size="sm" variant="secondary" leadingIcon={CopyIcon} className="self-start md:self-end" onClick={() => setDialog('dupes')}>
-                {tr(dupes === 1 ? 'Review {n} possible duplicate' : 'Review {n} possible duplicates', { n: dupes })}
-              </Button>
-          }
-          </div>
+          <AudienceGrowth
+          contacts={data.contacts}
+          subscribed={subscribed}
+          openTasks={openTasks}
+          action={
+          dupes > 0 ?
+          <Button size="sm" variant="secondary" leadingIcon={CopyIcon} onClick={() => setDialog('dupes')}>
+                  {tr(dupes === 1 ? 'Review {n} possible duplicate' : 'Review {n} possible duplicates', { n: dupes })}
+                </Button> :
+          undefined
+          } />
+        
 
-          <div className="mt-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <SegmentBar filters={filters} onApply={setFilters} canEdit={canEdit} tags={tagOptions} />
+
+          <div className="mt-6 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
             <div className="flex items-center gap-2">
-              <Segmented<View> ariaLabel="View" value={view} onChange={setView} options={[{ value: 'list', label: 'List' }, { value: 'pipeline', label: 'Pipeline' }]} />
+              <Segmented<View> ariaLabel="View" value={view} onChange={setView} options={[{ value: 'list', label: 'List' }, { value: 'pipeline', label: 'Pipeline' }, { value: 'sources', label: 'Sources' }]} />
               <MineToggle mine={mine} count={mineCount} onChange={setMine} />
             </div>
             <div className={cn('grid gap-3 md:flex', tagOptions.length ? 'grid-cols-2 sm:grid-cols-3' : 'grid-cols-2')}>
@@ -193,7 +218,24 @@ export function Audience() {
             </div>
           </div>
 
-          {view === 'list' ?
+          {filters.campaign !== 'all' &&
+        <p className="mt-3 flex flex-wrap items-center gap-2 text-label text-fg-muted">
+              Came through short link <span className="font-semibold text-fg">/s/{filters.campaign}</span>
+              <button type="button" onClick={() => setFilters((f) => ({ ...f, campaign: 'all' }))} className="text-action underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+                Clear
+              </button>
+            </p>
+        }
+
+          {view === 'sources' ?
+        <AudienceSources
+          contacts={rows}
+          onPickCampaign={(slug) => {
+            setFilters((f) => ({ ...f, campaign: slug }));
+            setView('list');
+          }} /> :
+
+        view === 'list' ?
         <div className="mt-4">
               <DataTable caption="Contacts" rows={rows} columns={columns} filterText={(c) => `${c.name} ${c.email} ${c.phone} ${c.tags.join(' ')}`} filterPlaceholder="Search name, email, phone or tag" emptyTitle="No contacts match" emptyDescription="Try other filters." />
             </div> :

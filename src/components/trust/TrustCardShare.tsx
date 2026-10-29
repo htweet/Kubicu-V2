@@ -25,8 +25,8 @@ interface TrustCardShareProps {
  * (WhatsApp chats and Status, Instagram…); elsewhere the image downloads and WhatsApp opens with the text and link.
  */
 export function TrustCardShare({ business, level, score, signals, url, summary, unpublished }: TrustCardShareProps) {
-  // A low number can put buyers off a new, honest seller — show it by default only from "Established".
-  const [showScore, setShowScore] = useState(level === 'established' || level === 'trusted');
+  // The score is on by default and takes the card's open space (D272); owners can still turn it off.
+  const [showScore, setShowScore] = useState(true);
   const [blob, setBlob] = useState<Blob | null>(null);
   const [failed, setFailed] = useState(false);
   const [busy, setBusy] = useState(false);

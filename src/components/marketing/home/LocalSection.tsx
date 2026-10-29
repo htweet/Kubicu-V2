@@ -47,7 +47,7 @@ export function LocalSection() {
             </div>
             <div className="relative min-h-[280px]">
               <img src={homeImages.chef} alt="Chef presenting a plate of jollof rice" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
-              <KbShape kind="asterisk" color="rgb(var(--kb-lime))" size={64} motion="spin" className="absolute right-5 top-5" />
+              <KbShape kind="kube" color="rgb(var(--kb-lime))" size={64} motion="spin" className="absolute right-5 top-5" />
             </div>
           </motion.article>
 

@@ -14,7 +14,7 @@ export type CopilotKind = 'business' | 'portfolio' | 'creator' | 'shop' | 'servi
 
 export type CopilotStage = 'welcome' | 'asking' | 'brief' | 'generating' | 'ready' | 'failed' | 'limit';
 
-export type CopilotTopic = 'kind' | 'about' | 'name' | 'goal' | 'look' | 'photos' | 'items' | 'phone' | 'city' | 'change' | 'more';
+export type CopilotTopic = 'kind' | 'about' | 'name' | 'goal' | 'look' | 'logo' | 'photos' | 'items' | 'phone' | 'city' | 'change' | 'more';
 
 /** A reply option. WhatsApp shows up to 3 as buttons, more as a list (max 10). */
 export interface CopilotReply {
@@ -32,6 +32,10 @@ export interface CopilotQuestion {
   input: 'choice' | 'text' | 'tel' | 'images';
   placeholder?: string;
   skippable: boolean;
+  /** A plain-language line under the question for people who've never made a website (D265). */
+  help?: string;
+  /** For photo questions: how many it takes at once (the logo question takes 1). */
+  maxImages?: number;
 }
 
 export type CopilotCard = 'brief' | 'progress' | 'preview' | 'failed' | 'limit' | 'privacy' | 'looks';

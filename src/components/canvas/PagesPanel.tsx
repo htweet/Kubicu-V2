@@ -69,8 +69,8 @@ export function PagesPanel({ touch, onOpened }: PagesPanelProps) {
   if (currentSpace.kind !== 'main')
   return (
     <div className="flex flex-col gap-3 p-4">
-        <p className="text-label font-semibold text-fg">One page for this {spaceKinds[currentSpace.kind].label.toLowerCase()}</p>
-        <p className="text-caption text-fg-muted">Campaigns and DealRooms keep everything on one focused page with their own link. Only your main page can grow into a site with Shop, About and Book pages.</p>
+        <p className="text-label font-semibold text-fg">{currentSpace.kind === 'page' ? 'This space is one page' : `One page for this ${spaceKinds[currentSpace.kind].label.toLowerCase()}`}</p>
+        <p className="text-caption text-fg-muted">Extra spaces keep everything on one focused page with their own link. Only your main page can grow into a site with Shop, About and Book pages.</p>
         <Button
         variant="secondary"
         size="sm"

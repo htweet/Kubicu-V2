@@ -74,6 +74,8 @@ export interface AssistantImage {
   role: ImageRole;
   width: number;
   height: number;
+  /** A small copy for chat bubbles, so the full photo isn't stored twice (Copilot only). */
+  thumb?: string;
 }
 
 export type AssistantCard = 'plan' | 'done' | 'change' | 'credits' | 'failed' | 'removed';

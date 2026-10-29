@@ -28,6 +28,26 @@ interface StarterInput {
 }
 
 /**
+ * Plain page starter (D267): no dates, stock or rules — just the main page's identity, an intro to write
+ * and a link home. Owners add anything else from the block library or a template.
+ */
+function plainPageBlocks(main: PageDocument, name: string): Block[] {
+  const mainProfile = main.blocks.find((b) => b.type === 'profile');
+  const profile = createBlock('profile');
+  profile.content.name = name;
+  if (mainProfile?.type === 'profile') {
+    profile.content.avatarUrl = mainProfile.content.avatarUrl;
+    profile.content.location = mainProfile.content.location;
+  }
+  const intro = createBlock('text');
+  intro.content.body = '[Add a short introduction: what this page is for]';
+  const back = createBlock('link');
+  back.content.label = `Visit ${main.title || 'our main page'}`;
+  back.content.url = `https://kub.icu/${main.handle}`;
+  return [profile, intro, back];
+}
+
+/**
  * Members area starter (D185): what members see once signed in. Non-members never see these — they
  * get the welcome card. What members actually get is left for the owner to write.
  */
@@ -356,7 +376,9 @@ export function starterSpaceDoc(kind: Exclude<SpaceKind, 'main'>, main: PageDocu
   let blocks: Block[];
   let bookingPage = input.bookingPage;
 
-  if (kind === 'members' && input.membersArea) {
+  if (kind === 'page') {
+    blocks = plainPageBlocks(main, input.name);
+  } else if (kind === 'members' && input.membersArea) {
     blocks = membersAreaBlocks(main, input.name);
   } else if (kind === 'booking' && input.bookingPage) {
     const built = bookingPageBlocks(main);

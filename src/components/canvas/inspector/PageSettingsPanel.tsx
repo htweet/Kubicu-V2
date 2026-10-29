@@ -21,6 +21,7 @@ import { pageTitle, sitePages } from '../../../utils/sitePages';
 import { SelectInput } from '../../ui/SelectInput';
 import { SearchEnginesSection } from './SearchEnginesSection';
 import { SearchSharingFields } from './SearchSharingFields';
+import { ShortLinkQuick } from '../ShortLinkQuick';
 import { Field } from '../../ui/Field';
 import { Segmented } from '../../ui/Segmented';
 import { blockName, summarizeBlock } from '../../../utils/blocks';
@@ -181,6 +182,10 @@ export function PageSettingsPanel() {
           <p className="text-caption text-fg-subtle">How your page appears on Google and when shared on WhatsApp or X.</p>
         </div>
         <SearchSharingFields idPrefix="seo" />
+      </section>
+
+      <section className="flex flex-col gap-4 border-t border-line pt-5" aria-labelledby="shortlink-heading">
+        <ShortLinkQuick />
       </section>
 
       <SearchEnginesSection />

@@ -14,6 +14,7 @@ import { CanvasNoAccess } from '../components/canvas/CanvasNoAccess';
 import { ReviewSync } from '../components/canvas/ReviewStatus';
 import { PresenceProvider } from '../contexts/PresenceContext';
 import { SiteKitLauncher } from '../components/canvas/SiteKitLauncher';
+import { CopilotCanvasWelcome } from '../components/copilot/CopilotCanvasWelcome';
 
 export function CanvasPage() {
   const { pageId } = useParams();
@@ -55,6 +56,7 @@ export function CanvasPage() {
         <ReviewSync />
         <SiteKitLauncher />
         {isDesktop ? <DesktopEditor /> : <MobileEditor />}
+        <CopilotCanvasWelcome pageId={state.draft.id} />
       </PresenceProvider>
     </CampaignPreviewProvider>);
 

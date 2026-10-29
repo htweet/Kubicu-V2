@@ -3,8 +3,12 @@ import type { Block, PageDocument } from '../../types/page';
 import type { CopilotBrief, CopilotInput, CopilotKind, CopilotMessage, CopilotQuestion, CopilotSession, CopilotTopic } from '../../types/copilot';
 import {
   COPILOT_GREETING,
+  MAX_PHOTOS,
   audienceWords,
+  confusedWords,
   decideWords,
+  helpMore,
+  helps,
   goalLabels,
   goalReplies,
   kindDefaults,
@@ -23,6 +27,7 @@ import { analyzeBrief } from '../ai/brief';
 import { makePlan } from '../assistant/layout';
 import { parsePriceList } from '../assistant/priceList';
 import { uid } from '../id';
+import { readDraft } from './store';
 
 /**
  * KUBICU Copilot's conversation (D262) — rule-based in the prototype. It reads everything from what the
@@ -92,7 +97,17 @@ export function readFacts(a: AssistantAnswers, text: string, override = false): 
 }
 
 function questionFor(topic: CopilotTopic, s: CopilotSession): CopilotQuestion {
+  const q = baseQuestion(topic, s);
+  return helps[topic] ? { ...q, help: helps[topic] } : q;
+}
+
+const hasLogo = (images: AssistantImage[]) => images.some((i) => i.role === 'logo');
+const photoCount = (images: AssistantImage[]) => images.filter((i) => i.role !== 'logo').length;
+
+function baseQuestion(topic: CopilotTopic, s: CopilotSession): CopilotQuestion {
   switch (topic) {
+    case 'logo':
+      return { topic, text: prompts.logo, replies: [{ value: 'nologo', label: 'I don’t have one' }], input: 'images', skippable: false, maxImages: 1 };
     case 'about':
       return { topic, text: prompts.about, replies: [], input: 'text', skippable: true, placeholder: 'e.g. I make small chops and party trays for events in Lekki' };
     case 'name':
@@ -101,8 +116,10 @@ function questionFor(topic: CopilotTopic, s: CopilotSession): CopilotQuestion {
       return { topic, text: prompts.goal, replies: goalReplies, input: 'choice', skippable: false };
     case 'look':
       return { topic, text: prompts.look, replies: lookReplies, input: 'choice', skippable: false };
-    case 'photos':
-      return { topic, text: prompts.photos, replies: [], input: 'images', skippable: true };
+    case 'photos':{
+        const room = MAX_PHOTOS - photoCount(s.images);
+        return { topic, text: room < MAX_PHOTOS ? `You can send ${room} more photo${room === 1 ? '' : 's'} of your work, products, space or you.` : prompts.photos, replies: [], input: 'images', skippable: true, maxImages: Math.max(1, room) };
+      }
     case 'items':
       return { topic, text: prompts.items, replies: [], input: 'text', skippable: true, placeholder: 'One item per line' };
     case 'phone':
@@ -118,7 +135,8 @@ function questionFor(topic: CopilotTopic, s: CopilotSession): CopilotQuestion {
   }
 }
 
-const counted = (s: CopilotSession) => s.asked.filter((t) => t !== 'kind' && t !== 'change' && t !== 'more').length;
+// The logo and photos are one step for the 3–6 count — asked separately so the logo never gets mixed up with photos.
+const counted = (s: CopilotSession) => s.asked.filter((t) => t !== 'kind' && t !== 'change' && t !== 'more' && t !== 'logo').length;
 
 /** The next most valuable thing to ask, or null when it's time for the brief. */
 function nextTopic(s: CopilotSession): CopilotTopic | null {
@@ -131,10 +149,13 @@ function nextTopic(s: CopilotSession): CopilotTopic | null {
   if (!a.action) wanted.push('goal');
   if (!a.feel) wanted.push('look');
   if ((offer === 'products' || offer === 'menu') && !(a.items ?? []).length) wanted.push('items');
-  if (!s.images.length) wanted.push('photos');
+  if (!hasLogo(s.images)) wanted.push('logo');
+  if (!photoCount(s.images)) wanted.push('photos');
   if ((a.action === 'order' || a.action === 'enquire' || a.action === 'buy') && !a.phone) wanted.push('phone');
   if ((offer === 'menu' || offer === 'products' || offer === 'services') && !a.city) wanted.push('city');
   const open = wanted.filter((t) => !asked.has(t));
+  // Straight after the logo, photos always follow — they're one step.
+  if (s.asked[s.asked.length - 1] === 'logo' && open.includes('photos')) return 'photos';
   if (counted(s) >= MAX_QUESTIONS) return null;
   if (open.length) return open[0];
   if (counted(s) < MIN_QUESTIONS) return (['look', 'photos', 'more'] as CopilotTopic[]).find((t) => !asked.has(t)) ?? null;
@@ -143,7 +164,7 @@ function nextTopic(s: CopilotSession): CopilotTopic | null {
 
 function ask(s: CopilotSession, topic: CopilotTopic, lead?: string): CopilotSession {
   const q = questionFor(topic, s);
-  const text = lead ? `${lead} ${q.text}` : q.text;
+  const text = `${lead ? `${lead} ` : ''}${q.text}${q.help ? `\n\n${q.help}` : ''}`;
   return { ...s, stage: 'asking', question: q, asked: s.asked.includes(topic) ? s.asked : [...s.asked, topic], messages: [...s.messages, msg('copilot', text, { replies: q.replies, card: topic === 'look' ? 'looks' : undefined })] };
 }
 
@@ -163,7 +184,7 @@ export function briefFrom(s: CopilotSession, plan: AssistantPlan): CopilotBrief 
   const a = s.answers;
   const gaps = [...plan.gaps];
   if ((a.action === 'order' || a.action === 'enquire') && !a.phone) gaps.push('Your WhatsApp number');
-  if (!s.images.length) gaps.push('Your logo and photos');
+  if (!photoCount(s.images)) gaps.push('Your photos');
   if (a.action === 'buy') gaps.push('Online checkout — set up in KUBICU before people can pay');
   if (a.action === 'book') gaps.push('Bookings — shown as an enquiry until you set it up in KUBICU');
   return {
@@ -192,23 +213,48 @@ function showBrief(s: CopilotSession, lead?: string): CopilotSession {
   };
 }
 
-/** Turns photos into roles: anything named like a logo is the logo, the first other photo leads, the rest are a gallery. */
-export function rolePhotos(existing: AssistantImage[], incoming: AssistantImage[]): AssistantImage[] {
-  const all = [...existing, ...incoming].slice(0, 6);
-  let hero = all.some((i) => i.role === 'hero');
-  let logo = all.some((i) => i.role === 'logo');
-  return all.map((img, n) => {
-    if (n < existing.length) return img;
-    if (!logo && /logo/i.test(img.name)) {
+export interface PhotoResult {
+  images: AssistantImage[];
+  logo: boolean;
+  added: number;
+  /** Photos that didn't fit (over the limit) — always reported, never silently dropped. */
+  over: number;
+}
+
+/**
+ * Gives every photo a job (D265). The logo question's picture is the logo — whatever its file name. Other
+ * photos: the first leads the page (hero), the rest are the gallery, up to MAX_PHOTOS. Sent outside those
+ * questions, a file named like a logo still becomes the logo when there isn't one yet.
+ */
+export function rolePhotos(existing: AssistantImage[], incoming: AssistantImage[], as: 'logo' | 'photos' | 'auto'): PhotoResult {
+  let images = [...existing];
+  let logo = false;
+  let rest = incoming;
+  if (as === 'logo' || as === 'auto' && !hasLogo(images)) {
+    const pick = as === 'logo' ? incoming[0] : incoming.find((i) => /logo/i.test(i.name));
+    if (pick) {
+      images = [{ ...pick, role: 'logo' }, ...images.filter((i) => i.role !== 'logo')];
       logo = true;
-      return { ...img, role: 'logo' };
+      rest = incoming.filter((i) => i !== pick);
     }
-    if (!hero) {
-      hero = true;
-      return { ...img, role: 'hero' };
-    }
-    return { ...img, role: 'gallery' };
-  });
+  }
+  const room = Math.max(0, MAX_PHOTOS - photoCount(images));
+  const taken = rest.slice(0, room);
+  let hero = images.some((i) => i.role === 'hero');
+  for (const img of taken) {
+    images.push({ ...img, role: hero ? 'gallery' : 'hero' });
+    hero = true;
+  }
+  return { images, logo, added: taken.length, over: rest.length - taken.length };
+}
+
+function photosLead(r: PhotoResult): string {
+  const parts: string[] = [];
+  if (r.logo) parts.push('Got your logo — it goes in the round picture at the top of your page.');
+  const gallery = r.images.filter((i) => i.role === 'gallery').length;
+  if (r.added) parts.push(`Got ${r.added} photo${r.added === 1 ? '' : 's'}. Your first photo is the big picture at the top${gallery ? `, and ${gallery === 1 ? 'the other one goes' : `the other ${gallery} go`} in a photo gallery` : ''}.`);
+  if (r.over) parts.push(`I could only keep ${MAX_PHOTOS} photos, so the last ${r.over} weren’t added — you can add more later in KUBICU.`);
+  return parts.join(' ');
 }
 
 function userText(input: CopilotInput): string {
@@ -241,12 +287,45 @@ export function respond(prev: CopilotSession, input: CopilotInput): CopilotSessi
     return s.question ? { ...s, messages: [...s.messages, msg('copilot', s.question.text, { replies: s.question.replies })] } : s;
   }
 
+  // Once a draft has moved into KUBICU, changes happen there — the chat no longer edits it (D264).
+  const claimed = s.draftId ? readDraft(s.draftId)?.claimed : undefined;
+  if (claimed && s.stage === 'ready' && (input.kind === 'change' || input.kind === 'text' && !s.question)) {
+    return {
+      ...s,
+      messages: [
+      ...s.messages,
+      msg('user', userText(input)),
+      msg('copilot', 'Your draft is in KUBICU now, so make changes there — the page assistant in the canvas can do this for you. Want to start a different page here instead? Tap Start over.', {
+        replies: [{ value: 'continue', label: 'Open in KUBICU' }]
+      })]
+
+    };
+  }
+
   // Typing after the brief or the preview means "change something".
   if (input.kind === 'text' && !s.question && (s.stage === 'brief' || s.stage === 'ready')) {
     return respond({ ...prev, question: questionFor('change', prev) }, input);
   }
 
-  s = { ...s, messages: [...s.messages, msg('user', userText(input), { images: input.kind === 'images' ? input.items.map((i) => i.src) : undefined })] };
+  s = { ...s, messages: [...s.messages, msg('user', userText(input), { images: input.kind === 'images' ? input.items.map((i) => i.thumb ?? i.src) : undefined })] };
+
+  // "What do you mean?" — explain more simply and ask the same thing again (D265).
+  if (input.kind === 'text' && s.question && confusedWords.test(raw)) {
+    const q = s.question;
+    const more = helpMore[q.topic] ?? q.help ?? 'Sorry, let me put it simply.';
+    const again = q.topic === 'kind' ? 'So, what are you creating today?' : q.text;
+    return { ...s, messages: [...s.messages, msg('copilot', `${more}\n\n${again}`, { replies: q.replies, card: q.topic === 'look' ? 'looks' : undefined })] };
+  }
+
+  // Photos sent in the middle of another question are kept, never lost (WhatsApp allows attaching any time).
+  if (input.kind === 'images' && s.question?.topic !== 'logo' && s.question?.topic !== 'photos') {
+    const r = rolePhotos(s.images, input.items, 'auto');
+    s = { ...s, images: r.images };
+    const q = s.question;
+    const lead = photosLead(r) || 'I already have the most photos I can use.';
+    if (!q || q.topic === 'change') return showBrief(s, lead);
+    return { ...s, messages: [...s.messages, msg('copilot', `${lead}\n\n${q.topic === 'kind' ? 'So, what are you creating today?' : q.text}`, { replies: q.replies, card: q.topic === 'look' ? 'looks' : undefined })] };
+  }
 
   // Brief and ready actions.
   if (input.kind === 'create') return { ...s, stage: 'generating', progress: 0, question: null };
@@ -297,12 +376,21 @@ export function respond(prev: CopilotSession, input: CopilotInput): CopilotSessi
         const chosen = feel ?? lookByKind[s.kind ?? 'other'];
         return advance({ ...s, answers: { ...a, feel: chosen } }, feel ? undefined : `I’ll use ${lookLabels[chosen]} — it suits ${kindLabels[s.kind ?? 'other'].toLowerCase()}.`);
       }
+    case 'logo':{
+        if (input.kind === 'images') {
+          const r = rolePhotos(s.images, input.items, 'logo');
+          return advance({ ...s, images: r.images }, photosLead(r));
+        }
+        if (input.kind === 'choice' || skip || decide) return advance(s, 'No problem — lots of small businesses don’t have one. I’ll show your initials in a neat circle, and you can add a logo any time.');
+        return { ...s, messages: [...s.messages, msg('copilot', 'To send your logo, tap the photo button and choose the picture. Or tap “I don’t have one”.', { replies: s.question?.replies })] };
+      }
     case 'photos':{
         if (input.kind === 'images') {
-          const images = rolePhotos(s.images, input.items);
-          return advance({ ...s, images }, `Thanks — ${images.some((i) => i.role === 'logo') ? 'I’ll put your logo at the top and ' : ''}the first photo will lead the page.`);
+          const r = rolePhotos(s.images, input.items, 'photos');
+          return advance({ ...s, images: r.images }, photosLead(r));
         }
-        return advance(s, 'That’s fine — I’ll leave tidy spaces for photos.');
+        if (skip || decide) return advance(s, 'That’s fine — the photo spaces stay hidden until you add pictures, so the page still looks finished.');
+        return { ...s, messages: [...s.messages, msg('copilot', 'To send photos, tap the photo button and choose them from your phone — you can pick several at once. No photos yet? Just say “skip”.')] };
       }
     case 'items':{
         if (skip) return advance(s, 'Okay — you can add them in KUBICU later.');
@@ -325,12 +413,26 @@ export function respond(prev: CopilotSession, input: CopilotInput): CopilotSessi
       }
     case 'change':{
         const answers = readFacts(a, raw, true);
-        if (/\b(remove|no) (the )?photos?\b/i.test(raw)) s = { ...s, images: [] };
-        const changed = JSON.stringify(answers) !== JSON.stringify(a);
-        if (!changed && !/\bphotos?\b/i.test(raw)) {
+        const notes: string[] = [];
+        if (/\b(remove|no) (the |my )?(photos?|pictures?|gallery)\b/i.test(raw) && photoCount(s.images)) {
+          s = { ...s, images: s.images.filter((i) => i.role === 'logo') };
+          notes.push('Photos: removed (the photo spaces will be hidden)');
+        }
+        if (/\b(remove|no) (the |my )?logo\b/i.test(raw) && hasLogo(s.images)) {
+          s = { ...s, images: s.images.filter((i) => i.role !== 'logo') };
+          notes.push('Logo: removed (your initials show instead)');
+        }
+        if (/\b(add|use|change|new|send|replace)\b.*\blogo\b/i.test(raw)) return ask(s, 'logo', 'Sure.');
+        if (/\b(add|use|more|new|send|replace)\b.*\b(photos?|pictures?|images?)\b/i.test(raw)) {
+          if (photoCount(s.images) >= MAX_PHOTOS) return showBrief(s, `You already have ${MAX_PHOTOS} photos, the most I can use here — you can add more in KUBICU after you continue.`);
+          return ask(s, 'photos', 'Sure.');
+        }
+        notes.push(...describeChanges(a, answers));
+        if (!notes.length) {
           return { ...s, messages: [...s.messages, msg('copilot', 'I want to get this right. Is it the name, the main action, the look, or something else? For example “make it warmer” or “call it Tolu’s Kitchen”.')] };
         }
-        return showBrief({ ...s, answers }, 'Updated.');
+        const lead = `Here’s what will change:\n${notes.map((n) => `• ${n}`).join('\n')}\nEverything else stays the same. Nothing changes on your draft until you tap “Create my draft”.`;
+        return showBrief({ ...s, answers }, lead);
       }
     case 'more':{
         if (skip) return showBrief(s);
@@ -340,6 +442,22 @@ export function respond(prev: CopilotSession, input: CopilotInput): CopilotSessi
     default:
       return s;
   }
+}
+
+/** Plain-language list of what a change request altered, so people see it before the draft is rebuilt (D266). */
+function describeChanges(before: AssistantAnswers, after: AssistantAnswers): string[] {
+  const out: string[] = [];
+  const goalLabel = (v?: string) => goalReplies.find((r) => r.value === v)?.label ?? v ?? 'not set';
+  if (before.name !== after.name) out.push(`Name: “${before.name ?? 'not set'}” → “${after.name ?? 'not set'}”`);
+  if (before.feel !== after.feel) out.push(`Look: ${before.feel ? lookLabels[before.feel] : 'not set'} → ${after.feel ? lookLabels[after.feel] : 'not set'}`);
+  if (before.action !== after.action) out.push(`Main action: ${goalLabel(before.action)} → ${goalLabel(after.action)}`);
+  if (before.phone !== after.phone) out.push(`WhatsApp number: ${after.phone ?? 'removed'}`);
+  if (before.city !== after.city) out.push(`Location: ${after.city || 'removed'}`);
+  if (JSON.stringify(before.items ?? []) !== JSON.stringify(after.items ?? [])) out.push(`Items: ${(after.items ?? []).length} on the list`);
+  const known = ['name', 'feel', 'action', 'phone', 'city', 'items'];
+  const other = (Object.keys({ ...before, ...after }) as Array<keyof AssistantAnswers>).filter((k) => !known.includes(k as string) && JSON.stringify(before[k]) !== JSON.stringify(after[k]));
+  if (other.length && !out.length) out.push('The wording, based on what you just said');
+  return out;
 }
 
 /** Builds the draft page document from the session — the same plan the brief described. */
@@ -367,15 +485,26 @@ export function progressSteps(): string[] {
 export function readyMessage(s: CopilotSession, draftId: string, gaps: number): CopilotMessage {
   const lead = `Your draft is ready${s.answers.name ? `, ${s.answers.name}` : ''}. It’s not published — only people you share the preview link with can see it.`;
   const tail = gaps ? ` ${gaps} detail${gaps === 1 ? '' : 's'} still need${gaps === 1 ? 's' : ''} filling in before you publish.` : '';
-  return msg('copilot', lead + tail, { card: 'preview', draftId, replies: [{ value: 'open', label: 'Open preview' }, { value: 'change', label: 'Make changes' }] });
+  return msg('copilot', lead + tail, {
+    card: 'preview',
+    draftId,
+    replies: [
+    { value: 'open', label: 'Open preview' },
+    { value: 'change', label: 'Make changes' },
+    { value: 'continue', label: 'Continue to KUBICU' }]
+
+  });
 }
 
 export function failedMessage(): CopilotMessage {
   return msg('copilot', 'I couldn’t finish your draft just now. Your answers are saved, and this didn’t count toward today’s limit.', { card: 'failed', tone: 'warning', replies: [{ value: 'retry', label: 'Try again' }] });
 }
 
-export function limitMessage(): CopilotMessage {
-  return msg('copilot', 'You’ve reached today’s free drafts and changes (3 drafts and 10 changes a day). Your answers and your last draft are saved — come back tomorrow, or continue in KUBICU with a free account.', { card: 'limit' });
+export function limitMessage(hasDraft = false): CopilotMessage {
+  return msg('copilot', 'You’ve reached today’s free drafts and changes (3 drafts and 10 changes a day). Your answers and your last draft are saved — come back tomorrow, or continue in KUBICU with a free account.', {
+    card: 'limit',
+    replies: hasDraft ? [{ value: 'continue', label: 'Continue to KUBICU' }] : undefined
+  });
 }
 
 export { msg as copilotMessage };

@@ -265,7 +265,22 @@ export function useNotificationFeed(): AppNotification[] {
 
     // Links and QR codes whose page, product, block or space was removed (D72). Scans fall back, but the owner should re-point them.
     for (const l of domains.links) {
-      if (l.archivedAt || destinationExists(current, commerce, l.destination)) continue;
+      if (l.archivedAt) continue;
+      // Website and WhatsApp links (D271): the daily check stores its result on the link.
+      if (l.externalUrl || l.whatsapp) {
+        if (l.health?.ok === false)
+        out.push({
+          id: `link_broken:${l.id}:${l.health.checkedAt.slice(0, 10)}`,
+          event: 'domain_status',
+          area: 'domains',
+          kind: 'action',
+          text: `Short link “${l.name}” failed its check — ${l.health.reason ?? 'edit it to choose another destination'}`,
+          href: `/app/links/${l.id}`,
+          at: l.health.checkedAt
+        });
+        continue;
+      }
+      if (destinationExists(current, commerce, l.destination)) continue;
       const qr = domains.qrs.find((q) => q.linkId === l.id);
       const to = destinationLabel(current, commerce, fallbackDestination(current, commerce, l.destination), ops.services);
       out.push({
@@ -274,7 +289,7 @@ export function useNotificationFeed(): AppNotification[] {
         area: 'domains',
         kind: 'action',
         text: `${qr ? 'QR code' : 'Link'} “${l.name}” points to something you removed — scans go to ${to} until you choose a new destination`,
-        href: qr ? `/app/qr?link=${l.id}` : '/app/campaign-links',
+        href: qr ? `/app/qr?link=${l.id}` : `/app/links/${l.id}`,
         at: today
       });
     }

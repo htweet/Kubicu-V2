@@ -83,12 +83,6 @@ export async function renderTrustCard(c: TrustCardContent): Promise<Blob> {
   ctx.fillStyle = levelInk[c.level];
   ctx.font = `700 48px ${FONT}`;
   ctx.fillText(levelLabels[c.level], pad, y);
-  if (c.showScore) {
-    const w = ctx.measureText(levelLabels[c.level]).width;
-    ctx.fillStyle = C.subtle;
-    ctx.font = `600 40px ${FONT}`;
-    ctx.fillText(`·  ${c.score}/100`, pad + w + 22, y);
-  }
 
   // Rule
   y += 48;
@@ -116,6 +110,20 @@ export async function renderTrustCard(c: TrustCardContent): Promise<Blob> {
       ctx.fillStyle = C.ink;
       lines.forEach((l, i) => ctx.fillText(l, pad + 64, y + i * 44));
       y += lines.length * 44 + 30;
+    }
+  }
+
+  // Score: fills the open space between the checks and the footer (D272).
+  if (c.showScore) {
+    const spaceTop = y - 10;
+    const spaceBottom = footerTop - 30;
+    const room = spaceBottom - spaceTop;
+    if (room >= 200) drawScoreBlock(ctx, c.score, levelInk[c.level], pad, spaceTop, CARD_W - pad * 2, room);else
+    {
+      // Long list of checks: no room for the large score, so it sits on its own line under the last check.
+      ctx.fillStyle = C.ink;
+      ctx.font = `700 40px ${FONT}`;
+      ctx.fillText(`Trust score ${c.score}/100`, pad, Math.min(y + 10, spaceBottom));
     }
   }
 
@@ -206,6 +214,54 @@ function drawQr(ctx: CanvasRenderingContext2D, text: string, x: number, y: numbe
     for (let col = 0; col < n; col++) {
       if (qr.isDark(r, col)) ctx.fillRect(Math.floor(x + col * cell), Math.floor(y + r * cell), Math.ceil(cell), Math.ceil(cell));
     }
+  }
+}
+
+/** A ring gauge with the score inside, and a plain explanation beside it. */
+function drawScoreBlock(ctx: CanvasRenderingContext2D, score: number, accent: string, x: number, top: number, width: number, room: number) {
+  const d = Math.min(room - 20, 300);
+  const r = d / 2;
+  const cy = top + room / 2;
+  const cx = x + r;
+  const line = Math.max(18, d * 0.085);
+  const pct = Math.max(0, Math.min(100, score)) / 100;
+
+  ctx.lineCap = 'round';
+  ctx.lineWidth = line;
+  ctx.strokeStyle = C.rule;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r - line / 2, 0, Math.PI * 2);
+  ctx.stroke();
+  if (pct > 0) {
+    ctx.strokeStyle = accent;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r - line / 2, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * pct);
+    ctx.stroke();
+  }
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = C.ink;
+  ctx.font = `800 ${Math.round(d * 0.34)}px ${FONT}`;
+  ctx.textBaseline = 'middle';
+  ctx.fillText(String(score), cx, cy - d * 0.04);
+  ctx.fillStyle = C.subtle;
+  ctx.font = `600 ${Math.round(d * 0.1)}px ${FONT}`;
+  ctx.fillText('out of 100', cx, cy + d * 0.22);
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
+
+  const tx = x + d + 56;
+  const tw = width - d - 56;
+  let ty = cy - 46;
+  ctx.fillStyle = C.ink;
+  ctx.font = `700 44px ${FONT}`;
+  ctx.fillText('Trust score', tx, ty);
+  ty += 52;
+  ctx.fillStyle = C.muted;
+  ctx.font = `500 28px ${FONT}`;
+  for (const l of wrap(ctx, 'Worked out only from records KUBICU has checked.', tw, 2)) {
+    ctx.fillText(l, tx, ty);
+    ty += 38;
   }
 }
 

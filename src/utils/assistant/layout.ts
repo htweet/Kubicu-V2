@@ -153,6 +153,9 @@ function composeBlocks(a: AssistantAnswers, images: AssistantImage[]): {blocks: 
   if (gallery.length >= 2) {
     blocks.push(mk('gallery', { title: offer === 'content' ? 'Selected work' : '', layout: gallery.length >= 4 ? 'masonry' : 'grid', images: gallery.map((g) => ({ id: uid('gi'), url: g.src, alt: '' })) }, { layout: { width: 'wide' } }));
     notes.push(`Put ${gallery.length} of your photos in a ${gallery.length >= 4 ? 'masonry' : 'grid'} gallery.`);
+  } else if (gallery.length === 1) {
+    // One spare photo still gets a place of its own — never dropped (D265).
+    blocks.push(mk('image', { url: gallery[0].src, alt: a.name || '', caption: '', aspect: gallery[0].width >= gallery[0].height ? '16:9' : '4:5' }));
   }
 
   // About, in their words.
@@ -178,9 +181,16 @@ function placeImages(blocks: Block[], images: AssistantImage[], name: string): B
   const gallery = images.filter((i) => i.role === 'gallery');
   let heroUsed = false;
   let galleryUsed = false;
+  let logoUsed = false;
   let out = blocks.map((b) => {
-    if (logo && b.type === 'profile') return { ...b, content: { ...b.content, avatarUrl: logo.src, avatarAlt: `${name} logo` } } as Block;
-    if (logo && b.type === 'brandHeader') return { ...b, content: { ...b.content, logoUrl: logo.src, logoAlt: `${name} logo` } } as Block;
+    if (logo && b.type === 'profile') {
+      logoUsed = true;
+      return { ...b, visibility: { ...b.visibility, hidden: false }, content: { ...b.content, avatarUrl: logo.src, avatarAlt: `${name} logo` } } as Block;
+    }
+    if (logo && b.type === 'brandHeader') {
+      logoUsed = true;
+      return { ...b, visibility: { ...b.visibility, hidden: false }, content: { ...b.content, logoUrl: logo.src, logoAlt: `${name} logo` } } as Block;
+    }
     if (hero && !heroUsed && b.type === 'hero') {
       heroUsed = true;
       return { ...b, content: { ...b.content, imageUrl: hero.src, imageAlt: `${name}` } } as Block;
@@ -195,11 +205,17 @@ function placeImages(blocks: Block[], images: AssistantImage[], name: string): B
     }
     return b;
   });
+  // A starter without a logo spot gets a brand header at the very top, so the logo is never left out (D265).
+  if (logo && !logoUsed) out = [mk('brandHeader', { logoUrl: logo.src, logoAlt: `${name} logo`, name, tagline: '', ctaLabel: '', url: '', align: 'left' }), ...out];
   const top = Math.max(0, out.findIndex((b) => b.type === 'profile' || b.type === 'hero' || b.type === 'brandHeader'));
   if (hero && !heroUsed) out.splice(top + 1, 0, mk('image', { url: hero.src, alt: name, caption: '', aspect: hero.width >= hero.height ? '16:9' : '4:5' }));
-  if (gallery.length >= 2 && !galleryUsed) {
+  if (gallery.length && !galleryUsed) {
     const end = out.findIndex((b) => b.type === 'faq' || b.type === 'contact' || b.type === 'contactActions');
-    out = [...out.slice(0, end < 0 ? out.length : end), mk('gallery', { title: '', layout: 'grid', images: gallery.map((g) => ({ id: uid('gi'), url: g.src, alt: '' })) }, { layout: { width: 'wide' } }), ...out.slice(end < 0 ? out.length : end)];
+    const spare =
+    gallery.length >= 2 ?
+    mk('gallery', { title: '', layout: 'grid', images: gallery.map((g) => ({ id: uid('gi'), url: g.src, alt: '' })) }, { layout: { width: 'wide' } }) :
+    mk('image', { url: gallery[0].src, alt: name, caption: '', aspect: gallery[0].width >= gallery[0].height ? '16:9' : '4:5' });
+    out = [...out.slice(0, end < 0 ? out.length : end), spare, ...out.slice(end < 0 ? out.length : end)];
   }
   return out;
 }

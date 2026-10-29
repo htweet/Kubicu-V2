@@ -24,7 +24,8 @@ import { InlineAlert } from '../ui/InlineAlert';
 import { UpgradeButton } from '../ui/UpgradeButton';
 import { useTeam } from '../../contexts/TeamContext';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
-import { ChevronDownIcon, QrCodeIcon, SearchIcon, SendIcon } from 'lucide-react';
+import { ChevronDownIcon, Link2Icon, QrCodeIcon, SearchIcon, SendIcon } from 'lucide-react';
+import { ShortLinkQuick } from './ShortLinkQuick';
 import { SearchSharingFields, seoSummary } from './inspector/SearchSharingFields';
 import { IndexingFields, indexingSummary } from './inspector/IndexingFields';
 import { qrHref } from '../../utils/domains/links';
@@ -248,6 +249,16 @@ export function PublishDialog({ open, onClose, onGoToBlock, onOpenTheme }: Publi
             <QrCodeIcon size={16} aria-hidden />
             Make a QR code for flyers and your counter
           </button>
+          <details className="group rounded-md border border-line">
+            <summary className="flex cursor-pointer select-none items-center gap-2 rounded-md px-3 py-2.5 text-label font-medium text-fg hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+              <Link2Icon size={16} aria-hidden className="text-fg-muted" />
+              <span className="flex-1">Make a short link to share</span>
+              <ChevronDownIcon size={16} aria-hidden className="text-fg-subtle transition-transform duration-150 ease-out group-open:rotate-180" />
+            </summary>
+            <div className="border-t border-line p-3">
+              <ShortLinkQuick compact />
+            </div>
+          </details>
           <p className="text-caption text-fg-subtle">
             Prototype note: the kub.icu address is yours, but hosting isn’t connected yet. “Open live page” shows the published version inside this prototype.
           </p>

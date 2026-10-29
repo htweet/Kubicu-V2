@@ -74,11 +74,12 @@ export const workspaceNav: NavItem[] = [
 { id: 'forms', label: 'Forms', to: '/app/forms', icon: ClipboardListIcon, group: 'customers', appId: 'forms' },
 { id: 'automations', label: 'Automations', to: '/app/automations', icon: WorkflowIcon, group: 'customers', appId: 'automations' },
 // Growth — reach, insight and reputation
+// Short links are core (D270): always visible, first in Growth, not tied to the Domains app.
+{ id: 'links', label: 'Short links', to: '/app/links', icon: Link2Icon, group: 'growth' },
 { id: 'intentflow', label: 'IntentFlow', to: '/app/intentflow', icon: SplitIcon, group: 'growth', appId: 'intentflow' },
 { id: 'domains', label: 'Domains', to: '/app/domains', icon: GlobeIcon, group: 'growth', appId: 'domains' },
 { id: 'qr', label: 'QR codes', to: '/app/qr', icon: QrCodeIcon, group: 'growth', appId: 'domains' },
 { id: 'printkit', label: 'Print kit', to: '/app/print-kit', icon: PrinterIcon, group: 'growth', appId: 'domains' },
-{ id: 'links', label: 'Campaign links', to: '/app/campaign-links', icon: Link2Icon, group: 'growth', appId: 'domains' },
 { id: 'trust', label: 'Trust Passport', to: '/app/trust', icon: ShieldCheckIcon, group: 'growth', appId: 'trust-passport' },
 { id: 'coach', label: 'Business Coach', to: '/app/coach', icon: SparklesIcon, group: 'growth', appId: 'ai-coach' },
 // Workspace — tools and settings

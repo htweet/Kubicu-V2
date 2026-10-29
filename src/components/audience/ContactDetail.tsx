@@ -96,6 +96,26 @@ export function ContactDetail({ contactId, onClose }: {contactId: string | null;
             {c.sample && <SampleTag />}
             <LoyaltyPoints phone={c.phone} />
           </div>
+          {(c.attribution || c.consentRecord) &&
+            <dl className="grid gap-2 rounded-md bg-sunken p-3 text-caption sm:grid-cols-2">
+              {c.attribution &&
+              <div>
+                  <dt className="text-fg-subtle">First came from</dt>
+                  <dd className="text-fg">
+                    {c.attribution.channel}
+                    {c.attribution.campaign ? ` · short link /s/${c.attribution.campaign}` : ''}
+                    {c.attribution.page ? ` · kub.icu/${c.attribution.page}` : ''}
+                  </dd>
+                </div>
+              }
+              {c.consentRecord &&
+              <div>
+                  <dt className="text-fg-subtle">Agreed {new Date(c.consentRecord.at).toLocaleString('en-NG', { dateStyle: 'medium', timeStyle: 'short' })}</dt>
+                  <dd className="text-fg">“{c.consentRecord.wording}”</dd>
+                </div>
+              }
+            </dl>
+            }
 
           <div className="grid gap-4 sm:grid-cols-3">
             <TextInput id="ct-name" label="Name" value={c.name} onChange={(e) => set({ name: e.target.value })} />

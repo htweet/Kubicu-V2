@@ -11,7 +11,7 @@ export function InsightsVisual() {
   const reduce = useReducedMotion();
   return (
     <div className="relative mx-auto max-w-[540px]" aria-hidden>
-      <KbShape kind="asterisk" color="rgb(var(--kb-pink))" size={72} motion="spin" className="absolute -right-4 -top-8 z-20" />
+      <KbShape kind="kube" color="rgb(var(--kb-pink))" size={72} motion="spin" className="absolute -right-4 -top-8 z-20" />
       <KbShape kind="arch" color="rgb(var(--kb-lime))" size={80} motion="sway" className="absolute -bottom-8 -left-6 z-0" />
 
       <div className="relative z-10 rounded-[32px] bg-[rgb(247_243_234)] p-6 text-[rgb(20_20_18)] shadow-3 sm:p-8">

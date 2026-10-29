@@ -26,10 +26,13 @@ export function readAnalytics(workspaceId: string): AnalyticsData | null {
 
 /** Sample visits saved before devices were counted (D258) get one, from their session id — never real visits. */
 function sampleDevice(e: AnalyticsEvent): AnalyticsEvent {
-  if (!e.sample || e.device) return e;
+  if (!e.sample || e.device && (e.via || !e.campaign)) return e;
   let h = 0;
   for (let i = 0; i < e.session.length; i++) h = (h * 31 + e.session.charCodeAt(i)) % 100;
-  return { ...e, device: h < 72 ? 'phone' : h < 94 ? 'desktop' : 'tablet' };
+  const device = e.device ?? (h < 72 ? 'phone' : h < 94 ? 'desktop' : 'tablet');
+  // Sample short-link clicks get where the tap came from (D271): mostly the place the link was made for.
+  const via = e.campaign && !e.via ? e.source === 'qr' ? 'direct' : h % 10 < 7 ? e.source : h % 10 < 9 ? 'direct' : 'other' : e.via;
+  return { ...e, device, via };
 }
 
 /** Drops events past the retention window and keeps the newest when the cap is reached. */

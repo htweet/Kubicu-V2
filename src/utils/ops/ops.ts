@@ -1,4 +1,4 @@
-import type { Booking, BookingStatus, Contact, ContactSource, ConsentStatus, OpsData, Service } from '../../types/ops';
+import type { Booking, BookingStatus, Contact, ContactAttribution, ContactSource, ConsentStatus, OpsData, Service } from '../../types/ops';
 import { uid } from '../id';
 import { dateKeyInTz, findSlot } from './slots';
 import { pickStaff, staffName } from './staff';
@@ -35,15 +35,20 @@ data: OpsData,
 input: ContactInput,
 source: ContactSource,
 label: string,
-opts: {linkedId?: string;consent?: ConsentStatus;at?: string;} = {})
+opts: {linkedId?: string;consent?: ConsentStatus;at?: string;attribution?: Omit<ContactAttribution, 'at'>;consentWording?: string;} = {})
 : OpsData {
   const at = opts.at ?? now();
+  const attribution = opts.attribution ? { ...opts.attribution, at } : undefined;
+  const consentRecord = opts.consent === 'subscribed' ? { at, wording: opts.consentWording?.trim() || label } : undefined;
   const existing = matchContact(data.contacts, input);
   if (existing && opts.linkedId && existing.linked.includes(opts.linkedId)) return data;
   if (existing) {
     const consent = existing.consent === 'unsubscribed' ? 'unsubscribed' : opts.consent === 'subscribed' ? 'subscribed' : existing.consent;
     const updated: Contact = {
       ...existing,
+      // First touch wins: later visits don't rewrite where someone first came from.
+      attribution: existing.attribution ?? attribution,
+      consentRecord: consent === 'subscribed' && existing.consent !== 'subscribed' ? consentRecord : existing.consentRecord,
       name: existing.name || input.name,
       email: existing.email || input.email,
       phone: existing.phone || input.phone,
@@ -71,7 +76,9 @@ opts: {linkedId?: string;consent?: ConsentStatus;at?: string;} = {})
     stage: 'new',
     activity: [{ id: uid('act'), at, kind: source, label }],
     linked: opts.linkedId ? [opts.linkedId] : [],
-    createdAt: at
+    createdAt: at,
+    attribution,
+    consentRecord: (opts.consent ?? 'transactional') === 'subscribed' ? consentRecord : undefined
   };
   return { ...data, contacts: [contact, ...data.contacts] };
 }

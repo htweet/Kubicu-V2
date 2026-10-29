@@ -9,8 +9,11 @@ export const defaultOpsSettings: OpsSettings = {
   savedTags: [],
   consentText: '',
   quietHours: { on: false, from: '21:00', to: '07:00' },
-  defaultChannel: 'send_whatsapp'
+  defaultChannel: 'send_whatsapp',
+  segments: []
 };
+
+export const MAX_SEGMENTS = 12;
 
 export function opsSettingsOf(d: Pick<OpsData, 'settings'> | null | undefined): OpsSettings {
   const s = d?.settings ?? {};

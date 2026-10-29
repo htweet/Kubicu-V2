@@ -11,24 +11,43 @@ import { isValidEmail } from '../../../utils/validation';
 import { downloadCsv, toCsv } from '../../../utils/csv';
 import { formatTimestamp } from '../../../utils/format';
 import { orderRef } from '../../../utils/commerce/shopSettings';
+import { preflight, readSyncLog, withSyncEntry, type SyncEntry } from '../../../utils/extensions/syncLog';
+import { uid } from '../../../utils/id';
 import { Button } from '../../ui/Button';
 import { ToolSection, ToolStat } from './ToolSection';
+import { SyncHistory } from './SyncHistory';
 
 const today = () => new Date().toISOString().slice(0, 10);
+const API_KEY = /^([0-9a-f]{32}-us\d{1,2}|xkeysib-[0-9a-f]{64}-[A-Za-z0-9]{16})$/;
+const SHEET_URL = /^https:\/\/docs\.google\.com\/spreadsheets\/d\/[A-Za-z0-9_-]{20,}/;
 
-/** Email marketing sync (D232): only subscribed contacts with an email, never buyers-only or unsubscribed. */
+/** Email marketing sync (D232, D272): only subscribed contacts with an email, never buyers-only or unsubscribed. */
 export function EmailSyncTool({ rec }: {rec: InstalledExtension;}) {
   const { data } = useOps();
   const market = useMarketplace();
   const provider = rec.settings.apiKey?.startsWith('xkeysib-') ? 'Brevo' : 'Mailchimp';
+  const log = readSyncLog(rec.settings);
   const { send, noEmail, notSubscribed, fromForms } = useMemo(() => {
     const subscribed = data.contacts.filter((c) => c.consent === 'subscribed');
     const ok = subscribed.filter((c) => isValidEmail(c.email));
     return { send: ok, noEmail: subscribed.length - ok.length, notSubscribed: data.contacts.length - subscribed.length, fromForms: ok.filter((c) => c.sources.includes('form')).length };
   }, [data.contacts]);
 
-  const sync = () => {
-    market.updateSettings(rec.id, { ...rec.settings, lastSyncAt: new Date().toISOString(), lastSyncCount: String(send.length) });
+  const sync = (retryOf?: SyncEntry) => {
+    const error = preflight(rec.settings.apiKey, API_KEY, `${provider} API key`);
+    const entry: SyncEntry = error ?
+    { id: uid('sync'), at: new Date().toISOString(), status: 'failed', sent: 0, skipped: 0, detail: '', error, retryOf: retryOf?.id } :
+    {
+      id: uid('sync'),
+      at: new Date().toISOString(),
+      status: noEmail > 0 ? 'partial' : 'ok',
+      sent: send.length,
+      skipped: noEmail,
+      detail: noEmail > 0 ? `${noEmail} subscribed without a valid email` : `to ${provider}, with tags`,
+      retryOf: retryOf?.id
+    };
+    market.updateSettings(rec.id, withSyncEntry(rec.settings, entry));
+    if (error) toast.error('Sync failed', { description: error });else
     toast(`${send.length} contacts ready for ${provider}`, { description: 'Preview — nothing was sent. The live connection needs the KUBICU backend.' });
   };
 
@@ -39,9 +58,9 @@ export function EmailSyncTool({ rec }: {rec: InstalledExtension;}) {
         <ToolStat label="Subscribed, no email" value={noEmail} />
         <ToolStat label="Never sent" value={notSubscribed} hint="Buyers-only or unsubscribed" />
       </dl>
-      <p className="text-caption text-fg-muted">{rec.settings.lastSyncAt ? `Last checked ${formatTimestamp(rec.settings.lastSyncAt)} · ${rec.settings.lastSyncCount} contacts` : 'Not synced yet.'} Tags go across as {provider} tags.</p>
+      <p className="text-caption text-fg-muted">{rec.settings.lastSyncAt ? `Last synced ${formatTimestamp(rec.settings.lastSyncAt)} · ${rec.settings.lastSyncCount} contacts` : 'Not synced yet.'} Tags go across as {provider} tags.</p>
       <div className="flex flex-wrap gap-2">
-        <Button size="sm" leadingIcon={RefreshCwIcon} onClick={sync} disabled={send.length === 0}>
+        <Button size="sm" leadingIcon={RefreshCwIcon} onClick={() => sync()} disabled={send.length === 0}>
           Sync now
         </Button>
         <Button
@@ -54,17 +73,21 @@ export function EmailSyncTool({ rec }: {rec: InstalledExtension;}) {
           Download list
         </Button>
       </div>
+      <div className="border-t border-line pt-4">
+        <SyncHistory entries={log} unit="contacts" onRetry={sync} />
+      </div>
     </ToolSection>);
 
 }
 
-/** Google Sheets sync (D232): the rows each tab would get, downloadable per tab. */
+/** Google Sheets sync (D232, D272): the rows each tab would get, downloadable per tab, with a history of syncs. */
 export function SheetsSyncTool({ rec }: {rec: InstalledExtension;}) {
   const { data: commerce } = useCommerce();
   const { data: ops } = useOps();
   const { current } = useWorkspace();
   const forms = useFormsStore(current.id).data;
   const market = useMarketplace();
+  const log = readSyncLog(rec.settings);
 
   const tabs = useMemo(() => {
     const formName = (id: string) => forms?.forms.find((f) => f.id === id)?.name ?? '';
@@ -90,9 +113,26 @@ export function SheetsSyncTool({ rec }: {rec: InstalledExtension;}) {
 
   }, [commerce.orders, ops.bookings, forms]);
 
-  const sync = () => {
-    market.updateSettings(rec.id, { ...rec.settings, lastSyncAt: new Date().toISOString() });
-    toast('Rows checked', { description: 'Preview — nothing was added to your sheet. Adding rows needs the KUBICU backend.' });
+  const sync = (retryOf?: SyncEntry) => {
+    const error = preflight(rec.settings.sheetUrl, SHEET_URL, 'Google Sheet address');
+    // Only rows added since the last good sync would go across.
+    const since = rec.settings.lastSyncAt ? Date.parse(rec.settings.lastSyncAt) : 0;
+    const fresh = tabs.map((t) => ({ label: t.label, n: t.rows.filter((r) => Date.parse(String(r[0])) > since).length }));
+    const sent = fresh.reduce((s, f) => s + f.n, 0);
+    const entry: SyncEntry = error ?
+    { id: uid('sync'), at: new Date().toISOString(), status: 'failed', sent: 0, skipped: 0, detail: '', error, retryOf: retryOf?.id } :
+    {
+      id: uid('sync'),
+      at: new Date().toISOString(),
+      status: 'ok',
+      sent,
+      skipped: 0,
+      detail: sent ? fresh.filter((f) => f.n).map((f) => `${f.label} ${f.n}`).join(', ') : 'nothing new since the last sync',
+      retryOf: retryOf?.id
+    };
+    market.updateSettings(rec.id, withSyncEntry(rec.settings, entry));
+    if (error) toast.error('Sync failed', { description: error });else
+    toast(sent ? `${sent} new rows checked` : 'Nothing new to add', { description: 'Preview — nothing was added to your sheet. Adding rows needs the KUBICU backend.' });
   };
 
   return (
@@ -111,10 +151,13 @@ export function SheetsSyncTool({ rec }: {rec: InstalledExtension;}) {
         )}
       </ul>
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-caption text-fg-muted">{rec.settings.lastSyncAt ? `Last checked ${formatTimestamp(rec.settings.lastSyncAt)}` : 'Not synced yet.'}</p>
-        <Button size="sm" leadingIcon={RefreshCwIcon} onClick={sync}>
+        <p className="text-caption text-fg-muted">{rec.settings.lastSyncAt ? `Last synced ${formatTimestamp(rec.settings.lastSyncAt)}` : 'Not synced yet.'}</p>
+        <Button size="sm" leadingIcon={RefreshCwIcon} onClick={() => sync()}>
           Sync now
         </Button>
+      </div>
+      <div className="border-t border-line pt-4">
+        <SyncHistory entries={log} unit="rows" onRetry={sync} />
       </div>
     </ToolSection>);
 

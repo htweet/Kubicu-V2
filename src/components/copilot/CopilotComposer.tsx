@@ -45,12 +45,12 @@ export function CopilotComposer({ question, stage, onText, onSkip, onPhotos }: P
       <div className="flex flex-wrap items-center gap-2">
           {wantsPhotos &&
         <>
-              <input ref={file} type="file" accept="image/jpeg,image/png,image/webp" multiple className="sr-only" id="copilot-photos" onChange={(e) => pick(e.target.files)} />
+              <input ref={file} type="file" accept="image/jpeg,image/png,image/webp" multiple={(question?.maxImages ?? 6) > 1} className="sr-only" id="copilot-photos" onChange={(e) => pick(e.target.files)} />
               <label
             htmlFor="copilot-photos"
             className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-full bg-action px-4 text-label font-semibold text-action-fg transition-transform duration-150 ease-out active:scale-[0.97] focus-within:ring-2 focus-within:ring-focus">
             
-                <ImagePlusIcon size={16} aria-hidden /> {busy ? 'Adding…' : 'Add photos'}
+                <ImagePlusIcon size={16} aria-hidden /> {busy ? 'Adding…' : question?.topic === 'logo' ? 'Choose my logo' : `Choose photos (up to ${question?.maxImages ?? 5})`}
               </label>
             </>
         }

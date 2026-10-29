@@ -46,6 +46,33 @@ export async function processUpload(file: File): Promise<string> {
   return canvas.toDataURL('image/jpeg', QUALITY);
 }
 
+/** Logos keep their transparency (PNG out for PNG/WebP in) and stay small — they only ever show small. */
+export async function processLogo(file: File, maxEdge = 512): Promise<string> {
+  checkImageFile(file);
+  const img = await loadImage(await readAsDataUrl(file));
+  const scale = Math.min(1, maxEdge / Math.max(img.naturalWidth, img.naturalHeight));
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
+  canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new ImageProblem('Your browser couldn’t process the logo.');
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  return file.type === 'image/jpeg' ? canvas.toDataURL('image/jpeg', QUALITY) : canvas.toDataURL('image/png');
+}
+
+/** Re-encodes an image (usually a data URL) at a smaller size — for chat thumbnails and lighter drafts. */
+export async function downscale(src: string, maxEdge: number, quality = 0.8): Promise<string> {
+  const img = await loadImage(src);
+  const scale = Math.min(1, maxEdge / Math.max(img.naturalWidth, img.naturalHeight));
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
+  canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return src;
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  return canvas.toDataURL('image/jpeg', quality);
+}
+
 export interface CropBox {
   /** Zoom ≥ 1 relative to "cover" fit. */
   zoom: number;

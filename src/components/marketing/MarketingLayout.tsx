@@ -1,38 +1,42 @@
 import React, { useEffect, useState } from 'react';
-import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowRightIcon, FlagIcon, MenuIcon, XIcon } from 'lucide-react';
 import { KubicuLogo } from '../shell/KubicuLogo';
 import { PlatformLook } from './PlatformLook';
 import { AnnouncementBar } from './AnnouncementBar';
+import { MegaMenu } from './MegaMenu';
+import { MobileSiteMenu } from './MobileSiteMenu';
 import { cn } from '../../utils/cn';
-
-const nav = [
-{ to: '/', label: 'Product', end: true },
-{ to: '/templates', label: 'Templates' },
-{ to: '/ai', label: 'KUBICU AI' },
-{ to: '/pricing', label: 'Pricing' },
-{ to: '/about/help', label: 'Resources' }];
-
 
 const footer = [
 {
   title: 'Product',
   links: [
+  { to: '/features', label: 'All features' },
   { to: '/templates', label: 'Templates' },
+  { to: '/themes', label: 'Themes' },
   { to: '/pricing', label: 'Pricing' },
   { to: '/ai', label: 'KUBICU AI' },
-  { to: '/about/roadmap', label: 'Roadmap' },
-  { to: '/signup', label: 'Create a page' }]
+  { to: '/copilot', label: 'Copilot' }]
 
 },
 {
-  title: 'Use cases',
+  title: 'Tools',
   links: [
-  { to: '/templates?goal=sell', label: 'Sell products' },
-  { to: '/templates?goal=book', label: 'Take bookings' },
-  { to: '/templates?goal=events', label: 'Sell event tickets' },
-  { to: '/templates?goal=showcase', label: 'Show your work' }]
+  { to: '/tools/short-links', label: 'Short links & QR' },
+  { to: '/features/audience-manager', label: 'Audience Manager' },
+  { to: '/marketplace', label: 'Marketplace' },
+  { to: '/about/roadmap', label: 'Roadmap' }]
+
+},
+{
+  title: 'Solutions',
+  links: [
+  { to: '/for/creators', label: 'Creators' },
+  { to: '/for/shops', label: 'Shops & sellers' },
+  { to: '/for/services', label: 'Service businesses' },
+  { to: '/for/events', label: 'Events & communities' }]
 
 },
 {
@@ -68,8 +72,18 @@ export function MarketingLayout() {
 
   useEffect(() => {
     setMenuOpen(false);
-    window.scrollTo(0, 0);
-  }, [location.pathname]);
+    // Menu links like /features#bookings land on their section; everything else starts at the top.
+    if (location.hash) {
+      window.requestAnimationFrame(() => document.getElementById(location.hash.slice(1))?.scrollIntoView({ block: 'start' }));
+    } else window.scrollTo(0, 0);
+  }, [location.pathname, location.hash]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setMenuOpen(false);
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [menuOpen]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -85,28 +99,12 @@ export function MarketingLayout() {
       </a>
       <AnnouncementBar />
       <header className="sticky top-0 z-30 h-[88px] px-3 pt-3 print:hidden md:px-5">
-        <div className={cn('mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-4 rounded-full bg-white pl-5 pr-2 text-[rgb(20_20_18)] transition-shadow duration-200 md:pl-7', scrolled ? 'shadow-3' : 'shadow-1')}>
-          <div className="flex items-center gap-6 lg:gap-10">
+        <div className={cn('relative mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-4 rounded-full bg-white pl-5 pr-2 text-[rgb(20_20_18)] transition-shadow duration-200 md:pl-7', scrolled ? 'shadow-3' : 'shadow-1')}>
+          <div className="flex items-center gap-6 lg:gap-8">
             <Link to="/" aria-label="KUBICU home" className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-              <KubicuLogo />
+              <KubicuLogo accent="#6B8CFF" />
             </Link>
-            <nav aria-label="Main" className="hidden items-center gap-0.5 lg:flex">
-              {nav.map((n) =>
-              <NavLink
-                key={n.to}
-                to={n.to}
-                end={n.end}
-                className={({ isActive }) =>
-                cn(
-                  'whitespace-nowrap rounded-full px-3.5 py-2 text-[15px] font-semibold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
-                  isActive ? 'bg-[rgb(238_233_221)] text-[rgb(20_20_18)]' : 'text-[rgb(70_68_62)] hover:bg-[rgb(238_233_221)] hover:text-[rgb(20_20_18)]'
-                )
-                }>
-                
-                  {n.label}
-                </NavLink>
-              )}
-            </nav>
+            <MegaMenu />
           </div>
           <div className="flex items-center gap-2">
             <Link to="/signin" className={cn(pill, 'hidden bg-[rgb(238_233_221)] text-[rgb(20_20_18)] hover:bg-[rgb(224_217_202)] sm:inline-flex')}>
@@ -136,18 +134,12 @@ export function MarketingLayout() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.98 }}
             transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
-            className="mx-auto mt-2 max-w-7xl origin-top rounded-[28px] bg-white p-3 text-[rgb(20_20_18)] shadow-3 lg:hidden">
+            className="mx-auto mt-2 max-h-[calc(100dvh-112px)] max-w-7xl origin-top overflow-y-auto overscroll-contain rounded-[28px] bg-white p-3 text-[rgb(20_20_18)] shadow-3 lg:hidden">
             
-              <ul className="flex flex-col">
-                {nav.map((n, i) =>
-              <motion.li key={n.to} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2, delay: 0.03 * i, ease: [0.23, 1, 0.32, 1] }}>
-                    <Link to={n.to} className="flex h-14 items-center justify-between rounded-2xl px-4 text-[18px] font-bold hover:bg-[rgb(238_233_221)]">
-                      {n.label}
-                      <ArrowRightIcon size={18} aria-hidden className="text-[rgb(104_100_92)]" />
-                    </Link>
-                  </motion.li>
-              )}
-              </ul>
+              <MobileSiteMenu />
+              <Link to="/copilot" className={cn(pill, 'mt-2 w-full gap-2 bg-[rgb(var(--kb-lime))] text-[rgb(var(--kb-forest))]')}>
+                Start with Copilot <ArrowRightIcon size={16} aria-hidden />
+              </Link>
               <Link to="/signin" className={cn(pill, 'mt-2 w-full bg-[rgb(238_233_221)] text-[rgb(20_20_18)] sm:hidden')}>
                 Log in
               </Link>
@@ -162,7 +154,7 @@ export function MarketingLayout() {
 
       <footer className="bg-[rgb(var(--kb-plum))] px-3 pb-8 pt-3 text-white print:hidden md:px-5">
         <div className="mx-auto w-full max-w-7xl rounded-[36px] bg-white px-6 py-12 text-[rgb(20_20_18)] md:px-12 md:py-14">
-          <div className="grid gap-12 lg:grid-cols-[1.3fr_repeat(4,1fr)]">
+          <div className="grid gap-12 lg:grid-cols-[1.2fr_repeat(5,1fr)]">
             <div className="max-w-xs">
               <KubicuLogo />
               <p className="mt-4 text-[15px] font-medium text-[rgb(70_68_62)]">Your corner of the internet. Your whole business.</p>
@@ -170,7 +162,7 @@ export function MarketingLayout() {
                 Create your page — free <ArrowRightIcon size={16} aria-hidden />
               </Link>
             </div>
-            <div className="grid grid-cols-2 gap-8 sm:grid-cols-4 lg:col-span-4">
+            <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:col-span-5 lg:grid-cols-5">
               {footer.map((col) =>
               <div key={col.title}>
                   <h2 className="text-[15px] font-extrabold">{col.title}</h2>

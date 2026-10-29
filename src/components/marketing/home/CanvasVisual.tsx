@@ -14,7 +14,7 @@ export function CanvasVisual() {
   const reduce = useReducedMotion();
   return (
     <div className="relative mx-auto max-w-[560px]" aria-hidden>
-      <KbShape kind="asterisk" color="rgb(var(--kb-lime))" size={84} motion="spin" className="absolute -left-6 -top-8 z-20" />
+      <KbShape kind="kube" color="rgb(var(--kb-lime))" size={84} motion="spin" className="absolute -left-6 -top-8 z-20" />
       <KbShape kind="ring" color="rgb(var(--kb-sky))" size={110} motion="bob" className="absolute -bottom-10 -right-6 z-0" />
 
       <div className="relative z-10 overflow-hidden rounded-[28px] bg-white text-[rgb(20_20_18)] shadow-3">

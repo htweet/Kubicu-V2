@@ -41,10 +41,10 @@ export function WaComposer({ question, stage, onText, onPhotos }: Props) {
       }
       <form onSubmit={submit} className="flex items-end gap-2">
         <div className="flex min-h-[44px] flex-1 items-end rounded-[22px] bg-white pl-1">
-          <input ref={file} id="wa-photos" type="file" accept="image/jpeg,image/png,image/webp" multiple className="sr-only" onChange={(e) => pick(e.target.files)} disabled={locked} />
+          <input ref={file} id="wa-photos" type="file" accept="image/jpeg,image/png,image/webp" multiple={question?.topic !== 'logo'} className="sr-only" onChange={(e) => pick(e.target.files)} disabled={locked} />
           <label
             htmlFor="wa-photos"
-            aria-label="Attach photos"
+            aria-label={question?.topic === 'logo' ? 'Attach your logo' : 'Attach photos'}
             className="flex h-11 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full focus-within:ring-2"
             style={{ color: question?.input === 'images' ? wa.send : wa.meta }}>
             

@@ -5,6 +5,7 @@ import { SubscribeSheet } from '../components/subscriptions/SubscribeSheet';
 import { SubscribeProvider } from '../contexts/SubscribeContext';
 import { usePageOps } from '../hooks/usePageOps';
 import { upsertContact } from '../utils/ops/ops';
+import { opsSettingsOf } from '../utils/ops/settings';
 import { contactFrom, recordSubmission } from '../utils/forms/submit';
 import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { SiteNav } from '../components/blocks/SiteNav';
@@ -113,11 +114,23 @@ export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
     return {
       submitLead: (v, formTitle, consent) => {
         track('lead', { label: formTitle });
-        return ops.apply((d) => upsertContact(d, { name: v.name, email: v.email, phone: v.phone }, 'form', `Sent “${formTitle}”${v.message ? `: ${v.message.slice(0, 140)}` : ''}`, { consent: consent ? 'subscribed' : 'transactional' }));
+        return ops.apply((d) =>
+        upsertContact(d, { name: v.name, email: v.email, phone: v.phone }, 'form', `Sent “${formTitle}”${v.message ? `: ${v.message.slice(0, 140)}` : ''}`, {
+          consent: consent ? 'subscribed' : 'transactional',
+          attribution: { channel: visit.source, campaign: visit.campaign ?? null, page: handle ?? null },
+          consentWording: opsSettingsOf(d).consentText || `Ticked “keep me updated” on “${formTitle}”`
+        })
+        );
       },
       subscribe: (v, title) => {
         track('signup', { label: title });
-        return ops.apply((d) => upsertContact(d, { name: '', email: v.email, phone: '' }, 'newsletter', `Subscribed via “${title}”`, { consent: 'subscribed' }));
+        return ops.apply((d) =>
+        upsertContact(d, { name: '', email: v.email, phone: '' }, 'newsletter', `Subscribed via “${title}”`, {
+          consent: 'subscribed',
+          attribution: { channel: visit.source, campaign: visit.campaign ?? null, page: handle ?? null },
+          consentWording: opsSettingsOf(d).consentText || `Signed up to “${title}”`
+        })
+        );
       },
       openBooking: (id) => {
         track('booking_open', { label: id });
@@ -131,7 +144,13 @@ export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
         track('form_submit', { label: form.id, valueNgn: paymentNgn ?? undefined });
         const c = contactFrom(form, sub.answers);
         if (c.email || c.phone) {
-          ops.apply((d) => upsertContact(d, { name: c.name, email: c.email, phone: c.phone }, 'form', `Sent “${form.name}”${paymentNgn ? ` and paid ₦${paymentNgn.toLocaleString()} (test)` : ''}`, { consent: c.consent ? 'subscribed' : 'transactional' }));
+          ops.apply((d) =>
+          upsertContact(d, { name: c.name, email: c.email, phone: c.phone }, 'form', `Sent “${form.name}”${paymentNgn ? ` and paid ₦${paymentNgn.toLocaleString()} (test)` : ''}`, {
+            consent: c.consent ? 'subscribed' : 'transactional',
+            attribution: { channel: visit.source, campaign: visit.campaign ?? null, page: handle ?? null },
+            consentWording: `Consent question on “${form.name}”`
+          })
+          );
         }
         return true;
       },

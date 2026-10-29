@@ -45,6 +45,7 @@ export function ReportPageDialog({ open, onClose, handle, workspaceId }: {open: 
 
   return (
     <Dialog
+      centered
       open={open}
       onClose={onClose}
       title={sent ? 'Thanks — we’ve got it' : 'Report this page'}

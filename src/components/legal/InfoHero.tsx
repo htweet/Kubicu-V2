@@ -23,7 +23,7 @@ export function InfoHero({ crumb, title, intro, meta, actions }: InfoHeroProps) 
         <span>{crumb}</span>
       </nav>
       <div className="nm-fill relative mt-4 overflow-hidden rounded-[36px] px-6 py-12 md:px-12 md:py-16">
-        <KbShape kind="asterisk" color="rgb(var(--kb-forest, 18 56 40))" size={72} motion="spin" className="absolute -right-3 -top-3 hidden opacity-90 sm:block" />
+        <KbShape kind="kube" color="rgb(var(--kb-forest, 18 56 40))" size={72} motion="spin" className="absolute -right-3 -top-3 hidden opacity-90 sm:block" />
         <h1 className="kb-display relative max-w-3xl text-[40px] leading-[0.98] text-[rgb(var(--kb-forest,18_56_40))] md:text-[64px]">{title}</h1>
       </div>
       <div className="mt-6 flex flex-col gap-4 md:flex-row md:items-start md:justify-between md:gap-10">

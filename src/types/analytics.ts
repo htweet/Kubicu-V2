@@ -20,7 +20,9 @@ export type EventType =
 'form_submit' |
 'member_gate' |
 'member_signin' |
-'member_view';
+'member_view'
+/** Someone tapped or scanned a short link, before it sent them on (D270). Counted for the link, never as a page visit. */ |
+'link_click';
 
 export type DeviceKind = 'phone' | 'tablet' | 'desktop';
 
@@ -47,6 +49,10 @@ export interface AnalyticsEvent {
   /** Naira value for paid orders and deposits. */
   valueNgn?: number;
   sample?: boolean;
+  /** Short-link clicks only: the app or site the tap came from, by kind — never the address (D271). */
+  via?: SourceId;
+  /** Short-link clicks only: not counted as a click — a bot or link preview, or rapid repeats from one browser (D271). */
+  invalid?: 'bot' | 'burst';
 }
 
 export interface AnalyticsSettings {

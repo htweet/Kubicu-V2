@@ -13,6 +13,11 @@ interface AnalyticsValue {
   clearSample: () => void;
   loadSample: () => void;
   clearAll: () => void;
+  /**
+   * Deletes a short link's click data (D271): its taps are removed, and visits it brought stay in Analytics
+   * but are no longer tied to the link. Returns how many taps were removed.
+   */
+  clearLinkClicks: (slug: string) => number;
 }
 
 const AnalyticsContext = createContext<AnalyticsValue | null>(null);
@@ -81,6 +86,24 @@ export function AnalyticsProvider({ children }: {children: React.ReactNode;}) {
       clearAll: () => {
         apply((d) => ({ ...d, events: [] }));
         toast('All visit data deleted');
+      },
+      clearLinkClicks: (slug) => {
+        let removed = 0;
+        apply((d) => ({
+          ...d,
+          events: d.events.flatMap((e) => {
+            if (e.campaign !== slug) return [e];
+            if (e.type === 'link_click') {
+              removed += 1;
+              return [];
+            }
+            const rest = { ...e };
+            delete rest.campaign;
+            delete rest.via;
+            return [rest];
+          })
+        }));
+        return removed;
       }
     }),
     [data, apply]

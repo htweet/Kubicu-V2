@@ -11,6 +11,7 @@ import { useMainLink } from '../../hooks/useMainLink';
 import type { QrDesign } from '../../types/domains';
 import { campaignStats } from '../../utils/analytics/aggregate';
 import { destinationExists, destinationLabel, fallbackDestination, shortDisplay, shortUrl } from '../../utils/domains/links';
+import { linkGoesTo } from '../../utils/domains/linkRules';
 import { useOps } from '../../contexts/OpsContext';
 import { downloadPng, qrChecks, qrSvg, styleOf } from '../../utils/domains/qr';
 import { PageHeader } from '../../components/shell/PageHeader';
@@ -99,7 +100,7 @@ export function QrCodes() {
           const link = data.links.find((l) => l.id === q.linkId);
           if (!link) return null;
           const scans = stats.get(link.slug)?.visits ?? 0;
-          const ok = destinationExists(current, commerce, link.destination);
+          const ok = !!(link.whatsapp || link.externalUrl) || destinationExists(current, commerce, link.destination);
           const weak = qrChecks(styleOf(q, initials)).contrast.level === 'fail';
           return (
             <li key={q.id} className="flex flex-col rounded-lg border border-line bg-raised">
@@ -113,7 +114,7 @@ export function QrCodes() {
                   </p>
                   <p className="truncate text-caption text-fg-muted">{shortDisplay(mainHandle, link.slug, host)}</p>
                   <p className={ok ? 'truncate text-caption text-fg-subtle' : 'text-caption text-danger'}>
-                    → {ok ? destinationLabel(current, commerce, link.destination, ops.services) : `Destination removed — scans go to ${destinationLabel(current, commerce, fallbackDestination(current, commerce, link.destination), ops.services)} until you choose a new one`}
+                    → {link.whatsapp || link.externalUrl ? linkGoesTo(current, commerce, link) : ok ? destinationLabel(current, commerce, link.destination, ops.services) : `Destination removed — scans go to ${destinationLabel(current, commerce, fallbackDestination(current, commerce, link.destination), ops.services)} until you choose a new one`}
                   </p>
                   <div className="mt-2 flex flex-wrap items-center gap-2">
                     <span className="text-label font-semibold tabular-nums text-fg">{scans.toLocaleString()}</span>

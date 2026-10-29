@@ -220,6 +220,46 @@ export interface Contact {
   assigneeId?: string | null;
   /** Values for the business's own contact fields, by field id (D259). */
   fields?: Record<string, string>;
+  /** First channel, short link and page that brought them in (D268). A click alone never creates a contact. */
+  attribution?: ContactAttribution;
+  /** What they agreed to and when — kept apart from where they came from (D268). */
+  consentRecord?: {at: string;wording: string;};
+}
+
+export interface ContactAttribution {
+  channel: import('./analytics').SourceId;
+  /** Short-link slug, when they arrived through one. */
+  campaign: string | null;
+  /** Page handle they signed up on. */
+  page: string | null;
+  at: string;
+}
+
+/** A saved Audience filter (D268). Membership is worked out live, so people join and leave as they change. */
+export interface SavedSegment {
+  id: string;
+  name: string;
+  source: ContactSource | 'all';
+  consent: ConsentStatus | 'all';
+  tag: string;
+  /** Short-link slug, or 'all'. */
+  campaign: string;
+  /** Extra conditions from the rule builder (D272). Combined with the filters above. */
+  rules?: SegmentRule[];
+  /** Whether a contact must meet all of the rules or any one of them. */
+  match?: 'all' | 'any';
+}
+
+export type SegmentField = 'source' | 'consent' | 'tag' | 'campaign' | 'channel' | 'stage' | 'added' | 'email' | 'phone';
+export type SegmentOp = 'is' | 'isNot' | 'within' | 'olderThan' | 'has' | 'missing';
+
+/** One condition in a segment (D272), e.g. "Tag is VIP" or "Added within 30 days". */
+export interface SegmentRule {
+  id: string;
+  field: SegmentField;
+  op: SegmentOp;
+  /** Option id, tag, slug or number of days. Unused for has/missing. */
+  value: string;
 }
 
 export type TriggerId =
@@ -330,4 +370,6 @@ export interface OpsSettings {
   quietHours: {on: boolean;from: string;to: string;};
   /** Channel a new "send a message" step starts with. */
   defaultChannel: 'send_whatsapp' | 'send_email';
+  /** Saved Audience filters (D268). */
+  segments: SavedSegment[];
 }

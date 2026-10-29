@@ -48,6 +48,15 @@ export function SignUp() {
         </>
       }>
       
+      {!claim &&
+      <p className="mb-5 rounded-lg border border-line bg-raised px-3.5 py-3 text-label text-fg-muted">
+          Never made a website?{' '}
+          <Link to="/copilot" className="font-semibold text-fg underline underline-offset-2">
+            Tell Copilot about your business
+          </Link>{' '}
+          first — it asks simple questions, shows you a draft page, and you create your account only if you like it.
+        </p>
+      }
       {claim &&
       <div className="mb-5 flex items-start gap-3 rounded-lg border border-success/40 bg-success-soft px-3.5 py-3">
           <CheckCircle2Icon size={18} className="mt-0.5 shrink-0 text-success" aria-hidden />

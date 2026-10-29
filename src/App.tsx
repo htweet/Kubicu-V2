@@ -31,6 +31,7 @@ import { GrowthToolLayout, MovedTo } from './components/domains/GrowthToolLayout
 import { Domains } from './pages/domains/Domains';
 import { QrCodes } from './pages/domains/QrCodes';
 import { CampaignLinks } from './pages/domains/CampaignLinks';
+import { LinkStats } from './pages/domains/LinkStats';
 import { Redirects } from './pages/domains/Redirects';
 import { PrintKit } from './pages/domains/PrintKit';
 import { ServiceOs } from './pages/ServiceOs';
@@ -69,6 +70,7 @@ import { CopilotLanding } from './pages/marketing/CopilotLanding';
 import { CopilotWeb } from './pages/copilot/CopilotWeb';
 import { CopilotWhatsApp } from './pages/copilot/CopilotWhatsApp';
 import { CopilotPreview } from './pages/copilot/CopilotPreview';
+import { CopilotContinue } from './pages/copilot/CopilotContinue';
 import { Onboarding } from './pages/Onboarding';
 import { Home } from './pages/marketing/Home';
 import { Templates } from './pages/marketing/Templates';
@@ -76,6 +78,13 @@ import { TemplateDetail } from './pages/marketing/TemplateDetail';
 import { Pricing } from './pages/marketing/Pricing';
 import { InfoPage } from './pages/marketing/InfoPage';
 import { Developers } from './pages/marketing/Developers';
+import { Solution } from './pages/marketing/Solution';
+import { Features } from './pages/marketing/Features';
+import { MarketplaceHome } from './pages/marketing/marketplace/MarketplaceHome';
+import { MarketplaceCategory } from './pages/marketing/marketplace/MarketplaceCategory';
+import { MarketplaceListing } from './pages/marketing/marketplace/MarketplaceListing';
+import { ShortLinksLanding } from './pages/marketing/ShortLinksLanding';
+import { AudienceManagerLanding } from './pages/marketing/AudienceManagerLanding';
 import { SignUp } from './pages/auth/SignUp';
 import { SignIn } from './pages/auth/SignIn';
 import { ResetPassword } from './pages/auth/ResetPassword';
@@ -151,7 +160,7 @@ type WorkspacePlanOption = 'free' | 'creator' | 'pro' | 'business' | 'agency' | 
 type ViewingAsOption = 'owner' | 'admin' | 'editor' | 'sales' | 'viewer';
 type RenewalOption = 'succeeds' | 'fails';
 type CopilotWhatsAppOption = 'available' | 'unavailable';
-type CopilotFailureOption = 'none' | 'generation' | 'previewImage' | 'expiredLink';
+type CopilotFailureOption = 'none' | 'generation' | 'previewImage' | 'expiredLink' | 'signIn';
 
 interface AppProps {
   /** KUBICU Copilot's WhatsApp channel (D262, proposed): off shows the web fallback. */
@@ -188,10 +197,22 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
                 <Route path="about/:topic" element={<InfoPage />} />
                 <Route path="developers" element={<Developers />} />
                 <Route path="copilot" element={<CopilotLanding />} />
+                <Route path="for/:segment" element={<Solution />} />
+                <Route path="marketplace" element={<MarketplaceHome />} />
+                <Route path="marketplace/apps" element={<MarketplaceCategory fixed="apps" />} />
+                <Route path="marketplace/categories/:category" element={<MarketplaceCategory />} />
+                <Route path="marketplace/:slug" element={<MarketplaceListing />} />
+                <Route path="tools/short-links" element={<ShortLinksLanding />} />
+                <Route path="features/audience-manager" element={<AudienceManagerLanding />} />
+                <Route path="features" element={<Features />} />
+                <Route path="themes" element={<Navigate to="/templates?tab=themes" replace />} />
+                <Route path="blocks" element={<Navigate to="/marketplace/categories/blocks" replace />} />
+                <Route path="resources" element={<Navigate to="/about/help" replace />} />
               </Route>
               <Route path="/copilot/chat" element={<CopilotWeb />} />
               <Route path="/copilot/whatsapp" element={<CopilotWhatsApp />} />
               <Route path="/d/:id" element={<CopilotPreview />} />
+              <Route path="/copilot/continue" element={<CopilotContinue />} />
               <Route path="/signup" element={<SignUp />} />
               <Route path="/signin" element={<SignIn />} />
               <Route path="/reset" element={<ResetPassword />} />
@@ -241,12 +262,14 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
                   <Route path="redirects" element={<Redirects />} />
                 </Route>
                 <Route path="domains/qr" element={<MovedTo to="/app/qr" />} />
-                <Route path="domains/links" element={<MovedTo to="/app/campaign-links" />} />
+                <Route path="domains/links" element={<MovedTo to="/app/links" />} />
+                <Route path="campaign-links" element={<MovedTo to="/app/links" />} />
                 <Route path="domains/kit" element={<MovedTo to="/app/print-kit" />} />
                 <Route element={<GrowthToolLayout />}>
                   <Route path="qr" element={<QrCodes />} />
                   <Route path="print-kit" element={<PrintKit />} />
-                  <Route path="campaign-links" element={<CampaignLinks />} />
+                  <Route path="links" element={<CampaignLinks />} />
+                  <Route path="links/:id" element={<LinkStats />} />
                 </Route>
                 <Route path="extensions" element={<Extensions />} />
                 <Route path="templates" element={<TemplatesMarket />} />

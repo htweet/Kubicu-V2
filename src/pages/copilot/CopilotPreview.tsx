@@ -1,18 +1,20 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { CircleDashedIcon, ClockIcon, LinkIcon, MessageCircleIcon, XIcon } from 'lucide-react';
+import { ArrowRightIcon, CheckCircle2Icon, CircleDashedIcon, ClockIcon, LinkIcon, MessageCircleIcon, XIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { RenderPlanProvider } from '../../contexts/RenderPlanContext';
 import { PageSurface } from '../../components/blocks/PageSurface';
 import { PageLayoutView } from '../../components/blocks/PageLayoutView';
 import { PlatformLook } from '../../components/marketing/PlatformLook';
 import { KubicuLogo } from '../../components/shell/KubicuLogo';
+import { BackButton } from '../../components/shell/BackButton';
 import { plans } from '../../data/plans';
 import { useCopilotSim } from '../../contexts/CopilotSimContext';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { isExpired, readDraft, readSession, DRAFT_DAYS } from '../../utils/copilot/store';
 import { chatPathFor, expiryLabel, previewHref } from '../../utils/copilot/links';
+import { startClaim } from '../../utils/copilot/claim';
 
 const ease = [0.23, 1, 0.32, 1] as const;
 
@@ -24,6 +26,7 @@ export function CopilotPreview() {
   const { id = '' } = useParams();
   const sim = useCopilotSim();
   const draft = useMemo(() => readDraft(id), [id]);
+  const navigate = useNavigate();
   const wide = useMediaQuery('(min-width: 768px)');
   const [gapsOpen, setGapsOpen] = useState(false);
 
@@ -45,6 +48,8 @@ export function CopilotPreview() {
   const chatPath = session ? chatPathFor(session.channel) : null;
   if (isExpired(draft) || sim.failure === 'expiredLink') return <PreviewState kind="expired" chatPath={chatPath} />;
 
+  // Only the chat that made the draft (on this device) holds the claim code — a shared link can only look.
+  const canContinue = !!session && !draft.claimed;
   const visible = draft.doc.blocks.filter((b) => !b.visibility.hidden);
   const gaps = draft.brief.gaps;
 
@@ -59,8 +64,9 @@ export function CopilotPreview() {
     <PlatformLook night>
       <div className="min-h-[100dvh] w-full" style={{ background: draft.doc.theme.background }}>
         <div className="sticky top-0 z-40 border-b border-line bg-canvas/95 backdrop-blur-sm">
-          <div className="mx-auto flex h-14 w-full max-w-6xl items-center gap-3 px-3 md:px-6">
-            <KubicuLogo />
+          <div className="mx-auto flex h-14 w-full max-w-6xl items-center gap-2 px-3 sm:gap-3 md:px-6">
+            <BackButton fallback={chatPath ?? '/copilot'} compact />
+            <KubicuLogo withWordmark={wide} />
             <p className="min-w-0 flex-1 truncate text-caption text-fg-muted">
               <span className="font-semibold text-fg">Draft preview</span>
               <span className="hidden sm:inline"> · not published</span>
@@ -83,9 +89,33 @@ export function CopilotPreview() {
               <LinkIcon size={16} aria-hidden />
             </button>
             {chatPath &&
-            <Link to={chatPath} className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-action px-4 text-label font-semibold text-action-fg transition-transform duration-150 ease-out active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-                <MessageCircleIcon size={15} aria-hidden /> Back to chat
+            <Link
+              to={chatPath}
+              aria-label="Back to chat"
+              className={
+              canContinue ?
+              'flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-fg-muted hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus sm:w-auto sm:gap-1.5 sm:px-3 sm:text-label sm:font-medium' :
+              'inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-action px-4 text-label font-semibold text-action-fg transition-transform duration-150 ease-out active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus'
+              }>
+              
+                <MessageCircleIcon size={15} aria-hidden /> <span className={canContinue ? 'hidden sm:inline' : undefined}>Back to chat</span>
               </Link>
+            }
+            {canContinue &&
+            <button
+              type="button"
+              onClick={() => {
+                if (startClaim(draft.id)) navigate('/copilot/continue');
+              }}
+              className="inline-flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-action px-4 text-label font-semibold text-action-fg transition-transform duration-150 ease-out active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+              
+                Continue<span className="hidden sm:inline"> in KUBICU</span> <ArrowRightIcon size={15} aria-hidden />
+              </button>
+            }
+            {draft.claimed &&
+            <span className="hidden shrink-0 items-center gap-1.5 text-caption font-semibold text-fg sm:inline-flex">
+                <CheckCircle2Icon size={14} className="text-success" aria-hidden /> In KUBICU
+              </span>
             }
           </div>
           <AnimatePresence initial={false}>

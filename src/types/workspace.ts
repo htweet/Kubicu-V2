@@ -3,7 +3,7 @@ import type { WorkspacePlan } from './plan';
 import type { CurrencyCode } from '../utils/currency';
 
 /** What a space is for (D50). Every workspace has exactly one main space. */
-export type SpaceKind = 'main' | 'campaign' | 'dealroom' | 'event' | 'fundraiser' | 'popup' | 'booking' | 'members';
+export type SpaceKind = 'main' | 'campaign' | 'dealroom' | 'event' | 'fundraiser' | 'popup' | 'booking' | 'members' | 'page';
 
 /** One public space inside a workspace — its own link, theme, blocks and publishing. */
 export interface Space {

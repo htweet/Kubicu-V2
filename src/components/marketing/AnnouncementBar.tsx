@@ -16,8 +16,8 @@ export function AnnouncementBar() {
   if (!open) return null;
   return (
     <div className="relative bg-[rgb(var(--kb-plum))] px-12 py-3 text-center text-[14px] font-medium text-white print:hidden">
-      Build your page by chatting with KUBICU AI — now in preview.{' '}
-      <Link to="/ai" className="font-bold underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
+      New: describe your business in a chat and get a draft page in minutes.{' '}
+      <Link to="/copilot" className="font-bold underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
         Try it
       </Link>
       <button

@@ -1,4 +1,4 @@
-import { CalendarClockIcon, CalendarDaysIcon, HandHeartIcon, KeyRoundIcon, HomeIcon, MegaphoneIcon, StoreIcon, UsersRoundIcon, type LucideIcon } from 'lucide-react';
+import { CalendarClockIcon, CalendarDaysIcon, FileTextIcon, HandHeartIcon, KeyRoundIcon, HomeIcon, MegaphoneIcon, StoreIcon, UsersRoundIcon, type LucideIcon } from 'lucide-react';
 import type { SpaceKind } from '../types/workspace';
 
 export const spaceKinds: Record<SpaceKind, {label: string;plural: string;icon: LucideIcon;blurb: string;example: string;useWhen?: string;}> = {
@@ -64,8 +64,16 @@ export const spaceKinds: Record<SpaceKind, {label: string;plural: string;icon: L
     blurb: 'A whole space only active subscribers to your membership plans can open.',
     example: 'Course material · Community resources',
     useWhen: 'Use for a separate members’ home. To lock one section or page of your main site, use the Members-only block.'
+  },
+  page: {
+    label: 'Page',
+    plural: 'Pages',
+    icon: FileTextIcon,
+    blurb: 'An ordinary page on its own link — no dates, stock or rules. Build it with any blocks or template.',
+    example: 'A second business · A portfolio · A link list',
+    useWhen: 'Use when none of the special types fit.'
   }
 };
 
-/** Extra spaces, in the order they're offered. */
-export const extraSpaceKindOrder = ['campaign', 'dealroom', 'event', 'fundraiser', 'popup', 'booking', 'members'] as const;
+/** Extra spaces, in the order they're offered. A plain Page comes first (D267). */
+export const extraSpaceKindOrder = ['page', 'campaign', 'dealroom', 'event', 'fundraiser', 'popup', 'booking', 'members'] as const;

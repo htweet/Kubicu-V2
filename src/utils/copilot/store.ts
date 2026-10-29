@@ -25,22 +25,48 @@ function read<T>(key: string, fallback: T): T {
   }
 }
 
-function write(key: string, value: unknown) {
+function tryWrite(key: string, value: unknown): boolean {
   try {
     localStorage.setItem(key, JSON.stringify(value));
+    return true;
   } catch {
+    return false;
+  }
+}
 
-    // Storage full or blocked: the chat keeps working for this visit.
-  }}
+/**
+ * Saves, and if the browser's storage is full, clears out what's no longer needed — old chats, expired
+ * drafts — then tries again (D265). Returns false only if it still can't save, so the chat can warn.
+ */
+function write(key: string, value: unknown, keepId?: string): boolean {
+  if (tryWrite(key, value)) return true;
+  const sessions = key === SESSIONS ? keepCurrent(value as Record<string, CopilotSession>, keepId) : undefined;
+  prune(sessions);
+  return tryWrite(key, sessions ?? value);
+}
+
+function keepCurrent(sessions: Record<string, CopilotSession>, keepId?: string): Record<string, CopilotSession> {
+  const current = new Set(Object.values(read<Record<string, string>>(CURRENT, {})));
+  if (keepId) current.add(keepId);
+  return Object.fromEntries(Object.entries(sessions).filter(([id]) => current.has(id)));
+}
+
+function prune(sessions?: Record<string, CopilotSession>) {
+  const now = Date.now();
+  const drafts = read<Record<string, CopilotDraft>>(DRAFTS, {});
+  const liveDrafts = Object.fromEntries(Object.entries(drafts).filter(([, d]) => d.claimed || new Date(d.expiresAt).getTime() > now));
+  tryWrite(DRAFTS, liveDrafts);
+  tryWrite(SESSIONS, sessions ?? keepCurrent(read<Record<string, CopilotSession>>(SESSIONS, {})));
+}
 
 export function readSession(id: string): CopilotSession | null {
   return read<Record<string, CopilotSession>>(SESSIONS, {})[id] ?? null;
 }
 
-export function saveSession(s: CopilotSession) {
+export function saveSession(s: CopilotSession): boolean {
   const all = read<Record<string, CopilotSession>>(SESSIONS, {});
   all[s.id] = s;
-  write(SESSIONS, all);
+  return write(SESSIONS, all, s.id);
 }
 
 /** The chat in progress on this device for a channel, so leaving and coming back continues it. */
@@ -59,10 +85,10 @@ export function readDraft(id: string): CopilotDraft | null {
   return read<Record<string, CopilotDraft>>(DRAFTS, {})[id] ?? null;
 }
 
-export function saveDraft(d: CopilotDraft) {
+export function saveDraft(d: CopilotDraft): boolean {
   const all = read<Record<string, CopilotDraft>>(DRAFTS, {});
   all[d.id] = d;
-  write(DRAFTS, all);
+  return write(DRAFTS, all);
 }
 
 export function isExpired(d: CopilotDraft, now = Date.now()): boolean {

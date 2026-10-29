@@ -38,16 +38,21 @@ export function HomeHero() {
           <motion.div className="mt-9" {...reduce ? {} : { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.3, delay: 0.45, ease } }}>
             <HandleClaim />
           </motion.div>
-          <Link
-            to="/templates"
-            className="group mt-4 inline-flex items-center gap-1.5 rounded-sm text-label font-bold text-white underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-            
-            Or browse example pages <ArrowRightIcon size={15} aria-hidden className="transition-transform duration-150 ease-out group-hover:translate-x-0.5" />
-          </Link>
+          <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2">
+            <Link
+              to="/copilot"
+              className="group inline-flex items-center gap-1.5 rounded-sm text-label font-bold text-white underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+              
+              Not sure where to start? Describe it in a chat <ArrowRightIcon size={15} aria-hidden className="transition-transform duration-150 ease-out group-hover:translate-x-0.5" />
+            </Link>
+            <Link to="/templates" className="rounded-sm text-label font-medium text-white/80 underline-offset-4 hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+              Browse example pages
+            </Link>
+          </div>
         </div>
 
         <figure className="relative mx-auto h-[440px] w-full max-w-[560px] sm:h-[540px] lg:h-[600px]">
-          <KbShape kind="asterisk" color="rgb(var(--kb-pink))" size={92} motion="spin" className="absolute -right-2 -top-4 z-20 sm:-right-6" />
+          <KbShape kind="kube" color="rgb(var(--kb-pink))" size={92} motion="spin" className="absolute -right-2 -top-4 z-20 sm:-right-6" />
           <KbShape kind="circle" color="rgb(var(--kb-cobalt))" size={70} motion="bob" className="absolute -left-2 top-[38%] z-0 hidden sm:block" />
           <KbShape kind="arch" color="rgb(var(--kb-lime))" size={64} motion="sway" phase={1} className="absolute bottom-2 right-[30%] z-0" />
 

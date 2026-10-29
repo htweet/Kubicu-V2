@@ -3,6 +3,7 @@ import type { AppNotification, NotifChannel, NotifEventId, NotifPrefs } from '..
 import { useTeam } from './TeamContext';
 import { useWorkspace } from './WorkspaceContext';
 import { useNotificationFeed } from '../hooks/useNotificationFeed';
+import { useLinkHealthCheck } from '../hooks/useLinkHealthCheck';
 import { notifEventById } from '../data/notificationEvents';
 import { channelOn, readPrefs, writePrefs } from '../utils/notifications';
 import { NotificationsPanel } from '../components/notifications/NotificationsPanel';
@@ -28,6 +29,8 @@ export function NotificationsProvider({ children }: {children: React.ReactNode;}
   const team = useTeam();
   const { current } = useWorkspace();
   const feed = useNotificationFeed();
+  // Daily short-link checks run here, where every workspace screen is mounted (D271).
+  useLinkHealthCheck({ schedule: true });
   const memberId = team.me.id;
   const [prefs, setPrefs] = useState<NotifPrefs>(() => readPrefs(current.id, memberId));
   const [open, setOpen] = useState(false);

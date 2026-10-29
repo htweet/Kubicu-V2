@@ -2,7 +2,7 @@ import React, { createContext, useContext } from 'react';
 
 /** Reviewer-only switches for KUBICU Copilot (D262), set from the Controls panel. Never shown in the product. */
 export type CopilotWhatsAppOption = 'available' | 'unavailable';
-export type CopilotFailureOption = 'none' | 'generation' | 'previewImage' | 'expiredLink';
+export type CopilotFailureOption = 'none' | 'generation' | 'previewImage' | 'expiredLink' | 'signIn';
 
 interface CopilotSim {
   whatsapp: CopilotWhatsAppOption;

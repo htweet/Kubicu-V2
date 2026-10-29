@@ -13,6 +13,7 @@ import { useCopilot } from '../../hooks/useCopilot';
 import { useCopilotSim } from '../../contexts/CopilotSimContext';
 import { previewPath } from '../../utils/copilot/links';
 import { CHANGES_PER_DAY, DRAFTS_PER_DAY } from '../../utils/copilot/store';
+import { startClaim } from '../../utils/copilot/claim';
 
 /** The number this simulated chat "comes from". Only used for daily limits — never to create an account. */
 const SAMPLE_CHAT_PHONE = '+2348035550142';
@@ -55,6 +56,11 @@ function WhatsAppChannel() {
     }
     if (r.value === 'open') {
       if (session.draftId) window.open(previewPath(session.draftId), '_blank', 'noopener');
+      return undefined;
+    }
+    // In WhatsApp the button opens a one-time continue link in the phone's browser.
+    if (r.value === 'continue') {
+      if (session.draftId && startClaim(session.draftId)) window.open('/copilot/continue', '_blank', 'noopener');
       return undefined;
     }
     return send({ kind: 'choice', value: r.value, label: r.label });

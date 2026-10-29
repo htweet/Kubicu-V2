@@ -31,6 +31,13 @@ export function AiFeatures() {
         <div>
           <SectionHeading id="ai-setup-h" title={<>Page setup from a <span className="nm-text">short brief</span></>} />
           <p className="mt-4 max-w-md text-body leading-relaxed text-fg-muted">Labelled “AI preview” everywhere it appears, so you always know which words came from AI.</p>
+          <p className="mt-4 max-w-md text-body leading-relaxed text-fg-muted">
+            No account yet?{' '}
+            <button type="button" onClick={() => navigate('/copilot')} className="inline-flex items-center gap-1 font-semibold text-fg underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+              Start with Copilot <ArrowRightIcon size={14} aria-hidden />
+            </button>{' '}
+            — chat in your browser, see a draft, and sign up only if you like it.
+          </p>
         </div>
         <ol className="flex flex-col divide-y divide-line border-y border-line">
           {steps.map((s, i) =>

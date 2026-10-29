@@ -16,7 +16,7 @@ export const coreModules: Record<CoreModule, {label: string;href: string;}> = {
   analytics: { label: 'Analytics', href: '/app/analytics' },
   notifications: { label: 'Notifications', href: '/app/settings/notifications' },
   forms: { label: 'Forms', href: '/app/forms' },
-  campaignLinks: { label: 'Campaign links', href: '/app/campaign-links' },
+  campaignLinks: { label: 'Short links', href: '/app/links' },
   quotes: { label: 'Quotes & jobs', href: '/app/services' },
   proof: { label: 'Proof of work', href: '/app/proof' },
   settings: { label: 'Settings', href: '/app/settings' }
