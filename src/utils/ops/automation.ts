@@ -4,16 +4,16 @@ import { uid } from '../id';
 
 /** Sample event used for test runs, per trigger. */
 const sampleSubject: Record<Automation['trigger'], {subject: string;vars: Record<string, string>;total: number;source: string;subscribed: boolean;}> = {
-  order_paid: { subject: 'Test order #9999 from Ada Test', vars: { first_name: 'Ada', order_number: '9999' }, total: 45000, source: 'order', subscribed: false },
-  booking_created: { subject: 'Test booking for Ada Test', vars: { first_name: 'Ada', service: 'Fitting', time: 'Tue 10:00am' }, total: 0, source: 'booking', subscribed: false },
-  checkout_abandoned: { subject: 'Test cart left by Ada Test', vars: { first_name: 'Ada', cart_link: 'kub.icu/…/cart' }, total: 32000, source: 'order', subscribed: true },
-  lead_submitted: { subject: 'Test enquiry from Ada Test', vars: { first_name: 'Ada' }, total: 0, source: 'form', subscribed: false },
+  order_paid: { subject: 'Test order #9999 from Ada Test', vars: { first_name: 'Ada', name: 'Ada Test', order_number: '#9999', total: '₦45,000', item: 'Ankara wrap dress', product: 'Ankara wrap dress', link: 'kub.icu/…', order_link: 'kub.icu/…/order/…' }, total: 45000, source: 'order', subscribed: false },
+  booking_created: { subject: 'Test booking for Ada Test', vars: { first_name: 'Ada', name: 'Ada Test', service: 'Fitting', time: 'Tue 10:00am', ref: 'BK-TEST' }, total: 0, source: 'booking', subscribed: false },
+  checkout_abandoned: { subject: 'Test cart left by Ada Test', vars: { first_name: 'Ada', name: 'Ada Test', order_number: '#9998', total: '₦32,000', cart_link: 'kub.icu/…/order/…' }, total: 32000, source: 'order', subscribed: true },
+  lead_submitted: { subject: 'Test enquiry from Ada Test', vars: { first_name: 'Ada', name: 'Ada Test', form: 'Newsletter' }, total: 0, source: 'form', subscribed: false },
   form_sent: { subject: 'Test: Ada Test sent “Bridal quote request”', vars: { first_name: 'Ada', name: 'Ada Test', email: 'ada@example.com', form: 'Bridal quote request', total: '' }, total: 0, source: 'form', subscribed: false },
   stock_low: { subject: 'Test: Voile wrap blouse low', vars: { product: 'Voile wrap blouse', stock: '2' }, total: 0, source: 'order', subscribed: false },
   sub_started: { subject: 'Test: Ada Test joined Atelier Circle', vars: { first_name: 'Ada', plan: 'Atelier Circle' }, total: 5000, source: 'order', subscribed: false },
-  sub_failed: { subject: 'Test: Ada Test’s renewal was declined', vars: { first_name: 'Ada', plan: 'Atelier Circle', amount: '₦5,000' }, total: 5000, source: 'order', subscribed: false },
+  sub_failed: { subject: 'Test: Ada Test’s renewal was declined', vars: { first_name: 'Ada', name: 'Ada Test', plan: 'Atelier Circle', amount: '₦5,000' }, total: 5000, source: 'order', subscribed: false },
   sub_cancelled: { subject: 'Test: Ada Test cancelled Atelier Circle', vars: { first_name: 'Ada', plan: 'Atelier Circle' }, total: 0, source: 'order', subscribed: false },
-  stage_due: { subject: 'Test: “Trial session” is due on Ada Test’s bridal quote', vars: { first_name: 'Ada', stage: 'Trial session', amount: '₦48,000', pay_link: 'kub.icu/ada/pay/…' }, total: 48000, source: 'order', subscribed: false },
+  stage_due: { subject: 'Test: “Trial session” is due on Ada Test’s bridal quote', vars: { first_name: 'Ada', name: 'Ada Test', stage: 'Trial session', total: '₦48,000', amount: '₦48,000', pay_link: 'kub.icu/ada/pay/…' }, total: 48000, source: 'order', subscribed: false },
   campaign_started: { subject: 'Test: “Owambe Season Drop” went live', vars: { campaign: 'Owambe Season Drop', link: 'kub.icu/…/owambe' }, total: 0, source: 'order', subscribed: true },
   campaign_ended: { subject: 'Test: “Owambe Season Drop” ended — 14 orders, ₦486,000', vars: { campaign: 'Owambe Season Drop', orders: '14', revenue: '₦486,000' }, total: 486000, source: 'order', subscribed: true },
   contact_quiet: { subject: 'Test: Ada Test hasn’t bought in 45 days', vars: { first_name: 'Ada', days: '45', last_item: 'Ankara wrap dress' }, total: 0, source: 'order', subscribed: true }
@@ -82,6 +82,11 @@ export function testRun(a: Automation, paused: boolean, memberName: (id: string 
   }
   if (paused) steps.push({ label: 'Workspace automations paused', status: 'skipped', detail: 'Live runs wouldn’t happen while paused' });
   return { id: uid('run'), at: new Date().toISOString(), test: true, status: blocked ? 'skipped' : 'succeeded', subject: s.subject, steps };
+}
+
+/** Test runs keep only the latest one per automation, so pressing Test run again replaces it instead of piling up history. */
+export function addTestRun(data: OpsData, automationId: string, run: AutomationRun): OpsData {
+  return { ...data, automations: data.automations.map((a) => a.id === automationId ? { ...a, runs: [run, ...a.runs.filter((r) => !r.test)].slice(0, 50) } : a) };
 }
 
 export function addRun(data: OpsData, automationId: string, run: AutomationRun): OpsData {

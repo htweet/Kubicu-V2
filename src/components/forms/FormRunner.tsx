@@ -22,13 +22,15 @@ interface FormRunnerProps {
   /** Show the form's name as a heading. */
   showTitle?: boolean;
   headingLevel?: 'h2' | 'h3';
+  /** Answers filled in before the visitor starts, e.g. a topic chosen by the page that linked here. */
+  initialAnswers?: Answers;
 }
 
 /** Runs a form: steps, show/hide rules, validation, spam checks, test payment and done/closed states (D79). */
-export function FormRunner({ form, skin, mode, closed, onSubmit, onStart, showTitle = true, headingLevel = 'h2' }: FormRunnerProps) {
+export function FormRunner({ form, skin, mode, closed, onSubmit, onStart, showTitle = true, headingLevel = 'h2', initialAnswers }: FormRunnerProps) {
   const uid = useId();
   const inert = mode === 'inert';
-  const [answers, setAnswers] = useState<Answers>({});
+  const [answers, setAnswers] = useState<Answers>(() => initialAnswers ?? {});
   const [stepIndex, setStepIndex] = useState(0);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [done, setDone] = useState(false);
@@ -40,7 +42,7 @@ export function FormRunner({ form, skin, mode, closed, onSubmit, onStart, showTi
   const Heading = headingLevel;
 
   useEffect(() => {
-    setAnswers({});
+    setAnswers(initialAnswers ?? {});
     setStepIndex(0);
     setErrors({});
     setDone(false);

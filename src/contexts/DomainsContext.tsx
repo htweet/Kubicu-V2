@@ -16,6 +16,8 @@ interface DomainsValue {
   checkDomain: (id: string, outcome: CheckOutcome) => void;
   removeDomain: (id: string) => void;
   saveLink: (link: CampaignLink) => boolean;
+  /** Only for links no QR code uses (D230). */
+  deleteLink: (id: string) => boolean;
   saveQr: (qr: QrDesign, link: CampaignLink) => boolean;
   deleteQr: (id: string) => void;
   saveRedirect: (r: CustomRedirect) => boolean;
@@ -119,6 +121,7 @@ export function DomainsProvider({ children }: {children: React.ReactNode;}) {
       },
       removeDomain: (id) => apply((d) => ({ ...d, domains: d.domains.filter((x) => x.id !== id) })),
       saveLink: (link) => apply((d) => ({ ...d, links: d.links.some((l) => l.id === link.id) ? d.links.map((l) => l.id === link.id ? link : l) : [...d.links, link] })),
+      deleteLink: (id) => ref.current.qrs.some((q) => q.linkId === id) ? false : apply((d) => ({ ...d, links: d.links.filter((l) => l.id !== id) })),
       saveQr: (qr, link) =>
       apply((d) => ({
         ...d,

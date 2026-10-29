@@ -1,4 +1,23 @@
-import type { SourceId } from '../../types/analytics';
+import type { DeviceKind, SourceId } from '../../types/analytics';
+
+export const deviceLabels: Record<DeviceKind | 'unknown', string> = { phone: 'Phone', tablet: 'Tablet', desktop: 'Computer', unknown: 'Not recorded' };
+
+/**
+ * Phone, tablet or computer, from what the browser says about itself (D258). Only the kind of
+ * device is kept — never the model, browser version or screen size.
+ */
+export function deviceKind(): DeviceKind {
+  try {
+    const ua = navigator.userAgent;
+    const hints = (navigator as Navigator & {userAgentData?: {mobile?: boolean;};}).userAgentData;
+    // iPads report themselves as Macs; a touch screen on a "Mac" is an iPad.
+    if (/iPad|Tablet|PlayBook|Silk/i.test(ua) || /Android/i.test(ua) && !/Mobile/i.test(ua) || /Macintosh/i.test(ua) && navigator.maxTouchPoints > 1) return 'tablet';
+    if (hints?.mobile || /Mobi|iPhone|iPod|Android|Opera Mini|IEMobile/i.test(ua)) return 'phone';
+    return 'desktop';
+  } catch {
+    return 'desktop';
+  }
+}
 
 const SESSION_KEY = 'kubicu.visit';
 const SESSION_MS = 30 * 60 * 1000;
@@ -48,7 +67,8 @@ const map: [RegExp, SourceId][] = [
 [/whatsapp|wa\.me/i, 'whatsapp'],
 [/instagram/i, 'instagram'],
 [/tiktok/i, 'tiktok'],
-[/facebook|fb\.|messenger/i, 'facebook'],
+// meta_shop: product feed links into Instagram/Facebook Shops (D232).
+[/facebook|fb\.|messenger|meta_shop/i, 'facebook'],
 [/twitter|t\.co|x\.com/i, 'x'],
 [/google/i, 'google'],
 [/^qr$/i, 'qr']];

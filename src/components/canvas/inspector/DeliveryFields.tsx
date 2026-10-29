@@ -50,7 +50,7 @@ export function DeliveryFields({ block, set, id }: DeliveryFieldsProps) {
           <p className="text-caption text-fg">{shopSummary}</p>
           <p className="mt-1 text-caption text-fg-subtle">
             Uses the same areas, prices and pickup details as checkout, so they always match.{' '}
-            <Link to="/app/commerce/settings" className="font-semibold text-action hover:underline">
+            <Link to="/app/commerce/settings#delivery" className="font-semibold text-action hover:underline">
               Edit in Commerce → Settings
             </Link>
           </p>

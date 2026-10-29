@@ -1,9 +1,13 @@
-import React, { useState } from 'react';
-import { PauseIcon, PlayIcon, PlusIcon, RotateCcwIcon, WorkflowIcon } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { PauseIcon, PlayIcon, PlusIcon, RotateCcwIcon, SettingsIcon, WorkflowIcon } from 'lucide-react';
+import { opsSettingsOf } from '../utils/ops/settings';
+import { AutomationSettingsSheet } from '../components/automations/AutomationSettingsSheet';
 import { toast } from 'sonner';
 import type { Automation, AutomationRun } from '../types/ops';
 import { useOps } from '../contexts/OpsContext';
-import { recipes, triggerLabels } from '../data/automationRecipes';
+import { recipeGroups, recipes, triggerLabels, type RecipeGroup } from '../data/automationRecipes';
+import { Segmented } from '../components/ui/Segmented';
 import { addRun, stepLabel, testRun } from '../utils/ops/automation';
 import { formatRelative, formatTimestamp } from '../utils/format';
 import { PageHeader } from '../components/shell/PageHeader';
@@ -24,8 +28,19 @@ const statusText = { active: 'On', paused: 'Paused', draft: 'Draft' } as const;
 
 export function Automations() {
   const { data, apply } = useOps();
-  const [editing, setEditing] = useState<Automation | null>(null);
+  // ?recipe=<id> opens that recipe as a draft — e.g. "Recover unpaid checkouts" from Orders (D231).
+  const [params, setParams] = useSearchParams();
+  const [editing, setEditing] = useState<Automation | null>(() => {
+    const r = params.get('recipe');
+    return r && recipes.some((x) => x.id === r) ? newAutomation(r) : null;
+  });
+  useEffect(() => {
+    if (params.get('recipe')) setParams({}, { replace: true });
+  }, [params, setParams]);
+  const [group, setGroup] = useState<'all' | RecipeGroup>('all');
   const [runView, setRunView] = useState<{automation: Automation;run: AutomationRun;} | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const quiet = opsSettingsOf(data).quietHours;
 
   const runs = data.automations.flatMap((a) => a.runs.map((r) => ({ automation: a, run: r }))).sort((x, y) => Date.parse(y.run.at) - Date.parse(x.run.at)).slice(0, 20);
   const failed = runs.filter((r) => r.run.status === 'failed' && !r.run.test).length;
@@ -51,6 +66,9 @@ export function Automations() {
         description="Follow-ups that run on their own, written as plain steps you can read."
         actions={
         <>
+            <Button variant="tertiary" leadingIcon={SettingsIcon} onClick={() => setSettingsOpen(true)}>
+              Settings
+            </Button>
             <Button variant="secondary" leadingIcon={data.automationsPaused ? PlayIcon : PauseIcon} onClick={togglePause}>
               {data.automationsPaused ? 'Resume all' : 'Pause all'}
             </Button>
@@ -68,6 +86,13 @@ export function Automations() {
           No automation runs until you resume. Useful while you change prices or close for a holiday.
         </InlineAlert>
       }
+
+      {quiet.on &&
+      <p className="mt-3 text-caption text-fg-muted">
+          Quiet hours {quiet.from}–{quiet.to}: customer messages written then wait until {quiet.to}.
+        </p>
+      }
+      <AutomationSettingsSheet open={settingsOpen} onClose={() => setSettingsOpen(false)} />
 
       <PendingDrafts />
 
@@ -103,17 +128,32 @@ export function Automations() {
             }
           </Section>
 
-          <Section id="recipes" title="Start from a recipe">
+          <Section id="recipes" title="Start from a recipe" description={`${recipes.length} ready-made follow-ups. Each opens as a draft you can change before switching it on.`}>
+            <div className="mb-4 -mx-1 overflow-x-auto overflow-y-hidden px-1">
+              <Segmented<'all' | RecipeGroup>
+                ariaLabel="Recipe type"
+                size="sm"
+                value={group}
+                onChange={setGroup}
+                options={[{ value: 'all', label: 'All' }, ...recipeGroups.map((g) => ({ value: g.id, label: g.label }))]} />
+              
+            </div>
             <ul className="grid gap-3 sm:grid-cols-2">
-              {recipes.map((r) =>
+              {recipes.
+              filter((r) => group === 'all' || r.group === group).
+              map((r) =>
               <li key={r.id}>
-                  <button type="button" onClick={() => setEditing(newAutomation(r.id))} className="flex h-full w-full flex-col rounded-md border border-line p-4 text-left transition-colors duration-150 hover:border-line-strong hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-                    <WorkflowIcon size={18} strokeWidth={2.25} className="text-action" aria-hidden />
-                    <span className="mt-3 text-label font-semibold text-fg">{r.name}</span>
-                    <span className="mt-1 text-caption text-fg-muted">{r.description}</span>
-                    {r.marketing && <span className="mt-auto pt-3 text-caption font-medium text-fg-subtle">Opted-in contacts only</span>}
-                  </button>
-                </li>
+                    <button type="button" onClick={() => setEditing(newAutomation(r.id))} className="flex h-full w-full flex-col rounded-md border border-line p-4 text-left transition-colors duration-150 hover:border-line-strong hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+                      <WorkflowIcon size={18} strokeWidth={2.25} className="text-action" aria-hidden />
+                      <span className="mt-3 text-label font-semibold text-fg">{r.name}</span>
+                      <span className="mt-1 text-caption text-fg-muted">{r.description}</span>
+                      <span className="mt-auto pt-3 text-caption text-fg-subtle">
+                        {triggerLabels[r.trigger].label}
+                        {r.marketing ? ' · Opted-in contacts only' : ''}
+                        {r.needs ? ` · Needs ${r.needs}` : ''}
+                      </span>
+                    </button>
+                  </li>
               )}
             </ul>
           </Section>

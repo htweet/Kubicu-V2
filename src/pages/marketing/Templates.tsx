@@ -76,7 +76,7 @@ export function Templates() {
       <div className="mx-auto w-full max-w-6xl px-5 pb-20 pt-14 md:px-8 md:pt-20">
         <LibraryNav active="themes" />
         <header className="mt-8 max-w-2xl">
-          <h1 className="font-display text-[40px] font-semibold leading-[1.05] tracking-[-0.032em] text-fg md:text-[56px]">
+          <h1 className="kb-display text-[44px] leading-[0.98] text-fg md:text-[72px]">
             Choose the look, <span className="nm-text">keep your layout</span>
           </h1>
           <p className="mt-4 text-body text-fg-muted">
@@ -92,7 +92,7 @@ export function Templates() {
     <div className="mx-auto w-full max-w-6xl px-5 pb-20 pt-14 md:px-8 md:pt-20">
       <LibraryNav active="templates" />
       <header className="mt-8 max-w-2xl">
-        <h1 className="font-display text-[40px] font-semibold leading-[1.05] tracking-[-0.032em] text-fg md:text-[56px]">
+        <h1 className="kb-display text-[44px] leading-[0.98] text-fg md:text-[72px]">
           Start from a page <span className="nm-text">built for your goal</span>
         </h1>
         <p className="mt-4 text-body text-fg-muted">

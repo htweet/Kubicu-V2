@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { MediaImage } from '../../components/media/MediaImage';
 import { useSearchParams } from 'react-router-dom';
-import { FolderIcon, PlusIcon, ShoppingBagIcon, UploadIcon } from 'lucide-react';
+import { FolderIcon, PlusIcon, RssIcon, ShoppingBagIcon, UploadIcon } from 'lucide-react';
+import { ExtensionShortcut } from '../../components/extensions/ExtensionShortcut';
 import type { Product } from '../../types/commerce';
 import { useCommerce } from '../../contexts/CommerceContext';
 import { usePlan } from '../../contexts/PlanContext';
@@ -113,6 +114,7 @@ export function Products() {
         description="Physical products, their options and stock. Digital files live under Digital."
         actions={
         <>
+            <ExtensionShortcut id="product-feed" label="Product feed" icon={RssIcon} />
             <Button variant="tertiary" leadingIcon={FolderIcon} onClick={() => setCollectionsOpen(true)}>
               Collections
             </Button>

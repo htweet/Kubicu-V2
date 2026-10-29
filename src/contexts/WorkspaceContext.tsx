@@ -19,6 +19,8 @@ export interface CreateWorkspaceInput {
   publish: boolean;
   /** Fill every module with labelled sample data, removed automatically after 7 days (D200). */
   demoData?: boolean;
+  /** The Business WhatsApp number, if given during setup (D214). */
+  whatsapp?: string;
 }
 
 export interface CreateSpaceInput {
@@ -41,7 +43,7 @@ interface WorkspaceValue {
   /** Adds a campaign or DealRoom to the current workspace. Throws if storage fails. */
   createSpace: (input: CreateSpaceInput) => Space;
   setSpaceArchived: (spaceId: string, archived: boolean) => void;
-  update: (id: string, patch: Partial<Pick<Workspace, 'name' | 'ownerName' | 'plan' | 'currency'>>) => void;
+  update: (id: string, patch: Partial<Pick<Workspace, 'name' | 'ownerName' | 'plan' | 'currency' | 'whatsapp'>>) => void;
   /** Removes the current workspace's demo data everywhere, then reloads so every screen reads clean data (D200). */
   removeDemoData: (reason: 'manual' | 'expired') => void;
   /** Deletes the built-in Adaeze demo workspace and everything in it (D201). Needs another workspace to move to. */
@@ -59,6 +61,7 @@ function demoWorkspace(plan: WorkspacePlan): Workspace {
     ownerName: 'Adaeze',
     plan,
     pageId: 'page_adaeze',
+    whatsapp: '+234 803 123 4567',
     spaces: seedSampleSpaces(),
     sampleSpacesSeeded: true,
     sampleSpaces2Seeded: true,
@@ -173,6 +176,7 @@ export function WorkspaceProvider({ planControl, children }: {planControl: Works
       plan: 'free',
       pageId: doc.id,
       createdAt: now,
+      ...(input.whatsapp?.trim() ? { whatsapp: input.whatsapp.trim() } : {}),
       ...(input.demoData ? { demoData: demoExpiry(), spaces: seedSampleSpaces(id) } : {})
     };
     setWorkspaces((list) => [...list, workspace]);
@@ -205,7 +209,7 @@ export function WorkspaceProvider({ planControl, children }: {planControl: Works
     [current.id]
   );
 
-  const update = useCallback((id: string, patch: Partial<Pick<Workspace, 'name' | 'ownerName' | 'plan' | 'currency'>>) => {
+  const update = useCallback((id: string, patch: Partial<Pick<Workspace, 'name' | 'ownerName' | 'plan' | 'currency' | 'whatsapp'>>) => {
     setWorkspaces((list) => list.map((w) => w.id === id ? { ...w, ...patch } : w));
   }, []);
 

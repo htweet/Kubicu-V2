@@ -415,7 +415,11 @@ export interface BlockContentMap {
    */
   membersOnly: MemberRule & {title: string;teaser: string;joinLabel: string;covers: number;};
   /** Trust Passport badge (D111): level and checked signals, worked out when the page is viewed. */
-  trustBadge: {style: 'compact' | 'full';showScore: boolean;};
+  /**
+   * D254: 'verified' shows only the "Verified by KUBICU" seal. hideBelow hides the badge from visitors while the
+   * level is "Just starting" (undefined on older blocks = always shown, as before).
+   */
+  trustBadge: {style: 'compact' | 'full' | 'verified';showScore: boolean;hideBelow?: boolean;};
   /** One audio track (D124): a link or a small upload, with cover and optional transcript. */
   audio: {title: string;artist: string;url: string;fileName: string;coverUrl: string;coverAlt: string;allowDownload: boolean;transcript: string;};
   /** Several tracks with a now-playing bar (D124). */
@@ -474,7 +478,16 @@ export interface BlockContentMap {
   press: {title: string;items: PressItem[];};
   hours: {title: string;timeZone: string;hours: OpeningHours[];note: string;};
   agenda: {title: string;date: string;items: AgendaItem[];};
-  contactActions: {title: string;phone: string;email: string;whatsapp: string;website: string;layout: 'row' | 'stack';};
+  contactActions: {
+    title: string;
+    phone: string;
+    email: string;
+    whatsapp: string;
+    website: string;
+    layout: 'row' | 'stack';
+    /** With no number typed in, show the Business WhatsApp number (D214). Missing = yes. */
+    useBusinessWhatsApp?: boolean;
+  };
   share: {title: string;text: string;};
   anchorNav: {title: string;items: AnchorItem[];};
   policies: {title: string;intro: string;items: PolicyItem[];};
@@ -764,6 +777,8 @@ export interface PageBranding {
   startLightweight?: boolean;
   /** Ask search engines not to list this space (adds a noindex tag), D124. Links still work. */
   hideFromSearch?: boolean;
+  /** Ask search engines not to follow links on these pages (robots nofollow), D221. Default: follow. */
+  noFollowLinks?: boolean;
 }
 
 export type Block = { [K in
@@ -885,6 +900,11 @@ export interface ThemeMaterial {
 export interface PageSeo {
   title: string;
   description: string;
+  /** Image shown when the link is shared (D219). Falls back to the profile photo. */
+  image?: string;
+  imageAlt?: string;
+  /** Keep just this page out of search results (D221). The space-wide switch is PageBranding.hideFromSearch. */
+  noIndex?: boolean;
 }
 
 /** An extra page inside a space (D48). The home page lives on the document itself. */

@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeftIcon, CalendarCheck2Icon, CalendarXIcon, MessageCircleIcon } from 'lucide-react';
+import { ArrowLeftIcon, CalendarCheck2Icon, CalendarClockIcon, CalendarXIcon, MessageCircleIcon } from 'lucide-react';
 import { useResolvedPage, sellerPhone } from '../hooks/useResolvedPage';
 import { usePageOps } from '../hooks/usePageOps';
 import { PageSurface } from '../components/blocks/PageSurface';
 import { cardStyle, mix } from '../components/blocks/pageStyle';
 import { CheckoutHeading, PrimaryButton, SecondaryButton, TestModeNote } from '../components/checkout/checkoutUi';
 import { SlotPicker } from '../components/booking/SlotPicker';
-import { cancelBooking, rescheduleBooking } from '../utils/ops/ops';
+import { cancelBooking, rescheduleBooking, wasDeclined } from '../utils/ops/ops';
 import { dayLabel, durationLabel, timeLabel } from '../utils/ops/slots';
 import { formatNgn, whatsappLink } from '../utils/format';
 import { bookingBalance, payBookingBalance } from '../utils/ops/balance';
@@ -15,6 +15,7 @@ import { readMoney, recordStagePayment, writeMoney } from '../utils/money/store'
 import { Unavailable } from './PublicPage';
 import { useVisitorLang } from '../hooks/useVisitorLang';
 import { LocaleProvider, translatorFor } from '../contexts/LocaleContext';
+import { meetingApps } from '../utils/ops/meetings';
 
 /** The customer’s booking confirmation, with reschedule and cancel under the shown policy. */
 export function BookingStatus() {
@@ -40,6 +41,10 @@ export function BookingStatus() {
   const service = ops.data.services.find((s) => s.id === booking.serviceId);
   const start = Date.parse(booking.start);
   const upcoming = start > Date.now() && (booking.status === 'confirmed' || booking.status === 'pending_deposit');
+  // D256: a request waiting for the business, or one they declined.
+  const requested = booking.status === 'requested' && start > Date.now();
+  const declined = wasDeclined(booking);
+  const declineReason = declined ? booking.events.find((e) => e.label.startsWith('Declined by you'))?.label.split(' — ')[1]?.split(' · ')[0] ?? '' : '';
   const freeWindow = start - Date.now() >= a.cancelHours * 3600000;
   const phone = sellerPhone(page.doc);
   const bal = bookingBalance(booking, service);
@@ -82,21 +87,47 @@ export function BookingStatus() {
           <Link to={`/p/${handle}`} className="inline-flex items-center gap-1.5 self-start text-[14px] font-medium" style={muted}>
             <ArrowLeftIcon size={15} aria-hidden /> {tx('Back to {name}', { name: page.doc.title })}
           </Link>
-          {booking.status === 'cancelled' ? <CalendarXIcon size={30} aria-hidden /> : <CalendarCheck2Icon size={30} aria-hidden />}
+          {booking.status === 'cancelled' ? <CalendarXIcon size={30} aria-hidden /> : booking.status === 'requested' ? <CalendarClockIcon size={30} aria-hidden /> : <CalendarCheck2Icon size={30} aria-hidden />}
           <CheckoutHeading
               level={1}
               theme={t}
               sub={
+              declined ?
+              `${tx('The business couldn’t take this booking.')}${declineReason ? ` “${declineReason}”` : ''}${booking.depositPaidNgn ? ` ${tx('Your {amount} deposit is refunded in full.', { amount: formatNgn(booking.depositPaidNgn) })}` : ''}` :
               booking.status === 'cancelled' ?
               tx('This booking was cancelled.') :
+              requested ?
+              tx('{name} accepts each booking themselves. Your time is held, and you’ll hear at {to} when they reply (preview only in this prototype).', { name: page.doc.title, to: booking.customer.email || booking.customer.phone }) :
+              booking.status === 'requested' ?
+              tx('This request wasn’t answered before the appointment time.') :
               upcoming ?
               tx('A confirmation has been sent to {to} (preview only in this prototype).', { to: booking.customer.email || booking.customer.phone }) :
               tx('This booking is in the past.')
               }>
               
-            {tx(booking.status === 'cancelled' ? 'Booking cancelled' : 'You’re booked in')}
+            {tx(declined ? 'Request declined' : booking.status === 'cancelled' ? 'Booking cancelled' : booking.status === 'requested' ? 'Request sent' : 'You’re booked in')}
           </CheckoutHeading>
           <TestModeNote theme={t} />
+
+          {booking.meeting && booking.status !== 'cancelled' && upcoming &&
+            <section aria-label={tx('How to join')} className="flex flex-col gap-2 p-5 text-[14px]" style={cardStyle(t)}>
+              <p className="font-semibold">{tx('Join on {app}', { app: meetingApps[booking.meeting.app].name })}</p>
+              <p className="break-all font-mono text-[12.5px]" style={muted}>
+                {booking.meeting.url}
+              </p>
+              {booking.meeting.code &&
+              <p className="text-[13px]" style={muted}>
+                  {booking.meeting.app === 'zoom' ? tx('Passcode') : tx('Meeting ID')}: {booking.meeting.code}
+                </p>
+              }
+              <a href={booking.meeting.url} target="_blank" rel="noopener noreferrer" className="mt-1 flex h-12 items-center justify-center gap-2 text-[15px] font-semibold focus-visible:outline-none focus-visible:ring-2" style={{ background: t.accent, color: t.accentText, borderRadius: 999 }}>
+                {tx('Join the call')}
+              </a>
+              <p className="text-[12.5px]" style={muted}>
+                {tx('The same link is in your confirmation and reminder. Preview link — it won’t open a real meeting in this prototype.')}
+              </p>
+            </section>
+            }
 
           <dl className="flex flex-col gap-2 p-5 text-[14px]" style={cardStyle(t)}>
             <div className="flex justify-between gap-3">
@@ -185,6 +216,12 @@ export function BookingStatus() {
             </div>
             }
 
+          {requested && mode === 'view' &&
+            <SecondaryButton theme={t} onClick={() => setMode('cancel')}>
+              Withdraw request
+            </SecondaryButton>
+            }
+
           {mode === 'reschedule' && service &&
             <section className="flex flex-col gap-4" aria-label={tx('Pick a new time')}>
               <SlotPicker theme={t} service={service} availability={a} bookings={ops.data.bookings} value={newStart} onChange={setNewStart} ignoreId={booking.id} />
@@ -204,10 +241,10 @@ export function BookingStatus() {
 
           {mode === 'cancel' &&
             <section className="flex flex-col gap-3 p-4" style={cardStyle(t)} aria-label={tx('Cancel booking')}>
-              <p className="text-[15px] font-semibold">{tx('Cancel this booking?')}</p>
+              <p className="text-[15px] font-semibold">{tx(requested ? 'Withdraw this request?' : 'Cancel this booking?')}</p>
               <p className="text-[13.5px]" style={muted}>
                 {booking.depositPaidNgn > 0 ?
-                freeWindow ?
+                freeWindow || requested ?
                 tx('Your {amount} deposit will be refunded.', { amount: formatNgn(booking.depositPaidNgn) }) :
                 tx('It’s within {n} hours, so under the policy the {amount} deposit isn’t refunded.', { n: a.cancelHours, amount: formatNgn(booking.depositPaidNgn) }) :
                 tx('Nothing was paid, so there’s nothing to refund.')}

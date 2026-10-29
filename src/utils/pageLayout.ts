@@ -74,6 +74,16 @@ export function layoutRows<T>(items: T[], blockOf: (item: T) => Block | null, ke
   return rows;
 }
 
+/**
+ * Whether row i shares its section background with the row above / below (D216).
+ * Matching tinted or inverted rows that touch read as one band, so their shared edge drops the band padding.
+ */
+export function bandJoins<T extends {background: NonNullable<BlockLayout['background']>;}>(rows: T[], i: number): {joinPrev: boolean;joinNext: boolean;} {
+  const bg = rows[i]?.background ?? 'none';
+  if (bg === 'none') return { joinPrev: false, joinNext: false };
+  return { joinPrev: rows[i - 1]?.background === bg, joinNext: rows[i + 1]?.background === bg };
+}
+
 /** A section background taken from the theme, so it works in every theme. Inverted swaps text and background. */
 export function sectionTheme(theme: PageTheme, background: NonNullable<BlockLayout['background']>): PageTheme {
   if (background === 'tint') return { ...theme, background: mix(theme.text, 5, theme.background), surface: theme.background };

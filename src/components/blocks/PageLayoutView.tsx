@@ -2,7 +2,7 @@ import React from 'react';
 import type { Block, PageDocument, PageTheme, RenderMode } from '../../types/page';
 import { BlockRenderer, spacingClass } from './BlockRenderer';
 import { LayoutRow } from './LayoutRow';
-import { layoutRows, pageContentWidth, sectionTheme } from '../../utils/pageLayout';
+import { bandJoins, layoutRows, pageContentWidth, sectionTheme } from '../../utils/pageLayout';
 import { BlockChildrenProvider, type BlockChildrenValue } from '../../contexts/BlockChildrenContext';
 
 interface PageLayoutViewProps {
@@ -27,10 +27,10 @@ export function PageLayoutView({ doc, blocks, theme, mode, wide }: PageLayoutVie
   };
   return (
     <BlockChildrenProvider value={childCtx}>
-      {layoutRows(blocks.filter((b) => !b.parentId), (b) => b, (b) => b.id).map((row) => {
+      {layoutRows(blocks.filter((b) => !b.parentId), (b) => b, (b) => b.id).map((row, i, rows) => {
         const t = sectionTheme(theme, row.background);
         return (
-          <LayoutRow key={row.key} theme={theme} columnPx={columnPx} density={doc.layout?.density} width={row.width} background={row.background} ratio={row.ratio} firstSecondOnPhone={row.firstSecondOnPhone} sideBySide={wide}>
+          <LayoutRow key={row.key} {...bandJoins(rows, i)} theme={theme} columnPx={columnPx} density={doc.layout?.density} width={row.width} background={row.background} ratio={row.ratio} firstSecondOnPhone={row.firstSecondOnPhone} sideBySide={wide}>
             {row.items.map((b) =>
             <div key={b.id} data-preview-block={b.id} className={spacingClass[b.layout.spacing]}>
                 <BlockRenderer block={b} theme={t} mode={mode} />

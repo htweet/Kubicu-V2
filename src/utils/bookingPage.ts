@@ -2,6 +2,7 @@ import type { Block, BookingPageSettings } from '../types/page';
 import type { Availability, Booking, OpsData, Service } from '../types/ops';
 import type { ValidationIssue } from './validation';
 import { addDaysKey, dateKeyInTz, dayLabel, slotsFor, timeLabel, type Slot } from './ops/slots';
+import { waNumber } from './businessWhatsApp';
 
 /*
  * Booking page spaces (D184). The page opens on chosen services from the Bookings app with each
@@ -59,7 +60,7 @@ export function bookingPageIssues(s: BookingPageSettings, blocks: Block[], ops: 
   if (off) push('off', 'warning', `${off} chosen service${off === 1 ? ' is' : 's are'} switched off or deleted in Bookings and won’t show.`);
   if (s.whatsapp.trim() && !validWhatsapp(s.whatsapp)) push('whatsapp', 'error', 'The WhatsApp number looks too short. Use the full number, e.g. 0803 123 4567.');
   if (ops && shown.length && shown.every((sv) => !nextFreeSlot(sv, ops.availability, ops.bookings, now))) {
-    const fallback = !!s.whatsapp.trim() || !!s.waitlistBlockId && blocks.some((b) => b.id === s.waitlistBlockId && !b.visibility.hidden);
+    const fallback = !!waNumber(s.whatsapp) || !!s.waitlistBlockId && blocks.some((b) => b.id === s.waitlistBlockId && !b.visibility.hidden);
     push('full', fallback ? 'warning' : 'error', fallback ? 'No free times right now — visitors will be offered the waitlist or WhatsApp instead.' : 'No free times right now and no waitlist or WhatsApp number, so visitors would hit a dead end. Add one, or open more hours in Bookings.');
   }
   return out;

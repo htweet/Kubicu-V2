@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import type { Order } from '../../types/commerce';
+import { orderRef } from '../../utils/commerce/shopSettings';
 import { useCommerce } from '../../contexts/CommerceContext';
 import { cancelOrder, refundOrder } from '../../utils/commerce/ops';
 import { refundableNgn } from '../../utils/commerce/money';
@@ -64,8 +65,8 @@ export function RefundDialog({ order, mode, onClose }: Props) {
       return refundOrder(d, order.id, amount ?? 0, reason.trim(), physical && restock);
     });
     if (ok) {
-      team.log('commerce', mode === 'cancel' ? `cancelled order #${order.number}` : `refunded ${formatNgn(amount ?? 0)} on order #${order.number}`, '/app/commerce/orders');
-      toast(mode === 'cancel' ? `Order #${order.number} cancelled` : `Refund of ${formatNgn(amount ?? 0)} sent (test mode)`, {
+      team.log('commerce', mode === 'cancel' ? `cancelled order ${orderRef(order)}` : `refunded ${formatNgn(amount ?? 0)} on order ${orderRef(order)}`, '/app/commerce/orders');
+      toast(mode === 'cancel' ? `Order ${orderRef(order)} cancelled` : `Refund of ${formatNgn(amount ?? 0)} sent (test mode)`, {
         description: paid ? 'In live mode the customer’s bank usually shows it within 5–10 working days.' : undefined
       });
       onClose();

@@ -16,6 +16,7 @@ import { CardLink } from '../../components/ui/layout/CardLink';
 import { List, ListRow } from '../../components/ui/layout/ListRow';
 import { Stat, StatGroup } from '../../components/ui/layout/Stat';
 import type { Order } from '../../types/commerce';
+import { ordersToActOn } from '../../utils/commerce/orderQueue';
 import { useT } from '../../contexts/LocaleContext';
 
 const queue: {id: string;label: string;match: (o: Order) => boolean;hint: string;}[] = [
@@ -44,10 +45,13 @@ export function CommerceOverview() {
   const stockAlerts = data.products.filter((p) => p.status === 'active' && p.kind !== 'ticket' && (isSoldOut(p) || isLowStock(p)));
   const groups = queue.map((q) => ({ ...q, orders: data.orders.filter(q.match) }));
   const totalActionable = groups.reduce((s, g) => s + g.orders.length, 0);
+  // D247: the headline number is the same one the sidebar and Orders tab show; out-for-delivery is listed separately.
+  const toActOn = ordersToActOn(data.orders);
+  const outNow = totalActionable - toActOn;
 
   const setup = [
   { id: 'product', label: 'Add your first product', done: data.products.length > 0, to: '/app/commerce/products?new=1' },
-  { id: 'delivery', label: 'Set pickup or delivery zones', done: data.fulfilment.pickupEnabled || data.fulfilment.deliveryEnabled && data.fulfilment.zones.length > 0, to: '/app/commerce/settings' },
+  { id: 'delivery', label: 'Set pickup or delivery zones', done: data.fulfilment.pickupEnabled || data.fulfilment.deliveryEnabled && data.fulfilment.zones.length > 0, to: '/app/commerce/settings#delivery' },
   { id: 'payments', label: 'Choose how you’ll take payment', done: !!data.payments.provider, to: '/app/commerce/payments' }];
 
   const setupDone = setup.every((s) => s.done);
@@ -119,7 +123,11 @@ export function CommerceOverview() {
           emphasis="primary"
           body="flush"
           title="Orders needing action"
-          description={totalActionable === 0 ? 'You’re all caught up.' : tr(totalActionable === 1 ? '{n} order across {stages} stages' : '{n} orders across {stages} stages', { n: totalActionable, stages: groups.filter((g) => g.orders.length).length })}
+          description={
+          totalActionable === 0 ?
+          'You’re all caught up.' :
+          [toActOn ? tr(toActOn === 1 ? '{n} order to confirm or pack' : '{n} orders to confirm or pack', { n: toActOn }) : tr('Nothing to confirm or pack'), outNow ? tr('{n} out for delivery', { n: outNow }) : ''].filter(Boolean).join(' · ')
+          }
           actions={<CardLink to="/app/commerce/orders">{tr('All orders')}</CardLink>}>
           
           {totalActionable === 0 ?
@@ -194,7 +202,7 @@ export function CommerceOverview() {
           </Card>
 
           <Link
-            to="/app/commerce/settings"
+            to="/app/commerce/settings#delivery"
             className="flex items-center gap-3 rounded-md border border-dashed border-line-strong px-4 py-3 text-label text-fg-muted transition-colors duration-150 hover:text-fg">
             
             <TruckIcon size={17} strokeWidth={2.25} aria-hidden />

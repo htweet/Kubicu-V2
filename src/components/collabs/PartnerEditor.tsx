@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import type { Product } from '../../types/commerce';
-import { MAX_RATE, makePartnerCode, platformLabels, type Partner, type PartnerPlatform } from '../../utils/collabs';
+import { MAX_RATE, defaultCollabSettings, makePartnerCode, platformLabels, termsFor, type CollabSettings, type Partner, type PartnerPlatform } from '../../utils/collabs';
 import { uid } from '../../utils/id';
 import { Sheet } from '../ui/Sheet';
 import { Button } from '../ui/Button';
@@ -16,6 +16,8 @@ interface PartnerEditorProps {
   products: Product[];
   onClose: () => void;
   onSave: (p: Partner) => void;
+  /** Collaborations settings: starting rate, terms and payout timing for new invites (D259). */
+  defaults?: CollabSettings;
 }
 
 interface Form {
@@ -30,29 +32,29 @@ interface Form {
   terms: string;
 }
 
-const toForm = (p: Partner | null): Form => ({
+const toForm = (p: Partner | null, defaults: CollabSettings): Form => ({
   name: p?.name ?? '',
   handle: p?.handle ?? '',
   phone: p?.phone ?? '',
   platform: p?.platform ?? 'instagram',
   code: p?.code ?? '',
-  rate: p ? String(p.ratePct) : '10',
+  rate: p ? String(p.ratePct) : String(defaults.defaultRatePct),
   scope: p?.productIds.length ? 'some' : 'all',
   productIds: p?.productIds ?? [],
-  terms: p?.terms ?? ''
+  terms: p?.terms ?? defaults.defaultTerms
 });
 
 /** Invite or edit a partner. The code is locked once they've accepted, so links already shared keep working. */
-export function PartnerEditor({ open, partner, partners, products, onClose, onSave }: PartnerEditorProps) {
-  const [f, setF] = useState<Form>(() => toForm(partner));
+export function PartnerEditor({ open, partner, partners, products, onClose, onSave, defaults = defaultCollabSettings }: PartnerEditorProps) {
+  const [f, setF] = useState<Form>(() => toForm(partner, defaults));
   const [tried, setTried] = useState(false);
 
   useEffect(() => {
     if (open) {
-      setF(toForm(partner));
+      setF(toForm(partner, defaults));
       setTried(false);
     }
-  }, [open, partner]);
+  }, [open, partner]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const taken = new Set(partners.filter((p) => p.id !== partner?.id).map((p) => p.code));
   const code = (f.code || makePartnerCode(f.name, taken)).toUpperCase();
@@ -81,7 +83,7 @@ export function PartnerEditor({ open, partner, partners, products, onClose, onSa
       code,
       ratePct: Math.round(rate * 10) / 10,
       productIds: f.scope === 'some' ? f.productIds : [],
-      terms: f.terms.trim() || `${Math.round(rate * 10) / 10}% on sales through your link, paid once the order is delivered.`,
+      terms: f.terms.trim() || termsFor(Math.round(rate * 10) / 10, defaults.holdDays),
       status: partner?.status ?? 'invited',
       invitedAt: partner?.invitedAt ?? now,
       acceptedAt: partner?.acceptedAt,

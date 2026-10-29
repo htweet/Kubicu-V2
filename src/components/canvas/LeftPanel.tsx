@@ -9,7 +9,6 @@ import { LayersList } from './LayersList';
 import { TemplatesPanel } from './TemplatesPanel';
 import { useEditor } from '../../contexts/EditorContext';
 import { PagesPanel } from './PagesPanel';
-import { pageCount } from '../../utils/sitePages';
 
 export type LeftTab = 'blocks' | 'layers' | 'pages' | 'templates' | 'check';
 
@@ -32,13 +31,15 @@ export function LeftPanel({ tab, onTabChange, onCollapse }: LeftPanelProps) {
           value={tab}
           onChange={onTabChange}
           fullWidth
-          className="min-w-0 flex-1 px-2"
+          dense
+          className="min-w-0 flex-1 px-1"
           items={[
           { id: 'blocks', label: 'Blocks' },
           { id: 'layers', label: 'Layers' },
-          { id: 'pages', label: pageCount(state.site) > 1 ? `Pages ${pageCount(state.site)}` : 'Pages' },
+          { id: 'pages', label: 'Pages' },
           { id: 'templates', label: 'Templates' },
-          { id: 'check', label: fixCount ? `Check ${fixCount}` : 'Check' }]
+          // Things to fix show as a badge so the label never grows wider than the panel.
+          { id: 'check', label: 'Check', badge: fixCount || undefined }]
           } />
         
         {onCollapse && <IconButton icon={PanelLeftCloseIcon} size="sm" label="Collapse panel" onClick={onCollapse} />}

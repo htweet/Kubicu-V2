@@ -40,6 +40,10 @@ export interface OrderMoney {
   refunded: number;
   /** What the seller keeps after fees and refunds. */
   net: number;
+  /** VAT on the order (D222): inside the prices when inclusive, added to `gross` when not. */
+  vat: number;
+  vatInclusive: boolean;
+  vatRatePct: number;
 }
 
 export function orderMoney(order: Order): OrderMoney {
@@ -48,7 +52,8 @@ export function orderMoney(order: Order): OrderMoney {
   // Instalments (D112): parts not yet paid — and cancelled parts that never will be — aren't money paid.
   const partsOwed = order.instalments ? order.instalments.parts.filter((p) => p.status !== 'paid').reduce((s, p) => s + p.amountNgn, 0) : 0;
   const owed = balanceOwed + partsOwed;
-  const gross = order.subtotalNgn - order.discountNgn + order.deliveryNgn - owed;
+  const vatAdded = order.vat && !order.vat.inclusive ? order.vat.amountNgn : 0;
+  const gross = order.subtotalNgn - order.discountNgn + order.deliveryNgn + vatAdded - owed;
   const refunded = order.refunds.reduce((s, r) => s + r.amountNgn, 0);
   const paid = order.paymentStatus !== 'pending' && order.paymentStatus !== 'cancelled';
   const providerFeeNgn = paid ? order.providerFeeNgn : 0;
@@ -61,7 +66,10 @@ export function orderMoney(order: Order): OrderMoney {
     providerFee: providerFeeNgn,
     kubicuFee: kubicuFeeNgn,
     refunded,
-    net: paid ? gross - providerFeeNgn - kubicuFeeNgn - refunded : 0
+    net: paid ? gross - providerFeeNgn - kubicuFeeNgn - refunded : 0,
+    vat: order.vat?.amountNgn ?? 0,
+    vatInclusive: order.vat?.inclusive ?? true,
+    vatRatePct: order.vat?.ratePct ?? 0
   };
 }
 

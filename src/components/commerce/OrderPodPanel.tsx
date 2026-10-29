@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { AlertTriangleIcon, BanknoteIcon, CheckCircle2Icon } from 'lucide-react';
+import { orderRef } from '../../utils/commerce/shopSettings';
 import { toast } from 'sonner';
 import type { CommerceData, Order, PodFailReason } from '../../types/commerce';
 import { usePlan } from '../../contexts/PlanContext';
@@ -48,13 +49,13 @@ export function OrderPodPanel({ order, data, apply, collectOpen, onCollectOpen }
 
   const collect = () => {
     if (apply((d) => collectPod(d, order.id, how, plan.id))) {
-      toast.success(`Order #${order.number} delivered and paid`, { description: `${formatNgn(pod.amountNgn)} by ${how}.` });
+      toast.success(`Order ${orderRef(order)} delivered and paid`, { description: `${formatNgn(pod.amountNgn)} by ${how}.` });
       onCollectOpen(false);
     }
   };
   const fail = () => {
     if (apply((d) => failPod(d, order.id, reason, note.trim()))) {
-      toast(`Order #${order.number} is back with you`, { description: 'Rebook the delivery or cancel the order to put the stock back.' });
+      toast(`Order ${orderRef(order)} is back with you`, { description: 'Rebook the delivery or cancel the order to put the stock back.' });
       setFailing(false);
       setNote('');
       onCollectOpen(false);

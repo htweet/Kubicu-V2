@@ -564,7 +564,8 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
     supportsEmphasis: false,
     clickable: true,
     requiresApp: 'trust-passport',
-    defaults: () => ({ style: 'compact', showScore: true })
+    // D254: new badges hide the number and stay hidden while "Just starting".
+    defaults: () => ({ style: 'compact', showScore: false, hideBelow: true })
   },
   audio: {
     type: 'audio',

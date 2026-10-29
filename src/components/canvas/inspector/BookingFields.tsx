@@ -27,7 +27,13 @@ export function BookingFields({ block, issues }: {block: BlockOf<'booking'>;issu
 
   return (
     <div className="flex flex-col gap-4">
-      <SourceSwitch id={id('source')} catalogLabel="Bookings" value={linked ? 'catalog' : 'manual'} onChange={(source) => set({ source, ctaLabel: source === 'catalog' ? 'Pick a time' : 'Book' }, 'source')} />
+      <SourceSwitch
+        id={id('source')}
+        catalogLabel="My services"
+        manualLabel="External booking"
+        catalogHint="A service you’ve set up in Bookings. Visitors pick a free time and book right here."
+        manualHint="Already take bookings somewhere else (Calendly, a form, another website)? Add its details and link — the button opens it."
+        value={linked ? 'catalog' : 'manual'} onChange={(source) => set({ source, ctaLabel: source === 'catalog' ? 'Pick a time' : 'Book' }, 'source')} />
       {linked ?
       <>
           {!allowed &&

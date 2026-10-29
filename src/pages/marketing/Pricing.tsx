@@ -28,7 +28,7 @@ export function Pricing() {
   return (
     <div className="mx-auto w-full max-w-6xl px-5 pb-24 pt-14 md:px-8 md:pt-20">
       <header className="mx-auto max-w-2xl text-center">
-        <h1 className="font-display text-[40px] font-semibold leading-[1.05] tracking-[-0.032em] text-fg md:text-[56px]">
+        <h1 className="kb-display text-[44px] leading-[0.98] text-fg md:text-[72px]">
           Start free. <span className="nm-text">Pay when it pays you.</span>
         </h1>
         <p className="mt-5 text-[17px] leading-relaxed text-fg-muted">Every plan includes the canvas and publishing. Upgrade for your own brand, checkout, bookings and teams.</p>

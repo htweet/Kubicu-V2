@@ -3,7 +3,21 @@
 export type CourseStatus = 'draft' | 'published' | 'archived';
 export type CourseAccess = 'free' | 'paid' | 'membership';
 export type CourseRelease = 'all' | 'drip';
-export type LessonKind = 'video' | 'text' | 'file' | 'quiz';
+import type { BookingMeeting, MeetingApp } from './ops';
+
+export type LessonKind = 'video' | 'text' | 'file' | 'quiz' | 'live';
+
+/** A scheduled live session inside a course (D229). Its recording, once added, goes in `videoUrl`. */
+export interface LessonLive {
+  /** ISO start time. Empty until scheduled. */
+  startsAt: string;
+  /** A connected meeting app from Bookings, or the owner's own link. */
+  app: MeetingApp | 'own';
+  /** Made when a connected app is chosen — what the provider's API would return. */
+  meeting?: BookingMeeting;
+  /** "own": the owner's meeting link (https). */
+  ownUrl: string;
+}
 
 export interface QuizQuestion {
   id: string;
@@ -25,7 +39,9 @@ export interface CourseLesson {
   fileName: string;
   fileSizeBytes: number;
   questions: QuizQuestion[];
-  /** Rough length shown in the outline. */
+  /** Live lessons only (D229). */
+  live?: LessonLive;
+  /** Rough length shown in the outline. Live lessons: the session length. */
   minutes: number;
   /** Anyone can open it before enrolling. */
   preview: boolean;

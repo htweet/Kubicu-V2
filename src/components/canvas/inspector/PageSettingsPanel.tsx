@@ -1,10 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowUpRightIcon } from 'lucide-react';
-import { MediaImage } from '../../media/MediaImage';
 import { useEditor } from '../../../contexts/EditorContext';
 import { TextInput } from '../../ui/TextInput';
-import { TextArea } from '../../ui/TextArea';
 import { PlanLock } from '../../ui/PlanLock';
 import { UpgradeButton } from '../../ui/UpgradeButton';
 import { CampaignSettingsPanel } from './CampaignSettingsPanel';
@@ -15,14 +13,14 @@ import { PopupSettingsPanel } from './PopupSettingsPanel';
 import { BookingPageSettingsPanel } from './BookingPageSettingsPanel';
 import { MembersAreaSettingsPanel } from './MembersAreaSettingsPanel';
 import { CoBrandSettingsPanel } from './CoBrandSettingsPanel';
-import { publicUrl } from '../../../utils/format';
 import { Switch } from '../../ui/Switch';
 import { usePlan } from '../../../contexts/PlanContext';
 import { badgeRemovalPlanName } from '../../../data/plans';
 import { showsKubicuBadge } from '../../../utils/branding';
-import { findPage, pageTitle, sitePages } from '../../../utils/sitePages';
+import { pageTitle, sitePages } from '../../../utils/sitePages';
 import { SelectInput } from '../../ui/SelectInput';
 import { SearchEnginesSection } from './SearchEnginesSection';
+import { SearchSharingFields } from './SearchSharingFields';
 import { Field } from '../../ui/Field';
 import { Segmented } from '../../ui/Segmented';
 import { blockName, summarizeBlock } from '../../../utils/blocks';
@@ -41,13 +39,9 @@ export function PageSettingsPanel() {
   const { state, actions, issues } = useEditor();
   const { draft } = state;
   const handleError = issues.find((i) => i.id === 'page:handle')?.message;
-  const preview = draft.blocks.find((b) => b.type === 'profile');
-  const avatar = preview?.type === 'profile' ? preview.content.avatarUrl : '';
   const plan = usePlan();
   const badgeShown = showsKubicuBadge(draft, plan);
   const multi = sitePages(state.site).length > 0;
-  const current = findPage(state.site, state.activePageId);
-  const shareUrl = `${publicUrl(draft.handle)}${current ? `/${current.path}` : ''}`;
   const bar = state.site.layout?.actionBar ?? null;
   const targets = draft.blocks.filter((b) => !b.visibility.hidden).map((b) => ({ value: b.id, label: `${blockName(b)} — ${summarizeBlock(b).slice(0, 32) || 'untitled'}` }));
 
@@ -186,29 +180,7 @@ export function PageSettingsPanel() {
           </h3>
           <p className="text-caption text-fg-subtle">How your page appears on Google and when shared on WhatsApp or X.</p>
         </div>
-        <TextInput id="seo-title" label="Title" value={draft.seo.title} onChange={(e) => actions.updatePage({ seo: { title: e.target.value } }, 'seoTitle')} />
-        <TextArea
-          id="seo-desc"
-          label="Description"
-          rows={3}
-          value={draft.seo.description}
-          hint={`${draft.seo.description.length}/160 characters`}
-          onChange={(e) => actions.updatePage({ seo: { description: e.target.value } }, 'seoDesc')} />
-        
-        <div className="overflow-hidden rounded-md border border-line bg-canvas" aria-label="Share preview">
-          <div className="flex gap-3 p-3">
-            {avatar ?
-            <MediaImage src={avatar} alt="" className="h-14 w-14 shrink-0 rounded-sm object-cover" /> :
-
-            <div className="h-14 w-14 shrink-0 rounded-sm bg-sunken" aria-hidden />
-            }
-            <div className="min-w-0">
-              <p className="truncate text-caption text-fg-subtle">{shareUrl}</p>
-              <p className="truncate text-label font-semibold text-fg">{draft.seo.title || (current ? `${current.title} · ${draft.title}` : draft.title)}</p>
-              <p className="line-clamp-2 text-caption text-fg-muted">{draft.seo.description || 'Add a description to improve how your link looks when shared.'}</p>
-            </div>
-          </div>
-        </div>
+        <SearchSharingFields idPrefix="seo" />
       </section>
 
       <SearchEnginesSection />

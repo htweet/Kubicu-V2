@@ -225,7 +225,7 @@ export function SubmitExtensionDialog({ open, onClose, editing }: Props) {
         <label className="flex cursor-pointer items-start gap-2.5 text-label text-fg">
           <input type="checkbox" className="mt-0.5 size-4 accent-[rgb(var(--action))]" checked={f.agree} onChange={(e) => set({ agree: e.target.checked })} />
           <span>
-            I’ll only use the data these permissions allow, delete it when an owner disconnects, and follow the KUBICU developer terms (draft, pending legal review).
+            I’ll only use the data these permissions allow, delete it when an owner disconnects, and follow the KUBICU Developer terms (kub.icu/about/developer-terms).
             {err('agree') && <span className="mt-0.5 block text-caption text-danger">{err('agree')}</span>}
           </span>
         </label>

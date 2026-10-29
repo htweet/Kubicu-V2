@@ -15,7 +15,7 @@ import { BookingDetail, bookingStatusCopy } from '../../components/bookings/Book
 import { BookingsPlanNote } from '../../components/bookings/BookingsPlanNote';
 import { ClassSessions } from '../../components/bookings/ClassSessions';
 import { SampleTag } from '../../components/commerce/StatusBadges';
-import { addDaysKey, dateKeyInTz, dayLabel, formatInTz, hoursFor, timeLabel, weekdayOfKey, zonedToUtc } from '../../utils/ops/slots';
+import { addDaysKey, dateKeyInTz, dayLabel, formatInTz, hoursFor, openRequests, timeLabel, weekdayOfKey, zonedToUtc } from '../../utils/ops/slots';
 import { cn } from '../../utils/cn';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { useTeam } from '../../contexts/TeamContext';
@@ -56,7 +56,9 @@ export function Schedule() {
   );
   const sorted = useMemo(() => [...visible].sort((a, b) => Date.parse(a.start) - Date.parse(b.start)), [visible]);
   const awayOn = (k: string) => (data.availability.staff ?? []).filter((s) => (person === 'all' || person === s.memberId) && isAway(s, k)).map((s) => ({ id: s.memberId, name: s.name.split(' ')[0] }));
-  const upcoming = sorted.filter((b) => Date.parse(b.end) >= Date.now() && b.status !== 'cancelled');
+  // Requests (D256) get their own strip above the list, ignoring the filters so none are missed.
+  const requests = openRequests(data.bookings);
+  const upcoming = sorted.filter((b) => Date.parse(b.end) >= Date.now() && b.status !== 'cancelled' && !(b.status === 'requested' && Date.parse(b.start) > Date.now()));
   const past = sorted.filter((b) => Date.parse(b.end) < Date.now() || b.status === 'cancelled').reverse();
 
   const open = (id: string) => setParams({ booking: id });
@@ -148,6 +150,17 @@ export function Schedule() {
         } />
       
       <BookingsPlanNote />
+      {requests.length > 0 &&
+      <section aria-labelledby="bk-requests" className="mt-6">
+          <h2 id="bk-requests" className="text-label font-semibold text-fg">
+            {tr(requests.length === 1 ? '1 request to answer' : '{n} requests to answer', { n: requests.length })}
+          </h2>
+          <p className="text-caption text-fg-subtle">{tr('Their time is held until you accept or decline.')}</p>
+          <Card as="div" body="flush" className="mt-3 overflow-hidden">
+            <List label={tr('Requests to answer')}>{requests.map(row)}</List>
+          </Card>
+        </section>
+      }
       {view === 'upcoming' && <ClassSessions onOpenBooking={open} />}
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">

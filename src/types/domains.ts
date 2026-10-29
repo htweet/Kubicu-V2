@@ -45,6 +45,10 @@ export interface CampaignLink {
   destination: LinkDestination;
   createdAt: string;
   archivedAt: string | null;
+  /** Optional tags passed on for Google Analytics and ad tools (D230). Source comes from `source`. */
+  utm?: {medium: string;campaign: string;content: string;};
+  /** Optional end: after this, the link shows "This link has ended" like an archived one (D230). */
+  endsAt?: string | null;
 }
 
 export type QrModuleStyle = 'square' | 'rounded' | 'dots';

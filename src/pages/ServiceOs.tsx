@@ -3,7 +3,10 @@ import { BriefcaseIcon, FileTextIcon, PlusIcon, ReceiptIcon } from 'lucide-react
 import { useWorkspace } from '../contexts/WorkspaceContext';
 import { useCan } from '../contexts/TeamContext';
 import { useServiceOs } from '../hooks/useServiceOs';
-import { balanceOf, formatDay, invoiceLabels, invoiceTones, invoiceView, itemsTotal, jobLabels, jobOrder, jobTones, newQuote, quoteLabels, quoteTones, quoteView } from '../utils/serviceOs';
+import { balanceOf, formatDay, invoiceLabels, invoiceTones, invoiceTotal, invoiceView, jobLabels, jobOrder, jobTones, newQuote, quoteLabels, quoteTones, quoteTotal, quoteView } from '../utils/serviceOs';
+import { useCommerce } from '../contexts/CommerceContext';
+import { shopSettingsOf } from '../utils/commerce/shopSettings';
+import { ServiceOsSettingsPanel } from '../components/serviceOs/ServiceOsSettingsPanel';
 import { formatNgn } from '../utils/format';
 import { PageHeader } from '../components/shell/PageHeader';
 import { Button } from '../components/ui/Button';
@@ -15,7 +18,7 @@ import { QuoteEditor } from '../components/serviceOs/QuoteEditor';
 import { InvoiceDetail } from '../components/serviceOs/InvoiceDetail';
 import { JobDetail } from '../components/serviceOs/JobDetail';
 
-type Tab = 'quotes' | 'invoices' | 'jobs';
+type Tab = 'quotes' | 'invoices' | 'jobs' | 'settings';
 type Open = {kind: 'quote' | 'invoice' | 'job';id: string;} | null;
 
 const rowCls = 'flex w-full items-center gap-4 px-4 py-3.5 text-left transition-colors duration-150 hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus';
@@ -32,12 +35,15 @@ export function ServiceOs() {
   const overdue = data.invoices.filter((i) => invoiceView(i) === 'overdue').length;
   const waitingQuotes = data.quotes.filter((q) => quoteView(q) === 'sent');
   const activeJobs = data.jobs.filter((j) => j.status !== 'done').length;
+  // VAT comes from Commerce settings → Tax so shop and quotes always match (D257).
+  const tax = shopSettingsOf(useCommerce().data).tax;
+  const vatRate = tax.ratePct > 0 ? { ratePct: tax.ratePct, inclusive: tax.inclusive } : undefined;
   const jobs = useMemo(() => [...data.jobs].sort((a, b) => jobOrder.indexOf(a.status) - jobOrder.indexOf(b.status) || a.dueDate.localeCompare(b.dueDate)), [data.jobs]);
 
   const create = () => {
     let id = '';
     update((d) => {
-      const r = newQuote(d);
+      const r = newQuote(d, vatRate);
       id = r.quote.id;
       return r.data;
     });
@@ -71,7 +77,7 @@ export function ServiceOs() {
         <div className="sm:border-l sm:border-line sm:pl-6">
           <p className="text-label text-fg-muted">Quotes waiting for a reply</p>
           <p className="mt-1 text-heading font-semibold tabular-nums text-fg">{waitingQuotes.length}</p>
-          <p className="mt-1 text-caption text-fg-subtle">{formatNgn(waitingQuotes.reduce((s, q) => s + itemsTotal(q.items), 0))} quoted</p>
+          <p className="mt-1 text-caption text-fg-subtle">{formatNgn(waitingQuotes.reduce((s, q) => s + quoteTotal(q), 0))} quoted</p>
         </div>
         <div className="sm:border-l sm:border-line sm:pl-6">
           <p className="text-label text-fg-muted">Jobs in progress</p>
@@ -89,7 +95,8 @@ export function ServiceOs() {
         items={[
         { id: 'quotes', label: 'Quotes', badge: waitingQuotes.length || undefined },
         { id: 'invoices', label: 'Invoices', badge: overdue || undefined },
-        { id: 'jobs', label: 'Jobs' }]
+        { id: 'jobs', label: 'Jobs' },
+        { id: 'settings', label: 'Settings' }]
         } />
       
 
@@ -113,7 +120,7 @@ export function ServiceOs() {
                           {q.number} · {q.client.name || 'No client yet'} · valid until {formatDay(q.validUntil)}
                         </span>
                       </span>
-                      <span className="hidden text-right text-label font-medium tabular-nums text-fg sm:block">{formatNgn(itemsTotal(q.items))}</span>
+                      <span className="hidden text-right text-label font-medium tabular-nums text-fg sm:block">{formatNgn(quoteTotal(q))}</span>
                       <Badge tone={quoteTones[v]} dot>
                         {quoteLabels[v]}
                       </Badge>
@@ -146,7 +153,7 @@ export function ServiceOs() {
                         </span>
                       </span>
                       <span className="hidden text-right sm:block">
-                        <span className="block text-label font-medium tabular-nums text-fg">{formatNgn(itemsTotal(inv.items))}</span>
+                        <span className="block text-label font-medium tabular-nums text-fg">{formatNgn(invoiceTotal(inv))}</span>
                         {v === 'part_paid' && <span className="block text-caption tabular-nums text-fg-muted">{formatNgn(balanceOf(inv))} left</span>}
                       </span>
                       <Badge tone={invoiceTones[v]} dot>
@@ -188,6 +195,8 @@ export function ServiceOs() {
           })}
             </ul>)
         }
+
+        {tab === 'settings' && <ServiceOsSettingsPanel data={data} tax={tax} canEdit={can.allowed} update={update} />}
       </div>
 
       <QuoteEditor
@@ -198,7 +207,8 @@ export function ServiceOs() {
         update={update}
         onClose={() => setOpen(null)}
         onOpenInvoice={(id) => (setTab('invoices'), setOpen({ kind: 'invoice', id }))}
-        onOpenJob={(id) => (setTab('jobs'), setOpen({ kind: 'job', id }))} />
+        onOpenJob={(id) => (setTab('jobs'), setOpen({ kind: 'job', id }))}
+        vatRate={vatRate} />
       
       <InvoiceDetail invoice={invoice} businessName={current.name} canEdit={can.allowed} update={update} onClose={() => setOpen(null)} onOpenQuote={(id) => (setTab('quotes'), setOpen({ kind: 'quote', id }))} />
       <JobDetail job={job} data={data} onOpenInvoice={(id) => (setTab('invoices'), setOpen({ kind: 'invoice', id }))} businessName={current.name} canEdit={can.allowed} update={update} onClose={() => setOpen(null)} onOpenQuote={(id) => (setTab('quotes'), setOpen({ kind: 'quote', id }))} />

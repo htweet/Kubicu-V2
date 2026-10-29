@@ -20,12 +20,13 @@ import { variantLabel, variantPrice } from './catalog';
 import { kubicuFee, providerFee, refundableNgn } from './money';
 import { orderDiscountRecord, resolveDiscount } from './discounts';
 import { formatNgn } from '../format';
-import { issueTickets, orderCapacityIssue, ticketLineIssue } from './tickets';
+import { issueTickets, orderCapacityIssue, stockFree, stockHeldMessage, ticketLineIssue } from './tickets';
 import { cartBalanceNgn, dispatchBlocked } from './deposit';
 import { everyLabels, instalmentCheck, newParts, payOptionsOf, podAwaiting, podCheck } from './payOptions';
 import { bundleLineFor, partnerGrossFor } from './bundles';
 import { enrolFromOrder } from './courses';
 import { bulkUnitPrice, isPreorder, issueGiftCardsForOrder, preorderLeft, resolveGiftCard, shipsByLabel, spendGiftCard } from './sellModes';
+import { shopClosedMessage, shopSettingsOf, vatFor } from './shopSettings';
 
 export const OWNER_ACTOR = 'You';
 
@@ -119,6 +120,11 @@ export interface CheckoutInput {
   stallLeft?: Record<string, number | null>;
   /** Gift card code the buyer entered (D202), re-checked here against live balances. */
   giftCardCode?: string;
+  /** Order-note box and checkout address (D222). */
+  buyerNote?: string;
+  buyerAddress?: string;
+  /** Paid to a one-time provider transfer account (D222). */
+  transferAccount?: {bank: string;account: string;};
 }
 
 /** A short, readable share code for a DealRoom buyer, e.g. NGOZI-7K2. */
@@ -156,6 +162,11 @@ export function placeOrder(data: CommerceData, input: CheckoutInput): CheckoutRe
   if (pod || atStall) input = { ...input, outcome: 'success' };
   if (input.outcome === 'failed') return { ok: false, reason: 'failed', message: 'The test card was declined. No money moved and nothing was ordered.' };
   if (input.outcome === 'cancelled') return { ok: false, reason: 'cancelled', message: 'Payment was cancelled before it finished. Your cart is still here.' };
+  // Shop settings (D222) are re-checked here against the live store, like discounts and stock.
+  const shop = shopSettingsOf(data);
+  const closed = shopClosedMessage(shop);
+  if (closed) return { ok: false, reason: 'unavailable', message: `${closed} Nothing was charged.` };
+  let backordered = false;
 
   const items = [];
   // Bulk prices (D202) go by how many of each product are in the order, across its variants.
@@ -172,9 +183,15 @@ export function placeOrder(data: CommerceData, input: CheckoutInput): CheckoutRe
     if (isPreorder(product)) {
       const left = preorderLeft(product);
       if (left !== null && (qtyByProduct[product.id] ?? 0) > left) return { ok: false, reason: 'unavailable', message: left === 0 ? `Pre-orders for ${product.name} are full. Nothing was charged.` : `Only ${left} pre-order${left === 1 ? '' : 's'} left for ${product.name}. Nothing was charged.` };
-    } else if (product.kind === 'physical' && product.trackStock && variant.stock < line.qty) {
-      return { ok: false, reason: 'unavailable', message: `Only ${variant.stock} of ${product.name} (${variantLabel(variant)}) left.` };
+    } else if (product.kind === 'physical' && product.trackStock && !shop.orders.backorders) {
+      // Other buyers' checkout holds (D255) count as taken; this buyer's own hold counts as theirs.
+      const free = stockFree(data, variant, input.holder);
+      if (free < line.qty) {
+        const held = free < variant.stock;
+        return { ok: false, reason: 'unavailable', message: held ? `${stockHeldMessage(product.name, free)}. Nothing was charged.` : `Only ${variant.stock} of ${product.name} (${variantLabel(variant)}) left.` };
+      }
     }
+    if (product.kind === 'physical' && product.trackStock && !isPreorder(product) && variant.stock < line.qty) backordered = true;
     if (product.kind === 'ticket') {
       // Seats are re-checked at payment so an event never oversells (D73).
       const issue = ticketLineIssue(data, line, Date.now(), input.holder);
@@ -220,13 +237,19 @@ export function placeOrder(data: CommerceData, input: CheckoutInput): CheckoutRe
     input.discountCode ?? ''
   );
   const codeDiscountNgn = Math.min(applied?.amountNgn ?? 0, subtotal + input.deliveryNgn);
+  // Minimum order value (D222), on goods after any discount code.
+  if (shop.checkout.minOrderNgn && subtotal - codeDiscountNgn < shop.checkout.minOrderNgn)
+  return { ok: false, reason: 'unavailable', message: `The minimum order is ${formatNgn(shop.checkout.minOrderNgn)}. Nothing was charged.` };
+  // VAT (D222): on goods after discount, plus delivery. Exclusive VAT is added before any gift card is spent.
+  const vat = vatFor(shop, subtotal - codeDiscountNgn + input.deliveryNgn);
+  const vatAdded = vat?.addedNgn ?? 0;
   // Gift card (D202): spent after any discount; the amount is part of the order's discount line.
   const giftProducts = new Set(data.products.filter((p) => p.giftCard).map((p) => p.id));
-  const gift = resolveGiftCard(data, input.giftCardCode ?? '', subtotal - codeDiscountNgn + input.deliveryNgn, items.some((i) => giftProducts.has(i.productId)));
+  const gift = resolveGiftCard(data, input.giftCardCode ?? '', subtotal - codeDiscountNgn + input.deliveryNgn + vatAdded, items.some((i) => giftProducts.has(i.productId)));
   if (gift && !gift.ok) return { ok: false, reason: 'unavailable', message: `${gift.message} Nothing was charged.` };
   const giftNgn = gift?.ok ? gift.amountNgn : 0;
   const discountNgn = codeDiscountNgn + giftNgn;
-  const fullTotal = subtotal - discountNgn + input.deliveryNgn;
+  const fullTotal = subtotal - discountNgn + input.deliveryNgn + vatAdded;
   // Made-to-order items: only the deposit is charged now; the rest before dispatch (D95). Not for DealRooms.
   const balanceNgn = input.dealRoom ?
   0 :
@@ -293,6 +316,8 @@ export function placeOrder(data: CommerceData, input: CheckoutInput): CheckoutRe
   }
   if (paid && digitalOnly && !input.dealRoom?.held) events.unshift(event('completed', deliveredLabel));
   if (input.popup) events.unshift(event('note', `Pop-up pickup — ${input.popup.sessionLabel}${atStall ? `. Collect ${formatNgn(fullTotal)} at the stall` : ''}`, placedAt));
+  if (backordered) events.unshift(event('note', 'Includes items sold past zero stock (backorder) — send when they’re back in', placedAt));
+  if (input.buyerNote?.trim()) events.unshift(event('note', `Customer’s note: “${input.buyerNote.trim().slice(0, 300)}”`, placedAt));
   if (!paid && !pod && !atStall) events.unshift(event('payment', input.outcome === 'timeout' ? 'Provider didn’t respond in time — awaiting confirmation' : 'Payment pending with provider'));
 
   const order: Order = {
@@ -325,7 +350,13 @@ export function placeOrder(data: CommerceData, input: CheckoutInput): CheckoutRe
     balance: balanceNgn > 0 && !parts ? { dueNgn: balanceNgn } : undefined,
     pod: pod ? { amountNgn: fullTotal, accept: payOptionsOf(data).pod.accept } : undefined,
     instalments: parts && instalmentPlan?.ok ? { every: instalmentPlan.plan.every, ship: instalmentPlan.plan.ship, card: { brand: 'Visa', last4: '4081' }, parts, status: 'active', agreedAt: placedAt } : undefined,
-    popup: input.popup ? { ...input.popup } : undefined
+    popup: input.popup ? { ...input.popup } : undefined,
+    vat: vat ? { ratePct: vat.ratePct, amountNgn: vat.amountNgn, inclusive: vat.inclusive } : undefined,
+    numberPrefix: shop.orders.prefix || undefined,
+    buyerNote: input.buyerNote?.trim().slice(0, 300) || undefined,
+    buyerAddress: input.buyerAddress?.trim() || undefined,
+    backorder: backordered || undefined,
+    transferAccount: input.transferAccount
   };
 
   let next: CommerceData = { ...data, orders: [order, ...data.orders], nextOrderNumber: number + 1 };

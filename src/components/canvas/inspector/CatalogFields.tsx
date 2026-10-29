@@ -15,19 +15,45 @@ import { PlanLock } from '../../ui/PlanLock';
 import { cn } from '../../../utils/cn';
 import { MediaImage } from '../../media/MediaImage';
 
-export function SourceSwitch({ id, value, onChange, catalogLabel = 'Commerce' }: {id: string;value: 'manual' | 'catalog';onChange: (v: 'manual' | 'catalog') => void;catalogLabel?: string;}) {
+interface SourceSwitchProps {
+  id: string;
+  value: 'manual' | 'catalog';
+  onChange: (v: 'manual' | 'catalog') => void;
+  /** Short label for "something you already set up in KUBICU", e.g. "My services". */
+  catalogLabel?: string;
+  /** Short label for "details you have elsewhere", e.g. "External link". */
+  manualLabel?: string;
+  /** One sentence under the switch explaining the chosen option. */
+  catalogHint?: string;
+  manualHint?: string;
+}
+
+/**
+ * Where a block's details come from: something already set up in KUBICU (kept in sync), or
+ * details the person already has elsewhere and enters here (D38, wording D215).
+ */
+export function SourceSwitch({
+  id,
+  value,
+  onChange,
+  catalogLabel = 'My products',
+  manualLabel = 'Enter details',
+  catalogHint = 'Pick a product you’ve added in Commerce. Name, price, photo and stock stay in sync.',
+  manualHint = 'Not in Commerce? Enter the name, price and photo here, and choose where the button goes.'
+}: SourceSwitchProps) {
   return (
-    <Field id={id} label="Details come from">
+    <Field id={id} label="Use">
       <Segmented
-        ariaLabel="Details come from"
+        ariaLabel="Where the details come from"
         fullWidth
         value={value}
         onChange={onChange}
         options={[
         { value: 'catalog', label: catalogLabel },
-        { value: 'manual', label: 'Type them here' }]
+        { value: 'manual', label: manualLabel }]
         } />
       
+      <p className="mt-1.5 text-caption text-fg-muted">{value === 'catalog' ? catalogHint : manualHint}</p>
     </Field>);
 
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "../../utils/cn";
 import { BoxIcon, CheckIcon } from "lucide-react";
@@ -41,7 +41,48 @@ export function Menu({
   const { t } = useT();
   items = items.map((i) => ({ ...i, label: t(i.label), reason: i.reason && t(i.reason) }));
   const rootRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  // D250: the menu floats over the page (fixed position) so a scrolling list or card can't clip it,
+  // and flips above the trigger when there isn't room below.
+  const [placed, setPlaced] = useState<'top' | 'bottom'>(side);
+  const [pos, setPos] = useState<{top: number;left: number;width?: number;} | null>(null);
+  const place = useCallback(() => {
+    const root = rootRef.current;
+    const menu = menuRef.current;
+    if (!root || !menu) return;
+    const r = root.getBoundingClientRect();
+    // A stretched trigger (e.g. the sidebar appearance row) gets a menu exactly its width, as it had
+    // before menus floated (D250); small triggers keep a content-sized menu.
+    const width = r.width >= 220 ? Math.min(r.width, window.innerWidth - 16) : undefined;
+    if (width !== undefined) menu.style.width = `${width}px`;
+    const h = menu.offsetHeight;
+    const w = width ?? menu.offsetWidth;
+    const gap = 6;
+    const edge = 8;
+    const vh = window.innerHeight;
+    const vw = window.innerWidth;
+    let s: 'top' | 'bottom' = side;
+    if (s === 'bottom' && r.bottom + gap + h > vh - edge && r.top - gap - h >= edge) s = 'top';else
+    if (s === 'top' && r.top - gap - h < edge && r.bottom + gap + h <= vh - edge) s = 'bottom';
+    const top = Math.max(edge, Math.min(s === 'bottom' ? r.bottom + gap : r.top - gap - h, vh - h - edge));
+    const left = Math.max(edge, Math.min(align === 'end' ? r.right - w : r.left, vw - w - edge));
+    setPos((p) => p && p.top === top && p.left === left && p.width === width ? p : { top, left, width });
+    setPlaced(s);
+  }, [align, side]);
+  useLayoutEffect(() => {
+    if (!open) {
+      setPos(null);
+      return;
+    }
+    place();
+    window.addEventListener('resize', place);
+    window.addEventListener('scroll', place, true);
+    return () => {
+      window.removeEventListener('resize', place);
+      window.removeEventListener('scroll', place, true);
+    };
+  }, [open, place]);
   useEffect(() => {
     if (!open) return;
     const onDown = (e: MouseEvent) => {
@@ -88,10 +129,10 @@ export function Menu({
       'aria-haspopup': 'menu'
     })}
       <AnimatePresence>
-        {open && <motion.div role="menu" initial={{
+        {open && <motion.div ref={menuRef} role="menu" style={{ top: pos?.top ?? 0, left: pos?.left ?? 0, width: pos?.width, visibility: pos ? 'visible' : 'hidden' }} initial={{
         opacity: 0,
         scale: 0.96,
-        y: side === 'bottom' ? -4 : 4
+        y: placed === 'bottom' ? -4 : 4
       }} animate={{
         opacity: 1,
         scale: 1,
@@ -102,7 +143,7 @@ export function Menu({
       }} transition={{
         duration: 0.15,
         ease: [0.23, 1, 0.32, 1]
-      }} className={cn('absolute z-50 min-w-[220px] rounded-md border border-line bg-overlay p-1 shadow-3', side === 'bottom' ? 'top-full mt-1.5 origin-top' : 'bottom-full mb-1.5 origin-bottom', align === 'end' ? 'right-0' : 'left-0')}>
+      }} className={cn('fixed z-[80] max-h-[calc(100vh-16px)] min-w-[220px] overflow-y-auto rounded-md border border-line bg-overlay p-1 shadow-3', pos?.width ? 'max-w-[calc(100vw-16px)]' : 'max-w-[min(340px,calc(100vw-16px))]', placed === 'bottom' ? align === 'end' ? 'origin-top-right' : 'origin-top-left' : align === 'end' ? 'origin-bottom-right' : 'origin-bottom-left')}>
             {header && <div className="border-b border-line px-2.5 pb-2 pt-1.5">{header}</div>}
             {items.map((item, i) => {
           const Icon = item.icon;

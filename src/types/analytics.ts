@@ -22,6 +22,8 @@ export type EventType =
 'member_signin' |
 'member_view';
 
+export type DeviceKind = 'phone' | 'tablet' | 'desktop';
+
 export type SourceId = 'whatsapp' | 'instagram' | 'tiktok' | 'facebook' | 'x' | 'google' | 'qr' | 'campaign' | 'direct' | 'other';
 
 /** One thing a visitor did on a public page. No personal data — just a random session id (D61). */
@@ -32,6 +34,8 @@ export interface AnalyticsEvent {
   /** Random id for this browser, used only to estimate unique visitors. */
   browser?: string;
   source: SourceId;
+  /** Kind of device, from the browser's own description (D258). Missing on older visits. */
+  device?: DeviceKind;
   /** Campaign link slug when the visit came through one. */
   campaign?: string;
   /** Link the event happened on (main page, campaign, DealRoom). */

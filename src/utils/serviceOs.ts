@@ -1,4 +1,4 @@
-import type { Invoice, InvoiceStatus, Job, JobStatus, LineItem, Milestone, Quote, QuoteStatus, ServiceClient, ServiceOsData } from '../types/serviceOs';
+import type { DocVat, Invoice, InvoiceStatus, Job, JobStatus, LineItem, Milestone, Quote, QuoteStatus, ServiceClient, ServiceOsData, ServiceOsSettings } from '../types/serviceOs';
 import { uid } from './id';
 import { seedsSample } from './workspaceStorage';
 
@@ -36,7 +36,29 @@ export const lineTotal = (i: LineItem) => Math.max(0, Math.round(i.qty * i.unitN
 export const itemsTotal = (items: LineItem[]) => items.reduce((s, i) => s + lineTotal(i), 0);
 export const depositOf = (q: Quote) => Math.round(itemsTotal(q.items) * q.depositPct / 100);
 export const paidOf = (inv: Invoice) => inv.payments.reduce((s, p) => s + p.amountNgn, 0);
-export const balanceOf = (inv: Invoice) => Math.max(0, itemsTotal(inv.items) - paidOf(inv));
+
+/** Items, VAT and what the client pays (D257). Without VAT, all three are the items total. */
+export function vatSplit(items: LineItem[], vat?: DocVat): {subtotal: number;vat: number;total: number;} {
+  const base = itemsTotal(items);
+  if (!vat || vat.ratePct <= 0) return { subtotal: base, vat: 0, total: base };
+  const r = vat.ratePct / 100;
+  if (vat.inclusive) return { subtotal: base, vat: Math.round(base - base / (1 + r)), total: base };
+  const added = Math.round(base * r);
+  return { subtotal: base, vat: added, total: base + added };
+}
+export const quoteTotal = (q: Quote) => vatSplit(q.items, q.vat).total;
+export const invoiceTotal = (inv: Invoice) => vatSplit(inv.items, inv.vat).total;
+export const balanceOf = (inv: Invoice) => Math.max(0, invoiceTotal(inv) - paidOf(inv));
+
+// ——— Settings (D257) ———
+
+export const defaultServiceSettings: ServiceOsSettings = { quotePrefix: 'Q-', invoicePrefix: 'INV-', validDays: 14, dueDays: 7, quoteNote: '', invoiceNote: '', vat: false };
+export const serviceSettingsOf = (d: ServiceOsData): ServiceOsSettings => ({ ...defaultServiceSettings, ...(d.settings ?? {}) });
+/** Letters, numbers and - / only, up to 8 characters. Empty means no prefix. */
+export const cleanDocPrefix = (p: string) => p.toUpperCase().replace(/[^A-Z0-9\-/]/g, '').slice(0, 8);
+export const docNumber = (prefix: string, n: number) => `${prefix}${String(n).padStart(4, '0')}`;
+export const validDayOptions = [7, 14, 30, 60];
+export const dueDayOptions = [0, 3, 7, 14, 30];
 
 export const todayKey = () => new Date().toISOString().slice(0, 10);
 export const addDays = (days: number) => new Date(Date.now() + days * 86_400_000).toISOString().slice(0, 10);
@@ -73,17 +95,20 @@ export const manualMethods = ['transfer', 'cash', 'card'] as const;
 export const blankClient = (): ServiceClient => ({ name: '', phone: '', email: '' });
 export const blankItem = (): LineItem => ({ id: uid('li'), label: '', qty: 1, unitNgn: 0 });
 
-export function newQuote(d: ServiceOsData): {data: ServiceOsData;quote: Quote;} {
+/** `vat` is the Commerce tax rate, passed in only when Quotes & jobs settings charge VAT (D257). */
+export function newQuote(d: ServiceOsData, vat?: DocVat): {data: ServiceOsData;quote: Quote;} {
   const n = d.counters.quote + 1;
+  const s = serviceSettingsOf(d);
   const quote: Quote = {
     id: uid('q'),
-    number: `Q-${String(n).padStart(4, '0')}`,
+    number: docNumber(s.quotePrefix, n),
+    vat: s.vat && vat ? vat : undefined,
     title: '',
     client: blankClient(),
     items: [blankItem()],
     depositPct: 0,
-    validUntil: addDays(14),
-    note: '',
+    validUntil: addDays(s.validDays),
+    note: s.quoteNote,
     status: 'draft',
     createdAt: new Date().toISOString(),
     invoiceIds: []
@@ -103,14 +128,17 @@ export function invoiceFromQuote(d: ServiceOsData, q: Quote): {data: ServiceOsDa
   first ?
   q.items.map((i) => ({ ...i, id: uid('li') })) :
   [{ id: uid('li'), label: `Balance — ${q.title}`, qty: 1, unitNgn: Math.max(0, total - invoiced) }];
+  const s = serviceSettingsOf(d);
   const invoice: Invoice = {
     id: uid('inv'),
-    number: `INV-${String(n).padStart(4, '0')}`,
+    number: docNumber(s.invoicePrefix, n),
     title: q.title,
     client: q.client,
     items,
     quoteId: q.id,
-    dueDate: addDays(7),
+    vat: q.vat,
+    note: s.invoiceNote || undefined,
+    dueDate: addDays(s.dueDays),
     status: 'draft',
     payments: [],
     createdAt: new Date().toISOString()
@@ -159,7 +187,7 @@ export function quoteProblems(q: Quote): string[] {
   if (!q.client.name.trim()) p.push('Add the client’s name.');
   if (!q.client.phone.trim() && !q.client.email.trim()) p.push('Add a phone or email so the client can get the link.');
   if (!q.items.some((i) => i.label.trim() && lineTotal(i) > 0)) p.push('Add at least one priced item.');
-  if (q.items.some((i) => i.label.trim() && lineTotal(i) === 0)) p.push('Every item needs a price above ₦0.');
+  if (q.items.some((i) => i.label.trim() && lineTotal(i) === 0)) p.push('Every item needs a price above 0.');
   if (q.validUntil < todayKey()) p.push('Valid until must be today or later.');
   return p;
 }

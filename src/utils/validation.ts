@@ -6,6 +6,7 @@ import { contrastCopy, suggestContrastFix, type ContrastKey } from './contrastFi
 import { parseEmbed } from './embeds';
 import { formatNgn } from './format';
 import { socialPlatformLabels } from '../data/socialPlatforms';
+import { NO_WA_NUMBER, waNumber } from './businessWhatsApp';
 
 export type IssueSeverity = 'error' | 'warning';
 
@@ -113,8 +114,8 @@ export function validateBlock(block: Block): ValidationIssue[] {
           if (!p.imageAlt.trim()) push('warning', 'Describe the product photo for screen readers', 'imageAlt');
           if (p.ctaAction === 'checkout') push('error', 'Checkout needs a product from Commerce — link one or choose WhatsApp', 'ctaAction');
         }
-        if (p.ctaAction === 'whatsapp' && !isValidPhone(p.whatsappPhone))
-        push('error', 'Add the WhatsApp number orders should go to', 'whatsappPhone');
+        if (p.ctaAction === 'whatsapp' && !isValidPhone(waNumber(p.whatsappPhone)))
+        push('error', waNumber(p.whatsappPhone) ? 'WhatsApp number needs a country code, e.g. +234…' : NO_WA_NUMBER, 'whatsappPhone');
         if (p.ctaAction === 'link' && !isValidUrl(p.url)) push('error', 'Add a full link for the order button', 'url');
         break;
       }
@@ -124,8 +125,8 @@ export function validateBlock(block: Block): ValidationIssue[] {
       if (!isValidUrl(block.content.url)) push('error', 'Add a full link to where people book', 'url');
       break;
     case 'whatsapp':
-      if (!isValidPhone(block.content.phone))
-      push('error', 'Add a WhatsApp number with country code, e.g. +234…', 'phone');
+      if (!isValidPhone(waNumber(block.content.phone)))
+      push('error', waNumber(block.content.phone) ? 'Add a WhatsApp number with country code, e.g. +234…' : NO_WA_NUMBER, 'phone');
       break;
     case 'newsletter':
       if (!block.content.consentText.trim())
@@ -141,7 +142,7 @@ export function validateBlock(block: Block): ValidationIssue[] {
     case 'productGrid':{
         const c = block.content;
         if (c.source === 'catalog') {
-          if (c.orderAction === 'whatsapp' && !isValidPhone(c.whatsappPhone)) push('error', 'Add the WhatsApp number orders should go to', 'whatsappPhone');
+          if (c.orderAction === 'whatsapp' && !isValidPhone(waNumber(c.whatsappPhone))) push('error', NO_WA_NUMBER, 'whatsappPhone');
           if (c.orderAction === 'link') push('error', 'Linked products order through checkout or WhatsApp', 'orderAction');
           break;
         }
@@ -151,15 +152,15 @@ export function validateBlock(block: Block): ValidationIssue[] {
         if (c.items.length > 12) push('error', 'Up to 12 products per grid', 'items');
         if (named.some((i) => i.priceNgn === null)) push('warning', 'Some products have no price — they’ll show “Price on request”', 'items');
         if (named.some((i) => i.imageUrl && !i.imageAlt.trim())) push('warning', 'Describe each product photo for screen readers', 'items');
-        if (c.orderAction === 'whatsapp' && !isValidPhone(c.whatsappPhone)) push('error', 'Add the WhatsApp number orders should go to', 'whatsappPhone');
+        if (c.orderAction === 'whatsapp' && !isValidPhone(waNumber(c.whatsappPhone))) push('error', NO_WA_NUMBER, 'whatsappPhone');
         if (c.orderAction === 'link' && named.some((i) => !i.soldOut && !isValidUrl(i.url))) push('error', 'Every available product needs a full order link', 'items');
         break;
       }
     case 'menu':{
         const c = block.content;
         if (!c.categories.some((cat) => cat.items.some((i) => i.name.trim()))) push('error', 'Add at least one menu item', 'categories');
-        if (c.orderingOpen && c.whatsappPhone && !isValidPhone(c.whatsappPhone)) push('error', 'WhatsApp number needs a country code, e.g. +234…', 'whatsappPhone');
-        if (c.orderingOpen && !c.whatsappPhone) push('warning', 'Add a WhatsApp number so people can order', 'whatsappPhone');
+        if (c.orderingOpen && waNumber(c.whatsappPhone) && !isValidPhone(waNumber(c.whatsappPhone))) push('error', 'WhatsApp number needs a country code, e.g. +234…', 'whatsappPhone');
+        if (c.orderingOpen && !waNumber(c.whatsappPhone)) push('warning', NO_WA_NUMBER, 'whatsappPhone');
         break;
       }
     case 'pricing':{

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { CheckCircle2Icon, HammerIcon, Loader2Icon } from 'lucide-react';
 import type { CommerceData, Order } from '../../types/commerce';
+import { orderRef } from '../../utils/commerce/shopSettings';
 import type { PageTheme } from '../../types/page';
 import { cardStyle, mix } from '../blocks/pageStyle';
 import { PrimaryButton } from './checkoutUi';
@@ -49,7 +50,7 @@ export function OrderBalanceCard({ theme, order, data, workspaceId, apply }: Ord
       // Wallet first: reading it syncs the original sale, which must not yet include this balance.
       const before = workspaceId ? readMoney(workspaceId) : null;
       if (!apply((d) => payOrderBalance(d, order.id, 'online'))) return setError('Couldn’t take the payment. Please try again.');
-      if (workspaceId && before) writeMoney(workspaceId, recordStagePayment(before, 'shop', { type: 'order', id: order.id }, `Balance · order #${order.number} · ${order.customer.name || 'Customer'}`, balance.dueNgn).data);
+      if (workspaceId && before) writeMoney(workspaceId, recordStagePayment(before, 'shop', { type: 'order', id: order.id }, `Balance · order ${orderRef(order)} · ${order.customer.name || 'Customer'}`, balance.dueNgn).data);
     }, 1000);
   };
 

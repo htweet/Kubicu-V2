@@ -1,7 +1,7 @@
 import React, { createContext, useContext } from 'react';
 import type { AnalyticsEvent, EventType, SourceId } from '../types/analytics';
 import { appendEvent, readAnalytics } from '../utils/analytics/storage';
-import { browserId, sessionId } from '../utils/analytics/track';
+import { browserId, deviceKind, sessionId } from '../utils/analytics/track';
 
 export type TrackFn = (type: EventType, extra?: Partial<Pick<AnalyticsEvent, 'blockId' | 'label' | 'valueNgn' | 'pageId'>>) => void;
 
@@ -25,7 +25,7 @@ export function createTracker({ workspaceId, handle, pageId, source, disabled, i
   if (disabled || !workspaceId) return noop;
   return (type, extra) => {
     if (isOwner && readAnalytics(workspaceId)?.settings.excludeOwn) return;
-    appendEvent(workspaceId, { type, at: new Date().toISOString(), session: sessionId(), browser: browserId(), source: source.source, campaign: source.campaign, handle, pageId, ...extra });
+    appendEvent(workspaceId, { type, at: new Date().toISOString(), session: sessionId(), browser: browserId(), device: deviceKind(), source: source.source, campaign: source.campaign, handle, pageId, ...extra });
   };
 }
 

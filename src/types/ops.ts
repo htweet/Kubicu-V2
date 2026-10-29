@@ -23,6 +23,41 @@ export interface Service {
   staffIds?: string[];
   /** Group class (D198): seats per time. Missing or 1 = one-to-one. */
   capacity?: number;
+  /** Online services (D225): which connected app makes each booking's meeting link. Missing = the seller sends their own. */
+  meetingApp?: MeetingApp;
+  /** D256: each booking arrives as a request the seller accepts or declines. */
+  approval?: boolean;
+  /** D256: the seller's own questions, asked in the booking sheet. Up to 5. */
+  questions?: IntakeQuestion[];
+}
+
+/** One question a service asks when someone books (D256). */
+export interface IntakeQuestion {
+  id: string;
+  label: string;
+  kind: 'text' | 'choice' | 'yesno';
+  /** Choice questions only: 2–6 options. */
+  options: string[];
+  required: boolean;
+}
+
+export type MeetingApp = 'google_meet' | 'zoom' | 'teams';
+
+/** A connected video-call account (D225). Simulated sign-in; a real build uses each provider's OAuth and API. */
+export interface MeetingConnection {
+  id: string;
+  app: MeetingApp;
+  account: string;
+  connectedAt: string;
+  status: 'ok' | 'revoked';
+}
+
+export interface BookingMeeting {
+  app: MeetingApp;
+  url: string;
+  /** Zoom passcode / Teams meeting ID, when the app has one. */
+  code?: string;
+  createdAt: string;
 }
 
 export interface TimeOff {
@@ -73,6 +108,8 @@ export interface Availability {
   calendars?: CalendarConnection[];
   /** Per-person hours, time off and calendar (D140). Empty = the business is booked as one. */
   staff?: StaffHours[];
+  /** Connected Google Meet, Zoom and Microsoft Teams accounts (D225). */
+  meetings?: MeetingConnection[];
 }
 
 export interface BusyEvent {
@@ -102,7 +139,8 @@ export interface CalendarConnection {
   log: {at: string;text: string;}[];
 }
 
-export type BookingStatus = 'confirmed' | 'pending_deposit' | 'cancelled' | 'completed' | 'no_show';
+/** 'requested' (D256): waiting for the seller to accept. The time is held meanwhile. Declining cancels it. */
+export type BookingStatus = 'requested' | 'confirmed' | 'pending_deposit' | 'cancelled' | 'completed' | 'no_show';
 
 export interface BookingEvent {
   id: string;
@@ -119,6 +157,8 @@ export interface Booking {
   end: string;
   customer: {name: string;phone: string;email: string;};
   intake: string;
+  /** Answers to the service's own questions, with the question copied so later edits don't change them (D256). */
+  answers?: {question: string;answer: string;}[];
   status: BookingStatus;
   depositPaidNgn: number;
   priceNgn: number | null;
@@ -137,6 +177,8 @@ export interface Booking {
   assigneeId?: string | null;
   /** Public handle of the page or space it was booked on (D191) — e.g. a Booking page. */
   sourceHandle?: string;
+  /** Meeting made automatically for an online booking (D225). */
+  meeting?: BookingMeeting;
 }
 
 export type ContactSource = 'order' | 'booking' | 'form' | 'newsletter' | 'import' | 'manual';
@@ -176,6 +218,8 @@ export interface Contact {
   sample?: boolean;
   /** Team member who owns the relationship (D60). */
   assigneeId?: string | null;
+  /** Values for the business's own contact fields, by field id (D259). */
+  fields?: Record<string, string>;
 }
 
 export type TriggerId =
@@ -261,4 +305,29 @@ export interface OpsData {
   syncedOrderIds?: string[];
   /** Live-run keys already handled, so each campaign phase or quiet spell fires once (D137). */
   firedKeys?: string[];
+  /** Audience and Automations settings (D259). Read through opsSettingsOf(). */
+  settings?: Partial<OpsSettings>;
+}
+
+export type ContactFieldType = 'text' | 'number' | 'date' | 'choice';
+
+/** A field of the business's own on every contact, e.g. "Dress size" or "Birthday" (D259). */
+export interface ContactField {
+  id: string;
+  label: string;
+  type: ContactFieldType;
+  /** Choice fields only. */
+  options: string[];
+}
+
+export interface OpsSettings {
+  contactFields: ContactField[];
+  /** Tags offered when tagging a contact and in the Audience tag filter. */
+  savedTags: string[];
+  /** Standard consent note for sign-up forms. */
+  consentText: string;
+  /** Automations hold customer messages written in these hours (business time zone). */
+  quietHours: {on: boolean;from: string;to: string;};
+  /** Channel a new "send a message" step starts with. */
+  defaultChannel: 'send_whatsapp' | 'send_email';
 }

@@ -8,6 +8,7 @@ import { buttonStyle, cardStyle, fontsFor, mix } from './pageStyle';
 import { formatNgn, whatsappLink } from '../../utils/format';
 import { useCatalog } from '../../contexts/CatalogContext';
 import { resolveMenuItem } from '../../utils/commerce/catalog';
+import { waNumber } from '../../utils/businessWhatsApp';
 
 export function MenuBlock({ block, theme, mode }: BlockProps<'menu'>) {
   const c = block.content;
@@ -50,10 +51,10 @@ export function MenuBlock({ block, theme, mode }: BlockProps<'menu'>) {
         )}
       </div>
       {c.orderingOpen ?
-      c.whatsappPhone &&
+      waNumber(c.whatsappPhone) &&
       <PageAction
         mode={mode}
-        href={whatsappLink(c.whatsappPhone, 'Hello! I’d like to order from your menu:\n')}
+        href={whatsappLink(waNumber(c.whatsappPhone), 'Hello! I’d like to order from your menu:\n')}
         className="mt-5 flex h-12 w-full items-center justify-center gap-2 text-[15px] font-semibold"
         style={buttonStyle(theme, 'featured')}>
         

@@ -15,10 +15,12 @@ interface TabsProps<T extends string> {
   ariaLabel: string;
   idPrefix: string;
   fullWidth?: boolean;
+  /** Tighter tabs for narrow panels; the strip never shows a scrollbar (it still scrolls by keyboard). */
+  dense?: boolean;
   className?: string;
 }
 
-export function Tabs<T extends string>({ items, value, onChange, ariaLabel, idPrefix, fullWidth, className }: TabsProps<T>) {
+export function Tabs<T extends string>({ items, value, onChange, ariaLabel, idPrefix, fullWidth, dense, className }: TabsProps<T>) {
   const refs = useRef<Array<HTMLButtonElement | null>>([]);
   const { t } = useT();
 
@@ -31,7 +33,7 @@ export function Tabs<T extends string>({ items, value, onChange, ariaLabel, idPr
   };
 
   return (
-    <div role="tablist" aria-label={ariaLabel} className={cn('scroll-quiet flex gap-1 overflow-x-auto shadow-[inset_0_-1px_0_0_rgb(var(--border-subtle))]', className)}>
+    <div role="tablist" aria-label={ariaLabel} className={cn('scroll-quiet flex overflow-x-auto shadow-[inset_0_-1px_0_0_rgb(var(--border-subtle))]', dense ? 'no-scrollbar gap-0' : 'gap-1', className)}>
       {items.map((item, i) => {
         const selected = item.id === value;
         return (
@@ -47,7 +49,8 @@ export function Tabs<T extends string>({ items, value, onChange, ariaLabel, idPr
             onClick={() => onChange(item.id)}
             onKeyDown={(e) => onKeyDown(e, i)}
             className={cn(
-              'relative inline-flex h-10 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap border-b-2 px-2.5 text-label font-medium',
+              'relative inline-flex h-10 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap border-b-2 text-label font-medium',
+              dense ? 'px-1.5' : 'px-2.5',
               'transition-colors duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus',
               fullWidth && 'flex-1',
               selected ? 'border-action text-fg' : 'border-transparent text-fg-subtle hover:text-fg'

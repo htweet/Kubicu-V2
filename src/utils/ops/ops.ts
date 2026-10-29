@@ -137,6 +137,8 @@ export interface BookingInput {
   staffId?: string | null;
   /** The page or space handle the booking sheet was opened on (D191). */
   sourceHandle?: string;
+  /** Answers to the service's own questions (D256). */
+  answers?: {question: string;answer: string;}[];
 }
 
 export type BookingResult = {ok: true;data: OpsData;booking: Booking;} | {ok: false;reason: 'taken' | 'failed';message: string;};
@@ -152,6 +154,8 @@ export function createBooking(data: OpsData, input: BookingInput): BookingResult
   if (input.depositOutcome === 'failed') return { ok: false, reason: 'failed', message: 'The test deposit payment didn’t go through. Your time isn’t held yet.' };
   const at = now();
   const ref = `B${data.nextBookingRef}`;
+  const request = !!input.service.approval;
+  const answers = (input.answers ?? []).filter((x) => x.answer.trim());
   const booking: Booking = {
     id: uid('bk'),
     ref,
@@ -161,7 +165,8 @@ export function createBooking(data: OpsData, input: BookingInput): BookingResult
     end: new Date(input.start + input.service.durationMin * 60000).toISOString(),
     customer: input.customer,
     intake: input.intake,
-    status: 'confirmed',
+    answers: answers.length ? answers : undefined,
+    status: request ? 'requested' : 'confirmed',
     depositPaidNgn: input.depositOutcome === 'paid' ? input.service.depositNgn ?? 0 : 0,
     priceNgn: input.service.priceNgn,
     balanceOnline: input.service.balanceOnline || undefined,
@@ -174,7 +179,9 @@ export function createBooking(data: OpsData, input: BookingInput): BookingResult
     {
       id: uid('bev'),
       at,
-      label: slot.capacity ?
+      label: request ?
+      `Requested on your page${assigneeName ? ` with ${assigneeName}` : ''} — waiting for you to accept` :
+      slot.capacity ?
       `Booked a seat on your page — seat ${slot.capacity - (slot.seatsLeft ?? 1) + 1} of ${slot.capacity}` :
       assigneeName ?
       `Booked on your page with ${assigneeName}${input.staffId ? '' : ' (anyone available)'}` :
@@ -182,9 +189,11 @@ export function createBooking(data: OpsData, input: BookingInput): BookingResult
     }]
 
   };
-  let next: OpsData = { ...data, bookings: [booking, ...data.bookings], nextBookingRef: data.nextBookingRef + 1 };
-  next = upsertContact(next, input.customer, 'booking', `Booked ${input.service.name}`, { linkedId: booking.id, consent: input.marketingConsent ? 'subscribed' : 'transactional' });
-  return { ok: true, data: next, booking };
+  // Online services with a connected video app get their meeting link now (D225) — requests get theirs once accepted.
+  const withMeeting = request ? booking : attachMeeting(booking, input.service, data.availability);
+  let next: OpsData = { ...data, bookings: [withMeeting, ...data.bookings], nextBookingRef: data.nextBookingRef + 1 };
+  next = upsertContact(next, input.customer, 'booking', `${request ? 'Requested' : 'Booked'} ${input.service.name}`, { linkedId: booking.id, consent: input.marketingConsent ? 'subscribed' : 'transactional' });
+  return { ok: true, data: next, booking: withMeeting };
 }
 
 export function rescheduleBooking(data: OpsData, bookingId: string, start: number, service: Service, by: 'customer' | 'owner'): {ok: boolean;data: OpsData;message?: string;} {
@@ -218,7 +227,8 @@ export function cancelBooking(data: OpsData, bookingId: string, by: 'customer' |
     bookings: data.bookings.map((b) => {
       if (b.id !== bookingId) return b;
       const inWindow = Date.parse(b.start) - Date.now() >= data.availability.cancelHours * 3600000;
-      const refund = b.depositPaidNgn > 0 && (inWindow || by === 'owner');
+      // A request that was never accepted (D256) always gets its deposit back.
+      const refund = b.depositPaidNgn > 0 && (inWindow || by === 'owner' || b.status === 'requested');
       const label = `Cancelled by ${by === 'customer' ? 'customer' : 'you'}${reason ? ` — ${reason}` : ''}${b.depositPaidNgn ? refund ? ' · deposit refunded' : ' · deposit kept under policy' : ''}`;
       return { ...b, status: 'cancelled' as const, events: [{ id: uid('bev'), at: now(), label }, ...b.events] };
     })
@@ -236,8 +246,36 @@ export function cancelClass(data: OpsData, serviceId: string, start: number, rea
 }
 
 function activeBookingsFor(data: OpsData, serviceId: string, start: number): Booking[] {
-  return data.bookings.filter((b) => b.serviceId === serviceId && Date.parse(b.start) === start && (b.status === 'confirmed' || b.status === 'pending_deposit'));
+  return data.bookings.filter((b) => b.serviceId === serviceId && Date.parse(b.start) === start && (b.status === 'confirmed' || b.status === 'pending_deposit' || b.status === 'requested'));
 }
+
+/** Accept a request (D256): it becomes a normal booking and, for online services, gets its meeting link. */
+export function acceptBooking(data: OpsData, bookingId: string): OpsData {
+  return {
+    ...data,
+    bookings: data.bookings.map((b) => {
+      if (b.id !== bookingId || b.status !== 'requested') return b;
+      const accepted: Booking = { ...b, status: 'confirmed', events: [{ id: uid('bev'), at: now(), label: 'Accepted by you' }, ...b.events] };
+      const service = data.services.find((s) => s.id === b.serviceId);
+      return service ? attachMeeting(accepted, service, data.availability) : accepted;
+    })
+  };
+}
+
+/** Decline a request (D256): the time is freed and any deposit is refunded in full. */
+export function declineBooking(data: OpsData, bookingId: string, reason: string): OpsData {
+  return {
+    ...data,
+    bookings: data.bookings.map((b) => {
+      if (b.id !== bookingId || b.status !== 'requested') return b;
+      const label = `Declined by you${reason ? ` — ${reason}` : ''}${b.depositPaidNgn ? ' · deposit refunded in full' : ''}`;
+      return { ...b, status: 'cancelled' as const, events: [{ id: uid('bev'), at: now(), label }, ...b.events] };
+    })
+  };
+}
+
+/** A request is declined once its event log says so; otherwise a cancelled booking was cancelled. */
+export const wasDeclined = (b: Booking) => b.status === 'cancelled' && b.events.some((e) => e.label.startsWith('Declined by you'));
 
 export function setBookingStatus(data: OpsData, bookingId: string, status: BookingStatus, label: string): OpsData {
   return { ...data, bookings: data.bookings.map((b) => b.id === bookingId ? { ...b, status, events: [{ id: uid('bev'), at: now(), label }, ...b.events] } : b) };

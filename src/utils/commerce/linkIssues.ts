@@ -7,6 +7,7 @@ import { canSell, findProduct, isSoldOut, linkedGridProducts, priceRange } from 
 import { boxShortfall } from './subscriptions';
 import { eventPhase, eventSelling, findEvent, ticketTypeState } from './tickets';
 import { COURSE_PLAN, findCourse } from './courses';
+import { NO_WA_NUMBER, waNumber } from '../businessWhatsApp';
 
 /** Plan that unlocks KUBICU checkout and digital delivery (hypothesis). */
 export const CHECKOUT_PLAN: WorkspacePlan = 'pro';
@@ -32,7 +33,7 @@ export function catalogLinkIssues(doc: PageDocument, data: CommerceData | null, 
       if (p.status !== 'active') push(b.id, 'warning', `“${p.name}” is ${p.status} in Commerce, so this block is hidden from visitors`, 'productId');else
       if (isSoldOut(p)) push(b.id, 'warning', `“${p.name}” is sold out — visitors see a Sold out label`, 'productId');
       if (p.status === 'active' && !priceRange(p)) push(b.id, 'warning', `“${p.name}” has no price in Commerce`, 'productId');
-      if (c.ctaAction === 'whatsapp' && !c.whatsappPhone.trim()) push(b.id, 'error', 'Add the WhatsApp number orders should go to', 'whatsappPhone');
+      if (c.ctaAction === 'whatsapp' && !waNumber(c.whatsappPhone)) push(b.id, 'error', NO_WA_NUMBER, 'whatsappPhone');
     }
     if (b.type === 'productGrid') {
       const c = b.content;

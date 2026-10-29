@@ -1,4 +1,4 @@
-import type { AnalyticsEvent, EventType, SourceId } from '../../types/analytics';
+import type { AnalyticsEvent, DeviceKind, EventType, SourceId } from '../../types/analytics';
 
 /** Pure metrics over recorded events (D61). Every number can show its sample size. */
 
@@ -120,6 +120,78 @@ export function sources(events: AnalyticsEvent[]): SourceRow[] {
     return { id, visits: s.size, share: total ? s.size / total : 0, conversions, rate: s.size ? conversions / s.size : 0 };
   }).
   sort((a, b) => b.visits - a.visits);
+}
+
+// ——— Devices and returning visitors (D258) ———
+
+export type DeviceId = DeviceKind | 'unknown';
+
+export interface BreakdownRow<T extends string> {
+  id: T;
+  visits: number;
+  share: number;
+  conversions: number;
+  rate: number;
+}
+
+/** Each visit's first view: when it started, which browser, which device. */
+function visitStarts(events: AnalyticsEvent[]): Map<string, {at: number;browser?: string;device?: DeviceKind;}> {
+  const out = new Map<string, {at: number;browser?: string;device?: DeviceKind;}>();
+  events.forEach((e) => {
+    if (e.type !== 'view') return;
+    const t = Date.parse(e.at);
+    const cur = out.get(e.session);
+    if (!cur || t < cur.at) out.set(e.session, { at: t, browser: e.browser, device: e.device ?? cur?.device });
+  });
+  return out;
+}
+
+function breakdown<T extends string>(events: AnalyticsEvent[], groupOf: (session: string) => T | null): BreakdownRow<T>[] {
+  const visits = new Map<T, Set<string>>();
+  const conv = new Map<T, Set<string>>();
+  const sessions = new Set(events.filter((e) => e.type === 'view').map((e) => e.session));
+  sessions.forEach((s) => {
+    const g = groupOf(s);
+    if (g !== null) (visits.get(g) ?? visits.set(g, new Set()).get(g)!).add(s);
+  });
+  events.forEach((e) => {
+    if (!conversionTypes.includes(e.type) || !sessions.has(e.session)) return;
+    const g = groupOf(e.session);
+    if (g !== null) (conv.get(g) ?? conv.set(g, new Set()).get(g)!).add(e.session);
+  });
+  const total = sessions.size;
+  return Array.from(visits.entries()).
+  map(([id, s]) => {
+    const conversions = conv.get(id)?.size ?? 0;
+    return { id, visits: s.size, share: total ? s.size / total : 0, conversions, rate: s.size ? conversions / s.size : 0 };
+  }).
+  sort((a, b) => b.visits - a.visits);
+}
+
+/** Visits by phone, tablet or computer. Visits recorded before devices were counted show as "Not recorded". */
+export function devices(events: AnalyticsEvent[]): BreakdownRow<DeviceId>[] {
+  const starts = visitStarts(events);
+  return breakdown<DeviceId>(events, (s) => starts.get(s)?.device ?? 'unknown');
+}
+
+/**
+ * New vs returning visits. A visit is returning when the same browser had an earlier visit in
+ * anything still kept (`all`, not just this period) — so it's an estimate, like visitors.
+ */
+export function visitorMix(events: AnalyticsEvent[], all: AnalyticsEvent[]): BreakdownRow<'new' | 'returning'>[] {
+  const firstByBrowser = new Map<string, number>();
+  visitStarts(all).forEach((v) => {
+    if (!v.browser) return;
+    const cur = firstByBrowser.get(v.browser);
+    if (cur === undefined || v.at < cur) firstByBrowser.set(v.browser, v.at);
+  });
+  const starts = visitStarts(events);
+  return breakdown<'new' | 'returning'>(events, (s) => {
+    const v = starts.get(s);
+    if (!v) return null;
+    const first = v.browser ? firstByBrowser.get(v.browser) : undefined;
+    return first !== undefined && first < v.at ? 'returning' : 'new';
+  });
 }
 
 export interface CampaignStat {

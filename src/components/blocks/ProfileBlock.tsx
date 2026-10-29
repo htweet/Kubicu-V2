@@ -4,6 +4,7 @@ import type { BlockProps } from './blockProps';
 import { fontsFor, mix } from './pageStyle';
 import { cn } from '../../utils/cn';
 import { MediaImage } from '../media/MediaImage';
+import { VerifiedTick } from './VerifiedTick';
 
 export function ProfileBlock({ block, theme }: BlockProps<'profile'>) {
   const { name, tagline, avatarUrl, avatarAlt, location } = block.content;
@@ -34,6 +35,12 @@ export function ProfileBlock({ block, theme }: BlockProps<'profile'>) {
           style={{ fontFamily: fonts.display, color: theme.text }}>
           
           {name || 'Your name'}
+          {name &&
+          <>
+              {' '}
+              <VerifiedTick theme={theme} size={24} />
+            </>
+          }
         </h1>
         {tagline &&
         <p className="max-w-[40ch] text-[15px] leading-relaxed" style={{ color: theme.mutedText }}>

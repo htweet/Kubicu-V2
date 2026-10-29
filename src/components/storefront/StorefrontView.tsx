@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { MegaphoneIcon, RotateCcwIcon, SearchIcon, SearchXIcon, ShoppingBagIcon, TruckIcon, XIcon } from 'lucide-react';
+import { ClockIcon, MegaphoneIcon, PauseCircleIcon, RotateCcwIcon, SearchIcon, SearchXIcon, ShoppingBagIcon, TruckIcon, XIcon } from 'lucide-react';
+import { hoursSummary, returnsSummary, shopClosedMessage, shopSettingsOf } from '../../utils/commerce/shopSettings';
 import type { PageTheme } from '../../types/page';
 import type { CommerceData, Product } from '../../types/commerce';
 import { StoreProductCard } from './StoreProductCard';
@@ -81,9 +82,15 @@ export function StorefrontView({ theme, data, productHref, ordering, whatsappPho
   const offer = data.discounts.find((d) => d.kind === 'automatic' && discountStatus(d, data) === 'active');
   const activeCollection = collections.find((c) => c.id === collection);
   const hasFeatured = s.featuredIds.some((id) => all.some((p) => p.id === id));
+  // Commerce settings (D222): a structured returns policy replaces the free-text note; opening hours and a paused shop show here too.
+  const shop = shopSettingsOf(data);
+  const returnsText = returnsSummary(shop.policy) || s.returnsNote.trim();
+  const hours = hoursSummary(shop.status.hours);
+  const closed = shopClosedMessage(shop);
   const notes = [
   s.deliveryNote.trim() && { icon: TruckIcon, title: 'Delivery', text: s.deliveryNote.trim() },
-  s.returnsNote.trim() && { icon: RotateCcwIcon, title: 'Returns & exchanges', text: s.returnsNote.trim() }].
+  returnsText && { icon: RotateCcwIcon, title: 'Returns & exchanges', text: returnsText },
+  hours && { icon: ClockIcon, title: 'Opening hours', text: hours }].
   filter(Boolean) as {icon: typeof TruckIcon;title: string;text: string;}[];
 
   const navItems: NavItem[] = [
@@ -140,6 +147,12 @@ export function StorefrontView({ theme, data, productHref, ordering, whatsappPho
 
   return (
     <div className="flex flex-col gap-5">
+      {closed &&
+      <p className="flex items-start gap-2 rounded-lg px-3.5 py-3 text-[14px] font-semibold leading-snug" style={{ background: theme.text, color: theme.background }} role="status">
+          <PauseCircleIcon size={16} aria-hidden className="mt-0.5 shrink-0" />
+          {closed}
+        </p>
+      }
       {s.announcement.trim() &&
       <p className="flex items-center gap-2 rounded-lg px-3.5 py-2.5 text-[14px] font-medium" style={{ background: mix(theme.accent, 14, theme.background), color: theme.text }}>
           <MegaphoneIcon size={15} aria-hidden className="shrink-0" />
@@ -250,7 +263,7 @@ export function StorefrontView({ theme, data, productHref, ordering, whatsappPho
       }
 
       {notes.length > 0 &&
-      <section aria-label="Good to know" className="mt-4 grid gap-4 border-t pt-6 md:grid-cols-2" style={{ borderColor: mix(theme.text, 12) }}>
+      <section aria-label="Good to know" className={cn('mt-4 grid gap-4 border-t pt-6 md:grid-cols-2', notes.length === 3 && 'lg:grid-cols-3')} style={{ borderColor: mix(theme.text, 12) }}>
           {notes.map((n) =>
         <div key={n.title} className="flex gap-3">
               <n.icon size={18} aria-hidden className="mt-0.5 shrink-0" style={{ color: theme.mutedText }} />

@@ -36,6 +36,7 @@ import { useLocalStore } from '../../hooks/useLocalStore';
 import { emptyPartnerships, partnershipKey } from '../../utils/partnerships';
 import { bundleIssue } from '../../utils/commerce/bundles';
 import { useT } from '../../contexts/LocaleContext';
+import { shopSettingsOf } from '../../utils/commerce/shopSettings';
 
 interface ProductEditorProps {
   open: boolean;
@@ -45,7 +46,8 @@ interface ProductEditorProps {
   onClose: () => void;
 }
 
-export function blankProduct(kind: ProductKind): Product {
+/** A new, empty product. `lowStockAt` comes from Commerce settings → Orders & stock when given (D222). */
+export function blankProduct(kind: ProductKind, lowStockAt = 2): Product {
   const now = new Date().toISOString();
   const base: Product = {
     id: uid('prd'),
@@ -60,7 +62,7 @@ export function blankProduct(kind: ProductKind): Product {
     variants: [],
     collectionIds: [],
     trackStock: kind === 'physical',
-    lowStockAt: 2,
+    lowStockAt,
     weightKg: null,
     createdAt: now,
     updatedAt: now
@@ -79,7 +81,7 @@ export function ProductEditor({ open, productId, kind, onClose }: ProductEditorP
   const pricesAllowed = useCan('prices.edit');
   const { t: tr } = useT();
   const existing = productId ? data.products.find((p) => p.id === productId) : undefined;
-  const [draft, setDraft] = useState<Product>(() => existing ?? blankProduct(kind));
+  const [draft, setDraft] = useState<Product>(() => existing ?? blankProduct(kind, shopSettingsOf(data).orders.lowStockDefault));
   const [confirmClose, setConfirmClose] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [triedSave, setTriedSave] = useState(false);
@@ -91,7 +93,7 @@ export function ProductEditor({ open, productId, kind, onClose }: ProductEditorP
 
   useEffect(() => {
     if (!open) return;
-    setDraft(existing ?? blankProduct(kind));
+    setDraft(existing ?? blankProduct(kind, shopSettingsOf(data).orders.lowStockDefault));
     setTriedSave(false);
     setSection('details');
     // Only reset when a different product opens.

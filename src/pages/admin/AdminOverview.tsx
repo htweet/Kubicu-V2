@@ -6,6 +6,8 @@ import { roleCanOpen, roleInfo } from '../../data/staffRoles';
 import { approvalArea, effectiveStatus } from '../../utils/admin/approvals';
 import { activeIncidents, impactLabels, overallState, serviceStateLabels } from '../../utils/admin/incidents';
 import { formatRelative } from '../../utils/format';
+import { useKycQueue } from '../../hooks/useKycQueue';
+import { REVIEW_HOURS } from '../../utils/money/kyc';
 import { PageHeader } from '../../components/shell/PageHeader';
 import { Card } from '../../components/ui/layout/Card';
 import { List, ListRow } from '../../components/ui/layout/ListRow';
@@ -26,9 +28,19 @@ export function AdminOverview() {
   const dueSoon = store.dataRequests.filter((d) => (d.status === 'new' || d.status === 'in_progress') && Date.parse(d.dueAt) - now < 7 * DAY);
   const incidents = activeIncidents(store.incidents);
   const overall = overallState(store.incidents);
+  const kyc = useKycQueue();
+  const kycLate = kyc.filter((k) => now - Date.parse(k.submittedAt) > REVIEW_HOURS * 3600000);
 
   const queues = [
   { area: 'health', label: 'Open incidents', count: incidents.length, urgent: incidents.length > 0, note: incidents.length ? incidents.map((i) => `${i.title} (${impactLabels[i.impact]})`).join(' · ') : 'Status page: working normally', to: '/admin/health' },
+  {
+    area: 'payments',
+    label: 'Verifications to review',
+    count: kyc.length,
+    urgent: kycLate.length > 0,
+    note: kycLate.length ? `${kycLate.length} past the ${REVIEW_HOURS}-hour promise · oldest first` : `Sellers are promised a decision within ${REVIEW_HOURS} hours`,
+    to: '/admin/payments?tab=identity'
+  },
   ...(['staff', 'tenants', 'payments'] as const).map((area) => {
     const mineToDecide = approvalsForMe.filter((a) => approvalArea[a.kind] === area);
     const label = area === 'staff' ? 'Access changes waiting for you' : area === 'tenants' ? 'Suspensions waiting for you' : 'Large payouts waiting for you';

@@ -23,9 +23,10 @@ const full = (handle: string, path = '') => `https://${publicUrl(handle)}${path 
  * unsellable products and past events are left out, so search never sends people to dead ends.
  */
 export function sitemapEntries(doc: PageDocument, commerce: CommerceData | null, services: Service[]): SitemapEntry[] {
-  const out: SitemapEntry[] = [{ url: full(doc.handle), kind: 'Home', label: doc.homeLabel || 'Home', updated: doc.updatedAt }];
+  if (doc.branding?.hideFromSearch) return [];
+  const out: SitemapEntry[] = doc.seo.noIndex ? [] : [{ url: full(doc.handle), kind: 'Home', label: doc.homeLabel || 'Home', updated: doc.updatedAt }];
   sitePages(doc).
-  filter((p) => !p.membersOnly).
+  filter((p) => !p.membersOnly && !p.seo.noIndex).
   forEach((p) => out.push({ url: full(doc.handle, p.path), kind: 'Page', label: p.title, updated: doc.updatedAt }));
   if (commerce && storefrontAvailable(doc, commerce)) {
     out.push({ url: full(doc.handle, STOREFRONT_PATH), kind: 'Shop', label: commerce.storefront.title || 'Shop', updated: doc.updatedAt });
@@ -41,6 +42,17 @@ export function sitemapEntries(doc: PageDocument, commerce: CommerceData | null,
   filter((s) => s.active && !s.sample).
   forEach((s) => out.push({ url: full(doc.handle), kind: 'Service', label: s.name, updated: doc.updatedAt }));
   return out;
+}
+
+/**
+ * The robots instruction for one page (D221): hidden space or page → noindex; "don't follow links" → nofollow.
+ * Returns null when the defaults (index, follow) apply, so no tag is needed.
+ */
+export function robotsFor(doc: Pick<PageDocument, 'branding'>, pageSeo: {noIndex?: boolean;} | null): string | null {
+  const noindex = !!doc.branding?.hideFromSearch || !!pageSeo?.noIndex;
+  const nofollow = !!doc.branding?.noFollowLinks;
+  if (!noindex && !nofollow) return null;
+  return `${noindex ? 'noindex' : 'index'}, ${nofollow ? 'nofollow' : 'follow'}`;
 }
 
 /** Structured data (schema.org) a search engine would read: the business, products and events. */

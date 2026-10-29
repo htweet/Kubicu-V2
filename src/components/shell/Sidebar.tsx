@@ -18,6 +18,7 @@ import { HelpMenu } from './HelpMenu';
 import { AccountMenu } from './AccountMenu';
 import { useMarketplace } from '../../contexts/MarketplaceContext';
 import { useT } from '../../contexts/LocaleContext';
+import { useWorkspaceNavCounts } from '../../hooks/useWorkspaceNavCounts';
 import { uiLanguages } from '../../data/translations';
 
 export function Sidebar() {
@@ -33,6 +34,8 @@ export function Sidebar() {
   const reduce = useReducedMotion();
   const ToggleIcon = collapsed ? PanelLeftOpenIcon : PanelLeftCloseIcon;
   const { t, lang } = useT();
+  // D247: a sidebar badge only ever repeats a number the screen itself shows, so the two never disagree.
+  const waitingByNav = useWorkspaceNavCounts();
   const toggleLabel = t(collapsed ? 'Expand sidebar' : 'Collapse sidebar');
 
   const onToggle = () => {
@@ -75,7 +78,7 @@ export function Sidebar() {
         {navGroups.map((g) => {
           const items = visible.filter((n) => n.group === g.id);
           if (!items.length) return null;
-          const badgeOf = (id: string) => id === 'settings' ? reviewsWaiting : undefined;
+          const badgeOf = (id: string) => waitingByNav[id] || undefined;
           const list =
           <ul id={`nav-group-${g.id}`} className="flex flex-col gap-0.5">
               {items.map((item) =>

@@ -9,6 +9,7 @@ export type NotifEventId =
 'stage_due' |
 'stock' |
 'booking_today' |
+'booking_request' |
 'booking_cancelled' |
 'lead_new' |
 'task_due' |
@@ -27,7 +28,8 @@ export type NotifEventId =
 'sub_cancelled' |
 'form_response' |
 'weekly_digest' |
-'automation';
+'automation' |
+'verification';
 
 export type NotifChannel = 'app' | 'email' | 'whatsapp';
 

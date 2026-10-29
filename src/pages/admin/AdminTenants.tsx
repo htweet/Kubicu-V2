@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { BanIcon, ExternalLinkIcon, MoreHorizontalIcon, RotateCcwIcon, ArrowUpDownIcon } from 'lucide-react';
+import { BanIcon, ExternalLinkIcon, MoreHorizontalIcon, RotateCcwIcon, ArrowUpDownIcon, ShieldCheckIcon } from 'lucide-react';
 import type { WorkspacePlan } from '../../types/plan';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
 import { planOrder, plans } from '../../data/plans';
@@ -40,6 +41,7 @@ export function AdminTenants() {
   const [action, setAction] = useState<Action>(null);
   const [newPlan, setNewPlan] = useState<WorkspacePlan>('free');
   const me = useStaffSession();
+  const navigate = useNavigate();
 
   const rows: Row[] = useMemo(
     () =>
@@ -129,6 +131,8 @@ export function AdminTenants() {
       align="end"
       items={[
       ...(r.live ? [{ id: 'open', label: 'Open live page', icon: ExternalLinkIcon, onSelect: () => window.open(`/p/${r.handle}`, '_blank', 'noopener') }] : []),
+      // D252: straight to this workspace's verification record, decided or not.
+      { id: 'kyc', label: 'Verification', icon: ShieldCheckIcon, onSelect: () => navigate(`/admin/payments?tab=identity&ws=${encodeURIComponent(r.id)}`) },
       {
         id: 'plan',
         label: 'Change plan…',

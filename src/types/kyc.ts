@@ -21,6 +21,9 @@ export interface KycDoc {
   name: string;
   sizeKb: number;
   uploadedAt: string;
+  /** Photos only: a reduced copy kept on this device so you can check what you added. Never put in Media. */
+  previewUrl?: string;
+  kind?: 'image' | 'pdf';
 }
 
 export interface KycIdentity {

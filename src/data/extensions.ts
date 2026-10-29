@@ -27,7 +27,12 @@ export const extensions: ExtensionInfo[] = [
   version: '1.0.0',
   versions: [{ version: '1.0.0', date: '2026-10-23', notes: 'Now an app you install from Extensions.' }],
   reviews: [{ name: 'Bisi O.', business: 'Bisi’s Kitchen', rating: 5, text: 'The QR on my counter brings in most of my WhatsApp orders now.' }],
-  uninstallNote: 'Your QR codes and links keep working for customers, and nothing is deleted. The screen leaves your sidebar until you reinstall.'
+  uninstallNote: 'Your QR codes and links keep working for customers, and nothing is deleted. The screen leaves your sidebar until you reinstall.',
+  worksWith: [
+  { module: 'pages', how: 'QR codes and short links point to your spaces and products' },
+  { module: 'analytics', how: 'Scans and clicks show as their own sources' },
+  { module: 'orders', how: 'Orders are credited to the link that brought them' }]
+
 },
 {
   id: 'bookings',
@@ -45,7 +50,13 @@ export const extensions: ExtensionInfo[] = [
   version: '1.0.0',
   versions: [{ version: '1.0.0', date: '2026-10-23', notes: 'Now an app you install from Extensions.' }],
   reviews: [{ name: 'Funmi A.', business: 'Studio Funmi', rating: 5, text: 'No more “are you free Saturday?” messages.' }],
-  uninstallNote: 'Your services and bookings are kept, and booking blocks already on your pages keep working. The screen leaves your sidebar until you reinstall.'
+  uninstallNote: 'Your services and bookings are kept, and booking blocks already on your pages keep working. The screen leaves your sidebar until you reinstall.',
+  worksWith: [
+  { module: 'pages', how: 'Booking blocks read your real free times' },
+  { module: 'audience', how: 'People who book become contacts' },
+  { module: 'automations', how: 'New bookings can start an automation' },
+  { module: 'reports', how: 'Deposits and balances count in the Sales report' }]
+
 },
 {
   id: 'service-os',
@@ -63,7 +74,13 @@ export const extensions: ExtensionInfo[] = [
   version: '1.0.0',
   versions: [{ version: '1.0.0', date: '2026-10-23', notes: 'First release: quotes, invoices and jobs.' }],
   reviews: [],
-  uninstallNote: 'Your quotes, invoices and jobs are kept, and quote links keep working for clients. The screen leaves your sidebar until you reinstall.'
+  uninstallNote: 'Your quotes, invoices and jobs are kept, and quote links keep working for clients. The screen leaves your sidebar until you reinstall.',
+  worksWith: [
+  { module: 'orders', how: 'Printable invoices on every order' },
+  { module: 'reports', how: 'Paid invoices count in the Sales report' },
+  { module: 'automations', how: 'Balances falling due can send a reminder' },
+  { module: 'notifications', how: 'Accepted quotes and payments notify you' }]
+
 },
 {
   id: 'proof',
@@ -81,7 +98,12 @@ export const extensions: ExtensionInfo[] = [
   version: '1.0.0',
   versions: [{ version: '1.0.0', date: '2026-10-23', notes: 'First release: verified reviews, delivered work and the Proof block.' }],
   reviews: [],
-  uninstallNote: 'Your reviews and delivered work are kept, and Proof blocks already on your pages keep showing them. The screen leaves your sidebar until you reinstall.'
+  uninstallNote: 'Your reviews and delivered work are kept, and Proof blocks already on your pages keep showing them. The screen leaves your sidebar until you reinstall.',
+  worksWith: [
+  { module: 'orders', how: 'Review links only for completed orders' },
+  { module: 'bookings', how: 'Review links for completed bookings' },
+  { module: 'pages', how: 'The Proof block shows reviews and work' }]
+
 },
 {
   id: 'trust-passport',
@@ -100,7 +122,12 @@ export const extensions: ExtensionInfo[] = [
   versions: [{ version: '1.0.0', date: '2026-10-23', notes: 'First release. Partner checks simulated.' }],
   reviews: [],
   preview: true,
-  uninstallNote: 'Nothing is deleted — the passport is worked out from your records each time.'
+  uninstallNote: 'Nothing is deleted — the passport is worked out from your records each time.',
+  worksWith: [
+  { module: 'orders', how: 'Completed orders, refunds and disputes feed your level' },
+  { module: 'proof', how: 'Verified reviews count as a signal' },
+  { module: 'pages', how: 'The Trust badge block shows your level' }]
+
 },
 {
   id: 'voice-to-store',
@@ -119,7 +146,11 @@ export const extensions: ExtensionInfo[] = [
   versions: [{ version: '1.0.0', date: '2026-10-23', notes: 'First release. Local-language speech simulated.' }],
   reviews: [],
   preview: true,
-  uninstallNote: 'Products you added stay in Commerce. Your session history is kept for when you reinstall.'
+  uninstallNote: 'Products you added stay in Commerce. Your session history is kept for when you reinstall.',
+  worksWith: [
+  { module: 'products', how: 'Creates draft products with prices and stock' },
+  { module: 'storefront', how: 'Drafts appear in your shop once published' }]
+
 },
 {
   id: 'collaborations',
@@ -138,7 +169,12 @@ export const extensions: ExtensionInfo[] = [
   versions: [{ version: '1.0.0', date: '2026-10-23', notes: 'First release. Partner sign-up simulated.' }],
   reviews: [],
   preview: true,
-  uninstallNote: 'Partner links stop earning, and your partners and payment history are kept for when you reinstall.'
+  uninstallNote: 'Partner links stop earning, and your partners and payment history are kept for when you reinstall.',
+  worksWith: [
+  { module: 'checkout', how: 'Records the partner code on each order' },
+  { module: 'orders', how: 'Commission worked out from real orders after refunds' },
+  { module: 'wallet', how: 'Commission paid from your wallet' }]
+
 },
 {
   id: 'ai-coach',
@@ -157,7 +193,12 @@ export const extensions: ExtensionInfo[] = [
   versions: [{ version: '1.0.0', date: '2026-10-23', notes: 'First release. Rule-based preview.' }],
   reviews: [],
   preview: true,
-  uninstallNote: 'Nothing is deleted. Saved answers come back if you reinstall.'
+  uninstallNote: 'Nothing is deleted. Saved answers come back if you reinstall.',
+  worksWith: [
+  { module: 'orders', how: 'Reads sales to suggest what to do' },
+  { module: 'products', how: 'Spots what to restock' },
+  { module: 'wallet', how: 'Shows money waiting to be paid out' }]
+
 },
 {
   id: 'local-fulfilment',
@@ -175,7 +216,11 @@ export const extensions: ExtensionInfo[] = [
   version: '1.0.0',
   versions: [{ version: '1.0.0', date: '2026-10-23', notes: 'First release: quotes, riders, delivery codes and escrow release. Couriers simulated.' }],
   reviews: [],
-  uninstallNote: 'Your delivery history is kept. Deliveries already on the way keep their status, but you’ll update orders by hand until you reinstall.'
+  uninstallNote: 'Your delivery history is kept. Deliveries already on the way keep their status, but you’ll update orders by hand until you reinstall.',
+  worksWith: [
+  { module: 'orders', how: 'Moves orders to Out for delivery and Completed' },
+  { module: 'wallet', how: 'A matching code releases escrow payments' }]
+
 },
 {
   id: 'opportunities',
@@ -193,7 +238,12 @@ export const extensions: ExtensionInfo[] = [
   version: '1.0.0',
   versions: [{ version: '1.0.0', date: '2026-10-23', notes: 'Now an app you install from Extensions.' }],
   reviews: [],
-  uninstallNote: 'Nothing is deleted — items you handled or snoozed are remembered if you reinstall.'
+  uninstallNote: 'Nothing is deleted — items you handled or snoozed are remembered if you reinstall.',
+  worksWith: [
+  { module: 'orders', how: 'Lists unpaid checkouts' },
+  { module: 'bookings', how: 'Lists unpaid deposits and no-shows' },
+  { module: 'audience', how: 'Lists quiet leads and overdue follow-ups' }]
+
 },
 {
   id: 'automations',
@@ -203,15 +253,21 @@ export const extensions: ExtensionInfo[] = [
   category: 'apps',
   summary: 'When something happens, do something — thank-yous, reminders, follow-ups and stock alerts.',
   description:
-  'Start from five ready-made recipes or build your own: a trigger, optional conditions, then actions and waits. Test on a sample event before turning it on, pause any time, and see every run in the history.',
-  adds: ['An Automations screen in your sidebar', 'Five ready-made recipes and a step builder', 'Test runs and run history'],
+  'Start from 18 ready-made recipes or build your own: a trigger, optional conditions, then actions and waits. Test on a sample event before turning it on, pause any time, and see every run in the history.',
+  adds: ['An Automations screen in your sidebar', '18 ready-made recipes and a step builder', 'Test runs and run history'],
   permissions: ['Read events from orders, bookings, forms and subscriptions', 'Message customers who agreed to marketing (preview — not sent)', 'Create tasks and notify your team'],
   minPlan: 'free',
   priceNgn: 0,
   version: '1.0.0',
   versions: [{ version: '1.0.0', date: '2026-10-23', notes: 'Now an app you install from Extensions.' }],
   reviews: [],
-  uninstallNote: 'Your automations are kept but stop running until you reinstall.'
+  uninstallNote: 'Your automations are kept but stop running until you reinstall.',
+  worksWith: [
+  { module: 'orders', how: 'Paid and unfinished orders start automations' },
+  { module: 'bookings', how: 'New bookings start automations' },
+  { module: 'audience', how: 'Tags contacts and respects their consent' },
+  { module: 'notifications', how: 'Can notify you or a team member' }]
+
 },
 {
   id: 'intentflow',
@@ -229,7 +285,12 @@ export const extensions: ExtensionInfo[] = [
   version: '1.0.0',
   versions: [{ version: '1.0.0', date: '2026-10-23', notes: 'Now an app you install from Extensions.' }],
   reviews: [],
-  uninstallNote: 'Source rules on your blocks are kept and keep applying on your live pages. The screen leaves your sidebar until you reinstall.'
+  uninstallNote: 'Source rules on your blocks are kept and keep applying on your live pages. The screen leaves your sidebar until you reinstall.',
+  worksWith: [
+  { module: 'pages', how: 'Shows or hides blocks by visitor source' },
+  { module: 'analytics', how: 'Compares results for each audience' },
+  { module: 'campaignLinks', how: 'Campaign links can be a source rule' }]
+
 },
 {
   id: 'forms',
@@ -251,7 +312,13 @@ export const extensions: ExtensionInfo[] = [
   { name: 'Kunle B.', business: 'Kunle Events', rating: 4, text: 'RSVPs straight into Audience. Would love to email everyone from the inbox.' }],
 
   staffPick: true,
-  uninstallNote: 'Your forms and responses are kept for 30 days in case you reinstall. Form blocks on your pages stop accepting responses straight away.'
+  uninstallNote: 'Your forms and responses are kept for 30 days in case you reinstall. Form blocks on your pages stop accepting responses straight away.',
+  worksWith: [
+  { module: 'pages', how: 'A Form block for any page' },
+  { module: 'audience', how: 'Responses become contacts' },
+  { module: 'automations', how: 'Responses can start an automation' },
+  { module: 'notifications', how: 'New responses notify you' }]
+
 },
 {
   id: 'abandoned-cart',
@@ -275,7 +342,13 @@ export const extensions: ExtensionInfo[] = [
   { name: 'Chidi O.', business: 'Kicks by Chidi', rating: 4, text: 'Would love a second reminder option.' }],
 
   staffPick: true,
-  uninstallNote: 'The automation and its run history stay in Automations — delete them there if you want.'
+  uninstallNote: 'The automation and its run history stay in Automations — delete them there if you want.',
+  retired: {
+    movedTo: 'Automations',
+    href: '/app/automations?recipe=abandoned',
+    note: 'This is now the “Abandoned checkout nudge” recipe in Automations, one tap from Orders. Your automation keeps running exactly as it was.',
+    installs: 'automations'
+  }
 },
 {
   id: 'meta-pixel',
@@ -296,7 +369,12 @@ export const extensions: ExtensionInfo[] = [
 
   reviews: [{ name: 'Amaka E.', business: 'Glow by Amaka', rating: 5, text: 'Finally see which ads bring bookings.' }],
   setup: [{ id: 'pixelId', label: 'Pixel ID', placeholder: '123456789012345', hint: 'In Meta Events Manager → Data sources. 15–16 digits.', pattern: /^\d{15,16}$/, error: 'A Pixel ID is 15 or 16 digits.' }],
-  uninstallNote: 'The tag and cookie notice are removed from your pages straight away.'
+  uninstallNote: 'The tag and cookie notice are removed from your pages straight away.',
+  worksWith: [
+  { module: 'pages', how: 'Loads after visitors accept the cookie notice' },
+  { module: 'checkout', how: 'Records purchases with their value' },
+  { module: 'campaignLinks', how: 'Campaign links carry UTM tags for ads' }]
+
 },
 {
   id: 'google-tag',
@@ -317,7 +395,12 @@ export const extensions: ExtensionInfo[] = [
 
   reviews: [{ name: 'Seun K.', business: 'Seun Studio', rating: 4, text: 'Does what it says.' }],
   setup: [{ id: 'tagId', label: 'Measurement ID', placeholder: 'G-XXXXXXXXXX', hint: 'In Google Analytics → Admin → Data streams.', pattern: /^G-[A-Z0-9]{6,12}$/, error: 'Starts with G- followed by letters and numbers.' }],
-  uninstallNote: 'The tag is removed from your pages straight away.'
+  uninstallNote: 'The tag is removed from your pages straight away.',
+  worksWith: [
+  { module: 'pages', how: 'Loads after visitors accept the cookie notice' },
+  { module: 'checkout', how: 'Records purchases with their value' },
+  { module: 'campaignLinks', how: 'Campaign links carry UTM tags' }]
+
 },
 {
   id: 'delivery-partners',
@@ -340,8 +423,17 @@ export const extensions: ExtensionInfo[] = [
   { name: 'Bisi F.', business: 'Fola Fabrics', rating: 4, text: 'Saves me typing rates every month.' },
   { name: 'Ifeanyi N.', business: 'Gadget Hub', rating: 3, text: 'Wish it covered Abuja.' }],
 
-  staffPick: true,
-  uninstallNote: 'The three partner zones are removed. Your own zones and past orders are untouched.'
+  uninstallNote: 'The three partner zones are removed. Your own zones and past orders are untouched.',
+  worksWith: [
+  { module: 'checkout', how: 'Partner zones and fees offered at checkout' },
+  { module: 'orders', how: 'The chosen zone and fee are recorded on each order' }],
+
+  // Removed (D232): both connections sat inside Commerce, rates were examples, and couriers already connect through Deliveries.
+  retired: {
+    movedTo: 'Delivery & pickup',
+    href: '/app/commerce/settings',
+    note: 'This extension has been removed. The three zones it added stay as your own delivery zones — change their fees in Commerce settings → Delivery & pickup. Courier booking is part of Deliveries.'
+  }
 },
 {
   id: 'invoice-generator',
@@ -362,7 +454,13 @@ export const extensions: ExtensionInfo[] = [
 
   reviews: [{ name: 'Halima B.', business: 'Halima’s Glow', rating: 5, text: 'Customers ask for receipts all the time. This is it.' }],
   staffPick: true,
-  uninstallNote: 'The Invoice button disappears. Orders are untouched.'
+  uninstallNote: 'The Invoice button disappears. Orders are untouched.',
+  retired: {
+    movedTo: 'Quotes & jobs',
+    href: '/app/extensions?ext=service-os',
+    note: 'Order invoices are now part of Quotes & jobs, so every invoice shares one template. Moving installs Quotes & jobs (free) and the Invoice button stays on your orders.',
+    installs: 'service-os'
+  }
 },
 {
   id: 'review-requests',
@@ -380,7 +478,13 @@ export const extensions: ExtensionInfo[] = [
   versions: [{ version: '0.9.0', date: '2026-09-28', notes: 'Preview release.' }],
   reviews: [],
   preview: true,
-  uninstallNote: 'Testimonials you already added to your page stay.'
+  uninstallNote: 'Testimonials you already added to your page stay.',
+  retired: {
+    movedTo: 'Proof of work',
+    href: '/app/proof',
+    note: 'Review requests are now part of Proof of work, which sends one-time review links only to customers with a completed order, booking or job. Moving installs Proof of work (free).',
+    installs: 'proof'
+  }
 },
 {
   id: 'whatsapp-catalogue',
@@ -402,7 +506,12 @@ export const extensions: ExtensionInfo[] = [
 
   reviews: [{ name: 'Ngozi U.', business: 'Ngozi Naturals', rating: 4, text: 'Can’t wait for this to go live.' }],
   preview: true,
-  uninstallNote: 'Your chats and settings are kept on this device. The WhatsApp screen leaves your sidebar until you reinstall.'
+  uninstallNote: 'Your chats and settings are kept on this device. The WhatsApp screen leaves your sidebar until you reinstall.',
+  worksWith: [
+  { module: 'products', how: 'Product cards and catalogue sync from your shop' },
+  { module: 'checkout', how: 'Product cards link straight to checkout' },
+  { module: 'audience', how: 'People who message you can become contacts' }]
+
 },
 {
   id: 'bank-transfer',
@@ -426,7 +535,225 @@ export const extensions: ExtensionInfo[] = [
   { id: 'bank', label: 'Bank', placeholder: 'GTBank', hint: 'As customers know it.', pattern: /^.{2,40}$/, error: 'Enter the bank name.' },
   { id: 'account', label: 'Account number', placeholder: '0123456789', hint: '10-digit NUBAN.', pattern: /^\d{10}$/, error: 'NUBAN account numbers are 10 digits.' }],
 
-  uninstallNote: 'Your bank details are removed. Existing orders are untouched.'
+  uninstallNote: 'Your bank details are removed. Existing orders are untouched.',
+  worksWith: [
+  { module: 'checkout', how: 'Bank transfer offered at checkout' },
+  { module: 'paymentLinks', how: 'Transfers to your account on payment links' },
+  { module: 'orders', how: 'Orders wait until you confirm the money arrived' }]
+
+},
+// ——— D232: new extensions, each connected to two or more core modules ———
+{
+  id: 'tiktok-pixel',
+  name: 'TikTok Pixel',
+  publisher: 'KUBICU',
+  verified: 'kubicu',
+  category: 'marketing',
+  summary: 'Measure TikTok ads on your pages.',
+  description: 'Adds your TikTok Pixel to your public pages so ad results show in TikTok Ads Manager. Uses the same cookie notice as Meta Pixel and Google tag, and loads only if visitors accept.',
+  adds: ['Your Pixel ID on every public page', 'Paid checkouts recorded as “Complete payment” with their value', 'Shared cookie notice'],
+  permissions: ['Add a tracking tag to your public pages', 'Show a cookie notice to visitors'],
+  minPlan: 'creator',
+  priceNgn: 0,
+  version: '1.0.0',
+  versions: [{ version: '1.0.0', date: '2026-10-27', notes: 'First release.' }],
+  reviews: [],
+  setup: [{ id: 'pixelId', label: 'Pixel ID', placeholder: 'C4ABCDEFGHIJ12345678', hint: 'In TikTok Ads Manager → Assets → Events → Web events. 20 capital letters and numbers.', pattern: /^[A-Z0-9]{20}$/, error: 'A TikTok Pixel ID is 20 capital letters and numbers.' }],
+  uninstallNote: 'The pixel is removed from your pages straight away.',
+  worksWith: [
+  { module: 'pages', how: 'Loads after visitors accept the cookie notice' },
+  { module: 'checkout', how: 'Records paid checkouts with their value' },
+  { module: 'campaignLinks', how: 'Campaign links set to “TikTok” carry UTM tags for your ads' }]
+
+},
+{
+  id: 'product-feed',
+  name: 'Product feed',
+  publisher: 'KUBICU',
+  verified: 'kubicu',
+  category: 'selling',
+  summary: 'Your products in Instagram & Facebook Shops and Google Shopping.',
+  description:
+  'Builds a catalogue file from your products in the format Meta and Google ask for, and tells you which products are left out and why. Every product link is tagged, so visits from Shops show up in Analytics. Preview: download the file and upload it yourself; an address that updates automatically needs the KUBICU backend.',
+  adds: ['A Meta and a Google catalogue file', 'Reasons for every product left out', 'Tagged links so Shops visits show in Analytics'],
+  permissions: ['Read your products, prices, photos and stock'],
+  minPlan: 'free',
+  priceNgn: 0,
+  version: '0.9.0',
+  versions: [{ version: '0.9.0', date: '2026-10-27', notes: 'Preview release: download the feed file.' }],
+  reviews: [],
+  preview: true,
+  uninstallNote: 'Nothing on your pages changes. Catalogues you already uploaded keep their last copy.',
+  worksWith: [
+  { module: 'products', how: 'Name, price, photo, description and stock go into the feed' },
+  { module: 'storefront', how: 'Each product links to its shop page' },
+  { module: 'analytics', how: 'Visits from Shops show as Facebook or Google sources' }]
+
+},
+{
+  id: 'loyalty',
+  name: 'Loyalty points',
+  publisher: 'KUBICU',
+  verified: 'kubicu',
+  category: 'selling',
+  summary: 'Customers earn points on every order and spend them at checkout.',
+  description:
+  'Customers earn 1 point for every ₦100 they spend on items, matched by phone number. At checkout, 500 points become a one-time ₦500 discount code. Refunds take points back. Points start from the day you install. Referral codes stay in Commerce → Discounts. Example figures.',
+  adds: ['Points on every paid order', '“Use 500 points” at checkout', 'Points on each customer’s receipt and contact'],
+  permissions: ['Read your orders and customers’ phone numbers', 'Create one-time discount codes'],
+  minPlan: 'creator',
+  priceNgn: 0,
+  version: '1.0.0',
+  versions: [{ version: '1.0.0', date: '2026-10-27', notes: 'First release.' }],
+  reviews: [],
+  uninstallNote: 'Customers stop earning and can’t make new codes. Points codes already made still work once.',
+  worksWith: [
+  { module: 'checkout', how: '500 points become a ₦500 code at checkout' },
+  { module: 'orders', how: 'Paid orders earn points; the receipt shows them' },
+  { module: 'audience', how: 'Each contact shows their points balance' }]
+
+},
+{
+  id: 'email-sync',
+  name: 'Email marketing sync',
+  publisher: 'KUBICU',
+  verified: 'kubicu',
+  category: 'marketing',
+  summary: 'Send subscribed contacts to Mailchimp or Brevo.',
+  description:
+  'Copies contacts who agreed to hear from you — with their tags — to your Mailchimp or Brevo audience. People who only bought, or who unsubscribed, are never sent. Preview: shows exactly who would be sent and lets you download them; the live connection needs the KUBICU backend.',
+  adds: ['Subscribed contacts and their tags', 'Form sign-ups with consent included', 'Download the list any time'],
+  permissions: ['Read contacts who subscribed, their emails and tags', 'Send contacts to your email tool (preview — not sent)'],
+  minPlan: 'free',
+  priceNgn: 0,
+  version: '0.9.0',
+  versions: [{ version: '0.9.0', date: '2026-10-27', notes: 'Preview release.' }],
+  reviews: [],
+  preview: true,
+  setup: [
+  {
+    id: 'apiKey',
+    label: 'Mailchimp or Brevo API key',
+    placeholder: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-us21',
+    hint: 'Mailchimp: Account → Extras → API keys. Brevo: SMTP & API → API keys (starts with xkeysib-).',
+    pattern: /^([0-9a-f]{32}-us\d{1,2}|xkeysib-[0-9a-f]{64}-[A-Za-z0-9]{16})$/,
+    error: 'That doesn’t look like a Mailchimp or Brevo API key.'
+  }],
+
+  uninstallNote: 'Nothing more is sent. Contacts already in your email tool stay there.',
+  worksWith: [
+  { module: 'audience', how: 'Only subscribed contacts, with their tags' },
+  { module: 'forms', how: 'Form sign-ups who ticked consent are included' }]
+
+},
+{
+  id: 'sheets-sync',
+  name: 'Google Sheets sync',
+  publisher: 'KUBICU',
+  verified: 'kubicu',
+  category: 'operations',
+  summary: 'Orders, bookings and form responses in a spreadsheet.',
+  description:
+  'Adds a row to your Google Sheet for every new order, booking and form response, one tab each — handy for a packer or assistant who doesn’t use KUBICU. Preview: shows the rows and lets you download each tab; adding rows automatically needs the KUBICU backend.',
+  adds: ['An Orders, a Bookings and a Responses tab', 'One row per new record', 'Download each tab any time'],
+  permissions: ['Read your orders, bookings and form responses', 'Add rows to the sheet you choose (preview — not sent)'],
+  minPlan: 'free',
+  priceNgn: 0,
+  version: '0.9.0',
+  versions: [{ version: '0.9.0', date: '2026-10-27', notes: 'Preview release.' }],
+  reviews: [],
+  preview: true,
+  setup: [
+  {
+    id: 'sheetUrl',
+    label: 'Google Sheet address',
+    placeholder: 'https://docs.google.com/spreadsheets/d/…',
+    hint: 'Open the sheet and copy the address from your browser. Share it with sync@kub.icu as an editor.',
+    pattern: /^https:\/\/docs\.google\.com\/spreadsheets\/d\/[A-Za-z0-9_-]{20,}/,
+    error: 'Paste the full address of a Google Sheet.'
+  }],
+
+  uninstallNote: 'No new rows are added. Your sheet keeps everything already in it.',
+  worksWith: [
+  { module: 'orders', how: 'A row per new order' },
+  { module: 'bookings', how: 'A row per new booking' },
+  { module: 'forms', how: 'A row per form response' }]
+
+},
+{
+  id: 'accounting-export',
+  name: 'Accounting export',
+  publisher: 'KUBICU',
+  verified: 'kubicu',
+  category: 'operations',
+  summary: 'Sales, fees, refunds and VAT for QuickBooks, Zoho Books or your accountant.',
+  description: 'Adds an “Accounting export” button to the Sales report. It downloads the period you’re viewing in QuickBooks or Zoho Books import format, or as a spreadsheet, with fees and refunds on their own lines. Sample entries are left out.',
+  adds: ['“Accounting export” on the Sales report', 'QuickBooks, Zoho Books and spreadsheet formats', 'Fees, refunds and VAT on their own lines'],
+  permissions: ['Read your sales, payment links, invoices and VAT'],
+  minPlan: 'creator',
+  priceNgn: 0,
+  version: '1.0.0',
+  versions: [{ version: '1.0.0', date: '2026-10-27', notes: 'First release.' }],
+  reviews: [],
+  uninstallNote: 'The button leaves the Sales report. Files you downloaded are yours.',
+  worksWith: [
+  { module: 'reports', how: 'Exports the period you’re viewing' },
+  { module: 'paymentLinks', how: 'Payment link income is included' },
+  { module: 'quotes', how: 'Paid invoices are included' }]
+
+},
+{
+  id: 'search-console',
+  name: 'Search Console & SEO',
+  publisher: 'KUBICU',
+  verified: 'kubicu',
+  category: 'marketing',
+  summary: 'Prove you own your pages to Google and hand it your sitemap.',
+  description: 'Adds Google’s verification tag to your live pages and builds a sitemap from what you’ve published — pages, shop, products, events and services, leaving out hidden and members-only pages. Also lists published pages missing a search description.',
+  adds: ['Google verification tag on live pages', 'Sitemap file built from your published pages', 'Pages missing a search description'],
+  permissions: ['Add a verification tag to your public pages', 'Read your published pages and products'],
+  minPlan: 'free',
+  priceNgn: 0,
+  version: '1.0.0',
+  versions: [{ version: '1.0.0', date: '2026-10-27', notes: 'First release.' }],
+  reviews: [],
+  setup: [
+  {
+    id: 'verification',
+    label: 'Google verification code',
+    placeholder: 'e.g. 1a2B3c4D5e6F7g8H9i0J…',
+    hint: 'In Search Console → Add property → URL prefix → HTML tag. Paste only the content="…" value.',
+    pattern: /^[A-Za-z0-9_-]{20,64}$/,
+    error: 'Paste only the code inside content="…".'
+  }],
+
+  uninstallNote: 'The verification tag is removed. Google may ask you to verify again.',
+  worksWith: [
+  { module: 'pages', how: 'Uses the search details you set when publishing' },
+  { module: 'storefront', how: 'Shop and product pages go into the sitemap' }]
+
+},
+{
+  id: 'clarity',
+  name: 'Microsoft Clarity',
+  publisher: 'KUBICU',
+  verified: 'kubicu',
+  category: 'analytics',
+  summary: 'Free heatmaps and session recordings.',
+  description: 'Adds Microsoft Clarity to your public pages so you can see where visitors tap and scroll. It loads only after visitors accept the cookie notice. Clarity hides typed text by default; recordings live in your Clarity account.',
+  adds: ['Clarity on every public page', 'Shared cookie notice', 'A shortcut from Analytics to your heatmaps'],
+  permissions: ['Add a tracking tag to your public pages', 'Show a cookie notice to visitors'],
+  minPlan: 'creator',
+  priceNgn: 0,
+  version: '1.0.0',
+  versions: [{ version: '1.0.0', date: '2026-10-27', notes: 'First release.' }],
+  reviews: [],
+  setup: [{ id: 'projectId', label: 'Project ID', placeholder: 'abcd1234ef', hint: 'In Clarity → Settings → Overview. Lower-case letters and numbers.', pattern: /^[a-z0-9]{8,12}$/, error: 'A Clarity project ID is 8–12 lower-case letters and numbers.' }],
+  uninstallNote: 'Clarity is removed from your pages straight away. Recordings stay in your Clarity account.',
+  worksWith: [
+  { module: 'pages', how: 'Loads after visitors accept the cookie notice' },
+  { module: 'analytics', how: 'Heatmaps one tap away from Analytics' }]
+
 }];
 
 

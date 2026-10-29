@@ -1,5 +1,5 @@
 /* @import url() FONT IMPORTS MUST ALWAYS BE AT THE VERY TOP OF THIS FILE, ABOVE THE TAILWIND IMPORTS — DO NOT DELETE THIS COMMENT */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Instrument+Serif&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=Archivo:wdth,wght@75..100,500..800&family=Lora:wght@400;500;600&family=Cormorant+Garamond:wght@500;600&family=Bricolage+Grotesque:opsz,wght@12..96,500..700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Instrument+Serif&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=Archivo:wdth,wght@75..100,500..800&family=Lora:wght@400;500;600&family=Cormorant+Garamond:wght@500;600&family=Bricolage+Grotesque:opsz,wght@12..96,500..800&display=swap');
 
 /* CRITICAL: THE FOLLOWING TAILWIND IMPORTS MUST NEVER BE DELETED OR REORDERED — DO NOT DELETE THIS COMMENT */
 @import 'tailwindcss/base';
@@ -169,6 +169,113 @@ html[data-motion='reduce'] *::after {
   --nm-3: 61 123 255;
   color-scheme: dark;
 }
+/* KUBICU Bold (D260): the website, legal, sign-in and 404 pages. Light cream canvas, full-bleed solid colour bands,
+   heavy grotesque display type. Replaces the Night market look on public pages; the nm-* helpers below are
+   re-pointed to solid brand colours inside this direction so older pages follow without edits. */
+[data-direction='kubicuBold'] {
+  --canvas: 247 243 234;
+  --raised: 255 255 255;
+  --sunken: 238 233 221;
+  --overlay: 255 255 255;
+  --inverse: 20 20 18;
+  --stage: 238 233 221;
+  --field: 255 255 255;
+  --border-subtle: 224 217 202;
+  --border-strong: 186 177 158;
+  --text-primary: 20 20 18;
+  --text-secondary: 70 68 62;
+  --text-muted: 104 100 92;
+  --text-inverse: 255 255 255;
+  --action: 20 20 18;
+  --action-hover: 48 48 44;
+  --action-pressed: 0 0 0;
+  --on-action: 255 255 255;
+  --action-soft: 238 233 221;
+  --accent: 34 76 214;
+  --accent-soft: 222 231 255;
+  --select: 20 20 18;
+  --on-select: 255 255 255;
+  --success: 22 122 70;
+  --success-soft: 220 243 229;
+  --warning: 156 98 0;
+  --warning-soft: 251 240 218;
+  --danger: 186 40 34;
+  --danger-soft: 251 231 229;
+  --info: 34 76 214;
+  --info-soft: 222 231 255;
+  --focus: 34 76 214;
+  --shadow-1: 0 1px 2px rgb(20 20 18 / 0.06);
+  --shadow-2: 0 14px 34px -14px rgb(20 20 18 / 0.22), 0 0 0 1px rgb(20 20 18 / 0.04);
+  --shadow-3: 0 34px 80px -24px rgb(20 20 18 / 0.32), 0 0 0 1px rgb(20 20 18 / 0.05);
+  --kb-lime: 214 241 90;
+  --kb-forest: 18 56 40;
+  --kb-cobalt: 34 76 214;
+  --kb-sky: 205 222 255;
+  --kb-plum: 56 18 64;
+  --kb-pink: 246 190 228;
+  --kb-clay: 128 36 20;
+  --kb-peach: 255 207 172;
+  --nm-1: 214 241 90;
+  --nm-2: 246 190 228;
+  --nm-3: 34 76 214;
+  color-scheme: light;
+}
+[data-direction='kubicuBold'] .nm-fill {
+  background-image: none;
+  background-color: rgb(var(--kb-lime));
+}
+[data-direction='kubicuBold'] .nm-text {
+  background-image: none;
+  color: rgb(var(--kb-cobalt));
+}
+[data-direction='kubicuBold'] .nm-text-drift {
+  animation: none;
+}
+[data-direction='kubicuBold'] .nm-frame {
+  background-image: none;
+  background-color: rgb(var(--text-primary));
+}
+[data-direction='kubicuBold'] .nm-edge,
+[data-direction='kubicuBold'] .group:hover > .nm-edge,
+[data-direction='kubicuBold'] .nm-edge:hover {
+  background-image: none;
+  background-color: rgb(var(--border-subtle));
+}
+[data-direction='kubicuBold'] .group:hover > .nm-edge,
+[data-direction='kubicuBold'] .nm-edge:hover,
+[data-direction='kubicuBold'] .group:focus-visible > .nm-edge {
+  background-color: rgb(var(--text-primary));
+}
+[data-direction='kubicuBold'] .nm-rule {
+  background-image: none;
+  background-color: rgb(var(--border-subtle));
+}
+[data-direction='kubicuBold'] .nm-glow {
+  box-shadow: var(--shadow-3);
+}
+/* Heavy display face for public pages only. */
+.kb-display {
+  font-family: 'Bricolage Grotesque', 'Inter', ui-sans-serif, system-ui, sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+}
+.kb-marquee {
+  animation: kb-marquee var(--kb-marquee-duration, 48s) linear infinite;
+}
+.kb-marquee-host:hover .kb-marquee,
+.kb-marquee-host:focus-within .kb-marquee {
+  animation-play-state: paused;
+}
+@keyframes kb-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kb-marquee {
+    animation: none;
+  }
+}
 /* Brand gradient. Text placed on .nm-fill must be dark ink, ≥18px semibold. */
 .nm-fill {
   background-image: linear-gradient(115deg, rgb(var(--nm-1)) 0%, rgb(var(--nm-2)) 50%, rgb(var(--nm-3)) 100%);
@@ -295,6 +402,13 @@ details.kb-faq > summary::-webkit-details-marker {
 /* Horizontal strips (sub-menus, filter chips, day pickers) scroll sideways only — never vertically. */
 .scroll-quiet.overflow-x-auto {
   overflow-y: hidden;
+}
+/* Strips sized to fit (e.g. the canvas panel tabs): still scrollable by keyboard, but no visible scrollbar. */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 /*
  * AI surfaces (D63). The only gradients in the product — reserved so anything AI suggests,

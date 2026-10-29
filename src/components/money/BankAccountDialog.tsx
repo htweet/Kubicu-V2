@@ -9,8 +9,6 @@ import { Dialog } from '../ui/Dialog';
 import { Button } from '../ui/Button';
 import { TextInput } from '../ui/TextInput';
 import { SelectInput } from '../ui/SelectInput';
-import { Segmented } from '../ui/Segmented';
-import { Field } from '../ui/Field';
 import { ConfirmMoneyDialog } from './ConfirmMoneyDialog';
 
 const banks = ['Access Bank', 'First Bank', 'GTBank', 'Kuda', 'Moniepoint', 'Opay', 'Stanbic IBTC', 'UBA', 'Wema Bank', 'Zenith Bank'];
@@ -30,7 +28,6 @@ export function BankAccountDialog({ open, onClose, data, update, businessName }:
   const [number, setNumber] = useState('');
   const [looked, setLooked] = useState<string | null>(null);
   const [looking, setLooking] = useState(false);
-  const [simulate, setSimulate] = useState<'same' | 'different'>('same');
   const [confirming, setConfirming] = useState(false);
 
   useEffect(() => {
@@ -41,7 +38,7 @@ export function BankAccountDialog({ open, onClose, data, update, businessName }:
     setConfirming(false);
   }, [open]);
 
-  useEffect(() => setLooked(null), [number, bank, simulate]);
+  useEffect(() => setLooked(null), [number, bank]);
 
   const valid = /^\d{10}$/.test(number);
   const match = looked ? nameMatchOf(looked, businessName) : null;
@@ -52,7 +49,8 @@ export function BankAccountDialog({ open, onClose, data, update, businessName }:
     setLooking(true);
     window.setTimeout(() => {
       setLooking(false);
-      setLooked(simulate === 'same' ? businessName.toUpperCase() : 'CHINEDU OKORO');
+      // Simulated bank name lookup: test account numbers ending in 0000 belong to someone else (D242).
+      setLooked(number.endsWith('0000') ? 'CHINEDU OKORO' : businessName.toUpperCase());
     }, 700);
   };
 
@@ -102,9 +100,7 @@ export function BankAccountDialog({ open, onClose, data, update, businessName }:
         <div className="flex flex-col gap-4">
           <SelectInput id="bank-name" label={tr('Bank')} value={bank} onChange={setBank} options={banks.map((b) => ({ value: b, label: b }))} />
           <TextInput id="bank-number" label="Account number" inputMode="numeric" maxLength={10} value={number} onChange={(e) => setNumber(e.target.value.replace(/\D/g, ''))} hint={tr('10 digits (NUBAN)')} error={number.length > 0 && number.length !== 10 ? tr('Account numbers have 10 digits.') : undefined} />
-          <Field id="bank-sim" label="Prototype: name on the account">
-            <Segmented ariaLabel={tr('Simulated account name')} value={simulate} onChange={setSimulate} options={[{ value: 'same', label: 'Business name' }, { value: 'different', label: 'Someone else' }]} />
-          </Field>
+          {!looked && <p className="text-caption text-fg-subtle">{tr('We’ll ask your bank for the name on this account and check it matches {name}.', { name: businessName })}</p>}
           {looked && match &&
           <div className={match === 'mismatch' ? 'rounded-md bg-danger-soft px-4 py-3 text-danger' : match === 'close' ? 'rounded-md bg-warning-soft px-4 py-3 text-warning' : 'rounded-md bg-success-soft px-4 py-3 text-success'} role="status">
               <p className="flex items-center gap-2 text-label font-semibold">

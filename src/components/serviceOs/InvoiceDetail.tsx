@@ -7,7 +7,8 @@ import { printServiceInvoice } from '../../utils/serviceInvoicePrint';
 import { ClientAudienceLink } from './ClientAudienceLink';
 import { toast } from 'sonner';
 import type { Invoice, PaymentMethod, ServiceOsData } from '../../types/serviceOs';
-import { balanceOf, formatDay, invoiceLabels, invoiceTones, invoiceView, itemsTotal, manualMethods, methodLabels, paidOf, todayKey } from '../../utils/serviceOs';
+import { balanceOf, formatDay, invoiceLabels, invoiceTones, invoiceTotal, invoiceView, itemsTotal, manualMethods, methodLabels, paidOf, todayKey } from '../../utils/serviceOs';
+import { TextArea } from '../ui/TextArea';
 import { invoicePayPath } from '../../utils/milestones';
 import { useMainLink } from '../../hooks/useMainLink';
 import { formatNgn, formatTimestamp, whatsappLink } from '../../utils/format';
@@ -58,7 +59,7 @@ export function InvoiceDetail({ invoice, businessName, canEdit, update, onClose,
   const record = () => {
     if (!amount || amountError) return;
     const payments = [...invoice.payments, { id: uid('pay'), amountNgn: amount, method, at: new Date().toISOString() }];
-    const fullyPaid = payments.reduce((s, p) => s + p.amountNgn, 0) >= itemsTotal(invoice.items);
+    const fullyPaid = payments.reduce((s, p) => s + p.amountNgn, 0) >= invoiceTotal(invoice);
     patch({ payments, status: fullyPaid ? 'paid' : 'sent' });
     toast.success(fullyPaid ? `${invoice.number} is paid in full` : `${formatNgn(amount)} recorded`);
     setPaying(false);
@@ -77,10 +78,10 @@ export function InvoiceDetail({ invoice, businessName, canEdit, update, onClose,
 
   const footer = editable ?
   <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-      <Button variant="secondary" onClick={() => (patch({ items: draft.items, dueDate: draft.dueDate }), toast.success('Draft saved'))}>
+      <Button variant="secondary" onClick={() => (patch({ items: draft.items, dueDate: draft.dueDate, note: draft.note }), toast.success('Draft saved'))}>
         Save draft
       </Button>
-      <Button leadingIcon={SendIcon} disabled={!valid} onClick={() => (patch({ items: draft.items, dueDate: draft.dueDate, status: 'sent' }), toast.success('Marked as sent', { description: 'Share it with your client on WhatsApp.' }))}>
+      <Button leadingIcon={SendIcon} disabled={!valid} onClick={() => (patch({ items: draft.items, dueDate: draft.dueDate, note: draft.note, status: 'sent' }), toast.success('Marked as sent', { description: 'Share it with your client on WhatsApp.' }))}>
         Mark as sent
       </Button>
     </div> :
@@ -134,6 +135,7 @@ export function InvoiceDetail({ invoice, businessName, canEdit, update, onClose,
             </h3>
             <LineItemsEditor
               items={draft.items}
+              vat={invoice.vat}
               readOnly={!editable}
               onChange={(items) => setDraft({ ...draft, items })}
               footer={
@@ -152,11 +154,17 @@ export function InvoiceDetail({ invoice, businessName, canEdit, update, onClose,
               Due date
             </h3>
             {editable ?
-            <TextInput id="inv-due-date" label="Due" type="date" min={todayKey()} value={draft.dueDate} onChange={(e) => setDraft({ ...draft, dueDate: e.target.value })} /> :
+            <div className="flex flex-col gap-4">
+                <TextInput id="inv-due-date" label="Due" type="date" min={todayKey()} value={draft.dueDate} onChange={(e) => setDraft({ ...draft, dueDate: e.target.value })} fieldClassName="sm:max-w-[50%] sm:pr-2" />
+                <TextArea id="inv-note" label="Payment terms" optional rows={3} maxLength={400} value={draft.note ?? ''} hint="Shown on the pay page and the printed invoice." onChange={(e) => setDraft({ ...draft, note: e.target.value })} />
+              </div> :
 
-            <p className="text-label text-fg-muted">
-                Due <span className="font-medium text-fg">{formatDay(invoice.dueDate)}</span>
-              </p>
+            <>
+                <p className="text-label text-fg-muted">
+                  Due <span className="font-medium text-fg">{formatDay(invoice.dueDate)}</span>
+                </p>
+                {invoice.note && <p className="mt-2 whitespace-pre-line text-label text-fg-muted">{invoice.note}</p>}
+              </>
             }
           </section>
 

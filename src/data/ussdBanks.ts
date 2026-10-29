@@ -1,3 +1,9 @@
+/**
+ * USSD payments are switched off for now (D233). Every place that offers USSD checks this flag, so
+ * turning it back on later is a one-line change. Sellers' saved USSD choices are kept untouched.
+ */
+export const USSD_AVAILABLE = false;
+
 /** Nigerian banks with a USSD service, and their short codes (D136). Payment references are simulated. */
 export interface UssdBank {
   id: string;

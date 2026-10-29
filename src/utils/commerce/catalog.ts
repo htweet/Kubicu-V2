@@ -1,6 +1,7 @@
 import type { CommerceData, Product, ProductOption, ProductVariant } from '../../types/commerce';
 import type { BlockContentMap, MenuItem } from '../../types/page';
 import { uid } from '../id';
+import { backordersOn } from './shopSettings';
 
 export function variantLabel(variant: ProductVariant): string {
   const values = Object.values(variant.options);
@@ -19,7 +20,15 @@ export function isSoldOut(product: Product): boolean {
   // Pre-orders (D202) don't need stock; they sell out only when their own limit is reached.
   if (product.kind === 'physical' && product.preorder) return product.preorder.limit !== null && product.preorder.taken >= product.preorder.limit;
   if (product.kind === 'digital' || !product.trackStock) return false;
+  // Allow backorders (D222): physical products keep selling past zero, labelled "Ships later".
+  if (product.kind === 'physical' && backordersOn()) return false;
   return totalStock(product) <= 0;
+}
+
+/** Out of stock but still for sale under "Allow backorders" (D222). */
+export function isBackorder(product: Product, variant?: ProductVariant): boolean {
+  if (product.kind !== 'physical' || !product.trackStock || product.preorder || !backordersOn()) return false;
+  return variant ? variant.stock <= 0 : totalStock(product) <= 0;
 }
 
 export function isLowStock(product: Product): boolean {
@@ -34,6 +43,7 @@ export function canSell(product: Product, variant?: ProductVariant): boolean {
   if (product.kind === 'course') return true;
   if (product.kind === 'physical' && product.preorder) return !isSoldOut(product);
   if (!product.trackStock) return true;
+  if (product.kind === 'physical' && backordersOn()) return true;
   return variant ? variant.stock > 0 : totalStock(product) > 0;
 }
 

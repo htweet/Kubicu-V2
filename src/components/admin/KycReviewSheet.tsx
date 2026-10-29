@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { AlertTriangleIcon, CheckIcon, MessageSquareWarningIcon, XIcon } from 'lucide-react';
+import { AlertTriangleIcon, CheckIcon, MessageSquareWarningIcon, ShieldOffIcon, XIcon } from 'lucide-react';
 import type { MoneyData } from '../../types/money';
 import type { KycRequest, KycStepId } from '../../types/kyc';
-import { entityInfo, kycRisks, stepLabels, stepsFor, verifiedName } from '../../utils/money/kyc';
+import { entityInfo, kycRisks, statusLabels, statusTones, stepLabels, stepsFor, verifiedName } from '../../utils/money/kyc';
 import { nameMatchOf, tierInfo } from '../../utils/money/store';
 import { formatRelative, formatTimestamp } from '../../utils/format';
 import { Sheet } from '../ui/Sheet';
@@ -21,12 +21,21 @@ interface KycReviewSheetProps {
   onApprove: (note: string) => void;
   onRequest: (requests: KycRequest[], summary: string) => void;
   onReject: (reason: string) => void;
+  /** Platform leads only (D252). */
+  canWithdraw?: boolean;
+  onWithdraw?: (reason: string) => void;
+  /** D254: the public verified tick for this workspace. */
+  tick?: {platformOn: boolean;hidden: {reason: string;at: string;by: string;} | null;};
+  onTick?: (show: boolean, reason: string) => void;
 }
 
-/** Staff review of one verification case (D93): every check, document and person, then approve, ask for changes or reject. */
-export function KycReviewSheet({ open, onClose, workspace, money, onApprove, onRequest, onReject }: KycReviewSheetProps) {
+/**
+ * Staff review of one verification case (D93): every check, document and person, then approve, ask for changes or reject.
+ * Decided cases open read-only with their decision and history (D252); a Platform lead can withdraw an approval.
+ */
+export function KycReviewSheet({ open, onClose, workspace, money, onApprove, onRequest, onReject, canWithdraw = false, onWithdraw, tick, onTick }: KycReviewSheetProps) {
   const [mode, setMode] = useState<'view' | 'request'>('view');
-  const [dialog, setDialog] = useState<'approve' | 'reject' | null>(null);
+  const [dialog, setDialog] = useState<'approve' | 'reject' | 'withdraw' | 'tickOff' | 'tickOn' | null>(null);
   const [picked, setPicked] = useState<Record<string, string>>({});
   const [tried, setTried] = useState(false);
 
@@ -43,6 +52,9 @@ export function KycReviewSheet({ open, onClose, workspace, money, onApprove, onR
   const risks = kycRisks(k);
   const steps = stepsFor(k.entity).filter((s) => s !== 'review' && s !== 'type');
   const tier = k.entity ? tierInfo[entityInfo[k.entity].tier] : null;
+  const waiting = k.status === 'in_review';
+  const withdrawn = k.status === 'rejected' && k.history[k.history.length - 1]?.label === 'Approval withdrawn';
+  const lapsesAt = k.status === 'approved' && k.decidedAt ? new Date(Date.parse(k.decidedAt) + 365 * 86_400_000).toISOString() : null;
 
   const requests = Object.entries(picked).map(([step, message]) => ({ step: step as KycStepId, message: message.trim() }));
   const requestError = !requests.length ? 'Choose at least one step.' : requests.some((r) => r.message.length < 8) ? 'Write what needs to change for each step you picked.' : '';
@@ -61,9 +73,27 @@ export function KycReviewSheet({ open, onClose, workspace, money, onApprove, onR
         side="right"
         size="lg"
         height="full"
+        bodyClassName="px-5 py-5 md:px-6 md:py-6"
         title={`${workspace} · verification`}
         description={`${k.entity ? entityInfo[k.entity].label : 'Unknown type'} · submission ${k.attempts}${k.submittedAt ? ` · sent ${formatRelative(k.submittedAt)}` : ''}`}
         footer={
+        !waiting ?
+        <div className="flex w-full flex-wrap items-center justify-between gap-2">
+              {k.status === 'approved' && onWithdraw ?
+          canWithdraw ?
+          <Button variant="tertiary" leadingIcon={ShieldOffIcon} onClick={() => setDialog('withdraw')}>
+                    Withdraw approval…
+                  </Button> :
+
+          <span className="text-caption text-fg-subtle">Only a Platform lead can withdraw an approval.</span> :
+
+
+          <span />
+          }
+              <Button variant="secondary" onClick={onClose}>
+                Close
+              </Button>
+            </div> :
         mode === 'view' ?
         <div className="flex w-full flex-wrap items-center justify-between gap-2">
               <Button variant="tertiary" leadingIcon={XIcon} onClick={() => setDialog('reject')}>
@@ -90,12 +120,72 @@ export function KycReviewSheet({ open, onClose, workspace, money, onApprove, onR
         
         {mode === 'view' ?
         <div className="flex flex-col gap-6">
+            {!waiting &&
+          <section aria-labelledby="kyc-decision" className="rounded-md border border-line bg-sunken px-4 py-3.5">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <h3 id="kyc-decision" className="text-label font-semibold text-fg">
+                    Decision
+                  </h3>
+                  <Badge tone={statusTones[k.status]}>{withdrawn ? 'Approval withdrawn' : statusLabels[k.status]}</Badge>
+                </div>
+                <dl className="mt-2.5 grid gap-x-6 gap-y-1.5 text-caption sm:grid-cols-[auto_1fr]">
+                  {k.decidedAt &&
+              <>
+                      <dt className="text-fg-muted">Decided</dt>
+                      <dd className="text-fg">
+                        {formatTimestamp(k.decidedAt)}
+                        {k.decidedBy ? ` · ${k.decidedBy}` : ''}
+                      </dd>
+                    </>
+              }
+                  {k.status === 'approved' && tier &&
+              <>
+                      <dt className="text-fg-muted">Payouts</dt>
+                      <dd className="text-fg">
+                        {tier.label} · up to ₦{tier.dailyPayoutNgn.toLocaleString('en-NG')} a day
+                      </dd>
+                    </>
+              }
+                  {lapsesAt &&
+              <>
+                      <dt className="text-fg-muted">Lapses</dt>
+                      <dd className="text-fg">{formatTimestamp(lapsesAt)} — the owner re-verifies after a year</dd>
+                    </>
+              }
+                  {k.note &&
+              <>
+                      <dt className="text-fg-muted">{k.status === 'approved' ? 'Note' : 'Reason shown to owner'}</dt>
+                      <dd className="text-fg">{k.note}</dd>
+                    </>
+              }
+                  {k.status === 'approved' && tick &&
+              <>
+                      <dt className="text-fg-muted">Verified tick</dt>
+                      <dd className="flex flex-wrap items-center gap-x-3 gap-y-1 text-fg">
+                        <span>{!tick.platformOn ? 'Hidden for everyone (Feature flags)' : tick.hidden ? `Hidden by ${tick.hidden.by} — “${tick.hidden.reason}”` : 'Showing on their pages'}</span>
+                        {onTick && tick.platformOn &&
+                  <button type="button" onClick={() => setDialog(tick.hidden ? 'tickOn' : 'tickOff')} className="font-semibold text-fg underline underline-offset-2 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+                            {tick.hidden ? 'Show again…' : 'Hide tick…'}
+                          </button>
+                  }
+                      </dd>
+                    </>
+              }
+                  {k.status === 'needs_info' && k.requests.length > 0 &&
+              <>
+                      <dt className="text-fg-muted">Asked to fix</dt>
+                      <dd className="text-fg">{k.requests.map((r) => `${stepLabels[r.step].label}: ${r.message}`).join(' · ')}</dd>
+                    </>
+              }
+                </dl>
+              </section>
+          }
             {risks.length > 0 ?
-          <section aria-labelledby="kyc-risks" className="rounded-md bg-warning-soft px-4 py-3">
-                <h3 id="kyc-risks" className="flex items-center gap-2 text-label font-semibold text-warning">
-                  <AlertTriangleIcon size={15} aria-hidden /> Look closely at
+          <section aria-labelledby="kyc-risks" className="rounded-md border border-warning/40 bg-warning-soft px-4 py-3.5">
+                <h3 id="kyc-risks" className="flex items-center gap-2 text-label font-semibold text-fg">
+                  <AlertTriangleIcon size={16} aria-hidden className="shrink-0 text-warning" /> Look closely at
                 </h3>
-                <ul className="mt-2 flex flex-wrap gap-1.5">
+                <ul className="mt-2.5 flex flex-wrap gap-1.5 pl-6">
                   {risks.map((r) =>
               <li key={r}>
                       <Badge tone="warning">{r}</Badge>
@@ -104,12 +194,15 @@ export function KycReviewSheet({ open, onClose, workspace, money, onApprove, onR
                 </ul>
               </section> :
 
-          <p className="rounded-md bg-success-soft px-4 py-3 text-label text-success">Every automated check matched. Still compare the ID photo with the selfie and the documents with the details.</p>
+          <p className="rounded-md border border-success/40 bg-success-soft px-4 py-3.5 text-label text-fg">Every automated check matched. Still compare the ID photo with the selfie and the documents with the details.</p>
           }
-            {tier &&
-          <p className="text-caption text-fg-muted">
-                Approving sets <span className="font-semibold text-fg">{tier.label}</span> — payouts up to {tier.dailyPayoutNgn.toLocaleString('en-NG')} a day.
-              </p>
+            {tier && waiting &&
+          <div className="flex flex-col gap-0.5 rounded-md bg-sunken px-4 py-3 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
+                <span className="text-caption text-fg-muted">If you approve</span>
+                <span className="text-label text-fg">
+                  <span className="font-semibold">{tier.label}</span> · payouts up to ₦{tier.dailyPayoutNgn.toLocaleString('en-NG')} a day
+                </span>
+              </div>
           }
             <KycSummary k={k} banks={banks} />
             {k.history.length > 0 &&
@@ -189,6 +282,35 @@ export function KycReviewSheet({ open, onClose, workspace, money, onApprove, onR
         description="The owner sees your reason word for word and can fix it and send again. Payouts stay off."
         confirmLabel="Reject"
         destructive />
+      
+      <ReasonDialog
+        open={dialog === 'withdraw'}
+        onClose={() => setDialog(null)}
+        onConfirm={(r) => {
+          setDialog(null);
+          onWithdraw?.(r);
+        }}
+        title="Withdraw this approval"
+        description="Use this when something is found after approval — a fake document, fraud reports or a mismatch. Payouts drop to unverified limits straight away (sales still arrive), Starter payouts stop, and the owner sees your reason word for word and can send verification again. Recorded in the audit log."
+        confirmLabel="Withdraw approval"
+        destructive />
+      
+      <ReasonDialog
+        open={dialog === 'tickOff' || dialog === 'tickOn'}
+        onClose={() => setDialog(null)}
+        onConfirm={(r) => {
+          const show = dialog === 'tickOn';
+          setDialog(null);
+          onTick?.(show, r);
+        }}
+        title={dialog === 'tickOn' ? 'Show the verified tick again' : 'Hide the verified tick'}
+        description={
+        dialog === 'tickOn' ?
+        'The tick returns to their Profile, Brand header and Verified badge straight away.' :
+        'Use this for a name that misleads buyers or an impersonation report while you look into it. Verification, payouts and the Trust Passport score stay as they are. The owner sees that KUBICU hid the seal.'
+        }
+        confirmLabel={dialog === 'tickOn' ? 'Show tick' : 'Hide tick'}
+        destructive={dialog === 'tickOff'} />
       
     </>);
 

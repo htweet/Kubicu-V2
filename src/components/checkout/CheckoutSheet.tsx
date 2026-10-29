@@ -1,10 +1,13 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useT } from '../../contexts/LocaleContext';
 import { announce } from '../../utils/announce';
+import { tagPurchase } from '../../utils/trackingTags';
 import { MediaImage } from '../media/MediaImage';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { DiscountCodeField } from './DiscountCodeField';
 import { GiftCardField } from './GiftCardField';
+import { LoyaltyRedeem } from './LoyaltyRedeem';
+import { USSD_AVAILABLE } from '../../data/ussdBanks';
 import { bulkUnitPrice, isPreorder, preorderLeft, resolveGiftCard, shipsByLabel } from '../../utils/commerce/sellModes';
 import { useTrack } from '../../contexts/TrackContext';
 import { unitsBoughtBy, type DealRoomCheckout } from '../../utils/dealRoom';
@@ -23,17 +26,20 @@ import { placeOrder } from '../../utils/commerce/ops';
 import { cartBalanceNgn, isMadeToOrder } from '../../utils/commerce/deposit';
 import { instalmentCheck, payOptionsOf, podCheck, schedule } from '../../utils/commerce/payOptions';
 import { PayWithChooser, type PayWith } from './PayWithChooser';
-import { HOLD_MINUTES, extendHolds, findEvent, holdExpiry, holderId, placeHolds, releaseHolds, ticketLineIssue } from '../../utils/commerce/tickets';
+import { HOLD_MINUTES, STOCK_HOLD_MINUTES, extendHolds, findEvent, holdExpiry, holderId, placeHolds, releaseHolds, stockFree, stockHeldMessage, stockHoldable, ticketLineIssue } from '../../utils/commerce/tickets';
 import { describeSeats, findSeat } from '../../utils/commerce/seating';
 import { useNow } from '../../hooks/useNow';
 import { isValidEmail, isValidPhone } from '../../utils/validation';
 import { formatNgn } from '../../utils/format';
 import { isNaira } from '../../utils/currency';
 import { UssdPay } from './UssdPay';
-import { stampTransfer, transferDetails } from '../../utils/commerce/bankTransfer';
+import { stampTransfer, transferAccounts } from '../../utils/commerce/bankTransfer';
 import { reservedForStalls, type PopupCheckout } from '../../utils/popup';
+import { hoursSummary, orderRef, returnsSummary, shopClosedMessage, shopSettingsOf, vatFor, vatRateLabel } from '../../utils/commerce/shopSettings';
+import { TransferAccountPay, transferAccountFor } from './TransferAccountPay';
 
 type Step = 'cart' | 'details' | 'delivery' | 'review' | 'paying' | 'failed';
+type PayBy = 'card' | 'ussd' | 'transfer' | 'account';
 
 const outcomes: {value: TestPaymentOutcome;label: string;hint: string;}[] = [
 { value: 'success', label: 'Succeeds', hint: '4084 0840 8408 4081' },
@@ -83,11 +89,23 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
   const [payWithChoice, setPayWith] = useState<PayWith>('now');
   const [agreed, setAgreed] = useState(false);
   // Card or USSD for an immediate payment (D136).
-  const [payBy, setPayBy] = useState<'card' | 'ussd' | 'transfer'>('card');
-  const transfer = useMemo(() => transferDetails(workspaceId, businessName), [workspaceId, businessName, cart?.open]);
+  // 'account' = a one-time provider transfer account that confirms itself (D222); 'transfer' = the seller's own account (D148).
+  const [payByChoice, setPayBy] = useState<PayBy>('card');
+  // Shop settings (D222): order note, checkout address, terms tick.
+  const [buyerNote, setBuyerNote] = useState('');
+  const [buyerAddress, setBuyerAddress] = useState('');
+  const [termsOk, setTermsOk] = useState(false);
+  // Seller's own accounts (D148, several from D223); the buyer picks one when there's more than one.
+  const transferList = useMemo(() => transferAccounts(workspaceId, businessName), [workspaceId, businessName, cart?.open]);
+  const [transferIdx, setTransferIdx] = useState(0);
+  const transfer = transferList[Math.min(transferIdx, transferList.length - 1)] ?? null;
   const [ussdOpen, setUssdOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
   useEffect(() => {
-    if (step !== 'review') setUssdOpen(false);
+    if (step !== 'review') {
+      setUssdOpen(false);
+      setAccountOpen(false);
+    }
   }, [step]);
   // Pop-up shop pickup (D183).
   const [sessionId, setSessionId] = useState('');
@@ -115,6 +133,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
       setExtended(false);
       setPayWith('now');
       setAgreed(false);
+      setTermsOk(false);
     }
   }, [open]);
   useEffect(() => {
@@ -122,10 +141,13 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
     if (holding && !holdUntil && step !== 'cart' && step !== 'paying') {
       setHolding(false);
       setStep('cart');
-      setHoldNotice(`Your seats were released after ${HOLD_MINUTES} minutes. Check they’re still available and continue.`);
+      setHoldNotice(holdWhat === 'seats' ? `Your seats were released after ${holdMins} minutes. Check they’re still available and continue.` : `Your items were released after ${holdMins} minutes so other buyers could have them. Check they’re still available and continue.`);
     }
   }, [holding, holdUntil, step]);
 
+  const backorders = shopSettingsOf(data).orders.backorders;
+  // Stock holds (D255): never needed while backorders are on — nothing can run out.
+  const holdStock = shopSettingsOf(data).orders.holdStock && !backorders;
   const lines = useMemo(() => {
     const shown = (cart?.lines ?? []
     // A DealRoom sells only its own product; a pop-up only its chosen products.
@@ -148,13 +170,21 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
       const unreserved = product && variant && reserved.qty > 0 ? Math.min(variant.stock, Math.max(0, product.variants.reduce((s, v) => s + Math.max(0, v.stock), 0) - reserved.qty)) : null;
       const asideIssue = unreserved !== null && l.qty > unreserved ? unreserved === 0 ? `Set aside for ${reserved.labels[0]}` : `Only ${unreserved} available — the rest is set aside for ${reserved.labels[0]}` : '';
       const ticketIssue = product?.kind === 'ticket' ? ticketLineIssue(data, l, Date.now(), holder) : stallLeft !== null && l.qty > stallLeft ? stallLeft === 0 ? 'Sold out at the stall' : `Only ${stallLeft} left at the stall` : preIssue || asideIssue;
-      const ok = !!product && !!variant && price !== null && canSell(product, variant) && !ticketIssue && (product.kind === 'digital' || !product.trackStock || isPreorder(product) || variant.stock >= l.qty);
+      // Units other buyers are holding in checkout count as taken; this buyer's own hold counts as theirs (D255).
+      const free = variant ? product?.kind === 'physical' ? stockFree(data, variant, holder) : variant.stock : 0;
+      const stockIssue = product && variant && product.kind === 'physical' && product.trackStock && !isPreorder(product) && !backorders && free < l.qty && free < variant.stock ? stockHeldMessage(product.name, free) : '';
+      const ok = !!product && !!variant && price !== null && canSell(product, variant) && !ticketIssue && !stockIssue && (product.kind === 'digital' || !product.trackStock || isPreorder(product) || free >= l.qty || product.kind === 'physical' && backorders);
       const ev = product?.kind === 'ticket' ? findEvent(data, product.eventId) : undefined;
       const tt = ev?.ticketTypes.find((t) => t.id === l.variantId);
       const seatText = describeSeats(ev, l.seats);
-      return { ...l, product, variant, price, basePrice, bulk, ok, ticketIssue, seatText, maxQty: tt ? tt.maxPerOrder : 20 };
+      const backorder = ok && product?.kind === 'physical' && product.trackStock && !isPreorder(product) && !!variant && variant.stock < l.qty;
+      return { ...l, product, variant, price, basePrice, bulk, ok, backorder, ticketIssue: ticketIssue || stockIssue, seatText, free, maxQty: tt ? tt.maxPerOrder : 20 };
     });
-  }, [cart?.lines, data, dealRoom, holder, popup]);
+  }, [cart?.lines, data, dealRoom, holder, popup, backorders]);
+  // What gets held when the buyer presses Checkout: seats always, stock-tracked items when the shop holds stock.
+  const stockHoldLines = holdStock ? lines.filter((l) => l.ok && stockHoldable(l.product)) : [];
+  const holdWhat: 'seats' | 'items' = lines.some((l) => l.ok && l.product?.kind === 'ticket') ? 'seats' : 'items';
+  const holdMins = holdWhat === 'seats' ? HOLD_MINUTES : STOCK_HOLD_MINUTES;
 
   if (!cart || !data) return null;
 
@@ -195,9 +225,24 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
   `The limit is ${dealRoom.perPersonLimit} per person${priorUnits ? ` — you’ve already bought ${priorUnits}` : ''}.` :
   '';
   const discount = Math.min(resolution.applied?.amountNgn ?? 0, subtotal + (physical ? deliveryFee : 0));
-  const giftRes = resolveGiftCard(data, giftCode, subtotal - discount + (physical ? deliveryFee : 0), hasGiftItems);
+  // Shop settings (D222): VAT, minimum order, closed shop, payment methods.
+  const shop = shopSettingsOf(data);
+  const closedMsg = shopClosedMessage(shop);
+  const vat = vatFor(shop, subtotal - discount + (physical ? deliveryFee : 0));
+  const vatAdded = vat?.addedNgn ?? 0;
+  const minError = shop.checkout.minOrderNgn && subtotal > 0 && subtotal - discount < shop.checkout.minOrderNgn ? `The minimum order is ${formatNgn(shop.checkout.minOrderNgn)} — add ${formatNgn(shop.checkout.minOrderNgn - (subtotal - discount))} more.` : '';
+  const returnsText = returnsSummary(shop.policy);
+  const giftRes = resolveGiftCard(data, giftCode, subtotal - discount + (physical ? deliveryFee : 0) + vatAdded, hasGiftItems);
   const giftNgn = giftRes?.ok ? giftRes.amountNgn : 0;
-  const total = subtotal - discount - giftNgn + (physical ? deliveryFee : 0);
+  const total = subtotal - discount - giftNgn + (physical ? deliveryFee : 0) + vatAdded;
+  const vatRow = vat ?
+  <div className="flex justify-between gap-3">
+      <dt style={{ color: theme.mutedText }}>{vat.inclusive ? `Includes VAT (${vatRateLabel(vat.ratePct)})` : `VAT (${vatRateLabel(vat.ratePct)})`}</dt>
+      <dd className="shrink-0 tabular-nums" style={vat.inclusive ? { color: theme.mutedText } : undefined}>
+        {formatNgn(vat.amountNgn)}
+      </dd>
+    </div> :
+  null;
   const giftRow = giftNgn > 0 ?
   <div className="flex justify-between gap-3">
       <dt style={{ color: theme.mutedText }}>Gift card</dt>
@@ -242,11 +287,26 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
   const steps: Step[] = physical ? ['cart', 'details', 'delivery', 'review'] : ['cart', 'details', 'review'];
   const stepNo = Math.max(1, steps.indexOf(step) + 1);
 
+  // Email (D222): digital items, tickets and courses always need one; physical orders follow the seller's setting.
+  const emailAsk = !physical ? 'required' : shop.checkout.email;
+  // Address on orders that aren't delivered (D222); delivery asks for its own address.
+  const addressAsk = !physical ? shop.checkout.address : 'off';
   const detailErrors = {
     name: !customer.name.trim() ? 'Enter your name' : '',
     phone: !isValidPhone(customer.phone) ? 'Enter a phone number, e.g. +234 803 123 4567' : '',
-    email: (!physical || customer.email.trim()) && !isValidEmail(customer.email) ? ticketLines.length ? 'Enter an email for your receipt and tickets' : 'Enter an email for your receipt and download link' : ''
+    email:
+    emailAsk === 'off' ?
+    '' :
+    (emailAsk === 'required' || customer.email.trim()) && !isValidEmail(customer.email) ?
+    !physical ?
+    ticketLines.length ?
+    'Enter an email for your receipt and tickets' :
+    'Enter an email for your receipt and download link' :
+    'Enter an email for your receipt' :
+    '',
+    address: addressAsk === 'required' && !buyerAddress.trim() ? 'Enter your address' : ''
   };
+  const pickupAddressAsk = physical && method === 'pickup' && !popup ? shop.checkout.address : 'off';
   const deliveryError = popup ?
   !chosenSession ?
   'Choose when you’ll collect' :
@@ -255,14 +315,21 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
   'Choose how you’ll get your order' :
   method !== 'pickup' && !address.trim() ?
   'Enter the delivery address' :
+  method === 'pickup' && shop.checkout.address === 'required' && !buyerAddress.trim() ?
+  'Enter your address' :
   '';
 
   const close = () => {
+    // Leaving checkout gives held items and seats straight back to other buyers (D255).
+    if (holding && step !== 'paying') {
+      commerce.apply((d) => releaseHolds(d, holder));
+      setHolding(false);
+    }
     cart.setOpen(false);
     cart.doneChoosing();
   };
 
-  const pay = (override?: TestPaymentOutcome, via?: 'transfer') => {
+  const pay = (override?: TestPaymentOutcome, via?: 'transfer' | 'account') => {
     setStep('paying');
     // Nothing to charge: the test-card choice doesn't apply. USSD passes its own result (D136).
     const outcome = payNow > 0 ? override ?? chosenOutcome : 'success';
@@ -293,7 +360,10 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
             payWith,
             popup: popup && chosenSession ? { sessionId: chosenSession.id, sessionLabel: chosenSession.label, payAtStall: atStall } : undefined,
             stallLeft: popup?.left,
-            giftCardCode: giftRes?.ok ? giftRes.card.code : undefined
+            giftCardCode: giftRes?.ok ? giftRes.card.code : undefined,
+            buyerNote: shop.checkout.orderNote ? buyerNote : undefined,
+            buyerAddress: addressAsk !== 'off' || pickupAddressAsk !== 'off' ? buyerAddress : undefined,
+            transferAccount: via === 'account' ? transferAccountFor(holder) : undefined
           });
           if (!result.ok) return d;
           // Creator Collaboration (D103): remember which partner's link the buyer came from.
@@ -318,9 +388,10 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
           return;
         }
         if (r.order.paymentStatus === 'paid') {
-          track('order_paid', { valueNgn: r.order.subtotalNgn - r.order.discountNgn + r.order.deliveryNgn - (r.order.balance?.dueNgn ?? 0) - (r.order.instalments ? r.order.instalments.parts.filter((p) => p.status !== 'paid').reduce((s, p) => s + p.amountNgn, 0) : 0), label: `#${r.order.number}` });
+          track('order_paid', { valueNgn: r.order.subtotalNgn - r.order.discountNgn + r.order.deliveryNgn - (r.order.balance?.dueNgn ?? 0) - (r.order.instalments ? r.order.instalments.parts.filter((p) => p.status !== 'paid').reduce((s, p) => s + p.amountNgn, 0) : 0), label: orderRef(r.order) });
+          tagPurchase(r.order.subtotalNgn - r.order.discountNgn + r.order.deliveryNgn, r.order.id);
           const ticketValue = r.order.items.filter((i) => i.kind === 'ticket').reduce((s, i) => s + i.unitPriceNgn * i.qty, 0);
-          if (r.order.items.some((i) => i.kind === 'ticket')) track('ticket_paid', { valueNgn: ticketValue, label: `#${r.order.number}` });
+          if (r.order.items.some((i) => i.kind === 'ticket')) track('ticket_paid', { valueNgn: ticketValue, label: orderRef(r.order) });
         }
         setHolding(false);
         cart.clear();
@@ -437,9 +508,9 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
                       {[l.variant && Object.keys(l.variant.options).length ? variantLabel(l.variant) : null, l.price !== null ? formatNgn(l.price) : null].filter(Boolean).join(' · ')}
                       {l.bulk && l.basePrice !== null && <s className="ml-1.5">{formatNgn(l.basePrice)}</s>}
                     </p>
-                    {(l.bulk || l.ok && isPreorder(l.product)) &&
+                    {(l.bulk || l.backorder || l.ok && isPreorder(l.product)) &&
                 <p className="text-[12px] font-semibold" style={{ color: theme.text }}>
-                        {[l.bulk ? 'Bulk price' : '', l.ok && isPreorder(l.product) ? `Pre-order · expected by ${shipsByLabel(l.product.preorder.shipsBy)}` : ''].filter(Boolean).join(' · ')}
+                        {[l.bulk ? 'Bulk price' : '', l.backorder ? 'Ships later — back in stock soon' : '', l.ok && isPreorder(l.product) ? `Pre-order · expected by ${shipsByLabel(l.product.preorder.shipsBy)}` : ''].filter(Boolean).join(' · ')}
                       </p>
                 }
                     {l.seatText &&
@@ -449,7 +520,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
                 }
                     {!l.ok &&
                 <p className="mt-0.5 flex items-center gap-1 text-[12px] font-semibold">
-                        <AlertTriangleIcon size={12} aria-hidden /> {l.ticketIssue || (l.variant && l.product?.trackStock && l.variant.stock > 0 ? `Only ${l.variant.stock} left` : 'No longer available')}
+                        <AlertTriangleIcon size={12} aria-hidden /> {l.ticketIssue || (l.variant && l.product?.trackStock && l.free > 0 ? `Only ${l.free} left` : 'No longer available')}
                       </p>
                 }
                   </div>
@@ -464,7 +535,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
                       <button
                   type="button"
                   aria-label="One more"
-                  disabled={!!l.seats?.length || !!l.product.trackStock && !isPreorder(l.product) && !!l.variant && l.qty >= l.variant.stock || roomQty >= roomCap || l.qty >= l.maxQty}
+                  disabled={!!l.seats?.length || !!l.product.trackStock && !isPreorder(l.product) && !(backorders && l.product.kind === 'physical') && !!l.variant && l.qty >= (l.product.kind === 'physical' ? l.free : l.variant.stock) || roomQty >= roomCap || l.qty >= l.maxQty}
                   title={l.seats?.length ? 'Add seats from the seat map' : undefined}
                   onClick={() => cart.setQty(l.variantId, l.qty + 1)}
                   className="flex h-9 w-9 items-center justify-center disabled:opacity-40"
@@ -490,8 +561,19 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
                   <dd className="font-semibold tabular-nums">{formatNgn(subtotal)}</dd>
                 </div>
                 {discountRow}
+                {vat && !vat.inclusive && vatRow}
                 {giftRow}
               </dl>
+              {closedMsg &&
+            <p className="rounded-md px-3 py-2.5 text-[13.5px] font-semibold leading-snug" style={{ background: mix(theme.text, 6) }} role="alert">
+                  {closedMsg}
+                </p>
+            }
+              {!closedMsg && minError &&
+            <p className="rounded-md px-3 py-2.5 text-[13px] font-semibold leading-snug" style={{ background: mix(theme.text, 6) }} role="status">
+                  {minError}
+                </p>
+            }
               <DiscountCodeField theme={theme} code={code} onApply={setCode} resolution={resolution} />
               <GiftCardField theme={theme} code={giftCode} onApply={setGiftCode} resolution={giftRes} />
               {lines.some((l) => !l.ok) &&
@@ -504,23 +586,31 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
                   {holdNotice}
                 </p>
             }
-              {ticketLines.length > 0 && !holdNotice &&
+              {(ticketLines.length > 0 || stockHoldLines.length > 0) && !holdNotice &&
             <p className="text-[12.5px]" style={muted}>
-                  {tr('We’ll hold your seats for {n} minutes while you check out.', { n: HOLD_MINUTES })}
+                  {holdWhat === 'seats' ?
+              tr('We’ll hold your seats for {n} minutes while you check out.', { n: HOLD_MINUTES }) :
+              tr('We’ll keep these items for you for {n} minutes while you check out.', { n: STOCK_HOLD_MINUTES })}
                 </p>
             }
               <TestModeNote theme={theme} />
               <SheetActions theme={theme}>
               <PrimaryButton
                 theme={theme}
-                disabled={!lines.some((l) => l.ok)}
+                disabled={!lines.some((l) => l.ok) || !!closedMsg || !!minError}
                 onClick={() => {
                   setHoldNotice('');
-                  if (ticketLines.length) {
+                  if (ticketLines.length || stockHoldLines.length) {
                     let issue = '';
                     let until: string | null = null;
                     commerce.apply((d) => {
-                      const r = placeHolds(d, holder, ticketLines.map(({ productId, variantId, qty, seats }) => ({ productId, variantId, qty, seats })));
+                      const r = placeHolds(
+                        d,
+                        holder,
+                        [...ticketLines, ...stockHoldLines].map(({ productId, variantId, qty, seats }) => ({ productId, variantId, qty, seats })),
+                        Date.now(),
+                        holdStock
+                      );
                       issue = r.issue;
                       until = r.expiresAt;
                       return r.data;
@@ -530,7 +620,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
                       return;
                     }
                     setHolding(!!until);
-                    track('ticket_checkout');
+                    if (ticketLines.length) track('ticket_checkout');
                   }
                   track('checkout_start');
                   setStep('details');
@@ -565,7 +655,8 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
           </CheckoutHeading>
           <ThemedField theme={theme} label="Full name" autoComplete="name" value={customer.name} error={showErr('name')} onChange={(name) => setCustomer((c) => ({ ...c, name }))} />
           <ThemedField theme={theme} label="Phone (WhatsApp preferred)" type="tel" inputMode="tel" autoComplete="tel" placeholder="+234 …" value={customer.phone} error={showErr('phone')} onChange={(phone) => setCustomer((c) => ({ ...c, phone }))} />
-          <ThemedField theme={theme} label="Email" type="email" inputMode="email" autoComplete="email" optional={physical} value={customer.email} error={showErr('email')} onChange={(email) => setCustomer((c) => ({ ...c, email }))} />
+          {emailAsk !== 'off' && <ThemedField theme={theme} label="Email" type="email" inputMode="email" autoComplete="email" optional={emailAsk === 'optional'} value={customer.email} error={showErr('email')} onChange={(email) => setCustomer((c) => ({ ...c, email }))} />}
+          {addressAsk !== 'off' && <ThemedField theme={theme} label="Address" autoComplete="street-address" optional={addressAsk === 'optional'} value={buyerAddress} error={showErr('address')} onChange={setBuyerAddress} />}
           {ticketLines.some((l) => l.qty > 1) &&
           <fieldset className="flex flex-col gap-3 pt-1">
               <legend className="mb-1 text-[14px] font-semibold">
@@ -692,7 +783,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
 
     if (step === 'delivery') {
       const options = [
-      ...(f.pickupEnabled ? [{ id: 'pickup', title: tr('Pickup'), detail: [f.pickupAddress, f.pickupHours].filter(Boolean).join(' · '), fee: 0 }] : []),
+      ...(f.pickupEnabled ? [{ id: 'pickup', title: tr('Pickup'), detail: [f.pickupAddress, hoursSummary(shop.status.hours) || f.pickupHours].filter(Boolean).join(' · '), fee: 0 }] : []),
       ...(f.deliveryEnabled ? f.zones.map((z) => ({ id: z.id, title: `${tr('Delivery')} · ${z.name}`, detail: z.eta ? `${tr('Usually')} ${z.eta}` : '', fee: free ? 0 : z.feeNgn })) : [])];
 
       return (
@@ -733,6 +824,9 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
             </div>
           }
           {method && method !== 'pickup' && <ThemedField theme={theme} label="Delivery address" autoComplete="street-address" value={address} error={tried && !address.trim() ? 'Enter the delivery address' : undefined} onChange={setAddress} />}
+          {pickupAddressAsk !== 'off' &&
+          <ThemedField theme={theme} label="Your address" autoComplete="street-address" optional={pickupAddressAsk === 'optional'} value={buyerAddress} error={tried && pickupAddressAsk === 'required' && !buyerAddress.trim() ? 'Enter your address' : undefined} onChange={setBuyerAddress} />
+          }
           {tried && !method &&
           <p className="text-[12.5px] font-medium" role="alert">
               {tr('Choose how you’ll get your order.')}
@@ -772,17 +866,41 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
         
         </div>);
 
+    if (accountOpen)
+    return (
+      <div className="flex flex-1 flex-col gap-4">
+          <TransferAccountPay
+          theme={theme}
+          amount={payNow}
+          account={transferAccountFor(holder)}
+          onBack={() => setAccountOpen(false)}
+          onPaid={() => {
+            setAccountOpen(false);
+            pay('success', 'account');
+          }} />
+        
+        </div>);
+
+    // Ways to pay follow Commerce settings → Payment methods (D222).
+    // Instalments need a card, since later parts are charged to it.
+    const cardAvailable = shop.methods.card || payWith === 'instalments';
     // USSD only for a single naira payment now — not for later instalment charges (D136).
-    const ussdAvailable = isNaira() && payNow > 0 && payWith === 'now';
+    const ussdAvailable = USSD_AVAILABLE && shop.methods.ussd && isNaira() && payNow > 0 && payWith === 'now';
+    // One-time transfer account from the provider: confirms itself (D222).
+    const accountAvailable = shop.methods.transfer && isNaira() && payNow > 0 && payWith === 'now';
     // Bank transfer to the seller (D148): naira, a payment now, not group buys (their refunds need the provider).
-    const transferAvailable = !!transfer && isNaira() && payNow > 0 && payWith === 'now' && !dealRoom;
-    const byUssd = ussdAvailable && payBy === 'ussd';
-    const byTransfer = transferAvailable && payBy === 'transfer';
+    const transferAvailable = shop.methods.transfer && shop.methods.transferOwn && !!transfer && isNaira() && payNow > 0 && payWith === 'now' && !dealRoom;
     const payOptions = [
-    ['card', CreditCardIcon, tr('Card or transfer')],
-    ...(ussdAvailable ? [['ussd', HashIcon, tr('USSD code')] as const] : []),
-    ...(transferAvailable ? [['transfer', LandmarkIcon, tr('Bank transfer')] as const] : [])] as
-    const;
+    ...(cardAvailable ? [['card', CreditCardIcon, tr('Card')] as const] : []),
+    ...(accountAvailable ? [['account', LandmarkIcon, transferAvailable ? tr('Transfer account') : tr('Bank transfer')] as const] : []),
+    ...(transferAvailable ? [['transfer', LandmarkIcon, tr('Seller’s account')] as const] : []),
+    ...(ussdAvailable ? [['ussd', HashIcon, tr('USSD code')] as const] : [])];
+
+    const payBy: PayBy = payOptions.some(([v]) => v === payByChoice) ? payByChoice : payOptions[0]?.[0] ?? 'card';
+    const byUssd = payBy === 'ussd';
+    const byTransfer = payBy === 'transfer';
+    const byAccount = payBy === 'account';
+    const noWayToPay = payNow > 0 && !atStall && payOptions.length === 0;
     return (
       <div className="flex flex-col gap-4">
         <CheckoutHeading theme={theme}>Review and pay</CheckoutHeading>
@@ -803,17 +921,19 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
             <dd className="tabular-nums">{formatNgn(subtotal)}</dd>
           </div>
           {discountRow}
-          {giftRow}
           {physical &&
           <div className="flex justify-between gap-3">
               <dt style={muted}>{popup ? `${tr('Pickup')} · ${chosenSession?.when ?? ''}` : method === 'pickup' ? tr('Pickup') : `${tr('Delivery')} · ${zone?.name ?? ''}`}</dt>
               <dd className="tabular-nums">{deliveryFee === 0 ? tr('Free') : formatNgn(deliveryFee)}</dd>
             </div>
           }
+          {vat && !vat.inclusive && vatRow}
+          {giftRow}
           <div className={balanceLater ? 'flex justify-between pt-1' : 'flex justify-between pt-1 text-[16px] font-semibold'}>
             <dt>{tr('Total')}</dt>
             <dd className="tabular-nums">{formatNgn(total)}</dd>
           </div>
+          {vat?.inclusive && vatRow}
           {balanceLater > 0 &&
           <>
               <div className="flex justify-between pt-1 text-[16px] font-semibold">
@@ -838,6 +958,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
             Includes a pre-order — expected by {shipsByLabel(shipsBy)}. It’s sent as soon as it’s in.
           </p>
         }
+        {!dealRoom && <LoyaltyRedeem theme={theme} workspaceId={workspaceId} data={data} apply={commerce.apply} phone={customer.phone} code={code} onApply={setCode} />}
         <DiscountCodeField theme={theme} code={code} onApply={setCode} resolution={resolution} />
         <GiftCardField theme={theme} code={giftCode} onApply={setGiftCode} resolution={giftRes} />
         {atStall &&
@@ -862,7 +983,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
         {payOptions.length > 1 && !atStall &&
         <fieldset className="flex flex-col gap-2">
             <legend className="mb-1 text-[14px] font-semibold">{tr('Pay with')}</legend>
-            <div className={payOptions.length === 3 ? 'grid grid-cols-1 gap-2 min-[400px]:grid-cols-3' : 'grid grid-cols-2 gap-2'}>
+            <div className={payOptions.length === 3 ? 'grid grid-cols-1 gap-2 min-[400px]:grid-cols-3' : 'grid grid-cols-1 gap-2 min-[360px]:grid-cols-2'}>
               {payOptions.map(([v, Icon, label]) =>
             <label key={v} className="flex cursor-pointer items-center gap-2.5 p-3 text-[14px] font-semibold focus-within:outline focus-within:outline-2 focus-within:outline-offset-2" style={{ ...cardStyle(theme), border: `1.5px solid ${payBy === v ? theme.text : mix(theme.text, 12)}` }}>
                   <input type="radio" name="pay-by" className="sr-only" checked={payBy === v} onChange={() => setPayBy(v)} />
@@ -876,9 +997,24 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
                 {tr('No card or data needed — dial a code from your bank phone and approve with your PIN.')}
               </p>
           }
+            {byAccount &&
+          <p className="text-[12.5px] leading-snug" style={muted}>
+                {tr('You’ll get a one-time account number to transfer to. Your order confirms automatically when the money lands.')}
+              </p>
+          }
             {byTransfer && transfer &&
           <div className="flex flex-col gap-2 p-3 text-[14px]" style={{ ...cardStyle(theme), background: mix(theme.text, 4) }}>
                 <p className="font-semibold">{tr('Transfer {amount} to:', { amount: formatNgn(payNow) })}</p>
+                {transferList.length > 1 &&
+            <div role="radiogroup" aria-label={tr('Choose an account')} className="flex flex-col gap-1.5">
+                    {transferList.map((a, i) =>
+              <label key={`${a.bank}-${a.account}`} className="flex cursor-pointer items-center gap-2.5 text-[13.5px]">
+                        <input type="radio" name="transfer-acct" checked={transfer === a} onChange={() => setTransferIdx(i)} style={{ accentColor: theme.text }} />
+                        {a.bank} · {a.account.slice(-4).padStart(4, '•')}
+                      </label>
+              )}
+                  </div>
+            }
                 <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
                   <dt style={muted}>{tr('Bank')}</dt>
                   <dd className="font-medium">{transfer.bank}</dd>
@@ -898,7 +1034,12 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
           }
           </fieldset>
         }
-        {payNow > 0 && !byUssd && !byTransfer &&
+        {noWayToPay &&
+        <p className="rounded-md px-3 py-2.5 text-[13.5px] font-semibold leading-snug" style={{ background: mix(theme.text, 6) }} role="alert">
+            {tr('This seller hasn’t turned on a way to pay online yet. Message them to order.')}
+          </p>
+        }
+        {payNow > 0 && !atStall && payBy === 'card' && !noWayToPay &&
         <fieldset className="flex flex-col gap-2">
           <legend className="mb-1 text-[13px] font-semibold">{tr('Test card — choose what happens')}</legend>
           {outcomes.filter((o) => payWith !== 'instalments' || o.value !== 'pending' && o.value !== 'timeout').map((o) =>
@@ -924,12 +1065,39 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
             {roomError}
           </p>
         }
+        {shop.checkout.orderNote &&
+        <ThemedField theme={theme} label="Note for the seller" optional autoComplete="off" placeholder="e.g. Gift wrap, please" value={buyerNote} onChange={(v) => setBuyerNote(v.slice(0, 300))} />
+        }
+        {shop.checkout.termsTick &&
+        <label className="flex cursor-pointer items-start gap-3 text-[13.5px] leading-snug">
+            <input type="checkbox" checked={termsOk} onChange={(e) => setTermsOk(e.target.checked)} className="mt-0.5 h-5 w-5 shrink-0" style={{ accentColor: theme.text }} />
+            <span>
+              {tr('I agree to the seller’s terms and returns policy.')}
+              {returnsText &&
+            <span className="mt-1 block text-[12.5px]" style={muted}>
+                  {returnsText}
+                </span>
+            }
+            </span>
+          </label>
+        }
+        {closedMsg &&
+        <p className="rounded-md px-3 py-2.5 text-[13.5px] font-semibold leading-snug" style={{ background: mix(theme.text, 6) }} role="alert">
+            {closedMsg}
+          </p>
+        }
         <TestModeNote theme={theme} />
         <TermsUpdatedNote theme={theme} />
         <SheetActions theme={theme}>
-          <PrimaryButton theme={theme} onClick={() => byUssd ? setUssdOpen(true) : byTransfer ? pay('pending', 'transfer') : pay()} disabled={okLines.length === 0 || !!roomError || payWith === 'instalments' && !agreed}>
+          <PrimaryButton
+            theme={theme}
+            onClick={() => byUssd ? setUssdOpen(true) : byAccount ? setAccountOpen(true) : byTransfer ? pay('pending', 'transfer') : pay()}
+            disabled={okLines.length === 0 || !!roomError || payWith === 'instalments' && !agreed || shop.checkout.termsTick && !termsOk || !!closedMsg || !!minError || noWayToPay}>
+            
             {byUssd ?
             tr('Get a USSD code for {amount}', { amount: formatNgn(payNow) }) :
+            byAccount ?
+            tr('Get account details for {amount}', { amount: formatNgn(payNow) }) :
             byTransfer ?
             tr('Place order — pay {amount} by transfer', { amount: formatNgn(payNow) }) :
             atStall ?
@@ -974,15 +1142,17 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
           onExtend={() => {
             let ok = false;
             commerce.apply((d) => {
-              const r = extendHolds(d, holder);
+              const r = extendHolds(d, holder, Date.now(), holdMins);
               ok = !!r.expiresAt;
               return r.data;
             });
             if (ok) {
               setExtended(true);
-              announce(`Your seats are held for another ${HOLD_MINUTES} minutes.`);
+              announce(`Your ${holdWhat} are held for another ${holdMins} minutes.`);
             }
-          }} />
+          }}
+          what={holdWhat}
+          minutes={holdMins} />
 
         }
         {body()}
@@ -995,7 +1165,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
  * Countdown for reserved seats; turns emphatic in the last minute and offers one extension
  * (WCAG 2.2.1, D76). The ticking digits are silent — the warning is announced once.
  */
-function HoldTimer({ theme, msLeft, canExtend, onExtend }: {theme: PageTheme;msLeft: number;canExtend: boolean;onExtend: () => void;}) {
+function HoldTimer({ theme, msLeft, canExtend, onExtend, what = 'seats', minutes = HOLD_MINUTES }: {theme: PageTheme;msLeft: number;canExtend: boolean;onExtend: () => void;what?: 'seats' | 'items';minutes?: number;}) {
   const s = Math.max(0, Math.ceil(msLeft / 1000));
   const label = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
   const urgent = s <= 60;
@@ -1003,14 +1173,14 @@ function HoldTimer({ theme, msLeft, canExtend, onExtend }: {theme: PageTheme;msL
   useEffect(() => {
     if (urgent && !warned.current) {
       warned.current = true;
-      announce(canExtend ? 'Your seats are released in about a minute. Choose Keep my seats if you need more time.' : 'Your seats are released in about a minute.', 'assertive');
+      announce(canExtend ? `Your ${what} are released in about a minute. Choose Keep my ${what} if you need more time.` : `Your ${what} are released in about a minute.`, 'assertive');
     }
     if (!urgent) warned.current = false;
-  }, [urgent, canExtend]);
+  }, [urgent, canExtend, what]);
   return (
     <div className="flex flex-col gap-2 rounded-md px-3 py-2 text-[13px]" style={{ background: urgent ? theme.text : mix(theme.text, 6), color: urgent ? theme.background : theme.text }}>
       <p className="flex items-center justify-between gap-3">
-        <span className="font-medium">{urgent && canExtend ? 'Need more time?' : 'Your seats are held'}</span>
+        <span className="font-medium">{urgent && canExtend ? 'Need more time?' : what === 'seats' ? 'Your seats are held' : 'Your items are kept for you'}</span>
         <span role="timer" aria-live="off" aria-label={`${Math.ceil(s / 60)} minute${Math.ceil(s / 60) === 1 ? '' : 's'} left`} className="font-semibold tabular-nums">
           {label}
         </span>
@@ -1022,7 +1192,7 @@ function HoldTimer({ theme, msLeft, canExtend, onExtend }: {theme: PageTheme;msL
         className="min-h-[36px] self-start rounded-md px-3 text-[13px] font-semibold underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2"
         style={{ background: theme.background, color: theme.text }}>
         
-          Keep my seats for {HOLD_MINUTES} more minutes
+          Keep my {what} for {minutes} more minutes
         </button>
       }
     </div>);

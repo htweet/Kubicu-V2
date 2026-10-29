@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useRef } from 'react';
+import { useElementWidth } from '../../hooks/useElementWidth';
 import { TruckIcon } from 'lucide-react';
 import type { BlockProps } from './blockProps';
 import { BlockPlaceholder } from './BlockPlaceholder';
@@ -20,6 +21,8 @@ interface Row {
  */
 export function DeliveryBlock({ block, theme, mode }: BlockProps<'delivery'>) {
   const c = block.content;
+  const ref = useRef<HTMLElement>(null);
+  const width = useElementWidth(ref);
   const catalog = useCatalog();
   const f = catalog?.fulfilment;
   const fromShop = c.source === 'shop';
@@ -48,11 +51,15 @@ export function DeliveryBlock({ block, theme, mode }: BlockProps<'delivery'>) {
   const label = { color: theme.mutedText };
   const rule = `1px solid ${mix(theme.text, 10)}`;
   const display = { fontFamily: fontsFor(theme).display, color: theme.text };
+  // Side by side only when the block itself is wide enough for the price table to breathe — a narrow column,
+  // a phone or the canvas phone preview stacks Returns under Delivery instead of squeezing the table.
+  const twoCol = !!returns && (rows.length > 0 || !!pickup) && width >= 640;
+  const showTime = width >= 380;
 
   return (
-    <section>
+    <section ref={ref}>
       <SectionHeading theme={theme} title={c.title} intro={c.intro} />
-      <div className="grid gap-x-10 md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+      <div className={twoCol ? 'grid grid-cols-[minmax(0,3fr)_minmax(0,2fr)] gap-x-10' : 'flex flex-col'}>
         <div>
           {rows.length > 0 &&
           <div className="py-5" style={{ borderTop: rule }}>
@@ -65,7 +72,7 @@ export function DeliveryBlock({ block, theme, mode }: BlockProps<'delivery'>) {
                   <tr className="text-[12.5px]" style={label}>
                     <th scope="col" className="pb-2 font-medium">Area</th>
                     <th scope="col" className="pb-2 text-right font-medium">Price</th>
-                    <th scope="col" className="hidden pb-2 pl-4 text-right font-medium sm:table-cell">Usually</th>
+                    {showTime && <th scope="col" className="pb-2 pl-4 text-right font-medium">Usually</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -73,18 +80,20 @@ export function DeliveryBlock({ block, theme, mode }: BlockProps<'delivery'>) {
                 <tr key={r.id} style={{ borderTop: `1px solid ${mix(theme.text, 7)}` }}>
                       <th scope="row" className="py-2.5 pr-3 align-top font-normal" style={{ color: theme.text }}>
                         {r.area}
-                        {r.time &&
-                    <span className="block text-[13px] sm:hidden" style={label}>
+                        {r.time && !showTime &&
+                    <span className="block text-[13px]" style={label}>
                             {r.time}
                           </span>
                     }
                       </th>
-                      <td className="py-2.5 text-right align-top font-medium tabular-nums" style={{ color: theme.text }}>
+                      <td className="whitespace-nowrap py-2.5 text-right align-top font-medium tabular-nums" style={{ color: theme.text }}>
                         {r.price || '—'}
                       </td>
-                      <td className="hidden py-2.5 pl-4 text-right align-top sm:table-cell" style={label}>
-                        {r.time || '—'}
-                      </td>
+                      {showTime &&
+                  <td className="py-2.5 pl-4 text-right align-top" style={label}>
+                          {r.time || '—'}
+                        </td>
+                  }
                     </tr>
                 )}
                 </tbody>

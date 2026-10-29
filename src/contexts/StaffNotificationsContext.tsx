@@ -4,6 +4,7 @@ import { useAdminStore } from '../utils/admin/store';
 import { useTemplateStore } from '../utils/templateListings';
 import { useSubmissions } from '../utils/extensionSubmissions';
 import { staffFeed, type StaffNotif } from '../utils/admin/staffFeed';
+import { useKycQueue } from '../hooks/useKycQueue';
 
 /** Staff notifications (D168): read state and muted areas per staff member, on this device. */
 interface StaffNotifPrefs {
@@ -63,7 +64,8 @@ export function StaffNotificationsProvider({ staff, children }: {staff: StaffMem
       /* storage full — read state just won't persist */}
   }, [prefs, staff.id]);
 
-  const all = useMemo(() => staffFeed(store, templates, subs, staff, now), [store, templates, subs, staff, now]);
+  const kyc = useKycQueue();
+  const all = useMemo(() => staffFeed(store, templates, subs, staff, now, kyc), [store, templates, subs, staff, now, kyc]);
   const items = useMemo(() => all.filter((n) => n.urgent || !prefs.muted.includes(n.area)), [all, prefs.muted]);
   const areas = useMemo(() => Array.from(new Set(all.map((n) => n.area))), [all]);
   const readSet = useMemo(() => new Set(prefs.read), [prefs.read]);

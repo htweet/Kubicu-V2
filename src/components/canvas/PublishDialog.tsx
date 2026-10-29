@@ -24,7 +24,9 @@ import { InlineAlert } from '../ui/InlineAlert';
 import { UpgradeButton } from '../ui/UpgradeButton';
 import { useTeam } from '../../contexts/TeamContext';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
-import { QrCodeIcon, SendIcon } from 'lucide-react';
+import { ChevronDownIcon, QrCodeIcon, SearchIcon, SendIcon } from 'lucide-react';
+import { SearchSharingFields, seoSummary } from './inspector/SearchSharingFields';
+import { IndexingFields, indexingSummary } from './inspector/IndexingFields';
 import { qrHref } from '../../utils/domains/links';
 import { Segmented } from '../ui/Segmented';
 import { DateTimeInput } from '../ui/DateTimeInput';
@@ -56,6 +58,8 @@ export function PublishDialog({ open, onClose, onGoToBlock, onOpenTheme }: Publi
   const [busy, setBusy] = useState(false);
   const [mode, setMode] = useState<Mode>('now');
   const [when, setWhen] = useState<string | null>(tomorrowAtNine());
+  const [seoOpen, setSeoOpen] = useState(false);
+  const seo = seoSummary(state.draft.seo);
 
   useEffect(() => {
     if (open) {
@@ -63,8 +67,10 @@ export function PublishDialog({ open, onClose, onGoToBlock, onOpenTheme }: Publi
       setNote('');
       setMode('now');
       setWhen(tomorrowAtNine());
+      // Search & sharing (D219): open straight away when the description is still empty.
+      setSeoOpen(!state.draft.seo.description.trim());
     }
-  }, [open]);
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const whenError =
   mode === 'schedule' ?
@@ -340,6 +346,40 @@ export function PublishDialog({ open, onClose, onGoToBlock, onOpenTheme }: Publi
           }
           </div>
         }
+
+        <section className="rounded-md border border-line" aria-labelledby="publish-seo-heading">
+          <h3 id="publish-seo-heading" className="m-0">
+            <button
+              type="button"
+              aria-expanded={seoOpen}
+              aria-controls="publish-seo-body"
+              onClick={() => setSeoOpen((v) => !v)}
+              className="flex w-full items-center gap-3 rounded-md px-3.5 py-3 text-left transition-colors duration-150 ease-out hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+              
+              <SearchIcon size={16} className="shrink-0 text-fg-muted" aria-hidden />
+              <span className="min-w-0 flex-1">
+                <span className="block text-label font-semibold text-fg">Search & sharing</span>
+                <span className="block text-caption text-fg-muted">
+                  {indexingSummary(state.site, state.draft.seo)} · {seo.missing.length === 0 ? 'title, description and share image set' : `not set yet: ${seo.missing.join(', ')}`}
+                </span>
+              </span>
+              <ChevronDownIcon size={16} className={`shrink-0 text-fg-subtle transition-transform duration-150 ease-out ${seoOpen ? 'rotate-180' : ''}`} aria-hidden />
+            </button>
+          </h3>
+          {seoOpen &&
+          <div id="publish-seo-body" className="border-t border-line px-3.5 pb-4 pt-4">
+              <p className="mb-4 text-caption text-fg-subtle">
+                How {state.activePageId ? 'this page' : 'your page'} appears on Google and when the link is shared on WhatsApp or X. The same settings are in Page settings → Search & sharing.
+                {hasUnpublishedChanges ? '' : ' Changing them here means you’ll need to publish again.'}
+              </p>
+              <SearchSharingFields idPrefix="publish-seo" compact />
+              <div className="mt-5 border-t border-line pt-4">
+                <h4 className="mb-3 text-label font-semibold text-fg">Search engines</h4>
+                <IndexingFields idPrefix="publish" />
+              </div>
+            </div>
+          }
+        </section>
 
         {hasUnpublishedChanges &&
         <TextInput

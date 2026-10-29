@@ -1,5 +1,6 @@
 import React from 'react';
 import { CheckCircle2Icon, CopyIcon, HammerIcon, MessageCircleIcon } from 'lucide-react';
+import { orderRef } from '../../utils/commerce/shopSettings';
 import { toast } from 'sonner';
 import type { CommerceData, Order } from '../../types/commerce';
 import { Button } from '../ui/Button';
@@ -37,7 +38,7 @@ export function OrderBalancePanel({ order, handle, business, apply }: OrderBalan
     navigator.clipboard?.writeText(link).catch(() => undefined);
     if (apply((d) => requestOrderBalance(d, order.id))) toast.success('Pay link copied', { description: 'Send it to the customer — they pay from their order page.' });
   };
-  const message = `Hi ${order.customer.name.split(' ')[0] || 'there'}, it's ${business}. Your order #${order.number} is nearly ready! The balance is ${formatNgn(b.dueNgn)} — you can pay it here: ${link}`;
+  const message = `Hi ${order.customer.name.split(' ')[0] || 'there'}, it's ${business}. Your order ${orderRef(order)} is nearly ready! The balance is ${formatNgn(b.dueNgn)} — you can pay it here: ${link}`;
 
   return (
     <section aria-labelledby="ord-balance-h" className="flex flex-col gap-3 rounded-md border border-warning/40 bg-warning-soft px-4 py-3">

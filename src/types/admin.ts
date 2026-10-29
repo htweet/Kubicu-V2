@@ -2,7 +2,7 @@ import type { WorkspacePlan } from './plan';
 
 /** Super-admin operations (D75b). Stored in the browser for the prototype. */
 
-export type FlagId = 'ai_page_setup' | 'storefront';
+export type FlagId = 'ai_page_setup' | 'storefront' | 'verified_tick';
 
 export interface FlagState {
   /** Kill switch: off means off for everyone, whatever the plans say. */
@@ -41,7 +41,7 @@ export interface Suspension {
 }
 
 export type TicketStatus = 'open' | 'waiting' | 'solved';
-export type TicketTopic = 'billing' | 'payments' | 'pages' | 'account' | 'other';
+export type TicketTopic = 'billing' | 'payments' | 'pages' | 'account' | 'legal' | 'other';
 
 export interface TicketMessage {
   id: string;
@@ -271,6 +271,8 @@ export interface AdminStore {
   policyReleases: Record<string, PolicyRelease[]>;
   /** Fundraisers staff paused while reviewing (D179). Keyed by page handle. */
   pausedFundraisers?: Record<string, {reason: string;at: string;by: string;}>;
+  /** Verified workspaces whose public tick staff have hidden without withdrawing verification (D254). Keyed by workspace id. */
+  verifiedTickOff?: Record<string, {reason: string;at: string;by: string;}>;
   /** Fundraisers started on this device, so staff are told about new ones (D179). */
   fundraisers?: {handle: string;workspaceId: string;workspaceName: string;name: string;goalNgn: number;createdAt: string;}[];
 }

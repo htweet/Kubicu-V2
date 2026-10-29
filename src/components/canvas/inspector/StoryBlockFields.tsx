@@ -4,6 +4,7 @@ import type { ValidationIssue } from '../../../utils/validation';
 import type { StoryBlockType } from '../../../data/blockRegistryStory';
 import { useEditor } from '../../../contexts/EditorContext';
 import { uid } from '../../../utils/id';
+import { businessWhatsApp, waFieldHint } from '../../../utils/businessWhatsApp';
 import { blockName, summarizeBlock } from '../../../utils/blocks';
 import { TextInput } from '../../ui/TextInput';
 import { TextArea } from '../../ui/TextArea';
@@ -273,7 +274,13 @@ export function StoryBlockFields({ block, issues }: {block: Extract<Block, {type
           <div className={stack}>
           <TextInput id={id('title')} label="Title" optional value={c.title} onChange={(e) => set({ title: e.target.value }, 'title')} />
           <TextInput id={id('phone')} label="Phone" optional type="tel" placeholder="+234…" value={c.phone} onChange={(e) => set({ phone: e.target.value }, 'phone')} />
-          <TextInput id={id('whatsapp')} label="WhatsApp number" optional type="tel" placeholder="+234…" hint="With country code. Opens a chat with you." value={c.whatsapp} error={err('whatsapp')} onChange={(e) => set({ whatsapp: e.target.value }, 'whatsapp')} />
+          <TextInput id={id('whatsapp')} label="WhatsApp number" optional type="tel" placeholder={businessWhatsApp() || '+234…'} hint={waFieldHint(c.whatsapp, 'Opens a chat with you.')} value={c.whatsapp} error={err('whatsapp')} onChange={(e) => set({ whatsapp: e.target.value }, 'whatsapp')} />
+          {!c.whatsapp.trim() && businessWhatsApp() &&
+            <label className="-mt-2 flex items-center gap-2 text-label text-fg">
+              <input type="checkbox" className="h-4 w-4" checked={c.useBusinessWhatsApp !== false} onChange={(e) => set({ useBusinessWhatsApp: e.target.checked }, 'whatsapp')} />
+              Show a WhatsApp button with my business number
+            </label>
+            }
           <TextInput id={id('email')} label="Email" optional type="email" value={c.email} error={err('email')} onChange={(e) => set({ email: e.target.value }, 'email')} />
           <TextInput id={id('website')} label="Website" optional type="url" placeholder="https://" value={c.website} error={err('website')} onChange={(e) => set({ website: e.target.value }, 'website')} />
           <Field id={id('layout')} label="Arrange">

@@ -1,17 +1,18 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { AlertTriangleIcon, MoreHorizontalIcon, PauseIcon, PlayIcon, SnowflakeIcon, Undo2Icon } from 'lucide-react';
 import type { MoneyData, Payout } from '../../types/money';
-import type { KycRequest } from '../../types/kyc';
+import type { KycRequest, KycStatus } from '../../types/kyc';
 import { entityInfo, kycRisks, REVIEW_HOURS, statusLabels, statusTones, withEvent } from '../../utils/money/kyc';
 import { KycReviewSheet } from '../../components/admin/KycReviewSheet';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
-import { audit, staffActor, useAdminStore } from '../../utils/admin/store';
+import { audit, flagOn, staffActor, useAdminStore } from '../../utils/admin/store';
 import { effectiveStatus, newApproval } from '../../utils/admin/approvals';
 import { useStaffSession } from '../../hooks/useStaffSession';
 import { ApprovalQueue } from '../../components/admin/ApprovalQueue';
 import type { PendingApproval } from '../../types/admin';
-import { balances, readMoney, tierInfo, writeMoney } from '../../utils/money/store';
+import { balances, MONEY_EVENT, payoutTier, readMoney, tierInfo, writeMoney } from '../../utils/money/store';
 import { uid } from '../../utils/id';
 import { formatNgn, formatRelative } from '../../utils/format';
 import { PageHeader } from '../../components/shell/PageHeader';
@@ -26,6 +27,14 @@ import { Card } from '../../components/ui/layout/Card';
 import { ReasonDialog } from '../../components/admin/ReasonDialog';
 
 type Tab = 'queue' | 'wallets' | 'identity' | 'providers';
+type KycFilter = 'waiting' | 'changes' | 'approved' | 'rejected' | 'all';
+const kycFilters: Record<KycFilter, {label: string;empty: string;match: (s: KycStatus) => boolean;}> = {
+  waiting: { label: 'Waiting', empty: 'No verifications are waiting', match: (s) => s === 'in_review' },
+  changes: { label: 'Changes requested', empty: 'No owners are fixing changes', match: (s) => s === 'needs_info' },
+  approved: { label: 'Approved', empty: 'No approved verifications yet', match: (s) => s === 'approved' },
+  rejected: { label: 'Not approved', empty: 'Nothing has been rejected', match: (s) => s === 'rejected' },
+  all: { label: 'All', empty: 'No verifications have been sent', match: () => true }
+};
 const LARGE_PAYOUT = 100_000;
 const NEW_BANK_DAYS = 7;
 
@@ -63,8 +72,28 @@ export function AdminPayments() {
     writeMoney(a.workspaceId, ((d: MoneyData) => ({ ...d, payouts: d.payouts.map((p) => p.id === a.payoutId ? { ...p, status: 'processing' as const, holdReason: null, createdAt: new Date().toISOString() } : p) }))(readMoney(a.workspaceId)));
     setTick((t) => t + 1);
   };
-  const [tab, setTab] = useState<Tab>('queue');
+  const [params] = useSearchParams();
+  const [tab, setTab] = useState<Tab>(() => ['queue', 'wallets', 'identity', 'providers'].includes(params.get('tab') ?? '') ? params.get('tab') as Tab : 'queue');
   const [tick, setTick] = useState(0);
+  // A seller submitting verification (or any wallet change) refreshes this page without a reload (D244).
+  useEffect(() => {
+    const bump = () => setTick((t) => t + 1);
+    const onStorage = (e: StorageEvent) => {
+      if (!e.key || e.key.startsWith('kubicu.money.')) bump();
+    };
+    window.addEventListener(MONEY_EVENT, bump);
+    window.addEventListener('storage', onStorage);
+    const t = window.setInterval(bump, 30000);
+    return () => {
+      window.removeEventListener(MONEY_EVENT, bump);
+      window.removeEventListener('storage', onStorage);
+      window.clearInterval(t);
+    };
+  }, []);
+  useEffect(() => {
+    const t = params.get('tab');
+    if (t === 'queue' || t === 'wallets' || t === 'identity' || t === 'providers') setTab(t);
+  }, [params]);
   const [pending, setPending] = useState<Pending | null>(null);
   const [reviewing, setReviewing] = useState<string | null>(null);
 
@@ -87,7 +116,26 @@ export function AdminPayments() {
     [wallets]
   );
   const reviews = wallets.filter((w) => w.money.kyc.status === 'in_review').sort((a, b) => Date.parse(a.money.kyc.submittedAt ?? '') - Date.parse(b.money.kyc.submittedAt ?? ''));
+  // D252: every case ever sent stays findable after a decision.
+  const [kycFilter, setKycFilter] = useState<KycFilter>('waiting');
+  const cases = useMemo(() => wallets.filter((w) => !!w.money.kyc.submittedAt || w.money.kyc.history.length > 0), [wallets]);
+  const kycCount = (f: KycFilter) => cases.filter((w) => kycFilters[f].match(w.money.kyc.status)).length;
+  const shownCases = useMemo(() => {
+    const list = cases.filter((w) => kycFilters[kycFilter].match(w.money.kyc.status));
+    return kycFilter === 'waiting' ?
+    list.sort((a, b) => Date.parse(a.money.kyc.submittedAt ?? '') - Date.parse(b.money.kyc.submittedAt ?? '')) :
+    list.sort((a, b) => Date.parse(b.money.kyc.decidedAt ?? b.money.kyc.submittedAt ?? '') - Date.parse(a.money.kyc.decidedAt ?? a.money.kyc.submittedAt ?? ''));
+  }, [cases, kycFilter]);
+  // Opened from Users & tenants → "Verification" (…?tab=identity&ws=<id>).
+  useEffect(() => {
+    const ws = params.get('ws');
+    if (!ws) return;
+    const status = readMoney(ws).kyc.status;
+    setKycFilter(status === 'in_review' ? 'waiting' : 'all');
+    setReviewing(ws);
+  }, [params]);
   const reviewRow = reviewing ? wallets.find((w) => w.id === reviewing) ?? null : null;
+  const isLead = me?.role === 'lead';
   const frozen = wallets.filter((w) => w.money.frozen);
   const held = wallets.reduce((s, w) => s + balances(w.money).held, 0);
 
@@ -137,9 +185,22 @@ export function AdminPayments() {
   };
 
   // ——— Verification decisions (D93) ———
-  const decide = (row: WalletRow, kind: 'approve' | 'request' | 'reject', reason: string, requests: KycRequest[] = []) => {
+  const decide = (row: WalletRow, kind: 'approve' | 'request' | 'reject' | 'withdraw', reason: string, requests: KycRequest[] = []) => {
     const by = staffActor();
     const now = new Date().toISOString();
+    if (kind === 'withdraw') {
+      // D252: a Platform lead can take an approval back — limits drop to unverified and the owner sees why.
+      if (!isLead) return;
+      change(row.id, (d) => ({
+        ...d,
+        verification: { tier: 0, pending: null, rejectedNote: reason },
+        kyc: withEvent({ ...d.kyc, status: 'rejected', decidedAt: now, decidedBy: by, note: `Approval withdrawn: ${reason}`, requests: [] }, 'Approval withdrawn', by)
+      }));
+      setStore((s) => audit(s, { area: 'payments', action: 'Withdrew verification approval', target: row.workspace, reason }));
+      toast.success('Approval withdrawn', { description: 'Payouts are back to unverified limits. The owner sees your reason and can send verification again.' });
+      setReviewing(null);
+      return;
+    }
     change(row.id, (d) => {
       const k = d.kyc;
       if (kind === 'approve') {
@@ -203,7 +264,7 @@ export function AdminPayments() {
     header: 'Verification',
     render: (r) =>
     r.money.kyc.status === 'approved' ?
-    <span className="text-fg-muted">{tierInfo[r.money.verification.tier].label}</span> :
+    <span className="text-fg-muted">{tierInfo[payoutTier(r.money)].label}</span> :
 
     <Badge tone={statusTones[r.money.kyc.status]}>{statusLabels[r.money.kyc.status]}</Badge>
 
@@ -238,6 +299,33 @@ export function AdminPayments() {
     freeze: { title: 'Pause payouts for this workspace', label: 'Pause payouts', destructive: true, description: 'Sales keep arriving; only payouts stop. The owner sees your reason word for word.' },
     unfreeze: { title: 'Resume payouts', label: 'Resume payouts', description: 'Payouts and schedules start working again.' }
   };
+
+  const decidedCols: DataColumn<WalletRow>[] = [
+  { key: 'ws', header: 'Workspace', render: (r) => <span className="font-medium text-fg">{r.workspace}</span> },
+  { key: 'type', header: 'Type', hideOnMobile: true, render: (r) => <span className="text-fg-muted">{r.money.kyc.entity ? entityInfo[r.money.kyc.entity].short : '—'}</span> },
+  { key: 'status', header: 'Status', render: (r) => <Badge tone={statusTones[r.money.kyc.status]}>{r.money.kyc.history[r.money.kyc.history.length - 1]?.label === 'Approval withdrawn' && r.money.kyc.status === 'rejected' ? 'Approval withdrawn' : statusLabels[r.money.kyc.status]}</Badge> },
+  {
+    key: 'decided',
+    header: 'Decided',
+    hideOnMobile: true,
+    sortValue: (r) => Date.parse(r.money.kyc.decidedAt ?? ''),
+    render: (r) =>
+    <span className="text-fg-muted">
+          {r.money.kyc.decidedAt ? `${formatRelative(r.money.kyc.decidedAt)}${r.money.kyc.decidedBy ? ` · ${r.money.kyc.decidedBy}` : ''}` : '—'}
+        </span>
+
+  },
+  {
+    key: 'actions',
+    header: '',
+    align: 'right',
+    render: (r) =>
+    <Button size="sm" variant={r.money.kyc.status === 'in_review' ? 'secondary' : 'tertiary'} onClick={() => setReviewing(r.id)}>
+          {r.money.kyc.status === 'in_review' ? 'Review' : 'Open'}
+        </Button>
+
+  }];
+
 
   const reviewCols: DataColumn<WalletRow>[] = [
   { key: 'ws', header: 'Workspace', render: (r) => <span className="font-medium text-fg">{r.workspace}</span> },
@@ -314,7 +402,33 @@ export function AdminPayments() {
         <div role="tabpanel" id={`admin-pay-panel-${tab}`} aria-labelledby={`admin-pay-tab-${tab}`}>
           {tab === 'queue' && <DataTable caption="Payouts not yet paid" rows={queue} columns={queueCols} filterText={(r) => `${r.workspace} ${r.payout.bankLabel}`} filterPlaceholder="Search workspace or bank" emptyTitle="The queue is empty" emptyDescription="Payouts finish within seconds in the prototype. Held payouts wait here." />}
           {tab === 'wallets' && <DataTable caption="Wallets" rows={wallets} columns={walletCols} filterText={(r) => r.workspace} filterPlaceholder="Search workspace" emptyTitle="No wallets" emptyDescription="Wallets appear as workspaces are created." />}
-          {tab === 'identity' && <DataTable caption="Verification cases waiting for review, oldest first" rows={reviews} columns={reviewCols} filterText={(r) => r.workspace} filterPlaceholder="Search workspace" emptyTitle="No verifications are waiting" emptyDescription="Cases appear here when an owner sends their business verification." />}
+          {tab === 'identity' &&
+          <div className="flex flex-col gap-4">
+              <div role="group" aria-label="Show verifications" className="flex gap-1.5 overflow-x-auto overflow-y-hidden pb-0.5">
+                {(Object.keys(kycFilters) as KycFilter[]).map((f) => {
+                const on = kycFilter === f;
+                const n = kycCount(f);
+                return (
+                  <button
+                    key={f}
+                    type="button"
+                    aria-pressed={on}
+                    onClick={() => setKycFilter(f)}
+                    className={`inline-flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-3.5 text-label transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus ${on ? 'border-fg bg-fg font-semibold text-canvas' : 'border-line bg-raised text-fg-muted hover:bg-sunken hover:text-fg'}`}>
+                    
+                      {kycFilters[f].label}
+                      <span className={`tabular-nums ${on ? 'opacity-80' : 'text-fg-subtle'}`}>{n}</span>
+                    </button>);
+
+              })}
+              </div>
+              {kycFilter === 'waiting' ?
+            <DataTable caption="Verification cases waiting for review, oldest first" rows={shownCases} columns={reviewCols} filterText={(r) => r.workspace} filterPlaceholder="Search workspace" emptyTitle="No verifications are waiting" emptyDescription="Cases appear here when an owner sends their business verification. Decided cases are under Approved, Not approved and All." /> :
+
+            <DataTable caption={`Verification cases · ${kycFilters[kycFilter].label}, newest decision first`} rows={shownCases} columns={decidedCols} filterText={(r) => r.workspace} filterPlaceholder="Search workspace" emptyTitle={kycFilters[kycFilter].empty} emptyDescription="Every case an owner has sent stays here after a decision, with its full history." />
+            }
+            </div>
+          }
           {tab === 'providers' &&
           <Card title="Provider health" description="Illustrative — no provider is integrated yet. Secrets and keys are never shown here." body="flush">
               <ul className="divide-y divide-line border-t border-line">
@@ -340,7 +454,19 @@ export function AdminPayments() {
         money={reviewRow?.money ?? null}
         onApprove={(note) => reviewRow && decide(reviewRow, 'approve', note)}
         onRequest={(requests, summary) => reviewRow && decide(reviewRow, 'request', summary, requests)}
-        onReject={(reason) => reviewRow && decide(reviewRow, 'reject', reason)} />
+        onReject={(reason) => reviewRow && decide(reviewRow, 'reject', reason)}
+        canWithdraw={isLead}
+        onWithdraw={(reason) => reviewRow && decide(reviewRow, 'withdraw', reason)}
+        tick={reviewRow ? { platformOn: flagOn(adminStore, 'verified_tick'), hidden: adminStore.verifiedTickOff?.[reviewRow.id] ?? null } : undefined}
+        onTick={(show, reason) => {
+          if (!reviewRow) return;
+          setStore((s) => {
+            const { [reviewRow.id]: _gone, ...rest } = s.verifiedTickOff ?? {};
+            const next = show ? rest : { ...rest, [reviewRow.id]: { reason, at: new Date().toISOString(), by: staffActor(s) } };
+            return audit({ ...s, verifiedTickOff: next }, { area: 'payments', action: show ? 'Showed verified tick again' : 'Hid verified tick', target: reviewRow.workspace, reason });
+          });
+          toast.success(show ? 'Verified tick showing again' : 'Verified tick hidden', { description: 'Their public pages update straight away.' });
+        }} />
       
     </div>);
 

@@ -3,7 +3,7 @@ import { useAppearancePolicy } from '../../contexts/AppearancePolicyContext';
 
 interface PlatformLookProps {
   children: React.ReactNode;
-  /** Website, legal and sign-in pages use the Night market look (D77). Onboarding keeps the platform default. */
+  /** Website, legal and sign-in pages use the KUBICU Bold look (D260, replacing Night market D77). Onboarding keeps the platform default. */
   night?: boolean;
 }
 
@@ -14,7 +14,7 @@ interface PlatformLookProps {
 export function PlatformLook({ children, night = false }: PlatformLookProps) {
   const { defaultDirection } = useAppearancePolicy();
   return (
-    <div data-direction={night ? 'nightMarket' : defaultDirection} className="min-h-screen w-full bg-canvas text-fg">
+    <div data-direction={night ? 'kubicuBold' : defaultDirection} className="min-h-screen w-full bg-canvas text-fg">
       {children}
     </div>);
 

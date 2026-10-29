@@ -6,6 +6,8 @@ import { usePageCommerce } from '../hooks/usePageCommerce';
 import { useCourseLearner } from '../hooks/useCourseLearner';
 import { usePageOps } from '../hooks/usePageOps';
 import { upsertContact } from '../utils/ops/ops';
+import { newSession, normalisePhone } from '../utils/members';
+import { announce } from '../utils/announce';
 import { CartProvider, useCart } from '../contexts/CartContext';
 import { PageSurface } from '../components/blocks/PageSurface';
 import { buttonStyle, fontsFor, mix } from '../components/blocks/pageStyle';
@@ -17,6 +19,7 @@ import { LessonContent } from '../components/learn/LessonContent';
 import { CourseCertificate } from '../components/learn/CourseCertificate';
 import { CourseAccessPanel } from '../components/learn/CourseAccessPanel';
 import { accessLabels, allLessons, durationLabel, findCourse, lessonCount, moduleOpensAt, totalMinutes } from '../utils/commerce/courses';
+import { liveCanComplete } from '../utils/commerce/liveLessons';
 import { SubscribeSheet } from '../components/subscriptions/SubscribeSheet';
 import type { SubPlan } from '../types/subscriptions';
 import { Unavailable } from './PublicPage';
@@ -221,7 +224,8 @@ function LearnBody() {
                     lesson={current.lesson}
                     passPct={course.passPct}
                     bestScore={learner.enrolment?.quizScores[current.lesson.id]}
-                    onQuiz={learner.actions.quiz ? (score) => learner.actions.quiz?.(current.lesson, score) : null} />
+                    onQuiz={learner.actions.quiz ? (score) => learner.actions.quiz?.(current.lesson, score) : null}
+                    courseTitle={course.title} />
                   
                         {!open && current.lesson.preview &&
                   <div className="flex flex-col gap-3 pt-2" style={{ borderTop: `1px solid ${mix(t.text, 10)}` }}>
@@ -232,7 +236,7 @@ function LearnBody() {
                           </div>
                   }
                         <div className="flex flex-col gap-3 pt-4 sm:flex-row sm:items-center sm:justify-between" style={{ borderTop: `1px solid ${mix(t.text, 10)}` }}>
-                          {learner.canSave && current.lesson.kind !== 'quiz' ?
+                          {learner.canSave && current.lesson.kind !== 'quiz' && (current.lesson.kind !== 'live' || liveCanComplete(current.lesson) || done.has(current.lesson.id)) ?
                     <button
                       type="button"
                       aria-pressed={done.has(current.lesson.id)}
@@ -245,7 +249,7 @@ function LearnBody() {
                             </button> :
 
                     <span className="text-[13px]" style={muted}>
-                              {current.lesson.kind === 'quiz' && learner.canSave ? `Pass with ${course.passPct}% to mark it done.` : ''}
+                              {current.lesson.kind === 'quiz' && learner.canSave ? `Pass with ${course.passPct}% to mark it done.` : current.lesson.kind === 'live' && learner.canSave ? 'You can mark it done once the session starts, or when the recording is added.' : ''}
                             </span>
                     }
                           <div className="flex gap-2">
@@ -298,7 +302,14 @@ function LearnBody() {
         ownerPlan={page.plan.id}
         returnTo={`/p/${handle}/learn/${course.id}?joined=1`}
         onClose={() => setJoinPlanId(null)}
-        onSubscribed={(c, planName, consent) => ops.apply((d) => upsertContact(d, c, 'order', `Subscribed to ${planName}`, { consent: consent ? 'subscribed' : 'transactional' }))} />
+        onSubscribed={(c, planName, consent) => {
+          ops.apply((d) => upsertContact(d, c, 'order', `Subscribed to ${planName}`, { consent: consent ? 'subscribed' : 'transactional' }));
+          // They just joined with this phone (or email) — sign them in with it, so the course opens
+          // even if they were signed in with a different number before.
+          const s = c.phone ? newSession(normalisePhone(c.phone), 'phone') : newSession(c.email.trim().toLowerCase(), 'email');
+          learner.signIn(s);
+          announce(`You’ve joined ${planName}. ${course.title} is now open.`);
+        }} />
 
       }
       <MemberSignInSheet

@@ -17,8 +17,18 @@ import { isNaira } from '../utils/currency';
 import { UssdPay } from '../components/checkout/UssdPay';
 import { fundraiserBlocked, fundraiserTerms } from '../utils/fundraiser';
 import { readAdminStore } from '../utils/admin/store';
+import { ClockIcon, CreditCardIcon, ExternalLinkIcon, HashIcon, LandmarkIcon } from 'lucide-react';
+import { usePageCommerce } from '../hooks/usePageCommerce';
+import { shopClosedMessage, shopSettingsOf, vatRateLabel } from '../utils/commerce/shopSettings';
+import { transferAccounts } from '../utils/commerce/bankTransfer';
+import { addPendingTransfer, linkPayWays, linkVat, payerFeeFor, safeRedirect } from '../utils/money/linkCheckout';
+import { isValidEmail } from '../utils/validation';
+import { MediaImage } from '../components/media/MediaImage';
+import { ReceiptBusinessFooter } from '../components/checkout/ReceiptBusinessFooter';
+import { TransferAccountPay, transferAccountFor } from '../components/checkout/TransferAccountPay';
 
-type Step = 'details' | 'pay' | 'done' | 'declined';
+type Step = 'details' | 'pay' | 'done' | 'declined' | 'awaiting';
+type PayBy = 'card' | 'account' | 'transfer' | 'ussd';
 type CardOutcome = 'success' | 'declined';
 
 /** What a payer opens from a payment link (D92): amount, details, test card, receipt. */
@@ -41,7 +51,15 @@ export function PayLinkPage() {
   const [tried, setTried] = useState(false);
   const [busy, setBusy] = useState(false);
   const [ussd, setUssd] = useState(false);
-  const [receipt, setReceipt] = useState<{number: string;at: string;amount: number;stage?: string;} | null>(null);
+  const [receipt, setReceipt] = useState<{number: string;at: string;amount: number;stage?: string;fee?: number;vat?: number;vatInclusive?: boolean;vatRate?: number;} | null>(null);
+  // Standard links (D224): more details, own questions, ways to pay.
+  const [email, setEmail] = useState('');
+  const [address, setAddress] = useState('');
+  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [payByChoice, setPayBy] = useState<PayBy>('card');
+  const [accountOpen, setAccountOpen] = useState(false);
+  const [ownIdx, setOwnIdx] = useState(0);
+  const commerce = usePageCommerce(workspaceId, !!page?.isOwn);
   // Visitor language (D133): the payer's pick on this device, else the page's language.
   const [lang] = useVisitorLang(page?.doc.language);
   const tx = translatorFor(lang);
@@ -94,14 +112,51 @@ export function PayLinkPage() {
   const business = page.doc.title;
   const view = linkView(link);
   const method = linkMethod(money, link);
-  const buyerFee = method === 'escrow' ? buyerEscrowFee(money, subtotal) : 0;
-  const total = subtotal + buyerFee;
+  // Commerce settings (D222) and the link's own options (D224).
+  const shop = shopSettingsOf(commerce.data);
+  const ownAccounts = transferAccounts(workspaceId, shop.business.tradingName || business);
+  const ways = linkPayWays(link, shop, isNaira(), ownAccounts.length);
+  const vat = linkVat(link, shop, subtotal);
+  const vatAdded = vat?.addedNgn ?? 0;
+  const payerFee = link.payerCoversFee && !link.fundraiser ? payerFeeFor(subtotal + vatAdded) : 0;
+  const charged = subtotal + vatAdded + payerFee;
+  const buyerFee = method === 'escrow' ? buyerEscrowFee(money, charged) : 0;
+  const total = charged + buyerFee;
+  const ask = link.fundraiser ? { email: 'off' as const, address: 'off' as const } : link.ask ?? { email: 'off' as const, address: 'off' as const };
+  const questions = link.fundraiser ? [] : link.questions ?? [];
+  const payOptions: PayBy[] = [...(ways.card ? ['card'] as const : []), ...(ways.account ? ['account'] as const : []), ...(ways.own ? ['transfer'] as const : []), ...(ways.ussd && total > 0 ? ['ussd'] as const : [])];
+  const payBy: PayBy = payOptions.includes(payByChoice) ? payByChoice : payOptions[0] ?? 'card';
+  const own = ownAccounts[Math.min(ownIdx, ownAccounts.length - 1)];
 
   const errors = {
-    amount: link.kind === 'open' && subtotal < link.minNgn ? tx('Enter at least {amount}.', { amount: formatNgn(link.minNgn) }) : link.kind === 'items' && subtotal === 0 ? tx('Choose at least one item.') : undefined,
+    amount:
+    link.kind === 'open' && subtotal < link.minNgn ?
+    tx('Enter at least {amount}.', { amount: formatNgn(link.minNgn) }) :
+    link.kind === 'open' && link.maxNgn && subtotal > link.maxNgn ?
+    tx('The most you can pay here is {amount}.', { amount: formatNgn(link.maxNgn) }) :
+    link.kind === 'items' && subtotal === 0 ?
+    tx('Choose at least one item.') :
+    undefined,
     name: link.fields.name && name.trim().length < 2 ? tx('Enter your name.') : undefined,
-    phone: link.fields.phone && phone.replace(/\D/g, '').length < 10 ? tx('Enter a phone number the business can reach you on.') : undefined
+    phone: link.fields.phone && phone.replace(/\D/g, '').length < 10 ? tx('Enter a phone number the business can reach you on.') : undefined,
+    email: ask.email !== 'off' && (ask.email === 'required' || email.trim()) && !isValidEmail(email) ? tx('Enter a valid email.') : undefined,
+    address: ask.address === 'required' && address.trim().length < 4 ? tx('Enter your address.') : undefined,
+    questions: questions.some((q) => q.required && !(answers[q.id] ?? '').trim()) ? tx('Answer the required questions.') : undefined
   };
+  const paymentBase = () => ({
+    amountNgn: charged,
+    payerName: name.trim(),
+    payerPhone: phone.trim(),
+    note: note.trim(),
+    items: link.kind === 'items' ? link.items.filter((i) => (qty[i.id] ?? 0) > 0).map((i) => ({ label: i.label, qty: qty[i.id], unitNgn: i.unitNgn })) : undefined,
+    stageId: stage?.id,
+    showName: link.fundraiser ? showName : undefined,
+    payerEmail: email.trim() || undefined,
+    payerAddress: address.trim() || undefined,
+    answers: questions.length ? questions.map((q) => ({ label: q.label, value: (answers[q.id] ?? '').trim() })).filter((a) => a.value) : undefined,
+    feeNgn: payerFee || undefined,
+    vatNgn: vat?.amountNgn || undefined
+  });
 
   const next = () => {
     setTried(true);
@@ -109,26 +164,36 @@ export function PayLinkPage() {
     setStep('pay');
   };
 
-  const pay = (byUssd = false) => {
+  const pay = (via: PayBy = 'card') => {
     setBusy(true);
     window.setTimeout(() => {
       setBusy(false);
-      // USSD has already been approved by the bank on the payer's phone (D136).
-      if (!byUssd && outcome === 'declined') return setStep('declined');
+      // USSD and transfer accounts confirm on their own; only the test card can be declined (D136, D224).
+      if (via === 'card' && outcome === 'declined') return setStep('declined');
       const d = readMoney(workspaceId);
-      const items = link.kind === 'items' ? link.items.filter((i) => (qty[i.id] ?? 0) > 0).map((i) => ({ label: i.label, qty: qty[i.id], unitNgn: i.unitNgn })) : undefined;
       if (link.fundraiser && fundraiserBlocked(link, d, readAdminStore())) return setStep('declined');
-      const res = recordLinkPayment(d, link.id, { amountNgn: subtotal, payerName: name.trim(), payerPhone: phone.trim(), note: note.trim(), items, stageId: stage?.id, showName: link.fundraiser ? showName : undefined });
+      const res = recordLinkPayment(d, link.id, { ...paymentBase(), payBy: via });
       if (!res) return setStep('declined');
       writeMoney(workspaceId, res.data);
-      setReceipt({ number: res.payment.receipt, at: res.payment.at, amount: total, stage: stage?.label });
+      setReceipt({ number: res.payment.receipt, at: res.payment.at, amount: total, stage: stage?.label, fee: payerFee, vat: vat?.amountNgn, vatInclusive: vat?.inclusive, vatRate: vat?.ratePct });
       setStep('done');
     }, 1100);
   };
 
+  // Transfer to the seller's own account: waits for the seller to confirm (D224).
+  const sentToOwn = () => {
+    if (!own) return;
+    const d = readMoney(workspaceId);
+    writeMoney(workspaceId, addPendingTransfer(d, link.id, { ...paymentBase(), payBy: 'transfer', transferTo: own }).data);
+    setStep('awaiting');
+  };
+
   const blocked = link.fundraiser ? fundraiserBlocked(link, money, readAdminStore()) : null;
+  const shopPaused = !link.fundraiser && shop.status.paused && shop.status.pauseLinks ? shopClosedMessage(shop) : '';
   const closedCopy = blocked ?
   tx(blocked) :
+  shopPaused ?
+  shopPaused :
   view === 'paused' ?
   tx('{business} isn’t taking payments on this link right now.', { business }) :
   view === 'expired' ?
@@ -154,7 +219,10 @@ export function PayLinkPage() {
               </CheckoutHeading>
               <section aria-label={tx('Receipt')} className="flex flex-col gap-2 p-5 text-[14.5px]" style={{ ...cardStyle(t), color: t.text }}>
                 <Row label="For" value={receipt.stage ? `${link.title} · ${receipt.stage}` : link.title} />
+                {!!receipt.vat && !receipt.vatInclusive && <Row label={`VAT (${vatRateLabel(receipt.vatRate ?? 0)})`} value={formatNgn(receipt.vat)} />}
+                {!!receipt.fee && <Row label="Processing fee" value={formatNgn(receipt.fee)} />}
                 <Row label="Amount" value={formatNgn(receipt.amount)} strong />
+                {!!receipt.vat && receipt.vatInclusive && <Row label={`Includes VAT (${vatRateLabel(receipt.vatRate ?? 0)})`} value={formatNgn(receipt.vat)} />}
                 <Row label="Receipt" value={receipt.number} />
                 <Row label="Paid" value={formatTimestamp(receipt.at)} />
                 {method === 'escrow' &&
@@ -162,13 +230,41 @@ export function PayLinkPage() {
                     <ShieldCheckIcon size={15} className="mt-0.5 shrink-0" aria-hidden /> {tx('Your money is held by our licensed payment partner and released to {business} after {n} days, unless you report a problem.', { business, n: inspectionDays.links })}
                   </p>
                 }
+                <ReceiptBusinessFooter business={shop.business} fallbackName={business} muted={muted} borderColor={mix(t.text, 12)} />
               </section>
+              {link.after?.message &&
+              <p className="whitespace-pre-line rounded-md px-4 py-3 text-[14.5px] leading-relaxed" style={{ background: mix(t.text, 6), color: t.text }}>
+                  {link.after.message}
+                </p>
+              }
+              {link.after?.redirectUrl && safeRedirect(link.after.redirectUrl) &&
+              <a href={safeRedirect(link.after.redirectUrl)} target="_blank" rel="noopener noreferrer" className="flex h-12 items-center justify-center gap-2 text-[15px] font-semibold focus-visible:outline-none focus-visible:ring-2" style={{ background: t.accent, color: t.accentText, borderRadius: 999 }}>
+                  {tx('Continue')} <ExternalLinkIcon size={15} aria-hidden />
+                </a>
+              }
               {isStaged(link) && <StagePlan link={link} amounts={stageAmounts} theme={t} />}
               {isStaged(link) && nextLinkStage(link) &&
               <SecondaryButton theme={t} onClick={() => {setReceipt(null);setStep('details');setTried(false);}}>
                   Pay the next stage now
                 </SecondaryButton>
               }
+              <TestModeNote theme={t} />
+            </> :
+            step === 'awaiting' && own ?
+            <>
+              <ClockIcon size={30} aria-hidden style={{ color: t.text }} />
+              <CheckoutHeading theme={t} level={1} sub={tx('{business} will confirm when the money arrives. You’ll get a receipt then.', { business })}>
+                Transfer sent — waiting for confirmation
+              </CheckoutHeading>
+              <section aria-label={tx('Transfer details')} className="flex flex-col gap-2 p-5 text-[14.5px]" style={{ ...cardStyle(t), color: t.text }}>
+                <Row label="For" value={link.title} />
+                <Row label="Amount" value={formatNgn(charged)} strong />
+                <Row label="Sent to" value={`${own.bank} · ${own.account}`} />
+                <Row label="Account name" value={own.accountName} />
+              </section>
+              <p className="text-[13px] leading-relaxed" style={muted}>
+                {tx('Only transfer to the account shown here. KUBICU doesn’t hold this money and can’t refund a transfer to the wrong account.')}
+              </p>
               <TestModeNote theme={t} />
             </> :
             step === 'declined' ?
@@ -186,6 +282,7 @@ export function PayLinkPage() {
               <CheckoutHeading theme={t} level={1} sub={closedCopy ?? tx('Pay {business} securely. You don’t need an account.', { business })}>
                 {link.title}
               </CheckoutHeading>
+              {link.imageUrl && !link.fundraiser && <MediaImage src={link.imageUrl} alt="" className="aspect-video w-full object-cover" style={{ borderRadius: 16 }} />}
               {link.description &&
               <p className="whitespace-pre-line text-[14.5px] leading-relaxed" style={muted}>
                   {link.description}
@@ -198,7 +295,19 @@ export function PayLinkPage() {
               <section aria-label={tx('Payment details')} className="flex flex-col gap-4 p-5" style={cardStyle(t)}>
                   {link.kind === 'fixed' && stage && <Row label={tx('Now: {stage}', { stage: stage.label })} value={formatNgn(subtotal)} strong color={t.text} />}
                   {link.kind === 'fixed' && !stage && <Row label="Amount" value={formatNgn(link.amountNgn)} strong color={t.text} />}
-                  {link.kind === 'open' && <ThemedField theme={t} label={tx('Amount (from {amount})', { amount: formatNgn(link.minNgn) })} inputMode="numeric" value={amount} onChange={(v) => setAmount(v.replace(/\D/g, ''))} error={tried ? errors.amount : undefined} placeholder="0" />}
+                  {link.kind === 'open' && !!link.suggested?.length &&
+                <div role="group" aria-label={tx('Choose an amount')} className="flex flex-wrap gap-2">
+                      {link.suggested.map((a) => {
+                    const on = Number(amount) === a;
+                    return (
+                      <button key={a} type="button" aria-pressed={on} onClick={() => setAmount(String(a))} className="min-h-[44px] px-4 text-[14.5px] font-semibold tabular-nums focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2" style={{ borderRadius: 999, border: `1.5px solid ${on ? t.text : mix(t.text, 16)}`, background: on ? mix(t.text, 8) : 'transparent', color: t.text }}>
+                            {formatNgn(a)}
+                          </button>);
+
+                  })}
+                    </div>
+                }
+                  {link.kind === 'open' && <ThemedField theme={t} label={link.maxNgn ? tx('Amount ({min}–{max})', { min: formatNgn(link.minNgn), max: formatNgn(link.maxNgn) }) : tx('Amount (from {amount})', { amount: formatNgn(link.minNgn) })} inputMode="numeric" value={amount} onChange={(v) => setAmount(v.replace(/\D/g, ''))} error={tried ? errors.amount : undefined} placeholder="0" />}
                   {link.kind === 'items' &&
                 <ul className="flex flex-col">
                       {link.items.map((i) => {
@@ -234,6 +343,31 @@ export function PayLinkPage() {
                 }
                   {link.fields.name && <ThemedField theme={t} label="Your name" autoComplete="name" value={name} onChange={setName} error={tried ? errors.name : undefined} />}
                   {link.fields.phone && <ThemedField theme={t} label="Phone or WhatsApp" type="tel" autoComplete="tel" value={phone} onChange={setPhone} error={tried ? errors.phone : undefined} />}
+                  {ask.email !== 'off' && <ThemedField theme={t} label="Email" type="email" inputMode="email" autoComplete="email" optional={ask.email === 'optional'} value={email} onChange={setEmail} error={tried ? errors.email : undefined} />}
+                  {ask.address !== 'off' && <ThemedField theme={t} label="Address" autoComplete="street-address" optional={ask.address === 'optional'} value={address} onChange={setAddress} error={tried ? errors.address : undefined} />}
+                  {questions.map((q) =>
+                q.type === 'choice' ?
+                <fieldset key={q.id} className="flex flex-col gap-2" style={{ color: t.text }}>
+                        <legend className="mb-1 text-[14px] font-semibold">
+                          {q.label}
+                          {!q.required && <span className="font-normal" style={muted}> · {tx('optional')}</span>}
+                        </legend>
+                        {q.options.map((o) =>
+                  <label key={o} className="flex min-h-[44px] cursor-pointer items-center gap-2.5 rounded-md px-3 text-[14px]" style={{ border: `1px solid ${mix(t.text, answers[q.id] === o ? 40 : 14)}` }}>
+                            <input type="radio" name={`plq-${q.id}`} checked={answers[q.id] === o} onChange={() => setAnswers({ ...answers, [q.id]: o })} style={{ accentColor: t.text }} />
+                            {o}
+                          </label>
+                  )}
+                      </fieldset> :
+
+                <ThemedField key={q.id} theme={t} label={q.label} type={q.type === 'date' ? 'date' : 'text'} optional={!q.required} value={answers[q.id] ?? ''} onChange={(v) => setAnswers({ ...answers, [q.id]: v.slice(0, 200) })} />
+
+                )}
+                  {tried && errors.questions &&
+                <p className="text-[12.5px] font-medium" style={{ color: t.text }} role="alert">
+                      {errors.questions}
+                    </p>
+                }
                   {link.fields.note && <ThemedField theme={t} label={link.fundraiser ? 'Message for the organiser' : 'Note for the business'} optional value={note} onChange={setNote} />}
                   {link.fundraiser &&
                 <label className="flex cursor-pointer items-start gap-2.5 text-[14px]" style={{ color: t.text }}>
@@ -259,41 +393,98 @@ export function PayLinkPage() {
 
               {!closedCopy && step === 'pay' && ussd &&
               <section aria-label={tx('Pay with USSD')} className="flex flex-col gap-4 p-5" style={{ ...cardStyle(t), color: t.text }}>
-                  <UssdPay inline theme={t} amount={total} onBack={() => setUssd(false)} onPaid={() => (setUssd(false), pay(true))} />
+                  <UssdPay inline theme={t} amount={total} onBack={() => setUssd(false)} onPaid={() => (setUssd(false), pay('ussd'))} />
                 </section>
               }
 
-              {!closedCopy && step === 'pay' && !ussd &&
+              {!closedCopy && step === 'pay' && accountOpen &&
+              <section aria-label={tx('Pay by bank transfer')} className="flex flex-col gap-4 p-5" style={{ ...cardStyle(t), color: t.text }}>
+                  <TransferAccountPay theme={t} amount={total} account={transferAccountFor(`${link.id}:${name}:${phone}`)} onBack={() => setAccountOpen(false)} onPaid={() => (setAccountOpen(false), pay('account'))} />
+                </section>
+              }
+
+              {!closedCopy && step === 'pay' && !ussd && !accountOpen &&
               <section aria-label={tx('Pay')} className="flex flex-col gap-4 p-5" style={cardStyle(t)}>
                   <div className="flex flex-col gap-1.5 text-[14.5px]" style={{ color: t.text }}>
                     <Row label={stage ? stage.label : 'Subtotal'} value={formatNgn(subtotal)} />
+                    {vat && !vat.inclusive && <Row label={`VAT (${vatRateLabel(vat.ratePct)})`} value={formatNgn(vat.amountNgn)} />}
+                    {payerFee > 0 && <Row label="Processing fee" value={formatNgn(payerFee)} />}
                     {buyerFee > 0 && <Row label="Escrow protection fee" value={formatNgn(buyerFee)} />}
                     <Row label="You pay" value={formatNgn(total)} strong />
+                    {vat?.inclusive && <Row label={`Includes VAT (${vatRateLabel(vat.ratePct)})`} value={formatNgn(vat.amountNgn)} />}
                   </div>
+                  {payOptions.length === 0 &&
+                <p className="rounded-md px-3 py-2.5 text-[13.5px] font-semibold" style={{ background: mix(t.text, 6), color: t.text }} role="alert">
+                      {tx('{business} hasn’t turned on a way to pay online yet.', { business })}
+                    </p>
+                }
+                  {payOptions.length > 1 &&
+                <fieldset className="flex flex-col gap-2">
+                      <legend className="mb-1 text-[14px] font-semibold" style={{ color: t.text }}>
+                        {tx('Pay with')}
+                      </legend>
+                      <div className="grid grid-cols-1 gap-2 min-[380px]:grid-cols-2">
+                        {payOptions.map((v) =>
+                    <label key={v} className="flex min-h-[48px] cursor-pointer items-center gap-2.5 px-3 text-[14px] font-semibold focus-within:outline focus-within:outline-2 focus-within:outline-offset-2" style={{ ...cardStyle(t), color: t.text, border: `1.5px solid ${payBy === v ? t.text : mix(t.text, 12)}` }}>
+                            <input type="radio" name="paylink-by" className="sr-only" checked={payBy === v} onChange={() => setPayBy(v)} />
+                            {v === 'card' ? <CreditCardIcon size={17} aria-hidden /> : v === 'ussd' ? <HashIcon size={17} aria-hidden /> : <LandmarkIcon size={17} aria-hidden />}
+                            {v === 'card' ? tx('Card') : v === 'ussd' ? tx('USSD code') : v === 'account' ? ways.own ? tx('Transfer account') : tx('Bank transfer') : tx('Seller’s account')}
+                          </label>
+                    )}
+                      </div>
+                    </fieldset>
+                }
+                  {payBy === 'transfer' && own &&
+                <div className="flex flex-col gap-2 rounded-md p-3 text-[14px]" style={{ background: mix(t.text, 4), color: t.text }}>
+                      {ownAccounts.length > 1 &&
+                  <div role="radiogroup" aria-label={tx('Choose an account')} className="flex flex-col gap-1.5">
+                          {ownAccounts.map((a, i) =>
+                    <label key={`${a.bank}-${a.account}`} className="flex cursor-pointer items-center gap-2.5 text-[13.5px]">
+                              <input type="radio" name="paylink-own" checked={own === a} onChange={() => setOwnIdx(i)} style={{ accentColor: t.text }} />
+                              {a.bank} · {a.account.slice(-4).padStart(4, '•')}
+                            </label>
+                    )}
+                        </div>
+                  }
+                      <Row label="Bank" value={own.bank} />
+                      <Row label="Account number" value={own.account} />
+                      <Row label="Account name" value={own.accountName} />
+                      <p className="text-[12.5px] leading-snug" style={muted}>
+                        {tx('Transfer {amount}, then tap “I’ve sent it”. {business} confirms when it arrives.', { amount: formatNgn(charged), business })}
+                      </p>
+                    </div>
+                }
                   {method === 'escrow' &&
                 <p className="flex items-start gap-2 rounded-md px-3 py-2 text-[13px] leading-relaxed" style={{ background: mix(t.text, 6), color: t.text }}>
                       <ShieldCheckIcon size={15} className="mt-0.5 shrink-0" aria-hidden /> {tx('Protected by escrow: your money is held by our licensed partner for {n} days before {business} receives it.', { n: inspectionDays.links, business })}
                     </p>
                 }
-                  <fieldset className="flex flex-col gap-2">
-                    <legend className="mb-1 text-[13px] font-medium" style={{ color: t.text }}>
-                      {tx('Test card')}
-                    </legend>
-                    {(['success', 'declined'] as const).map((o) =>
+                  {payBy === 'card' && payOptions.length > 0 &&
+                <fieldset className="flex flex-col gap-2">
+                      <legend className="mb-1 text-[13px] font-medium" style={{ color: t.text }}>
+                        {tx('Test card')}
+                      </legend>
+                      {(['success', 'declined'] as const).map((o) =>
                   <label key={o} className="flex cursor-pointer items-center gap-2.5 rounded-md px-3 py-2.5 text-[14px]" style={{ border: `1px solid ${mix(t.text, outcome === o ? 40 : 14)}`, color: t.text }}>
-                        <input type="radio" name="paylink-card" checked={outcome === o} onChange={() => setOutcome(o)} />
-                        {o === 'success' ? `4242 4242 4242 4242 — ${tx('payment works')}` : `4000 0000 0000 0002 — ${tx('declined')}`}
-                      </label>
+                          <input type="radio" name="paylink-card" checked={outcome === o} onChange={() => setOutcome(o)} />
+                          {o === 'success' ? `4242 4242 4242 4242 — ${tx('payment works')}` : `4000 0000 0000 0002 — ${tx('declined')}`}
+                        </label>
                   )}
-                  </fieldset>
+                    </fieldset>
+                }
                   <TestModeNote theme={t} />
-                  <PrimaryButton theme={t} onClick={() => pay()} disabled={busy}>
-                    {busy ? tx('Paying…') : tx('Pay {amount}', { amount: formatNgn(total) })}
-                  </PrimaryButton>
-                  {isNaira() && total > 0 &&
-                <SecondaryButton theme={t} onClick={() => setUssd(true)}>
-                      {tx('No card? Pay with a USSD code')}
-                    </SecondaryButton>
+                  {payOptions.length > 0 &&
+                <PrimaryButton theme={t} onClick={() => payBy === 'ussd' ? setUssd(true) : payBy === 'account' ? setAccountOpen(true) : payBy === 'transfer' ? sentToOwn() : pay('card')} disabled={busy}>
+                      {busy ?
+                  tx('Paying…') :
+                  payBy === 'ussd' ?
+                  tx('Get a USSD code for {amount}', { amount: formatNgn(total) }) :
+                  payBy === 'account' ?
+                  tx('Get account details for {amount}', { amount: formatNgn(total) }) :
+                  payBy === 'transfer' ?
+                  tx('I’ve sent it') :
+                  tx('Pay {amount}', { amount: formatNgn(total) })}
+                    </PrimaryButton>
                 }
                   <SecondaryButton theme={t} onClick={() => setStep('details')}>
                     Back

@@ -4,6 +4,8 @@ import type { SubmissionStore } from '../../types/extensionSubmission';
 import { roleCanOpen } from '../../data/staffRoles';
 import { approvalArea, effectiveStatus } from './approvals';
 import { activeIncidents, impactLabels } from './incidents';
+import { REVIEW_HOURS } from '../money/kyc';
+import type { KycQueueItem } from '../../hooks/useKycQueue';
 
 /*
  * Staff notifications (D168): everything in the console that needs a person, derived from live
@@ -49,10 +51,25 @@ const ago = (iso: string, now: number) => {
   return `${d} day${d === 1 ? '' : 's'} ago`;
 };
 
-export function staffFeed(store: AdminStore, templates: TemplateStore, subs: SubmissionStore, me: StaffMember, now = Date.now()): StaffNotif[] {
+export function staffFeed(store: AdminStore, templates: TemplateStore, subs: SubmissionStore, me: StaffMember, now = Date.now(), kyc: KycQueueItem[] = []): StaffNotif[] {
   const out: StaffNotif[] = [];
   const iso = new Date(now).toISOString();
   const myName = me.name;
+
+  // Identity & business verification (D244): every submission waiting for a decision; urgent past the review promise.
+  kyc.forEach((k) => {
+    const late = now - Date.parse(k.submittedAt) > REVIEW_HOURS * HOUR;
+    out.push({
+      id: `kyc:${k.workspaceId}:${k.submittedAt}`,
+      area: 'payments',
+      kind: 'action',
+      urgent: late,
+      text: `Verification to review: ${k.workspace}`,
+      detail: `${k.entityLabel}${k.attempts > 1 ? ` · resubmitted (attempt ${k.attempts})` : ''} · submitted ${ago(k.submittedAt, now)}${late ? ` · past the ${REVIEW_HOURS}-hour promise` : ''}`,
+      href: '/admin/payments?tab=identity',
+      at: k.submittedAt
+    });
+  });
 
   // Platform health
   activeIncidents(store.incidents).forEach((i) => {

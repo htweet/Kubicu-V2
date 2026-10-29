@@ -3,7 +3,8 @@ import { Link, useParams } from 'react-router-dom';
 import { ArrowLeftIcon, CheckCircle2Icon, FileTextIcon, XCircleIcon } from 'lucide-react';
 import type { Quote } from '../types/serviceOs';
 import { useResolvedPage } from '../hooks/useResolvedPage';
-import { depositOf, formatDay, itemsTotal, lineTotal, quoteView, readServiceOs, SERVICE_OS_EVENT, writeServiceOs } from '../utils/serviceOs';
+import { depositOf, formatDay, lineTotal, quoteView, readServiceOs, SERVICE_OS_EVENT, vatSplit, writeServiceOs } from '../utils/serviceOs';
+import { vatRateLabel } from '../utils/commerce/shopSettings';
 import { formatNgn } from '../utils/format';
 import { hasStages, invoicePayPath, requestDueStages, stageRows } from '../utils/milestones';
 import { PageSurface } from '../components/blocks/PageSurface';
@@ -38,7 +39,10 @@ export function QuoteView() {
   const muted = { color: t.mutedText };
   const business = page.doc.title;
   const view = quoteView(quote);
-  const total = itemsTotal(quote.items);
+  const split = vatSplit(quote.items, quote.vat);
+  const total = split.total;
+  // With VAT added on top, stages and deposits are worked out before VAT and each invoice adds it (D257).
+  const vatOnTop = !!quote.vat && !quote.vat.inclusive && split.vat > 0;
   const nameError = tried && name.trim().length < 2 ? 'Type your full name to accept.' : undefined;
 
   const staged = hasStages(quote);
@@ -103,6 +107,14 @@ export function QuoteView() {
                 </li>
               )}
             </ul>
+            {quote.vat && split.vat > 0 &&
+            <div className="mt-3 flex items-baseline justify-between text-[13.5px]" style={muted}>
+                <span>
+                  {quote.vat.inclusive ? 'Includes VAT' : 'VAT'} ({vatRateLabel(quote.vat.ratePct)})
+                </span>
+                <span className="tabular-nums">{formatNgn(split.vat)}</span>
+              </div>
+            }
             <div className="mt-3 flex items-baseline justify-between text-[16px] font-semibold" style={{ color: t.text }}>
               <span>Total</span>
               <span className="tabular-nums">{formatNgn(total)}</span>
@@ -110,7 +122,7 @@ export function QuoteView() {
             {staged &&
             <div className="mt-4 flex flex-col gap-1">
                 <p className="text-[13px] font-semibold" style={{ color: t.text }}>
-                  Paid in {rows.length} stages
+                  Paid in {rows.length} stages{vatOnTop ? ' (plus VAT on each)' : ''}
                 </p>
                 <ol className="flex flex-col">
                   {rows.map((r, i) =>
@@ -129,7 +141,9 @@ export function QuoteView() {
             }
             {!staged && quote.depositPct > 0 &&
             <div className="mt-1 flex items-baseline justify-between text-[13.5px]" style={muted}>
-                <span>Deposit to book ({quote.depositPct}%)</span>
+                <span>
+                  Deposit to book ({quote.depositPct}%){vatOnTop ? ' + VAT' : ''}
+                </span>
                 <span className="tabular-nums">{formatNgn(depositOf(quote))}</span>
               </div>
             }

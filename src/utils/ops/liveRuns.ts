@@ -7,6 +7,7 @@ import { isLowStock, isSoldOut } from '../commerce/catalog';
 import { formatNgn } from '../format';
 import { uid } from '../id';
 import { stepLabel } from './automation';
+import { inQuietHours, opsSettingsOf } from './settings';
 
 const DAY = 86400000;
 
@@ -101,7 +102,14 @@ export function runLive(data: OpsData, a: Automation, ev: LiveEvent, ctx: {comme
         steps.push({ label: stepLabel(step), status: res.ok ? 'done' : 'failed', detail: res.ok ? `POST ${step.value.trim()} → ${res.status} OK in ${res.durationMs} ms (signed, simulated)` : `POST ${step.value.trim()} → ${res.status}. Retried 3 times, then stopped.` });
         if (!res.ok) failed = true;
       } else {
-        steps.push({ label: stepLabel(step), status: 'done', detail: `Written: “${text}” — not sent; sending needs a messaging partner` });
+        // Quiet hours (D259): customer messages wait until the hours end. Owner notices and tags never wait.
+        const quiet = opsSettingsOf(data).quietHours;
+        const held = inQuietHours(quiet, data.availability.timeZone);
+        steps.push({
+          label: stepLabel(step),
+          status: 'done',
+          detail: held ? `Written: “${text}” — held for quiet hours, would go at ${quiet.to}; not sent, sending needs a messaging partner` : `Written: “${text}” — not sent; sending needs a messaging partner`
+        });
       }
     }
   }

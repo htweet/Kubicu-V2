@@ -1,5 +1,6 @@
 import type { WorkspacePlan } from '../types/plan';
 import type { CardOutcome } from '../types/billing';
+import { kubicuCompany } from './legal/company';
 
 /**
  * Example monthly prices in NGN, taken from inside each plan's price hypothesis (blueprint §19.1).
@@ -35,7 +36,7 @@ export const testCards: {number: string;outcome: CardOutcome;label: string;}[] =
 
 /** Illustrative seller-of-record details printed on invoices. */
 export const kubicuBillingEntity = {
-  name: 'KUBICU Technologies Ltd (example)',
-  address: 'Lagos, Nigeria',
-  taxId: 'TIN 00000000-0001 (example)'
+  name: `${kubicuCompany.legalName} (${kubicuCompany.rcNumber}) — trading as KUBICU`,
+  address: kubicuCompany.registeredAddress,
+  taxId: `TIN ${kubicuCompany.tin}`
 };

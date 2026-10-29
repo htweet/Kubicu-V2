@@ -155,12 +155,16 @@ export function BlockInspector({ block, showHeader = true }: {block: Block;showH
         role="tabpanel"
         id={`insp-${block.id}-panel-${tab}`}
         aria-labelledby={`insp-${block.id}-tab-${tab}`}
-        className="scroll-quiet min-h-0 flex-1 overflow-y-auto px-4 pb-8 pt-4">
+        className="scroll-quiet min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden px-4 pb-8 pt-4 [overflow-wrap:anywhere]"
+        // Focusing a field can nudge the panel sideways even with the scrollbar hidden; keep it pinned left (D216).
+        onScroll={(e) => {
+          if (e.currentTarget.scrollLeft !== 0) e.currentTarget.scrollLeft = 0;
+        }}>
         
         <fieldset disabled={locked} className={cn('m-0 min-w-0 border-0 p-0', locked && 'opacity-60')}>
           <legend className="sr-only">{locked ? `${def.name} settings, locked` : `${def.name} settings`}</legend>
           {tab === 'content' &&
-          <div className="flex flex-col gap-4">
+          <div className="flex min-w-0 flex-col gap-4">
               {looks.length > 0 &&
             <p className="flex items-center gap-2 text-caption text-fg-muted">
                   <span className="min-w-0 flex-1 truncate">
@@ -175,7 +179,38 @@ export function BlockInspector({ block, showHeader = true }: {block: Block;showH
                   </button>
                 </p>
             }
-              <IssueList issues={blockIssues} />
+              <IssueList
+              issues={blockIssues}
+              actionFor={(issue) => {
+                // Settings that live on another tab get a way there, plus a one-tap fix where one is safe (D220).
+                if (issue.field !== 'abTest') return null;
+                const test = block.visibility.abTest;
+                const orphan = issue.id.endsWith(':pair');
+                return (
+                  <span className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                      {orphan && test && !locked &&
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => {
+                        actions.endAbTest(test.id, test.arm);
+                        toast('Test ended', { description: 'Everyone now sees this block.', action: { label: 'Undo', onClick: () => actions.undo() } });
+                      }}>
+                      
+                          End test and keep this
+                        </Button>
+                    }
+                      <button
+                      type="button"
+                      onClick={() => setTab('visibility')}
+                      className="rounded-sm font-semibold underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+                      
+                        Open Visibility → A/B test
+                      </button>
+                    </span>);
+
+              }} />
+            
               <ContentFields block={block} issues={blockIssues} />
               {supportsSuggest(block) && <BlockSuggest block={block} />}
               {!locked && <NextBlockSuggestions block={block} />}

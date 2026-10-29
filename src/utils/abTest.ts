@@ -85,9 +85,9 @@ export function abIssues(blocks: Block[]): ValidationIssue[] {
     const t = b.visibility.abTest;
     if (!t) continue;
     if (!testPair(blocks, t.id))
-    out.push({ id: `ab:${b.id}:pair`, blockId: b.id, severity: 'warning', message: `${blockName(b)} is version ${t.arm} of a test whose other version was deleted. End the test so everyone sees it.`, field: 'abTest' });else
+    out.push({ id: `ab:${b.id}:pair`, blockId: b.id, severity: 'warning', message: `${blockName(b)} is version ${t.arm} of an A/B test whose other version was deleted, so only half your visitors see it. End the test in Visibility → A/B test.`, field: 'abTest' });else
     if (b.visibility.sources && !b.visibility.sources.paused)
-    out.push({ id: `ab:${b.id}:src`, blockId: b.id, severity: 'warning', message: `${blockName(b)} is in an A/B test and has a visitor-source rule. Results will be hard to read — pause one of them.`, field: 'abTest' });
+    out.push({ id: `ab:${b.id}:src`, blockId: b.id, severity: 'warning', message: `${blockName(b)} is in an A/B test and has a visitor-source rule. Results will be hard to read — pause one of them in Visibility → Advanced.`, field: 'abTest' });
   }
   return out;
 }

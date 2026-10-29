@@ -1,16 +1,16 @@
 import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRightIcon, CheckCircle2Icon, CircleIcon, CopyIcon, MessageCircleIcon, ShieldCheckIcon } from 'lucide-react';
-import { toast } from 'sonner';
+import { useVerifiedTick } from '../hooks/useVerifiedTick';
+import { AlertCircleIcon, ArrowRightIcon, BadgeCheckIcon, CheckCircle2Icon, CircleIcon, ClockIcon, ShieldCheckIcon, XCircleIcon } from 'lucide-react';
+import { TrustCardShare } from '../components/trust/TrustCardShare';
 import { useWorkspace } from '../contexts/WorkspaceContext';
 import { useCommerce } from '../contexts/CommerceContext';
 import { useEditor } from '../contexts/EditorContext';
 import { useMoney } from '../hooks/useMoney';
 import { useProof } from '../hooks/useProof';
-import { computePassport, lapsingSoon, levelLabels, levelTones, passportSummary } from '../utils/trustPassport';
-import { formatDate, publicUrl, whatsappLink } from '../utils/format';
+import { computePassport, lapsingSoon, levelLabels, passportSummary, publicSignals } from '../utils/trustPassport';
+import { formatDate, formatRelative, publicUrl } from '../utils/format';
 import { PageHeader } from '../components/shell/PageHeader';
-import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { InlineAlert } from '../components/ui/InlineAlert';
 import { cn } from '../utils/cn';
@@ -23,19 +23,13 @@ export function TrustPassport() {
   const money = useMoney(current.id);
   const proof = useProof(current.id);
   const p = useMemo(() => computePassport(commerce.data.orders, money.data, proof.data), [commerce.data.orders, money.data, proof.data]);
-  const url = `https://${publicUrl(editor.published?.handle ?? editor.site.handle)}`;
+  // D253: shared text, link and QR all point at the live public passport so buyers can check it.
+  const url = `https://${publicUrl(editor.published?.handle ?? editor.site.handle)}/trust`;
   const summary = passportSummary(current.name, url, p);
   const met = p.signals.filter((s) => s.met);
   const todo = p.signals.filter((s) => !s.met);
-
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(summary);
-      toast.success('Passport summary copied');
-    } catch {
-      toast.error('Couldn’t copy. Select the text and copy it instead.');
-    }
-  };
+  const cardSignals = useMemo(() => publicSignals(p).map((s) => s.evidence), [p]);
+  const tick = useVerifiedTick(current.id);
 
   return (
     <div className="mx-auto w-full max-w-[1100px] px-5 pb-16 pt-6 md:px-10 md:pt-8">
@@ -75,17 +69,22 @@ export function TrustPassport() {
             </p>
           </div>
 
+          {tick.shown ?
+          <p className="flex items-start gap-2 text-caption text-fg-muted">
+              <BadgeCheckIcon size={16} className="mt-px shrink-0 text-action" aria-hidden />
+              <span>
+                <span className="font-semibold text-fg">Verified tick is on.</span> It shows after your name on Profile and Brand header blocks. Add a Trust Passport badge set to “Verified” to show the seal on its own.
+              </span>
+            </p> :
+          tick.hiddenByKubicu ?
+          <InlineAlert tone="warning" title="KUBICU has hidden your verified tick">
+              Your verification, payouts and score aren’t affected. Contact support if you think this is a mistake.
+            </InlineAlert> :
+          null}
+
           <div className="flex flex-col gap-3">
             <h2 className="text-label font-semibold text-fg">Share it</h2>
-            <pre className="whitespace-pre-wrap break-words rounded-md border border-line bg-sunken p-4 font-sans text-caption text-fg-muted">{summary}</pre>
-            <div className="flex flex-wrap gap-2">
-              <Button size="sm" variant="secondary" leadingIcon={CopyIcon} onClick={copy}>
-                Copy
-              </Button>
-              <Button size="sm" variant="secondary" leadingIcon={MessageCircleIcon} onClick={() => window.open(whatsappLink('', summary), '_blank', 'noopener')}>
-                Share on WhatsApp
-              </Button>
-            </div>
+            <TrustCardShare business={current.name} level={p.level} score={p.score} signals={cardSignals} url={url} summary={summary} unpublished={!editor.published} />
           </div>
         </section>
 
@@ -123,17 +122,36 @@ export function TrustPassport() {
 
 }
 
+const progressIcon = { info: ClockIcon, warning: AlertCircleIcon, danger: XCircleIcon } as const;
+const progressColor = { info: 'text-info', warning: 'text-warning', danger: 'text-danger' } as const;
+
 function SignalRow({ signal: s }: {signal: ReturnType<typeof computePassport>['signals'][number];}) {
   const soon = lapsingSoon(s);
+  const pr = !s.met ? s.progress : undefined;
+  const PrIcon = pr ? progressIcon[pr.tone] : null;
   return (
-    <li className="flex items-start gap-3 px-4 py-4">
-      {s.met ? <CheckCircle2Icon size={18} className="mt-0.5 shrink-0 text-success" aria-hidden /> : <CircleIcon size={18} className="mt-0.5 shrink-0 text-fg-subtle" aria-hidden />}
+    <li className={cn('flex items-start gap-3 px-4 py-4', pr && 'bg-sunken')}>
+      {s.met ?
+      <CheckCircle2Icon size={18} className="mt-0.5 shrink-0 text-success" aria-hidden /> :
+      PrIcon && pr ?
+      <PrIcon size={18} className={cn('mt-0.5 shrink-0', progressColor[pr.tone])} aria-hidden /> :
+
+      <CircleIcon size={18} className="mt-0.5 shrink-0 text-fg-subtle" aria-hidden />
+      }
       <div className="min-w-0 flex-1">
         <p className="flex flex-wrap items-center gap-2">
           <span className="text-label font-semibold text-fg">{s.title}</span>
+          {pr &&
+          <Badge tone={pr.tone} dot>
+              {pr.label}
+            </Badge>
+          }
           <Badge tone={s.met ? 'success' : 'neutral'}>{`${s.met ? '+' : ''}${s.points} pts`}</Badge>
         </p>
-        <p className="mt-0.5 text-caption text-fg-muted">{s.evidence}</p>
+        <p className="mt-0.5 text-caption text-fg-muted">
+          {s.evidence}
+          {pr?.at && ` · ${pr.tone === 'info' ? 'submitted' : 'updated'} ${formatRelative(pr.at)}`}
+        </p>
         {s.met && s.validUntil &&
         <p className={cn('mt-1 text-caption', soon ? 'font-medium text-warning' : 'text-fg-subtle')}>
             {soon ? 'Lapses' : 'Valid until'} {formatDate(s.validUntil)}
@@ -144,7 +162,7 @@ function SignalRow({ signal: s }: {signal: ReturnType<typeof computePassport>['s
       </div>
       {(!s.met || soon) &&
       <Link to={s.to} className={cn('inline-flex shrink-0 items-center gap-1 self-center text-label font-medium text-fg underline-offset-2 hover:underline')}>
-          Open <ArrowRightIcon size={14} aria-hidden />
+          {pr?.tone === 'info' ? 'View' : pr ? 'Fix' : 'Open'} <ArrowRightIcon size={14} aria-hidden />
           <span className="sr-only">{s.title}</span>
         </Link>
       }

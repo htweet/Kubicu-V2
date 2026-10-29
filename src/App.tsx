@@ -64,6 +64,11 @@ import { AppShell } from './components/shell/AppShell';
 import { AdminShell } from './components/admin/AdminShell';
 import { AppToaster } from './components/ui/AppToaster';
 import { MarketingLayout } from './components/marketing/MarketingLayout';
+import { CopilotSimProvider } from './contexts/CopilotSimContext';
+import { CopilotLanding } from './pages/marketing/CopilotLanding';
+import { CopilotWeb } from './pages/copilot/CopilotWeb';
+import { CopilotWhatsApp } from './pages/copilot/CopilotWhatsApp';
+import { CopilotPreview } from './pages/copilot/CopilotPreview';
 import { Onboarding } from './pages/Onboarding';
 import { Home } from './pages/marketing/Home';
 import { Templates } from './pages/marketing/Templates';
@@ -145,8 +150,14 @@ type WorkspacePlanOption = 'free' | 'creator' | 'pro' | 'business' | 'agency' | 
 
 type ViewingAsOption = 'owner' | 'admin' | 'editor' | 'sales' | 'viewer';
 type RenewalOption = 'succeeds' | 'fails';
+type CopilotWhatsAppOption = 'available' | 'unavailable';
+type CopilotFailureOption = 'none' | 'generation' | 'previewImage' | 'expiredLink';
 
 interface AppProps {
+  /** KUBICU Copilot's WhatsApp channel (D262, proposed): off shows the web fallback. */
+  copilotWhatsApp?: CopilotWhatsAppOption;
+  /** Walk through a Copilot recovery path (D262). */
+  copilotFailure?: CopilotFailureOption;
   visualDirection?: VisualDirectionOption;
   workspacePlan?: WorkspacePlanOption;
   /** Experience the workspace as a team member with this role (D57). */
@@ -155,7 +166,7 @@ interface AppProps {
   simulateNextRenewal?: RenewalOption;
 }
 
-export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', viewingAs = 'owner', simulateNextRenewal = 'succeeds' }: AppProps) {
+export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', viewingAs = 'owner', simulateNextRenewal = 'succeeds', copilotWhatsApp = 'available', copilotFailure = 'none' }: AppProps) {
   // Personal text size and motion preferences (D80).
   const { reduceMotion, lang } = useAccountEffects();
   return (
@@ -163,6 +174,7 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
     <LocaleProvider lang={lang}>
     <MotionConfig reducedMotion={reduceMotion ? 'always' : 'user'}>
     <BrowserRouter>
+      <CopilotSimProvider whatsapp={copilotWhatsApp} failure={copilotFailure}>
       <AppearancePolicyProvider initialDefault={visualDirection}>
         <WorkspaceProvider planControl={workspacePlan}>
           <WorkspaceScope visualDirection={visualDirection} viewingAs={viewingAs} renewal={simulateNextRenewal}>
@@ -175,7 +187,11 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
                 <Route path="ai" element={<AiFeatures />} />
                 <Route path="about/:topic" element={<InfoPage />} />
                 <Route path="developers" element={<Developers />} />
+                <Route path="copilot" element={<CopilotLanding />} />
               </Route>
+              <Route path="/copilot/chat" element={<CopilotWeb />} />
+              <Route path="/copilot/whatsapp" element={<CopilotWhatsApp />} />
+              <Route path="/d/:id" element={<CopilotPreview />} />
               <Route path="/signup" element={<SignUp />} />
               <Route path="/signin" element={<SignIn />} />
               <Route path="/reset" element={<ResetPassword />} />
@@ -314,6 +330,7 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
           </WorkspaceScope>
         </WorkspaceProvider>
       </AppearancePolicyProvider>
+      </CopilotSimProvider>
     </BrowserRouter>
     </MotionConfig>
     </LocaleProvider>);

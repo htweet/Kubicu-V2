@@ -7,6 +7,7 @@ import { formatBytes } from '../../utils/commerce/catalog';
 import { scoreQuiz } from '../../utils/commerce/courses';
 import { buttonStyle, cardStyle, mix } from '../blocks/pageStyle';
 import { announce } from '../../utils/announce';
+import { LiveLessonPanel } from './LiveLessonPanel';
 
 interface Props {
   theme: PageTheme;
@@ -15,6 +16,8 @@ interface Props {
   bestScore?: number;
   /** Null in preview mode — quizzes still check answers but nothing is saved. */
   onQuiz: ((score: number) => void) | null;
+  /** Used in a live session's calendar file. */
+  courseTitle?: string;
 }
 
 function Paragraphs({ text, theme }: {text: string;theme: PageTheme;}) {
@@ -31,7 +34,7 @@ function Paragraphs({ text, theme }: {text: string;theme: PageTheme;}) {
 }
 
 /** One lesson's material: a safe video embed, reading, a file, or a quiz (D197). */
-export function LessonContent({ theme: t, lesson: l, passPct, bestScore, onQuiz }: Props) {
+export function LessonContent({ theme: t, lesson: l, passPct, bestScore, onQuiz, courseTitle }: Props) {
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [result, setResult] = useState<number | null>(null);
   const [downloaded, setDownloaded] = useState(false);
@@ -56,6 +59,8 @@ export function LessonContent({ theme: t, lesson: l, passPct, bestScore, onQuiz 
             This video can’t be shown right now. Ask the course owner to check the link.
           </p>)
       }
+
+      {l.kind === 'live' && <LiveLessonPanel theme={t} lesson={l} courseTitle={courseTitle ?? ''} />}
 
       {l.kind === 'file' &&
       <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center" style={cardStyle(t)}>

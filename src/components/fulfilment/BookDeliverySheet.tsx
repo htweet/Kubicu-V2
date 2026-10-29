@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { BikeIcon, ShieldCheckIcon } from 'lucide-react';
 import type { Order } from '../../types/commerce';
+import { orderRef } from '../../utils/commerce/shopSettings';
 import type { Rider } from '../../types/fulfilment';
 import { quotesFor, type PartnerQuote } from '../../utils/fulfilment';
 import { formatNgn } from '../../utils/format';
@@ -64,7 +65,7 @@ export function BookDeliverySheet({ order, escrow, savedRiders, onClose, onBook 
       onClose={onClose}
       side="right"
       size="lg"
-      title={`Book delivery · order #${order.number}`}
+      title={`Book delivery · order ${orderRef(order)}`}
       description={`${order.customer.name || 'Customer'} · ${order.fulfilment.address || 'No address'}`}
       footer={
       <div className="flex w-full items-center justify-between gap-3">

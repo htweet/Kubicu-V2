@@ -10,6 +10,7 @@ import { Switch } from '../../ui/Switch';
 import { Button } from '../../ui/Button';
 import { IconButton } from '../../ui/IconButton';
 import { cn } from '../../../utils/cn';
+import { LiveLessonFields } from './LiveLessonFields';
 
 const MAX_FILE_BYTES = 200 * 1024 * 1024;
 
@@ -25,6 +26,9 @@ export function LessonEditor({ lesson: l, onChange, showErrors }: Props) {
   const id = (f: string) => `${l.id}-${f}`;
   const embed = l.kind === 'video' && l.videoUrl.trim() ? parseEmbed(l.videoUrl) : null;
   const videoError = embed && !embed.ok ? embed.reason : embed && embed.ok && embed.kind !== 'video' ? 'That link isn’t a video. Use YouTube, Vimeo, Loom, TikTok, Instagram or Facebook video.' : showErrors && l.kind === 'video' && !l.videoUrl.trim() ? 'Add a video link' : undefined;
+
+  const recordingEmbed = l.kind === 'live' && l.videoUrl.trim() ? parseEmbed(l.videoUrl) : null;
+  const recordingError = recordingEmbed && !recordingEmbed.ok ? recordingEmbed.reason : recordingEmbed && recordingEmbed.ok && recordingEmbed.kind !== 'video' ? 'That link isn’t a video.' : undefined;
 
   const setQuestion = (qid: string, patch: Partial<QuizQuestion>) => onChange({ questions: l.questions.map((q) => q.id === qid ? { ...q, ...patch } : q) });
 
@@ -42,6 +46,22 @@ export function LessonEditor({ lesson: l, onChange, showErrors }: Props) {
         hint={embed?.ok && embed.kind === 'video' ? `${embed.name} video — learners watch it inside the lesson. Set it to Unlisted so it can’t be found outside the course.` : 'YouTube, Vimeo, Loom, TikTok, Instagram or Facebook. Upload there first; KUBICU doesn’t host video.'}
         onChange={(e) => onChange({ videoUrl: e.target.value })} />
 
+      }
+
+      {l.kind === 'live' &&
+      <>
+          <LiveLessonFields lesson={l} onChange={onChange} showErrors={showErrors} />
+          <TextInput
+          id={id('recording')}
+          label="Recording"
+          optional
+          value={l.videoUrl}
+          placeholder="Add after the session"
+          error={recordingError}
+          hint={recordingEmbed?.ok && recordingEmbed.kind === 'video' ? `${recordingEmbed.name} video — once the session ends, students watch it here instead.` : 'After the session, paste the recording link (YouTube, Vimeo, Loom…). Set it to Unlisted.'}
+          onChange={(e) => onChange({ videoUrl: e.target.value })} />
+        
+        </>
       }
 
       {l.kind === 'file' &&
@@ -83,7 +103,7 @@ export function LessonEditor({ lesson: l, onChange, showErrors }: Props) {
         </div>
       }
 
-      {(l.kind === 'text' || l.kind === 'video' || l.kind === 'file') &&
+      {(l.kind === 'text' || l.kind === 'video' || l.kind === 'file' || l.kind === 'live') &&
       <TextArea
         id={id('body')}
         label={l.kind === 'text' ? 'Lesson' : 'Notes under the lesson'}
@@ -162,10 +182,14 @@ export function LessonEditor({ lesson: l, onChange, showErrors }: Props) {
       }
 
       <div className="grid gap-4 sm:grid-cols-2 sm:items-start">
-        <TextInput id={id('minutes')} label="Length (minutes)" inputMode="numeric" value={String(l.minutes || '')} onChange={(e) => onChange({ minutes: Math.min(600, Number(e.target.value.replace(/\D/g, '')) || 0) })} />
+        <TextInput id={id('minutes')} label={l.kind === 'live' ? 'Session length (minutes)' : 'Length (minutes)'} inputMode="numeric" value={String(l.minutes || '')} onChange={(e) => onChange({ minutes: Math.min(600, Number(e.target.value.replace(/\D/g, '')) || 0) })} />
+        {l.kind === 'live' ?
+        <p className="text-caption text-fg-subtle sm:pt-7">Live sessions can’t be free previews, so the link stays with students who have access.</p> :
+
         <div className="pt-1 sm:pt-7">
-          <Switch id={id('preview')} label="Free preview" description="Anyone can open it before enrolling." checked={l.preview} onChange={(preview) => onChange({ preview })} />
-        </div>
+            <Switch id={id('preview')} label="Free preview" description="Anyone can open it before enrolling." checked={l.preview} onChange={(preview) => onChange({ preview })} />
+          </div>
+        }
       </div>
     </div>);
 

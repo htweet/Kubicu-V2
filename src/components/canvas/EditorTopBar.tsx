@@ -64,8 +64,9 @@ export function EditorTopBar({ viewport, onViewportChange, onOpenVersions, onOpe
     <header className="grid h-14 shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-4 border-b border-line bg-raised px-3">
       <div className="flex min-w-0 items-center gap-3">
         <Link
-          to="/app"
-          aria-label="Back to workspace"
+          to="/app/spaces"
+          aria-label="Back to My Spaces"
+          title="Back to My Spaces"
           className="group flex h-9 items-center gap-1.5 rounded-md px-1.5 text-fg-muted transition-colors duration-150 hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
           
           <ArrowLeftIcon size={15} aria-hidden />

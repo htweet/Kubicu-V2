@@ -68,7 +68,7 @@ export function MobileEditor() {
   const close = () => setSheet(null);
   return <div className="flex h-[100dvh] flex-col bg-canvas text-fg">
       <header className="flex h-14 shrink-0 items-center gap-1 border-b border-line bg-raised px-1.5">
-        <Link to="/app" aria-label="Back to workspace" className="flex h-11 w-11 items-center justify-center rounded-md text-fg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+        <Link to="/app/spaces" aria-label="Back to My Spaces" className="flex h-11 w-11 items-center justify-center rounded-md text-fg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
           <ArrowLeftIcon size={19} aria-hidden />
         </Link>
         <SpaceSwitcher compact />

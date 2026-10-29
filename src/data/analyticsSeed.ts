@@ -50,7 +50,10 @@ export function sampleAnalytics(now = Date.now()): AnalyticsEvent[] {
       const browser = rand() < 0.2 ? `b${Math.floor(rand() * 400)}` : `b${session}`;
       // QR visits came from the sample “Market flyer” code; half of Instagram from the sample bio link (D62).
       const campaign = source === 'qr' ? 'flyer' : source === 'instagram' && rand() < 0.5 ? 'ig' : undefined;
-      const base = { session, browser, source, campaign, handle: samplePage.handle, pageId: null, sample: true } as const;
+      // Mostly phones (D258). Worked out from the visit number so the rest of the sample stays the same.
+      const slot = (v * 37 + day * 11) % 100;
+      const device = slot < 72 ? 'phone' : slot < 94 ? 'desktop' : 'tablet';
+      const base = { session, browser, device, source, campaign, handle: samplePage.handle, pageId: null, sample: true } as const;
       const ev = (type: AnalyticsEvent['type'], dt: number, extra: Partial<AnalyticsEvent> = {}) => out.push({ ...base, type, at: new Date(at + dt * 1000).toISOString(), ...extra });
       ev('view', 0);
       if (rand() < 0.42 && links.length) {

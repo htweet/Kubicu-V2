@@ -4,6 +4,7 @@ import type { BlockProps } from './blockProps';
 import { BlockPlaceholder } from './BlockPlaceholder';
 import { PageAction } from './PageAction';
 import { MediaImage } from '../media/MediaImage';
+import { VerifiedTick } from './VerifiedTick';
 import { buttonStyle, headingStyle } from './pageStyle';
 import { cn } from '../../utils/cn';
 
@@ -19,7 +20,7 @@ export function BrandHeaderBlock({ block, theme, mode }: BlockProps<'brandHeader
         <div className="min-w-0">
           {c.name &&
           <h1 className="break-words text-[clamp(1.6rem,3.6cqw,2.4rem)] font-medium leading-[1.08] tracking-[-0.02em]" style={{ ...headingStyle(theme), color: theme.text }}>
-              {c.name}
+              {c.name} <VerifiedTick theme={theme} size={26} />
             </h1>
           }
           {c.tagline && <p className="mt-1.5 text-[16px] leading-snug" style={{ color: theme.mutedText }}>{c.tagline}</p>}

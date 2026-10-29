@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { CalendarClockIcon, CopyIcon, MessageCircleIcon } from 'lucide-react';
+import { orderRef } from '../../utils/commerce/shopSettings';
 import { toast } from 'sonner';
 import type { CommerceData, InstalmentPart, Order } from '../../types/commerce';
 import { cancelRemaining, everyLabels, instalmentsOwed, nextAttemptAt, nextPart, payPart } from '../../utils/commerce/payOptions';
@@ -40,7 +41,7 @@ export function OrderInstalmentsPanel({ order, handle, business, workspaceId, ap
     if (apply((d) => payPart(d, order.id, p.id, 'card'))) toast.success(`Instalment ${p.n} charged (test)`);
   };
   const record = (p: InstalmentPart) => apply((d) => payPart(d, order.id, p.id, 'recorded')) && toast.success(`Instalment ${p.n} recorded as paid`, { description: 'Cash or transfer to you — not added to your wallet.' });
-  const nudge = next ? `Hi ${order.customer.name.split(' ')[0] || 'there'}, it’s ${business}. Instalment ${next.n} of ${total} for order #${order.number} (${formatNgn(next.amountNgn)}) ${next.status === 'failed' ? 'didn’t go through' : 'is coming up'}. You can pay it or update your card here: ${link}` : '';
+  const nudge = next ? `Hi ${order.customer.name.split(' ')[0] || 'there'}, it’s ${business}. Instalment ${next.n} of ${total} for order ${orderRef(order)} (${formatNgn(next.amountNgn)}) ${next.status === 'failed' ? 'didn’t go through' : 'is coming up'}. You can pay it or update your card here: ${link}` : '';
 
   return (
     <section aria-labelledby={`inst-${order.id}`} className={cn('flex flex-col gap-3 rounded-md border px-4 py-3', inst.status === 'defaulted' || next?.status === 'failed' ? 'border-danger/40 bg-danger-soft' : 'border-line')}>

@@ -13,6 +13,7 @@ import { buttonRadius, cardStyle, mix } from './pageStyle';
 import { useCatalog } from '../../contexts/CatalogContext';
 import { isSoldOut, linkedGridProducts, priceRange } from '../../utils/commerce/catalog';
 import { formatNgn, whatsappLink } from '../../utils/format';
+import { waNumber } from '../../utils/businessWhatsApp';
 
 type GridView = GridProduct & {product?: Product;from?: boolean;};
 
@@ -65,7 +66,7 @@ export function ProductGridBlock({ block, theme, mode }: BlockProps<'productGrid
         {items.map((item) => {
           const href =
           action === 'whatsapp' ?
-          whatsappLink(c.whatsappPhone, `Hi! I’d like to order: ${item.name}${item.priceNgn !== null ? ` (${formatNgn(item.priceNgn)})` : ''}.`) :
+          whatsappLink(waNumber(c.whatsappPhone), `Hi! I’d like to order: ${item.name}${item.priceNgn !== null ? ` (${formatNgn(item.priceNgn)})` : ''}.`) :
           item.url;
           const buttonCls = 'mt-1 flex h-10 items-center justify-center gap-1.5 text-[13px] font-semibold';
           const buttonCss = { background: theme.accent, color: theme.accentText, borderRadius: buttonRadius(theme) };

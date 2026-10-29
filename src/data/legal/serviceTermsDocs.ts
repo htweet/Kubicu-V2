@@ -1,0 +1,149 @@
+import type { LegalDoc } from '../../types/legal';
+
+/**
+ * Feature-specific terms — Draft 1.0 for counsel review (D233). These cover Group B items that had no
+ * standalone document before: subscriptions, tickets, fundraising and support payments, buyer protection,
+ * partnerships, template creators, developers and AI features.
+ */
+const UPDATED = '27 October 2026';
+const VERSION = 'Draft 1.0 — for legal review';
+
+export const serviceTermsDocs: LegalDoc[] = [
+{
+  slug: 'subscriptions',
+  title: 'Subscriptions and memberships',
+  group: 'Legal',
+  intro: 'Terms for customers who subscribe to a seller’s membership or product box on KUBICU, and for sellers who offer them.',
+  updated: UPDATED,
+  version: VERSION,
+  sections: [
+  { id: 'agreement', title: 'Who you’re subscribing with', summary: 'Your subscription is with the seller, not KUBICU.', paragraphs: ['A subscription is an agreement between you and the seller. KUBICU provides the sign-up, billing and subscriber page on the seller’s behalf. The seller decides what is included, the price and how often you are charged.'] },
+  { id: 'renewal', title: 'Automatic renewal', summary: 'You’re charged each period until you cancel.', paragraphs: ['By subscribing you authorise the seller, through their payment provider, to charge your card at the start of each period (weekly, monthly or yearly) until you cancel. Any trial ends automatically and becomes paid unless you cancel before it ends; we remind you before a trial ends. A setup fee, if any, is shown before you subscribe.'] },
+  { id: 'changes', title: 'Price and plan changes', summary: 'Sellers must give notice before raising your price.', paragraphs: ['Sellers must give you at least 14 days’ notice before a price increase takes effect, and you can cancel before then. Changing plan takes effect as described on your subscriber page.'] },
+  { id: 'manage', title: 'Pause, skip and cancel', summary: 'Manage everything from your subscriber page.', paragraphs: ['From your subscriber page you can update your card, change plan, pause, skip a cycle (where the seller allows) or cancel. If you cancel, access continues until the end of the period you have paid for and you won’t be charged again.'] },
+  { id: 'failed', title: 'Failed payments', summary: 'We retry, then access ends after a grace period.', paragraphs: ['If a payment fails we retry on days 1, 3 and 5. You keep access during a 7-day grace period; if payment still fails the subscription ends. You can rejoin at any time.'] },
+  { id: 'members', title: 'Members-only content and sign-in', summary: 'Access is personal to you and checked on each visit.', paragraphs: ['Members sign in with a one-time code sent to the phone number or email used to subscribe. Access is for your personal use; don’t share codes or copy members-only content. Sessions last 30 days on a device and access is rechecked on every visit.'] },
+  { id: 'refunds', title: 'Refunds', summary: 'Periods already started usually aren’t refunded.', paragraphs: ['See Refunds and cancellations. If the seller closes the membership, the unused part of a prepaid period is refunded.'] }]
+
+},
+{
+  slug: 'event-tickets',
+  title: 'Event tickets',
+  group: 'Legal',
+  intro: 'Terms for buying tickets to events sold through KUBICU, and for organisers who sell them.',
+  updated: UPDATED,
+  version: VERSION,
+  sections: [
+  { id: 'organiser', title: 'The organiser runs the event', summary: 'Your ticket is a contract with the organiser.', paragraphs: ['The event organiser is responsible for the event, its venue, safety, accessibility and any age limits. KUBICU sells tickets on the organiser’s behalf and issues QR tickets.'] },
+  { id: 'tickets', title: 'Your ticket', summary: 'Each QR ticket admits one person once.', paragraphs: ['Each ticket admits one person and can be scanned once. Keep your ticket private; a copied ticket may be refused if the original was already scanned. Organisers may ask for ID where an age limit applies. Reserved seats are held for you only once payment is confirmed.'] },
+  { id: 'changes', title: 'Changes and cancellation', summary: 'Cancelled events are refunded in full.', paragraphs: ['If the organiser cancels the event, every ticket is refunded in full. If the date, time or venue changes significantly, you may ask the organiser for a refund before the new date. Otherwise refunds follow the organiser’s policy shown before you buy.'] },
+  { id: 'conduct', title: 'At the event', summary: 'Follow the organiser’s rules.', paragraphs: ['The organiser may refuse entry or remove anyone who breaks the law or their published rules, without refund where their policy allows.'] },
+  { id: 'resale', title: 'Resale', summary: 'Don’t resell tickets above face value.', paragraphs: ['Tickets may not be resold for more than face value unless the organiser allows it. Organisers may cancel tickets bought for unauthorised resale.'] }]
+
+},
+{
+  slug: 'fundraising',
+  title: 'Fundraising and support payments',
+  group: 'Legal',
+  intro: 'Terms for fundraisers and Support / pay-what-you-want payments on KUBICU, for both organisers and supporters.',
+  updated: UPDATED,
+  version: VERSION,
+  sections: [
+  { id: 'nature', title: 'What a fundraiser payment is', summary: 'A payment to the organiser — not a tax-deductible charitable donation.', paragraphs: ['Money given through a fundraiser or Support block is a payment to the organiser named on the page. It is not a donation to a registered charity and is not tax-deductible unless the organiser says otherwise and can prove registration. KUBICU is not a party to the payment and does not act as a trustee.'] },
+  { id: 'organisers', title: 'Who can run a fundraiser', summary: 'Verified workspaces on Creator and above.', paragraphs: ['Only workspaces on the Creator plan or above that have passed identity verification can start a fundraiser. Organisers must state truthfully what the money is for and who receives it, use it for that purpose, and post honest updates.'] },
+  { id: 'goal', title: 'Goals', summary: 'The goal is a target, not a condition.', paragraphs: ['Each payment goes to the organiser’s wallet as it arrives. If the goal isn’t reached, the organiser keeps what was raised and payments are not refunded automatically. Totals count only real, paid payments, less refunds.'] },
+  { id: 'charities', title: 'Charities and regulated fundraising', summary: 'Organisers must hold any permission the law requires.', paragraphs: ['Registered charities, religious bodies and organisations raising money from the public may need registration with the Corporate Affairs Commission or other permissions. Organisers are responsible for holding these and for any tax or reporting duties.'] },
+  { id: 'refunds', title: 'Refunds', summary: 'At the organiser’s discretion, except for fraud.', paragraphs: ['Organisers may refund a payment in full from their fundraiser settings. If a fundraiser is found to be fraudulent, KUBICU may pause it, hold the remaining balance and work with the payment provider to return money to supporters.'] },
+  { id: 'safety', title: 'Reports and pausing', summary: 'Report suspected scams; staff can pause a fundraiser.', paragraphs: ['Anyone can report a fundraiser as a scam or misuse. KUBICU staff review new fundraisers and reports and may pause a fundraiser — the page stays visible but no one can pay — while they investigate.'] },
+  { id: 'privacy', title: 'Supporters’ privacy', summary: 'Supporters are anonymous unless they choose to show their name.', paragraphs: ['Supporters are shown as anonymous unless they choose to display their name. The organiser can see supporters’ details to issue receipts and refunds and must not use them for marketing without consent.'] }]
+
+},
+{
+  slug: 'buyer-protection',
+  title: 'Buyer protection',
+  group: 'Trust & safety',
+  intro: 'How Buyer protection works when a seller offers it: where your money is held, when it is released, and how to report a problem.',
+  updated: UPDATED,
+  version: VERSION,
+  sections: [
+  { id: 'what', title: 'What it covers', summary: 'Orders paid into protection, marked on the checkout.', paragraphs: ['Buyer protection applies only to orders marked as protected at checkout and paid through the payment provider. It doesn’t cover payments made directly to a seller’s own bank account, pay on delivery, or anything paid outside the page.'] },
+  { id: 'held', title: 'Where your money is held', summary: 'By our licensed payment partner — not by the seller or KUBICU.', paragraphs: ['Your payment is held by our licensed payment partner until you confirm delivery, or until the release date shown on your protection page passes without a reported problem. KUBICU does not hold the money itself.'] },
+  { id: 'release', title: 'When money is released', summary: 'When you confirm, a delivery code matches, or the release date passes.', paragraphs: ['Money is released to the seller when you confirm you received the order, when the courier records a matching delivery code, or automatically on the release date if no problem has been reported.'] },
+  { id: 'problem', title: 'Reporting a problem', summary: 'Report before the release date; the money stays held.', paragraphs: ['If the order doesn’t arrive or isn’t as described, report it from your protection page before the release date. The money stays held while the seller responds. If you can’t agree, KUBICU reviews the evidence from both sides and decides whether to release the money to the seller or refund you. Our decision does not affect your right to go to your bank or the courts.'] }]
+
+},
+{
+  slug: 'partnerships',
+  title: 'Business partnerships',
+  group: 'Legal',
+  intro: 'Terms for workspaces that work together on co-branded spaces, partner bundles, shared shops and creator collaborations.',
+  updated: UPDATED,
+  version: VERSION,
+  sections: [
+  { id: 'agreement', title: 'Your agreement', summary: 'Partners agree the basics in plain words before working together.', paragraphs: ['Before a partnership starts, both workspaces accept a written summary covering: the purpose; how money is split; who delivers; who answers customers; and the notice period to end it (14 days by default). This summary forms a contract between the partners. KUBICU records who accepted it and when, but is not a party to it.'] },
+  { id: 'cobrand', title: 'Co-branded spaces', summary: 'Each partner controls its own sections; nothing goes live without approval.', paragraphs: ['In a co-branded space, partners edit only the sections they own unless both choose open editing. Changes affecting the other partner’s brand need their approval before publishing. Each partner remains responsible for its own content.'] },
+  { id: 'money', title: 'Splits and commissions', summary: 'Splits are paid by the payment provider; commissions are held 7 days.', paragraphs: ['For partner bundles and collaborations, each sale is split as agreed and paid to each partner by the payment provider. Creator commissions (1–50%) are held for 7 days to allow for refunds. Refunds are shared in the same proportion as the original split.'] },
+  { id: 'customers', title: 'Customers', summary: 'The selling partner is responsible to the customer.', paragraphs: ['The partner who takes the payment is responsible to the customer for delivery and refunds unless the agreement names the other partner. Customer data shared between partners may be used only for that partnership.'] },
+  { id: 'ending', title: 'Ending a partnership', summary: 'Give the agreed notice; open orders are completed.', paragraphs: ['Either partner may end the partnership by giving the agreed notice. Orders already placed are completed and split as agreed. Co-branded content returns to its owners.'] }]
+
+},
+{
+  slug: 'template-creators',
+  title: 'Template creator terms',
+  group: 'Legal',
+  intro: 'Terms for creators who sell templates, themes and sections in the KUBICU marketplace, and the licence buyers receive.',
+  updated: UPDATED,
+  version: VERSION,
+  sections: [
+  { id: 'rights', title: 'Your rights in what you submit', summary: 'You must own everything in your template.', paragraphs: ['You confirm you own or have licensed every image, font, icon and text in your submission, and that it contains no customer personal data. You keep ownership and grant KUBICU a non-exclusive licence to host, review, display, promote and sell it.'] },
+  { id: 'review', title: 'Review and listing', summary: 'Staff review every template; we may decline or remove it.', paragraphs: ['KUBICU staff review submissions for quality, accessibility, honesty (no fake reviews, figures or testimonials presented as real) and rights. We may decline a template, ask for changes, or remove a listing that breaks these terms.'] },
+  { id: 'revenue', title: 'Revenue share and payouts', summary: 'You keep 70%; payouts from ₦5,000.', paragraphs: ['You receive 70% of each sale’s price after VAT; KUBICU keeps 30%. Earnings are paid to your verified account once they reach ₦5,000. Refunded sales are deducted.'] },
+  { id: 'buyer-licence', title: 'The buyer’s licence', summary: 'Use in the buyer’s own workspace; no resale.', paragraphs: ['Buyers receive a non-exclusive, non-transferable licence to use the template for pages in the workspace that bought it, including commercial pages. They may not resell, share or redistribute the template. Buyers can request a refund within 7 days if they haven’t published it on a live page.'] },
+  { id: 'ai', title: 'AI-composed layouts', summary: 'Layouts the AI assistant saves for you are private and can’t be sold.', paragraphs: ['Layouts that KUBICU’s AI assistant composes and saves under your templates are for your own workspaces only and can’t be listed in the marketplace.'] }]
+
+},
+{
+  slug: 'developer-terms',
+  title: 'Developer terms',
+  group: 'Legal',
+  intro: 'Terms for developers using the KUBICU API and webhooks, or submitting extensions.',
+  updated: UPDATED,
+  version: VERSION,
+  sections: [
+  { id: 'access', title: 'API access', summary: 'Keep keys secret and stay within rate limits.', paragraphs: ['API keys are confidential and tied to a workspace. Requests are limited to 120 per minute per key. We may suspend keys that are abused or put the service at risk.'] },
+  { id: 'data-use', title: 'Data-use declaration', summary: 'Use only the data your permissions allow, for the purpose you declared.', paragraphs: ['When you submit an extension you declare which data it accesses and why. You must: use only the data the granted permissions allow and only for the declared purpose; not sell or share it with third parties except sub-processors under equivalent terms; secure it; delete it within 30 days when an owner disconnects your extension; and comply with the NDPA. You act as the workspace owner’s processor for their customers’ data.'] },
+  { id: 'review', title: 'Extension review', summary: 'Extensions are curated and reviewed before listing.', paragraphs: ['KUBICU reviews extensions for security, privacy and quality, may request changes, and may remove or roll back an extension that breaks these terms.'] },
+  { id: 'pricing', title: 'Pricing and revenue share', summary: 'You set the price within plan caps; you keep 80%.', paragraphs: ['Paid extensions are priced within the caps for each plan. You receive 80% of revenue and KUBICU 20%, paid to your verified account.'] },
+  { id: 'liability', title: 'Responsibility', summary: 'You are responsible for your extension.', paragraphs: ['You are responsible for your extension’s behaviour and for any claims arising from it, and agree to indemnify KUBICU accordingly.'] }]
+
+},
+{
+  slug: 'ai-features',
+  title: 'AI features',
+  group: 'Legal',
+  intro: 'How KUBICU’s AI page assistant and other AI suggestions work, what they will and won’t do, and how your data is used.',
+  updated: UPDATED,
+  version: VERSION,
+  sections: [
+  { id: 'drafts', title: 'Suggestions are drafts', summary: 'Nothing is applied until you approve it.', paragraphs: ['The AI page assistant asks questions, proposes a plan and builds only after you approve. Each later change is shown as before/after for you to keep or undo. You are responsible for checking and publishing the result.'] },
+  { id: 'facts', title: 'No invented facts', summary: 'Prices, reviews, qualifications and policies are never made up.', paragraphs: ['The assistant uses only details you provide. Where something is missing — a price, a policy, a qualification — it leaves a clearly marked gap for you to fill. It never verifies your identity, connects payments, publishes or charges money on its own.'] },
+  { id: 'data', title: 'Your data', summary: 'Used to build your page, not to train public models.', paragraphs: ['Your answers and uploaded images are used to build your page. Where a third-party AI provider is used, it processes data under contract on our behalf and may not use it to train its models. Conversations are kept on your account until you delete them.'] },
+  { id: 'ownership', title: 'Ownership of the output', summary: 'You can use what the assistant creates for you.', paragraphs: ['As between you and KUBICU, you may use the text and layouts the assistant produces for your pages. AI output may resemble other content; check that it doesn’t infringe anyone’s rights before publishing.'] },
+  { id: 'credits', title: 'Credits', summary: 'Builds and refinements use AI credits.', paragraphs: ['A build uses 5 AI credits and each refinement 1 credit. Requests the assistant can’t carry out don’t use credits.'] }]
+
+},
+{
+  slug: 'copilot',
+  title: 'KUBICU Copilot privacy notice',
+  group: 'Legal',
+  intro: 'How KUBICU Copilot uses what you share in a chat — on WhatsApp or on kub.icu — to make a draft page before you have an account.',
+  updated: UPDATED,
+  version: VERSION,
+  sections: [
+  { id: 'what', title: 'What Copilot uses', summary: 'Only what you tell it and the photos you send.', paragraphs: ['Copilot uses your answers, the photos you choose to send and, on WhatsApp, the phone number the chat comes from. It uses them only to make and change your draft page and to apply daily limits. It never asks for passwords, card numbers, PINs, BVN or NIN; if you send something like that, it is removed and not stored.'] },
+  { id: 'whatsapp', title: 'Chatting on WhatsApp', summary: 'An AI agent chat, processed by KUBICU — not end-to-end encrypted like personal chats.', paragraphs: ['When you chat with Copilot on WhatsApp, the conversation is with KUBICU’s AI agent. Messages are processed by KUBICU and the platform providers we use to run the service, so they are not end-to-end encrypted in the way your personal chats are. WhatsApp’s own terms and privacy policy also apply. Where WhatsApp isn’t available, you can use Copilot on kub.icu instead.'] },
+  { id: 'drafts', title: 'Drafts and preview links', summary: 'Private, not in search, deleted after 7 days if unclaimed.', paragraphs: ['A draft is not published. Its preview link is private and not listed by search engines, but anyone you share it with can view it. Only the chat that made a draft can continue it into an account. Unclaimed drafts and their photos are deleted after 7 days; claimed drafts become part of your account.'] },
+  { id: 'accounts', title: 'Accounts', summary: 'Copilot never creates an account for you.', paragraphs: ['Continuing a draft needs you to sign up or sign in yourself. Copilot does not create accounts from phone numbers, publish pages, connect payments or turn on paid features.'] },
+  { id: 'lawful-basis', title: 'Lawful basis and your rights', summary: 'We use your data to do what you asked; you can ask us to delete it.', paragraphs: ['We process this data to provide the service you request (making a draft), under the Nigeria Data Protection Act 2023. You can ask us to delete a draft and its chat at any time via kub.icu/about/contact. Where an AI model provider is used, it processes data under contract on our behalf and may not use it to train its models.'] }]
+
+}];

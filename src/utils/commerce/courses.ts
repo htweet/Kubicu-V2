@@ -4,6 +4,7 @@ import type { WorkspacePlan } from '../../types/plan';
 import { uid } from '../id';
 import { checkAccess, normalisePhone, type MemberSession } from '../members';
 import { planAtLeast } from '../../data/plans';
+import { blankLive, liveIssue } from './liveLessons';
 
 /**
  * Courses (D197). A course is modules of lessons. Free courses enrol on sign-in; paid courses are sold
@@ -20,7 +21,7 @@ export const COURSE_PLAN: WorkspacePlan = 'creator';
 export const PAID_COURSE_PLAN: WorkspacePlan = 'pro';
 const DAY = 86_400_000;
 
-export const lessonKindLabels: Record<LessonKind, string> = { video: 'Video', text: 'Reading', file: 'File', quiz: 'Quiz' };
+export const lessonKindLabels: Record<LessonKind, string> = { video: 'Video', text: 'Reading', file: 'File', quiz: 'Quiz', live: 'Live session' };
 export const accessLabels: Record<Course['access'], string> = { free: 'Free', paid: 'Paid', membership: 'With a membership' };
 export const enrolSourceLabels: Record<EnrolmentSource, string> = { free: 'Signed up free', order: 'Bought', membership: 'Membership', manual: 'Added by you' };
 
@@ -39,7 +40,7 @@ export function enrolmentsFor(data: CommerceData | null | undefined, courseId: s
 // ——— Building ———
 
 export function blankLesson(kind: LessonKind = 'video'): CourseLesson {
-  return { id: uid('les'), title: '', kind, videoUrl: '', body: '', fileName: '', fileSizeBytes: 0, questions: kind === 'quiz' ? [blankQuestion()] : [], minutes: kind === 'quiz' ? 5 : 10, preview: false };
+  return { id: uid('les'), title: '', kind, videoUrl: '', body: '', fileName: '', fileSizeBytes: 0, questions: kind === 'quiz' ? [blankQuestion()] : [], ...(kind === 'live' ? { live: blankLive() } : {}), minutes: kind === 'quiz' ? 5 : kind === 'live' ? 60 : 10, preview: false };
 }
 
 export function blankQuestion(): QuizQuestion {
@@ -100,6 +101,7 @@ export function lessonIssue(l: CourseLesson): string | null {
   if (l.kind === 'video' && !l.videoUrl.trim()) return 'Add a video link';
   if (l.kind === 'text' && !l.body.trim()) return 'Write the lesson';
   if (l.kind === 'file' && !l.fileName) return 'Upload a file';
+  if (l.kind === 'live') return liveIssue(l);
   if (l.kind === 'quiz') {
     if (l.questions.length === 0) return 'Add a question';
     if (l.questions.some((q) => !q.prompt.trim() || q.options.filter((o) => o.trim()).length < 2 || !q.options[q.correct]?.trim())) return 'Each question needs a prompt, two answers and a correct answer';

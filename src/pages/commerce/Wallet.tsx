@@ -7,7 +7,8 @@ import { useWorkspace } from '../../contexts/WorkspaceContext';
 import { useCan, useTeam } from '../../contexts/TeamContext';
 import { useT } from '../../contexts/LocaleContext';
 import { useMoney } from '../../hooks/useMoney';
-import { balances, paidOutToday, payoutBlocker, tierInfo, usableBanks } from '../../utils/money/store';
+import { balances, paidOutToday, payoutBlocker, payoutTier, starterEligible, starterMissing, starterReady, tierInfo, usableBanks } from '../../utils/money/store';
+import { verifiedName } from '../../utils/money/kyc';
 import { formatNgn, formatRelative, formatTimestamp } from '../../utils/format';
 import { activeCurrency, currencyInfo, isNaira } from '../../utils/currency';
 import { PageHeader } from '../../components/shell/PageHeader';
@@ -52,7 +53,9 @@ export function Wallet() {
 
   const b = balances(data);
   const blocker = payoutBlocker(data);
-  const tier = tierInfo[data.verification.tier];
+  const starter = starterReady(data);
+  const tier = tierInfo[payoutTier(data)];
+  const missing = verified || starter || data.kyc.status === 'rejected' || !starterEligible(data) ? [] : starterMissing(data);
   const usedToday = paidOutToday(data);
   const usedPct = tier.dailyPayoutNgn ? Math.min(100, Math.round(usedToday / tier.dailyPayoutNgn * 100)) : 0;
   const total = b.available + b.pending + b.held + b.reserved;
@@ -121,7 +124,9 @@ export function Wallet() {
         undefined
         }>
         
-          {tr(
+          {starter ?
+        tr('Starter payouts are on — up to {n} a day to your own account. Finish verification for higher limits.', { n: formatNgn(tierInfo[1].dailyPayoutNgn) }) :
+        tr(
           data.kyc.entity && data.kyc.entity !== 'individual' ?
           'Sales keep arriving in your wallet. Takes about 10 minutes — have your BVN, NIN, a photo ID and proof of address ready, plus your CAC documents.' :
           'Sales keep arriving in your wallet. Takes about 10 minutes — have your BVN, NIN, a photo ID and proof of address ready.'
@@ -267,17 +272,35 @@ export function Wallet() {
                 <Badge tone="success" icon={BadgeCheckIcon}>
                     {tr('Verified')}
                   </Badge> :
+                starter ?
+                <Badge tone="info">{tr('Starter')}</Badge> :
 
                 <Badge tone={statusTones[data.kyc.status]}>{tr(statusLabels[data.kyc.status])}</Badge>
                 }
               </div>
-              {verified ?
+              {verified || starter ?
               <>
                   <Meter label={tr('Paid out today')} value={ofLine(usedToday, tier.dailyPayoutNgn)} pct={usedPct} />
-                  {tier.balanceCapNgn && <Meter label={tr('Wallet balance')} value={ofLine(total, tier.balanceCapNgn)} pct={capPct} />}
+                  {tier.balanceCapNgn && <Meter label={tr(starter ? 'Wallet balance before full verification' : 'Wallet balance')} value={ofLine(total, tier.balanceCapNgn)} pct={capPct} />}
                 </> :
 
               tier.balanceCapNgn && <Meter label={tr('Wallet balance before verifying')} value={ofLine(total, tier.balanceCapNgn)} pct={capPct} />
+              }
+              {missing.length > 0 &&
+              <div className="rounded-md bg-sunken px-3 py-2.5">
+                  <p className="text-label font-medium text-fg">{tr('Start small payouts — up to {n} a day', { n: formatNgn(tierInfo[1].dailyPayoutNgn) })}</p>
+                  <p className="mt-0.5 text-caption text-fg-muted">{tr('No CAC or address proof needed yet. Still to do:')}</p>
+                  <ul className="mt-1.5 list-disc pl-5 text-caption text-fg-muted">
+                    {missing.map((m) =>
+                  <li key={m}>{tr(m)}</li>
+                  )}
+                  </ul>
+                </div>
+              }
+              {starter &&
+              <p className="text-caption text-fg-subtle">
+                  {tr('Payouts go only to your account in your own name. Finish verification to raise your limit to {ind} a day, or {biz} as a registered business.', { ind: formatNgn(tierInfo[2].dailyPayoutNgn), biz: formatNgn(tierInfo[3].dailyPayoutNgn) })}
+                </p>
               }
               <Link to="/app/commerce/verification" className="inline-flex h-10 items-center justify-center rounded-md border border-line-strong bg-raised px-4 text-label font-medium text-fg transition-colors duration-150 ease-out hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
                 {tr(verified ? 'View verification' : data.kyc.status === 'in_review' ? 'See review status' : data.kyc.status === 'needs_info' ? 'Fix what was asked' : data.kyc.status === 'not_started' ? 'Verify your business' : 'Continue verification')}
@@ -302,7 +325,7 @@ export function Wallet() {
       </div>
 
       <PayoutDialog open={dialog === 'payout'} onClose={() => setDialog(null)} data={data} update={update} by={actor} />
-      <BankAccountDialog open={dialog === 'bank'} onClose={() => setDialog(null)} data={data} update={update} businessName={current.name} />
+      <BankAccountDialog open={dialog === 'bank'} onClose={() => setDialog(null)} data={data} update={update} businessName={verifiedName(data.kyc) || current.name} />
       <TopUpDialog open={dialog === 'topup'} onClose={() => setDialog(null)} update={update} businessName={current.name} workspaceId={current.id} suggested={b.available < 0 ? -b.available : undefined} />
     </>);
 

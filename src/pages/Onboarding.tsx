@@ -27,7 +27,7 @@ export function Onboarding() {
       // Save progress first: creating the workspace switches to it and remounts this screen.
       const next = { ...state, step: publish ? 5 : state.step, published: publish, workspaceId: 'pending' };
       writeOnboarding(next);
-      const workspace = create({ name: state.name.trim() || 'My page', ownerName: state.name, doc: built.doc, publish, demoData: !!state.demoData });
+      const workspace = create({ name: state.name.trim() || 'My page', ownerName: state.name, doc: built.doc, publish, demoData: !!state.demoData, whatsapp: state.actionType === 'whatsapp' ? state.actionValue : undefined });
       writeOnboarding({ ...next, workspaceId: workspace.id });
       if (state.businessKitId) writePendingKit(workspace.id, state.businessKitId);
       if (!publish) {

@@ -40,9 +40,33 @@ export interface MilestoneTemplate {
   builtIn?: boolean;
 }
 
+/** VAT copied onto a quote or invoice when it's created (D257), so later setting changes never alter a sent document. */
+export interface DocVat {
+  ratePct: number;
+  /** True: prices already include VAT (shown as a line). False: VAT is added on top. */
+  inclusive: boolean;
+}
+
+/** Quotes & jobs settings (D257). */
+export interface ServiceOsSettings {
+  quotePrefix: string;
+  invoicePrefix: string;
+  /** Days a new quote stays valid. */
+  validDays: number;
+  /** Days until a new invoice is due. */
+  dueDays: number;
+  /** Starts every new quote's note. */
+  quoteNote: string;
+  /** Printed on every new invoice and its pay page — payment terms, bank details. */
+  invoiceNote: string;
+  /** Charge VAT on new quotes and invoices, at the rate in Commerce settings → Tax. */
+  vat: boolean;
+}
+
 export interface Quote {
   id: string;
   number: string;
+  vat?: DocVat;
   title: string;
   client: ServiceClient;
   items: LineItem[];
@@ -87,6 +111,9 @@ export interface Invoice {
   quoteId?: string;
   /** The payment stage this invoice requests (D95). */
   milestoneId?: string;
+  vat?: DocVat;
+  /** Payment terms or instructions shown to the client (D257). */
+  note?: string;
   /** YYYY-MM-DD */
   dueDate: string;
   status: InvoiceStatus;
@@ -118,5 +145,7 @@ export interface ServiceOsData {
   counters: {quote: number;invoice: number;};
   /** The seller's own saved stage templates (built-ins live in code). */
   milestoneTemplates: MilestoneTemplate[];
+  /** Missing on older saved data — read through serviceSettingsOf(). */
+  settings?: Partial<ServiceOsSettings>;
   seeded: boolean;
 }

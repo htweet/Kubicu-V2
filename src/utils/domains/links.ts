@@ -49,8 +49,21 @@ export function landingHref(workspaceId: string, link: CampaignLink): string | n
   if (link.source !== 'campaign') qs.set('src', link.source);
   qs.set('c', link.slug);
   if (link.destination.anchor) qs.set('b', link.destination.anchor);
+  // Standard UTM tags for Google tag / Meta Pixel on the page (D230). KUBICU Analytics still reads src and c.
+  // 'campaign' is what Analytics expects for "something else" (track.ts detectSource).
+  qs.set('utm_source', link.source);
+  qs.set('utm_medium', link.utm?.medium.trim() || (link.source === 'qr' ? 'qr' : 'social'));
+  qs.set('utm_campaign', link.utm?.campaign.trim() || link.slug);
+  if (link.utm?.content.trim()) qs.set('utm_content', link.utm.content.trim());
   return `${pageHref(handle, link.destination.path)}?${qs.toString()}`;
 }
+
+/** Archived, or past its end date. */
+export function linkEnded(link: CampaignLink, now = Date.now()): boolean {
+  return !!link.archivedAt || !!link.endsAt && Date.parse(link.endsAt) <= now;
+}
+
+export const UTM_PATTERN = /^[A-Za-z0-9._-]{0,60}$/;
 
 export const SLUG_PATTERN = /^[a-z0-9](?:[a-z0-9-]{0,38}[a-z0-9])?$/;
 
@@ -69,6 +82,7 @@ export function slugError(slug: string, data: DomainsData, exceptId?: string): s
   if (!slug) return 'Add a short name for the link.';
   if (!SLUG_PATTERN.test(slug)) return 'Use lowercase letters, numbers and hyphens (up to 40).';
   if (data.links.some((l) => l.slug === slug && l.id !== exceptId)) return 'Another link already uses this. Pick a different one.';
+  if (data.redirects.some((r) => r.from.replace(/^\/+|\/+$/g, '') === shortPath(slug))) return 'One of your redirects already uses this address.';
   return undefined;
 }
 

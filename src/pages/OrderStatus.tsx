@@ -24,6 +24,9 @@ import { OrderTrackingCard } from '../components/checkout/OrderTrackingCard';
 import { useFulfilment } from '../hooks/useFulfilment';
 import { buildTracking } from '../utils/commerce/tracking';
 import { markTransferSent } from '../utils/commerce/bankTransfer';
+import { orderRef, shopSettingsOf } from '../utils/commerce/shopSettings';
+import { ReceiptBusinessFooter } from '../components/checkout/ReceiptBusinessFooter';
+import { LoyaltyReceiptCard } from '../components/checkout/LoyaltyReceiptCard';
 
 /** Visitor-facing order confirmation and receipt. Follows the visitor's language (D133). */
 export function OrderStatus() {
@@ -110,7 +113,7 @@ export function OrderStatus() {
                   </>
                 }
                 <dt style={muted}>{tx('Reference')}</dt>
-                <dd className="font-mono font-semibold">#{order.number}</dd>
+                <dd className="font-mono font-semibold">{orderRef(order)}</dd>
               </dl>
               {order.bankTransfer.sentAt ?
               <p className="flex items-center gap-1.5 text-[13.5px] font-medium">
@@ -136,7 +139,7 @@ export function OrderStatus() {
 
           <section className="flex flex-col gap-3 p-5" style={cardStyle(t)} aria-label={tx('Receipt')}>
             <div className="flex items-baseline justify-between gap-3">
-              <p className="text-[15px] font-semibold">{tx('Order #{n}', { n: order.number })}</p>
+              <p className="text-[15px] font-semibold">{order.numberPrefix ? tx('Order {ref}', { ref: orderRef(order) }) : tx('Order #{n}', { n: order.number })}</p>
               <p className="text-[12.5px]" style={muted}>
                 {formatTimestamp(order.createdAt)}
               </p>
@@ -179,8 +182,14 @@ export function OrderStatus() {
                 {order.customer.name} · {order.customer.phone}
                 {order.customer.email ? ` · ${order.customer.email}` : ''}
               </p>
+              {order.buyerAddress && <p style={muted}>{order.buyerAddress}</p>}
+              {order.buyerNote && <p style={muted}>{tx('Your note: “{note}”', { note: order.buyerNote })}</p>}
+              {order.backorder && <p className="font-semibold">{tx('Some items ship later — they’re on their way back into stock.')}</p>}
             </div>
+            <ReceiptBusinessFooter business={shopSettingsOf(commerce.data).business} fallbackName={page.doc.title} muted={muted} borderColor={mix(t.text, 12)} />
           </section>
+
+          {!pending && !refunded && commerce.data && <LoyaltyReceiptCard theme={t} workspaceId={page.workspaceId ?? null} order={order} data={commerce.data} />}
 
           {order.instalments && !refunded && <OrderInstalmentsCard theme={t} order={order} workspaceId={page.workspaceId ?? null} apply={commerce.apply} />}
 
@@ -283,7 +292,7 @@ export function OrderStatus() {
 
           {phone &&
             <a
-              href={whatsappLink(phone, `Hi! About my order #${order.number}…`)}
+              href={whatsappLink(phone, `Hi! About my order ${orderRef(order)}…`)}
               target="_blank"
               rel="noopener noreferrer"
               className="flex h-12 items-center justify-center gap-2 text-[15px] font-semibold"

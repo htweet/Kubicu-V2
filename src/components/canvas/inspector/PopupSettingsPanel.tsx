@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { orderRef } from '../../../utils/commerce/shopSettings';
 import { toast } from 'sonner';
 import { CheckIcon, DownloadIcon, PrinterIcon, StoreIcon } from 'lucide-react';
 import type { PopupSettings } from '../../../types/page';
@@ -210,7 +211,7 @@ export function PopupSettingsPanel() {
                           aria-label={done ? `Undo collected for order ${o.number}` : `Mark order ${o.number} collected${owe ? ' and paid' : ''}`}
                           onClick={() => {
                             setCollected(o.id, !done);
-                            if (!done) toast(`Order #${o.number} collected`, { description: owe ? 'Marked as paid at the stall.' : undefined, action: { label: 'Undo', onClick: () => setCollected(o.id, false) } });
+                            if (!done) toast(`Order ${orderRef(o)} collected`, { description: owe ? 'Marked as paid at the stall.' : undefined, action: { label: 'Undo', onClick: () => setCollected(o.id, false) } });
                           }}>
                           
                               {done ? 'Collected' : owe ? 'Paid & collected' : 'Collected?'}

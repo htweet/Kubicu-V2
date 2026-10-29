@@ -5,9 +5,11 @@ import { PageAction } from './PageAction';
 import { buttonStyle } from './pageStyle';
 import { whatsappLink } from '../../utils/format';
 import { isValidPhone } from '../../utils/validation';
+import { waNumber } from '../../utils/businessWhatsApp';
 
 export function WhatsAppBlock({ block, theme, mode }: BlockProps<'whatsapp'>) {
-  const { label, phone, message } = block.content;
+  const { label, message } = block.content;
+  const phone = waNumber(block.content.phone);
   const href = isValidPhone(phone) ? whatsappLink(phone, message) : '';
   return (
     <PageAction

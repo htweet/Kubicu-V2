@@ -93,7 +93,7 @@ export function Opportunities() {
                 <p className="text-caption text-fg-muted">No name or number was left, so we can’t show who. Asking for a WhatsApp number earlier — or offering “Order on WhatsApp” — turns more of these into conversations.</p>
               </div>
             </div>
-            <Link to="/app/commerce/settings" className="shrink-0 text-caption font-semibold text-action hover:underline">Checkout settings</Link>
+            <Link to="/app/commerce/settings#checkout" className="shrink-0 text-caption font-semibold text-action hover:underline">Checkout settings</Link>
           </div>
         }
 

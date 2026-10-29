@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import type { AppNotification } from '../types/notifications';
 import { useCommerce } from '../contexts/CommerceContext';
+import { orderRef } from '../utils/commerce/shopSettings';
 import { useOps } from '../contexts/OpsContext';
 import { useTeam } from '../contexts/TeamContext';
 import { useBilling } from '../contexts/BillingContext';
@@ -14,6 +15,7 @@ import { useServiceOs } from './useServiceOs';
 import { SERVICE_OS_APP_ID } from '../utils/serviceOs';
 import { dueUnrequested, hasStages } from '../utils/milestones';
 import { bookingBalance } from '../utils/ops/balance';
+import { wasDeclined } from '../utils/ops/ops';
 import { useMarketplace } from '../contexts/MarketplaceContext';
 import { FORMS_EXTENSION_ID } from '../utils/forms/storage';
 import { isLowStock, isSoldOut } from '../utils/commerce/catalog';
@@ -27,6 +29,7 @@ import { TRIAL_REMINDER_DAYS } from '../data/billing';
 import { readTemplateStore } from '../utils/templateListings';
 import { readAdminStore } from '../utils/admin/store';
 import { fundraiserGoalFor } from '../utils/fundraiser';
+import { REVIEW_HOURS } from '../utils/money/kyc';
 import { useFulfilment } from './useFulfilment';
 import { buildTracking, promiseLabel } from '../utils/commerce/tracking';
 import { destinationExists, destinationLabel, encodeDestination, fallbackDestination } from '../utils/domains/links';
@@ -60,10 +63,39 @@ export function useNotificationFeed(): AppNotification[] {
     const now = Date.now();
     const today = startOfToday();
 
+    // Verification (D244): the owner hears when it's submitted and when KUBICU decides.
+    {
+      const k = money.kyc;
+      const href = '/app/commerce/verification';
+      if (k.status === 'in_review' && k.submittedAt)
+      out.push({ id: `kyc_submitted:${k.submittedAt}`, event: 'verification', area: 'billing', kind: 'update', text: `Verification sent to KUBICU — expect a decision within ${REVIEW_HOURS} hours. Sales keep arriving meanwhile.`, href, at: k.submittedAt });
+      if (k.decidedAt && now - Date.parse(k.decidedAt) < 30 * DAY) {
+        if (k.status === 'approved') out.push({ id: `kyc_approved:${k.decidedAt}`, event: 'verification', area: 'billing', kind: 'update', text: 'Verification approved — full payout limits are on', href: '/app/commerce/wallet', at: k.decidedAt });
+        if (k.status === 'needs_info')
+        out.push({ id: `kyc_needs:${k.decidedAt}`, event: 'verification', area: 'billing', kind: 'action', text: `KUBICU asked for ${k.requests.length || 'some'} change${k.requests.length === 1 ? '' : 's'} to your verification — fix and resubmit`, href, at: k.decidedAt });
+        if (k.status === 'rejected') out.push({ id: `kyc_rejected:${k.decidedAt}`, event: 'verification', area: 'billing', kind: 'action', text: 'Verification wasn’t approved — see KUBICU’s reason', href, at: k.decidedAt });
+      }
+    }
+
+    // Payment links (D224): new payments in the last week, transfers to confirm, links that hit their limit.
+    for (const l of money.links) {
+      if (l.fundraiser) continue;
+      for (const p of l.payments) {
+        if (p.sample || now - Date.parse(p.at) > 7 * 86_400_000) continue;
+        out.push({ id: `link_paid:${p.id}`, event: 'order_paid', area: 'orders', kind: 'update', text: `${p.payerName || 'Someone'} paid ${formatNgn(p.amountNgn)} on “${l.title}”`, href: '/app/commerce/payment-links', at: p.at });
+      }
+      for (const x of l.pendingTransfers ?? []) {
+        if (x.status !== 'waiting') continue;
+        out.push({ id: `link_transfer:${x.id}`, event: 'order_pending', area: 'orders', kind: 'action', text: `${x.payment.payerName || 'A payer'} says they transferred ${formatNgn(x.payment.amountNgn)} for “${l.title}” — confirm it arrived`, href: '/app/commerce/payment-links', at: x.at });
+      }
+      if (l.reusable && l.maxUses && l.payments.length >= l.maxUses && l.payments[0])
+      out.push({ id: `link_full:${l.id}`, event: 'order_paid', area: 'orders', kind: 'update', text: `“${l.title}” reached its limit of ${l.maxUses} payments and closed`, href: '/app/commerce/payment-links', at: l.payments[0].at });
+    }
+
     for (const o of commerce.orders) {
       if (o.status === 'paid')
-      out.push({ id: `order_paid:${o.id}`, event: 'order_paid', area: 'orders', kind: 'action', text: `Order #${o.number} from ${o.customer.name} is paid — ready to pack${o.held ? ' (held for DealRoom goal)' : ''}`, href: '/app/commerce/orders?status=paid', at: o.createdAt });
-      if (o.status === 'new') out.push({ id: `order_pending:${o.id}`, event: 'order_pending', area: 'orders', kind: 'update', text: `Order #${o.number} from ${o.customer.name} is waiting for payment`, href: '/app/commerce/orders?status=new', at: o.createdAt });
+      out.push({ id: `order_paid:${o.id}`, event: 'order_paid', area: 'orders', kind: 'action', text: `Order ${orderRef(o)} from ${o.customer.name} is paid — ready to pack${o.held ? ' (held for DealRoom goal)' : ''}`, href: '/app/commerce/orders?status=paid', at: o.createdAt });
+      if (o.status === 'new') out.push({ id: `order_pending:${o.id}`, event: 'order_pending', area: 'orders', kind: 'update', text: `Order ${orderRef(o)} from ${o.customer.name} is waiting for payment`, href: '/app/commerce/orders?status=new', at: o.createdAt });
       // Delivery tracking (D144): late, or a failed delivery attempt.
       const tv = buildTracking(o, fulfilment, now);
       if (tv.applies && (tv.health === 'late' || tv.health === 'problem' && !o.dispute))
@@ -72,12 +104,12 @@ export function useNotificationFeed(): AppNotification[] {
         event: 'order_late',
         area: 'orders',
         kind: 'action',
-        text: tv.health === 'late' && tv.promisedBy ? `Order #${o.number} for ${o.customer.name} is running late — promised by ${promiseLabel(tv.promisedBy)}` : `Delivery for order #${o.number} (${o.customer.name}) didn’t go through — arrange another try`,
+        text: tv.health === 'late' && tv.promisedBy ? `Order ${orderRef(o)} for ${o.customer.name} is running late — promised by ${promiseLabel(tv.promisedBy)}` : `Delivery for order ${orderRef(o)} (${o.customer.name}) didn’t go through — arrange another try`,
         href: `/app/commerce/orders?order=${o.id}`,
         at: tv.promisedBy && tv.health === 'late' ? tv.promisedBy : tv.lastUpdateAt
       });
       if (o.dispute?.status === 'needs_response')
-      out.push({ id: `dispute:${o.dispute.id}`, event: 'dispute', area: 'orders', kind: 'action', text: `Dispute on order #${o.number} (${formatNgn(o.dispute.amountNgn)}) — respond by ${formatDate(o.dispute.respondBy)}`, href: '/app/commerce/orders', at: o.dispute.openedAt });
+      out.push({ id: `dispute:${o.dispute.id}`, event: 'dispute', area: 'orders', kind: 'action', text: `Dispute on order ${orderRef(o)} (${formatNgn(o.dispute.amountNgn)}) — respond by ${formatDate(o.dispute.respondBy)}`, href: '/app/commerce/orders', at: o.dispute.openedAt });
     }
 
     // Milestone payments (D95): quote stages due but not requested, booking balances due.
@@ -88,6 +120,9 @@ export function useNotificationFeed(): AppNotification[] {
       out.push({ id: `stage_due:${q.id}:${r.m.id}`, event: 'stage_due', area: 'orders', kind: 'action', text: `“${r.m.label}” (${formatNgn(r.amount)}) is due on ${q.client.name}’s quote — request payment`, href: '/app/services', at: q.decidedAt ?? q.createdAt });
     }
     for (const b of ops.bookings) {
+      // Requests to accept or decline (D256).
+      if (b.status === 'requested' && Date.parse(b.start) > now && !b.sample)
+      out.push({ id: `booking_request:${b.id}`, event: 'booking_request', area: 'bookings', kind: 'action', text: `${b.customer.name} asked to book ${b.serviceName} — accept or decline`, href: `/app/bookings?booking=${b.id}`, at: b.events[b.events.length - 1]?.at ?? b.start });
       if (b.status !== 'confirmed' && b.status !== 'pending_deposit') continue;
       const bal = bookingBalance(b, ops.services.find((s) => s.id === b.serviceId), now);
       if (bal.state === 'overdue')
@@ -98,7 +133,7 @@ export function useNotificationFeed(): AppNotification[] {
     for (const o of commerce.orders) {
       const failed = o.instalments && (o.instalments.status === 'active' || o.instalments.status === 'defaulted') ? o.instalments.parts.find((p) => p.status === 'failed') : undefined;
       if (failed && o.instalments)
-      out.push({ id: `inst_failed:${o.id}:${failed.id}:${failed.retries}`, event: 'stage_due', area: 'orders', kind: 'action', text: `Instalment ${failed.n} of ${o.instalments.parts.length} on order #${o.number} (${formatNgn(failed.amountNgn)}) ${o.instalments.status === 'defaulted' ? 'is unpaid after every retry' : 'didn’t go through — retrying'}`, href: `/app/commerce/orders?order=${o.id}`, at: failed.failedAt ?? failed.dueAt });
+      out.push({ id: `inst_failed:${o.id}:${failed.id}:${failed.retries}`, event: 'stage_due', area: 'orders', kind: 'action', text: `Instalment ${failed.n} of ${o.instalments.parts.length} on order ${orderRef(o)} (${formatNgn(failed.amountNgn)}) ${o.instalments.status === 'defaulted' ? 'is unpaid after every retry' : 'didn’t go through — retrying'}`, href: `/app/commerce/orders?order=${o.id}`, at: failed.failedAt ?? failed.dueAt });
     }
 
     // Escrow: buyer problems to answer, and KUBICU decisions (D94).
@@ -182,7 +217,8 @@ export function useNotificationFeed(): AppNotification[] {
     for (const b of ops.bookings) {
       if (b.status === 'confirmed' && new Date(b.start).toDateString() === todayKey)
       out.push({ id: `booking_today:${b.id}`, event: 'booking_today', area: 'bookings', kind: 'update', text: `${b.serviceName} with ${b.customer.name} today at ${new Date(b.start).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`, href: '/app/bookings', at: today });
-      if (b.status === 'cancelled') {
+      // A request you declined yourself isn't news to you (D256).
+      if (b.status === 'cancelled' && !wasDeclined(b)) {
         const at = b.events[b.events.length - 1]?.at ?? b.start;
         if (now - Date.parse(at) < 7 * DAY) out.push({ id: `booking_cancelled:${b.id}`, event: 'booking_cancelled', area: 'bookings', kind: 'update', text: `${b.customer.name} cancelled ${b.serviceName} (${formatDate(b.start)})`, href: '/app/bookings', at });
       }

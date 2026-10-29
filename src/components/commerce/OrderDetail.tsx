@@ -24,6 +24,7 @@ import { FileTextIcon } from 'lucide-react';
 import { useMarketplace } from '../../contexts/MarketplaceContext';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
 import { printOrderInvoice } from '../../utils/orderInvoice';
+import { orderRef, shopSettingsOf } from '../../utils/commerce/shopSettings';
 import { useEditor } from '../../contexts/EditorContext';
 import { EscrowPanel } from '../money/EscrowPanel';
 import { OrderBalancePanel } from './OrderBalancePanel';
@@ -64,7 +65,9 @@ function nextStep(o: Order): {label: string;status: OrderStatus;icon: typeof Pac
 export function OrderDetail({ orderId, onClose }: {orderId: string | null;onClose: () => void;}) {
   const { data, apply } = useCommerce();
   const team = useTeam();
-  const invoices = useMarketplace().isActive('invoice-generator');
+  // Order invoices are part of Quotes & jobs; the retired Order invoices extension keeps working until moved (D231).
+  const market = useMarketplace();
+  const invoices = market.isActive('service-os') || market.isActive('invoice-generator');
   const { current } = useWorkspace();
   const { state: editor } = useEditor();
   const handle = editor.published?.handle ?? editor.site.handle;
@@ -88,8 +91,8 @@ export function OrderDetail({ orderId, onClose }: {orderId: string | null;onClos
   const advance = () => {
     if (!next) return;
     if (!apply((d) => setOrderStatus(d, order.id, next.status))) return;
-    team.log('commerce', `${next.label.toLowerCase().replace(/^mark /, 'marked ').replace(/^start /, 'started ')} on order #${order.number}`, `/app/commerce/orders?order=${order.id}`);
-    toast(`Order #${order.number}: ${next.label.replace(/^Mark /, '').replace(/^Start /, '')}`, { description: 'The customer would get an update (preview only).' });
+    team.log('commerce', `${next.label.toLowerCase().replace(/^mark /, 'marked ').replace(/^start /, 'started ')} on order ${orderRef(order)}`, `/app/commerce/orders?order=${order.id}`);
+    toast(`Order ${orderRef(order)}: ${next.label.replace(/^Mark /, '').replace(/^Start /, '')}`, { description: 'The customer would get an update (preview only).' });
   };
 
   return (
@@ -99,7 +102,7 @@ export function OrderDetail({ orderId, onClose }: {orderId: string | null;onClos
         onClose={onClose}
         side="right"
         size="lg"
-        title={tr('Order #{n}', { n: order.number })}
+        title={order.numberPrefix ? `${tr('Order')} ${orderRef(order)}` : tr('Order #{n}', { n: order.number })}
         description={`${formatTimestamp(order.createdAt)}${order.sample ? ` · ${tr('Sample')}` : ''}`}
         footer={
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -110,7 +113,7 @@ export function OrderDetail({ orderId, onClose }: {orderId: string | null;onClos
               size="sm"
               leadingIcon={FileTextIcon}
               onClick={() => {
-                if (!printOrderInvoice(order, current.name)) toast.error('Your browser blocked the print window', { description: 'Allow pop-ups for KUBICU and try again.' });
+                if (!printOrderInvoice(order, current.name, shopSettingsOf(data).business)) toast.error('Your browser blocked the print window', { description: 'Allow pop-ups for KUBICU and try again.' });
               }}>
               
                   Invoice
@@ -167,7 +170,7 @@ export function OrderDetail({ orderId, onClose }: {orderId: string | null;onClos
             onChange={(assigneeId) => {
               if (apply((d) => ({ ...d, orders: d.orders.map((o) => o.id === order.id ? { ...o, assigneeId } : o) }))) {
                 const who = team.data.members.find((m) => m.id === assigneeId)?.name;
-                team.log('commerce', who ? `assigned order #${order.number} to ${who}` : `unassigned order #${order.number}`, `/app/commerce/orders?order=${order.id}`);
+                team.log('commerce', who ? `assigned order ${orderRef(order)} to ${who}` : `unassigned order ${orderRef(order)}`, `/app/commerce/orders?order=${order.id}`);
               }
             }}
             className="max-w-xs" />
@@ -243,7 +246,7 @@ export function OrderDetail({ orderId, onClose }: {orderId: string | null;onClos
               <p className="text-label text-fg-muted">{order.customer.phone}</p>
               <p className="text-label text-fg-muted">{order.customer.email}</p>
               <a
-                href={whatsappLink(order.customer.phone, `Hi ${order.customer.name.split(' ')[0]}, about your order #${order.number}…`)}
+                href={whatsappLink(order.customer.phone, `Hi ${order.customer.name.split(' ')[0]}, about your order ${orderRef(order)}…`)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="mt-2 inline-flex items-center gap-1.5 text-label font-semibold text-action hover:underline">
@@ -325,7 +328,7 @@ export function OrderDetail({ orderId, onClose }: {orderId: string | null;onClos
             </ol>
           </section>
 
-          <CommentThread subject={`order:${order.id}`} subjectLabel={`Order #${order.number}`} href={`/app/commerce/orders?order=${order.id}`} area="commerce" className="border-t border-line pt-6" />
+          <CommentThread subject={`order:${order.id}`} subjectLabel={`Order ${orderRef(order)}`} href={`/app/commerce/orders?order=${order.id}`} area="commerce" className="border-t border-line pt-6" />
         </div>
       </Sheet>
       <RefundDialog order={dialog ? order : null} mode={dialog ?? 'refund'} onClose={() => setDialog(null)} />

@@ -18,8 +18,8 @@ export function CanvasNoAccess({ reason, handle, title }: {reason: string;handle
         description={`${reason} You’re signed in as ${roleInfo[role].label}.`}
         action={
         <div className="flex flex-wrap justify-center gap-2">
-            <Button variant="secondary" onClick={() => navigate('/app')}>
-              Back to workspace
+            <Button variant="secondary" onClick={() => navigate('/app/spaces')}>
+              Back to My Spaces
             </Button>
             <Button leadingIcon={EyeIcon} onClick={() => navigate(`/p/${handle}?draft=1`)}>
               Preview the draft

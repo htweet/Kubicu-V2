@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
 import { MAIN_SPACE_ID } from '../../utils/spaces';
 import { setActiveCurrency } from '../../utils/currency';
+import { setActiveBusinessWhatsApp } from '../../utils/businessWhatsApp';
 import { useAutomationRunner } from '../../hooks/useAutomationRunner';
 import { Sidebar } from './Sidebar';
 import { MobileNav } from './MobileNav';
@@ -24,6 +25,8 @@ export function AppShell() {
   const { pathname } = useLocation();
   // Every amount on workspace screens uses this workspace's currency (D136). Set before children render.
   setActiveCurrency(current.currency);
+  // Every WhatsApp button without its own number uses the business number (D214).
+  setActiveBusinessWhatsApp(current.whatsapp);
   // Campaign and quiet-contact automations run on real changes while the app is open (D137).
   useAutomationRunner();
   // Workspace screens describe the main space; campaigns and DealRooms open only in the canvas.

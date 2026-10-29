@@ -20,7 +20,16 @@ export interface TrustSignal {
   to: string;
   /** D126: when this check lapses unless renewed (verification) or refreshed (reviews). ISO date. */
   validUntil?: string;
+  /** D245: not met yet, but something is under way — shown so it doesn't look untouched. */
+  progress?: {label: string;tone: 'info' | 'warning' | 'danger';at?: string;};
 }
+
+const kycProgress = (k: MoneyData['kyc']): TrustSignal['progress'] => {
+  if (k.status === 'in_review') return { label: 'In review', tone: 'info', at: k.submittedAt ?? undefined };
+  if (k.status === 'needs_info') return { label: 'Changes requested', tone: 'warning', at: k.decidedAt ?? undefined };
+  if (k.status === 'rejected') return { label: 'Not approved', tone: 'danger', at: k.decidedAt ?? undefined };
+  return undefined;
+};
 
 /** Verification is re-checked yearly; only reviews from the last 12 months count (D126). */
 export const VERIFY_VALID_DAYS = 365;
@@ -96,11 +105,24 @@ export function computePassport(orders: Order[], money: MoneyData, proof: ProofD
     kyc.status === 'approved' ?
     `${kyc.entity ? entityLabels[kyc.entity] : 'Verified'} · checked by KUBICU` :
     kyc.status === 'in_review' ?
-    'In review' :
-    'Not verified yet',
-    next: verifiedLapsed ? 'Renew verification: confirm your details are still correct.' : 'Complete business verification.',
+    'Submitted — KUBICU is checking your details' :
+    kyc.status === 'needs_info' ?
+    `KUBICU asked for ${kyc.requests.length || 'some'} change${kyc.requests.length === 1 ? '' : 's'}` :
+    kyc.status === 'rejected' ?
+    'Verification wasn’t approved' :
+    'Not started',
+    next: verifiedLapsed ?
+    'Renew verification: confirm your details are still correct.' :
+    kyc.status === 'in_review' ?
+    'Nothing to do — the points are added once it’s approved, usually within 24 hours.' :
+    kyc.status === 'needs_info' ?
+    'Fix what was asked and resubmit.' :
+    kyc.status === 'rejected' ?
+    'See KUBICU’s reason on the Verification page.' :
+    'Complete business verification.',
     to: '/app/commerce/verification',
-    validUntil: verifiedUntil
+    validUntil: verifiedUntil,
+    progress: verifiedLapsed ? undefined : kycProgress(kyc)
   },
   {
     id: 'reviews',

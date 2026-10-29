@@ -58,13 +58,7 @@ export function compositionFindings(all: Block[]): CompositionFinding[] {
     }
   }
 
-  // 4. Background rhythm
-  for (let i = 1; i < top.length; i++) {
-    const a = top[i - 1].layout.background ?? 'none';
-    const b = top[i].layout.background ?? 'none';
-    if (a !== 'none' && a === b)
-    out.push({ id: `bands:${top[i].id}`, title: 'Two matching background bands touch', why: 'Adjacent tinted (or inverted) sections merge into one band, so the chapter break disappears. Make one of them Plain, or put a plain block between.', blockId: top[i].id, fix: { kind: 'select', blockId: top[i].id, label: 'Select it' } });
-  }
+  // 4. Background rhythm: matching bands that touch are now joined into one section on purpose (D216), so no finding.
 
   // 5. Opening
   if (!openingTypes.has(top[0].type) && top.length >= 3)

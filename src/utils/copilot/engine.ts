@@ -1,0 +1,381 @@
+import type { AssistantAction, AssistantAnswers, AssistantFeel, AssistantImage, AssistantPlan } from '../../types/assistant';
+import type { Block, PageDocument } from '../../types/page';
+import type { CopilotBrief, CopilotInput, CopilotKind, CopilotMessage, CopilotQuestion, CopilotSession, CopilotTopic } from '../../types/copilot';
+import {
+  COPILOT_GREETING,
+  audienceWords,
+  decideWords,
+  goalLabels,
+  goalReplies,
+  kindDefaults,
+  kindLabels,
+  kindReplies,
+  lookLabels,
+  lookReplies,
+  lookWords,
+  prompts,
+  sensitivePatterns,
+  skipWords } from
+'../../data/copilotQuestions';
+import { actionWords, offerWords } from '../../data/assistantQuestions';
+import { blankTemplateDoc } from '../../data/templates';
+import { analyzeBrief } from '../ai/brief';
+import { makePlan } from '../assistant/layout';
+import { parsePriceList } from '../assistant/priceList';
+import { uid } from '../id';
+
+/**
+ * KUBICU Copilot's conversation (D262) — rule-based in the prototype. It reads everything from what the
+ * person already said, then asks only what's missing: 3–6 questions after the opening, one per message.
+ * A real model replaces `respond` and `readFacts` without changing the screens.
+ */
+
+export const MIN_QUESTIONS = 3;
+export const MAX_QUESTIONS = 6;
+const PHONE = /(\+?234\s?\d{3}\s?\d{3}\s?\d{4}|0[789][01]\d[\s-]?\d{3}[\s-]?\d{4})/;
+
+const now = () => new Date().toISOString();
+
+function msg(from: CopilotMessage['from'], text: string, extra: Partial<CopilotMessage> = {}): CopilotMessage {
+  return { id: uid('cm'), from, text, createdAt: now(), ...extra };
+}
+
+export function newSession(channel: CopilotSession['channel'], chatPhone?: string): CopilotSession {
+  const question: CopilotQuestion = { topic: 'kind', text: COPILOT_GREETING, replies: kindReplies, input: 'choice', skippable: false, placeholder: 'Or describe it in your own words…' };
+  return {
+    id: uid('cps'),
+    channel,
+    stage: 'asking',
+    answers: { brief: '' },
+    asked: [],
+    question,
+    messages: [msg('copilot', COPILOT_GREETING, { replies: kindReplies })],
+    images: [],
+    brief: null,
+    progress: 0,
+    chatPhone,
+    createdAt: now(),
+    updatedAt: now()
+  };
+}
+
+const lookByKind: Record<CopilotKind, AssistantFeel> = { business: 'warm', portfolio: 'editorial', creator: 'glass', shop: 'bold', service: 'light', event: 'bold', other: 'light' };
+
+function kindFromText(text: string): CopilotKind {
+  const offer = offerWords.find(([, re]) => re.test(text))?.[0];
+  if (/\b(portfolio|designer|photograph|illustrat|architect)/i.test(text)) return 'portfolio';
+  if (/\b(creator|influencer|youtube|tiktok|podcast|music|artist)/i.test(text)) return 'creator';
+  if (offer === 'products') return 'shop';
+  if (offer === 'services') return 'service';
+  if (offer === 'events') return 'event';
+  return 'business';
+}
+
+/** Facts the person typed. Fills gaps only, unless `override` (they asked to change something). */
+export function readFacts(a: AssistantAnswers, text: string, override = false): AssistantAnswers {
+  const out = { ...a };
+  const set = <K extends keyof AssistantAnswers,>(k: K, v: AssistantAnswers[K] | undefined) => {
+    if (v !== undefined && v !== '' && (override || out[k] === undefined || out[k] === '')) out[k] = v;
+  };
+  const found = analyzeBrief(text);
+  set('business', found.exampleId ?? undefined);
+  set('name', found.name || undefined);
+  set('city', found.city || undefined);
+  set('phone', found.phone || undefined);
+  set('action', actionWords.find(([, re]) => re.test(text))?.[0]);
+  set('offer', offerWords.find(([, re]) => re.test(text))?.[0]);
+  set('feel', lookWords.find(([, re]) => re.test(text))?.[0]);
+  set('audience', audienceWords.find(([, re]) => re.test(text))?.[0]);
+  const named = /(?:call it|name it|rename (?:it )?to|called)\s+["“]?([^"”.!?\n]{2,60})/i.exec(text);
+  if (named && override) out.name = named[1].trim();
+  return out;
+}
+
+function questionFor(topic: CopilotTopic, s: CopilotSession): CopilotQuestion {
+  switch (topic) {
+    case 'about':
+      return { topic, text: prompts.about, replies: [], input: 'text', skippable: true, placeholder: 'e.g. I make small chops and party trays for events in Lekki' };
+    case 'name':
+      return { topic, text: prompts.name, replies: [], input: 'text', skippable: false, placeholder: 'Business or your own name' };
+    case 'goal':
+      return { topic, text: prompts.goal, replies: goalReplies, input: 'choice', skippable: false };
+    case 'look':
+      return { topic, text: prompts.look, replies: lookReplies, input: 'choice', skippable: false };
+    case 'photos':
+      return { topic, text: prompts.photos, replies: [], input: 'images', skippable: true };
+    case 'items':
+      return { topic, text: prompts.items, replies: [], input: 'text', skippable: true, placeholder: 'One item per line' };
+    case 'phone':
+      return { topic, text: prompts.phone, replies: s.chatPhone ? [{ value: s.chatPhone, label: 'Use this chat’s number' }] : [], input: 'tel', skippable: true, placeholder: '0803 123 4567' };
+    case 'city':
+      return { topic, text: prompts.city, replies: [{ value: 'Lagos', label: 'Lagos' }, { value: 'Abuja', label: 'Abuja' }, { value: 'online', label: 'Online only' }], input: 'text', skippable: true, placeholder: 'e.g. Lekki, Lagos' };
+    case 'change':
+      return { topic, text: prompts.change, replies: [], input: 'text', skippable: false, placeholder: 'e.g. Make it warmer, or call it Tolu’s Kitchen' };
+    case 'more':
+      return { topic, text: prompts.more, replies: [], input: 'text', skippable: true, placeholder: 'Anything else for the page' };
+    default:
+      return { topic: 'kind', text: COPILOT_GREETING, replies: kindReplies, input: 'choice', skippable: false };
+  }
+}
+
+const counted = (s: CopilotSession) => s.asked.filter((t) => t !== 'kind' && t !== 'change' && t !== 'more').length;
+
+/** The next most valuable thing to ask, or null when it's time for the brief. */
+function nextTopic(s: CopilotSession): CopilotTopic | null {
+  const a = s.answers;
+  const asked = new Set(s.asked);
+  const offer = a.offer;
+  const wanted: CopilotTopic[] = [];
+  if ((a.brief ?? '').trim().length < 20) wanted.push('about');
+  if (!a.name) wanted.push('name');
+  if (!a.action) wanted.push('goal');
+  if (!a.feel) wanted.push('look');
+  if ((offer === 'products' || offer === 'menu') && !(a.items ?? []).length) wanted.push('items');
+  if (!s.images.length) wanted.push('photos');
+  if ((a.action === 'order' || a.action === 'enquire' || a.action === 'buy') && !a.phone) wanted.push('phone');
+  if ((offer === 'menu' || offer === 'products' || offer === 'services') && !a.city) wanted.push('city');
+  const open = wanted.filter((t) => !asked.has(t));
+  if (counted(s) >= MAX_QUESTIONS) return null;
+  if (open.length) return open[0];
+  if (counted(s) < MIN_QUESTIONS) return (['look', 'photos', 'more'] as CopilotTopic[]).find((t) => !asked.has(t)) ?? null;
+  return null;
+}
+
+function ask(s: CopilotSession, topic: CopilotTopic, lead?: string): CopilotSession {
+  const q = questionFor(topic, s);
+  const text = lead ? `${lead} ${q.text}` : q.text;
+  return { ...s, stage: 'asking', question: q, asked: s.asked.includes(topic) ? s.asked : [...s.asked, topic], messages: [...s.messages, msg('copilot', text, { replies: q.replies, card: topic === 'look' ? 'looks' : undefined })] };
+}
+
+function advance(s: CopilotSession, lead?: string): CopilotSession {
+  const t = nextTopic(s);
+  if (t) return ask(s, t, lead);
+  return showBrief(s, lead);
+}
+
+const planCtx = { owns: () => false, signatureAllowed: true, currentTheme: blankTemplateDoc.theme, bookingsReady: false };
+
+export function planFor(s: CopilotSession): AssistantPlan {
+  return makePlan({ ...s.answers, mode: 'replace', qr: false }, s.images, planCtx);
+}
+
+export function briefFrom(s: CopilotSession, plan: AssistantPlan): CopilotBrief {
+  const a = s.answers;
+  const gaps = [...plan.gaps];
+  if ((a.action === 'order' || a.action === 'enquire') && !a.phone) gaps.push('Your WhatsApp number');
+  if (!s.images.length) gaps.push('Your logo and photos');
+  if (a.action === 'buy') gaps.push('Online checkout — set up in KUBICU before people can pay');
+  if (a.action === 'book') gaps.push('Bookings — shown as an enquiry until you set it up in KUBICU');
+  return {
+    kindLabel: a.businessText || kindLabels[s.kind ?? 'other'],
+    name: a.name || 'Not given yet',
+    audience: a.audience || 'Anyone who finds your link',
+    goal: a.action ? goalLabels[a.action] : 'Get in touch',
+    action: a.action ?? 'enquire',
+    look: a.feel ? `${lookLabels[a.feel]} · ${plan.themeName}` : plan.themeName,
+    sections: plan.units.filter((u) => !u.blocks[0].visibility.hidden).map((u) => u.label),
+    layout: plan.source.kind === 'template' ? `Starts from the ${plan.source.name} template` : 'A new layout from ready-made sections',
+    layoutReason: plan.source.reason,
+    gaps: [...new Set(gaps)].slice(0, 6)
+  };
+}
+
+function showBrief(s: CopilotSession, lead?: string): CopilotSession {
+  const brief = briefFrom(s, planFor(s));
+  const text = `${lead ? `${lead} ` : ''}Here’s what I’ll make. Nothing is published — you’ll see a draft first.`;
+  return {
+    ...s,
+    stage: 'brief',
+    question: null,
+    brief,
+    messages: [...s.messages, msg('copilot', text, { card: 'brief', replies: [{ value: 'create', label: 'Create my draft' }, { value: 'change', label: 'Change something' }, { value: 'more', label: 'Add more details' }] })]
+  };
+}
+
+/** Turns photos into roles: anything named like a logo is the logo, the first other photo leads, the rest are a gallery. */
+export function rolePhotos(existing: AssistantImage[], incoming: AssistantImage[]): AssistantImage[] {
+  const all = [...existing, ...incoming].slice(0, 6);
+  let hero = all.some((i) => i.role === 'hero');
+  let logo = all.some((i) => i.role === 'logo');
+  return all.map((img, n) => {
+    if (n < existing.length) return img;
+    if (!logo && /logo/i.test(img.name)) {
+      logo = true;
+      return { ...img, role: 'logo' };
+    }
+    if (!hero) {
+      hero = true;
+      return { ...img, role: 'hero' };
+    }
+    return { ...img, role: 'gallery' };
+  });
+}
+
+function userText(input: CopilotInput): string {
+  switch (input.kind) {
+    case 'text':
+      return input.text.trim();
+    case 'choice':
+      return input.label;
+    case 'images':
+      return `Sent ${input.items.length} photo${input.items.length === 1 ? '' : 's'}`;
+    case 'skip':
+      return 'Skip';
+    case 'create':
+      return 'Create my draft';
+    case 'change':
+      return 'Change something';
+    case 'more':
+      return 'Add more details';
+  }
+}
+
+/** One turn of the conversation. Generation itself is run by the hook once the stage is `generating`. */
+export function respond(prev: CopilotSession, input: CopilotInput): CopilotSession {
+  let s: CopilotSession = { ...prev, updatedAt: now() };
+  const raw = input.kind === 'text' ? input.text : '';
+
+  // Never keep card numbers, passwords or ID numbers.
+  if (raw && sensitivePatterns.some((re) => re.test(raw))) {
+    s = { ...s, messages: [...s.messages, msg('user', '[Removed — this looked like a card number, password or ID number]'), msg('copilot', 'I’ve removed that message. I never need card numbers, passwords, PINs, BVN or NIN to make your page — please don’t send them here.', { tone: 'warning' })] };
+    return s.question ? { ...s, messages: [...s.messages, msg('copilot', s.question.text, { replies: s.question.replies })] } : s;
+  }
+
+  // Typing after the brief or the preview means "change something".
+  if (input.kind === 'text' && !s.question && (s.stage === 'brief' || s.stage === 'ready')) {
+    return respond({ ...prev, question: questionFor('change', prev) }, input);
+  }
+
+  s = { ...s, messages: [...s.messages, msg('user', userText(input), { images: input.kind === 'images' ? input.items.map((i) => i.src) : undefined })] };
+
+  // Brief and ready actions.
+  if (input.kind === 'create') return { ...s, stage: 'generating', progress: 0, question: null };
+  if (input.kind === 'change') return ask(s, 'change');
+  if (input.kind === 'more') return ask(s, 'more');
+
+  const topic = s.question?.topic;
+  const a = s.answers;
+  const skip = input.kind === 'skip' || input.kind === 'text' && skipWords.test(raw.trim());
+  const decide = input.kind === 'choice' ? input.value === 'decide' : decideWords.test(raw);
+
+  switch (topic) {
+    case 'kind':{
+        const kind = (input.kind === 'choice' ? input.value : kindFromText(raw)) as CopilotKind;
+        const d = kindDefaults[kind];
+        let answers: AssistantAnswers = { ...a, offer: a.offer ?? d.offer, action: a.action ?? d.action };
+        if (input.kind === 'text') {
+          answers = readFacts({ ...answers, brief: raw.trim(), businessText: kind === 'other' ? raw.trim().slice(0, 40) : undefined }, raw);
+          answers.offer = answers.offer ?? d.offer;
+        }
+        if (kind === 'portfolio') answers.offer = 'content';
+        return advance({ ...s, kind, answers }, input.kind === 'text' ? 'Got it.' : undefined);
+      }
+    case 'about':{
+        if (skip) return advance(s, 'No problem — I’ll keep the wording short and you can add more later.');
+        const answers = readFacts({ ...a, brief: `${a.brief} ${raw}`.trim() }, raw);
+        if (s.kind === 'other' && !answers.businessText) answers.businessText = raw.trim().split(/[.!?]/)[0].slice(0, 40);
+        return advance({ ...s, answers }, answers.name ? `Lovely — “${answers.name}”.` : 'Lovely.');
+      }
+    case 'name':{
+        const name = raw.trim().replace(/[.!]+$/, '').slice(0, 60);
+        if (!name || skip) return { ...s, messages: [...s.messages, msg('copilot', 'I’ll need a name for the top of the page — your business name or your own name is fine.', { tone: 'warning' })] };
+        return advance({ ...s, answers: { ...a, name } });
+      }
+    case 'goal':{
+        let action: AssistantAction | undefined;
+        let offer = a.offer;
+        if (input.kind === 'choice' && input.value === 'view') {
+          action = 'enquire';
+          offer = 'content';
+        } else if (input.kind === 'choice' && !decide) action = input.value as AssistantAction;else
+        action = decide ? undefined : actionWords.find(([, re]) => re.test(raw))?.[0];
+        const lead = decide || !action ? 'I’ll go with WhatsApp messages — it’s how most customers here reach a business.' : undefined;
+        return advance({ ...s, answers: { ...a, action: action ?? kindDefaults[s.kind ?? 'other'].action ?? 'order', offer } }, lead);
+      }
+    case 'look':{
+        const feel = input.kind === 'choice' && !decide ? input.value as AssistantFeel : decide ? undefined : lookWords.find(([, re]) => re.test(raw))?.[0];
+        const chosen = feel ?? lookByKind[s.kind ?? 'other'];
+        return advance({ ...s, answers: { ...a, feel: chosen } }, feel ? undefined : `I’ll use ${lookLabels[chosen]} — it suits ${kindLabels[s.kind ?? 'other'].toLowerCase()}.`);
+      }
+    case 'photos':{
+        if (input.kind === 'images') {
+          const images = rolePhotos(s.images, input.items);
+          return advance({ ...s, images }, `Thanks — ${images.some((i) => i.role === 'logo') ? 'I’ll put your logo at the top and ' : ''}the first photo will lead the page.`);
+        }
+        return advance(s, 'That’s fine — I’ll leave tidy spaces for photos.');
+      }
+    case 'items':{
+        if (skip) return advance(s, 'Okay — you can add them in KUBICU later.');
+        const items = parsePriceList(raw, 20);
+        if (!items.length) return { ...s, messages: [...s.messages, msg('copilot', 'I couldn’t read that as a list. Try one item per line, like “Jollof tray — 25,000”, or say skip.', { tone: 'warning' })] };
+        const unpriced = items.filter((i) => i.priceNgn === null).length;
+        return advance({ ...s, answers: { ...a, items } }, `Got ${items.length} item${items.length === 1 ? '' : 's'}${unpriced ? ` — ${unpriced} without a price will stay marked to fill in` : ''}.`);
+      }
+    case 'phone':{
+        if (skip) return advance(s, 'Okay — the WhatsApp button stays hidden until you add a number.');
+        const value = input.kind === 'choice' ? input.value : raw;
+        const m = PHONE.exec(value);
+        if (!m) return { ...s, messages: [...s.messages, msg('copilot', 'That doesn’t look like a Nigerian mobile number. Try 0803 123 4567 or +234 803 123 4567, or say skip.', { tone: 'warning' })] };
+        return advance({ ...s, answers: { ...a, phone: m[1].replace(/[\s-]/g, '') } });
+      }
+    case 'city':{
+        if (skip) return advance(s);
+        const city = input.kind === 'choice' ? input.value === 'online' ? '' : input.value : raw.trim().slice(0, 60);
+        return advance({ ...s, answers: { ...a, city: city || undefined, audience: a.audience ?? (input.kind === 'choice' && input.value === 'online' ? 'Customers across Nigeria' : undefined) } });
+      }
+    case 'change':{
+        const answers = readFacts(a, raw, true);
+        if (/\b(remove|no) (the )?photos?\b/i.test(raw)) s = { ...s, images: [] };
+        const changed = JSON.stringify(answers) !== JSON.stringify(a);
+        if (!changed && !/\bphotos?\b/i.test(raw)) {
+          return { ...s, messages: [...s.messages, msg('copilot', 'I want to get this right. Is it the name, the main action, the look, or something else? For example “make it warmer” or “call it Tolu’s Kitchen”.')] };
+        }
+        return showBrief({ ...s, answers }, 'Updated.');
+      }
+    case 'more':{
+        if (skip) return showBrief(s);
+        const answers = readFacts({ ...a, brief: `${a.brief} ${raw}`.trim() }, raw);
+        return showBrief({ ...s, answers }, 'Added.');
+      }
+    default:
+      return s;
+  }
+}
+
+/** Builds the draft page document from the session — the same plan the brief described. */
+export function draftDocFrom(s: CopilotSession, plan: AssistantPlan): PageDocument {
+  const items = plan.items;
+  const blocks: Block[] = plan.units.flatMap((u) => u.blocks).map((b) => {
+    // Signed out there's no Commerce yet, so a product grid lists the person's own items directly.
+    if (b.type === 'productGrid' && b.content.source === 'catalog') {
+      return {
+        ...b,
+        visibility: { ...b.visibility, hidden: !items.length },
+        content: { ...b.content, source: 'manual', productIds: [], collectionId: null, orderAction: 'whatsapp', ctaLabel: 'Order', items: items.map((i) => ({ id: i.id, name: i.name, priceNgn: i.priceNgn, imageUrl: i.imageSrc ?? '', imageAlt: i.imageSrc ? i.name : '', note: '', soldOut: false, url: '' })) }
+      } as Block;
+    }
+    return b;
+  });
+  const title = s.answers.name || 'Your page';
+  return { ...blankTemplateDoc, id: uid('cpdoc'), handle: 'draft', title, updatedAt: now(), seo: { title, description: '' }, theme: { ...plan.theme }, blocks };
+}
+
+export function progressSteps(): string[] {
+  return ['Organising your brief', 'Choosing a layout and theme', 'Arranging the sections', 'Checking details that are still missing', 'Preparing your preview'];
+}
+
+export function readyMessage(s: CopilotSession, draftId: string, gaps: number): CopilotMessage {
+  const lead = `Your draft is ready${s.answers.name ? `, ${s.answers.name}` : ''}. It’s not published — only people you share the preview link with can see it.`;
+  const tail = gaps ? ` ${gaps} detail${gaps === 1 ? '' : 's'} still need${gaps === 1 ? 's' : ''} filling in before you publish.` : '';
+  return msg('copilot', lead + tail, { card: 'preview', draftId, replies: [{ value: 'open', label: 'Open preview' }, { value: 'change', label: 'Make changes' }] });
+}
+
+export function failedMessage(): CopilotMessage {
+  return msg('copilot', 'I couldn’t finish your draft just now. Your answers are saved, and this didn’t count toward today’s limit.', { card: 'failed', tone: 'warning', replies: [{ value: 'retry', label: 'Try again' }] });
+}
+
+export function limitMessage(): CopilotMessage {
+  return msg('copilot', 'You’ve reached today’s free drafts and changes (3 drafts and 10 changes a day). Your answers and your last draft are saved — come back tomorrow, or continue in KUBICU with a free account.', { card: 'limit' });
+}
+
+export { msg as copilotMessage };

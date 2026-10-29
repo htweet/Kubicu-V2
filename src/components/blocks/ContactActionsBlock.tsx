@@ -5,15 +5,17 @@ import { BlockPlaceholder } from './BlockPlaceholder';
 import { PageAction } from './PageAction';
 import { buttonStyle, fontsFor } from './pageStyle';
 import { cn } from '../../utils/cn';
+import { waNumber } from '../../utils/businessWhatsApp';
 
 const digits = (s: string) => s.replace(/[^\d+]/g, '');
 
 /** Contact buttons (D169): only the ways you filled in, each opening the right app. */
 export function ContactActionsBlock({ block, theme, mode }: BlockProps<'contactActions'>) {
   const c = block.content;
+  const wa = c.useBusinessWhatsApp === false ? c.whatsapp.trim() : waNumber(c.whatsapp);
   const actions = [
   c.phone.trim() && { key: 'call', label: 'Call', icon: PhoneIcon, href: `tel:${digits(c.phone)}`, aria: `Call ${c.phone}`, newTab: false },
-  c.whatsapp.trim() && { key: 'wa', label: 'WhatsApp', icon: MessageCircleIcon, href: `https://wa.me/${digits(c.whatsapp).replace(/^\+/, '')}`, aria: 'Message on WhatsApp', newTab: true },
+  wa && { key: 'wa', label: 'WhatsApp', icon: MessageCircleIcon, href: `https://wa.me/${digits(wa).replace(/^\+/, '')}`, aria: 'Message on WhatsApp', newTab: true },
   c.email.trim() && { key: 'email', label: 'Email', icon: MailIcon, href: `mailto:${c.email.trim()}`, aria: `Email ${c.email}`, newTab: false },
   c.website.trim() && { key: 'web', label: 'Website', icon: GlobeIcon, href: c.website.trim(), aria: 'Visit website', newTab: true }].
   filter(Boolean) as {key: string;label: string;icon: typeof PhoneIcon;href: string;aria: string;newTab: boolean;}[];

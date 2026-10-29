@@ -16,6 +16,9 @@ const field = (f: Partial<FormField> & Pick<FormField, 'id' | 'type' | 'label'>)
   ...f
 });
 
+/** Legal pages link to the contact form with this topic already chosen (D236). */
+export const LEGAL_TOPIC_LABEL = 'Legal, privacy or security';
+
 /** Topic labels on the website contact form, mapped to support-queue topics. */
 export const contactTopics: {label: string;topic: TicketTopic;}[] = [
 { label: 'A question before signing up', topic: 'other' },
@@ -23,7 +26,8 @@ export const contactTopics: {label: string;topic: TicketTopic;}[] = [
 { label: 'Selling and payouts', topic: 'payments' },
 { label: 'My page or domain', topic: 'pages' },
 { label: 'Partnerships', topic: 'other' },
-{ label: 'Press', topic: 'other' }];
+{ label: 'Press', topic: 'other' },
+{ label: LEGAL_TOPIC_LABEL, topic: 'legal' }];
 
 
 /**

@@ -8,7 +8,7 @@ import { cn } from '../../utils/cn';
 
 const methodTone: Record<string, string> = { GET: 'text-success', POST: 'text-action', PATCH: 'text-warning' };
 
-const curl = `curl https://api.kubicu.com/v1/orders?status=paid \\
+const curl = `curl https://api.kub.icu/v1/orders?status=paid \\
   -H "Authorization: Bearer kub_test_••••••••" \\
   -H "Kubicu-Version: 2026-10-24"`;
 
@@ -42,7 +42,7 @@ export function Developers() {
     <div className="mx-auto w-full max-w-6xl px-5 pb-24 pt-14 md:px-8 md:pt-20">
       <header className="grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
         <div>
-          <h1 className="font-display text-[40px] font-semibold leading-[1.05] tracking-[-0.032em] text-fg md:text-[52px]">
+          <h1 className="kb-display text-[44px] leading-[0.98] text-fg md:text-[64px]">
             Build on <span className="nm-text">KUBICU.</span>
           </h1>
           <p className="mt-5 max-w-lg text-[17px] leading-relaxed text-fg-muted">Read orders, sync stock with your shop till, and get a signed message the moment someone pays — in naira, with Nigerian phone formats, from day one.</p>

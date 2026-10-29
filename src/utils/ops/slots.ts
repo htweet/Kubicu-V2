@@ -96,7 +96,17 @@ export function classAttendees(bookings: Booking[], serviceId: string, start: nu
 const STEP_MIN = 30;
 
 export function activeBookings(bookings: Booking[], ignoreId?: string): Booking[] {
-  return bookings.filter((b) => b.id !== ignoreId && (b.status === 'confirmed' || b.status === 'pending_deposit'));
+  return bookings.filter((b) => b.id !== ignoreId && holdsTime(b));
+}
+
+/** Confirmed bookings and requests waiting for an answer both keep their time (D256). */
+export function holdsTime(b: Booking): boolean {
+  return b.status === 'confirmed' || b.status === 'pending_deposit' || b.status === 'requested';
+}
+
+/** Requests the seller still has to accept or decline, soonest first (D256). */
+export function openRequests(bookings: Booking[], now = Date.now()): Booking[] {
+  return bookings.filter((b) => b.status === 'requested' && Date.parse(b.start) > now).sort((a, b) => Date.parse(a.start) - Date.parse(b.start));
 }
 
 /**

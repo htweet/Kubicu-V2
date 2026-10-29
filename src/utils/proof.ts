@@ -1,5 +1,6 @@
 import type { HideReason, ProofData, ProofReview, ProofSource, ProofSourceKind, ReviewRequest } from '../types/proof';
 import type { Order } from '../types/commerce';
+import { orderRef } from './commerce/shopSettings';
 import type { Booking } from '../types/ops';
 import type { Job } from '../types/serviceOs';
 import { uid } from './id';
@@ -71,7 +72,7 @@ export function eligibleSources(orders: Order[], bookings: Booking[], jobs: Job[
   const out: EligibleSource[] = [];
   orders.
   filter((o) => o.status === 'completed' && new Date(o.createdAt).getTime() >= since).
-  forEach((o) => out.push({ source: { kind: 'order', id: o.id, label: `Order #${o.number}`, date: o.createdAt }, customerName: o.customer.name, phone: o.customer.phone }));
+  forEach((o) => out.push({ source: { kind: 'order', id: o.id, label: `Order ${orderRef(o)}`, date: o.createdAt }, customerName: o.customer.name, phone: o.customer.phone }));
   bookings.
   filter((b) => b.status === 'completed' && new Date(b.start).getTime() >= since).
   forEach((b) => out.push({ source: { kind: 'booking', id: b.id, label: `${b.serviceName} · ${shortDay(b.start)}`, date: b.start }, customerName: b.customer.name, phone: b.customer.phone }));

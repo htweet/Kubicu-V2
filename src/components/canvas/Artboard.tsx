@@ -33,6 +33,7 @@ import { SourcePreviewBar } from './SourcePreviewBar';
 import { showsForSource } from '../../utils/intentflow';
 import { allBlocks, pageView } from '../../utils/sitePages';
 import { pageContentWidth } from '../../utils/pageLayout';
+import { blockSignature } from '../../utils/blocks';
 import { BlockChildrenProvider, type BlockChildrenValue } from '../../contexts/BlockChildrenContext';
 import { ChildFrame } from './ChildFrame';
 import { ContainerAddSlot } from './ContainerAddSlot';
@@ -120,12 +121,13 @@ export function Artboard({ viewport = 'phone', framed = true, touch = false, onE
   const columnPx = pageContentWidth(state.site);
   // Changed since publishing (D171): compare each block with the live version, ignoring timestamps.
   const livePage = state.published ? pageView(state.published, state.activePageId) : null;
-  const sig = (b: (typeof draft.blocks)[number]) => {
-    const { updatedAt: _u, createdAt: _c, locked: _l, name: _n, ...rest } = b;
-    return JSON.stringify(rest);
-  };
-  const liveSigs = livePage ? new Map(livePage.blocks.map((b) => [b.id, sig(b)])) : null;
-  const isEdited = (b: (typeof draft.blocks)[number]) => !!liveSigs && liveSigs.get(b.id) !== sig(b);
+  // Same editor-only fields as the page-level check, compared with a stable key order (D216).
+  const liveSigs = livePage ? new Map(livePage.blocks.map((b) => [b.id, blockSignature(b)])) : null;
+  const editedIds = new Set(liveSigs ? draft.blocks.filter((b) => liveSigs.get(b.id) !== blockSignature(b)).map((b) => b.id) : []);
+  // When nothing on the page matches the live version (a new template, an AI build), a marker on every block is noise:
+  // the top bar's "Unpublished changes" already says it. Markers are for spotting the few blocks you changed.
+  const everythingChanged = draft.blocks.length > 0 && editedIds.size === draft.blocks.length;
+  const isEdited = (b: (typeof draft.blocks)[number]) => !everythingChanged && editedIds.has(b.id);
   const selectBlock = (id: string) => {
     actions.select(id);
     if (touch && onEditBlock) onEditBlock(id);
@@ -247,6 +249,8 @@ export function Artboard({ viewport = 'phone', framed = true, touch = false, onE
             columnPx={columnPx}
             density={state.site.layout?.density}
             pairedWithPrevious={!!blocks[i - 1]?.layout.pair}
+            joinPrev={(block.layout.background ?? 'none') !== 'none' && blocks[i - 1]?.layout.background === block.layout.background}
+            joinNext={(block.layout.background ?? 'none') !== 'none' && blocks[i + 1]?.layout.background === block.layout.background}
             groupName={findGroup(draft, block.groupId)?.name}
             groupActive={!!block.groupId && block.groupId === activeGroupId}
             groupEdge={{

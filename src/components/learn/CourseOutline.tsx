@@ -1,11 +1,11 @@
 import React from 'react';
-import { CheckCircle2Icon, CircleIcon, LockIcon, PlayCircleIcon, FileTextIcon, FileIcon, ListChecksIcon } from 'lucide-react';
+import { CheckCircle2Icon, CircleIcon, LockIcon, PlayCircleIcon, FileTextIcon, FileIcon, ListChecksIcon, VideoIcon } from 'lucide-react';
 import type { PageTheme } from '../../types/page';
 import type { Course, Enrolment, LessonKind } from '../../types/courses';
 import { durationLabel, lessonKindLabels, moduleOpensAt } from '../../utils/commerce/courses';
 import { fontsFor, mix } from '../blocks/pageStyle';
 
-const icons: Record<LessonKind, typeof PlayCircleIcon> = { video: PlayCircleIcon, text: FileTextIcon, file: FileIcon, quiz: ListChecksIcon };
+const icons: Record<LessonKind, typeof PlayCircleIcon> = { video: PlayCircleIcon, text: FileTextIcon, file: FileIcon, quiz: ListChecksIcon, live: VideoIcon };
 
 interface Props {
   theme: PageTheme;

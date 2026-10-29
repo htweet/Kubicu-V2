@@ -1,131 +1,138 @@
-import React, { useState } from 'react';
-import { PlusIcon, Trash2Icon } from 'lucide-react';
-import { toast } from 'sonner';
-import type { FulfilmentSettings } from '../../types/commerce';
+import React, { useEffect, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { ArrowUpRightIcon } from 'lucide-react';
 import { useCommerce } from '../../contexts/CommerceContext';
-import { uid } from '../../utils/id';
 import { PageHeader } from '../../components/shell/PageHeader';
 import { Button } from '../../components/ui/Button';
-import { IconButton } from '../../components/ui/IconButton';
-import { Switch } from '../../components/ui/Switch';
-import { TextInput } from '../../components/ui/TextInput';
-import { CurrencyInput } from '../../components/ui/CurrencyInput';
 import { Dialog } from '../../components/ui/Dialog';
-import { useMediaQuery } from '../../hooks/useMediaQuery';
-import { Card } from '../../components/ui/layout/Card';
-import { AsideNote } from '../../components/ui/layout/AsideNote';
-import { useT } from '../../contexts/LocaleContext';
+import { SelectInput } from '../../components/ui/SelectInput';
+import { BusinessReceiptsSection } from '../../components/commerce/settings/BusinessReceiptsSection';
+import { CheckoutSettingsSection } from '../../components/commerce/settings/CheckoutSettingsSection';
+import { ShopPaymentMethodsSection } from '../../components/commerce/settings/ShopPaymentMethodsSection';
+import { DeliveryPickupSection } from '../../components/commerce/settings/DeliveryPickupSection';
+import { TaxSection } from '../../components/commerce/settings/TaxSection';
+import { OrdersStockSection } from '../../components/commerce/settings/OrdersStockSection';
+import { PoliciesSection } from '../../components/commerce/settings/PoliciesSection';
+import { StoreStatusSection } from '../../components/commerce/settings/StoreStatusSection';
+import { CustomerMessagesSection } from '../../components/commerce/settings/CustomerMessagesSection';
+import { shopSettingsOf } from '../../utils/commerce/shopSettings';
+import { cn } from '../../utils/cn';
 
+const sections = [
+{ id: 'business', label: 'Business & receipts' },
+{ id: 'checkout', label: 'Checkout' },
+{ id: 'methods', label: 'Payment methods' },
+{ id: 'delivery', label: 'Delivery & pickup' },
+{ id: 'tax', label: 'Tax' },
+{ id: 'orders', label: 'Orders & stock' },
+{ id: 'policies', label: 'Policies' },
+{ id: 'status', label: 'Store status' },
+{ id: 'messages', label: 'Customer messages' }];
+
+
+/** Settings that live on other screens, linked so nothing exists in two places (D222). */
+const elsewhere = [
+{ label: 'Currency and business WhatsApp', to: '/app/settings/business' },
+{ label: 'Payment provider, pay on delivery and instalments', to: '/app/commerce/payments' },
+{ label: 'Bank account and payouts', to: '/app/commerce/wallet' },
+{ label: 'Shop look and WhatsApp ordering', to: '/app/commerce/storefront' }];
+
+
+/** Commerce settings, one page with sections and a contents list (D222). Each section saves on its own. */
 export function CommerceSettings() {
-  const wide = useMediaQuery('(min-width: 768px)');
-  const { t: tr } = useT();
-  const { data, apply, loadSample, clearSampleData, hasSample } = useCommerce();
-  const [draft, setDraft] = useState<FulfilmentSettings>(data.fulfilment);
-  const [tried, setTried] = useState(false);
+  const { data, loadSample, clearSampleData, hasSample } = useCommerce();
   const [confirmClear, setConfirmClear] = useState(false);
-  const dirty = JSON.stringify(draft) !== JSON.stringify(data.fulfilment);
+  const [active, setActive] = useState(sections[0].id);
+  const paused = shopSettingsOf(data).status.paused;
 
-  const patch = (p: Partial<FulfilmentSettings>) => setDraft((d) => ({ ...d, ...p }));
-  const zoneErrors = draft.deliveryEnabled ? draft.zones.map((z) => !z.name.trim() ? 'Name the zone' : '') : [];
-  const errors = {
-    pickup: draft.pickupEnabled && !draft.pickupAddress.trim() ? 'Add where customers collect from' : '',
-    zones: draft.deliveryEnabled && draft.zones.length === 0 ? 'Add at least one delivery zone' : '',
-    none: !draft.pickupEnabled && !draft.deliveryEnabled ? 'Turn on pickup or delivery so physical orders can be fulfilled' : ''
-  };
-  const hasErrors = Object.values(errors).some(Boolean) || zoneErrors.some(Boolean);
+  // Highlight the section in view.
+  useEffect(() => {
+    const els = sections.map((s) => document.getElementById(s.id)).filter((el): el is HTMLElement => !!el);
+    const io = new IntersectionObserver(
+      (entries) => {
+        const visible = entries.filter((e) => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        if (visible[0]) setActive(visible[0].target.id);
+      },
+      { rootMargin: '-96px 0px -60% 0px' }
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, []);
 
-  const save = () => {
-    setTried(true);
-    if (hasErrors) return;
-    if (apply((d) => ({ ...d, fulfilment: { ...draft, zones: draft.zones.map((z) => ({ ...z, name: z.name.trim() })) } }))) toast(tr('Fulfilment settings saved'), { description: tr('Checkout uses them straight away.') });
+  const jump = (id: string) => {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    document.getElementById(id)?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+    setActive(id);
+    window.setTimeout(() => document.getElementById(`${id}-title`)?.focus({ preventScroll: true }), reduce ? 0 : 350);
   };
+
+  // Links from other screens (e.g. "Edit in Policies") land on their section, not the top of the page.
+  const { hash } = useLocation();
+  useEffect(() => {
+    const id = hash.replace('#', '');
+    if (!sections.some((s) => s.id === id)) return;
+    const t = window.setTimeout(() => jump(id), 60);
+    return () => window.clearTimeout(t);
+  }, [hash]);
 
   return (
     <>
-      <PageHeader
-        title="Commerce settings"
-        description="How orders reach your customers."
-        actions={
-        <Button onClick={save} disabled={!dirty}>
-            Save changes
-          </Button>
-        } />
-      
+      <PageHeader title="Commerce settings" description={paused ? 'Your shop is paused — checkout is closed until you open it again.' : 'How your shop takes orders, gets paid and talks to buyers.'} />
 
-      <div className="mt-8 grid items-start gap-10 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
-        <Card id="fulfilment" emphasis="primary" title="How orders reach customers" description="Checkout offers whichever of these you turn on." body="flush">
-          {tried && errors.none && <p className="mx-5 mt-5 rounded-md bg-danger-soft px-3 py-2.5 text-label text-danger md:mx-6">{tr(errors.none)}</p>}
-          <div className="flex flex-col divide-y divide-line">
-          <section aria-labelledby="pickup-heading" className="px-5 py-5 md:px-6 md:py-6">
-            <h3 id="pickup-heading" className="sr-only">
-              {tr('Pickup')}
-            </h3>
-            <Switch id="set-pickup" label="Customers can collect" description="Free for the customer. They see your address and hours at checkout." checked={draft.pickupEnabled} onChange={(pickupEnabled) => patch({ pickupEnabled })} />
-            {draft.pickupEnabled &&
-              <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                <TextInput id="set-pickup-addr" label="Pickup address" value={draft.pickupAddress} error={tried ? errors.pickup || undefined : undefined} onChange={(e) => patch({ pickupAddress: e.target.value })} />
-                <TextInput id="set-pickup-hours" label="Pickup hours" optional placeholder="e.g. Tue–Sat, 10am–6pm" value={draft.pickupHours} onChange={(e) => patch({ pickupHours: e.target.value })} />
-              </div>
-              }
-          </section>
+      <div className="mt-6 lg:hidden">
+        <SelectInput<string> id="cs-jump" label="Jump to" value={active} options={sections.map((s) => ({ value: s.id, label: s.label }))} onChange={jump} />
+      </div>
 
-          <section aria-labelledby="delivery-heading" className="px-5 py-5 md:px-6 md:py-6">
-            <h3 id="delivery-heading" className="sr-only">
-              {tr('Delivery')}
-            </h3>
-            <Switch id="set-delivery" label="Deliver to customers" description="Charge per zone. Customers pick their zone and see the fee before paying." checked={draft.deliveryEnabled} onChange={(deliveryEnabled) => patch({ deliveryEnabled })} />
-            {draft.deliveryEnabled &&
-              <div className="mt-5 flex flex-col gap-4">
-                <div className="overflow-x-auto rounded-md border border-line">
-                  <table className="block w-full text-left md:table">
-                    <caption className="sr-only">{tr('Delivery zones')}</caption>
-                    <thead className="hidden bg-sunken text-caption font-semibold text-fg-muted md:table-header-group">
-                      <tr>
-                        <th scope="col" className="px-3 py-2">{tr('Zone')}</th>
-                        <th scope="col" className="px-3 py-2">{tr('Fee')}</th>
-                        <th scope="col" className="px-3 py-2">{tr('Delivery time')}</th>
-                        <th scope="col" className="px-3 py-2">
-                          <span className="sr-only">{tr('Remove')}</span>
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="block divide-y divide-line md:table-row-group md:divide-y-0">
-                      {draft.zones.map((z, i) =>
-                      // Phones: each zone stacks as a small form with visible labels.
-                      <tr key={z.id} className="grid grid-cols-[1fr_1fr_auto] items-end gap-2 p-3 align-top md:table-row md:border-t md:border-line md:p-0">
-                          <td className="col-span-3 block md:table-cell md:px-3 md:py-2">
-                            <TextInput id={`zone-n-${z.id}`} label="Zone name" className="h-11 md:h-9" fieldClassName="md:[&>div:first-child]:sr-only" value={z.name} error={tried ? zoneErrors[i] || undefined : undefined} placeholder="e.g. Lagos Mainland" onChange={(e) => patch({ zones: draft.zones.map((x) => x.id === z.id ? { ...x, name: e.target.value } : x) })} />
-                          </td>
-                          <td className="block md:table-cell md:w-36 md:px-3 md:py-2 md:[&>div>div:first-child]:sr-only">
-                            <CurrencyInput id={`zone-f-${z.id}`} label="Fee" value={z.feeNgn} onChange={(v) => patch({ zones: draft.zones.map((x) => x.id === z.id ? { ...x, feeNgn: v ?? 0 } : x) })} />
-                          </td>
-                          <td className="block md:table-cell md:w-40 md:px-3 md:py-2">
-                            <TextInput id={`zone-e-${z.id}`} label="Delivery time" className="h-11 md:h-9" fieldClassName="md:[&>div:first-child]:sr-only" placeholder="e.g. 1–2 days" value={z.eta} onChange={(e) => patch({ zones: draft.zones.map((x) => x.id === z.id ? { ...x, eta: e.target.value } : x) })} />
-                          </td>
-                          <td className="block pb-0.5 md:table-cell md:px-2 md:py-2">
-                            <IconButton icon={Trash2Icon} size={wide ? 'sm' : 'lg'} label={tr('Remove {name}', { name: z.name || tr('zone') })} onClick={() => patch({ zones: draft.zones.filter((x) => x.id !== z.id) })} />
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                  {draft.zones.length === 0 && <p className="px-3 py-4 text-label text-fg-muted">{tr('No zones yet.')}</p>}
-                </div>
-                {tried && errors.zones && <p className="text-caption text-danger">{tr(errors.zones)}</p>}
-                <Button size="sm" variant="secondary" leadingIcon={PlusIcon} className="self-start" onClick={() => patch({ zones: [...draft.zones, { id: uid('zone'), name: '', feeNgn: 0, eta: '' }] })}>
-                  Add zone
-                </Button>
-                <div className="max-w-xs">
-                  <CurrencyInput id="set-free" label="Free delivery over" optional value={draft.freeDeliveryOverNgn} placeholder="No free delivery" hint="Based on the items subtotal." onChange={(freeDeliveryOverNgn) => patch({ freeDeliveryOverNgn })} />
-                </div>
-              </div>
-              }
-          </section>
+      <div className="mt-6 grid items-start gap-10 lg:mt-8 lg:grid-cols-[13rem_minmax(0,1fr)]">
+        <nav aria-label="Commerce settings sections" className="sticky top-6 hidden lg:block">
+          <ul className="flex flex-col gap-0.5 border-l border-line">
+            {sections.map((s) =>
+            <li key={s.id}>
+                <a
+                href={`#${s.id}`}
+                aria-current={active === s.id ? 'true' : undefined}
+                onClick={(e) => {
+                  e.preventDefault();
+                  jump(s.id);
+                }}
+                className={cn(
+                  '-ml-px block border-l-2 py-1.5 pl-3 text-label transition-colors duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
+                  active === s.id ? 'border-action font-semibold text-fg' : 'border-transparent text-fg-muted hover:text-fg'
+                )}>
+                
+                  {s.label}
+                </a>
+              </li>
+            )}
+          </ul>
+          <div className="mt-8 flex flex-col gap-2 pl-3">
+            <p className="text-caption font-semibold text-fg-subtle">Set elsewhere</p>
+            {elsewhere.map((e) =>
+            <Link key={e.to} to={e.to} className="inline-flex items-start gap-1 text-caption text-fg-muted hover:text-fg hover:underline">
+                {e.label} <ArrowUpRightIcon size={11} aria-hidden className="mt-0.5 shrink-0" />
+              </Link>
+            )}
           </div>
-        </Card>
+        </nav>
 
-        <aside className="flex flex-col divide-y divide-line">
-          <AsideNote id="sample" title="Sample data" text={hasSample ? 'Sample products and orders are labelled “Sample”. Clear them before you start selling.' : 'Add labelled sample products and orders to explore every screen.'}>
+        <div className="flex min-w-0 flex-col gap-8">
+          <BusinessReceiptsSection />
+          <CheckoutSettingsSection />
+          <ShopPaymentMethodsSection />
+          <DeliveryPickupSection />
+          <TaxSection />
+          <OrdersStockSection />
+          <PoliciesSection />
+          <StoreStatusSection />
+          <CustomerMessagesSection />
+
+          <section aria-labelledby="sample-heading" className="flex flex-col gap-3 border-t border-line pt-6 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 id="sample-heading" className="text-label font-semibold text-fg">
+                Sample data
+              </h2>
+              <p className="text-caption text-fg-subtle">{hasSample ? 'Sample products and orders are labelled “Sample”. Clear them before you start selling.' : 'Add labelled sample products and orders to explore every screen.'}</p>
+            </div>
             {hasSample ?
             <Button variant="destructive" size="sm" onClick={() => setConfirmClear(true)}>
                 Clear sample data
@@ -135,9 +142,17 @@ export function CommerceSettings() {
                 Add sample data
               </Button>
             }
-          </AsideNote>
-          <AsideNote id="messages" title="Customer messages" text="Order confirmations, delivery updates and refund notices are written and previewed, but not sent yet. Email, WhatsApp and SMS sending need a messaging partner." />
-        </aside>
+          </section>
+
+          <div className="flex flex-col gap-2 lg:hidden">
+            <p className="text-caption font-semibold text-fg-subtle">Set elsewhere</p>
+            {elsewhere.map((e) =>
+            <Link key={e.to} to={e.to} className="inline-flex min-h-[36px] items-center gap-1 text-label text-fg-muted hover:text-fg hover:underline">
+                {e.label} <ArrowUpRightIcon size={12} aria-hidden />
+              </Link>
+            )}
+          </div>
+        </div>
       </div>
 
       <Dialog

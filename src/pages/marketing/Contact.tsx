@@ -1,16 +1,18 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { FlagIcon, MailIcon, ShieldIcon } from 'lucide-react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { BriefcaseIcon, FlagIcon, MailIcon, ShieldIcon } from 'lucide-react';
 import { InfoHero } from '../../components/legal/InfoHero';
 import { FormRunner, type RunnerSubmit } from '../../components/forms/FormRunner';
 import { appSkin } from '../../components/forms/formSkin';
-import { contactFormDef, contactTopics } from '../../data/contactForm';
+import { contactFormDef, contactTopics, LEGAL_TOPIC_LABEL } from '../../data/contactForm';
+import { findLegalDoc } from '../../data/legal';
 import { updateAdminStore } from '../../utils/admin/store';
 import { uid } from '../../utils/id';
 
 const channels = [
 { icon: MailIcon, title: 'Email', text: 'hello@kub.icu — we reply within 1 working day.' },
-{ icon: ShieldIcon, title: 'Privacy', text: 'privacy@kub.icu for data requests under the NDPA.' },
+{ icon: ShieldIcon, title: 'Legal & privacy', text: 'legal@kub.icu for legal notices and data requests under the NDPA.' },
+{ icon: BriefcaseIcon, title: 'Sales', text: 'sales@kub.icu for Enterprise plans and partnerships.' },
 { icon: FlagIcon, title: 'A page you’ve seen', text: 'Use Report a page so our moderation team sees it.', to: '/about/report' }];
 
 
@@ -18,6 +20,12 @@ const str = (v: string | string[] | undefined) => (Array.isArray(v) ? v.join(', 
 
 /** Website contact page (D125): the Forms engine, feeding the staff support queue. */
 export function Contact() {
+  // Legal pages link here with ?topic=legal&doc=<slug> so the topic is already chosen (D236).
+  const [params] = useSearchParams();
+  const fromLegal = params.get('topic') === 'legal';
+  const aboutDoc = fromLegal ? findLegalDoc(params.get('doc') ?? '') : undefined;
+  const initialAnswers = fromLegal ? { topic: LEGAL_TOPIC_LABEL } : undefined;
+
   const submit = ({ answers }: RunnerSubmit) => {
     const name = str(answers.name);
     const topicLabel = str(answers.topic);
@@ -34,7 +42,7 @@ export function Contact() {
         workspaceName: str(answers.handle) || 'Website visitor',
         from: name,
         topic,
-        subject: `${topicLabel} — from the website`,
+        subject: topic === 'legal' && aboutDoc ? `${topicLabel} — about ${aboutDoc.title}` : `${topicLabel} — from the website`,
         status: 'open',
         createdAt: now,
         updatedAt: now,
@@ -51,7 +59,16 @@ export function Contact() {
       <div className="mx-auto grid w-full max-w-6xl gap-12 px-5 py-14 md:px-8 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] lg:gap-16">
         <div className="nm-frame rounded-2xl">
           <div className="rounded-[15px] bg-raised p-6 md:p-8">
-            <FormRunner form={contactFormDef} skin={appSkin} mode="live" headingLevel="h2" onSubmit={submit} />
+            {aboutDoc &&
+            <p className="mb-6 border-b border-line pb-4 text-label text-fg-muted">
+                About:{' '}
+                <Link to={`/about/${aboutDoc.slug}`} className="font-semibold text-fg underline">
+                  {aboutDoc.title}
+                </Link>
+                . Prefer email? Write to <a href="mailto:legal@kub.icu" className="font-semibold text-fg underline">legal@kub.icu</a>.
+              </p>
+            }
+            <FormRunner form={contactFormDef} skin={appSkin} mode="live" headingLevel="h2" onSubmit={submit} initialAnswers={initialAnswers} />
           </div>
         </div>
 

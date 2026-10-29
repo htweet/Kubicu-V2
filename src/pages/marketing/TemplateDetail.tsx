@@ -87,7 +87,7 @@ export function TemplateDetail() {
           <p className="text-label font-medium text-fg-subtle">
             {elite ? `Elite ${String(elite.number).padStart(2, '0')} · ${eliteUseCaseLabels[elite.useCase]}` : `${example.category} · ${example.city}`}
           </p>
-          <h1 className="mt-2 font-display text-[40px] font-semibold leading-[1.05] tracking-[-0.03em] text-fg">{example.name}</h1>
+          <h1 className="kb-display mt-2 text-[44px] leading-[0.98] text-fg">{example.name}</h1>
           <p className="mt-4 text-body text-fg-muted">{example.description}</p>
           <div className="mt-5 flex flex-wrap gap-1.5">
             {elite ? <Badge>{eliteGoalLabels[elite.goal]}</Badge> : example.goals.map((g) => <Badge key={g}>{goalLabels[g]}</Badge>)}

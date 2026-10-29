@@ -1,14 +1,16 @@
 import React, { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowDownRightIcon, ArrowUpRightIcon, BarChart3Icon, DownloadIcon, LightbulbIcon, LockIcon, XIcon } from 'lucide-react';
+import { ArrowDownRightIcon, ArrowUpRightIcon, BarChart3Icon, DownloadIcon, LightbulbIcon, LockIcon, MousePointerClickIcon, XIcon } from 'lucide-react';
+import { ExtensionShortcut } from '../components/extensions/ExtensionShortcut';
 import { toast } from 'sonner';
 import { useAnalytics } from '../contexts/AnalyticsContext';
 import { useEditor } from '../contexts/EditorContext';
 import { useWorkspace } from '../contexts/WorkspaceContext';
 import { useCan } from '../contexts/TeamContext';
 import { useDomains } from '../contexts/DomainsContext';
-import { campaignStats, change, funnels, hasSample, headline, inRange, insights, rangeFor, sources, topLinks, visitsByDay, type Range } from '../utils/analytics/aggregate';
-import { sourceLabels } from '../utils/analytics/track';
+import { campaignStats, change, devices, funnels, hasSample, headline, inRange, insights, rangeFor, sources, topLinks, visitorMix, visitsByDay, type Range } from '../utils/analytics/aggregate';
+import { deviceLabels, sourceLabels } from '../utils/analytics/track';
+import { AudienceBreakdown } from '../components/analytics/AudienceBreakdown';
 import { activeExtraSpaces, readSpacePage } from '../utils/spaces';
 import { allBlocks } from '../utils/sitePages';
 import { blockName } from '../utils/blocks';
@@ -81,6 +83,8 @@ export function Analytics() {
   const chart = days.map((d, i) => ({ label: d.label, value: d.value, previous: prevDays[i]?.value ?? 0 }));
   const links = topLinks(cur, h.visits).slice(0, 8);
   const src = sources(cur);
+  const devs = devices(cur);
+  const mix = visitorMix(cur, data.events);
   const f = funnels(cur);
   const sample = hasSample(cur);
   const { data: domainsData } = useDomains();
@@ -119,7 +123,7 @@ export function Analytics() {
   const exportCsv = () =>
   downloadCsv(
     `kubicu-analytics-${new Date().toISOString().slice(0, 10)}.csv`,
-    toCsv(['when', 'event', 'link', 'page', 'source', 'campaign', 'block', 'label', 'value_ngn', 'sample'], cur.map((e) => [e.at, e.type, e.handle, e.pageId ?? 'home', e.source, e.campaign ?? '', e.blockId ?? '', e.label ?? '', e.valueNgn ?? '', e.sample ? 'yes' : '']))
+    toCsv(['when', 'event', 'link', 'page', 'source', 'campaign', 'device', 'block', 'label', 'value_ngn', 'sample'], cur.map((e) => [e.at, e.type, e.handle, e.pageId ?? 'home', e.source, e.campaign ?? '', e.device ?? '', e.blockId ?? '', e.label ?? '', e.valueNgn ?? '', e.sample ? 'yes' : '']))
   );
 
   const rangeText = period === 'custom' ? `${from} – ${to}` : `Last ${period} days`;
@@ -144,9 +148,12 @@ export function Analytics() {
         title="Analytics"
         description="What visitors do on your pages — recorded on this device, nothing personal kept."
         actions={
-        <Button variant="secondary" leadingIcon={DownloadIcon} onClick={exportCsv} disabled={cur.length === 0}>
-            Export CSV
-          </Button>
+        <>
+            <ExtensionShortcut id="clarity" label="Heatmaps" icon={MousePointerClickIcon} />
+            <Button variant="secondary" leadingIcon={DownloadIcon} onClick={exportCsv} disabled={cur.length === 0}>
+              Export CSV
+            </Button>
+          </>
         } />
       
 
@@ -319,6 +326,23 @@ export function Analytics() {
                 </ul>
             }
             </Card>
+          </div>
+
+          <div className="mt-10 grid gap-10 md:grid-cols-2">
+            <AudienceBreakdown
+            id="devices"
+            title="Devices"
+            caption="Visits and conversions by device"
+            rows={devs.map((d) => ({ ...d, label: deviceLabels[d.id] }))}
+            note={devs.some((d) => d.id === 'unknown') ? 'Only the kind of device is kept. Visits from before devices were counted show as “Not recorded”.' : 'Only the kind of device is kept — never the model or browser.'} />
+          
+            <AudienceBreakdown
+            id="returning"
+            title="New and returning"
+            caption="New and returning visits"
+            rows={mix.map((d) => ({ ...d, label: d.id === 'new' ? 'First visit' : 'Came back' }))}
+            note="An estimate: “came back” means the same browser visited before. Someone using a new phone, or who cleared their browser, counts as new." />
+          
           </div>
 
           <Section

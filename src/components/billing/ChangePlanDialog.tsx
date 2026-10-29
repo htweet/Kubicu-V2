@@ -215,7 +215,7 @@ export function ChangePlanDialog({ open, onClose, feature, minPlan, initial }: P
                 <span className="text-body font-semibold text-fg">{plans.enterprise.name}</span>
                 <p className="text-caption text-fg-muted">{plans.enterprise.intendedFor} — custom limits and contracts.</p>
               </div>
-              <a href="mailto:sales@kubicu.example?subject=Enterprise%20plan" className="inline-flex h-9 items-center justify-center rounded-md border border-line-strong px-3 text-label font-medium text-fg hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+              <a href="mailto:sales@kub.icu?subject=Enterprise%20plan" className="inline-flex h-9 items-center justify-center rounded-md border border-line-strong px-3 text-label font-medium text-fg hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
                 Talk to us
               </a>
             </li>

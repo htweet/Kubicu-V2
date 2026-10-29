@@ -22,6 +22,7 @@ import { AsideNote } from '../../components/ui/layout/AsideNote';
 import { DetailSection } from '../../components/ui/layout/DetailList';
 import { List } from '../../components/ui/layout/ListRow';
 import { CalendarSyncCard } from '../../components/bookings/CalendarSyncCard';
+import { MeetingAppsCard } from '../../components/bookings/MeetingAppsCard';
 import { TeamHoursCard } from '../../components/bookings/TeamHoursCard';
 import { useT } from '../../contexts/LocaleContext';
 
@@ -39,7 +40,7 @@ export function Availability() {
 
   const save = () => {
     if (hoursError) return;
-    if (apply((d) => ({ ...d, availability: { ...draft, calendars: d.availability.calendars } }))) toast(tr('Availability saved'), { description: tr('Your booking calendar updates straight away. Existing bookings stay with whoever has them.') });
+    if (apply((d) => ({ ...d, availability: { ...draft, calendars: d.availability.calendars, meetings: d.availability.meetings } }))) toast(tr('Availability saved'), { description: tr('Your booking calendar updates straight away. Existing bookings stay with whoever has them.') });
   };
 
   return (
@@ -99,6 +100,8 @@ export function Availability() {
           <TeamHoursCard draft={draft} bookings={data.bookings} onChange={(staff) => patch({ staff })} />
 
           <CalendarSyncCard />
+
+          <MeetingAppsCard />
         </div>
 
         <div className="flex flex-col gap-6">

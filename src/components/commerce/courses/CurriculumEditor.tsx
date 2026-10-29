@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AlertCircleIcon, ArrowDownIcon, ArrowUpIcon, ChevronDownIcon, FileTextIcon, FileIcon, ListChecksIcon, PlayCircleIcon, PlusIcon, Trash2Icon } from 'lucide-react';
+import { AlertCircleIcon, ArrowDownIcon, ArrowUpIcon, ChevronDownIcon, FileTextIcon, FileIcon, ListChecksIcon, PlayCircleIcon, PlusIcon, Trash2Icon, VideoIcon } from 'lucide-react';
 import type { CourseLesson, CourseModule, LessonKind } from '../../../types/courses';
 import { MAX_LESSONS_PER_MODULE, MAX_MODULES, blankLesson, blankModule, durationLabel, lessonIssue, lessonKindLabels } from '../../../utils/commerce/courses';
 import { Button } from '../../ui/Button';
@@ -10,7 +10,7 @@ import { LessonEditor } from './LessonEditor';
 import { announce } from '../../../utils/announce';
 import { cn } from '../../../utils/cn';
 
-export const lessonIcons: Record<LessonKind, typeof PlayCircleIcon> = { video: PlayCircleIcon, text: FileTextIcon, file: FileIcon, quiz: ListChecksIcon };
+export const lessonIcons: Record<LessonKind, typeof PlayCircleIcon> = { video: PlayCircleIcon, text: FileTextIcon, file: FileIcon, quiz: ListChecksIcon, live: VideoIcon };
 
 interface Props {
   modules: CourseModule[];
@@ -132,7 +132,7 @@ export function CurriculumEditor({ modules, onChange, showErrors }: Props) {
             <div className="border-t border-line px-3 py-2">
               <Menu
                 align="start"
-                items={(['video', 'text', 'file', 'quiz'] as LessonKind[]).map((k) => ({ id: k, label: lessonKindLabels[k], icon: lessonIcons[k], disabled: m.lessons.length >= MAX_LESSONS_PER_MODULE, reason: `Up to ${MAX_LESSONS_PER_MODULE} lessons per module`, onSelect: () => addLesson(m.id, k) }))}
+                items={(['video', 'live', 'text', 'file', 'quiz'] as LessonKind[]).map((k) => ({ id: k, label: lessonKindLabels[k], icon: lessonIcons[k], disabled: m.lessons.length >= MAX_LESSONS_PER_MODULE, reason: `Up to ${MAX_LESSONS_PER_MODULE} lessons per module`, onSelect: () => addLesson(m.id, k) }))}
                 trigger={(props) =>
                 <Button {...props} size="sm" variant="tertiary" leadingIcon={PlusIcon}>
                     Add lesson

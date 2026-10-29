@@ -1,5 +1,6 @@
 import type { Block, CampaignPhase, PopupSession, PopupSettings } from '../types/page';
 import type { CommerceData, Order, OrderEvent, StallHold } from '../types/commerce';
+import { orderRef } from './commerce/shopSettings';
 import type { ValidationIssue } from './validation';
 import { blockInPhase, phaseOrder } from './campaign';
 import { uid } from './id';
@@ -180,7 +181,7 @@ export function popupOrdersCsv(orders: Order[]): string {
   const rows = [['Order', 'Session', 'Name', 'Phone', 'Items', 'Total (NGN)', 'Payment', 'Collected']];
   orders.forEach((o) =>
   rows.push([
-  `#${o.number}`,
+  orderRef(o),
   o.popup?.sessionLabel ?? '',
   o.customer.name,
   o.customer.phone,

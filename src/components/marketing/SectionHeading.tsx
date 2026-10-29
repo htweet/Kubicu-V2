@@ -16,7 +16,7 @@ export function SectionHeading({ id, title, lead, align = 'left', action, classN
   return (
     <Reveal className={cn('flex flex-wrap items-end justify-between gap-6', align === 'center' && 'flex-col items-center text-center', className)}>
       <div className={cn('max-w-2xl', align === 'center' && 'mx-auto')}>
-        <h2 id={id} className="font-display text-[30px] font-semibold leading-[1.1] tracking-[-0.025em] text-fg md:text-[40px]">
+        <h2 id={id} className="kb-display text-[34px] leading-[1.02] text-fg md:text-[48px]">
           {title}
         </h2>
         {lead && <p className="mt-4 text-[17px] leading-relaxed text-fg-muted">{lead}</p>}

@@ -51,7 +51,7 @@ export function personalCalendarIds(a: Availability): Set<string> {
 export function pickStaff(free: string[], a: Availability, bookings: Booking[], dateKey: string): string | null {
   if (!free.length) return null;
   const staff = (a.staff ?? []).filter((s) => free.includes(s.memberId));
-  const load = (id: string) => bookings.filter((b) => b.assigneeId === id && (b.status === 'confirmed' || b.status === 'pending_deposit') && dateKeyInTz(Date.parse(b.start), a.timeZone) === dateKey).length;
+  const load = (id: string) => bookings.filter((b) => b.assigneeId === id && (b.status === 'confirmed' || b.status === 'pending_deposit' || b.status === 'requested') && dateKeyInTz(Date.parse(b.start), a.timeZone) === dateKey).length;
   return [...staff].sort((x, y) => load(x.memberId) - load(y.memberId) || x.name.localeCompare(y.name))[0]?.memberId ?? null;
 }
 

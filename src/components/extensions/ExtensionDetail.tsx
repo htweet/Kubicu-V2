@@ -10,6 +10,9 @@ import { Dialog } from '../ui/Dialog';
 import { UpgradeButton } from '../ui/UpgradeButton';
 import { ExtensionPreview } from './ExtensionPreview';
 import { ExtensionIcon } from './ExtensionIcon';
+import { WorksWith } from './WorksWith';
+import { ExtensionTools } from './ExtensionTools';
+import { useNavigate } from 'react-router-dom';
 import { useMarketplace } from '../../contexts/MarketplaceContext';
 import { usePlan } from '../../contexts/PlanContext';
 import { useTeam } from '../../contexts/TeamContext';
@@ -30,6 +33,7 @@ export function ExtensionDetail({ ext, onClose, onInstall }: Props) {
   const market = useMarketplace();
   const plan = usePlan();
   const can = useTeam().can('extensions.manage');
+  const navigate = useNavigate();
   const [confirmRemove, setConfirmRemove] = useState(false);
   const [adminStore] = useAdminStore();
   if (!ext) return <Sheet open={false} onClose={onClose} title="">{null}</Sheet>;
@@ -41,7 +45,34 @@ export function ExtensionDetail({ ext, onClose, onInstall }: Props) {
   const perms = groupPermissions(ext.permissions);
   const canRollback = !!rec && rec.version === ext.version && ext.versions.length > 1 && pull?.pulledVersion !== ext.version;
 
-  const footer = rec ?
+  const retired = ext.retired;
+  const footer = retired ?
+  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      <span className="text-caption text-fg-muted">{rec ? 'Still working. Move when you’re ready.' : `Now part of ${retired.movedTo}.`}</span>
+      {rec ?
+    <Button
+      disabled={!can.allowed}
+      onClick={() => {
+        market.moveRetired(ext.id);
+        toast(`Moved to ${retired.movedTo}`, { description: 'Everything you set up keeps working.' });
+        onClose();
+        navigate(retired.href);
+      }}>
+      
+          Move to {retired.movedTo}
+        </Button> :
+
+    <Button
+      onClick={() => {
+        onClose();
+        navigate(retired.href);
+      }}>
+      
+          Open {retired.movedTo}
+        </Button>
+    }
+    </div> :
+  rec ?
   <div className="flex flex-wrap items-center gap-2">
       {ext.setup &&
     <Button variant="secondary" size="sm" leadingIcon={SettingsIcon} disabled={!can.allowed} onClick={() => onInstall(ext, 'settings')}>
@@ -84,13 +115,24 @@ export function ExtensionDetail({ ext, onClose, onInstall }: Props) {
                 {rating !== null && ` · ★ ${rating.toFixed(1)} (${ext.reviews.length})`}
               </p>
               <div className="mt-2 flex flex-wrap gap-1.5">
-                {rec && <Badge tone={rec.paused ? 'warning' : 'success'} dot>{rec.paused ? 'Paused' : 'Installed'}</Badge>}
+                {retired ? <Badge tone="info">Moved to {retired.movedTo}</Badge> : rec && <Badge tone={rec.paused ? 'warning' : 'success'} dot>{rec.paused ? 'Paused' : 'Installed'}</Badge>}
                 {ext.preview && <Badge tone="info">Preview</Badge>}
               </div>
             </div>
           </div>
 
+          {retired &&
+          <div className="rounded-md border border-info/40 bg-info-soft px-4 py-3">
+              <p className="text-label font-semibold text-fg">Now part of {retired.movedTo}</p>
+              <p className="mt-1 text-caption text-fg">{retired.note}</p>
+            </div>
+          }
+
           <p className="text-body text-fg">{ext.description}</p>
+
+          {rec && !rec.paused && !retired && <ExtensionTools id={ext.id} rec={rec} onNavigate={onClose} />}
+
+          {ext.worksWith && <WorksWith connections={ext.worksWith} onNavigate={onClose} />}
 
           <section aria-label="What it adds" className="rounded-lg bg-sunken p-4">
             <h3 className="text-label font-semibold text-fg">What it adds</h3>

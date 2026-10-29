@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
-import { ChevronDownIcon, LinkIcon, PrinterIcon } from 'lucide-react';
+import { ChevronDownIcon, LinkIcon, MessageSquareIcon, PrinterIcon } from 'lucide-react';
 import type { LegalDoc } from '../../types/legal';
 import { allLegalDocs } from '../../data/legal';
 import { Button } from '../ui/Button';
@@ -123,6 +123,20 @@ export function LegalDocument({ doc }: {doc: LegalDoc;}) {
                 </div>
               </section>
             )}
+
+            <aside aria-labelledby="questions-h" className="border-t border-line pt-8">
+              <h2 id="questions-h" className="text-label font-semibold text-fg">
+                Questions about this {doc.group === 'Legal' ? 'document' : 'page'}?
+              </h2>
+              <p className="mt-1.5 text-label text-fg-muted">Send us a message and we’ll reply within 2 working days.</p>
+              <Link
+                to={`/about/contact?topic=legal&doc=${doc.slug}`}
+                className="mt-4 inline-flex h-10 items-center gap-2 rounded-md bg-action px-4 text-label font-semibold text-action-fg hover:bg-action-hover active:bg-action-pressed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2">
+                
+                <MessageSquareIcon size={16} aria-hidden />
+                Use the contact form
+              </Link>
+            </aside>
 
             {related.length > 0 &&
             <aside aria-labelledby="related-h" className="border-t border-line pt-8">

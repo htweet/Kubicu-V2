@@ -1,6 +1,8 @@
 import type { Invoice } from '../types/serviceOs';
 import type { BankAccount } from '../types/money';
-import { balanceOf, formatDay, itemsTotal, lineTotal, methodLabels, paidOf } from './serviceOs';
+import { balanceOf, formatDay, lineTotal, methodLabels, paidOf, vatSplit } from './serviceOs';
+import { vatRateLabel } from './commerce/shopSettings';
+import { activeCurrency, currencyInfo } from './currency';
 import { formatNgn, formatTimestamp } from './format';
 
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -21,7 +23,11 @@ export function printServiceInvoice(inv: Invoice, o: PrintOptions): boolean {
   const w = window.open('', '_blank', 'width=820,height=960');
   if (!w) return false;
   const accent = o.accent || '#111111';
-  const total = itemsTotal(inv.items);
+  const split = vatSplit(inv.items, inv.vat);
+  const total = split.total;
+  const vatRow = inv.vat && split.vat > 0 ?
+  `${inv.vat.inclusive ? '' : `<tr><td class="k">Subtotal</td><td class="r">${formatNgn(split.subtotal)}</td></tr>`}<tr><td class="k">${inv.vat.inclusive ? 'Includes VAT' : 'VAT'} (${esc(vatRateLabel(inv.vat.ratePct))})</td><td class="r">${formatNgn(split.vat)}</td></tr>` :
+  '';
   const paid = paidOf(inv);
   const balance = balanceOf(inv);
   const open = balance > 0 && inv.status !== 'void';
@@ -49,13 +55,14 @@ table{width:100%;border-collapse:collapse;margin-top:22px}th{text-align:left;fon
 <div style="text-align:right"><div class="m">${open ? 'Amount due' : 'Total'}</div><div class="big">${formatNgn(open ? balance : total)}</div></div></div>
 <p style="margin:22px 0 0;font-weight:600">${esc(inv.title)}</p>
 <table><tr><th>Item</th><th class="r">Qty</th><th class="r">Price</th><th class="r">Amount</th></tr>${rows}</table>
-<table class="tot" style="margin-top:6px;width:280px;margin-left:auto"><tr><td class="k">Total</td><td class="r">${formatNgn(total)}</td></tr>${paid ? `<tr><td class="k">Paid</td><td class="r">− ${formatNgn(paid)}</td></tr>` : ''}<tr class="due"><td>Left to pay</td><td class="r">${formatNgn(Math.max(0, balance))}</td></tr></table>
+<table class="tot" style="margin-top:6px;width:280px;margin-left:auto">${vatRow}<tr><td class="k">Total</td><td class="r">${formatNgn(total)}</td></tr>${paid ? `<tr><td class="k">Paid</td><td class="r">− ${formatNgn(paid)}</td></tr>` : ''}<tr class="due"><td>Left to pay</td><td class="r">${formatNgn(Math.max(0, balance))}</td></tr></table>
+${inv.note ? `<div class="box" style="margin-top:22px"><h3>Payment terms</h3><div style="white-space:pre-line">${esc(inv.note)}</div></div>` : ''}
 ${pays ? `<table><tr><th>Payment</th><th>Date</th><th class="r">Amount</th></tr>${pays}</table>` : ''}
 ${open ? `<div class="grid">
 <div class="box"><h3>Pay online</h3><div style="word-break:break-all">${esc(o.payUrl)}</div><div class="m">Card or bank transfer. Your receipt is kept automatically.</div></div>
 <div class="box"><h3>Or pay by transfer</h3>${o.bank ? `<strong>${esc(o.bank.accountName)}</strong><div>${esc(o.bank.bankName)} · ••••${esc(o.bank.last4)}</div><div class="m">Use <strong>${esc(inv.number)}</strong> as the narration, then send your receipt on WhatsApp.</div>` : `<div class="m">Ask ${esc(o.business)} for their account details.</div>`}</div>
 </div>` : ''}
-<p class="foot">Made with KUBICU · prototype — test mode. Amounts in Nigerian naira.</p>
+<p class="foot">Made with KUBICU · prototype — test mode. Amounts in ${esc(currencyInfo(activeCurrency()).name)}.</p>
 <script>window.onload=function(){setTimeout(function(){window.print()},250)}</script></body></html>`);
   w.document.close();
   return true;

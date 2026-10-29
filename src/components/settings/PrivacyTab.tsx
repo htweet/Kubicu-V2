@@ -65,10 +65,10 @@ export function PrivacyTab() {
 
       <Section id="priv-notice" title={<span className="flex items-center gap-2"><ShieldCheckIcon size={16} className="text-success" aria-hidden /> What visitors are told</span>}>
         <blockquote className="rounded-md border border-line bg-sunken p-4 text-label text-fg-muted">
-          This page counts visits to help the owner improve it: which links are tapped, and whether you came from WhatsApp, Instagram, a QR code and so on. No name, email or phone number is recorded, and nothing follows you to other sites. A visit is forgotten after 30 minutes.
+          This page counts visits to help the owner improve it: which links are tapped, whether you came from WhatsApp, Instagram, a QR code and so on, and whether you’re on a phone, tablet or computer. No name, email or phone number is recorded, and nothing follows you to other sites. A visit ends after 30 minutes; a random number kept in your browser lets the page tell a first visit from a return one, and clearing your browser removes it.
         </blockquote>
         <ul className="flex flex-col gap-1.5 text-caption text-fg-muted">
-          <li>No cookies across sites, no fingerprinting, no personal data.</li>
+          <li>No cookies across sites, no fingerprinting, no personal data. Only the kind of device is kept — never its model, browser or screen size.</li>
           <li>Owners see totals and patterns, never a person.</li>
           <li>Orders, bookings and forms are kept in their own screens — that’s what customers chose to share.</li>
         </ul>

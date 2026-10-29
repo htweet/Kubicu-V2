@@ -1,5 +1,6 @@
 import type { InstalmentPart, Order } from '../../types/commerce';
 import { readMoney, recordStagePayment, writeMoney } from './store';
+import { orderRef } from '../commerce/shopSettings';
 
 /**
  * Credits one instalment that was paid by card or online, following the shop's payment setting (D112).
@@ -8,6 +9,6 @@ import { readMoney, recordStagePayment, writeMoney } from './store';
  */
 export function creditInstalment(workspaceId: string, order: Order, part: InstalmentPart): void {
   const total = order.instalments?.parts.length ?? 0;
-  const label = `Instalment ${part.n} of ${total} · order #${order.number} · ${order.customer.name || 'Customer'}`;
+  const label = `Instalment ${part.n} of ${total} · order ${orderRef(order)} · ${order.customer.name || 'Customer'}`;
   writeMoney(workspaceId, recordStagePayment(readMoney(workspaceId), 'shop', { type: 'order', id: order.id }, label, part.amountNgn, false).data);
 }

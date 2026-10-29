@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import type { CommerceData } from '../types/commerce';
 import { useCommerce } from '../contexts/CommerceContext';
 import { readCommerce, writeCommerce } from '../utils/commerce/storage';
+import { setActiveBackorders, shopSettingsOf } from '../utils/commerce/shopSettings';
 
 export interface PageCommerce {
   data: CommerceData | null;
@@ -41,6 +42,9 @@ export function usePageCommerce(workspaceId: string | null, isOwn: boolean): Pag
   );
 
   // Visitors' checkouts aren't limited by the signed-in member's role.
+  const data = isOwn ? own.data : other;
+  // Stock checks on this page follow the seller's "Allow backorders" setting (D222).
+  setActiveBackorders(shopSettingsOf(data).orders.backorders);
   if (isOwn) return { data: own.data, apply: own.applySystem };
   return { data: other, apply: applyOther };
 }

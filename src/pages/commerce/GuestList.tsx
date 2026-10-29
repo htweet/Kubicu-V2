@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import { orderRef } from '../../utils/commerce/shopSettings';
 import { toast } from 'sonner';
 import { ArrowLeftIcon, DownloadIcon, MoreHorizontalIcon, ScanLineIcon, SendIcon, UndoIcon, UserCheckIcon, UserPlusIcon, ReceiptIcon } from 'lucide-react';
 import type { CommerceEvent } from '../../types/commerce';
@@ -76,7 +77,7 @@ export function GuestList() {
       `${ev.name.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}-guests.csv`,
       toCsv(
         ['ticket', 'guest', 'type', 'status', 'checked_in_at', 'checked_in_by', 'order', 'buyer', 'phone', 'email', 'complimentary'],
-        rows.map((r) => [r.ticket.code, r.ticket.guestName, r.ticket.seat ? `${r.ticket.typeName} — ${r.ticket.seat}` : r.ticket.typeName, ticketStatusLabel[r.status], r.ticket.checkedInAt ?? '', r.ticket.checkedInBy ?? '', `#${r.order.number}`, r.order.customer.name, r.order.customer.phone, r.order.customer.email, r.ticket.comp ? 'yes' : ''])
+        rows.map((r) => [r.ticket.code, r.ticket.guestName, r.ticket.seat ? `${r.ticket.typeName} — ${r.ticket.seat}` : r.ticket.typeName, ticketStatusLabel[r.status], r.ticket.checkedInAt ?? '', r.ticket.checkedInBy ?? '', orderRef(r.order), r.order.customer.name, r.order.customer.phone, r.order.customer.email, r.ticket.comp ? 'yes' : ''])
       )
     );
   };
@@ -228,7 +229,7 @@ export function GuestList() {
           }
           </div>
           <div className="mt-4">
-            <DataTable caption="Guests" rows={shown} columns={columns} filterText={(r) => `${r.ticket.guestName} ${r.ticket.code} ${r.order.customer.name} ${r.order.customer.phone} #${r.order.number}`} filterPlaceholder="Search name, code or order" emptyTitle="No guests match" />
+            <DataTable caption="Guests" rows={shown} columns={columns} filterText={(r) => `${r.ticket.guestName} ${r.ticket.code} ${r.order.customer.name} ${r.order.customer.phone} ${orderRef(r.order)} #${r.order.number}`} filterPlaceholder="Search name, code or order" emptyTitle="No guests match" />
           </div>
         </>
       }

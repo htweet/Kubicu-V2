@@ -4,6 +4,7 @@ import { AlertTriangleIcon, ArrowLeftIcon, Loader2Icon } from 'lucide-react';
 import type { PageTheme } from '../../types/page';
 import type { PageOps } from '../../hooks/usePageOps';
 import { PageOverlay } from '../blocks/PageOverlay';
+import { USSD_AVAILABLE } from '../../data/ussdBanks';
 import { cardStyle, mix } from '../blocks/pageStyle';
 import { CheckoutHeading, PrimaryButton, SecondaryButton, SheetActions, StepDots, TestModeNote, ThemedField } from '../checkout/checkoutUi';
 import { SlotPicker } from './SlotPicker';
@@ -17,6 +18,8 @@ import { formatNgn } from '../../utils/format';
 import { isNaira } from '../../utils/currency';
 import { UssdPay } from '../checkout/UssdPay';
 import { useTrack } from '../../contexts/TrackContext';
+import { meetingPromise } from '../../utils/ops/meetings';
+import { IntakeQuestionFields, intakeAnswers, intakeErrors } from './IntakeQuestionFields';
 
 type Step = 'time' | 'details' | 'confirm' | 'working' | 'problem';
 
@@ -35,6 +38,7 @@ export function BookingSheet({ theme, ops, serviceId, handle, onClose }: Booking
   const [staffId, setStaffId] = useState<string | null>(null);
   const [customer, setCustomer] = useState({ name: '', phone: '', email: '' });
   const [intake, setIntake] = useState('');
+  const [answers, setAnswers] = useState<Record<string, string>>({});
   const [consent, setConsent] = useState(false);
   const [deposit, setDeposit] = useState<'paid' | 'failed'>('paid');
   const [simulateTaken, setSimulateTaken] = useState(false);
@@ -56,6 +60,7 @@ export function BookingSheet({ theme, ops, serviceId, handle, onClose }: Booking
     setStaffId(null);
     setProblem(null);
     setTried(false);
+    setAnswers({});
   }, [serviceId]);
 
   const data = ops.data;
@@ -67,10 +72,13 @@ export function BookingSheet({ theme, ops, serviceId, handle, onClose }: Booking
   const staff = eligibleStaff(service, a);
   const chosen = staff.find((s) => s.memberId === staffId) ?? null;
   const steps: Step[] = ['time', 'details', 'confirm'];
+  const questions = service.questions ?? [];
+  const request = !!service.approval;
   const errors = {
     name: !customer.name.trim() ? 'Enter your name' : '',
     phone: !isValidPhone(customer.phone) ? 'Enter a phone number, e.g. +234 803 123 4567' : '',
-    email: !isValidEmail(customer.email) ? 'Enter an email for your confirmation' : ''
+    email: !isValidEmail(customer.email) ? 'Enter an email for your confirmation' : '',
+    ...intakeErrors(questions, answers)
   };
 
   const book = (byUssd = false) => {
@@ -92,7 +100,8 @@ export function BookingSheet({ theme, ops, serviceId, handle, onClose }: Booking
           customerTimeZone: visitorTimeZone(),
           marketingConsent: consent,
           staffId: chosen?.memberId ?? null,
-          sourceHandle: handle
+          sourceHandle: handle,
+          answers: intakeAnswers(questions, answers)
         });
         return result.ok ? result.data : d;
       });
@@ -109,7 +118,7 @@ export function BookingSheet({ theme, ops, serviceId, handle, onClose }: Booking
         setStep('problem');
         return;
       }
-      track('booking_confirmed', { label: service.name, valueNgn: r.booking.depositPaidNgn || undefined });
+      if (!request) track('booking_confirmed', { label: service.name, valueNgn: r.booking.depositPaidNgn || undefined });
       onClose();
       navigate(`/p/${handle}/booking/${r.booking.id}`);
     }, 1100);
@@ -127,7 +136,7 @@ export function BookingSheet({ theme, ops, serviceId, handle, onClose }: Booking
     return (
       <div className="flex flex-col items-center gap-3 py-12 text-center" role="status">
           <Loader2Icon size={28} className="animate-spin" aria-hidden />
-          <p className="text-[16px] font-medium">{service.depositNgn ? 'Taking your test deposit…' : 'Booking your time…'}</p>
+          <p className="text-[16px] font-medium">{service.depositNgn ? 'Taking your test deposit…' : request ? 'Sending your request…' : 'Booking your time…'}</p>
         </div>);
 
     if (step === 'problem' && problem)
@@ -179,6 +188,7 @@ export function BookingSheet({ theme, ops, serviceId, handle, onClose }: Booking
           <ThemedField theme={theme} label="Full name" autoComplete="name" value={customer.name} error={tried ? errors.name || undefined : undefined} onChange={(name) => setCustomer((c) => ({ ...c, name }))} />
           <ThemedField theme={theme} label="Phone (WhatsApp preferred)" type="tel" inputMode="tel" autoComplete="tel" value={customer.phone} error={tried ? errors.phone || undefined : undefined} onChange={(phone) => setCustomer((c) => ({ ...c, phone }))} />
           <ThemedField theme={theme} label="Email" type="email" inputMode="email" autoComplete="email" value={customer.email} error={tried ? errors.email || undefined : undefined} onChange={(email) => setCustomer((c) => ({ ...c, email }))} />
+          {questions.length > 0 && <IntakeQuestionFields theme={theme} questions={questions} answers={answers} onChange={(id, v) => setAnswers((x) => ({ ...x, [id]: v }))} showErrors={tried} />}
           <label className="flex flex-col gap-1.5">
             <span className="text-[13px] font-medium">
               Anything we should know? <span style={{ ...muted, fontWeight: 400 }}>· optional</span>
@@ -199,7 +209,9 @@ export function BookingSheet({ theme, ops, serviceId, handle, onClose }: Booking
     // confirm
     return (
       <div className="flex flex-col gap-4">
-        <CheckoutHeading theme={theme}>Confirm your booking</CheckoutHeading>
+        <CheckoutHeading theme={theme} sub={request ? `The business accepts each booking. Your time is held until they reply — usually well before the appointment.${service.depositNgn ? ' If they can’t take it, your deposit is refunded in full.' : ''}` : undefined}>
+          {request ? 'Send your booking request' : 'Confirm your booking'}
+        </CheckoutHeading>
         <dl className="flex flex-col gap-2 p-4 text-[14px]" style={cardStyle(theme)}>
           <div className="flex justify-between gap-3">
             <dt style={muted}>Service</dt>
@@ -222,7 +234,7 @@ export function BookingSheet({ theme, ops, serviceId, handle, onClose }: Booking
           }
           <div className="flex justify-between gap-3">
             <dt style={muted}>Where</dt>
-            <dd className="text-right font-medium">{service.location === 'online' ? 'Online' : service.location === 'customer' ? 'At your address' : 'In person'}{service.locationNote ? <span className="block text-[12px] font-normal" style={muted}>{service.locationNote}</span> : null}</dd>
+            <dd className="text-right font-medium">{service.location === 'online' ? 'Online' : service.location === 'customer' ? 'At your address' : 'In person'}{(service.location === 'online' && ops.data ? meetingPromise(service, ops.data.availability) : service.locationNote) ? <span className="block text-[12px] font-normal" style={muted}>{service.location === 'online' && ops.data ? meetingPromise(service, ops.data.availability) : service.locationNote}</span> : null}</dd>
           </div>
           <div className="flex justify-between gap-3 border-t pt-2" style={{ borderColor: mix(theme.text, 12) }}>
             <dt style={muted}>Pay now</dt>
@@ -257,9 +269,15 @@ export function BookingSheet({ theme, ops, serviceId, handle, onClose }: Booking
         <TestModeNote theme={theme} />
         <SheetActions theme={theme}>
           <PrimaryButton theme={theme} onClick={() => book()}>
-            {service.depositNgn ? `Pay ${formatNgn(service.depositNgn)} and book` : 'Book this time'}
+            {request ?
+            service.depositNgn ?
+            `Pay ${formatNgn(service.depositNgn)} and send request` :
+            'Send request' :
+            service.depositNgn ?
+            `Pay ${formatNgn(service.depositNgn)} and book` :
+            'Book this time'}
           </PrimaryButton>
-          {service.depositNgn && isNaira() ?
+          {USSD_AVAILABLE && service.depositNgn && isNaira() ?
           <SecondaryButton theme={theme} onClick={() => setUssd(true)}>
               No card? Pay the deposit with USSD
             </SecondaryButton> :

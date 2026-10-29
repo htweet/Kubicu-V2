@@ -1,10 +1,11 @@
 import type { Automation, Contact, OpsData } from '../../types/ops';
 import type { CommerceData, Order } from '../../types/commerce';
+import { orderRef } from '../commerce/shopSettings';
 import type { Workspace } from '../../types/workspace';
 import { readSpacePage } from '../spaces';
 import { readForms } from '../forms/storage';
 import { campaignPhase } from '../campaign';
-import { isLowStock, isSoldOut } from '../commerce/catalog';
+import { isLowStock, isSoldOut, totalStock } from '../commerce/catalog';
 import { orderMoney } from '../commerce/money';
 import { formatNgn, publicUrl } from '../format';
 import { lastActivity, type LiveEvent } from './liveRuns';
@@ -35,7 +36,18 @@ function orderEvent(a: Automation, o: Order, ctx: Ctx, key: string, subject: str
   return {
     key,
     subject,
-    vars: { first_name: first(o.customer.name), name: o.customer.name, order_number: `#${o.number}`, total: formatNgn(total), item: o.items[0]?.name ?? '', product: o.items[0]?.name ?? '', link: o.sourceHandle ? publicUrl(o.sourceHandle) : '' },
+    vars: {
+      first_name: first(o.customer.name),
+      name: o.customer.name,
+      order_number: orderRef(o),
+      total: formatNgn(total),
+      item: o.items[0]?.name ?? '',
+      product: o.items[0]?.name ?? '',
+      link: o.sourceHandle ? publicUrl(o.sourceHandle) : '',
+      // The order's own page: pay a pending checkout, or follow an order (D230).
+      cart_link: o.sourceHandle ? `${publicUrl(o.sourceHandle)}/order/${o.id}` : '',
+      order_link: o.sourceHandle ? `${publicUrl(o.sourceHandle)}/order/${o.id}` : ''
+    },
     total,
     source: 'order',
     subscribed: c ? c.consent === 'subscribed' : false,
@@ -58,7 +70,7 @@ export function eventsFor(a: Automation, fired: Set<string>, ctx: Ctx): LiveEven
 
   switch (a.trigger) {
     case 'order_paid':
-      for (const o of commerce.orders) if (!o.sample && isPaid(o) && after(o.createdAt)) push(orderEvent(a, o, ctx, `${a.id}:order:${o.id}`, `Order #${o.number} paid — ${o.customer.name}, ${formatNgn(orderMoney(o).gross)}`));
+      for (const o of commerce.orders) if (!o.sample && isPaid(o) && after(o.createdAt)) push(orderEvent(a, o, ctx, `${a.id}:order:${o.id}`, `Order ${orderRef(o)} paid — ${o.customer.name}, ${formatNgn(orderMoney(o).gross)}`));
       break;
 
     case 'checkout_abandoned':
@@ -72,7 +84,8 @@ export function eventsFor(a: Automation, fired: Set<string>, ctx: Ctx): LiveEven
 
     case 'booking_created':
       for (const b of ops.bookings) {
-        if (b.sample || b.status === 'cancelled') continue;
+        // Requests (D256) only count as booked once accepted, so "Confirm every booking" never confirms one early.
+        if (b.sample || b.status === 'cancelled' || b.status === 'requested') continue;
         const created = b.events.length ? new Date(Math.min(...b.events.map((e) => Date.parse(e.at)))).toISOString() : b.start;
         if (!after(created)) continue;
         const c = findContact(ops, b.customer.email, b.customer.phone);
@@ -117,7 +130,7 @@ export function eventsFor(a: Automation, fired: Set<string>, ctx: Ctx): LiveEven
         if (p.status !== 'active' || !p.trackStock) continue;
         const out_ = isSoldOut(p);
         if (!out_ && !isLowStock(p)) continue;
-        push({ key: `${a.id}:stock:${p.id}:${out_ ? 'out' : 'low'}`, subject: out_ ? `${p.name} sold out` : `${p.name} is running low`, vars: { product: p.name }, total: 0, source: 'order', subscribed: true });
+        push({ key: `${a.id}:stock:${p.id}:${out_ ? 'out' : 'low'}`, subject: out_ ? `${p.name} sold out` : `${p.name} is running low`, vars: { product: p.name, stock: String(totalStock(p)) }, total: 0, source: 'order', subscribed: true });
       }
       break;
 
@@ -155,7 +168,7 @@ export function eventsFor(a: Automation, fired: Set<string>, ctx: Ctx): LiveEven
       }
       for (const o of commerce.orders) {
         if (o.sample || !o.balance?.requestedAt || o.balance.paidAt || !after(o.balance.requestedAt)) continue;
-        push({ ...orderEvent(a, o, ctx, `${a.id}:mto:${o.id}`, `Balance of ${formatNgn(o.balance.dueNgn)} due on order #${o.number}`), total: o.balance.dueNgn });
+        push({ ...orderEvent(a, o, ctx, `${a.id}:mto:${o.id}`, `Balance of ${formatNgn(o.balance.dueNgn)} due on order ${orderRef(o)}`), total: o.balance.dueNgn });
       }
       break;
 

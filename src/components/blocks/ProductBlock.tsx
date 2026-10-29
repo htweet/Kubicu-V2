@@ -10,6 +10,7 @@ import { buttonRadius, buttonStyle, cardRadius, cardStyle, fontsFor, mix } from 
 import { useCatalog } from '../../contexts/CatalogContext';
 import { canSell, findProduct, isSoldOut, priceRange } from '../../utils/commerce/catalog';
 import { formatNgn, whatsappLink } from '../../utils/format';
+import { waNumber } from '../../utils/businessWhatsApp';
 
 export function ProductBlock({ block, theme, mode }: BlockProps<'product'>) {
   const { t: tr } = useT();
@@ -56,7 +57,7 @@ export function ProductBlock({ block, theme, mode }: BlockProps<'product'>) {
 
   const href =
   p.ctaAction === 'whatsapp' ?
-  whatsappLink(p.whatsappPhone, `Hi! I’d like to order the ${view.name}${selected ? ` (${Object.values(selected.options).join(' / ')})` : ''}${shownPrice !== null ? ` (${formatNgn(shownPrice)})` : ''}.`) :
+  whatsappLink(waNumber(p.whatsappPhone), `Hi! I’d like to order the ${view.name}${selected ? ` (${Object.values(selected.options).join(' / ')})` : ''}${shownPrice !== null ? ` (${formatNgn(shownPrice)})` : ''}.`) :
   p.url;
   const radius = cardRadius(theme);
   const badge = view.soldOut ? tr('Sold out') : p.badge;

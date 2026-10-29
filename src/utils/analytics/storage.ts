@@ -14,7 +14,7 @@ export function readAnalytics(workspaceId: string): AnalyticsData | null {
     const p = JSON.parse(raw) as Partial<AnalyticsData>;
     const base = emptyAnalytics();
     return {
-      events: Array.isArray(p.events) ? p.events : [],
+      events: Array.isArray(p.events) ? p.events.map(sampleDevice) : [],
       settings: { ...base.settings, ...p.settings },
       dismissedInsights: Array.isArray(p.dismissedInsights) ? p.dismissedInsights : [],
       sampleSeeded: !!p.sampleSeeded
@@ -22,6 +22,14 @@ export function readAnalytics(workspaceId: string): AnalyticsData | null {
   } catch {
     return null;
   }
+}
+
+/** Sample visits saved before devices were counted (D258) get one, from their session id — never real visits. */
+function sampleDevice(e: AnalyticsEvent): AnalyticsEvent {
+  if (!e.sample || e.device) return e;
+  let h = 0;
+  for (let i = 0; i < e.session.length; i++) h = (h * 31 + e.session.charCodeAt(i)) % 100;
+  return { ...e, device: h < 72 ? 'phone' : h < 94 ? 'desktop' : 'tablet' };
 }
 
 /** Drops events past the retention window and keeps the newest when the cap is reached. */

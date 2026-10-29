@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import type { MeetingApp } from '../../types/ops';
+import { connectionFor, meetingAppIds, meetingApps } from '../../utils/ops/meetings';
 import { CalendarIcon, PlusIcon, QrCodeIcon } from 'lucide-react';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
 import { blockDestination, qrHref, spaceDoc } from '../../utils/domains/links';
@@ -32,6 +34,8 @@ import { DetailSection } from '../../components/ui/layout/DetailList';
 import { Card } from '../../components/ui/layout/Card';
 import { List } from '../../components/ui/layout/ListRow';
 import { useT } from '../../contexts/LocaleContext';
+import { IntakeQuestionsEditor, questionError } from '../../components/bookings/IntakeQuestionsEditor';
+import { openRequests } from '../../utils/ops/slots';
 
 const blank = (): Service => ({ id: uid('svc'), name: '', description: '', durationMin: 60, priceNgn: null, depositNgn: null, location: 'studio', locationNote: '', bufferMin: 15, active: true });
 const durations = [15, 30, 45, 60, 90, 120, 180].map((m) => ({ value: String(m), label: durationLabel(m) }));
@@ -40,6 +44,8 @@ export function Services() {
   const { data, apply } = useOps();
   const { t: tr } = useT();
   const { current } = useWorkspace();
+  // Video apps connected in Availability (D225).
+  const connectedApps = meetingAppIds.filter((a) => !!connectionFor(data.availability, a));
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const editId = params.get('edit');
@@ -75,11 +81,14 @@ export function Services() {
 
   const save = () => {
     setTried(true);
-    if (!draft.name.trim() || depositError || seatsError) {
+    const badQuestion = (draft.questions ?? []).some((q) => questionError(q));
+    if (!draft.name.trim() || depositError || seatsError || badQuestion) {
       if (seatsError && !groupOn) toast.error(seatsError);
+      if (badQuestion) toast.error(tr('Finish or remove the unfinished question'));
       return;
     }
-    const s = { ...draft, name: draft.name.trim(), capacity: groupOn ? draft.capacity : undefined };
+    const questions = (draft.questions ?? []).map((q) => ({ ...q, label: q.label.trim(), options: q.kind === 'choice' ? q.options.map((o) => o.trim()).filter(Boolean) : [] }));
+    const s = { ...draft, name: draft.name.trim(), capacity: groupOn ? draft.capacity : undefined, questions: questions.length ? questions : undefined, approval: draft.approval || undefined };
     if (apply((d) => ({ ...d, services: existing ? d.services.map((x) => x.id === s.id ? s : x) : [...d.services, s] }))) {
       toast(tr(existing ? 'Service saved' : 'Service added'), { description: existing ? undefined : tr('Add a Booking block to your page and pick this service.') });
       setParams({});
@@ -137,6 +146,7 @@ export function Services() {
                     <span className="text-label font-semibold text-fg">{s.name}</span>
                     {s.sample && <SampleTag />}
                     {classCapacity(s) > 1 && <Badge tone="info">{tr('Group · {n} seats', { n: classCapacity(s) })}</Badge>}
+                    {s.approval && <Badge tone="neutral">{tr('You approve')}</Badge>}
                   </span>
                   <span className="block text-caption text-fg-subtle">
                     {durationLabel(s.durationMin)} · {tr(s.location === 'online' ? 'Online' : s.location === 'customer' ? 'At customer’s address' : 'In person')} · {tr('{n} upcoming', { n: upcomingFor(s.id) })}
@@ -243,6 +253,29 @@ export function Services() {
             }
             </DetailSection>
           }
+          <DetailSection title="Before they book">
+            <Switch
+              id="svc-approval"
+              label="Approve each booking yourself"
+              description={
+              draft.approval ?
+              draft.depositNgn ?
+              tr('Bookings arrive as requests. The time is held and the deposit taken; if you decline, it’s refunded in full. Answer before the appointment time.') :
+              tr('Bookings arrive as requests. The time is held until you accept or decline. Answer before the appointment time.') :
+              tr('Off: every booking is confirmed straight away.')
+              }
+              checked={!!draft.approval}
+              onChange={(approval) => patch({ approval })} />
+            
+            {existing?.approval && !draft.approval && openRequests(data.bookings).some((b) => b.serviceId === existing.id) &&
+            <p className="rounded-md bg-warning-soft px-3 py-2 text-caption text-fg">{tr('Requests already waiting stay requests — answer them in Schedule. Only new bookings change.')}</p>
+            }
+            <div className="flex flex-col gap-2 border-t border-line pt-4">
+              <p className="text-label font-semibold text-fg">{tr('Your questions')}</p>
+              <p className="text-caption text-fg-subtle">{tr('Asked after their name and number. Answers show on the booking. The “Anything we should know?” box is always there too.')}</p>
+              <IntakeQuestionsEditor value={draft.questions ?? []} onChange={(questions) => patch({ questions })} showErrors={tried} />
+            </div>
+          </DetailSection>
           <DetailSection title="Price">
           <div className="grid items-start gap-4 sm:grid-cols-2">
             <CurrencyInput id="svc-price" label="Price" value={draft.priceNgn} placeholder="On request" onChange={(priceNgn) => patch({ priceNgn })} />
@@ -279,7 +312,29 @@ export function Services() {
                 } />
               
           </Field>
-          <TextInput id="svc-locnote" label={draft.location === 'online' ? 'How you’ll meet' : 'Address or area'} optional value={draft.locationNote} placeholder={tr(draft.location === 'online' ? 'e.g. Google Meet link sent after booking' : 'e.g. Victoria Island studio')} onChange={(e) => patch({ locationNote: e.target.value })} />
+          {draft.location === 'online' &&
+            <div>
+              <SelectInput<string>
+                id="svc-meeting-app"
+                label="Meeting link"
+                hint={connectedApps.length ? 'Each booking gets its own link, sent with the confirmation and reminder.' : undefined}
+                value={draft.meetingApp && connectedApps.includes(draft.meetingApp) ? draft.meetingApp : ''}
+                onChange={(v) => patch({ meetingApp: (v || undefined) as MeetingApp | undefined })}
+                options={[{ value: '', label: tr('I’ll send my own link') }, ...connectedApps.map((a) => ({ value: a, label: tr('Make a {app} link automatically', { app: meetingApps[a].name }) }))]} />
+              
+              {connectedApps.length === 0 &&
+              <p className="mt-1.5 text-caption text-fg-muted">
+                  {tr('Connect Google Meet, Zoom or Microsoft Teams to make links automatically.')}{' '}
+                  <Link to="/app/bookings/availability#meeting-apps" className="font-medium text-action hover:underline">
+                    {tr('Connect in Availability')}
+                  </Link>
+                </p>
+              }
+            </div>
+            }
+          {!(draft.location === 'online' && draft.meetingApp && connectedApps.includes(draft.meetingApp)) &&
+            <TextInput id="svc-locnote" label={draft.location === 'online' ? 'How you’ll meet' : 'Address or area'} optional value={draft.locationNote} placeholder={tr(draft.location === 'online' ? 'e.g. Zoom link sent the day before' : 'e.g. Victoria Island studio')} onChange={(e) => patch({ locationNote: e.target.value })} />
+            }
           </DetailSection>
         </div>
       </Sheet>

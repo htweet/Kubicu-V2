@@ -132,6 +132,39 @@ export interface LinkPayment {
   refundedNgn?: number;
   refundedAt?: string;
   sample?: boolean;
+  // ——— D224 standard payment links ———
+  payerEmail?: string;
+  payerAddress?: string;
+  /** Answers to the link's own questions, frozen with their labels. */
+  answers?: {label: string;value: string;}[];
+  /** Processing fee the payer covered on top (included in amountNgn). */
+  feeNgn?: number;
+  /** VAT in this payment (inside amountNgn). */
+  vatNgn?: number;
+  /** How they paid. */
+  payBy?: 'card' | 'ussd' | 'account' | 'transfer';
+  /** Which of the seller's own accounts a transfer went to. */
+  transferTo?: {bank: string;account: string;accountName: string;};
+  refundReason?: string;
+}
+
+export type LinkQuestionType = 'text' | 'choice' | 'date';
+
+export interface LinkQuestion {
+  id: string;
+  label: string;
+  type: LinkQuestionType;
+  /** Choice questions: one option per entry. */
+  options: string[];
+  required: boolean;
+}
+
+/** A transfer to the seller's own account the payer says they've sent; counted only once confirmed (D224). */
+export interface PendingTransfer {
+  id: string;
+  at: string;
+  payment: Omit<LinkPayment, 'id' | 'at' | 'receipt' | 'method'>;
+  status: 'waiting' | 'not_received';
 }
 
 /** One stage of a staged fixed-amount link, e.g. "Deposit 50%". */
@@ -167,6 +200,24 @@ export interface PaymentLink {
   /** The open link behind a Fundraiser space (D179): fixed wording and the "show my name" choice on the pay page. */
   fundraiser?: {handle: string;organiser: string;};
   sample?: boolean;
+  // ——— D224 standard payment links (all optional; missing = how links worked before) ———
+  /** "Payer chooses": highest amount allowed. */
+  maxNgn?: number | null;
+  /** "Payer chooses": up to 4 amounts to tap. */
+  suggested?: number[];
+  imageUrl?: string;
+  /** Extra details to collect. Name and phone stay on `fields`. */
+  ask?: {email: 'required' | 'optional' | 'off';address: 'required' | 'optional' | 'off';};
+  questions?: LinkQuestion[];
+  /** The payer pays the processing fee on top, so the seller receives the full amount. */
+  payerCoversFee?: boolean;
+  /** Ways to pay on this link; missing = follow Commerce settings. */
+  methods?: {card: boolean;transfer: boolean;ussd: boolean;};
+  /** After paying: a thank-you message, or send the payer to a page (https only). */
+  after?: {message: string;redirectUrl: string;};
+  /** Turn VAT off for this link (e.g. a deposit). */
+  noVat?: boolean;
+  pendingTransfers?: PendingTransfer[];
 }
 
 export interface MoneyData {

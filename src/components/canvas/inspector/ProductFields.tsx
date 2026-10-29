@@ -4,6 +4,7 @@ import type { ValidationIssue } from '../../../utils/validation';
 import { useEditor } from '../../../contexts/EditorContext';
 import { useCommerce } from '../../../contexts/CommerceContext';
 import { findProduct } from '../../../utils/commerce/catalog';
+import { businessWhatsApp, waFieldHint } from '../../../utils/businessWhatsApp';
 import { TextInput } from '../../ui/TextInput';
 import { TextArea } from '../../ui/TextArea';
 import { CurrencyInput } from '../../ui/CurrencyInput';
@@ -35,10 +36,10 @@ export function ProductFields({ block, issues }: ProductFieldsProps) {
     label="WhatsApp number"
     type="tel"
     inputMode="tel"
-    placeholder="+234 …"
+    placeholder={businessWhatsApp() || '+234 …'}
     value={c.whatsappPhone}
     error={err('whatsappPhone')}
-    hint="The order message includes the product name and price."
+    hint={waFieldHint(c.whatsappPhone, 'The order message includes the product name and price.')}
     onChange={(e) => set({ whatsappPhone: e.target.value }, 'whatsappPhone')} />;
 
 
@@ -116,7 +117,7 @@ export function ProductFields({ block, issues }: ProductFieldsProps) {
         whatsapp
         }
           <TextInput id={id('ctaLabel')} label="Button label" value={c.ctaLabel} onChange={(e) => set({ ctaLabel: e.target.value }, 'ctaLabel')} />
-          <p className="text-caption text-fg-subtle">For stock, variants and checkout, switch to “Commerce” above.</p>
+          <p className="text-caption text-fg-subtle">For stock, variants and checkout, switch to “My products” above.</p>
         </>
       }
     </div>);

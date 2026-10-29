@@ -1,7 +1,8 @@
 import React from 'react';
 import { PlusIcon, Trash2Icon } from 'lucide-react';
-import type { LineItem } from '../../types/serviceOs';
-import { blankItem, itemsTotal, lineTotal } from '../../utils/serviceOs';
+import type { DocVat, LineItem } from '../../types/serviceOs';
+import { blankItem, lineTotal, vatSplit } from '../../utils/serviceOs';
+import { vatRateLabel } from '../../utils/commerce/shopSettings';
 import { formatNgn } from '../../utils/format';
 import { currencySymbol } from '../../utils/currency';
 import { fieldControlClass } from '../ui/Field';
@@ -15,12 +16,15 @@ interface Props {
   readOnly?: boolean;
   /** Extra rows under the total, e.g. deposit or amount paid. */
   footer?: React.ReactNode;
+  /** VAT copied onto the quote or invoice (D257). */
+  vat?: DocVat;
 }
 
 const grouped = new Intl.NumberFormat('en-NG', { maximumFractionDigits: 0 });
 
 /** Priced lines for quotes and invoices: what, how many, price each, line total (D89). */
-export function LineItemsEditor({ items, onChange, readOnly, footer }: Props) {
+export function LineItemsEditor({ items, onChange, readOnly, footer, vat }: Props) {
+  const split = vatSplit(items, vat);
   const set = (id: string, patch: Partial<LineItem>) => onChange(items.map((i) => i.id === id ? { ...i, ...patch } : i));
 
   return (
@@ -82,9 +86,15 @@ export function LineItemsEditor({ items, onChange, readOnly, footer }: Props) {
         </Button>
       }
       <dl className="mt-3 flex flex-col gap-1.5 border-t border-line pt-3">
+        {split.vat > 0 && vat &&
+        <>
+            {!vat.inclusive && <TotalRow label="Subtotal" value={formatNgn(split.subtotal)} />}
+            <TotalRow label={vat.inclusive ? `Includes VAT (${vatRateLabel(vat.ratePct)})` : `VAT (${vatRateLabel(vat.ratePct)})`} value={formatNgn(split.vat)} />
+          </>
+        }
         <div className="flex items-baseline justify-between">
           <dt className="text-label font-semibold text-fg">Total</dt>
-          <dd className="text-heading font-semibold tabular-nums text-fg">{formatNgn(itemsTotal(items))}</dd>
+          <dd className="text-heading font-semibold tabular-nums text-fg">{formatNgn(split.total)}</dd>
         </div>
         {footer}
       </dl>

@@ -62,8 +62,8 @@ export const providerInfo: Record<SsoProvider, {label: string;detail: string;whe
 };
 
 export const spValues = (workspaceId: string) => ({
-  acsUrl: `https://auth.kubicu.com/sso/${workspaceId}/acs`,
-  entityId: `https://auth.kubicu.com/sso/${workspaceId}`
+  acsUrl: `https://auth.kub.icu/sso/${workspaceId}/acs`,
+  entityId: `https://auth.kub.icu/sso/${workspaceId}`
 });
 
 /** Free email providers can't be claimed for company sign-in. */

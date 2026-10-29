@@ -21,7 +21,10 @@ import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { useTeam } from '../../contexts/TeamContext';
 import { AssigneeChip, AssigneeSelect } from '../team/AssigneeSelect';
 import { CommentThread } from '../team/CommentThread';
+import { LoyaltyPoints } from './LoyaltyPoints';
 import { useT } from '../../contexts/LocaleContext';
+import { opsSettingsOf } from '../../utils/ops/settings';
+import { SelectInput } from '../ui/SelectInput';
 
 export function ConsentBadge({ consent }: {consent: Contact['consent'];}) {
   const { t } = useT();
@@ -32,6 +35,7 @@ export function ContactDetail({ contactId, onClose }: {contactId: string | null;
   const { data, apply } = useOps();
   const { t: tr } = useT();
   const c = data.contacts.find((x) => x.id === contactId);
+  const settings = opsSettingsOf(data);
   const [tag, setTag] = useState('');
   const [note, setNote] = useState('');
   const [task, setTask] = useState('');
@@ -90,6 +94,7 @@ export function ContactDetail({ contactId, onClose }: {contactId: string | null;
               <Badge key={s}>{tr(sourceLabels[s])}</Badge>
               )}
             {c.sample && <SampleTag />}
+            <LoyaltyPoints phone={c.phone} />
           </div>
 
           <div className="grid gap-4 sm:grid-cols-3">
@@ -97,6 +102,21 @@ export function ContactDetail({ contactId, onClose }: {contactId: string | null;
             <TextInput id="ct-email" label="Email" type="email" value={c.email} onChange={(e) => set({ email: e.target.value })} />
             <TextInput id="ct-phone" label="Phone" type="tel" value={c.phone} onChange={(e) => set({ phone: e.target.value })} />
           </div>
+
+          {/* The business's own fields (D259). */}
+          {settings.contactFields.length > 0 &&
+            <div className="grid gap-4 sm:grid-cols-2">
+              {settings.contactFields.map((f) => {
+                const v = c.fields?.[f.id] ?? '';
+                const setV = (val: string) => set({ fields: { ...(c.fields ?? {}), [f.id]: val } });
+                return f.type === 'choice' ?
+                <SelectInput<string> key={f.id} id={`ct-f-${f.id}`} label={f.label} value={v} options={[{ value: '', label: tr('Not set') }, ...f.options.map((o) => ({ value: o, label: o }))]} onChange={setV} /> :
+
+                <TextInput key={f.id} id={`ct-f-${f.id}`} label={f.label} optional type={f.type === 'date' ? 'date' : 'text'} inputMode={f.type === 'number' ? 'decimal' : undefined} value={v} maxLength={120} onChange={(e) => setV(f.type === 'number' ? e.target.value.replace(/[^0-9.,-]/g, '') : e.target.value)} />;
+
+              })}
+            </div>
+            }
 
           <AssigneeSelect
               id="ct-assignee"
@@ -176,9 +196,27 @@ export function ContactDetail({ contactId, onClose }: {contactId: string | null;
                     }}>
                     
                   <label htmlFor="ct-tag" className="sr-only">{tr('Add tag')}</label>
-                  <input id="ct-tag" value={tag} onChange={(e) => setTag(e.target.value)} placeholder={tr('+ Add tag')} className="h-7 w-28 rounded-full border border-dashed border-line-strong bg-transparent px-2.5 text-caption text-fg placeholder:text-fg-subtle focus:border-action focus:outline-none" />
+                  <input id="ct-tag" list="ct-tag-saved" value={tag} onChange={(e) => setTag(e.target.value)} placeholder={tr('+ Add tag')} className="h-7 w-28 rounded-full border border-dashed border-line-strong bg-transparent px-2.5 text-caption text-fg placeholder:text-fg-subtle focus:border-action focus:outline-none" />
+                  <datalist id="ct-tag-saved">
+                    {settings.savedTags.filter((t) => !c.tags.includes(t)).map((t) =>
+                      <option key={t} value={t} />
+                      )}
+                  </datalist>
                 </form>
               </div>
+              {/* Saved tags (D259): one tap, spelled the same way every time. */}
+              {settings.savedTags.some((t) => !c.tags.includes(t)) &&
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {settings.savedTags.
+                  filter((t) => !c.tags.includes(t)).
+                  slice(0, 8).
+                  map((t) =>
+                  <button key={t} type="button" onClick={() => set({ tags: [...c.tags, t] })} className="inline-flex h-7 items-center gap-0.5 rounded-full px-2 text-caption text-fg-subtle hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+                        <PlusIcon size={11} aria-hidden /> {t}
+                      </button>
+                  )}
+                </div>
+                }
             </section>
           </div>
           </>

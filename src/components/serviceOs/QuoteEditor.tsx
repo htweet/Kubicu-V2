@@ -2,7 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { BriefcaseIcon, CopyIcon, MessageCircleIcon, ReceiptIcon, SendIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import type { Quote, ServiceOsData } from '../../types/serviceOs';
-import { depositOf, formatDay, invoiceFromQuote, itemsTotal, jobFromQuote, quoteLabels, quotePath, quoteProblems, quoteTones, quoteView, todayKey, uninvoiced } from '../../utils/serviceOs';
+import type { DocVat } from '../../types/serviceOs';
+import { depositOf, formatDay, invoiceFromQuote, invoiceTotal, itemsTotal, jobFromQuote, quoteLabels, quotePath, quoteProblems, quoteTones, quoteTotal, quoteView, todayKey, uninvoiced } from '../../utils/serviceOs';
+import { vatRateLabel } from '../../utils/commerce/shopSettings';
 import { formatNgn, whatsappLink } from '../../utils/format';
 import { useMainLink } from '../../hooks/useMainLink';
 import { Sheet } from '../ui/Sheet';
@@ -28,12 +30,14 @@ interface Props {
   onClose: () => void;
   onOpenInvoice: (id: string) => void;
   onOpenJob: (id: string) => void;
+  /** The Commerce VAT rate, when Commerce has one set (D257). */
+  vatRate?: DocVat;
 }
 
 const depositOptions = [0, 20, 30, 50, 70, 100].map((v) => ({ value: String(v), label: v === 0 ? 'No deposit' : `${v}% up front` }));
 
 /** Draft and send a quote; after the client accepts, invoice it and start the job (D89). */
-export function QuoteEditor({ quote, data, businessName, canEdit, update, onClose, onOpenInvoice, onOpenJob }: Props) {
+export function QuoteEditor({ quote, data, businessName, canEdit, update, onClose, onOpenInvoice, onOpenJob, vatRate }: Props) {
   const { mainHandle } = useMainLink();
   const [draft, setDraft] = useState<Quote | null>(quote);
   const [tried, setTried] = useState(false);
@@ -63,7 +67,7 @@ export function QuoteEditor({ quote, data, businessName, canEdit, update, onClos
     toast.success('Quote ready to send', { description: 'Link copied — share it with your client on WhatsApp or email.' });
   };
   const share = () => {
-    const msg = `Hi ${quote.client.name.split(' ')[0]}, here’s your quote from ${businessName} for ${quote.title} (${formatNgn(itemsTotal(quote.items))}). View and accept it here: ${link}`;
+    const msg = `Hi ${quote.client.name.split(' ')[0]}, here’s your quote from ${businessName} for ${quote.title} (${formatNgn(quoteTotal(quote))}). View and accept it here: ${link}`;
     window.open(whatsappLink(quote.client.phone, msg), '_blank', 'noopener');
   };
   const invoice = () => {
@@ -165,10 +169,28 @@ export function QuoteEditor({ quote, data, businessName, canEdit, update, onClos
           <TextInput id="qe-title" label="What it’s for" placeholder="e.g. Wedding day makeup — bride + 3 bridesmaids" value={draft.title} disabled={!editable} maxLength={90} onChange={(e) => setDraft({ ...draft, title: e.target.value })} />
           <LineItemsEditor
             items={draft.items}
+            vat={draft.vat}
             readOnly={!editable}
             onChange={(items) => setDraft({ ...draft, items })}
-            footer={!staged && draft.depositPct > 0 ? <TotalRow label={`Deposit to book (${draft.depositPct}%)`} value={formatNgn(depositOf(draft))} /> : undefined} />
+            footer={!staged && draft.depositPct > 0 ? <TotalRow label={`Deposit to book (${draft.depositPct}%)${draft.vat && !draft.vat.inclusive ? ' + VAT' : ''}`} value={formatNgn(depositOf(draft))} /> : undefined} />
           
+          {editable && (draft.vat || data.settings?.vat) &&
+          <label className="flex items-start gap-2.5 text-label text-fg">
+              <input
+              type="checkbox"
+              className="mt-1 h-4 w-4"
+              checked={!!draft.vat}
+              disabled={!draft.vat && !vatRate}
+              onChange={(e) => setDraft({ ...draft, vat: e.target.checked && vatRate ? vatRate : undefined })} />
+            
+              <span>
+                Charge VAT on this quote
+                <span className="block text-caption text-fg-subtle">
+                  {draft.vat ? `${vatRateLabel(draft.vat.ratePct)}, ${draft.vat.inclusive ? 'included in your prices' : 'added on top'}. Its invoices charge the same.` : 'Uses the rate in Commerce settings → Tax.'}
+                </span>
+              </span>
+            </label>
+          }
         </section>
 
         {quote.status === 'accepted' && hasStages(quote) ?
@@ -246,7 +268,7 @@ export function QuoteEditor({ quote, data, businessName, canEdit, update, onClos
                         Invoice {inv.number}
                         {inv.milestoneId && <span className="text-fg-subtle"> · {quote.milestones?.find((m) => m.id === inv.milestoneId)?.label ?? 'Stage'}</span>}
                       </span>
-                      <span className="tabular-nums text-fg-muted">{formatNgn(itemsTotal(inv.items))}</span>
+                      <span className="tabular-nums text-fg-muted">{formatNgn(invoiceTotal(inv))}</span>
                     </button>
                   </li>);
 

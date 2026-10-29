@@ -10,6 +10,7 @@ import { allBlocks } from '../utils/sitePages';
 import { spaceStorageId } from '../utils/spaces';
 import { liveReadableTheme } from '../utils/contrastFixes';
 import { setActiveCurrency } from '../utils/currency';
+import { businessWhatsApp, setActiveBusinessWhatsApp } from '../utils/businessWhatsApp';
 
 export interface ResolvedPage {
   doc: PageDocument;
@@ -42,7 +43,10 @@ export function useResolvedPage(handle: string, isDraft = false): ResolvedPage |
     return { doc: readable(other.doc), plan: sameWorkspace ? workspacePlan : plans[other.plan], workspaceId: other.workspaceId, isOwn: sameWorkspace, example: other.example, redirectTo: other.redirectTo };
   }, [isDraft, state.site, state.published, handle, workspacePlan, workspaces, current.id, currentSpace.archivedAt, storageId]);
   // Visitors see prices in the seller's own currency (D136). Examples are Nigerian, so naira.
-  setActiveCurrency(workspaces.find((w) => w.id === resolved?.workspaceId)?.currency);
+  const owner = workspaces.find((w) => w.id === resolved?.workspaceId);
+  setActiveCurrency(owner?.currency);
+  // The page owner's Business WhatsApp number (D214). Examples carry their own numbers.
+  setActiveBusinessWhatsApp(resolved?.example ? '' : owner?.whatsapp);
   return resolved;
 }
 
@@ -54,6 +58,7 @@ function readable(doc: PageDocument): PageDocument {
 
 /** The seller's WhatsApp number from any page of the site, for “message the seller” links. */
 export function sellerPhone(doc: PageDocument): string {
+  if (businessWhatsApp()) return businessWhatsApp();
   for (const b of allBlocks(doc)) {
     if (b.type === 'whatsapp' && b.content.phone) return b.content.phone;
     if (b.type === 'product' && b.content.whatsappPhone) return b.content.whatsappPhone;

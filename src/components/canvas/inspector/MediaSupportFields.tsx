@@ -200,7 +200,7 @@ function SupportFields({ block, issues }: {block: Extract<Block, {type: 'support
       </Field>
       {c.wording === 'donate' &&
       <InlineAlert tone="info" title="Donations aren’t tax-deductible here">
-          Visitors are told this is a payment to you, not a registered charity donation. Raising money for a cause may need extra permissions — wording pending legal review.
+          Visitors are told this is a payment to you, not a registered charity donation. Raising money for a cause may need extra permissions — see the Fundraising and support payments terms.
         </InlineAlert>
       }
       <TextInput id={fid('title')} label="Heading" value={c.title} onChange={(e) => set({ title: e.target.value }, 'title')} />

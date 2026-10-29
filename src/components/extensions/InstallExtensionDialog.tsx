@@ -11,6 +11,8 @@ import { useBilling } from '../../contexts/BillingContext';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
 import { formatNaira as formatNgn } from '../../utils/format';
 import { withVat } from '../../utils/billing';
+import { BANK_TRANSFER_ID, accountIssue, accountsToSettings, parseAccounts, type TransferDetails } from '../../utils/commerce/bankTransfer';
+import { BankAccountsEditor } from './BankAccountsEditor';
 
 type Step = 'permissions' | 'pay' | 'setup' | 'done';
 
@@ -32,13 +34,16 @@ export function InstallExtensionDialog({ ext, onClose, mode = 'install' }: {ext:
   }, [ext?.id, mode]);
 
   if (!ext) return <Dialog open={false} onClose={onClose} title="" />;
+  // Bank transfer payments has its own setup: one or more accounts, each with its account name (D223).
+  const bankSetup = ext.id === BANK_TRANSFER_ID;
+  const accounts: TransferDetails[] = bankSetup ? parseAccounts(values).length ? parseAccounts(values) : [{ bank: '', account: '', accountName: '' }] : [];
   const fields = ext.setup ?? [];
-  const errors = Object.fromEntries(fields.map((f) => [f.id, f.pattern.test((values[f.id] ?? '').trim()) ? undefined : f.error]));
-  const valid = Object.values(errors).every((e) => !e);
+  const errors = bankSetup ? {} : Object.fromEntries(fields.map((f) => [f.id, f.pattern.test((values[f.id] ?? '').trim()) ? undefined : f.error]));
+  const valid = bankSetup ? accounts.every((a) => Object.values(accountIssue(a)).every((e) => !e)) : Object.values(errors).every((e) => !e);
   const total = withVat(ext.priceNgn).total;
 
   const finish = () => {
-    const settings = Object.fromEntries(fields.map((f) => [f.id, (values[f.id] ?? '').trim()]));
+    const settings = bankSetup ? accountsToSettings(accounts) : Object.fromEntries(fields.map((f) => [f.id, (values[f.id] ?? '').trim()]));
     if (mode === 'settings') {
       market.updateSettings(ext.id, settings);
       toast.success(`${ext.name} settings saved`);
@@ -116,7 +121,8 @@ export function InstallExtensionDialog({ ext, onClose, mode = 'install' }: {ext:
         }} />
 
       }
-      {step === 'setup' &&
+      {step === 'setup' && bankSetup && <BankAccountsEditor accounts={accounts} showErrors={tried} onChange={(list) => setValues(accountsToSettings(list))} />}
+      {step === 'setup' && !bankSetup &&
       <div className="flex flex-col gap-4">
           {fields.map((f) =>
         <TextInput key={f.id} id={`ext-${f.id}`} label={f.label} placeholder={f.placeholder} hint={f.hint} value={values[f.id] ?? ''} onChange={(e) => setValues((v) => ({ ...v, [f.id]: e.target.value }))} error={tried ? errors[f.id] : undefined} />

@@ -1,5 +1,6 @@
 import type { Order } from '../types/commerce';
 import { formatNgn } from './format';
+import { orderRef } from './commerce/shopSettings';
 
 const esc = (v: string) => v.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] as string);
 
@@ -17,7 +18,7 @@ export function pickupSlipsHtml(opts: {shop: string;venue: string;sessionWhen: s
     map((i) => `<tr><td class="q">${i.qty}×</td><td>${esc(i.name)}${i.variantLabel ? ` <span class="m">(${esc(i.variantLabel)})</span>` : ''}</td><td class="box"></td></tr>`).
     join('');
     return `<section class="slip">
-  <header><div><p class="m">${esc(shop)} · ${esc(venue)}</p><h2>Order #${o.number}</h2></div><p class="when">${esc(sessionWhen)}</p></header>
+  <header><div><p class="m">${esc(shop)} · ${esc(venue)}</p><h2>Order ${esc(orderRef(o))}</h2></div><p class="when">${esc(sessionWhen)}</p></header>
   <p class="who"><strong>${esc(o.customer.name || 'Customer')}</strong>${o.customer.phone ? ` · ${esc(o.customer.phone)}` : ''}</p>
   <table><thead><tr><th>Qty</th><th>Item</th><th>Packed</th></tr></thead><tbody>${items}</tbody></table>
   <footer><p class="pay">${owe ? `Collect <strong>${esc(formatNgn(total))}</strong> at the stall` : `Paid online · ${esc(formatNgn(total))}`}</p><p class="m">Handed over ☐ &nbsp; Signature ____________</p></footer>

@@ -177,7 +177,7 @@ export function summarizeBlock(block: Block): string {
     case 'membersOnly':
       return `${block.content.covers === 0 ? 'Hides everything below' : `Hides the next ${block.content.covers}`} · ${block.content.access === 'any' ? 'any subscriber' : `${block.content.planIds.length} plan${block.content.planIds.length === 1 ? '' : 's'}`}`;
     case 'trustBadge':
-      return block.content.style === 'compact' ? 'Compact badge' : 'Full badge';
+      return block.content.style === 'verified' ? 'Verified seal' : block.content.style === 'compact' ? 'Compact badge' : 'Full badge';
     case 'audio':
       return block.content.title || (block.content.url ? 'Audio track' : 'No track yet');
     case 'playlist':{
@@ -273,13 +273,36 @@ export function summarizeBlock(block: Block): string {
   }
 }
 
+/** JSON with sorted keys and no undefined values, so the same content always gives the same string (D216). */
+function stableJson(value: unknown): string {
+  return JSON.stringify(value, (_k, v: unknown) => {
+    if (v && typeof v === 'object' && !Array.isArray(v)) {
+      const o = v as Record<string, unknown>;
+      return Object.keys(o).
+      sort().
+      reduce<Record<string, unknown>>((acc, k) => {
+        if (o[k] !== undefined) acc[k] = o[k];
+        return acc;
+      }, {});
+    }
+    return v;
+  });
+}
+
+// Locks and groups are editor-only organisation; visitors never see them.
+// Co-brand ownership (D121) is editor-only too; the partner strip visitors see is compared below.
+// Block names (D175) are editor-only too.
+const visibleBlock = ({ createdAt: _c, updatedAt: _u, locked: _l, groupId: _g, owner: _o, name: _n, ...rest }: Block) => rest;
+
+/** What visitors can see of one block, for "changed since publishing" (D171, D216). */
+export function blockSignature(block: Block): string {
+  return stableJson(visibleBlock(block));
+}
+
 export function docSignature(doc: PageDocument | null): string {
   if (!doc) return '';
-  // Locks and groups are editor-only organisation; visitors never see them.
-  // Co-brand ownership (D121) is editor-only too; the partner strip visitors see is compared below.
-  // Block names (D175) are editor-only too.
-  const visible = (blocks: Block[]) => blocks.map(({ createdAt: _c, updatedAt: _u, locked: _l, groupId: _g, owner: _o, name: _n, ...rest }) => rest);
-  return JSON.stringify({
+  const visible = (blocks: Block[]) => blocks.map(visibleBlock);
+  return stableJson({
     title: doc.title,
     handle: doc.handle,
     seo: doc.seo,

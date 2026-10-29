@@ -153,7 +153,7 @@ export function ConnectDomainDialog({ open, onClose, spaces }: Props) {
             `Only ${host || 'shop.adaeze.com'} shows your page — your other website and email stay as they are.`}
             </p>
           </div>
-          <SelectInput id="dom-space" label="Which space it shows" value={spaceId} options={spaces.map((s) => ({ value: s.id, label: s.label }))} onChange={setSpaceId} hint="Your kub.icu link keeps working either way." />
+          <SelectInput id="dom-space" label="Page visitors see at this domain" value={spaceId} options={spaces.map((s) => ({ value: s.id, label: s.label }))} onChange={setSpaceId} hint="Anyone who types this domain lands on the page you choose. Its kub.icu link keeps working too." />
         </div> :
 
       <div className="flex flex-col gap-5">

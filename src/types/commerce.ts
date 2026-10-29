@@ -517,6 +517,90 @@ export interface Order {
   giftCard?: {code: string;amountNgn: number;};
   /** Pre-ordered items in this order and the latest expected date (D202). */
   preorder?: {shipsBy: string;};
+  // ——— D222 shop settings, frozen at order time ———
+  /** VAT on this order. Inclusive VAT is already inside the prices; exclusive VAT was added on top. */
+  vat?: {ratePct: number;amountNgn: number;inclusive: boolean;};
+  /** Order number prefix in force when the order was placed, e.g. "ADA" → ADA-1042. */
+  numberPrefix?: string;
+  /** What the buyer typed in the order-note box. */
+  buyerNote?: string;
+  /** Address asked for at checkout on orders that aren't delivered (billing / contact address). */
+  buyerAddress?: string;
+  /** Sold past zero stock under "Allow backorders". */
+  backorder?: boolean;
+  /** Paid to a one-time provider transfer account (confirms itself). */
+  transferAccount?: {bank: string;account: string;};
+}
+
+// ——— D222 Commerce settings ———
+export type FieldAsk = 'required' | 'optional' | 'off';
+export type WeekdayId = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
+export interface DayHours {
+  open: boolean;
+  from: string;
+  to: string;
+}
+export type OrderMessageId = 'confirmed' | 'ready' | 'out_for_delivery' | 'delivered' | 'refunded';
+
+export interface ShopSettings {
+  business: {
+    tradingName: string;
+    address: string;
+    /** CAC registration, e.g. RC 1234567 or BN 1234567. */
+    regNumber: string;
+    tin: string;
+    phone: string;
+    email: string;
+    logoUrl: string;
+    receiptFooter: string;
+  };
+  checkout: {
+    email: FieldAsk;
+    /** Address on orders that aren't delivered; delivery always asks for one. */
+    address: FieldAsk;
+    minOrderNgn: number | null;
+    termsTick: boolean;
+    orderNote: boolean;
+  };
+  methods: {
+    card: boolean;
+    /** One-time provider transfer account that confirms itself. */
+    transfer: boolean;
+    /** Also offer the seller's own bank details (Bank transfer payments app); the seller confirms. */
+    transferOwn: boolean;
+    ussd: boolean;
+  };
+  tax: {
+    enabled: boolean;
+    ratePct: number;
+    inclusive: boolean;
+  };
+  orders: {
+    prefix: string;
+    lowStockDefault: number;
+    backorders: boolean;
+    /** Keep a buyer's stock-tracked items for STOCK_HOLD_MINUTES once they press Checkout (D255). */
+    holdStock: boolean;
+  };
+  policy: {
+    set: boolean;
+    accepts: boolean;
+    days: number;
+    condition: string;
+    returnDelivery: 'buyer' | 'seller';
+    refundAs: 'original' | 'credit' | 'exchange';
+    notes: string;
+  };
+  status: {
+    paused: boolean;
+    message: string;
+    backOn: string | null;
+    pauseLinks: boolean;
+    /** Opening hours by day; null = not set. */
+    hours: Record<WeekdayId, DayHours> | null;
+  };
+  messages: Record<OrderMessageId, {whatsapp: boolean;email: boolean;}>;
+  weightUnit: 'kg' | 'g';
 }
 
 export interface OrderPopup {
@@ -566,6 +650,8 @@ export interface Discount {
   rewardNote?: string;
   createdAt: string;
   sample?: boolean;
+  /** Loyalty points (D232): a single-use code a customer made from their points. */
+  loyalty?: {phone: string;points: number;};
 }
 
 /** The auto-built shop at /shop on the workspace's pages (D53). */
@@ -685,6 +771,8 @@ export interface CommerceData {
   sampleSellModesSeeded?: boolean;
   /** Gift cards sold or issued (D202). */
   giftCards?: GiftCard[];
+  /** Shop-wide settings (D222). Optional; defaults reproduce the shop as it was. */
+  shop?: Partial<ShopSettings>;
   nextOrderNumber: number;
   /** True once sample data has been offered/seeded, so clearing it doesn't bring it back. */
   sampleSeeded: boolean;
@@ -707,10 +795,13 @@ export interface TicketHold {
   id: string;
   /** A random id for one browser's checkout — never personal data. */
   holder: string;
+  /** Empty for stock holds on physical products (D255). */
   eventId: string;
   productId: string;
-  /** Ticket type id (the ticket product's variant id). */
+  /** Ticket type id (the ticket product's variant id), or the product variant for stock holds. */
   variantId: string;
+  /** 'stock' for physical items held during checkout (D255); undefined = ticket seats (D73a). */
+  kind?: 'stock';
   qty: number;
   expiresAt: string;
   /** Exact seats held, for seated events (D113). */

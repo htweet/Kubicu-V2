@@ -41,12 +41,12 @@ export function SidebarItem({
     }) => <>
           <span className="relative shrink-0">
             <Icon size={20} strokeWidth={2.1} className={cn('transition-colors duration-150', isActive ? 'text-action' : soon ? 'text-fg-subtle group-hover:text-fg-muted' : 'text-fg-muted group-hover:text-fg')} aria-hidden />
-            {collapsed && !!badge && <span aria-hidden className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-action ring-2 ring-raised" />}
+            {collapsed && !!badge && <span aria-hidden className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-warning ring-2 ring-raised" />}
           </span>
           {!collapsed && <>
               <span className="min-w-0 flex-1 truncate">{label}</span>
               {soon && <span className="text-meta font-medium text-fg-subtle">{t('Soon')}</span>}
-              {!!badge && <span className="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-action px-1 text-meta font-bold text-action-fg" aria-label={`${badge} waiting`}>{badge}</span>}
+              {!!badge && <span className="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-warning-soft px-1 text-meta font-semibold text-warning" aria-label={`${badge} waiting`}>{badge}</span>}
             </>}
         </>}
     </NavLink>;
@@ -79,7 +79,7 @@ export function SidebarGroupToggle({
       <span className="min-w-0 flex-1 truncate">{useT().t(label)}</span>
       {!open && active && <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-action" />}
       {!open && !!badge &&
-      <span className="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-action px-1 text-meta font-bold text-action-fg" aria-label={`${badge} waiting`}>
+      <span className="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-warning-soft px-1 text-meta font-semibold text-warning" aria-label={`${badge} waiting`}>
           {badge}
         </span>
       }

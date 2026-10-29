@@ -176,7 +176,7 @@ export function SubscribeSheet({ theme, commerce, planId, handle, ownerPlan, onC
           setStep(isBox ? 'delivery' : 'pay');
         }}>
         
-          <CheckoutHeading theme={theme} sub={`${formatNgn(plan.priceNgn)} every ${intervalWord[plan.interval]}${plan.trialDays ? ` after ${plan.trialDays} days free` : ''}${plan.setupFeeNgn ? ` · ${formatNgn(plan.setupFeeNgn)} setup` : ''}`}>
+          <CheckoutHeading theme={theme} sub={`${formatNgn(plan.priceNgn)} every ${intervalWord[plan.interval]}${plan.trialDays ? ` (Free for first ${plan.trialDays === 1 ? 'day' : `${plan.trialDays} days`})` : ''}${plan.setupFeeNgn ? ` · ${formatNgn(plan.setupFeeNgn)} setup` : ''}`}>
             {plan.name}
           </CheckoutHeading>
           <ThemedField theme={theme} label="Full name" autoComplete="name" value={customer.name} error={tried ? errors.name || undefined : undefined} onChange={(name) => setCustomer((c) => ({ ...c, name }))} />

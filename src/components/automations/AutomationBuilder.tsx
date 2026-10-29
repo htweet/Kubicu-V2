@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ArrowDownIcon, ArrowUpIcon, ClockIcon, FlaskConicalIcon, PlusIcon, Trash2Icon, ZapIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import type { ActionId, Automation, AutomationCondition, AutomationRun, TriggerId } from '../../types/ops';
 import { useOps } from '../../contexts/OpsContext';
 import { actionLabels, conditionLabels, recipes, reportOptions, triggerLabels } from '../../data/automationRecipes';
-import { addRun, automationProblems, stepLabel, testRun } from '../../utils/ops/automation';
+import { addTestRun, automationProblems, stepLabel, testRun } from '../../utils/ops/automation';
 import { uid } from '../../utils/id';
 import { Sheet } from '../ui/Sheet';
 import { Button } from '../ui/Button';
@@ -18,6 +18,7 @@ import { FormTriggerPicker } from './FormTriggerPicker';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { useTeam } from '../../contexts/TeamContext';
 import { AssigneeSelect } from '../team/AssigneeSelect';
+import { opsSettingsOf } from '../../utils/ops/settings';
 
 export function newAutomation(recipeId: string | null): Automation {
   const r = recipes.find((x) => x.id === recipeId);
@@ -27,6 +28,7 @@ export function newAutomation(recipeId: string | null): Automation {
     recipeId,
     status: 'draft',
     trigger: r?.trigger ?? 'order_paid',
+    ...(r?.triggerDays ? { triggerDays: r.triggerDays } : {}),
     conditions: r ? r.conditions.map((c) => ({ ...c, id: uid('cond') })) : [],
     steps: r ? r.steps.map((s) => ({ ...s, id: uid('step') })) : [{ id: uid('step'), kind: 'action', action: 'notify_owner', value: '' }],
     runs: [],
@@ -40,10 +42,20 @@ export function AutomationBuilder({ automation, onClose }: {automation: Automati
   const team = useTeam();
   const [draft, setDraft] = useState<Automation | null>(automation);
   const [lastRun, setLastRun] = useState<AutomationRun | null>(null);
+  const [testing, setTesting] = useState(false);
+  const resultRef = useRef<HTMLElement>(null);
   useEffect(() => {
     setDraft(automation);
     setLastRun(null);
+    setTesting(false);
   }, [automation]);
+  // Bring the result into view so the press visibly did something, even when it's below the fold.
+  useEffect(() => {
+    if (!lastRun || !resultRef.current) return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    resultRef.current.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'nearest' });
+    resultRef.current.focus({ preventScroll: true });
+  }, [lastRun]);
   const [addOpen, setAddOpen] = useState(false);
   const wide = useMediaQuery('(min-width: 768px)');
   if (!draft) return null;
@@ -76,9 +88,17 @@ export function AutomationBuilder({ automation, onClose }: {automation: Automati
   };
 
   const runTest = () => {
-    const run = testRun(draft, data.automationsPaused, (id) => team.data.members.find((m) => m.id === id)?.name ?? 'a former member');
-    setLastRun(run);
-    if (exists) apply((d) => addRun(d, draft.id, run));
+    if (testing) return;
+    setTesting(true);
+    // A short beat so the button visibly works; the test itself is instant.
+    window.setTimeout(() => {
+      const run = testRun(draft, data.automationsPaused, (id) => team.data.members.find((m) => m.id === id)?.name ?? 'a former member');
+      setLastRun(run);
+      setTesting(false);
+      if (exists) apply((d) => addTestRun(d, draft.id, run));
+      if (run.status === 'succeeded') toast.success('Test run passed', { description: 'All steps ran with sample details. Nothing was sent.' });else
+      toast('Test run stopped at a condition', { description: 'The sample didn’t meet a condition — see the result below.' });
+    }, 450);
   };
 
   return (
@@ -91,8 +111,8 @@ export function AutomationBuilder({ automation, onClose }: {automation: Automati
       description={draft.status === 'active' ? 'On' : draft.status === 'paused' ? 'Paused' : 'Draft'}
       footer={
       <div className="flex flex-wrap items-center justify-between gap-2">
-          <Button variant="secondary" leadingIcon={FlaskConicalIcon} onClick={runTest}>
-            Test run
+          <Button variant="secondary" leadingIcon={FlaskConicalIcon} onClick={runTest} loading={testing}>
+            {testing ? 'Testing…' : lastRun ? 'Test again' : 'Test run'}
           </Button>
           <div className="flex gap-2">
             {draft.status === 'active' ?
@@ -198,7 +218,7 @@ export function AutomationBuilder({ automation, onClose }: {automation: Automati
           <li className="pl-9">
             {wide ?
             <div className="flex gap-2">
-                <Button size="sm" variant="secondary" leadingIcon={PlusIcon} onClick={() => addStep({ id: uid('step'), kind: 'action', action: 'send_whatsapp', value: '' })}>
+                <Button size="sm" variant="secondary" leadingIcon={PlusIcon} onClick={() => addStep({ id: uid('step'), kind: 'action', action: opsSettingsOf(data).defaultChannel, value: '' })}>
                   Action
                 </Button>
                 <Button size="sm" variant="secondary" leadingIcon={ClockIcon} onClick={() => addStep({ id: uid('step'), kind: 'delay', value: '', delayHours: 24 })}>
@@ -229,9 +249,12 @@ export function AutomationBuilder({ automation, onClose }: {automation: Automati
           </InlineAlert>
         }
         {lastRun &&
-        <section aria-label="Test result" className="rounded-md border border-line p-4">
+        <section key={lastRun.id} ref={resultRef} tabIndex={-1} aria-label="Test result" aria-live="polite" className="scroll-mb-4 rounded-md border border-line p-4 focus:outline-none">
             <p className="text-label font-semibold text-fg">Test run · {lastRun.status === 'succeeded' ? 'all steps passed' : 'stopped at a condition'}</p>
-            <p className="text-caption text-fg-subtle">{lastRun.subject}. Nothing was sent.</p>
+            <p className="text-caption text-fg-subtle">
+              {lastRun.subject}. Nothing was sent. Ran at {new Date(lastRun.at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', second: '2-digit' })}
+              {exists ? ' · replaces the previous test in Run history' : ' · save the automation to keep test results in Run history'}.
+            </p>
             <RunSteps run={lastRun} />
           </section>
         }

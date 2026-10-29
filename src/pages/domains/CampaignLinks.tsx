@@ -1,6 +1,9 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArchiveIcon, ArchiveRestoreIcon, CopyIcon, ExternalLinkIcon, LinkIcon, PencilIcon, PlusIcon, QrCodeIcon, AlertTriangleIcon } from 'lucide-react';
+import { ArchiveIcon, ArchiveRestoreIcon, CopyIcon, DownloadIcon, ExternalLinkIcon, LinkIcon, PencilIcon, PlusIcon, QrCodeIcon, AlertTriangleIcon, Trash2Icon } from 'lucide-react';
+import { toast } from 'sonner';
+import { Dialog } from '../../components/ui/Dialog';
+import { downloadCsv, toCsv } from '../../utils/csv';
 import { useDomains } from '../../contexts/DomainsContext';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
 import { useCommerce } from '../../contexts/CommerceContext';
@@ -9,7 +12,7 @@ import { useCan, useTeam } from '../../contexts/TeamContext';
 import { useMainLink } from '../../hooks/useMainLink';
 import type { CampaignLink } from '../../types/domains';
 import { campaignStats } from '../../utils/analytics/aggregate';
-import { destinationExists, destinationLabel, shortDisplay, shortHref, shortUrl } from '../../utils/domains/links';
+import { destinationExists, destinationLabel, linkEnded, shortDisplay, shortHref, shortUrl } from '../../utils/domains/links';
 import { sourceLabels } from '../../utils/analytics/track';
 import { copyToClipboard } from '../../utils/clipboard';
 import { formatNgn } from '../../utils/format';
@@ -26,7 +29,8 @@ type View = 'active' | 'archived';
 
 /** Tracked short links for each place you share (D62). */
 export function CampaignLinks() {
-  const { data, saveLink } = useDomains();
+  const { data, saveLink, deleteLink } = useDomains();
+  const [deleting, setDeleting] = useState<CampaignLink | null>(null);
   const { current } = useWorkspace();
   const { data: commerce } = useCommerce();
   const { data: analytics } = useAnalytics();
@@ -39,6 +43,24 @@ export function CampaignLinks() {
   const stats = useMemo(() => campaignStats(analytics.events), [analytics.events]);
   const list = data.links.filter((l) => view === 'active' ? !l.archivedAt : !!l.archivedAt).sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
   const archivedCount = data.links.filter((l) => l.archivedAt).length;
+
+  const remove = (l: CampaignLink) => {
+    if (!deleteLink(l.id)) {
+      toast.error('A QR code uses this link', { description: 'Delete the QR code first, or archive the link instead.' });
+      return;
+    }
+    team.log('pages', `deleted the campaign link ${shortDisplay(mainHandle, l.slug, host)}`, '/app/campaign-links');
+    toast('Link deleted', { description: 'Visits already counted stay in Analytics.' });
+    setDeleting(null);
+  };
+
+  const exportCsv = () => {
+    const rows = data.links.map((l) => {
+      const s = stats.get(l.slug) ?? { visits: 0, orders: 0, revenueNgn: 0 };
+      return [l.name, shortUrl(mainHandle, l.slug, host), sourceLabels[l.source], destinationLabel(current, commerce, l.destination), l.utm?.medium ?? '', l.utm?.campaign ?? '', l.utm?.content ?? '', s.visits, s.orders, s.revenueNgn, l.createdAt.slice(0, 10), l.endsAt?.slice(0, 10) ?? '', l.archivedAt ? 'Archived' : linkEnded(l) ? 'Ended' : 'Active'];
+    });
+    downloadCsv('campaign-links.csv', toCsv(['Name', 'Link', 'Shared on', 'Goes to', 'utm_medium', 'utm_campaign', 'utm_content', 'Visits', 'Orders', 'Revenue (NGN)', 'Created', 'Ends', 'Status'], rows));
+  };
 
   const setArchived = (l: CampaignLink, on: boolean) => {
     saveLink({ ...l, archivedAt: on ? new Date().toISOString() : null });
@@ -69,7 +91,12 @@ export function CampaignLinks() {
           { value: 'archived', label: `Archived${archivedCount ? ` (${archivedCount})` : ''}` }]
           } />
         
-          <p className="text-caption text-fg-subtle">Visits, orders and revenue since each link was created · orders in test mode</p>
+          <div className="flex flex-wrap items-center gap-3">
+            <p className="text-caption text-fg-subtle">Visits, orders and revenue since each link was created · orders in test mode</p>
+            <Button size="sm" variant="secondary" leadingIcon={DownloadIcon} onClick={exportCsv}>
+              Export CSV
+            </Button>
+          </div>
         </div>
       }
 
@@ -101,9 +128,10 @@ export function CampaignLinks() {
                   </p>
                   <p className="mt-0.5 truncate text-caption text-fg-muted">
                     <span className="font-medium text-fg">{shortDisplay(mainHandle, l.slug, host)}</span> · {sourceLabels[l.source]}
+                    {l.endsAt && !l.archivedAt && <> · {linkEnded(l) ? 'Ended' : 'Ends'} {new Date(l.endsAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</>}
                   </p>
                   <p className={ok ? 'mt-0.5 truncate text-caption text-fg-subtle' : 'mt-0.5 flex items-center gap-1 text-caption text-danger'}>
-                    {!ok && <AlertTriangleIcon size={12} aria-hidden />}→ {ok ? destinationLabel(current, commerce, l.destination) : 'Its page was removed — visitors see “page doesn’t exist”. Edit to fix.'}
+                    {!ok && <AlertTriangleIcon size={12} aria-hidden />}→ {ok ? destinationLabel(current, commerce, l.destination) : 'Its page was removed — visitors are sent to the nearest page that still exists. Edit to choose a new one.'}
                   </p>
                 </div>
                 <dl className="grid grid-cols-3 gap-3 md:contents">
@@ -123,6 +151,7 @@ export function CampaignLinks() {
                   disabled={!can.allowed}
                   onClick={() => setArchived(l, !l.archivedAt)} />
                 
+                  <IconButton icon={Trash2Icon} label={`Delete ${l.name}`} size="sm" disabled={!can.allowed} onClick={() => setDeleting(l)} />
                 </div>
               </li>);
 
@@ -131,6 +160,25 @@ export function CampaignLinks() {
       }
 
       <p className="text-caption text-fg-subtle">“Open” simulates a visit through the link, so it’s counted in Analytics. Turn on “Don’t count my own visits” in Settings → Privacy to stop that.</p>
+
+      <Dialog
+        open={!!deleting}
+        onClose={() => setDeleting(null)}
+        title="Delete this link?"
+        description={deleting ? `${shortDisplay(mainHandle, deleting.slug, host)} will stop working straight away, including anywhere it’s printed or shared. Visits already counted stay in Analytics. To keep it but stop using it, archive it instead.` : undefined}
+        footer={
+        <>
+            <Button variant="secondary" onClick={() => setDeleting(null)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={() => deleting && remove(deleting)}>
+              Delete link
+            </Button>
+          </>
+        }>
+        
+        {deleting && data.qrs.some((q) => q.linkId === deleting.id) ? <p className="text-label text-danger">A QR code uses this link. Delete the QR code in QR codes first.</p> : null}
+      </Dialog>
 
       <CampaignLinkDialog open={editing !== null} onClose={() => setEditing(null)} link={editing && editing !== 'new' ? editing : undefined} />
     </div>);

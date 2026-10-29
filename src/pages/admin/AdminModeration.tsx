@@ -1,5 +1,7 @@
 import React, { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
+import { useKycQueue } from '../../hooks/useKycQueue';
 import { autoFlagRules, scanPublishedPages, type AutoFlag } from '../../utils/admin/autoFlags';
 import { uid } from '../../utils/id';
 import { toast } from 'sonner';
@@ -24,6 +26,7 @@ type Decision = {kind: 'takedown' | 'dismiss';report: PageReport;} | {kind: 'res
 /** Super admin → Moderation & trust: reports from “Report this page”, takedowns and restores (D75b). */
 export function AdminModeration() {
   const [store, setStore] = useAdminStore();
+  const kycQueue = useKycQueue();
   const [tab, setTab] = useState<Tab>('open');
   const [openId, setOpenId] = useState<string | null>(null);
   const [decision, setDecision] = useState<Decision>(null);
@@ -83,6 +86,17 @@ export function AdminModeration() {
   return (
     <div className="mx-auto w-full max-w-5xl px-5 py-8 md:px-10 md:py-12">
       <PageHeader title="Moderation & trust" description="Reports from visitors and the actions taken. Act proportionately: dismiss, or take a page down — accounts are suspended from Users & tenants." />
+      {kycQueue.length > 0 &&
+      <Link to="/admin/payments?tab=identity" className="mt-6 flex items-center justify-between gap-4 rounded-lg border border-line bg-raised px-5 py-3.5 text-label hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+          <span className="text-fg">
+            <span className="font-semibold">
+              {kycQueue.length} verification{kycQueue.length === 1 ? '' : 's'} waiting for review
+            </span>
+            <span className="text-fg-muted"> · identity and business checks are decided in Payments & providers</span>
+          </span>
+          <span className="shrink-0 font-medium text-action">Review</span>
+        </Link>
+      }
 
       <div className="mt-8">
         <Tabs<Tab>

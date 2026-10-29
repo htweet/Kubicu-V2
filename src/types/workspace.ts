@@ -39,6 +39,8 @@ export interface Workspace {
   demoData?: {seededAt: string;expiresAt: string;} | null;
   /** One currency for everything this workspace sells (D136). Missing = naira. */
   currency?: CurrencyCode;
+  /** The Business WhatsApp number every WhatsApp button falls back to (D214). Plain wa.me links — no API. */
+  whatsapp?: string;
 }
 
 /** Everything saved for one space's page. */

@@ -5,7 +5,7 @@ import { useOptionalCommerce } from '../../../contexts/CommerceContext';
 import { useOptionalOps } from '../../../contexts/OpsContext';
 import { richResultHints, sitemapEntries, structuredData } from '../../../utils/seo';
 import { publicUrl } from '../../../utils/format';
-import { Switch } from '../../ui/Switch';
+import { IndexingFields } from './IndexingFields';
 import { cn } from '../../../utils/cn';
 
 /**
@@ -13,7 +13,7 @@ import { cn } from '../../../utils/cn';
  * structured data that can earn richer results. Computed from the space as it is now.
  */
 export function SearchEnginesSection() {
-  const { state, actions } = useEditor();
+  const { state } = useEditor();
   const commerce = useOptionalCommerce()?.data ?? null;
   const services = useOptionalOps()?.data.services ?? [];
   const site = state.site;
@@ -30,15 +30,9 @@ export function SearchEnginesSection() {
     <section className="flex flex-col gap-4 border-t border-line pt-5" aria-labelledby="search-engines-heading">
       <div>
         <h3 id="search-engines-heading" className="text-label font-medium text-fg">Search engines</h3>
-        <p className="text-caption text-fg-subtle">Applies to every page in this space.</p>
+        <p className="text-caption text-fg-subtle">Whether Google lists your pages and follows your links. Also in the Publish window.</p>
       </div>
-      <Switch
-        id="search-show"
-        label="Show in search results"
-        description={hidden ? 'Hidden: Google and others are asked not to list it. People with the link can still open it.' : 'Google and others can list your pages, shop and products.'}
-        checked={!hidden}
-        onChange={(on) => actions.updateBranding({ hideFromSearch: !on })} />
-      
+      <IndexingFields idPrefix="search" />
 
       {!hidden &&
       <>

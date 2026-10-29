@@ -22,6 +22,9 @@ interface BlockFrameProps {
   density?: 'comfortable' | 'compact';
   /** The block above pairs with this one on wider screens. */
   pairedWithPrevious?: boolean;
+  /** Neighbours share this block's section background, so the band continues (D216). */
+  joinPrev?: boolean;
+  joinNext?: boolean;
   selected: boolean;
   /** Changed since the live version (D171). */
   edited?: boolean;
@@ -53,6 +56,8 @@ export function BlockFrame({
   columnPx,
   density,
   pairedWithPrevious,
+  joinPrev,
+  joinNext,
   selected,
   edited,
   issues,
@@ -104,7 +109,12 @@ export function BlockFrame({
       dragControls={dragControls}
       as="div"
       ref={ref}
-      className={cn('group/block relative w-full', selected && 'z-10', background !== 'none' && (density === 'compact' ? 'py-4' : 'py-6'))}
+      className={cn(
+        'group/block relative w-full',
+        selected && 'z-10',
+        background !== 'none' && (joinPrev ? 'pt-0' : density === 'compact' ? 'pt-4' : 'pt-6'),
+        background !== 'none' && (joinNext ? 'pb-0' : density === 'compact' ? 'pb-4' : 'pb-6')
+      )}
       style={background !== 'none' ? { background: theme.background, color: theme.text } : undefined}
       transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
       whileDrag={{ scale: 1.015, zIndex: 30 }}

@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { LinkIcon } from 'lucide-react';
 import { useWorkspace } from '../contexts/WorkspaceContext';
-import { fallbackDestination, findShortLink, landingHref, spaceHandle } from '../utils/domains/links';
+import { fallbackDestination, findShortLink, landingHref, linkEnded, spaceHandle } from '../utils/domains/links';
 import { readDomains } from '../utils/domains/storage';
 import { readCommerce } from '../utils/commerce/storage';
 import { MAIN_SPACE_ID } from '../utils/spaces';
@@ -16,7 +16,7 @@ export function ShortLink() {
   const { handle = '', slug = '' } = useParams();
   const { workspaces } = useWorkspace();
   const hit = findShortLink(workspaces, handle, slug, readDomains);
-  const link = hit && !hit.link.archivedAt ? { ...hit.link, destination: fallbackDestination(hit.workspace, readCommerce(hit.workspace.id), hit.link.destination) } : null;
+  const link = hit && !linkEnded(hit.link) ? { ...hit.link, destination: fallbackDestination(hit.workspace, readCommerce(hit.workspace.id), hit.link.destination) } : null;
   const target = hit && link ? landingHref(hit.workspace.id, link) : null;
   if (target) return <Navigate to={target} replace />;
   const home = hit ? spaceHandle(hit.workspace.id, MAIN_SPACE_ID) : handle;

@@ -15,6 +15,13 @@ export const featureFlags: {id: FlagId;name: string;description: string;affects:
   description: 'The auto-built shop at /shop. Turning it off hides every workspace’s storefront; pages keep working.',
   affects: 'Public /shop pages',
   planTargeted: false
+},
+{
+  id: 'verified_tick',
+  name: 'Verified tick',
+  description: 'The “Verified by KUBICU” tick next to verified sellers’ names, and the Verified style of the Trust badge. Turning it off hides every tick; verification and payouts are unchanged. Single workspaces can be hidden from their verification record.',
+  affects: 'Public pages — Profile, Brand header, Trust badge',
+  planTargeted: false
 }];
 
 
@@ -34,5 +41,6 @@ export const ticketTopicLabels = {
   payments: 'Payments & payouts',
   pages: 'Pages & domains',
   account: 'Account & team',
+  legal: 'Legal, privacy & security',
   other: 'Something else'
 } as const;

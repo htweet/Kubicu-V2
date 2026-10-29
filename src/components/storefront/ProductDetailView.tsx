@@ -15,6 +15,8 @@ import { formatNgn, whatsappLink } from '../../utils/format';
 import { isValidPhone } from '../../utils/validation';
 import { cn } from '../../utils/cn';
 import { bulkLevels, isPreorder, preorderLeft, shipsByLabel } from '../../utils/commerce/sellModes';
+import { holderId, stockFree, stockHoldable } from '../../utils/commerce/tickets';
+import { shopSettingsOf } from '../../utils/commerce/shopSettings';
 
 interface ProductDetailViewProps {
   theme: PageTheme;
@@ -65,6 +67,10 @@ export function ProductDetailView({ theme, data, product, ordering, whatsappPhon
   const range = priceRange(product);
   const soldOut = isSoldOut(product);
   const available = variant ? canSell(product, variant) : !soldOut;
+  // Units in other buyers' checkouts (D255): only reported when holds are actually taking some of this option.
+  const orders = shopSettingsOf(data).orders;
+  const freeNow = variant && available && orders.holdStock && !orders.backorders && stockHoldable(product) ? stockFree(data, variant, holderId()) : null;
+  const heldFree = freeNow !== null && variant && freeNow < variant.stock ? freeNow : null;
   const missing = product.options.filter((o) => !chosen[o.name]);
   const onSale = s.showSaleBadges && product.compareAtNgn !== null && (price ?? range?.[0] ?? Infinity) < product.compareAtNgn;
   const shop = shopProducts(data);
@@ -211,10 +217,14 @@ export function ProductDetailView({ theme, data, product, ordering, whatsappPhon
       variant ?
       !available ?
       'This option is sold out — try another.' :
+      heldFree === 0 ?
+      'The last ones are in other buyers’ checkouts. If they don’t pay, they’re back here within 15 minutes.' :
       product.giftCard ?
       'Your gift card code appears on your order page as soon as payment is confirmed.' :
       isPreorder(product) ?
       'Available to pre-order.' :
+      heldFree !== null ?
+      `Only ${heldFree} left — others are in buyers’ checkouts.` :
       product.trackStock && product.kind === 'physical' && variant.stock <= product.lowStockAt ?
       `Only ${variant.stock} left.` :
       product.kind === 'digital' ?

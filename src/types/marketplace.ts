@@ -14,6 +14,42 @@ export interface ExtensionSetupField {
   error: string;
 }
 
+/** Core KUBICU modules an extension can connect to (D231). */
+export type CoreModule =
+'orders' |
+'products' |
+'checkout' |
+'storefront' |
+'paymentLinks' |
+'reports' |
+'wallet' |
+'pages' |
+'bookings' |
+'audience' |
+'automations' |
+'analytics' |
+'notifications' |
+'forms' |
+'campaignLinks' |
+'quotes' |
+'proof' |
+'settings';
+
+export interface ModuleConnection {
+  module: CoreModule;
+  /** What it does there, in a few words. */
+  how: string;
+}
+
+/** A catalogue entry folded into a core feature (D231). */
+export interface RetiredInfo {
+  movedTo: string;
+  href: string;
+  note: string;
+  /** Installed for the seller when they move, so nothing stops working. */
+  installs?: string;
+}
+
 export interface ExtensionInfo {
   id: string;
   name: string;
@@ -38,6 +74,9 @@ export interface ExtensionInfo {
   preview?: boolean;
   /** What stays when it's uninstalled. */
   uninstallNote: string;
+  /** Core modules it genuinely connects to — at least two for KUBICU-listed extensions (D231). */
+  worksWith?: ModuleConnection[];
+  retired?: RetiredInfo;
 }
 
 export interface InstalledExtension {
@@ -55,6 +94,8 @@ export interface MarketplaceData {
   installed: Record<string, InstalledExtension>;
   /** Premium templates bought for this workspace (licence per workspace). */
   templateLicences: string[];
+  /** Retired extensions whose "now part of…" notice was shown (D231). */
+  retiredNoticed?: string[];
 }
 
 /** A saved theme or section shared privately with another workspace (blueprint §21). */

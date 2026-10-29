@@ -26,6 +26,7 @@ import { ChatThread } from '../components/whatsapp/ChatThread';
 import { WhatsAppSetup } from '../components/whatsapp/WhatsAppSetup';
 import { cn } from '../utils/cn';
 import { seedsSample } from '../utils/workspaceStorage';
+import { whatsappCounts } from '../utils/whatsappCounts';
 
 type Tab = 'chats' | 'catalogue' | 'auto' | 'setup';
 
@@ -52,11 +53,8 @@ export function WhatsApp() {
 
   const connected = data.connection.status === 'connected';
   const chats = useMemo(() => sortChats(data.chats), [data.chats]);
-  const unread = chats.reduce((s, c) => s + c.unread, 0);
-  const waiting = chats.filter((c) => c.messages[c.messages.length - 1]?.from === 'customer').length;
   const rows = useMemo(() => syncRows(commerce.data.products), [commerce.data.products]);
-  const syncable = rows.filter((r) => !r.reason);
-  const outOfDate = data.lastSyncAt ? syncable.filter((r) => !data.syncedIds.includes(r.product.id) || new Date(r.product.updatedAt).getTime() > new Date(data.lastSyncAt as string).getTime()).length : syncable.length;
+  const { unread, waiting, outOfDate, syncable } = useMemo(() => whatsappCounts(data, commerce.data.products), [data, commerce.data.products]);
   const sendable = commerce.data.products.filter((p) => p.status === 'active' && p.kind !== 'ticket' && p.priceNgn);
   const open = chats.find((c) => c.id === openId) ?? null;
 
@@ -224,7 +222,7 @@ export function WhatsApp() {
         {tab === 'auto' &&
         <WhatsAppAutoMessages data={data} canEdit={can.allowed} unlocked={autoUnlocked} onUpgrade={() => openUpgrade({ plan: WA_AUTOMATION_PLAN, feature: 'WhatsApp keyword replies and order updates' })} update={update} />
         }
-        {tab === 'setup' && <WhatsAppSetup data={data} canEdit={can.allowed} defaultName={current.name} defaultPhone="" update={update} />}
+        {tab === 'setup' && <WhatsAppSetup data={data} canEdit={can.allowed} defaultName={current.name} defaultPhone={current.whatsapp ?? ''} update={update} />}
       </div>
 
       <ChatThread

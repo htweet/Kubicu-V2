@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { BanIcon, CalendarClockIcon, CheckCircle2Icon, CopyIcon, MessageCircleIcon, UserXIcon } from 'lucide-react';
+import { BanIcon, CalendarClockIcon, CheckCircle2Icon, CheckIcon, CopyIcon, MessageCircleIcon, UserXIcon, XIcon } from 'lucide-react';
 import { bookingBalance, balanceLabels, payBookingBalance } from '../../utils/ops/balance';
 import { useMainLink } from '../../hooks/useMainLink';
 import { cn } from '../../utils/cn';
 import { toast } from 'sonner';
 import { useOps } from '../../contexts/OpsContext';
-import { cancelBooking, rescheduleBooking, setBookingStatus } from '../../utils/ops/ops';
+import { acceptBooking, cancelBooking, declineBooking, rescheduleBooking, setBookingStatus } from '../../utils/ops/ops';
 import { dayLabel, durationLabel, timeLabel } from '../../utils/ops/slots';
 import { formatNgn, formatTimestamp, whatsappLink } from '../../utils/format';
 import { Sheet } from '../ui/Sheet';
@@ -20,8 +20,11 @@ import { AssigneeSelect } from '../team/AssigneeSelect';
 import { CommentThread } from '../team/CommentThread';
 import { useT } from '../../contexts/LocaleContext';
 import { useBookingSources } from '../../hooks/useBookingSources';
+import { MeetingLinkPanel } from './MeetingLinkPanel';
+import { connectionFor, renewMeeting } from '../../utils/ops/meetings';
 
 export const bookingStatusCopy = {
+  requested: { label: 'Waiting for you', tone: 'warning' as const },
   confirmed: { label: 'Confirmed', tone: 'success' as const },
   pending_deposit: { label: 'Awaiting deposit', tone: 'warning' as const },
   cancelled: { label: 'Cancelled', tone: 'neutral' as const },
@@ -36,7 +39,7 @@ export function BookingDetail({ bookingId, onClose }: {bookingId: string | null;
   const { mainHandle } = useMainLink();
   const b = data.bookings.find((x) => x.id === bookingId);
   const { sourceOf } = useBookingSources(data.bookings);
-  const [dialog, setDialog] = useState<'cancel' | 'reschedule' | null>(null);
+  const [dialog, setDialog] = useState<'cancel' | 'reschedule' | 'decline' | null>(null);
   const [reason, setReason] = useState('');
   const [newStart, setNewStart] = useState<number | null>(null);
   if (!b) return <Sheet open={!!bookingId} onClose={onClose} side="right" title="Booking not found"><p className="p-5 text-label text-fg-muted">{tr('It may have been cleared with the sample data.')}</p></Sheet>;
@@ -68,6 +71,25 @@ export function BookingDetail({ bookingId, onClose }: {bookingId: string | null;
         title={`${b.serviceName} · ${b.ref}`}
         description={`${dayLabel(start, tz)}, ${timeLabel(start, tz)}`}
         footer={
+        b.status === 'requested' ?
+        <div className="flex flex-wrap items-center justify-between gap-2">
+              <Button variant="tertiary" size="sm" leadingIcon={XIcon} onClick={() => setDialog('decline')}>
+                Decline
+              </Button>
+              {past ?
+          <span className="text-caption text-fg-subtle">{tr('The time has passed, so it can only be declined.')}</span> :
+
+          <Button
+            size="sm"
+            leadingIcon={CheckIcon}
+            onClick={() => {
+              if (apply((d) => acceptBooking(d, b.id))) toast.success(tr('Booking accepted'), { description: tr('{name} would get a confirmation (preview only).', { name: b.customer.name }) });
+            }}>
+            
+                  Accept booking
+                </Button>
+          }
+            </div> :
         open ?
         <div className="flex flex-wrap items-center justify-between gap-2">
               <Button variant="tertiary" size="sm" leadingIcon={BanIcon} onClick={() => setDialog('cancel')}>
@@ -114,6 +136,13 @@ export function BookingDetail({ bookingId, onClose }: {bookingId: string | null;
               }
             }} />
           
+          {b.meeting &&
+          <MeetingLinkPanel
+            meeting={b.meeting}
+            canRenew={open && !!connectionFor(data.availability, b.meeting.app)}
+            onRenew={(app) => apply((d) => renewMeeting(d, b.id, app)) && toast(tr('New meeting link made'), { description: tr('Send it to the customer — the old link no longer applies.') })} />
+
+          }
           <dl className="grid grid-cols-2 gap-4 text-label">
             <div>
               <dt className="text-caption text-fg-subtle">{tr('When')}</dt>
@@ -160,6 +189,12 @@ export function BookingDetail({ bookingId, onClose }: {bookingId: string | null;
                 </a>
               }
             </div>
+            {(b.answers ?? []).map((x, i) =>
+            <div key={i} className="col-span-2">
+                <dt className="text-caption text-fg-subtle">{x.question}</dt>
+                <dd className="font-medium text-fg">{x.answer}</dd>
+              </div>
+            )}
             {b.intake &&
             <div className="col-span-2">
                 <dt className="text-caption text-fg-subtle">{tr('They told you')}</dt>
@@ -210,6 +245,35 @@ export function BookingDetail({ bookingId, onClose }: {bookingId: string | null;
         }>
         
         <TextInput id="bk-cancel-reason" label="Reason for the customer" optional value={reason} placeholder={tr('e.g. Studio closed for a family event')} onChange={(e) => setReason(e.target.value)} />
+      </Dialog>
+
+      <Dialog
+        open={dialog === 'decline'}
+        onClose={() => setDialog(null)}
+        size="sm"
+        title={tr('Decline {name}’s request?', { name: b.customer.name })}
+        description={b.depositPaidNgn ? tr('The time is freed and the {amount} deposit is refunded in full (test mode).', { amount: formatNgn(b.depositPaidNgn) }) : tr('The time is freed for someone else. Nothing was paid.')}
+        footer={
+        <>
+            <Button variant="secondary" onClick={() => setDialog(null)}>
+              Keep it
+            </Button>
+            <Button
+            variant="destructive"
+            onClick={() => {
+              if (apply((d) => declineBooking(d, b.id, reason.trim()))) {
+                toast(tr('Request declined'), { description: tr('The customer would get a message (preview only).') });
+                setDialog(null);
+                setReason('');
+              }
+            }}>
+            
+              Decline request
+            </Button>
+          </>
+        }>
+        
+        <TextInput id="bk-decline-reason" label="Reason for the customer" optional value={reason} placeholder={tr('e.g. Fully booked that day — could you do Friday?')} onChange={(e) => setReason(e.target.value)} />
       </Dialog>
 
       <Dialog

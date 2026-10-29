@@ -55,12 +55,12 @@ export function HandleClaim() {
       </label>
       <div
         className={cn(
-          'mt-2 flex flex-col gap-2 rounded-xl border bg-raised p-1.5 transition-colors duration-150 focus-within:ring-2 focus-within:ring-focus sm:flex-row sm:items-center',
-          message?.tone === 'bad' ? 'border-danger/60' : message?.tone === 'ok' ? 'border-success/60' : 'border-line-strong'
+          'mt-2 flex flex-col gap-2 rounded-[28px] border-2 bg-raised p-1.5 shadow-2 transition-colors duration-150 focus-within:ring-2 focus-within:ring-focus sm:flex-row sm:items-center sm:rounded-full',
+          message?.tone === 'bad' ? 'border-danger' : message?.tone === 'ok' ? 'border-success' : 'border-transparent'
         )}>
         
-        <div className="flex min-w-0 flex-1 items-center pl-3">
-          <span className="shrink-0 select-none text-[17px] text-fg-subtle" aria-hidden>
+        <div className="flex min-w-0 flex-1 items-center pl-4">
+          <span className="shrink-0 select-none text-[17px] font-medium text-fg-subtle" aria-hidden>
             kub.icu/
           </span>
           <input
@@ -76,7 +76,7 @@ export function HandleClaim() {
             className="h-11 min-w-0 flex-1 bg-transparent text-[17px] font-medium text-fg placeholder:text-fg-subtle focus:outline-none" />
           
         </div>
-        <Button type="submit" size="lg" variant="brand" trailingIcon={ArrowRightIcon} className="shrink-0">
+        <Button type="submit" size="lg" variant="primary" trailingIcon={ArrowRightIcon} className="h-12 shrink-0 rounded-full px-6 text-[15px] font-bold">
           Claim it — free
         </Button>
       </div>

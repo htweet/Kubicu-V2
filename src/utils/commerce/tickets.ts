@@ -96,6 +96,31 @@ export function availableForEvent(data: CommerceData | null | undefined, ev: Com
 /** Seats currently reserved by people in checkout, for the owner's view. */
 export const eventHeld = (data: CommerceData | null | undefined, ev: CommerceEvent, now = Date.now()) => heldOfEvent(data, ev.id, now);
 
+/* ---------- Stock holds during checkout (D255) ---------- */
+
+/** Example figure: how long stock-tracked items stay kept for a buyer once they press Checkout. */
+export const STOCK_HOLD_MINUTES = 15;
+
+/** Units of a variant other buyers are holding in checkout right now. */
+export function heldByOthers(data: CommerceData | null | undefined, variantId: string, holder?: string, now = Date.now()): number {
+  return heldOfType(data, variantId, now, holder);
+}
+
+/** Stock this buyer can take now: stock minus what other people are holding in checkout. */
+export function stockFree(data: CommerceData | null | undefined, variant: {id: string;stock: number;}, holder?: string, now = Date.now()): number {
+  return Math.max(0, variant.stock - heldByOthers(data, variant.id, holder, now));
+}
+
+/** A physical, stock-tracked, non-pre-order product: the only kind stock holds apply to. */
+export function stockHoldable(product: Product | undefined): product is Product {
+  return !!product && product.kind === 'physical' && product.trackStock && !product.preorder && !product.giftCard;
+}
+
+/** Plain words for a line that other buyers' holds have blocked. */
+export function stockHeldMessage(name: string, free: number): string {
+  return free === 0 ? `The last ${name} ${name.endsWith('s') ? 'are' : 'is'} in someone else’s checkout — try again in a few minutes` : `Only ${free} of ${name} free right now — others are in checkout`;
+}
+
 /** The holder's earliest running expiry, if any. */
 export function holdExpiry(data: CommerceData | null | undefined, holder: string, now = Date.now()): string | null {
   const mine = (data?.ticketHolds ?? []).filter((h) => h.holder === holder && Date.parse(h.expiresAt) > now);
@@ -112,21 +137,39 @@ export function releaseHolds(data: CommerceData, holder: string, now = Date.now(
  * Reserves the ticket lines for this holder. Re-starting checkout keeps the original expiry,
  * so the timer can't be extended by going back and forth. Returns an issue when seats aren't there.
  */
-export function placeHolds(data: CommerceData, holder: string, lines: Pick<CartLine, 'productId' | 'variantId' | 'qty' | 'seats'>[], now = Date.now()): {data: CommerceData;issue: string;expiresAt: string | null;} {
-  const ticketLines = lines.filter((l) => data.products.find((p) => p.id === l.productId)?.kind === 'ticket');
-  if (!ticketLines.length) return { data: releaseHolds(data, holder, now), issue: '', expiresAt: null };
+export function placeHolds(
+data: CommerceData,
+holder: string,
+lines: Pick<CartLine, 'productId' | 'variantId' | 'qty' | 'seats'>[],
+now = Date.now(),
+/** Also hold stock-tracked physical items (D255) — off when the shop allows backorders or turned holds off. */
+holdStock = false)
+: {data: CommerceData;issue: string;expiresAt: string | null;} {
+  const product = (id: string) => data.products.find((p) => p.id === id);
+  const ticketLines = lines.filter((l) => product(l.productId)?.kind === 'ticket');
+  const stockLines = holdStock ? lines.filter((l) => stockHoldable(product(l.productId))) : [];
+  if (!ticketLines.length && !stockLines.length) return { data: releaseHolds(data, holder, now), issue: '', expiresAt: null };
   for (const l of ticketLines) {
     const issue = ticketLineIssue(data, l, now, holder);
     if (issue) return { data, issue, expiresAt: null };
   }
   const cap = orderCapacityIssue(data, ticketLines, holder, now);
   if (cap) return { data, issue: cap, expiresAt: null };
-  const expiresAt = holdExpiry(data, holder, now) ?? new Date(now + HOLD_MINUTES * 60_000).toISOString();
+  for (const l of stockLines) {
+    const p = product(l.productId) as Product;
+    const v = p.variants.find((x) => x.id === l.variantId);
+    if (!v) return { data, issue: `${p.name} is no longer available`, expiresAt: null };
+    const free = stockFree(data, v, holder, now);
+    if (free < l.qty) return { data, issue: stockHeldMessage(p.name, free), expiresAt: null };
+  }
+  // Seats keep their shorter hold when tickets are in the cart; otherwise stock gets its own window.
+  const minutes = ticketLines.length ? HOLD_MINUTES : STOCK_HOLD_MINUTES;
+  const expiresAt = holdExpiry(data, holder, now) ?? new Date(now + minutes * 60_000).toISOString();
   const base = releaseHolds(data, holder, now);
-  const holds: TicketHold[] = ticketLines.map((l) => {
-    const product = data.products.find((p) => p.id === l.productId) as Product;
-    return { id: uid(), holder, eventId: product.eventId ?? '', productId: l.productId, variantId: l.variantId, qty: l.qty, expiresAt, seats: l.seats?.length ? l.seats : undefined };
-  });
+  const holds: TicketHold[] = [
+  ...ticketLines.map((l) => ({ id: uid(), holder, eventId: product(l.productId)?.eventId ?? '', productId: l.productId, variantId: l.variantId, qty: l.qty, expiresAt, seats: l.seats?.length ? l.seats : undefined })),
+  ...stockLines.map((l) => ({ id: uid(), holder, eventId: '', productId: l.productId, variantId: l.variantId, qty: l.qty, expiresAt, kind: 'stock' as const }))];
+
   return { data: { ...base, ticketHolds: [...(base.ticketHolds ?? []), ...holds] }, issue: '', expiresAt };
 }
 
@@ -134,10 +177,10 @@ export function placeHolds(data: CommerceData, holder: string, lines: Pick<CartL
  * "Need more time?" (WCAG 2.2.1, D76): pushes this holder's running holds back by HOLD_MINUTES.
  * Works only while the holds are still running — the seats are then still reserved for this buyer.
  */
-export function extendHolds(data: CommerceData, holder: string, now = Date.now()): {data: CommerceData;expiresAt: string | null;} {
+export function extendHolds(data: CommerceData, holder: string, now = Date.now(), minutes = HOLD_MINUTES): {data: CommerceData;expiresAt: string | null;} {
   const current = holdExpiry(data, holder, now);
   if (!current) return { data, expiresAt: null };
-  const expiresAt = new Date(Date.parse(current) + HOLD_MINUTES * 60_000).toISOString();
+  const expiresAt = new Date(Date.parse(current) + minutes * 60_000).toISOString();
   return {
     data: { ...data, ticketHolds: (data.ticketHolds ?? []).map((h) => h.holder === holder && Date.parse(h.expiresAt) > now ? { ...h, expiresAt } : h) },
     expiresAt

@@ -6,6 +6,7 @@ import { useNow } from '../../hooks/useNow';
 import { bookingPageServices, lookaheadDays, nextFreeSlot, slotWhen, validWhatsapp } from '../../utils/bookingPage';
 import { durationLabel } from '../../utils/ops/slots';
 import { formatNgn, whatsappLink } from '../../utils/format';
+import { waNumber } from '../../utils/businessWhatsApp';
 import { buttonStyle, cardStyle, fontsFor, mix } from '../blocks/pageStyle';
 
 interface BookingPagePanelProps {
@@ -33,7 +34,8 @@ export function BookingPagePanel({ settings, pageName, theme, mode }: BookingPag
   const muted = { color: theme.mutedText };
   const display = { fontFamily: fontsFor(theme).display, color: theme.text };
   const allFull = services.length > 0 && services.every((s) => !next.get(s.id));
-  const wa = settings.whatsapp.trim() && validWhatsapp(settings.whatsapp) ? whatsappLink(settings.whatsapp, `Hi! I found ${pageName} and I’d like to book. Do you have any times?`) : '';
+  const waPhone = waNumber(settings.whatsapp);
+  const wa = waPhone && validWhatsapp(waPhone) ? whatsappLink(waPhone, `Hi! I found ${pageName} and I’d like to book. Do you have any times?`) : '';
   const waitlistHref = settings.waitlistBlockId ? `#b-${settings.waitlistBlockId}` : '';
   const live = mode === 'live' && !!actions;
   const btn = 'inline-flex min-h-[44px] shrink-0 items-center justify-center px-4 text-[14px] font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2';

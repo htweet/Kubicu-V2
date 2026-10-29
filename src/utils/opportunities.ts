@@ -1,6 +1,7 @@
 import type { CommerceData } from '../types/commerce';
 import type { OpsData } from '../types/ops';
 import { orderMoney } from './commerce/money';
+import { orderRef } from './commerce/shopSettings';
 import { isSoldOut } from './commerce/catalog';
 import type { ServiceOsData } from '../types/serviceOs';
 import { bookingBalance } from './ops/balance';
@@ -83,12 +84,12 @@ export function buildOpportunities(commerce: CommerceData, ops: OpsData, busines
       id: `mto:${o.id}`,
       kind: 'balance',
       group: 'payments',
-      title: `${o.customer.name || 'Customer'} · order #${o.number}`,
+      title: `${o.customer.name || 'Customer'} · order ${orderRef(o)}`,
       reason: o.balance.requestedAt ? 'Made-to-order balance requested — not paid yet' : 'Made-to-order balance not requested yet',
       valueNgn: o.balance.dueNgn,
       since: o.balance.requestedAt ?? o.createdAt,
       to: `/app/commerce/orders?order=${o.id}`,
-      nudge: o.customer.phone ? { phone: o.customer.phone, message: `Hi ${first(o.customer.name)}, it's ${business}. Your order #${o.number} is nearly ready! The balance is ₦${o.balance.dueNgn.toLocaleString('en-NG')} — pay it from your order page and we'll send it out.` } : undefined,
+      nudge: o.customer.phone ? { phone: o.customer.phone, message: `Hi ${first(o.customer.name)}, it's ${business}. Your order ${orderRef(o)} is nearly ready! The balance is ₦${o.balance.dueNgn.toLocaleString('en-NG')} — pay it from your order page and we'll send it out.` } : undefined,
       sample: o.sample
     });
   });
@@ -103,12 +104,12 @@ export function buildOpportunities(commerce: CommerceData, ops: OpsData, busines
       id: `inst:${o.id}:${failed.id}`,
       kind: 'balance',
       group: 'payments',
-      title: `${o.customer.name || 'Customer'} · order #${o.number}`,
+      title: `${o.customer.name || 'Customer'} · order ${orderRef(o)}`,
       reason: inst.status === 'defaulted' ? `Instalment ${failed.n} of ${inst.parts.length} unpaid after every retry` : `Instalment ${failed.n} of ${inst.parts.length} didn’t go through — retrying automatically`,
       valueNgn: failed.amountNgn,
       since: failed.failedAt ?? failed.dueAt,
       to: `/app/commerce/orders?order=${o.id}`,
-      nudge: o.customer.phone ? { phone: o.customer.phone, message: `Hi ${first(o.customer.name)}, it’s ${business}. Part ${failed.n} of your order #${o.number} (₦${failed.amountNgn.toLocaleString('en-NG')}) didn’t go through. You can pay it or update your card from your order page.` } : undefined,
+      nudge: o.customer.phone ? { phone: o.customer.phone, message: `Hi ${first(o.customer.name)}, it’s ${business}. Part ${failed.n} of your order ${orderRef(o)} (₦${failed.amountNgn.toLocaleString('en-NG')}) didn’t go through. You can pay it or update your card from your order page.` } : undefined,
       sample: o.sample
     });
   });
@@ -121,12 +122,12 @@ export function buildOpportunities(commerce: CommerceData, ops: OpsData, busines
       id: `pod:${o.id}:${last.at}`,
       kind: 'unpaid',
       group: 'payments',
-      title: `${o.customer.name || 'Customer'} · order #${o.number}`,
+      title: `${o.customer.name || 'Customer'} · order ${orderRef(o)}`,
       reason: 'Pay-on-delivery order came back unpaid — rebook or cancel to free the stock',
       valueNgn: o.pod.amountNgn,
       since: last.at,
       to: `/app/commerce/orders?order=${o.id}`,
-      nudge: o.customer.phone && last.reason !== 'refused' ? { phone: o.customer.phone, message: `Hi ${first(o.customer.name)}, it’s ${business}. We tried to deliver order #${o.number} but couldn’t reach you. When’s a good time to try again?` } : undefined,
+      nudge: o.customer.phone && last.reason !== 'refused' ? { phone: o.customer.phone, message: `Hi ${first(o.customer.name)}, it’s ${business}. We tried to deliver order ${orderRef(o)} but couldn’t reach you. When’s a good time to try again?` } : undefined,
       sample: o.sample
     });
   });
@@ -157,12 +158,12 @@ export function buildOpportunities(commerce: CommerceData, ops: OpsData, busines
       id: `unpaid:${o.id}`,
       kind: 'unpaid',
       group: 'payments',
-      title: `${o.customer.name || 'A customer'} · order #${o.number}`,
+      title: `${o.customer.name || 'A customer'} · order ${orderRef(o)}`,
       reason: 'Entered their details but hasn’t paid',
       valueNgn: orderMoney(o).gross,
       since: o.createdAt,
       to: '/app/commerce/orders?status=new',
-      nudge: o.customer.phone ? { phone: o.customer.phone, message: `Hi ${first(o.customer.name)}, it’s ${business}. Your order #${o.number} is saved but not paid yet — can I help you finish it?` } : undefined,
+      nudge: o.customer.phone ? { phone: o.customer.phone, message: `Hi ${first(o.customer.name)}, it’s ${business}. Your order ${orderRef(o)} is saved but not paid yet — can I help you finish it?` } : undefined,
       sample: o.sample
     });
   });

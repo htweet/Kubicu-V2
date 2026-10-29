@@ -159,7 +159,8 @@ export function PaymentLinks() {
         canEdit={can.allowed}
         onClose={() => setOpenId(null)}
         onEdit={(l) => setEditing(l)}
-        onStatus={setStatus} />
+        onStatus={setStatus}
+        onUpdate={(fn) => update(fn)} />
       
     </>);
 

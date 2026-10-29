@@ -3,6 +3,7 @@ import type { Block, BlockContentMap, BlockType } from '../../../types/page';
 import type { ValidationIssue } from '../../../utils/validation';
 import { useEditor } from '../../../contexts/EditorContext';
 import { TextInput } from '../../ui/TextInput';
+import { businessWhatsApp, waFieldHint } from '../../../utils/businessWhatsApp';
 import { TextArea } from '../../ui/TextArea';
 import { Switch } from '../../ui/Switch';
 import { Segmented } from '../../ui/Segmented';
@@ -25,6 +26,7 @@ import { ContainerFields } from './ContainerFields';
 import { StoryBlockFields, isStoryBlock } from './StoryBlockFields';
 import { Round2BlockFields, isRound2Block } from './Round2BlockFields';
 import { isContainer } from '../../../utils/containers';
+import { StandardConsent } from './StandardConsent';
 
 interface ContentFieldsProps {
   block: Block;
@@ -265,6 +267,7 @@ export function ContentFields({ block, issues }: ContentFieldsProps) {
               hint={warn('consentText') ?? 'Shown under the form.'}
               onChange={(e) => set({ consentText: e.target.value }, 'consentText')} />
             
+          <StandardConsent current={c.consentText} onUse={(t) => set({ consentText: t }, 'consentText')} />
           <InlineAlert tone="info" title="Submissions go to Audience">
             Each one creates or updates a contact. People can also tick an optional box to get updates.
           </InlineAlert>
@@ -298,10 +301,10 @@ export function ContentFields({ block, issues }: ContentFieldsProps) {
               label="WhatsApp number"
               type="tel"
               inputMode="tel"
-              placeholder="+234 …"
+              placeholder={businessWhatsApp() || '+234 …'}
               value={c.phone}
               error={err('phone')}
-              hint="Include the country code."
+              hint={waFieldHint(c.phone)}
               onChange={(e) => set({ phone: e.target.value }, 'phone')} />
             
           <TextArea
@@ -332,6 +335,7 @@ export function ContentFields({ block, issues }: ContentFieldsProps) {
               hint={warn('consentText') ?? 'Tell people what they’re signing up for.'}
               onChange={(e) => set({ consentText: e.target.value }, 'consentText')} />
             
+          <StandardConsent current={c.consentText} onUse={(t) => set({ consentText: t }, 'consentText')} />
           <InlineAlert tone="info" title="Signups go to Audience">
             Each signup is saved as a subscribed contact with a consent record.
           </InlineAlert>

@@ -1,6 +1,8 @@
 import React, { useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { AlertTriangleIcon, DownloadIcon, ReceiptIcon } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { AlertTriangleIcon, DownloadIcon, ReceiptIcon, WorkflowIcon } from 'lucide-react';
+import { useMarketplace } from '../../contexts/MarketplaceContext';
+import { useOps } from '../../contexts/OpsContext';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
 import { useFulfilment } from '../../hooks/useFulfilment';
 import { buildTracking, dayLabel, healthLabels, needsTrackingAttention } from '../../utils/commerce/tracking';
@@ -15,6 +17,7 @@ import { OrderDetail } from '../../components/commerce/OrderDetail';
 import { OrderStatusBadge, PaymentBadge, SampleTag } from '../../components/commerce/StatusBadges';
 import { orderStatusLabels } from '../../data/commerceNav';
 import { orderMoney } from '../../utils/commerce/money';
+import { orderRef } from '../../utils/commerce/shopSettings';
 import { downloadCsv, toCsv } from '../../utils/csv';
 import { formatNgn, formatRelative } from '../../utils/format';
 import { cn } from '../../utils/cn';
@@ -31,6 +34,10 @@ export function Orders() {
   const [params, setParams] = useSearchParams();
   const tab = params.get('status') as Tab || 'all';
   const openId = params.get('order');
+  // Abandoned-cart recovery is an Automations recipe, one tap from here (D231).
+  const navigate = useNavigate();
+  const automationsOn = useMarketplace().isActive('automations');
+  const hasRecovery = useOps().data.automations.some((a) => a.trigger === 'checkout_abandoned');
 
   const counts = useMemo(() => {
     const c: Record<string, number> = { all: data.orders.length };
@@ -74,7 +81,7 @@ export function Orders() {
     render: (o) =>
     <button type="button" onClick={() => set({ order: o.id })} className="group text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
           <span className="flex items-center gap-2">
-            <span className="font-mono font-semibold text-fg group-hover:underline">#{o.number}</span>
+            <span className="font-mono font-semibold text-fg group-hover:underline">{orderRef(o)}</span>
             {o.sample && <SampleTag />}
           </span>
           <span className="block text-caption text-fg-subtle">{formatRelative(o.createdAt)}</span>
@@ -124,9 +131,16 @@ export function Orders() {
         title="Orders"
         description="Every order from your page, from payment to delivery."
         actions={
-        <Button variant="secondary" leadingIcon={DownloadIcon} onClick={exportCsv} disabled={rows.length === 0}>
+        <>
+          {!hasRecovery &&
+          <Button variant="tertiary" leadingIcon={WorkflowIcon} onClick={() => navigate(automationsOn ? '/app/automations?recipe=abandoned' : '/app/extensions?ext=automations')}>
+              Recover unpaid checkouts
+            </Button>
+          }
+          <Button variant="secondary" leadingIcon={DownloadIcon} onClick={exportCsv} disabled={rows.length === 0}>
             Export CSV
           </Button>
+          </>
         } />
       
       <TestModeStrip className="mt-6" />

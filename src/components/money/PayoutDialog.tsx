@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import type { MoneyData } from '../../types/money';
-import { balances, createPayout, paidOutToday, payoutFee, tierInfo, usableBanks } from '../../utils/money/store';
+import { balances, createPayout, paidOutToday, payoutFee, payoutTier, tierInfo, usableBanks } from '../../utils/money/store';
 import { formatNgn } from '../../utils/format';
 import { useT } from '../../contexts/LocaleContext';
 import { Dialog } from '../ui/Dialog';
@@ -26,7 +26,7 @@ export function PayoutDialog({ open, onClose, data, update, by }: PayoutDialogPr
   const banks = usableBanks(data);
   const available = balances(data).available;
   const fee = payoutFee(false);
-  const todayLeft = Math.max(0, tierInfo[data.verification.tier].dailyPayoutNgn - paidOutToday(data));
+  const todayLeft = Math.max(0, tierInfo[payoutTier(data)].dailyPayoutNgn - paidOutToday(data));
   const max = Math.max(0, Math.min(available - fee, todayLeft));
   const [amount, setAmount] = useState('');
   const [bankId, setBankId] = useState('');
@@ -74,7 +74,7 @@ export function PayoutDialog({ open, onClose, data, update, by }: PayoutDialogPr
         open={open && !confirming}
         onClose={onClose}
         title="Pay out to your bank"
-        description={tr('{available} available · up to {left} more today on {tier}.', { available: formatNgn(available), left: formatNgn(todayLeft), tier: tierInfo[data.verification.tier].label })}
+        description={tr('{available} available · up to {left} more today on {tier}.', { available: formatNgn(available), left: formatNgn(todayLeft), tier: tierInfo[payoutTier(data)].label })}
         footer={
         <>
             <Button variant="secondary" onClick={onClose}>

@@ -4,6 +4,7 @@ import type { ValidationIssue } from '../../../utils/validation';
 import { useEditor } from '../../../contexts/EditorContext';
 import { usePlan } from '../../../contexts/PlanContext';
 import { planAtLeast } from '../../../data/plans';
+import { businessWhatsApp, waFieldHint } from '../../../utils/businessWhatsApp';
 import { uid } from '../../../utils/id';
 import { formatNgn } from '../../../utils/format';
 import { TextInput } from '../../ui/TextInput';
@@ -95,6 +96,8 @@ export function ExtendedContentFields({ block, issues }: Props) {
         <SourceSwitch
           id={id('source')}
           value={c.source === 'catalog' ? 'catalog' : 'manual'}
+          catalogHint="Pick products you’ve added in Commerce. Names, prices, photos and stock stay in sync."
+          manualHint="Not in Commerce? Enter each item’s name, price and photo here, and choose where Order goes."
           onChange={(source) =>
           set(
             source === 'catalog' ?
@@ -152,7 +155,7 @@ export function ExtendedContentFields({ block, issues }: Props) {
               
             {err('orderAction') && <p className="-mt-2 text-caption text-danger">{err('orderAction')}</p>}
             {c.orderAction === 'whatsapp' &&
-              <TextInput id={id('wa')} label="WhatsApp number" type="tel" inputMode="tel" placeholder="+234 …" value={c.whatsappPhone} error={err('whatsappPhone')} onChange={(e) => set({ whatsappPhone: e.target.value }, 'whatsappPhone')} />
+              <TextInput id={id('wa')} label="WhatsApp number" type="tel" inputMode="tel" placeholder={businessWhatsApp() || '+234 …'} value={c.whatsappPhone} error={err('whatsappPhone')} hint={waFieldHint(c.whatsappPhone)} onChange={(e) => set({ whatsappPhone: e.target.value }, 'whatsappPhone')} />
               }
             <TextInput id={id('cta')} label="Button label" value={c.ctaLabel} onChange={(e) => set({ ctaLabel: e.target.value }, 'ctaLabel')} />
             <p className="text-caption text-fg-subtle">Prices, photos and sold-out status stay in sync with Commerce. Drafts and archived products never show.</p>
@@ -191,7 +194,7 @@ export function ExtendedContentFields({ block, issues }: Props) {
             <Segmented ariaLabel="Order action" fullWidth value={c.orderAction === 'checkout' ? 'whatsapp' : c.orderAction} onChange={(orderAction) => set({ orderAction }, 'orderAction')} options={[{ value: 'whatsapp', label: 'Open WhatsApp' }, { value: 'link', label: 'Open a link' }]} />
           </Field>
           {c.orderAction !== 'link' &&
-            <TextInput id={id('wa')} label="WhatsApp number" type="tel" inputMode="tel" placeholder="+234 …" value={c.whatsappPhone} error={err('whatsappPhone')} hint="Each order message names the product and price." onChange={(e) => set({ whatsappPhone: e.target.value }, 'whatsappPhone')} />
+            <TextInput id={id('wa')} label="WhatsApp number" type="tel" inputMode="tel" placeholder={businessWhatsApp() || '+234 …'} value={c.whatsappPhone} error={err('whatsappPhone')} hint={waFieldHint(c.whatsappPhone, 'Each order message names the product and price.')} onChange={(e) => set({ whatsappPhone: e.target.value }, 'whatsappPhone')} />
             }
           <TextInput id={id('cta')} label="Button label" value={c.ctaLabel} onChange={(e) => set({ ctaLabel: e.target.value }, 'ctaLabel')} />
           <p className="text-caption text-fg-subtle">Here you mark items sold out yourself. For live stock and checkout, switch to “Commerce” above.</p>
@@ -284,7 +287,7 @@ export function ExtendedContentFields({ block, issues }: Props) {
               </>
               } />
             
-          <TextInput id={id('wa')} label="WhatsApp for orders" type="tel" inputMode="tel" placeholder="+234 …" value={c.whatsappPhone} error={err('whatsappPhone')} hint={warn('whatsappPhone')} onChange={(e) => set({ whatsappPhone: e.target.value }, 'whatsappPhone')} />
+          <TextInput id={id('wa')} label="WhatsApp for orders" type="tel" inputMode="tel" placeholder={businessWhatsApp() || '+234 …'} value={c.whatsappPhone} error={err('whatsappPhone')} hint={warn('whatsappPhone') || waFieldHint(c.whatsappPhone)} onChange={(e) => set({ whatsappPhone: e.target.value }, 'whatsappPhone')} />
           <Switch id={id('open')} label="Taking orders" description="Turn off when the kitchen is closed. The menu stays visible." checked={c.orderingOpen} onChange={(orderingOpen) => set({ orderingOpen }, 'orderingOpen')} />
           {!c.orderingOpen && <TextInput id={id('closed')} label="Message while paused" value={c.closedMessage} onChange={(e) => set({ closedMessage: e.target.value }, 'closedMessage')} />}
         </div>);
@@ -372,7 +375,17 @@ export function ExtendedContentFields({ block, issues }: Props) {
         const c = block.content;
         const set = setter('event');
         const source = c.source ?? 'manual';
-        const sourceSwitch = <SourceSwitch id={id('source')} value={source} catalogLabel="Commerce event" onChange={(v) => set({ source: v }, 'source')} />;
+        const sourceSwitch =
+        <SourceSwitch
+          id={id('source')}
+          value={source}
+          catalogLabel="My events"
+          manualLabel="External event"
+          catalogHint="An event you’ve set up in Commerce → Events. Tickets, seats and dates stay in sync."
+          manualHint="Selling tickets or taking sign-ups somewhere else? Enter the date and place, and link to it."
+          onChange={(v) => set({ source: v }, 'source')} />;
+
+
         if (source === 'catalog') {
           return (
             <div className={stack}>
@@ -442,6 +455,10 @@ export function ExtendedContentFields({ block, issues }: Props) {
         <SourceSwitch
           id={id('source')}
           value={c.source === 'catalog' ? 'catalog' : 'manual'}
+          catalogLabel="My downloads"
+          manualLabel="External file"
+          catalogHint="A digital product you’ve added in Commerce. Buyers get a secure download after paying."
+          manualHint="File hosted somewhere else (Google Drive, Dropbox, your website)? Add its details and link."
           onChange={(source) => set(source === 'catalog' ? { source, ctaLabel: 'Buy and download' } : { source, ctaLabel: c.access === 'paid' ? 'Buy now' : 'Download' }, 'source')} />;
 
 

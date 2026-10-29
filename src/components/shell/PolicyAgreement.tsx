@@ -120,7 +120,7 @@ export function PolicyAgreement() {
           <input type="checkbox" checked={read} onChange={(e) => setRead(e.target.checked)} className="mt-0.5 h-4 w-4 shrink-0" />
           <span>I’ve read the changes and agree on behalf of {current.name}.</span>
         </label>
-        <p className="mt-2 text-caption text-fg-subtle">KUBICU records who agreed and when. Draft wording — pending legal review.</p>
+        <p className="mt-2 text-caption text-fg-subtle">KUBICU records who agreed and when.</p>
       </Dialog>
     </>);
 

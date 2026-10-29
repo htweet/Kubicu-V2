@@ -30,6 +30,17 @@ export function readImageFile(file: File): Promise<HTMLImageElement> {
   });
 }
 
+/** Loads an image already in Media (or a link) so it can be prepared like an upload. */
+export function readImageSrc(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const im = new Image();
+    if (!src.startsWith('data:') && !src.startsWith('blob:')) im.crossOrigin = 'anonymous';
+    im.onload = () => resolve(im);
+    im.onerror = () => reject(new Error('We couldn’t load that image. Try another, or upload it from your device.'));
+    im.src = src;
+  });
+}
+
 /** Draws the image at most `maxPx` on its longest side. `knockout` turns near-white pixels transparent. */
 export function prepareImage(source: CanvasImageSource & {width: number;height: number;}, maxPx: number, opts: {knockout?: boolean;jpeg?: boolean;} = {}): PreparedImage {
   const scale = Math.min(1, maxPx / Math.max(source.width, source.height));

@@ -3,6 +3,7 @@ import type { OrderMoney } from '../../utils/commerce/money';
 import { formatNgn } from '../../utils/format';
 import { IllustrativeTag } from '../ui/IllustrativeTag';
 import { cn } from '../../utils/cn';
+import { vatRateLabel } from '../../utils/commerce/shopSettings';
 import { useT } from '../../contexts/LocaleContext';
 
 interface MoneyBreakdownProps {
@@ -31,7 +32,9 @@ export function MoneyBreakdown({ money, audience = 'seller', className, discount
       {row('Subtotal', money.subtotal)}
       {money.discount > 0 && row(discountLabel ? `${t('Discount')} · ${discountLabel}` : 'Discount', money.discount, { negative: true })}
       {row('Delivery', money.delivery)}
+      {money.vat > 0 && !money.vatInclusive && row(`${t('VAT')} (${vatRateLabel(money.vatRatePct)})`, money.vat)}
       {row('Customer paid', money.gross, { strong: true })}
+      {money.vat > 0 && money.vatInclusive && row(`${t('Includes VAT')} (${vatRateLabel(money.vatRatePct)})`, money.vat, { muted: true })}
       {audience === 'seller' &&
       <>
           {row(

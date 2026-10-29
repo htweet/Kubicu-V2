@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { HandshakeIcon, LockIcon, StoreIcon, UserPlusIcon } from 'lucide-react';
+import { HandshakeIcon, LockIcon, SettingsIcon, StoreIcon, UserPlusIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { useWorkspace } from '../contexts/WorkspaceContext';
 import { useCommerce } from '../contexts/CommerceContext';
@@ -12,7 +12,8 @@ import { useLocalStore } from '../hooks/useLocalStore';
 import { useMoney } from '../hooks/useMoney';
 import { seedsSample } from '../utils/workspaceStorage';
 import { balances, isVerified } from '../utils/money/store';
-import { COLLAB_PLAN, collabKey, commissionLines, emptyCollabs, partnerStatusLabels, partnerStatusTones, partnerTotals, seedCollabs, type Partner } from '../utils/collabs';
+import { COLLAB_PLAN, collabKey, collabSettingsOf, commissionLines, emptyCollabs, partnerStatusLabels, partnerStatusTones, partnerTotals, seedCollabs, type Partner } from '../utils/collabs';
+import { CollabSettingsSheet } from '../components/collabs/CollabSettingsSheet';
 import { formatNgn, publicUrl } from '../utils/format';
 import { uid } from '../utils/id';
 import { PageHeader } from '../components/shell/PageHeader';
@@ -50,6 +51,8 @@ export function Collaborations() {
   const unlocked = planAtLeast(plan.id, COLLAB_PLAN);
   const money = useMoney(current.id);
   const { data, update } = useLocalStore(collabKey(current.id), emptyCollabs);
+  const collabSettings = collabSettingsOf(data);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [editing, setEditing] = useState<Partner | 'new' | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
   const [tab, setTab] = useState<CollabTab>('business');
@@ -84,10 +87,10 @@ export function Collaborations() {
   const rows = useMemo(
     () =>
     data.partners.map((p) => {
-      const lines = commissionLines(p, orders, data.payouts);
+      const lines = commissionLines(p, orders, data.payouts, Date.now(), collabSettings.holdDays);
       return { partner: p, lines, totals: partnerTotals(lines) };
     }),
-    [data.partners, data.payouts, orders]
+    [data.partners, data.payouts, orders, collabSettings.holdDays]
   );
   const sum = (k: 'sales' | 'pending' | 'payable' | 'paid') => rows.reduce((s, r) => s + r.totals[k], 0);
   const open = rows.find((r) => r.partner.id === openId) ?? null;
@@ -142,9 +145,14 @@ export function Collaborations() {
               Work together
             </Button> :
 
-        <Button leadingIcon={unlocked ? UserPlusIcon : LockIcon} disabled={!can.allowed} title={can.allowed ? undefined : can.reason} onClick={() => unlocked ? setEditing('new') : openUpgrade({ plan: COLLAB_PLAN, feature: 'Creator Collaboration' })}>
-              Invite referral partner
-            </Button>
+        <>
+              <Button variant="tertiary" leadingIcon={SettingsIcon} onClick={() => setSettingsOpen(true)}>
+                Settings
+              </Button>
+              <Button leadingIcon={unlocked ? UserPlusIcon : LockIcon} disabled={!can.allowed} title={can.allowed ? undefined : can.reason} onClick={() => unlocked ? setEditing('new') : openUpgrade({ plan: COLLAB_PLAN, feature: 'Creator Collaboration' })}>
+                Invite referral partner
+              </Button>
+            </>
 
         } />
       
@@ -281,7 +289,20 @@ export function Collaborations() {
         partners={data.partners}
         products={commerce.data.products}
         onClose={() => setEditing(null)}
-        onSave={savePartner} />
+        onSave={savePartner}
+        defaults={collabSettings} />
+      
+
+      <CollabSettingsSheet
+        open={settingsOpen}
+        settings={collabSettings}
+        canEdit={can.allowed}
+        onClose={() => setSettingsOpen(false)}
+        onSave={(s) => {
+          update((d) => ({ ...d, settings: s }));
+          toast.success('Referral partner settings saved');
+          setSettingsOpen(false);
+        }} />
       
 
       <PartnerDetail

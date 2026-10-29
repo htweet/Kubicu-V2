@@ -38,6 +38,7 @@ import { flagOn, useAdminStore } from '../utils/admin/store';
 import { CheckoutSheet } from '../components/checkout/CheckoutSheet';
 import { CartButton } from '../components/checkout/CartButton';
 import { ConsentStrip } from '../components/blocks/ConsentStrip';
+import { SearchVerificationTag } from '../components/blocks/SearchVerificationTag';
 import { Button } from '../components/ui/Button';
 import { showsKubicuBadge } from '../utils/branding';
 import { isLiveNow } from '../utils/schedule';
@@ -46,7 +47,8 @@ import { usePageCommerce } from '../hooks/usePageCommerce';
 import type { CampaignPhase, PageDocument, PageTheme } from '../types/page';
 import { LayoutRow } from '../components/blocks/LayoutRow';
 import { StickyActionBar } from '../components/blocks/StickyActionBar';
-import { layoutRows, pageContentWidth, sectionTheme } from '../utils/pageLayout';
+import { bandJoins, layoutRows, pageContentWidth, sectionTheme } from '../utils/pageLayout';
+import { robotsFor } from '../utils/seo';
 import { BlockChildrenProvider, type BlockChildrenValue } from '../contexts/BlockChildrenContext';
 import { blockInPhase, phaseOrder } from '../utils/campaign';
 import { docPhase, phaseCopy } from '../utils/eventSpace';
@@ -168,16 +170,38 @@ export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
     const meta = document.querySelector('meta[name="description"]');
     const previousDescription = meta?.getAttribute('content') ?? null;
     if (meta && view) meta.setAttribute('content', wantShop ? shopProduct?.description.slice(0, 160) ?? (shopData?.storefront.seoDescription?.trim() || shopData?.storefront.intro || '') : view.seo.description);
-    // Search engines (D124): honour "Show in search results" off with a noindex tag.
+    // Share previews (D219): Open Graph title, description and image. Real link previews need server-rendered tags;
+    // these are set for the prototype so the values travel with the page.
+    const og: HTMLMetaElement[] = [];
+    if (view && !wantShop) {
+      const profile = view.blocks.find((b) => b.type === 'profile');
+      const ogImage = view.seo.image || (profile?.type === 'profile' ? profile.content.avatarUrl : '');
+      const tags: [string, string][] = [
+      ['og:title', document.title],
+      ['og:description', view.seo.description],
+      ...(ogImage && /^https?:/.test(ogImage) ? [['og:image', ogImage], ['og:image:alt', view.seo.imageAlt ?? '']] as [string, string][] : [])];
+
+      tags.forEach(([property, content]) => {
+        if (!content) return;
+        const m = document.createElement('meta');
+        m.setAttribute('property', property);
+        m.content = content;
+        document.head.appendChild(m);
+        og.push(m);
+      });
+    }
+    // Search engines (D124, D221): space or page hidden → noindex; "don't follow links" → nofollow.
     let robots: HTMLMetaElement | null = null;
-    if (resolved?.doc.branding?.hideFromSearch) {
+    const robotsContent = resolved ? robotsFor(resolved.doc, wantShop ? null : view?.seo ?? null) : null;
+    if (robotsContent) {
       robots = document.createElement('meta');
       robots.name = 'robots';
-      robots.content = 'noindex, nofollow';
+      robots.content = robotsContent;
       document.head.appendChild(robots);
     }
     return () => {
       robots?.remove();
+      og.forEach((m) => m.remove());
       document.title = previous;
       document.documentElement.lang = previousLang || 'en';
       if (meta && previousDescription !== null) meta.setAttribute('content', previousDescription);
@@ -365,7 +389,7 @@ export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
                             
                     <span id="page-content" tabIndex={-1} className="sr-only">Page content</span>
                     {shopProduct ?
-                            <ProductDetailView theme={doc.theme} data={catalog} product={shopProduct} ordering={storefrontOrdering(catalog, plan.id)} whatsappPhone={catalog.storefront.whatsappPhone || sellerPhone(doc)} shopHref={shopHref} productHref={productHref} shopKey={`${resolved.workspaceId ?? 'example'}:${handle}`} /> :
+                            <ProductDetailView theme={doc.theme} data={catalog} product={shopProduct} ordering={storefrontOrdering(catalog, plan.id)} whatsappPhone={catalog.storefront.whatsappPhone.trim() || sellerPhone(doc)} shopHref={shopHref} productHref={productHref} shopKey={`${resolved.workspaceId ?? 'example'}:${handle}`} /> :
 
                             <StorefrontView theme={doc.theme} data={catalog} productHref={productHref} ordering={storefrontOrdering(catalog, plan.id)} whatsappPhone={catalog.storefront.whatsappPhone || sellerPhone(doc)} shopKey={`${resolved.workspaceId ?? 'example'}:${handle}`} />
                             }
@@ -377,6 +401,7 @@ export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
               {catalog && <CheckoutSheet theme={doc.theme} commerce={commerce} ownerPlan={plan.id} handle={handle} defaultCode={phase === 'live' ? campaignCode : undefined} dealRoom={roomCheckout} popup={stallCheckout} workspaceId={resolved && !resolved.example && !isDraft ? resolved.workspaceId : null} businessName={doc.title} />}
               <CartButton theme={doc.theme} />
               {resolved?.workspaceId && !resolved.example && !isDraft && <ConsentStrip workspaceId={resolved.workspaceId} theme={doc.theme} />}
+              {resolved?.workspaceId && !resolved.example && !isDraft && <SearchVerificationTag workspaceId={resolved.workspaceId} />}
             </CartProvider>
             {hasMemberContent && !isDraft && !example &&
                       <MemberSignInSheet
@@ -571,7 +596,7 @@ function PageBody({
         ) :
         <BlockChildrenProvider value={childCtx}>
             {pageRule && members && column(<div className="mb-3"><MembersOpenBar theme={doc.theme} title={area ? site.title || 'Members area' : 'Members-only page'} id={area ? `area-${handle}` : `page-${pageId}`} access={pageAccess} /></div>)}
-            {rows.map((row) => {
+            {rows.map((row, rowIndex) => {
             const themeFor = sectionTheme(doc.theme, row.background);
             const nodes = row.items.map((item) => {
               if (item.kind === 'locked')
@@ -589,7 +614,7 @@ function PageBody({
               return renderBlock(item.block, themeFor);
             });
             return (
-              <LayoutRow key={row.key} theme={doc.theme} columnPx={columnPx} density={site.layout?.density} width={row.width} background={row.background} ratio={row.ratio} firstSecondOnPhone={row.firstSecondOnPhone}>
+              <LayoutRow key={row.key} {...bandJoins(rows, rowIndex)} theme={doc.theme} columnPx={columnPx} density={site.layout?.density} width={row.width} background={row.background} ratio={row.ratio} firstSecondOnPhone={row.firstSecondOnPhone}>
                   {nodes}
                 </LayoutRow>);
 

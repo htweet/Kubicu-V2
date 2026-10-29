@@ -10,6 +10,7 @@ import { Badge } from '../../ui/Badge';
 import { TextInput } from '../../ui/TextInput';
 import { MAX_BOOKING_SERVICES, bookingPageServices, nextFreeSlot, slotWhen, validWhatsapp } from '../../../utils/bookingPage';
 import { durationLabel } from '../../../utils/ops/slots';
+import { businessWhatsApp, waFieldHint } from '../../../utils/businessWhatsApp';
 import { qrHref } from '../../../utils/domains/links';
 import { cn } from '../../../utils/cn';
 
@@ -122,8 +123,8 @@ export function BookingPageSettingsPanel() {
           optional
           inputMode="tel"
           value={s.whatsapp}
-          placeholder="e.g. 0803 123 4567"
-          hint="Offered as “Message on WhatsApp”. Empty = not offered."
+          placeholder={businessWhatsApp() || 'e.g. 0803 123 4567'}
+          hint={businessWhatsApp() ? waFieldHint(s.whatsapp, 'Offered as “Message on WhatsApp”.') : 'Offered as “Message on WhatsApp”. Empty = not offered.'}
           error={waError}
           onChange={(e) => patch({ whatsapp: e.target.value })} />
         

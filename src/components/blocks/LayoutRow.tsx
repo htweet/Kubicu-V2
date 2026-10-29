@@ -19,6 +19,12 @@ interface LayoutRowProps {
   sideBySide?: 'responsive' | boolean;
   /** Page section spacing (D175). */
   density?: 'comfortable' | 'compact';
+  /**
+   * The row above / below has the same section background (D216). Touching bands merge into one
+   * section: the shared edge loses its band padding so two blocks don't sit a whole chapter apart.
+   */
+  joinPrev?: boolean;
+  joinNext?: boolean;
   children: React.ReactNode[];
 }
 
@@ -26,7 +32,7 @@ interface LayoutRowProps {
  * One row of a page (D153): a width, an optional theme-derived section background,
  * and either one block or two blocks side by side. Defaults reproduce today's single column exactly.
  */
-export function LayoutRow({ theme, columnPx, width, background, ratio, firstSecondOnPhone, sideBySide = 'responsive', density = 'comfortable', children }: LayoutRowProps) {
+export function LayoutRow({ theme, columnPx, width, background, ratio, firstSecondOnPhone, sideBySide = 'responsive', density = 'comfortable', joinPrev = false, joinNext = false, children }: LayoutRowProps) {
   const compact = density === 'compact';
   const st = sectionTheme(theme, background);
   const maxWidth = width === 'column' ? columnPx : width === 'wide' ? WIDE_PX : undefined;
@@ -54,7 +60,16 @@ export function LayoutRow({ theme, columnPx, width, background, ratio, firstSeco
 
   if (background === 'none') return body;
   return (
-    <div className={cn('w-full', compact ? 'py-8 md:py-14' : 'py-14 md:py-24')} style={{ background: st.background, color: st.text }}>
+    <div
+      className={cn(
+        'w-full',
+        // Band edges (D218): enough to frame the section without a screen of empty colour above the first block.
+        // Joined edges add nothing — the blocks' own spacing separates them, as on a plain background.
+        joinPrev ? 'pt-0' : compact ? 'pt-6 md:pt-8' : 'pt-8 md:pt-12',
+        joinNext ? 'pb-0' : compact ? 'pb-6 md:pb-8' : 'pb-8 md:pb-12'
+      )}
+      style={{ background: st.background, color: st.text }}>
+      
       {body}
     </div>);
 

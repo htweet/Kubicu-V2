@@ -10,6 +10,7 @@ import { Tabs } from '../components/ui/Tabs';
 import { ExtensionIcon } from '../components/extensions/ExtensionIcon';
 import { ExtensionDetail } from '../components/extensions/ExtensionDetail';
 import { InstallExtensionDialog } from '../components/extensions/InstallExtensionDialog';
+import { worksWithLine } from '../components/extensions/WorksWith';
 import { useMarketplace } from '../contexts/MarketplaceContext';
 import { useWorkspace } from '../contexts/WorkspaceContext';
 import { averageRating, extensionById, extensionCategories, extensions } from '../data/extensions';
@@ -42,12 +43,12 @@ export function Extensions() {
     const term = q.trim().toLowerCase();
     return catalogue.filter(
       (e) =>
-      (view === 'browse' || market.data.installed[e.id]) && (
+      (view === 'browse' ? !e.retired || !!market.data.installed[e.id] : !!market.data.installed[e.id]) && (
       cat === 'all' || e.category === cat) && (
       !term || `${e.name} ${e.summary} ${e.publisher}`.toLowerCase().includes(term))
     );
   }, [q, cat, view, market.data.installed, catalogue]);
-  const picks = extensions.filter((e) => e.staffPick);
+  const picks = extensions.filter((e) => e.staffPick && !e.retired);
   const showPicks = view === 'browse' && !q && cat === 'all';
 
   return (
@@ -124,13 +125,15 @@ export function Extensions() {
                         {e.verified === 'community' ? <Badge tone="neutral">By {e.publisher}</Badge> : e.preview && <Badge tone="info">Preview</Badge>}
                       </span>
                       <span className="mt-0.5 block truncate text-caption text-fg-muted">{e.summary}</span>
-                      <span className="mt-0.5 block text-caption text-fg-subtle">
-                        {e.publisher} · {extensionCategories[e.category]}
+                      <span className="mt-0.5 block truncate text-caption text-fg-subtle">
+                        {e.worksWith?.length ? `Works with ${worksWithLine(e.worksWith)}` : `${e.publisher} · ${extensionCategories[e.category]}`}
                         {rating !== null && ` · ★ ${rating.toFixed(1)}`}
                       </span>
                     </span>
                     <span className="hidden shrink-0 text-right sm:block">
-                      {rec ?
+                      {e.retired ?
+                      <Badge tone="info">Moved to {e.retired.movedTo}</Badge> :
+                      rec ?
                       <Badge tone={rec.paused ? 'warning' : 'success'} dot>
                           {rec.paused ? 'Paused' : 'Installed'}
                         </Badge> :

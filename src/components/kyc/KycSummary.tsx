@@ -152,12 +152,19 @@ function Rows({ rows }: {rows: [string, string][];}) {
 
 function Docs({ docs }: {docs: [string, KycDoc | null][];}) {
   return (
-    <ul className="mt-3 flex flex-wrap gap-2">
+    <ul className="mt-4 grid gap-2 sm:grid-cols-2">
       {docs.map(([label, doc]) =>
-      <li key={label} className="inline-flex max-w-full items-center gap-1.5 rounded-md bg-sunken px-2.5 py-1.5 text-caption text-fg-muted">
-          <FileTextIcon size={13} aria-hidden className="shrink-0" />
-          <span className="truncate">
-            {label}: {doc ? doc.name : 'missing'}
+      <li key={label} className="flex min-w-0 items-center gap-3 rounded-md border border-line bg-sunken p-2">
+          {doc?.previewUrl ?
+        <img src={doc.previewUrl} alt={label} className="h-12 w-16 shrink-0 rounded object-cover" /> :
+
+        <span aria-hidden className="flex h-12 w-16 shrink-0 items-center justify-center rounded bg-raised text-fg-subtle">
+              <FileTextIcon size={18} />
+            </span>
+        }
+          <span className="min-w-0">
+            <span className="block text-caption font-medium text-fg">{label}</span>
+            <span className={doc ? 'block truncate text-caption text-fg-subtle' : 'block text-caption font-medium text-danger'}>{doc ? `${doc.name}${doc.sizeKb ? ` · ${doc.sizeKb} KB` : ''}` : 'Missing'}</span>
           </span>
         </li>
       )}

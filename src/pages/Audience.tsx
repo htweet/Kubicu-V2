@@ -1,6 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { CopyIcon, DownloadIcon, PlusIcon, SparklesIcon, UploadIcon, UsersIcon } from 'lucide-react';
+import { CopyIcon, DownloadIcon, MailIcon, PlusIcon, SettingsIcon, SparklesIcon, UploadIcon, UsersIcon } from 'lucide-react';
+import { opsSettingsOf } from '../utils/ops/settings';
+import { AudienceSettingsSheet } from '../components/audience/AudienceSettingsSheet';
+import { ExtensionShortcut } from '../components/extensions/ExtensionShortcut';
 import { toast } from 'sonner';
 import type { Contact, ContactSource, ContactStage, ConsentStatus } from '../types/ops';
 import { useOps } from '../contexts/OpsContext';
@@ -41,7 +44,11 @@ export function Audience() {
   const [view, setView] = useState<View>('list');
   const [source, setSource] = useState<ContactSource | 'all'>('all');
   const [consent, setConsent] = useState<ConsentStatus | 'all'>('all');
-  const [dialog, setDialog] = useState<'import' | 'dupes' | 'add' | null>(null);
+  const [tagFilter, setTagFilter] = useState<string>('all');
+  const [dialog, setDialog] = useState<'import' | 'dupes' | 'add' | 'settings' | null>(null);
+  const settings = opsSettingsOf(data);
+  // Tag filter (D259): saved tags first, then any others in use.
+  const tagOptions = Array.from(new Set([...settings.savedTags, ...data.contacts.flatMap((c) => c.tags).sort()]));
   const [newContact, setNewContact] = useState({ name: '', email: '', phone: '' });
   const [tried, setTried] = useState(false);
   const [stageTab, setStageTab] = useState<ContactStage>('new');
@@ -59,8 +66,8 @@ export function Audience() {
   const isMine = (c: Contact) => c.assigneeId === me.id || c.tasks.some((t) => !t.done && t.assigneeId === me.id);
   const mineCount = data.contacts.filter(isMine).length;
   const rows = useMemo(
-    () => data.contacts.filter((c) => (source === 'all' || c.sources.includes(source)) && (consent === 'all' || c.consent === consent) && (!mine || c.assigneeId === me.id || c.tasks.some((t) => !t.done && t.assigneeId === me.id))),
-    [data.contacts, source, consent, mine, me.id]
+    () => data.contacts.filter((c) => (source === 'all' || c.sources.includes(source)) && (consent === 'all' || c.consent === consent) && (tagFilter === 'all' || c.tags.includes(tagFilter)) && (!mine || c.assigneeId === me.id || c.tasks.some((t) => !t.done && t.assigneeId === me.id))),
+    [data.contacts, source, consent, tagFilter, mine, me.id]
   );
   const dupes = duplicatePairs(data.contacts).length;
   const subscribed = data.contacts.filter((c) => c.consent === 'subscribed').length;
@@ -74,7 +81,10 @@ export function Audience() {
   const exportCsv = () =>
   downloadCsv(
     `kubicu-contacts-${new Date().toISOString().slice(0, 10)}.csv`,
-    toCsv(['name', 'email', 'phone', 'consent', 'sources', 'tags', 'stage', 'created'], rows.map((c) => [c.name, c.email, c.phone, c.consent, c.sources.join('; '), c.tags.join('; '), c.stage, c.createdAt]))
+    toCsv(
+      ['name', 'email', 'phone', 'consent', 'sources', 'tags', 'stage', 'created', ...settings.contactFields.map((f) => f.label)],
+      rows.map((c) => [c.name, c.email, c.phone, c.consent, c.sources.join('; '), c.tags.join('; '), c.stage, c.createdAt, ...settings.contactFields.map((f) => c.fields?.[f.id] ?? '')])
+    )
   );
 
   const addErrors = {
@@ -113,6 +123,10 @@ export function Audience() {
         description="Everyone your page brings in — customers, bookings, enquiries and subscribers — with their consent."
         actions={
         <>
+            <ExtensionShortcut id="email-sync" label="Email sync" icon={MailIcon} />
+            <Button variant="tertiary" leadingIcon={SettingsIcon} onClick={() => setDialog('settings')}>
+              Settings
+            </Button>
             <Button variant="tertiary" leadingIcon={UploadIcon} onClick={() => setDialog('import')}>
               Import
             </Button>
@@ -164,7 +178,12 @@ export function Audience() {
               <Segmented<View> ariaLabel="View" value={view} onChange={setView} options={[{ value: 'list', label: 'List' }, { value: 'pipeline', label: 'Pipeline' }]} />
               <MineToggle mine={mine} count={mineCount} onChange={setMine} />
             </div>
-            <div className="grid grid-cols-2 gap-3 md:flex">
+            <div className={cn('grid gap-3 md:flex', tagOptions.length ? 'grid-cols-2 sm:grid-cols-3' : 'grid-cols-2')}>
+              {tagOptions.length > 0 &&
+            <div className="md:w-40">
+                  <SelectInput<string> id="aud-tag" label="Tag" value={tagFilter} onChange={setTagFilter} options={[{ value: 'all', label: tr('Any') }, ...tagOptions.map((t) => ({ value: t, label: t }))]} />
+                </div>
+            }
               <div className="md:w-44">
                 <SelectInput id="aud-src" label="Came from" value={source} onChange={setSource} options={[{ value: 'all', label: tr('Anywhere') }, ...(Object.keys(sourceLabels) as ContactSource[]).map((s) => ({ value: s, label: tr(sourceLabels[s]) }))]} />
               </div>
@@ -260,6 +279,7 @@ export function Audience() {
       <ContactDetail contactId={openId} onClose={() => setParams({})} />
       <ImportContactsDialog open={dialog === 'import'} onClose={() => setDialog(null)} />
       <DuplicatesDialog open={dialog === 'dupes'} onClose={() => setDialog(null)} />
+      <AudienceSettingsSheet open={dialog === 'settings'} onClose={() => setDialog(null)} />
       <Dialog
         open={dialog === 'add'}
         onClose={() => setDialog(null)}

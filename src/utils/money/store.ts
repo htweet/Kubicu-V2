@@ -1,6 +1,7 @@
 import type { Order } from '../../types/commerce';
-import type { BankAccount, KycTier, LedgerEntry, LedgerRefType, LinkPayment, MoneyData, PayArea, PayMethod, Payout, PaymentLink } from '../../types/money';
+import type { BankAccount, KycTier, LedgerEntry, LedgerRefType, LinkPayment, MoneyData, PayArea, PayMethod, Payout, PaymentLink, PendingTransfer } from '../../types/money';
 import { readCommerce } from '../commerce/storage';
+import { orderRef } from '../commerce/shopSettings';
 import { orderMoney } from '../commerce/money';
 import { orderPartnerShares, partnerDebitNgn, partnerRatio } from '../commerce/bundles';
 import { uid } from '../id';
@@ -46,13 +47,44 @@ export const inspectionDays: Record<PayArea, number> = { shop: 3, tickets: 1, bo
 
 export const tierInfo: Record<KycTier, {label: string;checks: string;dailyPayoutNgn: number;balanceCapNgn: number | null;}> = {
   0: { label: 'Not verified', checks: 'Sales still arrive; payouts are off until you’re verified', dailyPayoutNgn: 0, balanceCapNgn: 300_000 },
-  1: { label: 'Basic (legacy)', checks: 'Older phone-and-BVN check — full verification is now required', dailyPayoutNgn: 0, balanceCapNgn: 300_000 },
+  1: { label: 'Starter payouts', checks: 'Phone, BVN, NIN, ID and selfie checked automatically, with a bank account in your own name. Finish verification for higher limits.', dailyPayoutNgn: 50_000, balanceCapNgn: 300_000 },
   2: { label: 'Verified individual', checks: 'Identity, address and payout account checked', dailyPayoutNgn: 2_000_000, balanceCapNgn: 10_000_000 },
   3: { label: 'Verified business', checks: 'Identity, CAC registration, directors and payout account checked', dailyPayoutNgn: 20_000_000, balanceCapNgn: null }
 };
 
-/** Payouts only work once full verification (D93) is approved. */
+/** Full verification (D93) is approved. */
 export const isVerified = (d: MoneyData) => d.kyc.status === 'approved' && d.verification.tier >= 2;
+
+/**
+ * Starter payouts (D243): before full review, once the automated identity checks pass and there's a
+ * bank account in the applicant's own name, small payouts can go to that account. No address proof or
+ * CAC needed yet; KUBICU review isn't required. Lost if verification is rejected or the wallet is frozen.
+ */
+export function starterMissing(d: MoneyData): string[] {
+  const i = d.kyc.identity;
+  const out: string[] = [];
+  if (!i.phoneVerified) out.push('Confirm your phone number');
+  if (i.checks.bvn !== 'pass') out.push('BVN check');
+  if (i.checks.nin !== 'pass') out.push('NIN check');
+  if (!i.idFront) out.push('Photo of your ID');
+  if (i.checks.liveness !== 'pass') out.push('Selfie');
+  if (!personalBanks(d).length) out.push('A bank account in your own name');
+  return out;
+}
+
+/** Bank accounts in the applicant's own (BVN) name — the only ones starter payouts can go to. */
+export function personalBanks(d: MoneyData): BankAccount[] {
+  const name = d.kyc.identity.legalName.trim();
+  return name ? d.banks.filter((b) => nameMatchOf(b.accountName, name) === 'match') : [];
+}
+
+/** Starter is for people selling in their own name; registered businesses pay out to the business account only after review (D242). */
+export const starterEligible = (d: MoneyData) => d.kyc.entity === null || d.kyc.entity === 'individual';
+export const starterReady = (d: MoneyData) => starterEligible(d) && !isVerified(d) && !d.frozen && d.kyc.status !== 'rejected' && starterMissing(d).length === 0;
+
+/** The limits that apply right now: full tier when verified, Starter while the basics are done, otherwise none. */
+export const payoutTier = (d: MoneyData): KycTier => isVerified(d) ? d.verification.tier : starterReady(d) ? 1 : 0;
+export const canPayOut = (d: MoneyData) => payoutTier(d) >= 1;
 
 export const methodLabels: Record<PayMethod, string> = { direct: 'Direct to bank', wallet: 'KUBICU wallet', escrow: 'Escrow' };
 export const areaLabels: Record<PayArea, string> = { shop: 'Shop orders', tickets: 'Event tickets', bookings: 'Bookings', quotes: 'Quotes & jobs', links: 'Payment links', dealrooms: 'DealRooms' };
@@ -145,7 +177,9 @@ export function paidOutToday(d: MoneyData): number {
 
 export function usableBanks(d: MoneyData): BankAccount[] {
   const now = Date.now();
-  return d.banks.filter((b) => Date.parse(b.usableAt) <= now && b.nameMatch !== 'mismatch');
+  // On Starter payouts, money only goes to an account in the applicant's own name.
+  const pool = !isVerified(d) && starterReady(d) ? personalBanks(d) : d.banks;
+  return pool.filter((b) => Date.parse(b.usableAt) <= now && b.nameMatch !== 'mismatch');
 }
 
 export function methodFor(d: MoneyData, area: PayArea): PayMethod {
@@ -190,21 +224,22 @@ function syncNewSales(d: MoneyData, orders: Order[]): MoneyData {
         const m = orderMoney(o);
         const net = m.gross - m.providerFee - m.kubicuFee;
         const at = o.createdAt;
-        const label = `Order #${o.number} · ${o.customer.name || 'Customer'}`;
+        const ref = orderRef(o);
+        const label = `Order ${ref} · ${o.customer.name || 'Customer'}`;
         // Partner bundles (D122): the partner's share is split off at payment, in the same state as the sale.
         const partnerOut = partnerDebitNgn(o);
-        const partnerLabel = `${orderPartnerShares(o).map((s) => s.partnerName).join(' and ')}’s share · #${o.number}`;
+        const partnerLabel = `${orderPartnerShares(o).map((s) => s.partnerName).join(' and ')}’s share · ${ref}`;
         if (method === 'wallet') {
           const availableAt = iso(Date.parse(at) + SETTLE_HOURS * HOUR);
-          add.push({ id: uid('led'), at, kind: 'sale', amountNgn: net, state: 'pending', availableAt, label, ref: { type: 'order', id: o.id, label: `#${o.number}` } });
-          if (partnerOut > 0) add.push({ id: uid('led'), at, kind: 'partner_share', amountNgn: -partnerOut, state: 'pending', availableAt, label: partnerLabel, ref: { type: 'order', id: o.id, label: `#${o.number}` } });
+          add.push({ id: uid('led'), at, kind: 'sale', amountNgn: net, state: 'pending', availableAt, label, ref: { type: 'order', id: o.id, label: ref } });
+          if (partnerOut > 0) add.push({ id: uid('led'), at, kind: 'partner_share', amountNgn: -partnerOut, state: 'pending', availableAt, label: partnerLabel, ref: { type: 'order', id: o.id, label: ref } });
         } else {
           const days = area === 'shop' && o.items.every((i) => i.kind === 'digital') ? 1 : inspectionDays[area];
           // Held until delivery is confirmed or the inspection window ends — no fixed release date (D94).
-          add.push({ id: uid('led'), at, kind: 'sale', amountNgn: net, state: 'held', label: `${label} · in escrow`, ref: { type: 'order', id: o.id, label: `#${o.number}` } });
+          add.push({ id: uid('led'), at, kind: 'sale', amountNgn: net, state: 'held', label: `${label} · in escrow`, ref: { type: 'order', id: o.id, label: ref } });
           const fee = goal ? 0 : sellerEscrowFee(d, m.gross);
-          if (fee) add.push({ id: uid('led'), at, kind: 'fee', amountNgn: -fee, state: 'held', label: `Escrow fee · #${o.number} · in escrow`, ref: { type: 'order', id: o.id } });
-          if (partnerOut > 0) add.push({ id: uid('led'), at, kind: 'partner_share', amountNgn: -partnerOut, state: 'held', label: `${partnerLabel} · in escrow`, ref: { type: 'order', id: o.id, label: `#${o.number}` } });
+          if (fee) add.push({ id: uid('led'), at, kind: 'fee', amountNgn: -fee, state: 'held', label: `Escrow fee · ${ref} · in escrow`, ref: { type: 'order', id: o.id } });
+          if (partnerOut > 0) add.push({ id: uid('led'), at, kind: 'partner_share', amountNgn: -partnerOut, state: 'held', label: `${partnerLabel} · in escrow`, ref: { type: 'order', id: o.id, label: ref } });
           cases.push(newCase(o, goal ? 'goal' : 'order', net - fee - partnerOut, m.gross, days));
         }
       }
@@ -217,10 +252,10 @@ function syncNewSales(d: MoneyData, orders: Order[]): MoneyData {
       const credit = credits[credits.length - 1];
       if (!credit) continue; // paid direct to bank — the refund comes from the provider
       const state = credit.state === 'held' || credit.state === 'reserved' ? credit.state : 'available';
-      add.push({ id: uid('led'), at: r.at, kind: 'refund', amountNgn: -r.amountNgn, state, availableAt: credit.availableAt, label: `Refund · order #${o.number}${state === 'held' ? ' · in escrow' : ''}`, ref: { type: 'order', id: o.id, label: `#${o.number}` } });
+      add.push({ id: uid('led'), at: r.at, kind: 'refund', amountNgn: -r.amountNgn, state, availableAt: credit.availableAt, label: `Refund · order ${orderRef(o)}${state === 'held' ? ' · in escrow' : ''}`, ref: { type: 'order', id: o.id, label: orderRef(o) } });
       // Bundles: the partner's part of the refund comes back from their share, in proportion (D122).
       const back = Math.round(r.amountNgn * partnerRatio(o));
-      if (back > 0) add.push({ id: uid('led'), at: r.at, kind: 'partner_share', amountNgn: back, state, availableAt: credit.availableAt, label: `Partner’s part of refund · #${o.number}`, ref: { type: 'order', id: o.id, label: `#${o.number}` } });
+      if (back > 0) add.push({ id: uid('led'), at: r.at, kind: 'partner_share', amountNgn: back, state, availableAt: credit.availableAt, label: `Partner’s part of refund · ${orderRef(o)}`, ref: { type: 'order', id: o.id, label: orderRef(o) } });
     }
   }
 
@@ -265,14 +300,14 @@ function settle(d: MoneyData): MoneyData {
 
 function autoPayout(d: MoneyData): MoneyData {
   const { mode, thresholdNgn, lastRunAt } = d.autoPayout;
-  if (mode === 'off' || d.frozen || !isVerified(d)) return d;
+  if (mode === 'off' || d.frozen || !canPayOut(d)) return d;
   const bank = usableBanks(d).find((b) => b.primary) ?? usableBanks(d)[0];
   if (!bank) return d;
   const available = balances(d).available;
   const last = lastRunAt ? Date.parse(lastRunAt) : 0;
   const due = mode === 'daily' ? Date.now() - last >= DAY : mode === 'weekly' ? Date.now() - last >= 7 * DAY : available >= thresholdNgn;
   if (!due) return d;
-  const limit = tierInfo[d.verification.tier].dailyPayoutNgn - paidOutToday(d);
+  const limit = tierInfo[payoutTier(d)].dailyPayoutNgn - paidOutToday(d);
   const amount = Math.min(available, limit);
   if (amount < 1000) return d;
   const res = createPayout(d, { amountNgn: amount, bankId: bank.id, by: 'Scheduled payout', outcome: 'paid', auto: true });
@@ -287,11 +322,11 @@ export function payoutFee(auto: boolean): number {
 
 export function payoutBlocker(d: MoneyData): string | null {
   if (d.frozen) return 'Payouts are paused by KUBICU while we check your account. See the notice above.';
-  if (!isVerified(d)) {
-    if (d.kyc.status === 'in_review') return 'Your verification is with KUBICU for review. Payouts start as soon as it’s approved.';
-    if (d.kyc.status === 'needs_info') return 'KUBICU asked for a few changes to your verification. Fix them to start paying out.';
+  if (!canPayOut(d)) {
     if (d.kyc.status === 'rejected') return 'Your verification wasn’t approved. See the note on the Verification page.';
-    return 'Finish verifying your business to pay out. Sales still arrive as normal.';
+    if (!starterEligible(d)) return d.kyc.status === 'in_review' ? 'Your verification is with KUBICU for review. Payouts start as soon as it’s approved.' : 'Finish verifying your business to pay out. Sales still arrive as normal.';
+    const missing = starterMissing(d);
+    return `To start small payouts (up to ₦${tierInfo[1].dailyPayoutNgn.toLocaleString('en-NG')} a day) you still need: ${missing.join(', ').toLowerCase()}. Sales still arrive as normal.`;
   }
   if (!d.banks.length) return 'Add a bank account to pay out.';
   if (!usableBanks(d).length) return 'Your new bank account is in its 24-hour safety wait.';
@@ -308,11 +343,11 @@ input: {amountNgn: number;bankId: string;by: string;outcome: 'paid' | 'failed';a
   if (!usableBanks(d).some((b) => b.id === bank.id)) return { error: 'This account is still in its safety wait.' };
   const fee = payoutFee(input.auto);
   const available = balances(d).available;
-  if (!isVerified(d)) return { error: 'Finish verifying your business to pay out.' };
+  if (!canPayOut(d)) return { error: 'Finish the identity checks and add a bank account in your own name to pay out.' };
   if (input.amountNgn < 1000) return { error: 'The smallest payout is ₦1,000.' };
   if (input.amountNgn + fee > available) return { error: `You have ${available.toLocaleString('en-NG')} available, including the ₦${fee} fee.` };
-  const left = tierInfo[d.verification.tier].dailyPayoutNgn - paidOutToday(d);
-  if (input.amountNgn > left) return { error: `That's over today's limit. You can pay out up to ₦${Math.max(0, left).toLocaleString('en-NG')} more today.` };
+  const left = tierInfo[payoutTier(d)].dailyPayoutNgn - paidOutToday(d);
+  if (input.amountNgn > left) return { error: `That's over today's limit. You can pay out up to ₦${Math.max(0, left).toLocaleString('en-NG')} more today.${isVerified(d) ? '' : ' Finish verification for higher limits.'}` };
   const at = new Date().toISOString();
   const bankLabel = `${bank.bankName} ····${bank.last4}`;
   const payout: Payout = { id: uid('po'), amountNgn: input.amountNgn, feeNgn: fee, bankId: bank.id, bankLabel, status: 'processing', createdAt: at, settledAt: null, outcome: input.outcome, failureReason: null, holdReason: null, auto: input.auto, by: input.by };
@@ -484,8 +519,17 @@ function seedMoney(): MoneyData {
   const bank: BankAccount = { id: 'bank_s1', bankName: 'GTBank', last4: '4821', accountName: 'Adaeze Atelier', nameMatch: 'match', addedAt: iso(now - 40 * DAY), usableAt: iso(now - 39 * DAY), primary: true };
   const payout: Payout = { id: 'po_s1', amountNgn: 60_000, feeNgn: PAYOUT_FEE_NGN, bankId: bank.id, bankLabel: 'GTBank ····4821', status: 'paid', createdAt: iso(now - 5 * DAY), settledAt: iso(now - 5 * DAY + 2 * HOUR), outcome: 'paid', failureReason: null, holdReason: null, auto: false, by: 'Owner', sample: true };
   const linkPayments: LinkPayment[] = [
-  { id: 'lp_s1', at: iso(now - 3 * DAY), amountNgn: 15_000, payerName: 'Temi A.', payerPhone: '0803 000 1122', note: '', method: 'wallet', receipt: 'R-00001', sample: true },
-  { id: 'lp_s2', at: iso(now - 6 * HOUR), amountNgn: 15_000, payerName: 'Bisi O.', payerPhone: '0812 000 3344', note: 'Saturday class please', method: 'wallet', receipt: 'R-00002', sample: true }];
+  { id: 'lp_s1', at: iso(now - 3 * DAY), amountNgn: 15_000, payerName: 'Temi A.', payerPhone: '0803 000 1122', note: '', method: 'wallet', receipt: 'R-00001', sample: true, payBy: 'card', payerEmail: 'temi@example.com', answers: [{ label: 'Which class?', value: 'Saturday 10am' }] },
+  { id: 'lp_s2', at: iso(now - 6 * HOUR), amountNgn: 15_000, payerName: 'Bisi O.', payerPhone: '0812 000 3344', note: 'Saturday class please', method: 'wallet', receipt: 'R-00002', sample: true, payBy: 'account', answers: [{ label: 'Which class?', value: 'Saturday 2pm' }] }];
+
+  // D224 sample: one transfer to the seller's own account waiting to be confirmed.
+  const pending: PendingTransfer[] = [
+  {
+    id: 'pt_s1',
+    at: iso(now - 2 * HOUR),
+    status: 'waiting',
+    payment: { amountNgn: 15_000, payerName: 'Ngozi E.', payerPhone: '0809 000 5566', note: '', payBy: 'transfer', transferTo: { bank: 'GTBank', account: '0123454821', accountName: 'Adaeze Atelier' }, answers: [{ label: 'Which class?', value: 'Saturday 10am' }], sample: true }
+  }];
 
   const link: PaymentLink = {
     ...blankLink(),
@@ -501,7 +545,11 @@ function seedMoney(): MoneyData {
     views: 41,
     createdAt: iso(now - 10 * DAY),
     payments: linkPayments,
-    sample: true
+    sample: true,
+    ask: { email: 'optional', address: 'off' },
+    questions: [{ id: 'q_s1', label: 'Which class?', type: 'choice', options: ['Saturday 10am', 'Saturday 2pm'], required: true }],
+    after: { message: 'Thank you! We’ll send directions to the studio the day before your class.', redirectUrl: '' },
+    pendingTransfers: pending
   };
   const ledger: LedgerEntry[] = [
   { id: 'led_s1', at: iso(now - 6 * HOUR), kind: 'link', amountNgn: 15_000 - linkProviderFee(15_000), state: 'pending', availableAt: iso(now + 18 * HOUR), label: 'Gele tying masterclass · Bisi O.', ref: { type: 'link', id: link.id, label: 'R-00002' }, sample: true },

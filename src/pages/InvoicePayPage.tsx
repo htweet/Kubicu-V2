@@ -5,7 +5,8 @@ import type { ServiceOsData } from '../types/serviceOs';
 import type { PageTheme } from '../types/page';
 import type { StageRow } from '../utils/milestones';
 import { useResolvedPage } from '../hooks/useResolvedPage';
-import { balanceOf, formatDay, itemsTotal, lineTotal, paidOf, readServiceOs, SERVICE_OS_EVENT, todayKey, writeServiceOs } from '../utils/serviceOs';
+import { balanceOf, formatDay, lineTotal, paidOf, readServiceOs, SERVICE_OS_EVENT, todayKey, vatSplit, writeServiceOs } from '../utils/serviceOs';
+import { vatRateLabel } from '../utils/commerce/shopSettings';
 import { stageRows } from '../utils/milestones';
 import { inspectionDays, methodFor, readMoney, recordInvoicePayment, writeMoney } from '../utils/money/store';
 import { formatNgn, formatTimestamp } from '../utils/format';
@@ -50,6 +51,7 @@ export function InvoicePayPage() {
   const stages = quote && invoice.milestoneId ? stageRows(data, quote) : [];
   const stage = stages.find((r) => r.m.id === invoice.milestoneId);
   const balance = balanceOf(invoice);
+  const split = vatSplit(invoice.items, invoice.vat);
   const overdue = invoice.status === 'sent' && invoice.dueDate < todayKey();
   const escrow = methodFor(readMoney(workspaceId), 'quotes') === 'escrow';
 
@@ -142,6 +144,14 @@ export function InvoicePayPage() {
                     </li>
                 )}
                 </ul>
+                {invoice.vat && split.vat > 0 &&
+              <div className="mt-3 flex items-baseline justify-between text-[13.5px]" style={muted}>
+                    <span>
+                      {invoice.vat.inclusive ? 'Includes VAT' : 'VAT'} ({vatRateLabel(invoice.vat.ratePct)})
+                    </span>
+                    <span className="tabular-nums">{formatNgn(split.vat)}</span>
+                  </div>
+              }
                 {paidOf(invoice) > 0 &&
               <div className="mt-3 flex items-baseline justify-between text-[13.5px]" style={muted}>
                     <span>Already paid</span>
@@ -150,8 +160,13 @@ export function InvoicePayPage() {
               }
                 <div className="mt-2 flex items-baseline justify-between text-[16px] font-semibold" style={{ color: t.text }}>
                   <span>{invoice.status === 'paid' ? 'Total' : 'To pay now'}</span>
-                  <span className="tabular-nums">{formatNgn(invoice.status === 'paid' ? itemsTotal(invoice.items) : balance)}</span>
+                  <span className="tabular-nums">{formatNgn(invoice.status === 'paid' ? split.total : balance)}</span>
                 </div>
+                {invoice.note &&
+              <p className="mt-4 whitespace-pre-line text-[13.5px] leading-relaxed" style={muted}>
+                    {invoice.note}
+                  </p>
+              }
               </section>
 
               {stages.length > 0 && <StagePlan rows={stages} currentId={invoice.milestoneId} theme={t} />}

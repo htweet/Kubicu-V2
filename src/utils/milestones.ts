@@ -1,5 +1,5 @@
 import type { Invoice, Job, Milestone, MilestoneTemplate, MilestoneTrigger, Quote, ServiceOsData } from '../types/serviceOs';
-import { addDays, formatDay, itemsTotal, paidOf, todayKey } from './serviceOs';
+import { addDays, docNumber, formatDay, itemsTotal, paidOf, serviceSettingsOf, todayKey } from './serviceOs';
 import { uid } from './id';
 
 /** Milestone payments for Quotes & jobs (D95): the seller splits a quote into stages, each with its own pay link. */
@@ -146,15 +146,18 @@ export function requestStage(d: ServiceOsData, quoteId: string, stageId: string)
   if (amount <= 0) return null;
   const n = d.counters.invoice + 1;
   const idx = (q.milestones ?? []).findIndex((x) => x.id === m.id) + 1;
+  const s = serviceSettingsOf(d);
   const invoice: Invoice = {
     id: uid('inv'),
-    number: `INV-${String(n).padStart(4, '0')}`,
+    number: docNumber(s.invoicePrefix, n),
     title: q.title,
     client: q.client,
     items: [{ id: uid('li'), label: `Stage ${idx} of ${q.milestones!.length}: ${m.label} (${m.pct}%)`, qty: 1, unitNgn: amount }],
     quoteId: q.id,
     milestoneId: m.id,
-    dueDate: m.trigger === 'date' && m.date && m.date > todayKey() ? m.date : addDays(3),
+    vat: q.vat,
+    note: s.invoiceNote || undefined,
+    dueDate: m.trigger === 'date' && m.date && m.date > todayKey() ? m.date : addDays(s.dueDays),
     status: 'sent',
     payments: [],
     createdAt: new Date().toISOString()

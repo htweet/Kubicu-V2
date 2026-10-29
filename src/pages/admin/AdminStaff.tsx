@@ -86,7 +86,7 @@ export function AdminStaff() {
   const confirm = (reason: string) => {
     if (!action) return;
     if (action.kind === 'invite') {
-      if (!name.trim() || !isEmail(email)) return setInviteError('Add their name and a @kubicu.com email.');
+      if (!name.trim() || !isEmail(email)) return setInviteError('Add their name and a @kub.icu email.');
       if (staff.some((m) => m.email.toLowerCase() === email.trim().toLowerCase())) return setInviteError('That email already has a staff account.');
       const m: StaffMember = { id: uid('stf'), name: name.trim(), email: email.trim().toLowerCase(), role, status: 'invited', twoStep: false, lastActiveAt: null, invitedAt: new Date().toISOString() };
       setStore((s) => audit({ ...s, staff: [...s.staff, m] }, { area: 'staff', action: `Invited as ${roleInfo(role).label}`, target: m.email, reason }));
@@ -354,7 +354,7 @@ export function AdminStaff() {
         {action?.kind === 'invite' &&
         <>
             <TextInput id="staff-invite-name" label="Full name" value={name} onChange={(e) => setName(e.target.value)} />
-            <TextInput id="staff-invite-email" label="Work email" type="email" placeholder="name@kubicu.com" value={email} onChange={(e) => setEmail(e.target.value)} error={inviteError || undefined} />
+            <TextInput id="staff-invite-email" label="Work email" type="email" placeholder="name@kub.icu" value={email} onChange={(e) => setEmail(e.target.value)} error={inviteError || undefined} />
           </>
         }
         {(action?.kind === 'invite' || action?.kind === 'role') && <SelectInput<StaffRole> id="staff-role" label="Role" value={role} options={roleOptions} onChange={setRole} hint={roleInfo(role).description} />}

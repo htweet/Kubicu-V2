@@ -9,7 +9,7 @@ import { nextFor } from '../../../utils/compositionCheck';
 import { childrenOf, parentOf } from '../../../utils/containers';
 
 /**
- * "Goes well after this" (D174): up to three next blocks for the selected one, from a fixed table — no AI.
+ * "Suggested next blocks" (D174; renamed D217): up to three next blocks for the selected one, from a fixed table — no AI.
  * Adds straight below this block (or below its container). Hidden for a block type once dismissed.
  */
 export function NextBlockSuggestions({ block }: {block: Block;}) {
@@ -27,9 +27,9 @@ export function NextBlockSuggestions({ block }: {block: Block;}) {
   const after = blocks.indexOf(unit[unit.length - 1]) + 1;
 
   return (
-    <section aria-label="Goes well after this" className="rounded-md border border-dashed border-line-strong p-3">
+    <section aria-label="Suggested next blocks" className="rounded-md border border-dashed border-line-strong p-3">
       <div className="flex items-center justify-between gap-2">
-        <h3 className="text-caption font-semibold text-fg">Goes well after this</h3>
+        <h3 className="text-caption font-semibold text-fg">Suggested next blocks</h3>
         <button type="button" aria-label="Don’t suggest for this block type" title="Don’t suggest for this block type" onClick={() => shelf.dismiss(key)} className="inline-flex h-7 w-7 items-center justify-center rounded-sm text-fg-subtle hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
           <XIcon size={13} aria-hidden />
         </button>
@@ -55,7 +55,7 @@ export function NextBlockSuggestions({ block }: {block: Block;}) {
 
         })}
       </div>
-      <p className="mt-2 text-[11.5px] text-fg-subtle">Common next steps for a {blockDefinitions[block.type].name.toLowerCase()}. Adds below it.</p>
+      <p className="mt-2 text-[11.5px] text-fg-subtle">Often placed after {blockDefinitions[block.type].name}. Tap one to add it right below.</p>
     </section>);
 
 }

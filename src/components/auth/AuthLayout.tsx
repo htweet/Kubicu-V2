@@ -4,6 +4,7 @@ import { FlaskConicalIcon } from 'lucide-react';
 import { KubicuLogo } from '../shell/KubicuLogo';
 import { PlatformLook } from '../marketing/PlatformLook';
 import { TemplateThumb } from '../templates/TemplateThumb';
+import { KbShape } from '../marketing/home/KbShape';
 import { findExampleById } from '../../data/examples';
 
 interface AuthLayoutProps {
@@ -25,7 +26,7 @@ export function AuthLayout({ title, description, children, footer }: AuthLayoutP
             <KubicuLogo />
           </Link>
           <main className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-12">
-            <h1 className="font-display text-[32px] font-semibold leading-tight tracking-[-0.025em] text-fg">{title}</h1>
+            <h1 className="kb-display text-[38px] leading-[1] text-fg">{title}</h1>
             {description && <div className="mt-2 text-label text-fg-muted">{description}</div>}
             <div className="mt-8">{children}</div>
             {footer && <div className="mt-8 text-label text-fg-muted">{footer}</div>}
@@ -36,16 +37,14 @@ export function AuthLayout({ title, description, children, footer }: AuthLayoutP
           </p>
         </div>
         <aside aria-hidden className="hidden p-4 lg:block">
-          <div className="nm-frame h-full rounded-[28px]">
-            <div className="dot-stage flex h-full flex-col items-center justify-center gap-8 rounded-[27px] px-10">
-              <p className="max-w-xs text-center font-display text-[26px] font-semibold leading-tight tracking-[-0.02em] text-fg">
-                One link. <span className="nm-text">Your whole business.</span>
-              </p>
-              <div className="nm-glow rounded-[24px]">
-                <TemplateThumb doc={showcase.doc} width={240} height={480} />
-              </div>
-              <p className="text-caption text-fg-subtle">Example page · fictional business</p>
+          <div className="relative flex h-full flex-col items-center justify-center gap-8 overflow-hidden rounded-[36px] bg-[rgb(var(--kb-lime))] px-10 text-[rgb(var(--kb-forest))]">
+            <KbShape kind="asterisk" color="rgb(var(--kb-pink))" size={96} motion="spin" className="absolute -right-4 top-10" />
+            <KbShape kind="circle" color="rgb(var(--kb-cobalt))" size={80} motion="bob" className="absolute -left-6 bottom-24" />
+            <p className="kb-display relative max-w-sm text-center text-[40px] leading-[0.98]">One link. Your whole business.</p>
+            <div className="relative overflow-hidden rounded-[26px] border-[5px] border-[rgb(var(--kb-forest))] bg-[rgb(var(--kb-forest))] shadow-3">
+              <TemplateThumb doc={showcase.doc} width={240} height={480} />
             </div>
+            <p className="relative text-caption font-semibold">Example page · fictional business</p>
           </div>
         </aside>
       </div>

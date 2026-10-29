@@ -18,10 +18,13 @@ import { IconButton } from '../ui/IconButton';
 import { SkipLink } from '../ui/SkipLink';
 import { cn } from '../../utils/cn';
 import { StaffNotificationsProvider } from '../../contexts/StaffNotificationsContext';
+import { useAdminNavCounts } from '../../hooks/useAdminNavCounts';
 import { StaffNotificationBell, StaffNotificationsPanel } from './StaffNotifications';
 
 function AdminNavList({ staff, collapsed, tip, onNavigate }: {staff: StaffMember;collapsed?: boolean;tip?: SideTip;onNavigate?: () => void;}) {
   const groups = adminNav.map((g) => ({ ...g, items: g.items.filter((i) => roleCanOpen(staff.role, i.id)) })).filter((g) => g.items.length);
+  // D248: each badge repeats the waiting count shown on that area's own page.
+  const waiting = useAdminNavCounts();
   return (
     <div className="flex flex-col gap-6">
       {groups.map((group) =>
@@ -30,7 +33,7 @@ function AdminNavList({ staff, collapsed, tip, onNavigate }: {staff: StaffMember
           <ul className="flex flex-col gap-0.5">
             {group.items.map((item) =>
           <li key={item.id}>
-                <SidebarItem to={`/admin/${item.id}`} label={item.label} icon={item.icon} soon={!item.built} collapsed={collapsed} tip={tip} onNavigate={onNavigate} />
+                <SidebarItem to={`/admin/${item.id}`} label={item.label} icon={item.icon} soon={!item.built} collapsed={collapsed} tip={tip} onNavigate={onNavigate} badge={waiting[item.id] || undefined} />
               </li>
           )}
           </ul>

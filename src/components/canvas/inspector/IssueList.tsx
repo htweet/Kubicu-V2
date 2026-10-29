@@ -4,7 +4,7 @@ import type { ValidationIssue } from '../../../utils/validation';
 import { UpgradeButton } from '../../ui/UpgradeButton';
 import { cn } from '../../../utils/cn';
 
-export function IssueList({ issues, className }: {issues: ValidationIssue[];className?: string;}) {
+export function IssueList({ issues, className, actionFor }: {issues: ValidationIssue[];className?: string;actionFor?: (issue: ValidationIssue) => React.ReactNode;}) {
   if (issues.length === 0) return null;
   return (
     <ul className={cn('flex flex-col gap-1.5', className)} aria-label="Things to fix">
@@ -23,6 +23,7 @@ export function IssueList({ issues, className }: {issues: ValidationIssue[];clas
                 {issue.message}
               </span>
               {issue.upgradeTo && <UpgradeButton plan={issue.upgradeTo} feature={issue.upgradeFeature ?? 'This feature'} className="self-start" />}
+              {actionFor?.(issue)}
             </span>
           </li>);
 

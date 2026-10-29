@@ -4,6 +4,7 @@ import { CheckIcon, PencilIcon, SparklesIcon, XIcon } from 'lucide-react';
 import { useOps } from '../../contexts/OpsContext';
 import { useTeam } from '../../contexts/TeamContext';
 import { decideDraft } from '../../utils/ops/liveRuns';
+import { pendingDrafts } from '../../utils/ops/pendingDrafts';
 import { formatRelative } from '../../utils/format';
 import { Button } from '../ui/Button';
 import { TextArea } from '../ui/TextArea';
@@ -16,9 +17,7 @@ export function PendingDrafts() {
   const [editing, setEditing] = useState<string | null>(null);
   const [text, setText] = useState('');
 
-  const waiting = data.automations.flatMap((a) =>
-  a.runs.filter((r) => !r.test).flatMap((r) => r.steps.map((s, i) => ({ a, r, s, i })).filter((x) => x.s.status === 'waiting'))
-  );
+  const waiting = pendingDrafts(data.automations);
   if (waiting.length === 0) return null;
 
   const decide = (aId: string, rId: string, i: number, approve: boolean, newText?: string) => {

@@ -6,6 +6,7 @@ import { useCommerce } from '../../contexts/CommerceContext';
 import { useEditor } from '../../contexts/EditorContext';
 import { usePlan } from '../../contexts/PlanContext';
 import { planAtLeast, plans } from '../../data/plans';
+import { NO_WA_NUMBER, businessWhatsApp, waFieldHint, waNumber } from '../../utils/businessWhatsApp';
 import { CHECKOUT_PLAN } from '../../utils/commerce/linkIssues';
 import { shopPathTaken, shopProducts, sortProducts, storefrontConfig, STOREFRONT_PATH, type StorefrontConfig } from '../../utils/commerce/storefront';
 import { isCustomised, lookDef, type ShopParts } from '../../utils/commerce/shopLooks';
@@ -29,6 +30,7 @@ import { Card } from '../../components/ui/layout/Card';
 import { Section } from '../../components/ui/layout/Section';
 import { FeaturedPicker } from '../../components/commerce/storefront/FeaturedPicker';
 import { useT } from '../../contexts/LocaleContext';
+import { shopSettingsOf } from '../../utils/commerce/shopSettings';
 
 const ANNOUNCEMENT_MAX = 90;
 const SEO_TITLE_MAX = 60;
@@ -49,7 +51,8 @@ export function Storefront() {
   const set = <K extends keyof StorefrontConfig,>(k: K, v: StorefrontConfig[K]) => setDraft((d) => ({ ...d, [k]: v }));
   const checkoutAllowed = planAtLeast(plan.id, CHECKOUT_PLAN);
   const usesWhatsApp = draft.ordering === 'whatsapp' || !checkoutAllowed;
-  const phoneError = draft.enabled && usesWhatsApp && !isValidPhone(draft.whatsappPhone) ? 'Add the WhatsApp number orders go to, e.g. +234 803 123 4567.' : '';
+  const shopPhone = waNumber(draft.whatsappPhone);
+  const phoneError = draft.enabled && usesWhatsApp && !isValidPhone(shopPhone) ? shopPhone ? 'Add the WhatsApp number with its country code, e.g. +234 803 123 4567.' : NO_WA_NUMBER : '';
   const titleError = draft.enabled && !draft.title.trim() ? 'Give the shop a title.' : '';
   const bannerAltError = draft.bannerUrl && !draft.bannerAlt.trim() ? 'Describe the banner for people who can’t see it.' : '';
   const clash = shopPathTaken(state.site);
@@ -198,12 +201,12 @@ export function Storefront() {
                 </InlineAlert>
               }
               {usesWhatsApp &&
-              <TextInput id="sf-phone" label="WhatsApp number" type="tel" inputMode="tel" value={draft.whatsappPhone} placeholder="+234 …" error={tried ? phoneError || undefined : undefined} hint="Each product sends a pre-filled message with the chosen option and price." onChange={(e) => set('whatsappPhone', e.target.value)} />
+              <TextInput id="sf-phone" label="WhatsApp number" type="tel" inputMode="tel" value={draft.whatsappPhone} placeholder={businessWhatsApp() || '+234 …'} error={tried ? phoneError || undefined : undefined} hint={waFieldHint(draft.whatsappPhone, 'Each product sends a pre-filled message with the chosen option and price.')} onChange={(e) => set('whatsappPhone', e.target.value)} />
               }
               {!usesWhatsApp &&
               <p className="text-caption text-fg-muted">
                   {tr('Shoppers add to a cart and pay at checkout, with your delivery options, discount codes and payment settings.')}{' '}
-                  <Link to="/app/commerce/settings" className="font-medium text-fg underline underline-offset-2">{tr('Delivery options')}</Link>
+                  <Link to="/app/commerce/settings#delivery" className="font-medium text-fg underline underline-offset-2">{tr('Delivery options')}</Link>
                   {' · '}
                   <Link to="/app/commerce/payments" className="font-medium text-fg underline underline-offset-2">{tr('Payment settings')}</Link>
                 </p>
@@ -218,7 +221,19 @@ export function Storefront() {
           <Card id="sf-notes" title="Good to know" description="Short notes at the bottom of the shop. Leave one empty to hide it." className={offCls}>
             <div className="flex flex-col gap-4">
               <TextArea id="sf-delivery" label="Delivery" optional rows={2} maxLength={300} value={draft.deliveryNote} disabled={off} placeholder={tr('e.g. Same-day in Lagos if you order by 2pm. Nationwide in 2–4 days.')} onChange={(e) => set('deliveryNote', e.target.value)} />
-              <TextArea id="sf-returns" label="Returns & exchanges" optional rows={2} maxLength={300} value={draft.returnsNote} disabled={off} placeholder={tr('e.g. Exchanges within 7 days on unworn items with tags.')} onChange={(e) => set('returnsNote', e.target.value)} />
+              {shopSettingsOf(data).policy.set ?
+              <div>
+                  <p className="text-label font-medium text-fg">{tr('Returns & exchanges')}</p>
+                  <p className="mt-1 text-caption text-fg-muted">
+                    {tr('Your shop shows the returns policy from Commerce settings.')}{' '}
+                    <Link to="/app/commerce/settings#policies" className="font-medium text-action hover:underline">
+                      {tr('Edit in Policies')}
+                    </Link>
+                  </p>
+                </div> :
+
+              <TextArea id="sf-returns" label="Returns & exchanges" optional rows={2} maxLength={300} value={draft.returnsNote} disabled={off} placeholder={tr('e.g. Exchanges within 7 days on unworn items with tags.')} hint={tr('Or set a full returns policy in Commerce settings → Policies.')} onChange={(e) => set('returnsNote', e.target.value)} />
+              }
             </div>
           </Card>
 
@@ -256,7 +271,7 @@ export function Storefront() {
               </Link>
             </div> :
 
-          <StorefrontLivePreview theme={state.site.theme} data={{ ...data, storefront: draft }} ordering={usesWhatsApp ? 'whatsapp' : 'checkout'} whatsappPhone={draft.whatsappPhone} />
+          <StorefrontLivePreview theme={state.site.theme} data={{ ...data, storefront: draft }} ordering={usesWhatsApp ? 'whatsapp' : 'checkout'} whatsappPhone={shopPhone} />
           }
           {(noPhoto > 0 || noPrice > 0) &&
           <InlineAlert tone="warning" title="Some products look unfinished">

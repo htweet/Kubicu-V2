@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { useLocation, useNavigate } from 'react-router-dom';
 import type { InstalledExtension, MarketplaceData } from '../types/marketplace';
 import { useWorkspace } from './WorkspaceContext';
 import { useTeam } from './TeamContext';
@@ -23,6 +24,8 @@ interface MarketplaceValue {
   setPaused: (id: string, paused: boolean) => void;
   updateSettings: (id: string, settings: Record<string, string>) => void;
   rollback: (id: string) => void;
+  /** Retired extension → its new home: installs that app if needed, then removes the old record (D231). */
+  moveRetired: (id: string) => void;
   hasLicence: (templateId: string) => boolean;
   addLicence: (templateId: string) => void;
 }
@@ -76,6 +79,27 @@ export function MarketplaceProvider({ children }: {children: React.ReactNode;}) 
     });
   }, [pulls, data.installed, patch]);
 
+  // One-time "this is now part of…" notice for retired extensions (D231), only inside the app.
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const inApp = pathname.startsWith('/app');
+  useEffect(() => {
+    if (!inApp) return;
+    const noticed = new Set(data.retiredNoticed ?? []);
+    const fresh = Object.keys(data.installed).filter((id) => extensionById[id]?.retired && !noticed.has(id));
+    if (!fresh.length) return;
+    fresh.forEach((id) => {
+      const info = extensionById[id];
+      const r = info.retired!;
+      toast(`${info.name} is now part of ${r.movedTo}`, {
+        description: 'Nothing stops working. Open Extensions to move it when you’re ready.',
+        duration: 10000,
+        action: { label: 'See where', onClick: () => navigate(`/app/extensions?ext=${id}`) }
+      });
+    });
+    apply((d) => ({ ...d, retiredNoticed: Array.from(new Set([...(d.retiredNoticed ?? []), ...fresh])) }));
+  }, [inApp, data.installed, data.retiredNoticed, apply, navigate]);
+
   const value = useMemo<MarketplaceValue>(
     () => ({
       data,
@@ -110,22 +134,35 @@ export function MarketplaceProvider({ children }: {children: React.ReactNode;}) 
           delete installed[id];
           return { ...d, installed };
         });
-        team.log('settings', `uninstalled the ${extensionById[id].name} extension`, '/app/extensions');
+        team.log('settings', `uninstalled the ${extensionById[id]?.name ?? 'an'} extension`, '/app/extensions');
       },
       setPaused: (id, paused) => {
         patch(id, { paused });
-        team.log('settings', `${paused ? 'paused' : 'resumed'} the ${extensionById[id].name} extension`, `/app/extensions?ext=${id}`);
+        team.log('settings', `${paused ? 'paused' : 'resumed'} the ${extensionById[id]?.name ?? 'an'} extension`, `/app/extensions?ext=${id}`);
       },
       updateSettings: (id, settings) => {
         patch(id, { settings });
-        team.log('settings', `changed settings for ${extensionById[id].name}`, `/app/extensions?ext=${id}`);
+        team.log('settings', `changed settings for ${extensionById[id]?.name ?? 'an extension'}`, `/app/extensions?ext=${id}`);
       },
       rollback: (id) => {
         const info = extensionById[id];
-        const prev = info.versions[1]?.version;
+        const prev = info?.versions[1]?.version;
         if (!prev) return;
         patch(id, { version: prev });
         team.log('settings', `rolled ${info.name} back to ${prev}`, `/app/extensions?ext=${id}`);
+      },
+      moveRetired: (id) => {
+        const info = extensionById[id];
+        const r = info?.retired;
+        if (!r) return;
+        const target = r.installs ? extensionById[r.installs] : undefined;
+        apply((d) => {
+          const installed = { ...d.installed };
+          delete installed[id];
+          if (target && !installed[target.id]) installed[target.id] = { id: target.id, version: target.version, installedAt: new Date().toISOString(), paused: false, settings: {} };
+          return { ...d, installed };
+        });
+        team.log('settings', `moved ${info.name} to ${r.movedTo}`, r.href);
       },
       hasLicence: (templateId) => data.templateLicences.includes(templateId),
       addLicence: (templateId) => apply((d) => ({ ...d, templateLicences: Array.from(new Set([...d.templateLicences, templateId])) }))

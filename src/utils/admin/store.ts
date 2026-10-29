@@ -17,12 +17,12 @@ function seed(): AdminStore {
   const now = new Date().toISOString();
   return {
     staff: [
-    { id: 'stf-tolu', name: 'Tolu Bakare', email: 'tolu@kubicu.com', role: 'lead', status: 'active', twoStep: true, lastActiveAt: ago(1), invitedAt: ago(24 * 200) },
+    { id: 'stf-tolu', name: 'Tolu Bakare', email: 'tolu@kub.icu', role: 'lead', status: 'active', twoStep: true, lastActiveAt: ago(1), invitedAt: ago(24 * 200) },
     SECOND_LEAD,
-    { id: 'stf-ifeanyi', name: 'Ifeanyi Okafor', email: 'ifeanyi@kubicu.com', role: 'trust', status: 'active', twoStep: true, lastActiveAt: ago(6), invitedAt: ago(24 * 120) },
-    { id: 'stf-kemi', name: 'Kemi Adeyemi', email: 'kemi@kubicu.com', role: 'support', status: 'active', twoStep: true, lastActiveAt: ago(3), invitedAt: ago(24 * 90) },
-    { id: 'stf-dayo', name: 'Dayo Ajayi', email: 'dayo@kubicu.com', role: 'engineering', status: 'active', twoStep: true, lastActiveAt: ago(30), invitedAt: ago(24 * 60) },
-    { id: 'stf-zainab', name: 'Zainab Musa', email: 'zainab@kubicu.com', role: 'finance', status: 'invited', twoStep: false, lastActiveAt: null, invitedAt: ago(20) }],
+    { id: 'stf-ifeanyi', name: 'Ifeanyi Okafor', email: 'ifeanyi@kub.icu', role: 'trust', status: 'active', twoStep: true, lastActiveAt: ago(6), invitedAt: ago(24 * 120) },
+    { id: 'stf-kemi', name: 'Kemi Adeyemi', email: 'kemi@kub.icu', role: 'support', status: 'active', twoStep: true, lastActiveAt: ago(3), invitedAt: ago(24 * 90) },
+    { id: 'stf-dayo', name: 'Dayo Ajayi', email: 'dayo@kub.icu', role: 'engineering', status: 'active', twoStep: true, lastActiveAt: ago(30), invitedAt: ago(24 * 60) },
+    { id: 'stf-zainab', name: 'Zainab Musa', email: 'zainab@kub.icu', role: 'finance', status: 'invited', twoStep: false, lastActiveAt: null, invitedAt: ago(20) }],
 
     appeals: [
     {
@@ -45,7 +45,8 @@ function seed(): AdminStore {
 
     flags: {
       ai_page_setup: { on: true, plans: [...planOrder], updatedAt: now },
-      storefront: { on: true, plans: [...planOrder], updatedAt: now }
+      storefront: { on: true, plans: [...planOrder], updatedAt: now },
+      verified_tick: { on: true, plans: [...planOrder], updatedAt: now }
     },
     reports: [
     {
@@ -196,7 +197,7 @@ const SAMPLE_COUPON = {
 };
 
 /** A second Platform lead so two-person approval can be tried in the prototype (D129). */
-const SECOND_LEAD = { id: 'stf-ngozi', name: 'Ngozi Eze', email: 'ngozi@kubicu.com', role: 'lead' as const, status: 'active' as const, twoStep: true, lastActiveAt: ago(9), invitedAt: ago(24 * 180) };
+const SECOND_LEAD = { id: 'stf-ngozi', name: 'Ngozi Eze', email: 'ngozi@kub.icu', role: 'lead' as const, status: 'active' as const, twoStep: true, lastActiveAt: ago(9), invitedAt: ago(24 * 180) };
 
 /** Days to answer a personal-data request. Example figure — confirm against NDPA guidance (D82). */
 export const DATA_REQUEST_DAYS = 30;

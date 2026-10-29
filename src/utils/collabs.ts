@@ -53,7 +53,24 @@ export interface CollabData {
   partners: Partner[];
   payouts: CommissionPayout[];
   sampleSeeded: boolean;
+  /** Referral-partner defaults (D259). Read through collabSettingsOf(). */
+  settings?: Partial<CollabSettings>;
 }
+
+/** Defaults for new referral partners, and when commission becomes payable (D259). */
+export interface CollabSettings {
+  defaultRatePct: number;
+  /** Starting terms for every new invite. Empty = the plain sentence built from the rate. */
+  defaultTerms: string;
+  /** Days after payment, with no refund or dispute, before commission is payable. */
+  holdDays: number;
+}
+
+export const holdDayOptions = [0, 3, 7, 14, 30];
+export const defaultCollabSettings: CollabSettings = { defaultRatePct: 10, defaultTerms: '', holdDays: COMMISSION_HOLD_DAYS };
+export const collabSettingsOf = (d: Pick<CollabData, 'settings'>): CollabSettings => ({ ...defaultCollabSettings, ...(d.settings ?? {}) });
+export const termsFor = (ratePct: number, holdDays: number) =>
+`${ratePct}% on sales through your link, paid ${holdDays === 0 ? 'once the order is paid with no refund or dispute' : `once the order is delivered, or ${holdDays} days after payment with no refund or dispute`}.`;
 
 export const emptyCollabs = (): CollabData => ({ partners: [], payouts: [], sampleSeeded: false });
 export const collabKey = (workspaceId: string) => `kubicu.collabs.${workspaceId}`;
@@ -103,7 +120,7 @@ function commissionBase(p: Partner, o: Order): number {
   return Math.round(goodsPaid * share);
 }
 
-export function commissionLines(p: Partner, orders: Order[], payouts: CommissionPayout[], now = Date.now()): CommissionLine[] {
+export function commissionLines(p: Partner, orders: Order[], payouts: CommissionPayout[], now = Date.now(), holdDays = COMMISSION_HOLD_DAYS): CommissionLine[] {
   const paidIds = new Set(payouts.filter((x) => x.partnerId === p.id).flatMap((x) => x.orderIds));
   return partnerOrders(p, orders).
   map((o) => {
@@ -124,12 +141,12 @@ export function commissionLines(p: Partner, orders: Order[], payouts: Commission
     } else if (o.dispute && (o.dispute.status === 'needs_response' || o.dispute.status === 'under_review')) {
       state = 'pending';
       reason = 'Dispute open';
-    } else if (o.status === 'completed' || now - new Date(paidAt).getTime() >= COMMISSION_HOLD_DAYS * DAY) {
+    } else if (o.status === 'completed' || now - new Date(paidAt).getTime() >= holdDays * DAY) {
       state = 'payable';
       reason = 'Ready to pay';
     } else {
       state = 'pending';
-      reason = `Payable ${COMMISSION_HOLD_DAYS} days after payment`;
+      reason = `Payable ${holdDays} days after payment`;
     }
     return { order: o, baseNgn, commissionNgn, state, reason };
   }).
