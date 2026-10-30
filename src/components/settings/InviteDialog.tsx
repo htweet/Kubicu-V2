@@ -12,9 +12,11 @@ import { Button } from '../ui/Button';
 import { TextInput } from '../ui/TextInput';
 import { SpaceAccessField } from './SpaceAccessField';
 import { RolePicker } from './RolePicker';
+import { useT } from '../../contexts/LocaleContext';
 
 /** Invite by email or phone, with a role and the spaces they can edit (D57). */
 export function InviteDialog({ open, onClose }: {open: boolean;onClose: () => void;}) {
+  const { t: tr } = useT();
   const team = useTeam();
   const { current } = useWorkspace();
   const [contact, setContact] = useState('');
@@ -48,7 +50,7 @@ export function InviteDialog({ open, onClose }: {open: boolean;onClose: () => vo
     if (error) return;
     const inv = team.invite({ contact: contact.trim(), role, spaceIds: role === 'admin' ? null : spaceIds });
     if (!inv) {
-      toast.error('No seats left', { description: 'Free a seat or upgrade to invite more people.' });
+      toast.error(tr('No seats left'), { description: tr('Free a seat or upgrade to invite more people.') });
       return;
     }
     setSent(inv.token);
@@ -62,7 +64,7 @@ export function InviteDialog({ open, onClose }: {open: boolean;onClose: () => vo
       onClose={onClose}
       size="lg"
       title={sent ? 'Invite ready' : 'Invite people'}
-      description={sent ? `Prototype: nothing is sent. In the real product ${contact.trim()} gets a ${isValidEmail(c) ? 'email' : 'WhatsApp message'} with this link. It expires in 7 days.` : `They join ${current.name} with the role you pick. You can change it any time.`}
+      description={sent ? tr(isValidEmail(c) ? 'Prototype: nothing is sent. In the real product {contact} gets an email with this link. It expires in 7 days.' : 'Prototype: nothing is sent. In the real product {contact} gets a WhatsApp message with this link. It expires in 7 days.', { contact: contact.trim() }) : tr('They join {workspace} with the role you pick. You can change it any time.', { workspace: current.name })}
       footer={
       sent ?
       <Button onClick={onClose}>Done</Button> :
@@ -86,21 +88,21 @@ export function InviteDialog({ open, onClose }: {open: boolean;onClose: () => vo
             leadingIcon={CopyIcon}
             onClick={() => {
               void navigator.clipboard?.writeText(link);
-              toast('Invite link copied');
+              toast(tr('Invite link copied'));
             }}>
             
               Copy
             </Button>
           </div>
-          <p className="text-caption text-fg-muted">Open the link in another tab to see what {contact.trim()} sees.</p>
+          <p className="text-caption text-fg-muted">{tr('Open the link in another tab to see what {contact} sees.', { contact: contact.trim() })}</p>
         </div> :
 
       <div className="flex flex-col gap-5">
           <TextInput id="invite-contact" label="Email or phone" value={contact} placeholder="name@example.com or +234 …" error={tried ? error || undefined : undefined} onChange={(e) => setContact(e.target.value)} />
           <RolePicker value={role} onChange={setRole} />
           {role !== 'admin' && <SpaceAccessField value={spaceIds} onChange={setSpaceIds} />}
-          {role === 'admin' && <p className="text-caption text-fg-muted">Admins can always edit every space.</p>}
-          <p className="text-caption text-fg-subtle">{roleInfo[role].summary}</p>
+          {role === 'admin' && <p className="text-caption text-fg-muted">{tr('Admins can always edit every space.')}</p>}
+          <p className="text-caption text-fg-subtle">{tr(roleInfo[role].summary)}</p>
         </div>
       }
     </Dialog>);

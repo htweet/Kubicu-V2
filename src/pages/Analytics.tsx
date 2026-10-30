@@ -29,6 +29,7 @@ import { Stat, StatGroup } from '../components/ui/layout/Stat';
 import { Section } from '../components/ui/layout/Section';
 import { Card } from '../components/ui/layout/Card';
 import { cn } from '../utils/cn';
+import { useT } from '../contexts/LocaleContext';
 
 type Period = '7' | '30' | '90' | 'custom';
 type FunnelTab = 'shop' | 'booking' | 'leads' | 'subscriptions' | 'tickets' | 'forms' | 'members';
@@ -37,6 +38,7 @@ const pct = (n: number) => `${Math.round(n * 100)}%`;
 
 /** Analytics (D61): what visitors do, from real visits on this device plus labelled sample history. */
 export function Analytics() {
+  const { t: tr } = useT();
   const allowed = useCan('analytics.view');
   const { data, dismissInsight, clearSample } = useAnalytics();
   const { state, actions } = useEditor();
@@ -52,14 +54,14 @@ export function Analytics() {
   const mainHandle = state.published?.handle ?? state.site.handle;
   const spaceOptions = useMemo(
     () => [
-    { value: 'all', label: 'All spaces' },
-    { value: mainHandle, label: `Main page · ${mainHandle}` },
+    { value: 'all', label: tr('All spaces') },
+    { value: mainHandle, label: `${tr('Main page')} · ${mainHandle}` },
     ...activeExtraSpaces(current).
     map((s) => readSpacePage(current.id, s.id)?.published?.handle ?? readSpacePage(current.id, s.id)?.draft.handle).
     filter((h): h is string => !!h).
     map((h) => ({ value: h, label: h }))],
 
-    [current, mainHandle]
+    [current, mainHandle, tr]
   );
 
   const ranges = useMemo((): {current: Range;previous: Range;days: number;} => {
@@ -106,9 +108,9 @@ export function Analytics() {
     const next = [...rest.slice(0, lead), blockId, ...rest.slice(lead)];
     actions.reorderBlocks(next);
     dismissInsight(insightId);
-    toast.success('Moved it up in your draft', {
-      description: 'Publish when you’re ready for visitors to see it.',
-      action: { label: 'Undo', onClick: () => actions.reorderBlocks(before) }
+    toast.success(tr('Moved it up in your draft'), {
+      description: tr('Publish when you’re ready for visitors to see it.'),
+      action: { label: tr('Undo'), onClick: () => actions.reorderBlocks(before) }
     });
   };
 
@@ -126,18 +128,18 @@ export function Analytics() {
     toCsv(['when', 'event', 'link', 'page', 'source', 'campaign', 'device', 'block', 'label', 'value_ngn', 'sample'], cur.map((e) => [e.at, e.type, e.handle, e.pageId ?? 'home', e.source, e.campaign ?? '', e.device ?? '', e.blockId ?? '', e.label ?? '', e.valueNgn ?? '', e.sample ? 'yes' : '']))
   );
 
-  const rangeText = period === 'custom' ? `${from} – ${to}` : `Last ${period} days`;
+  const rangeText = period === 'custom' ? `${from} – ${to}` : tr('Last {n} days', { n: period });
   const delta = (c: number, p: number) => {
     if (!compare) return null;
     const ch = change(c, p);
-    if (ch === null) return <span className="text-caption text-fg-subtle">new</span>;
+    if (ch === null) return <span className="text-caption text-fg-subtle">{tr('new')}</span>;
     const up = ch >= 0;
     const Icon = up ? ArrowUpRightIcon : ArrowDownRightIcon;
     return (
       <span className={cn('inline-flex items-center gap-0.5 text-caption font-semibold', up ? 'text-success' : 'text-danger')}>
         <Icon size={13} aria-hidden />
         {up ? '+' : ''}
-        {Math.round(ch * 100)}%<span className="sr-only"> vs previous period</span>
+        {Math.round(ch * 100)}%<span className="sr-only"> {tr('vs previous period')}</span>
       </span>);
 
   };
@@ -172,16 +174,16 @@ export function Analytics() {
           
           {period === 'custom' &&
           <div className="flex items-center gap-2">
-              <label className="sr-only" htmlFor="an-from">From</label>
+              <label className="sr-only" htmlFor="an-from">{tr('From')}</label>
               <input id="an-from" type="date" value={from} max={to} onChange={(e) => setFrom(e.target.value)} className="h-9 rounded-md border border-line bg-raised px-2.5 text-label text-fg" />
-              <span className="text-caption text-fg-subtle">to</span>
-              <label className="sr-only" htmlFor="an-to">To</label>
+              <span className="text-caption text-fg-subtle">{tr('to')}</span>
+              <label className="sr-only" htmlFor="an-to">{tr('To')}</label>
               <input id="an-to" type="date" value={to} min={from} onChange={(e) => setTo(e.target.value)} className="h-9 rounded-md border border-line bg-raised px-2.5 text-label text-fg" />
             </div>
           }
           <div className="min-w-[200px]">
             <label htmlFor="an-space" className="sr-only">
-              Space
+              {tr('Space')}
             </label>
             <select id="an-space" value={handle} onChange={(e) => setHandle(e.target.value)} className="h-9 w-full rounded-md border border-line bg-raised px-2.5 text-label text-fg">
               {spaceOptions.map((o) =>
@@ -197,7 +199,7 @@ export function Analytics() {
           <span className="inline-flex items-center gap-2">
               <Badge tone="neutral">Includes sample visits</Badge>
               <button type="button" onClick={clearSample} className="text-caption font-medium text-fg-muted underline underline-offset-2 hover:text-fg">
-                Clear sample
+                {tr('Clear sample')}
               </button>
             </span>
           }
@@ -213,14 +215,14 @@ export function Analytics() {
       <>
           {/* Headline: visits leads; the rest support it. */}
           {/* Headline: visits leads; the rest support it (shared Stat, D188). */}
-          <div role="group" aria-label={`Summary, ${rangeText}`} className="mt-8 grid gap-6 border-b border-line pb-8 md:grid-cols-[minmax(0,1.3fr)_minmax(0,3fr)] md:items-end">
+          <div role="group" aria-label={`${tr('Summary')}, ${rangeText}`} className="mt-8 grid gap-6 border-b border-line pb-8 md:grid-cols-[minmax(0,1.3fr)_minmax(0,3fr)] md:items-end">
             <dl>
-              <Stat primary label="Visits" value={<span className="flex items-baseline gap-2">{h.visits.toLocaleString()} {delta(h.visits, hp.visits)}</span>} hint={`${rangeText} · a visit is one browser session (30 min)`} />
+              <Stat primary label="Visits" value={<span className="flex items-baseline gap-2">{h.visits.toLocaleString()} {delta(h.visits, hp.visits)}</span>} hint={`${rangeText} · ${tr('a visit is one browser session (30 min)')}`} />
             </dl>
             <StatGroup columns={3}>
               <Stat label="Visitors (estimated)" value={<span className="flex items-baseline gap-2">{h.visitors.toLocaleString()} {delta(h.visitors, hp.visitors)}</span>} hint="Distinct browsers — people on two devices count twice" />
               <Stat label="Tapped something" value={<span className="flex items-baseline gap-2">{pct(h.tapRate)} {delta(h.tapRate, hp.tapRate)}</span>} hint="Share of visits with at least one tap" />
-              <Stat label="From your pages" value={<span className="flex items-baseline gap-2">{formatNgn(h.revenueNgn)} {delta(h.revenueNgn, hp.revenueNgn)}</span>} hint={`${h.orders} paid order${h.orders === 1 ? '' : 's'} · test mode`} />
+              <Stat label="From your pages" value={<span className="flex items-baseline gap-2">{formatNgn(h.revenueNgn)} {delta(h.revenueNgn, hp.revenueNgn)}</span>} hint={tr('{n} paid orders · test mode', { n: h.orders })} />
             </StatGroup>
           </div>
 
@@ -228,22 +230,22 @@ export function Analytics() {
             <VisitsChart
             data={chart}
             compare={compare}
-            summary={`${h.visits.toLocaleString()} visits ${rangeText.toLowerCase()}${compare ? `, compared with ${hp.visits.toLocaleString()} in the period before (dashed)` : ''}. Busiest day: ${days.reduce((a, b) => b.value > a.value ? b : a, days[0])?.label ?? '—'}.`} />
+            summary={`${tr('{n} visits', { n: h.visits.toLocaleString() })} · ${rangeText}${compare ? ` · ${tr('compared with {n} in the period before (dashed)', { n: hp.visits.toLocaleString() })}` : ''}. ${tr('Busiest day:')} ${days.reduce((a, b) => b.value > a.value ? b : a, days[0])?.label ?? '—'}.`} />
           
           </Section>
 
           <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_320px]">
             <Section id="links" title="Top links and buttons" className="gap-3">
               {links.length === 0 ?
-            <p className="text-label text-fg-muted">No taps yet in this period.</p> :
+            <p className="text-label text-fg-muted">{tr('No taps yet in this period.')}</p> :
 
             <table className="w-full text-label">
-                  <caption className="sr-only">Top links and buttons in this period</caption>
+                  <caption className="sr-only">{tr('Top links and buttons in this period')}</caption>
                   <thead>
                     <tr className="border-b border-line text-caption text-fg-subtle">
-                      <th scope="col" className="py-2 text-left font-medium">Link</th>
-                      <th scope="col" className="py-2 text-right font-medium">Taps</th>
-                      <th scope="col" className="py-2 text-right font-medium">Of visits</th>
+                      <th scope="col" className="py-2 text-left font-medium">{tr('Link')}</th>
+                      <th scope="col" className="py-2 text-right font-medium">{tr('Taps')}</th>
+                      <th scope="col" className="py-2 text-right font-medium">{tr('Of visits')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -262,19 +264,19 @@ export function Analytics() {
             <Section id="sources" title="Where visitors come from" className="gap-3">
               <div>
               <table className="w-full text-label">
-                <caption className="sr-only">Visits and conversions by source</caption>
+                <caption className="sr-only">{tr('Visits and conversions by source')}</caption>
                 <thead>
                   <tr className="border-b border-line text-caption text-fg-subtle">
-                    <th scope="col" className="py-2 text-left font-medium">Source</th>
-                    <th scope="col" className="py-2 text-right font-medium">Visits</th>
-                    <th scope="col" className="py-2 text-right font-medium" title="Paid orders, bookings, forms and sign-ups">Converted</th>
+                    <th scope="col" className="py-2 text-left font-medium">{tr('Source')}</th>
+                    <th scope="col" className="py-2 text-right font-medium">{tr('Visits')}</th>
+                    <th scope="col" className="py-2 text-right font-medium" title={tr('Paid orders, bookings, forms and sign-ups')}>{tr('Converted')}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {src.map((s) =>
                   <tr key={s.id} className="border-b border-line">
                       <td className="py-2 pr-3 text-fg">
-                        {sourceLabels[s.id]} <span className="text-caption text-fg-subtle">{pct(s.share)}</span>
+                        {tr(sourceLabels[s.id])} <span className="text-caption text-fg-subtle">{pct(s.share)}</span>
                       </td>
                       <td className="py-2 text-right tabular-nums text-fg">{s.visits}</td>
                       <td className="py-2 text-right tabular-nums text-fg-muted">
@@ -284,7 +286,7 @@ export function Analytics() {
                   )}
                 </tbody>
               </table>
-              <p className="mt-2 text-caption text-fg-subtle">From the link used (QR codes and campaign links tag themselves) or the site that sent them.</p>
+              <p className="mt-2 text-caption text-fg-subtle">{tr('From the link used (QR codes and campaign links tag themselves) or the site that sent them.')}</p>
               </div>
             </Section>
 
@@ -294,17 +296,17 @@ export function Analytics() {
             icon={LightbulbIcon}
             title="Link Intelligence"
             className="self-start"
-            footer={<p className="text-caption text-fg-subtle">Observations, not proof — a pattern doesn’t show what caused it.</p>}>
+            footer={<p className="text-caption text-fg-subtle">{tr('Observations, not proof — a pattern doesn’t show what caused it.')}</p>}>
             
               {ideas.length === 0 ?
-            <p className="text-caption text-fg-muted">{h.visits < 30 ? `Suggestions appear after 30 visits in a period (${h.visits} so far).` : 'Nothing stands out right now.'}</p> :
+            <p className="text-caption text-fg-muted">{h.visits < 30 ? tr('Suggestions appear after 30 visits in a period ({n} so far).', { n: h.visits }) : tr('Nothing stands out right now.')}</p> :
 
             <ul className="flex flex-col gap-4">
                   {ideas.map((i) =>
               <li key={i.id} className="border-t border-line pt-3 first:border-0 first:pt-0">
                       <div className="flex items-start justify-between gap-2">
                         <p className="text-label font-medium text-fg">{i.title}</p>
-                        <button type="button" aria-label="Dismiss suggestion" onClick={() => dismissInsight(i.id)} className="shrink-0 rounded p-0.5 text-fg-subtle hover:text-fg">
+                        <button type="button" aria-label={tr('Dismiss suggestion')} onClick={() => dismissInsight(i.id)} className="shrink-0 rounded p-0.5 text-fg-subtle hover:text-fg">
                           <XIcon size={14} aria-hidden />
                         </button>
                       </div>
@@ -333,7 +335,7 @@ export function Analytics() {
             id="devices"
             title="Devices"
             caption="Visits and conversions by device"
-            rows={devs.map((d) => ({ ...d, label: deviceLabels[d.id] }))}
+            rows={devs.map((d) => ({ ...d, label: tr(deviceLabels[d.id]) }))}
             note={devs.some((d) => d.id === 'unknown') ? 'Only the kind of device is kept. Visits from before devices were counted show as “Not recorded”.' : 'Only the kind of device is kept — never the model or browser.'} />
           
             <AudienceBreakdown
@@ -351,23 +353,23 @@ export function Analytics() {
           className="mt-10 gap-3"
           actions={
           <Link to="/app/campaign-links" className="text-label font-medium text-action hover:underline">
-                Manage
+                {tr('Manage')}
               </Link>
           }>
           
             {domainLinks.length === 0 ?
           <p className="text-label text-fg-muted">
-                Make a short link for each place you share, or a QR code for print, to see which brings visitors. <Link to="/app/campaign-links" className="underline underline-offset-2">Create one</Link>
+                {tr('Make a short link for each place you share, or a QR code for print, to see which brings visitors.')} <Link to="/app/campaign-links" className="underline underline-offset-2">{tr('Create one')}</Link>
               </p> :
 
           <table className="w-full max-w-3xl text-label">
-                <caption className="sr-only">Campaign links and QR codes</caption>
+                <caption className="sr-only">{tr('Campaign links and QR codes')}</caption>
                 <thead>
                   <tr className="border-b border-line text-caption text-fg-subtle">
-                    <th scope="col" className="py-2 text-left font-medium">Link</th>
-                    <th scope="col" className="py-2 text-right font-medium">Visits / scans</th>
-                    <th scope="col" className="py-2 text-right font-medium">Orders</th>
-                    <th scope="col" className="hidden py-2 text-right font-medium sm:table-cell">Revenue</th>
+                    <th scope="col" className="py-2 text-left font-medium">{tr('Link')}</th>
+                    <th scope="col" className="py-2 text-right font-medium">{tr('Visits / scans')}</th>
+                    <th scope="col" className="py-2 text-right font-medium">{tr('Orders')}</th>
+                    <th scope="col" className="hidden py-2 text-right font-medium sm:table-cell">{tr('Revenue')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -376,7 +378,7 @@ export function Analytics() {
                 return (
                   <tr key={l.id} className="border-b border-line">
                         <td className="max-w-0 truncate py-2 pr-3 text-fg">
-                          {l.name} <span className="text-caption text-fg-subtle">{l.source === 'qr' ? 'QR' : sourceLabels[l.source]}</span>
+                          {l.name} <span className="text-caption text-fg-subtle">{l.source === 'qr' ? 'QR' : tr(sourceLabels[l.source])}</span>
                         </td>
                         <td className="py-2 text-right tabular-nums text-fg">{s.visits}</td>
                         <td className="py-2 text-right tabular-nums text-fg-muted">{s.orders}</td>
@@ -438,12 +440,12 @@ export function Analytics() {
               emptyText="No visits in this period." />
 
             }
-              <p className="mt-3 text-caption text-fg-subtle">Each step counts visits that also did every step before it. Percentages are kept from the step above.</p>
+              <p className="mt-3 text-caption text-fg-subtle">{tr('Each step counts visits that also did every step before it. Percentages are kept from the step above.')}</p>
             </div>
           </Section>
 
           <p className="mt-10 text-caption text-fg-subtle">
-            Your own visits {data.settings.excludeOwn ? 'aren’t' : 'are'} counted on this device — change it in <Link to="/app/settings/privacy" className="underline underline-offset-2">Settings → Privacy</Link>.
+            {tr(data.settings.excludeOwn ? 'Your own visits aren’t counted on this device — change it in' : 'Your own visits are counted on this device — change it in')} <Link to="/app/settings/privacy" className="underline underline-offset-2">{tr('Settings → Privacy')}</Link>.
           </p>
         </>
       }

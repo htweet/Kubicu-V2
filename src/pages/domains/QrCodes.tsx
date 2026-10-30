@@ -23,9 +23,11 @@ import { EmptyState } from '../../components/ui/EmptyState';
 import { IllustrativeTag } from '../../components/ui/IllustrativeTag';
 import { QrPreview } from '../../components/domains/QrPreview';
 import { QrDesigner, initialsOf } from '../../components/domains/QrDesigner';
+import { useT } from '../../contexts/LocaleContext';
 
 /** QR codes for flyers, counters and packaging — each one a tracked link (D62). On every plan. */
 export function QrCodes() {
+  const { t: tr } = useT();
   const { data, deleteQr } = useDomains();
   const { current } = useWorkspace();
   const { data: commerce } = useCommerce();
@@ -66,7 +68,7 @@ export function QrCodes() {
       const svg = await qrSvg(shortUrl(mainHandle, link.slug, host), styleOf(q, initials));
       await downloadPng(svg, `kubicu-qr-${link.slug}`, q.exportSize ?? 1024);
     } catch {
-      toast.error('Couldn’t make the PNG', { description: 'Open the code and try SVG instead.' });
+      toast.error(tr('Couldn’t make the PNG'), { description: tr('Open the code and try SVG instead.') });
     }
   };
 
@@ -105,20 +107,20 @@ export function QrCodes() {
           return (
             <li key={q.id} className="flex flex-col rounded-lg border border-line bg-raised">
                 <div className="rounded-t-lg border-b border-line p-5" style={{ background: q.transparent ? undefined : q.bg }}>
-                  <QrPreview url={shortUrl(mainHandle, link.slug, host)} style={styleOf(q, initials)} alt={`QR code: ${link.name}`} className="mx-auto max-w-[180px]" />
+                  <QrPreview url={shortUrl(mainHandle, link.slug, host)} style={styleOf(q, initials)} alt={`${tr('QR code')}: ${link.name}`} className="mx-auto max-w-[180px]" />
                 </div>
                 <div className="flex flex-1 flex-col gap-1 p-4">
                   <p className="flex items-center gap-2 text-label font-semibold text-fg">
                     <span className="truncate">{link.name}</span>
-                    {q.id.startsWith('qr_sample') && <IllustrativeTag note="Sample QR code — scans come from sample history." />}
+                    {q.id.startsWith('qr_sample') && <IllustrativeTag note={tr('Sample QR code — scans come from sample history.')} />}
                   </p>
                   <p className="truncate text-caption text-fg-muted">{shortDisplay(mainHandle, link.slug, host)}</p>
                   <p className={ok ? 'truncate text-caption text-fg-subtle' : 'text-caption text-danger'}>
-                    → {link.whatsapp || link.externalUrl ? linkGoesTo(current, commerce, link) : ok ? destinationLabel(current, commerce, link.destination, ops.services) : `Destination removed — scans go to ${destinationLabel(current, commerce, fallbackDestination(current, commerce, link.destination), ops.services)} until you choose a new one`}
+                    → {link.whatsapp || link.externalUrl ? linkGoesTo(current, commerce, link) : ok ? destinationLabel(current, commerce, link.destination, ops.services) : tr('Destination removed — scans go to {place} until you choose a new one', { place: destinationLabel(current, commerce, fallbackDestination(current, commerce, link.destination), ops.services) })}
                   </p>
                   <div className="mt-2 flex flex-wrap items-center gap-2">
                     <span className="text-label font-semibold tabular-nums text-fg">{scans.toLocaleString()}</span>
-                    <span className="text-caption text-fg-subtle">scans</span>
+                    <span className="text-caption text-fg-subtle">{tr('scans')}</span>
                     {link.archivedAt && <Badge>Link archived</Badge>}
                     {weak && <Badge tone="danger">Low contrast</Badge>}
                   </div>
@@ -127,8 +129,8 @@ export function QrCodes() {
                       PNG
                     </Button>
                     <span className="flex-1" />
-                    <IconButton icon={PencilIcon} label={`Edit ${link.name}`} size="sm" disabled={!can.allowed} onClick={() => setEditing(q)} />
-                    <IconButton icon={Trash2Icon} label={`Delete ${link.name}`} size="sm" disabled={!can.allowed} onClick={() => setRemoving(q)} />
+                    <IconButton icon={PencilIcon} label={tr('Edit {name}', { name: link.name })} size="sm" disabled={!can.allowed} onClick={() => setEditing(q)} />
+                    <IconButton icon={Trash2Icon} label={tr('Delete {name}', { name: link.name })} size="sm" disabled={!can.allowed} onClick={() => setRemoving(q)} />
                   </div>
                 </div>
               </li>);

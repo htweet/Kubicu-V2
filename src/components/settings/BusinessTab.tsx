@@ -13,11 +13,13 @@ import { SelectInput } from '../ui/SelectInput';
 import { DemoDataCard } from './DemoDataCard';
 import { DemoWorkspaceCard } from './DemoWorkspaceCard';
 import { BusinessWhatsAppCard } from './BusinessWhatsAppCard';
+import { useT } from '../../contexts/LocaleContext';
 
 const nairaOnly = ['USSD at checkout', 'Pay on delivery', 'Pay in instalments', 'Payouts to Nigerian bank accounts'];
 
 /** Settings → Business (D136): the one currency this workspace sells in. */
 export function BusinessTab() {
+  const { t: tr } = useT();
   const { current, update } = useWorkspace();
   const commerce = useCommerce().data;
   const can = useTeam().can('billing.manage');
@@ -32,7 +34,7 @@ export function BusinessTab() {
   const save = () => {
     update(current.id, { currency: choice });
     setConfirming(false);
-    toast.success(`${current.name} now sells in ${currencyInfo(choice).name}`, { description: priced ? `Check your ${priced} priced product${priced === 1 ? '' : 's'} — amounts were kept as numbers, not converted.` : 'New prices you set use it.' });
+    toast.success(tr('{workspace} now sells in {currency}', { workspace: current.name, currency: currencyInfo(choice).name }), { description: priced ? tr('Check your priced products ({n}) — amounts were kept as numbers, not converted.', { n: priced }) : tr('New prices you set use it.') });
   };
 
   return (
@@ -57,15 +59,15 @@ export function BusinessTab() {
           </div>
 
           <p className="text-label text-fg-muted">
-            Example: a price of 12,500 shows as <span className="font-semibold tabular-nums text-fg">{formatMoney(12500, choice)}</span>.
+            {tr('Example: a price of 12,500 shows as')} <span className="font-semibold tabular-nums text-fg">{formatMoney(12500, choice)}</span>.
           </p>
 
           {locked ?
           <InlineAlert tone="info" title="Locked after your first paid order">
-              You’ve taken {paidOrders} paid order{paidOrders === 1 ? '' : 's'} in {currencyInfo(code).name}. Changing now would make past orders, refunds and payouts stop adding up. To change it, ask KUBICU support from the Help menu.
+              {tr('You’ve taken paid orders ({n}) in {currency}. Changing now would make past orders, refunds and payouts stop adding up. To change it, ask KUBICU support from the Help menu.', { n: paidOrders, currency: currencyInfo(code).name })}
             </InlineAlert> :
 
-          <p className="text-caption text-fg-subtle">You can change this freely until your first paid order. Sample orders don’t count.</p>
+          <p className="text-caption text-fg-subtle">{tr('You can change this freely until your first paid order. Sample orders don’t count.')}</p>
           }
         </div>
       </Card>
@@ -74,38 +76,38 @@ export function BusinessTab() {
         <ul className="flex flex-col gap-2.5">
           {nairaOnly.map((f) =>
           <li key={f} className="flex items-center justify-between gap-4 text-label text-fg">
-              {f}
+              {tr(f)}
               <Badge tone={code === 'NGN' ? 'success' : 'neutral'} dot>
                 {code === 'NGN' ? 'On' : 'Off'}
               </Badge>
             </li>
           )}
         </ul>
-        {code !== 'NGN' && <p className="mt-4 text-caption text-fg-subtle">Payouts outside Nigeria need a payment partner in your country; the wallet shows a placeholder account until then.</p>}
-        <p className="mt-4 border-t border-line pt-4 text-caption text-fg-subtle">KUBICU’s own plan prices are always charged in naira, whatever you sell in.</p>
+        {code !== 'NGN' && <p className="mt-4 text-caption text-fg-subtle">{tr('Payouts outside Nigeria need a payment partner in your country; the wallet shows a placeholder account until then.')}</p>}
+        <p className="mt-4 border-t border-line pt-4 text-caption text-fg-subtle">{tr('KUBICU’s own plan prices are always charged in naira, whatever you sell in.')}</p>
       </Card>
 
       <Dialog
         open={confirming}
         onClose={() => setConfirming(false)}
         size="sm"
-        title={`Sell in ${currencyInfo(choice).name}?`}
+        title={tr('Sell in {currency}?', { currency: currencyInfo(choice).name })}
         description="Prices are kept as numbers and shown in the new currency — they aren’t converted."
         footer={
         <>
             <Button variant="secondary" onClick={() => setConfirming(false)}>
               Cancel
             </Button>
-            <Button onClick={save}>Change to {currencyInfo(choice).code}</Button>
+            <Button onClick={save}>{tr('Change to {code}', { code: currencyInfo(choice).code })}</Button>
           </>
         }>
         
         <ul className="flex flex-col gap-2 text-label text-fg-muted">
           <li>
-            A product at 12,500 becomes <span className="font-semibold text-fg">{formatMoney(12500, choice)}</span>. {priced > 0 && <span className="font-semibold text-fg">Check your {priced} priced product{priced === 1 ? '' : 's'}.</span>}
+            {tr('A product at 12,500 becomes')} <span className="font-semibold text-fg">{formatMoney(12500, choice)}</span>. {priced > 0 && <span className="font-semibold text-fg">{tr('Check your priced products ({n}).', { n: priced })}</span>}
           </li>
-          {choice !== 'NGN' && <li>USSD, pay on delivery and instalments switch off.</li>}
-          <li>It locks after your first paid order.</li>
+          {choice !== 'NGN' && <li>{tr('USSD, pay on delivery and instalments switch off.')}</li>}
+          <li>{tr('It locks after your first paid order.')}</li>
         </ul>
       </Dialog>
     </div>);

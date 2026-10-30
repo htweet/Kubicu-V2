@@ -11,14 +11,17 @@ import { SelectInput } from '../ui/SelectInput';
 import { TimezoneSelect } from '../ui/TimezoneSelect';
 import { Segmented } from '../ui/Segmented';
 import { Field } from '../ui/Field';
+import { toUiLang, translatorFor, useT } from '../../contexts/LocaleContext';
 
 /** Account → Preferences: personal, follows you into every workspace (D80). */
 export function PreferencesTab() {
+  const { t: tr } = useT();
   const account = useAccount();
   const { current } = useWorkspace();
   const p = account.prefs;
   const set = (patch: Partial<AccountPrefs>, message = 'Preference saved') => {
-    if (updateAccount((a) => ({ ...a, prefs: { ...a.prefs, ...patch } }))) toast.success(message);
+    // Saved before the toast, so a language change shows its confirmation in the new language.
+    if (updateAccount((a) => ({ ...a, prefs: { ...a.prefs, ...patch } }))) toast.success(patch.language ? translatorFor(toUiLang(patch.language))(message) : tr(message));
   };
 
   return (
@@ -30,18 +33,18 @@ export function PreferencesTab() {
             label="Language"
             value={p.language}
             hint="Naijá, Yorùbá, Hausa and Igbo are drafts: menus, screen names and buttons change first, and anything not translated yet stays in English. French is coming later."
-            options={languageOptions.map((o) => ({ value: o.value, label: o.ready ? o.label : o.draft ? `${o.label} — draft` : `${o.label} — coming soon`, disabled: !o.ready && !o.draft }))}
+            options={languageOptions.map((o) => ({ value: o.value, label: o.ready ? o.label : o.draft ? `${o.label} — ${tr('draft')}` : `${o.label} — ${tr('coming soon')}`, disabled: !o.ready && !o.draft }))}
             onChange={(language) => set({ language }, 'Language saved')} />
           
           {!!languageOptions.find((o) => o.value === p.language)?.draft &&
           <p className="rounded-md bg-sunken px-3 py-2.5 text-caption text-fg-muted">
-              These words were drafted and haven’t been checked by a native speaker yet. If something reads wrong, tell us from Help → Contact support. Your customers choose their own language at the bottom of your page.
+              {tr('These words were drafted and haven’t been checked by a native speaker yet. If something reads wrong, tell us from Help → Contact support. Your customers choose their own language at the bottom of your page.')}
             </p>
           }
           <TimezoneSelect id="pref-tz" value={p.timeZone} onChange={(timeZone) => set({ timeZone }, 'Time zone saved')} hint="Used for your sign-in history and scheduled times you see." />
           <SelectInput id="pref-date" label="Date format" value={p.dateFormat} options={dateFormatOptions} onChange={(dateFormat) => set({ dateFormat }, 'Date format saved')} />
           <p className="rounded-md bg-sunken px-3 py-2.5 text-caption text-fg-muted">
-            Right now it’s <span className="font-semibold tabular-nums text-fg">{formatAccountDate(new Date().toISOString(), p)}</span> for you.
+            {tr('Right now it’s')} <span className="font-semibold tabular-nums text-fg">{formatAccountDate(new Date().toISOString(), p)}</span> {tr('for you.')}
           </p>
         </div>
       </Card>
@@ -81,7 +84,7 @@ export function PreferencesTab() {
 
       <Card id="pref-elsewhere" title="Set in each workspace" description="These depend on the workspace, so they live there." body="flush">
         <ul className="divide-y divide-line">
-          <LinkRow icon={BellIcon} to="/app/settings/notifications" title="Your notifications" meta={`Which events reach you in ${current.name}, by app, email or WhatsApp.`} />
+          <LinkRow icon={BellIcon} to="/app/settings/notifications" title="Your notifications" meta={tr('Which events reach you in {workspace}, by app, email or WhatsApp.', { workspace: current.name })} />
           <LinkRow icon={PaletteIcon} to="/app" title="Workspace appearance" meta="Chosen by the Owner for everyone — from Appearance at the bottom of the sidebar." />
         </ul>
       </Card>
@@ -90,6 +93,9 @@ export function PreferencesTab() {
 }
 
 function LinkRow({ icon: Icon, to, title, meta }: {icon: typeof BellIcon;to: string;title: string;meta: string;}) {
+  const { t } = useT();
+  title = t(title);
+  meta = t(meta);
   return (
     <li>
       <Link to={to} className="flex items-center gap-4 px-5 py-4 transition-colors duration-150 hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus md:px-6">

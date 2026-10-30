@@ -18,11 +18,13 @@ import { Card } from '../ui/layout/Card';
 import { Section } from '../ui/layout/Section';
 import { List } from '../ui/layout/ListRow';
 import { ProviderConnectDialog } from './integrations/ProviderConnectDialog';
+import { useT } from '../../contexts/LocaleContext';
 
 const order: ProviderCategory[] = ['email', 'sms', 'whatsapp', 'dns', 'storage'];
 
 /** Settings → Integrations (D192): outside services for messages, domains and file storage. Payments live in Commerce → Payments. */
 export function IntegrationsTab() {
+  const { t: tr } = useT();
   const p = useProviders();
   const can = useCan('extensions.manage');
   const { data: commerce } = useCommerce();
@@ -38,29 +40,29 @@ export function IntegrationsTab() {
     setBusy(null);
     p.recordTest(def.id, r.ok, r.message);
     p.log(def.id, 'Check', r.ok, r.message);
-    toast(r.ok ? `${def.name} is working` : `${def.name} check failed`, { description: r.message });
+    toast(tr(r.ok ? '{name} is working' : '{name} check failed', { name: def.name }), { description: r.message });
   };
 
   return (
     <div className="flex flex-col gap-10">
       <p className="max-w-2xl text-label text-fg-muted">
-        Connect the services KUBICU uses to send messages, set up domains and store files. Every connection here is a placeholder: keys are checked for the right format and calls are simulated — nothing reaches the provider.
+        {tr('Connect the services KUBICU uses to send messages, set up domains and store files. Every connection here is a placeholder: keys are checked for the right format and calls are simulated — nothing reaches the provider.')}
       </p>
-      {!can.allowed && <InlineAlert tone="info" title="View only">{can.reason ?? 'Only Owners and Admins can connect services.'}</InlineAlert>}
+      {!can.allowed && <InlineAlert tone="info" title="View only">{can.reason ?? tr('Only Owners and Admins can connect services.')}</InlineAlert>}
 
       <Section id="int-payments" title={categoryInfo.payments.label} description={categoryInfo.payments.description}>
         <div className="flex flex-wrap items-center justify-between gap-3 border-y border-line py-4">
           <p className="text-label text-fg">
             {payment ?
             <>
-                <span className="font-semibold">{payment.name}</span> <span className="text-fg-subtle">· connected in test mode</span>
+                <span className="font-semibold">{payment.name}</span> <span className="text-fg-subtle">· {tr('connected in test mode')}</span>
               </> :
 
-            <span className="text-fg-muted">No payment provider yet — Paystack, Flutterwave, Monnify or Stripe.</span>
+            <span className="text-fg-muted">{tr('No payment provider yet — Paystack, Flutterwave, Monnify or Stripe.')}</span>
             }
           </p>
           <Link to="/app/commerce/payments" className="text-label font-medium text-action hover:underline">
-            {payment ? 'Manage in Commerce → Payments' : 'Connect in Commerce → Payments'}
+            {tr(payment ? 'Manage in Commerce → Payments' : 'Connect in Commerce → Payments')}
           </Link>
         </div>
       </Section>
@@ -86,14 +88,14 @@ export function IntegrationsTab() {
                           {def.builtIn ? <Badge tone="neutral">Built in</Badge> : on ? <Badge tone="success" dot>Connected · test</Badge> : null}
                           {on && isActive && connectedCount > 1 && <Badge tone="action">In use</Badge>}
                         </p>
-                        <p className="mt-0.5 text-caption text-fg-muted">{def.blurb}</p>
+                        <p className="mt-0.5 text-caption text-fg-muted">{tr(def.blurb)}</p>
                         {conn &&
                         <p className="mt-1 flex flex-wrap items-center gap-x-2 text-caption text-fg-subtle">
                             {firstKey && <span className="font-mono">{def.fields[0].secret ? maskSecret(firstKey) : firstKey}</span>}
                             {conn.lastTest &&
                           <span className="inline-flex items-center gap-1">
                                 {conn.lastTest.ok ? <CheckCircle2Icon size={12} className="text-success" aria-hidden /> : <XCircleIcon size={12} className="text-danger" aria-hidden />}
-                                {conn.lastTest.ok ? 'Checked' : 'Failed'} {formatRelative(conn.lastTest.at)}
+                                {tr(conn.lastTest.ok ? 'Checked' : 'Failed')} {formatRelative(conn.lastTest.at)}
                               </span>
                           }
                           </p>
@@ -123,7 +125,7 @@ export function IntegrationsTab() {
                           onClick={() => {
                             p.disconnect(def.id);
                             p.log(def.id, 'Disconnect', true, 'Keys removed from this browser.');
-                            toast(`${def.name} disconnected`, { description: 'Its keys were removed from this browser.' });
+                            toast(tr('{provider} disconnected', { provider: def.name }), { description: tr('Its keys were removed from this browser.') });
                           }}>
                           
                             Disconnect
@@ -140,9 +142,9 @@ export function IntegrationsTab() {
               </List>
             </Card>
             {c === 'storage' && active?.id !== 'browser' &&
-            <p className="text-caption text-fg-subtle">New uploads would go to {active?.name}. In the prototype, files still stay in this browser.</p>
+            <p className="text-caption text-fg-subtle">{tr('New uploads would go to {name}. In the prototype, files still stay in this browser.', { name: active?.name ?? '' })}</p>
             }
-            {c === 'dns' && <p className="text-caption text-fg-subtle">When you connect a domain bought from one of these, Domains offers to add the records for you.</p>}
+            {c === 'dns' && <p className="text-caption text-fg-subtle">{tr('When you connect a domain bought from one of these, Domains offers to add the records for you.')}</p>}
           </Section>);
 
       })}
@@ -171,6 +173,7 @@ export function IntegrationsTab() {
 }
 
 function SendTestDialog({ def, onClose }: {def: ProviderDef | null;onClose: () => void;}) {
+  const { t: tr } = useT();
   const p = useProviders();
   const [to, setTo] = useState('');
   const [tried, setTried] = useState(false);
@@ -186,7 +189,7 @@ function SendTestDialog({ def, onClose }: {def: ProviderDef | null;onClose: () =
     const r = await sendTestMessage(def, to.trim(), 'success');
     setSending(false);
     p.log(def.id, 'Test message', r.ok, r.message);
-    toast(r.ok ? 'Test sent (simulated)' : 'Test failed', { description: r.message });
+    toast(tr(r.ok ? 'Test sent (simulated)' : 'Test failed'), { description: r.message });
     setTo('');
     setTried(false);
     onClose();
@@ -197,7 +200,7 @@ function SendTestDialog({ def, onClose }: {def: ProviderDef | null;onClose: () =
       open={!!def}
       onClose={onClose}
       size="sm"
-      title={def ? `Send a test with ${def.name}` : 'Send a test'}
+      title={def ? tr('Send a test with {name}', { name: def.name }) : 'Send a test'}
       description="Nothing is delivered in the prototype — this checks the flow and logs the result."
       footer={
       <>

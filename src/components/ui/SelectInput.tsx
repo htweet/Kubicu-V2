@@ -2,6 +2,7 @@ import React from 'react';
 import { ChevronDownIcon } from 'lucide-react';
 import { Field, fieldControlClass } from './Field';
 import { cn } from '../../utils/cn';
+import { useT } from '../../contexts/LocaleContext';
 
 interface SelectInputProps<T extends string> {
   id: string;
@@ -15,6 +16,8 @@ interface SelectInputProps<T extends string> {
 }
 
 export function SelectInput<T extends string>({ id, label, value, options, onChange, hint, error, disabled }: SelectInputProps<T>) {
+  // Option labels follow the interface language like every other primitive; untranslated ones stay English.
+  const { t } = useT();
   return (
     <Field id={id} label={label} hint={hint} error={error}>
       <div className="relative">
@@ -29,7 +32,7 @@ export function SelectInput<T extends string>({ id, label, value, options, onCha
           
           {options.map((o) =>
           <option key={o.value} value={o.value} disabled={o.disabled}>
-              {o.label}
+              {t(o.label)}
             </option>
           )}
         </select>

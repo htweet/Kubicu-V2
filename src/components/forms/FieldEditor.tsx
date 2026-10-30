@@ -14,6 +14,7 @@ import { Switch } from '../ui/Switch';
 import { Button } from '../ui/Button';
 import { ImageChoiceOptionsEditor } from './ImageChoiceOptionsEditor';
 import { ProductPickEditor } from './ProductPickEditor';
+import { useT } from '../../contexts/LocaleContext';
 
 interface FieldEditorProps {
   field: FormField;
@@ -29,6 +30,7 @@ const textTypes = ['shortText', 'longText', 'email', 'phone', 'number', 'amount'
 
 /** Settings for one field: label, help, options, rules, steps and payment (D79). */
 export function FieldEditor({ field, fields, isFirst, onChange, onRemove, disabled }: FieldEditorProps) {
+  const { t: tr } = useT();
   const p = `fe-${field.id}`;
   const info = fieldTypeInfo[field.type];
   const earlier = fields.slice(0, fields.findIndex((f) => f.id === field.id));
@@ -43,10 +45,10 @@ export function FieldEditor({ field, fields, isFirst, onChange, onRemove, disabl
 
   return (
     <fieldset disabled={disabled} className="flex flex-col gap-6">
-      <legend className="sr-only">Edit {field.label || info.label}</legend>
+      <legend className="sr-only">{tr('Edit {name}', { name: field.label || tr(info.label) })}</legend>
       <div className="flex items-center justify-between gap-3">
         <span className="inline-flex items-center gap-2 text-caption font-medium text-fg-subtle">
-          <info.icon size={15} aria-hidden /> {info.label}
+          <info.icon size={15} aria-hidden /> {tr(info.label)}
         </span>
         <Button size="sm" variant="tertiary" leadingIcon={Trash2Icon} onClick={onRemove}>
           Remove
@@ -74,14 +76,14 @@ export function FieldEditor({ field, fields, isFirst, onChange, onRemove, disabl
 
 
         <p className="rounded-lg border border-dashed border-line px-4 py-5 text-center text-caption text-fg-muted">
-              No active services yet.{' '}
+              {tr('No active services yet.')}{' '}
               <Link to="/app/bookings" className="font-medium text-fg underline underline-offset-2">
-                Add one in Bookings
+                {tr('Add one in Bookings')}
               </Link>
               .
             </p>)
         }
-        {field.type === 'bank' && <p className="text-caption text-fg-muted">For refunds or payouts. Account numbers must have 10 digits; names aren’t checked with the bank in this prototype. In your inbox the number is hidden except the last 4 digits until you choose Show number. Never ask for PINs, passwords or card numbers.</p>}
+        {field.type === 'bank' && <p className="text-caption text-fg-muted">{tr('For refunds or payouts. Account numbers must have 10 digits; names aren’t checked with the bank in this prototype. In your inbox the number is hidden except the last 4 digits until you choose Show number. Never ask for PINs, passwords or card numbers.')}</p>}
         {field.type === 'grid' &&
         <TextArea
           id={`${p}-cols`}
@@ -100,11 +102,11 @@ export function FieldEditor({ field, fields, isFirst, onChange, onRemove, disabl
         <div className="grid gap-3 sm:grid-cols-2">
             <SelectInput id={`${p}-smin`} label="Starts at" value={String(scale.min) as '0' | '1'} options={[{ value: '0', label: '0' }, { value: '1', label: '1' }]} onChange={(v) => onChange({ scale: { ...scale, min: v === '1' ? 1 : 0 } })} />
             <SelectInput id={`${p}-smax`} label="Ends at" value={String(scale.max) as '5' | '10'} options={[{ value: '5', label: '5' }, { value: '10', label: '10' }]} onChange={(v) => onChange({ scale: { ...scale, max: v === '5' ? 5 : 10 } })} />
-            <TextInput id={`${p}-slo`} label={`Word for ${scale.min}`} value={scale.minLabel} maxLength={24} placeholder="e.g. Not likely" onChange={(e) => onChange({ scale: { ...scale, minLabel: e.target.value } })} error={scale.minLabel.trim() ? undefined : 'Add a word'} />
-            <TextInput id={`${p}-shi`} label={`Word for ${scale.max}`} value={scale.maxLabel} maxLength={24} placeholder="e.g. Very likely" onChange={(e) => onChange({ scale: { ...scale, maxLabel: e.target.value } })} error={scale.maxLabel.trim() ? undefined : 'Add a word'} />
+            <TextInput id={`${p}-slo`} label={tr('Word for {n}', { n: scale.min })} value={scale.minLabel} maxLength={24} placeholder="e.g. Not likely" onChange={(e) => onChange({ scale: { ...scale, minLabel: e.target.value } })} error={scale.minLabel.trim() ? undefined : 'Add a word'} />
+            <TextInput id={`${p}-shi`} label={tr('Word for {n}', { n: scale.max })} value={scale.maxLabel} maxLength={24} placeholder="e.g. Very likely" onChange={(e) => onChange({ scale: { ...scale, maxLabel: e.target.value } })} error={scale.maxLabel.trim() ? undefined : 'Add a word'} />
           </div>
         }
-        {field.type === 'signature' && <p className="text-caption text-fg-muted">Visitors can draw or type their name — typing is always offered, so nobody has to draw. Drawn signatures are saved as a picture with the response. This records agreement on the form; it isn’t a certified e-signature.</p>}
+        {field.type === 'signature' && <p className="text-caption text-fg-muted">{tr('Visitors can draw or type their name — typing is always offered, so nobody has to draw. Drawn signatures are saved as a picture with the response. This records agreement on the form; it isn’t a certified e-signature.')}</p>}
         {listOptionTypes.includes(field.type) &&
         <TextArea
           id={`${p}-opts`}
@@ -139,7 +141,7 @@ export function FieldEditor({ field, fields, isFirst, onChange, onRemove, disabl
             id={`${p}-amt-src`}
             label="Amount"
             value={field.amountFromFieldId ?? 'fixed'}
-            options={[{ value: 'fixed', label: 'A fixed amount' }, ...amountFields.map((f) => ({ value: f.id, label: f.type === 'products' || f.type === 'calculated' ? `Total of “${f.label}”` : `From “${f.label}”` }))]}
+            options={[{ value: 'fixed', label: 'A fixed amount' }, ...amountFields.map((f) => ({ value: f.id, label: tr(f.type === 'products' || f.type === 'calculated' ? 'Total of “{name}”' : 'From “{name}”', { name: f.label }) }))]}
             onChange={(v) => onChange({ amountFromFieldId: v === 'fixed' ? null : v, amountNgn: v === 'fixed' ? field.amountNgn ?? 5000 : null })}
             hint="Test mode — no real money moves." />
           
@@ -149,12 +151,12 @@ export function FieldEditor({ field, fields, isFirst, onChange, onRemove, disabl
           </>
         }
         {!['hidden', 'consent', 'section', 'calculated'].includes(field.type) && <Switch id={`${p}-req`} label="Required" checked={field.required} onChange={(v) => onChange({ required: v })} disabled={field.type === 'payment'} description={field.type === 'payment' ? 'Payment fields are always required.' : undefined} />}
-        {field.type === 'consent' && <p className="text-caption text-fg-muted">Always optional and never ticked in advance. Only people who tick it are marked as agreeing to marketing in Audience.</p>}
+        {field.type === 'consent' && <p className="text-caption text-fg-muted">{tr('Always optional and never ticked in advance. Only people who tick it are marked as agreeing to marketing in Audience.')}</p>}
       </section>
 
       {!isFirst &&
       <section className="flex flex-col gap-3 border-t border-line pt-5">
-          <h3 className="text-label font-semibold text-fg">Steps</h3>
+          <h3 className="text-label font-semibold text-fg">{tr('Steps')}</h3>
           <Switch id={`${p}-step`} label="Start a new step here" description="Visitors see a progress bar and a Next button." checked={field.stepBreak} onChange={(v) => onChange({ stepBreak: v })} />
           {field.stepBreak && <TextInput id={`${p}-step-title`} label="Step title" value={field.stepTitle} maxLength={40} placeholder="e.g. Delivery and deposit" onChange={(e) => onChange({ stepTitle: e.target.value })} />}
         </section>
@@ -162,9 +164,9 @@ export function FieldEditor({ field, fields, isFirst, onChange, onRemove, disabl
 
       {field.type !== 'hidden' &&
       <section className="flex flex-col gap-3 border-t border-line pt-5">
-          <h3 className="text-label font-semibold text-fg">Show this question</h3>
+          <h3 className="text-label font-semibold text-fg">{tr('Show this question')}</h3>
           {above.length === 0 ?
-        <p className="text-caption text-fg-subtle">Rules can only depend on a question above this one.</p> :
+        <p className="text-caption text-fg-subtle">{tr('Rules can only depend on a question above this one.')}</p> :
 
         <>
               <SelectInput id={`${p}-rule-on`} label="When" value={rule ? 'rule' : 'always'} options={[{ value: 'always', label: 'Always' }, { value: 'rule', label: 'Only when an earlier answer matches' }]} onChange={(v) => setRule(v === 'always' ? null : {})} />

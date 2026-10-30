@@ -10,11 +10,13 @@ import { TextInput } from '../ui/TextInput';
 import { Button } from '../ui/Button';
 import { cn } from '../../utils/cn';
 import { signOutOthers } from '../../utils/account/signOutOthers';
+import { useT } from '../../contexts/LocaleContext';
 
 type Step = 'method' | 'setup' | 'codes';
 
 /** Turn on two-step sign-in: choose a method, prove it works, keep backup codes. */
 export function TwoStepDialog({ open, onClose }: {open: boolean;onClose: () => void;}) {
+  const { t: tr } = useT();
   const account = useAccount();
   const [step, setStep] = useState<Step>('method');
   const [method, setMethod] = useState<Exclude<TwoStepMethod, 'none'>>('app');
@@ -47,7 +49,7 @@ export function TwoStepDialog({ open, onClose }: {open: boolean;onClose: () => v
   const finish = () => {
     // Turning on two-step signs out other devices so they have to pass it too (D125).
     updateAccount((a) => signOutOthers({ ...a, security: { ...a.security, twoStep: method, twoStepSince: new Date().toISOString(), backupCodes: codes } }, 'two_step_on'));
-    toast.success('Two-step sign-in is on', { description: method === 'app' ? 'You’ll enter a code from your app when signing in on a new device.' : 'We’ll text you a code when signing in on a new device.' });
+    toast.success(tr('Two-step sign-in is on'), { description: tr(method === 'app' ? 'You’ll enter a code from your app when signing in on a new device.' : 'We’ll text you a code when signing in on a new device.') });
     onClose();
   };
 
@@ -68,7 +70,7 @@ export function TwoStepDialog({ open, onClose }: {open: boolean;onClose: () => v
   step === 'setup' ?
   method === 'app' ?
   'Scan this with Google Authenticator, Microsoft Authenticator or 1Password, then enter the 6-digit code it shows.' :
-  `We texted a code to ${account.profile.phone}.` :
+  tr('We texted a code to {phone}.', { phone: account.profile.phone }) :
   'If you lose your phone, each of these codes lets you in once. Keep them somewhere safe — we can’t show them again.';
 
   const footer =
@@ -80,7 +82,7 @@ export function TwoStepDialog({ open, onClose }: {open: boolean;onClose: () => v
         <Button
       onClick={() => {
         setStep('setup');
-        if (method === 'sms') toast('Code sent', { description: 'Prototype: any 6 digits work except 000000.' });
+        if (method === 'sms') toast(tr('Code sent'), { description: tr('Prototype: any 6 digits work except 000000.') });
       }}>
       
           Continue
@@ -95,13 +97,13 @@ export function TwoStepDialog({ open, onClose }: {open: boolean;onClose: () => v
       </> :
 
   <>
-        <Button variant="secondary" leadingIcon={CopyIcon} onClick={() => navigator.clipboard?.writeText(codes.join('\n')).then(() => {setSaved(true);toast.success('Codes copied');})}>
+        <Button variant="secondary" leadingIcon={CopyIcon} onClick={() => navigator.clipboard?.writeText(codes.join('\n')).then(() => {setSaved(true);toast.success(tr('Codes copied'));})}>
           Copy
         </Button>
         <Button variant="secondary" leadingIcon={DownloadIcon} onClick={download}>
           Download
         </Button>
-        <Button disabled={!saved} title={saved ? undefined : 'Copy or download the codes first'} onClick={finish}>
+        <Button disabled={!saved} title={saved ? undefined : tr('Copy or download the codes first')} onClick={finish}>
           I’ve saved them
         </Button>
       </>;
@@ -111,7 +113,7 @@ export function TwoStepDialog({ open, onClose }: {open: boolean;onClose: () => v
     <Dialog open={open} onClose={onClose} title={title} description={description} footer={footer}>
       {step === 'method' &&
       <fieldset className="flex flex-col gap-3">
-          <legend className="sr-only">How you’ll get codes</legend>
+          <legend className="sr-only">{tr('How you’ll get codes')}</legend>
           <MethodOption icon={SmartphoneIcon} checked={method === 'app'} onSelect={() => setMethod('app')} title="Authenticator app" text="Recommended. Works without signal or airtime." />
           <MethodOption
           icon={MessageSquareIcon}
@@ -119,7 +121,7 @@ export function TwoStepDialog({ open, onClose }: {open: boolean;onClose: () => v
           disabled={!smsReady}
           onSelect={() => setMethod('sms')}
           title="Text message"
-          text={smsReady ? `Codes go to ${account.profile.phone}.` : 'Add and verify a phone on your Profile first.'} />
+          text={smsReady ? tr('Codes go to {phone}.', { phone: account.profile.phone }) : 'Add and verify a phone on your Profile first.'} />
         
         </fieldset>
       }
@@ -129,10 +131,10 @@ export function TwoStepDialog({ open, onClose }: {open: boolean;onClose: () => v
           {method === 'app' &&
         <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
               <div className="w-40 shrink-0 rounded-md border border-line bg-white p-2">
-                <QrPreview url={`otpauth://totp/KUBICU:${encodeURIComponent(account.profile.email)}?secret=${secret}&issuer=KUBICU`} style={qrStyle} alt="QR code for your authenticator app" />
+                <QrPreview url={`otpauth://totp/KUBICU:${encodeURIComponent(account.profile.email)}?secret=${secret}&issuer=KUBICU`} style={qrStyle} alt={tr('QR code for your authenticator app')} />
               </div>
               <div className="min-w-0 text-caption text-fg-muted">
-                <p>Can’t scan? Type this key into the app instead:</p>
+                <p>{tr('Can’t scan? Type this key into the app instead:')}</p>
                 <p className="mt-2 break-all rounded-md bg-sunken px-3 py-2 font-mono text-label tracking-wider text-fg">{secret.match(/.{1,4}/g)?.join(' ')}</p>
               </div>
             </div>
@@ -155,6 +157,9 @@ export function TwoStepDialog({ open, onClose }: {open: boolean;onClose: () => v
 }
 
 function MethodOption({ icon: Icon, checked, disabled, onSelect, title, text }: {icon: typeof SmartphoneIcon;checked: boolean;disabled?: boolean;onSelect: () => void;title: string;text: string;}) {
+  const { t } = useT();
+  title = t(title);
+  text = t(text);
   return (
     <label className={cn('flex cursor-pointer items-start gap-3 rounded-md border p-4 transition-colors duration-150 focus-within:ring-2 focus-within:ring-focus', checked ? 'border-action bg-action-soft' : 'border-line hover:bg-sunken', disabled && 'cursor-not-allowed opacity-60 hover:bg-transparent')}>
       <input type="radio" name="twostep-method" className="sr-only" checked={checked} disabled={disabled} onChange={onSelect} />

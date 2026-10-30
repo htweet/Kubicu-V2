@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ExternalLinkIcon, FlaskConicalIcon, MaximizeIcon, MonitorIcon, RotateCcwIcon, SmartphoneIcon, XIcon } from 'lucide-react';
+import { ExternalLinkIcon, FlaskConicalIcon, MaximizeIcon, MessagesSquareIcon, MonitorIcon, RotateCcwIcon, SmartphoneIcon, XIcon } from 'lucide-react';
 import type { CopilotReply } from '../../types/copilot';
 import { PlatformLook } from '../../components/marketing/PlatformLook';
 import { KubicuLogo } from '../../components/shell/KubicuLogo';
 import { BackButton } from '../../components/shell/BackButton';
 import { CopilotThread } from '../../components/copilot/CopilotThread';
 import { CopilotComposer } from '../../components/copilot/CopilotComposer';
+import { CopilotChatsPanel } from '../../components/copilot/CopilotChatsPanel';
 import { TemplateLivePreview } from '../../components/templates/TemplateLivePreview';
 import { useCopilot } from '../../hooks/useCopilot';
 import { cn } from '../../utils/cn';
@@ -18,13 +19,40 @@ const ease = [0.23, 1, 0.32, 1] as const;
 
 /** Web Copilot (D262): the same conversation as the WhatsApp channel, with a live phone preview beside it. */
 export function CopilotWeb() {
-  const { session, draft, send, retry, restart, addPhotos, limits } = useCopilot('web');
+  const [params, setParams] = useSearchParams();
+  const navigate = useNavigate();
+  const openId = params.get('c');
+  const { session, draft, send, retry, restart, addPhotos, limits } = useCopilot('web', undefined, openId);
   const [tab, setTab] = useState<'chat' | 'preview'>('chat');
   const [full, setFull] = useState<'phone' | 'desktop' | null>(null);
   const [confirmRestart, setConfirmRestart] = useState(false);
+  const chatsOpen = params.get('view') === 'chats';
 
-  const [params, setParams] = useSearchParams();
-  const navigate = useNavigate();
+  // `?c=` opens a chat (from the sidebar or the list); once it's showing, the address goes back to plain.
+  useEffect(() => {
+    if (openId && session.id === openId) {
+      setParams((p) => {
+        const next = new URLSearchParams(p);
+        next.delete('c');
+        return next;
+      }, { replace: true });
+      setTab('chat');
+    }
+  }, [openId, session.id, setParams]);
+
+  const setChatsOpen = (on: boolean) =>
+  setParams((p) => {
+    const next = new URLSearchParams(p);
+    if (on) next.set('view', 'chats');else
+    next.delete('view');
+    return next;
+  }, { replace: !on });
+
+  const newChat = () => {
+    restart();
+    setConfirmRestart(false);
+    setTab('chat');
+  };
 
   useEffect(() => {
     document.title = 'KUBICU Copilot — tell us what you want to build';
@@ -71,12 +99,16 @@ export function CopilotWeb() {
             <span className="hidden truncate text-label font-semibold text-fg sm:block">Copilot</span>
           </div>
           <div className="flex items-center gap-2">
+            <button type="button" onClick={() => setChatsOpen(true)} aria-haspopup="dialog" className="inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-label font-medium text-fg-muted hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+              <MessagesSquareIcon size={15} aria-hidden /> <span className="hidden sm:inline">All chats</span>
+              <span className="sr-only sm:hidden">All chats</span>
+            </button>
             <span className="hidden text-caption text-fg-subtle md:block">
               {limits.drafts} of 3 free drafts left today
             </span>
             {confirmRestart ?
             <span className="flex items-center gap-1.5">
-                <button type="button" onClick={() => {restart();setConfirmRestart(false);setTab('chat');}} className="h-9 rounded-full bg-action px-3 text-label font-semibold text-action-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+                <button type="button" onClick={newChat} className="h-9 rounded-full bg-action px-3 text-label font-semibold text-action-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
                   Start a new chat
                 </button>
                 <button type="button" onClick={() => setConfirmRestart(false)} className="h-9 rounded-full px-3 text-label text-fg-muted hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
@@ -158,6 +190,16 @@ export function CopilotWeb() {
           </aside>
         </div>
       </div>
+
+      <CopilotChatsPanel
+        open={chatsOpen}
+        onClose={() => setChatsOpen(false)}
+        activeId={session.id}
+        onOpenChat={(id) => {
+          setParams({ c: id }, { replace: true });
+        }}
+        onNewChat={newChat} />
+      
 
       <AnimatePresence>
         {full && draft &&

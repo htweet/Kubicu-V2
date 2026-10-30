@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { KeyRoundIcon } from 'lucide-react';
+import { ArrowRightIcon, Building2Icon, KeyRoundIcon, MailIcon } from 'lucide-react';
 import { AuthLayout } from '../../components/auth/AuthLayout';
+import { PasswordInput } from '../../components/auth/PasswordInput';
 import { TextInput } from '../../components/ui/TextInput';
 import { Button } from '../../components/ui/Button';
 import { InlineAlert } from '../../components/ui/InlineAlert';
@@ -9,11 +10,15 @@ import { isValidEmail } from '../../utils/validation';
 import { readAccount } from '../../utils/account/store';
 import { providerInfo, ssoForEmail } from '../../utils/sso';
 import { startPageOptions } from '../../data/accountOptions';
+import { useT } from '../../contexts/LocaleContext';
 
 type Mode = 'password' | 'sso';
 
+const inputClass = 'h-12 rounded-xl pl-10';
+
 export function SignIn() {
   const navigate = useNavigate();
+  const { t } = useT();
   const [mode, setMode] = useState<Mode>('password');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -48,7 +53,7 @@ export function SignIn() {
     setSubmitted(true);
     if (errors.email) return;
     const found = ssoForEmail(email);
-    if (!found) return setSsoMessage(`Single sign-on isn’t set up for @${email.split('@')[1]}. Sign in with your password, or ask your workspace admin.`);
+    if (!found) return setSsoMessage(t('Single sign-on isn’t set up for @{domain}. Sign in with your password, or ask your workspace admin.', { domain: email.split('@')[1] }));
     setSsoMessage('');
     setLoading(true);
     // Simulated redirect to the identity provider and back.
@@ -67,66 +72,105 @@ export function SignIn() {
 
   return (
     <AuthLayout
-      title={mode === 'sso' ? 'Sign in with single sign-on' : 'Welcome back'}
+      showcase="signin"
+      title={mode === 'sso' ? t('Sign in with single sign-on') : t('Welcome back')}
+      description={mode === 'sso' ? t('For teams on Enterprise. We’ll send you to your company’s sign-in page.') : t('Sign in to manage your pages, orders and bookings.')}
       footer={
       <>
-          New to KUBICU?{' '}
-          <Link to="/signup" className="font-semibold text-action hover:underline">
-            Create an account
+          {t('New to KUBICU?')}{' '}
+          <Link to="/signup" className="font-semibold text-fg underline underline-offset-4 hover:no-underline">
+            {t('Create an account')}
           </Link>
           <span className="mt-3 block text-caption text-fg-subtle">
-            KUBICU team?{' '}
+            {t('KUBICU team?')}{' '}
             <Link to="/admin" className="font-medium text-fg-muted underline underline-offset-2 hover:text-fg">
-              Staff console
+              {t('Staff console')}
             </Link>
           </span>
         </>
       }>
       
       {mode === 'password' ?
-      <form onSubmit={submit} noValidate className="flex flex-col gap-4">
-          <TextInput id="si-email" label="Email" type="email" inputMode="email" autoComplete="email" value={email} onChange={(e) => {setEmail(e.target.value);setRequired(false);}} error={submitted ? errors.email || undefined : undefined} />
-          <div>
-            <TextInput id="si-password" label="Password" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} error={submitted ? errors.password || undefined : undefined} />
-            <Link to="/reset" className="mt-2 inline-block text-caption font-medium text-action hover:underline">
-              Forgot password?
-            </Link>
-          </div>
+      <form onSubmit={submit} noValidate className="flex flex-col gap-5">
+          <TextInput
+          id="si-email"
+          label="Email"
+          type="email"
+          inputMode="email"
+          autoComplete="email"
+          leadingIcon={MailIcon}
+          placeholder="you@example.com"
+          className={inputClass}
+          value={email}
+          onChange={(e) => {
+            setEmail(e.target.value);
+            setRequired(false);
+          }}
+          error={submitted ? errors.email || undefined : undefined} />
+        
+          <PasswordInput
+          id="si-password"
+          label="Password"
+          autoComplete="current-password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          error={submitted ? errors.password || undefined : undefined}
+          trailing={
+          <Link to="/reset" className="text-caption font-semibold text-fg-muted underline-offset-4 hover:text-fg hover:underline">
+                {t('Forgot password?')}
+              </Link>
+          } />
+        
           {required &&
         <InlineAlert tone="warning" title="Your company uses single sign-on">
-              <span className="block">Sign in with your work account instead of a password.</span>
+              <span className="block">{t('Sign in with your work account instead of a password.')}</span>
               <span className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
                 <button type="button" className="font-semibold underline underline-offset-2" onClick={() => switchMode('sso')}>
-                  Use single sign-on
+                  {t('Use single sign-on')}
                 </button>
                 <button type="button" className="underline underline-offset-2" onClick={(e) => submit(e as unknown as React.FormEvent, true)}>
-                  I’m the Owner — continue with password and two-step code
+                  {t('I’m the Owner — continue with password and two-step code')}
                 </button>
               </span>
             </InlineAlert>
         }
-          <Button type="submit" variant="brand" size="lg" fullWidth loading={loading} className="mt-2">
+          <Button type="submit" variant="brand" size="lg" fullWidth loading={loading} trailingIcon={ArrowRightIcon} className="mt-1 h-12 rounded-xl">
             Sign in
           </Button>
           <div className="flex items-center gap-3 text-caption text-fg-subtle" aria-hidden>
             <span className="h-px flex-1 bg-line" />
-            or
+            {t('or')}
             <span className="h-px flex-1 bg-line" />
           </div>
-          <Button type="button" variant="secondary" size="lg" fullWidth leadingIcon={KeyRoundIcon} onClick={() => switchMode('sso')}>
+          <Button type="button" variant="secondary" size="lg" fullWidth leadingIcon={KeyRoundIcon} className="h-12 rounded-xl" onClick={() => switchMode('sso')}>
             Sign in with single sign-on
           </Button>
         </form> :
 
-      <form onSubmit={submitSso} noValidate className="flex flex-col gap-4">
-          <p className="text-label text-fg-muted">For teams on Enterprise. We’ll send you to your company’s sign-in page.</p>
-          <TextInput id="si-sso-email" label="Work email" type="email" inputMode="email" autoComplete="email" value={email} onChange={(e) => {setEmail(e.target.value);setSsoMessage('');}} error={submitted ? errors.email || undefined : undefined} hint={sso ? `${sso.workspaceName} · ${providerInfo[sso.provider].label}` : undefined} />
+      <form onSubmit={submitSso} noValidate className="flex flex-col gap-5">
+          <TextInput
+          id="si-sso-email"
+          label="Work email"
+          type="email"
+          inputMode="email"
+          autoComplete="email"
+          leadingIcon={Building2Icon}
+          placeholder="you@company.com"
+          className={inputClass}
+          value={email}
+          onChange={(e) => {
+            setEmail(e.target.value);
+            setSsoMessage('');
+          }}
+          error={submitted ? errors.email || undefined : undefined}
+          hint={sso ? `${sso.workspaceName} · ${providerInfo[sso.provider].label}` : undefined} />
+        
           {ssoMessage && <InlineAlert tone="warning" title="No single sign-on for this email">{ssoMessage}</InlineAlert>}
-          <Button type="submit" variant="brand" size="lg" fullWidth loading={loading}>
-            {loading && sso ? `Opening ${providerInfo[sso.provider].label}…` : 'Continue'}
+          <Button type="submit" variant="brand" size="lg" fullWidth loading={loading} className="h-12 rounded-xl">
+            {loading && sso ? t('Opening {provider}…', { provider: providerInfo[sso.provider].label }) : t('Continue')}
           </Button>
-          <button type="button" onClick={() => switchMode('password')} className="self-center text-caption font-medium text-action hover:underline">
-            Sign in with a password instead
+          <button type="button" onClick={() => switchMode('password')} className="self-center text-caption font-semibold text-fg-muted underline-offset-4 hover:text-fg hover:underline">
+            {t('Sign in with a password instead')}
           </button>
         </form>
       }

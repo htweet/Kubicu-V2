@@ -29,6 +29,21 @@ _Re-audited 24 Oct 2026 against the code, the decision register (through D149) a
 >
 > **Buildable gaps after this audit:** translations of the remaining screens (left out by the owner's choice). Nothing else is unbuilt; the rest is partners (§4), hands-on checks (§7) or sign-off (§5 — D110 onwards are still "Proposed").
 
+> **Re-audit, 29 Oct 2026 (D268–D273).** The creator pages, Marketplace, Short Links and Audience Manager document (`docs/KUBICU_LINKTREE_PARITY_AND_UPGRADE_MAGIC_PATTERNS.md`) is recorded here and row by row in the traceability matrix.
+>
+> | Area | Decisions | Status |
+> |---|---|---|
+> | Mega menu, `/features`, eight `/for/…` pages, `/marketplace` with listings and install checks | D268 | ✅ · AI workflow packs "Not available yet" |
+> | Dedicated Creators page | D273 | ✅ |
+> | Menu usage counts (anonymous daily tallies) | D273 | ✅ 🧪 per device until a server endpoint exists |
+> | Marketplace sort and related items | D268 (checked D273) | ✅ · no "Popular" sort without real install data |
+> | Short links: any destination, canvas and publish shortcuts, core nav item, full per-link stats | D268–D270 | ✅ |
+> | Short links: search/filter/sort, scheduled start, WhatsApp links, saved tag sets, creation limit, click quality, health checks, delete click data | D271 | ✅ 🧪 server-side filtering and abuse limits |
+> | Audience: segments with rule builder, Sources, first touch, consent record, logged exports, growth overview, sync history with retry | D268, D272 | ✅ 🧪 real syncing needs a backend |
+> | Workspace dialogs as right-side sheets; Trust card score ring; Copilot phone mock; WhatsApp chat sheet layout | D272, D273 | ✅ |
+>
+> **Buildable gaps after this audit:** none from that document. Still open: translations of the remaining screens (owner's choice), partners (§4), hands-on checks (§7) and sign-off (§5).
+
 ---
 
 ## 1. Summary
@@ -170,6 +185,8 @@ _Re-audited 24 Oct 2026 against the code, the decision register (through D149) a
 
 **Still true after the 26 Oct re-audit (D212):** the same — translations only. Add to the hands-on list: all 32 templates and 35 theme versions at 320 px and desktop; glass/blur on a low-end Android; the AI assistant, courses, group classes, gift cards, fundraiser and event pages with VoiceOver/TalkBack; canvas drag into and out of containers on touch.
 
+**Still true after the 29 Oct re-audit (D273):** the same — translations only. Add to §4 (partners): a real phishing/URL screening service, server-side short-link click counting and bot filtering, and real Mailchimp/Brevo/Sheets syncing. Add to the hands-on list: the mega menu with a screen reader and keyboard only, the phone menu at 320 px, the Creators page tabs with VoiceOver/TalkBack, side sheets at 200% zoom, and long Marketplace results on a low-end Android.
+
 **Waiting on partners:** see §4.
 
 **Hands-on:** G16 visual review at 320 px / 200%; real-phone screen readers (seat map, print ordering, @mentions, print designs, partner panel, Sold with a partner, guest partner page, check-in result card and doors panel, buyer tracking page, bank-transfer order page, USSD flow); axe-core and status-colour contrast run, including the tracking "problem" orange on dark custom themes; embeds from each of the 11 sites at 320 px.
@@ -179,4 +196,5 @@ _Re-audited 24 Oct 2026 against the code, the decision register (through D149) a
 - Batches 1–11, print kit (D118–D119), co-branded spaces & bundles (D120–D123) and Batch 12 (D124–D134) are complete; Batch 12 translations continue in parts.
 - Batch 13 complete (D135–D138): docs reconciliation, staff editing tools, workspace currency, USSD, watermarks, calendar sync, live automations, seven industry page sets, multiple workspaces, checks.
 - 26 Oct 2026 re-audit (D212): libraries, block ecosystem, spaces, selling, forms, providers, demo data and the AI assistant recorded; drag-into-container and Delivery & returns confirmed closed (D180, D181, D191).
+- 29 Oct 2026 re-audit (D268–D273): public pillars, Marketplace, Short Links and Audience Manager recorded; the traceability matrix gained an "LP" section for them.
 - Earlier versions of this file: 22 Oct 2026; updates after Forms, the account area, Batch 8, Batch 11 and 23 Oct 2026.

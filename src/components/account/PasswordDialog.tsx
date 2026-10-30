@@ -6,11 +6,13 @@ import { TextInput } from '../ui/TextInput';
 import { Button } from '../ui/Button';
 import { cn } from '../../utils/cn';
 import { signOutOthers } from '../../utils/account/signOutOthers';
+import { useT } from '../../contexts/LocaleContext';
 
 const barTone = ['bg-danger', 'bg-danger', 'bg-warning', 'bg-success', 'bg-success'];
 
 /** Change password: current, new (with strength), confirm, and sign out elsewhere. */
 export function PasswordDialog({ open, onClose }: {open: boolean;onClose: () => void;}) {
+  const { t: tr } = useT();
   const account = useAccount();
   const [f, setF] = useState({ current: '', next: '', confirm: '', signOutOthers: true });
   const [tried, setTried] = useState(false);
@@ -37,7 +39,7 @@ export function PasswordDialog({ open, onClose }: {open: boolean;onClose: () => 
       const next = { ...a, security: { ...a.security, passwordSetAt: new Date().toISOString() } };
       return f.signOutOthers ? signOutOthers(next, 'password') : next;
     });
-    toast.success('Password changed', { description: f.signOutOthers && others ? `Signed out of ${others} other ${others === 1 ? 'device' : 'devices'}.` : 'You’ll use it next time you sign in.' });
+    toast.success(tr('Password changed'), { description: f.signOutOthers && others ? others === 1 ? tr('Signed out of 1 other device') : tr('Signed out of {n} other devices', { n: others }) : tr('You’ll use it next time you sign in.') });
     onClose();
   };
 
@@ -67,7 +69,7 @@ export function PasswordDialog({ open, onClose }: {open: boolean;onClose: () => 
               <span key={i} className={cn('h-1.5 rounded-full', i <= strength.score ? barTone[strength.score] : 'bg-sunken')} />
               )}
               </div>
-              <span className="w-16 text-right text-caption font-medium text-fg-muted">{strength.label}</span>
+              <span className="w-16 text-right text-caption font-medium text-fg-muted">{tr(strength.label)}</span>
             </div>
           }
         </div>
@@ -76,8 +78,8 @@ export function PasswordDialog({ open, onClose }: {open: boolean;onClose: () => 
         <label className="flex items-start gap-3 text-label text-fg">
             <input type="checkbox" className="mt-0.5 h-4 w-4 accent-[rgb(var(--action))]" checked={f.signOutOthers} onChange={(e) => setF((x) => ({ ...x, signOutOthers: e.target.checked }))} />
             <span>
-              Sign out of my other {others} {others === 1 ? 'device' : 'devices'}
-              <span className="block text-caption text-fg-subtle">Recommended if you think someone else knows your password.</span>
+              {others === 1 ? tr('Sign out of my other device') : tr('Sign out of my other {n} devices', { n: others })}
+              <span className="block text-caption text-fg-subtle">{tr('Recommended if you think someone else knows your password.')}</span>
             </span>
           </label>
         }

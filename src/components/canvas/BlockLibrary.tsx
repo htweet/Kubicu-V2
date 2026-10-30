@@ -26,6 +26,7 @@ import type { BlockStatus } from './BlockStatusChip';
 import { usePlan } from '../../contexts/PlanContext';
 import { planAtLeast } from '../../data/plans';
 import { useMarketplace } from '../../contexts/MarketplaceContext';
+import { useT } from '../../contexts/LocaleContext';
 
 interface BlockLibraryProps {
   onAdded?: (id: string) => void;
@@ -39,6 +40,7 @@ type Filter = 'all' | 'sections' | LibraryCategoryId;
  * real mini previews in the page's theme, and a details step before adding. Same component on phones (`touch`).
  */
 export function BlockLibrary({ onAdded, touch }: BlockLibraryProps) {
+  const { t: tr } = useT();
   const { state, actions } = useEditor();
   const plan = usePlan();
   const market = useMarketplace();
@@ -52,10 +54,10 @@ export function BlockLibrary({ onAdded, touch }: BlockLibraryProps) {
   // Containers (D167): with a container (or a block in one) selected, new blocks go inside while there's room.
   const inside = placementFor(state.draft.blocks, state.selectedId, 'text').container;
   const placement = inside ?
-  `Adds inside “${layerName(inside)}” · ${childrenOf(state.draft.blocks, inside.id).length} of ${MAX_CHILDREN} used` :
+  tr('Adds inside “{name}” · {used} of {max} used', { name: layerName(inside), used: childrenOf(state.draft.blocks, inside.id).length, max: MAX_CHILDREN }) :
   selected ?
-  `Adds below “${layerName(selected)}”` :
-  'Adds to the end of your page';
+  tr('Adds below “{name}”', { name: layerName(selected) }) :
+  tr('Adds to the end of your page');
 
   const statusOf = (type: BlockType): BlockStatus => {
     const def = blockDefinitions[type];
@@ -78,7 +80,7 @@ export function BlockLibrary({ onAdded, touch }: BlockLibraryProps) {
     // Compatibility (D174): say so when the selected container can't hold this block.
     const where = placementFor(state.draft.blocks, state.selectedId, type);
     const id = actions.addBlock(type, undefined, undefined, preset);
-    if (where.blocked) toast(`${blockDefinitions[type].name} added below ${blockName(where.blocked.container)}`, { description: where.blocked.reason });
+    if (where.blocked) toast(tr('{block} added below {container}', { block: tr(blockDefinitions[type].name), container: blockName(where.blocked.container) }), { description: tr(where.blocked.reason) });
     shelf.used(type);
     setDetail(null);
     onAdded?.(id);
@@ -145,7 +147,7 @@ export function BlockLibrary({ onAdded, touch }: BlockLibraryProps) {
     <div className="flex flex-col">
       <div className="sticky top-0 z-10 flex flex-col gap-2.5 bg-raised px-4 pb-3 pt-4">
         <label htmlFor="block-search" className="sr-only">
-          Search blocks
+          {tr('Search blocks')}
         </label>
         <div className="relative">
           <SearchIcon size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-fg-subtle" aria-hidden />
@@ -154,12 +156,12 @@ export function BlockLibrary({ onAdded, touch }: BlockLibraryProps) {
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search — try “photo”, “appointment”, “shop”"
+            placeholder={tr('Search — try “photo”, “appointment”, “shop”')}
             className={cn(fieldControlClass, 'pl-9 text-label', touch ? 'h-11' : 'h-9')} />
           
         </div>
         {/* Horizontal-only strip (no vertical scroll): category chips. */}
-        <div className="scroll-quiet -mx-4 flex gap-1.5 overflow-x-auto overflow-y-hidden px-4 pb-0.5" role="group" aria-label="Block categories">
+        <div className="scroll-quiet -mx-4 flex gap-1.5 overflow-x-auto overflow-y-hidden px-4 pb-0.5" role="group" aria-label={tr('Block categories')}>
           {([{ id: 'all', label: 'All', icon: null }, { id: 'sections', label: 'Sections', icon: LayoutTemplateIcon }, ...libraryCategories] as {id: Filter;label: string;icon: typeof SearchIcon | null;}[]).map((c) => {
             const Icon = c.icon;
             const active = filter === c.id;
@@ -176,7 +178,7 @@ export function BlockLibrary({ onAdded, touch }: BlockLibraryProps) {
                 )}>
                 
                 {Icon && <Icon size={12} aria-hidden />}
-                {c.label}
+                {tr(c.label)}
               </button>);
 
           })}
@@ -184,7 +186,7 @@ export function BlockLibrary({ onAdded, touch }: BlockLibraryProps) {
         <div className="flex items-center justify-between gap-3">
           <p className="min-w-0 truncate text-caption text-fg-subtle">{placement}</p>
           {/* List (compact) or grid (previews) — remembered on this device. */}
-          <div role="group" aria-label="Block view" className="flex shrink-0 rounded-md border border-line p-0.5">
+          <div role="group" aria-label={tr('Block view')} className="flex shrink-0 rounded-md border border-line p-0.5">
             {([
             { v: 'list', icon: ListIcon, label: 'List view' },
             { v: 'grid', icon: LayoutGridIcon, label: 'Grid view with previews' }] as
@@ -193,8 +195,8 @@ export function BlockLibrary({ onAdded, touch }: BlockLibraryProps) {
               key={v}
               type="button"
               aria-pressed={shelf.view === v}
-              aria-label={label}
-              title={label}
+              aria-label={tr(label)}
+              title={tr(label)}
               onClick={() => shelf.setView(v)}
               className={cn(
                 'flex items-center justify-center rounded-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
@@ -211,18 +213,18 @@ export function BlockLibrary({ onAdded, touch }: BlockLibraryProps) {
 
       {browsing &&
       <p className="px-4 pb-1 text-[11.5px] text-fg-subtle">
-          {blockOrder.length} blocks and {catalogLooks.length} ready-made looks — all {blockCatalog.length} ideas in the block catalogue.
+          {tr('{blocks} blocks and {looks} ready-made looks — all {all} ideas in the block catalogue.', { blocks: blockOrder.length, looks: catalogLooks.length, all: blockCatalog.length })}
         </p>
       }
       {filter === 'sections' ?
       <div className="flex flex-col gap-6 px-3 pb-6">
           <SavedSectionsList query={query} touch={touch} onInserted={() => onAdded?.(state.selectedId ?? '')} />
-          <Shelf title="Ready-made sections" hint="Real blocks you can edit. Anything marked [Add …] must be replaced before publishing.">
+          <Shelf title={tr('Ready-made sections')} hint={tr('Real blocks you can edit. Anything marked [Add …] must be replaced before publishing.')}>
             <SectionPresetList query={query} touch={touch} onInserted={() => onAdded?.(state.selectedId ?? '')} />
           </Shelf>
         </div> :
       matches.length === 0 && plannedMatches.length === 0 && lookMatches.length === 0 && !(q && sectionMatchCount > 0) ?
-      <EmptyState icon={SearchXIcon} title="No blocks found" description={`Nothing matches “${query}”. Try “button”, “photo”, “form” or pick a category.`} /> :
+      <EmptyState icon={SearchXIcon} title={tr('No blocks found')} description={tr('Nothing matches “{q}”. Try “button”, “photo”, “form” or pick a category.', { q: query })} /> :
 
       <div className="flex flex-col gap-6 px-3 pb-6">
           {browsing &&
@@ -233,38 +235,38 @@ export function BlockLibrary({ onAdded, touch }: BlockLibraryProps) {
           
               <LayoutTemplateIcon size={18} className="shrink-0 text-action" aria-hidden />
               <span className="min-w-0 flex-1">
-                <span className="block text-label font-semibold text-fg">{sectionPresets.length} ready-made sections</span>
-                <span className="block text-caption text-fg-subtle">Hero + portfolio, menu + ordering, schedule + speakers and more</span>
+                <span className="block text-label font-semibold text-fg">{tr('Ready-made sections: {n}', { n: sectionPresets.length })}</span>
+                <span className="block text-caption text-fg-subtle">{tr('Hero + portfolio, menu + ordering, schedule + speakers and more')}</span>
               </span>
               <ChevronRightIcon size={16} className="shrink-0 text-fg-subtle" aria-hidden />
             </button>
         }
           {q && sectionMatchCount > 0 &&
-        <Shelf title="Ready-made sections">
+        <Shelf title={tr('Ready-made sections')}>
               <SectionPresetList query={query} touch={touch} onInserted={() => onAdded?.(state.selectedId ?? '')} />
             </Shelf>
         }
           {browsing && suggestions.length > 0 &&
-        <Shelf title="Suggested" hint="Simple rules based on what's on your page">
+        <Shelf title={tr('Suggested')} hint={tr('Simple rules based on what’s on your page')}>
               <ul className={grid}>
-                {suggestions.map((s) => card(s.type, s.reason, s.id))}
+                {suggestions.map((s) => card(s.type, tr(s.reason), s.id))}
               </ul>
               <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1">
                 {suggestions.map((s) =>
             <button key={s.id} type="button" onClick={() => shelf.dismiss(s.id)} className="inline-flex items-center gap-1 text-caption text-fg-subtle hover:text-fg">
-                    <XIcon size={11} aria-hidden /> Don’t suggest {blockDefinitions[s.type].name.toLowerCase()}
+                    <XIcon size={11} aria-hidden /> {tr('Don’t suggest {name}', { name: tr(blockDefinitions[s.type].name).toLowerCase() })}
                   </button>
             )}
               </div>
             </Shelf>
         }
           {browsing && favourites.length > 0 &&
-        <Shelf title="Favourites">
+        <Shelf title={tr('Favourites')}>
               <ul className={grid}>{favourites.map((t) => card(t))}</ul>
             </Shelf>
         }
           {browsing && recent.length > 0 &&
-        <Shelf title="Recently used">
+        <Shelf title={tr('Recently used')}>
               <ul className={grid}>{recent.map((t) => card(t))}</ul>
             </Shelf>
         }
@@ -276,11 +278,11 @@ export function BlockLibrary({ onAdded, touch }: BlockLibraryProps) {
           const tips = howtos.filter((e) => e.category === c.id);
           if (items.length === 0 && looks.length === 0 && tips.length === 0) return null;
           return (
-            <Shelf key={c.id} title={c.label} hint={filter === c.id ? c.description : undefined}>
+            <Shelf key={c.id} title={tr(c.label)} hint={filter === c.id ? tr(c.description) : undefined}>
                 {items.length > 0 && <ul className={grid}>{items.map((t) => card(t))}</ul>}
                 {looks.length > 0 &&
               <div className={items.length ? 'mt-3' : undefined}>
-                    <p className="mb-1 px-1 text-[11.5px] font-medium text-fg-subtle">Ready-made looks</p>
+                    <p className="mb-1 px-1 text-[11.5px] font-medium text-fg-subtle">{tr('Ready-made looks')}</p>
                     <ul className="flex flex-col gap-0.5">
                       {looks.map((e) =>
                   <LookRow key={e.n} entry={e} status={statusOf(e.type as BlockType)} touch={touch} onAdd={() => add(e.type as BlockType, e.preset?.())} />
@@ -298,7 +300,7 @@ export function BlockLibrary({ onAdded, touch }: BlockLibraryProps) {
         })}
 
           {plannedMatches.length > 0 &&
-        <Shelf title="Planned" hint="Shown so you know they're coming — they can't be added yet">
+        <Shelf title={tr('Planned')} hint={tr('Shown so you know they’re coming — they can’t be added yet')}>
               <ul className="flex flex-col gap-1.5">
                 {plannedMatches.map((p) => {
               const Icon = p.icon;
@@ -306,9 +308,9 @@ export function BlockLibrary({ onAdded, touch }: BlockLibraryProps) {
                 <li key={p.id} className="flex items-center gap-3 rounded-md border border-dashed border-line-strong px-2.5 py-2" aria-disabled="true">
                       <Icon size={15} className="shrink-0 text-fg-subtle" aria-hidden />
                       <span className="min-w-0">
-                        <span className="block text-label font-medium text-fg-muted">{p.name}</span>
-                        <span className="block text-caption text-fg-subtle">{p.description}</span>
-                        <PlanLock kind={p.availability}>{p.note}</PlanLock>
+                        <span className="block text-label font-medium text-fg-muted">{tr(p.name)}</span>
+                        <span className="block text-caption text-fg-subtle">{tr(p.description)}</span>
+                        <PlanLock kind={p.availability}>{tr(p.note)}</PlanLock>
                       </span>
                     </li>);
 
@@ -319,9 +321,9 @@ export function BlockLibrary({ onAdded, touch }: BlockLibraryProps) {
 
           {!market.isActive('bookings') && browsing &&
         <p className="rounded-md bg-sunken px-3 py-2.5 text-caption text-fg-muted">
-              Want customers to book a time? The Booking block comes with the free Bookings app.{' '}
+              {tr('Want customers to book a time? The Booking block comes with the free Bookings app.')}{' '}
               <Link to="/app/extensions?ext=bookings" className="font-semibold text-fg underline-offset-2 hover:underline">
-                Get Bookings
+                {tr('Get Bookings')}
               </Link>
             </p>
         }
@@ -332,7 +334,7 @@ export function BlockLibrary({ onAdded, touch }: BlockLibraryProps) {
 }
 
 function Shelf({ title, hint, children }: {title: string;hint?: string;children: React.ReactNode;}) {
-  const id = `shelf-${title.replace(/\W+/g, '-').toLowerCase()}`;
+  const id = `shelf-${React.useId().replace(/:/g, '')}`;
   return (
     <section aria-labelledby={id}>
       <div className="mb-2 px-1">

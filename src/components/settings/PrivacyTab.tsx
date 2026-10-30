@@ -7,9 +7,11 @@ import { Button } from '../ui/Button';
 import { Dialog } from '../ui/Dialog';
 import { Card } from '../ui/layout/Card';
 import { Section } from '../ui/layout/Section';
+import { useT } from '../../contexts/LocaleContext';
 
 /** Settings → Privacy: what's recorded about visitors, and the switches (D61). */
 export function PrivacyTab() {
+  const { t: tr } = useT();
   const { data, updateSettings, clearAll, clearSample, loadSample } = useAnalytics();
   const team = useTeam();
   const manage = team.can('team.manage');
@@ -28,7 +30,7 @@ export function PrivacyTab() {
           <div className="flex flex-wrap gap-2">
               {sampleCount > 0 ?
             <Button size="sm" variant="secondary" disabled={!manage.allowed} onClick={clearSample}>
-                  Clear {sampleCount.toLocaleString()} sample events
+                  {tr('Clear sample events ({n})', { n: sampleCount.toLocaleString() })}
                 </Button> :
 
             <Button size="sm" variant="secondary" disabled={!manage.allowed} onClick={loadSample}>
@@ -53,9 +55,9 @@ export function PrivacyTab() {
             
           <div className="flex items-center justify-between gap-3 border-t border-line pt-4">
             <div>
-              <p className="text-label font-medium text-fg">Kept for {s.retentionDays} days</p>
+              <p className="text-label font-medium text-fg">{tr('Kept for {n} days', { n: s.retentionDays })}</p>
               <p className="flex items-center gap-1.5 text-caption text-fg-subtle">
-                Set by KUBICU for every workspace — older visits are deleted automatically.
+                {tr('Set by KUBICU for every workspace — older visits are deleted automatically.')}
               </p>
             </div>
           </div>
@@ -63,16 +65,16 @@ export function PrivacyTab() {
         </Card>
       </div>
 
-      <Section id="priv-notice" title={<span className="flex items-center gap-2"><ShieldCheckIcon size={16} className="text-success" aria-hidden /> What visitors are told</span>}>
+      <Section id="priv-notice" title={<span className="flex items-center gap-2"><ShieldCheckIcon size={16} className="text-success" aria-hidden /> {tr('What visitors are told')}</span>}>
         <blockquote className="rounded-md border border-line bg-sunken p-4 text-label text-fg-muted">
-          This page counts visits to help the owner improve it: which links are tapped, whether you came from WhatsApp, Instagram, a QR code and so on, and whether you’re on a phone, tablet or computer. No name, email or phone number is recorded, and nothing follows you to other sites. A visit ends after 30 minutes; a random number kept in your browser lets the page tell a first visit from a return one, and clearing your browser removes it.
+          {tr('This page counts visits to help the owner improve it: which links are tapped, whether you came from WhatsApp, Instagram, a QR code and so on, and whether you’re on a phone, tablet or computer. No name, email or phone number is recorded, and nothing follows you to other sites. A visit ends after 30 minutes; a random number kept in your browser lets the page tell a first visit from a return one, and clearing your browser removes it.')}
         </blockquote>
         <ul className="flex flex-col gap-1.5 text-caption text-fg-muted">
-          <li>No cookies across sites, no fingerprinting, no personal data. Only the kind of device is kept — never its model, browser or screen size.</li>
-          <li>Owners see totals and patterns, never a person.</li>
-          <li>Orders, bookings and forms are kept in their own screens — that’s what customers chose to share.</li>
+          <li>{tr('No cookies across sites, no fingerprinting, no personal data. Only the kind of device is kept — never its model, browser or screen size.')}</li>
+          <li>{tr('Owners see totals and patterns, never a person.')}</li>
+          <li>{tr('Orders, bookings and forms are kept in their own screens — that’s what customers chose to share.')}</li>
         </ul>
-        <p className="text-caption text-fg-subtle">This notice is written by KUBICU and is the same on every workspace’s pages.</p>
+        <p className="text-caption text-fg-subtle">{tr('This notice is written by KUBICU and is the same on every workspace’s pages.')}</p>
       </Section>
 
       <Dialog

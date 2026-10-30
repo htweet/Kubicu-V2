@@ -19,6 +19,7 @@ import { WA_MESSAGE_MAX, checkLinkHealth, destinationKey, linkCreationCheck, waD
 import { MAIN_SPACE_ID } from '../../utils/spaces';
 import { uid } from '../../utils/id';
 import { checkDestination } from '../../utils/linkSafety';
+import { useT } from '../../contexts/LocaleContext';
 
 type Target = 'page' | 'web' | 'whatsapp';
 
@@ -43,6 +44,7 @@ const dayEnd = (d: string) => new Date(`${d}T23:59:59`);
 
 /** Create or edit a tracked short link. The address can't change after it's shared. */
 export function CampaignLinkDialog({ open, onClose, link }: Props) {
+  const { t: tr } = useT();
   const { data, saveLink } = useDomains();
   const { current } = useWorkspace();
   const { data: commerce } = useCommerce();
@@ -99,7 +101,7 @@ export function CampaignLinkDialog({ open, onClose, link }: Props) {
     undefined :
     web.message :
     target === 'whatsapp' ?
-    waPhoneError(waPhone) ?? (waMessage.length > WA_MESSAGE_MAX ? `Keep the message under ${WA_MESSAGE_MAX} characters.` : undefined) :
+    waPhoneError(waPhone) ?? (waMessage.length > WA_MESSAGE_MAX ? tr('Keep the message under {n} characters.', { n: WA_MESSAGE_MAX }) : undefined) :
     options.some((o) => o.value === dest) ?
     undefined :
     'Choose where the link goes.',
@@ -158,13 +160,13 @@ export function CampaignLinkDialog({ open, onClose, link }: Props) {
       <div className="flex flex-col gap-4">
         {limit && !limit.ok &&
         <p role="alert" className="rounded-md bg-warning-soft px-3 py-2 text-label text-fg">
-            {limit.message}
+            {tr(limit.message)}
           </p>
         }
         <TextInput
           id="cl-name"
           label="Link name"
-          placeholder={`e.g. Eid sale — ${linkSourceOptions.find((o) => o.value === source)?.label.split(' (')[0] ?? 'Instagram'}`}
+          placeholder={tr('e.g. Eid sale — {place}', { place: tr(linkSourceOptions.find((o) => o.value === source)?.label ?? 'Instagram').split(' (')[0] })}
           value={name}
           onChange={(e) => setName(e.target.value)}
           error={tried ? errors.name : undefined}
@@ -172,7 +174,7 @@ export function CampaignLinkDialog({ open, onClose, link }: Props) {
         
         <SelectInput<SourceId> id="cl-source" label="Where will you share it?" value={source} options={linkSourceOptions} onChange={setSource} hint="Visits from this link are counted under this source in Analytics." />
         <div className="flex flex-col gap-1.5">
-          <span className="text-label font-medium text-fg">Link goes to</span>
+          <span className="text-label font-medium text-fg">{tr('Link goes to')}</span>
           <Segmented<Target>
             ariaLabel="Link goes to"
             fullWidth
@@ -205,7 +207,7 @@ export function CampaignLinkDialog({ open, onClose, link }: Props) {
           value={webUrl}
           onChange={(e) => setWebUrl(e.target.value)}
           error={(tried || webUrl.length > 8) && !web.ok ? (web as {message: string;}).message : undefined}
-          hint={web.ok ? `Checked: opens ${web.host}${web.upgraded ? ' (switched to https)' : ''}. It’s checked again every time someone taps the link, and once a day.` : 'Only https web addresses. Private, unsafe and other short-link addresses are refused.'} />
+          hint={web.ok ? tr(web.upgraded ? 'Checked: opens {host} (switched to https). It’s checked again every time someone taps the link, and once a day.' : 'Checked: opens {host}. It’s checked again every time someone taps the link, and once a day.', { host: web.host }) : 'Only https web addresses. Private, unsafe and other short-link addresses are refused.'} />
 
         }
         {target === 'whatsapp' &&
@@ -231,16 +233,16 @@ export function CampaignLinkDialog({ open, onClose, link }: Props) {
             placeholder="Hi! I saw your flyer and I’d like to order…"
             value={waMessage}
             onChange={(e) => setWaMessage(e.target.value)}
-            hint={`Already typed in their chat box. They can edit it before sending. ${waMessage.length}/${WA_MESSAGE_MAX}`} />
+            hint={`${tr('Already typed in their chat box. They can edit it before sending.')} ${waMessage.length}/${WA_MESSAGE_MAX}`} />
           
           </>
         }
         <TextInput id="cl-tags" label="Tags" optional value={tags} placeholder="december-sale, ads" onChange={(e) => setTags(e.target.value)} hint="Separate with commas. Use them to filter and export your links." />
         {link ?
         <div className="flex flex-col gap-1">
-            <span className="text-label font-medium text-fg">Short link</span>
+            <span className="text-label font-medium text-fg">{tr('Short link')}</span>
             <p className="break-all text-body text-fg">{shortDisplay(mainHandle, link.slug, host)}</p>
-            <p className="text-caption text-fg-subtle">Can’t be changed — it may already be printed or shared. Change where it goes instead.</p>
+            <p className="text-caption text-fg-subtle">{tr('Can’t be changed — it may already be printed or shared. Change where it goes instead.')}</p>
           </div> :
 
         <TextInput
@@ -253,11 +255,11 @@ export function CampaignLinkDialog({ open, onClose, link }: Props) {
             setSlug(e.target.value.toLowerCase());
           }}
           error={tried ? errors.slug : undefined}
-          hint={`People will see ${shortDisplay(mainHandle, effectiveSlug || 'your-link', host)}. Made from the name; edit if you like. It can’t change once created.`} />
+          hint={tr('People will see {link}. Made from the name; edit if you like. It can’t change once created.', { link: shortDisplay(mainHandle, effectiveSlug || 'your-link', host) })} />
 
         }
         <button type="button" aria-expanded={showMore} onClick={() => setShowMore((v) => !v)} className="self-start text-label font-medium text-action hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-          {showMore ? 'Hide more options' : 'More options: start and end dates, campaign tags'}
+          {tr(showMore ? 'Hide more options' : 'More options: start and end dates, campaign tags')}
         </button>
         {showMore &&
         <div className="flex flex-col gap-5 border-t border-line pt-4">
@@ -298,7 +300,7 @@ export function CampaignLinkDialog({ open, onClose, link }: Props) {
           }
           </div>
         }
-        {limit?.ok && limit.left <= 5 && <p className="text-caption text-fg-subtle">You can make {limit.left} more link{limit.left === 1 ? '' : 's'} this hour.</p>}
+        {limit?.ok && limit.left <= 5 && <p className="text-caption text-fg-subtle">{tr('Links you can still make this hour: {n}', { n: limit.left })}</p>}
       </div>
     </Dialog>);
 

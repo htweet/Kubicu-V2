@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { toast } from "sonner";
-import { InboxIcon, LifeBuoyIcon, BoxIcon } from "lucide-react";
+import { useLocation } from "react-router-dom";
+import { BookOpenIcon, InboxIcon, LifeBuoyIcon, BoxIcon } from "lucide-react";
+import { helpForPathname } from "../../utils/help";
 import { TicketTopic } from "../../types/admin";
 import { ticketTopicLabels } from "../../data/featureFlags";
 import { useWorkspace } from "../../contexts/WorkspaceContext";
@@ -33,6 +35,7 @@ export function HelpMenu({
     me
   } = useTeam();
   const [store] = useAdminStore();
+  const { pathname } = useLocation();
   const [dialog, setDialog] = useState<'contact' | 'requests' | null>(null);
   const [form, setForm] = useState({
     topic: 'other' as TicketTopic,
@@ -79,8 +82,20 @@ export function HelpMenu({
     setTried(false);
     setDialog('requests');
   };
+  const guide = helpForPathname(pathname);
+  const openGuide = (href: string) => window.open(href, '_blank', 'noopener');
   return <>
-      <Menu side="top" align="start" className={collapsed ? 'mx-auto' : 'w-full'} items={[{
+      <Menu side="top" align="start" className={collapsed ? 'mx-auto' : 'w-full'} items={[...(guide ? [{
+      id: 'guide',
+      label: `Guide: ${guide.label}`,
+      icon: BookOpenIcon,
+      onSelect: () => openGuide(`/about/help/${guide.articleId}`)
+    }] : []), {
+      id: 'centre',
+      label: 'Help centre',
+      icon: LifeBuoyIcon,
+      onSelect: () => openGuide('/about/help')
+    }, {
       id: 'contact',
       label: 'Contact support',
       icon: BoxIcon,

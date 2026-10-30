@@ -17,6 +17,7 @@ import { Dialog } from '../../components/ui/Dialog';
 import { TextInput } from '../../components/ui/TextInput';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { cn } from '../../utils/cn';
+import { useT } from '../../contexts/LocaleContext';
 
 const status: Record<FormDef['status'], {label: string;tone: BadgeTone;}> = {
   draft: { label: 'Draft', tone: 'neutral' },
@@ -34,6 +35,7 @@ export function FormsList() {
 }
 
 function FormsListInner() {
+  const { t: tr } = useT();
   const { current } = useWorkspace();
   const team = useTeam();
   const canEdit = useCan('contacts.manage');
@@ -61,10 +63,10 @@ function FormsListInner() {
 
   const create = () => {
     const tpl = formTemplates.find((t) => t.id === templateId)!;
-    const form = createForm(templateId, name.trim() || tpl.name);
+    const form = createForm(templateId, name.trim() || tr(tpl.name));
     update((d) => ({ ...d, forms: [form, ...d.forms] }));
     team.log('audience', `Created the form “${form.name}”`, `/app/forms/${form.id}`);
-    toast.success('Form created', { description: 'It’s a draft — set it live when it’s ready.' });
+    toast.success(tr('Form created'), { description: tr('It’s a draft — set it live when it’s ready.') });
     setCreating(false);
     navigate(`/app/forms/${form.id}`);
   };
@@ -100,13 +102,13 @@ function FormsListInner() {
                       {f.sample && <Badge>Sample</Badge>}
                     </div>
                     <p className="mt-0.5 truncate text-caption text-fg-subtle">
-                      {f.fields.filter((x) => x.type !== 'hidden').length} fields · edited {new Date(f.updatedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                      {tr('{n} fields · edited {date}', { n: f.fields.filter((x) => x.type !== 'hidden').length, date: new Date(f.updatedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) })}
                     </p>
                   </div>
                   <div className="text-caption text-fg-muted sm:text-right">
-                    <span className="text-label font-semibold tabular-nums text-fg">{c.total}</span> responses
+                    <span className="text-label font-semibold tabular-nums text-fg">{c.total}</span> {tr('responses')}
                   </div>
-                  <div className="sm:text-right">{c.unread > 0 ? <Badge tone="action">{c.unread} new</Badge> : <span className="text-caption text-fg-subtle">All read</span>}</div>
+                  <div className="sm:text-right">{c.unread > 0 ? <Badge tone="action">{tr('{n} new', { n: c.unread })}</Badge> : <span className="text-caption text-fg-subtle">{tr('All read')}</span>}</div>
                 </Link>
               </li>);
 
@@ -123,7 +125,7 @@ function FormsListInner() {
         footer={
         <>
             <p className="min-w-0 text-caption text-fg-subtle sm:mr-auto sm:self-center" aria-live="polite">
-              <span className="font-medium text-fg">{selected.name}</span> · {selectedCount} question{selectedCount === 1 ? '' : 's'} to start with
+              <span className="font-medium text-fg">{tr(selected.name)}</span> · {tr('{n} questions to start with', { n: selectedCount })}
             </p>
             <Button variant="tertiary" onClick={() => setCreating(false)}>
               Cancel
@@ -134,11 +136,11 @@ function FormsListInner() {
         
         <div className="flex flex-col gap-5 pb-2">
           <div className="sm:max-w-sm">
-            <TextInput id="new-form-name" label="Form name" optional placeholder={selected.name} value={name} onChange={(e) => setName(e.target.value)} maxLength={60} />
+            <TextInput id="new-form-name" label="Form name" optional placeholder={tr(selected.name)} value={name} onChange={(e) => setName(e.target.value)} maxLength={60} />
           </div>
           <fieldset>
-            <legend className="mb-2 text-label font-medium text-fg">Start from</legend>
-            <div role="group" aria-label="Filter starting points" className="scroll-quiet sticky -top-3 z-10 -mx-6 mb-3 flex gap-1.5 overflow-x-auto overflow-y-hidden border-b border-line bg-overlay px-6 py-2.5">
+            <legend className="mb-2 text-label font-medium text-fg">{tr('Start from')}</legend>
+            <div role="group" aria-label={tr('Filter starting points')} className="scroll-quiet sticky -top-3 z-10 -mx-6 mb-3 flex gap-1.5 overflow-x-auto overflow-y-hidden border-b border-line bg-overlay px-6 py-2.5">
               {[{ id: 'all' as const, label: 'All' }, ...formTemplateCategories].map((c) =>
               <button
                 key={c.id}
@@ -150,7 +152,7 @@ function FormsListInner() {
                   category === c.id ? 'border-fg bg-fg text-canvas' : 'border-line text-fg-muted hover:bg-sunken hover:text-fg'
                 )}>
                 
-                  {c.label}
+                  {tr(c.label)}
                   <span className={cn('ml-1.5 tabular-nums', category === c.id ? 'opacity-70' : 'text-fg-subtle')}>{c.id === 'all' ? formTemplates.length : formTemplates.filter((t) => t.category === c.id).length}</span>
                 </button>
               )}
@@ -172,18 +174,18 @@ function FormsListInner() {
                       <Icon size={17} />
                     </span>
                     <span className="flex min-w-0 flex-1 flex-col gap-1 pr-5">
-                      <span className="text-label font-semibold leading-snug text-fg">{t.name}</span>
-                      <span className="line-clamp-2 text-caption leading-snug text-fg-muted">{t.description}</span>
+                      <span className="text-label font-semibold leading-snug text-fg">{tr(t.name)}</span>
+                      <span className="line-clamp-2 text-caption leading-snug text-fg-muted">{tr(t.description)}</span>
                       {t.highlights && t.highlights.length > 0 &&
                       <span className="mt-auto flex flex-wrap gap-1 pt-1.5">
                           {t.highlights.map((h) =>
                         <span key={h} className="rounded-sm border border-line px-1.5 py-px text-[11px] font-medium leading-4 text-fg-muted">
-                              {h}
+                              {tr(h)}
                             </span>
                         )}
                         </span>
                       }
-                      {t.setupNote && <span className="pt-0.5 text-[11.5px] leading-snug text-fg-subtle">{t.setupNote}</span>}
+                      {t.setupNote && <span className="pt-0.5 text-[11.5px] leading-snug text-fg-subtle">{tr(t.setupNote)}</span>}
                     </span>
                     <span
                       aria-hidden

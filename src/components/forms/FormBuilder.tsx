@@ -10,6 +10,7 @@ import { Button } from '../ui/Button';
 import { Dialog } from '../ui/Dialog';
 import { InlineAlert } from '../ui/InlineAlert';
 import { cn } from '../../utils/cn';
+import { useT } from '../../contexts/LocaleContext';
 
 interface FormBuilderProps {
   form: FormDef;
@@ -19,6 +20,7 @@ interface FormBuilderProps {
 
 /** Field list on the left, the selected field's settings on the right (D79). */
 export function FormBuilder({ form, onChange, disabled }: FormBuilderProps) {
+  const { t: tr } = useT();
   const [selectedId, setSelectedId] = useState<string | null>(form.fields[0]?.id ?? null);
   const [adding, setAdding] = useState(false);
   const fields = form.fields;
@@ -58,15 +60,15 @@ export function FormBuilder({ form, onChange, disabled }: FormBuilderProps) {
     <div className="flex flex-col gap-5">
       {issues.length > 0 &&
       <InlineAlert tone="warning" title="Fix before setting live">
-          {issues.slice(0, 3).join(' · ')}
-          {issues.length > 3 ? ` · and ${issues.length - 3} more` : ''}
+          {issues.slice(0, 3).map((x) => tr(x)).join(' · ')}
+          {issues.length > 3 ? ` · ${tr('and {n} more', { n: issues.length - 3 })}` : ''}
         </InlineAlert>
       }
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:items-start">
         <section aria-labelledby="fields-heading" className="flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <h2 id="fields-heading" className="text-label font-semibold text-fg">
-              Fields <span className="font-normal text-fg-subtle">· {fields.length}</span>
+              {tr('Fields')} <span className="font-normal text-fg-subtle">· {fields.length}</span>
             </h2>
             <Button size="sm" variant="secondary" leadingIcon={PlusIcon} disabled={disabled} onClick={() => setAdding(true)}>
               Add field
@@ -80,7 +82,7 @@ export function FormBuilder({ form, onChange, disabled }: FormBuilderProps) {
                 <li key={f.id} className={cn(i > 0 && 'border-t border-line')}>
                   {f.stepBreak && i > 0 &&
                   <div className="flex items-center gap-2 border-b border-dashed border-line bg-sunken px-3 py-1.5 text-caption font-medium text-fg-muted">
-                      <SplitSquareVerticalIcon size={13} aria-hidden /> New step{f.stepTitle ? `: ${f.stepTitle}` : ''}
+                      <SplitSquareVerticalIcon size={13} aria-hidden /> {tr('New step')}{f.stepTitle ? `: ${f.stepTitle}` : ''}
                     </div>
                   }
                   <div className={cn('flex items-center gap-1 pr-1.5 transition-colors duration-150', active ? 'bg-action-soft' : 'hover:bg-sunken')}>
@@ -88,44 +90,44 @@ export function FormBuilder({ form, onChange, disabled }: FormBuilderProps) {
                       <info.icon size={16} className={active ? 'shrink-0 text-action' : 'shrink-0 text-fg-subtle'} aria-hidden />
                       <span className="min-w-0 flex-1">
                         <span className="block truncate text-label font-medium text-fg">
-                          {f.label || 'Untitled'}
+                          {f.label || tr('Untitled')}
                           {f.required && <span className="text-fg-subtle"> *</span>}
                         </span>
                         <span className="flex items-center gap-1.5 truncate text-caption text-fg-subtle">
-                          {info.label}
+                          {tr(info.label)}
                           {f.rule &&
                           <>
                               <span aria-hidden>·</span>
-                              <GitBranchIcon size={12} aria-hidden /> Has a rule
+                              <GitBranchIcon size={12} aria-hidden /> {tr('Has a rule')}
                             </>
                           }
                         </span>
                       </span>
                     </button>
-                    <IconButton icon={ArrowUpIcon} size="sm" label={`Move ${f.label || 'field'} up`} disabled={disabled || i === 0} onClick={() => move(i, -1)} />
-                    <IconButton icon={ArrowDownIcon} size="sm" label={`Move ${f.label || 'field'} down`} disabled={disabled || i === fields.length - 1} onClick={() => move(i, 1)} />
+                    <IconButton icon={ArrowUpIcon} size="sm" label={tr('Move {name} up', { name: f.label || tr('field') })} disabled={disabled || i === 0} onClick={() => move(i, -1)} />
+                    <IconButton icon={ArrowDownIcon} size="sm" label={tr('Move {name} down', { name: f.label || tr('field') })} disabled={disabled || i === fields.length - 1} onClick={() => move(i, 1)} />
                   </div>
                 </li>);
 
             })}
-            {fields.length === 0 && <li className="px-4 py-8 text-center text-caption text-fg-muted">No fields yet. Add one to start.</li>}
+            {fields.length === 0 && <li className="px-4 py-8 text-center text-caption text-fg-muted">{tr('No fields yet. Add one to start.')}</li>}
           </ol>
         </section>
 
-        <section aria-label="Field settings" className="rounded-lg border border-line bg-raised p-5 lg:sticky lg:top-6">
+        <section aria-label={tr('Field settings')} className="rounded-lg border border-line bg-raised p-5 lg:sticky lg:top-6">
           {selected ?
           <FieldEditor key={selected.id} field={selected} fields={fields} isFirst={fields[0]?.id === selected.id} onChange={(p) => patch(selected.id, p)} onRemove={() => remove(selected.id)} disabled={disabled} /> :
 
-          <p className="py-10 text-center text-caption text-fg-muted">Select a field to edit it.</p>
+          <p className="py-10 text-center text-caption text-fg-muted">{tr('Select a field to edit it.')}</p>
           }
         </section>
       </div>
 
-      <Dialog open={adding} onClose={() => setAdding(false)} title="Add a field" description={selected ? `Added below “${selected.label || 'the selected field'}”.` : undefined} size="lg">
+      <Dialog open={adding} onClose={() => setAdding(false)} title="Add a field" description={selected ? tr('Added below “{name}”.', { name: selected.label || tr('the selected field') }) : undefined} size="lg">
         <div className="flex flex-col gap-5">
           {fieldGroups.map((g) =>
           <div key={g}>
-              <h3 className="mb-2 text-caption font-semibold text-fg-subtle">{g}</h3>
+              <h3 className="mb-2 text-caption font-semibold text-fg-subtle">{tr(g)}</h3>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                 {(Object.keys(fieldTypeInfo) as FormFieldType[]).
               filter((t) => fieldTypeInfo[t].group === g).
@@ -133,9 +135,9 @@ export function FormBuilder({ form, onChange, disabled }: FormBuilderProps) {
                 const Icon = fieldTypeInfo[t].icon;
                 const blocked = t === 'payment' && hasPayment;
                 return (
-                  <button key={t} type="button" disabled={blocked} title={blocked ? 'One payment field per form' : undefined} onClick={() => add(t)} className="flex items-center gap-2.5 rounded-md border border-line px-3 py-2.5 text-left text-label text-fg transition-colors duration-150 hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus disabled:opacity-50">
+                  <button key={t} type="button" disabled={blocked} title={blocked ? tr('One payment field per form') : undefined} onClick={() => add(t)} className="flex items-center gap-2.5 rounded-md border border-line px-3 py-2.5 text-left text-label text-fg transition-colors duration-150 hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus disabled:opacity-50">
                         <Icon size={16} className="shrink-0 text-fg-muted" aria-hidden />
-                        <span className="truncate">{fieldTypeInfo[t].label}</span>
+                        <span className="truncate">{tr(fieldTypeInfo[t].label)}</span>
                       </button>);
 
               })}

@@ -3,6 +3,7 @@ import { PlusIcon, StarIcon } from 'lucide-react';
 import type { BlockType } from '../../types/page';
 import { blockDefinitions } from '../../data/blockRegistry';
 import { BlockStatusChip, type BlockStatus } from './BlockStatusChip';
+import { useT } from '../../contexts/LocaleContext';
 import { cn } from '../../utils/cn';
 
 interface BlockRowProps {
@@ -22,7 +23,9 @@ interface BlockRowProps {
  * A favourited star stays visible as a small marker.
  */
 export function BlockRow({ type, status, favourite, touch, note, onOpen, onAdd, onToggleFavourite }: BlockRowProps) {
+  const { t: tr } = useT();
   const def = blockDefinitions[type];
+  const name = tr(def.name);
   const Icon = def.icon;
   const canAdd = status !== 'app' && status !== 'planned';
   return (
@@ -30,7 +33,7 @@ export function BlockRow({ type, status, favourite, touch, note, onOpen, onAdd, 
       <button
         type="button"
         onClick={onOpen}
-        aria-label={`${def.name} — details`}
+        aria-label={tr('{name} — details', { name })}
         className={cn('flex w-full min-w-0 items-center gap-3 rounded-md px-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus', touch ? 'min-h-[60px] py-2 pr-24' : 'min-h-[52px] py-1.5')}>
         
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-line bg-raised text-fg-muted">
@@ -38,12 +41,12 @@ export function BlockRow({ type, status, favourite, touch, note, onOpen, onAdd, 
         </span>
         <span className="min-w-0 flex-1">
           <span className="flex min-w-0 items-center gap-1.5">
-            <span className="truncate text-label font-medium text-fg">{def.name}</span>
-            {favourite && !touch && <StarIcon size={11} fill="currentColor" className="shrink-0 text-warning group-hover:invisible group-focus-within:invisible" aria-label="Favourite" />}
+            <span className="truncate text-label font-medium text-fg">{name}</span>
+            {favourite && !touch && <StarIcon size={11} fill="currentColor" className="shrink-0 text-warning group-hover:invisible group-focus-within:invisible" aria-label={tr('Favourite')} />}
           </span>
           <span className="mt-0.5 flex min-w-0 items-center gap-1.5">
             {status !== 'available' && <BlockStatusChip status={status} />}
-            <span className="truncate text-caption text-fg-subtle">{note ?? def.description}</span>
+            <span className="truncate text-caption text-fg-subtle">{note ?? tr(def.description)}</span>
           </span>
         </span>
       </button>
@@ -58,7 +61,7 @@ export function BlockRow({ type, status, favourite, touch, note, onOpen, onAdd, 
           type="button"
           onClick={onToggleFavourite}
           aria-pressed={favourite}
-          aria-label={favourite ? `Remove ${def.name} from favourites` : `Add ${def.name} to favourites`}
+          aria-label={favourite ? tr('Remove {name} from favourites', { name }) : tr('Add {name} to favourites', { name })}
           className={cn('relative flex items-center justify-center rounded-full hover:bg-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus', touch ? 'h-10 w-10' : 'h-8 w-8', favourite ? 'text-warning' : 'text-fg-subtle')}>
           
           <StarIcon size={14} fill={favourite ? 'currentColor' : 'none'} aria-hidden />
@@ -67,7 +70,7 @@ export function BlockRow({ type, status, favourite, touch, note, onOpen, onAdd, 
         <button
           type="button"
           onClick={onAdd}
-          aria-label={`Add ${def.name}`}
+          aria-label={tr('Add {name}', { name })}
           className={cn('relative flex items-center justify-center rounded-full bg-action text-action-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus', touch ? 'h-10 w-10' : 'h-8 w-8')}>
           
             <PlusIcon size={15} aria-hidden />

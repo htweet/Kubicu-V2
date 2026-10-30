@@ -11,9 +11,11 @@ import { initialsOf } from '../../utils/account/store';
 import { Card } from '../ui/layout/Card';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
+import { useT } from '../../contexts/LocaleContext';
 
 /** Account → Workspaces: every workspace this account belongs to (D80). */
 export function WorkspacesTab() {
+  const { t: tr } = useT();
   const { workspaces, current, switchTo, restoreDemoWorkspace } = useWorkspace();
   const navigate = useNavigate();
   const [removing, setRemoving] = useState(false);
@@ -32,7 +34,7 @@ export function WorkspacesTab() {
       <Card
         id="acc-ws"
         title="Your workspaces"
-        description={`${workspaces.length} ${workspaces.length === 1 ? 'workspace' : 'workspaces'}. Each has its own pages, products, customers, team and plan.`}
+        description={`${workspaces.length === 1 ? tr('1 workspace.') : tr('{n} workspaces.', { n: workspaces.length })} ${tr('Each has its own pages, products, customers, team and plan.')}`}
         body="flush"
         actions={
         <Button size="sm" variant="secondary" leadingIcon={PlusIcon} onClick={() => navigate('/start')}>
@@ -56,7 +58,7 @@ export function WorkspacesTab() {
                       {w.id === DEMO_WORKSPACE_ID && <Badge tone="neutral">Demo</Badge>}
                     </span>
                     <span className="block truncate text-caption text-fg-subtle">
-                      {roleInfo[role].label} · {plans[w.plan].name} plan · {members} {members === 1 ? 'member' : 'members'}
+                      {tr(roleInfo[role].label)} · {tr('{plan} plan', { plan: plans[w.plan].name })} · {members === 1 ? tr('1 member') : tr('{n} members', { n: members })}
                     </span>
                   </span>
                 </div>
@@ -74,11 +76,11 @@ export function WorkspacesTab() {
                     </Button>
                   }
                   {w.id === DEMO_WORKSPACE_ID ?
-                  <Button size="sm" variant="tertiary" disabled={!hasOwn} title={hasOwn ? undefined : 'Create your own workspace first'} onClick={() => setRemoving(true)}>
+                  <Button size="sm" variant="tertiary" disabled={!hasOwn} title={hasOwn ? undefined : tr('Create your own workspace first')} onClick={() => setRemoving(true)}>
                       Remove
                     </Button> :
 
-                  <Button size="sm" variant="tertiary" disabled title="Owners can’t leave. Transfer ownership in Settings → Team first.">
+                  <Button size="sm" variant="tertiary" disabled title={tr('Owners can’t leave. Transfer ownership in Settings → Team first.')}>
                       Leave
                     </Button>
                   }
@@ -88,7 +90,7 @@ export function WorkspacesTab() {
           })}
         </ul>
         <p className="border-t border-line px-5 py-3 text-caption text-fg-muted md:px-6">
-          Owners can’t leave a workspace. To hand one over, open it and use Settings → Team → Transfer ownership.
+          {tr('Owners can’t leave a workspace. To hand one over, open it and use Settings → Team → Transfer ownership.')}
         </p>
       </Card>
 
@@ -102,7 +104,7 @@ export function WorkspacesTab() {
         }
         actions={
         demoPresent ?
-        <Button size="sm" variant="secondary" disabled={!hasOwn} title={hasOwn ? undefined : 'Create your own workspace first'} onClick={() => setRemoving(true)}>
+        <Button size="sm" variant="secondary" disabled={!hasOwn} title={hasOwn ? undefined : tr('Create your own workspace first')} onClick={() => setRemoving(true)}>
               Remove
             </Button> :
 

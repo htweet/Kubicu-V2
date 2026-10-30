@@ -13,9 +13,11 @@ import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import { Dialog } from '../ui/Dialog';
 import { AccountAvatar } from './AccountAvatar';
+import { useT } from '../../contexts/LocaleContext';
 
 /** Account → Profile: who you are to teammates, and how KUBICU reaches you (D80). */
 export function ProfileTab() {
+  const { t: tr } = useT();
   const account = useAccount();
   const team = useTeam();
   const p = account.profile;
@@ -39,10 +41,10 @@ export function ProfileTab() {
     if (draft.name.trim().length < 2) return;
     const name = draft.name.trim();
     const displayName = draft.displayName.trim() || name.split(/\s+/)[0];
-    if (!updateAccount((a) => ({ ...a, profile: { ...a.profile, name, displayName, jobTitle: draft.jobTitle.trim(), bio: draft.bio.trim() } }))) return toast.error('Couldn’t save', { description: 'Your browser storage is full.' });
+    if (!updateAccount((a) => ({ ...a, profile: { ...a.profile, name, displayName, jobTitle: draft.jobTitle.trim(), bio: draft.bio.trim() } }))) return toast.error(tr('Couldn’t save'), { description: tr('Your browser storage is full.') });
     syncMember({ name });
     setTried(false);
-    toast.success('Profile saved');
+    toast.success(tr('Profile saved'));
   };
 
   const onPhoto = async (file: File | undefined) => {
@@ -50,10 +52,10 @@ export function ProfileTab() {
     try {
       const photo = await squarePhoto(file);
       if (!updateAccount((a) => ({ ...a, profile: { ...a.profile, photo } }))) throw new Error('storage');
-      toast.success('Photo updated');
+      toast.success(tr('Photo updated'));
     } catch (e) {
       const m = (e as Error).message;
-      toast.error('Couldn’t use that photo', { description: m === 'type' ? 'Choose a JPG, PNG, WebP or GIF.' : m === 'size' ? 'Choose a photo under 5 MB.' : 'Try a different photo.' });
+      toast.error(tr('Couldn’t use that photo'), { description: tr(m === 'type' ? 'Choose a JPG, PNG, WebP or GIF.' : m === 'size' ? 'Choose a photo under 5 MB.' : 'Try a different photo.') });
     } finally {
       if (fileRef.current) fileRef.current.value = '';
     }
@@ -93,7 +95,7 @@ export function ProfileTab() {
                     </Button>
                   }
                 </div>
-                <p className="text-caption text-fg-subtle">Square works best. JPG, PNG or WebP, up to 5 MB.</p>
+                <p className="text-caption text-fg-subtle">{tr('Square works best. JPG, PNG or WebP, up to 5 MB.')}</p>
                 <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp,image/gif" className="sr-only" tabIndex={-1} aria-hidden onChange={(e) => onPhoto(e.target.files?.[0])} />
               </div>
             </div>
@@ -102,7 +104,7 @@ export function ProfileTab() {
               <TextInput id="acc-display" label="Display name" optional value={draft.displayName} maxLength={30} hint="Shown in approvals and the activity log." onChange={(e) => setDraft((d) => ({ ...d, displayName: e.target.value }))} />
             </div>
             <TextInput id="acc-title" label="Job title" optional value={draft.jobTitle} maxLength={40} placeholder="e.g. Founder, Sales lead" onChange={(e) => setDraft((d) => ({ ...d, jobTitle: e.target.value }))} />
-            <TextArea id="acc-bio" label="About you" optional rows={3} maxLength={200} value={draft.bio} hint={`${draft.bio.length}/200 · Teammates see this on the Team screen.`} onChange={(e) => setDraft((d) => ({ ...d, bio: e.target.value }))} />
+            <TextArea id="acc-bio" label="About you" optional rows={3} maxLength={200} value={draft.bio} hint={`${draft.bio.length}/200 · ${tr('Teammates see this on the Team screen.')}`} onChange={(e) => setDraft((d) => ({ ...d, bio: e.target.value }))} />
           </div>
         </Card>
 
@@ -113,7 +115,7 @@ export function ProfileTab() {
               label="Email"
               value={p.email}
               status={account.pendingEmail ? <Badge tone="warning">Change pending</Badge> : account.emailVerified ? <Badge tone="success">Verified</Badge> : <Badge tone="warning">Not verified</Badge>}
-              note={account.pendingEmail ? `Waiting for you to confirm ${account.pendingEmail}. Until then, we keep using ${p.email}.` : undefined}
+              note={account.pendingEmail ? tr('Waiting for you to confirm {next}. Until then, we keep using {current}.', { next: account.pendingEmail, current: p.email }) : undefined}
               action={
               <Button size="sm" variant="secondary" onClick={() => setDialog('email')}>
                   {account.pendingEmail ? 'Review' : 'Change'}
@@ -123,9 +125,9 @@ export function ProfileTab() {
             <ContactRow
               icon={PhoneIcon}
               label="Phone"
-              value={p.phone || 'Not added'}
+              value={p.phone || tr('Not added')}
               status={p.phone ? account.phoneVerified ? <Badge tone="success">Verified</Badge> : <Badge tone="warning">Not verified</Badge> : null}
-              note={p.phone ? undefined : 'Needed for text-message codes and WhatsApp alerts.'}
+              note={p.phone ? undefined : tr('Needed for text-message codes and WhatsApp alerts.')}
               action={
               <Button size="sm" variant="secondary" onClick={() => setDialog('phone')}>
                   {p.phone ? account.phoneVerified ? 'Change' : 'Verify' : 'Add phone'}
@@ -150,6 +152,7 @@ export function ProfileTab() {
 }
 
 function ContactRow({ icon: Icon, label, value, status, note, action }: {icon: typeof MailIcon;label: string;value: string;status: React.ReactNode;note?: string;action: React.ReactNode;}) {
+  label = useT().t(label);
   return (
     <li className="flex items-start gap-4 px-5 py-4 md:px-6">
       <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-sunken text-fg-muted">
@@ -169,6 +172,7 @@ function ContactRow({ icon: Icon, label, value, status, note, action }: {icon: t
 }
 
 function EmailDialog({ open, onClose, onConfirmed }: {open: boolean;onClose: () => void;onConfirmed: (email: string) => void;}) {
+  const { t: tr } = useT();
   const account = useAccount();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -189,7 +193,7 @@ function EmailDialog({ open, onClose, onConfirmed }: {open: boolean;onClose: () 
     setTried(true);
     if (!isValidEmail(email) || email.trim().toLowerCase() === account.profile.email.toLowerCase() || password.length < 8) return;
     updateAccount((a) => ({ ...a, pendingEmail: email.trim() }));
-    toast.success('Check your new inbox', { description: `We sent a link to ${email.trim()}. Nothing is actually sent in the prototype.` });
+    toast.success(tr('Check your new inbox'), { description: tr('We sent a link to {email}. Nothing is actually sent in the prototype.', { email: email.trim() }) });
   };
 
   const confirm = () => {
@@ -197,7 +201,7 @@ function EmailDialog({ open, onClose, onConfirmed }: {open: boolean;onClose: () 
     if (!next) return;
     updateAccount((a) => ({ ...a, pendingEmail: null, emailVerified: true, profile: { ...a.profile, email: next } }));
     onConfirmed(next);
-    toast.success('Email changed', { description: `A notice went to your old address in case this wasn’t you.` });
+    toast.success(tr('Email changed'), { description: tr('A notice went to your old address in case this wasn’t you.') });
     onClose();
   };
 
@@ -208,20 +212,20 @@ function EmailDialog({ open, onClose, onConfirmed }: {open: boolean;onClose: () 
       onClose={onClose}
       size="sm"
       title="Confirm your new email"
-      description={`We sent a link to ${account.pendingEmail}. The change happens when you open it. The link expires in 24 hours.`}
+      description={tr('We sent a link to {email}. The change happens when you open it. The link expires in 24 hours.', { email: account.pendingEmail })}
       footer={
       <>
             <Button
           variant="tertiary"
           onClick={() => {
             updateAccount((a) => ({ ...a, pendingEmail: null }));
-            toast('Email change cancelled');
+            toast(tr('Email change cancelled'));
             onClose();
           }}>
           
               Cancel the change
             </Button>
-            <Button variant="secondary" onClick={() => toast.success('Link sent again', { description: 'Preview only — nothing is sent.' })}>
+            <Button variant="secondary" onClick={() => toast.success(tr('Link sent again'), { description: tr('Preview only — nothing is sent.') })}>
               Resend link
             </Button>
             <Button leadingIcon={CheckCircle2Icon} onClick={confirm}>
@@ -257,6 +261,7 @@ function EmailDialog({ open, onClose, onConfirmed }: {open: boolean;onClose: () 
 }
 
 function PhoneDialog({ open, onClose }: {open: boolean;onClose: () => void;}) {
+  const { t: tr } = useT();
   const account = useAccount();
   const [phone, setPhone] = useState('');
   const [step, setStep] = useState<'number' | 'code'>('number');
@@ -283,14 +288,14 @@ function PhoneDialog({ open, onClose }: {open: boolean;onClose: () => void;}) {
     updateAccount((a) => ({ ...a, profile: { ...a.profile, phone: phone.trim() }, phoneVerified: false }));
     setStep('code');
     setTried(false);
-    toast('Code sent', { description: 'Prototype: any 6 digits work except 000000.' });
+    toast(tr('Code sent'), { description: tr('Prototype: any 6 digits work except 000000.') });
   };
 
   const verify = () => {
     setTried(true);
     if (!/^\d{6}$/.test(code) || code === '000000') return;
     updateAccount((a) => ({ ...a, phoneVerified: true }));
-    toast.success('Phone verified');
+    toast.success(tr('Phone verified'));
     onClose();
   };
 
@@ -300,7 +305,7 @@ function PhoneDialog({ open, onClose }: {open: boolean;onClose: () => void;}) {
       onClose={onClose}
       size="sm"
       title={step === 'number' ? account.profile.phone ? 'Change your phone' : 'Add your phone' : 'Enter the code'}
-      description={step === 'number' ? 'We’ll text a 6-digit code to confirm it’s yours.' : `We texted a code to ${account.profile.phone}. It expires in 10 minutes.`}
+      description={step === 'number' ? 'We’ll text a 6-digit code to confirm it’s yours.' : tr('We texted a code to {phone}. It expires in 10 minutes.', { phone: account.profile.phone })}
       footer={
       step === 'number' ?
       <>
@@ -309,10 +314,10 @@ function PhoneDialog({ open, onClose }: {open: boolean;onClose: () => void;}) {
           variant="tertiary"
           className="mr-auto"
           disabled={account.security.twoStep === 'sms'}
-          title={account.security.twoStep === 'sms' ? 'Switch two-step sign-in off text messages first' : undefined}
+          title={account.security.twoStep === 'sms' ? tr('Switch two-step sign-in off text messages first') : undefined}
           onClick={() => {
             updateAccount((a) => ({ ...a, profile: { ...a.profile, phone: '' }, phoneVerified: false }));
-            toast('Phone removed');
+            toast(tr('Phone removed'));
             onClose();
           }}>
           

@@ -77,6 +77,7 @@ import { Templates } from './pages/marketing/Templates';
 import { TemplateDetail } from './pages/marketing/TemplateDetail';
 import { Pricing } from './pages/marketing/Pricing';
 import { InfoPage } from './pages/marketing/InfoPage';
+import { HelpArticlePage } from './pages/marketing/HelpArticlePage';
 import { Developers } from './pages/marketing/Developers';
 import { Solution } from './pages/marketing/Solution';
 import { ForCreators } from './pages/marketing/ForCreators';
@@ -141,7 +142,7 @@ import { Reports } from './pages/commerce/Reports';
 import { CommerceSettings } from './pages/commerce/CommerceSettings';
 import { NotFound } from './pages/NotFound';
 import { AdminDesignSystem } from './pages/admin/AdminDesignSystem';
-import { AdminPlannedArea } from './pages/admin/AdminPlannedArea';
+import { AdminAreaNotFound } from './pages/admin/AdminAreaNotFound';
 import { AdminTenants } from './pages/admin/AdminTenants';
 import { AdminPages } from './pages/admin/AdminPages';
 import { AdminOrders } from './pages/admin/AdminOrders';
@@ -195,6 +196,7 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
                 <Route path="templates/:id" element={<TemplateDetail />} />
                 <Route path="pricing" element={<Pricing />} />
                 <Route path="ai" element={<AiFeatures />} />
+                <Route path="about/help/:articleId" element={<HelpArticlePage />} />
                 <Route path="about/:topic" element={<InfoPage />} />
                 <Route path="developers" element={<Developers />} />
                 <Route path="copilot" element={<CopilotLanding />} />
@@ -316,7 +318,8 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
                 <Route path="ai" element={<AdminAi />} />
                 <Route path="notifications" element={<AdminIntegrations />} />
                 <Route path="settings" element={<AdminLocalisation />} />
-                <Route path=":area" element={<AdminPlannedArea />} />
+                {/* Any other /admin/… address is a mistyped or moved staff area — shown as "not found". */}
+                <Route path="*" element={<AdminAreaNotFound />} />
               </Route>
 
               <Route path="/p/:handle" element={<PublicPage />} />

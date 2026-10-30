@@ -28,9 +28,11 @@ import { CancelPlanDialog } from '../billing/CancelPlanDialog';
 import { PaymentStep } from '../billing/PaymentStep';
 import { BillingHistory } from '../billing/BillingHistory';
 import { cn } from '../../utils/cn';
+import { useT } from '../../contexts/LocaleContext';
 
 /** Settings → Plan & billing (D65). Owner manages; Admins read only. */
 export function BillingTab() {
+  const { t: tr } = useT();
   const billing = useBilling();
   const plan = usePlan();
   const { current } = useWorkspace();
@@ -46,30 +48,33 @@ export function BillingTab() {
   const periodEnd = d.periodEnd ? formatDate(d.periodEnd) : null;
 
   const status = d.trial ?
-  { tone: 'info' as const, label: `Trial · ${daysUntil(d.trial.endsAt)} days left` } :
+  { tone: 'info' as const, label: tr('Trial · {n} days left', { n: daysUntil(d.trial.endsAt) }) } :
   d.status === 'past_due' ?
-  { tone: 'danger' as const, label: 'Payment failed' } :
+  { tone: 'danger' as const, label: tr('Payment failed') } :
   d.pendingPlan === 'free' ?
-  { tone: 'warning' as const, label: `Ends ${periodEnd}` } :
+  { tone: 'warning' as const, label: tr('Ends {date}', { date: periodEnd ?? '' }) } :
   d.pendingPlan ?
-  { tone: 'warning' as const, label: `Changes to ${plans[d.pendingPlan].name} ${periodEnd}` } :
-  { tone: 'success' as const, label: 'Active' };
+  { tone: 'warning' as const, label: tr('Changes to {plan} {date}', { plan: plans[d.pendingPlan].name, date: periodEnd ?? '' }) } :
+  { tone: 'success' as const, label: tr('Active') };
 
+  const total = formatNgn(nextTotal);
   const comingUp = d.trial ?
-  `Trial ends ${formatDate(d.trial.endsAt)} — then back to ${plans[d.trial.previousPlan].name} unless you choose a plan.` :
+  tr('Trial ends {date} — then back to {plan} unless you choose a plan.', { date: formatDate(d.trial.endsAt), plan: plans[d.trial.previousPlan].name }) :
   d.status === 'past_due' && d.graceEndsAt ?
-  `Moves to Free on ${formatDate(d.graceEndsAt)} unless the payment is fixed.` :
+  tr('Moves to Free on {date} unless the payment is fixed.', { date: formatDate(d.graceEndsAt) }) :
   !paid ?
   plan.id === 'enterprise' ?
-  'Billed by contract — nothing scheduled here.' :
-  'Nothing scheduled. Free has no renewals.' :
+  tr('Billed by contract — nothing scheduled here.') :
+  tr('Nothing scheduled. Free has no renewals.') :
   d.pendingPlan === 'free' ?
-  `Ends ${periodEnd}, then Free. Nothing will be charged.` :
+  tr('Ends {date}, then Free. Nothing will be charged.', { date: periodEnd ?? '' }) :
   d.pendingPlan ?
-  `Moves to ${plans[d.pendingPlan].name} on ${periodEnd}, then ${formatNgn(nextTotal)} incl. VAT.` :
+  tr('Moves to {plan} on {date}, then {total} incl. VAT.', { plan: plans[d.pendingPlan].name, date: periodEnd ?? '', total }) :
   d.pendingCycle && d.pendingCycle !== d.cycle ?
-  `Switches to ${d.pendingCycle} billing on ${periodEnd} for ${formatNgn(nextTotal)} incl. VAT.` :
-  `Renews ${periodEnd} for ${formatNgn(nextTotal)} incl. VAT${d.card ? ` on •••• ${d.card.last4}` : ' — add a card first'}.`;
+  tr(d.pendingCycle === 'yearly' ? 'Switches to yearly billing on {date} for {total} incl. VAT.' : 'Switches to monthly billing on {date} for {total} incl. VAT.', { date: periodEnd ?? '', total }) :
+  d.card ?
+  tr('Renews {date} for {total} incl. VAT on •••• {last4}.', { date: periodEnd ?? '', total, last4: d.card.last4 }) :
+  tr('Renews {date} for {total} incl. VAT — add a card first.', { date: periodEnd ?? '', total });
 
   const exportCsv = () => {
     const csv = toCsv(
@@ -91,7 +96,7 @@ export function BillingTab() {
       {d.status === 'past_due' && d.graceEndsAt &&
       <InlineAlert
         tone="danger"
-        title={`Renewal payment failed — ${daysUntil(d.graceEndsAt)} days to fix it`}
+        title={tr('Renewal payment failed — {n} days to fix it', { n: daysUntil(d.graceEndsAt) })}
         action={
         <div className="flex flex-wrap gap-2">
               <Button size="sm" disabled={!can.allowed} onClick={() => billing.retryPayment()}>
@@ -103,7 +108,7 @@ export function BillingTab() {
             </div>
         }>
         
-          {plan.name} keeps working until {formatDate(d.graceEndsAt)}. After that the workspace moves to Free — nothing is deleted.
+          {tr('{plan} keeps working until {date}. After that the workspace moves to Free — nothing is deleted.', { plan: plan.name, date: formatDate(d.graceEndsAt) })}
         </InlineAlert>
       }
 
@@ -112,11 +117,11 @@ export function BillingTab() {
         <section aria-labelledby="billing-plan" className={cn('flex flex-col gap-5 bg-raised p-5 md:p-6', paid ? 'rounded-[calc(0.5rem-1px)]' : 'rounded-lg')}>
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="text-caption font-medium text-fg-subtle">Current plan</p>
+              <p className="text-caption font-medium text-fg-subtle">{tr('Current plan')}</p>
               <h2 id="billing-plan" className="mt-1 font-display text-title font-semibold text-fg">
                 {plan.name}
               </h2>
-              <p className="mt-1 text-label text-fg-muted">{plan.intendedFor}</p>
+              <p className="mt-1 text-label text-fg-muted">{tr(plan.intendedFor)}</p>
             </div>
             <Badge tone={status.tone} dot>
               {status.label}
@@ -126,7 +131,7 @@ export function BillingTab() {
           {paid && !d.trial &&
             <p className="font-display text-heading font-semibold tabular-nums text-fg">
               {formatNgn(price)}
-              <span className="text-label font-normal text-fg-muted"> /{d.cycle === 'yearly' ? 'year' : 'month'} + VAT</span>
+              <span className="text-label font-normal text-fg-muted"> {tr(d.cycle === 'yearly' ? '/year + VAT' : '/month + VAT')}</span>
             </p>
             }
 
@@ -134,12 +139,12 @@ export function BillingTab() {
             <ul className="flex flex-col gap-1.5 rounded-md bg-success-soft px-3 py-2.5 text-label text-fg">
               {billing.creditLeft > 0 &&
               <li>
-                  <span className="font-semibold">{formatNgn(billing.creditLeft)} account credit</span> from KUBICU — used before your card on the next invoice.
+                  {tr('{amount} account credit from KUBICU — used before your card on the next invoice.', { amount: formatNgn(billing.creditLeft) })}
                 </li>
               }
               {d.coupon &&
               <li>
-                  Code <span className="font-semibold">{d.coupon.code}</span> keeps applying at every renewal while you stay on {plan.name}.
+                  {tr('Code {code} keeps applying at every renewal while you stay on {plan}.', { code: d.coupon.code, plan: plan.name })}
                 </li>
               }
             </ul>
@@ -149,16 +154,16 @@ export function BillingTab() {
             <CalendarClockIcon size={16} className="mt-0.5 shrink-0" aria-hidden />
             <span>
               {d.trial ?
-                `Free ${plans[TRIAL_PLAN].name} trial until ${formatDate(d.trial.endsAt)}. Then back to ${plans[d.trial.previousPlan].name} unless you choose a plan — no card needed.` :
+                tr('Free {trial} trial until {date}. Then back to {plan} unless you choose a plan — no card needed.', { trial: plans[TRIAL_PLAN].name, date: formatDate(d.trial.endsAt), plan: plans[d.trial.previousPlan].name }) :
                 !paid ?
                 plan.id === 'enterprise' ?
-                'Billed by contract. Talk to your account manager about changes.' :
-                'Free has no subscription. Upgrade any time — you only pay from the day you switch.' :
+                tr('Billed by contract. Talk to your account manager about changes.') :
+                tr('Free has no subscription. Upgrade any time — you only pay from the day you switch.') :
                 d.pendingPlan === 'free' ?
-                `Cancelled${d.cancelReason ? ` (“${d.cancelReason}”)` : ''}. You keep ${plan.name} until ${periodEnd}, then move to Free.` :
+                `${tr('Cancelled')}${d.cancelReason ? ` (“${d.cancelReason}”)` : ''}. ${tr('You keep {plan} until {date}, then move to Free.', { plan: plan.name, date: periodEnd ?? '' })}` :
                 d.pendingPlan ?
-                `Moves to ${plans[d.pendingPlan].name} on ${periodEnd}, then ${formatNgn(nextTotal)} incl. VAT.` :
-                `Renews on ${periodEnd} for ${formatNgn(nextTotal)} incl. VAT.`}
+                tr('Moves to {plan} on {date}, then {total} incl. VAT.', { plan: plans[d.pendingPlan].name, date: periodEnd ?? '', total }) :
+                tr('Renews on {date} for {total} incl. VAT.', { date: periodEnd ?? '', total })}
             </span>
           </div>
 
@@ -175,7 +180,7 @@ export function BillingTab() {
               }
             {d.pendingPlan ?
               <Button variant="secondary" disabled={!can.allowed} onClick={billing.cancelScheduled}>
-                {d.pendingPlan === 'free' ? `Resume ${plan.name}` : `Stay on ${plan.name}`}
+                {tr(d.pendingPlan === 'free' ? 'Resume {plan}' : 'Stay on {plan}', { plan: plan.name })}
               </Button> :
 
               paid &&
@@ -196,7 +201,7 @@ export function BillingTab() {
 
         <aside aria-labelledby="billing-usage" className="flex flex-col gap-4">
           <h2 id="billing-usage" className="text-label font-semibold text-fg">
-            Usage this period
+            {tr('Usage this period')}
           </h2>
           <UsageMeters />
         </aside>
@@ -204,7 +209,7 @@ export function BillingTab() {
 
       <section aria-labelledby="billing-card" className="flex flex-col gap-3">
         <h2 id="billing-card" className="text-label font-semibold text-fg">
-          Payment method
+          {tr('Payment method')}
         </h2>
         <div className="flex flex-col gap-3 rounded-lg border border-line bg-raised p-4 sm:flex-row sm:items-center">
           <span className="flex h-10 w-14 shrink-0 items-center justify-center rounded-md bg-sunken text-fg-muted">
@@ -217,13 +222,13 @@ export function BillingTab() {
                   {d.card.brand} •••• {d.card.last4}
                 </p>
                 <p className="text-caption text-fg-muted">
-                  Expires {d.card.expiry} · {d.card.holder}
+                  {tr('Expires {date}', { date: d.card.expiry })} · {d.card.holder}
                 </p>
               </> :
 
             <>
-                <p className="text-label font-medium text-fg">No card on file</p>
-                <p className="text-caption text-fg-muted">{paid ? 'Add a card before your renewal so the plan carries on.' : 'You’ll add one when you upgrade.'}</p>
+                <p className="text-label font-medium text-fg">{tr('No card on file')}</p>
+                <p className="text-caption text-fg-muted">{tr(paid ? 'Add a card before your renewal so the plan carries on.' : 'You’ll add one when you upgrade.')}</p>
               </>
             }
           </div>
@@ -243,7 +248,7 @@ export function BillingTab() {
       <section aria-labelledby="billing-invoices" className="flex flex-col gap-3">
         <div className="flex items-center justify-between gap-3">
           <h2 id="billing-invoices" className="text-label font-semibold text-fg">
-            Invoices
+            {tr('Invoices')}
           </h2>
           {d.invoices.length > 0 &&
           <Button size="sm" variant="tertiary" leadingIcon={DownloadIcon} onClick={exportCsv}>
@@ -260,7 +265,7 @@ export function BillingTab() {
             <li className="flex flex-wrap items-center gap-x-4 gap-y-1 px-5 py-3 md:px-6">
                 <span className="w-[120px] text-label text-fg-muted">{periodEnd}</span>
                 <span className="min-w-0 flex-1 text-label text-fg">
-                  {plans[d.pendingPlan ?? plan.id].name} ({d.pendingCycle ?? d.cycle}) renewal
+                  {tr((d.pendingCycle ?? d.cycle) === 'yearly' ? '{plan} (yearly) renewal' : '{plan} (monthly) renewal', { plan: plans[d.pendingPlan ?? plan.id].name })}
                 </span>
                 <InvoiceStatusBadge status="upcoming" />
                 <span className="w-[110px] text-right text-label tabular-nums text-fg">{formatNgn(nextTotal)}</span>
@@ -276,7 +281,7 @@ export function BillingTab() {
                   <span className="w-[120px] text-label text-fg-muted">{formatDate(i.issuedAt)}</span>
                   <span className="min-w-0 flex-1 truncate text-label text-fg">
                     <span className="font-mono text-caption text-fg-subtle">{i.number}</span> · {i.lines[0]?.label}
-                    {i.sample && <span className="text-fg-subtle"> · sample</span>}
+                    {i.sample && <span className="text-fg-subtle"> · {tr('sample')}</span>}
                   </span>
                   <InvoiceStatusBadge status={i.status} />
                   <span className="w-[110px] text-right text-label tabular-nums text-fg">{formatNgn(i.totalNgn)}</span>
@@ -292,7 +297,7 @@ export function BillingTab() {
         <div className="flex items-start gap-3 rounded-lg bg-sunken px-4 py-3">
           <CalendarClockIcon size={16} className="mt-0.5 shrink-0 text-fg-muted" aria-hidden />
           <p className="text-label text-fg">
-            <span className="font-semibold">What’s coming: </span>
+            <span className="font-semibold">{tr('What’s coming:')} </span>
             {comingUp}
           </p>
         </div>
@@ -313,7 +318,7 @@ export function BillingTab() {
           </>
         }>
         
-        Renewals follow <span className="font-medium text-fg">Simulate next renewal</span> in the Controls panel (now: {billing.renewalOutcome === 'succeeds' ? 'succeeds' : 'fails'}).
+        {tr(billing.renewalOutcome === 'succeeds' ? 'Renewals follow Simulate next renewal in the Controls panel (now: succeeds).' : 'Renewals follow Simulate next renewal in the Controls panel (now: fails).')}
       </PrototypeNote>
 
       <InvoiceDialog invoice={invoice} onClose={() => setInvoice(null)} />
@@ -327,7 +332,7 @@ export function BillingTab() {
           onPaid={(card) => {
             billing.saveCard(card);
             setCardOpen(false);
-            toast.success(`${card.brand} •••• ${card.last4} saved`, { description: d.status === 'past_due' ? 'Now retry the payment.' : undefined });
+            toast.success(tr('{card} saved', { card: `${card.brand} •••• ${card.last4}` }), { description: d.status === 'past_due' ? tr('Now retry the payment.') : undefined });
           }} />
         
       </Dialog>

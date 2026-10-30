@@ -1,14 +1,21 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { ArrowRightIcon, CheckCircle2Icon, MailIcon, SparklesIcon, UserIcon } from 'lucide-react';
 import { AuthLayout } from '../../components/auth/AuthLayout';
+import { PasswordInput } from '../../components/auth/PasswordInput';
+import { PasswordChecklist } from '../../components/auth/PasswordChecklist';
 import { TextInput } from '../../components/ui/TextInput';
 import { Button } from '../../components/ui/Button';
-import { CheckCircle2Icon } from 'lucide-react';
 import { isValidEmail } from '../../utils/validation';
 import { claimMinutesLeft, readHandleClaim } from '../../utils/handleClaim';
+import { useT } from '../../contexts/LocaleContext';
+import { cn } from '../../utils/cn';
+
+const inputClass = 'h-12 rounded-xl pl-10';
 
 export function SignUp() {
   const navigate = useNavigate();
+  const { t } = useT();
   const [params] = useSearchParams();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -35,70 +42,96 @@ export function SignUp() {
     window.setTimeout(() => navigate(`/verify?email=${encodeURIComponent(email.trim())}${kit ? `&kit=${kit}` : ''}`), 400);
   };
 
+  const minutes = claim ? claimMinutesLeft(claim) : 0;
+
   return (
     <AuthLayout
-      title="Create your KUBICU account"
-      description="Free to start. You’ll build your page right after this."
+      showcase="signup"
+      title={t('Create your account')}
+      description={t('Free to start. You’ll build your page right after this.')}
+      eyebrow={<Journey />}
       footer={
       <>
-          Already have an account?{' '}
-          <Link to="/signin" className="font-semibold text-action hover:underline">
-            Sign in
+          {t('Already have an account?')}{' '}
+          <Link to="/signin" className="font-semibold text-fg underline underline-offset-4 hover:no-underline">
+            {t('Sign in')}
           </Link>
         </>
       }>
       
-      {!claim &&
-      <p className="mb-5 rounded-lg border border-line bg-raised px-3.5 py-3 text-label text-fg-muted">
-          Never made a website?{' '}
-          <Link to="/copilot" className="font-semibold text-fg underline underline-offset-2">
-            Tell Copilot about your business
-          </Link>{' '}
-          first — it asks simple questions, shows you a draft page, and you create your account only if you like it.
-        </p>
-      }
-      {claim &&
-      <div className="mb-5 flex items-start gap-3 rounded-lg border border-success/40 bg-success-soft px-3.5 py-3">
+      {claim ?
+      <div className="mb-6 flex items-start gap-3 rounded-2xl border border-success/40 bg-success-soft px-4 py-3.5">
           <CheckCircle2Icon size={18} className="mt-0.5 shrink-0 text-success" aria-hidden />
           <p className="text-label text-fg">
-            <span className="font-semibold">kub.icu/{claim.handle}</span> is held for you for {claimMinutesLeft(claim)} more minute{claimMinutesLeft(claim) === 1 ? '' : 's'}. Create your account to make it yours.
+            {t('{link} is held for you for {n} more minutes. Create your account to make it yours.', { link: `kub.icu/${claim.handle}`, n: minutes })}
           </p>
-        </div>
-      }
-      <form onSubmit={submit} noValidate className="flex flex-col gap-4">
-        <TextInput id="su-name" label="Your name" autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} error={submitted ? errors.name : undefined} />
-        <TextInput id="su-email" label="Email" type="email" inputMode="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} error={submitted ? errors.email : undefined} />
-        <TextInput
-          id="su-password"
-          label="Password"
-          type="password"
-          autoComplete="new-password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          hint="At least 8 characters"
-          error={submitted ? errors.password : undefined} />
+        </div> :
+
+      <Link
+        to="/copilot"
+        className="group mb-6 flex items-center gap-3 rounded-2xl border border-line bg-sunken/60 px-4 py-3.5 transition-colors duration-150 hover:border-line-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
         
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-fg text-raised">
+            <SparklesIcon size={16} aria-hidden />
+          </span>
+          <span className="min-w-0 flex-1 text-label leading-snug text-fg-muted">
+            <span className="block font-semibold text-fg">{t('Never made a website?')}</span>
+            {t('Tell Copilot about your business and see a draft first.')}
+          </span>
+          <ArrowRightIcon size={16} className="shrink-0 text-fg-subtle transition-transform duration-150 ease-out group-hover:translate-x-0.5" aria-hidden />
+        </Link>
+      }
+
+      <form onSubmit={submit} noValidate className="flex flex-col gap-5">
+        <TextInput id="su-name" label="Your name" autoComplete="name" leadingIcon={UserIcon} placeholder="Adaeze Okafor" className={inputClass} value={name} onChange={(e) => setName(e.target.value)} error={submitted ? errors.name || undefined : undefined} />
+        <TextInput id="su-email" label="Email" type="email" inputMode="email" autoComplete="email" leadingIcon={MailIcon} placeholder="you@example.com" className={inputClass} value={email} onChange={(e) => setEmail(e.target.value)} error={submitted ? errors.email || undefined : undefined} />
+        <div className="flex flex-col gap-3">
+          <PasswordInput id="su-password" label="Password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} error={submitted ? errors.password || undefined : undefined} />
+          <PasswordChecklist password={password} />
+        </div>
         <div>
-          <label className="flex items-start gap-2.5 text-label text-fg-muted">
-            <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="mt-0.5 h-4 w-4 accent-[rgb(var(--action))]" />
+          <label className={cn('flex cursor-pointer items-start gap-3 rounded-xl border px-4 py-3 text-label text-fg-muted transition-colors duration-150', submitted && errors.agreed ? 'border-danger' : 'border-line hover:border-line-strong')}>
+            <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} aria-invalid={submitted && !!errors.agreed} aria-describedby={submitted && errors.agreed ? 'su-agree-error' : undefined} className="mt-0.5 h-4 w-4 shrink-0 accent-[rgb(var(--action))]" />
             <span>
-              I agree to the{' '}
-              <Link to="/about/terms" className="font-medium text-fg underline underline-offset-2">
-                Terms
+              {t('I agree to the')}{' '}
+              <Link to="/about/terms" className="font-semibold text-fg underline underline-offset-2">
+                {t('Terms')}
               </Link>{' '}
-              and{' '}
-              <Link to="/about/privacy" className="font-medium text-fg underline underline-offset-2">
-                Privacy policy
+              {t('and')}{' '}
+              <Link to="/about/privacy" className="font-semibold text-fg underline underline-offset-2">
+                {t('Privacy policy')}
               </Link>
               .
             </span>
           </label>
-          {submitted && errors.agreed && <p className="mt-1.5 text-caption text-danger">{errors.agreed}</p>}
+          {submitted && errors.agreed &&
+          <p id="su-agree-error" role="alert" className="mt-1.5 text-caption text-danger">
+              {t(errors.agreed)}
+            </p>
+          }
         </div>
-        <Button type="submit" variant="brand" size="lg" fullWidth loading={loading} className="mt-2">
+        <Button type="submit" variant="brand" size="lg" fullWidth loading={loading} trailingIcon={ArrowRightIcon} className="mt-1 h-12 rounded-xl">
           Create account
         </Button>
       </form>
     </AuthLayout>);
+
+}
+
+/** Where sign-up sits in the journey: account → confirm email → your page. */
+function Journey() {
+  const { t } = useT();
+  const steps = [t('Account'), t('Confirm email'), t('Your page')];
+  return (
+    <ol aria-label={t('Getting started')} className="flex items-center gap-2 text-caption font-semibold">
+      {steps.map((s, i) =>
+      <li key={s} className="flex items-center gap-2">
+          <span aria-current={i === 0 ? 'step' : undefined} className={cn('rounded-full px-2.5 py-1', i === 0 ? 'bg-fg text-raised' : 'bg-sunken text-fg-subtle')}>
+            {s}
+          </span>
+          {i < steps.length - 1 && <span className="h-px w-3 bg-line-strong" aria-hidden />}
+        </li>
+      )}
+    </ol>);
 
 }

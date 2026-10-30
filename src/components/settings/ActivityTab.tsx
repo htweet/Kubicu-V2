@@ -10,12 +10,14 @@ import { Button } from '../ui/Button';
 import { SelectInput } from '../ui/SelectInput';
 import { EmptyState } from '../ui/EmptyState';
 import { List } from '../ui/layout/ListRow';
+import { useT } from '../../contexts/LocaleContext';
 
 const areaLabels: Record<ActivityArea, string> = { team: 'Team', pages: 'Pages', commerce: 'Commerce', bookings: 'Bookings', audience: 'Audience', settings: 'Settings' };
 type Period = '1' | '7' | '30' | 'all';
 
 /** Settings → Activity: who did what, newest first (D60). */
 export function ActivityTab() {
+  const { t: tr } = useT();
   const team = useTeam();
   const [person, setPerson] = useState('all');
   const [area, setArea] = useState<'all' | ActivityArea>('all');
@@ -68,7 +70,7 @@ export function ActivityTab() {
       <div className="flex flex-col gap-6">
           {groups.map((g) =>
         <section key={g.day} aria-label={g.day}>
-              <h3 className="text-caption font-semibold text-fg-subtle">{g.day === today ? 'Today' : g.day === yesterday ? 'Yesterday' : new Date(g.day).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'short' })}</h3>
+              <h3 className="text-caption font-semibold text-fg-subtle">{g.day === today ? tr('Today') : g.day === yesterday ? tr('Yesterday') : new Date(g.day).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'short' })}</h3>
               <List ordered ruled className="mt-2">
                 {g.items.map((a) =>
             <li key={a.id} className="flex items-start gap-3 py-2.5">
@@ -80,7 +82,7 @@ export function ActivityTab() {
                         <span className="font-semibold">{a.actor}</span> {a.href ? <Link to={a.href} className="underline-offset-2 hover:underline">{a.text}</Link> : a.text}
                       </p>
                       <p className="text-caption text-fg-subtle" title={formatTimestamp(a.at)}>
-                        {areaLabels[a.area]} · {formatRelative(a.at)}
+                        {tr(areaLabels[a.area])} · {formatRelative(a.at)}
                       </p>
                     </div>
                   </li>
@@ -90,7 +92,7 @@ export function ActivityTab() {
         )}
         </div>
       }
-      <p className="text-caption text-fg-subtle">Kept for the last 500 changes in this prototype. Visitors’ orders and bookings appear in their own screens, not here.</p>
+      <p className="text-caption text-fg-subtle">{tr('Kept for the last 500 changes in this prototype. Visitors’ orders and bookings appear in their own screens, not here.')}</p>
     </div>);
 
 }

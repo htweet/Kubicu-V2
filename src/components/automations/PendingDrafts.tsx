@@ -9,9 +9,11 @@ import { formatRelative } from '../../utils/format';
 import { Button } from '../ui/Button';
 import { TextArea } from '../ui/TextArea';
 import { AiPreviewTag } from '../ai/AiPreviewTag';
+import { useT } from '../../contexts/LocaleContext';
 
 /** Messages written by "Draft a message with AI" on live runs, waiting for the owner (D137). Nothing is sent on its own. */
 export function PendingDrafts() {
+  const { t: tr } = useT();
   const { data, apply } = useOps();
   const me = useTeam().me.name;
   const [editing, setEditing] = useState<string | null>(null);
@@ -27,7 +29,7 @@ export function PendingDrafts() {
     });
     if (!ok) return;
     setEditing(null);
-    toast(approve ? 'Approved' : 'Discarded', { description: approve ? 'Ready to send once a messaging partner is connected — copy it to WhatsApp in the meantime.' : 'Nothing was sent.' });
+    toast(tr(approve ? 'Approved' : 'Discarded'), { description: tr(approve ? 'Ready to send once a messaging partner is connected — copy it to WhatsApp in the meantime.' : 'Nothing was sent.') });
   };
 
   return (
@@ -35,11 +37,11 @@ export function PendingDrafts() {
       <div className="ai-soft rounded-[7px] p-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 id="drafts-h" className="flex items-center gap-2 text-heading font-semibold text-fg">
-            <SparklesIcon size={17} aria-hidden /> Drafts waiting for you · {waiting.length}
+            <SparklesIcon size={17} aria-hidden /> {tr('Drafts waiting for you')} · {waiting.length}
           </h2>
           <AiPreviewTag />
         </div>
-        <p className="mt-1 text-caption text-fg-muted">Written from the contact’s name and what they last bought. Approve, edit or discard each one.</p>
+        <p className="mt-1 text-caption text-fg-muted">{tr('Written from the contact’s name and what they last bought. Approve, edit or discard each one.')}</p>
         <ul className="mt-4 flex flex-col divide-y divide-line rounded-md border border-line bg-raised">
           {waiting.map(({ a, r, s, i }) => {
             const key = `${r.id}:${i}`;

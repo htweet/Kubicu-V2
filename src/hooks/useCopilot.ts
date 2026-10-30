@@ -12,16 +12,27 @@ import { toast } from 'sonner';
 const STEP_MS = 520;
 
 /** Runs one Copilot chat (D262): the conversation, generation, limits and the resulting draft. */
-export function useCopilot(channel: CopilotChannel, chatPhone?: string) {
+export function useCopilot(channel: CopilotChannel, chatPhone?: string, openId?: string | null) {
   const sim = useCopilotSim();
   const [session, setSession] = useState<CopilotSession>(() => {
+    const requested = openId ? readSession(openId) : null;
     const id = currentSessionId(channel);
-    const saved = id ? readSession(id) : null;
+    const saved = requested?.channel === channel ? requested : id ? readSession(id) : null;
     // A chat interrupted mid-generation picks up by generating again.
-    if (saved) return saved.stage === 'generating' ? { ...saved, progress: 0 } : saved;
+    if (saved) return resume(saved);
     return newSession(channel, chatPhone);
   });
   const timer = useRef<number | null>(null);
+
+  // Opening a chat from the sidebar or the chat list switches to it.
+  useEffect(() => {
+    if (!openId) return;
+    setSession((s) => {
+      if (s.id === openId) return s;
+      const saved = readSession(openId);
+      return saved && saved.channel === channel ? resume(saved) : s;
+    });
+  }, [openId, channel]);
 
   const warned = useRef(false);
   useEffect(() => {
@@ -110,4 +121,8 @@ export function useCopilot(channel: CopilotChannel, chatPhone?: string) {
 
   const draft = session.draftId ? readDraft(session.draftId) : null;
   return { session, draft, send, retry, restart, addPhotos, limits: remaining(usageKey(session)) };
+}
+
+function resume(s: CopilotSession): CopilotSession {
+  return s.stage === 'generating' ? { ...s, progress: 0 } : s;
 }

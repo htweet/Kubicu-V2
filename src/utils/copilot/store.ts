@@ -10,6 +10,18 @@ const SESSIONS = 'kubicu.copilot.sessions';
 const DRAFTS = 'kubicu.copilot.drafts';
 const USAGE = 'kubicu.copilot.usage';
 const CURRENT = 'kubicu.copilot.current';
+const PINS = 'kubicu.copilot.pins';
+
+/** Fired on this tab whenever chats or pins change, so the sidebar and chat list stay in step. */
+export const CHATS_EVENT = 'kubicu:copilot-chats';
+
+function notify() {
+  try {
+    window.dispatchEvent(new Event(CHATS_EVENT));
+  } catch {
+
+    // Not in a browser — nothing to tell.
+  }}
 
 /** Example figures: unclaimed drafts last 7 days; 3 drafts and 10 changes a day per phone number or browser. */
 export const DRAFT_DAYS = 7;
@@ -46,7 +58,8 @@ function write(key: string, value: unknown, keepId?: string): boolean {
 }
 
 function keepCurrent(sessions: Record<string, CopilotSession>, keepId?: string): Record<string, CopilotSession> {
-  const current = new Set(Object.values(read<Record<string, string>>(CURRENT, {})));
+  // Pinned chats are kept too: pinning is a promise the chat won't be cleared out.
+  const current = new Set([...Object.values(read<Record<string, string>>(CURRENT, {})), ...read<string[]>(PINS, [])]);
   if (keepId) current.add(keepId);
   return Object.fromEntries(Object.entries(sessions).filter(([id]) => current.has(id)));
 }
@@ -66,7 +79,46 @@ export function readSession(id: string): CopilotSession | null {
 export function saveSession(s: CopilotSession): boolean {
   const all = read<Record<string, CopilotSession>>(SESSIONS, {});
   all[s.id] = s;
-  return write(SESSIONS, all, s.id);
+  const ok = write(SESSIONS, all, s.id);
+  notify();
+  return ok;
+}
+
+/** Chats someone has actually started (said something in), newest first. */
+export function listSessions(channel: CopilotSession['channel']): CopilotSession[] {
+  return Object.values(read<Record<string, CopilotSession>>(SESSIONS, {})).
+  filter((s) => s.channel === channel && s.messages.some((m) => m.from === 'user')).
+  sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+}
+
+/** A short name for a chat: the business name once known, otherwise their first words. */
+export function sessionTitle(s: CopilotSession): string {
+  const firstWords = s.messages.find((m) => m.from === 'user' && m.text.trim())?.text.trim();
+  const title = s.brief?.name || s.answers.name || s.answers.businessText || firstWords || 'New chat';
+  return title.length > 60 ? `${title.slice(0, 57).trimEnd()}…` : title;
+}
+
+/** Pinned chat ids, most recently pinned first. */
+export function pinnedIds(): string[] {
+  return read<string[]>(PINS, []);
+}
+
+export function togglePin(id: string): boolean {
+  const pins = pinnedIds();
+  const pinned = pins.includes(id);
+  write(PINS, pinned ? pins.filter((p) => p !== id) : [id, ...pins]);
+  notify();
+  return !pinned;
+}
+
+export function deleteSession(id: string) {
+  const all = read<Record<string, CopilotSession>>(SESSIONS, {});
+  delete all[id];
+  write(SESSIONS, all);
+  write(PINS, pinnedIds().filter((p) => p !== id));
+  const current = read<Record<string, string>>(CURRENT, {});
+  write(CURRENT, Object.fromEntries(Object.entries(current).filter(([, v]) => v !== id)));
+  notify();
 }
 
 /** The chat in progress on this device for a channel, so leaving and coming back continues it. */

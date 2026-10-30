@@ -3,6 +3,7 @@ import { CheckCircle2Icon, MessageSquareIcon, RotateCcwIcon } from 'lucide-react
 import type { AgreementSide, PartnerComment, Partnership } from '../../types/partnership';
 import { formatRelative } from '../../utils/format';
 import { uid } from '../../utils/id';
+import { useT } from '../../contexts/LocaleContext';
 import { Button } from '../ui/Button';
 import { TextArea } from '../ui/TextArea';
 import { cn } from '../../utils/cn';
@@ -23,9 +24,10 @@ interface PartnerCommentsProps {
 
 /**
  * Comments between the two businesses (D121). Unlike team comments (D116), both businesses
- * read and write here, so nothing internal should go in it.
+ * read and write here, so nothing internal should go in it. Comment text and block names show as written.
  */
 export function PartnerComments({ partnership: p, leadName, side, onChange, spaceId, block, disabled, className }: PartnerCommentsProps) {
+  const { t: tr } = useT();
   const [text, setText] = useState('');
   const [aboutBlock, setAboutBlock] = useState(true);
   const [showResolved, setShowResolved] = useState(false);
@@ -48,25 +50,34 @@ export function PartnerComments({ partnership: p, leadName, side, onChange, spac
     <section aria-labelledby={headingId} className={cn('flex flex-col gap-4', className)}>
       <div className="flex items-baseline justify-between gap-3">
         <h3 id={headingId} className="text-label font-semibold text-fg">
-          Comments with {side === 'lead' ? p.partner.name : leadName}
+          {tr('Comments with {name}', { name: side === 'lead' ? p.partner.name : leadName })}
         </h3>
-        <span className="text-caption text-fg-subtle">{open.length ? `${open.length} open` : 'None open'}</span>
+        <span className="text-caption text-fg-subtle">{open.length ? tr('Open: {n}', { n: open.length }) : tr('None open')}</span>
       </div>
-      <p className="-mt-2 text-caption text-fg-subtle">Both businesses see these. Keep team-only notes in your team comments.</p>
+      <p className="-mt-2 text-caption text-fg-subtle">{tr('Both businesses see these. Keep team-only notes in your team comments.')}</p>
 
       <div className="flex flex-col gap-2">
-        <TextArea id={`pc-new-${p.id}-${spaceId ?? 'all'}`} label={`Comment as ${name}`} rows={2} maxLength={600} value={text} disabled={disabled} onChange={(e) => setText(e.target.value)} placeholder={block ? `e.g. Can we use the photo from the shoot on the ${block.label.toLowerCase()}?` : 'e.g. Can we launch on Friday?'} />
+        <TextArea
+          id={`pc-new-${p.id}-${spaceId ?? 'all'}`}
+          label={tr('Comment as {name}', { name })}
+          rows={2}
+          maxLength={600}
+          value={text}
+          disabled={disabled}
+          onChange={(e) => setText(e.target.value)}
+          placeholder={block ? tr('e.g. Can we use the photo from the shoot on the {block}?', { block: block.label.toLowerCase() }) : tr('e.g. Can we launch on Friday?')} />
+        
         <div className="flex flex-wrap items-center justify-between gap-2">
           {block ?
           <label className="flex items-center gap-2 text-caption text-fg-muted">
               <input type="checkbox" className="h-4 w-4 accent-[rgb(var(--action))]" checked={aboutBlock} onChange={(e) => setAboutBlock(e.target.checked)} />
-              About “{block.label}”
+              {tr('About “{name}”', { name: block.label })}
             </label> :
 
           <span />
           }
           <Button size="sm" leadingIcon={MessageSquareIcon} disabled={disabled || !text.trim()} onClick={post}>
-            Post
+            {tr('Post')}
           </Button>
         </div>
       </div>
@@ -81,7 +92,7 @@ export function PartnerComments({ partnership: p, leadName, side, onChange, spac
       {resolved.length > 0 &&
       <div className="flex flex-col gap-2">
           <button type="button" onClick={() => setShowResolved((v) => !v)} aria-expanded={showResolved} className="self-start rounded-sm text-caption font-medium text-fg-muted hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-            {showResolved ? 'Hide' : 'Show'} {resolved.length} resolved
+            {showResolved ? tr('Hide resolved ({n})', { n: resolved.length }) : tr('Show resolved ({n})', { n: resolved.length })}
           </button>
           {showResolved &&
         <ol className="flex flex-col divide-y divide-line rounded-lg border border-line bg-raised opacity-80">
@@ -97,6 +108,7 @@ export function PartnerComments({ partnership: p, leadName, side, onChange, spac
 }
 
 function CommentRow({ c, mine, onResolve, onReopen, disabled }: {c: PartnerComment;mine: boolean;onResolve?: () => void;onReopen?: () => void;disabled?: boolean;}) {
+  const { t: tr } = useT();
   return (
     <li className="flex flex-col gap-1.5 px-4 py-3">
       <div className="flex items-center justify-between gap-3">
@@ -105,17 +117,17 @@ function CommentRow({ c, mine, onResolve, onReopen, disabled }: {c: PartnerComme
           <span className="text-fg-subtle"> · {formatRelative(c.at)}</span>
         </p>
         {onResolve &&
-        <button type="button" disabled={disabled} onClick={onResolve} aria-label={`Resolve comment from ${c.author}`} className="inline-flex shrink-0 items-center gap-1 rounded-sm text-caption font-medium text-fg-muted hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus disabled:opacity-40">
-            <CheckCircle2Icon size={13} aria-hidden /> Resolve
+        <button type="button" disabled={disabled} onClick={onResolve} aria-label={tr('Resolve comment from {name}', { name: c.author })} className="inline-flex shrink-0 items-center gap-1 rounded-sm text-caption font-medium text-fg-muted hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus disabled:opacity-40">
+            <CheckCircle2Icon size={13} aria-hidden /> {tr('Resolve')}
           </button>
         }
         {onReopen &&
-        <button type="button" disabled={disabled} onClick={onReopen} aria-label={`Reopen comment from ${c.author}`} className="inline-flex shrink-0 items-center gap-1 rounded-sm text-caption font-medium text-fg-muted hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus disabled:opacity-40">
-            <RotateCcwIcon size={13} aria-hidden /> Reopen
+        <button type="button" disabled={disabled} onClick={onReopen} aria-label={tr('Reopen comment from {name}', { name: c.author })} className="inline-flex shrink-0 items-center gap-1 rounded-sm text-caption font-medium text-fg-muted hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus disabled:opacity-40">
+            <RotateCcwIcon size={13} aria-hidden /> {tr('Reopen')}
           </button>
         }
       </div>
-      {c.blockLabel && <span className="self-start rounded-sm bg-sunken px-1.5 py-0.5 text-meta font-medium text-fg-muted">About {c.blockLabel}</span>}
+      {c.blockLabel && <span className="self-start rounded-sm bg-sunken px-1.5 py-0.5 text-meta font-medium text-fg-muted">{tr('About {name}', { name: c.blockLabel })}</span>}
       <p className="whitespace-pre-wrap text-label text-fg">{c.text}</p>
     </li>);
 

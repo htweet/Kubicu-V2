@@ -5,6 +5,7 @@ import { TextArea } from '../ui/TextArea';
 import { DateTimeInput } from '../ui/DateTimeInput';
 import { AssigneeSelect } from '../team/AssigneeSelect';
 import { ConfirmationSettings } from './ConfirmationSettings';
+import { useT } from '../../contexts/LocaleContext';
 
 interface FormSettingsTabProps {
   form: FormDef;
@@ -59,6 +60,9 @@ export function FormSettingsTab({ form, onChange, disabled }: FormSettingsTabPro
 }
 
 function Group({ title, text, children, last }: {title: string;text: string;children: React.ReactNode;last?: boolean;}) {
+  const { t } = useT();
+  title = t(title);
+  text = t(text);
   return (
     <section className={last ? 'grid gap-4 py-6 md:grid-cols-[14rem_minmax(0,1fr)] md:gap-8' : 'grid gap-4 border-b border-line py-6 md:grid-cols-[14rem_minmax(0,1fr)] md:gap-8'}>
       <div>

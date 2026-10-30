@@ -5,18 +5,39 @@ import { signatureTheme } from '../../../data/signatureThemes';
 import { findExampleById } from '../../../data/examples';
 import { TemplateThumb } from '../../templates/TemplateThumb';
 import { ExtensionIcon } from '../../extensions/ExtensionIcon';
+import { kitPhotos } from '../../../data/kitPhotos';
 
 const reference = findExampleById('elite-signature-creator') ?? findExampleById('adaeze-atelier');
 
 /**
  * The visual half of a listing card (D268). Templates and themes show a real miniature page; everything
- * else shows its icon on its kind's colour, with what's inside as a short stack — never a stock image.
+ * else shows its icon on its kind's colour, with what's inside as a short stack. Industry kits show an
+ * illustrative photo of the trade with their real starter page on top (D279).
  */
 export function ListingPreview({ listing, size = 'card' }: {listing: Listing;size?: 'card' | 'hero';}) {
   const tone = listingKindById[listing.kind].tone;
   const hero = size === 'hero';
   const thumbW = hero ? 200 : 120;
   const thumbH = hero ? 360 : 190;
+
+  // Industry kits (D279): a photo of the kind of business, with the kit's real starter page in a phone on top.
+  if (listing.kit) {
+    const photo = kitPhotos[listing.kit.id];
+    const starter = findExampleById(listing.kit.templateId);
+    return (
+      <div aria-hidden className="relative h-full overflow-hidden" style={{ backgroundColor: tone.bg }}>
+        {photo && <img src={photo.url} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />}
+        {starter &&
+        <div className={hero ? 'absolute bottom-0 right-6' : 'absolute bottom-0 right-4'}>
+            <div className="overflow-hidden rounded-t-[16px] border-[4px] border-b-0 border-[rgb(18_18_20)] bg-[rgb(18_18_20)] shadow-3">
+              <TemplateThumb doc={starter.doc} width={hero ? 150 : 86} height={hero ? 230 : 128} />
+            </div>
+          </div>
+        }
+        <span className="absolute bottom-3 left-3 rounded-full bg-black/55 px-2 py-0.5 text-[10.5px] font-semibold text-white">Illustration</span>
+      </div>);
+
+  }
 
   if (listing.example || listing.theme && reference) {
     const doc = listing.example ? listing.example.doc : { ...reference!.doc, theme: signatureTheme(listing.theme!) };

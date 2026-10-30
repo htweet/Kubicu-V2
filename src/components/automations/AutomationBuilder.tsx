@@ -19,6 +19,13 @@ import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { useTeam } from '../../contexts/TeamContext';
 import { AssigneeSelect } from '../team/AssigneeSelect';
 import { opsSettingsOf } from '../../utils/ops/settings';
+import { useT } from '../../contexts/LocaleContext';
+
+/** Step label in the reader's language; delays carry a number, so they get their own phrase. */
+export function useStepLabel() {
+  const { t } = useT();
+  return (s: Automation['steps'][number]) => s.kind === 'delay' ? s.delayHours === 1 ? t('Wait 1 hour') : t('Wait {n} hours', { n: s.delayHours ?? 0 }) : t(stepLabel(s));
+}
 
 export function newAutomation(recipeId: string | null): Automation {
   const r = recipes.find((x) => x.id === recipeId);
@@ -38,6 +45,7 @@ export function newAutomation(recipeId: string | null): Automation {
 
 /** Readable top-to-bottom builder: Trigger → Conditions → Actions/Delays → Outcome. */
 export function AutomationBuilder({ automation, onClose }: {automation: Automation | null;onClose: () => void;}) {
+  const { t: tr } = useT();
   const { data, apply } = useOps();
   const team = useTeam();
   const [draft, setDraft] = useState<Automation | null>(automation);
@@ -58,6 +66,7 @@ export function AutomationBuilder({ automation, onClose }: {automation: Automati
   }, [lastRun]);
   const [addOpen, setAddOpen] = useState(false);
   const wide = useMediaQuery('(min-width: 768px)');
+  const label = useStepLabel();
   if (!draft) return null;
   const addStep = (step: Automation['steps'][number]) => {
     patch({ steps: [...draft.steps, step] });
@@ -82,7 +91,7 @@ export function AutomationBuilder({ automation, onClose }: {automation: Automati
     const next = { ...draft, status: status ?? draft.status, updatedAt: at, liveSince: turningOn ? at : draft.liveSince ?? (draft.status === 'active' ? draft.updatedAt : undefined) };
     if (status === 'active' && problems.length) return;
     if (apply((d) => ({ ...d, automations: exists ? d.automations.map((a) => a.id === next.id ? { ...next, runs: a.runs } : a) : [next, ...d.automations] }))) {
-      toast(status === 'active' ? 'Automation is on' : status === 'paused' ? 'Automation paused' : 'Saved as draft', { description: status === 'active' ? 'It reacts to things that happen from now on. Customer messages are written, not sent, in this prototype.' : undefined });
+      toast(tr(status === 'active' ? 'Automation is on' : status === 'paused' ? 'Automation paused' : 'Saved as draft'), { description: status === 'active' ? tr('It reacts to things that happen from now on. Customer messages are written, not sent, in this prototype.') : undefined });
       onClose();
     }
   };
@@ -96,8 +105,8 @@ export function AutomationBuilder({ automation, onClose }: {automation: Automati
       setLastRun(run);
       setTesting(false);
       if (exists) apply((d) => addTestRun(d, draft.id, run));
-      if (run.status === 'succeeded') toast.success('Test run passed', { description: 'All steps ran with sample details. Nothing was sent.' });else
-      toast('Test run stopped at a condition', { description: 'The sample didn’t meet a condition — see the result below.' });
+      if (run.status === 'succeeded') toast.success(tr('Test run passed'), { description: tr('All steps ran with sample details. Nothing was sent.') });else
+      toast(tr('Test run stopped at a condition'), { description: tr('The sample didn’t meet a condition — see the result below.') });
     }, 450);
   };
 
@@ -135,7 +144,7 @@ export function AutomationBuilder({ automation, onClose }: {automation: Automati
         <TextInput id="auto-name" label="Name" value={draft.name} onChange={(e) => patch({ name: e.target.value })} />
         {data.automationsPaused &&
         <InlineAlert tone="warning" title="All automations are paused">
-            Nothing runs until you resume them from the Automations page.
+            {tr('Nothing runs until you resume them from the Automations page.')}
           </InlineAlert>
         }
 
@@ -145,7 +154,7 @@ export function AutomationBuilder({ automation, onClose }: {automation: Automati
             <span aria-hidden className="absolute left-0 top-0 flex h-7 w-7 items-center justify-center rounded-full bg-action text-action-fg">
               <ZapIcon size={14} strokeWidth={2.5} />
             </span>
-            <p className="text-caption font-semibold text-fg-subtle">When</p>
+            <p className="text-caption font-semibold text-fg-subtle">{tr('When')}</p>
             <SelectInput<TriggerId> id="auto-trigger" label="Trigger" value={draft.trigger} options={(Object.keys(triggerLabels) as TriggerId[]).map((t) => ({ value: t, label: triggerLabels[t].label }))} hint={triggerLabels[draft.trigger].hint} onChange={(trigger) => patch(trigger === 'contact_quiet' && !draft.triggerDays ? { trigger, triggerDays: 30 } : { trigger })} />
             {draft.trigger === 'form_sent' && <FormTriggerPicker value={draft.triggerFormId ?? null} onChange={(triggerFormId) => patch({ triggerFormId })} />}
             {draft.trigger === 'contact_quiet' &&
@@ -158,7 +167,7 @@ export function AutomationBuilder({ automation, onClose }: {automation: Automati
             <span aria-hidden className="absolute left-0 top-0 flex h-7 w-7 items-center justify-center rounded-full border-2 border-line-strong bg-raised text-caption font-bold text-fg-muted">
               if
             </span>
-            <p className="text-caption font-semibold text-fg-subtle">Only if (optional)</p>
+            <p className="text-caption font-semibold text-fg-subtle">{tr('Only if (optional)')}</p>
             <div className="mt-2 flex flex-col gap-2">
               {draft.conditions.map((c) =>
               <div key={c.id} className="flex items-end gap-2">
@@ -182,7 +191,7 @@ export function AutomationBuilder({ automation, onClose }: {automation: Automati
                 {s.kind === 'delay' ? <ClockIcon size={13} strokeWidth={2.5} /> : i + 1}
               </span>
               <div className="flex items-center justify-between gap-2">
-                <p className="text-caption font-semibold text-fg-subtle">{s.kind === 'delay' ? 'Wait' : 'Then'}</p>
+                <p className="text-caption font-semibold text-fg-subtle">{tr(s.kind === 'delay' ? 'Wait' : 'Then')}</p>
                 <div className="flex">
                   <IconButton icon={ArrowUpIcon} size={wide ? 'sm' : 'lg'} label="Move up" disabled={i === 0} onClick={() => move(i, -1)} />
                   <IconButton icon={ArrowDownIcon} size={wide ? 'sm' : 'lg'} label="Move down" disabled={i === draft.steps.length - 1} onClick={() => move(i, 1)} />
@@ -230,30 +239,30 @@ export function AutomationBuilder({ automation, onClose }: {automation: Automati
                 Add a step
               </Button>
             }
-            <p className="mt-3 text-caption text-fg-subtle">Outcome: {draft.steps.map(stepLabel).join(' → ')}</p>
+            <p className="mt-3 text-caption text-fg-subtle">{tr('Outcome:')} {draft.steps.map(label).join(' → ')}</p>
           </li>
         </ol>
 
         {marketing &&
         <InlineAlert tone="info" title="Marketing message">
-            Keep the “subscribed to marketing” condition so only people who opted in are contacted. Unsubscribed contacts are always skipped.
+            {tr('Keep the “subscribed to marketing” condition so only people who opted in are contacted. Unsubscribed contacts are always skipped.')}
           </InlineAlert>
         }
         {problems.length > 0 &&
         <InlineAlert tone="warning" title="Before you turn it on">
             <ul className="list-disc pl-4">
               {problems.map((p) =>
-            <li key={p}>{p}</li>
+            <li key={p}>{tr(p)}</li>
             )}
             </ul>
           </InlineAlert>
         }
         {lastRun &&
-        <section key={lastRun.id} ref={resultRef} tabIndex={-1} aria-label="Test result" aria-live="polite" className="scroll-mb-4 rounded-md border border-line p-4 focus:outline-none">
-            <p className="text-label font-semibold text-fg">Test run · {lastRun.status === 'succeeded' ? 'all steps passed' : 'stopped at a condition'}</p>
+        <section key={lastRun.id} ref={resultRef} tabIndex={-1} aria-label={tr('Test result')} aria-live="polite" className="scroll-mb-4 rounded-md border border-line p-4 focus:outline-none">
+            <p className="text-label font-semibold text-fg">{tr('Test run')} · {tr(lastRun.status === 'succeeded' ? 'all steps passed' : 'stopped at a condition')}</p>
             <p className="text-caption text-fg-subtle">
-              {lastRun.subject}. Nothing was sent. Ran at {new Date(lastRun.at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', second: '2-digit' })}
-              {exists ? ' · replaces the previous test in Run history' : ' · save the automation to keep test results in Run history'}.
+              {lastRun.subject}. {tr('Nothing was sent.')} {tr('Ran at {time}', { time: new Date(lastRun.at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', second: '2-digit' }) })}
+              {' · '}{tr(exists ? 'replaces the previous test in Run history' : 'save the automation to keep test results in Run history')}.
             </p>
             <RunSteps run={lastRun} />
           </section>
@@ -266,14 +275,14 @@ export function AutomationBuilder({ automation, onClose }: {automation: Automati
             <li key={a}>
                 <button type="button" onClick={() => addStep({ id: uid('step'), kind: 'action', action: a, value: '' })} className="flex min-h-[52px] w-full items-center gap-3 px-5 text-left text-label font-medium text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus">
                   <ZapIcon size={16} className="shrink-0 text-action" aria-hidden />
-                  {actionLabels[a].label}
+                  {tr(actionLabels[a].label)}
                 </button>
               </li>
             )}
             <li>
               <button type="button" onClick={() => addStep({ id: uid('step'), kind: 'delay', value: '', delayHours: 24 })} className="flex min-h-[52px] w-full items-center gap-3 px-5 text-left text-label font-medium text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus">
                 <ClockIcon size={16} className="shrink-0 text-fg-subtle" aria-hidden />
-                Wait before the next step
+                {tr('Wait before the next step')}
               </button>
             </li>
           </ul>

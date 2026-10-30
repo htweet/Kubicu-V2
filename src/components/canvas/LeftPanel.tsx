@@ -8,6 +8,7 @@ import { BlockLibrary } from './BlockLibrary';
 import { LayersList } from './LayersList';
 import { TemplatesPanel } from './TemplatesPanel';
 import { useEditor } from '../../contexts/EditorContext';
+import { useT } from '../../contexts/LocaleContext';
 import { PagesPanel } from './PagesPanel';
 
 export type LeftTab = 'blocks' | 'layers' | 'pages' | 'templates' | 'check';
@@ -19,6 +20,7 @@ interface LeftPanelProps {
 }
 
 export function LeftPanel({ tab, onTabChange, onCollapse }: LeftPanelProps) {
+  const { t: tr } = useT();
   const { state, issues } = useEditor();
   const fixCount = useMemo(() => a11yFindings(state.draft.blocks, issues).filter((f) => f.level === 'fix').length, [state.draft.blocks, issues]);
 
@@ -27,22 +29,22 @@ export function LeftPanel({ tab, onTabChange, onCollapse }: LeftPanelProps) {
       <div className="flex items-center gap-1 pr-2">
         <Tabs<LeftTab>
           idPrefix="left"
-          ariaLabel="Editor panels"
+          ariaLabel={tr('Editor panels')}
           value={tab}
           onChange={onTabChange}
           fullWidth
           dense
           className="min-w-0 flex-1 px-1"
           items={[
-          { id: 'blocks', label: 'Blocks' },
-          { id: 'layers', label: 'Layers' },
-          { id: 'pages', label: 'Pages' },
-          { id: 'templates', label: 'Templates' },
+          { id: 'blocks', label: tr('Blocks') },
+          { id: 'layers', label: tr('Layers') },
+          { id: 'pages', label: tr('Pages') },
+          { id: 'templates', label: tr('Templates') },
           // Things to fix show as a badge so the label never grows wider than the panel.
-          { id: 'check', label: 'Check', badge: fixCount || undefined }]
+          { id: 'check', label: tr('Check'), badge: fixCount || undefined }]
           } />
         
-        {onCollapse && <IconButton icon={PanelLeftCloseIcon} size="sm" label="Collapse panel" onClick={onCollapse} />}
+        {onCollapse && <IconButton icon={PanelLeftCloseIcon} size="sm" label={tr('Collapse panel')} onClick={onCollapse} />}
       </div>
       <div
         role="tabpanel"

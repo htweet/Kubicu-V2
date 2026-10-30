@@ -13,6 +13,7 @@ import { caseForOrder, isOpen, markDelivered, release } from '../utils/money/esc
 import { setOrderStatus } from '../utils/commerce/ops';
 import { collectPod } from '../utils/commerce/payOptions';
 import { usePlan } from '../contexts/PlanContext';
+import { useT } from '../contexts/LocaleContext';
 import { formatNgn, formatTimestamp } from '../utils/format';
 import { PageHeader } from '../components/shell/PageHeader';
 import { Button } from '../components/ui/Button';
@@ -29,6 +30,7 @@ const rowCls = 'flex w-full items-center gap-4 px-4 py-3.5 text-left transition-
 
 /** Local Fulfilment (D96): book riders for paid delivery orders and hand over with a code. Courier side simulated. */
 export function Deliveries() {
+  const { t: tr } = useT();
   const { current } = useWorkspace();
   const can = useCan('orders.manage');
   const commerce = useCommerce();
@@ -63,7 +65,7 @@ export function Deliveries() {
     setBooking(null);
     setTab('active');
     if (created) setOpenId((created as Delivery).id);
-    toast('Delivery booked', { description: 'The customer has been texted their delivery code (simulated).' });
+    toast(tr('Delivery booked'), { description: tr('The customer has been texted their delivery code (simulated).') });
   };
 
   const onPickedUp = (d: Delivery) => {
@@ -78,14 +80,14 @@ export function Deliveries() {
       return result.data;
     });
     const r = result as ReturnType<typeof enterCode> | null;
-    if (!r) return 'Something went wrong. Try again.';
+    if (!r) return tr('Something went wrong. Try again.');
     if (!r.ok) {
       if (r.left <= 0) {
         commerce.apply((c) => setOrderStatus(c, d.orderId, 'packing', 'Handover stopped after 3 wrong delivery codes — back with the seller'));
-        toast.error('Handover stopped', { description: 'Too many wrong codes. The order comes back to you.' });
+        toast.error(tr('Handover stopped'), { description: tr('Too many wrong codes. The order comes back to you.') });
         return null;
       }
-      return `That code doesn’t match. ${r.left} ${r.left === 1 ? 'try' : 'tries'} left.`;
+      return tr('That code doesn’t match. Tries left: {n}', { n: r.left });
     }
     let released = false;
     if (d.escrow) {
@@ -103,65 +105,65 @@ export function Deliveries() {
       const how = podOrder.pod.accept === 'transfer' ? 'transfer' : 'cash';
       commerce.apply((c) => collectPod(c, d.orderId, how, plan.id, `Delivered — code matched and ${formatNgn(podOrder.pod!.amountNgn)} collected by the rider (${d.partnerName})`));
     } else commerce.apply((c) => setOrderStatus(c, d.orderId, 'completed', `Delivered — customer’s code matched (${d.partnerName})`));
-    toast.success('Delivered', { description: released ? 'The escrow payment was released to your wallet.' : 'The order is marked completed.' });
+    toast.success(tr('Delivered'), { description: released ? tr('The escrow payment was released to your wallet.') : tr('The order is marked completed.') });
     return null;
   };
 
   return (
     <div className="mx-auto w-full max-w-[1100px] px-5 pb-16 pt-6 md:px-10 md:pt-8">
-      <PageHeader title="Deliveries" context={current.name} description="Book a rider for paid orders, follow them to the door, and hand over only when the customer reads out their code. Courier partners are simulated." />
+      <PageHeader title={tr('Deliveries')} context={current.name} description={tr('Book a rider for paid orders, follow them to the door, and hand over only when the customer reads out their code. Courier partners are simulated.')} />
 
-      <section aria-label="Summary" className="mt-8 grid gap-6 border-b border-line pb-8 sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)]">
+      <section aria-label={tr('Summary')} className="mt-8 grid gap-6 border-b border-line pb-8 sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)]">
         <div>
-          <p className="text-label text-fg-muted">Ready to send</p>
+          <p className="text-label text-fg-muted">{tr('Ready to send')}</p>
           <p className="mt-1 font-display text-[2rem] font-semibold leading-tight tabular-nums text-fg">{ready.length}</p>
-          <p className="mt-1 text-caption text-fg-subtle">{ready.length ? `Oldest paid ${formatTimestamp(ready[0].createdAt)}` : 'Every paid delivery order has a rider'}</p>
+          <p className="mt-1 text-caption text-fg-subtle">{ready.length ? tr('Oldest paid {when}', { when: formatTimestamp(ready[0].createdAt) }) : tr('Every paid delivery order has a rider')}</p>
         </div>
         <div className="sm:border-l sm:border-line sm:pl-6">
-          <p className="text-label text-fg-muted">On the way</p>
+          <p className="text-label text-fg-muted">{tr('On the way')}</p>
           <p className="mt-1 text-heading font-semibold tabular-nums text-fg">{active.length}</p>
-          <p className="mt-1 text-caption text-fg-subtle">{deliveredToday} delivered today</p>
+          <p className="mt-1 text-caption text-fg-subtle">{tr('Delivered today: {n}', { n: deliveredToday })}</p>
         </div>
         <div className="sm:border-l sm:border-line sm:pl-6">
-          <p className="text-label text-fg-muted">Failed</p>
+          <p className="text-label text-fg-muted">{tr('Failed')}</p>
           <p className="mt-1 text-heading font-semibold tabular-nums text-fg">{failed}</p>
-          <p className="mt-1 text-caption text-fg-subtle">{failed ? 'Book again from History' : 'None'}</p>
+          <p className="mt-1 text-caption text-fg-subtle">{failed ? tr('Book again from History') : tr('None')}</p>
         </div>
       </section>
 
       <Tabs<Tab>
         idPrefix="dlv"
-        ariaLabel="Deliveries"
+        ariaLabel={tr('Deliveries')}
         value={tab}
         onChange={setTab}
         className="mt-6"
         items={[
-        { id: 'ready', label: 'Ready to send', badge: ready.length || undefined },
-        { id: 'active', label: 'On the way', badge: active.length || undefined },
-        { id: 'done', label: 'History' }]
+        { id: 'ready', label: tr('Ready to send'), badge: ready.length || undefined },
+        { id: 'active', label: tr('On the way'), badge: active.length || undefined },
+        { id: 'done', label: tr('History') }]
         } />
       
 
       <div role="tabpanel" id={`dlv-panel-${tab}`} aria-labelledby={`dlv-tab-${tab}`} className="mt-4">
         {tab === 'ready' && (
         ready.length === 0 ?
-        <EmptyState icon={PackageIcon} title="Nothing waiting" description="Paid orders with home delivery show here. Pickup and download orders don’t need a rider, and made-to-order items appear once the balance is paid." /> :
+        <EmptyState icon={PackageIcon} title={tr('Nothing waiting')} description={tr('Paid orders with home delivery show here. Pickup and download orders don’t need a rider, and made-to-order items appear once the balance is paid.')} /> :
 
         <ul className="divide-y divide-line rounded-lg border border-line bg-raised">
               {ready.map((o) =>
           <li key={o.id} className="flex flex-wrap items-center gap-4 px-4 py-3.5">
                   <span className="min-w-0 flex-1">
                     <span className="flex flex-wrap items-center gap-2">
-                      <span className="text-label font-semibold text-fg">#{o.number} · {o.customer.name || 'Customer'}</span>
-                      {escrowHeld(o.id) && <Badge tone="info">Escrow</Badge>}
+                      <span className="text-label font-semibold text-fg">#{o.number} · {o.customer.name || tr('Customer')}</span>
+                      {escrowHeld(o.id) && <Badge tone="info">{tr('Escrow')}</Badge>}
                       {o.sample && <SampleTag />}
                     </span>
                     <span className="mt-0.5 block truncate text-caption text-fg-muted">
-                      {o.fulfilment.address || 'No address'} · {o.items.reduce((s, i) => s + i.qty, 0)} item{o.items.reduce((s, i) => s + i.qty, 0) === 1 ? '' : 's'}
+                      {o.fulfilment.address || tr('No address')} · {tr('Items: {n}', { n: o.items.reduce((s, i) => s + i.qty, 0) })}
                     </span>
                   </span>
                   <Button size="sm" leadingIcon={BikeIcon} disabled={!can.allowed} title={can.allowed ? undefined : can.reason} onClick={() => setBooking(o)}>
-                    Book rider
+                    {tr('Book rider')}
                   </Button>
                 </li>
           )}
@@ -170,7 +172,7 @@ export function Deliveries() {
 
         {tab !== 'ready' && (
         (tab === 'active' ? active : done).length === 0 ?
-        <EmptyState icon={TruckIcon} title={tab === 'active' ? 'No deliveries on the way' : 'No past deliveries yet'} description={tab === 'active' ? 'Book a rider from Ready to send.' : 'Delivered, failed and cancelled deliveries are kept here.'} /> :
+        <EmptyState icon={TruckIcon} title={tab === 'active' ? tr('No deliveries on the way') : tr('No past deliveries yet')} description={tab === 'active' ? tr('Book a rider from Ready to send.') : tr('Delivered, failed and cancelled deliveries are kept here.')} /> :
 
         <ul className="divide-y divide-line rounded-lg border border-line bg-raised">
               {(tab === 'active' ? active : done).map((d) =>
@@ -179,7 +181,7 @@ export function Deliveries() {
                     <span className="min-w-0 flex-1">
                       <span className="flex flex-wrap items-center gap-2">
                         <span className="text-label font-semibold text-fg">#{d.orderNumber} · {d.customerName}</span>
-                        {d.escrow && <Badge tone="info">Escrow</Badge>}
+                        {d.escrow && <Badge tone="info">{tr('Escrow')}</Badge>}
                       </span>
                       <span className="mt-0.5 block truncate text-caption text-fg-muted">
                         {d.partnerName}
@@ -188,7 +190,7 @@ export function Deliveries() {
                     </span>
                     <span className="hidden text-right text-label tabular-nums text-fg-muted sm:block">{d.feeNgn ? formatNgn(d.feeNgn) : '—'}</span>
                     <Badge tone={deliveryTones[d.status]} dot>
-                      {deliveryLabels[d.status]}
+                      {tr(deliveryLabels[d.status])}
                     </Badge>
                   </button>
                 </li>
@@ -212,7 +214,7 @@ export function Deliveries() {
         }}
         onCancel={(d) => {
           update((x) => cancel(x, d.id));
-          toast('Booking cancelled', { description: 'No fee is charged before pickup.' });
+          toast(tr('Booking cancelled'), { description: tr('No fee is charged before pickup.') });
         }}
         onRebook={(d) => {
           const o = commerce.data.orders.find((x) => x.id === d.orderId);

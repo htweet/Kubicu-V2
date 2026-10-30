@@ -16,6 +16,7 @@ import { InlineAlert } from '../ui/InlineAlert';
 import { useProviders } from '../../hooks/useProviders';
 import { providerById, registrarProvider } from '../../data/providers';
 import { addDnsRecords } from '../../utils/providers/adapters';
+import { useT } from '../../contexts/LocaleContext';
 
 interface Props {
   open: boolean;
@@ -31,6 +32,7 @@ export const outcomeOptions: {value: CheckOutcome;label: string;}[] = [
 
 /** Two steps: which domain and space, then the records to add and a first check (D62). */
 export function ConnectDomainDialog({ open, onClose, spaces }: Props) {
+  const { t: tr } = useT();
   const { data, addDomain, checkDomain } = useDomains();
   const team = useTeam();
   const [step, setStep] = useState<1 | 2>(1);
@@ -60,8 +62,8 @@ export function ConnectDomainDialog({ open, onClose, spaces }: Props) {
     const r = await addDnsRecords(dnsDef, host, records.length, 'success');
     setAdding(false);
     providers.log(dnsDef.id, `Add DNS records for ${host}`, r.ok, r.message);
-    if (!r.ok) return toast.error('Couldn’t add the records', { description: r.message });
-    toast(`Records added in ${dnsDef.name}`, { description: r.message });
+    if (!r.ok) return toast.error(tr('Couldn’t add the records'), { description: r.message });
+    toast(tr('Records added in {name}', { name: dnsDef.name }), { description: r.message });
     finish();
   };
 
@@ -93,7 +95,7 @@ export function ConnectDomainDialog({ open, onClose, spaces }: Props) {
       open={open}
       onClose={close}
       size="lg"
-      title={step === 1 ? 'Connect a domain' : `Add these records for ${host}`}
+      title={step === 1 ? 'Connect a domain' : tr('Add these records for {host}', { host })}
       description={step === 1 ? 'Use a domain you already own. You’ll add a few records where you bought it — about 5 minutes.' : 'At your domain registrar, add each record exactly as shown. Then check — we’ll take it from there.'}
       footer={
       step === 1 ?
@@ -130,7 +132,7 @@ export function ConnectDomainDialog({ open, onClose, spaces }: Props) {
         
           <div className="flex flex-col gap-1.5">
             <span className="text-label font-medium text-fg" id="dom-kind-label">
-              Use it as
+              {tr('Use it as')}
             </span>
             <Segmented<'root' | 'subdomain'>
             ariaLabel="Use it as"
@@ -147,10 +149,10 @@ export function ConnectDomainDialog({ open, onClose, spaces }: Props) {
           
             <p className={tried && kindError ? 'text-caption text-danger' : 'text-caption text-fg-subtle'}>
               {tried && kindError ?
-            kindError :
+            tr(kindError) :
             effectiveKind === 'root' ?
-            `${host || 'adaeze.com'} and www.${host || 'adaeze.com'} will show your page.` :
-            `Only ${host || 'shop.adaeze.com'} shows your page — your other website and email stay as they are.`}
+            tr('{host} and www.{host} will show your page.', { host: host || 'adaeze.com' }) :
+            tr('Only {host} shows your page — your other website and email stay as they are.', { host: host || 'shop.adaeze.com' })}
             </p>
           </div>
           <SelectInput id="dom-space" label="Page visitors see at this domain" value={spaceId} options={spaces.map((s) => ({ value: s.id, label: s.label }))} onChange={setSpaceId} hint="Anyone who types this domain lands on the page you choose. Its kub.icu link keeps working too." />
@@ -161,26 +163,26 @@ export function ConnectDomainDialog({ open, onClose, spaces }: Props) {
             <SelectInput<RegistrarId> id="dom-registrar" label="Where did you buy it?" value={registrar} options={registrars.map((r) => ({ value: r.id, label: r.name }))} onChange={setRegistrar} />
             <p className="flex items-start gap-1.5 text-caption text-fg-muted">
               <span>{tip}</span>
-              <IllustrativeTag note="Registrar steps are illustrative — menus differ and change over time." />
+              <IllustrativeTag note={tr('Registrar steps are illustrative — menus differ and change over time.')} />
             </p>
           </div>
           {dnsDef &&
         <InlineAlert
           tone="info"
-          title={`Your ${dnsDef.name} account is connected`}
+          title={tr('Your {name} account is connected', { name: dnsDef.name })}
           action={
           <Button size="sm" loading={adding} onClick={addForMe}>
                   Add them for me
                 </Button>
           }>
           
-              KUBICU can add these records in {dnsDef.name} instead of you typing them. Simulated in the prototype.
+              {tr('KUBICU can add these records in {name} instead of you typing them. Simulated in the prototype.', { name: dnsDef.name })}
             </InlineAlert>
         }
           <DnsRecordsTable records={records} />
           <p className="flex items-center gap-1.5 text-caption text-fg-subtle">
-            Changes usually show within an hour, sometimes up to 48 hours. You can close this — we’ll keep the records on the domain card.
-            <IllustrativeTag note="Target addresses are examples until hosting is chosen (D62)." />
+            {tr('Changes usually show within an hour, sometimes up to 48 hours. You can close this — we’ll keep the records on the domain card.')}
+            <IllustrativeTag note={tr('Target addresses are examples until hosting is chosen.')} />
           </p>
           <div className="rounded-md border border-dashed border-line-strong p-3">
             <SelectInput<CheckOutcome> id="dom-outcome" label="Prototype: what the check finds" value={outcome} options={outcomeOptions} onChange={setOutcome} hint="Real DNS isn’t checked in this prototype." />

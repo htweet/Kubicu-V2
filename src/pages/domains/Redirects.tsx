@@ -14,9 +14,11 @@ import { IconButton } from '../../components/ui/IconButton';
 import { RedirectDialog } from '../../components/domains/RedirectDialog';
 import { Section } from '../../components/ui/layout/Section';
 import { List } from '../../components/ui/layout/ListRow';
+import { useT } from '../../contexts/LocaleContext';
 
 /** Every forwarding address in one place: yours, plus the ones KUBICU made automatically (D62). */
 export function Redirects() {
+  const { t: tr } = useT();
   const { data, deleteRedirect } = useDomains();
   const { current } = useWorkspace();
   const can = useCan('pages.edit');
@@ -46,7 +48,7 @@ export function Redirects() {
       const doc = spaceDoc(current.id, s.id);
       if (!doc) return;
       (doc.redirects ?? []).forEach((r) =>
-      rows.push({ key: `${s.id}-${r.from}`, from: `kub.icu/${doc.handle}/${r.from}`, to: r.to ? `kub.icu/${doc.handle}/${r.to}` : `kub.icu/${doc.handle}`, why: 'You renamed or removed this page' })
+      rows.push({ key: `${s.id}-${r.from}`, from: `kub.icu/${doc.handle}/${r.from}`, to: r.to ? `kub.icu/${doc.handle}/${r.to}` : `kub.icu/${doc.handle}`, why: tr('You renamed or removed this page') })
       );
     });
     const mainHandle = spaceHandle(current.id, MAIN_SPACE_ID);
@@ -54,10 +56,10 @@ export function Redirects() {
     filter((s) => s.archivedAt).
     forEach((s) => {
       const h = spaceHandle(current.id, s.id);
-      if (h && mainHandle) rows.push({ key: `arch-${s.id}`, from: `kub.icu/${h}`, to: `kub.icu/${mainHandle}`, why: `“${s.name}” was archived` });
+      if (h && mainHandle) rows.push({ key: `arch-${s.id}`, from: `kub.icu/${h}`, to: `kub.icu/${mainHandle}`, why: tr('“{name}” was archived', { name: s.name }) });
     });
     return rows;
-  }, [current]);
+  }, [current, tr]);
 
   return (
     <div className="flex flex-col gap-10">
@@ -73,7 +75,7 @@ export function Redirects() {
 
       <Section id="rd-yours" title="Your redirects">
         {data.redirects.length === 0 ?
-        <p className="max-w-xl text-label text-fg-muted">None yet. For example, make kub.icu/{spaceHandle(current.id, MAIN_SPACE_ID)}/ig forward to your Instagram, or /menu to a page.</p> :
+        <p className="max-w-xl text-label text-fg-muted">{tr('None yet. For example, make {link} forward to your Instagram, or /menu to a page.', { link: `kub.icu/${spaceHandle(current.id, MAIN_SPACE_ID)}/ig` })}</p> :
 
         <List ruled label="Your redirects">
             {data.redirects.map((r) => {
@@ -86,13 +88,13 @@ export function Redirects() {
                   </p>
                   <p className={`flex min-w-0 flex-1 items-center gap-1.5 truncate text-label ${dest === 'missing page' ? 'text-danger' : 'text-fg-muted'}`}>
                     <ArrowRightIcon size={14} className="shrink-0" aria-hidden />
-                    <span className="truncate">{dest === 'missing page' ? 'Page removed — edit to choose another' : dest}</span>
+                    <span className="truncate">{dest === 'missing page' ? tr('Page removed — edit to choose another') : dest}</span>
                   </p>
                   <div className="flex gap-1">
-                    <IconButton icon={PencilIcon} label={`Edit redirect from ${r.from}`} size="sm" disabled={!can.allowed} onClick={() => setEditing(r)} />
+                    <IconButton icon={PencilIcon} label={tr('Edit redirect from {path}', { path: r.from })} size="sm" disabled={!can.allowed} onClick={() => setEditing(r)} />
                     <IconButton
                     icon={Trash2Icon}
-                    label={`Delete redirect from ${r.from}`}
+                    label={tr('Delete redirect from {path}', { path: r.from })}
                     size="sm"
                     disabled={!can.allowed}
                     onClick={() => {
@@ -110,7 +112,7 @@ export function Redirects() {
 
       <Section id="rd-auto" title="Made automatically" description="KUBICU keeps these so old links keep working. Change them by editing the page or restoring the space.">
         {automatic.length === 0 ?
-        <p className="text-label text-fg-muted">None yet.</p> :
+        <p className="text-label text-fg-muted">{tr('None yet.')}</p> :
 
         <List ruled label="Made automatically">
             {automatic.map((r) =>
@@ -131,7 +133,7 @@ export function Redirects() {
       </Section>
 
       <p className="text-caption text-fg-subtle">
-        Short links (…/s/…) are managed on <Link to="/app/campaign-links" className="underline underline-offset-2">Campaign links</Link>.
+        {tr('Short links (…/s/…) are managed on')} <Link to="/app/campaign-links" className="underline underline-offset-2">{tr('Campaign links')}</Link>.
       </p>
 
       <RedirectDialog open={editing !== null} onClose={() => setEditing(null)} redirect={editing && editing !== 'new' ? editing : undefined} workspaceId={current.id} spaces={spaces} />

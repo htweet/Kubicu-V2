@@ -18,6 +18,19 @@ import { bookingsAudienceHa, bookingsAudienceIg, bookingsAudiencePcm, bookingsAu
 import { availabilityHa, availabilityIg, availabilityPcm, availabilityYo } from './translationsAvailability';
 import { panelsHa, panelsIg, panelsPcm, panelsYo } from './translationsPanels';
 import { kycHa, kycIg, kycPcm, kycYo } from './translationsKyc';
+import { accountAuthHa, accountAuthIg, accountAuthPcm, accountAuthYo } from './translationsAccountAuth';
+import { accountSettingsHa, accountSettingsIg, accountSettingsPcm, accountSettingsYo } from './translationsAccountSettings';
+import { settingsTabsHa, settingsTabsIg, settingsTabsPcm, settingsTabsYo } from './translationsSettingsTabs';
+import { automationsFormsHa, automationsFormsIg, automationsFormsPcm, automationsFormsYo } from './translationsAutomationsForms';
+import { formsAnalyticsHa, formsAnalyticsIg, formsAnalyticsPcm, formsAnalyticsYo } from './translationsFormsAnalytics';
+import { domainsHa, domainsIg, domainsPcm, domainsYo } from './translationsDomains';
+import { qrPrintHa, qrPrintIg, qrPrintPcm, qrPrintYo } from './translationsQrPrint';
+import { copilotChatsHa, copilotChatsIg, copilotChatsPcm, copilotChatsYo } from './translationsCopilotChats';
+import { opsPagesHa, opsPagesIg, opsPagesPcm, opsPagesYo } from './translationsOpsPages';
+import { collabPanelsHa, collabPanelsIg, collabPanelsPcm, collabPanelsYo } from './translationsCollabPanels';
+import { partnerPanelsHa, partnerPanelsIg, partnerPanelsPcm, partnerPanelsYo } from './translationsPartnerPanels';
+import { canvasChromeHa, canvasChromeIg, canvasChromePcm, canvasChromeYo } from './translationsCanvasChrome';
+import { blockNamesHa, blockNamesIg, blockNamesPcm, blockNamesYo } from './translationsBlockNames';
 
 export type UiLang = 'en' | 'pcm' | 'yo' | 'ha' | 'ig';
 
@@ -277,10 +290,10 @@ const ig: Dict = {
 
 export const translations: Record<Exclude<UiLang, 'en'>, Dict> = {
   // Earlier dictionaries win on overlap so screen names stay as already drafted.
-  pcm: { ...kycPcm, ...panelsPcm, ...availabilityPcm, ...bookingsAudiencePcm, ...commerceMoneyPcm, ...trackingPcm, ...batch14Pcm, ...batch13Pcm, ...commerceTabsPcm, ...commerceDetailPcm, ...commercePcm, ...pcm, ...checkoutPcm, ...statusPcm, ...payPcm, ...subsPcm },
-  yo: { ...kycYo, ...panelsYo, ...availabilityYo, ...bookingsAudienceYo, ...commerceMoneyYo, ...trackingYo, ...batch14Yo, ...batch13Yo, ...commerceTabsYo, ...commerceDetailYo, ...commerceYo, ...yo, ...checkoutYo, ...statusYo, ...payYo, ...subsYo },
-  ha: { ...kycHa, ...panelsHa, ...availabilityHa, ...bookingsAudienceHa, ...commerceMoneyHa, ...trackingHa, ...batch14Ha, ...batch13Ha, ...commerceTabsHa, ...commerceDetailHa, ...commerceHa, ...ha, ...checkoutHa, ...statusHa, ...payHa, ...subsHa },
-  ig: { ...kycIg, ...panelsIg, ...availabilityIg, ...bookingsAudienceIg, ...commerceMoneyIg, ...trackingIg, ...batch14Ig, ...batch13Ig, ...commerceTabsIg, ...commerceDetailIg, ...commerceIg, ...ig, ...checkoutIg, ...statusIg, ...payIg, ...subsIg }
+  pcm: { ...blockNamesPcm, ...canvasChromePcm, ...partnerPanelsPcm, ...collabPanelsPcm, ...opsPagesPcm, ...copilotChatsPcm, ...qrPrintPcm, ...domainsPcm, ...formsAnalyticsPcm, ...automationsFormsPcm, ...settingsTabsPcm, ...accountSettingsPcm, ...accountAuthPcm, ...kycPcm, ...panelsPcm, ...availabilityPcm, ...bookingsAudiencePcm, ...commerceMoneyPcm, ...trackingPcm, ...batch14Pcm, ...batch13Pcm, ...commerceTabsPcm, ...commerceDetailPcm, ...commercePcm, ...pcm, ...checkoutPcm, ...statusPcm, ...payPcm, ...subsPcm },
+  yo: { ...blockNamesYo, ...canvasChromeYo, ...partnerPanelsYo, ...collabPanelsYo, ...opsPagesYo, ...copilotChatsYo, ...qrPrintYo, ...domainsYo, ...formsAnalyticsYo, ...automationsFormsYo, ...settingsTabsYo, ...accountSettingsYo, ...accountAuthYo, ...kycYo, ...panelsYo, ...availabilityYo, ...bookingsAudienceYo, ...commerceMoneyYo, ...trackingYo, ...batch14Yo, ...batch13Yo, ...commerceTabsYo, ...commerceDetailYo, ...commerceYo, ...yo, ...checkoutYo, ...statusYo, ...payYo, ...subsYo },
+  ha: { ...blockNamesHa, ...canvasChromeHa, ...partnerPanelsHa, ...collabPanelsHa, ...opsPagesHa, ...copilotChatsHa, ...qrPrintHa, ...domainsHa, ...formsAnalyticsHa, ...automationsFormsHa, ...settingsTabsHa, ...accountSettingsHa, ...accountAuthHa, ...kycHa, ...panelsHa, ...availabilityHa, ...bookingsAudienceHa, ...commerceMoneyHa, ...trackingHa, ...batch14Ha, ...batch13Ha, ...commerceTabsHa, ...commerceDetailHa, ...commerceHa, ...ha, ...checkoutHa, ...statusHa, ...payHa, ...subsHa },
+  ig: { ...blockNamesIg, ...canvasChromeIg, ...partnerPanelsIg, ...collabPanelsIg, ...opsPagesIg, ...copilotChatsIg, ...qrPrintIg, ...domainsIg, ...formsAnalyticsIg, ...automationsFormsIg, ...settingsTabsIg, ...accountSettingsIg, ...accountAuthIg, ...kycIg, ...panelsIg, ...availabilityIg, ...bookingsAudienceIg, ...commerceMoneyIg, ...trackingIg, ...batch14Ig, ...batch13Ig, ...commerceTabsIg, ...commerceDetailIg, ...commerceIg, ...ig, ...checkoutIg, ...statusIg, ...payIg, ...subsIg }
 };
 
 export const uiLanguages: {value: UiLang;label: string;native: string;}[] = [

@@ -9,11 +9,13 @@ import { Switch } from '../ui/Switch';
 import { TextInput } from '../ui/TextInput';
 import { Segmented } from '../ui/Segmented';
 import { Field } from '../ui/Field';
+import { useT } from '../../contexts/LocaleContext';
 
 type Draft = Pick<OpsSettings, 'quietHours' | 'defaultChannel'>;
 
 /** Automations → Settings (D259): quiet hours for customer messages, and the channel new message steps start with. */
 export function AutomationSettingsSheet({ open, onClose }: {open: boolean;onClose: () => void;}) {
+  const { t: tr } = useT();
   const { data, apply } = useOps();
   const saved = opsSettingsOf(data);
   const [draft, setDraft] = useState<Draft>({ quietHours: saved.quietHours, defaultChannel: saved.defaultChannel });
@@ -30,7 +32,7 @@ export function AutomationSettingsSheet({ open, onClose }: {open: boolean;onClos
   const save = () => {
     if (same) return;
     if (apply((d) => ({ ...d, settings: { ...d.settings, quietHours: draft.quietHours, defaultChannel: draft.defaultChannel } }))) {
-      toast.success('Automation settings saved');
+      toast.success(tr('Automation settings saved'));
       onClose();
     }
   };
@@ -61,7 +63,7 @@ export function AutomationSettingsSheet({ open, onClose }: {open: boolean;onClos
           <Switch
             id="aset-quiet-on"
             label="Quiet hours"
-            description={`Customer WhatsApp messages and emails written in these hours wait until they end, in your business time (${data.availability.timeZone.replace('_', ' ')}). Tags, follow-ups and notices to you still happen straight away.`}
+            description={tr('Customer WhatsApp messages and emails written in these hours wait until they end, in your business time ({zone}). Tags, follow-ups and notices to you still happen straight away.', { zone: data.availability.timeZone.replace('_', ' ') })}
             checked={q.on}
             onChange={(on) => setDraft((d) => ({ ...d, quietHours: { ...d.quietHours, on } }))} />
           
@@ -89,7 +91,7 @@ export function AutomationSettingsSheet({ open, onClose }: {open: boolean;onClos
             
           </Field>
         </section>
-        <p className="text-caption text-fg-subtle">Customer messages are written but not sent in this prototype — sending needs a messaging partner. Quiet hours show in each run’s history.</p>
+        <p className="text-caption text-fg-subtle">{tr('Customer messages are written but not sent in this prototype — sending needs a messaging partner. Quiet hours show in each run’s history.')}</p>
       </div>
     </Sheet>);
 

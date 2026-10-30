@@ -30,6 +30,7 @@ import { EmptyState } from '../../components/ui/EmptyState';
 import { IllustrativeTag } from '../../components/ui/IllustrativeTag';
 import { CampaignLinkDialog } from '../../components/domains/CampaignLinkDialog';
 import { List } from '../../components/ui/layout/ListRow';
+import { useT } from '../../contexts/LocaleContext';
 
 type View = 'active' | 'archived';
 
@@ -37,6 +38,7 @@ const timeAgo = (iso: string) => formatRelative(iso).replace(/^about /, '');
 
 /** Tracked short links for each place you share (D62, D270, D271). */
 export function CampaignLinks() {
+  const { t: tr } = useT();
   const { data, saveLink, deleteLink } = useDomains();
   const [deleting, setDeleting] = useState<CampaignLink | null>(null);
   const [alsoClicks, setAlsoClicks] = useState(false);
@@ -77,12 +79,12 @@ export function CampaignLinks() {
 
   const remove = (l: CampaignLink) => {
     if (!deleteLink(l.id)) {
-      toast.error('A QR code uses this link', { description: 'Delete the QR code first, or archive the link instead.' });
+      toast.error(tr('A QR code uses this link'), { description: tr('Delete the QR code first, or archive the link instead.') });
       return;
     }
     const removed = alsoClicks ? clearLinkClicks(l.slug) : 0;
     team.log('pages', `deleted the short link ${shortDisplay(mainHandle, l.slug, host)}${alsoClicks ? ' and its click data' : ''}`, '/app/links');
-    toast('Link deleted', { description: alsoClicks ? `${removed} taps deleted. Visits it brought stay in Analytics, no longer tied to the link.` : 'Visits already counted stay in Analytics.' });
+    toast(tr('Link deleted'), { description: alsoClicks ? tr('Taps deleted: {n}. Visits it brought stay in Analytics, no longer tied to the link.', { n: removed }) : tr('Visits already counted stay in Analytics.') });
     setDeleting(null);
   };
 
@@ -102,7 +104,7 @@ export function CampaignLinks() {
 
   const checkNow = () => {
     const broken = health.run();
-    toast(broken ? `${broken} link${broken === 1 ? '' : 's'} need${broken === 1 ? 's' : ''} attention` : 'All links passed', { description: 'Website addresses, WhatsApp numbers and your pages were checked.' });
+    toast(broken ? tr('Links that need attention: {n}', { n: broken }) : tr('All links passed'), { description: tr('Website addresses, WhatsApp numbers and your pages were checked.') });
   };
 
   return (
@@ -129,19 +131,19 @@ export function CampaignLinks() {
             onChange={setView}
             options={[
             { value: 'active', label: 'Active' },
-            { value: 'archived', label: `Archived${archivedCount ? ` (${archivedCount})` : ''}` }]
+            { value: 'archived', label: `${tr('Archived')}${archivedCount ? ` (${archivedCount})` : ''}` }]
             } />
           
             <div className="flex flex-wrap items-center gap-3">
               <p className="text-caption text-fg-subtle">
                 {attention > 0 ?
               <button type="button" onClick={() => setFilters((f) => ({ ...f, status: 'attention' }))} className="font-semibold text-danger hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-                    {attention} need{attention === 1 ? 's' : ''} attention
+                    {tr('Need attention: {n}', { n: attention })}
                   </button> :
 
-              'All links pass their checks'
+              tr('All links pass their checks')
               }
-                {' · '}checked daily{health.checkedAt ? `, last ${timeAgo(health.checkedAt)}` : ''}
+                {' · '}{tr('checked daily')}{health.checkedAt ? `, ${tr('last {when}', { when: timeAgo(health.checkedAt) })}` : ''}
               </p>
               <Button size="sm" variant="tertiary" leadingIcon={RefreshCwIcon} onClick={checkNow}>
                 Check now
@@ -187,18 +189,18 @@ export function CampaignLinks() {
                     <Link to={`/app/links/${l.id}`} className="truncate rounded-sm hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
                       {l.name}
                     </Link>
-                    {l.id.startsWith('lnk_sample') && <IllustrativeTag note="Sample link — visits come from sample history." />}
-                    {status !== 'live' && status !== 'archived' && <span className="shrink-0 rounded-full bg-sunken px-2 py-0.5 text-caption font-semibold text-fg-muted">{linkStatusLabels[status]}</span>}
+                    {l.id.startsWith('lnk_sample') && <IllustrativeTag note={tr('Sample link — visits come from sample history.')} />}
+                    {status !== 'live' && status !== 'archived' && <span className="shrink-0 rounded-full bg-sunken px-2 py-0.5 text-caption font-semibold text-fg-muted">{tr(linkStatusLabels[status])}</span>}
                   </p>
                   {(l.tags?.length ?? 0) > 0 && <p className="mt-0.5 truncate text-caption text-fg-subtle">{l.tags!.map((t) => `#${t}`).join(' ')}</p>}
                   <p className="mt-0.5 truncate text-caption text-fg-muted">
-                    <span className="font-medium text-fg">{shortDisplay(mainHandle, l.slug, host)}</span> · {sourceLabels[l.source]}
-                    {status === 'scheduled' && l.startsAt && <> · Starts {new Date(l.startsAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</>}
-                    {l.endsAt && !l.archivedAt && <> · {status === 'ended' ? 'Ended' : 'Ends'} {new Date(l.endsAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</>}
+                    <span className="font-medium text-fg">{shortDisplay(mainHandle, l.slug, host)}</span> · {tr(sourceLabels[l.source])}
+                    {status === 'scheduled' && l.startsAt && <> · {tr('Starts {date}', { date: new Date(l.startsAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) })}</>}
+                    {l.endsAt && !l.archivedAt && <> · {tr(status === 'ended' ? 'Ended {date}' : 'Ends {date}', { date: new Date(l.endsAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) })}</>}
                   </p>
                   <p className={h.ok ? 'mt-0.5 flex items-center gap-1 truncate text-caption text-fg-subtle' : 'mt-0.5 flex items-start gap-1 text-caption text-danger'}>
                     {!h.ok ? <AlertTriangleIcon size={12} aria-hidden className="mt-0.5 shrink-0" /> : l.whatsapp ? <MessageCircleIcon size={12} aria-hidden className="shrink-0" /> : <span aria-hidden>→</span>}
-                    <span className={h.ok ? 'truncate' : undefined}>{h.ok ? linkGoesTo(current, commerce, l) : `${h.reason} Edit to choose another.`}</span>
+                    <span className={h.ok ? 'truncate' : undefined}>{h.ok ? linkGoesTo(current, commerce, l) : `${tr(h.reason ?? '')} ${tr('Edit to choose another.')}`}</span>
                   </p>
                 </div>
                 <dl className="grid grid-cols-4 gap-3 md:contents">
@@ -208,28 +210,28 @@ export function CampaignLinks() {
                   <RowFigure label="Revenue" value={l.externalUrl || l.whatsapp ? '—' : formatNgn(s.revenueNgn)} />
                 </dl>
                 <div className="flex flex-wrap items-center gap-1 md:justify-end">
-                  <IconButton icon={BarChart3Icon} label={`Stats for ${l.name}`} size="sm" onClick={() => navigate(`/app/links/${l.id}`)} />
-                  <IconButton icon={CopyIcon} label={`Copy ${l.name} link`} size="sm" onClick={() => copyToClipboard(shortUrl(mainHandle, l.slug, host), 'Link copied')} />
-                  <IconButton icon={ExternalLinkIcon} label={`Open ${l.name} link (test visit)`} size="sm" onClick={() => window.open(shortHref(mainHandle, l.slug), '_blank')} />
-                  {!l.archivedAt && <IconButton icon={QrCodeIcon} label={`QR code for ${l.name}`} size="sm" onClick={() => navigate(`/app/qr?link=${l.id}`)} />}
-                  <IconButton icon={PencilIcon} label={`Edit ${l.name}`} size="sm" disabled={!can.allowed} onClick={() => setEditing(l)} />
+                  <IconButton icon={BarChart3Icon} label={tr('Stats for {name}', { name: l.name })} size="sm" onClick={() => navigate(`/app/links/${l.id}`)} />
+                  <IconButton icon={CopyIcon} label={tr('Copy {name} link', { name: l.name })} size="sm" onClick={() => copyToClipboard(shortUrl(mainHandle, l.slug, host), tr('Link copied'))} />
+                  <IconButton icon={ExternalLinkIcon} label={tr('Open {name} link (test visit)', { name: l.name })} size="sm" onClick={() => window.open(shortHref(mainHandle, l.slug), '_blank')} />
+                  {!l.archivedAt && <IconButton icon={QrCodeIcon} label={tr('QR code for {name}', { name: l.name })} size="sm" onClick={() => navigate(`/app/qr?link=${l.id}`)} />}
+                  <IconButton icon={PencilIcon} label={tr('Edit {name}', { name: l.name })} size="sm" disabled={!can.allowed} onClick={() => setEditing(l)} />
                   {!l.archivedAt &&
                 <IconButton
                   icon={l.pausedAt ? PlayIcon : PauseIcon}
-                  label={l.pausedAt ? `Resume ${l.name}` : `Pause ${l.name}`}
+                  label={tr(l.pausedAt ? 'Resume {name}' : 'Pause {name}', { name: l.name })}
                   size="sm"
                   disabled={!can.allowed}
                   onClick={() => {
                     saveLink({ ...l, pausedAt: l.pausedAt ? null : new Date().toISOString() });
                     team.log('pages', `${l.pausedAt ? 'resumed' : 'paused'} the short link ${shortDisplay(mainHandle, l.slug, host)}`, '/app/links');
-                    toast(l.pausedAt ? 'Link resumed' : 'Link paused', { description: l.pausedAt ? 'It sends people to its destination again.' : 'Anyone who taps it sees that it’s paused, with a link to your main page.' });
+                    toast(tr(l.pausedAt ? 'Link resumed' : 'Link paused'), { description: tr(l.pausedAt ? 'It sends people to its destination again.' : 'Anyone who taps it sees that it’s paused, with a link to your main page.') });
                   }} />
 
                 }
-                  <IconButton icon={l.archivedAt ? ArchiveRestoreIcon : ArchiveIcon} label={l.archivedAt ? `Restore ${l.name}` : `Archive ${l.name}`} size="sm" disabled={!can.allowed} onClick={() => setArchived(l, !l.archivedAt)} />
+                  <IconButton icon={l.archivedAt ? ArchiveRestoreIcon : ArchiveIcon} label={tr(l.archivedAt ? 'Restore {name}' : 'Archive {name}', { name: l.name })} size="sm" disabled={!can.allowed} onClick={() => setArchived(l, !l.archivedAt)} />
                   <IconButton
                   icon={Trash2Icon}
-                  label={`Delete ${l.name}`}
+                  label={tr('Delete {name}', { name: l.name })}
                   size="sm"
                   disabled={!can.allowed}
                   onClick={() => {
@@ -245,14 +247,14 @@ export function CampaignLinks() {
       }
 
       <p className="text-caption text-fg-subtle">
-        “Open” simulates a visit through the link, so it’s counted. Turn on “Don’t count my own visits” in Settings → Privacy to stop that. Daily checks confirm website addresses still pass the safety check, WhatsApp numbers are valid and your pages still exist; checking whether another website is down needs the live service.
+        {tr('“Open” simulates a visit through the link, so it’s counted. Turn on “Don’t count my own visits” in Settings → Privacy to stop that. Daily checks confirm website addresses still pass the safety check, WhatsApp numbers are valid and your pages still exist; checking whether another website is down needs the live service.')}
       </p>
 
       <Dialog
         open={!!deleting}
         onClose={() => setDeleting(null)}
         title="Delete this link?"
-        description={deleting ? `${shortDisplay(mainHandle, deleting.slug, host)} will stop working straight away, including anywhere it’s printed or shared. To keep it but stop using it, archive it instead.` : undefined}
+        description={deleting ? tr('{link} will stop working straight away, including anywhere it’s printed or shared. To keep it but stop using it, archive it instead.', { link: shortDisplay(mainHandle, deleting.slug, host) }) : undefined}
         footer={
         <>
             <Button variant="secondary" onClick={() => setDeleting(null)}>
@@ -265,13 +267,13 @@ export function CampaignLinks() {
         }>
         
         {deleting && data.qrs.some((q) => q.linkId === deleting.id) ?
-        <p className="text-label text-danger">A QR code uses this link. Delete the QR code in QR codes first.</p> :
+        <p className="text-label text-danger">{tr('A QR code uses this link. Delete the QR code in QR codes first.')}</p> :
 
         <label className="flex items-start gap-3 text-label text-fg">
             <input type="checkbox" checked={alsoClicks} onChange={(e) => setAlsoClicks(e.target.checked)} className="mt-0.5 h-4 w-4 shrink-0" />
             <span>
-              Also delete its click data{deletingTaps ? ` (${deletingTaps.toLocaleString()} taps)` : ''}
-              <span className="block text-caption text-fg-subtle">Visits it brought stay in Analytics, no longer tied to this link. This can’t be undone.</span>
+              {tr('Also delete its click data')}{deletingTaps ? ` (${tr('{n} taps', { n: deletingTaps.toLocaleString() })})` : ''}
+              <span className="block text-caption text-fg-subtle">{tr('Visits it brought stay in Analytics, no longer tied to this link. This can’t be undone.')}</span>
             </span>
           </label>
         }
@@ -284,6 +286,7 @@ export function CampaignLinks() {
 
 /** A figure inside a table-like row: label on phones, column caption on desktop. Not a stat strip, so not the shared Stat (D188). */
 function RowFigure({ label, value }: {label: string;value: string;}) {
+  label = useT().t(label);
   return (
     <div className="min-w-0 md:text-right">
       <dt className="text-caption text-fg-subtle md:sr-only">{label}</dt>

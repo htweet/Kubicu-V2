@@ -12,6 +12,7 @@ import { Dialog } from '../ui/Dialog';
 import { PasswordDialog } from './PasswordDialog';
 import { TwoStepDialog } from './TwoStepDialog';
 import { InlineAlert } from '../ui/InlineAlert';
+import { useT } from '../../contexts/LocaleContext';
 import { signOutOthers, signOutReasonCopy } from '../../utils/account/signOutOthers';
 
 const providerLabel: Record<LoginProvider, string> = { google: 'Google', apple: 'Apple' };
@@ -19,6 +20,7 @@ const outcomeLabel = { ok: 'Signed in', wrong_password: 'Wrong password', blocke
 
 /** Account → Sign-in & security (D80). Everything is simulated; no real credentials exist. */
 export function SecurityTab() {
+  const { t: tr } = useT();
   const account = useAccount();
   const s = account.security;
   const [dialog, setDialog] = useState<'password' | 'twostep' | 'disable' | 'codes' | 'signout-all' | null>(null);
@@ -28,7 +30,7 @@ export function SecurityTab() {
 
   const connect = (provider: LoginProvider) => {
     updateAccount((a) => ({ ...a, connected: [...a.connected, { provider, email: a.profile.email, connectedAt: new Date().toISOString() }] }));
-    toast.success(`${providerLabel[provider]} connected`, { description: 'Prototype — no real account was linked.' });
+    toast.success(tr('{provider} connected', { provider: providerLabel[provider] }), { description: tr('Prototype — no real account was linked.') });
   };
 
   const signedOut = s.lastSignOut && !s.lastSignOut.seen && Date.now() - Date.parse(s.lastSignOut.at) < 7 * 86400000 ? s.lastSignOut : null;
@@ -54,17 +56,17 @@ export function SecurityTab() {
         title={
         <span className="flex items-center gap-2">
             {on ? <ShieldCheckIcon size={18} className="text-success" aria-hidden /> : <ShieldAlertIcon size={18} className="text-warning" aria-hidden />}
-            {on ? 'Your account is well protected' : 'Add a second step to protect your account'}
+            {tr(on ? 'Your account is well protected' : 'Add a second step to protect your account')}
           </span>
         }
-        description={on ? `Two-step sign-in has been on since ${formatAccountDate(s.twoStepSince ?? s.passwordSetAt, account.prefs, false)}.` : 'Your workspaces hold orders, payouts and customer details. A password alone is easy to steal.'}
+        description={on ? tr('Two-step sign-in has been on since {date}.', { date: formatAccountDate(s.twoStepSince ?? s.passwordSetAt, account.prefs, false) }) : 'Your workspaces hold orders, payouts and customer details. A password alone is easy to steal.'}
         body="flush">
         
         <ul className="divide-y divide-line">
           <Row
             icon={KeyRoundIcon}
             title="Password"
-            meta={`Changed ${daysSincePw === 0 ? 'today' : `${daysSincePw} days ago`}`}
+            meta={daysSincePw === 0 ? tr('Changed today') : tr('Changed {n} days ago', { n: daysSincePw })}
             action={
             <Button size="sm" variant="secondary" onClick={() => setDialog('password')}>
                 Change
@@ -74,7 +76,7 @@ export function SecurityTab() {
           <Row
             icon={SmartphoneIcon}
             title="Two-step sign-in"
-            meta={on ? s.twoStep === 'app' ? 'Authenticator app' : `Text message to ${account.profile.phone}` : 'Off'}
+            meta={on ? s.twoStep === 'app' ? tr('Authenticator app') : tr('Text message to {phone}', { phone: account.profile.phone }) : tr('Off')}
             badge={on ? <Badge tone="success">On</Badge> : <Badge tone="warning">Off</Badge>}
             action={
             on ?
@@ -92,7 +94,7 @@ export function SecurityTab() {
           <Row
             icon={RefreshCwIcon}
             title="Backup codes"
-            meta={`${s.backupCodes.length} of 10 left · each works once`}
+            meta={tr('{n} of 10 left · each works once', { n: s.backupCodes.length })}
             badge={s.backupCodes.length <= 3 ? <Badge tone="warning">Running low</Badge> : undefined}
             action={
             <Button size="sm" variant="secondary" onClick={() => setDialog('codes')}>
@@ -111,7 +113,7 @@ export function SecurityTab() {
         <Card
           id="sec-sessions"
           title="Where you’re signed in"
-          description={`${account.sessions.length} ${account.sessions.length === 1 ? 'device' : 'devices'}`}
+          description={account.sessions.length === 1 ? tr('1 device') : tr('{n} devices', { n: account.sessions.length })}
           body="flush"
           actions={
           others.length > 0 &&
@@ -127,7 +129,7 @@ export function SecurityTab() {
               key={x.id}
               icon={/android|iphone|phone/i.test(x.device) ? SmartphoneIcon : LaptopIcon}
               title={`${x.device} · ${x.browser}`}
-              meta={`${x.place} · ${x.current ? 'Active now' : formatRelative(x.lastActiveAt)}`}
+              meta={`${x.place} · ${x.current ? tr('Active now') : formatRelative(x.lastActiveAt)}`}
               badge={x.current ? <Badge tone="info">This device</Badge> : undefined}
               action={
               !x.current &&
@@ -137,7 +139,7 @@ export function SecurityTab() {
                 leadingIcon={LogOutIcon}
                 onClick={() => {
                   updateAccount((a) => ({ ...a, sessions: a.sessions.filter((y) => y.id !== x.id) }));
-                  toast.success(`Signed out of ${x.device}`);
+                  toast.success(tr('Signed out of {device}', { device: x.device }));
                 }}>
                 
                       Sign out
@@ -149,7 +151,7 @@ export function SecurityTab() {
           </ul>
         </Card>
 
-        <Card id="sec-history" title="Recent sign-ins" description={`Times in ${account.prefs.timeZone.replace('_', ' ').split('/')[1]} time.`} body="flush">
+        <Card id="sec-history" title="Recent sign-ins" description={tr('Times in {zone} time.', { zone: account.prefs.timeZone.replace('_', ' ').split('/')[1] })} body="flush">
           <ul className="divide-y divide-line">
             {account.signIns.map((e) =>
             <li key={e.id} className="flex items-center gap-3 px-5 py-3 md:px-6">
@@ -163,7 +165,7 @@ export function SecurityTab() {
               </li>
             )}
           </ul>
-          <p className="border-t border-line px-5 py-3 text-caption text-fg-muted md:px-6">Don’t recognise one? Change your password and sign out of other devices.</p>
+          <p className="border-t border-line px-5 py-3 text-caption text-fg-muted md:px-6">{tr('Don’t recognise one? Change your password and sign out of other devices.')}</p>
         </Card>
       </div>
 
@@ -176,7 +178,7 @@ export function SecurityTab() {
                 key={p}
                 icon={KeyRoundIcon}
                 title={providerLabel[p]}
-                meta={c ? `${c.email} · connected ${formatAccountDate(c.connectedAt, account.prefs, false)}` : 'Not connected'}
+                meta={c ? `${c.email} · ${tr('connected {date}', { date: formatAccountDate(c.connectedAt, account.prefs, false) })}` : tr('Not connected')}
                 action={
                 c ?
                 <Button
@@ -184,7 +186,7 @@ export function SecurityTab() {
                   variant="tertiary"
                   onClick={() => {
                     updateAccount((a) => ({ ...a, connected: a.connected.filter((x) => x.provider !== p) }));
-                    toast(`${providerLabel[p]} disconnected`, { description: 'You can still sign in with your email and password.' });
+                    toast(tr('{provider} disconnected', { provider: providerLabel[p] }), { description: tr('You can still sign in with your email and password.') });
                   }}>
                   
                       Disconnect
@@ -219,7 +221,7 @@ export function SecurityTab() {
             variant="destructive"
             onClick={() => {
               updateAccount((a) => signOutOthers({ ...a, security: { ...a.security, twoStep: 'none', twoStepSince: null, backupCodes: [] } }, 'two_step_off'));
-              toast('Two-step sign-in is off');
+              toast(tr('Two-step sign-in is off'));
               setDialog(null);
             }}>
             
@@ -245,7 +247,7 @@ export function SecurityTab() {
               const codes = newBackupCodes();
               updateAccount((a) => ({ ...a, security: { ...a.security, backupCodes: codes } }));
               navigator.clipboard?.writeText(codes.join('\n')).catch(() => undefined);
-              toast.success('New codes made and copied', { description: codes.slice(0, 2).join(', ') + ' …' });
+              toast.success(tr('New codes made and copied'), { description: codes.slice(0, 2).join(', ') + ' …' });
               setDialog(null);
             }}>
             
@@ -259,7 +261,7 @@ export function SecurityTab() {
         open={dialog === 'signout-all'}
         onClose={() => setDialog(null)}
         size="sm"
-        title={`Sign out of ${others.length} other ${others.length === 1 ? 'device' : 'devices'}?`}
+        title={others.length === 1 ? tr('Sign out of 1 other device?') : tr('Sign out of {n} other devices?', { n: others.length })}
         description="You’ll stay signed in here. Anyone on those devices will need your password again."
         footer={
         <>
@@ -271,7 +273,7 @@ export function SecurityTab() {
             onClick={() => {
               const n = others.length;
               updateAccount((a) => signOutOthers(a, 'manual'));
-              toast.success(`Signed out of ${n} other ${n === 1 ? 'device' : 'devices'}`);
+              toast.success(n === 1 ? tr('Signed out of 1 other device') : tr('Signed out of {n} other devices', { n }));
               setDialog(null);
               // The confirmation at the top of this tab lists which devices (D139).
               window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
@@ -287,6 +289,7 @@ export function SecurityTab() {
 }
 
 function Row({ icon: Icon, title, meta, badge, action }: {icon: typeof KeyRoundIcon;title: string;meta: string;badge?: React.ReactNode;action?: React.ReactNode;}) {
+  title = useT().t(title);
   return (
     <li className="flex items-center gap-4 px-5 py-4 md:px-6">
       <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-sunken text-fg-muted">

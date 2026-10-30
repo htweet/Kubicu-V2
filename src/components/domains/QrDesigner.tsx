@@ -24,6 +24,7 @@ import { downloadPng, downloadSvg, effectiveLevel, printFormats, printSheet, qrC
 import { MAIN_SPACE_ID } from '../../utils/spaces';
 import { uid } from '../../utils/id';
 import { cn } from '../../utils/cn';
+import { useT } from '../../contexts/LocaleContext';
 
 interface Props {
   open: boolean;
@@ -74,6 +75,7 @@ function lookFrom(qr: QrDesign | undefined, initials: string): Look {
 
 /** Design, test and download a QR code that encodes a tracked short link (D62). */
 export function QrDesigner({ open, onClose, qr, presetLink, presetDest, presetName }: Props) {
+  const { t: tr } = useT();
   const { data, saveQr } = useDomains();
   const { current } = useWorkspace();
   const { data: commerce } = useCommerce();
@@ -162,7 +164,7 @@ export function QrDesigner({ open, onClose, qr, presetLink, presetDest, presetNa
     };
     if (!saveQr(design, link)) return;
     team.log('pages', `${qr ? 'updated' : 'created'} the QR code “${link.name}”`, '/app/qr');
-    toast.success(qr ? 'QR code saved' : 'QR code created', { description: 'Scans show in Analytics and on Campaign links.' });
+    toast.success(tr(qr ? 'QR code saved' : 'QR code created'), { description: tr('Scans show in Analytics and on Campaign links.') });
     onClose();
   };
 
@@ -176,7 +178,7 @@ export function QrDesigner({ open, onClose, qr, presetLink, presetDest, presetNa
       if (media?.available) void media.addDataUrl(centreImage, file.name.replace(/\.[^.]+$/, '') || 'QR centre image', '', 'brand').catch(() => undefined);
     } catch (e) {
       const why = (e as Error).message;
-      toast.error('Couldn’t use that image', { description: why === 'size' ? 'Choose an image under 5 MB.' : why === 'type' ? 'Choose a PNG, JPG, SVG or WebP image.' : 'Try another image.' });
+      toast.error(tr('Couldn’t use that image'), { description: tr(why === 'size' ? 'Choose an image under 5 MB.' : why === 'type' ? 'Choose a PNG, JPG, SVG or WebP image.' : 'Try another image.') });
     } finally {
       setUploading(false);
       if (fileRef.current) fileRef.current.value = '';
@@ -222,16 +224,16 @@ export function QrDesigner({ open, onClose, qr, presetLink, presetDest, presetNa
             <>
                 {!!presetDest && !qr && !options.some((o) => o.value === presetDest) &&
               <InlineAlert tone="warning" title="That isn’t live yet">
-                    Codes can only open what’s published. Publish it first, or pick somewhere else for now — you can change where the code goes later without reprinting.
+                    {tr('Codes can only open what’s published. Publish it first, or pick somewhere else for now — you can change where the code goes later without reprinting.')}
                   </InlineAlert>
               }
-                <TextInput id="qr-name" label="Name" placeholder="Market flyer, Shop counter…" value={name} onChange={(e) => setName(e.target.value)} error={tried ? errors.name : undefined} />
+                <TextInput id="qr-name" label="Name" placeholder={tr('Market flyer, Shop counter…')} value={name} onChange={(e) => setName(e.target.value)} error={tried ? errors.name : undefined} />
                 <DestinationSelect id="qr-dest" label="Opens" value={dest} options={options} onChange={setDest} error={tried ? errors.dest : undefined} hint="You can change this later without reprinting." />
                 {existingLink ?
               <div className="flex flex-col gap-1">
-                    <span className="text-label font-medium text-fg">Encodes</span>
+                    <span className="text-label font-medium text-fg">{tr('Encodes')}</span>
                     <p className="break-all text-label text-fg">{shortDisplay(mainHandle, existingLink.slug, host)}</p>
-                    <p className="text-caption text-fg-subtle">Fixed — it may already be printed.</p>
+                    <p className="text-caption text-fg-subtle">{tr('Fixed — it may already be printed.')}</p>
                   </div> :
 
               <TextInput
@@ -244,7 +246,7 @@ export function QrDesigner({ open, onClose, qr, presetLink, presetDest, presetNa
                   setSlug(e.target.value.toLowerCase());
                 }}
                 error={errors.slug && (tried || slugTouched) ? errors.slug : undefined}
-                hint={`${shortDisplay(mainHandle, effectiveSlug || 'your-code', host)} · fixed once created`} />
+                hint={`${shortDisplay(mainHandle, effectiveSlug || 'your-code', host)} · ${tr('fixed once created')}`} />
 
               }
               </>
@@ -252,7 +254,7 @@ export function QrDesigner({ open, onClose, qr, presetLink, presetDest, presetNa
 
             {section === 'pattern' &&
             <>
-                <div className="flex flex-wrap gap-2" role="group" aria-label="Colour presets">
+                <div className="flex flex-wrap gap-2" role="group" aria-label={tr('Colour presets')}>
                   {presets.map((p) => {
                   const on = p.fg === look.fg && p.bg === look.bg;
                   return (
@@ -264,7 +266,7 @@ export function QrDesigner({ open, onClose, qr, presetLink, presetDest, presetNa
                       className={cn('flex h-9 items-center gap-2 rounded-md border px-2.5 text-caption text-fg transition-colors duration-150 ease-out', on ? 'border-action bg-action-soft' : 'border-line hover:bg-sunken')}>
                       
                         <span aria-hidden className="h-4 w-4 rounded-sm border border-line" style={{ background: p.bg, boxShadow: `inset 0 0 0 4px ${p.bg}, inset 0 0 0 8px ${p.fg}` }} />
-                        {p.label}
+                        {tr(p.label)}
                       </button>);
 
                 })}
@@ -316,7 +318,7 @@ export function QrDesigner({ open, onClose, qr, presetLink, presetDest, presetNa
                 id="qr-margin"
                 label="Border around the code"
                 value={String(look.margin)}
-                options={[1, 2, 3, 4, 6].map((v) => ({ value: String(v), label: `${v} square${v === 1 ? '' : 's'}${v === 2 ? ' (default)' : v === 4 ? ' (print standard)' : ''}` }))}
+                options={[1, 2, 3, 4, 6].map((v) => ({ value: String(v), label: `${v === 1 ? tr('1 square') : tr('{n} squares', { n: v })}${v === 2 ? ` (${tr('default')})` : v === 4 ? ` (${tr('print standard')})` : ''}` }))}
                 onChange={(v) => set({ margin: Number(v) })} />
               
               </>
@@ -335,16 +337,16 @@ export function QrDesigner({ open, onClose, qr, presetLink, presetDest, presetNa
                 { value: 'image', label: 'Image' }]
                 } />
               
-                {look.centreKind === 'initials' && <p className="text-caption text-fg-muted">Your workspace initials. Changes if you rename the workspace.</p>}
+                {look.centreKind === 'initials' && <p className="text-caption text-fg-muted">{tr('Your workspace initials. Changes if you rename the workspace.')}</p>}
                 {look.centreKind === 'text' &&
-              <TextInput id="qr-centre-text" label="Centre text" maxLength={8} placeholder="SCAN, MENU, ₦…" value={look.centreText} onChange={(e) => set({ centreText: e.target.value })} hint={`${look.centreText.length}/8 · short words scan best`} />
+              <TextInput id="qr-centre-text" label="Centre text" maxLength={8} placeholder="SCAN, MENU, ₦…" value={look.centreText} onChange={(e) => set({ centreText: e.target.value })} hint={`${look.centreText.length}/8 · ${tr('short words scan best')}`} />
               }
                 {look.centreKind === 'image' &&
               <div className="flex flex-col gap-2">
-                    <span className="text-label font-medium text-fg">Centre image</span>
+                    <span className="text-label font-medium text-fg">{tr('Centre image')}</span>
                     <div className="flex items-center gap-3">
                       <span className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-md border border-line bg-sunken">
-                        {look.centreImage ? <img src={look.centreImage} alt="Centre image" className="h-full w-full object-cover" /> : <ImagePlusIcon size={20} className="text-fg-subtle" aria-hidden />}
+                        {look.centreImage ? <img src={look.centreImage} alt={tr('Centre image')} className="h-full w-full object-cover" /> : <ImagePlusIcon size={20} className="text-fg-subtle" aria-hidden />}
                       </span>
                       <div className="flex flex-wrap gap-2">
                         <Button size="sm" variant="secondary" leadingIcon={ImagePlusIcon} loading={uploading} onClick={() => fileRef.current?.click()}>
@@ -358,7 +360,7 @@ export function QrDesigner({ open, onClose, qr, presetLink, presetDest, presetNa
                       </div>
                       <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" className="sr-only" tabIndex={-1} aria-hidden onChange={(e) => upload(e.target.files?.[0])} />
                     </div>
-                    <p className="text-caption text-fg-subtle">Your logo works best: simple, square, high contrast. Shrunk to fit — up to 5 MB.</p>
+                    <p className="text-caption text-fg-subtle">{tr('Your logo works best: simple, square, high contrast. Shrunk to fit — up to 5 MB.')}</p>
                   </div>
               }
                 {look.centreKind !== 'none' &&
@@ -409,7 +411,7 @@ export function QrDesigner({ open, onClose, qr, presetLink, presetDest, presetNa
                 { value: 'banner', label: 'Banner' }]
                 } />
               
-                {look.frame === 'banner' && !look.frameText.trim() && <p className="text-caption text-fg-muted">Add a caption to show the banner.</p>}
+                {look.frame === 'banner' && !look.frameText.trim() && <p className="text-caption text-fg-muted">{tr('Add a caption to show the banner.')}</p>}
               </>
             }
 
@@ -425,9 +427,9 @@ export function QrDesigner({ open, onClose, qr, presetLink, presetDest, presetNa
                 { value: '2048', label: '2048 px' }]
                 } />
               
-                <p className="-mt-3 text-caption text-fg-subtle">2048 px for posters and banners. SVG scales to any size — best for print shops.</p>
+                <p className="-mt-3 text-caption text-fg-subtle">{tr('2048 px for posters and banners. SVG scales to any size — best for print shops.')}</p>
                 <div className="grid grid-cols-2 gap-2">
-                  <Button variant="secondary" leadingIcon={DownloadIcon} disabled={!canDownload} onClick={() => svg && downloadPng(svg, filename, look.exportSize).catch(() => toast.error('Couldn’t make the PNG — try SVG.'))}>
+                  <Button variant="secondary" leadingIcon={DownloadIcon} disabled={!canDownload} onClick={() => svg && downloadPng(svg, filename, look.exportSize).catch(() => toast.error(tr('Couldn’t make the PNG — try SVG.')))}>
                     PNG
                   </Button>
                   <Button variant="secondary" leadingIcon={DownloadIcon} disabled={!canDownload} onClick={() => svg && downloadSvg(svg, filename)}>
@@ -435,42 +437,42 @@ export function QrDesigner({ open, onClose, qr, presetLink, presetDest, presetNa
                   </Button>
                 </div>
                 <div className="flex flex-col gap-2 border-t border-line pt-4">
-                  <SelectInput<PrintFormat> id="qr-format" label="Print sheet" value={format} options={printFormats.map((f) => ({ value: f.id, label: f.label }))} onChange={setFormat} hint={printFormats.find((f) => f.id === format)?.detail} />
+                  <SelectInput<PrintFormat> id="qr-format" label="Print sheet" value={format} options={printFormats.map((f) => ({ value: f.id, label: f.label }))} onChange={setFormat} hint={tr(printFormats.find((f) => f.id === format)?.detail ?? '')} />
                   <Button
                   variant="secondary"
                   leadingIcon={PrinterIcon}
                   disabled={!canDownload}
                   className="self-start"
                   onClick={() => {
-                    if (svg && !printSheet(svg, format, name || current.name, shortDisplay(mainHandle, effectiveSlug, host))) toast.error('Your browser blocked the print window', { description: 'Allow pop-ups for KUBICU and try again.' });
+                    if (svg && !printSheet(svg, format, name || current.name, shortDisplay(mainHandle, effectiveSlug, host))) toast.error(tr('Your browser blocked the print window'), { description: tr('Allow pop-ups for KUBICU and try again.') });
                   }}>
                   
                     Print
                   </Button>
                 </div>
-                {checks.contrast.level === 'fail' && <p className="text-caption text-danger">Downloads are off until the code has enough contrast.</p>}
+                {checks.contrast.level === 'fail' && <p className="text-caption text-danger">{tr('Downloads are off until the code has enough contrast.')}</p>}
               </>
             }
           </div>
         </div>
 
-        <aside className="flex flex-col gap-3 md:sticky md:top-0 md:self-start" aria-label="Preview and checks">
+        <aside className="flex flex-col gap-3 md:sticky md:top-0 md:self-start" aria-label={tr('Preview and checks')}>
           <div className="rounded-lg border border-line p-3" style={{ background: look.transparent ? undefined : look.bg }}>
-            <QrPreview url={url} style={style} alt={`QR code for ${url}`} onReady={setSvg} />
+            <QrPreview url={url} style={style} alt={tr('QR code for {name}', { name: url })} onReady={setSvg} />
           </div>
-          <InlineAlert tone={checks.contrast.level === 'fail' ? 'danger' : checks.contrast.level === 'warn' ? 'warning' : 'success'} title={`Contrast ${checks.ratio.toFixed(1)}:1`}>
-            {checks.contrast.message}
+          <InlineAlert tone={checks.contrast.level === 'fail' ? 'danger' : checks.contrast.level === 'warn' ? 'warning' : 'success'} title={`${tr('Contrast')} ${checks.ratio.toFixed(1)}:1`}>
+            {tr(checks.contrast.message)}
           </InlineAlert>
           {checks.others.length > 0 &&
           <ul className="flex flex-col gap-1.5">
               {checks.others.map((c) =>
             <li key={c.message} className="text-caption text-fg-muted">
-                  {c.message}
+                  {tr(c.message)}
                 </li>
             )}
             </ul>
           }
-          <p className="text-caption text-fg-subtle">Test it with your phone camera before printing. In this prototype the kub.icu address isn’t hosted — use “Open” on Campaign links to simulate a scan.</p>
+          <p className="text-caption text-fg-subtle">{tr('Test it with your phone camera before printing. In this prototype the kub.icu address isn’t hosted — use “Open” on Campaign links to simulate a scan.')}</p>
           {section !== 'export' &&
           <Button size="sm" variant="tertiary" leadingIcon={DownloadIcon} className="self-start" onClick={() => setSection('export')}>
               Download or print
@@ -483,6 +485,7 @@ export function QrDesigner({ open, onClose, qr, presetLink, presetDest, presetNa
 }
 
 function Choice<T extends string>({ label, value, onChange, options }: {label: string;value: T;onChange: (v: T) => void;options: {value: T;label: string;}[];}) {
+  label = useT().t(label);
   return (
     <div className="flex flex-col gap-1.5">
       <span className="text-label font-medium text-fg">{label}</span>
@@ -492,6 +495,7 @@ function Choice<T extends string>({ label, value, onChange, options }: {label: s
 }
 
 function ColourInput({ id, label, value, onChange, disabled }: {id: string;label: string;value: string;onChange: (v: string) => void;disabled?: boolean;}) {
+  label = useT().t(label);
   return (
     <div className={cn('flex flex-col gap-1.5', disabled && 'opacity-50')}>
       <label htmlFor={id} className="text-label font-medium text-fg">

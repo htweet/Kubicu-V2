@@ -11,6 +11,7 @@ import { TextInput } from '../ui/TextInput';
 import { InlineAlert } from '../ui/InlineAlert';
 import { isValidPhone } from '../../utils/validation';
 import { whatsappLink } from '../../utils/format';
+import { useT } from '../../contexts/LocaleContext';
 
 const usedBy = ['WhatsApp buttons', 'Menus and products set to “Order on WhatsApp”', 'Your shop', 'Contact buttons', 'Booking pages (when there are no free times)', 'Order and booking status pages'];
 
@@ -19,6 +20,7 @@ const usedBy = ['WhatsApp buttons', 'Menus and products set to “Order on Whats
  * unless that block has its own. Chat buttons need no API — only automatic messages do.
  */
 export function BusinessWhatsAppCard() {
+  const { t: tr } = useT();
   const { current, update } = useWorkspace();
   const can = useTeam().can('commerce.settings');
   const saved = current.whatsapp ?? '';
@@ -34,8 +36,8 @@ export function BusinessWhatsAppCard() {
     setTried(true);
     if (error) return;
     update(current.id, { whatsapp: trimmed });
-    toast.success(trimmed ? 'Business WhatsApp number saved' : 'Business WhatsApp number removed', {
-      description: trimmed ? 'Every WhatsApp button without its own number now uses it.' : 'Buttons without their own number won’t show a WhatsApp link.'
+    toast.success(tr(trimmed ? 'Business WhatsApp number saved' : 'Business WhatsApp number removed'), {
+      description: tr(trimmed ? 'Every WhatsApp button without its own number now uses it.' : 'Buttons without their own number won’t show a WhatsApp link.')
     });
   };
 
@@ -70,40 +72,40 @@ export function BusinessWhatsAppCard() {
         </form>
 
         <div>
-          <p className="text-label font-medium text-fg">Used by</p>
+          <p className="text-label font-medium text-fg">{tr('Used by')}</p>
           <ul className="mt-2 grid gap-1.5 sm:grid-cols-2">
             {usedBy.map((u) =>
             <li key={u} className="flex items-start gap-2 text-label text-fg-muted">
                 <CheckIcon size={15} className="mt-0.5 shrink-0 text-fg-subtle" aria-hidden />
-                {u}
+                {tr(u)}
               </li>
             )}
           </ul>
-          <p className="mt-2 text-caption text-fg-subtle">A block can still use a different number (a branch line, say) — type it in that block and it overrides this one there only.</p>
+          <p className="mt-2 text-caption text-fg-subtle">{tr('A block can still use a different number (a branch line, say) — type it in that block and it overrides this one there only.')}</p>
         </div>
 
         <div className="grid gap-px overflow-hidden rounded-lg border border-line bg-line md:grid-cols-2">
           <section className="flex flex-col gap-2 bg-surface p-4" aria-labelledby="wa-buttons">
             <div className="flex items-center justify-between gap-3">
               <h3 id="wa-buttons" className="flex items-center gap-2 text-label font-semibold text-fg">
-                <MessageCircleIcon size={16} aria-hidden /> Chat buttons
+                <MessageCircleIcon size={16} aria-hidden /> {tr('Chat buttons')}
               </h3>
               <Badge tone={saved ? 'success' : 'neutral'} dot>
                 {saved ? 'On' : 'Add a number'}
               </Badge>
             </div>
-            <p className="text-caption text-fg-muted">Opens WhatsApp with your number and a ready-typed message. Works with the normal WhatsApp or WhatsApp Business app — no API, account approval or connection needed.</p>
+            <p className="text-caption text-fg-muted">{tr('Opens WhatsApp with your number and a ready-typed message. Works with the normal WhatsApp or WhatsApp Business app — no API, account approval or connection needed.')}</p>
           </section>
           <section className="flex flex-col gap-2 bg-surface p-4" aria-labelledby="wa-auto">
             <div className="flex items-center justify-between gap-3">
               <h3 id="wa-auto" className="flex items-center gap-2 text-label font-semibold text-fg">
-                <PlugZapIcon size={16} aria-hidden /> Automatic messages & inbox
+                <PlugZapIcon size={16} aria-hidden /> {tr('Automatic messages & inbox')}
               </h3>
               <Badge tone="neutral">Optional</Badge>
             </div>
-            <p className="text-caption text-fg-muted">Order and booking updates, auto-replies and a shared inbox. WhatsApp only allows these through the WhatsApp Business API, via a Meta-approved partner.</p>
+            <p className="text-caption text-fg-muted">{tr('Order and booking updates, auto-replies and a shared inbox. WhatsApp only allows these through the WhatsApp Business API, via a Meta-approved partner.')}</p>
             <Link to="/app/whatsapp" className="mt-auto text-caption font-semibold text-fg underline underline-offset-2">
-              Set up in the WhatsApp app
+              {tr('Set up in the WhatsApp app')}
             </Link>
           </section>
         </div>

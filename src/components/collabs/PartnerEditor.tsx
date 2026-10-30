@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import type { Product } from '../../types/commerce';
 import { MAX_RATE, defaultCollabSettings, makePartnerCode, platformLabels, termsFor, type CollabSettings, type Partner, type PartnerPlatform } from '../../utils/collabs';
 import { uid } from '../../utils/id';
+import { useT } from '../../contexts/LocaleContext';
 import { Sheet } from '../ui/Sheet';
 import { Button } from '../ui/Button';
 import { TextInput } from '../ui/TextInput';
@@ -44,8 +45,12 @@ const toForm = (p: Partner | null, defaults: CollabSettings): Form => ({
   terms: p?.terms ?? defaults.defaultTerms
 });
 
-/** Invite or edit a partner. The code is locked once they've accepted, so links already shared keep working. */
+/**
+ * Invite or edit a partner. The code is locked once they've accepted, so links already shared keep working.
+ * The terms text itself stays as typed — it's what the partner reads and agrees to.
+ */
 export function PartnerEditor({ open, partner, partners, products, onClose, onSave, defaults = defaultCollabSettings }: PartnerEditorProps) {
+  const { t: tr } = useT();
   const [f, setF] = useState<Form>(() => toForm(partner, defaults));
   const [tried, setTried] = useState(false);
 
@@ -61,11 +66,11 @@ export function PartnerEditor({ open, partner, partners, products, onClose, onSa
   const rate = Number(f.rate);
   const codeLocked = !!partner?.acceptedAt;
   const errors = {
-    name: !f.name.trim() ? 'Add their name.' : '',
-    phone: f.phone.replace(/\D/g, '').length < 10 ? 'Add a phone number so you can send the invite.' : '',
-    code: !/^[A-Z0-9-]{3,20}$/.test(code) ? 'Use 3–20 letters, numbers or dashes.' : taken.has(code) ? 'Another partner already uses this code.' : '',
-    rate: !Number.isFinite(rate) || rate < 1 || rate > MAX_RATE ? `Between 1% and ${MAX_RATE}%.` : '',
-    products: f.scope === 'some' && !f.productIds.length ? 'Pick at least one product.' : ''
+    name: !f.name.trim() ? tr('Add their name.') : '',
+    phone: f.phone.replace(/\D/g, '').length < 10 ? tr('Add a phone number so you can send the invite.') : '',
+    code: !/^[A-Z0-9-]{3,20}$/.test(code) ? tr('Use 3–20 letters, numbers or dashes.') : taken.has(code) ? tr('Another partner already uses this code.') : '',
+    rate: !Number.isFinite(rate) || rate < 1 || rate > MAX_RATE ? tr('Between 1% and {max}%', { max: MAX_RATE }) : '',
+    products: f.scope === 'some' && !f.productIds.length ? tr('Pick at least one product.') : ''
   };
   const valid = Object.values(errors).every((e) => !e);
   const set = (p: Partial<Form>) => setF((x) => ({ ...x, ...p }));
@@ -100,52 +105,52 @@ export function PartnerEditor({ open, partner, partners, products, onClose, onSa
       onClose={onClose}
       side="right"
       size="lg"
-      title={partner ? `Edit ${partner.name}` : 'Invite a partner'}
-      description="Creators, stylists or resellers who share your link and earn a commission on what sells."
+      title={partner ? tr('Edit {name}', { name: partner.name }) : tr('Invite a partner')}
+      description={tr('Creators, stylists or resellers who share your link and earn a commission on what sells.')}
       footer={
       <div className="flex w-full justify-end gap-2">
           <Button variant="tertiary" onClick={onClose}>
-            Cancel
+            {tr('Cancel')}
           </Button>
-          <Button onClick={save}>{partner ? 'Save changes' : 'Create invite'}</Button>
+          <Button onClick={save}>{partner ? tr('Save changes') : tr('Create invite')}</Button>
         </div>
       }>
       
       <div className="flex flex-col gap-5 px-5 py-5 md:px-6">
-        <TextInput id="pt-name" label="Name" value={f.name} maxLength={60} error={tried ? errors.name : undefined} onChange={(e) => set({ name: e.target.value })} />
+        <TextInput id="pt-name" label={tr('Name')} value={f.name} maxLength={60} error={tried ? errors.name : undefined} onChange={(e) => set({ name: e.target.value })} />
         <div className="grid gap-4 sm:grid-cols-2">
-          <SelectInput id="pt-platform" label="Where they post" value={f.platform} options={(Object.keys(platformLabels) as PartnerPlatform[]).map((v) => ({ value: v, label: platformLabels[v] }))} onChange={(v) => set({ platform: v })} />
-          <TextInput id="pt-handle" label="Handle" optional placeholder="@name" value={f.handle} maxLength={40} onChange={(e) => set({ handle: e.target.value })} />
+          <SelectInput id="pt-platform" label={tr('Where they post')} value={f.platform} options={(Object.keys(platformLabels) as PartnerPlatform[]).map((v) => ({ value: v, label: tr(platformLabels[v]) }))} onChange={(v) => set({ platform: v })} />
+          <TextInput id="pt-handle" label={tr('Handle')} optional placeholder="@name" value={f.handle} maxLength={40} onChange={(e) => set({ handle: e.target.value })} />
         </div>
-        <TextInput id="pt-phone" label="WhatsApp number" type="tel" value={f.phone} error={tried ? errors.phone : undefined} onChange={(e) => set({ phone: e.target.value })} />
+        <TextInput id="pt-phone" label={tr('WhatsApp number')} type="tel" value={f.phone} error={tried ? errors.phone : undefined} onChange={(e) => set({ phone: e.target.value })} />
         <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_8rem]">
           <TextInput
             id="pt-code"
-            label="Link code"
-            hint={codeLocked ? 'Locked — they’re already sharing it.' : 'Shown in their link as ?partner=CODE'}
+            label={tr('Link code')}
+            hint={codeLocked ? tr('Locked — they’re already sharing it.') : tr('Shown in their link as ?partner=CODE')}
             value={code}
             disabled={codeLocked}
             error={tried ? errors.code : undefined}
             onChange={(e) => set({ code: e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, '') })} />
           
-          <TextInput id="pt-rate" label="Commission" inputMode="decimal" value={f.rate} error={tried ? errors.rate : undefined} onChange={(e) => set({ rate: e.target.value.replace(/[^0-9.]/g, '') })} />
+          <TextInput id="pt-rate" label={tr('Commission')} inputMode="decimal" value={f.rate} error={tried ? errors.rate : undefined} onChange={(e) => set({ rate: e.target.value.replace(/[^0-9.]/g, '') })} />
         </div>
 
         <div className="flex flex-col gap-3">
-          <p className="text-label font-medium text-fg">Earns on</p>
+          <p className="text-label font-medium text-fg">{tr('Earns on')}</p>
           <Segmented
-            ariaLabel="Products the commission applies to"
+            ariaLabel={tr('Products the commission applies to')}
             value={f.scope}
             onChange={(v) => set({ scope: v })}
             options={[
-            { value: 'all', label: 'Every product' },
-            { value: 'some', label: 'Chosen products' }]
+            { value: 'all', label: tr('Every product') },
+            { value: 'some', label: tr('Chosen products') }]
             } />
           
           {f.scope === 'some' &&
           <fieldset className="flex max-h-56 flex-col gap-1 overflow-y-auto rounded-md border border-line p-2">
-              <legend className="sr-only">Products</legend>
-              {sellable.length === 0 && <p className="px-2 py-3 text-caption text-fg-muted">No products yet.</p>}
+              <legend className="sr-only">{tr('Products')}</legend>
+              {sellable.length === 0 && <p className="px-2 py-3 text-caption text-fg-muted">{tr('No products yet.')}</p>}
               {sellable.map((p) =>
             <label key={p.id} className="flex min-h-[36px] cursor-pointer items-center gap-3 rounded px-2 text-label text-fg hover:bg-sunken">
                   <input
@@ -162,8 +167,8 @@ export function PartnerEditor({ open, partner, partners, products, onClose, onSa
           {tried && errors.products && <p className="text-caption text-danger">{errors.products}</p>}
         </div>
 
-        <TextArea id="pt-terms" label="Terms they’ll see" optional rows={3} maxLength={400} placeholder="e.g. 10% on every sale through your link, paid weekly once delivered." value={f.terms} onChange={(e) => set({ terms: e.target.value })} />
-        <p className="text-caption text-fg-subtle">Commission is worked out on what the customer paid for the products, after discounts and refunds. Delivery fees never count.</p>
+        <TextArea id="pt-terms" label={tr('Terms they’ll see')} optional rows={3} maxLength={400} placeholder={tr('e.g. 10% on every sale through your link, paid weekly once delivered.')} value={f.terms} onChange={(e) => set({ terms: e.target.value })} />
+        <p className="text-caption text-fg-subtle">{tr('Commission is worked out on what the customer paid for the products, after discounts and refunds. Delivery fees never count.')}</p>
       </div>
     </Sheet>);
 

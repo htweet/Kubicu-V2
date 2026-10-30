@@ -10,6 +10,7 @@ import { KubicuLogo } from './KubicuLogo';
 import { WorkspaceSwitcher } from './WorkspaceSwitcher';
 import { AppearancePicker } from './AppearancePicker';
 import { SidebarItem, SidebarGroupLabel, SidebarGroupToggle } from './SidebarItem';
+import { SidebarCopilotChats } from './SidebarCopilotChats';
 import { cn } from '../../utils/cn';
 import { useTeam } from '../../contexts/TeamContext';
 import { roleInfo } from '../../data/permissions';
@@ -129,6 +130,7 @@ export function Sidebar() {
             </ul>
           </div>
         }
+        <SidebarCopilotChats collapsed={collapsed} tip={tip} />
       </nav>
 
       <div className={cn('flex shrink-0 flex-col gap-0.5 border-t border-line py-3', collapsed ? 'items-center px-0' : 'px-3')}>

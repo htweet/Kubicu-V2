@@ -10,6 +10,7 @@ import { EmptyState } from '../ui/EmptyState';
 import { ReviewDetail } from './ReviewDetail';
 import { Card } from '../ui/layout/Card';
 import { List } from '../ui/layout/ListRow';
+import { useT } from '../../contexts/LocaleContext';
 
 const statusBadge = {
   pending: { tone: 'info', label: 'Waiting' },
@@ -20,6 +21,7 @@ const statusBadge = {
 
 /** Settings → Approvals: the switch, the rules and the review queue (D58). */
 export function ApprovalsTab() {
+  const { t: tr } = useT();
   const team = useTeam();
   const [params, setParams] = useSearchParams();
   const manage = team.can('team.manage');
@@ -44,7 +46,7 @@ export function ApprovalsTab() {
           <span className="block truncate text-label font-medium text-fg">{r.spaceName}</span>
           <span className="block truncate text-caption text-fg-subtle">
             {r.requestedBy} · {formatRelative(r.createdAt)}
-            {r.updatedAt !== r.createdAt && r.status === 'pending' ? ' · updated since' : ''}
+            {r.updatedAt !== r.createdAt && r.status === 'pending' ? ` · ${tr('updated since')}` : ''}
             {r.note ? ` · “${r.note}”` : ''}
           </span>
         </span>
@@ -71,24 +73,24 @@ export function ApprovalsTab() {
           onChange={(approvalsOn) => team.update({ approvalsOn })} />
         
         <ul className="mt-4 flex flex-col gap-1.5 border-t border-line pt-4 text-caption text-fg-muted">
-          <li>Editors press <span className="font-semibold text-fg">Send for review</span> instead of Publish. Their live page doesn’t change until it’s approved.</li>
-          <li>Approving publishes exactly the version that was sent. If the Editor keeps editing, the request updates and the reviewer is told.</li>
-          <li>Request changes needs a comment, which the Editor sees in the canvas.</li>
+          <li>{tr('Editors press Send for review instead of Publish. Their live page doesn’t change until it’s approved.')}</li>
+          <li>{tr('Approving publishes exactly the version that was sent. If the Editor keeps editing, the request updates and the reviewer is told.')}</li>
+          <li>{tr('Request changes needs a comment, which the Editor sees in the canvas.')}</li>
         </ul>
       </Card>
 
       <section aria-labelledby="queue-heading">
         <h2 id="queue-heading" className="text-label font-semibold text-fg">
-          {reviewer ? 'Waiting for review' : 'Your requests'}
+          {tr(reviewer ? 'Waiting for review' : 'Your requests')}
         </h2>
         {pending.length === 0 && recent.length === 0 ?
         <EmptyState framed className="mt-3" icon={SendIcon} title={reviewer ? 'Nothing to review' : 'No requests yet'} description={team.data.approvalsOn ? 'Requests appear here when an Editor sends a page, campaign or DealRoom for review.' : 'Turn on approvals to have Editors send their changes for review.'} /> :
 
         <>
-            {pending.length > 0 ? <List ruled className="mt-3">{pending.map(row)}</List> : <p className="mt-2 text-caption text-fg-muted">Nothing waiting right now.</p>}
+            {pending.length > 0 ? <List ruled className="mt-3">{pending.map(row)}</List> : <p className="mt-2 text-caption text-fg-muted">{tr('Nothing waiting right now.')}</p>}
             {recent.length > 0 &&
           <>
-                <h3 className="mt-8 text-caption font-semibold text-fg-subtle">Recently decided</h3>
+                <h3 className="mt-8 text-caption font-semibold text-fg-subtle">{tr('Recently decided')}</h3>
                 <List ruled className="mt-2">{recent.map(row)}</List>
               </>
           }

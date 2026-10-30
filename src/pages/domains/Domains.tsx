@@ -16,11 +16,13 @@ import { UpgradeButton } from '../../components/ui/UpgradeButton';
 import { DomainCard } from '../../components/domains/DomainCard';
 import { Card } from '../../components/ui/layout/Card';
 import { ConnectDomainDialog } from '../../components/domains/ConnectDomainDialog';
+import { useT } from '../../contexts/LocaleContext';
 
 /** Custom domains need Creator or above (example gating, D62). */
 export const DOMAIN_PLAN = 'creator' as const;
 
 export function Domains() {
+  const { t: tr } = useT();
   const { data } = useDomains();
   const { current } = useWorkspace();
   const plan = usePlan();
@@ -30,12 +32,12 @@ export function Domains() {
 
   const spaces = useMemo(
     () =>
-    [{ id: MAIN_SPACE_ID, name: 'Main page' }, ...activeExtraSpaces(current).map((s) => ({ id: s.id, name: s.name }))].
+    [{ id: MAIN_SPACE_ID, name: tr('Main page') }, ...activeExtraSpaces(current).map((s) => ({ id: s.id, name: s.name }))].
     map((s) => ({ id: s.id, label: `${s.name} · kub.icu/${spaceHandle(current.id, s.id) ?? '…'}`, short: s.name })).
     filter((s) => spaceDoc(current.id, s.id)),
-    [current]
+    [current, tr]
   );
-  const labelFor = (id: string) => spaces.find((s) => s.id === id)?.short ?? 'an archived space';
+  const labelFor = (id: string) => spaces.find((s) => s.id === id)?.short ?? tr('an archived space');
   const mainHandle = spaceHandle(current.id, MAIN_SPACE_ID) ?? '';
 
   return (
@@ -54,12 +56,12 @@ export function Domains() {
         } />
       
 
-      <section aria-label="Your free address" className="flex flex-wrap items-center justify-between gap-3 border-y border-line py-4">
+      <section aria-label={tr('Your free address')} className="flex flex-wrap items-center justify-between gap-3 border-y border-line py-4">
         <div className="min-w-0">
-          <p className="text-caption text-fg-subtle">Your free address</p>
+          <p className="text-caption text-fg-subtle">{tr('Your free address')}</p>
           <p className="truncate text-body font-semibold text-fg">kub.icu/{mainHandle}</p>
         </div>
-        <Button size="sm" variant="secondary" leadingIcon={CopyIcon} onClick={() => copyToClipboard(`https://kub.icu/${mainHandle}`, 'Link copied')}>
+        <Button size="sm" variant="secondary" leadingIcon={CopyIcon} onClick={() => copyToClipboard(`https://kub.icu/${mainHandle}`, tr('Link copied'))}>
           Copy
         </Button>
       </section>
@@ -68,18 +70,18 @@ export function Domains() {
       <Card id="domain-upsell" emphasis="primary">
         <div className="grid gap-8 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           <div>
-            <h2 className="text-heading font-semibold text-fg">Your own domain, on Creator</h2>
-            <p className="mt-1 text-body text-fg-muted">Customers remember adaeze.com more easily than a kub.icu link, and it looks established on flyers and invoices.</p>
+            <h2 className="text-heading font-semibold text-fg">{tr('Your own domain, on Creator')}</h2>
+            <p className="mt-1 text-body text-fg-muted">{tr('Customers remember adaeze.com more easily than a kub.icu link, and it looks established on flyers and invoices.')}</p>
             <div className="mt-5">
               <UpgradeButton plan={DOMAIN_PLAN} feature="Custom domains" variant="primary" />
             </div>
           </div>
           <ul className="flex flex-col gap-3 text-label text-fg-muted">
-            <li>Use a whole domain or a subdomain like shop.adaeze.com.</li>
-            <li>Guided setup with the exact records for your registrar.</li>
-            <li>Free security certificate (https), renewed automatically.</li>
-            <li>Readable product links: /shop/ankara-wrap-dress.</li>
-            <li className="text-caption text-fg-subtle">QR codes and campaign links are on every plan.</li>
+            <li>{tr('Use a whole domain or a subdomain like shop.adaeze.com.')}</li>
+            <li>{tr('Guided setup with the exact records for your registrar.')}</li>
+            <li>{tr('Free security certificate (https), renewed automatically.')}</li>
+            <li>{tr('Readable product links: /shop/ankara-wrap-dress.')}</li>
+            <li className="text-caption text-fg-subtle">{tr('QR codes and campaign links are on every plan.')}</li>
           </ul>
         </div>
         </Card> :
@@ -87,7 +89,7 @@ export function Domains() {
       <>
           {!planOk &&
         <InlineAlert tone="warning" title="Your plan no longer includes custom domains" action={<UpgradeButton plan={DOMAIN_PLAN} feature="Custom domains" />}>
-              Connected domains keep working, but you can’t add new ones.
+              {tr('Connected domains keep working, but you can’t add new ones.')}
             </InlineAlert>
         }
           {data.domains.length === 0 ?
@@ -110,7 +112,7 @@ export function Domains() {
             </div>
         }
           <p className="text-caption text-fg-subtle">
-            Prototype: DNS checks and certificates are simulated, and the record targets are examples until hosting is chosen.
+            {tr('Prototype: DNS checks and certificates are simulated, and the record targets are examples until hosting is chosen.')}
           </p>
         </>
       }

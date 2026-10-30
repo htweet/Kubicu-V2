@@ -20,6 +20,7 @@ import { Tabs } from '../../components/ui/Tabs';
 import { Sheet } from '../../components/ui/Sheet';
 import { Dialog } from '../../components/ui/Dialog';
 import { NotFoundInline } from '../../components/forms/NotFoundInline';
+import { useT } from '../../contexts/LocaleContext';
 
 type Tab = 'build' | 'responses' | 'settings';
 const tabs: Tab[] = ['build', 'responses', 'settings'];
@@ -34,6 +35,7 @@ export function FormEditor() {
 }
 
 function FormEditorInner() {
+  const { t: tr } = useT();
   const { formId } = useParams();
   const { current } = useWorkspace();
   const team = useTeam();
@@ -61,13 +63,13 @@ function FormEditorInner() {
 
   const setStatus = (status: FormDef['status']) => {
     if (status === 'live' && issues.length) {
-      toast.error('Fix the form first', { description: issues[0] });
+      toast.error(tr('Fix the form first'), { description: tr(issues[0]) });
       return;
     }
     save({ status });
     team.log('audience', `${status === 'live' ? 'Set live' : status === 'closed' ? 'Closed' : 'Moved to draft'} the form “${form.name}”`, `/app/forms/${form.id}`);
-    toast.success(status === 'live' ? 'Form is live' : status === 'closed' ? 'Form closed' : 'Back to draft', {
-      description: status === 'live' ? 'Add it to a page with the Form block in the canvas.' : 'Form blocks show a “not accepting responses” message.'
+    toast.success(tr(status === 'live' ? 'Form is live' : status === 'closed' ? 'Form closed' : 'Back to draft'), {
+      description: tr(status === 'live' ? 'Add it to a page with the Form block in the canvas.' : 'Form blocks show a “not accepting responses” message.')
     });
   };
 
@@ -75,14 +77,14 @@ function FormEditorInner() {
     const now = new Date().toISOString();
     const copy: FormDef = { ...form, id: uid('form'), name: `${form.name} (copy)`, status: 'draft', sample: undefined, createdAt: now, updatedAt: now };
     update((d) => ({ ...d, forms: [copy, ...d.forms] }));
-    toast.success('Form duplicated');
+    toast.success(tr('Form duplicated'));
     navigate(`/app/forms/${copy.id}`);
   };
 
   const remove = () => {
     update((d) => ({ forms: d.forms.filter((f) => f.id !== form.id), submissions: d.submissions.filter((s) => s.formId !== form.id) }));
     team.log('audience', `Deleted the form “${form.name}”`);
-    toast.success('Form deleted');
+    toast.success(tr('Form deleted'));
     navigate('/app/forms');
   };
 
@@ -92,17 +94,17 @@ function FormEditorInner() {
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-5 py-8 md:px-8">
       <div className="flex flex-col gap-4">
         <Link to="/app/forms" className="inline-flex w-fit items-center gap-1.5 text-label text-fg-muted hover:text-fg">
-          <ArrowLeftIcon size={15} aria-hidden /> All forms
+          <ArrowLeftIcon size={15} aria-hidden /> {tr('All forms')}
         </Link>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <h1 className="truncate font-display text-title font-semibold text-fg">{form.name || 'Untitled form'}</h1>
+              <h1 className="truncate font-display text-title font-semibold text-fg">{form.name || tr('Untitled form')}</h1>
               {statusBadge}
               {form.sample && <Badge>Sample</Badge>}
             </div>
             <p className="mt-1 text-caption text-fg-muted">
-              {subs.length} responses · {form.fields.filter((f) => f.type !== 'hidden').length} fields
+              {tr('{n} responses', { n: subs.length })} · {tr('{n} fields', { n: form.fields.filter((f) => f.type !== 'hidden').length })}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -174,7 +176,7 @@ function FormEditorInner() {
         footer={
         <div className="flex items-center justify-between gap-3">
             <span className="inline-flex items-center gap-1.5 text-caption text-fg-subtle">
-              <EyeIcon size={14} aria-hidden /> {form.status === 'live' ? 'Live' : form.status === 'closed' ? 'Closed' : 'Draft'} · {form.fields.length} {form.fields.length === 1 ? 'question' : 'questions'}
+              <EyeIcon size={14} aria-hidden /> {tr(form.status === 'live' ? 'Live' : form.status === 'closed' ? 'Closed' : 'Draft')} · {tr('{n} questions', { n: form.fields.length })}
             </span>
             <div className="flex items-center gap-2">
               <Button size="sm" variant="tertiary" leadingIcon={RotateCcwIcon} onClick={() => setRun((n) => n + 1)}>
@@ -190,20 +192,20 @@ function FormEditorInner() {
         <div className="flex min-h-full flex-col gap-3 p-4 md:p-5">
           <div className="rounded-lg border border-line bg-overlay p-5 shadow-1 md:p-6">
             {form.fields.length === 0 ?
-            <p className="py-6 text-center text-label text-fg-muted">Add a question in Build to preview the form.</p> :
+            <p className="py-6 text-center text-label text-fg-muted">{tr('Add a question in Build to preview the form.')}</p> :
 
             <FormRunner key={`${form.id}-${form.updatedAt}-${run}`} form={form} skin={appSkin} mode="preview" headingLevel="h3" />
             }
           </div>
-          <p className="px-1 text-caption text-fg-subtle">On your page, the form uses the page’s own colours and fonts.</p>
+          <p className="px-1 text-caption text-fg-subtle">{tr('On your page, the form uses the page’s own colours and fonts.')}</p>
         </div>
       </Sheet>
 
       <Dialog
         open={deleting}
         onClose={() => setDeleting(false)}
-        title={`Delete “${form.name}”?`}
-        description={`Its ${subs.length} responses are deleted too. Contacts already added to Audience stay. Form blocks using it will ask you to choose another form before you can publish.`}
+        title={tr('Delete “{name}”?', { name: form.name })}
+        description={tr('Its {n} responses are deleted too. Contacts already added to Audience stay. Form blocks using it will ask you to choose another form before you can publish.', { n: subs.length })}
         size="sm"
         footer={
         <>

@@ -29,6 +29,7 @@ import { PartnerEditor } from '../components/collabs/PartnerEditor';
 import { PartnerDetail } from '../components/collabs/PartnerDetail';
 import { Tabs } from '../components/ui/Tabs';
 import { useTeam } from '../contexts/TeamContext';
+import { useT } from '../contexts/LocaleContext';
 import { emptyPartnerships, PARTNERSHIP_PLAN, partnershipKey, seedPartnerships, syncPartnerships } from '../utils/partnerships';
 import { WorkTogetherSheet } from '../components/partners/WorkTogetherSheet';
 import { PartnershipDetail } from '../components/partners/PartnershipDetail';
@@ -41,6 +42,7 @@ type CollabTab = 'business' | 'shops' | 'referral';
 
 /** Collaborations: business partners who sell with you (D120) and referral partners who earn commission (D103). */
 export function Collaborations() {
+  const { t: tr } = useT();
   const { current } = useWorkspace();
   const commerce = useCommerce();
   const { state: editor } = useEditor();
@@ -98,11 +100,11 @@ export function Collaborations() {
   const verified = isVerified(money.data);
   const available = balances(money.data).available;
   const openPayable = open ? open.totals.payable : 0;
-  const walletBlock = !canPay.allowed ? canPay.reason ?? 'Only the Owner can pay from the wallet.' : !verified ? 'Finish business verification to pay from your wallet.' : available < openPayable ? `Your wallet has ${formatNgn(available)} available.` : null;
+  const walletBlock = !canPay.allowed ? canPay.reason ?? tr('Only the Owner can pay from the wallet.') : !verified ? tr('Finish business verification to pay from your wallet.') : available < openPayable ? tr('Your wallet has {amount} available.', { amount: formatNgn(available) }) : null;
 
   const savePartner = (p: Partner) => {
     update((d) => ({ ...d, partners: d.partners.some((x) => x.id === p.id) ? d.partners.map((x) => x.id === p.id ? p : x) : [p, ...d.partners] }));
-    toast.success(editing === 'new' ? 'Partner invited' : 'Partner updated', { description: editing === 'new' ? 'Send them the invite from their page.' : undefined });
+    toast.success(editing === 'new' ? tr('Partner invited') : tr('Partner updated'), { description: editing === 'new' ? tr('Send them the invite from their page.') : undefined });
     setEditing(null);
     if (editing === 'new') setOpenId(p.id);
   };
@@ -110,7 +112,7 @@ export function Collaborations() {
   const setStatus = (id: string, status: Partner['status']) => {
     const now = new Date().toISOString();
     update((d) => ({ ...d, partners: d.partners.map((x) => x.id === id ? { ...x, status, stoppedAt: status === 'active' ? undefined : x.stoppedAt ?? now } : x) }));
-    toast(`Partner ${partnerStatusLabels[status].toLowerCase()}`);
+    toast(`${tr('Partner')}: ${tr(partnerStatusLabels[status])}`);
   };
 
   const pay = (method: 'wallet' | 'outside') => {
@@ -119,38 +121,38 @@ export function Collaborations() {
     const amount = due.reduce((s, l) => s + l.commissionNgn, 0);
     if (amount <= 0) return;
     if (method === 'wallet') {
-      if (walletBlock) return toast.error('Can’t pay from the wallet', { description: walletBlock });
+      if (walletBlock) return toast.error(tr('Can’t pay from the wallet'), { description: walletBlock });
       money.update((m) => ({
         ...m,
         ledger: [{ id: uid('led'), at: new Date().toISOString(), kind: 'commission', amountNgn: -amount, state: 'available', label: `Commission · ${open.partner.name}` }, ...m.ledger]
       }));
     }
     update((d) => ({ ...d, payouts: [{ id: uid('cpo'), partnerId: open.partner.id, amountNgn: amount, orderIds: due.map((l) => l.order.id), method, at: new Date().toISOString(), note: '' }, ...d.payouts] }));
-    toast.success(`${formatNgn(amount)} commission ${method === 'wallet' ? 'paid from your wallet' : 'recorded as paid'}`, { description: method === 'wallet' ? 'Test mode — sent by our licensed payment partner.' : undefined });
+    toast.success(tr(method === 'wallet' ? '{amount} commission paid from your wallet' : '{amount} commission recorded as paid', { amount: formatNgn(amount) }), { description: method === 'wallet' ? tr('Test mode — sent by our licensed payment partner.') : undefined });
   };
 
   return (
     <div className="mx-auto w-full max-w-[1100px] px-5 pb-16 pt-6 md:px-10 md:pt-8">
       <PageHeader
-        title="Collaborations"
+        title={tr('Collaborations')}
         context={current.name}
-        description={tab === 'shops' ? 'One shop link for a group of sellers. Customers browse everyone’s products; each seller takes their own orders, money and delivery.' : tab === 'business' ? 'Run a page and sell bundles with another business. Each of you is paid your own part, the moment the customer pays.' : 'Creators and resellers share your link and earn a commission on what they sell. Every naira is worked out from real orders.'}
+        description={tr(tab === 'shops' ? 'One shop link for a group of sellers. Customers browse everyone’s products; each seller takes their own orders, money and delivery.' : tab === 'business' ? 'Run a page and sell bundles with another business. Each of you is paid your own part, the moment the customer pays.' : 'Creators and resellers share your link and earn a commission on what they sell. Every naira is worked out from real orders.')}
         actions={
         tab === 'shops' ?
         <Button leadingIcon={planAtLeast(plan.id, SHARED_SHOP_PLAN) ? StoreIcon : LockIcon} disabled={!can.allowed} title={can.allowed ? undefined : can.reason} onClick={startShop}>
-              New shared shop
+              {tr('New shared shop')}
             </Button> :
         tab === 'business' ?
         <Button leadingIcon={unlocked ? HandshakeIcon : LockIcon} disabled={!can.allowed} title={can.allowed ? undefined : can.reason} onClick={startWorkTogether}>
-              Work together
+              {tr('Work together')}
             </Button> :
 
         <>
               <Button variant="tertiary" leadingIcon={SettingsIcon} onClick={() => setSettingsOpen(true)}>
-                Settings
+                {tr('Settings')}
               </Button>
               <Button leadingIcon={unlocked ? UserPlusIcon : LockIcon} disabled={!can.allowed} title={can.allowed ? undefined : can.reason} onClick={() => unlocked ? setEditing('new') : openUpgrade({ plan: COLLAB_PLAN, feature: 'Creator Collaboration' })}>
-                Invite referral partner
+                {tr('Invite referral partner')}
               </Button>
             </>
 
@@ -160,28 +162,28 @@ export function Collaborations() {
       {!unlocked &&
       <InlineAlert
         tone="info"
-        title="Creator Collaboration is on Pro and above"
+        title={tr('Creator Collaboration is on Pro and above')}
         className="mt-6"
         action={
         <Button size="sm" onClick={() => openUpgrade({ plan: COLLAB_PLAN, feature: 'Creator Collaboration' })}>
-              Upgrade
+              {tr('Upgrade')}
             </Button>
         }>
         
-          The sample partners below show how it works. Working with another business, inviting partners and paying commission need Pro.
+          {tr('The sample partners below show how it works. Working with another business, inviting partners and paying commission need Pro.')}
         </InlineAlert>
       }
 
       <Tabs<CollabTab>
-        ariaLabel="Collaborations"
+        ariaLabel={tr('Collaborations')}
         idPrefix="collab-tab"
         className="mt-6"
         value={tab}
         onChange={setTab}
         items={[
-        { id: 'business', label: 'Business partners', badge: invitesWaiting || undefined },
-        { id: 'shops', label: 'Shared shops' },
-        { id: 'referral', label: 'Referral partners' }]
+        { id: 'business', label: tr('Business partners'), badge: invitesWaiting || undefined },
+        { id: 'shops', label: tr('Shared shops') },
+        { id: 'referral', label: tr('Referral partners') }]
         } />
       
 
@@ -199,30 +201,30 @@ export function Collaborations() {
 
 
       <>
-      <section aria-label="Summary" className="mt-8 grid gap-6 border-b border-line pb-8 sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)]">
+      <section aria-label={tr('Summary')} className="mt-8 grid gap-6 border-b border-line pb-8 sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)]">
         <div>
-          <p className="text-label text-fg-muted">Commission ready to pay</p>
+          <p className="text-label text-fg-muted">{tr('Commission ready to pay')}</p>
           <p className="mt-1 font-display text-[2rem] font-semibold leading-tight tabular-nums text-fg">{formatNgn(sum('payable'))}</p>
-          <p className="mt-1 text-caption text-fg-subtle">{formatNgn(sum('pending'))} pending until orders are delivered</p>
+          <p className="mt-1 text-caption text-fg-subtle">{tr('{amount} pending until orders are delivered', { amount: formatNgn(sum('pending')) })}</p>
         </div>
         <div className="sm:border-l sm:border-line sm:pl-6">
-          <p className="text-label text-fg-muted">Sales from partners</p>
+          <p className="text-label text-fg-muted">{tr('Sales from partners')}</p>
           <p className="mt-1 text-heading font-semibold tabular-nums text-fg">{formatNgn(sum('sales'))}</p>
-          <p className="mt-1 text-caption text-fg-subtle">{rows.filter((r) => r.partner.status === 'active').length} active partners</p>
+          <p className="mt-1 text-caption text-fg-subtle">{tr('Active partners: {n}', { n: rows.filter((r) => r.partner.status === 'active').length })}</p>
         </div>
         <div className="sm:border-l sm:border-line sm:pl-6">
-          <p className="text-label text-fg-muted">Paid to partners</p>
+          <p className="text-label text-fg-muted">{tr('Paid to partners')}</p>
           <p className="mt-1 text-heading font-semibold tabular-nums text-fg">{formatNgn(sum('paid'))}</p>
-          <p className="mt-1 text-caption text-fg-subtle">All time</p>
+          <p className="mt-1 text-caption text-fg-subtle">{tr('All time')}</p>
         </div>
       </section>
 
-      <Section id="partners" title="Partners" className="mt-8">
+      <Section id="partners" title={tr('Partners')} className="mt-8">
         {rows.length === 0 ?
-          <EmptyState framed icon={HandshakeIcon} title="No partners yet" description="Invite someone who already talks to your customers — a stylist, a creator or a reseller." /> :
+          <EmptyState framed icon={HandshakeIcon} title={tr('No partners yet')} description={tr('Invite someone who already talks to your customers — a stylist, a creator or a reseller.')} /> :
 
           <Card as="div" body="flush">
-          <List label="Partners">
+          <List label={tr('Partners')}>
             {rows.map(({ partner: p, totals }) =>
               <li key={p.id}>
                 <button
@@ -236,20 +238,20 @@ export function Collaborations() {
                       {p.sample && <SampleTag />}
                     </span>
                     <span className="block truncate text-caption text-fg-muted">
-                      {p.handle || p.code} · {p.ratePct}% · {totals.orders} order{totals.orders === 1 ? '' : 's'}
+                      {p.handle || p.code} · {p.ratePct}% · {tr('Orders: {n}', { n: totals.orders })}
                     </span>
                   </span>
                   <span className="hidden text-right sm:block">
-                    <span className="block text-caption text-fg-subtle">Sales</span>
+                    <span className="block text-caption text-fg-subtle">{tr('Sales')}</span>
                     <span className="text-label tabular-nums text-fg">{formatNgn(totals.sales)}</span>
                   </span>
                   <span className="hidden text-right sm:block">
-                    <span className="block text-caption text-fg-subtle">To pay</span>
+                    <span className="block text-caption text-fg-subtle">{tr('To pay')}</span>
                     <span className="text-label font-semibold tabular-nums text-fg">{formatNgn(totals.payable)}</span>
                   </span>
                   <span className="justify-self-end">
                     <Badge tone={partnerStatusTones[p.status]} dot>
-                      {partnerStatusLabels[p.status]}
+                      {tr(partnerStatusLabels[p.status])}
                     </Badge>
                   </span>
                 </button>
@@ -258,7 +260,7 @@ export function Collaborations() {
           </List>
           </Card>
           }
-        <p className="text-caption text-fg-subtle">Commission becomes payable once an order is delivered, or 7 days after payment with no refund or dispute. Rates and the 7-day hold are example figures (D103).</p>
+        <p className="text-caption text-fg-subtle">{tr('Commission becomes payable once an order is delivered, or 7 days after payment with no refund or dispute. Rates and the 7-day hold are example figures.')}</p>
       </Section>
       </>
       }
@@ -300,7 +302,7 @@ export function Collaborations() {
         onClose={() => setSettingsOpen(false)}
         onSave={(s) => {
           update((d) => ({ ...d, settings: s }));
-          toast.success('Referral partner settings saved');
+          toast.success(tr('Referral partner settings saved'));
           setSettingsOpen(false);
         }} />
       
@@ -321,7 +323,7 @@ export function Collaborations() {
         onAccept={() => {
           if (!open) return;
           update((d) => ({ ...d, partners: d.partners.map((x) => x.id === open.partner.id ? { ...x, status: 'active', acceptedAt: new Date().toISOString() } : x) }));
-          toast.success(`${open.partner.name} accepted`, { description: 'Orders through their link now earn commission.' });
+          toast.success(tr('{name} accepted', { name: open.partner.name }), { description: tr('Orders through their link now earn commission.') });
         }}
         onPay={pay} />
       

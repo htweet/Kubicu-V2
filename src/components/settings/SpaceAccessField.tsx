@@ -2,16 +2,18 @@ import React from 'react';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
 import { workspaceSpaces } from '../../utils/spaces';
 import { Segmented } from '../ui/Segmented';
+import { useT } from '../../contexts/LocaleContext';
 
 /** Every space, or chosen ones (D57). Owners and Admins always have every space. */
 export function SpaceAccessField({ value, onChange }: {value: string[] | null;onChange: (v: string[] | null) => void;}) {
+  const { t } = useT();
   const { current } = useWorkspace();
   const spaces = workspaceSpaces(current).filter((s) => !s.archivedAt);
   const mode = value === null ? 'all' : 'some';
 
   return (
     <fieldset className="flex flex-col gap-2.5">
-      <legend className="mb-2 text-label font-medium text-fg">Spaces they can edit</legend>
+      <legend className="mb-2 text-label font-medium text-fg">{t('Spaces they can edit')}</legend>
       <Segmented<'all' | 'some'>
         ariaLabel="Spaces they can edit"
         fullWidth
@@ -42,7 +44,7 @@ export function SpaceAccessField({ value, onChange }: {value: string[] | null;on
         })}
         </ul>
       }
-      {mode === 'some' && (value ?? []).length === 0 && <p className="text-caption text-warning">They’ll be able to see the workspace but not edit any space.</p>}
+      {mode === 'some' && (value ?? []).length === 0 && <p className="text-caption text-warning">{t('They’ll be able to see the workspace but not edit any space.')}</p>}
     </fieldset>);
 
 }

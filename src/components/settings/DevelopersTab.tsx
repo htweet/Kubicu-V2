@@ -11,9 +11,11 @@ import { WebhooksSection } from './developers/WebhooksSection';
 import { ConnectedAppsSection } from './developers/ConnectedAppsSection';
 import { YourExtensionsSection } from './developers/YourExtensionsSection';
 import { canSubmitExtensions } from '../../utils/extensionSubmissions';
+import { useT } from '../../contexts/LocaleContext';
 
 /** Settings → Developers (D131): webhooks on Pro+, API keys and connected apps on Business+. Owner and Admin manage. */
 export function DevelopersTab() {
+  const { t: tr } = useT();
   const plan = usePlan();
   const can = useCan('extensions.manage');
   const hasWebhooks = planAtLeast(plan.id, 'pro');
@@ -22,13 +24,13 @@ export function DevelopersTab() {
   return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <p className="max-w-2xl text-label text-fg-muted">Connect your own software to KUBICU. Everything here is test mode in the prototype — no real requests are made.</p>
+        <p className="max-w-2xl text-label text-fg-muted">{tr('Connect your own software to KUBICU. Everything here is test mode in the prototype — no real requests are made.')}</p>
         <Link to="/developers" target="_blank" className="inline-flex shrink-0 items-center gap-1.5 text-label font-medium text-action underline-offset-2 hover:underline">
           <BookOpenIcon size={15} aria-hidden />
-          Developer docs
+          {tr('Developer docs')}
         </Link>
       </div>
-      {!can.allowed && <InlineAlert tone="info" title="View only">{can.reason ?? 'Only Owners and Admins can change developer settings.'}</InlineAlert>}
+      {!can.allowed && <InlineAlert tone="info" title="View only">{can.reason ?? tr('Only Owners and Admins can change developer settings.')}</InlineAlert>}
 
       {hasWebhooks ?
       <WebhooksSection canManage={can.allowed} /> :
@@ -56,6 +58,9 @@ export function DevelopersTab() {
 }
 
 function Locked({ title, text, plan, feature }: {title: string;text: string;plan: 'creator' | 'pro' | 'business';feature: string;}) {
+  const { t } = useT();
+  title = t(title);
+  text = t(text);
   return (
     <section className="flex flex-col gap-3 border-t border-line pt-6 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-start gap-3">

@@ -30,6 +30,7 @@ import { KitContentFields } from '../../components/domains/KitContentFields';
 import { KitActualSize } from '../../components/domains/KitActualSize';
 import { PHOTO_ITEMS } from '../../utils/domains/printKitTemplates';
 import { cn } from '../../utils/cn';
+import { useT } from '../../contexts/LocaleContext';
 
 const itemIcons: Record<KitItem, typeof CreditCardIcon> = { card: CreditCardIcon, sticker: StickerIcon, insert: PackageIcon, receipt: ReceiptIcon, hangtag: TagIcon, voucher: TicketIcon, flyer: MegaphoneIcon, counter: StoreIcon, stamp: StampIcon, label: PackageCheckIcon };
 const MM = 3.78; // CSS px per millimetre
@@ -49,6 +50,7 @@ const emptyStore = (): KitStore => ({ draft: null, item: 'card', inkMode: null, 
 
 /** Domains & QR → Print kit: designed print pieces carrying a tracked QR code (D86, expanded D118). */
 export function PrintKit() {
+  const { t: tr } = useT();
   const { data } = useDomains();
   const { current } = useWorkspace();
   const can = useCan('pages.edit');
@@ -105,13 +107,13 @@ export function PrintKit() {
 
   const print = () => {
     if (!ready || !qrUrl) return;
-    if (!printKit(item, kit, qrUrl)) return toast.error('Your browser blocked the print window', { description: 'Allow pop-ups for KUBICU and try again.' });
+    if (!printKit(item, kit, qrUrl)) return toast.error(tr('Your browser blocked the print window'), { description: tr('Allow pop-ups for KUBICU and try again.') });
     team.log('pages', `printed ${spec.label.toLowerCase()}`, '/app/print-kit');
   };
 
   const reset = () => {
     store.update((s) => ({ ...s, draft: null, inkMode: null, photoPx: null }));
-    toast('Design reset', { description: 'Back to the starting layout. Your QR codes are unchanged.' });
+    toast(tr('Design reset'), { description: tr('Back to the starting layout. Your QR codes are unchanged.') });
   };
 
   if (usable.length === 0)
@@ -125,7 +127,7 @@ export function PrintKit() {
         description="Every printed piece uses one of your QR codes, so scans are counted and you can change where it goes without reprinting."
         action={
         <Link to="/app/qr" className="inline-flex h-10 items-center gap-2 rounded-md bg-action px-4 text-label font-semibold text-action-fg transition-colors duration-150 hover:bg-action-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-                <PlusIcon size={16} aria-hidden /> New QR code
+                <PlusIcon size={16} aria-hidden /> {tr('New QR code')}
               </Link>
         } />
       
@@ -154,7 +156,7 @@ export function PrintKit() {
         <div className="flex min-w-0 flex-col gap-10">
           <section aria-labelledby="kit-what">
             <h2 id="kit-what" className="text-heading font-semibold text-fg">
-              What to print
+              {tr('What to print')}
             </h2>
             <div role="radiogroup" aria-labelledby="kit-what" className="mt-3 grid gap-2 sm:grid-cols-2">
               {kitItems.map((k) => {
@@ -176,10 +178,10 @@ export function PrintKit() {
                       <Icon size={18} />
                     </span>
                     <span className="min-w-0">
-                      <span className="block text-label font-semibold text-fg">{k.label}</span>
-                      <span className="block text-caption text-fg-muted">{k.goodFor}</span>
+                      <span className="block text-label font-semibold text-fg">{tr(k.label)}</span>
+                      <span className="block text-caption text-fg-muted">{tr(k.goodFor)}</span>
                       <span className="mt-0.5 block text-caption text-fg-subtle">
-                        {k.detail} · {k.perSheet.toLowerCase()}
+                        {tr(k.detail)} · {tr(k.perSheet)}
                       </span>
                     </span>
                   </button>);
@@ -192,7 +194,7 @@ export function PrintKit() {
 
           <section aria-labelledby="kit-design" className="flex flex-col gap-4 border-t border-line pt-8">
             <h2 id="kit-design" className="text-heading font-semibold text-fg">
-              Look and feel
+              {tr('Look and feel')}
             </h2>
             <KitDesignFields
               item={item}
@@ -209,7 +211,7 @@ export function PrintKit() {
 
           <section aria-labelledby="kit-content" className="flex flex-col gap-4 border-t border-line pt-8">
             <h2 id="kit-content" className="text-heading font-semibold text-fg">
-              Content
+              {tr('Content')}
             </h2>
             <SelectInput<string>
               id="kit-qr"
@@ -217,7 +219,7 @@ export function PrintKit() {
               value={qr?.id ?? ''}
               onChange={setQrId}
               options={usable.map((q) => ({ value: q.id, label: data.links.find((l) => l.id === q.linkId)?.name ?? 'QR code' }))}
-              hint={link ? `Opens ${shortDisplay(mainHandle, link.slug, host)} — scans are counted in Analytics, and you can change where it goes without reprinting.` : undefined} />
+              hint={link ? tr('Opens {link} — scans are counted in Analytics, and you can change where it goes without reprinting.', { link: shortDisplay(mainHandle, link.slug, host) }) : undefined} />
             
             <KitContentFields
               spec={spec}
@@ -237,7 +239,7 @@ export function PrintKit() {
           <div className="overflow-hidden rounded-lg border border-line bg-raised">
             <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
               <h2 id="kit-preview" className="text-label font-semibold text-fg">
-                Preview · actual design
+                {tr('Preview · actual design')}
               </h2>
               {showBack ?
               <Segmented<'front' | 'back'>
@@ -271,23 +273,23 @@ export function PrintKit() {
               }
             </div>
             <div className="flex items-center justify-between gap-3 border-t border-line px-4 py-2.5">
-              <span className="text-caption text-fg-subtle">Scaled to fit</span>
+              <span className="text-caption text-fg-subtle">{tr('Scaled to fit')}</span>
               <Button size="sm" variant="tertiary" leadingIcon={RulerIcon} disabled={!qrUrl} onClick={() => setActual(true)}>
                 View actual size
               </Button>
             </div>
 
             <div className="border-t border-line px-4 py-3">
-              <p className="text-caption font-semibold text-fg-subtle">Print check</p>
-              <ul className="mt-2 flex flex-col gap-1.5" aria-label="Print check">
+              <p className="text-caption font-semibold text-fg-subtle">{tr('Print check')}</p>
+              <ul className="mt-2 flex flex-col gap-1.5" aria-label={tr('Print check')}>
                 {checks.map((c) => {
                   const Icon = c.level === 'pass' ? CheckCircle2Icon : c.level === 'warn' ? AlertTriangleIcon : XCircleIcon;
                   return (
                     <li key={c.id} className="flex items-start gap-2 text-caption">
                       <Icon size={14} className={cn('mt-0.5 shrink-0', c.level === 'pass' ? 'text-success' : c.level === 'warn' ? 'text-warning' : 'text-danger')} aria-hidden />
                       <span className={c.level === 'fail' ? 'text-fg' : 'text-fg-muted'}>
-                        <span className="sr-only">{c.level === 'pass' ? 'OK: ' : c.level === 'warn' ? 'Warning: ' : 'Must fix: '}</span>
-                        {c.text}
+                        <span className="sr-only">{tr(c.level === 'pass' ? 'OK' : c.level === 'warn' ? 'Warning' : 'Must fix')}: </span>
+                        {tr(c.text)}
                       </span>
                     </li>);
 
@@ -297,7 +299,7 @@ export function PrintKit() {
 
             <div className="flex flex-col gap-2.5 border-t border-line p-4">
               <Button leadingIcon={PrinterIcon} fullWidth disabled={!can.allowed || !ready} title={can.allowed ? undefined : can.reason} onClick={print}>
-                Print {spec.label.toLowerCase()} yourself
+                {tr('Print it yourself')}
               </Button>
               {item !== 'receipt' &&
               <Button variant="secondary" leadingIcon={TruckIcon} fullWidth disabled={!can.allowed || !ready} title={can.allowed ? undefined : can.reason} onClick={() => setOrdering(true)}>
@@ -306,8 +308,8 @@ export function PrintKit() {
               }
               <p className="text-caption text-fg-subtle">
                 {item === 'receipt' ?
-                'Opens a print sheet for your 80 mm receipt printer. Print at 100% scale.' :
-                `Print at home (${spec.perSheet.toLowerCase()}, at 100% scale — choose “Save as PDF” for a print shop), or have it printed and delivered anywhere in Nigeria from ${formatNgn(printPrices[item as OrderableItem][0].ngn)}.`}
+                tr('Opens a print sheet for your 80 mm receipt printer. Print at 100% scale.') :
+                tr('Print at home ({sheet}, at 100% scale — choose “Save as PDF” for a print shop), or have it printed and delivered anywhere in Nigeria from {price}.', { sheet: tr(spec.perSheet), price: formatNgn(printPrices[item as OrderableItem][0].ngn) })}
               </p>
             </div>
           </div>

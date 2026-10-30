@@ -8,9 +8,11 @@ import { Card } from '../ui/layout/Card';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import { RemoveDemoWorkspaceDialog } from './RemoveDemoWorkspaceDialog';
+import { useT } from '../../contexts/LocaleContext';
 
 /** Settings → Business, only inside the built-in demo workspace (D201). */
 export function DemoWorkspaceCard() {
+  const { t: tr } = useT();
   const { current, workspaces } = useWorkspace();
   const can = useTeam().can('billing.manage');
   const [open, setOpen] = useState(false);
@@ -26,11 +28,11 @@ export function DemoWorkspaceCard() {
       
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-label text-fg-muted">
-          {hasOwn ? 'Finished exploring? Remove it to keep only your own workspaces.' :
+          {hasOwn ? tr('Finished exploring? Remove it to keep only your own workspaces.') :
           <>
-              Create your own workspace first, then you can remove this one.{' '}
+              {tr('Create your own workspace first, then you can remove this one.')}{' '}
               <Link to="/start" className="font-medium text-fg underline underline-offset-4 hover:text-action focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-                Create a workspace
+                {tr('Create a workspace')}
               </Link>
             </>
           }

@@ -17,6 +17,7 @@ import { SsoTab } from '../../components/settings/SsoTab';
 import { DevelopersTab } from '../../components/settings/DevelopersTab';
 import { IntegrationsTab } from '../../components/settings/IntegrationsTab';
 import { useBilling } from '../../contexts/BillingContext';
+import { useT } from '../../contexts/LocaleContext';
 
 const tabs = [
 { id: 'team', label: 'Team', to: '/app/settings', end: true },
@@ -48,6 +49,7 @@ const panels: Record<string, () => React.ReactElement | null> = {
 
 /** Workspace settings. Team and Roles now; approvals and the activity log follow (D57–D59). */
 export function Settings() {
+  const { t: tr } = useT();
   const { tab = 'team' } = useParams();
   const { current } = useWorkspace();
   const { me, role, data, can } = useTeam();
@@ -62,12 +64,12 @@ export function Settings() {
       <PageHeader
         title="Settings"
         context={current.name}
-        description={`Settings for everyone in ${current.name}. You’re ${me.name} — ${roleInfo[role].label}.`} />
+        description={tr('Settings for everyone in {workspace}. You’re {name} — {role}.', { workspace: current.name, name: me.name, role: tr(roleInfo[role].label) })} />
       
       <p className="mt-2 text-caption text-fg-subtle">
-        Your own profile, password and preferences are in{' '}
+        {tr('Your own profile, password and preferences are in')}{' '}
         <Link to="/app/account" className="font-medium text-fg underline-offset-2 hover:underline">
-          Your account
+          {tr('Your account')}
         </Link>
         .
       </p>

@@ -54,3 +54,28 @@ Prototype status: ✅ interactive · 🟡 partial · ⏳ planned placeholder · 
 | MB-A17 | Lightweight mode / low bandwidth | P0 | Visitor/Owner | Public page, canvas Check | data saver, page weight | — | ✅ | D85, D88, D126 · smaller image versions need a CDN |
 | DP-9/10 | Honest microcopy & mock data labelling | P0 | All | All | IllustrativeTag, demo notes | — | ✅ | MVP-D |
 | DP-11 | Every control works, is marked illustrative, or disabled with reason | P0 | All | All | Menu reasons, PlanLock, tooltips | — | ✅ | MVP-D |
+
+## Creator pages, Marketplace, Short Links & Audience Manager (D268–D273)
+
+Source: `docs/KUBICU_LINKTREE_PARITY_AND_UPGRADE_MAGIC_PATTERNS.md` (LP). Route list and limits: `docs/PUBLIC_SITE_REGISTER.md`.
+
+| Req ID | Requirement | Priority / phase | Role | Screen / flow | Component | States | Prototype | Disposition / open questions |
+|---|---|---|---|---|---|---|---|---|
+| LP-4 | Public information architecture: `/features`, `/for/:segment`, `/marketplace`, `/tools/short-links`, `/features/audience-manager` | P1 | Visitor | Website | `pages/marketing/*`, `data/featureIndex.ts`, `data/solutions.ts` | Ready / Needs a plan / Simulated labels | ✅ | D268 · `/themes`, `/blocks`, `/resources` redirect to existing pages |
+| LP-5 / LP-11 | Icon-rich mega menu (hover, click, keyboard, Escape) and phone accordion from one schema | P1 | Visitor | Website header, footer | `data/siteMenu.ts`, `MegaMenu`, `MobileSiteMenu` | open, focus return | ✅ | D268 |
+| LP-5.1 | Menu usage measured without personal data | P2 | Staff | Super admin → Business reporting → Website menu | `AdminReporting` | empty, per device | ✅ 🧪 | D273 · daily counts only, 90 days, skips DNT/GPC · per device until a server endpoint exists |
+| LP-6 | Creator pillar page: creator types, media kit, collaborations, page-to-selling path, Copilot, phone + desktop example | P1 | Visitor | `/for/creators` | `ForCreators`, `data/creatorsPage.ts`, `ExampleDesktop` | tabs (arrow keys) | ✅ | D273 · other seven segments keep the shared layout |
+| LP-7.1–7.2 | Marketplace taxonomy, search with everyday words, filters, sort, related items | P1 | Visitor | `/marketplace`, categories, listing | `MarketplaceBrowser`, `ListingCard` | empty search, not available yet | ✅ | D268, checked D273 · no "Popular" sort until real install data exists |
+| LP-7.3 | Install journey checks plan, role and installed state | P1 | Owner | Listing → workspace install | `InstallPanel` | locked by plan/role, installed | ✅ | D268 · AI workflow packs shown "Not available yet" |
+| LP-8.1 | Public short-link page with safe demo | P1 | Visitor | `/tools/short-links` | `ShortLinkDemo`, `LinkStatsSample` | refused address, 5-try cap | ✅ | D268 · demo saves nothing |
+| LP-8.2 | Short links as a core app feature, any destination, tags, pause, destination history | P1 | Owner | Short links (`/app/links`) | `CampaignLinks`, `utils/linkSafety.ts` | paused, ended, blocked | ✅ | D268, D270 · old Campaign links address redirects |
+| LP-8.2 | Shorten from the canvas and the publish screen | P1 | Owner | Page settings → Short link; publish success | `ShortLinkQuick` | not published yet, no permission | ✅ | D269 |
+| LP-8.3 | Per-link stats: clicks, uniques, outcomes, devices, time of day, landing pages, sources, latest clicks, export | P1 | Owner | `/app/links/:id` | `utils/analytics/linkStats.ts` | empty period, invalid clicks left out | ✅ | D270, D271 · no location data by design |
+| LP-8.3 | Search, filter, sort, scheduled start, WhatsApp destinations, saved campaign-tag sets, creation limit | P1 | Owner | Short links list | `CampaignLinks` | scheduled, needs attention | ✅ | D271 · 30/hour and 12 sets are example figures |
+| LP-8.4 | Bot and burst filtering, daily health checks, delete click data | P1 | Owner | Short links, Notifications | `ShortLink`, `NotificationsContext` | needs attention, deleted | ✅ 🧪 | D271 · server-side bot filtering, down-site detection and abuse limits need the live service |
+| LP-9.1 | Public Audience Manager page | P1 | Visitor | `/features/audience-manager` | `AudienceFlow`, `AudienceDashboardSample` | sample labelled | ✅ | D268 |
+| LP-9.2 | Saved segments with an "All of / Any of" rule builder | P1 | Owner | Audience | `SegmentBar` | live count, consent suggestion | ✅ | D268, D272 |
+| LP-9.2 | Overview: total contacts and growth over time | P1 | Owner | Audience | Audience overview | 30 d / 90 d / 12 m | ✅ | D272 · deleted contacts aren't in the history |
+| LP-9.3 | Sources view and first-touch attribution (channel, short link, page) | P1 | Owner | Audience → Sources | `AudienceSources` | older contacts "not recorded" | ✅ | D268 |
+| LP-9.4 | Consent record, logged exports, email and Sheets sync history with retry | P1 | Owner | Contact detail, Activity log, Extensions | `ContactSyncTools` | synced, partly synced, failed | ✅ 🧪 | D268, D272 · real sending to Mailchimp/Brevo/Sheets needs a backend |
+| LP-12 | Workspace actions open in a right-side sheet | P1 | Owner | All workspace dialogs | `components/ui/Dialog.tsx` | phone: full-height from the bottom | ✅ | D272 · public pages keep a centred dialog |

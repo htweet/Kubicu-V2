@@ -5,6 +5,7 @@ import { InstallPanel } from '../../../components/marketing/marketplace/InstallP
 import { ListingPreview } from '../../../components/marketing/marketplace/ListingPreview';
 import { ListingCard } from '../../../components/marketing/marketplace/ListingCard';
 import { ListingStatusLabel } from '../../../components/marketing/marketplace/ListingStatusLabel';
+import { KitShowcase } from '../../../components/marketing/marketplace/KitShowcase';
 import { useMarketplace } from '../../../contexts/MarketplaceContext';
 import { listingKindById } from '../../../data/marketplaceKinds';
 import { coreModules } from '../../../data/coreModules';
@@ -78,7 +79,9 @@ export function MarketplaceListing() {
               <p className="max-w-2xl text-[16px] leading-relaxed text-fg-muted">{listing.description}</p>
             </Section>
 
-            {listing.inside.length > 0 &&
+            {listing.kit && <KitShowcase kit={listing.kit} />}
+
+            {listing.inside.length > 0 && !listing.kit &&
             <Section id="inside" title={listing.kind === 'blocks' ? 'Blocks inside' : 'What you get'}>
                 <ul className="grid gap-x-8 gap-y-3 sm:grid-cols-2">
                   {listing.inside.map((x) =>

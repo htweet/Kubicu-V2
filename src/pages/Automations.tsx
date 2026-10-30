@@ -8,25 +8,28 @@ import type { Automation, AutomationRun } from '../types/ops';
 import { useOps } from '../contexts/OpsContext';
 import { recipeGroups, recipes, triggerLabels, type RecipeGroup } from '../data/automationRecipes';
 import { Segmented } from '../components/ui/Segmented';
-import { addRun, stepLabel, testRun } from '../utils/ops/automation';
+import { addRun, testRun } from '../utils/ops/automation';
 import { formatRelative, formatTimestamp } from '../utils/format';
 import { PageHeader } from '../components/shell/PageHeader';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { InlineAlert } from '../components/ui/InlineAlert';
 import { Dialog } from '../components/ui/Dialog';
-import { AutomationBuilder, newAutomation } from '../components/automations/AutomationBuilder';
+import { AutomationBuilder, newAutomation, useStepLabel } from '../components/automations/AutomationBuilder';
 import { RunSteps } from '../components/automations/RunSteps';
 import { PendingDrafts } from '../components/automations/PendingDrafts';
 import { SampleTag } from '../components/commerce/StatusBadges';
 import { Section } from '../components/ui/layout/Section';
 import { Card } from '../components/ui/layout/Card';
 import { List } from '../components/ui/layout/ListRow';
+import { useT } from '../contexts/LocaleContext';
 
 const statusTone = { active: 'success', paused: 'warning', draft: 'neutral' } as const;
 const statusText = { active: 'On', paused: 'Paused', draft: 'Draft' } as const;
 
 export function Automations() {
+  const { t: tr } = useT();
+  const label = useStepLabel();
   const { data, apply } = useOps();
   // ?recipe=<id> opens that recipe as a draft — e.g. "Recover unpaid checkouts" from Orders (D231).
   const [params, setParams] = useSearchParams();
@@ -47,14 +50,14 @@ export function Automations() {
   const liveRuns = runs.filter((r) => !r.run.test).length;
 
   const togglePause = () => {
-    if (apply((d) => ({ ...d, automationsPaused: !d.automationsPaused }))) toast(data.automationsPaused ? 'Automations resumed' : 'All automations paused');
+    if (apply((d) => ({ ...d, automationsPaused: !d.automationsPaused }))) toast(tr(data.automationsPaused ? 'Automations resumed' : 'All automations paused'));
   };
 
   const retry = (a: Automation, r: AutomationRun) => {
     const run = { ...testRun(a, data.automationsPaused), test: false, subject: `Retry · ${r.subject}` };
     run.steps = run.steps.map((s) => s.detail.startsWith('Preview') ? { ...s, detail: 'Previewed (prototype doesn’t send)' } : s);
     if (apply((d) => addRun(d, a.id, run))) {
-      toast('Retried', { description: 'Logged as a new run.' });
+      toast(tr('Retried'), { description: tr('Logged as a new run.') });
       setRunView(null);
     }
   };
@@ -79,17 +82,17 @@ export function Automations() {
         } />
       
       <InlineAlert tone="info" title="Automations that are on run for real" className="mt-6">
-        Every trigger reacts to real orders, bookings, forms, stock, subscriptions, due dates, unfinished checkouts, campaigns and quiet contacts — only things that happen after you switch it on. Tags and follow-ups are added, reports and notices land in your notifications, and AI drafts wait below for you. Customer emails and WhatsApp messages are written but not sent until a messaging partner is connected. In this prototype, runs happen while KUBICU is open in a tab.
+        {tr('Every trigger reacts to real orders, bookings, forms, stock, subscriptions, due dates, unfinished checkouts, campaigns and quiet contacts — only things that happen after you switch it on. Tags and follow-ups are added, reports and notices land in your notifications, and AI drafts wait below for you. Customer emails and WhatsApp messages are written but not sent until a messaging partner is connected. In this prototype, runs happen while KUBICU is open in a tab.')}
       </InlineAlert>
       {data.automationsPaused &&
       <InlineAlert tone="warning" title="Everything is paused" className="mt-3">
-          No automation runs until you resume. Useful while you change prices or close for a holiday.
+          {tr('No automation runs until you resume. Useful while you change prices or close for a holiday.')}
         </InlineAlert>
       }
 
       {quiet.on &&
       <p className="mt-3 text-caption text-fg-muted">
-          Quiet hours {quiet.from}–{quiet.to}: customer messages written then wait until {quiet.to}.
+          {tr('Quiet hours {from}–{to}: customer messages written then wait until {to}.', { from: quiet.from, to: quiet.to })}
         </p>
       }
       <AutomationSettingsSheet open={settingsOpen} onClose={() => setSettingsOpen(false)} />
@@ -100,7 +103,7 @@ export function Automations() {
         <div className="flex flex-col gap-10">
           <Section id="yours" title="Your automations">
             {data.automations.length === 0 ?
-            <p className="text-label text-fg-muted">None yet. Start from a recipe below.</p> :
+            <p className="text-label text-fg-muted">{tr('None yet. Start from a recipe below.')}</p> :
 
             <Card as="div" body="flush">
               <List label="Your automations">
@@ -115,10 +118,10 @@ export function Automations() {
                         {a.sample && <SampleTag />}
                       </span>
                       <span className="text-caption text-fg-muted">
-                        {triggerLabels[a.trigger].label} → {a.steps.map(stepLabel).join(' → ')}
+                        {tr(triggerLabels[a.trigger].label)} → {a.steps.map(label).join(' → ')}
                       </span>
                       <span className="text-caption text-fg-subtle">
-                        {a.runs.filter((r) => !r.test).length} runs · edited {formatRelative(a.updatedAt)}
+                        {tr('{n} runs · edited {when}', { n: a.runs.filter((r) => !r.test).length, when: formatRelative(a.updatedAt) })}
                       </span>
                     </button>
                   </li>
@@ -128,7 +131,7 @@ export function Automations() {
             }
           </Section>
 
-          <Section id="recipes" title="Start from a recipe" description={`${recipes.length} ready-made follow-ups. Each opens as a draft you can change before switching it on.`}>
+          <Section id="recipes" title="Start from a recipe" description={tr('{n} ready-made follow-ups. Each opens as a draft you can change before switching it on.', { n: recipes.length })}>
             <div className="mb-4 -mx-1 overflow-x-auto overflow-y-hidden px-1">
               <Segmented<'all' | RecipeGroup>
                 ariaLabel="Recipe type"
@@ -145,12 +148,12 @@ export function Automations() {
               <li key={r.id}>
                     <button type="button" onClick={() => setEditing(newAutomation(r.id))} className="flex h-full w-full flex-col rounded-md border border-line p-4 text-left transition-colors duration-150 hover:border-line-strong hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
                       <WorkflowIcon size={18} strokeWidth={2.25} className="text-action" aria-hidden />
-                      <span className="mt-3 text-label font-semibold text-fg">{r.name}</span>
-                      <span className="mt-1 text-caption text-fg-muted">{r.description}</span>
+                      <span className="mt-3 text-label font-semibold text-fg">{tr(r.name)}</span>
+                      <span className="mt-1 text-caption text-fg-muted">{tr(r.description)}</span>
                       <span className="mt-auto pt-3 text-caption text-fg-subtle">
-                        {triggerLabels[r.trigger].label}
-                        {r.marketing ? ' · Opted-in contacts only' : ''}
-                        {r.needs ? ` · Needs ${r.needs}` : ''}
+                        {tr(triggerLabels[r.trigger].label)}
+                        {r.marketing ? ` · ${tr('Opted-in contacts only')}` : ''}
+                        {r.needs ? ` · ${tr('Needs {what}', { what: tr(r.needs) })}` : ''}
                       </span>
                     </button>
                   </li>
@@ -159,9 +162,9 @@ export function Automations() {
           </Section>
         </div>
 
-        <Section id="runs" title="Run history" description={`${liveRuns} run${liveRuns === 1 ? '' : 's'}${failed > 0 ? ` · ${failed} failed` : ''} · usage isn’t billed in this prototype`}>
+        <Section id="runs" title="Run history" description={`${tr('{n} runs', { n: liveRuns })}${failed > 0 ? ` · ${tr('{n} failed', { n: failed })}` : ''} · ${tr('usage isn’t billed in this prototype')}`}>
           {runs.length === 0 ?
-          <p className="text-label text-fg-muted">No runs yet. Use “Test run” in any automation.</p> :
+          <p className="text-label text-fg-muted">{tr('No runs yet. Use “Test run” in any automation.')}</p> :
 
           <List ruled label="Run history">
               {runs.map(({ automation, run }) =>
