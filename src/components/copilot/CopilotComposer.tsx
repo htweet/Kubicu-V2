@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { ArrowUpIcon, ImagePlusIcon } from 'lucide-react';
 import type { CopilotQuestion, CopilotStage } from '../../types/copilot';
+import { useT } from '../../contexts/LocaleContext';
 import { cn } from '../../utils/cn';
 
 interface Props {
@@ -11,15 +12,20 @@ interface Props {
   onPhotos: (files: File[]) => Promise<string | null>;
 }
 
-/** Typing always works; photos and Skip appear only when the question takes them (D262). */
+/** Typing always works; photos and Skip appear only when the question takes them (D262). Translated in D339. */
 export function CopilotComposer({ question, stage, onText, onSkip, onPhotos }: Props) {
+  const { t: tr } = useT();
   const [text, setText] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const file = useRef<HTMLInputElement>(null);
   const locked = stage === 'generating';
   const wantsPhotos = question?.input === 'images';
-  const placeholder = locked ? 'Making your draft…' : question?.placeholder ?? (stage === 'ready' || stage === 'brief' ? 'Ask for a change, e.g. “make it warmer”' : 'Type a message…');
+  const placeholder = locked ?
+  tr('Making your draft…') :
+  question?.placeholder ?
+  tr(question.placeholder) :
+  tr(stage === 'ready' || stage === 'brief' ? 'Ask for a change, e.g. “make it warmer”' : 'Type a message…');
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,7 +41,7 @@ export function CopilotComposer({ question, stage, onText, onSkip, onPhotos }: P
     setBusy(true);
     const problem = await onPhotos(Array.from(files));
     setBusy(false);
-    setError(problem);
+    setError(problem ? tr(problem) : null);
     if (file.current) file.current.value = '';
   };
 
@@ -48,15 +54,15 @@ export function CopilotComposer({ question, stage, onText, onSkip, onPhotos }: P
               <input ref={file} type="file" accept="image/jpeg,image/png,image/webp" multiple={(question?.maxImages ?? 6) > 1} className="sr-only" id="copilot-photos" onChange={(e) => pick(e.target.files)} />
               <label
             htmlFor="copilot-photos"
-            className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-full bg-action px-4 text-label font-semibold text-action-fg transition-transform duration-150 ease-out active:scale-[0.97] focus-within:ring-2 focus-within:ring-focus">
+            className="inline-flex h-10 cursor-pointer items-center gap-2 whitespace-nowrap rounded-full bg-action px-4 text-label font-semibold text-action-fg transition-transform duration-150 ease-out active:scale-[0.97] focus-within:ring-2 focus-within:ring-focus">
             
-                <ImagePlusIcon size={16} aria-hidden /> {busy ? 'Adding…' : question?.topic === 'logo' ? 'Choose my logo' : `Choose photos (up to ${question?.maxImages ?? 5})`}
+                <ImagePlusIcon size={16} aria-hidden /> {busy ? tr('Adding…') : question?.topic === 'logo' ? tr('Choose my logo') : tr('Choose photos (up to {n})', { n: question?.maxImages ?? 5 })}
               </label>
             </>
         }
           {question?.skippable &&
-        <button type="button" onClick={onSkip} className="inline-flex h-10 items-center rounded-full px-4 text-label font-medium text-fg-muted hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-              Skip for now
+        <button type="button" onClick={onSkip} className="inline-flex h-10 items-center whitespace-nowrap rounded-full px-4 text-label font-medium text-fg-muted hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+              {tr('Skip for now')}
             </button>
         }
         </div>
@@ -68,7 +74,7 @@ export function CopilotComposer({ question, stage, onText, onSkip, onPhotos }: P
       }
       <form onSubmit={submit} className="flex items-end gap-2 rounded-[26px] border border-line-strong bg-raised p-1.5 pl-4 focus-within:ring-2 focus-within:ring-focus">
         <label htmlFor="copilot-input" className="sr-only">
-          Message Copilot
+          {tr('Message Copilot')}
         </label>
         <textarea
           id="copilot-input"
@@ -88,7 +94,7 @@ export function CopilotComposer({ question, stage, onText, onSkip, onPhotos }: P
         
         <button
           type="submit"
-          aria-label="Send"
+          aria-label={tr('Send')}
           disabled={locked || !text.trim()}
           className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-action text-action-fg transition-[opacity,transform] duration-150 ease-out active:scale-[0.94] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus disabled:opacity-40')}>
           

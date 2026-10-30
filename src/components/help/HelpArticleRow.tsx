@@ -3,9 +3,11 @@ import { Link } from 'react-router-dom';
 import { ChevronRightIcon, ImageIcon, ListOrderedIcon } from 'lucide-react';
 import type { HelpArticle } from '../../types/help';
 import { helpArticleHref, shotFor } from '../../utils/help';
+import { useT } from '../../contexts/LocaleContext';
 
-/** One guide answer in the list: the question, a one-line answer, and what the full guide contains. */
+/** One guide answer in the list: the question, a one-line answer, and what the full guide contains. Labels translated in D332; the guide text is English for now. */
 export function HelpArticleRow({ article: a }: {article: HelpArticle;}) {
+  const { t: tr } = useT();
   const steps = a.steps?.length ?? 0;
   const picture = !!shotFor(a);
   return (
@@ -21,12 +23,12 @@ export function HelpArticleRow({ article: a }: {article: HelpArticle;}) {
           <span className="mt-1.5 flex flex-wrap gap-3 text-caption text-fg-subtle">
               {steps > 0 &&
             <span className="inline-flex items-center gap-1">
-                  <ListOrderedIcon size={13} aria-hidden /> {steps} steps
+                  <ListOrderedIcon size={13} aria-hidden /> {tr('Steps: {n}', { n: steps })}
                 </span>
             }
               {picture &&
             <span className="inline-flex items-center gap-1">
-                  <ImageIcon size={13} aria-hidden /> Picture
+                  <ImageIcon size={13} aria-hidden /> {tr('Picture')}
                 </span>
             }
             </span>

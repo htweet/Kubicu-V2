@@ -168,14 +168,24 @@ export function fieldError(field: FormField, value: string | string[] | undefine
   return '';
 }
 
-const opText: Record<FieldRule['op'], string> = { is: 'is', isNot: 'is not', contains: 'contains', answered: 'is answered' };
+type Translate = (key: string, vars?: Record<string, string | number>) => string;
+const plain: Translate = (key, vars) => vars ? key.replace(/\{(\w+)\}/g, (m, k: string) => k in vars ? String(vars[k]) : m) : key;
 
-export function ruleSentence(field: FormField, fields: FormField[]): string | null {
+const ruleKeys: Record<FieldRule['op'], string> = {
+  is: 'If {source} is {value}, show {field}',
+  isNot: 'If {source} is not {value}, show {field}',
+  contains: 'If {source} contains {value}, show {field}',
+  answered: 'If {source} is answered, show {field}'
+};
+
+/** "If Topic is Press, show Your KUBICU link". Pass the translator to get it in the chosen language (D341). */
+export function ruleSentence(field: FormField, fields: FormField[], t: Translate = plain): string | null {
   if (!field.rule) return null;
   const src = fields.find((f) => f.id === field.rule!.fieldId);
-  if (!src) return 'Rule points to a deleted field';
-  return `If ${src.label || 'untitled'} ${opText[field.rule.op]}${field.rule.op === 'answered' ? '' : ` ${field.rule.value || '…'}`}, show ${field.label || 'this field'}`;
+  if (!src) return t('Rule points to a deleted field');
+  return t(ruleKeys[field.rule.op], { source: src.label || t('untitled'), value: field.rule.value || '…', field: field.label || t('this field') });
 }
+
 
 export function formIssues(form: FormDef): string[] {
   const issues: string[] = [];

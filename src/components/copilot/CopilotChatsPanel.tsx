@@ -4,6 +4,7 @@ import { MessageSquareIcon, PinIcon, PinOffIcon, PlusIcon, SearchIcon, Trash2Ico
 import type { CopilotSession } from '../../types/copilot';
 import { useCopilotChats } from '../../hooks/useCopilotChats';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
+import { useT } from '../../contexts/LocaleContext';
 import { sessionTitle } from '../../utils/copilot/store';
 import { formatRelative } from '../../utils/format';
 import { cn } from '../../utils/cn';
@@ -18,8 +19,9 @@ interface Props {
   onNewChat: () => void;
 }
 
-/** Every Copilot chat on this device: pinned first, then newest. Open, pin or delete from here. */
+/** Every Copilot chat on this device: pinned first, then newest. Open, pin or delete from here. Translated in D339. */
 export function CopilotChatsPanel({ open, onClose, activeId, onOpenChat, onNewChat }: Props) {
+  const { t: tr } = useT();
   const panelRef = useRef<HTMLDivElement>(null);
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
@@ -60,7 +62,7 @@ export function CopilotChatsPanel({ open, onClose, activeId, onOpenChat, onNewCh
           
             <div className="flex h-16 shrink-0 items-center justify-between gap-3 border-b border-line px-4">
               <h2 id="copilot-chats-title" className="text-label font-semibold text-fg">
-                All chats <span className="font-normal text-fg-subtle">· {all.length}</span>
+                {tr('All chats')} <span className="font-normal text-fg-subtle">· {all.length}</span>
               </h2>
               <div className="flex items-center gap-1">
                 <button
@@ -71,9 +73,9 @@ export function CopilotChatsPanel({ open, onClose, activeId, onOpenChat, onNewCh
                 }}
                 className="inline-flex h-9 items-center gap-1.5 rounded-full bg-action px-3 text-label font-semibold text-action-fg transition-colors duration-150 hover:bg-action-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
                 
-                  <PlusIcon size={15} aria-hidden /> New chat
+                  <PlusIcon size={15} aria-hidden /> {tr('New chat')}
                 </button>
-                <button type="button" onClick={onClose} aria-label="Close chats" className="flex h-9 w-9 items-center justify-center rounded-full text-fg-muted transition-colors duration-150 hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+                <button type="button" onClick={onClose} aria-label={tr('Close chats')} className="flex h-9 w-9 items-center justify-center rounded-full text-fg-muted transition-colors duration-150 hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
                   <XIcon size={18} aria-hidden />
                 </button>
               </div>
@@ -82,11 +84,11 @@ export function CopilotChatsPanel({ open, onClose, activeId, onOpenChat, onNewCh
             {all.length > 0 &&
           <div className="shrink-0 px-4 pt-4">
                 <label htmlFor="copilot-chat-search" className="sr-only">
-                  Search chats
+                  {tr('Search chats')}
                 </label>
                 <div className="flex h-10 items-center gap-2 rounded-md border border-line-strong bg-field px-3 focus-within:ring-2 focus-within:ring-focus">
                   <SearchIcon size={16} className="shrink-0 text-fg-subtle" aria-hidden />
-                  <input id="copilot-chat-search" type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search chats" className="min-w-0 flex-1 bg-transparent text-label text-fg placeholder:text-fg-subtle focus:outline-none" />
+                  <input id="copilot-chat-search" type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder={tr('Search chats')} className="min-w-0 flex-1 bg-transparent text-label text-fg placeholder:text-fg-subtle focus:outline-none" />
                 </div>
               </div>
           }
@@ -95,22 +97,22 @@ export function CopilotChatsPanel({ open, onClose, activeId, onOpenChat, onNewCh
               {all.length === 0 ?
             <div className="flex flex-col items-center gap-2 px-6 py-12 text-center">
                   <MessageSquareIcon size={22} className="text-fg-subtle" aria-hidden />
-                  <p className="text-label font-semibold text-fg">No chats yet</p>
-                  <p className="text-caption text-fg-muted">Chats you start appear here. Pin the ones you come back to and they’ll stay at the top — and in your workspace sidebar.</p>
+                  <p className="text-label font-semibold text-fg">{tr('No chats yet')}</p>
+                  <p className="text-caption text-fg-muted">{tr('Chats you start appear here. Pin the ones you come back to and they’ll stay at the top — and in your workspace sidebar.')}</p>
                 </div> :
             pinnedShown.length + recentShown.length === 0 ?
-            <p className="px-4 py-8 text-center text-caption text-fg-muted">No chats match “{query.trim()}”.</p> :
+            <p className="px-4 py-8 text-center text-caption text-fg-muted">{tr('No chats match “{q}”.', { q: query.trim() })}</p> :
 
             <div className="flex flex-col gap-5">
                   {pinnedShown.length > 0 &&
-              <ChatGroup label="Pinned">
+              <ChatGroup label={tr('Pinned')}>
                       {pinnedShown.map((s) =>
                 <Row key={s.id} s={s} pinned active={s.id === activeId} confirming={confirmId === s.id} onOpen={() => onOpenChat(s.id)} onPin={() => togglePin(s.id)} onAskDelete={() => setConfirmId(s.id)} onCancelDelete={() => setConfirmId(null)} onDelete={() => onDelete(s.id)} />
                 )}
                     </ChatGroup>
               }
                   {recentShown.length > 0 &&
-              <ChatGroup label={pinnedShown.length ? 'Everything else' : 'Recent'}>
+              <ChatGroup label={tr(pinnedShown.length ? 'Everything else' : 'Recent')}>
                       {recentShown.map((s) =>
                 <Row key={s.id} s={s} pinned={false} active={s.id === activeId} confirming={confirmId === s.id} onOpen={() => onOpenChat(s.id)} onPin={() => togglePin(s.id)} onAskDelete={() => setConfirmId(s.id)} onCancelDelete={() => setConfirmId(null)} onDelete={() => onDelete(s.id)} />
                 )}
@@ -119,7 +121,7 @@ export function CopilotChatsPanel({ open, onClose, activeId, onOpenChat, onNewCh
                 </div>
             }
             </div>
-            <p className="shrink-0 border-t border-line px-4 py-3 text-caption text-fg-subtle">Chats are kept in this browser. Pinned chats are never cleared to make space.</p>
+            <p className="shrink-0 border-t border-line px-4 py-3 text-caption text-fg-subtle">{tr('Chats are kept in this browser. Pinned chats are never cleared to make space.')}</p>
           </motion.div>
         </div>
       }
@@ -149,16 +151,17 @@ interface RowProps {
 }
 
 function Row({ s, pinned, active, confirming, onOpen, onPin, onAskDelete, onCancelDelete, onDelete }: RowProps) {
+  const { t: tr } = useT();
   const title = sessionTitle(s);
   if (confirming)
   return (
     <li className="flex items-center gap-2 rounded-md bg-danger-soft px-2 py-2">
-        <p className="min-w-0 flex-1 truncate text-label text-fg">Delete “{title}”?</p>
-        <button type="button" onClick={onDelete} className="h-8 rounded-full bg-danger px-3 text-caption font-semibold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-          Delete
+        <p className="min-w-0 flex-1 truncate text-label text-fg">{tr('Delete “{title}”?', { title })}</p>
+        <button type="button" onClick={onDelete} className="h-8 whitespace-nowrap rounded-full bg-danger px-3 text-caption font-semibold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+          {tr('Delete')}
         </button>
-        <button type="button" autoFocus onClick={onCancelDelete} className="h-8 rounded-full px-3 text-caption font-medium text-fg-muted hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-          Keep
+        <button type="button" autoFocus onClick={onCancelDelete} className="h-8 whitespace-nowrap rounded-full px-3 text-caption font-medium text-fg-muted hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+          {tr('Keep')}
         </button>
       </li>);
 
@@ -169,15 +172,15 @@ function Row({ s, pinned, active, confirming, onOpen, onPin, onAskDelete, onCanc
         <span className="min-w-0 flex-1">
           <span className="block truncate text-label font-medium text-fg">{title}</span>
           <span className="block truncate text-caption text-fg-subtle">
-            {active ? 'Open now' : s.draftId ? 'Draft made' : 'In progress'} · {formatRelative(s.updatedAt)}
+            {tr(active ? 'Open now' : s.draftId ? 'Draft made' : 'In progress')} · {formatRelative(s.updatedAt)}
           </span>
         </span>
       </button>
       <div className="absolute right-1.5 top-1/2 flex -translate-y-1/2 items-center gap-0.5 opacity-100 transition-opacity duration-150 md:opacity-0 md:focus-within:opacity-100 md:group-hover/row:opacity-100">
-        <button type="button" onClick={onPin} aria-pressed={pinned} aria-label={pinned ? `Unpin “${title}”` : `Pin “${title}”`} className="flex h-8 w-8 items-center justify-center rounded-md text-fg-subtle transition-colors duration-150 hover:bg-canvas hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+        <button type="button" onClick={onPin} aria-pressed={pinned} aria-label={tr(pinned ? 'Unpin “{title}”' : 'Pin “{title}”', { title })} className="flex h-8 w-8 items-center justify-center rounded-md text-fg-subtle transition-colors duration-150 hover:bg-canvas hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
           {pinned ? <PinOffIcon size={15} aria-hidden /> : <PinIcon size={15} aria-hidden />}
         </button>
-        <button type="button" onClick={onAskDelete} aria-label={`Delete “${title}”`} className="flex h-8 w-8 items-center justify-center rounded-md text-fg-subtle transition-colors duration-150 hover:bg-canvas hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+        <button type="button" onClick={onAskDelete} aria-label={tr('Delete “{title}”', { title })} className="flex h-8 w-8 items-center justify-center rounded-md text-fg-subtle transition-colors duration-150 hover:bg-canvas hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
           <Trash2Icon size={15} aria-hidden />
         </button>
       </div>

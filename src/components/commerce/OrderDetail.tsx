@@ -321,7 +321,7 @@ export function OrderDetail({ orderId, onClose }: {orderId: string | null;onClos
               {order.events.map((e) =>
               <li key={e.id} className="relative">
                   <span aria-hidden className={cn('absolute -left-6 top-1 h-[15px] w-[15px] rounded-full border-2 bg-raised', e.kind === 'note' ? 'border-line-strong' : e.kind === 'refund' || e.kind === 'cancelled' || e.kind === 'dispute' ? 'border-warning' : 'border-action')} />
-                  <p className="text-label text-fg">{e.label}</p>
+                  <p className="text-label text-fg">{tr(e.label)}</p>
                   <p className="text-caption text-fg-subtle">{formatTimestamp(e.at)}</p>
                 </li>
               )}

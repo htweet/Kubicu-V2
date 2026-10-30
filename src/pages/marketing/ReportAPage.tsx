@@ -5,14 +5,22 @@ import { InfoHero } from '../../components/legal/InfoHero';
 import { ReportPageDialog } from '../../components/blocks/ReportPageDialog';
 import { TextInput } from '../../components/ui/TextInput';
 import { Button } from '../../components/ui/Button';
+import { useT } from '../../contexts/LocaleContext';
 
-/** Website entry to the existing visitor report flow (D75b). */
+const nextSteps = [
+'A moderator reviews the page, usually within 2 working days.',
+'If it breaks our rules, the page is removed or the seller is paused.',
+'The seller can appeal; a different staff member decides.'];
+
+
+/** Website entry to the existing visitor report flow (D75b). Translated in D333. */
 export function ReportAPage() {
+  const { t: tr } = useT();
   const [address, setAddress] = useState('');
   const [tried, setTried] = useState(false);
   const [open, setOpen] = useState(false);
   const handle = address.trim().replace(/^https?:\/\//, '').replace(/^(www\.)?kub\.icu\//, '').replace(/^\/?p\//, '').split(/[/?#]/)[0];
-  const error = handle && /^[a-z0-9-_.]{2,}$/i.test(handle) ? '' : 'Paste the page address, e.g. kub.icu/adaeze-atelier';
+  const error = handle && /^[a-z0-9-_.]{2,}$/i.test(handle) ? '' : tr('Paste the page address, e.g. kub.icu/adaeze-atelier');
 
   return (
     <>
@@ -28,22 +36,36 @@ export function ReportAPage() {
           className="nm-frame rounded-2xl">
           
           <div className="flex flex-col gap-5 rounded-[15px] bg-raised p-6 md:p-8">
-            <h2 className="text-title font-semibold text-fg">Which page?</h2>
-            <TextInput id="report-address" label="Page address" placeholder="kub.icu/…" value={address} error={tried ? error || undefined : undefined} hint="You’ll find it in your browser’s address bar." onChange={(e) => setAddress(e.target.value)} />
+            <h2 className="text-title font-semibold text-fg">{tr('Which page?')}</h2>
+            <TextInput
+              id="report-address"
+              label={tr('Page address')}
+              placeholder="kub.icu/…"
+              value={address}
+              error={tried ? error || undefined : undefined}
+              hint={tr('You’ll find it in your browser’s address bar.')}
+              onChange={(e) => setAddress(e.target.value)} />
+            
             <Button type="submit" variant="brand" size="lg" leadingIcon={FlagIcon} className="self-start">
-              Continue
+              {tr('Continue')}
             </Button>
           </div>
         </form>
         <aside className="flex flex-col gap-4 text-label text-fg-muted">
-          <h2 className="text-heading font-semibold text-fg">What happens next</h2>
+          <h2 className="text-heading font-semibold text-fg">{tr('What happens next')}</h2>
           <ol className="flex flex-col divide-y divide-line border-y border-line">
-            <li className="py-4">A moderator reviews the page, usually within 2 working days.</li>
-            <li className="py-4">If it breaks our rules, the page is removed or the seller is paused.</li>
-            <li className="py-4">The seller can appeal; a different staff member decides.</li>
+            {nextSteps.map((s) =>
+            <li key={s} className="py-4">
+                {tr(s)}
+              </li>
+            )}
           </ol>
           <p>
-            Lost money? Contact your bank first. Read <Link to="/about/takedown" className="font-semibold text-fg underline">takedowns and appeals</Link>.
+            {tr('Lost money? Contact your bank first.')}{' '}
+            <Link to="/about/takedown" className="font-semibold text-fg underline">
+              {tr('Read about takedowns and appeals')}
+            </Link>
+            .
           </p>
         </aside>
       </div>

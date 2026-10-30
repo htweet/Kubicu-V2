@@ -52,8 +52,8 @@ export function OpportunityRow({
           <span>{hiddenNote ?? tr('waiting {time}', { time: formatRelative(item.since).replace(/ ago$/, '') })}</span>
           {item.sample && <SampleTag />}
         </p>
-        <p className="mt-0.5 truncate text-label font-semibold text-fg">{item.title}</p>
-        <p className="mt-0.5 text-caption text-fg-muted">{item.reason}</p>
+        <p className="mt-0.5 truncate text-label font-semibold text-fg">{tr(item.title)}</p>
+        <p className="mt-0.5 text-caption text-fg-muted">{tr(item.reason)}</p>
       </div>
 
       <p className="col-start-2 text-label font-semibold tabular-nums text-fg md:col-start-auto md:text-right">

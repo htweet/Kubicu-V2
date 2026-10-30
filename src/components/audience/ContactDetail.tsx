@@ -309,7 +309,7 @@ export function ContactDetail({ contactId, onClose }: {contactId: string | null;
               {c.activity.map((a) =>
               <li key={a.id} className="relative">
                   <span aria-hidden className={cn('absolute -left-6 top-1 h-[15px] w-[15px] rounded-full border-2 bg-raised', a.kind === 'consent' ? 'border-warning' : a.kind === 'note' ? 'border-line-strong' : 'border-action')} />
-                  <p className="text-label text-fg">{a.label}</p>
+                  <p className="text-label text-fg">{tr(a.label)}</p>
                   <p className="text-caption text-fg-subtle">{formatTimestamp(a.at)}</p>
                 </li>
               )}

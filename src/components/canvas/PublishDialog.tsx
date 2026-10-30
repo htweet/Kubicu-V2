@@ -143,7 +143,7 @@ export function PublishDialog({ open, onClose, onGoToBlock, onOpenTheme }: Publi
   const applyFix = (issue: ValidationIssue) => {
     if (!issue.fix) return;
     actions.updateTheme(issue.fix.theme, `fix-${issue.id}-${Date.now()}`);
-    toast(tr('Suggestion applied'), { description: issue.fix.description, action: { label: tr('Undo'), onClick: () => actions.undo() } });
+    toast(tr('Suggestion applied'), { description: tr(issue.fix.description), action: { label: tr('Undo'), onClick: () => actions.undo() } });
   };
 
   const handlers = {
@@ -482,7 +482,7 @@ function IssueGroup({ title, tone, issues, describe, onGo, onApplyFix, onOpenThe
                       {tr('Adjust colours myself')}
                     </Button>
                 }
-                  {issue.fix && <span className="text-caption text-fg-subtle">{issue.fix.description}</span>}
+                  {issue.fix && <span className="text-caption text-fg-subtle">{tr(issue.fix.description)}</span>}
                 </div>
               }
             </li>);

@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { SearchIcon } from 'lucide-react';
+import { InfoIcon, SearchIcon } from 'lucide-react';
 import { HelpStillStuck } from '../../components/help/HelpStillStuck';
 import { helpGroups, helpTopics } from '../../data/helpTopics';
 import { InfoHero } from '../../components/legal/InfoHero';
@@ -8,13 +8,20 @@ import { HelpArticleRow } from '../../components/help/HelpArticleRow';
 import { helpIcons } from '../../components/help/helpIcons';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Button } from '../../components/ui/Button';
+import { useT } from '../../contexts/LocaleContext';
 import { helpArticleHref, matchesHelp } from '../../utils/help';
 
 /** First guides most people need, in the order they need them. */
 const START_HERE = ['claim-link', 'first-page', 'add-blocks', 'publish-check', 'sl-shorten', 'add-product'];
 
-/** Help centre (D113b, D274): a step-by-step guide grouped by job, searchable, each answer on its own page. */
+/**
+ * Help centre (D113b, D274): a step-by-step guide grouped by job, searchable, each answer on its own page.
+ * D332: the page around the guides is translated; topic names, summaries and the guides themselves are still English
+ * (a few hundred articles), and a note says so in other languages. Topic and group names pass through the translator so
+ * any that already have drafts show translated.
+ */
 export function HelpCentre() {
+  const { t: tr, lang } = useT();
   const [query, setQuery] = useState('');
   const q = query.trim().toLowerCase();
   const results = useMemo(() => helpTopics.map((t) => ({ ...t, articles: t.articles.filter((a) => matchesHelp(a, t, q)) })).filter((t) => t.articles.length > 0), [q]);
@@ -26,32 +33,38 @@ export function HelpCentre() {
     <>
       <InfoHero crumb="Company" title="Help centre" intro="Step-by-step guides to everything in KUBICU, with a picture of each screen — from claiming your link to checking guests in at the door. Can’t find it? A person will reply." />
       <div className="mx-auto w-full max-w-6xl px-5 py-12 md:px-8">
+        {lang !== 'en' &&
+        <p className="mb-6 flex max-w-2xl items-start gap-2 rounded-lg bg-sunken px-4 py-3 text-label text-fg-muted">
+            <InfoIcon size={16} className="mt-0.5 shrink-0" aria-hidden />
+            {tr('The guides are in English for now. Search with English words, like “refund” or “domain”.')}
+          </p>
+        }
         <label className="relative block max-w-xl">
-          <span className="sr-only">Search help</span>
+          <span className="sr-only">{tr('Search help')}</span>
           <SearchIcon size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-fg-subtle" aria-hidden />
           <input
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search, e.g. short link, refund, segment, domain"
+            placeholder={tr('Search, e.g. short link, refund, segment, domain')}
             className="h-12 w-full rounded-xl border border-line-strong bg-field pl-11 pr-4 text-body text-fg placeholder:text-fg-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus" />
           
         </label>
         <p className="mt-3 text-caption text-fg-subtle" aria-live="polite">
-          {q ? `${count} guide${count === 1 ? '' : 's'}` : `${total} guides across ${helpTopics.length} topics`}
+          {q ? tr('Guides: {n}', { n: count }) : tr('Guides: {n} · topics: {topics}', { n: total, topics: helpTopics.length })}
         </p>
 
         {!q &&
         <>
             <section aria-labelledby="help-start" className="mt-10">
               <h2 id="help-start" className="text-heading font-semibold text-fg">
-                Start here
+                {tr('Start here')}
               </h2>
               <ol className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {startHere.map((a, i) =>
               <li key={a.id}>
                     <Link to={helpArticleHref(a.id)} className="flex h-full items-start gap-3 rounded-xl border border-line bg-raised p-4 transition-colors duration-150 hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-fg text-caption font-bold text-raised tabular-nums">{i + 1}</span>
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-fg text-caption font-bold tabular-nums text-raised">{i + 1}</span>
                       <span className="text-label font-semibold text-fg">{a.q}</span>
                     </Link>
                   </li>
@@ -59,16 +72,16 @@ export function HelpCentre() {
               </ol>
             </section>
 
-            <ul className="mt-12 grid gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-4" aria-label="Topics">
+            <ul className="mt-12 grid gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-4" aria-label={tr('Topics')}>
               {helpTopics.map((t) => {
               const Icon = helpIcons[t.icon];
               return (
                 <li key={t.id} className="bg-raised">
                     <a href={`#topic-${t.id}`} className="flex h-full flex-col gap-2 p-5 hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus">
                       <Icon size={20} className="text-[rgb(var(--nm-3))]" aria-hidden />
-                      <span className="text-label font-semibold text-fg">{t.title}</span>
-                      <span className="text-caption leading-relaxed text-fg-muted">{t.summary}</span>
-                      <span className="mt-auto pt-1 text-meta text-fg-subtle">{t.articles.length} guides</span>
+                      <span className="text-label font-semibold text-fg">{tr(t.title)}</span>
+                      <span className="text-caption leading-relaxed text-fg-muted">{tr(t.summary)}</span>
+                      <span className="mt-auto pt-1 text-meta text-fg-subtle">{tr('Guides: {n}', { n: t.articles.length })}</span>
                     </a>
                   </li>);
 
@@ -79,23 +92,32 @@ export function HelpCentre() {
 
         {results.length === 0 ?
         <div className="mt-10">
-            <EmptyState icon={SearchIcon} title="No guides match" description="Try a different word, or ask us directly." action={<Button variant="secondary" onClick={() => setQuery('')}>Clear search</Button>} />
+            <EmptyState
+            icon={SearchIcon}
+            title={tr('No guides match')}
+            description={tr('Try a different word, or ask us directly.')}
+            action={
+            <Button variant="secondary" onClick={() => setQuery('')}>
+                  {tr('Clear search')}
+                </Button>
+            } />
+          
           </div> :
 
         <div className="mt-14 grid gap-12 lg:grid-cols-[220px_minmax(0,1fr)]">
-            <nav aria-label="Guide contents" className="hidden lg:block">
+            <nav aria-label={tr('Guide contents')} className="hidden lg:block">
               <div className="sticky top-24 flex max-h-[calc(100vh-7rem)] flex-col gap-5 overflow-y-auto pb-4">
                 {helpGroups.map((g) => {
                 const inGroup = results.filter((t) => t.group === g);
                 if (!inGroup.length) return null;
                 return (
                   <div key={g}>
-                      <p className="text-caption font-semibold text-fg-subtle">{g}</p>
+                      <p className="text-caption font-semibold text-fg-subtle">{tr(g)}</p>
                       <ul className="mt-2 flex flex-col gap-1 border-l border-line">
                         {inGroup.map((t) =>
                       <li key={t.id}>
                             <a href={`#topic-${t.id}`} className="-ml-px block border-l border-transparent py-1 pl-3 text-label text-fg-muted hover:border-fg hover:text-fg">
-                              {t.title}
+                              {tr(t.title)}
                             </a>
                           </li>
                       )}
@@ -114,11 +136,11 @@ export function HelpCentre() {
                     <div className="flex items-start gap-3">
                       <Icon size={22} className="mt-1 shrink-0 text-[rgb(var(--nm-3))]" aria-hidden />
                       <div>
-                        <p className="text-caption text-fg-subtle">{t.group}</p>
+                        <p className="text-caption text-fg-subtle">{tr(t.group)}</p>
                         <h2 id={`topic-h-${t.id}`} className="font-display text-[22px] font-semibold tracking-[-0.015em] text-fg">
-                          {t.title}
+                          {tr(t.title)}
                         </h2>
-                        <p className="mt-1 text-label text-fg-muted">{t.summary}</p>
+                        <p className="mt-1 text-label text-fg-muted">{tr(t.summary)}</p>
                       </div>
                     </div>
                     <ul className="mt-5 divide-y divide-line border-y border-line">

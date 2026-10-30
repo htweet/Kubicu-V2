@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
-import { ChevronDownIcon, LinkIcon, MessageSquareIcon, PrinterIcon } from 'lucide-react';
+import { ChevronDownIcon, InfoIcon, LinkIcon, MessageSquareIcon, PrinterIcon } from 'lucide-react';
 import type { LegalDoc } from '../../types/legal';
 import { allLegalDocs } from '../../data/legal';
 import { Button } from '../ui/Button';
@@ -10,9 +10,15 @@ import { cn } from '../../utils/cn';
 import { readAdminStore } from '../../utils/admin/store';
 import { formatDate } from '../../utils/billing';
 import { POLICY_GRACE_DAYS } from '../../utils/policyAgreements';
+import { useT } from '../../contexts/LocaleContext';
 
-/** Structured legal/policy page: draft banner, sticky contents, summary above every section (D78). */
+/**
+ * Structured legal/policy page: draft banner, sticky contents, summary above every section (D78).
+ * D332: the page around the document is translated; the document itself (title, intro, sections) stays English,
+ * because the English version is the one that applies. A note says so in other languages.
+ */
 export function LegalDocument({ doc }: {doc: LegalDoc;}) {
+  const { t: tr, lang } = useT();
   const [active, setActive] = useState(doc.sections[0]?.id);
   // A version KUBICU staff published after this text was written (D135/D141).
   const latest = readAdminStore().policyReleases[doc.slug]?.[0];
@@ -33,9 +39,9 @@ export function LegalDocument({ doc }: {doc: LegalDoc;}) {
   const copyLink = async () => {
     try {
       await navigator.clipboard.writeText(window.location.href.split('#')[0]);
-      toast.success('Link copied');
+      toast.success(tr('Link copied'));
     } catch {
-      toast.error('Couldn’t copy — copy the address bar instead');
+      toast.error(tr('Couldn’t copy — copy the address bar instead'));
     }
   };
 
@@ -49,18 +55,18 @@ export function LegalDocument({ doc }: {doc: LegalDoc;}) {
         intro={doc.intro}
         meta={
         <>
-            <span>Last updated {latest ? formatDate(latest.publishedAt) : doc.updated}</span>
+            <span>{tr('Last updated {date}', { date: latest ? formatDate(latest.publishedAt) : doc.updated })}</span>
             <span aria-hidden>·</span>
-            <span>{latest ? `Version ${latest.version}` : doc.version}</span>
+            <span>{latest ? tr('Version {n}', { n: latest.version }) : doc.version}</span>
           </>
         }
         actions={
         <>
             <Button variant="secondary" size="sm" leadingIcon={PrinterIcon} onClick={() => window.print()}>
-              Print
+              {tr('Print')}
             </Button>
             <Button variant="secondary" size="sm" leadingIcon={LinkIcon} onClick={copyLink}>
-              Copy link
+              {tr('Copy link')}
             </Button>
           </>
         } />
@@ -69,30 +75,36 @@ export function LegalDocument({ doc }: {doc: LegalDoc;}) {
       <div className="mx-auto w-full max-w-6xl px-5 md:px-8">
         <div className="mt-12 grid gap-10 pb-12 lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-16">
           {/* Contents */}
-          <nav aria-label="On this page" className="lg:sticky lg:top-24 lg:self-start">
+          <nav aria-label={tr('On this page')} className="lg:sticky lg:top-24 lg:self-start">
             <details className="kb-faq group rounded-xl border border-line lg:hidden">
               <summary className="flex cursor-pointer items-center justify-between px-4 py-3 text-label font-semibold text-fg">
-                Jump to a section
+                {tr('Jump to a section')}
                 <ChevronDownIcon size={16} className="text-fg-subtle transition-transform duration-150 group-open:rotate-180" aria-hidden />
               </summary>
               <TocList doc={doc} active={active} />
             </details>
             <div className="hidden lg:block">
-              <p className="text-caption font-semibold text-fg">On this page</p>
+              <p className="text-caption font-semibold text-fg">{tr('On this page')}</p>
               <TocList doc={doc} active={active} />
             </div>
           </nav>
 
           <div className="flex min-w-0 max-w-3xl flex-col gap-14">
+            {lang !== 'en' &&
+            <p className="flex items-start gap-2 rounded-xl bg-sunken px-4 py-3 text-label text-fg-muted">
+                <InfoIcon size={16} className="mt-0.5 shrink-0" aria-hidden />
+                {tr('This document is in English, and the English version is the one that applies. Questions? Use the contact form below.')}
+              </p>
+            }
             {latest &&
             <aside aria-labelledby="what-changed-h" className="rounded-xl border border-line bg-raised px-5 py-4">
                 <h2 id="what-changed-h" className="text-label font-semibold text-fg">
-                  What changed in version {latest.version}
+                  {tr('What changed in version {n}', { n: latest.version })}
                 </h2>
                 <p className="mt-1.5 text-label text-fg-muted">{latest.summary}</p>
                 <p className="mt-2 text-caption text-fg-subtle">
-                  Published {formatDate(latest.publishedAt)}
-                  {latest.reaccept !== 'none' && ` · ${latest.reaccept === 'all' ? 'Every workspace' : 'Paid workspaces'} must agree within ${POLICY_GRACE_DAYS} days`}
+                  {tr('Published {date}', { date: formatDate(latest.publishedAt) })}
+                  {latest.reaccept !== 'none' && ` · ${tr(latest.reaccept === 'all' ? 'Every workspace must agree within {n} days' : 'Paid workspaces must agree within {n} days', { n: POLICY_GRACE_DAYS })}`}
                 </p>
               </aside>
             }
@@ -103,7 +115,7 @@ export function LegalDocument({ doc }: {doc: LegalDoc;}) {
                   {s.title}
                 </h2>
                 <p className="mt-4 rounded-xl border-l-2 border-[rgb(var(--nm-2))] bg-raised px-4 py-3 text-label text-fg">
-                  <span className="font-semibold">In short: </span>
+                  <span className="font-semibold">{tr('In short:')} </span>
                   {s.summary}
                 </p>
                 <div className="mt-5 flex flex-col gap-4 text-body leading-relaxed text-fg-muted">
@@ -126,22 +138,22 @@ export function LegalDocument({ doc }: {doc: LegalDoc;}) {
 
             <aside aria-labelledby="questions-h" className="border-t border-line pt-8">
               <h2 id="questions-h" className="text-label font-semibold text-fg">
-                Questions about this {doc.group === 'Legal' ? 'document' : 'page'}?
+                {tr(doc.group === 'Legal' ? 'Questions about this document?' : 'Questions about this page?')}
               </h2>
-              <p className="mt-1.5 text-label text-fg-muted">Send us a message and we’ll reply within 2 working days.</p>
+              <p className="mt-1.5 text-label text-fg-muted">{tr('Send us a message and we’ll reply within 2 working days.')}</p>
               <Link
                 to={`/about/contact?topic=legal&doc=${doc.slug}`}
                 className="mt-4 inline-flex h-10 items-center gap-2 rounded-md bg-action px-4 text-label font-semibold text-action-fg hover:bg-action-hover active:bg-action-pressed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2">
                 
                 <MessageSquareIcon size={16} aria-hidden />
-                Use the contact form
+                {tr('Use the contact form')}
               </Link>
             </aside>
 
             {related.length > 0 &&
             <aside aria-labelledby="related-h" className="border-t border-line pt-8">
                 <h2 id="related-h" className="text-label font-semibold text-fg">
-                  More in {doc.group}
+                  {tr('More in: {group}', { group: tr(doc.group) })}
                 </h2>
                 <ul className="mt-4 grid gap-3 sm:grid-cols-2">
                   {related.map((d) =>

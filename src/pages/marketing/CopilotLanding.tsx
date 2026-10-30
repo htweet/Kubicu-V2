@@ -78,7 +78,7 @@ export function CopilotLanding() {
                 {tr('Copilot on WhatsApp isn’t available where you are yet. The browser chat is the same conversation and works on any phone.')}
               </p>
             }
-            <p className="mt-4 text-caption text-white/75">{tr('The chat itself is in English for now.')}</p>
+            <p className="mt-4 text-caption text-white/75">{tr('Copilot understands typed answers in English for now — tapping its buttons works in any language.')}</p>
             <div className="mt-8">
               <p className="text-caption font-semibold text-white/80">{tr('Or start with an example')}</p>
               <ul className="mt-2 flex flex-wrap gap-2">

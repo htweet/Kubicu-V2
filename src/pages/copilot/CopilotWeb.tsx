@@ -12,14 +12,16 @@ import { CopilotChatsPanel } from '../../components/copilot/CopilotChatsPanel';
 import { TemplateLivePreview } from '../../components/templates/TemplateLivePreview';
 import { LanguagePicker } from '../../components/ui/LanguagePicker';
 import { useCopilot } from '../../hooks/useCopilot';
+import { useT } from '../../contexts/LocaleContext';
 import { cn } from '../../utils/cn';
 import { previewPath } from '../../utils/copilot/links';
 import { startClaim } from '../../utils/copilot/claim';
 
 const ease = [0.23, 1, 0.32, 1] as const;
 
-/** Web Copilot (D262): the same conversation as the WhatsApp channel, with a live phone preview beside it. */
+/** Web Copilot (D262): the same conversation as the WhatsApp channel, with a live phone preview beside it. Page chrome translated in D339. */
 export function CopilotWeb() {
+  const { t: tr } = useT();
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
   const openId = params.get('c');
@@ -56,8 +58,8 @@ export function CopilotWeb() {
   };
 
   useEffect(() => {
-    document.title = 'KUBICU Copilot — tell us what you want to build';
-  }, []);
+    document.title = `KUBICU Copilot — ${tr('tell us what you want to build')}`;
+  }, [tr]);
 
   // Example starters from /copilot begin a fresh chat with their description.
   useEffect(() => {
@@ -93,7 +95,7 @@ export function CopilotWeb() {
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             <BackButton fallback="/copilot" compact />
             <span className="h-5 w-px bg-line" aria-hidden />
-            <Link to="/copilot" aria-label="KUBICU Copilot home" className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+            <Link to="/copilot" aria-label={tr('KUBICU Copilot home')} className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
               <KubicuLogo />
             </Link>
             <span className="hidden h-5 w-px bg-line sm:block" aria-hidden />
@@ -102,30 +104,30 @@ export function CopilotWeb() {
           <div className="flex items-center gap-2">
             <LanguagePicker variant="compact" />
             <button type="button" onClick={() => setChatsOpen(true)} aria-haspopup="dialog" className="inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-label font-medium text-fg-muted hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-              <MessagesSquareIcon size={15} aria-hidden /> <span className="hidden sm:inline">All chats</span>
-              <span className="sr-only sm:hidden">All chats</span>
+              <MessagesSquareIcon size={15} aria-hidden /> <span className="hidden whitespace-nowrap sm:inline">{tr('All chats')}</span>
+              <span className="sr-only sm:hidden">{tr('All chats')}</span>
             </button>
-            <span className="hidden text-caption text-fg-subtle md:block">
-              {limits.drafts} of 3 free drafts left today
+            <span className="hidden whitespace-nowrap text-caption text-fg-subtle xl:block">
+              {tr('Free drafts left today: {n} of {total}', { n: limits.drafts, total: 3 })}
             </span>
             {confirmRestart ?
             <span className="flex items-center gap-1.5">
-                <button type="button" onClick={newChat} className="h-9 rounded-full bg-action px-3 text-label font-semibold text-action-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-                  Start a new chat
+                <button type="button" onClick={newChat} className="h-9 whitespace-nowrap rounded-full bg-action px-3 text-label font-semibold text-action-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+                  {tr('Start a new chat')}
                 </button>
-                <button type="button" onClick={() => setConfirmRestart(false)} className="h-9 rounded-full px-3 text-label text-fg-muted hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-                  Keep this one
+                <button type="button" onClick={() => setConfirmRestart(false)} className="h-9 whitespace-nowrap rounded-full px-3 text-label text-fg-muted hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+                  {tr('Keep this one')}
                 </button>
               </span> :
 
             <button type="button" onClick={() => setConfirmRestart(true)} className="inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-label font-medium text-fg-muted hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-                <RotateCcwIcon size={15} aria-hidden /> Start over
+                <RotateCcwIcon size={15} aria-hidden /> <span className="whitespace-nowrap">{tr('Start over')}</span>
               </button>
             }
           </div>
         </header>
 
-        <div role="tablist" aria-label="View" className="flex shrink-0 gap-1 border-b border-line p-1.5 lg:hidden">
+        <div role="tablist" aria-label={tr('View')} className="flex shrink-0 gap-1 border-b border-line p-1.5 lg:hidden">
           {(['chat', 'preview'] as const).map((t) =>
           <button
             key={t}
@@ -136,7 +138,7 @@ export function CopilotWeb() {
             onClick={() => setTab(t)}
             className={cn('h-10 flex-1 rounded-full text-label font-semibold transition-colors duration-150 disabled:opacity-40', tab === t ? 'bg-raised text-fg shadow-1' : 'text-fg-muted')}>
             
-              {t === 'chat' ? 'Chat' : 'Preview'}
+              {tr(t === 'chat' ? 'Chat' : 'Preview')}
             </button>
           )}
         </div>
@@ -158,24 +160,24 @@ export function CopilotWeb() {
                   onPhotos={addPhotos} />
                 
                 <p className="mt-2 flex items-center gap-1.5 text-caption text-fg-subtle">
-                  <FlaskConicalIcon size={12} aria-hidden /> Prototype: replies follow written rules, not a live AI model, and everything stays in this browser.
+                  <FlaskConicalIcon size={12} aria-hidden className="shrink-0" /> {tr('Prototype: replies follow written rules, not a live AI model, and everything stays in this browser.')}
                 </p>
               </div>
             </div>
           </main>
 
-          <aside aria-label="Draft preview" className={cn('min-h-0 flex-col items-center justify-center gap-4 border-l border-line bg-sunken/50 p-6', tab === 'preview' ? 'flex' : 'hidden lg:flex')}>
+          <aside aria-label={tr('Draft preview')} className={cn('min-h-0 flex-col items-center justify-center gap-4 border-l border-line bg-sunken/50 p-6', tab === 'preview' ? 'flex' : 'hidden lg:flex')}>
             {draft ?
             <>
                 <div className="flex w-full max-w-[390px] items-center justify-between">
                   <p className="text-label font-semibold text-fg">
-                    {draft.doc.title} <span className="font-normal text-fg-subtle">· draft, not published</span>
+                    {draft.doc.title} <span className="font-normal text-fg-subtle">· {tr('draft, not published')}</span>
                   </p>
                   <div className="flex items-center gap-1">
-                    <Link to={previewPath(draft.id)} target="_blank" rel="noopener" aria-label="Open the private preview link in a new tab" className="flex h-9 w-9 items-center justify-center rounded-full text-fg-muted hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+                    <Link to={previewPath(draft.id)} target="_blank" rel="noopener" aria-label={tr('Open the private preview link in a new tab')} className="flex h-9 w-9 items-center justify-center rounded-full text-fg-muted hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
                       <ExternalLinkIcon size={16} aria-hidden />
                     </Link>
-                    <button type="button" onClick={() => setFull('phone')} aria-label="Open the preview full screen" className="flex h-9 w-9 items-center justify-center rounded-full text-fg-muted hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+                    <button type="button" onClick={() => setFull('phone')} aria-label={tr('Open the preview full screen')} className="flex h-9 w-9 items-center justify-center rounded-full text-fg-muted hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
                       <MaximizeIcon size={16} aria-hidden />
                     </button>
                   </div>
@@ -187,7 +189,7 @@ export function CopilotWeb() {
                 </AnimatePresence>
               </> :
 
-            <EmptyPreview generating={session.stage === 'generating'} />
+            <EmptyPreview generating={session.stage === 'generating'} label={tr(session.stage === 'generating' ? 'Putting your page together…' : 'Your draft appears here once you confirm the brief.')} />
             }
           </aside>
         </div>
@@ -208,7 +210,7 @@ export function CopilotWeb() {
         <motion.div
           role="dialog"
           aria-modal="true"
-          aria-label={`Preview of ${draft.doc.title}`}
+          aria-label={tr('Preview of {title}', { title: draft.doc.title })}
           className="fixed inset-0 z-50 flex flex-col bg-canvas"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -218,16 +220,16 @@ export function CopilotWeb() {
           
             <div className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-line px-4">
               <p className="truncate text-label text-fg">
-                <span className="font-semibold">Draft</span> · not published · only people you share it with can see it
+                <span className="font-semibold">{tr('Draft')}</span> · {tr('not published · only people you share it with can see it')}
               </p>
               <div className="flex items-center gap-1">
-                <button type="button" aria-pressed={full === 'phone'} onClick={() => setFull('phone')} aria-label="Phone view" className={cn('flex h-9 w-9 items-center justify-center rounded-full', full === 'phone' ? 'bg-raised text-fg shadow-1' : 'text-fg-muted')}>
+                <button type="button" aria-pressed={full === 'phone'} onClick={() => setFull('phone')} aria-label={tr('Phone view')} className={cn('flex h-9 w-9 items-center justify-center rounded-full', full === 'phone' ? 'bg-raised text-fg shadow-1' : 'text-fg-muted')}>
                   <SmartphoneIcon size={16} aria-hidden />
                 </button>
-                <button type="button" aria-pressed={full === 'desktop'} onClick={() => setFull('desktop')} aria-label="Desktop view" className={cn('hidden h-9 w-9 items-center justify-center rounded-full md:flex', full === 'desktop' ? 'bg-raised text-fg shadow-1' : 'text-fg-muted')}>
+                <button type="button" aria-pressed={full === 'desktop'} onClick={() => setFull('desktop')} aria-label={tr('Desktop view')} className={cn('hidden h-9 w-9 items-center justify-center rounded-full md:flex', full === 'desktop' ? 'bg-raised text-fg shadow-1' : 'text-fg-muted')}>
                   <MonitorIcon size={16} aria-hidden />
                 </button>
-                <button type="button" autoFocus onClick={() => setFull(null)} aria-label="Close preview" className="flex h-9 w-9 items-center justify-center rounded-full text-fg-muted hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+                <button type="button" autoFocus onClick={() => setFull(null)} aria-label={tr('Close preview')} className="flex h-9 w-9 items-center justify-center rounded-full text-fg-muted hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
                   <XIcon size={18} aria-hidden />
                 </button>
               </div>
@@ -242,7 +244,7 @@ export function CopilotWeb() {
 
 }
 
-function EmptyPreview({ generating }: {generating: boolean;}) {
+function EmptyPreview({ generating, label }: {generating: boolean;label: string;}) {
   return (
     <div className="flex flex-col items-center gap-5 text-center">
       <div aria-hidden className="flex h-[360px] w-[190px] flex-col gap-3 rounded-[30px] border-[6px] border-line-strong bg-raised p-4">
@@ -252,7 +254,7 @@ function EmptyPreview({ generating }: {generating: boolean;}) {
         <div className={cn('mt-2 h-10 rounded-full bg-sunken', generating && 'animate-pulse')} />
         <div className={cn('h-16 rounded-xl bg-sunken', generating && 'animate-pulse')} />
       </div>
-      <p className="max-w-[260px] text-label text-fg-muted">{generating ? 'Putting your page together…' : 'Your draft appears here once you confirm the brief.'}</p>
+      <p className="max-w-[260px] text-label text-fg-muted">{label}</p>
     </div>);
 
 }

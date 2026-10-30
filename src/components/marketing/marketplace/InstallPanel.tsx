@@ -6,6 +6,7 @@ import { useMarketplace } from '../../../contexts/MarketplaceContext';
 import { usePlan } from '../../../contexts/PlanContext';
 import { useTeam } from '../../../contexts/TeamContext';
 import { useWorkspace } from '../../../contexts/WorkspaceContext';
+import { useT } from '../../../contexts/LocaleContext';
 import { planAtLeast, plans } from '../../../data/plans';
 
 const primary =
@@ -18,9 +19,10 @@ const needsPermission = (l: Listing) => l.kind === 'apps' || l.kind === 'kits' |
 
 /**
  * The action box on a listing (D268): checks plan, role and installed state before offering the action.
- * Every button opens the real screen in the workspace, where the existing install steps take over.
+ * Every button opens the real screen in the workspace, where the existing install steps take over. Translated in D335.
  */
 export function InstallPanel({ listing }: {listing: Listing;}) {
+  const { t: tr } = useT();
   const market = useMarketplace();
   const plan = usePlan();
   const team = useTeam();
@@ -28,65 +30,71 @@ export function InstallPanel({ listing }: {listing: Listing;}) {
   const installed = !!listing.ext && market.isActive(listing.ext.id);
   const planOk = planAtLeast(plan.id, listing.minPlan);
   const allowed = !needsPermission(listing) || team.can('extensions.manage');
+  const actionLabel = tr(listing.action.label);
 
   let body: React.ReactNode;
   if (listing.status === 'planned') {
     body =
     <>
-        <State icon={ClockIcon} title="Not available yet" text="This is planned. It can’t be installed on any plan today." />
+        <State icon={ClockIcon} title={tr('Not available yet')} text={tr('This is planned. It can’t be installed on any plan today.')} />
         <Link to={listing.action.to} className={secondary}>
-          {listing.action.label}
+          {actionLabel}
         </Link>
       </>;
 
   } else if (installed) {
     body =
     <>
-        <State icon={CheckCircle2Icon} tone="success" title={`Installed in ${current.name}`} text="Pause, change its settings or uninstall from Extensions." />
+        <State icon={CheckCircle2Icon} tone="success" title={tr('Installed in {workspace}', { workspace: current.name })} text={tr('Pause, change its settings or uninstall from Extensions.')} />
         <Link to={`/app/extensions?ext=${listing.ext!.id}`} className={primary}>
-          Manage <ArrowRightIcon size={16} aria-hidden />
+          {tr('Manage')} <ArrowRightIcon size={16} aria-hidden />
         </Link>
       </>;
 
   } else if (!allowed) {
     body =
     <>
-        <State icon={UserRoundXIcon} title="Ask an owner or admin" text="Your role in this workspace can’t install extensions or add workspace-wide drafts." />
+        <State icon={UserRoundXIcon} title={tr('Ask an owner or admin')} text={tr('Your role in this workspace can’t install extensions or add workspace-wide drafts.')} />
         <Link to="/app/settings/roles" className={secondary}>
-          See who can
+          {tr('See who can')}
         </Link>
       </>;
 
   } else if (!planOk) {
     body =
     <>
-        <State icon={LockIcon} title={`Needs the ${plans[listing.minPlan].name} plan`} text={`${current.name} is on ${plan.name}. Preview everything here; upgrade to use it.`} />
+        <State
+        icon={LockIcon}
+        title={tr('Needs the {plan} plan', { plan: plans[listing.minPlan].name })}
+        text={tr('{workspace} is on {plan}. Preview everything here; upgrade to use it.', { workspace: current.name, plan: plan.name })} />
+      
         <Link to="/pricing" className={primary}>
-          Compare plans <ArrowRightIcon size={16} aria-hidden />
+          {tr('Compare plans')} <ArrowRightIcon size={16} aria-hidden />
         </Link>
         <Link to={listing.action.to} className={secondary}>
-          {listing.kind === 'apps' ? 'See it in Extensions' : listing.action.label}
+          {listing.kind === 'apps' ? tr('See it in Extensions') : actionLabel}
         </Link>
       </>;
 
   } else {
     body =
     <Link to={listing.action.to} className={primary}>
-        {listing.action.label} <ArrowRightIcon size={16} aria-hidden className="transition-transform duration-150 ease-out group-hover:translate-x-0.5" />
+        {actionLabel} <ArrowRightIcon size={16} aria-hidden className="transition-transform duration-150 ease-out group-hover:translate-x-0.5" />
       </Link>;
 
   }
 
   return (
-    <aside aria-label="Get it" className="flex flex-col gap-3 rounded-[24px] bg-raised p-5 shadow-2">
+    <aside aria-label={tr('Get it')} className="flex flex-col gap-3 rounded-[24px] bg-raised p-5 shadow-2">
       <div className="flex items-baseline justify-between gap-3">
-        <p className="text-[20px] font-extrabold text-fg">{listing.priceLabel}</p>
-        {listing.minPlan !== 'free' && listing.status !== 'planned' && <p className="text-[13px] font-semibold text-fg-muted">{plans[listing.minPlan].name} and above</p>}
+        <p className="text-[20px] font-extrabold text-fg">{tr(listing.priceLabel)}</p>
+        {listing.minPlan !== 'free' && listing.status !== 'planned' && <p className="text-[13px] font-semibold text-fg-muted">{tr('{plan} and above', { plan: plans[listing.minPlan].name })}</p>}
       </div>
       {body}
       {listing.status !== 'planned' &&
       <p className="text-[12px] leading-snug text-fg-subtle">
-          Opens your workspace{needsPermission(listing) ? ', where you confirm permissions before anything is added' : ''}. In this prototype you’re already signed in as the demo workspace.
+          {tr(needsPermission(listing) ? 'Opens your workspace, where you confirm permissions before anything is added.' : 'Opens your workspace.')}{' '}
+          {tr('In this prototype you’re already signed in as the demo workspace.')}
         </p>
       }
     </aside>);

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { BriefcaseIcon, FlagIcon, MailIcon, ShieldIcon } from 'lucide-react';
 import { InfoHero } from '../../components/legal/InfoHero';
@@ -21,7 +21,8 @@ const str = (v: string | string[] | undefined) => (Array.isArray(v) ? v.join(', 
 
 /**
  * Website contact page (D125): the Forms engine, feeding the staff support queue.
- * Translated in D331 apart from the form itself — its topic answers feed the staff queue in English.
+ * D331 translated the page; D338 translates the form too. The visitor sees topics in their language, but the ticket
+ * is filed with the English topic label so staff and queue routing are unchanged. The visitor's message is kept as typed.
  */
 export function Contact() {
   const { t: tr } = useT();
@@ -29,12 +30,40 @@ export function Contact() {
   const [params] = useSearchParams();
   const fromLegal = params.get('topic') === 'legal';
   const aboutDoc = fromLegal ? findLegalDoc(params.get('doc') ?? '') : undefined;
-  const initialAnswers = fromLegal ? { topic: LEGAL_TOPIC_LABEL } : undefined;
+  const initialAnswers = fromLegal ? { topic: tr(LEGAL_TOPIC_LABEL) } : undefined;
+
+  // Same form, shown in the chosen language. Field ids and the show-if rule keep working because the rule value is translated with the options.
+  const form = useMemo(
+    () => ({
+      ...contactFormDef,
+      // A different id per language resets the runner cleanly if the language changes mid-form.
+      id: `${contactFormDef.id}_${tr('Send a message')}`,
+      name: tr(contactFormDef.name),
+      fields: contactFormDef.fields.map((f) => ({
+        ...f,
+        label: tr(f.label),
+        help: f.help ? tr(f.help) : '',
+        options: f.options.map((o) => tr(o)),
+        rule: f.rule ? { ...f.rule, value: tr(f.rule.value) } : null
+      })),
+      settings: {
+        ...contactFormDef.settings,
+        submitLabel: tr(contactFormDef.settings.submitLabel),
+        successTitle: tr(contactFormDef.settings.successTitle),
+        successText: tr(contactFormDef.settings.successText),
+        privacyNote: tr(contactFormDef.settings.privacyNote)
+      }
+    }),
+    [tr]
+  );
 
   const submit = ({ answers }: RunnerSubmit) => {
     const name = str(answers.name);
-    const topicLabel = str(answers.topic);
-    const topic = contactTopics.find((t) => t.label === topicLabel)?.topic ?? 'other';
+    const shown = str(answers.topic);
+    // Back to English for the staff queue.
+    const match = contactTopics.find((t) => tr(t.label) === shown || t.label === shown);
+    const topicLabel = match?.label ?? shown;
+    const topic = match?.topic ?? 'other';
     const lines = [str(answers.message), '', `Reply to: ${str(answers.email)}${str(answers.phone) ? ` · WhatsApp ${str(answers.phone)}` : ''}`, str(answers.handle) ? `Their link: ${str(answers.handle)}` : ''].filter((l, i) => l || i === 1);
     const now = new Date().toISOString();
     return updateAdminStore((s) => ({
@@ -77,7 +106,7 @@ export function Contact() {
                 .
               </p>
             }
-            <FormRunner form={contactFormDef} skin={appSkin} mode="live" headingLevel="h2" onSubmit={submit} initialAnswers={initialAnswers} />
+            <FormRunner form={form} skin={appSkin} mode="live" headingLevel="h2" onSubmit={submit} initialAnswers={initialAnswers} />
           </div>
         </div>
 

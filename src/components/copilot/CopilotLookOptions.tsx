@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import type { CopilotKind, CopilotReply } from '../../types/copilot';
 import { TemplateThumb } from '../templates/TemplateThumb';
+import { useT } from '../../contexts/LocaleContext';
 import { findExampleById } from '../../data/examples';
 import { themeForFeel } from '../../utils/assistant/layout';
 import { cn } from '../../utils/cn';
@@ -25,6 +26,7 @@ interface Props {
 
 /** Real Signature themes on a sample page like theirs, so the choice is about how it looks, not a swatch (D262). */
 export function CopilotLookOptions({ replies, kind, exampleId, active, onPick }: Props) {
+  const { t: tr } = useT();
   const sample = findExampleById(exampleId ?? sampleByKind[kind ?? 'other']) ?? findExampleById('tolu-makes')!;
   const looks = useMemo(
     () =>
@@ -53,7 +55,7 @@ export function CopilotLookOptions({ replies, kind, exampleId, active, onPick }:
             <TemplateThumb doc={doc} width={156} height={150} />
           </span>
           <span className="px-1 pb-1">
-            <span className="block text-label font-semibold text-fg">{r.label}</span>
+            <span className="block text-label font-semibold text-fg">{tr(r.label)}</span>
             <span className="block text-caption text-fg-subtle">{name}</span>
           </span>
         </button>

@@ -6,14 +6,18 @@ import { findExampleById } from '../../../data/examples';
 import { kitPhotos } from '../../../data/kitPhotos';
 import { recipes } from '../../../data/automationRecipes';
 import { templatePrice } from '../../../data/templateMarket';
+import { useT } from '../../../contexts/LocaleContext';
 import { formatNgn } from '../../../utils/format';
 import { TemplateThumb } from '../../templates/TemplateThumb';
 
 /**
  * The example half of a kit's Marketplace page (D279): who it's for, the real page it starts you with
  * (and the optional Elite look), and the exact starter items it adds — so nothing is a mystery before applying.
+ * D335: headings and labels are translated; the kit's own example wording (products, services, policies) stays as written,
+ * since it's the sample content the seller replaces. Automation names pass through the translator.
  */
 export function KitShowcase({ kit }: {kit: BusinessKit;}) {
+  const { t: tr } = useT();
   const photo = kitPhotos[kit.id];
   const starter = findExampleById(kit.templateId);
   const elite = kit.eliteTemplateId ? findExampleById(kit.eliteTemplateId) : undefined;
@@ -30,7 +34,7 @@ export function KitShowcase({ kit }: {kit: BusinessKit;}) {
       <figure className="overflow-hidden rounded-[28px] bg-sunken">
           <img src={photo.url} alt={photo.alt} className="aspect-[16/9] w-full object-cover" />
           <figcaption className="px-5 py-3 text-[13px] text-fg-muted">
-            {kit.forWho} <span className="text-fg-subtle">· Illustration, not a KUBICU customer</span>
+            {tr(kit.forWho)} <span className="text-fg-subtle">· {tr('Illustration, not a KUBICU customer')}</span>
           </figcaption>
         </figure>
       }
@@ -38,63 +42,72 @@ export function KitShowcase({ kit }: {kit: BusinessKit;}) {
       {starter &&
       <section aria-labelledby="kit-pages">
           <h2 id="kit-pages" className="text-[22px] font-extrabold text-fg">
-            The page it starts you with
+            {tr('The page it starts you with')}
           </h2>
           <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-fg-muted">
-            A real, editable page — shown here with its example business. When you apply the kit, the sample name, photos and wording are yours to replace.
+            {tr('A real, editable page — shown here with its example business. When you apply the kit, the sample name, photos and wording are yours to replace.')}
           </p>
           <div className="mt-6 grid gap-5 sm:grid-cols-2">
-            <PagePreview label="Included free" title={starter.name} note={starter.bestFor} doc={starter.doc} to={`/templates/${starter.id}`} />
-            {elite && <PagePreview label={`Optional upgrade · ${formatNgn(templatePrice(elite.id))} once`} title={elite.name} note="Same content, an Elite look. You can switch any time." doc={elite.doc} to={`/templates/${elite.id}`} />}
+            <PagePreview label={tr('Included free')} title={starter.name} note={starter.bestFor} doc={starter.doc} to={`/templates/${starter.id}`} openLabel={tr('Open full preview')} />
+            {elite &&
+          <PagePreview
+            label={tr('Optional upgrade · {price} once', { price: formatNgn(templatePrice(elite.id)) })}
+            title={elite.name}
+            note={tr('Same content, an Elite look. You can switch any time.')}
+            doc={elite.doc}
+            to={`/templates/${elite.id}`}
+            openLabel={tr('Open full preview')} />
+
+          }
           </div>
         </section>
       }
 
       <section aria-labelledby="kit-items">
         <h2 id="kit-items" className="text-[22px] font-extrabold text-fg">
-          Exactly what it adds
+          {tr('Exactly what it adds')}
         </h2>
-        <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-fg-muted">Everything arrives as a draft without prices, so nothing goes live until you’ve checked it.</p>
+        <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-fg-muted">{tr('Everything arrives as a draft without prices, so nothing goes live until you’ve checked it.')}</p>
         <div className="mt-6 grid gap-x-10 gap-y-8 md:grid-cols-2">
           {kit.products.length > 0 &&
-          <ItemGroup icon={PackageIcon} title={`Starter products · ${kit.products.length}`}>
+          <ItemGroup icon={PackageIcon} title={tr('Starter products: {n}', { n: kit.products.length })}>
               {kit.products.map((p) =>
-            <Item key={p.name} name={p.name} text={p.description} tag={p.kind === 'digital' ? 'Digital' : undefined} />
+            <Item key={p.name} name={p.name} text={p.description} tag={p.kind === 'digital' ? tr('Digital') : undefined} />
             )}
             </ItemGroup>
           }
           {kit.services.length > 0 &&
-          <ItemGroup icon={CalendarClockIcon} title={`Starter services · ${kit.services.length}`}>
+          <ItemGroup icon={CalendarClockIcon} title={tr('Starter services: {n}', { n: kit.services.length })}>
               {kit.services.map((s) =>
-            <Item key={s.name} name={s.name} text={s.description} tag={`${s.durationMin} min`} />
+            <Item key={s.name} name={s.name} text={s.description} tag={tr('{n} min', { n: s.durationMin })} />
             )}
             </ItemGroup>
           }
           {policies.length > 0 &&
-          <ItemGroup icon={FileTextIcon} title="Draft policies">
+          <ItemGroup icon={FileTextIcon} title={tr('Draft policies')}>
               {policies.map((p) =>
-            <Item key={p.label} name={p.label} text={p.text} clamp />
+            <Item key={p.label} name={tr(p.label)} text={p.text} clamp />
             )}
             </ItemGroup>
           }
           {kitRecipes.length > 0 &&
-          <ItemGroup icon={WorkflowIcon} title={`Automations · ${kitRecipes.length}`}>
+          <ItemGroup icon={WorkflowIcon} title={tr('Automations: {n}', { n: kitRecipes.length })}>
               {kitRecipes.map((r) =>
-            <Item key={r.id} name={r.name} text={r.description} />
+            <Item key={r.id} name={tr(r.name)} text={tr(r.description)} />
             )}
             </ItemGroup>
           }
         </div>
         <p className="mt-6 flex items-start gap-2 text-[13px] text-fg-subtle">
           <SparklesIcon size={14} aria-hidden className="mt-0.5 shrink-0" />
-          Example wording only. KUBICU never invents prices, reviews or results for your business.
+          {tr('Example wording only. KUBICU never invents prices, reviews or results for your business.')}
         </p>
       </section>
     </div>);
 
 }
 
-function PagePreview({ label, title, note, doc, to }: {label: string;title: string;note: string;doc: Parameters<typeof TemplateThumb>[0]['doc'];to: string;}) {
+function PagePreview({ label, title, note, doc, to, openLabel }: {label: string;title: string;note: string;doc: Parameters<typeof TemplateThumb>[0]['doc'];to: string;openLabel: string;}) {
   return (
     <Link
       to={to}
@@ -109,8 +122,8 @@ function PagePreview({ label, title, note, doc, to }: {label: string;title: stri
         <span className="text-[12px] font-semibold text-fg-subtle">{label}</span>
         <span className="text-[17px] font-bold text-fg">{title}</span>
         <span className="text-[14px] leading-snug text-fg-muted">{note}</span>
-        <span className="mt-auto inline-flex items-center gap-1 pt-3 text-[14px] font-semibold text-fg">
-          Open full preview <ArrowUpRightIcon size={15} aria-hidden className="transition-transform duration-150 ease-out group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+        <span className="mt-auto inline-flex items-center gap-1 whitespace-nowrap pt-3 text-[14px] font-semibold text-fg">
+          {openLabel} <ArrowUpRightIcon size={15} aria-hidden className="transition-transform duration-150 ease-out group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
         </span>
       </div>
     </Link>);

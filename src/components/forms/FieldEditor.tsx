@@ -186,7 +186,7 @@ export function FieldEditor({ field, fields, isFirst, onChange, onRemove, disabl
             }
                 </div>
           }
-              {rule && <p className="text-caption text-fg-muted">{ruleSentence(field, fields)}</p>}
+              {rule && <p className="text-caption text-fg-muted">{ruleSentence(field, fields, tr)}</p>}
             </>
         }
         </section>

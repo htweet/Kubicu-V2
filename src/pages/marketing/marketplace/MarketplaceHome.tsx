@@ -8,6 +8,7 @@ import { ListingCard } from '../../../components/marketing/marketplace/ListingCa
 import { SectionHeading } from '../../../components/marketing/SectionHeading';
 import { Reveal } from '../../../components/marketing/Reveal';
 import { useMarketplace } from '../../../contexts/MarketplaceContext';
+import { useT } from '../../../contexts/LocaleContext';
 import { listingKinds } from '../../../data/marketplaceKinds';
 import { allListings } from '../../../utils/marketplaceListings';
 
@@ -27,8 +28,12 @@ const rules = [
 'Anything planned or preview-only says so on its card.'];
 
 
-/** Public Marketplace (D268): everything you can add to KUBICU — not the place your customers shop. */
+/**
+ * Public Marketplace (D268): everything you can add to KUBICU — not the place your customers shop.
+ * D333: the page, the seven kinds and the journey are translated; listing cards and the browser are translated separately.
+ */
 export function MarketplaceHome() {
+  const { t: tr } = useT();
   const market = useMarketplace();
   const listings = allListings();
   const picks = listings.filter((l) => l.ext?.staffPick).slice(0, 4);
@@ -49,7 +54,7 @@ export function MarketplaceHome() {
       
 
       <section aria-labelledby="mp-kinds" className="mx-auto w-full max-w-7xl px-5 py-20 md:px-8 md:py-24">
-        <SectionHeading id="mp-kinds" title="Seven kinds of add-on" lead="Each kind changes something different, so each one says what it changes." />
+        <SectionHeading id="mp-kinds" title={tr('Seven kinds of add-on')} lead={tr('Each kind changes something different, so each one says what it changes.')} />
         <ul className="mt-10 flex flex-col border-t border-line">
           {listingKinds.map((k, i) => {
             const count = listings.filter((l) => l.kind === k.id).length;
@@ -65,12 +70,12 @@ export function MarketplaceHome() {
                       <k.icon size={22} strokeWidth={2.1} aria-hidden />
                     </span>
                     <span className="min-w-0">
-                      <span className="block text-[18px] font-extrabold text-fg md:text-[20px]">{k.label}</span>
-                      <span className="block text-[14px] text-fg-muted md:hidden">{k.description}</span>
+                      <span className="block text-[18px] font-extrabold text-fg md:text-[20px]">{tr(k.label)}</span>
+                      <span className="block text-[14px] text-fg-muted md:hidden">{tr(k.description)}</span>
                     </span>
-                    <span className="hidden text-[15px] leading-snug text-fg-muted md:block">{k.description}</span>
-                    <span className="flex items-center gap-2 text-[14px] font-bold text-fg">
-                      <span className="tabular-nums">{k.id === 'ai' ? 'Planned' : count}</span>
+                    <span className="hidden text-[15px] leading-snug text-fg-muted md:block">{tr(k.description)}</span>
+                    <span className="flex items-center gap-2 whitespace-nowrap text-[14px] font-bold text-fg">
+                      <span className="tabular-nums">{k.id === 'ai' ? tr('Planned') : count}</span>
                       <ArrowRightIcon size={18} aria-hidden className="transition-transform duration-150 ease-out group-hover:translate-x-0.5" />
                     </span>
                   </Link>
@@ -85,11 +90,11 @@ export function MarketplaceHome() {
         <div className="mx-auto w-full max-w-7xl px-5 py-20 md:px-8">
           <SectionHeading
             id="mp-picks"
-            title="Picked by the KUBICU team"
-            lead="Chosen because they connect deeply to how small businesses here sell — not because anyone paid to be here."
+            title={tr('Picked by the KUBICU team')}
+            lead={tr('Chosen because they connect deeply to how small businesses here sell — not because anyone paid to be here.')}
             action={
-            <Link to="/marketplace/apps" className="inline-flex h-12 items-center gap-2 rounded-full bg-fg px-6 text-[15px] font-bold text-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2">
-                All apps <ArrowRightIcon size={16} aria-hidden />
+            <Link to="/marketplace/apps" className="inline-flex h-12 items-center gap-2 whitespace-nowrap rounded-full bg-fg px-6 text-[15px] font-bold text-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2">
+                {tr('All apps')} <ArrowRightIcon size={16} aria-hidden />
               </Link>
             } />
           
@@ -103,15 +108,15 @@ export function MarketplaceHome() {
 
       <section aria-labelledby="mp-journey" className="mx-auto grid w-full max-w-7xl gap-12 px-5 py-20 md:px-8 md:py-24 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
         <div className="lg:sticky lg:top-28 lg:self-start">
-          <SectionHeading id="mp-journey" title="From finding it to managing it" lead="The same six steps for every app, so nothing surprises you after you click Install." />
+          <SectionHeading id="mp-journey" title={tr('From finding it to managing it')} lead={tr('The same six steps for every app, so nothing surprises you after you click Install.')} />
         </div>
         <ol className="flex flex-col">
           {journey.map((s, i) =>
           <li key={s.title} className="grid grid-cols-[48px_minmax(0,1fr)] gap-4 border-t border-line py-6 last:border-b">
               <span className="kb-display text-[32px] leading-none text-[rgb(var(--kb-cobalt))]">{i + 1}</span>
               <div>
-                <h3 className="text-[19px] font-extrabold text-fg">{s.title}</h3>
-                <p className="mt-1 text-[15px] leading-relaxed text-fg-muted">{s.text}</p>
+                <h3 className="text-[19px] font-extrabold text-fg">{tr(s.title)}</h3>
+                <p className="mt-1 text-[15px] leading-relaxed text-fg-muted">{tr(s.text)}</p>
               </div>
             </li>
           )}
@@ -120,9 +125,9 @@ export function MarketplaceHome() {
 
       <section id="browse" aria-labelledby="mp-browse" className="scroll-mt-28 border-t border-line">
         <div className="mx-auto w-full max-w-7xl px-5 py-20 md:px-8">
-          <SectionHeading id="mp-browse" title="Browse everything" />
+          <SectionHeading id="mp-browse" title={tr('Browse everything')} />
           <div className="mt-8">
-            <MarketplaceBrowser label="Marketplace results" />
+            <MarketplaceBrowser label={tr('Marketplace results')} />
           </div>
         </div>
       </section>
@@ -131,20 +136,18 @@ export function MarketplaceHome() {
         <div className="mx-auto grid w-full max-w-7xl gap-10 px-5 py-20 md:px-8 lg:grid-cols-2">
           <div>
             <h2 id="mp-rules" className="kb-display text-[40px] leading-[1] text-[rgb(var(--kb-lime))] md:text-[56px]">
-              The rules every listing follows
+              {tr('The rules every listing follows')}
             </h2>
-            <p className="mt-5 max-w-md text-[16px] leading-relaxed text-white/85">
-              This Marketplace adds to KUBICU itself. The products you sell to your own customers live in Commerce, on your own page.
-            </p>
+            <p className="mt-5 max-w-md text-[16px] leading-relaxed text-white/85">{tr('This Marketplace adds to KUBICU itself. The products you sell to your own customers live in Commerce, on your own page.')}</p>
             <Link to="/developers" className="mt-7 inline-flex items-center gap-2 rounded-sm text-[15px] font-bold text-[rgb(var(--kb-lime))] underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--kb-lime))]">
-              Build for KUBICU <ArrowRightIcon size={16} aria-hidden />
+              {tr('Build for KUBICU')} <ArrowRightIcon size={16} aria-hidden />
             </Link>
           </div>
           <ul className="flex flex-col gap-4">
             {rules.map((r) =>
             <li key={r} className="flex gap-3 border-b border-white/15 pb-4 text-[16px] leading-relaxed">
                 <CheckIcon size={20} aria-hidden className="mt-0.5 shrink-0 text-[rgb(var(--kb-lime))]" />
-                {r}
+                {tr(r)}
               </li>
             )}
           </ul>

@@ -3,6 +3,7 @@ import { MonitorIcon, SmartphoneIcon } from 'lucide-react';
 import type { PageDocument } from '../../types/page';
 import type { SignatureTheme } from '../../data/signatureThemes';
 import { signatureTheme } from '../../data/signatureThemes';
+import { useT } from '../../contexts/LocaleContext';
 import { Sheet } from '../ui/Sheet';
 import { Segmented } from '../ui/Segmented';
 import { TemplateLivePreview } from '../templates/TemplateLivePreview';
@@ -15,8 +16,9 @@ interface ThemeCompareSheetProps {
   doc: PageDocument;
 }
 
-/** Up to three themes side by side on the same page (D164). Only the look differs. */
+/** Up to three themes side by side on the same page (D164). Only the look differs. Translated in D337. */
 export function ThemeCompareSheet({ open, onClose, themes, doc }: ThemeCompareSheetProps) {
+  const { t: tr } = useT();
   const [device, setDevice] = useState<'phone' | 'desktop'>('phone');
   return (
     <Sheet
@@ -24,17 +26,17 @@ export function ThemeCompareSheet({ open, onClose, themes, doc }: ThemeCompareSh
       onClose={onClose}
       side="bottom"
       height="full"
-      title="Compare themes"
-      description="Same page, same content — only the theme changes."
+      title={tr('Compare themes')}
+      description={tr('Same page, same content — only the theme changes.')}
       headerActions={
       <Segmented<'phone' | 'desktop'>
-        ariaLabel="Preview size"
+        ariaLabel={tr('Preview size')}
         size="sm"
         value={device}
         onChange={setDevice}
         options={[
-        { value: 'phone', label: 'Phone', icon: SmartphoneIcon },
-        { value: 'desktop', label: 'Desktop', icon: MonitorIcon }]
+        { value: 'phone', label: tr('Phone'), icon: SmartphoneIcon },
+        { value: 'desktop', label: tr('Desktop'), icon: MonitorIcon }]
         } />
 
       }>

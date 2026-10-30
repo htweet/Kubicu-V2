@@ -202,7 +202,7 @@ export function SubscriberDetail({ subId, onClose }: {subId: string | null;onClo
             <li key={e.id} className="grid grid-cols-[12px_minmax(0,1fr)] gap-x-3 border-l border-line py-2 pl-3 first:pt-0">
                   <span className="-ml-[19px] mt-1.5 h-2 w-2 rounded-full bg-fg-subtle" aria-hidden />
                   <div>
-                    <p className="text-label text-fg">{e.label}</p>
+                    <p className="text-label text-fg">{tr(e.label)}</p>
                     <p className="text-caption text-fg-subtle">
                       {formatTimestamp(e.at)} · {tr(e.by === 'customer' ? 'Subscriber' : e.by === 'seller' ? 'You' : 'Automatic')}
                     </p>
