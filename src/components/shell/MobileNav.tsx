@@ -13,6 +13,7 @@ import { Sheet } from '../ui/Sheet';
 import { cn } from '../../utils/cn';
 import { DirectionSwitcher } from './DirectionSwitcher';
 import { HelpMenu } from './HelpMenu';
+import { LanguagePicker } from '../ui/LanguagePicker';
 import { useMarketplace } from '../../contexts/MarketplaceContext';
 import { useT } from '../../contexts/LocaleContext';
 
@@ -137,6 +138,7 @@ export function MobileNav() {
         {/* Support is reachable on phones too (D76). */}
         <div className="border-t border-line p-2">
           <HelpMenu />
+          <LanguagePicker variant="row" side="top" align="start" />
           <button
             type="button"
             onClick={() => {

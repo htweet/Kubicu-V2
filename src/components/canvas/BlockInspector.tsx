@@ -8,10 +8,9 @@ import { NextBlockSuggestions } from './inspector/NextBlockSuggestions';
 import { currentLook, looksFor } from '../../utils/blockLooks';
 import type { Block } from '../../types/page';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
+import { useT } from '../../contexts/LocaleContext';
 import { blockDestination, qrHref } from '../../utils/domains/links';
-import { blockName, layerName } from '../../utils/blocks';
-
-const qrBlockTypes: Block['type'][] = ['event', 'booking', 'subscription'];
+import { blockName } from '../../utils/blocks';
 import { blockDefinitions } from '../../data/blockRegistry';
 import { useEditor } from '../../contexts/EditorContext';
 import { issuesByBlock } from '../../utils/validation';
@@ -31,13 +30,17 @@ import { canEditBlock } from '../../utils/coBrand';
 import { CoBrandBlockBar } from './inspector/CoBrandBlockBar';
 import { ContainerMembership, containerMembershipApplies } from './inspector/ContainerMembership';
 
+const qrBlockTypes: Block['type'][] = ['event', 'booking', 'subscription'];
+
 type InspectorTab = 'content' | 'style' | 'behaviour' | 'visibility';
 
 export function BlockInspector({ block, showHeader = true }: {block: Block;showHeader?: boolean;}) {
+  const { t: tr } = useT();
   const [tab, setTab] = useState<InspectorTab>('content');
   const { state, actions, issues } = useEditor();
   const blockIssues = issuesByBlock(issues)[block.id] ?? [];
   const def = blockDefinitions[block.type];
+  const typeName = tr(def.name);
   const Icon = def.icon;
   const coBrand = useCoBrand();
   const partnerLocked = !canEditBlock(coBrand.cb, block, coBrand.actor);
@@ -51,6 +54,7 @@ export function BlockInspector({ block, showHeader = true }: {block: Block;showH
   const conversions = conversionsFor(block);
   // Ready-made looks of this block (D177), switchable from the Style tab.
   const looks = looksFor(block.type);
+  const look = currentLook(block, looks);
 
   return (
     <div className="flex h-full flex-col">
@@ -60,13 +64,13 @@ export function BlockInspector({ block, showHeader = true }: {block: Block;showH
             <Icon size={15} aria-hidden />
           </span>
           <div className="min-w-0 flex-1">
-            <h2 className="truncate text-label font-semibold text-fg">{layerName(block)}</h2>
-            <p className="truncate text-caption text-fg-subtle">{block.name ? `${def.name} · rename in Layers` : def.description}</p>
+            <h2 className="truncate text-label font-semibold text-fg">{block.name?.trim() || typeName}</h2>
+            <p className="truncate text-caption text-fg-subtle">{block.name ? tr('{name} · rename in Layers', { name: typeName }) : tr(def.description)}</p>
           </div>
           {qrDest &&
         <IconButton
           icon={QrCodeIcon}
-          label={`QR code that opens this ${def.name.toLowerCase()}`}
+          label={tr('QR code that opens this {name}', { name: typeName.toLowerCase() })}
           size="sm"
           onClick={() => navigate(qrHref(qrDest, blockName(block)))} />
 
@@ -74,23 +78,23 @@ export function BlockInspector({ block, showHeader = true }: {block: Block;showH
           {conversions.length > 0 &&
         <Menu
           align="end"
-          header={<p className="px-3 pb-1 pt-2 text-caption font-medium text-fg-subtle">Change to…</p>}
+          header={<p className="px-3 pb-1 pt-2 text-caption font-medium text-fg-subtle">{tr('Change to…')}</p>}
           items={conversions.map((c) => ({
             id: c.to,
-            label: blockDefinitions[c.to].name,
+            label: tr(blockDefinitions[c.to].name),
             icon: blockDefinitions[c.to].icon,
             disabled: locked,
             onSelect: () => {
               actions.convertBlock(block.id, c.to);
-              toast(`Changed to ${blockDefinitions[c.to].name}`, { description: c.loses || 'Everything carried over.', action: { label: 'Undo', onClick: () => actions.undo() } });
+              toast(tr('Changed to {name}', { name: tr(blockDefinitions[c.to].name) }), { description: c.loses ? tr(c.loses) : tr('Everything carried over.'), action: { label: tr('Undo'), onClick: () => actions.undo() } });
             }
           }))}
-          trigger={(props) => <IconButton {...props} icon={ArrowRightLeftIcon} label="Change block type" size="sm" disabled={locked} />} />
+          trigger={(props) => <IconButton {...props} icon={ArrowRightLeftIcon} label={tr('Change block type')} size="sm" disabled={locked} />} />
 
         }
           <IconButton
           icon={block.locked ? LockIcon : LockOpenIcon}
-          label={block.locked ? 'Unlock block' : 'Lock block'}
+          label={block.locked ? tr('Unlock block') : tr('Lock block')}
           size="sm"
           active={!!block.locked}
           disabled={partnerLocked}
@@ -111,10 +115,10 @@ export function BlockInspector({ block, showHeader = true }: {block: Block;showH
         <div className="flex items-center gap-3 rounded-md bg-sunken px-3 py-2.5">
               <LockIcon size={15} className="shrink-0 text-fg-muted" aria-hidden />
               <p className="min-w-0 flex-1 text-caption text-fg">
-                <span className="font-semibold">Locked.</span> Unlock to edit, move, hide or delete it.
+                <span className="font-semibold">{tr('Locked.')}</span> {tr('Unlock to edit, move, hide or delete it.')}
               </p>
               <Button size="sm" variant="secondary" onClick={() => actions.toggleLocked(block.id)}>
-                Unlock
+                {tr('Unlock')}
               </Button>
             </div>
         }
@@ -122,7 +126,7 @@ export function BlockInspector({ block, showHeader = true }: {block: Block;showH
         <div className="flex items-center gap-2 text-caption text-fg-muted">
               <GroupIcon size={13} className="shrink-0" aria-hidden />
               <span className="min-w-0 flex-1 truncate">
-                In <span className="font-medium text-fg">{group.name}</span>
+                {tr('In')} <span className="font-medium text-fg">{group.name}</span>
               </span>
               <button
             type="button"
@@ -130,7 +134,7 @@ export function BlockInspector({ block, showHeader = true }: {block: Block;showH
             onClick={() => actions.removeFromGroup(block.id)}
             className="rounded-sm font-medium text-action hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus disabled:pointer-events-none disabled:opacity-40">
             
-                Remove from group
+                {tr('Remove from group')}
               </button>
             </div>
         }
@@ -139,16 +143,16 @@ export function BlockInspector({ block, showHeader = true }: {block: Block;showH
 
       <Tabs<InspectorTab>
         idPrefix={`insp-${block.id}`}
-        ariaLabel="Block settings"
+        ariaLabel={tr('Block settings')}
         value={tab}
         onChange={setTab}
         fullWidth
         className="px-2"
         items={[
-        { id: 'content', label: 'Content', badge: blockIssues.length || undefined },
-        { id: 'style', label: 'Style' },
-        { id: 'behaviour', label: 'Behaviour' },
-        { id: 'visibility', label: 'Visibility' }]
+        { id: 'content', label: tr('Content'), badge: blockIssues.length || undefined },
+        { id: 'style', label: tr('Style') },
+        { id: 'behaviour', label: tr('Behaviour') },
+        { id: 'visibility', label: tr('Visibility') }]
         } />
       
       <div
@@ -162,20 +166,20 @@ export function BlockInspector({ block, showHeader = true }: {block: Block;showH
         }}>
         
         <fieldset disabled={locked} className={cn('m-0 min-w-0 border-0 p-0', locked && 'opacity-60')}>
-          <legend className="sr-only">{locked ? `${def.name} settings, locked` : `${def.name} settings`}</legend>
+          <legend className="sr-only">{locked ? tr('{name} settings, locked', { name: typeName }) : tr('{name} settings', { name: typeName })}</legend>
           {tab === 'content' &&
           <div className="flex min-w-0 flex-col gap-4">
               {looks.length > 0 &&
             <p className="flex items-center gap-2 text-caption text-fg-muted">
                   <span className="min-w-0 flex-1 truncate">
-                    Look: <span className="font-medium text-fg">{currentLook(block, looks)?.name ?? 'Custom settings'}</span>
+                    {tr('Look:')} <span className="font-medium text-fg">{look ? tr(look.name) : tr('Custom settings')}</span>
                   </span>
                   <button
                 type="button"
                 onClick={() => setTab('style')}
                 className="shrink-0 rounded-sm font-medium text-action hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
                 
-                    Change look
+                    {tr('Change look')}
                   </button>
                 </p>
             }
@@ -194,10 +198,10 @@ export function BlockInspector({ block, showHeader = true }: {block: Block;showH
                       variant="secondary"
                       onClick={() => {
                         actions.endAbTest(test.id, test.arm);
-                        toast('Test ended', { description: 'Everyone now sees this block.', action: { label: 'Undo', onClick: () => actions.undo() } });
+                        toast(tr('Test ended'), { description: tr('Everyone now sees this block.'), action: { label: tr('Undo'), onClick: () => actions.undo() } });
                       }}>
                       
-                          End test and keep this
+                          {tr('End test and keep this')}
                         </Button>
                     }
                       <button
@@ -205,7 +209,7 @@ export function BlockInspector({ block, showHeader = true }: {block: Block;showH
                       onClick={() => setTab('visibility')}
                       className="rounded-sm font-semibold underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
                       
-                        Open Visibility → A/B test
+                        {tr('Open Visibility → A/B test')}
                       </button>
                     </span>);
 

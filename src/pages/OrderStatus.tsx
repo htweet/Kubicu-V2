@@ -7,6 +7,7 @@ import { usePageCommerce } from '../hooks/usePageCommerce';
 import { useVisitorLang } from '../hooks/useVisitorLang';
 import { LocaleProvider, translatorFor } from '../contexts/LocaleContext';
 import { PageSurface } from '../components/blocks/PageSurface';
+import { VisitorLanguageRow } from '../components/blocks/VisitorLanguageRow';
 import { cardStyle, mix } from '../components/blocks/pageStyle';
 import { CheckoutHeading, TestModeNote } from '../components/checkout/checkoutUi';
 import { MoneyBreakdown } from '../components/commerce/MoneyBreakdown';
@@ -33,7 +34,7 @@ export function OrderStatus() {
   const { handle = '', orderId = '' } = useParams();
   const page = useResolvedPage(handle);
   const commerce = usePageCommerce(page?.workspaceId ?? null, !!page?.isOwn);
-  const [lang] = useVisitorLang(page?.doc.language);
+  const [lang, setLang] = useVisitorLang(page?.doc.language);
   const tx = translatorFor(lang);
   const order = commerce.data?.orders.find((o) => o.id === orderId);
   const fulfilment = useFulfilment(page?.workspaceId ?? '__none').data;
@@ -83,9 +84,9 @@ export function OrderStatus() {
   tx('Expected delivery: {eta}.', { eta });
 
   return (
-    <LocaleProvider lang={lang}>
+    <LocaleProvider lang={lang} setLang={setLang}>
     <div className="min-h-screen w-full" style={{ background: t.background }}>
-      <PageSurface theme={t}>
+      <PageSurface theme={t} header={<VisitorLanguageRow theme={t} />}>
         <main className="flex flex-col gap-5 py-6">
           <Link to={`/p/${handle}`} className="inline-flex items-center gap-1.5 self-start text-[14px] font-medium" style={muted}>
             <ArrowLeftIcon size={15} aria-hidden /> {tx('Back to {name}', { name: page.doc.title })}

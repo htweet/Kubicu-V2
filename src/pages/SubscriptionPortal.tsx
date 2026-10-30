@@ -7,6 +7,7 @@ import { usePageCommerce } from '../hooks/usePageCommerce';
 import { useVisitorLang } from '../hooks/useVisitorLang';
 import { LocaleProvider, translatorFor, useT } from '../contexts/LocaleContext';
 import { PageSurface } from '../components/blocks/PageSurface';
+import { VisitorLanguageRow } from '../components/blocks/VisitorLanguageRow';
 import { cardStyle, mix } from '../components/blocks/pageStyle';
 import { CheckoutHeading, PrimaryButton, SecondaryButton, TestModeNote, ThemedField } from '../components/checkout/checkoutUi';
 import { canSelfCancel, cancelSub, intervalWord, pauseSub, priceLine, resumeSub, skipNextCycle, subDate, subStatusLabels, switchPlan, undoCancel, updateCard, SUB_RETRY_DAYS } from '../utils/commerce/subscriptions';
@@ -30,7 +31,7 @@ export function SubscriptionPortal() {
   const [cardErr, setCardErr] = useState<string | undefined>();
   const [reason, setReason] = useState('');
   const [notice, setNotice] = useState<string | null>(params.get('welcome') ? 'welcome' : null);
-  const [lang] = useVisitorLang(page?.doc.language);
+  const [lang, setLang] = useVisitorLang(page?.doc.language);
   const tx = translatorFor(lang);
 
   if (!page) return <Unavailable handle={handle} />;
@@ -89,9 +90,9 @@ export function SubscriptionPortal() {
 
 
   return (
-    <LocaleProvider lang={lang}>
+    <LocaleProvider lang={lang} setLang={setLang}>
     <div className="min-h-screen w-full" style={{ background: t.background }}>
-      <PageSurface theme={t}>
+      <PageSurface theme={t} header={<VisitorLanguageRow theme={t} />}>
         <main className="flex flex-col gap-5 py-6">
           <Link to={`/p/${handle}`} className="inline-flex items-center gap-1.5 self-start text-[14px] font-medium" style={muted}>
             <ArrowLeftIcon size={15} aria-hidden /> {tx('Back to {name}', { name: page.doc.title })}

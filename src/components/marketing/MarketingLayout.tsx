@@ -7,6 +7,7 @@ import { PlatformLook } from './PlatformLook';
 import { AnnouncementBar } from './AnnouncementBar';
 import { MegaMenu } from './MegaMenu';
 import { MobileSiteMenu } from './MobileSiteMenu';
+import { LanguagePicker } from '../ui/LanguagePicker';
 import { cn } from '../../utils/cn';
 
 const footer = [
@@ -107,6 +108,9 @@ export function MarketingLayout() {
             <MegaMenu />
           </div>
           <div className="flex items-center gap-2">
+            <span className="hidden lg:inline-flex">
+              <LanguagePicker variant="site" />
+            </span>
             <Link to="/signin" className={cn(pill, 'hidden bg-[rgb(238_233_221)] text-[rgb(20_20_18)] hover:bg-[rgb(224_217_202)] sm:inline-flex')}>
               Log in
             </Link>
@@ -143,6 +147,9 @@ export function MarketingLayout() {
               <Link to="/signin" className={cn(pill, 'mt-2 w-full bg-[rgb(238_233_221)] text-[rgb(20_20_18)] sm:hidden')}>
                 Log in
               </Link>
+              <div className="mt-2">
+                <LanguagePicker variant="site" stretch side="top" align="start" />
+              </div>
             </motion.nav>
           }
         </AnimatePresence>

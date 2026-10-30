@@ -7,6 +7,7 @@ import { usePageCommerce } from '../hooks/usePageCommerce';
 import { useVisitorLang } from '../hooks/useVisitorLang';
 import { LocaleProvider, translatorFor } from '../contexts/LocaleContext';
 import { PageSurface } from '../components/blocks/PageSurface';
+import { VisitorLanguageRow } from '../components/blocks/VisitorLanguageRow';
 import { buttonStyle, cardStyle, mix } from '../components/blocks/pageStyle';
 import { CheckoutHeading, TestModeNote } from '../components/checkout/checkoutUi';
 import { checkDownload, recordDownload } from '../utils/commerce/ops';
@@ -29,7 +30,7 @@ export function DownloadPage() {
   const { handle = '', token = '' } = useParams();
   const page = useResolvedPage(handle);
   const commerce = usePageCommerce(page?.workspaceId ?? null, !!page?.isOwn);
-  const [lang] = useVisitorLang(page?.doc.language);
+  const [lang, setLang] = useVisitorLang(page?.doc.language);
   const tx = translatorFor(lang);
   const order = commerce.data?.orders.find((o) => o.downloadToken === token);
   const [justDownloaded, setJustDownloaded] = useState<string | null>(null);
@@ -48,9 +49,9 @@ export function DownloadPage() {
   const items = order.items.filter((i) => i.kind === 'digital');
 
   return (
-    <LocaleProvider lang={lang}>
+    <LocaleProvider lang={lang} setLang={setLang}>
     <div className="min-h-screen w-full" style={{ background: t.background }}>
-      <PageSurface theme={t}>
+      <PageSurface theme={t} header={<VisitorLanguageRow theme={t} />}>
         <main className="flex flex-col gap-5 py-6">
           <Link to={`/p/${handle}/order/${order.id}`} className="inline-flex items-center gap-1.5 self-start text-[14px] font-medium" style={muted}>
             <ArrowLeftIcon size={15} aria-hidden /> {tx('Order #{n}', { n: order.number })}

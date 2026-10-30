@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeftIcon } from 'lucide-react';
 import { KubicuLogo } from '../shell/KubicuLogo';
 import { Button } from '../ui/Button';
+import { LanguagePicker } from '../ui/LanguagePicker';
 import { PlatformLook } from '../marketing/PlatformLook';
 import { ONBOARDING_STEPS } from '../../hooks/useOnboarding';
 import { cn } from '../../utils/cn';
@@ -38,11 +39,19 @@ export function OnboardingLayout({ step, onExit, preview, children }: Onboarding
               <KubicuLogo />
             </Link>
           </div>
-          {step < total &&
-          <Button variant="tertiary" onClick={onExit}>
-              Save and exit
-            </Button>
-          }
+          <div className="flex items-center gap-2">
+            <span className="hidden sm:inline-flex">
+              <LanguagePicker variant="pill" />
+            </span>
+            <span className="sm:hidden">
+              <LanguagePicker variant="compact" />
+            </span>
+            {step < total &&
+            <Button variant="tertiary" onClick={onExit}>
+                Save and exit
+              </Button>
+            }
+          </div>
         </header>
         {step < total &&
         <div className="flex gap-1 px-5 pt-4 md:px-8" role="progressbar" aria-label="Setup progress" aria-valuemin={1} aria-valuemax={total} aria-valuenow={step + 1} aria-valuetext={`${ONBOARDING_STEPS[step]}, ${step + 1} of ${total}`}>

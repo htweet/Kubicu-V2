@@ -25,7 +25,7 @@ import {
 import type { Block, BlockGroup } from '../../types/page';
 import { useEditor } from '../../contexts/EditorContext';
 import { blockDefinitions } from '../../data/blockRegistry';
-import { blockName, layerName, summarizeBlock } from '../../utils/blocks';
+import { blockName, summarizeBlock } from '../../utils/blocks';
 import { toUnits } from '../../utils/groups';
 import { issuesByBlock, type ValidationIssue } from '../../utils/validation';
 import { EmptyState } from '../ui/EmptyState';
@@ -35,6 +35,15 @@ import { Menu } from '../ui/Menu';
 import { cn } from '../../utils/cn';
 import { SaveSectionDialog } from './SaveSectionDialog';
 import { useCoBrandGuard } from '../../hooks/useCoBrandGuard';
+import { useT } from '../../contexts/LocaleContext';
+
+/** Translated block-type name; an owner's own layer name is shown as typed. */
+function useBlockNames() {
+  const { t: tr } = useT();
+  const bn = (block: Block) => tr(blockName(block));
+  const ln = (block: Block) => block.name?.trim() || bn(block);
+  return { tr, bn, ln };
+}
 
 interface LayersListProps {
   touch?: boolean;
@@ -49,6 +58,7 @@ cn(
 );
 
 export function LayersList({ touch = false, onPick }: LayersListProps) {
+  const { tr, bn } = useBlockNames();
   const { state, actions, issues } = useEditor();
   const guard = useCoBrandGuard();
   const [selecting, setSelecting] = useState(false);
@@ -65,7 +75,7 @@ export function LayersList({ touch = false, onPick }: LayersListProps) {
   }, [blocks]);
 
   if (blocks.length === 0) {
-    return <EmptyState icon={LayersIcon} title="No blocks yet" description="Blocks you add appear here in page order." />;
+    return <EmptyState icon={LayersIcon} title={tr('No blocks yet')} description={tr('Blocks you add appear here in page order.')} />;
   }
 
   const toggleCheck = (id: string) => setChecked((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
@@ -75,7 +85,7 @@ export function LayersList({ touch = false, onPick }: LayersListProps) {
   };
   const createGroup = () => {
     const groupId = actions.groupBlocks(checked);
-    if (groupId) toast(`Grouped ${checked.length} blocks`, { description: 'They now move, lock and hide together.' });
+    if (groupId) toast(tr('Grouped {n} blocks', { n: checked.length }), { description: tr('They now move, lock and hide together.') });
     stopSelecting();
   };
 
@@ -111,18 +121,18 @@ export function LayersList({ touch = false, onPick }: LayersListProps) {
       <div className="flex items-start justify-between gap-2 px-1">
         <p className="text-caption text-fg-subtle">
           {selecting ?
-          'Choose blocks to group, or save them as a reusable section.' :
+          tr('Choose blocks to group, or save them as a reusable section.') :
           touch ?
-          'Use the arrows to reorder, or hold the grip and drag.' :
+          tr('Use the arrows to reorder, or hold the grip and drag.') :
 
           <>
-              Drag to reorder, or focus a layer and press <Kbd>Alt</Kbd> + <Kbd>↑</Kbd>/<Kbd>↓</Kbd>.
+              {tr('Drag to reorder, or focus a layer and press')} <Kbd>Alt</Kbd> + <Kbd>↑</Kbd>/<Kbd>↓</Kbd>.
             </>
           }
         </p>
         {!selecting &&
         <Button variant="tertiary" size="sm" leadingIcon={GroupIcon} className="-mr-1 -mt-1 shrink-0" onClick={() => setSelecting(true)}>
-            Select
+            {tr('Select')}
           </Button>
         }
       </div>
@@ -130,10 +140,10 @@ export function LayersList({ touch = false, onPick }: LayersListProps) {
       {selecting &&
       <div className="sticky top-0 z-10 flex items-center gap-2 rounded-md border border-line bg-overlay p-1.5 pl-3 shadow-1">
           <span className="min-w-0 flex-1 text-label font-medium text-fg" aria-live="polite">
-            {checked.length} selected
+            {tr('Selected: {n}', { n: checked.length })}
           </span>
           <Button variant="tertiary" size="sm" onClick={stopSelecting}>
-            Cancel
+            {tr('Cancel')}
           </Button>
           <Button
           variant="secondary"
@@ -146,10 +156,10 @@ export function LayersList({ touch = false, onPick }: LayersListProps) {
             stopSelecting();
           }}>
           
-            Save
+            {tr('Save')}
           </Button>
           <Button size="sm" disabled={checked.length < 2} onClick={createGroup}>
-            Group {checked.length >= 2 ? checked.length : ''}
+            {tr('Group')} {checked.length >= 2 ? checked.length : ''}
           </Button>
         </div>
       }
@@ -166,12 +176,12 @@ export function LayersList({ touch = false, onPick }: LayersListProps) {
         <UnitItem key={unit.key} value={unit.key} locked={!!unit.block.locked} selecting={selecting}>
               {(startDrag) =>
           <>
-                  <BlockRowShell startDrag={startDrag} touch={touch} locked={!!unit.block.locked} selecting={selecting} label={blockName(unit.block)}>
+                  <BlockRowShell startDrag={startDrag} touch={touch} locked={!!unit.block.locked} selecting={selecting} label={bn(unit.block)}>
                     {renderRow(unit.block, { inGroup: false, index: unitIndex, total: units.length })}
                   </BlockRowShell>
                   {/* Containers (D167): the blocks inside, indented. Arrows move them among themselves. */}
                   {unit.children.length > 0 &&
-            <ol aria-label={`Inside ${blockName(unit.block)}`} className={cn('flex flex-col gap-0.5 border-l border-line pl-2', touch ? 'ml-10' : 'ml-7')}>
+            <ol aria-label={tr('Inside {name}', { name: bn(unit.block) })} className={cn('flex flex-col gap-0.5 border-l border-line pl-2', touch ? 'ml-10' : 'ml-7')}>
                       {unit.children.map((child, i) =>
               <li key={child.id}>{renderRow(child, { inGroup: false, index: i, total: unit.children.length })}</li>
               )}
@@ -260,12 +270,13 @@ function BlockRowShell({
 
 
 }: {startDrag: (e: React.PointerEvent) => void;touch: boolean;locked: boolean;selecting: boolean;label: string;children: React.ReactNode;}) {
+  const { t: tr } = useT();
   return (
     <div className="group flex items-center">
       {!selecting &&
       <button
         type="button"
-        aria-label={`Drag ${label}`}
+        aria-label={tr('Drag {name}', { name: label })}
         disabled={locked}
         onPointerDown={startDrag}
         className={cn(
@@ -311,6 +322,7 @@ function GroupLayer({
   onSaveSection,
   renderRow
 }: GroupLayerProps) {
+  const { t: tr } = useT();
   const { actions } = useEditor();
   const [renaming, setRenaming] = useState(false);
   const [name, setName] = useState(group.name);
@@ -334,9 +346,9 @@ function GroupLayer({
   const deleteGroup = () => {
     const lockedCount = blocks.filter((b) => b.locked).length;
     actions.removeGroup(group.id);
-    toast(`${group.name} deleted`, {
-      description: lockedCount ? `${lockedCount} locked block${lockedCount === 1 ? ' was' : 's were'} kept.` : undefined,
-      action: { label: 'Undo', onClick: () => actions.undo() }
+    toast(tr('{name} deleted', { name: group.name }), {
+      description: lockedCount ? tr('Locked blocks kept: {n}.', { n: lockedCount }) : undefined,
+      action: { label: tr('Undo'), onClick: () => actions.undo() }
     });
   };
 
@@ -346,7 +358,7 @@ function GroupLayer({
         {!selecting &&
         <button
           type="button"
-          aria-label={`Drag ${group.name}`}
+          aria-label={tr('Drag {name}', { name: group.name })}
           disabled={allLocked}
           onPointerDown={startDrag}
           className={cn(btn, 'cursor-grab touch-none active:cursor-grabbing', !touch && 'opacity-0 group-hover:opacity-100 focus-visible:opacity-100')}>
@@ -357,7 +369,7 @@ function GroupLayer({
         <button
           type="button"
           aria-expanded={!collapsed}
-          aria-label={collapsed ? `Expand ${group.name}` : `Collapse ${group.name}`}
+          aria-label={collapsed ? tr('Expand {name}', { name: group.name }) : tr('Collapse {name}', { name: group.name })}
           onClick={onToggleCollapsed}
           className={btn}>
           
@@ -366,7 +378,7 @@ function GroupLayer({
         {renaming ?
         <input
           ref={inputRef}
-          aria-label="Group name"
+          aria-label={tr('Group name')}
           value={name}
           onChange={(e) => setName(e.target.value)}
           onBlur={commitName}
@@ -392,7 +404,7 @@ function GroupLayer({
             }
           }}
           onClick={onToggleCollapsed}
-          title="Double-click to rename"
+          title={tr('Double-click to rename')}
           className={cn(
             'flex min-w-0 flex-1 items-center gap-2 rounded-sm py-1.5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
             allHidden && 'opacity-55'
@@ -405,19 +417,19 @@ function GroupLayer({
         }
         {touch && !selecting &&
         <>
-            <button type="button" aria-label={`Move ${group.name} up`} disabled={isFirst || allLocked} onClick={() => actions.moveGroup(group.id, -1)} className={btn}>
+            <button type="button" aria-label={tr('Move {name} up', { name: group.name })} disabled={isFirst || allLocked} onClick={() => actions.moveGroup(group.id, -1)} className={btn}>
               <ArrowUpIcon size={16} aria-hidden />
             </button>
-            <button type="button" aria-label={`Move ${group.name} down`} disabled={isLast || allLocked} onClick={() => actions.moveGroup(group.id, 1)} className={btn}>
+            <button type="button" aria-label={tr('Move {name} down', { name: group.name })} disabled={isLast || allLocked} onClick={() => actions.moveGroup(group.id, 1)} className={btn}>
               <ArrowDownIcon size={16} aria-hidden />
             </button>
           </>
         }
         <button
           type="button"
-          aria-label={allLocked ? `Unlock ${group.name}` : `Lock ${group.name}`}
+          aria-label={allLocked ? tr('Unlock {name}', { name: group.name }) : tr('Lock {name}', { name: group.name })}
           aria-pressed={allLocked}
-          title={allLocked ? 'Unlock group' : 'Lock group'}
+          title={allLocked ? tr('Unlock group') : tr('Lock group')}
           onClick={() => actions.setGroupLocked(group.id, !allLocked)}
           className={cn(btn, allLocked ? 'text-action' : !touch && 'opacity-0 group-hover:opacity-100 focus-visible:opacity-100')}>
           
@@ -425,8 +437,8 @@ function GroupLayer({
         </button>
         <button
           type="button"
-          aria-label={allHidden ? `Show ${group.name}` : `Hide ${group.name}`}
-          title={allHidden ? 'Show group on live page' : 'Hide group from live page'}
+          aria-label={allHidden ? tr('Show {name}', { name: group.name }) : tr('Hide {name}', { name: group.name })}
+          title={allHidden ? tr('Show group on live page') : tr('Hide group from live page')}
           onClick={() => actions.setGroupHidden(group.id, !allHidden)}
           className={cn(btn, !touch && !allHidden && 'opacity-0 group-hover:opacity-100 focus-visible:opacity-100')}>
           
@@ -434,22 +446,22 @@ function GroupLayer({
         </button>
         <Menu
           items={[
-          { id: 'rename', label: 'Rename', icon: PencilIcon, onSelect: () => setRenaming(true) },
-          { id: 'duplicate', label: 'Duplicate group', icon: CopyIcon, onSelect: () => actions.duplicateGroup(group.id) },
-          { id: 'save', label: 'Save as reusable section', icon: BookmarkPlusIcon, onSelect: onSaveSection },
-          { id: 'ungroup', label: 'Ungroup', icon: UngroupIcon, onSelect: () => actions.ungroup(group.id) },
+          { id: 'rename', label: tr('Rename'), icon: PencilIcon, onSelect: () => setRenaming(true) },
+          { id: 'duplicate', label: tr('Duplicate group'), icon: CopyIcon, onSelect: () => actions.duplicateGroup(group.id) },
+          { id: 'save', label: tr('Save as reusable section'), icon: BookmarkPlusIcon, onSelect: onSaveSection },
+          { id: 'ungroup', label: tr('Ungroup'), icon: UngroupIcon, onSelect: () => actions.ungroup(group.id) },
           {
             id: 'delete',
-            label: 'Delete group',
+            label: tr('Delete group'),
             icon: Trash2Icon,
             destructive: true,
             disabled: allLocked,
-            reason: allLocked ? 'Unlock the group to delete it.' : undefined,
+            reason: allLocked ? tr('Unlock the group to delete it.') : undefined,
             onSelect: deleteGroup
           }]
           }
           trigger={(props) =>
-          <button type="button" {...props} aria-label={`More actions for ${group.name}`} className={btn}>
+          <button type="button" {...props} aria-label={tr('More actions for {name}', { name: group.name })} className={btn}>
               <MoreHorizontalIcon size={14} aria-hidden />
             </button>
           } />
@@ -475,6 +487,7 @@ function GroupLayer({
 }
 
 function MemberItem({ block, touch, selecting, children }: {block: Block;touch: boolean;selecting: boolean;children: React.ReactNode;}) {
+  const { bn } = useBlockNames();
   const controls = useDragControls();
   return (
     <Reorder.Item
@@ -490,7 +503,7 @@ function MemberItem({ block, touch, selecting, children }: {block: Block;touch: 
         touch={touch}
         locked={!!block.locked}
         selecting={selecting}
-        label={blockName(block)}>
+        label={bn(block)}>
         
         {children}
       </BlockRowShell>
@@ -531,6 +544,8 @@ function LayerRow({
   onToggleHidden,
   onToggleLocked
 }: LayerRowProps) {
+  const { tr, bn, ln } = useBlockNames();
+  const typeName = bn(block);
   const Icon = blockDefinitions[block.type].icon;
   const hidden = block.visibility.hidden;
   const locked = !!block.locked;
@@ -567,8 +582,8 @@ function LayerRow({
       {renaming ?
       <input
         autoFocus
-        aria-label={`Name for this ${blockName(block)} in Layers`}
-        placeholder={blockName(block)}
+        aria-label={tr('Name for this {name} in Layers', { name: typeName })}
+        placeholder={typeName}
         value={draftName}
         maxLength={40}
         onChange={(e) => setDraftName(e.target.value)}
@@ -586,7 +601,7 @@ function LayerRow({
       <button
         type="button"
         onDoubleClick={() => !selecting && !locked && setRenaming(true)}
-        title="Double-click or press F2 to rename"
+        title={tr('Double-click or press F2 to rename')}
         role={canCheck ? 'checkbox' : undefined}
         aria-checked={canCheck ? checked : undefined}
         aria-disabled={selecting && inGroup ? true : undefined}
@@ -619,14 +634,14 @@ function LayerRow({
         
         <Icon size={15} className="shrink-0 text-fg-muted" aria-hidden />
         <span className="min-w-0">
-          <span className="block truncate text-label font-medium text-fg">{layerName(block)}</span>
-          <span className="block truncate text-caption text-fg-subtle">{block.name ? `${blockName(block)} · ${summarizeBlock(block)}` : summarizeBlock(block)}</span>
+          <span className="block truncate text-label font-medium text-fg">{ln(block)}</span>
+          <span className="block truncate text-caption text-fg-subtle">{block.name ? `${typeName} · ${tr(summarizeBlock(block))}` : tr(summarizeBlock(block))}</span>
         </span>
         {issues.length > 0 && (
         hasError ?
-        <AlertCircleIcon size={14} className="ml-auto shrink-0 text-danger" aria-label="Needs a fix" /> :
+        <AlertCircleIcon size={14} className="ml-auto shrink-0 text-danger" aria-label={tr('Needs a fix')} /> :
 
-        <AlertTriangleIcon size={14} className="ml-auto shrink-0 text-warning" aria-label="Worth checking" />)
+        <AlertTriangleIcon size={14} className="ml-auto shrink-0 text-warning" aria-label={tr('Worth checking')} />)
         }
       </button>
       }
@@ -634,19 +649,19 @@ function LayerRow({
       <>
           {touch &&
         <>
-              <button type="button" aria-label="Move up" disabled={isFirst || locked} onClick={() => onMove(-1)} className={btn}>
+              <button type="button" aria-label={tr('Move up')} disabled={isFirst || locked} onClick={() => onMove(-1)} className={btn}>
                 <ArrowUpIcon size={16} aria-hidden />
               </button>
-              <button type="button" aria-label="Move down" disabled={isLast || locked} onClick={() => onMove(1)} className={btn}>
+              <button type="button" aria-label={tr('Move down')} disabled={isLast || locked} onClick={() => onMove(1)} className={btn}>
                 <ArrowDownIcon size={16} aria-hidden />
               </button>
             </>
         }
           <button
           type="button"
-          aria-label={locked ? `Unlock ${blockName(block)}` : `Lock ${blockName(block)}`}
+          aria-label={locked ? tr('Unlock {name}', { name: typeName }) : tr('Lock {name}', { name: typeName })}
           aria-pressed={locked}
-          title={locked ? 'Unlock' : 'Lock — prevents edits, moves and deletion'}
+          title={locked ? tr('Unlock') : tr('Lock — prevents edits, moves and deletion')}
           onClick={onToggleLocked}
           className={cn(btn, locked ? 'text-action' : !touch && 'opacity-0 group-hover:opacity-100 focus-visible:opacity-100')}>
           
@@ -654,8 +669,8 @@ function LayerRow({
           </button>
           <button
           type="button"
-          aria-label={hidden ? `Show ${blockName(block)}` : `Hide ${blockName(block)}`}
-          title={hidden ? 'Show on live page' : 'Hide from live page'}
+          aria-label={hidden ? tr('Show {name}', { name: typeName }) : tr('Hide {name}', { name: typeName })}
+          title={hidden ? tr('Show on live page') : tr('Hide from live page')}
           disabled={locked}
           onClick={onToggleHidden}
           className={cn(btn, !touch && !hidden && 'opacity-0 group-hover:opacity-100 focus-visible:opacity-100')}>

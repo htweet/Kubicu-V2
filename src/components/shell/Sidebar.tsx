@@ -20,7 +20,7 @@ import { AccountMenu } from './AccountMenu';
 import { useMarketplace } from '../../contexts/MarketplaceContext';
 import { useT } from '../../contexts/LocaleContext';
 import { useWorkspaceNavCounts } from '../../hooks/useWorkspaceNavCounts';
-import { uiLanguages } from '../../data/translations';
+import { LanguagePicker } from '../ui/LanguagePicker';
 
 export function Sidebar() {
   const { collapsed, toggle } = useSidebarCollapsed();
@@ -34,7 +34,7 @@ export function Sidebar() {
   const groups = useNavGroups();
   const reduce = useReducedMotion();
   const ToggleIcon = collapsed ? PanelLeftOpenIcon : PanelLeftCloseIcon;
-  const { t, lang } = useT();
+  const { t } = useT();
   // D247: a sidebar badge only ever repeats a number the screen itself shows, so the two never disagree.
   const waitingByNav = useWorkspaceNavCounts();
   const toggleLabel = t(collapsed ? 'Expand sidebar' : 'Collapse sidebar');
@@ -142,13 +142,9 @@ export function Sidebar() {
             {collapsed ? roleInfo[team.role].label.slice(0, 1) : `Viewing as ${team.me.name.split(' ')[0]} · ${roleInfo[team.role].label}`}
           </p>
         }
-        {lang !== 'en' && !collapsed &&
-        <p className="mb-1 px-2.5 text-meta text-fg-subtle" title="Drafted translations, waiting for a native speaker to check them. Screens without a draft stay in English.">
-            {t('Draft translation')} · {uiLanguages.find((l) => l.value === lang)?.native}
-          </p>
-        }
         {collapsed && <NotificationBell size="md" onMouseEnter={tip.show(t('Notifications'))} onMouseLeave={tip.hide} onFocus={tip.show(t('Notifications'))} onBlur={tip.hide} />}
         <HelpMenu collapsed={collapsed} tip={tip} />
+        <LanguagePicker variant="row" side="top" align="start" collapsed={collapsed} tip={tip} />
         <AppearancePicker collapsed={collapsed} tip={tip} />
         <div className={cn('mt-1.5 border-t border-line pt-2', collapsed ? 'flex justify-center px-0' : '-mx-3 px-3')}>
           <AccountMenu collapsed={collapsed} tip={tip} />

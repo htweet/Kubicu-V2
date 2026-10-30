@@ -32,6 +32,7 @@ import { publicUrl } from '../../utils/format';
 import { cn } from '../../utils/cn';
 import { findPage, pageHref } from '../../utils/sitePages';
 import { PageSwitcher } from './PageSwitcher';
+import { LanguagePicker } from '../ui/LanguagePicker';
 import { SpaceSwitcher } from './SpaceSwitcher';
 import { ReviewBadge } from './ReviewStatus';
 import { PresenceAvatars } from './PresenceAvatars';
@@ -171,6 +172,9 @@ export function EditorTopBar({ viewport, onViewportChange, onOpenVersions, onOpe
           <IconButton icon={SearchIcon} label={tr('Search blocks and actions')} title="" onClick={onOpenCommand} />
         </Tooltip>
         <IconButton icon={HistoryIcon} label={tr('Version history')} onClick={onOpenVersions} />
+        <span className="hidden lg:inline-flex">
+          <LanguagePicker variant="compact" />
+        </span>
         <Button variant="secondary" leadingIcon={EyeIcon} onClick={() => navigate(`${pageHref(draft.handle, activePath)}?draft=1${previewSource ? `&as=${previewSource}` : ''}`)}>
           {tr('Preview')}
         </Button>

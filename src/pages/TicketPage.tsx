@@ -5,6 +5,7 @@ import { ArrowLeftIcon, CalendarPlusIcon, CheckCircle2Icon, ClockIcon, CopyIcon,
 import { useResolvedPage } from '../hooks/useResolvedPage';
 import { usePageCommerce } from '../hooks/usePageCommerce';
 import { PageSurface } from '../components/blocks/PageSurface';
+import { VisitorLanguageRow } from '../components/blocks/VisitorLanguageRow';
 import { cardStyle, fontsFor, mix } from '../components/blocks/pageStyle';
 import { TestModeNote } from '../components/checkout/checkoutUi';
 import { Unavailable } from './PublicPage';
@@ -23,7 +24,7 @@ export function TicketPage() {
   const ref = findTicket(commerce.data, { id: ticketId });
   const ev = ref ? findEvent(commerce.data, ref.ticket.eventId) : undefined;
   const [qr, setQr] = useState('');
-  const [lang] = useVisitorLang(page?.doc.language);
+  const [lang, setLang] = useVisitorLang(page?.doc.language);
   const tx = translatorFor(lang);
 
   useEffect(() => {
@@ -71,9 +72,9 @@ export function TicketPage() {
   null;
 
   return (
-    <LocaleProvider lang={lang}>
+    <LocaleProvider lang={lang} setLang={setLang}>
     <div className="min-h-screen w-full" style={{ background: t.background }}>
-      <PageSurface theme={t}>
+      <PageSurface theme={t} header={<VisitorLanguageRow theme={t} />}>
         <main className="flex flex-col gap-5 py-6">
           <Link to={`/p/${handle}/order/${ref.order.id}`} className="inline-flex items-center gap-1.5 self-start text-[14px] font-medium" style={muted}>
             <ArrowLeftIcon size={15} aria-hidden /> {tx('Order #{n}', { n: ref.order.number })}

@@ -4,7 +4,8 @@ import type { ValidationIssue } from '../../../utils/validation';
 import { useEditor } from '../../../contexts/EditorContext';
 import { usePlan } from '../../../contexts/PlanContext';
 import { planAtLeast } from '../../../data/plans';
-import { businessWhatsApp, waFieldHint } from '../../../utils/businessWhatsApp';
+import { businessWhatsApp, waFieldHintIn } from '../../../utils/businessWhatsApp';
+import { useT } from '../../../contexts/LocaleContext';
 import { uid } from '../../../utils/id';
 import { formatNgn } from '../../../utils/format';
 import { TextInput } from '../../ui/TextInput';
@@ -33,11 +34,11 @@ interface Props {
   issues: ValidationIssue[];
 }
 
-const priceTag = <IllustrativeTag note="KUBICU never invents prices. Leave blank to show “Price on request”." />;
-const priceText = (p: number | null) => p === null ? 'Price on request' : formatNgn(p);
-
-/** Inspector fields for the blocks added in Batch 3. */
+/** Inspector fields for the blocks added in Batch 3. Commerce blocks (gallery, product grid, menu, pricing) translated in D297. */
 export function ExtendedContentFields({ block, issues }: Props) {
+  const { t: tr } = useT();
+  const priceTag = <IllustrativeTag note={tr('KUBICU never invents prices. Leave blank to show “Price on request”.')} />;
+  const priceText = (p: number | null) => p === null ? tr('Price on request') : formatNgn(p);
   const { actions } = useEditor();
   const plan = usePlan();
   const commerce = useCommerce().data;
@@ -60,29 +61,29 @@ export function ExtendedContentFields({ block, issues }: Props) {
         return (
           <div className={stack}>
           {!unlocked &&
-            <InlineAlert tone="info" title="Creator plan shows the full gallery">
-              On {plan.name}, visitors see the first photo only. Your other photos are kept and appear when you upgrade.
+            <InlineAlert tone="info" title={tr('Creator plan shows the full gallery')}>
+              {tr('On {plan}, visitors see the first photo only. Your other photos are kept and appear when you upgrade.', { plan: plan.name })}
             </InlineAlert>
             }
-          <TextInput id={id('title')} label="Title" optional value={c.title} onChange={(e) => set({ title: e.target.value }, 'title')} />
-          <Field id={id('layout')} label="Layout">
-            <Segmented ariaLabel="Gallery layout" value={c.layout} onChange={(layout) => set({ layout }, 'layout')} options={[{ value: 'grid', label: 'Grid' }, { value: 'masonry', label: 'Masonry' }, { value: 'carousel', label: 'Swipe' }]} />
+          <TextInput id={id('title')} label={tr('Title')} optional value={c.title} onChange={(e) => set({ title: e.target.value }, 'title')} />
+          <Field id={id('layout')} label={tr('Layout')}>
+            <Segmented ariaLabel={tr('Gallery layout')} value={c.layout} onChange={(layout) => set({ layout }, 'layout')} options={[{ value: 'grid', label: tr('Grid') }, { value: 'masonry', label: tr('Masonry') }, { value: 'carousel', label: tr('Swipe') }]} />
           </Field>
           <ItemListEditor
               legend="Photos"
               noun="Photo"
               items={c.images}
               onChange={(images, f) => set({ images }, f)}
-              title={(img) => img.alt || (img.url ? 'Photo' : '')}
-              meta={(img) => img.url && !img.alt ? 'Needs a description' : undefined}
+              title={(img) => img.alt || (img.url ? tr('Photo') : '')}
+              meta={(img) => img.url && !img.alt ? tr('Needs a description') : undefined}
               create={() => ({ id: uid('img'), url: '', alt: '' })}
               addLabel="Add photo"
               hint={warn('images')}
               error={err('images')}
               render={(img, update) =>
               <>
-                <MediaPicker id={id(`img-${img.id}`)} label="Photo" aspect="1:1" value={img.url} onChange={(url, meta) => update(meta?.alt && !img.alt.trim() ? { url, alt: meta.alt } : { url }, 'url')} />
-                <TextInput id={id(`alt-${img.id}`)} label="Photo description" value={img.alt} hint="Read aloud by screen readers." onChange={(e) => update({ alt: e.target.value }, 'alt')} />
+                <MediaPicker id={id(`img-${img.id}`)} label={tr('Photo')} aspect="1:1" value={img.url} onChange={(url, meta) => update(meta?.alt && !img.alt.trim() ? { url, alt: meta.alt } : { url }, 'url')} />
+                <TextInput id={id(`alt-${img.id}`)} label={tr('Photo description')} value={img.alt} hint={tr('Read aloud by screen readers.')} onChange={(e) => update({ alt: e.target.value }, 'alt')} />
               </>
               } />
             
@@ -113,16 +114,16 @@ export function ExtendedContentFields({ block, issues }: Props) {
           return (
             <div className={stack}>
             {sourceSwitch}
-            <TextInput id={id('title')} label="Title" optional value={c.title} onChange={(e) => set({ title: e.target.value }, 'title')} />
-            <Field id={id('pick')} label="Show">
+            <TextInput id={id('title')} label={tr('Title')} optional value={c.title} onChange={(e) => set({ title: e.target.value }, 'title')} />
+            <Field id={id('pick')} label={tr('Show')}>
               <Segmented
-                  ariaLabel="Which products"
+                  ariaLabel={tr('Which products')}
                   fullWidth
                   value={byCollection ? 'collection' : 'pick'}
                   onChange={(v) => set(v === 'collection' ? { collectionId: commerce.collections[0]?.id ?? null } : { collectionId: null }, 'source')}
                   options={[
-                  { value: 'pick', label: 'Products I pick' },
-                  { value: 'collection', label: 'A collection' }]
+                  { value: 'pick', label: tr('Products I pick') },
+                  { value: 'collection', label: tr('A collection') }]
                   } />
                 
             </Field>
@@ -130,20 +131,20 @@ export function ExtendedContentFields({ block, issues }: Props) {
               commerce.collections.length ?
               <SelectInput
                 id={id('collection')}
-                label="Collection"
+                label={tr('Collection')}
                 value={c.collectionId ?? ''}
                 onChange={(collectionId) => set({ collectionId }, 'source')}
                 options={commerce.collections.map((col) => ({ value: col.id, label: col.name }))}
-                hint="New products added to this collection appear automatically. Up to 12." /> :
+                hint={tr('New products added to this collection appear automatically. Up to 12.')} /> :
 
 
-              <p className="text-caption text-fg-muted">No collections yet. Create one from Commerce → Products.</p> :
+              <p className="text-caption text-fg-muted">{tr('No collections yet. Create one from Commerce → Products.')}</p> :
 
 
               <ProductPicker selected={c.productIds ?? []} onChange={(productIds) => set({ productIds }, 'source')} />
               }
-            {err('source') && <p className="text-caption text-danger">{err('source')}</p>}
-            {!err('source') && warn('source') && <p className="text-caption text-warning">{warn('source')}</p>}
+            {err('source') && <p className="text-caption text-danger">{tr(err('source') ?? '')}</p>}
+            {!err('source') && warn('source') && <p className="text-caption text-warning">{tr(warn('source') ?? '')}</p>}
             <OrderActionField
                 id={id('order')}
                 value={c.orderAction === 'link' ? 'whatsapp' : c.orderAction}
@@ -153,19 +154,19 @@ export function ExtendedContentFields({ block, issues }: Props) {
                 { value: 'whatsapp', label: 'WhatsApp' }]
                 } />
               
-            {err('orderAction') && <p className="-mt-2 text-caption text-danger">{err('orderAction')}</p>}
+            {err('orderAction') && <p className="-mt-2 text-caption text-danger">{tr(err('orderAction') ?? '')}</p>}
             {c.orderAction === 'whatsapp' &&
-              <TextInput id={id('wa')} label="WhatsApp number" type="tel" inputMode="tel" placeholder={businessWhatsApp() || '+234 …'} value={c.whatsappPhone} error={err('whatsappPhone')} hint={waFieldHint(c.whatsappPhone)} onChange={(e) => set({ whatsappPhone: e.target.value }, 'whatsappPhone')} />
+              <TextInput id={id('wa')} label={tr('WhatsApp number')} type="tel" inputMode="tel" placeholder={businessWhatsApp() || '+234 …'} value={c.whatsappPhone} error={err('whatsappPhone') && tr(err('whatsappPhone') ?? '')} hint={waFieldHintIn(tr, c.whatsappPhone)} onChange={(e) => set({ whatsappPhone: e.target.value }, 'whatsappPhone')} />
               }
-            <TextInput id={id('cta')} label="Button label" value={c.ctaLabel} onChange={(e) => set({ ctaLabel: e.target.value }, 'ctaLabel')} />
-            <p className="text-caption text-fg-subtle">Prices, photos and sold-out status stay in sync with Commerce. Drafts and archived products never show.</p>
+            <TextInput id={id('cta')} label={tr('Button label')} value={c.ctaLabel} onChange={(e) => set({ ctaLabel: e.target.value }, 'ctaLabel')} />
+            <p className="text-caption text-fg-subtle">{tr('Prices, photos and sold-out status stay in sync with Commerce. Drafts and archived products never show.')}</p>
           </div>);
 
         }
         return (
           <div className={stack}>
           {sourceSwitch}
-          <TextInput id={id('title')} label="Title" optional value={c.title} onChange={(e) => set({ title: e.target.value }, 'title')} />
+          <TextInput id={id('title')} label={tr('Title')} optional value={c.title} onChange={(e) => set({ title: e.target.value }, 'title')} />
           <ItemListEditor
               legend="Products"
               noun="Product"
@@ -173,31 +174,31 @@ export function ExtendedContentFields({ block, issues }: Props) {
               min={1}
               onChange={(items, f) => set({ items }, f)}
               title={(p) => p.name}
-              meta={(p) => `${priceText(p.priceNgn)}${p.soldOut ? ' · Sold out' : ''}`}
+              meta={(p) => `${priceText(p.priceNgn)}${p.soldOut ? ` · ${tr('Sold out')}` : ''}`}
               create={() => ({ id: uid('gp'), name: '', priceNgn: null, imageUrl: '', imageAlt: '', note: '', soldOut: false, url: '' })}
               addLabel="Add product"
               error={err('items')}
               hint={warn('items')}
               render={(p, update) =>
               <>
-                <TextInput id={id(`n-${p.id}`)} label="Name" value={p.name} onChange={(e) => update({ name: e.target.value }, 'name')} />
-                <CurrencyInput id={id(`p-${p.id}`)} label="Price" value={p.priceNgn} placeholder="Price on request" trailing={priceTag} onChange={(priceNgn) => update({ priceNgn }, 'price')} />
-                <TextInput id={id(`note-${p.id}`)} label="Short note" optional placeholder="e.g. Sizes 8–16" value={p.note} onChange={(e) => update({ note: e.target.value }, 'note')} />
-                <MediaPicker id={id(`img-${p.id}`)} label="Photo" aspect="1:1" value={p.imageUrl} onChange={(imageUrl) => update({ imageUrl }, 'image')} />
-                {p.imageUrl && <TextInput id={id(`alt-${p.id}`)} label="Photo description" value={p.imageAlt} onChange={(e) => update({ imageAlt: e.target.value }, 'alt')} />}
-                {c.orderAction === 'link' && <TextInput id={id(`url-${p.id}`)} label="Order link" type="url" inputMode="url" placeholder="https://" value={p.url} onChange={(e) => update({ url: e.target.value }, 'url')} />}
-                <Switch id={id(`so-${p.id}`)} label="Sold out" description="Shows a Sold out tag and hides the order button." checked={p.soldOut} onChange={(soldOut) => update({ soldOut }, 'soldOut')} />
+                <TextInput id={id(`n-${p.id}`)} label={tr('Name')} value={p.name} onChange={(e) => update({ name: e.target.value }, 'name')} />
+                <CurrencyInput id={id(`p-${p.id}`)} label={tr('Price')} value={p.priceNgn} placeholder={tr('Price on request')} trailing={priceTag} onChange={(priceNgn) => update({ priceNgn }, 'price')} />
+                <TextInput id={id(`note-${p.id}`)} label={tr('Short note')} optional placeholder={tr('e.g. Sizes 8–16')} value={p.note} onChange={(e) => update({ note: e.target.value }, 'note')} />
+                <MediaPicker id={id(`img-${p.id}`)} label={tr('Photo')} aspect="1:1" value={p.imageUrl} onChange={(imageUrl) => update({ imageUrl }, 'image')} />
+                {p.imageUrl && <TextInput id={id(`alt-${p.id}`)} label={tr('Photo description')} value={p.imageAlt} onChange={(e) => update({ imageAlt: e.target.value }, 'alt')} />}
+                {c.orderAction === 'link' && <TextInput id={id(`url-${p.id}`)} label={tr('Order link')} type="url" inputMode="url" placeholder="https://" value={p.url} onChange={(e) => update({ url: e.target.value }, 'url')} />}
+                <Switch id={id(`so-${p.id}`)} label={tr('Sold out')} description={tr('Shows a Sold out tag and hides the order button.')} checked={p.soldOut} onChange={(soldOut) => update({ soldOut }, 'soldOut')} />
               </>
               } />
             
-          <Field id={id('order')} label="When someone taps order">
-            <Segmented ariaLabel="Order action" fullWidth value={c.orderAction === 'checkout' ? 'whatsapp' : c.orderAction} onChange={(orderAction) => set({ orderAction }, 'orderAction')} options={[{ value: 'whatsapp', label: 'Open WhatsApp' }, { value: 'link', label: 'Open a link' }]} />
+          <Field id={id('order')} label={tr('When someone taps order')}>
+            <Segmented ariaLabel={tr('Order action')} fullWidth value={c.orderAction === 'checkout' ? 'whatsapp' : c.orderAction} onChange={(orderAction) => set({ orderAction }, 'orderAction')} options={[{ value: 'whatsapp', label: tr('Open WhatsApp') }, { value: 'link', label: tr('Open a link') }]} />
           </Field>
           {c.orderAction !== 'link' &&
-            <TextInput id={id('wa')} label="WhatsApp number" type="tel" inputMode="tel" placeholder={businessWhatsApp() || '+234 …'} value={c.whatsappPhone} error={err('whatsappPhone')} hint={waFieldHint(c.whatsappPhone, 'Each order message names the product and price.')} onChange={(e) => set({ whatsappPhone: e.target.value }, 'whatsappPhone')} />
+            <TextInput id={id('wa')} label={tr('WhatsApp number')} type="tel" inputMode="tel" placeholder={businessWhatsApp() || '+234 …'} value={c.whatsappPhone} error={err('whatsappPhone') && tr(err('whatsappPhone') ?? '')} hint={waFieldHintIn(tr, c.whatsappPhone, tr('Each order message names the product and price.'))} onChange={(e) => set({ whatsappPhone: e.target.value }, 'whatsappPhone')} />
             }
-          <TextInput id={id('cta')} label="Button label" value={c.ctaLabel} onChange={(e) => set({ ctaLabel: e.target.value }, 'ctaLabel')} />
-          <p className="text-caption text-fg-subtle">Here you mark items sold out yourself. For live stock and checkout, switch to “Commerce” above.</p>
+          <TextInput id={id('cta')} label={tr('Button label')} value={c.ctaLabel} onChange={(e) => set({ ctaLabel: e.target.value }, 'ctaLabel')} />
+          <p className="text-caption text-fg-subtle">{tr('Here you mark items sold out yourself. For live stock and checkout, switch to “My products” above.')}</p>
         </div>);
 
       }
@@ -206,8 +207,8 @@ export function ExtendedContentFields({ block, issues }: Props) {
         const set = setter('menu');
         return (
           <div className={stack}>
-          <TextInput id={id('title')} label="Title" value={c.title} onChange={(e) => set({ title: e.target.value }, 'title')} />
-          <TextArea id={id('note')} label="Note" optional rows={2} placeholder="e.g. Delivery within Ibadan from ₦1,500" value={c.note} onChange={(e) => set({ note: e.target.value }, 'note')} />
+          <TextInput id={id('title')} label={tr('Title')} value={c.title} onChange={(e) => set({ title: e.target.value }, 'title')} />
+          <TextArea id={id('note')} label={tr('Note')} optional rows={2} placeholder={tr('e.g. Delivery within Ibadan from ₦1,500')} value={c.note} onChange={(e) => set({ note: e.target.value }, 'note')} />
           <ItemListEditor
               legend="Categories"
               noun="Category"
@@ -216,13 +217,13 @@ export function ExtendedContentFields({ block, issues }: Props) {
               max={8}
               onChange={(categories, f) => set({ categories }, f)}
               title={(cat) => cat.name}
-              meta={(cat) => `${cat.items.length} item${cat.items.length === 1 ? '' : 's'}`}
+              meta={(cat) => tr('Items: {n}', { n: cat.items.length })}
               create={() => ({ id: uid('mc'), name: '', items: [{ id: uid('mi'), name: '', description: '', priceNgn: null, tags: '', available: true }] })}
               addLabel="Add category"
               error={err('categories')}
               render={(cat, updateCat) =>
               <>
-                <TextInput id={id(`cat-${cat.id}`)} label="Category name" value={cat.name} onChange={(e) => updateCat({ name: e.target.value }, 'name')} />
+                <TextInput id={id(`cat-${cat.id}`)} label={tr('Category name')} value={cat.name} onChange={(e) => updateCat({ name: e.target.value }, 'name')} />
                 <ItemListEditor
                   legend="Items"
                   noun="Item"
@@ -232,9 +233,9 @@ export function ExtendedContentFields({ block, issues }: Props) {
                   title={(it) => findProduct(commerce, it.productId)?.name ?? it.name}
                   meta={(it) => {
                     const p = findProduct(commerce, it.productId);
-                    if (it.productId && p) return `Synced · ${p.status === 'active' ? productSummary(p) : `${p.status}, hidden`}`;
-                    if (it.productId) return 'Linked product deleted · showing typed details';
-                    return `${it.priceNgn === null ? 'No price' : formatNgn(it.priceNgn)}${it.available ? '' : ' · Sold out today'}`;
+                    if (it.productId && p) return `${tr('Synced')} · ${p.status === 'active' ? productSummary(p, tr) : p.status === 'draft' ? tr('Draft, hidden') : tr('Archived, hidden')}`;
+                    if (it.productId) return tr('Linked product deleted · showing typed details');
+                    return `${it.priceNgn === null ? tr('No price') : formatNgn(it.priceNgn)}${it.available ? '' : ` · ${tr('Sold out today')}`}`;
                   }}
                   create={() => ({ id: uid('mi'), name: '', description: '', priceNgn: null, tags: '', available: true })}
                   addLabel="Add item"
@@ -246,12 +247,12 @@ export function ExtendedContentFields({ block, issues }: Props) {
                         {linkable.length > 0 || it.productId ?
                         <SelectInput
                           id={id(`ilink-${it.id}`)}
-                          label="Details come from"
+                          label={tr('Details come from')}
                           value={it.productId ?? ''}
                           options={[
-                          { value: '', label: 'Typed here' },
-                          ...linkable.map((p) => ({ value: p.id, label: `Commerce · ${p.name}${p.status === 'draft' ? ' (draft)' : ''}` })),
-                          ...(it.productId && !linkable.some((p) => p.id === it.productId) ? [{ value: it.productId, label: product ? `${product.name} (archived)` : 'Deleted product' }] : [])]
+                          { value: '', label: tr('Typed here') },
+                          ...linkable.map((p) => ({ value: p.id, label: `${tr('Commerce')} · ${p.name}${p.status === 'draft' ? ` (${tr('draft')})` : ''}` })),
+                          ...(it.productId && !linkable.some((p) => p.id === it.productId) ? [{ value: it.productId, label: product ? `${product.name} (${tr('archived')})` : tr('Deleted product') }] : [])]
                           }
                           onChange={(productId) => {
                             const p = findProduct(commerce, productId);
@@ -261,22 +262,22 @@ export function ExtendedContentFields({ block, issues }: Props) {
                           }} /> :
 
 
-                        <p className="text-caption text-fg-subtle">Add products in Commerce to sync dishes, prices and sold-out status here.</p>
+                        <p className="text-caption text-fg-subtle">{tr('Add products in Commerce to sync dishes, prices and sold-out status here.')}</p>
                         }
                         {product ?
                         <SyncedNote product={product} /> :
 
                         <>
-                            <TextInput id={id(`in-${it.id}`)} label="Name" value={it.name} onChange={(e) => update({ name: e.target.value }, 'name')} />
-                            <TextInput id={id(`id-${it.id}`)} label="Description" optional value={it.description} onChange={(e) => update({ description: e.target.value }, 'desc')} />
-                            <CurrencyInput id={id(`ip-${it.id}`)} label="Price" value={it.priceNgn} placeholder="Ask" trailing={priceTag} onChange={(priceNgn) => update({ priceNgn }, 'price')} />
+                            <TextInput id={id(`in-${it.id}`)} label={tr('Name')} value={it.name} onChange={(e) => update({ name: e.target.value }, 'name')} />
+                            <TextInput id={id(`id-${it.id}`)} label={tr('Description')} optional value={it.description} onChange={(e) => update({ description: e.target.value }, 'desc')} />
+                            <CurrencyInput id={id(`ip-${it.id}`)} label={tr('Price')} value={it.priceNgn} placeholder={tr('Ask')} trailing={priceTag} onChange={(priceNgn) => update({ priceNgn }, 'price')} />
                           </>
                         }
-                        <TextInput id={id(`it-${it.id}`)} label="Notes" optional placeholder="e.g. Spicy · Contains nuts" value={it.tags} onChange={(e) => update({ tags: e.target.value }, 'tags')} />
+                        <TextInput id={id(`it-${it.id}`)} label={tr('Notes')} optional placeholder={tr('e.g. Spicy · Contains nuts')} value={it.tags} onChange={(e) => update({ tags: e.target.value }, 'tags')} />
                         <Switch
                           id={id(`ia-${it.id}`)}
-                          label="Available today"
-                          description={product ? 'Also shows sold out automatically when Commerce stock runs out.' : undefined}
+                          label={tr('Available today')}
+                          description={product ? tr('Also shows sold out automatically when Commerce stock runs out.') : undefined}
                           checked={it.available}
                           onChange={(available) => update({ available }, 'available')} />
                         
@@ -287,9 +288,9 @@ export function ExtendedContentFields({ block, issues }: Props) {
               </>
               } />
             
-          <TextInput id={id('wa')} label="WhatsApp for orders" type="tel" inputMode="tel" placeholder={businessWhatsApp() || '+234 …'} value={c.whatsappPhone} error={err('whatsappPhone')} hint={warn('whatsappPhone') || waFieldHint(c.whatsappPhone)} onChange={(e) => set({ whatsappPhone: e.target.value }, 'whatsappPhone')} />
-          <Switch id={id('open')} label="Taking orders" description="Turn off when the kitchen is closed. The menu stays visible." checked={c.orderingOpen} onChange={(orderingOpen) => set({ orderingOpen }, 'orderingOpen')} />
-          {!c.orderingOpen && <TextInput id={id('closed')} label="Message while paused" value={c.closedMessage} onChange={(e) => set({ closedMessage: e.target.value }, 'closedMessage')} />}
+          <TextInput id={id('wa')} label={tr('WhatsApp for orders')} type="tel" inputMode="tel" placeholder={businessWhatsApp() || '+234 …'} value={c.whatsappPhone} error={err('whatsappPhone') && tr(err('whatsappPhone') ?? '')} hint={warn('whatsappPhone') ? tr(warn('whatsappPhone') ?? '') : waFieldHintIn(tr, c.whatsappPhone)} onChange={(e) => set({ whatsappPhone: e.target.value }, 'whatsappPhone')} />
+          <Switch id={id('open')} label={tr('Taking orders')} description={tr('Turn off when the kitchen is closed. The menu stays visible.')} checked={c.orderingOpen} onChange={(orderingOpen) => set({ orderingOpen }, 'orderingOpen')} />
+          {!c.orderingOpen && <TextInput id={id('closed')} label={tr('Message while paused')} value={c.closedMessage} onChange={(e) => set({ closedMessage: e.target.value }, 'closedMessage')} />}
         </div>);
 
       }
@@ -298,7 +299,7 @@ export function ExtendedContentFields({ block, issues }: Props) {
         const set = setter('pricing');
         return (
           <div className={stack}>
-          <TextInput id={id('title')} label="Title" optional value={c.title} onChange={(e) => set({ title: e.target.value }, 'title')} />
+          <TextInput id={id('title')} label={tr('Title')} optional value={c.title} onChange={(e) => set({ title: e.target.value }, 'title')} />
           <ItemListEditor
               legend="Packages"
               noun="Package"
@@ -307,35 +308,35 @@ export function ExtendedContentFields({ block, issues }: Props) {
               max={3}
               onChange={(packages, f) => set({ packages }, f)}
               title={(p) => p.name}
-              meta={(p) => `${priceText(p.priceNgn)}${p.highlighted ? ' · Highlighted' : ''}`}
+              meta={(p) => `${priceText(p.priceNgn)}${p.highlighted ? ` · ${tr('Highlighted')}` : ''}`}
               create={() => ({ id: uid('pk'), name: '', priceNgn: null, unit: '', description: '', features: '', ctaLabel: 'Enquire', url: '', highlighted: false })}
               addLabel="Add package"
               error={err('packages')}
               hint={warn('packages')}
               render={(p, update) =>
               <>
-                <TextInput id={id(`n-${p.id}`)} label="Name" value={p.name} onChange={(e) => update({ name: e.target.value }, 'name')} />
+                <TextInput id={id(`n-${p.id}`)} label={tr('Name')} value={p.name} onChange={(e) => update({ name: e.target.value }, 'name')} />
                 <div className="grid grid-cols-[1fr_120px] gap-2">
-                  <CurrencyInput id={id(`p-${p.id}`)} label="Price" value={p.priceNgn} placeholder="On request" trailing={priceTag} onChange={(priceNgn) => update({ priceNgn }, 'price')} />
-                  <TextInput id={id(`u-${p.id}`)} label="Per" optional placeholder="project" value={p.unit} onChange={(e) => update({ unit: e.target.value }, 'unit')} />
+                  <CurrencyInput id={id(`p-${p.id}`)} label={tr('Price')} value={p.priceNgn} placeholder={tr('On request')} trailing={priceTag} onChange={(priceNgn) => update({ priceNgn }, 'price')} />
+                  <TextInput id={id(`u-${p.id}`)} label={tr('Per')} optional placeholder={tr('project')} value={p.unit} onChange={(e) => update({ unit: e.target.value }, 'unit')} />
                 </div>
-                <TextInput id={id(`d-${p.id}`)} label="One-line summary" optional value={p.description} onChange={(e) => update({ description: e.target.value }, 'desc')} />
-                <TextArea id={id(`f-${p.id}`)} label="What’s included" rows={4} hint="One item per line." value={p.features} onChange={(e) => update({ features: e.target.value }, 'features')} />
-                <TextInput id={id(`l-${p.id}`)} label="Button label" value={p.ctaLabel} onChange={(e) => update({ ctaLabel: e.target.value }, 'cta')} />
+                <TextInput id={id(`d-${p.id}`)} label={tr('One-line summary')} optional value={p.description} onChange={(e) => update({ description: e.target.value }, 'desc')} />
+                <TextArea id={id(`f-${p.id}`)} label={tr('What’s included')} rows={4} hint={tr('One item per line.')} value={p.features} onChange={(e) => update({ features: e.target.value }, 'features')} />
+                <TextInput id={id(`l-${p.id}`)} label={tr('Button label')} value={p.ctaLabel} onChange={(e) => update({ ctaLabel: e.target.value }, 'cta')} />
                 {ops.services.length > 0 &&
                 <SelectInput
                   id={id(`svc-${p.id}`)}
-                  label="Button books a service"
+                  label={tr('Button books a service')}
                   value={p.serviceId ?? ''}
                   onChange={(serviceId) => update({ serviceId: serviceId || undefined }, 'service')}
-                  options={[{ value: '', label: 'No — use a link' }, ...ops.services.map((s) => ({ value: s.id, label: s.name }))]}
-                  hint="Opens your booking calendar on the page." />
+                  options={[{ value: '', label: tr('No — use a link') }, ...ops.services.map((s) => ({ value: s.id, label: s.name }))]}
+                  hint={tr('Opens your booking calendar on the page.')} />
 
                 }
-                {!p.serviceId && <TextInput id={id(`url-${p.id}`)} label="Button link" type="url" inputMode="url" placeholder="https://" value={p.url} onChange={(e) => update({ url: e.target.value }, 'url')} />}
+                {!p.serviceId && <TextInput id={id(`url-${p.id}`)} label={tr('Button link')} type="url" inputMode="url" placeholder="https://" value={p.url} onChange={(e) => update({ url: e.target.value }, 'url')} />}
                 <Switch
                   id={id(`h-${p.id}`)}
-                  label="Highlight this package"
+                  label={tr('Highlight this package')}
                   checked={p.highlighted}
                   onChange={(highlighted) =>
                   set({ packages: c.packages.map((x) => ({ ...x, highlighted: x.id === p.id ? highlighted : highlighted ? false : x.highlighted })) }, 'highlight')
@@ -354,19 +355,19 @@ export function ExtendedContentFields({ block, issues }: Props) {
           <div className={stack}>
           <TextArea id={id('quote')} label="Their words" rows={4} value={c.quote} error={err('quote')} hint="Use what they actually said. Don’t edit the meaning." onChange={(e) => set({ quote: e.target.value }, 'quote')} />
           <TextInput id={id('name')} label="Name" value={c.name} error={err('name')} onChange={(e) => set({ name: e.target.value }, 'name')} />
-          <TextInput id={id('role')} label="Role or context" optional placeholder="e.g. Bride, Lekki" value={c.role} onChange={(e) => set({ role: e.target.value }, 'role')} />
-          <TextInput id={id('source')} label="Where it came from" optional placeholder="e.g. Instagram DM, Google review" value={c.source} onChange={(e) => set({ source: e.target.value }, 'source')} />
-          <MediaPicker id={id('avatar')} label="Their photo" optional round aspect="1:1" value={c.avatarUrl} onChange={(avatarUrl) => set({ avatarUrl }, 'avatarUrl')} />
+          <TextInput id={id('role')} label="Role or context" optional placeholder={tr('e.g. Bride, Lekki')} value={c.role} onChange={(e) => set({ role: e.target.value }, 'role')} />
+          <TextInput id={id('source')} label="Where it came from" optional placeholder={tr('e.g. Instagram DM, Google review')} value={c.source} onChange={(e) => set({ source: e.target.value }, 'source')} />
+          <MediaPicker id={id('avatar')} label={tr('Their photo')} optional round aspect="1:1" value={c.avatarUrl} onChange={(avatarUrl) => set({ avatarUrl }, 'avatarUrl')} />
           {c.avatarUrl && <TextInput id={id('avatarAlt')} label="Photo description" value={c.avatarAlt} onChange={(e) => set({ avatarAlt: e.target.value }, 'avatarAlt')} />}
           <div className="rounded-md border border-line p-3">
             <label className="flex items-start gap-2.5 text-label text-fg">
               <input type="checkbox" checked={c.permission} onChange={(e) => set({ permission: e.target.checked }, 'permission')} className="mt-0.5 h-4 w-4 accent-[rgb(var(--action))]" />
               <span>
-                I have this person’s permission to publish their words{c.avatarUrl ? ' and photo' : ''}.
-                <span className="mt-0.5 block text-caption text-fg-subtle">Until you tick this, the quote stays hidden from visitors.</span>
+                {tr(c.avatarUrl ? 'I have this person’s permission to publish their words and photo.' : 'I have this person’s permission to publish their words.')}
+                <span className="mt-0.5 block text-caption text-fg-subtle">{tr('Until you tick this, the quote stays hidden from visitors.')}</span>
               </span>
             </label>
-            {err('permission') && <p className="mt-2 text-caption text-danger">{err('permission')}</p>}
+            {err('permission') && <p className="mt-2 text-caption text-danger">{tr(err('permission') ?? '')}</p>}
           </div>
         </div>);
 
@@ -391,7 +392,7 @@ export function ExtendedContentFields({ block, issues }: Props) {
             <div className={stack}>
             {sourceSwitch}
             <EventLinkFields id={id('event')} eventId={c.eventId ?? null} error={err('eventId')} onChange={(eventId) => set({ eventId }, 'eventId')} />
-            <TextInput id={id('cta')} label="Button label" optional placeholder="Get tickets" value={c.ctaLabel} onChange={(e) => set({ ctaLabel: e.target.value }, 'ctaLabel')} />
+            <TextInput id={id('cta')} label="Button label" optional placeholder={tr('Get tickets')} value={c.ctaLabel} onChange={(e) => set({ ctaLabel: e.target.value }, 'ctaLabel')} />
           </div>);
 
         }
@@ -399,9 +400,9 @@ export function ExtendedContentFields({ block, issues }: Props) {
           <div className={stack}>
           {sourceSwitch}
           <TextInput id={id('title')} label="Event name" value={c.title} error={err('title')} onChange={(e) => set({ title: e.target.value }, 'title')} />
-          <DateTimeInput id={id('start')} label="Starts" value={c.startsAt} error={err('startsAt')} hint="Used for the date shown and the Event ended state." onChange={(startsAt) => set({ startsAt }, 'startsAt')} />
-          <DateTimeInput id={id('end')} label="Ends" optional clearable value={c.endsAt} error={err('endsAt')} onChange={(endsAt) => set({ endsAt }, 'endsAt')} />
-          <TimezoneSelect id={id('tz')} label="Show times in" value={c.timeZone as TimeZoneId} onChange={(timeZone) => set({ timeZone }, 'timeZone')} />
+          <DateTimeInput id={id('start')} label={tr('Starts')} value={c.startsAt} error={err('startsAt') && tr(err('startsAt') ?? '')} hint={tr('Used for the date shown and the Event ended state.')} onChange={(startsAt) => set({ startsAt }, 'startsAt')} />
+          <DateTimeInput id={id('end')} label={tr('Ends')} optional clearable value={c.endsAt} error={err('endsAt') && tr(err('endsAt') ?? '')} onChange={(endsAt) => set({ endsAt }, 'endsAt')} />
+          <TimezoneSelect id={id('tz')} label={tr('Show times in')} value={c.timeZone as TimeZoneId} onChange={(timeZone) => set({ timeZone }, 'timeZone')} />
           <TextInput id={id('venue')} label="Venue" value={c.venue} hint={warn('venue')} onChange={(e) => set({ venue: e.target.value }, 'venue')} />
           <TextInput id={id('address')} label="Address" optional value={c.address} onChange={(e) => set({ address: e.target.value }, 'address')} />
           <ItemListEditor
@@ -411,23 +412,23 @@ export function ExtendedContentFields({ block, issues }: Props) {
               max={5}
               onChange={(tiers, f) => set({ tiers }, f)}
               title={(t) => t.name}
-              meta={(t) => t.soldOut ? 'Sold out' : t.priceNgn === 0 ? 'Free' : priceText(t.priceNgn)}
+              meta={(t) => t.soldOut ? tr('Sold out') : t.priceNgn === 0 ? tr('Free') : priceText(t.priceNgn)}
               create={() => ({ id: uid('tier'), name: '', priceNgn: null, note: '', soldOut: false })}
               addLabel="Add ticket type"
               render={(t, update) =>
               <>
-                <TextInput id={id(`tn-${t.id}`)} label="Name" placeholder="e.g. Early bird" value={t.name} onChange={(e) => update({ name: e.target.value }, 'name')} />
-                <CurrencyInput id={id(`tp-${t.id}`)} label="Price" value={t.priceNgn} placeholder="TBC" hint="Enter 0 for free entry." trailing={priceTag} onChange={(priceNgn) => update({ priceNgn }, 'price')} />
-                <TextInput id={id(`tt-${t.id}`)} label="Note" optional placeholder="e.g. Includes brunch" value={t.note} onChange={(e) => update({ note: e.target.value }, 'note')} />
-                <Switch id={id(`ts-${t.id}`)} label="Sold out" checked={t.soldOut} onChange={(soldOut) => update({ soldOut }, 'soldOut')} />
+                <TextInput id={id(`tn-${t.id}`)} label="Name" placeholder={tr('e.g. Early bird')} value={t.name} onChange={(e) => update({ name: e.target.value }, 'name')} />
+                <CurrencyInput id={id(`tp-${t.id}`)} label={tr('Price')} value={t.priceNgn} placeholder={tr('TBC')} hint={tr('Enter 0 for free entry.')} trailing={priceTag} onChange={(priceNgn) => update({ priceNgn }, 'price')} />
+                <TextInput id={id(`tt-${t.id}`)} label="Note" optional placeholder={tr('e.g. Includes brunch')} value={t.note} onChange={(e) => update({ note: e.target.value }, 'note')} />
+                <Switch id={id(`ts-${t.id}`)} label={tr('Sold out')} checked={t.soldOut} onChange={(soldOut) => update({ soldOut }, 'soldOut')} />
               </>
               } />
             
           <TextInput id={id('url')} label="Ticket link" type="url" inputMode="url" placeholder="https://" value={c.ticketUrl} error={err('ticketUrl')} onChange={(e) => set({ ticketUrl: e.target.value }, 'ticketUrl')} />
           <TextInput id={id('cta')} label="Button label" value={c.ctaLabel} onChange={(e) => set({ ctaLabel: e.target.value }, 'ctaLabel')} />
-          <Switch id={id('soldout')} label="Whole event sold out" checked={c.soldOut} onChange={(soldOut) => set({ soldOut }, 'soldOut')} />
-          <InlineAlert tone="info" title="Sell tickets on KUBICU instead">
-            Switch “Details come from” to Commerce event for real seat limits, checkout and QR tickets.
+          <Switch id={id('soldout')} label={tr('Whole event sold out')} checked={c.soldOut} onChange={(soldOut) => set({ soldOut }, 'soldOut')} />
+          <InlineAlert tone="info" title={tr('Sell tickets on KUBICU instead')}>
+            {tr('Switch to “My events” above for real seat limits, checkout and QR tickets.')}
           </InlineAlert>
         </div>);
 
@@ -438,12 +439,12 @@ export function ExtendedContentFields({ block, issues }: Props) {
         return (
           <div className={stack}>
           <TextInput id={id('title')} label="Title" value={c.title} onChange={(e) => set({ title: e.target.value }, 'title')} />
-          <DateTimeInput id={id('target')} label="Counts down to" value={c.target} error={err('target')} hint={warn('target')} onChange={(target) => set({ target }, 'target')} />
+          <DateTimeInput id={id('target')} label={tr('Counts down to')} value={c.target} error={err('target') && tr(err('target') ?? '')} hint={warn('target') && tr(warn('target') ?? '')} onChange={(target) => set({ target }, 'target')} />
           <TextInput id={id('ended')} label="Message when it ends" value={c.endedMessage} onChange={(e) => set({ endedMessage: e.target.value }, 'endedMessage')} />
           <TextInput id={id('linkLabel')} label="Button label" optional value={c.linkLabel} onChange={(e) => set({ linkLabel: e.target.value }, 'linkLabel')} />
           {c.linkLabel && <TextInput id={id('url')} label="Button link" type="url" inputMode="url" placeholder="https://" value={c.url} error={err('url')} onChange={(e) => set({ url: e.target.value }, 'url')} />}
-          <InlineAlert tone="info" title="Honest by design">
-            The countdown only runs to the date you set and never restarts for new visitors. When it reaches zero, people see your ended message.
+          <InlineAlert tone="info" title={tr('Honest by design')}>
+            {tr('The countdown only runs to the date you set and never restarts for new visitors. When it reaches zero, people see your ended message.')}
           </InlineAlert>
         </div>);
 
@@ -467,18 +468,18 @@ export function ExtendedContentFields({ block, issues }: Props) {
           return (
             <div className={stack}>
             {!checkout.allowed &&
-              <InlineAlert tone="info" title={`Secure file delivery is on ${checkout.needed}`}>
-                You can set it up now; it can’t be published on {plan.name}.
+              <InlineAlert tone="info" title={tr('Secure file delivery is on {plan}', { plan: checkout.needed })}>
+                {tr('You can set it up now; it can’t be published on {plan}.', { plan: plan.name })}
               </InlineAlert>
               }
             {sourceSwitch}
             <ProductSelect id={id('productId')} kind="digital" value={c.productId} onChange={(productId) => set({ productId }, 'productId')} />
-            {err('productId') && <p className="-mt-2 text-caption text-danger">{err('productId')}</p>}
-            {!err('productId') && warn('productId') && <p className="-mt-2 text-caption text-warning">{warn('productId')}</p>}
+            {err('productId') && <p className="-mt-2 text-caption text-danger">{tr(err('productId') ?? '')}</p>}
+            {!err('productId') && warn('productId') && <p className="-mt-2 text-caption text-warning">{tr(warn('productId') ?? '')}</p>}
             {product && <SyncedNote product={product} />}
             <TextInput id={id('title')} label="Title" optional placeholder={product?.name} value={c.title} hint="Leave blank to use the product name." onChange={(e) => set({ title: e.target.value }, 'title')} />
             <TextInput id={id('cta')} label="Button label" value={c.ctaLabel} onChange={(e) => set({ ctaLabel: e.target.value }, 'ctaLabel')} />
-            <p className="text-caption text-fg-subtle">Buyers pay through checkout (test mode) and get a secure download link with your limits.</p>
+            <p className="text-caption text-fg-subtle">{tr('Buyers pay through checkout (test mode) and get a secure download link with your limits.')}</p>
           </div>);
 
         }
@@ -492,7 +493,7 @@ export function ExtendedContentFields({ block, issues }: Props) {
             <TextInput id={id('size')} label="Size" optional placeholder="12 MB" value={c.fileSize} onChange={(e) => set({ fileSize: e.target.value }, 'fileSize')} />
           </div>
           <Field id={id('access')} label="Access">
-            <Segmented ariaLabel="Access" fullWidth value={c.access} onChange={(access) => set({ access, ctaLabel: access === 'paid' ? 'Buy now' : 'Download' }, 'access')} options={[{ value: 'free', label: 'Free' }, { value: 'paid', label: 'Paid via link' }]} />
+            <Segmented ariaLabel={tr('Access')} fullWidth value={c.access} onChange={(access) => set({ access, ctaLabel: access === 'paid' ? 'Buy now' : 'Download' }, 'access')} options={[{ value: 'free', label: tr('Free') }, { value: 'paid', label: tr('Paid via link') }]} />
           </Field>
           {c.access === 'paid' && <CurrencyInput id={id('price')} label="Price" value={c.priceNgn} hint={warn('priceNgn')} trailing={priceTag} onChange={(priceNgn) => set({ priceNgn }, 'priceNgn')} />}
           <TextInput
@@ -507,9 +508,9 @@ export function ExtendedContentFields({ block, issues }: Props) {
               onChange={(e) => set({ url: e.target.value }, 'url')} />
             
           <TextInput id={id('cta')} label="Button label" value={c.ctaLabel} onChange={(e) => set({ ctaLabel: e.target.value }, 'ctaLabel')} />
-          <MediaPicker id={id('cover')} label="Cover image" optional aspect="4:5" value={c.coverUrl} onChange={(coverUrl) => set({ coverUrl }, 'coverUrl')} />
+          <MediaPicker id={id('cover')} label={tr('Cover image')} optional aspect="4:5" value={c.coverUrl} onChange={(coverUrl) => set({ coverUrl }, 'coverUrl')} />
           {c.coverUrl && <TextInput id={id('coverAlt')} label="Cover description" value={c.coverAlt} onChange={(e) => set({ coverAlt: e.target.value }, 'coverAlt')} />}
-          <p className="text-caption text-fg-subtle">To sell files with secure delivery and download limits, switch to “Commerce” above.</p>
+          <p className="text-caption text-fg-subtle">{tr('To sell files with secure delivery and download limits, switch to “My downloads” above.')}</p>
         </div>);
 
       }
@@ -541,7 +542,7 @@ export function ExtendedContentFields({ block, issues }: Props) {
                 </div>
                 <TextInput id={id(`o-${p.id}`)} label="Outcome" optional hint="Only results you can stand behind." value={p.outcome} onChange={(e) => update({ outcome: e.target.value }, 'outcome')} />
                 <TextArea id={id(`s-${p.id}`)} label="Case study" optional rows={4} hint="Shown when a visitor opens the project." value={p.summary} onChange={(e) => update({ summary: e.target.value }, 'summary')} />
-                <MediaPicker id={id(`img-${p.id}`)} label="Cover image" aspect="16:9" value={p.coverUrl} onChange={(coverUrl) => update({ coverUrl }, 'cover')} />
+                <MediaPicker id={id(`img-${p.id}`)} label={tr('Cover image')} aspect="16:9" value={p.coverUrl} onChange={(coverUrl) => update({ coverUrl }, 'cover')} />
                 {p.coverUrl && <TextInput id={id(`a-${p.id}`)} label="Cover description" value={p.coverAlt} onChange={(e) => update({ coverAlt: e.target.value }, 'alt')} />}
                 <TextInput id={id(`u-${p.id}`)} label="Project link" optional type="url" inputMode="url" placeholder="https://" value={p.url} onChange={(e) => update({ url: e.target.value }, 'url')} />
               </>
@@ -555,11 +556,11 @@ export function ExtendedContentFields({ block, issues }: Props) {
         const set = setter('location');
         return (
           <div className={stack}>
-          <TextInput id={id('name')} label="Place name" optional placeholder="e.g. Our Yaba shop" value={c.name} onChange={(e) => set({ name: e.target.value }, 'name')} />
+          <TextInput id={id('name')} label="Place name" optional placeholder={tr('e.g. Our Yaba shop')} value={c.name} onChange={(e) => set({ name: e.target.value }, 'name')} />
           <TextArea id={id('address')} label="Address" rows={2} value={c.address} error={err('address')} onChange={(e) => set({ address: e.target.value }, 'address')} />
-          <TimezoneSelect id={id('tz')} label="Your time zone" value={c.timeZone as TimeZoneId} hint="The open-now badge uses this." onChange={(timeZone) => set({ timeZone }, 'timeZone')} />
+          <TimezoneSelect id={id('tz')} label={tr('Your time zone')} value={c.timeZone as TimeZoneId} hint={tr('The open-now badge uses this.')} onChange={(timeZone) => set({ timeZone }, 'timeZone')} />
           <HoursEditor blockId={block.id} hours={c.hours} error={err('hours')} onChange={(hours, f) => set({ hours }, f)} />
-          <TextInput id={id('note')} label="Note" optional placeholder="e.g. Parking at the back" value={c.note} onChange={(e) => set({ note: e.target.value }, 'note')} />
+          <TextInput id={id('note')} label="Note" optional placeholder={tr('e.g. Parking at the back')} value={c.note} onChange={(e) => set({ note: e.target.value }, 'note')} />
         </div>);
 
       }

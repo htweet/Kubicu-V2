@@ -2,8 +2,9 @@ import React from 'react';
 import type { Block, BlockContentMap, BlockType } from '../../../types/page';
 import type { ValidationIssue } from '../../../utils/validation';
 import { useEditor } from '../../../contexts/EditorContext';
+import { useT } from '../../../contexts/LocaleContext';
 import { TextInput } from '../../ui/TextInput';
-import { businessWhatsApp, waFieldHint } from '../../../utils/businessWhatsApp';
+import { businessWhatsApp, waFieldHintIn } from '../../../utils/businessWhatsApp';
 import { TextArea } from '../../ui/TextArea';
 import { Switch } from '../../ui/Switch';
 import { Segmented } from '../../ui/Segmented';
@@ -33,10 +34,16 @@ interface ContentFieldsProps {
   issues: ValidationIssue[];
 }
 
+/** Content tab for the core blocks (D296). What the owner types shows as typed; fixed checks translate where a draft exists. */
 export function ContentFields({ block, issues }: ContentFieldsProps) {
+  const { t: tr } = useT();
   const { actions } = useEditor();
-  const err = (field: string) => issues.find((i) => i.field === field && i.severity === 'error')?.message;
-  const warn = (field: string) => issues.find((i) => i.field === field && i.severity === 'warning')?.message;
+  const pick = (field: string, severity: ValidationIssue['severity']) => {
+    const m = issues.find((i) => i.field === field && i.severity === severity)?.message;
+    return m ? tr(m) : undefined;
+  };
+  const err = (field: string) => pick(field, 'error');
+  const warn = (field: string) => pick(field, 'warning');
   const id = (field: string) => `${block.id}-${field}`;
   const setter =
   <K extends BlockType,>(type: K) =>
@@ -56,11 +63,11 @@ export function ContentFields({ block, issues }: ContentFieldsProps) {
         const set = setter('profile');
         return (
           <div className={stack}>
-          <TextInput id={id('name')} label="Name" value={c.name} error={err('name')} onChange={(e) => set({ name: e.target.value }, 'name')} />
-          <TextArea id={id('tagline')} label="One-line pitch" optional value={c.tagline} rows={3} onChange={(e) => set({ tagline: e.target.value }, 'tagline')} />
+          <TextInput id={id('name')} label={tr('Name')} value={c.name} error={err('name')} onChange={(e) => set({ name: e.target.value }, 'name')} />
+          <TextArea id={id('tagline')} label={tr('One-line pitch')} optional value={c.tagline} rows={3} onChange={(e) => set({ tagline: e.target.value }, 'tagline')} />
           <MediaPicker
               id={id('avatar')}
-              label="Photo or logo"
+              label={tr('Photo or logo')}
               folder="brand"
               optional
               round
@@ -71,13 +78,13 @@ export function ContentFields({ block, issues }: ContentFieldsProps) {
           {c.avatarUrl &&
             <TextInput
               id={id('avatarAlt')}
-              label="Photo description"
+              label={tr('Photo description')}
               value={c.avatarAlt}
-              hint={warn('avatarAlt') ?? 'Read aloud by screen readers.'}
+              hint={warn('avatarAlt') ?? tr('Read aloud by screen readers.')}
               onChange={(e) => set({ avatarAlt: e.target.value }, 'avatarAlt')} />
 
             }
-          <TextInput id={id('location')} label="Location" optional placeholder="e.g. Lekki, Lagos" value={c.location} onChange={(e) => set({ location: e.target.value }, 'location')} />
+          <TextInput id={id('location')} label={tr('Location')} optional placeholder={tr('e.g. Lekki, Lagos')} value={c.location} onChange={(e) => set({ location: e.target.value }, 'location')} />
         </div>);
 
       }
@@ -86,15 +93,15 @@ export function ContentFields({ block, issues }: ContentFieldsProps) {
         const set = setter('heading');
         return (
           <div className={stack}>
-          <TextInput id={id('text')} label="Heading" value={c.text} error={err('text')} onChange={(e) => set({ text: e.target.value }, 'text')} />
-          <Field id={id('level')} label="Size">
+          <TextInput id={id('text')} label={tr('Heading')} value={c.text} error={err('text')} onChange={(e) => set({ text: e.target.value }, 'text')} />
+          <Field id={id('level')} label={tr('Size')}>
             <Segmented
-                ariaLabel="Heading size"
+                ariaLabel={tr('Heading size')}
                 value={c.level}
                 onChange={(level) => set({ level }, 'level')}
                 options={[
-                { value: 'h2', label: 'Section' },
-                { value: 'h3', label: 'Sub-section' }]
+                { value: 'h2', label: tr('Section') },
+                { value: 'h3', label: tr('Sub-section') }]
                 } />
               
           </Field>
@@ -106,23 +113,23 @@ export function ContentFields({ block, issues }: ContentFieldsProps) {
         const editorial = block.content.variant === 'editorial';
         return (
           <div className={stack}>
-          <Field id={id('variant')} label="Style">
+          <Field id={id('variant')} label={tr('Style')}>
             <Segmented
-                ariaLabel="Text style"
+                ariaLabel={tr('Text style')}
                 value={editorial ? 'editorial' : 'plain'}
                 onChange={(variant) => set({ variant }, 'variant')}
                 options={[
-                { value: 'plain', label: 'Paragraph' },
-                { value: 'editorial', label: 'Editorial' }]
+                { value: 'plain', label: tr('Paragraph') },
+                { value: 'editorial', label: tr('Editorial') }]
                 } />
               
           </Field>
           <TextArea
               id={id('body')}
-              label="Text"
+              label={tr('Text')}
               rows={7}
               value={block.content.body}
-              hint={warn('body') ?? (editorial ? 'First line becomes a large heading. Put a short line and a blank line before it to add a kicker above.' : undefined)}
+              hint={warn('body') ?? (editorial ? tr('First line becomes a large heading. Put a short line and a blank line before it to add a kicker above.') : undefined)}
               onChange={(e) => set({ body: e.target.value }, 'body')} />
             
         </div>);
@@ -133,10 +140,10 @@ export function ContentFields({ block, issues }: ContentFieldsProps) {
         const set = setter('link');
         return (
           <div className={stack}>
-          <TextInput id={id('label')} label="Button label" value={c.label} error={err('label')} onChange={(e) => set({ label: e.target.value }, 'label')} />
+          <TextInput id={id('label')} label={tr('Button label')} value={c.label} error={err('label')} onChange={(e) => set({ label: e.target.value }, 'label')} />
           <TextInput
               id={id('url')}
-              label="Destination"
+              label={tr('Destination')}
               type="url"
               inputMode="url"
               placeholder="https://"
@@ -144,7 +151,7 @@ export function ContentFields({ block, issues }: ContentFieldsProps) {
               error={err('url')}
               onChange={(e) => set({ url: e.target.value }, 'url')} />
             
-          <TextInput id={id('description')} label="Supporting line" optional value={c.description} onChange={(e) => set({ description: e.target.value }, 'description')} />
+          <TextInput id={id('description')} label={tr('Supporting line')} optional value={c.description} onChange={(e) => set({ description: e.target.value }, 'description')} />
         </div>);
 
       }
@@ -159,7 +166,7 @@ export function ContentFields({ block, issues }: ContentFieldsProps) {
           <div className={stack}>
           <MediaPicker
               id={id('url')}
-              label="Image"
+              label={tr('Image')}
               aspect={c.aspect}
               value={c.url}
               error={err('url')}
@@ -168,29 +175,29 @@ export function ContentFields({ block, issues }: ContentFieldsProps) {
           {!c.decorative &&
             <TextInput
               id={id('alt')}
-              label="Image description"
+              label={tr('Image description')}
               value={c.alt}
-              hint={warn('alt') ?? 'Describe what’s in the photo for screen readers.'}
+              hint={warn('alt') ?? tr('Describe what’s in the photo for screen readers.')}
               onChange={(e) => set({ alt: e.target.value }, 'alt')} />
 
             }
           <Switch
               id={id('decorative')}
-              label="Decorative only"
-              description="Turn on if the image adds no information (a texture or divider). Screen readers will skip it."
+              label={tr('Decorative only')}
+              description={tr('Turn on if the image adds no information (a texture or divider). Screen readers will skip it.')}
               checked={!!c.decorative}
               onChange={(decorative) => set({ decorative }, 'decorative')} />
             
-          <TextInput id={id('caption')} label="Caption" optional value={c.caption} onChange={(e) => set({ caption: e.target.value }, 'caption')} />
-          <Field id={id('aspect')} label="Shape">
+          <TextInput id={id('caption')} label={tr('Caption')} optional value={c.caption} onChange={(e) => set({ caption: e.target.value }, 'caption')} />
+          <Field id={id('aspect')} label={tr('Shape')}>
             <Segmented
-                ariaLabel="Image shape"
+                ariaLabel={tr('Image shape')}
                 value={c.aspect}
                 onChange={(aspect) => set({ aspect }, 'aspect')}
                 options={[
-                { value: '4:5', label: 'Portrait' },
-                { value: '1:1', label: 'Square' },
-                { value: '16:9', label: 'Wide' }]
+                { value: '4:5', label: tr('Portrait') },
+                { value: '1:1', label: tr('Square') },
+                { value: '16:9', label: tr('Wide') }]
                 } />
               
           </Field>
@@ -201,20 +208,20 @@ export function ContentFields({ block, issues }: ContentFieldsProps) {
       return <EmbedFields block={block} error={err('url')} />;
     case 'divider':{
         const set = setter('divider');
-        return <TextInput id={id('label')} label="Label" optional value={block.content.label} hint="Leave empty for a plain line." onChange={(e) => set({ label: e.target.value }, 'label')} />;
+        return <TextInput id={id('label')} label={tr('Label')} optional value={block.content.label} hint={tr('Leave empty for a plain line.')} onChange={(e) => set({ label: e.target.value }, 'label')} />;
       }
     case 'spacer':{
         const set = setter('spacer');
         return (
-          <Field id={id('size')} label="Height">
+          <Field id={id('size')} label={tr('Height')}>
           <Segmented
-              ariaLabel="Spacer height"
+              ariaLabel={tr('Spacer height')}
               value={block.content.size}
               onChange={(size) => set({ size }, 'size')}
               options={[
-              { value: 'sm', label: 'Small' },
-              { value: 'md', label: 'Medium' },
-              { value: 'lg', label: 'Large' }]
+              { value: 'sm', label: tr('Small') },
+              { value: 'md', label: tr('Medium') },
+              { value: 'lg', label: tr('Large') }]
               } />
             
         </Field>);
@@ -225,10 +232,10 @@ export function ContentFields({ block, issues }: ContentFieldsProps) {
         const set = setter('contact');
         return (
           <div className={stack}>
-          <TextInput id={id('phone')} label="Phone" optional type="tel" inputMode="tel" placeholder="+234 …" value={c.phone} error={err('phone')} onChange={(e) => set({ phone: e.target.value }, 'phone')} />
-          <TextInput id={id('email')} label="Email" optional type="email" inputMode="email" value={c.email} error={err('email')} onChange={(e) => set({ email: e.target.value }, 'email')} />
-          <TextArea id={id('address')} label="Address" optional rows={2} value={c.address} onChange={(e) => set({ address: e.target.value }, 'address')} />
-          <TextInput id={id('hours')} label="Opening hours" optional placeholder="e.g. Mon–Fri, 9am–5pm WAT" value={c.hours} onChange={(e) => set({ hours: e.target.value }, 'hours')} />
+          <TextInput id={id('phone')} label={tr('Phone')} optional type="tel" inputMode="tel" placeholder="+234 …" value={c.phone} error={err('phone')} onChange={(e) => set({ phone: e.target.value }, 'phone')} />
+          <TextInput id={id('email')} label={tr('Email')} optional type="email" inputMode="email" value={c.email} error={err('email')} onChange={(e) => set({ email: e.target.value }, 'email')} />
+          <TextArea id={id('address')} label={tr('Address')} optional rows={2} value={c.address} onChange={(e) => set({ address: e.target.value }, 'address')} />
+          <TextInput id={id('hours')} label={tr('Opening hours')} optional placeholder={tr('e.g. Mon–Fri, 9am–5pm WAT')} value={c.hours} onChange={(e) => set({ hours: e.target.value }, 'hours')} />
         </div>);
 
       }
@@ -236,7 +243,7 @@ export function ContentFields({ block, issues }: ContentFieldsProps) {
         const set = setter('faq');
         return (
           <div className={stack}>
-          <TextInput id={id('title')} label="Section title" optional value={block.content.title} onChange={(e) => set({ title: e.target.value }, 'title')} />
+          <TextInput id={id('title')} label={tr('Section title')} optional value={block.content.title} onChange={(e) => set({ title: e.target.value }, 'title')} />
           {warn('items') && <p className="text-caption text-warning">{warn('items')}</p>}
           <FaqItemsEditor blockId={block.id} items={block.content.items} onChange={(items, f) => set({ items }, f)} />
         </div>);
@@ -248,28 +255,28 @@ export function ContentFields({ block, issues }: ContentFieldsProps) {
         const toggle = (key: keyof typeof c.fields) => (v: boolean) => set({ fields: { ...c.fields, [key]: v } }, `field-${key}`);
         return (
           <div className={stack}>
-          <TextInput id={id('title')} label="Title" value={c.title} onChange={(e) => set({ title: e.target.value }, 'title')} />
-          <TextArea id={id('description')} label="Intro" optional rows={2} value={c.description} onChange={(e) => set({ description: e.target.value }, 'description')} />
+          <TextInput id={id('title')} label={tr('Title')} value={c.title} onChange={(e) => set({ title: e.target.value }, 'title')} />
+          <TextArea id={id('description')} label={tr('Intro')} optional rows={2} value={c.description} onChange={(e) => set({ description: e.target.value }, 'description')} />
           <fieldset className="flex flex-col gap-3 rounded-md border border-line p-3">
-            <legend className="px-1 text-label font-medium text-fg">Fields</legend>
-            <Switch id={id('f-name')} label="Name" checked={c.fields.name} onChange={toggle('name')} />
-            <Switch id={id('f-email')} label="Email" checked={c.fields.email} onChange={toggle('email')} />
-            <Switch id={id('f-phone')} label="Phone" checked={c.fields.phone} onChange={toggle('phone')} />
-            <Switch id={id('f-message')} label="Message" checked={c.fields.message} onChange={toggle('message')} />
+            <legend className="px-1 text-label font-medium text-fg">{tr('Fields')}</legend>
+            <Switch id={id('f-name')} label={tr('Name')} checked={c.fields.name} onChange={toggle('name')} />
+            <Switch id={id('f-email')} label={tr('Email')} checked={c.fields.email} onChange={toggle('email')} />
+            <Switch id={id('f-phone')} label={tr('Phone')} checked={c.fields.phone} onChange={toggle('phone')} />
+            <Switch id={id('f-message')} label={tr('Message')} checked={c.fields.message} onChange={toggle('message')} />
             {err('fields') && <p className="text-caption text-danger">{err('fields')}</p>}
           </fieldset>
-          <TextInput id={id('submit')} label="Button label" value={c.submitLabel} onChange={(e) => set({ submitLabel: e.target.value }, 'submitLabel')} />
+          <TextInput id={id('submit')} label={tr('Button label')} value={c.submitLabel} onChange={(e) => set({ submitLabel: e.target.value }, 'submitLabel')} />
           <TextArea
               id={id('consent')}
-              label="Consent note"
+              label={tr('Consent note')}
               rows={2}
               value={c.consentText}
-              hint={warn('consentText') ?? 'Shown under the form.'}
+              hint={warn('consentText') ?? tr('Shown under the form.')}
               onChange={(e) => set({ consentText: e.target.value }, 'consentText')} />
             
           <StandardConsent current={c.consentText} onUse={(t) => set({ consentText: t }, 'consentText')} />
-          <InlineAlert tone="info" title="Submissions go to Audience">
-            Each one creates or updates a contact. People can also tick an optional box to get updates.
+          <InlineAlert tone="info" title={tr('Submissions go to Audience')}>
+            {tr('Each one creates or updates a contact. People can also tick an optional box to get updates.')}
           </InlineAlert>
         </div>);
 
@@ -295,25 +302,25 @@ export function ContentFields({ block, issues }: ContentFieldsProps) {
         const set = setter('whatsapp');
         return (
           <div className={stack}>
-          <TextInput id={id('label')} label="Button label" value={c.label} onChange={(e) => set({ label: e.target.value }, 'label')} />
+          <TextInput id={id('label')} label={tr('Button label')} value={c.label} onChange={(e) => set({ label: e.target.value }, 'label')} />
           <TextInput
               id={id('phone')}
-              label="WhatsApp number"
+              label={tr('WhatsApp number')}
               type="tel"
               inputMode="tel"
               placeholder={businessWhatsApp() || '+234 …'}
               value={c.phone}
               error={err('phone')}
-              hint={waFieldHint(c.phone)}
+              hint={waFieldHintIn(tr, c.phone)}
               onChange={(e) => set({ phone: e.target.value }, 'phone')} />
             
           <TextArea
               id={id('message')}
-              label="Prefilled message"
+              label={tr('Prefilled message')}
               optional
               rows={3}
               value={c.message}
-              hint="Visitors can edit it before they send."
+              hint={tr('Visitors can edit it before they send.')}
               onChange={(e) => set({ message: e.target.value }, 'message')} />
             
         </div>);
@@ -324,20 +331,20 @@ export function ContentFields({ block, issues }: ContentFieldsProps) {
         const set = setter('newsletter');
         return (
           <div className={stack}>
-          <TextInput id={id('title')} label="Title" value={c.title} onChange={(e) => set({ title: e.target.value }, 'title')} />
-          <TextInput id={id('description')} label="Intro" optional value={c.description} onChange={(e) => set({ description: e.target.value }, 'description')} />
-          <TextInput id={id('button')} label="Button label" value={c.buttonLabel} onChange={(e) => set({ buttonLabel: e.target.value }, 'buttonLabel')} />
+          <TextInput id={id('title')} label={tr('Title')} value={c.title} onChange={(e) => set({ title: e.target.value }, 'title')} />
+          <TextInput id={id('description')} label={tr('Intro')} optional value={c.description} onChange={(e) => set({ description: e.target.value }, 'description')} />
+          <TextInput id={id('button')} label={tr('Button label')} value={c.buttonLabel} onChange={(e) => set({ buttonLabel: e.target.value }, 'buttonLabel')} />
           <TextArea
               id={id('consent')}
-              label="Consent note"
+              label={tr('Consent note')}
               rows={2}
               value={c.consentText}
-              hint={warn('consentText') ?? 'Tell people what they’re signing up for.'}
+              hint={warn('consentText') ?? tr('Tell people what they’re signing up for.')}
               onChange={(e) => set({ consentText: e.target.value }, 'consentText')} />
             
           <StandardConsent current={c.consentText} onUse={(t) => set({ consentText: t }, 'consentText')} />
-          <InlineAlert tone="info" title="Signups go to Audience">
-            Each signup is saved as a subscribed contact with a consent record.
+          <InlineAlert tone="info" title={tr('Signups go to Audience')}>
+            {tr('Each signup is saved as a subscribed contact with a consent record.')}
           </InlineAlert>
         </div>);
 

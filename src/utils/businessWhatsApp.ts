@@ -41,5 +41,19 @@ export function waFieldHint(own: string | undefined | null, extra?: string): str
   return [base, extra].filter(Boolean).join(' ');
 }
 
+type Translate = (text: string, vars?: Record<string, string | number>) => string;
+
+/** Same hint in the editor's language (D296). */
+export function waFieldHintIn(tr: Translate, own: string | undefined | null, extra?: string): string {
+  const base = (own ?? '').trim() ?
+  active ?
+  tr('Uses this number instead of your business number. Clear it to use the business number again.') :
+  '' :
+  active ?
+  tr('Using your business number, {phone}. Type a number only to send this somewhere else.', { phone: active }) :
+  tr('Include the country code. Tip: set it once in Settings → Business and every WhatsApp button uses it.');
+  return [base, extra].filter(Boolean).join(' ');
+}
+
 /** Error text when neither the block nor the business has a number. */
 export const NO_WA_NUMBER = 'Add a WhatsApp number here, or set your business number in Settings → Business';

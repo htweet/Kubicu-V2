@@ -3,6 +3,7 @@ import { PlusIcon, Trash2Icon } from 'lucide-react';
 import type { SocialItem, SocialPlatform } from '../../../types/page';
 import { socialPlatformLabels, socialPlatforms } from '../../../data/socialPlatforms';
 import type { ValidationIssue } from '../../../utils/validation';
+import { useT } from '../../../contexts/LocaleContext';
 import { uid } from '../../../utils/id';
 import { Button } from '../../ui/Button';
 import { IconButton } from '../../ui/IconButton';
@@ -16,22 +17,25 @@ interface SocialItemsEditorProps {
   onChange: (items: SocialItem[], field: string) => void;
 }
 
+/** Platform names are brands and stay as they are. */
 export function SocialItemsEditor({ blockId, items, issues, onChange }: SocialItemsEditorProps) {
+  const { t: tr } = useT();
   const unused = socialPlatforms.filter((p) => !items.some((i) => i.platform === p));
   const update = (id: string, patch: Partial<SocialItem>, field: string) =>
   onChange(items.map((i) => i.id === id ? { ...i, ...patch } : i), `${id}:${field}`);
 
   return (
     <fieldset className="flex flex-col gap-3">
-      <legend className="mb-1.5 text-label font-medium text-fg">Profiles</legend>
-      {items.length === 0 && <p className="text-caption text-fg-subtle">Add the profiles where your customers already follow you.</p>}
+      <legend className="mb-1.5 text-label font-medium text-fg">{tr('Profiles')}</legend>
+      {items.length === 0 && <p className="text-caption text-fg-subtle">{tr('Add the profiles where your customers already follow you.')}</p>}
       {items.map((item) => {
         const error = issues.find((i) => i.field === `item:${item.id}`)?.message;
+        const platform = socialPlatformLabels[item.platform];
         return (
           <div key={item.id} className="flex flex-col gap-1.5">
             <div className="flex items-center gap-2">
               <label htmlFor={`${blockId}-${item.id}-platform`} className="sr-only">
-                Platform
+                {tr('Platform')}
               </label>
               <select
                 id={`${blockId}-${item.id}-platform`}
@@ -48,7 +52,7 @@ export function SocialItemsEditor({ blockId, items, issues, onChange }: SocialIt
                 )}
               </select>
               <label htmlFor={`${blockId}-${item.id}-url`} className="sr-only">
-                {socialPlatformLabels[item.platform]} URL
+                {tr('{platform} link', { platform })}
               </label>
               <input
                 id={`${blockId}-${item.id}-url`}
@@ -62,12 +66,12 @@ export function SocialItemsEditor({ blockId, items, issues, onChange }: SocialIt
               
               <IconButton
                 icon={Trash2Icon}
-                label={`Remove ${socialPlatformLabels[item.platform]}`}
+                label={tr('Remove {platform}', { platform })}
                 size="sm"
                 onClick={() => onChange(items.filter((i) => i.id !== item.id), 'remove')} />
               
             </div>
-            {error && <p className="text-caption text-danger">{error}</p>}
+            {error && <p className="text-caption text-danger">{tr(error)}</p>}
           </div>);
 
       })}
@@ -79,7 +83,7 @@ export function SocialItemsEditor({ blockId, items, issues, onChange }: SocialIt
         disabled={unused.length === 0}
         onClick={() => onChange([...items, { id: uid('soc'), platform: unused[0], url: '' }], 'add')}>
         
-        Add profile
+        {tr('Add profile')}
       </Button>
     </fieldset>);
 

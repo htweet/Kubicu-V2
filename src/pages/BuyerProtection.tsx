@@ -9,6 +9,7 @@ import { acceptOffer, caseSummary, confirmReceived, escalate, issueLabels, MAX_F
 import { readCommerce } from '../utils/commerce/storage';
 import { formatNgn, formatTimestamp } from '../utils/format';
 import { PageSurface } from '../components/blocks/PageSurface';
+import { VisitorLanguageRow } from '../components/blocks/VisitorLanguageRow';
 import { cardStyle, mix } from '../components/blocks/pageStyle';
 import { CheckoutHeading, PrimaryButton, SecondaryButton, TestModeNote, ThemedField } from '../components/checkout/checkoutUi';
 import { Unavailable } from './PublicPage';
@@ -20,10 +21,10 @@ export function BuyerProtection() {
   const { handle = '', orderId = '' } = useParams();
   const page = useResolvedPage(handle);
   // Visitor language (D133): the buyer's pick on this device, else the page's language.
-  const [lang] = useVisitorLang(page?.doc.language);
+  const [lang, setLang] = useVisitorLang(page?.doc.language);
   if (!page?.workspaceId) return <Unavailable handle={handle} />;
   return (
-    <LocaleProvider lang={lang}>
+    <LocaleProvider lang={lang} setLang={setLang}>
       <Body workspaceId={page.workspaceId} handle={handle} orderId={orderId} theme={page.doc.theme} business={page.doc.title} />
     </LocaleProvider>);
 
@@ -43,7 +44,7 @@ function Body({ workspaceId, handle, orderId, theme: t, business }: {workspaceId
 
   return (
     <div className="min-h-screen w-full" style={{ background: t.background }}>
-      <PageSurface theme={t}>
+      <PageSurface theme={t} header={<VisitorLanguageRow theme={t} />}>
         <main className="flex flex-col gap-5 py-6">
           <Link to={`/p/${handle}/order/${orderId}`} className="inline-flex items-center gap-1.5 self-start text-[14px] font-medium" style={muted}>
             <ArrowLeftIcon size={15} aria-hidden /> {tx('Order #{n}', { n: c.orderNumber })}

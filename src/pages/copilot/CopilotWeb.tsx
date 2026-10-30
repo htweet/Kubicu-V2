@@ -10,6 +10,7 @@ import { CopilotThread } from '../../components/copilot/CopilotThread';
 import { CopilotComposer } from '../../components/copilot/CopilotComposer';
 import { CopilotChatsPanel } from '../../components/copilot/CopilotChatsPanel';
 import { TemplateLivePreview } from '../../components/templates/TemplateLivePreview';
+import { LanguagePicker } from '../../components/ui/LanguagePicker';
 import { useCopilot } from '../../hooks/useCopilot';
 import { cn } from '../../utils/cn';
 import { previewPath } from '../../utils/copilot/links';
@@ -99,6 +100,7 @@ export function CopilotWeb() {
             <span className="hidden truncate text-label font-semibold text-fg sm:block">Copilot</span>
           </div>
           <div className="flex items-center gap-2">
+            <LanguagePicker variant="compact" />
             <button type="button" onClick={() => setChatsOpen(true)} aria-haspopup="dialog" className="inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-label font-medium text-fg-muted hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
               <MessagesSquareIcon size={15} aria-hidden /> <span className="hidden sm:inline">All chats</span>
               <span className="sr-only sm:hidden">All chats</span>

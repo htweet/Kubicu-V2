@@ -20,6 +20,7 @@ import { cn } from '../../utils/cn';
 import { StaffNotificationsProvider } from '../../contexts/StaffNotificationsContext';
 import { useAdminNavCounts } from '../../hooks/useAdminNavCounts';
 import { StaffNotificationBell, StaffNotificationsPanel } from './StaffNotifications';
+import { LanguagePicker } from '../ui/LanguagePicker';
 
 function AdminNavList({ staff, collapsed, tip, onNavigate }: {staff: StaffMember;collapsed?: boolean;tip?: SideTip;onNavigate?: () => void;}) {
   const groups = adminNav.map((g) => ({ ...g, items: g.items.filter((i) => roleCanOpen(staff.role, i.id)) })).filter((g) => g.items.length);
@@ -170,6 +171,7 @@ function AdminConsole({ staff }: {staff: StaffMember;}) {
 
         <div className={cn('flex shrink-0 flex-col gap-1 border-t border-line py-3', collapsed ? 'items-center px-0' : 'px-3')}>
           <ActorCard staff={staff} collapsed={collapsed} />
+          <LanguagePicker variant="row" side="top" align="start" collapsed={collapsed} tip={tip} />
           <button
             type="button"
             onClick={() => signOut(staff)}
@@ -222,6 +224,7 @@ function AdminConsole({ staff }: {staff: StaffMember;}) {
           <KubicuLogo />
           <span className="ml-auto flex items-center gap-2">
             <AdminTag />
+            <LanguagePicker variant="compact" />
             <StaffNotificationBell size="md" />
           </span>
         </header>

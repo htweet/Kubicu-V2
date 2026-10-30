@@ -4,7 +4,7 @@ import { FlaskConicalIcon } from 'lucide-react';
 import { KubicuLogo } from '../shell/KubicuLogo';
 import { PlatformLook } from '../marketing/PlatformLook';
 import { useT } from '../../contexts/LocaleContext';
-import { AuthLanguagePicker } from './AuthLanguagePicker';
+import { LanguagePicker } from '../ui/LanguagePicker';
 import { AuthShowcase, type ShowcaseKind } from './AuthShowcase';
 
 interface AuthLayoutProps {
@@ -44,7 +44,7 @@ export function AuthLayout({ title, description, children, footer, aside, back, 
                 <KubicuLogo />
               </Link>
             </div>
-            <AuthLanguagePicker />
+            <LanguagePicker variant="pill" />
           </header>
 
           <main className="mx-auto flex w-full max-w-[460px] flex-1 flex-col justify-center py-10 md:py-14">

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { FeatherIcon, FlagIcon, LanguagesIcon } from 'lucide-react';
+import { FeatherIcon, FlagIcon } from 'lucide-react';
 import { useDataSaver } from '../../contexts/DataSaverContext';
 import { useT } from '../../contexts/LocaleContext';
-import { uiLanguages, type UiLang } from '../../data/translations';
+import { VisitorLanguageMenu } from './VisitorLanguageMenu';
 import type { PageTheme } from '../../types/page';
 import { MadeWithKubicu } from './MadeWithKubicu';
 import { ReportPageDialog } from './ReportPageDialog';
@@ -45,28 +45,13 @@ export function PublicFooter({ theme, badge, handle, workspaceId }: {theme: Page
         {setLang &&
         <>
             <span aria-hidden>·</span>
-            <label className="relative inline-flex items-center gap-1.5 rounded px-1 focus-within:ring-2">
-              <LanguagesIcon size={12} aria-hidden />
-              <span className="sr-only">{t('Language')}</span>
-              <select
-              value={lang}
-              onChange={(e) => setLang(e.target.value as UiLang)}
-              className="cursor-pointer appearance-none bg-transparent pr-1 underline-offset-2 hover:underline focus:outline-none"
-              style={{ color: theme.mutedText }}>
-              
-                {uiLanguages.map((l) =>
-              <option key={l.value} value={l.value} style={{ color: '#111' }}>
-                    {l.native}
-                  </option>
-              )}
-              </select>
-            </label>
+            <VisitorLanguageMenu theme={theme} variant="inline" side="top" />
           </>
         }
       </div>
       {lang !== 'en' &&
       <p className="px-4 text-center text-[11px]" style={{ color: theme.mutedText }}>
-          {t('Draft translation')} · the seller’s own words stay as they wrote them.
+          {t('Draft translation')} · {t('the seller’s own words stay as they wrote them.')}
         </p>
       }
       <ReportPageDialog open={open} onClose={() => setOpen(false)} handle={handle} workspaceId={workspaceId} />

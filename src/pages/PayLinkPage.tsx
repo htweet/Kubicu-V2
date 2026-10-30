@@ -7,6 +7,7 @@ import { useResolvedPage } from '../hooks/useResolvedPage';
 import { buyerEscrowFee, inspectionDays, linkMethod, linkView, MONEY_EVENT, readMoney, recordLinkPayment, writeMoney } from '../utils/money/store';
 import { formatNgn, formatTimestamp } from '../utils/format';
 import { PageSurface } from '../components/blocks/PageSurface';
+import { VisitorLanguageRow } from '../components/blocks/VisitorLanguageRow';
 import { cardStyle, mix } from '../components/blocks/pageStyle';
 import { CheckoutHeading, PrimaryButton, SecondaryButton, TestModeNote, ThemedField } from '../components/checkout/checkoutUi';
 import { Unavailable } from './PublicPage';
@@ -61,7 +62,7 @@ export function PayLinkPage() {
   const [ownIdx, setOwnIdx] = useState(0);
   const commerce = usePageCommerce(workspaceId, !!page?.isOwn);
   // Visitor language (D133): the payer's pick on this device, else the page's language.
-  const [lang] = useVisitorLang(page?.doc.language);
+  const [lang, setLang] = useVisitorLang(page?.doc.language);
   const tx = translatorFor(lang);
 
   useEffect(() => {
@@ -203,9 +204,9 @@ export function PayLinkPage() {
   null;
 
   return (
-    <LocaleProvider lang={lang}>
+    <LocaleProvider lang={lang} setLang={setLang}>
     <div className="min-h-screen w-full" style={{ background: t.background }}>
-      <PageSurface theme={t}>
+      <PageSurface theme={t} header={<VisitorLanguageRow theme={t} />}>
         <main className="flex flex-col gap-5 py-6">
           <Link to={`/p/${handle}`} className="inline-flex items-center gap-1.5 self-start text-[14px] font-medium" style={muted}>
             <ArrowLeftIcon size={15} aria-hidden /> {business}

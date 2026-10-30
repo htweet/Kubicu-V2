@@ -4,6 +4,7 @@ import { ArrowLeftIcon, CalendarCheck2Icon, CalendarClockIcon, CalendarXIcon, Me
 import { useResolvedPage, sellerPhone } from '../hooks/useResolvedPage';
 import { usePageOps } from '../hooks/usePageOps';
 import { PageSurface } from '../components/blocks/PageSurface';
+import { VisitorLanguageRow } from '../components/blocks/VisitorLanguageRow';
 import { cardStyle, mix } from '../components/blocks/pageStyle';
 import { CheckoutHeading, PrimaryButton, SecondaryButton, TestModeNote } from '../components/checkout/checkoutUi';
 import { SlotPicker } from '../components/booking/SlotPicker';
@@ -27,7 +28,7 @@ export function BookingStatus() {
   const [error, setError] = useState('');
   const [cardOutcome, setCardOutcome] = useState<'success' | 'declined'>('success');
   const [paying, setPaying] = useState(false);
-  const [lang] = useVisitorLang(page?.doc.language);
+  const [lang, setLang] = useVisitorLang(page?.doc.language);
   const tx = translatorFor(lang);
 
   const booking = ops.data?.bookings.find((b) => b.id === bookingId);
@@ -80,9 +81,9 @@ export function BookingStatus() {
   };
 
   return (
-    <LocaleProvider lang={lang}>
+    <LocaleProvider lang={lang} setLang={setLang}>
     <div className="min-h-screen w-full" style={{ background: t.background }}>
-      <PageSurface theme={t}>
+      <PageSurface theme={t} header={<VisitorLanguageRow theme={t} />}>
         <main className="flex flex-col gap-5 py-6">
           <Link to={`/p/${handle}`} className="inline-flex items-center gap-1.5 self-start text-[14px] font-medium" style={muted}>
             <ArrowLeftIcon size={15} aria-hidden /> {tx('Back to {name}', { name: page.doc.title })}
