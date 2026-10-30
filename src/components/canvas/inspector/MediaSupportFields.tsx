@@ -6,6 +6,7 @@ import type { ValidationIssue } from '../../../utils/validation';
 import { useEditor } from '../../../contexts/EditorContext';
 import { useCommerce } from '../../../contexts/CommerceContext';
 import { useWorkspace } from '../../../contexts/WorkspaceContext';
+import { useT } from '../../../contexts/LocaleContext';
 import { useMoney } from '../../../hooks/useMoney';
 import { blankLink, linkView, linkViewLabels, uniqueSlug } from '../../../utils/money/store';
 import { uid } from '../../../utils/id';
@@ -31,10 +32,15 @@ interface Props {
 
 /** Inspector fields for the Batch 12 blocks: Audio, Playlist, Collection, Support (D124). */
 export function MediaSupportFields({ block, issues }: Props) {
+  const { t: tr } = useT();
   const { actions } = useEditor();
   const commerce = useCommerce().data;
-  const err = (field: string) => issues.find((i) => i.field === field && i.severity === 'error')?.message;
-  const warn = (field: string) => issues.find((i) => i.field === field && i.severity === 'warning')?.message;
+  const pick = (field: string, s: ValidationIssue['severity']) => {
+    const m = issues.find((i) => i.field === field && i.severity === s)?.message;
+    return m ? tr(m) : undefined;
+  };
+  const err = (field: string) => pick(field, 'error');
+  const warn = (field: string) => pick(field, 'warning');
   const id = (field: string) => `${block.id}-${field}`;
   const setter =
   <K extends BlockType,>(type: K) =>
@@ -48,13 +54,13 @@ export function MediaSupportFields({ block, issues }: Props) {
         const set = setter('audio');
         return (
           <div className={stack}>
-          <TextInput id={id('title')} label="Title" value={c.title} placeholder="e.g. Episode 4 — Pricing your work" onChange={(e) => set({ title: e.target.value }, 'title')} />
-          <TextInput id={id('artist')} label="Artist or speaker" optional value={c.artist} onChange={(e) => set({ artist: e.target.value }, 'artist')} />
+          <TextInput id={id('title')} label={tr('Title')} value={c.title} placeholder={tr('e.g. Episode 4 — Pricing your work')} onChange={(e) => set({ title: e.target.value }, 'title')} />
+          <TextInput id={id('artist')} label={tr('Artist or speaker')} optional value={c.artist} onChange={(e) => set({ artist: e.target.value }, 'artist')} />
           <AudioFileField id={id('url')} url={c.url} fileName={c.fileName} error={err('url')} onChange={(p) => set(p, 'url')} />
-          <MediaPicker id={id('cover')} label="Cover" optional aspect="1:1" value={c.coverUrl} onChange={(coverUrl, meta) => set(meta?.alt && !c.coverAlt ? { coverUrl, coverAlt: meta.alt } : { coverUrl }, 'coverUrl')} />
-          {c.coverUrl && <TextInput id={id('coverAlt')} label="Cover description" value={c.coverAlt} hint={warn('coverAlt') ?? 'Read aloud by screen readers.'} onChange={(e) => set({ coverAlt: e.target.value }, 'coverAlt')} />}
-          <TextArea id={id('transcript')} label="Transcript or description" optional rows={4} value={c.transcript} hint={warn('transcript') ?? 'Shown behind “Read transcript” for deaf and hard-of-hearing visitors.'} onChange={(e) => set({ transcript: e.target.value }, 'transcript')} />
-          <Switch id={id('dl')} label="Let visitors download it" description="Off keeps it play-only on your page. Anyone can still record what plays." checked={c.allowDownload} onChange={(allowDownload) => set({ allowDownload }, 'allowDownload')} />
+          <MediaPicker id={id('cover')} label={tr('Cover')} optional aspect="1:1" value={c.coverUrl} onChange={(coverUrl, meta) => set(meta?.alt && !c.coverAlt ? { coverUrl, coverAlt: meta.alt } : { coverUrl }, 'coverUrl')} />
+          {c.coverUrl && <TextInput id={id('coverAlt')} label={tr('Cover description')} value={c.coverAlt} hint={warn('coverAlt') ?? tr('Read aloud by screen readers.')} onChange={(e) => set({ coverAlt: e.target.value }, 'coverAlt')} />}
+          <TextArea id={id('transcript')} label={tr('Transcript or description')} optional rows={4} value={c.transcript} hint={warn('transcript') ?? tr('Shown behind “Read transcript” for deaf and hard-of-hearing visitors.')} onChange={(e) => set({ transcript: e.target.value }, 'transcript')} />
+          <Switch id={id('dl')} label={tr('Let visitors download it')} description={tr('Off keeps it play-only on your page. Anyone can still record what plays.')} checked={c.allowDownload} onChange={(allowDownload) => set({ allowDownload }, 'allowDownload')} />
         </div>);
 
       }
@@ -64,10 +70,10 @@ export function MediaSupportFields({ block, issues }: Props) {
         const digital = commerce.products.filter((p) => p.kind === 'digital' && p.status !== 'archived');
         return (
           <div className={stack}>
-          <TextInput id={id('title')} label="Title" optional placeholder="e.g. Lagos Nights EP" value={c.title} onChange={(e) => set({ title: e.target.value }, 'title')} />
-          <TextInput id={id('artist')} label="Artist" optional value={c.artist} onChange={(e) => set({ artist: e.target.value }, 'artist')} />
-          <MediaPicker id={id('cover')} label="Cover" optional aspect="1:1" value={c.coverUrl} onChange={(coverUrl, meta) => set(meta?.alt && !c.coverAlt ? { coverUrl, coverAlt: meta.alt } : { coverUrl }, 'coverUrl')} />
-          {c.coverUrl && <TextInput id={id('coverAlt')} label="Cover description" value={c.coverAlt} hint={warn('coverAlt')} onChange={(e) => set({ coverAlt: e.target.value }, 'coverAlt')} />}
+          <TextInput id={id('title')} label={tr('Title')} optional placeholder={tr('e.g. Lagos Nights EP')} value={c.title} onChange={(e) => set({ title: e.target.value }, 'title')} />
+          <TextInput id={id('artist')} label={tr('Artist')} optional value={c.artist} onChange={(e) => set({ artist: e.target.value }, 'artist')} />
+          <MediaPicker id={id('cover')} label={tr('Cover')} optional aspect="1:1" value={c.coverUrl} onChange={(coverUrl, meta) => set(meta?.alt && !c.coverAlt ? { coverUrl, coverAlt: meta.alt } : { coverUrl }, 'coverUrl')} />
+          {c.coverUrl && <TextInput id={id('coverAlt')} label={tr('Cover description')} value={c.coverAlt} hint={warn('coverAlt')} onChange={(e) => set({ coverAlt: e.target.value }, 'coverAlt')} />}
           <ItemListEditor
               legend="Tracks"
               noun="Track"
@@ -75,39 +81,39 @@ export function MediaSupportFields({ block, issues }: Props) {
               max={20}
               min={1}
               onChange={(tracks, f) => set({ tracks }, f)}
-              title={(t, i) => t.title || `Track ${i + 1}`}
-              meta={(t) => !t.url ? 'No audio yet' : t.productId ? 'For sale' : undefined}
+              title={(t, i) => t.title || `${tr('Track')} ${i + 1}`}
+              meta={(t) => !t.url ? tr('No audio yet') : t.productId ? tr('For sale') : undefined}
               create={() => ({ id: uid('tr'), title: '', artist: '', url: '', fileName: '', duration: '', productId: null })}
               addLabel="Add track"
               error={err('tracks')}
               hint={warn('tracks')}
               render={(t, update) =>
               <>
-                <TextInput id={id(`t-${t.id}`)} label="Track title" value={t.title} onChange={(e) => update({ title: e.target.value }, 'tracks')} />
-                <TextInput id={id(`a-${t.id}`)} label="Featuring" optional value={t.artist} onChange={(e) => update({ artist: e.target.value }, 'tracks')} />
+                <TextInput id={id(`t-${t.id}`)} label={tr('Track title')} value={t.title} onChange={(e) => update({ title: e.target.value }, 'tracks')} />
+                <TextInput id={id(`a-${t.id}`)} label={tr('Featuring')} optional value={t.artist} onChange={(e) => update({ artist: e.target.value }, 'tracks')} />
                 <AudioFileField id={id(`u-${t.id}`)} url={t.url} fileName={t.fileName} onChange={(p) => update(p, 'tracks')} />
-                <TextInput id={id(`d-${t.id}`)} label="Length" optional placeholder="3:42" value={t.duration} onChange={(e) => update({ duration: e.target.value }, 'tracks')} />
+                <TextInput id={id(`d-${t.id}`)} label={tr('Length')} optional placeholder="3:42" value={t.duration} onChange={(e) => update({ duration: e.target.value }, 'tracks')} />
                 {digital.length ?
                 <SelectInput
                   id={id(`p-${t.id}`)}
-                  label="Sell this track"
+                  label={tr('Sell this track')}
                   value={t.productId ?? ''}
                   onChange={(v) => update({ productId: v || null }, 'tracks')}
-                  options={[{ value: '', label: 'Not for sale' }, ...digital.map((p) => ({ value: p.id, label: `${p.name}${p.priceNgn !== null ? ` · ${formatNgn(p.priceNgn)}` : ''}${p.status === 'draft' ? ' (draft)' : ''}` }))]}
-                  hint="Buyers get the full file by secure link, with your download limits." /> :
+                  options={[{ value: '', label: tr('Not for sale') }, ...digital.map((p) => ({ value: p.id, label: `${p.name}${p.priceNgn !== null ? ` · ${formatNgn(p.priceNgn)}` : ''}${p.status === 'draft' ? ` (${tr('draft')})` : ''}` }))]}
+                  hint={tr('Buyers get the full file by secure link, with your download limits.')} /> :
 
 
                 <p className="text-caption text-fg-muted">
-                    To sell tracks, add them as digital products first.{' '}
+                    {tr('To sell tracks, add them as digital products first.')}{' '}
                     <Link to="/app/commerce/digital?new=1" className="inline-flex items-center gap-0.5 font-semibold text-action hover:underline">
-                      Add one <ArrowUpRightIcon size={12} aria-hidden />
+                      {tr('Add one')} <ArrowUpRightIcon size={12} aria-hidden />
                     </Link>
                   </p>
                 }
               </>
               } />
             
-          <Switch id={id('dl')} label="Let visitors download free tracks" description="Tracks for sale are never downloadable from the player." checked={c.allowDownload} onChange={(allowDownload) => set({ allowDownload }, 'allowDownload')} />
+          <Switch id={id('dl')} label={tr('Let visitors download free tracks')} description={tr('Tracks for sale are never downloadable from the player.')} checked={c.allowDownload} onChange={(allowDownload) => set({ allowDownload }, 'allowDownload')} />
         </div>);
 
       }
@@ -119,23 +125,23 @@ export function MediaSupportFields({ block, issues }: Props) {
           {commerce.collections.length ?
             <SelectInput
               id={id('collectionId')}
-              label="Collection"
+              label={tr('Collection')}
               value={c.collectionId ?? ''}
               onChange={(v) => set({ collectionId: v || null }, 'collectionId')}
-              options={[{ value: '', label: 'Choose…' }, ...commerce.collections.map((col) => ({ value: col.id, label: `${col.name} · ${commerce.products.filter((p) => p.collectionIds.includes(col.id)).length}` }))]}
-              hint={err('collectionId') ?? 'New products added to it appear automatically.'} /> :
+              options={[{ value: '', label: tr('Choose…') }, ...commerce.collections.map((col) => ({ value: col.id, label: `${col.name} · ${commerce.products.filter((p) => p.collectionIds.includes(col.id)).length}` }))]}
+              hint={err('collectionId') ?? tr('New products added to it appear automatically.')} /> :
 
 
-            <InlineAlert tone="info" title="No collections yet">
-              Group products into collections in Commerce → Products, then pick one here.
+            <InlineAlert tone="info" title={tr('No collections yet')}>
+              {tr('Group products into collections in Commerce → Products, then pick one here.')}
             </InlineAlert>
             }
-          <TextInput id={id('title')} label="Title" optional placeholder="Uses the collection name" value={c.title} onChange={(e) => set({ title: e.target.value }, 'title')} />
-          <Field id={id('layout')} label="Layout">
-            <Segmented ariaLabel="Collection layout" fullWidth value={c.layout} onChange={(layout) => set({ layout }, 'layout')} options={[{ value: 'strip', label: 'Swipe strip' }, { value: 'grid', label: 'Grid' }]} />
+          <TextInput id={id('title')} label={tr('Title')} optional placeholder={tr('Uses the collection name')} value={c.title} onChange={(e) => set({ title: e.target.value }, 'title')} />
+          <Field id={id('layout')} label={tr('Layout')}>
+            <Segmented ariaLabel={tr('Collection layout')} fullWidth value={c.layout} onChange={(layout) => set({ layout }, 'layout')} options={[{ value: 'strip', label: tr('Swipe strip') }, { value: 'grid', label: tr('Grid') }]} />
           </Field>
-          <SelectInput id={id('limit')} label="Show up to" value={String(c.limit)} onChange={(v) => set({ limit: Number(v) }, 'limit')} options={[4, 6, 8, 12].map((n) => ({ value: String(n), label: `${n} products` }))} />
-          <Switch id={id('seeAll')} label="“See all” link" description="Opens your shop filtered to this collection." checked={c.showSeeAll} onChange={(showSeeAll) => set({ showSeeAll }, 'showSeeAll')} />
+          <SelectInput id={id('limit')} label={tr('Show up to')} value={String(c.limit)} onChange={(v) => set({ limit: Number(v) }, 'limit')} options={[4, 6, 8, 12].map((n) => ({ value: String(n), label: tr('{n} products', { n }) }))} />
+          <Switch id={id('seeAll')} label={tr('“See all” link')} description={tr('Opens your shop filtered to this collection.')} checked={c.showSeeAll} onChange={(showSeeAll) => set({ showSeeAll }, 'showSeeAll')} />
         </div>);
 
       }
@@ -148,6 +154,7 @@ export function MediaSupportFields({ block, issues }: Props) {
 
 /** Support block fields. Creates its open payment link on first open and keeps it in sync. */
 function SupportFields({ block, issues }: {block: Extract<Block, {type: 'support';}>;issues: ValidationIssue[];}) {
+  const { t: tr } = useT();
   const { actions, state } = useEditor();
   const { current } = useWorkspace();
   const money = useMoney(current.id);
@@ -185,34 +192,34 @@ function SupportFields({ block, issues }: {block: Extract<Block, {type: 'support
 
   return (
     <div className="flex flex-col gap-4">
-      <Field id={fid('wording')} label="Wording">
+      <Field id={fid('wording')} label={tr('Wording')}>
         <Segmented
-          ariaLabel="Button wording"
+          ariaLabel={tr('Button wording')}
           fullWidth
           value={c.wording}
           onChange={(wording) => set({ wording }, 'wording')}
           options={[
-          { value: 'support', label: 'Support' },
-          { value: 'tip', label: 'Tip' },
-          { value: 'donate', label: 'Donate' }]
+          { value: 'support', label: tr('Support') },
+          { value: 'tip', label: tr('Tip') },
+          { value: 'donate', label: tr('Donate') }]
           } />
         
       </Field>
       {c.wording === 'donate' &&
-      <InlineAlert tone="info" title="Donations aren’t tax-deductible here">
-          Visitors are told this is a payment to you, not a registered charity donation. Raising money for a cause may need extra permissions — see the Fundraising and support payments terms.
+      <InlineAlert tone="info" title={tr('Donations aren’t tax-deductible here')}>
+          {tr('Visitors are told this is a payment to you, not a registered charity donation. Raising money for a cause may need extra permissions — see the Fundraising and support payments terms.')}
         </InlineAlert>
       }
-      <TextInput id={fid('title')} label="Heading" value={c.title} onChange={(e) => set({ title: e.target.value }, 'title')} />
-      <TextArea id={fid('intro')} label="Why support you" optional rows={3} placeholder="e.g. Every tip helps me keep the tutorials free." value={c.intro} onChange={(e) => set({ intro: e.target.value }, 'intro')} />
+      <TextInput id={fid('title')} label={tr('Heading')} value={c.title} onChange={(e) => set({ title: e.target.value }, 'title')} />
+      <TextArea id={fid('intro')} label={tr('Why support you')} optional rows={3} placeholder={tr('e.g. Every tip helps me keep the tutorials free.')} value={c.intro} onChange={(e) => set({ intro: e.target.value }, 'intro')} />
       <fieldset className="flex flex-col gap-2">
-        <legend className="mb-1 text-label font-medium text-fg">Suggested amounts</legend>
+        <legend className="mb-1 text-label font-medium text-fg">{tr('Suggested amounts')}</legend>
         <div className="grid grid-cols-2 gap-2">
           {amounts.map((a, i) =>
           <CurrencyInput
             key={i}
             id={fid(`amt-${i}`)}
-            label={`Amount ${i + 1}`}
+            label={tr('Amount {n}', { n: i + 1 })}
             optional={i > 0}
             value={a || null}
             onChange={(v) => {
@@ -223,22 +230,22 @@ function SupportFields({ block, issues }: {block: Extract<Block, {type: 'support
 
           )}
         </div>
-        {(err || warn) && <p className={`text-caption font-medium ${err ? 'text-danger' : 'text-warning'}`}>{err ?? warn}</p>}
+        {(err || warn) && <p className={`text-caption font-medium ${err ? 'text-danger' : 'text-warning'}`}>{tr((err ?? warn) as string)}</p>}
       </fieldset>
-      <Switch id={fid('other')} label="Allow “Other amount”" checked={c.allowOther} onChange={(allowOther) => set({ allowOther }, 'amounts')} />
-      <CurrencyInput id={fid('min')} label="Smallest amount" value={c.minNgn} onChange={(v) => set({ minNgn: Math.max(100, v ?? 100) }, 'minNgn')} hint="Keeps payment fees from eating small amounts." />
-      <Switch id={fid('name')} label="Ask for their name" checked={c.askName} onChange={(askName) => set({ askName }, 'askName')} />
-      <Switch id={fid('msg')} label="Let them leave a message" checked={c.askMessage} onChange={(askMessage) => set({ askMessage }, 'askMessage')} />
+      <Switch id={fid('other')} label={tr('Allow “Other amount”')} checked={c.allowOther} onChange={(allowOther) => set({ allowOther }, 'amounts')} />
+      <CurrencyInput id={fid('min')} label={tr('Smallest amount')} value={c.minNgn} onChange={(v) => set({ minNgn: Math.max(100, v ?? 100) }, 'minNgn')} hint={tr('Keeps payment fees from eating small amounts.')} />
+      <Switch id={fid('name')} label={tr('Ask for their name')} checked={c.askName} onChange={(askName) => set({ askName }, 'askName')} />
+      <Switch id={fid('msg')} label={tr('Let them leave a message')} checked={c.askMessage} onChange={(askMessage) => set({ askMessage }, 'askMessage')} />
       {link &&
       <div className="flex flex-col gap-1 rounded-md border border-line bg-sunken px-3 py-2.5 text-caption">
           <span className="text-fg">
-            Paid through the payment link <span className="font-semibold">{link.title}</span> · {linkViewLabels[linkView(link)]}
+            {tr('Paid through the payment link')} <span className="font-semibold">{link.title}</span> · {tr(linkViewLabels[linkView(link)])}
           </span>
           <span className="text-fg-muted">
-            {link.payments.filter((p) => !p.sample).length} payments · {formatNgn(received)} received. Where the money goes follows Payment links in Commerce → Payments.
+            {tr('Payments: {n}', { n: link.payments.filter((p) => !p.sample).length })} · {tr('{amount} received', { amount: formatNgn(received) })}. {tr('Where the money goes follows Payment links in Commerce → Payments.')}
           </span>
           <Link to="/app/commerce/payment-links" className="mt-0.5 inline-flex items-center gap-0.5 self-start font-semibold text-action hover:underline">
-            Open in Payment links <ArrowUpRightIcon size={12} aria-hidden />
+            {tr('Open in Payment links')} <ArrowUpRightIcon size={12} aria-hidden />
           </Link>
         </div>
       }

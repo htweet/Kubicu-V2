@@ -4,6 +4,7 @@ import { BookmarkPlusIcon, CheckIcon, XIcon } from 'lucide-react';
 import type { PageTheme } from '../../../types/page';
 import { useEditor } from '../../../contexts/EditorContext';
 import { useLibrary } from '../../../contexts/LibraryContext';
+import { useT } from '../../../contexts/LocaleContext';
 import { fontPairs } from '../../../data/pageThemes';
 import { Button } from '../../ui/Button';
 import { Dialog } from '../../ui/Dialog';
@@ -14,6 +15,7 @@ import { buttonStyle, fontsFor } from '../../blocks/pageStyle';
 
 /** Workspace themes: save the current look once, reuse it on any page. */
 export function SavedThemes() {
+  const { t: tr } = useT();
   const { state, actions } = useEditor();
   const library = useLibrary();
   const [open, setOpen] = useState(false);
@@ -24,15 +26,15 @@ export function SavedThemes() {
   const save = () => {
     const saved = library.saveTheme(name, current);
     actions.applyThemePreset(saved.theme);
-    toast(`Saved “${saved.name}”`, { description: 'Available on every page in this workspace.' });
+    toast(tr('Saved “{name}”', { name: saved.name }), { description: tr('Available on every page in this workspace.') });
     setOpen(false);
   };
 
   const remove = (id: string, label: string) => {
     const removed = library.deleteTheme(id);
-    toast(`Deleted “${label}”`, {
-      description: 'Pages using it keep their colours.',
-      action: removed ? { label: 'Undo', onClick: () => library.restoreTheme(removed) } : undefined
+    toast(tr('Deleted “{name}”', { name: label }), {
+      description: tr('Pages using it keep their colours.'),
+      action: removed ? { label: tr('Undo'), onClick: () => library.restoreTheme(removed) } : undefined
     });
   };
 
@@ -40,24 +42,24 @@ export function SavedThemes() {
     <section aria-labelledby="saved-themes" className="flex flex-col gap-2.5">
       <div className="flex items-center justify-between gap-2">
         <h3 id="saved-themes" className="text-label font-medium text-fg">
-          Your themes
+          {tr('Your themes')}
         </h3>
         <Button
           size="sm"
           variant="tertiary"
           leadingIcon={BookmarkPlusIcon}
           disabled={alreadySaved}
-          title={alreadySaved ? 'This theme is already saved' : undefined}
+          title={alreadySaved ? tr('This theme is already saved') : undefined}
           onClick={() => {
             setName('');
             setOpen(true);
           }}>
           
-          Save current
+          {tr('Save current')}
         </Button>
       </div>
       {library.themes.length === 0 ?
-      <p className="text-caption text-fg-subtle">Save your colours, fonts and button style to reuse them on other pages.</p> :
+      <p className="text-caption text-fg-subtle">{tr('Save your colours, fonts and button style to reuse them on other pages.')}</p> :
 
       <ul className="grid grid-cols-3 gap-2">
           {library.themes.map((t) =>
@@ -66,7 +68,7 @@ export function SavedThemes() {
               <button
             type="button"
             onClick={() => remove(t.id, t.name)}
-            aria-label={`Delete theme ${t.name}`}
+            aria-label={tr('Delete theme {name}', { name: t.name })}
             className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full border border-line bg-overlay text-fg-subtle opacity-0 shadow-1 transition-opacity duration-150 hover:text-danger focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus group-hover:opacity-100">
             
                 <XIcon size={12} aria-hidden />
@@ -80,15 +82,15 @@ export function SavedThemes() {
         open={open}
         onClose={() => setOpen(false)}
         size="sm"
-        title="Save theme"
-        description="Colours, fonts and button style are saved together."
+        title={tr('Save theme')}
+        description={tr('Colours, fonts and button style are saved together.')}
         footer={
         <>
             <Button variant="secondary" onClick={() => setOpen(false)}>
-              Cancel
+              {tr('Cancel')}
             </Button>
             <Button onClick={save} disabled={!name.trim()}>
-              Save theme
+              {tr('Save theme')}
             </Button>
           </>
         }>
@@ -100,7 +102,7 @@ export function SavedThemes() {
             if (name.trim()) save();
           }}>
           
-          <TextInput id="theme-name" label="Theme name" value={name} maxLength={32} placeholder="e.g. Harmattan campaign" onChange={(e) => setName(e.target.value)} />
+          <TextInput id="theme-name" label={tr('Theme name')} value={name} maxLength={32} placeholder={tr('e.g. Harmattan campaign')} onChange={(e) => setName(e.target.value)} />
         </form>
       </Dialog>
     </section>);

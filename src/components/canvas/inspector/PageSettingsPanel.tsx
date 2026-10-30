@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowUpRightIcon } from 'lucide-react';
 import { useEditor } from '../../../contexts/EditorContext';
+import { useT } from '../../../contexts/LocaleContext';
 import { TextInput } from '../../ui/TextInput';
 import { PlanLock } from '../../ui/PlanLock';
 import { UpgradeButton } from '../../ui/UpgradeButton';
@@ -36,7 +37,9 @@ const pageLanguages = [
 { value: 'sw', label: 'Swahili' }];
 
 
+/** Page panel → page settings. Shared inputs translate their own labels; headings, notes and built lines here (D305). */
 export function PageSettingsPanel() {
+  const { t: tr } = useT();
   const { state, actions, issues } = useEditor();
   const { draft } = state;
   const handleError = issues.find((i) => i.id === 'page:handle')?.message;
@@ -44,7 +47,7 @@ export function PageSettingsPanel() {
   const badgeShown = showsKubicuBadge(draft, plan);
   const multi = sitePages(state.site).length > 0;
   const bar = state.site.layout?.actionBar ?? null;
-  const targets = draft.blocks.filter((b) => !b.visibility.hidden).map((b) => ({ value: b.id, label: `${blockName(b)} — ${summarizeBlock(b).slice(0, 32) || 'untitled'}` }));
+  const targets = draft.blocks.filter((b) => !b.visibility.hidden).map((b) => ({ value: b.id, label: `${tr(blockName(b))} — ${summarizeBlock(b).slice(0, 32) || tr('untitled')}` }));
 
   return (
     <div className="flex flex-col gap-5">
@@ -58,7 +61,7 @@ export function PageSettingsPanel() {
       <DealRoomSettingsPanel />
       {multi &&
       <p className="rounded-md bg-sunken px-3 py-2.5 text-caption text-fg-muted">
-          Editing the <span className="font-semibold text-fg">{pageTitle(state.site, state.activePageId)}</span> page. Link, theme and branding are shared by every page; search & sharing below is for this page only.
+          {tr('Editing page:')} <span className="font-semibold text-fg">{pageTitle(state.site, state.activePageId)}</span>. {tr('Link, theme and branding are shared by every page; search & sharing below is for this page only.')}
         </p>
       }
       <TextInput id="page-title" label={multi ? 'Site name' : 'Page name'} value={draft.title} hint={multi ? 'Shown at the top of your site menu.' : 'Only you see this in the workspace.'} onChange={(e) => actions.updatePage({ title: e.target.value }, 'title')} />
@@ -81,17 +84,17 @@ export function PageSettingsPanel() {
       
       <div className="flex items-start justify-between gap-3 rounded-md border border-dashed border-line-strong p-3">
         <div>
-          <p className="text-label font-medium text-fg">Custom domain</p>
-          <p className="mt-0.5 text-caption text-fg-subtle">Use your own address, like adaezeatelier.com.</p>
+          <p className="text-label font-medium text-fg">{tr('Custom domain')}</p>
+          <p className="mt-0.5 text-caption text-fg-subtle">{tr('Use your own address, like adaezeatelier.com.')}</p>
         </div>
         <Link to="/app/domains" className="inline-flex shrink-0 items-center gap-1 text-caption font-semibold text-action hover:underline">
-          Domains <ArrowUpRightIcon size={12} aria-hidden />
+          {tr('Domains')} <ArrowUpRightIcon size={12} aria-hidden />
         </Link>
       </div>
 
       <section className="flex flex-col gap-4 border-t border-line pt-5" aria-labelledby="layout-heading">
         <h3 id="layout-heading" className="text-label font-medium text-fg">
-          Layout
+          {tr('Layout')}
         </h3>
         <Field id="layout-width" label="Reading width" hint="How wide text columns are on computers. Blocks set to Wide or Edge to edge ignore it.">
           <Segmented
@@ -143,9 +146,9 @@ export function PageSettingsPanel() {
       <section className="flex flex-col gap-3 border-t border-line pt-5" aria-labelledby="branding-heading">
         <div className="flex items-start justify-between gap-3">
           <h3 id="branding-heading" className="text-label font-medium text-fg">
-            Branding
+            {tr('Branding')}
           </h3>
-          {!plan.canHideBadge && <PlanLock kind="plan">{badgeRemovalPlanName} plan</PlanLock>}
+          {!plan.canHideBadge && <PlanLock kind="plan">{tr('{plan} plan', { plan: badgeRemovalPlanName })}</PlanLock>}
         </div>
         <Switch
           id="branding-badge"
@@ -153,7 +156,7 @@ export function PageSettingsPanel() {
           description={
           plan.canHideBadge ?
           'A small footer at the bottom of your page. Your plan lets you turn it off.' :
-          `Free pages always show it. Upgrade to ${badgeRemovalPlanName} or above to remove it.`
+          tr('Free pages always show it. Upgrade to {plan} or above to remove it.', { plan: badgeRemovalPlanName })
           }
           checked={badgeShown}
           disabled={!plan.canHideBadge}
@@ -169,7 +172,7 @@ export function PageSettingsPanel() {
         
         {!plan.canHideBadge && draft.branding?.hideKubicuBadge &&
         <p className="text-caption text-fg-subtle">
-            Your earlier choice to hide it is saved and will apply again if you move to a paid plan.
+            {tr('Your earlier choice to hide it is saved and will apply again if you move to a paid plan.')}
           </p>
         }
       </section>
@@ -177,9 +180,9 @@ export function PageSettingsPanel() {
       <section className="flex flex-col gap-4 border-t border-line pt-5" aria-labelledby="seo-heading">
         <div>
           <h3 id="seo-heading" className="text-label font-medium text-fg">
-            Search & sharing
+            {tr('Search & sharing')}
           </h3>
-          <p className="text-caption text-fg-subtle">How your page appears on Google and when shared on WhatsApp or X.</p>
+          <p className="text-caption text-fg-subtle">{tr('How your page appears on Google and when shared on WhatsApp or X.')}</p>
         </div>
         <SearchSharingFields idPrefix="seo" />
       </section>

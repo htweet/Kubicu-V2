@@ -1,0 +1,77 @@
+/**
+ * Canvas Content tab for round 2 blocks: Carousel, Brand header, Link collection, QR code, Document,
+ * Embed, Poll, Community, Back to top and Language switch (D303).
+ * DRAFTS — every non-English line needs a native speaker's check. Row: [English, Naijá, Yorùbá, Hausa, Igbo].
+ */
+export const round2BlockFieldsRows: [string, string, string, string, string][] = [
+['Photo shape', 'Photo shape', 'Ìrísí fọ́tò', 'Siffar hoto', 'Ọdịdị foto'],
+['Wide', 'Wide', 'Fífẹ̀', 'Mai faɗi', 'Sara mbara'],
+['Portrait', 'Standing', 'Ìdúró', 'A tsaye', 'Kwụ ọtọ'],
+['Slides', 'Slides', 'Àwọn ojú-ìwé ìfihàn', 'Shafukan nuni', 'Mpempe ngosi'],
+['Slide', 'Slide', 'Ojú-ìwé ìfihàn', 'Shafin nuni', 'Mpempe ngosi'],
+['Add slide', 'Add slide', 'Fi ojú-ìwé ìfihàn kún', 'Ƙara shafin nuni', 'Tinye mpempe ngosi'],
+['No photo', 'No photo', 'Kò sí fọ́tò', 'Babu hoto', 'Enweghị foto'],
+['Describe the photo', 'Describe the photo', 'Ṣàpèjúwe fọ́tò', 'Bayyana hoton', 'Kọwaa foto'],
+['Slides never move on their own, so everyone can read at their own pace.', 'Slides no dey move by themselves, so everybody fit read for their own pace.', 'Àwọn ojú-ìwé ìfihàn kì í yí fúnra wọn, kí gbogbo ènìyàn lè kà ní ìwọ̀n tiwọn.', 'Shafukan nuni ba sa motsi da kansu, don kowa ya karanta a lokacinsa.', 'Mpempe ngosi anaghị agagharị n’onwe ha, ka onye ọ bụla gụọ n’oge nke ya.'],
+['Transparent PNG or SVG. Shown at its own proportions.', 'Transparent PNG or SVG. E go show for im own size.', 'PNG tàbí SVG tí ó ṣe kedere. Ó ń hàn ní ìwọ̀n tirẹ̀.', 'PNG ko SVG mai haske. Ana nunawa da girmansa na asali.', 'PNG ma ọ bụ SVG doro anya. Egosiri ya n’ogo nke ya.'],
+['Business name', 'Business name', 'Orúkọ iṣẹ́', 'Sunan kasuwanci', 'Aha azụmahịa'],
+['Tagline', 'Tagline', 'Ọ̀rọ̀ àmì', 'Taken alama', 'Okwu njirimara'],
+['Button', 'Button', 'Bọ́tìnnì', 'Maɓalli', 'Bọtịnụ'],
+['e.g. Order now', 'like Order now', 'bí Pàṣẹ báyìí', 'misali Yi oda yanzu', 'dịka Tụọ ọda ugbu a'],
+['Centred', 'For centre', 'Ní àárín', 'A tsakiya', 'N’etiti'],
+['Show as', 'Show as', 'Fi hàn bí', 'Nuna a matsayin', 'Gosi dịka'],
+['List', 'List', 'Àkójọ', 'Jeri', 'Ndepụta'],
+['Groups', 'Groups', 'Àwọn ẹgbẹ́', 'Rukunoni', 'Otu'],
+['Group', 'Group', 'Ẹgbẹ́', 'Rukuni', 'Otu'],
+['Add group', 'Add group', 'Fi ẹgbẹ́ kún', 'Ƙara rukuni', 'Tinye otu'],
+['Links: {n}', 'Links: {n}', 'Ìjápọ̀: {n}', 'Hanyoyi: {n}', 'Njikọ: {n}'],
+['Group heading', 'Group heading', 'Àkọlé ẹgbẹ́', 'Kanun rukuni', 'Isiokwu otu'],
+['Hidden when there\'s only one group.', 'E go hide when na only one group.', 'Ó farapamọ́ nígbà tí ẹgbẹ́ kan ṣoṣo bá wà.', 'A ɓoye idan rukuni ɗaya ne kawai.', 'Ezoro ezo mgbe ọ bụ naanị otu otu.'],
+['No link yet', 'No link yet', 'Kò sí ìjápọ̀ síbẹ̀', 'Babu hanya tukuna', 'Enwebeghị njikọ'],
+['Opens', 'E dey open', 'Ó ń ṣí', 'Yana buɗewa', 'Ọ na-emepe'],
+['This page', 'This page', 'Ojú-ìwé yìí', 'Wannan shafi', 'Ibe a'],
+['Another link', 'Another link', 'Ìjápọ̀ mìíràn', 'Wata hanya', 'Njikọ ọzọ'],
+['Small', 'Small', 'Kékeré', 'Ƙarami', 'Obere'],
+['Medium', 'Medium', 'Àárín', 'Matsakaici', 'Etiti'],
+['Large', 'Big', 'Ńlá', 'Babba', 'Nnukwu'],
+['Scans count in Analytics', 'Scans dey count for Analytics', 'A ń ka àwọn ìwò nínú Àtúpalẹ̀', 'Ana ƙirga duba a Nazari', 'A na-agụ nyocha na Nyocha data'],
+['“This page” codes are tagged as QR visits. For printed, branded codes with their own tracking, use Domains & QR.', '“This page” codes dey marked as QR visits. For printed, branded codes wey get their own tracking, use Domains & QR.', 'A sàmì sí kóòdù “Ojú-ìwé yìí” bí ìbẹ̀wò QR. Fún kóòdù tí a tẹ̀ jáde pẹ̀lú àmì àti ìtọpa tirẹ̀, lo Àwọn àgbègbè & QR.', 'Ana yiwa lambobin “Wannan shafi” alamar ziyarar QR. Don lambobin da aka buga masu alama da bin diddigi nasu, yi amfani da Yankuna & QR.', 'A na-akara koodu “Ibe a” dịka nleta QR. Maka koodu ebipụtara nwere akara na nsochi nke ha, jiri Ngalaba & QR.'],
+['Link to the file', 'Link to the file', 'Ìjápọ̀ sí fáìlì', 'Hanya zuwa fayil', 'Njikọ gaa na faịlụ'],
+['A PDF link, Google Drive or Dropbox. Make sure anyone with the link can view it.', 'PDF link, Google Drive or Dropbox. Make sure say anybody wey get the link fit see am.', 'Ìjápọ̀ PDF, Google Drive tàbí Dropbox. Rí i dájú pé ẹnikẹ́ni tí ó ní ìjápọ̀ lè wò ó.', 'Hanyar PDF, Google Drive ko Dropbox. Tabbatar duk wanda ke da hanyar zai iya gani.', 'Njikọ PDF, Google Drive ma ọ bụ Dropbox. Hụ na onye ọ bụla nwere njikọ nwere ike ilele ya.'],
+['What\'s inside', 'Wetin dey inside', 'Ohun tí ó wà nínú', 'Abin da ke ciki', 'Ihe dị n’ime'],
+['File type', 'File type', 'Oríṣi fáìlì', 'Nau’in fayil', 'Ụdị faịlụ'],
+['Pages', 'Pages', 'Àwọn ojú-ìwé', 'Shafuka', 'Ibe'],
+['Describe the cover', 'Describe the cover', 'Ṣàpèjúwe ìbòrí', 'Bayyana murfi', 'Kọwaa mkpuchi'],
+['Paste a Spotify, SoundCloud, YouTube, Maps or Calendly link', 'Paste Spotify, SoundCloud, YouTube, Maps or Calendly link', 'Lẹ ìjápọ̀ Spotify, SoundCloud, YouTube, Maps tàbí Calendly', 'Liƙa hanyar Spotify, SoundCloud, YouTube, Maps ko Calendly', 'Mado njikọ Spotify, SoundCloud, YouTube, Maps ma ọ bụ Calendly'],
+['{site} — will play on your page', '{site} — e go play for your page', '{site} — yóò máa ṣiṣẹ́ lórí ojú-ìwé rẹ', '{site} — zai kunna a shafinka', '{site} — ga-akpọ na ibe gị'],
+['Will show as a link card', 'E go show as link card', 'Yóò hàn bí káàdì ìjápọ̀', 'Zai bayyana a matsayin katin hanya', 'Ọ ga-egosi dịka kaadị njikọ'],
+['Screen readers announce this for the embedded content.', 'Screen readers go announce this for the content wey dey inside.', 'Àwọn olùka ojú-ìbojú ń kéde èyí fún àkóónú tí a fi sínú.', 'Masu karanta allo suna sanar da wannan don abubuwan da aka saka.', 'Ndị na-agụ ihuenyo na-ekwupụta nke a maka ọdịnaya etinyere.'],
+['Custom code and scripts aren’t allowed, to keep visitors safe.', 'Custom code and scripts no dey allowed, to keep visitors safe.', 'A kò gba kóòdù àdáni àti ìwé-àfọwọ́kọ láàyè, láti dáàbò bo àwọn àlejò.', 'Ba a yarda da lambobin al’ada da rubutun aiki ba, don kare baƙi.', 'Anaghị ekwe koodu onwe na skript, iji chekwaa ndị ọbịa.'],
+['Question', 'Question', 'Ìbéèrè', 'Tambaya', 'Ajụjụ'],
+['Answers', 'Answers', 'Àwọn ìdáhùn', 'Amsoshi', 'Azịza'],
+['Answer', 'Answer', 'Ìdáhùn', 'Amsa', 'Azịza'],
+['Add answer', 'Add answer', 'Fi ìdáhùn kún', 'Ƙara amsa', 'Tinye azịza'],
+['Show results', 'Show results', 'Fi àbájáde hàn', 'Nuna sakamako', 'Gosi nsonaazụ'],
+['After voting', 'After voting', 'Lẹ́yìn ìdìbò', 'Bayan zaɓe', 'Mgbe ntuli aka gasịrị'],
+['Never', 'Never', 'Láéláé', 'Ba taɓa ba', 'Mgbe ọ bụla'],
+['Prototype limit', 'Prototype limit', 'Òpin àpẹẹrẹ', 'Iyakar samfuri', 'Oke ihe nlereanya'],
+['Votes are counted on each visitor’s own device, and the results say so. A shared count needs the live server.', 'Votes dey count for each visitor own device, and the results go talk am. Shared count need live server.', 'A ń ka ìbò lórí ẹ̀rọ àlejò kọ̀ọ̀kan, àbájáde sì sọ bẹ́ẹ̀. Kíkà àpapọ̀ nílò sẹ́fà gidi.', 'Ana ƙirga ƙuri’u a na’urar kowane baƙo, kuma sakamakon ya faɗi haka. Ƙidaya ta haɗin gwiwa tana buƙatar sabar kai tsaye.', 'A na-agụ votu na ngwaọrụ onye ọbịa ọ bụla, nsonaazụ na-ekwukwa ya. Ngụkọ ọnụ chọrọ sava dị ndụ.'],
+['WhatsApp group', 'WhatsApp group', 'Ẹgbẹ́ WhatsApp', 'Rukunin WhatsApp', 'Otu WhatsApp'],
+['Facebook group', 'Facebook group', 'Ẹgbẹ́ Facebook', 'Rukunin Facebook', 'Otu Facebook'],
+['Somewhere else', 'Another place', 'Ibòmíràn', 'Wani wuri', 'Ebe ọzọ'],
+['Invite link', 'Invite link', 'Ìjápọ̀ ìpè', 'Hanyar gayyata', 'Njikọ òkù'],
+['Community name', 'Community name', 'Orúkọ àwùjọ', 'Sunan al’umma', 'Aha obodo'],
+['Who it’s for and what happens there', 'Who e dey for and wetin dey happen there', 'Ta ni ó wà fún àti ohun tí ó ń ṣẹlẹ̀ níbẹ̀', 'Ga wa yake da abin da ke faruwa a can', 'Onye ọ bụ maka ya na ihe na-eme ebe ahụ'],
+['House rules', 'House rules', 'Òfin ilé', 'Dokokin gida', 'Iwu ụlọ'],
+['Shown behind a “House rules” toggle.', 'E go show behind “House rules” switch.', 'Ó ń hàn lẹ́yìn bọ́tìnnì “Òfin ilé”.', 'Ana nunawa a bayan maɓallin “Dokokin gida”.', 'Egosiri ya n’azụ mgba ọkụ “Iwu ụlọ”.'],
+['Best as the last block on a long page.', 'E best as the last block for long page.', 'Ó dára jù bí búlọ́ọ̀kù tí ó kẹ́yìn lórí ojú-ìwé gígùn.', 'Ya fi kyau a matsayin tubalin ƙarshe a dogon shafi.', 'Ọ kacha mma dịka blọk ikpeazụ na ibe ogologo.'],
+['What changes', 'Wetin dey change', 'Ohun tí ó ń yípadà', 'Abin da ke canzawa', 'Ihe na-agbanwe'],
+['Visitors see buttons, labels, checkout and messages in their language. Your own words stay as you wrote them. Translations are drafts until a native speaker reviews them.', 'Visitors go see buttons, labels, checkout and messages for their language. Your own words go stay as you write dem. Translations na drafts until native speaker check dem.', 'Àwọn àlejò ń rí bọ́tìnnì, àkọlé, ìsanwó àti ìfiránṣẹ́ ní èdè wọn. Ọ̀rọ̀ tìrẹ yóò wà bí o ṣe kọ ọ́. Ìtúmọ̀ jẹ́ àkọ̀tun títí olùsọ èdè abínibí yóò fi ṣàyẹ̀wò wọn.', 'Baƙi suna ganin maɓallai, lakabi, biya da saƙonni a harshensu. Kalmominka suna nan yadda ka rubuta. Fassarori daftari ne har sai mai harshen asali ya duba su.', 'Ndị ọbịa na-ahụ bọtịnụ, aha, ịkwụ ụgwọ na ozi n’asụsụ ha. Okwu gị na-anọ dịka i dere ya. Ntụgharị bụ ndepụta ruo mgbe onye asụsụ obodo nyochara ha.']];
+
+
+const column = (i: 1 | 2 | 3 | 4) => Object.fromEntries(round2BlockFieldsRows.map((r) => [r[0], r[i]])) as Record<string, string>;
+
+export const round2BlockFieldsPcm = column(1);
+export const round2BlockFieldsYo = column(2);
+export const round2BlockFieldsHa = column(3);
+export const round2BlockFieldsIg = column(4);

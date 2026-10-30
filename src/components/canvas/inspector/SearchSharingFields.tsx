@@ -1,5 +1,6 @@
 import React from 'react';
 import { useEditor } from '../../../contexts/EditorContext';
+import { useT } from '../../../contexts/LocaleContext';
 import { TextInput } from '../../ui/TextInput';
 import { TextArea } from '../../ui/TextArea';
 import { MediaPicker } from '../../media/MediaPicker';
@@ -20,8 +21,10 @@ export function seoSummary(seo: {title: string;description: string;image?: strin
 /**
  * Search & sharing fields (D219): shared by Page settings and the Publish dialog so both edit the same values.
  * Title and description fall back to the page name; the share image falls back to the profile photo.
+ * Translated in D306; the preview shows the owner's words as written.
  */
 export function SearchSharingFields({ idPrefix, compact = false }: {idPrefix: string;compact?: boolean;}) {
+  const { t: tr } = useT();
   const { state, actions } = useEditor();
   const { draft } = state;
   const current = findPage(state.site, state.activePageId);
@@ -32,59 +35,58 @@ export function SearchSharingFields({ idPrefix, compact = false }: {idPrefix: st
   const fallbackTitle = current ? `${current.title} · ${draft.title}` : draft.title;
   const titleLen = draft.seo.title.length;
   const descLen = draft.seo.description.length;
+  const shareHint = tr('Shown when your link is shared on WhatsApp, X or Facebook.');
 
   return (
     <div className="flex flex-col gap-4">
       <TextInput
         id={`${idPrefix}-title`}
-        label="Title"
+        label={tr('Title')}
         placeholder={fallbackTitle}
         value={draft.seo.title}
-        hint={titleLen > SEO_TITLE_MAX ? `${titleLen}/${SEO_TITLE_MAX} — Google may cut it short` : `${titleLen}/${SEO_TITLE_MAX} · Leave blank to use “${fallbackTitle}”`}
+        hint={titleLen > SEO_TITLE_MAX ? `${titleLen}/${SEO_TITLE_MAX} — ${tr('Google may cut it short')}` : `${titleLen}/${SEO_TITLE_MAX} · ${tr('Leave blank to use “{title}”', { title: fallbackTitle })}`}
         onChange={(e) => actions.updatePage({ seo: { title: e.target.value } }, 'seoTitle')} />
       
       <TextArea
         id={`${idPrefix}-desc`}
-        label="Description"
+        label={tr('Description')}
         rows={compact ? 2 : 3}
-        placeholder="One or two sentences on what you offer and where."
+        placeholder={tr('One or two sentences on what you offer and where.')}
         value={draft.seo.description}
-        hint={descLen > SEO_DESC_MAX ? `${descLen}/${SEO_DESC_MAX} — longer text is cut off in search and chats` : `${descLen}/${SEO_DESC_MAX} characters`}
+        hint={descLen > SEO_DESC_MAX ? `${descLen}/${SEO_DESC_MAX} — ${tr('longer text is cut off in search and chats')}` : `${descLen}/${SEO_DESC_MAX} ${tr('characters')}`}
         onChange={(e) => actions.updatePage({ seo: { description: e.target.value } }, 'seoDesc')} />
       
       <MediaPicker
         id={`${idPrefix}-image`}
-        label="Share image"
+        label={tr('Share image')}
         optional
         aspect="16:9"
         value={draft.seo.image ?? ''}
-        hint={draft.seo.image ? 'Shown when your link is shared on WhatsApp, X or Facebook.' : avatar ? 'Using your profile photo for now. A wide photo looks better in chats.' : 'Shown when your link is shared on WhatsApp, X or Facebook.'}
+        hint={draft.seo.image ? shareHint : avatar ? tr('Using your profile photo for now. A wide photo looks better in chats.') : shareHint}
         onChange={(src, meta) => actions.updatePage({ seo: { image: src || undefined, imageAlt: src ? meta?.alt || draft.seo.imageAlt || '' : undefined } }, 'seoImage')} />
       
       {draft.seo.image &&
       <TextInput
         id={`${idPrefix}-image-alt`}
-        label="Image description"
+        label={tr('Image description')}
         optional
-        placeholder="e.g. Rails of Ankara two-pieces in the studio"
+        placeholder={tr('e.g. Rails of Ankara two-pieces in the studio')}
         value={draft.seo.imageAlt ?? ''}
         onChange={(e) => actions.updatePage({ seo: { imageAlt: e.target.value } }, 'seoImageAlt')} />
 
       }
 
       <figure className="m-0">
-        <figcaption className="mb-1.5 text-caption font-medium text-fg-muted">Preview when shared</figcaption>
+        <figcaption className="mb-1.5 text-caption font-medium text-fg-muted">{tr('Preview when shared')}</figcaption>
         <div className="overflow-hidden rounded-md border border-line bg-canvas">
-          {draft.seo.image ?
-          <MediaImage src={draft.seo.image} alt="" className="aspect-[1.91/1] w-full object-cover" /> :
-          null}
+          {draft.seo.image ? <MediaImage src={draft.seo.image} alt="" className="aspect-[1.91/1] w-full object-cover" /> : null}
           <div className={cn('flex gap-3 p-3', draft.seo.image && 'pt-2.5')}>
             {!draft.seo.image && (
             image ? <MediaImage src={image} alt="" className="h-14 w-14 shrink-0 rounded-sm object-cover" /> : <div className="h-14 w-14 shrink-0 rounded-sm bg-sunken" aria-hidden />)}
             <div className="min-w-0">
               <p className="truncate text-caption text-fg-subtle">{shareUrl}</p>
               <p className="truncate text-label font-semibold text-fg">{draft.seo.title || fallbackTitle}</p>
-              <p className="line-clamp-2 text-caption text-fg-muted">{draft.seo.description || 'Add a description to improve how your link looks when shared.'}</p>
+              <p className="line-clamp-2 text-caption text-fg-muted">{draft.seo.description || tr('Add a description to improve how your link looks when shared.')}</p>
             </div>
           </div>
         </div>

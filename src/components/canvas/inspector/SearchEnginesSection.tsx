@@ -3,6 +3,7 @@ import { ChevronDownIcon, SearchIcon } from 'lucide-react';
 import { useEditor } from '../../../contexts/EditorContext';
 import { useOptionalCommerce } from '../../../contexts/CommerceContext';
 import { useOptionalOps } from '../../../contexts/OpsContext';
+import { useT } from '../../../contexts/LocaleContext';
 import { richResultHints, sitemapEntries, structuredData } from '../../../utils/seo';
 import { publicUrl } from '../../../utils/format';
 import { IndexingFields } from './IndexingFields';
@@ -10,9 +11,10 @@ import { cn } from '../../../utils/cn';
 
 /**
  * Search engines (D124): show in search on/off, the sitemap search engines would get, and the
- * structured data that can earn richer results. Computed from the space as it is now.
+ * structured data that can earn richer results. Computed from the space as it is now. Translated in D306.
  */
 export function SearchEnginesSection() {
+  const { t: tr } = useT();
   const { state } = useEditor();
   const commerce = useOptionalCommerce()?.data ?? null;
   const services = useOptionalOps()?.data.services ?? [];
@@ -22,34 +24,36 @@ export function SearchEnginesSection() {
   const [showData, setShowData] = useState(false);
   const entries = useMemo(() => sitemapEntries(site, commerce, services), [site, commerce, services]);
   const data = useMemo(() => structuredData(site, commerce, services), [site, commerce, services]);
-  const hints = richResultHints(data);
+  const hints = richResultHints(data).map((h) => tr(h.text, h.vars));
   const title = site.seo.title || site.title;
   const counts = entries.reduce<Record<string, number>>((acc, e) => ({ ...acc, [e.kind]: (acc[e.kind] ?? 0) + 1 }), {});
+  // “Addresses: 6 · Page 3, Product 2, Event 1” — label then number, so no plural rules are needed.
+  const mapSummary = `${tr('Addresses: {n}', { n: entries.length })} · ${Object.entries(counts).map(([k, n]) => `${tr(k)} ${n}`).join(', ')}`;
 
   return (
     <section className="flex flex-col gap-4 border-t border-line pt-5" aria-labelledby="search-engines-heading">
       <div>
-        <h3 id="search-engines-heading" className="text-label font-medium text-fg">Search engines</h3>
-        <p className="text-caption text-fg-subtle">Whether Google lists your pages and follows your links. Also in the Publish window.</p>
+        <h3 id="search-engines-heading" className="text-label font-medium text-fg">{tr('Search engines')}</h3>
+        <p className="text-caption text-fg-subtle">{tr('Whether Google lists your pages and follows your links. Also in the Publish window.')}</p>
       </div>
       <IndexingFields idPrefix="search" />
 
       {!hidden &&
       <>
-          <div className="rounded-md border border-line bg-canvas p-3" aria-label="How it may look on Google">
-            <p className="flex items-center gap-1.5 text-meta text-fg-subtle"><SearchIcon size={11} aria-hidden /> Google result (example)</p>
+          <div className="rounded-md border border-line bg-canvas p-3" aria-label={tr('How it may look on Google')}>
+            <p className="flex items-center gap-1.5 text-meta text-fg-subtle"><SearchIcon size={11} aria-hidden /> {tr('Google result (example)')}</p>
             <p className="mt-1.5 truncate text-caption text-fg-muted">{publicUrl(site.handle)}</p>
             <p className="truncate text-label font-semibold text-action">{title}</p>
-            <p className="line-clamp-2 text-caption text-fg-muted">{site.seo.description || 'Add a description under Search & sharing — otherwise Google picks text from your page.'}</p>
-            {hints.length > 1 && <p className="mt-1.5 text-caption text-fg-subtle">May also show: {hints.slice(1).join(' · ')}</p>}
+            <p className="line-clamp-2 text-caption text-fg-muted">{site.seo.description || tr('Add a description under Search & sharing — otherwise Google picks text from your page.')}</p>
+            {hints.length > 1 && <p className="mt-1.5 text-caption text-fg-subtle">{tr('May also show:')} {hints.slice(1).join(' · ')}</p>}
           </div>
 
           <div className="flex flex-col divide-y divide-line rounded-md border border-line">
-            <Disclosure open={showMap} onToggle={() => setShowMap((v) => !v)} label="Sitemap" summary={`${entries.length} address${entries.length === 1 ? '' : 'es'} · ${Object.entries(counts).map(([k, n]) => `${n} ${k.toLowerCase()}${n === 1 ? '' : 's'}`).join(', ')}`}>
+            <Disclosure open={showMap} onToggle={() => setShowMap((v) => !v)} label={tr('Sitemap')} summary={mapSummary}>
               <ul className="flex max-h-64 flex-col gap-1.5 overflow-y-auto scroll-quiet">
                 {entries.map((e, i) =>
               <li key={`${e.url}-${i}`} className="grid grid-cols-[4.5rem_minmax(0,1fr)] gap-2 text-caption">
-                    <span className="text-fg-subtle">{e.kind}</span>
+                    <span className="text-fg-subtle">{tr(e.kind)}</span>
                     <span className="min-w-0">
                       <span className="block truncate text-fg">{e.label}</span>
                       <span className="block truncate text-fg-subtle">{e.url.replace('https://', '')}</span>
@@ -57,11 +61,11 @@ export function SearchEnginesSection() {
                   </li>
               )}
               </ul>
-              <p className="mt-2 text-caption text-fg-subtle">Drafts, hidden and members-only pages, sold-out-forever products and past events are left out. Updated automatically when you publish.</p>
+              <p className="mt-2 text-caption text-fg-subtle">{tr('Drafts, hidden and members-only pages, sold-out-forever products and past events are left out. Updated automatically when you publish.')}</p>
             </Disclosure>
-            <Disclosure open={showData} onToggle={() => setShowData((v) => !v)} label="Structured data" summary={hints.join(' · ')}>
+            <Disclosure open={showData} onToggle={() => setShowData((v) => !v)} label={tr('Structured data')} summary={hints.join(' · ')}>
               <pre className="max-h-64 overflow-auto rounded-sm bg-sunken p-2 text-[11px] leading-snug text-fg-muted scroll-quiet">{JSON.stringify({ '@context': 'https://schema.org', '@graph': data }, null, 2)}</pre>
-              <p className="mt-2 text-caption text-fg-subtle">Search engines read this to show prices, stock and event dates. It’s built from your real products and events — nothing is invented.</p>
+              <p className="mt-2 text-caption text-fg-subtle">{tr('Search engines read this to show prices, stock and event dates. It’s built from your real products and events — nothing is invented.')}</p>
             </Disclosure>
           </div>
         </>

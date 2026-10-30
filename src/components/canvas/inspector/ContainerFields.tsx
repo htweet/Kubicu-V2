@@ -6,6 +6,7 @@ import { MAX_CHILDREN, childrenOf, isContainer, isContainerType, slotName, topLe
 import { blockDefinitions, blockOrder } from '../../../data/blockRegistry';
 import { blockName, layerName, summarizeBlock } from '../../../utils/blocks';
 import { useEditor } from '../../../contexts/EditorContext';
+import { useT } from '../../../contexts/LocaleContext';
 import { containerRules, fitsIn } from '../../../data/blockCompatibility';
 import { usePlan } from '../../../contexts/PlanContext';
 import { planAtLeast } from '../../../data/plans';
@@ -20,6 +21,7 @@ import { IconButton } from '../../ui/IconButton';
 
 /** Content settings for Section, Columns and Tabs (D167): their own options, then the blocks inside. */
 export function ContainerFields({ block }: {block: ContainerBlock;}) {
+  const { t: tr } = useT();
   const { state, actions } = useEditor();
   const plan = usePlan();
   const blocks = state.draft.blocks;
@@ -31,9 +33,10 @@ export function ContainerFields({ block }: {block: ContainerBlock;}) {
   const room = kids.length < MAX_CHILDREN;
   const canTake = (b?: Block): b is Block => !!b && room && !isContainer(b) && !b.locked && fitsIn(b.type, block.type).ok;
   // Compatibility (D174): say why a neighbour can't come in, rather than hiding the option silently.
-  const refusal = (b?: Block) => b && room && !isContainer(b) && !fitsIn(b.type, block.type).ok ? `“${blockName(b)}” can’t go in: ${fitsIn(b.type, block.type).reason}` : null;
+  const refusal = (b?: Block) => b && room && !isContainer(b) && !fitsIn(b.type, block.type).ok ? `${tr('“{block}” can’t go in:', { block: tr(blockName(b)) })} ${tr(fitsIn(b.type, block.type).reason ?? '')}` : null;
   const id = (f: string) => `${block.id}-${f}`;
-  const name = blockDefinitions[block.type].name;
+  // Container name in the screen language, used as a heading word only (“Section”, “Columns”, “Tabs”).
+  const name = tr(blockDefinitions[block.type].name);
   const unlocked = planAtLeast(plan.id, 'creator');
   const addable = blockOrder.filter((t) => !isContainerType(t) && !blockDefinitions[t].requiresApp && fitsIn(t, block.type).ok);
 
@@ -42,7 +45,7 @@ export function ContainerFields({ block }: {block: ContainerBlock;}) {
       const c = block.content;
       return (
         <>
-          <TextInput id={id('heading')} label="Section heading" optional value={c.heading} placeholder="e.g. What I offer" onChange={(e) => actions.updateContent(block.id, 'section', { heading: e.target.value }, 'heading')} />
+          <TextInput id={id('heading')} label="Section heading" optional value={c.heading} placeholder={tr('e.g. What I offer')} onChange={(e) => actions.updateContent(block.id, 'section', { heading: e.target.value }, 'heading')} />
           <TextArea id={id('intro')} label="Short intro" optional rows={2} value={c.intro} onChange={(e) => actions.updateContent(block.id, 'section', { intro: e.target.value }, 'intro')} />
           <Field id={id('align')} label="Heading alignment">
             <Segmented
@@ -150,8 +153,8 @@ export function ContainerFields({ block }: {block: ContainerBlock;}) {
   return (
     <div className="flex flex-col gap-5">
       {!unlocked && block.type !== 'section' &&
-      <InlineAlert tone="info" title={`${name} work fully on Creator and above`}>
-          {block.type === 'columns' ? 'On your plan the blocks inside stack one under another.' : 'On your plan every tab shows one under another, each with its label as a heading.'}
+      <InlineAlert tone="info" title={tr('{name} work fully on Creator and above', { name })}>
+          {tr(block.type === 'columns' ? 'On your plan the blocks inside stack one under another.' : 'On your plan every tab shows one under another, each with its label as a heading.')}
         </InlineAlert>
       }
       {own}
@@ -159,15 +162,15 @@ export function ContainerFields({ block }: {block: ContainerBlock;}) {
       <section aria-labelledby={id('inside')} className="flex flex-col gap-2">
         <div className="flex items-baseline justify-between gap-2">
           <h3 id={id('inside')} className="text-label font-semibold text-fg">
-            Inside this {name.toLowerCase()}
+            {tr('Inside: {name}', { name })}
           </h3>
           <span className="text-caption text-fg-subtle">
-            {kids.length} of {MAX_CHILDREN}
+            {tr('{n} of {max}', { n: kids.length, max: MAX_CHILDREN })}
           </span>
         </div>
         {kids.length === 0 ?
         <p className="rounded-md bg-sunken px-3 py-2.5 text-caption text-fg-muted">
-            Nothing inside yet. Add a block below, or move the block above or below into it.
+            {tr('Nothing inside yet. Add a block below, or move the block above or below into it.')}
           </p> :
 
         <ol className="flex flex-col divide-y divide-line rounded-md border border-line">
@@ -181,18 +184,18 @@ export function ContainerFields({ block }: {block: ContainerBlock;}) {
                       <span className="block truncate text-label font-medium text-fg">
                         {slotName(block, i, k)} · {layerName(k)}
                       </span>
-                      <span className="block truncate text-caption text-fg-subtle">{summarizeBlock(k) || 'Select to edit'}</span>
+                      <span className="block truncate text-caption text-fg-subtle">{summarizeBlock(k) || tr('Select to edit')}</span>
                     </button>
-                    <IconButton icon={ArrowUpIcon} label={`Move ${blockName(k)} earlier`} size="sm" disabled={i === 0 || !!k.locked} onClick={() => actions.moveBlock(k.id, -1)} />
-                    <IconButton icon={ArrowDownIcon} label={`Move ${blockName(k)} later`} size="sm" disabled={i === kids.length - 1 || !!k.locked} onClick={() => actions.moveBlock(k.id, 1)} />
-                    <IconButton icon={LogOutIcon} label={`Move ${blockName(k)} out of the ${name.toLowerCase()}`} size="sm" disabled={!!k.locked} onClick={() => actions.moveOutOfContainer(k.id)} />
+                    <IconButton icon={ArrowUpIcon} label={tr('Move {block} earlier', { block: tr(blockName(k)) })} size="sm" disabled={i === 0 || !!k.locked} onClick={() => actions.moveBlock(k.id, -1)} />
+                    <IconButton icon={ArrowDownIcon} label={tr('Move {block} later', { block: tr(blockName(k)) })} size="sm" disabled={i === kids.length - 1 || !!k.locked} onClick={() => actions.moveBlock(k.id, 1)} />
+                    <IconButton icon={LogOutIcon} label={tr('Move {block} out', { block: tr(blockName(k)) })} size="sm" disabled={!!k.locked} onClick={() => actions.moveOutOfContainer(k.id)} />
                   </div>
                   {block.type === 'tabs' &&
                 <TextInput
                   id={id(`label-${k.id}`)}
-                  label="Tab label"
+                  label={tr('Tab label')}
                   value={k.slotLabel ?? ''}
-                  placeholder={`Tab ${i + 1}`}
+                  placeholder={tr('Tab {n}', { n: i + 1 })}
                   onChange={(e) => actions.updateBlockLabel(k.id, e.target.value)} />
 
                 }
@@ -210,22 +213,22 @@ export function ContainerFields({ block }: {block: ContainerBlock;}) {
           options={[{ value: '', label: 'Choose a block…' }, ...addable.map((t) => ({ value: t, label: blockDefinitions[t].name }))]} /> :
 
 
-        <p className="text-caption text-fg-subtle">Full — a {name.toLowerCase()} holds up to {MAX_CHILDREN} blocks. Add another {name.toLowerCase()} for more.</p>
+        <p className="text-caption text-fg-subtle">{tr('Full — this holds up to {max} blocks. Add another one for more.', { max: MAX_CHILDREN })}</p>
         }
         {[refusal(above), refusal(below)].filter(Boolean).map((r) =>
         <p key={r} className="text-caption text-fg-subtle">{r}</p>
         )}
-        <p className="text-caption text-fg-subtle">{containerRules[block.type]}</p>
+        <p className="text-caption text-fg-subtle">{tr(containerRules[block.type])}</p>
         {(canTake(above) || canTake(below)) &&
         <div className="flex flex-wrap gap-2">
             {canTake(above) &&
           <Button variant="secondary" size="sm" leadingIcon={CornerDownLeftIcon} onClick={() => actions.moveIntoContainer(above.id, block.id)}>
-                Move “{blockName(above)}” above into it
+                {tr('Move “{block}” above into it', { block: tr(blockName(above)) })}
               </Button>
           }
             {canTake(below) &&
           <Button variant="secondary" size="sm" leadingIcon={CornerDownLeftIcon} onClick={() => actions.moveIntoContainer(below.id, block.id)}>
-                Move “{blockName(below)}” below into it
+                {tr('Move “{block}” below into it', { block: tr(blockName(below)) })}
               </Button>
           }
           </div>
@@ -235,7 +238,7 @@ export function ContainerFields({ block }: {block: ContainerBlock;}) {
       {kids.length > 0 &&
       <div className="border-t border-line pt-4">
           <Button variant="tertiary" size="sm" leadingIcon={UnplugIcon} disabled={!!block.locked} onClick={() => actions.unwrapContainer(block.id)}>
-            Remove {name.toLowerCase()}, keep its blocks
+            {tr('Remove the container, keep its blocks')}
           </Button>
         </div>
       }
@@ -245,9 +248,10 @@ export function ContainerFields({ block }: {block: ContainerBlock;}) {
 
 /** Marks a setting that only affects phones, so per-device changes are never a surprise. */
 function PhoneTag() {
+  const { t: tr } = useT();
   return (
     <span className="inline-flex items-center gap-1 rounded-full bg-sunken px-2 py-0.5 text-meta font-medium text-fg-muted">
-      <SmartphoneIcon size={11} aria-hidden /> Phones
+      <SmartphoneIcon size={11} aria-hidden /> {tr('Phones')}
     </span>);
 
 }

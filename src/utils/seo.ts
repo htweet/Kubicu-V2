@@ -100,16 +100,19 @@ export function structuredData(doc: PageDocument, commerce: CommerceData | null,
   return items;
 }
 
-/** Plain-language list of what Google may show from the structured data. */
-export function richResultHints(items: StructuredItem[]): string[] {
+/**
+ * Plain-language list of what Google may show from the structured data. Each hint is an English phrase with
+ * `{n}` placeholders plus its numbers, so the editor can translate it (D306) — written “label: number” to avoid plurals.
+ */
+export function richResultHints(items: StructuredItem[]): {text: string;vars?: Record<string, number>;}[] {
   const count = (t: string) => items.filter((i) => i['@type'] === t).length;
-  const hints: string[] = ['Your business name and link'];
+  const hints: {text: string;vars?: Record<string, number>;}[] = [{ text: 'Your business name and link' }];
   const products = count('Product');
   const priced = items.filter((i) => i['@type'] === 'Product' && i.offers).length;
-  if (products) hints.push(`${products} product${products === 1 ? '' : 's'}${priced ? `, ${priced} with price and stock` : ''}`);
+  if (products) hints.push(priced ? { text: 'Products: {n} ({priced} with price and stock)', vars: { n: products, priced } } : { text: 'Products: {n}', vars: { n: products } });
   const events = count('Event');
-  if (events) hints.push(`${events} upcoming event${events === 1 ? '' : 's'} with date and place`);
+  if (events) hints.push({ text: 'Upcoming events with date and place: {n}', vars: { n: events } });
   const svc = count('Service');
-  if (svc) hints.push(`${svc} service${svc === 1 ? '' : 's'}`);
+  if (svc) hints.push({ text: 'Services: {n}', vars: { n: svc } });
   return hints;
 }
