@@ -12,11 +12,14 @@ import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Segmented } from '../../components/ui/Segmented';
 import { blockName } from '../../utils/blocks';
+import { useT } from '../../contexts/LocaleContext';
 import { formatNaira as formatNgn } from '../../utils/format';
 import { cn } from '../../utils/cn';
 import { NotFound } from '../NotFound';
 
+/** A template's public page. Translated in D327; the sample business's name, description, structure and section list stay as written. */
 export function TemplateDetail() {
+  const { t: tr } = useT();
   const { id = '' } = useParams();
   const navigate = useNavigate();
   const example = findExampleById(id);
@@ -28,7 +31,7 @@ export function TemplateDetail() {
   const price = templatePrice(example.id);
   // Signature themes first (D164), then two classics — preview only, the template's layout never changes.
   const tryThemes = [
-  { id: 'original', name: 'As designed', theme: doc.theme },
+  { id: 'original', name: tr('As designed'), theme: doc.theme },
   ...['aurora-glass', 'pearl-atelier', 'emerald-luxe', 'sunset-haze'].map((sid) => {
     const s = signatureThemes.find((t) => t.id === sid)!;
     return { id: s.id, name: s.name, theme: signatureTheme(s) };
@@ -37,20 +40,20 @@ export function TemplateDetail() {
 
   const theme = tryThemes.find((t) => t.id === themeId)?.theme ?? doc.theme;
   const visible = doc.blocks.filter((b) => !b.visibility.hidden);
-  const blockNames = Array.from(new Set(visible.map(blockName)));
+  const blockNames = Array.from(new Set(visible.map((b) => tr(blockName(b)))));
   const wide = view === 'desktop';
 
   return (
     <div className="mx-auto w-full max-w-7xl px-5 pb-20 pt-8 md:px-8">
       <Link to="/templates" className="inline-flex items-center gap-1.5 text-label font-medium text-fg-muted hover:text-fg">
-        <ArrowLeftIcon size={15} aria-hidden /> All templates
+        <ArrowLeftIcon size={15} aria-hidden /> {tr('All templates')}
       </Link>
 
       <div className={cn('mt-8 grid gap-12 lg:gap-14', wide ? 'lg:grid-cols-1' : 'lg:grid-cols-[minmax(0,1fr)_400px]')}>
         <div className="order-2 flex min-w-0 flex-col items-center gap-4 lg:order-1">
           <div className="flex w-full flex-wrap items-center justify-between gap-3">
             <Segmented
-              ariaLabel="Preview size"
+              ariaLabel={tr('Preview size')}
               value={view}
               onChange={setView}
               options={[
@@ -58,8 +61,8 @@ export function TemplateDetail() {
               { value: 'desktop', label: 'Desktop', icon: MonitorIcon }]
               } />
             
-            <div role="group" aria-label="Try with theme" className="flex flex-wrap items-center gap-1.5">
-              <span className="mr-1 text-caption text-fg-subtle">Try with theme</span>
+            <div role="group" aria-label={tr('Try with theme')} className="flex flex-wrap items-center gap-1.5">
+              <span className="mr-1 text-caption text-fg-subtle">{tr('Try with theme')}</span>
               {tryThemes.map((t) =>
               <button
                 key={t.id}
@@ -85,29 +88,33 @@ export function TemplateDetail() {
 
         <aside className={cn('order-1 lg:order-2', !wide && 'lg:pt-14')}>
           <p className="text-label font-medium text-fg-subtle">
-            {elite ? `Elite ${String(elite.number).padStart(2, '0')} · ${eliteUseCaseLabels[elite.useCase]}` : `${example.category} · ${example.city}`}
+            {elite ? `Elite ${String(elite.number).padStart(2, '0')} · ${tr(eliteUseCaseLabels[elite.useCase])}` : `${tr(example.category)} · ${tr(example.city)}`}
           </p>
           <h1 className="kb-display mt-2 text-[44px] leading-[0.98] text-fg">{example.name}</h1>
           <p className="mt-4 text-body text-fg-muted">{example.description}</p>
           <div className="mt-5 flex flex-wrap gap-1.5">
-            {elite ? <Badge>{eliteGoalLabels[elite.goal]}</Badge> : example.goals.map((g) => <Badge key={g}>{goalLabels[g]}</Badge>)}
-            {price > 0 && <Badge tone="accent">{formatNgn(price)} · one-off</Badge>}
+            {elite ? <Badge>{tr(eliteGoalLabels[elite.goal])}</Badge> : example.goals.map((g) => <Badge key={g}>{tr(goalLabels[g])}</Badge>)}
+            {price > 0 && <Badge tone="accent">{tr('{price} · one-off', { price: formatNgn(price) })}</Badge>}
           </div>
-          {elite && <p className="mt-4 text-label text-fg-muted"><span className="font-semibold text-fg">Structure:</span> {elite.structure}</p>}
+          {elite &&
+          <p className="mt-4 text-label text-fg-muted">
+              <span className="font-semibold text-fg">{tr('Structure:')}</span> {elite.structure}
+            </p>
+          }
 
           <div className="mt-8 flex flex-col gap-2 sm:flex-row lg:flex-col">
             <Button size="lg" variant="brand" fullWidth onClick={() => navigate(`/start?kit=${example.id}`)}>
-              {price > 0 ? `Get this template · ${formatNgn(price)}` : 'Use this template'}
+              {price > 0 ? tr('Get this template · {price}', { price: formatNgn(price) }) : tr('Use this template')}
             </Button>
             <Button size="lg" variant="secondary" fullWidth trailingIcon={ExternalLinkIcon} onClick={() => navigate(`/p/${doc.handle}`)}>
-              Open full page
+              {tr('Open full page')}
             </Button>
           </div>
-          {price > 0 && <p className="mt-2 text-caption text-fg-subtle">Preview is free. You pay once per workspace when you use it (test mode, example price).</p>}
+          {price > 0 && <p className="mt-2 text-caption text-fg-subtle">{tr('Preview is free. You pay once per workspace when you use it (test mode, example price).')}</p>}
 
           {elite &&
           <div className="mt-8">
-              <h2 className="text-label font-semibold text-fg">What’s inside</h2>
+              <h2 className="text-label font-semibold text-fg">{tr('What’s inside')}</h2>
               <ol className="mt-3 flex flex-col gap-1.5">
                 {elite.inside.map((s, i) =>
               <li key={s} className="flex gap-3 text-label text-fg-muted">
@@ -122,7 +129,7 @@ export function TemplateDetail() {
           {elite && elite.goodToKnow.length > 0 &&
           <div className="mt-8 rounded-md bg-sunken p-4">
               <h2 className="flex items-center gap-1.5 text-label font-semibold text-fg">
-                <InfoIcon size={15} aria-hidden /> Good to know
+                <InfoIcon size={15} aria-hidden /> {tr('Good to know')}
               </h2>
               <ul className="mt-2 flex flex-col gap-1.5">
                 {elite.goodToKnow.map((g) =>
@@ -135,13 +142,14 @@ export function TemplateDetail() {
           <div className="mt-8 flex gap-3 border-t border-line pt-6">
             <ShieldCheckIcon size={18} className="mt-0.5 shrink-0 text-success" aria-hidden />
             <p className="text-label text-fg-muted">
-              <span className="font-semibold text-fg">{example.name} is fictional.</span> Using this template keeps the layout, theme and photos. Prices, links, contact details, figures and customer quotes are removed, and blocks that need them stay hidden until you add your own.
+              <span className="font-semibold text-fg">{tr('{name} is fictional.', { name: example.name })}</span>{' '}
+              {tr('Using this template keeps the layout, theme and photos. Prices, links, contact details, figures and customer quotes are removed, and blocks that need them stay hidden until you add your own.')}
             </p>
           </div>
 
           {!elite &&
           <div className="mt-8">
-              <h2 className="text-label font-semibold text-fg">Blocks in this template</h2>
+              <h2 className="text-label font-semibold text-fg">{tr('Blocks in this template')}</h2>
               <p className="mt-2 text-label leading-relaxed text-fg-muted">{blockNames.join(' · ')}</p>
             </div>
           }

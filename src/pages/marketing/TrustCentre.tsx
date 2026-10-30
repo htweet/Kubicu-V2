@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRightIcon, FlagIcon, GavelIcon, LifeBuoyIcon, LockIcon, ShieldCheckIcon, ShoppingBagIcon } from 'lucide-react';
 import { InfoHero } from '../../components/legal/InfoHero';
 import { SectionHeading } from '../../components/marketing/SectionHeading';
+import { useT } from '../../contexts/LocaleContext';
 
 const pillars = [
 { icon: ShoppingBagIcon, title: 'Safety tips for buyers', text: 'How to shop safely and what to look for in a seller.', to: '/about/safety' },
@@ -18,14 +19,16 @@ const promises = [
 { title: 'Reporters stay anonymous', text: 'Sellers are never told who reported their page.' }];
 
 
+/** /about/trust. Translated in D331. */
 export function TrustCentre() {
+  const { t: tr } = useT();
   return (
     <>
       <InfoHero crumb="Trust & safety" title="Trust centre" intro="KUBICU is built so buyers can trust the pages they visit and sellers can trust the tools they run their business on. Here’s how." />
 
       <section aria-labelledby="pillars-h" className="mx-auto w-full max-w-6xl px-5 py-16 md:px-8">
         <h2 id="pillars-h" className="sr-only">
-          Trust and safety topics
+          {tr('Trust and safety topics')}
         </h2>
         <ul className="grid gap-4 sm:grid-cols-2">
           {pillars.map((p) =>
@@ -37,8 +40,8 @@ export function TrustCentre() {
                       <p.icon size={21} strokeWidth={2.2} className="text-[rgb(var(--nm-1))]" aria-hidden />
                     </span>
                     <span className="flex-1">
-                      <span className="block text-heading font-semibold text-fg">{p.title}</span>
-                      <span className="mt-1 block text-label leading-relaxed text-fg-muted">{p.text}</span>
+                      <span className="block text-heading font-semibold text-fg">{tr(p.title)}</span>
+                      <span className="mt-1 block text-label leading-relaxed text-fg-muted">{tr(p.text)}</span>
                     </span>
                     <ArrowRightIcon size={18} className="mt-1 shrink-0 text-fg-subtle transition-transform duration-150 group-hover:translate-x-0.5" aria-hidden />
                   </span>
@@ -51,14 +54,22 @@ export function TrustCentre() {
 
       <section aria-labelledby="promises-h" className="border-y border-line bg-raised/60">
         <div className="mx-auto grid w-full max-w-6xl gap-10 px-5 py-16 md:px-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)]">
-          <SectionHeading id="promises-h" title={<>Our <span className="nm-text">honesty rules</span></>} lead="Built into the product, not just written in a policy." />
+          <SectionHeading
+            id="promises-h"
+            title={
+            <>
+                {tr('Our')} <span className="nm-text">{tr('honesty rules')}</span>
+              </>
+            }
+            lead={tr('Built into the product, not just written in a policy.')} />
+          
           <ul className="grid gap-x-10 sm:grid-cols-2">
             {promises.map((p) =>
             <li key={p.title} className="flex gap-3 border-t border-line py-5">
                 <ShieldCheckIcon size={20} strokeWidth={2.2} className="mt-0.5 shrink-0 text-success" aria-hidden />
                 <div>
-                  <h3 className="text-heading font-semibold text-fg">{p.title}</h3>
-                  <p className="mt-1 text-label leading-relaxed text-fg-muted">{p.text}</p>
+                  <h3 className="text-heading font-semibold text-fg">{tr(p.title)}</h3>
+                  <p className="mt-1 text-label leading-relaxed text-fg-muted">{tr(p.text)}</p>
                 </div>
               </li>
             )}
@@ -70,11 +81,11 @@ export function TrustCentre() {
         <div className="flex items-start gap-3">
           <LifeBuoyIcon size={20} className="mt-0.5 shrink-0 text-fg-muted" aria-hidden />
           <p className="text-label text-fg-muted">
-            <span className="font-semibold text-fg">Lost money?</span> Contact your bank first — they can act faster than we can — then report the page.
+            <span className="font-semibold text-fg">{tr('Lost money?')}</span> {tr('Contact your bank first — they can act faster than we can — then report the page.')}
           </p>
         </div>
-        <Link to="/about/report" className="inline-flex items-center gap-1.5 text-label font-semibold text-fg hover:underline">
-          Report a page <ArrowRightIcon size={15} aria-hidden />
+        <Link to="/about/report" className="inline-flex items-center gap-1.5 whitespace-nowrap text-label font-semibold text-fg hover:underline">
+          {tr('Report a page')} <ArrowRightIcon size={15} aria-hidden />
         </Link>
       </section>
     </>);

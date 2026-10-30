@@ -13,10 +13,11 @@ export interface A11yFinding {
   id: string;
   blockId: string | null;
   level: CheckLevel;
-  /** Short title, e.g. "Image has no description". */
+  /** Short title, e.g. "Image has no description". English with placeholders filled from `vars` (D311). */
   title: string;
-  /** What to do, in plain words. */
+  /** What to do, in plain words. Same placeholders. */
   advice: string;
+  vars?: Record<string, string | number>;
   /** WCAG 2.1 success criterion, shown as a reference. */
   wcag: string;
 }
@@ -43,7 +44,7 @@ export function a11yFindings(blocks: Block[], editorIssues: ValidationIssue[]): 
         break;
       case 'gallery':{
           const missing = b.content.images.filter((i) => i.url && !i.alt.trim()).length;
-          if (missing) add({ id: `${b.id}:alt`, level: 'fix', title: `${missing} gallery photo${missing === 1 ? ' has' : 's have'} no description`, advice: 'Add a short description to each photo so screen-reader users know what’s there.', wcag: '1.1.1' });
+          if (missing) add({ id: `${b.id}:alt`, level: 'fix', title: 'Gallery photos with no description: {n}', vars: { n: missing }, advice: 'Add a short description to each photo so screen-reader users know what’s there.', wcag: '1.1.1' });
           break;
         }
       case 'product':
@@ -52,7 +53,7 @@ export function a11yFindings(blocks: Block[], editorIssues: ValidationIssue[]): 
         break;
       case 'productGrid':{
           const missing = b.content.items.filter((i) => i.imageUrl && !i.imageAlt.trim()).length;
-          if (missing) add({ id: `${b.id}:alt`, level: 'improve', title: `${missing} product photo${missing === 1 ? '' : 's'} with no description`, advice: 'Describe each product photo, or link the grid to Commerce where photos carry their own descriptions.', wcag: '1.1.1' });
+          if (missing) add({ id: `${b.id}:alt`, level: 'improve', title: 'Product photos with no description: {n}', vars: { n: missing }, advice: 'Describe each product photo, or link the grid to Commerce where photos carry their own descriptions.', wcag: '1.1.1' });
           break;
         }
       case 'heading':
@@ -69,12 +70,12 @@ export function a11yFindings(blocks: Block[], editorIssues: ValidationIssue[]): 
           const label = b.content.label.trim();
           if (!label) add({ id: `${b.id}:label`, level: 'fix', title: 'Button has no label', advice: 'Give the button a label that says where it goes.', wcag: '2.4.4' });else
           if (VAGUE.has(label.toLowerCase()))
-          add({ id: `${b.id}:vague`, level: 'improve', title: `“${label}” doesn’t say where it goes`, advice: 'Use words like “See the menu” or “Book a fitting” — people using screen readers often jump from link to link.', wcag: '2.4.4' });else
+          add({ id: `${b.id}:vague`, level: 'improve', title: '“{label}” doesn’t say where it goes', vars: { label }, advice: 'Use words like “See the menu” or “Book a fitting” — people using screen readers often jump from link to link.', wcag: '2.4.4' });else
           {
             const key = label.toLowerCase();
             const prev = linkTargets.get(key);
             if (prev !== undefined && prev !== b.content.url.trim())
-            add({ id: `${b.id}:dup`, level: 'improve', title: `Two buttons say “${label}” but go to different places`, advice: 'Make each label different so people can tell them apart.', wcag: '2.4.4' });
+            add({ id: `${b.id}:dup`, level: 'improve', title: 'Two buttons say “{label}” but go to different places', vars: { label }, advice: 'Make each label different so people can tell them apart.', wcag: '2.4.4' });
             linkTargets.set(key, b.content.url.trim());
           }
           break;
@@ -84,7 +85,14 @@ export function a11yFindings(blocks: Block[], editorIssues: ValidationIssue[]): 
           if (!r || !r.ok) break;
           const what = r.kind === 'map' ? 'map' : r.kind === 'scheduler' ? 'booking calendar' : r.kind === 'audio' ? 'audio player' : 'video';
           if (!b.content.title.trim())
-          add({ id: `${b.id}:title`, level: 'fix', title: `Embedded ${what} has no title`, advice: `Add a title so screen readers can announce what this ${r.name} ${what} is.`, wcag: '4.1.2' });
+          add({
+            id: `${b.id}:title`,
+            level: 'fix',
+            title: { map: 'Embedded map has no title', 'booking calendar': 'Embedded booking calendar has no title', 'audio player': 'Embedded audio player has no title', video: 'Embedded video has no title' }[what],
+            advice: 'Add a title so screen readers can announce what this {site} embed is.',
+            vars: { site: r.name },
+            wcag: '4.1.2'
+          });
           if (r.kind === 'video' && !b.content.captioned)
           add({ id: `${b.id}:captions`, level: 'improve', title: 'Video isn’t marked as captioned', advice: `${providerMeta(r.provider).captionsHow ?? 'Turn on captions where the video is hosted.'} Then tick “This video has captions”. Many people watch on mute, on buses and in shops.`, wcag: '1.2.2' });
           if (r.kind === 'audio')

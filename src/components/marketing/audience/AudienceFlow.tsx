@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { useT } from '../../../contexts/LocaleContext';
 import { cn } from '../../../utils/cn';
 
 interface Step {
@@ -58,12 +59,13 @@ const steps: Step[] = [
 
 /** "From a tap to a contact" (D268): pick a step, watch the record change beside it. */
 export function AudienceFlow() {
+  const { t: tr } = useT();
   const [active, setActive] = useState(0);
   const reduce = useReducedMotion();
   const step = steps[active];
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-14">
-      <ol className="flex flex-col" aria-label="Steps">
+      <ol className="flex flex-col" aria-label={tr('Steps')}>
         {steps.map((s, i) =>
         <li key={s.title}>
             <button
@@ -77,8 +79,8 @@ export function AudienceFlow() {
             
               <span className={cn('kb-display text-[28px] leading-none', i === active ? 'text-[rgb(var(--kb-clay))]' : 'text-fg-subtle')}>{i + 1}</span>
               <span>
-                <span className="block text-[17px] font-extrabold text-fg">{s.title}</span>
-                {i === active && <span className="mt-1 block text-[15px] leading-relaxed text-fg-muted">{s.text}</span>}
+                <span className="block text-[17px] font-extrabold text-fg">{tr(s.title)}</span>
+                {i === active && <span className="mt-1 block text-[15px] leading-relaxed text-fg-muted">{tr(s.text)}</span>}
               </span>
             </button>
           </li>
@@ -86,7 +88,7 @@ export function AudienceFlow() {
       </ol>
       <div className="lg:sticky lg:top-28 lg:self-start">
         <div className="rounded-[28px] bg-[rgb(var(--kb-peach))] p-5 md:p-7">
-          <p className="text-[12px] font-bold uppercase tracking-[0.08em] text-[rgb(var(--kb-clay))]">Contact record · step {active + 1}</p>
+          <p className="text-[12px] font-bold uppercase tracking-[0.08em] text-[rgb(var(--kb-clay))]">{tr('Contact record · step {n}', { n: active + 1 })}</p>
           <dl className="mt-4 flex flex-col gap-2" aria-live="polite">
             <AnimatePresence initial={false} mode="popLayout">
               {step.record.map((r) =>
@@ -99,10 +101,10 @@ export function AudienceFlow() {
                 transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
                 className="grid grid-cols-[88px_minmax(0,1fr)] gap-3 rounded-2xl bg-white px-4 py-3 text-[rgb(20_20_18)]">
                 
-                  <dt className="text-[13px] font-semibold text-[rgb(90_86_78)]">{r.label}</dt>
+                  <dt className="text-[13px] font-semibold text-[rgb(90_86_78)]">{tr(r.label)}</dt>
                   <dd className="flex items-center gap-2 text-[14px] font-bold">
-                    <span className="min-w-0 break-words">{r.value}</span>
-                    {r.fresh && <span className="shrink-0 rounded-full bg-[rgb(var(--kb-lime))] px-2 py-0.5 text-[10px] font-extrabold uppercase text-[rgb(var(--kb-forest))]">New</span>}
+                    <span className="min-w-0 break-words">{tr(r.value)}</span>
+                    {r.fresh && <span className="shrink-0 rounded-full bg-[rgb(var(--kb-lime))] px-2 py-0.5 text-[10px] font-extrabold uppercase text-[rgb(var(--kb-forest))]">{tr('New')}</span>}
                   </dd>
                 </motion.div>
               )}
@@ -115,7 +117,7 @@ export function AudienceFlow() {
               onClick={() => setActive((a) => a - 1)}
               className="h-11 rounded-full bg-white/70 px-5 text-[14px] font-bold text-[rgb(var(--kb-clay))] disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--kb-clay))]">
               
-              Back
+              {tr('Back')}
             </button>
             <button
               type="button"
@@ -123,7 +125,7 @@ export function AudienceFlow() {
               onClick={() => setActive((a) => a + 1)}
               className="h-11 rounded-full bg-[rgb(var(--kb-clay))] px-5 text-[14px] font-bold text-white disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--kb-clay))] focus-visible:ring-offset-2">
               
-              Next step
+              {tr('Next step')}
             </button>
           </div>
         </div>

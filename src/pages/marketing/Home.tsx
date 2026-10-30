@@ -1,5 +1,6 @@
 import React from 'react';
 import { CalendarCheckIcon, ShoppingBagIcon, TicketIcon, UsersIcon } from 'lucide-react';
+import { useT } from '../../contexts/LocaleContext';
 import { HomeHero } from '../../components/marketing/home/HomeHero';
 import { ColourBand } from '../../components/marketing/home/ColourBand';
 import { CanvasVisual } from '../../components/marketing/home/CanvasVisual';
@@ -19,8 +20,9 @@ const sellList = [
 { icon: UsersIcon, text: 'Group buys and campaign pages with real progress' }];
 
 
-/** Website home (D260): colour-blocked chapters, each answering one question a new seller has. */
+/** Website home (D260): colour-blocked chapters, each answering one question a new seller has. Top chapters translated in D318. */
 export function Home() {
+  const { t: tr } = useT();
   return (
     <>
       <HomeHero />
@@ -29,9 +31,9 @@ export function Home() {
         id="canvas-heading"
         bg="rgb(var(--kb-cobalt))"
         fg="rgb(255 255 255)"
-        title="Make it yours in minutes."
-        lead="Start from a layout built for your goal, then arrange blocks on a real canvas. Edit text in place, pick a theme, and a publish check catches broken links before anyone sees them."
-        cta={{ label: 'Start building — free', to: '/signup', bg: 'rgb(var(--kb-lime))', fg: 'rgb(var(--kb-forest))' }}
+        title={tr('Make it yours in minutes.')}
+        lead={tr('Start from a layout built for your goal, then arrange blocks on a real canvas. Edit text in place, pick a theme, and a publish check catches broken links before anyone sees them.')}
+        cta={{ label: tr('Start building — free'), to: '/signup', bg: 'rgb(var(--kb-lime))', fg: 'rgb(var(--kb-forest))' }}
         visual={<CanvasVisual />}
         flip />
       
@@ -40,9 +42,9 @@ export function Home() {
         id="share-heading"
         bg="rgb(var(--kb-pink))"
         fg="rgb(var(--kb-plum))"
-        title="Share it everywhere they already are."
-        lead="Put your kub.icu link in your WhatsApp status and Instagram bio, or print the QR code on your stall, flyers and receipts. Every visit lands on one page that’s ready to sell."
-        cta={{ label: 'Claim your link', to: '/signup', bg: 'rgb(var(--kb-plum))', fg: 'rgb(255 255 255)' }}
+        title={tr('Share it everywhere they already are.')}
+        lead={tr('Put your kub.icu link in your WhatsApp status and Instagram bio, or print the QR code on your stall, flyers and receipts. Every visit lands on one page that’s ready to sell.')}
+        cta={{ label: tr('Claim your link'), to: '/signup', bg: 'rgb(var(--kb-plum))', fg: 'rgb(255 255 255)' }}
         visual={<ShareVisual />} />
       
 
@@ -50,8 +52,8 @@ export function Home() {
         id="sell-heading"
         bg="rgb(var(--kb-peach))"
         fg="rgb(var(--kb-clay))"
-        title="Sell, book and get paid."
-        lead="Grow from a link-in-bio into a shop, a booking desk and a box office without changing tools. Every order shows exactly what you receive."
+        title={tr('Sell, book and get paid.')}
+        lead={tr('Grow from a link-in-bio into a shop, a booking desk and a box office without changing tools. Every order shows exactly what you receive.')}
         visual={<SellVisual />}
         flip>
         
@@ -61,7 +63,7 @@ export function Home() {
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[rgb(var(--kb-clay))] text-[rgb(var(--kb-peach))]">
                 <Icon size={18} aria-hidden />
               </span>
-              {text}
+              {tr(text)}
             </li>
           )}
         </ul>
@@ -71,9 +73,9 @@ export function Home() {
         id="insights-heading"
         bg="rgb(var(--kb-forest))"
         fg="rgb(var(--kb-lime))"
-        title="See what’s working."
-        lead="Visits, where they came from and where people drop off — with plain suggestions that show their evidence. No personal data, and your own visits can be left out."
-        cta={{ label: 'See plans', to: '/pricing', bg: 'rgb(var(--kb-lime))', fg: 'rgb(var(--kb-forest))' }}
+        title={tr('See what’s working.')}
+        lead={tr('Visits, where they came from and where people drop off — with plain suggestions that show their evidence. No personal data, and your own visits can be left out.')}
+        cta={{ label: tr('See plans'), to: '/pricing', bg: 'rgb(var(--kb-lime))', fg: 'rgb(var(--kb-forest))' }}
         visual={<InsightsVisual />} />
       
 

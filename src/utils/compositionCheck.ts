@@ -14,7 +14,9 @@ export type CompositionFix =
 
 export interface CompositionFinding {
   id: string;
+  /** English with `{n}` / `{block}` placeholders filled from `vars`, so the Check tab can translate it (D311). */
   title: string;
+  vars?: Record<string, string | number>;
   why: string;
   blockId?: string;
   fix?: CompositionFix;
@@ -42,7 +44,7 @@ export function compositionFindings(all: Block[]): CompositionFinding[] {
   // 2. Too many competing actions
   const loud = blocks.filter((b) => featured(b) || b.type === 'cta' || b.type === 'smartButton');
   if (loud.length > 3)
-  out.push({ id: 'competing', title: `${loud.length} blocks compete for attention`, why: 'Featured links and calls to action are strongest when there are one or two. Set the rest to Standard so the main one stands out.', blockId: loud[loud.length - 1].id, fix: { kind: 'select', blockId: loud[loud.length - 1].id, label: 'Review the last one' } });
+  out.push({ id: 'competing', title: 'Blocks competing for attention: {n}', vars: { n: loud.length }, why: 'Featured links and calls to action are strongest when there are one or two. Set the rest to Standard so the main one stands out.', blockId: loud[loud.length - 1].id, fix: { kind: 'select', blockId: loud[loud.length - 1].id, label: 'Review the last one' } });
 
   // 3. Repeated structure
   for (let i = 0; i < top.length; i++) {
@@ -53,7 +55,7 @@ export function compositionFindings(all: Block[]): CompositionFinding[] {
     while (j + 1 < top.length && top[j + 1].type === t) j++;
     const run = j - i + 1;
     if (run >= limit) {
-      out.push({ id: `repeat:${top[i].id}`, title: `${run} ${blockName(top[i])} blocks in a row`, why: 'Back-to-back sections with the same shape read as one long block. Merge them, or put something different between them.', blockId: top[j].id, fix: { kind: 'select', blockId: top[j].id, label: 'Select the last one' } });
+      out.push({ id: `repeat:${top[i].id}`, title: '{block} blocks in a row: {n}', vars: { block: blockName(top[i]), n: run }, why: 'Back-to-back sections with the same shape read as one long block. Merge them, or put something different between them.', blockId: top[j].id, fix: { kind: 'select', blockId: top[j].id, label: 'Select the last one' } });
       i = j;
     }
   }

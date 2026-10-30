@@ -10,6 +10,7 @@ import { TemplateLivePreview } from '../templates/TemplateLivePreview';
 import { ThemeCard } from './ThemeCard';
 import { ThemeSpecSheet } from './ThemeSpecSheet';
 import { ThemeCompareSheet } from './ThemeCompareSheet';
+import { useT } from '../../contexts/LocaleContext';
 import { cn } from '../../utils/cn';
 import { backgroundMode } from '../../utils/pageBackground';
 
@@ -31,6 +32,7 @@ type Source = 'reference' | 'mine';
  * reference page re-skins live on the right. Compare up to three; open a full spec for any version.
  */
 export function ThemeGallery({ canUse, onUse, onUpgrade, myPage, signUpHref }: ThemeGalleryProps) {
+  const { t: tr } = useT();
   const [mood, setMood] = useState<ThemeMood | 'all'>('all');
   const [selectedId, setSelectedId] = useState(signatureThemes[0].id);
   const [mode, setMode] = useState<ThemeMode | null>(null);
@@ -74,7 +76,7 @@ export function ThemeGallery({ canUse, onUse, onUpgrade, myPage, signUpHref }: T
 
   return (
     <div className="mt-8">
-      <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Filter by mood">
+      <div className="flex flex-wrap items-center gap-2" role="group" aria-label={tr('Filter by mood')}>
         {(['all', ...Object.keys(themeMoodLabels)] as (ThemeMood | 'all')[]).map((m) =>
         <button
           key={m}
@@ -86,13 +88,13 @@ export function ThemeGallery({ canUse, onUse, onUpgrade, myPage, signUpHref }: T
             mood === m ? 'border-fg bg-fg text-bg' : 'border-line text-fg-muted hover:border-line-strong hover:text-fg'
           )}>
           
-            {m === 'all' ? `All ${signatureThemes.length}` : themeMoodLabels[m]}
+            {m === 'all' ? tr('All: {n}', { n: signatureThemes.length }) : tr(themeMoodLabels[m])}
           </button>
         )}
       </div>
 
       <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
-        <ul className="grid content-start gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2" aria-label="Signature themes">
+        <ul className="grid content-start gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2" aria-label={tr('Signature themes')}>
           {list.map((t) =>
           <ThemeCard
             key={t.id}
@@ -112,17 +114,17 @@ export function ThemeGallery({ canUse, onUse, onUpgrade, myPage, signUpHref }: T
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0">
               <h2 id="theme-preview-title" className="text-heading font-semibold text-fg">{sig.name}</h2>
-              <p className="mt-0.5 text-label text-fg-muted">{sig.personality}</p>
+              <p className="mt-0.5 text-label text-fg-muted">{tr(sig.personality)}</p>
             </div>
             <Button size="sm" variant="secondary" leadingIcon={FileTextIcon} onClick={() => setSpecOpen(true)}>
-              Spec sheet
+              {tr('Spec sheet')}
             </Button>
           </div>
 
           <div className="mt-4 flex flex-wrap items-center gap-2">
             {modes.length > 1 &&
             <Segmented<ThemeMode>
-              ariaLabel="Theme mode"
+              ariaLabel={tr('Theme mode')}
               size="sm"
               value={activeMode}
               onChange={setMode}
@@ -133,7 +135,7 @@ export function ThemeGallery({ canUse, onUse, onUpgrade, myPage, signUpHref }: T
 
             }
             <Segmented<'phone' | 'desktop'>
-              ariaLabel="Preview size"
+              ariaLabel={tr('Preview size')}
               size="sm"
               value={device}
               onChange={setDevice}
@@ -144,7 +146,7 @@ export function ThemeGallery({ canUse, onUse, onUpgrade, myPage, signUpHref }: T
             
             {myPage &&
             <Segmented<Source>
-              ariaLabel="Page to preview"
+              ariaLabel={tr('Page to preview')}
               size="sm"
               value={source}
               onChange={setSource}
@@ -157,42 +159,44 @@ export function ThemeGallery({ canUse, onUse, onUpgrade, myPage, signUpHref }: T
           </div>
 
           <div className="mt-4">
-            <TemplateLivePreview doc={previewDoc} plan="pro" device={device} theme={theme} name={`${sig.name} on ${source === 'mine' ? 'your page' : 'the sample page'}`} height={device === 'phone' ? 680 : 600} />
+            <TemplateLivePreview doc={previewDoc} plan="pro" device={device} theme={theme} name={tr(source === 'mine' ? '{theme} on your page' : '{theme} on the sample page', { theme: sig.name })} height={device === 'phone' ? 680 : 600} />
           </div>
 
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-line bg-raised p-3">
             <p className="min-w-0 text-caption text-fg-muted">
               {locked ?
-              <span className="inline-flex items-center gap-1.5"><LockIcon size={12} aria-hidden /> Creator plan and above. Preview is free.</span> :
+              <span className="inline-flex items-center gap-1.5">
+                  <LockIcon size={12} aria-hidden /> {tr('Creator plan and above. Preview is free.')}
+                </span> :
               sig.free ?
-              'Free on every plan.' :
+              tr('Free on every plan.') :
               canUse ?
-              'Included in your plan.' :
+              tr('Included in your plan.') :
 
-              'Free to preview · all 24 Signature themes need Creator or above.'
+              tr('Free to preview · all 24 Signature themes need Creator or above.')
               }
             </p>
             {onUse ?
             locked ?
             <Button size="sm" leadingIcon={SparklesIcon} onClick={onUpgrade}>
-                  Upgrade to use
+                  {tr('Upgrade to use')}
                 </Button> :
 
             <div className="flex flex-wrap items-center gap-3">
                   {ownBackground &&
               <label className="flex items-center gap-2 text-caption text-fg">
                       <input type="checkbox" checked={keepBackground} onChange={(e) => setKeepBackground(e.target.checked)} className="h-4 w-4 accent-[var(--color-action,#2563eb)]" />
-                      Keep my own page background
+                      {tr('Keep my own page background')}
                     </label>
               }
                   <Button size="sm" onClick={() => onUse(themeToApply, sig)}>
-                    Use on my page
+                    {tr('Use on my page')}
                   </Button>
                 </div> :
 
             signUpHref ?
             <Button size="sm" onClick={() => navigate(signUpHref)}>
-                Start with this theme
+                {tr('Start with this theme')}
               </Button> :
             null}
           </div>
@@ -203,19 +207,19 @@ export function ThemeGallery({ canUse, onUse, onUpgrade, myPage, signUpHref }: T
       <div className="sticky bottom-4 z-20 mt-8 flex justify-center">
           <div className="flex items-center gap-3 rounded-full border border-line bg-overlay py-2 pl-4 pr-2 shadow-3">
             <span className="text-label text-fg">
-              {compare.length} of 3 selected
+              {tr('Picked to compare: {n} of {max}', { n: compare.length, max: 3 })}
             </span>
             <Button size="sm" variant="tertiary" onClick={() => setCompare([])}>
-              Clear
+              {tr('Clear')}
             </Button>
             <Button size="sm" disabled={compare.length < 2} onClick={() => setCompareOpen(true)}>
-              Compare
+              {tr('Compare')}
             </Button>
           </div>
         </div>
       }
 
-      <ThemeSpecSheet open={specOpen} onClose={() => setSpecOpen(false)} sig={sig} theme={theme} modeLabel={activeMode === 'dark' ? 'Dark' : 'Light'} />
+      <ThemeSpecSheet open={specOpen} onClose={() => setSpecOpen(false)} sig={sig} theme={theme} modeLabel={tr(activeMode === 'dark' ? 'Dark' : 'Light')} />
       <ThemeCompareSheet open={compareOpen} onClose={() => setCompareOpen(false)} themes={signatureThemes.filter((t) => compare.includes(t.id))} doc={previewDoc} />
     </div>);
 

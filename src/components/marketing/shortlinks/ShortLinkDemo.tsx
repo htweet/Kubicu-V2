@@ -7,6 +7,7 @@ import { QrPreview } from '../../domains/QrPreview';
 import { styleOf } from '../../../utils/domains/qr';
 import { SLUG_PATTERN, slugify } from '../../../utils/domains/links';
 import { checkDestination } from '../../../utils/linkSafety';
+import { useT } from '../../../contexts/LocaleContext';
 import { cn } from '../../../utils/cn';
 
 const channels = [
@@ -46,6 +47,7 @@ function demoCount(): number {
  * its tags and a QR — but saves nothing. Five tries per visit, then it asks you to sign up.
  */
 export function ShortLinkDemo() {
+  const { t: tr } = useT();
   const reduce = useReducedMotion();
   const [url, setUrl] = useState('');
   const [slug, setSlug] = useState('');
@@ -67,10 +69,10 @@ export function ShortLinkDemo() {
     e.preventDefault();
     if (limited) return;
     const check = checkDestination(url);
-    if (!check.ok) return setError({ field: 'url', text: check.message });
+    if (!check.ok) return setError({ field: 'url', text: tr(check.message) });
     const s = (slug || suggested).trim();
-    if (!SLUG_PATTERN.test(s)) return setError({ field: 'slug', text: 'Use lowercase letters, numbers and hyphens (up to 40).' });
-    if (RESERVED.includes(s)) return setError({ field: 'slug', text: `“${s}” is reserved by KUBICU. Try another.` });
+    if (!SLUG_PATTERN.test(s)) return setError({ field: 'slug', text: tr('Use lowercase letters, numbers and hyphens (up to 40).') });
+    if (RESERVED.includes(s)) return setError({ field: 'slug', text: tr('“{name}” is reserved by KUBICU. Try another.', { name: s }) });
     setError(null);
     const next = count + 1;
     try {
@@ -86,9 +88,9 @@ export function ShortLinkDemo() {
     if (!result) return;
     try {
       await navigator.clipboard.writeText(`https://${result.short}`);
-      toast.success('Copied — it’s a demo address, so it won’t open yet');
+      toast.success(tr('Copied — it’s a demo address, so it won’t open yet'));
     } catch {
-      toast.error('Couldn’t copy. Select the link and copy it yourself.');
+      toast.error(tr('Couldn’t copy. Select the link and copy it yourself.'));
     }
   };
 
@@ -98,7 +100,7 @@ export function ShortLinkDemo() {
     <div className="rounded-[32px] bg-white p-5 text-[rgb(20_20_18)] shadow-3 md:p-7">
       <form noValidate onSubmit={submit} aria-describedby="demo-note">
         <label htmlFor="demo-url" className="text-[14px] font-bold">
-          Long address
+          {tr('Long address')}
         </label>
         <input
           id="demo-url"
@@ -124,7 +126,7 @@ export function ShortLinkDemo() {
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <div>
             <label htmlFor="demo-slug" className="text-[14px] font-bold">
-              Short name <span className="font-medium text-fg-subtle">(optional)</span>
+              {tr('Short name')} <span className="font-medium text-fg-subtle">({tr('optional')})</span>
             </label>
             <div className={cn('mt-2 flex h-12 items-center rounded-2xl border border-line bg-raised pl-4 focus-within:ring-2 focus-within:ring-focus', error?.field === 'slug' && 'border-danger')}>
               <span className="shrink-0 text-[14px] text-fg-subtle" aria-hidden>
@@ -154,14 +156,14 @@ export function ShortLinkDemo() {
           </div>
           <div>
             <label htmlFor="demo-tag" className="text-[14px] font-bold">
-              Campaign tag <span className="font-medium text-fg-subtle">(optional)</span>
+              {tr('Campaign tag')} <span className="font-medium text-fg-subtle">({tr('optional')})</span>
             </label>
             <input id="demo-tag" value={tag} onChange={(e) => setTag(e.target.value.slice(0, 40))} placeholder="december-sale" className={cn(field, 'mt-2')} />
           </div>
         </div>
 
         <fieldset className="mt-4">
-          <legend className="text-[14px] font-bold">Where you’ll share it</legend>
+          <legend className="text-[14px] font-bold">{tr('Where you’ll share it')}</legend>
           <div className="mt-2 flex flex-wrap gap-2">
             {channels.map((c) =>
             <label
@@ -172,7 +174,7 @@ export function ShortLinkDemo() {
               )}>
               
                 <input type="radio" name="demo-channel" value={c.id} checked={channel === c.id} onChange={() => setChannel(c.id)} className="sr-only" />
-                {c.label}
+                {tr(c.label)}
               </label>
             )}
           </div>
@@ -180,10 +182,10 @@ export function ShortLinkDemo() {
 
         {limited ?
         <div role="status" className="mt-6 rounded-2xl bg-[rgb(238_233_221)] p-4">
-            <p className="text-[15px] font-bold">You’ve tried {DEMO_LIMIT} demo links this visit</p>
-            <p className="mt-1 text-[14px] text-[rgb(70_68_62)]">That’s the limit for the demo. Make real, saved links free in your workspace.</p>
+            <p className="text-[15px] font-bold">{tr('Demo links tried this visit: {n}', { n: DEMO_LIMIT })}</p>
+            <p className="mt-1 text-[14px] text-[rgb(70_68_62)]">{tr('That’s the limit for the demo. Make real, saved links free in your workspace.')}</p>
             <Link to="/signup" className="mt-3 inline-flex h-11 items-center gap-2 rounded-full bg-[rgb(20_20_18)] px-5 text-[14px] font-bold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-              Sign up free <ArrowRightIcon size={15} aria-hidden />
+              {tr('Sign up free')} <ArrowRightIcon size={15} aria-hidden />
             </Link>
           </div> :
 
@@ -191,11 +193,11 @@ export function ShortLinkDemo() {
           type="submit"
           className="mt-6 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[rgb(20_20_18)] px-6 text-[15px] font-bold text-white transition-transform duration-150 ease-out hover:scale-[1.01] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 sm:w-auto">
           
-            Shorten it <ArrowRightIcon size={16} aria-hidden />
+            {tr('Shorten it')} <ArrowRightIcon size={16} aria-hidden />
           </button>
         }
         <p id="demo-note" className="mt-3 text-[12px] text-fg-subtle">
-          Demo only: nothing is saved and the link won’t open. {DEMO_LIMIT - Math.min(count, DEMO_LIMIT)} of {DEMO_LIMIT} tries left this visit.
+          {tr('Demo only: nothing is saved and the link won’t open.')} {tr('Tries left this visit: {left} of {total}', { left: DEMO_LIMIT - Math.min(count, DEMO_LIMIT), total: DEMO_LIMIT })}
         </p>
       </form>
 
@@ -212,30 +214,30 @@ export function ShortLinkDemo() {
           
             <div className="min-w-0">
               <p className="flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-[0.08em]">
-                <ShieldCheckIcon size={14} aria-hidden /> Address checked
+                <ShieldCheckIcon size={14} aria-hidden /> {tr('Address checked')}
               </p>
               <p className="mt-2 break-all text-[20px] font-extrabold leading-tight md:text-[22px]">{result.short}</p>
-              <p className="mt-2 truncate text-[13px] font-medium">Opens {result.host}</p>
+              <p className="mt-2 truncate text-[13px] font-medium">{tr('Opens {site}', { site: result.host })}</p>
               <div className="mt-3 flex flex-wrap gap-1.5 text-[12px] font-semibold">
-                <span className="rounded-full bg-white/70 px-2.5 py-1">Source: {result.channel}</span>
-                {result.tag && <span className="rounded-full bg-white/70 px-2.5 py-1">Tag: {result.tag}</span>}
+                <span className="rounded-full bg-white/70 px-2.5 py-1">{tr('Source: {name}', { name: tr(result.channel) })}</span>
+                {result.tag && <span className="rounded-full bg-white/70 px-2.5 py-1">{tr('Tag: {name}', { name: result.tag })}</span>}
                 {result.upgraded &&
               <span className="inline-flex items-center gap-1 rounded-full bg-white/70 px-2.5 py-1">
-                    <CheckIcon size={11} aria-hidden /> Switched to https
+                    <CheckIcon size={11} aria-hidden /> {tr('Switched to https')}
                   </span>
               }
               </div>
               <div className="mt-4 flex flex-wrap gap-2">
                 <button type="button" onClick={copy} className="inline-flex h-11 items-center gap-2 rounded-full bg-[rgb(var(--kb-forest))] px-5 text-[14px] font-bold text-[rgb(var(--kb-lime))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--kb-forest))] focus-visible:ring-offset-2">
-                  <CopyIcon size={15} aria-hidden /> Copy
+                  <CopyIcon size={15} aria-hidden /> {tr('Copy')}
                 </button>
                 <Link to="/signup" className="inline-flex h-11 items-center gap-2 rounded-full bg-white px-5 text-[14px] font-bold text-[rgb(20_20_18)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--kb-forest))]">
-                  Make it real <ArrowRightIcon size={15} aria-hidden />
+                  {tr('Make it real')} <ArrowRightIcon size={15} aria-hidden />
                 </Link>
               </div>
             </div>
             <div className="w-32 justify-self-start rounded-2xl bg-white p-2 sm:justify-self-end">
-              <QrPreview url={`https://${result.short}`} style={qrStyle} alt={`QR code preview for ${result.short}`} />
+              <QrPreview url={`https://${result.short}`} style={qrStyle} alt={tr('QR code preview for {link}', { link: result.short })} />
             </div>
           </motion.div>
         }

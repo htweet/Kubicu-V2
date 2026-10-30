@@ -9,12 +9,14 @@ import { Parallax } from './Parallax';
 import { RiseText } from './RiseText';
 import { findExampleById } from '../../../data/examples';
 import { homeImages } from '../../../data/marketingHome';
+import { useT } from '../../../contexts/LocaleContext';
 
 const atelier = findExampleById('adaeze-atelier')!;
 const ease = [0.23, 1, 0.32, 1] as const;
 
 /** Home hero (D260, D261): dark grey band with a subtle even gradient under the floating nav, giant headline, link claim, and a photo + live page collage. */
 export function HomeHero() {
+  const { t: tr } = useT();
   const reduce = useReducedMotion();
   const pop = (delay: number) => reduce ? {} : { initial: { opacity: 0, scale: 0.96, y: 10 }, animate: { opacity: 1, scale: 1, y: 0 }, transition: { duration: 0.28, delay, ease } };
 
@@ -27,13 +29,13 @@ export function HomeHero() {
       <div className="mx-auto grid w-full max-w-7xl items-center gap-12 px-5 pb-16 pt-10 md:px-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:gap-10 lg:pb-24 lg:pt-16">
         <div className="relative z-10 max-w-2xl">
           <h1 id="hero-heading" className="kb-display text-[52px] leading-[0.95] sm:text-[72px] lg:text-[88px]">
-            <RiseText text="Your whole business in one link." />
+            <RiseText text={tr('Your whole business in one link.')} />
           </h1>
           <motion.p
             className="mt-7 max-w-lg text-[18px] font-medium leading-relaxed opacity-90 md:text-[20px]"
             {...reduce ? {} : { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.3, delay: 0.35, ease } }}>
             
-            Sell, take bookings, sell tickets and collect enquiries from one page — built on a real canvas, made for phones and for how customers buy in Nigeria.
+            {tr('Sell, take bookings, sell tickets and collect enquiries from one page — built on a real canvas, made for phones and for how customers buy in Nigeria.')}
           </motion.p>
           <motion.div className="mt-9" {...reduce ? {} : { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.3, delay: 0.45, ease } }}>
             <HandleClaim />
@@ -43,10 +45,10 @@ export function HomeHero() {
               to="/copilot"
               className="group inline-flex items-center gap-1.5 rounded-sm text-label font-bold text-white underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
               
-              Not sure where to start? Describe it in a chat <ArrowRightIcon size={15} aria-hidden className="transition-transform duration-150 ease-out group-hover:translate-x-0.5" />
+              {tr('Not sure where to start? Describe it in a chat')} <ArrowRightIcon size={15} aria-hidden className="transition-transform duration-150 ease-out group-hover:translate-x-0.5" />
             </Link>
             <Link to="/templates" className="rounded-sm text-label font-medium text-white/80 underline-offset-4 hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-              Browse example pages
+              {tr('Browse example pages')}
             </Link>
           </div>
         </div>
@@ -59,7 +61,7 @@ export function HomeHero() {
           <Parallax distance={24} className="absolute right-0 top-0 h-[84%] w-[76%]">
             <motion.img
               src={homeImages.fashion}
-              alt="A fashion designer in her Lagos studio, holding her phone"
+              alt={tr('A fashion designer in her Lagos studio, holding her phone')}
               className="h-full w-full rounded-[36px] object-cover object-[50%_25%] shadow-3"
               {...reduce ? {} : { initial: { opacity: 0, scale: 0.96 }, animate: { opacity: 1, scale: 1 }, transition: { duration: 0.3, delay: 0.1, ease } }} />
             
@@ -79,9 +81,9 @@ export function HomeHero() {
           <motion.div className="absolute left-[30%] top-[6%] z-20 max-w-[220px] sm:left-[18%]" {...pop(0.55)}>
             <div className="rounded-2xl rounded-bl-md bg-white px-4 py-3 text-[rgb(20_20_18)] shadow-2">
               <p className="flex items-center gap-1.5 text-[11px] font-semibold text-[rgb(22_122_70)]">
-                <MessageCircleIcon size={12} aria-hidden /> WhatsApp · from your page
+                <MessageCircleIcon size={12} aria-hidden /> {tr('WhatsApp · from your page')}
               </p>
-              <p className="mt-1 text-[13px] font-medium leading-snug">Hi! Is the green ankara dress in size 12?</p>
+              <p className="mt-1 text-[13px] font-medium leading-snug">{tr('Hi! Is the green ankara dress in size 12?')}</p>
             </div>
           </motion.div>
 
@@ -91,13 +93,13 @@ export function HomeHero() {
                 <CheckIcon size={18} strokeWidth={3} aria-hidden />
               </span>
               <span>
-                <span className="block text-[13px] font-bold">New order · ₦18,500</span>
-                <span className="block text-[11px] text-white/75">Paid by transfer</span>
+                <span className="block text-[13px] font-bold">{tr('New order')} · ₦18,500</span>
+                <span className="block text-[11px] text-white/75">{tr('Paid by transfer')}</span>
               </span>
             </motion.div>
           </motion.div>
 
-          <figcaption className="sr-only">Example page for a fictional fashion business, with a sample WhatsApp enquiry and order.</figcaption>
+          <figcaption className="sr-only">{tr('Example page for a fictional fashion business, with a sample WhatsApp enquiry and order.')}</figcaption>
         </figure>
       </div>
     </section>);

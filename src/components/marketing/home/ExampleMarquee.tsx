@@ -5,26 +5,28 @@ import { TemplateThumb } from '../../templates/TemplateThumb';
 import { RiseText } from './RiseText';
 import { Reveal } from '../Reveal';
 import { examplePages, findExampleById } from '../../../data/examples';
+import { useT } from '../../../contexts/LocaleContext';
 
 const ids = ['glow-by-halima', 'afrobeats-brunch', 'lagos-bookshelf', 'kemi-presets', 'fixright-plumbing', 'ife-sounds', 'mama-put-kitchen', 'studio-nnamdi'];
 const pages = ids.map((id) => findExampleById(id)).filter((e): e is NonNullable<typeof e> => !!e);
 
 /** Endless strip of real example pages; pauses on hover or keyboard focus, still on reduced motion (D260). */
 export function ExampleMarquee() {
+  const { t: tr } = useT();
   return (
     <section aria-labelledby="examples-heading" className="overflow-hidden bg-[rgb(var(--kb-sky))] py-20 text-[rgb(20_20_18)] md:py-28">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-5 md:flex-row md:items-end md:justify-between md:px-8">
         <div className="max-w-2xl">
           <h2 id="examples-heading" className="kb-display text-[42px] leading-[0.98] sm:text-[56px]">
-            <RiseText text="One platform. Very different pages." stagger={0.04} />
+            <RiseText text={tr('One platform. Very different pages.')} stagger={0.04} />
           </h2>
           <Reveal delay={0.12}>
-            <p className="mt-5 text-[18px] font-medium leading-relaxed text-[rgb(20_20_18)]/80">Every example is a fictional business. Open one to see the full page, or start from its layout.</p>
+            <p className="mt-5 text-[18px] font-medium leading-relaxed text-[rgb(20_20_18)]/80">{tr('Every example is a fictional business. Open one to see the full page, or start from its layout.')}</p>
           </Reveal>
         </div>
         <Reveal delay={0.18}>
           <Link to="/templates" className="group inline-flex h-12 items-center gap-2 whitespace-nowrap rounded-full bg-[rgb(var(--kb-cobalt))] px-6 text-[15px] font-bold text-white transition-transform duration-150 ease-out hover:scale-[1.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--kb-cobalt))] focus-visible:ring-offset-2">
-            All {examplePages.length} templates <ArrowRightIcon size={17} aria-hidden className="transition-transform duration-150 ease-out group-hover:translate-x-0.5" />
+            {tr('All templates: {n}', { n: examplePages.length })} <ArrowRightIcon size={17} aria-hidden className="transition-transform duration-150 ease-out group-hover:translate-x-0.5" />
           </Link>
         </Reveal>
       </div>
@@ -44,7 +46,7 @@ export function ExampleMarquee() {
                     <TemplateThumb doc={e.doc} width={190} height={380} />
                   </span>
                   <span className="mt-4 block text-[15px] font-bold">{e.name}</span>
-                  <span className="block text-[13px] font-medium text-[rgb(20_20_18)]/70">{e.category}</span>
+                  <span className="block text-[13px] font-medium text-[rgb(20_20_18)]/70">{tr(e.category)}</span>
                 </Link>
               </li>);
 

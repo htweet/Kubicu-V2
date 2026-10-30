@@ -8,6 +8,7 @@ import { Reveal } from '../../components/marketing/Reveal';
 import { ClosingCta } from '../../components/marketing/home/ClosingCta';
 import { featureAreas, type FeatureStatus } from '../../data/featureIndex';
 import { findExampleById } from '../../data/examples';
+import { useT } from '../../contexts/LocaleContext';
 import { cn } from '../../utils/cn';
 
 const statusClass: Record<FeatureStatus, string> = {
@@ -16,8 +17,9 @@ const statusClass: Record<FeatureStatus, string> = {
   Simulated: 'bg-sunken text-fg-muted'
 };
 
-/** /features — every product area on one page, each with an honest status per capability (D268). */
+/** /features — every product area on one page, each with an honest status per capability (D268). Translated in D321. */
 export function Features() {
+  const { t: tr } = useT();
   const hero = findExampleById('elite-beauty');
   return (
     <>
@@ -33,12 +35,12 @@ export function Features() {
         visual={hero ? <ExamplePhone doc={hero.doc} width={240} bezel="light" className="mx-auto w-fit rotate-[3deg]" /> : null} />
       
 
-      <nav aria-label="On this page" className="sticky top-[88px] z-20 border-b border-line bg-canvas/95 backdrop-blur">
+      <nav aria-label={tr('On this page')} className="sticky top-[88px] z-20 border-b border-line bg-canvas/95 backdrop-blur">
         <ul className="no-scrollbar mx-auto flex max-w-7xl gap-1 overflow-x-auto overflow-y-hidden px-5 py-2 md:px-8">
           {featureAreas.map((a) =>
           <li key={a.id}>
               <a href={`#${a.id}`} className="inline-flex h-10 items-center whitespace-nowrap rounded-full px-4 text-[14px] font-semibold text-fg-muted hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-                {a.title}
+                {tr(a.title)}
               </a>
             </li>
           )}
@@ -55,19 +57,19 @@ export function Features() {
                   <a.icon size={24} strokeWidth={2.1} aria-hidden />
                 </span>
                 <h2 id={`${a.id}-h`} className="kb-display mt-5 text-[36px] leading-[1] text-fg md:text-[48px]">
-                  {a.title}
+                  {tr(a.title)}
                 </h2>
-                <p className="mt-4 max-w-lg text-[17px] leading-relaxed text-fg-muted">{a.lead}</p>
+                <p className="mt-4 max-w-lg text-[17px] leading-relaxed text-fg-muted">{tr(a.lead)}</p>
                 <Link to={a.more.to} className="group mt-6 inline-flex items-center gap-1.5 text-[15px] font-bold text-fg underline-offset-4 hover:underline">
-                  {a.more.label} <ArrowRightIcon size={15} aria-hidden className="transition-transform duration-150 ease-out group-hover:translate-x-0.5" />
+                  {tr(a.more.label)} <ArrowRightIcon size={15} aria-hidden className="transition-transform duration-150 ease-out group-hover:translate-x-0.5" />
                 </Link>
               </Reveal>
               <div className={cn('flex flex-col gap-6 sm:flex-row sm:items-center', i % 2 === 1 && 'lg:order-1')}>
                 <ul className="flex flex-1 flex-col">
                   {a.items.map((it) =>
                   <li key={it.name} className="flex items-center justify-between gap-4 border-t border-line py-4 text-[16px] text-fg last:border-b">
-                      <span className="min-w-0">{it.name}</span>
-                      <span className={cn('shrink-0 whitespace-nowrap rounded-full px-2.5 py-1 text-[12px] font-bold', statusClass[it.status])}>{it.status}</span>
+                      <span className="min-w-0">{tr(it.name)}</span>
+                      <span className={cn('shrink-0 whitespace-nowrap rounded-full px-2.5 py-1 text-[12px] font-bold', statusClass[it.status])}>{tr(it.status)}</span>
                     </li>
                   )}
                 </ul>
@@ -76,7 +78,7 @@ export function Features() {
             </section>);
 
         })}
-        <p className="py-8 text-[13px] text-fg-subtle">“Simulated” means it works in this prototype without the outside service it needs in production — payments, messaging, domains or an AI model.</p>
+        <p className="py-8 text-[13px] text-fg-subtle">{tr('“Simulated” means it works in this prototype without the outside service it needs in production — payments, messaging, domains or an AI model.')}</p>
       </div>
 
       <PillarCrossLinks title="Four places to go next" />

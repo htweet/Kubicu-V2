@@ -8,6 +8,7 @@ import { AnnouncementBar } from './AnnouncementBar';
 import { MegaMenu } from './MegaMenu';
 import { MobileSiteMenu } from './MobileSiteMenu';
 import { LanguagePicker } from '../ui/LanguagePicker';
+import { useT } from '../../contexts/LocaleContext';
 import { cn } from '../../utils/cn';
 
 const footer = [
@@ -65,8 +66,9 @@ const footer = [
 
 const pill = 'inline-flex h-12 items-center justify-center whitespace-nowrap rounded-full px-5 text-[15px] font-bold transition-[transform,background-color] duration-150 ease-out active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2';
 
-/** Website frame (D260): floating pill nav over colour bands, plum footer with a white link card. */
+/** Website frame (D260): floating pill nav over colour bands, plum footer with a white link card. Translated in D318. */
 export function MarketingLayout() {
+  const { t: tr } = useT();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
@@ -96,13 +98,13 @@ export function MarketingLayout() {
   return (
     <PlatformLook night>
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-md focus:bg-raised focus:px-3 focus:py-2">
-        Skip to content
+        {tr('Skip to content')}
       </a>
       <AnnouncementBar />
       <header className="sticky top-0 z-30 h-[88px] px-3 pt-3 print:hidden md:px-5">
         <div className={cn('relative mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-4 rounded-full bg-white pl-5 pr-2 text-[rgb(20_20_18)] transition-shadow duration-200 md:pl-7', scrolled ? 'shadow-3' : 'shadow-1')}>
           <div className="flex items-center gap-6 lg:gap-8">
-            <Link to="/" aria-label="KUBICU home" className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+            <Link to="/" aria-label={tr('KUBICU home')} className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
               <KubicuLogo accent="#6B8CFF" />
             </Link>
             <MegaMenu />
@@ -112,14 +114,14 @@ export function MarketingLayout() {
               <LanguagePicker variant="site" />
             </span>
             <Link to="/signin" className={cn(pill, 'hidden bg-[rgb(238_233_221)] text-[rgb(20_20_18)] hover:bg-[rgb(224_217_202)] sm:inline-flex')}>
-              Log in
+              {tr('Log in')}
             </Link>
             <Link to="/signup" className={cn(pill, 'bg-[rgb(20_20_18)] text-white hover:bg-[rgb(48_48_44)]')}>
-              Sign up free
+              {tr('Sign up free')}
             </Link>
             <button
               type="button"
-              aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+              aria-label={tr(menuOpen ? 'Close menu' : 'Open menu')}
               aria-expanded={menuOpen}
               aria-controls="site-menu"
               onClick={() => setMenuOpen((o) => !o)}
@@ -133,7 +135,7 @@ export function MarketingLayout() {
           {menuOpen &&
           <motion.nav
             id="site-menu"
-            aria-label="Main"
+            aria-label={tr('Main')}
             initial={{ opacity: 0, y: -8, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.98 }}
@@ -142,10 +144,10 @@ export function MarketingLayout() {
             
               <MobileSiteMenu />
               <Link to="/copilot" className={cn(pill, 'mt-2 w-full gap-2 bg-[rgb(var(--kb-lime))] text-[rgb(var(--kb-forest))]')}>
-                Start with Copilot <ArrowRightIcon size={16} aria-hidden />
+                {tr('Start with Copilot')} <ArrowRightIcon size={16} aria-hidden />
               </Link>
               <Link to="/signin" className={cn(pill, 'mt-2 w-full bg-[rgb(238_233_221)] text-[rgb(20_20_18)] sm:hidden')}>
-                Log in
+                {tr('Log in')}
               </Link>
               <div className="mt-2">
                 <LanguagePicker variant="site" stretch side="top" align="start" />
@@ -164,20 +166,20 @@ export function MarketingLayout() {
           <div className="grid gap-12 lg:grid-cols-[1.2fr_repeat(5,1fr)]">
             <div className="max-w-xs">
               <KubicuLogo />
-              <p className="mt-4 text-[15px] font-medium text-[rgb(70_68_62)]">Your corner of the internet. Your whole business.</p>
+              <p className="mt-4 text-[15px] font-medium text-[rgb(70_68_62)]">{tr('Your corner of the internet. Your whole business.')}</p>
               <Link to="/signup" className={cn(pill, 'mt-6 gap-2 bg-[rgb(var(--kb-lime))] text-[rgb(var(--kb-forest))] hover:scale-[1.03]')}>
-                Create your page — free <ArrowRightIcon size={16} aria-hidden />
+                {tr('Create your page — free')} <ArrowRightIcon size={16} aria-hidden />
               </Link>
             </div>
             <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:col-span-5 lg:grid-cols-5">
               {footer.map((col) =>
               <div key={col.title}>
-                  <h2 className="text-[15px] font-extrabold">{col.title}</h2>
+                  <h2 className="text-[15px] font-extrabold">{tr(col.title)}</h2>
                   <ul className="mt-4 flex flex-col gap-3">
                     {col.links.map((l) =>
                   <li key={l.to}>
                         <Link to={l.to} className="rounded-sm text-[15px] font-medium text-[rgb(70_68_62)] transition-colors duration-150 hover:text-[rgb(20_20_18)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-                          {l.label}
+                          {tr(l.label)}
                         </Link>
                       </li>
                   )}
@@ -191,11 +193,11 @@ export function MarketingLayout() {
           KUBICU
         </p>
         <div className="mx-auto mt-8 flex w-full max-w-7xl flex-col gap-3 px-2 text-[13px] text-white/80 md:flex-row md:items-center md:justify-between">
-          <p>© 2026 Saintstartup Technologies Ltd (RC 7298088) · KUBICU · kub.icu · English (Nigeria)</p>
+          <p>© 2026 Saintstartup Technologies Ltd (RC 7298088) · KUBICU · kub.icu</p>
           <p className="max-w-xl md:text-right">
-            Design prototype: example businesses are fictional, payments run in test mode and no accounts are stored.{' '}
+            {tr('Design prototype: example businesses are fictional, payments run in test mode and no accounts are stored.')}{' '}
             <Link to="/about/report" className="inline-flex items-center gap-1 font-semibold text-white hover:underline">
-              <FlagIcon size={12} aria-hidden /> Report a page
+              <FlagIcon size={12} aria-hidden /> {tr('Report a page')}
             </Link>
           </p>
         </div>

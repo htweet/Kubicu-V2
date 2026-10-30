@@ -8,18 +8,23 @@ import { contactFormDef, contactTopics, LEGAL_TOPIC_LABEL } from '../../data/con
 import { findLegalDoc } from '../../data/legal';
 import { updateAdminStore } from '../../utils/admin/store';
 import { uid } from '../../utils/id';
+import { useT } from '../../contexts/LocaleContext';
 
 const channels = [
-{ icon: MailIcon, title: 'Email', text: 'hello@kub.icu — we reply within 1 working day.' },
-{ icon: ShieldIcon, title: 'Legal & privacy', text: 'legal@kub.icu for legal notices and data requests under the NDPA.' },
-{ icon: BriefcaseIcon, title: 'Sales', text: 'sales@kub.icu for Enterprise plans and partnerships.' },
+{ icon: MailIcon, title: 'Email', text: '{email} — we reply within 1 working day.', email: 'hello@kub.icu' },
+{ icon: ShieldIcon, title: 'Legal & privacy', text: '{email} for legal notices and data requests under the NDPA.', email: 'legal@kub.icu' },
+{ icon: BriefcaseIcon, title: 'Sales', text: '{email} for Enterprise plans and partnerships.', email: 'sales@kub.icu' },
 { icon: FlagIcon, title: 'A page you’ve seen', text: 'Use Report a page so our moderation team sees it.', to: '/about/report' }];
 
 
 const str = (v: string | string[] | undefined) => (Array.isArray(v) ? v.join(', ') : v ?? '').trim();
 
-/** Website contact page (D125): the Forms engine, feeding the staff support queue. */
+/**
+ * Website contact page (D125): the Forms engine, feeding the staff support queue.
+ * Translated in D331 apart from the form itself — its topic answers feed the staff queue in English.
+ */
 export function Contact() {
+  const { t: tr } = useT();
   // Legal pages link here with ?topic=legal&doc=<slug> so the topic is already chosen (D236).
   const [params] = useSearchParams();
   const fromLegal = params.get('topic') === 'legal';
@@ -61,11 +66,15 @@ export function Contact() {
           <div className="rounded-[15px] bg-raised p-6 md:p-8">
             {aboutDoc &&
             <p className="mb-6 border-b border-line pb-4 text-label text-fg-muted">
-                About:{' '}
+                {tr('About:')}{' '}
                 <Link to={`/about/${aboutDoc.slug}`} className="font-semibold text-fg underline">
-                  {aboutDoc.title}
+                  {tr(aboutDoc.title)}
                 </Link>
-                . Prefer email? Write to <a href="mailto:legal@kub.icu" className="font-semibold text-fg underline">legal@kub.icu</a>.
+                . {tr('Prefer email? Write to')}{' '}
+                <a href="mailto:legal@kub.icu" className="font-semibold text-fg underline">
+                  legal@kub.icu
+                </a>
+                .
               </p>
             }
             <FormRunner form={contactFormDef} skin={appSkin} mode="live" headingLevel="h2" onSubmit={submit} initialAnswers={initialAnswers} />
@@ -74,19 +83,19 @@ export function Contact() {
 
         <aside aria-labelledby="channels-h">
           <h2 id="channels-h" className="text-heading font-semibold text-fg">
-            Other ways to reach us
+            {tr('Other ways to reach us')}
           </h2>
           <ul className="mt-4 divide-y divide-line border-y border-line">
             {channels.map((c) =>
             <li key={c.title} className="flex gap-4 py-5">
                 <c.icon size={20} strokeWidth={2.2} className="mt-0.5 shrink-0 text-[rgb(var(--nm-1))]" aria-hidden />
                 <div>
-                  <h3 className="text-label font-semibold text-fg">{c.title}</h3>
+                  <h3 className="text-label font-semibold text-fg">{tr(c.title)}</h3>
                   <p className="mt-1 text-label text-fg-muted">
-                    {c.text}{' '}
+                    {'email' in c && c.email ? tr(c.text, { email: c.email }) : tr(c.text)}{' '}
                     {c.to &&
                   <Link to={c.to} className="font-semibold text-fg underline">
-                        Report a page
+                        {tr('Report a page')}
                       </Link>
                   }
                   </p>
@@ -94,7 +103,7 @@ export function Contact() {
               </li>
             )}
           </ul>
-          <p className="mt-6 text-caption text-fg-subtle">KUBICU · Lagos, Nigeria. Office hours Monday–Friday, 9am–6pm WAT. Messages land in our support queue — you’ll get a reference by email.</p>
+          <p className="mt-6 text-caption text-fg-subtle">{tr('KUBICU · Lagos, Nigeria. Office hours Monday–Friday, 9am–6pm WAT. Messages land in our support queue — you’ll get a reference by email.')}</p>
         </aside>
       </div>
     </>);

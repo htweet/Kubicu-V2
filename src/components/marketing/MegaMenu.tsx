@@ -3,6 +3,7 @@ import { Link, NavLink, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { ArrowRightIcon, ChevronDownIcon } from 'lucide-react';
 import { siteMenu, siteMenuLinks, type SiteMenuFeature, type SiteMenuGroup } from '../../data/siteMenu';
+import { useT } from '../../contexts/LocaleContext';
 import { cn } from '../../utils/cn';
 import { recordMenuLink, recordMenuOpen } from '../../utils/siteMenuUsage';
 
@@ -28,6 +29,7 @@ export function isCurrentLink(to: string, pathname: string): boolean {
  * returns focus to its trigger. A hidden bridge under the triggers stops flicker on the way down.
  */
 export function MegaMenu() {
+  const { t: tr } = useT();
   const [openId, setOpenId] = useState<string | null>(null);
   const location = useLocation();
   const root = useRef<HTMLDivElement>(null);
@@ -102,7 +104,7 @@ export function MegaMenu() {
         if (openId && root.current && !root.current.contains(e.relatedTarget as Node | null)) close();
       }}>
       
-      <nav aria-label="Main" className="flex items-center gap-0.5">
+      <nav aria-label={tr('Main')} className="flex items-center gap-0.5">
         {siteMenu.map((g) => {
           const isOpen = openId === g.id;
           return (
@@ -126,7 +128,7 @@ export function MegaMenu() {
                 isOpen || groupActive(g) ? `bg-[rgb(238_233_221)] ${ink}` : 'text-[rgb(70_68_62)] hover:bg-[rgb(238_233_221)] hover:text-[rgb(20_20_18)]'
               )}>
               
-              {g.label}
+              {tr(g.label)}
               <ChevronDownIcon size={15} aria-hidden className={cn('transition-transform duration-200 ease-out', isOpen && 'rotate-180')} />
             </button>);
 
@@ -141,7 +143,7 @@ export function MegaMenu() {
           cn(trigger, isActive ? `bg-[rgb(238_233_221)] ${ink}` : 'text-[rgb(70_68_62)] hover:bg-[rgb(238_233_221)] hover:text-[rgb(20_20_18)]')
           }>
           
-            {l.label}
+            {tr(l.label)}
           </NavLink>
         )}
       </nav>
@@ -152,6 +154,7 @@ export function MegaMenu() {
 }
 
 function MegaPanel({ group, pathname, onNavigate }: {group: SiteMenuGroup;pathname: string;onNavigate: () => void;}) {
+  const { t: tr } = useT();
   const reduce = useReducedMotion();
   const tone = featureTone[group.feature.tone];
   const cols = group.columns.length;
@@ -170,7 +173,7 @@ function MegaPanel({ group, pathname, onNavigate }: {group: SiteMenuGroup;pathna
           <div className={cn('grid gap-x-6 gap-y-6', cols === 3 ? 'grid-cols-3' : 'grid-cols-2')}>
             {group.columns.map((c) =>
             <div key={c.heading}>
-                <h3 className="px-3 text-[12px] font-bold uppercase tracking-[0.08em] text-[rgb(104_100_92)]">{c.heading}</h3>
+                <h3 className="px-3 text-[12px] font-bold uppercase tracking-[0.08em] text-[rgb(104_100_92)]">{tr(c.heading)}</h3>
                 <ul className="mt-2 flex flex-col gap-0.5">
                   {c.items.map((i) => {
                   const current = isCurrentLink(i.to, pathname);
@@ -192,8 +195,8 @@ function MegaPanel({ group, pathname, onNavigate }: {group: SiteMenuGroup;pathna
                             <i.icon size={19} strokeWidth={2.1} aria-hidden />
                           </span>
                           <span className="min-w-0">
-                            <span className="block text-[15px] font-bold leading-tight">{i.title}</span>
-                            <span className="mt-0.5 block text-[13px] leading-snug text-[rgb(90_86_78)]">{i.description}</span>
+                            <span className="block text-[15px] font-bold leading-tight">{tr(i.title)}</span>
+                            <span className="mt-0.5 block text-[13px] leading-snug text-[rgb(90_86_78)]">{tr(i.description)}</span>
                           </span>
                         </Link>
                       </li>);
@@ -212,7 +215,7 @@ function MegaPanel({ group, pathname, onNavigate }: {group: SiteMenuGroup;pathna
             }}
             className="group mt-4 inline-flex items-center gap-1.5 self-start rounded-full px-3 py-2 text-[14px] font-bold hover:bg-[rgb(246_243_236)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
             
-              {group.viewAll.label}
+              {tr(group.viewAll.label)}
               <ArrowRightIcon size={15} aria-hidden className="transition-transform duration-150 ease-out group-hover:translate-x-0.5" />
             </Link>
           }
@@ -220,9 +223,9 @@ function MegaPanel({ group, pathname, onNavigate }: {group: SiteMenuGroup;pathna
 
         <div className="flex flex-col justify-between rounded-[22px] p-6" style={{ backgroundColor: tone.bg, color: tone.fg }}>
           <div>
-            <p className="text-[12px] font-bold uppercase tracking-[0.08em] opacity-80">{group.feature.eyebrow}</p>
-            <p className="kb-display mt-3 text-[28px] leading-[1.02]">{group.feature.title}</p>
-            <p className="mt-3 text-[14px] font-medium leading-relaxed opacity-90">{group.feature.text}</p>
+            <p className="text-[12px] font-bold uppercase tracking-[0.08em] opacity-80">{tr(group.feature.eyebrow)}</p>
+            <p className="kb-display mt-3 text-[28px] leading-[1.02]">{tr(group.feature.title)}</p>
+            <p className="mt-3 text-[14px] font-medium leading-relaxed opacity-90">{tr(group.feature.text)}</p>
           </div>
           <Link
             to={group.feature.cta.to}
@@ -233,7 +236,7 @@ function MegaPanel({ group, pathname, onNavigate }: {group: SiteMenuGroup;pathna
             style={{ backgroundColor: tone.btnBg, color: tone.btnFg }}
             className="group mt-6 inline-flex h-11 items-center justify-center gap-1.5 self-start whitespace-nowrap rounded-full px-5 text-[14px] font-bold transition-transform duration-150 ease-out hover:scale-[1.03] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current focus-visible:ring-offset-2">
             
-            {group.feature.cta.label} <ArrowRightIcon size={15} aria-hidden />
+            {tr(group.feature.cta.label)} <ArrowRightIcon size={15} aria-hidden />
           </Link>
         </div>
       </div>

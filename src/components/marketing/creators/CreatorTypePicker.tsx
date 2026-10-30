@@ -5,10 +5,12 @@ import { ArrowRightIcon } from 'lucide-react';
 import { creatorTypes } from '../../../data/creatorsPage';
 import { findExampleById } from '../../../data/examples';
 import { ExamplePhone } from '../ExamplePhone';
+import { useT } from '../../../contexts/LocaleContext';
 import { cn } from '../../../utils/cn';
 
-/** Creator types as tabs; each shows the real template it maps to and what that page leads with (D273). */
+/** Creator types as tabs; each shows the real template it maps to and what that page leads with (D273). Translated in D323. */
 export function CreatorTypePicker() {
+  const { t: tr } = useT();
   const [active, setActive] = useState(creatorTypes[0].id);
   const reduce = useReducedMotion();
   const tabs = useRef<Record<string, HTMLButtonElement | null>>({});
@@ -26,7 +28,7 @@ export function CreatorTypePicker() {
 
   return (
     <div className="mt-12 grid gap-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-16">
-      <div role="tablist" aria-label="Kind of creator" aria-orientation="vertical" className="flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:gap-0 lg:overflow-visible lg:pb-0">
+      <div role="tablist" aria-label={tr('Kind of creator')} aria-orientation="vertical" className="flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:gap-0 lg:overflow-visible lg:pb-0">
         {creatorTypes.map((t, i) => {
           const on = t.id === active;
           return (
@@ -47,7 +49,7 @@ export function CreatorTypePicker() {
                 on ? 'bg-[rgb(20_20_18)] text-white lg:bg-transparent lg:text-fg' : 'bg-[rgb(238_233_221)] text-[rgb(70_68_62)] hover:text-fg lg:bg-transparent lg:text-fg-subtle'
               )}>
               
-              {t.label}
+              {tr(t.label)}
               <ArrowRightIcon size={22} aria-hidden className={cn('hidden transition-[opacity,transform] duration-200 ease-out lg:block', on ? 'translate-x-0 opacity-100' : '-translate-x-2 opacity-0')} />
             </button>);
 
@@ -66,13 +68,13 @@ export function CreatorTypePicker() {
             
             {example && <ExamplePhone doc={example.doc} width={210} className="mx-auto" />}
             <div className="min-w-0">
-              <p className="text-[13px] font-bold text-fg-subtle">The page leads with</p>
-              <p className="mt-2 text-[20px] font-bold leading-snug text-fg md:text-[22px]">{type.leads}</p>
+              <p className="text-[13px] font-bold text-fg-subtle">{tr('The page leads with')}</p>
+              <p className="mt-2 text-[20px] font-bold leading-snug text-fg md:text-[22px]">{tr(type.leads)}</p>
               <ol className="mt-6 flex flex-col">
                 {type.blocks.map((b, i) =>
                 <li key={b} className="flex items-baseline gap-3 border-t border-[rgb(226_220_206)] py-2.5 text-[15px] text-fg last:border-b">
                     <span className="w-5 shrink-0 tabular-nums text-fg-subtle">{i + 1}</span>
-                    {b}
+                    {tr(b)}
                   </li>
                 )}
               </ol>
@@ -81,7 +83,7 @@ export function CreatorTypePicker() {
                 to={`/templates/${example.id}`}
                 className="mt-6 inline-flex h-11 items-center gap-1.5 rounded-full bg-[rgb(20_20_18)] px-5 text-[14px] font-bold text-white transition-transform duration-150 ease-out hover:scale-[1.03] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2">
                 
-                  See {example.name} <ArrowRightIcon size={15} aria-hidden />
+                  {tr('See: {name}', { name: example.name })} <ArrowRightIcon size={15} aria-hidden />
                 </Link>
               }
             </div>

@@ -7,6 +7,7 @@ import { useBilling } from '../../contexts/BillingContext';
 import { useMarketplace } from '../../contexts/MarketplaceContext';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
 import { useTeam } from '../../contexts/TeamContext';
+import { useT } from '../../contexts/LocaleContext';
 import type { ExamplePage } from '../../data/examples/build';
 import { templatePrice } from '../../data/templateMarket';
 import { withVat } from '../../utils/billing';
@@ -14,8 +15,9 @@ import { formatNaira as formatNgn } from '../../utils/format';
 import { creatorShare, findListing, updateTemplateStore } from '../../utils/templateListings';
 import { uid } from '../../utils/id';
 
-/** One-off premium template purchase; licence for this workspace (D67). */
+/** One-off premium template purchase; licence for this workspace (D67). Translated in D315; the invoice line stays English. */
 export function BuyTemplateDialog({ template, onClose, onBought }: {template: ExamplePage | null;onClose: () => void;onBought?: (t: ExamplePage) => void;}) {
+  const { t: tr } = useT();
   const billing = useBilling();
   const market = useMarketplace();
   const { current } = useWorkspace();
@@ -27,7 +29,12 @@ export function BuyTemplateDialog({ template, onClose, onBought }: {template: Ex
   const total = withVat(price).total;
 
   return (
-    <Dialog open={!!template} onClose={onClose} title={`Buy “${template.category}” template`} description={`${formatNgn(price)} + VAT, once. Use it on any space in ${current.name}.`}>
+    <Dialog
+      open={!!template}
+      onClose={onClose}
+      title={tr('Buy this template: {name}', { name: tr(template.category) })}
+      description={tr('{price} + VAT, once. Use it on any space in {workspace}.', { price: formatNgn(price), workspace: current.name })}>
+      
       <div className="flex flex-col gap-5 sm:flex-row">
         <div className="shrink-0 self-center overflow-hidden rounded-[14px]">
           <TemplateThumb doc={template.doc} width={120} height={180} />
@@ -36,7 +43,7 @@ export function BuyTemplateDialog({ template, onClose, onBought }: {template: Ex
           {can.allowed ?
           <PaymentStep
             key={key}
-            payLabel={`Pay ${formatNgn(total)}`}
+            payLabel={tr('Pay {amount}', { amount: formatNgn(total) })}
             savedCard={billing.data.card}
             defaultHolder={current.ownerName}
             onPaid={(card) => {
@@ -51,13 +58,15 @@ export function BuyTemplateDialog({ template, onClose, onBought }: {template: Ex
                   sales: [{ id: uid('sale'), listingId: listing.id, buyerWorkspaceId: current.id, buyerName: current.name, priceNgn: price, creatorShareNgn: creatorShare(price), version: listing.listedVersion, doc, at: new Date().toISOString(), refundedAt: null }, ...s.sales]
                 }));
               }
-              toast.success('Template bought', { description: 'It’s yours for this workspace. The invoice is in Plan & billing.' });
+              toast.success(tr('Template bought'), { description: tr('It’s yours for this workspace. The invoice is in Plan & billing.') });
               onBought?.(template);
               onClose();
             }} /> :
 
 
-          <p className="text-label text-fg-muted">{can.reason} Ask the Owner to buy it.</p>
+          <p className="text-label text-fg-muted">
+              {tr(can.reason ?? '')} {tr('Ask the Owner to buy it.')}
+            </p>
           }
         </div>
       </div>

@@ -3,9 +3,11 @@ import { HandleClaim } from '../HandleClaim';
 import { KbShape } from './KbShape';
 import { RiseText } from './RiseText';
 import { Reveal } from '../Reveal';
+import { useT } from '../../../contexts/LocaleContext';
 
-/** Last call: claim your link, framed by moving brand geometry (D260). */
+/** Last call: claim your link, framed by moving brand geometry (D260). The title is translated here (D318). */
 export function ClosingCta({ title = 'Start with one link. Grow into a whole business.' }: {title?: string;}) {
+  const { t: tr } = useT();
   return (
     <section aria-labelledby="cta-heading" className="relative overflow-hidden bg-[rgb(var(--kb-pink))] text-[rgb(var(--kb-plum))]">
       <KbShape kind="kube" color="rgb(var(--kb-plum))" size={110} motion="spin" className="absolute -left-6 top-10 hidden md:block" />
@@ -15,7 +17,7 @@ export function ClosingCta({ title = 'Start with one link. Grow into a whole bus
 
       <div className="relative z-10 mx-auto flex w-full max-w-4xl flex-col items-center px-5 py-24 text-center md:px-8 md:py-32">
         <h2 id="cta-heading" className="kb-display text-[44px] leading-[0.95] sm:text-[64px] lg:text-[80px]">
-          <RiseText text={title} stagger={0.04} />
+          <RiseText text={tr(title)} stagger={0.04} />
         </h2>
         <Reveal delay={0.2} className="mt-10 flex w-full justify-center text-left">
           <HandleClaim />

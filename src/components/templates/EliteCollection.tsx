@@ -6,6 +6,7 @@ import { eliteGoalLabels, eliteUseCaseLabels } from '../../data/eliteTemplates';
 import { TemplateThumb } from './TemplateThumb';
 import { Dialog } from '../ui/Dialog';
 import { Button } from '../ui/Button';
+import { useT } from '../../contexts/LocaleContext';
 import { formatNaira as formatNgn } from '../../utils/format';
 import { cn } from '../../utils/cn';
 
@@ -19,6 +20,7 @@ interface EliteCollectionProps {
 
 /** Elite Template Library (D154): curated paid templates with use-case and goal filters, and compare up to 3. */
 export function EliteCollection({ templates, hrefFor, onOpen }: EliteCollectionProps) {
+  const { t: tr } = useT();
   const open = (t: ExamplePage) => (ev: React.MouseEvent) => {
     if (!onOpen) return;
     ev.preventDefault();
@@ -41,18 +43,18 @@ export function EliteCollection({ templates, hrefFor, onOpen }: EliteCollectionP
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="max-w-xl">
           <h2 id="elite-title" className="font-display text-[28px] font-semibold leading-tight tracking-[-0.02em] text-fg md:text-[32px]">
-            Elite collection
+            {tr('Elite collection')}
           </h2>
-          <p className="mt-2 text-label text-fg-muted">Complete, art-directed pages with their own structure — heroes, side-by-side sections, grids and a clear main action. Each works with any theme. Example prices, paid once per workspace.</p>
+          <p className="mt-2 text-label text-fg-muted">{tr('Complete, art-directed pages with their own structure — heroes, side-by-side sections, grids and a clear main action. Each works with any theme. Example prices, paid once per workspace.')}</p>
         </div>
         <p className="text-caption text-fg-subtle" aria-live="polite">
-          {list.length} of {elite.length}
+          {tr('{n} of {total}', { n: list.length, total: elite.length })}
         </p>
       </div>
 
       <div className="mt-6 flex flex-col gap-3">
-        <Chips label="Use case" value={useCase} onChange={setUseCase} options={[['all', 'All'], ...useCases.map((u) => [u, eliteUseCaseLabels[u]] as [EliteUseCase, string])]} />
-        <Chips label="Main goal" value={goal} onChange={setGoal} options={[['all', 'Any goal'], ...(Object.entries(eliteGoalLabels) as [EliteGoal, string][])]} />
+        <Chips label={tr('Use case')} value={useCase} onChange={setUseCase} options={[['all', tr('All')], ...useCases.map((u) => [u, tr(eliteUseCaseLabels[u])] as [EliteUseCase, string])]} />
+        <Chips label={tr('Main goal')} value={goal} onChange={setGoal} options={[['all', tr('Any goal')], ...(Object.entries(eliteGoalLabels) as [EliteGoal, string][]).map(([k, v]) => [k, tr(v)] as [EliteGoal, string])]} />
       </div>
 
       <ul className="mt-8 grid grid-cols-1 gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
@@ -77,7 +79,7 @@ export function EliteCollection({ templates, hrefFor, onOpen }: EliteCollectionP
                 <p className="shrink-0 text-label font-semibold tabular-nums text-fg">{formatNgn(e.priceNgn)}</p>
               </div>
               <p className="mt-2 text-caption text-fg-subtle">
-                {eliteGoalLabels[e.goal]} · {e.structure}
+                {tr(eliteGoalLabels[e.goal])} · {e.structure}
               </p>
               <button
                 type="button"
@@ -86,7 +88,7 @@ export function EliteCollection({ templates, hrefFor, onOpen }: EliteCollectionP
                 onClick={() => toggle(t.id)}
                 className="mt-3 inline-flex h-9 items-center gap-1.5 self-start rounded-full border border-line px-3 text-caption font-medium text-fg-muted transition-colors duration-150 hover:border-line-strong hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus disabled:cursor-not-allowed disabled:opacity-50">
                 
-                {on ? <CheckIcon size={13} aria-hidden /> : <PlusIcon size={13} aria-hidden />} {on ? 'In compare' : 'Compare'}
+                {on ? <CheckIcon size={13} aria-hidden /> : <PlusIcon size={13} aria-hidden />} {tr(on ? 'In compare' : 'Compare')}
               </button>
             </li>);
 
@@ -96,18 +98,18 @@ export function EliteCollection({ templates, hrefFor, onOpen }: EliteCollectionP
       {compare.length > 0 &&
       <div className="sticky bottom-4 z-30 mt-8 flex justify-center">
           <div className="flex flex-wrap items-center gap-3 rounded-full border border-line-strong bg-raised px-4 py-2 shadow-3">
-            <span className="text-label text-fg">{compare.length} of 3 to compare</span>
+            <span className="text-label text-fg">{tr('Picked to compare: {n} of {max}', { n: compare.length, max: 3 })}</span>
             <Button size="sm" leadingIcon={Columns3Icon} disabled={compare.length < 2} onClick={() => setComparing(true)}>
-              Compare
+              {tr('Compare')}
             </Button>
             <button type="button" onClick={() => setCompare([])} className="inline-flex h-8 items-center gap-1 px-2 text-caption font-medium text-fg-muted hover:text-fg">
-              <XIcon size={13} aria-hidden /> Clear
+              <XIcon size={13} aria-hidden /> {tr('Clear')}
             </button>
           </div>
         </div>
       }
 
-      <Dialog open={comparing} onClose={() => setComparing(false)} size="lg" title="Compare templates" description="Phone previews side by side. Scroll each one to see the whole page.">
+      <Dialog open={comparing} onClose={() => setComparing(false)} size="lg" title={tr('Compare templates')} description={tr('Phone previews side by side. Scroll each one to see the whole page.')}>
         <div className="scroll-quiet -mx-1 flex gap-4 overflow-x-auto px-1 pb-2">
           {picked.map((t) =>
           <div key={t.id} className="flex shrink-0 flex-col items-center gap-2">
@@ -135,7 +137,7 @@ function Chips<T extends string>({ label, value, onChange, options }: {label: st
         aria-pressed={value === v}
         onClick={() => onChange(v)}
         className={cn(
-          'h-8 rounded-full border px-3 text-label font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
+          'h-8 whitespace-nowrap rounded-full border px-3 text-label font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
           value === v ? 'border-fg bg-fg text-canvas' : 'border-line text-fg-muted hover:border-line-strong hover:text-fg'
         )}>
         

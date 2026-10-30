@@ -9,18 +9,20 @@ import { EmptyState } from '../../components/ui/EmptyState';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { templatePrice } from '../../data/templateMarket';
+import { useT } from '../../contexts/LocaleContext';
 import { formatNaira as formatNgn } from '../../utils/format';
 import { cn } from '../../utils/cn';
 import { ThemeGallery } from '../../components/themes/ThemeGallery';
 
 /** Templates set the layout; themes set the look (D164). */
 function LibraryNav({ active }: {active: 'templates' | 'themes';}) {
+  const { t: tr } = useT();
   const tabs = [
   { id: 'templates', label: 'Templates', to: '/templates' },
   { id: 'themes', label: 'Themes', to: '/templates?tab=themes' }] as
   const;
   return (
-    <nav aria-label="Library" className="flex gap-1 border-b border-line">
+    <nav aria-label={tr('Library')} className="flex gap-1 border-b border-line">
       {tabs.map((t) =>
       <Link
         key={t.id}
@@ -31,7 +33,7 @@ function LibraryNav({ active }: {active: 'templates' | 'themes';}) {
           active === t.id ? 'border-fg text-fg' : 'border-transparent text-fg-muted hover:text-fg'
         )}>
         
-          {t.label}
+          {tr(t.label)}
         </Link>
       )}
     </nav>);
@@ -40,7 +42,13 @@ function LibraryNav({ active }: {active: 'templates' | 'themes';}) {
 
 const styleLabels: Record<ExampleStyle, string> = { light: 'Light', dark: 'Dark', editorial: 'Editorial', bold: 'Bold' };
 
+/**
+ * Public templates library (D164). Translated in D326: headings, filters, counts and each template's category.
+ * Example business names, “best for” lines and descriptions are sample content and stay as written; search still
+ * matches the English words.
+ */
 export function Templates() {
+  const { t: tr } = useT();
   const [params] = useSearchParams();
   const initialGoal = params.get('goal');
   const [goal, setGoal] = useState<ExampleGoal | 'all'>(initialGoal && initialGoal in goalLabels ? initialGoal as ExampleGoal : 'all');
@@ -59,9 +67,9 @@ export function Templates() {
       style === 'all' || e.styles.includes(style)) && (
       region === 'all' || e.city === region) && (
       price === 'all' || (price === 'premium' ? templatePrice(e.id) > 0 : templatePrice(e.id) === 0)) && (
-      !q || [e.name, e.category, e.bestFor, e.description, e.city].some((s) => s.toLowerCase().includes(q)))
+      !q || [e.name, e.category, tr(e.category), e.bestFor, e.description, e.city].some((s) => s.toLowerCase().includes(q)))
     );
-  }, [goal, style, query, region, price]);
+  }, [goal, style, query, region, price, tr]);
 
   const reset = () => {
     setGoal('all');
@@ -77,10 +85,10 @@ export function Templates() {
         <LibraryNav active="themes" />
         <header className="mt-8 max-w-2xl">
           <h1 className="kb-display text-[44px] leading-[0.98] text-fg md:text-[72px]">
-            Choose the look, <span className="nm-text">keep your layout</span>
+            {tr('Choose the look,')} <span className="nm-text">{tr('keep your layout')}</span>
           </h1>
           <p className="mt-4 text-body text-fg-muted">
-            24 Signature themes — glass, gloss, editorial and quiet luxury. A theme changes colours, surfaces, buttons and type; your page’s content and layout stay exactly where they are.
+            {tr('24 Signature themes — glass, gloss, editorial and quiet luxury. A theme changes colours, surfaces, buttons and type; your page’s content and layout stay exactly where they are.')}
           </p>
         </header>
         <ThemeGallery signUpHref="/signup" />
@@ -93,29 +101,29 @@ export function Templates() {
       <LibraryNav active="templates" />
       <header className="mt-8 max-w-2xl">
         <h1 className="kb-display text-[44px] leading-[0.98] text-fg md:text-[72px]">
-          Start from a page <span className="nm-text">built for your goal</span>
+          {tr('Start from a page')} <span className="nm-text">{tr('built for your goal')}</span>
         </h1>
         <p className="mt-4 text-body text-fg-muted">
-          Each template is a complete example for a fictional business. When you use one, we keep the layout and remove its prices, links and quotes, so only your details go live.
+          {tr('Each template is a complete example for a fictional business. When you use one, we keep the layout and remove its prices, links and quotes, so only your details go live.')}
         </p>
       </header>
 
       <EliteCollection templates={examplePages} hrefFor={(e) => `/templates/${e.id}`} />
       <ArtworkCollection templates={examplePages} hrefFor={(e) => `/templates/${e.id}`} />
 
-      <h2 className="mt-16 font-display text-[28px] font-semibold leading-tight tracking-[-0.02em] text-fg">All templates</h2>
+      <h2 className="mt-16 font-display text-[28px] font-semibold leading-tight tracking-[-0.02em] text-fg">{tr('All templates')}</h2>
       <div className="mt-6 flex flex-col gap-4 border-b border-line pb-6 lg:flex-row lg:items-center lg:justify-between">
-        <FilterRow label="Goal" value={goal} onChange={setGoal} options={[['all', 'All goals'], ...(Object.entries(goalLabels) as [ExampleGoal, string][])]} />
+        <FilterRow label={tr('Goal')} value={goal} onChange={setGoal} options={[['all', tr('All goals')], ...(Object.entries(goalLabels) as [ExampleGoal, string][]).map(([k, v]) => [k, tr(v)] as [ExampleGoal, string])]} />
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <FilterRow label="Style" value={style} onChange={setStyle} options={[['all', 'Any style'], ...(Object.entries(styleLabels) as [ExampleStyle, string][])]} />
+          <FilterRow label={tr('Style')} value={style} onChange={setStyle} options={[['all', tr('Any style')], ...(Object.entries(styleLabels) as [ExampleStyle, string][]).map(([k, v]) => [k, tr(v)] as [ExampleStyle, string])]} />
           <label className="relative block sm:w-56">
-            <span className="sr-only">Search templates</span>
+            <span className="sr-only">{tr('Search templates')}</span>
             <SearchIcon size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-fg-subtle" aria-hidden />
             <input
               type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search, e.g. salon"
+              placeholder={tr('Search, e.g. salon')}
               className="h-10 w-full rounded-md border border-line-strong bg-field pl-9 pr-3 text-label text-fg placeholder:text-fg-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus" />
             
           </label>
@@ -123,17 +131,35 @@ export function Templates() {
       </div>
 
       <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
-        <FilterRow label="Price" value={price} onChange={setPrice} options={[['all', 'Free and premium'], ['free', 'Free'], ['premium', 'Premium']]} />
-        <FilterRow label="Region" value={region} onChange={setRegion} options={[['all', 'Everywhere'], ...regions.map((r) => [r, r] as [string, string])]} />
+        <FilterRow
+          label={tr('Price')}
+          value={price}
+          onChange={setPrice}
+          options={[
+          ['all', tr('Free and premium')],
+          ['free', tr('Free')],
+          ['premium', tr('Premium')]]
+          } />
+        
+        <FilterRow label={tr('Region')} value={region} onChange={setRegion} options={[['all', tr('Everywhere')], ...regions.map((r) => [r, tr(r)] as [string, string])]} />
       </div>
 
       <p className="mt-6 text-caption text-fg-subtle" aria-live="polite">
-        {list.length} template{list.length === 1 ? '' : 's'}
+        {tr('Templates: {n}', { n: list.length })}
       </p>
 
       {list.length === 0 ?
       <div className="mt-8">
-          <EmptyState icon={SearchIcon} title="No templates match" description="Try another goal or style, or start from a blank page." action={<Button variant="secondary" onClick={reset}>Clear filters</Button>} />
+          <EmptyState
+          icon={SearchIcon}
+          title={tr('No templates match')}
+          description={tr('Try another goal or style, or start from a blank page.')}
+          action={
+          <Button variant="secondary" onClick={reset}>
+                {tr('Clear filters')}
+              </Button>
+          } />
+        
         </div> :
 
       <ul className="mt-6 grid grid-cols-2 gap-x-5 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
@@ -146,11 +172,11 @@ export function Templates() {
                   </span>
                   {templatePrice(e.id) > 0 &&
               <span className="absolute left-2 top-2">
-                      <Badge tone="accent">Premium · {formatNgn(templatePrice(e.id))}</Badge>
+                      <Badge tone="accent">{tr('Premium · {price}', { price: formatNgn(templatePrice(e.id)) })}</Badge>
                     </span>
               }
                 </span>
-                <span className="mt-4 text-caption font-medium text-fg-subtle">{e.category}</span>
+                <span className="mt-4 text-caption font-medium text-fg-subtle">{tr(e.category)}</span>
                 <span className="mt-0.5 text-heading font-semibold text-fg">{e.name}</span>
                 <span className="mt-1 text-label text-fg-muted">{e.bestFor}</span>
               </Link>
@@ -172,7 +198,7 @@ function FilterRow<T extends string>({ label, value, onChange, options }: {label
         aria-pressed={value === v}
         onClick={() => onChange(v)}
         className={cn(
-          'h-8 rounded-full border px-3 text-label font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
+          'h-8 whitespace-nowrap rounded-full border px-3 text-label font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
           value === v ? 'nm-fill border-transparent font-semibold text-[rgb(16_14_26)]' : 'border-line text-fg-muted hover:border-line-strong hover:text-fg'
         )}>
         

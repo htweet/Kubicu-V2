@@ -4,11 +4,13 @@ import { ArrowRightIcon, CheckCircle2Icon, XCircleIcon } from 'lucide-react';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
 import { handleStatus, suggestHandles, takenHandles } from '../../utils/handles';
 import { CLAIM_HOLD_MINUTES, saveHandleClaim } from '../../utils/handleClaim';
+import { useT } from '../../contexts/LocaleContext';
 import { Button } from '../ui/Button';
 import { cn } from '../../utils/cn';
 
-/** Hero form: type the kub.icu address you want, see if it's free, claim it and go to sign-up (D84). */
+/** Hero form: type the kub.icu address you want, see if it's free, claim it and go to sign-up (D84). Translated in D318. */
 export function HandleClaim() {
+  const { t: tr } = useT();
   const navigate = useNavigate();
   const { workspaces } = useWorkspace();
   const taken = useMemo(() => takenHandles(workspaces, '__new__'), [workspaces]);
@@ -28,15 +30,15 @@ export function HandleClaim() {
   const message = (() => {
     switch (status) {
       case 'available':
-        return { tone: 'ok' as const, text: `kub.icu/${handle} is free. Claim it before someone else does.` };
+        return { tone: 'ok' as const, text: tr('{address} is free. Claim it before someone else does.', { address: `kub.icu/${handle}` }) };
       case 'taken':
-        return { tone: 'bad' as const, text: `kub.icu/${handle} is already taken.` };
+        return { tone: 'bad' as const, text: tr('{address} is already taken.', { address: `kub.icu/${handle}` }) };
       case 'reserved':
-        return { tone: 'bad' as const, text: `kub.icu/${handle} is reserved by KUBICU.` };
+        return { tone: 'bad' as const, text: tr('{address} is reserved by KUBICU.', { address: `kub.icu/${handle}` }) };
       case 'invalid':
-        return { tone: 'bad' as const, text: 'Use 3–30 lowercase letters, numbers or dashes.' };
+        return { tone: 'bad' as const, text: tr('Use 3–30 lowercase letters, numbers or dashes.') };
       default:
-        return tried ? { tone: 'bad' as const, text: 'Type the address you want for your page.' } : null;
+        return tried ? { tone: 'bad' as const, text: tr('Type the address you want for your page.') } : null;
     }
   })();
 
@@ -51,7 +53,7 @@ export function HandleClaim() {
       aria-describedby="claim-status">
       
       <label htmlFor="claim-handle" className="text-label font-semibold text-fg">
-        Claim your link
+        {tr('Claim your link')}
       </label>
       <div
         className={cn(
@@ -67,7 +69,7 @@ export function HandleClaim() {
             id="claim-handle"
             value={handle}
             onChange={(e) => setHandle(e.target.value.toLowerCase().replace(/\s+/g, ''))}
-            placeholder="yourbusiness"
+            placeholder={tr('yourbusiness')}
             autoComplete="off"
             autoCapitalize="none"
             spellCheck={false}
@@ -77,7 +79,7 @@ export function HandleClaim() {
           
         </div>
         <Button type="submit" size="lg" variant="primary" trailingIcon={ArrowRightIcon} className="h-12 shrink-0 rounded-full px-6 text-[15px] font-bold">
-          Claim it — free
+          {tr('Claim it — free')}
         </Button>
       </div>
 
@@ -90,7 +92,7 @@ export function HandleClaim() {
         }
         {suggestions.length > 0 &&
         <div className="mt-2 flex flex-wrap items-center gap-2">
-            <span className="text-caption text-fg-subtle">Free instead:</span>
+            <span className="text-caption text-fg-subtle">{tr('Free instead:')}</span>
             {suggestions.map((s) =>
           <button
             key={s}
@@ -105,7 +107,7 @@ export function HandleClaim() {
         }
       </div>
       <p className="mt-1 text-caption text-fg-subtle">
-        We hold it for {CLAIM_HOLD_MINUTES} minutes while you create your account. No card needed.
+        {tr('We hold it for {n} minutes while you create your account. No card needed.', { n: CLAIM_HOLD_MINUTES })}
       </p>
     </form>);
 

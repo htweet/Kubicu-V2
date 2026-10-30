@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { CheckIcon, DownloadIcon, PrinterIcon, StoreIcon } from 'lucide-react';
 import type { PopupSettings } from '../../../types/page';
 import { useEditor } from '../../../contexts/EditorContext';
+import { useT } from '../../../contexts/LocaleContext';
 import { useCommerce } from '../../../contexts/CommerceContext';
 import { useWorkspace } from '../../../contexts/WorkspaceContext';
 import { useNow } from '../../../hooks/useNow';
@@ -14,7 +15,7 @@ import { Field } from '../../ui/Field';
 import { Segmented } from '../../ui/Segmented';
 import { TextInput } from '../../ui/TextInput';
 import { PopupSessionsEditor } from '../../popup/PopupSessionsEditor';
-import { markCollected, popupOrders, popupOrdersCsv, popupStatus, popupStateLabels, popupSummary, sessionWhen, sortedSessions, stallLeft, stallSold, syncStallHolds, undoCollected } from '../../../utils/popup';
+import { markCollected, popupOrders, popupOrdersCsv, popupStatus, popupStateLabels, popupSummary, sessionDay, sessionWhen, sortedSessions, stallLeft, stallSold, syncStallHolds, undoCollected } from '../../../utils/popup';
 import { printPickupSlips } from '../../../utils/popupSlips';
 import { Switch } from '../../ui/Switch';
 import { downloadCsv } from '../../../utils/csv';
@@ -26,6 +27,8 @@ const linkClass = 'inline-flex min-h-[44px] items-center gap-1.5 rounded-sm text
 
 /** Pop-up shop settings (D183): place, sessions, products, payment, and orders to collect per session. */
 export function PopupSettingsPanel() {
+  // Shared inputs translate their own labels; headings, notes, buttons and built lines are translated here (D309).
+  const { t: tr } = useT();
   const { state, actions } = useEditor();
   const { data, apply } = useCommerce();
   const { currentSpace } = useWorkspace();
@@ -58,12 +61,20 @@ export function PopupSettingsPanel() {
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h3 id="popup-heading" className="text-label font-semibold text-fg">
-            Pop-up shop
+            {tr('Pop-up shop')}
           </h3>
-          <p className="mt-0.5 truncate text-caption text-fg-subtle">{popupSummary(p, now)}</p>
+          <p className="mt-0.5 truncate text-caption text-fg-subtle">
+            {st.state === 'open' && st.current ?
+            tr('Open now · until {time}', { time: st.current.to }) :
+            st.state === 'soon' && st.next ?
+            tr('Opens {day} at {time}', { day: sessionDay(st.next), time: st.next.from }) :
+            st.state === 'between' && st.next ?
+            tr('Next: {when}', { when: sessionWhen(st.next) }) :
+            tr(popupSummary(p, now))}
+          </p>
         </div>
         <Badge tone={st.state === 'open' ? 'success' : st.state === 'closed' ? 'neutral' : 'info'} dot>
-          {popupStateLabels[st.state]}
+          {tr(popupStateLabels[st.state])}
         </Badge>
       </div>
 
@@ -90,7 +101,7 @@ export function PopupSettingsPanel() {
       </Field>
 
       <fieldset className="min-w-0">
-        <legend className="mb-1.5 text-label font-medium text-fg">Products at the stall</legend>
+        <legend className="mb-1.5 text-label font-medium text-fg">{tr('Products at the stall')}</legend>
         <ul className="flex flex-col divide-y divide-line rounded-md border border-line">
           {products.map((x) => {
             const on = p.productIds.includes(x.id);
@@ -109,7 +120,8 @@ export function PopupSettingsPanel() {
                     <span className="block truncate">{x.name}</span>
                     {on &&
                     <span className="block text-caption text-fg-subtle">
-                        {sold} sold here{left !== null ? ` · ${left} left at the stall${p.holdStock && st.state !== 'closed' && left > 0 ? ' (set aside)' : ''}` : ''}
+                        {tr('Sold here: {n}', { n: sold })}
+                        {left !== null ? ` · ${tr('Left at the stall: {n}', { n: left })}${p.holdStock && st.state !== 'closed' && left > 0 ? ` (${tr('set aside')})` : ''}` : ''}
                       </span>
                     }
                   </span>
@@ -119,8 +131,8 @@ export function PopupSettingsPanel() {
                   type="number"
                   min={0}
                   inputMode="numeric"
-                  aria-label={`Most to sell at the stall: ${x.name}`}
-                  placeholder="No limit"
+                  aria-label={tr('Most to sell at the stall: {name}', { name: x.name })}
+                  placeholder={tr('No limit')}
                   value={p.stallLimits[x.id] ?? ''}
                   onChange={(e) => {
                     const v = e.target.value.trim();
@@ -149,23 +161,23 @@ export function PopupSettingsPanel() {
             onChange={(holdStock) => patch({ holdStock })} />
           
           {p.holdStock && Object.keys(p.stallLimits).filter((id) => p.productIds.includes(id)).length === 0 &&
-          <p className="mt-1.5 text-caption text-warning">Add a stall limit to a product to set units aside.</p>
+          <p className="mt-1.5 text-caption text-warning">{tr('Add a stall limit to a product to set units aside.')}</p>
           }
-          {p.holdStock && st.state === 'closed' && <p className="mt-1.5 text-caption text-fg-subtle">Closed — everything set aside has gone back to your main stock.</p>}
+          {p.holdStock && st.state === 'closed' && <p className="mt-1.5 text-caption text-fg-subtle">{tr('Closed — everything set aside has gone back to your main stock.')}</p>}
         </div>
       </fieldset>
 
       <div>
         <div className="mb-2 flex items-center justify-between gap-2">
           <h4 className="text-label font-medium text-fg">
-            To collect <span className="font-normal tabular-nums text-fg-subtle">· {toCollect} of {orders.length}</span>
+            {tr('To collect')} <span className="font-normal tabular-nums text-fg-subtle">· {toCollect} / {orders.length}</span>
           </h4>
           <Button size="sm" variant="tertiary" leadingIcon={DownloadIcon} disabled={!orders.length} onClick={() => downloadCsv(`${handle}-pickups.csv`, popupOrdersCsv(orders))}>
             CSV
           </Button>
         </div>
         {orders.length === 0 ?
-        <p className="rounded-md border border-dashed border-line-strong px-3 py-3 text-caption text-fg-muted">No pickup orders yet. They appear here, grouped by session.</p> :
+        <p className="rounded-md border border-dashed border-line-strong px-3 py-3 text-caption text-fg-muted">{tr('No pickup orders yet. They appear here, grouped by session.')}</p> :
 
         <div className="flex flex-col gap-3">
             {sortedSessions(p).
@@ -180,13 +192,13 @@ export function PopupSettingsPanel() {
                     size="sm"
                     variant="tertiary"
                     leadingIcon={PrinterIcon}
-                    aria-label={`Print packing slips for ${sessionWhen(s)}`}
+                    aria-label={tr('Print packing slips for {when}', { when: sessionWhen(s) })}
                     onClick={() => {
                       const ok = printPickupSlips({ shop: state.site.title || 'Pop-up shop', venue: p.venue, sessionWhen: sessionWhen(s), orders: list });
-                      if (!ok) toast.error('Your browser blocked the print tab', { description: 'Allow pop-ups for this site, then try again.' });
+                      if (!ok) toast.error(tr('Your browser blocked the print tab'), { description: tr('Allow pop-ups for this site, then try again.') });
                     }}>
                     
-                        Slips
+                        {tr('Slips')}
                       </Button>
                     </div>
                     <ul className="flex flex-col divide-y divide-line rounded-md border border-line">
@@ -201,20 +213,20 @@ export function PopupSettingsPanel() {
                               </p>
                               <p className="truncate text-caption text-fg-subtle">
                                 {o.items.map((i) => `${i.qty}× ${i.name}`).join(', ')}
-                                {owe ? ` · collect ${formatNgn(o.subtotalNgn - o.discountNgn)}` : ''}
+                                {owe ? ` · ${tr('collect {amount}', { amount: formatNgn(o.subtotalNgn - o.discountNgn) })}` : ''}
                               </p>
                             </div>
                             <Button
                           size="sm"
                           variant={done ? 'tertiary' : 'secondary'}
                           leadingIcon={done ? CheckIcon : undefined}
-                          aria-label={done ? `Undo collected for order ${o.number}` : `Mark order ${o.number} collected${owe ? ' and paid' : ''}`}
+                          aria-label={done ? tr('Undo collected for order {n}', { n: o.number }) : tr(owe ? 'Mark order {n} collected and paid' : 'Mark order {n} collected', { n: o.number })}
                           onClick={() => {
                             setCollected(o.id, !done);
-                            if (!done) toast(`Order ${orderRef(o)} collected`, { description: owe ? 'Marked as paid at the stall.' : undefined, action: { label: 'Undo', onClick: () => setCollected(o.id, false) } });
+                            if (!done) toast(tr('Order {ref} collected', { ref: orderRef(o) }), { description: owe ? tr('Marked as paid at the stall.') : undefined, action: { label: tr('Undo'), onClick: () => setCollected(o.id, false) } });
                           }}>
                           
-                              {done ? 'Collected' : owe ? 'Paid & collected' : 'Collected?'}
+                              {tr(done ? 'Collected' : owe ? 'Paid & collected' : 'Collected?')}
                             </Button>
                           </li>);
 
@@ -229,17 +241,17 @@ export function PopupSettingsPanel() {
 
       <div className="flex flex-wrap gap-x-4 gap-y-1">
         <Link to={qrHref({ spaceId: currentSpace.id, path: '' }, `${state.site.title} stall sign`)} className={linkClass}>
-          <PrinterIcon size={13} aria-hidden /> Stall sign with QR code
+          <PrinterIcon size={13} aria-hidden /> {tr('Stall sign with QR code')}
         </Link>
         <Link to="/app/commerce/orders" className={linkClass}>
-          <StoreIcon size={13} aria-hidden /> All orders
+          <StoreIcon size={13} aria-hidden /> {tr('All orders')}
         </Link>
       </div>
-      <p className="-mt-2 text-caption text-fg-subtle">Opens the QR code for this page — download it, or print the A4/A5 sign from the Print sheet. Scans count in Analytics as this space.</p>
+      <p className="-mt-2 text-caption text-fg-subtle">{tr('Opens the QR code for this page — download it, or print the A4/A5 sign from the Print sheet. Scans count in Analytics as this space.')}</p>
 
       {p.closedAt ?
       <Button size="sm" variant="secondary" className="self-start" onClick={() => patch({ closedAt: null })}>
-          Reopen the pop-up
+          {tr('Reopen the pop-up')}
         </Button> :
 
       st.state !== 'closed' &&
@@ -249,10 +261,10 @@ export function PopupSettingsPanel() {
         className="self-start"
         onClick={() => {
           patch({ closedAt: new Date().toISOString() });
-          toast('Pop-up closed early', { description: 'Visitors see “Closed” once you publish. Orders already placed stay in your list.', action: { label: 'Undo', onClick: () => actions.undo() } });
+          toast(tr('Pop-up closed early'), { description: tr('Visitors see “Closed” once you publish. Orders already placed stay in your list.'), action: { label: tr('Undo'), onClick: () => actions.undo() } });
         }}>
         
-            Close early
+            {tr('Close early')}
           </Button>
 
       }

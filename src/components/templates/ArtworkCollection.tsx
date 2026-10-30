@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import type { ExamplePage } from '../../data/examples/build';
 import { TemplateThumb } from './TemplateThumb';
 import { formatNaira as formatNgn } from '../../utils/currency';
+import { useT } from '../../contexts/LocaleContext';
 
 interface ArtworkCollectionProps {
   templates: ExamplePage[];
@@ -13,6 +14,7 @@ interface ArtworkCollectionProps {
 
 /** Artwork collection (D158): classic single-column pages, each over its own AI-generated background artwork. */
 export function ArtworkCollection({ templates, hrefFor, onOpen }: ArtworkCollectionProps) {
+  const { t: tr } = useT();
   const list = templates.filter((t) => t.artwork);
   if (list.length === 0) return null;
   const open = (t: ExamplePage) => (ev: React.MouseEvent) => {
@@ -24,10 +26,10 @@ export function ArtworkCollection({ templates, hrefFor, onOpen }: ArtworkCollect
     <section aria-labelledby="artwork-title" className="mt-14">
       <div className="max-w-xl">
         <h2 id="artwork-title" className="font-display text-[28px] font-semibold leading-tight tracking-[-0.02em] text-fg md:text-[32px]">
-          Artwork collection
+          {tr('Artwork collection')}
         </h2>
         <p className="mt-2 text-label text-fg-muted">
-          The familiar one-column page — profile, links, forms — set over an original background artwork. Keep the art and change everything else. Up to {formatNgn(3000)}, paid once per workspace (example prices).
+          {tr('The familiar one-column page — profile, links, forms — set over an original background artwork. Keep the art and change everything else. Up to {price}, paid once per workspace (example prices).', { price: formatNgn(3000) })}
         </p>
       </div>
       <ul className="scroll-quiet -mx-1 mt-8 flex snap-x gap-5 overflow-x-auto px-1 pb-3">

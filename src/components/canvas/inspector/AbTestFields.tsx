@@ -5,6 +5,7 @@ import type { Block, IntentGoal } from '../../../types/page';
 import { useEditor } from '../../../contexts/EditorContext';
 import { useAnalytics } from '../../../contexts/AnalyticsContext';
 import { usePlan } from '../../../contexts/PlanContext';
+import { useT } from '../../../contexts/LocaleContext';
 import { planAtLeast } from '../../../data/plans';
 import { goalLabels, MIN_VISITS } from '../../../utils/intentflow';
 import { abResult, rate, testPair } from '../../../utils/abTest';
@@ -16,8 +17,9 @@ import { cn } from '../../../utils/cn';
 
 const AB_PLAN = 'pro' as const;
 
-/** Visibility → A/B test (D127): try two versions of a block; each visit sees one. */
+/** Visibility → A/B test (D127): try two versions of a block; each visit sees one. Translated in D314. */
 export function AbTestFields({ block }: {block: Block;}) {
+  const { t: tr } = useT();
   const { state, actions } = useEditor();
   const { data } = useAnalytics();
   const plan = usePlan();
@@ -32,20 +34,20 @@ export function AbTestFields({ block }: {block: Block;}) {
     <section aria-labelledby={`${block.id}-ab`} className="flex flex-col gap-3 border-t border-line pt-5">
       <div>
         <h3 id={`${block.id}-ab`} className="flex items-center gap-1.5 text-label font-medium text-fg">
-          <FlaskConicalIcon size={14} aria-hidden /> A/B test
+          <FlaskConicalIcon size={14} aria-hidden /> {tr('A/B test')}
         </h3>
-        <p className="mt-0.5 text-caption text-fg-subtle">Try two versions — a different headline, photo or button — and see which gets more results. Half of visits see each.</p>
+        <p className="mt-0.5 text-caption text-fg-subtle">{tr('Try two versions — a different headline, photo or button — and see which gets more results. Half of visits see each.')}</p>
       </div>
 
       {!test &&
       <>
           <SelectInput<IntentGoal>
           id={`${block.id}-ab-goal`}
-          label="Judge it by"
+          label={tr('Judge it by')}
           value={goal}
           disabled={!allowed}
           onChange={setGoal}
-          options={(Object.keys(goalLabels) as IntentGoal[]).map((g) => ({ value: g, label: goalLabels[g] }))} />
+          options={(Object.keys(goalLabels) as IntentGoal[]).map((g) => ({ value: g, label: tr(goalLabels[g]) }))} />
         
           <Button
           size="sm"
@@ -54,10 +56,10 @@ export function AbTestFields({ block }: {block: Block;}) {
           disabled={!allowed}
           onClick={() => {
             actions.startAbTest(block.id, goal);
-            toast('Version B added below', { description: 'Change something in version B, then publish to start the test.', action: { label: 'Undo', onClick: () => actions.undo() } });
+            toast(tr('Version B added below'), { description: tr('Change something in version B, then publish to start the test.'), action: { label: tr('Undo'), onClick: () => actions.undo() } });
           }}>
           
-            Test a different version
+            {tr('Test a different version')}
           </Button>
           {!allowed && <UpgradeButton plan={AB_PLAN} feature="A/B tests" className="self-start" />}
         </>
@@ -65,9 +67,9 @@ export function AbTestFields({ block }: {block: Block;}) {
 
       {test && !pair &&
       <div className="flex flex-col gap-2">
-          <p className="text-caption text-warning">The other version was deleted.</p>
+          <p className="text-caption text-warning">{tr('The other version was deleted.')}</p>
           <Button size="sm" variant="secondary" className="self-start" onClick={() => actions.endAbTest(test.id, test.arm)}>
-            End test and keep this one
+            {tr('End test and keep this one')}
           </Button>
         </div>
       }
@@ -75,7 +77,7 @@ export function AbTestFields({ block }: {block: Block;}) {
       {test && pair && result &&
       <>
           <p className="text-caption text-fg-muted">
-            This is <strong className="font-semibold text-fg">version {test.arm}</strong>. Judged by {goalLabels[test.goal].toLowerCase()}. Both versions show here; visitors see one.
+            <strong className="font-semibold text-fg">{tr('This is version {arm}.', { arm: test.arm })}</strong> {tr('Judged by: {goal}.', { goal: tr(goalLabels[test.goal]) })} {tr('Both versions show here; visitors see one.')}
           </p>
           <div className="grid grid-cols-2 gap-2">
             {(['A', 'B'] as const).map((arm) => {
@@ -88,26 +90,27 @@ export function AbTestFields({ block }: {block: Block;}) {
                 onClick={() => actions.select(arm === 'A' ? pair.a.id : pair.b.id)}
                 className={cn('rounded-md border p-3 text-left transition-colors duration-150 ease-out hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus', lead ? 'border-success' : 'border-line', test.arm === arm && 'bg-sunken')}>
                 
-                  <span className="block text-caption text-fg-subtle">Version {arm}{lead ? ' · ahead' : ''}</span>
-                  <span className="block text-heading font-semibold tabular-nums text-fg">{rate(side)}</span>
-                  <span className="block text-caption text-fg-muted tabular-nums">
-                    {side.hits} of {side.visits} visits
+                  <span className="block text-caption text-fg-subtle">
+                    {tr('Version {arm}', { arm })}
+                    {lead ? ` · ${tr('ahead')}` : ''}
                   </span>
+                  <span className="block text-heading font-semibold tabular-nums text-fg">{rate(side)}</span>
+                  <span className="block text-caption tabular-nums text-fg-muted">{tr('{hits} of {visits} visits', { hits: side.hits, visits: side.visits })}</span>
                 </button>);
 
           })}
           </div>
           <p className="text-caption text-fg-subtle" role="status">
             {!result.enough ?
-          `Too early to tell — needs ${MIN_VISITS} visits on each version.` :
+          tr('Too early to tell — visits needed on each version: {n}.', { n: MIN_VISITS }) :
           result.leader ?
-          `Version ${result.leader} is clearly ahead. A difference isn’t proof — seasons and paydays move results too.` :
-          'No clear winner yet. Keep it running, or keep the one you prefer.'}
+          tr('Version {arm} is clearly ahead. A difference isn’t proof — seasons and paydays move results too.', { arm: result.leader }) :
+          tr('No clear winner yet. Keep it running, or keep the one you prefer.')}
           </p>
           <Switch
           id={`${block.id}-ab-pause`}
-          label="Pause the test"
-          description="Everyone sees version A until you resume."
+          label={tr('Pause the test')}
+          description={tr('Everyone sees version A until you resume.')}
           checked={!!test.paused}
           onChange={(paused) => {
             actions.updateMeta(pair.a.id, { visibility: { abTest: { ...pair.a.visibility.abTest!, paused } } });
@@ -122,10 +125,10 @@ export function AbTestFields({ block }: {block: Block;}) {
             variant={result.leader === arm ? 'primary' : 'secondary'}
             onClick={() => {
               actions.endAbTest(test.id, arm);
-              toast.success(`Kept version ${arm}`, { description: 'The other version was removed. Publish to show it to everyone.', action: { label: 'Undo', onClick: () => actions.undo() } });
+              toast.success(tr('Kept version {arm}', { arm }), { description: tr('The other version was removed. Publish to show it to everyone.'), action: { label: tr('Undo'), onClick: () => actions.undo() } });
             }}>
             
-                Keep {arm}
+                {tr('Keep {arm}', { arm })}
               </Button>
           )}
           </div>
