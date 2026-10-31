@@ -1,39 +1,42 @@
 import type { BankAccount, KycTier } from '../../types/money';
-import type { CheckResult, EntityType, KycCase, KycPerson, KycStepId } from '../../types/kyc';
+import type { CheckResult, EntityType, IdType, KycAddress, KycCase, KycPerson, KycStepId } from '../../types/kyc';
+import { phoneIssue } from '../phone';
+import type { CountryCode } from '../../types/country';
 import { uid } from '../id';
-import { activeCountryInfo } from '../country';
+import { activeCountry, activeCountryInfo, countryInfo } from '../country';
 
-/** Business verification (D93): which steps apply, what each needs, simulated partner checks and review decisions. */
+const kycCountryName = (code: CountryCode) => countryInfo(code).name;
+import { kycCountries, proofLabelsFor, type KycCountryRules } from '../../data/kycCountries';
+
+/**
+ * Business verification (D93): which steps apply, what each needs, simulated partner checks and review decisions.
+ * Labels, number formats and registries follow the workspace's country (D424); the lookups below are getters, so
+ * they always read the country on screen.
+ */
+
+/** The verification rules for the workspace on screen. */
+export const kycRules = (country?: CountryCode): KycCountryRules => kycCountries[country ?? activeCountry()] ?? kycCountries.NG;
+
+const tiers: Record<EntityType, KycTier> = { individual: 2, business_name: 3, company: 3 };
+const entityEntry = (id: EntityType) => ({
+  get label() {return kycRules().entities[id].label;},
+  get short() {return kycRules().entities[id].short;},
+  get blurb() {return kycRules().entities[id].blurb;},
+  get needs() {return kycRules().entities[id].needs;},
+  tier: tiers[id]
+});
 
 export const entityInfo: Record<EntityType, {label: string;short: string;blurb: string;needs: string[];tier: KycTier;}> = {
-  individual: {
-    label: 'Individual or freelancer',
-    short: 'Individual',
-    blurb: 'You sell under your own name and aren’t registered with CAC.',
-    needs: ['BVN and NIN', 'A government ID and a selfie', 'Proof of address', 'A bank account in your name'],
-    tier: 2
-  },
-  business_name: {
-    label: 'Registered business name',
-    short: 'Business name (BN)',
-    blurb: 'Registered with CAC as a business name or sole proprietorship (BN number).',
-    needs: ['Everything for individuals', 'CAC certificate and BN number', 'Proprietors listed', 'A bank account in the business name'],
-    tier: 3
-  },
-  company: {
-    label: 'Limited company',
-    short: 'Company (RC)',
-    blurb: 'Registered with CAC as a limited liability company (RC number).',
-    needs: ['The person applying: BVN, ID, selfie', 'CAC certificate, status report and MEMART', 'Directors and owners of 25% or more', 'A corporate bank account'],
-    tier: 3
-  }
+  individual: entityEntry('individual'),
+  business_name: entityEntry('business_name'),
+  company: entityEntry('company')
 };
 
 export const stepLabels: Record<KycStepId, {label: string;hint: string;}> = {
   type: { label: 'Business type', hint: 'Who is getting paid' },
-  identity: { label: 'Your identity', hint: 'BVN, NIN, ID and selfie' },
+  identity: { label: 'Your identity', get hint() {return kycRules().identityHint;} },
   address: { label: 'Address', hint: 'Where you live or trade' },
-  business: { label: 'Business details', hint: 'CAC registration and documents' },
+  business: { label: 'Business details', get hint() {return `${kycRules().registry.short} registration and documents`;} },
   people: { label: 'Directors & owners', hint: 'Everyone who controls the business' },
   payout: { label: 'Payout account', hint: 'Must match the verified name' },
   declarations: { label: 'Declarations', hint: 'Expected volume and source of funds' },
@@ -47,12 +50,21 @@ export function stepsFor(entity: EntityType | null): KycStepId[] {
 
 
 
-export const volumeLabels = { under_500k: 'Under ₦500,000', '500k_2m': '₦500,000 – ₦2 million', '2m_10m': '₦2 – 10 million', '10m_50m': '₦10 – 50 million', over_50m: 'Over ₦50 million' } as const;
+type VolumeKey = Exclude<KycCase['declarations']['monthlyVolume'], ''>;
+const volumeKeys: VolumeKey[] = ['under_500k', '500k_2m', '2m_10m', '10m_50m', 'over_50m'];
+/** Monthly sales bands in the country's own currency (D424). Keys are kept so saved answers still load. */
+export const volumeLabels = Object.defineProperties({} as Record<VolumeKey, string>, Object.fromEntries(volumeKeys.map((k) => [k, { enumerable: true, get: () => kycRules().volume[k] }])));
 export const fundsLabels = { sales: 'Selling products', services: 'Providing services', savings: 'Personal savings', investment: 'Investment or loan', other: 'Something else' } as const;
-export const idTypeLabels = { nin: 'NIN slip or card', passport: 'International passport', licence: 'Driver’s licence', voters: 'Voter’s card' } as const;
-export const proofLabels = { utility: 'Utility bill (last 3 months)', bank_statement: 'Bank statement (last 3 months)', tenancy: 'Tenancy agreement', lga_letter: 'Letter from your LGA' } as const;
+const idTypeKeys: IdType[] = ['nin', 'passport', 'licence', 'voters'];
+/** Label for any stored ID type; `idTypeOptions` lists only the ones the country accepts. */
+export const idTypeLabels = Object.defineProperties({} as Record<IdType, string>, Object.fromEntries(idTypeKeys.map((k) => [k, { enumerable: true, get: () => kycRules().idTypes.find((t) => t.value === k)?.label ?? kycCountries.NG.idTypes.find((t) => t.value === k)?.label ?? k }])));
+export const idTypeOptions = () => kycRules().idTypes;
+export const idNeedsExpiry = (t: IdType) => kycRules().expiring.includes(t);
+const proofKeys: KycAddress['proofType'][] = ['utility', 'bank_statement', 'tenancy', 'lga_letter'];
+export const proofLabels = Object.defineProperties({} as Record<KycAddress['proofType'], string>, Object.fromEntries(proofKeys.map((k) => [k, { enumerable: true, get: () => proofLabelsFor(kycRules())[k] }])));
 
 export const blankKyc = (): KycCase => ({
+  country: activeCountry(),
   status: 'not_started',
   entity: null,
   identity: {
@@ -83,6 +95,8 @@ export function normaliseKyc(raw: Partial<KycCase> | undefined): KycCase {
   return {
     ...base,
     ...raw,
+    // Cases saved before D425 have no country: they were Nigerian, unless still being drafted elsewhere.
+    country: raw.country ?? (raw.status && raw.status !== 'not_started' && raw.status !== 'in_progress' ? 'NG' : base.country),
     identity: { ...base.identity, ...raw.identity, checks: { ...base.identity.checks, ...raw.identity?.checks } },
     address: { ...base.address, ...raw.address },
     business: { ...base.business, ...raw.business, checks: { ...base.business.checks, ...raw.business?.checks } },
@@ -95,11 +109,15 @@ export function normaliseKyc(raw: Partial<KycCase> | undefined): KycCase {
 
 // ——— Simulated partner checks (deterministic so testers can force outcomes) ———
 
-/** BVN/NIN ending in 0000 fails; ending in 9 returns a partial name match that needs review. */
-export function simulateIdCheck(num: string): CheckResult {
-  if (!/^\d{11}$/.test(num)) return 'not_run';
-  if (num.endsWith('0000')) return 'fail';
-  if (num.endsWith('9')) return 'review';
+/**
+ * An ID number in the country's format whose digits end in 0000 fails; ending in 9 returns a partial name match
+ * that needs review. `pattern` defaults to the country's main ID number (BVN in Nigeria).
+ */
+export function simulateIdCheck(num: string, pattern: RegExp = kycRules().primary.pattern): CheckResult {
+  if (!pattern.test(num.trim())) return 'not_run';
+  const digits = num.replace(/\D/g, '');
+  if (digits.endsWith('0000')) return 'fail';
+  if (digits.endsWith('9')) return 'review';
   return 'pass';
 }
 
@@ -139,42 +157,49 @@ export function stepErrors(k: KycCase, step: KycStepId, banks: BankAccount[]): S
     case 'type':
       if (!k.entity) e.entity = 'Choose how your business is set up.';
       break;
-    case 'identity':
-      if (i.legalName.trim().split(/\s+/).length < 2) e.legalName = 'Enter your first and last name exactly as on your BVN.';
-      if (!i.dob) e.dob = 'Enter your date of birth.';else
-      if (ageOf(i.dob) < 18) e.dob = 'You must be 18 or older to receive payouts.';
-      if (!/^0\d{10}$/.test(i.phone.replace(/\s/g, ''))) e.phone = 'Enter an 11-digit Nigerian number starting with 0.';else
-      if (!i.phoneVerified) e.phone = 'Confirm your phone with the code we send.';
-      if (!/^\d{11}$/.test(i.bvn)) e.bvn = 'A BVN has 11 digits.';else
-      if (i.checks.bvn === 'fail') e.bvn = 'This BVN didn’t match our partner’s records. Check the number.';
-      if (!/^\d{11}$/.test(i.nin)) e.nin = 'A NIN has 11 digits.';else
-      if (i.checks.nin === 'fail') e.nin = 'This NIN didn’t match. Check the number.';
-      if (i.idNumber.trim().length < 6) e.idNumber = 'Enter the number on your ID.';
-      if (i.idType !== 'nin' && i.idType !== 'voters') {
-        if (!i.idExpiry) e.idExpiry = 'Enter the expiry date.';else
-        if (Date.parse(i.idExpiry) < Date.now()) e.idExpiry = 'This ID has expired. Use a valid one.';
+    case 'identity':{
+        const r = kycRules();
+        if (i.legalName.trim().split(/\s+/).length < 2) e.legalName = r.legalNameError;
+        if (!i.dob) e.dob = 'Enter your date of birth.';else
+        if (ageOf(i.dob) < 18) e.dob = 'You must be 18 or older to receive payouts.';
+        if (!i.phone.trim() || phoneIssue(i.phone) !== null) e.phone = activeCountry() === 'NG' && !i.phone.trim().startsWith('+') ? 'Enter an 11-digit Nigerian number starting with 0.' : 'Enter a complete mobile number.';else
+        if (!i.phoneVerified) e.phone = 'Confirm your phone with the code we send.';
+        if (!r.primary.pattern.test(i.bvn.trim())) e.bvn = r.primary.formatError;else
+        if (i.checks.bvn === 'fail') e.bvn = r.primary.mismatch;
+        if (r.secondary) {
+          if (!r.secondary.pattern.test(i.nin.trim())) e.nin = r.secondary.formatError;else
+          if (i.checks.nin === 'fail') e.nin = r.secondary.mismatch;
+        }
+        if (i.idNumber.trim().length < 6) e.idNumber = 'Enter the number on your ID.';
+        if (idNeedsExpiry(i.idType)) {
+          if (!i.idExpiry) e.idExpiry = 'Enter the expiry date.';else
+          if (Date.parse(i.idExpiry) < Date.now()) e.idExpiry = 'This ID has expired. Use a valid one.';
+        }
+        if (!i.idFront) e.idFront = 'Upload a clear photo of your ID.';
+        if (!i.selfie) e.selfie = 'Take a selfie so we can match it to your ID.';
+        break;
       }
-      if (!i.idFront) e.idFront = 'Upload a clear photo of your ID.';
-      if (!i.selfie) e.selfie = 'Take a selfie so we can match it to your ID.';
-      break;
     case 'address':
       if (k.address.line1.trim().length < 6) e.line1 = 'Enter your street address.';
       if (k.address.city.trim().length < 2) e.city = 'Enter your city or town.';
       if (!k.address.proof) e.proof = 'Upload a proof of address dated in the last 3 months.';
       break;
-    case 'business':
-      if (b.registeredName.trim().length < 3) e.registeredName = 'Enter the name exactly as on your CAC certificate.';
-      if (k.entity === 'company' ? !/^(RC)?\s?\d{4,8}$/i.test(b.number.trim()) : !/^(BN)?\s?\d{4,8}$/i.test(b.number.trim()))
-      e.number = k.entity === 'company' ? 'Enter your RC number, e.g. RC 1234567.' : 'Enter your BN number, e.g. BN 3456789.';else
-      if (b.checks.cac === 'fail') e.number = 'We couldn’t find this number at CAC. Check it and try again.';
-      if (!b.incorporatedOn) e.incorporatedOn = 'Enter the registration date.';
-      if (k.entity === 'company' && !/^\d{8}-\d{4}$/.test(b.tin.trim())) e.tin = 'Enter your TIN, e.g. 12345678-0001.';
-      if (!b.industry) e.industry = 'Choose what the business does.';
-      if (b.description.trim().length < 20) e.description = 'Describe what you sell and how in a sentence or two.';
-      if (!b.certificate) e.certificate = 'Upload your CAC certificate.';
-      if (!b.statusReport) e.statusReport = k.entity === 'company' ? 'Upload a recent CAC status report.' : 'Upload your BN application form (Form BN/1).';
-      if (k.entity === 'company' && !b.memart) e.memart = 'Upload your memorandum and articles of association.';
-      break;
+    case 'business':{
+        const reg = kycRules().registry;
+        const tax = kycRules().tax;
+        const company = k.entity === 'company';
+        if (b.registeredName.trim().length < 3) e.registeredName = reg.nameError;
+        if (!(company ? reg.companyPattern : reg.bnPattern).test(b.number.trim())) e.number = company ? reg.companyError : reg.bnError;else
+        if (b.checks.cac === 'fail') e.number = reg.notFound;
+        if (!b.incorporatedOn) e.incorporatedOn = 'Enter the registration date.';
+        if (company && !tax.pattern.test(b.tin.trim())) e.tin = tax.error;
+        if (!b.industry) e.industry = 'Choose what the business does.';
+        if (b.description.trim().length < 20) e.description = 'Describe what you sell and how in a sentence or two.';
+        if (!b.certificate) e.certificate = reg.certificateError;
+        if (!b.statusReport) e.statusReport = company ? reg.companyRecordError : reg.bnRecordError;
+        if (company && !b.memart) e.memart = reg.constitutionError;
+        break;
+      }
     case 'people':{
         if (!k.people.length) e.people = k.entity === 'company' ? 'Add every director and anyone who owns 25% or more.' : 'Add every proprietor.';
         const bad = k.people.find((p) => personErrors(p).length);
@@ -210,7 +235,7 @@ export function personErrors(p: KycPerson): string[] {
   const out: string[] = [];
   if (p.fullName.trim().split(/\s+/).length < 2) out.push('full name');
   if (!p.dob) out.push('date of birth');
-  if (!/^\d{11}$/.test(p.bvn)) out.push('BVN');
+  if (!kycRules().primary.pattern.test(p.bvn.trim())) out.push(kycRules().primary.label);
   if (p.role !== 'director' && (p.ownershipPct < 25 || p.ownershipPct > 100)) out.push('ownership 25–100%');
   return out;
 }
@@ -234,11 +259,14 @@ export const kycEditable = (k: KycCase) => k.status === 'not_started' || k.statu
 /** Things a reviewer should look at, worked out from the case. */
 export function kycRisks(k: KycCase): string[] {
   const r: string[] = [];
-  if (k.identity.checks.bvn === 'review') r.push('BVN name partly matches');
-  if (k.identity.checks.nin === 'review') r.push('NIN needs a closer look');
-  if (k.business.checks.cac === 'review') r.push('CAC record shows inactive');
+  // Named for the case's own country, whatever country the staff console runs as (D427).
+  const rules = kycRules(k.country);
+  if (k.identity.checks.bvn === 'review') r.push(`${rules.primary.label} name partly matches`);
+  if (rules.secondary && k.identity.checks.nin === 'review') r.push(`${rules.secondary.label} needs a closer look`);
+  if (k.business.checks.cac === 'review') r.push(`${rules.registry.short} record shows inactive`);
   if (k.declarations.pep || k.people.some((p) => p.pep)) r.push('Politically exposed person');
-  if (k.people.some((p) => p.check === 'review')) r.push('A director’s BVN needs review');
+  if (k.people.some((p) => p.check === 'review')) r.push(`A director’s ${rules.primary.label} needs review`);
+  if (k.country && k.country !== 'NG') r.push(`Applying from ${kycCountryName(k.country)} — check against that country’s rules`);
   if (k.declarations.monthlyVolume === 'over_50m' || k.declarations.monthlyVolume === '10m_50m') r.push('High expected volume');
   if (k.attempts > 2) r.push(`Submitted ${k.attempts} times`);
   return r;

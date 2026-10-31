@@ -14,8 +14,10 @@ import { useT } from '../../contexts/LocaleContext';
 import { createBooking } from '../../utils/ops/ops';
 import { dayLabel, durationLabel, timeLabel, visitorTimeZone } from '../../utils/ops/slots';
 import { isValidEmail, isValidPhone } from '../../utils/validation';
+import { focusFirstError } from '../../utils/a11y';
 import { formatNgn } from '../../utils/format';
 import { isNaira } from '../../utils/currency';
+import { phonePlaceholder } from '../../utils/phone';
 import { UssdPay } from '../checkout/UssdPay';
 import { useTrack } from '../../contexts/TrackContext';
 import { meetingPromise } from '../../utils/ops/meetings';
@@ -76,7 +78,7 @@ export function BookingSheet({ theme, ops, serviceId, handle, onClose }: Booking
   const request = !!service.approval;
   const errors = {
     name: !customer.name.trim() ? 'Enter your name' : '',
-    phone: !isValidPhone(customer.phone) ? 'Enter a phone number, e.g. +234 803 123 4567' : '',
+    phone: !isValidPhone(customer.phone) ? `Enter a phone number, e.g. ${phonePlaceholder()}` : '',
     email: !isValidEmail(customer.email) ? 'Enter an email for your confirmation' : '',
     ...intakeErrors(questions, answers)
   };
@@ -179,7 +181,7 @@ export function BookingSheet({ theme, ops, serviceId, handle, onClose }: Booking
         onSubmit={(e) => {
           e.preventDefault();
           setTried(true);
-          if (Object.values(errors).some(Boolean)) return;
+          if (Object.values(errors).some(Boolean)) return focusFirstError(e.currentTarget);
           setTried(false);
           setStep('confirm');
         }}>

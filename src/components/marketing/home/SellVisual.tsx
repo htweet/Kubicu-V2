@@ -4,11 +4,14 @@ import { CalendarCheckIcon, PackageCheckIcon } from 'lucide-react';
 import { KbShape } from './KbShape';
 import { Parallax } from './Parallax';
 import { homeImages } from '../../../data/marketingHome';
+import { useT } from '../../../contexts/LocaleContext';
+import { previewAmount } from '../../../utils/previewMoney';
 
 const ease = [0.23, 1, 0.32, 1] as const;
 
 /** Shop owner photo with an order and a booking arriving on top (D260). Figures are illustrative. */
 export function SellVisual() {
+  const { lang } = useT();
   const reduce = useReducedMotion();
   const enter = (delay: number, x: number) => ({
     initial: reduce ? false : { opacity: 0, x },
@@ -37,7 +40,7 @@ export function SellVisual() {
         </div>
         <div className="mt-3 flex items-baseline justify-between border-t border-[rgb(224_217_202)] pt-3">
           <span className="text-[11px] text-[rgb(104_100_92)]">You receive</span>
-          <span className="text-[16px] font-extrabold">₦24,150</span>
+          <span className="text-[16px] font-extrabold">{previewAmount(24150, lang)}</span>
         </div>
       </motion.div>
 
@@ -47,7 +50,7 @@ export function SellVisual() {
         </span>
         <span>
           <span className="block text-[13px] font-bold">Fitting booked · Sat 11:00</span>
-          <span className="block text-[11px] text-white/80">₦5,000 deposit paid</span>
+          <span className="block text-[11px] text-white/80">{previewAmount(5000, lang)} deposit paid</span>
         </span>
       </motion.div>
     </div>);

@@ -61,7 +61,7 @@ export function Opportunities() {
   tr('snoozed until {date}', { date: new Date(state.snoozed[id]).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }) });
 
   return (
-    <div className="w-full">
+    <div className="mx-auto w-full max-w-[1200px] px-5 py-8 md:px-10 md:py-12">
       <PageHeader title={tr('Opportunities')} description={tr('Money and customers that are one small step from coming back. Everything here comes from your real orders, bookings and contacts.')} />
 
       <PageStack>

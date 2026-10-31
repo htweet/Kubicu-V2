@@ -1,6 +1,9 @@
 import type { CommerceData } from '../types/commerce';
 import type { Subscription } from '../types/subscriptions';
 import type { Block, MemberRule, SitePage } from '../types/page';
+import { countries } from '../data/countries';
+import { activeCountry, countryInfo } from './country';
+import { phoneIssue } from './phone';
 
 /**
  * Members-only content (D110). Members sign in with a one-time code sent to the phone or email
@@ -30,16 +33,28 @@ export interface AccessResult {
   sub?: Subscription;
 }
 
-/** Nigerian numbers in any common shape (0803…, 803…, +234 803…, 234803…) become 0803…; others keep their digits. */
+/**
+ * Numbers from any of our four countries, in any common shape (0712…, 712…, +254 712…, 254712…), become the
+ * local form with a leading 0 so a subscriber can sign in however they type it (D403). Nigerian numbers come out
+ * exactly as before (0803…). Numbers from elsewhere keep their digits.
+ */
 export function normalisePhone(raw: string): string {
-  const d = raw.replace(/\D/g, '');
-  if (d.startsWith('234') && d.length === 13) return `0${d.slice(3)}`;
-  if (d.length === 10 && /^[789]/.test(d)) return `0${d}`;
+  const v = raw.trim();
+  const d = v.replace(/\D/g, '');
+  if (!d) return '';
+  const intl = v.startsWith('00') ? d.slice(2) : d;
+  for (const c of countries) {
+    if (intl.startsWith(c.dialCode) && intl.length === c.dialCode.length + c.nationalLength) return `0${intl.slice(c.dialCode.length)}`;
+  }
+  if (d.length === countryInfo(activeCountry()).nationalLength && !d.startsWith('0')) return `0${d}`;
   return d;
 }
 
-export function isNigerianMobile(raw: string): boolean {
-  return /^0[789][01]\d{8}$/.test(normalisePhone(raw));
+/** A complete mobile number for its country (the workspace's country when no code is given). Was Nigeria-only before D403. */
+export function isMobileNumber(raw: string): boolean {
+  const v = raw.trim();
+  if (v.replace(/\D/g, '').length < 9) return false;
+  return phoneIssue(v) === null;
 }
 
 export function normaliseContact(raw: string, channel: 'phone' | 'email'): string {

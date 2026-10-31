@@ -8,8 +8,10 @@ import { AnnouncementBar } from './AnnouncementBar';
 import { MegaMenu } from './MegaMenu';
 import { MobileSiteMenu } from './MobileSiteMenu';
 import { LanguagePicker } from '../ui/LanguagePicker';
-import { useT } from '../../contexts/LocaleContext';
+import { useDocumentLang, useT } from '../../contexts/LocaleContext';
 import { cn } from '../../utils/cn';
+import { setDisplayConversion } from '../../utils/currency';
+import { currencyForLang } from '../../utils/previewMoney';
 
 const footer = [
 {
@@ -68,7 +70,11 @@ const pill = 'inline-flex h-12 items-center justify-center whitespace-nowrap rou
 
 /** Website frame (D260): floating pill nav over colour bands, plum footer with a white link card. Translated in D318. */
 export function MarketingLayout() {
-  const { t: tr } = useT();
+  const { t: tr, lang } = useT();
+  // Every naira amount on the website shows in the language's country currency (D421). Set before children render.
+  setDisplayConversion(currencyForLang(lang));
+  useEffect(() => () => setDisplayConversion(null), []);
+  useDocumentLang();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
@@ -104,7 +110,7 @@ export function MarketingLayout() {
       <header className="sticky top-0 z-30 h-[88px] px-3 pt-3 print:hidden md:px-5">
         <div className={cn('relative mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-4 rounded-full bg-white pl-5 pr-2 text-[rgb(20_20_18)] transition-shadow duration-200 md:pl-7', scrolled ? 'shadow-3' : 'shadow-1')}>
           <div className="flex items-center gap-6 lg:gap-8">
-            <Link to="/" aria-label={tr('KUBICU home')} className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+            <Link to="/" aria-label={tr('KUBICU home')} className="flex items-center rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
               <KubicuLogo accent="#6B8CFF" />
             </Link>
             <MegaMenu />
@@ -163,6 +169,8 @@ export function MarketingLayout() {
 
       <footer className="bg-[rgb(var(--kb-plum))] px-3 pb-8 pt-3 text-white print:hidden md:px-5">
         <div className="mx-auto w-full max-w-7xl rounded-[36px] bg-white px-6 py-12 text-[rgb(20_20_18)] md:px-12 md:py-14">
+          {/* One footer heading groups the link columns below the page's own sections (D430). */}
+          <h2 className="sr-only">{tr('Site links')}</h2>
           <div className="grid gap-12 lg:grid-cols-[1.2fr_repeat(5,1fr)]">
             <div className="max-w-xs">
               <KubicuLogo />
@@ -174,7 +182,7 @@ export function MarketingLayout() {
             <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:col-span-5 lg:grid-cols-5">
               {footer.map((col) =>
               <div key={col.title}>
-                  <h2 className="text-[15px] font-extrabold">{tr(col.title)}</h2>
+                  <h3 className="text-[15px] font-extrabold">{tr(col.title)}</h3>
                   <ul className="mt-4 flex flex-col gap-3">
                     {col.links.map((l) =>
                   <li key={l.to}>

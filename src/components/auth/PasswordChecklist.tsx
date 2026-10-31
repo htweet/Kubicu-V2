@@ -21,14 +21,15 @@ export function PasswordChecklist({ password }: {password: string;}) {
   const filled = !password ? 0 : checks[0].met ? score : 1;
   const tone = !checks[0].met ? 'bg-warning' : score === 3 ? 'bg-success' : score === 2 ? 'bg-action' : 'bg-warning';
   return (
-    <div className="flex flex-col gap-2" aria-live="polite">
+    <div className="flex flex-col gap-2">
       <div className="flex items-center gap-2">
         <div className="grid flex-1 grid-cols-3 gap-1.5" aria-hidden>
           {[0, 1, 2].map((i) =>
           <span key={i} className={cn('h-1.5 rounded-full transition-colors duration-200 ease-out', i < filled ? tone : 'bg-line')} />
           )}
         </div>
-        <span className="w-16 text-right text-caption font-semibold text-fg-muted">{word}</span>
+        {/* Only the strength word is announced, and only when it changes — not every rule on every keystroke (D430). */}
+        <span aria-live="polite" className="w-16 text-right text-caption font-semibold text-fg-muted">{word}</span>
       </div>
       <ul className="flex flex-col gap-1">
         {checks.map((c) =>

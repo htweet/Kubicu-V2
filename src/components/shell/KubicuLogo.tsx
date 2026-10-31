@@ -17,7 +17,8 @@ export function KubicuLogo({ withWordmark = true, className, accent }: KubicuLog
         <rect x="14" y="7" width="5" height="5" rx="1.5" className={accent ? undefined : 'fill-action'} style={accent ? { fill: accent } : undefined} />
         <rect x="14" y="14" width="5" height="5" rx="1.5" className="fill-canvas" />
       </svg>
-      {withWordmark && <span className="text-[15px] font-semibold tracking-[0.12em] text-fg">KUBICU</span>}
+      {/* All-caps text sits high in its line box; nudge it so it centres optically with the mark and nearby text. */}
+      {withWordmark && <span className="translate-y-[1.5px] text-[15px] font-semibold leading-none tracking-[0.12em] text-fg">KUBICU</span>}
     </span>);
 
 }

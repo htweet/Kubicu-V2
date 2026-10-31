@@ -134,6 +134,7 @@ export const opsPagesRows: [string, string, string, string, string][] = [
 ['No fee is charged before pickup.', 'We no dey charge fee before pickup.', 'A kì í gba owó kankan ṣáájú gbígbé.', 'Ba a cajin kuɗi kafin ɗauka.', 'Anaghị ana ụgwọ tupu ebulie.'],
 // Book delivery panel (D287)
 ['Book delivery · order {ref}', 'Book delivery · order {ref}', 'Fiṣura ìfijiṣẹ́ · àṣẹ {ref}', 'Yi ajiyar isarwa · oda {ref}', 'Debanye nnyefe · ọda {ref}'],
+['Add your rider’s name and phone number.', 'Add your rider name and phone number.', 'Fi orúkọ ẹlẹ́ṣin rẹ àti nọ́ńbà fóònù rẹ̀ kún.', 'Ƙara sunan mai babur ɗinka da lambar wayarsa.', 'Tinye aha onye ọgba gị na nọmba ekwentị ya.'],
 ['Add your rider’s name and an 11-digit phone number.', 'Add your rider name and 11-digit phone number.', 'Fi orúkọ ẹlẹ́ṣin rẹ àti nọ́ńbà fóònù oní-nọ́ńbà 11 kún.', 'Ƙara sunan mai babur ɗinka da lambar waya mai lambobi 11.', 'Tinye aha onye ọgba gị na nọmba ekwentị nwere ọnụọgụ 11.'],
 ['Rider collects {amount} at the door', 'Rider go collect {amount} for door', 'Ẹlẹ́ṣin yóò gba {amount} ní ẹnu ọ̀nà', 'Mai babur zai karɓi {amount} a ƙofa', 'Onye ọgba ga-anata {amount} n’ọnụ ụzọ'],
 ['{amount} partner fee', '{amount} partner fee', 'Owó alábàáṣepọ̀ {amount}', 'Kuɗin abokin hulɗa {amount}', 'Ụgwọ onye mmekọ {amount}'],

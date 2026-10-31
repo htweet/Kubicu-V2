@@ -7,12 +7,14 @@ import { useCan } from '../../contexts/TeamContext';
 import { kitById, kitPartLabels, kitParts } from '../../data/businessKits';
 import { KIT_EVENT, readPendingKit, writePendingKit } from '../../utils/kits';
 import { Button } from '../ui/Button';
+import { useT } from '../../contexts/LocaleContext';
 
 /**
  * Overview card for a Business kit picked during onboarding (D126). The page already came
  * from the kit; this adds the rest (products, services, policies, automations, apps) on request.
  */
 export function PendingKitCard() {
+  const { t: tr } = useT();
   const { current } = useWorkspace();
   const { apply } = useBusinessKit();
   const navigate = useNavigate();
@@ -34,7 +36,7 @@ export function PendingKitCard() {
   const add = () => {
     apply(kit, parts);
     writePendingKit(current.id, null);
-    toast.success(`${kit.name} kit added`, { description: 'Everything went in as drafts with no prices.', action: { label: 'See checklist', onClick: () => navigate('/app/templates?tab=kits') } });
+    toast.success(tr('{name} kit added', { name: tr(kit.name) }), { description: tr('Everything went in as drafts with no prices.'), action: { label: tr('See checklist'), onClick: () => navigate('/app/templates?tab=kits') } });
   };
 
   return (
@@ -44,22 +46,24 @@ export function PendingKitCard() {
       </span>
       <div className="min-w-0 flex-1">
         <h2 id="pending-kit-h" className="text-label font-semibold text-fg">
-          Finish your {kit.name} kit
+          {tr('Finish your {name} kit', { name: tr(kit.name) })}
         </h2>
         <p className="mt-0.5 text-caption text-fg-muted">
-          Your page is set up. Add the rest: {parts.map((p) => kitPartLabels[p].label.toLowerCase()).join(', ')}. All drafts — nothing goes live or gets a price until you set it.
+          {tr('Your page is set up. Add the rest: {list}. All drafts — nothing goes live or gets a price until you set it.', {
+            list: parts.map((p) => tr(kitPartLabels[p].label).toLowerCase()).join(', ')
+          })}
         </p>
         {!can.allowed && <p className="mt-1 text-caption text-fg-subtle">{can.reason}</p>}
       </div>
       <div className="flex shrink-0 flex-wrap gap-2">
         <Button size="sm" disabled={!can.allowed} onClick={add}>
-          Add starter items
+          {tr('Add starter items')}
         </Button>
         <Button size="sm" variant="tertiary" onClick={() => writePendingKit(current.id, null)}>
-          Not now
+          {tr('Not now')}
         </Button>
         <Link to="/app/templates?tab=kits" className="sr-only focus:not-sr-only">
-          See all kits
+          {tr('See all kits')}
         </Link>
       </div>
     </section>);

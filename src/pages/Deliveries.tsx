@@ -110,7 +110,7 @@ export function Deliveries() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-[1100px] px-5 pb-16 pt-6 md:px-10 md:pt-8">
+    <div className="mx-auto w-full max-w-[1200px] px-5 pb-16 pt-6 md:px-10 md:pt-8">
       <PageHeader title={tr('Deliveries')} context={current.name} description={tr('Book a rider for paid orders, follow them to the door, and hand over only when the customer reads out their code. Courier partners are simulated.')} />
 
       <section aria-label={tr('Summary')} className="mt-8 grid gap-6 border-b border-line pb-8 sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)]">

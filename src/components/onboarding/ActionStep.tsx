@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type { FirstActionType, OnboardingState } from '../../hooks/useOnboarding';
 import { firstActions } from '../../data/onboarding';
 import { isValidPhone, isValidUrl } from '../../utils/validation';
+import { phonePlaceholder } from '../../utils/phone';
 import { TextInput } from '../ui/TextInput';
 import { ChoiceCard, StepHeading, StepNav } from './OnboardingLayout';
 
@@ -13,7 +14,7 @@ interface StepProps {
 
 export function actionError(type: FirstActionType | null, value: string): string {
   if (!type || type === 'form') return '';
-  if (type === 'whatsapp') return isValidPhone(value) ? '' : 'Enter a WhatsApp number, e.g. +234 803 123 4567';
+  if (type === 'whatsapp') return isValidPhone(value) ? '' : `Enter a WhatsApp number, e.g. ${phonePlaceholder()}`;
   return isValidUrl(value) ? '' : 'Enter a full link starting with https://';
 }
 
@@ -59,7 +60,7 @@ export function ActionStep({ state, update, go }: StepProps) {
           type="tel"
           inputMode="tel"
           autoComplete="tel"
-          placeholder="+234 803 123 4567"
+          placeholder={phonePlaceholder()}
           value={state.actionValue}
           onChange={(e) => update({ actionValue: e.target.value })}
           onBlur={() => setTouched(true)}

@@ -14,7 +14,7 @@ export function AppGate({ appId }: {appId: string;}) {
   const paused = !!market.data.installed[appId]?.paused;
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-5 py-8 md:px-8">
+    <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-8 px-5 py-8 md:px-10 md:py-12">
       <PageHeader title={info.name} description={info.summary} />
       <section className="grid gap-8 rounded-lg border border-line bg-raised p-6 md:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)] md:p-8">
         <div className="flex flex-col items-start gap-4">

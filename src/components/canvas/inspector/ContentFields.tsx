@@ -6,6 +6,7 @@ import { useT } from '../../../contexts/LocaleContext';
 import { TextInput } from '../../ui/TextInput';
 import { PhoneInput } from '../../ui/PhoneInput';
 import { businessWhatsApp, waFieldHintIn } from '../../../utils/businessWhatsApp';
+import { dialPrefix } from '../../../utils/phone';
 import { TextArea } from '../../ui/TextArea';
 import { Switch } from '../../ui/Switch';
 import { Segmented } from '../../ui/Segmented';
@@ -309,7 +310,7 @@ export function ContentFields({ block, issues }: ContentFieldsProps) {
               label={tr('WhatsApp number')}
               type="tel"
               inputMode="tel"
-              placeholder={businessWhatsApp() || '+234 …'}
+              placeholder={businessWhatsApp() || dialPrefix()}
               value={c.phone}
               error={err('phone')}
               hint={waFieldHintIn(tr, c.phone)}

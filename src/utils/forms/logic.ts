@@ -166,7 +166,7 @@ export function fieldError(field: FormField, value: string | string[] | undefine
   if (field.maxLength && text.length > field.maxLength) return `Keep it under ${field.maxLength} characters`;
   if (field.type === 'email' && !isValidEmail(text)) return 'Enter an email like name@example.com';
   if (field.type === 'website' && !isValidWebsiteOrHandle(text)) return 'Enter a web address like example.com, or a handle like @yourname';
-  if (field.type === 'phone' && !/^\+?[\d\s-]{7,16}$/.test(text)) return 'Enter a phone number, e.g. +234 803 000 0000';
+  if (field.type === 'phone' && !/^\+?[\d\s-]{7,16}$/.test(text)) return 'Enter a phone number with its country code';
   if ((field.type === 'number' || field.type === 'amount') && !/^\d+(\.\d+)?$/.test(text.replace(/[,₦\s]/g, ''))) return 'Enter numbers only';
   return '';
 }

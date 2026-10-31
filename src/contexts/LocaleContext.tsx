@@ -1,4 +1,15 @@
-import React, { createContext, useContext, useMemo } from 'react';
+import React, { createContext, useContext, useEffect, useMemo } from 'react';
+
+/**
+ * Keeps <html lang> in step with the screen language (D429), so screen readers pick the right voice. Used by the
+ * website and workspace frames; published seller pages set their own language and aren't affected.
+ */
+export function useDocumentLang(): void {
+  const { lang } = useContext(LocaleContext);
+  useEffect(() => {
+    document.documentElement.lang = htmlLang[lang] ?? 'en';
+  }, [lang]);
+}
 import { translations, type UiLang } from '../data/translations';
 import { phraseOverride } from '../utils/phraseOverrides';
 import { translateBuilt } from '../utils/builtPhrases';
@@ -14,6 +25,9 @@ interface LocaleValue {
 const fill = (s: string, vars?: Record<string, string | number>) => vars ? s.replace(/\{(\w+)\}/g, (m, k) => k in vars ? String(vars[k]) : m) : s;
 
 const english: LocaleValue = { lang: 'en', t: fill };
+
+/** BCP-47 tags for the <html lang> attribute. Twi is "ak" (Akan); Pidgin is "pcm". */
+const htmlLang: Record<UiLang, string> = { en: 'en', pcm: 'pcm', yo: 'yo', ha: 'ha', ig: 'ig', sw: 'sw', tw: 'ak', zu: 'zu' };
 
 const LocaleContext = createContext<LocaleValue>(english);
 

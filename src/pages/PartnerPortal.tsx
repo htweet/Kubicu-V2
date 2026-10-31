@@ -5,7 +5,10 @@ import { BadgeCheckIcon, CheckCircle2Icon, LandmarkIcon, LockIcon, PhoneIcon, Sh
 import type { Partnership } from '../types/partnership';
 import { useLocalStore } from '../hooks/useLocalStore';
 import { acceptInvite, answerChange, declineInvite, emptyPartnerships, ev, findByToken, guestReady, isExpired, partnershipKey, statusLabels } from '../utils/partnerships';
-import { isNigerianMobile } from '../utils/members';
+import { isMobileNumber } from '../utils/members';
+import { splitPhone } from '../utils/phone';
+import { accountNumberIssue, countryInfo } from '../utils/country';
+import { kycRules } from '../utils/money/kyc';
 import { formatDate } from '../utils/format';
 import { Button } from '../components/ui/Button';
 import { TextInput } from '../components/ui/TextInput';
@@ -116,9 +119,15 @@ function Portal({ workspaceId, token }: {workspaceId: string;token: string;}) {
 }
 
 function GettingPaid({ p, save }: {p: Partnership;save: (p: Partnership) => void;}) {
+  // A guest has no workspace: their country comes from their phone number's code (D428), so banks, account
+  // length and the ID check are their own country's, using the same rules as seller verification.
+  const country = splitPhone(p.phone).country;
+  const info = countryInfo(country);
+  const rules = kycRules(country);
+  const banks = country === 'NG' ? BANKS : info.banks;
   const [code, setCode] = useState('');
   const [codeSent, setCodeSent] = useState(false);
-  const [bank, setBank] = useState(BANKS[2]);
+  const [bank, setBank] = useState(country === 'NG' ? BANKS[2] : info.banks[0]);
   const [account, setAccount] = useState('');
   const [bvn, setBvn] = useState('');
   const [busy, setBusy] = useState(false);
@@ -133,16 +142,17 @@ function GettingPaid({ p, save }: {p: Partnership;save: (p: Partnership) => void
   };
 
   const addBank = () => {
-    if (!/^\d{10}$/.test(account)) return setErr('Account numbers have 10 digits.');
-    if (!/^\d{11}$/.test(bvn)) return setErr('Your BVN has 11 digits. Dial *565*0# to get it.');
+    const acctIssue = accountNumberIssue(account, country);
+    if (country === 'NG' ? !/^\d{10}$/.test(account) : acctIssue) return setErr(country === 'NG' ? 'Account numbers have 10 digits.' : acctIssue ?? '');
+    if (country === 'NG' ? !/^\d{11}$/.test(bvn) : !rules.primary.pattern.test(bvn.trim())) return setErr(country === 'NG' ? 'Your BVN has 11 digits. Dial *565*0# to get it.' : rules.primary.formatError);
     setErr(null);
     setBusy(true);
     // Simulated name lookup: the account name comes back as the invited person's name.
     window.setTimeout(() => {
       const accountName = p.contactName.toUpperCase();
-      save({ ...p, guest: { ...p.guest, bank: { bankName: bank, last4: account.slice(-4), accountName, bvnLast4: bvn.slice(-4), verifiedAt: new Date().toISOString() } }, events: [ev('partner', `Added ${bank} ····${account.slice(-4)} for payouts`), ...p.events] });
+      save({ ...p, guest: { ...p.guest, bank: { bankName: bank, last4: account.slice(-4), accountName, bvnLast4: bvn.replace(/[^0-9A-Z]/gi, '').slice(-4), verifiedAt: new Date().toISOString() } }, events: [ev('partner', `Added ${bank} ····${account.slice(-4)} for payouts`), ...p.events] });
       setBusy(false);
-      toast.success('Bank added', { description: `${accountName} matches your BVN.` });
+      toast.success('Bank added', { description: country === 'NG' ? `${accountName} matches your BVN.` : `${accountName} matches your ${rules.primary.label}.` });
     }, 700);
   };
 
@@ -170,7 +180,7 @@ function GettingPaid({ p, save }: {p: Partnership;save: (p: Partnership) => void
           {phoneOk ?
           <p className="text-caption text-fg-muted">{p.phone} confirmed</p> :
           !codeSent ?
-          <Button size="sm" variant="secondary" className="self-start" disabled={!isNigerianMobile(p.phone)} onClick={() => {setCodeSent(true);toast(`Code sent to ${p.phone}`, { description: 'Prototype: any 6 digits except 000000.' });}}>
+          <Button size="sm" variant="secondary" className="self-start" disabled={!isMobileNumber(p.phone)} onClick={() => {setCodeSent(true);toast(`Code sent to ${p.phone}`, { description: 'Prototype: any 6 digits except 000000.' });}}>
               Text me a code
             </Button> :
 
@@ -193,10 +203,19 @@ function GettingPaid({ p, save }: {p: Partnership;save: (p: Partnership) => void
 
           <>
               <div className="grid gap-4 sm:grid-cols-2">
-                <SelectInput<string> id="pp-bank" label="Bank" value={bank} onChange={setBank} options={BANKS.map((b) => ({ value: b, label: b }))} />
-                <TextInput id="pp-acct" label="Account number" inputMode="numeric" maxLength={10} value={account} onChange={(e) => setAccount(e.target.value.replace(/\D/g, ''))} />
+                <SelectInput<string> id="pp-bank" label="Bank" value={bank} onChange={setBank} options={banks.map((b) => ({ value: b, label: b }))} />
+                <TextInput id="pp-acct" label="Account number" inputMode="numeric" maxLength={info.accountNumber.max} value={account} onChange={(e) => setAccount(e.target.value.replace(/\D/g, ''))} />
               </div>
-              <TextInput id="pp-bvn" label="BVN" inputMode="numeric" maxLength={11} value={bvn} onChange={(e) => setBvn(e.target.value.replace(/\D/g, ''))} hint="Used once to check the account is in your name. We never see your bank balance." />
+              <TextInput
+              id="pp-bvn"
+              label={rules.primary.label}
+              inputMode={rules.primary.numeric ? 'numeric' : 'text'}
+              maxLength={rules.primary.maxLength}
+              placeholder={rules.primary.placeholder || undefined}
+              value={bvn}
+              onChange={(e) => setBvn(rules.primary.numeric ? e.target.value.replace(/\D/g, '') : e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, ''))}
+              hint="Used once to check the account is in your name. We never see your bank balance." />
+            
               <Button className="self-start" loading={busy} onClick={addBank}>
                 Check and add
               </Button>

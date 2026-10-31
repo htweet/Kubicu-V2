@@ -103,7 +103,8 @@ export function EditorTopBar({ viewport, onViewportChange, onOpenVersions, onOpe
               <Tooltip content={leftOpen ? tr('Hide blocks panel') : tr('Show blocks panel')} side="bottom">
                 <button
                 type="button"
-                aria-pressed={leftOpen}
+                aria-expanded={leftOpen}
+                aria-controls="canvas-left-panel"
                 aria-label={tr('Blocks panel')}
                 onClick={onToggleLeft}
                 className={cn('flex h-8 w-8 items-center justify-center rounded-[5px] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus', leftOpen ? 'bg-sunken text-fg' : 'text-fg-subtle hover:text-fg')}>
@@ -115,6 +116,7 @@ export function EditorTopBar({ viewport, onViewportChange, onOpenVersions, onOpe
                 <button
                 type="button"
                 aria-pressed={!leftOpen && !rightOpen}
+                aria-controls="canvas-left-panel canvas-right-panel"
                 aria-label={tr('Focus mode — hide both panels')}
                 onClick={() => {
                   const hide = leftOpen || rightOpen;
@@ -129,7 +131,8 @@ export function EditorTopBar({ viewport, onViewportChange, onOpenVersions, onOpe
               <Tooltip content={rightOpen ? tr('Hide inspector') : tr('Show inspector')} side="bottom">
                 <button
                 type="button"
-                aria-pressed={rightOpen}
+                aria-expanded={rightOpen}
+                aria-controls="canvas-right-panel"
                 aria-label={tr('Inspector panel')}
                 onClick={onToggleRight}
                 className={cn('flex h-8 w-8 items-center justify-center rounded-[5px] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus', rightOpen ? 'bg-sunken text-fg' : 'text-fg-subtle hover:text-fg')}>

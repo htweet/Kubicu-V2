@@ -13,9 +13,11 @@ interface SelectInputProps<T extends string> {
   hint?: string;
   error?: string;
   disabled?: boolean;
+  /** Announced as required to screen readers (D430). */
+  required?: boolean;
 }
 
-export function SelectInput<T extends string>({ id, label, value, options, onChange, hint, error, disabled }: SelectInputProps<T>) {
+export function SelectInput<T extends string>({ id, label, value, options, onChange, hint, error, disabled, required }: SelectInputProps<T>) {
   // Option labels follow the interface language like every other primitive; untranslated ones stay English.
   const { t } = useT();
   return (
@@ -26,6 +28,7 @@ export function SelectInput<T extends string>({ id, label, value, options, onCha
           value={value}
           disabled={disabled}
           aria-invalid={error ? true : undefined}
+          aria-required={required || undefined}
           aria-describedby={error ? `${id}-error` : hint ? `${id}-hint` : undefined}
           onChange={(e) => onChange(e.target.value as T)}
           className={cn(fieldControlClass, 'h-10 appearance-none pr-9')}>

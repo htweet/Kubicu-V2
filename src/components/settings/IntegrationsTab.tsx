@@ -9,6 +9,7 @@ import { useCommerce } from '../../contexts/CommerceContext';
 import { checkStorage, sendTestMessage, testConnection, type SimulatedOutcome } from '../../utils/providers/adapters';
 import { formatRelative } from '../../utils/format';
 import { isValidEmail, isValidPhone } from '../../utils/validation';
+import { phonePlaceholder } from '../../utils/phone';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import { Dialog } from '../ui/Dialog';
@@ -179,7 +180,7 @@ function SendTestDialog({ def, onClose }: {def: ProviderDef | null;onClose: () =
   const [tried, setTried] = useState(false);
   const [sending, setSending] = useState(false);
   const isEmail = def?.category === 'email';
-  const error = !to.trim() ? isEmail ? 'Enter an email address.' : 'Enter a phone number.' : isEmail ? isValidEmail(to) ? '' : 'Enter a valid email address.' : isValidPhone(to) ? '' : 'Enter a phone number, e.g. +234 803 123 4567.';
+  const error = !to.trim() ? isEmail ? 'Enter an email address.' : 'Enter a phone number.' : isEmail ? isValidEmail(to) ? '' : 'Enter a valid email address.' : isValidPhone(to) ? '' : `Enter a phone number, e.g. ${phonePlaceholder()}.`;
 
   const send = async () => {
     if (!def) return;

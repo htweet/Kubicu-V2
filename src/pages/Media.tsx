@@ -146,7 +146,7 @@ export function Media() {
 
   return (
     <div
-      className="mx-auto w-full max-w-[1280px] px-5 py-8 md:px-10 md:py-12"
+      className="mx-auto w-full max-w-[1200px] px-5 py-8 md:px-10 md:py-12"
       onDragOver={(e) => {
         if (!media.available) return;
         e.preventDefault();

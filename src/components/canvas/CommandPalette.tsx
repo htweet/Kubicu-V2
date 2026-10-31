@@ -165,7 +165,11 @@ export function CommandPalette({
         duration: 0.16,
         ease: [0.23, 1, 0.32, 1]
       }} className="relative flex max-h-[min(560px,70vh)] w-full max-w-lg flex-col overflow-hidden rounded-lg border border-line bg-overlay text-fg shadow-3" onKeyDown={(e) => {
-        if (e.key === 'Escape') onClose();else if (e.key === 'ArrowDown') {
+        // The search box is the only stop inside the menu, so Tab stays on it instead of leaving the dialog (D429).
+        if (e.key === 'Tab') {
+          e.preventDefault();
+          inputRef.current?.focus();
+        } else if (e.key === 'Escape') onClose();else if (e.key === 'ArrowDown') {
           e.preventDefault();
           setActive((i) => Math.min(results.length - 1, i + 1));
         } else if (e.key === 'ArrowUp') {
@@ -178,7 +182,7 @@ export function CommandPalette({
       }}>
             <div className="flex items-center gap-2.5 border-b border-line px-4">
               <SearchIcon size={16} className="shrink-0 text-fg-subtle" aria-hidden />
-              <input ref={inputRef} role="combobox" aria-expanded="true" aria-controls="command-list" aria-activedescendant={results[active] ? `cmd-${results[active].id}` : undefined} aria-label={tr('Search actions and blocks')} value={query} onChange={(e) => setQuery(e.target.value)} placeholder={tr('Add a block, find a block, or run an action…')} className="h-12 min-w-0 flex-1 bg-transparent text-body text-fg placeholder:text-fg-subtle focus:outline-none" />
+              <input ref={inputRef} role="combobox" aria-autocomplete="list" aria-expanded={results.length > 0} aria-controls="command-list" aria-activedescendant={results[active] ? `cmd-${results[active].id}` : undefined} aria-label={tr('Search actions and blocks')} value={query} onChange={(e) => setQuery(e.target.value)} placeholder={tr('Add a block, find a block, or run an action…')} className="h-12 min-w-0 flex-1 bg-transparent text-body text-fg placeholder:text-fg-subtle focus:outline-none" />
               <Kbd>Esc</Kbd>
             </div>
             <ul ref={listRef} id="command-list" role="listbox" className="scroll-quiet min-h-0 flex-1 overflow-y-auto p-1.5">

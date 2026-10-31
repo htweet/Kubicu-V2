@@ -7,6 +7,7 @@ import { PasswordChecklist } from '../../components/auth/PasswordChecklist';
 import { TextInput } from '../../components/ui/TextInput';
 import { Button } from '../../components/ui/Button';
 import { isValidEmail } from '../../utils/validation';
+import { focusFirstError } from '../../utils/a11y';
 import { claimMinutesLeft, readHandleClaim } from '../../utils/handleClaim';
 import { useT } from '../../contexts/LocaleContext';
 import { cn } from '../../utils/cn';
@@ -36,7 +37,7 @@ export function SignUp() {
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitted(true);
-    if (!valid) return;
+    if (!valid) return focusFirstError();
     setLoading(true);
     const kit = params.get('kit');
     window.setTimeout(() => navigate(`/verify?email=${encodeURIComponent(email.trim())}${kit ? `&kit=${kit}` : ''}`), 400);
@@ -123,13 +124,14 @@ function Journey() {
   const { t } = useT();
   const steps = [t('Account'), t('Confirm email'), t('Your page')];
   return (
-    <ol aria-label={t('Getting started')} className="flex items-center gap-2 text-caption font-semibold">
+    // Each step stays on one line; in longer languages whole steps move to the next row instead of splitting.
+    <ol aria-label={t('Getting started')} className="flex flex-wrap items-center gap-x-1.5 gap-y-2 text-[12px] font-semibold sm:gap-x-2 sm:text-caption">
       {steps.map((s, i) =>
-      <li key={s} className="flex items-center gap-2">
-          <span aria-current={i === 0 ? 'step' : undefined} className={cn('rounded-full px-2.5 py-1', i === 0 ? 'bg-fg text-raised' : 'bg-sunken text-fg-subtle')}>
+      <li key={s} className="flex items-center gap-1.5 sm:gap-2">
+          <span aria-current={i === 0 ? 'step' : undefined} className={cn('whitespace-nowrap rounded-full px-2.5 py-1', i === 0 ? 'bg-fg text-raised' : 'bg-sunken text-fg-subtle')}>
             {s}
           </span>
-          {i < steps.length - 1 && <span className="h-px w-3 bg-line-strong" aria-hidden />}
+          {i < steps.length - 1 && <span className="h-px w-2 bg-line-strong sm:w-3" aria-hidden />}
         </li>
       )}
     </ol>);

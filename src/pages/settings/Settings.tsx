@@ -60,7 +60,7 @@ export function Settings() {
   const Panel = panels[tab];
 
   return (
-    <div className="mx-auto w-full max-w-[1100px] px-5 pb-16 pt-6 md:px-10 md:pt-8">
+    <div className="mx-auto w-full max-w-[1200px] px-5 pb-16 pt-6 md:px-10 md:pt-8">
       <PageHeader
         title="Settings"
         context={current.name}

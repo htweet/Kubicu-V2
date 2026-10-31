@@ -30,9 +30,10 @@ import { HOLD_MINUTES, STOCK_HOLD_MINUTES, extendHolds, findEvent, holdExpiry, h
 import { describeSeats, findSeat } from '../../utils/commerce/seating';
 import { useNow } from '../../hooks/useNow';
 import { isValidEmail, isValidPhone } from '../../utils/validation';
+import { focusFirstError, onRadioGroupKeyDown, radioTabIndex } from '../../utils/a11y';
 import { formatNgn } from '../../utils/format';
 import { isNaira } from '../../utils/currency';
-import { dialPrefix } from '../../utils/phone';
+import { dialPrefix, phonePlaceholder } from '../../utils/phone';
 import { UssdPay } from './UssdPay';
 import { stampTransfer, transferAccounts } from '../../utils/commerce/bankTransfer';
 import { reservedForStalls, type PopupCheckout } from '../../utils/popup';
@@ -302,7 +303,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
   const addressAsk = !physical ? shop.checkout.address : 'off';
   const detailErrors = {
     name: !customer.name.trim() ? 'Enter your name' : '',
-    phone: !isValidPhone(customer.phone) ? 'Enter a phone number, e.g. +234 803 123 4567' : '',
+    phone: !isValidPhone(customer.phone) ? `Enter a phone number, e.g. ${phonePlaceholder()}` : '',
     email:
     emailAsk === 'off' ?
     '' :
@@ -654,7 +655,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
           onSubmit={(e) => {
             e.preventDefault();
             setTried(true);
-            if (Object.values(detailErrors).some(Boolean)) return;
+            if (Object.values(detailErrors).some(Boolean)) return focusFirstError(e.currentTarget);
             setTried(false);
             setStep(physical ? 'delivery' : 'review');
           }}>
@@ -721,8 +722,8 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
               {tr('This pop-up has no more sessions, so it isn’t taking orders.')}
             </p> :
 
-          <div role="radiogroup" aria-label={tr('Pickup times')} className="flex flex-col gap-2">
-              {popup.sessions.map((s) => {
+          <div role="radiogroup" aria-label={tr('Pickup times')} className="flex flex-col gap-2" onKeyDown={onRadioGroupKeyDown}>
+              {popup.sessions.map((s, idx) => {
               const active = sessionId === s.id;
               return (
                 <button
@@ -730,6 +731,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
                   type="button"
                   role="radio"
                   aria-checked={active}
+                  tabIndex={radioTabIndex(active, idx, popup.sessions.some((x) => x.id === sessionId))}
                   onClick={() => setSessionId(s.id)}
                   className="flex items-center justify-between gap-3 p-4 text-left text-[15px] font-semibold"
                   style={{ ...cardStyle(theme), border: `1.5px solid ${active ? theme.text : mix(theme.text, 12)}` }}>
@@ -805,8 +807,8 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
               {tr('This seller hasn’t set up pickup or delivery yet. Please message them before ordering.')}
             </p> :
 
-          <div role="radiogroup" aria-label="Delivery options" className="flex flex-col gap-2">
-              {options.map((o) => {
+          <div role="radiogroup" aria-label={tr('Delivery options')} className="flex flex-col gap-2" onKeyDown={onRadioGroupKeyDown}>
+              {options.map((o, idx) => {
               const active = method === o.id;
               return (
                 <button
@@ -814,6 +816,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
                   type="button"
                   role="radio"
                   aria-checked={active}
+                  tabIndex={radioTabIndex(active, idx, options.some((x) => x.id === method))}
                   onClick={() => setMethod(o.id)}
                   className="flex items-start justify-between gap-3 p-4 text-left"
                   style={{ ...cardStyle(theme), border: `1.5px solid ${active ? theme.text : mix(theme.text, 12)}` }}>
@@ -847,7 +850,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
               disabled={options.length === 0}
               onClick={() => {
                 setTried(true);
-                if (deliveryError) return;
+                if (deliveryError) return focusFirstError();
                 setTried(false);
                 setStep('review');
               }}>

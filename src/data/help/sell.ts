@@ -48,7 +48,7 @@ export const sellHelp: HelpCategory[] = [
   {
     id: 'verify',
     q: 'Why do I need to verify before paying out?',
-    a: 'Nigerian regulations require us to confirm who receives money. Verification checks your BVN, NIN, ID, selfie and address, plus CAC details and directors for businesses. KUBICU aims to review within one business day.',
+    a: 'Regulations in every country we serve require us to confirm who receives money. Verification checks your national identity number (BVN and NIN in Nigeria, national ID and KRA PIN in Kenya, Ghana Card in Ghana, SA ID in South Africa), a photo ID, a selfie and your address, plus registration details and directors for businesses. KUBICU aims to review within one business day.',
     where: 'Commerce → Wallet → Verification',
     steps: ['Choose individual or business.', 'Add your identity, address and (for businesses) CAC details and owners.', 'Pick a payout account whose name matches.', 'Send for review. Sales keep arriving while you wait.']
   },

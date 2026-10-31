@@ -250,7 +250,7 @@ Other switches: demo data (onboarding / Settings), payment test mode strip (`com
 
 - **Tokens** (`tailwind.config.js` → CSS variables in `index.css`): surfaces `canvas, raised, sunken, overlay, inverse, stage, field`; `line(.strong)`; text `fg(.muted/.subtle/.inverse)`; `action(.hover/.pressed/.fg/.soft)`, `accent(.soft)`, `select(.fg)`; status `success/warning/danger/info(.soft)`; `focus`. Font sizes: display, title, heading, body, label, caption, meta. Radius sm 6 / md 10 / lg 16. Shadows 1–3. Use tokens, never raw palette classes.
 - **Visual directions** via `data-direction`: `darkStudio` (default app), `inkCobalt` (light app), `nightMarket` (public site), `kubicuBold` (public site v2). Personal prefs: `data-text-size=large`, `data-motion=reduce`.
-- **Fonts:** Inter for UI; seller themes use Fraunces, Instrument Serif, Newsreader, Archivo, Lora, Cormorant Garamond, Bricolage Grotesque.
+- **Fonts:** Inter for UI; seller themes use Fraunces, Instrument Serif, Newsreader, Archivo, Lora, Cormorant Garamond, Bricolage Grotesque (also the website display face, D422).
 - **Gradients:** only the reserved `.ai-*` (AI surfaces) and `.nm-*`/brand classes. Nowhere else.
 - **Signature themes:** glass layer `.kb-bg/.kb-page`, simplified on phones and in data-saver `.kb-lite`, respects reduced transparency.
 - **Components:** `components/ui/*` — Button (variants incl. `ai`, `brand`), Dialog (right-side sheet in workspace; `centered` on public pages, D272), Sheet, Field/TextInput/TextArea/SelectInput, Segmented, InlineAlert, PlanLock, UpgradeButton, ItemListEditor. Toasts via sonner (`AppToaster`).

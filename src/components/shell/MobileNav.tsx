@@ -33,7 +33,7 @@ export function MobileNav() {
 
   return (
     <>
-      <nav aria-label="Workspace" className="safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-line bg-raised md:hidden">
+      <nav aria-label={t('Workspace shortcuts')} className="safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-line bg-raised md:hidden">
         <ul className="grid h-16 grid-cols-4">
           {primary.map((item) => {
             const Icon = item.icon;

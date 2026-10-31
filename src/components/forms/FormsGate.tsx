@@ -16,7 +16,7 @@ export function FormsGate({ children }: {children: React.ReactNode;}) {
   const paused = !!market.data.installed[FORMS_EXTENSION_ID]?.paused;
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-5 py-8 md:px-8">
+    <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-8 px-5 py-8 md:px-10 md:py-12">
       <PageHeader title="Forms" description="Quotes, RSVPs, order intake, applications — any form, with steps, rules and payments." />
       <section className="grid gap-8 rounded-lg border border-line bg-raised p-6 md:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)] md:p-8">
         <div className="flex flex-col items-start gap-4">

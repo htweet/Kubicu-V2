@@ -1,6 +1,6 @@
 import React from 'react';
 import type { KycBusiness } from '../../../types/kyc';
-import { industries, simulateCac } from '../../../utils/money/kyc';
+import { industries, kycRules, simulateCac } from '../../../utils/money/kyc';
 import type { KycStepProps } from '../stepProps';
 import { TextInput } from '../../ui/TextInput';
 import { TextArea } from '../../ui/TextArea';
@@ -22,21 +22,24 @@ export function BusinessStep({ k, set, errors, disabled }: KycStepProps) {
     set((c) => ({ ...c, business: { ...c.business, number, checks: { ...c.business.checks, cac, registeredNameOnCac: cacName(c.business.registeredName, cac) } } }));
   };
   const setName = (registeredName: string) => set((c) => ({ ...c, business: { ...c.business, registeredName, checks: { ...c.business.checks, registeredNameOnCac: cacName(registeredName, c.business.checks.cac) } } }));
-  const setTin = (tin: string) => setB({ tin, checks: { ...b.checks, tin: /^\d{8}-\d{4}$/.test(tin.trim()) ? 'pass' : 'not_run' } });
+  // Registry, number formats, tax number and documents follow the workspace's country (D424).
+  const reg = kycRules().registry;
+  const tax = kycRules().tax;
+  const setTin = (tin: string) => setB({ tin, checks: { ...b.checks, tin: tax.pattern.test(tin.trim()) ? 'pass' : 'not_run' } });
 
   return (
     <div className="flex flex-col gap-8">
       <section aria-labelledby="kyc-biz-reg" className="flex flex-col gap-4">
         <h3 id="kyc-biz-reg" className="text-label font-semibold text-fg">
-          {tr('CAC registration')}
+          {tr(reg.heading)}
         </h3>
-        <TextInput id="kyc-reg-name" label="Registered name" hint="Exactly as printed on your CAC certificate." value={b.registeredName} onChange={(e) => setName(e.target.value)} error={errors.registeredName} disabled={disabled} />
+        <TextInput id="kyc-reg-name" label="Registered name" hint={reg.nameHint} value={b.registeredName} onChange={(e) => setName(e.target.value)} error={errors.registeredName} disabled={disabled} />
         <div className="grid gap-4 md:grid-cols-2">
           <div className="flex flex-col gap-2">
-            <TextInput id="kyc-reg-number" label={company ? 'RC number' : 'BN number'} placeholder={company ? 'RC 1234567' : 'BN 3456789'} value={b.number} onChange={(e) => setNumber(e.target.value)} error={errors.number} disabled={disabled} />
+            <TextInput id="kyc-reg-number" label={company ? reg.companyLabel : reg.bnLabel} placeholder={company ? reg.companyPlaceholder : reg.bnPlaceholder} value={b.number} onChange={(e) => setNumber(e.target.value)} error={errors.number} disabled={disabled} />
             {b.checks.cac !== 'not_run' &&
             <div className="flex flex-wrap items-center gap-2">
-                <CheckBadge result={b.checks.cac} label="CAC" />
+                <CheckBadge result={b.checks.cac} label={reg.short} />
                 {b.checks.registeredNameOnCac &&
               <span className="text-caption text-fg-muted">
                     {b.checks.registeredNameOnCac} · {tr(b.checks.cac === 'review' ? 'shows as inactive' : 'active')}
@@ -49,12 +52,12 @@ export function BusinessStep({ k, set, errors, disabled }: KycStepProps) {
         </div>
         <div className="grid gap-4 md:grid-cols-2">
           <div className="flex flex-col gap-2">
-            <TextInput id="kyc-tin" label="Tax ID (TIN)" optional={!company} placeholder="12345678-0001" value={b.tin} onChange={(e) => setTin(e.target.value)} error={errors.tin} disabled={disabled} />
-            {b.checks.tin === 'pass' && <CheckBadge result="pass" label="FIRS" />}
+            <TextInput id="kyc-tin" label={tax.label} optional={!company} placeholder={tax.placeholder} value={b.tin} onChange={(e) => setTin(e.target.value)} error={errors.tin} disabled={disabled} />
+            {b.checks.tin === 'pass' && <CheckBadge result="pass" label={tax.badge} />}
           </div>
           <TextInput id="kyc-website" label="Website or social page" optional value={b.website} onChange={(e) => setB({ website: e.target.value })} disabled={disabled} placeholder="instagram.com/yourbusiness" />
         </div>
-        <p className="text-caption text-fg-subtle">{tr('Prototype: CAC numbers ending in 000 aren’t found; ending in 7 show as inactive.')}</p>
+        <p className="text-caption text-fg-subtle">{tr(reg.simulated)}</p>
       </section>
 
       <section aria-labelledby="kyc-biz-what" className="flex flex-col gap-4 border-t border-line pt-6">
@@ -62,24 +65,24 @@ export function BusinessStep({ k, set, errors, disabled }: KycStepProps) {
           {tr('What the business does')}
         </h3>
         <SelectInput id="kyc-industry" label="Industry" value={b.industry} onChange={(industry) => setB({ industry })} options={[{ value: '', label: tr('Choose one'), disabled: true }, ...industries.map((x) => ({ value: x, label: tr(x) }))]} error={errors.industry} disabled={disabled} />
-        <TextArea id="kyc-desc" label="Describe what you sell and how" hint="For example: “Made-to-order Ankara dresses, sold on Instagram and delivered across Lagos.”" value={b.description} onChange={(e) => setB({ description: e.target.value })} error={errors.description} disabled={disabled} />
+        <TextArea id="kyc-desc" label="Describe what you sell and how" hint={kycRules().describeExample} value={b.description} onChange={(e) => setB({ description: e.target.value })} error={errors.description} disabled={disabled} />
       </section>
 
       <section aria-labelledby="kyc-biz-docs" className="flex flex-col gap-5 border-t border-line pt-6">
         <h3 id="kyc-biz-docs" className="text-label font-semibold text-fg">
           {tr('Documents')}
         </h3>
-        <DocUpload id="kyc-cert" label="CAC certificate" value={b.certificate} onChange={(certificate) => setB({ certificate })} error={errors.certificate} disabled={disabled} />
+        <DocUpload id="kyc-cert" label={reg.certificate} value={b.certificate} onChange={(certificate) => setB({ certificate })} error={errors.certificate} disabled={disabled} />
         <DocUpload
           id="kyc-status"
-          label={company ? 'CAC status report' : 'BN application form (Form BN/1)'}
-          hint={company ? 'Lists your directors and shareholders. Download it from the CAC portal.' : 'Shows the proprietors’ names and address.'}
+          label={company ? reg.companyRecord : reg.bnRecord}
+          hint={company ? reg.companyRecordHint : reg.bnRecordHint}
           value={b.statusReport}
           onChange={(statusReport) => setB({ statusReport })}
           error={errors.statusReport}
           disabled={disabled} />
         
-        {company && <DocUpload id="kyc-memart" label="Memorandum & articles of association" value={b.memart} onChange={(memart) => setB({ memart })} error={errors.memart} disabled={disabled} />}
+        {company && <DocUpload id="kyc-memart" label={reg.constitution} value={b.memart} onChange={(memart) => setB({ memart })} error={errors.memart} disabled={disabled} />}
       </section>
     </div>);
 

@@ -9,6 +9,7 @@ import { proposeChange, REFINE_HELP } from './refine';
 import { blockName } from '../blocks';
 import { formatNgn } from '../format';
 import { uid } from '../id';
+import { findMobileNumber } from '../phone';
 
 /**
  * The AI page assistant's brain (D211). One function, `respond`, takes the session and the owner's input and
@@ -30,7 +31,6 @@ export interface EngineContext {
 
 /** The assistant always asks at least this many questions before it shows a plan. */
 export const MIN_QUESTIONS = 3;
-const PHONE = /^(\+?234|0)[789][01]\d{8}$/;
 const starters = examplePages.filter((e) => !e.elite && !e.artwork);
 
 const say = (text: string, extra: Partial<AssistantMessage> = {}): AssistantMessage => ({ id: uid('msg'), role: 'assistant', text, createdAt: new Date().toISOString(), ...extra });
@@ -324,8 +324,9 @@ function respondInner(s: AssistantSession, input: AssistantInput, ctx: EngineCon
       if (!(input.kind === 'choice' && value === 'online')) a.city = value.slice(0, 60);
       break;
     case 'phone':{
-        const clean = value.replace(/[\s-]/g, '');
-        if (!PHONE.test(clean)) return { ...withUser, messages: [...withUser.messages, say('That doesn’t look like a Nigerian mobile number — try something like 0803 123 4567 or +234 803 123 4567. Or skip for now.', { tone: 'warning' })] };
+        // The workspace's country, or any of our four with a country code (D420).
+        const clean = findMobileNumber(value);
+        if (!clean) return { ...withUser, messages: [...withUser.messages, say('That doesn’t look like a complete mobile number. Check the digits or add your country code (+234, +254, +233 or +27), or say skip.', { tone: 'warning' })] };
         a.phone = clean;
         break;
       }

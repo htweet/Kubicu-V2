@@ -70,6 +70,35 @@ export function phoneIssueIn(tr: Tr, value: string, fallback: CountryCode = acti
   return tr('Numbers in {country} have {n} digits after +{code}', { country: tr(info.name), n: info.nationalLength, code: info.dialCode });
 }
 
+/**
+ * Finds a complete mobile number from one of our four countries anywhere in a piece of text (D420) and returns it
+ * in compact international form ("+254712345678"), or null. A number with a country code is read as that country.
+ * A local 0… number is read as `fallback`'s when the length fits; otherwise as the one country whose length fits
+ * (an 11-digit 0… number can only be Nigerian). Used where people type freely, like Copilot's chat.
+ */
+export function findMobileNumber(text: string, fallback: CountryCode = activeCountry()): string | null {
+  const candidates = text.match(/(?:\+|00)?\d[\d\s-]{6,18}\d/g) ?? [];
+  for (const raw of candidates) {
+    const v = raw.trim();
+    const d = digitsOf(v);
+    const hasPrefix = v.startsWith('+') || v.startsWith('00');
+    if (hasPrefix || !d.startsWith('0')) {
+      const intl = v.startsWith('00') ? d.slice(2) : d;
+      const code = countryOfDigits(intl);
+      if (!code) continue;
+      const info = countryInfo(code);
+      if (intl.length === info.dialCode.length + info.nationalLength) return `+${intl}`;
+      continue;
+    }
+    const local = d.slice(1);
+    const own = countryInfo(fallback);
+    if (local.length === own.nationalLength) return `+${own.dialCode}${local}`;
+    const fits = countries.filter((c) => c.nationalLength === local.length);
+    if (fits.length === 1) return `+${fits[0].dialCode}${local}`;
+  }
+  return null;
+}
+
 /** A placeholder in the workspace's country, e.g. "+254 712 345 678". */
 export function phonePlaceholder(country: CountryCode = activeCountry()): string {
   const info = countryInfo(country);

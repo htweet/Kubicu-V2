@@ -10,9 +10,11 @@ import { Badge } from '../ui/Badge';
 import { useCommerce } from '../../contexts/CommerceContext';
 import { roomProgress, roomStateLabel } from '../../utils/dealRoom';
 import { campaignPhase, campaignTotals, phaseLabels, phaseSummary } from '../../utils/campaign';
+import { useT } from '../../contexts/LocaleContext';
 
 /** Live and scheduled campaigns and DealRooms, under the main page on Overview. */
 export function SpacesStrip() {
+  const { t: tr } = useT();
   const { current, switchSpace } = useWorkspace();
   const commerce = useCommerce().data;
   const navigate = useNavigate();
@@ -30,14 +32,15 @@ export function SpacesStrip() {
     <section aria-labelledby="spaces-strip-heading" className="mt-4">
       <div className="flex items-center justify-between gap-3">
         <h2 id="spaces-strip-heading" className="text-label font-semibold text-fg">
-          Campaigns & DealRooms
+          {tr('Campaigns & DealRooms')}
         </h2>
         <Link to="/app/spaces" className="inline-flex items-center gap-1 text-caption font-medium text-fg-muted hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-          {drafts > 0 ? `${drafts} draft${drafts === 1 ? '' : 's'} · ` : ''}All spaces <ArrowRightIcon size={13} aria-hidden />
+          {drafts > 0 ? `${tr('Drafts: {n}', { n: drafts })} · ` : ''}
+          {tr('All spaces')} <ArrowRightIcon size={13} aria-hidden />
         </Link>
       </div>
       {running.length === 0 ?
-      <p className="mt-2 text-caption text-fg-subtle">Nothing live right now. Publish a campaign or DealRoom from My Spaces.</p> :
+      <p className="mt-2 text-caption text-fg-subtle">{tr('Nothing live right now. Publish a campaign or DealRoom from My Spaces.')}</p> :
 
       <ul className="scroll-quiet mt-3 flex gap-3 overflow-x-auto pb-1">
           {running.map(({ space, page, status }) => {
@@ -57,28 +60,31 @@ export function SpacesStrip() {
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-label font-semibold text-fg">{space.name}</span>
-                    <span className="block truncate font-mono text-caption text-fg-subtle">{page ? publicUrl(page.draft.handle) : K.label}</span>
+                    <span className="block truncate font-mono text-caption text-fg-subtle">{page ? publicUrl(page.draft.handle) : tr(K.label)}</span>
                     {page?.published?.dealRoom &&
                   (() => {
                     const pr = roomProgress(page.published.dealRoom, page.published.handle, commerce);
                     return (
                       <span className="block truncate text-caption text-fg-muted">
-                            {roomStateLabel[pr.state]} · {page.published.dealRoom.type === 'goal' ? `${pr.count} of ${pr.target} joined` : `${pr.remaining} of ${pr.target} left`}
+                            {tr(roomStateLabel[pr.state])} ·{' '}
+                            {page.published.dealRoom.type === 'goal' ?
+                        tr('{count} of {target} joined', { count: pr.count, target: pr.target }) :
+                        tr('{remaining} of {target} left', { remaining: pr.remaining, target: pr.target })}
                           </span>);
 
                   })()}
                     {page?.published?.campaign &&
                   <span className="block truncate text-caption text-fg-muted">
-                        {phaseLabels[campaignPhase(page.published.campaign)]} · {phaseSummary(page.published.campaign)}
+                        {tr(phaseLabels[campaignPhase(page.published.campaign)])} · {phaseSummary(page.published.campaign)}
                         {(() => {
                       const t = campaignTotals(commerce, page.published.handle);
-                      return t.orders ? ` · ${t.orders} order${t.orders === 1 ? '' : 's'}` : '';
+                      return t.orders ? ` · ${tr('Orders: {n}', { n: t.orders })}` : '';
                     })()}
                       </span>
                   }
                   </span>
                   <Badge tone={spaceStatusBadge[status].tone} dot>
-                    {spaceStatusBadge[status].label}
+                    {tr(spaceStatusBadge[status].label)}
                   </Badge>
                 </button>
               </li>);

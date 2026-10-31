@@ -102,6 +102,8 @@ export interface KycEvent {
 }
 
 export interface KycCase {
+  /** Country whose checks apply (D425). Older cases have none and are Nigerian. */
+  country?: import('./country').CountryCode;
   status: KycStatus;
   entity: EntityType | null;
   identity: KycIdentity;

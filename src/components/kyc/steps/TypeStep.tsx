@@ -1,7 +1,7 @@
 import React from 'react';
 import { BriefcaseIcon, Building2Icon, CheckIcon, UserIcon } from 'lucide-react';
 import type { EntityType } from '../../../types/kyc';
-import { entityInfo } from '../../../utils/money/kyc';
+import { entityInfo, kycRules } from '../../../utils/money/kyc';
 import type { KycStepProps } from '../stepProps';
 import { cn } from '../../../utils/cn';
 import { useT } from '../../../contexts/LocaleContext';
@@ -55,7 +55,7 @@ export function TypeStep({ k, set, errors, disabled }: KycStepProps) {
           {tr(errors.entity)}
         </p>
       }
-      <p className="mt-4 text-caption text-fg-subtle">{tr('Not sure? If you have a CAC certificate, choose the type printed on it. Registered businesses get higher payout limits.')}</p>
+      <p className="mt-4 text-caption text-fg-subtle">{tr(kycRules().notSure)}</p>
     </fieldset>);
 
 }

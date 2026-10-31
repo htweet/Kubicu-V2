@@ -9,6 +9,8 @@ import { useT } from '../../contexts/LocaleContext';
 import { Sheet } from '../ui/Sheet';
 import { Button } from '../ui/Button';
 import { TextInput } from '../ui/TextInput';
+import { PhoneInput } from '../ui/PhoneInput';
+import { phoneIssueIn } from '../../utils/phone';
 import { SelectInput } from '../ui/SelectInput';
 import { InlineAlert } from '../ui/InlineAlert';
 import { cn } from '../../utils/cn';
@@ -52,12 +54,14 @@ export function BookDeliverySheet({ order, escrow, savedRiders, onClose, onBook 
 
   if (!order) return <Sheet open={false} onClose={onClose} title="">{null}</Sheet>;
   const chosen = quotes.find((q) => q.partnerId === partnerId);
-  const riderError = chosen?.own && (!rider.name.trim() || rider.phone.replace(/\D/g, '').length < 10) ? tr('Add your rider’s name and an 11-digit phone number.') : '';
+  const riderError = chosen?.own && (!rider.name.trim() || !rider.phone.trim()) ? tr('Add your rider’s name and phone number.') : '';
+  // Length is checked for the number's own country (D402), not a fixed 11 digits.
+  const riderPhoneError = chosen?.own ? phoneIssueIn(tr, rider.phone) : null;
   const noAddress = !(order.fulfilment.address ?? '').trim();
 
   const submit = () => {
     setTried(true);
-    if (!chosen || !chosen.available || riderError || noAddress) return;
+    if (!chosen || !chosen.available || riderError || riderPhoneError || noAddress) return;
     onBook(order, chosen, pickupAt, chosen.own ? { name: rider.name.trim(), phone: rider.phone.trim(), vehicle: rider.vehicle.trim() || 'Own rider' } : undefined);
   };
 
@@ -128,10 +132,10 @@ export function BookDeliverySheet({ order, escrow, savedRiders, onClose, onBook 
               {tr('Your rider')}
             </h3>
             <div className="grid gap-4 sm:grid-cols-2">
-              <TextInput id="rider-name" label={tr('Name')} value={rider.name} onChange={(e) => setRider({ ...rider, name: e.target.value })} />
-              <TextInput id="rider-phone" label={tr('Phone')} inputMode="tel" value={rider.phone} onChange={(e) => setRider({ ...rider, phone: e.target.value })} />
+              <TextInput id="rider-name" label={tr('Name')} value={rider.name} onChange={(e) => setRider({ ...rider, name: e.target.value })} error={tried ? riderError || undefined : undefined} />
+              <PhoneInput id="rider-phone" label={tr('Phone')} value={rider.phone} onChange={(phone) => setRider({ ...rider, phone })} error={tried ? riderPhoneError ?? undefined : undefined} />
             </div>
-            <TextInput id="rider-vehicle" label={tr('Vehicle')} optional placeholder={tr('e.g. Bike · LSR 482 KJ')} value={rider.vehicle} onChange={(e) => setRider({ ...rider, vehicle: e.target.value })} error={tried ? riderError || undefined : undefined} />
+            <TextInput id="rider-vehicle" label={tr('Vehicle')} optional placeholder={tr('e.g. Bike · LSR 482 KJ')} value={rider.vehicle} onChange={(e) => setRider({ ...rider, vehicle: e.target.value })} />
           </section>
         }
 

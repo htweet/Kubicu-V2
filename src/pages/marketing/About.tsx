@@ -23,7 +23,7 @@ export function About() {
   const navigate = useNavigate();
   return (
     <>
-      <InfoHero crumb="Company" title="About KUBICU" intro="We’re building the simplest way for Nigerian creators and small businesses to sell, book and grow from one link." />
+      <InfoHero crumb="Company" title="About KUBICU" intro="We’re building the simplest way for African creators and small businesses — in Nigeria, Kenya, Ghana, South Africa and beyond — to sell, book and grow from one link." />
       <section aria-labelledby="story-h" className="mx-auto grid w-full max-w-6xl gap-10 px-5 py-16 md:px-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
         <SectionHeading
           id="story-h"

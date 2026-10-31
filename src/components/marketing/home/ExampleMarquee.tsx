@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRightIcon } from 'lucide-react';
 import { TemplateThumb } from '../../templates/TemplateThumb';
 import { RiseText } from './RiseText';
+import { MarqueeToggle } from './MarqueeToggle';
 import { Reveal } from '../Reveal';
 import { examplePages, findExampleById } from '../../../data/examples';
 import { useT } from '../../../contexts/LocaleContext';
@@ -13,6 +14,7 @@ const pages = ids.map((id) => findExampleById(id)).filter((e): e is NonNullable<
 /** Endless strip of real example pages; pauses on hover or keyboard focus, still on reduced motion (D260). */
 export function ExampleMarquee() {
   const { t: tr } = useT();
+  const [paused, setPaused] = useState(false);
   return (
     <section aria-labelledby="examples-heading" className="overflow-hidden bg-[rgb(var(--kb-sky))] py-20 text-[rgb(20_20_18)] md:py-28">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-5 md:flex-row md:items-end md:justify-between md:px-8">
@@ -31,7 +33,10 @@ export function ExampleMarquee() {
         </Reveal>
       </div>
 
-      <div className="kb-marquee-host mt-14 overflow-x-auto [scrollbar-width:none] motion-safe:overflow-x-hidden">
+      <div className="mx-auto mt-10 flex w-full max-w-7xl justify-end px-5 md:px-8">
+        <MarqueeToggle paused={paused} onToggle={() => setPaused((p) => !p)} />
+      </div>
+      <div className="kb-marquee-host mt-4 overflow-x-auto [scrollbar-width:none] motion-safe:overflow-x-hidden" data-paused={paused}>
         <ul className="kb-marquee flex w-max gap-6 px-5" style={{ ['--kb-marquee-duration' as string]: '60s' }}>
           {[...pages, ...pages].map((e, i) => {
             const dup = i >= pages.length;

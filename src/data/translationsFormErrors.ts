@@ -12,6 +12,7 @@ export const formErrorRows: [string, string, string, string, string][] = [
 ['Keep it under {n} characters', 'Make e no pass {n} letters', 'Má jẹ́ kó ju lẹ́tà {n} lọ', 'Kada ya wuce haruffa {n}', 'Edela ya karịa mkpụrụedemede {n}'],
 ['Enter an email like name@example.com', 'Put email like name@example.com', 'Tẹ ímeèlì bíi name@example.com', 'Shigar da imel kamar name@example.com', 'Tinye email dịka name@example.com'],
 ['Enter a web address like example.com, or a handle like @yourname', 'Put website like example.com, or handle like @yourname', 'Tẹ àdírẹ́sì wẹ́ẹ̀bù bíi example.com, tàbí orúkọ bíi @yourname', 'Shigar da adireshin yanar gizo kamar example.com, ko suna kamar @yourname', 'Tinye adreesị weebụ dịka example.com, ma ọ bụ aha dịka @yourname'],
+['Enter a phone number with its country code', 'Put phone number with the country code', 'Tẹ nọ́mbà fóònù pẹ̀lú kóòdù orílẹ̀-èdè', 'Shigar da lambar waya da lambar ƙasa', 'Tinye nọmba ekwentị nwere koodu obodo'],
 ['Enter a phone number, e.g. +234 803 000 0000', 'Put phone number, e.g. +234 803 000 0000', 'Tẹ nọ́mbà fóònù, fún àpẹẹrẹ +234 803 000 0000', 'Shigar da lambar waya, misali +234 803 000 0000', 'Tinye nọmba ekwentị, dịka +234 803 000 0000'],
 ['Enter numbers only', 'Na only numbers', 'Tẹ nọ́mbà nìkan', 'Shigar da lambobi kawai', 'Tinye naanị nọmba'],
 ['Add your last name', 'Add your surname', 'Fi orúkọ ìdílé rẹ kún un', 'Ƙara sunan mahaifinka', 'Tinye aha nna gị'],

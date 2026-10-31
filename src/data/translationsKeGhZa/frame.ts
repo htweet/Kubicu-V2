@@ -105,6 +105,8 @@ const rows: Row3[] = [
 ['Account numbers here are {rule}.', 'Nambari za akaunti hapa ni {rule}.', 'Akawnt nɔma wɔ ha yɛ {rule}.', 'Izinombolo ze-akhawunti lapha zingu-{rule}.'],
 ['10–16 digits', 'tarakimu 10–16', 'nɔma 10–16', 'amadijithi angu-10–16'],
 ['9–11 digits', 'tarakimu 9–11', 'nɔma 9–11', 'amadijithi angu-9–11'],
+['Choose one from the list', 'Chagua moja kwenye orodha', 'Paw baako firi din krataa no so', 'Khetha okukodwa ohlwini'],
+['Check the account number — it’s the wrong length', 'Kagua nambari ya akaunti — urefu wake si sahihi', 'Hwɛ akawnt nɔma no — ne tenten nteɛ', 'Hlola inombolo ye-akhawunti — ubude bayo abulungile'],
 ['Payouts in {currency} are simulated', 'Malipo kwa {currency} ni ya kuigiza', 'Sika a wɔgye wɔ {currency} mu yɛ nsusuiɛ', 'Izinkokhelo nge-{currency} zilingiswa'],
 ['Your balance is kept in your currency. You can add a {country} payout account, but no money moves until KUBICU has a payment partner there.', 'Salio lako linahifadhiwa kwa sarafu yako. Unaweza kuongeza akaunti ya malipo ya {country}, lakini hakuna pesa zitakazohamishwa hadi KUBICU iwe na mshirika wa malipo huko.', 'Yɛkora wo sika wɔ wo sika mu. Wobɛtumi de {country} akawnt aka ho, nanso sika biara rentu kosi sɛ KUBICU benya tua hokafoɔ wɔ hɔ.', 'Ibhalansi yakho igcinwa ngohlobo lwakho lwemali. Ungangeza i-akhawunti yokukhokhelwa yase-{country}, kodwa ayikho imali ehambayo kuze kube yilapho i-KUBICU inozakwethu lapho.']];
 

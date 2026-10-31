@@ -132,7 +132,7 @@ export function Contact() {
               </li>
             )}
           </ul>
-          <p className="mt-6 text-caption text-fg-subtle">{tr('KUBICU · Lagos, Nigeria. Office hours Monday–Friday, 9am–6pm WAT. Messages land in our support queue — you’ll get a reference by email.')}</p>
+          <p className="mt-6 text-caption text-fg-subtle">{tr('KUBICU · Lagos, Nigeria — serving Nigeria, Kenya, Ghana and South Africa. Office hours Monday–Friday, 9am–6pm WAT. Messages land in our support queue — you’ll get a reference by email.')}</p>
         </aside>
       </div>
     </>);

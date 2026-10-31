@@ -84,12 +84,13 @@ p(/^Done: (.+)$/, 'Done: {task}', ['task']),
 p(/^Commission · (.+)$/, 'Commission · {name}', ['name']),
 
 // ——— Deliveries and order timelines ———
-p(/^Booked with (.+) · (₦[\d,]+) — delivery code texted to the customer$/, 'Booked with {partner} · {amount} — delivery code texted to the customer', ['partner', 'amount']),
+// Amounts can be in any of the shop's currencies (₦, KSh, GH₵, R…), so they're matched loosely (D416).
+p(/^Booked with (.+?) · (.+) — delivery code texted to the customer$/, 'Booked with {partner} · {amount} — delivery code texted to the customer', ['partner', 'amount']),
 p(/^Booked with (.+) — delivery code texted to the customer$/, 'Booked with {partner} — delivery code texted to the customer', ['partner']),
 p(/^Delivery booked with (.+)$/, 'Delivery booked with {partner}', ['partner']),
 p(/^Collected by (.+) \((.+)\)$/, 'Collected by {rider} ({partner})', ['rider', 'partner'], ['rider']),
 p(/^Delivered by (.+) · code matched$/, 'Delivered by {name} · code matched', ['name']),
-p(/^Delivered — code matched and (₦[\d,]+) collected by the rider \((.+)\)$/, 'Delivered — code matched and {amount} collected by the rider ({partner})', ['amount', 'partner']),
+p(/^Delivered — code matched and (.+) collected by the rider \((.+)\)$/, 'Delivered — code matched and {amount} collected by the rider ({partner})', ['amount', 'partner']),
 p(/^Delivered — customer’s code matched \((.+)\)$/, 'Delivered — customer’s code matched ({partner})', ['partner']),
 p(/^(.+) assigned · (.+)$/, '{rider} assigned · {vehicle}', ['rider', 'vehicle'], ['vehicle']),
 p(/^(.+) assigned$/, '{rider} assigned', ['rider']),

@@ -6,6 +6,7 @@ import { localFeatures } from '../../../data/marketing';
 import { homeImages } from '../../../data/marketingHome';
 import { cn } from '../../../utils/cn';
 import { useT } from '../../../contexts/LocaleContext';
+import { swapPreviewAmount } from '../../../utils/previewMoney';
 
 const tiles = [
 { bg: 'rgb(var(--kb-lime))', fg: 'rgb(var(--kb-forest))' },
@@ -14,9 +15,9 @@ const tiles = [
 { bg: 'rgb(var(--kb-cobalt))', fg: 'rgb(255 255 255)' }];
 
 
-/** "Built for Nigeria" bento: the WhatsApp tile leads with a photo, three supporting tiles (D260). */
+/** "Built for how customers buy" bento: the WhatsApp tile leads with a photo, three supporting tiles (D260). */
 export function LocalSection() {
-  const { t: tr } = useT();
+  const { t: tr, lang } = useT();
   const reduce = useReducedMotion();
   const [lead, ...rest] = localFeatures;
   const LeadIcon = lead.icon;
@@ -43,7 +44,7 @@ export function LocalSection() {
               <p className="mt-4 max-w-sm text-[17px] font-medium leading-relaxed opacity-90">{tr(lead.text)}</p>
               <div className="mt-auto pt-8">
                 <div className="inline-block max-w-[260px] rounded-2xl rounded-bl-md bg-white px-4 py-3 text-[13px] font-medium leading-snug text-[rgb(20_20_18)] shadow-2">
-                  {tr('Hello! I’d like 2 party trays of small chops (₦45,000) for Saturday.')}
+                  {swapPreviewAmount(tr('Hello! I’d like 2 party trays of small chops (₦45,000) for Saturday.'), 45000, lang)}
                 </div>
               </div>
             </div>

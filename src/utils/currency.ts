@@ -43,6 +43,8 @@ let active: CurrencyCode = 'NGN';
 
 export function setActiveCurrency(code: CurrencyCode | undefined): void {
   active = code ?? 'NGN';
+  // The app shell, seller pages and staff console never convert (D421); only the website turns it back on.
+  display = null;
 }
 
 export const activeCurrency = (): CurrencyCode => active;
@@ -50,8 +52,44 @@ export const currencySymbol = (code: CurrencyCode = active): string => currencyI
 /** USSD, pay on delivery, instalments and Nigerian bank payouts only work in naira. */
 export const isNaira = (code: CurrencyCode = active) => code === 'NGN';
 
-export function formatMoney(amount: number, code: CurrencyCode = active): string {
-  return formatterFor(code).format(amount);
+/**
+ * Display conversion for KUBICU's public website (D421). While the website is on screen in Kiswahili, Twi or
+ * isiZulu, every naira amount written without an explicit currency — sample prices, KUBICU's plan, template and
+ * add-on prices — is shown in that country's currency at a fixed example rate, rounded. Nothing is charged at
+ * these rates. Seller pages in their own currency (active ≠ NGN) and explicit-currency calls never convert.
+ */
+const nairaPer: Partial<Record<CurrencyCode, number>> = { NGN: 1, KES: 12, GHS: 135, ZAR: 85 };
+let display: CurrencyCode | null = null;
+
+export function setDisplayConversion(code: CurrencyCode | null): void {
+  display = code && code !== 'NGN' && nairaPer[code] ? code : null;
+}
+
+export const displayConversion = (): CurrencyCode | null => display;
+
+/** Rounds a converted example amount to a natural-looking figure for its currency. */
+export function tidyAmount(amount: number, code: CurrencyCode): number {
+  if (amount === 0) return 0;
+  const step = code === 'GHS' ? 5 : code === 'ZAR' ? 10 : code === 'KES' ? amount >= 1000 ? 50 : 10 : 1;
+  return Math.max(step, Math.round(amount / step) * step);
+}
+
+/** A naira amount converted to `code` at the example rate (not a live rate), rounded. */
+export function convertExampleNaira(naira: number, code: CurrencyCode): number {
+  if (code === 'NGN') return naira;
+  return tidyAmount(naira / (nairaPer[code] ?? 1), code);
+}
+
+export function formatMoney(amount: number, code?: CurrencyCode): string {
+  if (code === undefined && display && active === 'NGN') return formatterFor(display).format(convertExampleNaira(amount, display));
+  return formatterFor(code ?? active).format(amount);
+}
+
+/** Replaces every "₦12,500" inside fixed text with the converted amount while the website converts (D421). */
+export function localiseAmounts(text: string): string {
+  if (!display) return text;
+  const code = display;
+  return text.replace(/₦\s?(\d[\d,]*)/g, (_m, n: string) => formatterFor(code).format(convertExampleNaira(Number(n.replace(/,/g, '')), code)));
 }
 
 /** A plain number grouped the way the currency's country writes it (12,500 / 12 500), no symbol. */
@@ -79,7 +117,11 @@ export function withSymbol(text: string, code: CurrencyCode = active): string {
   return text.replace(/₦/g, s.length > 1 ? `${s} ` : s);
 }
 
-/** KUBICU's own prices (plans, templates, extensions, print orders) — always naira. */
+/**
+ * KUBICU's own prices (plans, templates, extensions, print orders) — billed in naira. On the public website in
+ * Kiswahili, Twi or isiZulu they're shown converted at the example rate (D421); everywhere else, naira.
+ */
 export function formatNaira(amount: number): string {
+  if (display) return formatterFor(display).format(convertExampleNaira(amount, display));
   return formatterFor('NGN').format(amount);
 }

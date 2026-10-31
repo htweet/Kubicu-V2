@@ -1,5 +1,5 @@
 /* @import url() FONT IMPORTS MUST ALWAYS BE AT THE VERY TOP OF THIS FILE, ABOVE THE TAILWIND IMPORTS — DO NOT DELETE THIS COMMENT */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Instrument+Serif&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=Archivo:wdth,wght@75..100,500..800&family=Lora:wght@400;500;600&family=Cormorant+Garamond:wght@500;600&family=Bricolage+Grotesque:opsz,wght@12..96,500..800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Instrument+Serif&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=Archivo:wdth,wght@75..100,500..800&family=Lora:wght@400;500;600&family=Cormorant+Garamond:wght@500;600&family=Bricolage+Grotesque:opsz,wght@12..96,500..800&display=swap');
 
 /* CRITICAL: THE FOLLOWING TAILWIND IMPORTS MUST NEVER BE DELETED OR REORDERED — DO NOT DELETE THIS COMMENT */
 @import 'tailwindcss/base';
@@ -253,9 +253,9 @@ html[data-motion='reduce'] *::after {
 [data-direction='kubicuBold'] .nm-glow {
   box-shadow: var(--shadow-3);
 }
-/* Heavy display face for public pages only. */
+/* Heavy display face for public pages only — Bricolage Grotesque, restored in D422. */
 .kb-display {
-  font-family: 'Bricolage Grotesque', 'Inter', ui-sans-serif, system-ui, sans-serif;
+  font-family: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
   font-optical-sizing: auto;
   font-weight: 800;
   letter-spacing: -0.035em;
@@ -264,7 +264,8 @@ html[data-motion='reduce'] *::after {
   animation: kb-marquee var(--kb-marquee-duration, 48s) linear infinite;
 }
 .kb-marquee-host:hover .kb-marquee,
-.kb-marquee-host:focus-within .kb-marquee {
+.kb-marquee-host:focus-within .kb-marquee,
+.kb-marquee-host[data-paused='true'] .kb-marquee {
   animation-play-state: paused;
 }
 @keyframes kb-marquee {

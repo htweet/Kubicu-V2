@@ -30,6 +30,7 @@ export const countries: CountryInfo[] = [
   payments: ['card', 'transfer', 'ussd', 'pay_on_delivery', 'instalments'],
   mobileMoney: null,
   vatPct: 7.5,
+  dataPerGb: 650,
   localLanguage: { code: 'yo', name: 'Yorùbá' },
   mainCity: 'Lagos'
 },
@@ -57,6 +58,7 @@ export const countries: CountryInfo[] = [
   payments: ['mpesa', 'card'],
   mobileMoney: { id: 'mpesa', name: 'M-Pesa', approveHint: 'enter your M-Pesa PIN' },
   vatPct: 16,
+  dataPerGb: 100,
   localLanguage: { code: 'sw', name: 'Kiswahili' },
   mainCity: 'Nairobi'
 },
@@ -81,6 +83,7 @@ export const countries: CountryInfo[] = [
   payments: ['momo', 'card'],
   mobileMoney: { id: 'momo', name: 'MTN MoMo', approveHint: 'enter your MoMo PIN' },
   vatPct: 15,
+  dataPerGb: 10,
   localLanguage: { code: 'tw', name: 'Twi' },
   mainCity: 'Accra'
 },
@@ -99,6 +102,7 @@ export const countries: CountryInfo[] = [
   payments: ['card', 'eft'],
   mobileMoney: null,
   vatPct: 15,
+  dataPerGb: 50,
   localLanguage: { code: 'zu', name: 'isiZulu' },
   mainCity: 'Johannesburg'
 }];

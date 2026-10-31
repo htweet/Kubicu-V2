@@ -4,7 +4,7 @@ import { useEditor } from '../../contexts/EditorContext';
 import { useT } from '../../contexts/LocaleContext';
 import { blockDefinitions } from '../../data/blockRegistry';
 import { a11yFindings, CHECK_KINDS, formatKb, pageWeight } from '../../utils/pageCheck';
-import { formatNgn } from '../../utils/format';
+import { formatMoney } from '../../utils/currency';
 import { Switch } from '../ui/Switch';
 import { cn } from '../../utils/cn';
 import { CompositionPanel } from './CompositionPanel';
@@ -25,6 +25,9 @@ export function PageCheckPanel() {
   const fixes = findings.filter((f) => f.level === 'fix').length;
   const r = ratingCopy[weight.rating];
   const lightweight = !!state.draft.branding?.startLightweight;
+  // Smallest amount worth showing in each currency: ₦2, or 1 shilling, cedi or rand (D404).
+  const minShown = weight.dataCurrency === 'NGN' ? 2 : 1;
+  const dataCostLabel = weight.dataCost < minShown ? tr('Under {amount}', { amount: formatMoney(minShown, weight.dataCurrency) }) : `~${formatMoney(Math.round(weight.dataCost), weight.dataCurrency)}`;
 
   const labelFor = (id: string | null) => {
     const b = id ? blocks.find((x) => x.id === id) : null;
@@ -97,10 +100,10 @@ export function PageCheckPanel() {
           </div>
           <div>
             <dt className="text-caption text-fg-subtle">{tr('Data cost')}</dt>
-            <dd className="text-label font-semibold tabular-nums text-fg">{weight.dataNgn < 2 ? tr('Under ₦2') : `~${formatNgn(weight.dataNgn)}`}</dd>
+            <dd className="text-label font-semibold tabular-nums text-fg">{dataCostLabel}</dd>
           </div>
         </dl>
-        <p className="mt-2 text-caption text-fg-subtle">{tr('Estimates at typical Nigerian mobile speeds and about ₦650 per GB of data. Videos aren’t counted until tapped.')}</p>
+        <p className="mt-2 text-caption text-fg-subtle">{tr('Estimates at typical mobile speeds and about {price} per GB of data. Videos aren’t counted until tapped.', { price: formatMoney(weight.dataPerGb, weight.dataCurrency) })}</p>
 
         {weight.items.length > 0 &&
         <>

@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { MotionConfig } from 'framer-motion';
 import { LocaleProvider } from './contexts/LocaleContext';
 import { LiveAnnouncer } from './components/ui/LiveAnnouncer';
+import { AskBar } from './components/shell/AskBar';
 import { AppearancePolicyProvider } from './contexts/AppearancePolicyContext';
 import { DirectionProvider } from './contexts/DirectionContext';
 import { EditorProvider } from './contexts/EditorContext';
@@ -353,6 +354,7 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
               {/* Public addresses typed without /p (e.g. /adaeze-trunk-show/shop) still reach the page (D187). */}
               <Route path="*" element={<LegacyRedirect />} />
             </Routes>
+            <AskBar />
             <AppToaster />
             <LiveAnnouncer />
           </WorkspaceScope>
