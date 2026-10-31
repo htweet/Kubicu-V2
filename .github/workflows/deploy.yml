@@ -1,0 +1,147 @@
+name: Deploy to Hostinger (kub.icu)
+
+on:
+  push:
+    branches:
+      - dev        # Engineering branch → auto-deploys to kub.icu
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    name: Build, upload & deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      # ── 1. Checkout ────────────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── 2. Node.js setup ───────────────────────────────────────────────────
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # ── 3. Install deps & build ────────────────────────────────────────────
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build (Vite)
+        run: npm run build
+        # Output: dist/  (index.html at root, assets/ subfolder)
+
+      # ── 4. Archive dist/ ───────────────────────────────────────────────────
+      - name: Create deployment archive
+        run: |
+          ARCHIVE="site_$(date +%Y%m%d_%H%M%S).zip"
+          echo "ARCHIVE=$ARCHIVE" >> "$GITHUB_ENV"
+          (cd dist && zip -r "../$ARCHIVE" .)
+          echo "Archive: $ARCHIVE  size: $(du -sh "$ARCHIVE" | cut -f1)"
+
+      # ── 5. Get Hostinger TUS upload credentials ────────────────────────────
+      - name: Get TUS upload credentials
+        env:
+          HOSTINGER_API_TOKEN: ${{ secrets.HOSTINGER_API_TOKEN }}
+        run: |
+          RESPONSE=$(curl -fsSL -X POST \
+            "https://developers.hostinger.com/api/hosting/v1/files/upload-urls" \
+            -H "Authorization: Bearer ${HOSTINGER_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d '{"username":"u339701955","domain":"kub.icu"}')
+
+          TUS_URL=$(echo "$RESPONSE" | jq -r '.url')
+          AUTH_KEY=$(echo "$RESPONSE" | jq -r '.auth_key')
+          REST_AUTH_KEY=$(echo "$RESPONSE" | jq -r '.rest_auth_key')
+
+          # Mask secrets so they never appear in logs
+          echo "::add-mask::${AUTH_KEY}"
+          echo "::add-mask::${REST_AUTH_KEY}"
+
+          echo "TUS_URL=${TUS_URL}" >> "$GITHUB_ENV"
+          echo "AUTH_KEY=${AUTH_KEY}" >> "$GITHUB_ENV"
+          echo "REST_AUTH_KEY=${REST_AUTH_KEY}" >> "$GITHUB_ENV"
+
+      # ── 6. Upload archive via TUS ──────────────────────────────────────────
+      - name: Upload archive (TUS create slot)
+        run: |
+          FILE="${ARCHIVE}"
+          SIZE=$(stat -c%s "$FILE")
+          DEST="site.zip"
+
+          STATUS=$(curl -sS -o /dev/null -w "%{http_code}" -X POST \
+            "${TUS_URL}/${DEST}?override=true" \
+            -H "X-Auth: ${AUTH_KEY}" \
+            -H "X-Auth-Rest: ${REST_AUTH_KEY}" \
+            -H "Tus-Resumable: 1.0.0" \
+            -H "Upload-Length: ${SIZE}" \
+            -H "Upload-Offset: 0")
+
+          echo "Create-slot status: ${STATUS}"
+          [ "${STATUS}" = "201" ] || { echo "Expected 201, got ${STATUS}"; exit 1; }
+
+      - name: Upload archive (TUS PATCH – send bytes)
+        run: |
+          FILE="${ARCHIVE}"
+          SIZE=$(stat -c%s "$FILE")
+          DEST="site.zip"
+
+          RESPONSE_HEADERS=$(curl -sS -D - -o /dev/null -X PATCH \
+            "${TUS_URL}/${DEST}?override=true" \
+            -H "X-Auth: ${AUTH_KEY}" \
+            -H "X-Auth-Rest: ${REST_AUTH_KEY}" \
+            -H "Tus-Resumable: 1.0.0" \
+            -H "Content-Type: application/offset+octet-stream" \
+            -H "Upload-Offset: 0" \
+            --data-binary "@${FILE}")
+
+          HTTP_STATUS=$(echo "$RESPONSE_HEADERS" | grep -m1 "^HTTP/" | awk '{print $2}')
+          UPLOAD_OFFSET=$(echo "$RESPONSE_HEADERS" | grep -i "^Upload-Offset:" | tr -d '\r' | awk '{print $2}')
+
+          echo "PATCH status: ${HTTP_STATUS}"
+          echo "Upload-Offset: ${UPLOAD_OFFSET} / ${SIZE}"
+
+          [ "${HTTP_STATUS}" = "204" ] || { echo "Expected 204, got ${HTTP_STATUS}"; exit 1; }
+          [ "${UPLOAD_OFFSET}" = "${SIZE}" ] || { echo "Offset mismatch: ${UPLOAD_OFFSET} != ${SIZE}"; exit 1; }
+
+      # ── 7. Trigger static-site deploy ──────────────────────────────────────
+      - name: Deploy static site archive
+        env:
+          HOSTINGER_API_TOKEN: ${{ secrets.HOSTINGER_API_TOKEN }}
+        run: |
+          RESPONSE=$(curl -fsSL -X POST \
+            "https://developers.hostinger.com/api/hosting/v1/accounts/u339701955/websites/kub.icu/deploy" \
+            -H "Authorization: Bearer ${HOSTINGER_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d '{"archive_path":"site.zip"}')
+
+          echo "Deploy response: ${RESPONSE}"
+
+      # ── 8. E2E verification ────────────────────────────────────────────────
+      - name: Wait for propagation
+        run: sleep 20
+
+      - name: E2E – verify live site (HTTP 200)
+        run: |
+          STATUS=$(curl -sS -o /dev/null -w "%{http_code}" https://kub.icu/)
+          echo "kub.icu HTTP status: ${STATUS}"
+          [ "${STATUS}" = "200" ] || { echo "Site did not return 200"; exit 1; }
+
+      - name: E2E – verify React app rendered
+        run: |
+          BODY=$(curl -sS https://kub.icu/)
+          # Vite SPA: HTML should contain the root div and script bundle reference
+          echo "$BODY" | grep -q 'id="root"' \
+            || { echo "ERROR: #root div not found in response"; exit 1; }
+          echo "$BODY" | grep -q '\.js' \
+            || { echo "ERROR: JS bundle reference not found"; exit 1; }
+          echo "✓ React app HTML verified on kub.icu"
+
+      - name: Clear Hostinger cache
+        env:
+          HOSTINGER_API_TOKEN: ${{ secrets.HOSTINGER_API_TOKEN }}
+        run: |
+          curl -sS -X DELETE \
+            "https://developers.hostinger.com/api/hosting/v1/accounts/u339701955/websites/kub.icu/cache/clear" \
+            -H "Authorization: Bearer ${HOSTINGER_API_TOKEN}" \
+            || echo "Cache clear returned non-zero (non-fatal)"
