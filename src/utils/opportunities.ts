@@ -6,6 +6,7 @@ import { isSoldOut } from './commerce/catalog';
 import type { ServiceOsData } from '../types/serviceOs';
 import { bookingBalance } from './ops/balance';
 import { dueUnrequested, hasStages } from './milestones';
+import { formatMoney } from './currency';
 
 /** Opportunity Inbox (concept 12, D81): money and customers that still need one small action. */
 export type OpportunityKind = 'unpaid' | 'renewal' | 'deposit' | 'balance' | 'stage' | 'noshow' | 'lead' | 'followup' | 'soldout' | 'automation';
@@ -72,7 +73,7 @@ export function buildOpportunities(commerce: CommerceData, ops: OpsData, busines
       valueNgn: bal.amount,
       since: b.start,
       to: `/app/bookings?booking=${b.id}`,
-      nudge: b.customer.phone ? { phone: b.customer.phone, message: `Hi ${first(b.customer.name)}, it's ${business}. Your ${b.serviceName} balance of ₦${bal.amount.toLocaleString('en-NG')} is due before your appointment — you can pay it from your booking link. See you soon!` } : undefined,
+      nudge: b.customer.phone ? { phone: b.customer.phone, message: `Hi ${first(b.customer.name)}, it's ${business}. Your ${b.serviceName} balance of ${formatMoney(bal.amount)} is due before your appointment — you can pay it from your booking link. See you soon!` } : undefined,
       sample: b.sample
     });
   });
@@ -89,7 +90,7 @@ export function buildOpportunities(commerce: CommerceData, ops: OpsData, busines
       valueNgn: o.balance.dueNgn,
       since: o.balance.requestedAt ?? o.createdAt,
       to: `/app/commerce/orders?order=${o.id}`,
-      nudge: o.customer.phone ? { phone: o.customer.phone, message: `Hi ${first(o.customer.name)}, it's ${business}. Your order ${orderRef(o)} is nearly ready! The balance is ₦${o.balance.dueNgn.toLocaleString('en-NG')} — pay it from your order page and we'll send it out.` } : undefined,
+      nudge: o.customer.phone ? { phone: o.customer.phone, message: `Hi ${first(o.customer.name)}, it's ${business}. Your order ${orderRef(o)} is nearly ready! The balance is ${formatMoney(o.balance.dueNgn)} — pay it from your order page and we'll send it out.` } : undefined,
       sample: o.sample
     });
   });
@@ -109,7 +110,7 @@ export function buildOpportunities(commerce: CommerceData, ops: OpsData, busines
       valueNgn: failed.amountNgn,
       since: failed.failedAt ?? failed.dueAt,
       to: `/app/commerce/orders?order=${o.id}`,
-      nudge: o.customer.phone ? { phone: o.customer.phone, message: `Hi ${first(o.customer.name)}, it’s ${business}. Part ${failed.n} of your order ${orderRef(o)} (₦${failed.amountNgn.toLocaleString('en-NG')}) didn’t go through. You can pay it or update your card from your order page.` } : undefined,
+      nudge: o.customer.phone ? { phone: o.customer.phone, message: `Hi ${first(o.customer.name)}, it’s ${business}. Part ${failed.n} of your order ${orderRef(o)} (${formatMoney(failed.amountNgn)}) didn’t go through. You can pay it or update your card from your order page.` } : undefined,
       sample: o.sample
     });
   });

@@ -154,13 +154,13 @@ B(109, 'Back to top', 'utilities', 'backToTop'),
 L(110, 'Custom embed', 'utilities', 'embed', () => ({ content: { title: '' } }), 'Supported sites only — no scripts or custom code'),
 // M. Smart & AI-powered
 L(111, 'AI-assisted content section', 'smart', 'heading', () => ({ content: { text: '' } }), 'Use “Suggest” in the inspector; nothing publishes until you approve it'),
-{ n: 112, name: 'AI FAQ assistant', category: 'smart', kind: 'planned', note: 'Needs an AI provider connection' },
+B(112, 'AI FAQ assistant', 'smart', 'faqAssistant'),
 L(113, 'Personalised welcome', 'smart', 'smartButton', () => ({ content: { label: 'New here? Start with this' } }), 'Changes by visitor source only — no personal data'),
 B(114, 'Campaign spotlight', 'smart', 'campaignSpotlight'),
 B(115, 'Smart CTA', 'smart', 'smartButton'),
 B(116, 'Recommendation collection', 'smart', 'recommendations'),
 L(117, 'Opportunity & contact CTA', 'smart', 'cta', () => ({ content: { title: 'Open to collaborations', text: 'Brands, studios and organisers — tell me what you have in mind.', primaryLabel: 'Pitch me' } }), 'Points to your enquiry route'),
-{ n: 118, name: 'Voice to content', category: 'smart', kind: 'planned', note: 'Needs a speech-to-text provider. Typing always works.' },
+{ n: 118, name: 'Voice to content', category: 'smart', kind: 'howto', note: 'Use “Voice to content” at the top of the block library: speak or type, check the words, then add them as blocks.' },
 L(119, 'Campaign landing section', 'smart', 'section', () => ({ content: { heading: 'Launch week', intro: 'Everything for this campaign in one place.' }, layout: { background: 'tint', width: 'wide' } }), 'On campaign spaces, pair with Visibility → phases'),
 L(120, 'Smart content collection', 'smart', 'recommendations', () => ({ content: { title: 'Everything for your first order' } }), 'Grouped around one goal, ordered by you')];
 

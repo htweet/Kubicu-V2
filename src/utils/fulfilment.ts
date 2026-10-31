@@ -1,8 +1,10 @@
 import type { Order } from '../types/commerce';
 import type { Delivery, DeliveryStatus, FailReason, FulfilmentData, Rider } from '../types/fulfilment';
-import { deliveryAreas, deliveryPartners, SIMULATED_RIDERS } from '../data/deliveryPartners';
+import { deliveryByCountry, SIMULATED_RIDERS } from '../data/deliveryPartners';
+import { activeCountry } from './country';
 import { dispatchBlocked } from './commerce/deposit';
 import { uid } from './id';
+import { formatMoney } from './currency';
 import { seedsSample } from './workspaceStorage';
 
 /** Local Fulfilment (D96) store and rules. The courier side is simulated and labelled. */
@@ -135,20 +137,24 @@ export interface PartnerQuote {
   own?: boolean;
 }
 
+/** Couriers, areas and riders for the workspace's country (D355). */
+const localDelivery = () => deliveryByCountry[activeCountry()] ?? deliveryByCountry.NG;
+
 export function areaFor(address: string) {
   const a = address.toLowerCase();
-  return deliveryAreas.find((x) => x.keywords.some((k) => a.includes(k))) ?? null;
+  return localDelivery().areas.find((x) => x.keywords.some((k) => a.includes(k))) ?? null;
 }
 
 export function quotesFor(address: string, now = new Date()): PartnerQuote[] {
   const area = areaFor(address);
   const afterCutoff = now.getHours() >= 14;
-  return deliveryPartners.map((p) => {
+  const local = localDelivery();
+  return local.partners.map((p) => {
     if (p.own) return { partnerId: p.id, name: p.name, tagline: p.tagline, feeNgn: 0, eta: 'When your rider delivers', available: true, own: true };
     if (area?.outOfRange) return { partnerId: p.id, name: p.name, tagline: p.tagline, feeNgn: 0, eta: '—', available: false, note: `Doesn’t deliver to ${area.label} yet` };
     const feeNgn = p.baseNgn + (area?.extraNgn ?? 0);
     const eta = p.sameDay && !afterCutoff ? 'Today, by 7pm' : 'Tomorrow, by 6pm';
-    return { partnerId: p.id, name: p.name, tagline: p.tagline, feeNgn, eta, available: true, note: area ? area.label : 'Lagos Mainland' };
+    return { partnerId: p.id, name: p.name, tagline: p.tagline, feeNgn, eta, available: true, note: area ? area.label : local.homeArea };
   });
 }
 
@@ -179,7 +185,7 @@ export function book(data: FulfilmentData, o: Order, q: PartnerQuote, pickupAt: 
     createdAt: new Date().toISOString(),
     events: [
     ...(rider ? [ev(`${rider.name} assigned`)] : []),
-    ev(`Booked with ${q.name}${q.feeNgn ? ` · ₦${q.feeNgn.toLocaleString('en-NG')}` : ''} — delivery code texted to the customer`)]
+    ev(`Booked with ${q.name}${q.feeNgn ? ` · ${formatMoney(q.feeNgn)}` : ''} — delivery code texted to the customer`)]
 
   };
   return { data: { ...data, deliveries: [delivery, ...data.deliveries] }, delivery };
@@ -189,7 +195,8 @@ export function book(data: FulfilmentData, o: Order, q: PartnerQuote, pickupAt: 
 export function assignRider(data: FulfilmentData, id: string): FulfilmentData {
   return patch(data, id, (d) => {
     if (d.status !== 'booked') return d;
-    const rider = SIMULATED_RIDERS[Math.floor(Math.random() * SIMULATED_RIDERS.length)];
+    const riders = localDelivery().riders;
+    const rider = riders[Math.floor(Math.random() * riders.length)];
     return { ...d, status: 'assigned', rider, events: [ev(`${rider.name} assigned · ${rider.vehicle}`), ...d.events] };
   });
 }

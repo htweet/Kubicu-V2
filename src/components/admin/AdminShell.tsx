@@ -3,6 +3,7 @@ import { Link, Navigate, Outlet, useLocation, useNavigate } from 'react-router-d
 import { ArrowLeftIcon, LockIcon, LogOutIcon, MenuIcon, PanelLeftCloseIcon, PanelLeftOpenIcon } from 'lucide-react';
 import type { StaffMember } from '../../types/admin';
 import { setActiveCurrency } from '../../utils/currency';
+import { setActiveCountry } from '../../utils/country';
 import { adminNav, adminNavItems } from '../../data/adminNavigation';
 import { roleCanOpen, roleInfo } from '../../data/staffRoles';
 import { useStaffSession } from '../../hooks/useStaffSession';
@@ -120,6 +121,7 @@ export function AdminShell() {
 function AdminConsole({ staff }: {staff: StaffMember;}) {
   // The staff console reports in naira (D136).
   setActiveCurrency('NGN');
+  setActiveCountry('NG');
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
   const { pathname } = useLocation();

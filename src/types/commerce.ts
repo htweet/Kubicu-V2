@@ -569,6 +569,10 @@ export interface ShopSettings {
     /** Also offer the seller's own bank details (Bank transfer payments app); the seller confirms. */
     transferOwn: boolean;
     ussd: boolean;
+    /** M-Pesa (Kenya) or MTN MoMo (Ghana), when the shop sells from there (D355). Missing = on. */
+    mobileMoney?: boolean;
+    /** EFT bank transfer to a one-time account (South Africa, D355). Missing = on. */
+    eft?: boolean;
   };
   tax: {
     enabled: boolean;

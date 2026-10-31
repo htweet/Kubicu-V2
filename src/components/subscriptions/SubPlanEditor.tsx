@@ -7,6 +7,7 @@ import { useT } from '../../contexts/LocaleContext';
 import { emptySubPlan, intervalWord, seatsTaken } from '../../utils/commerce/subscriptions';
 import { variantLabel } from '../../utils/commerce/catalog';
 import { formatNgn } from '../../utils/format';
+import { withSymbol } from '../../utils/currency';
 import { Sheet } from '../ui/Sheet';
 import { Button } from '../ui/Button';
 import { IconButton } from '../ui/IconButton';
@@ -54,7 +55,7 @@ export function SubPlanEditor({ target, onClose }: Props) {
   const errors = useMemo(() => {
     const e: Partial<Record<'name' | 'priceNgn' | 'items' | 'cap' | 'trialDays', string>> = {};
     if (!form.name.trim()) e.name = tr('Subscribers see this name.');
-    if (!form.priceNgn || form.priceNgn < 100) e.priceNgn = tr('Enter a price of at least ₦100.');
+    if (!form.priceNgn || form.priceNgn < 100) e.priceNgn = withSymbol(tr('Enter a price of at least ₦100.'));
     if (form.kind === 'box' && form.items.length === 0) e.items = tr('Add at least one product to the box.');
     const c = cap.trim() === '' ? null : Number(cap);
     if (c !== null && (!Number.isFinite(c) || c < 1)) e.cap = tr('At least 1, or leave empty for no limit.');else

@@ -1,6 +1,7 @@
 import type { BankAccount, KycTier } from '../../types/money';
 import type { CheckResult, EntityType, KycCase, KycPerson, KycStepId } from '../../types/kyc';
 import { uid } from '../id';
+import { activeCountryInfo } from '../country';
 
 /** Business verification (D93): which steps apply, what each needs, simulated partner checks and review decisions. */
 
@@ -44,8 +45,6 @@ export function stepsFor(entity: EntityType | null): KycStepId[] {
   return ['type', 'identity', 'address', 'payout', 'declarations', 'review'];
 }
 
-export const nigerianStates = [
-'Abia', 'Adamawa', 'Akwa Ibom', 'Anambra', 'Bauchi', 'Bayelsa', 'Benue', 'Borno', 'Cross River', 'Delta', 'Ebonyi', 'Edo', 'Ekiti', 'Enugu', 'FCT Abuja', 'Gombe', 'Imo', 'Jigawa', 'Kaduna', 'Kano', 'Katsina', 'Kebbi', 'Kogi', 'Kwara', 'Lagos', 'Nasarawa', 'Niger', 'Ogun', 'Ondo', 'Osun', 'Oyo', 'Plateau', 'Rivers', 'Sokoto', 'Taraba', 'Yobe', 'Zamfara'];
 
 
 export const volumeLabels = { under_500k: 'Under ₦500,000', '500k_2m': '₦500,000 – ₦2 million', '2m_10m': '₦2 – 10 million', '10m_50m': '₦10 – 50 million', over_50m: 'Over ₦50 million' } as const;
@@ -60,7 +59,7 @@ export const blankKyc = (): KycCase => ({
     legalName: '', dob: '', phone: '', phoneVerified: false, bvn: '', nin: '', idType: 'nin', idNumber: '', idExpiry: '', idFront: null, selfie: false,
     checks: { bvn: 'not_run', nin: 'not_run', liveness: 'not_run', nameOnBvn: '' }
   },
-  address: { line1: '', city: '', state: 'Lagos', proofType: 'utility', proof: null },
+  address: { line1: '', city: '', state: activeCountryInfo().defaultRegion, proofType: 'utility', proof: null },
   business: {
     registeredName: '', number: '', incorporatedOn: '', tin: '', industry: '', description: '', website: '', certificate: null, statusReport: null, memart: null,
     checks: { cac: 'not_run', registeredNameOnCac: '', tin: 'not_run' }

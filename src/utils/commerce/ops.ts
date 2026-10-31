@@ -466,7 +466,7 @@ export function refundOrder(data: CommerceData, orderId: string, amountNgn: numb
       status: full ? 'refunded' as const : o.status,
       // KUBICU returns its fee when an order is refunded in full; the provider fee stays (D55).
       kubicuFeeNgn: full ? 0 : o.kubicuFeeNgn,
-      events: [event('refund', `${full ? 'Refunded in full' : 'Partial refund'} — ₦${amount.toLocaleString('en-NG')}${reason ? ` · ${reason}` : ''}`), ...o.events]
+      events: [event('refund', `${full ? 'Refunded in full' : 'Partial refund'} — ${formatNgn(amount)}${reason ? ` · ${reason}` : ''}`), ...o.events]
     } :
     o
     )
@@ -485,7 +485,7 @@ export function refundOrder(data: CommerceData, orderId: string, amountNgn: numb
       { ...g, balanceNgn: Math.min(g.initialNgn, g.balanceNgn + gc.amountNgn), uses: [{ orderId: order.id, orderNumber: order.number, amountNgn: -gc.amountNgn, at: now() }, ...g.uses] } :
       g
       ),
-      orders: next.orders.map((o) => o.id === orderId ? { ...o, events: [event('note', `₦${gc.amountNgn.toLocaleString('en-NG')} put back on gift card ${gc.code}`), ...o.events] } : o)
+      orders: next.orders.map((o) => o.id === orderId ? { ...o, events: [event('note', `${formatNgn(gc.amountNgn)} put back on gift card ${gc.code}`), ...o.events] } : o)
     };
   }
   // Refunding a gift card purchase turns its codes off so they can't be spent after the money is returned.

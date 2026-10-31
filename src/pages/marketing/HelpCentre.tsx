@@ -18,13 +18,13 @@ const START_HERE = ['claim-link', 'first-page', 'add-blocks', 'publish-check', '
  * Help centre (D113b, D274): a step-by-step guide grouped by job, searchable, each answer on its own page.
  * D332: the page around the guides is translated; topic names, summaries and the guides themselves are still English
  * (a few hundred articles), and a note says so in other languages. Topic and group names pass through the translator so
- * any that already have drafts show translated.
+ * any that already have drafts show translated. D344: search also understands everyday words in the screen language.
  */
 export function HelpCentre() {
   const { t: tr, lang } = useT();
   const [query, setQuery] = useState('');
   const q = query.trim().toLowerCase();
-  const results = useMemo(() => helpTopics.map((t) => ({ ...t, articles: t.articles.filter((a) => matchesHelp(a, t, q)) })).filter((t) => t.articles.length > 0), [q]);
+  const results = useMemo(() => helpTopics.map((t) => ({ ...t, articles: t.articles.filter((a) => matchesHelp(a, t, q, lang, tr)) })).filter((t) => t.articles.length > 0), [q, lang, tr]);
   const total = helpTopics.reduce((n, t) => n + t.articles.length, 0);
   const count = results.reduce((n, t) => n + t.articles.length, 0);
   const startHere = START_HERE.map((id) => helpTopics.flatMap((t) => t.articles).find((a) => a.id === id)).filter((a): a is NonNullable<typeof a> => !!a);
@@ -36,7 +36,7 @@ export function HelpCentre() {
         {lang !== 'en' &&
         <p className="mb-6 flex max-w-2xl items-start gap-2 rounded-lg bg-sunken px-4 py-3 text-label text-fg-muted">
             <InfoIcon size={16} className="mt-0.5 shrink-0" aria-hidden />
-            {tr('The guides are in English for now. Search with English words, like “refund” or “domain”.')}
+            {tr('The guides are in English for now. Search in your language with everyday words, or in English.')}
           </p>
         }
         <label className="relative block max-w-xl">

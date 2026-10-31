@@ -2,6 +2,8 @@
 
 The source of truth is `data/planMatrix.ts`, which the public Pricing page renders. This document mirrors it for review. Prices, plan limits and KUBICU fees were **confirmed in D105** (23 Oct 2026). Partner-app plan placement (D101) was confirmed in D109.
 
+> **Update, 30 Oct 2026 (D343):** rows added after D101 live in `data/planMatrix.ts`, which is the source of truth; this mirror isn't refreshed row by row. Note the conflict on prices: this file says prices were confirmed in D105, while `PROTOTYPE_STATUS.md` lists plan prices as deferred by the founder. Treat prices as **not final** until the founder confirms (see `docs/CLAUDE_HANDOFF.md` §17.1).
+
 **Status:** Live = works in the prototype · Preview = works, partner side simulated · Coming = designed, not built.
 
 **Rule:** every new feature gets a row here (and in `data/planMatrix.ts`) when it is designed — including ones not built yet — and its code gate must match.

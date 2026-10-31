@@ -1,5 +1,6 @@
 import {
   ArrowUpToLineIcon,
+  BotMessageSquareIcon,
   CalendarRangeIcon,
   CodeXmlIcon,
   CreditCardIcon,
@@ -22,7 +23,8 @@ import { uid } from '../utils/id';
 /** Round 2 of the expanded block library (D170): media, commerce, audience and rule-based smart blocks. */
 export type Round2BlockType =
 'carousel' | 'brandHeader' | 'linkCollection' | 'qrCode' | 'document' | 'embed' | 'shopCategories' | 'checkoutButton' |
-'poll' | 'community' | 'reviewSummary' | 'languageSwitch' | 'smartButton' | 'campaignSpotlight' | 'recommendations' | 'backToTop';
+'poll' | 'community' | 'reviewSummary' | 'languageSwitch' | 'smartButton' | 'campaignSpotlight' | 'recommendations' | 'backToTop' |
+'faqAssistant';
 
 const base = { supportsEmphasis: false, defaultAlign: 'left' as const };
 
@@ -209,9 +211,27 @@ export const round2BlockDefinitions: { [K in Round2BlockType]: BlockDefinition<K
     clickable: true,
     defaultAlign: 'center',
     defaults: () => ({ label: 'Back to top' })
+  },
+  // Built in D342 (was Planned): matching is rule-based, answers are always the owner's own words.
+  faqAssistant: {
+    ...base,
+    type: 'faqAssistant',
+    name: 'AI FAQ assistant',
+    description: 'Answers visitor questions using only facts you’ve approved — never invents prices or policies.',
+    category: 'Conversion',
+    icon: BotMessageSquareIcon,
+    keywords: ['assistant', 'ask', 'questions', 'chatbot', 'help', 'answers', 'faq bot'],
+    clickable: true,
+    defaults: () => ({
+      title: 'Ask us anything',
+      intro: '',
+      facts: [{ id: uid('fact'), question: '', answer: '' }],
+      fallbackLabel: 'Message us',
+      fallbackUrl: ''
+    })
   }
 };
 
 export const round2BlockOrder: Round2BlockType[] = [
 'brandHeader', 'carousel', 'linkCollection', 'qrCode', 'document', 'embed', 'shopCategories', 'checkoutButton',
-'poll', 'community', 'reviewSummary', 'languageSwitch', 'smartButton', 'campaignSpotlight', 'recommendations', 'backToTop'];
+'poll', 'community', 'reviewSummary', 'languageSwitch', 'smartButton', 'campaignSpotlight', 'recommendations', 'faqAssistant', 'backToTop'];

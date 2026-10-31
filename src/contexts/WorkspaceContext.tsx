@@ -43,7 +43,7 @@ interface WorkspaceValue {
   /** Adds a campaign or DealRoom to the current workspace. Throws if storage fails. */
   createSpace: (input: CreateSpaceInput) => Space;
   setSpaceArchived: (spaceId: string, archived: boolean) => void;
-  update: (id: string, patch: Partial<Pick<Workspace, 'name' | 'ownerName' | 'plan' | 'currency' | 'whatsapp'>>) => void;
+  update: (id: string, patch: Partial<Pick<Workspace, 'name' | 'ownerName' | 'plan' | 'currency' | 'country' | 'whatsapp'>>) => void;
   /** Removes the current workspace's demo data everywhere, then reloads so every screen reads clean data (D200). */
   removeDemoData: (reason: 'manual' | 'expired') => void;
   /** Deletes the built-in Adaeze demo workspace and everything in it (D201). Needs another workspace to move to. */
@@ -62,6 +62,7 @@ function demoWorkspace(plan: WorkspacePlan): Workspace {
     plan,
     pageId: 'page_adaeze',
     whatsapp: '+234 803 123 4567',
+    country: 'NG',
     spaces: seedSampleSpaces(),
     sampleSpacesSeeded: true,
     sampleSpaces2Seeded: true,
@@ -209,7 +210,7 @@ export function WorkspaceProvider({ planControl, children }: {planControl: Works
     [current.id]
   );
 
-  const update = useCallback((id: string, patch: Partial<Pick<Workspace, 'name' | 'ownerName' | 'plan' | 'currency' | 'whatsapp'>>) => {
+  const update = useCallback((id: string, patch: Partial<Pick<Workspace, 'name' | 'ownerName' | 'plan' | 'currency' | 'country' | 'whatsapp'>>) => {
     setWorkspaces((list) => list.map((w) => w.id === id ? { ...w, ...patch } : w));
   }, []);
 

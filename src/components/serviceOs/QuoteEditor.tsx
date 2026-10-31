@@ -11,6 +11,7 @@ import { Sheet } from '../ui/Sheet';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import { TextInput } from '../ui/TextInput';
+import { PhoneInput } from '../ui/PhoneInput';
 import { TextArea } from '../ui/TextArea';
 import { SelectInput } from '../ui/SelectInput';
 import { InlineAlert } from '../ui/InlineAlert';
@@ -157,7 +158,7 @@ export function QuoteEditor({ quote, data, businessName, canEdit, update, onClos
           </h3>
           <TextInput id="qe-name" label="Name" value={draft.client.name} disabled={!editable} maxLength={60} onChange={(e) => setDraft({ ...draft, client: { ...draft.client, name: e.target.value } })} />
           <div className="grid gap-4 sm:grid-cols-2">
-            <TextInput id="qe-phone" label="Phone or WhatsApp" type="tel" value={draft.client.phone} disabled={!editable} maxLength={24} onChange={(e) => setDraft({ ...draft, client: { ...draft.client, phone: e.target.value } })} />
+            <PhoneInput id="qe-phone" label="Phone or WhatsApp" value={draft.client.phone} disabled={!editable} onChange={(phone) => setDraft({ ...draft, client: { ...draft.client, phone } })} />
             <TextInput id="qe-email" label="Email" type="email" optional value={draft.client.email} disabled={!editable} maxLength={80} onChange={(e) => setDraft({ ...draft, client: { ...draft.client, email: e.target.value } })} />
           </div>
         </section>

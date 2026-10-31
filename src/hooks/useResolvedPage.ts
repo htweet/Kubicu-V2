@@ -10,6 +10,7 @@ import { allBlocks } from '../utils/sitePages';
 import { spaceStorageId } from '../utils/spaces';
 import { liveReadableTheme } from '../utils/contrastFixes';
 import { setActiveCurrency } from '../utils/currency';
+import { setActiveCountry, workspaceCountry } from '../utils/country';
 import { businessWhatsApp, setActiveBusinessWhatsApp } from '../utils/businessWhatsApp';
 
 export interface ResolvedPage {
@@ -45,6 +46,8 @@ export function useResolvedPage(handle: string, isDraft = false): ResolvedPage |
   // Visitors see prices in the seller's own currency (D136). Examples are Nigerian, so naira.
   const owner = workspaces.find((w) => w.id === resolved?.workspaceId);
   setActiveCurrency(owner?.currency);
+  // Checkout options, phone fields and regions follow the seller's country (D352).
+  setActiveCountry(workspaceCountry(owner));
   // The page owner's Business WhatsApp number (D214). Examples carry their own numbers.
   setActiveBusinessWhatsApp(resolved?.example ? '' : owner?.whatsapp);
   return resolved;

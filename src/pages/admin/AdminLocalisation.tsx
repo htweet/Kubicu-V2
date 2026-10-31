@@ -16,7 +16,7 @@ import { PolicyReleasesCard } from '../../components/admin/localisation/PolicyRe
 const pct = (n: number) => `${(n * 100).toLocaleString(undefined, { maximumFractionDigits: 2 })}%`;
 
 /** Account language codes → translation dictionaries. */
-const dictFor = (code: string): Exclude<UiLang, 'en'> | null => code === 'pcm' || code === 'yo' || code === 'ha' || code === 'ig' ? code : null;
+const dictFor = (code: string): Exclude<UiLang, 'en'> | null => code === 'pcm' || code === 'yo' || code === 'ha' || code === 'ig' || code === 'sw' || code === 'tw' || code === 'zu' ? code : null;
 
 /**
  * Super admin → Localisation & policies (D130, editing D135): language readiness and native review,
@@ -29,7 +29,8 @@ export function AdminLocalisation() {
   ['Naira-only', 'USSD, pay on delivery, instalments, Nigerian payouts'],
   ['KUBICU plan prices', 'Always naira'],
   ['Default time zone', 'West Africa Time (Africa/Lagos)'],
-  ['Phone numbers', '+234, local 0 accepted and converted'],
+  ['Countries a workspace can sell from', 'Nigeria, Kenya, Ghana, South Africa (sets currency, phone code, regions, banks, checkout)'],
+  ['Phone numbers', '+234, +254, +233, +27 — local 0 accepted and converted'],
   ['Default date format', dateFormatOptions[0].label],
   ['Other date formats', dateFormatOptions.slice(1).map((d) => d.label.split(' —')[0]).join(', ')]];
 

@@ -9,6 +9,7 @@ import { blankProduct } from './ProductEditor';
 import { Dialog } from '../ui/Dialog';
 import { Button } from '../ui/Button';
 import { cn } from '../../utils/cn';
+import { formatMoney } from '../../utils/currency';
 
 interface Row {
   line: number;
@@ -146,7 +147,7 @@ export function ImportProductsDialog({ open, onClose, remaining }: {open: boolea
                     {r.name || '—'}
                   </span>
                   <span className="shrink-0 text-caption tabular-nums text-fg-muted">
-                    {r.price === null ? 'On request' : `₦${r.price.toLocaleString('en-NG')}`} · {r.stock}
+                    {r.price === null ? 'On request' : formatMoney(r.price)} · {r.stock}
                   </span>
                 </div>
                 {r.errors.length ?
@@ -176,7 +177,7 @@ export function ImportProductsDialog({ open, onClose, remaining }: {open: boolea
               <tr key={r.line} className={cn('border-t border-line', r.errors.length && 'bg-danger-soft/50')}>
                     <td className="px-3 py-2 tabular-nums text-fg-subtle">{r.line}</td>
                     <td className="px-3 py-2 text-fg">{r.name || '—'}</td>
-                    <td className="px-3 py-2 text-right tabular-nums text-fg">{r.price === null ? 'On request' : `₦${r.price.toLocaleString('en-NG')}`}</td>
+                    <td className="px-3 py-2 text-right tabular-nums text-fg">{r.price === null ? 'On request' : formatMoney(r.price)}</td>
                     <td className="px-3 py-2 text-right tabular-nums text-fg">{r.stock}</td>
                     <td className="px-3 py-2">
                       {r.errors.length ?

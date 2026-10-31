@@ -2,6 +2,7 @@
  * Meta Pixel and Google tag on public pages (D67, D230). Only called after a visitor accepts the cookie notice,
  * never in draft previews or example pages. IDs come from the extension's saved settings and are re-checked here.
  */
+import { activeCurrency } from './currency';
 
 type FbqFn = ((...args: unknown[]) => void) & {callMethod?: (...a: unknown[]) => void;queue: unknown[];loaded: boolean;version: string;push: unknown;};
 
@@ -107,8 +108,10 @@ export function loadClarity(projectId: string): void {
 
 /** Purchase events for ad tools, after consent. Safe to call when no tag is loaded. */
 export function tagPurchase(valueNgn: number, orderId: string): void {
-  window.fbq?.('track', 'Purchase', { value: valueNgn, currency: 'NGN' });
-  window.gtag?.('event', 'purchase', { transaction_id: orderId, value: valueNgn, currency: 'NGN' });
+  // The seller's own currency, so ad tools report the right amount (D352).
+  const currency = activeCurrency();
+  window.fbq?.('track', 'Purchase', { value: valueNgn, currency });
+  window.gtag?.('event', 'purchase', { transaction_id: orderId, value: valueNgn, currency });
   const track = window.ttq?.track;
-  if (typeof track === 'function') (track as TtqFn)('CompletePayment', { value: valueNgn, currency: 'NGN', content_id: orderId });
+  if (typeof track === 'function') (track as TtqFn)('CompletePayment', { value: valueNgn, currency, content_id: orderId });
 }

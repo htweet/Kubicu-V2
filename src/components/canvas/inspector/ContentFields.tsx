@@ -4,6 +4,7 @@ import type { ValidationIssue } from '../../../utils/validation';
 import { useEditor } from '../../../contexts/EditorContext';
 import { useT } from '../../../contexts/LocaleContext';
 import { TextInput } from '../../ui/TextInput';
+import { PhoneInput } from '../../ui/PhoneInput';
 import { businessWhatsApp, waFieldHintIn } from '../../../utils/businessWhatsApp';
 import { TextArea } from '../../ui/TextArea';
 import { Switch } from '../../ui/Switch';
@@ -232,7 +233,7 @@ export function ContentFields({ block, issues }: ContentFieldsProps) {
         const set = setter('contact');
         return (
           <div className={stack}>
-          <TextInput id={id('phone')} label={tr('Phone')} optional type="tel" inputMode="tel" placeholder="+234 …" value={c.phone} error={err('phone')} onChange={(e) => set({ phone: e.target.value }, 'phone')} />
+          <PhoneInput id={id('phone')} label={tr('Phone')} optional value={c.phone} error={err('phone')} onChange={(phone) => set({ phone }, 'phone')} />
           <TextInput id={id('email')} label={tr('Email')} optional type="email" inputMode="email" value={c.email} error={err('email')} onChange={(e) => set({ email: e.target.value }, 'email')} />
           <TextArea id={id('address')} label={tr('Address')} optional rows={2} value={c.address} onChange={(e) => set({ address: e.target.value }, 'address')} />
           <TextInput id={id('hours')} label={tr('Opening hours')} optional placeholder={tr('e.g. Mon–Fri, 9am–5pm WAT')} value={c.hours} onChange={(e) => set({ hours: e.target.value }, 'hours')} />

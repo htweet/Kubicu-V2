@@ -5,6 +5,7 @@ import { orderRef } from '../commerce/shopSettings';
 import { orderMoney } from '../commerce/money';
 import { orderPartnerShares, partnerDebitNgn, partnerRatio } from '../commerce/bundles';
 import { uid } from '../id';
+import { formatMoney, withSymbol } from '../currency';
 import { blankKyc, normaliseKyc } from './kyc';
 import { newCase, syncEscrow } from './escrow';
 import type { EscrowCase } from '../../types/escrow';
@@ -326,11 +327,11 @@ export function payoutBlocker(d: MoneyData): string | null {
     if (d.kyc.status === 'rejected') return 'Your verification wasn’t approved. See the note on the Verification page.';
     if (!starterEligible(d)) return d.kyc.status === 'in_review' ? 'Your verification is with KUBICU for review. Payouts start as soon as it’s approved.' : 'Finish verifying your business to pay out. Sales still arrive as normal.';
     const missing = starterMissing(d);
-    return `To start small payouts (up to ₦${tierInfo[1].dailyPayoutNgn.toLocaleString('en-NG')} a day) you still need: ${missing.join(', ').toLowerCase()}. Sales still arrive as normal.`;
+    return `To start small payouts (up to ${formatMoney(tierInfo[1].dailyPayoutNgn)} a day) you still need: ${missing.join(', ').toLowerCase()}. Sales still arrive as normal.`;
   }
   if (!d.banks.length) return 'Add a bank account to pay out.';
   if (!usableBanks(d).length) return 'Your new bank account is in its 24-hour safety wait.';
-  if (balances(d).available < 1000) return 'You need at least ₦1,000 available to pay out.';
+  if (balances(d).available < 1000) return withSymbol('You need at least ₦1,000 available to pay out.');
   return null;
 }
 
@@ -344,10 +345,10 @@ input: {amountNgn: number;bankId: string;by: string;outcome: 'paid' | 'failed';a
   const fee = payoutFee(input.auto);
   const available = balances(d).available;
   if (!canPayOut(d)) return { error: 'Finish the identity checks and add a bank account in your own name to pay out.' };
-  if (input.amountNgn < 1000) return { error: 'The smallest payout is ₦1,000.' };
-  if (input.amountNgn + fee > available) return { error: `You have ${available.toLocaleString('en-NG')} available, including the ₦${fee} fee.` };
+  if (input.amountNgn < 1000) return { error: withSymbol('The smallest payout is ₦1,000.') };
+  if (input.amountNgn + fee > available) return { error: `You have ${formatMoney(available)} available, including the ${formatMoney(fee)} fee.` };
   const left = tierInfo[payoutTier(d)].dailyPayoutNgn - paidOutToday(d);
-  if (input.amountNgn > left) return { error: `That's over today's limit. You can pay out up to ₦${Math.max(0, left).toLocaleString('en-NG')} more today.${isVerified(d) ? '' : ' Finish verification for higher limits.'}` };
+  if (input.amountNgn > left) return { error: `That's over today's limit. You can pay out up to ${formatMoney(Math.max(0, left))} more today.${isVerified(d) ? '' : ' Finish verification for higher limits.'}` };
   const at = new Date().toISOString();
   const bankLabel = `${bank.bankName} ····${bank.last4}`;
   const payout: Payout = { id: uid('po'), amountNgn: input.amountNgn, feeNgn: fee, bankId: bank.id, bankLabel, status: 'processing', createdAt: at, settledAt: null, outcome: input.outcome, failureReason: null, holdReason: null, auto: input.auto, by: input.by };

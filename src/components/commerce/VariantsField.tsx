@@ -8,14 +8,15 @@ import { IconButton } from '../ui/IconButton';
 import { TextInput } from '../ui/TextInput';
 import { fieldControlClass } from '../ui/Field';
 import { cn } from '../../utils/cn';
-import { currencySymbol } from '../../utils/currency';
+import { currencySymbol, groupNumber } from '../../utils/currency';
 
 interface VariantsFieldProps {
   product: Product;
   onChange: (patch: Partial<Product>) => void;
 }
 
-const grouped = new Intl.NumberFormat('en-NG', { maximumFractionDigits: 0 });
+// Grouped the way the workspace's currency country writes numbers (D352).
+const grouped = { format: (n: number) => groupNumber(n) };
 
 /** Options (e.g. Size, Colour) generate a variant per combination, each with its own SKU, price and stock. */
 export function VariantsField({ product, onChange }: VariantsFieldProps) {

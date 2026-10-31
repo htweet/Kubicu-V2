@@ -5,6 +5,7 @@ import type { EscrowCase } from '../../types/escrow';
 import { useMoney } from '../../hooks/useMoney';
 import { caseSummary, escalate, fastForward, issueLabels, markDelivered, markOrderDelivered, sellerRespond, stageLabels, stageTones } from '../../utils/money/escrow';
 import { formatNgn, formatTimestamp } from '../../utils/format';
+import { withSymbol } from '../../utils/currency';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import { TextArea } from '../ui/TextArea';
@@ -43,7 +44,7 @@ function CaseView({ c, workspaceId, handle, update }: {c: EscrowCase;workspaceId
 
   const partialNgn = Number(partial) || 0;
   const errors = {
-    partial: reply === 'partial' && (partialNgn <= 0 || partialNgn >= c.grossNgn) ? `Enter an amount between ₦1 and ${formatNgn(c.grossNgn - 1)}.` : undefined,
+    partial: reply === 'partial' && (partialNgn <= 0 || partialNgn >= c.grossNgn) ? withSymbol(`Enter an amount between ₦1 and ${formatNgn(c.grossNgn - 1)}.`) : undefined,
     text: reply !== 'full_refund' && text.trim().length < 20 ? 'Explain your side in at least 20 characters — the buyer and KUBICU will read it.' : undefined
   };
 
@@ -121,7 +122,7 @@ function CaseView({ c, workspaceId, handle, update }: {c: EscrowCase;workspaceId
                   </span>
                 </label>
           )}
-              {reply === 'partial' && <TextInput id={`esc-partial-${c.id}`} label="Amount to refund (₦)" inputMode="numeric" value={partial} onChange={(e) => setPartial(e.target.value.replace(/\D/g, ''))} error={tried ? errors.partial : undefined} />}
+              {reply === 'partial' && <TextInput id={`esc-partial-${c.id}`} label={withSymbol('Amount to refund (₦)')} inputMode="numeric" value={partial} onChange={(e) => setPartial(e.target.value.replace(/\D/g, ''))} error={tried ? errors.partial : undefined} />}
               {reply !== 'full_refund' &&
           <>
                   <TextArea id={`esc-text-${c.id}`} label="Your side" rows={3} value={text} onChange={(e) => setText(e.target.value)} error={tried ? errors.text : undefined} />

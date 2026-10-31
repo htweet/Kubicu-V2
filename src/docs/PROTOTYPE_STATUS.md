@@ -218,8 +218,8 @@ The full list lives in `docs/DESIGN_GAP_AUDIT.md`. In short: Batch 13 closes the
 - [x] **Pass D — Live presence and multi-door check-in (D143)**: live presence between tabs with selected-block outlines, simulated teammates labelled; named doors, door on every check-in, doors list and latest feed, offline queue with conflict review
 - [x] **Order tracking, paid → delivered (D144)**: customer tracking card with stage icons, promise date, rider and delivery code, outside couriers and updates feed; seller tracking panel with health and reasons, change date, add courier, post update; "Delivery needs attention" filter and late-order notification
 - [x] **QR code on the publish screen**: "Get a QR code" with PNG/SVG download and A6 print; scans count as QR visits; Overview checklist links to Domains & QR
-- [ ] **Pass E — Translations, part 1** (in progress): tracking, payout and bank windows (D145); Payments card, Verification frame, Reports, Commerce settings (D146); Audience, Schedule, Services (D147). Still to do: Verification step fields, Availability, booking/contact panels, workspace Settings, Your account
-- [ ] Pass F — Translations, part 2 (canvas, marketing site) — on hold until a native speaker can review
+- [x] **Pass E — Translations, part 1**: tracking, payout and bank windows (D145); Payments card, Verification frame, Reports, Commerce settings (D146); Audience, Schedule, Services (D147); remaining app screens D150–D152 and D280–D291
+- [x] **Pass F — Translations, part 2**: canvas (D292–D317), public website (D318–D338), Copilot (D339–D340), built sentences (D341). Drafts only — native-speaker review still pending (sign-off Group D)
 - [x] **Batch 14 checks (D149)**: phone fit and accessibility code-reading pass over every Batch 14 screen, fixes applied; accessibility report section 5b updated
 - [x] **Clean-up of buildable gaps (D148)**: "Count taps" respected; bank-transfer checkout via the extension; placeholder module pages removed; unanswered FAQ questions hidden; design-system batch labels removed
 
@@ -230,8 +230,18 @@ The full list lives in `docs/DESIGN_GAP_AUDIT.md`. In short: Batch 13 closes the
 - [x] **Pass D — Members area space (D185)**: whole space for active subscribers to chosen plans, welcome card with Join and Sign in, Member / Not a member canvas switch
 - [x] **Pass E — Checks, samples and docs (D186)**: sample Booking page and Members area, phone and accessibility code pass, register updated
 
+### After Batch 14 (D274–D343)
+- [x] Copilot chats in the sidebar and the All chats panel (D284, D290)
+- [x] Language picker in every surface (D298, D299)
+- [x] Whole-product translation drafts (D280–D341)
+- [x] AI FAQ assistant block, Voice to content, Composition copy/hierarchy checks, block search in screen language (D342)
+- [x] Website/WhatsApp short-link clicks in campaign stats; hand-filled source and permission for older contacts (D343)
+- [ ] Browser and device check of everything from D280–D343 (not yet opened in a browser)
+
 ## Needs founder confirmation
 1. Plan prices (deferred by founder).
+2. Copilot: AI provider, data-processing terms, chat retention, AI credit costs.
+3. Native-speaker review of all translation drafts.
 
 - **Accounts** are not created; sign-in opens the workspace on this device.
 - **Legal and help pages:** wording confirmed by the product owner after legal review (D109).
@@ -243,4 +253,4 @@ The full list lives in `docs/DESIGN_GAP_AUDIT.md`. In short: Batch 13 closes the
 - **Bookings and automations** never send real messages; reminders and runs are previews. Calendar sync is being added as a simulated connection in Batch 13.
 
 ## Next
-Remaining partial items in `docs/DESIGN_GAP_AUDIT.md` §7 (translations of remaining screens first), hands-on device checks, and partner selection.
+Hands-on browser and device checks, native-speaker review, partner selection, and the small items in `docs/DESIGN_GAP_AUDIT.md` §7. Current full list: `docs/CLAUDE_HANDOFF.md` §17.

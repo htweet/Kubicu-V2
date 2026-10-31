@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
-import { LockKeyholeIcon, ShieldCheckIcon as TrustShieldIcon, BotMessageSquareIcon, MicIcon } from 'lucide-react';
+import { LockKeyholeIcon, ShieldCheckIcon as TrustShieldIcon } from 'lucide-react';
 import {
   CircleUserRoundIcon,
   HeadingIcon,
@@ -848,23 +848,5 @@ export interface PlannedBlock {
  * Booking, checkout (product/grid blocks) and secure downloads shipped and were removed.
  */
 // Seating maps shipped inside the Event block (D113), so nothing is planned right now.
-// Canvas ecosystem (D170): the two smart blocks that need real AI/speech providers are shown as Planned only.
-export const plannedBlocks: PlannedBlock[] = [
-{
-  id: 'ai-faq',
-  name: 'AI FAQ assistant',
-  description: 'Answers visitor questions using only facts you’ve approved — never invents prices or policies.',
-  category: 'Conversion',
-  icon: BotMessageSquareIcon,
-  availability: 'planned',
-  note: 'Needs an AI provider connection'
-},
-{
-  id: 'voice-content',
-  name: 'Voice to content',
-  description: 'Speak, review the transcript, then turn it into a block. Typing always works too.',
-  category: 'Foundation',
-  icon: MicIcon,
-  availability: 'planned',
-  note: 'Needs a speech-to-text provider'
-}];
+// D342: the AI FAQ assistant is now a block and Voice to content a tool at the top of the library, so nothing is planned.
+export const plannedBlocks: PlannedBlock[] = [];

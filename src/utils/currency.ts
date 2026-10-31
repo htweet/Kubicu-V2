@@ -54,6 +54,31 @@ export function formatMoney(amount: number, code: CurrencyCode = active): string
   return formatterFor(code).format(amount);
 }
 
+/** A plain number grouped the way the currency's country writes it (12,500 / 12 500), no symbol. */
+export function groupNumber(amount: number, code: CurrencyCode = active): string {
+  return new Intl.NumberFormat(currencyInfo(code).locale, { maximumFractionDigits: 0 }).format(amount);
+}
+
+/** Compact amount for chart axes: ₦1.2m, KSh 45k. */
+export function formatShortMoney(amount: number, code: CurrencyCode = active): string {
+  const s = currencySymbol(code);
+  const sep = s.length > 1 ? ' ' : '';
+  if (Math.abs(amount) >= 1_000_000) return `${s}${sep}${(amount / 1_000_000).toFixed(1)}m`;
+  if (Math.abs(amount) >= 1000) return `${s}${sep}${Math.round(amount / 1000)}k`;
+  return `${s}${sep}${amount}`;
+}
+
+/**
+ * Swaps "₦" in a fixed, already-translated sentence for the workspace's symbol (D352), so examples and
+ * minimums like "at least ₦100" read right in KSh, GH₵ or R without re-keying every draft. Naira is unchanged.
+ * Only for seller amounts — never KUBICU's own prices or provider fees.
+ */
+export function withSymbol(text: string, code: CurrencyCode = active): string {
+  if (code === 'NGN') return text;
+  const s = currencySymbol(code);
+  return text.replace(/₦/g, s.length > 1 ? `${s} ` : s);
+}
+
 /** KUBICU's own prices (plans, templates, extensions, print orders) — always naira. */
 export function formatNaira(amount: number): string {
   return formatterFor('NGN').format(amount);

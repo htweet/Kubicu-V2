@@ -11,6 +11,7 @@ import { Sheet } from '../../ui/Sheet';
 import { Button } from '../../ui/Button';
 import { IconButton } from '../../ui/IconButton';
 import { TextInput } from '../../ui/TextInput';
+import { PhoneInput } from '../../ui/PhoneInput';
 import { Badge } from '../../ui/Badge';
 import { Dialog } from '../../ui/Dialog';
 
@@ -81,7 +82,7 @@ export function CourseLearners({ courseId, onClose }: Props) {
           <div className="flex flex-col gap-3">
               <TextInput id="lrn-name" label="Name" optional value={who.name} onChange={(e) => setWho((w) => ({ ...w, name: e.target.value }))} />
               <div className="grid gap-3 sm:grid-cols-2">
-                <TextInput id="lrn-phone" label="Phone" type="tel" value={who.phone} error={phoneErr ?? missing} onChange={(e) => setWho((w) => ({ ...w, phone: e.target.value }))} />
+                <PhoneInput id="lrn-phone" label="Phone" value={who.phone} error={phoneErr ?? missing} onChange={(phone) => setWho((w) => ({ ...w, phone }))} />
                 <TextInput id="lrn-email" label="Email" type="email" value={who.email} error={emailErr} onChange={(e) => setWho((w) => ({ ...w, email: e.target.value }))} />
               </div>
               <p className="text-caption text-fg-subtle">For people who paid another way, such as a bank transfer. They get access straight away, whatever the course’s price.</p>

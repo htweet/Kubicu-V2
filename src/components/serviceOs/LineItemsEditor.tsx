@@ -4,7 +4,7 @@ import type { DocVat, LineItem } from '../../types/serviceOs';
 import { blankItem, lineTotal, vatSplit } from '../../utils/serviceOs';
 import { vatRateLabel } from '../../utils/commerce/shopSettings';
 import { formatNgn } from '../../utils/format';
-import { currencySymbol } from '../../utils/currency';
+import { currencySymbol, groupNumber } from '../../utils/currency';
 import { fieldControlClass } from '../ui/Field';
 import { Button } from '../ui/Button';
 import { IconButton } from '../ui/IconButton';
@@ -20,7 +20,7 @@ interface Props {
   vat?: DocVat;
 }
 
-const grouped = new Intl.NumberFormat('en-NG', { maximumFractionDigits: 0 });
+const grouped = { format: (n: number) => groupNumber(n) };
 
 /** Priced lines for quotes and invoices: what, how many, price each, line total (D89). */
 export function LineItemsEditor({ items, onChange, readOnly, footer, vat }: Props) {

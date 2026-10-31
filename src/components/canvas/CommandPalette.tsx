@@ -44,7 +44,7 @@ export function CommandPalette({
   onVersions,
   onViewport
 }: CommandPaletteProps) {
-  const { t: tr } = useT();
+  const { t: tr, lang } = useT();
   const {
     state,
     actions,
@@ -96,7 +96,7 @@ export function CommandPalette({
         hint: libraryCategories.find((c) => c.id === libraryCategoryOf(type))?.label ?? def.category,
         icon: def.icon,
         // Same search text as the picker, synonyms included (D166).
-        keywords: blockSearchText(type),
+        keywords: blockSearchText(type, tr, lang),
         run: () => actions.addBlock(type)
       });
     });
@@ -117,7 +117,7 @@ export function CommandPalette({
       run: () => actions.select(b.id)
     }));
     return list;
-  }, [actions, canRedo, canUndo, library.sections, market, navigate, onPublish, onVersions, onViewport, state.draft.blocks, state.draft.handle, tr]);
+  }, [actions, canRedo, canUndo, library.sections, market, navigate, onPublish, onVersions, onViewport, state.draft.blocks, state.draft.handle, tr, lang]);
   // Section names and block summaries are the owner's own words; tr() returns them unchanged when no draft exists.
   const shown = (c: Command) => ({ label: tr(c.label), hint: c.hint && c.group === 'Add a block' ? tr(c.hint) : c.hint });
   const q = query.trim().toLowerCase();

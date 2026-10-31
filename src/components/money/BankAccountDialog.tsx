@@ -4,14 +4,17 @@ import { toast } from 'sonner';
 import type { BankAccount, MoneyData } from '../../types/money';
 import { BANK_COOLDOWN_HOURS, nameMatchOf } from '../../utils/money/store';
 import { uid } from '../../utils/id';
+import { activeCountryInfo } from '../../utils/country';
+import { isValidPhone } from '../../utils/validation';
+import { phoneIssueIn } from '../../utils/phone';
 import { useT } from '../../contexts/LocaleContext';
 import { Dialog } from '../ui/Dialog';
 import { Button } from '../ui/Button';
 import { TextInput } from '../ui/TextInput';
+import { PhoneInput } from '../ui/PhoneInput';
 import { SelectInput } from '../ui/SelectInput';
+import { Segmented } from '../ui/Segmented';
 import { ConfirmMoneyDialog } from './ConfirmMoneyDialog';
-
-const banks = ['Access Bank', 'First Bank', 'GTBank', 'Kuda', 'Moniepoint', 'Opay', 'Stanbic IBTC', 'UBA', 'Wema Bank', 'Zenith Bank'];
 
 interface BankAccountDialogProps {
   open: boolean;
@@ -21,11 +24,23 @@ interface BankAccountDialogProps {
   businessName: string;
 }
 
-/** Add a payout account. The name on the account is checked against the business (D92). */
+type Kind = 'bank' | 'mobile_money';
+
+/**
+ * Add a payout account. The name on the account is checked against the business (D92).
+ * Banks and the account-number length follow the workspace's country; in Kenya and Ghana payouts can
+ * also go to an M-Pesa or MTN MoMo wallet (D355). The name lookup is simulated.
+ */
 export function BankAccountDialog({ open, onClose, data, update, businessName }: BankAccountDialogProps) {
   const { t: tr } = useT();
-  const [bank, setBank] = useState('GTBank');
+  const country = activeCountryInfo();
+  const banks = country.banks;
+  const rule = country.accountNumber;
+  const wallet = country.mobileMoney;
+  const [kind, setKind] = useState<Kind>('bank');
+  const [bank, setBank] = useState(banks.includes('GTBank') ? 'GTBank' : banks[0]);
   const [number, setNumber] = useState('');
+  const [phone, setPhone] = useState('');
   const [looked, setLooked] = useState<string | null>(null);
   const [looking, setLooking] = useState(false);
   const [confirming, setConfirming] = useState(false);
@@ -33,24 +48,29 @@ export function BankAccountDialog({ open, onClose, data, update, businessName }:
   useEffect(() => {
     if (!open) return;
     setNumber('');
+    setPhone('');
     setLooked(null);
     setLooking(false);
     setConfirming(false);
   }, [open]);
 
-  useEffect(() => setLooked(null), [number, bank]);
+  useEffect(() => setLooked(null), [number, bank, phone, kind]);
 
-  const valid = /^\d{10}$/.test(number);
+  const isWallet = kind === 'mobile_money' && !!wallet;
+  const lengthOk = number.length >= rule.min && number.length <= rule.max;
+  const valid = isWallet ? isValidPhone(phone) : lengthOk;
   const match = looked ? nameMatchOf(looked, businessName) : null;
   const first = data.banks.length === 0;
+  const digits = isWallet ? phone.replace(/\D/g, '') : number;
+  const label = isWallet && wallet ? wallet.name : bank;
 
   const lookUp = () => {
     if (!valid) return;
     setLooking(true);
     window.setTimeout(() => {
       setLooking(false);
-      // Simulated bank name lookup: test account numbers ending in 0000 belong to someone else (D242).
-      setLooked(number.endsWith('0000') ? 'CHINEDU OKORO' : businessName.toUpperCase());
+      // Simulated name lookup: test numbers ending in 0000 belong to someone else (D242).
+      setLooked(digits.endsWith('0000') ? 'CHINEDU OKORO' : businessName.toUpperCase());
     }, 700);
   };
 
@@ -59,26 +79,29 @@ export function BankAccountDialog({ open, onClose, data, update, businessName }:
     const now = Date.now();
     const account: BankAccount = {
       id: uid('bank'),
-      bankName: bank,
-      last4: number.slice(-4),
+      bankName: label,
+      last4: digits.slice(-4),
       accountName: looked,
       nameMatch: match,
       addedAt: new Date(now).toISOString(),
       usableAt: new Date(first ? now : now + BANK_COOLDOWN_HOURS * 3_600_000).toISOString(),
-      primary: first
+      primary: first,
+      kind: isWallet ? 'mobile_money' : 'bank'
     };
     update((d) => ({ ...d, banks: [...d.banks, account] }));
     setConfirming(false);
     onClose();
-    toast.success(tr('Bank account added'), { description: first ? tr('You can pay out to it now.') : tr('For your safety it can receive payouts in {n} hours. We’ve emailed you about this change.', { n: BANK_COOLDOWN_HOURS }) });
+    toast.success(tr(isWallet ? 'Payout wallet added' : 'Bank account added'), { description: first ? tr('You can pay out to it now.') : tr('For your safety it can receive payouts in {n} hours. We’ve emailed you about this change.', { n: BANK_COOLDOWN_HOURS }) });
   };
+
+  const numberError = number.length > 0 && !lengthOk ? country.code === 'NG' ? tr('Account numbers have 10 digits.') : tr('Account numbers here are {rule}.', { rule: tr(rule.label) }) : undefined;
 
   return (
     <>
       <Dialog
         open={open && !confirming}
         onClose={onClose}
-        title="Add a bank account"
+        title={wallet ? 'Add a payout account' : 'Add a bank account'}
         description="Payouts can only go to an account in your business’s name."
         footer={
         <>
@@ -98,9 +121,36 @@ export function BankAccountDialog({ open, onClose, data, update, businessName }:
         }>
         
         <div className="flex flex-col gap-4">
-          <SelectInput id="bank-name" label={tr('Bank')} value={bank} onChange={setBank} options={banks.map((b) => ({ value: b, label: b }))} />
-          <TextInput id="bank-number" label="Account number" inputMode="numeric" maxLength={10} value={number} onChange={(e) => setNumber(e.target.value.replace(/\D/g, ''))} hint={tr('10 digits (NUBAN)')} error={number.length > 0 && number.length !== 10 ? tr('Account numbers have 10 digits.') : undefined} />
-          {!looked && <p className="text-caption text-fg-subtle">{tr('We’ll ask your bank for the name on this account and check it matches {name}.', { name: businessName })}</p>}
+          {wallet &&
+          <Segmented<Kind>
+            ariaLabel={tr('Pay out to')}
+            fullWidth
+            value={kind}
+            onChange={setKind}
+            options={[
+            { value: 'bank', label: 'Bank account' },
+            { value: 'mobile_money', label: wallet.name }]
+            } />
+
+          }
+          {isWallet && wallet ?
+          <PhoneInput id="wallet-number" label={tr('{wallet} number', { wallet: wallet.name })} value={phone} onChange={setPhone} error={phone.trim() ? phoneIssueIn(tr, phone) ?? undefined : undefined} hint={tr('The phone number your {wallet} wallet is registered to.', { wallet: wallet.name })} /> :
+
+          <>
+              <SelectInput id="bank-name" label={tr('Bank')} value={bank} onChange={setBank} options={banks.map((b) => ({ value: b, label: b }))} />
+              <TextInput
+              id="bank-number"
+              label="Account number"
+              inputMode="numeric"
+              maxLength={rule.max}
+              value={number}
+              onChange={(e) => setNumber(e.target.value.replace(/\D/g, ''))}
+              hint={country.code === 'NG' ? tr('10 digits (NUBAN)') : tr(rule.label)}
+              error={numberError} />
+            
+            </>
+          }
+          {!looked && <p className="text-caption text-fg-subtle">{tr(isWallet ? 'We’ll ask for the name on this wallet and check it matches {name}.' : 'We’ll ask your bank for the name on this account and check it matches {name}.', { name: businessName })}</p>}
           {looked && match &&
           <div className={match === 'mismatch' ? 'rounded-md bg-danger-soft px-4 py-3 text-danger' : match === 'close' ? 'rounded-md bg-warning-soft px-4 py-3 text-warning' : 'rounded-md bg-success-soft px-4 py-3 text-success'} role="status">
               <p className="flex items-center gap-2 text-label font-semibold">
@@ -116,10 +166,11 @@ export function BankAccountDialog({ open, onClose, data, update, businessName }:
               </p>
             </div>
           }
+          {country.code !== 'NG' && <p className="text-caption text-fg-subtle">{tr('Payouts in {country} are simulated until KUBICU has a payment partner there.', { country: tr(country.name) })}</p>}
           {!first && <p className="text-caption text-fg-subtle">{tr('New accounts wait {n} hours before they can receive payouts. This protects you if someone gets into your account.', { n: BANK_COOLDOWN_HOURS })}</p>}
         </div>
       </Dialog>
-      <ConfirmMoneyDialog open={confirming} onClose={() => setConfirming(false)} title={tr('Confirm new bank account')} summary={tr('Add {bank} ····{last4} for payouts.', { bank, last4: number.slice(-4) })} confirmLabel={tr('Add account')} onConfirm={save} />
+      <ConfirmMoneyDialog open={confirming} onClose={() => setConfirming(false)} title={tr(isWallet ? 'Confirm new payout wallet' : 'Confirm new bank account')} summary={tr('Add {bank} ····{last4} for payouts.', { bank: label, last4: digits.slice(-4) })} confirmLabel={tr('Add account')} onConfirm={save} />
     </>);
 
 }

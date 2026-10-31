@@ -8,7 +8,9 @@ import { businessWhatsApp, waFieldHintIn } from '../../../utils/businessWhatsApp
 import { useT } from '../../../contexts/LocaleContext';
 import { uid } from '../../../utils/id';
 import { formatNgn } from '../../../utils/format';
+import { withSymbol } from '../../../utils/currency';
 import { TextInput } from '../../ui/TextInput';
+import { PhoneInput } from '../../ui/PhoneInput';
 import { TextArea } from '../../ui/TextArea';
 import { Switch } from '../../ui/Switch';
 import { Segmented } from '../../ui/Segmented';
@@ -156,7 +158,7 @@ export function ExtendedContentFields({ block, issues }: Props) {
               
             {err('orderAction') && <p className="-mt-2 text-caption text-danger">{tr(err('orderAction') ?? '')}</p>}
             {c.orderAction === 'whatsapp' &&
-              <TextInput id={id('wa')} label={tr('WhatsApp number')} type="tel" inputMode="tel" placeholder={businessWhatsApp() || '+234 …'} value={c.whatsappPhone} error={err('whatsappPhone') && tr(err('whatsappPhone') ?? '')} hint={waFieldHintIn(tr, c.whatsappPhone)} onChange={(e) => set({ whatsappPhone: e.target.value }, 'whatsappPhone')} />
+              <PhoneInput id={id('wa')} label={tr('WhatsApp number')} placeholder={businessWhatsApp() || undefined} value={c.whatsappPhone} error={err('whatsappPhone') && tr(err('whatsappPhone') ?? '')} hint={waFieldHintIn(tr, c.whatsappPhone)} onChange={(v) => set({ whatsappPhone: v }, 'whatsappPhone')} />
               }
             <TextInput id={id('cta')} label={tr('Button label')} value={c.ctaLabel} onChange={(e) => set({ ctaLabel: e.target.value }, 'ctaLabel')} />
             <p className="text-caption text-fg-subtle">{tr('Prices, photos and sold-out status stay in sync with Commerce. Drafts and archived products never show.')}</p>
@@ -195,7 +197,7 @@ export function ExtendedContentFields({ block, issues }: Props) {
             <Segmented ariaLabel={tr('Order action')} fullWidth value={c.orderAction === 'checkout' ? 'whatsapp' : c.orderAction} onChange={(orderAction) => set({ orderAction }, 'orderAction')} options={[{ value: 'whatsapp', label: tr('Open WhatsApp') }, { value: 'link', label: tr('Open a link') }]} />
           </Field>
           {c.orderAction !== 'link' &&
-            <TextInput id={id('wa')} label={tr('WhatsApp number')} type="tel" inputMode="tel" placeholder={businessWhatsApp() || '+234 …'} value={c.whatsappPhone} error={err('whatsappPhone') && tr(err('whatsappPhone') ?? '')} hint={waFieldHintIn(tr, c.whatsappPhone, tr('Each order message names the product and price.'))} onChange={(e) => set({ whatsappPhone: e.target.value }, 'whatsappPhone')} />
+            <PhoneInput id={id('wa')} label={tr('WhatsApp number')} placeholder={businessWhatsApp() || undefined} value={c.whatsappPhone} error={err('whatsappPhone') && tr(err('whatsappPhone') ?? '')} hint={waFieldHintIn(tr, c.whatsappPhone, tr('Each order message names the product and price.'))} onChange={(v) => set({ whatsappPhone: v }, 'whatsappPhone')} />
             }
           <TextInput id={id('cta')} label={tr('Button label')} value={c.ctaLabel} onChange={(e) => set({ ctaLabel: e.target.value }, 'ctaLabel')} />
           <p className="text-caption text-fg-subtle">{tr('Here you mark items sold out yourself. For live stock and checkout, switch to “My products” above.')}</p>
@@ -208,7 +210,7 @@ export function ExtendedContentFields({ block, issues }: Props) {
         return (
           <div className={stack}>
           <TextInput id={id('title')} label={tr('Title')} value={c.title} onChange={(e) => set({ title: e.target.value }, 'title')} />
-          <TextArea id={id('note')} label={tr('Note')} optional rows={2} placeholder={tr('e.g. Delivery within Ibadan from ₦1,500')} value={c.note} onChange={(e) => set({ note: e.target.value }, 'note')} />
+          <TextArea id={id('note')} label={tr('Note')} optional rows={2} placeholder={withSymbol(tr('e.g. Delivery within Ibadan from ₦1,500'))} value={c.note} onChange={(e) => set({ note: e.target.value }, 'note')} />
           <ItemListEditor
               legend="Categories"
               noun="Category"
@@ -288,7 +290,7 @@ export function ExtendedContentFields({ block, issues }: Props) {
               </>
               } />
             
-          <TextInput id={id('wa')} label={tr('WhatsApp for orders')} type="tel" inputMode="tel" placeholder={businessWhatsApp() || '+234 …'} value={c.whatsappPhone} error={err('whatsappPhone') && tr(err('whatsappPhone') ?? '')} hint={warn('whatsappPhone') ? tr(warn('whatsappPhone') ?? '') : waFieldHintIn(tr, c.whatsappPhone)} onChange={(e) => set({ whatsappPhone: e.target.value }, 'whatsappPhone')} />
+          <PhoneInput id={id('wa')} label={tr('WhatsApp for orders')} placeholder={businessWhatsApp() || undefined} value={c.whatsappPhone} error={err('whatsappPhone') && tr(err('whatsappPhone') ?? '')} hint={warn('whatsappPhone') ? tr(warn('whatsappPhone') ?? '') : waFieldHintIn(tr, c.whatsappPhone)} onChange={(v) => set({ whatsappPhone: v }, 'whatsappPhone')} />
           <Switch id={id('open')} label={tr('Taking orders')} description={tr('Turn off when the kitchen is closed. The menu stays visible.')} checked={c.orderingOpen} onChange={(orderingOpen) => set({ orderingOpen }, 'orderingOpen')} />
           {!c.orderingOpen && <TextInput id={id('closed')} label={tr('Message while paused')} value={c.closedMessage} onChange={(e) => set({ closedMessage: e.target.value }, 'closedMessage')} />}
         </div>);

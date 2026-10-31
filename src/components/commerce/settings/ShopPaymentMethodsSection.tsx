@@ -11,6 +11,7 @@ import { SettingsSection } from './SettingsSection';
 import { transferDetails } from '../../../utils/commerce/bankTransfer';
 import { payOptionsOf } from '../../../utils/commerce/payOptions';
 import { isNaira } from '../../../utils/currency';
+import { localPayments } from '../../../utils/payments';
 import { TRANSFER_ACCOUNT_MINUTES } from '../../checkout/TransferAccountPay';
 
 /**
@@ -24,7 +25,8 @@ export function ShopPaymentMethodsSection() {
   const naira = isNaira();
   const own = transferDetails(current.id, current.name);
   const pay = payOptionsOf(s.data);
-  const anyOn = m.card || naira && (m.transfer || USSD_AVAILABLE && m.ussd);
+  const local = localPayments();
+  const anyOn = m.card || naira && (m.transfer || USSD_AVAILABLE && m.ussd) || !!local.mobileMoney && m.mobileMoney !== false || local.eft && m.eft !== false;
   const error = anyOn ? '' : 'Keep at least one way to pay on, or buyers can’t check out.';
 
   return (
@@ -34,7 +36,25 @@ export function ShopPaymentMethodsSection() {
           {error}
         </p>
       }
-      <Switch id="pm-card" label="Card" description="Visa, Mastercard and Verve through your payment provider. Paying in instalments always needs a card." checked={m.card} onChange={(card) => s.patch({ card })} />
+      {local.mobileMoney &&
+      <Switch
+        id="pm-momo"
+        label={local.mobileMoney.name}
+        description="Buyers approve a payment request on their phone with their PIN. Simulated until KUBICU has a payment partner in your country."
+        checked={m.mobileMoney !== false}
+        onChange={(mobileMoney) => s.patch({ mobileMoney })} />
+
+      }
+      {local.eft &&
+      <Switch
+        id="pm-eft"
+        label="EFT bank transfer"
+        description="Buyers get a one-time account number to pay into. The order confirms itself when the money lands. Simulated until KUBICU has a payment partner in your country."
+        checked={m.eft !== false}
+        onChange={(eft) => s.patch({ eft })} />
+
+      }
+      <Switch id="pm-card" label="Card" description={naira ? 'Visa, Mastercard and Verve through your payment provider. Paying in instalments always needs a card.' : 'Visa and Mastercard through your payment provider.'} checked={m.card} onChange={(card) => s.patch({ card })} />
 
       <div className="flex flex-col gap-4 border-t border-line pt-5">
         <Switch

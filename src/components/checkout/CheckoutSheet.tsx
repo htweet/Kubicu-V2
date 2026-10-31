@@ -12,7 +12,7 @@ import { bulkUnitPrice, isPreorder, preorderLeft, resolveGiftCard, shipsByLabel 
 import { useTrack } from '../../contexts/TrackContext';
 import { unitsBoughtBy, type DealRoomCheckout } from '../../utils/dealRoom';
 import { discountLineLabel, normaliseCode, resolveDiscount } from '../../utils/commerce/discounts';
-import { AlertTriangleIcon, ArrowLeftIcon, CreditCardIcon, HashIcon, LandmarkIcon, Loader2Icon, MinusIcon, PlusIcon, ShoppingBagIcon, Trash2Icon, XCircleIcon } from 'lucide-react';
+import { AlertTriangleIcon, ArrowLeftIcon, CreditCardIcon, HashIcon, LandmarkIcon, Loader2Icon, MinusIcon, PlusIcon, ShoppingBagIcon, SmartphoneIcon, Trash2Icon, XCircleIcon } from 'lucide-react';
 import type { PageTheme } from '../../types/page';
 import type { OrderFulfilment, TestPaymentOutcome } from '../../types/commerce';
 import type { WorkspacePlan } from '../../types/plan';
@@ -32,14 +32,17 @@ import { useNow } from '../../hooks/useNow';
 import { isValidEmail, isValidPhone } from '../../utils/validation';
 import { formatNgn } from '../../utils/format';
 import { isNaira } from '../../utils/currency';
+import { dialPrefix } from '../../utils/phone';
 import { UssdPay } from './UssdPay';
 import { stampTransfer, transferAccounts } from '../../utils/commerce/bankTransfer';
 import { reservedForStalls, type PopupCheckout } from '../../utils/popup';
 import { hoursSummary, orderRef, returnsSummary, shopClosedMessage, shopSettingsOf, vatFor, vatRateLabel } from '../../utils/commerce/shopSettings';
 import { TransferAccountPay, transferAccountFor } from './TransferAccountPay';
+import { MobileMoneyPay } from './MobileMoneyPay';
+import { localPayments } from '../../utils/payments';
 
 type Step = 'cart' | 'details' | 'delivery' | 'review' | 'paying' | 'failed';
-type PayBy = 'card' | 'ussd' | 'transfer' | 'account';
+type PayBy = 'card' | 'ussd' | 'transfer' | 'account' | 'momo' | 'eft';
 
 const outcomes: {value: TestPaymentOutcome;label: string;hint: string;}[] = [
 { value: 'success', label: 'Succeeds', hint: '4084 0840 8408 4081' },
@@ -101,10 +104,16 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
   const transfer = transferList[Math.min(transferIdx, transferList.length - 1)] ?? null;
   const [ussdOpen, setUssdOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
+  // Mobile money and EFT for Kenya, Ghana and South Africa (D355).
+  const [momoOpen, setMomoOpen] = useState(false);
+  const [eftOpen, setEftOpen] = useState(false);
+  const local = localPayments();
   useEffect(() => {
     if (step !== 'review') {
       setUssdOpen(false);
       setAccountOpen(false);
+      setMomoOpen(false);
+      setEftOpen(false);
     }
   }, [step]);
   // Pop-up shop pickup (D183).
@@ -654,7 +663,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
             Your details
           </CheckoutHeading>
           <ThemedField theme={theme} label="Full name" autoComplete="name" value={customer.name} error={showErr('name')} onChange={(name) => setCustomer((c) => ({ ...c, name }))} />
-          <ThemedField theme={theme} label="Phone (WhatsApp preferred)" type="tel" inputMode="tel" autoComplete="tel" placeholder="+234 …" value={customer.phone} error={showErr('phone')} onChange={(phone) => setCustomer((c) => ({ ...c, phone }))} />
+          <ThemedField theme={theme} label="Phone (WhatsApp preferred)" type="tel" inputMode="tel" autoComplete="tel" placeholder={dialPrefix()} value={customer.phone} error={showErr('phone')} onChange={(phone) => setCustomer((c) => ({ ...c, phone }))} />
           {emailAsk !== 'off' && <ThemedField theme={theme} label="Email" type="email" inputMode="email" autoComplete="email" optional={emailAsk === 'optional'} value={customer.email} error={showErr('email')} onChange={(email) => setCustomer((c) => ({ ...c, email }))} />}
           {addressAsk !== 'off' && <ThemedField theme={theme} label="Address" autoComplete="street-address" optional={addressAsk === 'optional'} value={buyerAddress} error={showErr('address')} onChange={setBuyerAddress} />}
           {ticketLines.some((l) => l.qty > 1) &&
@@ -866,17 +875,35 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
         
         </div>);
 
-    if (accountOpen)
+    if (accountOpen || eftOpen)
     return (
       <div className="flex flex-1 flex-col gap-4">
           <TransferAccountPay
           theme={theme}
           amount={payNow}
           account={transferAccountFor(holder)}
-          onBack={() => setAccountOpen(false)}
+          onBack={() => (setAccountOpen(false), setEftOpen(false))}
           onPaid={() => {
             setAccountOpen(false);
+            setEftOpen(false);
             pay('success', 'account');
+          }} />
+        
+        </div>);
+
+    if (momoOpen && local.mobileMoney)
+    return (
+      <div className="flex flex-1 flex-col gap-4">
+          <MobileMoneyPay
+          theme={theme}
+          amount={payNow}
+          wallet={local.mobileMoney}
+          payee={businessName || handle}
+          phone={customer.phone}
+          onBack={() => setMomoOpen(false)}
+          onPaid={() => {
+            setMomoOpen(false);
+            pay('success');
           }} />
         
         </div>);
@@ -890,8 +917,14 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
     const accountAvailable = shop.methods.transfer && isNaira() && payNow > 0 && payWith === 'now';
     // Bank transfer to the seller (D148): naira, a payment now, not group buys (their refunds need the provider).
     const transferAvailable = shop.methods.transfer && shop.methods.transferOwn && !!transfer && isNaira() && payNow > 0 && payWith === 'now' && !dealRoom;
+    // Mobile money first where people use it most (D355): M-Pesa in Kenya, MTN MoMo in Ghana.
+    const momoAvailable = !!local.mobileMoney && shop.methods.mobileMoney !== false && payNow > 0 && payWith === 'now';
+    // EFT in South Africa: a one-time account that confirms itself, like the naira transfer account.
+    const eftAvailable = local.eft && shop.methods.eft !== false && payNow > 0 && payWith === 'now';
     const payOptions = [
+    ...(momoAvailable && local.mobileMoney ? [['momo', SmartphoneIcon, local.mobileMoney.name] as const] : []),
     ...(cardAvailable ? [['card', CreditCardIcon, tr('Card')] as const] : []),
+    ...(eftAvailable ? [['eft', LandmarkIcon, tr('EFT bank transfer')] as const] : []),
     ...(accountAvailable ? [['account', LandmarkIcon, transferAvailable ? tr('Transfer account') : tr('Bank transfer')] as const] : []),
     ...(transferAvailable ? [['transfer', LandmarkIcon, tr('Seller’s account')] as const] : []),
     ...(ussdAvailable ? [['ussd', HashIcon, tr('USSD code')] as const] : [])];
@@ -900,6 +933,8 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
     const byUssd = payBy === 'ussd';
     const byTransfer = payBy === 'transfer';
     const byAccount = payBy === 'account';
+    const byMomo = payBy === 'momo';
+    const byEft = payBy === 'eft';
     const noWayToPay = payNow > 0 && !atStall && payOptions.length === 0;
     return (
       <div className="flex flex-col gap-4">
@@ -997,9 +1032,14 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
                 {tr('No card or data needed — dial a code from your bank phone and approve with your PIN.')}
               </p>
           }
-            {byAccount &&
+            {(byAccount || byEft) &&
           <p className="text-[12.5px] leading-snug" style={muted}>
                 {tr('You’ll get a one-time account number to transfer to. Your order confirms automatically when the money lands.')}
+              </p>
+          }
+            {byMomo && local.mobileMoney &&
+          <p className="text-[12.5px] leading-snug" style={muted}>
+                {tr('A payment request pops up on your phone. Approve it and {hint}.', { hint: tr(local.mobileMoney.approveHint) })}
               </p>
           }
             {byTransfer && transfer &&
@@ -1091,10 +1131,14 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
         <SheetActions theme={theme}>
           <PrimaryButton
             theme={theme}
-            onClick={() => byUssd ? setUssdOpen(true) : byAccount ? setAccountOpen(true) : byTransfer ? pay('pending', 'transfer') : pay()}
+            onClick={() => byMomo ? setMomoOpen(true) : byEft ? setEftOpen(true) : byUssd ? setUssdOpen(true) : byAccount ? setAccountOpen(true) : byTransfer ? pay('pending', 'transfer') : pay()}
             disabled={okLines.length === 0 || !!roomError || payWith === 'instalments' && !agreed || shop.checkout.termsTick && !termsOk || !!closedMsg || !!minError || noWayToPay}>
             
-            {byUssd ?
+            {byMomo && local.mobileMoney ?
+            tr('Pay {amount} with {wallet}', { amount: formatNgn(payNow), wallet: local.mobileMoney.name }) :
+            byEft ?
+            tr('Get account details for {amount}', { amount: formatNgn(payNow) }) :
+            byUssd ?
             tr('Get a USSD code for {amount}', { amount: formatNgn(payNow) }) :
             byAccount ?
             tr('Get account details for {amount}', { amount: formatNgn(payNow) }) :

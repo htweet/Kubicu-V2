@@ -15,8 +15,9 @@ import { InlineAlert } from '../../ui/InlineAlert';
 import { MediaPicker } from '../../media/MediaPicker';
 import { ItemListEditor } from './ItemListEditor';
 import { SmartCommerceFields, isSmartCommerceBlock } from './SmartCommerceFields';
+import { FaqAssistantFields } from './FaqAssistantFields';
 
-const round2Types = new Set<BlockType>(['carousel', 'brandHeader', 'linkCollection', 'qrCode', 'document', 'embed', 'shopCategories', 'checkoutButton', 'poll', 'community', 'reviewSummary', 'languageSwitch', 'smartButton', 'campaignSpotlight', 'recommendations', 'backToTop']);
+const round2Types = new Set<BlockType>(['carousel', 'brandHeader', 'linkCollection', 'qrCode', 'document', 'embed', 'shopCategories', 'checkoutButton', 'poll', 'community', 'reviewSummary', 'languageSwitch', 'smartButton', 'campaignSpotlight', 'recommendations', 'backToTop', 'faqAssistant']);
 
 export const isRound2Block = (b: Block): b is Extract<Block, {type: Round2BlockType;}> => round2Types.has(b.type);
 
@@ -34,6 +35,7 @@ export function Round2BlockFields({ block, issues }: {block: Extract<Block, {typ
   const stack = 'flex flex-col gap-4';
 
   if (isSmartCommerceBlock(block)) return <SmartCommerceFields block={block} issues={issues} />;
+  if (block.type === 'faqAssistant') return <FaqAssistantFields block={block} issues={issues} />;
 
   switch (block.type) {
     case 'carousel':{

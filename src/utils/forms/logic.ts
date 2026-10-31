@@ -2,6 +2,7 @@ import type { FieldRule, FormDef, FormField } from '../../types/forms';
 import { isValidEmail } from '../validation';
 import { formatNgn } from '../format';
 import { choiceTypes } from './fields';
+import { activeCountryInfo } from '../country';
 
 export type Answers = Record<string, string | string[]>;
 
@@ -122,14 +123,16 @@ export function fieldError(field: FormField, value: string | string[] | undefine
     const [country = '', state = ''] = Array.isArray(value) ? value.map((x) => x.trim()) : [];
     if (!country && !state) return field.required ? 'Choose your country' : '';
     if (!country) return 'Choose your country';
-    if (field.required && !state) return country === 'Nigeria' ? 'Choose your state' : 'Add your state or region';
+    if (field.required && !state) return country === 'Nigeria' ? 'Choose your state' : ['Kenya', 'Ghana', 'South Africa'].includes(country) ? 'Choose one from the list' : 'Add your state or region';
     return '';
   }
   if (field.type === 'bank') {
     const [bank = '', acct = '', holder = ''] = Array.isArray(value) ? value.map((x) => x.trim()) : [];
     if (!bank && !acct && !holder) return field.required ? 'Add your bank details' : '';
     if (!bank) return 'Choose your bank';
-    if (!/^\d{10}$/.test(acct)) return 'Account numbers have 10 digits';
+    // The seller's country sets the length (D355): 10 in Nigeria, 10–16 in Kenya and Ghana, 9–11 in South Africa.
+    const rule = activeCountryInfo().accountNumber;
+    if (!/^\d+$/.test(acct) || acct.length < rule.min || acct.length > rule.max) return rule.min === rule.max ? 'Account numbers have 10 digits' : 'Check the account number — it’s the wrong length';
     if (holder.length < 3) return 'Add the name on the account';
     return '';
   }

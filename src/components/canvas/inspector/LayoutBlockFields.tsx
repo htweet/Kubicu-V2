@@ -3,6 +3,7 @@ import type { Block, BlockContentMap, BlockType, HeroVariant } from '../../../ty
 import { useEditor } from '../../../contexts/EditorContext';
 import { useT } from '../../../contexts/LocaleContext';
 import { uid } from '../../../utils/id';
+import { withSymbol } from '../../../utils/currency';
 import { TextInput } from '../../ui/TextInput';
 import { TextArea } from '../../ui/TextArea';
 import { Switch } from '../../ui/Switch';
@@ -81,7 +82,7 @@ export function LayoutBlockFields({ block }: {block: Block;}) {
               render={(i, up) =>
               <>
                 <TextInput id={`${i.id}-t`} label={tr('Title')} value={i.title} onChange={(e) => up({ title: e.target.value }, 'title')} />
-                <TextInput id={`${i.id}-l`} label={tr('Small line')} optional placeholder={tr('e.g. From ₦45,000')} value={i.label} onChange={(e) => up({ label: e.target.value }, 'label')} />
+                <TextInput id={`${i.id}-l`} label={tr('Small line')} optional placeholder={withSymbol(tr('e.g. From ₦45,000'))} value={i.label} onChange={(e) => up({ label: e.target.value }, 'label')} />
                 <TextArea id={`${i.id}-x`} label={tr('Text')} optional rows={2} value={i.text} onChange={(e) => up({ text: e.target.value }, 'text')} />
                 <MediaPicker id={`${i.id}-img`} label={tr('Photo')} optional value={i.imageUrl} onChange={(imageUrl) => up({ imageUrl }, 'imageUrl')} />
                 {i.imageUrl && <TextInput id={`${i.id}-a`} label={tr('Photo description')} value={i.imageAlt} onChange={(e) => up({ imageAlt: e.target.value }, 'imageAlt')} />}

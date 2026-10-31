@@ -65,5 +65,6 @@ export const sandboxResponses: Record<string, unknown> = {
 
 export const apiChangelog: {date: string;title: string;body: string;}[] = [
 { date: '24 Oct 2026', title: 'Developer preview opens', body: 'API keys, webhooks with signed payloads and retries, connected apps and a test sandbox. Everything is test mode until a payment partner is live.' },
+{ date: '31 Oct 2026', title: 'Currency follows the workspace', body: 'Every amount is a whole number in the workspace’s currency: "NGN", "KES", "GHS" or "ZAR". Examples here use naira.' },
 { date: '24 Oct 2026', title: 'Naira amounts are whole numbers', body: 'Every amount is an integer in naira with currency "NGN". Kobo are never used.' },
 { date: '24 Oct 2026', title: 'Phone numbers in +234 format', body: 'Phones are returned in international format. Buyer phones are partly hidden unless the key can read orders.' }];

@@ -78,6 +78,7 @@ import { SmartButtonBlock } from './SmartButtonBlock';
 import { CampaignSpotlightBlock } from './CampaignSpotlightBlock';
 import { RecommendationsBlock } from './RecommendationsBlock';
 import { BackToTopBlock } from './BackToTopBlock';
+import { FaqAssistantBlock } from './FaqAssistantBlock';
 
 interface BlockRendererProps {
   block: Block;
@@ -243,6 +244,8 @@ export function BlockRenderer({ block, theme, mode }: BlockRendererProps) {
       return <RecommendationsBlock block={block} theme={theme} mode={mode} />;
     case 'backToTop':
       return <BackToTopBlock block={block} theme={theme} mode={mode} />;
+    case 'faqAssistant':
+      return <FaqAssistantBlock block={block} theme={theme} mode={mode} />;
     default:
       return null;
   }

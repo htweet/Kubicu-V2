@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
 import { MAIN_SPACE_ID } from '../../utils/spaces';
 import { setActiveCurrency } from '../../utils/currency';
+import { setActiveCountry, workspaceCountry } from '../../utils/country';
 import { setActiveBusinessWhatsApp } from '../../utils/businessWhatsApp';
 import { useAutomationRunner } from '../../hooks/useAutomationRunner';
 import { Sidebar } from './Sidebar';
@@ -25,6 +26,8 @@ export function AppShell() {
   const { pathname } = useLocation();
   // Every amount on workspace screens uses this workspace's currency (D136). Set before children render.
   setActiveCurrency(current.currency);
+  // Phone fields, regions, banks and checkout follow the workspace's country (D352).
+  setActiveCountry(workspaceCountry(current));
   // Every WhatsApp button without its own number uses the business number (D214).
   setActiveBusinessWhatsApp(current.whatsapp);
   // Campaign and quiet-contact automations run on real changes while the app is open (D137).

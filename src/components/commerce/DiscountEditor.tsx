@@ -16,6 +16,7 @@ import { Switch } from '../ui/Switch';
 import { InlineAlert } from '../ui/InlineAlert';
 import { cn } from '../../utils/cn';
 import { formatNgn } from '../../utils/format';
+import { withSymbol } from '../../utils/currency';
 import { useT } from '../../contexts/LocaleContext';
 
 interface DiscountEditorProps {
@@ -226,7 +227,7 @@ export function DiscountEditor({ target, onClose }: DiscountEditorProps) {
           onChange={(e) => set('code', e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, '').slice(0, 20))} />
 
         }
-        <TextInput id="disc-title" label="What customers see" value={form.title} error={err('title')} placeholder={kind === 'automatic' ? tr('10% off orders over ₦50,000') : tr('Eid sale — 20% off')} onChange={(e) => set('title', e.target.value)} />
+        <TextInput id="disc-title" label="What customers see" value={form.title} error={err('title')} placeholder={kind === 'automatic' ? withSymbol(tr('10% off orders over ₦50,000')) : tr('Eid sale — 20% off')} onChange={(e) => set('title', e.target.value)} />
 
         <fieldset className="flex flex-col gap-3">
           <legend className="mb-2 text-label font-medium text-fg">{tr('Discount')}</legend>

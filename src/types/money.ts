@@ -62,6 +62,8 @@ export interface BankAccount {
   /** New accounts can't receive payouts until this time (cool-down). */
   usableAt: string;
   primary: boolean;
+  /** A mobile money wallet (M-Pesa, MTN MoMo) instead of a bank account (D355). Missing = bank. */
+  kind?: 'bank' | 'mobile_money';
 }
 
 export type PayoutStatus = 'processing' | 'on_hold' | 'paid' | 'failed';

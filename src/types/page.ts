@@ -78,7 +78,8 @@ export type BlockType =
 'recommendations' |
 'backToTop' |
 'delivery' |
-'course';
+'course' |
+'faqAssistant';
 
 /* Delivery & returns (D181) */
 export interface DeliveryLine {id: string;area: string;price: string;time: string;}
@@ -510,6 +511,8 @@ export interface BlockContentMap {
   campaignSpotlight: {title: string;text: string;ctaLabel: string;url: string;imageUrl: string;imageAlt: string;startsAt: string | null;endsAt: string | null;afterText: string;};
   recommendations: {title: string;intro: string;items: RecommendationItem[];};
   backToTop: {label: string;};
+  /** FAQ assistant (D342): visitors ask in their own words; only the owner's approved answers are ever shown. */
+  faqAssistant: {title: string;intro: string;facts: FaqItem[];fallbackLabel: string;fallbackUrl: string;};
 }
 
 export interface BlockStyle {

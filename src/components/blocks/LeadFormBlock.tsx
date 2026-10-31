@@ -4,6 +4,7 @@ import type { BlockProps } from './blockProps';
 import { buttonStyle, cardStyle, fontsFor, inputStyle } from './pageStyle';
 import { isValidEmail } from '../../utils/validation';
 import { usePageOpsContext } from '../../contexts/PageOpsContext';
+import { useT } from '../../contexts/LocaleContext';
 
 type Key = 'name' | 'email' | 'phone' | 'message';
 
@@ -12,6 +13,8 @@ const autoComplete: Record<Key, string> = { name: 'name', email: 'email', phone:
 export function LeadFormBlock({ block, theme, mode }: BlockProps<'leadForm'>) {
   const { title, description, fields, submitLabel, consentText } = block.content;
   const uid = useId();
+  // Fixed wording follows the visitor's language (D344); the seller's title, description and consent stay as written.
+  const { t: tr } = useT();
   const [values, setValues] = useState({ name: '', email: '', phone: '', message: '' });
   const [error, setError] = useState<{field: Key | null;text: string;} | null>(null);
   const [sent, setSent] = useState(false);
@@ -78,26 +81,26 @@ export function LeadFormBlock({ block, theme, mode }: BlockProps<'leadForm'>) {
       {sent ?
       <div className="flex flex-col items-start gap-1 py-2" role="status">
           <span className="inline-flex items-center gap-2 text-[15px] font-semibold" style={{ color: theme.text }}>
-            <CheckIcon size={17} aria-hidden /> Thanks — your message is in.
+            <CheckIcon size={17} aria-hidden /> {tr('Thanks — your message is in.')}
           </span>
           <span className="text-[12.5px]" style={{ color: theme.mutedText }}>
-            {actions ? 'The owner will get back to you.' : 'Demo page: nothing was actually sent.'}
+            {actions ? tr('The owner will get back to you.') : tr('Demo page: nothing was actually sent.')}
           </span>
         </div> :
 
       <form onSubmit={onSubmit} className="flex flex-col gap-3" noValidate>
-          {fields.name && input('name', 'Name')}
-          {fields.email && input('email', 'Email', 'email')}
-          {fields.phone && input('phone', 'Phone', 'tel')}
-          {fields.message && input('message', 'Message')}
+          {fields.name && input('name', tr('Name'))}
+          {fields.email && input('email', tr('Email'), 'email')}
+          {fields.phone && input('phone', tr('Phone'), 'tel')}
+          {fields.message && input('message', tr('Message'))}
           {!fields.name && !fields.email && !fields.phone && !fields.message &&
         <p className="text-[13px]" style={{ color: theme.mutedText }}>
-              Turn on at least one field in the inspector.
+              {tr('Turn on at least one field in the inspector.')}
             </p>
         }
           {error &&
         <p id={errorId} className="text-[13px] font-medium" role="alert" style={{ color: theme.text }}>
-              {error.text}
+              {tr(error.text)}
             </p>
         }
           {consentText &&
@@ -107,10 +110,10 @@ export function LeadFormBlock({ block, theme, mode }: BlockProps<'leadForm'>) {
         }
           <label className="flex min-h-[24px] items-start gap-2 text-[12.5px]" style={{ color: theme.mutedText }}>
             <input type="checkbox" checked={optIn} disabled={inert} tabIndex={inert ? -1 : undefined} onChange={(e) => setOptIn(e.target.checked)} className="mt-0.5 h-4 w-4" style={{ accentColor: theme.text }} />
-            Also send me occasional updates (optional)
+            {tr('Also send me occasional updates (optional)')}
           </label>
           <button type="submit" tabIndex={inert ? -1 : undefined} className="mt-1 h-12 w-full text-[15px] font-semibold" style={buttonStyle(theme, 'featured')}>
-            {submitLabel || 'Send'}
+            {submitLabel || tr('Send')}
           </button>
         </form>
       }

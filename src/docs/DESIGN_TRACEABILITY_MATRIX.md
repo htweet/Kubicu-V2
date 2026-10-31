@@ -1,6 +1,6 @@
 # KUBICU — Design Traceability Matrix
 
-Sources: Master Blueprint (MB), Implementation Backlog (IB), Master Design Plan (DP).
+Sources: Master Blueprint (MB), Implementation Backlog (IB), Master Design Plan (DP), Linktree-parity brief (LP). Updated 30 Oct 2026 through D343. 🧪 = built but simulated by design; 👤 = waiting on sign-off.
 Disposition: **MVP-D** designed for MVP · **Later-D** designed for later phase · **Concept** future concept · **Clarify** needs clarification · **Excluded** with rationale.
 Prototype status: ✅ interactive · 🟡 partial · ⏳ planned placeholder · ⬜ not started
 
@@ -36,7 +36,7 @@ Prototype status: ✅ interactive · 🟡 partial · ⏳ planned placeholder · 
 | IB-L / MB-12 | Automations | P1/P2 | Owner | Automations | AutomationBuilder | test runs; campaign/quiet triggers, AI draft/report/webhook actions | ✅ | D46, D125 · real-event runs in Batch 13 · real sending is engineering |
 | IB-M / MB-7 | Custom domains | P1 | Owner | Domains & QR | DomainsContext | simulated checks | ✅ | D62 |
 | IB-N / MB-19 | Plans, billing, entitlements | P0 found. | Owner | Settings → Plan & billing | BillingContext | test mode | ✅ | D65, D68 · prices are example figures |
-| IB-O / MB-14 | Super-admin OS | P0 basic | Staff | /admin | pages/admin/* | approvals, incidents | 🟡 | All areas (D129, D130); staff plan editing, trials, coupons, credits, AI switches, test sends, translation review in Batch 13 |
+| IB-O / MB-14 | Super-admin OS | P0 basic | Staff | /admin | pages/admin/* | approvals, incidents | ✅ 🧪 | All areas (D129, D130); staff plan editing, trials, coupons, credits, AI switches, test sends and translation review built in Batch 13 (D135) · real audit log and staff auth need a backend |
 | IB-P / MB-18 | Modules & marketplace | P0 found. / P2 | Owner/Staff | Extensions, Templates | MarketplaceContext | install, pause, rollback | ✅ | D67, D70, staff rollback D130, developer submissions D132/D134 |
 | IB-Q / MB-11 | AI copilot (propose → approve) | P1 | Owner | Canvas, onboarding, Overview, My Spaces | AI page assistant (`/app/assistant`), BlockSuggest | AI preview, credits | ✅ 🧪 | D63, Voice-to-Store D102, Coach D104 · rule-based simulation |
 | IB-R / MB-21 | Security, privacy, trust | P0 | All | Settings → Privacy, legal pages | — | — | 🟡 | Privacy settings built; legal pages D78; backend security is engineering |
@@ -79,3 +79,16 @@ Source: `docs/KUBICU_LINKTREE_PARITY_AND_UPGRADE_MAGIC_PATTERNS.md` (LP). Route 
 | LP-9.3 | Sources view and first-touch attribution (channel, short link, page) | P1 | Owner | Audience → Sources | `AudienceSources` | older contacts "not recorded" | ✅ | D268 |
 | LP-9.4 | Consent record, logged exports, email and Sheets sync history with retry | P1 | Owner | Contact detail, Activity log, Extensions | `ContactSyncTools` | synced, partly synced, failed | ✅ 🧪 | D268, D272 · real sending to Mailchimp/Brevo/Sheets needs a backend |
 | LP-12 | Workspace actions open in a right-side sheet | P1 | Owner | All workspace dialogs | `components/ui/Dialog.tsx` | phone: full-height from the bottom | ✅ | D272 · public pages keep a centred dialog |
+
+## Added after D273 (through D343)
+
+| Req ID | Requirement | Priority / phase | Role | Screen / flow | Component | States | Prototype | Disposition / open questions |
+|---|---|---|---|---|---|---|---|---|
+| IB-U / DP-8 | Local languages across the whole product (Naijá, Yorùbá, Hausa, Igbo) | P1 | All | Every app, canvas, website and Copilot screen | `contexts/LocaleContext.tsx`, `data/translations*.ts`, `utils/builtPhrases.ts` | English fallback, built sentences | ✅ 👤 | D280–D341 · drafts, native review pending · legal text, help articles, customer messages stay English on purpose |
+| IB-U | Language picker in every surface | P1 | All | Sidebar, More sheet, editor top bar, phone Page settings, sign-in/up, Account, website | `LanguagePicker` | collapsed sidebar badge | ✅ | D298, D299 · seller pages use the themed `VisitorLanguageMenu` · D344 visitor form messages and glossary search in the screen language |
+| MB-11 | Copilot chats in the workspace sidebar, pin and see all | P2 | Owner | Sidebar → Copilot, `/copilot/chat` All chats | `utils/copilot/store.ts` | no chats, pinned, collapsed rail | ✅ | D284, D290 · device-only storage |
+| MB-11 / MB-5 | AI FAQ assistant answering only from approved answers | P2 | Visitor/Owner | Canvas block `faqAssistant` | `FaqAssistantBlock`, `utils/faqMatch.ts` | no match + fallback, empty | ✅ 🧪 | D342 · word matching, no model |
+| MB-11 / MB-5 | Voice to content | P2 | Owner | Canvas → Block library | `VoiceToContentDialog`, `useSpeechToText` | no mic, unsupported browser, empty | ✅ 🧪 | D342 · browser speech recognition, typing fallback |
+| MB-5.4 | Composition review of copy and hierarchy | P1 | Owner | Canvas → Check | `utils/compositionCheck.ts` | — | ✅ | D342 |
+| MB-13 / LP-8.3 | Website/WhatsApp short-link clicks in campaign stats | P1 | Owner | Analytics, Short links, QR | `utils/analytics/aggregate.ts` | bots and bursts excluded | ✅ | D343 |
+| MB-10 / LP-9.3 | Back-fill source and permission for older contacts | P1 | Owner | Contact detail | `ContactOrigin` | added by you, not subscribed | ✅ | D343 · hand-recorded permission is the business's own record |

@@ -72,7 +72,7 @@ export function CompositionPanel() {
       }
       <p className="mt-3 flex gap-1.5 text-caption text-fg-subtle">
         <InfoIcon size={13} className="mt-px shrink-0" aria-hidden />
-        {tr('Checks look at block order, actions, backgrounds and spacing. Nothing changes unless you press a button.')}
+        {tr('Checks look at block order, actions, wording, headings, backgrounds and spacing. Nothing changes unless you press a button.')}
       </p>
     </section>);
 

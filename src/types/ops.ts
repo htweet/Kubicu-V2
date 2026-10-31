@@ -223,7 +223,7 @@ export interface Contact {
   /** First channel, short link and page that brought them in (D268). A click alone never creates a contact. */
   attribution?: ContactAttribution;
   /** What they agreed to and when — kept apart from where they came from (D268). */
-  consentRecord?: {at: string;wording: string;};
+  consentRecord?: {at: string;wording: string;addedBy?: 'owner';};
 }
 
 export interface ContactAttribution {
@@ -233,6 +233,8 @@ export interface ContactAttribution {
   /** Page handle they signed up on. */
   page: string | null;
   at: string;
+  /** Filled in later by the business for contacts added before channels were recorded (D343). */
+  addedBy?: 'owner';
 }
 
 /** A saved Audience filter (D268). Membership is worked out live, so people join and leave as they change. */

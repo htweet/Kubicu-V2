@@ -14,6 +14,7 @@ import { Badge } from '../ui/Badge';
 import { IconButton } from '../ui/IconButton';
 import { Segmented } from '../ui/Segmented';
 import { TextInput } from '../ui/TextInput';
+import { PhoneInput } from '../ui/PhoneInput';
 import { Dialog } from '../ui/Dialog';
 import { SampleTag } from '../commerce/StatusBadges';
 import { cn } from '../../utils/cn';
@@ -25,6 +26,7 @@ import { LoyaltyPoints } from './LoyaltyPoints';
 import { useT } from '../../contexts/LocaleContext';
 import { opsSettingsOf } from '../../utils/ops/settings';
 import { SelectInput } from '../ui/SelectInput';
+import { ContactOrigin } from './ContactOrigin';
 
 export function ConsentBadge({ consent }: {consent: Contact['consent'];}) {
   const { t } = useT();
@@ -96,31 +98,12 @@ export function ContactDetail({ contactId, onClose }: {contactId: string | null;
             {c.sample && <SampleTag />}
             <LoyaltyPoints phone={c.phone} />
           </div>
-          {(c.attribution || c.consentRecord) &&
-            <dl className="grid gap-2 rounded-md bg-sunken p-3 text-caption sm:grid-cols-2">
-              {c.attribution &&
-              <div>
-                  <dt className="text-fg-subtle">First came from</dt>
-                  <dd className="text-fg">
-                    {c.attribution.channel}
-                    {c.attribution.campaign ? ` · short link /s/${c.attribution.campaign}` : ''}
-                    {c.attribution.page ? ` · kub.icu/${c.attribution.page}` : ''}
-                  </dd>
-                </div>
-              }
-              {c.consentRecord &&
-              <div>
-                  <dt className="text-fg-subtle">Agreed {new Date(c.consentRecord.at).toLocaleString('en-NG', { dateStyle: 'medium', timeStyle: 'short' })}</dt>
-                  <dd className="text-fg">“{c.consentRecord.wording}”</dd>
-                </div>
-              }
-            </dl>
-            }
+          <ContactOrigin contact={c} onSave={set} />
 
           <div className="grid gap-4 sm:grid-cols-3">
             <TextInput id="ct-name" label="Name" value={c.name} onChange={(e) => set({ name: e.target.value })} />
             <TextInput id="ct-email" label="Email" type="email" value={c.email} onChange={(e) => set({ email: e.target.value })} />
-            <TextInput id="ct-phone" label="Phone" type="tel" value={c.phone} onChange={(e) => set({ phone: e.target.value })} />
+            <PhoneInput id="ct-phone" label="Phone" value={c.phone} onChange={(phone) => set({ phone })} />
           </div>
 
           {/* The business's own fields (D259). */}

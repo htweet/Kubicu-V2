@@ -34,6 +34,7 @@ import { durationLabel } from '../../utils/ops/slots';
 import type { MembersAreaSettings } from '../../types/page';
 import { membershipPlans as commerceMembershipPlans } from '../../utils/membersArea';
 import { formatNgn } from '../../utils/format';
+import { withSymbol } from '../../utils/currency';
 import { CHECKOUT_PLAN } from '../../utils/commerce/linkIssues';
 import { useMoney } from '../../hooks/useMoney';
 import { blankLink, isVerified, uniqueSlug } from '../../utils/money/store';
@@ -755,7 +756,7 @@ export function NewSpaceDialog({ open, onClose, mainDoc, initialKind = null, tem
                 <TextInput id="fund-new-ben" label="Who benefits" optional value={fBeneficiary} placeholder="e.g. Pupils of Ìrẹ̀tí Primary, Ibadan" onChange={(e) => setFBeneficiary(e.target.value)} />
               </div>
               <div className="grid gap-3 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-                <TextInput id="fund-new-amounts" label="Suggested amounts (₦)" value={fAmounts} onChange={(e) => setFAmounts(e.target.value)} hint="Up to 4, separated by commas. Supporters can also enter their own." />
+                <TextInput id="fund-new-amounts" label={withSymbol('Suggested amounts (₦)')} value={fAmounts} onChange={(e) => setFAmounts(e.target.value)} hint="Up to 4, separated by commas. Supporters can also enter their own." />
                 <CurrencyInput id="fund-new-min" label="Minimum" value={fMin} onChange={setFMin} />
               </div>
               <Switch id="fund-new-msg" label="Let supporters leave a message" description="Messages come to you; they aren’t shown on the page." checked={fAskMessage} onChange={setFAskMessage} />

@@ -19,7 +19,7 @@ const LocaleContext = createContext<LocaleValue>(english);
 
 /** Maps any stored language code (account 'en-NG', page 'en', 'pcm'…) to an interface language. */
 export function toUiLang(code?: string | null): UiLang {
-  if (code === 'pcm' || code === 'yo' || code === 'ha' || code === 'ig') return code;
+  if (code === 'pcm' || code === 'yo' || code === 'ha' || code === 'ig' || code === 'sw' || code === 'tw' || code === 'zu') return code;
   return 'en';
 }
 

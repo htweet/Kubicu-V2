@@ -6,7 +6,7 @@ import { useT } from '../../contexts/LocaleContext';
 import { uiLanguages, type UiLang } from '../../data/translations';
 import { inputRadius, mix } from './pageStyle';
 
-const codes: Record<UiLang, string> = { en: 'EN', pcm: 'PCM', yo: 'YO', ha: 'HA', ig: 'IG' };
+const codes: Record<UiLang, string> = { en: 'EN', pcm: 'PCM', yo: 'YO', ha: 'HA', ig: 'IG', sw: 'SW', tw: 'TW', zu: 'ZU' };
 
 interface VisitorLanguageMenuProps {
   theme: PageTheme;
@@ -115,7 +115,7 @@ export function VisitorLanguageMenu({ theme, variant, label, disabled, side = 't
           exit={{ opacity: 0, x: shiftX, scale: 0.98 }}
           transition={{ duration: 0.15, ease: [0.23, 1, 0.32, 1] }}
           className={[
-          'absolute z-50 w-[232px] max-w-[calc(100vw-24px)] p-1.5',
+          'absolute z-50 max-h-[min(440px,70vh)] w-[232px] max-w-[calc(100vw-24px)] overflow-y-auto p-1.5',
           align === 'end' ? 'right-0' : 'left-1/2',
           side === 'top' ? 'bottom-full mb-2' : 'top-full mt-2',
           side === 'top' ? align === 'end' ? 'origin-bottom-right' : 'origin-bottom' : align === 'end' ? 'origin-top-right' : 'origin-top'].
@@ -131,34 +131,42 @@ export function VisitorLanguageMenu({ theme, variant, label, disabled, side = 't
           
             {uiLanguages.map((l, i) => {
             const selected = l.value === lang;
+            // A small country heading where the list moves to the next country (D356).
+            const heading = l.country !== uiLanguages[i - 1]?.country ? l.country : null;
             return (
-              <button
-                key={l.value}
-                ref={(el) => optionRefs.current[i] = el}
-                type="button"
-                role="option"
-                aria-selected={selected}
-                lang={l.value}
-                onKeyDown={(e) => onOptionKey(e, i)}
-                onClick={() => choose(l.value)}
-                className="flex w-full items-center gap-2.5 px-2 py-2 text-left transition-colors duration-100 focus-visible:outline-none"
-                style={{ borderRadius: radius, background: selected ? mix(theme.accent, 12) : undefined }}
-                onMouseEnter={(e) => !selected && (e.currentTarget.style.background = mix(theme.text, 6))}
-                onMouseLeave={(e) => !selected && (e.currentTarget.style.background = '')}
-                onFocus={(e) => !selected && (e.currentTarget.style.background = mix(theme.text, 6))}
-                onBlur={(e) => !selected && (e.currentTarget.style.background = '')}>
-                
+              <React.Fragment key={l.value}>
+                {heading &&
+                <p aria-hidden className={i === 0 ? 'px-2 pb-1 pt-1 text-[11px] font-semibold' : 'mx-2 mt-1 border-t px-0 pb-1 pt-2 text-[11px] font-semibold'} style={{ color: theme.mutedText, borderColor: mix(theme.text, 10) }}>
+                    {t(heading)}
+                  </p>
+                }
+                <button
+                  ref={(el) => optionRefs.current[i] = el}
+                  type="button"
+                  role="option"
+                  aria-selected={selected}
+                  lang={l.value}
+                  onKeyDown={(e) => onOptionKey(e, i)}
+                  onClick={() => choose(l.value)}
+                  className="flex w-full items-center gap-2.5 px-2 py-2 text-left transition-colors duration-100 focus-visible:outline-none"
+                  style={{ borderRadius: radius, background: selected ? mix(theme.accent, 12) : undefined }}
+                  onMouseEnter={(e) => !selected && (e.currentTarget.style.background = mix(theme.text, 6))}
+                  onMouseLeave={(e) => !selected && (e.currentTarget.style.background = '')}
+                  onFocus={(e) => !selected && (e.currentTarget.style.background = mix(theme.text, 6))}
+                  onBlur={(e) => !selected && (e.currentTarget.style.background = '')}>
+                  
                   <Code code={codes[l.value]} theme={theme} active={selected} />
                   <span className="min-w-0 flex-1">
                     <span className="block text-[14px] font-semibold leading-tight">{l.native}</span>
                     {l.label !== l.native &&
-                  <span className="block text-[12px] leading-tight" style={{ color: theme.mutedText }}>
+                    <span className="block text-[12px] leading-tight" style={{ color: theme.mutedText }}>
                         {l.label}
                       </span>
-                  }
+                    }
                   </span>
                   {selected && <CheckIcon size={15} strokeWidth={2.5} aria-hidden style={{ color: theme.accent }} />}
-                </button>);
+                </button>
+                </React.Fragment>);
 
           })}
             <p className="mx-2 mt-1 border-t pt-2 text-[11px] leading-snug" style={{ color: theme.mutedText, borderColor: mix(theme.text, 10) }}>

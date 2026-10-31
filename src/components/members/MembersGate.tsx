@@ -8,6 +8,7 @@ import { useTrack } from '../../contexts/TrackContext';
 import { buttonStyle, cardRadius, fontsFor, mix } from '../blocks/pageStyle';
 import { maskContact, ruleLabel, type AccessResult } from '../../utils/members';
 import { subDate } from '../../utils/commerce/subscriptions';
+import { formatMoney } from '../../utils/currency';
 
 interface GateProps {
   theme: PageTheme;
@@ -106,7 +107,7 @@ export function MembersLocked({ theme: t, rule, title, teaser, joinLabel, hidden
           <button key={p.id} type="button" onClick={() => members?.join?.(p.id)} className="flex min-h-[52px] w-full flex-col items-center justify-center px-4 py-1.5" style={buttonStyle(t, i === 0 ? 'featured' : 'default')}>
                   <span className="max-w-full truncate text-[15px] font-semibold">Join {p.name}</span>
                   <span className="text-[12.5px] font-medium">
-                    ₦{p.priceNgn.toLocaleString()} a {p.interval}
+                    {formatMoney(p.priceNgn)} a {p.interval}
                   </span>
                 </button>
           )}

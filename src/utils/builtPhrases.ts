@@ -59,6 +59,10 @@ p(/^(.+) Then tick “This video has captions”\. Many people watch on mute, on
 p(/^Field (\d+) needs a label$/, 'Field {n} needs a label', ['n']),
 ...formQuotedIssueSuffixes.map((suffix) => p(new RegExp(`^“(.*)” ${suffix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`), `“{label}” ${suffix}`, ['label'])),
 
+// ——— Visitor form errors (D344) ———
+p(/^Keep it under (\d+) characters$/, 'Keep it under {n} characters', ['n']),
+p(/^Answer (.+ and .+?)(…?)$/, 'Answer: {rows}{more}', ['rows', 'more']),
+
 // ——— Automations: test-run steps and setup problems ———
 p(/^If order total is over \(₦\) (.+)$/, 'If order total is over (₦) {amount}', ['amount']),
 p(/^If contact came from (.+)$/, 'If contact came from {source}', ['source'], ['source']),

@@ -97,7 +97,8 @@ Columns measure their own width: side by side from 600px (3–4 columns from 760
 
 Layers shows containers with their blocks indented; groups are collapsible and renamable; every move has up/down buttons (and Alt+↑/↓); blocks move in and out of containers from their settings ("Move into it", "Move out"); delete has Undo (containers with their contents in one step); duplicate copies containers with contents; lock prevents edits; saved sections keep container contents.
 Blocks and containers can be renamed in Layers (double-click or F2, D175); names are editor-only.
-**Not built:** dragging a block from the page into a container (use the buttons).
+**Drag into containers (D180, D191):** drag a page block onto a Section, Columns or Tabs (or onto a block inside one) — it lands where you point, before or after the block underneath; blocks inside get a drag handle to reorder, move to another container, or drop back out onto the page. Invalid drops show the reason and leave the block where it was. "Move into it" / "Move out" remain the keyboard and screen-reader route (WCAG 2.5.7).
+**Copy and hierarchy checks (D342):** the Check tab also flags more than one opening block, a long page with no headings, headlines over 12 words or in all capitals, paragraphs over 120 words, and vague button labels — each with a button that selects the block.
 
 ## 8. Composition assistant (Built, D174)
 

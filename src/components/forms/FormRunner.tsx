@@ -5,6 +5,7 @@ import type { FormSkin } from './formSkin';
 import { FormFieldInput } from './FormFieldInput';
 import { type Answers, calcValue, fieldError, paymentAmount, splitSteps, visibleFields } from '../../utils/forms/logic';
 import { bumpVisitor, visitorCount } from '../../utils/forms/storage';
+import { useT } from '../../contexts/LocaleContext';
 
 export interface RunnerSubmit {
   answers: Answers;
@@ -29,6 +30,8 @@ interface FormRunnerProps {
 /** Runs a form: steps, show/hide rules, validation, spam checks, test payment and done/closed states (D79). */
 export function FormRunner({ form, skin, mode, closed, onSubmit, onStart, showTitle = true, headingLevel = 'h2', initialAnswers }: FormRunnerProps) {
   const uid = useId();
+  // Fixed wording (errors, Back/Next/Send, thanks) follows the visitor's language (D344); seller wording stays as written.
+  const { t: tr } = useT();
   const inert = mode === 'inert';
   const [answers, setAnswers] = useState<Answers>(() => initialAnswers ?? {});
   const [stepIndex, setStepIndex] = useState(0);
@@ -147,19 +150,19 @@ export function FormRunner({ form, skin, mode, closed, onSubmit, onStart, showTi
     return (
       <div className="flex flex-col items-start gap-1.5 py-2" role="status">
         <span className="inline-flex items-center gap-2 text-[16px] font-semibold" style={{ color: skin.text }}>
-          <CheckIcon size={18} aria-hidden /> {form.settings.successTitle || 'Thanks — we’ve got it'}
+          <CheckIcon size={18} aria-hidden /> {form.settings.successTitle || tr('Thanks — we’ve got it')}
         </span>
         <span className="text-[13.5px]" style={{ color: skin.muted }}>
-          {mode === 'preview' ? 'Preview — nothing was saved.' : form.settings.successText}
+          {mode === 'preview' ? tr('Preview — nothing was saved.') : form.settings.successText}
         </span>
         {form.settings.redirectUrl && mode === 'live' &&
         <a href={form.settings.redirectUrl} className="mt-2 text-[13.5px] font-semibold underline" style={{ color: skin.text }}>
-            Continue
+            {tr('Continue')}
           </a>
         }
         {mode === 'preview' &&
         <button type="button" onClick={reset} className="mt-2 text-[13px] font-medium underline" style={{ color: skin.text }}>
-            Run again
+            {tr('Run again')}
           </button>
         }
       </div>);
@@ -185,7 +188,7 @@ export function FormRunner({ form, skin, mode, closed, onSubmit, onStart, showTi
               {safeIndex + 1} / {liveSteps.length}
             </span>
           </div>
-          <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full" style={{ background: `color-mix(in srgb, ${skin.text} 12%, transparent)` }} role="progressbar" aria-label="Form progress" aria-valuemin={1} aria-valuemax={liveSteps.length} aria-valuenow={safeIndex + 1}>
+          <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full" style={{ background: `color-mix(in srgb, ${skin.text} 12%, transparent)` }} role="progressbar" aria-label={tr('Form progress')} aria-valuemin={1} aria-valuemax={liveSteps.length} aria-valuenow={safeIndex + 1}>
             <div className="h-full rounded-full transition-[width] duration-200 ease-out" style={{ width: `${(safeIndex + 1) / liveSteps.length * 100}%`, background: skin.text }} />
           </div>
         </div>
@@ -205,7 +208,7 @@ export function FormRunner({ form, skin, mode, closed, onSubmit, onStart, showTi
 
       {failure &&
       <p role="alert" className="text-[13px] font-medium" style={{ color: skin.danger }}>
-          {failure}
+          {tr(failure)}
         </p>
       }
       {last && form.settings.privacyNote &&
@@ -216,11 +219,11 @@ export function FormRunner({ form, skin, mode, closed, onSubmit, onStart, showTi
       <div className="flex gap-2">
         {safeIndex > 0 &&
         <button type="button" disabled={inert} tabIndex={inert ? -1 : undefined} onClick={() => goTo(safeIndex - 1)} className="h-12 px-4 text-[14.5px] font-medium" style={{ ...skin.input, color: skin.text }}>
-            Back
+            {tr('Back')}
           </button>
         }
         <button type="submit" tabIndex={inert ? -1 : undefined} className="h-12 flex-1 text-[15px] font-semibold" style={skin.button}>
-          {last ? form.settings.submitLabel || 'Send' : 'Next'}
+          {last ? form.settings.submitLabel || tr('Send') : tr('Next')}
         </button>
       </div>
     </form>);

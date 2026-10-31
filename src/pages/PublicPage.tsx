@@ -18,6 +18,7 @@ import { ExternalRedirect } from '../components/domains/ExternalRedirect';
 import { StorefrontView } from '../components/storefront/StorefrontView';
 import { ProductDetailView } from '../components/storefront/ProductDetailView';
 import { sellerPhone } from '../hooks/useResolvedPage';
+import { formatMoney } from '../utils/currency';
 
 import { DealRoomPanel } from '../components/dealroom/DealRoomPanel';
 import { dealRoomCheckout } from '../utils/dealRoom';
@@ -145,7 +146,7 @@ export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
         const c = contactFrom(form, sub.answers);
         if (c.email || c.phone) {
           ops.apply((d) =>
-          upsertContact(d, { name: c.name, email: c.email, phone: c.phone }, 'form', `Sent “${form.name}”${paymentNgn ? ` and paid ₦${paymentNgn.toLocaleString()} (test)` : ''}`, {
+          upsertContact(d, { name: c.name, email: c.email, phone: c.phone }, 'form', `Sent “${form.name}”${paymentNgn ? ` and paid ${formatMoney(paymentNgn)} (test)` : ''}`, {
             consent: c.consent ? 'subscribed' : 'transactional',
             attribution: { channel: visit.source, campaign: visit.campaign ?? null, page: handle ?? null },
             consentWording: `Consent question on “${form.name}”`

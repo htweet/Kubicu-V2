@@ -2,6 +2,8 @@
 
 _Last updated: 24 Oct 2026 (section 5b covers Batches 8–14). Standard: WCAG 2.1 AA, plus 2.5.7 Dragging movements and 2.5.8 Target size (minimum) from WCAG 2.2._
 
+> **Not yet covered by this report (added after Batch 14, through D343):** Copilot chat, preview, claim and All chats panel; sidebar Copilot chats; the language picker in every surface; every translated screen in long languages (check for two-line labels and clipped text); screen-reader pronunciation of Yorùbá, Hausa and Igbo accent marks; AI FAQ assistant block (results use `aria-live`); Voice to content dialog (microphone permission, recording state, typing fallback); Composition check buttons; contact "Add / Record it" forms (D343). None of these has been opened in a browser yet. Run the section 6 checklist on them.
+
 ## 1. Summary
 
 | | |

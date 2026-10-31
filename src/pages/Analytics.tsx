@@ -389,6 +389,11 @@ export function Analytics() {
                 </tbody>
               </table>
           }
+            {domainLinks.length > 0 &&
+          <p className="max-w-3xl text-caption text-fg-subtle">
+                {tr('Links that go to another website or a WhatsApp chat count each real click, because those visitors don’t open your page. Bots and repeat taps are left out.')}
+              </p>
+          }
           </Section>
 
           <Section id="funnels" title="From visit to sale" className="mt-10 gap-3">

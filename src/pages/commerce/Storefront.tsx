@@ -21,6 +21,7 @@ import { PageHeader } from '../../components/shell/PageHeader';
 import { Button } from '../../components/ui/Button';
 import { Switch } from '../../components/ui/Switch';
 import { TextInput } from '../../components/ui/TextInput';
+import { PhoneInput } from '../../components/ui/PhoneInput';
 import { TextArea } from '../../components/ui/TextArea';
 import { Segmented } from '../../components/ui/Segmented';
 import { InlineAlert } from '../../components/ui/InlineAlert';
@@ -201,7 +202,7 @@ export function Storefront() {
                 </InlineAlert>
               }
               {usesWhatsApp &&
-              <TextInput id="sf-phone" label="WhatsApp number" type="tel" inputMode="tel" value={draft.whatsappPhone} placeholder={businessWhatsApp() || '+234 …'} error={tried ? phoneError || undefined : undefined} hint={waFieldHint(draft.whatsappPhone, 'Each product sends a pre-filled message with the chosen option and price.')} onChange={(e) => set('whatsappPhone', e.target.value)} />
+              <PhoneInput id="sf-phone" label="WhatsApp number" value={draft.whatsappPhone} placeholder={businessWhatsApp() || undefined} error={tried ? phoneError || undefined : undefined} hint={waFieldHint(draft.whatsappPhone, 'Each product sends a pre-filled message with the chosen option and price.')} onChange={(v) => set('whatsappPhone', v)} />
               }
               {!usesWhatsApp &&
               <p className="text-caption text-fg-muted">

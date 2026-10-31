@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
-import { ChevronRightIcon, LayoutGridIcon, LayoutTemplateIcon, ListIcon, SearchIcon, SearchXIcon, XIcon } from 'lucide-react';
+import { ChevronRightIcon, LayoutGridIcon, LayoutTemplateIcon, ListIcon, MicIcon, SearchIcon, SearchXIcon, XIcon } from 'lucide-react';
+import { VoiceToContentDialog } from './VoiceToContentDialog';
 import { sectionPresets } from '../../data/sectionPresets';
 import { SectionPresetList } from './SectionPresetList';
 import type { BlockType } from '../../types/page';
@@ -40,7 +41,7 @@ type Filter = 'all' | 'sections' | LibraryCategoryId;
  * real mini previews in the page's theme, and a details step before adding. Same component on phones (`touch`).
  */
 export function BlockLibrary({ onAdded, touch }: BlockLibraryProps) {
-  const { t: tr } = useT();
+  const { t: tr, lang } = useT();
   const { state, actions } = useEditor();
   const plan = usePlan();
   const market = useMarketplace();
@@ -49,6 +50,7 @@ export function BlockLibrary({ onAdded, touch }: BlockLibraryProps) {
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<Filter>('all');
   const [detail, setDetail] = useState<BlockType | null>(null);
+  const [voiceOpen, setVoiceOpen] = useState(false);
   const q = query.trim().toLowerCase();
   const selected = state.draft.blocks.find((b) => b.id === state.selectedId);
   // Containers (D167): with a container (or a block in one) selected, new blocks go inside while there's room.
@@ -66,7 +68,9 @@ export function BlockLibrary({ onAdded, touch }: BlockLibraryProps) {
     return 'available';
   };
 
-  const matches = useMemo(() => blockOrder.filter((type) => (!q || blockSearchText(type).includes(q)) && (filter === 'all' || libraryCategoryOf(type) === filter)), [q, filter]);
+  // Search matches English words, the block's name, description and category in the screen language (D342), and
+  // everyday words in that language with or without tone marks (D344).
+  const matches = useMemo(() => blockOrder.filter((type) => (!q || blockSearchText(type, tr, lang).includes(q)) && (filter === 'all' || libraryCategoryOf(type) === filter)), [q, filter, tr, lang]);
   const plannedMatches = plannedBlocks.filter((p) => (!q || `${p.name} ${p.description}`.toLowerCase().includes(q)) && (filter === 'all' || filter === 'smart'));
   const suggestions = useMemo(
     () => suggestBlocks(state.draft.blocks, { bookingsActive: market.isActive('bookings') }, shelf.dismissed).filter((s) => statusOf(s.type) !== 'app'),
@@ -87,9 +91,12 @@ export function BlockLibrary({ onAdded, touch }: BlockLibraryProps) {
   };
   // Ready-made looks (D171): every idea in the brief that is a setup of an existing block.
   const lookMatches = useMemo(
-    () => catalogLooks.filter((e) => e.type && (filter === 'all' || e.category === filter) && (!q || `${e.name} ${e.note ?? ''} ${blockSearchText(e.type)}`.toLowerCase().includes(q))),
-    [q, filter]
+    () => catalogLooks.filter((e) => e.type && (filter === 'all' || e.category === filter) && (!q || `${e.name} ${tr(e.name)} ${e.note ?? ''} ${blockSearchText(e.type, tr, lang)}`.toLowerCase().includes(q))),
+    [q, filter, tr, lang]
   );
+  // Voice to content (D342): a tool, not a block — shown while browsing and when a search asks for it.
+  const voiceWords = `voice speak dictate microphone mic talk record ${tr('Voice to content')} ${tr('Speak, review the words, then add them as blocks')}`.toLowerCase();
+  const showVoice = !q && (filter === 'all' || filter === 'smart') || !!q && voiceWords.includes(q);
   const howtos = blockCatalog.filter((e) => e.kind === 'howto' && (filter === 'all' || e.category === filter) && (!q || `${e.name} ${e.note}`.toLowerCase().includes(q)));
 
   const listView = shelf.view === 'list';
@@ -223,7 +230,7 @@ export function BlockLibrary({ onAdded, touch }: BlockLibraryProps) {
             <SectionPresetList query={query} touch={touch} onInserted={() => onAdded?.(state.selectedId ?? '')} />
           </Shelf>
         </div> :
-      matches.length === 0 && plannedMatches.length === 0 && lookMatches.length === 0 && !(q && sectionMatchCount > 0) ?
+      matches.length === 0 && plannedMatches.length === 0 && lookMatches.length === 0 && !showVoice && !(q && sectionMatchCount > 0) ?
       <EmptyState icon={SearchXIcon} title={tr('No blocks found')} description={tr('Nothing matches “{q}”. Try “button”, “photo”, “form” or pick a category.', { q: query })} /> :
 
       <div className="flex flex-col gap-6 px-3 pb-6">
@@ -237,6 +244,20 @@ export function BlockLibrary({ onAdded, touch }: BlockLibraryProps) {
               <span className="min-w-0 flex-1">
                 <span className="block text-label font-semibold text-fg">{tr('Ready-made sections: {n}', { n: sectionPresets.length })}</span>
                 <span className="block text-caption text-fg-subtle">{tr('Hero + portfolio, menu + ordering, schedule + speakers and more')}</span>
+              </span>
+              <ChevronRightIcon size={16} className="shrink-0 text-fg-subtle" aria-hidden />
+            </button>
+        }
+          {showVoice &&
+        <button
+          type="button"
+          onClick={() => setVoiceOpen(true)}
+          className="flex items-center gap-3 rounded-md border border-line bg-canvas px-3 py-3 text-left transition-colors duration-150 hover:border-line-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+          
+              <MicIcon size={18} className="shrink-0 text-action" aria-hidden />
+              <span className="min-w-0 flex-1">
+                <span className="block text-label font-semibold text-fg">{tr('Voice to content')}</span>
+                <span className="block text-caption text-fg-subtle">{tr('Speak, review the words, then add them as blocks')}</span>
               </span>
               <ChevronRightIcon size={16} className="shrink-0 text-fg-subtle" aria-hidden />
             </button>
@@ -329,6 +350,7 @@ export function BlockLibrary({ onAdded, touch }: BlockLibraryProps) {
         }
         </div>
       }
+      <VoiceToContentDialog open={voiceOpen} onClose={() => setVoiceOpen(false)} onAdded={onAdded} />
     </div>);
 
 }

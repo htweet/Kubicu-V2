@@ -75,6 +75,15 @@ export function storyBlockIssues(blocks: Block[]): ValidationIssue[] {
       case 'smartButton':
         if (!b.content.url.trim()) issue(b, 'default', 'warning', 'Set a default link — visitors from other sources see nothing without it.', 'url');
         return;
+      // FAQ assistant (D342): it can only ever repeat what the owner wrote.
+      case 'faqAssistant':{
+          const c = b.content;
+          const answered = c.facts.filter((f) => f.question.trim() && f.answer.trim());
+          if (answered.length === 0) issue(b, 'facts', 'warning', 'Add at least one approved question and answer, or the block won’t show.', 'facts');else
+          if (c.facts.some((f) => f.question.trim() && !f.answer.trim())) issue(b, 'unanswered', 'warning', 'Some questions have no answer, so they’re never used.', 'facts');
+          if (!c.fallbackUrl.trim()) issue(b, 'fallback', 'warning', 'Add a link for visitors whose question has no approved answer.', 'fallbackUrl');
+          return;
+        }
       default:
     }
   });

@@ -35,7 +35,7 @@ export interface ProviderDef {
 }
 
 export const categoryInfo: Record<ProviderCategory, {label: string;description: string;}> = {
-  payments: { label: 'Payments', description: 'Takes card, transfer and USSD payments at checkout.' },
+  payments: { label: 'Payments', description: 'Takes card, transfer, USSD and mobile money payments at checkout.' },
   sms: { label: 'SMS', description: 'Order updates, booking reminders and sign-in codes by text.' },
   whatsapp: { label: 'WhatsApp', description: 'Order updates and reminders on WhatsApp Business.' },
   email: { label: 'Email', description: 'Receipts, confirmations and sign-in codes by email.' },
@@ -85,6 +85,33 @@ export const providers: ProviderDef[] = [
   { key: 'apiKey', label: 'Sandbox API key', placeholder: 'MK_TEST_…', pattern: /^MK_(TEST|PROD)_[A-Z0-9]{8,}$/, patternMessage: 'Starts with MK_TEST_.', livePattern: /^MK_PROD_/ },
   { key: 'secretKey', label: 'Secret key', secret: true, pattern: /^[A-Za-z0-9]{16,}$/, patternMessage: 'At least 16 letters or digits.' },
   { key: 'contractCode', label: 'Contract code', placeholder: '1234567890', pattern: /^\d{8,12}$/, patternMessage: '8 to 12 digits.' }]
+
+},
+// Mobile money for Kenya and Ghana (D355). Simulated like every provider here.
+{
+  id: 'mpesa-daraja',
+  name: 'M-Pesa (Daraja)',
+  category: 'payments',
+  blurb: 'M-Pesa payment requests (STK push) for Kenyan businesses, through Safaricom’s Daraja API.',
+  tags: ['Kenya', 'Mobile money', 'STK push'],
+  whereToFind: 'Safaricom Daraja portal → My Apps → your sandbox app. Use the sandbox consumer key and secret, and test shortcode 174379.',
+  fields: [
+  { key: 'consumerKey', label: 'Sandbox consumer key', pattern: /^[A-Za-z0-9]{20,}$/, patternMessage: 'At least 20 letters or digits.' },
+  { key: 'consumerSecret', label: 'Sandbox consumer secret', secret: true, pattern: /^[A-Za-z0-9]{12,}$/, patternMessage: 'At least 12 letters or digits.' },
+  { key: 'shortcode', label: 'Paybill or till number', placeholder: '174379', pattern: /^\d{5,7}$/, patternMessage: '5 to 7 digits.' }]
+
+},
+{
+  id: 'mtn-momo',
+  name: 'MTN MoMo',
+  category: 'payments',
+  blurb: 'MTN Mobile Money payment requests for Ghanaian businesses, through the MoMo Collections API.',
+  tags: ['Ghana', 'Mobile money', 'Request to pay'],
+  whereToFind: 'MTN MoMo developer portal → Subscriptions → Collections. Create a sandbox API user and key.',
+  fields: [
+  { key: 'subscriptionKey', label: 'Collections subscription key', secret: true, pattern: /^[a-f0-9]{32}$/, patternMessage: '32 letters (a–f) or digits.' },
+  { key: 'apiUser', label: 'Sandbox API user', placeholder: 'a UUID', pattern: /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, patternMessage: 'A UUID like 3f2b…-…' },
+  { key: 'apiKey', label: 'Sandbox API key', secret: true, pattern: /^[a-f0-9]{32}$/, patternMessage: '32 letters (a–f) or digits.' }]
 
 },
 {

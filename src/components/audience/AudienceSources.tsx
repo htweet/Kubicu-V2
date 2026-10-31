@@ -56,7 +56,7 @@ export function AudienceSources({ contacts, onPickCampaign }: {contacts: Contact
       <Table title="Way in" rows={byWay} />
       <Table title="Channel" rows={byChannel} empty="Channels are recorded for sign-ups from now on." />
       <Table title="Short link" rows={byLink} empty="No one has signed up through a short link yet." onPick={onPickCampaign} />
-      {untracked > 0 && <p className="text-caption text-fg-subtle lg:col-span-3">{untracked} contacts were added before channels were recorded, by import or by hand, so they only show under “Way in”.</p>}
+      {untracked > 0 && <p className="text-caption text-fg-subtle lg:col-span-3">{untracked} contacts were added before channels were recorded, by import or by hand, so they only show under “Way in”. {t('Open a contact to add where they first found you.')}</p>}
     </div>);
 
 }

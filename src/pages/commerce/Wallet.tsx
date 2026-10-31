@@ -10,7 +10,8 @@ import { useMoney } from '../../hooks/useMoney';
 import { balances, paidOutToday, payoutBlocker, payoutTier, starterEligible, starterMissing, starterReady, tierInfo, usableBanks } from '../../utils/money/store';
 import { verifiedName } from '../../utils/money/kyc';
 import { formatNgn, formatRelative, formatTimestamp } from '../../utils/format';
-import { activeCurrency, currencyInfo, isNaira } from '../../utils/currency';
+import { activeCurrency, currencyInfo, currencySymbol, isNaira, withSymbol } from '../../utils/currency';
+import { activeCountryInfo } from '../../utils/country';
 import { PageHeader } from '../../components/shell/PageHeader';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
@@ -73,7 +74,7 @@ export function Wallet() {
 
   const saveThreshold = () => {
     const v = Number(threshold) || 0;
-    if (v < 5000) return toast.error(tr('Choose at least ₦5,000'));
+    if (v < 5000) return toast.error(withSymbol(tr('Choose at least ₦5,000')));
     update((d) => ({ ...d, autoPayout: { ...d.autoPayout, thresholdNgn: v } }));
     toast.success(tr('Pays out when you reach {amount}', { amount: formatNgn(v) }));
   };
@@ -106,8 +107,10 @@ export function Wallet() {
       <PartnerNote className="mt-6" />
 
       {!isNaira() &&
-      <InlineAlert className="mt-4" tone="info" title={tr('Payouts in {currency} need a partner in your country', { currency: currencyInfo(activeCurrency()).name })}>
-          {tr('Your balance is kept in your currency. Paying out to Nigerian banks only works in naira — a payout account in your country is added once KUBICU has a payment partner there.')}
+      <InlineAlert className="mt-4" tone="info" title={tr('Payouts in {currency} are simulated', { currency: tr(currencyInfo(activeCurrency()).name) })}>
+          {activeCountryInfo().currency === activeCurrency() ?
+        tr('Your balance is kept in your currency. You can add a {country} payout account, but no money moves until KUBICU has a payment partner there.', { country: tr(activeCountryInfo().name) }) :
+        tr('Your balance is kept in your currency. Paying out to Nigerian banks only works in naira — a payout account in your country is added once KUBICU has a payment partner there.')}
         </InlineAlert>
       }
 
@@ -251,7 +254,7 @@ export function Wallet() {
               <SelectInput id="auto-mode" label={tr('Pay out')} value={data.autoPayout.mode} options={autoOptions.map((o) => ({ ...o, label: tr(o.label) }))} onChange={setAuto} disabled={!canPayout} />
               {data.autoPayout.mode === 'threshold' &&
               <div className="flex items-end gap-2">
-                  <TextInput id="auto-threshold" label={tr('When available reaches')} prefix="₦" inputMode="numeric" value={threshold} onChange={(e) => setThreshold(e.target.value.replace(/\D/g, ''))} fieldClassName="flex-1" />
+                  <TextInput id="auto-threshold" label={tr('When available reaches')} prefix={currencySymbol()} inputMode="numeric" value={threshold} onChange={(e) => setThreshold(e.target.value.replace(/\D/g, ''))} fieldClassName="flex-1" />
                   <Button variant="secondary" onClick={guard(saveThreshold)}>
                     {tr('Save')}
                   </Button>

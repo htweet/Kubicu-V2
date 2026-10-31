@@ -1,6 +1,8 @@
 import type { HelpArticle, HelpCategory, HelpShot } from '../types/help';
 import { helpTopics } from '../data/helpTopics';
 import { helpForPath } from '../data/helpContext';
+import type { UiLang } from '../data/translations';
+import { expandSearch, foldSearch } from './searchGlossary';
 
 export interface FoundArticle {
   article: HelpArticle;
@@ -50,7 +52,13 @@ export function helpForPathname(pathname: string) {
   return helpForPath.filter((h) => pathname.startsWith(h.prefix)).sort((a, b) => b.prefix.length - a.prefix.length)[0] ?? null;
 }
 
-export function matchesHelp(a: HelpArticle, topic: HelpCategory, q: string): boolean {
+/**
+ * Search matches the guide's English words; in another language, everyday words from the search glossary also find
+ * the English guides they stand for (D344). `t` lets translated topic names match too.
+ */
+export function matchesHelp(a: HelpArticle, topic: HelpCategory, q: string, lang: UiLang = 'en', t?: (text: string) => string): boolean {
   if (!q) return true;
-  return `${a.q} ${a.a} ${a.where ?? ''} ${(a.steps ?? []).join(' ')} ${(a.tips ?? []).join(' ')} ${topic.title}`.toLowerCase().includes(q);
+  const text = `${a.q} ${a.a} ${a.where ?? ''} ${(a.steps ?? []).join(' ')} ${(a.tips ?? []).join(' ')} ${topic.title} ${t ? `${t(topic.title)} ${t(a.q)}` : ''}`.toLowerCase();
+  const folded = foldSearch(text);
+  return expandSearch(q, lang).some((term) => text.includes(term) || folded.includes(foldSearch(term)));
 }

@@ -3,7 +3,9 @@ import { Reorder, useDragControls, type PanInfo } from 'framer-motion';
 import { AlertCircleIcon, AlertTriangleIcon, CalendarClockIcon, ColumnsIcon, EyeOffIcon, LockIcon, SplitIcon } from 'lucide-react';
 import { WIDE_PX, sectionTheme, widthOf } from '../../utils/pageLayout';
 import { windowState } from '../../utils/schedule';
-import { activeRule, ruleText } from '../../utils/intentflow';
+import { activeRule } from '../../utils/intentflow';
+import { sourceLabels } from '../../utils/analytics/track';
+import { useT } from '../../contexts/LocaleContext';
 import type { Block, PageTheme } from '../../types/page';
 import type { ValidationIssue } from '../../utils/validation';
 import { BlockRenderer, spacingClass } from '../blocks/BlockRenderer';
@@ -90,6 +92,11 @@ export function BlockFrame({
   const hasWarning = !hasError && issues.length > 0;
   const schedule = windowState(block.visibility);
   const sourceRule = activeRule(block.visibility);
+  const { t: tr } = useT();
+  // Same wording as the Visibility tab and IntentFlow, with each source name translated (D342).
+  const ruleLine = sourceRule ?
+  tr(sourceRule.mode === 'only' ? 'Only visits from {list}' : 'Everyone except visits from {list}', { list: sourceRule.ids.map((i) => tr(sourceLabels[i])).join(', ') }) :
+  '';
   const scheduleLabel = schedule === 'upcoming' ? 'Scheduled' : schedule === 'ended' ? 'Ended' : schedule === 'active' ? 'Timed' : null;
   // Layout sections (D153): the canvas shows width and section background; pairs show a chip and sit side by side in Preview.
   const width = widthOf(block);
@@ -223,8 +230,8 @@ export function BlockFrame({
               </span>
             }
             {sourceRule && !hidden &&
-            <span className="inline-flex h-5 items-center gap-1 rounded-full bg-info-soft px-1.5 text-meta font-medium text-info ring-1 ring-info/30" title={ruleText(sourceRule)}>
-                <SplitIcon size={10} aria-hidden /> {sourceRule.mode === 'only' ? 'Some sources' : 'Not all sources'}
+            <span className="inline-flex h-5 items-center gap-1 rounded-full bg-info-soft px-1.5 text-meta font-medium text-info ring-1 ring-info/30" title={ruleLine}>
+                <SplitIcon size={10} aria-hidden /> {tr(sourceRule.mode === 'only' ? 'Some sources' : 'Not all sources')}
               </span>
             }
             {scheduleLabel && !hidden &&

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Field, fieldControlClass } from './Field';
 import { cn } from '../../utils/cn';
-import { currencySymbol } from '../../utils/currency';
+import { currencySymbol, groupNumber } from '../../utils/currency';
 
 interface CurrencyInputProps {
   id: string;
@@ -19,8 +19,6 @@ interface CurrencyInputProps {
   naira?: boolean;
 }
 
-const grouped = new Intl.NumberFormat('en-NG', { maximumFractionDigits: 0 });
-
 /** Amount in whole units of the workspace's currency (D136). Shows thousands separators; stores a number. */
 export function CurrencyInput({ id, label, value, onChange, placeholder, hint, error, optional, trailing, disabled, naira }: CurrencyInputProps) {
   const symbol = naira ? '₦' : currencySymbol();
@@ -35,7 +33,7 @@ export function CurrencyInput({ id, label, value, onChange, placeholder, hint, e
           inputMode="numeric"
           disabled={disabled}
           aria-invalid={error ? true : undefined}
-          value={value === null ? '' : grouped.format(value)}
+          value={value === null ? '' : groupNumber(value, naira ? 'NGN' : undefined)}
           placeholder={placeholder}
           onChange={(e) => {
             const digits = e.target.value.replace(/[^0-9]/g, '').slice(0, 12);

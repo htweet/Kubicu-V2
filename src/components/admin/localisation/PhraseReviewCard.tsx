@@ -19,7 +19,10 @@ const langs: {value: Lang;label: string;}[] = [
 { value: 'pcm', label: 'Naijá' },
 { value: 'yo', label: 'Yorùbá' },
 { value: 'ha', label: 'Hausa' },
-{ value: 'ig', label: 'Igbo' }];
+{ value: 'ig', label: 'Igbo' },
+{ value: 'sw', label: 'Kiswahili' },
+{ value: 'tw', label: 'Twi' },
+{ value: 'zu', label: 'isiZulu' }];
 
 
 const PAGE = 15;

@@ -6,6 +6,7 @@ import { useT } from '../../contexts/LocaleContext';
 import { Sheet } from '../ui/Sheet';
 import { Button } from '../ui/Button';
 import { TextInput } from '../ui/TextInput';
+import { PhoneInput } from '../ui/PhoneInput';
 import { TextArea } from '../ui/TextArea';
 import { SelectInput } from '../ui/SelectInput';
 import { Segmented } from '../ui/Segmented';
@@ -122,7 +123,7 @@ export function PartnerEditor({ open, partner, partners, products, onClose, onSa
           <SelectInput id="pt-platform" label={tr('Where they post')} value={f.platform} options={(Object.keys(platformLabels) as PartnerPlatform[]).map((v) => ({ value: v, label: tr(platformLabels[v]) }))} onChange={(v) => set({ platform: v })} />
           <TextInput id="pt-handle" label={tr('Handle')} optional placeholder="@name" value={f.handle} maxLength={40} onChange={(e) => set({ handle: e.target.value })} />
         </div>
-        <TextInput id="pt-phone" label={tr('WhatsApp number')} type="tel" value={f.phone} error={tried ? errors.phone : undefined} onChange={(e) => set({ phone: e.target.value })} />
+        <PhoneInput id="pt-phone" label={tr('WhatsApp number')} value={f.phone} error={tried ? errors.phone : undefined} onChange={(phone) => set({ phone })} />
         <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_8rem]">
           <TextInput
             id="pt-code"

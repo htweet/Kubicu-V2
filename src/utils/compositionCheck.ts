@@ -77,8 +77,45 @@ export function compositionFindings(all: Block[]): CompositionFinding[] {
     out.push({ id: `bind:${h.id}`, title: 'Heading floats away from its text', why: 'A heading reads as part of the paragraph below when the space between them is small. Roomy spacing makes them look unrelated.', blockId: h.id, fix: { kind: 'tighten', blockId: h.id, label: 'Use tight spacing' } });
   }
 
+  // Copy and hierarchy (D342) — still rule-based: word counts, capitals and known vague labels.
+  // 8. One opening
+  const openings = top.filter((b) => b.type === 'hero' || b.type === 'brandHeader' || b.type === 'profile');
+  if (openings.length > 1)
+  out.push({ id: 'openings', title: 'Openings competing: {n}', vars: { n: openings.length }, why: 'A page reads best with one opening. Extra heroes, profiles or brand headers make visitors wonder where the page starts.', blockId: openings[1].id, fix: { kind: 'select', blockId: openings[1].id, label: 'Review the second one' } });
+
+  // 9. Headings on long pages
+  if (top.length >= 8 && !top.some((b) => b.type === 'heading' || b.type === 'section' || b.type === 'hero' || b.type === 'cta'))
+  out.push({ id: 'no-headings', title: 'Long page without headings', why: 'Headings let visitors jump to what they need. Add one above each group of blocks.', fix: { kind: 'add', type: 'heading', label: 'Add a heading' } });
+
+  blocks.forEach((b) => {
+    // 10. Headlines: length and capitals
+    const headline = b.type === 'heading' ? b.content.text : b.type === 'hero' || b.type === 'cta' ? b.content.title : '';
+    if (headline.trim()) {
+      const n = wordCount(headline);
+      if (n > 12) out.push({ id: `long-head:${b.id}`, title: 'Long headline: {n} words', vars: { n }, why: 'Headlines over 12 words get skimmed. Keep the main promise and move the rest into the text below.', blockId: b.id, fix: { kind: 'select', blockId: b.id, label: 'Select the headline' } });
+      if (isShouting(headline)) out.push({ id: `caps:${b.id}`, title: 'Headline in capitals', why: 'All-capital text is slower to read, and some screen readers spell it out letter by letter. Type it normally — the theme sets the style.', blockId: b.id, fix: { kind: 'select', blockId: b.id, label: 'Select the headline' } });
+    }
+    // 11. Walls of text
+    if (b.type === 'text') {
+      const longest = Math.max(0, ...b.content.body.split(/\n\s*\n/).map(wordCount));
+      if (longest > 120) out.push({ id: `wall:${b.id}`, title: 'Long paragraph: {n} words', vars: { n: longest }, why: 'Big blocks of text are hard to read on a phone. Break it into shorter paragraphs with a blank line between them.', blockId: b.id, fix: { kind: 'select', blockId: b.id, label: 'Select the text' } });
+    }
+    // 12. Vague button words
+    const labels = b.type === 'link' || b.type === 'whatsapp' ? [b.content.label] : b.type === 'cta' || b.type === 'hero' ? [b.content.primaryLabel] : [];
+    const vague = labels.find((l) => vagueLabels.has(l.trim().toLowerCase().replace(/[.!…]+$/, '')));
+    if (vague) out.push({ id: `vague:${b.id}`, title: 'Button says “{label}” — say what happens', vars: { label: vague.trim() }, why: 'People scan buttons. “Book a fitting” or “See the menu” tells them what they get; “Click here” doesn’t.', blockId: b.id, fix: { kind: 'select', blockId: b.id, label: 'Select the button' } });
+  });
+
   return out;
 }
+
+const vagueLabels = new Set(['click here', 'click', 'here', 'learn more', 'read more', 'more', 'submit', 'go', 'link', 'tap here', 'click me', 'button', 'continue']);
+const wordCount = (s: string) => s.trim().split(/\s+/).filter(Boolean).length;
+/** Shouting: at least 12 letters, all capitals (acronyms in normal text don't trigger it). */
+const isShouting = (s: string) => {
+  const letters = s.replace(/[^A-Za-z]/g, '');
+  return letters.length >= 12 && letters === letters.toUpperCase();
+};
 
 /** What usually comes next after a block — simple, visible rules (D174), offered in the block's settings. */
 export const nextFor: Partial<Record<BlockType, BlockType[]>> = {

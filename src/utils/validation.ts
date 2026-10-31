@@ -7,6 +7,7 @@ import { parseEmbed } from './embeds';
 import { formatNgn } from './format';
 import { socialPlatformLabels } from '../data/socialPlatforms';
 import { NO_WA_NUMBER, waNumber } from './businessWhatsApp';
+import { phoneIssue } from './phone';
 
 export type IssueSeverity = 'error' | 'warning';
 
@@ -32,8 +33,10 @@ export function isValidUrl(value: string): boolean {
   return /^https?:\/\/[^\s.]+\.[^\s]{2,}$/i.test(value.trim());
 }
 
+/** Country-aware for Nigeria, Kenya, Ghana and South Africa; any other code gets the generic length check (D354). */
 export function isValidPhone(value: string): boolean {
-  return /^\+?[0-9][0-9\s-]{9,16}$/.test(value.trim());
+  if (!value.trim()) return false;
+  return phoneIssue(value) === null;
 }
 
 export function isValidEmail(value: string): boolean {

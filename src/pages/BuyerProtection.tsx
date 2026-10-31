@@ -8,6 +8,7 @@ import { useMoney } from '../hooks/useMoney';
 import { acceptOffer, caseSummary, confirmReceived, escalate, issueLabels, MAX_FILES, openDispute, RESPOND_HOURS, withdrawDispute } from '../utils/money/escrow';
 import { readCommerce } from '../utils/commerce/storage';
 import { formatNgn, formatTimestamp } from '../utils/format';
+import { withSymbol } from '../utils/currency';
 import { PageSurface } from '../components/blocks/PageSurface';
 import { VisitorLanguageRow } from '../components/blocks/VisitorLanguageRow';
 import { cardStyle, mix } from '../components/blocks/pageStyle';
@@ -271,7 +272,7 @@ function ReportForm({ c, theme: t, onCancel, onSubmit }: {c: EscrowCase;theme: P
           </label>
         )}
       </fieldset>
-      {wants === 'partial' && <ThemedField theme={t} label="Amount (₦)" inputMode="numeric" value={amount} onChange={(v) => setAmount(v.replace(/\D/g, ''))} error={tried ? errors.amount : undefined} />}
+      {wants === 'partial' && <ThemedField theme={t} label={withSymbol('Amount (₦)')} inputMode="numeric" value={amount} onChange={(v) => setAmount(v.replace(/\D/g, ''))} error={tried ? errors.amount : undefined} />}
       <div className="flex flex-col gap-1.5">
         <span className="text-[13px] font-medium">
           {tx('Photos or documents')} <span style={{ color: t.mutedText, fontWeight: 400 }}>· {tx('optional, up to {n}', { n: MAX_FILES })}</span>

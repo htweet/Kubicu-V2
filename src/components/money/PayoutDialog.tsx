@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import type { MoneyData } from '../../types/money';
 import { balances, createPayout, paidOutToday, payoutFee, payoutTier, tierInfo, usableBanks } from '../../utils/money/store';
 import { formatNgn } from '../../utils/format';
+import { currencySymbol } from '../../utils/currency';
 import { useT } from '../../contexts/LocaleContext';
 import { Dialog } from '../ui/Dialog';
 import { Button } from '../ui/Button';
@@ -90,7 +91,7 @@ export function PayoutDialog({ open, onClose, data, update, by }: PayoutDialogPr
           <TextInput
             id="payout-amount"
             label="Amount"
-            prefix="₦"
+            prefix={currencySymbol()}
             inputMode="numeric"
             value={amount}
             onChange={(e) => setAmount(e.target.value.replace(/[^\d]/g, ''))}

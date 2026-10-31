@@ -29,7 +29,7 @@ interface LanguagePickerProps {
 }
 
 /** Short code shown on the badge. */
-const codes: Partial<Record<LanguageId, string>> = { 'en-NG': 'EN', 'en-GB': 'EN', pcm: 'PCM', yo: 'YO', ha: 'HA', ig: 'IG', fr: 'FR' };
+const codes: Partial<Record<LanguageId, string>> = { 'en-NG': 'EN', 'en-GB': 'EN', pcm: 'PCM', yo: 'YO', ha: 'HA', ig: 'IG', sw: 'SW', tw: 'TW', zu: 'ZU', fr: 'FR' };
 /** The language's own name first, then the English name underneath. */
 const names: Partial<Record<LanguageId, {native: string;english: string;}>> = {
   'en-NG': { native: 'English', english: 'Nigeria' },
@@ -38,8 +38,13 @@ const names: Partial<Record<LanguageId, {native: string;english: string;}>> = {
   yo: { native: 'Yorùbá', english: 'Yoruba' },
   ha: { native: 'Hausa', english: 'Hausa' },
   ig: { native: 'Igbo', english: 'Igbo' },
+  sw: { native: 'Kiswahili', english: 'Swahili' },
+  tw: { native: 'Twi', english: 'Twi' },
+  zu: { native: 'isiZulu', english: 'Zulu' },
   fr: { native: 'Français', english: 'French' }
 };
+/** Pickers group languages by the country they're spoken in (D356). */
+const countryOf: Partial<Record<LanguageId, string>> = { 'en-NG': 'Nigeria', 'en-GB': 'Other', pcm: 'Nigeria', yo: 'Nigeria', ha: 'Nigeria', ig: 'Nigeria', sw: 'Kenya', tw: 'Ghana', zu: 'South Africa', fr: 'Other' };
 
 /**
  * One language picker for the whole signed-in and signed-out app (D298). It writes the device-wide
@@ -65,11 +70,13 @@ export function LanguagePicker({ variant, collapsed, tip, side = 'bottom', align
     if (updateAccount((a) => ({ ...a, prefs: { ...a.prefs, language: next } }))) toast.success(translatorFor(toUiLang(next))('Language saved'));
   };
 
-  const items: MenuItem[] = options.map((o) => {
+  const items: MenuItem[] = options.map((o, i) => {
     const n = names[o.value] ?? { native: o.label, english: '' };
     const comingSoon = !o.ready && !o.draft;
     const sub = [regions || o.value !== 'en-NG' ? t(n.english) : '', o.draft ? t('Draft') : '', comingSoon ? t('Coming later') : ''].filter(Boolean).join(' · ');
+    const group = countryOf[o.value];
     return {
+      groupLabel: group && group !== countryOf[options[i - 1]?.value] ? t(group) : undefined,
       id: o.value,
       label: n.native,
       reason: sub || undefined,

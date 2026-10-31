@@ -7,17 +7,24 @@ import { formatNgn } from '../../utils/format';
 import { useNow } from '../../hooks/useNow';
 import { announce } from '../../utils/announce';
 import { useT } from '../../contexts/LocaleContext';
+import { activeCountryInfo } from '../../utils/country';
 
 /** How long a one-time transfer account stays valid (example figure, D222). */
 export const TRANSFER_ACCOUNT_MINUTES = 30;
 
-const banks = ['Wema Bank', 'Titan Trust Bank', 'Providus Bank'];
+const ngBanks = ['Wema Bank', 'Titan Trust Bank', 'Providus Bank'];
 
-/** A stable, made-up one-time account for this checkout (simulated — a real provider issues it). */
+/**
+ * A stable, made-up one-time account for this checkout (simulated — a real provider issues it).
+ * Uses a bank and account length from the seller's country (D355): NUBAN in Nigeria, EFT in South Africa.
+ */
 export function transferAccountFor(holder: string): {bank: string;account: string;} {
   let h = 7;
   for (let i = 0; i < holder.length; i++) h = h * 31 + holder.charCodeAt(i) >>> 0;
-  const digits = String(9000000000 + h % 999999999).slice(0, 10);
+  const c = activeCountryInfo();
+  const banks = c.code === 'NG' ? ngBanks : c.banks.slice(0, 3);
+  const len = c.accountNumber.min;
+  const digits = `9${String(h % 999999999).padStart(9, '0')}${String(h).padStart(10, '0')}`.slice(0, len);
   return { bank: banks[h % banks.length], account: digits };
 }
 

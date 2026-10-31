@@ -16,6 +16,8 @@ import {
 'lucide-react';
 import type { BlockType } from '../types/page';
 import { blockDefinitions, type BlockCategory } from './blockRegistry';
+import type { UiLang } from './translations';
+import { foldSearch, localSearchWords } from '../utils/searchGlossary';
 
 /*
  * Block library taxonomy (D166). The registry's four broad groups stay for internal use; the picker
@@ -58,7 +60,7 @@ const categoryOf: Partial<Record<BlockType, LibraryCategoryId>> = {
   carousel: 'images', brandHeader: 'identity', linkCollection: 'links', qrCode: 'links',
   document: 'media', embed: 'media', shopCategories: 'commerce', checkoutButton: 'commerce',
   poll: 'forms', community: 'forms', reviewSummary: 'trust', languageSwitch: 'utilities',
-  smartButton: 'smart', campaignSpotlight: 'smart', recommendations: 'smart', backToTop: 'utilities',
+  smartButton: 'smart', campaignSpotlight: 'smart', recommendations: 'smart', backToTop: 'utilities', faqAssistant: 'smart',
   spacer: 'layout', divider: 'layout', featureGrid: 'layout', steps: 'layout',
   profile: 'identity', hero: 'identity',
   link: 'links', social: 'links', whatsapp: 'links',
@@ -149,13 +151,23 @@ const synonyms: Partial<Record<BlockType, string[]>> = {
   smartButton: ['personalised button', 'dynamic button', 'by source'],
   campaignSpotlight: ['promo', 'sale banner', 'limited offer', 'countdown offer'],
   recommendations: ['my picks', 'favourites', 'start here', 'gear', 'recommended'],
-  course: ['online course', 'tutorial class', 'lessons', 'e-learning', 'curriculum', 'modules', 'school', 'tutor']
+  course: ['online course', 'tutorial class', 'lessons', 'e-learning', 'curriculum', 'modules', 'school', 'tutor'],
+  faqAssistant: ['ai', 'bot', 'chat', 'ask a question', 'customer questions', 'auto answer']
 };
 
-export function blockSearchText(type: BlockType): string {
+/**
+ * Everything a search can match for a block. Pass the screen's translate function so the block's name,
+ * description and category also match in the chosen language (D342); English words always match too.
+ */
+export function blockSearchText(type: BlockType, t?: (text: string) => string, lang: UiLang = 'en'): string {
   const def = blockDefinitions[type];
   const cat = libraryCategories.find((c) => c.id === libraryCategoryOf(type));
-  return [def.name, def.description, cat?.label ?? '', ...def.keywords, ...(synonyms[type] ?? [])].join(' ').toLowerCase();
+  const english = [def.name, def.description, cat?.label ?? '', ...def.keywords, ...(synonyms[type] ?? [])];
+  const local = t ? [t(def.name), t(def.description), cat ? t(cat.label) : ''] : [];
+  // Everyday words in the screen language for the block's English synonyms (D344), with and without tone marks.
+  const glossary = localSearchWords(english.join(' '), lang);
+  const text = [...english, ...local].join(' ').toLowerCase();
+  return `${text} ${foldSearch(text)} ${glossary}`;
 }
 
 /** Presentation choices a block already offers, shown in the details pane (grows in Pass E). */

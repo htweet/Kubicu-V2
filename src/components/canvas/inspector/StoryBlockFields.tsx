@@ -8,6 +8,7 @@ import { businessWhatsApp, waFieldHintIn } from '../../../utils/businessWhatsApp
 import { useT } from '../../../contexts/LocaleContext';
 import { blockName, summarizeBlock } from '../../../utils/blocks';
 import { TextInput } from '../../ui/TextInput';
+import { PhoneInput } from '../../ui/PhoneInput';
 import { TextArea } from '../../ui/TextArea';
 import { Segmented } from '../../ui/Segmented';
 import { Field } from '../../ui/Field';
@@ -277,8 +278,8 @@ export function StoryBlockFields({ block, issues }: {block: Extract<Block, {type
         return (
           <div className={stack}>
           <TextInput id={id('title')} label="Title" optional value={c.title} onChange={(e) => set({ title: e.target.value }, 'title')} />
-          <TextInput id={id('phone')} label="Phone" optional type="tel" placeholder="+234…" value={c.phone} onChange={(e) => set({ phone: e.target.value }, 'phone')} />
-          <TextInput id={id('whatsapp')} label="WhatsApp number" optional type="tel" placeholder={businessWhatsApp() || '+234…'} hint={waFieldHintIn(tr, c.whatsapp, tr('Opens a chat with you.'))} value={c.whatsapp} error={err('whatsapp')} onChange={(e) => set({ whatsapp: e.target.value }, 'whatsapp')} />
+          <PhoneInput id={id('phone')} label="Phone" optional value={c.phone} onChange={(phone) => set({ phone }, 'phone')} />
+          <PhoneInput id={id('whatsapp')} label="WhatsApp number" optional placeholder={businessWhatsApp() || undefined} hint={waFieldHintIn(tr, c.whatsapp, tr('Opens a chat with you.'))} value={c.whatsapp} error={err('whatsapp')} onChange={(whatsapp) => set({ whatsapp }, 'whatsapp')} />
           {!c.whatsapp.trim() && businessWhatsApp() &&
             <label className="-mt-2 flex items-center gap-2 text-label text-fg">
               <input type="checkbox" className="h-4 w-4" checked={c.useBusinessWhatsApp !== false} onChange={(e) => set({ useBusinessWhatsApp: e.target.checked }, 'whatsapp')} />

@@ -5,6 +5,7 @@ import type { InstalledExtension } from '../../types/marketplace';
 import { useCommerce } from '../../contexts/CommerceContext';
 import { LOYALTY_EXTENSION_ID, REDEEM_NGN, REDEEM_POINTS, loyaltyMembers } from '../../utils/loyalty';
 import { ToolSection, ToolStat } from './tools/ToolSection';
+import { formatMoney } from '../../utils/currency';
 import { ProductFeedTool } from './tools/ProductFeedTool';
 import { EmailSyncTool, SheetsSyncTool } from './tools/ContactSyncTools';
 import { SearchConsoleTool } from './tools/SearchConsoleTool';
@@ -68,7 +69,7 @@ function LoyaltyTool({ rec }: {rec: InstalledExtension;}) {
         </ul>
       }
       <p className="text-caption text-fg-muted">
-        Counting from {new Date(rec.installedAt).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' })}. {REDEEM_POINTS} points = ₦{REDEEM_NGN} off; codes appear in Commerce → Discounts.
+        Counting from {new Date(rec.installedAt).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' })}. {REDEEM_POINTS} points = {formatMoney(REDEEM_NGN)} off; codes appear in Commerce → Discounts.
       </p>
     </ToolSection>);
 

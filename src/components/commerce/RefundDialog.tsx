@@ -6,6 +6,7 @@ import { useCommerce } from '../../contexts/CommerceContext';
 import { cancelOrder, refundOrder } from '../../utils/commerce/ops';
 import { refundableNgn } from '../../utils/commerce/money';
 import { formatNgn } from '../../utils/format';
+import { withSymbol } from '../../utils/currency';
 import { Dialog } from '../ui/Dialog';
 import { Button } from '../ui/Button';
 import { CurrencyInput } from '../ui/CurrencyInput';
@@ -48,7 +49,7 @@ export function RefundDialog({ order, mode, onClose }: Props) {
   const overLimit = refundAmount > limit;
   const amountError =
   mode === 'refund' && (amount === null || amount <= 0 || amount > max) ?
-  t('Enter an amount between ₦1 and {amount}', { amount: formatNgn(max) }) :
+  withSymbol(t('Enter an amount between ₦1 and {amount}', { amount: formatNgn(max) })) :
   overLimit ?
   t('Sales can refund up to {amount}. Ask an Admin or the Owner for anything bigger.', { amount: formatNgn(limit) }) :
   undefined;

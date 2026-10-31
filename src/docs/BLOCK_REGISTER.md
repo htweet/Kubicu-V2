@@ -9,7 +9,9 @@ Every idea from the Canvas brief (120), and how each one is delivered. Source of
 - **How-to** – an existing feature, explained in the picker.
 - **Planned** – shown in the picker as Planned; can't be added (needs an outside provider).
 
-Totals: **77 blocks** in the picker (68 of them map directly to an idea — Delivery & returns was split out of Policies in D181; the rest — e.g. Members-only, Subscription, Collection, Hero, Proof — are earlier blocks the brief didn't list), **49 looks**, **1 how-to**, **2 planned**.
+> **Update, D342 (30 Oct 2026):** the two Planned ideas are now delivered. **AI FAQ assistant** is a real block (`faqAssistant`: visitors ask in their own words and get the business's approved answer word for word, or a fallback button — rule-based matching in `utils/faqMatch.ts`, no model). **Voice to content** is a canvas tool, not a block (card at the top of the library → speak or type → paragraph, heading + text, or questions and answers, added in one undo step; browser speech recognition). So the picker now has **one more block and no Planned items**, and the Planned group is hidden. Block names, descriptions and categories are searchable in the screen language (D342) and translated (D293).
+
+Totals at D173 (before the update above): **77 blocks** in the picker (68 of them map directly to an idea — Delivery & returns was split out of Policies in D181; the rest — e.g. Members-only, Subscription, Collection, Hero, Proof — are earlier blocks the brief didn't list), **49 looks**, **1 how-to**, **2 planned**.
 
 Status key: **Built** (works in this prototype) · **Needs app** (works once a free KUBICU app is installed) · **Planned**. Group: A core · B commerce/business · C integration-dependent · D future smart.
 

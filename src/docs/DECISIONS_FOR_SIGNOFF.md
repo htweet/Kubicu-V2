@@ -16,6 +16,18 @@ To sign off, reply with IDs, e.g. *"Confirm all of E"*, *"Confirm D40 with KUBIC
 
 > **Outcome, 27 Oct 2026 (D233):** A confirmed · B rewritten to Draft 1.0, awaiting your lawyer · C on hold (USSD switched off) · D deferred · E no action needed.
 >
+> **Status refresh, 30 Oct 2026 (through D343).** What is still open:
+>
+> | Group | State now |
+> |---|---|
+> | A — Money, limits, figures | **Confirmed (D233).** The Group A table below is kept for history only; nothing in it needs action. Exception: the payment-provider fee (1.5% + ₦100) stays an example until a gateway is chosen. |
+> | B — Legal wording | **Open.** Draft 1.0 awaiting a lawyer. English text applies; translated pages show a notice saying so (D332). New wording since D232 that also needs legal review: Copilot privacy notice `/about/copilot` and data-processing terms (D265–D266), hand-recorded marketing permission on older contacts (D343). |
+> | C — Provider / backend | **Open.** No providers chosen. Added since D232: Copilot AI provider and chat storage (D265–D266, D284), browser speech-to-text in Voice to content (D342 — works without a provider, quality varies), server-side short-link click counting (D271, partly addressed in D343). |
+> | D — Translations | **Deferred.** Since D232 the drafts cover the whole app, canvas, website and Copilot (D280–D341). All need a native speaker. |
+> | E — Product / design | No action needed. D233–D343 are all product/design or translation decisions and fall here unless listed above. |
+>
+> Still to decide outside these groups: final plan prices (see `docs/CLAUDE_HANDOFF.md` §17.1), Copilot chat retention and AI credit costs.
+
 > **Correction:** the earlier note that D149 was used twice was wrong — it came from misreading a line number. D149 (Batch 14 checks) and D156 (Elite templates) are separate decisions; nothing was renumbered.
 
 ---

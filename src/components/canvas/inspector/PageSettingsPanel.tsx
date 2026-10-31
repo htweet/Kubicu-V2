@@ -33,8 +33,10 @@ const pageLanguages = [
 { value: 'yo', label: 'Yorùbá' },
 { value: 'ig', label: 'Igbo' },
 { value: 'ha', label: 'Hausa' },
-{ value: 'fr', label: 'French' },
-{ value: 'sw', label: 'Swahili' }];
+{ value: 'sw', label: 'Swahili' },
+{ value: 'tw', label: 'Twi' },
+{ value: 'zu', label: 'Zulu' },
+{ value: 'fr', label: 'French' }];
 
 
 /** Page panel → page settings. Shared inputs translate their own labels; headings, notes and built lines here (D305). */

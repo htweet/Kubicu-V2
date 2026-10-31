@@ -1,6 +1,7 @@
 import type { CommerceData, GiftCard, Order, Product } from '../../types/commerce';
 import type { WorkspacePlan } from '../../types/plan';
 import { uid } from '../id';
+import { formatMoney } from '../currency';
 
 /** Pre-orders, bulk prices and gift cards (D202). Example limits, logged in the decision register. */
 
@@ -152,7 +153,7 @@ export function upsertGiftCardProduct(data: CommerceData, amounts: number[], act
   const clean = [...new Set(amounts.filter((a) => a > 0))].sort((a, b) => a - b).slice(0, 6);
   const now = new Date().toISOString();
   const prev = data.products.find((p) => p.id === GIFT_CARD_PRODUCT_ID);
-  const label = (n: number) => `₦${n.toLocaleString('en-NG')}`;
+  const label = (n: number) => formatMoney(n);
   const product: Product = {
     id: GIFT_CARD_PRODUCT_ID,
     name: prev?.name ?? 'Gift card',

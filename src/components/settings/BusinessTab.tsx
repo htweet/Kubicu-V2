@@ -13,6 +13,7 @@ import { SelectInput } from '../ui/SelectInput';
 import { DemoDataCard } from './DemoDataCard';
 import { DemoWorkspaceCard } from './DemoWorkspaceCard';
 import { BusinessWhatsAppCard } from './BusinessWhatsAppCard';
+import { CountryCard } from './CountryCard';
 import { useT } from '../../contexts/LocaleContext';
 
 const nairaOnly = ['USSD at checkout', 'Pay on delivery', 'Pay in instalments', 'Payouts to Nigerian bank accounts'];
@@ -41,6 +42,7 @@ export function BusinessTab() {
     <div className="flex flex-col gap-8">
       <DemoWorkspaceCard />
       <DemoDataCard />
+      <CountryCard />
       <BusinessWhatsAppCard />
       <Card id="currency" title="Currency" description="Everything you sell — products, tickets, bookings, subscriptions, payment links — is priced and paid in this one currency. Visitors see the same currency; nothing is converted." emphasis="primary">
         <div className="flex flex-col gap-5">

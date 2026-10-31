@@ -73,6 +73,12 @@ Preview links only view. Claiming needs the one-time code held by the chat that 
 | Claiming | Real accounts, single-use claim codes as signed short-lived links, server-side transfer into the workspace. |
 | Privacy | Final legal text for `/about/copilot`; WhatsApp agent chats are not end-to-end encrypted like personal chats. |
 
+## Added after D266
+
+- **Chats in the workspace sidebar (D284, rollback D290):** a Copilot section below the last sidebar item. **Pinned** chats (pinning moves a chat out of Recent; unpinning returns it), **Recent** (up to 5 unpinned chats), then **See all chats (n)**. Hover a chat to pin or unpin; clicking opens it on `/copilot/chat`. Collapsed sidebar shows a single chats icon; with no chats it shows a hint and "Start a chat". Only web chats are listed (not WhatsApp). Stored in this browser (`kubicu.copilot.pins`); pinned chats are never evicted when storage runs low. The pin icon was rebuilt from notes and may differ from version 308.
+- **All chats panel:** opened from "See all chats" or the **All chats** button on `/copilot/chat` — search, open, pin, delete, start new; groups Pinned / Recent / Everything else.
+- **Translation (D339–D340):** the frame, reply buttons, greeting, questions, help lines and built sentences show in the chosen language. Chats are saved in English and translated on screen, so switching language re-translates older messages. Typed answers are only understood in English (the `/copilot` page says so). The WhatsApp simulation isn't translated.
+
 ## Manual checks still to do
 
 320px width and 200% zoom on all Copilot routes; VoiceOver/TalkBack on the chat, including whether new messages are announced; keyboard-only path from `/copilot` to the canvas; low-end Android with large photos.

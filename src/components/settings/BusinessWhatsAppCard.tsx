@@ -7,9 +7,10 @@ import { useTeam } from '../../contexts/TeamContext';
 import { Card } from '../ui/layout/Card';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
-import { TextInput } from '../ui/TextInput';
+import { PhoneInput } from '../ui/PhoneInput';
 import { InlineAlert } from '../ui/InlineAlert';
 import { isValidPhone } from '../../utils/validation';
+import { phoneIssueIn } from '../../utils/phone';
 import { whatsappLink } from '../../utils/format';
 import { useT } from '../../contexts/LocaleContext';
 
@@ -29,7 +30,7 @@ export function BusinessWhatsAppCard() {
   useEffect(() => setValue(saved), [saved]);
 
   const trimmed = value.trim();
-  const error = trimmed && !isValidPhone(trimmed) ? 'Use the full number with country code, e.g. +234 803 123 4567' : '';
+  const error = trimmed && !isValidPhone(trimmed) ? phoneIssueIn(tr, trimmed) ?? tr('Phone number looks incomplete') : '';
   const dirty = trimmed !== saved;
 
   const save = () => {
@@ -57,7 +58,7 @@ export function BusinessWhatsAppCard() {
           }}>
           
           <div className="sm:w-80">
-            <TextInput id="ws-whatsapp" label="WhatsApp number" type="tel" inputMode="tel" placeholder="+234 803 123 4567" value={value} disabled={!can.allowed} error={tried ? error || undefined : undefined} onChange={(e) => setValue(e.target.value)} />
+            <PhoneInput id="ws-whatsapp" label="WhatsApp number" value={value} disabled={!can.allowed} error={tried && error ? error : undefined} onChange={setValue} />
           </div>
           <div className="flex gap-2 sm:pt-7">
             <Button type="submit" disabled={!can.allowed || !dirty}>

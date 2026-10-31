@@ -1,6 +1,7 @@
 import type { PageDocument, PageVersion, ScheduledPublish } from './page';
 import type { WorkspacePlan } from './plan';
 import type { CurrencyCode } from '../utils/currency';
+import type { CountryCode } from './country';
 
 /** What a space is for (D50). Every workspace has exactly one main space. */
 export type SpaceKind = 'main' | 'campaign' | 'dealroom' | 'event' | 'fundraiser' | 'popup' | 'booking' | 'members' | 'page';
@@ -39,6 +40,8 @@ export interface Workspace {
   demoData?: {seededAt: string;expiresAt: string;} | null;
   /** One currency for everything this workspace sells (D136). Missing = naira. */
   currency?: CurrencyCode;
+  /** Where this business sells from (D352). Sets defaults for currency, phone numbers, regions, banks and checkout. Missing = from the currency, else Nigeria. */
+  country?: CountryCode;
   /** The Business WhatsApp number every WhatsApp button falls back to (D214). Plain wa.me links — no API. */
   whatsapp?: string;
 }

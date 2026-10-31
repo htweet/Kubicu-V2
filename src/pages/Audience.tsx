@@ -22,6 +22,7 @@ import { DataTable, type DataColumn } from '../components/ui/DataTable';
 import { EmptyState } from '../components/ui/EmptyState';
 import { Dialog } from '../components/ui/Dialog';
 import { TextInput } from '../components/ui/TextInput';
+import { PhoneInput } from '../components/ui/PhoneInput';
 import { ConsentBadge, ContactDetail } from '../components/audience/ContactDetail';
 import { ImportContactsDialog } from '../components/audience/ImportContactsDialog';
 import { DuplicatesDialog } from '../components/audience/DuplicatesDialog';
@@ -353,7 +354,7 @@ export function Audience() {
         <div className="flex flex-col gap-4">
           <TextInput id="add-name" label="Name" value={newContact.name} onChange={(e) => setNewContact((c) => ({ ...c, name: e.target.value }))} />
           <TextInput id="add-email" label="Email" type="email" value={newContact.email} error={tried ? addErrors.email || addErrors.contact || undefined : undefined} onChange={(e) => setNewContact((c) => ({ ...c, email: e.target.value }))} />
-          <TextInput id="add-phone" label="Phone" type="tel" value={newContact.phone} error={tried ? addErrors.phone || undefined : undefined} onChange={(e) => setNewContact((c) => ({ ...c, phone: e.target.value }))} />
+          <PhoneInput id="add-phone" label="Phone" value={newContact.phone} error={tried ? addErrors.phone || undefined : undefined} onChange={(phone) => setNewContact((c) => ({ ...c, phone }))} />
         </div>
       </Dialog>
     </div>);

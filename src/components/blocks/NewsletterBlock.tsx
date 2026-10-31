@@ -4,10 +4,13 @@ import type { BlockProps } from './blockProps';
 import { buttonStyle, cardStyle, fontsFor, inputStyle } from './pageStyle';
 import { isValidEmail } from '../../utils/validation';
 import { usePageOpsContext } from '../../contexts/PageOpsContext';
+import { useT } from '../../contexts/LocaleContext';
 
 export function NewsletterBlock({ block, theme, mode }: BlockProps<'newsletter'>) {
   const { title, description, buttonLabel, consentText } = block.content;
   const id = useId();
+  // Fixed wording follows the visitor's language (D344); the seller's title, description and consent stay as written.
+  const { t: tr } = useT();
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [done, setDone] = useState(false);
@@ -45,16 +48,16 @@ export function NewsletterBlock({ block, theme, mode }: BlockProps<'newsletter'>
       {done ?
       <div role="status" className="flex flex-col gap-1">
           <span className="inline-flex items-center gap-2 text-[15px] font-semibold" style={{ color: theme.text }}>
-            <CheckIcon size={17} aria-hidden /> You’re on the list.
+            <CheckIcon size={17} aria-hidden /> {tr('You’re on the list.')}
           </span>
           <span className="text-[12.5px]" style={{ color: theme.mutedText }}>
-            {actions ? 'You can unsubscribe any time.' : 'Demo page: no email was stored.'}
+            {actions ? tr('You can unsubscribe any time.') : tr('Demo page: no email was stored.')}
           </span>
         </div> :
 
       <form onSubmit={onSubmit} noValidate className="flex flex-col gap-2.5">
           <label htmlFor={id} className="sr-only">
-            Email address
+            {tr('Email address')}
           </label>
           <div className="flex flex-col gap-2 sm:flex-row">
             <input
@@ -78,12 +81,12 @@ export function NewsletterBlock({ block, theme, mode }: BlockProps<'newsletter'>
             className="h-12 shrink-0 px-5 text-[15px] font-semibold"
             style={buttonStyle(theme, 'featured')}>
             
-              {buttonLabel || 'Subscribe'}
+              {buttonLabel || tr('Subscribe')}
             </button>
           </div>
           {error &&
         <p id={`${id}-error`} role="alert" className="text-[13px] font-medium" style={{ color: theme.text }}>
-              {error}
+              {tr(error)}
             </p>
         }
           {consentText &&

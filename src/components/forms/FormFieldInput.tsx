@@ -6,6 +6,7 @@ import { formatNgn } from '../../utils/format';
 import { currencySymbol } from '../../utils/currency';
 import { RichFieldControl, richFieldTypes } from './RichFieldControl';
 import { MoreFieldControl, moreFieldTypes } from './MoreFieldControl';
+import { useT } from '../../contexts/LocaleContext';
 
 interface FormFieldInputProps {
   field: FormField;
@@ -21,6 +22,8 @@ interface FormFieldInputProps {
 
 /** One answer control. Every control has a visible label; errors are linked by aria-describedby (D76). */
 export function FormFieldInput({ field, value, onChange, error, skin, inert, idPrefix, amount = 0 }: FormFieldInputProps) {
+  // Error messages follow the visitor's language (D344); the seller's own labels and help stay as written.
+  const { t: tr } = useT();
   const id = `${idPrefix}-${field.id}`;
   const errId = `${id}-err`;
   const helpId = `${id}-help`;
@@ -218,7 +221,7 @@ export function FormFieldInput({ field, value, onChange, error, skin, inert, idP
       }
       {error &&
       <p id={errId} className="text-[12.5px] font-medium" style={{ color: skin.danger }}>
-          {error}
+          {tr(error)}
         </p>
       }
     </div>);

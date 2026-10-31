@@ -34,7 +34,7 @@ export function defaultHours(): Record<WeekdayId, DayHours> {
 export const defaultShopSettings: ShopSettings = {
   business: { tradingName: '', address: '', regNumber: '', tin: '', phone: '', email: '', logoUrl: '', receiptFooter: '' },
   checkout: { email: 'optional', address: 'off', minOrderNgn: null, termsTick: false, orderNote: false },
-  methods: { card: true, transfer: true, transferOwn: true, ussd: true },
+  methods: { card: true, transfer: true, transferOwn: true, ussd: true, mobileMoney: true, eft: true },
   tax: { enabled: false, ratePct: VAT_EXAMPLE_PCT, inclusive: true },
   // Stock holds (D255) default on: they only stop two buyers paying for the same last item.
   orders: { prefix: '', lowStockDefault: 2, backorders: false, holdStock: true },

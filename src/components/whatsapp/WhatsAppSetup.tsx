@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import type { WhatsAppData } from '../../types/whatsapp';
 import { Button } from '../ui/Button';
 import { TextInput } from '../ui/TextInput';
+import { PhoneInput } from '../ui/PhoneInput';
 import { TextArea } from '../ui/TextArea';
 import { Badge } from '../ui/Badge';
 import { IconButton } from '../ui/IconButton';
@@ -103,7 +104,7 @@ export function WhatsAppSetup({ data, canEdit, defaultName, defaultPhone, update
           </div> :
 
         <div className="grid max-w-xl gap-4">
-            <TextInput id="wa-phone" label="WhatsApp Business number" type="tel" value={phone} error={phoneError} disabled={!canEdit} onChange={(e) => setPhone(e.target.value)} />
+            <PhoneInput id="wa-phone" label="WhatsApp Business number" value={phone} error={phoneError} disabled={!canEdit} onChange={setPhone} />
             <TextInput id="wa-name" label="Name customers see" value={name} disabled={!canEdit} onChange={(e) => setName(e.target.value)} />
             <div>
               <Button onClick={sendCode} disabled={!canEdit}>

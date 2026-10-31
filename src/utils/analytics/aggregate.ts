@@ -200,14 +200,19 @@ export interface CampaignStat {
   revenueNgn: number;
 }
 
-/** Per short link (campaign slug): visits (scans for QR codes), paid orders and revenue (D62). */
+/**
+ * Per short link (campaign slug): visits (scans for QR codes), paid orders and revenue (D62).
+ * Links that send people to another website or a WhatsApp chat never open a page, so each real click
+ * counts as the visit there (D343). Bot and burst clicks are left out, as everywhere else.
+ */
 export function campaignStats(events: AnalyticsEvent[]): Map<string, CampaignStat> {
   const sessions = new Map<string, Set<string>>();
   const out = new Map<string, CampaignStat>();
   events.forEach((e) => {
     if (!e.campaign) return;
     const s = out.get(e.campaign) ?? { visits: 0, orders: 0, revenueNgn: 0 };
-    if (e.type === 'view') {
+    const leavesPage = e.type === 'link_click' && !e.invalid && (e.label === 'website' || e.label === 'whatsapp');
+    if (e.type === 'view' || leavesPage) {
       const set = sessions.get(e.campaign) ?? new Set<string>();
       if (!set.has(e.session)) {
         set.add(e.session);

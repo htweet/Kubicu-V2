@@ -3,11 +3,15 @@ import type { DateFormatId, LanguageId, StartPageId } from '../types/account';
 /** `draft`: selectable, with drafted translations that still need a native speaker's check (D133). */
 export const languageOptions: {value: LanguageId;label: string;ready: boolean;draft?: boolean;}[] = [
 { value: 'en-NG', label: 'English (Nigeria)', ready: true },
-{ value: 'en-GB', label: 'English (UK)', ready: true },
 { value: 'pcm', label: 'Naijá (Nigerian Pidgin)', ready: false, draft: true },
 { value: 'yo', label: 'Yorùbá', ready: false, draft: true },
 { value: 'ha', label: 'Hausa', ready: false, draft: true },
 { value: 'ig', label: 'Igbo', ready: false, draft: true },
+{ value: 'sw', label: 'Kiswahili', ready: false, draft: true },
+{ value: 'tw', label: 'Twi', ready: false, draft: true },
+{ value: 'zu', label: 'isiZulu', ready: false, draft: true },
+// Listed last so the picker's country groups stay together (D356).
+{ value: 'en-GB', label: 'English (UK)', ready: true },
 { value: 'fr', label: 'Français', ready: false }];
 
 

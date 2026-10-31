@@ -1,4 +1,5 @@
 import type { KitDetails, KitItem } from './printKit';
+import { countryInfo } from '../country';
 
 /**
  * Ordering prints from a partner print shop (D114). The print partner is simulated:
@@ -148,9 +149,8 @@ export const deliveryZones: {id: DeliveryZone;label: string;detail: string;ngn: 
 { id: 'other', label: 'Other states', detail: '3–6 working days after printing', ngn: 6000, days: [3, 6] }];
 
 
-export const nigerianStates = [
-'Abia', 'Adamawa', 'Akwa Ibom', 'Anambra', 'Bauchi', 'Bayelsa', 'Benue', 'Borno', 'Cross River', 'Delta', 'Ebonyi', 'Edo', 'Ekiti', 'Enugu', 'FCT (Abuja)', 'Gombe', 'Imo', 'Jigawa', 'Kaduna', 'Kano', 'Katsina', 'Kebbi', 'Kogi', 'Kwara', 'Lagos', 'Nasarawa', 'Niger', 'Ogun', 'Ondo', 'Osun', 'Oyo', 'Plateau', 'Rivers', 'Sokoto', 'Taraba', 'Yobe', 'Zamfara'];
-
+/** KUBICU's print partner is in Lagos, so prints ship within Nigeria only (D352: shared country table). */
+export const nigerianStates = countryInfo('NG').regions;
 
 /** Suggests the delivery zone from the state, so the fee matches where it's going. */
 export function zoneForState(state: string): DeliveryZone {

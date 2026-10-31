@@ -8,6 +8,7 @@ import { useOps } from '../../../contexts/OpsContext';
 import { useT } from '../../../contexts/LocaleContext';
 import { durationLabel } from '../../../utils/ops/slots';
 import { formatNgn } from '../../../utils/format';
+import { withSymbol } from '../../../utils/currency';
 import { TextInput } from '../../ui/TextInput';
 import { TextArea } from '../../ui/TextArea';
 import { SelectInput } from '../../ui/SelectInput';
@@ -92,7 +93,7 @@ export function BookingFields({ block, issues }: {block: BlockOf<'booking'>;issu
           <TextArea id={id('description')} label={tr('Description')} optional rows={2} value={c.description} onChange={(e) => set({ description: e.target.value }, 'description')} />
           <div className="grid grid-cols-2 gap-3">
             <TextInput id={id('duration')} label={tr('Duration')} optional placeholder={tr('45 min')} value={c.duration} onChange={(e) => set({ duration: e.target.value }, 'duration')} />
-            <TextInput id={id('price')} label={tr('Price note')} optional placeholder={tr('From ₦…')} value={c.priceNote} onChange={(e) => set({ priceNote: e.target.value }, 'priceNote')} />
+            <TextInput id={id('price')} label={tr('Price note')} optional placeholder={withSymbol(tr('From ₦…'))} value={c.priceNote} onChange={(e) => set({ priceNote: e.target.value }, 'priceNote')} />
           </div>
           <TextInput id={id('url')} label={tr('Booking link')} type="url" inputMode="url" placeholder="https://" value={c.url} error={err('url')} onChange={(e) => set({ url: e.target.value }, 'url')} />
           <TextInput id={id('cta')} label={tr('Button label')} value={c.ctaLabel} onChange={(e) => set({ ctaLabel: e.target.value }, 'ctaLabel')} />

@@ -37,6 +37,7 @@ import { emptyPartnerships, partnershipKey } from '../../utils/partnerships';
 import { bundleIssue } from '../../utils/commerce/bundles';
 import { useT } from '../../contexts/LocaleContext';
 import { shopSettingsOf } from '../../utils/commerce/shopSettings';
+import { formatMoney } from '../../utils/currency';
 
 interface ProductEditorProps {
   open: boolean;
@@ -220,7 +221,7 @@ export function ProductEditor({ open, productId, kind, onClose }: ProductEditorP
             </InlineAlert>
           }
 
-          <MobileSection id="prd-sec-details" title="Details" summary={[draft.name || tr('No name yet'), tr(draft.status === 'active' ? 'Active' : 'Draft'), draft.priceNgn !== null ? `₦${draft.priceNgn.toLocaleString('en-NG')}` : tr('No price')].join(' · ')} open={section === 'details'} onToggle={() => toggle('details')} invalid={!!nameError}>
+          <MobileSection id="prd-sec-details" title="Details" summary={[draft.name || tr('No name yet'), tr(draft.status === 'active' ? 'Active' : 'Draft'), draft.priceNgn !== null ? formatMoney(draft.priceNgn) : tr('No price')].join(' · ')} open={section === 'details'} onToggle={() => toggle('details')} invalid={!!nameError}>
           <Field id="prd-status" label="Status" hint={draft.status === 'draft' ? 'Drafts never appear on your page.' : 'Visible on any page block that links to it.'}>
             <Segmented
                 ariaLabel="Status"
@@ -284,7 +285,7 @@ export function ProductEditor({ open, productId, kind, onClose }: ProductEditorP
                 
                   {draft.madeToOrder &&
                 <div className="grid gap-4 sm:grid-cols-2">
-                      <Field id="prd-mto-pct" label="Deposit at checkout" hint={draft.priceNgn ? tr('{now} now, {later} before dispatch', { now: `₦${Math.round(draft.priceNgn * draft.madeToOrder.depositPct / 100).toLocaleString('en-NG')}`, later: `₦${(draft.priceNgn - Math.round(draft.priceNgn * draft.madeToOrder.depositPct / 100)).toLocaleString('en-NG')}` }) : 'Share of the price paid now.'}>
+                      <Field id="prd-mto-pct" label="Deposit at checkout" hint={draft.priceNgn ? tr('{now} now, {later} before dispatch', { now: formatMoney(Math.round(draft.priceNgn * draft.madeToOrder.depositPct / 100)), later: formatMoney(draft.priceNgn - Math.round(draft.priceNgn * draft.madeToOrder.depositPct / 100)) }) : 'Share of the price paid now.'}>
                         <select
                       id="prd-mto-pct"
                       className="h-10 w-full rounded-md border border-border-strong bg-surface px-3 text-body text-fg"

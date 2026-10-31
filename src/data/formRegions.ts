@@ -1,11 +1,8 @@
-/** Lists for the Country & state and Bank details form fields (D194). */
+import { countryInfo } from '../utils/country';
 
-export const nigerianStates = [
-'Abia', 'Adamawa', 'Akwa Ibom', 'Anambra', 'Bauchi', 'Bayelsa', 'Benue', 'Borno', 'Cross River', 'Delta',
-'Ebonyi', 'Edo', 'Ekiti', 'Enugu', 'FCT (Abuja)', 'Gombe', 'Imo', 'Jigawa', 'Kaduna', 'Kano',
-'Katsina', 'Kebbi', 'Kogi', 'Kwara', 'Lagos', 'Nasarawa', 'Niger', 'Ogun', 'Ondo', 'Osun',
-'Oyo', 'Plateau', 'Rivers', 'Sokoto', 'Taraba', 'Yobe', 'Zamfara'];
+/** Lists for the Country & state and Bank details form fields (D194). States and banks now come from `data/countries.ts` (D352). */
 
+export const nigerianStates = countryInfo('NG').regions;
 
 /** Nigeria first, then the countries KUBICU sellers most often ship to or hear from. */
 export const formCountries = [
@@ -14,7 +11,4 @@ export const formCountries = [
 'Italy', 'Spain', 'United Arab Emirates', 'Saudi Arabia', 'Qatar', 'China', 'India', 'Australia', 'Brazil', 'Other'];
 
 
-export const nigerianBanks = [
-'Access Bank', 'Citibank', 'Ecobank', 'Fidelity Bank', 'First Bank', 'FCMB', 'Globus Bank', 'GTBank', 'Heritage Bank', 'Jaiz Bank',
-'Keystone Bank', 'Kuda', 'Lotus Bank', 'Moniepoint', 'OPay', 'PalmPay', 'Parallex Bank', 'Polaris Bank', 'Providus Bank', 'Stanbic IBTC',
-'Standard Chartered', 'Sterling Bank', 'SunTrust Bank', 'Titan Trust Bank', 'Union Bank', 'UBA', 'Unity Bank', 'VFD Microfinance Bank', 'Wema Bank', 'Zenith Bank'];
+export const nigerianBanks = countryInfo('NG').banks;

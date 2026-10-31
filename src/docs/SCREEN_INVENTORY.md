@@ -3,6 +3,8 @@
 Status: ✅ Designed & interactive · 🟡 Partial · ⏳ Planned screen in place · ⬜ Not started
 Phase: MVP · CR (commerce-ready) · Later
 
+> **Update, 30 Oct 2026 (D343):** this table was written in the early batches. Screens added later are all built (✅) and listed with their routes in `docs/CLAUDE_HANDOFF.md` §6 — including the public pillars (`/features`, `/for/*`, `/marketplace/*`, `/tools/short-links`, `/features/audience-manager`, D268–D273), Short links as a core app screen (`/app/links`, `/app/links/:id`), Copilot (`/copilot`, `/copilot/chat`, `/copilot/whatsapp`, `/d/:id`, `/copilot/continue`, D262–D266) with sidebar chats (D284), spaces added in D178–D186 (event, fundraiser, pop-up, booking page, members area), Service OS, Proof of work, Deliveries, Collaborations, Voice-to-Store, Business Coach, and the language picker on every surface (D298–D299). Every screen has translation drafts (D280–D341).
+
 | Screen ID | Screen | Area | Primary user | Desktop / mobile | Entry point | Primary action | Key states | Dependencies | Phase | Status |
 |---|---|---|---|---|---|---|---|---|---|---|
 | DS-01 | Super admin → Design system `/admin/design-system` | Super admin | Platform design admin | Both | Super admin nav | Control workspace appearances (available / default), inspect tokens & components | Withdraw confirmation, default locked on, change history, all control states | — | MVP | ✅ |

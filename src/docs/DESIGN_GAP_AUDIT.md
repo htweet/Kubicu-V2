@@ -1,6 +1,6 @@
 # KUBICU — Design gap audit
 
-_Re-audited 24 Oct 2026 against the code, the decision register (through D149) and every doc in `docs/`. This file is the source of truth for what is still missing. The public roadmap (`data/roadmap.ts`) and the plan list (`data/planMatrix.ts`) follow it._
+_Latest re-audit 30 Oct 2026 (through D343) — see the newest note below and §7. Originally re-audited 24 Oct 2026 against the code, the decision register (through D149) and every doc in `docs/`. This file is the source of truth for what is still missing. The public roadmap (`data/roadmap.ts`) and the plan list (`data/planMatrix.ts`) follow it._
 
 **Status key:** ✅ built · 🟡 partial · ⬜ missing · 🧪 simulated by design (real work needs engineering or a partner) · 👤 waiting on founder/legal · ⚙ engineering-only (no screen to design)
 
@@ -43,6 +43,20 @@ _Re-audited 24 Oct 2026 against the code, the decision register (through D149) a
 > | Workspace dialogs as right-side sheets; Trust card score ring; Copilot phone mock; WhatsApp chat sheet layout | D272, D273 | ✅ |
 >
 > **Buildable gaps after this audit:** none from that document. Still open: translations of the remaining screens (owner's choice), partners (§4), hands-on checks (§7) and sign-off (§5).
+
+> **Re-audit, 30 Oct 2026 (D274–D343).**
+>
+> | Area | Decisions | Status |
+> |---|---|---|
+> | Translation of the whole product: settings, account, automations, forms, analytics, domains & QR, IntentFlow, opportunities, collaborations, deliveries, every canvas panel and block, the public website, Copilot | D280–D340 | ✅ drafts · 👤 native-speaker review (Group D) |
+> | Sentences built from names and amounts translate via patterns | D341 | ✅ |
+> | Copilot chats in the sidebar (Pinned, Recent, See all chats) and the All chats panel; rollback to original behaviour | D284, D290 | ✅ · pin icon rebuilt from notes |
+> | Language picker in every surface | D298, D299 | ✅ · seller pages use the themed visitor menu |
+> | Visitor form messages in the visitor's language; block and help search in the screen language | D344 | ✅ 👤 drafts and glossary need review |
+> | AI FAQ assistant block, Voice to content, Composition copy/hierarchy checks, block search in screen language, translated rule badge | D342 | ✅ 🧪 rule-based matching, browser speech |
+> | Website/WhatsApp short-link clicks in campaign stats; hand-filled source and permission for older contacts | D343 | ✅ |
+>
+> **Buildable gaps after this audit:** the small items in §7. Everything else is partners (§4), hands-on checks (§7) or sign-off (§5).
 
 ---
 
@@ -187,6 +201,9 @@ _Re-audited 24 Oct 2026 against the code, the decision register (through D149) a
 
 **Still true after the 29 Oct re-audit (D273):** the same — translations only. Add to §4 (partners): a real phishing/URL screening service, server-side short-link click counting and bot filtering, and real Mailchimp/Brevo/Sheets syncing. Add to the hands-on list: the mega menu with a screen reader and keyboard only, the phone menu at 320 px, the Creators page tabs with VoiceOver/TalkBack, side sheets at 200% zoom, and long Marketplace results on a low-end Android.
 
+**Still true after the 30 Oct re-audit (D343):** the translation list under "Partly built" is **done** — every screen in the app, canvas, website and Copilot now has drafts (D280–D341), so translations move to sign-off (§5, Group D). Also closed: AI FAQ assistant and Voice to content are built (D342, no longer "Planned"); Composition checks for copy and hierarchy (D342); block search and the rule badge in the screen language (D342); website/WhatsApp short-link clicks counted in campaign stats (D343); older contacts' source and permission can be filled in by hand (D343).
+Small buildable items left (form messages, block search and help search closed in D344; the seller language switch was already themed): Marketplace listings without a draft are English; Copilot understands typed answers only in English and the WhatsApp demo isn't translated. Add to the hands-on list: nothing from D280–D343 has been opened in a browser; all Copilot screens at 320 px / 200%; screen-reader pronunciation of Yorùbá, Hausa and Igbo accents; long-language labels for wrapping. The full current list is `docs/CLAUDE_HANDOFF.md` §17.
+
 **Waiting on partners:** see §4.
 
 **Hands-on:** G16 visual review at 320 px / 200%; real-phone screen readers (seat map, print ordering, @mentions, print designs, partner panel, Sold with a partner, guest partner page, check-in result card and doors panel, buyer tracking page, bank-transfer order page, USSD flow); axe-core and status-colour contrast run, including the tracking "problem" orange on dark custom themes; embeds from each of the 11 sites at 320 px.
@@ -197,4 +214,5 @@ _Re-audited 24 Oct 2026 against the code, the decision register (through D149) a
 - Batch 13 complete (D135–D138): docs reconciliation, staff editing tools, workspace currency, USSD, watermarks, calendar sync, live automations, seven industry page sets, multiple workspaces, checks.
 - 26 Oct 2026 re-audit (D212): libraries, block ecosystem, spaces, selling, forms, providers, demo data and the AI assistant recorded; drag-into-container and Delivery & returns confirmed closed (D180, D181, D191).
 - 29 Oct 2026 re-audit (D268–D273): public pillars, Marketplace, Short Links and Audience Manager recorded; the traceability matrix gained an "LP" section for them.
+- 30 Oct 2026 re-audit (D343): translation pass (D280–D341), D342 canvas gaps and D343 website gaps recorded; remaining items listed in §7 and in `docs/CLAUDE_HANDOFF.md` §17.
 - Earlier versions of this file: 22 Oct 2026; updates after Forms, the account area, Batch 8, Batch 11 and 23 Oct 2026.

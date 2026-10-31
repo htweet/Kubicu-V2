@@ -15,6 +15,8 @@ export interface MenuItem {
   disabled?: boolean;
   reason?: string;
   destructive?: boolean;
+  /** Small heading shown above this item, to group a long list (e.g. languages by country). */
+  groupLabel?: string;
 }
 interface MenuProps {
   trigger: (props: {
@@ -147,17 +149,22 @@ export function Menu({
             {header && <div className="border-b border-line px-2.5 pb-2 pt-1.5">{header}</div>}
             {items.map((item, i) => {
           const Icon = item.icon;
-          return <button key={item.id} ref={(el) => itemRefs.current[i] = el} role="menuitem" type="button" disabled={item.disabled} onKeyDown={(e) => onItemKey(e, i)} onClick={() => {
-            item.onSelect?.();
-            setOpen(false);
-          }} className={cn('flex w-full items-start gap-2.5 rounded-sm px-2.5 py-2 text-left text-label', 'transition-colors duration-100 focus-visible:bg-sunken focus-visible:outline-none', item.disabled ? 'cursor-not-allowed text-fg-subtle' : 'hover:bg-sunken', item.destructive && !item.disabled ? 'text-danger' : !item.disabled && 'text-fg')}>
+          return <React.Fragment key={item.id}>
+              {item.groupLabel && <p role="presentation" className={cn('px-2.5 pb-1 text-caption font-semibold text-fg-subtle', i === 0 ? 'pt-1.5' : 'mt-1 border-t border-line pt-2.5')}>
+                  {item.groupLabel}
+                </p>}
+              <button ref={(el) => itemRefs.current[i] = el} role="menuitem" type="button" disabled={item.disabled} onKeyDown={(e) => onItemKey(e, i)} onClick={() => {
+              item.onSelect?.();
+              setOpen(false);
+            }} className={cn('flex w-full items-start gap-2.5 rounded-sm px-2.5 py-2 text-left text-label', 'transition-colors duration-100 focus-visible:bg-sunken focus-visible:outline-none', item.disabled ? 'cursor-not-allowed text-fg-subtle' : 'hover:bg-sunken', item.destructive && !item.disabled ? 'text-danger' : !item.disabled && 'text-fg')}>
                   {item.leading ? <span className="mt-px shrink-0">{item.leading}</span> : Icon && <Icon size={15} className="mt-px shrink-0" aria-hidden />}
                   <span className="min-w-0 flex-1">
                     <span className="block">{item.label}</span>
                     {item.reason && <span className="mt-0.5 block text-caption text-fg-subtle">{item.reason}</span>}
                   </span>
                   {item.selected && <CheckIcon size={15} strokeWidth={2.5} className="mt-px shrink-0 text-action" aria-label="Selected" />}
-                </button>;
+                </button>
+            </React.Fragment>;
         })}
           </motion.div>}
       </AnimatePresence>

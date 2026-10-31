@@ -2,6 +2,7 @@ import type { PageDocument } from '../types/page';
 import type { CommerceData } from '../types/commerce';
 import type { Service } from '../types/ops';
 import { publicUrl } from './format';
+import { activeCurrency } from './currency';
 import { sitePages } from './sitePages';
 import { canSell, isSoldOut } from './commerce/catalog';
 import { productSlug, STOREFRONT_PATH, storefrontAvailable } from './commerce/storefront';
@@ -76,7 +77,7 @@ export function structuredData(doc: PageDocument, commerce: CommerceData | null,
       name: p.name,
       image: p.images[0]?.url || undefined,
       description: p.description ? p.description.slice(0, 160) : undefined,
-      offers: p.priceNgn !== null ? { '@type': 'Offer', price: p.priceNgn, priceCurrency: 'NGN', availability: isSoldOut(p) ? 'OutOfStock' : 'InStock' } : undefined
+      offers: p.priceNgn !== null ? { '@type': 'Offer', price: p.priceNgn, priceCurrency: activeCurrency(), availability: isSoldOut(p) ? 'OutOfStock' : 'InStock' } : undefined
     })
     );
     (commerce.events ?? []).
@@ -96,7 +97,7 @@ export function structuredData(doc: PageDocument, commerce: CommerceData | null,
   services.
   filter((s) => s.active && !s.sample).
   slice(0, 10).
-  forEach((s) => items.push({ '@type': 'Service', name: s.name, offers: s.priceNgn !== null ? { '@type': 'Offer', price: s.priceNgn, priceCurrency: 'NGN' } : undefined }));
+  forEach((s) => items.push({ '@type': 'Service', name: s.name, offers: s.priceNgn !== null ? { '@type': 'Offer', price: s.priceNgn, priceCurrency: activeCurrency() } : undefined }));
   return items;
 }
 

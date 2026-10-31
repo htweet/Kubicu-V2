@@ -13,7 +13,7 @@ export interface AccountProfile {
   bio: string;
 }
 
-export type LanguageId = 'en-NG' | 'en-GB' | 'pcm' | 'yo' | 'ha' | 'ig' | 'fr';
+export type LanguageId = 'en-NG' | 'en-GB' | 'pcm' | 'yo' | 'ha' | 'ig' | 'sw' | 'tw' | 'zu' | 'fr';
 export type DateFormatId = 'dmy' | 'mdy' | 'iso';
 export type StartPageId = 'overview' | 'spaces' | 'commerce' | 'canvas';
 export type TextSizeId = 'default' | 'large';

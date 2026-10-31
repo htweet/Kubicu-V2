@@ -3,9 +3,12 @@ import { ArrowDownIcon, ArrowUpIcon, CalculatorIcon } from 'lucide-react';
 import type { FormField } from '../../types/forms';
 import type { FormSkin } from './formSkin';
 import { BookingSlotInput } from './BookingSlotInput';
-import { formCountries, nigerianBanks, nigerianStates } from '../../data/formRegions';
+import { formCountries } from '../../data/formRegions';
+import { activeCountryInfo } from '../../utils/country';
+import { countries } from '../../data/countries';
 import { formatNgn } from '../../utils/format';
 import { announce } from '../../utils/announce';
+import { useT } from '../../contexts/LocaleContext';
 
 interface MoreFieldControlProps {
   field: FormField;
@@ -25,6 +28,7 @@ export const moreFieldTypes = ['ranking', 'grid', 'bookingSlot', 'bank', 'region
 
 /** Controls for Ranking, Grid, Booking time, Bank details, Country & state and Calculated total (D194). */
 export function MoreFieldControl({ field, value, onChange, skin, inert, id, labelId, describedBy, invalid, computed = 0 }: MoreFieldControlProps) {
+  const { t: tr } = useT();
   const list = Array.isArray(value) ? value : [];
   const tab = inert ? -1 : undefined;
   const inputCls = 'h-11 w-full min-w-0 px-3.5 text-[14.5px] outline-none focus:ring-2';
@@ -79,7 +83,7 @@ export function MoreFieldControl({ field, value, onChange, skin, inert, id, labe
           </ol>
           {list.length === 0 ?
             <button type="button" disabled={inert} tabIndex={tab} onClick={() => onChange(items)} className="min-h-[36px] self-start text-[13px] font-medium underline" style={{ color: skin.text }}>
-              This order is right
+              {tr('This order is right')}
             </button> :
 
             <p className="text-[12px]" style={{ color: skin.muted }} role="status">
@@ -124,6 +128,8 @@ export function MoreFieldControl({ field, value, onChange, skin, inert, id, labe
 
     case 'region':{
         const [country = '', state = ''] = list;
+        // Nigeria, Kenya, Ghana and South Africa get a pick-list with the right name for it (D352).
+        const known = countries.find((c) => c.name === country);
         return (
           <div role="group" aria-labelledby={labelId} className="grid gap-3 sm:grid-cols-2">
           <div className="flex min-w-0 flex-col gap-1">
@@ -136,11 +142,11 @@ export function MoreFieldControl({ field, value, onChange, skin, inert, id, labe
             </select>
           </div>
           <div className="flex min-w-0 flex-col gap-1">
-            {sub(`${id}-state`, country === 'Nigeria' ? 'State' : 'State or region')}
-            {country === 'Nigeria' ?
+            {sub(`${id}-state`, known ? known.regionLabel : 'State or region')}
+            {known ?
               <select id={`${id}-state`} {...common} value={state} onChange={(e) => onChange([country, e.target.value])} className={inputCls}>
                 <option value="">Choose…</option>
-                {nigerianStates.map((s) =>
+                {known.regions.map((s) =>
                 <option key={s}>{s}</option>
                 )}
               </select> :
@@ -161,14 +167,14 @@ export function MoreFieldControl({ field, value, onChange, skin, inert, id, labe
               {sub(id, 'Bank')}
               <select id={id} {...common} value={bank} onChange={(e) => onChange([e.target.value, acct, holder])} className={inputCls}>
                 <option value="">Choose…</option>
-                {nigerianBanks.map((b) =>
+                {activeCountryInfo().banks.map((b) =>
                   <option key={b}>{b}</option>
                   )}
               </select>
             </div>
             <div className="flex min-w-0 flex-col gap-1">
-              {sub(`${id}-acct`, 'Account number (10 digits)')}
-              <input id={`${id}-acct`} {...common} inputMode="numeric" autoComplete="off" maxLength={10} value={acct} onChange={(e) => onChange([bank, e.target.value.replace(/\D/g, '').slice(0, 10), holder])} className={`${inputCls} tabular-nums`} />
+              {sub(`${id}-acct`, activeCountryInfo().code === 'NG' ? 'Account number (10 digits)' : 'Account number')}
+              <input id={`${id}-acct`} {...common} inputMode="numeric" autoComplete="off" maxLength={activeCountryInfo().accountNumber.max} value={acct} onChange={(e) => onChange([bank, e.target.value.replace(/\D/g, '').slice(0, activeCountryInfo().accountNumber.max), holder])} className={`${inputCls} tabular-nums`} />
             </div>
           </div>
           <div className="flex min-w-0 flex-col gap-1">

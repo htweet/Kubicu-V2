@@ -9,6 +9,7 @@ import { useTeam } from '../../contexts/TeamContext';
 import { addCompTicket, checkedInCount, eventHeld, eventSold, eventTickets, eventTotalSeats, findEvent, setCheckedIn, ticketStatus, ticketStatusLabel, type TicketRef, type TicketStatus } from '../../utils/commerce/tickets';
 import { formatEventDate, formatEventTime } from '../../utils/eventTime';
 import { downloadCsv, toCsv } from '../../utils/csv';
+import { withSymbol } from '../../utils/currency';
 import { PageHeader } from '../../components/shell/PageHeader';
 import { Button } from '../../components/ui/Button';
 import { IconButton } from '../../components/ui/IconButton';
@@ -19,6 +20,7 @@ import { SelectInput } from '../../components/ui/SelectInput';
 import { DataTable, type DataColumn } from '../../components/ui/DataTable';
 import { Dialog } from '../../components/ui/Dialog';
 import { TextInput } from '../../components/ui/TextInput';
+import { PhoneInput } from '../../components/ui/PhoneInput';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { SampleTag } from '../../components/commerce/StatusBadges';
 import { Stat, StatGroup } from '../../components/ui/layout/Stat';
@@ -258,7 +260,7 @@ function AddGuestDialog({ open, event: ev, onClose }: {open: boolean;event: Comm
     if (problem) return setError(problem);
     if (!ok) return;
     team.log('commerce', `added ${qty} complimentary ticket${qty === 1 ? '' : 's'} for ${form.name.trim()} to ${ev.name}`, `/app/commerce/events/${ev.id}/guests`);
-    toast.success(`${form.name.trim()} added`, { description: 'A ₦0 order was created so seats and check-in stay accurate.' });
+    toast.success(`${form.name.trim()} added`, { description: withSymbol('A ₦0 order was created so seats and check-in stay accurate.') });
     setForm({ name: '', phone: '', email: '', type: ev.ticketTypes[0]?.id ?? '', qty: '1' });
     setError('');
     onClose();
@@ -282,7 +284,7 @@ function AddGuestDialog({ open, event: ev, onClose }: {open: boolean;event: Comm
       <div className="flex flex-col gap-4">
         <TextInput id="ag-name" label="Name" value={form.name} error={error && !form.name.trim() ? error : undefined} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} />
         <div className="grid gap-4 sm:grid-cols-2">
-          <TextInput id="ag-phone" label="Phone" optional type="tel" value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} />
+          <PhoneInput id="ag-phone" label="Phone" optional value={form.phone} onChange={(phone) => setForm((f) => ({ ...f, phone }))} />
           <TextInput id="ag-email" label="Email" optional type="email" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} />
         </div>
         <div className="grid grid-cols-[minmax(0,1fr)_96px] gap-4">

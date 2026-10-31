@@ -1,6 +1,7 @@
 import React from 'react';
 import { Area, CartesianGrid, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { formatNgn } from '../../../utils/format';
+import { formatShortMoney } from '../../../utils/currency';
 
 interface Point {
   label: string;
@@ -8,7 +9,7 @@ interface Point {
   previous?: number;
 }
 
-const short = (n: number) => n >= 1_000_000 ? `₦${(n / 1_000_000).toFixed(1)}m` : n >= 1000 ? `₦${Math.round(n / 1000)}k` : `₦${n}`;
+const short = (n: number) => formatShortMoney(n);
 
 /** Money received over time, previous period dashed (D227). */
 export function IncomeChart({ data, compare, summary }: {data: Point[];compare: boolean;summary: string;}) {

@@ -3,6 +3,7 @@ import type { Product } from '../types/commerce';
 import { readCommerce } from './commerce/storage';
 import { shopProducts } from './commerce/storefront';
 import { priceRange } from './commerce/catalog';
+import { formatMoney } from './currency';
 
 /** Shared storefronts (D128). Stored once for the device so any member's view and the public page agree. */
 export const SHARED_SHOPS_KEY = 'kubicu.sharedShops';
@@ -71,7 +72,7 @@ export interface ShopItem {
   sample: boolean;
 }
 
-const naira = (n: number) => `₦${n.toLocaleString('en-NG')}`;
+const naira = (n: number) => formatMoney(n);
 
 /** What a joined member shows: their real active shop products, or labelled sample cards. */
 export function memberItems(m: SharedShopMember): ShopItem[] {

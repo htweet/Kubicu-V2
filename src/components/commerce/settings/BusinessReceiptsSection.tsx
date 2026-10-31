@@ -2,6 +2,7 @@ import React from 'react';
 import { useShopSection } from '../../../hooks/useShopSection';
 import { useWorkspace } from '../../../contexts/WorkspaceContext';
 import { TextInput } from '../../ui/TextInput';
+import { PhoneInput } from '../../ui/PhoneInput';
 import { TextArea } from '../../ui/TextArea';
 import { MediaPicker } from '../../media/MediaPicker';
 import { MediaImage } from '../../media/MediaImage';
@@ -31,7 +32,7 @@ export function BusinessReceiptsSection() {
           </div>
           <TextInput id="biz-reg" label="CAC number" optional placeholder="e.g. RC 1234567 or BN 1234567" value={b.regNumber} onChange={(e) => s.patch({ regNumber: e.target.value.slice(0, 20) })} />
           <TextInput id="biz-tin" label="Tax ID (TIN)" optional inputMode="numeric" value={b.tin} onChange={(e) => s.patch({ tin: e.target.value.replace(/[^\d-]/g, '').slice(0, 15) })} />
-          <TextInput id="biz-phone" label="Support phone" optional type="tel" inputMode="tel" placeholder="+234 …" value={b.phone} onChange={(e) => s.patch({ phone: e.target.value })} />
+          <PhoneInput id="biz-phone" label="Support phone" optional value={b.phone} onChange={(phone) => s.patch({ phone })} />
           <TextInput id="biz-email" label="Support email" optional type="email" inputMode="email" value={b.email} error={emailError || undefined} onChange={(e) => s.patch({ email: e.target.value })} />
           <div className="sm:col-span-2">
             <MediaPicker id="biz-logo" label="Receipt logo" optional aspect="1:1" folder="brand" value={b.logoUrl} onChange={(logoUrl) => s.patch({ logoUrl })} />

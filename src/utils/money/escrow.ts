@@ -5,6 +5,7 @@ import { readCommerce, writeCommerceExternal as writeCommerce } from '../commerc
 import { refundOrder, setOrderStatus } from '../commerce/ops';
 import { refundableNgn } from '../commerce/money';
 import { uid } from '../id';
+import { formatMoney } from '../currency';
 
 /** Escrow lifecycle (D94): hold → delivered → inspection → release, with buyer disputes and staff decisions. */
 
@@ -82,7 +83,7 @@ export function caseSummary(c: EscrowCase): string {
     case 'escalated':
       return `KUBICU is reviewing both sides and aims to decide within ${DECIDE_HOURS / 24} days. The money stays reserved until then.`;
     case 'closed':
-      return c.outcome === 'released' ? `Released to the seller · ${c.releaseReason ? releaseLabels[c.releaseReason] : ''}` : c.outcome === 'refunded' ? 'Refunded to the buyer in full.' : `Partly refunded (₦${(c.refundedNgn ?? 0).toLocaleString('en-NG')}); the rest released to the seller.`;
+      return c.outcome === 'released' ? `Released to the seller · ${c.releaseReason ? releaseLabels[c.releaseReason] : ''}` : c.outcome === 'refunded' ? 'Refunded to the buyer in full.' : `Partly refunded (${formatMoney(c.refundedNgn ?? 0)}); the rest released to the seller.`;
   }
 }
 
@@ -181,7 +182,7 @@ export function sellerRespond(workspaceId: string, d: MoneyData, caseId: string,
   const withResponse = patch(d, caseId, (x) => ({
     ...x,
     dispute: x.dispute && { ...x.dispute, response },
-    events: [ev(input.kind === 'full_refund' ? 'Seller agreed to a full refund' : input.kind === 'partial' ? `Seller offered a partial refund of ₦${(input.partialNgn ?? 0).toLocaleString('en-NG')}` : 'Seller disagreed and shared their side', 'seller'), ...x.events]
+    events: [ev(input.kind === 'full_refund' ? 'Seller agreed to a full refund' : input.kind === 'partial' ? `Seller offered a partial refund of ${formatMoney(input.partialNgn ?? 0)}` : 'Seller disagreed and shared their side', 'seller'), ...x.events]
   }));
   if (input.kind === 'full_refund') return refundCase(workspaceId, withResponse, caseId, Number.MAX_SAFE_INTEGER, 'Escrow — seller agreed to refund', 'seller');
   return withResponse;
@@ -244,7 +245,7 @@ export function refundCase(workspaceId: string, d: MoneyData, caseId: string, am
     ...d,
     escrow: d.escrow.map((x) =>
     x.id === caseId ?
-    { ...x, stage: 'closed', outcome: full ? 'refunded' : 'partial', refundedNgn: amount, closedAt: at, releaseReason: full ? undefined : by === 'staff' ? 'staff' : undefined, events: [ev(full ? `Refunded to the buyer in full — ₦${amount.toLocaleString('en-NG')}` : `Refunded ₦${amount.toLocaleString('en-NG')} to the buyer; the rest released to the seller`, by, at), ...x.events] } :
+    { ...x, stage: 'closed', outcome: full ? 'refunded' : 'partial', refundedNgn: amount, closedAt: at, releaseReason: full ? undefined : by === 'staff' ? 'staff' : undefined, events: [ev(full ? `Refunded to the buyer in full — ${formatMoney(amount)}` : `Refunded ${formatMoney(amount)} to the buyer; the rest released to the seller`, by, at), ...x.events] } :
     x
     ),
     ledger: [...(entry ? [entry] : []), ...moveLedger(d.ledger, c.orderId, 'available')],

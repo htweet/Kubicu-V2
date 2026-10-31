@@ -1,6 +1,7 @@
 import type { CommerceData, Discount, Order } from '../types/commerce';
 import { isPaidOrder } from './commerce/salesReport';
 import { uid } from './id';
+import { formatMoney } from './currency';
 
 /**
  * Loyalty points (D232). Nothing is stored separately: points are worked out from paid orders since the
@@ -56,7 +57,7 @@ export function redeemPoints(data: CommerceData, phone: string, since: string): 
     id: uid('disc'),
     kind: 'code',
     code,
-    title: `Loyalty points — ₦${REDEEM_NGN} off`,
+    title: `Loyalty points — ${formatMoney(REDEEM_NGN)} off`,
     value: { type: 'fixed', amountNgn: REDEEM_NGN },
     appliesTo: { scope: 'all' },
     minSubtotalNgn: null,

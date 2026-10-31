@@ -75,6 +75,7 @@ export function cloneBlock(block: Block): Block {
   if (copy.type === 'poll') copy.content.options = copy.content.options.map((o) => ({ ...o, id: uid('po') }));
   if (copy.type === 'smartButton') copy.content.rules = copy.content.rules.map((r) => ({ ...r, id: uid('sr') }));
   if (copy.type === 'recommendations') copy.content.items = copy.content.items.map((i) => ({ ...i, id: uid('rec') }));
+  if (copy.type === 'faqAssistant') copy.content.facts = copy.content.facts.map((f) => ({ ...f, id: uid('fact') }));
   if (copy.type === 'menu')
   copy.content.categories = copy.content.categories.map((cat) => ({
     ...cat,
@@ -268,6 +269,10 @@ export function summarizeBlock(block: Block): string {
       return `${block.content.items.length} pick${block.content.items.length === 1 ? '' : 's'}`;
     case 'backToTop':
       return block.content.label || 'Back to top';
+    case 'faqAssistant':{
+        const n = block.content.facts.filter((f) => f.question.trim() && f.answer.trim()).length;
+        return n ? `${n} approved answer${n === 1 ? '' : 's'}` : 'No approved answers yet';
+      }
     default:
       return '';
   }
