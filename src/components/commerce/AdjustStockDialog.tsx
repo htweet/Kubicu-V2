@@ -11,6 +11,7 @@ import { Segmented } from '../ui/Segmented';
 import { Field } from '../ui/Field';
 import { TextInput } from '../ui/TextInput';
 import { SelectInput } from '../ui/SelectInput';
+import { useT } from '../../contexts/LocaleContext';
 
 type Mode = 'received' | 'correction' | 'damaged';
 
@@ -26,6 +27,7 @@ interface AdjustStockDialogProps {
 /** Receive new stock, correct a count or write off damage — always with a reason. */
 export function AdjustStockDialog({ product, variantId, initialMode, initialBatchId, onClose }: AdjustStockDialogProps) {
   const { apply } = useCommerce();
+  const { t: tr } = useT();
   const [mode, setMode] = useState<Mode>('received');
   const [vid, setVid] = useState('');
   const [amount, setAmount] = useState('');
@@ -57,7 +59,7 @@ export function AdjustStockDialog({ product, variantId, initialMode, initialBatc
   const delta = !variant ? 0 : mode === 'received' ? n : mode === 'damaged' ? -Math.min(n, cap) : n - variant.stock;
   const after = variant ? Math.max(0, variant.stock + delta) : 0;
   const reasonNeeded = mode !== 'received' && !note.trim();
-  const expiryError = mode === 'received' && expiresOn && expiresOn < todayIso() ? 'This date has passed — check the label' : undefined;
+  const expiryError = mode === 'received' && expiresOn && expiresOn < todayIso() ? tr('This date has passed — check the label') : undefined;
 
   const save = () => {
     setTried(true);
@@ -123,18 +125,24 @@ export function AdjustStockDialog({ product, variantId, initialMode, initialBatc
         
           {mode === 'received' &&
         <div className="grid gap-4 sm:grid-cols-2">
-              <TextInput id="adj-lot" label="Batch or lot number" optional placeholder="e.g. L2611-04" value={lot} onChange={(e) => setLot(e.target.value.slice(0, 30))} />
-              <TextInput id="adj-expiry" label="Expiry date" optional type="date" min={todayIso()} value={expiresOn} error={tried ? expiryError : undefined} onChange={(e) => setExpiresOn(e.target.value)} />
+              <TextInput id="adj-lot" label={tr('Batch or lot number')} optional placeholder="L2611-04" value={lot} onChange={(e) => setLot(e.target.value.slice(0, 30))} />
+              <TextInput id="adj-expiry" label={tr('Expiry date')} optional type="date" min={todayIso()} value={expiresOn} error={tried ? expiryError : undefined} onChange={(e) => setExpiresOn(e.target.value)} />
             </div>
         }
-          {mode === 'received' && <p className="-mt-2 text-caption text-fg-subtle">For food, cosmetics and medicines. Sales use the batch that expires soonest first.</p>}
+          {mode === 'received' && <p className="-mt-2 text-caption text-fg-subtle">{tr('For food, cosmetics and medicines. Sales use the batch that expires soonest first.')}</p>}
           {mode === 'damaged' && batches.length > 0 &&
         <SelectInput
           id="adj-batch"
-          label="Which batch?"
+          label={tr('Which batch?')}
           value={batchId}
           onChange={setBatchId}
-          options={[{ value: '', label: 'Soonest to expire first' }, ...batches.map((b) => ({ value: b.id, label: `${b.code || 'No batch number'}${b.expiresOn ? ` · expires ${formatExpiry(b.expiresOn)}` : ''} · ${b.qty} units` }))]} />
+          options={[
+          { value: '', label: tr('Soonest to expire first') },
+          ...batches.map((b) => ({
+            value: b.id,
+            label: [b.code || tr('No batch number'), b.expiresOn ? tr('Expires {date}', { date: formatExpiry(b.expiresOn) }) : '', tr('Units: {n}', { n: b.qty })].filter(Boolean).join(' · ')
+          }))]
+          } />
 
         }
           <TextInput

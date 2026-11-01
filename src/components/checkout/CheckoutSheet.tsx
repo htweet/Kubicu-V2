@@ -22,6 +22,7 @@ import { PageOverlay } from '../blocks/PageOverlay';
 import { buttonRadius, cardStyle, mix } from '../blocks/pageStyle';
 import { CheckoutHeading, PrimaryButton, SecondaryButton, SheetActions, StepDots, TermsUpdatedNote, TestModeNote, ThemedField } from './checkoutUi';
 import { canSell, variantLabel, variantPrice } from '../../utils/commerce/catalog';
+import { expiryState, formatExpiry } from '../../utils/commerce/batches';
 import { placeOrder } from '../../utils/commerce/ops';
 import { cartBalanceNgn, isMadeToOrder } from '../../utils/commerce/deposit';
 import { instalmentCheck, payOptionsOf, podCheck, schedule } from '../../utils/commerce/payOptions';
@@ -467,8 +468,16 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
                     className="flex h-14 w-full items-center justify-between gap-3 px-4 text-left text-[15px] font-medium disabled:cursor-not-allowed disabled:opacity-50"
                     style={cardStyle(theme)}>
                     
-                    <span>{variantLabel(v)}</span>
-                    <span className="text-[14px] tabular-nums" style={muted}>
+                    <span className="flex min-w-0 flex-col">
+                      <span className="truncate">{variantLabel(v)}</span>
+                      {/* Expiry of the batch this order will come from — sales use the soonest-expiring one (D476). */}
+                      {available && choosingProduct.trackStock && expiryState(v).next?.expiresOn &&
+                      <span className="text-[12px] font-normal" style={muted}>
+                          Best before {formatExpiry(expiryState(v).next?.expiresOn ?? '')}
+                        </span>
+                      }
+                    </span>
+                    <span className="shrink-0 text-[14px] tabular-nums" style={muted}>
                       {!available ? ticketIssue || 'Sold out' : price === null ? 'Price on request' : price === 0 && choosingProduct.kind === 'ticket' ? 'Free' : formatNgn(price)}
                       {available && choosingProduct.trackStock && v.stock <= choosingProduct.lowStockAt ? ` · ${v.stock} left` : ''}
                     </span>

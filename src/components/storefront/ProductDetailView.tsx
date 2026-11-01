@@ -10,6 +10,7 @@ import { buttonRadius, buttonStyle, fontsFor, mix } from '../blocks/pageStyle';
 import { useCart } from '../../contexts/CartContext';
 import { useRecentlyViewed } from '../../hooks/useShopMemory';
 import { canSell, isSoldOut, priceRange, variantLabel, variantPrice } from '../../utils/commerce/catalog';
+import { expiryState, formatExpiry } from '../../utils/commerce/batches';
 import { matchVariant, shopProducts, storefrontConfig, valueAvailable } from '../../utils/commerce/storefront';
 import { formatNgn, whatsappLink } from '../../utils/format';
 import { isValidPhone } from '../../utils/validation';
@@ -235,6 +236,8 @@ export function ProductDetailView({ theme, data, product, ordering, whatsappPhon
       tried && missing.length ?
       `Choose ${missing.map((m) => m.name.toLowerCase()).join(' and ')}.` :
       `Choose ${missing.map((m) => m.name.toLowerCase()).join(' and ')} to see availability.`}
+        {/* The batch a buyer receives is the one that expires soonest (D476). */}
+        {variant && available && product.trackStock && expiryState(variant).next?.expiresOn && ` Best before ${formatExpiry(expiryState(variant).next?.expiresOn ?? '')}.`}
       </p>
 
       <div ref={ctaRef} className="flex flex-col gap-2.5">
