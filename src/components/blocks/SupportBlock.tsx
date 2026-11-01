@@ -8,7 +8,9 @@ import { usePageOpsContext } from '../../contexts/PageOpsContext';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
 import { linkView, readMoney } from '../../utils/money/store';
 import { formatNgn } from '../../utils/format';
+import { useT } from '../../contexts/LocaleContext';
 
+/** English wording; the block translates it for visitors (D503). */
 export const supportWordingLabels = {
   support: { cta: 'Support', verb: 'Send support' },
   donate: { cta: 'Donate', verb: 'Donate' },
@@ -20,6 +22,7 @@ export const supportWordingLabels = {
  * filled in; "Other amount" opens it empty. Payment rules (wallet, escrow) follow Payment links.
  */
 export function SupportBlock({ block, theme: t, mode }: BlockProps<'support'>) {
+  const { t: tr } = useT();
   const c = block.content;
   const { handle } = useParams();
   const pageOps = usePageOpsContext();
@@ -44,7 +47,7 @@ export function SupportBlock({ block, theme: t, mode }: BlockProps<'support'>) {
     { background: t.accent, color: t.accentText, borderRadius: buttonRadius(t) } :
     { background: t.surface, color: t.text, border: `1px solid ${mix(t.text, 18)}`, borderRadius: buttonRadius(t) };
     const url = href(amount);
-    const label = amount ? `${words.verb} of ${formatNgn(amount)}` : `${words.verb} — choose your own amount`;
+    const label = amount ? `${tr(words.verb)}: ${formatNgn(amount)}` : `${tr(words.verb)} — ${tr('choose your own amount')}`;
     return url ?
     <a href={url} className={btn} style={style} aria-label={label}>{children}</a> :
 
@@ -55,7 +58,7 @@ export function SupportBlock({ block, theme: t, mode }: BlockProps<'support'>) {
   return (
     <article className="flex flex-col gap-4 p-5" style={cardStyle(t)}>
       <div className="flex flex-col gap-1.5" style={{ textAlign: block.style.align }}>
-        <h3 className="text-[19px] font-medium leading-snug" style={{ fontFamily: fontsFor(t).display, color: t.text }}>{c.title || words.verb}</h3>
+        <h3 className="text-[19px] font-medium leading-snug" style={{ fontFamily: fontsFor(t).display, color: t.text }}>{c.title || tr(words.verb)}</h3>
         {c.intro && <p className="whitespace-pre-line text-[14px] leading-relaxed" style={{ color: t.mutedText }}>{c.intro}</p>}
       </div>
       {amounts.length > 0 &&
@@ -67,12 +70,16 @@ export function SupportBlock({ block, theme: t, mode }: BlockProps<'support'>) {
         )}
         </div>
       }
-      {c.allowOther && <Action primary={amounts.length === 0}>{amounts.length ? 'Other amount' : `${words.cta} any amount`}</Action>}
+      {c.allowOther && <Action primary={amounts.length === 0}>{amounts.length ? tr('Other amount') : `${tr(words.cta)} · ${tr('any amount')}`}</Action>}
       <p className="flex items-start justify-center gap-1.5 text-center text-[11.5px] leading-snug" style={{ color: t.mutedText }}>
         <ShieldCheckIcon size={12} className="mt-0.5 shrink-0" aria-hidden />
-        <span>Paid securely by card or transfer, from {formatNgn(c.minNgn)}. This is a payment to {c.wording === 'donate' ? 'this page’s owner' : 'the seller'}, not a tax-deductible donation.</span>
+        <span>
+          {c.wording === 'donate' ?
+          tr('Paid securely by card or transfer, from {min}. This is a payment to this page’s owner, not a tax-deductible donation.', { min: formatNgn(c.minNgn) }) :
+          tr('Paid securely by card or transfer, from {min}. This is a payment to the seller, not a tax-deductible donation.', { min: formatNgn(c.minNgn) })}
+        </span>
       </p>
-      {mode === 'edit' && closed && <p className="text-center text-[12px] font-medium" style={{ color: t.mutedText }}>The payment link is paused or closed — visitors won’t see this block.</p>}
+      {mode === 'edit' && closed && <p className="text-center text-[12px] font-medium" style={{ color: t.mutedText }}>{tr('The payment link is paused or closed — visitors won’t see this block.')}</p>}
     </article>);
 
 }

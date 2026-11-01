@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { CalendarIcon, ChevronLeftIcon, ChevronRightIcon, PlusIcon, SparklesIcon } from 'lucide-react';
+import { CalendarIcon, ChevronLeftIcon, ChevronRightIcon, DownloadIcon, PlusIcon, SparklesIcon } from 'lucide-react';
+import { downloadCsv, toCsv } from '../../utils/csv';
 import type { Booking } from '../../types/ops';
 import { useOps } from '../../contexts/OpsContext';
 import { PageHeader } from '../../components/shell/PageHeader';
@@ -144,9 +145,14 @@ export function Schedule() {
         title="Schedule"
         description={tr('{n} upcoming · times in {tz}', { n: upcoming.length, tz })}
         actions={
-        <Button variant="secondary" leadingIcon={PlusIcon} onClick={() => navigate('/app/bookings/services?new=1')}>
-            Add service
-          </Button>
+        <>
+            <Button variant="secondary" leadingIcon={DownloadIcon} onClick={() => exportBookings(sorted, staff)}>
+              Download CSV
+            </Button>
+            <Button variant="secondary" leadingIcon={PlusIcon} onClick={() => navigate('/app/bookings/services?new=1')}>
+              Add service
+            </Button>
+          </>
         } />
       
       <BookingsPlanNote />
@@ -342,4 +348,32 @@ export function Schedule() {
       <BookingDetail bookingId={openId} onClose={() => setParams({})} />
     </>);
 
+}
+
+/**
+ * Bookings as a spreadsheet (D514): every booking matching the filters, with one column per question the
+ * services asked (D256) so answers line up. Headings stay English so spreadsheets read the same for everyone.
+ */
+function exportBookings(bookings: Booking[], staff: {memberId: string;name: string;}[]) {
+  const questions = Array.from(new Set(bookings.flatMap((b) => (b.answers ?? []).map((a) => a.question))));
+  const who = (id?: string | null) => id ? staff.find((s) => s.memberId === id)?.name ?? '' : '';
+  const rows = bookings.map((b) => [
+  b.ref,
+  b.serviceName,
+  b.start,
+  b.end,
+  b.status,
+  b.customer.name,
+  b.customer.phone,
+  b.customer.email,
+  b.priceNgn,
+  b.depositPaidNgn,
+  b.balancePaidNgn ?? 0,
+  who(b.assigneeId),
+  b.sourceHandle ?? '',
+  b.intake,
+  ...questions.map((q) => b.answers?.find((a) => a.question === q)?.answer ?? '')]
+  );
+  const csv = toCsv(['Ref', 'Service', 'Starts', 'Ends', 'Status', 'Customer', 'Phone', 'Email', 'Price', 'Deposit paid', 'Balance paid', 'Assigned to', 'Booked on page', 'Anything we should know', ...questions], rows);
+  downloadCsv(`bookings-${new Date().toISOString().slice(0, 10)}.csv`, csv);
 }

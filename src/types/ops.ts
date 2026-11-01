@@ -27,6 +27,8 @@ export interface Service {
   meetingApp?: MeetingApp;
   /** D256: each booking arrives as a request the seller accepts or declines. */
   approval?: boolean;
+  /** D514: decline a request automatically if it isn't answered within this many hours. Missing = only when its time passes. */
+  autoDeclineHours?: number;
   /** D256: the seller's own questions, asked in the booking sheet. Up to 5. */
   questions?: IntakeQuestion[];
 }

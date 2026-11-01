@@ -1,5 +1,7 @@
 # Connecting a real model to the AI page assistant
 
+> **Copilot** (the signed-out chat and Ask bar) has its own guide: `docs/COPILOT_AI_INTEGRATION.md` (D522). The rules in §3–4 below apply to both.
+
 Status: the assistant (D211–D211e) runs on rules in the browser. This guide is for the team that replaces the rules with a language model. The screens, safeguards and data stay the same; only two functions change.
 
 ## 1. What to replace

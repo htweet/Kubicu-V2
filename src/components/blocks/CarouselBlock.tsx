@@ -8,6 +8,7 @@ import { MediaImage } from '../media/MediaImage';
 import { useRenderPlan } from '../../contexts/RenderPlanContext';
 import { planAtLeast } from '../../data/plans';
 import { accentOf, cardRadius, fontsFor, imageFrameStyle, mix } from './pageStyle';
+import { useT } from '../../contexts/LocaleContext';
 
 const ratio = { wide: '16 / 9', square: '1 / 1', portrait: '4 / 5' } as const;
 
@@ -16,6 +17,8 @@ const ratio = { wide: '16 / 9', square: '1 / 1', portrait: '4 / 5' } as const;
  * buttons, arrow keys when focused. Never auto-advances. Free plan: slides stack as a simple list.
  */
 export function CarouselBlock({ block, theme, mode }: BlockProps<'carousel'>) {
+  // Controls and screen-reader labels follow the visitor's language (D505).
+  const { t: tr } = useT();
   const c = block.content;
   const plan = useRenderPlan();
   const uid = useId().replace(/:/g, '');
@@ -57,7 +60,7 @@ export function CarouselBlock({ block, theme, mode }: BlockProps<'carousel'>) {
 
   const btn = 'flex h-11 w-11 items-center justify-center rounded-full transition-[background-color] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2';
   return (
-    <section aria-roledescription="carousel" aria-label={c.title || 'Slides'}>
+    <section aria-roledescription={tr('carousel')} aria-label={c.title || tr('Slides')}>
       <SectionHeading theme={theme} title={c.title} />
       <div
         onKeyDown={(e) => {
@@ -68,19 +71,19 @@ export function CarouselBlock({ block, theme, mode }: BlockProps<'carousel'>) {
         <div className="overflow-hidden">
           <div className="flex transition-transform duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none" style={{ transform: `translateX(-${at * 100}%)` }}>
             {slides.map((s, k) =>
-            <div key={s.id} id={`${uid}-s${k}`} role="group" aria-roledescription="slide" aria-label={`${k + 1} of ${n}`} aria-hidden={k !== at} className="w-full shrink-0" style={{ visibility: k === at ? 'visible' : 'hidden' }}>
+            <div key={s.id} id={`${uid}-s${k}`} role="group" aria-roledescription={tr('slide')} aria-label={tr('{n} of {total}', { n: k + 1, total: n })} aria-hidden={k !== at} className="w-full shrink-0" style={{ visibility: k === at ? 'visible' : 'hidden' }}>
                 {s.url ? <PageAction mode={mode} href={s.url} className="block">{slideBody(s)}</PageAction> : slideBody(s)}
               </div>
             )}
           </div>
         </div>
         <div className="mt-5 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-1.5" role="group" aria-label="Choose a slide">
+          <div className="flex items-center gap-1.5" role="group" aria-label={tr('Choose a slide')}>
             {slides.map((s, k) =>
             <button
               key={s.id}
               type="button"
-              aria-label={`Show slide ${k + 1}${s.title ? `: ${s.title}` : ''}`}
+              aria-label={`${tr('Show slide {n}', { n: k + 1 })}${s.title ? `: ${s.title}` : ''}`}
               aria-current={k === at ? 'true' : undefined}
               aria-controls={`${uid}-s${k}`}
               onClick={() => go(k)}
@@ -92,16 +95,16 @@ export function CarouselBlock({ block, theme, mode }: BlockProps<'carousel'>) {
             )}
           </div>
           <div className="flex gap-2">
-            <button type="button" aria-label="Previous slide" onClick={() => go(at - 1)} className={btn} style={{ background: mix(theme.text, 8), color: theme.text, ['--tw-ring-color' as string]: theme.text }}>
+            <button type="button" aria-label={tr('Previous slide')} onClick={() => go(at - 1)} className={btn} style={{ background: mix(theme.text, 8), color: theme.text, ['--tw-ring-color' as string]: theme.text }}>
               <ChevronLeftIcon size={18} aria-hidden />
             </button>
-            <button type="button" aria-label="Next slide" onClick={() => go(at + 1)} className={btn} style={{ background: mix(theme.text, 8), color: theme.text, ['--tw-ring-color' as string]: theme.text }}>
+            <button type="button" aria-label={tr('Next slide')} onClick={() => go(at + 1)} className={btn} style={{ background: mix(theme.text, 8), color: theme.text, ['--tw-ring-color' as string]: theme.text }}>
               <ChevronRightIcon size={18} aria-hidden />
             </button>
           </div>
         </div>
         <p className="sr-only" aria-live="polite">
-          Slide {at + 1} of {n}
+          {tr('Slide {n} of {total}', { n: at + 1, total: n })}
         </p>
       </div>
     </section>);

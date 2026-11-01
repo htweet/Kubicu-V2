@@ -167,7 +167,11 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
     if (holding && !holdUntil && step !== 'cart' && step !== 'paying') {
       setHolding(false);
       setStep('cart');
-      setHoldNotice(holdWhat === 'seats' ? `Your seats were released after ${holdMins} minutes. Check they’re still available and continue.` : `Your items were released after ${holdMins} minutes so other buyers could have them. Check they’re still available and continue.`);
+      setHoldNotice(
+        holdWhat === 'seats' ?
+        tr('Your seats were released after {n} minutes. Check they’re still available and continue.', { n: holdMins }) :
+        tr('Your items were released after {n} minutes so other buyers could have them. Check they’re still available and continue.', { n: holdMins })
+      );
     }
   }, [holding, holdUntil, step]);
 
@@ -202,7 +206,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
       const ok = !!product && !!variant && price !== null && canSell(product, variant) && !ticketIssue && !stockIssue && (product.kind === 'digital' || !product.trackStock || isPreorder(product) || free >= l.qty || product.kind === 'physical' && backorders);
       const ev = product?.kind === 'ticket' ? findEvent(data, product.eventId) : undefined;
       const tt = ev?.ticketTypes.find((t) => t.id === l.variantId);
-      const seatText = describeSeats(ev, l.seats);
+      const seatText = describeSeats(ev, l.seats, tr);
       const backorder = ok && product?.kind === 'physical' && product.trackStock && !isPreorder(product) && !!variant && variant.stock < l.qty;
       return { ...l, product, variant, price, basePrice, bulk, ok, backorder, ticketIssue: ticketIssue || stockIssue, seatText, free, maxQty: tt ? tt.maxPerOrder : 20 };
     });
@@ -253,11 +257,13 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
   const roomError = !dealRoom ?
   '' :
   !dealRoom.open ?
-  'This room isn’t taking orders right now.' :
+  tr('This room isn’t taking orders right now.') :
   roomQty > dealRoom.remaining ?
-  `Only ${dealRoom.remaining} left in this room.` :
+  tr('Left in this room: {n}.', { n: dealRoom.remaining }) :
   priorUnits + roomQty > dealRoom.perPersonLimit ?
-  `The limit is ${dealRoom.perPersonLimit} per person${priorUnits ? ` — you’ve already bought ${priorUnits}` : ''}.` :
+  priorUnits ?
+  tr('Limit per person: {n}. You’ve already bought: {bought}.', { n: dealRoom.perPersonLimit, bought: priorUnits }) :
+  tr('Limit per person: {n}.', { n: dealRoom.perPersonLimit }) :
   '';
   const discount = Math.min(resolution.applied?.amountNgn ?? 0, subtotal + (physical ? deliveryFee : 0));
   // Shop settings (D222): VAT, minimum order, closed shop, payment methods.
@@ -267,14 +273,14 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
   const untaxedNgn = untaxedAmount(lines.filter((l) => l.ok && l.price !== null).map((l) => ({ amountNgn: (l.price ?? 0) * l.qty, taxClass: l.product?.taxClass })));
   const vat = vatFor(shop, subtotal - discount + (physical ? deliveryFee : 0), { buyerCountry: shipTo, untaxedNgn });
   const vatAdded = vat?.addedNgn ?? 0;
-  const minError = shop.checkout.minOrderNgn && subtotal > 0 && subtotal - discount < shop.checkout.minOrderNgn ? `The minimum order is ${formatNgn(shop.checkout.minOrderNgn)} — add ${formatNgn(shop.checkout.minOrderNgn - (subtotal - discount))} more.` : '';
+  const minError = shop.checkout.minOrderNgn && subtotal > 0 && subtotal - discount < shop.checkout.minOrderNgn ? tr('The minimum order is {min} — add {more} more.', { min: formatNgn(shop.checkout.minOrderNgn), more: formatNgn(shop.checkout.minOrderNgn - (subtotal - discount)) }) : '';
   const returnsText = returnsSummary(shop.policy);
   const giftRes = resolveGiftCard(data, giftCode, subtotal - discount + (physical ? deliveryFee : 0) + vatAdded, hasGiftItems);
   const giftNgn = giftRes?.ok ? giftRes.amountNgn : 0;
   const total = subtotal - discount - giftNgn + (physical ? deliveryFee : 0) + vatAdded;
   const vatRow = vat ?
   <div className="flex justify-between gap-3">
-      <dt style={{ color: theme.mutedText }}>{vat.inclusive ? `Includes VAT (${vatRateLabel(vat.ratePct)})` : `VAT (${vatRateLabel(vat.ratePct)})`}</dt>
+      <dt style={{ color: theme.mutedText }}>{vat.inclusive ? tr('Includes VAT ({rate})', { rate: vatRateLabel(vat.ratePct) }) : tr('VAT ({rate})', { rate: vatRateLabel(vat.ratePct) })}</dt>
       <dd className="shrink-0 tabular-nums" style={vat.inclusive ? { color: theme.mutedText } : undefined}>
         {formatNgn(vat.amountNgn)}
       </dd>
@@ -282,7 +288,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
   null;
   const giftRow = giftNgn > 0 ?
   <div className="flex justify-between gap-3">
-      <dt style={{ color: theme.mutedText }}>Gift card</dt>
+      <dt style={{ color: theme.mutedText }}>{tr('Gift card')}</dt>
       <dd className="shrink-0 font-semibold tabular-nums">−{formatNgn(giftNgn)}</dd>
     </div> :
   null;
@@ -317,7 +323,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
   resolution.applied && (discount > 0 || resolution.applied.discount.value.type === 'free_delivery') ?
   <div className="flex justify-between gap-3">
         <dt style={{ color: theme.mutedText }}>{discountLineLabel(resolution.applied.discount)}</dt>
-        <dd className="shrink-0 font-semibold tabular-nums">{discount > 0 ? `−${formatNgn(discount)}` : 'At delivery step'}</dd>
+        <dd className="shrink-0 font-semibold tabular-nums">{discount > 0 ? `−${formatNgn(discount)}` : tr('At delivery step')}</dd>
       </div> :
   null;
   const choosingProduct = cart.choosing ? data.products.find((p) => p.id === cart.choosing) : undefined;
@@ -1292,7 +1298,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
         {!choosingProduct && step !== 'paying' && step !== 'failed' &&
         <div className="flex items-center gap-3 pr-12">
             {step !== 'cart' &&
-          <button type="button" onClick={back} aria-label="Back" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full" style={{ background: theme.surface }}>
+          <button type="button" onClick={back} aria-label={tr('Back')} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full" style={{ background: theme.surface }}>
                 <ArrowLeftIcon size={16} aria-hidden />
               </button>
           }

@@ -105,6 +105,15 @@ p(/^Instalment (\d+) of (\d+) didn’t go through — retrying automatically$/, 
 p(/^Card failed · ends (.+) unless updated$/, 'Card failed · ends {date} unless updated', ['date']),
 p(/^(\d+) runs? failed this week — customers may have missed a message$/, 'Runs failed this week: {n} — customers may have missed a message', ['n']),
 
+// ——— Ticket and seat problems at checkout (D512). Ticket names and seat labels are kept as written. ———
+p(/^(.+) sales have closed$/, '{ticket} sales have closed', ['ticket']),
+p(/^(.+) goes on sale (.+)$/, '{ticket} goes on sale {date}', ['ticket', 'date']),
+p(/^Only (\d+) (.+) left$/, 'Only {n} {ticket} left', ['n', 'ticket']),
+p(/^Up to (\d+) (.+) per order$/, 'Up to {n} {ticket} per order', ['n', 'ticket']),
+p(/^At least (\d+) (.+) per order$/, 'At least {n} {ticket} per order', ['n', 'ticket']),
+p(/^Choose your seats for (.+)$/, 'Choose your seats for {ticket}', ['ticket']),
+p(/^(.+) was just taken — please choose another seat$/, '{seat} was just taken — please choose another seat', ['seat']),
+
 // ——— A page name in front of a check from that page ("Menu · Add a headline"). Last: it is the most general. ———
 p(/^(.+?) · (.+)$/, '{page} · {message}', ['page', 'message'], ['message'], ['message'])];
 

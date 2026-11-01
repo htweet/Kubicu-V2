@@ -70,7 +70,7 @@ export function LeadFormBlock({ block, theme, mode }: BlockProps<'leadForm'>) {
     <section className="flex flex-col gap-4 p-5" style={cardStyle(theme)}>
       <div>
         <h2 className="text-[20px] font-medium tracking-[-0.01em]" style={{ fontFamily: fontsFor(theme).display, color: theme.text }}>
-          {title || 'Form'}
+          {title || tr('Form')}
         </h2>
         {description &&
         <p className="mt-1 text-[14px] leading-relaxed" style={{ color: theme.mutedText }}>

@@ -5,20 +5,22 @@ import { BlockPlaceholder } from './BlockPlaceholder';
 import { SectionHeading } from './SectionHeading';
 import { accentOf, cardStyle, fontsFor, mix } from './pageStyle';
 import { useElementWidth } from '../../hooks/useElementWidth';
+import { useT } from '../../contexts/LocaleContext';
 
 /** "yes"/"✓" show a tick, "no"/"-" a dash — never colour alone; everything else is shown as written. */
 function Cell({ value, theme }: {value: string;theme: BlockProps<'comparison'>['theme'];}) {
+  const { t: tr } = useT();
   const v = value.trim().toLowerCase();
   if (['yes', '✓', 'y', 'true', 'included'].includes(v))
   return (
     <span className="inline-flex items-center gap-1" style={{ color: theme.text }}>
-        <CheckIcon size={16} aria-hidden /> <span className="sr-only">Included</span>
+        <CheckIcon size={16} aria-hidden /> <span className="sr-only">{tr('Included')}</span>
       </span>);
 
   if (['no', '-', '—', 'n', 'false', ''].includes(v))
   return (
     <span className="inline-flex items-center" style={{ color: theme.mutedText }}>
-        <MinusIcon size={16} aria-hidden /> <span className="sr-only">Not included</span>
+        <MinusIcon size={16} aria-hidden /> <span className="sr-only">{tr('Not included')}</span>
       </span>);
 
   return <span style={{ color: theme.text }}>{value}</span>;
@@ -26,6 +28,8 @@ function Cell({ value, theme }: {value: string;theme: BlockProps<'comparison'>['
 
 /** Comparison table (D169): a real table when there's room; one card per option when narrow. */
 export function ComparisonBlock({ block, theme, mode }: BlockProps<'comparison'>) {
+  // Fixed labels follow the visitor's language (D509); options, rows and cell text stay as written.
+  const { t: tr } = useT();
   const c = block.content;
   const ref = useRef<HTMLDivElement>(null);
   const width = useElementWidth(ref);
@@ -48,7 +52,7 @@ export function ComparisonBlock({ block, theme, mode }: BlockProps<'comparison'>
                 <h3 className="text-[19px] font-medium" style={{ fontFamily: display, color: theme.text }}>{col.name}</h3>
                 {col.price && <span className="text-[15px] font-semibold tabular-nums" style={{ color: theme.text }}>{col.price}</span>}
               </div>
-              {col.highlight && <p className="mt-1 text-[12px] font-semibold" style={{ color: accent }}>Most chosen</p>}
+              {col.highlight && <p className="mt-1 text-[12px] font-semibold" style={{ color: accent }}>{tr('Most chosen')}</p>}
               <dl className="mt-3">
                 {rows.map((r) =>
             <div key={r.id} className="flex items-center justify-between gap-4 py-2 text-[14px]" style={{ borderTop: `1px solid ${mix(theme.text, 9)}` }}>
@@ -65,13 +69,13 @@ export function ComparisonBlock({ block, theme, mode }: BlockProps<'comparison'>
 
       <div className="overflow-hidden" style={cardStyle(theme)}>
           <table className="w-full border-collapse text-left text-[14px]">
-            <caption className="sr-only">{c.title || 'Comparison'}</caption>
+            <caption className="sr-only">{c.title || tr('Comparison')}</caption>
             <thead>
               <tr>
                 <td className="p-4" />
                 {cols.map((col) =>
               <th key={col.id} scope="col" className="p-4 align-bottom" style={col.highlight ? { background: mix(accent, 10, theme.surface) } : undefined}>
-                    {col.highlight && <span className="mb-1 block text-[12px] font-semibold" style={{ color: accent }}>Most chosen</span>}
+                    {col.highlight && <span className="mb-1 block text-[12px] font-semibold" style={{ color: accent }}>{tr('Most chosen')}</span>}
                     <span className="block text-[18px] font-medium" style={{ fontFamily: display, color: theme.text }}>{col.name}</span>
                     {col.price && <span className="mt-0.5 block text-[14px] font-semibold tabular-nums" style={{ color: theme.mutedText }}>{col.price}</span>}
                   </th>

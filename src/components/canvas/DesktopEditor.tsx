@@ -22,6 +22,7 @@ import { ShortcutsDialog } from './ShortcutsDialog';
 import { Sheet } from '../ui/Sheet';
 import { SkipLink } from '../ui/SkipLink';
 import { cn } from '../../utils/cn';
+import { useBlockClipboard } from '../../hooks/useBlockClipboard';
 
 const RAIL = 56;
 const LEFT_W = 280;
@@ -44,13 +45,16 @@ export function DesktopEditor() {
   const selected = state.draft.blocks.find((b) => b.id === state.selectedId);
   const selectedDef = selected ? blockDefinitions[selected.type] : null;
 
+  const clipboard = useBlockClipboard();
   useCanvasShortcuts({
     onUndo: actions.undo,
     onRedo: actions.redo,
     onDelete: () => state.selectedId && removeBlock(state.selectedId),
     onDuplicate: () => state.selectedId && actions.duplicateBlock(state.selectedId),
     onEscape: () => actions.select(null),
-    onCommand: () => setCommandOpen(true)
+    onCommand: () => setCommandOpen(true),
+    onCopy: () => state.selectedId && clipboard.copy(state.selectedId),
+    onPaste: clipboard.paste
   });
 
   // ⌘\ / Ctrl+\ hides both panels for a clear view of the page, and brings them back.

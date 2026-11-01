@@ -9,6 +9,7 @@ import { buttonRadius, buttonStyle, cardRadius, cardStyle, fontsFor, mix } from 
 import { formatNgn } from '../../utils/format';
 import { MAX_SEATS_PER_PICK, describeSeats, isTable, seatsOfRow, takenSeats, type Seat } from '../../utils/commerce/seating';
 import { ticketTypeState } from '../../utils/commerce/tickets';
+import { useT } from '../../contexts/LocaleContext';
 
 interface Props {
   event: CommerceEvent;
@@ -21,8 +22,12 @@ interface Props {
   onClose: () => void;
 }
 
-/** Choose exact seats or a whole table (D113). Map for sighted pointer users, list for keyboard and screen readers. */
+/**
+ * Choose exact seats or a whole table (D113). Map for sighted pointer users, list for keyboard and screen readers.
+ * Fixed wording follows the visitor's language (D507); event, ticket, row and table names stay as written.
+ */
 export function SeatPicker({ event: ev, data, theme, holder, initial, onConfirm, onClose }: Props) {
+  const { t: tr } = useT();
   const ref = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
   useFocusTrap(ref, true, onClose);
@@ -48,9 +53,9 @@ export function SeatPicker({ event: ev, data, theme, holder, initial, onConfirm,
   const countOfType = (ttId: string, list = picked) => list.filter((id) => map.rows.find((r) => id.startsWith(`${r.id}:`))?.ticketTypeId === ttId).length;
   const canAdd = (seat: Seat, list = picked) => {
     const tt = typeOf(seat.ticketTypeId);
-    if (!tt) return 'This seat isn’t for sale';
-    if (list.length >= MAX_SEATS_PER_PICK) return `Up to ${MAX_SEATS_PER_PICK} seats per order`;
-    if (countOfType(seat.ticketTypeId, list) >= tt.maxPerOrder) return `Up to ${tt.maxPerOrder} ${tt.name} per order`;
+    if (!tt) return tr('This seat isn’t for sale');
+    if (list.length >= MAX_SEATS_PER_PICK) return tr('Most seats per order: {n}', { n: MAX_SEATS_PER_PICK });
+    if (countOfType(seat.ticketTypeId, list) >= tt.maxPerOrder) return tr('Most {ticket} per order: {n}', { ticket: tt.name, n: tt.maxPerOrder });
     return '';
   };
 
@@ -72,7 +77,7 @@ export function SeatPicker({ event: ev, data, theme, holder, initial, onConfirm,
       if (next.includes(s.id)) continue;
       const why = canAdd(s, next);
       if (why) {
-        setNotice(`${why} — only part of ${row.label} was added`);
+        setNotice(`${why} — ${tr('only part of {name} was added', { name: row.label })}`);
         break;
       }
       next = [...next, s.id];
@@ -94,7 +99,7 @@ export function SeatPicker({ event: ev, data, theme, holder, initial, onConfirm,
     });
     for (const t of seatedTypes) {
       const n = byType[t.id].length;
-      if (n > 0 && n < t.minPerOrder) return setNotice(`Choose at least ${t.minPerOrder} ${t.name} seats`);
+      if (n > 0 && n < t.minPerOrder) return setNotice(tr('Fewest {ticket} seats per order: {n}', { ticket: t.name, n: t.minPerOrder }));
     }
     onConfirm(byType);
   };
@@ -110,7 +115,7 @@ export function SeatPicker({ event: ev, data, theme, holder, initial, onConfirm,
         type="button"
         disabled={(isTaken || closed) && !mine}
         aria-pressed={mine}
-        aria-label={`${s.label}, ${tt?.name ?? ''} ${tt ? tt.priceNgn ? formatNgn(tt.priceNgn) : 'free' : ''}, ${isTaken ? 'taken' : closed ? 'not on sale' : mine ? 'selected' : 'available'}`}
+        aria-label={`${s.label}, ${tt?.name ?? ''} ${tt ? tt.priceNgn ? formatNgn(tt.priceNgn) : tr('Free') : ''}, ${isTaken ? tr('Taken') : closed ? tr('Not on sale') : mine ? tr('Selected') : tr('Available')}`}
         title={s.label}
         onClick={() => toggle(s)}
         className="flex h-7 w-7 shrink-0 items-center justify-center text-[10px] font-semibold tabular-nums transition-[background-color,transform] duration-150 ease-out active:scale-95 disabled:cursor-not-allowed"
@@ -154,14 +159,14 @@ export function SeatPicker({ event: ev, data, theme, holder, initial, onConfirm,
         <header className="flex items-start justify-between gap-3 px-5 pb-3 pt-5" style={{ borderBottom: `1px solid ${mix(theme.text, 9)}` }}>
           <div className="min-w-0">
             <h2 id="seat-title" className="text-[19px] font-medium leading-tight" style={{ fontFamily: fontsFor(theme).display }}>
-              {tables ? 'Choose seats or a table' : 'Choose your seats'}
+              {tables ? tr('Choose seats or a table') : tr('Choose your seats')}
             </h2>
             <p className="mt-0.5 truncate text-[13px]" style={muted}>
               {ev.name}
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-1">
-            <div className="flex p-0.5" role="group" aria-label="View" style={{ background: mix(theme.text, 6), borderRadius: buttonRadius(theme) }}>
+            <div className="flex p-0.5" role="group" aria-label={tr('View')} style={{ background: mix(theme.text, 6), borderRadius: buttonRadius(theme) }}>
               {(['map', 'list'] as const).map((v) =>
               <button
                 key={v}
@@ -172,30 +177,30 @@ export function SeatPicker({ event: ev, data, theme, holder, initial, onConfirm,
                 style={{ borderRadius: buttonRadius(theme), background: view === v ? theme.surface : 'transparent', color: theme.text }}>
                 
                   {v === 'map' ? <LayoutGridIcon size={13} aria-hidden /> : <ListIcon size={13} aria-hidden />}
-                  {v === 'map' ? 'Map' : 'List'}
+                  {v === 'map' ? tr('Map') : tr('List')}
                 </button>
               )}
             </div>
-            <button type="button" aria-label="Close" onClick={onClose} className="flex h-9 w-9 items-center justify-center" style={{ borderRadius: buttonRadius(theme) }}>
+            <button type="button" aria-label={tr('Close')} onClick={onClose} className="flex h-9 w-9 items-center justify-center" style={{ borderRadius: buttonRadius(theme) }}>
               <XIcon size={18} aria-hidden />
             </button>
           </div>
         </header>
 
-        <ul className="flex flex-wrap gap-x-4 gap-y-1.5 px-5 py-3 text-[12.5px]" aria-label="Key">
+        <ul className="flex flex-wrap gap-x-4 gap-y-1.5 px-5 py-3 text-[12.5px]" aria-label={tr('Key')}>
           {seatedTypes.map((t) =>
           <li key={t.id} className="flex items-center gap-1.5">
               <span aria-hidden className="h-3.5 w-3.5" style={{ borderRadius: 4, background: mix(theme.accent, shade(t.id), theme.surface), border: `1px solid ${mix(theme.text, 14)}` }} />
-              {t.name} · {t.priceNgn ? formatNgn(t.priceNgn) : 'Free'}
+              {t.name} · {t.priceNgn ? formatNgn(t.priceNgn) : tr('Free')}
             </li>
           )}
           <li className="flex items-center gap-1.5">
             <span aria-hidden className="h-3.5 w-3.5" style={{ borderRadius: 4, background: theme.accent }} />
-            Yours
+            {tr('Yours')}
           </li>
           <li className="flex items-center gap-1.5" style={muted}>
             <span aria-hidden className="h-3.5 w-3.5" style={{ borderRadius: 4, border: `1px dashed ${mix(theme.text, 28)}` }} />
-            Taken
+            {tr('Taken')}
           </li>
         </ul>
 
@@ -204,7 +209,7 @@ export function SeatPicker({ event: ev, data, theme, holder, initial, onConfirm,
           <div className="flex flex-col gap-3" aria-hidden={false}>
               {map.layout !== 'banquet' &&
             <div className="mx-auto mb-1 flex h-8 w-2/3 items-center justify-center text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ background: mix(theme.text, 8), borderRadius: 6, color: theme.mutedText }}>
-                  Stage
+                  {tr('Stage')}
                 </div>
             }
               {tables ?
@@ -218,13 +223,13 @@ export function SeatPicker({ event: ev, data, theme, holder, initial, onConfirm,
                         <div className="flex items-baseline justify-between gap-2">
                           <span className="text-[14px] font-semibold">{r.label}</span>
                           <span className="text-[12px]" style={muted}>
-                            {typeOf(r.ticketTypeId)?.name} · {free} of {seats.length} free
+                            {typeOf(r.ticketTypeId)?.name} · {tr('Free seats: {n} of {total}', { n: free, total: seats.length })}
                           </span>
                         </div>
                         <div className="flex flex-wrap gap-1.5">{seats.map((s) => seatButton(s, r))}</div>
                         {free > 0 && onSale(r.ticketTypeId) &&
                     <button type="button" onClick={() => bookTable(r)} className="h-9 self-start px-3 text-[12.5px] font-semibold" style={buttonStyle(theme, 'default')}>
-                            {allMine ? `Remove ${r.label}` : free === seats.length ? `Book the whole table (${free})` : `Book the ${free} free seats`}
+                            {allMine ? tr('Remove: {name}', { name: r.label }) : free === seats.length ? tr('Book the whole table ({n})', { n: free }) : tr('Book the free seats ({n})', { n: free })}
                           </button>
                     }
                       </li>);
@@ -249,7 +254,7 @@ export function SeatPicker({ event: ev, data, theme, holder, initial, onConfirm,
 
           <div className="flex flex-col gap-3">
               <label className="flex flex-col gap-1 text-[13px] font-semibold">
-                {tables ? 'Table' : 'Row'}
+                {tables ? tr('Table') : tr('Row')}
                 <select
                 value={rowForList?.id}
                 onChange={(e) => setListRow(e.target.value)}
@@ -260,7 +265,7 @@ export function SeatPicker({ event: ev, data, theme, holder, initial, onConfirm,
                   const free = seatsOfRow(map, r).filter((s) => !taken.has(s.id)).length;
                   return (
                     <option key={r.id} value={r.id}>
-                        {tables ? r.label : `Row ${r.label}`} — {typeOf(r.ticketTypeId)?.name} — {free} free
+                        {tables ? r.label : tr('Row {name}', { name: r.label })} — {typeOf(r.ticketTypeId)?.name} — {tr('Free seats: {n}', { n: free })}
                       </option>);
 
                 })}
@@ -268,7 +273,7 @@ export function SeatPicker({ event: ev, data, theme, holder, initial, onConfirm,
               </label>
               {rowForList &&
             <fieldset className="flex flex-col">
-                  <legend className="sr-only">Seats in {rowForList.label}</legend>
+                  <legend className="sr-only">{tr('Seats in {name}', { name: rowForList.label })}</legend>
                   {seatsOfRow(map, rowForList).map((s) => {
                 const isTaken = taken.has(s.id);
                 const closed = !onSale(rowForList.ticketTypeId);
@@ -276,7 +281,7 @@ export function SeatPicker({ event: ev, data, theme, holder, initial, onConfirm,
                   <label key={s.id} className="flex min-h-[44px] items-center gap-3 text-[14.5px]" style={{ borderBottom: `1px solid ${mix(theme.text, 8)}`, color: isTaken || closed ? theme.mutedText : theme.text }}>
                         <input type="checkbox" className="h-5 w-5" checked={picked.includes(s.id)} disabled={(isTaken || closed) && !picked.includes(s.id)} onChange={() => toggle(s)} style={{ accentColor: theme.accent }} />
                         <span className="flex-1">{s.label}</span>
-                        <span className="text-[13px]">{isTaken ? 'Taken' : closed ? 'Not on sale' : typeOf(s.ticketTypeId)?.priceNgn ? formatNgn(typeOf(s.ticketTypeId)?.priceNgn ?? 0) : 'Free'}</span>
+                        <span className="text-[13px]">{isTaken ? tr('Taken') : closed ? tr('Not on sale') : typeOf(s.ticketTypeId)?.priceNgn ? formatNgn(typeOf(s.ticketTypeId)?.priceNgn ?? 0) : tr('Free')}</span>
                       </label>);
 
               })}
@@ -284,7 +289,7 @@ export function SeatPicker({ event: ev, data, theme, holder, initial, onConfirm,
             }
               {tables && rowForList && onSale(rowForList.ticketTypeId) &&
             <button type="button" onClick={() => bookTable(rowForList)} className="h-10 self-start px-3.5 text-[13px] font-semibold" style={buttonStyle(theme, 'default')}>
-                  Book every free seat at {rowForList.label}
+                  {tr('Book every free seat at {name}', { name: rowForList.label })}
                 </button>
             }
             </div>
@@ -293,7 +298,7 @@ export function SeatPicker({ event: ev, data, theme, holder, initial, onConfirm,
 
         <footer className="flex flex-col gap-2 px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3" style={{ borderTop: `1px solid ${mix(theme.text, 9)}`, background: theme.background }}>
           <p className="min-h-[1.25rem] text-[13px]" aria-live="polite" style={notice ? { color: theme.text, fontWeight: 600 } : muted}>
-            {notice || (picked.length ? describeSeats(ev, picked) : 'Tap a seat to choose it. You can change seats until you pay.')}
+            {notice || (picked.length ? describeSeats(ev, picked, tr) : tr('Tap a seat to choose it. You can change seats until you pay.'))}
           </p>
           <button
             type="button"
@@ -302,7 +307,11 @@ export function SeatPicker({ event: ev, data, theme, holder, initial, onConfirm,
             className="flex h-12 w-full items-center justify-center text-[15px] font-semibold disabled:opacity-50"
             style={buttonStyle(theme, 'featured')}>
             
-            {picked.length === 0 ? initial.length ? 'Remove my seats' : 'Choose a seat' : `Add ${picked.length} seat${picked.length === 1 ? '' : 's'} · ${total ? formatNgn(total) : 'Free'}`}
+            {picked.length === 0 ?
+            initial.length ?
+            tr('Remove my seats') :
+            tr('Choose a seat') :
+            `${tr('Add seats: {n}', { n: picked.length })} · ${total ? formatNgn(total) : tr('Free')}`}
           </button>
         </footer>
       </motion.div>

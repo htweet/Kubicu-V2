@@ -54,6 +54,7 @@ import { ShortLink } from './pages/ShortLink';
 import { Settings } from './pages/settings/Settings';
 import { AcceptInvite } from './pages/AcceptInvite';
 import { DealRoomSettler } from './components/shell/DealRoomSettler';
+import { BookingAutoDecliner } from './components/shell/BookingAutoDecliner';
 import { SubscriptionRenewer } from './components/shell/SubscriptionRenewer';
 import { Subscriptions } from './pages/commerce/Subscriptions';
 import { Events } from './pages/commerce/Events';
@@ -402,6 +403,7 @@ function WorkspaceScope({ visualDirection, viewingAs, renewal, children }: {visu
                         <NotificationsProvider>
                           {children}
                           <DealRoomSettler />
+                          <BookingAutoDecliner />
                           <SubscriptionRenewer />
                           <InstalmentCharger />
                         </NotificationsProvider>

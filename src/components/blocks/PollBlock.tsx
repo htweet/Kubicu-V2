@@ -3,6 +3,7 @@ import { CheckIcon, VoteIcon } from 'lucide-react';
 import type { BlockProps } from './blockProps';
 import { BlockPlaceholder } from './BlockPlaceholder';
 import { buttonStyle, cardStyle, fontsFor, mix } from './pageStyle';
+import { useT } from '../../contexts/LocaleContext';
 
 interface Tally {
   votes: Record<string, number>;
@@ -24,6 +25,8 @@ const read = (id: string): Tally => {
  * device only, and the results say so — no invented totals.
  */
 export function PollBlock({ block, theme, mode }: BlockProps<'poll'>) {
+  // Fixed wording follows the visitor's language (D505); the question and answers stay as written.
+  const { t: tr } = useT();
   const c = block.content;
   const options = c.options.filter((o) => o.label.trim());
   const [tally, setTally] = useState<Tally>({ votes: {}, mine: null });
@@ -51,7 +54,7 @@ export function PollBlock({ block, theme, mode }: BlockProps<'poll'>) {
       <h2 id={gid} className="text-[19px] font-medium leading-snug" style={{ fontFamily: fontsFor(theme).display, color: theme.text }}>{c.question}</h2>
       {voted ?
       <div className="mt-4" role="status">
-          <p className="text-[14px] font-medium" style={{ color: theme.text }}>Thanks — your vote is in.</p>
+          <p className="text-[14px] font-medium" style={{ color: theme.text }}>{tr('Thanks — your vote is in.')}</p>
           {c.showResults === 'after' &&
         <ul className="mt-3 flex flex-col gap-2.5">
               {options.map((o) => {
@@ -62,7 +65,7 @@ export function PollBlock({ block, theme, mode }: BlockProps<'poll'>) {
                     <div className="flex justify-between text-[14px]" style={{ color: theme.text }}>
                       <span className="inline-flex items-center gap-1.5">
                         {o.label}
-                        {tally.mine === o.id && <CheckIcon size={14} aria-label="your vote" />}
+                        {tally.mine === o.id && <CheckIcon size={14} aria-label={tr('your vote')} />}
                       </span>
                       <span className="tabular-nums">{pct}%</span>
                     </div>
@@ -74,7 +77,7 @@ export function PollBlock({ block, theme, mode }: BlockProps<'poll'>) {
           })}
             </ul>
         }
-          <p className="mt-3 text-[11.5px]" style={{ color: theme.mutedText }}>Results from this device only (prototype).</p>
+          <p className="mt-3 text-[11.5px]" style={{ color: theme.mutedText }}>{tr('Results from this device only (prototype).')}</p>
         </div> :
 
       <fieldset className="mt-4" aria-labelledby={gid}>
@@ -87,7 +90,7 @@ export function PollBlock({ block, theme, mode }: BlockProps<'poll'>) {
           )}
           </div>
           <button type="button" onClick={vote} disabled={!pick || mode !== 'live'} className="mt-4 h-12 w-full text-[15px] font-semibold disabled:opacity-50" style={buttonStyle(theme, 'featured')}>
-            Vote
+            {tr('Vote')}
           </button>
         </fieldset>
       }

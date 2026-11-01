@@ -54,13 +54,13 @@ export function ReportPageDialog({ open, onClose, handle, workspaceId }: {open: 
       description={sent ? undefined : tr('Tell KUBICU about a problem with {page}. The page owner isn’t told who reported it.', { page: `kub.icu/${handle}` })}
       footer={
       sent ?
-      <Button onClick={onClose}>Done</Button> :
+      <Button onClick={onClose}>{tr('Done')}</Button> :
 
       <>
             <Button variant="secondary" onClick={onClose}>
-              Cancel
+              {tr('Cancel')}
             </Button>
-            <Button onClick={submit}>Send report</Button>
+            <Button onClick={submit}>{tr('Send report')}</Button>
           </>
 
       }>

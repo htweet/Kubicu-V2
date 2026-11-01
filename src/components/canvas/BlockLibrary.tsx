@@ -10,6 +10,7 @@ import { blockDefinitions, blockOrder, plannedBlocks } from '../../data/blockReg
 import { blockSearchText, libraryCategories, libraryCategoryOf, type LibraryCategoryId } from '../../data/blockTaxonomy';
 import { useEditor } from '../../contexts/EditorContext';
 import { blockName, layerName } from '../../utils/blocks';
+import { LIBRARY_DRAG_TYPE, setLibraryDrag } from '../../utils/blockClipboard';
 import { MAX_CHILDREN, childrenOf, placementFor } from '../../utils/containers';
 import { suggestBlocks } from '../../utils/blockSuggestions';
 import { useBlockShelf } from '../../hooks/useBlockShelf';
@@ -100,7 +101,28 @@ export function BlockLibrary({ onAdded, touch }: BlockLibraryProps) {
   const howtos = blockCatalog.filter((e) => e.kind === 'howto' && (filter === 'all' || e.category === filter) && (!q || `${e.name} ${e.note}`.toLowerCase().includes(q)));
 
   const listView = shelf.view === 'list';
-  const card = (type: BlockType, note?: string, key?: string) =>
+  // Drag a block onto the page to drop it exactly where you want (D515); clicking still adds it in the usual place.
+  const draggable = (type: BlockType, node: React.ReactNode, key: string) =>
+  touch || statusOf(type) === 'app' ?
+  node :
+
+  <div
+    key={key}
+    draggable
+    onDragStart={(e) => {
+      e.dataTransfer.setData(LIBRARY_DRAG_TYPE, type);
+      e.dataTransfer.effectAllowed = 'copy';
+      setLibraryDrag(type);
+    }}
+    onDragEnd={() => setLibraryDrag(null)}
+    className="cursor-grab active:cursor-grabbing"
+    title={tr('Drag onto the page, or click to add')}>
+    
+        {node}
+      </div>;
+
+  const card = (type: BlockType, note?: string, key?: string) => draggable(type, cardNode(type, note, key), key ?? type);
+  const cardNode = (type: BlockType, note?: string, key?: string) =>
   listView ?
   <BlockRow
     key={key ?? type}

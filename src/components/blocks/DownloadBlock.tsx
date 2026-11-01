@@ -10,8 +10,11 @@ import { buttonStyle, cardStyle, fontsFor, mix } from './pageStyle';
 import { useCatalog } from '../../contexts/CatalogContext';
 import { canSell, findProduct, formatBytes } from '../../utils/commerce/catalog';
 import { formatNgn } from '../../utils/format';
+import { useT } from '../../contexts/LocaleContext';
 
+/** A file to download or buy. Fixed wording follows the visitor's language (D508); titles, descriptions and the seller's labels stay as written. */
 export function DownloadBlock({ block, theme, mode }: BlockProps<'download'>) {
+  const { t: tr } = useT();
   const c = block.content;
   const catalog = useCatalog();
   const linked = c.source === 'catalog';
@@ -22,7 +25,7 @@ export function DownloadBlock({ block, theme, mode }: BlockProps<'download'>) {
       return mode === 'edit' ?
       <BlockPlaceholder
         icon={LinkIcon}
-        title={product ? `“${product.name}” isn’t ready to sell` : 'Choose a digital product'}
+        title={product ? tr('Not ready to sell: {name}', { name: product.name }) : 'Choose a digital product'}
         hint={product ? 'It must be active with a scanned file. Visitors won’t see this block yet.' : 'Pick one from Commerce in the inspector.'}
         theme={theme} /> :
 
@@ -30,7 +33,7 @@ export function DownloadBlock({ block, theme, mode }: BlockProps<'download'>) {
     }
     const asset = product.digital!;
     const ext = asset.fileName.split('.').pop()?.toUpperCase() ?? '';
-    const limits = [asset.downloadLimit ? `${asset.downloadLimit} downloads` : null, asset.expiryDays ? `${asset.expiryDays}-day link` : null].filter(Boolean).join(' · ');
+    const limits = [asset.downloadLimit ? tr('Downloads: {n}', { n: asset.downloadLimit }) : null, asset.expiryDays ? tr('Link works for days: {n}', { n: asset.expiryDays }) : null].filter(Boolean).join(' · ');
     const cover = product.images[0];
     return (
       <article className="flex gap-4 p-4" style={cardStyle(theme)}>
@@ -44,7 +47,7 @@ export function DownloadBlock({ block, theme, mode }: BlockProps<'download'>) {
         <div className="flex min-w-0 flex-1 flex-col">
           <div className="flex items-start justify-between gap-2">
             <h3 className="text-[16px] font-medium leading-snug" style={{ fontFamily: fontsFor(theme).display, color: theme.text }}>{c.title || product.name}</h3>
-            <PageChip theme={theme}>{product.priceNgn !== null ? formatNgn(product.priceNgn) : 'Price on request'}</PageChip>
+            <PageChip theme={theme}>{product.priceNgn !== null ? formatNgn(product.priceNgn) : tr('Price on request')}</PageChip>
           </div>
           {(c.description || product.description) && <p className="mt-1 text-[13px] leading-snug" style={{ color: theme.mutedText }}>{c.description || product.description}</p>}
           <p className="mt-1 text-[12px]" style={{ color: theme.mutedText }}>{[ext, formatBytes(asset.sizeBytes)].filter(Boolean).join(' · ')}</p>
@@ -54,11 +57,12 @@ export function DownloadBlock({ block, theme, mode }: BlockProps<'download'>) {
             className="mt-3 flex h-10 items-center justify-center gap-2 text-[14px] font-semibold"
             style={buttonStyle(theme, 'featured')}>
             
-            {c.ctaLabel || 'Buy and download'}
+            {c.ctaLabel || tr('Buy and download')}
           </CheckoutButton>
           <p className="mt-1.5 flex items-center gap-1 text-[11px]" style={{ color: theme.mutedText }}>
             <ShieldCheckIcon size={11} aria-hidden />
-            Delivered by secure link after payment{limits ? ` · ${limits}` : ''}
+            {tr('Delivered by secure link after payment')}
+            {limits ? ` · ${limits}` : ''}
           </p>
         </div>
       </article>);
@@ -84,7 +88,7 @@ export function DownloadBlock({ block, theme, mode }: BlockProps<'download'>) {
         <div className="flex items-start justify-between gap-2">
           <h3 className="text-[16px] font-medium leading-snug" style={{ fontFamily: fontsFor(theme).display, color: theme.text }}>{c.title}</h3>
           <PageChip theme={theme} tone={paid ? 'neutral' : 'muted'}>
-            {paid ? c.priceNgn !== null ? formatNgn(c.priceNgn) : 'Paid' : 'Free'}
+            {paid ? c.priceNgn !== null ? formatNgn(c.priceNgn) : tr('Paid') : tr('Free')}
           </PageChip>
         </div>
         {c.description && <p className="mt-1 text-[13px] leading-snug" style={{ color: theme.mutedText }}>{c.description}</p>}
@@ -94,12 +98,12 @@ export function DownloadBlock({ block, theme, mode }: BlockProps<'download'>) {
           href={c.url}
           className="mt-3 flex h-10 items-center justify-center gap-2 text-[14px] font-semibold"
           style={buttonStyle(theme, paid ? 'featured' : 'default')}
-          ariaLabel={`${c.ctaLabel || (paid ? 'Buy' : 'Download')} ${c.title}${paid ? ' (opens the seller’s payment page)' : ''}`}>
+          ariaLabel={`${c.ctaLabel || (paid ? tr('Buy') : tr('Download'))}: ${c.title}${paid ? ` (${tr('opens the seller’s payment page')})` : ''}`}>
           
           {paid ? <ExternalLinkIcon size={15} aria-hidden /> : <DownloadIcon size={15} aria-hidden />}
-          {c.ctaLabel || (paid ? 'Buy' : 'Download')}
+          {c.ctaLabel || (paid ? tr('Buy') : tr('Download'))}
         </PageAction>
-        {paid && <p className="mt-1.5 text-[11px]" style={{ color: theme.mutedText }}>Payment happens on the seller’s own checkout, not KUBICU.</p>}
+        {paid && <p className="mt-1.5 text-[11px]" style={{ color: theme.mutedText }}>{tr('Payment happens on the seller’s own checkout, not KUBICU.')}</p>}
       </div>
     </article>);
 

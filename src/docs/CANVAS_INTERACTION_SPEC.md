@@ -126,7 +126,7 @@ After adding, the new block is selected (on phones the block sheet opens).
 
 **Drop feedback** (`utils/canvasDrop.ts`): valid target → green dashed highlight + "Drop to put X before/at the end of Y"; invalid → red highlight + reason, and nothing changes. Reasons: locked block, type doesn't fit the container (`fitsIn` reason), container full (4).
 After a successful drag: toast with Undo; a screen-reader announcement "Moved X up — 3 of 8".
-**Not built:** dragging from the block library onto the artboard (library adds by click).
+**Library drag (D515):** on desktop, a block can be dragged from the block library onto the framed artboard; a line shows where it lands between top-level blocks, and it's added there and selected. Clicking still adds it in the usual place. D516: hovering a Section, Columns or Tabs (or a block inside one) outlines it with "Drop to add X before Y / at the end of Z", or in red with the reason it can't (doesn't fit, full, locked, containers don't nest); a refused drop changes nothing and says why. Touch screens add by tapping: select where first, and the library says "Adds below…" / "Adds inside…".
 
 ## 9. Containers
 - **Types:** Section, Columns, Tabs. **One level only** — containers can't go inside containers. **Max 4 children** (`MAX_CHILDREN`).
@@ -152,7 +152,7 @@ After a successful drag: toast with Undo; a screen-reader announcement "Moved X 
 | **Insert a saved section** | Library "Your sections", command menu | Copied below the selection; 2+ blocks arrive as a group; one undo step |
 | **Change to…** | Inspector header | Curated safe pairs (`utils/blockConvert.ts`, e.g. text↔quote, gallery↔carousel, link↔CTA, steps↔timeline). Keeps id, layout, visibility, schedule and label; toast states exactly what's lost, with Undo |
 
-**Not built:** clipboard copy/paste of blocks between pages — saved sections are the way to reuse.
+**Copy and paste (D515):** ⌘C / Ctrl+C copies the selected block (with anything inside it, if it's a container) to a canvas clipboard kept on this device (`utils/blockClipboard.ts`); ⌘V / Ctrl+V pastes fresh copies below the selection on any page or space in the same browser. Ordinary text copying still works when words are selected. D516: the block toolbar has Copy and (once something's copied) Paste buttons, on desktop and touch; paste goes inside the selected container when every pasted block fits and there's room, otherwise below the selection at page level, with Undo. A single block — or a container with its contents — pastes ungrouped; only 2+ page-level blocks form a group.
 
 ## 11. Inspector (right panel)
 `Inspector.tsx` / `BlockInspector.tsx`. Edits apply to the draft immediately (autosave §4).
@@ -277,10 +277,8 @@ Canonical list: `ShortcutsDialog.tsx` (⌘/), handled in `hooks/useCanvasShortcu
 ## 23. Not built / open questions
 Design decisions still open for the canvas (not testing or provider items):
 1. **Multi-select on the artboard** (shift-click) — only Layers Select mode exists. Decide whether bulk hide/delete/move on the artboard is needed.
-2. **Copy and paste blocks between pages** — saved sections cover reuse; a clipboard shortcut (⌘C/⌘V) is not designed.
-3. **Drag from the library onto the artboard** — click-to-add only.
-4. **Block render failure** — no error panel; a broken block disappears silently. Recommended: a contained "This block couldn't be shown — Undo / Remove" frame in the editor, and silent omission on the live page.
-5. **Comments on blocks** — none in the canvas.
+2. **Block render failure** — no error panel; a broken block disappears silently. Recommended: a contained "This block couldn't be shown — Undo / Remove" frame in the editor, and silent omission on the live page.
+3. **Comments on blocks** — none in the canvas.
 6. **Zoom** — fixed widths only.
 7. **Page density switch** and **renaming containers** — still planned from D174.
 8. **Phone editor Check tab** — checks surface in Publish and the inspector, but there's no full Check panel on phones.

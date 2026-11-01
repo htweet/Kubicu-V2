@@ -1,8 +1,10 @@
 import React from 'react';
 import type { CoBrandSettings, PageTheme } from '../../types/page';
+import { useT } from '../../contexts/LocaleContext';
 
 /** Both businesses' names at the top of a co-branded page (D121), in the page's own colours. */
 export function CoBrandStrip({ coBrand, theme }: {coBrand: CoBrandSettings;theme: PageTheme;}) {
+  const { t: tr } = useT();
   const mark = (name: string, filled: boolean) =>
   <span
     aria-hidden
@@ -13,7 +15,7 @@ export function CoBrandStrip({ coBrand, theme }: {coBrand: CoBrandSettings;theme
     </span>;
 
   return (
-    <div className="flex items-center justify-center gap-2.5 px-4 py-3" style={{ color: theme.text }} aria-label={`A page by ${coBrand.leadName} and ${coBrand.partnerName}`} role="note">
+    <div className="flex items-center justify-center gap-2.5 px-4 py-3" style={{ color: theme.text }} aria-label={tr('A page by {a} and {b}', { a: coBrand.leadName, b: coBrand.partnerName })} role="note">
       <span className="flex -space-x-1.5">
         {mark(coBrand.leadName, true)}
         {mark(coBrand.partnerName, false)}

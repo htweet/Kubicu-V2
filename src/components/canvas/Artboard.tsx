@@ -38,6 +38,13 @@ import { BlockChildrenProvider, type BlockChildrenValue } from '../../contexts/B
 import { ChildFrame } from './ChildFrame';
 import { ContainerAddSlot } from './ContainerAddSlot';
 import { CanvasDropContext, useContainerDrop } from '../../hooks/useContainerDrop';
+import { LIBRARY_DRAG_TYPE, libraryDrag, setLibraryDrag } from '../../utils/blockClipboard';
+import { resolveLibraryDrop, type DropTarget } from '../../utils/canvasDrop';
+import { useBlockClipboard } from '../../hooks/useBlockClipboard';
+import { toast } from 'sonner';
+import { announce } from '../../utils/announce';
+import { useT } from '../../contexts/LocaleContext';
+import { blockDefinitions } from '../../data/blockRegistry';
 
 export const viewportWidths: Record<Viewport, number> = {
   phone: 390,
@@ -67,6 +74,7 @@ export function Artboard({ viewport = 'phone', framed = true, touch = false, onE
   const removeBlock = useRemoveBlock();
   const guard = useCoBrandGuard();
   const byBlock = issuesByBlock(issues);
+  const { t: tr } = useT();
   const preview = useCampaignPreview();
   // Phased spaces: campaigns (D52) and Event spaces (D178), whose phases follow the linked event.
   const commerceData = useOptionalCommerce()?.data ?? null;
@@ -114,6 +122,9 @@ export function Artboard({ viewport = 'phone', framed = true, touch = false, onE
 
   // Members areas (D185): switch between what members see (editable) and the welcome card.
   const [memberView, setMemberView] = React.useState<MemberView>('member');
+  const [dropLine, setDropLine] = React.useState<{beforeId: string | null;y: number;} | null>(null);
+  const [dropInto, setDropInto] = React.useState<{target: DropTarget;rect: {top: number;left: number;width: number;height: number;};} | null>(null);
+  const clipboard = useBlockClipboard();
   const area = state.site.membersArea && !state.activePageId ? state.site.membersArea : null;
   const asVisitor = !!area && memberView === 'visitor';
   const memberBar = area ? <MembersAreaPreviewBar view={memberView} onChange={setMemberView} className={framed ? 'mx-auto mb-4 w-full' : 'mx-3 mb-3 mt-3'} /> : null;
@@ -270,6 +281,9 @@ export function Artboard({ viewport = 'phone', framed = true, touch = false, onE
             onToggleHidden={actions.toggleHidden}
             onDelete={removeBlock}
             onEdit={onEditBlock}
+            onCopy={clipboard.copy}
+            onPaste={clipboard.paste}
+            pasteName={clipboard.clipName}
             onDragMove={drop.onDrag}
             onDragDone={drop.onDragEnd}
             dropTarget={drop.target?.frameId === block.id ? drop.target : null} />
@@ -296,6 +310,74 @@ export function Artboard({ viewport = 'phone', framed = true, touch = false, onE
   const width = viewportWidths[viewport];
   const isPhone = viewport === 'phone' || viewport === 'widePhone';
 
+  // Dropping a block from the library (D515): a line shows where it will land, between top-level blocks.
+  const placeFor = (e: React.DragEvent<HTMLDivElement>) => {
+    const box = e.currentTarget.getBoundingClientRect();
+    const rows = Array.from(e.currentTarget.querySelectorAll<HTMLElement>('[data-block-id]')).filter((el) => ids.includes(el.dataset.blockId ?? ''));
+    const before = rows.find((el) => {
+      const r = el.getBoundingClientRect();
+      return e.clientY < r.top + r.height / 2;
+    });
+    const last = rows[rows.length - 1];
+    const y = before ? before.getBoundingClientRect().top - box.top : last ? last.getBoundingClientRect().bottom - box.top : 24;
+    return { beforeId: before?.dataset.blockId ?? null, y };
+  };
+  // Over a container (D516): outline it, with a message saying where the block goes or why it can't.
+  const boxFor = (e: React.DragEvent<HTMLDivElement>, t: DropTarget) => {
+    const el = e.currentTarget.querySelector<HTMLElement>(`[data-block-id="${t.frameId}"]`);
+    if (!el) return null;
+    const box = e.currentTarget.getBoundingClientRect();
+    const r = el.getBoundingClientRect();
+    return { top: r.top - box.top, left: r.left - box.left, width: r.width, height: r.height };
+  };
+  const onLibraryDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    if (!e.dataTransfer.types.includes(LIBRARY_DRAG_TYPE) || asVisitor) return;
+    e.preventDefault();
+    const type = libraryDrag() as BlockType | null;
+    const into = type ? resolveLibraryDrop(draft.blocks, type, { x: e.clientX, y: e.clientY }, tr) : null;
+    if (into) {
+      e.dataTransfer.dropEffect = into.ok ? 'copy' : 'none';
+      const rect = boxFor(e, into);
+      setDropLine(null);
+      setDropInto((cur) => cur && cur.target.frameId === into.frameId && cur.target.beforeId === into.beforeId && cur.target.ok === into.ok ? cur : rect ? { target: into, rect } : null);
+      return;
+    }
+    e.dataTransfer.dropEffect = 'copy';
+    setDropInto(null);
+    const at = placeFor(e);
+    setDropLine((cur) => cur?.y === at.y ? cur : at);
+  };
+  const clearDrop = () => {
+    setDropLine(null);
+    setDropInto(null);
+  };
+  const onLibraryDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    const type = e.dataTransfer.getData(LIBRARY_DRAG_TYPE) as BlockType;
+    clearDrop();
+    setLibraryDrag(null);
+    if (!type || asVisitor) return;
+    e.preventDefault();
+    const into = resolveLibraryDrop(draft.blocks, type, { x: e.clientX, y: e.clientY }, tr);
+    if (into) {
+      if (!into.ok) {
+        toast(tr('Couldn’t add it there'), { description: into.message });
+        announce(into.message);
+        return;
+      }
+      const kids = draft.blocks.filter((b) => b.parentId === into.parentId);
+      const container = draft.blocks.findIndex((b) => b.id === into.parentId);
+      const index = into.beforeId ? draft.blocks.findIndex((b) => b.id === into.beforeId) : (kids.length ? draft.blocks.indexOf(kids[kids.length - 1]) : container) + 1;
+      const id = actions.addBlock(type, index, into.parentId ?? undefined);
+      if (id) actions.select(id);
+      announce(tr('{block} added', { block: tr(blockDefinitions[type].name) }));
+      return;
+    }
+    const { beforeId } = placeFor(e);
+    const index = beforeId ? draft.blocks.findIndex((b) => b.id === beforeId) : draft.blocks.length;
+    const id = actions.addBlock(type, index < 0 ? draft.blocks.length : index);
+    if (id) actions.select(id);
+  };
+
   return (
     <div className="scroll-quiet h-full overflow-auto bg-stage" onClick={() => actions.select(null)}>
       <div className="flex min-h-full flex-col items-center px-8 py-10">
@@ -309,9 +391,34 @@ export function Artboard({ viewport = 'phone', framed = true, touch = false, onE
             isPhone ? 'rounded-[32px]' : viewport === 'tablet' ? 'rounded-[20px]' : 'rounded-[12px]'
           )}
           style={{ maxWidth: width }}
-          aria-label={`Page preview at ${width}px wide`}>
+          aria-label={`Page preview at ${width}px wide`}
+          onDragOver={onLibraryDragOver}
+          onDragLeave={(e) => {
+            if (!e.currentTarget.contains(e.relatedTarget as Node | null)) clearDrop();
+          }}
+          onDrop={onLibraryDrop}>
           
           {page}
+          {dropLine && <span aria-hidden className="pointer-events-none absolute inset-x-4 z-20 h-[3px] -translate-y-1/2 rounded-full bg-action" style={{ top: dropLine.y }} />}
+          {dropInto &&
+          <div
+            aria-hidden
+            className={cn(
+              'pointer-events-none absolute z-20 rounded-md border-2 border-dashed',
+              dropInto.target.ok ? 'border-select bg-select/10' : 'border-danger bg-danger/10'
+            )}
+            style={dropInto.rect}>
+            
+              <span
+              className={cn(
+                'absolute left-2 top-2 max-w-[calc(100%-16px)] truncate rounded-sm px-2 py-1 text-caption font-medium shadow-2',
+                dropInto.target.ok ? 'bg-select text-white' : 'bg-danger text-white'
+              )}>
+              
+                {dropInto.target.message}
+              </span>
+            </div>
+          }
         </div>
       </div>
     </div>);

@@ -4,6 +4,7 @@ import { figure, onOpsSettings } from '../opsSettings';
 import { cancelOrder, refundOrder } from './ops';
 import { refundableNgn } from './money';
 import { findSeat, seatsIssue, syncSeatQuantities } from './seating';
+import { currentLang, dateLocale } from '../localeFormat';
 
 /** Example figures (D73). */
 export let MAX_TICKET_TYPES = 8;
@@ -245,7 +246,8 @@ export function ticketLineIssue(data: CommerceData | null | undefined, line: Pic
   if (ev.status !== 'on_sale') return 'Ticket sales are paused';
   const state = ticketTypeState(data, ev, tt, now, holder);
   if (state === 'closed') return `${tt.name} sales have closed`;
-  if (state === 'not_yet') return `${tt.name} goes on sale ${new Date(tt.salesStart as string).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`;
+  // The date follows the screen language (D514); the sentence itself is translated by its builtPhrases pattern.
+  if (state === 'not_yet') return `${tt.name} goes on sale ${new Date(tt.salesStart as string).toLocaleDateString(dateLocale(currentLang()), { day: 'numeric', month: 'short' })}`;
   const left = Math.min(availableOfType(data, ev, tt, now, holder), availableForEvent(data, ev, now, holder));
   if (left <= 0) {
     // Seats physically left but all reserved by people mid-checkout.

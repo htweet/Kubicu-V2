@@ -2,6 +2,8 @@ import React from 'react';
 import {
   ArrowDownIcon,
   ArrowUpIcon,
+  ClipboardCopyIcon,
+  ClipboardPasteIcon,
   CopyIcon,
   EyeIcon,
   EyeOffIcon,
@@ -13,6 +15,7 @@ import {
 'lucide-react';
 import type { DragControls } from 'framer-motion';
 import { cn } from '../../utils/cn';
+import { useT } from '../../contexts/LocaleContext';
 
 interface BlockToolbarProps {
   dragControls: DragControls;
@@ -27,6 +30,10 @@ interface BlockToolbarProps {
   onToggleLocked: () => void;
   onDelete: () => void;
   onEdit?: () => void;
+  /** D516: copy to the canvas clipboard; paste shows only when something's been copied. */
+  onCopy?: () => void;
+  onPaste?: () => void;
+  pasteName?: string | null;
 }
 
 export function BlockToolbar({
@@ -41,8 +48,12 @@ export function BlockToolbar({
   onToggleHidden,
   onToggleLocked,
   onDelete,
-  onEdit
+  onEdit,
+  onCopy,
+  onPaste,
+  pasteName
 }: BlockToolbarProps) {
+  const { t: tr } = useT();
   const btn = cn(
     'inline-flex items-center justify-center rounded-sm text-fg-muted transition-colors duration-100 hover:bg-sunken hover:text-fg',
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus disabled:pointer-events-none disabled:opacity-35',
@@ -85,6 +96,22 @@ export function BlockToolbar({
       <button type="button" aria-label="Duplicate" title="Duplicate" onClick={onDuplicate} className={btn}>
         <CopyIcon size={size} aria-hidden />
       </button>
+      {onCopy &&
+      <button type="button" aria-label={tr('Copy')} title={touch ? tr('Copy') : tr('Copy — paste on any page (⌘C)')} onClick={onCopy} className={btn}>
+          <ClipboardCopyIcon size={size} aria-hidden />
+        </button>
+      }
+      {onPaste && pasteName &&
+      <button
+        type="button"
+        aria-label={tr('Paste “{name}” here', { name: pasteName })}
+        title={tr('Paste “{name}” here', { name: pasteName }) + (touch ? '' : ' (⌘V)')}
+        onClick={onPaste}
+        className={btn}>
+        
+          <ClipboardPasteIcon size={size} aria-hidden />
+        </button>
+      }
       <button
         type="button"
         aria-label={hidden ? 'Show on live page' : 'Hide from live page'}

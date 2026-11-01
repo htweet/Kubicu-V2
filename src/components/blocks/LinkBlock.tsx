@@ -4,8 +4,10 @@ import type { BlockProps } from './blockProps';
 import { PageAction } from './PageAction';
 import { buttonStyle } from './pageStyle';
 import { cn } from '../../utils/cn';
+import { useT } from '../../contexts/LocaleContext';
 
 export function LinkBlock({ block, theme, mode }: BlockProps<'link'>) {
+  const { t: tr } = useT();
   const { label, url, description } = block.content;
   const { emphasis, align } = block.style;
   const subtle = emphasis === 'subtle';
@@ -26,7 +28,7 @@ export function LinkBlock({ block, theme, mode }: BlockProps<'link'>) {
       
       <span className={cn('flex min-w-0 flex-col', align === 'center' && 'items-center')}>
         <span className="text-[15px] font-semibold leading-snug" style={{ opacity: label ? 1 : 0.5 }}>
-          {label || 'Untitled link'}
+          {label || tr('Untitled link')}
         </span>
         {description && !subtle && <span className="mt-0.5 text-[12.5px] leading-snug opacity-75">{description}</span>}
       </span>

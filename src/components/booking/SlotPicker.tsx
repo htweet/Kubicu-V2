@@ -3,6 +3,8 @@ import type { PageTheme } from '../../types/page';
 import type { Availability, Booking, Service } from '../../types/ops';
 import { addDaysKey, dateKeyInTz, slotsFor, timeLabel, visitorTimeZone, zonedToUtc } from '../../utils/ops/slots';
 import { cardStyle, mix } from '../blocks/pageStyle';
+import { useT } from '../../contexts/LocaleContext';
+import { dateLocale } from '../../utils/localeFormat';
 
 interface SlotPickerProps {
   theme: PageTheme;
@@ -20,6 +22,8 @@ const DAYS_SHOWN = 14;
 
 /** Date chips then time slots, both in the business’s time zone, with the visitor’s local time alongside. */
 export function SlotPicker({ theme, service, availability, bookings, value, onChange, ignoreId, staffId }: SlotPickerProps) {
+  const { t: tr, lang } = useT();
+  const loc = dateLocale(lang);
   const tz = availability.timeZone;
   const local = visitorTimeZone();
   const differentZone = local !== tz && timeLabel(Date.now(), local) !== timeLabel(Date.now(), tz);
@@ -40,14 +44,14 @@ export function SlotPicker({ theme, service, availability, bookings, value, onCh
   if (!days.some((d) => d.slots.length)) {
     return (
       <p className="p-4 text-[14px]" style={cardStyle(theme)} role="status">
-        No times are free in the next {DAYS_SHOWN} days. Please message the business to arrange a time.
+        {tr('No times are free in the next {n} days. Please message the business to arrange a time.', { n: DAYS_SHOWN })}
       </p>);
 
   }
 
   return (
     <div className="flex flex-col gap-4">
-      <div role="radiogroup" aria-label="Choose a day" className="scroll-quiet -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+      <div role="radiogroup" aria-label={tr('Choose a day')} className="scroll-quiet -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
         {days.map((d) => {
           const noon = zonedToUtc(d.key, '12:00', tz);
           const active = d.key === day;
@@ -63,23 +67,23 @@ export function SlotPicker({ theme, service, availability, bookings, value, onCh
               className="flex h-16 w-14 shrink-0 flex-col items-center justify-center disabled:cursor-not-allowed disabled:opacity-40"
               style={{ borderRadius: 12, border: `1.5px solid ${active ? theme.text : mix(theme.text, 12)}`, background: active ? theme.text : 'transparent', color: active ? theme.background : theme.text }}>
               
-              <span className="text-[11px] font-medium uppercase">{new Intl.DateTimeFormat('en-NG', { timeZone: tz, weekday: 'short' }).format(noon)}</span>
-              <span className="text-[17px] font-semibold tabular-nums">{new Intl.DateTimeFormat('en-NG', { timeZone: tz, day: 'numeric' }).format(noon)}</span>
+              <span className="text-[11px] font-medium uppercase">{new Intl.DateTimeFormat(loc, { timeZone: tz, weekday: 'short' }).format(noon)}</span>
+              <span className="text-[17px] font-semibold tabular-nums">{new Intl.DateTimeFormat(loc, { timeZone: tz, day: 'numeric' }).format(noon)}</span>
             </button>);
 
         })}
       </div>
       <div>
         <p className="mb-2 text-[12.5px]" style={muted}>
-          Times in {tz.replace('_', ' ')}
-          {differentZone ? ` · your time (${local.split('/').pop()?.replace('_', ' ')}) in brackets` : ''}
+          {tr('Times in {zone}.', { zone: tz.replace('_', ' ') })}
+          {differentZone ? ` ${tr('Your time ({zone}) is in brackets.', { zone: local.split('/').pop()?.replace('_', ' ') ?? '' })}` : ''}
         </p>
         {current.slots.length === 0 ?
         <p className="text-[14px]" style={muted}>
-            Nothing free this day. Try another.
+            {tr('Nothing free this day. Try another.')}
           </p> :
 
-        <div role="radiogroup" aria-label="Choose a time" className="grid grid-cols-3 gap-2">
+        <div role="radiogroup" aria-label={tr('Choose a time')} className="grid grid-cols-3 gap-2">
             {current.slots.map((s) => {
             const active = s.start === value;
             return (
@@ -89,13 +93,13 @@ export function SlotPicker({ theme, service, availability, bookings, value, onCh
                 role="radio"
                 aria-checked={active}
                 onClick={() => onChange(s.start)}
-                aria-label={s.capacity ? `${timeLabel(s.start, tz)}, ${s.seatsLeft} of ${s.capacity} seats left` : undefined}
+                aria-label={s.capacity ? `${timeLabel(s.start, tz, loc)}, ${tr('Places left: {n} of {total}', { n: s.seatsLeft ?? 0, total: s.capacity })}` : undefined}
                 className={`flex ${s.capacity || differentZone ? 'min-h-[56px] py-1.5' : 'h-12'} flex-col items-center justify-center text-[14px] font-semibold tabular-nums`}
                 style={{ borderRadius: 10, border: `1.5px solid ${active ? theme.text : mix(theme.text, 12)}`, background: active ? theme.text : theme.surface, color: active ? theme.background : theme.text }}>
                 
-                  {timeLabel(s.start, tz)}
-                  {differentZone && <span className="text-[10.5px] font-medium opacity-70">({timeLabel(s.start, local)})</span>}
-                  {s.capacity && <span className="text-[10.5px] font-medium opacity-75">{s.seatsLeft === 1 ? '1 seat left' : `${s.seatsLeft} of ${s.capacity} left`}</span>}
+                  {timeLabel(s.start, tz, loc)}
+                  {differentZone && <span className="text-[10.5px] font-medium opacity-70">({timeLabel(s.start, local, loc)})</span>}
+                  {s.capacity && <span className="text-[10.5px] font-medium opacity-75">{tr('Left: {n} of {total}', { n: s.seatsLeft ?? 0, total: s.capacity })}</span>}
                 </button>);
 
           })}

@@ -82,13 +82,15 @@ import { crossBorderTracking } from './crossBorderTracking';
 import { sponsorDisputes } from './sponsorDisputes';
 import { storefrontProduct } from './storefrontProduct';
 import { staffFrame } from './staffFrame';
+import { copilotWhatsAppKeGhZa } from '../translationsCopilotWhatsApp';
+import { copilotHelpKeGhZa } from '../translationsCopilotHelp';
 
 /**
  * Every Kiswahili, Twi and isiZulu pass, merged (D356). Add each new pass file here; later files win on overlap.
  * Missing phrases fall back to English, so each pass can ship on its own.
  */
 // Earlier entries are overridden by later ones: screen-specific passes first, the shared frame last.
-const passes = [staffFrame, storefrontProduct, sponsorDisputes, crossBorderTracking, branchesActivity, accountingErp2, sponsorships, nfc, erp, activityExport, accounting, branches, crossBorder, starterFilters, payFlows, billingFx, a11yLabels, kycFollowups, kycCountriesKeGhZa, publicMoney, copilotQuestions, copilotChat, batch1314, kyc, websiteGapsBuilt, collabPartners, specialPages23, formErrorsSpecial1, paySubs, panels, accountSettings, availability, settingsTabs, blockLooks, canvasFinal, round2BlockFields, smartSignupBlockFields, storyBlockFields, layoutBlockFields, mediaBlockFields, eventBlockFields, commerceBlockFields, coreBlockFields, pagePanelMore, pagePanel, templatesThemes, publishCheck, inspectorLayers, blockNames, canvasChrome, home, siteHelpContact, siteListingDevelopers, siteTemplatesMarket, siteLinksAudience, siteCopilotCreators, siteCompanyAi, siteSolutions, siteFeatures, siteFrame, sitePricing, siteHome, opsPages, intentAsk, siteAfrica, qrPrint, domains2, domains1, formsAnalytics, automations2, automations1, bookingsAudience, commerceTabs3, commerceTabs2, commerceTabs1, trackingWallet, commerceMoney, commerceDetail, commerce, checkoutStatus, accountAuth, appFrame, frame];
+const passes = [copilotHelpKeGhZa, copilotWhatsAppKeGhZa, staffFrame, storefrontProduct, sponsorDisputes, crossBorderTracking, branchesActivity, accountingErp2, sponsorships, nfc, erp, activityExport, accounting, branches, crossBorder, starterFilters, payFlows, billingFx, a11yLabels, kycFollowups, kycCountriesKeGhZa, publicMoney, copilotQuestions, copilotChat, batch1314, kyc, websiteGapsBuilt, collabPartners, specialPages23, formErrorsSpecial1, paySubs, panels, accountSettings, availability, settingsTabs, blockLooks, canvasFinal, round2BlockFields, smartSignupBlockFields, storyBlockFields, layoutBlockFields, mediaBlockFields, eventBlockFields, commerceBlockFields, coreBlockFields, pagePanelMore, pagePanel, templatesThemes, publishCheck, inspectorLayers, blockNames, canvasChrome, home, siteHelpContact, siteListingDevelopers, siteTemplatesMarket, siteLinksAudience, siteCopilotCreators, siteCompanyAi, siteSolutions, siteFeatures, siteFrame, sitePricing, siteHome, opsPages, intentAsk, siteAfrica, qrPrint, domains2, domains1, formsAnalytics, automations2, automations1, bookingsAudience, commerceTabs3, commerceTabs2, commerceTabs1, trackingWallet, commerceMoney, commerceDetail, commerce, checkoutStatus, accountAuth, appFrame, frame];
 
 const merge = (lang: 'sw' | 'tw' | 'zu'): Dict => Object.assign({}, ...passes.map((p) => p[lang]));
 

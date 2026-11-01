@@ -7,8 +7,11 @@ import { PageAction } from './PageAction';
 import { borderColor, buttonStyle, cardRadius, cardStyle, fontsFor, mix } from './pageStyle';
 import { formatNgn } from '../../utils/format';
 import { usePageOpsContext } from '../../contexts/PageOpsContext';
+import { useT } from '../../contexts/LocaleContext';
 
+/** Fixed wording follows the visitor's language (D503); package names, prices, units and button labels the seller typed stay as written. */
 export function PricingBlock({ block, theme, mode }: BlockProps<'pricing'>) {
+  const { t: tr } = useT();
   const c = block.content;
   const ops = usePageOpsContext();
   const packages = c.packages.filter((p) => p.name);
@@ -35,10 +38,10 @@ export function PricingBlock({ block, theme, mode }: BlockProps<'pricing'>) {
               
               <div className="flex items-start justify-between gap-3">
                 <h3 className="text-[18px] font-medium leading-tight" style={{ fontFamily: fontsFor(theme).display, color: theme.text }}>{p.name}</h3>
-                {p.highlighted && <PageChip theme={theme} tone="strong">Most chosen</PageChip>}
+                {p.highlighted && <PageChip theme={theme} tone="strong">{tr('Most chosen')}</PageChip>}
               </div>
               <p className="mt-2 text-[24px] font-semibold tabular-nums" style={{ color: theme.text }}>
-                {p.priceNgn !== null ? formatNgn(p.priceNgn) : <span className="text-[16px] font-medium" style={{ color: theme.mutedText }}>Price on request</span>}
+                {p.priceNgn !== null ? formatNgn(p.priceNgn) : <span className="text-[16px] font-medium" style={{ color: theme.mutedText }}>{tr('Price on request')}</span>}
                 {p.priceNgn !== null && p.unit && <span className="ml-1 text-[13px] font-normal" style={{ color: theme.mutedText }}>{p.unit}</span>}
               </p>
               {p.description && <p className="mt-1 text-[13px] leading-relaxed" style={{ color: theme.mutedText }}>{p.description}</p>}
@@ -55,11 +58,11 @@ export function PricingBlock({ block, theme, mode }: BlockProps<'pricing'>) {
               {p.serviceId && ops.data?.services.some((s) => s.id === p.serviceId && s.active) ?
               mode === 'live' && ops.actions ?
               <button type="button" onClick={() => ops.actions?.openBooking(p.serviceId as string)} className="mt-5 flex h-11 w-full items-center justify-center text-[14px] font-semibold" style={buttonStyle(theme, p.highlighted ? 'featured' : 'default')}>
-                    {p.ctaLabel || 'Book'}
+                    {p.ctaLabel || tr('Book')}
                   </button> :
 
               <span className="mt-5 flex h-11 w-full items-center justify-center text-[14px] font-semibold" style={buttonStyle(theme, p.highlighted ? 'featured' : 'default')}>
-                    {p.ctaLabel || 'Book'}
+                    {p.ctaLabel || tr('Book')}
                   </span> :
 
 
@@ -69,7 +72,7 @@ export function PricingBlock({ block, theme, mode }: BlockProps<'pricing'>) {
                 className="mt-5 flex h-11 w-full items-center justify-center text-[14px] font-semibold"
                 style={buttonStyle(theme, p.highlighted ? 'featured' : 'default')}>
                 
-                  {p.ctaLabel || 'Enquire'}
+                  {p.ctaLabel || tr('Enquire')}
                 </PageAction>
               }
             </li>);

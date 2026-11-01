@@ -282,7 +282,33 @@ export function declineBooking(data: OpsData, bookingId: string, reason: string)
 }
 
 /** A request is declined once its event log says so; otherwise a cancelled booking was cancelled. */
-export const wasDeclined = (b: Booking) => b.status === 'cancelled' && b.events.some((e) => e.label.startsWith('Declined by you'));
+export const wasDeclined = (b: Booking) => b.status === 'cancelled' && b.events.some((e) => e.label.startsWith('Declined by you') || e.label.startsWith('Declined automatically'));
+
+/** When an unanswered request is declined on its own (D514): the service's answer window, or its start time if sooner. */
+export function autoDeclineAt(b: Booking, service: Service | undefined): number {
+  const start = Date.parse(b.start);
+  const hours = service?.autoDeclineHours;
+  if (!hours) return start;
+  const arrived = b.events.reduce((m, e) => Math.min(m, Date.parse(e.at)), Date.parse(b.events[b.events.length - 1]?.at ?? b.start));
+  return Math.min(start, arrived + hours * 3_600_000);
+}
+
+/**
+ * Declines every request nobody answered in time (D514). The time is freed and any deposit refunded in full,
+ * exactly like declining by hand. In production this runs on the server; here it runs while KUBICU is open.
+ */
+export function autoDeclineDue(data: OpsData, at = Date.now()): OpsData {
+  let changed = false;
+  const bookings = data.bookings.map((b) => {
+    if (b.status !== 'requested') return b;
+    const service = data.services.find((s) => s.id === b.serviceId);
+    if (autoDeclineAt(b, service) > at) return b;
+    changed = true;
+    const label = `Declined automatically — not answered in time${b.depositPaidNgn ? ' · deposit refunded in full' : ''}`;
+    return { ...b, status: 'cancelled' as const, events: [{ id: uid('bev'), at: new Date(at).toISOString(), label }, ...b.events] };
+  });
+  return changed ? { ...data, bookings } : data;
+}
 
 export function setBookingStatus(data: OpsData, bookingId: string, status: BookingStatus, label: string): OpsData {
   return { ...data, bookings: data.bookings.map((b) => b.id === bookingId ? { ...b, status, events: [{ id: uid('bev'), at: now(), label }, ...b.events] } : b) };

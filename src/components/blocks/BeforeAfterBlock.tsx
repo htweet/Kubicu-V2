@@ -7,12 +7,15 @@ import { MediaImage } from '../media/MediaImage';
 import { useRenderPlan } from '../../contexts/RenderPlanContext';
 import { planAtLeast } from '../../data/plans';
 import { buttonStyle, cardRadius, imageFrameStyle } from './pageStyle';
+import { useT } from '../../contexts/LocaleContext';
 
 /**
  * Before & after (D169). Three ways to compare, so no one depends on dragging: drag the handle,
  * use arrow keys on the slider (role="slider"), or tap the Before / After buttons. Free plan: side by side.
  */
 export function BeforeAfterBlock({ block, theme, mode }: BlockProps<'beforeAfter'>) {
+  // Screen-reader wording follows the visitor's language (D509); the seller's Before/After labels stay as written.
+  const { t: tr } = useT();
   const c = block.content;
   const plan = useRenderPlan();
   const [pos, setPos] = useState(50);
@@ -80,11 +83,11 @@ export function BeforeAfterBlock({ block, theme, mode }: BlockProps<'beforeAfter
         <div
           role="slider"
           tabIndex={0}
-          aria-label={`Compare ${c.beforeLabel.toLowerCase()} and ${c.afterLabel.toLowerCase()}`}
+          aria-label={tr('Compare: {a} and {b}', { a: c.beforeLabel, b: c.afterLabel })}
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={Math.round(pos)}
-          aria-valuetext={`${Math.round(pos)}% ${c.beforeLabel.toLowerCase()}`}
+          aria-valuetext={`${c.beforeLabel}: ${Math.round(pos)}%`}
           onKeyDown={onKey}
           className="absolute inset-y-0 -ml-5 flex w-10 cursor-ew-resize items-center justify-center focus-visible:outline-none [&:focus-visible>span]:ring-4 [&:focus-visible>span]:ring-white/70"
           style={{ left: `${pos}%` }}>
@@ -97,7 +100,7 @@ export function BeforeAfterBlock({ block, theme, mode }: BlockProps<'beforeAfter
       </div>
       <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
         {c.caption ? <figcaption className="text-[14px]" style={{ color: theme.mutedText }}>{c.caption}</figcaption> : <span />}
-        <div className="flex gap-2" role="group" aria-label="Show">
+        <div className="flex gap-2" role="group" aria-label={tr('Show')}>
           <button type="button" onClick={() => setPos(100)} aria-pressed={pos === 100} className="h-10 px-4 text-[13px] font-semibold" style={buttonStyle(theme, pos === 100 ? 'featured' : 'default')}>
             {c.beforeLabel}
           </button>

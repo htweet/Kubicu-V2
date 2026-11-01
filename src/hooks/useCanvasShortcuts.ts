@@ -7,6 +7,9 @@ interface Shortcuts {
   onDuplicate: () => void;
   onEscape: () => void;
   onCommand?: () => void;
+  /** D515: copy the selected block; paste copied blocks below the selection (works across pages). */
+  onCopy?: () => void;
+  onPaste?: () => void;
 }
 
 function isTyping(target: EventTarget | null): boolean {
@@ -37,6 +40,13 @@ export function useCanvasShortcuts(handlers: Shortcuts) {
       } else if (mod && key === 'y') {
         e.preventDefault();
         ref.current.onRedo();
+      } else if (mod && key === 'c' && ref.current.onCopy && !window.getSelection()?.toString()) {
+        // Leave ordinary text copying alone when the person has selected some words.
+        e.preventDefault();
+        ref.current.onCopy();
+      } else if (mod && key === 'v' && ref.current.onPaste) {
+        e.preventDefault();
+        ref.current.onPaste();
       } else if (mod && key === 'd') {
         e.preventDefault();
         ref.current.onDuplicate();

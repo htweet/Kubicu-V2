@@ -2,9 +2,11 @@ import React from 'react';
 import { ChevronDownIcon } from 'lucide-react';
 import type { BlockProps } from './blockProps';
 import { cardStyle, fontsFor, mix } from './pageStyle';
+import { useT } from '../../contexts/LocaleContext';
 
 /** Questions without an answer only show in the canvas; visitors never see a blank or "coming soon" answer. */
 export function FaqBlock({ block, theme, mode }: BlockProps<'faq'>) {
+  const { t: tr } = useT();
   const { title, items } = block.content;
   const live = mode === 'live';
   const filled = items.filter((i) => i.question.trim() && (!live || i.answer.trim()));
@@ -19,7 +21,7 @@ export function FaqBlock({ block, theme, mode }: BlockProps<'faq'>) {
       <div className="overflow-hidden" style={cardStyle(theme)}>
         {filled.length === 0 ?
         <p className="px-4 py-4 text-[14px]" style={{ color: theme.mutedText }}>
-            Add your first question in the inspector.
+            {tr('Add your first question in the inspector.')}
           </p> :
 
         filled.map((item, i) =>
@@ -29,7 +31,7 @@ export function FaqBlock({ block, theme, mode }: BlockProps<'faq'>) {
                 <ChevronDownIcon size={16} className="shrink-0 transition-transform duration-200 ease-out group-open:rotate-180" style={{ color: theme.mutedText }} aria-hidden />
               </summary>
               <p className="px-4 pb-4 text-[14px] leading-relaxed" style={{ color: theme.mutedText, fontStyle: item.answer.trim() ? undefined : 'italic' }}>
-                {item.answer.trim() || 'No answer yet — visitors won’t see this question until you add one.'}
+                {item.answer.trim() || tr('No answer yet — visitors won’t see this question until you add one.')}
               </p>
             </details>
         )

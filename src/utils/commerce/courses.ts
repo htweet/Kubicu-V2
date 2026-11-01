@@ -5,6 +5,7 @@ import { uid } from '../id';
 import { checkAccess, normalisePhone, type MemberSession } from '../members';
 import { planAtLeast } from '../../data/plans';
 import { blankLive, liveIssue } from './liveLessons';
+import { durationText, type FormatTr } from '../localeFormat';
 
 /**
  * Courses (D197). A course is modules of lessons. Free courses enrol on sign-in; paid courses are sold
@@ -88,11 +89,9 @@ export function totalMinutes(course: Course): number {
   return allLessons(course).reduce((n, { lesson }) => n + Math.max(0, lesson.minutes || 0), 0);
 }
 
-export function durationLabel(minutes: number): string {
-  if (minutes < 60) return `${minutes} min`;
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  return m ? `${h} h ${m} min` : `${h} h`;
+/** Pass the visitor's translator on buyer screens so the units follow their language (D510). */
+export function durationLabel(minutes: number, tr?: FormatTr): string {
+  return durationText(minutes, tr);
 }
 
 /** Why a lesson isn't ready to publish, or null. */

@@ -1,6 +1,19 @@
 # KUBICU — Design gap audit
 
-_Latest re-audit 1 Nov 2026 (through D481) — see "Re-audit, 1 Nov 2026" directly below. Previous re-audit 30 Oct 2026 (through D343) — see the later notes and §7._
+_Latest re-audit 1 Nov 2026 (through D522) — see "Addendum D482–D522" and "Re-audit, 1 Nov 2026" directly below. Previous re-audit 30 Oct 2026 (through D343) — see the later notes and §7._
+
+> **Addendum, 1 Nov 2026 (D482–D522).**
+>
+> | Area | Decisions | Status |
+> |---|---|---|
+> | Branch-limited Sales report and Wallet; office hours in the visitor's time zone; sample stats per country | D482, D484–D486 | ✅ |
+> | Staff console frame + 13 areas translated; the other 11 stay English by owner's decision | D483, D487–D502 | ✅ (closed by decision) |
+> | Country rollout switch (open/closed/scheduled per country, Nigeria first), country-aware kits, staff money per workspace currency; every new workspace keeps a country | D494–D495 | ✅ 🧪 · a real backend must enforce rollout at sign-up/sign-in |
+> | Every published-page block, dates, lengths, seat summary, Trust Passport, checkout problems in the visitor's language; "ago" times and months app-wide with Twi fallbacks | D502–D514 | ✅ 👤 drafts need native review |
+> | Bookings auto-decline and CSV; canvas drag from library (into containers), Copy/Paste buttons, smarter paste | D514–D517 | ✅ |
+> | Copilot: typed replies in eight languages, WhatsApp demo translated, answers questions about KUBICU (17 curated topics + every Help centre guide) with screen links | D518–D521 | ✅ 🧪 rule-based · real model per `COPILOT_AI_INTEGRATION.md` (D522) |
+>
+> **Buildable gaps after this addendum:** none known. Open items are a real AI model and backend (§4), sign-off (§5) and hands-on checks (§7). **Nothing from D280 to D521 has been opened in a browser.** Copilot-specific limits until the model lands: workspace links assume sign-in, the Ask bar doesn't check the AI operations switch, question matching is by words.
 
 > **Re-audit, 1 Nov 2026 (D344–D481).** Everything built since D343, by area. The decision register has the detail for each row.
 >

@@ -7,6 +7,7 @@ import { SectionHeading } from './SectionHeading';
 import { fontsFor, mix } from './pageStyle';
 import { useCatalog } from '../../contexts/CatalogContext';
 import { formatNgn } from '../../utils/format';
+import { useT } from '../../contexts/LocaleContext';
 
 interface Row {
   id: string;
@@ -20,6 +21,8 @@ interface Row {
  * checkout never disagree — or are written by hand. Returns are always the owner's own words.
  */
 export function DeliveryBlock({ block, theme, mode }: BlockProps<'delivery'>) {
+  // Headings and table labels follow the visitor's language (D508); areas, times and the returns policy stay as written.
+  const { t: tr } = useT();
   const c = block.content;
   const ref = useRef<HTMLElement>(null);
   const width = useElementWidth(ref);
@@ -29,11 +32,11 @@ export function DeliveryBlock({ block, theme, mode }: BlockProps<'delivery'>) {
 
   const rows: Row[] = fromShop ?
   f?.deliveryEnabled ?
-  f.zones.map((z) => ({ id: z.id, area: z.name, price: z.feeNgn > 0 ? formatNgn(z.feeNgn) : 'Free', time: z.eta })) :
+  f.zones.map((z) => ({ id: z.id, area: z.name, price: z.feeNgn > 0 ? formatNgn(z.feeNgn) : tr('Free'), time: z.eta })) :
   [] :
   c.zones.filter((z) => z.area.trim()).map((z) => ({ ...z, area: z.area.trim() }));
-  const freeOver = fromShop && f?.deliveryEnabled && f.freeDeliveryOverNgn ? `Free delivery on orders over ${formatNgn(f.freeDeliveryOverNgn)}.` : '';
-  const pickup = fromShop ? f?.pickupEnabled ? [f.pickupAddress, f.pickupHours].filter((s) => s.trim()).join(' · ') || 'Available — details when you order' : '' : c.pickup.trim();
+  const freeOver = fromShop && f?.deliveryEnabled && f.freeDeliveryOverNgn ? tr('Free delivery on orders over {amount}.', { amount: formatNgn(f.freeDeliveryOverNgn) }) : '';
+  const pickup = fromShop ? f?.pickupEnabled ? [f.pickupAddress, f.pickupHours].filter((s) => s.trim()).join(' · ') || tr('Available — details when you order') : '' : c.pickup.trim();
   const returns = c.returns.trim();
 
   if (!rows.length && !pickup && !returns) {
@@ -64,15 +67,15 @@ export function DeliveryBlock({ block, theme, mode }: BlockProps<'delivery'>) {
           {rows.length > 0 &&
           <div className="py-5" style={{ borderTop: rule }}>
               <h3 className="text-[17px] font-medium" style={display}>
-                Delivery
+                {tr('Delivery')}
               </h3>
               <table className="mt-3 w-full text-left text-[15px]">
-                <caption className="sr-only">Delivery areas, prices and times</caption>
+                <caption className="sr-only">{tr('Delivery areas, prices and times')}</caption>
                 <thead>
                   <tr className="text-[12.5px]" style={label}>
-                    <th scope="col" className="pb-2 font-medium">Area</th>
-                    <th scope="col" className="pb-2 text-right font-medium">Price</th>
-                    {showTime && <th scope="col" className="pb-2 pl-4 text-right font-medium">Usually</th>}
+                    <th scope="col" className="pb-2 font-medium">{tr('Area')}</th>
+                    <th scope="col" className="pb-2 text-right font-medium">{tr('Price')}</th>
+                    {showTime && <th scope="col" className="pb-2 pl-4 text-right font-medium">{tr('Usually')}</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -108,7 +111,7 @@ export function DeliveryBlock({ block, theme, mode }: BlockProps<'delivery'>) {
           {pickup &&
           <div className="py-5" style={{ borderTop: rule }}>
               <h3 className="text-[17px] font-medium" style={display}>
-                Pickup
+                {tr('Pickup')}
               </h3>
               <p className="mt-2 whitespace-pre-line text-[15px] leading-relaxed" style={label}>
                 {pickup}
@@ -119,7 +122,7 @@ export function DeliveryBlock({ block, theme, mode }: BlockProps<'delivery'>) {
         {returns &&
         <div className="py-5" style={{ borderTop: rule }}>
             <h3 className="text-[17px] font-medium" style={display}>
-              Returns
+              {tr('Returns')}
             </h3>
             <p className="mt-2 whitespace-pre-line text-[15px] leading-relaxed" style={label}>
               {returns}

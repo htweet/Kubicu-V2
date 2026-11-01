@@ -15,6 +15,7 @@ export interface TrustSignal {
   met: boolean;
   /** Plain evidence, e.g. "4 of 10 completed orders". */
   evidence: string;
+
   /** What to do next when not met. */
   next: string;
   to: string;
@@ -180,7 +181,15 @@ export function computePassport(orders: Order[], money: MoneyData, proof: ProofD
  * Met signals in words safe to show buyers on a public page (D111): counts and checks only —
  * never revenue, refund amounts or anything still in progress.
  */
-export function publicSignals(p: ReturnType<typeof computePassport>): {id: SignalId;title: string;evidence: string;validUntil?: string;}[] {
+/** A public evidence line as a phrase with {placeholders}, so visitors read it in their language (D511). */
+export interface EvidencePhrase {
+  t: string;
+  v?: Record<string, string | number>;
+}
+
+export function publicSignals(
+p: ReturnType<typeof computePassport>)
+: {id: SignalId;title: string;evidence: string;evidencePhrase: EvidencePhrase;validUntil?: string;}[] {
   const s = p.stats;
   const words: Record<SignalId, string> = {
     verified: 'Identity and business details checked by KUBICU',
@@ -190,7 +199,18 @@ export function publicSignals(p: ReturnType<typeof computePassport>): {id: Signa
     issues: 'Few refunds and disputes',
     tenure: `Selling on KUBICU for ${s.days}+ days`
   };
-  return p.signals.filter((x) => x.met).map((x) => ({ id: x.id, title: x.title, evidence: words[x.id], validUntil: x.id === 'verified' ? x.validUntil : undefined }));
+  // The same lines as phrases with {placeholders}, so visitors read them in their language (D511).
+  const phrases: Record<SignalId, EvidencePhrase> = {
+    verified: { t: 'Identity and business details checked by KUBICU' },
+    reviews: { t: 'Verified reviews: {n} · average {avg}', v: { n: s.reviews, avg: s.avg.toFixed(1) } },
+    orders: { t: 'Orders completed: {n}+', v: { n: s.completed } },
+    escrow: { t: 'Protected (escrow) orders completed without a lost dispute: {n}', v: { n: s.escrowReleased } },
+    issues: { t: 'Few refunds and disputes' },
+    tenure: { t: 'Days selling on KUBICU: {n}+', v: { n: s.days } }
+  };
+  return p.signals.
+  filter((x) => x.met).
+  map((x) => ({ id: x.id, title: x.title, evidence: words[x.id], evidencePhrase: phrases[x.id], validUntil: x.id === 'verified' ? x.validUntil : undefined }));
 }
 
 export function passportSummary(business: string, url: string, p: ReturnType<typeof computePassport>): string {

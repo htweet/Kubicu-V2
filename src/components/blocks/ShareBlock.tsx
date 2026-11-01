@@ -2,9 +2,14 @@ import React, { useState } from 'react';
 import { CheckIcon, LinkIcon, MailIcon, MessageCircleIcon, Share2Icon } from 'lucide-react';
 import type { BlockProps } from './blockProps';
 import { buttonStyle, fontsFor } from './pageStyle';
+import { useT } from '../../contexts/LocaleContext';
 
-/** Share this page (D169): the device's own share sheet when there is one, plus WhatsApp, X, Facebook, email and copy link. */
+/**
+ * Share this page (D169): the device's own share sheet when there is one, plus WhatsApp, X, Facebook, email and copy link.
+ * Button wording follows the visitor's language (D503); service names stay as they are.
+ */
 export function ShareBlock({ block, theme, mode }: BlockProps<'share'>) {
+  const { t: tr } = useT();
   const c = block.content;
   const [copied, setCopied] = useState(false);
   const live = mode === 'live';
@@ -16,7 +21,7 @@ export function ShareBlock({ block, theme, mode }: BlockProps<'share'>) {
   { key: 'wa', label: 'WhatsApp', icon: MessageCircleIcon, href: `https://wa.me/?text=${enc(`${msg} ${url}`)}` },
   { key: 'x', label: 'X', icon: null, href: `https://x.com/intent/post?text=${enc(msg)}&url=${enc(url)}` },
   { key: 'fb', label: 'Facebook', icon: null, href: `https://www.facebook.com/sharer/sharer.php?u=${enc(url)}` },
-  { key: 'email', label: 'Email', icon: MailIcon, href: `mailto:?subject=${enc(msg)}&body=${enc(url)}` }];
+  { key: 'email', label: tr('Email'), icon: MailIcon, href: `mailto:?subject=${enc(msg)}&body=${enc(url)}` }];
 
   const copy = async () => {
     if (!live) return;
@@ -35,7 +40,7 @@ export function ShareBlock({ block, theme, mode }: BlockProps<'share'>) {
       <div className="flex flex-wrap justify-center gap-2">
         {canNative &&
         <button type="button" onClick={() => navigator.share({ title: msg, url }).catch(() => undefined)} className={chip} style={buttonStyle(theme, 'featured')}>
-            <Share2Icon size={15} aria-hidden /> Share
+            <Share2Icon size={15} aria-hidden /> {tr('Share')}
           </button>
         }
         {targets.map((t) => {
@@ -47,7 +52,7 @@ export function ShareBlock({ block, theme, mode }: BlockProps<'share'>) {
             </>;
 
           return live ?
-          <a key={t.key} href={t.href} target="_blank" rel="noopener noreferrer" aria-label={`Share on ${t.label}`} className={chip} style={buttonStyle(theme, 'default')}>
+          <a key={t.key} href={t.href} target="_blank" rel="noopener noreferrer" aria-label={tr('Share on {service}', { service: t.label })} className={chip} style={buttonStyle(theme, 'default')}>
               {inner}
             </a> :
 
@@ -58,7 +63,7 @@ export function ShareBlock({ block, theme, mode }: BlockProps<'share'>) {
         })}
         <button type="button" onClick={copy} className={chip} style={buttonStyle(theme, 'default')} aria-live="polite">
           {copied ? <CheckIcon size={15} aria-hidden /> : <LinkIcon size={15} aria-hidden />}
-          {copied ? 'Link copied' : 'Copy link'}
+          {copied ? tr('Link copied') : tr('Copy link')}
         </button>
       </div>
     </section>);

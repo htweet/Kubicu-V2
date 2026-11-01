@@ -41,6 +41,7 @@ import { blankLink, isVerified, uniqueSlug } from '../../utils/money/store';
 import { syncFundraiserLink } from '../../utils/fundraiser';
 import { updateAdminStore } from '../../utils/admin/store';
 import { uid } from '../../utils/id';
+import { phonePlaceholder } from '../../utils/phone';
 import { activeExtraSpaces, extraSpaceLimits } from '../../utils/spaces';
 import { starterSpaceDoc } from '../../utils/spaceStarters';
 import { prepareStarter } from '../../utils/starterKit';
@@ -872,7 +873,7 @@ export function NewSpaceDialog({ open, onClose, mainDoc, initialKind = null, tem
             optional
             inputMode="tel"
             value={bWhatsapp}
-            placeholder="e.g. 0803 123 4567"
+            placeholder={`e.g. ${phonePlaceholder()}`}
             hint="Offered when there are no free times, next to a waitlist sign-up."
             onChange={(e) => setBWhatsapp(e.target.value)} />
           

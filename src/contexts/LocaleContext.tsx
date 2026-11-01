@@ -13,6 +13,7 @@ export function useDocumentLang(): void {
 import { translations, type UiLang } from '../data/translations';
 import { phraseOverride } from '../utils/phraseOverrides';
 import { translateBuilt } from '../utils/builtPhrases';
+import { setActiveLang } from '../utils/localeFormat';
 
 interface LocaleValue {
   lang: UiLang;
@@ -70,6 +71,8 @@ export function LocaleProvider({ lang, setLang, children }: {lang: UiLang;setLan
     if (lang === 'en') return { ...english, setLang };
     return { lang, setLang, t: makeTranslator(lang) };
   }, [lang, setLang]);
+  // Plain date helpers (formatRelative, formatDate) read this while the subtree renders (D513, D514).
+  setActiveLang(lang, value.t);
   return <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>;
 }
 

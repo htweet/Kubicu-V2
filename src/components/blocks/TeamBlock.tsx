@@ -6,9 +6,11 @@ import { SectionHeading } from './SectionHeading';
 import { PageAction } from './PageAction';
 import { MediaImage } from '../media/MediaImage';
 import { accentOf, cardRadius, fontsFor, imageFrameStyle, mix } from './pageStyle';
+import { useT } from '../../contexts/LocaleContext';
 
-/** Team (D169): portrait-led people grid. "Speakers" crops tighter and leads with the session role. */
+/** Team (D169): portrait-led people grid. "Speakers" crops tighter and leads with the session role. Link wording follows the visitor's language (D506). */
 export function TeamBlock({ block, theme, mode }: BlockProps<'team'>) {
+  const { t: tr } = useT();
   const c = block.content;
   const people = c.items.filter((p) => p.name.trim());
   if (people.length === 0) return mode === 'edit' ? <BlockPlaceholder icon={UsersIcon} title="Add people" hint="A photo, name and role for each" theme={theme} tall /> : null;
@@ -37,8 +39,8 @@ export function TeamBlock({ block, theme, mode }: BlockProps<'team'>) {
             {p.role && <p className={`mt-0.5 text-[14px] font-medium ${speakers ? 'text-center' : ''}`} style={{ color: accent }}>{p.role}</p>}
             {p.bio && <p className={`mt-2 text-[14px] leading-relaxed ${speakers ? 'text-center' : ''}`} style={{ color: theme.mutedText }}>{p.bio}</p>}
             {p.url &&
-          <PageAction mode={mode} href={p.url} ariaLabel={`More about ${p.name}`} className={`mt-3 inline-flex min-h-[32px] items-center gap-1 text-[14px] font-semibold ${speakers ? 'self-center' : ''}`} style={{ color: theme.text }}>
-                Profile <ArrowUpRightIcon size={14} aria-hidden />
+          <PageAction mode={mode} href={p.url} ariaLabel={tr('More about {name}', { name: p.name })} className={`mt-3 inline-flex min-h-[32px] items-center gap-1 text-[14px] font-semibold ${speakers ? 'self-center' : ''}`} style={{ color: theme.text }}>
+                {tr('Profile')} <ArrowUpRightIcon size={14} aria-hidden />
               </PageAction>
           }
           </li>

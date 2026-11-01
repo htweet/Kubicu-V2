@@ -6,18 +6,21 @@ import { PageAction } from './PageAction';
 import { buttonStyle, fontsFor } from './pageStyle';
 import { cn } from '../../utils/cn';
 import { waNumber } from '../../utils/businessWhatsApp';
+import { useT } from '../../contexts/LocaleContext';
 
 const digits = (s: string) => s.replace(/[^\d+]/g, '');
 
 /** Contact buttons (D169): only the ways you filled in, each opening the right app. */
 export function ContactActionsBlock({ block, theme, mode }: BlockProps<'contactActions'>) {
+  // Button wording follows the visitor's language (D508).
+  const { t: tr } = useT();
   const c = block.content;
   const wa = c.useBusinessWhatsApp === false ? c.whatsapp.trim() : waNumber(c.whatsapp);
   const actions = [
-  c.phone.trim() && { key: 'call', label: 'Call', icon: PhoneIcon, href: `tel:${digits(c.phone)}`, aria: `Call ${c.phone}`, newTab: false },
-  wa && { key: 'wa', label: 'WhatsApp', icon: MessageCircleIcon, href: `https://wa.me/${digits(wa).replace(/^\+/, '')}`, aria: 'Message on WhatsApp', newTab: true },
-  c.email.trim() && { key: 'email', label: 'Email', icon: MailIcon, href: `mailto:${c.email.trim()}`, aria: `Email ${c.email}`, newTab: false },
-  c.website.trim() && { key: 'web', label: 'Website', icon: GlobeIcon, href: c.website.trim(), aria: 'Visit website', newTab: true }].
+  c.phone.trim() && { key: 'call', label: tr('Call'), icon: PhoneIcon, href: `tel:${digits(c.phone)}`, aria: `${tr('Call')}: ${c.phone}`, newTab: false },
+  wa && { key: 'wa', label: 'WhatsApp', icon: MessageCircleIcon, href: `https://wa.me/${digits(wa).replace(/^\+/, '')}`, aria: tr('Message on WhatsApp'), newTab: true },
+  c.email.trim() && { key: 'email', label: tr('Email'), icon: MailIcon, href: `mailto:${c.email.trim()}`, aria: `${tr('Email')}: ${c.email}`, newTab: false },
+  c.website.trim() && { key: 'web', label: tr('Website'), icon: GlobeIcon, href: c.website.trim(), aria: tr('Visit website'), newTab: true }].
   filter(Boolean) as {key: string;label: string;icon: typeof PhoneIcon;href: string;aria: string;newTab: boolean;}[];
   if (actions.length === 0) return mode === 'edit' ? <BlockPlaceholder icon={PhoneCallIcon} title="Add a phone, email, WhatsApp or website" hint="Only the ones you fill in show" theme={theme} /> : null;
   const stack = c.layout === 'stack';

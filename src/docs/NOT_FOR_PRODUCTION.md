@@ -40,7 +40,7 @@ Nothing here may call a provider from the browser with a secret. All provider ca
 | Link safety | `utils/linkSafety.ts` (sample block list) | A live URL-reputation service |
 | Calendar, meetings | `utils/ops/calendarSync.ts`, `utils/ops/meetings.ts` | OAuth integrations |
 | SSO | `utils/sso.ts` | Real identity provider |
-| AI and Copilot | `utils/ai/*`, `utils/copilot/engine.ts`, `utils/assistant/engine.ts` (rule-based) | Chosen model behind the server, per `AI_ASSISTANT_INTEGRATION.md`; credits enforced server-side |
+| AI and Copilot | `utils/ai/*`, `utils/copilot/engine.ts` (`respond`), `utils/copilot/understand.ts` + `data/copilotUnderstanding.ts` (word lists), `utils/copilot/askAnything.ts` (question/guide matching), `utils/assistant/engine.ts` (rule-based) | Chosen model behind the server — page assistant per `AI_ASSISTANT_INTEGRATION.md`, Copilot per `COPILOT_AI_INTEGRATION.md` (keep screens, types, `makePlan`, limits; replace the rule logic; delete the word lists); credits, limits and the sensitive-data filter enforced server-side; links only from the allowlist |
 | Speech-to-text | `hooks/useSpeechToText.ts` (browser API) | Acceptable as-is for the browser; a server model if quality requires, with consent |
 | Watermarking, image variants, print orders | `WatermarkPreview.tsx`, data-saver images, print kit orders | File storage + processing + CDN + print partner |
 | Analytics | Local events in this browser | Server-side collection with bot filtering and consent |

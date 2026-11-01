@@ -6,8 +6,10 @@ import { buttonStyle } from './pageStyle';
 import { whatsappLink } from '../../utils/format';
 import { isValidPhone } from '../../utils/validation';
 import { waNumber } from '../../utils/businessWhatsApp';
+import { useT } from '../../contexts/LocaleContext';
 
 export function WhatsAppBlock({ block, theme, mode }: BlockProps<'whatsapp'>) {
+  const { t: tr } = useT();
   const { label, message } = block.content;
   const phone = waNumber(block.content.phone);
   const href = isValidPhone(phone) ? whatsappLink(phone, message) : '';
@@ -21,7 +23,7 @@ export function WhatsAppBlock({ block, theme, mode }: BlockProps<'whatsapp'>) {
       style={buttonStyle(theme, block.style.emphasis)}>
       
       <MessageCircleIcon size={18} aria-hidden />
-      {label || 'Chat on WhatsApp'}
+      {label || tr('Chat on WhatsApp')}
     </PageAction>);
 
 }
