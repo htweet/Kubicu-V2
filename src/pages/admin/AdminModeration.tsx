@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
+import { useT } from '../../contexts/LocaleContext';
 import { useKycQueue } from '../../hooks/useKycQueue';
 import { autoFlagRules, scanPublishedPages, type AutoFlag } from '../../utils/admin/autoFlags';
 import { uid } from '../../utils/id';
@@ -23,8 +24,12 @@ import { List } from '../../components/ui/layout/ListRow';
 type Tab = 'open' | 'auto' | 'decided' | 'takedowns';
 type Decision = {kind: 'takedown' | 'dismiss';report: PageReport;} | {kind: 'restore';handle: string;} | null;
 
-/** Super admin → Moderation & trust: reports from “Report this page”, takedowns and restores (D75b). */
+/**
+ * Super admin → Moderation & trust: reports from “Report this page”, takedowns and restores (D75b).
+ * Follows the staff console language (D496). Reports, snippets, reasons and audit entries stay as written.
+ */
 export function AdminModeration() {
+  const { t: tr } = useT();
   const [store, setStore] = useAdminStore();
   const kycQueue = useKycQueue();
   const [tab, setTab] = useState<Tab>('open');
@@ -42,20 +47,20 @@ export function AdminModeration() {
 
   const raiseReport = (f: AutoFlag) => {
     if (store.reports.some((r) => r.handle === f.handle && r.status === 'open')) {
-      toast('This page already has an open report', { description: 'Review it in Open reports.' });
+      toast(tr('This page already has an open report'), { description: tr('Review it in Open reports.') });
       setTab('open');
       return;
     }
     const report: PageReport = { id: uid('rep'), handle: f.handle, workspaceId: f.workspaceId, reason: f.rule.reason, details: `Automatic check — ${f.rule.label}: “${f.snippet}”`, reporterEmail: '', createdAt: new Date().toISOString(), status: 'open', decision: null, decidedAt: null, sample: f.sample };
     setStore((s) => audit({ ...s, reports: [report, ...s.reports] }, { area: 'moderation', action: `Opened a report from an automatic flag (${f.rule.label})`, target: `kub.icu/${f.handle}`, reason: 'A staff member reviewed the flag and wants it decided as a report.' }));
-    toast.success('Report opened', { description: 'Decide it like any visitor report — check the page yourself first.' });
+    toast.success(tr('Report opened'), { description: tr('Decide it like any visitor report — check the page yourself first.') });
     setTab('open');
   };
   const clearFlag = (reason: string) => {
     if (!clearing) return;
     const f = clearing;
     setStore((s) => audit({ ...s, autoFlagsCleared: { ...s.autoFlagsCleared, [f.key]: { at: new Date().toISOString(), by: staffActor(s), reason } } }, { area: 'moderation', action: `Cleared automatic flag (${f.rule.label})`, target: `kub.icu/${f.handle}`, reason }));
-    toast('Flag cleared', { description: 'It won’t come back for this page unless the wording matches a different check.' });
+    toast(tr('Flag cleared'), { description: tr('It won’t come back for this page unless the wording matches a different check.') });
     setClearing(null);
   };
 
@@ -64,7 +69,7 @@ export function AdminModeration() {
     const now = new Date().toISOString();
     if (decision.kind === 'restore') {
       setStore((s) => audit({ ...s, takedowns: s.takedowns.filter((t) => t.handle !== decision.handle) }, { area: 'moderation', action: 'Restored page', target: `kub.icu/${decision.handle}`, reason }));
-      toast.success(`kub.icu/${decision.handle} restored`);
+      toast.success(tr('{page} restored', { page: `kub.icu/${decision.handle}` }));
     } else {
       const { report } = decision;
       const status: ReportStatus = decision.kind === 'takedown' ? 'actioned' : 'dismissed';
@@ -77,7 +82,9 @@ export function AdminModeration() {
         if (decision.kind === 'takedown' && !s.takedowns.some((t) => t.handle === report.handle)) next = { ...next, takedowns: [{ handle: report.handle, reason, at: now }, ...next.takedowns] };
         return audit(next, { area: 'moderation', action: decision.kind === 'takedown' ? 'Took page down' : 'Dismissed report', target: `kub.icu/${report.handle}`, reason });
       });
-      toast.success(decision.kind === 'takedown' ? `kub.icu/${report.handle} taken down` : 'Report dismissed', { description: decision.kind === 'takedown' ? 'Visitors see “removed for breaking KUBICU’s rules”. The owner keeps their data and can appeal.' : undefined });
+      toast.success(decision.kind === 'takedown' ? tr('{page} taken down', { page: `kub.icu/${report.handle}` }) : tr('Report dismissed'), {
+        description: decision.kind === 'takedown' ? tr('Visitors see “removed for breaking KUBICU’s rules”. The owner keeps their data and can appeal.') : undefined
+      });
       setOpenId(null);
     }
     setDecision(null);
@@ -87,28 +94,26 @@ export function AdminModeration() {
     <div className="mx-auto w-full max-w-5xl px-5 py-8 md:px-10 md:py-12">
       <PageHeader title="Moderation & trust" description="Reports from visitors and the actions taken. Act proportionately: dismiss, or take a page down — accounts are suspended from Users & tenants." />
       {kycQueue.length > 0 &&
-      <Link to="/admin/payments?tab=identity" className="mt-6 flex items-center justify-between gap-4 rounded-lg border border-line bg-raised px-5 py-3.5 text-label hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+      <Link to="/admin/payments?tab=identity" className="mt-6 flex items-center justify-between gap-4 rounded-lg border border-line bg-raised px-5 py-3.5 text-label transition-colors duration-150 hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
           <span className="text-fg">
-            <span className="font-semibold">
-              {kycQueue.length} verification{kycQueue.length === 1 ? '' : 's'} waiting for review
-            </span>
-            <span className="text-fg-muted"> · identity and business checks are decided in Payments & providers</span>
+            <span className="font-semibold">{tr('Verifications waiting for review: {n}', { n: kycQueue.length })}</span>
+            <span className="text-fg-muted"> · {tr('identity and business checks are decided in Payments & providers')}</span>
           </span>
-          <span className="shrink-0 font-medium text-action">Review</span>
+          <span className="shrink-0 font-medium text-action">{tr('Review')}</span>
         </Link>
       }
 
       <div className="mt-8">
         <Tabs<Tab>
           idPrefix="mod"
-          ariaLabel="Moderation"
+          ariaLabel={tr('Moderation')}
           value={tab}
           onChange={setTab}
           items={[
-          { id: 'open', label: 'Open reports', badge: openReports.length || undefined },
-          { id: 'auto', label: 'Automatic flags', badge: flags.length || undefined },
-          { id: 'decided', label: 'Decided' },
-          { id: 'takedowns', label: 'Taken down', badge: store.takedowns.length || undefined }]
+          { id: 'open', label: tr('Open reports'), badge: openReports.length || undefined },
+          { id: 'auto', label: tr('Automatic flags'), badge: flags.length || undefined },
+          { id: 'decided', label: tr('Decided') },
+          { id: 'takedowns', label: tr('Taken down'), badge: store.takedowns.length || undefined }]
           } />
         
       </div>
@@ -117,23 +122,23 @@ export function AdminModeration() {
         {tab === 'auto' ?
         <>
             <p className="mb-4 max-w-3xl text-label text-fg-muted">
-              Live pages are checked for wording common in scams and fakes. A flag is only a prompt to look — it never takes a page down, and the owner isn’t told. Open it as a report to decide it, or clear it if it’s fine.
+              {tr('Live pages are checked for wording common in scams and fakes. A flag is only a prompt to look — it never takes a page down, and the owner isn’t told. Open it as a report to decide it, or clear it if it’s fine.')}
             </p>
             {flags.length === 0 ?
-          <EmptyState icon={ShieldCheckIcon} title="No automatic flags" description="Nothing on live pages matches the checks right now." /> :
+          <EmptyState icon={ShieldCheckIcon} title={tr('No automatic flags')} description={tr('Nothing on live pages matches the checks right now.')} /> :
 
-          <List ruled label="Automatic flags">
+          <List ruled label={tr('Automatic flags')}>
                 {flags.map((f) =>
             <li key={f.key} className="flex flex-col gap-3 py-4 md:flex-row md:items-start md:gap-6">
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="font-semibold text-fg">kub.icu/{f.handle}</span>
-                        <Badge tone={f.rule.reason === 'scam' ? 'danger' : 'warning'}>{f.rule.label}</Badge>
+                        <Badge tone={f.rule.reason === 'scam' ? 'danger' : 'warning'}>{tr(f.rule.label)}</Badge>
                         {f.sample && <SampleTag />}
-                        {store.reports.some((r) => r.handle === f.handle && r.status === 'open') && <Badge tone="info">Also reported by visitors</Badge>}
+                        {store.reports.some((r) => r.handle === f.handle && r.status === 'open') && <Badge tone="info">{tr('Also reported by visitors')}</Badge>}
                       </div>
                       <p className="mt-0.5 text-caption text-fg-subtle">
-                        {f.workspaceName} · {f.rule.why}
+                        {f.workspaceName} · {tr(f.rule.why)}
                       </p>
                       <blockquote className="mt-2 rounded-md bg-sunken px-3 py-2 text-label text-fg">{f.snippet}</blockquote>
                     </div>
@@ -153,11 +158,11 @@ export function AdminModeration() {
               </List>
           }
             <details className="mt-6 text-label">
-              <summary className="cursor-pointer font-medium text-fg">What the checks look for</summary>
+              <summary className="cursor-pointer font-medium text-fg">{tr('What the checks look for')}</summary>
               <ul className="mt-3 flex flex-col gap-2">
                 {autoFlagRules.map((r) =>
               <li key={r.id}>
-                    <span className="font-medium text-fg">{r.label}</span> <span className="text-fg-muted">— {r.why}</span>
+                    <span className="font-medium text-fg">{tr(r.label)}</span> <span className="text-fg-muted">— {tr(r.why)}</span>
                   </li>
               )}
               </ul>
@@ -165,9 +170,9 @@ export function AdminModeration() {
           </> :
         tab === 'takedowns' ?
         store.takedowns.length === 0 ?
-        <EmptyState icon={ShieldCheckIcon} title="No pages taken down" description="Pages you take down are listed here so they can be restored after an appeal." /> :
+        <EmptyState icon={ShieldCheckIcon} title={tr('No pages taken down')} description={tr('Pages you take down are listed here so they can be restored after an appeal.')} /> :
 
-        <List ruled label="Pages taken down">
+        <List ruled label={tr('Pages taken down')}>
               {store.takedowns.map((t) =>
           <li key={t.handle} className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
                   <span className="min-w-0">
@@ -184,23 +189,23 @@ export function AdminModeration() {
             </List> :
 
         list.length === 0 ?
-        <EmptyState icon={ShieldCheckIcon} title={tab === 'open' ? 'No open reports' : 'Nothing decided yet'} description="Visitors report pages from the “Report this page” link at the bottom of every public page." /> :
+        <EmptyState icon={ShieldCheckIcon} title={tab === 'open' ? tr('No open reports') : tr('Nothing decided yet')} description={tr('Visitors report pages from the “Report this page” link at the bottom of every public page.')} /> :
 
-        <List ruled label="Reports">
+        <List ruled label={tr('Reports')}>
             {list.map((r) =>
           <li key={r.id}>
                 <button type="button" onClick={() => setOpenId(r.id)} className="flex w-full flex-col gap-1 py-4 text-left transition-colors duration-150 hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus sm:flex-row sm:items-center sm:gap-4 sm:px-2">
                   <span className="min-w-0 flex-1">
                     <span className="flex flex-wrap items-center gap-2">
                       <span className="font-semibold text-fg">kub.icu/{r.handle}</span>
-                      <Badge tone={r.reason === 'scam' || r.reason === 'hate' ? 'danger' : 'warning'}>{reportReasonLabels[r.reason]}</Badge>
+                      <Badge tone={r.reason === 'scam' || r.reason === 'hate' ? 'danger' : 'warning'}>{tr(reportReasonLabels[r.reason])}</Badge>
                       {r.sample && <SampleTag />}
                     </span>
                     <span className="mt-0.5 block truncate text-caption text-fg-subtle">{r.details}</span>
                   </span>
                   <span className="shrink-0 text-caption text-fg-subtle">
-                    {r.status === 'open' ? formatRelative(r.createdAt) : r.status === 'actioned' ? 'Taken down' : 'Dismissed'}
-                    {reportsFor(r.handle) > 1 ? ` · ${reportsFor(r.handle)} reports` : ''}
+                    {r.status === 'open' ? formatRelative(r.createdAt) : r.status === 'actioned' ? tr('Taken down') : tr('Dismissed')}
+                    {reportsFor(r.handle) > 1 ? ` · ${tr('Reports: {n}', { n: reportsFor(r.handle) })}` : ''}
                   </span>
                 </button>
               </li>
@@ -213,8 +218,8 @@ export function AdminModeration() {
         open={!!open}
         onClose={() => setOpenId(null)}
         side="right"
-        title={open ? `kub.icu/${open.handle}` : 'Report'}
-        description={open ? reportReasonLabels[open.reason] : undefined}
+        title={open ? `kub.icu/${open.handle}` : tr('Report')}
+        description={open ? tr(reportReasonLabels[open.reason]) : undefined}
         footer={
         open?.status === 'open' ?
         <div className="flex flex-wrap justify-end gap-2">
@@ -232,19 +237,19 @@ export function AdminModeration() {
         <div className="flex flex-col gap-6">
             <section aria-labelledby="rep-what" className="flex flex-col gap-2">
               <h3 id="rep-what" className="text-label font-semibold text-fg">
-                What the visitor said
+                {tr('What the visitor said')}
               </h3>
               <blockquote className="rounded-md border border-line bg-sunken p-4 text-label text-fg">{open.details}</blockquote>
               <p className="text-caption text-fg-subtle">
-                From {open.reporterEmail || 'an anonymous visitor'} · {formatTimestamp(open.createdAt)}
+                {tr('From {who}', { who: open.reporterEmail || tr('an anonymous visitor') })} · {formatTimestamp(open.createdAt)}
               </p>
             </section>
             <section aria-labelledby="rep-page" className="flex flex-col gap-2">
               <h3 id="rep-page" className="text-label font-semibold text-fg">
-                The page
+                {tr('The page')}
               </h3>
               <p className="text-caption text-fg-muted">
-                {reportsFor(open.handle)} report{reportsFor(open.handle) === 1 ? '' : 's'} for this page in total. Check it yourself before acting — reports alone aren’t proof.
+                {tr('Reports for this page in total: {n}.', { n: reportsFor(open.handle) })} {tr('Check it yourself before acting — reports alone aren’t proof.')}
               </p>
               <Button size="sm" variant="secondary" leadingIcon={ExternalLinkIcon} className="self-start" onClick={() => window.open(`/p/${open.handle}`, '_blank', 'noopener')}>
                 Open the page
@@ -253,7 +258,7 @@ export function AdminModeration() {
             {open.status !== 'open' &&
           <section aria-labelledby="rep-decision" className="flex flex-col gap-1 border-t border-line pt-4">
                 <h3 id="rep-decision" className="text-label font-semibold text-fg">
-                  {open.status === 'actioned' ? 'Taken down' : 'Dismissed'}
+                  {open.status === 'actioned' ? tr('Taken down') : tr('Dismissed')}
                 </h3>
                 <p className="text-caption text-fg-muted">
                   “{open.decision}” · {open.decidedAt ? formatTimestamp(open.decidedAt) : ''}
@@ -269,17 +274,24 @@ export function AdminModeration() {
         onClose={() => setDecision(null)}
         onConfirm={confirm}
         destructive={decision?.kind === 'takedown'}
-        title={decision?.kind === 'takedown' ? 'Take this page down?' : decision?.kind === 'dismiss' ? 'Dismiss this report?' : 'Restore this page?'}
+        title={decision?.kind === 'takedown' ? tr('Take this page down?') : decision?.kind === 'dismiss' ? tr('Dismiss this report?') : tr('Restore this page?')}
         description={
         decision?.kind === 'takedown' ?
-        'Visitors see “This page was removed for breaking KUBICU’s rules”. Orders, contacts and the owner’s account aren’t touched. Every open report for this page is closed.' :
+        tr('Visitors see “This page was removed for breaking KUBICU’s rules”. Orders, contacts and the owner’s account aren’t touched. Every open report for this page is closed.') :
         decision?.kind === 'dismiss' ?
-        'The page stays up. Every open report for this page is closed with your reason.' :
-        'The page comes back straight away, for example after a successful appeal.'
+        tr('The page stays up. Every open report for this page is closed with your reason.') :
+        tr('The page comes back straight away, for example after a successful appeal.')
         }
-        confirmLabel={decision?.kind === 'takedown' ? 'Take down' : decision?.kind === 'dismiss' ? 'Dismiss' : 'Restore'} />
+        confirmLabel={decision?.kind === 'takedown' ? tr('Take down') : decision?.kind === 'dismiss' ? tr('Dismiss') : tr('Restore')} />
       
-      <ReasonDialog open={!!clearing} onClose={() => setClearing(null)} onConfirm={clearFlag} title="Clear this flag?" description={clearing ? `kub.icu/${clearing.handle} — ${clearing.rule.label}. Say why it’s fine, e.g. “Sells phone cases, not phones”.` : ''} confirmLabel="Clear flag" />
+      <ReasonDialog
+        open={!!clearing}
+        onClose={() => setClearing(null)}
+        onConfirm={clearFlag}
+        title={tr('Clear this flag?')}
+        description={clearing ? `kub.icu/${clearing.handle} — ${tr(clearing.rule.label)}. ${tr('Say why it’s fine, e.g. “Sells phone cases, not phones”.')}` : ''}
+        confirmLabel={tr('Clear flag')} />
+      
     </div>);
 
 }

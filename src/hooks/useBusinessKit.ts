@@ -9,6 +9,8 @@ import { useMarketplace } from '../contexts/MarketplaceContext';
 import { useTeam } from '../contexts/TeamContext';
 import { useApplyTemplate } from './useApplyTemplate';
 import { findExampleById } from '../data/examples';
+import { kitTemplateFor } from '../data/businessKits';
+import { workspaceCountry } from '../utils/country';
 import { blankProduct } from '../components/commerce/ProductEditor';
 import { newAutomation } from '../components/automations/AutomationBuilder';
 import { KIT_EVENT, readAppliedKit, writeAppliedKit } from '../utils/kits';
@@ -42,7 +44,8 @@ export function useBusinessKit() {
       const record: AppliedKit = { kitId: kit.id, appliedAt: new Date().toISOString(), parts, productIds: [], serviceIds: [], automationIds: [], installedApps: [], policies: null };
 
       if (has('page')) {
-        const ex = findExampleById(kit.templateId);
+        // The seller's own country's starter where the kit has one (D494).
+        const ex = findExampleById(kitTemplateFor(kit, workspaceCountry(current)));
         if (ex) applyTemplate(kit.name, ex.doc);
       }
       if (has('products') && kit.products.length) {
@@ -80,7 +83,7 @@ export function useBusinessKit() {
       team.log('settings', `applied the ${kit.name} kit`, '/app/templates?tab=kits');
       return record;
     },
-    [applyTemplate, commerce, ops, market, team, current.id]
+    [applyTemplate, commerce, ops, market, team, current]
   );
 
   /** Takes out only what's still untouched; anything the seller has edited or switched on stays. */

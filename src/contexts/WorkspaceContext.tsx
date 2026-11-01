@@ -5,6 +5,8 @@ import type { PersistedPage, Space, SpaceKind, Workspace } from '../types/worksp
 import { DEMO_WORKSPACE_ID, setDemoSeed, writePersistedPage } from '../utils/workspaceStorage';
 import { MAIN_SPACE_ID, mainSpace, spaceStorageId, workspaceSpaces } from '../utils/spaces';
 import { uid } from '../utils/id';
+import type { CountryCode } from '../types/country';
+import { countryInfo } from '../utils/country';
 import { SAMPLE_SPACE_PREFIX, SAMPLE_SPACES_ROUND, seedSampleSpaces } from '../data/sampleSpaces';
 import { demoExpiry, removeDemoDataFromStorage, wipeWorkspaceStorage, writeDemoWorkspaceNotice, writeRemovedNotice } from '../utils/demoData';
 
@@ -21,6 +23,8 @@ export interface CreateWorkspaceInput {
   demoData?: boolean;
   /** The Business WhatsApp number, if given during setup (D214). */
   whatsapp?: string;
+  /** Where the business sells from, chosen at sign-up (D494). Sets the currency too. */
+  country?: CountryCode;
 }
 
 export interface CreateSpaceInput {
@@ -178,6 +182,7 @@ export function WorkspaceProvider({ planControl, children }: {planControl: Works
       pageId: doc.id,
       createdAt: now,
       ...(input.whatsapp?.trim() ? { whatsapp: input.whatsapp.trim() } : {}),
+      ...(input.country ? { country: input.country, currency: countryInfo(input.country).currency } : {}),
       ...(input.demoData ? { demoData: demoExpiry(), spaces: seedSampleSpaces(id) } : {})
     };
     setWorkspaces((list) => [...list, workspace]);

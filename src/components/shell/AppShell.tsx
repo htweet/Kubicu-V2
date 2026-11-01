@@ -27,6 +27,8 @@ import { extensionById } from '../../data/extensions';
 import { useAdminStore } from '../../utils/admin/store';
 import { ACCOUNT_PERSON } from '../../utils/admin/people';
 import { AccountLocked } from './AccountLocked';
+import { CountryNotOpen } from './CountryNotOpen';
+import { countryOpen } from '../../utils/admin/countryRollout';
 
 export function AppShell() {
   const { current, currentSpace, switchSpace } = useWorkspace();
@@ -61,6 +63,8 @@ export function AppShell() {
   // Staff can lock the signed-in account from Users & tenants (D472); every workspace is closed to it until unlocked.
   const [adminStore] = useAdminStore();
   if (adminStore.people?.[ACCOUNT_PERSON]?.locked) return <AccountLocked />;
+  // Countries open one at a time from Nigeria (D494): a workspace in a closed country can't be opened.
+  if (!countryOpen(adminStore, workspaceCountry(current))) return <CountryNotOpen workspace={current} />;
 
   return (
     <div className="flex min-h-screen w-full bg-canvas text-fg">

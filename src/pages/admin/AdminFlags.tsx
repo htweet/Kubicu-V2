@@ -12,6 +12,7 @@ import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/layout/Card';
 import { ReasonDialog } from '../../components/admin/ReasonDialog';
 import { ModuleFlagsSection } from '../../components/admin/ModuleFlagsSection';
+import { CountryRolloutSection } from '../../components/admin/CountryRolloutSection';
 import { cn } from '../../utils/cn';
 
 type Pending = {id: FlagId;on: boolean;plans: WorkspacePlan[];summary: string;} | null;
@@ -96,6 +97,8 @@ export function AdminFlags() {
 
         })}
       </div>
+
+      <CountryRolloutSection />
 
       <ModuleFlagsSection />
 

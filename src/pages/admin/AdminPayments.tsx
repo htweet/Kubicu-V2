@@ -15,6 +15,8 @@ import type { PendingApproval } from '../../types/admin';
 import { balances, MONEY_EVENT, payoutTier, readMoney, tierInfo, writeMoney } from '../../utils/money/store';
 import { uid } from '../../utils/id';
 import { formatNgn, formatRelative } from '../../utils/format';
+import { convertExampleNaira, formatMoney, type CurrencyCode } from '../../utils/currency';
+import { formatTotals, workspaceCurrency } from '../../utils/admin/workspaceMoney';
 import { PageHeader } from '../../components/shell/PageHeader';
 import { Badge } from '../../components/ui/Badge';
 import { Menu } from '../../components/ui/Menu';
@@ -43,14 +45,20 @@ interface PayoutRow {
   id: string;
   workspaceId: string;
   workspace: string;
+  /** The workspace's own currency — payouts and balances are stored in it (D494). */
+  currency: CurrencyCode;
   payout: Payout;
   risks: string[];
 }
 interface WalletRow {
   id: string;
   workspace: string;
+  currency: CurrencyCode;
   money: MoneyData;
 }
+
+/** The ₦100,000 "large payout" rule, at the day's rate for payouts in other currencies (D494). */
+const isLarge = (row: PayoutRow) => row.payout.amountNgn >= convertExampleNaira(LARGE_PAYOUT, row.currency);
 
 type Pending =
 {kind: 'hold' | 'release' | 'return';row: PayoutRow;} |
@@ -103,7 +111,7 @@ export function AdminPayments() {
   const [pending, setPending] = useState<Pending | null>(null);
   const [reviewing, setReviewing] = useState<string | null>(null);
 
-  const wallets: WalletRow[] = useMemo(() => workspaces.map((w) => ({ id: w.id, workspace: w.name, money: readMoney(w.id) })), [workspaces, tick]); // eslint-disable-line react-hooks/exhaustive-deps
+  const wallets: WalletRow[] = useMemo(() => workspaces.map((w) => ({ id: w.id, workspace: w.name, currency: workspaceCurrency(w), money: readMoney(w.id) })), [workspaces, tick]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const queue: PayoutRow[] = useMemo(
     () =>
@@ -114,9 +122,10 @@ export function AdminPayments() {
       const bank = w.money.banks.find((b) => b.id === p.bankId);
       const risks: string[] = [];
       if (bank && Date.now() - Date.parse(bank.addedAt) < NEW_BANK_DAYS * 86_400_000) risks.push(t('New bank account'));
-      if (p.amountNgn >= LARGE_PAYOUT) risks.push(t('Over {amount}', { amount: formatNgn(LARGE_PAYOUT) }));
+      const large = convertExampleNaira(LARGE_PAYOUT, w.currency);
+      if (p.amountNgn >= large) risks.push(t('Over {amount}', { amount: formatMoney(large, w.currency) }));
       if (bank?.nameMatch === 'close') risks.push(t('Name partly matches'));
-      return { id: `${w.id}:${p.id}`, workspaceId: w.id, workspace: w.workspace, payout: p, risks };
+      return { id: `${w.id}:${p.id}`, workspaceId: w.id, workspace: w.workspace, currency: w.currency, payout: p, risks };
     })
     ),
     [wallets, t]
@@ -143,7 +152,7 @@ export function AdminPayments() {
   const reviewRow = reviewing ? wallets.find((w) => w.id === reviewing) ?? null : null;
   const isLead = me?.role === 'lead';
   const frozen = wallets.filter((w) => w.money.frozen);
-  const held = wallets.reduce((s, w) => s + balances(w.money).held, 0);
+  const held = formatTotals(wallets.map((w) => ({ currency: w.currency, amount: balances(w.money).held })));
 
   const change = (workspaceId: string, fn: (d: MoneyData) => MoneyData) => {
     writeMoney(workspaceId, fn(readMoney(workspaceId)));
@@ -154,13 +163,14 @@ export function AdminPayments() {
     if (!pending) return;
     const by = staffActor();
     const now = new Date().toISOString();
-    if (pending.kind === 'release' && pending.row.payout.amountNgn >= LARGE_PAYOUT) {
+    if (pending.kind === 'release' && isLarge(pending.row)) {
       // Large releases need a second Finance or Platform lead (D130).
       const { row } = pending;
+      const amount = formatMoney(row.payout.amountNgn, row.currency);
       if (adminStore.approvals.some((a) => a.kind === 'payout_release' && a.payoutId === row.payout.id && effectiveStatus(a) === 'pending')) {
         toast(t('This release is already waiting for approval'));
       } else {
-        const req = newApproval({ kind: 'payout_release', summary: `Release ${formatNgn(row.payout.amountNgn)} payout · ${row.workspace}`, targetId: row.id, targetEmail: `${row.workspace} · ${formatNgn(row.payout.amountNgn)}`, workspaceId: row.workspaceId, payoutId: row.payout.id, amountNgn: row.payout.amountNgn, reason, requestedById: me?.id ?? '', requestedBy: staffActor() });
+        const req = newApproval({ kind: 'payout_release', summary: `Release ${amount} payout · ${row.workspace}`, targetId: row.id, targetEmail: `${row.workspace} · ${amount}`, workspaceId: row.workspaceId, payoutId: row.payout.id, amountNgn: row.payout.amountNgn, reason, requestedById: me?.id ?? '', requestedBy: staffActor() });
         setStore((s) => audit({ ...s, approvals: [req, ...s.approvals] }, { area: 'approvals', action: `Requested: ${req.summary}`, target: req.targetEmail, reason }));
         toast.success(t('Sent for a second approval'), { description: t('Payouts of {amount} or more need another Finance or Platform lead. It stays on hold until then.', { amount: formatNgn(LARGE_PAYOUT) }) });
       }
@@ -179,7 +189,7 @@ export function AdminPayments() {
         };
       });
       const action = pending.kind === 'hold' ? 'Held payout' : pending.kind === 'release' ? 'Released payout' : 'Returned payout to wallet';
-      setStore((s) => audit(s, { area: 'payments', action, target: `${row.workspace} · ${formatNgn(row.payout.amountNgn)}`, reason }));
+      setStore((s) => audit(s, { area: 'payments', action, target: `${row.workspace} · ${formatMoney(row.payout.amountNgn, row.currency)}`, reason }));
       toast.success(t(action));
     } else if (pending.kind === 'freeze' || pending.kind === 'unfreeze') {
       const { row } = pending;
@@ -244,7 +254,7 @@ export function AdminPayments() {
 
   },
   { key: 'status', header: t('Status'), render: (r) => payoutStatus(r.payout) },
-  { key: 'amount', header: t('Amount'), align: 'right', sortValue: (r) => r.payout.amountNgn, render: (r) => <span className="font-semibold tabular-nums text-fg">{formatNgn(r.payout.amountNgn)}</span> },
+  { key: 'amount', header: t('Amount'), align: 'right', sortValue: (r) => r.payout.amountNgn, render: (r) => <span className="font-semibold tabular-nums text-fg">{formatMoney(r.payout.amountNgn, r.currency)}</span> },
   {
     key: 'actions',
     header: '',
@@ -275,8 +285,8 @@ export function AdminPayments() {
     <Badge tone={statusTones[r.money.kyc.status]}>{t(statusLabels[r.money.kyc.status])}</Badge>
 
   },
-  { key: 'avail', header: t('Available'), align: 'right', sortValue: (r) => balances(r.money).available, render: (r) => <span className="tabular-nums text-fg">{formatNgn(balances(r.money).available)}</span> },
-  { key: 'held', header: t('In escrow'), align: 'right', hideOnMobile: true, render: (r) => <span className="tabular-nums text-fg-muted">{formatNgn(balances(r.money).held)}</span> },
+  { key: 'avail', header: t('Available'), align: 'right', sortValue: (r) => balances(r.money).available, render: (r) => <span className="tabular-nums text-fg">{formatMoney(balances(r.money).available, r.currency)}</span> },
+  { key: 'held', header: t('In escrow'), align: 'right', hideOnMobile: true, render: (r) => <span className="tabular-nums text-fg-muted">{formatMoney(balances(r.money).held, r.currency)}</span> },
   { key: 'state', header: t('Payouts'), render: (r) => r.money.frozen ? <Badge tone="danger" dot>{t('Paused')}</Badge> : <Badge tone="success" dot>{t('Normal')}</Badge> },
   {
     key: 'actions',
@@ -298,7 +308,7 @@ export function AdminPayments() {
   const dialogCopy: Record<Pending['kind'], {title: string;label: string;destructive?: boolean;description: string;}> = {
     hold: { title: 'Hold this payout', label: 'Hold payout', description: 'The owner sees that KUBICU is checking it, with your reason.' },
     release:
-    pending?.kind === 'release' && pending.row.payout.amountNgn >= LARGE_PAYOUT ?
+    pending?.kind === 'release' && isLarge(pending.row) ?
     { title: 'Release this payout', label: 'Send for approval', description: `Payouts of ${formatNgn(LARGE_PAYOUT)} or more need a second Finance or Platform lead. It stays on hold until they approve.` } :
     { title: 'Release this payout', label: 'Release', description: 'It goes to the bank straight away.' },
     return: { title: 'Return payout to the wallet', label: 'Return to wallet', destructive: true, description: 'The money goes back to the seller’s available balance. Nothing is lost.' },
@@ -378,7 +388,7 @@ export function AdminPayments() {
   }];
 
   const rawCopy = pending ? dialogCopy[pending.kind] : null;
-  const copy = rawCopy ? { ...rawCopy, title: t(rawCopy.title), label: t(rawCopy.label), description: pending?.kind === 'release' && pending.row.payout.amountNgn >= LARGE_PAYOUT ? t('Payouts of {amount} or more need a second Finance or Platform lead. It stays on hold until they approve.', { amount: formatNgn(LARGE_PAYOUT) }) : t(rawCopy.description) } : null;
+  const copy = rawCopy ? { ...rawCopy, title: t(rawCopy.title), label: t(rawCopy.label), description: pending?.kind === 'release' && isLarge(pending.row) ? t('Payouts of {amount} or more need a second Finance or Platform lead. It stays on hold until they approve.', { amount: formatNgn(LARGE_PAYOUT) }) : t(rawCopy.description) } : null;
 
   return (
     <div className="mx-auto w-full max-w-6xl px-5 py-8 md:px-10 md:py-12">
@@ -390,7 +400,7 @@ export function AdminPayments() {
         <Stat primary label={t('Payouts in the queue')} value={queue.length} hint={t('Flagged: {n}', { n: queue.filter((r) => r.risks.length).length })} />
         <Stat label={t('Verifications to review')} value={reviews.length} hint={t('Target: within {hours} hours', { hours: REVIEW_HOURS })} />
         <Stat label={t('Payouts paused')} value={frozen.length} hint={t('Workspaces')} />
-        <Stat label={t('Held in escrow')} value={formatNgn(held)} hint={t('All workspaces')} />
+        <Stat label={t('Held in escrow')} value={held} hint={t('All workspaces')} />
       </StatGroup>
 
       <div className="mt-8 flex flex-col gap-5">

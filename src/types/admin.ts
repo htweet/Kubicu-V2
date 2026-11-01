@@ -266,6 +266,11 @@ export interface AdminStore {
    * Marketplace add-ons. Missing = available. Off = still visible to owners, but "Currently not available".
    */
   modules?: Record<string, ModuleFlag>;
+  /**
+   * Country rollout (D494). Missing = open. Closed = new sign-ups from that country are turned away and its
+   * workspaces can't be opened; published pages stay live for buyers. Nigeria is the launch market and never closes.
+   */
+  countries?: Partial<Record<import('./country').CountryCode, CountryRollout>>;
   /** Example figures changed by staff, by key from `data/adjustableFigures.ts` (D465). Missing = the default. */
   figures?: Record<string, number>;
   /** Plan names and "intended for" lines changed by staff (D465). */
@@ -294,6 +299,14 @@ export interface AdminStore {
   workspaceNotes?: Record<string, StaffNote[]>;
   /** Fundraisers started on this device, so staff are told about new ones (D179). */
   fundraisers?: {handle: string;workspaceId: string;workspaceName: string;name: string;goalNgn: number;createdAt: string;}[];
+}
+
+/** One country's rollout switch (D494). */
+export interface CountryRollout {
+  open: boolean;
+  /** Planned opening day (yyyy-mm-dd) shown to people turned away. Informational only — opening is still a switch. */
+  opensOn?: string;
+  updatedAt: string;
 }
 
 /** An internal note staff leave on a person or workspace (D472). */

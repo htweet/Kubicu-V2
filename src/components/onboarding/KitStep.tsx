@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { SparklesIcon } from 'lucide-react';
 import type { OnboardingState } from '../../hooks/useOnboarding';
 import { countryFirst, examplePages, findExampleById } from '../../data/examples';
-import { activeCountry } from '../../utils/country';
-import { businessKits } from '../../data/businessKits';
+import { activeCountry, readSignupCountry } from '../../utils/country';
+import { businessKits, kitTemplateFor } from '../../data/businessKits';
 import { siteKits } from '../../data/siteKits';
 import { cn } from '../../utils/cn';
 import { blankTemplateDoc } from '../../data/templates';
@@ -30,13 +30,14 @@ export function KitStep({ state, update, go }: StepProps) {
   // New workspaces start on Free; Super admin can pause AI page setup (D75b).
   const aiAllowed = useFlag('ai_page_setup', 'free');
   const goal = state.goal;
-  // The seller's own country's starters come first (D434).
-  const pool = countryFirst(examplePages, activeCountry());
+  // The seller's own country's starters come first (D434): the country chosen at sign-up, else the active one (D494).
+  const country = readSignupCountry() ?? activeCountry();
+  const pool = countryFirst(examplePages, country);
   const matched = goal && goal !== 'other' ? pool.filter((e) => e.goals.includes(goal)) : [];
   const list = showAll || matched.length === 0 ? pool : matched.slice(0, 4);
   // Business kits whose page suits the chosen goal come first (D126).
   const kits = businessKits.
-  map((k) => ({ kit: k, ex: findExampleById(k.templateId) })).
+  map((k) => ({ kit: k, ex: findExampleById(kitTemplateFor(k, country)) })).
   filter(({ ex }) => !!ex).
   sort((a, b) => Number(!!goal && b.ex!.goals.includes(goal as never)) - Number(!!goal && a.ex!.goals.includes(goal as never)));
   const kitList = showAllKits ? kits : kits.slice(0, 4);
@@ -61,7 +62,7 @@ export function KitStep({ state, update, go }: StepProps) {
                   selected ? 'border-action bg-action-soft' : 'border-line hover:border-line-strong'
                 )}>
                 
-                <input type="radio" name="kit" className="sr-only" checked={selected} onChange={() => update({ businessKitId: kit.id, kitId: kit.templateId, useAssistant: false })} />
+                <input type="radio" name="kit" className="sr-only" checked={selected} onChange={() => update({ businessKitId: kit.id, kitId: kitTemplateFor(kit, country), useAssistant: false })} />
                 <span className={cn('flex size-9 shrink-0 items-center justify-center rounded-md', selected ? 'bg-action text-action-fg' : 'bg-sunken text-fg-muted')}>
                   <Icon size={18} strokeWidth={2.2} aria-hidden />
                 </span>

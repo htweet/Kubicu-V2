@@ -1,5 +1,6 @@
 import { BriefcaseIcon, CameraIcon, CompassIcon, DownloadIcon, GraduationCapIcon, HeartHandshakeIcon, HomeIcon, MapIcon, MicIcon, MusicIcon, PartyPopperIcon, ScissorsIcon, ShirtIcon, StoreIcon, UsersIcon, UtensilsIcon, WrenchIcon } from 'lucide-react';
 import type { BusinessKit, KitPart } from '../types/kit';
+import type { CountryCode } from '../types/country';
 
 export const kitPartLabels: Record<KitPart, {label: string;description: string;}> = {
   page: { label: 'Page layout', description: 'Replaces your main page draft. Your name and photo stay; the old draft goes to version history.' },
@@ -412,6 +413,23 @@ const eliteUpgrade: Record<string, string> = {
 for (const k of businessKits) k.eliteTemplateId = eliteUpgrade[k.id];
 
 export const kitById = (id: string) => businessKits.find((k) => k.id === id);
+
+/**
+ * Kits start from a page in the seller's own country where one fits (D494): the Kenyan, Ghanaian and South African
+ * starters (D434). Kits without a local match keep their Nigerian page.
+ */
+const countryStarter: Record<string, Partial<Record<CountryCode, string>>> = {
+  fashion: { KE: 'pwani-kikoi', GH: 'bonwire-kente-house', ZA: 'indigo-shweshwe' },
+  food: { KE: 'mama-oliech-grill', GH: 'auntie-ama-waakye', ZA: 'thandis-kota-kitchen' },
+  'home-services': { KE: 'safi-home-care', GH: 'fixam-fones-accra' },
+  'digital-creator': { KE: 'kevo-on-the-road' },
+  music: { GH: 'kojo-strings' },
+  photography: { ZA: 'sipho-lens' },
+  courses: { ZA: 'maths-with-ms-zulu' }
+};
+
+/** The example page a kit starts from in this country. */
+export const kitTemplateFor = (kit: Pick<BusinessKit, 'id' | 'templateId'>, country: CountryCode): string => countryStarter[kit.id]?.[country] ?? kit.templateId;
 
 /** The six draft policies, in the order they're shown and added to the page (D90a). */
 export const policyFields = [

@@ -39,6 +39,26 @@ export function countryForLanguage(lang: string): CountryCode {
 }
 export const activeCountryInfo = (): CountryInfo => countryInfo(active);
 
+/** The country chosen on the sign-up form (D494), used when the first workspace is created in onboarding. */
+const SIGNUP_KEY = 'kubicu.signup.country';
+
+export function readSignupCountry(): CountryCode | null {
+  try {
+    const v = localStorage.getItem(SIGNUP_KEY);
+    return countries.some((c) => c.code === v) ? v as CountryCode : null;
+  } catch {
+    return null;
+  }
+}
+
+export function writeSignupCountry(code: CountryCode): void {
+  try {
+    localStorage.setItem(SIGNUP_KEY, code);
+  } catch {
+
+    /* private mode: the workspace falls back to Nigeria and can be changed in Settings */}
+}
+
 /** Is this account number the right length for the country's banks? Returns an English message or null. */
 export function accountNumberIssue(value: string, code: CountryCode = active): string | null {
   const rule = countryInfo(code).accountNumber;

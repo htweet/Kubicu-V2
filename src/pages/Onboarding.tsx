@@ -5,6 +5,7 @@ import { clearOnboarding, useOnboarding, writeOnboarding } from '../hooks/useOnb
 import { useWorkspace } from '../contexts/WorkspaceContext';
 import { buildOnboardingPage } from '../utils/onboardingDoc';
 import { writePendingKit } from '../utils/kits';
+import { readSignupCountry } from '../utils/country';
 import { OnboardingLayout } from '../components/onboarding/OnboardingLayout';
 import { GoalStep } from '../components/onboarding/GoalStep';
 import { KitStep } from '../components/onboarding/KitStep';
@@ -27,7 +28,7 @@ export function Onboarding() {
       // Save progress first: creating the workspace switches to it and remounts this screen.
       const next = { ...state, step: publish ? 5 : state.step, published: publish, workspaceId: 'pending' };
       writeOnboarding(next);
-      const workspace = create({ name: state.name.trim() || 'My page', ownerName: state.name, doc: built.doc, publish, demoData: !!state.demoData, whatsapp: state.actionType === 'whatsapp' ? state.actionValue : undefined });
+      const workspace = create({ name: state.name.trim() || 'My page', ownerName: state.name, doc: built.doc, publish, demoData: !!state.demoData, whatsapp: state.actionType === 'whatsapp' ? state.actionValue : undefined, country: readSignupCountry() ?? undefined });
       writeOnboarding({ ...next, workspaceId: workspace.id });
       if (state.businessKitId) writePendingKit(workspace.id, state.businessKitId);
       if (!publish) {

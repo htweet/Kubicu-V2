@@ -7,7 +7,9 @@ import { useT } from '../../contexts/LocaleContext';
 import { MONEY_EVENT, readMoney, writeMoney } from '../../utils/money/store';
 import { DECIDE_HOURS, issueLabels, stageLabels, stageTones, staffDecide } from '../../utils/money/escrow';
 import { audit, staffActor, useAdminStore } from '../../utils/admin/store';
-import { formatNgn, formatRelative, formatTimestamp } from '../../utils/format';
+import { formatRelative, formatTimestamp } from '../../utils/format';
+import { currencySymbol, formatMoney, type CurrencyCode } from '../../utils/currency';
+import { formatTotals, workspaceCurrency } from '../../utils/admin/workspaceMoney';
 import { PageHeader } from '../../components/shell/PageHeader';
 import { Badge } from '../../components/ui/Badge';
 import { Tabs } from '../../components/ui/Tabs';
@@ -25,6 +27,8 @@ interface Row {
   id: string;
   workspaceId: string;
   workspace: string;
+  /** The workspace's own currency — case amounts are stored in it (D494). */
+  currency: CurrencyCode;
   c: EscrowCase;
 }
 
@@ -55,7 +59,7 @@ export function AdminEscrow() {
   }, []);
 
   const rows: Row[] = useMemo(
-    () => workspaces.flatMap((w) => readMoney(w.id).escrow.filter((c) => c.dispute).map((c) => ({ id: `${w.id}:${c.id}`, workspaceId: w.id, workspace: w.name, c }))),
+    () => workspaces.flatMap((w) => readMoney(w.id).escrow.filter((c) => c.dispute).map((c) => ({ id: `${w.id}:${c.id}`, workspaceId: w.id, workspace: w.name, currency: workspaceCurrency(w), c }))),
     [workspaces, tick] // eslint-disable-line react-hooks/exhaustive-deps
   );
 
@@ -63,7 +67,8 @@ export function AdminEscrow() {
   const withSeller = rows.filter((r) => r.c.stage === 'disputed');
   const decided = rows.filter((r) => r.c.dispute?.decision).sort((a, b) => Date.parse(b.c.dispute?.decision?.at ?? '') - Date.parse(a.c.dispute?.decision?.at ?? ''));
   const list = tab === 'decide' ? toDecide : tab === 'seller' ? withSeller : decided;
-  const reserved = [...toDecide, ...withSeller].reduce((s, r) => s + r.c.grossNgn, 0);
+  // Never adds currencies together: one figure per currency.
+  const reserved = formatTotals([...toDecide, ...withSeller].map((r) => ({ currency: r.currency, amount: r.c.grossNgn })));
   const overdue = toDecide.filter((r) => Date.now() - Date.parse(r.c.dispute?.escalatedAt ?? '') > DECIDE_HOURS * 3_600_000).length;
   const open = openId ? rows.find((r) => r.id === openId) ?? null : null;
 
@@ -93,7 +98,7 @@ export function AdminEscrow() {
       return <span className={late ? 'font-medium text-danger' : 'text-fg-muted'}>{at ? tab === 'seller' ? formatTimestamp(at) : `${formatRelative(at)}${late ? ` · ${t('overdue')}` : ''}` : '—'}</span>;
     }
   },
-  { key: 'amount', header: t('Paid'), align: 'right', sortValue: (r) => r.c.grossNgn, render: (r) => <span className="font-semibold tabular-nums text-fg">{formatNgn(r.c.grossNgn)}</span> },
+  { key: 'amount', header: t('Paid'), align: 'right', sortValue: (r) => r.c.grossNgn, render: (r) => <span className="font-semibold tabular-nums text-fg">{formatMoney(r.c.grossNgn, r.currency)}</span> },
   {
     key: 'actions',
     header: '',
@@ -114,7 +119,7 @@ export function AdminEscrow() {
       return;
     }
     writeMoney(r.workspaceId, after);
-    const label = outcome === 'release' ? 'Released escrow to seller' : outcome === 'refund' ? 'Refunded escrow to buyer' : `Split escrow (${formatNgn(partialNgn ?? 0)} to buyer)`;
+    const label = outcome === 'release' ? 'Released escrow to seller' : outcome === 'refund' ? 'Refunded escrow to buyer' : `Split escrow (${formatMoney(partialNgn ?? 0, r.currency)} to buyer)`;
     setStore((s) => audit(s, { area: 'escrow', action: label, target: `${r.workspace} · #${r.c.orderNumber}`, reason: note }));
     toast.success(t('Decision recorded'), { description: t('Buyer and seller both see your note word for word.') });
     setOpenId(null);
@@ -129,7 +134,7 @@ export function AdminEscrow() {
       <StatGroup columns={3} className="mt-8 items-end border-b border-line pb-6">
         <Stat primary label={t('To decide')} value={toDecide.length} hint={t('Target: within {days} days', { days: DECIDE_HOURS / 24 })} />
         <Stat label={t('Overdue')} value={<span className={overdue ? 'text-danger' : undefined}>{overdue}</span>} hint={t('Past the decision target')} />
-        <Stat label={t('Reserved in open cases')} value={formatNgn(reserved)} hint={t('Cases: {n}', { n: openCount })} />
+        <Stat label={t('Reserved in open cases')} value={reserved} hint={t('Cases: {n}', { n: openCount })} />
       </StatGroup>
 
       <div className="mt-8 flex flex-col gap-5">
@@ -180,13 +185,14 @@ function decisionLabel(c: EscrowCase): string {
 function CaseReview({ row, onDecide, t }: {row: Row;onDecide: (r: Row, outcome: Outcome, note: string, partialNgn?: number) => void;t: Tr;}) {
   const { c } = row;
   const d = c.dispute!;
+  const formatNgn = (n: number) => formatMoney(n, row.currency);
   const [outcome, setOutcome] = useState<Outcome>(d.wants === 'partial' ? 'partial' : 'refund');
   const [amount, setAmount] = useState(String(d.partialNgn ?? d.response?.partialNgn ?? ''));
   const [note, setNote] = useState('');
   const [tried, setTried] = useState(false);
   const partial = Number(amount) || 0;
   const errors = {
-    amount: outcome === 'partial' && (partial <= 0 || partial >= c.grossNgn) ? t('Enter an amount between ₦1 and {max}.', { max: formatNgn(c.grossNgn - 1) }) : undefined,
+    amount: outcome === 'partial' && (partial <= 0 || partial >= c.grossNgn) ? t('Enter an amount between {min} and {max}.', { min: formatNgn(1), max: formatNgn(c.grossNgn - 1) }) : undefined,
     note: note.trim().length < 20 ? t('Explain the decision in at least 20 characters. Buyer and seller see it word for word.') : undefined
   };
 
@@ -256,7 +262,7 @@ function CaseReview({ row, onDecide, t }: {row: Row;onDecide: (r: Row, outcome: 
               </label>
           )}
           </fieldset>
-          {outcome === 'partial' && <TextInput id="ae-amount" label={t('Refund to buyer (₦)')} inputMode="numeric" value={amount} onChange={(e) => setAmount(e.target.value.replace(/\D/g, ''))} error={tried ? errors.amount : undefined} />}
+          {outcome === 'partial' && <TextInput id="ae-amount" label={t('Refund to buyer ({symbol})', { symbol: currencySymbol(row.currency) })} inputMode="numeric" value={amount} onChange={(e) => setAmount(e.target.value.replace(/\D/g, ''))} error={tried ? errors.amount : undefined} />}
           <TextArea id="ae-note" label={t('Note to buyer and seller')} rows={4} value={note} onChange={(e) => setNote(e.target.value)} error={tried ? errors.note : undefined} hint={t('Shown word for word to both, and kept in the audit log.')} />
           <Button
           className="self-start"

@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import type { AiFeatureId } from '../../types/admin';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
+import { useT } from '../../contexts/LocaleContext';
 import { audit, flagOn, staffActor, useAdminStore } from '../../utils/admin/store';
 import { aiAllowance, aiBonus } from '../../utils/planCatalogue';
 import { readAiLog } from '../../utils/aiLog';
@@ -19,12 +20,12 @@ import { cn } from '../../utils/cn';
 
 type FeatureKey = AiFeatureId | 'page_setup';
 
-/** Every AI-labelled feature and the switch that controls it (D130, switches D135). */
-const aiFeatures: {id: FeatureKey;name: string;where: string;cost: string;}[] = [
-{ id: 'page_setup', name: 'AI page setup', where: 'Canvas → Page, onboarding, business-kit drafts', cost: `${aiCost.page} credits per draft` },
-{ id: 'block_suggest', name: 'Block suggestions', where: 'Canvas block settings', cost: `${aiCost.block} credit each` },
-{ id: 'print_writer', name: 'Print kit writing helper', where: 'Growth → Print kit', cost: '1 credit each' },
-{ id: 'coach', name: 'Business Coach', where: 'Growth → Business Coach', cost: '1 credit per refresh or question' }];
+/** Every AI-labelled feature and the switch that controls it (D130, switches D135). Cost is "Credits: n" plus what it's per. */
+const aiFeatures: {id: FeatureKey;name: string;where: string;credits: number;per: string;}[] = [
+{ id: 'page_setup', name: 'AI page setup', where: 'Canvas → Page, onboarding, business-kit drafts', credits: aiCost.page, per: 'per draft' },
+{ id: 'block_suggest', name: 'Block suggestions', where: 'Canvas block settings', credits: aiCost.block, per: 'each' },
+{ id: 'print_writer', name: 'Print kit writing helper', where: 'Growth → Print kit', credits: 1, per: 'each' },
+{ id: 'coach', name: 'Business Coach', where: 'Growth → Business Coach', credits: 1, per: 'per refresh or question' }];
 
 
 const safeguards = [
@@ -48,12 +49,17 @@ function usageFor(workspaceId: string): number {
 const outcomeTone = { ok: 'success', blocked: 'warning', failed: 'danger' } as const;
 const outcomeLabel = { ok: 'Done', blocked: 'Blocked by a rule', failed: 'Failed' } as const;
 
-/** Super admin → AI operations: credit use, per-feature switches, a redacted request log and safeguards. No private content is shown. */
+/**
+ * Super admin → AI operations: credit use, per-feature switches, a redacted request log and safeguards. No private content is shown.
+ * Follows the staff console language (D499). Workspace and plan names, log notes and audit entries stay as written.
+ */
 export function AdminAi() {
+  const { t: tr, lang } = useT();
   const { workspaces } = useWorkspace();
   const [store, setStore] = useAdminStore();
   const [switching, setSwitching] = useState<(typeof aiFeatures)[number] | null>(null);
   const log = useMemo(() => readAiLog(), [store]);
+  const num = (n: number) => n.toLocaleString(lang === 'en' ? 'en-GB' : undefined);
 
   const rows = useMemo(
     () =>
@@ -91,7 +97,10 @@ export function AdminAi() {
       }
       return audit(next, { area: 'ai', action: `${turningOff ? 'Switched off' : 'Switched on'} ${f.name} for everyone`, target: f.name, reason });
     });
-    toast.success(`${f.name} ${turningOff ? 'switched off' : 'switched on'}`, { description: turningOff ? 'Sellers see “Paused by KUBICU for now”. Nothing they made is changed.' : 'Available again within each plan’s credits.' });
+    const name = tr(f.name);
+    toast.success(turningOff ? tr('{feature} switched off', { feature: name }) : tr('{feature} switched on', { feature: name }), {
+      description: turningOff ? tr('Sellers see “Paused by KUBICU for now”. Nothing they made is changed.') : tr('Available again within each plan’s credits.')
+    });
     setSwitching(null);
   };
 
@@ -101,18 +110,18 @@ export function AdminAi() {
 
       <Card emphasis="primary" as="div" className="mt-8">
         <StatGroup columns={4}>
-          <Stat primary label="Credits used this month" value={used.toLocaleString()} hint={`of ${allowance.toLocaleString()} allowed across workspaces here`} />
-          <Stat label="Workspaces at 80%+" value={<span className={nearLimit ? 'text-warning' : undefined}>{nearLimit}</span>} />
-          <Stat label="Blocked by a rule" value={pct(blocked)} hint={`${blocked} of ${log.length} recent requests`} />
-          <Stat label="Features switched off" value={<span className={offCount ? 'text-danger' : undefined}>{offCount}</span>} hint="Provider: none — rule-based preview" />
+          <Stat primary label={tr('Credits used this month')} value={num(used)} hint={tr('Allowed across workspaces here: {n}', { n: num(allowance) })} />
+          <Stat label={tr('Workspaces at 80%+')} value={<span className={nearLimit ? 'text-warning' : undefined}>{nearLimit}</span>} />
+          <Stat label={tr('Blocked by a rule')} value={pct(blocked)} hint={tr('Blocked: {n} · Recent requests: {total}', { n: blocked, total: log.length })} />
+          <Stat label={tr('Features switched off')} value={<span className={offCount ? 'text-danger' : undefined}>{offCount}</span>} hint={tr('Provider: none — rule-based preview')} />
         </StatGroup>
       </Card>
 
       <div className="mt-8 grid items-start gap-8 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
         <div className="flex min-w-0 flex-col gap-8">
-          <Card id="usage" title="Use by workspace" description="Highest share of allowance first. Includes any AI credits staff gave this month." body="flush">
+          <Card id="usage" title={tr('Use by workspace')} description={tr('Highest share of allowance first. Includes any AI credits staff gave this month.')} body="flush">
             {rows.length === 0 ?
-            <p className="px-5 py-5 text-label text-fg-muted md:px-6">No workspaces on this device.</p> :
+            <p className="px-5 py-5 text-label text-fg-muted md:px-6">{tr('No workspaces on this device.')}</p> :
 
             <ul className="divide-y divide-line">
                 {rows.map((r) =>
@@ -126,7 +135,7 @@ export function AdminAi() {
                     </span>
                     <span className="text-right text-label tabular-nums text-fg">
                       {r.used} / {r.limit}
-                      {r.share >= 1 && <span className="sr-only"> — full</span>}
+                      {r.share >= 1 && <span className="sr-only"> — {tr('full')}</span>}
                     </span>
                   </li>
               )}
@@ -134,21 +143,27 @@ export function AdminAi() {
             }
           </Card>
 
-          <Card id="log" title="Recent requests" description={`Which feature, which workspace, credits and outcome — never the words asked for or returned. Failed: ${pct(failed)}.`} body="flush" actions={log.some((l) => l.sample) ? <Badge tone="neutral">Includes samples</Badge> : undefined}>
+          <Card
+            id="log"
+            title={tr('Recent requests')}
+            description={`${tr('Which feature, which workspace, credits and outcome — never the words asked for or returned.')} ${tr('Failed: {pct}.', { pct: pct(failed) })}`}
+            body="flush"
+            actions={log.some((l) => l.sample) ? <Badge tone="neutral">{tr('Includes samples')}</Badge> : undefined}>
+            
             <ul className="divide-y divide-line">
               {log.slice(0, 12).map((l) =>
               <li key={l.id} className="flex flex-col gap-1 px-5 py-3 sm:flex-row sm:items-start sm:gap-4 md:px-6">
                   <span className="min-w-0 flex-1">
                     <span className="block text-label font-medium text-fg">
-                      {l.feature} <span className="font-normal text-fg-muted">· {l.workspaceName}</span>
+                      {tr(l.feature)} <span className="font-normal text-fg-muted">· {l.workspaceName}</span>
                     </span>
                     <span className="block text-caption text-fg-subtle">
-                      {formatRelative(l.at)} · {l.credits} credit{l.credits === 1 ? '' : 's'}
+                      {formatRelative(l.at)} · {tr('Credits: {n}', { n: l.credits })}
                       {l.note && ` · ${l.note}`}
                     </span>
                   </span>
                   <Badge tone={outcomeTone[l.outcome]} dot>
-                    {outcomeLabel[l.outcome]}
+                    {tr(outcomeLabel[l.outcome])}
                   </Badge>
                 </li>
               )}
@@ -157,24 +172,25 @@ export function AdminAi() {
         </div>
 
         <div className="flex min-w-0 flex-col gap-8">
-          <Card id="features" title="AI features" description="Switching one off pauses it for every workspace straight away." actions={<IllustrativeTag note="No AI provider is connected in the prototype. Results come from rules and templates." />}>
+          <Card id="features" title={tr('AI features')} description={tr('Switching one off pauses it for every workspace straight away.')} actions={<IllustrativeTag note={tr('No AI provider is connected in the prototype. Results come from rules and templates.')} />}>
             <ul className="flex flex-col divide-y divide-line">
               {aiFeatures.map((f) => {
                 const off = f.id === 'page_setup' ? null : store.aiOff[f.id];
+                const parts = [tr(f.where), `${tr('Credits: {n}', { n: f.credits })} ${tr(f.per)}`, off ? tr('off since {when}', { when: formatRelative(off.at) }) : null];
                 return (
                   <li key={f.id} className="py-3 first:pt-0 last:pb-0">
-                    <Switch id={`ai-${f.id}`} checked={isOn(f.id)} onChange={() => setSwitching(f)} label={f.name} description={`${f.where} · ${f.cost}${off ? ` · off since ${formatRelative(off.at)}` : ''}`} />
+                    <Switch id={`ai-${f.id}`} checked={isOn(f.id)} onChange={() => setSwitching(f)} label={tr(f.name)} description={parts.filter(Boolean).join(' · ')} />
                   </li>);
 
               })}
             </ul>
           </Card>
 
-          <Card id="safeguards" title="Safeguards">
+          <Card id="safeguards" title={tr('Safeguards')}>
             <ul className="flex flex-col gap-2.5">
               {safeguards.map((s) =>
               <li key={s} className="text-label text-fg-muted">
-                  {s}
+                  {tr(s)}
                 </li>
               )}
             </ul>
@@ -187,9 +203,9 @@ export function AdminAi() {
         onClose={() => setSwitching(null)}
         onConfirm={confirm}
         destructive={!!switching && isOn(switching.id)}
-        title={switching ? `${isOn(switching.id) ? 'Switch off' : 'Switch on'} ${switching.name}?` : ''}
-        description={switching && isOn(switching.id) ? 'Every workspace loses this feature until it’s switched back on. Drafts and pages already made stay as they are.' : 'Every workspace gets it back, within its plan’s credits.'}
-        confirmLabel={switching && isOn(switching.id) ? 'Switch off' : 'Switch on'} />
+        title={switching ? isOn(switching.id) ? tr('Switch off {feature}?', { feature: tr(switching.name) }) : tr('Switch on {feature}?', { feature: tr(switching.name) }) : ''}
+        description={switching && isOn(switching.id) ? tr('Every workspace loses this feature until it’s switched back on. Drafts and pages already made stay as they are.') : tr('Every workspace gets it back, within its plan’s credits.')}
+        confirmLabel={switching && isOn(switching.id) ? tr('Switch off') : tr('Switch on')} />
       
     </div>);
 

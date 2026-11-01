@@ -13,6 +13,7 @@ import { Button } from '../ui/Button';
 import { Dialog } from '../ui/Dialog';
 import { InlineAlert } from '../ui/InlineAlert';
 import { SelectInput } from '../ui/SelectInput';
+import { useCountryRollout } from '../../utils/admin/countryRollout';
 
 /**
  * Settings → Business → Country (D352). The country sets sensible defaults — currency, phone code,
@@ -24,6 +25,8 @@ export function CountryCard() {
   const { current, update } = useWorkspace();
   const commerce = useCommerce().data;
   const can = useTeam().can('billing.manage');
+  // Countries open one at a time (D494); a closed one can't be picked here.
+  const rollout = useCountryRollout();
   const code = workspaceCountry(current);
   const [choice, setChoice] = useState<CountryCode>(code);
   const [confirming, setConfirming] = useState(false);
@@ -55,9 +58,18 @@ export function CountryCard() {
         }
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
           <div className="sm:w-80">
-            <SelectInput<CountryCode> id="ws-country" required label="Sells from" value={choice} disabled={!can.allowed} onChange={setChoice} options={countries.map((c) => ({ value: c.code, label: tr(c.name) }))} />
+            <SelectInput<CountryCode>
+              id="ws-country"
+              required
+              label="Sells from"
+              value={choice}
+              disabled={!can.allowed}
+              onChange={setChoice}
+              hint={countries.some((c) => !rollout.open(c.code)) ? 'Countries KUBICU hasn’t opened yet can’t be chosen.' : undefined}
+              options={countries.map((c) => ({ value: c.code, label: tr(c.name), disabled: !rollout.open(c.code) }))} />
+            
           </div>
-          <Button disabled={!can.allowed || choice === code} onClick={() => setConfirming(true)}>
+          <Button disabled={!can.allowed || choice === code || !rollout.open(choice)} onClick={() => setConfirming(true)}>
             Change country
           </Button>
         </div>

@@ -11,13 +11,25 @@ import { focusFirstError } from '../../utils/a11y';
 import { claimMinutesLeft, readHandleClaim } from '../../utils/handleClaim';
 import { useT } from '../../contexts/LocaleContext';
 import { cn } from '../../utils/cn';
+import type { CountryCode } from '../../types/country';
+import { countries } from '../../data/countries';
+import { countryForLanguage, countryInfo, writeSignupCountry } from '../../utils/country';
+import { formatOpeningDay, useCountryRollout } from '../../utils/admin/countryRollout';
+import { SelectInput } from '../../components/ui/SelectInput';
+import { InlineAlert } from '../../components/ui/InlineAlert';
 
 const inputClass = 'h-12 rounded-xl pl-10';
 
 export function SignUp() {
   const navigate = useNavigate();
-  const { t } = useT();
+  const { t, lang } = useT();
   const [params] = useSearchParams();
+  // Where the business sells from (D494): a first guess from the language, and checked against the country rollout.
+  const [country, setCountry] = useState<CountryCode>(() => countryForLanguage(lang));
+  const rollout = useCountryRollout();
+  const closed = !rollout.open(country);
+  const opensOn = rollout.opensOn(country);
+  const countryName = t(countryInfo(country).name);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -30,7 +42,8 @@ export function SignUp() {
     name: name.trim() ? '' : 'Enter your name',
     email: isValidEmail(email) ? '' : 'Enter a valid email, like you@example.com',
     password: password.length >= 8 ? '' : 'Use at least 8 characters',
-    agreed: agreed ? '' : 'Please agree to continue'
+    agreed: agreed ? '' : 'Please agree to continue',
+    country: closed ? 'Choose a country where KUBICU is open' : ''
   };
   const valid = Object.values(errors).every((e) => !e);
 
@@ -39,6 +52,7 @@ export function SignUp() {
     setSubmitted(true);
     if (!valid) return focusFirstError();
     setLoading(true);
+    writeSignupCountry(country);
     const kit = params.get('kit');
     window.setTimeout(() => navigate(`/verify?email=${encodeURIComponent(email.trim())}${kit ? `&kit=${kit}` : ''}`), 400);
   };
@@ -89,6 +103,23 @@ export function SignUp() {
         <div className="flex flex-col gap-3">
           <PasswordInput id="su-password" label="Password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} error={submitted ? errors.password || undefined : undefined} />
           <PasswordChecklist password={password} />
+        </div>
+        <div className="flex flex-col gap-3">
+          <SelectInput<CountryCode>
+            id="su-country"
+            required
+            label="Where is your business?"
+            hint={closed ? undefined : 'Sets your currency, phone code and how customers pay. You can change it later in Settings.'}
+            value={country}
+            onChange={setCountry}
+            error={submitted && errors.country ? errors.country : undefined}
+            options={countries.map((c) => ({ value: c.code, label: c.name }))} />
+          
+          {closed &&
+          <InlineAlert tone="info" title={t('KUBICU isn’t open for businesses in {country} yet', { country: countryName })}>
+              {opensOn ? t('We plan to open there on {date}. Buyers can already shop on KUBICU pages.', { date: formatOpeningDay(opensOn) }) : t('We’re opening one country at a time. Buyers can already shop on KUBICU pages.')}
+            </InlineAlert>
+          }
         </div>
         <div>
           <label className={cn('flex cursor-pointer items-start gap-3 rounded-xl border px-4 py-3 text-label text-fg-muted transition-colors duration-150', submitted && errors.agreed ? 'border-danger' : 'border-line hover:border-line-strong')}>
