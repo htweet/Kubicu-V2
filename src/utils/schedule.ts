@@ -39,6 +39,26 @@ export function formatSchedule(iso: string): string {
   return format(new Date(iso), "EEE d MMM, HH:mm");
 }
 
+/**
+ * KUBICU's office hours (9am–6pm Lagos, UTC+1) in the device's own time zone (D484), e.g. "10am–7pm SAST".
+ * Null when the device is already on West Africa Time, or the zone can't be read.
+ */
+export function officeHoursLocal(): string | null {
+  try {
+    const now = new Date();
+    const at = (utcHour: number) => new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), utcHour));
+    const opts: Intl.DateTimeFormatOptions = { hour: 'numeric', minute: '2-digit', hour12: true };
+    const lagos = new Intl.DateTimeFormat('en-GB', { ...opts, timeZone: 'Africa/Lagos' }).format(at(8));
+    const here = new Intl.DateTimeFormat('en-GB', opts).format(at(8));
+    if (lagos === here) return null;
+    const short = (d: Date) => new Intl.DateTimeFormat('en-US', opts).format(d).replace(':00', '').replace(' ', '').toLowerCase();
+    const zone = new Intl.DateTimeFormat('en-GB', { timeZoneName: 'short' }).formatToParts(now).find((p) => p.type === 'timeZoneName')?.value ?? '';
+    return `${short(at(8))}–${short(at(17))}${zone ? ` ${zone}` : ''}`;
+  } catch {
+    return null;
+  }
+}
+
 /** Short time-zone label for the device, e.g. "WAT" or "GMT+1". */
 export function timeZoneLabel(): string {
   try {

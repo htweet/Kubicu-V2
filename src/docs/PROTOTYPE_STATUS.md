@@ -2,6 +2,8 @@
 
 **Pass:** 1 + gap closure (Batches 1–2 complete) · **Default appearance:** Dark studio
 
+> **Status at 1 Nov 2026 (through D481).** This checklist records the early batches. For everything since, use `docs/DESIGN_GAP_AUDIT.md` (re-audit of 1 Nov covers D344–D481) and the decision register. In short: four countries and eight languages, four-country money, all of Phase 5 and its follow-ups, Operations switches and editable figures are built. Still open: the staff console in other languages, branch-limited Analytics and Payouts, native-speaker review, founder/legal sign-off, real provider connections, and a hands-on browser pass — nothing from D280 onwards has been opened in a browser.
+
 ## Acceptance checklist
 
 ### Batch 1 · Design system & shell

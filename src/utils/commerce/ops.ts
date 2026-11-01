@@ -63,8 +63,9 @@ batchId?: string)
       variants: p.variants.map((v) => {
         if (v.id !== variantId) return v;
         after = Math.max(0, v.stock + delta);
-        const batches = delta < 0 ? consumeBatches(v, -delta, batchId) : v.batches;
-        return shiftBranchStock({ ...v, stock: after, batches: fitBatches(batches, after) }, branchId, delta);
+        const batches = delta < 0 ? consumeBatches(v, -delta, batchId, branchId) : v.batches;
+        const moved = shiftBranchStock({ ...v, stock: after, batches }, branchId, delta);
+        return { ...moved, batches: fitBatches(moved) };
       })
     };
   });

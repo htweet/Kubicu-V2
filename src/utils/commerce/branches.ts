@@ -1,6 +1,7 @@
 import type { Branch, CommerceData, Order, ProductVariant } from '../../types/commerce';
 import type { WorkspacePlan } from '../../types/plan';
 import { uid } from '../id';
+import { moveBatches } from './batches';
 
 /**
  * Branches and franchises (D437). The main shop is implicit: it holds whatever stock isn't at a branch.
@@ -61,7 +62,8 @@ export function removeBranch(data: CommerceData, id: string): CommerceData {
       variants: p.variants.map((v) => {
         if (!v.branchStock || !(id in v.branchStock)) return v;
         const { [id]: _gone, ...rest } = v.branchStock;
-        return { ...v, branchStock: rest };
+        // The branch's batches go back to the main shop with its stock (D478).
+        return { ...v, branchStock: rest, batches: v.batches?.map((b) => b.branchId === id ? { ...b, branchId: undefined } : b) };
       })
     }))
   };
@@ -96,7 +98,8 @@ export function transferStock(data: CommerceData, productId: string, variantId: 
       const bs = { ...(v.branchStock ?? {}) };
       if (from !== MAIN_BRANCH) bs[from] = Math.max(0, (bs[from] ?? 0) - qty);
       if (to !== MAIN_BRANCH) bs[to] = (bs[to] ?? 0) + qty;
-      return { ...v, branchStock: bs };
+      // Batches travel with the units, soonest-expiring first (D478).
+      return { ...v, branchStock: bs, batches: moveBatches(v, from, to, qty) };
     })
   }
   );

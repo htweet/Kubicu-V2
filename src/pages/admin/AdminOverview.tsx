@@ -10,6 +10,7 @@ import { useKycQueue } from '../../hooks/useKycQueue';
 import { REVIEW_HOURS } from '../../utils/money/kyc';
 import { useSponsorships } from '../../hooks/useSponsorships';
 import { disputeOpen, disputeRows, SPONSOR_DECIDE_DAYS } from '../../utils/sponsorships';
+import { useT } from '../../contexts/LocaleContext';
 import { PageHeader } from '../../components/shell/PageHeader';
 import { Card } from '../../components/ui/layout/Card';
 import { List, ListRow } from '../../components/ui/layout/ListRow';
@@ -18,8 +19,12 @@ import { cn } from '../../utils/cn';
 
 const DAY = 86400000;
 
-/** Super admin → Operations overview: every queue the signed-in role can act on, worst first (D129). */
+/**
+ * Super admin → Operations overview: every queue the signed-in role can act on, worst first (D129).
+ * Follows the console's language (D487); incident titles and audit entries stay as recorded.
+ */
 export function AdminOverview() {
+  const { t } = useT();
   const [store] = useAdminStore();
   const me = useStaffSession();
   const role = me?.role ?? 'lead';
@@ -37,34 +42,41 @@ export function AdminOverview() {
   const sponsorLate = sponsorOpen.filter((r) => now - Date.parse(r.app.dispute!.openedAt) > SPONSOR_DECIDE_DAYS * DAY).length;
 
   const queues = [
-  { area: 'health', label: 'Open incidents', count: incidents.length, urgent: incidents.length > 0, note: incidents.length ? incidents.map((i) => `${i.title} (${impactLabels[i.impact]})`).join(' · ') : 'Status page: working normally', to: '/admin/health' },
+  {
+    area: 'health',
+    label: t('Open incidents'),
+    count: incidents.length,
+    urgent: incidents.length > 0,
+    note: incidents.length ? incidents.map((i) => `${i.title} (${t(impactLabels[i.impact])})`).join(' · ') : t('Status page: working normally'),
+    to: '/admin/health'
+  },
   {
     area: 'payments',
-    label: 'Verifications to review',
+    label: t('Verifications to review'),
     count: kyc.length,
     urgent: kycLate.length > 0,
-    note: kycLate.length ? `${kycLate.length} past the ${REVIEW_HOURS}-hour promise · oldest first` : `Sellers are promised a decision within ${REVIEW_HOURS} hours`,
+    note: kycLate.length ? t('Past the {hours}-hour promise: {n} · oldest first', { hours: REVIEW_HOURS, n: kycLate.length }) : t('Sellers are promised a decision within {hours} hours', { hours: REVIEW_HOURS }),
     to: '/admin/payments?tab=identity'
   },
   ...(['staff', 'tenants', 'payments'] as const).map((area) => {
     const mineToDecide = approvalsForMe.filter((a) => approvalArea[a.kind] === area);
     const label = area === 'staff' ? 'Access changes waiting for you' : area === 'tenants' ? 'Suspensions waiting for you' : 'Large payouts waiting for you';
-    return { area, label, count: mineToDecide.length, urgent: mineToDecide.length > 0, note: 'Second-person approval — expires after 24 hours', to: `/admin/${area}` };
+    return { area, label: t(label), count: mineToDecide.length, urgent: mineToDecide.length > 0, note: t('Second-person approval — expires after 24 hours'), to: `/admin/${area}` };
   }),
-  { area: 'moderation', label: 'Open page reports', count: store.reports.filter((r) => r.status === 'open').length, urgent: store.reports.some((r) => r.status === 'open' && r.reason === 'scam'), note: 'Scam reports are reviewed first', to: '/admin/moderation' },
+  { area: 'moderation', label: t('Open page reports'), count: store.reports.filter((r) => r.status === 'open').length, urgent: store.reports.some((r) => r.status === 'open' && r.reason === 'scam'), note: t('Scam reports are reviewed first'), to: '/admin/moderation' },
   {
     area: 'sponsorships',
-    label: 'Sponsorship problems to decide',
+    label: t('Sponsorship problems to decide'),
     count: sponsorOpen.length,
     urgent: sponsorLate > 0,
-    note: sponsorLate ? `${sponsorLate} past the ${SPONSOR_DECIDE_DAYS}-day target` : 'Held money is frozen until you decide',
+    note: sponsorLate ? t('Past the {days}-day target: {n}', { days: SPONSOR_DECIDE_DAYS, n: sponsorLate }) : t('Held money is frozen until you decide'),
     to: '/admin/sponsorships'
   },
-  { area: 'sponsorships', label: 'Sponsorship briefs to check', count: briefs.filter((b) => b.status === 'review').length, urgent: false, note: 'Creators can’t see a brief until it’s approved', to: '/admin/sponsorships' },
-  { area: 'appeals', label: 'Appeals to decide', count: store.appeals.filter((a) => a.status === 'open').length, urgent: false, note: 'Decided by someone other than the original reviewer', to: '/admin/appeals' },
-  { area: 'support', label: 'Help requests needing a reply', count: store.tickets.filter((t) => t.status === 'open').length, urgent: false, note: 'Oldest first in Support', to: '/admin/support' },
-  { area: 'data-requests', label: 'Data requests due within 7 days', count: dueSoon.length, urgent: dueSoon.some((d) => Date.parse(d.dueAt) < now), note: 'Legal deadline — don’t let these slip', to: '/admin/data-requests' },
-  { area: 'tenants', label: 'Suspended workspaces', count: Object.keys(store.suspended).length, urgent: false, note: 'Restore from Users & tenants', to: '/admin/tenants' }].
+  { area: 'sponsorships', label: t('Sponsorship briefs to check'), count: briefs.filter((b) => b.status === 'review').length, urgent: false, note: t('Creators can’t see a brief until it’s approved'), to: '/admin/sponsorships' },
+  { area: 'appeals', label: t('Appeals to decide'), count: store.appeals.filter((a) => a.status === 'open').length, urgent: false, note: t('Decided by someone other than the original reviewer'), to: '/admin/appeals' },
+  { area: 'support', label: t('Help requests needing a reply'), count: store.tickets.filter((x) => x.status === 'open').length, urgent: false, note: t('Oldest first in Support'), to: '/admin/support' },
+  { area: 'data-requests', label: t('Data requests due within 7 days'), count: dueSoon.length, urgent: dueSoon.some((d) => Date.parse(d.dueAt) < now), note: t('Legal deadline — don’t let these slip'), to: '/admin/data-requests' },
+  { area: 'tenants', label: t('Suspended workspaces'), count: Object.keys(store.suspended).length, urgent: false, note: t('Restore from Users & tenants'), to: '/admin/tenants' }].
   filter((q) => roleCanOpen(role, q.area));
 
   const needsAction = queues.filter((q) => q.count > 0).sort((a, b) => Number(b.urgent) - Number(a.urgent) || b.count - a.count);
@@ -73,21 +85,21 @@ export function AdminOverview() {
 
   return (
     <div className="mx-auto w-full max-w-6xl px-5 py-8 md:px-10 md:py-12">
-      <PageHeader title="Operations overview" description={`What needs ${roleInfo(role).label} attention now, worst first. Only the areas your role can open are shown.`} />
+      <PageHeader title={t('Operations overview')} description={t('What needs {role} attention now, worst first. Only the areas your role can open are shown.', { role: t(roleInfo(role).label) })} />
 
       <div className={cn('mt-8 flex flex-col gap-1 rounded-lg border px-5 py-4 md:flex-row md:items-center md:justify-between md:px-6', overall === 'operational' ? 'border-line bg-raised' : 'border-danger/40 bg-danger-soft')}>
         <p className="text-label font-semibold text-fg">
-          Platform: {overall === 'operational' ? 'all services working normally' : `some services ${serviceStateLabels[overall].toLowerCase()}`}
+          {overall === 'operational' ? t('Platform: all services working normally') : t('Platform: some services {state}', { state: t(serviceStateLabels[overall]).toLowerCase() })}
         </p>
         <Link to="/status" target="_blank" className="text-label font-medium text-action hover:underline">
-          Public status page
+          {t('Public status page')}
         </Link>
       </div>
 
       <div className="mt-8 grid items-start gap-8 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
-        <Card id="queues" title="Needs action" description={needsAction.length ? `${needsAction.length} queue${needsAction.length === 1 ? '' : 's'} with work in them` : 'Every queue you can open is clear.'} body="flush" emphasis="primary">
+        <Card id="queues" title={t('Needs action')} description={needsAction.length ? t('Queues with work in them: {n}', { n: needsAction.length }) : t('Every queue you can open is clear.')} body="flush" emphasis="primary">
           {needsAction.length === 0 ?
-          <p className="px-5 py-6 text-label text-fg-muted md:px-6">Nothing waiting. Nice.</p> :
+          <p className="px-5 py-6 text-label text-fg-muted md:px-6">{t('Nothing waiting. Nice.')}</p> :
 
           <List>
               {needsAction.map((q) =>
@@ -97,7 +109,7 @@ export function AdminOverview() {
               title={q.label}
               meta={q.note}
               leading={<span className={cn('flex h-9 min-w-[36px] items-center justify-center rounded-md px-2 text-label font-semibold tabular-nums', q.urgent ? 'bg-danger-soft text-danger' : 'bg-sunken text-fg')}>{q.count}</span>}
-              trailing={q.urgent ? <Badge tone="danger">Urgent</Badge> : undefined}
+              trailing={q.urgent ? <Badge tone="danger">{t('Urgent')}</Badge> : undefined}
               chevron />
 
             )}
@@ -105,14 +117,19 @@ export function AdminOverview() {
           }
           {clear.length > 0 &&
           <p className="border-t border-line px-5 py-3 text-caption text-fg-subtle md:px-6">
-              Clear: {clear.map((q) => q.label.toLowerCase()).join(', ')}.
+              {t('Clear: {list}.', { list: clear.map((q) => q.label).join(' · ') })}
             </p>
           }
         </Card>
 
-        <Card id="recent" title="Recent staff actions" actions={roleCanOpen(role, 'audit') ? <Link to="/admin/audit" className="text-label font-medium text-action hover:underline">Audit log</Link> : undefined} body="flush">
+        <Card
+          id="recent"
+          title={t('Recent staff actions')}
+          actions={roleCanOpen(role, 'audit') ? <Link to="/admin/audit" className="text-label font-medium text-action hover:underline">{t('Audit log')}</Link> : undefined}
+          body="flush">
+          
           {recent.length === 0 ?
-          <p className="px-5 py-6 text-label text-fg-muted md:px-6">No staff actions logged yet.</p> :
+          <p className="px-5 py-6 text-label text-fg-muted md:px-6">{t('No staff actions logged yet.')}</p> :
 
           <ul className="divide-y divide-line">
               {recent.map((e) =>

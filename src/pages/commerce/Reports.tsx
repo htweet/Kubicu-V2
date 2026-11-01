@@ -34,6 +34,8 @@ import { activeExtraSpaces, readSpacePage } from '../../utils/spaces';
 import { downloadCsv, toCsv } from '../../utils/csv';
 import { formatNgn, formatTimestamp } from '../../utils/format';
 import { cn } from '../../utils/cn';
+import { useTeam } from '../../contexts/TeamContext';
+import { MAIN_BRANCH, locationName } from '../../utils/commerce/branches';
 
 type Period = '7' | '30' | '90' | 'custom' | 'all';
 
@@ -55,6 +57,10 @@ export function Reports() {
   const [to, setTo] = useState(() => dayKey(Date.now()));
   const [compare, setCompare] = useState(true);
   const [handle, setHandle] = useState('all');
+  // A teammate limited to one location sees that location's shop orders only (D482). Bookings, invoices, payment
+  // links, gift cards and memberships belong to the whole business, so they're left out for them.
+  const { myBranchId } = useTeam();
+  const scopedOrders = useMemo(() => myBranchId ? data.orders.filter((o) => (o.fulfilment.branchId ?? MAIN_BRANCH) === myBranchId) : data.orders, [data.orders, myBranchId]);
 
   const mainHandle = state.published?.handle ?? state.site.handle;
   const spaceOptions = useMemo(
@@ -84,21 +90,24 @@ export function Reports() {
   }, [period, from, to]);
 
   const inputs = useMemo(
-    () => ({
+    () =>
+    myBranchId ?
+    { orders: scopedOrders, subscriptions: [], giftCards: [], bookings: [], invoices: [], linkPayments: [] } :
+    {
       orders: data.orders,
       subscriptions: data.subscriptions ?? [],
       giftCards: data.giftCards ?? [],
       bookings: ops.bookings,
       invoices: sos.invoices,
       linkPayments: money.links.flatMap((l) => l.payments.map((p) => ({ ...p, linkTitle: l.title })))
-    }),
-    [data.orders, data.subscriptions, data.giftCards, ops.bookings, sos.invoices, money.links]
+    },
+    [myBranchId, scopedOrders, data.orders, data.subscriptions, data.giftCards, ops.bookings, sos.invoices, money.links]
   );
 
-  const periodOrders = (r: ReportRange) => data.orders.filter((o) => isPaidOrder(o) && Date.parse(o.createdAt) >= r.from && Date.parse(o.createdAt) < r.to && (!space || o.sourceHandle === space));
+  const periodOrders = (r: ReportRange) => scopedOrders.filter((o) => isPaidOrder(o) && Date.parse(o.createdAt) >= r.from && Date.parse(o.createdAt) < r.to && (!space || o.sourceHandle === space));
   const entries = useMemo(() => incomeEntries(inputs, ranges.current, space), [inputs, ranges, space]);
-  const orders = useMemo(() => periodOrders(ranges.current), [data.orders, ranges, space]); // eslint-disable-line react-hooks/exhaustive-deps
-  const summary = useMemo(() => summarise(entries, data.orders, orders, ranges.current), [entries, data.orders, orders, ranges]);
+  const orders = useMemo(() => periodOrders(ranges.current), [scopedOrders, ranges, space]); // eslint-disable-line react-hooks/exhaustive-deps
+  const summary = useMemo(() => summarise(entries, scopedOrders, orders, ranges.current), [entries, scopedOrders, orders, ranges]);
 
   // “All time” starts at the first money in, so the chart isn’t years of empty days.
   const chartRange = useMemo((): ReportRange => {
@@ -110,8 +119,8 @@ export function Reports() {
   const prev = useMemo(() => {
     if (!ranges.previous) return null;
     const e = incomeEntries(inputs, ranges.previous, space);
-    return { entries: e, summary: summarise(e, data.orders, periodOrders(ranges.previous), ranges.previous) };
-  }, [inputs, ranges, space, data.orders]); // eslint-disable-line react-hooks/exhaustive-deps
+    return { entries: e, summary: summarise(e, scopedOrders, periodOrders(ranges.previous), ranges.previous) };
+  }, [inputs, ranges, space, scopedOrders]); // eslint-disable-line react-hooks/exhaustive-deps
   const showCompare = compare && !!prev;
 
   const series = incomeSeries(entries, chartRange);
@@ -207,6 +216,12 @@ export function Reports() {
           </div>
         } />
       
+      {myBranchId &&
+      <p className="mt-4 text-label text-fg-muted">
+          {tr('Showing {location} only — the location you work at.', { location: locationName(data, myBranchId, tr('Main shop')) })}{' '}
+          {tr('Bookings, invoices, payment links, gift cards and memberships belong to the whole business, so they aren’t included.')}
+        </p>
+      }
       <PageStack>
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div className="flex min-w-0 flex-wrap items-end gap-3">

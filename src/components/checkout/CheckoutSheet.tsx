@@ -189,13 +189,13 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
       const price = product && variant ? roomPrice ?? (basePrice !== null ? bulkUnitPrice(product, basePrice, qtyByProduct[product.id] ?? l.qty) : null) : null;
       const bulk = roomPrice === null && basePrice !== null && price !== null && price < basePrice;
       const preLeft = product && isPreorder(product) ? preorderLeft(product) : null;
-      const preIssue = preLeft !== null && (qtyByProduct[l.productId] ?? 0) > preLeft ? preLeft === 0 ? 'Pre-orders are full' : `Only ${preLeft} pre-order${preLeft === 1 ? '' : 's'} left` : '';
+      const preIssue = preLeft !== null && (qtyByProduct[l.productId] ?? 0) > preLeft ? preLeft === 0 ? 'Pre-orders are full.' : `Pre-orders left: ${preLeft}.` : '';
       const stallLeft = popup?.left[l.productId] ?? null;
       // Units a pop-up has set aside can't be sold elsewhere (D191); the pop-up's own hold never blocks it.
       const reserved = product?.kind === 'physical' && product.trackStock ? reservedForStalls(data, product.id, popup?.handle) : { qty: 0, labels: [] as string[] };
       const unreserved = product && variant && reserved.qty > 0 ? Math.min(variant.stock, Math.max(0, product.variants.reduce((s, v) => s + Math.max(0, v.stock), 0) - reserved.qty)) : null;
       const asideIssue = unreserved !== null && l.qty > unreserved ? unreserved === 0 ? `Set aside for ${reserved.labels[0]}` : `Only ${unreserved} available — the rest is set aside for ${reserved.labels[0]}` : '';
-      const ticketIssue = product?.kind === 'ticket' ? ticketLineIssue(data, l, Date.now(), holder) : stallLeft !== null && l.qty > stallLeft ? stallLeft === 0 ? 'Sold out at the stall' : `Only ${stallLeft} left at the stall` : preIssue || asideIssue;
+      const ticketIssue = product?.kind === 'ticket' ? ticketLineIssue(data, l, Date.now(), holder) : stallLeft !== null && l.qty > stallLeft ? stallLeft === 0 ? 'Sold out at the stall' : `Left at the stall: ${stallLeft}` : preIssue || asideIssue;
       // Units other buyers are holding in checkout count as taken; this buyer's own hold counts as theirs (D255).
       const free = variant ? product?.kind === 'physical' ? stockFree(data, variant, holder) : variant.stock : 0;
       const stockIssue = product && variant && product.kind === 'physical' && product.trackStock && !isPreorder(product) && !backorders && free < l.qty && free < variant.stock ? stockHeldMessage(product.name, free) : '';
@@ -451,7 +451,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
     if (choosingProduct) {
       return (
         <div className="flex flex-col gap-4">
-          <CheckoutHeading theme={theme} sub={`Choose ${choosingProduct.options[0]?.name.toLowerCase() ?? 'an option'}`}>
+          <CheckoutHeading theme={theme} sub={choosingProduct.options[0] ? tr('Choose {option}', { option: choosingProduct.options[0].name.toLowerCase() }) : tr('Choose an option')}>
             {choosingProduct.name}
           </CheckoutHeading>
           <ul className="flex flex-col gap-2" role="list">
@@ -473,13 +473,13 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
                       {/* Expiry of the batch this order will come from — sales use the soonest-expiring one (D476). */}
                       {available && choosingProduct.trackStock && expiryState(v).next?.expiresOn &&
                       <span className="text-[12px] font-normal" style={muted}>
-                          Best before {formatExpiry(expiryState(v).next?.expiresOn ?? '')}
+                          {tr('Best before {date}', { date: formatExpiry(expiryState(v).next?.expiresOn ?? '') })}
                         </span>
                       }
                     </span>
                     <span className="shrink-0 text-[14px] tabular-nums" style={muted}>
-                      {!available ? ticketIssue || 'Sold out' : price === null ? 'Price on request' : price === 0 && choosingProduct.kind === 'ticket' ? 'Free' : formatNgn(price)}
-                      {available && choosingProduct.trackStock && v.stock <= choosingProduct.lowStockAt ? ` · ${v.stock} left` : ''}
+                      {!available ? ticketIssue ? tr(ticketIssue) : tr('Sold out') : price === null ? tr('Price on request') : price === 0 && choosingProduct.kind === 'ticket' ? tr('Free') : formatNgn(price)}
+                      {available && choosingProduct.trackStock && v.stock <= choosingProduct.lowStockAt ? ` · ${tr('Left: {n}', { n: v.stock })}` : ''}
                     </span>
                   </button>
                 </li>);
@@ -499,9 +499,9 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
       return (
         <div className="flex flex-col items-center gap-3 py-12 text-center" role="status" aria-live="polite">
           <Loader2Icon size={28} className="animate-spin" aria-hidden />
-          <p className="text-[16px] font-medium">{payWith === 'pod' ? 'Placing your order…' : outcome === 'timeout' ? 'Waiting for the payment provider…' : 'Processing test payment…'}</p>
+          <p className="text-[16px] font-medium">{tr(payWith === 'pod' ? 'Placing your order…' : outcome === 'timeout' ? 'Waiting for the payment provider…' : 'Processing test payment…')}</p>
           <p className="text-[13px]" style={muted}>
-            Don’t close this window.
+            {tr('Don’t close this window.')}
           </p>
         </div>);
 
@@ -512,7 +512,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
         <div className="flex flex-col gap-4">
           <div className="flex flex-col items-center gap-2 py-4 text-center" role="alert">
             <XCircleIcon size={30} aria-hidden />
-            <p className="text-[18px] font-medium">{payWith === 'pod' ? 'We couldn’t place your order' : outcome === 'cancelled' ? 'Payment cancelled' : 'Payment didn’t go through'}</p>
+            <p className="text-[18px] font-medium">{tr(payWith === 'pod' ? 'We couldn’t place your order' : outcome === 'cancelled' ? 'Payment cancelled' : 'Payment didn’t go through')}</p>
             <p className="max-w-xs text-[13.5px]" style={muted}>
               {failure}
             </p>
@@ -536,9 +536,9 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
           {lines.length === 0 ?
           <div className="flex flex-col items-center gap-2 py-8 text-center">
               <ShoppingBagIcon size={26} aria-hidden style={muted} />
-              <p className="text-[15px] font-medium">Your cart is empty</p>
+              <p className="text-[15px] font-medium">{tr('Your cart is empty')}</p>
               <p className="text-[13px]" style={muted}>
-                Add something from the page to get started.
+                {tr('Add something from the page to get started.')}
               </p>
             </div> :
 
@@ -553,14 +553,14 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
                     </span>
               }
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-[14.5px] font-semibold">{l.product?.name ?? 'Unavailable item'}</p>
+                    <p className="truncate text-[14.5px] font-semibold">{l.product?.name ?? tr('Unavailable item')}</p>
                     <p className="text-[12.5px]" style={muted}>
                       {[l.variant && Object.keys(l.variant.options).length ? variantLabel(l.variant) : null, l.price !== null ? formatNgn(l.price) : null].filter(Boolean).join(' · ')}
                       {l.bulk && l.basePrice !== null && <s className="ml-1.5">{formatNgn(l.basePrice)}</s>}
                     </p>
                     {(l.bulk || l.backorder || l.ok && isPreorder(l.product)) &&
                 <p className="text-[12px] font-semibold" style={{ color: theme.text }}>
-                        {[l.bulk ? 'Bulk price' : '', l.backorder ? 'Ships later — back in stock soon' : '', l.ok && isPreorder(l.product) ? `Pre-order · expected by ${shipsByLabel(l.product.preorder.shipsBy)}` : ''].filter(Boolean).join(' · ')}
+                        {[l.bulk ? tr('Bulk price') : '', l.backorder ? tr('Ships later — back in stock soon') : '', l.ok && isPreorder(l.product) ? `${tr('Pre-order')} · ${tr('expected by {date}.', { date: shipsByLabel(l.product.preorder.shipsBy) })}` : ''].filter(Boolean).join(' · ')}
                       </p>
                 }
                     {l.seatText &&
@@ -570,13 +570,13 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
                 }
                     {!l.ok &&
                 <p className="mt-0.5 flex items-center gap-1 text-[12px] font-semibold">
-                        <AlertTriangleIcon size={12} aria-hidden /> {l.ticketIssue || (l.variant && l.product?.trackStock && l.free > 0 ? `Only ${l.free} left` : 'No longer available')}
+                        <AlertTriangleIcon size={12} aria-hidden /> {l.ticketIssue ? tr(l.ticketIssue) : l.variant && l.product?.trackStock && l.free > 0 ? tr('Left: {n}', { n: l.free }) : tr('No longer available')}
                       </p>
                 }
                   </div>
                   {l.product?.kind === 'physical' || l.product?.kind === 'ticket' ?
-              <div className="flex items-center" role="group" aria-label={`Quantity of ${l.product.name}`}>
-                      <button type="button" aria-label="One fewer" onClick={() => cart.setQty(l.variantId, l.qty - 1)} className="flex h-9 w-9 items-center justify-center" style={{ borderRadius: buttonRadius(theme), background: mix(theme.text, 6) }}>
+              <div className="flex items-center" role="group" aria-label={tr('Quantity of {name}', { name: l.product.name })}>
+                      <button type="button" aria-label={tr(l.qty === 1 ? 'Remove {name}' : 'One less {name}', { name: l.product.name })} onClick={() => cart.setQty(l.variantId, l.qty - 1)} className="flex h-9 w-9 items-center justify-center" style={{ borderRadius: buttonRadius(theme), background: mix(theme.text, 6) }}>
                         {l.qty === 1 ? <Trash2Icon size={14} aria-hidden /> : <MinusIcon size={14} aria-hidden />}
                       </button>
                       <span className="w-8 text-center text-[14px] font-semibold tabular-nums" aria-live="polite">
@@ -584,9 +584,9 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
                       </span>
                       <button
                   type="button"
-                  aria-label="One more"
+                  aria-label={tr('One more {name}', { name: l.product.name })}
                   disabled={!!l.seats?.length || !!l.product.trackStock && !isPreorder(l.product) && !(backorders && l.product.kind === 'physical') && !!l.variant && l.qty >= (l.product.kind === 'physical' ? l.free : l.variant.stock) || roomQty >= roomCap || l.qty >= l.maxQty}
-                  title={l.seats?.length ? 'Add seats from the seat map' : undefined}
+                  title={l.seats?.length ? tr('Add seats from the seat map') : undefined}
                   onClick={() => cart.setQty(l.variantId, l.qty + 1)}
                   className="flex h-9 w-9 items-center justify-center disabled:opacity-40"
                   style={{ borderRadius: buttonRadius(theme), background: mix(theme.text, 6) }}>
@@ -595,7 +595,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
                       </button>
                     </div> :
 
-              <button type="button" aria-label={`Remove ${l.product?.name ?? 'item'}`} onClick={() => cart.remove(l.variantId)} className="flex h-9 w-9 items-center justify-center" style={{ borderRadius: buttonRadius(theme), background: mix(theme.text, 6) }}>
+              <button type="button" aria-label={tr('Remove {name}', { name: l.product?.name ?? tr('item') })} onClick={() => cart.remove(l.variantId)} className="flex h-9 w-9 items-center justify-center" style={{ borderRadius: buttonRadius(theme), background: mix(theme.text, 6) }}>
                       <Trash2Icon size={14} aria-hidden />
                     </button>
               }
@@ -720,9 +720,9 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
             <ThemedField
               key={`${l.variantId}-${n}`}
               theme={theme}
-              label={`${l.variant ? variantLabel(l.variant) : 'Ticket'} · ${l.seats?.[n] && l.product?.eventId ? seatName(l.product.eventId, l.seats[n]) ?? `seat ${n + 1}` : `seat ${n + 1}`}`}
+              label={`${l.variant ? variantLabel(l.variant) : tr('Ticket')} · ${(l.seats?.[n] && l.product?.eventId ? seatName(l.product.eventId, l.seats[n]) : undefined) ?? tr('Seat {n}', { n: n + 1 })}`}
               autoComplete="off"
-              placeholder={customer.name || 'Your name'}
+              placeholder={customer.name || tr('Your name')}
               value={guestNames[l.variantId]?.[n] ?? ''}
               onChange={(v) =>
               setGuestNames((g) => {

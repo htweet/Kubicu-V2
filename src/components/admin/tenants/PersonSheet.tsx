@@ -8,6 +8,7 @@ import { audit, staffActor, useAdminStore } from '../../../utils/admin/store';
 import { updateAccount } from '../../../utils/account/store';
 import { formatRelative, formatTimestamp } from '../../../utils/format';
 import { uid } from '../../../utils/id';
+import { useT } from '../../../contexts/LocaleContext';
 import { Sheet } from '../../ui/Sheet';
 import { Badge } from '../../ui/Badge';
 import { Button } from '../../ui/Button';
@@ -24,8 +25,12 @@ const copy: Record<Act, {title: string;description: string;confirm: string;destr
   verify: { title: 'Send the verification email again?', description: 'They get a fresh link to confirm their email address.', confirm: 'Send email' }
 };
 
-/** One customer person: who they are, every workspace they're in, their sign-in security and staff actions (D472). */
+/**
+ * One customer person: who they are, every workspace they're in, their sign-in security and staff actions (D472).
+ * Follows the console language (D489); names, reasons, notes and audit entries stay as recorded.
+ */
 export function PersonSheet({ person, onClose, onOpenWorkspace }: {person: Person | null;onClose: () => void;onOpenWorkspace: (id: string) => void;}) {
+  const { t } = useT();
   const [store, setStore] = useAdminStore();
   const [act, setAct] = useState<Act | null>(null);
   const state: PersonStaffState = person && store.people?.[person.key] || {};
@@ -43,20 +48,20 @@ export function PersonSheet({ person, onClose, onOpenWorkspace }: {person: Perso
     if (act === 'signout') {
       if (person.accountHolder) updateAccount((a) => ({ ...a, sessions: a.sessions.filter((x) => x.current) }));
       patch((s) => ({ ...s, signedOutAt: now }), 'Signed out of every device', reason);
-      toast.success('Signed out everywhere');
+      toast.success(t('Signed out everywhere'));
     } else if (act === 'twostep') {
       if (person.accountHolder) updateAccount((a) => ({ ...a, security: { ...a.security, twoStep: 'none', twoStepSince: null, backupCodes: [] } }));
       patch((s) => ({ ...s, twoStepResetAt: now }), 'Reset two-step sign-in', reason);
-      toast.success('Two-step sign-in reset');
+      toast.success(t('Two-step sign-in reset'));
     } else if (act === 'lock') {
       patch((s) => ({ ...s, locked: { reason, at: now, by } }), 'Locked account', reason);
-      toast.success('Account locked');
+      toast.success(t('Account locked'));
     } else if (act === 'unlock') {
       patch((s) => ({ ...s, locked: null }), 'Unlocked account', reason);
-      toast.success('Account unlocked');
+      toast.success(t('Account unlocked'));
     } else {
       patch((s) => ({ ...s, verificationSentAt: now }), 'Sent the verification email again', reason);
-      toast.success('Verification email sent', { description: 'Test mode — no email is sent.' });
+      toast.success(t('Verification email sent'), { description: t('Test mode — no email is sent.') });
     }
     setAct(null);
   };
@@ -67,39 +72,40 @@ export function PersonSheet({ person, onClose, onOpenWorkspace }: {person: Perso
     setStore((s) => audit({ ...s, people: { ...s.people, [person.key]: { ...(s.people?.[person.key] ?? {}), notes: [note, ...(s.people?.[person.key]?.notes ?? [])] } } }, { area: 'tenants', action: 'Added a staff note', target: person.name, reason: text.slice(0, 120) }));
   };
 
-  const twoStepLabel = person?.twoStep === 'app' ? 'Authenticator app' : person?.twoStep === 'sms' ? 'Text message' : person?.twoStep === 'none' ? 'Off' : 'Not known';
+  const twoStepLabel = t(person?.twoStep === 'app' ? 'Authenticator app' : person?.twoStep === 'sms' ? 'Text message' : person?.twoStep === 'none' ? 'Off' : 'Not known');
+  const emailState = person?.emailVerified === false ? ` · ${t('not confirmed')}` : person?.emailVerified ? ` · ${t('confirmed')}` : '';
 
   return (
     <>
-      <Sheet open={!!person} onClose={onClose} side="right" size="lg" bodyClassName="px-5 py-6" title={person?.name ?? ''} description={person ? [person.email, person.phone].filter(Boolean).join(' · ') || 'No contact details' : undefined}>
+      <Sheet open={!!person} onClose={onClose} side="right" size="lg" bodyClassName="px-5 py-6" title={person?.name ?? ''} description={person ? [person.email, person.phone].filter(Boolean).join(' · ') || t('No contact details') : undefined}>
         {person &&
         <div className="flex flex-col gap-8">
             <div className="flex flex-wrap items-center gap-2">
               {locked ?
             <Badge tone="danger" dot>
-                  Locked
+                  {t('Locked')}
                 </Badge> :
 
             <Badge tone="success" dot>
-                  Active
+                  {t('Active')}
                 </Badge>
             }
-              {person.accountHolder && <Badge tone="info">Account holder</Badge>}
-              {person.sample && <Badge tone="neutral">Sample</Badge>}
+              {person.accountHolder && <Badge tone="info">{t('Account holder')}</Badge>}
+              {person.sample && <Badge tone="neutral">{t('Sample')}</Badge>}
             </div>
-            {locked && state.locked && <p className="-mt-5 text-caption text-fg-muted">{`Locked by ${state.locked.by} · ${formatTimestamp(state.locked.at)} — “${state.locked.reason}”`}</p>}
+            {locked && state.locked && <p className="-mt-5 text-caption text-fg-muted">{`${t('Locked by {name}', { name: state.locked.by })} · ${formatTimestamp(state.locked.at)} — “${state.locked.reason}”`}</p>}
 
             <section aria-labelledby="person-ws">
-              <h3 id="person-ws" className="text-label font-semibold text-fg">{`Workspaces: ${person.workspaces.length}`}</h3>
+              <h3 id="person-ws" className="text-label font-semibold text-fg">{t('Workspaces: {n}', { n: person.workspaces.length })}</h3>
               <ul className="mt-2 divide-y divide-line border-y border-line">
                 {person.workspaces.map((w) =>
               <li key={w.id}>
                     <button type="button" onClick={() => onOpenWorkspace(w.id)} className="-mx-2 flex w-[calc(100%+1rem)] items-center justify-between gap-3 rounded-md px-2 py-3 text-left transition-colors duration-150 hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
                       <span className="min-w-0">
                         <span className="block truncate text-label font-medium text-fg">{w.name}</span>
-                        <span className="block text-caption text-fg-subtle">{w.lastActiveAt ? `Last active ${formatRelative(w.lastActiveAt)}` : 'Not active yet'}</span>
+                        <span className="block text-caption text-fg-subtle">{w.lastActiveAt ? t('Last active {when}', { when: formatRelative(w.lastActiveAt) }) : t('Not active yet')}</span>
                       </span>
-                      <Badge tone={w.role === 'owner' ? 'accent' : 'neutral'}>{roleNames[w.role]}</Badge>
+                      <Badge tone={w.role === 'owner' ? 'accent' : 'neutral'}>{t(roleNames[w.role])}</Badge>
                     </button>
                   </li>
               )}
@@ -108,52 +114,52 @@ export function PersonSheet({ person, onClose, onOpenWorkspace }: {person: Perso
 
             <section aria-labelledby="person-security">
               <h3 id="person-security" className="text-label font-semibold text-fg">
-                Account and sign-in
+                {t('Account and sign-in')}
               </h3>
               <dl className="mt-2 grid grid-cols-[minmax(0,10rem)_minmax(0,1fr)] gap-x-4 gap-y-2 text-label">
-                <dt className="text-fg-muted">Email</dt>
-                <dd className="min-w-0 break-words text-fg">{person.email ? `${person.email}${person.emailVerified === false ? ' · not confirmed' : person.emailVerified ? ' · confirmed' : ''}` : '—'}</dd>
-                <dt className="text-fg-muted">Phone</dt>
+                <dt className="text-fg-muted">{t('Email')}</dt>
+                <dd className="min-w-0 break-words text-fg">{person.email ? `${person.email}${emailState}` : '—'}</dd>
+                <dt className="text-fg-muted">{t('Phone')}</dt>
                 <dd className="text-fg">{person.phone || '—'}</dd>
-                <dt className="text-fg-muted">Two-step sign-in</dt>
+                <dt className="text-fg-muted">{t('Two-step sign-in')}</dt>
                 <dd className="text-fg">{twoStepLabel}</dd>
-                <dt className="text-fg-muted">Signed-in devices</dt>
-                <dd className="text-fg">{person.sessions ?? 'Not known'}</dd>
-                <dt className="text-fg-muted">Joined</dt>
+                <dt className="text-fg-muted">{t('Signed-in devices')}</dt>
+                <dd className="text-fg">{person.sessions ?? t('Not known')}</dd>
+                <dt className="text-fg-muted">{t('Joined')}</dt>
                 <dd className="text-fg">{person.joinedAt ? formatTimestamp(person.joinedAt) : '—'}</dd>
-                <dt className="text-fg-muted">Last active</dt>
+                <dt className="text-fg-muted">{t('Last active')}</dt>
                 <dd className="text-fg">{person.lastActiveAt ? formatRelative(person.lastActiveAt) : '—'}</dd>
                 {state.signedOutAt &&
               <>
-                    <dt className="text-fg-muted">Signed out by staff</dt>
+                    <dt className="text-fg-muted">{t('Signed out by staff')}</dt>
                     <dd className="text-fg">{formatTimestamp(state.signedOutAt)}</dd>
                   </>
               }
                 {state.twoStepResetAt &&
               <>
-                    <dt className="text-fg-muted">Two-step reset by staff</dt>
+                    <dt className="text-fg-muted">{t('Two-step reset by staff')}</dt>
                     <dd className="text-fg">{formatTimestamp(state.twoStepResetAt)}</dd>
                   </>
               }
               </dl>
-              {!person.accountHolder && <p className="mt-2 text-caption text-fg-subtle">Teammates’ sign-in details live with their own account; the prototype only holds the account signed in on this device.</p>}
+              {!person.accountHolder && <p className="mt-2 text-caption text-fg-subtle">{t('Teammates’ sign-in details live with their own account; the prototype only holds the account signed in on this device.')}</p>}
               <div className="mt-4 flex flex-wrap gap-2">
                 <Button size="sm" variant="secondary" leadingIcon={LogOutIcon} onClick={() => setAct('signout')}>
-                  Sign out everywhere
+                  {t('Sign out everywhere')}
                 </Button>
                 <Button size="sm" variant="secondary" leadingIcon={KeyRoundIcon} disabled={person.twoStep === 'none'} onClick={() => setAct('twostep')}>
-                  Reset two-step
+                  {t('Reset two-step')}
                 </Button>
                 <Button size="sm" variant="secondary" leadingIcon={MailIcon} disabled={!person.email || person.emailVerified === true} onClick={() => setAct('verify')}>
-                  Resend verification
+                  {t('Resend verification')}
                 </Button>
                 {locked ?
               <Button size="sm" variant="secondary" leadingIcon={UnlockIcon} onClick={() => setAct('unlock')}>
-                    Unlock account
+                    {t('Unlock account')}
                   </Button> :
 
               <Button size="sm" variant="destructive" leadingIcon={LockIcon} onClick={() => setAct('lock')}>
-                    Lock account
+                    {t('Lock account')}
                   </Button>
               }
               </div>
@@ -163,7 +169,15 @@ export function PersonSheet({ person, onClose, onOpenWorkspace }: {person: Perso
           </div>
         }
       </Sheet>
-      <ReasonDialog open={!!act} onClose={() => setAct(null)} onConfirm={confirm} destructive={act ? copy[act].destructive : false} title={act ? copy[act].title : ''} description={act ? copy[act].description : ''} confirmLabel={act ? copy[act].confirm : ''} />
+      <ReasonDialog
+        open={!!act}
+        onClose={() => setAct(null)}
+        onConfirm={confirm}
+        destructive={act ? copy[act].destructive : false}
+        title={act ? t(copy[act].title) : ''}
+        description={act ? t(copy[act].description) : ''}
+        confirmLabel={act ? t(copy[act].confirm) : ''} />
+      
     </>);
 
 }

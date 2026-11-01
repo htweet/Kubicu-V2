@@ -5,6 +5,7 @@ import { useCommerce } from '../../contexts/CommerceContext';
 import { moveStock } from '../../utils/commerce/ops';
 import { variantLabel } from '../../utils/commerce/catalog';
 import { addBatch, formatExpiry, todayIso } from '../../utils/commerce/batches';
+import { locationName } from '../../utils/commerce/branches';
 import { Dialog } from '../ui/Dialog';
 import { Button } from '../ui/Button';
 import { Segmented } from '../ui/Segmented';
@@ -26,7 +27,7 @@ interface AdjustStockDialogProps {
 
 /** Receive new stock, correct a count or write off damage — always with a reason. */
 export function AdjustStockDialog({ product, variantId, initialMode, initialBatchId, onClose }: AdjustStockDialogProps) {
-  const { apply } = useCommerce();
+  const { apply, data } = useCommerce();
   const { t: tr } = useT();
   const [mode, setMode] = useState<Mode>('received');
   const [vid, setVid] = useState('');
@@ -68,7 +69,7 @@ export function AdjustStockDialog({ product, variantId, initialMode, initialBatc
     const batchNote = mode === 'received' && (lot.trim() || expiresOn) ? [lot.trim() && `Batch ${lot.trim()}`, expiresOn && `expires ${formatExpiry(expiresOn)}`].filter(Boolean).join(', ') : mode === 'damaged' && chosenBatch ? `Batch ${chosenBatch.code || formatExpiry(chosenBatch.expiresOn ?? '')}` : '';
     const fullNote = [note.trim(), batchNote].filter(Boolean).join(' · ');
     const ok = apply((d) => {
-      const moved = moveStock(d, product.id, variant.id, delta, reason, fullNote, undefined, undefined, mode === 'damaged' && chosenBatch ? chosenBatch.id : undefined);
+      const moved = moveStock(d, product.id, variant.id, delta, reason, fullNote, undefined, mode === 'damaged' ? chosenBatch?.branchId : undefined, mode === 'damaged' && chosenBatch ? chosenBatch.id : undefined);
       if (mode !== 'received' || !lot.trim() && !expiresOn) return moved;
       return { ...moved, products: moved.products.map((p) => p.id === product.id ? { ...p, variants: p.variants.map((v) => v.id === variant.id ? addBatch(v, lot, expiresOn || null, n) : v) } : p) };
     });
@@ -140,7 +141,7 @@ export function AdjustStockDialog({ product, variantId, initialMode, initialBatc
           { value: '', label: tr('Soonest to expire first') },
           ...batches.map((b) => ({
             value: b.id,
-            label: [b.code || tr('No batch number'), b.expiresOn ? tr('Expires {date}', { date: formatExpiry(b.expiresOn) }) : '', tr('Units: {n}', { n: b.qty })].filter(Boolean).join(' · ')
+            label: [b.code || tr('No batch number'), b.expiresOn ? tr('Expires {date}', { date: formatExpiry(b.expiresOn) }) : '', tr('Units: {n}', { n: b.qty }), b.branchId ? locationName(data, b.branchId) : ''].filter(Boolean).join(' · ')
           }))]
           } />
 

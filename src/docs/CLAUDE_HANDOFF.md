@@ -1,6 +1,6 @@
 # KUBICU — Handoff for Claude (or any AI / engineer continuing this project)
 
-Last updated: 1 Nov 2026 · Decision register at **D477** (next number: **D478**)
+Last updated: 1 Nov 2026 · Decision register at **D493** (next number: **D494**). Gap audit, traceability matrix and prototype status refreshed through D481 (1 Nov 2026)
 
 > **What changed since D430 (read §16 and §17):** KUBICU bills sellers in their own currency at the day's rate (D432); M-Pesa, Ghana's three mobile money networks, instant EFT and per-country payout flows (D433); twelve Kenyan, Ghanaian and South African starter pages (D434); and the whole of blueprint **Phase 5** — tax across countries (D435), cross-border delivery with customs tracking (D436, D451), branches and franchises (D437), Xero/Sage accounting including wallet payouts (D438, D452), enterprise sign-on and activity-log exports (D439), Odoo/SAP/Sage X3 inventory sync (D440), a creator sponsorship marketplace (D441), and NFC tags with their own Analytics source (D442–D443). Every new screen has drafts in all seven languages (D444–D450). All of it is simulated and unopened in a browser.
 
@@ -519,7 +519,7 @@ Before finishing
 - [ ] No label, button or tab wraps to two lines (check long languages).
 - [ ] Sibling cards share baselines; text contrast passes against its real background.
 - [ ] Keyboard focus visible and in order; results announced.
-- [ ] Register row added (next D478); stale docs updated.
+- [ ] Register row added (next D494); stale docs updated.
 - [ ] A new staff area or adjustable thing should be findable from the staff console search (`components/admin/AdminSearch.tsx`, D472).
 - [ ] A new block that sells, books or collects through a module gets an entry in `blockModule` in `components/blocks/BlockRenderer.tsx` (D470), so staff module switches reach published pages.
 - [ ] A new example figure goes in `data/adjustableFigures.ts` and is read with `figure(key)` (D465), so operations can change it in Figures & names. New text goes through `tr()`, so it can be reworded in Localisation → English.

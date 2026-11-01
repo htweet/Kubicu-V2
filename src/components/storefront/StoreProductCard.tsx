@@ -11,6 +11,7 @@ import { isLowStock, isSoldOut, priceRange, totalStock } from '../../utils/comme
 import { formatNgn } from '../../utils/format';
 import { imageShapeClass } from '../../utils/commerce/storefront';
 import { cn } from '../../utils/cn';
+import { useT } from '../../contexts/LocaleContext';
 
 interface StoreProductCardProps {
   product: Product;
@@ -43,6 +44,8 @@ export function StoreProductCard({
   whatsappPhone = '',
   saved = null
 }: StoreProductCardProps) {
+  // Buyer wording follows the visitor's language (D480); names and options stay as the seller wrote them.
+  const { t: tr } = useT();
   const range = priceRange(product);
   const soldOut = isSoldOut(product);
   const low = showLowStock && isLowStock(product);
@@ -53,11 +56,11 @@ export function StoreProductCard({
 
   const badges =
   <>
-      {soldOut ? <PageChip theme={theme}>{product.preorder ? 'Pre-orders full' : 'Sold out'}</PageChip> : onSale && showSale ? <PageChip theme={theme}>Sale</PageChip> : null}
-      {product.preorder && !soldOut && <PageChip theme={theme}>Pre-order</PageChip>}
-      {(product.bulkPrices?.length ?? 0) > 0 && !soldOut && <PageChip theme={theme}>Bulk prices</PageChip>}
-      {featured && !soldOut && <PageChip theme={theme}>Featured</PageChip>}
-      {low && !soldOut && <PageChip theme={theme}>Only {totalStock(product)} left</PageChip>}
+      {soldOut ? <PageChip theme={theme}>{tr(product.preorder ? 'Pre-orders full' : 'Sold out')}</PageChip> : onSale && showSale ? <PageChip theme={theme}>{tr('Sale')}</PageChip> : null}
+      {product.preorder && !soldOut && <PageChip theme={theme}>{tr('Pre-order')}</PageChip>}
+      {(product.bulkPrices?.length ?? 0) > 0 && !soldOut && <PageChip theme={theme}>{tr('Bulk prices')}</PageChip>}
+      {featured && !soldOut && <PageChip theme={theme}>{tr('Featured')}</PageChip>}
+      {low && !soldOut && <PageChip theme={theme}>{tr('Left: {n}', { n: totalStock(product) })}</PageChip>}
     </>;
 
 
@@ -65,7 +68,7 @@ export function StoreProductCard({
   <span className={cn('flex items-baseline gap-1.5 font-semibold tabular-nums', size === 'md' ? 'text-[14.5px]' : 'text-[13.5px]')} style={{ color: theme.text }}>
       {range ?
     <>
-          {range[0] !== range[1] && <span className="text-[11px] font-medium" style={{ color: theme.mutedText }}>from</span>}
+          {range[0] !== range[1] && <span className="text-[11px] font-medium" style={{ color: theme.mutedText }}>{tr('from')}</span>}
           {formatNgn(range[0])}
           {onSale && showSale &&
       <s className="text-[12px] font-medium" style={{ color: theme.mutedText }}>
@@ -74,7 +77,7 @@ export function StoreProductCard({
       }
         </> :
 
-    <span style={{ color: theme.mutedText, fontWeight: 500 }}>Price on request</span>
+    <span style={{ color: theme.mutedText, fontWeight: 500 }}>{tr('Price on request')}</span>
     }
     </span>;
 
@@ -90,7 +93,7 @@ export function StoreProductCard({
 
   const options = product.variants.length > 1 &&
   <span className="block text-[12px]" style={{ color: theme.mutedText }}>
-      {product.options.map((o) => `${o.values.length} ${o.name.toLowerCase()}${o.values.length === 1 ? '' : 's'}`).join(' · ')}
+      {product.options.map((o) => `${o.name}: ${o.values.length}`).join(' · ')}
     </span>;
 
 
@@ -102,7 +105,7 @@ export function StoreProductCard({
     type="button"
     onClick={saved.toggle}
     aria-pressed={saved.on}
-    aria-label={saved.on ? `Remove ${product.name} from saved` : `Save ${product.name}`}
+    aria-label={saved.on ? tr('Remove {name} from saved', { name: product.name }) : tr('Save {name}', { name: product.name })}
     className={cn('flex h-10 w-10 items-center justify-center rounded-full transition-transform duration-150 ease-out active:scale-95 focus-visible:outline-none focus-visible:ring-2', !inline && 'absolute right-2 top-2 z-10')}
     style={{ background: inline ? 'transparent' : mix(theme.background, 88), color: theme.text }}>
     

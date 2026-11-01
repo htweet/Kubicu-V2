@@ -48,6 +48,8 @@ export interface StockBatch {
   expiresOn: string | null;
   qty: number;
   receivedAt: string;
+  /** Location holding this batch (D478); missing means the main shop. */
+  branchId?: string;
 }
 
 export type DigitalFileStatus = 'processing' | 'scanning' | 'ready' | 'failed';

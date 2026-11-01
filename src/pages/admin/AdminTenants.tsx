@@ -22,6 +22,7 @@ import { Stat, StatGroup } from '../../components/ui/layout/Stat';
 import { ReasonDialog } from '../../components/admin/ReasonDialog';
 import { PersonSheet } from '../../components/admin/tenants/PersonSheet';
 import { WorkspaceSheet, type WorkspaceSummary } from '../../components/admin/tenants/WorkspaceSheet';
+import { useT } from '../../contexts/LocaleContext';
 
 type Tab = 'people' | 'workspaces';
 
@@ -51,6 +52,8 @@ export function AdminTenants() {
   const [newPlan, setNewPlan] = useState<WorkspacePlan>('free');
   const me = useStaffSession();
   const navigate = useNavigate();
+  // Follows the console language (D488); audit entries, names and reasons stay as recorded.
+  const { t } = useT();
 
   const tab: Tab = params.get('tab') === 'workspaces' || params.get('ws') && !params.get('person') ? 'workspaces' : 'people';
   const openPersonKey = params.get('person');
@@ -98,22 +101,22 @@ export function AdminTenants() {
     if (action.kind === 'plan') {
       update(row.id, { plan: newPlan });
       setStore((s) => audit(s, { area: 'tenants', action: `Changed plan ${plans[row.workspace.plan].name} → ${plans[newPlan].name}`, target: name, reason }));
-      toast.success(`${name} is now on ${plans[newPlan].name}`, { description: 'Entitlement override — no charge or refund is made.' });
+      toast.success(t('{name} is now on {plan}', { name, plan: plans[newPlan].name }), { description: t('Entitlement override — no charge or refund is made.') });
     } else if (action.kind === 'suspend') {
       // Suspending takes a whole business offline, so a second staff member must approve (D130).
       if (store.approvals.some((a) => a.kind === 'workspace_suspend' && a.workspaceId === row.id && effectiveStatus(a) === 'pending')) {
-        toast('A suspension for this workspace is already waiting for approval');
+        toast(t('A suspension for this workspace is already waiting for approval'));
       } else {
         const req = newApproval({ kind: 'workspace_suspend', summary: `Suspend ${name}`, targetId: row.id, targetEmail: name, workspaceId: row.id, reason, requestedById: me?.id ?? '', requestedBy: staffActor(store) });
         setStore((s) => audit({ ...s, approvals: [req, ...s.approvals] }, { area: 'approvals', action: `Requested: ${req.summary}`, target: name, reason }));
-        toast.success('Sent for a second approval', { description: `Another staff member who can open Users & tenants must approve within ${APPROVAL_HOURS} hours. Use Moderation to take a single page down straight away.` });
+        toast.success(t('Sent for a second approval'), { description: t('Another staff member who can open Users & tenants must approve within {hours} hours. Use Moderation to take a single page down straight away.', { hours: APPROVAL_HOURS }) });
       }
     } else {
       setStore((s) => {
         const { [row.id]: _gone, ...rest } = s.suspended;
         return audit({ ...s, suspended: rest }, { area: 'tenants', action: 'Restored workspace', target: name, reason });
       });
-      toast.success(`${name} restored`);
+      toast.success(t('{name} restored', { name }));
     }
     setAction(null);
   };
@@ -126,41 +129,41 @@ export function AdminTenants() {
 
 
   const personColumns: DataColumn<PersonRow>[] = [
-  { key: 'name', header: 'Person', sortValue: (r) => r.name.toLowerCase(), render: (r) => nameButton(r.name, r.email || r.phone || '—', () => setParam({ person: r.key })) },
+  { key: 'name', header: t('Person'), sortValue: (r) => r.name.toLowerCase(), render: (r) => nameButton(r.name, r.email || r.phone || '—', () => setParam({ person: r.key })) },
   {
     key: 'workspaces',
-    header: 'Workspaces',
+    header: t('Workspaces'),
     sortValue: (r) => r.workspaces.length,
     render: (r) =>
     <span className="min-w-0">
           <span className="block tabular-nums text-fg">{r.workspaces.length}</span>
-          <span className="block max-w-[16rem] truncate text-caption text-fg-subtle">{r.workspaces.map((w) => `${w.name} (${roleNames[w.role]})`).join(', ')}</span>
+          <span className="block max-w-[16rem] truncate text-caption text-fg-subtle">{r.workspaces.map((w) => `${w.name} (${t(roleNames[w.role])})`).join(', ')}</span>
         </span>
 
   },
   {
     key: 'status',
-    header: 'Status',
+    header: t('Status'),
     render: (r) =>
     r.locked ?
     <Badge tone="danger" dot>
-            Locked
+            {t('Locked')}
           </Badge> :
 
     <Badge tone="success" dot>
-            Active
+            {t('Active')}
           </Badge>
 
   },
-  { key: 'twostep', header: 'Two-step', hideOnMobile: true, render: (r) => <span className="text-fg-muted">{r.twoStep === null ? '—' : r.twoStep === 'none' ? 'Off' : 'On'}</span> },
-  { key: 'active', header: 'Last active', hideOnMobile: true, sortValue: (r) => r.lastActiveAt ? Date.parse(r.lastActiveAt) : 0, render: (r) => <span className="text-fg-muted">{r.lastActiveAt ? formatRelative(r.lastActiveAt) : '—'}</span> }];
+  { key: 'twostep', header: t('Two-step'), hideOnMobile: true, render: (r) => <span className="text-fg-muted">{r.twoStep === null ? '—' : t(r.twoStep === 'none' ? 'Off' : 'On')}</span> },
+  { key: 'active', header: t('Last active'), hideOnMobile: true, sortValue: (r) => r.lastActiveAt ? Date.parse(r.lastActiveAt) : 0, render: (r) => <span className="text-fg-muted">{r.lastActiveAt ? formatRelative(r.lastActiveAt) : '—'}</span> }];
 
 
   const wsColumns: DataColumn<WsRow>[] = [
-  { key: 'name', header: 'Workspace', sortValue: (r) => r.workspace.name.toLowerCase(), render: (r) => nameButton(r.workspace.name, `kub.icu/${r.handle}`, () => setParam({ ws: r.id, person: null })) },
+  { key: 'name', header: t('Workspace'), sortValue: (r) => r.workspace.name.toLowerCase(), render: (r) => nameButton(r.workspace.name, `kub.icu/${r.handle}`, () => setParam({ ws: r.id, person: null })) },
   {
     key: 'owner',
-    header: 'Owner',
+    header: t('Owner'),
     sortValue: (r) => r.owner.toLowerCase(),
     render: (r) =>
     <button type="button" onClick={() => setParam({ person: people[0]?.key ?? null })} className="truncate rounded-sm text-left text-fg-muted hover:text-fg hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
@@ -168,26 +171,26 @@ export function AdminTenants() {
         </button>
 
   },
-  { key: 'plan', header: 'Plan', sortValue: (r) => planOrder.indexOf(r.workspace.plan), render: (r) => <span className="text-fg-muted">{plans[r.workspace.plan].name}</span> },
+  { key: 'plan', header: t('Plan'), sortValue: (r) => planOrder.indexOf(r.workspace.plan), render: (r) => <span className="text-fg-muted">{plans[r.workspace.plan].name}</span> },
   {
     key: 'status',
-    header: 'Status',
+    header: t('Status'),
     render: (r) =>
     r.suspended ?
     <Badge tone="danger" dot>
-            Suspended
+            {t('Suspended')}
           </Badge> :
     r.live ?
     <Badge tone="success" dot>
-            Live
+            {t('Live')}
           </Badge> :
 
-    <Badge tone="neutral">Draft</Badge>
+    <Badge tone="neutral">{t('Draft')}</Badge>
 
   },
-  { key: 'country', header: 'Country', hideOnMobile: true, sortValue: (r) => r.workspace.country ?? 'NG', render: (r) => <span className="text-fg-muted">{countryInfo(r.workspace.country ?? 'NG').name}</span> },
-  { key: 'people', header: 'People', align: 'right', hideOnMobile: true, sortValue: (r) => r.members, render: (r) => <span className="tabular-nums text-fg-muted">{r.members}</span> },
-  { key: 'created', header: 'Created', hideOnMobile: true, sortValue: (r) => Date.parse(r.workspace.createdAt), render: (r) => <span className="text-fg-muted">{formatTimestamp(r.workspace.createdAt)}</span> }];
+  { key: 'country', header: t('Country'), hideOnMobile: true, sortValue: (r) => r.workspace.country ?? 'NG', render: (r) => <span className="text-fg-muted">{t(countryInfo(r.workspace.country ?? 'NG').name)}</span> },
+  { key: 'people', header: t('People'), align: 'right', hideOnMobile: true, sortValue: (r) => r.members, render: (r) => <span className="tabular-nums text-fg-muted">{r.members}</span> },
+  { key: 'created', header: t('Created'), hideOnMobile: true, sortValue: (r) => Date.parse(r.workspace.createdAt), render: (r) => <span className="text-fg-muted">{formatTimestamp(r.workspace.createdAt)}</span> }];
 
 
   const startAction = (kind: 'plan' | 'suspend' | 'restore', row: WsRow) => {
@@ -197,33 +200,33 @@ export function AdminTenants() {
 
   return (
     <div className="mx-auto w-full max-w-6xl px-5 py-8 md:px-10 md:py-12">
-      <PageHeader title="Users & tenants" description="Every person and workspace on this device. One person can own or work in several workspaces. Plan changes are entitlement overrides — nothing is charged or refunded." />
+      <PageHeader title={t('Users & tenants')} description={t('Every person and workspace on this device. One person can own or work in several workspaces. Plan changes are entitlement overrides — nothing is charged or refunded.')} />
 
       <StatGroup columns={4} className="mt-8 items-end border-b border-line pb-6">
-        <Stat primary label="People" value={people.length} />
-        <Stat label="Workspaces" value={`${wsRows.length} · paid ${paying}`} />
-        <Stat label="Locked accounts" value={<span className={lockedCount ? 'text-danger' : undefined}>{lockedCount}</span>} />
-        <Stat label="Suspended workspaces" value={<span className={suspendedCount ? 'text-danger' : undefined}>{suspendedCount}</span>} />
+        <Stat primary label={t('People')} value={people.length} />
+        <Stat label={t('Workspaces')} value={`${wsRows.length} · ${t('Paid: {n}', { n: paying })}`} />
+        <Stat label={t('Locked accounts')} value={<span className={lockedCount ? 'text-danger' : undefined}>{lockedCount}</span>} />
+        <Stat label={t('Suspended workspaces')} value={<span className={suspendedCount ? 'text-danger' : undefined}>{suspendedCount}</span>} />
       </StatGroup>
 
-      <ApprovalQueue kinds={['workspace_suspend']} title="Suspensions waiting for a second person" description="Suspending takes a whole business offline. Whoever asked can’t approve their own request." />
+      <ApprovalQueue kinds={['workspace_suspend']} title={t('Suspensions waiting for a second person')} description={t('Suspending takes a whole business offline. Whoever asked can’t approve their own request.')} />
 
       <Tabs<Tab>
         className="mt-8"
         idPrefix="tenants"
-        ariaLabel="People or workspaces"
+        ariaLabel={t('People or workspaces')}
         value={tab}
         onChange={(v) => setParam({ tab: v === 'people' ? null : v })}
         items={[
-        { id: 'people', label: 'People' },
-        { id: 'workspaces', label: 'Workspaces' }]
+        { id: 'people', label: t('People') },
+        { id: 'workspaces', label: t('Workspaces') }]
         } />
       
       <div role="tabpanel" id={`tenants-panel-${tab}`} aria-labelledby={`tenants-tab-${tab}`} className="mt-6">
         {tab === 'people' ?
-        <DataTable caption="People" rows={personRows} columns={personColumns} filterText={(r) => `${r.name} ${r.email} ${r.phone} ${r.workspaces.map((w) => w.name).join(' ')}`} filterPlaceholder="Search name, email, phone or workspace" emptyTitle="No people match" /> :
+        <DataTable caption={t('People')} rows={personRows} columns={personColumns} filterText={(r) => `${r.name} ${r.email} ${r.phone} ${r.workspaces.map((w) => w.name).join(' ')}`} filterPlaceholder={t('Search name, email, phone or workspace')} emptyTitle={t('No people match')} /> :
 
-        <DataTable caption="Workspaces" rows={wsRows} columns={wsColumns} filterText={(r) => `${r.workspace.name} ${r.owner} ${r.handle} ${countryInfo(r.workspace.country ?? 'NG').name}`} filterPlaceholder="Search name, owner, link or country" emptyTitle="No workspaces match" />
+        <DataTable caption={t('Workspaces')} rows={wsRows} columns={wsColumns} filterText={(r) => `${r.workspace.name} ${r.owner} ${r.handle} ${countryInfo(r.workspace.country ?? 'NG').name} ${t(countryInfo(r.workspace.country ?? 'NG').name)}`} filterPlaceholder={t('Search name, owner, link or country')} emptyTitle={t('No workspaces match')} />
         }
       </div>
 
@@ -243,17 +246,23 @@ export function AdminTenants() {
         onClose={() => setAction(null)}
         onConfirm={confirm}
         destructive={action?.kind === 'suspend'}
-        title={action?.kind === 'plan' ? `Change ${action.row.workspace.name}’s plan` : action?.kind === 'suspend' ? `Suspend ${action?.row.workspace.name}?` : `Restore ${action?.row.workspace.name}?`}
+        title={
+        action?.kind === 'plan' ?
+        t('Change the plan for {name}', { name: action.row.workspace.name }) :
+        action?.kind === 'suspend' ?
+        t('Suspend {name}?', { name: action.row.workspace.name }) :
+        t('Restore {name}?', { name: action?.row.workspace.name ?? '' })
+        }
         description={
         action?.kind === 'plan' ?
-        'Use for goodwill upgrades, partner deals or fixing a billing error. Their billing history isn’t changed.' :
+        t('Use for goodwill upgrades, partner deals or fixing a billing error. Their billing history isn’t changed.') :
         action?.kind === 'suspend' ?
-        `A second staff member must approve within ${APPROVAL_HOURS} hours. Once approved, their public pages show “temporarily unavailable” and the owner sees why in the app. Nothing is deleted, and you can restore at any time.` :
-        'Their pages come back straight away.'
+        t('A second staff member must approve within {hours} hours. Once approved, their public pages show “temporarily unavailable” and the owner sees why in the app. Nothing is deleted, and you can restore at any time.', { hours: APPROVAL_HOURS }) :
+        t('Their pages come back straight away.')
         }
-        confirmLabel={action?.kind === 'plan' ? 'Change plan' : action?.kind === 'suspend' ? 'Send for approval' : 'Restore'}>
+        confirmLabel={t(action?.kind === 'plan' ? 'Change plan' : action?.kind === 'suspend' ? 'Send for approval' : 'Restore')}>
         
-        {action?.kind === 'plan' && <SelectInput<WorkspacePlan> id="admin-plan" label="New plan" value={newPlan} onChange={setNewPlan} options={planOrder.map((p) => ({ value: p, label: plans[p].name }))} />}
+        {action?.kind === 'plan' && <SelectInput<WorkspacePlan> id="admin-plan" label={t('New plan')} value={newPlan} onChange={setNewPlan} options={planOrder.map((p) => ({ value: p, label: plans[p].name }))} />}
       </ReasonDialog>
     </div>);
 

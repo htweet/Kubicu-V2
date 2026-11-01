@@ -21,7 +21,7 @@ import { List } from '../../components/ui/layout/ListRow';
 import { useT } from '../../contexts/LocaleContext';
 import { useTeam } from '../../contexts/TeamContext';
 import { MAIN_BRANCH, locationName, stockAt } from '../../utils/commerce/branches';
-import { expiryState, formatExpiry } from '../../utils/commerce/batches';
+import { batchesAt, expiryState, formatExpiry } from '../../utils/commerce/batches';
 import { InlineAlert } from '../../components/ui/InlineAlert';
 
 interface StockRow {
@@ -60,8 +60,9 @@ export function Inventory() {
   const outCount = allVariants.filter(({ v }) => qty(v) <= 0).length;
   const lowCount = allVariants.filter(({ p, v }) => qty(v) > 0 && qty(v) <= p.lowStockAt).length;
   // Batches and expiry (D476).
-  const expiries = new Map(allVariants.map(({ v }) => [v.id, expiryState(v)]));
-  const hasBatches = allVariants.some(({ v }) => v.batches?.length);
+  // Branch staff see their own location's batches only (D478).
+  const expiries = new Map(allVariants.map(({ v }) => [v.id, expiryState(v, myBranchId || undefined)]));
+  const hasBatches = allVariants.some(({ v }) => batchesAt(v, myBranchId || undefined).length);
   const expiredUnits = [...expiries.values()].reduce((s, e) => s + e.expiredQty, 0);
   const soonCount = [...expiries.values()].filter((e) => e.soon).length;
   const movements = data.movements.filter((m) => productFilter === 'all' || m.productId === productFilter).slice(0, 40);
@@ -112,7 +113,8 @@ export function Inventory() {
     sortValue: (r: StockRow) => expiries.get(r.variant.id)?.next?.expiresOn ?? '9999',
     render: (r: StockRow) => {
       const e = expiries.get(r.variant.id);
-      if (!e || !r.variant.batches?.length) return <span className="text-fg-subtle">—</span>;
+      const here = batchesAt(r.variant, myBranchId || undefined);
+      if (!e || !here.length) return <span className="text-fg-subtle">—</span>;
       return (
         <span className="flex flex-col items-start gap-1">
                   {e.expiredQty > 0 && <Badge tone="danger">{tr('Expired: {n}', { n: e.expiredQty })}</Badge>}
@@ -121,7 +123,7 @@ export function Inventory() {
           e.next?.expiresOn ?
           <span className="text-caption text-fg-muted">{tr('Next expiry {date}', { date: formatExpiry(e.next.expiresOn) })}</span> :
           null}
-                  <span className="text-caption text-fg-subtle">{tr('Batches: {n}', { n: r.variant.batches.length })}</span>
+                  <span className="text-caption text-fg-subtle">{tr('Batches: {n}', { n: here.length })}</span>
                 </span>);
 
     }

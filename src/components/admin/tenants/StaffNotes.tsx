@@ -1,20 +1,22 @@
 import React, { useState } from 'react';
 import type { StaffNote } from '../../../types/admin';
 import { formatTimestamp } from '../../../utils/format';
+import { useT } from '../../../contexts/LocaleContext';
 import { Button } from '../../ui/Button';
 import { TextArea } from '../../ui/TextArea';
 
-/** Internal notes on a person or workspace (D472). Customers never see them. */
+/** Internal notes on a person or workspace (D472). Customers never see them. Notes stay as written (D489). */
 export function StaffNotes({ id, notes, onAdd }: {id: string;notes: StaffNote[];onAdd: (text: string) => void;}) {
+  const { t } = useT();
   const [text, setText] = useState('');
   return (
     <section aria-labelledby={`${id}-notes`}>
       <h3 id={`${id}-notes`} className="text-label font-semibold text-fg">
-        Staff notes
+        {t('Staff notes')}
       </h3>
-      <p className="mt-0.5 text-caption text-fg-subtle">Only KUBICU staff see these.</p>
+      <p className="mt-0.5 text-caption text-fg-subtle">{t('Only KUBICU staff see these.')}</p>
       <div className="mt-3 flex flex-col gap-2">
-        <TextArea id={`${id}-note`} label="Add a note" rows={2} value={text} placeholder="e.g. Called them about the failed payout — waiting on bank letter" onChange={(e) => setText(e.target.value.slice(0, 500))} />
+        <TextArea id={`${id}-note`} label={t('Add a note')} rows={2} value={text} placeholder={t('e.g. Called them about the failed payout — waiting on bank letter')} onChange={(e) => setText(e.target.value.slice(0, 500))} />
         <div className="flex justify-end">
           <Button
             size="sm"
@@ -25,7 +27,7 @@ export function StaffNotes({ id, notes, onAdd }: {id: string;notes: StaffNote[];
               setText('');
             }}>
             
-            Save note
+            {t('Save note')}
           </Button>
         </div>
       </div>

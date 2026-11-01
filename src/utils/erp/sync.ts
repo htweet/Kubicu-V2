@@ -87,7 +87,7 @@ export function runErpSync(data: CommerceData, s: ErpState, trigger: ErpRun['tri
     if (delta > 0 && v?.batches?.length) {
       const days = 90 + hash(`${l.sku}|${round}`) % 90;
       const expires = new Date(Date.now() + days * 86_400_000).toISOString().slice(0, 10);
-      next = { ...next, products: next.products.map((p) => p.id === l.productId ? { ...p, variants: p.variants.map((x) => x.id === l.variantId ? addBatch(x, `${l.warehouse}-${round}`, expires, delta) : x) } : p) };
+      next = { ...next, products: next.products.map((p) => p.id === l.productId ? { ...p, variants: p.variants.map((x) => x.id === l.variantId ? addBatch(x, `${l.warehouse}-${round}`, expires, delta, l.location) : x) } : p) };
       batchesIn += 1;
     }
   });

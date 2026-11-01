@@ -9,6 +9,7 @@ import { findLegalDoc } from '../../data/legal';
 import { updateAdminStore } from '../../utils/admin/store';
 import { uid } from '../../utils/id';
 import { useT } from '../../contexts/LocaleContext';
+import { officeHoursLocal } from '../../utils/schedule';
 
 const channels = [
 { icon: MailIcon, title: 'Email', text: '{email} — we reply within 1 working day.', email: 'hello@kub.icu' },
@@ -26,6 +27,8 @@ const str = (v: string | string[] | undefined) => (Array.isArray(v) ? v.join(', 
  */
 export function Contact() {
   const { t: tr } = useT();
+  // Office hours in the visitor's own time zone when it isn't West Africa Time (D484).
+  const localHours = useMemo(() => officeHoursLocal(), []);
   // Legal pages link here with ?topic=legal&doc=<slug> so the topic is already chosen (D236).
   const [params] = useSearchParams();
   const fromLegal = params.get('topic') === 'legal';
@@ -50,11 +53,12 @@ export function Contact() {
         ...contactFormDef.settings,
         submitLabel: tr(contactFormDef.settings.submitLabel),
         successTitle: tr(contactFormDef.settings.successTitle),
-        successText: tr(contactFormDef.settings.successText),
+        // The thank-you message adds the visitor's own time for office hours too (D486).
+        successText: [tr(contactFormDef.settings.successText), localHours ? tr('That’s {hours} where you are.', { hours: localHours }) : ''].filter(Boolean).join(' '),
         privacyNote: tr(contactFormDef.settings.privacyNote)
       }
     }),
-    [tr]
+    [tr, localHours]
   );
 
   const submit = ({ answers }: RunnerSubmit) => {
@@ -132,7 +136,9 @@ export function Contact() {
               </li>
             )}
           </ul>
-          <p className="mt-6 text-caption text-fg-subtle">{tr('KUBICU · Lagos, Nigeria — serving Nigeria, Kenya, Ghana and South Africa. Office hours Monday–Friday, 9am–6pm WAT. Messages land in our support queue — you’ll get a reference by email.')}</p>
+          <p className="mt-6 text-caption text-fg-subtle">{tr('KUBICU · Lagos, Nigeria — serving Nigeria, Kenya, Ghana and South Africa. Office hours Monday–Friday, 9am–6pm WAT. Messages land in our support queue — you’ll get a reference by email.')}
+            {localHours && ` ${tr('That’s {hours} where you are.', { hours: localHours })}`}
+          </p>
         </aside>
       </div>
     </>);
