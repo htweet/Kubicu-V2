@@ -11,6 +11,7 @@ import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/layout/Card';
 import { ReasonDialog } from '../../components/admin/ReasonDialog';
+import { ModuleFlagsSection } from '../../components/admin/ModuleFlagsSection';
 import { cn } from '../../utils/cn';
 
 type Pending = {id: FlagId;on: boolean;plans: WorkspacePlan[];summary: string;} | null;
@@ -33,7 +34,7 @@ export function AdminFlags() {
 
   return (
     <div className="mx-auto w-full max-w-5xl px-5 py-8 md:px-10 md:py-12">
-      <PageHeader title="Feature flags" description="Switch features off for everyone, or release them to chosen plans. Every change asks for a reason and is logged." />
+      <PageHeader title="Feature flags" description="Switch features, workspace modules and Marketplace add-ons off for everyone, or release features to chosen plans. Every change asks for a reason and is logged." />
 
       <div className="mt-8 flex flex-col gap-6">
         {featureFlags.map((f) => {
@@ -95,6 +96,8 @@ export function AdminFlags() {
 
         })}
       </div>
+
+      <ModuleFlagsSection />
 
       <section aria-labelledby="flag-history" className="mt-10">
         <h2 id="flag-history" className="text-heading font-semibold text-fg">

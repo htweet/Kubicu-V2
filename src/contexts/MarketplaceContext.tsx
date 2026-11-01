@@ -12,13 +12,17 @@ import { newAutomation } from '../components/automations/AutomationBuilder';
 import { uid } from '../utils/id';
 import { useAdminStore } from '../utils/admin/store';
 import { readSubmissions } from '../utils/extensionSubmissions';
+import { extKey, moduleOn } from '../utils/admin/moduleFlags';
 
 // Listed developer extensions join the catalogue lookup before anything reads installed records (D132).
 if (typeof window !== 'undefined') readSubmissions();
 
 interface MarketplaceValue {
   data: MarketplaceData;
+  /** Installed, not paused, and not switched off by KUBICU (D464) — what decides whether an add-on's effects run. */
   isActive: (id: string) => boolean;
+  /** Installed and not paused, whatever KUBICU's switch says — decides whether its screen is listed (D464). */
+  isInstalled: (id: string) => boolean;
   install: (id: string, settings: Record<string, string>) => void;
   uninstall: (id: string) => void;
   setPaused: (id: string, paused: boolean) => void;
@@ -103,7 +107,8 @@ export function MarketplaceProvider({ children }: {children: React.ReactNode;}) 
   const value = useMemo<MarketplaceValue>(
     () => ({
       data,
-      isActive: (id) => extensionActive(data, id),
+      isActive: (id) => extensionActive(data, id) && moduleOn(adminStore, extKey(id)),
+      isInstalled: (id) => extensionActive(data, id),
       install: (id, settings) => {
         const info = extensionById[id];
         const pull = pulls[id];
@@ -167,7 +172,7 @@ export function MarketplaceProvider({ children }: {children: React.ReactNode;}) 
       hasLicence: (templateId) => data.templateLicences.includes(templateId),
       addLicence: (templateId) => apply((d) => ({ ...d, templateLicences: Array.from(new Set([...d.templateLicences, templateId])) }))
     }),
-    [data, apply, patch, ops, commerce, team, pulls]
+    [data, apply, patch, ops, commerce, team, pulls, adminStore]
   );
 
   return <MarketplaceContext.Provider value={value}>{children}</MarketplaceContext.Provider>;

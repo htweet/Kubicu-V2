@@ -4,6 +4,7 @@ import type { Product, StockReason } from '../../types/commerce';
 import { useCommerce } from '../../contexts/CommerceContext';
 import { moveStock } from '../../utils/commerce/ops';
 import { variantLabel } from '../../utils/commerce/catalog';
+import { addBatch, formatExpiry, todayIso } from '../../utils/commerce/batches';
 import { Dialog } from '../ui/Dialog';
 import { Button } from '../ui/Button';
 import { Segmented } from '../ui/Segmented';
@@ -16,39 +17,60 @@ type Mode = 'received' | 'correction' | 'damaged';
 interface AdjustStockDialogProps {
   product: Product | null;
   variantId?: string;
+  /** Opens straight on a write-off of one batch, e.g. expired stock (D476). */
+  initialMode?: Mode;
+  initialBatchId?: string;
   onClose: () => void;
 }
 
 /** Receive new stock, correct a count or write off damage — always with a reason. */
-export function AdjustStockDialog({ product, variantId, onClose }: AdjustStockDialogProps) {
+export function AdjustStockDialog({ product, variantId, initialMode, initialBatchId, onClose }: AdjustStockDialogProps) {
   const { apply } = useCommerce();
   const [mode, setMode] = useState<Mode>('received');
   const [vid, setVid] = useState('');
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
   const [tried, setTried] = useState(false);
+  // Batches and expiry (D476): optional when receiving; write-offs can name the batch.
+  const [lot, setLot] = useState('');
+  const [expiresOn, setExpiresOn] = useState('');
+  const [batchId, setBatchId] = useState('');
 
   useEffect(() => {
     if (!product) return;
-    setMode('received');
+    setMode(initialMode ?? 'received');
     setVid(variantId ?? product.variants[0]?.id ?? '');
     setAmount('');
     setNote('');
+    setLot('');
+    setExpiresOn('');
+    setBatchId(initialBatchId ?? '');
     setTried(false);
-  }, [product, variantId]);
+  }, [product, variantId, initialMode, initialBatchId]);
 
   const variant = product?.variants.find((v) => v.id === vid);
+  const batches = variant?.batches ?? [];
+  const chosenBatch = batches.find((b) => b.id === batchId);
   const n = Number(amount);
   const valid = amount !== '' && Number.isInteger(n) && n >= 0 && (mode !== 'correction' || n !== variant?.stock) && (mode === 'correction' || n > 0);
-  const delta = !variant ? 0 : mode === 'received' ? n : mode === 'damaged' ? -Math.min(n, variant.stock) : n - variant.stock;
+  const cap = mode === 'damaged' && chosenBatch ? chosenBatch.qty : variant?.stock ?? 0;
+  const delta = !variant ? 0 : mode === 'received' ? n : mode === 'damaged' ? -Math.min(n, cap) : n - variant.stock;
   const after = variant ? Math.max(0, variant.stock + delta) : 0;
   const reasonNeeded = mode !== 'received' && !note.trim();
+  const expiryError = mode === 'received' && expiresOn && expiresOn < todayIso() ? 'This date has passed — check the label' : undefined;
 
   const save = () => {
     setTried(true);
-    if (!product || !variant || !valid || reasonNeeded) return;
+    if (!product || !variant || !valid || reasonNeeded || expiryError) return;
     const reason: StockReason = mode;
-    if (apply((d) => moveStock(d, product.id, variant.id, delta, reason, note.trim()))) {
+    const batchNote = mode === 'received' && (lot.trim() || expiresOn) ? [lot.trim() && `Batch ${lot.trim()}`, expiresOn && `expires ${formatExpiry(expiresOn)}`].filter(Boolean).join(', ') : mode === 'damaged' && chosenBatch ? `Batch ${chosenBatch.code || formatExpiry(chosenBatch.expiresOn ?? '')}` : '';
+    const fullNote = [note.trim(), batchNote].filter(Boolean).join(' · ');
+    const ok = apply((d) => {
+      const moved = moveStock(d, product.id, variant.id, delta, reason, fullNote, undefined, undefined, mode === 'damaged' && chosenBatch ? chosenBatch.id : undefined);
+      if (mode !== 'received' || !lot.trim() && !expiresOn) return moved;
+      return { ...moved, products: moved.products.map((p) => p.id === product.id ? { ...p, variants: p.variants.map((v) => v.id === variant.id ? addBatch(v, lot, expiresOn || null, n) : v) } : p) };
+    });
+    if (ok) {
       toast(`Stock updated: ${variant.stock} → ${after}`, { description: `${product.name}${Object.keys(variant.options).length ? ` · ${variantLabel(variant)}` : ''}` });
       onClose();
     }
@@ -99,6 +121,22 @@ export function AdjustStockDialog({ product, variantId, onClose }: AdjustStockDi
           hint={variant ? `Now ${variant.stock}${amount !== '' && valid ? ` → ${after} after saving` : ''}` : undefined}
           onChange={(e) => setAmount(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))} />
         
+          {mode === 'received' &&
+        <div className="grid gap-4 sm:grid-cols-2">
+              <TextInput id="adj-lot" label="Batch or lot number" optional placeholder="e.g. L2611-04" value={lot} onChange={(e) => setLot(e.target.value.slice(0, 30))} />
+              <TextInput id="adj-expiry" label="Expiry date" optional type="date" min={todayIso()} value={expiresOn} error={tried ? expiryError : undefined} onChange={(e) => setExpiresOn(e.target.value)} />
+            </div>
+        }
+          {mode === 'received' && <p className="-mt-2 text-caption text-fg-subtle">For food, cosmetics and medicines. Sales use the batch that expires soonest first.</p>}
+          {mode === 'damaged' && batches.length > 0 &&
+        <SelectInput
+          id="adj-batch"
+          label="Which batch?"
+          value={batchId}
+          onChange={setBatchId}
+          options={[{ value: '', label: 'Soonest to expire first' }, ...batches.map((b) => ({ value: b.id, label: `${b.code || 'No batch number'}${b.expiresOn ? ` · expires ${formatExpiry(b.expiresOn)}` : ''} · ${b.qty} units` }))]} />
+
+        }
           <TextInput
           id="adj-note"
           label="Reason"

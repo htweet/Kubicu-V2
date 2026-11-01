@@ -8,6 +8,8 @@ import { activeIncidents, impactLabels, overallState, serviceStateLabels } from 
 import { formatRelative } from '../../utils/format';
 import { useKycQueue } from '../../hooks/useKycQueue';
 import { REVIEW_HOURS } from '../../utils/money/kyc';
+import { useSponsorships } from '../../hooks/useSponsorships';
+import { disputeOpen, disputeRows, SPONSOR_DECIDE_DAYS } from '../../utils/sponsorships';
 import { PageHeader } from '../../components/shell/PageHeader';
 import { Card } from '../../components/ui/layout/Card';
 import { List, ListRow } from '../../components/ui/layout/ListRow';
@@ -30,6 +32,9 @@ export function AdminOverview() {
   const overall = overallState(store.incidents);
   const kyc = useKycQueue();
   const kycLate = kyc.filter((k) => now - Date.parse(k.submittedAt) > REVIEW_HOURS * 3600000);
+  const { briefs } = useSponsorships();
+  const sponsorOpen = disputeRows(briefs).filter((r) => disputeOpen(r.app));
+  const sponsorLate = sponsorOpen.filter((r) => now - Date.parse(r.app.dispute!.openedAt) > SPONSOR_DECIDE_DAYS * DAY).length;
 
   const queues = [
   { area: 'health', label: 'Open incidents', count: incidents.length, urgent: incidents.length > 0, note: incidents.length ? incidents.map((i) => `${i.title} (${impactLabels[i.impact]})`).join(' · ') : 'Status page: working normally', to: '/admin/health' },
@@ -47,6 +52,15 @@ export function AdminOverview() {
     return { area, label, count: mineToDecide.length, urgent: mineToDecide.length > 0, note: 'Second-person approval — expires after 24 hours', to: `/admin/${area}` };
   }),
   { area: 'moderation', label: 'Open page reports', count: store.reports.filter((r) => r.status === 'open').length, urgent: store.reports.some((r) => r.status === 'open' && r.reason === 'scam'), note: 'Scam reports are reviewed first', to: '/admin/moderation' },
+  {
+    area: 'sponsorships',
+    label: 'Sponsorship problems to decide',
+    count: sponsorOpen.length,
+    urgent: sponsorLate > 0,
+    note: sponsorLate ? `${sponsorLate} past the ${SPONSOR_DECIDE_DAYS}-day target` : 'Held money is frozen until you decide',
+    to: '/admin/sponsorships'
+  },
+  { area: 'sponsorships', label: 'Sponsorship briefs to check', count: briefs.filter((b) => b.status === 'review').length, urgent: false, note: 'Creators can’t see a brief until it’s approved', to: '/admin/sponsorships' },
   { area: 'appeals', label: 'Appeals to decide', count: store.appeals.filter((a) => a.status === 'open').length, urgent: false, note: 'Decided by someone other than the original reviewer', to: '/admin/appeals' },
   { area: 'support', label: 'Help requests needing a reply', count: store.tickets.filter((t) => t.status === 'open').length, urgent: false, note: 'Oldest first in Support', to: '/admin/support' },
   { area: 'data-requests', label: 'Data requests due within 7 days', count: dueSoon.length, urgent: dueSoon.some((d) => Date.parse(d.dueAt) < now), note: 'Legal deadline — don’t let these slip', to: '/admin/data-requests' },

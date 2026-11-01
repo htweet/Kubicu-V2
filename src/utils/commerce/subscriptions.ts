@@ -6,11 +6,15 @@ import { formatNgn } from '../format';
 import { variantLabel } from './catalog';
 import { kubicuFee, providerFee } from './money';
 import { moveStock } from './ops';
+import { figure, onOpsSettings } from '../opsSettings';
 
 /** Customer subscriptions: sign-up, renewals, retries and changes (D69). Test mode. */
 
 export const SUB_RETRY_DAYS = [1, 3, 5];
-export const SUB_GRACE_DAYS = 7;
+export let SUB_GRACE_DAYS = 7;
+onOpsSettings(() => {
+  SUB_GRACE_DAYS = figure('subs.graceDays');
+});
 const DAY = 86400000;
 const EVENT_CAP = 60;
 

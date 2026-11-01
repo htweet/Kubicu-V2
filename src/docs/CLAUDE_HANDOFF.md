@@ -1,8 +1,10 @@
 # KUBICU — Handoff for Claude (or any AI / engineer continuing this project)
 
-Last updated: 31 Oct 2026 · Decision register at **D430** (next number: **D431**)
+Last updated: 1 Nov 2026 · Decision register at **D476** (next number: **D477**)
 
-> **What changed since D351 (read §12a, §16 and §17 for detail):** four selling countries (Nigeria, Kenya, Ghana, South Africa) with their own currency, phones, banks, regions, payment options and seller verification; three more interface languages (Kiswahili, Twi, isiZulu) drafted across the whole app, canvas, website and Copilot; the public website converts every naira amount to the visitor's language's currency at example rates; a floating "Ask me anything" Copilot bar on most pages; one content width for workspace pages; and two rounds of accessibility fixes.
+> **What changed since D430 (read §16 and §17):** KUBICU bills sellers in their own currency at the day's rate (D432); M-Pesa, Ghana's three mobile money networks, instant EFT and per-country payout flows (D433); twelve Kenyan, Ghanaian and South African starter pages (D434); and the whole of blueprint **Phase 5** — tax across countries (D435), cross-border delivery with customs tracking (D436, D451), branches and franchises (D437), Xero/Sage accounting including wallet payouts (D438, D452), enterprise sign-on and activity-log exports (D439), Odoo/SAP/Sage X3 inventory sync (D440), a creator sponsorship marketplace (D441), and NFC tags with their own Analytics source (D442–D443). Every new screen has drafts in all seven languages (D444–D450). All of it is simulated and unopened in a browser.
+
+> **What changed from D351 to D430:** four selling countries (Nigeria, Kenya, Ghana, South Africa) with their own currency, phones, banks, regions, payment options and seller verification; three more interface languages (Kiswahili, Twi, isiZulu) drafted across the whole app, canvas, website and Copilot; the public website converts every naira amount to the visitor's language's currency at example rates; a floating "Ask me anything" Copilot bar on most pages; one content width for workspace pages; and two rounds of accessibility fixes.
 
 > **⛔ Do not deploy this prototype.** It runs entirely in the browser: roles, prices, balances, codes and payments are simulated and can be changed by anyone. Before writing any production code, read **`docs/NOT_FOR_PRODUCTION.md`** — what to remove, what to replace, what must move to the server, and the release gate.
 Built in Magic Patterns: React 18 + TypeScript + Tailwind CSS v3, standalone files, no framework, everything runs in the browser.
@@ -379,6 +381,18 @@ Process
 | D421, D423 | Website converts naira amounts to the language's currency (example rates) |
 | D424–D428 | Seller verification per country; starter payouts and limits; staff review; guest partners; draft legal wording |
 | D429–D430 | Accessibility fixes from a code audit (14 items) |
+| D431 | Small fixes: Ask bar hidden on sellers' published pages, D430 labels in Nigerian languages, required dropdowns announced, staff review follows the case's country |
+| D432 | KUBICU bills in the seller's currency at the day's rate; local invoices and tax; staff Exchange rates screen |
+| D433 | M-Pesa, MTN/Telecel/AirtelTigo mobile money, instant EFT, card step, per-country payouts and limits |
+| D434 | Twelve country starter pages (Kenya, Ghana, South Africa) and country-first suggestions |
+| D435–D436, D451 | Tax across countries; cross-border delivery; customs steps in delivery tracking |
+| D437 | Branches and franchises (`pages/commerce/Branches.tsx`) |
+| D438, D452 | Xero and Sage accounting; wallet payouts as bank transfers (`components/settings/integrations/AccountingSection.tsx`) |
+| D439 | Activity-log exports (CSV, JSON Lines, SHA-256 fingerprint) and combined log; sign-on was already built (D115) |
+| D440 | Inventory & ERP: Odoo, SAP Business One, Sage X3 (`ErpSection.tsx`, `utils/erp/sync.ts`) |
+| D441 | Creator sponsorship marketplace (`pages/Sponsorships.tsx`, `utils/sponsorships.ts`) |
+| D442–D443 | NFC tags (`pages/NfcTags.tsx`, public tap page `/p/:handle/t/:code`) and the `nfc` Analytics source |
+| D444–D450 | Translations for every Phase 5 screen in all seven languages; Sponsorships/NFC/Branches layout and side-sheet padding fixes (D445, D447, D450) |
 
 ---
 
@@ -389,7 +403,7 @@ Process
 - **Legal documents** — Draft 1.0, awaiting a lawyer; English text applies (Group B: embed allowlist, disputes/refunds, refund fees, analytics privacy, subscriptions, template sales split, ticketing, members-only wording, partnerships, co-brand, support block, developer submissions, verification, fundraiser, certificates, buyer protection/escrow, AI licence, staff data-request deadline).
 - **Translations** — native-speaker review of every draft in seven languages (Group D, deferred).
 - **Countries** — a licensed payment partner per country must confirm the Kenyan, Ghanaian and South African verification rules, document names and payout limits (D424–D425); a lawyer must approve the two clauses tagged "[DRAFT — country wording pending legal review, D428]" in Seller terms and Privacy and confirm each country's data-protection basis.
-- **Example figures to replace** — exchange rates ₦12/KES, ₦135/GHS, ₦85/ZAR (`utils/currency.ts`, D421/D425); data prices KSh 100, GH₵ 10, R 50 per GB (`data/countries.ts`, D404).
+- **Example figures to replace** — exchange rates ₦12/KES, ₦135/GHS, ₦85/ZAR (`utils/currency.ts`, D421/D425) and the day's billing rate (D432); data prices KSh 100, GH₵ 10, R 50 per GB (`data/countries.ts`, D404); KUBICU's local tax rates and local companies on invoices (D432); payout limits and fees per country (D433); tax rates (D435); courier rates and times (`utils/commerce/crossBorder.ts`, D436); default accounting account codes incl. bank 090/1200 (`data/accountingProviders.ts`, D438/D452); the 10% sponsorship fee (D441); NFC tag prices (`utils/nfc.ts`, D442).
 - **Copilot** — AI provider, data-processing terms for photos and business details, whether and how long chats are stored online, final AI credit costs.
 - **Group A** money/limits was confirmed (D233); `DECISIONS_FOR_SIGNOFF.md` hasn't been updated to say so.
 
@@ -400,7 +414,7 @@ Payment gateway, bank transfer and USSD; payouts and KYC; couriers; WhatsApp Bus
 Marketplace "Popular" sort; AI workflow packs (show "Not available yet").
 
 ### 17.4 Needs testing (not design work)
-- Nothing from D280–D430 has been opened in a browser.
+- Nothing from D280–D452 has been opened in a browser.
 - Accessibility fixes D429–D430 came from reading code; test with keyboard, VoiceOver/TalkBack and a scan.
 - Every screen in Kiswahili, Twi and isiZulu for wrapping (long words, e.g. isiZulu sign-up steps).
 - Browser pass on 32 templates and 35 theme versions, phone and desktop.
@@ -415,12 +429,9 @@ Marketplace "Popular" sort; AI workflow packs (show "Not available yet").
 - Help guide articles are English.
 - Marketplace listings with no draft are English.
 - Copilot understands typed answers only in English; WhatsApp Copilot demo isn't translated.
-- Pidgin, Yorùbá, Hausa and Igbo drafts missing for the four D430 labels ("Play/Pause moving examples", "Workspace shortcuts", "Site links").
-- `SelectInput` supports `required` (D430) but no form passes it yet.
-- Staff review screen: a few labels outside the case summary still read as Nigerian for other countries' cases.
-- Decision for the owner: whether the Ask bar should show on sellers' published pages (D374).
+- ~~D430 labels in Nigerian languages, `SelectInput required` unused, staff review labels, Ask bar on seller pages~~ — all done in D431 (Ask bar hidden there). ~~Phase 5 not designed~~ — built D435–D443.
 - Pinned-chat icon may not match version 308.
-- Phase 5 items not designed: multi-country tax, multi-location/franchise, ERP connectors, cross-border fulfilment.
+- **Phase 5 follow-ups still open:** order invoices use example per-country wording (D462) that an accountant must confirm, including thresholds and numbering rules; ERP has no batches/expiry dates, no push of KUBICU stock changes, no product creation (D440); sponsorship disputes exist with a staff queue (D453–D454) with a 48-hour reply time (D455) evidence file names (D463) and one appeal decided by a different reviewer (D464), brands see each creator's identity check and deal record (D461) but there's no minimum audience or audience proof, card payment by brands (D441; staff check new briefs since D459; tracked-link results come from Analytics since D457); NFC tags can't be ordered outside Nigeria or encoded from your own blanks (D442); franchise partners can't sign in to run only their branch, there's no per-branch staff access or delivery from a branch (D437); no scheduled activity exports or live security feed (D439). Daily/hourly auto-syncs only run when the Integrations screen opens.
 
 ### 17.6 Docs refreshed on 30 Oct 2026
 All ten docs flagged earlier now carry a D343 update note or corrected line: `DECISIONS_FOR_SIGNOFF.md` (status refresh: A confirmed, B/C/D open, new items), `DESIGN_GAP_AUDIT.md` (D274–D343 re-audit, §7 and history), `DESIGN_TRACEABILITY_MATRIX.md` (IB-O fixed, "Added after D273" section), `PROTOTYPE_STATUS.md` (translation passes ticked, after-Batch-14 list, founder items), `COMPOSITION_SPEC.md` §7 (drag into containers, D342 checks), `BLOCK_REGISTER.md` (D342 update), `COPILOT_SPEC.md` (sidebar chats, All chats, translation), `ACCESSIBILITY_REPORT.md` (uncovered screens), `SCREEN_INVENTORY.md` (later screens), `PLAN_MATRIX.md` (source of truth and price conflict). The point-in-time registers (`THEME_REGISTER`, `TEMPLATE_REGISTER`, `COMMERCE_UPGRADE`, `EXTENSION_REGISTER`, `PUBLIC_SITE_REGISTER`) have no known wrong statements beyond what §3.3 notes.
@@ -444,7 +455,7 @@ Give the **whole project** (all code files) plus these docs. Read them in this o
 **1. Start here**
 1. `docs/CLAUDE_HANDOFF.md` — this file.
 2. `docs/NOT_FOR_PRODUCTION.md` — what must not ship, what to replace, and the release gate (D349). **Read before writing production code.**
-3. `docs/DESIGN_DECISION_REGISTER.md` — every decision D1–D430 (source of truth).
+3. `docs/DESIGN_DECISION_REGISTER.md` — every decision D1–D452 (source of truth).
 
 **2. Status and what's open**
 3. `docs/DESIGN_GAP_AUDIT.md` — open gaps by type (re-audited to D343).
@@ -508,6 +519,12 @@ Before finishing
 - [ ] No label, button or tab wraps to two lines (check long languages).
 - [ ] Sibling cards share baselines; text contrast passes against its real background.
 - [ ] Keyboard focus visible and in order; results announced.
-- [ ] Register row added (next D431); stale docs updated.
+- [ ] Register row added (next D477); stale docs updated.
+- [ ] A new staff area or adjustable thing should be findable from the staff console search (`components/admin/AdminSearch.tsx`, D472).
+- [ ] A new block that sells, books or collects through a module gets an entry in `blockModule` in `components/blocks/BlockRenderer.tsx` (D470), so staff module switches reach published pages.
+- [ ] A new example figure goes in `data/adjustableFigures.ts` and is read with `figure(key)` (D465), so operations can change it in Figures & names. New text goes through `tr()`, so it can be reworded in Localisation → English.
+- [ ] A new workspace module or add-on is automatically switchable in Feature flags (D464); check effects with `market.isActive`, and sidebar/install state with `market.isInstalled`.
+- [ ] Every page sits in the 1200px workspace column and every side sheet pads its body (`bodyClassName="px-5 py-6"`) — D445/D450 fixed pages that missed this.
+- [ ] New sentences go through `tr()`; shared controls translate their own labels, but plain text, counts and toasts don't (D448). Counts read "Label: n", not English plurals.
 - [ ] Anything simulated stays labelled and is listed in `NOT_FOR_PRODUCTION.md`.
 - [ ] Tell the user what wasn't verified.

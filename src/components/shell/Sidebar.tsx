@@ -21,6 +21,7 @@ import { useMarketplace } from '../../contexts/MarketplaceContext';
 import { useT } from '../../contexts/LocaleContext';
 import { useWorkspaceNavCounts } from '../../hooks/useWorkspaceNavCounts';
 import { LanguagePicker } from '../ui/LanguagePicker';
+import { useModuleAvailability } from '../../utils/admin/moduleFlags';
 
 export function Sidebar() {
   const { collapsed, toggle } = useSidebarCollapsed();
@@ -28,9 +29,11 @@ export function Sidebar() {
   const reviewsWaiting = team.can('approvals.review').allowed ? team.data.reviews.filter((r) => r.status === 'pending').length : 0;
   const tip = useSideTip();
   const market = useMarketplace();
+  // Modules KUBICU switched off stay listed, marked "Not available" (D464).
+  const availability = useModuleAvailability();
   const superAdmin = useStaffSession()?.role === 'lead';
   // Apps that aren't installed stay out of the sidebar (D87).
-  const visible = workspaceNav.filter((n) => !n.appId || market.isActive(n.appId));
+  const visible = workspaceNav.filter((n) => !n.appId || market.isInstalled(n.appId));
   const groups = useNavGroups();
   const reduce = useReducedMotion();
   const ToggleIcon = collapsed ? PanelLeftOpenIcon : PanelLeftCloseIcon;
@@ -84,7 +87,7 @@ export function Sidebar() {
           <ul id={`nav-group-${g.id}`} className="flex flex-col gap-0.5">
               {items.map((item) =>
             <li key={item.id} data-tour={`nav-${item.id}`}>
-                  <SidebarItem to={item.to} end={item.to === '/app'} label={item.label} icon={item.icon} soon={!!item.batch} collapsed={collapsed} tip={tip} badge={badgeOf(item.id)} />
+                  <SidebarItem to={item.to} end={item.to === '/app'} label={item.label} icon={item.icon} soon={!!item.batch} unavailable={!availability.nav(item)} collapsed={collapsed} tip={tip} badge={badgeOf(item.id)} />
                 </li>
             )}
             </ul>;

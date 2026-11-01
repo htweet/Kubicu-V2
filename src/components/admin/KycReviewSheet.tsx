@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { AlertTriangleIcon, CheckIcon, MessageSquareWarningIcon, ShieldOffIcon, XIcon } from 'lucide-react';
 import type { MoneyData } from '../../types/money';
 import type { KycRequest, KycStepId } from '../../types/kyc';
-import { entityInfo, kycRisks, statusLabels, statusTones, stepLabels, stepsFor, verifiedName } from '../../utils/money/kyc';
-import { nameMatchOf, tierInfo } from '../../utils/money/store';
+import { entityInfo, kycRisks, kycRules, statusLabels, statusTones, stepLabels, stepsFor, verifiedName } from '../../utils/money/kyc';
+import { nameMatchOf, tierDailyIn, tierInfo } from '../../utils/money/store';
+import { countryInfo } from '../../utils/country';
+import { formatMoney } from '../../utils/currency';
 import { formatRelative, formatTimestamp } from '../../utils/format';
 import { Sheet } from '../ui/Sheet';
 import { Button } from '../ui/Button';
@@ -51,7 +53,14 @@ export function KycReviewSheet({ open, onClose, workspace, money, onApprove, onR
   const banks = money.banks.map((b) => ({ ...b, nameMatch: nameMatchOf(b.accountName, verifiedName(k)) }));
   const risks = kycRisks(k);
   const steps = stepsFor(k.entity).filter((s) => s !== 'review' && s !== 'type');
-  const tier = k.entity ? tierInfo[entityInfo[k.entity].tier] : null;
+  // Staff review any country's case; labels, registry and limits follow the case's country, not the console's (D431).
+  const caseCountry = countryInfo(k.country);
+  const caseRules = kycRules(k.country);
+  const tierId = k.entity ? entityInfo[k.entity].tier : null;
+  const tier = tierId !== null ? tierInfo[tierId] : null;
+  const dailyLimit = tierId !== null ? formatMoney(tierDailyIn(tierId, k.country), caseCountry.currency) : '';
+  const entityLabel = k.entity ? caseRules.entities[k.entity].label : 'Unknown type';
+  const stepLabel = (s: KycStepId) => s === 'business' ? `${caseRules.registry.short} — ${stepLabels[s].label}` : stepLabels[s].label;
   const waiting = k.status === 'in_review';
   const withdrawn = k.status === 'rejected' && k.history[k.history.length - 1]?.label === 'Approval withdrawn';
   const lapsesAt = k.status === 'approved' && k.decidedAt ? new Date(Date.parse(k.decidedAt) + 365 * 86_400_000).toISOString() : null;
@@ -62,7 +71,7 @@ export function KycReviewSheet({ open, onClose, workspace, money, onApprove, onR
   const sendRequest = () => {
     setTried(true);
     if (requestError) return;
-    onRequest(requests, requests.map((r) => `${stepLabels[r.step].label}: ${r.message}`).join(' · '));
+    onRequest(requests, requests.map((r) => `${stepLabel(r.step)}: ${r.message}`).join(' · '));
   };
 
   return (
@@ -75,7 +84,7 @@ export function KycReviewSheet({ open, onClose, workspace, money, onApprove, onR
         height="full"
         bodyClassName="px-5 py-5 md:px-6 md:py-6"
         title={`${workspace} · verification`}
-        description={`${k.entity ? entityInfo[k.entity].label : 'Unknown type'} · submission ${k.attempts}${k.submittedAt ? ` · sent ${formatRelative(k.submittedAt)}` : ''}`}
+        description={`${caseCountry.name} · ${entityLabel} · submission ${k.attempts}${k.submittedAt ? ` · sent ${formatRelative(k.submittedAt)}` : ''}`}
         footer={
         !waiting ?
         <div className="flex w-full flex-wrap items-center justify-between gap-2">
@@ -142,7 +151,7 @@ export function KycReviewSheet({ open, onClose, workspace, money, onApprove, onR
               <>
                       <dt className="text-fg-muted">Payouts</dt>
                       <dd className="text-fg">
-                        {tier.label} · up to ₦{tier.dailyPayoutNgn.toLocaleString('en-NG')} a day
+                        {tier.label} · up to {dailyLimit} a day
                       </dd>
                     </>
               }
@@ -174,7 +183,7 @@ export function KycReviewSheet({ open, onClose, workspace, money, onApprove, onR
                   {k.status === 'needs_info' && k.requests.length > 0 &&
               <>
                       <dt className="text-fg-muted">Asked to fix</dt>
-                      <dd className="text-fg">{k.requests.map((r) => `${stepLabels[r.step].label}: ${r.message}`).join(' · ')}</dd>
+                      <dd className="text-fg">{k.requests.map((r) => `${stepLabel(r.step)}: ${r.message}`).join(' · ')}</dd>
                     </>
               }
                 </dl>
@@ -200,7 +209,7 @@ export function KycReviewSheet({ open, onClose, workspace, money, onApprove, onR
           <div className="flex flex-col gap-0.5 rounded-md bg-sunken px-4 py-3 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
                 <span className="text-caption text-fg-muted">If you approve</span>
                 <span className="text-label text-fg">
-                  <span className="font-semibold">{tier.label}</span> · payouts up to ₦{tier.dailyPayoutNgn.toLocaleString('en-NG')} a day
+                  <span className="font-semibold">{tier.label}</span> · payouts up to {dailyLimit} a day
                 </span>
               </div>
           }
@@ -226,6 +235,10 @@ export function KycReviewSheet({ open, onClose, workspace, money, onApprove, onR
           </div> :
 
         <div className="flex flex-col gap-5">
+            <p className="text-label text-fg-muted">
+              Checking against {caseCountry.name}’s rules: {caseRules.primary.label}
+              {caseRules.secondary ? `, ${caseRules.secondary.label}` : ''} and {caseRules.registry.short}.
+            </p>
             <p className="text-label text-fg-muted">Pick the steps the owner needs to fix. They see your words exactly as written, and only those steps unlock for editing.</p>
             {steps.map((s) => {
             const on = s in picked;
@@ -242,7 +255,7 @@ export function KycReviewSheet({ open, onClose, workspace, money, onApprove, onR
                     return nextP;
                   })
                   }
-                  label={<span className="font-medium">{stepLabels[s].label}</span>} />
+                  label={<span className="font-medium">{stepLabel(s)}</span>} />
                 
                   {on &&
                 <div className="ml-9 mt-3">

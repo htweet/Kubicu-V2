@@ -5,6 +5,7 @@ import { examplePages } from '../data/examples';
 import type { ExamplePage } from '../data/examples/build';
 import { prepareStarter } from './starterKit';
 import { uid } from './id';
+import { figure, onOpsSettings } from './opsSettings';
 
 /**
  * Creator template listings, sales and payouts (D70). Stored under ONE browser-wide key so every
@@ -14,8 +15,13 @@ const KEY = 'kubicu.templateMarket';
 const EVENT = 'kubicu:template-market';
 
 export const CREATOR_SHARE = 0.7;
-export const REFUND_DAYS = 7;
-export const PAYOUT_MIN_NGN = 5000;
+// Example figures staff can change in Figures & names (D466).
+export let REFUND_DAYS = 7;
+export let PAYOUT_MIN_NGN = 5000;
+onOpsSettings(() => {
+  REFUND_DAYS = figure('templates.refundDays');
+  PAYOUT_MIN_NGN = figure('templates.payoutMinNgn');
+});
 export const PRICE_MIN_NGN = 2000;
 export const PRICE_MAX_NGN = 20000;
 const DAY = 86400000;

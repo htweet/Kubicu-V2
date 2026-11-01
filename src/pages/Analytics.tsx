@@ -30,6 +30,8 @@ import { Section } from '../components/ui/layout/Section';
 import { Card } from '../components/ui/layout/Card';
 import { cn } from '../utils/cn';
 import { useT } from '../contexts/LocaleContext';
+import { useSponsorships } from '../hooks/useSponsorships';
+import { sponsorCampaign } from '../utils/sponsorships';
 
 type Period = '7' | '30' | '90' | 'custom';
 type FunnelTab = 'shop' | 'booking' | 'leads' | 'subscriptions' | 'tickets' | 'forms' | 'members';
@@ -43,6 +45,7 @@ export function Analytics() {
   const { data, dismissInsight, clearSample } = useAnalytics();
   const { state, actions } = useEditor();
   const { current } = useWorkspace();
+  const { briefs } = useSponsorships();
   const navigate = useNavigate();
   const [period, setPeriod] = useState<Period>('30');
   const [from, setFrom] = useState(() => new Date(Date.now() - 13 * 86400000).toISOString().slice(0, 10));
@@ -92,6 +95,10 @@ export function Analytics() {
   const { data: domainsData } = useDomains();
   const camp = campaignStats(cur);
   const domainLinks = domainsData.links.filter((l) => !l.archivedAt || camp.has(l.slug));
+  // Creators' tracked sponsorship links on this business's briefs (D458), named after the creator.
+  const sponsored = briefs.
+  filter((b) => b.brandWorkspaceId === current.id).
+  flatMap((b) => b.applications.filter((a) => a.trackingCode).map((a) => ({ id: a.id, name: a.creatorName, brief: b.title, slug: sponsorCampaign(a.trackingCode as string) })));
 
   const mainBlocks = allBlocks(state.site);
   const ideas = insights(cur, state.site.blocks.map((b) => b.id), (id) => {
@@ -357,7 +364,7 @@ export function Analytics() {
               </Link>
           }>
           
-            {domainLinks.length === 0 ?
+            {domainLinks.length === 0 && sponsored.length === 0 ?
           <p className="text-label text-fg-muted">
                 {tr('Make a short link for each place you share, or a QR code for print, to see which brings visitors.')} <Link to="/app/campaign-links" className="underline underline-offset-2">{tr('Create one')}</Link>
               </p> :
@@ -386,10 +393,23 @@ export function Analytics() {
                       </tr>);
 
               })}
+                  {sponsored.map((sp) => {
+                const s = camp.get(sp.slug) ?? { visits: 0, orders: 0, revenueNgn: 0 };
+                return (
+                  <tr key={sp.id} className="border-b border-line">
+                        <td className="max-w-0 truncate py-2 pr-3 text-fg">
+                          {sp.name} <span className="text-caption text-fg-subtle">{tr('Sponsored creator · {brief}', { brief: sp.brief })}</span>
+                        </td>
+                        <td className="py-2 text-right tabular-nums text-fg">{s.visits}</td>
+                        <td className="py-2 text-right tabular-nums text-fg-muted">{s.orders}</td>
+                        <td className="hidden py-2 text-right tabular-nums text-fg-muted sm:table-cell">{formatNgn(s.revenueNgn)}</td>
+                      </tr>);
+
+              })}
                 </tbody>
               </table>
           }
-            {domainLinks.length > 0 &&
+            {(domainLinks.length > 0 || sponsored.length > 0) &&
           <p className="max-w-3xl text-caption text-fg-subtle">
                 {tr('Links that go to another website or a WhatsApp chat count each real click, because those visitors don’t open your page. Bots and repeat taps are left out.')}
               </p>

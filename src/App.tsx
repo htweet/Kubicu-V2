@@ -44,6 +44,10 @@ import { WhatsApp } from './pages/WhatsApp';
 import { TrustPassport } from './pages/TrustPassport';
 import { BusinessCoach } from './pages/BusinessCoach';
 import { Collaborations } from './pages/Collaborations';
+import { Sponsorships } from './pages/Sponsorships';
+import { NfcTags } from './pages/NfcTags';
+import { NfcTap } from './pages/NfcTap';
+import { SponsorLink } from './pages/SponsorLink';
 import { VoiceToStore } from './pages/VoiceToStore';
 import { ReviewSubmit } from './pages/ReviewSubmit';
 import { ShortLink } from './pages/ShortLink';
@@ -55,6 +59,7 @@ import { Subscriptions } from './pages/commerce/Subscriptions';
 import { Events } from './pages/commerce/Events';
 import { Courses } from './pages/commerce/Courses';
 import { GiftCards } from './pages/commerce/GiftCards';
+import { Branches } from './pages/commerce/Branches';
 import { LearnPage } from './pages/LearnPage';
 import { GuestList } from './pages/commerce/GuestList';
 import { CheckIn } from './pages/commerce/CheckIn';
@@ -139,6 +144,8 @@ import { PayLinkPage } from './pages/PayLinkPage';
 import { AdminPayments } from './pages/admin/AdminPayments';
 import { BuyerProtection } from './pages/BuyerProtection';
 import { AdminEscrow } from './pages/admin/AdminEscrow';
+import { AdminSponsorships } from './pages/admin/AdminSponsorships';
+import { AdminFigures } from './pages/admin/AdminFigures';
 import { Reports } from './pages/commerce/Reports';
 import { CommerceSettings } from './pages/commerce/CommerceSettings';
 import { NotFound } from './pages/NotFound';
@@ -254,6 +261,7 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
                   <Route path="subscriptions" element={<Subscriptions />} />
                   <Route path="courses" element={<Courses />} />
                   <Route path="gift-cards" element={<GiftCards />} />
+                  <Route path="branches" element={<Branches />} />
                   <Route path="events" element={<Events />} />
                   <Route path="events/:eventId/guests" element={<GuestList />} />
                   <Route path="events/:eventId/check-in" element={<CheckIn />} />
@@ -286,6 +294,8 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
                 <Route path="trust" element={<TrustPassport />} />
                 <Route path="coach" element={<BusinessCoach />} />
                 <Route path="collabs" element={<Collaborations />} />
+                <Route path="sponsorships" element={<Sponsorships />} />
+                <Route path="nfc" element={<NfcTags />} />
                 <Route path="voice" element={<VoiceToStore />} />
                 <Route path="account" element={<Account />} />
                 <Route path="account/:tab" element={<Account />} />
@@ -315,6 +325,8 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
                 <Route path="health" element={<AdminHealth />} />
                 <Route path="payments" element={<AdminPayments />} />
                 <Route path="escrow" element={<AdminEscrow />} />
+                <Route path="sponsorships" element={<AdminSponsorships />} />
+                <Route path="figures" element={<AdminFigures />} />
                 <Route path="plans" element={<AdminPlans />} />
                 <Route path="ai" element={<AdminAi />} />
                 <Route path="notifications" element={<AdminIntegrations />} />
@@ -327,6 +339,8 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
               <Route path="/p/:handle/shop" element={<PublicPage view="shop" />} />
               <Route path="/p/:handle/shop/:productId" element={<PublicPage view="shop" />} />
               <Route path="/p/:handle/s/:slug" element={<ShortLink />} />
+              <Route path="/p/:handle/t/:code" element={<NfcTap />} />
+              <Route path="/sp/:code" element={<SponsorLink />} />
               <Route path="/p/:handle/trust" element={<PublicTrustPassport />} />
               <Route path="/p/:handle/work/:id" element={<PublicWorkCertificate />} />
               <Route path="/m/:slug" element={<PublicSharedShop />} />

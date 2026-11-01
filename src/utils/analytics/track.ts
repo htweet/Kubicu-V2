@@ -30,6 +30,7 @@ export const sourceLabels: Record<SourceId, string> = {
   x: 'X (Twitter)',
   google: 'Google',
   qr: 'QR code',
+  nfc: 'NFC tap',
   campaign: 'Campaign link',
   direct: 'Direct',
   other: 'Other sites'
@@ -71,7 +72,9 @@ const map: [RegExp, SourceId][] = [
 [/facebook|fb\.|messenger|meta_shop/i, 'facebook'],
 [/twitter|t\.co|x\.com/i, 'x'],
 [/google/i, 'google'],
-[/^qr$/i, 'qr']];
+[/^qr$/i, 'qr'],
+// NFC tags forward with ?src=nfc (D443).
+[/^nfc$/i, 'nfc']];
 
 
 /**

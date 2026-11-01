@@ -5,7 +5,12 @@ import { activeCountry } from './country';
 import { dispatchBlocked } from './commerce/deposit';
 import { uid } from './id';
 import { formatMoney } from './currency';
+import { countryInfo } from './country';
+import { isCrossBorderMethod } from './commerce/crossBorder';
+import type { CountryCode } from '../types/country';
+import type { CrossBorderStage } from '../types/fulfilment';
 import { seedsSample } from './workspaceStorage';
+import { figure, onOpsSettings } from './opsSettings';
 
 /** Local Fulfilment (D96) store and rules. The courier side is simulated and labelled. */
 
@@ -13,7 +18,10 @@ export const FULFILMENT_APP_ID = 'local-fulfilment';
 const key = (workspaceId: string) => `kubicu.fulfilment.${workspaceId}`;
 export const FULFILMENT_EVENT = 'kubicu:fulfilment';
 /** Wrong codes allowed before the handover is stopped and must be retried (example figure). */
-export const MAX_CODE_ATTEMPTS = 3;
+export let MAX_CODE_ATTEMPTS = 3;
+onOpsSettings(() => {
+  MAX_CODE_ATTEMPTS = figure('delivery.codeAttempts');
+});
 
 export const emptyFulfilment = (): FulfilmentData => ({ deliveries: [], pickupAddress: '', pickupPhone: '', riders: [] });
 
@@ -100,6 +108,9 @@ export const failLabels: Record<FailReason, string> = {
   wrong_address: 'Address wrong or not found',
   refused: 'Customer refused the order',
   wrong_code: 'Too many wrong delivery codes',
+  // Cross-border parcels (D436).
+  held_customs: 'Held at customs — details or duties needed',
+  returned_sender: 'Returned to sender from abroad',
   other: 'Something else'
 };
 
@@ -183,6 +194,8 @@ export function book(data: FulfilmentData, o: Order, q: PartnerQuote, pickupAt: 
     codeAttempts: 0,
     escrow,
     createdAt: new Date().toISOString(),
+    // Abroad (D451): tracking adds the customs steps between pickup and the handover.
+    ...(o.fulfilment.zoneId && isCrossBorderMethod(o.fulfilment.zoneId) ? { crossBorder: { from: activeCountry(), to: o.fulfilment.country, stage: 0 as CrossBorderStage } } : {}),
     events: [
     ...(rider ? [ev(`${rider.name} assigned`)] : []),
     ev(`Booked with ${q.name}${q.feeNgn ? ` · ${formatMoney(q.feeNgn)}` : ''} — delivery code texted to the customer`)]
@@ -204,6 +217,30 @@ export function assignRider(data: FulfilmentData, id: string): FulfilmentData {
 export function pickedUp(data: FulfilmentData, id: string): FulfilmentData {
   return patch(data, id, (d) => d.status === 'assigned' ? { ...d, status: 'picked_up', events: [ev('Picked up from you — on the way to the customer'), ...d.events] } : d);
 }
+
+/** English country name for a stored code; shown through the translator. "the buyer’s country" when unknown. */
+export const crossBorderPlace = (code?: string) => code ? countryInfo(code as CountryCode).name : 'the buyer’s country';
+
+/** Event label for each stage after pickup (D451). `{from}`/`{to}` are filled from the delivery. */
+export const crossBorderStageLabels: Record<Exclude<CrossBorderStage, 0>, string> = {
+  1: 'Left {from} — on the way abroad',
+  2: 'At customs in {to}',
+  3: 'Cleared customs',
+  4: 'Out for delivery in {to}'
+};
+
+/** Prototype: the courier's next tracking update for a parcel going abroad. */
+export function advanceCrossBorder(data: FulfilmentData, id: string): FulfilmentData {
+  return patch(data, id, (d) => {
+    if (d.status !== 'picked_up' || !d.crossBorder || d.crossBorder.stage >= 4) return d;
+    const stage = d.crossBorder.stage + 1 as Exclude<CrossBorderStage, 0>;
+    const vars = { from: crossBorderPlace(d.crossBorder.from), to: crossBorderPlace(d.crossBorder.to) };
+    return { ...d, crossBorder: { ...d.crossBorder, stage }, events: [{ ...ev(crossBorderStageLabels[stage]), vars }, ...d.events] };
+  });
+}
+
+/** The handover code can only be used once a parcel going abroad is out for delivery in the buyer's country. */
+export const awaitingCrossBorder = (d: Delivery) => !!d.crossBorder && d.status === 'picked_up' && d.crossBorder.stage < 4;
 
 export type CodeResult = {ok: true;data: FulfilmentData;} | {ok: false;data: FulfilmentData;left: number;};
 

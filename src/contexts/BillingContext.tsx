@@ -21,7 +21,8 @@ const AUTO = 'Automatic';
 interface BillingValue {
   data: BillingData;
   /** Pay now and switch plan (upgrades, cycle changes, keeping a trial plan). A coupon and any account credit apply first (D135). */
-  checkout: (target: WorkspacePlan, cycle: BillingCycle, card: PaymentCard, coupon?: Coupon | null) => void;
+  /** `card` is null when paid another way (M-Pesa, mobile money, instant EFT — D433); `paidWith` names it on the invoice. */
+  checkout: (target: WorkspacePlan, cycle: BillingCycle, card: PaymentCard | null, coupon?: Coupon | null, paidWith?: string) => void;
   /** The exact charge checkout would make, with coupon and account credit applied. */
   previewQuote: (target: WorkspacePlan, cycle: BillingCycle, coupon?: Coupon | null) => Quote;
   /** Account credit from KUBICU not yet used. */
@@ -233,7 +234,7 @@ export function BillingProvider({ renewalOutcome, children }: {renewalOutcome: R
       renewalOutcome,
       previewQuote,
       creditLeft: creditAvailable(current.id, data.creditUsedNgn),
-      checkout: (target, cycle, card, coupon) => {
+      checkout: (target, cycle, card, coupon, paidWith) => {
         const cur = planRef.current;
         const before = ref.current;
         const base = quoteChange(before, cur, target, cycle);
@@ -248,12 +249,13 @@ export function BillingProvider({ renewalOutcome, children }: {renewalOutcome: R
         target === cur ?
         `Switched to ${cycle} billing` :
         `${planOrder.indexOf(target) > planOrder.indexOf(cur) ? 'Upgraded' : 'Changed'} from ${plans[cur].name} to ${plans[target].name} (${cycle})`;
-        const cardChanged = before.card?.last4 !== card.last4;
+        const cardChanged = !!card && before.card?.last4 !== card.last4;
         apply((x) => {
-          const inv = q.subtotal > 0 ? makeInvoice(x, q.lines, 'paid', card) : null;
+          const made = q.subtotal > 0 ? makeInvoice(x, q.lines, 'paid', card) : null;
+          const inv = made && !card && paidWith ? { ...made, paidWith } : made;
           let next: BillingData = {
             ...x,
-            card,
+            card: card ?? x.card,
             cycle,
             periodStart: q.periodStart,
             periodEnd: q.periodEnd,
@@ -266,7 +268,7 @@ export function BillingProvider({ renewalOutcome, children }: {renewalOutcome: R
             creditUsedNgn: (x.creditUsedNgn ?? 0) + adj.creditUsed,
             coupon: coupon && coupon.duration === 'every' && adj.couponOff > 0 ? { code: coupon.code, kind: coupon.kind, value: coupon.value } : target === cur ? x.coupon ?? null : null
           };
-          if (cardChanged) next = withEvent(next, { kind: 'card', text: `Added ${card.brand} •••• ${card.last4}`, actor: me, tone: 'neutral' });
+          if (cardChanged && card) next = withEvent(next, { kind: 'card', text: `Added ${card.brand} •••• ${card.last4}`, actor: me, tone: 'neutral' });
           return withEvent(next, {
             kind: 'plan',
             text,

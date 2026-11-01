@@ -4,6 +4,7 @@ import type { Subscription } from '../../types/subscriptions';
 import type { Booking } from '../../types/ops';
 import type { Invoice } from '../../types/serviceOs';
 import type { LinkPayment } from '../../types/money';
+import type { CountryCode } from '../../types/country';
 import { orderMoney } from './money';
 
 /** Sales report maths (D227). Pure: every screen number and both exports come from here. */
@@ -47,6 +48,8 @@ export interface IncomeEntry {
   refunded: number;
   net: number;
   vat: number;
+  /** Whose tax `vat` is, when it isn't the shop's own country (D456). */
+  vatCountry?: CountryCode;
   method: MethodId | null;
   sample: boolean;
 }
@@ -93,7 +96,7 @@ export function incomeEntries(inp: ReportInputs, r: ReportRange, handle: string 
     const m = orderMoney(o);
     const gift = Math.min(soldByOrder.get(o.id) ?? 0, m.gross);
     const base = { at: o.createdAt, ref: orderRef(o), customer: o.customer.name, method: orderMethod(o), sample: !!o.sample };
-    out.push({ ...base, type: 'shop', paid: m.gross - gift, fees: m.providerFee + m.kubicuFee, refunded: m.refunded, net: m.net - gift, vat: m.vat });
+    out.push({ ...base, type: 'shop', paid: m.gross - gift, fees: m.providerFee + m.kubicuFee, refunded: m.refunded, net: m.net - gift, vat: m.vat, ...(o.vat?.country ? { vatCountry: o.vat.country } : {}) });
     if (gift > 0) out.push({ ...base, type: 'gift_cards', paid: gift, fees: 0, refunded: 0, net: gift, vat: 0 });
   });
 

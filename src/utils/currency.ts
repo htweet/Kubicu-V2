@@ -1,6 +1,9 @@
+import { isFxCode, nairaPerToday, nairaToLocal } from './fxRates';
+
 /**
  * One currency per workspace (D136). Every amount a seller sets or a buyer pays is shown in the
- * workspace's currency, with no conversion. KUBICU's own plan prices always stay in naira.
+ * workspace's currency, with no conversion. KUBICU's own prices are one naira list, billed in the workspace
+ * country's currency at the day's rate (D432).
  */
 export type CurrencyCode = 'NGN' | 'GHS' | 'KES' | 'ZAR' | 'USD' | 'GBP' | 'EUR';
 
@@ -45,7 +48,19 @@ export function setActiveCurrency(code: CurrencyCode | undefined): void {
   active = code ?? 'NGN';
   // The app shell, seller pages and staff console never convert (D421); only the website turns it back on.
   display = null;
+  // Billing conversion is set again by the app shell for the workspace's country (D432).
+  billing = null;
 }
+
+/**
+ * The currency KUBICU bills this workspace in — its country's currency, whatever it sells in (D432). Set by the app
+ * shell; naira everywhere else (seller pages, staff console).
+ */
+let billing: CurrencyCode | null = null;
+export function setBillingCurrency(code: CurrencyCode | null): void {
+  billing = code && code !== 'NGN' && isFxCode(code) ? code : null;
+}
+export const billingCurrency = (): CurrencyCode => billing ?? 'NGN';
 
 export const activeCurrency = (): CurrencyCode => active;
 export const currencySymbol = (code: CurrencyCode = active): string => currencyInfo(code).symbol;
@@ -55,14 +70,14 @@ export const isNaira = (code: CurrencyCode = active) => code === 'NGN';
 /**
  * Display conversion for KUBICU's public website (D421). While the website is on screen in Kiswahili, Twi or
  * isiZulu, every naira amount written without an explicit currency — sample prices, KUBICU's plan, template and
- * add-on prices — is shown in that country's currency at a fixed example rate, rounded. Nothing is charged at
- * these rates. Seller pages in their own currency (active ≠ NGN) and explicit-currency calls never convert.
+ * add-on prices — is shown in that country's currency at the day's rate (D432; was a fixed example rate). Sample
+ * amounts are rounded to natural figures; KUBICU's own prices are exact. Seller pages in their own currency
+ * (active ≠ NGN) and explicit-currency calls never convert.
  */
-const nairaPer: Partial<Record<CurrencyCode, number>> = { NGN: 1, KES: 12, GHS: 135, ZAR: 85 };
 let display: CurrencyCode | null = null;
 
 export function setDisplayConversion(code: CurrencyCode | null): void {
-  display = code && code !== 'NGN' && nairaPer[code] ? code : null;
+  display = code && code !== 'NGN' && isFxCode(code) ? code : null;
 }
 
 export const displayConversion = (): CurrencyCode | null => display;
@@ -74,13 +89,23 @@ export function tidyAmount(amount: number, code: CurrencyCode): number {
   return Math.max(step, Math.round(amount / step) * step);
 }
 
-/** A naira amount converted to `code` at the example rate (not a live rate), rounded. */
+/** A sample naira amount converted to `code` at the day's rate, rounded to a natural figure. */
 export function convertExampleNaira(naira: number, code: CurrencyCode): number {
   if (code === 'NGN') return naira;
-  return tidyAmount(naira / (nairaPer[code] ?? 1), code);
+  return tidyAmount(naira / nairaPerToday(code), code);
+}
+
+/**
+ * While an example page from Kenya, Ghana or South Africa draws (D434), its prices are written in its own currency.
+ * `PageLayoutView` sets this before its blocks render and clears it after them, so they show as written.
+ */
+let preview: CurrencyCode | null = null;
+export function setPreviewCurrency(code: CurrencyCode | null): void {
+  preview = code;
 }
 
 export function formatMoney(amount: number, code?: CurrencyCode): string {
+  if (code === undefined && preview) return formatterFor(preview).format(amount);
   if (code === undefined && display && active === 'NGN') return formatterFor(display).format(convertExampleNaira(amount, display));
   return formatterFor(code ?? active).format(amount);
 }
@@ -118,10 +143,20 @@ export function withSymbol(text: string, code: CurrencyCode = active): string {
 }
 
 /**
- * KUBICU's own prices (plans, templates, extensions, print orders) — billed in naira. On the public website in
- * Kiswahili, Twi or isiZulu they're shown converted at the example rate (D421); everywhere else, naira.
+ * KUBICU's own prices (plans, templates, extensions, print orders) — one naira list (D432). On the website in
+ * Kiswahili, Twi or isiZulu, and in a Kenyan, Ghanaian or South African workspace, they're shown in that currency at
+ * the day's rate, rounded up to a whole unit; everywhere else, naira.
  */
 export function formatNaira(amount: number): string {
-  if (display) return formatterFor(display).format(convertExampleNaira(amount, display));
+  const code = display ?? billing;
+  if (code) return formatterFor(code).format(nairaToLocal(amount, code));
   return formatterFor('NGN').format(amount);
 }
+
+/** A KUBICU price in a given currency at a given (frozen) rate — invoices keep the rate of the day they were made. */
+export function formatNairaAt(amount: number, code: CurrencyCode, rate?: number): string {
+  return formatterFor(code).format(nairaToLocal(amount, code, rate));
+}
+
+/** The currency KUBICU prices are shown in right now (website language or workspace country), or naira. */
+export const kubicuPriceCurrency = (): CurrencyCode => display ?? billing ?? 'NGN';

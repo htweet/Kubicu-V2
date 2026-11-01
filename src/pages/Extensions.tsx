@@ -21,12 +21,15 @@ import { Section } from '../components/ui/layout/Section';
 import { Card } from '../components/ui/layout/Card';
 import { List } from '../components/ui/layout/ListRow';
 import { listedCommunity, useSubmissions } from '../utils/extensionSubmissions';
+import { useModuleAvailability } from '../utils/admin/moduleFlags';
 
 type View = 'browse' | 'installed';
 
 /** Curated extension marketplace (D67). */
 export function Extensions() {
   const market = useMarketplace();
+  // Add-ons KUBICU switched off stay listed but can't be installed (D464).
+  const availability = useModuleAvailability();
   const { current } = useWorkspace();
   const [params, setParams] = useSearchParams();
   const [view, setView] = useState<View>('browse');
@@ -67,7 +70,7 @@ export function Extensions() {
                     <span className="mt-1 block text-label text-fg-muted">{e.summary}</span>
                   </span>
                   <span className="mt-auto flex flex-wrap items-center gap-2 text-caption text-fg-subtle">
-                    {market.data.installed[e.id] ? <Badge tone="success" dot>Installed</Badge> : <span>{e.priceNgn ? `${formatNgn(e.priceNgn)}/mo` : 'Free'}</span>}
+                    {!availability.ext(e.id) ? <Badge tone="neutral">Currently not available</Badge> : market.data.installed[e.id] ? <Badge tone="success" dot>Installed</Badge> : <span>{e.priceNgn ? `${formatNgn(e.priceNgn)}/mo` : 'Free'}</span>}
                     <span>· {plans[e.minPlan].name}+</span>
                   </span>
                 </button>
@@ -133,6 +136,8 @@ export function Extensions() {
                     <span className="hidden shrink-0 text-right sm:block">
                       {e.retired ?
                       <Badge tone="info">Moved to {e.retired.movedTo}</Badge> :
+                      !availability.ext(e.id) ?
+                      <Badge tone="neutral">Currently not available</Badge> :
                       rec ?
                       <Badge tone={rec.paused ? 'warning' : 'success'} dot>
                           {rec.paused ? 'Paused' : 'Installed'}

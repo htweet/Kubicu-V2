@@ -16,6 +16,8 @@ interface SidebarItemProps {
   onNavigate?: () => void;
   /** Count of things waiting, e.g. reviews to approve. */
   badge?: number;
+  /** Switched off by KUBICU for now (D464): still listed, quieter, marked "Not available". */
+  unavailable?: boolean;
 }
 
 /** One navigation row, shared by the workspace and super-admin sidebars. */
@@ -28,11 +30,13 @@ export function SidebarItem({
   collapsed,
   tip,
   onNavigate,
-  badge
+  badge,
+  unavailable
 }: SidebarItemProps) {
   const { t } = useT();
   label = t(label);
-  const tipLabel = soon ? `${label} · ${t('Soon')}` : label;
+  const tipLabel = unavailable ? `${label} · ${t('Not available')}` : soon ? `${label} · ${t('Soon')}` : label;
+  soon = soon || unavailable;
   return <NavLink to={to} end={end} onClick={onNavigate} aria-label={collapsed ? tipLabel : undefined} onMouseEnter={collapsed ? tip?.show(tipLabel) : undefined} onMouseLeave={tip?.hide} onFocus={collapsed ? tip?.show(tipLabel) : undefined} onBlur={tip?.hide} className={({
     isActive
   }) => cn('group flex h-10 items-center gap-3 rounded-md text-label transition-colors duration-150', 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus', collapsed ? 'mx-auto w-10 justify-center' : 'px-2.5', isActive ? 'bg-canvas font-semibold text-fg shadow-1 ring-1 ring-line' : cn('font-medium hover:bg-sunken hover:text-fg', soon ? 'text-fg-subtle' : 'text-fg-muted'))}>
@@ -45,7 +49,7 @@ export function SidebarItem({
           </span>
           {!collapsed && <>
               <span className="min-w-0 flex-1 truncate">{label}</span>
-              {soon && <span className="text-meta font-medium text-fg-subtle">{t('Soon')}</span>}
+              {soon && <span className="shrink-0 text-meta font-medium text-fg-subtle">{t(unavailable ? 'Not available' : 'Soon')}</span>}
               {!!badge && <span className="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-warning-soft px-1 text-meta font-semibold text-warning" aria-label={`${badge} waiting`}>{badge}</span>}
             </>}
         </>}

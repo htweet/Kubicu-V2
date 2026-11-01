@@ -55,7 +55,7 @@ export function CountryCard() {
         }
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
           <div className="sm:w-80">
-            <SelectInput<CountryCode> id="ws-country" label="Sells from" value={choice} disabled={!can.allowed} onChange={setChoice} options={countries.map((c) => ({ value: c.code, label: tr(c.name) }))} />
+            <SelectInput<CountryCode> id="ws-country" required label="Sells from" value={choice} disabled={!can.allowed} onChange={setChoice} options={countries.map((c) => ({ value: c.code, label: tr(c.name) }))} />
           </div>
           <Button disabled={!can.allowed || choice === code} onClick={() => setConfirming(true)}>
             Change country
@@ -101,6 +101,9 @@ export function CountryCard() {
           <li>{tr('New phone numbers start with +{code}.', { code: next.dialCode })}</li>
           <li>{tr('Addresses ask for a {region}.', { region: tr(next.regionLabel).toLowerCase() })}</li>
           <li>{tr('Checkout offers: {options}.', { options: next.payments.map((p) => tr(paymentOptionLabels[p])).join(', ') })}</li>
+          {next.currency !== now.currency &&
+          <li>{tr('Your KUBICU plan is billed in {currency} from your next renewal, at that day’s rate. The current period isn’t charged again.', { currency: tr(currencyInfo(next.currency).name) })}</li>
+          }
         </ul>
       </Dialog>
     </Card>);

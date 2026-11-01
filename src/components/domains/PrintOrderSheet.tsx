@@ -9,6 +9,7 @@ import { balances, isVerified } from '../../utils/money/store';
 import { kitItems, kitPreviewDoc, type KitDetails } from '../../utils/domains/printKit';
 import {
   deliveryZones,
+  DOUBLE_SIDED_PCT,
   emptyPrintOrders,
   estimateArrival,
   nigerianStates,
@@ -257,7 +258,7 @@ export function PrintOrderSheet({ open, onClose, initialItem, kit, qrUrl, qrLink
               {ds &&
             <>
                   <dt className="text-fg-subtle">Sides</dt>
-                  <dd className="text-fg">Double-sided — back as designed (+30%)</dd>
+                  <dd className="text-fg">{`Double-sided — back as designed (+${DOUBLE_SIDED_PCT}%)`}</dd>
                 </>
             }
               <dt className="text-fg-subtle">Paper</dt>

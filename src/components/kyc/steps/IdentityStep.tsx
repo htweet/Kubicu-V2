@@ -138,7 +138,7 @@ export function IdentityStep({ k, set, errors, disabled }: KycStepProps) {
           {tr('Photo ID and selfie')}
         </h3>
         <div className="grid gap-4 md:grid-cols-3">
-          <SelectInput<IdType> id="kyc-id-type" label="ID type" value={i.idType} onChange={(idType) => setId({ idType })} options={idOptions.map((o) => ({ value: o.value, label: tr(o.label) }))} disabled={disabled} />
+          <SelectInput<IdType> id="kyc-id-type" label="ID type" value={i.idType} onChange={(idType) => setId({ idType })} options={idOptions.map((o) => ({ value: o.value, label: tr(o.label) }))} disabled={disabled} required />
           <TextInput id="kyc-id-number" label="ID number" value={i.idNumber} onChange={(e) => setId({ idNumber: e.target.value })} error={errors.idNumber} disabled={disabled} />
           {needsExpiry && <TextInput id="kyc-id-expiry" label="Expiry date" type="date" value={i.idExpiry} onChange={(e) => setId({ idExpiry: e.target.value })} error={errors.idExpiry} disabled={disabled} />}
         </div>

@@ -14,6 +14,9 @@ import { plans } from '../../data/plans';
 import { TRIAL_PLAN } from '../../data/billing';
 import { daysUntil, formatDate, isPaidPlan, priceFor, withVat } from '../../utils/billing';
 import { formatNaira as formatNgn } from '../../utils/format';
+import { billingCurrency, formatMoney } from '../../utils/currency';
+import { invoiceTotals, localBreakdown, rateLine, rateMovedSince } from '../../utils/billingMoney';
+import { isFxCode, nairaPerToday } from '../../utils/fxRates';
 import { downloadCsv, toCsv } from '../../utils/csv';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
@@ -44,8 +47,15 @@ export function BillingTab() {
   const [cancelOpen, setCancelOpen] = useState(false);
   const paid = isPaidPlan(plan.id);
   const price = priceFor(plan.id, d.cycle);
-  const nextTotal = d.pendingPlan && d.pendingPlan !== 'free' ? withVat(priceFor(d.pendingPlan, d.pendingCycle ?? d.cycle)).total : withVat(price).total;
+  const nextSubtotal = d.pendingPlan && d.pendingPlan !== 'free' ? priceFor(d.pendingPlan, d.pendingCycle ?? d.cycle) : price;
+  const nextTotal = withVat(nextSubtotal).total;
   const periodEnd = d.periodEnd ? formatDate(d.periodEnd) : null;
+  // Outside Nigeria KUBICU bills in the workspace country's currency at the day's rate (D432).
+  const billCode = billingCurrency();
+  const converts = isFxCode(billCode);
+  const nextLocal = localBreakdown(nextSubtotal);
+  const lastPaid = d.invoices.find((i) => i.status === 'paid');
+  const moved = rateMovedSince(lastPaid);
 
   const status = d.trial ?
   { tone: 'info' as const, label: tr('Trial · {n} days left', { n: daysUntil(d.trial.endsAt) }) } :
@@ -57,7 +67,7 @@ export function BillingTab() {
   { tone: 'warning' as const, label: tr('Changes to {plan} {date}', { plan: plans[d.pendingPlan].name, date: periodEnd ?? '' }) } :
   { tone: 'success' as const, label: tr('Active') };
 
-  const total = formatNgn(nextTotal);
+  const total = converts ? formatMoney(nextLocal.total, billCode) : formatNgn(nextTotal);
   const comingUp = d.trial ?
   tr('Trial ends {date} — then back to {plan} unless you choose a plan.', { date: formatDate(d.trial.endsAt), plan: plans[d.trial.previousPlan].name }) :
   d.status === 'past_due' && d.graceEndsAt ?
@@ -78,8 +88,11 @@ export function BillingTab() {
 
   const exportCsv = () => {
     const csv = toCsv(
-      ['Invoice', 'Date', 'Status', 'Items', 'Subtotal (NGN)', 'VAT (NGN)', 'Total (NGN)', 'Card'],
-      d.invoices.map((i) => [i.number, i.issuedAt.slice(0, 10), i.status, i.lines.map((l) => l.label).join(' | '), i.subtotalNgn, i.vatNgn, i.totalNgn, i.cardLast4 ? `•••• ${i.cardLast4}` : ''])
+      ['Invoice', 'Date', 'Status', 'Items', 'Currency', 'Subtotal', 'Tax', 'Total', 'Price list (NGN)', 'Rate (NGN per unit)', 'Card'],
+      d.invoices.map((i) => {
+        const t = invoiceTotals(i);
+        return [i.number, i.issuedAt.slice(0, 10), i.status, i.lines.map((l) => l.label).join(' | '), t.code, t.subtotal, t.tax, t.total, i.subtotalNgn, i.fx ? i.fx.rate : 1, i.cardLast4 ? `•••• ${i.cardLast4}` : ''];
+      })
     );
     downloadCsv(`kubicu-invoices-${current.name.toLowerCase().replace(/\W+/g, '-')}.csv`, csv);
   };
@@ -133,6 +146,15 @@ export function BillingTab() {
               {formatNgn(price)}
               <span className="text-label font-normal text-fg-muted"> {tr(d.cycle === 'yearly' ? '/year + VAT' : '/month + VAT')}</span>
             </p>
+            }
+
+          {paid && converts &&
+            <div className="flex flex-col gap-1 text-caption text-fg-muted">
+              <p>
+                {tr('Converted from {price} at today’s rate ({rate}). The amount is fixed on each invoice, and an unpaid invoice keeps its amount for 7 days.', { price: `₦${price.toLocaleString('en-NG')}`, rate: rateLine(billCode, nairaPerToday(billCode)) })}
+              </p>
+              {moved.moved && <p className="font-medium text-warning">{tr('The rate has moved {pct}% since your last payment, so your next charge will differ from the last one.', { pct: Math.round(moved.pct * 100) })}</p>}
+            </div>
             }
 
           {(billing.creditLeft > 0 || d.coupon) &&
@@ -268,7 +290,7 @@ export function BillingTab() {
                   {tr((d.pendingCycle ?? d.cycle) === 'yearly' ? '{plan} (yearly) renewal' : '{plan} (monthly) renewal', { plan: plans[d.pendingPlan ?? plan.id].name })}
                 </span>
                 <InvoiceStatusBadge status="upcoming" />
-                <span className="w-[110px] text-right text-label tabular-nums text-fg">{formatNgn(nextTotal)}</span>
+                <span className="w-[110px] text-right text-label tabular-nums text-fg">{total}</span>
               </li>
             }
             {d.invoices.map((i) =>
@@ -284,7 +306,7 @@ export function BillingTab() {
                     {i.sample && <span className="text-fg-subtle"> · {tr('sample')}</span>}
                   </span>
                   <InvoiceStatusBadge status={i.status} />
-                  <span className="w-[110px] text-right text-label tabular-nums text-fg">{formatNgn(i.totalNgn)}</span>
+                  <span className="w-[110px] text-right text-label tabular-nums text-fg">{formatMoney(invoiceTotals(i).total, invoiceTotals(i).code)}</span>
                 </button>
               </li>
             )}

@@ -335,7 +335,7 @@ function ordinal(n: number): string {
   return `${n}${n % 10 === 1 && n % 100 !== 11 ? 'st' : n % 10 === 2 && n % 100 !== 12 ? 'nd' : n % 10 === 3 && n % 100 !== 13 ? 'rd' : 'th'}`;
 }
 
-const sourceNames: Record<SourceId, string> = { whatsapp: 'WhatsApp', instagram: 'Instagram', tiktok: 'TikTok', facebook: 'Facebook', x: 'X', google: 'Google', qr: 'QR codes', campaign: 'Campaign links', direct: 'Direct visits', other: 'Other sites' };
+const sourceNames: Record<SourceId, string> = { whatsapp: 'WhatsApp', instagram: 'Instagram', tiktok: 'TikTok', facebook: 'Facebook', x: 'X', google: 'Google', qr: 'QR codes', nfc: 'NFC tags', campaign: 'Campaign links', direct: 'Direct visits', other: 'Other sites' };
 function labelSource(s: SourceId): string {
   return sourceNames[s];
 }

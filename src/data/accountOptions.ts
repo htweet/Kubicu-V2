@@ -1,4 +1,5 @@
 import type { DateFormatId, LanguageId, StartPageId } from '../types/account';
+import { figure, onOpsSettings } from '../utils/opsSettings';
 
 /** `draft`: selectable, with drafted translations that still need a native speaker's check (D133). */
 export const languageOptions: {value: LanguageId;label: string;ready: boolean;draft?: boolean;}[] = [
@@ -37,4 +38,7 @@ export const accountTabs = [
 const;
 
 /** Days between asking to delete an account and it happening (example figure). */
-export const DELETION_GRACE_DAYS = 14;
+export let DELETION_GRACE_DAYS = 14;
+onOpsSettings(() => {
+  DELETION_GRACE_DAYS = figure('account.deletionGraceDays');
+});

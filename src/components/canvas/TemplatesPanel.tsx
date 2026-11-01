@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { LockIcon } from 'lucide-react';
-import { examplePages, goalLabels, type ExampleGoal } from '../../data/examples';
+import { countryFirst, examplePages, goalLabels, type ExampleGoal } from '../../data/examples';
+import { activeCountry } from '../../utils/country';
 import type { ExamplePage } from '../../data/examples/build';
 import { blankTemplateDoc } from '../../data/templates';
 import { templatePrice } from '../../data/templateMarket';
@@ -39,7 +40,8 @@ export function TemplatesPanel() {
   const [goal, setGoal] = useState<ExampleGoal | 'all'>('all');
   const [previewing, setPreviewing] = useState<ExamplePage | null>(null);
 
-  const list = useMemo(() => examplePages.filter((e) => goal === 'all' || e.goals.includes(goal)), [goal]);
+  // The workspace country's starters first (D434).
+  const list = useMemo(() => countryFirst(examplePages, activeCountry()).filter((e) => goal === 'all' || e.goals.includes(goal)), [goal]);
 
   const fromExample = (e: ExamplePage): PendingTemplate => ({ name: tr(e.category), key: e.category, doc: e.doc });
 

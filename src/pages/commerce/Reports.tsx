@@ -24,6 +24,7 @@ import { IncomeChart } from '../../components/commerce/reports/IncomeChart';
 import { BarList } from '../../components/commerce/reports/BarList';
 import { MoneyStillToCome } from '../../components/commerce/reports/MoneyStillToCome';
 import { AccountingExportButton } from '../../components/commerce/reports/AccountingExportButton';
+import { TaxByCountryCard } from '../../components/commerce/reports/TaxByCountryCard';
 import { byIncomeType, byMethod, byProduct, incomeEntries, incomeLabels, incomeSeries, isPaidOrder, methodLabels, summarise, vatSummary, type IncomeEntry, type ReportRange } from '../../utils/commerce/salesReport';
 import { printSalesSummary } from '../../utils/commerce/salesReportPrint';
 import { shopSettingsOf, vatRateLabel } from '../../utils/commerce/shopSettings';
@@ -368,6 +369,8 @@ export function Reports() {
             </StatGroup>
           </Card>
         }
+
+        <TaxByCountryCard orders={orders.filter(isPaidOrder)} business={current.name} />
 
         <MoneyStillToCome data={data} links={money.links} range={period === 'all' ? { from: 0, to: Date.now() + 1 } : ranges.current} />
 

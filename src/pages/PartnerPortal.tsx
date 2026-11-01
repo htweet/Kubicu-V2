@@ -203,7 +203,7 @@ function GettingPaid({ p, save }: {p: Partnership;save: (p: Partnership) => void
 
           <>
               <div className="grid gap-4 sm:grid-cols-2">
-                <SelectInput<string> id="pp-bank" label="Bank" value={bank} onChange={setBank} options={banks.map((b) => ({ value: b, label: b }))} />
+                <SelectInput<string> id="pp-bank" label="Bank" value={bank} onChange={setBank} options={banks.map((b) => ({ value: b, label: b }))} required />
                 <TextInput id="pp-acct" label="Account number" inputMode="numeric" maxLength={info.accountNumber.max} value={account} onChange={(e) => setAccount(e.target.value.replace(/\D/g, ''))} />
               </div>
               <TextInput

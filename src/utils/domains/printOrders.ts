@@ -1,5 +1,6 @@
 import type { KitDetails, KitItem } from './printKit';
 import { countryInfo } from '../country';
+import { figure, onOpsSettings } from '../opsSettings';
 
 /**
  * Ordering prints from a partner print shop (D114). The print partner is simulated:
@@ -159,12 +160,25 @@ export function zoneForState(state: string): DeliveryZone {
   return 'other';
 }
 
-export const PRINT_DAYS = 2; // working days to print
+export let PRINT_DAYS = 2; // working days to print
+export let DOUBLE_SIDED_PCT = 30;
 
-/** Double-sided business cards cost 30% more (example figure). */
+// Print time and delivery fees are example figures staff can change in Figures & names (D467).
+onOpsSettings(() => {
+  PRINT_DAYS = figure('print.days');
+  DOUBLE_SIDED_PCT = figure('print.doubleSidedPct');
+  (Object.keys(printPrices) as OrderableItem[]).forEach((item) => printPrices[item].forEach((t) => t.ngn = figure(`print.price.${item}.${t.qty}`)));
+  const fee: Partial<Record<DeliveryZone, string>> = { lagos: 'print.lagosNgn', major: 'print.majorNgn', other: 'print.otherNgn' };
+  deliveryZones.forEach((z) => {
+    const k = fee[z.id];
+    if (k) z.ngn = figure(k);
+  });
+});
+
+/** Double-sided business cards cost DOUBLE_SIDED_PCT more (example figure, adjustable — D468). */
 export function quote(item: OrderableItem, qty: number, finishId: string, zone: DeliveryZone, doubleSided = false) {
   const base = printPrices[item].find((p) => p.qty === qty)?.ngn ?? 0;
-  const uplift = (printFinishes[item].find((f) => f.id === finishId)?.upliftPct ?? 0) + (doubleSided ? 30 : 0);
+  const uplift = (printFinishes[item].find((f) => f.id === finishId)?.upliftPct ?? 0) + (doubleSided ? DOUBLE_SIDED_PCT : 0);
   const subtotalNgn = Math.round(base * (100 + uplift) / 100 / 50) * 50;
   const deliveryNgn = deliveryZones.find((z) => z.id === zone)?.ngn ?? 0;
   return { subtotalNgn, deliveryNgn, totalNgn: subtotalNgn + deliveryNgn, unitNgn: qty ? subtotalNgn / qty : 0 };

@@ -172,7 +172,7 @@ export function FieldEditor({ field, fields, isFirst, onChange, onRemove, disabl
               <SelectInput id={`${p}-rule-on`} label="When" value={rule ? 'rule' : 'always'} options={[{ value: 'always', label: 'Always' }, { value: 'rule', label: 'Only when an earlier answer matches' }]} onChange={(v) => setRule(v === 'always' ? null : {})} />
               {rule &&
           <div className="grid gap-3 sm:grid-cols-2">
-                  <SelectInput id={`${p}-rule-f`} label="Question" value={rule.fieldId} options={above.map((f) => ({ value: f.id, label: f.label || 'Untitled' }))} onChange={(v) => setRule({ fieldId: v, value: '' })} error={src ? undefined : 'Choose a question'} />
+                  <SelectInput id={`${p}-rule-f`} required label="Question" value={rule.fieldId} options={above.map((f) => ({ value: f.id, label: f.label || 'Untitled' }))} onChange={(v) => setRule({ fieldId: v, value: '' })} error={src ? undefined : 'Choose a question'} />
                   <SelectInput id={`${p}-rule-op`} label="Condition" value={rule.op} options={[{ value: 'is', label: 'is' }, { value: 'isNot', label: 'is not' }, { value: 'contains', label: 'contains' }, { value: 'answered', label: 'is answered' }]} onChange={(v) => setRule({ op: v })} />
                   {rule.op !== 'answered' && (
             src && choiceTypes.includes(src.type) ?

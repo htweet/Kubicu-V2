@@ -19,6 +19,8 @@ import { Card } from '../ui/layout/Card';
 import { Section } from '../ui/layout/Section';
 import { List } from '../ui/layout/ListRow';
 import { ProviderConnectDialog } from './integrations/ProviderConnectDialog';
+import { AccountingSection } from './integrations/AccountingSection';
+import { ErpSection } from './integrations/ErpSection';
 import { useT } from '../../contexts/LocaleContext';
 
 const order: ProviderCategory[] = ['email', 'sms', 'whatsapp', 'dns', 'storage'];
@@ -149,6 +151,9 @@ export function IntegrationsTab() {
           </Section>);
 
       })}
+
+      <AccountingSection canManage={can.allowed} />
+      <ErpSection canManage={can.allowed} />
 
       {p.data.log.length > 0 &&
       <Section id="int-log" title="Recent activity" description="Connections, checks and test messages on this device.">

@@ -947,6 +947,8 @@ export interface PageDocument {
   groups?: BlockGroup[];
   branding?: PageBranding;
   pages?: SitePage[];
+  /** Example pages only (D434): prices are written in this currency, so previews show them as written, unconverted. */
+  currency?: 'KES' | 'GHS' | 'ZAR';
   /** Menu label for the home page. Defaults to “Home”. */
   homeLabel?: string;
   redirects?: PageRedirect[];

@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Link, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeftIcon, LockIcon, LogOutIcon, MenuIcon, PanelLeftCloseIcon, PanelLeftOpenIcon } from 'lucide-react';
+import { ArrowLeftIcon, LockIcon, LogOutIcon, MenuIcon, PanelLeftCloseIcon, PanelLeftOpenIcon, SearchIcon } from 'lucide-react';
 import type { StaffMember } from '../../types/admin';
 import { setActiveCurrency } from '../../utils/currency';
 import { setActiveCountry } from '../../utils/country';
@@ -22,6 +22,8 @@ import { StaffNotificationsProvider } from '../../contexts/StaffNotificationsCon
 import { useAdminNavCounts } from '../../hooks/useAdminNavCounts';
 import { StaffNotificationBell, StaffNotificationsPanel } from './StaffNotifications';
 import { LanguagePicker } from '../ui/LanguagePicker';
+import { Kbd } from '../ui/Kbd';
+import { AdminSearch, useAdminSearchShortcut } from './AdminSearch';
 
 function AdminNavList({ staff, collapsed, tip, onNavigate }: {staff: StaffMember;collapsed?: boolean;tip?: SideTip;onNavigate?: () => void;}) {
   const groups = adminNav.map((g) => ({ ...g, items: g.items.filter((i) => roleCanOpen(staff.role, i.id)) })).filter((g) => g.items.length);
@@ -123,6 +125,9 @@ function AdminConsole({ staff }: {staff: StaffMember;}) {
   setActiveCurrency('NGN');
   setActiveCountry('NG');
   const [menuOpen, setMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const openSearch = useCallback(() => setSearchOpen(true), []);
+  useAdminSearchShortcut(openSearch);
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const area = pathname.split('/')[2] ?? '';
@@ -164,6 +169,31 @@ function AdminConsole({ staff }: {staff: StaffMember;}) {
                 <ToggleIcon size={18} strokeWidth={2.1} aria-hidden />
               </button>
             </span>
+          }
+        </div>
+
+        <div className={cn('shrink-0 pb-3', collapsed ? 'flex justify-center' : 'px-3')}>
+          {collapsed ?
+          <button
+            type="button"
+            onClick={openSearch}
+            aria-label="Search (Ctrl K)"
+            onMouseEnter={tip.show('Search')}
+            onMouseLeave={tip.hide}
+            className="flex h-10 w-10 items-center justify-center rounded-md text-fg-muted transition-colors duration-150 hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+            
+              <SearchIcon size={20} strokeWidth={2.1} aria-hidden />
+            </button> :
+
+          <button
+            type="button"
+            onClick={openSearch}
+            className="flex h-9 w-full items-center gap-2 rounded-md border border-line bg-canvas px-2.5 text-label text-fg-subtle transition-colors duration-150 hover:border-line-strong hover:text-fg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+            
+              <SearchIcon size={16} aria-hidden />
+              <span className="flex-1 text-left">Search</span>
+              <Kbd>Ctrl K</Kbd>
+            </button>
           }
         </div>
 
@@ -225,12 +255,14 @@ function AdminConsole({ staff }: {staff: StaffMember;}) {
           <IconButton icon={MenuIcon} label="Open super admin menu" onClick={() => setMenuOpen(true)} />
           <KubicuLogo />
           <span className="ml-auto flex items-center gap-2">
+            <IconButton icon={SearchIcon} label="Search" onClick={openSearch} />
             <AdminTag />
             <LanguagePicker variant="compact" />
             <StaffNotificationBell size="md" />
           </span>
         </header>
         <SkipLink />
+        <AdminSearch staff={staff} open={searchOpen} onClose={() => setSearchOpen(false)} />
         <main id="main-content" tabIndex={-1} className="flex-1 focus:outline-none">
           {area === '' ? <Navigate to={`/admin/${firstArea}`} replace /> : roleCanOpen(staff.role, area) ? <Outlet /> : <NoAccess staff={staff} area={area} />}
         </main>

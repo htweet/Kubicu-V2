@@ -32,7 +32,7 @@ export function MoreFieldControl({ field, value, onChange, skin, inert, id, labe
   const list = Array.isArray(value) ? value : [];
   const tab = inert ? -1 : undefined;
   const inputCls = 'h-11 w-full min-w-0 px-3.5 text-[14.5px] outline-none focus:ring-2';
-  const common = { disabled: inert, tabIndex: tab, 'aria-invalid': invalid || undefined, 'aria-describedby': describedBy, style: skin.input };
+  const common = { disabled: inert, tabIndex: tab, 'aria-invalid': invalid || undefined, 'aria-required': field.required || undefined, 'aria-describedby': describedBy, style: skin.input };
   const rule = `1px solid color-mix(in srgb, ${skin.text} 12%, transparent)`;
   const sub = (htmlFor: string, t: string) =>
   <label htmlFor={htmlFor} className="text-[12px]" style={{ color: skin.muted }}>

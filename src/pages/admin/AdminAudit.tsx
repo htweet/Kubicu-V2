@@ -11,7 +11,7 @@ import { DataTable, type DataColumn } from '../../components/ui/DataTable';
 import { EmptyState } from '../../components/ui/EmptyState';
 
 type Area = 'all' | AuditEntry['area'];
-const areaLabels: Record<AuditEntry['area'], string> = { tenants: 'Tenants', flags: 'Feature flags', moderation: 'Moderation', support: 'Support', announcements: 'Announcements', pages: 'Pages & domains', orders: 'Orders & disputes', data: 'Data requests', staff: 'Staff & access', appeals: 'Appeals', payments: 'Payments & providers', escrow: 'Escrow cases', incidents: 'Incidents', approvals: 'Approvals', access: 'Access reviews', extensions: 'Extensions' };
+const areaLabels: Record<AuditEntry['area'], string> = { tenants: 'Tenants', flags: 'Feature flags', moderation: 'Moderation', support: 'Support', announcements: 'Announcements', pages: 'Pages & domains', orders: 'Orders & disputes', data: 'Data requests', staff: 'Staff & access', appeals: 'Appeals', payments: 'Payments & providers', escrow: 'Escrow cases', sponsorships: 'Sponsorships', incidents: 'Incidents', approvals: 'Approvals', access: 'Access reviews', extensions: 'Extensions' };
 
 /** Super admin → Audit log: every privileged staff action with its reason (D75b). Read-only. */
 export function AdminAudit() {

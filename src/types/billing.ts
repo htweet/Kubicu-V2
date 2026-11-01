@@ -3,7 +3,7 @@ import type { WorkspacePlan } from './plan';
 export type BillingCycle = 'monthly' | 'yearly';
 export type SubscriptionStatus = 'active' | 'trialing' | 'past_due';
 export type InvoiceStatus = 'paid' | 'failed' | 'refunded';
-export type CardOutcome = 'success' | 'declined' | 'challenge' | 'expired';
+export type CardOutcome = 'success' | 'declined' | 'challenge' | 'expired' | 'insufficient';
 
 export interface PaymentCard {
   brand: 'Visa' | 'Mastercard' | 'Verve';
@@ -31,6 +31,13 @@ export interface Invoice {
   /** e.g. "Paid on retry", "Renewal failed: card declined". */
   note?: string;
   sample?: boolean;
+  /**
+   * Outside Nigeria (D432): the currency and the day's rate this invoice was made at. Amounts above stay in naira
+   * (the price list); everything shown converts at this frozen rate. Older invoices have none and show naira.
+   */
+  fx?: {currency: 'KES' | 'GHS' | 'ZAR';rate: number;date: string;};
+  /** How the invoice was paid, when not by card (D432). */
+  paidWith?: string;
 }
 
 export type BillingEventKind = 'plan' | 'payment' | 'card';

@@ -37,9 +37,15 @@ import { dialPrefix, phonePlaceholder } from '../../utils/phone';
 import { UssdPay } from './UssdPay';
 import { stampTransfer, transferAccounts } from '../../utils/commerce/bankTransfer';
 import { reservedForStalls, type PopupCheckout } from '../../utils/popup';
-import { hoursSummary, orderRef, returnsSummary, shopClosedMessage, shopSettingsOf, vatFor, vatRateLabel } from '../../utils/commerce/shopSettings';
+import { hoursSummary, orderRef, returnsSummary, shopClosedMessage, shopSettingsOf, untaxedAmount, vatFor, vatRateLabel } from '../../utils/commerce/shopSettings';
 import { TransferAccountPay, transferAccountFor } from './TransferAccountPay';
 import { MobileMoneyPay } from './MobileMoneyPay';
+import { InstantEftPay } from './InstantEftPay';
+import { CardPay } from './CardPay';
+import type { CountryCode } from '../../types/country';
+import { activeCountry, countryInfo } from '../../utils/country';
+import { crossBorderOptions, parcelKg } from '../../utils/commerce/crossBorder';
+import { pickupBranches } from '../../utils/commerce/branches';
 import { localPayments } from '../../utils/payments';
 
 type Step = 'cart' | 'details' | 'delivery' | 'review' | 'paying' | 'failed';
@@ -77,6 +83,8 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
   const [step, setStep] = useState<Step>('cart');
   const [customer, setCustomer] = useState({ name: '', phone: '', email: '' });
   const [method, setMethod] = useState<string>('');
+  // Branch chosen for pickup (D437); '' is the main shop.
+  const [pickupAt, setPickupAt] = useState('');
   const [address, setAddress] = useState('');
   const [chosenOutcome, setOutcome] = useState<TestPaymentOutcome>('success');
   const outcome = chosenOutcome;
@@ -108,6 +116,11 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
   // Mobile money and EFT for Kenya, Ghana and South Africa (D355).
   const [momoOpen, setMomoOpen] = useState(false);
   const [eftOpen, setEftOpen] = useState(false);
+  // Instant EFT first; manual EFT with a reference as the fallback (D433). Card details step (D433).
+  const [eftManual, setEftManual] = useState(false);
+  const [cardOpen, setCardOpen] = useState(false);
+  // Where the buyer is (D435/D438): the shop's own country unless they choose delivery to another one.
+  const [shipTo, setShipTo] = useState<CountryCode>(() => activeCountry());
   const local = localPayments();
   useEffect(() => {
     if (step !== 'review') {
@@ -115,6 +128,8 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
       setAccountOpen(false);
       setMomoOpen(false);
       setEftOpen(false);
+      setEftManual(false);
+      setCardOpen(false);
     }
   }, [step]);
   // Pop-up shop pickup (D183).
@@ -211,7 +226,16 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
   const f = data.fulfilment;
   const zone = f.zones.find((z) => z.id === method);
   const free = f.freeDeliveryOverNgn !== null && subtotal >= f.freeDeliveryOverNgn;
-  const deliveryFee = method === 'pickup' || !zone ? 0 : free ? 0 : zone.feeNgn;
+  // Cross-border delivery (D436): courier options to the buyer's country; free-delivery thresholds stay domestic.
+  const home = activeCountry();
+  const shipCountries = f.deliveryEnabled ? (f.international?.countries ?? []).filter((c) => c !== home) : [];
+  const abroad = shipTo !== home && shipCountries.includes(shipTo);
+  const intlOptions = abroad ? crossBorderOptions(shipTo, parcelKg(lines.filter((l) => l.ok))) : [];
+  const intl = intlOptions.find((o) => o.id === method);
+  const deliveryFee = method === 'pickup' ? 0 : intl ? intl.fee : !zone ? 0 : free ? 0 : zone.feeNgn;
+  // Pickup at a branch (D437): '' is the main shop.
+  const branchPoints = pickupBranches(data);
+  const pickupBranch = branchPoints.find((b) => b.id === pickupAt) ?? (!f.pickupEnabled ? branchPoints[0] ?? null : null);
   const resolution = resolveDiscount(
     data,
     {
@@ -238,7 +262,9 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
   // Shop settings (D222): VAT, minimum order, closed shop, payment methods.
   const shop = shopSettingsOf(data);
   const closedMsg = shopClosedMessage(shop);
-  const vat = vatFor(shop, subtotal - discount + (physical ? deliveryFee : 0));
+  // Zero-rated and exempt items are left out of tax; buyers abroad follow the shop's registrations (D435).
+  const untaxedNgn = untaxedAmount(lines.filter((l) => l.ok && l.price !== null).map((l) => ({ amountNgn: (l.price ?? 0) * l.qty, taxClass: l.product?.taxClass })));
+  const vat = vatFor(shop, subtotal - discount + (physical ? deliveryFee : 0), { buyerCountry: shipTo, untaxedNgn });
   const vatAdded = vat?.addedNgn ?? 0;
   const minError = shop.checkout.minOrderNgn && subtotal > 0 && subtotal - discount < shop.checkout.minOrderNgn ? `The minimum order is ${formatNgn(shop.checkout.minOrderNgn)} — add ${formatNgn(shop.checkout.minOrderNgn - (subtotal - discount))} more.` : '';
   const returnsText = returnsSummary(shop.policy);
@@ -348,7 +374,11 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
     popup ?
     { method: 'pickup', address: [popup.venue, popup.address].filter((s) => s.trim()).join(', ') } :
     method === 'pickup' ?
+    pickupBranch ?
+    { method: 'pickup', address: pickupBranch.address, zoneName: pickupBranch.name, branchId: pickupBranch.id } :
     { method: 'pickup', address: f.pickupAddress } :
+    intl ?
+    { method: 'delivery', zoneId: intl.id, zoneName: intl.title, address: address.trim(), eta: intl.eta } :
     { method: 'delivery', zoneId: zone?.id, zoneName: zone?.name, address: address.trim(), eta: zone?.eta };
     window.setTimeout(
       () => {
@@ -372,6 +402,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
             stallLeft: popup?.left,
             giftCardCode: giftRes?.ok ? giftRes.card.code : undefined,
             buyerNote: shop.checkout.orderNote ? buyerNote : undefined,
+            shipTo: shipTo !== activeCountry() ? shipTo : undefined,
             buyerAddress: addressAsk !== 'off' || pickupAddressAsk !== 'off' ? buyerAddress : undefined,
             transferAccount: via === 'account' ? transferAccountFor(holder) : undefined
           });
@@ -793,15 +824,44 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
     }
 
     if (step === 'delivery') {
-      const options = [
-      ...(f.pickupEnabled ? [{ id: 'pickup', title: tr('Pickup'), detail: [f.pickupAddress, hoursSummary(shop.status.hours) || f.pickupHours].filter(Boolean).join(' · '), fee: 0 }] : []),
+      const options = abroad ?
+      intlOptions.map((o) => ({ id: o.id, title: tr(o.id === 'intl_express' ? 'Express to {country}' : 'Economy to {country}', { country: tr(countryInfo(shipTo).name) }), detail: `${tr('Usually')} ${tr(o.eta)} · ${tr('tracked')}`, fee: o.fee })) :
+      [
+      ...(f.pickupEnabled || branchPoints.length ?
+      [{ id: 'pickup', title: tr('Pickup'), detail: branchPoints.length ? tr('{n} places to collect from', { n: branchPoints.length + (f.pickupEnabled ? 1 : 0) }) : [f.pickupAddress, hoursSummary(shop.status.hours) || f.pickupHours].filter(Boolean).join(' · '), fee: 0 }] :
+      []),
       ...(f.deliveryEnabled ? f.zones.map((z) => ({ id: z.id, title: `${tr('Delivery')} · ${z.name}`, detail: z.eta ? `${tr('Usually')} ${z.eta}` : '', fee: free ? 0 : z.feeNgn })) : [])];
 
       return (
         <div className="flex flex-col gap-4">
-          <CheckoutHeading theme={theme} sub={f.freeDeliveryOverNgn !== null ? free ? tr('You qualify for free delivery.') : tr('Free delivery over {amount}.', { amount: formatNgn(f.freeDeliveryOverNgn) }) : undefined}>
+          <CheckoutHeading theme={theme} sub={!abroad && f.freeDeliveryOverNgn !== null ? free ? tr('You qualify for free delivery.') : tr('Free delivery over {amount}.', { amount: formatNgn(f.freeDeliveryOverNgn) }) : undefined}>
             How do you want it?
           </CheckoutHeading>
+          {shipCountries.length > 0 &&
+          <label className="flex flex-col gap-1.5 text-[14px] font-semibold">
+              {tr('Deliver to')}
+              <select
+              value={shipTo}
+              onChange={(e) => {
+                setShipTo(e.target.value as CountryCode);
+                setMethod('');
+              }}
+              className="h-11 rounded-md px-3 text-[14.5px] font-normal"
+              style={{ ...cardStyle(theme), border: `1.5px solid ${mix(theme.text, 16)}` }}>
+              
+                {[home, ...shipCountries].map((c) =>
+              <option key={c} value={c}>
+                    {tr(countryInfo(c).name)}
+                  </option>
+              )}
+              </select>
+            </label>
+          }
+          {abroad &&
+          <p className="rounded-md px-3 py-2.5 text-[13px] leading-snug" style={{ background: mix(theme.text, 6) }} role="note">
+              {tr('Sent from {from} by courier. Import duties or taxes may be charged by {to} when it arrives — they aren’t included here.', { from: tr(countryInfo(home).name), to: tr(countryInfo(shipTo).name) })}
+            </p>
+          }
           {options.length === 0 ?
           <p className="rounded-md p-3 text-[14px]" style={cardStyle(theme)}>
               {tr('This seller hasn’t set up pickup or delivery yet. Please message them before ordering.')}
@@ -834,6 +894,19 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
 
             })}
             </div>
+          }
+          {method === 'pickup' && !popup && branchPoints.length > 0 &&
+          <label className="flex flex-col gap-1.5 text-[14px] font-semibold">
+              {tr('Collect from')}
+              <select value={pickupBranch?.id ?? ''} onChange={(e) => setPickupAt(e.target.value)} className="h-11 rounded-md px-3 text-[14.5px] font-normal" style={{ ...cardStyle(theme), border: `1.5px solid ${mix(theme.text, 16)}` }}>
+                {f.pickupEnabled && <option value="">{[tr('Main shop'), f.pickupAddress].filter(Boolean).join(' · ')}</option>}
+                {branchPoints.map((b) =>
+              <option key={b.id} value={b.id}>
+                    {[b.name, b.address, b.hours].filter(Boolean).join(' · ')}
+                  </option>
+              )}
+              </select>
+            </label>
           }
           {method && method !== 'pickup' && <ThemedField theme={theme} label="Delivery address" autoComplete="street-address" value={address} error={tried && !address.trim() ? 'Enter the delivery address' : undefined} onChange={setAddress} />}
           {pickupAddressAsk !== 'off' &&
@@ -878,6 +951,37 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
         
         </div>);
 
+    if (eftOpen && !eftManual)
+    return (
+      <div className="flex flex-1 flex-col gap-4">
+          <InstantEftPay
+          theme={theme}
+          amount={payNow}
+          payee={businessName || handle}
+          onBack={() => setEftOpen(false)}
+          onManual={() => setEftManual(true)}
+          onPaid={() => {
+            setEftOpen(false);
+            pay('success');
+          }} />
+        
+        </div>);
+
+    if (cardOpen)
+    return (
+      <div className="flex flex-1 flex-col gap-4">
+          <CardPay
+          theme={theme}
+          amount={payNow}
+          payee={businessName || handle}
+          onBack={() => setCardOpen(false)}
+          onPaid={() => {
+            setCardOpen(false);
+            pay('success');
+          }} />
+        
+        </div>);
+
     if (accountOpen || eftOpen)
     return (
       <div className="flex flex-1 flex-col gap-4">
@@ -885,10 +989,11 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
           theme={theme}
           amount={payNow}
           account={transferAccountFor(holder)}
-          onBack={() => (setAccountOpen(false), setEftOpen(false))}
+          onBack={() => (setAccountOpen(false), setEftOpen(false), setEftManual(false))}
           onPaid={() => {
             setAccountOpen(false);
             setEftOpen(false);
+            setEftManual(false);
             pay('success', 'account');
           }} />
         
@@ -927,7 +1032,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
     const payOptions = [
     ...(momoAvailable && local.mobileMoney ? [['momo', SmartphoneIcon, local.mobileMoney.name] as const] : []),
     ...(cardAvailable ? [['card', CreditCardIcon, tr('Card')] as const] : []),
-    ...(eftAvailable ? [['eft', LandmarkIcon, tr('EFT bank transfer')] as const] : []),
+    ...(eftAvailable ? [['eft', LandmarkIcon, tr('Instant EFT')] as const] : []),
     ...(accountAvailable ? [['account', LandmarkIcon, transferAvailable ? tr('Transfer account') : tr('Bank transfer')] as const] : []),
     ...(transferAvailable ? [['transfer', LandmarkIcon, tr('Seller’s account')] as const] : []),
     ...(ussdAvailable ? [['ussd', HashIcon, tr('USSD code')] as const] : [])];
@@ -961,7 +1066,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
           {discountRow}
           {physical &&
           <div className="flex justify-between gap-3">
-              <dt style={muted}>{popup ? `${tr('Pickup')} · ${chosenSession?.when ?? ''}` : method === 'pickup' ? tr('Pickup') : `${tr('Delivery')} · ${zone?.name ?? ''}`}</dt>
+              <dt style={muted}>{popup ? `${tr('Pickup')} · ${chosenSession?.when ?? ''}` : method === 'pickup' ? pickupBranch ? `${tr('Pickup')} · ${pickupBranch.name}` : tr('Pickup') : `${tr('Delivery')} · ${zone?.name ?? ''}`}</dt>
               <dd className="tabular-nums">{deliveryFee === 0 ? tr('Free') : formatNgn(deliveryFee)}</dd>
             </div>
           }
@@ -1035,9 +1140,14 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
                 {tr('No card or data needed — dial a code from your bank phone and approve with your PIN.')}
               </p>
           }
-            {(byAccount || byEft) &&
+            {byAccount &&
           <p className="text-[12.5px] leading-snug" style={muted}>
                 {tr('You’ll get a one-time account number to transfer to. Your order confirms automatically when the money lands.')}
+              </p>
+          }
+            {byEft &&
+          <p className="text-[12.5px] leading-snug" style={muted}>
+                {tr('Pick your bank, sign in there and approve. Manual EFT with a reference is there if you need it.')}
               </p>
           }
             {byMomo && local.mobileMoney &&
@@ -1082,7 +1192,8 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
             {tr('This seller hasn’t turned on a way to pay online yet. Message them to order.')}
           </p>
         }
-        {payNow > 0 && !atStall && payBy === 'card' && !noWayToPay &&
+        {/* Paying now by card opens the card step (D433); provider states stay testable for instalments. */}
+        {payNow > 0 && !atStall && payBy === 'card' && !noWayToPay && payWith !== 'now' &&
         <fieldset className="flex flex-col gap-2">
           <legend className="mb-1 text-[13px] font-semibold">{tr('Test card — choose what happens')}</legend>
           {outcomes.filter((o) => payWith !== 'instalments' || o.value !== 'pending' && o.value !== 'timeout').map((o) =>
@@ -1134,13 +1245,13 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
         <SheetActions theme={theme}>
           <PrimaryButton
             theme={theme}
-            onClick={() => byMomo ? setMomoOpen(true) : byEft ? setEftOpen(true) : byUssd ? setUssdOpen(true) : byAccount ? setAccountOpen(true) : byTransfer ? pay('pending', 'transfer') : pay()}
+            onClick={() => byMomo ? setMomoOpen(true) : byEft ? setEftOpen(true) : byUssd ? setUssdOpen(true) : byAccount ? setAccountOpen(true) : byTransfer ? pay('pending', 'transfer') : payBy === 'card' && payWith === 'now' && payNow > 0 && !atStall ? setCardOpen(true) : pay()}
             disabled={okLines.length === 0 || !!roomError || payWith === 'instalments' && !agreed || shop.checkout.termsTick && !termsOk || !!closedMsg || !!minError || noWayToPay}>
             
             {byMomo && local.mobileMoney ?
             tr('Pay {amount} with {wallet}', { amount: formatNgn(payNow), wallet: local.mobileMoney.name }) :
             byEft ?
-            tr('Get account details for {amount}', { amount: formatNgn(payNow) }) :
+            tr('Pay {amount} with instant EFT', { amount: formatNgn(payNow) }) :
             byUssd ?
             tr('Get a USSD code for {amount}', { amount: formatNgn(payNow) }) :
             byAccount ?

@@ -14,6 +14,7 @@ import { ApprovalQueue } from '../../components/admin/ApprovalQueue';
 import { PlanCatalogue } from '../../components/admin/plans/PlanCatalogue';
 import { WorkspaceBillingTools } from '../../components/admin/plans/WorkspaceBillingTools';
 import { CouponsCard } from '../../components/admin/plans/CouponsCard';
+import { ExchangeRatesCard } from '../../components/admin/plans/ExchangeRatesCard';
 
 const statusTone = { live: 'success', preview: 'info', planned: 'neutral' } as const;
 const statusLabel = { live: 'Live', preview: 'Preview', planned: 'Planned' } as const;
@@ -93,6 +94,8 @@ export function AdminPlans() {
         </div>
 
         <div className="flex min-w-0 flex-col gap-8">
+          <ExchangeRatesCard />
+
           <CouponsCard />
 
           <Card id="rules" title="Billing rules">
@@ -103,7 +106,8 @@ export function AdminPlans() {
               ['Yearly billing', '12 months for the price of 10'],
               ['Codes', `One per payment, at most ${COUPON_MAX_SHARE * 100}% off`],
               ['Second approval for credit over', `${formatNgn(GRANT_APPROVAL_NGN)} or ${GRANT_APPROVAL_AI} AI credits`],
-              ['VAT on plan invoices', `${(VAT_RATE * 100).toFixed(1)}%`],
+              ['Tax on plan invoices', `NG ${(VAT_RATE * 100).toFixed(1)}% · KE 16% · GH 20% · ZA 15% (examples)`],
+              ['Outside Nigeria', 'Naira list at the day’s rate, rounded up; invoice amount held 7 days'],
               ['Downgrades', 'At renewal; nothing is ever deleted']].
               map(([k, v]) =>
               <div key={k} className="flex justify-between gap-4 py-2.5 first:pt-0 last:pb-0">

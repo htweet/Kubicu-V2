@@ -15,6 +15,8 @@ import { useMediaQuery } from '../../../hooks/useMediaQuery';
 import { useT } from '../../../contexts/LocaleContext';
 import { hoursSummary, shopSettingsOf } from '../../../utils/commerce/shopSettings';
 import { SettingsSection } from './SettingsSection';
+import { countries } from '../../../data/countries';
+import { activeCountry } from '../../../utils/country';
 
 /** Pickup, delivery zones and free delivery (unchanged from before D222), plus the weight unit. */
 export function DeliveryPickupSection() {
@@ -147,6 +149,33 @@ export function DeliveryPickupSection() {
             <div className="max-w-xs">
               <CurrencyInput id="set-free" label="Free delivery over" optional value={draft.freeDeliveryOverNgn} placeholder="No free delivery" hint="Based on the items subtotal." onChange={(freeDeliveryOverNgn) => patch({ freeDeliveryOverNgn })} />
             </div>
+            {/* Cross-border delivery (D436). */}
+            <fieldset className="flex flex-col gap-2 border-t border-line pt-4">
+              <legend className="text-label font-semibold text-fg">{tr('Ship abroad')}</legend>
+              <p className="text-caption text-fg-muted">{tr('Buyers in these countries can order with courier delivery. Fees are worked out from the parcel’s weight, and buyers are told they may pay import duties. Example courier rates.')}</p>
+              <div className="flex flex-wrap gap-x-5 gap-y-2">
+                {countries.
+              filter((c) => c.code !== activeCountry()).
+              map((c) => {
+                const on = (draft.international?.countries ?? []).includes(c.code);
+                return (
+                  <label key={c.code} className="flex min-h-[44px] cursor-pointer items-center gap-2 text-label text-fg">
+                        <input
+                      type="checkbox"
+                      className="h-4 w-4 accent-[rgb(var(--action))]"
+                      checked={on}
+                      onChange={(e) => {
+                        const list = draft.international?.countries ?? [];
+                        patch({ international: { countries: e.target.checked ? [...list, c.code] : list.filter((x) => x !== c.code) } });
+                      }} />
+                    
+                        {tr(c.name)}
+                      </label>);
+
+              })}
+              </div>
+              {(draft.international?.countries.length ?? 0) > 0 && <p className="text-caption text-fg-subtle">{tr('Add a weight, customs description and where it’s made on each product you’ll send abroad. Tax for these buyers follows Commerce settings → Tax.')}</p>}
+            </fieldset>
           </div>
         }
       </section>

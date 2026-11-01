@@ -113,7 +113,7 @@ export function OrderDetail({ orderId, onClose }: {orderId: string | null;onClos
               size="sm"
               leadingIcon={FileTextIcon}
               onClick={() => {
-                if (!printOrderInvoice(order, current.name, shopSettingsOf(data).business)) toast.error('Your browser blocked the print window', { description: 'Allow pop-ups for KUBICU and try again.' });
+                if (!printOrderInvoice(order, current.name, shopSettingsOf(data).business, shopSettingsOf(data).tax)) toast.error('Your browser blocked the print window', { description: 'Allow pop-ups for KUBICU and try again.' });
               }}>
               
                   Invoice
@@ -259,7 +259,7 @@ export function OrderDetail({ orderId, onClose }: {orderId: string | null;onClos
                 {tr('Fulfilment')}
               </h3>
               <p className="mt-1 text-label font-semibold text-fg">
-                {order.fulfilment.method === 'pickup' ? tr('Pickup') : order.fulfilment.method === 'tickets' ? tr('Event tickets · {n} issued', { n: order.tickets?.length ?? 0 }) : order.fulfilment.method === 'digital' ? tr('Download link') : `${tr('Delivery')} · ${order.fulfilment.zoneName}`}
+                {order.fulfilment.method === 'pickup' ? order.fulfilment.branchId ? `${tr('Pickup')} · ${order.fulfilment.zoneName}` : tr('Pickup') : order.fulfilment.method === 'tickets' ? tr('Event tickets · {n} issued', { n: order.tickets?.length ?? 0 }) : order.fulfilment.method === 'digital' ? tr('Download link') : `${tr('Delivery')} · ${order.fulfilment.zoneName}`}
               </p>
               {order.fulfilment.address && <p className="text-label text-fg-muted">{order.fulfilment.address}</p>}
               {order.popup &&

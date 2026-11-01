@@ -26,7 +26,7 @@ export type EventType =
 
 export type DeviceKind = 'phone' | 'tablet' | 'desktop';
 
-export type SourceId = 'whatsapp' | 'instagram' | 'tiktok' | 'facebook' | 'x' | 'google' | 'qr' | 'campaign' | 'direct' | 'other';
+export type SourceId = 'whatsapp' | 'instagram' | 'tiktok' | 'facebook' | 'x' | 'google' | 'qr' | 'nfc' | 'campaign' | 'direct' | 'other';
 
 /** One thing a visitor did on a public page. No personal data — just a random session id (D61). */
 export interface AnalyticsEvent {

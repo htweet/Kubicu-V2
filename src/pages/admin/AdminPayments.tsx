@@ -59,7 +59,10 @@ const providers = [
 { name: 'Payment provider (cards, transfer, USSD)', status: 'Operational', tone: 'success' as const },
 { name: 'Escrow trustee partner', status: 'Not chosen', tone: 'neutral' as const },
 { name: 'Payouts (NIP transfers)', status: 'Operational', tone: 'success' as const },
-{ name: 'Identity checks (BVN / NIN / CAC)', status: 'Degraded — slow responses', tone: 'warning' as const }];
+{ name: 'Identity checks — Nigeria (BVN / NIN / CAC)', status: 'Degraded — slow responses', tone: 'warning' as const },
+{ name: 'Identity checks — Kenya (IPRS / KRA / BRS)', status: 'Simulated — no partner yet', tone: 'neutral' as const },
+{ name: 'Identity checks — Ghana (NIA / Registrar of Companies)', status: 'Simulated — no partner yet', tone: 'neutral' as const },
+{ name: 'Identity checks — South Africa (Home Affairs / SARS / CIPC)', status: 'Simulated — no partner yet', tone: 'neutral' as const }];
 
 
 /** Super admin → Payments & providers (D92): payout queue, wallet freezes, identity reviews and provider health. */

@@ -188,6 +188,12 @@ export function PrintKit() {
 
               })}
             </div>
+            <p className="mt-3 text-caption text-fg-muted">
+              {tr('Want customers to tap instead of scan?')}{' '}
+              <Link to="/app/nfc" className="font-medium text-action hover:underline">
+                {tr('Order NFC tags')}
+              </Link>
+            </p>
           </section>
 
           <KitAiPanel details={kit} spec={spec} disabled={!can.allowed} onApply={(patch) => setDraft(patch)} />

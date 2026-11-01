@@ -5,7 +5,11 @@ import { orderRef } from '../commerce/shopSettings';
 import { orderMoney } from '../commerce/money';
 import { orderPartnerShares, partnerDebitNgn, partnerRatio } from '../commerce/bundles';
 import { uid } from '../id';
-import { activeCurrency, convertExampleNaira, formatMoney, withSymbol } from '../currency';
+import { formatMoney } from '../currency';
+import { activeCountry } from '../country';
+import type { CountryCode } from '../../types/country';
+import { payoutRules } from '../../data/payoutLimits';
+import { figure, onOpsSettings } from '../opsSettings';
 import { blankKyc, kycRules, normaliseKyc } from './kyc';
 import { newCase, syncEscrow } from './escrow';
 import type { EscrowCase } from '../../types/escrow';
@@ -33,12 +37,17 @@ const iso = (ms: number) => new Date(ms).toISOString();
 
 // ——— Example figures (logged in D92; confirm with the chosen partner) ———
 
-/** Wallet sales settle with the partner after this long. */
-export const SETTLE_HOURS = 24;
+/** Wallet sales settle with the partner after this long (per country, D432). */
+const settleHours = () => (payoutRules[activeCountry()] ?? payoutRules.NG).settleHours;
 /** A new bank account can't receive payouts for this long. */
-export const BANK_COOLDOWN_HOURS = 24;
-/** Manual payouts cost this; scheduled ones are free. */
-export const PAYOUT_FEE_NGN = 50;
+export let BANK_COOLDOWN_HOURS = 24;
+onOpsSettings(() => {
+  BANK_COOLDOWN_HOURS = figure('money.bankCooldownHours');
+});
+/** Manual payouts cost this in the workspace's currency; scheduled ones are free (D432). */
+export const manualPayoutFee = () => (payoutRules[activeCountry()] ?? payoutRules.NG).manualFee;
+/** Payout rules (limits, fees, wallet transfer cap) for a country — the workspace's when not given. */
+export const payoutRulesFor = (country?: CountryCode) => payoutRules[country ?? activeCountry()] ?? payoutRules.NG;
 /** Payment-link processing fee: 1.5% + ₦100, capped. */
 export const linkProviderFee = (amount: number) => Math.min(2000, Math.round(amount * 0.015) + 100);
 /** Escrow fee: 1%, capped at ₦5,000. */
@@ -47,23 +56,25 @@ export const escrowFee = (amount: number) => Math.min(5000, Math.round(amount * 
 export const inspectionDays: Record<PayArea, number> = { shop: 3, tickets: 1, bookings: 2, quotes: 2, links: 2, dealrooms: 3 };
 
 /**
- * Limits are set in naira and shown and enforced in the workspace's own currency at the example rate (D425), so a
- * Kenyan wallet's starter limit is about KSh 4,150 a day, not KSh 50,000. Example figures — confirm per partner.
+ * Each country has its own rounded limit table in its own currency (D432, replacing the naira conversion of D425).
+ * Fields keep their `Ngn` names so every caller still works; the amounts are in the workspace's currency.
  */
-const local = (naira: number) => activeCurrency() === 'NGN' ? naira : convertExampleNaira(naira, activeCurrency());
-const tier = (label: string, checks: () => string, dailyNaira: number, capNaira: number | null) => ({
+const tier = (id: KycTier, label: string, checks: () => string) => ({
   label,
   get checks() {return checks();},
-  get dailyPayoutNgn() {return local(dailyNaira);},
-  get balanceCapNgn() {return capNaira === null ? null : local(capNaira);}
+  get dailyPayoutNgn() {return payoutRulesFor().limits[id].daily;},
+  get balanceCapNgn() {return payoutRulesFor().limits[id].cap;}
 });
 
 export const tierInfo: Record<KycTier, {label: string;checks: string;dailyPayoutNgn: number;balanceCapNgn: number | null;}> = {
-  0: tier('Not verified', () => 'Sales still arrive; payouts are off until you’re verified', 0, 300_000),
-  1: tier('Starter payouts', () => kycRules().secondary ? `Phone, ${kycRules().primary.label}, ${kycRules().secondary?.label}, ID and selfie checked automatically, with a bank account in your own name. Finish verification for higher limits.` : `Phone, ${kycRules().primary.label}, ID and selfie checked automatically, with a bank account in your own name. Finish verification for higher limits.`, 50_000, 300_000),
-  2: tier('Verified individual', () => 'Identity, address and payout account checked', 2_000_000, 10_000_000),
-  3: tier('Verified business', () => `Identity, ${kycRules().registry.short} registration, directors and payout account checked`, 20_000_000, null)
+  0: tier(0, 'Not verified', () => 'Sales still arrive; payouts are off until you’re verified'),
+  1: tier(1, 'Starter payouts', () => kycRules().secondary ? `Phone, ${kycRules().primary.label}, ${kycRules().secondary?.label}, ID and selfie checked automatically, with a bank account in your own name. Finish verification for higher limits.` : `Phone, ${kycRules().primary.label}, ID and selfie checked automatically, with a bank account in your own name. Finish verification for higher limits.`),
+  2: tier(2, 'Verified individual', () => 'Identity, address and payout account checked'),
+  3: tier(3, 'Verified business', () => `Identity, ${kycRules().registry.short} registration, directors and payout account checked`)
 };
+
+/** A tier's daily limit for any country, in that country's currency — for staff reviewing another country's case. */
+export const tierDailyIn = (id: KycTier, country: CountryCode) => payoutRulesFor(country).limits[id].daily;
 
 /** Full verification (D93) is approved. */
 export const isVerified = (d: MoneyData) => d.kyc.status === 'approved' && d.verification.tier >= 2;
@@ -245,7 +256,7 @@ function syncNewSales(d: MoneyData, orders: Order[]): MoneyData {
         const partnerOut = partnerDebitNgn(o);
         const partnerLabel = `${orderPartnerShares(o).map((s) => s.partnerName).join(' and ')}’s share · ${ref}`;
         if (method === 'wallet') {
-          const availableAt = iso(Date.parse(at) + SETTLE_HOURS * HOUR);
+          const availableAt = iso(Date.parse(at) + settleHours() * HOUR);
           add.push({ id: uid('led'), at, kind: 'sale', amountNgn: net, state: 'pending', availableAt, label, ref: { type: 'order', id: o.id, label: ref } });
           if (partnerOut > 0) add.push({ id: uid('led'), at, kind: 'partner_share', amountNgn: -partnerOut, state: 'pending', availableAt, label: partnerLabel, ref: { type: 'order', id: o.id, label: ref } });
         } else {
@@ -308,7 +319,8 @@ function settle(d: MoneyData): MoneyData {
     changed = true;
     if (p.outcome === 'paid') return { ...p, status: 'paid' as const, settledAt: iso(now) };
     returned.push({ id: uid('led'), at: iso(now), kind: 'payout_returned', amountNgn: p.amountNgn + p.feeNgn, state: 'available', label: `Payout returned · ${p.bankLabel}`, ref: { type: 'payout', id: p.id } });
-    return { ...p, status: 'failed' as const, settledAt: iso(now), failureReason: 'The bank returned the transfer (simulated). The money is back in your wallet.' };
+    // The reason the bank or wallet gave, chosen in test mode (D433).
+    return { ...p, status: 'failed' as const, settledAt: iso(now), failureReason: `${p.returnReason ?? 'The bank returned the transfer (simulated).'} The money is back in your wallet.` };
   });
   return changed ? { ...d, ledger: [...returned, ...ledger], payouts } : d;
 }
@@ -324,7 +336,7 @@ function autoPayout(d: MoneyData): MoneyData {
   if (!due) return d;
   const limit = tierInfo[payoutTier(d)].dailyPayoutNgn - paidOutToday(d);
   const amount = Math.min(available, limit);
-  if (amount < 1000) return d;
+  if (amount < payoutRulesFor().minAuto) return d;
   const res = createPayout(d, { amountNgn: amount, bankId: bank.id, by: 'Scheduled payout', outcome: 'paid', auto: true });
   return 'error' in res ? d : { ...res.data, autoPayout: { ...res.data.autoPayout, lastRunAt: iso(Date.now()) } };
 }
@@ -332,7 +344,7 @@ function autoPayout(d: MoneyData): MoneyData {
 // ——— Payouts ———
 
 export function payoutFee(auto: boolean): number {
-  return auto ? 0 : PAYOUT_FEE_NGN;
+  return auto ? 0 : manualPayoutFee();
 }
 
 export function payoutBlocker(d: MoneyData): string | null {
@@ -345,13 +357,26 @@ export function payoutBlocker(d: MoneyData): string | null {
   }
   if (!d.banks.length) return 'Add a bank account to pay out.';
   if (!usableBanks(d).length) return 'Your new bank account is in its 24-hour safety wait.';
-  if (balances(d).available < 1000) return withSymbol('You need at least ₦1,000 available to pay out.');
+  if (balances(d).available < minPayout()) return `You need at least ${formatMoney(minPayout())} available to pay out.`;
   return null;
+}
+
+/** Smallest payout in the workspace's currency (D433). */
+export const minPayout = () => payoutRulesFor().minAuto;
+
+/** How soon a payout lands, by account type and country (D433). Example timings. */
+export function payoutArrival(kind: 'bank' | 'mobile_money' | undefined, now = new Date()): string {
+  if (kind === 'mobile_money') return 'within minutes';
+  const early = now.getHours() < 15;
+  const c = activeCountry();
+  if (c === 'ZA') return early ? 'today (same-day EFT)' : 'the next business day';
+  if (c === 'KE' || c === 'GH') return early ? 'today, usually within 4 hours' : 'by midday the next business day';
+  return early ? 'today, usually within 2 hours' : 'by 10am the next business day';
 }
 
 export function createPayout(
 d: MoneyData,
-input: {amountNgn: number;bankId: string;by: string;outcome: 'paid' | 'failed';auto: boolean;})
+input: {amountNgn: number;bankId: string;by: string;outcome: 'paid' | 'failed';auto: boolean;returnReason?: string;})
 : {data: MoneyData;payout: Payout;} | {error: string;} {
   const bank = d.banks.find((b) => b.id === input.bankId);
   if (!bank) return { error: 'Choose a bank account.' };
@@ -359,13 +384,16 @@ input: {amountNgn: number;bankId: string;by: string;outcome: 'paid' | 'failed';a
   const fee = payoutFee(input.auto);
   const available = balances(d).available;
   if (!canPayOut(d)) return { error: 'Finish the identity checks and add a bank account in your own name to pay out.' };
-  if (input.amountNgn < 1000) return { error: withSymbol('The smallest payout is ₦1,000.') };
+  if (input.amountNgn < minPayout()) return { error: `The smallest payout is ${formatMoney(minPayout())}.` };
+  // Mobile money wallets cap a single transfer (M-Pesa KSh 250,000 — D432).
+  const walletCap = payoutRulesFor().walletMaxPerTransfer;
+  if (bank.kind === 'mobile_money' && walletCap && input.amountNgn > walletCap) return { error: `${bank.bankName} takes up to ${formatMoney(walletCap)} in one payout. Send the rest in another payout or to a bank account.` };
   if (input.amountNgn + fee > available) return { error: `You have ${formatMoney(available)} available, including the ${formatMoney(fee)} fee.` };
   const left = tierInfo[payoutTier(d)].dailyPayoutNgn - paidOutToday(d);
   if (input.amountNgn > left) return { error: `That's over today's limit. You can pay out up to ${formatMoney(Math.max(0, left))} more today.${isVerified(d) ? '' : ' Finish verification for higher limits.'}` };
   const at = new Date().toISOString();
   const bankLabel = `${bank.bankName} ····${bank.last4}`;
-  const payout: Payout = { id: uid('po'), amountNgn: input.amountNgn, feeNgn: fee, bankId: bank.id, bankLabel, status: 'processing', createdAt: at, settledAt: null, outcome: input.outcome, failureReason: null, holdReason: null, auto: input.auto, by: input.by };
+  const payout: Payout = { id: uid('po'), amountNgn: input.amountNgn, feeNgn: fee, bankId: bank.id, bankLabel, status: 'processing', createdAt: at, settledAt: null, outcome: input.outcome, failureReason: null, holdReason: null, auto: input.auto, by: input.by, ...(input.returnReason ? { returnReason: input.returnReason } : {}) };
   const entries: LedgerEntry[] = [{ id: uid('led'), at, kind: 'payout', amountNgn: -input.amountNgn, state: 'available', label: `Payout to ${bankLabel}`, ref: { type: 'payout', id: payout.id } }];
   if (fee) entries.push({ id: uid('led'), at, kind: 'fee', amountNgn: -fee, state: 'available', label: 'Payout fee', ref: { type: 'payout', id: payout.id } });
   return { data: { ...d, payouts: [payout, ...d.payouts], ledger: [...entries, ...d.ledger] }, payout };
@@ -458,7 +486,7 @@ export function recordLinkPayment(d: MoneyData, linkId: string, p: Omit<LinkPaym
   const net = p.amountNgn - linkProviderFee(p.amountNgn);
   const label = `${link.title} · ${p.payerName || 'Payer'}`;
   const entries: LedgerEntry[] = [];
-  if (method === 'wallet') entries.push({ id: uid('led'), at, kind: 'link', amountNgn: net, state: 'pending', availableAt: iso(Date.now() + SETTLE_HOURS * HOUR), label, ref: { type: 'link', id: link.id, label: payment.receipt } });
+  if (method === 'wallet') entries.push({ id: uid('led'), at, kind: 'link', amountNgn: net, state: 'pending', availableAt: iso(Date.now() + settleHours() * HOUR), label, ref: { type: 'link', id: link.id, label: payment.receipt } });
   if (method === 'escrow') {
     const until = iso(Date.now() + inspectionDays.links * DAY);
     entries.push({ id: uid('led'), at, kind: 'link', amountNgn: net, state: 'held', availableAt: until, label: `${label} · in escrow`, ref: { type: 'link', id: link.id, label: payment.receipt } });
@@ -516,7 +544,7 @@ milestone = true)
   const kind = milestone ? 'milestone' : 'sale';
   const ref = { ...refBase, label: receipt };
   const entries: LedgerEntry[] = [];
-  if (method === 'wallet') entries.push({ id: uid('led'), at, kind, amountNgn: net, state: 'pending', availableAt: iso(Date.now() + SETTLE_HOURS * HOUR), label, ref });
+  if (method === 'wallet') entries.push({ id: uid('led'), at, kind, amountNgn: net, state: 'pending', availableAt: iso(Date.now() + settleHours() * HOUR), label, ref });
   if (method === 'escrow') {
     const until = iso(Date.now() + inspectionDays[area] * DAY);
     entries.push({ id: uid('led'), at, kind, amountNgn: net, state: 'held', availableAt: until, label: `${label} · in escrow`, ref });
@@ -532,7 +560,7 @@ function seedMoney(): MoneyData {
   const now = Date.now();
   const base = emptyMoney();
   const bank: BankAccount = { id: 'bank_s1', bankName: 'GTBank', last4: '4821', accountName: 'Adaeze Atelier', nameMatch: 'match', addedAt: iso(now - 40 * DAY), usableAt: iso(now - 39 * DAY), primary: true };
-  const payout: Payout = { id: 'po_s1', amountNgn: 60_000, feeNgn: PAYOUT_FEE_NGN, bankId: bank.id, bankLabel: 'GTBank ····4821', status: 'paid', createdAt: iso(now - 5 * DAY), settledAt: iso(now - 5 * DAY + 2 * HOUR), outcome: 'paid', failureReason: null, holdReason: null, auto: false, by: 'Owner', sample: true };
+  const payout: Payout = { id: 'po_s1', amountNgn: 60_000, feeNgn: payoutRules.NG.manualFee, bankId: bank.id, bankLabel: 'GTBank ····4821', status: 'paid', createdAt: iso(now - 5 * DAY), settledAt: iso(now - 5 * DAY + 2 * HOUR), outcome: 'paid', failureReason: null, holdReason: null, auto: false, by: 'Owner', sample: true };
   const linkPayments: LinkPayment[] = [
   { id: 'lp_s1', at: iso(now - 3 * DAY), amountNgn: 15_000, payerName: 'Temi A.', payerPhone: '0803 000 1122', note: '', method: 'wallet', receipt: 'R-00001', sample: true, payBy: 'card', payerEmail: 'temi@example.com', answers: [{ label: 'Which class?', value: 'Saturday 10am' }] },
   { id: 'lp_s2', at: iso(now - 6 * HOUR), amountNgn: 15_000, payerName: 'Bisi O.', payerPhone: '0812 000 3344', note: 'Saturday class please', method: 'wallet', receipt: 'R-00002', sample: true, payBy: 'account', answers: [{ label: 'Which class?', value: 'Saturday 2pm' }] }];
@@ -570,7 +598,7 @@ function seedMoney(): MoneyData {
   { id: 'led_s1', at: iso(now - 6 * HOUR), kind: 'link', amountNgn: 15_000 - linkProviderFee(15_000), state: 'pending', availableAt: iso(now + 18 * HOUR), label: 'Gele tying masterclass · Bisi O.', ref: { type: 'link', id: link.id, label: 'R-00002' }, sample: true },
   { id: 'led_s2', at: iso(now - 3 * DAY), kind: 'link', amountNgn: 15_000 - linkProviderFee(15_000), state: 'available', label: 'Gele tying masterclass · Temi A.', ref: { type: 'link', id: link.id, label: 'R-00001' }, sample: true },
   { id: 'led_s3', at: iso(now - 4 * DAY), kind: 'sale', amountNgn: 62_000, state: 'available', label: 'Order #1038 · Kemi B.', sample: true },
-  { id: 'led_s4', at: iso(now - 5 * DAY), kind: 'fee', amountNgn: -PAYOUT_FEE_NGN, state: 'available', label: 'Payout fee', ref: { type: 'payout', id: payout.id }, sample: true },
+  { id: 'led_s4', at: iso(now - 5 * DAY), kind: 'fee', amountNgn: -payoutRules.NG.manualFee, state: 'available', label: 'Payout fee', ref: { type: 'payout', id: payout.id }, sample: true },
   { id: 'led_s5', at: iso(now - 5 * DAY), kind: 'payout', amountNgn: -60_000, state: 'available', label: 'Payout to GTBank ····4821', ref: { type: 'payout', id: payout.id }, sample: true },
   { id: 'led_s6', at: iso(now - 7 * DAY), kind: 'sale', amountNgn: 45_000, state: 'available', label: 'Order #1031 · Ifeoma N.', sample: true },
   { id: 'led_s7', at: iso(now - 9 * DAY), kind: 'sale', amountNgn: 28_500, state: 'available', label: 'Order #1027 · Chuka E.', sample: true },

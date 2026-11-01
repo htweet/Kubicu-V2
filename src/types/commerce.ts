@@ -1,5 +1,6 @@
 import type { SubPlan, Subscription } from './subscriptions';
 import type { Course, Enrolment } from './courses';
+import type { CountryCode } from './country';
 
 export type ProductStatus = 'active' | 'draft' | 'archived';
 /** 'ticket' products are owned by a Commerce event (D73): one variant per ticket type, stock = seats left. Never listed as products. */
@@ -26,6 +27,27 @@ export interface ProductVariant {
   /** Null uses the product price. */
   priceNgn: number | null;
   stock: number;
+  /**
+   * Units held at each branch other than the main shop (D437). The main shop holds the rest:
+   * `stock` minus these. Missing for shops without branches.
+   */
+  branchStock?: Record<string, number>;
+  /**
+   * Batches or lots with their expiry dates (D476), soonest first. Their quantities never add up to more than
+   * `stock`; the rest is unbatched. Sales use the batch that expires soonest first (FEFO).
+   */
+  batches?: StockBatch[];
+}
+
+/** One delivery of a variant with its batch/lot code and optional expiry date (D476). */
+export interface StockBatch {
+  id: string;
+  /** Batch or lot number as printed on the goods; may be empty when only an expiry date is known. */
+  code: string;
+  /** YYYY-MM-DD, or null when the goods don't expire. */
+  expiresOn: string | null;
+  qty: number;
+  receivedAt: string;
 }
 
 export type DigitalFileStatus = 'processing' | 'scanning' | 'ready' | 'failed';
@@ -103,9 +125,22 @@ export interface Product {
   bulkPrices?: BulkPrice[];
   /** Gift card product (D202): each item bought issues a code worth its price. */
   giftCard?: boolean;
+  /** How tax applies (D435): standard rate, zero-rated or exempt. Missing = standard. */
+  taxClass?: TaxClass;
+  /** Cross-border delivery (D436): customs description and where it was made (weight is `weightKg`). */
+  shipping?: {customsDescription: string;originCountry: CountryCode;};
   sample?: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+export type TaxClass = 'standard' | 'zero' | 'exempt';
+
+/** Registered for tax in another country you sell into (D435). */
+export interface TaxRegistration {
+  registered: boolean;
+  taxNumber: string;
+  ratePct: number;
 }
 
 export interface ProductPreorder {
@@ -346,7 +381,7 @@ export interface Collection {
   sample?: boolean;
 }
 
-export type StockReason = 'received' | 'correction' | 'damaged' | 'order' | 'cancelled' | 'returned' | 'created';
+export type StockReason = 'received' | 'correction' | 'damaged' | 'order' | 'cancelled' | 'returned' | 'created' | 'transfer';
 
 export interface StockMovement {
   id: string;
@@ -394,6 +429,10 @@ export interface OrderFulfilment {
   zoneName?: string;
   address?: string;
   eta?: string;
+  /** Pickup at a branch (D437); missing means the main shop. */
+  branchId?: string;
+  /** Cross-border delivery (D451): the buyer's country. Missing = the shop's own country. */
+  country?: CountryCode;
 }
 
 export interface Refund {
@@ -519,7 +558,8 @@ export interface Order {
   preorder?: {shipsBy: string;};
   // ——— D222 shop settings, frozen at order time ———
   /** VAT on this order. Inclusive VAT is already inside the prices; exclusive VAT was added on top. */
-  vat?: {ratePct: number;amountNgn: number;inclusive: boolean;};
+  /** `country`: whose tax this is (D435) — the buyer's country when the shop is registered there, else the shop's own. */
+  vat?: {ratePct: number;amountNgn: number;inclusive: boolean;country?: CountryCode;};
   /** Order number prefix in force when the order was placed, e.g. "ADA" → ADA-1042. */
   numberPrefix?: string;
   /** What the buyer typed in the order-note box. */
@@ -578,6 +618,8 @@ export interface ShopSettings {
     enabled: boolean;
     ratePct: number;
     inclusive: boolean;
+    /** Other countries you're registered in; buyers there are charged that country's rate (D435). */
+    sellsTo?: Partial<Record<CountryCode, TaxRegistration>>;
   };
   orders: {
     prefix: string;
@@ -733,6 +775,8 @@ export interface FulfilmentSettings {
   deliveryEnabled: boolean;
   zones: DeliveryZone[];
   freeDeliveryOverNgn: number | null;
+  /** Cross-border delivery (D436): other countries the shop ships to by courier. */
+  international?: {countries: CountryCode[];};
 }
 
 export type PaymentProviderId = 'paystack' | 'flutterwave' | 'monnify' | 'stripe';
@@ -777,9 +821,26 @@ export interface CommerceData {
   giftCards?: GiftCard[];
   /** Shop-wide settings (D222). Optional; defaults reproduce the shop as it was. */
   shop?: Partial<ShopSettings>;
+  /** Other shop locations, owned or franchised (D437). The main shop isn't listed. */
+  branches?: Branch[];
   nextOrderNumber: number;
   /** True once sample data has been offered/seeded, so clearing it doesn't bring it back. */
   sampleSeeded: boolean;
+}
+
+/** A shop location besides the main one (D437). Franchised branches pay the brand a royalty on their sales. */
+export interface Branch {
+  id: string;
+  name: string;
+  address: string;
+  hours: string;
+  phone: string;
+  /** Buyers can choose it for pickup at checkout. */
+  pickup: boolean;
+  status: 'open' | 'closed';
+  kind: 'owned' | 'franchise';
+  franchise?: {operator: string;royaltyPct: number;since: string;};
+  createdAt: string;
 }
 
 /**

@@ -55,7 +55,7 @@ export function PeopleStep({ k, set, errors, disabled }: KycStepProps) {
                   <TextInput id={`kp-dob-${p.id}`} label="Date of birth" type="date" value={p.dob} onChange={(e) => update(p.id, { dob: e.target.value })} disabled={disabled} />
                   <TextInput id={`kp-bvn-${p.id}`} label={rules.primary.label} inputMode={rules.primary.numeric ? 'numeric' : 'text'} maxLength={rules.primary.maxLength} placeholder={rules.primary.placeholder || undefined} value={p.bvn} onChange={(e) => update(p.id, { bvn: cleanId(e.target.value) })} disabled={disabled} />
                   <div className="grid grid-cols-[minmax(0,1fr)_7rem] gap-3">
-                    {company ? <SelectInput id={`kp-role-${p.id}`} label="Role" value={p.role} onChange={(role) => update(p.id, { role, ownershipPct: role === 'director' ? 0 : p.ownershipPct })} options={roleOptions.map((o) => ({ ...o, label: tr(o.label) }))} disabled={disabled} /> : <TextInput id={`kp-role-${p.id}`} label="Role" value={tr('Proprietor')} readOnly disabled />}
+                    {company ? <SelectInput id={`kp-role-${p.id}`} label="Role" value={p.role} onChange={(role) => update(p.id, { role, ownershipPct: role === 'director' ? 0 : p.ownershipPct })} options={roleOptions.map((o) => ({ ...o, label: tr(o.label) }))} disabled={disabled} required /> : <TextInput id={`kp-role-${p.id}`} label="Role" value={tr('Proprietor')} readOnly disabled />}
                     <TextInput
                     id={`kp-own-${p.id}`}
                     label="Owns"

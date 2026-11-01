@@ -19,6 +19,10 @@ import { cn } from '../../utils/cn';
 import { Section } from '../../components/ui/layout/Section';
 import { List } from '../../components/ui/layout/ListRow';
 import { useT } from '../../contexts/LocaleContext';
+import { useTeam } from '../../contexts/TeamContext';
+import { MAIN_BRANCH, locationName, stockAt } from '../../utils/commerce/branches';
+import { expiryState, formatExpiry } from '../../utils/commerce/batches';
+import { InlineAlert } from '../../components/ui/InlineAlert';
 
 interface StockRow {
   id: string;
@@ -33,8 +37,13 @@ export function Inventory() {
   const { t: tr } = useT();
   const [params, setParams] = useSearchParams();
   const [view, setView] = useState<View>('all');
-  const [adjust, setAdjust] = useState<{product: Product;variantId: string;} | null>(null);
+  const [adjust, setAdjust] = useState<{product: Product;variantId: string;mode?: 'damaged';batchId?: string;} | null>(null);
   const productFilter = params.get('product') ?? 'all';
+  // A teammate limited to one location sees that location's count only (D475). Adjusting changes the main shop's
+  // count, so it's only offered there; stock history covers every location, so it's hidden from branch staff.
+  const { myBranchId } = useTeam();
+  const qty = (v: ProductVariant) => myBranchId ? stockAt(v, myBranchId) : v.stock;
+  const canAdjust = !myBranchId || myBranchId === MAIN_BRANCH;
 
   const tracked = data.products.filter((p) => p.kind === 'physical' && p.trackStock && p.status !== 'archived');
   const rows = useMemo<StockRow[]>(
@@ -42,13 +51,19 @@ export function Inventory() {
     tracked.
     flatMap((p) => p.variants.map((v) => ({ id: v.id, product: p, variant: v }))).
     filter((r) => productFilter === 'all' ? true : r.product.id === productFilter).
-    filter((r) => view === 'out' ? r.variant.stock <= 0 : view === 'low' ? r.variant.stock > 0 && r.variant.stock <= r.product.lowStockAt : true),
-    [tracked, view, productFilter]
+    filter((r) => view === 'out' ? qty(r.variant) <= 0 : view === 'low' ? qty(r.variant) > 0 && qty(r.variant) <= r.product.lowStockAt : true),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [tracked, view, productFilter, myBranchId]
   );
 
   const allVariants = tracked.flatMap((p) => p.variants.map((v) => ({ p, v })));
-  const outCount = allVariants.filter(({ v }) => v.stock <= 0).length;
-  const lowCount = allVariants.filter(({ p, v }) => v.stock > 0 && v.stock <= p.lowStockAt).length;
+  const outCount = allVariants.filter(({ v }) => qty(v) <= 0).length;
+  const lowCount = allVariants.filter(({ p, v }) => qty(v) > 0 && qty(v) <= p.lowStockAt).length;
+  // Batches and expiry (D476).
+  const expiries = new Map(allVariants.map(({ v }) => [v.id, expiryState(v)]));
+  const hasBatches = allVariants.some(({ v }) => v.batches?.length);
+  const expiredUnits = [...expiries.values()].reduce((s, e) => s + e.expiredQty, 0);
+  const soonCount = [...expiries.values()].filter((e) => e.soon).length;
   const movements = data.movements.filter((m) => productFilter === 'all' || m.productId === productFilter).slice(0, 40);
   const productName = (id: string) => data.products.find((p) => p.id === id)?.name ?? tr('Deleted product');
   const variantName = (m: StockMovement) => {
@@ -76,9 +91,9 @@ export function Inventory() {
     key: 'stock',
     header: 'On hand',
     align: 'right',
-    sortValue: (r) => r.variant.stock,
+    sortValue: (r) => qty(r.variant),
     render: (r) =>
-    <span className={cn('font-semibold', r.variant.stock <= 0 ? 'text-danger' : r.variant.stock <= r.product.lowStockAt ? 'text-warning' : 'text-fg')}>{r.variant.stock}</span>
+    <span className={cn('font-semibold', qty(r.variant) <= 0 ? 'text-danger' : qty(r.variant) <= r.product.lowStockAt ? 'text-warning' : 'text-fg')}>{qty(r.variant)}</span>
 
   },
   {
@@ -86,28 +101,71 @@ export function Inventory() {
     header: 'Status',
     hideOnMobile: true,
     render: (r) =>
-    r.variant.stock <= 0 ? <Badge tone="danger">Out of stock</Badge> : r.variant.stock <= r.product.lowStockAt ? <Badge tone="warning">{tr('Low · alert at {n}', { n: r.product.lowStockAt })}</Badge> : <Badge tone="success">In stock</Badge>
+    qty(r.variant) <= 0 ? <Badge tone="danger">Out of stock</Badge> : qty(r.variant) <= r.product.lowStockAt ? <Badge tone="warning">{tr('Low · alert at {n}', { n: r.product.lowStockAt })}</Badge> : <Badge tone="success">In stock</Badge>
   },
+  ...(hasBatches ?
+  [
+  {
+    key: 'expiry',
+    header: 'Expiry',
+    hideOnMobile: true,
+    sortValue: (r: StockRow) => expiries.get(r.variant.id)?.next?.expiresOn ?? '9999',
+    render: (r: StockRow) => {
+      const e = expiries.get(r.variant.id);
+      if (!e || !r.variant.batches?.length) return <span className="text-fg-subtle">—</span>;
+      return (
+        <span className="flex flex-col items-start gap-1">
+                  {e.expiredQty > 0 && <Badge tone="danger">{tr('Expired: {n}', { n: e.expiredQty })}</Badge>}
+                  {e.soon?.expiresOn ?
+          <Badge tone="warning">{tr('Expires {date}', { date: formatExpiry(e.soon.expiresOn) })}</Badge> :
+          e.next?.expiresOn ?
+          <span className="text-caption text-fg-muted">{tr('Next expiry {date}', { date: formatExpiry(e.next.expiresOn) })}</span> :
+          null}
+                  <span className="text-caption text-fg-subtle">{tr('Batches: {n}', { n: r.variant.batches.length })}</span>
+                </span>);
+
+    }
+  } as DataColumn<StockRow>] :
+
+  []),
   {
     key: 'adjust',
     header: '',
     align: 'right',
-    render: (r) =>
-    <Button size="sm" variant="secondary" onClick={() => setAdjust({ product: r.product, variantId: r.variant.id })}>
-          Adjust
-        </Button>
+    render: (r) => {
+      const expired = expiries.get(r.variant.id)?.expiredBatches[0];
+      return expired && canAdjust ?
+      <span className="flex justify-end gap-1.5">
+            <Button size="sm" variant="secondary" onClick={() => setAdjust({ product: r.product, variantId: r.variant.id, mode: 'damaged', batchId: expired.id })}>
+              {tr('Write off expired')}
+            </Button>
+            <Button size="sm" variant="tertiary" onClick={() => setAdjust({ product: r.product, variantId: r.variant.id })}>
+              Adjust
+            </Button>
+          </span> :
 
+      <Button size="sm" variant="secondary" disabled={!canAdjust} title={canAdjust ? undefined : tr('Ask the owner to move stock to your location from Branches.')} onClick={() => setAdjust({ product: r.product, variantId: r.variant.id })}>
+          Adjust
+        </Button>;
+
+    }
   }];
 
 
   return (
     <>
       <PageHeader title="Inventory" description="Stock for every variant. Orders reserve stock automatically and cancellations put it back." />
+      {myBranchId && <p className="mt-4 text-label text-fg-muted">{tr('Showing {location} only — the location you work at.', { location: locationName(data, myBranchId, tr('Main shop')) })}</p>}
+      {(expiredUnits > 0 || soonCount > 0) &&
+      <InlineAlert tone={expiredUnits > 0 ? 'danger' : 'warning'} className="mt-6" title={expiredUnits > 0 ? tr('Expired units still counted as stock: {n}', { n: expiredUnits }) : tr('Items with a batch expiring soon: {n}', { n: soonCount })}>
+          {expiredUnits > 0 ? tr('Sales never use an expired batch while other stock is left. Write expired units off so your counts are right.') : tr('Sales already use the batch that expires soonest. Consider a discount to sell it in time.')}
+        </InlineAlert>
+      }
 
       {tracked.length === 0 ?
       <EmptyState framed className="mt-8" icon={PackageIcon} title="No stock to track yet" description="Products with “Track stock” switched on appear here." action={<Link to="/app/commerce/products?new=1" className="text-label font-semibold text-action hover:underline">{tr('Add a product')}</Link>} /> :
 
-      <div className="mt-8 grid items-start gap-8 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] xl:gap-10">
+      <div className={cn('mt-8 grid items-start gap-8 xl:gap-10', !myBranchId && 'xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]')}>
           <Section
           id="stock"
           title="Stock levels"
@@ -137,7 +195,8 @@ export function Inventory() {
             <DataTable caption="Stock levels" rows={rows} columns={columns} filterText={(r) => `${r.product.name} ${r.variant.sku}`} filterPlaceholder="Search item or SKU" emptyTitle="Nothing here" emptyDescription="No items match this filter." />
           </Section>
 
-          <Section id="moves" title="Stock history" description="Who changed what, when and why.">
+          {!myBranchId &&
+        <Section id="moves" title="Stock history" description="Who changed what, when and why.">
             {movements.length === 0 ?
           <p className="text-label text-fg-muted">{tr('No stock changes yet.')}</p> :
 
@@ -176,10 +235,11 @@ export function Inventory() {
               </List>
           }
           </Section>
+        }
         </div>
       }
 
-      <AdjustStockDialog product={adjust?.product ?? null} variantId={adjust?.variantId} onClose={() => setAdjust(null)} />
+      <AdjustStockDialog product={adjust?.product ?? null} variantId={adjust?.variantId} initialMode={adjust?.mode} initialBatchId={adjust?.batchId} onClose={() => setAdjust(null)} />
     </>);
 
 }

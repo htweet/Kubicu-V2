@@ -64,7 +64,7 @@ export function BusinessStep({ k, set, errors, disabled }: KycStepProps) {
         <h3 id="kyc-biz-what" className="text-label font-semibold text-fg">
           {tr('What the business does')}
         </h3>
-        <SelectInput id="kyc-industry" label="Industry" value={b.industry} onChange={(industry) => setB({ industry })} options={[{ value: '', label: tr('Choose one'), disabled: true }, ...industries.map((x) => ({ value: x, label: tr(x) }))]} error={errors.industry} disabled={disabled} />
+        <SelectInput id="kyc-industry" label="Industry" value={b.industry} onChange={(industry) => setB({ industry })} options={[{ value: '', label: tr('Choose one'), disabled: true }, ...industries.map((x) => ({ value: x, label: tr(x) }))]} error={errors.industry} disabled={disabled} required />
         <TextArea id="kyc-desc" label="Describe what you sell and how" hint={kycRules().describeExample} value={b.description} onChange={(e) => setB({ description: e.target.value })} error={errors.description} disabled={disabled} />
       </section>
 

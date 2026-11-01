@@ -22,6 +22,7 @@ import { downloadCsv, toCsv } from '../../utils/csv';
 import { formatNgn, formatRelative } from '../../utils/format';
 import { cn } from '../../utils/cn';
 import { useTeam } from '../../contexts/TeamContext';
+import { MAIN_BRANCH, locationName } from '../../utils/commerce/branches';
 import { AssigneeChip, MineToggle } from '../../components/team/AssigneeSelect';
 import { useT } from '../../contexts/LocaleContext';
 
@@ -29,8 +30,11 @@ type Tab = 'all' | OrderStatus;
 const tabs: Tab[] = ['all', 'new', 'paid', 'packing', 'out_for_delivery', 'completed', 'cancelled', 'refunded'];
 
 export function Orders() {
-  const { data } = useCommerce();
+  const { data: allData } = useCommerce();
   const { t: tr } = useT();
+  // A teammate limited to one location sees only that location's orders (D474).
+  const { me, myBranchId } = useTeam();
+  const data = useMemo(() => myBranchId ? { ...allData, orders: allData.orders.filter((o) => (o.fulfilment.branchId ?? MAIN_BRANCH) === myBranchId) } : allData, [allData, myBranchId]);
   const [params, setParams] = useSearchParams();
   const tab = params.get('status') as Tab || 'all';
   const openId = params.get('order');
@@ -46,7 +50,6 @@ export function Orders() {
   }, [data.orders]);
 
   // “Mine”: orders assigned to the signed-in member (D60).
-  const { me } = useTeam();
   const mine = params.get('mine') === '1';
   const mineCount = data.orders.filter((o) => o.assigneeId === me.id).length;
   // Delivery tracking health per order (D144).
@@ -103,7 +106,7 @@ export function Orders() {
     key: 'fulfilment',
     header: 'Fulfilment',
     hideOnMobile: true,
-    render: (o) => <span className="text-fg-muted">{o.popup ? tr('Pop-up pickup') : o.fulfilment.method === 'pickup' ? tr('Pickup') : o.fulfilment.method === 'tickets' ? tr('Tickets') : o.fulfilment.method === 'digital' ? tr('Download') : o.fulfilment.zoneName}</span>
+    render: (o) => <span className="text-fg-muted">{o.popup ? tr('Pop-up pickup') : o.fulfilment.method === 'pickup' ? o.fulfilment.branchId ? `${tr('Pickup')} · ${o.fulfilment.zoneName}` : tr('Pickup') : o.fulfilment.method === 'tickets' ? tr('Tickets') : o.fulfilment.method === 'digital' ? tr('Download') : o.fulfilment.zoneName}</span>
   },
   { key: 'payment', header: 'Payment', hideOnMobile: true, render: (o) => <PaymentBadge status={o.paymentStatus} /> },
   {
@@ -144,6 +147,7 @@ export function Orders() {
         } />
       
       <TestModeStrip className="mt-6" />
+      {myBranchId && <p className="mt-4 text-label text-fg-muted">{tr('Showing {location} only — the location you work at.', { location: locationName(allData, myBranchId, tr('Main shop')) })}</p>}
 
       {data.orders.length === 0 ?
       <EmptyState framed className="mt-8" icon={ReceiptIcon} title="No orders yet" description="Link a product to a page block with Checkout, publish, then try buying it yourself — test mode never charges anyone." /> :

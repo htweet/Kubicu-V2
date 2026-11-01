@@ -1,5 +1,6 @@
 import type { Block, BlockContentMap, BlockLayout, BlockStyle, BlockType, PageDocument, PageTheme } from '../../types/page';
 import type { WorkspacePlan } from '../../types/plan';
+import type { CountryCode } from '../../types/country';
 
 export type ExampleGoal = 'sell' | 'book' | 'audience' | 'showcase' | 'events' | 'support';
 export type ExampleStyle = 'light' | 'dark' | 'editorial' | 'bold';
@@ -10,6 +11,8 @@ export interface ExamplePage {
   category: string;
   name: string;
   city: string;
+  /** Country the fictional business is in (D434). Missing = Nigeria, like every example before D434. */
+  country?: CountryCode;
   bestFor: string;
   description: string;
   goals: ExampleGoal[];

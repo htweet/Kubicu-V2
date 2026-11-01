@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { SparklesIcon } from 'lucide-react';
 import type { OnboardingState } from '../../hooks/useOnboarding';
-import { examplePages, findExampleById } from '../../data/examples';
+import { countryFirst, examplePages, findExampleById } from '../../data/examples';
+import { activeCountry } from '../../utils/country';
 import { businessKits } from '../../data/businessKits';
 import { siteKits } from '../../data/siteKits';
 import { cn } from '../../utils/cn';
@@ -29,8 +30,10 @@ export function KitStep({ state, update, go }: StepProps) {
   // New workspaces start on Free; Super admin can pause AI page setup (D75b).
   const aiAllowed = useFlag('ai_page_setup', 'free');
   const goal = state.goal;
-  const matched = goal && goal !== 'other' ? examplePages.filter((e) => e.goals.includes(goal)) : [];
-  const list = showAll || matched.length === 0 ? examplePages : matched.slice(0, 4);
+  // The seller's own country's starters come first (D434).
+  const pool = countryFirst(examplePages, activeCountry());
+  const matched = goal && goal !== 'other' ? pool.filter((e) => e.goals.includes(goal)) : [];
+  const list = showAll || matched.length === 0 ? pool : matched.slice(0, 4);
   // Business kits whose page suits the chosen goal come first (D126).
   const kits = businessKits.
   map((k) => ({ kit: k, ex: findExampleById(k.templateId) })).

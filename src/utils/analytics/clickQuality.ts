@@ -56,6 +56,7 @@ export const viaLabels: Record<SourceId, string> = {
   x: 'X (Twitter)',
   google: 'Google',
   qr: 'QR code',
+  nfc: 'NFC tag',
   campaign: 'Campaign link',
   direct: 'Scanned, typed or no app info',
   other: 'Other websites'

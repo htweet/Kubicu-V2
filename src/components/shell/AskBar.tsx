@@ -10,9 +10,14 @@ import { KubicuLogo } from './KubicuLogo';
 const STORE_KEY = 'kubicu.askBar.minimised';
 const ease = [0.23, 1, 0.32, 1] as const;
 
-/** Copilot and KUBICU AI screens have their own chat, so the bar stays out of them (D374). */
+/**
+ * Copilot and KUBICU AI screens have their own chat, so the bar stays out of them (D374). Sellers' published pages
+ * and shared shops are the seller's own space, so buyers never see KUBICU's bar there (D431).
+ */
 function hiddenOn(path: string): boolean {
   return (
+    path.startsWith('/p/') ||
+    path.startsWith('/m/') ||
     path === '/copilot' ||
     path.startsWith('/copilot/') ||
     path.startsWith('/d/') ||
@@ -24,9 +29,8 @@ function hiddenOn(path: string): boolean {
 
 }
 
-/** Lifts the bar above bars that already sit at the bottom: workspace phone nav, shop cart and buy bars. */
+/** Lifts the bar above bars that already sit at the bottom, such as the workspace phone nav. */
 function bottomOffset(path: string): string {
-  if (path.startsWith('/p/') || path.startsWith('/m/')) return 'bottom-[calc(84px+env(safe-area-inset-bottom))]';
   if (path.startsWith('/app')) return 'bottom-[calc(76px+env(safe-area-inset-bottom))] md:bottom-5';
   return 'bottom-[calc(16px+env(safe-area-inset-bottom))] md:bottom-5';
 }

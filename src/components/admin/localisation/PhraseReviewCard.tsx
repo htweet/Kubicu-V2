@@ -12,10 +12,15 @@ import { Segmented } from '../../ui/Segmented';
 import { TextInput } from '../../ui/TextInput';
 import { TextArea } from '../../ui/TextArea';
 
-type Lang = Exclude<UiLang, 'en'>;
+type Lang = UiLang;
 type Filter = 'todo' | 'done';
 
+/** Every English phrase the app shows through the translator — what staff can reword in English (D465). */
+const englishPhrases: Record<string, string> = Object.fromEntries([...new Set([...Object.keys(translations.pcm), ...Object.keys(translations.sw)])].map((k) => [k, k]));
+const dictFor = (l: Lang): Record<string, string> => l === 'en' ? englishPhrases : translations[l];
+
 const langs: {value: Lang;label: string;}[] = [
+{ value: 'en', label: 'English' },
 { value: 'pcm', label: 'Naijá' },
 { value: 'yo', label: 'Yorùbá' },
 { value: 'ha', label: 'Hausa' },
@@ -34,14 +39,23 @@ const PAGE = 15;
 export function PhraseReviewCard() {
   const [store, setStore] = useAdminStore();
   const [lang, setLang] = useState<Lang>('pcm');
+  const isEnglish = lang === 'en';
   const [filter, setFilter] = useState<Filter>('todo');
   const [q, setQ] = useState('');
   const [shown, setShown] = useState(PAGE);
   const [editing, setEditing] = useState<string | null>(null);
   const [draft, setDraft] = useState('');
 
-  const entries = useMemo(() => Object.entries(translations[lang]), [lang]);
-  const reviewedCount = (l: Lang) => Object.keys(translations[l]).filter((en) => store.phraseReviews[phraseKey(l, en)]).length;
+  const entries = useMemo(() => Object.entries(dictFor(lang)), [lang]);
+  const reviewedCount = (l: Lang) => Object.keys(dictFor(l)).filter((en) => store.phraseReviews[phraseKey(l, en)]).length;
+  const undo = (en: string) => {
+    setStore((s) => {
+      const next = { ...s.phraseReviews };
+      delete next[phraseKey(lang, en)];
+      return audit({ ...s, phraseReviews: next }, { area: 'localisation', action: `Restored the original ${langs.find((l) => l.value === lang)?.label} wording`, target: en.slice(0, 80), reason: 'Back to the original' });
+    });
+    toast('Original wording restored');
+  };
   const list = useMemo(() => {
     const needle = q.trim().toLowerCase();
     return entries.filter(([en, tr]) => {
@@ -69,10 +83,15 @@ export function PhraseReviewCard() {
   };
 
   return (
-    <Card id="review" title="Translation review" description="For native speakers: approve each draft or correct it. Corrections go live at once; {placeholders} must stay." body="flush">
+    <Card
+      id="review"
+      title="Wording and translation review"
+      description="English: change any label, button, placeholder, message or name the app shows — it updates everywhere at once, and languages without their own draft follow it. Other languages: native speakers approve or correct each draft. {placeholders} must stay."
+      body="flush">
+      
       <div className="flex flex-col gap-3 px-5 pt-4 md:px-6">
         <div className="scroll-quiet overflow-x-auto">
-          <Segmented<Lang> ariaLabel="Language" size="sm" value={lang} onChange={(v) => (setLang(v), setShown(PAGE), setEditing(null))} options={langs.map((l) => ({ value: l.value, label: `${l.label} · ${reviewedCount(l.value)}/${Object.keys(translations[l.value]).length}` }))} />
+          <Segmented<Lang> ariaLabel="Language" size="sm" value={lang} onChange={(v) => (setLang(v), setShown(PAGE), setEditing(null))} options={langs.map((l) => ({ value: l.value, label: l.value === 'en' ? `${l.label} · changed ${reviewedCount('en')}` : `${l.label} · ${reviewedCount(l.value)}/${Object.keys(dictFor(l.value)).length}` }))} />
         </div>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <Segmented<Filter>
@@ -80,9 +99,16 @@ export function PhraseReviewCard() {
             size="sm"
             value={filter}
             onChange={(v) => (setFilter(v), setShown(PAGE))}
-            options={[
+            options={
+            isEnglish ?
+            [
+            { value: 'todo', label: 'Original' },
+            { value: 'done', label: 'Changed' }] :
+
+            [
             { value: 'todo', label: 'To review' },
             { value: 'done', label: 'Reviewed' }]
+
             } />
           
           <div className="relative sm:ml-auto sm:w-64">
@@ -93,7 +119,7 @@ export function PhraseReviewCard() {
       </div>
 
       {list.length === 0 ?
-      <p className="px-5 py-6 text-label text-fg-muted md:px-6">{filter === 'todo' ? 'Every phrase in this language has been reviewed.' : 'Nothing reviewed yet.'}</p> :
+      <p className="px-5 py-6 text-label text-fg-muted md:px-6">{isEnglish ? filter === 'todo' ? 'No match.' : 'No English wording changed yet.' : filter === 'todo' ? 'Every phrase in this language has been reviewed.' : 'Nothing reviewed yet.'}</p> :
 
       <ul className="mt-3 divide-y divide-line border-t border-line">
           {list.slice(0, shown).map(([en, tr]) => {
@@ -101,10 +127,10 @@ export function PhraseReviewCard() {
           const current = review?.status === 'edited' ? review.text ?? tr : tr;
           return (
             <li key={en} className="flex flex-col gap-2 px-5 py-3.5 md:px-6">
-                <p className="text-caption text-fg-subtle">{en}</p>
+                <p className="text-caption text-fg-subtle">{isEnglish ? 'Original' : en}{isEnglish && review?.status === 'edited' ? ` · ${en}` : ''}</p>
                 {editing === en ?
               <div className="flex flex-col gap-2">
-                    <TextArea id={`phrase-${en.slice(0, 20)}`} label="Correct wording" rows={2} value={draft} onChange={(e) => setDraft(e.target.value)} />
+                    <TextArea id={`phrase-${en.slice(0, 20)}`} label={isEnglish ? 'New wording' : 'Correct wording'} rows={2} value={draft} onChange={(e) => setDraft(e.target.value)} />
                     <div className="flex gap-2">
                       <Button size="sm" onClick={() => saveEdit(en)} disabled={!draft.trim()}>
                         Save correction
@@ -126,9 +152,14 @@ export function PhraseReviewCard() {
                         </Badge>
                   }
                       <Button size="sm" variant="tertiary" leadingIcon={PencilIcon} onClick={() => (setEditing(en), setDraft(current))}>
-                        Correct
+                        {isEnglish ? 'Change' : 'Correct'}
                       </Button>
-                      {!review &&
+                      {review?.status === 'edited' &&
+                  <Button size="sm" variant="tertiary" onClick={() => undo(en)}>
+                          Restore original
+                        </Button>
+                  }
+                      {!review && !isEnglish &&
                   <Button size="sm" variant="secondary" leadingIcon={CheckIcon} onClick={() => record(en, 'approved')}>
                           Approve
                         </Button>

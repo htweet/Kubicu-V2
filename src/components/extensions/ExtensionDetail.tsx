@@ -21,6 +21,8 @@ import { planAtLeast, plans } from '../../data/plans';
 import { formatDate } from '../../utils/billing';
 import { formatNaira as formatNgn } from '../../utils/format';
 import { useAdminStore } from '../../utils/admin/store';
+import { extKey, moduleOn } from '../../utils/admin/moduleFlags';
+import { useT } from '../../contexts/LocaleContext';
 
 interface Props {
   ext: ExtensionInfo | null;
@@ -36,9 +38,11 @@ export function ExtensionDetail({ ext, onClose, onInstall }: Props) {
   const navigate = useNavigate();
   const [confirmRemove, setConfirmRemove] = useState(false);
   const [adminStore] = useAdminStore();
+  const { t: tr } = useT();
   if (!ext) return <Sheet open={false} onClose={onClose} title="">{null}</Sheet>;
 
   const rec = market.data.installed[ext.id];
+  const available = moduleOn(adminStore, extKey(ext.id));
   const allowedPlan = planAtLeast(plan.id, ext.minPlan);
   const rating = averageRating(ext);
   const pull = adminStore.extensionPulls[ext.id];
@@ -86,6 +90,12 @@ export function ExtensionDetail({ ext, onClose, onInstall }: Props) {
         Uninstall
       </Button>
     </div> :
+  !available ?
+  // Switched off by KUBICU for now (D464): the listing stays visible, nothing can be installed.
+  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      <span className="text-caption text-fg-muted">{tr('Currently not available to install. It comes back here when KUBICU switches it on again.')}</span>
+      <Button disabled>{tr('Not available')}</Button>
+    </div> :
 
   <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
       <span className="text-caption text-fg-muted">{!can.allowed ? can.reason : !allowedPlan ? `Needs ${plans[ext.minPlan].name} or above.` : ext.priceNgn ? `${formatNgn(ext.priceNgn)}/month + VAT` : 'Free'}</span>
@@ -117,9 +127,17 @@ export function ExtensionDetail({ ext, onClose, onInstall }: Props) {
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {retired ? <Badge tone="info">Moved to {retired.movedTo}</Badge> : rec && <Badge tone={rec.paused ? 'warning' : 'success'} dot>{rec.paused ? 'Paused' : 'Installed'}</Badge>}
                 {ext.preview && <Badge tone="info">Preview</Badge>}
+                {!available && <Badge tone="neutral">Currently not available</Badge>}
               </div>
             </div>
           </div>
+
+          {!available && rec &&
+          <div className="rounded-md bg-sunken px-4 py-3">
+              <p className="text-label font-semibold text-fg">{tr('Currently not available')}</p>
+              <p className="mt-1 text-caption text-fg-muted">{tr('KUBICU has paused this add-on for now. Your settings are kept and it works again as soon as it’s switched back on.')}</p>
+            </div>
+          }
 
           {retired &&
           <div className="rounded-md border border-info/40 bg-info-soft px-4 py-3">
