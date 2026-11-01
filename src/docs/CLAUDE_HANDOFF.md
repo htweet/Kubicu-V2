@@ -1,6 +1,8 @@
 # KUBICU — Handoff for Claude (or any AI / engineer continuing this project)
 
-Last updated: 30 Oct 2026 · Decision register at **D351** (next number: **D352**)
+Last updated: 31 Oct 2026 · Decision register at **D430** (next number: **D431**)
+
+> **What changed since D351 (read §12a, §16 and §17 for detail):** four selling countries (Nigeria, Kenya, Ghana, South Africa) with their own currency, phones, banks, regions, payment options and seller verification; three more interface languages (Kiswahili, Twi, isiZulu) drafted across the whole app, canvas, website and Copilot; the public website converts every naira amount to the visitor's language's currency at example rates; a floating "Ask me anything" Copilot bar on most pages; one content width for workspace pages; and two rounds of accessibility fixes.
 
 > **⛔ Do not deploy this prototype.** It runs entirely in the browser: roles, prices, balances, codes and payments are simulated and can be changed by anyone. Before writing any production code, read **`docs/NOT_FOR_PRODUCTION.md`** — what to remove, what to replace, what must move to the server, and the release gate.
 Built in Magic Patterns: React 18 + TypeScript + Tailwind CSS v3, standalone files, no framework, everything runs in the browser.
@@ -22,6 +24,7 @@ Built in Magic Patterns: React 18 + TypeScript + Tailwind CSS v3, standalone fil
 10. Simulation switches (the Controls panel)
 11. Design system and visual rules
 12. Translation system
+    12a. Countries, currency and money on the website
 13. Real vs simulated
 14. How to do common tasks (recipes)
 15. Rules every change follows
@@ -35,7 +38,7 @@ Built in Magic Patterns: React 18 + TypeScript + Tailwind CSS v3, standalone fil
 
 ## 1. What KUBICU is
 
-A phone-first page builder and business operating kit for Nigerian (and later African) creators and small businesses. A seller builds pages on a **canvas** (published at `kub.icu/<handle>`; in the prototype at `/p/<handle>`), then sells, takes bookings, manages contacts, automates follow-ups, tracks analytics, shares short links and QR codes, connects domains, works with partners, books deliveries, and gets help from an AI **Copilot** that drafts a page from a chat. Naira, WhatsApp, bank transfer and local languages are first-class.
+A phone-first page builder and business operating kit for African creators and small businesses — selling from Nigeria, Kenya, Ghana and South Africa today (D352 onwards), with Nigeria the most complete. A seller builds pages on a **canvas** (published at `kub.icu/<handle>`; in the prototype at `/p/<handle>`), then sells, takes bookings, manages contacts, automates follow-ups, tracks analytics, shares short links and QR codes, connects domains, works with partners, books deliveries, and gets help from an AI **Copilot** that drafts a page from a chat. Naira, WhatsApp, bank transfer and local languages are first-class.
 
 It is a **high-fidelity interactive prototype**. All state lives in the browser (`localStorage`). Payments, couriers, messaging, AI, DNS and anything needing a server are simulated and labelled as such in the UI. It is design-complete for the blueprint's scope, not production software (see §18).
 
@@ -255,20 +258,23 @@ Other switches: demo data (onboarding / Settings), payment test mode strip (`com
 - **Signature themes:** glass layer `.kb-bg/.kb-page`, simplified on phones and in data-saver `.kb-lite`, respects reduced transparency.
 - **Components:** `components/ui/*` — Button (variants incl. `ai`, `brand`), Dialog (right-side sheet in workspace; `centered` on public pages, D272), Sheet, Field/TextInput/TextArea/SelectInput, Segmented, InlineAlert, PlanLock, UpgradeButton, ItemListEditor. Toasts via sonner (`AppToaster`).
 - **Motion:** framer-motion, ease-out `cubic-bezier(0.23,1,0.32,1)`, ≤300 ms per element, enter from scale 0.96 + opacity 0, stagger 30–60 ms, no `transition-all`, honour reduced motion.
-- **Accessibility:** semantic landmarks, labelled inputs, `focus-visible:ring-focus`, `aria-live` for results/toasts (`LiveAnnouncer`), ≥44 px targets, contrast AA (publish blocks failing contrast on seller pages).
+- **Accessibility:** semantic landmarks, labelled inputs, `focus-visible:ring-focus`, `aria-live` for results/toasts (`LiveAnnouncer`), ≥44 px targets, contrast AA (publish blocks failing contrast on seller pages). Shared helpers (D429–D430): `focusFirstError` and `onRadioGroupKeyDown`/`radioTabIndex` in `utils/a11y.ts`, `useScrollLock` (Dialog, Sheet), `useDocumentLang`, `MarqueeToggle` for moving strips.
+- **Workspace page width:** every workspace page except the canvas uses the same 1200px column with 20/40px side padding (D397).
 
 ---
 
 ## 12. Translation system
 
-- Languages: English, Naijá `pcm`, Yorùbá `yo`, Hausa `ha`, Igbo `ig`. French is listed as "Coming later". Choice is per device (`kubicu.account`), carries across sign-in and workspaces.
+- Languages (8): English, Naijá `pcm`, Yorùbá `yo`, Hausa `ha`, Igbo `ig`, **Kiswahili `sw`, Twi `tw`, isiZulu `zu`** (D356 onwards). French is listed as "Coming later". Choice is per device (`kubicu.account`), carries across sign-in and workspaces. `<html lang>` follows the screen language on the website and in the workspace via `useDocumentLang` (Twi is written as `ak`); published seller pages set their own (D429).
+- **Kiswahili, Twi and isiZulu** live in `data/translationsKeGhZa/*.ts` — one file per pass, rows `[English, sw, tw, zu]` built with `columns()` from `build.ts`, merged in `translationsKeGhZa/index.ts` (add each new file to the `passes` array; earlier entries win). Every app, canvas, website and Copilot file is mirrored (passes 1–55, D356–D426). Localised examples (places, names, dishes, phone numbers, prices) differ from the Nigerian drafts on purpose — see each pass's register row.
+- **New strings need drafts in all seven non-English languages**: rows in a `data/translations<Area>.ts` file for pcm/yo/ha/ig, and rows in a `data/translationsKeGhZa/` file for sw/tw/zu. Wording that only shows to sellers in one country (e.g. Kenyan verification) only needs that country's language set (D426).
 - **Pickers** (D298/D299): workspace sidebar, phone More sheet, editor top bar, phone editor Page settings ("Editor language"), sign-in/up, Account → Preferences, public website header. Seller public pages keep their own visitor language switch — the themed `VisitorLanguageMenu` (D299), painted in the page's theme. Search (block library, command palette, help centre) also understands everyday words in the screen language via `data/searchGlossary.ts` + `utils/searchGlossary.ts` (D344).
 - **Usage:** `const { t: tr } = useT()` from `contexts/LocaleContext`. Keys are the English text; placeholders `{name}`: `tr('Photos received: {n}', { n })`. Shared inputs (TextInput, Field, Button, Dialog title, Segmented, SelectInput, ItemListEditor) translate English labels themselves — pass English.
 - **Drafts:** `data/translations*.ts`, rows `[English, Naijá, Yorùbá, Hausa, Igbo]`, merged in `data/translations.ts` (spread new files into all four dictionaries). Latest: `translationsCanvasGaps.ts` (D342), `translationsWebsiteGaps.ts` (D343).
 - **Built sentences** (names/amounts): pattern fallback in `utils/builtPhrases.ts` (D341). Prefer `'Label: {value}'` wording.
 - **Reviewer overrides:** `utils/phraseOverrides` (D135), managed in the staff console translation review.
 - **Status:** every non-English string is an **unreviewed draft** (Group D sign-off deferred).
-- **Adding a language** (e.g. Kenya, Ghana, South Africa). Language codes are listed by hand in five places — update them all:
+- **Adding another language.** Language codes are listed by hand in five places — update them all (this is how sw/tw/zu were added):
   1. `data/translations.ts` — `UiLang`, the `translations` map, `uiLanguages` (label + native name).
   2. `contexts/LocaleContext.tsx` — `toUiLang`.
   3. `types/account.ts` — `LanguageId`.
@@ -276,6 +282,14 @@ Other switches: demo data (onboarding / Settings), payment test mode strip (`com
   5. `components/canvas/inspector/PageSettingsPanel.tsx` — page language list (Swahili `sw` is already listed there, for sellers' page language only).
   Then: a dictionary per new language for every `translations*.ts` file (export `xxxSw`… alongside the existing four, or one new file per language merged in `translations.ts`; missing keys fall back to English), `data/searchGlossary.ts` words, `utils/builtPhrases.ts` patterns (they look up the dictionary, so they work once phrases exist), the Voice to content speech languages, and font checks for any new characters. Countries also bring non-language work — currency (KES, GHS, ZAR), phone formats, mobile money (M-Pesa, MTN MoMo) and local providers — which is outside translation.
 - **English on purpose:** legal document text (English applies; a notice says so), help guide articles (a notice says so), WhatsApp/customer messages, invoice lines, partnership agreement wording and history, referral terms, staff console, Marketplace listings without a draft, Copilot typed-answer understanding.
+
+## 12a. Countries, currency and money on the website
+
+- **Countries** (D352–D355): `types/country.ts` + `data/countries.ts` — NG, KE, GH, ZA, each with currency, dial code and number length, regions and their label, banks, account-number rule, payment options, mobile money, VAT guide, data price per GB, main city. A workspace's country is `workspaceCountry(ws)`; the one on screen is `activeCountry()` (`utils/country.ts`), set by `AppShell`, published pages and the staff console (always NG). Copilot, which has no workspace, sets it from the screen language (`countryForLanguage`, D420).
+- **Currency** (D136, D353): one per workspace, no conversion of seller money. `formatNgn` = the active workspace currency (name kept from the naira-only days); `formatNaira` = KUBICU's own prices.
+- **Website conversion** (D421, D423): while `MarketingLayout` is mounted in Kiswahili, Twi or isiZulu it sets `setDisplayConversion(KES|GHS|ZAR)`; every naira amount formatted without an explicit currency, `formatNaira`, fixed text through `localiseAmounts`, and "₦…" typed inside example pages (`localiseBlockAmounts` in `PageLayoutView`) show in that currency at **example rates** (₦12, ₦135, ₦85 per unit, `utils/currency.ts`). `setActiveCurrency` clears it, so the app, published pages and staff console never convert. Pricing says the figures are at an example rate.
+- **Phones** (D354, D402, D403, D420): `utils/phone.ts` — `splitPhone`, `joinPhone`, `phoneIssue(In)`, `phonePlaceholder`, `findMobileNumber` (free text, any of the four countries, international form). Shared `PhoneInput` has a country-code picker.
+- **Seller verification** (D424–D428): `data/kycCountries.ts` holds each country's ID numbers, ID types, registry, documents, tax number, business types, consent, sales bands; `kycRules(country?)` in `utils/money/kyc.ts`. The old field names are kept (`identity.bvn` = main ID number, `identity.nin` = second number, if the country has one) so saved cases load. Cases store their `country`. Payout limits are naira figures shown and enforced in the workspace currency at the example rates. Guest partners' bank step uses their phone's country.
 
 ---
 
@@ -304,7 +318,9 @@ Other switches: demo data (onboarding / Settings), payment test mode strip (`com
 
 **Add a setting to a stored record:** make it optional in `types/*`, read defensively, never break old saved data.
 
-**Add translations:** new `data/translations<Area>.ts` with rows; import and spread into `pcm/yo/ha/ig` in `data/translations.ts`.
+**Add translations:** new `data/translations<Area>.ts` with rows; import and spread into `pcm/yo/ha/ig` in `data/translations.ts`. Then a `data/translationsKeGhZa/<area>.ts` with `[English, sw, tw, zu]` rows, added to `passes` in `translationsKeGhZa/index.ts`.
+
+**Add something country-specific:** add a field to `CountryInfo` (`types/country.ts`) and all four rows in `data/countries.ts`, or a rule in `data/kycCountries.ts`; read it via `activeCountryInfo()` / `kycRules()`. Never hard-code Nigerian formats (11-digit phones, +234, naira, BVN/CAC) outside the NG row.
 
 **Swap in a real provider:** keep the UI; replace the simulated util (`utils/providers/*`, `utils/money/*`, `utils/ai/*`) behind the same function signatures; remove the "simulated" label only when real.
 
@@ -329,7 +345,7 @@ Code
 - Replace, don't fork: no `V2` files left beside old ones.
 
 Process
-- Every change gets the next register row (**D352** next), status "Proposed" until signed off.
+- Every change gets the next register row (**D431** next), status "Proposed" until signed off.
 - Update any doc you make stale (see §3.3).
 - Tell the user plainly what wasn't verified (e.g. not opened in a browser).
 
@@ -350,6 +366,19 @@ Process
 | D341 | Sentence patterns for names and amounts |
 | D342 | AI FAQ assistant block, Voice to content, composition copy/hierarchy checks, block search in screen language, translated rule badge |
 | D343 | Website/WhatsApp short-link clicks counted in campaign stats; hand-filled source and permission for older contacts |
+| D344–D351 | Glossary search; the 12 design deliverables and UX/UI master spec |
+| D352–D355 | Four countries: country table, currency, phone numbers with a country code, banks and regions |
+| D356–D372, D375–D401 | Kiswahili, Twi, isiZulu passes 1–43 (workspace, website, canvas) |
+| D373 | Website talks about Africa; sample prices follow the language |
+| D374 | Floating "Ask me anything" Copilot bar (`components/shell/AskBar.tsx`) |
+| D397 | One content width (1200px) for workspace pages except the canvas |
+| D402–D405 | Last Nigeria-only phone fields, price hint, data cost per country, Developers page money line |
+| D406–D419 | Translation passes 44–54 (settings, panels, verification, Copilot chat) |
+| D417–D418, D422 | Website display font: Inter and Plus Jakarta tried, **Bricolage Grotesque restored** |
+| D420 | Copilot and the page assistant accept numbers from all four countries |
+| D421, D423 | Website converts naira amounts to the language's currency (example rates) |
+| D424–D428 | Seller verification per country; starter payouts and limits; staff review; guest partners; draft legal wording |
+| D429–D430 | Accessibility fixes from a code audit (14 items) |
 
 ---
 
@@ -358,7 +387,9 @@ Process
 ### 17.1 Needs founder or legal sign-off
 - **Plan prices** (placeholders).
 - **Legal documents** — Draft 1.0, awaiting a lawyer; English text applies (Group B: embed allowlist, disputes/refunds, refund fees, analytics privacy, subscriptions, template sales split, ticketing, members-only wording, partnerships, co-brand, support block, developer submissions, verification, fundraiser, certificates, buyer protection/escrow, AI licence, staff data-request deadline).
-- **Translations** — native-speaker review of every draft in four languages (Group D, deferred).
+- **Translations** — native-speaker review of every draft in seven languages (Group D, deferred).
+- **Countries** — a licensed payment partner per country must confirm the Kenyan, Ghanaian and South African verification rules, document names and payout limits (D424–D425); a lawyer must approve the two clauses tagged "[DRAFT — country wording pending legal review, D428]" in Seller terms and Privacy and confirm each country's data-protection basis.
+- **Example figures to replace** — exchange rates ₦12/KES, ₦135/GHS, ₦85/ZAR (`utils/currency.ts`, D421/D425); data prices KSh 100, GH₵ 10, R 50 per GB (`data/countries.ts`, D404).
 - **Copilot** — AI provider, data-processing terms for photos and business details, whether and how long chats are stored online, final AI credit costs.
 - **Group A** money/limits was confirmed (D233); `DECISIONS_FOR_SIGNOFF.md` hasn't been updated to say so.
 
@@ -369,7 +400,9 @@ Payment gateway, bank transfer and USSD; payouts and KYC; couriers; WhatsApp Bus
 Marketplace "Popular" sort; AI workflow packs (show "Not available yet").
 
 ### 17.4 Needs testing (not design work)
-- Nothing from D280–D343 has been opened in a browser.
+- Nothing from D280–D430 has been opened in a browser.
+- Accessibility fixes D429–D430 came from reading code; test with keyboard, VoiceOver/TalkBack and a scan.
+- Every screen in Kiswahili, Twi and isiZulu for wrapping (long words, e.g. isiZulu sign-up steps).
 - Browser pass on 32 templates and 35 theme versions, phone and desktop.
 - Glass/blur on low-end Android; theme contrast numbers checked on screen; soft status colours in every appearance.
 - 320 px / 200% zoom: Products, Orders, Schedule, Automations, IntentFlow, Domains & QR, Media, Templates, staff console, all Copilot screens.
@@ -382,6 +415,10 @@ Marketplace "Popular" sort; AI workflow packs (show "Not available yet").
 - Help guide articles are English.
 - Marketplace listings with no draft are English.
 - Copilot understands typed answers only in English; WhatsApp Copilot demo isn't translated.
+- Pidgin, Yorùbá, Hausa and Igbo drafts missing for the four D430 labels ("Play/Pause moving examples", "Workspace shortcuts", "Site links").
+- `SelectInput` supports `required` (D430) but no form passes it yet.
+- Staff review screen: a few labels outside the case summary still read as Nigerian for other countries' cases.
+- Decision for the owner: whether the Ask bar should show on sellers' published pages (D374).
 - Pinned-chat icon may not match version 308.
 - Phase 5 items not designed: multi-country tax, multi-location/franchise, ERP connectors, cross-border fulfilment.
 
@@ -407,7 +444,7 @@ Give the **whole project** (all code files) plus these docs. Read them in this o
 **1. Start here**
 1. `docs/CLAUDE_HANDOFF.md` — this file.
 2. `docs/NOT_FOR_PRODUCTION.md` — what must not ship, what to replace, and the release gate (D349). **Read before writing production code.**
-3. `docs/DESIGN_DECISION_REGISTER.md` — every decision D1–D349 (source of truth).
+3. `docs/DESIGN_DECISION_REGISTER.md` — every decision D1–D430 (source of truth).
 
 **2. Status and what's open**
 3. `docs/DESIGN_GAP_AUDIT.md` — open gaps by type (re-audited to D343).
@@ -444,7 +481,8 @@ Give the **whole project** (all code files) plus these docs. Read them in this o
 **5. Content that lives in code (not docs) but Claude must know about**
 - `data/legal/` — legal documents (Draft 1.0, awaiting lawyer).
 - `data/help/` — help centre articles.
-- `data/translations*.ts` — all translation drafts.
+- `data/translations*.ts` — Pidgin, Yorùbá, Hausa and Igbo drafts; `data/translationsKeGhZa/` — Kiswahili, Twi and isiZulu drafts.
+- `data/countries.ts`, `data/kycCountries.ts` — per-country rules.
 - `data/planMatrix.ts`, `data/plans.ts`, `data/permissions.ts` — plans, limits, roles.
 - `data/roadmap.ts` — public roadmap.
 - `types/` — the data model.
@@ -459,7 +497,8 @@ Before changing anything
 
 While building
 - [ ] Tokens only; no gradients; no `transition-all`; motion ≤300 ms with ease-out.
-- [ ] Every new string has drafts in all four languages.
+- [ ] Every new string has drafts in all seven non-English languages (pcm/yo/ha/ig and sw/tw/zu).
+- [ ] Nothing assumes Nigeria: phones, currency, banks, IDs and examples come from the country table.
 - [ ] Simulated behaviour is labelled; nothing implies a real provider.
 - [ ] Locked features show their plan; permissions checked with `useCan`.
 - [ ] Stored shapes stay backward-compatible.
@@ -469,6 +508,6 @@ Before finishing
 - [ ] No label, button or tab wraps to two lines (check long languages).
 - [ ] Sibling cards share baselines; text contrast passes against its real background.
 - [ ] Keyboard focus visible and in order; results announced.
-- [ ] Register row added (next D352); stale docs updated.
+- [ ] Register row added (next D431); stale docs updated.
 - [ ] Anything simulated stays labelled and is listed in `NOT_FOR_PRODUCTION.md`.
 - [ ] Tell the user what wasn't verified.
