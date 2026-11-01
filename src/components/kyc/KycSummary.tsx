@@ -2,7 +2,7 @@ import React from 'react';
 import { FileTextIcon, PencilIcon } from 'lucide-react';
 import type { BankAccount } from '../../types/money';
 import type { KycCase, KycDoc, KycStepId } from '../../types/kyc';
-import { entityInfo, fundsLabels, idTypeLabels, proofLabels, stepLabels, stepsFor, volumeLabels } from '../../utils/money/kyc';
+import { entityInfo, fundsLabels, idTypeLabels, kycRules, proofLabels, stepLabels, stepsFor, volumeLabels } from '../../utils/money/kyc';
 import { formatDay } from '../../utils/serviceOs';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
@@ -27,6 +27,8 @@ export function KycSummary({ k, banks, onEdit, flagged = [] }: KycSummaryProps) 
   const i = k.identity;
   const b = k.business;
   const d = k.declarations;
+  // Number and registry names follow the workspace's country (D424).
+  const rules = kycRules(k.country);
 
   const content: Record<Exclude<KycStepId, 'review'>, React.ReactNode> = {
     type: <Rows rows={[['Type', k.entity ? entityInfo[k.entity].label : '—']]} />,
@@ -37,17 +39,17 @@ export function KycSummary({ k, banks, onEdit, flagged = [] }: KycSummaryProps) 
         ['Legal name', i.legalName || '—'],
         ['Date of birth', date(i.dob)],
         ['Phone', i.phone ? `${i.phone}${i.phoneVerified ? ' · confirmed' : ' · not confirmed'}` : '—'],
-        ['BVN', mask(i.bvn)],
-        ['NIN', mask(i.nin)],
+        [rules.primary.label, mask(i.bvn)],
+        ...(rules.secondary ? [[rules.secondary.label, mask(i.nin)]] as [string, string][] : []),
         ['ID', `${idTypeLabels[i.idType]} · ${i.idNumber || '—'}${i.idExpiry ? ` · expires ${date(i.idExpiry)}` : ''}`]]
         } />
       
         <div className="mt-3 flex flex-wrap gap-2">
-          <CheckBadge result={i.checks.bvn} label="BVN" />
-          <CheckBadge result={i.checks.nin} label="NIN" />
+          <CheckBadge result={i.checks.bvn} label={rules.primary.label} />
+          {rules.secondary && <CheckBadge result={i.checks.nin} label={rules.secondary.label} />}
           <CheckBadge result={i.checks.liveness} label="Selfie" />
         </div>
-        {i.checks.nameOnBvn && <p className="mt-2 text-caption text-fg-muted">Name on BVN: {i.checks.nameOnBvn}</p>}
+        {i.checks.nameOnBvn && <p className="mt-2 text-caption text-fg-muted">{rules.nameOnRecord.replace('{name}', i.checks.nameOnBvn)}</p>}
         <Docs docs={[['Photo ID', i.idFront]]} />
       </>,
 
@@ -62,23 +64,23 @@ export function KycSummary({ k, banks, onEdit, flagged = [] }: KycSummaryProps) 
         <Rows
         rows={[
         ['Registered name', b.registeredName || '—'],
-        [k.entity === 'company' ? 'RC number' : 'BN number', b.number || '—'],
+        [k.entity === 'company' ? rules.registry.companyLabel : rules.registry.bnLabel, b.number || '—'],
         ['Registered on', date(b.incorporatedOn)],
-        ['TIN', b.tin || 'Not given'],
+        [rules.tax.label, b.tin || 'Not given'],
         ['Industry', b.industry || '—'],
         ['What it does', b.description || '—'],
         ['Website', b.website || 'Not given']]
         } />
       
         <div className="mt-3 flex flex-wrap gap-2">
-          <CheckBadge result={b.checks.cac} label="CAC" />
-          {b.tin && <CheckBadge result={b.checks.tin} label="TIN" />}
+          <CheckBadge result={b.checks.cac} label={rules.registry.short} />
+          {b.tin && <CheckBadge result={b.checks.tin} label={rules.tax.badge} />}
         </div>
         <Docs
         docs={[
-        ['CAC certificate', b.certificate],
-        [k.entity === 'company' ? 'Status report' : 'BN/1 form', b.statusReport],
-        ...(k.entity === 'company' ? [['MEMART', b.memart]] as [string, KycDoc | null][] : [])]
+        [rules.registry.certificate, b.certificate],
+        [k.entity === 'company' ? rules.registry.companyRecord : rules.registry.bnRecord, b.statusReport],
+        ...(k.entity === 'company' ? [[rules.registry.constitution, b.memart]] as [string, KycDoc | null][] : [])]
         } />
       
       </>,
@@ -91,12 +93,12 @@ export function KycSummary({ k, banks, onEdit, flagged = [] }: KycSummaryProps) 
             <span className="min-w-0">
               <span className="block text-label font-medium text-fg">{p.fullName || 'Unnamed'}</span>
               <span className="block text-caption text-fg-subtle">
-                {p.role === 'director' ? 'Director' : p.role === 'owner' ? `Owner · ${p.ownershipPct}%` : `Director and owner · ${p.ownershipPct}%`} · BVN {mask(p.bvn)}
+                {p.role === 'director' ? 'Director' : p.role === 'owner' ? `Owner · ${p.ownershipPct}%` : `Director and owner · ${p.ownershipPct}%`} · {rules.primary.label} {mask(p.bvn)}
               </span>
             </span>
             <span className="flex flex-wrap gap-1.5">
               {p.pep && <Badge tone="warning">PEP</Badge>}
-              <CheckBadge result={p.check} label="BVN" />
+              <CheckBadge result={p.check} label={rules.primary.label} />
             </span>
           </li>
       )}

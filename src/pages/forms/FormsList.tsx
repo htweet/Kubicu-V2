@@ -74,7 +74,7 @@ function FormsListInner() {
   const forms = data?.forms ?? [];
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-5 py-8 md:px-8">
+    <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-8 px-5 py-8 md:px-10 md:py-12">
       <PageHeader
         title="Forms"
         description="Build a form, add it to any page with the Form block, and answer responses here."

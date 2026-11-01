@@ -6,7 +6,8 @@ import { PageOverlay } from '../blocks/PageOverlay';
 import { mix } from '../blocks/pageStyle';
 import { CheckoutHeading, PrimaryButton, SheetActions, ThemedField } from '../checkout/checkoutUi';
 import { isValidEmail } from '../../utils/validation';
-import { isNigerianMobile, maskContact, membershipsFor, newSession, normaliseContact, normalisePhone, type MemberSession } from '../../utils/members';
+import { phonePlaceholder } from '../../utils/phone';
+import { isMobileNumber, maskContact, membershipsFor, newSession, normaliseContact, normalisePhone, type MemberSession } from '../../utils/members';
 
 type Channel = 'phone' | 'email';
 type Delivery = 'whatsapp' | 'sms';
@@ -79,7 +80,7 @@ export function MemberSignInSheet({ open, onClose, theme: t, data, business, onS
 
   const submitContact = (e: React.FormEvent) => {
     e.preventDefault();
-    if (channel === 'phone' && !isNigerianMobile(value) && normalisePhone(value).length < 10) return setError('Enter the phone number you subscribed with, e.g. 0803 123 4567');
+    if (channel === 'phone' && !isMobileNumber(value) && normalisePhone(value).length < 10) return setError(`Enter the phone number you subscribed with, e.g. ${phonePlaceholder()}`);
     if (channel === 'email' && !isValidEmail(value)) return setError('Enter the email you subscribed with');
     if (canSignIn ? !canSignIn(contact, channel) : membershipsFor(data, contact, channel).length === 0) {
       setStep('none');
@@ -137,7 +138,7 @@ export function MemberSignInSheet({ open, onClose, theme: t, data, business, onS
             </div>
             {channel === 'phone' ?
           <>
-                <ThemedField theme={t} label="Phone number" type="tel" inputMode="tel" autoComplete="tel" placeholder="0803 123 4567" value={value} onChange={setValue} error={error} />
+                <ThemedField theme={t} label="Phone number" type="tel" inputMode="tel" autoComplete="tel" placeholder={phonePlaceholder()} value={value} onChange={setValue} error={error} />
                 <fieldset className="flex flex-col gap-2">
                   <legend className="mb-1 text-[13px] font-medium" style={{ color: t.text }}>
                     Send the code by

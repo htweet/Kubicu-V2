@@ -5,7 +5,8 @@ import type { Agreement, Partnership } from '../../types/partnership';
 import type { Partner } from '../../utils/collabs';
 import { searchDirectory, partnerDirectory } from '../../data/partnerDirectory';
 import { defaultAgreement, invite, inviteUrl, INVITE_DAYS, trustLabels } from '../../utils/partnerships';
-import { isNigerianMobile } from '../../utils/members';
+import { isMobileNumber } from '../../utils/members';
+import { phoneIssueIn, phonePlaceholder } from '../../utils/phone';
 import { whatsappLink } from '../../utils/format';
 import { useT } from '../../contexts/LocaleContext';
 import { Sheet } from '../ui/Sheet';
@@ -68,7 +69,7 @@ export function WorkTogetherSheet({ open, onClose, leadName, takenHandles, refer
 
   const guestErrors = {
     contactName: guest.contactName.trim().length < 2 ? tr('Enter their name') : '',
-    phone: !isNigerianMobile(guest.phone) ? tr('Enter a Nigerian mobile number, e.g. 0803 555 0142') : ''
+    phone: !isMobileNumber(guest.phone) ? phoneIssueIn(tr, guest.phone) ?? tr('Phone number looks incomplete') : ''
   };
   const partnerName = kind === 'connected' ? picked?.name ?? '' : guest.business.trim() || guest.contactName.trim();
   const canNext = kind === 'connected' ? !!picked : !guestErrors.contactName && !guestErrors.phone;
@@ -189,7 +190,7 @@ export function WorkTogetherSheet({ open, onClose, leadName, takenHandles, refer
               <p className="text-caption text-fg-muted">{tr('They don’t need a KUBICU page. They get a simple partner page to accept, check your shared page, see their sales and be paid to their bank.')}</p>
               <div className="grid gap-4 sm:grid-cols-2">
                 <TextInput id="wt-name" label={tr('Their name')} value={guest.contactName} maxLength={60} onChange={(e) => setGuest((g) => ({ ...g, contactName: e.target.value }))} error={touched ? guestErrors.contactName || undefined : undefined} />
-                <TextInput id="wt-phone" label={tr('WhatsApp number')} type="tel" placeholder="0803 555 0142" value={guest.phone} maxLength={20} onChange={(e) => setGuest((g) => ({ ...g, phone: e.target.value }))} error={touched ? guestErrors.phone || undefined : undefined} />
+                <TextInput id="wt-phone" label={tr('WhatsApp number')} type="tel" placeholder={phonePlaceholder()} value={guest.phone} maxLength={20} onChange={(e) => setGuest((g) => ({ ...g, phone: e.target.value }))} error={touched ? guestErrors.phone || undefined : undefined} />
               </div>
               <TextInput id="wt-biz" label={tr('Business name')} optional placeholder={tr('e.g. Bayo Small Chops')} value={guest.business} maxLength={60} onChange={(e) => setGuest((g) => ({ ...g, business: e.target.value }))} hint={tr('Shown to your customers next to yours. Their name is used if empty.')} />
             </div>

@@ -4,6 +4,7 @@ import { BadgeCheckIcon, CheckIcon } from 'lucide-react';
 import type { Listing } from '../../../utils/marketplaceListings';
 import { listingKindById } from '../../../data/marketplaceKinds';
 import { useT } from '../../../contexts/LocaleContext';
+import { localiseAmounts } from '../../../utils/currency';
 import { ListingPreview } from './ListingPreview';
 import { ListingStatusLabel } from './ListingStatusLabel';
 
@@ -40,7 +41,7 @@ export function ListingCard({ listing, installed, showKind }: ListingCardProps) 
           </h3>
           <p className="mt-1.5 line-clamp-2 text-[14px] leading-snug text-fg-muted">{tr(listing.summary)}</p>
           <div className="mt-auto flex items-center justify-between gap-3 pt-4">
-            <span className="truncate text-[13px] font-semibold text-fg">{tr(listing.priceLabel)}</span>
+            <span className="truncate text-[13px] font-semibold text-fg">{localiseAmounts(tr(listing.priceLabel))}</span>
             {installed ?
             <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap text-[12px] font-semibold text-success">
                 <CheckIcon size={13} aria-hidden /> {tr('Installed')}

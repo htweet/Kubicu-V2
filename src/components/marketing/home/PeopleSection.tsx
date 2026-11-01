@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
 import { ArrowUpRightIcon } from 'lucide-react';
 import { RiseText } from './RiseText';
+import { MarqueeToggle } from './MarqueeToggle';
 import { Reveal } from '../Reveal';
 import { businessTypes } from '../../../data/marketing';
 import { peopleCards } from '../../../data/marketingHome';
@@ -12,6 +13,7 @@ import { useT } from '../../../contexts/LocaleContext';
 export function PeopleSection() {
   const { t: tr } = useT();
   const reduce = useReducedMotion();
+  const [typesPaused, setTypesPaused] = useState(false);
   return (
     <section aria-labelledby="people-heading" className="overflow-hidden bg-canvas py-20 md:py-28">
       <div className="mx-auto w-full max-w-7xl px-5 md:px-8">
@@ -51,7 +53,10 @@ export function PeopleSection() {
         <p className="mt-6 text-caption text-fg-subtle">{tr('People pictured are illustrative.')}</p>
       </div>
 
-      <div className="kb-marquee-host mt-16 border-y-2 border-fg py-5" aria-label={tr('Business types')}>
+      <div className="mx-auto mt-16 flex w-full max-w-7xl justify-end px-5 md:px-8">
+        <MarqueeToggle paused={typesPaused} onToggle={() => setTypesPaused((p) => !p)} />
+      </div>
+      <div className="kb-marquee-host mt-4 border-y-2 border-fg py-5" aria-label={tr('Business types')} data-paused={typesPaused}>
         <div className="kb-marquee flex w-max gap-10" style={{ ['--kb-marquee-duration' as string]: '40s' }}>
           {[...businessTypes, ...businessTypes].map((t, i) =>
           <span key={`${t}-${i}`} aria-hidden={i >= businessTypes.length || undefined} className="kb-display flex items-center gap-10 whitespace-nowrap text-[28px] text-fg md:text-[36px]">

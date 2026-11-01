@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ExternalLinkIcon, PenToolIcon, AlertTriangleIcon, ArrowRightIcon, SparklesIcon } from 'lucide-react';
 import { useEditor } from '../contexts/EditorContext';
 import { useWorkspace } from '../contexts/WorkspaceContext';
+import { useT } from '../contexts/LocaleContext';
 import { PageMiniPreview } from '../components/overview/PageMiniPreview';
 import { SetupChecklist } from '../components/overview/SetupChecklist';
 import { CopyLinkButton } from '../components/overview/CopyLinkButton';
@@ -23,7 +24,9 @@ function greeting(): string {
   return 'Good evening';
 }
 
+/** Home (D385). Every line goes through the translator so all eight languages work here. */
 export function Overview() {
+  const { t: tr } = useT();
   const { state, issues } = useEditor();
   const navigate = useNavigate();
   const { current } = useWorkspace();
@@ -31,24 +34,25 @@ export function Overview() {
   const errors = issues.filter((i) => i.severity === 'error').length;
   const warnings = issues.length - errors;
   const visible = draft.blocks.filter((b) => !b.visibility.hidden).length;
+  const hidden = draft.blocks.length - visible;
   const font = fontPairs.find((f) => f.id === draft.theme.fontPair)?.name ?? '—';
   const canvas = `/app/canvas/${draft.id}`;
 
   const facts = [
-  { label: 'Blocks', value: `${visible}${visible !== draft.blocks.length ? ` · ${draft.blocks.length - visible} hidden` : ''}` },
-  { label: 'Last edit', value: formatRelative(draft.updatedAt) },
-  { label: 'Published', value: state.publishedAt ? formatRelative(state.publishedAt) : 'Not yet' },
-  { label: 'Fonts', value: font }];
+  { label: tr('Blocks'), value: `${visible}${hidden ? ` · ${tr('Hidden: {n}', { n: hidden })}` : ''}` },
+  { label: tr('Last edit'), value: formatRelative(draft.updatedAt) },
+  { label: tr('Published'), value: state.publishedAt ? formatRelative(state.publishedAt) : tr('Not yet') },
+  { label: tr('Fonts'), value: font }];
 
 
   return (
     <div className="mx-auto w-full max-w-[1200px] px-5 py-8 md:px-10 md:py-12">
       <header className="flex flex-col gap-1">
         <p className="text-label font-medium text-fg-subtle">
-          {greeting()}
+          {tr(greeting())}
           {current.ownerName ? `, ${current.ownerName}` : ''}
         </p>
-        <h1 className="font-display text-title font-semibold text-fg md:text-display">Your corner of the internet</h1>
+        <h1 className="font-display text-title font-semibold text-fg md:text-display">{tr('Your corner of the internet')}</h1>
       </header>
       <ResumeOnboardingBanner />
       <PendingKitCard />
@@ -58,7 +62,7 @@ export function Overview() {
         <div className="grid lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
           <Link
             to={canvas}
-            aria-label={`Open ${draft.title} in the canvas`}
+            aria-label={tr('Open {name} in the canvas', { name: draft.title })}
             className="dot-stage group flex min-h-[360px] items-end justify-center overflow-hidden px-6 pt-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus lg:min-h-[440px]">
             
             <span className="block translate-y-6 transition-transform duration-200 ease-out group-hover:translate-y-3">
@@ -69,7 +73,7 @@ export function Overview() {
           <div className="flex flex-col border-t border-line p-6 md:p-8 lg:border-l lg:border-t-0 lg:p-10">
             <div className="flex flex-wrap items-center gap-2">
               <PageStatusBadge />
-              <span className="text-caption text-fg-subtle">Main page</span>
+              <span className="text-caption text-fg-subtle">{tr('Main page')}</span>
             </div>
             <h2 id="page-heading" className="mt-4 font-display text-[1.75rem] font-semibold leading-tight tracking-[-0.022em] text-fg md:text-[2rem]">
               {draft.title}
@@ -83,9 +87,9 @@ export function Overview() {
               
                 <AlertTriangleIcon size={16} strokeWidth={2.25} aria-hidden />
                 <span>
-                  {errors > 0 ? `${errors} to fix` : ''}
+                  {errors > 0 ? tr('To fix: {n}', { n: errors }) : ''}
                   {errors > 0 && warnings > 0 ? ' · ' : ''}
-                  {warnings > 0 ? `${warnings} worth checking` : ''}
+                  {warnings > 0 ? tr('Worth checking: {n}', { n: warnings }) : ''}
                 </span>
                 <ArrowRightIcon size={14} className="transition-transform duration-150 group-hover:translate-x-0.5" aria-hidden />
               </Link>
@@ -102,10 +106,10 @@ export function Overview() {
 
             <div className="mt-auto flex flex-wrap gap-2 pt-8">
               <Button size="lg" leadingIcon={PenToolIcon} onClick={() => navigate(canvas)}>
-                Open canvas
+                {tr('Open canvas')}
               </Button>
               <Button size="lg" variant="ai" leadingIcon={SparklesIcon} onClick={() => navigate('/app/assistant')}>
-                Build with AI
+                {tr('Build with AI')}
               </Button>
               <Button
                 size="lg"
@@ -114,7 +118,7 @@ export function Overview() {
                 disabled={!state.published}
                 onClick={() => navigate(`/p/${state.published?.handle ?? draft.handle}`)}>
                 
-                View live page
+                {tr('View live page')}
               </Button>
             </div>
           </div>

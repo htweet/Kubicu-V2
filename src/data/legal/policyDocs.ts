@@ -98,7 +98,7 @@ export const policyDocs: LegalDoc[] = [
     title: 'Verification',
     summary: 'Payouts and fundraising require verified identity and business details.',
     paragraphs: [
-    'To receive payouts you must complete verification (KYC for individuals, KYB for businesses), and the payout account must be in the verified person’s or registered business’s name. You consent to us and our licensed partners checking your BVN, NIN and CAC records. Payouts are held until verification is approved. Daily payout and balance limits apply according to your verification level.']
+    'To receive payouts you must complete verification (KYC for individuals, KYB for businesses), and the payout account must be in the verified person’s or registered business’s name. You consent to us and our licensed partners checking your identity and business records with the official sources in your country — in Nigeria your BVN, NIN and CAC records; in Kenya your national ID, KRA PIN and Business Registration Service records; in Ghana your Ghana Card and Registrar of Companies records; and in South Africa your ID number with Home Affairs, your SARS tax number and your CIPC records. [DRAFT — country wording pending legal review, D428] Payouts are held until verification is approved. Daily payout and balance limits apply according to your verification level.']
 
   },
   {

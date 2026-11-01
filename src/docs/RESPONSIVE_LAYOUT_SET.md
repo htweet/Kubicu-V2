@@ -28,7 +28,7 @@ Tailwind's defaults; `tailwind.config.js` doesn't override `screens`.
 | Surface | Max width |
 |---|---|
 | Workspace pages (Home, Audience, modules) | `max-w-[1200px]` |
-| Settings | `max-w-[1100px]` |
+| Settings | `max-w-[1200px]` (all workspace pages share this, D397) |
 | Website shell (header, footer) | `max-w-7xl` (1280) |
 | Website pricing body | `max-w-6xl` (1152) |
 | Seller page reading column | narrow 480 · **standard 560** · wide 760 (`contentWidthPx`) |
@@ -104,7 +104,7 @@ Phone (<768)                         Tablet/desktop (≥768)
 | Activity + setup checklist | Stacked | Stacked | `lg:grid-cols-[1fr_360px]` with a left rule |
 
 ### B5. Settings and forms
-- Settings (`pages/settings/Settings.tsx`): `SubNav` tab row at all widths (scrolls horizontally on phones), `max-w-[1100px]`.
+- Settings (`pages/settings/Settings.tsx`): `SubNav` tab row at all widths (scrolls horizontally on phones), `max-w-[1200px]`.
 - Label/value detail rows: stacked → `sm:grid-cols-[10rem_1fr]`.
 - Save actions live in dialog/sheet footers or inline section buttons; there are **no sticky page-level save bars** (autosaving screens show status instead).
 

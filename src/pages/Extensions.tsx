@@ -52,7 +52,7 @@ export function Extensions() {
   const showPicks = view === 'browse' && !q && cat === 'all';
 
   return (
-    <div className="mx-auto w-full max-w-[1100px] px-5 pb-16 pt-6 md:px-10 md:pt-8">
+    <div className="mx-auto w-full max-w-[1200px] px-5 pb-16 pt-6 md:px-10 md:pt-8">
       <PageHeader title="Extensions" context={current.name} description="Add features to your workspace. Every extension is built by KUBICU or reviewed by our team before it’s listed, and shows exactly what it can do before you install." />
 
       {showPicks &&

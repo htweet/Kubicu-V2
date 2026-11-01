@@ -7,6 +7,7 @@ import { usePlan } from '../../../contexts/PlanContext';
 import { useTeam } from '../../../contexts/TeamContext';
 import { useWorkspace } from '../../../contexts/WorkspaceContext';
 import { useT } from '../../../contexts/LocaleContext';
+import { localiseAmounts } from '../../../utils/currency';
 import { planAtLeast, plans } from '../../../data/plans';
 
 const primary =
@@ -87,7 +88,7 @@ export function InstallPanel({ listing }: {listing: Listing;}) {
   return (
     <aside aria-label={tr('Get it')} className="flex flex-col gap-3 rounded-[24px] bg-raised p-5 shadow-2">
       <div className="flex items-baseline justify-between gap-3">
-        <p className="text-[20px] font-extrabold text-fg">{tr(listing.priceLabel)}</p>
+        <p className="text-[20px] font-extrabold text-fg">{localiseAmounts(tr(listing.priceLabel))}</p>
         {listing.minPlan !== 'free' && listing.status !== 'planned' && <p className="text-[13px] font-semibold text-fg-muted">{tr('{plan} and above', { plan: plans[listing.minPlan].name })}</p>}
       </div>
       {body}

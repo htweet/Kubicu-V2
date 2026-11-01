@@ -1,5 +1,6 @@
 import React, { useId, useRef } from 'react';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
+import { useScrollLock } from '../../hooks/useScrollLock';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { XIcon } from 'lucide-react';
@@ -35,6 +36,7 @@ export function Dialog({ open, onClose, title, description, children, footer, si
 
   // Focus moves in, Tab stays inside, Escape closes, focus returns to the opener (D76).
   useFocusTrap(panelRef, open, () => onCloseRef.current());
+  useScrollLock(open);
   const { t } = useT();
   title = t(title);
   if (typeof description === 'string') description = t(description);

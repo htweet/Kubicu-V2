@@ -64,7 +64,7 @@ export function IntentFlow() {
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-5 py-8 md:px-8">
+    <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-8 px-5 py-8 md:px-10 md:py-12">
       <PageHeader title="IntentFlow" description={tr('Show different blocks depending on where a visit came from — your TikTok, a WhatsApp status, a QR code on your counter.')} />
 
       <p className="flex max-w-3xl items-start gap-2 text-caption text-fg-muted">

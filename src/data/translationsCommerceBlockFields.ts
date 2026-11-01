@@ -56,6 +56,7 @@ export const commerceBlockFieldsRows: [string, string, string, string, string][]
 ['Price on request', 'Ask for price', 'Béèrè iye owó', 'Farashi idan an tambaya', 'Ọnụahịa ma a jụọ'],
 ['KUBICU never invents prices — leave blank to show “Price on request”.', 'KUBICU no dey ever make up prices — leave am empty to show “Ask for price”.', 'KUBICU kì í hùmọ̀ iye owó — fi sílẹ̀ ní òfo láti fi “Béèrè iye owó” hàn.', 'KUBICU ba ya ƙirƙiro farashi — bar shi babu komai don nuna “Farashi idan an tambaya”.', 'KUBICU anaghị echepụta ọnụahịa — hapụ ya efu iji gosi “Ọnụahịa ma a jụọ”.'],
 ['KUBICU never invents prices. Leave blank to show “Price on request”.', 'KUBICU no dey ever make up prices. Leave am empty to show “Ask for price”.', 'KUBICU kì í hùmọ̀ iye owó. Fi sílẹ̀ ní òfo láti fi “Béèrè iye owó” hàn.', 'KUBICU ba ya ƙirƙiro farashi. Bar shi babu komai don nuna “Farashi idan an tambaya”.', 'KUBICU anaghị echepụta ọnụahịa. Hapụ ya efu iji gosi “Ọnụahịa ma a jụọ”.'],
+['Whole numbers, in your shop’s currency.', 'Whole numbers, for your shop currency.', 'Nọ́ńbà odidi, ní owó ṣọ́ọ̀bù rẹ.', 'Cikakkun lambobi, a kuɗin shagonka.', 'Ọnụọgụ zuru ezu, n’ego ụlọ ahịa gị.'],
 ['Naira, whole numbers.', 'Naira, whole numbers.', 'Náírà, nọ́ńbà odidi.', 'Naira, cikakkun lambobi.', 'Naịra, ọnụọgụ zuru ezu.'],
 ['Description', 'Description', 'Àpèjúwe', 'Bayani', 'Nkọwa'],
 ['Product photo', 'Product photo', 'Fọ́tò ọjà', 'Hoton kaya', 'Foto ngwaahịa'],

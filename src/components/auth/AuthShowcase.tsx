@@ -5,6 +5,7 @@ import { TemplateThumb } from '../templates/TemplateThumb';
 import { KbShape } from '../marketing/home/KbShape';
 import { findExampleById } from '../../data/examples';
 import { useT } from '../../contexts/LocaleContext';
+import { swapPreviewAmount } from '../../utils/previewMoney';
 
 const showcase = findExampleById('glow-by-halima')!;
 const ease = [0.23, 1, 0.32, 1] as const;
@@ -16,15 +17,15 @@ export type ShowcaseKind = 'signup' | 'signin';
  * moments floating beside it. Everything is labelled as an example of a fictional business.
  */
 export function AuthShowcase({ kind }: {kind: ShowcaseKind;}) {
-  const { t } = useT();
+  const { t, lang } = useT();
   const cards =
   kind === 'signup' ?
   [
   { icon: LinkIcon, title: 'kub.icu/glowbyhalima', text: t('Your link, ready to share') },
-  { icon: MessageCircleIcon, title: t('Order on WhatsApp'), text: t('Knotless braids · ₦35,000') }] :
+  { icon: MessageCircleIcon, title: t('Order on WhatsApp'), text: swapPreviewAmount(t('Knotless braids · ₦35,000'), 35000, lang) }] :
 
   [
-  { icon: ShoppingBagIcon, title: t('New order #1008'), text: t('Paid · ₦31,500') },
+  { icon: ShoppingBagIcon, title: t('New order #1008'), text: swapPreviewAmount(t('Paid · ₦31,500'), 31500, lang) },
   { icon: CalendarCheckIcon, title: t('Booking confirmed'), text: t('Sat 10:00 · Silk press') }];
 
   const steps = [t('Claim your link'), t('Build your page'), t('Share and sell')];

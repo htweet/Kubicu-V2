@@ -99,6 +99,7 @@ export function DesktopEditor() {
       <ConflictBanner />
       <div className="flex min-h-0 flex-1">
         <aside
+          id="canvas-left-panel"
           aria-label={tr('Blocks and layers')}
           className={cn('shrink-0 overflow-hidden border-r border-line bg-raised', panelMotion)}
           style={{ width: panels.left ? LEFT_W : RAIL }}>
@@ -131,6 +132,7 @@ export function DesktopEditor() {
         </main>
 
         <aside
+          id="canvas-right-panel"
           aria-label={tr('Inspector')}
           className={cn('shrink-0 overflow-hidden border-l border-line bg-raised', panelMotion)}
           style={{ width: panels.right ? RIGHT_W : RAIL }}>

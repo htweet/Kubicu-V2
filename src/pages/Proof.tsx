@@ -44,7 +44,7 @@ export function Proof() {
   const work = [...data.work].sort((a, b) => b.date.localeCompare(a.date));
 
   return (
-    <div className="mx-auto w-full max-w-[1100px] px-5 pb-16 pt-6 md:px-10 md:pt-8">
+    <div className="mx-auto w-full max-w-[1200px] px-5 pb-16 pt-6 md:px-10 md:pt-8">
       <PageHeader
         title="Proof of work"
         context={current.name}

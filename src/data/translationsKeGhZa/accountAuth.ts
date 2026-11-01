@@ -59,7 +59,7 @@ const rows: Row3[] = [
 ['Create your account', 'Fungua akaunti yako', 'Bue wo akawnt', 'Dala i-akhawunti yakho'],
 ['Free to start. You’ll build your page right after this.', 'Bure kuanza. Utajenga ukurasa wako mara baada ya hapa.', 'Ɛyɛ kwa sɛ wobɛfi aseɛ. Wobɛsi wo krataafa ntɛm ara wɔ yei akyi.', 'Mahhala ukuqala. Uzokwakha ikhasi lakho ngokushesha emva kwalokhu.'],
 ['Account', 'Akaunti', 'Akawnt', 'I-akhawunti'],
-['Confirm email', 'Thibitisha barua pepe', 'Si email so dua', 'Qinisekisa i-imeyili'],
+['Confirm email', 'Thibitisha barua', 'Si email so dua', 'Qinisekisa i-imeyili'],
 ['Your page', 'Ukurasa wako', 'Wo krataafa', 'Ikhasi lakho'],
 ['Getting started', 'Kuanza', 'Mfiaseɛ', 'Ukuqala'],
 ['Never made a website?', 'Hujawahi kutengeneza tovuti?', 'Wonnyɛɛ website da?', 'Awukaze wenze iwebhusayithi?'],

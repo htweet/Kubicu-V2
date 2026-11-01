@@ -27,6 +27,7 @@ import { analyzeBrief } from '../ai/brief';
 import { makePlan } from '../assistant/layout';
 import { parsePriceList } from '../assistant/priceList';
 import { uid } from '../id';
+import { findMobileNumber } from '../phone';
 import { readDraft } from './store';
 
 /**
@@ -37,7 +38,6 @@ import { readDraft } from './store';
 
 export const MIN_QUESTIONS = 3;
 export const MAX_QUESTIONS = 6;
-const PHONE = /(\+?234\s?\d{3}\s?\d{3}\s?\d{4}|0[789][01]\d[\s-]?\d{3}[\s-]?\d{4})/;
 
 const now = () => new Date().toISOString();
 
@@ -402,9 +402,10 @@ export function respond(prev: CopilotSession, input: CopilotInput): CopilotSessi
     case 'phone':{
         if (skip) return advance(s, 'Okay — the WhatsApp button stays hidden until you add a number.');
         const value = input.kind === 'choice' ? input.value : raw;
-        const m = PHONE.exec(value);
-        if (!m) return { ...s, messages: [...s.messages, msg('copilot', 'That doesn’t look like a Nigerian mobile number. Try 0803 123 4567 or +234 803 123 4567, or say skip.', { tone: 'warning' })] };
-        return advance({ ...s, answers: { ...a, phone: m[1].replace(/[\s-]/g, '') } });
+        // Any of our four countries; a number without a country code is read as the visitor's (D420).
+        const phone = findMobileNumber(value);
+        if (!phone) return { ...s, messages: [...s.messages, msg('copilot', 'That doesn’t look like a complete mobile number. Check the digits or add your country code (+234, +254, +233 or +27), or say skip.', { tone: 'warning' })] };
+        return advance({ ...s, answers: { ...a, phone } });
       }
     case 'city':{
         if (skip) return advance(s);

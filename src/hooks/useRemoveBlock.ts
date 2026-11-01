@@ -23,7 +23,18 @@ export function useRemoveBlock() {
         return;
       }
       const kids = isContainer(block) ? childrenOf(state.draft.blocks, id) : [];
+      // Keyboard focus moves to the neighbouring block (or the canvas) instead of falling to the page top (D429).
+      const gone = new Set([id, ...kids.map((k) => k.id)]);
+      const rest = state.draft.blocks.filter((b) => !gone.has(b.id));
+      const neighbour = rest[Math.min(index, rest.length - 1)] ?? null;
+      const hadFocus = !!document.activeElement?.closest(`[data-block-id="${id}"], [data-layer-row]`);
       actions.removeBlock(id);
+      if (hadFocus) {
+        window.requestAnimationFrame(() => {
+          const next = neighbour ? document.querySelector<HTMLElement>(`[data-block-id="${neighbour.id}"]`) : null;
+          (next ?? document.getElementById('canvas-main'))?.focus();
+        });
+      }
       if (kids.length) {
         toast(`${blockName(block)} and ${kids.length} block${kids.length === 1 ? '' : 's'} inside deleted`, {
           action: { label: 'Undo', onClick: () => actions.restoreBlocks([block, ...kids], index) }

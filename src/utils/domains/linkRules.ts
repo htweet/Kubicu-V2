@@ -4,6 +4,8 @@ import type { CommerceData } from '../../types/commerce';
 import { checkDestination } from '../linkSafety';
 import { isValidPhone } from '../validation';
 import { whatsappLink } from '../format';
+import { phoneIssue, splitPhone } from '../phone';
+import { countryInfo } from '../country';
 import { destinationExists, destinationLabel, linkEnded } from './links';
 
 /*
@@ -41,16 +43,21 @@ export function linkOffsite(link: CampaignLink): boolean {
 
 export const WA_MESSAGE_MAX = 500;
 
-/** Digits in international form. Nigerian numbers written 080… become 23480…. */
+/**
+ * Digits in international form. New links are saved as "+254 712 345 678" by the phone field; older links
+ * typed as a local number (0803…, 0712…) get the workspace country's code instead of always +234 (D402).
+ */
 export function waNumber(raw: string): string {
-  const digits = raw.replace(/[^0-9]/g, '');
-  if (digits.length === 11 && digits.startsWith('0')) return `234${digits.slice(1)}`;
-  return digits;
+  const { country, local, foreign } = splitPhone(raw);
+  if (foreign) return raw.replace(/[^0-9]/g, '').replace(/^00/, '');
+  return local ? `${countryInfo(country).dialCode}${local}` : '';
 }
 
 export function waPhoneError(raw: string): string | undefined {
   if (!raw.trim()) return 'Add the WhatsApp number people should message.';
-  if (!isValidPhone(raw) || waNumber(raw).length < 10) return 'Use a full number, e.g. 0803 000 0000 or +234 803 000 0000.';
+  const issue = phoneIssue(raw);
+  if (issue) return issue;
+  if (!isValidPhone(raw) || waNumber(raw).length < 10) return 'Phone number looks incomplete';
   return undefined;
 }
 

@@ -1,6 +1,8 @@
 import type { Block } from '../types/page';
 import type { ValidationIssue } from './validation';
+import type { CountryInfo } from '../types/country';
 import { parseEmbed, providerMeta } from './embeds';
+import { activeCountryInfo } from './country';
 
 /**
  * Canvas "Check" tab (D126): an automatic accessibility pass and a page-weight estimate,
@@ -133,8 +135,11 @@ export interface PageWeight {
   items: WeightItem[];
   seconds3g: number;
   seconds4g: number;
-  /** Naira of mobile data for one visit, at an assumed ₦650 per GB. */
-  dataNgn: number;
+  /** Mobile data cost of one visit in the workspace country's currency, at that country's example price per GB (D404). */
+  dataCost: number;
+  /** The currency of `dataCost` and the price per GB it assumed. */
+  dataCurrency: CountryInfo['currency'];
+  dataPerGb: number;
   rating: 'light' | 'ok' | 'heavy';
 }
 
@@ -142,7 +147,6 @@ export interface PageWeight {
 const BASE_KB = 140;
 /** Guess for a photo hosted on another site. */
 const REMOTE_KB = 180;
-const NGN_PER_GB = 650;
 
 function urlKb(url: string): {kb: number;guessed: boolean;} | null {
   if (!url) return null;
@@ -195,14 +199,17 @@ export function pageWeight(blocks: Block[]): PageWeight {
 
   const mediaKb = items.reduce((s, i) => s + i.kb, 0);
   const totalKb = BASE_KB + mediaKb;
+  const country = activeCountryInfo();
   return {
     totalKb,
     deferredKb: deferredKb + mediaKb,
     items: items.sort((a, b) => b.kb - a.kb),
-    // 3G ≈ 750 kbps ≈ 90 KB/s; 4G ≈ 6 Mbps ≈ 700 KB/s (typical Nigerian mobile speeds, not best case).
+    // 3G ≈ 750 kbps ≈ 90 KB/s; 4G ≈ 6 Mbps ≈ 700 KB/s (typical mobile speeds across our markets, not best case).
     seconds3g: Math.max(1, Math.round(totalKb / 90)),
     seconds4g: Math.max(1, Math.round(totalKb / 700 * 10) / 10),
-    dataNgn: Math.max(1, Math.round(totalKb / (1024 * 1024) * NGN_PER_GB)),
+    dataCost: totalKb / (1024 * 1024) * country.dataPerGb,
+    dataCurrency: country.currency,
+    dataPerGb: country.dataPerGb,
     rating: totalKb < 1000 ? 'light' : totalKb < 3000 ? 'ok' : 'heavy'
   };
 }

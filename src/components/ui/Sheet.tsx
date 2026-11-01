@@ -1,5 +1,6 @@
 import React, { useId, useRef } from 'react';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
+import { useScrollLock } from '../../hooks/useScrollLock';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { XIcon } from 'lucide-react';
@@ -42,6 +43,7 @@ export function Sheet({
   onCloseRef.current = onClose;
   // Focus moves in, Tab stays inside, Escape closes, focus returns to the opener (D76).
   useFocusTrap(panelRef, open, () => onCloseRef.current());
+  useScrollLock(open);
   const { t } = useT();
   title = t(title);
   description = description && t(description);

@@ -6,6 +6,7 @@ import { PlanLock } from '../ui/PlanLock';
 import { cn } from '../../utils/cn';
 import { allBlocks } from '../../utils/sitePages';
 import { useDomains } from '../../contexts/DomainsContext';
+import { useT } from '../../contexts/LocaleContext';
 
 interface Step {
   id: string;
@@ -19,6 +20,7 @@ interface Step {
 }
 
 export function SetupChecklist() {
+  const { t: tr } = useT();
   const { state, issues, hasUnpublishedChanges } = useEditor();
   const types = new Set(allBlocks(state.site).filter((b) => !b.visibility.hidden).map((b) => b.type));
   const canvas = `/app/canvas/${state.draft.id}`;
@@ -45,7 +47,7 @@ export function SetupChecklist() {
   {
     id: 'checks',
     label: 'Clear the pre-publish checks',
-    hint: issues.length ? `${issues.length} item${issues.length === 1 ? '' : 's'} to review in the canvas.` : 'Links, images and contrast look good.',
+    hint: issues.length ? tr('Items to review in the canvas: {n}', { n: issues.length }) : 'Links, images and contrast look good.',
     done: issues.length === 0,
     to: canvas
   },
@@ -69,10 +71,10 @@ export function SetupChecklist() {
         <ProgressRing done={done} total={countable.length} />
         <div>
           <h2 id="setup-heading" className="text-heading font-semibold text-fg">
-            Setup
+            {tr('Setup')}
           </h2>
           <p className="text-caption text-fg-subtle">
-            {done === countable.length ? 'All set — nice work.' : `${countable.length - done} step${countable.length - done === 1 ? '' : 's'} left`}
+            {done === countable.length ? tr('All set — nice work.') : tr('Steps left: {n}', { n: countable.length - done })}
           </p>
         </div>
       </div>
@@ -92,12 +94,12 @@ export function SetupChecklist() {
               </span>
               <span className="min-w-0 flex-1">
                 <span className={cn('block text-label font-medium', step.done ? 'text-fg-muted' : 'text-fg', step.planned && 'text-fg-subtle')}>
-                  <span className="sr-only">{step.done ? 'Done: ' : 'To do: '}</span>
-                  {step.label}
+                  <span className="sr-only">{step.done ? `${tr('Done:')} ` : `${tr('To do:')} `}</span>
+                  {tr(step.label)}
                 </span>
                 <span className="block text-caption text-fg-subtle">
-                  {step.optional && !step.done && <span className="font-medium text-fg-muted">Optional · </span>}
-                  {step.hint}
+                  {step.optional && !step.done && <span className="font-medium text-fg-muted">{tr('Optional')} · </span>}
+                  {tr(step.hint)}
                 </span>
               </span>
               {step.planned ?
@@ -125,10 +127,11 @@ export function SetupChecklist() {
 }
 
 function ProgressRing({ done, total }: {done: number;total: number;}) {
+  const { t: tr } = useT();
   const r = 20;
   const c = 2 * Math.PI * r;
   return (
-    <span className="relative flex h-12 w-12 shrink-0 items-center justify-center" role="progressbar" aria-label="Setup progress" aria-valuemin={0} aria-valuemax={total} aria-valuenow={done}>
+    <span className="relative flex h-12 w-12 shrink-0 items-center justify-center" role="progressbar" aria-label={tr('Setup progress')} aria-valuemin={0} aria-valuemax={total} aria-valuenow={done}>
       <svg width="48" height="48" viewBox="0 0 48 48" aria-hidden className="-rotate-90">
         <circle cx="24" cy="24" r={r} fill="none" strokeWidth="4" className="stroke-sunken" />
         <circle

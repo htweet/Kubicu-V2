@@ -91,7 +91,7 @@ function FormEditorInner() {
   const statusBadge = form.status === 'live' ? <Badge tone="success">Live</Badge> : form.status === 'closed' ? <Badge tone="warning">Closed</Badge> : <Badge>Draft</Badge>;
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-5 py-8 md:px-8">
+    <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-6 px-5 py-8 md:px-10 md:py-12">
       <div className="flex flex-col gap-4">
         <Link to="/app/forms" className="inline-flex w-fit items-center gap-1.5 text-label text-fg-muted hover:text-fg">
           <ArrowLeftIcon size={15} aria-hidden /> {tr('All forms')}

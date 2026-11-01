@@ -20,6 +20,7 @@ import { PageStack, Section } from '../../components/ui/layout/Section';
 import { formatTimestamp } from '../../utils/format';
 import { cn } from '../../utils/cn';
 import { useT } from '../../contexts/LocaleContext';
+import { activeCountry } from '../../utils/country';
 
 export function Payments() {
   const { t: tr } = useT();
@@ -135,7 +136,7 @@ export function Payments() {
           id="pay-business"
           label={tr('Registered business name')}
           value={business}
-          placeholder={tr('As it appears on your CAC certificate')}
+          placeholder={activeCountry() === 'NG' ? tr('As it appears on your CAC certificate') : tr('As it appears on your registration certificate')}
           hint={tr('Shown on your customers’ bank statements.')}
           onChange={(e) => setBusiness(e.target.value)} />
 

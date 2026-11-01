@@ -4,6 +4,7 @@ import { BlockRenderer, spacingClass } from './BlockRenderer';
 import { LayoutRow } from './LayoutRow';
 import { bandJoins, layoutRows, pageContentWidth, sectionTheme } from '../../utils/pageLayout';
 import { BlockChildrenProvider, type BlockChildrenValue } from '../../contexts/BlockChildrenContext';
+import { localiseBlockAmounts } from '../../utils/previewMoney';
 
 interface PageLayoutViewProps {
   doc: Pick<PageDocument, 'layout'>;
@@ -15,7 +16,9 @@ interface PageLayoutViewProps {
 }
 
 /** Read-only render of a page's layout rows (D153), for previews, thumbnails and the template library. Containers draw their own blocks (D167). */
-export function PageLayoutView({ doc, blocks, theme, mode, wide }: PageLayoutViewProps) {
+export function PageLayoutView({ doc, blocks: source, theme, mode, wide }: PageLayoutViewProps) {
+  // On the website, typed "₦…" in example pages follows the visitor's language (D423); unchanged elsewhere.
+  const blocks = localiseBlockAmounts(source);
   const columnPx = pageContentWidth(doc);
   const childCtx: BlockChildrenValue = {
     childrenOf: (id) => blocks.filter((b) => b.parentId === id),

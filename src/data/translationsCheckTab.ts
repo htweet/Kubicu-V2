@@ -81,6 +81,8 @@ export const checkTabRows: [string, string, string, string, string][] = [
 ['On 3G', 'For 3G', 'Lórí 3G', 'A 3G', 'Na 3G'],
 ['On 4G', 'For 4G', 'Lórí 4G', 'A 4G', 'Na 4G'],
 ['Data cost', 'Data cost', 'Owó dátà', 'Kuɗin bayanai', 'Ọnụahịa data'],
+['Under {amount}', 'Under {amount}', 'Lábẹ́ {amount}', 'Ƙasa da {amount}', 'N’okpuru {amount}'],
+['Estimates at typical mobile speeds and about {price} per GB of data. Videos aren’t counted until tapped.', 'Estimates for normal mobile speeds and about {price} per GB of data. We no dey count videos until person tap dem.', 'Ìfojúdíwọ̀n ní ìyára alágbèéká tí ó wọ́pọ̀ àti nǹkan bí {price} fún GB dátà kọ̀ọ̀kan. A kò ka fídíò títí a ó fi tẹ̀ wọ́n.', 'Ƙiyasi a saurin waya na yau da kullum da kusan {price} kan kowane GB na bayanai. Ba a ƙirga bidiyo sai an taɓa su.', 'Atụmatụ na ọsọ ekwentị a na-ahụkarị na ihe dị ka {price} kwa GB data. Anaghị agụ vidiyo ruo mgbe a pịara ha.'],
 ['Under ₦2', 'Under ₦2', 'Lábẹ́ ₦2', 'Ƙasa da ₦2', 'N’okpuru ₦2'],
 ['Estimates at typical Nigerian mobile speeds and about ₦650 per GB of data. Videos aren’t counted until tapped.', 'Estimates for normal Nigerian mobile speeds and about ₦650 per GB of data. We no dey count videos until person tap dem.', 'Ìfojúdíwọ̀n ní ìyára alágbèéká Nàìjíríà tí ó wọ́pọ̀ àti nǹkan bí ₦650 fún GB dátà kọ̀ọ̀kan. A kò ka fídíò títí a ó fi tẹ̀ wọ́n.', 'Ƙiyasi a saurin wayar Najeriya na yau da kullum da kusan ₦650 kan kowane GB na bayanai. Ba a ƙirga bidiyo sai an taɓa su.', 'Atụmatụ na ọsọ ekwentị Naịjirịa a na-ahụkarị na ihe dị ka ₦650 kwa GB data. Anaghị agụ vidiyo ruo mgbe a pịara ha.'],
 ['Biggest images', 'Biggest images', 'Àwòrán tí ó tóbi jù', 'Manyan hotuna', 'Onyonyo kachasị ibu'],

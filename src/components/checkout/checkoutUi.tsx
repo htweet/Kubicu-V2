@@ -91,7 +91,7 @@ export function ThemedField({
         style={{ ...inputStyle(theme), borderColor: error ? '#c0392b' : undefined }} />
       
       {error &&
-      <p id={`${id}-err`} className="text-[12.5px] font-medium" style={{ color: theme.text }}>
+      <p id={`${id}-err`} role="alert" className="text-[12.5px] font-medium" style={{ color: theme.text }}>
           {error}
         </p>
       }

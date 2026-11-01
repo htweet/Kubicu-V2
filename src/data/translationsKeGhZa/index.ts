@@ -10,13 +10,69 @@ import { trackingWallet } from './trackingWallet';
 import { commerceTabs1 } from './commerceTabs1';
 import { commerceTabs2 } from './commerceTabs2';
 import { commerceTabs3 } from './commerceTabs3';
+import { bookingsAudience } from './bookingsAudience';
+import { automations1 } from './automations1';
+import { automations2 } from './automations2';
+import { formsAnalytics } from './formsAnalytics';
+import { domains1 } from './domains1';
+import { domains2 } from './domains2';
+import { qrPrint } from './qrPrint';
+import { siteAfrica } from './siteAfrica';
+import { intentAsk } from './intentAsk';
+import { opsPages } from './opsPages';
+import { siteHome } from './siteHome';
+import { sitePricing } from './sitePricing';
+import { siteFrame } from './siteFrame';
+import { siteFeatures } from './siteFeatures';
+import { siteSolutions } from './siteSolutions';
+import { siteCompanyAi } from './siteCompanyAi';
+import { siteCopilotCreators } from './siteCopilotCreators';
+import { siteLinksAudience } from './siteLinksAudience';
+import { siteTemplatesMarket } from './siteTemplatesMarket';
+import { siteListingDevelopers } from './siteListingDevelopers';
+import { siteHelpContact } from './siteHelpContact';
+import { home } from './home';
+import { canvasChrome } from './canvasChrome';
+import { blockNames } from './blockNames';
+import { inspectorLayers } from './inspectorLayers';
+import { publishCheck } from './publishCheck';
+import { templatesThemes } from './templatesThemes';
+import { pagePanel } from './pagePanel';
+import { pagePanelMore } from './pagePanelMore';
+import { coreBlockFields } from './coreBlockFields';
+import { commerceBlockFields } from './commerceBlockFields';
+import { eventBlockFields } from './eventBlockFields';
+import { mediaBlockFields } from './mediaBlockFields';
+import { layoutBlockFields } from './layoutBlockFields';
+import { storyBlockFields } from './storyBlockFields';
+import { smartSignupBlockFields } from './smartSignupBlockFields';
+import { round2BlockFields } from './round2BlockFields';
+import { canvasFinal } from './canvasFinal';
+import { blockLooks } from './blockLooks';
+import { settingsTabs } from './settingsTabs';
+import { accountSettings } from './accountSettings';
+import { availability } from './availability';
+import { panels } from './panels';
+import { paySubs } from './paySubs';
+import { formErrorsSpecial1 } from './formErrorsSpecial1';
+import { specialPages23 } from './specialPages23';
+import { collabPartners } from './collabPartners';
+import { websiteGapsBuilt } from './websiteGapsBuilt';
+import { kyc } from './kyc';
+import { batch1314 } from './batch1314';
+import { copilotChat } from './copilotChat';
+import { copilotQuestions } from './copilotQuestions';
+import { publicMoney } from './publicMoney';
+import { kycCountriesKeGhZa } from './kycCountries';
+import { kycFollowups } from './kycFollowups';
+import { a11yLabels } from './a11yLabels';
 
 /**
  * Every Kiswahili, Twi and isiZulu pass, merged (D356). Add each new pass file here; later files win on overlap.
  * Missing phrases fall back to English, so each pass can ship on its own.
  */
 // Earlier entries are overridden by later ones: screen-specific passes first, the shared frame last.
-const passes = [commerceTabs3, commerceTabs2, commerceTabs1, trackingWallet, commerceMoney, commerceDetail, commerce, checkoutStatus, accountAuth, appFrame, frame];
+const passes = [a11yLabels, kycFollowups, kycCountriesKeGhZa, publicMoney, copilotQuestions, copilotChat, batch1314, kyc, websiteGapsBuilt, collabPartners, specialPages23, formErrorsSpecial1, paySubs, panels, accountSettings, availability, settingsTabs, blockLooks, canvasFinal, round2BlockFields, smartSignupBlockFields, storyBlockFields, layoutBlockFields, mediaBlockFields, eventBlockFields, commerceBlockFields, coreBlockFields, pagePanelMore, pagePanel, templatesThemes, publishCheck, inspectorLayers, blockNames, canvasChrome, home, siteHelpContact, siteListingDevelopers, siteTemplatesMarket, siteLinksAudience, siteCopilotCreators, siteCompanyAi, siteSolutions, siteFeatures, siteFrame, sitePricing, siteHome, opsPages, intentAsk, siteAfrica, qrPrint, domains2, domains1, formsAnalytics, automations2, automations1, bookingsAudience, commerceTabs3, commerceTabs2, commerceTabs1, trackingWallet, commerceMoney, commerceDetail, commerce, checkoutStatus, accountAuth, appFrame, frame];
 
 const merge = (lang: 'sw' | 'tw' | 'zu'): Dict => Object.assign({}, ...passes.map((p) => p[lang]));
 

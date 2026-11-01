@@ -6,6 +6,9 @@ import type { ClaimStep, PendingClaim } from '../../../utils/copilot/claim';
 import { TextInput } from '../../ui/TextInput';
 import { Button } from '../../ui/Button';
 import { isValidEmail } from '../../../utils/validation';
+import { findMobileNumber } from '../../../utils/phone';
+import { countryForLanguage } from '../../../utils/country';
+import { useT } from '../../../contexts/LocaleContext';
 
 interface Props {
   step: Extract<ClaimStep, 'signup' | 'verify' | 'setup'>;
@@ -21,7 +24,6 @@ interface Props {
   backTo?: ClaimStep;
 }
 
-const PHONE = /^(\+?234|0)[789][01]\d{8}$/;
 
 /** New account: sign up → confirm email → a short setup already filled in from the brief (D264). */
 export function ClaimNewAccount({ step, pending, draft, chatPhone, failFirst, onStep, onFinish, backTo }: Props) {
@@ -146,17 +148,20 @@ function SetupStep({ pending, draft, chatPhone, onStep, onFinish, backTo }: {pen
   const [whatsapp, setWhatsapp] = useState(chatPhone);
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { lang } = useT();
+  // No workspace yet, so a number without a country code is read as the visitor's language's country (D420).
+  const phone = whatsapp.trim() ? findMobileNumber(whatsapp, countryForLanguage(lang)) : '';
   const errors = {
     workspaceName: workspaceName.trim() ? '' : 'Give your workspace a name',
     ownerName: ownerName.trim() ? '' : 'Enter your name',
-    whatsapp: !whatsapp.trim() || PHONE.test(whatsapp.replace(/[\s-]/g, '')) ? '' : 'Use a Nigerian mobile number, like 0803 123 4567'
+    whatsapp: phone === null ? 'Enter a complete mobile number with its country code, like +254 712 345 678' : ''
   };
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitted(true);
     if (Object.values(errors).some(Boolean)) return;
     setLoading(true);
-    window.setTimeout(() => onFinish({ workspaceName: workspaceName.trim(), ownerName: ownerName.trim(), whatsapp: whatsapp.replace(/[\s-]/g, '') }), 350);
+    window.setTimeout(() => onFinish({ workspaceName: workspaceName.trim(), ownerName: ownerName.trim(), whatsapp: phone ?? '' }), 350);
   };
   return (
     <form onSubmit={submit} noValidate className="flex flex-col gap-4">

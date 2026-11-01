@@ -7,6 +7,7 @@ import { useWorkspace } from '../../contexts/WorkspaceContext';
 import { roleInfo } from '../../data/permissions';
 import { isValidEmail, isValidPhone } from '../../utils/validation';
 import { inviteState } from '../../utils/team';
+import { dialPrefix } from '../../utils/phone';
 import { Dialog } from '../ui/Dialog';
 import { Button } from '../ui/Button';
 import { TextInput } from '../ui/TextInput';
@@ -98,7 +99,7 @@ export function InviteDialog({ open, onClose }: {open: boolean;onClose: () => vo
         </div> :
 
       <div className="flex flex-col gap-5">
-          <TextInput id="invite-contact" label="Email or phone" value={contact} placeholder="name@example.com or +234 …" error={tried ? error || undefined : undefined} onChange={(e) => setContact(e.target.value)} />
+          <TextInput id="invite-contact" label="Email or phone" value={contact} placeholder={`name@example.com or ${dialPrefix()}`} error={tried ? error || undefined : undefined} onChange={(e) => setContact(e.target.value)} />
           <RolePicker value={role} onChange={setRole} />
           {role !== 'admin' && <SpaceAccessField value={spaceIds} onChange={setSpaceIds} />}
           {role === 'admin' && <p className="text-caption text-fg-muted">{tr('Admins can always edit every space.')}</p>}

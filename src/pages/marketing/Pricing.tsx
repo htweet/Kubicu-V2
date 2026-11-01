@@ -10,6 +10,7 @@ import type { BillingCycle } from '../../types/billing';
 import { useT } from '../../contexts/LocaleContext';
 import { priceFor, yearlySaving } from '../../utils/billing';
 import { formatNaira as formatNgn } from '../../utils/format';
+import { displayConversion, localiseAmounts } from '../../utils/currency';
 import { Button } from '../../components/ui/Button';
 import { Segmented } from '../../components/ui/Segmented';
 import { FaqList } from '../../components/marketing/FaqList';
@@ -46,6 +47,7 @@ export function Pricing() {
             } />
           
           <p className="text-caption text-fg-subtle">{tr('Launch prices. Nobody is charged in this prototype.')}</p>
+          {displayConversion() && <p className="text-caption text-fg-subtle">{tr('Shown in {currency} at an example rate. The final price is confirmed when you pay.', { currency: displayConversion() ?? '' })}</p>}
         </div>
       </header>
 
@@ -61,9 +63,9 @@ export function Pricing() {
                 {isFeatured && <span className="nm-fill whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-semibold text-[rgb(16_14_26)]">{tr('Most chosen')}</span>}
               </div>
               <p className="mt-1 min-h-[40px] text-caption text-fg-subtle">{tr(plans[id].intendedFor)}</p>
-              <p className="mt-5 flex items-baseline gap-1">
-                <span className="font-display text-[30px] font-semibold tabular-nums tracking-[-0.02em] text-fg">{price === 0 ? '₦0' : formatNgn(price)}</span>
-                {price > 0 && <span className="text-caption text-fg-muted">{tr(cycle === 'yearly' ? '/yr' : '/mo')}</span>}
+              <p className="mt-5 flex min-w-0 flex-wrap items-baseline gap-x-1">
+                <span className="font-display text-[30px] font-semibold tabular-nums tracking-[-0.02em] text-fg">{formatNgn(price)}</span>
+                {price > 0 && <span className="whitespace-nowrap text-caption text-fg-muted">{tr(cycle === 'yearly' ? '/yr' : '/mo')}</span>}
               </p>
               <p className="min-h-[20px] text-caption text-success">{cycle === 'yearly' && price > 0 ? tr('Save {amount}', { amount: formatNgn(yearlySaving(id)) }) : ''}</p>
               <Button variant={isFeatured ? 'brand' : id === 'free' ? 'primary' : 'secondary'} fullWidth className="mt-5" onClick={() => navigate('/signup')}>
@@ -73,7 +75,7 @@ export function Pricing() {
                 {planHighlights[id].map((h) =>
               <li key={h} className="flex gap-2 text-label text-fg-muted">
                     <CheckIcon size={15} strokeWidth={2.4} className="mt-0.5 shrink-0 text-[rgb(var(--nm-1))]" aria-hidden />
-                    {tr(h)}
+                    {localiseAmounts(tr(h))}
                   </li>
               )}
               </ul>
@@ -137,7 +139,7 @@ export function Pricing() {
                           </span>
                     }
                       </span>
-                      {row.note && <span className="block text-caption font-normal text-fg-subtle">{tr(row.note)}</span>}
+                      {row.note && <span className="block text-caption font-normal text-fg-subtle">{localiseAmounts(tr(row.note))}</span>}
                     </th>
                     {shown.map((id) =>
                 <td key={id} className={cn('px-4 py-3.5 text-label', id === featured && 'bg-sunken/50')}>
@@ -164,9 +166,9 @@ export function Pricing() {
                 </span>
                 <h3 className="text-heading font-semibold text-fg">{tr(a.name)}</h3>
               </div>
-              <p className="mt-3 text-label leading-relaxed text-fg-muted">{tr(a.text)}</p>
+              <p className="mt-3 text-label leading-relaxed text-fg-muted">{localiseAmounts(tr(a.text))}</p>
               <div className="mt-auto flex items-center justify-between gap-3 border-t border-line pt-4 text-caption">
-                <span className="font-semibold text-fg">{tr(a.price)}</span>
+                <span className="font-semibold text-fg">{localiseAmounts(tr(a.price))}</span>
                 <span className="text-right text-fg-subtle">{tr(a.plan)}</span>
               </div>
             </li>
@@ -181,7 +183,7 @@ export function Pricing() {
           <dl className="mt-8 flex flex-col gap-3 rounded-2xl border border-line bg-raised p-5 text-label">
             <div className="flex justify-between gap-4">
               <dt className="text-fg-muted">{tr('Payment provider')}</dt>
-              <dd className="font-semibold tabular-nums text-fg">1.5% + ₦100</dd>
+              <dd className="font-semibold tabular-nums text-fg">{localiseAmounts('1.5% + ₦100')}</dd>
             </div>
             <div className="flex justify-between gap-4">
               <dt className="text-fg-muted">{tr('KUBICU fee')}</dt>
@@ -202,5 +204,5 @@ function CellValue({ value }: {value: Cell;}) {
   const { t: tr } = useT();
   if (value === true) return <CheckIcon size={17} strokeWidth={2.4} className="text-success" aria-label={tr('Included')} />;
   if (value === false) return <MinusIcon size={17} className="text-fg-subtle" aria-label={tr('Not included')} />;
-  return <span className="tabular-nums text-fg-muted">{tr(value)}</span>;
+  return <span className="tabular-nums text-fg-muted">{localiseAmounts(tr(value))}</span>;
 }

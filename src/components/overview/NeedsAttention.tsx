@@ -6,9 +6,11 @@ import { useCommerce } from '../../contexts/CommerceContext';
 import { useOps } from '../../contexts/OpsContext';
 import { isLowStock, isSoldOut } from '../../utils/commerce/catalog';
 import { useNotifications } from '../../contexts/NotificationsContext';
+import { useT } from '../../contexts/LocaleContext';
 
 /** Compact row of things to act on today. Hidden when there's nothing to do. */
 export function NeedsAttention() {
+  const { t: tr } = useT();
   const { data } = useCommerce();
   const toFulfil = data.orders.filter((o) => o.status === 'paid' || o.status === 'packing').length;
   const toConfirm = data.orders.filter((o) => o.status === 'new').length;
@@ -26,15 +28,16 @@ export function NeedsAttention() {
   const notifications = useNotifications();
 
   const items = [
-  reviews > 0 && { id: 'reviews', icon: SendIcon, label: `${reviews} change${reviews === 1 ? '' : 's'} to review`, to: '/app/settings/approvals' },
-  unseen[0] && { id: 'notice', icon: BellIcon, label: unseen.length > 1 ? `${unseen[0].text} (+${unseen.length - 1} more)` : unseen[0].text, to: unseen[0].href ?? '/app/settings/approvals' },
-  todayBookings > 0 && { id: 'today', icon: CalendarIcon, label: `${todayBookings} booking${todayBookings === 1 ? '' : 's'} today`, to: '/app/bookings' },
-  newLeads > 0 && { id: 'leads', icon: UsersIcon, label: `${newLeads} new lead${newLeads === 1 ? '' : 's'}`, to: '/app/audience' },
-  dueTasks > 0 && { id: 'tasks', icon: UsersIcon, label: `${dueTasks} follow-up${dueTasks === 1 ? '' : 's'} due`, to: '/app/audience' },
-  toFulfil > 0 && { id: 'fulfil', icon: ReceiptIcon, label: `${toFulfil} order${toFulfil === 1 ? '' : 's'} to fulfil`, to: '/app/commerce/orders?status=paid' },
-  toConfirm > 0 && { id: 'confirm', icon: ReceiptIcon, label: `${toConfirm} awaiting payment`, to: '/app/commerce/orders?status=new' },
-  disputes > 0 && { id: 'dispute', icon: GavelIcon, label: `${disputes} dispute${disputes === 1 ? '' : 's'} to answer`, to: '/app/commerce/orders' },
-  stock > 0 && { id: 'stock', icon: PackageIcon, label: `${stock} product${stock === 1 ? '' : 's'} low or sold out`, to: '/app/commerce/inventory' }].
+  // "Label: {n}" wording avoids English-only plural endings, so every language reads correctly (D385).
+  reviews > 0 && { id: 'reviews', icon: SendIcon, label: tr('Changes to review: {n}', { n: reviews }), to: '/app/settings/approvals' },
+  unseen[0] && { id: 'notice', icon: BellIcon, label: unseen.length > 1 ? `${tr(unseen[0].text)} ${tr('(+{n} more)', { n: unseen.length - 1 })}` : tr(unseen[0].text), to: unseen[0].href ?? '/app/settings/approvals' },
+  todayBookings > 0 && { id: 'today', icon: CalendarIcon, label: tr('Bookings today: {n}', { n: todayBookings }), to: '/app/bookings' },
+  newLeads > 0 && { id: 'leads', icon: UsersIcon, label: tr('New leads: {n}', { n: newLeads }), to: '/app/audience' },
+  dueTasks > 0 && { id: 'tasks', icon: UsersIcon, label: tr('Follow-ups due: {n}', { n: dueTasks }), to: '/app/audience' },
+  toFulfil > 0 && { id: 'fulfil', icon: ReceiptIcon, label: tr('Orders to fulfil: {n}', { n: toFulfil }), to: '/app/commerce/orders?status=paid' },
+  toConfirm > 0 && { id: 'confirm', icon: ReceiptIcon, label: tr('Awaiting payment: {n}', { n: toConfirm }), to: '/app/commerce/orders?status=new' },
+  disputes > 0 && { id: 'dispute', icon: GavelIcon, label: tr('Disputes to answer: {n}', { n: disputes }), to: '/app/commerce/orders' },
+  stock > 0 && { id: 'stock', icon: PackageIcon, label: tr('Products low or sold out: {n}', { n: stock }), to: '/app/commerce/inventory' }].
   filter(Boolean) as {id: string;icon: typeof ReceiptIcon;label: string;to: string;}[];
 
   if (items.length === 0) return null;
@@ -43,10 +46,11 @@ export function NeedsAttention() {
     <section aria-labelledby="attention-heading" className="mt-8">
       <div className="flex items-center justify-between gap-3">
         <h2 id="attention-heading" className="text-label font-semibold text-fg-subtle">
-          Needs attention
+          {tr('Needs attention')}
         </h2>
         <button type="button" onClick={() => notifications.setOpen(true)} className="inline-flex items-center gap-1 rounded text-caption font-medium text-fg-muted hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-          See all{notifications.unread ? ` · ${notifications.unread} unread` : ''} <ArrowRightIcon size={13} aria-hidden />
+          {tr('See all')}
+          {notifications.unread ? ` · ${tr('Unread: {n}', { n: notifications.unread })}` : ''} <ArrowRightIcon size={13} aria-hidden />
         </button>
       </div>
       <ul className="mt-2 flex flex-wrap gap-2">

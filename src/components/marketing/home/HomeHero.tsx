@@ -10,13 +10,14 @@ import { RiseText } from './RiseText';
 import { findExampleById } from '../../../data/examples';
 import { homeImages } from '../../../data/marketingHome';
 import { useT } from '../../../contexts/LocaleContext';
+import { previewAmount } from '../../../utils/previewMoney';
 
 const atelier = findExampleById('adaeze-atelier')!;
 const ease = [0.23, 1, 0.32, 1] as const;
 
 /** Home hero (D260, D261): dark grey band with a subtle even gradient under the floating nav, giant headline, link claim, and a photo + live page collage. */
 export function HomeHero() {
-  const { t: tr } = useT();
+  const { t: tr, lang } = useT();
   const reduce = useReducedMotion();
   const pop = (delay: number) => reduce ? {} : { initial: { opacity: 0, scale: 0.96, y: 10 }, animate: { opacity: 1, scale: 1, y: 0 }, transition: { duration: 0.28, delay, ease } };
 
@@ -35,7 +36,7 @@ export function HomeHero() {
             className="mt-7 max-w-lg text-[18px] font-medium leading-relaxed opacity-90 md:text-[20px]"
             {...reduce ? {} : { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.3, delay: 0.35, ease } }}>
             
-            {tr('Sell, take bookings, sell tickets and collect enquiries from one page — built on a real canvas, made for phones and for how customers buy in Nigeria.')}
+            {tr('Sell, take bookings, sell tickets and collect enquiries from one page — built on a real canvas, made for phones and for how customers buy across Africa — in Nigeria, Kenya, Ghana, South Africa and beyond.')}
           </motion.p>
           <motion.div className="mt-9" {...reduce ? {} : { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.3, delay: 0.45, ease } }}>
             <HandleClaim />
@@ -93,7 +94,7 @@ export function HomeHero() {
                 <CheckIcon size={18} strokeWidth={3} aria-hidden />
               </span>
               <span>
-                <span className="block text-[13px] font-bold">{tr('New order')} · ₦18,500</span>
+                <span className="block text-[13px] font-bold">{tr('New order')} · {previewAmount(18500, lang)}</span>
                 <span className="block text-[11px] text-white/75">{tr('Paid by transfer')}</span>
               </span>
             </motion.div>

@@ -1,4 +1,5 @@
 import { examplePages } from '../../data/examples';
+import { findMobileNumber } from '../phone';
 
 /**
  * Rule-based reading of a short business brief (D63). Nothing here calls a model — it matches
@@ -46,7 +47,6 @@ const KEYWORDS: Record<string, string[]> = {
 
 const CITIES = ['Lagos', 'Abuja', 'Ibadan', 'Port Harcourt', 'Kano', 'Enugu', 'Benin City', 'Kaduna', 'Abeokuta', 'Jos', 'Ilorin', 'Owerri', 'Uyo', 'Calabar', 'Warri', 'Akure', 'Lekki', 'Ikeja', 'Yaba', 'Surulere', 'Ajah', 'Wuse', 'Accra', 'Nairobi'];
 
-const PHONE = /(\+?234\s?\d{3}\s?\d{3}\s?\d{4}|0[789][01]\d[\s-]?\d{3}[\s-]?\d{4})/;
 const NAME_PATTERNS = [/(?:called|named|brand is|business is|name is)\s+["“]?([A-Z][\w'&.-]*(?:\s+[A-Z&][\w'&.-]*){0,3})/, /^([A-Z][\w'&.-]*(?:\s+[A-Z&][\w'&.-]*){0,3})\s+(?:is|sells|makes|offers|helps)\b/];
 
 const BOOK_GOALS = new Set(['book']);
@@ -75,7 +75,8 @@ export function analyzeBrief(brief: string): BriefAnalysis {
   }
 
   const city = CITIES.find((c) => hasWord(lower, c.toLowerCase())) ?? '';
-  const phone = PHONE.exec(brief)?.[1]?.replace(/[\s-]/g, '') ?? '';
+  // Any of our four countries' mobile numbers (D420).
+  const phone = findMobileNumber(brief) ?? '';
   const suggestedAction: AiAction = /\bbook|appointment|session/.test(lower) || example?.goals.some((g) => BOOK_GOALS.has(g)) ?
   'booking' :
   /\bwhatsapp|dm|chat\b/.test(lower) || phone ?

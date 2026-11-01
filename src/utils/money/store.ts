@@ -5,8 +5,8 @@ import { orderRef } from '../commerce/shopSettings';
 import { orderMoney } from '../commerce/money';
 import { orderPartnerShares, partnerDebitNgn, partnerRatio } from '../commerce/bundles';
 import { uid } from '../id';
-import { formatMoney, withSymbol } from '../currency';
-import { blankKyc, normaliseKyc } from './kyc';
+import { activeCurrency, convertExampleNaira, formatMoney, withSymbol } from '../currency';
+import { blankKyc, kycRules, normaliseKyc } from './kyc';
 import { newCase, syncEscrow } from './escrow';
 import type { EscrowCase } from '../../types/escrow';
 import { DEMO_WORKSPACE_ID, sampleHandle, seedsSample } from '../workspaceStorage';
@@ -46,11 +46,23 @@ export const escrowFee = (amount: number) => Math.min(5000, Math.round(amount * 
 /** Days a buyer has to check what they got before escrow releases automatically. */
 export const inspectionDays: Record<PayArea, number> = { shop: 3, tickets: 1, bookings: 2, quotes: 2, links: 2, dealrooms: 3 };
 
+/**
+ * Limits are set in naira and shown and enforced in the workspace's own currency at the example rate (D425), so a
+ * Kenyan wallet's starter limit is about KSh 4,150 a day, not KSh 50,000. Example figures — confirm per partner.
+ */
+const local = (naira: number) => activeCurrency() === 'NGN' ? naira : convertExampleNaira(naira, activeCurrency());
+const tier = (label: string, checks: () => string, dailyNaira: number, capNaira: number | null) => ({
+  label,
+  get checks() {return checks();},
+  get dailyPayoutNgn() {return local(dailyNaira);},
+  get balanceCapNgn() {return capNaira === null ? null : local(capNaira);}
+});
+
 export const tierInfo: Record<KycTier, {label: string;checks: string;dailyPayoutNgn: number;balanceCapNgn: number | null;}> = {
-  0: { label: 'Not verified', checks: 'Sales still arrive; payouts are off until you’re verified', dailyPayoutNgn: 0, balanceCapNgn: 300_000 },
-  1: { label: 'Starter payouts', checks: 'Phone, BVN, NIN, ID and selfie checked automatically, with a bank account in your own name. Finish verification for higher limits.', dailyPayoutNgn: 50_000, balanceCapNgn: 300_000 },
-  2: { label: 'Verified individual', checks: 'Identity, address and payout account checked', dailyPayoutNgn: 2_000_000, balanceCapNgn: 10_000_000 },
-  3: { label: 'Verified business', checks: 'Identity, CAC registration, directors and payout account checked', dailyPayoutNgn: 20_000_000, balanceCapNgn: null }
+  0: tier('Not verified', () => 'Sales still arrive; payouts are off until you’re verified', 0, 300_000),
+  1: tier('Starter payouts', () => kycRules().secondary ? `Phone, ${kycRules().primary.label}, ${kycRules().secondary?.label}, ID and selfie checked automatically, with a bank account in your own name. Finish verification for higher limits.` : `Phone, ${kycRules().primary.label}, ID and selfie checked automatically, with a bank account in your own name. Finish verification for higher limits.`, 50_000, 300_000),
+  2: tier('Verified individual', () => 'Identity, address and payout account checked', 2_000_000, 10_000_000),
+  3: tier('Verified business', () => `Identity, ${kycRules().registry.short} registration, directors and payout account checked`, 20_000_000, null)
 };
 
 /** Full verification (D93) is approved. */
@@ -65,8 +77,10 @@ export function starterMissing(d: MoneyData): string[] {
   const i = d.kyc.identity;
   const out: string[] = [];
   if (!i.phoneVerified) out.push('Confirm your phone number');
-  if (i.checks.bvn !== 'pass') out.push('BVN check');
-  if (i.checks.nin !== 'pass') out.push('NIN check');
+  // Ghana and South Africa have one identity number, so there's no second check to wait for (D425).
+  const rules = kycRules();
+  if (i.checks.bvn !== 'pass') out.push(`${rules.primary.label} check`);
+  if (rules.secondary && i.checks.nin !== 'pass') out.push(`${rules.secondary.label} check`);
   if (!i.idFront) out.push('Photo of your ID');
   if (i.checks.liveness !== 'pass') out.push('Selfie');
   if (!personalBanks(d).length) out.push('A bank account in your own name');

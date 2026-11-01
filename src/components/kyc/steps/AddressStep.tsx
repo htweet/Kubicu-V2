@@ -1,6 +1,6 @@
 import React from 'react';
 import type { KycAddress } from '../../../types/kyc';
-import { proofLabels } from '../../../utils/money/kyc';
+import { kycRules, proofLabels } from '../../../utils/money/kyc';
 import { activeCountryInfo } from '../../../utils/country';
 import type { KycStepProps } from '../stepProps';
 import { TextInput } from '../../ui/TextInput';
@@ -18,7 +18,7 @@ export function AddressStep({ k, set, errors, disabled }: KycStepProps) {
   const country = activeCountryInfo();
   return (
     <div className="flex flex-col gap-4">
-      <TextInput id="kyc-line1" label={business ? 'Business or operating address' : 'Home address'} value={a.line1} onChange={(e) => setA({ line1: e.target.value })} error={errors.line1} disabled={disabled} autoComplete="street-address" placeholder="12 Admiralty Way, Lekki Phase 1" />
+      <TextInput id="kyc-line1" label={business ? 'Business or operating address' : 'Home address'} value={a.line1} onChange={(e) => setA({ line1: e.target.value })} error={errors.line1} disabled={disabled} autoComplete="street-address" placeholder={kycRules().addressPlaceholder} />
       <div className="grid gap-4 md:grid-cols-2">
         <TextInput id="kyc-city" label="City or town" value={a.city} onChange={(e) => setA({ city: e.target.value })} error={errors.city} disabled={disabled} autoComplete="address-level2" />
         <SelectInput id="kyc-state" label={country.regionLabel} value={a.state} onChange={(state) => setA({ state })} options={country.regions.map((s) => ({ value: s, label: s }))} disabled={disabled} />

@@ -8,10 +8,10 @@ import { useCan, useTeam } from '../../contexts/TeamContext';
 import { useT } from '../../contexts/LocaleContext';
 import { useMoney } from '../../hooks/useMoney';
 import { balances, paidOutToday, payoutBlocker, payoutTier, starterEligible, starterMissing, starterReady, tierInfo, usableBanks } from '../../utils/money/store';
-import { verifiedName } from '../../utils/money/kyc';
+import { kycRules, verifiedName } from '../../utils/money/kyc';
 import { formatNgn, formatRelative, formatTimestamp } from '../../utils/format';
 import { activeCurrency, currencyInfo, currencySymbol, isNaira, withSymbol } from '../../utils/currency';
-import { activeCountryInfo } from '../../utils/country';
+import { activeCountry, activeCountryInfo } from '../../utils/country';
 import { PageHeader } from '../../components/shell/PageHeader';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
@@ -129,10 +129,18 @@ export function Wallet() {
         
           {starter ?
         tr('Starter payouts are on — up to {n} a day to your own account. Finish verification for higher limits.', { n: formatNgn(tierInfo[1].dailyPayoutNgn) }) :
+        activeCountry() === 'NG' ?
         tr(
           data.kyc.entity && data.kyc.entity !== 'individual' ?
           'Sales keep arriving in your wallet. Takes about 10 minutes — have your BVN, NIN, a photo ID and proof of address ready, plus your CAC documents.' :
           'Sales keep arriving in your wallet. Takes about 10 minutes — have your BVN, NIN, a photo ID and proof of address ready.'
+        ) :
+        // Other countries name their own numbers and registry (D425).
+        tr(
+          data.kyc.entity && data.kyc.entity !== 'individual' ?
+          'Sales keep arriving in your wallet. Takes about 10 minutes — have your {ids}, a photo ID and proof of address ready, plus your {registry} documents.' :
+          'Sales keep arriving in your wallet. Takes about 10 minutes — have your {ids}, a photo ID and proof of address ready.',
+          { ids: [kycRules().primary.label, kycRules().secondary?.label].filter(Boolean).join(tr(' and ')), registry: kycRules().registry.short }
         )}
         </InlineAlert>
       }
@@ -292,7 +300,7 @@ export function Wallet() {
               {missing.length > 0 &&
               <div className="rounded-md bg-sunken px-3 py-2.5">
                   <p className="text-label font-medium text-fg">{tr('Start small payouts — up to {n} a day', { n: formatNgn(tierInfo[1].dailyPayoutNgn) })}</p>
-                  <p className="mt-0.5 text-caption text-fg-muted">{tr('No CAC or address proof needed yet. Still to do:')}</p>
+                  <p className="mt-0.5 text-caption text-fg-muted">{activeCountry() === 'NG' ? tr('No CAC or address proof needed yet. Still to do:') : tr('No business documents or address proof needed yet. Still to do:')}</p>
                   <ul className="mt-1.5 list-disc pl-5 text-caption text-fg-muted">
                     {missing.map((m) =>
                   <li key={m}>{tr(m)}</li>

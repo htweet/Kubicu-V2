@@ -6,6 +6,7 @@ import { useCommerce } from '../../../contexts/CommerceContext';
 import { useT } from '../../../contexts/LocaleContext';
 import { findProduct } from '../../../utils/commerce/catalog';
 import { businessWhatsApp, waFieldHintIn } from '../../../utils/businessWhatsApp';
+import { dialPrefix } from '../../../utils/phone';
 import { TextInput } from '../../ui/TextInput';
 import { TextArea } from '../../ui/TextArea';
 import { CurrencyInput } from '../../ui/CurrencyInput';
@@ -43,7 +44,7 @@ export function ProductFields({ block, issues }: ProductFieldsProps) {
     label={tr('WhatsApp number')}
     type="tel"
     inputMode="tel"
-    placeholder={businessWhatsApp() || '+234 …'}
+    placeholder={businessWhatsApp() || dialPrefix()}
     value={c.whatsappPhone}
     error={err('whatsappPhone')}
     hint={waFieldHintIn(tr, c.whatsappPhone, tr('The order message includes the product name and price.'))}
@@ -100,7 +101,7 @@ export function ProductFields({ block, issues }: ProductFieldsProps) {
           value={c.priceNgn}
           placeholder={tr('Price on request')}
           trailing={<IllustrativeTag note={tr('KUBICU never invents prices — leave blank to show “Price on request”.')} />}
-          hint={warn('priceNgn') ?? tr('Naira, whole numbers.')}
+          hint={warn('priceNgn') ?? tr('Whole numbers, in your shop’s currency.')}
           onChange={(priceNgn) => set({ priceNgn }, 'priceNgn')} />
         
           <TextArea id={id('description')} label={tr('Description')} optional rows={3} value={c.description} onChange={(e) => set({ description: e.target.value }, 'description')} />

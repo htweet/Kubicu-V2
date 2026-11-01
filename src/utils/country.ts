@@ -26,6 +26,17 @@ export function setActiveCountry(code: CountryCode | undefined): void {
 }
 
 export const activeCountry = (): CountryCode => active;
+
+/**
+ * Best guess at a visitor's country from their screen language, for public screens with no workspace behind them
+ * (Copilot, D420): Kiswahili → Kenya, Twi → Ghana, isiZulu → South Africa, anything else → Nigeria.
+ */
+export function countryForLanguage(lang: string): CountryCode {
+  if (lang === 'sw') return 'KE';
+  if (lang === 'tw') return 'GH';
+  if (lang === 'zu') return 'ZA';
+  return 'NG';
+}
 export const activeCountryInfo = (): CountryInfo => countryInfo(active);
 
 /** Is this account number the right length for the country's banks? Returns an English message or null. */

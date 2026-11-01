@@ -7,6 +7,7 @@ import { TextInput } from '../../components/ui/TextInput';
 import { Button } from '../../components/ui/Button';
 import { InlineAlert } from '../../components/ui/InlineAlert';
 import { isValidEmail } from '../../utils/validation';
+import { focusFirstError } from '../../utils/a11y';
 import { readAccount } from '../../utils/account/store';
 import { providerInfo, ssoForEmail } from '../../utils/sso';
 import { startPageOptions } from '../../data/accountOptions';
@@ -41,7 +42,7 @@ export function SignIn() {
   const submit = (e: React.FormEvent, ownerOverride = false) => {
     e.preventDefault();
     setSubmitted(true);
-    if (errors.email || errors.password) return;
+    if (errors.email || errors.password) return focusFirstError();
     // Company requires single sign-on for this domain (D115); the Owner keeps a password + two-step way in.
     if (!ownerOverride && ssoForEmail(email)?.requireSso) return setRequired(true);
     setLoading(true);
@@ -51,7 +52,7 @@ export function SignIn() {
   const submitSso = (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitted(true);
-    if (errors.email) return;
+    if (errors.email) return focusFirstError();
     const found = ssoForEmail(email);
     if (!found) return setSsoMessage(t('Single sign-on isn’t set up for @{domain}. Sign in with your password, or ask your workspace admin.', { domain: email.split('@')[1] }));
     setSsoMessage('');

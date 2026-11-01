@@ -7,6 +7,8 @@ import { useCopilotSim } from '../contexts/CopilotSimContext';
 import { downscale, imageSize, processLogo, processUpload } from '../utils/image';
 import { MAX_PHOTOS } from '../data/copilotQuestions';
 import { toast } from 'sonner';
+import { useT } from '../contexts/LocaleContext';
+import { countryForLanguage, setActiveCountry } from '../utils/country';
 
 /** Generation steps are real work in production; here each gets a short, honest pause. */
 const STEP_MS = 520;
@@ -14,6 +16,9 @@ const STEP_MS = 520;
 /** Runs one Copilot chat (D262): the conversation, generation, limits and the resulting draft. */
 export function useCopilot(channel: CopilotChannel, chatPhone?: string, openId?: string | null) {
   const sim = useCopilotSim();
+  const { lang } = useT();
+  // Copilot has no workspace behind it, so numbers typed without a country code follow the screen language (D420).
+  setActiveCountry(countryForLanguage(lang));
   const [session, setSession] = useState<CopilotSession>(() => {
     const requested = openId ? readSession(openId) : null;
     const id = currentSessionId(channel);

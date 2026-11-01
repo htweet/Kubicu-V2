@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Dialog } from '../ui/Dialog';
 import { Button } from '../ui/Button';
 import { TextInput } from '../ui/TextInput';
+import { PhoneInput } from '../ui/PhoneInput';
 import { TextArea } from '../ui/TextArea';
 import { SelectInput } from '../ui/SelectInput';
 import { Segmented } from '../ui/Segmented';
@@ -212,17 +213,13 @@ export function CampaignLinkDialog({ open, onClose, link }: Props) {
         }
         {target === 'whatsapp' &&
         <>
-            <TextInput
+            <PhoneInput
             id="cl-wa-phone"
             label="WhatsApp number"
-            type="tel"
-            inputMode="tel"
-            autoComplete="tel"
-            placeholder="0803 000 0000"
             value={waPhone}
-            onChange={(e) => setWaPhone(e.target.value)}
+            onChange={setWaPhone}
             error={tried && waPhoneError(waPhone) ? waPhoneError(waPhone) : undefined}
-            hint="The chat opens with this number. Nigerian numbers starting with 0 get +234." />
+            hint="The chat opens with this number." />
           
             <TextArea
             id="cl-wa-message"

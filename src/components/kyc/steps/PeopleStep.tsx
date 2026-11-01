@@ -1,7 +1,7 @@
 import React from 'react';
 import { PlusIcon, Trash2Icon, UserPlusIcon } from 'lucide-react';
 import type { KycPerson, PersonRole } from '../../../types/kyc';
-import { blankPerson, personErrors, simulateIdCheck } from '../../../utils/money/kyc';
+import { blankPerson, kycRules, personErrors, simulateIdCheck } from '../../../utils/money/kyc';
 import type { KycStepProps } from '../stepProps';
 import { TextInput } from '../../ui/TextInput';
 import { SelectInput } from '../../ui/SelectInput';
@@ -20,8 +20,11 @@ const roleOptions: {value: PersonRole;label: string;}[] = [
 export function PeopleStep({ k, set, errors, disabled }: KycStepProps) {
   const { t: tr } = useT();
   const company = k.entity === 'company';
+  // Each person's national ID number follows the workspace's country (D424).
+  const rules = kycRules();
+  const cleanId = (v: string) => rules.primary.numeric ? v.replace(/\D/g, '') : v.toUpperCase().replace(/[^A-Z0-9-]/g, '');
   const update = (id: string, patch: Partial<KycPerson>) =>
-  set((c) => ({ ...c, people: c.people.map((p) => p.id === id ? { ...p, ...patch, check: patch.bvn !== undefined ? simulateIdCheck(patch.bvn) : p.check } : p) }));
+  set((c) => ({ ...c, people: c.people.map((p) => p.id === id ? { ...p, ...patch, check: patch.bvn !== undefined ? simulateIdCheck(patch.bvn, rules.primary.pattern) : p.check } : p) }));
   const add = (p: KycPerson = blankPerson()) => set((c) => ({ ...c, people: [...c.people, company ? p : { ...p, role: 'both', ownershipPct: c.people.length ? 0 : 100 }] }));
   const remove = (id: string) => set((c) => ({ ...c, people: c.people.filter((p) => p.id !== id) }));
   const addMe = () => add({ ...blankPerson(), fullName: k.identity.legalName, dob: k.identity.dob, bvn: k.identity.bvn, check: k.identity.checks.bvn, role: 'both', ownershipPct: 100 });
@@ -31,7 +34,7 @@ export function PeopleStep({ k, set, errors, disabled }: KycStepProps) {
   return (
     <div className="flex flex-col gap-5">
       <p className="text-label text-fg-muted">
-        {tr(company ? 'List every director, and anyone who owns or controls 25% or more of the company. They should match your CAC status report.' : 'List every proprietor named on your BN registration.')}
+        {tr(company ? rules.registry.peopleCompany : rules.registry.peopleBn)}
       </p>
 
       {k.people.length > 0 &&
@@ -43,14 +46,14 @@ export function PeopleStep({ k, set, errors, disabled }: KycStepProps) {
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-label font-semibold text-fg">{p.fullName.trim() || tr('Person {n}', { n: idx + 1 })}</p>
                   <span className="flex items-center gap-2">
-                    {p.check !== 'not_run' && <CheckBadge result={p.check} label="BVN" />}
+                    {p.check !== 'not_run' && <CheckBadge result={p.check} label={rules.primary.label} />}
                     {!disabled && <Button size="sm" variant="tertiary" leadingIcon={Trash2Icon} aria-label={tr('Remove {name}', { name: p.fullName || tr('Person {n}', { n: idx + 1 }) })} onClick={() => remove(p.id)} />}
                   </span>
                 </div>
                 <div className="mt-4 grid gap-4 md:grid-cols-2">
                   <TextInput id={`kp-name-${p.id}`} label="Full name" value={p.fullName} onChange={(e) => update(p.id, { fullName: e.target.value })} disabled={disabled} />
                   <TextInput id={`kp-dob-${p.id}`} label="Date of birth" type="date" value={p.dob} onChange={(e) => update(p.id, { dob: e.target.value })} disabled={disabled} />
-                  <TextInput id={`kp-bvn-${p.id}`} label="BVN" inputMode="numeric" maxLength={11} value={p.bvn} onChange={(e) => update(p.id, { bvn: e.target.value.replace(/\D/g, '') })} disabled={disabled} />
+                  <TextInput id={`kp-bvn-${p.id}`} label={rules.primary.label} inputMode={rules.primary.numeric ? 'numeric' : 'text'} maxLength={rules.primary.maxLength} placeholder={rules.primary.placeholder || undefined} value={p.bvn} onChange={(e) => update(p.id, { bvn: cleanId(e.target.value) })} disabled={disabled} />
                   <div className="grid grid-cols-[minmax(0,1fr)_7rem] gap-3">
                     {company ? <SelectInput id={`kp-role-${p.id}`} label="Role" value={p.role} onChange={(role) => update(p.id, { role, ownershipPct: role === 'director' ? 0 : p.ownershipPct })} options={roleOptions.map((o) => ({ ...o, label: tr(o.label) }))} disabled={disabled} /> : <TextInput id={`kp-role-${p.id}`} label="Role" value={tr('Proprietor')} readOnly disabled />}
                     <TextInput

@@ -26,7 +26,7 @@ const sandboxOptions = apiResources.filter((r) => r.method === 'GET');
 
 const basics = [
 ['Sign in with a key', 'Send your key as a Bearer token. Test keys (kub_test_) only see sample data; live keys see real data. Each key only gets the permissions you tick.'],
-['Money and phones', 'Amounts are whole naira with currency "NGN". Phones are +234. Times are ISO 8601 in West Africa Time.'],
+['Money and phones', 'Amounts are whole numbers in the workspace’s currency: "NGN", "KES", "GHS" or "ZAR". Phones are international, with their country code, e.g. +254 712 345 678. Times are ISO 8601 with a time zone offset.'],
 ['Limits and errors', 'Requests per minute per key: {n}. Over that you get 429 with Retry-After. Errors always carry a code and a plain message.']] as
 const;
 
@@ -59,7 +59,7 @@ export function Developers() {
             {tr('Build on')} <span className="nm-text">KUBICU.</span>
           </h1>
           <p className="mt-5 max-w-lg text-[17px] leading-relaxed text-fg-muted">
-            {tr('Read orders, sync stock with your shop till, and get a signed message the moment someone pays — in naira, with Nigerian phone formats, from day one.')}
+            {tr('Read orders, sync stock with your shop till, and get a signed message the moment someone pays — in naira, shillings, cedis or rand, with local phone formats for Nigeria, Kenya, Ghana and South Africa, from day one.')}
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button variant="brand" trailingIcon={ArrowRightIcon} onClick={() => navigate('/signup')}>

@@ -28,7 +28,7 @@ export function Account() {
   const twoStepOff = account.security.twoStep === 'none';
 
   return (
-    <div className="mx-auto w-full max-w-[1100px] px-5 pb-16 pt-6 md:px-10 md:pt-8">
+    <div className="mx-auto w-full max-w-[1200px] px-5 pb-16 pt-6 md:px-10 md:pt-8">
       <div className="flex items-center gap-4">
         <AccountAvatar name={account.profile.name} photo={account.profile.photo} size="md" className="hidden sm:inline-flex" />
         <div className="min-w-0 flex-1">

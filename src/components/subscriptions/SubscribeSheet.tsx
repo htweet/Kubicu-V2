@@ -12,6 +12,7 @@ import { CheckoutHeading, PrimaryButton, SecondaryButton, SheetActions, StepDots
 import { dueToday, intervalWord, renewalTerms, startSubscription, type SignupOutcome } from '../../utils/commerce/subscriptions';
 import { isValidEmail, isValidPhone } from '../../utils/validation';
 import { formatNgn } from '../../utils/format';
+import { phonePlaceholder } from '../../utils/phone';
 import { useTrack } from '../../contexts/TrackContext';
 
 type Step = 'details' | 'delivery' | 'pay' | 'bank' | 'working' | 'problem';
@@ -71,7 +72,7 @@ export function SubscribeSheet({ theme, commerce, planId, handle, ownerPlan, onC
   const muted = { color: theme.mutedText };
   const errors = {
     name: !customer.name.trim() ? 'Enter your name' : '',
-    phone: !isValidPhone(customer.phone) ? 'Enter a phone number, e.g. +234 803 123 4567' : '',
+    phone: !isValidPhone(customer.phone) ? `Enter a phone number, e.g. ${phonePlaceholder()}` : '',
     email: !isValidEmail(customer.email) ? 'Enter an email for your receipts' : ''
   };
   const deliveryErrors = {

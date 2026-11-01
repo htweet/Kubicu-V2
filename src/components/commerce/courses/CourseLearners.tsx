@@ -3,7 +3,8 @@ import { toast } from 'sonner';
 import { DownloadIcon, UserPlusIcon, UserMinusIcon, AwardIcon } from 'lucide-react';
 import { useCommerce } from '../../../contexts/CommerceContext';
 import { addLearner, courseAccess, enrolSourceLabels, enrolmentsFor, findCourse, progressOf, removeLearner } from '../../../utils/commerce/courses';
-import { isNigerianMobile, normalisePhone } from '../../../utils/members';
+import { isMobileNumber } from '../../../utils/members';
+import { phoneIssue } from '../../../utils/phone';
 import { isValidEmail } from '../../../utils/validation';
 import { downloadCsv, toCsv } from '../../../utils/csv';
 import { formatTimestamp } from '../../../utils/format';
@@ -41,7 +42,7 @@ export function CourseLearners({ courseId, onClose }: Props) {
 
   if (!course) return <Sheet open={false} onClose={onClose} title="Learners">{null}</Sheet>;
 
-  const phoneErr = who.phone && !isNigerianMobile(who.phone) && normalisePhone(who.phone).length < 10 ? 'Enter a phone number, e.g. 0803 123 4567' : undefined;
+  const phoneErr = who.phone && !isMobileNumber(who.phone) ? phoneIssue(who.phone) ?? 'Phone number looks incomplete' : undefined;
   const emailErr = who.email && !isValidEmail(who.email) ? 'Enter a valid email' : undefined;
   const missing = tried && !who.phone.trim() && !who.email.trim() ? 'Add a phone number or email — it’s how they sign in' : undefined;
 

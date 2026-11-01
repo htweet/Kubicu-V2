@@ -162,7 +162,7 @@ export const legalDocs: LegalDoc[] = [
     paragraphs: ['We collect:'],
     list: [
     'Account data: name, email, phone number, business name, role and sign-in records',
-    'Verification data (only when you verify): legal name, date of birth, BVN/NIN check results, ID document details, address and business registration — collected through licensed verification partners',
+    'Verification data (only when you verify): legal name, date of birth, national identity number check results (for example BVN and NIN in Nigeria, national ID and KRA PIN in Kenya, Ghana Card in Ghana, SA ID in South Africa), ID document details, address and business registration — collected through licensed verification partners [DRAFT — country wording pending legal review, D428]',
     'Billing data: plan, invoices and payment status (card details are held by the payment provider, not KUBICU)',
     'Content you upload: pages, products, photos, messages to customers',
     'Customer data sellers collect: names, contact details, delivery addresses, order and booking history, form answers',
