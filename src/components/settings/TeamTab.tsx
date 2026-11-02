@@ -23,6 +23,8 @@ import { InviteDialog } from './InviteDialog';
 import { List } from '../ui/layout/ListRow';
 import { RolePicker } from './RolePicker';
 import { SpaceAccessField } from './SpaceAccessField';
+import { BranchAccessField } from './BranchAccessField';
+import { branchesOf, locationName } from '../../utils/commerce/branches';
 import { cn } from '../../utils/cn';
 import { useT } from '../../contexts/LocaleContext';
 
@@ -40,6 +42,8 @@ export function TeamTab() {
   const [pending, setPending] = useState<Pending>(null);
   const [roleDraft, setRoleDraft] = useState<Role>('editor');
   const [spacesDraft, setSpacesDraft] = useState<string[] | null>(null);
+  const [branchDraft, setBranchDraft] = useState<string | null>(null);
+  const branchName = (id: string | null | undefined) => !id || !branchesOf(commerce.data).length ? null : locationName(commerce.data, id, tr('Main shop'));
   const manage = team.can('team.manage');
   const transfer = team.can('ownership.transfer');
   const atLimit = team.seatsUsed >= team.seatLimit;
@@ -52,6 +56,7 @@ export function TeamTab() {
   const open = (kind: NonNullable<Pending>['kind'], member: Member) => {
     setRoleDraft(member.role === 'owner' ? 'admin' : member.role);
     setSpacesDraft(member.spaceIds);
+    setBranchDraft(member.branchId ?? null);
     setPending({ kind, member });
   };
 
@@ -63,6 +68,7 @@ export function TeamTab() {
       toast(tr('{name}’s role is now {role}', { name: m.name, role: tr(roleInfo[roleDraft].label) }));
     } else if (pending.kind === 'spaces') {
       team.setSpaces(m.id, spacesDraft);
+      if ((m.branchId ?? null) !== branchDraft) team.setBranch(m.id, branchDraft);
       toast(tr('Access updated'));
     } else if (pending.kind === 'remove') {
       // Their open work moves to you (D60); finished work keeps their name.
@@ -146,7 +152,7 @@ export function TeamTab() {
                     {m.sample && <Badge tone="neutral">Sample</Badge>}
                   </p>
                   <p className="truncate text-caption text-fg-subtle">
-                    {[m.contact, m.role === 'owner' || m.role === 'admin' ? tr('Every space') : spaceNames(m.spaceIds), m.lastActiveAt ? tr('Active {when}', { when: formatRelative(m.lastActiveAt) }) : null].filter(Boolean).join(' · ')}
+                    {[m.contact, m.role === 'owner' || m.role === 'admin' ? tr('Every space') : spaceNames(m.spaceIds), m.role === 'owner' || m.role === 'admin' ? null : branchName(m.branchId), m.lastActiveAt ? tr('Active {when}', { when: formatRelative(m.lastActiveAt) }) : null].filter(Boolean).join(' · ')}
                   </p>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
@@ -231,7 +237,12 @@ export function TeamTab() {
         }>
         
         {pending?.kind === 'role' && <RolePicker value={roleDraft} onChange={setRoleDraft} />}
-        {pending?.kind === 'spaces' && <SpaceAccessField value={spacesDraft} onChange={setSpacesDraft} />}
+        {pending?.kind === 'spaces' &&
+        <div className="flex flex-col gap-5">
+            <SpaceAccessField value={spacesDraft} onChange={setSpacesDraft} />
+            <BranchAccessField id="member-branch" value={branchDraft} onChange={setBranchDraft} />
+          </div>
+        }
       </Dialog>
     </div>);
 

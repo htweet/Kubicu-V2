@@ -13,6 +13,7 @@ import { readSession } from '../../utils/copilot/store';
 import { chatPathFor, previewPath } from '../../utils/copilot/links';
 import { CLAIM_MINUTES, claimStatus, markClaimed, updateClaim, writeCopilotWelcome, type ClaimStatus, type ClaimStep, type PendingClaim } from '../../utils/copilot/claim';
 import { slugifyHandle } from '../../utils/handles';
+import { readSignupCountry, workspaceCountry } from '../../utils/country';
 
 const titles: Record<ClaimStep, {title: string;description: string;}> = {
   choose: { title: 'Continue with your draft', description: 'It moves into KUBICU as a normal page you can edit. Nothing is published.' },
@@ -66,7 +67,8 @@ function ClaimFlow({ draft, pending, failFirst, onChange }: {draft: Extract<Clai
   const finishNew = ({ workspaceName, ownerName, whatsapp }: {workspaceName: string;ownerName: string;whatsapp: string;}) => {
     try {
       const doc = { ...draft.doc, handle: slugifyHandle(workspaceName) || 'my-page' };
-      const ws = create({ name: workspaceName, ownerName: ownerName || current.ownerName, doc, publish: false, whatsapp });
+      // The country picked at sign-up, else the account's current workspace's country (D495).
+      const ws = create({ name: workspaceName, ownerName: ownerName || current.ownerName, doc, publish: false, whatsapp, country: readSignupCountry() ?? workspaceCountry(current) });
       markClaimed(draft.id, { workspaceId: ws.id, pageId: ws.pageId, at: new Date().toISOString() });
       welcome(ws.pageId, false);
       navigate(`/app/canvas/${ws.pageId}`);

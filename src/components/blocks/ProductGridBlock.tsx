@@ -33,7 +33,7 @@ export function ProductGridBlock({ block, theme, mode }: BlockProps<'productGrid
       from: !!range && range[0] !== range[1],
       imageUrl: p.images[0]?.url ?? '',
       imageAlt: p.images[0]?.alt ?? '',
-      note: p.variants.length > 1 ? `${p.variants.length} options` : '',
+      note: p.variants.length > 1 ? tr('Options: {n}', { n: p.variants.length }) : '',
       soldOut: isSoldOut(p),
       url: '',
       product: p
@@ -58,7 +58,7 @@ export function ProductGridBlock({ block, theme, mode }: BlockProps<'productGrid
   return (
     <section>
       {c.title &&
-      <BlockTitle theme={theme} aside={<span className="text-[13px]" style={{ color: theme.mutedText }}>{items.length} items</span>}>
+      <BlockTitle theme={theme} aside={<span className="text-[13px]" style={{ color: theme.mutedText }}>{tr('Items: {n}', { n: items.length })}</span>}>
           {c.title}
         </BlockTitle>
       }
@@ -82,32 +82,32 @@ export function ProductGridBlock({ block, theme, mode }: BlockProps<'productGrid
                 }
                 {item.soldOut &&
                 <span className="absolute left-2 top-2">
-                    <PageChip theme={theme}>Sold out</PageChip>
+                    <PageChip theme={theme}>{tr('Sold out')}</PageChip>
                   </span>
                 }
               </div>
               <div className="flex flex-1 flex-col gap-1 p-3">
-                <h3 className="text-[14px] font-semibold leading-snug" style={{ color: theme.text }}>{item.name || 'Untitled'}</h3>
+                <h3 className="text-[14px] font-semibold leading-snug" style={{ color: theme.text }}>{item.name || tr('Untitled')}</h3>
                 {item.note && <p className="text-[12px] leading-snug" style={{ color: theme.mutedText }}>{item.note}</p>}
                 <p className="mt-auto pt-1 text-[14px] font-semibold tabular-nums" style={{ color: theme.text }}>
                   {item.priceNgn !== null ?
                   <>
-                      {item.from && <span className="mr-1 text-[11px] font-medium" style={{ color: theme.mutedText }}>from</span>}
+                      {item.from && <span className="mr-1 text-[11px] font-medium" style={{ color: theme.mutedText }}>{tr('from')}</span>}
                       {formatNgn(item.priceNgn)}
                     </> :
 
-                  <span style={{ color: theme.mutedText, fontWeight: 500 }}>Price on request</span>
+                  <span style={{ color: theme.mutedText, fontWeight: 500 }}>{tr('Price on request')}</span>
                   }
                 </p>
                 {item.soldOut ?
                 <span className="mt-1 flex h-10 items-center justify-center text-[13px] font-medium" style={{ color: theme.mutedText, borderRadius: buttonRadius(theme), border: `1px dashed ${mix(theme.text, 20)}` }}>
-                    Unavailable
+                    {tr('Unavailable')}
                   </span> :
                 action === 'checkout' && item.product ?
                 <CheckoutButton
                   mode={mode}
                   showIcon={false}
-                  ariaLabel={`${c.ctaLabel || 'Add'} ${item.name}`}
+                  ariaLabel={`${c.ctaLabel || tr('Add')}: ${item.name}`}
                   onAdd={(cart) => {
                     const p = item.product as Product;
                     cart.add(p.id, p.variants.length === 1 ? p.variants[0].id : undefined, p.variants.length > 1);
@@ -118,8 +118,8 @@ export function ProductGridBlock({ block, theme, mode }: BlockProps<'productGrid
                     {tr(c.ctaLabel || 'Add to cart')}
                   </CheckoutButton> :
 
-                <PageAction mode={mode} href={href} ariaLabel={`${c.ctaLabel || 'Order'} ${item.name}`} className={buttonCls} style={buttonCss}>
-                    {c.ctaLabel || 'Order'}
+                <PageAction mode={mode} href={href} ariaLabel={`${c.ctaLabel || tr('Order')}: ${item.name}`} className={buttonCls} style={buttonCss}>
+                    {c.ctaLabel || tr('Order')}
                   </PageAction>
                 }
               </div>
@@ -128,7 +128,7 @@ export function ProductGridBlock({ block, theme, mode }: BlockProps<'productGrid
         })}
       </ul>
       {available === 0 &&
-      <p className="mt-3 text-[13px]" style={{ color: theme.mutedText }}>Everything is sold out right now. Check back soon.</p>
+      <p className="mt-3 text-[13px]" style={{ color: theme.mutedText }}>{tr('Everything is sold out right now. Check back soon.')}</p>
       }
     </section>);
 

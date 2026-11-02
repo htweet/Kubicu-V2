@@ -6,12 +6,15 @@ import { SectionHeading } from './SectionHeading';
 import { PageAction } from './PageAction';
 import { MediaImage } from '../media/MediaImage';
 import { accentOf, cardRadius, fontsFor, mix } from './pageStyle';
+import { useT } from '../../contexts/LocaleContext';
 
 /**
  * Recommendations (D170): the owner's own picks in their chosen order, each with "why". Numbered because
  * the order is the recommendation. No automatic ranking or personalisation is claimed.
  */
 export function RecommendationsBlock({ block, theme, mode }: BlockProps<'recommendations'>) {
+  // "Why:" and the screen-reader pick number follow the visitor's language (D506).
+  const { t: tr } = useT();
   const c = block.content;
   const items = c.items.filter((i) => i.title.trim());
   if (items.length === 0) return mode === 'edit' ? <BlockPlaceholder icon={ThumbsUpIcon} title="Add your picks" hint="Put the one people should start with first" theme={theme} /> : null;
@@ -32,7 +35,7 @@ export function RecommendationsBlock({ block, theme, mode }: BlockProps<'recomme
                 {i.text && <span className="mt-1 block text-[14px] leading-relaxed" style={{ color: theme.mutedText }}>{i.text}</span>}
                 {i.reason &&
               <span className="mt-2 block text-[13px] italic leading-snug" style={{ color: theme.text }}>
-                    Why: {i.reason}
+                    {tr('Why:')} {i.reason}
                   </span>
               }
               </span>
@@ -46,7 +49,7 @@ export function RecommendationsBlock({ block, theme, mode }: BlockProps<'recomme
 
           return (
             <li key={i.id} style={{ borderTop: `1px solid ${mix(theme.text, 10)}` }}>
-              <span className="sr-only">Pick {n + 1}: </span>
+              <span className="sr-only">{tr('Pick {n}:', { n: n + 1 })} </span>
               {i.url ?
               <PageAction mode={mode} href={i.url} className="flex items-start gap-4 py-5">
                   {body}

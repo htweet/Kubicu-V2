@@ -7,8 +7,11 @@ import { BlockTitle } from './BlockTitle';
 import { PageAction } from './PageAction';
 import { PageOverlay } from './PageOverlay';
 import { buttonStyle, cardRadius, fontsFor, mix } from './pageStyle';
+import { useT } from '../../contexts/LocaleContext';
 
+/** Case studies. Fixed wording follows the visitor's language (D506); project text stays as written. */
 export function PortfolioBlock({ block, theme, mode }: BlockProps<'portfolio'>) {
+  const { t: tr } = useT();
   const c = block.content;
   const [openId, setOpenId] = useState<string | null>(null);
   const items = c.items.filter((i) => i.title);
@@ -45,7 +48,7 @@ export function PortfolioBlock({ block, theme, mode }: BlockProps<'portfolio'>) 
           return (
             <li key={item.id}>
               {mode === 'live' ?
-              <button type="button" onClick={() => setOpenId(item.id)} className="block w-full" aria-label={`Open case study: ${item.title}`}>
+              <button type="button" onClick={() => setOpenId(item.id)} className="block w-full" aria-label={tr('Open case study: {name}', { name: item.title })}>
                   {inner}
                 </button> :
 
@@ -57,7 +60,7 @@ export function PortfolioBlock({ block, theme, mode }: BlockProps<'portfolio'>) 
       </ul>
 
       {mode === 'live' &&
-      <PageOverlay open={!!open} onClose={() => setOpenId(null)} theme={theme} label={open ? `Case study: ${open.title}` : 'Case study'}>
+      <PageOverlay open={!!open} onClose={() => setOpenId(null)} theme={theme} label={open ? tr('Case study: {name}', { name: open.title }) : tr('Case study')}>
           {open &&
         <div className="p-5 pt-16">
               {open.coverUrl && <MediaImage src={open.coverUrl} alt={open.coverAlt} className="aspect-[16/10] w-full object-cover" style={{ borderRadius: radius }} />}
@@ -65,13 +68,13 @@ export function PortfolioBlock({ block, theme, mode }: BlockProps<'portfolio'>) 
               <dl className="mt-3 grid grid-cols-2 gap-3 text-[13px]">
                 {open.client &&
             <div>
-                    <dt style={{ color: theme.mutedText }}>Client</dt>
+                    <dt style={{ color: theme.mutedText }}>{tr('Client')}</dt>
                     <dd className="font-medium">{open.client}</dd>
                   </div>
             }
                 {open.role &&
             <div>
-                    <dt style={{ color: theme.mutedText }}>Role</dt>
+                    <dt style={{ color: theme.mutedText }}>{tr('Role')}</dt>
                     <dd className="font-medium">{open.role}</dd>
                   </div>
             }
@@ -79,13 +82,13 @@ export function PortfolioBlock({ block, theme, mode }: BlockProps<'portfolio'>) 
               {open.summary && <p className="mt-4 whitespace-pre-line text-[15px] leading-relaxed">{open.summary}</p>}
               {open.outcome &&
           <p className="mt-4 rounded-lg px-4 py-3 text-[14px]" style={{ background: mix(theme.text, 6) }}>
-                  <span className="font-semibold">Outcome: </span>
+                  <span className="font-semibold">{tr('Outcome:')} </span>
                   {open.outcome}
                 </p>
           }
               {open.url &&
           <PageAction mode="live" href={open.url} className="mt-5 flex h-12 w-full items-center justify-center gap-2 text-[15px] font-semibold" style={buttonStyle(theme, 'featured')}>
-                  View the project
+                  {tr('View the project')}
                   <ArrowUpRightIcon size={16} aria-hidden />
                 </PageAction>
           }

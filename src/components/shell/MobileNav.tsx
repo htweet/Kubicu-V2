@@ -22,7 +22,7 @@ export function MobileNav() {
   const navigate = useNavigate();
   const primary = workspaceNav.filter((n) => mobilePrimaryNavIds.includes(n.id));
   const market = useMarketplace();
-  const rest = workspaceNav.filter((n) => !mobilePrimaryNavIds.includes(n.id) && (!n.appId || market.isActive(n.appId)));
+  const rest = workspaceNav.filter((n) => !mobilePrimaryNavIds.includes(n.id) && (!n.appId || market.isInstalled(n.appId)));
   const canChoose = useAppearancePolicy().enabled.length > 1;
   const currentWorkspace = useWorkspace().current;
   const account = useAccount();

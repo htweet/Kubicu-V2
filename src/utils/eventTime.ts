@@ -9,17 +9,18 @@ export function eventState(startsAt: string | null, endsAt: string | null, now =
   return 'ended';
 }
 
-export function formatEventDate(iso: string, timeZone: string): string {
+/** `locale` comes from dateLocale() so visitors read dates in their language (D510); defaults to British English. */
+export function formatEventDate(iso: string, timeZone: string, locale = 'en-GB'): string {
   try {
-    return new Intl.DateTimeFormat('en-GB', { timeZone, weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(iso));
+    return new Intl.DateTimeFormat(locale, { timeZone, weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(iso));
   } catch {
     return new Date(iso).toDateString();
   }
 }
 
-export function formatEventTime(iso: string, timeZone: string): string {
+export function formatEventTime(iso: string, timeZone: string, locale = 'en-GB'): string {
   try {
-    return new Intl.DateTimeFormat('en-GB', { timeZone, hour: 'numeric', minute: '2-digit', hour12: true, timeZoneName: 'short' }).
+    return new Intl.DateTimeFormat(locale, { timeZone, hour: 'numeric', minute: '2-digit', hour12: true, timeZoneName: 'short' }).
     format(new Date(iso)).
     replace(' am', 'am').
     replace(' pm', 'pm');

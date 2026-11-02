@@ -22,6 +22,7 @@ import { UssdPay } from '../checkout/UssdPay';
 import { useTrack } from '../../contexts/TrackContext';
 import { meetingPromise } from '../../utils/ops/meetings';
 import { IntakeQuestionFields, intakeAnswers, intakeErrors } from './IntakeQuestionFields';
+import { dateLocale } from '../../utils/localeFormat';
 
 type Step = 'time' | 'details' | 'confirm' | 'working' | 'problem';
 
@@ -48,7 +49,8 @@ export function BookingSheet({ theme, ops, serviceId, handle, onClose }: Booking
   const [problem, setProblem] = useState<{kind: 'taken' | 'failed';message: string;} | null>(null);
   const [tried, setTried] = useState(false);
   const track = useTrack();
-  const { t } = useT();
+  const { t, lang } = useT();
+  const loc = dateLocale(lang);
   // Booking funnel: a time was chosen (D61).
   useEffect(() => {
     if (step === 'details' && serviceId) track('booking_time', { label: serviceId });
@@ -161,7 +163,7 @@ export function BookingSheet({ theme, ops, serviceId, handle, onClose }: Booking
     if (step === 'time')
     return (
       <div className="flex flex-col gap-4">
-          <CheckoutHeading theme={theme} sub={`${durationLabel(service.durationMin)} · ${service.priceNgn !== null ? formatNgn(service.priceNgn) : 'Price on request'}${service.depositNgn ? ` · ${formatNgn(service.depositNgn)} deposit to hold it` : ''}`}>
+          <CheckoutHeading theme={theme} sub={`${durationLabel(service.durationMin, t)} · ${service.priceNgn !== null ? formatNgn(service.priceNgn) : t('Price on request')}${service.depositNgn ? ` · ${t('Deposit to hold it: {amount}', { amount: formatNgn(service.depositNgn) })}` : ''}`}>
             {service.name}
           </CheckoutHeading>
           {staff.length > 1 && <StaffPicker theme={theme} staff={staff} value={chosen?.memberId ?? null} onChange={(id) => (setStaffId(id), setStart(null))} />}
@@ -216,15 +218,15 @@ export function BookingSheet({ theme, ops, serviceId, handle, onClose }: Booking
         </CheckoutHeading>
         <dl className="flex flex-col gap-2 p-4 text-[14px]" style={cardStyle(theme)}>
           <div className="flex justify-between gap-3">
-            <dt style={muted}>Service</dt>
+            <dt style={muted}>{t('Service')}</dt>
             <dd className="text-right font-medium">{service.name}</dd>
           </div>
           <div className="flex justify-between gap-3">
-            <dt style={muted}>When</dt>
+            <dt style={muted}>{t('When')}</dt>
             <dd className="text-right font-medium">
-              {start !== null && `${dayLabel(start, tz)}, ${timeLabel(start, tz)}`}
+              {start !== null && `${dayLabel(start, tz, loc)}, ${timeLabel(start, tz, loc)}`}
               <span className="block text-[12px] font-normal" style={muted}>
-                {durationLabel(service.durationMin)} · {tz.replace('_', ' ')}
+                {durationLabel(service.durationMin, t)} · {tz.replace('_', ' ')}
               </span>
             </dd>
           </div>
@@ -235,31 +237,31 @@ export function BookingSheet({ theme, ops, serviceId, handle, onClose }: Booking
             </div>
           }
           <div className="flex justify-between gap-3">
-            <dt style={muted}>Where</dt>
-            <dd className="text-right font-medium">{service.location === 'online' ? 'Online' : service.location === 'customer' ? 'At your address' : 'In person'}{(service.location === 'online' && ops.data ? meetingPromise(service, ops.data.availability) : service.locationNote) ? <span className="block text-[12px] font-normal" style={muted}>{service.location === 'online' && ops.data ? meetingPromise(service, ops.data.availability) : service.locationNote}</span> : null}</dd>
+            <dt style={muted}>{t('Where')}</dt>
+            <dd className="text-right font-medium">{service.location === 'online' ? t('Online') : service.location === 'customer' ? t('At your address') : t('In person')}{(service.location === 'online' && ops.data ? meetingPromise(service, ops.data.availability) : service.locationNote) ? <span className="block text-[12px] font-normal" style={muted}>{service.location === 'online' && ops.data ? meetingPromise(service, ops.data.availability) : service.locationNote}</span> : null}</dd>
           </div>
           <div className="flex justify-between gap-3 border-t pt-2" style={{ borderColor: mix(theme.text, 12) }}>
-            <dt style={muted}>Pay now</dt>
-            <dd className="text-right font-semibold tabular-nums">{service.depositNgn ? `${formatNgn(service.depositNgn)} deposit` : 'Nothing'}</dd>
+            <dt style={muted}>{t('Pay now')}</dt>
+            <dd className="text-right font-semibold tabular-nums">{service.depositNgn ? t('Deposit: {amount}', { amount: formatNgn(service.depositNgn) }) : t('Nothing')}</dd>
           </div>
           {service.priceNgn !== null &&
           <div className="flex justify-between gap-3">
-              <dt style={muted}>{service.balanceOnline ? `Online, ${service.balanceHoursBefore ?? 24}h before` : 'At the appointment'}</dt>
+              <dt style={muted}>{service.balanceOnline ? t('Online, hours before: {n}', { n: service.balanceHoursBefore ?? 24 }) : t('At the appointment')}</dt>
               <dd className="text-right tabular-nums">{formatNgn(Math.max(0, service.priceNgn - (service.depositNgn ?? 0)))}</dd>
             </div>
           }
         </dl>
         <p className="text-[12.5px] leading-relaxed" style={muted}>
-          <span className="font-semibold" style={{ color: theme.text }}>Policy: </span>
+          <span className="font-semibold" style={{ color: theme.text }}>{t('Policy:')} </span>
           {a.policy}
         </p>
         {service.depositNgn ?
         <fieldset className="flex flex-col gap-2">
-            <legend className="mb-1 text-[13px] font-semibold">Test deposit — choose what happens</legend>
+            <legend className="mb-1 text-[13px] font-semibold">{t('Test deposit — choose what happens')}</legend>
             {(['paid', 'failed'] as const).map((o) =>
           <label key={o} className="flex items-center gap-3 p-3 text-[14px]" style={{ ...cardStyle(theme), border: `1.5px solid ${deposit === o ? theme.text : mix(theme.text, 12)}` }}>
                 <input type="radio" name="dep" checked={deposit === o} onChange={() => setDeposit(o)} style={{ accentColor: theme.text }} />
-                {o === 'paid' ? 'Payment succeeds' : 'Payment fails (provider error)'}
+                {o === 'paid' ? t('Payment succeeds') : t('Payment fails (provider error)')}
               </label>
           )}
           </fieldset> :
@@ -298,7 +300,7 @@ export function BookingSheet({ theme, ops, serviceId, handle, onClose }: Booking
         {steps.includes(step) &&
         <div className="flex items-center gap-3 pr-12">
             {step !== 'time' &&
-          <button type="button" aria-label="Back" onClick={() => setStep(steps[steps.indexOf(step) - 1])} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full" style={{ background: theme.surface }}>
+          <button type="button" aria-label={t('Back')} onClick={() => setStep(steps[steps.indexOf(step) - 1])} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full" style={{ background: theme.surface }}>
                 <ArrowLeftIcon size={16} aria-hidden />
               </button>
           }

@@ -10,6 +10,7 @@ import { buttonRadius, buttonStyle, fontsFor, mix } from '../blocks/pageStyle';
 import { useCart } from '../../contexts/CartContext';
 import { useRecentlyViewed } from '../../hooks/useShopMemory';
 import { canSell, isSoldOut, priceRange, variantLabel, variantPrice } from '../../utils/commerce/catalog';
+import { expiryState, formatExpiry } from '../../utils/commerce/batches';
 import { matchVariant, shopProducts, storefrontConfig, valueAvailable } from '../../utils/commerce/storefront';
 import { formatNgn, whatsappLink } from '../../utils/format';
 import { isValidPhone } from '../../utils/validation';
@@ -17,6 +18,7 @@ import { cn } from '../../utils/cn';
 import { bulkLevels, isPreorder, preorderLeft, shipsByLabel } from '../../utils/commerce/sellModes';
 import { holderId, stockFree, stockHoldable } from '../../utils/commerce/tickets';
 import { shopSettingsOf } from '../../utils/commerce/shopSettings';
+import { useT } from '../../contexts/LocaleContext';
 
 interface ProductDetailViewProps {
   theme: PageTheme;
@@ -33,6 +35,8 @@ interface ProductDetailViewProps {
 /** A product's own page in the storefront, in the shop's chosen layout and features (D53, D196). */
 export function ProductDetailView({ theme, data, product, ordering, whatsappPhone, shopHref, productHref, shopKey }: ProductDetailViewProps) {
   const cart = useCart();
+  // Buyer wording follows the visitor's language (D479); product names, options and descriptions stay as the seller wrote them.
+  const { t: tr } = useT();
   const s = storefrontConfig(data.storefront);
   const recent = useRecentlyViewed(s.recentlyViewed ? shopKey : null);
   const [imageIndex, setImageIndex] = useState(0);
@@ -113,7 +117,7 @@ export function ProductDetailView({ theme, data, product, ordering, whatsappPhon
   ordering === 'checkout' ?
   <button type="button" onClick={buy} disabled={soldOut || !!variant && !available} className="flex h-12 w-full items-center justify-center gap-2 text-[15px] font-semibold transition-opacity duration-150 disabled:cursor-not-allowed disabled:opacity-50" style={primary}>
         <ShoppingBagIcon size={16} aria-hidden />
-        {soldOut ? isPreorder(product) ? 'Pre-orders full' : 'Sold out' : isPreorder(product) ? 'Pre-order' : 'Add to cart'}
+        {tr(soldOut ? isPreorder(product) ? 'Pre-orders full' : 'Sold out' : isPreorder(product) ? 'Pre-order' : 'Add to cart')}
       </button> :
 
   <a
@@ -131,7 +135,7 @@ export function ProductDetailView({ theme, data, product, ordering, whatsappPhon
     style={primary}>
     
         <MessageCircleIcon size={16} aria-hidden />
-        {soldOut ? 'Sold out' : 'Order on WhatsApp'}
+        {tr(soldOut ? 'Sold out' : 'Order on WhatsApp')}
       </a>;
 
 
@@ -142,7 +146,7 @@ export function ProductDetailView({ theme, data, product, ordering, whatsappPhon
           {product.name}
         </h1>
         <p className="mt-2 flex items-baseline gap-2 text-[20px] font-semibold tabular-nums">
-          {priceText ?? <span style={{ color: theme.mutedText }}>Price on request</span>}
+          {priceText ?? <span style={{ color: theme.mutedText }}>{tr('Price on request')}</span>}
           {onSale &&
         <s className="text-[15px] font-medium" style={{ color: theme.mutedText }}>
               {formatNgn(product.compareAtNgn as number)}
@@ -172,7 +176,7 @@ export function ProductDetailView({ theme, data, product, ordering, whatsappPhon
               
                   {on && <CheckIcon size={14} aria-hidden />}
                   {value}
-                  {!ok && <span className="sr-only"> (sold out)</span>}
+                  {!ok && <span className="sr-only"> ({tr('Sold out')})</span>}
                 </button>);
 
         })}
@@ -183,58 +187,58 @@ export function ProductDetailView({ theme, data, product, ordering, whatsappPhon
       {bulkLevels(product).length > 0 && ordering === 'checkout' &&
     <div className="rounded-md px-3.5 py-3" style={{ background: mix(theme.text, 5) }}>
           <p className="text-[13.5px] font-semibold" style={{ color: theme.text }}>
-            Buy more, pay less
+            {tr('Buy more, pay less')}
           </p>
           <ul className="mt-1.5 flex flex-col gap-1 text-[13.5px] tabular-nums" style={{ color: theme.mutedText }}>
             {bulkLevels(product).map((b) =>
         <li key={b.minQty} className="flex justify-between gap-4">
-                <span>{b.minQty}+ items</span>
+                <span>{tr('{n} or more', { n: b.minQty })}</span>
                 <span className="font-semibold" style={{ color: theme.text }}>
-                  {formatNgn(b.priceNgn)} each
+                  {tr('{price} each', { price: formatNgn(b.priceNgn) })}
                 </span>
               </li>
         )}
           </ul>
           <p className="mt-1.5 text-[12px]" style={{ color: theme.mutedText }}>
-            Applied in the cart automatically{product.variants.length > 1 ? ', counting every option together' : ''}.
+            {tr(product.variants.length > 1 ? 'Applied in the cart automatically, counting every option together.' : 'Applied in the cart automatically.')}
           </p>
         </div>
     }
 
       {isPreorder(product) && !soldOut &&
     <p className="rounded-md px-3.5 py-3 text-[13.5px] leading-snug" style={{ background: mix(theme.text, 5), color: theme.text }}>
-          <span className="font-semibold">Pre-order</span> — expected by {shipsByLabel(product.preorder.shipsBy)}.
-          {product.preorder.depositPct ? ` Pay ${product.preorder.depositPct}% now and the rest before it’s sent.` : ' Paid in full now; sent as soon as it’s in.'}
-          {preorderLeft(product) !== null && ` ${preorderLeft(product)} left.`}
+          <span className="font-semibold">{tr('Pre-order')}</span> — {tr('expected by {date}.', { date: shipsByLabel(product.preorder.shipsBy) })}{' '}
+          {product.preorder.depositPct ? tr('Pay {pct}% now and the rest before it’s sent.', { pct: product.preorder.depositPct }) : tr('Paid in full now; sent as soon as it’s in.')}
+          {preorderLeft(product) !== null && ` ${tr('Pre-orders left: {n}.', { n: preorderLeft(product) ?? 0 })}`}
         </p>
     }
 
       <p className="text-[13.5px] font-medium" style={{ color: theme.mutedText }} aria-live="polite">
         {soldOut ?
-      isPreorder(product) ?
-      'Pre-orders are full.' :
-      'Sold out right now.' :
+      tr(isPreorder(product) ? 'Pre-orders are full.' : 'Sold out right now.') :
       variant ?
       !available ?
-      'This option is sold out — try another.' :
+      tr('This option is sold out — try another.') :
       heldFree === 0 ?
-      'The last ones are in other buyers’ checkouts. If they don’t pay, they’re back here within 15 minutes.' :
+      tr('The last ones are in other buyers’ checkouts. If they don’t pay, they’re back here within 15 minutes.') :
       product.giftCard ?
-      'Your gift card code appears on your order page as soon as payment is confirmed.' :
+      tr('Your gift card code appears on your order page as soon as payment is confirmed.') :
       isPreorder(product) ?
-      'Available to pre-order.' :
+      tr('Available to pre-order.') :
       heldFree !== null ?
-      `Only ${heldFree} left — others are in buyers’ checkouts.` :
+      tr('Left: {n} — others are in buyers’ checkouts.', { n: heldFree }) :
       product.trackStock && product.kind === 'physical' && variant.stock <= product.lowStockAt ?
-      `Only ${variant.stock} left.` :
+      tr('Left: {n}.', { n: variant.stock }) :
       product.kind === 'digital' ?
-      'Instant download after payment.' :
+      tr('Instant download after payment.') :
       product.kind === 'course' ?
-      'Online course — start learning straight after payment.' :
-      'In stock.' :
+      tr('Online course — start learning straight after payment.') :
+      tr('In stock.') :
       tried && missing.length ?
-      `Choose ${missing.map((m) => m.name.toLowerCase()).join(' and ')}.` :
-      `Choose ${missing.map((m) => m.name.toLowerCase()).join(' and ')} to see availability.`}
+      tr('Choose: {options}.', { options: missing.map((m) => m.name.toLowerCase()).join(', ') }) :
+      tr('Choose {options} to see availability.', { options: missing.map((m) => m.name.toLowerCase()).join(', ') })}
+        {/* The batch a buyer receives is the one that expires soonest (D476). */}
+        {variant && available && product.trackStock && expiryState(variant).next?.expiresOn && ` ${tr('Best before {date}.', { date: formatExpiry(expiryState(variant).next?.expiresOn ?? '') })}`}
       </p>
 
       <div ref={ctaRef} className="flex flex-col gap-2.5">
@@ -243,13 +247,13 @@ export function ProductDetailView({ theme, data, product, ordering, whatsappPhon
       <div className="flex gap-2.5">
             {canAsk &&
         <a href={whatsappLink(whatsappPhone, `Hi! A question about ${product.name}: `)} target="_blank" rel="noreferrer" className="flex h-11 flex-1 items-center justify-center gap-2 text-[14px] font-semibold" style={secondary}>
-                <MessageCircleIcon size={15} aria-hidden /> Ask on WhatsApp
+                <MessageCircleIcon size={15} aria-hidden /> {tr('Ask on WhatsApp')}
               </a>
         }
             {s.shareButtons &&
         <button type="button" onClick={share} className="flex h-11 flex-1 items-center justify-center gap-2 text-[14px] font-semibold" style={secondary}>
                 {copied ? <CheckIcon size={15} aria-hidden /> : <Share2Icon size={15} aria-hidden />}
-                <span aria-live="polite">{copied ? 'Link copied' : 'Share'}</span>
+                <span aria-live="polite">{tr(copied ? 'Link copied' : 'Share')}</span>
               </button>
         }
           </div>
@@ -258,8 +262,8 @@ export function ProductDetailView({ theme, data, product, ordering, whatsappPhon
 
       {product.bundle &&
     <p className="text-[14px] leading-snug" style={{ color: theme.mutedText }}>
-          Made together with <strong style={{ color: theme.text }}>{product.bundle.partnerName}</strong>
-          {product.bundle.partnerPart ? ` — ${product.bundle.partnerPart}` : ''}. One payment; each business is paid its own part.
+          {tr('Made together with {partner}.', { partner: product.bundle.partnerPart ? `${product.bundle.partnerName} — ${product.bundle.partnerPart}` : product.bundle.partnerName })}{' '}
+          {tr('One payment; each business is paid its own part.')}
         </p>
     }
 
@@ -294,7 +298,7 @@ export function ProductDetailView({ theme, data, product, ordering, whatsappPhon
   return (
     <div className="flex flex-col gap-10">
       <Link to={shopHref} className="inline-flex items-center gap-1.5 self-start pt-2 text-[14px] font-medium" style={{ color: theme.mutedText }}>
-        <ArrowLeftIcon size={15} aria-hidden /> {collection ? collection.name : 'All products'}
+        <ArrowLeftIcon size={15} aria-hidden /> {collection ? collection.name : tr('All products')}
       </Link>
 
       {layout === 'full' ?
@@ -310,8 +314,8 @@ export function ProductDetailView({ theme, data, product, ordering, whatsappPhon
       }
 
       {s.showReviews && <ProductReviews theme={theme} data={data} productId={product.id} />}
-      {strip('related-heading', `More from ${collection?.name ?? 'the shop'}`, related)}
-      {strip('recent-heading', 'Recently viewed', recentProducts)}
+      {strip('related-heading', collection ? tr('More from {name}', { name: collection.name }) : tr('More from the shop'), related)}
+      {strip('recent-heading', tr('Recently viewed'), recentProducts)}
 
       {s.stickyBuy &&
       <div
@@ -336,7 +340,7 @@ export function ProductDetailView({ theme, data, product, ordering, whatsappPhon
           className="flex h-11 shrink-0 items-center justify-center gap-2 px-5 text-[14px] font-semibold"
           style={primary}>
           
-            {missing.length ? `Choose ${missing[0].name.toLowerCase()}` : ordering === 'checkout' ? 'Add to cart' : 'Order'}
+            {missing.length ? tr('Choose {option}', { option: missing[0].name.toLowerCase() }) : tr(ordering === 'checkout' ? 'Add to cart' : 'Order')}
           </button>
         </div>
       }

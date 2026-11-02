@@ -907,19 +907,46 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
 
       cancelSchedule: () => dispatch({ type: 'schedule', scheduled: null }),
 
-      /** Inserts copies of saved blocks below the selection, grouped under `groupName` when 2+. */
-      insertBlocks: (source: Block[], groupName?: string) => {
-        if (source.length === 0) return;
+      /**
+       * Inserts copies of saved blocks below the selection. Grouped under `groupName` only when there are 2+ blocks
+       * at page level — a container copied with its contents stays one block (D516).
+       * `smart` (paste, D516): when the selection is a container or sits in one, and everything fits with room left,
+       * the copies go inside it, right after the selection. Returns where they landed.
+       */
+      insertBlocks: (source: Block[], groupName?: string, opts?: {smart?: boolean;}): {parentId: string | null;} | null => {
+        if (source.length === 0) return null;
         const { selectedId } = stateRef.current;
         const draft = viewOf(stateRef.current);
         const sel = draft.blocks.find((b) => b.id === selectedId);
+        const sourceIds = new Set(source.map((b) => b.id));
+        const isRoot = (b: Block) => !b.parentId || !sourceIds.has(b.parentId);
+        const roots = source.filter(isRoot);
         let at = draft.blocks.length;
-        if (sel) {
-          const range = sel.groupId ? groupRange(draft, sel.groupId) : null;
-          at = (range ? range[1] : draft.blocks.indexOf(sel)) + 1;
+        let parent: string | null = null;
+        if (opts?.smart && sel) {
+          const container = isContainer(sel) ? sel : sel.parentId ? draft.blocks.find((b) => b.id === sel.parentId) : undefined;
+          if (
+          isContainer(container) &&
+          roots.every((r) => !isContainer(r) && fitsIn(r.type, container.type).ok) &&
+          childrenOf(draft.blocks, container.id).length + roots.length <= MAX_CHILDREN)
+          {
+            const kids = childrenOf(draft.blocks, container.id);
+            const anchor = sel.id === container.id ? kids[kids.length - 1] ?? container : sel;
+            parent = container.id;
+            at = draft.blocks.indexOf(anchor) + 1;
+          }
         }
-        const group: BlockGroup | null = source.length > 1 ? { id: uid('grp'), name: groupName ?? nextGroupName(draft) } : null;
-        const copies = relinkClones(source, source.map((b) => ({ ...cloneBlock(b), groupId: group?.id ?? null })));
+        if (!parent && sel) {
+          // At page level: after the selected block's container (and its contents) or its group.
+          const top = (sel.parentId ? draft.blocks.find((b) => b.id === sel.parentId) : undefined) ?? sel;
+          const range = top.groupId ? groupRange(draft, top.groupId) : null;
+          const kids = isContainer(top) ? childrenOf(draft.blocks, top.id) : [];
+          const lastKid = kids[kids.length - 1];
+          at = Math.max(range ? range[1] : draft.blocks.indexOf(top), lastKid ? draft.blocks.indexOf(lastKid) : -1) + 1;
+        }
+        const group: BlockGroup | null = !parent && roots.length > 1 && roots.every((r) => !isContainer(r)) ? { id: uid('grp'), name: groupName ?? nextGroupName(draft) } : null;
+        const cloned = relinkClones(source, source.map((b) => ({ ...cloneBlock(b), groupId: group?.id ?? null })));
+        const copies = cloned.map((c, i) => isRoot(source[i]) ? { ...c, parentId: parent } as Block : c);
         mutate(
           (doc) => {
             const blocks = [...doc.blocks];
@@ -929,6 +956,7 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
           undefined,
           copies[0].id
         );
+        return { parentId: parent };
       },
 
       /** Conflict: keep this tab's version and overwrite the other copy. */

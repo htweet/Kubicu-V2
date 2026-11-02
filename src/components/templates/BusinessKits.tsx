@@ -3,7 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { CheckCircle2Icon, PackageIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import type { BusinessKit, KitPart, KitPolicies } from '../../types/kit';
-import { businessKits, kitById, kitPartLabels, kitParts, policyFields } from '../../data/businessKits';
+import { businessKits, kitById, kitPartLabels, kitParts, kitTemplateFor, policyFields } from '../../data/businessKits';
+import { activeCountry } from '../../utils/country';
 import { useEditor } from '../../contexts/EditorContext';
 import { createBlock } from '../../utils/blocks';
 import { uid } from '../../utils/id';
@@ -171,7 +172,7 @@ export function BusinessKits() {
 
         <ul className="mt-6 grid gap-5 md:grid-cols-2">
           {businessKits.map((kit) => {
-            const ex = findExampleById(kit.templateId);
+            const ex = findExampleById(kitTemplateFor(kit, activeCountry()));
             const Icon = kit.icon;
             const isApplied = applied?.kitId === kit.id && !applied.removedAt;
             return (

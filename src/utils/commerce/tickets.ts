@@ -1,12 +1,18 @@
 import type { CartLine, CommerceData, CommerceEvent, IssuedTicket, Order, OrderItem, Product, TicketHold, TicketType } from '../../types/commerce';
 import { uid } from '../id';
+import { figure, onOpsSettings } from '../opsSettings';
 import { cancelOrder, refundOrder } from './ops';
 import { refundableNgn } from './money';
 import { findSeat, seatsIssue, syncSeatQuantities } from './seating';
+import { currentLang, dateLocale } from '../localeFormat';
 
 /** Example figures (D73). */
-export const MAX_TICKET_TYPES = 8;
-export const LOW_SEATS_AT = 10;
+export let MAX_TICKET_TYPES = 8;
+export let LOW_SEATS_AT = 10;
+onOpsSettings(() => {
+  MAX_TICKET_TYPES = figure('events.maxTicketTypes');
+  LOW_SEATS_AT = figure('events.lowSeatsAt');
+});
 
 export type TicketTypeState = 'on_sale' | 'not_yet' | 'closed' | 'sold_out';
 export type EventPhase = 'upcoming' | 'live' | 'past';
@@ -57,7 +63,7 @@ export function eventRevenue(data: CommerceData, ev: CommerceEvent): number {
 /* ---------- Seat holds during checkout (D73a) ---------- */
 
 /** Example figure: how long seats stay reserved once a buyer starts checkout. */
-export const HOLD_MINUTES = 10;
+export let HOLD_MINUTES = 10;
 const HOLDER_KEY = 'kubicu.ticketHolder';
 
 /** A random per-tab id for this browser's checkout. Never personal data. */
@@ -99,7 +105,13 @@ export const eventHeld = (data: CommerceData | null | undefined, ev: CommerceEve
 /* ---------- Stock holds during checkout (D255) ---------- */
 
 /** Example figure: how long stock-tracked items stay kept for a buyer once they press Checkout. */
-export const STOCK_HOLD_MINUTES = 15;
+export let STOCK_HOLD_MINUTES = 15;
+
+// Both hold times are example figures staff can change in Figures & names (D466).
+onOpsSettings(() => {
+  HOLD_MINUTES = figure('checkout.seatHoldMinutes');
+  STOCK_HOLD_MINUTES = figure('checkout.stockHoldMinutes');
+});
 
 /** Units of a variant other buyers are holding in checkout right now. */
 export function heldByOthers(data: CommerceData | null | undefined, variantId: string, holder?: string, now = Date.now()): number {
@@ -234,7 +246,8 @@ export function ticketLineIssue(data: CommerceData | null | undefined, line: Pic
   if (ev.status !== 'on_sale') return 'Ticket sales are paused';
   const state = ticketTypeState(data, ev, tt, now, holder);
   if (state === 'closed') return `${tt.name} sales have closed`;
-  if (state === 'not_yet') return `${tt.name} goes on sale ${new Date(tt.salesStart as string).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`;
+  // The date follows the screen language (D514); the sentence itself is translated by its builtPhrases pattern.
+  if (state === 'not_yet') return `${tt.name} goes on sale ${new Date(tt.salesStart as string).toLocaleDateString(dateLocale(currentLang()), { day: 'numeric', month: 'short' })}`;
   const left = Math.min(availableOfType(data, ev, tt, now, holder), availableForEvent(data, ev, now, holder));
   if (left <= 0) {
     // Seats physically left but all reserved by people mid-checkout.

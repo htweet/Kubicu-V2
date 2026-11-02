@@ -8,6 +8,8 @@ import { eliteProfessionals } from './elite/professionals';
 import { eliteCommerce } from './elite/commerce';
 import { eliteCommunityPages } from './elite/community';
 import { artworkPages } from './artwork';
+import { countryStarters } from './countries';
+import type { CountryCode } from '../../types/country';
 import { luminance } from '../../utils/contrast';
 
 export type { ExamplePage, ExampleGoal, ExampleStyle } from './build';
@@ -28,7 +30,7 @@ const lightTexture: Record<number, keyof typeof texture> = {
 };
 const darkTexture: Record<number, keyof typeof texture> = { 8: 'deep', 18: 'deep', 23: 'deep' };
 
-/** Twelve fictional example pages. Each is also a starter template (D32). */
+/** Fictional example pages — twelve Nigerian and twelve from Kenya, Ghana and South Africa (D434). Each is also a starter template (D32). */
 export const examplePages: ExamplePage[] = [
 adaezeAtelier,
 toluMakes,
@@ -42,6 +44,8 @@ kemiPresets,
 belloAndCo,
 ifeSounds,
 ikejaFoodBank,
+// Starters from Kenya, Ghana and South Africa (D434).
+...countryStarters,
 // Elite Template Library (D154); text passages use the editorial style (D157).
 // Each also gets a quiet AI-generated ambient texture behind it (D160).
 ...[...eliteCreators, ...eliteProfessionals, ...eliteCommerce, ...eliteCommunityPages].map(editorialText).map(ambientArt),
@@ -61,6 +65,14 @@ function ambientArt(e: ExamplePage): ExamplePage {
   const dark = luminance(e.doc.theme.background) < 0.25;
   const key = dark ? darkTexture[e.elite.number] ?? 'ink' : lightTexture[e.elite.number] ?? 'paper';
   return { ...e, doc: { ...e.doc, theme: { ...e.doc.theme, backgroundImage: texture[key], backgroundVeil: dark ? 25 : 20 } } };
+}
+
+/** The country an example's business is in; older examples are Nigerian (D434). */
+export const exampleCountry = (e: ExamplePage): CountryCode => e.country ?? 'NG';
+
+/** Same list with the given country's examples first, keeping the original order within each group (D434). */
+export function countryFirst<T extends ExamplePage>(list: T[], country: CountryCode): T[] {
+  return [...list.filter((e) => exampleCountry(e) === country), ...list.filter((e) => exampleCountry(e) !== country)];
 }
 
 export function findExampleByHandle(handle: string): ExamplePage | undefined {

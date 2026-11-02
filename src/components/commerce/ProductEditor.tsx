@@ -36,8 +36,13 @@ import { useLocalStore } from '../../hooks/useLocalStore';
 import { emptyPartnerships, partnershipKey } from '../../utils/partnerships';
 import { bundleIssue } from '../../utils/commerce/bundles';
 import { useT } from '../../contexts/LocaleContext';
-import { shopSettingsOf } from '../../utils/commerce/shopSettings';
+import { shopSettingsOf, taxClassLabels } from '../../utils/commerce/shopSettings';
 import { formatMoney } from '../../utils/currency';
+import { SelectInput } from '../ui/SelectInput';
+import { activeCountry } from '../../utils/country';
+import { countries } from '../../data/countries';
+import type { TaxClass } from '../../types/commerce';
+import type { CountryCode } from '../../types/country';
 
 interface ProductEditorProps {
   open: boolean;
@@ -241,6 +246,15 @@ export function ProductEditor({ open, productId, kind, onClose }: ProductEditorP
             <CurrencyInput id="prd-price" label="Price" value={draft.priceNgn} placeholder={tr('Price on request')} disabled={!pricesAllowed.allowed} hint={!pricesAllowed.allowed ? pricesAllowed.reason : priceWarning ? 'No price — checkout can’t sell it until you add one.' : undefined} onChange={(priceNgn) => patch({ priceNgn })} />
             <CurrencyInput id="prd-compare" label="Compare-at price" optional value={draft.compareAtNgn} disabled={!pricesAllowed.allowed} hint="Shown struck through, e.g. before a sale." onChange={(compareAtNgn) => patch({ compareAtNgn })} />
           </div>
+          {/* Tax type (D435): zero-rated and exempt items are left out of tax at checkout. */}
+          <SelectInput<TaxClass>
+              id="prd-tax"
+              label="Tax"
+              value={draft.taxClass ?? 'standard'}
+              onChange={(taxClass) => patch({ taxClass: taxClass === 'standard' ? undefined : taxClass })}
+              options={(Object.keys(taxClassLabels) as TaxClass[]).map((k) => ({ value: k, label: tr(taxClassLabels[k].label) }))}
+              hint={tr(taxClassLabels[draft.taxClass ?? 'standard'].hint)} />
+            
           </MobileSection>
 
           <MobileSection id="prd-sec-photos" title="Photos" summary={draft.images.length ? tr(draft.images.length === 1 ? '{n} photo' : '{n} photos', { n: draft.images.length }) : tr('No photos yet')} open={section === 'photos'} onToggle={() => toggle('photos')}>
@@ -331,13 +345,25 @@ export function ProductEditor({ open, productId, kind, onClose }: ProductEditorP
                   optional
                   inputMode="decimal"
                   value={draft.weightKg === null ? '' : String(draft.weightKg)}
-                  hint="For your delivery partner."
+                  hint="For your delivery partner, and needed to ship abroad."
                   onChange={(e) => {
                     const v = e.target.value.replace(/[^0-9.]/g, '');
                     patch({ weightKg: v === '' ? null : Number(v) });
                   }} />
                 
               </div>
+              {kind === 'physical' && !draft.giftCard &&
+              <div className="flex flex-col gap-4 border-t border-border pt-4">
+                  <div>
+                    <h3 className="text-label font-semibold text-fg">{tr('For delivery abroad')}</h3>
+                    <p className="mt-0.5 text-caption text-fg-muted">{tr('Needed on customs forms when you ship to another country. Leave empty if you only deliver at home.')}</p>
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <TextInput id="prd-customs" label="Customs description" optional placeholder={tr('e.g. Cotton dress, women’s')} maxLength={60} value={draft.shipping?.customsDescription ?? ''} onChange={(e) => patch({ shipping: { customsDescription: e.target.value, originCountry: draft.shipping?.originCountry ?? activeCountry() } })} />
+                    <SelectInput<CountryCode> id="prd-origin" label="Made in" value={draft.shipping?.originCountry ?? activeCountry()} onChange={(originCountry) => patch({ shipping: { customsDescription: draft.shipping?.customsDescription ?? '', originCountry } })} options={countries.map((c) => ({ value: c.code, label: tr(c.name) }))} />
+                  </div>
+                </div>
+              }
             </>
             }
           </MobileSection>

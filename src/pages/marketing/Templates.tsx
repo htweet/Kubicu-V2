@@ -1,7 +1,10 @@
 import React, { useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { SearchIcon } from 'lucide-react';
-import { examplePages, goalLabels, type ExampleGoal, type ExampleStyle } from '../../data/examples';
+import { countryFirst, exampleCountry, examplePages, goalLabels, type ExampleGoal, type ExampleStyle } from '../../data/examples';
+import { countries } from '../../data/countries';
+import { countryForLang } from '../../utils/previewMoney';
+import type { CountryCode } from '../../types/country';
 import { TemplateThumb } from '../../components/templates/TemplateThumb';
 import { EliteCollection } from '../../components/templates/EliteCollection';
 import { ArtworkCollection } from '../../components/templates/ArtworkCollection';
@@ -48,30 +51,36 @@ const styleLabels: Record<ExampleStyle, string> = { light: 'Light', dark: 'Dark'
  * matches the English words.
  */
 export function Templates() {
-  const { t: tr } = useT();
+  const { t: tr, lang } = useT();
   const [params] = useSearchParams();
   const initialGoal = params.get('goal');
+  // Country, then city (D434). Defaults to the country of the visitor's language; Nigeria's starters show first in English.
+  const [country, setCountry] = useState<CountryCode | 'all'>(() => countryForLang(lang));
   const [goal, setGoal] = useState<ExampleGoal | 'all'>(initialGoal && initialGoal in goalLabels ? initialGoal as ExampleGoal : 'all');
   const [style, setStyle] = useState<ExampleStyle | 'all'>('all');
   const [query, setQuery] = useState('');
   const [region, setRegion] = useState('all');
   const [price, setPrice] = useState<'all' | 'free' | 'premium'>('all');
-  const regions = useMemo(() => Array.from(new Set(examplePages.map((e) => e.city))).sort(), []);
+  const regions = useMemo(() => Array.from(new Set(examplePages.filter((e) => country === 'all' || exampleCountry(e) === country).map((e) => e.city))).sort(), [country]);
   const showThemes = params.get('tab') === 'themes';
 
   const list = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return examplePages.filter(
+    // Elite and Artwork pages have no country of their own business — they stay in every country's list.
+    const inCountry = (e: (typeof examplePages)[number]) => country === 'all' || exampleCountry(e) === country || !!e.elite || !!e.artwork;
+    return countryFirst(examplePages, country === 'all' ? countryForLang(lang) : country).filter(
       (e) =>
-      (goal === 'all' || e.goals.includes(goal)) && (
+      inCountry(e) && (
+      goal === 'all' || e.goals.includes(goal)) && (
       style === 'all' || e.styles.includes(style)) && (
       region === 'all' || e.city === region) && (
       price === 'all' || (price === 'premium' ? templatePrice(e.id) > 0 : templatePrice(e.id) === 0)) && (
       !q || [e.name, e.category, tr(e.category), e.bestFor, e.description, e.city].some((s) => s.toLowerCase().includes(q)))
     );
-  }, [goal, style, query, region, price, tr]);
+  }, [goal, style, query, region, price, tr, country, lang]);
 
   const reset = () => {
+    setCountry('all');
     setGoal('all');
     setStyle('all');
     setQuery('');
@@ -141,7 +150,8 @@ export function Templates() {
           ['premium', tr('Premium')]]
           } />
         
-        <FilterRow label={tr('Region')} value={region} onChange={setRegion} options={[['all', tr('Everywhere')], ...regions.map((r) => [r, tr(r)] as [string, string])]} />
+        <FilterRow<CountryCode | 'all'> label={tr('Country')} value={country} onChange={(c) => (setCountry(c), setRegion('all'))} options={[['all', tr('All countries')], ...countries.map((c) => [c.code, tr(c.name)] as [CountryCode, string])]} />
+        <FilterRow label={tr('City')} value={region} onChange={setRegion} options={[['all', tr('Every city')], ...regions.map((r) => [r, tr(r)] as [string, string])]} />
       </div>
 
       <p className="mt-6 text-caption text-fg-subtle" aria-live="polite">

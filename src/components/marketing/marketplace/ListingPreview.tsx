@@ -6,6 +6,9 @@ import { findExampleById } from '../../../data/examples';
 import { TemplateThumb } from '../../templates/TemplateThumb';
 import { ExtensionIcon } from '../../extensions/ExtensionIcon';
 import { kitPhotos } from '../../../data/kitPhotos';
+import { kitTemplateFor } from '../../../data/businessKits';
+import { countryForLanguage } from '../../../utils/country';
+import { useT } from '../../../contexts/LocaleContext';
 
 const reference = findExampleById('elite-signature-creator') ?? findExampleById('adaeze-atelier');
 
@@ -15,6 +18,7 @@ const reference = findExampleById('elite-signature-creator') ?? findExampleById(
  * illustrative photo of the trade with their real starter page on top (D279).
  */
 export function ListingPreview({ listing, size = 'card' }: {listing: Listing;size?: 'card' | 'hero';}) {
+  const { lang } = useT();
   const tone = listingKindById[listing.kind].tone;
   const hero = size === 'hero';
   const thumbW = hero ? 200 : 120;
@@ -23,7 +27,7 @@ export function ListingPreview({ listing, size = 'card' }: {listing: Listing;siz
   // Industry kits (D279): a photo of the kind of business, with the kit's real starter page in a phone on top.
   if (listing.kit) {
     const photo = kitPhotos[listing.kit.id];
-    const starter = findExampleById(listing.kit.templateId);
+    const starter = findExampleById(kitTemplateFor(listing.kit, countryForLanguage(lang)));
     return (
       <div aria-hidden className="relative h-full overflow-hidden" style={{ backgroundColor: tone.bg }}>
         {photo && <img src={photo.url} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />}

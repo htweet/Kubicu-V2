@@ -25,7 +25,10 @@ interface TeamValue {
   seatsUsed: number;
   can: (p: Permission, spaceId?: string) => CanResult;
   canAccessSpace: (spaceId: string) => boolean;
-  invite: (input: {contact: string;role: Role;spaceIds: string[] | null;}) => Invite | null;
+  /** The location the signed-in member is limited to (D474); null = every location. Owners and Admins are never limited. */
+  myBranchId: string | null;
+  invite: (input: {contact: string;role: Role;spaceIds: string[] | null;branchId?: string | null;}) => Invite | null;
+  setBranch: (memberId: string, branchId: string | null) => void;
   cancelInvite: (id: string) => void;
   resendInvite: (id: string) => void;
   acceptInvite: (token: string, name: string) => Member | null;
@@ -106,6 +109,8 @@ export function TeamProvider({ viewingAs, children }: {viewingAs: Role;children:
   }, [viewingAs, data.members, owner, current.createdAt]);
   const role = me.id.startsWith('preview_') ? me.role : effectiveRole(me, paused);
 
+  const myBranchId = role === 'owner' || role === 'admin' ? null : me.branchId ?? null;
+
   const canAccessSpace = useCallback((spaceId: string) => role === 'owner' || role === 'admin' || !me.spaceIds || me.spaceIds.includes(spaceId), [role, me.spaceIds]);
 
   const can = useCallback(
@@ -128,7 +133,7 @@ export function TeamProvider({ viewingAs, children }: {viewingAs: Role;children:
   const used = seatsUsed(data);
 
   const invite = useCallback(
-    (input: {contact: string;role: Role;spaceIds: string[] | null;}) => {
+    (input: {contact: string;role: Role;spaceIds: string[] | null;branchId?: string | null;}) => {
       const contact = input.contact.trim();
       if (seatsUsed(ref.current) >= seatLimits[current.plan]) return null;
       const now = new Date();
@@ -138,6 +143,7 @@ export function TeamProvider({ viewingAs, children }: {viewingAs: Role;children:
         contact,
         role: input.role,
         spaceIds: input.spaceIds,
+        branchId: input.role === 'admin' ? null : input.branchId ?? null,
         invitedBy: me.name,
         createdAt: now.toISOString(),
         expiresAt: new Date(now.getTime() + INVITE_DAYS * 86400000).toISOString(),
@@ -163,7 +169,7 @@ export function TeamProvider({ viewingAs, children }: {viewingAs: Role;children:
     (token: string, name: string) => {
       const inv = ref.current.invites.find((i) => i.token === token);
       if (!inv || inviteState(inv) !== 'pending') return null;
-      const member: Member = { id: uid('member'), name: name.trim() || inv.contact, contact: inv.contact, role: inv.role, spaceIds: inv.spaceIds, joinedAt: new Date().toISOString(), lastActiveAt: new Date().toISOString() };
+      const member: Member = { id: uid('member'), name: name.trim() || inv.contact, contact: inv.contact, role: inv.role, spaceIds: inv.spaceIds, branchId: inv.branchId ?? null, joinedAt: new Date().toISOString(), lastActiveAt: new Date().toISOString() };
       apply((d) => ({ ...d, members: [...d.members, member], invites: d.invites.map((i) => i.id === inv.id ? { ...i, status: 'accepted' as const } : i), activity: [activity(member.name, 'team', `joined as ${articled(inv.role)}`, '/app/settings'), ...d.activity] }));
       return member;
     },
@@ -190,6 +196,16 @@ export function TeamProvider({ viewingAs, children }: {viewingAs: Role;children:
     [apply, me.name]
   );
 
+  const setBranch = useCallback(
+    (memberId: string, branchId: string | null) =>
+    apply((d) => {
+      const m = d.members.find((x) => x.id === memberId);
+      if (!m || m.role === 'owner' || m.role === 'admin') return d;
+      return { ...d, members: d.members.map((x) => x.id === memberId ? { ...x, branchId } : x), activity: [activity(me.name, 'team', branchId ? `limited ${m.name} to one location` : `gave ${m.name} every location`, '/app/settings'), ...d.activity] };
+    }),
+    [apply, me.name]
+  );
+
   const removeMember = useCallback(
     (memberId: string) =>
     apply((d) => {
@@ -208,7 +224,7 @@ export function TeamProvider({ viewingAs, children }: {viewingAs: Role;children:
       if (!to || !from || to.id === from.id) return d;
       return {
         ...d,
-        members: d.members.map((x) => x.id === to.id ? { ...x, role: 'owner' as const, spaceIds: null } : x.id === from.id ? { ...x, role: 'admin' as const } : x),
+        members: d.members.map((x) => x.id === to.id ? { ...x, role: 'owner' as const, spaceIds: null, branchId: null } : x.id === from.id ? { ...x, role: 'admin' as const } : x),
         activity: [activity(me.name, 'team', `transferred ownership to ${to.name}`, '/app/settings'), ...d.activity]
       };
     }),
@@ -334,8 +350,8 @@ export function TeamProvider({ viewingAs, children }: {viewingAs: Role;children:
   );
 
   const value = useMemo<TeamValue>(
-    () => ({ data, me, role, paused, seatLimit, seatsUsed: used, can, canAccessSpace, invite, cancelInvite, resendInvite, acceptInvite, changeRole, setSpaces, removeMember, transferOwnership, updateMember, update, log, needsReview, requestReview, updateReviewDoc, withdrawReview, decideReview, myNotices, markNoticesSeen, addComment, editComment, deleteComment, resolveThread }),
-    [data, me, role, paused, seatLimit, used, can, canAccessSpace, invite, cancelInvite, resendInvite, acceptInvite, changeRole, setSpaces, removeMember, transferOwnership, updateMember, update, log, needsReview, requestReview, updateReviewDoc, withdrawReview, decideReview, myNotices, markNoticesSeen, addComment, editComment, deleteComment, resolveThread]
+    () => ({ data, me, role, paused, seatLimit, seatsUsed: used, can, canAccessSpace, myBranchId, invite, setBranch, cancelInvite, resendInvite, acceptInvite, changeRole, setSpaces, removeMember, transferOwnership, updateMember, update, log, needsReview, requestReview, updateReviewDoc, withdrawReview, decideReview, myNotices, markNoticesSeen, addComment, editComment, deleteComment, resolveThread }),
+    [data, me, role, paused, seatLimit, used, can, canAccessSpace, myBranchId, invite, setBranch, cancelInvite, resendInvite, acceptInvite, changeRole, setSpaces, removeMember, transferOwnership, updateMember, update, log, needsReview, requestReview, updateReviewDoc, withdrawReview, decideReview, myNotices, markNoticesSeen, addComment, editComment, deleteComment, resolveThread]
   );
   return <TeamContext.Provider value={value}>{children}</TeamContext.Provider>;
 }

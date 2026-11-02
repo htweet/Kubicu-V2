@@ -4,9 +4,11 @@ import type { BlockProps } from './blockProps';
 import { BlockPlaceholder } from './BlockPlaceholder';
 import { PageAction } from './PageAction';
 import { accentOf, cardRadius, mix } from './pageStyle';
+import { useT } from '../../contexts/LocaleContext';
 
 /** Announcement bar (D169): one line, an optional link, three tones taken from the theme. */
 export function AnnouncementBlock({ block, theme, mode }: BlockProps<'announcement'>) {
+  const { t: tr } = useT();
   const c = block.content;
   if (!c.text.trim()) return mode === 'edit' ? <BlockPlaceholder icon={MegaphoneIcon} title="Write your announcement" hint="One short line works best" theme={theme} /> : null;
   const tone =
@@ -28,7 +30,7 @@ export function AnnouncementBlock({ block, theme, mode }: BlockProps<'announceme
   const cls = 'group flex min-h-[48px] w-full flex-wrap items-center justify-center gap-x-4 gap-y-1 px-4 py-2.5 text-center';
   const style = { ...tone, borderRadius: Math.min(cardRadius(theme), 14) };
   return (
-    <aside aria-label="Announcement">
+    <aside aria-label={tr('Announcement')}>
       {c.url ?
       <PageAction mode={mode} href={c.url} className={cls} style={style}>
           {inner}

@@ -27,6 +27,13 @@ To sign off, reply with IDs, e.g. *"Confirm all of E"*, *"Confirm D40 with KUBIC
 > | E — Product / design | No action needed. D233–D343 are all product/design or translation decisions and fall here unless listed above. |
 >
 > Still to decide outside these groups: final plan prices (see `docs/CLAUDE_HANDOFF.md` §17.1), Copilot chat retention and AI credit costs.
+>
+> **Added 1 Nov 2026 (D518–D522), Copilot as KUBICU's front door:**
+> - **B — Legal:** the "not advice" wording Copilot uses for legal, tax and financial questions in each country; data-processing terms for each country where a model provider handles chats and photos.
+> - **C — Provider:** AI provider and model for Copilot; server storage of chats and drafts; whether signed-in users' chats sync across devices; whether Copilot may read workspace data when signed in.
+> - **A — Figures (not yet confirmed):** Copilot credit costs, daily draft/change limits (3 / 10 are examples), and whether question-only use gets its own daily allowance.
+> - **D — Translations:** Copilot's curated answers and word lists (`data/translationsCopilotHelp.ts`, `data/copilotUnderstanding.ts`, `data/copilotHelpTopics.ts` keyword rows) are drafts; the word lists become unnecessary once a model is connected.
+> - **E — Product:** Copilot is a general KUBICU assistant with building as its main job (D520). Full engineering contract: `docs/COPILOT_AI_INTEGRATION.md`.
 
 > **Correction:** the earlier note that D149 was used twice was wrong — it came from misreading a line number. D149 (Batch 14 checks) and D156 (Elite templates) are separate decisions; nothing was renumbered.
 

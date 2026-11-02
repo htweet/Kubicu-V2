@@ -13,6 +13,7 @@ export function useDocumentLang(): void {
 import { translations, type UiLang } from '../data/translations';
 import { phraseOverride } from '../utils/phraseOverrides';
 import { translateBuilt } from '../utils/builtPhrases';
+import { setActiveLang } from '../utils/localeFormat';
 
 interface LocaleValue {
   lang: UiLang;
@@ -24,7 +25,10 @@ interface LocaleValue {
 
 const fill = (s: string, vars?: Record<string, string | number>) => vars ? s.replace(/\{(\w+)\}/g, (m, k) => k in vars ? String(vars[k]) : m) : s;
 
-const english: LocaleValue = { lang: 'en', t: fill };
+/** English wording staff changed in Super admin → Localisation → English (D465): any text, label, placeholder or name. */
+const englishT: LocaleValue['t'] = (text, vars) => fill(phraseOverride('en', text) ?? text, vars);
+
+const english: LocaleValue = { lang: 'en', t: englishT };
 
 /** BCP-47 tags for the <html lang> attribute. Twi is "ak" (Akan); Pidgin is "pcm". */
 const htmlLang: Record<UiLang, string> = { en: 'en', pcm: 'pcm', yo: 'yo', ha: 'ha', ig: 'ig', sw: 'sw', tw: 'ak', zu: 'zu' };
@@ -51,13 +55,14 @@ function makeTranslator(lang: Exclude<UiLang, 'en'>): LocaleValue['t'] {
       const built = translateBuilt(text, lookup);
       if (built !== undefined) return built;
     }
-    return fill(text, vars);
+    // No draft in this language: show staff's English wording if they changed it (D465).
+    return fill(phraseOverride('en', text) ?? text, vars);
   };
 }
 
 /** A plain translate function for a language — for code that runs before a provider is in place. */
 export function translatorFor(lang: UiLang): LocaleValue['t'] {
-  if (lang === 'en') return fill;
+  if (lang === 'en') return englishT;
   return makeTranslator(lang);
 }
 
@@ -66,6 +71,8 @@ export function LocaleProvider({ lang, setLang, children }: {lang: UiLang;setLan
     if (lang === 'en') return { ...english, setLang };
     return { lang, setLang, t: makeTranslator(lang) };
   }, [lang, setLang]);
+  // Plain date helpers (formatRelative, formatDate) read this while the subtree renders (D513, D514).
+  setActiveLang(lang, value.t);
   return <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>;
 }
 

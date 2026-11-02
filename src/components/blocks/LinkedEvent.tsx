@@ -16,6 +16,7 @@ import { useTrack } from '../../contexts/TrackContext';
 import { useCart } from '../../contexts/CartContext';
 import { isSeatedType, repeatLabels, seriesDates } from '../../utils/commerce/seating';
 import { SeatPicker } from './SeatPicker';
+import { dateLocale } from '../../utils/localeFormat';
 
 interface Props {
   event: CommerceEvent | undefined;
@@ -25,11 +26,12 @@ interface Props {
   ctaLabel: string;
 }
 
-const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+const shortDate = (iso: string, locale = 'en-GB') => new Date(iso).toLocaleDateString(locale, { day: 'numeric', month: 'short' });
 
-/** Event block reading live from Commerce → Events: real seats, sales windows and checkout (D73). */
+/** Event block reading live from Commerce → Events: real seats, sales windows and checkout (D73). Dates follow the visitor's language (D510). */
 export function LinkedEvent({ event: linked, data, theme, mode, ctaLabel }: Props) {
-  const { t: tr } = useT();
+  const { t: tr, lang } = useT();
+  const loc = dateLocale(lang);
   const now = useNow(30_000);
   const track = useTrack();
   const cart = useCart();
@@ -71,13 +73,13 @@ export function LinkedEvent({ event: linked, data, theme, mode, ctaLabel }: Prop
 
   const chip =
   display === 'past' ?
-  <PageChip theme={theme} tone="muted">Event ended</PageChip> :
+  <PageChip theme={theme} tone="muted">{tr('Event ended')}</PageChip> :
   phase === 'live' ?
-  <PageChip theme={theme} tone="strong">Happening now</PageChip> :
+  <PageChip theme={theme} tone="strong">{tr('Happening now')}</PageChip> :
   display === 'sold_out' ?
   <PageChip theme={theme}>{tr('Sold out')}</PageChip> :
   left > 0 && left <= LOW_SEATS_AT && display === 'on_sale' ?
-  <PageChip theme={theme} tone="strong">Only {left} left</PageChip> :
+  <PageChip theme={theme} tone="strong">{tr('Left: {n}', { n: left })}</PageChip> :
   null;
 
   return (
@@ -92,22 +94,22 @@ export function LinkedEvent({ event: linked, data, theme, mode, ctaLabel }: Prop
         </div>
         <dl className="flex flex-col gap-2.5 text-[14px]" style={{ color: theme.text }}>
           <div className="flex items-start gap-2.5">
-            <dt className="sr-only">When</dt>
+            <dt className="sr-only">{tr('When')}</dt>
             <CalendarIcon size={16} className="mt-0.5 shrink-0" style={muted} aria-hidden />
             <dd>
-              {formatEventDate(ev.startsAt, ev.timeZone)}
+              {formatEventDate(ev.startsAt, ev.timeZone, loc)}
               <span className="block text-[13px]" style={muted}>
-                {formatEventTime(ev.startsAt, ev.timeZone)}
-                {ev.endsAt && ` – ${formatEventTime(ev.endsAt, ev.timeZone)}`}
+                {formatEventTime(ev.startsAt, ev.timeZone, loc)}
+                {ev.endsAt && ` – ${formatEventTime(ev.endsAt, ev.timeZone, loc)}`}
               </span>
             </dd>
           </div>
           {(ev.online || ev.venue || ev.address) &&
           <div className="flex items-start gap-2.5">
-              <dt className="sr-only">Where</dt>
+              <dt className="sr-only">{tr('Where')}</dt>
               {ev.online ? <VideoIcon size={16} className="mt-0.5 shrink-0" style={muted} aria-hidden /> : <MapPinIcon size={16} className="mt-0.5 shrink-0" style={muted} aria-hidden />}
               <dd>
-                {ev.online ? 'Online — link sent with your ticket' : ev.venue}
+                {ev.online ? tr('Online — link sent with your ticket') : ev.venue}
                 {!ev.online && ev.address &&
               <span className="block text-[13px]" style={muted}>
                     {ev.address}
@@ -120,9 +122,9 @@ export function LinkedEvent({ event: linked, data, theme, mode, ctaLabel }: Prop
         {dates.length > 1 &&
         <div className="flex flex-col gap-2">
             <p className="text-[13px] font-semibold" style={{ color: theme.text }}>
-              Choose a date <span className="font-normal" style={muted}>· {repeatLabels[ev.series?.every ?? 'weekly'].toLowerCase()}</span>
+              {tr('Choose a date')} <span className="font-normal" style={muted}>· {tr(repeatLabels[ev.series?.every ?? 'weekly'])}</span>
             </p>
-            <div className="kb-scroll -mx-1 flex gap-2 overflow-x-auto overflow-y-hidden px-1 pb-1" role="group" aria-label="Dates">
+            <div className="kb-scroll -mx-1 flex gap-2 overflow-x-auto overflow-y-hidden px-1 pb-1" role="group" aria-label={tr('Dates')}>
               {dates.map((d) => {
               const selected = d.id === ev.id;
               const full = availableForEvent(data, d, now, me) <= 0;
@@ -135,9 +137,9 @@ export function LinkedEvent({ event: linked, data, theme, mode, ctaLabel }: Prop
                   className="flex shrink-0 flex-col items-start px-3 py-2 text-left"
                   style={{ borderRadius: buttonRadius(theme), background: selected ? theme.accent : 'transparent', color: selected ? theme.accentText : theme.text, border: `1px solid ${selected ? theme.accent : mix(theme.text, 16)}` }}>
                   
-                    <span className="whitespace-nowrap text-[13.5px] font-semibold">{new Date(d.startsAt).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: d.timeZone })}</span>
+                    <span className="whitespace-nowrap text-[13.5px] font-semibold">{new Date(d.startsAt).toLocaleDateString(loc, { weekday: 'short', day: 'numeric', month: 'short', timeZone: d.timeZone })}</span>
                     <span className="whitespace-nowrap text-[11.5px]" style={{ opacity: 0.8 }}>
-                      {full ? 'Sold out' : formatEventTime(d.startsAt, d.timeZone)}
+                      {full ? tr('Sold out') : formatEventTime(d.startsAt, d.timeZone, loc)}
                     </span>
                   </button>);
 
@@ -152,22 +154,22 @@ export function LinkedEvent({ event: linked, data, theme, mode, ctaLabel }: Prop
         }
 
         {display !== 'past' && ev.ticketTypes.length > 0 &&
-        <ul className="flex flex-col" aria-label="Tickets">
+        <ul className="flex flex-col" aria-label={tr('Tickets')}>
             {ev.ticketTypes.map((tt) => {
             const state = ticketTypeState(data, ev, tt, now, me);
             const seats = Math.min(availableOfType(data, ev, tt, now, me), left);
             const sellable = state === 'on_sale' && ev.status === 'on_sale';
             const status =
             state === 'sold_out' ?
-            'Sold out' :
+            tr('Sold out') :
             state === 'closed' ?
-            'Sales closed' :
+            tr('Sales closed') :
             state === 'not_yet' ?
-            `On sale ${shortDate(tt.salesStart as string)}` :
+            tr('On sale {date}', { date: shortDate(tt.salesStart as string, loc) }) :
             ev.status === 'paused' ?
-            'Paused' :
+            tr('Paused') :
             null;
-            const sub = [tt.note, sellable && tt.salesEnd ? `Until ${shortDate(tt.salesEnd)}` : null, sellable && seats <= LOW_SEATS_AT ? `${seats} left` : null].filter(Boolean).join(' · ');
+            const sub = [tt.note, sellable && tt.salesEnd ? tr('Until {date}', { date: shortDate(tt.salesEnd, loc) }) : null, sellable && seats <= LOW_SEATS_AT ? tr('Left: {n}', { n: seats }) : null].filter(Boolean).join(' · ');
             return (
               <li key={tt.id} className="flex items-center gap-3 py-3" style={{ borderTop: `1px solid ${mix(theme.text, 9)}` }}>
                   <span className="min-w-0 flex-1">
@@ -181,18 +183,18 @@ export function LinkedEvent({ event: linked, data, theme, mode, ctaLabel }: Prop
                   }
                   </span>
                   <span className="shrink-0 text-right text-[14px] font-semibold tabular-nums" style={{ color: sellable ? theme.text : theme.mutedText }}>
-                    {status ?? (tt.priceNgn === 0 ? 'Free' : formatNgn(tt.priceNgn))}
+                    {status ?? (tt.priceNgn === 0 ? tr('Free') : formatNgn(tt.priceNgn))}
                   </span>
                   {sellable && product && onSale.length > 1 && !isSeatedType(ev, tt.id) &&
                 <CheckoutButton
                   mode={mode}
                   showIcon={false}
                   onAdd={(cart) => pick(cart, tt.id)}
-                  ariaLabel={`Add ${tt.name} ticket`}
+                  ariaLabel={`${tr('Add')}: ${tt.name}`}
                   className="flex h-9 shrink-0 items-center px-3.5 text-[13px] font-semibold"
                   style={buttonStyle(theme, 'default')}>
                   
-                      Add
+                      {tr('Add')}
                     </CheckoutButton>
                 }
                 </li>);
@@ -203,12 +205,12 @@ export function LinkedEvent({ event: linked, data, theme, mode, ctaLabel }: Prop
 
         {display === 'past' ?
         <p className="text-[13px]" style={muted}>
-            This event has finished. Thanks to everyone who came.
+            {tr('This event has finished. Thanks to everyone who came.')}
           </p> :
         seatedOnSale && product && ev.status === 'on_sale' ?
         <CheckoutButton mode={mode} showIcon={false} onAdd={openSeats} className="flex h-12 w-full items-center justify-center gap-2 text-[15px] font-semibold" style={buttonStyle(theme, 'featured')}>
             <ArmchairIcon size={17} aria-hidden />
-            {mySeats.length ? `Change seats (${mySeats.length})` : ctaLabel || 'Choose seats'}
+            {mySeats.length ? tr('Change seats ({n})', { n: mySeats.length }) : ctaLabel || tr('Choose seats')}
           </CheckoutButton> :
         onSale.length > 0 && product && ev.status === 'on_sale' ?
         <CheckoutButton
@@ -223,7 +225,7 @@ export function LinkedEvent({ event: linked, data, theme, mode, ctaLabel }: Prop
           </CheckoutButton> :
 
         <span className="flex h-12 items-center justify-center text-[14px] font-medium" style={{ color: theme.mutedText, borderRadius: buttonRadius(theme), border: `1px dashed ${mix(theme.text, 22)}` }}>
-            {display === 'sold_out' ? 'Tickets sold out' : display === 'paused' ? 'Ticket sales are paused' : 'Tickets aren’t on sale yet'}
+            {display === 'sold_out' ? tr('Tickets sold out') : display === 'paused' ? tr('Ticket sales are paused') : tr('Tickets aren’t on sale yet')}
           </span>
         }
         {display !== 'past' && ev.refundPolicy &&

@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { ArrowUpRightIcon, CalendarClockIcon, FileTextIcon, PackageIcon, SparklesIcon, WorkflowIcon } from 'lucide-react';
 import type { BusinessKit } from '../../../types/kit';
 import { findExampleById } from '../../../data/examples';
+import { kitTemplateFor } from '../../../data/businessKits';
+import { countryForLanguage } from '../../../utils/country';
 import { kitPhotos } from '../../../data/kitPhotos';
 import { recipes } from '../../../data/automationRecipes';
 import { templatePrice } from '../../../data/templateMarket';
@@ -17,9 +19,10 @@ import { TemplateThumb } from '../../templates/TemplateThumb';
  * since it's the sample content the seller replaces. Automation names pass through the translator.
  */
 export function KitShowcase({ kit }: {kit: BusinessKit;}) {
-  const { t: tr } = useT();
+  const { t: tr, lang } = useT();
   const photo = kitPhotos[kit.id];
-  const starter = findExampleById(kit.templateId);
+  // The starter from the visitor's country where the kit has one (D494).
+  const starter = findExampleById(kitTemplateFor(kit, countryForLanguage(lang)));
   const elite = kit.eliteTemplateId ? findExampleById(kit.eliteTemplateId) : undefined;
   const kitRecipes = kit.recipes.map((id) => recipes.find((r) => r.id === id)).filter((r): r is (typeof recipes)[number] => !!r);
   const policies = [

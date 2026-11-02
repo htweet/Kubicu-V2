@@ -13,6 +13,7 @@ const channelLabels: Record<SourceId, string> = {
   x: 'X',
   google: 'Google',
   qr: 'QR code',
+  nfc: 'NFC tag',
   campaign: 'Campaign link',
   direct: 'Direct or unknown',
   other: 'Another site'

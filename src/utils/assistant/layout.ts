@@ -1,7 +1,8 @@
 import type { Block, BlockType, PageTheme } from '../../types/page';
 import type { AssistantAction, AssistantAnswers, AssistantFeel, AssistantImage, AssistantItem, AssistantOffer, AssistantPlan, PlanUnit } from '../../types/assistant';
 import type { ExampleGoal, ExamplePage } from '../../data/examples/build';
-import { examplePages } from '../../data/examples';
+import { exampleCountry, examplePages } from '../../data/examples';
+import { activeCountry, countryInfo } from '../country';
 import { sectionPresets } from '../../data/sectionPresets';
 import { signatureTheme, signatureThemes } from '../../data/signatureThemes';
 import { pageThemePresets } from '../../data/pageThemes';
@@ -72,6 +73,11 @@ export function scoreStarters(answers: AssistantAnswers, owns: (id: string) => b
     if (answers.offer && offerGoals[answers.offer].some((g) => example.goals.includes(g))) score += 2;
     const style = answers.feel ? feelStyle[answers.feel] : undefined;
     if (style && example.styles.includes(style)) score += 1;
+    // Starters from the seller's own country win ties (D434).
+    if (exampleCountry(example) === activeCountry()) {
+      score += 1;
+      if (example.country) reasons.push(`it’s set up for ${countryInfo(example.country).name}`);
+    }
     return { example, score, reasons };
   }).
   sort((a, b) => b.score - a.score);

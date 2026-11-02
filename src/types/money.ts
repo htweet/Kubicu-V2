@@ -80,6 +80,8 @@ export interface Payout {
   /** Prototype: decided when the payout is made. */
   outcome: 'paid' | 'failed';
   failureReason: string | null;
+  /** Prototype: why the bank or wallet sends it back, chosen when testing a returned payout (D433). */
+  returnReason?: string;
   /** Staff hold note (Super admin → Payments). */
   holdReason: string | null;
   auto: boolean;

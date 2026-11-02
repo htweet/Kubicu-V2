@@ -50,6 +50,8 @@ export interface CopilotMessage {
   replies?: CopilotReply[];
   draftId?: string;
   tone?: 'default' | 'warning';
+  /** D520: screens an answer points to ("Open Wallet" → /app/commerce/wallet). Copilot links; the person acts there. */
+  links?: {label: string;to: string;}[];
   createdAt: string;
 }
 

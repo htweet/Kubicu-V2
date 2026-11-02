@@ -24,7 +24,10 @@ import { useWorkspace } from '../contexts/WorkspaceContext';
 import { useEditor } from '../contexts/EditorContext';
 import { useTeam } from '../contexts/TeamContext';
 import { useApplyTemplate } from '../hooks/useApplyTemplate';
-import { examplePages } from '../data/examples';
+import { countryFirst, exampleCountry, examplePages } from '../data/examples';
+import { countries } from '../data/countries';
+import { activeCountry } from '../utils/country';
+import type { CountryCode } from '../types/country';
 import type { ExamplePage } from '../data/examples/build';
 import type { TemplateListing } from '../types/templateListing';
 import { moodLabels, templateMood, templatePrice, type ColourMood } from '../data/templateMarket';
@@ -66,6 +69,8 @@ export function TemplatesMarket() {
   const [q, setQ] = useState('');
   const [type, setType] = useState('all');
   const [region, setRegion] = useState('all');
+  // Country, then city (D434). Starts on the workspace's country; its starters come first.
+  const [country, setCountry] = useState<CountryCode | 'all'>(() => activeCountry());
   const [mood, setMood] = useState<ColourMood | 'all'>('all');
   const [price, setPrice] = useState<Price>('all');
   const [source, setSource] = useState<Source>('all');
@@ -76,7 +81,7 @@ export function TemplatesMarket() {
 
   const items: Item[] = useMemo(
     () => [
-    ...examplePages.map((ex) => ({ ex, type: ex.category })),
+    ...countryFirst(examplePages, activeCountry()).map((ex) => ({ ex, type: ex.category })),
     ...store.listings.
     filter((l) => l.status === 'listed' && l.listedDoc).
     map((l) => ({ ex: listingAsExample(l, activeSale(store, l.id, current.id)?.doc ?? l.listedDoc as NonNullable<typeof l.listedDoc>), listing: l, type: l.category }))],
@@ -85,12 +90,14 @@ export function TemplatesMarket() {
   );
   const owns = (it: Item) => it.listing ? it.listing.priceNgn === 0 || it.listing.workspaceId === current.id || !!activeSale(store, it.listing.id, current.id) : market.hasLicence(it.ex.id);
   const types = useMemo(() => Array.from(new Set(items.map((i) => i.type))).sort(), [items]);
-  const regions = useMemo(() => Array.from(new Set(items.map((i) => i.ex.city))).sort(), [items]);
+  const inCountry = (ex: ExamplePage, listing?: TemplateListing) => country === 'all' || !!listing || !!ex.elite || !!ex.artwork || exampleCountry(ex) === country;
+  const regions = useMemo(() => Array.from(new Set(items.filter((i) => inCountry(i.ex, i.listing)).map((i) => i.ex.city))).sort(), [items, country]); // eslint-disable-line react-hooks/exhaustive-deps
   const list = items.filter(({ ex, listing, type: t }) => {
     const term = q.trim().toLowerCase();
     const p = templatePrice(ex.id);
     return (
-      (type === 'all' || t === type) && (
+      inCountry(ex, listing) && (
+      type === 'all' || t === type) && (
       region === 'all' || ex.city === region) && (
       mood === 'all' || templateMood(ex) === mood) && (
       price === 'all' || (price === 'premium' ? p > 0 : p === 0)) && (
@@ -155,7 +162,8 @@ export function TemplatesMarket() {
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.4fr)_repeat(5,minmax(0,1fr))]">
             <TextInput id="tpl-search" label="Search" leadingIcon={SearchIcon} placeholder="Bakery, salon, creator…" value={q} onChange={(e) => setQ(e.target.value)} />
             <SelectInput<string> id="tpl-type" label="Business type" value={type} onChange={setType} options={[{ value: 'all', label: 'All types' }, ...types.map((t) => ({ value: t, label: t }))]} />
-            <SelectInput<string> id="tpl-region" label="Region" value={region} onChange={setRegion} options={[{ value: 'all', label: 'Everywhere' }, ...regions.map((r) => ({ value: r, label: r }))]} />
+            <SelectInput<CountryCode | 'all'> id="tpl-country" label="Country" value={country} onChange={(c) => (setCountry(c), setRegion('all'))} options={[{ value: 'all', label: 'All countries' }, ...countries.map((c) => ({ value: c.code, label: c.name }))]} />
+            <SelectInput<string> id="tpl-region" label="City" value={region} onChange={setRegion} options={[{ value: 'all', label: 'Every city' }, ...regions.map((r) => ({ value: r, label: r }))]} />
             <SelectInput<ColourMood | 'all'> id="tpl-mood" label="Colour mood" value={mood} onChange={setMood} options={[{ value: 'all', label: 'Any' }, ...(Object.keys(moodLabels) as ColourMood[]).map((m) => ({ value: m, label: moodLabels[m] }))]} />
             <SelectInput<Price>
             id="tpl-price"

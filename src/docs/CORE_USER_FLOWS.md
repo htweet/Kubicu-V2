@@ -68,7 +68,7 @@ Each flow lists **who**, **where it starts**, the **steps** in order, the **bran
 **Who:** a visitor without an account. **Starts:** `/copilot` → `/copilot/chat` (`pages/copilot/CopilotWeb.tsx`, engine `utils/copilot/engine.ts`, state `hooks/useCopilot.ts`).
 
 1. **Privacy notice** (`CopilotPrivacyNotice.tsx`) before the first message.
-2. **Brief questions** in priority order (`nextTopic()`): about → name → main action → look → items (shop/menu only) → logo → photos → phone (if ordering/enquiring) → city. 3–6 questions in total; logo and photos come together. Each has reply buttons; typed answers are understood in English only.
+2. **Brief questions** in priority order (`nextTopic()`): about → name → main action → look → items (shop/menu only) → logo → photos → phone (if ordering/enquiring) → city. 3–6 questions in total; logo and photos come together. Each has reply buttons; typed answers are understood in all eight languages for everyday words (D518).
    - Card numbers or PINs are removed from the message with a warning.
    - Photos: 5 MB limit each, downscaled, up to `MAX_PHOTOS`; extras are counted and reported.
    - "I don't have one" skips the logo.
@@ -81,6 +81,8 @@ Each flow lists **who**, **where it starts**, the **steps** in order, the **bran
 9. **Ends:** code spent (`markClaimed`), welcome panel in the canvas (`CopilotCanvasWelcome.tsx`), `/app/canvas/:pageId`. Storage failure → toast, draft kept.
 
 **WhatsApp variant** `/copilot/whatsapp` — same engine, WhatsApp-style UI; more than `MAX_BUTTONS` choices become a list sheet; preview and continue open in a new tab; `copilotWhatsApp="unavailable"` → redirect to the browser chat.
+
+**Asking instead of building (D520–D521):** from the Ask bar (any page → `/copilot/chat?start=…`) or typed in the chat. A question about KUBICU gets a short answer and link buttons to the screen where the person acts (curated topic, else the best Help centre guide with "Read the full guide"); unknown → honest "not sure" + Help centre. Then: at the start, "Want a page too?" with the starting choices; mid-interview (clear questions only), "Back to your page:" and the same question; after the brief or draft, the previous buttons. Asking for a page always builds. Copilot never moves money, refunds or changes accounts — it links instead. Production behaviour with a model: `docs/COPILOT_AI_INTEGRATION.md`.
 
 **Coming back:** sidebar Copilot section (`SidebarCopilotChats.tsx`) — Pinned, Recent (5), See all chats → `/copilot/chat?view=chats`. Reopening a claimed chat says to edit in the canvas, with Open in KUBICU / Start over.
 

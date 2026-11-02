@@ -1,6 +1,37 @@
 # KUBICU — Design gap audit
 
-_Latest re-audit 30 Oct 2026 (through D343) — see the newest note below and §7. Originally re-audited 24 Oct 2026 against the code, the decision register (through D149) and every doc in `docs/`. This file is the source of truth for what is still missing. The public roadmap (`data/roadmap.ts`) and the plan list (`data/planMatrix.ts`) follow it._
+_Latest re-audit 1 Nov 2026 (through D522) — see "Addendum D482–D522" and "Re-audit, 1 Nov 2026" directly below. Previous re-audit 30 Oct 2026 (through D343) — see the later notes and §7._
+
+> **Addendum, 1 Nov 2026 (D482–D522).**
+>
+> | Area | Decisions | Status |
+> |---|---|---|
+> | Branch-limited Sales report and Wallet; office hours in the visitor's time zone; sample stats per country | D482, D484–D486 | ✅ |
+> | Staff console frame + 13 areas translated; the other 11 stay English by owner's decision | D483, D487–D502 | ✅ (closed by decision) |
+> | Country rollout switch (open/closed/scheduled per country, Nigeria first), country-aware kits, staff money per workspace currency; every new workspace keeps a country | D494–D495 | ✅ 🧪 · a real backend must enforce rollout at sign-up/sign-in |
+> | Every published-page block, dates, lengths, seat summary, Trust Passport, checkout problems in the visitor's language; "ago" times and months app-wide with Twi fallbacks | D502–D514 | ✅ 👤 drafts need native review |
+> | Bookings auto-decline and CSV; canvas drag from library (into containers), Copy/Paste buttons, smarter paste | D514–D517 | ✅ |
+> | Copilot: typed replies in eight languages, WhatsApp demo translated, answers questions about KUBICU (17 curated topics + every Help centre guide) with screen links | D518–D521 | ✅ 🧪 rule-based · real model per `COPILOT_AI_INTEGRATION.md` (D522) |
+>
+> **Buildable gaps after this addendum:** none known. Open items are a real AI model and backend (§4), sign-off (§5) and hands-on checks (§7). **Nothing from D280 to D521 has been opened in a browser.** Copilot-specific limits until the model lands: workspace links assume sign-in, the Ask bar doesn't check the AI operations switch, question matching is by words.
+
+> **Re-audit, 1 Nov 2026 (D344–D481).** Everything built since D343, by area. The decision register has the detail for each row.
+>
+> | Area | Decisions | Status |
+> |---|---|---|
+> | Four countries — Kenya, Ghana, South Africa alongside Nigeria: currency, phone formats, regions, banks, payout limits, country-aware phone fields everywhere (incl. short-link WhatsApp and rider phone) | D350–D357, D402–D405, D423–D427 | ✅ 🧪 · 👤 example rates, data prices and payout limits |
+> | Kiswahili, Twi, isiZulu — whole app, canvas, website, Home, buyer shop and checkout; website copy widened to "across Africa" | D356–D401, D373–D385, D479–D481 | ✅ 👤 drafts need native review |
+> | Website amounts follow the visitor's language (KES, GHS, ZAR at example rates) | D373, D421 | ✅ · billing itself stays in naira-converted pricing per D431 |
+> | Floating Copilot ask bar on every page except Copilot/AI screens | D374, later polish | ✅ · hidden on sellers' published pages and shared shops (D431) |
+> | Accessibility code audit fixes (moving strips, panel toggles, labels, live regions) | D428–D430 | ✅ · screen-reader pass on a real device still open |
+> | Four-country money: KUBICU billing converted from naira at the day's rate, mobile money (M-Pesa; MTN/Telecel/AirtelTigo), instant EFT, card; country starter pages; seller verification per country | D431–D434 | ✅ 🧪 provider calls simulated |
+> | Phase 5 — tax across countries, cross-border delivery, branches and franchises, accounting (Xero, Sage), enterprise SSO and activity exports, inventory/ERP, sponsorship marketplace, NFC tags | D435–D446 | ✅ 🧪 |
+> | Phase 5 follow-ups — per-country tax accounts, invoice wording by country, sponsorship disputes/staff review/appeals/evidence/brief checks/creator track record/real link results, NFC in all four countries, branch-limited teammates (orders, branches, inventory), batches and expiry (FEFO, per location, shown to buyers) | D447–D478 | ✅ 🧪 · 👤 legal/accounting wording, sponsorship rules |
+> | Operations — module and add-on switches (shown as "Currently not available", also on published pages), Figures & names, English wording overrides, multi-workspace Users & tenants, staff search, team and country changes | D464–D473 | ✅ |
+>
+> **Buildable gaps after this audit:** the staff console's own screens are English only — its frame was translated in D483 (branch-limited Sales report and Wallet closed in D482); issue messages built with numbers translate only where a matching draft exists. Everything else open is partners (§4), sign-off (§5) or hands-on checks (§7): **nothing from D280 onwards has been opened in a browser.**
+
+_ Originally re-audited 24 Oct 2026 against the code, the decision register (through D149) and every doc in `docs/`. This file is the source of truth for what is still missing. The public roadmap (`data/roadmap.ts`) and the plan list (`data/planMatrix.ts`) follow it._
 
 **Status key:** ✅ built · 🟡 partial · ⬜ missing · 🧪 simulated by design (real work needs engineering or a partner) · 👤 waiting on founder/legal · ⚙ engineering-only (no screen to design)
 

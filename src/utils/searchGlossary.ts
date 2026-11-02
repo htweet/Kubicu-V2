@@ -66,6 +66,20 @@ export function localSearchWords(englishText: string, lang: UiLang): string {
 }
 
 /**
+ * English words for local words that appear whole in a typed sentence (D518), for Copilot's typed answers.
+ * Stricter than search: a word must match exactly, so a sentence doesn't pull in unrelated meanings.
+ */
+export function englishForSentence(text: string, lang: UiLang): string[] {
+  if (lang === 'en') return [];
+  const padded = ` ${foldSearch(text).replace(/[^\p{L}\p{N}]+/gu, ' ')} `;
+  const out = new Set<string>();
+  entries(lang).forEach((e) => {
+    if (e.local.some((w) => w.length >= 2 && padded.includes(` ${w} `))) e.english.forEach((w) => out.add(w));
+  });
+  return [...out];
+}
+
+/**
  * The search as typed plus the English words it stands for (D344): "oúnjẹ" in Yorùbá also searches "menu", "food"…
  * Short queries only match the start of a word so a single letter doesn't pull in everything.
  */

@@ -10,6 +10,7 @@ import {
   FileLockIcon,
   FlagIcon,
   GavelIcon,
+  HandshakeIcon,
   GlobeIcon,
   LifeBuoyIcon,
   PackageIcon,
@@ -52,10 +53,12 @@ export const adminNav: AdminNavGroup[] = [
   label: 'Commercial',
   items: [
   { id: 'plans', label: 'Plans & entitlements', icon: BadgeDollarSignIcon, summary: 'Plan catalogue, feature matrix, trials, credits and entitlement overrides with reasons.', built: true },
+  { id: 'figures', label: 'Figures & names', icon: SlidersHorizontalIcon, summary: 'Fees, prices, limits, time windows and plan names operations can change without a release.', built: true },
   { id: 'flags', label: 'Feature flags', icon: FlagIcon, summary: 'Target releases by plan, cohort or percentage, with a kill switch and full history.', built: true },
   { id: 'modules', label: 'Modules & marketplace', icon: PackageIcon, summary: 'Review creator templates and extension listings before they’re sold.', built: true },
   { id: 'payments', label: 'Payments & providers', icon: CreditCardIcon, summary: 'Payout queue, wallet freezes, identity reviews and provider health. Never shows secrets.', built: true },
   { id: 'escrow', label: 'Escrow cases', icon: GavelIcon, summary: 'Buyer-protection disputes passed to KUBICU: review both sides and decide release, refund or split.', built: true },
+  { id: 'sponsorships', label: 'Sponsorships', icon: HandshakeIcon, summary: 'Check new creator sponsorship briefs before they go live, and decide problems reported on deals.', built: true },
   { id: 'orders', label: 'Orders & disputes', icon: ReceiptIcon, summary: 'Support sellers with refunds and disputes, with notes and an audit trail.', built: true }]
 
 },

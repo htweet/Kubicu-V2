@@ -1,5 +1,6 @@
 import type { CommerceData, CommerceEvent, RepeatEvery, SeatRow, SeatingLayout, SeatingMap, TicketType } from '../../types/commerce';
 import { uid } from '../id';
+import type { FormatTr } from '../localeFormat';
 
 /** Seating maps and repeating events (D113). Example limits. */
 export const MAX_SEAT_ROWS = 30;
@@ -117,8 +118,11 @@ export function seatsIssue(data: CommerceData | null | undefined, ev: CommerceEv
   return '';
 }
 
-/** Readable list, e.g. "Row B, seats 4, 5" or "Table 3, seats 1–8". */
-export function describeSeats(ev: CommerceEvent | undefined, ids: string[] | undefined): string {
+/**
+ * Readable list, e.g. "Row B, seats 4, 5" or "Table 3, seats 1–8". Pass the visitor's translator on buyer
+ * screens (D511) to get "Row B · Seats: 4, 5" in their language; without one the English wording is unchanged.
+ */
+export function describeSeats(ev: CommerceEvent | undefined, ids: string[] | undefined, tr?: FormatTr): string {
   if (!ev?.seating || !ids?.length) return '';
   const map = ev.seating;
   const byRow = new Map<string, number[]>();
@@ -132,6 +136,7 @@ export function describeSeats(ev: CommerceEvent | undefined, ids: string[] | und
     const ns = (byRow.get(r.id) ?? []).sort((a, b) => a - b);
     const contiguous = ns.length > 2 && ns[ns.length - 1] - ns[0] === ns.length - 1;
     const list = contiguous ? `${ns[0]}–${ns[ns.length - 1]}` : ns.join(', ');
+    if (tr) return `${isTable(map) ? r.label : tr('Row {name}', { name: r.label })} · ${tr('Seats: {list}', { list })}`;
     const name = isTable(map) ? r.label : `Row ${r.label}`;
     return `${name}, seat${ns.length > 1 ? 's' : ''} ${list}`;
   }).

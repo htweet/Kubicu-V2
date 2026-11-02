@@ -1,6 +1,7 @@
 import type { Order } from '../types/commerce';
 import { orderMoney } from './commerce/money';
 import { uid } from './id';
+import { figure, onOpsSettings } from './opsSettings';
 
 /**
  * Creator Collaboration (D103): partners (creators, stylists, resellers) share a tracked link and earn a commission on sales.
@@ -10,7 +11,7 @@ import { uid } from './id';
 export const COLLAB_APP_ID = 'collaborations';
 export const COLLAB_PLAN = 'pro' as const;
 /** Commission only becomes payable once the order is completed, or this many days after payment with no refund or dispute. */
-export const COMMISSION_HOLD_DAYS = 7;
+export let COMMISSION_HOLD_DAYS = 7;
 export const MAX_RATE = 50;
 
 export type PartnerStatus = 'invited' | 'active' | 'paused' | 'ended';
@@ -68,6 +69,11 @@ export interface CollabSettings {
 
 export const holdDayOptions = [0, 3, 7, 14, 30];
 export const defaultCollabSettings: CollabSettings = { defaultRatePct: 10, defaultTerms: '', holdDays: COMMISSION_HOLD_DAYS };
+// The default wait for new workspaces is an example figure staff can change (D466).
+onOpsSettings(() => {
+  COMMISSION_HOLD_DAYS = figure('collabs.holdDays');
+  defaultCollabSettings.holdDays = COMMISSION_HOLD_DAYS;
+});
 export const collabSettingsOf = (d: Pick<CollabData, 'settings'>): CollabSettings => ({ ...defaultCollabSettings, ...(d.settings ?? {}) });
 export const termsFor = (ratePct: number, holdDays: number) =>
 `${ratePct}% on sales through your link, paid ${holdDays === 0 ? 'once the order is paid with no refund or dispute' : `once the order is delivered, or ${holdDays} days after payment with no refund or dispute`}.`;

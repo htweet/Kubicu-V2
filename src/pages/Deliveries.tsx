@@ -8,7 +8,7 @@ import { useCan } from '../contexts/TeamContext';
 import { useCommerce } from '../contexts/CommerceContext';
 import { useFulfilment } from '../hooks/useFulfilment';
 import { useMoney } from '../hooks/useMoney';
-import { activeFor, assignRider, book, cancel, deliveryLabels, deliveryTones, enterCode, fail, isActive, pickedUp, readyOrders } from '../utils/fulfilment';
+import { activeFor, advanceCrossBorder, assignRider, book, cancel, deliveryLabels, deliveryTones, enterCode, fail, isActive, pickedUp, readyOrders } from '../utils/fulfilment';
 import { caseForOrder, isOpen, markDelivered, release } from '../utils/money/escrow';
 import { setOrderStatus } from '../utils/commerce/ops';
 import { collectPod } from '../utils/commerce/payOptions';
@@ -207,6 +207,7 @@ export function Deliveries() {
         onClose={() => setOpenId(null)}
         onAssign={(d) => update((x) => assignRider(x, d.id))}
         onPickedUp={onPickedUp}
+        onAdvance={(d) => update((x) => advanceCrossBorder(x, d.id))}
         onCode={onCode}
         onFail={(d, reason, note) => {
           update((x) => fail(x, d.id, reason, note));

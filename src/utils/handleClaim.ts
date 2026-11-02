@@ -2,8 +2,13 @@
  * A handle picked on the marketing site before sign-up (D84).
  * Held on this device for 30 minutes (example) and applied to onboarding's Identity step.
  */
+import { figure, onOpsSettings } from './opsSettings';
+
 const KEY = 'kubicu.handleClaim.v1';
-export const CLAIM_HOLD_MINUTES = 30;
+export let CLAIM_HOLD_MINUTES = 30;
+onOpsSettings(() => {
+  CLAIM_HOLD_MINUTES = figure('signup.claimHoldMinutes');
+});
 
 export interface HandleClaim {
   handle: string;

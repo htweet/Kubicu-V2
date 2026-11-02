@@ -9,8 +9,11 @@ import { formatNgn, whatsappLink } from '../../utils/format';
 import { useCatalog } from '../../contexts/CatalogContext';
 import { resolveMenuItem } from '../../utils/commerce/catalog';
 import { waNumber } from '../../utils/businessWhatsApp';
+import { useT } from '../../contexts/LocaleContext';
 
+/** Fixed wording follows the visitor's language (D503); dishes, notes and the seller's closed message stay as written. */
 export function MenuBlock({ block, theme, mode }: BlockProps<'menu'>) {
+  const { t: tr } = useT();
   const c = block.content;
   const catalog = useCatalog();
   const categories = c.categories.
@@ -22,8 +25,8 @@ export function MenuBlock({ block, theme, mode }: BlockProps<'menu'>) {
 
   return (
     <section className="p-5" style={cardStyle(theme)}>
-      <BlockTitle theme={theme} aside={!c.orderingOpen ? <PageChip theme={theme} tone="muted">Ordering paused</PageChip> : undefined}>
-        {c.title || 'Menu'}
+      <BlockTitle theme={theme} aside={!c.orderingOpen ? <PageChip theme={theme} tone="muted">{tr('Ordering paused')}</PageChip> : undefined}>
+        {c.title || tr('Menu')}
       </BlockTitle>
       {c.note && <p className="-mt-1 mb-4 text-[13px] leading-relaxed" style={{ color: theme.mutedText }}>{c.note}</p>}
       <div className="flex flex-col gap-6">
@@ -36,13 +39,13 @@ export function MenuBlock({ block, theme, mode }: BlockProps<'menu'>) {
                   <div className="min-w-0" style={{ opacity: item.available ? 1 : 0.6 }}>
                     <p className="text-[15px] font-medium leading-snug" style={{ color: theme.text, fontFamily: fontsFor(theme).body }}>
                       {item.name}
-                      {!item.available && <span className="ml-2 align-middle"><PageChip theme={theme} tone="muted">Sold out today</PageChip></span>}
+                      {!item.available && <span className="ml-2 align-middle"><PageChip theme={theme} tone="muted">{tr('Sold out today')}</PageChip></span>}
                     </p>
                     {item.description && <p className="mt-0.5 text-[13px] leading-snug" style={{ color: theme.mutedText }}>{item.description}</p>}
                     {item.tags && <p className="mt-1 text-[12px]" style={{ color: theme.mutedText }}>{item.tags}</p>}
                   </div>
                   <p className="shrink-0 text-[15px] font-semibold tabular-nums" style={{ color: theme.text }}>
-                    {item.priceNgn !== null ? formatNgn(item.priceNgn) : <span className="text-[13px] font-medium" style={{ color: theme.mutedText }}>Ask</span>}
+                    {item.priceNgn !== null ? formatNgn(item.priceNgn) : <span className="text-[13px] font-medium" style={{ color: theme.mutedText }}>{tr('Ask')}</span>}
                   </p>
                 </li>
             )}
@@ -59,12 +62,12 @@ export function MenuBlock({ block, theme, mode }: BlockProps<'menu'>) {
         style={buttonStyle(theme, 'featured')}>
         
             <MessageCircleIcon size={17} aria-hidden />
-            Order on WhatsApp
+            {tr('Order on WhatsApp')}
           </PageAction> :
 
 
       <p className="mt-5 rounded-lg px-4 py-3 text-center text-[14px]" style={{ background: mix(theme.text, 6), color: theme.text }}>
-          {c.closedMessage || 'We’re not taking orders right now.'}
+          {c.closedMessage || tr('We’re not taking orders right now.')}
         </p>
       }
     </section>);

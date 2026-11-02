@@ -36,22 +36,28 @@ export function timeOf(iso: string): string {
   return new Date(iso).toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit', hour12: false });
 }
 
-/** The brief as one WhatsApp message (no cards in WhatsApp — just formatted text). */
-export function briefText(session: CopilotSession): string {
+type Translate = (key: string, vars?: Record<string, string | number>) => string;
+const plain: Translate = (key) => key;
+
+/**
+ * The brief as one WhatsApp message (no cards in WhatsApp — just formatted text). D519: labels and the plan's
+ * fixed values go through the translator; the page name stays as given.
+ */
+export function briefText(session: CopilotSession, t: Translate = plain): string {
   const b = session.brief;
   if (!b) return '';
   const lines = [
-  '*Here’s the plan*',
-  `Creating: ${b.kindLabel}`,
-  `Name: ${b.name}`,
-  `For: ${b.audience}`,
-  `Visitors should: ${b.goal}`,
-  `Look: ${b.look}`,
-  `Layout: ${b.layout}`,
+  `*${t('Here’s the plan')}*`,
+  `${t('Creating')}: ${t(b.kindLabel)}`,
+  `${t('Name')}: ${b.name}`,
+  `${t('For')}: ${t(b.audience)}`,
+  `${t('Visitors should')}: ${t(b.goal)}`,
+  `${t('Look')}: ${t(b.look)}`,
+  `${t('Layout')}: ${t(b.layout)}`,
   '',
-  '*Sections*',
-  ...b.sections.map((s, i) => `${i + 1}. ${s}`)];
+  `*${t('Sections')}*`,
+  ...b.sections.map((s, i) => `${i + 1}. ${t(s)}`)];
 
-  if (b.gaps.length) lines.push('', '*Left for you to fill in*', ...b.gaps.map((g) => `• ${g}`), '', '_I never make up prices, reviews, hours or policies._');
+  if (b.gaps.length) lines.push('', `*${t('Left for you to fill in')}*`, ...b.gaps.map((g) => `• ${t(g)}`), '', `_${t('I never make up prices, reviews, hours or policies.')}_`);
   return lines.join('\n');
 }

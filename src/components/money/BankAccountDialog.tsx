@@ -38,6 +38,9 @@ export function BankAccountDialog({ open, onClose, data, update, businessName }:
   const rule = country.accountNumber;
   const wallet = country.mobileMoney;
   const [kind, setKind] = useState<Kind>('bank');
+  // Ghana: payouts go to MTN MoMo, Telecel Cash or AirtelTigo Money (D433).
+  const networks = wallet?.networks ?? null;
+  const [networkId, setNetworkId] = useState(networks?.[0]?.id ?? '');
   const [bank, setBank] = useState(banks.includes('GTBank') ? 'GTBank' : banks[0]);
   const [number, setNumber] = useState('');
   const [phone, setPhone] = useState('');
@@ -62,7 +65,7 @@ export function BankAccountDialog({ open, onClose, data, update, businessName }:
   const match = looked ? nameMatchOf(looked, businessName) : null;
   const first = data.banks.length === 0;
   const digits = isWallet ? phone.replace(/\D/g, '') : number;
-  const label = isWallet && wallet ? wallet.name : bank;
+  const label = isWallet && wallet ? networks?.find((n) => n.id === networkId)?.name ?? wallet.name : bank;
 
   const lookUp = () => {
     if (!valid) return;
@@ -133,11 +136,14 @@ export function BankAccountDialog({ open, onClose, data, update, businessName }:
             } />
 
           }
+          {isWallet && networks &&
+          <SelectInput id="wallet-network" required label={tr('Network')} value={networkId} onChange={setNetworkId} options={networks.map((n) => ({ value: n.id, label: n.name }))} />
+          }
           {isWallet && wallet ?
           <PhoneInput id="wallet-number" label={tr('{wallet} number', { wallet: wallet.name })} value={phone} onChange={setPhone} error={phone.trim() ? phoneIssueIn(tr, phone) ?? undefined : undefined} hint={tr('The phone number your {wallet} wallet is registered to.', { wallet: wallet.name })} /> :
 
           <>
-              <SelectInput id="bank-name" label={tr('Bank')} value={bank} onChange={setBank} options={banks.map((b) => ({ value: b, label: b }))} />
+              <SelectInput id="bank-name" label={tr('Bank')} value={bank} onChange={setBank} options={banks.map((b) => ({ value: b, label: b }))} required />
               <TextInput
               id="bank-number"
               label="Account number"
@@ -166,6 +172,7 @@ export function BankAccountDialog({ open, onClose, data, update, businessName }:
               </p>
             </div>
           }
+          {isWallet && wallet && <p className="text-caption text-fg-subtle">{tr('Payouts to a mobile money wallet usually arrive {when}.', { when: tr(wallet.payoutArrival) })}</p>}
           {country.code !== 'NG' && <p className="text-caption text-fg-subtle">{tr('Payouts in {country} are simulated until KUBICU has a payment partner there.', { country: tr(country.name) })}</p>}
           {!first && <p className="text-caption text-fg-subtle">{tr('New accounts wait {n} hours before they can receive payouts. This protects you if someone gets into your account.', { n: BANK_COOLDOWN_HOURS })}</p>}
         </div>

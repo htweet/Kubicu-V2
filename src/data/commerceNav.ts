@@ -7,6 +7,7 @@ export const commerceNav = [
 { to: '/app/commerce/products', label: 'Products' },
 { to: '/app/commerce/storefront', label: 'Storefront' },
 { to: '/app/commerce/inventory', label: 'Inventory' },
+{ to: '/app/commerce/branches', label: 'Branches' },
 { to: '/app/commerce/digital', label: 'Digital' },
 { to: '/app/commerce/courses', label: 'Courses' },
 { to: '/app/commerce/events', label: 'Events' },
@@ -46,7 +47,8 @@ export const stockReasonLabels = {
   order: 'Order',
   cancelled: 'Order cancelled',
   returned: 'Returned',
-  created: 'Opening stock'
+  created: 'Opening stock',
+  transfer: 'Moved between branches'
 } as const;
 
 /** Payment providers, from the provider registry (D192) — availability and methods depend on the provider and merchant. */

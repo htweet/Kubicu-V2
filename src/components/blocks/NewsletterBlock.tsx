@@ -37,7 +37,7 @@ export function NewsletterBlock({ block, theme, mode }: BlockProps<'newsletter'>
     <section className="flex flex-col gap-3 p-5" style={cardStyle(theme)}>
       <div>
         <h2 className="text-[20px] font-medium tracking-[-0.01em]" style={{ fontFamily: fontsFor(theme).display, color: theme.text }}>
-          {title || 'Newsletter'}
+          {title || tr('Newsletter')}
         </h2>
         {description &&
         <p className="mt-1 text-[14px]" style={{ color: theme.mutedText }}>

@@ -6,6 +6,7 @@ import { refundOrder, setOrderStatus } from '../commerce/ops';
 import { refundableNgn } from '../commerce/money';
 import { uid } from '../id';
 import { formatMoney } from '../currency';
+import { figure, onOpsSettings } from '../opsSettings';
 
 /** Escrow lifecycle (D94): hold → delivered → inspection → release, with buyer disputes and staff decisions. */
 
@@ -16,10 +17,16 @@ const now = () => new Date().toISOString();
 
 // ——— Example figures (D94) ———
 /** The seller has this long to reply to a buyer's problem before it goes to KUBICU automatically. */
-export const RESPOND_HOURS = 48;
+export let RESPOND_HOURS = 48;
 /** KUBICU aims to decide an escalated case within this long. */
-export const DECIDE_HOURS = 72;
-export const MAX_FILES = 5;
+export let DECIDE_HOURS = 72;
+export let MAX_FILES = 5;
+// Staff can change these in Figures & names (D467).
+onOpsSettings(() => {
+  RESPOND_HOURS = figure('escrow.respondHours');
+  DECIDE_HOURS = figure('escrow.decideHours');
+  MAX_FILES = figure('escrow.maxFiles');
+});
 
 export const issueLabels: Record<EscrowIssue, string> = {
   not_received: 'I didn’t receive it',

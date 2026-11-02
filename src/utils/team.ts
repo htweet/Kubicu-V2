@@ -2,10 +2,14 @@ import type { ActivityArea, ActivityEntry, Invite, Member, Role, TeamData } from
 import type { Workspace } from '../types/workspace';
 import { seatLimits } from '../data/permissions';
 import { uid } from './id';
+import { figure, onOpsSettings } from './opsSettings';
 
 export const teamKey = (workspaceId: string) => `kubicu.team.${workspaceId}`;
 export const OWNER_ID = 'member_owner';
-export const INVITE_DAYS = 7;
+export let INVITE_DAYS = 7;
+onOpsSettings(() => {
+  INVITE_DAYS = figure('team.inviteDays');
+});
 
 export function emptyTeam(w: Workspace): TeamData {
   return {

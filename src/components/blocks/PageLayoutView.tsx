@@ -5,9 +5,10 @@ import { LayoutRow } from './LayoutRow';
 import { bandJoins, layoutRows, pageContentWidth, sectionTheme } from '../../utils/pageLayout';
 import { BlockChildrenProvider, type BlockChildrenValue } from '../../contexts/BlockChildrenContext';
 import { localiseBlockAmounts } from '../../utils/previewMoney';
+import { setPreviewCurrency } from '../../utils/currency';
 
 interface PageLayoutViewProps {
-  doc: Pick<PageDocument, 'layout'>;
+  doc: Pick<PageDocument, 'layout' | 'currency'>;
   blocks: Block[];
   theme: PageTheme;
   mode: RenderMode;
@@ -15,10 +16,19 @@ interface PageLayoutViewProps {
   wide: boolean;
 }
 
+/** Clears the example currency once the blocks above it have drawn (D434). Renders nothing. */
+function EndPreviewCurrency() {
+  setPreviewCurrency(null);
+  return null;
+}
+
 /** Read-only render of a page's layout rows (D153), for previews, thumbnails and the template library. Containers draw their own blocks (D167). */
 export function PageLayoutView({ doc, blocks: source, theme, mode, wide }: PageLayoutViewProps) {
-  // On the website, typed "₦…" in example pages follows the visitor's language (D423); unchanged elsewhere.
-  const blocks = localiseBlockAmounts(source);
+  // Examples from Kenya, Ghana and South Africa are priced in their own currency and shown as written (D434).
+  // Everything else: on the website, typed "₦…" follows the visitor's language (D423); unchanged elsewhere.
+  const own = doc.currency ?? null;
+  setPreviewCurrency(own);
+  const blocks = own ? source : localiseBlockAmounts(source);
   const columnPx = pageContentWidth(doc);
   const childCtx: BlockChildrenValue = {
     childrenOf: (id) => blocks.filter((b) => b.parentId === id),
@@ -42,6 +52,7 @@ export function PageLayoutView({ doc, blocks: source, theme, mode, wide }: PageL
           </LayoutRow>);
 
       })}
+      {own && <EndPreviewCurrency />}
     </BlockChildrenProvider>);
 
 }

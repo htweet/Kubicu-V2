@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
-import { CopyIcon, SparklesIcon } from 'lucide-react';
+import { ArrowUpRightIcon, CopyIcon, SparklesIcon } from 'lucide-react';
 import type { CopilotMessage, CopilotReply, CopilotSession } from '../../types/copilot';
 import { CopilotBriefCard } from './CopilotBriefCard';
 import { CopilotProgress } from './CopilotProgress';
@@ -78,6 +78,19 @@ export function CopilotThread({ session, onReply }: Props) {
               
                 {translateCopilotText(m.text, tr, lang)}
               </p>
+            }
+            {m.links && m.links.length > 0 &&
+            <div className="flex max-w-[86%] flex-wrap gap-2">
+                {m.links.map((l) =>
+              <Link
+                key={l.to}
+                to={l.to}
+                className="inline-flex min-h-10 items-center gap-1.5 whitespace-nowrap rounded-full bg-sunken px-4 text-label font-semibold text-fg transition-[background-color,transform] duration-150 ease-out hover:bg-line active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+                
+                    {tr(l.label)} <ArrowUpRightIcon size={15} aria-hidden />
+                  </Link>
+              )}
+              </div>
             }
             {m.images && m.images.length > 0 &&
             <div className="flex max-w-[86%] flex-wrap justify-end gap-1.5">

@@ -1,5 +1,6 @@
 import type { Availability, Booking, Service } from '../../types/ops';
 import { eligibleStaff, personalCalendarIds, staffBusy, staffHoursFor, usesStaff } from './staff';
+import { durationText, type FormatTr } from '../localeFormat';
 
 /** Busy times that block bookings: events from calendars ticked "blocks", on working connections, not KUBICU's own (D137). */
 export function busyTimes(a: Availability): {start: number;end: number;}[] {
@@ -39,20 +40,21 @@ export function addDaysKey(dateKey: string, days: number): string {
   return t.toISOString().slice(0, 10);
 }
 
-export function formatInTz(iso: string | number, timeZone: string, opts: Intl.DateTimeFormatOptions): string {
+/** `locale` comes from dateLocale() on buyer screens (D510); everywhere else it stays en-NG as before. */
+export function formatInTz(iso: string | number, timeZone: string, opts: Intl.DateTimeFormatOptions, locale = 'en-NG'): string {
   try {
-    return new Intl.DateTimeFormat('en-NG', { timeZone, ...opts }).format(new Date(iso));
+    return new Intl.DateTimeFormat(locale, { timeZone, ...opts }).format(new Date(iso));
   } catch {
     return new Date(iso).toLocaleString();
   }
 }
 
-export function timeLabel(iso: string | number, timeZone: string): string {
-  return formatInTz(iso, timeZone, { hour: 'numeric', minute: '2-digit', hour12: true }).replace(' ', '').toLowerCase();
+export function timeLabel(iso: string | number, timeZone: string, locale?: string): string {
+  return formatInTz(iso, timeZone, { hour: 'numeric', minute: '2-digit', hour12: true }, locale).replace(' ', '').toLowerCase();
 }
 
-export function dayLabel(iso: string | number, timeZone: string): string {
-  return formatInTz(iso, timeZone, { weekday: 'short', day: 'numeric', month: 'short' });
+export function dayLabel(iso: string | number, timeZone: string, locale?: string): string {
+  return formatInTz(iso, timeZone, { weekday: 'short', day: 'numeric', month: 'short' }, locale);
 }
 
 export function visitorTimeZone(): string {
@@ -194,7 +196,9 @@ export function isSlotFree(start: number, service: Service, a: Availability, boo
   return !!findSlot(start, service, a, bookings, ignoreId, staffId);
 }
 
-export function durationLabel(min: number): string {
+/** Pass the visitor's translator on buyer screens so the units follow their language (D510). */
+export function durationLabel(min: number, tr?: FormatTr): string {
+  if (tr) return durationText(min, tr);
   if (min < 60) return `${min} min`;
   const h = Math.floor(min / 60);
   const m = min % 60;

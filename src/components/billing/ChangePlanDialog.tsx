@@ -8,7 +8,7 @@ import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import { Segmented } from '../ui/Segmented';
 import { InlineAlert } from '../ui/InlineAlert';
-import { PaymentStep } from './PaymentStep';
+import { PaymentStep, localBillingMethod } from './PaymentStep';
 import { ImpactList } from './ImpactList';
 import { QuoteTable } from './QuoteTable';
 import { useBilling } from '../../contexts/BillingContext';
@@ -24,6 +24,9 @@ import { checkCoupon, couponLabel } from '../../utils/planCatalogue';
 import type { Coupon } from '../../types/admin';
 import { TextInput } from '../ui/TextInput';
 import { formatNaira as formatNgn } from '../../utils/format';
+import { billingCurrency, formatMoney } from '../../utils/currency';
+import { localBreakdown, rateLine } from '../../utils/billingMoney';
+import { isFxCode, nairaPerToday } from '../../utils/fxRates';
 import { cn } from '../../utils/cn';
 
 interface Props {
@@ -83,6 +86,14 @@ export function ChangePlanDialog({ open, onClose, feature, minPlan, initial }: P
     setCodeError(undefined);
     setCoupon(r.coupon);
   };
+  // Outside Nigeria, prices are the naira list converted at the day's rate (D432). Totals are worked out locally.
+  const billCode = billingCurrency();
+  const converts = isFxCode(billCode);
+  const dueLocal = localBreakdown(quote.subtotal);
+  const renewLocal = localBreakdown(priceFor(target, cycle));
+  const due = formatMoney(dueLocal.total, dueLocal.code);
+  const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  const rateNote = converts ? `About — converted from naira at today’s rate (${rateLine(billCode, nairaPerToday(billCode))}, ${today}). The amount is fixed when the invoice is made.` : null;
   const trialOffer = !d.trialUsed && plan.id === 'free' && (!minPlan || planAtLeast(TRIAL_PLAN, minPlan));
   const periodEnd = d.periodEnd ? formatDate(d.periodEnd) : 'your renewal date';
 
@@ -140,6 +151,7 @@ export function ChangePlanDialog({ open, onClose, feature, minPlan, initial }: P
           
             <span className="text-caption text-fg-subtle">Prices exclude VAT · test mode</span>
           </div>
+          {rateNote && <p className="-mt-2 text-caption text-fg-muted">{rateNote}</p>}
 
           {trialOffer &&
         <div className="nm-frame rounded-lg">
@@ -191,7 +203,8 @@ export function ChangePlanDialog({ open, onClose, feature, minPlan, initial }: P
                   </div>
                   <div className="text-right sm:min-w-[7.5rem]">
                     <p className="whitespace-nowrap font-display text-heading font-semibold tabular-nums text-fg">
-                      {price === 0 ? '₦0' : formatNgn(price)}
+                      {converts && price > 0 && <span className="text-caption font-normal text-fg-muted">about </span>}
+                      {formatNgn(price)}
                       {price > 0 && <span className="text-caption font-normal text-fg-muted"> /{cycle === 'yearly' ? 'yr' : 'mo'}</span>}
                     </p>
                     {cycle === 'yearly' && price > 0 && <p className="whitespace-nowrap text-caption text-success">Save {formatNgn(yearlySaving(id))}</p>}
@@ -244,6 +257,7 @@ export function ChangePlanDialog({ open, onClose, feature, minPlan, initial }: P
       {step === 'review' && kind !== 'downgrade' &&
       <div className="flex flex-col gap-5">
           <QuoteTable quote={quote} />
+          {rateNote && <p className="-mt-2 text-caption text-fg-muted">{rateNote}</p>}
           <div className="flex flex-col gap-2">
             {activeCoupon ?
           <div className="flex flex-wrap items-center justify-between gap-2 rounded-md bg-success-soft px-3 py-2">
@@ -269,14 +283,14 @@ export function ChangePlanDialog({ open, onClose, feature, minPlan, initial }: P
             {billing.creditLeft > 0 && <p className="text-caption text-fg-muted">You have {formatNgn(billing.creditLeft)} account credit from KUBICU. It’s used before your card.</p>}
           </div>
           <p className="text-caption text-fg-muted">
-            Then {formatNgn(quote.renewTotal)} (incl. VAT) every {cycle === 'yearly' ? 'year' : 'month'}, next on {formatDate(quote.renewOn)}. Cancel any time — you keep the plan until the period ends.
+            Then {converts ? `about ${formatMoney(renewLocal.total, renewLocal.code)}` : formatNgn(quote.renewTotal)} (incl. {converts ? 'tax' : 'VAT'}) every {cycle === 'yearly' ? 'year' : 'month'}, next on {formatDate(quote.renewOn)}{converts ? ', at that day’s rate' : ''}. Cancel any time — you keep the plan until the period ends.
           </p>
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-between">
             <Button variant="tertiary" onClick={() => setStep('choose')}>
               Back
             </Button>
             <Button disabled={!can.allowed} onClick={() => setStep('pay')}>
-              {quote.total > 0 ? `Continue to pay ${formatNgn(quote.total)}` : 'Continue'}
+              {quote.total > 0 ? `Continue to pay ${due}` : 'Continue'}
             </Button>
           </div>
         </div>
@@ -284,12 +298,17 @@ export function ChangePlanDialog({ open, onClose, feature, minPlan, initial }: P
 
       {step === 'pay' &&
       <PaymentStep
-        payLabel={quote.total > 0 ? `Pay ${formatNgn(quote.total)}` : 'Confirm'}
+        payLabel={quote.total > 0 ? `Pay ${due}` : 'Confirm'}
         savedCard={d.card}
         defaultHolder={current.ownerName}
         onBack={() => setStep('review')}
         onPaid={(card) => {
           billing.checkout(target, cycle, card, activeCoupon);
+          setStep('done');
+        }}
+        localMethod={localBillingMethod(billCode)}
+        onPaidOther={(label) => {
+          billing.checkout(target, cycle, null, activeCoupon, label);
           setStep('done');
         }} />
 
@@ -301,7 +320,7 @@ export function ChangePlanDialog({ open, onClose, feature, minPlan, initial }: P
           <p className="text-body text-fg">
             {plans[target].name} is on now{feature && minPlan && planAtLeast(target, minPlan) ? ` — ${feature.charAt(0).toLowerCase()}${feature.slice(1)} is unlocked` : ''}.
           </p>
-          <p className="text-caption text-fg-muted">{quote.total > 0 ? `Test payment of ${formatNgn(quote.total)} taken. The invoice is in Settings → Plan & billing.` : 'No charge today.'}</p>
+          <p className="text-caption text-fg-muted">{quote.total > 0 ? `Test payment of ${due} taken. The invoice is in Settings → Plan & billing.` : 'No charge today.'}</p>
           <Button onClick={onClose}>Done</Button>
         </div>
       }

@@ -10,9 +10,11 @@ import { useCatalog } from '../../contexts/CatalogContext';
 import { pageHref } from '../../utils/sitePages';
 import { STOREFRONT_PATH } from '../../utils/commerce/storefront';
 import { accentOf, buttonRadius, cardRadius, fontsFor, mix } from './pageStyle';
+import { useT } from '../../contexts/LocaleContext';
 
 /** Shop categories (D170): Commerce collections as shortcuts into the shop, with a real product photo where there is one. */
 export function ShopCategoriesBlock({ block, theme, mode }: BlockProps<'shopCategories'>) {
+  const { t: tr } = useT();
   const c = block.content;
   const data = useCatalog();
   const { handle } = useParams();
@@ -56,7 +58,7 @@ export function ShopCategoriesBlock({ block, theme, mode }: BlockProps<'shopCate
                   <span className="text-[17px] font-medium" style={{ fontFamily: display, color: theme.text }}>{col.name}</span>
                   <ArrowRightIcon size={16} aria-hidden style={{ color: theme.text }} />
                 </span>
-                <span className="text-[13px]" style={{ color: theme.mutedText }}>{items.length} item{items.length === 1 ? '' : 's'}</span>
+                <span className="text-[13px]" style={{ color: theme.mutedText }}>{tr('Items: {n}', { n: items.length })}</span>
               </PageAction>
             </li>);
 

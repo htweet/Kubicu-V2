@@ -1,4 +1,5 @@
 import type { CountryCode, CountryInfo } from '../types/country';
+import { figure, onOpsSettings } from '../utils/opsSettings';
 
 /**
  * Everything that changes by country (D352). One table, so currency, phone numbers, regions, banks and
@@ -56,7 +57,8 @@ export const countries: CountryInfo[] = [
 
   accountNumber: { min: 10, max: 16, label: '10–16 digits' },
   payments: ['mpesa', 'card'],
-  mobileMoney: { id: 'mpesa', name: 'M-Pesa', approveHint: 'enter your M-Pesa PIN' },
+  // Paybill number is an example (D433).
+  mobileMoney: { id: 'mpesa', name: 'M-Pesa', approveHint: 'enter your M-Pesa PIN', paybill: '522 533', codeLabel: 'M-Pesa code', payoutArrival: 'within minutes' },
   vatPct: 16,
   dataPerGb: 100,
   localLanguage: { code: 'sw', name: 'Kiswahili' },
@@ -81,7 +83,19 @@ export const countries: CountryInfo[] = [
 
   accountNumber: { min: 10, max: 16, label: '10–16 digits' },
   payments: ['momo', 'card'],
-  mobileMoney: { id: 'momo', name: 'MTN MoMo', approveHint: 'enter your MoMo PIN' },
+  // MTN, Telecel and AirtelTigo (D433). Number starts are examples to confirm with the partner.
+  mobileMoney: {
+    id: 'momo',
+    name: 'Mobile money',
+    approveHint: 'enter your mobile money PIN',
+    codeLabel: 'Transaction ID',
+    payoutArrival: 'within minutes',
+    networks: [
+    { id: 'mtn', name: 'MTN MoMo', approveHint: 'enter your MoMo PIN', prefixes: ['024', '025', '053', '054', '055', '059'] },
+    { id: 'telecel', name: 'Telecel Cash', approveHint: 'enter your Telecel Cash PIN', prefixes: ['020', '050'], voucher: true },
+    { id: 'airteltigo', name: 'AirtelTigo Money', approveHint: 'enter your AirtelTigo Money PIN', prefixes: ['026', '027', '056', '057'] }]
+
+  },
   vatPct: 15,
   dataPerGb: 10,
   localLanguage: { code: 'tw', name: 'Twi' },
@@ -109,6 +123,13 @@ export const countries: CountryInfo[] = [
 
 
 export const countryCodes: CountryCode[] = countries.map((c) => c.code);
+
+// Data price per GB is an example figure staff can change in Figures & names (D466).
+onOpsSettings(() => {
+  countries.forEach((c) => {
+    c.dataPerGb = figure(`data.${c.code}.perGb`);
+  });
+});
 
 /** The plain English names of each checkout option, for settings and the staff console. */
 export const paymentOptionLabels = {

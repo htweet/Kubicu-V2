@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { BanIcon, KeyRoundIcon, MessageCircleIcon, PackageCheckIcon, PhoneIcon, UserCheckIcon } from 'lucide-react';
+import { BanIcon, CheckIcon, KeyRoundIcon, MessageCircleIcon, PackageCheckIcon, PhoneIcon, PlaneIcon, UserCheckIcon } from 'lucide-react';
 import type { Delivery, FailReason } from '../../types/fulfilment';
-import { deliveryLabels, deliveryTones, failLabels, MAX_CODE_ATTEMPTS } from '../../utils/fulfilment';
+import { awaitingCrossBorder, crossBorderPlace, deliveryLabels, deliveryTones, failLabels, MAX_CODE_ATTEMPTS } from '../../utils/fulfilment';
+import { crossBorderSteps } from '../../utils/commerce/crossBorder';
+import { cn } from '../../utils/cn';
 import { formatNgn, formatTimestamp, whatsappLink } from '../../utils/format';
 import { useT } from '../../contexts/LocaleContext';
 import { Sheet } from '../ui/Sheet';
@@ -20,6 +22,8 @@ interface DeliveryDetailProps {
   onClose: () => void;
   onAssign: (d: Delivery) => void;
   onPickedUp: (d: Delivery) => void;
+  /** Prototype: the courier's next tracking update for a parcel going abroad (D451). */
+  onAdvance: (d: Delivery) => void;
   /** Returns an error message for a wrong code, or null on success. */
   onCode: (d: Delivery, code: string) => string | null;
   onFail: (d: Delivery, reason: FailReason, note: string) => void;
@@ -31,7 +35,7 @@ interface DeliveryDetailProps {
  * One delivery: rider, timeline and the code handover (D96).
  * Messages that reach the customer (their code text, the WhatsApp update) stay in English — we don't know their language.
  */
-export function DeliveryDetail({ delivery: d, canEdit, business, onClose, onAssign, onPickedUp, onCode, onFail, onCancel, onRebook }: DeliveryDetailProps) {
+export function DeliveryDetail({ delivery: d, canEdit, business, onClose, onAssign, onPickedUp, onAdvance, onCode, onFail, onCancel, onRebook }: DeliveryDetailProps) {
   const { t: tr } = useT();
   const [code, setCode] = useState('');
   const [codeError, setCodeError] = useState('');
@@ -48,6 +52,12 @@ export function DeliveryDetail({ delivery: d, canEdit, business, onClose, onAssi
 
   if (!d) return <Sheet open={false} onClose={onClose} title="">{null}</Sheet>;
   const active = d.status === 'booked' || d.status === 'assigned' || d.status === 'picked_up';
+  const abroad = !!d.crossBorder;
+  const inTransit = awaitingCrossBorder(d);
+  const places = d.crossBorder ? { from: tr(crossBorderPlace(d.crossBorder.from)), to: tr(crossBorderPlace(d.crossBorder.to)) } : { from: '', to: '' };
+  // How far along the cross-border steps the parcel is (D451): see crossBorderSteps for the mapping.
+  const reached = !d.crossBorder ? -1 : d.status === 'delivered' ? 6 : d.status === 'picked_up' ? 1 + d.crossBorder.stage : d.status === 'booked' || d.status === 'assigned' ? 0 : -1;
+  const failReasons: FailReason[] = abroad ? ['held_customs', 'returned_sender', 'unreachable', 'wrong_address', 'refused', 'other'] : ['unreachable', 'wrong_address', 'refused', 'other'];
 
   const submitCode = () => {
     if (!/^\d{4}$/.test(code.trim())) return setCodeError(tr('Enter the 4 digits the customer reads out.'));
@@ -86,7 +96,12 @@ export function DeliveryDetail({ delivery: d, canEdit, business, onClose, onAssi
     }
       {d.status === 'assigned' &&
     <Button leadingIcon={PackageCheckIcon} onClick={() => onPickedUp(d)}>
-          {tr('Rider has collected it')}
+          {tr(abroad ? 'Courier has collected it' : 'Rider has collected it')}
+        </Button>
+    }
+      {inTransit &&
+    <Button variant="secondary" leadingIcon={PlaneIcon} onClick={() => onAdvance(d)}>
+          {tr('Prototype: next tracking update')}
         </Button>
     }
     </div> :
@@ -124,7 +139,30 @@ export function DeliveryDetail({ delivery: d, canEdit, business, onClose, onAssi
           </InlineAlert>
         }
 
-        {d.status === 'picked_up' && canEdit && !failing &&
+        {abroad && reached >= 0 &&
+        <section aria-labelledby="dl-abroad" className="flex flex-col gap-3 rounded-md border border-line p-4">
+            <h3 id="dl-abroad" className="flex items-center gap-2 text-label font-semibold text-fg">
+              <PlaneIcon size={16} className="text-fg-muted" aria-hidden /> {tr('Going abroad: {from} → {to}', places)}
+            </h3>
+            <ol className="flex flex-col gap-2">
+              {crossBorderSteps.map((step, i) => {
+              const done = i < reached || i === reached && d.status === 'delivered';
+              const now = i === reached && d.status !== 'delivered';
+              return (
+                <li key={step} className="flex items-center gap-2.5 text-caption" aria-current={now ? 'step' : undefined}>
+                    <span className={cn('flex h-5 w-5 shrink-0 items-center justify-center rounded-full border', done ? 'border-success bg-success text-white' : now ? 'border-action bg-action-soft' : 'border-line')} aria-hidden>
+                      {done ? <CheckIcon size={12} /> : now ? <span className="h-1.5 w-1.5 rounded-full bg-action" /> : null}
+                    </span>
+                    <span className={done || now ? 'font-medium text-fg' : 'text-fg-subtle'}>{tr(step, places)}</span>
+                  </li>);
+
+            })}
+            </ol>
+            {inTransit && <p className="text-caption text-fg-muted">{tr('The customer’s code is used at the door once the parcel is out for delivery in {to}.', places)}</p>}
+          </section>
+        }
+
+        {d.status === 'picked_up' && !inTransit && canEdit && !failing &&
         <section aria-labelledby="dl-code" className="flex flex-col gap-3 rounded-md border border-line p-4">
             <h3 id="dl-code" className="flex items-center gap-2 text-label font-semibold text-fg">
               <KeyRoundIcon size={16} className="text-fg-muted" aria-hidden /> {tr('At the door: enter the customer’s code')}
@@ -167,7 +205,7 @@ export function DeliveryDetail({ delivery: d, canEdit, business, onClose, onAssi
             label={tr('Reason')}
             value={reason}
             onChange={setReason}
-            options={(['unreachable', 'wrong_address', 'refused', 'other'] as FailReason[]).map((r) => ({ value: r, label: tr(failLabels[r]) }))} />
+            options={failReasons.map((r) => ({ value: r, label: tr(failLabels[r]) }))} />
           
             <TextArea id="dl-fail-note" label={tr('Note')} optional rows={2} value={note} onChange={(e) => setNote(e.target.value)} placeholder={tr('e.g. Gate locked, no answer after 3 calls')} />
           </section>
@@ -214,7 +252,7 @@ export function DeliveryDetail({ delivery: d, canEdit, business, onClose, onAssi
             {d.events.map((e) =>
             <li key={e.id} className="grid grid-cols-[8rem_minmax(0,1fr)] gap-3 text-caption">
                 <span className="tabular-nums text-fg-subtle">{formatTimestamp(e.at)}</span>
-                <span className="text-fg">{tr(e.label)}</span>
+                <span className="text-fg">{e.vars ? tr(e.label, Object.fromEntries(Object.entries(e.vars).map(([k, v]) => [k, tr(v)]))) : tr(e.label)}</span>
               </li>
             )}
           </ol>

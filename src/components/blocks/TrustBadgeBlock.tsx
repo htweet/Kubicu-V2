@@ -10,10 +10,15 @@ import { useCatalog } from '../../contexts/CatalogContext';
 import { usePageOpsContext } from '../../contexts/PageOpsContext';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
 import { usePublicPassport } from '../../hooks/usePublicPassport';
-import { levelLabels, publicSignals } from '../../utils/trustPassport';
+import { MIN_DAYS, levelLabels, publicSignals } from '../../utils/trustPassport';
+import { useT } from '../../contexts/LocaleContext';
 
-/** Trust Passport badge (D111): the level and checked signals, worked out when the page is viewed. */
+/**
+ * Trust Passport badge (D111): the level and checked signals, worked out when the page is viewed.
+ * Follows the visitor's language (D506); signal lines with figures translate where a draft exists.
+ */
 export function TrustBadgeBlock({ block, theme: t, mode }: BlockProps<'trustBadge'>) {
+  const { t: tr } = useT();
   const pageOps = usePageOpsContext();
   const { current } = useWorkspace();
   const catalog = useCatalog();
@@ -28,7 +33,12 @@ export function TrustBadgeBlock({ block, theme: t, mode }: BlockProps<'trustBadg
   }
 
   const signals = publicSignals(passport);
-  const label = levelLabels[passport.level];
+  const label = tr(levelLabels[passport.level]);
+  // "Business verified by KUBICU · <registered name>": translate the phrase, keep the name as registered.
+  const trTick = (s: string) => s.split(' · ').map((part, i) => i === 0 ? tr(part) : part).join(' · ');
+  const tickLabel = trTick(tick.label);
+  // The tenure title carries a number, so it has its own phrase.
+  const signalTitle = (s: {id: string;title: string;}) => s.id === 'tenure' ? tr('Selling for {n} days', { n: MIN_DAYS }) : tr(s.title);
   const href = mode === 'live' && handle ? `/p/${handle}/trust` : null;
   const box = { background: t.surface, borderRadius: cardRadius(t), border: `1px solid ${mix(t.text, 12)}`, color: t.text };
   const tickColor = contrastRatio(t.accent, t.surface) >= 3 ? t.accent : t.text;
@@ -50,16 +60,16 @@ export function TrustBadgeBlock({ block, theme: t, mode }: BlockProps<'trustBadg
     <>
         <BadgeCheckIcon size={22} strokeWidth={2.2} style={{ color: tickColor }} aria-hidden className="shrink-0" />
         <span className="min-w-0 flex-1">
-          <span className="block text-[15px] font-semibold leading-tight">Verified by KUBICU</span>
+          <span className="block text-[15px] font-semibold leading-tight">{tr('Verified by KUBICU')}</span>
           <span className="block truncate text-[12.5px]" style={{ color: t.mutedText }}>
-            {tick.label.replace(' by KUBICU', '')}
+            {trTick(tick.label.replace(' by KUBICU', ''))}
           </span>
         </span>
         {href && <ChevronRightIcon size={16} aria-hidden style={{ color: t.mutedText }} />}
       </>;
 
     return href ?
-    <Link to={href} className="inline-flex max-w-full items-center gap-3 px-4 py-3" style={box} aria-label={`${tick.label}. See the Trust Passport.`}>
+    <Link to={href} className="inline-flex max-w-full items-center gap-3 px-4 py-3" style={box} aria-label={`${tickLabel}. ${tr('See the Trust Passport.')}`}>
         {inner}
       </Link> :
 
@@ -75,7 +85,7 @@ export function TrustBadgeBlock({ block, theme: t, mode }: BlockProps<'trustBadg
   }
   const Wrap = ({ children, className }: {children: React.ReactNode;className: string;}) =>
   href ?
-  <Link to={href} className={className} style={box} aria-label={`KUBICU Trust Passport: ${label}${c.showScore ? `, ${passport.score} out of 100` : ''}. See the full passport.`}>
+  <Link to={href} className={className} style={box} aria-label={`${tr('KUBICU Trust Passport')}: ${label}${c.showScore ? `, ${tr('{n} out of 100', { n: passport.score })}` : ''}. ${tr('See the full passport.')}`}>
         {children}
       </Link> :
 
@@ -97,10 +107,11 @@ export function TrustBadgeBlock({ block, theme: t, mode }: BlockProps<'trustBadg
         <span className="min-w-0 flex-1">
           <span className="flex items-center gap-1.5 text-[15px] font-semibold leading-tight">
             {label}
-            {tick.shown && <BadgeCheckIcon size={15} strokeWidth={2.4} style={{ color: tickColor }} aria-label={tick.label} />}
+            {tick.shown && <BadgeCheckIcon size={15} strokeWidth={2.4} style={{ color: tickColor }} aria-label={tickLabel} />}
           </span>
           <span className="block truncate text-[12.5px]" style={{ color: t.mutedText }}>
-            KUBICU Trust Passport{signals.length ? ` · ${signals.slice(0, 2).map((s) => s.title).join(' · ')}` : ''}
+            {tr('KUBICU Trust Passport')}
+            {signals.length ? ` · ${signals.slice(0, 2).map((s) => signalTitle(s)).join(' · ')}` : ''}
           </span>
         </span>
         {c.showScore &&
@@ -122,11 +133,11 @@ export function TrustBadgeBlock({ block, theme: t, mode }: BlockProps<'trustBadg
         {seal}
         <span className="min-w-0 flex-1">
           <span className="block text-[12.5px]" style={{ color: t.mutedText }}>
-            KUBICU Trust Passport
+            {tr('KUBICU Trust Passport')}
           </span>
           <span className="flex items-center gap-2 text-[19px] font-medium leading-tight" style={{ fontFamily: fontsFor(t).display }}>
             {label}
-            {tick.shown && <BadgeCheckIcon size={18} strokeWidth={2.4} style={{ color: tickColor }} aria-label={tick.label} />}
+            {tick.shown && <BadgeCheckIcon size={18} strokeWidth={2.4} style={{ color: tickColor }} aria-label={tickLabel} />}
           </span>
         </span>
         {c.showScore &&
@@ -149,22 +160,25 @@ export function TrustBadgeBlock({ block, theme: t, mode }: BlockProps<'trustBadg
         <li key={s.id} className="flex items-start gap-2 text-[14px] leading-snug">
               <CheckIcon size={15} className="mt-0.5 shrink-0" aria-hidden />
               <span>
-                <span className="font-semibold">{s.title}</span>
-                <span style={{ color: t.mutedText }}> — {s.evidence}</span>
+                <span className="font-semibold">{signalTitle(s)}</span>
+                <span style={{ color: t.mutedText }}>
+                  {' '}
+                  — {tr(s.evidencePhrase.t, s.evidencePhrase.v)}
+                </span>
               </span>
             </li>
         )}
         </ul> :
 
       <span className="text-[13.5px]" style={{ color: t.mutedText }}>
-          New on KUBICU — checks build up with verification, completed orders and verified reviews.
+          {tr('New on KUBICU — checks build up with verification, completed orders and verified reviews.')}
         </span>
       }
       <span className="flex items-center justify-between gap-3 text-[12.5px]" style={{ color: t.mutedText }}>
-        <span>Built only from records KUBICU checks. The business can’t edit it.</span>
+        <span>{tr('Built only from records KUBICU checks. The business can’t edit it.')}</span>
         {href &&
-        <span className="inline-flex shrink-0 items-center gap-0.5 font-semibold" style={{ color: t.text }}>
-            Full passport <ChevronRightIcon size={14} aria-hidden />
+        <span className="inline-flex shrink-0 items-center gap-0.5 whitespace-nowrap font-semibold" style={{ color: t.text }}>
+            {tr('Full passport')} <ChevronRightIcon size={14} aria-hidden />
           </span>
         }
       </span>

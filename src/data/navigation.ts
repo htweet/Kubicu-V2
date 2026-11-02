@@ -25,7 +25,9 @@ import {
   MicIcon,
   QrCodeIcon,
   PrinterIcon,
-  Link2Icon } from
+  Link2Icon,
+  MegaphoneIcon,
+  NfcIcon } from
 'lucide-react';
 
 export type NavGroupId = 'studio' | 'business' | 'customers' | 'growth' | 'workspace';
@@ -80,8 +82,12 @@ export const workspaceNav: NavItem[] = [
 { id: 'domains', label: 'Domains', to: '/app/domains', icon: GlobeIcon, group: 'growth', appId: 'domains' },
 { id: 'qr', label: 'QR codes', to: '/app/qr', icon: QrCodeIcon, group: 'growth', appId: 'domains' },
 { id: 'printkit', label: 'Print kit', to: '/app/print-kit', icon: PrinterIcon, group: 'growth', appId: 'domains' },
+// NFC tags (D442): tap-to-open, ordered alongside the Print kit.
+{ id: 'nfc', label: 'NFC tags', to: '/app/nfc', icon: NfcIcon, group: 'growth', appId: 'domains' },
 { id: 'trust', label: 'Trust Passport', to: '/app/trust', icon: ShieldCheckIcon, group: 'growth', appId: 'trust-passport' },
 { id: 'coach', label: 'Business Coach', to: '/app/coach', icon: SparklesIcon, group: 'growth', appId: 'ai-coach' },
+// Creator sponsorship marketplace (D441).
+{ id: 'sponsorships', label: 'Sponsorships', to: '/app/sponsorships', icon: MegaphoneIcon, group: 'growth' },
 // Workspace — tools and settings
 { id: 'extensions', label: 'Extensions', to: '/app/extensions', icon: PuzzleIcon, group: 'workspace' },
 { id: 'settings', label: 'Settings', to: '/app/settings', icon: SettingsIcon, group: 'workspace' }];

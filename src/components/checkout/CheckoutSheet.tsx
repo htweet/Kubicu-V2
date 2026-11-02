@@ -22,6 +22,7 @@ import { PageOverlay } from '../blocks/PageOverlay';
 import { buttonRadius, cardStyle, mix } from '../blocks/pageStyle';
 import { CheckoutHeading, PrimaryButton, SecondaryButton, SheetActions, StepDots, TermsUpdatedNote, TestModeNote, ThemedField } from './checkoutUi';
 import { canSell, variantLabel, variantPrice } from '../../utils/commerce/catalog';
+import { expiryState, formatExpiry } from '../../utils/commerce/batches';
 import { placeOrder } from '../../utils/commerce/ops';
 import { cartBalanceNgn, isMadeToOrder } from '../../utils/commerce/deposit';
 import { instalmentCheck, payOptionsOf, podCheck, schedule } from '../../utils/commerce/payOptions';
@@ -37,9 +38,15 @@ import { dialPrefix, phonePlaceholder } from '../../utils/phone';
 import { UssdPay } from './UssdPay';
 import { stampTransfer, transferAccounts } from '../../utils/commerce/bankTransfer';
 import { reservedForStalls, type PopupCheckout } from '../../utils/popup';
-import { hoursSummary, orderRef, returnsSummary, shopClosedMessage, shopSettingsOf, vatFor, vatRateLabel } from '../../utils/commerce/shopSettings';
+import { hoursSummary, orderRef, returnsSummary, shopClosedMessage, shopSettingsOf, untaxedAmount, vatFor, vatRateLabel } from '../../utils/commerce/shopSettings';
 import { TransferAccountPay, transferAccountFor } from './TransferAccountPay';
 import { MobileMoneyPay } from './MobileMoneyPay';
+import { InstantEftPay } from './InstantEftPay';
+import { CardPay } from './CardPay';
+import type { CountryCode } from '../../types/country';
+import { activeCountry, countryInfo } from '../../utils/country';
+import { crossBorderOptions, parcelKg } from '../../utils/commerce/crossBorder';
+import { pickupBranches } from '../../utils/commerce/branches';
 import { localPayments } from '../../utils/payments';
 
 type Step = 'cart' | 'details' | 'delivery' | 'review' | 'paying' | 'failed';
@@ -77,6 +84,8 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
   const [step, setStep] = useState<Step>('cart');
   const [customer, setCustomer] = useState({ name: '', phone: '', email: '' });
   const [method, setMethod] = useState<string>('');
+  // Branch chosen for pickup (D437); '' is the main shop.
+  const [pickupAt, setPickupAt] = useState('');
   const [address, setAddress] = useState('');
   const [chosenOutcome, setOutcome] = useState<TestPaymentOutcome>('success');
   const outcome = chosenOutcome;
@@ -108,6 +117,11 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
   // Mobile money and EFT for Kenya, Ghana and South Africa (D355).
   const [momoOpen, setMomoOpen] = useState(false);
   const [eftOpen, setEftOpen] = useState(false);
+  // Instant EFT first; manual EFT with a reference as the fallback (D433). Card details step (D433).
+  const [eftManual, setEftManual] = useState(false);
+  const [cardOpen, setCardOpen] = useState(false);
+  // Where the buyer is (D435/D438): the shop's own country unless they choose delivery to another one.
+  const [shipTo, setShipTo] = useState<CountryCode>(() => activeCountry());
   const local = localPayments();
   useEffect(() => {
     if (step !== 'review') {
@@ -115,6 +129,8 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
       setAccountOpen(false);
       setMomoOpen(false);
       setEftOpen(false);
+      setEftManual(false);
+      setCardOpen(false);
     }
   }, [step]);
   // Pop-up shop pickup (D183).
@@ -151,7 +167,11 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
     if (holding && !holdUntil && step !== 'cart' && step !== 'paying') {
       setHolding(false);
       setStep('cart');
-      setHoldNotice(holdWhat === 'seats' ? `Your seats were released after ${holdMins} minutes. Check they’re still available and continue.` : `Your items were released after ${holdMins} minutes so other buyers could have them. Check they’re still available and continue.`);
+      setHoldNotice(
+        holdWhat === 'seats' ?
+        tr('Your seats were released after {n} minutes. Check they’re still available and continue.', { n: holdMins }) :
+        tr('Your items were released after {n} minutes so other buyers could have them. Check they’re still available and continue.', { n: holdMins })
+      );
     }
   }, [holding, holdUntil, step]);
 
@@ -173,20 +193,20 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
       const price = product && variant ? roomPrice ?? (basePrice !== null ? bulkUnitPrice(product, basePrice, qtyByProduct[product.id] ?? l.qty) : null) : null;
       const bulk = roomPrice === null && basePrice !== null && price !== null && price < basePrice;
       const preLeft = product && isPreorder(product) ? preorderLeft(product) : null;
-      const preIssue = preLeft !== null && (qtyByProduct[l.productId] ?? 0) > preLeft ? preLeft === 0 ? 'Pre-orders are full' : `Only ${preLeft} pre-order${preLeft === 1 ? '' : 's'} left` : '';
+      const preIssue = preLeft !== null && (qtyByProduct[l.productId] ?? 0) > preLeft ? preLeft === 0 ? 'Pre-orders are full.' : `Pre-orders left: ${preLeft}.` : '';
       const stallLeft = popup?.left[l.productId] ?? null;
       // Units a pop-up has set aside can't be sold elsewhere (D191); the pop-up's own hold never blocks it.
       const reserved = product?.kind === 'physical' && product.trackStock ? reservedForStalls(data, product.id, popup?.handle) : { qty: 0, labels: [] as string[] };
       const unreserved = product && variant && reserved.qty > 0 ? Math.min(variant.stock, Math.max(0, product.variants.reduce((s, v) => s + Math.max(0, v.stock), 0) - reserved.qty)) : null;
       const asideIssue = unreserved !== null && l.qty > unreserved ? unreserved === 0 ? `Set aside for ${reserved.labels[0]}` : `Only ${unreserved} available — the rest is set aside for ${reserved.labels[0]}` : '';
-      const ticketIssue = product?.kind === 'ticket' ? ticketLineIssue(data, l, Date.now(), holder) : stallLeft !== null && l.qty > stallLeft ? stallLeft === 0 ? 'Sold out at the stall' : `Only ${stallLeft} left at the stall` : preIssue || asideIssue;
+      const ticketIssue = product?.kind === 'ticket' ? ticketLineIssue(data, l, Date.now(), holder) : stallLeft !== null && l.qty > stallLeft ? stallLeft === 0 ? 'Sold out at the stall' : `Left at the stall: ${stallLeft}` : preIssue || asideIssue;
       // Units other buyers are holding in checkout count as taken; this buyer's own hold counts as theirs (D255).
       const free = variant ? product?.kind === 'physical' ? stockFree(data, variant, holder) : variant.stock : 0;
       const stockIssue = product && variant && product.kind === 'physical' && product.trackStock && !isPreorder(product) && !backorders && free < l.qty && free < variant.stock ? stockHeldMessage(product.name, free) : '';
       const ok = !!product && !!variant && price !== null && canSell(product, variant) && !ticketIssue && !stockIssue && (product.kind === 'digital' || !product.trackStock || isPreorder(product) || free >= l.qty || product.kind === 'physical' && backorders);
       const ev = product?.kind === 'ticket' ? findEvent(data, product.eventId) : undefined;
       const tt = ev?.ticketTypes.find((t) => t.id === l.variantId);
-      const seatText = describeSeats(ev, l.seats);
+      const seatText = describeSeats(ev, l.seats, tr);
       const backorder = ok && product?.kind === 'physical' && product.trackStock && !isPreorder(product) && !!variant && variant.stock < l.qty;
       return { ...l, product, variant, price, basePrice, bulk, ok, backorder, ticketIssue: ticketIssue || stockIssue, seatText, free, maxQty: tt ? tt.maxPerOrder : 20 };
     });
@@ -211,7 +231,16 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
   const f = data.fulfilment;
   const zone = f.zones.find((z) => z.id === method);
   const free = f.freeDeliveryOverNgn !== null && subtotal >= f.freeDeliveryOverNgn;
-  const deliveryFee = method === 'pickup' || !zone ? 0 : free ? 0 : zone.feeNgn;
+  // Cross-border delivery (D436): courier options to the buyer's country; free-delivery thresholds stay domestic.
+  const home = activeCountry();
+  const shipCountries = f.deliveryEnabled ? (f.international?.countries ?? []).filter((c) => c !== home) : [];
+  const abroad = shipTo !== home && shipCountries.includes(shipTo);
+  const intlOptions = abroad ? crossBorderOptions(shipTo, parcelKg(lines.filter((l) => l.ok))) : [];
+  const intl = intlOptions.find((o) => o.id === method);
+  const deliveryFee = method === 'pickup' ? 0 : intl ? intl.fee : !zone ? 0 : free ? 0 : zone.feeNgn;
+  // Pickup at a branch (D437): '' is the main shop.
+  const branchPoints = pickupBranches(data);
+  const pickupBranch = branchPoints.find((b) => b.id === pickupAt) ?? (!f.pickupEnabled ? branchPoints[0] ?? null : null);
   const resolution = resolveDiscount(
     data,
     {
@@ -228,26 +257,30 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
   const roomError = !dealRoom ?
   '' :
   !dealRoom.open ?
-  'This room isn’t taking orders right now.' :
+  tr('This room isn’t taking orders right now.') :
   roomQty > dealRoom.remaining ?
-  `Only ${dealRoom.remaining} left in this room.` :
+  tr('Left in this room: {n}.', { n: dealRoom.remaining }) :
   priorUnits + roomQty > dealRoom.perPersonLimit ?
-  `The limit is ${dealRoom.perPersonLimit} per person${priorUnits ? ` — you’ve already bought ${priorUnits}` : ''}.` :
+  priorUnits ?
+  tr('Limit per person: {n}. You’ve already bought: {bought}.', { n: dealRoom.perPersonLimit, bought: priorUnits }) :
+  tr('Limit per person: {n}.', { n: dealRoom.perPersonLimit }) :
   '';
   const discount = Math.min(resolution.applied?.amountNgn ?? 0, subtotal + (physical ? deliveryFee : 0));
   // Shop settings (D222): VAT, minimum order, closed shop, payment methods.
   const shop = shopSettingsOf(data);
   const closedMsg = shopClosedMessage(shop);
-  const vat = vatFor(shop, subtotal - discount + (physical ? deliveryFee : 0));
+  // Zero-rated and exempt items are left out of tax; buyers abroad follow the shop's registrations (D435).
+  const untaxedNgn = untaxedAmount(lines.filter((l) => l.ok && l.price !== null).map((l) => ({ amountNgn: (l.price ?? 0) * l.qty, taxClass: l.product?.taxClass })));
+  const vat = vatFor(shop, subtotal - discount + (physical ? deliveryFee : 0), { buyerCountry: shipTo, untaxedNgn });
   const vatAdded = vat?.addedNgn ?? 0;
-  const minError = shop.checkout.minOrderNgn && subtotal > 0 && subtotal - discount < shop.checkout.minOrderNgn ? `The minimum order is ${formatNgn(shop.checkout.minOrderNgn)} — add ${formatNgn(shop.checkout.minOrderNgn - (subtotal - discount))} more.` : '';
+  const minError = shop.checkout.minOrderNgn && subtotal > 0 && subtotal - discount < shop.checkout.minOrderNgn ? tr('The minimum order is {min} — add {more} more.', { min: formatNgn(shop.checkout.minOrderNgn), more: formatNgn(shop.checkout.minOrderNgn - (subtotal - discount)) }) : '';
   const returnsText = returnsSummary(shop.policy);
   const giftRes = resolveGiftCard(data, giftCode, subtotal - discount + (physical ? deliveryFee : 0) + vatAdded, hasGiftItems);
   const giftNgn = giftRes?.ok ? giftRes.amountNgn : 0;
   const total = subtotal - discount - giftNgn + (physical ? deliveryFee : 0) + vatAdded;
   const vatRow = vat ?
   <div className="flex justify-between gap-3">
-      <dt style={{ color: theme.mutedText }}>{vat.inclusive ? `Includes VAT (${vatRateLabel(vat.ratePct)})` : `VAT (${vatRateLabel(vat.ratePct)})`}</dt>
+      <dt style={{ color: theme.mutedText }}>{vat.inclusive ? tr('Includes VAT ({rate})', { rate: vatRateLabel(vat.ratePct) }) : tr('VAT ({rate})', { rate: vatRateLabel(vat.ratePct) })}</dt>
       <dd className="shrink-0 tabular-nums" style={vat.inclusive ? { color: theme.mutedText } : undefined}>
         {formatNgn(vat.amountNgn)}
       </dd>
@@ -255,7 +288,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
   null;
   const giftRow = giftNgn > 0 ?
   <div className="flex justify-between gap-3">
-      <dt style={{ color: theme.mutedText }}>Gift card</dt>
+      <dt style={{ color: theme.mutedText }}>{tr('Gift card')}</dt>
       <dd className="shrink-0 font-semibold tabular-nums">−{formatNgn(giftNgn)}</dd>
     </div> :
   null;
@@ -290,7 +323,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
   resolution.applied && (discount > 0 || resolution.applied.discount.value.type === 'free_delivery') ?
   <div className="flex justify-between gap-3">
         <dt style={{ color: theme.mutedText }}>{discountLineLabel(resolution.applied.discount)}</dt>
-        <dd className="shrink-0 font-semibold tabular-nums">{discount > 0 ? `−${formatNgn(discount)}` : 'At delivery step'}</dd>
+        <dd className="shrink-0 font-semibold tabular-nums">{discount > 0 ? `−${formatNgn(discount)}` : tr('At delivery step')}</dd>
       </div> :
   null;
   const choosingProduct = cart.choosing ? data.products.find((p) => p.id === cart.choosing) : undefined;
@@ -348,7 +381,11 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
     popup ?
     { method: 'pickup', address: [popup.venue, popup.address].filter((s) => s.trim()).join(', ') } :
     method === 'pickup' ?
+    pickupBranch ?
+    { method: 'pickup', address: pickupBranch.address, zoneName: pickupBranch.name, branchId: pickupBranch.id } :
     { method: 'pickup', address: f.pickupAddress } :
+    intl ?
+    { method: 'delivery', zoneId: intl.id, zoneName: intl.title, address: address.trim(), eta: intl.eta } :
     { method: 'delivery', zoneId: zone?.id, zoneName: zone?.name, address: address.trim(), eta: zone?.eta };
     window.setTimeout(
       () => {
@@ -372,6 +409,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
             stallLeft: popup?.left,
             giftCardCode: giftRes?.ok ? giftRes.card.code : undefined,
             buyerNote: shop.checkout.orderNote ? buyerNote : undefined,
+            shipTo: shipTo !== activeCountry() ? shipTo : undefined,
             buyerAddress: addressAsk !== 'off' || pickupAddressAsk !== 'off' ? buyerAddress : undefined,
             transferAccount: via === 'account' ? transferAccountFor(holder) : undefined
           });
@@ -419,7 +457,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
     if (choosingProduct) {
       return (
         <div className="flex flex-col gap-4">
-          <CheckoutHeading theme={theme} sub={`Choose ${choosingProduct.options[0]?.name.toLowerCase() ?? 'an option'}`}>
+          <CheckoutHeading theme={theme} sub={choosingProduct.options[0] ? tr('Choose {option}', { option: choosingProduct.options[0].name.toLowerCase() }) : tr('Choose an option')}>
             {choosingProduct.name}
           </CheckoutHeading>
           <ul className="flex flex-col gap-2" role="list">
@@ -436,10 +474,18 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
                     className="flex h-14 w-full items-center justify-between gap-3 px-4 text-left text-[15px] font-medium disabled:cursor-not-allowed disabled:opacity-50"
                     style={cardStyle(theme)}>
                     
-                    <span>{variantLabel(v)}</span>
-                    <span className="text-[14px] tabular-nums" style={muted}>
-                      {!available ? ticketIssue || 'Sold out' : price === null ? 'Price on request' : price === 0 && choosingProduct.kind === 'ticket' ? 'Free' : formatNgn(price)}
-                      {available && choosingProduct.trackStock && v.stock <= choosingProduct.lowStockAt ? ` · ${v.stock} left` : ''}
+                    <span className="flex min-w-0 flex-col">
+                      <span className="truncate">{variantLabel(v)}</span>
+                      {/* Expiry of the batch this order will come from — sales use the soonest-expiring one (D476). */}
+                      {available && choosingProduct.trackStock && expiryState(v).next?.expiresOn &&
+                      <span className="text-[12px] font-normal" style={muted}>
+                          {tr('Best before {date}', { date: formatExpiry(expiryState(v).next?.expiresOn ?? '') })}
+                        </span>
+                      }
+                    </span>
+                    <span className="shrink-0 text-[14px] tabular-nums" style={muted}>
+                      {!available ? ticketIssue ? tr(ticketIssue) : tr('Sold out') : price === null ? tr('Price on request') : price === 0 && choosingProduct.kind === 'ticket' ? tr('Free') : formatNgn(price)}
+                      {available && choosingProduct.trackStock && v.stock <= choosingProduct.lowStockAt ? ` · ${tr('Left: {n}', { n: v.stock })}` : ''}
                     </span>
                   </button>
                 </li>);
@@ -459,9 +505,9 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
       return (
         <div className="flex flex-col items-center gap-3 py-12 text-center" role="status" aria-live="polite">
           <Loader2Icon size={28} className="animate-spin" aria-hidden />
-          <p className="text-[16px] font-medium">{payWith === 'pod' ? 'Placing your order…' : outcome === 'timeout' ? 'Waiting for the payment provider…' : 'Processing test payment…'}</p>
+          <p className="text-[16px] font-medium">{tr(payWith === 'pod' ? 'Placing your order…' : outcome === 'timeout' ? 'Waiting for the payment provider…' : 'Processing test payment…')}</p>
           <p className="text-[13px]" style={muted}>
-            Don’t close this window.
+            {tr('Don’t close this window.')}
           </p>
         </div>);
 
@@ -472,7 +518,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
         <div className="flex flex-col gap-4">
           <div className="flex flex-col items-center gap-2 py-4 text-center" role="alert">
             <XCircleIcon size={30} aria-hidden />
-            <p className="text-[18px] font-medium">{payWith === 'pod' ? 'We couldn’t place your order' : outcome === 'cancelled' ? 'Payment cancelled' : 'Payment didn’t go through'}</p>
+            <p className="text-[18px] font-medium">{tr(payWith === 'pod' ? 'We couldn’t place your order' : outcome === 'cancelled' ? 'Payment cancelled' : 'Payment didn’t go through')}</p>
             <p className="max-w-xs text-[13.5px]" style={muted}>
               {failure}
             </p>
@@ -496,9 +542,9 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
           {lines.length === 0 ?
           <div className="flex flex-col items-center gap-2 py-8 text-center">
               <ShoppingBagIcon size={26} aria-hidden style={muted} />
-              <p className="text-[15px] font-medium">Your cart is empty</p>
+              <p className="text-[15px] font-medium">{tr('Your cart is empty')}</p>
               <p className="text-[13px]" style={muted}>
-                Add something from the page to get started.
+                {tr('Add something from the page to get started.')}
               </p>
             </div> :
 
@@ -513,14 +559,14 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
                     </span>
               }
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-[14.5px] font-semibold">{l.product?.name ?? 'Unavailable item'}</p>
+                    <p className="truncate text-[14.5px] font-semibold">{l.product?.name ?? tr('Unavailable item')}</p>
                     <p className="text-[12.5px]" style={muted}>
                       {[l.variant && Object.keys(l.variant.options).length ? variantLabel(l.variant) : null, l.price !== null ? formatNgn(l.price) : null].filter(Boolean).join(' · ')}
                       {l.bulk && l.basePrice !== null && <s className="ml-1.5">{formatNgn(l.basePrice)}</s>}
                     </p>
                     {(l.bulk || l.backorder || l.ok && isPreorder(l.product)) &&
                 <p className="text-[12px] font-semibold" style={{ color: theme.text }}>
-                        {[l.bulk ? 'Bulk price' : '', l.backorder ? 'Ships later — back in stock soon' : '', l.ok && isPreorder(l.product) ? `Pre-order · expected by ${shipsByLabel(l.product.preorder.shipsBy)}` : ''].filter(Boolean).join(' · ')}
+                        {[l.bulk ? tr('Bulk price') : '', l.backorder ? tr('Ships later — back in stock soon') : '', l.ok && isPreorder(l.product) ? `${tr('Pre-order')} · ${tr('expected by {date}.', { date: shipsByLabel(l.product.preorder.shipsBy) })}` : ''].filter(Boolean).join(' · ')}
                       </p>
                 }
                     {l.seatText &&
@@ -530,13 +576,13 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
                 }
                     {!l.ok &&
                 <p className="mt-0.5 flex items-center gap-1 text-[12px] font-semibold">
-                        <AlertTriangleIcon size={12} aria-hidden /> {l.ticketIssue || (l.variant && l.product?.trackStock && l.free > 0 ? `Only ${l.free} left` : 'No longer available')}
+                        <AlertTriangleIcon size={12} aria-hidden /> {l.ticketIssue ? tr(l.ticketIssue) : l.variant && l.product?.trackStock && l.free > 0 ? tr('Left: {n}', { n: l.free }) : tr('No longer available')}
                       </p>
                 }
                   </div>
                   {l.product?.kind === 'physical' || l.product?.kind === 'ticket' ?
-              <div className="flex items-center" role="group" aria-label={`Quantity of ${l.product.name}`}>
-                      <button type="button" aria-label="One fewer" onClick={() => cart.setQty(l.variantId, l.qty - 1)} className="flex h-9 w-9 items-center justify-center" style={{ borderRadius: buttonRadius(theme), background: mix(theme.text, 6) }}>
+              <div className="flex items-center" role="group" aria-label={tr('Quantity of {name}', { name: l.product.name })}>
+                      <button type="button" aria-label={tr(l.qty === 1 ? 'Remove {name}' : 'One less {name}', { name: l.product.name })} onClick={() => cart.setQty(l.variantId, l.qty - 1)} className="flex h-9 w-9 items-center justify-center" style={{ borderRadius: buttonRadius(theme), background: mix(theme.text, 6) }}>
                         {l.qty === 1 ? <Trash2Icon size={14} aria-hidden /> : <MinusIcon size={14} aria-hidden />}
                       </button>
                       <span className="w-8 text-center text-[14px] font-semibold tabular-nums" aria-live="polite">
@@ -544,9 +590,9 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
                       </span>
                       <button
                   type="button"
-                  aria-label="One more"
+                  aria-label={tr('One more {name}', { name: l.product.name })}
                   disabled={!!l.seats?.length || !!l.product.trackStock && !isPreorder(l.product) && !(backorders && l.product.kind === 'physical') && !!l.variant && l.qty >= (l.product.kind === 'physical' ? l.free : l.variant.stock) || roomQty >= roomCap || l.qty >= l.maxQty}
-                  title={l.seats?.length ? 'Add seats from the seat map' : undefined}
+                  title={l.seats?.length ? tr('Add seats from the seat map') : undefined}
                   onClick={() => cart.setQty(l.variantId, l.qty + 1)}
                   className="flex h-9 w-9 items-center justify-center disabled:opacity-40"
                   style={{ borderRadius: buttonRadius(theme), background: mix(theme.text, 6) }}>
@@ -555,7 +601,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
                       </button>
                     </div> :
 
-              <button type="button" aria-label={`Remove ${l.product?.name ?? 'item'}`} onClick={() => cart.remove(l.variantId)} className="flex h-9 w-9 items-center justify-center" style={{ borderRadius: buttonRadius(theme), background: mix(theme.text, 6) }}>
+              <button type="button" aria-label={tr('Remove {name}', { name: l.product?.name ?? tr('item') })} onClick={() => cart.remove(l.variantId)} className="flex h-9 w-9 items-center justify-center" style={{ borderRadius: buttonRadius(theme), background: mix(theme.text, 6) }}>
                       <Trash2Icon size={14} aria-hidden />
                     </button>
               }
@@ -680,9 +726,9 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
             <ThemedField
               key={`${l.variantId}-${n}`}
               theme={theme}
-              label={`${l.variant ? variantLabel(l.variant) : 'Ticket'} · ${l.seats?.[n] && l.product?.eventId ? seatName(l.product.eventId, l.seats[n]) ?? `seat ${n + 1}` : `seat ${n + 1}`}`}
+              label={`${l.variant ? variantLabel(l.variant) : tr('Ticket')} · ${(l.seats?.[n] && l.product?.eventId ? seatName(l.product.eventId, l.seats[n]) : undefined) ?? tr('Seat {n}', { n: n + 1 })}`}
               autoComplete="off"
-              placeholder={customer.name || 'Your name'}
+              placeholder={customer.name || tr('Your name')}
               value={guestNames[l.variantId]?.[n] ?? ''}
               onChange={(v) =>
               setGuestNames((g) => {
@@ -793,15 +839,44 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
     }
 
     if (step === 'delivery') {
-      const options = [
-      ...(f.pickupEnabled ? [{ id: 'pickup', title: tr('Pickup'), detail: [f.pickupAddress, hoursSummary(shop.status.hours) || f.pickupHours].filter(Boolean).join(' · '), fee: 0 }] : []),
+      const options = abroad ?
+      intlOptions.map((o) => ({ id: o.id, title: tr(o.id === 'intl_express' ? 'Express to {country}' : 'Economy to {country}', { country: tr(countryInfo(shipTo).name) }), detail: `${tr('Usually')} ${tr(o.eta)} · ${tr('tracked')}`, fee: o.fee })) :
+      [
+      ...(f.pickupEnabled || branchPoints.length ?
+      [{ id: 'pickup', title: tr('Pickup'), detail: branchPoints.length ? tr('{n} places to collect from', { n: branchPoints.length + (f.pickupEnabled ? 1 : 0) }) : [f.pickupAddress, hoursSummary(shop.status.hours) || f.pickupHours].filter(Boolean).join(' · '), fee: 0 }] :
+      []),
       ...(f.deliveryEnabled ? f.zones.map((z) => ({ id: z.id, title: `${tr('Delivery')} · ${z.name}`, detail: z.eta ? `${tr('Usually')} ${z.eta}` : '', fee: free ? 0 : z.feeNgn })) : [])];
 
       return (
         <div className="flex flex-col gap-4">
-          <CheckoutHeading theme={theme} sub={f.freeDeliveryOverNgn !== null ? free ? tr('You qualify for free delivery.') : tr('Free delivery over {amount}.', { amount: formatNgn(f.freeDeliveryOverNgn) }) : undefined}>
+          <CheckoutHeading theme={theme} sub={!abroad && f.freeDeliveryOverNgn !== null ? free ? tr('You qualify for free delivery.') : tr('Free delivery over {amount}.', { amount: formatNgn(f.freeDeliveryOverNgn) }) : undefined}>
             How do you want it?
           </CheckoutHeading>
+          {shipCountries.length > 0 &&
+          <label className="flex flex-col gap-1.5 text-[14px] font-semibold">
+              {tr('Deliver to')}
+              <select
+              value={shipTo}
+              onChange={(e) => {
+                setShipTo(e.target.value as CountryCode);
+                setMethod('');
+              }}
+              className="h-11 rounded-md px-3 text-[14.5px] font-normal"
+              style={{ ...cardStyle(theme), border: `1.5px solid ${mix(theme.text, 16)}` }}>
+              
+                {[home, ...shipCountries].map((c) =>
+              <option key={c} value={c}>
+                    {tr(countryInfo(c).name)}
+                  </option>
+              )}
+              </select>
+            </label>
+          }
+          {abroad &&
+          <p className="rounded-md px-3 py-2.5 text-[13px] leading-snug" style={{ background: mix(theme.text, 6) }} role="note">
+              {tr('Sent from {from} by courier. Import duties or taxes may be charged by {to} when it arrives — they aren’t included here.', { from: tr(countryInfo(home).name), to: tr(countryInfo(shipTo).name) })}
+            </p>
+          }
           {options.length === 0 ?
           <p className="rounded-md p-3 text-[14px]" style={cardStyle(theme)}>
               {tr('This seller hasn’t set up pickup or delivery yet. Please message them before ordering.')}
@@ -834,6 +909,19 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
 
             })}
             </div>
+          }
+          {method === 'pickup' && !popup && branchPoints.length > 0 &&
+          <label className="flex flex-col gap-1.5 text-[14px] font-semibold">
+              {tr('Collect from')}
+              <select value={pickupBranch?.id ?? ''} onChange={(e) => setPickupAt(e.target.value)} className="h-11 rounded-md px-3 text-[14.5px] font-normal" style={{ ...cardStyle(theme), border: `1.5px solid ${mix(theme.text, 16)}` }}>
+                {f.pickupEnabled && <option value="">{[tr('Main shop'), f.pickupAddress].filter(Boolean).join(' · ')}</option>}
+                {branchPoints.map((b) =>
+              <option key={b.id} value={b.id}>
+                    {[b.name, b.address, b.hours].filter(Boolean).join(' · ')}
+                  </option>
+              )}
+              </select>
+            </label>
           }
           {method && method !== 'pickup' && <ThemedField theme={theme} label="Delivery address" autoComplete="street-address" value={address} error={tried && !address.trim() ? 'Enter the delivery address' : undefined} onChange={setAddress} />}
           {pickupAddressAsk !== 'off' &&
@@ -878,6 +966,37 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
         
         </div>);
 
+    if (eftOpen && !eftManual)
+    return (
+      <div className="flex flex-1 flex-col gap-4">
+          <InstantEftPay
+          theme={theme}
+          amount={payNow}
+          payee={businessName || handle}
+          onBack={() => setEftOpen(false)}
+          onManual={() => setEftManual(true)}
+          onPaid={() => {
+            setEftOpen(false);
+            pay('success');
+          }} />
+        
+        </div>);
+
+    if (cardOpen)
+    return (
+      <div className="flex flex-1 flex-col gap-4">
+          <CardPay
+          theme={theme}
+          amount={payNow}
+          payee={businessName || handle}
+          onBack={() => setCardOpen(false)}
+          onPaid={() => {
+            setCardOpen(false);
+            pay('success');
+          }} />
+        
+        </div>);
+
     if (accountOpen || eftOpen)
     return (
       <div className="flex flex-1 flex-col gap-4">
@@ -885,10 +1004,11 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
           theme={theme}
           amount={payNow}
           account={transferAccountFor(holder)}
-          onBack={() => (setAccountOpen(false), setEftOpen(false))}
+          onBack={() => (setAccountOpen(false), setEftOpen(false), setEftManual(false))}
           onPaid={() => {
             setAccountOpen(false);
             setEftOpen(false);
+            setEftManual(false);
             pay('success', 'account');
           }} />
         
@@ -927,7 +1047,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
     const payOptions = [
     ...(momoAvailable && local.mobileMoney ? [['momo', SmartphoneIcon, local.mobileMoney.name] as const] : []),
     ...(cardAvailable ? [['card', CreditCardIcon, tr('Card')] as const] : []),
-    ...(eftAvailable ? [['eft', LandmarkIcon, tr('EFT bank transfer')] as const] : []),
+    ...(eftAvailable ? [['eft', LandmarkIcon, tr('Instant EFT')] as const] : []),
     ...(accountAvailable ? [['account', LandmarkIcon, transferAvailable ? tr('Transfer account') : tr('Bank transfer')] as const] : []),
     ...(transferAvailable ? [['transfer', LandmarkIcon, tr('Seller’s account')] as const] : []),
     ...(ussdAvailable ? [['ussd', HashIcon, tr('USSD code')] as const] : [])];
@@ -961,7 +1081,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
           {discountRow}
           {physical &&
           <div className="flex justify-between gap-3">
-              <dt style={muted}>{popup ? `${tr('Pickup')} · ${chosenSession?.when ?? ''}` : method === 'pickup' ? tr('Pickup') : `${tr('Delivery')} · ${zone?.name ?? ''}`}</dt>
+              <dt style={muted}>{popup ? `${tr('Pickup')} · ${chosenSession?.when ?? ''}` : method === 'pickup' ? pickupBranch ? `${tr('Pickup')} · ${pickupBranch.name}` : tr('Pickup') : `${tr('Delivery')} · ${zone?.name ?? ''}`}</dt>
               <dd className="tabular-nums">{deliveryFee === 0 ? tr('Free') : formatNgn(deliveryFee)}</dd>
             </div>
           }
@@ -1035,9 +1155,14 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
                 {tr('No card or data needed — dial a code from your bank phone and approve with your PIN.')}
               </p>
           }
-            {(byAccount || byEft) &&
+            {byAccount &&
           <p className="text-[12.5px] leading-snug" style={muted}>
                 {tr('You’ll get a one-time account number to transfer to. Your order confirms automatically when the money lands.')}
+              </p>
+          }
+            {byEft &&
+          <p className="text-[12.5px] leading-snug" style={muted}>
+                {tr('Pick your bank, sign in there and approve. Manual EFT with a reference is there if you need it.')}
               </p>
           }
             {byMomo && local.mobileMoney &&
@@ -1082,7 +1207,8 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
             {tr('This seller hasn’t turned on a way to pay online yet. Message them to order.')}
           </p>
         }
-        {payNow > 0 && !atStall && payBy === 'card' && !noWayToPay &&
+        {/* Paying now by card opens the card step (D433); provider states stay testable for instalments. */}
+        {payNow > 0 && !atStall && payBy === 'card' && !noWayToPay && payWith !== 'now' &&
         <fieldset className="flex flex-col gap-2">
           <legend className="mb-1 text-[13px] font-semibold">{tr('Test card — choose what happens')}</legend>
           {outcomes.filter((o) => payWith !== 'instalments' || o.value !== 'pending' && o.value !== 'timeout').map((o) =>
@@ -1134,13 +1260,13 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
         <SheetActions theme={theme}>
           <PrimaryButton
             theme={theme}
-            onClick={() => byMomo ? setMomoOpen(true) : byEft ? setEftOpen(true) : byUssd ? setUssdOpen(true) : byAccount ? setAccountOpen(true) : byTransfer ? pay('pending', 'transfer') : pay()}
+            onClick={() => byMomo ? setMomoOpen(true) : byEft ? setEftOpen(true) : byUssd ? setUssdOpen(true) : byAccount ? setAccountOpen(true) : byTransfer ? pay('pending', 'transfer') : payBy === 'card' && payWith === 'now' && payNow > 0 && !atStall ? setCardOpen(true) : pay()}
             disabled={okLines.length === 0 || !!roomError || payWith === 'instalments' && !agreed || shop.checkout.termsTick && !termsOk || !!closedMsg || !!minError || noWayToPay}>
             
             {byMomo && local.mobileMoney ?
             tr('Pay {amount} with {wallet}', { amount: formatNgn(payNow), wallet: local.mobileMoney.name }) :
             byEft ?
-            tr('Get account details for {amount}', { amount: formatNgn(payNow) }) :
+            tr('Pay {amount} with instant EFT', { amount: formatNgn(payNow) }) :
             byUssd ?
             tr('Get a USSD code for {amount}', { amount: formatNgn(payNow) }) :
             byAccount ?
@@ -1172,7 +1298,7 @@ export function CheckoutSheet({ theme, commerce, ownerPlan, handle, defaultCode,
         {!choosingProduct && step !== 'paying' && step !== 'failed' &&
         <div className="flex items-center gap-3 pr-12">
             {step !== 'cart' &&
-          <button type="button" onClick={back} aria-label="Back" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full" style={{ background: theme.surface }}>
+          <button type="button" onClick={back} aria-label={tr('Back')} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full" style={{ background: theme.surface }}>
                 <ArrowLeftIcon size={16} aria-hidden />
               </button>
           }

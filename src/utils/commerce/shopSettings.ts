@@ -1,4 +1,6 @@
-import type { CommerceData, DayHours, Order, OrderMessageId, ShopSettings, WeekdayId } from '../../types/commerce';
+import type { CommerceData, DayHours, Order, OrderMessageId, ShopSettings, TaxClass, WeekdayId } from '../../types/commerce';
+import type { CountryCode } from '../../types/country';
+import { activeCountry } from '../country';
 
 /**
  * Shop-wide Commerce settings (D222). Every default reproduces the shop as it was before these
@@ -83,18 +85,58 @@ export interface VatResult {
   inclusive: boolean;
   /** What the buyer pays on top (0 when VAT is included in prices). */
   addedNgn: number;
+  /** Whose tax it is (D435). */
+  country: CountryCode;
 }
 
-/** VAT on a taxable amount (goods after discount, plus delivery). Null when VAT is off. */
-export function vatFor(settings: ShopSettings, taxableNgn: number): VatResult | null {
-  if (!settings.tax.enabled || settings.tax.ratePct <= 0 || taxableNgn <= 0) return null;
-  const r = settings.tax.ratePct;
+export interface VatOptions {
+  /** Where the buyer is (cross-border delivery, D438). Missing = the shop's own country. */
+  buyerCountry?: CountryCode;
+  /** Part of the taxable amount that's zero-rated or exempt (D435). */
+  untaxedNgn?: number;
+}
+
+/**
+ * Tax on a taxable amount (goods after discount, plus delivery). Null when no tax applies (D222, D435):
+ * - at home, the shop's own rate; zero-rated and exempt items are left out;
+ * - a buyer in another country is charged that country's rate only if the shop is registered there; otherwise the
+ *   sale is an export and no tax is added (the buyer may pay import tax on arrival).
+ */
+export function vatFor(settings: ShopSettings, taxableNgn: number, opts: VatOptions = {}): VatResult | null {
+  const home = activeCountry();
+  const where = opts.buyerCountry ?? home;
+  const reg = where === home ? null : settings.tax.sellsTo?.[where];
+  if (where !== home && !reg?.registered) return null;
+  const on = where === home ? settings.tax.enabled : true;
+  const r = where === home ? settings.tax.ratePct : reg?.ratePct ?? 0;
+  const base = Math.max(0, taxableNgn - (opts.untaxedNgn ?? 0));
+  if (!on || r <= 0 || base <= 0) return null;
   if (settings.tax.inclusive) {
-    const amountNgn = Math.round(taxableNgn * r / (100 + r));
-    return { ratePct: r, amountNgn, inclusive: true, addedNgn: 0 };
+    const amountNgn = Math.round(base * r / (100 + r));
+    return { ratePct: r, amountNgn, inclusive: true, addedNgn: 0, country: where };
   }
-  const amountNgn = Math.round(taxableNgn * r / 100);
-  return { ratePct: r, amountNgn, inclusive: false, addedNgn: amountNgn };
+  const amountNgn = Math.round(base * r / 100);
+  return { ratePct: r, amountNgn, inclusive: false, addedNgn: amountNgn, country: where };
+}
+
+/** What each country calls the number on a tax-registered business's receipts — examples to confirm (D435). */
+export const taxNumberLabels: Record<CountryCode, {label: string;placeholder: string;}> = {
+  NG: { label: 'VAT number or TIN', placeholder: '12345678-0001' },
+  KE: { label: 'KRA PIN', placeholder: 'P051234567X' },
+  GH: { label: 'GRA TIN', placeholder: 'C0012345678' },
+  ZA: { label: 'VAT number', placeholder: '4123456789' }
+};
+
+/** The tax types a product can have, per country wording (D435). Example labels — check with an accountant. */
+export const taxClassLabels: Record<TaxClass, {label: string;hint: string;}> = {
+  standard: { label: 'Standard rate', hint: 'Most goods and services.' },
+  zero: { label: 'Zero-rated', hint: 'Taxable at 0% — for example some basic foods, exports or books, depending on the country.' },
+  exempt: { label: 'Exempt', hint: 'Outside tax — for example some financial, medical or education services.' }
+};
+
+/** The amount of a set of lines that's zero-rated or exempt (D435). */
+export function untaxedAmount(lines: {amountNgn: number;taxClass?: TaxClass;}[]): number {
+  return lines.filter((l) => l.taxClass === 'zero' || l.taxClass === 'exempt').reduce((s, l) => s + l.amountNgn, 0);
 }
 
 export function vatRateLabel(ratePct: number): string {

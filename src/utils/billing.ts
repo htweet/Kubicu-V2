@@ -4,6 +4,9 @@ import { testCards, VAT_RATE, YEARLY_MONTHS } from '../data/billing';
 import { planOrder, plans } from '../data/plans';
 import { uid } from './id';
 import { monthlyPrice } from './planCatalogue';
+import { billingCurrency } from './currency';
+import { isFxCode, rateOn } from './fxRates';
+import { billingCountryFor } from '../data/billingCountries';
 
 const DAY = 86400000;
 
@@ -95,8 +98,11 @@ export function daysUntil(iso: string, now = Date.now()): number {
 
 export const formatDate = (iso: string) => new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 
+/** Tax at the billing country's rate (D432) — Nigeria's VAT_RATE in a Nigerian workspace. Amounts stay in naira. */
 export function withVat(subtotal: number) {
-  const vat = Math.round(subtotal * VAT_RATE);
+  const code = billingCurrency();
+  const rate = code === 'NGN' ? VAT_RATE : billingCountryFor(code).taxRate;
+  const vat = Math.round(subtotal * rate);
   return { subtotal, vat, total: subtotal + vat };
 }
 
@@ -179,10 +185,15 @@ export function makeInvoice(data: BillingData, lines: InvoiceLine[], status: Inv
   const subtotal = Math.max(0, lines.reduce((s, l) => s + l.amountNgn, 0));
   const { vat, total } = withVat(subtotal);
   const year = new Date(at).getFullYear();
-  const seq = data.invoices.length + 1;
+  // Outside Nigeria the invoice freezes the day's rate and gets its own number series (D432).
+  const code = billingCurrency();
+  const fx = isFxCode(code) ? { currency: code, rate: rateOn(code, at.slice(0, 10)).rate, date: at.slice(0, 10) } : undefined;
+  const prefix = billingCountryFor(code).invoicePrefix;
+  const seq = data.invoices.filter((i) => (i.fx?.currency ?? 'NGN') === (fx?.currency ?? 'NGN')).length + 1;
   return {
     id: uid('inv'),
-    number: `KUB-${year}-${String(seq).padStart(4, '0')}`,
+    ...(fx ? { fx } : {}),
+    number: `${prefix}-${year}-${String(seq).padStart(4, '0')}`,
     issuedAt: at,
     status,
     lines,

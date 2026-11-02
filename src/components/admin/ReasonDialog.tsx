@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Dialog } from '../ui/Dialog';
 import { Button } from '../ui/Button';
 import { TextArea } from '../ui/TextArea';
+import { useT } from '../../contexts/LocaleContext';
 
 interface ReasonDialogProps {
   open: boolean;
@@ -15,8 +16,12 @@ interface ReasonDialogProps {
   onConfirm: (reason: string) => void;
 }
 
-/** Every privileged staff action asks why, and the answer goes to the audit log (D75b). */
+/**
+ * Every privileged staff action asks why, and the answer goes to the audit log (D75b).
+ * The dialog's own wording follows the console language (D489); the reason is kept exactly as typed.
+ */
 export function ReasonDialog({ open, title, description, confirmLabel, destructive, children, onClose, onConfirm }: ReasonDialogProps) {
+  const { t } = useT();
   const [reason, setReason] = useState('');
   const [tried, setTried] = useState(false);
   useEffect(() => {
@@ -25,7 +30,7 @@ export function ReasonDialog({ open, title, description, confirmLabel, destructi
       setTried(false);
     }
   }, [open]);
-  const error = reason.trim().length < 10 ? 'Write at least a short sentence — it’s kept in the audit log.' : '';
+  const error = reason.trim().length < 10 ? t('Write at least a short sentence — it’s kept in the audit log.') : '';
   const confirm = () => {
     setTried(true);
     if (error) return;
@@ -41,7 +46,7 @@ export function ReasonDialog({ open, title, description, confirmLabel, destructi
       footer={
       <>
           <Button variant="secondary" onClick={onClose}>
-            Cancel
+            {t('Cancel')}
           </Button>
           <Button variant={destructive ? 'destructive' : 'primary'} onClick={confirm}>
             {confirmLabel}
@@ -51,7 +56,7 @@ export function ReasonDialog({ open, title, description, confirmLabel, destructi
       
       <div className="flex flex-col gap-4">
         {children}
-        <TextArea id="admin-reason" label="Reason" rows={3} value={reason} error={tried ? error || undefined : undefined} placeholder="e.g. Confirmed fraud reports from three buyers" onChange={(e) => setReason(e.target.value)} />
+        <TextArea id="admin-reason" label={t('Reason')} rows={3} value={reason} error={tried ? error || undefined : undefined} placeholder={t('e.g. Confirmed fraud reports from three buyers')} onChange={(e) => setReason(e.target.value)} />
       </div>
     </Dialog>);
 

@@ -47,7 +47,7 @@ export function Pricing() {
             } />
           
           <p className="text-caption text-fg-subtle">{tr('Launch prices. Nobody is charged in this prototype.')}</p>
-          {displayConversion() && <p className="text-caption text-fg-subtle">{tr('Shown in {currency} at an example rate. The final price is confirmed when you pay.', { currency: displayConversion() ?? '' })}</p>}
+          {displayConversion() && <p className="text-caption text-fg-subtle">{tr('Converted from naira at today’s rate. The amount is fixed on your invoice.')}</p>}
         </div>
       </header>
 

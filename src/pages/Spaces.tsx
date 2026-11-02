@@ -21,6 +21,7 @@ import {
 import { useEditor } from '../contexts/EditorContext';
 import { useWorkspace } from '../contexts/WorkspaceContext';
 import { useCan, useTeam } from '../contexts/TeamContext';
+import { workspaceCountry } from '../utils/country';
 import { SpaceAccessDialog } from '../components/spaces/SpaceAccessDialog';
 import type { Space } from '../types/workspace';
 import { PageHeader } from '../components/shell/PageHeader';
@@ -179,7 +180,8 @@ export function Spaces() {
     const name = copyName.trim() || `${current.name} (copy)`;
     const handle = suggestHandles(`${draft.handle}copy`, takenHandles(workspaces))[0] ?? `${draft.handle.slice(0, 24)}-copy2`;
     const doc = cloneDocument(draft, { handle, title: `${draft.title} (copy)` });
-    const ws = create({ name, ownerName: current.ownerName, doc, publish: false });
+    // A new workspace sells from the same country as the one it was made from (D495).
+    const ws = create({ name, ownerName: current.ownerName, doc, publish: false, country: workspaceCountry(current) });
     setDialog(null);
     toast(`Created ${ws.name}`, { description: `A draft copy at ${publicUrl(handle)}. You’re now in the copy.` });
   };

@@ -2,13 +2,18 @@
 
 export type DeliveryStatus = 'booked' | 'assigned' | 'picked_up' | 'delivered' | 'failed' | 'cancelled';
 
-export type FailReason = 'unreachable' | 'wrong_address' | 'refused' | 'wrong_code' | 'other';
+export type FailReason = 'unreachable' | 'wrong_address' | 'refused' | 'wrong_code' | 'held_customs' | 'returned_sender' | 'other';
 
 export interface DeliveryEvent {
   id: string;
   at: string;
   label: string;
+  /** Filled into `{name}` placeholders in the label when it's shown (D451), so the label stays translatable. */
+  vars?: Record<string, string>;
 }
+
+/** Tracking steps after pickup for a parcel going abroad (D451). 4 = out for delivery in the buyer's country. */
+export type CrossBorderStage = 0 | 1 | 2 | 3 | 4;
 
 export interface Rider {
   name: string;
@@ -41,6 +46,8 @@ export interface Delivery {
   events: DeliveryEvent[];
   createdAt: string;
   sample?: boolean;
+  /** Parcel going to another country (D451): country codes and how far it has got after pickup. */
+  crossBorder?: {from: string;to?: string;stage: CrossBorderStage;};
 }
 
 export interface FulfilmentData {

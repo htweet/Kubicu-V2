@@ -25,6 +25,7 @@ export function DeclarationsStep({ k, set, errors, disabled }: KycStepProps) {
         <div className="grid gap-4 md:grid-cols-2">
           <SelectInput<Vol>
             id="kyc-volume"
+            required
             label="Expected sales each month"
             value={d.monthlyVolume}
             onChange={(monthlyVolume) => setD({ monthlyVolume })}
@@ -35,6 +36,7 @@ export function DeclarationsStep({ k, set, errors, disabled }: KycStepProps) {
           
           <SelectInput<Funds>
             id="kyc-funds"
+            required
             label="Where your money mainly comes from"
             value={d.sourceOfFunds}
             onChange={(sourceOfFunds) => setD({ sourceOfFunds })}

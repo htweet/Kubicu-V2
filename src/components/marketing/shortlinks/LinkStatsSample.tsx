@@ -8,15 +8,23 @@ const devices = [
 { label: 'Computer', pct: 9 },
 { label: 'Tablet', pct: 3 }];
 
-const regions = [
-{ label: 'Lagos', pct: 64 },
-{ label: 'Abuja', pct: 14 },
-{ label: 'Elsewhere', pct: 22 }];
-
+// Sample cities follow the visitor's language (D485): Kiswahili → Kenya, Twi → Ghana, isiZulu → South Africa,
+// every other language → Nigeria. These are display-only names for this sample, never looked up as real regions.
+const sampleCities: Record<string, [string, string]> = {
+  sw: ['Nairobi', 'Mombasa'],
+  tw: ['Accra', 'Kumasi'],
+  zu: ['eGoli', 'eThekwini']
+};
 
 /** Illustrative per-link stats for the Short Links page (D268). Labelled as sample everywhere it shows. */
 export function LinkStatsSample() {
-  const { t: tr } = useT();
+  const { t: tr, lang } = useT();
+  const cities = sampleCities[lang];
+  const regions = [
+  { label: cities ? cities[0] : 'Lagos', pct: 64 },
+  { label: cities ? cities[1] : 'Abuja', pct: 14 },
+  { label: 'Elsewhere', pct: 22 }];
+
   const reduce = useReducedMotion();
   const max = Math.max(...days);
   return (

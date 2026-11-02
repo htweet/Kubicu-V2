@@ -8,9 +8,14 @@ import { useCatalog } from '../../contexts/CatalogContext';
 import { useSubscribeOpener } from '../../contexts/SubscribeContext';
 import { intervalWord, planFull } from '../../utils/commerce/subscriptions';
 import { formatNgn } from '../../utils/format';
+import { useT } from '../../contexts/LocaleContext';
 
-/** Recurring plans side by side; the button opens sign-up on the live page (D69). */
+/**
+ * Recurring plans side by side; the button opens sign-up on the live page (D69).
+ * Fixed wording follows the visitor's language (D503); plan names, descriptions, benefits and the seller's button label stay as written.
+ */
 export function SubscriptionBlock({ block, theme, mode }: BlockProps<'subscription'>) {
+  const { t: tr } = useT();
   const c = block.content;
   const catalog = useCatalog();
   const open = useSubscribeOpener();
@@ -33,7 +38,7 @@ export function SubscriptionBlock({ block, theme, mode }: BlockProps<'subscripti
           const highlighted = c.highlightPlanId === p.id;
           const full = catalog ? planFull(catalog, p) : false;
           const benefits = p.benefits.split('\n').map((b) => b.trim()).filter(Boolean);
-          const label = full ? 'Full right now' : p.trialDays ? `Start ${p.trialDays}-day free trial` : c.ctaLabel || 'Subscribe';
+          const label = full ? tr('Full right now') : p.trialDays ? tr('Start free trial · days: {n}', { n: p.trialDays }) : c.ctaLabel || tr('Subscribe');
           const btnClass = 'mt-5 flex h-11 w-full items-center justify-center text-[14px] font-semibold';
           const btnStyle = { ...buttonStyle(theme, highlighted ? 'featured' : 'default'), opacity: full ? 0.55 : 1 };
           return (
@@ -48,19 +53,25 @@ export function SubscriptionBlock({ block, theme, mode }: BlockProps<'subscripti
                 </h3>
                 {highlighted &&
                 <PageChip theme={theme} tone="strong">
-                    Most chosen
+                    {tr('Most chosen')}
                   </PageChip>
                 }
               </div>
               <p className="mt-2 text-[24px] font-semibold tabular-nums" style={{ color: theme.text }}>
                 {formatNgn(p.priceNgn)}
                 <span className="ml-1 text-[13px] font-normal" style={{ color: theme.mutedText }}>
-                  / {intervalWord[p.interval]}
+                  / {tr(intervalWord[p.interval])}
                 </span>
               </p>
               {(p.trialDays > 0 || p.setupFeeNgn > 0 || p.kind === 'box') &&
               <p className="mt-0.5 text-[12.5px]" style={{ color: theme.mutedText }}>
-                  {[p.trialDays ? `${p.trialDays} days free` : '', p.setupFeeNgn ? `${formatNgn(p.setupFeeNgn)} one-off setup` : '', p.kind === 'box' ? 'plus delivery' : ''].filter(Boolean).join(' · ')}
+                  {[
+                p.trialDays ? tr('Free days: {n}', { n: p.trialDays }) : '',
+                p.setupFeeNgn ? tr('One-off setup: {amount}', { amount: formatNgn(p.setupFeeNgn) }) : '',
+                p.kind === 'box' ? tr('plus delivery') : ''].
+
+                filter(Boolean).
+                join(' · ')}
                 </p>
               }
               {p.description &&

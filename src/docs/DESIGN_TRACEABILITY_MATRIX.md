@@ -1,6 +1,6 @@
 # KUBICU — Design Traceability Matrix
 
-Sources: Master Blueprint (MB), Implementation Backlog (IB), Master Design Plan (DP), Linktree-parity brief (LP). Updated 30 Oct 2026 through D343. 🧪 = built but simulated by design; 👤 = waiting on sign-off.
+Sources: Master Blueprint (MB), Implementation Backlog (IB), Master Design Plan (DP), Linktree-parity brief (LP). Updated 1 Nov 2026 through D481. 🧪 = built but simulated by design; 👤 = waiting on sign-off.
 Disposition: **MVP-D** designed for MVP · **Later-D** designed for later phase · **Concept** future concept · **Clarify** needs clarification · **Excluded** with rationale.
 Prototype status: ✅ interactive · 🟡 partial · ⏳ planned placeholder · ⬜ not started
 
@@ -92,3 +92,17 @@ Source: `docs/KUBICU_LINKTREE_PARITY_AND_UPGRADE_MAGIC_PATTERNS.md` (LP). Route 
 | MB-5.4 | Composition review of copy and hierarchy | P1 | Owner | Canvas → Check | `utils/compositionCheck.ts` | — | ✅ | D342 |
 | MB-13 / LP-8.3 | Website/WhatsApp short-link clicks in campaign stats | P1 | Owner | Analytics, Short links, QR | `utils/analytics/aggregate.ts` | bots and bursts excluded | ✅ | D343 |
 | MB-10 / LP-9.3 | Back-fill source and permission for older contacts | P1 | Owner | Contact detail | `ContactOrigin` | added by you, not subscribed | ✅ | D343 · hand-recorded permission is the business's own record |
+
+## Added after D343 (through D481)
+
+| Req ID | Requirement | Priority / phase | Role | Screen / flow | Component | States | Prototype | Disposition / open questions |
+|---|---|---|---|---|---|---|---|---|
+| IB-U / DP-8 | Kiswahili, Twi, isiZulu across the product | P1 | All | App, canvas, website, Home, shop, cart, checkout | `data/translationsKeGhZa/*`, `data/translationsStorefrontProduct.ts` | English fallback | ✅ 👤 | D356–D401, D479–D481 · drafts, native review pending · staff console English only |
+| Founder brief | Kenya, Ghana, South Africa as first-class countries | P1 | Owner/Buyer | Currency, phones, regions, banks, payouts, verification | `utils/country.ts`, `utils/currency.ts`, `PhoneField` | country picker, wrong-length errors | ✅ 🧪 | D350–D357, D402–D405, D423–D427 · 👤 example rates and limits |
+| Founder brief | Public website speaks to Africa; amounts follow the visitor's language | P1 | Visitor | Website | `MarketingLayout`, `localiseAmounts` | example-rate note | ✅ | D373, D421 |
+| Founder brief | Floating Copilot ask bar | P2 | All | Every page except Copilot/AI screens | `AskBar` | minimised, hidden on scroll, near footer | ✅ | D374 · hidden on sellers' published pages and shared shops since D431 |
+| Plan 2bf11082 | Billing in each country's currency, local payment methods, country starters | P1 | Owner/Buyer | Pricing, checkout, onboarding | `MobileMoneyPay`, `InstantEftPay`, `CardPay` | pending, failed, timeout | ✅ 🧪 | D431–D434 |
+| Plan 2bf11082 — Phase 5 | Tax across countries, cross-border delivery, branches/franchises, accounting, SSO and activity exports, ERP, sponsorships, NFC | P2 | Owner/Staff | Commerce, Settings → Integrations, Growth → Sponsorships, NFC | see register | simulated connections | ✅ 🧪 | D435–D446 |
+| Phase 5 follow-ups | Country tax accounts, invoice wording, sponsorship disputes/review/appeals/evidence, real link results, NFC in four countries, branch-limited staff, batches and expiry | P2 | Owner/Staff/Buyer | as listed | `utils/commerce/batches.ts`, `utils/commerce/branches.ts`, sponsorship panels | expired, expiring soon, frozen money | ✅ 🧪 | D447–D478 · 👤 accountant/lawyer wording |
+| Founder brief | Every module and add-on switchable by Operations; figures and names editable | P1 | Staff | Super admin → Feature flags, Figures & names, Localisation | `data/adjustableFigures.ts` | "Currently not available" | ✅ | D464–D470 |
+| Founder brief | Users & tenants: one person, many workspaces; staff search | P1 | Staff | Super admin → Users & tenants, search | — | locked account | ✅ | D472–D473 |

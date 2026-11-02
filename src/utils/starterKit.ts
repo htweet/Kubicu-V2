@@ -101,7 +101,9 @@ export function prepareStarter(example: PageDocument, identity: StarterIdentity 
       groups: [],
       layout: base.layout ? { ...base.layout, actionBar: base.layout.actionBar ? { ...base.layout.actionBar, url: '', enabled: !!base.layout.actionBar.blockId && base.layout.actionBar.enabled } : base.layout.actionBar } : undefined,
       title: identity.name?.trim() || base.title,
-      seo: { title: identity.name?.trim() || base.title, description: identity.tagline?.trim() ?? '' }
+      seo: { title: identity.name?.trim() || base.title, description: identity.tagline?.trim() ?? '' },
+      // The example's price currency is preview-only; the owner's page uses their workspace currency (D434).
+      currency: undefined
     },
     hidden
   };

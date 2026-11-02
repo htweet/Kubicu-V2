@@ -84,16 +84,16 @@ export function ProductBlock({ block, theme, mode }: BlockProps<'product'>) {
       <div className="flex flex-col gap-3 p-5">
         <div className="flex items-start justify-between gap-4">
           <h3 className="text-[20px] font-medium leading-tight tracking-[-0.01em]" style={{ fontFamily: fontsFor(theme).display, color: theme.text }}>
-            {view.name || 'Untitled product'}
+            {view.name || tr('Untitled product')}
           </h3>
           <p className="shrink-0 pt-0.5 text-[15px] font-semibold tabular-nums" style={{ color: theme.text }}>
             {shownPrice !== null ?
             <>
-                {view.from && !selected && <span className="mr-1 text-[12px] font-medium" style={{ color: theme.mutedText }}>from</span>}
+                {view.from && !selected && <span className="mr-1 text-[12px] font-medium" style={{ color: theme.mutedText }}>{tr('from')}</span>}
                 {formatNgn(shownPrice)}
               </> :
 
-            <span style={{ color: theme.mutedText, fontWeight: 500 }}>Price on request</span>
+            <span style={{ color: theme.mutedText, fontWeight: 500 }}>{tr('Price on request')}</span>
             }
           </p>
         </div>
@@ -104,7 +104,7 @@ export function ProductBlock({ block, theme, mode }: BlockProps<'product'>) {
         }
 
         {multi && product &&
-        <div role="radiogroup" aria-label={`Choose ${optionName.toLowerCase()}`} className="flex flex-wrap gap-2">
+        <div role="radiogroup" aria-label={tr('Choose: {option}', { option: optionName.toLowerCase() })} className="flex flex-wrap gap-2">
             {product.variants.map((v) => {
             const available = canSell(product, v);
             const active = v.id === variantId;
@@ -140,11 +140,11 @@ export function ProductBlock({ block, theme, mode }: BlockProps<'product'>) {
           className="mt-1 flex h-12 w-full items-center justify-center gap-2 text-[15px] font-semibold"
           style={buttonStyle(theme, 'featured')}>
           
-            {view.soldOut ? tr('Sold out') : multi && !selected ? `Choose ${optionName.toLowerCase()}` : tr(p.ctaLabel || 'Add to cart')}
+            {view.soldOut ? tr('Sold out') : multi && !selected ? tr('Choose: {option}', { option: optionName.toLowerCase() }) : tr(p.ctaLabel || 'Add to cart')}
           </CheckoutButton> :
         view.soldOut ?
         <span className="mt-1 flex h-12 w-full items-center justify-center text-[15px] font-medium" style={{ color: theme.mutedText, borderRadius: buttonRadius(theme), border: `1px dashed ${mix(theme.text, 20)}` }}>
-            Sold out
+            {tr('Sold out')}
           </span> :
 
         <PageAction
@@ -155,7 +155,7 @@ export function ProductBlock({ block, theme, mode }: BlockProps<'product'>) {
           style={buttonStyle(theme, 'featured')}>
           
             {p.ctaAction === 'whatsapp' && <MessageCircleIcon size={17} aria-hidden />}
-            {p.ctaLabel || 'Order'}
+            {p.ctaLabel || tr('Order')}
           </PageAction>
         }
       </div>

@@ -1,5 +1,9 @@
 import React from 'react';
 import type { Block, PageTheme, RenderMode } from '../../types/page';
+import { useT } from '../../contexts/LocaleContext';
+import { useModuleAvailability } from '../../utils/admin/moduleFlags';
+import { PageChip } from './BlockTitle';
+import { cardStyle } from './pageStyle';
 import { ProfileBlock } from './ProfileBlock';
 import { HeadingBlock } from './HeadingBlock';
 import { TextBlock } from './TextBlock';
@@ -86,7 +90,59 @@ interface BlockRendererProps {
   mode: RenderMode;
 }
 
+/**
+ * Blocks that sell, book or collect through a workspace module (D470). When KUBICU switches that module off in
+ * Super admin → Feature flags, visitors see a calm "isn't available right now" card instead, and the owner sees
+ * the block with a note on the canvas. Nothing is deleted.
+ */
+const blockModule: Partial<Record<Block['type'], {id: string;appId?: string;}>> = {
+  product: { id: 'commerce' },
+  productGrid: { id: 'commerce' },
+  shopCategories: { id: 'commerce' },
+  checkoutButton: { id: 'commerce' },
+  collection: { id: 'commerce' },
+  menu: { id: 'commerce' },
+  event: { id: 'commerce' },
+  download: { id: 'commerce' },
+  subscription: { id: 'commerce' },
+  course: { id: 'commerce' },
+  support: { id: 'commerce' },
+  booking: { id: 'bookings', appId: 'bookings' },
+  form: { id: 'forms', appId: 'forms' },
+  leadForm: { id: 'audience' },
+  newsletter: { id: 'audience' }
+};
+
 export function BlockRenderer({ block, theme, mode }: BlockRendererProps) {
+  const availability = useModuleAvailability();
+  const tr = useT();
+  const mod = blockModule[block.type];
+  if (mod && !availability.nav(mod)) {
+    if (mode === 'live') {
+      return (
+        <section className="flex items-center justify-between gap-3 p-5" style={cardStyle(theme)} aria-live="polite">
+          <p className="text-[14px] leading-relaxed" style={{ color: theme.mutedText }}>
+            {tr('This isn’t available right now. Please check back soon.')}
+          </p>
+          <PageChip theme={theme} tone="muted">
+            {tr('Not available')}
+          </PageChip>
+        </section>);
+
+    }
+    return (
+      <div className="flex flex-col gap-2">
+        <p className="rounded-md px-3 py-2 text-[12px] leading-snug" style={{ background: `color-mix(in srgb, ${theme.text} 8%, transparent)`, color: theme.text }}>
+          {tr('KUBICU has paused this for now, so visitors see “isn’t available right now” in its place. Your block is kept.')}
+        </p>
+        <BlockSwitch block={block} theme={theme} mode={mode} />
+      </div>);
+
+  }
+  return <BlockSwitch block={block} theme={theme} mode={mode} />;
+}
+
+function BlockSwitch({ block, theme, mode }: BlockRendererProps) {
   switch (block.type) {
     case 'profile':
       return <ProfileBlock block={block} theme={theme} mode={mode} />;

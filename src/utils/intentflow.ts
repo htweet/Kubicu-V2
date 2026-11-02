@@ -9,7 +9,7 @@ import { activeExtraSpaces, MAIN_SPACE_ID, readSpacePage, spaceStorageId } from 
 import { writePersistedPage } from './workspaceStorage';
 
 /** Sources an owner can target. Rules only ever use where a visit came from — never who the person is (D64). */
-export const intentSources: SourceId[] = ['whatsapp', 'instagram', 'tiktok', 'facebook', 'x', 'google', 'qr', 'campaign', 'direct', 'other'];
+export const intentSources: SourceId[] = ['whatsapp', 'instagram', 'tiktok', 'facebook', 'x', 'google', 'qr', 'nfc', 'campaign', 'direct', 'other'];
 
 export const goalLabels: Record<IntentGoal, string> = {
   tap: 'Taps on this block',

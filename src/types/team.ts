@@ -34,6 +34,8 @@ export interface Member {
   role: Role;
   /** Spaces they can edit; null = every space (D57). */
   spaceIds: string[] | null;
+  /** The one shop location they work at (D474) — e.g. a franchise partner. Missing or null = every location. */
+  branchId?: string | null;
   joinedAt: string;
   lastActiveAt: string | null;
   sample?: boolean;
@@ -47,6 +49,8 @@ export interface Invite {
   contact: string;
   role: Role;
   spaceIds: string[] | null;
+  /** Location they'll be limited to once they join (D474). */
+  branchId?: string | null;
   invitedBy: string;
   createdAt: string;
   expiresAt: string;

@@ -3,11 +3,14 @@ import { toast } from 'sonner';
 import { MessageSquareIcon, MoreHorizontalIcon, StickyNoteIcon, EyeIcon } from 'lucide-react';
 import type { Order } from '../../types/commerce';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
+import { useT } from '../../contexts/LocaleContext';
 import { readCommerce } from '../../utils/commerce/storage';
 import { orderMoney } from '../../utils/commerce/money';
 import { audit, staffActor, staffReplyName, useAdminStore } from '../../utils/admin/store';
 import { uid } from '../../utils/id';
 import { formatNgn, formatRelative, formatTimestamp } from '../../utils/format';
+import { convertExampleNaira, formatMoney, type CurrencyCode } from '../../utils/currency';
+import { formatTotals, workspaceCurrency } from '../../utils/admin/workspaceMoney';
 import { PageHeader } from '../../components/shell/PageHeader';
 import { Badge } from '../../components/ui/Badge';
 import { Menu } from '../../components/ui/Menu';
@@ -26,6 +29,8 @@ interface Row {
   id: string;
   workspaceId: string;
   workspace: string;
+  /** The workspace's own currency — order amounts are stored in it (D494). */
+  currency: CurrencyCode;
   order: Order;
   gross: number;
   refunded: number;
@@ -39,8 +44,12 @@ const STUCK_HOURS = 24;
 
 const disputeLabels = { needs_response: 'Seller must respond', under_review: 'With the provider', won: 'Won', lost: 'Lost' } as const;
 
-/** Super admin → Orders & disputes: help sellers with disputes, big refunds and stuck payments (D82). Staff never move money. */
+/**
+ * Super admin → Orders & disputes: help sellers with disputes, big refunds and stuck payments (D82). Staff never move money.
+ * Follows the staff console language (D498). Messages to sellers, staff notes, dispute reasons and audit entries stay as written.
+ */
 export function AdminOrders() {
+  const { t: tr } = useT();
   const { workspaces } = useWorkspace();
   const [store, setStore] = useAdminStore();
   const [tab, setTab] = useState<Tab>('dispute');
@@ -55,10 +64,13 @@ export function AdminOrders() {
     return workspaces.flatMap((w) =>
     (readCommerce(w.id)?.orders ?? []).map((o) => {
       const m = orderMoney(o);
-      const recentBigRefund = o.refunds.some((r) => r.amountNgn >= LARGE_REFUND && now - Date.parse(r.at) < 30 * 86400000);
+      const currency = workspaceCurrency(w);
+      // The ₦50,000 rule at the day's rate for shops in other currencies.
+      const large = convertExampleNaira(LARGE_REFUND, currency);
+      const recentBigRefund = o.refunds.some((r) => r.amountNgn >= large && now - Date.parse(r.at) < 30 * 86400000);
       const stuck = !o.pod && o.paymentStatus === 'pending' && o.status !== 'cancelled' && now - Date.parse(o.createdAt) > STUCK_HOURS * 3600000;
       const flag: Row['flag'] = o.dispute && (o.dispute.status === 'needs_response' || o.dispute.status === 'under_review') ? 'dispute' : recentBigRefund ? 'refund' : stuck ? 'stuck' : null;
-      return { id: `${w.id}:${o.id}`, workspaceId: w.id, workspace: w.name, order: o, gross: m.gross, refunded: m.refunded, flag, dueAt: o.dispute?.status === 'needs_response' ? o.dispute.respondBy : null };
+      return { id: `${w.id}:${o.id}`, workspaceId: w.id, workspace: w.name, currency, order: o, gross: m.gross, refunded: m.refunded, flag, dueAt: o.dispute?.status === 'needs_response' ? o.dispute.respondBy : null };
     })
     );
   }, [workspaces]);
@@ -67,21 +79,21 @@ export function AdminOrders() {
   const refunds = rows.filter((r) => r.flag === 'refund');
   const stuck = rows.filter((r) => r.flag === 'stuck');
   const list = tab === 'dispute' ? disputes : tab === 'refund' ? refunds : stuck;
-  const atRisk = disputes.reduce((s, r) => s + (r.order.dispute?.amountNgn ?? 0), 0);
+  const atRisk = formatTotals(disputes.map((r) => ({ currency: r.currency, amount: r.order.dispute?.amountNgn ?? 0 })));
   const dueSoon = disputes.filter((r) => r.dueAt && Date.parse(r.dueAt) - Date.now() < 2 * 86400000).length;
 
   const saveNote = () => {
     if (!noteFor || note.trim().length < 3) return;
     const entry = { id: uid('onote'), at: new Date().toISOString(), by: staffActor(), text: note.trim() };
     setStore((s) => audit({ ...s, orderNotes: { ...s.orderNotes, [noteFor.id]: [entry, ...(s.orderNotes[noteFor.id] ?? [])] } }, { area: 'orders', action: 'Added staff note', target: `${noteFor.workspace} · #${noteFor.order.number}`, reason: note.trim() }));
-    toast.success('Note added', { description: 'Only KUBICU staff can see it.' });
+    toast.success(tr('Note added'), { description: tr('Only KUBICU staff can see it.') });
     setNoteFor(null);
     setNote('');
   };
 
   const sendMessage = (reason: string) => {
     if (!messageFor || message.trim().length < 10) {
-      toast.error('Write the message to the seller first');
+      toast.error(tr('Write the message to the seller first'));
       return;
     }
     const r = messageFor;
@@ -111,7 +123,7 @@ export function AdminOrders() {
         { area: 'orders', action: 'Messaged seller about an order', target: `${r.workspace} · #${r.order.number}`, reason }
       );
     });
-    toast.success('Message sent to the seller', { description: 'It appears in their Help → My requests, and in Support here.' });
+    toast.success(tr('Message sent to the seller'), { description: tr('It appears in their Help → My requests, and in Support here.') });
     setMessageFor(null);
     setMessage('');
   };
@@ -119,12 +131,12 @@ export function AdminOrders() {
   const columns: DataColumn<Row>[] = [
   {
     key: 'order',
-    header: 'Order',
+    header: tr('Order'),
     sortValue: (r) => r.order.number,
     render: (r) =>
     <span className="min-w-0">
           <span className="block truncate font-semibold text-fg">
-            #{r.order.number} · {r.order.customer.name || 'Customer'}
+            #{r.order.number} · {r.order.customer.name || tr('Customer')}
           </span>
           <span className="block truncate text-caption text-fg-subtle">
             {r.workspace} · {formatRelative(r.order.createdAt)}
@@ -134,23 +146,23 @@ export function AdminOrders() {
   },
   {
     key: 'state',
-    header: tab === 'dispute' ? 'Dispute' : tab === 'refund' ? 'Refunded' : 'Waiting',
+    header: tab === 'dispute' ? tr('Dispute') : tab === 'refund' ? tr('Refunded') : tr('Waiting'),
     render: (r) =>
     tab === 'dispute' && r.order.dispute ?
     <span className="flex flex-col gap-0.5">
             <Badge tone={r.order.dispute.status === 'needs_response' ? 'warning' : 'info'} dot>
-              {disputeLabels[r.order.dispute.status]}
+              {tr(disputeLabels[r.order.dispute.status])}
             </Badge>
-            {r.dueAt && <span className="text-caption text-fg-subtle">Respond by {formatTimestamp(r.dueAt)}</span>}
+            {r.dueAt && <span className="text-caption text-fg-subtle">{tr('Respond by {date}', { date: formatTimestamp(r.dueAt) })}</span>}
           </span> :
     tab === 'refund' ?
-    <span className="tabular-nums text-fg">{formatNgn(r.refunded)}</span> :
+    <span className="tabular-nums text-fg">{formatMoney(r.refunded, r.currency)}</span> :
 
-    <span className="text-fg-muted">Payment pending {formatRelative(r.order.createdAt).replace(/ ago$/, '')}</span>
+    <span className="text-fg-muted">{tr('Payment pending since {date}', { date: formatTimestamp(r.order.createdAt) })}</span>
 
   },
-  { key: 'amount', header: tab === 'dispute' ? 'Disputed' : 'Order total', align: 'right', sortValue: (r) => tab === 'dispute' ? r.order.dispute?.amountNgn ?? 0 : r.gross, render: (r) => <span className="font-semibold tabular-nums text-fg">{formatNgn(tab === 'dispute' ? r.order.dispute?.amountNgn ?? 0 : r.gross)}</span> },
-  { key: 'notes', header: 'Notes', align: 'right', hideOnMobile: true, render: (r) => <span className="tabular-nums text-fg-subtle">{store.orderNotes[r.id]?.length || '—'}</span> },
+  { key: 'amount', header: tab === 'dispute' ? tr('Disputed') : tr('Order total'), align: 'right', sortValue: (r) => tab === 'dispute' ? r.order.dispute?.amountNgn ?? 0 : r.gross, render: (r) => <span className="font-semibold tabular-nums text-fg">{formatMoney(tab === 'dispute' ? r.order.dispute?.amountNgn ?? 0 : r.gross, r.currency)}</span> },
+  { key: 'notes', header: tr('Notes'), align: 'right', hideOnMobile: true, render: (r) => <span className="tabular-nums text-fg-subtle">{store.orderNotes[r.id]?.length || '—'}</span> },
   {
     key: 'actions',
     header: '',
@@ -158,79 +170,80 @@ export function AdminOrders() {
     render: (r) =>
     <Menu
       items={[
-      { id: 'view', label: 'View details', icon: EyeIcon, onSelect: () => setOpen(r) },
-      { id: 'note', label: 'Add staff note…', icon: StickyNoteIcon, onSelect: () => setNoteFor(r) },
-      { id: 'msg', label: 'Message the seller…', icon: MessageSquareIcon, onSelect: () => setMessageFor(r) }]
+      { id: 'view', label: tr('View details'), icon: EyeIcon, onSelect: () => setOpen(r) },
+      { id: 'note', label: tr('Add staff note…'), icon: StickyNoteIcon, onSelect: () => setNoteFor(r) },
+      { id: 'msg', label: tr('Message the seller…'), icon: MessageSquareIcon, onSelect: () => setMessageFor(r) }]
       }
-      trigger={(props) => <IconButton {...props} size="sm" icon={MoreHorizontalIcon} label={`Actions for order #${r.order.number}`} />} />
+      trigger={(props) => <IconButton {...props} size="sm" icon={MoreHorizontalIcon} label={tr('Actions for order #{number}', { number: r.order.number })} />} />
 
 
   }];
 
 
   const detail = open && rows.find((r) => r.id === open.id);
+  const evidence = detail?.order.dispute?.evidence.length ?? 0;
 
   return (
     <div className="mx-auto w-full max-w-6xl px-5 py-8 md:px-10 md:py-12">
       <PageHeader title="Orders & disputes" description="Help sellers through disputes, large refunds and stuck payments. Staff can add notes and message the seller, but never refund or move money themselves." />
 
       <StatGroup columns={3} className="mt-8 items-end border-b border-line pb-6">
-        <Stat primary label="Disputed amount" value={formatNgn(atRisk)} hint={`${disputes.length} open dispute${disputes.length === 1 ? '' : 's'}`} />
-        <Stat label="Due in 2 days" value={<span className={dueSoon ? 'text-warning' : undefined}>{dueSoon}</span>} hint="Seller response deadline" />
-        <Stat label="Stuck payments" value={stuck.length} hint={`Pending over ${STUCK_HOURS} h`} />
+        <Stat primary label={tr('Disputed amount')} value={atRisk} hint={tr('Open disputes: {n}', { n: disputes.length })} />
+        <Stat label={tr('Due in 2 days')} value={<span className={dueSoon ? 'text-warning' : undefined}>{dueSoon}</span>} hint={tr('Seller response deadline')} />
+        <Stat label={tr('Stuck payments')} value={stuck.length} hint={tr('Pending over {hours} h', { hours: STUCK_HOURS })} />
       </StatGroup>
 
       <div className="mt-8 flex flex-col gap-5">
         <Tabs<Tab>
           idPrefix="admin-orders"
-          ariaLabel="Order queues"
+          ariaLabel={tr('Order queues')}
           value={tab}
           onChange={setTab}
           items={[
-          { id: 'dispute', label: 'Disputes', badge: disputes.length || undefined },
-          { id: 'refund', label: `Refunds over ${formatNgn(LARGE_REFUND)}`, badge: refunds.length || undefined },
-          { id: 'stuck', label: 'Stuck payments', badge: stuck.length || undefined }]
+          { id: 'dispute', label: tr('Disputes'), badge: disputes.length || undefined },
+          { id: 'refund', label: tr('Large refunds'), badge: refunds.length || undefined },
+          { id: 'stuck', label: tr('Stuck payments'), badge: stuck.length || undefined }]
           } />
         
+        {tab === 'refund' && <p className="max-w-3xl text-label text-fg-muted">{tr('Refunds of {amount} or more in the last 30 days — for shops in other currencies, the same amount at the day’s rate.', { amount: formatNgn(LARGE_REFUND) })}</p>}
         <div role="tabpanel" id={`admin-orders-panel-${tab}`} aria-labelledby={`admin-orders-tab-${tab}`}>
           <DataTable
-            caption="Orders needing staff attention"
+            caption={tr('Orders needing staff attention')}
             rows={list}
             columns={columns}
             filterText={(r) => `${r.order.number} ${r.order.customer.name} ${r.workspace}`}
-            filterPlaceholder="Search order, customer or workspace"
-            emptyTitle={tab === 'dispute' ? 'No open disputes' : tab === 'refund' ? 'No large refunds in 30 days' : 'No stuck payments'}
-            emptyDescription="Queues fill from every workspace on this device." />
+            filterPlaceholder={tr('Search order, customer or workspace')}
+            emptyTitle={tab === 'dispute' ? tr('No open disputes') : tab === 'refund' ? tr('No large refunds in 30 days') : tr('No stuck payments')}
+            emptyDescription={tr('Queues fill from every workspace on this device.')} />
           
         </div>
       </div>
 
-      <Sheet open={!!detail} onClose={() => setOpen(null)} side="right" title={detail ? `Order #${detail.order.number}` : 'Order'} description={detail ? `${detail.workspace} · ${formatTimestamp(detail.order.createdAt)}` : undefined}>
+      <Sheet open={!!detail} onClose={() => setOpen(null)} side="right" title={detail ? tr('Order #{number}', { number: detail.order.number }) : tr('Order')} description={detail ? `${detail.workspace} · ${formatTimestamp(detail.order.createdAt)}` : undefined}>
         {detail &&
         <div className="flex flex-col gap-6 px-5 py-5">
-            <DetailSection title="Order">
+            <DetailSection title={tr('Order')}>
               <DetailList
               items={[
-              { label: 'Customer', value: detail.order.customer.name || '—' },
-              { label: 'Total', value: <span className="font-semibold tabular-nums">{formatNgn(detail.gross)}</span> },
-              { label: 'Payment', value: <span className="capitalize">{detail.order.paymentStatus.replace('_', ' ')}</span> },
-              { label: 'Refunded', value: <span className="tabular-nums">{detail.refunded ? formatNgn(detail.refunded) : '—'}</span> }]
+              { label: tr('Customer'), value: detail.order.customer.name || '—' },
+              { label: tr('Total'), value: <span className="font-semibold tabular-nums">{formatMoney(detail.gross, detail.currency)}</span> },
+              { label: tr('Payment'), value: tr(paymentLabel(detail.order.paymentStatus)) },
+              { label: tr('Refunded'), value: <span className="tabular-nums">{detail.refunded ? formatMoney(detail.refunded, detail.currency) : '—'}</span> }]
               } />
             
             </DetailSection>
             {detail.order.dispute &&
-          <DetailSection title={`Dispute · ${disputeLabels[detail.order.dispute.status]}`}>
+          <DetailSection title={`${tr('Dispute')} · ${tr(disputeLabels[detail.order.dispute.status])}`}>
                 <div>
-                <p className="text-label text-fg-muted">“{detail.order.dispute.reason}”</p>
-                <p className="mt-2 text-caption text-fg-subtle">
-                  {formatNgn(detail.order.dispute.amountNgn)} · opened {formatRelative(detail.order.dispute.openedAt)} · {detail.order.dispute.evidence.length} file{detail.order.dispute.evidence.length === 1 ? '' : 's'} of evidence
-                  {detail.order.dispute.response ? ' · seller has responded' : ' · no response yet'}
-                </p>
+                  <p className="text-label text-fg-muted">“{detail.order.dispute.reason}”</p>
+                  <p className="mt-2 text-caption text-fg-subtle">
+                    {formatMoney(detail.order.dispute.amountNgn, detail.currency)} · {tr('opened {when}', { when: formatRelative(detail.order.dispute.openedAt) })} · {tr('Evidence files: {n}', { n: evidence })} · {detail.order.dispute.response ? tr('seller has responded') : tr('no response yet')}
+                  </p>
                 </div>
               </DetailSection>
           }
             <DetailSection
-            title="Staff notes"
+            title={tr('Staff notes')}
             actions={
             <Button size="sm" variant="secondary" leadingIcon={StickyNoteIcon} onClick={() => setNoteFor(detail)}>
                   Add note
@@ -238,7 +251,7 @@ export function AdminOrders() {
             }>
             
               {(store.orderNotes[detail.id] ?? []).length === 0 ?
-            <p className="text-caption text-fg-subtle">No notes yet. Only staff can see notes.</p> :
+            <p className="text-caption text-fg-subtle">{tr('No notes yet. Only staff can see notes.')}</p> :
 
             <ul className="flex flex-col gap-3">
                   {store.orderNotes[detail.id].map((n) =>
@@ -260,8 +273,8 @@ export function AdminOrders() {
         open={!!noteFor}
         onClose={() => setNoteFor(null)}
         size="sm"
-        title={`Note on order #${noteFor?.order.number ?? ''}`}
-        description="Visible to KUBICU staff only, and kept in the audit log."
+        title={tr('Note on order #{number}', { number: noteFor?.order.number ?? '' })}
+        description={tr('Visible to KUBICU staff only, and kept in the audit log.')}
         footer={
         <>
             <Button variant="secondary" onClick={() => setNoteFor(null)}>
@@ -273,12 +286,25 @@ export function AdminOrders() {
           </>
         }>
         
-        <TextArea id="ao-note" label="Note" rows={4} value={note} onChange={(e) => setNote(e.target.value)} placeholder="e.g. Seller sent courier proof by email — attach to response" />
+        <TextArea id="ao-note" label={tr('Note')} rows={4} value={note} onChange={(e) => setNote(e.target.value)} placeholder={tr('e.g. Seller sent courier proof by email — attach to response')} />
       </Dialog>
 
-      <ReasonDialog open={!!messageFor} onClose={() => setMessageFor(null)} onConfirm={sendMessage} title={`Message ${messageFor?.workspace ?? 'the seller'}`} description="Opens a support request in their Help → My requests. Write the message, then why you’re contacting them (for the audit log)." confirmLabel="Send message">
-        <TextArea id="ao-message" label="Message to the seller" rows={4} value={message} onChange={(e) => setMessage(e.target.value)} placeholder={`e.g. A buyer has disputed order #${messageFor?.order.number ?? ''}. Please add delivery proof in Orders before the deadline.`} />
+      <ReasonDialog
+        open={!!messageFor}
+        onClose={() => setMessageFor(null)}
+        onConfirm={sendMessage}
+        title={messageFor ? tr('Message {workspace}', { workspace: messageFor.workspace }) : tr('Message the seller')}
+        description={tr('Opens a support request in their Help → My requests. Write the message, then why you’re contacting them (for the audit log).')}
+        confirmLabel={tr('Send message')}>
+        
+        <TextArea id="ao-message" label={tr('Message to the seller')} rows={4} value={message} onChange={(e) => setMessage(e.target.value)} placeholder={tr('e.g. A buyer has disputed order #{number}. Please add delivery proof in Orders before the deadline.', { number: messageFor?.order.number ?? '' })} />
       </ReasonDialog>
     </div>);
 
+}
+
+/** Payment status in words — "partially_refunded" → "Partially refunded". */
+function paymentLabel(status: string): string {
+  const s = status.replace(/_/g, ' ');
+  return s.charAt(0).toUpperCase() + s.slice(1);
 }

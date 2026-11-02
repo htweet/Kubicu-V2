@@ -34,7 +34,7 @@ import { PageSurface } from '../components/blocks/PageSurface';
 import { BlockRenderer, spacingClass } from '../components/blocks/BlockRenderer';
 import { PublicFooter } from '../components/blocks/PublicFooter';
 import { SkipLink } from '../components/ui/SkipLink';
-import { LocaleProvider } from '../contexts/LocaleContext';
+import { LocaleProvider, useT } from '../contexts/LocaleContext';
 import { useVisitorLang } from '../hooks/useVisitorLang';
 import { flagOn, useAdminStore } from '../utils/admin/store';
 import { CheckoutSheet } from '../components/checkout/CheckoutSheet';
@@ -251,9 +251,10 @@ export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
     <Unavailable
       handle={`${handle}/${view === 'shop' ? STOREFRONT_PATH : rawPath ?? ''}`}
       title="This page doesn’t exist"
-      body={`${resolved.doc.title} doesn’t have a page at this address. It may have been renamed or removed.`}
+      body="{name} doesn’t have a page at this address. It may have been renamed or removed."
       homeHref={`${pageHref(handle, '')}${isDraft ? '?draft=1' : ''}`}
-      homeLabel={`Go to ${resolved.doc.title}`} />);
+      homeLabel="Go to {name}"
+      name={resolved.doc.title} />);
 
 
   const draftQs = isDraft ? '?draft=1' : '';
@@ -674,28 +675,33 @@ function buildRenderList(blocks: Block[], members: MembersValue | null): RenderI
   return out;
 }
 
+/**
+ * Shown instead of a published page that's missing, removed or paused. Title, body and button are English phrases
+ * that go through the translator (D503); `name` fills {name} with the seller's page title.
+ */
 export function Unavailable({
   handle,
   title = 'This page isn’t available',
-  body,
+  body = 'It may not be published yet, or the owner may have changed its link. Check the address and try again.',
   homeHref = '/',
-  homeLabel = 'Create your own KUBICU page'
+  homeLabel = 'Create your own KUBICU page',
+  name = ''
 
 
 
 
 
 
-}: {handle: string;title?: string;body?: string;homeHref?: string;homeLabel?: string;}) {
+
+}: {handle: string;title?: string;body?: string;homeHref?: string;homeLabel?: string;name?: string;}) {
+  const { t } = useT();
   return (
     <main className="flex min-h-screen w-full flex-col items-center justify-center bg-[#F4F1EA] px-6 text-center text-[#171717]">
       <p className="text-[13px] font-medium text-[#6B6459]">kub.icu/{handle}</p>
-      <h1 className="mt-3 font-display text-[28px] font-semibold leading-tight tracking-[-0.022em]">{title}</h1>
-      <p className="mt-3 max-w-sm text-[15px] leading-relaxed text-[#5E574D]">
-        {body ?? 'It may not be published yet, or the owner may have changed its link. Check the address and try again.'}
-      </p>
+      <h1 className="mt-3 font-display text-[28px] font-semibold leading-tight tracking-[-0.022em]">{t(title)}</h1>
+      <p className="mt-3 max-w-sm text-[15px] leading-relaxed text-[#5E574D]">{t(body, { name })}</p>
       <Link to={homeHref} className="mt-8 inline-flex h-12 items-center rounded-full bg-[#171717] px-6 text-[15px] font-semibold text-[#F4F1EA]">
-        {homeLabel}
+        {t(homeLabel, { name })}
       </Link>
     </main>);
 

@@ -2,6 +2,18 @@ import { columns, type Row3 } from './build';
 
 /** Sign-in, sign-up and Your account — pass 1 of the Kiswahili, Twi and isiZulu drafts (D357). */
 const rows: Row3[] = [
+// Country rollout: sign-up country, closed-country screen, Settings hint (D494)
+['Where is your business?', 'Biashara yako iko wapi?', 'Wo adwuma no wɔ he?', 'Lukuphi ibhizinisi lakho?'],
+['Sets your currency, phone code and how customers pay. You can change it later in Settings.', 'Huweka sarafu yako, msimbo wa simu na jinsi wateja wanavyolipa. Unaweza kuibadilisha baadaye kwenye Mipangilio.', 'Ɛhyehyɛ wo sika, fon kood ne sɛnea adetɔfoɔ tua ka. Wobɛtumi asesa akyiri yi wɔ Nhyehyɛeɛ mu.', 'Isetha imali yakho, ikhodi yocingo nokuthi amakhasimende akhokha kanjani. Ungakushintsha kamuva kuZilungiselelo.'],
+['Choose a country where KUBICU is open', 'Chagua nchi ambako KUBICU iko wazi', 'Paw ɔman a KUBICU abue wɔ hɔ', 'Khetha izwe lapho i-KUBICU ivulekile khona'],
+['KUBICU isn’t open for businesses in {country} yet', 'KUBICU bado haijafunguliwa kwa biashara nchini {country}', 'KUBICU mmuee mma nnwuma wɔ {country} ɛ', 'I-KUBICU ayikavulelwa amabhizinisi e-{country}'],
+['We plan to open there on {date}. Buyers can already shop on KUBICU pages.', 'Tunapanga kufungua huko tarehe {date}. Wanunuzi tayari wanaweza kununua kwenye kurasa za KUBICU.', 'Yɛreyɛ nhyehyɛeɛ sɛ yɛbɛbue hɔ {date}. Adetɔfoɔ betumi atɔ adeɛ wɔ KUBICU nkrataafa so dada.', 'Sihlela ukuvula lapho ngo-{date}. Abathengi sebengathenga emakhasini e-KUBICU.'],
+['We’re opening one country at a time. Buyers can already shop on KUBICU pages.', 'Tunafungua nchi moja baada ya nyingine. Wanunuzi tayari wanaweza kununua kwenye kurasa za KUBICU.', 'Yɛrebue ɔman baako baako. Adetɔfoɔ betumi atɔ adeɛ wɔ KUBICU nkrataafa so dada.', 'Sivula izwe elilodwa ngesikhathi. Abathengi sebengathenga emakhasini e-KUBICU.'],
+['KUBICU isn’t open in {country} yet', 'KUBICU bado haijafunguliwa nchini {country}', 'KUBICU mmuee wɔ {country} ɛ', 'I-KUBICU ayikavulwa e-{country}'],
+['{workspace} sells from {country}. We’re opening one country at a time, so this workspace is closed for now. Your published page stays live and nothing is deleted.', '{workspace} inauza kutoka {country}. Tunafungua nchi moja baada ya nyingine, kwa hiyo eneo hili la kazi limefungwa kwa sasa. Ukurasa wako uliochapishwa unabaki hewani na hakuna kinachofutwa.', '{workspace} tɔn firi {country}. Yɛrebue ɔman baako baako, enti saa adwumayɛbea yi ato mu seesei. Wo krataafa a woatintim no da so wɔ hɔ, na wɔmpopa biribiara.', '{workspace} ithengisa isuka e-{country}. Sivula izwe elilodwa ngesikhathi, ngakho le ndawo yokusebenza ivaliwe okwamanje. Ikhasi lakho elishicilelwe lisasebenza futhi akukho okususwayo.'],
+['We plan to open there on {date}.', 'Tunapanga kufungua huko tarehe {date}.', 'Yɛreyɛ nhyehyɛeɛ sɛ yɛbɛbue hɔ {date}.', 'Sihlela ukuvula lapho ngo-{date}.'],
+['Your other workspaces', 'Maeneo yako mengine ya kazi', 'Wo adwumayɛbea foforɔ', 'Ezinye izindawo zakho zokusebenza'],
+['Countries KUBICU hasn’t opened yet can’t be chosen.', 'Nchi ambazo KUBICU bado haijafungua haziwezi kuchaguliwa.', 'Wontumi mpaw aman a KUBICU mmuee ɛ.', 'Amazwe i-KUBICU engakawavuli awakhethwa.'],
 // Sign-in and sign-up frame
 ['KUBICU home', 'Mwanzo wa KUBICU', 'KUBICU fie', 'Ikhaya le-KUBICU'],
 ['draft', 'rasimu', 'nhyehyɛe', 'okusalungiswa'],

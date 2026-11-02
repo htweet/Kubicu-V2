@@ -4,6 +4,12 @@ import type { WorkspacePlan } from './plan';
 
 export type FlagId = 'ai_page_setup' | 'storefront' | 'verified_tick';
 
+/** One module or add-on's availability switch (D464). */
+export interface ModuleFlag {
+  on: boolean;
+  updatedAt: string;
+}
+
 export interface FlagState {
   /** Kill switch: off means off for everyone, whatever the plans say. */
   on: boolean;
@@ -84,7 +90,7 @@ export interface AuditEntry {
   id: string;
   at: string;
   actor: string;
-  area: 'tenants' | 'flags' | 'moderation' | 'support' | 'announcements' | 'pages' | 'orders' | 'data' | 'staff' | 'appeals' | 'payments' | 'escrow' | 'incidents' | 'approvals' | 'access' | 'extensions' | 'plans' | 'ai' | 'integrations' | 'localisation';
+  area: 'tenants' | 'flags' | 'moderation' | 'support' | 'announcements' | 'pages' | 'orders' | 'data' | 'staff' | 'appeals' | 'payments' | 'escrow' | 'sponsorships' | 'incidents' | 'approvals' | 'access' | 'extensions' | 'plans' | 'ai' | 'integrations' | 'localisation';
   action: string;
   target: string;
   reason: string;
@@ -255,6 +261,20 @@ export interface AdminStore {
   incidents: Incident[];
   /** Extension versions KUBICU has pulled platform-wide (D130). Keyed by extension id. */
   extensionPulls: Record<string, ExtensionPull>;
+  /**
+   * Module and add-on availability (D464). Keyed `nav:{navId}` for workspace modules and `ext:{extensionId}` for
+   * Marketplace add-ons. Missing = available. Off = still visible to owners, but "Currently not available".
+   */
+  modules?: Record<string, ModuleFlag>;
+  /**
+   * Country rollout (D494). Missing = open. Closed = new sign-ups from that country are turned away and its
+   * workspaces can't be opened; published pages stay live for buyers. Nigeria is the launch market and never closes.
+   */
+  countries?: Partial<Record<import('./country').CountryCode, CountryRollout>>;
+  /** Example figures changed by staff, by key from `data/adjustableFigures.ts` (D465). Missing = the default. */
+  figures?: Record<string, number>;
+  /** Plan names and "intended for" lines changed by staff (D465). */
+  planNames?: Partial<Record<WorkspacePlan, {name?: string;intendedFor?: string;}>>;
   /** Automatic moderation flags staff marked as fine. Keyed `${handle}:${ruleId}`. */
   autoFlagsCleared: Record<string, {at: string;by: string;reason: string;}>;
   /** Approved catalogue changes (D135). Apply to new sign-ups and at each workspace's next renewal. */
@@ -273,8 +293,38 @@ export interface AdminStore {
   pausedFundraisers?: Record<string, {reason: string;at: string;by: string;}>;
   /** Verified workspaces whose public tick staff have hidden without withdrawing verification (D254). Keyed by workspace id. */
   verifiedTickOff?: Record<string, {reason: string;at: string;by: string;}>;
+  /** Staff-side state for each customer person, keyed by `personKey` (D472). */
+  people?: Record<string, PersonStaffState>;
+  /** Internal staff notes on a workspace, newest first (D472). Never shown to the customer. */
+  workspaceNotes?: Record<string, StaffNote[]>;
   /** Fundraisers started on this device, so staff are told about new ones (D179). */
   fundraisers?: {handle: string;workspaceId: string;workspaceName: string;name: string;goalNgn: number;createdAt: string;}[];
+}
+
+/** One country's rollout switch (D494). */
+export interface CountryRollout {
+  open: boolean;
+  /** Planned opening day (yyyy-mm-dd) shown to people turned away. Informational only — opening is still a switch. */
+  opensOn?: string;
+  updatedAt: string;
+}
+
+/** An internal note staff leave on a person or workspace (D472). */
+export interface StaffNote {
+  id: string;
+  text: string;
+  at: string;
+  by: string;
+}
+
+/** What staff have done to one customer person (D472). */
+export interface PersonStaffState {
+  /** Locked accounts can't sign in to any workspace until unlocked. */
+  locked?: {reason: string;at: string;by: string;} | null;
+  signedOutAt?: string;
+  twoStepResetAt?: string;
+  verificationSentAt?: string;
+  notes?: StaffNote[];
 }
 
 export interface PlanOverride {

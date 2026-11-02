@@ -7,10 +7,13 @@ import { PageChip } from './BlockTitle';
 import { MediaImage } from '../media/MediaImage';
 import { SectionHeading } from './SectionHeading';
 import { cardRadius, fontsFor, mix } from './pageStyle';
+import { useT } from '../../contexts/LocaleContext';
 
 /** Properties, stays or experiences (D153, refined in D157). Sample cards carry "Example listing" until edited. */
 export function ListingsBlock({ block, theme, mode }: BlockProps<'listings'>) {
+  const { t: tr } = useT();
   const c = block.content;
+  const cta = c.ctaLabel || tr('Enquire');
   const items = c.items.filter((i) => i.title.trim());
   if (items.length === 0) return mode === 'edit' ? <BlockPlaceholder icon={HomeIcon} title="Add listings" hint="Photo, price, key facts and location" theme={theme} tall /> : null;
   const display = fontsFor(theme).display;
@@ -21,12 +24,12 @@ export function ListingsBlock({ block, theme, mode }: BlockProps<'listings'>) {
       <ul className="grid gap-x-6 gap-y-12" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 290px), 1fr))' }}>
         {items.map((i) =>
         <li key={i.id} className="flex">
-            <PageAction mode={mode} href={i.url} className="group flex w-full flex-col" ariaLabel={`${c.ctaLabel || 'Enquire'}: ${i.title}`}>
+            <PageAction mode={mode} href={i.url} className="group flex w-full flex-col" ariaLabel={`${cta}: ${i.title}`}>
               <div className="relative aspect-[4/3] overflow-hidden" style={{ borderRadius: radius, background: mix(theme.text, 6, theme.background) }}>
                 {i.imageUrl && <MediaImage src={i.imageUrl} alt={i.imageAlt} className="block h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.03]" />}
                 {i.example &&
               <span className="absolute left-3 top-3">
-                    <PageChip theme={theme}>Example listing</PageChip>
+                    <PageChip theme={theme}>{tr('Example listing')}</PageChip>
                   </span>
               }
                 {i.price &&
@@ -46,7 +49,7 @@ export function ListingsBlock({ block, theme, mode }: BlockProps<'listings'>) {
                 </p>
             }
               <span className="mt-4 text-[14px] font-semibold underline decoration-1 underline-offset-4" style={{ color: theme.text }}>
-                {c.ctaLabel || 'Enquire'}
+                {cta}
               </span>
             </PageAction>
           </li>

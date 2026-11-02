@@ -16,12 +16,31 @@ export interface AccountNumberRule {
   label: string;
 }
 
+/** One mobile money network in a country with several (Ghana, D433). */
+export interface MobileNetwork {
+  id: 'mtn' | 'telecel' | 'airteltigo';
+  name: string;
+  approveHint: string;
+  /** Local number starts used to guess the network from the number. */
+  prefixes: string[];
+  /** The buyer makes a 6-digit voucher on their phone first and types it in (Telecel Cash). */
+  voucher?: boolean;
+}
+
 /** A mobile money wallet that can receive payments and payouts. */
 export interface MobileMoneyInfo {
   id: 'mpesa' | 'momo';
   name: string;
   /** What the buyer approves on their phone. */
   approveHint: string;
+  /** Ghana: the buyer picks their network (D433). */
+  networks?: MobileNetwork[];
+  /** Kenya: pay by Paybill if the prompt doesn't arrive (D433). Example number. */
+  paybill?: string;
+  /** What the receipt calls the payment's code, e.g. "M-Pesa code". */
+  codeLabel: string;
+  /** Payouts to this wallet usually arrive within… */
+  payoutArrival: string;
 }
 
 export interface CountryInfo {

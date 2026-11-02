@@ -12,6 +12,7 @@ import { Dialog } from '../ui/Dialog';
 import { Button } from '../ui/Button';
 import { TextInput } from '../ui/TextInput';
 import { SpaceAccessField } from './SpaceAccessField';
+import { BranchAccessField } from './BranchAccessField';
 import { RolePicker } from './RolePicker';
 import { useT } from '../../contexts/LocaleContext';
 
@@ -23,6 +24,7 @@ export function InviteDialog({ open, onClose }: {open: boolean;onClose: () => vo
   const [contact, setContact] = useState('');
   const [role, setRole] = useState<Role>('editor');
   const [spaceIds, setSpaceIds] = useState<string[] | null>(null);
+  const [branchId, setBranchId] = useState<string | null>(null);
   const [tried, setTried] = useState(false);
   const [sent, setSent] = useState<string | null>(null);
 
@@ -31,6 +33,7 @@ export function InviteDialog({ open, onClose }: {open: boolean;onClose: () => vo
     setContact('');
     setRole('editor');
     setSpaceIds(null);
+    setBranchId(null);
     setTried(false);
     setSent(null);
   }, [open]);
@@ -49,7 +52,7 @@ export function InviteDialog({ open, onClose }: {open: boolean;onClose: () => vo
   const send = () => {
     setTried(true);
     if (error) return;
-    const inv = team.invite({ contact: contact.trim(), role, spaceIds: role === 'admin' ? null : spaceIds });
+    const inv = team.invite({ contact: contact.trim(), role, spaceIds: role === 'admin' ? null : spaceIds, branchId: role === 'admin' ? null : branchId });
     if (!inv) {
       toast.error(tr('No seats left'), { description: tr('Free a seat or upgrade to invite more people.') });
       return;
@@ -102,6 +105,7 @@ export function InviteDialog({ open, onClose }: {open: boolean;onClose: () => vo
           <TextInput id="invite-contact" label="Email or phone" value={contact} placeholder={`name@example.com or ${dialPrefix()}`} error={tried ? error || undefined : undefined} onChange={(e) => setContact(e.target.value)} />
           <RolePicker value={role} onChange={setRole} />
           {role !== 'admin' && <SpaceAccessField value={spaceIds} onChange={setSpaceIds} />}
+          {role !== 'admin' && <BranchAccessField id="invite-branch" value={branchId} onChange={setBranchId} />}
           {role === 'admin' && <p className="text-caption text-fg-muted">{tr('Admins can always edit every space.')}</p>}
           <p className="text-caption text-fg-subtle">{tr(roleInfo[role].summary)}</p>
         </div>

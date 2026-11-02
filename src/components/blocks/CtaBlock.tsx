@@ -5,12 +5,14 @@ import { BlockPlaceholder } from './BlockPlaceholder';
 import { PageAction } from './PageAction';
 import { buttonStyle, cardStyle, headingStyle, mix } from './pageStyle';
 import { cn } from '../../utils/cn';
+import { useT } from '../../contexts/LocaleContext';
 
 /**
  * Call to action (D169): one main ask, an optional quieter second. Band = full colour panel,
  * Card = theme surface, Split = headline left, buttons right on wide screens.
  */
 export function CtaBlock({ block, theme, mode }: BlockProps<'cta'>) {
+  const { t: tr } = useT();
   const c = block.content;
   if (!c.title.trim() && !c.primaryLabel.trim()) return mode === 'edit' ? <BlockPlaceholder icon={MousePointerClickIcon} title="Add your call to action" hint="A headline and one clear button" theme={theme} /> : null;
   const band = c.layout === 'band';
@@ -21,7 +23,7 @@ export function CtaBlock({ block, theme, mode }: BlockProps<'cta'>) {
   <div className={cn('flex flex-wrap gap-3', c.layout !== 'split' && 'justify-center')}>
       {(hasPrimary || mode === 'edit') &&
     <PageAction mode={mode} href={c.primaryUrl || '#'} className="inline-flex h-12 items-center gap-2 px-6 text-[15px] font-semibold" style={buttonStyle(t, 'featured')}>
-          {c.primaryLabel || 'Button'} <ArrowRightIcon size={16} aria-hidden />
+          {c.primaryLabel || tr('Button')} <ArrowRightIcon size={16} aria-hidden />
         </PageAction>
     }
       {hasSecondary &&

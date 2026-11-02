@@ -5,11 +5,24 @@ import { BlockPlaceholder } from './BlockPlaceholder';
 import { SectionHeading } from './SectionHeading';
 import { PageAction } from './PageAction';
 import { accentOf, fontsFor, mix } from './pageStyle';
+import { useT } from '../../contexts/LocaleContext';
 
-const kindLabels = { article: 'Article', interview: 'Interview', book: 'Book', podcast: 'Podcast', talk: 'Talk' } as const;
+const kindNames = { article: 'Article', interview: 'Interview', book: 'Book', podcast: 'Podcast', talk: 'Talk' } as const;
 
-/** Press & publications (D169): an index of outlet, headline and date — each row links to the source. */
+/**
+ * Press & publications (D169): an index of outlet, headline and date — each row links to the source.
+ * Kind names follow the visitor's language (D506); outlets, headlines and dates stay as written.
+ */
 export function PressBlock({ block, theme, mode }: BlockProps<'press'>) {
+  const { t: tr, lang } = useT();
+  // "Book" the noun has its own key so it doesn't collide with "Book" the booking button.
+  const kindLabels = {
+    article: tr(kindNames.article),
+    interview: tr(kindNames.interview),
+    book: lang === 'en' ? kindNames.book : tr('Book (publication)'),
+    podcast: tr(kindNames.podcast),
+    talk: tr(kindNames.talk)
+  };
   const c = block.content;
   const items = c.items.filter((i) => i.title.trim() || i.outlet.trim());
   if (items.length === 0) return mode === 'edit' ? <BlockPlaceholder icon={NewspaperIcon} title="Add press or publications" hint="Link each one to where it was published" theme={theme} /> : null;

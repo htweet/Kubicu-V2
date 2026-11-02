@@ -5,6 +5,7 @@ import { XIcon } from 'lucide-react';
 import type { PageTheme } from '../../types/page';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { cardRadius, fontsFor, mix } from './pageStyle';
+import { useT } from '../../contexts/LocaleContext';
 
 interface PageOverlayProps {
   open: boolean;
@@ -19,6 +20,7 @@ interface PageOverlayProps {
 
 /** Visitor-facing overlay styled by the page theme (not KUBICU chrome). Focus stays inside while open (D76). */
 export function PageOverlay({ open, onClose, theme, label, variant = 'sheet', children, onKeyDown }: PageOverlayProps) {
+  const { t: tr } = useT();
   const panelRef = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
   const onCloseRef = useRef(onClose);
@@ -88,7 +90,7 @@ export function PageOverlay({ open, onClose, theme, label, variant = 'sheet', ch
             type="button"
             data-autofocus
             onClick={onClose}
-            aria-label="Close"
+            aria-label={tr('Close')}
             className="absolute right-3 top-3 z-10 flex h-11 w-11 items-center justify-center rounded-full"
             style={viewer ? { background: 'rgba(255,255,255,0.12)', color: '#fff' } : { background: theme.surface, color: theme.text }}>
             

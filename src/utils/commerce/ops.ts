@@ -26,7 +26,10 @@ import { everyLabels, instalmentCheck, newParts, payOptionsOf, podAwaiting, podC
 import { bundleLineFor, partnerGrossFor } from './bundles';
 import { enrolFromOrder } from './courses';
 import { bulkUnitPrice, isPreorder, issueGiftCardsForOrder, preorderLeft, resolveGiftCard, shipsByLabel, spendGiftCard } from './sellModes';
-import { shopClosedMessage, shopSettingsOf, vatFor } from './shopSettings';
+import { shopClosedMessage, shopSettingsOf, untaxedAmount, vatFor } from './shopSettings';
+import type { CountryCode } from '../../types/country';
+import { shiftBranchStock } from './branches';
+import { consumeBatches, fitBatches } from './batches';
 
 export const OWNER_ACTOR = 'You';
 
@@ -46,7 +49,11 @@ variantId: string,
 delta: number,
 reason: StockReason,
 note = '',
-orderNumber?: number)
+orderNumber?: number,
+/** Location the units leave or arrive at (D437); the main shop when missing. */
+branchId?: string,
+/** Batch the units leave from (D476); otherwise sales use the batch that expires soonest. */
+batchId?: string)
 : CommerceData {
   let after = 0;
   const products = data.products.map((p) => {
@@ -56,7 +63,9 @@ orderNumber?: number)
       variants: p.variants.map((v) => {
         if (v.id !== variantId) return v;
         after = Math.max(0, v.stock + delta);
-        return { ...v, stock: after };
+        const batches = delta < 0 ? consumeBatches(v, -delta, batchId, branchId) : v.batches;
+        const moved = shiftBranchStock({ ...v, stock: after, batches }, branchId, delta);
+        return { ...moved, batches: fitBatches(moved) };
       })
     };
   });
@@ -125,6 +134,8 @@ export interface CheckoutInput {
   buyerAddress?: string;
   /** Paid to a one-time provider transfer account (D222). */
   transferAccount?: {bank: string;account: string;};
+  /** Cross-border delivery (D438): the buyer's country. Decides whose tax applies (D435). */
+  shipTo?: CountryCode;
 }
 
 /** A short, readable share code for a DealRoom buyer, e.g. NGOZI-7K2. */
@@ -241,7 +252,9 @@ export function placeOrder(data: CommerceData, input: CheckoutInput): CheckoutRe
   if (shop.checkout.minOrderNgn && subtotal - codeDiscountNgn < shop.checkout.minOrderNgn)
   return { ok: false, reason: 'unavailable', message: `The minimum order is ${formatNgn(shop.checkout.minOrderNgn)}. Nothing was charged.` };
   // VAT (D222): on goods after discount, plus delivery. Exclusive VAT is added before any gift card is spent.
-  const vat = vatFor(shop, subtotal - codeDiscountNgn + input.deliveryNgn);
+  // Zero-rated and exempt items, and buyers in other countries, follow the tax rules (D435).
+  const untaxedNgn = untaxedAmount(items.map((i) => ({ amountNgn: i.unitPriceNgn * i.qty, taxClass: data.products.find((p) => p.id === i.productId)?.taxClass })));
+  const vat = vatFor(shop, subtotal - codeDiscountNgn + input.deliveryNgn, { buyerCountry: input.shipTo, untaxedNgn });
   const vatAdded = vat?.addedNgn ?? 0;
   // Gift card (D202): spent after any discount; the amount is part of the order's discount line.
   const giftProducts = new Set(data.products.filter((p) => p.giftCard).map((p) => p.id));
@@ -326,7 +339,7 @@ export function placeOrder(data: CommerceData, input: CheckoutInput): CheckoutRe
     createdAt: placedAt,
     customer: input.customer,
     items,
-    fulfilment: input.fulfilment,
+    fulfilment: input.shipTo ? { ...input.fulfilment, country: input.shipTo } : input.fulfilment,
     subtotalNgn: subtotal,
     discountNgn,
     discount: applied && codeDiscountNgn > 0 ? orderDiscountRecord(applied) : undefined,
@@ -351,7 +364,7 @@ export function placeOrder(data: CommerceData, input: CheckoutInput): CheckoutRe
     pod: pod ? { amountNgn: fullTotal, accept: payOptionsOf(data).pod.accept } : undefined,
     instalments: parts && instalmentPlan?.ok ? { every: instalmentPlan.plan.every, ship: instalmentPlan.plan.ship, card: { brand: 'Visa', last4: '4081' }, parts, status: 'active', agreedAt: placedAt } : undefined,
     popup: input.popup ? { ...input.popup } : undefined,
-    vat: vat ? { ratePct: vat.ratePct, amountNgn: vat.amountNgn, inclusive: vat.inclusive } : undefined,
+    vat: vat ? { ratePct: vat.ratePct, amountNgn: vat.amountNgn, inclusive: vat.inclusive, country: vat.country } : undefined,
     numberPrefix: shop.orders.prefix || undefined,
     buyerNote: input.buyerNote?.trim().slice(0, 300) || undefined,
     buyerAddress: input.buyerAddress?.trim() || undefined,
@@ -364,7 +377,7 @@ export function placeOrder(data: CommerceData, input: CheckoutInput): CheckoutRe
   items.forEach((i) => {
     // Pre-orders count against their own limit instead of stock (D202).
     if (preIds.has(i.productId)) return;
-    next = moveStock(next, i.productId, i.variantId, -i.qty, 'order', 'Reserved by order', number);
+    next = moveStock(next, i.productId, i.variantId, -i.qty, 'order', 'Reserved by order', number, input.fulfilment.branchId);
   });
   if (preIds.size)
   next = { ...next, products: next.products.map((p) => preIds.has(p.id) && p.preorder ? { ...p, preorder: { ...p.preorder, taken: p.preorder.taken + (qtyByProduct[p.id] ?? 0) } } : p) };
@@ -444,7 +457,7 @@ export function cancelOrder(data: CommerceData, orderId: string, reason: string,
   };
   // Ticket seats always go back on sale when an order is cancelled.
   order.items.forEach((i) => {
-    if (restock || i.kind === 'ticket') next = moveStock(next, i.productId, i.variantId, i.qty, 'cancelled', 'Released by cancellation', order.number);
+    if (restock || i.kind === 'ticket') next = moveStock(next, i.productId, i.variantId, i.qty, 'cancelled', 'Released by cancellation', order.number, order.fulfilment.branchId);
   });
   return voidTickets(next, orderId);
 }
@@ -473,7 +486,7 @@ export function refundOrder(data: CommerceData, orderId: string, amountNgn: numb
   };
   // A full refund voids the order's tickets and frees their seats (D73).
   order.items.forEach((i) => {
-    if (restock || full && i.kind === 'ticket') next = moveStock(next, i.productId, i.variantId, i.qty, 'returned', 'Returned with refund', order.number);
+    if (restock || full && i.kind === 'ticket') next = moveStock(next, i.productId, i.variantId, i.qty, 'returned', 'Returned with refund', order.number, order.fulfilment.branchId);
   });
   // A full refund puts any gift card amount back on the card (D202); the card is never refunded as cash.
   if (full && order.giftCard && order.giftCard.amountNgn > 0) {

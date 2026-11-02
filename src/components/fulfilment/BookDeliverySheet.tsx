@@ -1,5 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { BikeIcon, ShieldCheckIcon } from 'lucide-react';
+import { BikeIcon, PrinterIcon, ShieldCheckIcon } from 'lucide-react';
+import { useCommerce } from '../../contexts/CommerceContext';
+import { activeCountry, countryInfo } from '../../utils/country';
+import { DEFAULT_ITEM_KG, isCrossBorderMethod } from '../../utils/commerce/crossBorder';
 import type { Order } from '../../types/commerce';
 import { orderRef } from '../../utils/commerce/shopSettings';
 import type { Rider } from '../../types/fulfilment';
@@ -38,7 +41,38 @@ const pickupSlots = () => {
 /** Choose a courier (simulated quotes) or your own rider for one order (D96). */
 export function BookDeliverySheet({ order, escrow, savedRiders, onClose, onBook }: BookDeliverySheetProps) {
   const { t: tr } = useT();
-  const quotes = useMemo(() => order ? quotesFor(order.fulfilment.address ?? '') : [], [order]);
+  // Cross-border orders (D436) go with the courier the buyer chose at checkout, with a customs declaration.
+  const crossBorder = !!order?.fulfilment.zoneId && isCrossBorderMethod(order.fulfilment.zoneId);
+  const quotes = useMemo<PartnerQuote[]>(
+    () =>
+    !order ?
+    [] :
+    crossBorder ?
+    [{ partnerId: order.fulfilment.zoneId ?? 'intl', name: order.fulfilment.zoneName ?? 'International courier', tagline: 'Cross-border · tracked door to door (example courier)', feeNgn: order.deliveryNgn, eta: order.fulfilment.eta ?? '', available: true }] :
+    quotesFor(order.fulfilment.address ?? ''),
+    [order, crossBorder]
+  );
+  const { data: commerce } = useCommerce();
+  const customs = useMemo(
+    () =>
+    crossBorder && order ?
+    order.items.map((i) => {
+      const p = commerce.products.find((x) => x.id === i.productId);
+      return { name: i.name, qty: i.qty, value: i.unitPriceNgn * i.qty, description: p?.shipping?.customsDescription?.trim() ?? '', origin: p?.shipping?.originCountry ?? activeCountry(), kg: (p?.weightKg ?? DEFAULT_ITEM_KG) * i.qty };
+    }) :
+    [],
+    [crossBorder, order, commerce.products]
+  );
+  const customsMissing = customs.filter((c) => !c.description);
+  const printCustoms = () => {
+    if (!order) return;
+    const w = window.open('', '_blank', 'width=800,height=900');
+    if (!w) return;
+    const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+    const rows = customs.map((c) => `<tr><td>${esc(c.description || c.name)}</td><td>${c.qty}</td><td>${c.kg.toFixed(1)} kg</td><td>${esc(countryInfo(c.origin).name)}</td><td class="r">${esc(formatNgn(c.value))}</td></tr>`).join('');
+    w.document.write(`<!doctype html><html><head><title>Customs declaration ${esc(orderRef(order))}</title><style>body{font-family:Inter,Arial,sans-serif;margin:40px;color:#111}table{width:100%;border-collapse:collapse;margin-top:16px;font-size:13px}td,th{border:1px solid #ccc;padding:6px;text-align:left}.r{text-align:right}.m{color:#555;font-size:12px}</style></head><body><h1 style="font-size:20px">Customs declaration — order ${esc(orderRef(order))}</h1><p class="m">From ${esc(countryInfo(activeCountry()).name)} to ${esc(order.fulfilment.address ?? '')} · ${esc(order.fulfilment.zoneName ?? '')}</p><p class="m">Type: sale of goods</p><table><tr><th>Description</th><th>Qty</th><th>Weight</th><th>Made in</th><th class="r">Value</th></tr>${rows}</table><p class="m">Example form for the prototype — the courier supplies the real one.</p><script>window.onload=function(){setTimeout(function(){window.print()},200)}</script></body></html>`);
+    w.document.close();
+  };
   const slots = useMemo(pickupSlots, [order?.id]); // eslint-disable-line react-hooks/exhaustive-deps
   const [partnerId, setPartnerId] = useState('');
   const [pickupAt, setPickupAt] = useState('');
@@ -84,7 +118,7 @@ export function BookDeliverySheet({ order, escrow, savedRiders, onClose, onBook 
               {tr('Cancel')}
             </Button>
             <Button leadingIcon={BikeIcon} onClick={submit} disabled={!chosen?.available || noAddress}>
-              {tr('Book rider')}
+              {crossBorder ? tr('Book courier') : tr('Book rider')}
             </Button>
           </span>
         </div>
@@ -98,6 +132,33 @@ export function BookDeliverySheet({ order, escrow, savedRiders, onClose, onBook 
         <InlineAlert tone="danger" title={tr('This order has no delivery address')}>
             {tr('Add it on the order first, or switch the order to pickup.')}
           </InlineAlert>
+        }
+
+        {crossBorder &&
+        <section aria-labelledby="customs" className="flex flex-col gap-3 rounded-md border border-line p-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h3 id="customs" className="text-label font-semibold text-fg">
+                {tr('Customs declaration')}
+              </h3>
+              <Button size="sm" variant="secondary" leadingIcon={PrinterIcon} onClick={printCustoms}>
+                {tr('Print customs form')}
+              </Button>
+            </div>
+            <ul className="flex flex-col divide-y divide-line text-caption">
+              {customs.map((c, i) =>
+            <li key={`${c.name}-${i}`} className="flex flex-wrap justify-between gap-2 py-2">
+                  <span className="text-fg">
+                    {c.qty} × {c.description || <span className="text-danger">{tr('{name} — no customs description', { name: c.name })}</span>}
+                  </span>
+                  <span className="tabular-nums text-fg-muted">
+                    {c.kg.toFixed(1)} kg · {tr(countryInfo(c.origin).name)} · {formatNgn(c.value)}
+                  </span>
+                </li>
+            )}
+            </ul>
+            {customsMissing.length > 0 && <p className="text-caption text-warning">{tr('Add a customs description on each product so the parcel isn’t held at the border.')}</p>}
+            <p className="text-caption text-fg-subtle">{tr('Tracking includes the customs steps. If the parcel is held at customs or sent back, mark it on the delivery.')}</p>
+          </section>
         }
 
         <fieldset className="flex flex-col gap-3">

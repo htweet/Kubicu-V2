@@ -5,14 +5,20 @@ import { ArrowUpIcon, ChevronDownIcon, MicIcon, PanelLeftIcon, SquareIcon } from
 import { useT } from '../../contexts/LocaleContext';
 import { useSpeechInput } from '../../hooks/useSpeechInput';
 import { cn } from '../../utils/cn';
+import { AskBarGlow } from './AskBarGlow';
 import { KubicuLogo } from './KubicuLogo';
 
 const STORE_KEY = 'kubicu.askBar.minimised';
 const ease = [0.23, 1, 0.32, 1] as const;
 
-/** Copilot and KUBICU AI screens have their own chat, so the bar stays out of them (D374). */
+/**
+ * Copilot and KUBICU AI screens have their own chat, so the bar stays out of them (D374). Sellers' published pages
+ * and shared shops are the seller's own space, so buyers never see KUBICU's bar there (D431).
+ */
 function hiddenOn(path: string): boolean {
   return (
+    path.startsWith('/p/') ||
+    path.startsWith('/m/') ||
     path === '/copilot' ||
     path.startsWith('/copilot/') ||
     path.startsWith('/d/') ||
@@ -24,9 +30,8 @@ function hiddenOn(path: string): boolean {
 
 }
 
-/** Lifts the bar above bars that already sit at the bottom: workspace phone nav, shop cart and buy bars. */
+/** Lifts the bar above bars that already sit at the bottom, such as the workspace phone nav. */
 function bottomOffset(path: string): string {
-  if (path.startsWith('/p/') || path.startsWith('/m/')) return 'bottom-[calc(84px+env(safe-area-inset-bottom))]';
   if (path.startsWith('/app')) return 'bottom-[calc(76px+env(safe-area-inset-bottom))] md:bottom-5';
   return 'bottom-[calc(16px+env(safe-area-inset-bottom))] md:bottom-5';
 }
@@ -50,8 +55,35 @@ export function AskBar() {
       return false;
     }
   });
+  // Using the bar pauses the inviting border sweep (D523). It resumes after a minute of the bar sitting idle in view,
+  // or as soon as the person comes back from Copilot (D524).
+  const [engaged, setEngaged] = useState(false);
+  // Once used at least once this visit, the resumed sweep repeats less often (D525).
+  const [usedOnce, setUsedOnce] = useState(false);
   const input = useRef<HTMLInputElement>(null);
   const speech = useSpeechInput(lang, setText);
+  const prevPath = useRef(pathname);
+
+  const engage = () => {
+    if (!engaged) setEngaged(true);
+    if (!usedOnce) setUsedOnce(true);
+  };
+
+  const away = (scrolledAway || atEnd) && !focused && !text && !speech.listening;
+  const idleInView = !hiddenOn(pathname) && !minimised && !away && !focused && !text && !speech.listening;
+
+  // Leaving Copilot (or KUBICU AI) for a page with the bar: start inviting again straight away.
+  useEffect(() => {
+    if (hiddenOn(prevPath.current) && !hiddenOn(pathname)) setEngaged(false);
+    prevPath.current = pathname;
+  }, [pathname]);
+
+  // 60s of the bar sitting idle and visible: resume. Any use, scrolling it away or minimising restarts the count.
+  useEffect(() => {
+    if (!engaged || !idleInView) return;
+    const timer = window.setTimeout(() => setEngaged(false), 60_000);
+    return () => window.clearTimeout(timer);
+  }, [engaged, idleInView]);
 
   useEffect(() => {
     try {
@@ -121,7 +153,6 @@ export function AskBar() {
     requestAnimationFrame(() => input.current?.focus());
   };
 
-  const away = (scrolledAway || atEnd) && !focused && !text && !speech.listening;
   const canSend = text.trim().length > 0;
 
   return (
@@ -151,11 +182,14 @@ export function AskBar() {
           animate={{ opacity: away ? 0 : 1, y: away ? 24 : 0 }}
           exit={{ opacity: 0, y: 12 }}
           transition={{ duration: 0.22, ease }}
-          className={cn('flex h-14 w-full max-w-[560px] items-center gap-1 rounded-full border border-line bg-raised pl-2 pr-2 shadow-3', away ? 'pointer-events-none' : 'pointer-events-auto')}
+          onPointerDown={engage}
+          onFocusCapture={engage}
+          className={cn('relative flex h-14 w-full max-w-[560px] items-center gap-1 rounded-full border border-line bg-raised pl-2 pr-2 shadow-3', away ? 'pointer-events-none' : 'pointer-events-auto')}
           aria-hidden={away || undefined}
           // While it's slid away, its controls also leave the Tab order (D429).
           {...away ? { inert: '' } : {}}>
           
+            <AskBarGlow active={!engaged && !away && !text && !speech.listening} calm={usedOnce} />
             <button
             type="button"
             onClick={tuck}

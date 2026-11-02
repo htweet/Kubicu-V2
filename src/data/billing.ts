@@ -1,6 +1,7 @@
 import type { WorkspacePlan } from '../types/plan';
 import type { CardOutcome } from '../types/billing';
 import { kubicuCompany } from './legal/company';
+import { figure, onOpsSettings } from '../utils/opsSettings';
 
 /**
  * Example monthly prices in NGN, taken from inside each plan's price hypothesis (blueprint §19.1).
@@ -16,13 +17,20 @@ export const monthlyPriceNgn: Record<WorkspacePlan, number | null> = {
 };
 
 /** Yearly = 10 months — "2 months free". */
-export const YEARLY_MONTHS = 10;
+export let YEARLY_MONTHS = 10;
 /** Example VAT rate (Nigeria, 7.5%). Confirm with tax advice before launch. */
 export const VAT_RATE = 0.075;
-export const GRACE_DAYS = 7;
-export const TRIAL_DAYS = 14;
+export let GRACE_DAYS = 7;
+export let TRIAL_DAYS = 14;
 export const TRIAL_PLAN: WorkspacePlan = 'pro';
-export const TRIAL_REMINDER_DAYS = 3;
+export let TRIAL_REMINDER_DAYS = 3;
+// Staff can change these in Super admin → Figures & names (D467).
+onOpsSettings(() => {
+  YEARLY_MONTHS = figure('billing.yearlyMonths');
+  GRACE_DAYS = figure('billing.graceDays');
+  TRIAL_DAYS = figure('billing.trialDays');
+  TRIAL_REMINDER_DAYS = figure('billing.trialReminderDays');
+});
 
 export const cancelReasons = ['It costs too much', 'I’m not using it enough', 'A feature I need is missing', 'I’m moving to another tool', 'My business is closing or pausing', 'Something else'];
 
@@ -31,7 +39,8 @@ export const testCards: {number: string;outcome: CardOutcome;label: string;}[] =
 { number: '4242 4242 4242 4242', outcome: 'success', label: 'Pays' },
 { number: '4000 0000 0000 3220', outcome: 'challenge', label: 'Asks your bank to confirm' },
 { number: '4000 0000 0000 0002', outcome: 'declined', label: 'Declined' },
-{ number: '4000 0000 0000 0069', outcome: 'expired', label: 'Expired card' }];
+{ number: '4000 0000 0000 0069', outcome: 'expired', label: 'Expired card' },
+{ number: '4000 0000 0000 9995', outcome: 'insufficient', label: 'Not enough money' }];
 
 
 /** Illustrative seller-of-record details printed on invoices. */

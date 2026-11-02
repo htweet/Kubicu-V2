@@ -1,8 +1,14 @@
 # KUBICU — Handoff for Claude (or any AI / engineer continuing this project)
 
-Last updated: 31 Oct 2026 · Decision register at **D430** (next number: **D431**)
+Last updated: 1 Nov 2026 · Decision register at **D522** (next number: **D523**). The staff console is no longer being translated (owner's decision, D502). Gap audit, traceability matrix and prototype status refreshed through D481; Copilot docs through D522.
 
-> **What changed since D351 (read §12a, §16 and §17 for detail):** four selling countries (Nigeria, Kenya, Ghana, South Africa) with their own currency, phones, banks, regions, payment options and seller verification; three more interface languages (Kiswahili, Twi, isiZulu) drafted across the whole app, canvas, website and Copilot; the public website converts every naira amount to the visitor's language's currency at example rates; a floating "Ask me anything" Copilot bar on most pages; one content width for workspace pages; and two rounds of accessibility fixes.
+> **For the lead engineer — start with §18a.** Copilot is now KUBICU's front door (D520): a general assistant whose main job is building pages. Its screens, data shapes, page builder, limits and safety rules are built to survive the switch to a real AI model; only the rule-based conversation logic (`respond` in `utils/copilot/engine.ts` and its helpers) is replaced. The full contract is **`docs/COPILOT_AI_INTEGRATION.md`** (D522).
+
+> **What changed since D452 (read §16 and §17):** sponsorship disputes, evidence, staff queue and appeals (D453–D464); operations can switch every module and add-on on or off (D464), change ~100 example figures, plan names and any English wording (D465–D469), and search the staff console (D472); module switches reach published pages (D470); staff manage a workspace's team and country (D473); teammates limited to one location, with batches and expiry dates per location (D474–D478); a **country rollout switch** so countries open one at a time starting with Nigeria (D494–D495); buyer-facing translation finished on sellers' pages, including dates, times and checkout problems (D479–D481, D502–D513); 13 staff screens translated, the rest stay English by choice (D483–D502); leftover fixes — bookings auto-decline and CSV, Twi date fallbacks (D514); canvas drag from the library into sections, copy/paste buttons, smarter paste (D515–D517); Copilot understands typed replies in all eight languages (D518), the WhatsApp demo is translated (D519), Copilot answers questions about KUBICU with links (D520) and from every Help centre guide (D521); Copilot AI integration guide (D522).
+
+> **What changed since D430 (read §16 and §17):** KUBICU bills sellers in their own currency at the day's rate (D432); M-Pesa, Ghana's three mobile money networks, instant EFT and per-country payout flows (D433); twelve Kenyan, Ghanaian and South African starter pages (D434); and the whole of blueprint **Phase 5** — tax across countries (D435), cross-border delivery with customs tracking (D436, D451), branches and franchises (D437), Xero/Sage accounting including wallet payouts (D438, D452), enterprise sign-on and activity-log exports (D439), Odoo/SAP/Sage X3 inventory sync (D440), a creator sponsorship marketplace (D441), and NFC tags with their own Analytics source (D442–D443). Every new screen has drafts in all seven languages (D444–D450). All of it is simulated and unopened in a browser.
+
+> **What changed from D351 to D430:** four selling countries (Nigeria, Kenya, Ghana, South Africa) with their own currency, phones, banks, regions, payment options and seller verification; three more interface languages (Kiswahili, Twi, isiZulu) drafted across the whole app, canvas, website and Copilot; the public website converts every naira amount to the visitor's language's currency at example rates; a floating "Ask me anything" Copilot bar on most pages; one content width for workspace pages; and two rounds of accessibility fixes.
 
 > **⛔ Do not deploy this prototype.** It runs entirely in the browser: roles, prices, balances, codes and payments are simulated and can be changed by anyone. Before writing any production code, read **`docs/NOT_FOR_PRODUCTION.md`** — what to remove, what to replace, what must move to the server, and the release gate.
 Built in Magic Patterns: React 18 + TypeScript + Tailwind CSS v3, standalone files, no framework, everything runs in the browser.
@@ -31,6 +37,7 @@ Built in Magic Patterns: React 18 + TypeScript + Tailwind CSS v3, standalone fil
 16. Decision history at a glance
 17. Open items — everything not finished
 18. Production engineering still required
+    18a. Copilot and the AI model — what survives, what's replaced
 19. Handover package — every doc to give Claude
 20. Working checklist
 
@@ -74,7 +81,7 @@ All in `docs/`. Markdown files are long — grep headings (`^#+ `) or keywords a
 
 | File | What it is | How entries look | Current up to | State |
 | --- | --- | --- | --- | --- |
-| `DESIGN_DECISION_REGISTER.md` | **Source of truth.** Every product/design decision in order, newest first. Code comments cite these as `(D123)`. | `ID \| Decision \| Current position \| Status \| Notes / dependency`. Status: Confirmed · Proposed · Illustrative · Needs validation · Pending founder. Sign-off log at the top; "Known conflicts recorded" at the bottom. | **D343** | Current. Add every change here. |
+| `DESIGN_DECISION_REGISTER.md` | **Source of truth.** Every product/design decision in order, newest first. Code comments cite these as `(D123)`. | `ID \| Decision \| Current position \| Status \| Notes / dependency`. Status: Confirmed · Proposed · Illustrative · Needs validation · Pending founder. Sign-off log at the top; "Known conflicts recorded" at the bottom. | **D522** | Current. Add every change here. |
 | `DECISIONS_FOR_SIGNOFF.md` | Extract of decisions needing founder/legal approval, grouped A–E: **A** money, limits and example figures · **B** legal wording · **C** needs a real provider/backend · **D** translations · **E** product/design (no action needed). | Group tables of D-numbers with one-line summaries. | **D343** (status note) | Refreshed 30 Oct: status table at the top says A confirmed (D233), B/C/D open, and lists items added since D232. Group tables below are historical. |
 | `DESIGN_GAP_AUDIT.md` | Periodic audit of everything still open across screens, blueprint concepts, simulated features, founder items and the backlog epics. | §1 Summary · §2 Screens · §3 Blueprint addendum · §4 Simulated by design · §5 Waiting on founder/legal · §6 Backlog audit · §7 Everything still open · §8 History. | **D343** | Refreshed 30 Oct: D274–D343 re-audit note, §7 updated. §17 here is the fuller list. |
 | `DESIGN_TRACEABILITY_MATRIX.md` | Traces each requirement from the Master Blueprint (MB-x), Implementation Backlog (IB-x), Design Plan (DP-x) and Linktree brief (LP-x) to screen, component and prototype status. | Columns: Req ID · Requirement · Priority · Role · Screen/flow · Component · States · Prototype · Disposition. Prototype: ✅ interactive · 🟡 partial · ⏳ placeholder · ⬜ not started; 🧪 = simulated by design; 👤 = waiting on sign-off. Disposition: MVP-D / Later-D / Concept / Clarify / Excluded. | **D343** | Refreshed 30 Oct: IB-O corrected, "Added after D273" section. 6 rows remain 🟡 (§4.2). |
@@ -102,10 +109,11 @@ All in `docs/`. Markdown files are long — grep headings (`^#+ `) or keywords a
 | `TEMPLATE_REGISTER.md` | Elite (24) + Artwork templates | D158 | |
 | `COMMERCE_UPGRADE.md` | Commerce settings, payment links, sales report | D226 | |
 | `EXTENSION_REGISTER.md` | Kept / not built / retired Marketplace add-ons | ~D130s | |
-| `COPILOT_SPEC.md` | Copilot chat, brief, drafting, claim | D266 | Missing sidebar chats (D284/D290) and translation (D339–D340). |
-| `AI_ASSISTANT_INTEGRATION.md` | How to swap the rule-based AI for a real model | — | Engineering guide; still valid. |
+| `COPILOT_SPEC.md` | Copilot chat, brief, drafting, claim, sidebar chats, languages, questions about KUBICU | D522 | Current. |
+| `COPILOT_AI_INTEGRATION.md` | **Lead-engineer guide:** what to keep and replace in Copilot, the model contract, tools, grounding, languages, acceptance tests, safety | D522 | Current. Read with `AI_ASSISTANT_INTEGRATION.md`. |
+| `AI_ASSISTANT_INTEGRATION.md` | How to swap the canvas page assistant's rules for a real model | — | Engineering guide; still valid. Copilot has its own guide (above). |
 | `PUBLIC_SITE_REGISTER.md` | Website routes and listings | D268 | D343 resolved its "website short-link clicks not counted" note. |
-| `CLAUDE_HANDOFF.md` | This file | D343 | Current. |
+| `CLAUDE_HANDOFF.md` | This file | D522 | Current. |
 
 ---
 
@@ -177,7 +185,7 @@ docs/           see §3
 - **Audience/automations/forms:** `components/audience/*`, `types/ops.ts`, `utils/ops/*`, `utils/forms/*`.
 - **Analytics:** `utils/analytics/storage.ts` (`appendEvent`, retention `prune()`), `utils/analytics/aggregate.ts` (page visits = `view` events only; campaign stats also count website/WhatsApp short-link clicks, D343), `utils/analytics/track.ts`.
 - **Domains, QR, short links:** `pages/domains/*`, `utils/domains/*`.
-- **Copilot:** `pages/copilot/*`, `components/copilot/*` (+claim/, whatsapp/), `utils/copilot/*` (store, flow), `contexts/CopilotSimContext`.
+- **Copilot:** `pages/copilot/*`, `components/copilot/*` (+claim/, whatsapp/), `hooks/useCopilot.ts` (send, photos, generation loop, limits), `contexts/CopilotSimContext`. Logic in `utils/copilot/`: `engine.ts` (`respond` — the conversation, the one function a model replaces; `planFor`/`briefFrom`/`draftDocFrom` build the page through `utils/assistant/layout.ts`), `store.ts` (sessions, drafts, limits, pins, claim), `claim.ts`, `links.ts`, `translateMessage.ts` (stored English → screen language), `understand.ts` (typed words in seven languages → English hints, D518), `askAnything.ts` (question vs build, curated topic, best Help centre guide, D520–D521). Words: `data/copilotQuestions.ts`, `data/copilotUnderstanding.ts`, `data/copilotHelpTopics.ts` (17 topics with answer + screen links). Ask bar: `components/shell/AskBar.tsx`. **Before changing any of this, read `docs/COPILOT_AI_INTEGRATION.md`.**
 - **AI (rule-based):** `utils/ai/*`, `utils/assistant/*`, `utils/faqMatch.ts`, `hooks/useAiUsage.ts`, limits `data/aiLimits.ts`.
 - **i18n:** `contexts/LocaleContext.tsx`, `data/translations*.ts`, `utils/builtPhrases.ts`, `utils/phraseOverrides`.
 
@@ -236,7 +244,8 @@ All keys start with `kubicu.`; workspace-scoped stores append `.<workspaceId>`. 
 - Ladder: `free → creator → pro → business → agency → enterprise` (`data/plans.ts`, `planAtLeast()`).
 - Feature × plan matrix: `data/planMatrix.ts` (status `live | preview | planned`). Other limits: `utils/commerce/limits.ts`, `data/mediaQuota.ts`, `data/aiLimits.ts`, seat limits in `data/permissions.ts`.
 - UI: `components/ui/PlanLock.tsx`, `components/ui/UpgradeButton.tsx`, `contexts/UpgradeContext.tsx` (`openUpgrade({ plan, feature })` → change-plan dialog). Never hide a locked feature silently — show it with the plan it needs.
-- Feature flags: `data/featureFlags.ts` (`ai_page_setup`, `storefront`, `verified_tick`), toggled per plan in `/admin/flags`.
+- Feature flags: `data/featureFlags.ts` (`ai_page_setup`, `storefront`, `verified_tick`), toggled per plan in `/admin/flags`. The same page switches **every workspace module and Marketplace add-on** (D464, `utils/admin/moduleFlags.ts`; off = visible but "Currently not available", reaching published pages via `blockModule`, D470) and the **country rollout** (open / closed / scheduled per country, D494).
+- Adjustable figures and names: `data/adjustableFigures.ts`, read with `figure(key)` from `utils/opsSettings.ts`, edited in `/admin/figures` (D465–D469). Plan prices and AI credits stay in Plans & entitlements (two-person approval).
 - Plan **prices** are placeholders pending founder sign-off.
 
 ---
@@ -281,7 +290,9 @@ Other switches: demo data (onboarding / Settings), payment test mode strip (`com
   4. `pages/admin/AdminLocalisation.tsx` — `dictFor`.
   5. `components/canvas/inspector/PageSettingsPanel.tsx` — page language list (Swahili `sw` is already listed there, for sellers' page language only).
   Then: a dictionary per new language for every `translations*.ts` file (export `xxxSw`… alongside the existing four, or one new file per language merged in `translations.ts`; missing keys fall back to English), `data/searchGlossary.ts` words, `utils/builtPhrases.ts` patterns (they look up the dictionary, so they work once phrases exist), the Voice to content speech languages, and font checks for any new characters. Countries also bring non-language work — currency (KES, GHS, ZAR), phone formats, mobile money (M-Pesa, MTN MoMo) and local providers — which is outside translation.
-- **English on purpose:** legal document text (English applies; a notice says so), help guide articles (a notice says so), WhatsApp/customer messages, invoice lines, partnership agreement wording and history, referral terms, staff console, Marketplace listings without a draft, Copilot typed-answer understanding.
+- **English on purpose:** legal document text (English applies; a notice says so), help guide articles (a notice says so — Copilot's guide answers say so too, D521), WhatsApp/customer messages, invoice lines, partnership agreement wording and history, referral terms, 11 staff console areas (13 areas and the frame are translated; owner stopped there, D502), Marketplace listings without a draft.
+- **Eight-column files (newer pattern):** `data/translationsCopilotWhatsApp.ts` and `data/translationsCopilotHelp.ts` hold all seven languages in one row (`[English, pcm, yo, ha, ig, sw, tw, zu]`), exported as four Nigerian-language dictionaries plus a `…KeGhZa` object added to `passes`. Either pattern is fine; don't duplicate a key across both.
+- **Copilot messages** are stored in English and translated on screen (`translateCopilotText`); typed replies are understood through `utils/copilot/understand.ts` (D518). With a real model this changes — see `COPILOT_AI_INTEGRATION.md` §8.
 
 ## 12a. Countries, currency and money on the website
 
@@ -297,7 +308,7 @@ Other switches: demo data (onboarding / Settings), payment test mode strip (`com
 
 **Works for real in the browser:** canvas editing, undo, versions and publish; all validation and composition checks; translations and language pickers; QR generation (`qrcode-generator`) and camera scanning (`jsqr`); speech-to-text via the browser (Voice to content, D342); FAQ assistant matching (`utils/faqMatch.ts`); localStorage persistence and cross-tab sync; analytics aggregation on locally recorded events.
 
-**Simulated (labelled in the UI):** payments, bank transfer, USSD (switched off), card, escrow settlement, refunds' provider side, payouts and KYC checks; couriers and riders; WhatsApp Business messages and the WhatsApp Copilot; email marketing and Google Sheets sync; DNS/SSL and domain purchase; SSO; calendar sync and meeting links; tracking pixels; print orders; all "AI" (rule-based in `utils/ai/*`, see `AI_ASSISTANT_INTEGRATION.md`); Copilot draft claiming; link safety screening (sample block list); watermarking (preview); data-saver image variants; live presence and multi-door sync; developer API, keys, webhooks and sandbox; analytics only sees this browser.
+**Simulated (labelled in the UI):** payments, bank transfer, USSD (switched off), card, escrow settlement, refunds' provider side, payouts and KYC checks; couriers and riders; WhatsApp Business messages and the WhatsApp Copilot; email marketing and Google Sheets sync; DNS/SSL and domain purchase; SSO; calendar sync and meeting links; tracking pixels; print orders; all "AI" (rule-based in `utils/ai/*`, see `AI_ASSISTANT_INTEGRATION.md`); **Copilot's whole conversation, its answers to questions about KUBICU (curated topics + Help centre guide matching) and its understanding of other languages** (rules and word lists, see `COPILOT_AI_INTEGRATION.md`); Copilot draft claiming; link safety screening (sample block list); watermarking (preview); data-saver image variants; live presence and multi-door sync; developer API, keys, webhooks and sandbox; analytics only sees this browser.
 
 ---
 
@@ -345,7 +356,7 @@ Code
 - Replace, don't fork: no `V2` files left beside old ones.
 
 Process
-- Every change gets the next register row (**D431** next), status "Proposed" until signed off.
+- Every change gets the next register row (**D523** next), status "Proposed" until signed off.
 - Update any doc you make stale (see §3.3).
 - Tell the user plainly what wasn't verified (e.g. not opened in a browser).
 
@@ -379,6 +390,37 @@ Process
 | D421, D423 | Website converts naira amounts to the language's currency (example rates) |
 | D424–D428 | Seller verification per country; starter payouts and limits; staff review; guest partners; draft legal wording |
 | D429–D430 | Accessibility fixes from a code audit (14 items) |
+| D431 | Small fixes: Ask bar hidden on sellers' published pages, D430 labels in Nigerian languages, required dropdowns announced, staff review follows the case's country |
+| D432 | KUBICU bills in the seller's currency at the day's rate; local invoices and tax; staff Exchange rates screen |
+| D433 | M-Pesa, MTN/Telecel/AirtelTigo mobile money, instant EFT, card step, per-country payouts and limits |
+| D434 | Twelve country starter pages (Kenya, Ghana, South Africa) and country-first suggestions |
+| D435–D436, D451 | Tax across countries; cross-border delivery; customs steps in delivery tracking |
+| D437 | Branches and franchises (`pages/commerce/Branches.tsx`) |
+| D438, D452 | Xero and Sage accounting; wallet payouts as bank transfers (`components/settings/integrations/AccountingSection.tsx`) |
+| D439 | Activity-log exports (CSV, JSON Lines, SHA-256 fingerprint) and combined log; sign-on was already built (D115) |
+| D440 | Inventory & ERP: Odoo, SAP Business One, Sage X3 (`ErpSection.tsx`, `utils/erp/sync.ts`) |
+| D441 | Creator sponsorship marketplace (`pages/Sponsorships.tsx`, `utils/sponsorships.ts`) |
+| D442–D443 | NFC tags (`pages/NfcTags.tsx`, public tap page `/p/:handle/t/:code`) and the `nfc` Analytics source |
+| D444–D450 | Translations for every Phase 5 screen in all seven languages; Sponsorships/NFC/Branches layout and side-sheet padding fixes (D445, D447, D450) |
+| D453–D464 | Sponsorship disputes: frozen money, one reply, staff queue, 48-hour reply time, evidence files (D463), creator record on applications (D461), fix-and-resend briefs (D460), one appeal decided by a different reviewer (D464) |
+| D462 | Order invoices worded by whose tax it is (example wording, needs an accountant) |
+| D464 | Every workspace module and Marketplace add-on switchable in Super admin → Feature flags; switched-off modules show "Currently not available" (`ModuleUnavailable`), add-ons can't be installed |
+| D465–D469 | **Figures & names** (`/admin/figures`, `data/adjustableFigures.ts`, `figure(key)`): ~100 example figures, plan names, and any English wording (Localisation → English) editable by operations, audited |
+| D470 | Module switches reach published pages (`blockModule` in `BlockRenderer.tsx`) |
+| D471 | NFC tags orderable in all four countries |
+| D472–D473 | Users & tenants: people with several workspaces, staff console search (`AdminSearch.tsx`), staff change a workspace's team, role and country |
+| D474–D478, D482 | Teammates limited to one location; Inventory, Orders, Sales report and Wallet follow it; batches, lots and expiry (FEFO) per location; expiry shown to buyers |
+| D479–D481 | Shop product page, shop list and cards, cart and checkout translated |
+| D483–D501 | Staff console frame and 13 areas translated |
+| D484–D486 | Office hours in the visitor's time zone; website sample stats show the visitor's country |
+| D494–D495 | **Country rollout switch** (Feature flags → Countries): open, closed or scheduled per country, starting with Nigeria; country-aware Business kits; staff money in each workspace's currency (`utils/admin/workspaceMoney.ts`); every new workspace keeps a country |
+| D502 | Staff console translation stopped (owner); buyer-facing leftovers translated |
+| D503–D513 | Every published-page block, dates, times, lengths, seat summary, Trust Passport and checkout problems in the visitor's language; "ago" times and month names follow the screen language app-wide |
+| D514 | Leftovers: ticket dates, Twi date fallbacks, page assistant phones, bookings auto-decline and CSV |
+| D515–D517 | Canvas: drag from the library (into sections/columns/tabs too), Copy/Paste buttons, smarter paste |
+| D518–D519 | Copilot understands typed replies in all eight languages; WhatsApp demo translated |
+| D520–D521 | **Copilot answers questions about KUBICU** (17 curated topics with screen links, then every Help centre guide), then carries on building |
+| D522 | `docs/COPILOT_AI_INTEGRATION.md` — the model contract for the lead engineer; handoff and Copilot docs refreshed |
 
 ---
 
@@ -389,8 +431,8 @@ Process
 - **Legal documents** — Draft 1.0, awaiting a lawyer; English text applies (Group B: embed allowlist, disputes/refunds, refund fees, analytics privacy, subscriptions, template sales split, ticketing, members-only wording, partnerships, co-brand, support block, developer submissions, verification, fundraiser, certificates, buyer protection/escrow, AI licence, staff data-request deadline).
 - **Translations** — native-speaker review of every draft in seven languages (Group D, deferred).
 - **Countries** — a licensed payment partner per country must confirm the Kenyan, Ghanaian and South African verification rules, document names and payout limits (D424–D425); a lawyer must approve the two clauses tagged "[DRAFT — country wording pending legal review, D428]" in Seller terms and Privacy and confirm each country's data-protection basis.
-- **Example figures to replace** — exchange rates ₦12/KES, ₦135/GHS, ₦85/ZAR (`utils/currency.ts`, D421/D425); data prices KSh 100, GH₵ 10, R 50 per GB (`data/countries.ts`, D404).
-- **Copilot** — AI provider, data-processing terms for photos and business details, whether and how long chats are stored online, final AI credit costs.
+- **Example figures to replace** — exchange rates ₦12/KES, ₦135/GHS, ₦85/ZAR (`utils/currency.ts`, D421/D425) and the day's billing rate (D432); data prices KSh 100, GH₵ 10, R 50 per GB (`data/countries.ts`, D404); KUBICU's local tax rates and local companies on invoices (D432); payout limits and fees per country (D433); tax rates (D435); courier rates and times (`utils/commerce/crossBorder.ts`, D436); default accounting account codes incl. bank 090/1200 (`data/accountingProviders.ts`, D438/D452); the 10% sponsorship fee (D441); NFC tag prices (`utils/nfc.ts`, D442).
+- **Copilot** — AI provider and model, data-processing terms for photos and business details in each country, whether and how long chats are stored online (and synced for signed-in users), final AI credit and daily-limit costs, whether question-only use is limited, whether Copilot may read workspace data when signed in, and the per-country "not advice" wording (`COPILOT_AI_INTEGRATION.md` §15).
 - **Group A** money/limits was confirmed (D233); `DECISIONS_FOR_SIGNOFF.md` hasn't been updated to say so.
 
 ### 17.2 Needs a provider or backend (Group C)
@@ -400,7 +442,8 @@ Payment gateway, bank transfer and USSD; payouts and KYC; couriers; WhatsApp Bus
 Marketplace "Popular" sort; AI workflow packs (show "Not available yet").
 
 ### 17.4 Needs testing (not design work)
-- Nothing from D280–D430 has been opened in a browser.
+- Nothing from D280–D521 has been opened in a browser.
+- Copilot questions (D520–D521): try the Ask bar with real questions in each language; check that building still wins, mid-interview answers aren't mistaken for questions, and guide matches are sensible.
 - Accessibility fixes D429–D430 came from reading code; test with keyboard, VoiceOver/TalkBack and a scan.
 - Every screen in Kiswahili, Twi and isiZulu for wrapping (long words, e.g. isiZulu sign-up steps).
 - Browser pass on 32 templates and 35 theme versions, phone and desktop.
@@ -414,13 +457,11 @@ Marketplace "Popular" sort; AI workflow packs (show "Not available yet").
 - ~~Form error messages English~~ — done D344. ~~Seller page language switch native select~~ — was already themed (D299). ~~Block search / help search English-only~~ — glossary search D344 (help guide articles themselves stay English).
 - Help guide articles are English.
 - Marketplace listings with no draft are English.
-- Copilot understands typed answers only in English; WhatsApp Copilot demo isn't translated.
-- Pidgin, Yorùbá, Hausa and Igbo drafts missing for the four D430 labels ("Play/Pause moving examples", "Workspace shortcuts", "Site links").
-- `SelectInput` supports `required` (D430) but no form passes it yet.
-- Staff review screen: a few labels outside the case summary still read as Nigerian for other countries' cases.
-- Decision for the owner: whether the Ask bar should show on sellers' published pages (D374).
+- Copilot understands typed answers in all eight languages for its everyday words (D518); the WhatsApp Copilot demo follows the chosen language too (D519, `data/translationsCopilotWhatsApp.ts`, one 8-language file).
+- Copilot (D520–D521): links to workspace screens assume the person is signed in (Copilot can't see sign-in state); the Ask bar doesn't check the AI operations switch; question matching is by words, so unusual wording can miss a guide. All three are resolved by the model integration (`COPILOT_AI_INTEGRATION.md` §11–12).
+- ~~D430 labels in Nigerian languages, `SelectInput required` unused, staff review labels, Ask bar on seller pages~~ — all done in D431 (Ask bar hidden there). ~~Phase 5 not designed~~ — built D435–D443.
 - Pinned-chat icon may not match version 308.
-- Phase 5 items not designed: multi-country tax, multi-location/franchise, ERP connectors, cross-border fulfilment.
+- **Phase 5 follow-ups still open:** order invoices use example per-country wording (D462) that an accountant must confirm, including thresholds and numbering rules; ERP has no batches/expiry dates, no push of KUBICU stock changes, no product creation (D440); sponsorship disputes exist with a staff queue (D453–D454) with a 48-hour reply time (D455) evidence file names (D463) and one appeal decided by a different reviewer (D464), brands see each creator's identity check and deal record (D461) but there's no minimum audience or audience proof, card payment by brands (D441; staff check new briefs since D459; tracked-link results come from Analytics since D457); NFC tags can't be ordered outside Nigeria or encoded from your own blanks (D442); franchise partners can't sign in to run only their branch, there's no per-branch staff access or delivery from a branch (D437); no scheduled activity exports or live security feed (D439). Daily/hourly auto-syncs only run when the Integrations screen opens.
 
 ### 17.6 Docs refreshed on 30 Oct 2026
 All ten docs flagged earlier now carry a D343 update note or corrected line: `DECISIONS_FOR_SIGNOFF.md` (status refresh: A confirmed, B/C/D open, new items), `DESIGN_GAP_AUDIT.md` (D274–D343 re-audit, §7 and history), `DESIGN_TRACEABILITY_MATRIX.md` (IB-O fixed, "Added after D273" section), `PROTOTYPE_STATUS.md` (translation passes ticked, after-Batch-14 list, founder items), `COMPOSITION_SPEC.md` §7 (drag into containers, D342 checks), `BLOCK_REGISTER.md` (D342 update), `COPILOT_SPEC.md` (sidebar chats, All chats, translation), `ACCESSIBILITY_REPORT.md` (uncovered screens), `SCREEN_INVENTORY.md` (later screens), `PLAN_MATRIX.md` (source of truth and price conflict). The point-in-time registers (`THEME_REGISTER`, `TEMPLATE_REGISTER`, `COMMERCE_UPGRADE`, `EXTENSION_REGISTER`, `PUBLIC_SITE_REGISTER`) have no known wrong statements beyond what §3.3 notes.
@@ -433,7 +474,27 @@ All 12 design deliverables now exist as written docs (D345–D350), rolled up in
 
 **What must not go to production is listed item by item, with file paths and a release gate, in `docs/NOT_FOR_PRODUCTION.md` (D349).** Summary: remove the Controls-panel switches, simulation controls, PrototypeNote banners, simulated people and demo data; replace every simulated provider server-side; move auth, roles, plans, prices, balances, limits and publishing to the server; replace the "any 6 digits" codes and `Math.random()` tokens; keep nothing sensitive in localStorage; don't publish draft legal text, unreviewed translations or example prices.
 
-The prototype is the design reference. To ship, engineering needs: a backend and database (start from `types/` as the data model), real auth and sessions, multi-tenant isolation, server-side publishing and hosting for `kub.icu/<handle>` and custom domains, payment and payout integration with webhooks and idempotency, file/media storage and CDN, server-side analytics and bot filtering, messaging integrations, the AI provider (see `AI_ASSISTANT_INTEGRATION.md`), staff console backed by real audit logs, security review, privacy/NDPA compliance review, automated tests, and deployment/operations. The §4.5 follow-on docs are the intended home for these specs.
+The prototype is the design reference. To ship, engineering needs: a backend and database (start from `types/` as the data model), real auth and sessions, multi-tenant isolation, server-side publishing and hosting for `kub.icu/<handle>` and custom domains, payment and payout integration with webhooks and idempotency, file/media storage and CDN, server-side analytics and bot filtering, messaging integrations, the AI provider (see `AI_ASSISTANT_INTEGRATION.md` for the page assistant and `COPILOT_AI_INTEGRATION.md` for Copilot), staff console backed by real audit logs, security review, privacy/NDPA compliance review, automated tests, and deployment/operations. The §4.5 follow-on docs are the intended home for these specs.
+
+---
+
+## 18a. Copilot and the AI model — what survives, what's replaced
+
+**Product position (D520):** Copilot is KUBICU's front door — a general KUBICU assistant whose main job is building pages. It answers questions briefly with a link to the screen where the person acts, hands business advice to Business Coach and workspace jobs to the Assistant, and never moves money, refunds, publishes or changes accounts from chat.
+
+**Survives unchanged when a model is connected**
+- Every screen: web chat and chat list, sidebar chats, WhatsApp simulation, brief card, progress, preview `/d/:id`, claim flow `/copilot/continue`, the Ask bar.
+- The data contract in `types/copilot.ts` (sessions, messages with `replies` and `links`, questions, brief, drafts, inputs).
+- Page building: the model fills answers and photo roles; `planFor` → `makePlan` builds valid blocks and themes, so drafts always pass publish checks.
+- Limits, expiry, claiming, sensitive-data removal and the honesty rules (no invented prices, reviews, hours or policies).
+- Knowledge: Help centre guides (`data/help/*`), curated topics (`data/copilotHelpTopics.ts`), plans, countries and the operations-adjustable figures become the model's grounding.
+- Interface translations.
+
+**Replaced:** `respond` and its rule helpers in `utils/copilot/engine.ts` (about four files of logic). **Becomes unnecessary:** `utils/copilot/understand.ts` + `data/copilotUnderstanding.ts` (a model reads all eight languages), the keyword matching in `utils/copilot/askAnything.ts` and the keyword rows in `copilotHelpTopics.ts`, and pre-translated answers. **Added by engineering anyway:** a server endpoint that holds the API key, stores sessions and drafts, enforces limits, validates output and logs to AI operations.
+
+**Reasoning, not pasting:** today Copilot follows rules and quotes guides because nothing in the browser can reason. With a model it understands the question (including follow-ups), retrieves the relevant guides and live settings as reference, and writes its own answer in the person's language — while refusing to state any fee, price, limit or policy that isn't in those sources.
+
+Full contract, tool list, grounding order, language handling, the 18-point acceptance list and red-team tests: **`docs/COPILOT_AI_INTEGRATION.md`**.
 
 ---
 
@@ -444,7 +505,7 @@ Give the **whole project** (all code files) plus these docs. Read them in this o
 **1. Start here**
 1. `docs/CLAUDE_HANDOFF.md` — this file.
 2. `docs/NOT_FOR_PRODUCTION.md` — what must not ship, what to replace, and the release gate (D349). **Read before writing production code.**
-3. `docs/DESIGN_DECISION_REGISTER.md` — every decision D1–D430 (source of truth).
+3. `docs/DESIGN_DECISION_REGISTER.md` — every decision D1–D522 (source of truth).
 
 **2. Status and what's open**
 3. `docs/DESIGN_GAP_AUDIT.md` — open gaps by type (re-audited to D343).
@@ -474,20 +535,23 @@ Give the **whole project** (all code files) plus these docs. Read them in this o
 17. `docs/COMMERCE_UPGRADE.md` — commerce.
 18. `docs/EXTENSION_REGISTER.md` — Marketplace add-ons.
 19. `docs/PUBLIC_SITE_REGISTER.md` — website.
-20. `docs/COPILOT_SPEC.md` — Copilot.
-21. `docs/AI_ASSISTANT_INTEGRATION.md` — connecting a real AI model.
-22. `docs/ACCESSIBILITY_REPORT.md` — accessibility status and manual test checklist.
+20. `docs/COPILOT_SPEC.md` — Copilot (what it does today).
+21. `docs/COPILOT_AI_INTEGRATION.md` — **connecting a real model to Copilot** (keep vs replace, contract, tools, grounding, acceptance tests) (D522).
+22. `docs/AI_ASSISTANT_INTEGRATION.md` — connecting a real model to the canvas page assistant.
+23. `docs/ACCESSIBILITY_REPORT.md` — accessibility status and manual test checklist.
 
 **5. Content that lives in code (not docs) but Claude must know about**
 - `data/legal/` — legal documents (Draft 1.0, awaiting lawyer).
-- `data/help/` — help centre articles.
+- `data/help/` — help centre articles (also Copilot's knowledge source, D521).
+- `data/copilotHelpTopics.ts` — Copilot's 17 curated answers and the screens they link to (D520).
+- `data/adjustableFigures.ts` — every example figure operations can change (D465).
 - `data/translations*.ts` — Pidgin, Yorùbá, Hausa and Igbo drafts; `data/translationsKeGhZa/` — Kiswahili, Twi and isiZulu drafts.
 - `data/countries.ts`, `data/kycCountries.ts` — per-country rules.
 - `data/planMatrix.ts`, `data/plans.ts`, `data/permissions.ts` — plans, limits, roles.
 - `data/roadmap.ts` — public roadmap.
 - `types/` — the data model.
 
-That is 29 docs plus the code. Nothing else in the project is needed to continue.
+That is 30 docs plus the code. Nothing else in the project is needed to continue.
 
 ## 20. Working checklist (short version — the full review is `docs/VISUAL_QA_CHECKLIST.md`)
 
@@ -508,6 +572,14 @@ Before finishing
 - [ ] No label, button or tab wraps to two lines (check long languages).
 - [ ] Sibling cards share baselines; text contrast passes against its real background.
 - [ ] Keyboard focus visible and in order; results announced.
-- [ ] Register row added (next D431); stale docs updated.
+- [ ] Register row added (next D523); stale docs updated.
+- [ ] A new workspace screen or Help centre guide is something Copilot can now be asked about: add a curated topic in `data/copilotHelpTopics.ts` (answer + link) when it's a common question, otherwise the guide is found automatically (D520–D521). Never let Copilot perform money or account actions.
+- [ ] Workspace screens respect the country rollout (D494): don't add another entry path that creates a workspace without `country`, and staff money uses `utils/admin/workspaceMoney.ts`, never a cross-currency sum.
+- [ ] A new staff area or adjustable thing should be findable from the staff console search (`components/admin/AdminSearch.tsx`, D472).
+- [ ] A new block that sells, books or collects through a module gets an entry in `blockModule` in `components/blocks/BlockRenderer.tsx` (D470), so staff module switches reach published pages.
+- [ ] A new example figure goes in `data/adjustableFigures.ts` and is read with `figure(key)` (D465), so operations can change it in Figures & names. New text goes through `tr()`, so it can be reworded in Localisation → English.
+- [ ] A new workspace module or add-on is automatically switchable in Feature flags (D464); check effects with `market.isActive`, and sidebar/install state with `market.isInstalled`.
+- [ ] Every page sits in the 1200px workspace column and every side sheet pads its body (`bodyClassName="px-5 py-6"`) — D445/D450 fixed pages that missed this.
+- [ ] New sentences go through `tr()`; shared controls translate their own labels, but plain text, counts and toasts don't (D448). Counts read "Label: n", not English plurals.
 - [ ] Anything simulated stays labelled and is listed in `NOT_FOR_PRODUCTION.md`.
 - [ ] Tell the user what wasn't verified.

@@ -267,6 +267,21 @@ export function Services() {
               checked={!!draft.approval}
               onChange={(approval) => patch({ approval })} />
             
+            {draft.approval &&
+            <SelectInput<string>
+              id="svc-auto-decline"
+              label="If you don’t answer"
+              value={String(draft.autoDeclineHours ?? 0)}
+              options={[
+              { value: '0', label: tr('Decline when its time arrives') },
+              { value: '12', label: tr('Decline after {n} hours', { n: 12 }) },
+              { value: '24', label: tr('Decline after {n} hours', { n: 24 }) },
+              { value: '48', label: tr('Decline after {n} hours', { n: 48 }) }]
+              }
+              hint={tr('Declined requests free the time, and any deposit is refunded in full. The customer is told.')}
+              onChange={(v) => patch({ autoDeclineHours: Number(v) || undefined })} />
+
+            }
             {existing?.approval && !draft.approval && openRequests(data.bookings).some((b) => b.serviceId === existing.id) &&
             <p className="rounded-md bg-warning-soft px-3 py-2 text-caption text-fg">{tr('Requests already waiting stay requests — answer them in Schedule. Only new bookings change.')}</p>
             }

@@ -152,7 +152,7 @@ const rows: Row3[] = [
 ['You organise them', 'Unawapanga', 'Wohyehyɛ wɔn', 'Uyabahlela'],
 ['Tag them, add a note, or let a rule do it. Segments update on their own as people match.', 'Waweke lebo, ongeza ujumbe, au acha kanuni ifanye. Makundi yanajisasisha yenyewe watu wanapolingana.', 'Hyɛ wɔn agyiraeɛ, fa nsɛm ka ho, anaa ma mmara nyɛ. Akuo sesa wɔn ankasa bere a nkurɔfoɔ hyia.', 'Bafake amathegi, wengeze inothi, noma uvumele umthetho ukwenze. Izigaba ziyazibuyekeza njengoba abantu befanela.'],
 ['Tags', 'Lebo', 'Agyiraeɛ', 'Amathegi'],
-['regular, lagos', 'wa kawaida, lagos', 'ɔtɔfoɔ daa, lagos', 'ovamile, lagos'],
+['regular, lagos', 'wa kawaida, nairobi', 'ɔtɔfoɔ daa, accra', 'ovamile, egoli'],
 ['Segment', 'Kundi', 'Kuo', 'Isigaba'],
 ['Subscribed from Instagram', 'Waliojisajili kutoka Instagram', 'Wɔn a wɔkyerɛw wɔn din firi Instagram', 'Ababhalise kusuka ku-Instagram'],
 ['You reach them — properly', 'Unawafikia — ipasavyo', 'Wo nya wɔn — yie', 'Uyabafinyelela — ngendlela efanele'],

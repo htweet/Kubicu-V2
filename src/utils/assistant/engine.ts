@@ -382,7 +382,8 @@ function applyChange(s: AssistantSession, text: string, ctx: EngineContext): Ass
     a.name = nameMatch[1];
     changed.push(`the name is ${nameMatch[1]}`);
   }
-  const phone = /(\+?234\s?\d{3}\s?\d{3}\s?\d{4}|0[789][01]\d[\s-]?\d{3}[\s-]?\d{4})/.exec(text)?.[1]?.replace(/[\s-]/g, '');
+  // Any of the four countries' mobile numbers, with or without the code (D514); was Nigeria-only.
+  const phone = findMobileNumber(text);
   if (phone) {
     a.phone = phone;
     changed.push('the WhatsApp number is updated');

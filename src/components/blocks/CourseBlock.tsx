@@ -9,9 +9,11 @@ import { useCatalog } from '../../contexts/CatalogContext';
 import { MediaImage } from '../media/MediaImage';
 import { durationLabel, findCourse, learnUrl, lessonCount, totalMinutes } from '../../utils/commerce/courses';
 import { formatNgn } from '../../utils/format';
+import { useT } from '../../contexts/LocaleContext';
 
-/** A course card that leads to its course page, where people preview, buy, join or continue (D197). */
+/** A course card that leads to its course page, where people preview, buy, join or continue (D197). Fixed wording follows the visitor's language (D508). */
 export function CourseBlock({ block, theme: t, mode }: BlockProps<'course'>) {
+  const { t: tr } = useT();
   const c = block.content;
   const catalog = useCatalog();
   const { handle = '' } = useParams();
@@ -22,8 +24,8 @@ export function CourseBlock({ block, theme: t, mode }: BlockProps<'course'>) {
   }
 
   const lessons = lessonCount(course);
-  const price = course.access === 'paid' && course.priceNgn ? formatNgn(course.priceNgn) : course.access === 'free' ? 'Free' : 'With membership';
-  const label = c.ctaLabel.trim() || (course.access === 'paid' ? 'See the course' : course.access === 'free' ? 'Start free' : 'Open the course');
+  const price = course.access === 'paid' && course.priceNgn ? formatNgn(course.priceNgn) : course.access === 'free' ? tr('Free') : tr('With membership');
+  const label = c.ctaLabel.trim() || (course.access === 'paid' ? tr('See the course') : course.access === 'free' ? tr('Start free') : tr('Open the course'));
   const href = learnUrl(handle, course.id);
   const btnClass = 'flex h-11 w-full items-center justify-center gap-2 text-[14.5px] font-semibold sm:w-auto sm:px-6';
   const button =
@@ -38,10 +40,10 @@ export function CourseBlock({ block, theme: t, mode }: BlockProps<'course'>) {
 
   const meta =
   <p className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[13px]" style={{ color: t.mutedText }}>
-      <span>{lessons} {lessons === 1 ? 'lesson' : 'lessons'}</span>
+      <span>{tr('Lessons: {n}', { n: lessons })}</span>
       <span aria-hidden>·</span>
       <span className="inline-flex items-center gap-1">
-        <ClockIcon size={12} aria-hidden /> {durationLabel(totalMinutes(course))}
+        <ClockIcon size={12} aria-hidden /> {durationLabel(totalMinutes(course), tr)}
       </span>
       {course.instructor &&
     <>
@@ -81,7 +83,7 @@ export function CourseBlock({ block, theme: t, mode }: BlockProps<'course'>) {
                 <span className="shrink-0 text-[12px]" style={{ color: t.mutedText }}>
                   {m.lessons.some((l) => l.preview) ?
               <span className="inline-flex items-center gap-1">
-                      <PlayCircleIcon size={12} aria-hidden /> Preview
+                      <PlayCircleIcon size={12} aria-hidden /> {tr('Preview')}
                     </span> :
 
               <span className="inline-flex items-center gap-1">
@@ -93,7 +95,7 @@ export function CourseBlock({ block, theme: t, mode }: BlockProps<'course'>) {
           )}
             {course.modules.length > 6 &&
           <li className="py-2.5 text-[13px]" style={{ color: t.mutedText }}>
-                + {course.modules.length - 6} more modules
+                {tr('More modules: {n}', { n: course.modules.length - 6 })}
               </li>
           }
           </ol>

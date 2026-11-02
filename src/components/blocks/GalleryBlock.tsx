@@ -8,8 +8,11 @@ import { PageOverlay } from './PageOverlay';
 import { cardRadius } from './pageStyle';
 import { useRenderPlan } from '../../contexts/RenderPlanContext';
 import { planAtLeast } from '../../data/plans';
+import { useT } from '../../contexts/LocaleContext';
 
+/** Photo gallery and viewer. Controls and labels follow the visitor's language (D505); photo descriptions stay as written. */
 export function GalleryBlock({ block, theme, mode }: BlockProps<'gallery'>) {
+  const { t: tr } = useT();
   const c = block.content;
   const plan = useRenderPlan();
   const [viewing, setViewing] = useState<number | null>(null);
@@ -30,7 +33,7 @@ export function GalleryBlock({ block, theme, mode }: BlockProps<'gallery'>) {
     const img = shown[index];
     const content = <MediaImage src={img.url} alt={img.alt} loading="lazy" className="h-full w-full object-cover" />;
     return interactive ?
-    <button type="button" onClick={() => open(index)} aria-label={`View photo ${index + 1} of ${shown.length}${img.alt ? `: ${img.alt}` : ''}`} className={className} style={{ borderRadius: radius, overflow: 'hidden' }}>
+    <button type="button" onClick={() => open(index)} aria-label={`${tr('View photo {n} of {total}', { n: index + 1, total: shown.length })}${img.alt ? `: ${img.alt}` : ''}`} className={className} style={{ borderRadius: radius, overflow: 'hidden' }}>
         {content}
       </button> :
 
@@ -46,7 +49,7 @@ export function GalleryBlock({ block, theme, mode }: BlockProps<'gallery'>) {
     <section>
       {c.title && <BlockTitle theme={theme}>{c.title}</BlockTitle>}
       {c.layout === 'carousel' && shown.length > 1 ?
-      <div className="-mx-1 flex snap-x snap-mandatory gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none]" aria-label={`${shown.length} photos — swipe to see more`} tabIndex={0}>
+      <div className="-mx-1 flex snap-x snap-mandatory gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none]" aria-label={tr('Photos: {n} — swipe to see more', { n: shown.length })} tabIndex={0}>
           {shown.map((img, i) =>
         <Tile key={img.id} index={i} className="aspect-[4/5] w-[78%] shrink-0 snap-start" />
         )}
@@ -67,7 +70,7 @@ export function GalleryBlock({ block, theme, mode }: BlockProps<'gallery'>) {
       }
       {!unlocked && mode === 'edit' && images.length > 1 &&
       <p className="mt-2 text-[12px]" style={{ color: theme.mutedText }}>
-          Free plan shows the first photo only. Creator plan and up show all {images.length}.
+          {tr('Free plan shows the first photo only. Creator plan and up show all of them ({n}).', { n: images.length })}
         </p>
       }
 
@@ -77,7 +80,7 @@ export function GalleryBlock({ block, theme, mode }: BlockProps<'gallery'>) {
         onClose={() => setViewing(null)}
         theme={theme}
         variant="viewer"
-        label="Photo viewer"
+        label={tr('Photo viewer')}
         onKeyDown={(e) => {
           if (e.key === 'ArrowRight') step(1);
           if (e.key === 'ArrowLeft') step(-1);
@@ -92,10 +95,10 @@ export function GalleryBlock({ block, theme, mode }: BlockProps<'gallery'>) {
               </p>
               {shown.length > 1 &&
           <div className="absolute inset-x-3 top-1/2 flex -translate-y-1/2 justify-between">
-                  <button type="button" onClick={() => step(-1)} aria-label="Previous photo" className="flex h-11 w-11 items-center justify-center rounded-full bg-white/15 text-white">
+                  <button type="button" onClick={() => step(-1)} aria-label={tr('Previous photo')} className="flex h-11 w-11 items-center justify-center rounded-full bg-white/15 text-white">
                     <ChevronLeftIcon size={20} aria-hidden />
                   </button>
-                  <button type="button" onClick={() => step(1)} aria-label="Next photo" className="flex h-11 w-11 items-center justify-center rounded-full bg-white/15 text-white">
+                  <button type="button" onClick={() => step(1)} aria-label={tr('Next photo')} className="flex h-11 w-11 items-center justify-center rounded-full bg-white/15 text-white">
                     <ChevronRightIcon size={20} aria-hidden />
                   </button>
                 </div>

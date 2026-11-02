@@ -5,12 +5,14 @@ import { BlockPlaceholder } from './BlockPlaceholder';
 import { SectionHeading } from './SectionHeading';
 import { PageAction } from './PageAction';
 import { buttonStyle, fontsFor, mix } from './pageStyle';
+import { useT } from '../../contexts/LocaleContext';
 
 /**
  * Credentials & experience (D169). Credentials: a ruled list of qualifications with issuer and year.
  * Résumé: a short summary, roles with years in a side column, and an optional CV download.
  */
 export function CredentialsBlock({ block, theme, mode }: BlockProps<'credentials'>) {
+  const { t: tr } = useT();
   const c = block.content;
   const items = c.items.filter((i) => i.title.trim());
   if (items.length === 0 && !c.summary.trim()) return mode === 'edit' ? <BlockPlaceholder icon={AwardIcon} title="Add qualifications or roles" hint="Only what you can show if asked" theme={theme} /> : null;
@@ -34,7 +36,7 @@ export function CredentialsBlock({ block, theme, mode }: BlockProps<'credentials
       </ul>
       {resume && c.cvUrl &&
       <PageAction mode={mode} href={c.cvUrl} className="mt-6 inline-flex h-11 items-center gap-2 px-5 text-[14px] font-semibold" style={buttonStyle(theme, 'default')}>
-          <DownloadIcon size={15} aria-hidden /> Download CV
+          <DownloadIcon size={15} aria-hidden /> {tr('Download CV')}
         </PageAction>
       }
     </section>);

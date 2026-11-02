@@ -9,9 +9,13 @@ import { useProof } from '../../hooks/useProof';
 import { matchedLabel, monthYear, ratingSummary, showable, shortDay, sourceBadge } from '../../utils/proof';
 import { MediaImage } from '../media/MediaImage';
 import { Stars } from '../proof/Stars';
+import { useT } from '../../contexts/LocaleContext';
+import { dateLocale } from '../../utils/localeFormat';
 
-/** Verified reviews and delivered work from Proof of work (D91). */
+/** Verified reviews and delivered work from Proof of work (D91). Fixed wording follows the visitor's language (D505). */
 export function ProofBlock({ block, theme: t, mode }: BlockProps<'proof'>) {
+  const { t: tr, lang } = useT();
+  const loc = dateLocale(lang);
   const pageOps = usePageOpsContext();
   const { current } = useWorkspace();
   const { data } = useProof(pageOps.workspaceId ?? current.id);
@@ -30,7 +34,7 @@ export function ProofBlock({ block, theme: t, mode }: BlockProps<'proof'>) {
   }
 
   return (
-    <section className="flex flex-col gap-4" aria-label={c.title || 'Proof of work'}>
+    <section className="flex flex-col gap-4" aria-label={c.title || tr('Proof of work')}>
       {c.title &&
       <h2 className="text-[20px] font-semibold leading-tight" style={{ fontFamily: fontsFor(t).display, color: t.text }}>
           {c.title}
@@ -43,11 +47,11 @@ export function ProofBlock({ block, theme: t, mode }: BlockProps<'proof'>) {
             <Stars rating={average} size={16} />
             <span className="font-semibold tabular-nums">{average.toFixed(1)}</span>
             <span style={muted}>
-              · {count} verified review{count === 1 ? '' : 's'}
+              · {tr('Verified reviews: {n}', { n: count })}
             </span>
           </p>
           <p className="text-[12.5px]" style={muted}>
-            Every review comes from a real order, booking or job. The business can’t edit them, and hidden ones still count in the rating.
+            {tr('Every review comes from a real order, booking or job. The business can’t edit them, and hidden ones still count in the rating.')}
           </p>
           {reviews.map((r) =>
         <figure key={r.id} className="p-4" style={cardStyle(t)}>
@@ -60,14 +64,14 @@ export function ProofBlock({ block, theme: t, mode }: BlockProps<'proof'>) {
                   {r.displayName}
                 </span>
                 <span className="inline-flex items-center gap-1">
-                  <BadgeCheckIcon size={12} aria-hidden /> {sourceBadge[r.source.kind]}
+                  <BadgeCheckIcon size={12} aria-hidden /> {tr(sourceBadge[r.source.kind])}
                 </span>
-                <span>· {monthYear(r.createdAt)}</span>
+                <span>· {monthYear(r.createdAt, loc)}</span>
               </figcaption>
               {r.reply &&
           <p className="mt-3 border-l-2 pl-3 text-[13px]" style={{ ...muted, borderColor: `${t.mutedText}55` }}>
                   <span className="font-semibold" style={{ color: t.text }}>
-                    Reply:
+                    {tr('Reply from the business:')}
                   </span>{' '}
                   {r.reply}
                 </p>
@@ -78,12 +82,12 @@ export function ProofBlock({ block, theme: t, mode }: BlockProps<'proof'>) {
       }
 
       {showWork && work.length > 0 &&
-      <ol className="flex flex-col gap-4 border-l pl-5" style={{ borderColor: `${t.mutedText}44` }} aria-label="Delivered work">
+      <ol className="flex flex-col gap-4 border-l pl-5" style={{ borderColor: `${t.mutedText}44` }} aria-label={tr('Delivered work')}>
           {work.map((w) =>
         <li key={w.id} className="relative">
               <span aria-hidden className="absolute -left-[25px] top-1.5 h-2.5 w-2.5 rounded-full" style={{ background: t.text }} />
               <p className="text-[12.5px]" style={muted}>
-                {shortDay(w.date)}
+                {shortDay(w.date, loc)}
               </p>
               <p className="text-[15px] font-semibold" style={{ color: t.text }}>
                 {w.title}
@@ -97,10 +101,10 @@ export function ProofBlock({ block, theme: t, mode }: BlockProps<'proof'>) {
               <p className="mt-1.5 flex flex-wrap gap-x-3 text-[12.5px]" style={muted}>
                 {w.source &&
             <span className="inline-flex items-center gap-1">
-                    <BadgeCheckIcon size={12} aria-hidden /> {matchedLabel[w.source.kind]}
+                    <BadgeCheckIcon size={12} aria-hidden /> {tr(matchedLabel[w.source.kind])}
                   </span>
             }
-                {w.clientName && <span>For {w.clientName}</span>}
+                {w.clientName && <span>{tr('Client: {name}', { name: w.clientName })}</span>}
               </p>
             </li>
         )}

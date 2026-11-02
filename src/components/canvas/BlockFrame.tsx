@@ -45,6 +45,10 @@ interface BlockFrameProps {
   onToggleLocked: (id: string) => void;
   onDelete: (id: string) => void;
   onEdit?: (id: string) => void;
+  /** Copy / paste (D516). */
+  onCopy?: (id: string) => void;
+  onPaste?: () => void;
+  pasteName?: string | null;
   /** Dragging into containers (D180): pointer position while this block is dragged, and on drop. */
   onDragMove?: (id: string, info: PanInfo) => void;
   onDragDone?: (id: string, info: PanInfo) => void;
@@ -76,6 +80,9 @@ export function BlockFrame({
   onToggleLocked,
   onDelete,
   onEdit,
+  onCopy,
+  onPaste,
+  pasteName,
   onDragMove,
   onDragDone,
   dropTarget
@@ -276,7 +283,10 @@ export function BlockFrame({
             onToggleHidden={() => onToggleHidden(block.id)}
             onToggleLocked={() => onToggleLocked(block.id)}
             onDelete={() => onDelete(block.id)}
-            onEdit={onEdit ? () => onEdit(block.id) : undefined} />
+            onEdit={onEdit ? () => onEdit(block.id) : undefined}
+            onCopy={onCopy ? () => onCopy(block.id) : undefined}
+            onPaste={onPaste}
+            pasteName={pasteName} />
           
         </div>
         }

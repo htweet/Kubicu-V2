@@ -8,6 +8,7 @@ import { buttonRadius, buttonStyle, mix } from '../blocks/pageStyle';
 import { canSell, isSoldOut, variantPrice } from '../../utils/commerce/catalog';
 import { formatNgn, whatsappLink } from '../../utils/format';
 import { isPreorder, preorderLeft } from '../../utils/commerce/sellModes';
+import { useT } from '../../contexts/LocaleContext';
 
 interface CardAddControlProps {
   product: Product;
@@ -26,6 +27,7 @@ interface CardAddControlProps {
  */
 export function CardAddControl({ product, theme, mode, ordering, whatsappPhone, block }: CardAddControlProps) {
   const cart = useCart();
+  const { t: tr } = useT();
   const [added, setAdded] = useState(false);
   useEffect(() => {
     if (!added) return;
@@ -46,16 +48,16 @@ export function CardAddControl({ product, theme, mode, ordering, whatsappPhone, 
     const price = variantPrice(product, single);
     const href = whatsappPhone ? whatsappLink(whatsappPhone, `Hi! I’d like to order: ${name}${price ? ` (${formatNgn(price)})` : ''}.`) : undefined;
     return (
-      <a href={href} target="_blank" rel="noreferrer" aria-label={`Order ${name} on WhatsApp`} className={`${base} ${width}`} style={secondary}>
-        <MessageCircleIcon size={14} aria-hidden /> Order
+      <a href={href} target="_blank" rel="noreferrer" aria-label={tr('Order {name} on WhatsApp', { name })} className={`${base} ${width}`} style={secondary}>
+        <MessageCircleIcon size={14} aria-hidden /> {tr('Order')}
       </a>);
 
   }
 
   if (!single) {
     return (
-      <button type="button" onClick={() => cart?.add(product.id)} aria-label={`Choose options for ${name}`} className={`${base} ${width}`} style={secondary}>
-        Choose
+      <button type="button" onClick={() => cart?.add(product.id)} aria-label={tr('Choose options for {name}', { name })} className={`${base} ${width}`} style={secondary}>
+        {tr('Choose')}
       </button>);
 
   }
@@ -69,14 +71,14 @@ export function CardAddControl({ product, theme, mode, ordering, whatsappPhone, 
   if (mode === 'stepper' && qty > 0) {
     const stepBtn = 'flex h-10 w-10 items-center justify-center transition-opacity duration-150 hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 disabled:opacity-40';
     return (
-      <div role="group" aria-label={`${name} quantity`} className={`inline-flex h-10 items-center ${width} ${block ? 'justify-between' : ''}`} style={{ ...secondary, padding: 0 }}>
-        <button type="button" className={stepBtn} aria-label={`One less ${name}`} onClick={() => cart?.setQty(single.id, qty - 1)}>
+      <div role="group" aria-label={tr('Quantity of {name}', { name })} className={`inline-flex h-10 items-center ${width} ${block ? 'justify-between' : ''}`} style={{ ...secondary, padding: 0 }}>
+        <button type="button" className={stepBtn} aria-label={tr('One less {name}', { name })} onClick={() => cart?.setQty(single.id, qty - 1)}>
           <MinusIcon size={15} aria-hidden />
         </button>
         <span className="min-w-[2ch] text-center text-[14px] font-semibold tabular-nums" aria-live="polite">
           {qty}
         </span>
-        <button type="button" className={stepBtn} aria-label={`One more ${name}`} disabled={qty >= max} onClick={() => cart?.setQty(single.id, qty + 1)}>
+        <button type="button" className={stepBtn} aria-label={tr('One more {name}', { name })} disabled={qty >= max} onClick={() => cart?.setQty(single.id, qty + 1)}>
           <PlusIcon size={15} aria-hidden />
         </button>
       </div>);
@@ -87,7 +89,7 @@ export function CardAddControl({ product, theme, mode, ordering, whatsappPhone, 
   return (
     <button
       type="button"
-      aria-label={`Add ${name} to cart`}
+      aria-label={tr('Add {name} to cart', { name })}
       disabled={!!line && qty >= max}
       onClick={() => {
         cart?.add(product.id, single.id, false, { silent: true });
@@ -97,7 +99,7 @@ export function CardAddControl({ product, theme, mode, ordering, whatsappPhone, 
       style={primary}>
       
       {added && mode === 'button' ? <CheckIcon size={14} aria-hidden /> : <PlusIcon size={14} aria-hidden />}
-      {added && mode === 'button' ? 'Added' : 'Add'}
+      {tr(added && mode === 'button' ? 'Added' : 'Add')}
     </button>);
 
 }

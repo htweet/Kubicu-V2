@@ -53,7 +53,7 @@ export function BusinessTab() {
           }
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
             <div className="sm:w-80">
-              <SelectInput<CurrencyCode> id="ws-currency" label="Sell in" value={choice} disabled={locked || !can.allowed} onChange={setChoice} options={currencies.map((c) => ({ value: c.code, label: `${c.name} (${c.symbol}) — ${c.country}` }))} />
+              <SelectInput<CurrencyCode> id="ws-currency" required label="Sell in" value={choice} disabled={locked || !can.allowed} onChange={setChoice} options={currencies.map((c) => ({ value: c.code, label: `${c.name} (${c.symbol}) — ${c.country}` }))} />
             </div>
             <Button disabled={locked || !can.allowed || choice === code} onClick={() => setConfirming(true)}>
               Change currency

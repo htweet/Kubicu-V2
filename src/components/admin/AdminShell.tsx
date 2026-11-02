@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Link, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeftIcon, LockIcon, LogOutIcon, MenuIcon, PanelLeftCloseIcon, PanelLeftOpenIcon } from 'lucide-react';
+import { ArrowLeftIcon, LockIcon, LogOutIcon, MenuIcon, PanelLeftCloseIcon, PanelLeftOpenIcon, SearchIcon } from 'lucide-react';
 import type { StaffMember } from '../../types/admin';
 import { setActiveCurrency } from '../../utils/currency';
 import { setActiveCountry } from '../../utils/country';
@@ -22,16 +22,20 @@ import { StaffNotificationsProvider } from '../../contexts/StaffNotificationsCon
 import { useAdminNavCounts } from '../../hooks/useAdminNavCounts';
 import { StaffNotificationBell, StaffNotificationsPanel } from './StaffNotifications';
 import { LanguagePicker } from '../ui/LanguagePicker';
+import { Kbd } from '../ui/Kbd';
+import { AdminSearch, useAdminSearchShortcut } from './AdminSearch';
+import { useT } from '../../contexts/LocaleContext';
 
 function AdminNavList({ staff, collapsed, tip, onNavigate }: {staff: StaffMember;collapsed?: boolean;tip?: SideTip;onNavigate?: () => void;}) {
   const groups = adminNav.map((g) => ({ ...g, items: g.items.filter((i) => roleCanOpen(staff.role, i.id)) })).filter((g) => g.items.length);
   // D248: each badge repeats the waiting count shown on that area's own page.
   const waiting = useAdminNavCounts();
+  const { t } = useT();
   return (
     <div className="flex flex-col gap-6">
       {groups.map((group) =>
       <div key={group.label}>
-          <SidebarGroupLabel collapsed={collapsed}>{group.label}</SidebarGroupLabel>
+          <SidebarGroupLabel collapsed={collapsed}>{t(group.label)}</SidebarGroupLabel>
           <ul className="flex flex-col gap-0.5">
             {group.items.map((item) =>
           <li key={item.id}>
@@ -46,7 +50,8 @@ function AdminNavList({ staff, collapsed, tip, onNavigate }: {staff: StaffMember
 }
 
 function ActorCard({ staff, collapsed }: {staff: StaffMember;collapsed?: boolean;}) {
-  const role = roleInfo(staff.role).label;
+  const { t } = useT();
+  const role = t(roleInfo(staff.role).label);
   const initials = staff.name.
   split(/\s+/).
   map((p) => p[0]).
@@ -65,7 +70,7 @@ function ActorCard({ staff, collapsed }: {staff: StaffMember;collapsed?: boolean
 
       <span className="min-w-0 flex-1">
           <span className="block truncate text-label font-semibold text-fg">{staff.name}</span>
-          <span className="block truncate text-caption text-fg-subtle">{role} · two-step on</span>
+          <span className="block truncate text-caption text-fg-subtle">{role} · {t('two-step on')}</span>
         </span>
       }
     </div>);
@@ -79,23 +84,26 @@ function signOut(staff: StaffMember) {
 
 /** Shown when a role opens an area it isn't allowed into (e.g. a bookmarked link). */
 function NoAccess({ staff, area }: {staff: StaffMember;area: string;}) {
-  const label = adminNavItems.find((i) => i.id === area)?.label ?? 'This area';
+  const { t } = useT();
+  const found = adminNavItems.find((i) => i.id === area)?.label;
   const first = adminNavItems.find((i) => roleCanOpen(staff.role, i.id));
+  const role = t(roleInfo(staff.role).label);
   return (
     <div className="mx-auto flex w-full max-w-lg flex-col items-start px-5 py-16 md:px-10">
       <span aria-hidden className="flex h-11 w-11 items-center justify-center rounded-full bg-sunken text-fg-muted">
         <LockIcon size={20} />
       </span>
-      <h1 className="mt-5 font-display text-title font-semibold text-fg">{label} isn’t part of your role</h1>
+      <h1 className="mt-5 font-display text-title font-semibold text-fg">{found ? t('{area} isn’t part of your role', { area: t(found) }) : t('This area isn’t part of your role')}</h1>
       <p className="mt-2 text-body text-fg-muted">
-        As {roleInfo(staff.role).label}, you can open {roleInfo(staff.role).description.toLowerCase().replace(/\.$/, '')}. If you need access, ask a Platform lead to change your role — the change is recorded in the audit log.
+        {t('Your role: {role}.', { role })} {t(roleInfo(staff.role).description)}{' '}
+        {t('If you need access, ask a Platform lead to change your role — the change is recorded in the audit log.')}
       </p>
       {first &&
       <Link
         to={`/admin/${first.id}`}
         className="mt-6 inline-flex h-10 items-center rounded-md border border-line-strong bg-raised px-4 text-label font-medium text-fg transition-colors duration-150 hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
         
-          Go to {first.label}
+          {t('Go to {area}', { area: t(first.label) })}
         </Link>
       }
     </div>);
@@ -103,7 +111,8 @@ function NoAccess({ staff, area }: {staff: StaffMember;area: string;}) {
 }
 
 function AdminTag() {
-  return <span className="rounded-full bg-accent-soft px-2 py-0.5 text-meta font-semibold text-accent">Super admin</span>;
+  const { t } = useT();
+  return <span className="whitespace-nowrap rounded-full bg-accent-soft px-2 py-0.5 text-meta font-semibold text-accent">{t('Super admin')}</span>;
 }
 
 /** The protected super-admin console — visually related to the workspace, but clearly a separate staff area. */
@@ -123,20 +132,27 @@ function AdminConsole({ staff }: {staff: StaffMember;}) {
   setActiveCurrency('NGN');
   setActiveCountry('NG');
   const [menuOpen, setMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const openSearch = useCallback(() => setSearchOpen(true), []);
+  useAdminSearchShortcut(openSearch);
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const area = pathname.split('/')[2] ?? '';
   const firstArea = adminNavItems.find((i) => roleCanOpen(staff.role, i.id))?.id ?? 'audit';
   const { collapsed, toggle } = useSidebarCollapsed();
   const tip = useSideTip();
+  // The console's frame follows the chosen language (D483); case details, notes and the audit log stay as recorded.
+  const { t } = useT();
   const ToggleIcon = collapsed ? PanelLeftOpenIcon : PanelLeftCloseIcon;
-  const toggleLabel = collapsed ? 'Expand sidebar' : 'Collapse sidebar';
+  const toggleLabel = t(collapsed ? 'Expand sidebar' : 'Collapse sidebar');
   const onToggle = () => {
     tip.hide();
     toggle();
   };
   // Staff console is separate from any customer workspace; this opens the customer app preview.
-  const back = 'Open customer app';
+  const back = t('Open customer app');
+  const signOutLabel = t('Sign out');
+  const searchLabel = t('Search');
 
   return (
     <div className="flex min-h-screen w-full bg-canvas text-fg">
@@ -167,7 +183,32 @@ function AdminConsole({ staff }: {staff: StaffMember;}) {
           }
         </div>
 
-        <nav aria-label="Super admin" className={cn('scroll-quiet min-h-0 flex-1 overflow-y-auto pb-4 pt-1', collapsed ? 'px-0' : 'px-3')}>
+        <div className={cn('shrink-0 pb-3', collapsed ? 'flex justify-center' : 'px-3')}>
+          {collapsed ?
+          <button
+            type="button"
+            onClick={openSearch}
+            aria-label={`${searchLabel} (Ctrl K)`}
+            onMouseEnter={tip.show(searchLabel)}
+            onMouseLeave={tip.hide}
+            className="flex h-10 w-10 items-center justify-center rounded-md text-fg-muted transition-colors duration-150 hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+            
+              <SearchIcon size={20} strokeWidth={2.1} aria-hidden />
+            </button> :
+
+          <button
+            type="button"
+            onClick={openSearch}
+            className="flex h-9 w-full items-center gap-2 rounded-md border border-line bg-canvas px-2.5 text-label text-fg-subtle transition-colors duration-150 hover:border-line-strong hover:text-fg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+            
+              <SearchIcon size={16} aria-hidden />
+              <span className="flex-1 text-left">{searchLabel}</span>
+              <Kbd>Ctrl K</Kbd>
+            </button>
+          }
+        </div>
+
+        <nav aria-label={t('Super admin')} className={cn('scroll-quiet min-h-0 flex-1 overflow-y-auto pb-4 pt-1', collapsed ? 'px-0' : 'px-3')}>
           <AdminNavList staff={staff} collapsed={collapsed} tip={tip} />
         </nav>
 
@@ -177,8 +218,8 @@ function AdminConsole({ staff }: {staff: StaffMember;}) {
           <button
             type="button"
             onClick={() => signOut(staff)}
-            aria-label={collapsed ? 'Sign out' : undefined}
-            onMouseEnter={collapsed ? tip.show('Sign out') : undefined}
+            aria-label={collapsed ? signOutLabel : undefined}
+            onMouseEnter={collapsed ? tip.show(signOutLabel) : undefined}
             onMouseLeave={tip.hide}
             className={cn(
               'mt-1 flex h-10 items-center gap-3 rounded-md text-label font-medium text-fg-muted transition-colors duration-150 hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
@@ -186,7 +227,7 @@ function AdminConsole({ staff }: {staff: StaffMember;}) {
             )}>
             
             <LogOutIcon size={20} strokeWidth={2.1} aria-hidden />
-            {!collapsed && 'Sign out'}
+            {!collapsed && signOutLabel}
           </button>
           <button
             type="button"
@@ -202,7 +243,7 @@ function AdminConsole({ staff }: {staff: StaffMember;}) {
             <ArrowLeftIcon size={20} strokeWidth={2.1} aria-hidden />
             {!collapsed && back}
           </button>
-          {collapsed && <StaffNotificationBell size="md" onMouseEnter={tip.show('Staff notifications')} onMouseLeave={tip.hide} />}
+          {collapsed && <StaffNotificationBell size="md" onMouseEnter={tip.show(t('Staff notifications'))} onMouseLeave={tip.hide} />}
           {collapsed &&
           <button
             type="button"
@@ -222,21 +263,23 @@ function AdminConsole({ staff }: {staff: StaffMember;}) {
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex h-14 items-center gap-2 border-b border-line bg-raised px-3 md:hidden">
-          <IconButton icon={MenuIcon} label="Open super admin menu" onClick={() => setMenuOpen(true)} />
+          <IconButton icon={MenuIcon} label={t('Open super admin menu')} onClick={() => setMenuOpen(true)} />
           <KubicuLogo />
           <span className="ml-auto flex items-center gap-2">
+            <IconButton icon={SearchIcon} label={searchLabel} onClick={openSearch} />
             <AdminTag />
             <LanguagePicker variant="compact" />
             <StaffNotificationBell size="md" />
           </span>
         </header>
         <SkipLink />
+        <AdminSearch staff={staff} open={searchOpen} onClose={() => setSearchOpen(false)} />
         <main id="main-content" tabIndex={-1} className="flex-1 focus:outline-none">
           {area === '' ? <Navigate to={`/admin/${firstArea}`} replace /> : roleCanOpen(staff.role, area) ? <Outlet /> : <NoAccess staff={staff} area={area} />}
         </main>
       </div>
 
-      <Sheet open={menuOpen} onClose={() => setMenuOpen(false)} title="Super admin">
+      <Sheet open={menuOpen} onClose={() => setMenuOpen(false)} title={t('Super admin')}>
         <div className="flex flex-col gap-5 p-3">
           <ActorCard staff={staff} />
           <AdminNavList staff={staff} onNavigate={() => setMenuOpen(false)} />
@@ -260,7 +303,7 @@ function AdminConsole({ staff }: {staff: StaffMember;}) {
             className="flex min-h-[48px] items-center gap-3 rounded-md px-2.5 text-body font-medium text-fg-muted hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
             
             <LogOutIcon size={20} strokeWidth={2.1} aria-hidden />
-            Sign out
+            {signOutLabel}
           </button>
         </div>
       </Sheet>

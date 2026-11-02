@@ -21,11 +21,12 @@ export function AddressStep({ k, set, errors, disabled }: KycStepProps) {
       <TextInput id="kyc-line1" label={business ? 'Business or operating address' : 'Home address'} value={a.line1} onChange={(e) => setA({ line1: e.target.value })} error={errors.line1} disabled={disabled} autoComplete="street-address" placeholder={kycRules().addressPlaceholder} />
       <div className="grid gap-4 md:grid-cols-2">
         <TextInput id="kyc-city" label="City or town" value={a.city} onChange={(e) => setA({ city: e.target.value })} error={errors.city} disabled={disabled} autoComplete="address-level2" />
-        <SelectInput id="kyc-state" label={country.regionLabel} value={a.state} onChange={(state) => setA({ state })} options={country.regions.map((s) => ({ value: s, label: s }))} disabled={disabled} />
+        <SelectInput id="kyc-state" label={country.regionLabel} value={a.state} onChange={(state) => setA({ state })} options={country.regions.map((s) => ({ value: s, label: s }))} disabled={disabled} required />
       </div>
       <div className="mt-2 flex flex-col gap-4 border-t border-line pt-6">
         <SelectInput<KycAddress['proofType']>
           id="kyc-proof-type"
+          required
           label="Proof of address"
           value={a.proofType}
           onChange={(proofType) => setA({ proofType })}

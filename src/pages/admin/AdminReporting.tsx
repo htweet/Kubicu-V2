@@ -10,6 +10,8 @@ import { readAnalytics } from '../../utils/analytics/storage';
 import { workspaceSpaces, readSpacePage } from '../../utils/spaces';
 import { orderMoney } from '../../utils/commerce/money';
 import { formatNgn } from '../../utils/format';
+import { formatMoney, type CurrencyCode } from '../../utils/currency';
+import { toNaira, workspaceCurrency } from '../../utils/admin/workspaceMoney';
 import { PageHeader } from '../../components/shell/PageHeader';
 import { Segmented } from '../../components/ui/Segmented';
 import { Stat, StatGroup } from '../../components/ui/layout/Stat';
@@ -28,6 +30,10 @@ interface WsStats {
   createdAt: string;
   mrr: number;
   live: boolean;
+  /** Sold, in the workspace's own currency (shown per seller). */
+  gmvLocal: number;
+  currency: CurrencyCode;
+  /** Sold and fees in naira at the day's rate, so KUBICU-wide totals never add currencies together (D494). */
   gmv: number;
   orders: number;
   fees: number;
@@ -119,6 +125,8 @@ export function AdminReporting() {
       const mrr = ended ? 0 : billing?.cycle === 'yearly' ? Math.round(price * YEARLY_MONTHS / 12) : price;
       const paid = (readCommerce(w.id)?.orders ?? []).filter((o) => Date.parse(o.createdAt) >= since && o.paymentStatus !== 'pending' && o.paymentStatus !== 'cancelled');
       const views = (readAnalytics(w.id)?.events ?? []).filter((e) => e.type === 'view' && Date.parse(e.at) >= since);
+      const currency = workspaceCurrency(w);
+      const gmvLocal = paid.reduce((s, o) => s + orderMoney(o).gross, 0);
       return {
         id: w.id,
         name: w.name,
@@ -126,9 +134,11 @@ export function AdminReporting() {
         createdAt: w.createdAt,
         mrr,
         live: workspaceSpaces(w).some((s) => !!readSpacePage(w.id, s.id)?.published),
-        gmv: paid.reduce((s, o) => s + orderMoney(o).gross, 0),
+        gmvLocal,
+        currency,
+        gmv: toNaira(gmvLocal, currency),
         orders: paid.length,
-        fees: paid.reduce((s, o) => s + o.kubicuFeeNgn, 0),
+        fees: toNaira(paid.reduce((s, o) => s + o.kubicuFeeNgn, 0), currency),
         visits: new Set(views.map((v) => v.session)).size
       };
     });
@@ -163,8 +173,8 @@ export function AdminReporting() {
             </div>
           </div>
           <StatGroup columns={4} divided>
-            <Stat label={`Sold through KUBICU · ${days} days`} value={formatNgn(total('gmv'))} hint={`${total('orders')} paid orders`} />
-            <Stat label="KUBICU fees earned" value={formatNgn(total('fees'))} hint="Test mode" />
+            <Stat label={`Sold through KUBICU · ${days} days`} value={formatNgn(total('gmv'))} hint={`${total('orders')} paid orders${stats.some((w) => w.currency !== 'NGN' && w.gmvLocal > 0) ? ' · other currencies at the day’s rate' : ''}`} />
+            <Stat label="KUBICU fees earned" value={formatNgn(total('fees'))} hint="Test mode · in naira" />
             <Stat label="New workspaces" value={newWs} hint={`${live} with a live page`} />
             <Stat label="Visits" value={total('visits').toLocaleString('en-NG')} hint="Sessions on public pages" />
           </StatGroup>
@@ -212,7 +222,7 @@ export function AdminReporting() {
                         <span className="block text-caption font-normal text-fg-subtle">{plans[w.plan].name}</span>
                       </th>
                       <td className="px-3 py-3 text-right tabular-nums text-fg-muted">{w.orders}</td>
-                      <td className="px-5 py-3 text-right font-semibold tabular-nums text-fg md:px-6">{formatNgn(w.gmv)}</td>
+                      <td className="px-5 py-3 text-right font-semibold tabular-nums text-fg md:px-6">{formatMoney(w.gmvLocal, w.currency)}</td>
                     </tr>
               )}
               </tbody>

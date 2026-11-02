@@ -4,6 +4,7 @@ import { BlockProps } from "./blockProps";
 import { BlockPlaceholder } from "./BlockPlaceholder";
 import { PageAction } from "./PageAction";
 import { cardStyle, mix } from "./pageStyle";
+import { useT } from "../../contexts/LocaleContext";
 interface Row {
   icon: BoxIcon;
   label: string;
@@ -15,6 +16,8 @@ export function ContactBlock({
   theme,
   mode
 }: BlockProps<'contact'>) {
+  // Row labels follow the visitor's language (D502); the seller's details stay as written.
+  const { t: tr } = useT();
   const {
     phone,
     email,
@@ -61,7 +64,7 @@ export function ContactBlock({
                 <span className="text-[11.5px]" style={{
               color: theme.mutedText
             }}>
-                  {row.label}
+                  {tr(row.label)}
                 </span>
                 <span className="text-[14px] leading-snug">{row.value}</span>
               </span>

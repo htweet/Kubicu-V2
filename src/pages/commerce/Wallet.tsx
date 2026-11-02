@@ -42,7 +42,7 @@ const autoOptions: {value: AutoPayoutMode;label: string;}[] = [
 export function Wallet() {
   const { t: tr } = useT();
   const { current } = useWorkspace();
-  const { role, me } = useTeam();
+  const { role, me, myBranchId } = useTeam();
   const { data, update } = useMoney(current.id);
   const payPerm = useCan('payouts.manage');
   const canPayout = payPerm.allowed || role === 'admin' && data.adminsCanPayout;
@@ -87,6 +87,22 @@ export function Wallet() {
   data.kyc.status === 'rejected' ?
   'Your verification wasn’t approved' :
   'Verify your business to turn on payouts';
+
+  // The wallet holds the whole business's money, so a teammate limited to one location doesn't see it (D482).
+  if (myBranchId)
+  return (
+    <>
+        <PageHeader title={tr('Wallet')} />
+        <InlineAlert className="mt-6" tone="info" title={tr('The wallet covers the whole business')}>
+          {tr('You work at one location, so balances and payouts are only shown to the owner and admins. Your location’s sales are in the Sales report.')}
+        </InlineAlert>
+        <div className="mt-4">
+          <Button variant="secondary" onClick={() => navigate('/app/commerce/reports')}>
+            {tr('Open Sales report')}
+          </Button>
+        </div>
+      </>);
+
 
   return (
     <>

@@ -54,8 +54,9 @@ export function ratingSummary(reviews: ProofReview[]) {
 
 export const showable = (r: ProofReview) => r.permission && !r.hidden && r.text.trim().length > 0;
 
-export const monthYear = (iso: string) => new Date(iso).toLocaleDateString('en-NG', { month: 'short', year: 'numeric' });
-export const shortDay = (iso: string) => new Date(iso).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' });
+/** `locale` from dateLocale() on published pages (D510). */
+export const monthYear = (iso: string, locale = 'en-NG') => new Date(iso).toLocaleDateString(locale, { month: 'short', year: 'numeric' });
+export const shortDay = (iso: string, locale = 'en-NG') => new Date(iso).toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
 
 export interface EligibleSource {
   source: ProofSource;
