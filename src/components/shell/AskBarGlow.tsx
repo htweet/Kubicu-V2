@@ -16,9 +16,9 @@ const GAP_CALM: [number, number] = [25, 45];
 const ARC =
 'conic-gradient(from 0deg, transparent 0deg, transparent 190deg, #4285F4 225deg, #A142F4 255deg, #EA4335 285deg, #FBBC04 318deg, #34A853 345deg, transparent 360deg)';
 
-/** Shows only a 1.5px ring: the inner area is masked out so the bar's own surface stays untouched. */
+/** Shows only a 2px ring (D527): the inner area is masked out so the bar's own surface stays untouched. */
 const RING_MASK: React.CSSProperties = {
-  padding: '1.5px',
+  padding: '2px',
   WebkitMask: 'linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)',
   WebkitMaskComposite: 'xor',
   maskComposite: 'exclude'
