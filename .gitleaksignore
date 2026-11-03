@@ -1,0 +1,4 @@
+# Reviewed false positives only. Each entry is one exact finding (commit:file:rule:line or file:rule:line).
+# src/utils/handleClaim.ts: `const KEY = 'kubicu.handleClaim.v1'` is a localStorage key name, not a credential.
+75b316a70f8a390201a9aa523e8af56188ffb66c:src/utils/handleClaim.ts:generic-api-key:5
+src/utils/handleClaim.ts:generic-api-key:7
