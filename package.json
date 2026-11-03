@@ -8,6 +8,7 @@
     "build": "npx vite build",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "preview": "npx vite preview",
+    "start:local": "npm run build && npx vite preview --port 4173 --strictPort",
     "check:manifests": "node scripts/check-manifests.mjs",
     "typecheck:ratchet": "node scripts/typecheck-ratchet.mjs",
     "typecheck:baseline": "node scripts/typecheck-ratchet.mjs --write-baseline",
