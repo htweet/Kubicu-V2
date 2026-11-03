@@ -1,0 +1,5077 @@
+{
+  "description": "Known TypeScript errors accepted at the time of recording. CI fails on any error not in this list. Re-record only after fixing errors.",
+  "typescript": "5.9.3",
+  "total": 845,
+  "errors": [
+    {
+      "file": "src/components/account/AccountAvatar.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/account/DataPrivacyTab.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/account/PasswordDialog.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/account/PreferencesTab.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/account/PreferencesTab.tsx",
+      "line": 35,
+      "code": "TS2304",
+      "message": "Cannot find name 'languageOptions'."
+    },
+    {
+      "file": "src/components/account/PreferencesTab.tsx",
+      "line": 35,
+      "code": "TS7006",
+      "message": "Parameter 'o' implicitly has an 'any' type."
+    },
+    {
+      "file": "src/components/account/TwoStepDialog.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/account/WorkspacesTab.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/admin/AccessReviewSection.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/admin/AdminSearch.tsx",
+      "line": 3,
+      "code": "TS6133",
+      "message": "'BoxIcon' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/admin/AdminSearch.tsx",
+      "line": 21,
+      "code": "TS2749",
+      "message": "'BoxIcon' refers to a value, but is being used as a type here. Did you mean 'typeof BoxIcon'?"
+    },
+    {
+      "file": "src/components/admin/AdminShell.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/admin/ApprovalQueue.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/admin/CountryRolloutSection.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/admin/ExtensionReviews.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/admin/ExtensionReviews.tsx",
+      "line": 97,
+      "code": "TS2322",
+      "message": "Type 'string | undefined' is not assignable to type 'string'."
+    },
+    {
+      "file": "src/components/admin/IncidentsCard.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/admin/integrations/ServicesCard.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/admin/KycReviewSheet.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/admin/KycReviewSheet.tsx",
+      "line": 64,
+      "code": "TS2345",
+      "message": "Argument of type 'CountryCode | undefined' is not assignable to parameter of type 'CountryCode'."
+    },
+    {
+      "file": "src/components/admin/localisation/PhraseReviewCard.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/admin/localisation/PolicyReleasesCard.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/admin/ModuleFlagsSection.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/admin/plans/CouponsCard.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/admin/plans/ExchangeRatesCard.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/admin/plans/PlanCatalogue.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/admin/plans/WorkspaceBillingTools.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/admin/tenants/PersonSheet.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/admin/tenants/StaffNotes.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/admin/tenants/WorkspaceSheet.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/ai/AiPageSetupDialog.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/ai/AiPreviewTag.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/ai/AiUsageMeter.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/ai/BlockSuggest.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/analytics/AudienceBreakdown.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/analytics/FunnelView.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/analytics/VisitsChart.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/assistant/AssistantChangeCard.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/assistant/AssistantChat.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/assistant/AssistantDoneCard.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/assistant/AssistantDoneCard.tsx",
+      "line": 3,
+      "code": "TS6133",
+      "message": "'BoxIcon' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/assistant/AssistantDoneCard.tsx",
+      "line": 83,
+      "code": "TS2749",
+      "message": "'BoxIcon' refers to a value, but is being used as a type here. Did you mean 'typeof BoxIcon'?"
+    },
+    {
+      "file": "src/components/assistant/AssistantExampleDialog.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/assistant/AssistantPlanCard.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/assistant/AssistantPreview.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/audience/AudienceSettingsSheet.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/audience/AudienceSources.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/audience/ContactDetail.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/audience/ContactOrigin.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/audience/DuplicatesDialog.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/audience/ImportContactsDialog.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/audience/LoyaltyPoints.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/audience/SegmentBuilder.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/auth/AuthLanguagePicker.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/auth/AuthShowcase.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/auth/PasswordChecklist.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/automations/AutomationBuilder.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/automations/AutomationSettingsSheet.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/automations/FormTriggerPicker.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/automations/PendingDrafts.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/automations/RunSteps.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/billing/BillingHistory.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/billing/CancelPlanDialog.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/billing/ChangePlanDialog.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/billing/ImpactList.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/billing/InvoiceDialog.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/billing/InvoiceStatusBadge.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/billing/QuoteTable.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/billing/UsageMeters.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/AgendaBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/AnchorNavBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/AnnouncementBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/AudioBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/AudioPlayer.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/BackToTopBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/BlockPlaceholder.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/BlockPlaceholder.tsx",
+      "line": 4,
+      "code": "TS6133",
+      "message": "'BoxIcon' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/BlockPlaceholder.tsx",
+      "line": 7,
+      "code": "TS2749",
+      "message": "'BoxIcon' refers to a value, but is being used as a type here. Did you mean 'typeof BoxIcon'?"
+    },
+    {
+      "file": "src/components/blocks/BlockRenderer.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/BlockRenderer.tsx",
+      "line": 125,
+      "code": "TS2349",
+      "message": "This expression is not callable."
+    },
+    {
+      "file": "src/components/blocks/BlockRenderer.tsx",
+      "line": 128,
+      "code": "TS2349",
+      "message": "This expression is not callable."
+    },
+    {
+      "file": "src/components/blocks/BlockRenderer.tsx",
+      "line": 136,
+      "code": "TS2349",
+      "message": "This expression is not callable."
+    },
+    {
+      "file": "src/components/blocks/BookingBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/BrandHeaderBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/CampaignSpotlightBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/CarouselBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/CheckoutButtonBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/CoBrandStrip.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/CollectionBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/ColumnsBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/CommunityBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/ComparisonBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/ConsentStrip.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/ContactActionsBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/ContactBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/ContactBlock.tsx",
+      "line": 2,
+      "code": "TS6133",
+      "message": "'BoxIcon' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/ContactBlock.tsx",
+      "line": 9,
+      "code": "TS2749",
+      "message": "'BoxIcon' refers to a value, but is being used as a type here. Did you mean 'typeof BoxIcon'?"
+    },
+    {
+      "file": "src/components/blocks/ContainerPlaceholder.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/CountdownBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/CourseBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/CredentialsBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/CtaBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/DataSaverBar.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/DeliveryBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/DividerBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/DocumentBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/DownloadBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/EmbedBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/EventBlock.tsx",
+      "line": 2,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/FaqAssistantBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/FaqBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/FeatureGridBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/FiguresBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/FormBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/GalleryBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/HeadingBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/HoursBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/ImageBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/LanguageSwitchBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/LinkBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/LinkCollectionBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/LinkedEvent.tsx",
+      "line": 2,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/ListingsBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/LocationBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/LogoStripBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/MadeWithKubicu.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/MediaListBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/MembersOnlyBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/MenuBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/PageLayoutView.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/PlaylistBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/PoliciesBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/PollBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/PortfolioBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/PressBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/PricingBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/ProductBlock.tsx",
+      "line": 2,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/ProductGridBlock.tsx",
+      "line": 2,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/ProfileBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/ProofBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/PublicFooter.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/QrCodeBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/QuoteBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/RecommendationsBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/ReportPageDialog.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/ReviewSummaryBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/SeatPicker.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/ShareBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/ShopCategoriesBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/SmartButtonBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/SocialBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/SpacerBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/StepsBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/SubscriptionBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/TeamBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/TestimonialBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/TextBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/TimelineBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/VerifiedTick.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/VideoBlock.tsx",
+      "line": 2,
+      "code": "TS6133",
+      "message": "'BoxIcon' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/VideoBlock.tsx",
+      "line": 9,
+      "code": "TS2749",
+      "message": "'BoxIcon' refers to a value, but is being used as a type here. Did you mean 'typeof BoxIcon'?"
+    },
+    {
+      "file": "src/components/blocks/VisitorLanguageRow.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/blocks/WhatsAppBlock.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/booking/BookingSheet.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/booking/IntakeQuestionFields.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/booking/SlotPicker.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/bookingpage/BookingPagePanel.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/bookings/BookingDetail.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/bookings/BookingsLayout.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/bookings/BookingsPlanNote.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/bookings/CalendarSyncCard.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/bookings/ClassSessions.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/bookings/IntakeQuestionsEditor.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/bookings/MeetingAppsCard.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/bookings/MeetingLinkPanel.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/bookings/OwnerSlotPicker.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/bookings/StaffHoursDialog.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/bookings/StaffHoursDialog.tsx",
+      "line": 140,
+      "code": "TS2349",
+      "message": "This expression is not callable."
+    },
+    {
+      "file": "src/components/bookings/TeamHoursCard.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/bookings/TeamHoursCard.tsx",
+      "line": 85,
+      "code": "TS2349",
+      "message": "This expression is not callable."
+    },
+    {
+      "file": "src/components/canvas/AiSuggestEntry.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/BlockFrame.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/BlockInspector.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/BlockMiniPreview.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/BlockRow.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/BlockStatusChip.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/CampaignPhaseBar.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/CanvasNoAccess.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/CoBrandChip.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/CoBrandSheet.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/CommandPalette.tsx",
+      "line": 5,
+      "code": "TS6133",
+      "message": "'BoxIcon' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/CommandPalette.tsx",
+      "line": 30,
+      "code": "TS2749",
+      "message": "'BoxIcon' refers to a value, but is being used as a type here. Did you mean 'typeof BoxIcon'?"
+    },
+    {
+      "file": "src/components/canvas/CompositionPanel.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/ConflictBanner.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/DesktopEditor.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/EditorTopBar.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/Inspector.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/inspector/AbTestFields.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/inspector/AudioFileField.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/inspector/BehaviourFields.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/inspector/BookingFields.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/inspector/BookingPageSettingsPanel.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/inspector/CampaignSettingsPanel.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/inspector/CatalogFields.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/inspector/CoBrandBlockBar.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/inspector/CoBrandSettingsPanel.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/inspector/ColorField.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/inspector/ContainerFields.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/inspector/ContainerMembership.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/inspector/ContentFields.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/inspector/CourseFields.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/inspector/DealRoomSettingsPanel.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/inspector/DeliveryFields.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/inspector/EmbedFields.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/inspector/EmbedFields.tsx",
+      "line": 101,
+      "code": "TS2345",
+      "message": "Argument of type 'string | undefined' is not assignable to parameter of type 'string'."
+    },
+    {
+      "file": "src/components/canvas/inspector/EventLinkFields.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/inspector/EventSpaceSettingsPanel.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/inspector/ExtendedContentFields.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/inspector/FaqAssistantFields.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/inspector/FaqItemsEditor.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/inspector/FormBlockFields.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/inspector/FundraiserSettingsPanel.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/inspector/HoursEditor.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/inspector/IndexingFields.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/inspector/LayoutBlockFields.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/inspector/LayoutBlockFields.tsx",
+      "line": 47,
+      "code": "TS2741",
+      "message": "Property 'aspect' is missing in type '{ id: string; label: string; optional: true; value: string; onChange: (imageUrl: string, meta: { alt: string; } | undefined) => void; }' but required in type 'MediaPickerProps'."
+    },
+    {
+      "file": "src/components/canvas/inspector/LayoutBlockFields.tsx",
+      "line": 87,
+      "code": "TS2741",
+      "message": "Property 'aspect' is missing in type '{ id: string; label: string; optional: true; value: string; onChange: (imageUrl: string) => void; }' but required in type 'MediaPickerProps'."
+    },
+    {
+      "file": "src/components/canvas/inspector/LayoutBlockFields.tsx",
+      "line": 123,
+      "code": "TS2741",
+      "message": "Property 'aspect' is missing in type '{ id: string; label: string; optional: true; value: string; onChange: (logoUrl: string) => void; }' but required in type 'MediaPickerProps'."
+    },
+    {
+      "file": "src/components/canvas/inspector/LayoutBlockFields.tsx",
+      "line": 162,
+      "code": "TS2741",
+      "message": "Property 'aspect' is missing in type '{ id: string; label: string; optional: true; value: string; onChange: (imageUrl: string) => void; }' but required in type 'MediaPickerProps'."
+    },
+    {
+      "file": "src/components/canvas/inspector/LayoutBlockFields.tsx",
+      "line": 192,
+      "code": "TS2741",
+      "message": "Property 'aspect' is missing in type '{ id: string; label: string; optional: true; value: string; onChange: (imageUrl: string) => void; }' but required in type 'MediaPickerProps'."
+    },
+    {
+      "file": "src/components/canvas/inspector/LookPicker.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/inspector/MediaSupportFields.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/inspector/MembersAreaSettingsPanel.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/inspector/MembersOnlyFields.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/inspector/NextBlockSuggestions.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/inspector/PageBackgroundSection.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/inspector/PageSettingsPanel.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/inspector/ProductFields.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/inspector/ProofFields.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/inspector/Round2BlockFields.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/inspector/SavedThemes.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/inspector/SearchSharingFields.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/inspector/SmartCommerceFields.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/inspector/SocialItemsEditor.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/inspector/SourceRuleFields.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/inspector/StandardConsent.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/inspector/StoryBlockFields.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/inspector/StyleFields.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/inspector/SubscriptionFields.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/inspector/ThemePanel.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/inspector/TrustBadgeFields.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/inspector/VisibilityFields.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/LeftPanel.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/LookRow.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/MembersAreaPreview.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/MobileEditor.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/MobileEditor.tsx",
+      "line": 3,
+      "code": "TS6133",
+      "message": "'BoxIcon' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/MobileEditor.tsx",
+      "line": 36,
+      "code": "TS2749",
+      "message": "'BoxIcon' refers to a value, but is being used as a type here. Did you mean 'typeof BoxIcon'?"
+    },
+    {
+      "file": "src/components/canvas/PageCheckPanel.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/PageMembersFields.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/PagesPanel.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/PageStatusBadge.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/PageSwitcher.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/PanelRail.tsx",
+      "line": 2,
+      "code": "TS6133",
+      "message": "'BoxIcon' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/PanelRail.tsx",
+      "line": 8,
+      "code": "TS2749",
+      "message": "'BoxIcon' refers to a value, but is being used as a type here. Did you mean 'typeof BoxIcon'?"
+    },
+    {
+      "file": "src/components/canvas/PresenceAvatars.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/PublishDialog.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/ReviewStatus.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/SavedSectionsList.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/SaveIndicator.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/SaveSectionDialog.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/SectionPresetList.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/ShortcutsDialog.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/ShortLinkQuick.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/ShortLinkQuick.tsx",
+      "line": 144,
+      "code": "TS2339",
+      "message": "Property 'target' does not exist on type 'SourceId'."
+    },
+    {
+      "file": "src/components/canvas/SiteKitDialog.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/SiteKitLauncher.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/SourcePreviewBar.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/SpaceSwitcher.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/TemplatesPanel.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/VersionHistory.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/canvas/VoiceToContentDialog.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/certificates/CertificateSeal.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/certificates/CertificateSheet.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/checkout/CardPay.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/checkout/CartButton.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/checkout/CheckoutSheet.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/checkout/DiscountCodeField.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/checkout/EscrowNotice.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/checkout/GiftCardField.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/checkout/LoyaltyReceiptCard.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/checkout/LoyaltyRedeem.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/checkout/OrderBalanceCard.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/checkout/OrderTrackingCard.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/checkout/OrderTrackingCard.tsx",
+      "line": 2,
+      "code": "TS6133",
+      "message": "'CheckIcon' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/checkout/PayWithChooser.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/checkout/TransferAccountPay.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/collabs/CollabSettingsSheet.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/collabs/PartnerDetail.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/collabs/PartnerEditor.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/AdjustStockDialog.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/BranchSheet.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/checkin/DoorNameForm.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/checkin/DoorsPanel.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/CollectionsSheet.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/CommerceLayout.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/courses/CourseLearners.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/courses/CurriculumEditor.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/courses/LessonEditor.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/courses/LiveLessonFields.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/DigitalFileField.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/DiscountEditor.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/DiscountEditor.tsx",
+      "line": 7,
+      "code": "TS6133",
+      "message": "'valueLabel' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/DisputePanel.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/EventEditor.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/GiftCardDetail.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/ImportProductsDialog.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/ImportProductsDialog.tsx",
+      "line": 143,
+      "code": "TS2345",
+      "message": "Argument of type '0 | \"bg-danger-soft/50\"' is not assignable to parameter of type 'string | false | null | undefined'."
+    },
+    {
+      "file": "src/components/commerce/ImportProductsDialog.tsx",
+      "line": 177,
+      "code": "TS2345",
+      "message": "Argument of type '0 | \"bg-danger-soft/50\"' is not assignable to parameter of type 'string | false | null | undefined'."
+    },
+    {
+      "file": "src/components/commerce/IssueGiftCardDialog.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/KeyLookup.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/OrderBalancePanel.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/OrderDetail.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/OrderInstalmentsPanel.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/OrderLicenceKeys.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/OrderPartnerSplit.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/OrderPodPanel.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/OrderTrackingPanel.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/ProductBundleField.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/ProductEditor.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/ProductImagesField.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/ProductInstalmentsField.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/ProductSellModesField.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/RefundDialog.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/reports/AccountingExportButton.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/reports/BarList.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/reports/IncomeChart.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/reports/MoneyStillToCome.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/reports/TaxByCountryCard.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/SeatMapOverview.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/settings/BusinessReceiptsSection.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/settings/CheckoutSettingsSection.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/settings/DeliveryPickupSection.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/settings/OrdersStockSection.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/settings/PoliciesSection.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/settings/ShopPaymentMethodsSection.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/settings/StoreStatusSection.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/settings/TaxSection.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/StatusBadges.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/storefront/FeaturedPicker.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/storefront/LookPicker.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/storefront/ShopPartsEditor.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/storefront/StorefrontLivePreview.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/TestModeStrip.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/TransferStockDialog.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/VariantsField.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/commerce/WatermarkPreview.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/copilot/claim/ClaimDraftAside.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/copilot/CopilotBriefCard.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/copilot/CopilotCanvasWelcome.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/copilot/CopilotLookOptions.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/copilot/CopilotPagePicture.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/copilot/CopilotPrivacyNotice.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/copilot/CopilotProgress.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/copilot/CopilotThread.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/copilot/whatsapp/WaListSheet.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/dealroom/DealRoomPanel.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/dealroom/ReferralShareCard.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/design-system/AccessibilityRules.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/design-system/AppearancePolicyPanel.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/design-system/ColorTokens.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/design-system/ControlGallery.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/design-system/DataGallery.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/design-system/FeedbackGallery.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/design-system/Foundations.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/domains/CampaignLinkDialog.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/domains/ConnectDomainDialog.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/domains/DestinationSelect.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/domains/DnsRecordsTable.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/domains/DomainCard.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/domains/DomainsLayout.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/domains/ExternalRedirect.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/domains/GrowthToolLayout.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/domains/KitActualSize.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/domains/KitContentFields.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/domains/KitDesignFields.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/domains/KitImageField.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/domains/PrintOrderSheet.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/domains/PrintOrdersList.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/domains/QrDesigner.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/domains/QrPreview.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/domains/RedirectDialog.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/domains/ShortLinkFilters.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/domains/UtmTagsFields.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/eventspace/EventSpaceNotice.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/extensions/AppGate.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/extensions/BankAccountsEditor.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/extensions/ExtensionDetail.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/extensions/ExtensionIcon.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/extensions/ExtensionIcon.tsx",
+      "line": 2,
+      "code": "TS6133",
+      "message": "'BoxIcon' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/extensions/ExtensionIcon.tsx",
+      "line": 5,
+      "code": "TS2749",
+      "message": "'BoxIcon' refers to a value, but is being used as a type here. Did you mean 'typeof BoxIcon'?"
+    },
+    {
+      "file": "src/components/extensions/ExtensionShortcut.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/extensions/ExtensionShortcut.tsx",
+      "line": 5,
+      "code": "TS6133",
+      "message": "'BoxIcon' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/extensions/ExtensionShortcut.tsx",
+      "line": 15,
+      "code": "TS2749",
+      "message": "'BoxIcon' refers to a value, but is being used as a type here. Did you mean 'typeof BoxIcon'?"
+    },
+    {
+      "file": "src/components/extensions/ExtensionsTour.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/extensions/ExtensionTools.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/extensions/InstallExtensionDialog.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/extensions/tools/ContactSyncTools.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/extensions/tools/ProductFeedTool.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/extensions/tools/SearchConsoleTool.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/extensions/tools/SyncHistory.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/extensions/WorksWith.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/forms/BookingSlotInput.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/forms/CalcEditor.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/forms/ConfirmationSettings.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/forms/CreateOrderSheet.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/forms/FieldEditor.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/forms/FormBuilder.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/forms/FormFieldInput.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/forms/ImageChoiceOptionsEditor.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/forms/MoreFieldControl.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/forms/NotFoundInline.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/forms/ProductPickEditor.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/forms/ResponseRecords.tsx",
+      "line": 72,
+      "code": "TS2339",
+      "message": "Property 'replace' does not exist on type 'never'."
+    },
+    {
+      "file": "src/components/forms/ResponseRecords.tsx",
+      "line": 82,
+      "code": "TS2322",
+      "message": "Type 'ForwardRefExoticComponent<Omit<LucideProps, \"ref\"> & RefAttributes<SVGSVGElement>>' is not assignable to type 'ComponentType<{ size?: number | undefined; className?: string | undefined; 'aria-hidden'?: boolean | undefined; }>'."
+    },
+    {
+      "file": "src/components/forms/ResponseRecords.tsx",
+      "line": 108,
+      "code": "TS2322",
+      "message": "Type 'ForwardRefExoticComponent<Omit<LucideProps, \"ref\"> & RefAttributes<SVGSVGElement>>' is not assignable to type 'ComponentType<{ size?: number | undefined; className?: string | undefined; 'aria-hidden'?: boolean | undefined; }>'."
+    },
+    {
+      "file": "src/components/forms/ResponseRecords.tsx",
+      "line": 125,
+      "code": "TS2322",
+      "message": "Type 'ForwardRefExoticComponent<Omit<LucideProps, \"ref\"> & RefAttributes<SVGSVGElement>>' is not assignable to type 'ComponentType<{ size?: number | undefined; className?: string | undefined; 'aria-hidden'?: boolean | undefined; }>'."
+    },
+    {
+      "file": "src/components/forms/ResponseRecords.tsx",
+      "line": 144,
+      "code": "TS2322",
+      "message": "Type 'ForwardRefExoticComponent<Omit<LucideProps, \"ref\"> & RefAttributes<SVGSVGElement>>' is not assignable to type 'ComponentType<{ size?: number | undefined; className?: string | undefined; 'aria-hidden'?: boolean | undefined; }>'."
+    },
+    {
+      "file": "src/components/forms/ResponsesInbox.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/forms/RichFieldControl.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/fulfilment/BookDeliverySheet.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/fulfilment/DeliveryDetail.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/fundraiser/FundraiserPanel.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/help/HelpArticleItem.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/help/HelpArticleRow.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/help/HelpStillStuck.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/kyc/CheckBadge.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/kyc/DocUpload.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/kyc/KycStatusPanel.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/kyc/KycStepper.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/kyc/steps/AddressStep.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/kyc/steps/BusinessStep.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/kyc/steps/DeclarationsStep.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/kyc/steps/IdentityStep.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/kyc/steps/PayoutStep.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/kyc/steps/PeopleStep.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/kyc/steps/TypeStep.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/learn/CourseAccessPanel.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/learn/CourseCertificate.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/learn/CourseOutline.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/learn/LessonContent.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/learn/LiveLessonPanel.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/legal/LegalDocument.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/marketing/AnnouncementBar.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/marketing/audience/AudienceDashboardSample.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/marketing/audience/AudienceFlow.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/marketing/ExampleDesktop.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/marketing/ExamplePhone.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/marketing/FaqList.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/marketing/HandleClaim.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/marketing/home/CanvasVisual.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/marketing/home/ClosingCta.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/marketing/home/ExampleMarquee.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/marketing/home/HomeHero.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/marketing/home/InsightsVisual.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/marketing/home/KbShape.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/marketing/home/LocalSection.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/marketing/home/MarqueeToggle.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/marketing/home/PeopleSection.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/marketing/home/RiseText.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/marketing/home/SellVisual.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/marketing/home/ShareVisual.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/marketing/home/StatusFaqSection.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/marketing/MarketingLayout.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/marketing/marketplace/ListingCard.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/marketing/marketplace/ListingPreview.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/marketing/marketplace/ListingStatusLabel.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/marketing/marketplace/MarketplaceBrowser.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/marketing/marketplace/MarketplaceHeroVisual.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/marketing/MobileSiteMenu.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/marketing/PillarCrossLinks.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/marketing/shortlinks/LinkStatsSample.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/media/ImageCropDialog.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/media/MediaDetail.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/media/MediaFolderIcon.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/media/MediaLibraryDialog.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/media/MediaLibraryDialog.tsx",
+      "line": 2,
+      "code": "TS6133",
+      "message": "'Link2Icon' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/media/MediaPicker.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/members/MembersGate.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/money/BankAccountDialog.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/money/EscrowPanel.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/money/EscrowTimeline.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/money/InstalmentProductPicker.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/money/PaymentLinkDetail.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/money/PaymentLinkEditor.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/money/PaymentMethodsSection.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/money/PaymentMethodsSection.tsx",
+      "line": 2,
+      "code": "TS6133",
+      "message": "'BoxIcon' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/money/PaymentMethodsSection.tsx",
+      "line": 25,
+      "code": "TS2749",
+      "message": "'BoxIcon' refers to a value, but is being used as a type here. Did you mean 'typeof BoxIcon'?"
+    },
+    {
+      "file": "src/components/money/PayOptionsCard.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/money/PayoutDialog.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/money/ProofPicker.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/money/TopUpDialog.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/money/WalletLedger.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/nfc/NfcDestinationFields.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/nfc/NfcOrderSheet.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/nfc/NfcTagSheet.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/notifications/NotificationsPanel.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/onboarding/ActionStep.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/onboarding/AiKitDialog.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/onboarding/DemoDataChoice.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/onboarding/GoalStep.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/onboarding/IdentityStep.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/onboarding/KitStep.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/onboarding/OnboardingLayout.tsx",
+      "line": 63,
+      "code": "TS2345",
+      "message": "Argument of type 'false | \"\" | 0 | \"lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-16\" | null | undefined' is not assignable to parameter of type 'string | false | null | undefined'."
+    },
+    {
+      "file": "src/components/onboarding/ResumeOnboardingBanner.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/onboarding/ShareQrDialog.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/onboarding/ShareStep.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/opportunities/OpportunityRow.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/opportunities/OpportunityRow.tsx",
+      "line": 3,
+      "code": "TS6133",
+      "message": "'BoxIcon' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/opportunities/OpportunityRow.tsx",
+      "line": 11,
+      "code": "TS2749",
+      "message": "'BoxIcon' refers to a value, but is being used as a type here. Did you mean 'typeof BoxIcon'?"
+    },
+    {
+      "file": "src/components/overview/CopyLinkButton.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/overview/NeedsAttention.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/overview/PageMiniPreview.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/overview/PendingKitCard.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/overview/RecentActivity.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/overview/SetupChecklist.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/overview/SpacesStrip.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/partners/AgreementFields.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/partners/AgreementSummary.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/partners/BusinessPartners.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/partners/PartnerAvatar.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/partners/PartnerComments.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/partners/PartnerSales.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/partners/SharedShopDialog.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/partners/SharedShops.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/partners/WorkTogetherSheet.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/popup/PopupPanel.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/popup/PopupSessionsEditor.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/proof/AskReviewDialog.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/proof/ReviewRow.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/proof/Stars.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/proof/WorkEditor.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/serviceOs/ClientAudienceLink.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/serviceOs/InvoiceDetail.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/serviceOs/JobDetail.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/serviceOs/MilestoneEditor.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/serviceOs/QuoteEditor.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/serviceOs/ServiceOsSettingsPanel.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/serviceOs/StageSchedule.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/settings/ActivityExportDialog.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/settings/ActivityTab.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/settings/ApprovalsTab.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/settings/BillingTab.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/settings/BranchAccessField.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/settings/BusinessTab.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/settings/BusinessWhatsAppCard.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/settings/CountryCard.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/settings/DemoDataCard.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/settings/DemoWorkspaceCard.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/settings/developers/ApiKeysSection.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/settings/developers/ConnectedAppsSection.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/settings/developers/SubmitExtensionDialog.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/settings/developers/WebhooksSection.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/settings/developers/YourExtensionsSection.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/settings/DevelopersTab.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/settings/integrations/AccountingConnectDialog.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/settings/integrations/AccountingSection.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/settings/integrations/ErpConnectDialog.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/settings/integrations/ErpSection.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/settings/IntegrationsTab.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/settings/InviteDialog.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/settings/NotificationsTab.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/settings/PrivacyTab.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/settings/RemoveDemoWorkspaceDialog.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/settings/ReviewDetail.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/settings/RolePicker.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/settings/RolesTab.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/settings/SpaceAccessField.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/settings/TeamTab.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/shell/AccountLocked.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/shell/AccountMenu.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/shell/AppealDialog.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/shell/AppearancePicker.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/shell/AppShell.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/shell/BackButton.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/shell/BillingBanner.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/shell/CountryNotOpen.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/shell/DemoDataBanner.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/shell/DirectionSwitcher.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/shell/HelpMenu.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/shell/KubicuLogo.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/shell/MobileNav.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/shell/ModuleLayout.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/shell/ModuleUnavailable.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/shell/PlatformBanner.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/shell/PolicyAgreement.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/shell/RoleBanner.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/shell/Sidebar.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/shell/Sidebar.tsx",
+      "line": 29,
+      "code": "TS6133",
+      "message": "'reviewsWaiting' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/shell/SidebarCopilotChats.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/shell/SidebarItem.tsx",
+      "line": 5,
+      "code": "TS6133",
+      "message": "'BoxIcon' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/shell/SidebarItem.tsx",
+      "line": 10,
+      "code": "TS2749",
+      "message": "'BoxIcon' refers to a value, but is being used as a type here. Did you mean 'typeof BoxIcon'?"
+    },
+    {
+      "file": "src/components/shell/SubNav.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/shell/WorkspaceSwitcher.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/spaces/NewSpaceDialog.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/spaces/SpaceAccessDialog.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/sponsorships/BriefSheet.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/sponsorships/CreatorRecordLine.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/sponsorships/DeliverableStatusBadge.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/sponsorships/DisputePanel.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/sponsorships/ManageBriefSheet.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/sponsorships/PostBriefSheet.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/storefront/ProductDetailView.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/storefront/ProductGallery.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/storefront/ProductReviews.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/storefront/ShopCollectionsNav.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/storefront/ShopHeader.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/storefront/StoreProductCard.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/subscriptions/SubPlanEditor.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/subscriptions/SubPlanEditor.tsx",
+      "line": 100,
+      "code": "TS2531",
+      "message": "Object is possibly 'null'."
+    },
+    {
+      "file": "src/components/subscriptions/SubscriberDetail.tsx",
+      "line": 54,
+      "code": "TS18047",
+      "message": "'state.published' is possibly 'null'."
+    },
+    {
+      "file": "src/components/subscriptions/SubscribeSheet.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/subscriptions/SubStatusBadge.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/team/AssigneeSelect.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/templates/ApplyKitDialog.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/templates/ApplyKitDialog.tsx",
+      "line": 70,
+      "code": "TS2741",
+      "message": "Property 'title' is missing in type '{ children: string; tone: \"info\"; }' but required in type 'InlineAlertProps'."
+    },
+    {
+      "file": "src/components/templates/BusinessKits.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/templates/BusinessKits.tsx",
+      "line": 115,
+      "code": "TS2741",
+      "message": "Property 'title' is missing in type '{ children: string; tone: \"warning\"; className: string; }' but required in type 'InlineAlertProps'."
+    },
+    {
+      "file": "src/components/templates/BuyTemplateDialog.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/templates/CreatorListingInfo.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/templates/MyTemplates.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/templates/SellTemplateDialog.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/templates/SharedLibrary.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/templates/TemplateLivePreview.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/templates/TemplatePreviewDialog.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/templates/TemplateThumb.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/themes/ThemeCard.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/themes/ThemeCompareSheet.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/themes/ThemeGallery.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/tickets/OrderTickets.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/trust/TrustCardShare.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/ui/AppToaster.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/ui/Badge.tsx",
+      "line": 3,
+      "code": "TS6133",
+      "message": "'BoxIcon' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/ui/Badge.tsx",
+      "line": 17,
+      "code": "TS2749",
+      "message": "'BoxIcon' refers to a value, but is being used as a type here. Did you mean 'typeof BoxIcon'?"
+    },
+    {
+      "file": "src/components/ui/Button.tsx",
+      "line": 2,
+      "code": "TS6133",
+      "message": "'BoxIcon' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/ui/Button.tsx",
+      "line": 13,
+      "code": "TS2749",
+      "message": "'BoxIcon' refers to a value, but is being used as a type here. Did you mean 'typeof BoxIcon'?"
+    },
+    {
+      "file": "src/components/ui/Button.tsx",
+      "line": 14,
+      "code": "TS2749",
+      "message": "'BoxIcon' refers to a value, but is being used as a type here. Did you mean 'typeof BoxIcon'?"
+    },
+    {
+      "file": "src/components/ui/DateTimeInput.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/ui/EmptyState.tsx",
+      "line": 3,
+      "code": "TS6133",
+      "message": "'BoxIcon' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/ui/EmptyState.tsx",
+      "line": 6,
+      "code": "TS2749",
+      "message": "'BoxIcon' refers to a value, but is being used as a type here. Did you mean 'typeof BoxIcon'?"
+    },
+    {
+      "file": "src/components/ui/IconButton.tsx",
+      "line": 4,
+      "code": "TS6133",
+      "message": "'BoxIcon' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/ui/IconButton.tsx",
+      "line": 6,
+      "code": "TS2749",
+      "message": "'BoxIcon' refers to a value, but is being used as a type here. Did you mean 'typeof BoxIcon'?"
+    },
+    {
+      "file": "src/components/ui/IllustrativeTag.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/ui/LanguagePicker.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/ui/layout/Card.tsx",
+      "line": 3,
+      "code": "TS6133",
+      "message": "'BoxIcon' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/ui/layout/Card.tsx",
+      "line": 8,
+      "code": "TS2749",
+      "message": "'BoxIcon' refers to a value, but is being used as a type here. Did you mean 'typeof BoxIcon'?"
+    },
+    {
+      "file": "src/components/ui/LiveAnnouncer.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/ui/Menu.tsx",
+      "line": 4,
+      "code": "TS6133",
+      "message": "'BoxIcon' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/ui/Menu.tsx",
+      "line": 9,
+      "code": "TS2749",
+      "message": "'BoxIcon' refers to a value, but is being used as a type here. Did you mean 'typeof BoxIcon'?"
+    },
+    {
+      "file": "src/components/ui/PhoneInput.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/ui/RangeInput.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/ui/Segmented.tsx",
+      "line": 3,
+      "code": "TS6133",
+      "message": "'BoxIcon' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/ui/Segmented.tsx",
+      "line": 8,
+      "code": "TS2749",
+      "message": "'BoxIcon' refers to a value, but is being used as a type here. Did you mean 'typeof BoxIcon'?"
+    },
+    {
+      "file": "src/components/ui/SelectInput.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/ui/Skeleton.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/ui/SkipLink.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/ui/Switch.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/ui/TextInput.tsx",
+      "line": 4,
+      "code": "TS6133",
+      "message": "'BoxIcon' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/ui/TextInput.tsx",
+      "line": 12,
+      "code": "TS2749",
+      "message": "'BoxIcon' refers to a value, but is being used as a type here. Did you mean 'typeof BoxIcon'?"
+    },
+    {
+      "file": "src/components/ui/TimezoneSelect.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/ui/UpgradeButton.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/whatsapp/ChatThread.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/whatsapp/WhatsAppAutoMessages.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/components/whatsapp/WhatsAppSetup.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/data/sectionPresets.ts",
+      "line": 56,
+      "code": "TS2741",
+      "message": "Property 'spacing' is missing in type '{ width: \"full\"; }' but required in type 'BlockLayout'."
+    },
+    {
+      "file": "src/data/sectionPresets.ts",
+      "line": 56,
+      "code": "TS2741",
+      "message": "Property 'spacing' is missing in type '{ width: \"wide\"; }' but required in type 'BlockLayout'."
+    },
+    {
+      "file": "src/data/sectionPresets.ts",
+      "line": 64,
+      "code": "TS2741",
+      "message": "Property 'spacing' is missing in type '{ width: \"wide\"; }' but required in type 'BlockLayout'."
+    },
+    {
+      "file": "src/data/sectionPresets.ts",
+      "line": 82,
+      "code": "TS2741",
+      "message": "Property 'spacing' is missing in type '{ width: \"wide\"; background: \"tint\"; }' but required in type 'BlockLayout'."
+    },
+    {
+      "file": "src/data/sectionPresets.ts",
+      "line": 93,
+      "code": "TS2741",
+      "message": "Property 'spacing' is missing in type '{ background: \"invert\"; width: \"wide\"; }' but required in type 'BlockLayout'."
+    },
+    {
+      "file": "src/data/sectionPresets.ts",
+      "line": 130,
+      "code": "TS2741",
+      "message": "Property 'spacing' is missing in type '{ width: \"wide\"; }' but required in type 'BlockLayout'."
+    },
+    {
+      "file": "src/data/sectionPresets.ts",
+      "line": 146,
+      "code": "TS2741",
+      "message": "Property 'spacing' is missing in type '{ width: \"wide\"; }' but required in type 'BlockLayout'."
+    },
+    {
+      "file": "src/data/sectionPresets.ts",
+      "line": 173,
+      "code": "TS2741",
+      "message": "Property 'spacing' is missing in type '{ width: \"wide\"; }' but required in type 'BlockLayout'."
+    },
+    {
+      "file": "src/data/sectionPresets.ts",
+      "line": 184,
+      "code": "TS2741",
+      "message": "Property 'align' is missing in type '{ emphasis: \"featured\"; }' but required in type 'BlockStyle'."
+    },
+    {
+      "file": "src/data/sectionPresets.ts",
+      "line": 194,
+      "code": "TS2741",
+      "message": "Property 'spacing' is missing in type '{ width: \"wide\"; background: \"tint\"; }' but required in type 'BlockLayout'."
+    },
+    {
+      "file": "src/data/sectionPresets.ts",
+      "line": 222,
+      "code": "TS2741",
+      "message": "Property 'spacing' is missing in type '{ width: \"wide\"; }' but required in type 'BlockLayout'."
+    },
+    {
+      "file": "src/data/sectionPresets.ts",
+      "line": 230,
+      "code": "TS2741",
+      "message": "Property 'spacing' is missing in type '{ width: \"wide\"; }' but required in type 'BlockLayout'."
+    },
+    {
+      "file": "src/data/sectionPresets.ts",
+      "line": 254,
+      "code": "TS2741",
+      "message": "Property 'spacing' is missing in type '{ width: \"wide\"; }' but required in type 'BlockLayout'."
+    },
+    {
+      "file": "src/index.tsx",
+      "line": 2,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/admin/AdminAi.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/admin/AdminAppeals.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/admin/AdminAreaNotFound.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/admin/AdminAudit.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/admin/AdminAudit.tsx",
+      "line": 14,
+      "code": "TS2739",
+      "message": "Type '{ tenants: string; flags: string; moderation: string; support: string; announcements: string; pages: string; orders: string; data: string; staff: string; appeals: string; payments: string; escrow: string; ... 4 more ...; extensions: string; }' is missing the following properties from type 'Record<\"orders\" | \"staff\" | \"payments\" | \"pages\" | \"tenants\" | \"flags\" | \"moderation\" | \"support\" | \"announcements\" | \"data\" | \"appeals\" | \"escrow\" | \"sponsorships\" | \"incidents\" | ... 6 more ... | \"localisation\", string>': plans, ai, integrations, localisation"
+    },
+    {
+      "file": "src/pages/admin/AdminDataRequests.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/admin/AdminDesignSystem.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/admin/AdminEscrow.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/admin/AdminFigures.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/admin/AdminFlags.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/admin/AdminHealth.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/admin/AdminIntegrations.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/admin/AdminLocalisation.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/admin/AdminMarketplace.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/admin/AdminMarketplace.tsx",
+      "line": 133,
+      "code": "TS2322",
+      "message": "Type 'string | undefined' is not assignable to type 'string'."
+    },
+    {
+      "file": "src/pages/admin/AdminModeration.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/admin/AdminOrders.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/admin/AdminOverview.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/admin/AdminPages.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/admin/AdminPayments.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/admin/AdminPlannedArea.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/admin/AdminPlans.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/admin/AdminReporting.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/admin/AdminSponsorships.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/admin/AdminStaff.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/admin/AdminSupport.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/admin/AdminTenants.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/Analytics.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/Assistant.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/Audience.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/Audience.tsx",
+      "line": 200,
+      "code": "TS2322",
+      "message": "Type 'CanResult' is not assignable to type 'boolean'."
+    },
+    {
+      "file": "src/pages/auth/VerifyEmail.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/Automations.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/bookings/Availability.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/bookings/Schedule.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/bookings/Services.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/BookingStatus.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/BusinessCoach.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/CanvasPage.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/CanvasRedirect.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/Collaborations.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/commerce/Branches.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/commerce/CheckIn.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/commerce/CommerceOverview.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/commerce/CommerceSettings.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/commerce/Courses.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/commerce/Digital.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/commerce/Discounts.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/commerce/Discounts.tsx",
+      "line": 8,
+      "code": "TS6133",
+      "message": "'valueLabel' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/commerce/Events.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/commerce/GiftCards.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/commerce/GuestList.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/commerce/Inventory.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/commerce/Orders.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/commerce/PaymentLinks.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/commerce/Payments.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/commerce/Payments.tsx",
+      "line": 130,
+      "code": "TS2322",
+      "message": "Type 'ProviderDef | undefined' is not assignable to type 'ProviderDef | null'."
+    },
+    {
+      "file": "src/pages/commerce/Products.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/commerce/Reports.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/commerce/Storefront.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/commerce/Subscriptions.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/commerce/Subscriptions.tsx",
+      "line": 14,
+      "code": "TS6133",
+      "message": "'priceLine' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/commerce/Verification.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/commerce/Wallet.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/copilot/CopilotPreview.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/copilot/CopilotWeb.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/copilot/CopilotWhatsApp.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/domains/CampaignLinks.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/domains/Domains.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/domains/LinkStats.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/domains/PrintKit.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/domains/QrCodes.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/domains/Redirects.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/DownloadPage.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/EmailPreferences.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/Extensions.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/forms/FormEditor.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/forms/FormsList.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/IntentFlow.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/InvoicePayPage.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/LearnPage.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/LegacyRedirect.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/marketing/About.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/marketing/AiFeatures.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/marketing/AudienceManagerLanding.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/marketing/ComingSoon.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/marketing/ComingSoon.tsx",
+      "line": 4,
+      "code": "TS2305",
+      "message": "Module '\"../../data/marketing\"' has no exported member 'legalTopics'."
+    },
+    {
+      "file": "src/pages/marketing/Contact.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/marketing/CopilotLanding.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/marketing/Developers.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/marketing/Features.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/marketing/ForCreators.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/marketing/HelpArticlePage.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/marketing/HelpCentre.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/marketing/Home.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/marketing/InfoPage.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/marketing/marketplace/MarketplaceCategory.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/marketing/marketplace/MarketplaceHome.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/marketing/Pricing.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/marketing/ReportAPage.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/marketing/Roadmap.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/marketing/ShortLinksLanding.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/marketing/Solution.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/marketing/TemplateDetail.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/marketing/TemplateDetail.tsx",
+      "line": 9,
+      "code": "TS6133",
+      "message": "'plans' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/marketing/Templates.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/marketing/TrustCentre.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/Media.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/NfcTags.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/NfcTap.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/NotFound.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/Onboarding.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/Opportunities.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/OrderStatus.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/Overview.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/PlannedModule.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/Proof.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/PublicPage.tsx",
+      "line": 596,
+      "code": "TS2322",
+      "message": "Type 'string | null | undefined' is not assignable to type 'string | null'."
+    },
+    {
+      "file": "src/pages/PublicPage.tsx",
+      "line": 612,
+      "code": "TS2339",
+      "message": "Property 'teaser' does not exist on type 'MemberRule'."
+    },
+    {
+      "file": "src/pages/PublicSharedShop.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/PublicStatus.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/PublicTrustPassport.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/PublicWorkCertificate.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/QuoteView.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/ReviewSubmit.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/ServiceOs.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/ShortLink.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/Spaces.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/Spaces.tsx",
+      "line": 315,
+      "code": "TS2322",
+      "message": "Type '\"event\" | \"page\" | \"campaign\" | \"booking\" | \"dealroom\" | \"fundraiser\" | \"popup\" | \"members\"' is not assignable to type '\"event\" | \"campaign\" | \"dealroom\" | null'."
+    },
+    {
+      "file": "src/pages/SponsorLink.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/Sponsorships.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/TemplatesMarket.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/TicketPage.tsx",
+      "line": 152,
+      "code": "TS2322",
+      "message": "Type 'ForwardRefExoticComponent<Omit<LucideProps, \"ref\"> & RefAttributes<SVGSVGElement>>' is not assignable to type 'ComponentType<{ size?: number | undefined; 'aria-hidden'?: boolean | undefined; }>'."
+    },
+    {
+      "file": "src/pages/TicketPage.tsx",
+      "line": 153,
+      "code": "TS2322",
+      "message": "Type 'ForwardRefExoticComponent<Omit<LucideProps, \"ref\"> & RefAttributes<SVGSVGElement>>' is not assignable to type 'ComponentType<{ size?: number | undefined; 'aria-hidden'?: boolean | undefined; }>'."
+    },
+    {
+      "file": "src/pages/TrustPassport.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/VoiceToStore.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/pages/WhatsApp.tsx",
+      "line": 1,
+      "code": "TS6133",
+      "message": "'React' is declared but its value is never read."
+    },
+    {
+      "file": "src/utils/ai/brief.ts",
+      "line": 104,
+      "code": "TS2304",
+      "message": "Cannot find name 'PHONE'."
+    },
+    {
+      "file": "src/utils/ai/brief.ts",
+      "line": 112,
+      "code": "TS2304",
+      "message": "Cannot find name 'PHONE'."
+    },
+    {
+      "file": "src/utils/assistant/layout.ts",
+      "line": 138,
+      "code": "TS2741",
+      "message": "Property 'spacing' is missing in type '{ width: \"full\"; }' but required in type 'BlockLayout'."
+    },
+    {
+      "file": "src/utils/assistant/layout.ts",
+      "line": 144,
+      "code": "TS2741",
+      "message": "Property 'align' is missing in type '{ emphasis: \"featured\"; }' but required in type 'BlockStyle'."
+    },
+    {
+      "file": "src/utils/assistant/layout.ts",
+      "line": 160,
+      "code": "TS2741",
+      "message": "Property 'spacing' is missing in type '{ width: \"wide\"; }' but required in type 'BlockLayout'."
+    },
+    {
+      "file": "src/utils/assistant/layout.ts",
+      "line": 222,
+      "code": "TS2741",
+      "message": "Property 'spacing' is missing in type '{ width: \"wide\"; }' but required in type 'BlockLayout'."
+    },
+    {
+      "file": "src/utils/commerce/ops.ts",
+      "line": 286,
+      "code": "TS18047",
+      "message": "'instalmentPlan' is possibly 'null'."
+    },
+    {
+      "file": "src/utils/commerce/ops.ts",
+      "line": 286,
+      "code": "TS18047",
+      "message": "'instalmentPlan' is possibly 'null'."
+    },
+    {
+      "file": "src/utils/commerce/ops.ts",
+      "line": 286,
+      "code": "TS2339",
+      "message": "Property 'reason' does not exist on type '({ ok: false; reason: string; hidden?: boolean | undefined; } & { ok: false; }) | { ok: true; plan: ProductInstalments; }'."
+    },
+    {
+      "file": "src/utils/commerce/sellModes.ts",
+      "line": 106,
+      "code": "TS6133",
+      "message": "'data' is declared but its value is never read."
+    },
+    {
+      "file": "src/utils/commerce/subscriptions.ts",
+      "line": 148,
+      "code": "TS2531",
+      "message": "Object is possibly 'null'."
+    },
+    {
+      "file": "src/utils/commerce/tickets.ts",
+      "line": 74,
+      "code": "TS2554",
+      "message": "Expected 1 arguments, but got 0."
+    },
+    {
+      "file": "src/utils/commerce/tickets.ts",
+      "line": 182,
+      "code": "TS2554",
+      "message": "Expected 1 arguments, but got 0."
+    },
+    {
+      "file": "src/utils/commerce/tickets.ts",
+      "line": 183,
+      "code": "TS2554",
+      "message": "Expected 1 arguments, but got 0."
+    },
+    {
+      "file": "src/utils/ops/liveEvents.ts",
+      "line": 33,
+      "code": "TS6133",
+      "message": "'a' is declared but its value is never read."
+    },
+    {
+      "file": "src/utils/ops/ops.ts",
+      "line": 127,
+      "code": "TS2322",
+      "message": "Type '{ id: string; at: string; kind: string; label: string; }[]' is not assignable to type 'ContactActivity[]'."
+    },
+    {
+      "file": "src/utils/ops/ops.ts",
+      "line": 200,
+      "code": "TS2304",
+      "message": "Cannot find name 'attachMeeting'."
+    },
+    {
+      "file": "src/utils/ops/ops.ts",
+      "line": 267,
+      "code": "TS2304",
+      "message": "Cannot find name 'attachMeeting'."
+    },
+    {
+      "file": "src/utils/popup.ts",
+      "line": 189,
+      "code": "TS2322",
+      "message": "Type 'number' is not assignable to type 'string'."
+    },
+    {
+      "file": "src/utils/sponsorships.ts",
+      "line": 89,
+      "code": "TS6133",
+      "message": "'brief' is declared but its value is never read."
+    }
+  ]
+}
