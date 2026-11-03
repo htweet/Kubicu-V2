@@ -1,6 +1,6 @@
 import type { Workspace } from '../types/workspace';
 import { examplePages } from '../data/examples';
-import { readPersistedPage } from './workspaceStorage';
+import { DEMO_WORKSPACE_ID, readPersistedPage } from './workspaceStorage';
 import { spaceStorageId, workspaceSpaces } from './spaces';
 
 /** Addresses KUBICU itself uses, so nobody can claim them. */
@@ -25,7 +25,13 @@ export function slugifyHandle(value: string): string {
  * being edited (its storage id — for a main space that's the workspace id).
  */
 export function takenHandles(workspaces: Workspace[], exceptStorageId?: string): Set<string> {
-  const taken = new Set<string>([...RESERVED_HANDLES, ...examplePages.map((e) => e.doc.handle)]);
+  // The Adaeze Atelier example reuses the demo workspace's own page, so its handle must not
+  // block the demo workspace's main space from publishing (L-14). Other examples stay taken.
+  const editingDemo = exceptStorageId === DEMO_WORKSPACE_ID;
+  const exampleHandles = examplePages.
+  map((e) => e.doc.handle).
+  filter((h) => !(editingDemo && h === 'adaeze'));
+  const taken = new Set<string>([...RESERVED_HANDLES, ...exampleHandles]);
   workspaces.forEach((w) => {
     workspaceSpaces(w).forEach((s) => {
       const id = spaceStorageId(w.id, s.id);
