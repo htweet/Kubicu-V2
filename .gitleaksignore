@@ -1,4 +1,6 @@
 # Reviewed false positives only. Each entry is one exact finding (commit:file:rule:line or file:rule:line).
-# src/utils/handleClaim.ts: `const KEY = 'kubicu.handleClaim.v1'` is a localStorage key name, not a credential.
+# 1-2: src/utils/handleClaim.ts declares the localStorage key name for handle claims. It is not a credential.
 75b316a70f8a390201a9aa523e8af56188ffb66c:src/utils/handleClaim.ts:generic-api-key:5
 src/utils/handleClaim.ts:generic-api-key:7
+# 3: an earlier version of this file quoted that same declaration in a comment (commit cc0fa27).
+cc0fa27c0cd32977a3c8aa5c8d5b3b8d95f375a8:.gitleaksignore:generic-api-key:2
