@@ -99,6 +99,36 @@ jobs:
             test-results/
           retention-days: 14
 
+  flag-flip-windows:
+    name: Real-sign-in build and the same 8 journeys on Windows (PowerShell)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install chromium
+      - name: Build the real-sign-in build, switch it off in /config.js, run the unchanged journeys
+        shell: pwsh
+        run: npm run test:e2e:flag-flip
+      - name: The real-sign-in build loads /config.js; the normal build does not
+        shell: pwsh
+        run: |
+          npm run build
+          if (-not (Select-String -Quiet -SimpleMatch 'src="/config.js"' dist-realauth/index.html)) { throw 'dist-realauth/index.html does not load /config.js' }
+          if (Select-String -Quiet -SimpleMatch 'config.js' dist/index.html) { throw 'dist/index.html must not load /config.js' }
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-flag-flip-windows
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
+
   secret-scan:
     name: Secret scan (gitleaks, full history)
     runs-on: ubuntu-latest

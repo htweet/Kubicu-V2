@@ -27,12 +27,12 @@ This builds the app and serves it at http://localhost:4173. All data stays in yo
 | `npm run build` | Production build. CI builds twice and requires identical output. |
 | `npm run typecheck:ratchet` | **Not a clean type-check.** The code has a known backlog of 845 TypeScript errors, recorded in `typecheck-baseline.json`. The check fails on any *new* error. After fixing errors, lower the baseline with `npm run typecheck:baseline`. |
 | `npm run test:e2e` | Eight browser journeys (Playwright, `tests/e2e/`) against the production build. Run `npm run build` first. Do not weaken or skip them to get a passing run. |
-| `npm run test:e2e:flag-flip` | The same eight journeys, unchanged, against the real-sign-in build with real sign-in switched off in `/config.js`. It must behave exactly like the prototype. |
+| `npm run test:e2e:flag-flip` | The same eight journeys, unchanged, against the real-sign-in build with real sign-in switched off in `/config.js`. It must behave exactly like the prototype. CI runs it on Linux and on Windows. |
 | gitleaks (CI only) | Secret scan of the full git history. Reviewed false positives are listed in `.gitleaksignore`. |
 
 ## Real sign-in (M2.6, behind a flag, off by default)
 
-Approved as D-UI-1, D-UI-2 and D-UI-3; the design and test plan are in the private AI-Engine repository (`docs/kubicu-integration/m2/17`, `19`).
+Approved as D-UI-1, D-UI-2 and D-UI-3; the design and test plan are in the AI-Engine repository (`docs/kubicu-integration/m2/17`, `19`).
 
 **What it changes, when on:**
 - **Sign-up and sign-in:** use e-mail codes, with no passwords.
@@ -43,7 +43,7 @@ When the flag is off, every screen behaves exactly as the prototype.
 
 | | |
 |---|---|
-| Build-time switch | `npm run build:realauth` (sets `VITE_KUBICU_REAL_AUTH=true`, output in `dist-realauth/`). `npm run build` never includes it. |
+| Build-time switch | `npm run build:realauth` (sets `VITE_KUBICU_REAL_AUTH=true`, output in `dist-realauth/`; works in PowerShell, cmd and POSIX shells). `npm run build` never includes it. |
 | Runtime switch | `/config.js`, served next to the app with `Cache-Control: no-store`: `window.__KUBICU_CONFIG__ = {"realAuth": true, "apiUrl": "https://api…", "authUrl": "https://…/auth/v1"}`. Write it with `node scripts/write-runtime-config.mjs <dir> on <apiUrl> <authUrl>`. |
 | Roll back | Write `off` (or remove the file); the next page load is the prototype again. Browser data is never deleted. |
 | Tests | The flag-on browser suite needs the Kubicu Platform API, Supabase Auth and PostgreSQL. It runs in AI-Engine (`platform/e2e/m2-6-real-auth.spec.ts`) against `dist-realauth/`. |
