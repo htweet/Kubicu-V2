@@ -1,8 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
+import { useSignOut } from '../../utils/auth/useSignOut';
+import { useSignedInProfile } from '../../utils/auth/useSignedInProfile';
 import { ChevronsUpDownIcon, LogOutIcon, ShieldCheckIcon, SlidersHorizontalIcon, UserIcon, BuildingIcon } from 'lucide-react';
-import { useAccount } from '../../utils/account/store';
 import { SideTip } from '../../hooks/useSideTip';
 import { Menu } from '../ui/Menu';
 import { AccountAvatar } from '../account/AccountAvatar';
@@ -10,9 +10,9 @@ import { cn } from '../../utils/cn';
 
 /** Sidebar footer: who's signed in, their account, and sign out (D80). */
 export function AccountMenu({ collapsed, tip }: {collapsed?: boolean;tip?: SideTip;}) {
-  const account = useAccount();
   const navigate = useNavigate();
-  const p = account.profile;
+  const signOut = useSignOut();
+  const p = useSignedInProfile();
 
   return (
     <Menu
@@ -34,10 +34,7 @@ export function AccountMenu({ collapsed, tip }: {collapsed?: boolean;tip?: SideT
         id: 'signout',
         label: 'Sign out',
         icon: LogOutIcon,
-        onSelect: () => {
-          navigate('/signin');
-          toast('Signed out', { description: 'Prototype — your data stays on this device.' });
-        }
+        onSelect: signOut
       }]
       }
       trigger={(props) =>

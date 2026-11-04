@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
+import { useSignOut } from '../../utils/auth/useSignOut';
+import { useSignedInProfile } from '../../utils/auth/useSignedInProfile';
 import { MenuIcon, ChevronRightIcon, LogOutIcon, ShieldCheckIcon } from 'lucide-react';
 import { useStaffSession } from '../../hooks/useStaffSession';
-import { toast } from 'sonner';
-import { useAccount } from '../../utils/account/store';
 import { AccountAvatar } from '../account/AccountAvatar';
 import { useAppearancePolicy } from '../../contexts/AppearancePolicyContext';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
@@ -20,12 +20,13 @@ import { useT } from '../../contexts/LocaleContext';
 export function MobileNav() {
   const [moreOpen, setMoreOpen] = useState(false);
   const navigate = useNavigate();
+  const signOut = useSignOut();
+  const profile = useSignedInProfile();
   const primary = workspaceNav.filter((n) => mobilePrimaryNavIds.includes(n.id));
   const market = useMarketplace();
   const rest = workspaceNav.filter((n) => !mobilePrimaryNavIds.includes(n.id) && (!n.appId || market.isInstalled(n.appId)));
   const canChoose = useAppearancePolicy().enabled.length > 1;
   const currentWorkspace = useWorkspace().current;
-  const account = useAccount();
   const superAdmin = useStaffSession()?.role === 'lead';
   const { t } = useT();
 
@@ -65,10 +66,10 @@ export function MobileNav() {
             }}
             className="flex min-h-[60px] w-full items-center gap-3 rounded-md px-3 text-left hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
             
-            <AccountAvatar name={account.profile.name} photo={account.profile.photo} size="md" />
+            <AccountAvatar name={profile.name} photo={profile.photo} size="md" />
             <span className="min-w-0 flex-1">
-              <span className="block truncate text-body font-semibold text-fg">{account.profile.name}</span>
-              <span className="block truncate text-caption text-fg-subtle">{t('Your account')} · {account.profile.email}</span>
+              <span className="block truncate text-body font-semibold text-fg">{profile.name}</span>
+              <span className="block truncate text-caption text-fg-subtle">{t('Your account')} · {profile.email}</span>
             </span>
             <ChevronRightIcon size={16} className="text-fg-subtle" aria-hidden />
           </button>
@@ -143,8 +144,7 @@ export function MobileNav() {
             type="button"
             onClick={() => {
               setMoreOpen(false);
-              navigate('/signin');
-              toast('Signed out', { description: 'Prototype — your data stays on this device.' });
+              signOut();
             }}
             className="flex h-10 w-full items-center gap-3 rounded-md px-2 text-left text-label font-medium text-fg hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
             

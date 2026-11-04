@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { Suspense, lazy, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FlaskConicalIcon, PlusIcon } from 'lucide-react';
 import { DEMO_WORKSPACE_ID } from '../../utils/workspaceStorage';
@@ -12,6 +12,11 @@ import { Card } from '../ui/layout/Card';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import { useT } from '../../contexts/LocaleContext';
+import { REAL_AUTH_BUILD, realAuthEnabled } from '../../utils/auth/realAuth';
+
+// Real sign-in only (D-UI-2): code-split, never loaded by prototype builds.
+const WorkspaceLink = REAL_AUTH_BUILD ? lazy(() => import('./WorkspaceLink').then((m) => ({ default: m.WorkspaceLink }))) : null;
+const AccountCopies = REAL_AUTH_BUILD ? lazy(() => import('./WorkspaceLink').then((m) => ({ default: m.AccountCopies }))) : null;
 
 /** Account → Workspaces: every workspace this account belongs to (D80). */
 export function WorkspacesTab() {
@@ -21,6 +26,7 @@ export function WorkspacesTab() {
   const [removing, setRemoving] = useState(false);
   const demoPresent = workspaces.some((w) => w.id === DEMO_WORKSPACE_ID);
   const hasOwn = workspaces.some((w) => w.id !== DEMO_WORKSPACE_ID);
+  const linked = realAuthEnabled() ? WorkspaceLink : null;
 
   const rows = workspaces.map((w) => {
     const team = readTeam(w.id);
@@ -56,6 +62,7 @@ export function WorkspacesTab() {
                       <span className="truncate text-label font-semibold text-fg">{w.name}</span>
                       {isCurrent && <Badge tone="info">Open now</Badge>}
                       {w.id === DEMO_WORKSPACE_ID && <Badge tone="neutral">Demo</Badge>}
+                      {linked && <Suspense fallback={null}>{React.createElement(linked, { workspaceId: w.id, part: 'badge' })}</Suspense>}
                     </span>
                     <span className="block truncate text-caption text-fg-subtle">
                       {tr(roleInfo[role].label)} · {tr('{plan} plan', { plan: plans[w.plan].name })} · {members === 1 ? tr('1 member') : tr('{n} members', { n: members })}
@@ -63,6 +70,7 @@ export function WorkspacesTab() {
                   </span>
                 </div>
                 <div className="flex shrink-0 items-center gap-2 sm:justify-end">
+                  {linked && <Suspense fallback={null}>{React.createElement(linked, { workspaceId: w.id, part: 'actions' })}</Suspense>}
                   {!isCurrent &&
                   <Button
                     size="sm"
@@ -93,6 +101,8 @@ export function WorkspacesTab() {
           {tr('Owners can’t leave a workspace. To hand one over, open it and use Settings → Team → Transfer ownership.')}
         </p>
       </Card>
+
+      {AccountCopies && realAuthEnabled() && <Suspense fallback={null}><AccountCopies /></Suspense>}
 
       <Card
         id="acc-demo"

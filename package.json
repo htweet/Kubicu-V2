@@ -12,7 +12,9 @@
     "check:manifests": "node scripts/check-manifests.mjs",
     "typecheck:ratchet": "node scripts/typecheck-ratchet.mjs",
     "typecheck:baseline": "node scripts/typecheck-ratchet.mjs --write-baseline",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "build:realauth": "VITE_KUBICU_REAL_AUTH=true npx vite build --outDir dist-realauth",
+    "test:e2e:flag-flip": "npm run build:realauth && node scripts/write-runtime-config.mjs dist-realauth off && KUBICU_PREVIEW_DIR=dist-realauth playwright test"
   },
   "dependencies": {
     "react": "18.3.1",

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import { CopyIcon, CrownIcon, LayersIcon, MoreHorizontalIcon, RefreshCwIcon, ShieldIcon, Trash2Icon, UserPlusIcon, XIcon } from 'lucide-react';
 import type { Member, Role } from '../../types/team';
@@ -39,6 +40,11 @@ export function TeamTab() {
   const { current } = useWorkspace();
   const plan = usePlan();
   const [inviting, setInviting] = useState(false);
+  // Contacts suggested after linking a browser workspace (real sign-in, D-UI-2b). Never set otherwise.
+  const suggested = ((useLocation().state as {suggestedInvites?: Array<{contact: string;role: Role;}>;} | null)?.suggestedInvites ?? []).filter(
+    (s) => !team.data.members.some((m) => m.contact.toLowerCase() === s.contact.toLowerCase()) && !team.data.invites.some((i) => i.contact.toLowerCase() === s.contact.toLowerCase() && inviteState(i) === 'pending')
+  );
+  const [prefill, setPrefill] = useState<{contact: string;role: Role;} | undefined>(undefined);
   const [pending, setPending] = useState<Pending>(null);
   const [roleDraft, setRoleDraft] = useState<Role>('editor');
   const [spacesDraft, setSpacesDraft] = useState<string[] | null>(null);
@@ -98,6 +104,28 @@ export function TeamTab() {
 
   return (
     <div className="flex flex-col gap-8">
+      {suggested.length > 0 &&
+      <InlineAlert tone="info" title="Suggested from your browser workspace">
+          <span className="block">{tr('These people were on this team before. Invite the ones who should have access; nobody gets in until they accept.')}</span>
+          <span className="mt-2 flex flex-col gap-1.5">
+            {suggested.map((s) =>
+          <span key={s.contact} className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                <span className="font-semibold">{s.contact}</span>
+                <span>{tr(roleInfo[s.role]?.label ?? s.role)}</span>
+                <button
+              type="button"
+              className="font-semibold underline underline-offset-2"
+              onClick={() => {
+                setPrefill({ contact: s.contact, role: s.role });
+                setInviting(true);
+              }}>
+                  {tr('Invite')}
+                </button>
+              </span>
+          )}
+          </span>
+        </InlineAlert>
+      }
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-label font-semibold text-fg">
@@ -209,7 +237,13 @@ export function TeamTab() {
         </section>
       }
 
-      <InviteDialog open={inviting} onClose={() => setInviting(false)} />
+      <InviteDialog
+        open={inviting}
+        prefill={prefill}
+        onClose={() => {
+          setInviting(false);
+          setPrefill(undefined);
+        }} />
 
       <Dialog
         open={!!pending}

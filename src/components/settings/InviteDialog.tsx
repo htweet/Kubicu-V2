@@ -17,7 +17,8 @@ import { RolePicker } from './RolePicker';
 import { useT } from '../../contexts/LocaleContext';
 
 /** Invite by email or phone, with a role and the spaces they can edit (D57). */
-export function InviteDialog({ open, onClose }: {open: boolean;onClose: () => void;}) {
+/** `prefill` (optional): a suggested contact and role, e.g. after linking a browser workspace (D-UI-2b). */
+export function InviteDialog({ open, onClose, prefill }: {open: boolean;onClose: () => void;prefill?: {contact: string;role: Role;};}) {
   const { t: tr } = useT();
   const team = useTeam();
   const { current } = useWorkspace();
@@ -30,13 +31,13 @@ export function InviteDialog({ open, onClose }: {open: boolean;onClose: () => vo
 
   useEffect(() => {
     if (!open) return;
-    setContact('');
-    setRole('editor');
+    setContact(prefill?.contact ?? '');
+    setRole(prefill && prefill.role !== 'owner' ? prefill.role : 'editor');
     setSpaceIds(null);
     setBranchId(null);
     setTried(false);
     setSent(null);
-  }, [open]);
+  }, [open, prefill]);
 
   const c = contact.trim().toLowerCase();
   const error = !c ?

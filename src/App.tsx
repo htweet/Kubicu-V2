@@ -98,6 +98,12 @@ import { SignUp } from './pages/auth/SignUp';
 import { SignIn } from './pages/auth/SignIn';
 import { ResetPassword } from './pages/auth/ResetPassword';
 import { VerifyEmail } from './pages/auth/VerifyEmail';
+import { CodeSignIn } from './pages/auth/CodeSignIn';
+import { VerifyCode } from './pages/auth/VerifyCode';
+import { RequireSession } from './components/auth/RequireSession';
+import { AuthProvider } from './contexts/AuthContext';
+import { ImportsProvider } from './contexts/ImportsContext';
+import { realAuthEnabled } from './utils/auth/realAuth';
 import { Overview } from './pages/Overview';
 import { Spaces } from './pages/Spaces';
 import { CanvasPage } from './pages/CanvasPage';
@@ -186,9 +192,19 @@ interface AppProps {
   simulateNextRenewal?: RenewalOption;
 }
 
+/**
+ * Real sign-in (M2.6, flag in utils/auth/realAuth.ts). Off: the prototype as before, no provider, no guard.
+ * On: GET /v1/me decides who is signed in, and every /app/* screen needs a session (D-UI-3).
+ */
+function SessionScope({ children }: {children: React.ReactNode;}) {
+  return realAuthEnabled() ? <AuthProvider><ImportsProvider>{children}</ImportsProvider></AuthProvider> : <>{children}</>;
+}
+const guard = (element: React.ReactElement): React.ReactElement => realAuthEnabled() ? <RequireSession>{element}</RequireSession> : element;
+
 export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', viewingAs = 'owner', simulateNextRenewal = 'succeeds', copilotWhatsApp = 'available', copilotFailure = 'none' }: AppProps) {
   // Personal text size and motion preferences (D80).
   const { reduceMotion, lang } = useAccountEffects();
+  const realAuth = realAuthEnabled();
   return (
     // Every framer-motion animation follows the device's "reduce motion" setting (D76), or the account's "Always reduce".
     <LocaleProvider lang={lang}>
@@ -198,6 +214,7 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
       <AppearancePolicyProvider initialDefault={visualDirection}>
         <WorkspaceProvider planControl={workspacePlan}>
           <WorkspaceScope visualDirection={visualDirection} viewingAs={viewingAs} renewal={simulateNextRenewal}>
+            <SessionScope>
             <Routes>
               <Route element={<MarketingLayout />}>
                 <Route index element={<Home />} />
@@ -226,14 +243,15 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
               <Route path="/copilot/whatsapp" element={<CopilotWhatsApp />} />
               <Route path="/d/:id" element={<CopilotPreview />} />
               <Route path="/copilot/continue" element={<CopilotContinue />} />
-              <Route path="/signup" element={<SignUp />} />
-              <Route path="/signin" element={<SignIn />} />
-              <Route path="/reset" element={<ResetPassword />} />
-              <Route path="/verify" element={<VerifyEmail />} />
+              <Route path="/signup" element={realAuth ? <SignUp codeFlow /> : <SignUp />} />
+              <Route path="/signin" element={realAuth ? <CodeSignIn /> : <SignIn />} />
+              {/* No passwords with real sign-in (D-UI-1d): /reset goes to sign-in. */}
+              <Route path="/reset" element={realAuth ? <Navigate to="/signin" replace /> : <ResetPassword />} />
+              <Route path="/verify" element={realAuth ? <VerifyCode /> : <VerifyEmail />} />
               <Route path="/start" element={<Onboarding />} />
               <Route path="/invite/:token" element={<AcceptInvite />} />
 
-              <Route path="/app" element={<AppShell />}>
+              <Route path="/app" element={guard(<AppShell />)}>
                 <Route index element={<Overview />} />
                 <Route path="spaces" element={<Spaces />} />
                 <Route path="canvas" element={<CanvasRedirect />} />
@@ -304,8 +322,8 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
                 <Route path="settings/:tab" element={<Settings />} />
                 <Route path="*" element={<NotFound embedded />} />
               </Route>
-              <Route path="/app/canvas/:pageId" element={<CanvasPage />} />
-              <Route path="/app/assistant" element={<Assistant />} />
+              <Route path="/app/canvas/:pageId" element={guard(<CanvasPage />)} />
+              <Route path="/app/assistant" element={guard(<Assistant />)} />
 
               <Route path="/admin" element={<AdminShell />}>
                 <Route index element={<Navigate to="overview" replace />} />
@@ -369,6 +387,7 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
               {/* Public addresses typed without /p (e.g. /adaeze-trunk-show/shop) still reach the page (D187). */}
               <Route path="*" element={<LegacyRedirect />} />
             </Routes>
+            </SessionScope>
             <AskBar />
             <AppToaster />
             <LiveAnnouncer />

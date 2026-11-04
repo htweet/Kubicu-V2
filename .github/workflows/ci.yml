@@ -76,6 +76,29 @@ jobs:
             test-results/
           retention-days: 14
 
+  flag-flip:
+    name: Real-sign-in build switched off behaves like the prototype (same 8 journeys, M2.6)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - name: Build with VITE_KUBICU_REAL_AUTH=true, switch it off in /config.js, run the unchanged journeys
+        run: npm run test:e2e:flag-flip
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-flag-flip
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
+
   secret-scan:
     name: Secret scan (gitleaks, full history)
     runs-on: ubuntu-latest

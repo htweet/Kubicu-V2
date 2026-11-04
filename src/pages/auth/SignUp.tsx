@@ -17,10 +17,15 @@ import { countryForLanguage, countryInfo, writeSignupCountry } from '../../utils
 import { formatOpeningDay, useCountryRollout } from '../../utils/admin/countryRollout';
 import { SelectInput } from '../../components/ui/SelectInput';
 import { InlineAlert } from '../../components/ui/InlineAlert';
+import { describeError, requestCode } from '../../utils/auth/session';
 
 const inputClass = 'h-12 rounded-xl pl-10';
 
-export function SignUp() {
+/**
+ * `codeFlow` (real sign-in on, D-UI-1 / D-A-1): no password; the account is created with an e-mail code
+ * (next screen). Without it the prototype's screen is unchanged.
+ */
+export function SignUp({ codeFlow = false }: {codeFlow?: boolean;} = {}) {
   const navigate = useNavigate();
   const { t, lang } = useT();
   const [params] = useSearchParams();
@@ -37,11 +42,12 @@ export function SignUp() {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [claim] = useState(() => readHandleClaim());
+  const [problem, setProblem] = useState<ReturnType<typeof describeError> | null>(null);
 
   const errors = {
     name: name.trim() ? '' : 'Enter your name',
     email: isValidEmail(email) ? '' : 'Enter a valid email, like you@example.com',
-    password: password.length >= 8 ? '' : 'Use at least 8 characters',
+    password: codeFlow || password.length >= 8 ? '' : 'Use at least 8 characters',
     agreed: agreed ? '' : 'Please agree to continue',
     country: closed ? 'Choose a country where KUBICU is open' : ''
   };
@@ -54,6 +60,17 @@ export function SignUp() {
     setLoading(true);
     writeSignupCountry(country);
     const kit = params.get('kit');
+    if (codeFlow) {
+      setProblem(null);
+      requestCode(email.trim(), { createUser: true, name: name.trim() }).then(
+        () => navigate(`/verify?email=${encodeURIComponent(email.trim())}${kit ? `&kit=${kit}` : ''}`),
+        (error: unknown) => {
+          setLoading(false);
+          setProblem(describeError(error));
+        }
+      );
+      return;
+    }
     window.setTimeout(() => navigate(`/verify?email=${encodeURIComponent(email.trim())}${kit ? `&kit=${kit}` : ''}`), 400);
   };
 
@@ -100,10 +117,12 @@ export function SignUp() {
       <form onSubmit={submit} noValidate className="flex flex-col gap-5">
         <TextInput id="su-name" label="Your name" autoComplete="name" leadingIcon={UserIcon} placeholder="Adaeze Okafor" className={inputClass} value={name} onChange={(e) => setName(e.target.value)} error={submitted ? errors.name || undefined : undefined} />
         <TextInput id="su-email" label="Email" type="email" inputMode="email" autoComplete="email" leadingIcon={MailIcon} placeholder="you@example.com" className={inputClass} value={email} onChange={(e) => setEmail(e.target.value)} error={submitted ? errors.email || undefined : undefined} />
+        {!codeFlow &&
         <div className="flex flex-col gap-3">
           <PasswordInput id="su-password" label="Password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} error={submitted ? errors.password || undefined : undefined} />
           <PasswordChecklist password={password} />
         </div>
+        }
         <div className="flex flex-col gap-3">
           <SelectInput<CountryCode>
             id="su-country"
@@ -142,6 +161,7 @@ export function SignUp() {
             </p>
           }
         </div>
+        {problem && <InlineAlert tone={problem.tone} title={problem.title}>{problem.body}</InlineAlert>}
         <Button type="submit" variant="brand" size="lg" fullWidth loading={loading} trailingIcon={ArrowRightIcon} className="mt-1 h-12 rounded-xl">
           Create account
         </Button>

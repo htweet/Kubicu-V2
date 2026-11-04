@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { Suspense, lazy, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
 import { useDocumentLang } from '../../contexts/LocaleContext';
@@ -29,6 +29,11 @@ import { ACCOUNT_PERSON } from '../../utils/admin/people';
 import { AccountLocked } from './AccountLocked';
 import { CountryNotOpen } from './CountryNotOpen';
 import { countryOpen } from '../../utils/admin/countryRollout';
+import { REAL_AUTH_BUILD, realAuthEnabled } from '../../utils/auth/realAuth';
+
+// Real sign-in only (D-UI-2): code-split, so prototype builds never load or render them.
+const LinkedWorkspaceBanner = REAL_AUTH_BUILD ? lazy(() => import('./LinkedWorkspaceBanner').then((m) => ({ default: m.LinkedWorkspaceBanner }))) : null;
+const ImportPrompt = REAL_AUTH_BUILD ? lazy(() => import('./ImportPrompt').then((m) => ({ default: m.ImportPrompt }))) : null;
 
 export function AppShell() {
   const { current, currentSpace, switchSpace } = useWorkspace();
@@ -78,6 +83,7 @@ export function AppShell() {
         <PlatformBanner />
         <BillingBanner />
         <DemoDataBanner />
+        {LinkedWorkspaceBanner && realAuthEnabled() && <Suspense fallback={null}><LinkedWorkspaceBanner /></Suspense>}
         <PolicyAgreement />
         <RoleBanner />
         <main id="main-content" tabIndex={-1} className="flex-1 pb-24 focus:outline-none md:pb-0">
@@ -86,6 +92,7 @@ export function AppShell() {
       </div>
       <MobileNav />
       <ExtensionsTour />
+      {ImportPrompt && realAuthEnabled() && <Suspense fallback={null}><ImportPrompt /></Suspense>}
     </div>);
 
 }

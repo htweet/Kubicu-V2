@@ -6,6 +6,7 @@ import { PlatformLook } from '../marketing/PlatformLook';
 import { useT } from '../../contexts/LocaleContext';
 import { LanguagePicker } from '../ui/LanguagePicker';
 import { AuthShowcase, type ShowcaseKind } from './AuthShowcase';
+import { realAuthEnabled } from '../../utils/auth/realAuth';
 
 interface AuthLayoutProps {
   title: string;
@@ -60,10 +61,13 @@ export function AuthLayout({ title, description, children, footer, aside, back, 
             {footer && <div className="mt-6 text-center text-label text-fg-muted">{footer}</div>}
           </main>
 
+          {/* With real sign-in on, accounts are real, so the prototype note would be untrue (D-UI-1). */}
+          {!realAuthEnabled() &&
           <p className="mx-auto flex max-w-[460px] items-start gap-2 text-caption text-fg-subtle">
             <FlaskConicalIcon size={13} className="mt-0.5 shrink-0" aria-hidden />
             {t('Prototype: no account is created and nothing you type here leaves this browser.')}
           </p>
+          }
         </div>
         <aside aria-hidden className="hidden p-4 lg:block">
           {aside ?
