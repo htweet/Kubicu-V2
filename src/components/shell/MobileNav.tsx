@@ -16,6 +16,7 @@ import { HelpMenu } from './HelpMenu';
 import { LanguagePicker } from '../ui/LanguagePicker';
 import { useMarketplace } from '../../contexts/MarketplaceContext';
 import { useT } from '../../contexts/LocaleContext';
+import { STAFF_CONSOLE_BUILD } from '../../utils/staffConsole';
 
 export function MobileNav() {
   const [moreOpen, setMoreOpen] = useState(false);
@@ -27,7 +28,9 @@ export function MobileNav() {
   const rest = workspaceNav.filter((n) => !mobilePrimaryNavIds.includes(n.id) && (!n.appId || market.isInstalled(n.appId)));
   const canChoose = useAppearancePolicy().enabled.length > 1;
   const currentWorkspace = useWorkspace().current;
-  const superAdmin = useStaffSession()?.role === 'lead';
+  const staffSession = useStaffSession();
+  // G-1: never in a deployed build, whatever the browser's session storage says.
+  const superAdmin = STAFF_CONSOLE_BUILD && staffSession?.role === 'lead';
   const { t } = useT();
 
   const itemCls = 'flex h-full w-full flex-col items-center justify-center gap-1 text-caption font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus';

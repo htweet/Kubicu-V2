@@ -15,6 +15,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { ApiError, describeError, requestCode, signInWithCode } from '../../utils/auth/session';
 import { safeNext } from '../../utils/auth/realAuth';
 import { useResendCooldown } from '../../components/auth/useResendCooldown';
+import { STAFF_CONSOLE_BUILD } from '../../utils/staffConsole';
 
 const inputClass = 'h-12 rounded-xl pl-10';
 /** Matches GOTRUE_MAILER_OTP_EXP (600 s) and the e-mail template. */
@@ -121,12 +122,13 @@ export function CodeSignIn() {
           <Link to="/signup" className="font-semibold text-fg underline underline-offset-4 hover:no-underline">
             {t('Create an account')}
           </Link>
+          {STAFF_CONSOLE_BUILD &&
           <span className="mt-3 block text-caption text-fg-subtle">
             {t('KUBICU team?')}{' '}
             <Link to="/admin" className="font-medium text-fg-muted underline underline-offset-2 hover:text-fg">
               {t('Staff console')}
             </Link>
-          </span>
+          </span>}
         </>
       }>
       

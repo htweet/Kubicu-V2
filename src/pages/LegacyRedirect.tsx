@@ -4,6 +4,7 @@ import { legacyModuleIds } from '../data/navigation';
 import { useWorkspace } from '../contexts/WorkspaceContext';
 import { resolvePublicPage } from '../utils/resolvePublicPage';
 import { NotFound } from './NotFound';
+import { STAFF_CONSOLE_BUILD } from '../utils/staffConsole';
 
 /** Staff console areas — the console itself still asks for a staff sign-in and checks the role. */
 const staffAreas = ['health', 'audit', 'appeals', 'staff', 'flags', 'moderation', 'support', 'tenants', 'reporting', 'data-requests', 'escrow', 'modules'];
@@ -30,7 +31,8 @@ export function LegacyRedirect() {
   if (pageId) return <Navigate to={`/app/canvas/${pageId}`} replace />;
   if (module && legacyModuleIds.includes(module)) return <Navigate to={`/app/${module}`} replace />;
   // Short addresses people type from memory (D113a).
-  if (module && staffAreas.includes(module)) return <Navigate to={`/admin/${module}`} replace />;
+  // Staff-area shortcuts exist only in builds with the prototype staff console (G-1).
+  if (STAFF_CONSOLE_BUILD && module && staffAreas.includes(module)) return <Navigate to={`/admin/${module}`} replace />;
   if (module && shortcuts[module]) return <Navigate to={shortcuts[module]} replace />;
 
   // Public page addresses typed without /p — optionally with the "kub.icu/" prefix pasted in.

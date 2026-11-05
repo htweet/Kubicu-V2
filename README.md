@@ -30,6 +30,23 @@ This builds the app and serves it at http://localhost:4173. All data stays in yo
 | `npm run test:e2e:flag-flip` | The same eight journeys, unchanged, against the real-sign-in build with real sign-in switched off in `/config.js`. It must behave exactly like the prototype. CI runs it on Linux and on Windows. |
 | gitleaks (CI only) | Secret scan of the full git history. Reviewed false positives are listed in `.gitleaksignore`. |
 
+## Staff console (`/admin`): prototype builds only (release gate G-1)
+
+The staff console under `/admin` is a **prototype**: its sign-in is simulated and its data lives in the browser. It is compiled in only when `VITE_KUBICU_STAFF_CONSOLE=prototype`.
+
+| Build | Staff console | Use |
+|---|---|---|
+| `npm run dev` | Included (`.env.development`) | Local development and demos |
+| `npm run build` | Included | Local demos and the journey tests. **Never deploy this build to a public host.** |
+| `npm run build:realauth` | **Excluded.** The build refuses `VITE_KUBICU_STAFF_CONSOLE`. | The only build to deploy |
+
+**Checks:**
+- `npm run check:staff-console -- <dir> absent|present` checks a built bundle. It runs in CI for both builds, on Linux and Windows.
+- `tests/e2e/staff-console-gate.spec.ts` checks `/admin`, `/Admin/…`, the staff shortcuts and the sign-in link in a real browser against both builds.
+- The server also answers `/admin` with 404 (AI-Engine `platform/infra/caddy/Caddyfile`).
+
+A real staff console with audited, second-person-approved break-glass access is a separate requirement before go-live.
+
 ## Real sign-in (M2.6, behind a flag, off by default)
 
 Approved as D-UI-1, D-UI-2 and D-UI-3; the design and test plan are in the AI-Engine repository (`docs/kubicu-integration/m2/17`, `19`).

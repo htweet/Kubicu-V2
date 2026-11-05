@@ -12,6 +12,7 @@ import { readAccount } from '../../utils/account/store';
 import { providerInfo, ssoForEmail } from '../../utils/sso';
 import { startPageOptions } from '../../data/accountOptions';
 import { useT } from '../../contexts/LocaleContext';
+import { STAFF_CONSOLE_BUILD } from '../../utils/staffConsole';
 
 type Mode = 'password' | 'sso';
 
@@ -82,12 +83,13 @@ export function SignIn() {
           <Link to="/signup" className="font-semibold text-fg underline underline-offset-4 hover:no-underline">
             {t('Create an account')}
           </Link>
+          {STAFF_CONSOLE_BUILD &&
           <span className="mt-3 block text-caption text-fg-subtle">
             {t('KUBICU team?')}{' '}
             <Link to="/admin" className="font-medium text-fg-muted underline underline-offset-2 hover:text-fg">
               {t('Staff console')}
             </Link>
-          </span>
+          </span>}
         </>
       }>
       

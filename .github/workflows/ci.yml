@@ -40,6 +40,13 @@ jobs:
           (cd dist && find . -type f -print0 | sort -z | xargs -0 sha256sum) > /tmp/build2.sha256
           diff /tmp/build1.sha256 /tmp/build2.sha256
           echo "Build is reproducible: $(wc -l < /tmp/build1.sha256) files, identical hashes"
+      - name: "G-1: the prototype build contains every staff-console marker (keeps the check honest)"
+        run: npm run check:staff-console -- dist present
+      - name: "G-1: the deployable real-sign-in build contains no staff console, and refuses VITE_KUBICU_STAFF_CONSOLE"
+        run: |
+          npm run build:realauth
+          npm run check:staff-console -- dist-realauth absent
+          if VITE_KUBICU_STAFF_CONSOLE=prototype npm run build:realauth; then echo "build:realauth accepted VITE_KUBICU_STAFF_CONSOLE"; exit 1; fi
 
   typecheck:
     name: Type-check ratchet (known backlog, no new errors)
@@ -87,8 +94,10 @@ jobs:
           cache: npm
       - run: npm ci --no-audit --no-fund
       - run: npx playwright install --with-deps chromium
-      - name: Build with VITE_KUBICU_REAL_AUTH=true, switch it off in /config.js, run the unchanged journeys
+      - name: Build with VITE_KUBICU_REAL_AUTH=true, switch it off in /config.js, run the unchanged journeys (and the G-1 browser check)
         run: npm run test:e2e:flag-flip
+      - name: "G-1: the tested real-sign-in build contains no staff console"
+        run: npm run check:staff-console -- dist-realauth absent
       - name: Upload Playwright report
         if: always()
         uses: actions/upload-artifact@v4
@@ -119,6 +128,13 @@ jobs:
           npm run build
           if (-not (Select-String -Quiet -SimpleMatch 'src="/config.js"' dist-realauth/index.html)) { throw 'dist-realauth/index.html does not load /config.js' }
           if (Select-String -Quiet -SimpleMatch 'config.js' dist/index.html) { throw 'dist/index.html must not load /config.js' }
+      - name: "G-1 on Windows: no staff console in the real-sign-in build; every marker in the prototype build"
+        shell: pwsh
+        run: |
+          npm run check:staff-console -- dist-realauth absent
+          if ($LASTEXITCODE -ne 0) { throw 'G-1 failed' }
+          npm run check:staff-console -- dist present
+          if ($LASTEXITCODE -ne 0) { throw 'G-1 marker check failed' }
       - name: Upload Playwright report
         if: always()
         uses: actions/upload-artifact@v4

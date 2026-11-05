@@ -22,6 +22,7 @@ import { useT } from '../../contexts/LocaleContext';
 import { useWorkspaceNavCounts } from '../../hooks/useWorkspaceNavCounts';
 import { LanguagePicker } from '../ui/LanguagePicker';
 import { useModuleAvailability } from '../../utils/admin/moduleFlags';
+import { STAFF_CONSOLE_BUILD } from '../../utils/staffConsole';
 
 export function Sidebar() {
   const { collapsed, toggle } = useSidebarCollapsed();
@@ -31,7 +32,9 @@ export function Sidebar() {
   const market = useMarketplace();
   // Modules KUBICU switched off stay listed, marked "Not available" (D464).
   const availability = useModuleAvailability();
-  const superAdmin = useStaffSession()?.role === 'lead';
+  const staffSession = useStaffSession();
+  // G-1: never in a deployed build, whatever the browser's session storage says.
+  const superAdmin = STAFF_CONSOLE_BUILD && staffSession?.role === 'lead';
   // Apps that aren't installed stay out of the sidebar (D87).
   const visible = workspaceNav.filter((n) => !n.appId || market.isInstalled(n.appId));
   const groups = useNavGroups();
