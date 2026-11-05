@@ -6,8 +6,12 @@ import { test, expect } from '@playwright/test';
 const deployable = process.env.KUBICU_PREVIEW_DIR === 'dist-realauth';
 
 test(deployable ? 'G-1: the deployable build has no staff console, shortcut or link' : 'G-1: the prototype build keeps the staff console for demos', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
   for (const path of ['/admin', '/admin/overview', '/Admin/staff', '/staff']) {
     await page.goto(path, { waitUntil: 'networkidle' });
+    // A real page rendered (not a blank or crashed one), whichever build this is (review finding G-1c).
+    await expect(page.getByRole('heading').first(), path).toBeVisible();
     const staffSignIn = page.getByRole('heading', { name: /staff/i });
     if (deployable) {
       await expect(page.getByLabel(/password/i), path).toHaveCount(0);
@@ -22,4 +26,5 @@ test(deployable ? 'G-1: the deployable build has no staff console, shortcut or l
   const link = page.getByRole('link', { name: 'Staff console' });
   if (deployable) await expect(link).toHaveCount(0);
   else await expect(link).toBeVisible();
+  expect(errors, 'uncaught page errors').toEqual([]);
 });
