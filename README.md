@@ -61,7 +61,7 @@ When the flag is off, every screen behaves exactly as the prototype.
 | | |
 |---|---|
 | Build-time switch | `npm run build:realauth` (sets `VITE_KUBICU_REAL_AUTH=true`, output in `dist-realauth/`; works in PowerShell, cmd and POSIX shells). `npm run build` never includes it. |
-| Runtime switch | `/config.js`, served next to the app with `Cache-Control: no-store`: `window.__KUBICU_CONFIG__ = {"realAuth": true, "apiUrl": "https://api…", "authUrl": "https://…/auth/v1"}`. Write it with `node scripts/write-runtime-config.mjs <dir> on <apiUrl> <authUrl>`. |
+| Runtime switch | `/config.js`, served next to the app with `Cache-Control: no-store`: `window.__KUBICU_CONFIG__ = {"realAuth": true, "apiUrl": "https://api…", "authUrl": "https://…/auth/v1"}`. Write it with `node scripts/write-runtime-config.mjs <dir> on <apiUrl> <authUrl> <publishableKey>`. The publishable key (`authKey`) is sent as `apikey` to Supabase Auth, as hosted Supabase requires (API-4); a secret or `service_role` key is refused by the script and by the app. |
 | Roll back | Write `off` (or remove the file); the next page load is the prototype again. Browser data is never deleted. |
 | Tests | The flag-on browser suite needs the Kubicu Platform API, Supabase Auth and PostgreSQL. It runs in AI-Engine (`platform/e2e/m2-6-real-auth.spec.ts`) against `dist-realauth/`. |
 

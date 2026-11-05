@@ -103,10 +103,12 @@ export async function api<T>(method: string, path: string, body?: unknown, extra
 }
 
 async function gotrue(path: string, body: unknown): Promise<Response> {
-  return send(`${realAuthConfig().authUrl}${path}`, {
+  const { authUrl, authKey } = realAuthConfig();
+  return send(`${authUrl}${path}`, {
     method: 'POST',
     credentials: 'omit',
-    headers: { 'content-type': 'application/json' },
+    // API-4: hosted Supabase Auth requires the publishable key on every call.
+    headers: { 'content-type': 'application/json', ...(authKey ? { apikey: authKey } : {}) },
     body: JSON.stringify(body)
   });
 }

@@ -16,6 +16,33 @@ export interface RealAuthConfig {
   readonly apiUrl: string;
   /** Supabase Auth base URL, e.g. https://<project>.supabase.co/auth/v1 */
   readonly authUrl: string;
+  /**
+   * The Supabase project's publishable key, sent as the `apikey` header on every Supabase Auth call (API-4).
+   * Hosted Supabase requires it; the local open-source server does not. Never a secret or service_role key.
+   */
+  readonly authKey?: string;
+}
+
+/**
+ * Why a value cannot be used as the `apikey` header, or null for a publishable key: `sb_publishable_…`, or a
+ * legacy JWT-format key with role "anon". Secret (`sb_secret_…`) and service_role keys bypass Row Level
+ * Security, so a configuration carrying one is refused as a whole.
+ */
+export function publishableKeyProblem(key: string): string | null {
+  if (!/^[A-Za-z0-9._-]{20,2048}$/.test(key)) return 'not a Supabase publishable key';
+  if (key.startsWith('sb_secret_')) return 'a Supabase secret key';
+  if (key.startsWith('sb_publishable_')) return null;
+  const parts = key.split('.');
+  if (parts.length === 3) {
+    try {
+      const role = (JSON.parse(atob(parts[1]!.replace(/-/g, '+').replace(/_/g, '/'))) as { role?: unknown }).role;
+      if (role === 'anon') return null;
+      if (role === 'service_role') return 'a service_role key';
+    } catch {
+      // not a JWT
+    }
+  }
+  return 'not a Supabase publishable key';
 }
 
 let config: RealAuthConfig | null = null;
@@ -41,11 +68,21 @@ declare global {
 /** Reads window.__KUBICU_CONFIG__ (set by /config.js) once, before the first render. */
 export function initRealAuthConfig(): void {
   if (!REAL_AUTH_BUILD) return;
-  const json = window.__KUBICU_CONFIG__ as { realAuth?: unknown; apiUrl?: unknown; authUrl?: unknown } | undefined;
+  const json = window.__KUBICU_CONFIG__ as { realAuth?: unknown; apiUrl?: unknown; authUrl?: unknown; authKey?: unknown } | undefined;
   if (!json || typeof json !== 'object') return;
   const apiUrl = httpUrl(json.apiUrl);
   const authUrl = httpUrl(json.authUrl);
-  if (json.realAuth === true && apiUrl && authUrl) config = { apiUrl, authUrl };
+  let authKey: string | undefined;
+  if (json.authKey !== undefined) {
+    const problem = typeof json.authKey === 'string' ? publishableKeyProblem(json.authKey) : 'not a string';
+    if (problem) {
+      // Never send a secret key from a browser: stay in prototype mode instead.
+      console.error(`Real sign-in is off: /config.js authKey is ${problem}.`);
+      return;
+    }
+    authKey = json.authKey as string;
+  }
+  if (json.realAuth === true && apiUrl && authUrl) config = { apiUrl, authUrl, ...(authKey ? { authKey } : {}) };
 }
 
 /** True when real sign-in is on for this page load. Constant after start-up. */
