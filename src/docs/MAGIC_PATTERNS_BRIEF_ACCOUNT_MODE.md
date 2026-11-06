@@ -1,7 +1,7 @@
 # KUBICU — Magic Patterns brief: account-mode states for screens that now have a real server
 
 **Date:** 6 November 2026 · **From:** engineering (AI Engine integration) · **For:** Magic Patterns AI, lead designer
-**Read with:** `KUBICU_MAGIC_PATTERNS_MASTER_DESIGN_PLAN.md`, `COMPONENT_STATE_LIBRARY.md`, `CLAUDE_HANDOFF.md`, `DESIGN_DECISION_REGISTER.md` (next number **D523**)
+**Read with:** `KUBICU_MAGIC_PATTERNS_MASTER_DESIGN_PLAN.md`, `COMPONENT_STATE_LIBRARY.md`, `CLAUDE_HANDOFF.md`, `DESIGN_DECISION_REGISTER.md` (next number **D529**; D523–D528 are taken), `NOT_FOR_PRODUCTION.md`, `COMPONENT_STATE_LIBRARY.md`, `CORE_USER_FLOWS.md`, `PLAN_MATRIX.md`, `COPILOT_AI_INTEGRATION.md`
 
 ---
 
@@ -19,17 +19,38 @@ Engineering then connects them to the server and tests them in a real browser.
 
 **Rules (owner instructions; they override anything else in this brief):**
 
-1. **Do not restyle or re-lay-out any existing screen.** Add states inside the existing components, using the existing primitives in `COMPONENT_STATE_LIBRARY.md` (Dialog, Sheet, Banner/Alert, EmptyState, Button, Field and so on). If you believe a layout change is needed, **record it in the Design Decision Register as "proposed, needs owner approval"** and do not build it.
-2. **Browser mode stays exactly as it is.** Every new state renders only when `realAuthEnabled()` is true and the workspace is an account workspace. The 8 existing prototype journeys must keep passing unchanged.
-3. **No network calls in your work.** Build the new states as presentational variants driven by props. Put sample data in one new file, `src/data/accountModeSamples.ts`, and make each state previewable from the existing **Controls panel** (simulation switches). Engineering replaces the samples with the real API.
+1. **Do not restyle or re-lay-out any existing screen.**
+   - Add states inside the existing components, using the existing primitives in `COMPONENT_STATE_LIBRARY.md` by their real names:
+     - `InlineAlert` for notices (there is no Banner);
+     - `Dialog` for confirmations (there is no ConfirmDialog), with `onTop` when a dialog opens over another;
+     - `Sheet`, `EmptyState`, `Button` and `Field`.
+   - There is no Pagination primitive, so "Load older" (§9) is a new pattern: record it as a decision.
+   - If you believe a layout change is needed, record it in the Design Decision Register with the existing **"Pending founder"** label, and do not build it.
+2. **Browser mode stays exactly as it is.** In the real product, every new state renders only for an account workspace when real sign-in is on (`realAuthEnabled()`). The 8 existing prototype journeys must keep passing unchanged.
+3. **No network calls in your work.**
+   - **Build:** make the new states presentational variants driven by props.
+   - **Sample data:** put it in one new file following the `data/sample*.ts` convention, `src/data/sampleAccountMode.ts`.
+   - **Previewing:** prototype builds have real sign-in off, so the Controls panel can't reach these states through `realAuthEnabled()`. Add one explicit simulation switch, **"Account mode (preview)"**, passed through `App.tsx` like the other Controls props, and make each state previewable from it. List that switch and the sample file in `NOT_FOR_PRODUCTION.md` §1 and its release gate.
+   - **Engineering:** replaces the samples with the real API, and in account mode takes the role only from the server, never from "Viewing as".
 4. **Do not change behaviour the server enforces** (permissions, seat limits, expiry times). Copy the numbers below; they come from the server.
-5. **Wording:** follow §9 of the master plan. Use plain UK English with typographic apostrophes (’), and wrap every new string in `tr()` like its neighbours. Never say something was sent, saved or deleted unless it really was.
+5. **Wording:**
+   - Follow §9 of the master plan. Use plain UK English with typographic apostrophes (’).
+   - Wrap every new string in `tr()`, **with drafts in all seven other languages**, as `CLAUDE_HANDOFF.md` requires.
+   - Write counts as "Label: n" rather than English plurals. For example, write "Expires in (days): 5", not "expires in 5 days", and "Ahead of you: 2", not "2 ahead of you".
+   - Never say something was sent, saved or deleted unless it really was.
 6. **Accessibility:**
-   - keyboard-only operation, with visible focus;
-   - focus moves into each new dialog and returns to the button that opened it;
-   - error text is tied to its field;
-   - the layout works at 390 px wide.
-7. **Record every decision** as D523 onwards. Update `SCREEN_INVENTORY.md` and `DESIGN_TRACEABILITY_MATRIX.md` for each state you add.
+   - **Width:** 390 px is the design target, but every state must also work at **320 px**.
+   - **Touch targets:** at least 44 px.
+   - **Status changes:** announced to screen readers.
+   - **Keyboard:** keyboard-only operation, with visible focus.
+   - **Dialogs:** focus moves into each new dialog and returns to the button that opened it.
+   - **Errors:** error text is tied to its field.
+7. **Record every decision** as D529 onwards. For each state you add, update:
+   - `SCREEN_INVENTORY.md` and `DESIGN_TRACEABILITY_MATRIX.md`;
+   - `NOT_FOR_PRODUCTION.md` and `COMPONENT_STATE_LIBRARY.md`;
+   - `CORE_USER_FLOWS.md` §2 (the existing invite states);
+   - `CLAUDE_HANDOFF.md` §10 (Controls);
+   - the Help guides and the Copilot topics that describe these screens. For example, `data/help/serveAndRun.ts` tells people about two-step sign-in and device lists.
 
 **Where to push:**
 - Push to a new branch, **`design/account-mode`**, on `htweet/Kubicu-V2`.
@@ -152,7 +173,8 @@ States to draw:
 
 **Server behaviour:**
 - **The list:** only active account workspaces where you are an active member.
-- **Create:** name (required); owner name, type, country, currency and WhatsApp (optional). Your workspace limit applies, and the approved limit message already exists.
+- **Create:** name and **country (required)**. D495 forbids a workspace without a country, and the currency follows the country. Owner name, type and WhatsApp are optional.
+- **Workspace limit:** the server limits how many workspaces one person may own (20 by default), and the approved limit message already exists. The prototype says "unlimited" (D137, `DESIGN_GAP_AUDIT.md`), so record a decision that account mode has a limit.
 - **Remove = archive:** the server **archives**; nothing is deleted. It needs `workspace.delete` (Owner) and a "confirm it’s you". An archived workspace disappears from everyone's list.
 
 **Design:** the prototype says "Remove". In account mode it should say **"Archive workspace"**, with honest copy: "It disappears for everyone in the team. Its data is kept." Don't promise a restore button: there isn't one yet. Browser workspaces keep their current "Remove" behaviour.
@@ -169,7 +191,7 @@ States to draw:
 ### 7. Workspace settings and team policies (Settings → Business / Team)
 
 **Server behaviour:**
-- **Workspace details:** name, owner name, country, currency and WhatsApp need `commerce.settings`.
+- **Workspace details:** name, owner name, country, currency and WhatsApp need `commerce.settings`. Country and currency are edited together, as in the prototype, and the currency locks after the first paid order (D473). Keep that behaviour.
 - **Team policies** need `team.manage` and a "confirm it’s you":
   - **Admins can pay out** can be changed **only by the Owner** ("Only Owners can change who may pay out.");
   - **Sales refund limit**;
@@ -183,7 +205,12 @@ States to draw:
 - not allowed (with the reason);
 - confirm it’s you.
 
-Where the prototype already has these controls, add only the states. Where a policy has no control yet, add it in the existing settings pattern. Record it as a decision.
+Most of these controls already exist; add only their account-mode states:
+- **Sales refund limit:** Settings → Roles (D57).
+- **Publishing needs review:** Settings → Approvals (D58).
+- **Admins can pay out:** Commerce → Wallet (D92).
+
+Only **separation of duties** is new. Propose where it lives (next to "Publishing needs review" is the obvious place) and record the decision.
 
 ### 8. Account → Security (`components/account/SecurityTab.tsx`)
 
@@ -193,6 +220,7 @@ Where the prototype already has these controls, add only the states. Where a pol
 
 **Design (account mode only):**
 1. Hide the per-device list. Show one row instead: "Sign out everywhere: signs you out on every phone and computer, including this one."
+   - The prototype's "Sign out other devices" (D80) keeps this device signed in; the server's version includes this device. The copy must say so, and you should record the difference as a decision.
 2. Keep the prototype's device list in browser mode.
 3. The prototype's password and two-step settings have no server behind them yet, because account sign-in uses e-mail codes. In account mode, hide them until they do, and record a decision, rather than showing controls that do nothing.
 
@@ -233,7 +261,9 @@ States to draw:
 - **Monthly credits per plan:** Free 10, Creator 60, Pro 200, Business 500, Agency 1,500, Enterprise 5,000.
 - **Unsettled charges:** `unsettledCharges` counts runs charged at their full reservation, because they stopped before reporting what they used.
 
-**Design:** add **"On hold"** to the existing meter, so it reads used, on hold and left, with help text: "Held while AI work is running. Anything unused comes back when it finishes." When unsettled charges exist, add a quiet note: "{n} AI tasks stopped before reporting usage, so they were charged in full ({credits} credits)."
+**Design:** add **"On hold"** to the existing meter, so it reads used, on hold and left, with help text: "Held while AI work is running. Anything unused comes back when it finishes." Keep the existing amber at 80% and red at 100% (D65).
+
+**Unsettled charges: do not design this note yet.** The app already promises "Declines, errors and timeouts cost nothing" (`AI_ASSISTANT_INTEGRATION.md`; D211d). Charging a task that stopped without reporting its usage conflicts with that promise. The owner must decide first; engineering will send the outcome.
 
 Viewing needs `ai.use`. Without it, keep the existing locked or upsell treatment.
 
@@ -253,7 +283,14 @@ Draw each of these once, as reusable patterns. Use existing components; for the 
 
 The run store is being built (M3.1). The owner decided the AI screens come in **M4**, so treat this batch as early design. **Field names may still change**; engineering will confirm them before wiring.
 
-**Place it inside what already exists:** Automations (execution history, failure detail, approvals) and Copilot. **Do not add a new top-level area.** If you think one is needed, record it as a proposal for the owner.
+**Place it inside what already exists:** Automations (execution history, failure detail, approvals), and the Assistant (`/app/assistant`) where a person starts a task.
+- **Not Copilot.** Copilot is signed-out by design and must never act on a workspace (`COPILOT_AI_INTEGRATION.md`; D520). It hands workspace jobs to the Assistant.
+- **No new top-level area.** If you think one is needed, record it as a proposal for the owner ("Pending founder").
+- **Naming:** "Approvals" already means publish reviews (Settings → Approvals, `approvals.review`), so call these **"Workflow approvals"**. Reuse the Automations pattern "Drafts waiting for you" (Approve / Edit / Discard, D137, with its sidebar badge, D251) where it fits.
+- **Roles and plans:**
+  - The **Approver** role and the `workflows.view` / `run` / `approve` / `admin` permissions are not yet in the prototype's Roles table. Add them as rows and record the decision.
+  - Automations is an app that isn't installed by default (D87).
+  - `PLAN_MATRIX.md` has no row yet for runs at once and runs waiting: add one with the numbers below.
 
 **What the server will do:**
 - **Starting a run:**
@@ -284,6 +321,7 @@ The run store is being built (M3.1). The owner decided the AI screens come in **
   - Rejected
 - **Live progress:** steps appear as they happen and survive a page reload.
 - **Cancelling:** the person who started a run, or anyone with `workflows.admin`, can cancel it. Actions already carried out aren't undone, so the screen must list them.
+- **Credits:** each model step is charged after it answers; a step that fails costs nothing. Whether steps already done are charged when a run later fails is **pending an owner decision**, because the app promises that errors cost nothing. Don't show a charge on failed runs until engineering confirms.
 - **Approvals:**
   - **What can be approved:** sensitive actions pause the run for approval (`workflows.approve`). The approval shows **exactly** what will happen, as a plain summary of the real action, not AI-written text.
   - **Who may approve:** with separation of duties on, the requester can’t approve their own request ("Someone else must approve this").
@@ -296,7 +334,7 @@ The run store is being built (M3.1). The owner decided the AI screens come in **
 2. **Run list:** filter by status. Show queued position ("2 ahead of you").
 3. **Run detail:** a live timeline of steps and tool actions, with credits used, and a cancel action with its consequence.
 4. **Approval card in the timeline**, plus an **approvals inbox**, with:
-   - approve and reject, with an optional comment;
+   - approve, and reject with a **required note** (the existing convention for rejections, D58 and D129);
    - expired;
    - withdrawn;
    - decided by someone else;
