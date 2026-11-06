@@ -20,6 +20,7 @@ export type ApiErrorCode =
   | 'not_found'
   | 'conflict'
   | 'seat_limit_reached'
+  | 'quota_exceeded'
   | 'validation_failed'
   | 'payload_too_large'
   | 'rate_limited'
@@ -34,7 +35,9 @@ export class ApiError extends Error {
     readonly code: ApiErrorCode,
     readonly title: string,
     readonly detail?: string,
-    readonly retryAfterSeconds?: number
+    readonly retryAfterSeconds?: number,
+    /** The limit reached, as the server reports it (a count, or bytes for payload_too_large). */
+    readonly limit?: number
   ) {
     super(title);
   }
@@ -48,6 +51,7 @@ const CODES: Record<string, ApiErrorCode> = {
   conflict: 'conflict',
   idempotency_conflict: 'conflict',
   seat_limit_reached: 'seat_limit_reached',
+  quota_exceeded: 'quota_exceeded',
   validation_failed: 'validation_failed',
   payload_too_large: 'payload_too_large',
   unsupported_media_type: 'validation_failed',
@@ -62,7 +66,7 @@ function retryAfter(res: Response): number | undefined {
 }
 
 async function apiError(res: Response): Promise<ApiError> {
-  let body: { type?: string; title?: string; detail?: string } = {};
+  let body: { type?: string; title?: string; detail?: string; limit?: unknown } = {};
   try {
     body = (await res.json()) as typeof body;
   } catch {
@@ -70,7 +74,8 @@ async function apiError(res: Response): Promise<ApiError> {
   }
   const slug = body.type?.split('/').pop() ?? '';
   const code: ApiErrorCode = CODES[slug] ?? (res.status === 401 ? 'unauthenticated' : res.status === 429 ? 'rate_limited' : res.status >= 500 ? 'unavailable' : 'unknown');
-  return new ApiError(res.status, code, body.title ?? `Request failed (${res.status})`, body.detail, retryAfter(res));
+  const limit = typeof body.limit === 'number' && Number.isInteger(body.limit) && body.limit >= 0 ? body.limit : undefined;
+  return new ApiError(res.status, code, body.title ?? `Request failed (${res.status})`, body.detail, retryAfter(res), limit);
 }
 
 async function send(input: string, init: RequestInit): Promise<Response> {
@@ -168,6 +173,37 @@ export async function signOutSession(): Promise<void> {
   }
 }
 
+/** "8 MiB", or "512 KB" below one MiB. */
+export function formatSizeLimit(bytes: number): string {
+  return bytes >= 1024 * 1024 ? `${Math.round(bytes / (1024 * 1024))} MiB` : `${Math.ceil(bytes / 1024)} KB`;
+}
+
+/** The server's title for the daily import limit (a 429, unlike other rate limits it lasts hours). */
+export const IMPORT_LIMIT_TITLE = 'Import limit reached';
+
+/**
+ * Owner-approved wording for the three limits (6 Nov 2026). The numbers always come from the server's reply;
+ * the defaults are only used if an older server leaves them out.
+ */
+export function describeLimit(error: unknown): { tone: 'warning'; title: string; body: string } | null {
+  if (!(error instanceof ApiError)) return null;
+  if (error.code === 'quota_exceeded') {
+    const n = error.limit ?? 20;
+    return { tone: 'warning', title: 'Workspace limit reached', body: `You’ve reached the maximum of ${n} ${n === 1 ? 'workspace' : 'workspaces'}. Close or remove a workspace you no longer need before creating another.` };
+  }
+  if (error.code === 'rate_limited' && error.title === IMPORT_LIMIT_TITLE) {
+    const n = error.limit ?? 10;
+    const hours = error.retryAfterSeconds ? Math.max(1, Math.ceil(error.retryAfterSeconds / 3600)) : undefined;
+    const when = hours ? `You can try again in about ${hours} ${hours === 1 ? 'hour' : 'hours'}.` : 'You can try again within 24 hours.';
+    return { tone: 'warning', title: IMPORT_LIMIT_TITLE, body: `You’ve reached the import limit of ${n} in 24 hours. ${when}` };
+  }
+  if (error.code === 'payload_too_large') {
+    const size = formatSizeLimit(error.limit ?? 8 * 1024 * 1024);
+    return { tone: 'warning', title: 'Too large to bring over', body: `This workspace is too large to bring to your account (${size} limit). Remove unused pages or images and try again.` };
+  }
+  return null;
+}
+
 /** Plain-language message for an error, following the table in m2/16 §E. */
 export function describeError(error: unknown): { tone: 'warning' | 'danger'; title: string; body: string } {
   const e = error instanceof ApiError ? error : new ApiError(0, 'unknown', 'Something went wrong');
@@ -186,6 +222,8 @@ export function describeError(error: unknown): { tone: 'warning' | 'danger'; tit
       return { tone: 'warning', title: 'You can’t do this', body: e.detail ?? 'Your role doesn’t allow it.' };
     case 'not_found':
       return { tone: 'warning', title: 'Not found', body: 'It may have been removed.' };
+    case 'quota_exceeded':
+      return describeLimit(e)!;
     case 'conflict':
     case 'seat_limit_reached':
       return { tone: 'warning', title: e.title, body: e.detail ?? '' };

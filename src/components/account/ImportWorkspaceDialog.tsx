@@ -7,7 +7,7 @@ import { InlineAlert } from '../ui/InlineAlert';
 import { useT } from '../../contexts/LocaleContext';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
 import { useImports, type ImportRecord, type Reinvite } from '../../contexts/ImportsContext';
-import { ApiError, describeError } from '../../utils/auth/session';
+import { ApiError, describeError, describeLimit, IMPORT_LIMIT_TITLE } from '../../utils/auth/session';
 import { buildLegacyBundleFrom, LEGACY_BUNDLE_MAX_BYTES, LEGACY_UNDO_DAYS, readBrowserStorage, secretArea, type LegacyBundle } from '../../utils/legacyBundle';
 import { formatDate } from '../../utils/billing';
 import { roleInfo } from '../../data/permissions';
@@ -78,7 +78,7 @@ export function ImportWorkspaceDialog({ open, onClose, workspaceId }: {open: boo
       const fresh = await buildLegacyBundleFrom(readBrowserStorage(), workspaceId);
       setPrepared(fresh);
       if (new TextEncoder().encode(JSON.stringify(fresh.bundle)).length > LEGACY_BUNDLE_MAX_BYTES) {
-        throw new ApiError(413, 'payload_too_large', 'Too large to upload', 'This workspace is over 20 MB. Remove some media, then try again.');
+        throw new ApiError(413, 'payload_too_large', 'Too large to upload', undefined, undefined, LEGACY_BUNDLE_MAX_BYTES);
       }
       setProgress('leftOut');
       setProgress('saving');
@@ -98,13 +98,15 @@ export function ImportWorkspaceDialog({ open, onClose, workspaceId }: {open: boo
           return;
         }
       }
-      const d = describeError(e);
+      // The three limits use the owner-approved wording, with the numbers from the server (describeLimit).
+      const d = describeLimit(e) ?? describeError(e);
       const secrets = e instanceof ApiError && e.title === 'Bundle contains secrets';
       setError({
         title: secrets ? 'Something here looks like a password or key' : d.title,
         body: secrets ? 'Remove it from the areas below (or move it to Settings → Integrations), then try again.' : d.body,
         areas: secrets ? areasIn(e.detail) : [],
-        retry: e instanceof ApiError && ['network', 'unavailable', 'rate_limited', 'unknown'].includes(e.code)
+        // The daily import limit lasts hours: no "Try again" for it.
+        retry: e instanceof ApiError && ['network', 'unavailable', 'rate_limited', 'unknown'].includes(e.code) && e.title !== IMPORT_LIMIT_TITLE
       });
       setStep('error');
     }
