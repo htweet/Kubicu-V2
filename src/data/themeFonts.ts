@@ -21,10 +21,10 @@ export const themeFonts: Record<ThemeFontId, {name: string;stack: string;load?: 
   syne: { name: 'Syne', stack: "'Syne', system-ui, sans-serif", load: 'Syne:wght@500;600;700;800' }
 };
 
-/** Google Fonts stylesheet URL for the theme's extra faces, or null when none are needed. */
+/** The self-hosted stylesheet for the theme's extra faces (scripts/build-fonts.mjs), or null when none are needed. */
 export function themeFontHref(ids: (ThemeFontId | undefined)[]): string | null {
   const families = Array.from(new Set(ids.filter(Boolean) as ThemeFontId[])).
   map((id) => themeFonts[id].load).
   filter(Boolean);
-  return families.length ? `https://fonts.googleapis.com/css2?${families.map((f) => `family=${f}`).join('&')}&display=swap` : null;
+  return families.length ? '/fonts/themes.css' : null;
 }

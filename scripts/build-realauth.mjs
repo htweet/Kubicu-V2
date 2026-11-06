@@ -6,6 +6,7 @@
 //   npm run build:realauth
 import { spawnSync } from 'node:child_process';
 import { build } from 'vite';
+import './build-fonts.mjs';
 
 // G-1: a deployable build never contains the prototype staff console.
 if (process.env.VITE_KUBICU_STAFF_CONSOLE !== undefined) {
@@ -20,3 +21,6 @@ await build({ build: { outDir: 'dist-realauth' } });
 // The build itself fails if the staff console ended up in it anyway.
 const check = spawnSync(process.execPath, ['scripts/check-staff-console.mjs', 'dist-realauth', 'absent'], { stdio: 'inherit' });
 if (check.status !== 0) process.exit(check.status ?? 1);
+// Fonts come only from our own server (owner decision, 6 Nov 2026).
+const fonts = spawnSync(process.execPath, ['scripts/check-self-hosted-fonts.mjs', 'dist-realauth'], { stdio: 'inherit' });
+if (fonts.status !== 0) process.exit(fonts.status ?? 1);

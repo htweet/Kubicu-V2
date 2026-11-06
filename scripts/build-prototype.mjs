@@ -4,6 +4,7 @@
 // to a public host; deployments use `npm run build:realauth`, which excludes the console.
 //   npm run build
 import { build } from 'vite';
+import './build-fonts.mjs';
 
 process.env.VITE_KUBICU_STAFF_CONSOLE = 'prototype';
 await build();

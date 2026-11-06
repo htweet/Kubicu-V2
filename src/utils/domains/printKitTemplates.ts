@@ -3,7 +3,8 @@ import { contrastRatio, mixHex } from '../contrast';
 
 /** HTML and CSS for every printed piece (D118, D119, type refresh D238). Sizes are in millimetres so print matches the preview. */
 
-export const KIT_FONTS_URL = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Libre+Baskerville:wght@400;700&family=Nunito:wght@500;600;700;800&family=Playfair+Display:wght@500;600;700;800&display=swap';
+/** Self-hosted (scripts/build-fonts.mjs). Absolute, because kit documents open in new windows and frames. */
+export const kitFontsUrl = (): string => `${window.location.origin}/fonts/print-kit.css`;
 
 const families: Record<KitFont, string> = {
   modern: "'Inter', Arial, sans-serif",

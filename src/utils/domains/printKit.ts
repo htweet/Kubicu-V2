@@ -4,7 +4,7 @@
  * loyalty stamp cards and delivery labels — each carrying a tracked QR code, in four designs,
  * four typefaces and three paper tones, with your logo, a photo and a signature, all resizable.
  */
-import { kitItemHtml as renderItem, kitCardBackHtml, kitCss, KIT_FONTS_URL } from './printKitTemplates';
+import { kitItemHtml as renderItem, kitCardBackHtml, kitCss, kitFontsUrl } from './printKitTemplates';
 
 export type KitItem = 'card' | 'sticker' | 'insert' | 'receipt' | 'hangtag' | 'voucher' | 'flyer' | 'counter' | 'stamp' | 'label';
 export type KitStyle = 'classic' | 'bold' | 'minimal' | 'photo';
@@ -154,7 +154,7 @@ export function kitItemHtml(item: KitItem, d: KitDetails, qrDataUrl: string, sid
 
 /** A standalone document holding one item, for a preview iframe. */
 export function kitPreviewDoc(item: KitItem, d: KitDetails, qrDataUrl: string, side: 'front' | 'back' = 'front'): string {
-  return `<!doctype html><html><head><link rel="stylesheet" href="${KIT_FONTS_URL}"/><style>${kitCss}body{display:flex;align-items:center;justify-content:center;min-height:100vh;background:transparent}</style></head><body>${kitItemHtml(item, d, qrDataUrl, side)}</body></html>`;
+  return `<!doctype html><html><head><link rel="stylesheet" href="${kitFontsUrl()}"/><style>${kitCss}body{display:flex;align-items:center;justify-content:center;min-height:100vh;background:transparent}</style></head><body>${kitItemHtml(item, d, qrDataUrl, side)}</body></html>`;
 }
 
 const sheets: Record<KitItem, {page: string;count: number;grid: string;sizeMm: [number, number] | null;}> = {
@@ -188,7 +188,7 @@ export function kitSheetDoc(item: KitItem, d: KitDetails, qrDataUrl: string, opt
   const body = side === 'front' ? front : side === 'back' && hasBack ? back : `${front}${back}`;
   const page = opts.withPrint ? `@page{size:${s.page}}` : `body{background:#fff;${s.sizeMm ? `width:${s.sizeMm[0]}mm;min-height:${s.sizeMm[1]}mm;padding:${s.page.split('margin:')[1] ?? '0'}` : ''}}`;
   const script = opts.withPrint ? `<script>window.onload=function(){var go=function(){setTimeout(function(){window.print()},250)};(document.fonts&&document.fonts.ready?document.fonts.ready.then(go):go())}</script>` : '';
-  return `<!doctype html><html><head><title>${esc(d.name)} — ${item} print</title><link rel="stylesheet" href="${KIT_FONTS_URL}"/><style>${kitCss}${page}${cut}.sheet{${s.grid}}</style></head><body>${body}${script}</body></html>`;
+  return `<!doctype html><html><head><title>${esc(d.name)} — ${item} print</title><link rel="stylesheet" href="${kitFontsUrl()}"/><style>${kitCss}${page}${cut}.sheet{${s.grid}}</style></head><body>${body}${script}</body></html>`;
 }
 
 /** Opens a print-ready sheet in a new window. Returns false if the browser blocked it. */
