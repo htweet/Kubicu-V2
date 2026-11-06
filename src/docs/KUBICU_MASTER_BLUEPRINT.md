@@ -1703,3 +1703,402 @@ A curated marketplace for independently installable blocks, integrations, themes
 ## Recommended prioritisation rule
 
 Do not attempt all 20 concepts in the first release. Score each candidate on customer pain, differentiation, willingness to pay, technical risk, compliance burden, retention potential and operational cost. The strongest initial combination is likely: canvas builder + fast publishing + local payment adapters + product/service selling + WhatsApp workflow + custom domains + privacy-aware analytics + modular admin. Validate with real Nigerian merchants before locking the roadmap.
+
+# 24. KUBICU WhatsApp-first Copilot — Conversational Website Creation
+
+## 24.1 Product vision
+
+KUBICU Copilot introduces a WhatsApp-first acquisition and onboarding journey. A prospective user starts a conversation with the KUBICU Copilot, explains what they want to build in everyday language, answers a small number of adaptive questions, and receives a tailored page draft without first learning the Canvas editor.
+
+The user can then inspect a visual preview, open an interactive web preview through a secure KUBICU link, and continue to KUBICU to create an account or sign in, claim the draft, manage it in Canvas, and publish it after explicit approval.
+
+The intended experience is:
+
+**Start in WhatsApp → describe the goal → clarify only what is needed → confirm the brief → generate a draft → receive a PNG preview and interactive preview link → sign in or create an account → claim and edit in KUBICU → approve and publish.**
+
+WhatsApp is an onboarding surface, not the system of record or replacement for the KUBICU application. KUBICU remains authoritative for accounts, page documents, template/theme configuration, publishing, domains, entitlements, and permissions.
+
+## 24.2 Product principles
+
+- Make the first interaction feel like a helpful conversation, not a long form disguised as chat.
+- Ask one useful question at a time when practical; reuse information already supplied and ask only about material gaps.
+- Let a user describe the page in natural language, use a compact structured question, share an image, or say “I am not sure” and receive a guided suggestion where supported.
+- Keep users informed about what the Copilot is doing and what information it still needs.
+- Summarize the proposed page brief and request confirmation before expensive or consequential generation where practical.
+- Generate from KUBICU's canonical block/page schema, templates, and themes. Do not create a separate WhatsApp-only page format.
+- Use existing KUBICU rendering and publishing services rather than building a parallel website engine.
+- Generate a draft, never silently publish it.
+- Be honest about unavailable capabilities and missing business information.
+- Make it easy to leave WhatsApp and continue in the full Canvas without losing work.
+
+## 24.3 Channel feasibility, platform policy, and decision gate
+
+Do not assume that “WhatsApp integration” is one interchangeable API. Evaluate these routes separately before implementation.
+
+### Route A — Official WhatsApp Third-Party Agent Platform
+
+WhatsApp's published Third-Party Agent Terms (last updated August 25, 2026) describe a platform through which users connect third-party agents. The terms state that WhatsApp currently makes that platform available at no charge, while also reserving the right to change availability or terms. The Help Center says the experience is available only in limited countries, so availability for the intended Nigerian user journey and access for KUBICU as an agent provider must be verified rather than assumed.
+
+This route is worth evaluating first because its published terms distinguish it from the WhatsApp Business Platform and currently state no WhatsApp platform fee for the Third-Party Agent Platform. It still uses a technical API/platform integration; “no platform fee” does not mean “no API calls,” “no model inference,” or “no operating cost.” Confirm the current developer manual, access process, supported regions, user-connection flow, rate limits, data handling, and production eligibility directly with WhatsApp before selecting this as the primary channel.
+
+Important privacy requirement: WhatsApp's Third-Party Agent Terms state that conversations with third-party agents are not considered end-to-end encrypted in the same way as personal messages, and that the Agent Provider receives, processes, and stores messages in unencrypted form subject to its own data practices. The onboarding and privacy notice must say this plainly before users share sensitive information. Minimize chat retention and provide a workable deletion/access request route.
+
+Sources to re-check during implementation:
+- https://www.whatsapp.com/legal/third-party-agents-terms
+- https://faq.whatsapp.com/1050934623978152
+- https://faq.whatsapp.com/1002544104126998
+- https://www.whatsapp.com/developer/WhatsApp-Agent-Platform-Developer-Manual.pdf
+
+Do not assume that the Third-Party Agent Platform gives KUBICU a conventional public business phone number that every user can open using a simple `wa.me` link. Validate the actual user connection/discovery steps. If users must perform an additional agent-connection step, design and test that setup carefully and retain a lower-friction fallback.
+
+### Route B — WhatsApp Business Platform / Cloud API
+
+Do not default to the Business Platform API for the Copilot without current policy review. The published WhatsApp Business Solution Terms contain restrictions on AI Providers using the Business Solution where offering an AI technology is the primary rather than incidental functionality, with stated exceptions for phone numbers registered in the European Economic Area or Brazil. Because KUBICU Copilot's principal purpose is AI-assisted website creation, Nigerian eligibility must not be assumed. Obtain written confirmation from Meta or an authorized policy/compliance source before using this route for the core AI conversation.
+
+The Business Platform also has message-category pricing and rules for the 24-hour customer-service window and approved message templates outside it. Meta's official FAQ, checked October 28, 2026, states that service-message pricing changed from October 1, 2026 and that the first 1,000 service messages per business phone number per month are free, with charges applying after that according to published rates. Verify current Nigeria rates and all message categories before estimating cost.
+
+Sources to re-check during implementation:
+- https://www.whatsapp.com/legal/business-solution-terms
+- https://whatsappbusiness.com/policy/
+- https://whatsappbusiness.com/resources/faq/
+- https://whatsappbusiness.com/developers/developer-hub/
+
+Do not evade the AI-provider policy by disguising the main AI functionality as unrelated customer support. Do not use unofficial WhatsApp Web automation, session scraping, modified clients, unofficial bridges, or other mechanisms that put accounts and customer data at risk.
+
+### Route C — KUBICU web Copilot with WhatsApp handoff (fallback and parallel channel)
+
+If an approved WhatsApp agent route is unavailable, offer the same guided journey on the KUBICU website. Provide an official click-to-chat link for human support or user-initiated continuation, but do not imply that clicking a regular WhatsApp link creates an automated AI bot without an approved integration.
+
+This route allows the product team to validate the conversation design, brief schema, page generation, preview and account-claim workflow before WhatsApp production approval. The web experience should preserve the same product behavior and backend APIs, rather than becoming a separate implementation.
+
+### Architecture decision requirement
+
+Create an Architecture Decision Record (ADR) comparing Routes A, B, and C. Record eligibility, rollout status in Nigeria, user setup friction, provider terms, message charges, model costs, rate limits, privacy posture, operational complexity, fallback behavior, and the evidence used to choose. Route A is a candidate, not an assumed approved production route. Route B requires explicit policy validation. Route C is the safe functional fallback while channel eligibility remains unresolved.
+
+## 24.4 Cost reality and consumption controls
+
+A fully AI-generated experience cannot be promised to have zero compute cost. Even if the WhatsApp agent platform currently has no platform fee, a model hosted by an external provider has inference/API charges. A self-hosted open-weight model may remove per-token vendor invoices but replaces them with server/GPU, power, monitoring, scaling, and maintenance costs. Image generation, asset storage, screenshot rendering, network egress, and application hosting may also carry cost.
+
+Design cost control into the architecture:
+
+- Use a model-provider adapter so Claude/Anthropic, other approved providers, and a self-hosted inference endpoint can be selected without redesigning the Copilot.
+- Do not make an external LLM call for every internal state transition. Use deterministic application logic for known choices, validation, IDs, permissions, quota checks, and workflow steps.
+- Keep a structured, incremental brief so the system does not repeatedly send the entire conversation history when a compact state and recent context are sufficient.
+- Ask clarifying questions only when answers materially improve the proposed page.
+- Offer a preview generation step after the user confirms a summary of their brief.
+- Reuse existing templates, sections, themes, and page blocks instead of asking a model to invent a page schema from scratch.
+- Cache generated assets and preview renders using safe versioned keys; do not re-render unchanged drafts unnecessarily.
+- Generate PNGs using KUBICU's own server-side page renderer and screenshot service where feasible. Do not require a paid image-generation API simply to take a screenshot of an HTML page.
+- Select the cheapest model that meets quality and safety thresholds for classification, extraction, and simple copy; reserve higher-capability models for complex layout planning or difficult copy.
+- Apply per-user, per-session, and platform-wide quotas, rate limits, timeouts, budgets, retries with backoff, and cost telemetry.
+- Provide a graceful template-based or deterministic fallback when the AI provider is unavailable or the usage budget is exhausted.
+- Record model/provider, token or compute usage where available, latency, retry count, estimated cost, and generation result for each operation.
+
+Do not claim that a self-hosted model is free. Compare total cost of ownership and quality before deciding whether to self-host.
+
+## 24.5 Conversational onboarding flow
+
+The conversation must be adaptive and progressive rather than a fixed questionnaire. Gather and retain the following information as available:
+
+1. What the user wants to create: personal page, creator page, portfolio, service business, product shop, event, professional profile, or other supported goal.
+2. Primary objective: showcase work, get enquiries, receive bookings, sell products, share links, collect leads, promote an event, or build an audience.
+3. Business/brand/person name and a short description.
+4. Target audience and geography/market, where relevant.
+5. Desired brand personality and aesthetic preferences, including reference images where supported.
+6. Existing assets: logo, profile picture, product photos, portfolio links, copy, social links, and other supplied content.
+7. Essential sections or block requirements.
+8. Primary call to action and its real destination or configuration.
+9. Relevant contact channels and business details.
+10. Template preference or permission for the Copilot to recommend one.
+11. Theme preference or permission for the Copilot to propose a cohesive theme.
+12. Missing facts that must be supplied before publishing, such as product prices, inventory, opening hours, address, delivery rules, or service terms.
+
+Do not ask all 12 questions if the user has already provided the answers or the use case does not require them. Ask the minimum useful next question. Allow “skip,” “not sure,” “suggest for me,” and “change that answer.” Do not require users to know design terminology.
+
+Example opening:
+
+“Hi, I'm KUBICU Copilot. Let's turn your idea into a page you can share. What are you creating today—a business page, portfolio, creator page, shop, service page, event page, or something else?”
+
+After gathering enough information, summarize the brief in simple language. Show the selected page goal, audience, proposed sections, visual direction, and primary CTA. Let the user approve or correct the brief before generating the first draft.
+
+Support natural-language corrections such as “make it more premium,” “use a cream and black theme,” “put my work before my bio,” “add WhatsApp contact,” and “remove the pricing section.” Convert each change into an explicit, validated page-document operation. Never treat arbitrary model output as executable code.
+
+## 24.6 Page-generation pipeline
+
+Use a controlled pipeline:
+
+1. Receive the message through an approved channel adapter.
+2. Resolve or create an anonymous Copilot session with a secure session identifier.
+3. Update a versioned structured page brief from the user message and permitted context.
+4. Ask a focused follow-up if a required decision is missing.
+5. Summarize the brief and receive confirmation when appropriate.
+6. Select a compatible existing template, a reusable composition preset, a theme, and approved blocks—or propose a custom composition assembled from the same canonical primitives.
+7. Produce a structured draft following the existing KUBICU page-document schema.
+8. Validate the draft server-side against schema, block compatibility, supported features, URL rules, tenant boundaries, and content-safety requirements.
+9. Mark missing business facts explicitly; use editable placeholders instead of inventing prices, inventory, testimonials, credentials, reviews, guarantees, policies, or contact details.
+10. Persist a draft version owned by the anonymous Copilot session, not by an unverified user account.
+11. Render the draft using the standard KUBICU page renderer in a non-indexed preview environment.
+12. Generate a PNG screenshot at defined mobile and/or desktop viewports. Generate an interactive preview by linking to the rendered draft website, not by pretending arbitrary HTML can run inside a WhatsApp message.
+13. Return the preview image and a secure, time-limited KUBICU preview link through the supported channel.
+14. When the user chooses to continue, direct them to account creation or sign-in.
+15. After authentication, verify the claim token server-side and transfer ownership of the draft atomically to the authenticated account.
+16. Open the claimed draft in the KUBICU Canvas with the generated template, theme, blocks, and content intact.
+17. Require explicit review and publication approval before making the page public.
+
+WhatsApp can deliver a preview image and supported buttons/links, but a full custom interactive website should open in a browser or in-app browser at KUBICU. Design this as a seamless handoff: the chat provides the first impression, while the linked preview provides real interactivity.
+
+## 24.7 Preview, draft and claim-token security
+
+Preview links must not expose private account data or provide edit authority. Use cryptographically random, short-lived, revocable claim tokens with server-side storage or suitable token verification. Do not put raw database IDs, phone numbers, credentials, or personal data in URLs.
+
+Separate:
+
+- Read-only preview token.
+- Draft-claim token.
+- Authenticated editing session.
+- Publishing authorization.
+
+A link must not permit anonymous visitors to claim, edit, publish, or take over another user's page. Bind claim intent to the correct draft and enforce one-time use or another explicitly justified, race-safe claim mechanism.
+
+Use noindex directives and suitable cache controls on private draft previews. Expire stale anonymous drafts according to a disclosed retention policy. Do not reserve a public handle permanently just because a draft was generated; reserve it at an appropriate confirmed point and handle conflicts transparently.
+
+On claim, use a database transaction or an equivalent idempotent operation so duplicate callbacks, repeated clicks, or retries cannot duplicate the page or transfer it to two accounts. If a user is already signed in, show the destination workspace and confirmation before attaching the draft to the selected workspace where ownership could be ambiguous.
+
+Do not create an account silently from a phone number. Let users explicitly create an account or sign in, complete necessary verification, agree to relevant terms, and claim the draft.
+
+## 24.8 Canonical data and integration boundaries
+
+The KUBICU application/database remains the source of truth. WhatsApp messages are an entry channel, not the page database.
+
+Use adapters and explicit boundaries for:
+
+- `CopilotChannelAdapter`: receive/send supported messages, media, supported interactive responses, and delivery/status events.
+- `CopilotSessionService`: session identity, conversation state, expiration, and recovery.
+- `PageBriefService`: structured brief extraction, validation, confirmation and revision.
+- `ModelProviderAdapter`: approved hosted model or self-hosted inference provider.
+- `PagePlanningService`: template/theme/block selection and bounded structured page operations.
+- `PageSchemaValidator`: canonical schema, compatibility, URL and feature validation.
+- `DraftPageService`: draft creation, versioning and persistence.
+- `PreviewRenderService`: page rendering, PNG generation, asset reuse, and expiry.
+- `DraftClaimService`: authentication handoff and race-safe transfer to a tenant/workspace.
+- `QuotaAndCostService`: rate limits, budgets, usage counters and alerts.
+- `AuditAndPrivacyService`: consent, retention, deletion requests, security events and traceability.
+
+Reuse the existing KUBICU renderer, design system, templates, themes and block registry. Do not create a second page schema for WhatsApp and do not allow the model to generate arbitrary scripts or SQL.
+
+## 24.9 Data, privacy and abuse controls
+
+Document the WhatsApp channel's data flow before production. Tell users that messages and shared media are processed by the connected agent service, identify the applicable channel/provider, and explain retention and deletion. For third-party-agent conversations, disclose the non-end-to-end-encrypted status specified by WhatsApp's terms.
+
+- Ask for no more personal data than the page needs.
+- Warn users not to share passwords, payment-card data, or unrelated sensitive information.
+- Do not put sensitive profile or account details into preview URLs or model prompts unless strictly required.
+- Keep channel identifiers separate from public page content; never publish a user's phone number simply because they chatted with the Copilot.
+- Store secrets server-side in a secrets manager or supported secure environment; never embed provider tokens in browser code.
+- Validate uploads, file types, sizes, image processing and external URLs.
+- Defend against prompt injection and malicious text inside uploaded assets or linked content.
+- Require explicit confirmation for public publishing and external side effects.
+- Apply abuse detection, quotas, rate limits, content policy controls, block/report handling, and human support escalation.
+- Define retention, export, deletion, and incident-handling policies that match applicable data-protection obligations.
+- Never train or fine-tune a shared model on private user content unless the user terms, provider terms, and applicable law explicitly permit the intended use.
+
+## 24.10 Failure states and recovery
+
+Design and implement graceful handling for:
+
+- WhatsApp channel/agent unavailable or regionally unavailable.
+- User has not completed the required agent connection.
+- Message or media delivery failure.
+- Unsupported file or malformed link.
+- Missing required brief information.
+- Model provider timeout, rate limit, refusal, or outage.
+- Invalid generated schema or unsupported block combination.
+- Screenshot renderer timeout or failed asset load.
+- Expired preview or claim link.
+- User already owns a page with the requested handle.
+- Sign-in/account-creation interruption.
+- Claim token already used or draft ownership changed.
+- Draft expiration.
+- Quota or model budget exhausted.
+- Publishing validation failure.
+
+Preserve the brief and draft where safe. Explain what happened in human language and offer a clear next step. Do not report successful generation, saving, delivery, or publication until the responsible service confirms it.
+
+## 24.11 Rollout strategy
+
+### Phase 0 — Policy and feasibility validation
+
+- Verify access to the official Third-Party Agent Platform and its developer process.
+- Verify availability and onboarding friction for target users in Nigeria.
+- Read the latest developer manual, rate limits, data handling and current terms.
+- Obtain a policy decision for the Business Platform route; do not presume eligibility.
+- Compare real model inference costs, hosting/rendering costs, and likely conversational usage.
+- Test a low-cost proof of concept with synthetic data only.
+
+### Phase 1 — Web-based Copilot and preview pipeline
+
+- Build the guided conversation on KUBICU web using the same session and page-creation services.
+- Generate validated drafts from canonical KUBICU schemas.
+- Produce a mobile PNG and interactive preview link.
+- Implement sign-in/create-account handoff and secure draft claiming.
+- Measure completion, edit rate, time to first preview, preview-to-claim conversion, and cost per successful draft.
+
+### Phase 2 — Approved WhatsApp adapter pilot
+
+Only after channel eligibility is verified, connect the chosen official WhatsApp agent/channel. Run an invited pilot, with limited quotas, human support escalation, privacy notices, delivery/error telemetry, and cost alerts. Do not use unauthorized WhatsApp automation to accelerate the pilot.
+
+### Phase 3 — Production scale
+
+Expand only after measured quality, acceptable cost per draft, reliable claim transfer, data protection controls, support operations, and platform-policy approval are demonstrated.
+
+## 24.12 Acceptance criteria
+
+The feature is ready for a limited production pilot only when:
+
+- The selected WhatsApp integration route is documented, officially supported, and approved for the intended KUBICU use case and launch region.
+- A user can complete the journey without losing the brief or draft when switching channels.
+- AI output is a validated KUBICU page document, not arbitrary executable code.
+- At least one complete happy-path and all critical failure-path tests pass.
+- The user receives a preview image and a working interactive web preview.
+- Preview links are read-only and protected; claim tokens cannot be reused to take over another draft.
+- Account creation/sign-in and draft claiming are authenticated, idempotent, and auditable.
+- Publication requires explicit user approval.
+- Missing facts and unsupported capabilities are clearly shown.
+- The design is usable on mobile and desktop and meets the project's accessibility target.
+- Model costs, channel costs, rendering/storage costs, quotas, and rate limits are measured and monitored.
+- Privacy, retention, deletion, abuse response and human escalation are documented.
+- Provider outages, invalid drafts, delivery failures and interrupted claims have tested recovery paths.
+
+## 24.13 Authoritative implementation directive for Claude
+
+When implementing KUBICU Copilot, preserve this blueprint and the implementation backlog as governing specifications. Start with a concise ADR and policy/eligibility spike; do not begin by blindly building against the WhatsApp Business Cloud API. Validate the official WhatsApp Third-Party Agent Platform as a candidate, account for its limited-country rollout and non-end-to-end-encrypted conversation model, and retain a web Copilot fallback.
+
+Build the conversation, structured page brief, draft generation, preview rendering and claim flow as reusable server-side product services independent of any one channel or model vendor. The channel adapter and model provider must be replaceable. All page operations must pass canonical schema validation and authorization. Never publish automatically, never make up commercial facts, never let an LLM directly mutate ownership or permissions, and never report success without service confirmation.
+
+Do not promise zero cost or zero API consumption. Minimize usage through bounded conversational state, deterministic transitions, appropriate model selection, caching, quotas, and telemetry. Compare hosted model API costs with self-hosted total cost of ownership before choosing an inference architecture. Document unresolved Meta eligibility questions rather than inventing an answer.
+
+---
+
+**Policy and platform facts last reviewed:** October 28, 2026. Re-check official terms, region availability, pricing, developer documentation and technical limits immediately before implementation and release.
+
+
+# 25. Creator Pages, Marketplace, Short Links, Audience Manager & Public Mega Menu
+
+**Revision date:** 29 October 2026. This addition supplements the existing blueprint; it does not replace any previously approved scope, including the Canvas, modular marketplace, CRM, analytics, short links/QR, or WhatsApp-first Copilot.
+
+## 25.1 Competitive research interpretation
+
+Review of Linktree's current public product pages indicates four user-facing capability areas that KUBICU should expose through complete marketing pages and real connected app features: creator-oriented public pages, a marketplace of apps/integrations, a short-link tool with share attribution, and an audience manager that centralizes contacts/leads. Linktree's public Marketplace includes categorized tools and integrations; its shortener documentation describes editable slugs, channels, tags, and shareable short links; its Audience Manager page describes contact organization, source filtering, exports/syncs, and notifications. These are outcomes to learn from, not a design or source-code specification to copy.
+
+Sources reviewed 29 October 2026 (revalidate at implementation):
+- https://linktr.ee/for/creators
+- https://linktr.ee/features
+- https://linktr.ee/marketplace
+- https://linktr.ee/marketplace/apps
+- https://linktr.ee/features/link-shortener
+- https://linktr.ee/features/audience-management
+- https://linktr.ee/help/articles/8133719-how-to-shorten-and-share-links-with-tr-ee-links
+
+KUBICU should use its own brand, copy, visual design, icons, and layouts. Implement equivalent or better user outcomes with a more integrated product model.
+
+## 25.2 Public routes and product surfaces
+
+Ensure these routes exist or map to approved existing equivalents:
+
+- `/for/creators` — public creator solution landing page.
+- The existing public-page runtime route for each creator/user — the actual published, editable-by-owner public page, distinct from the marketing landing page.
+- `/marketplace` — public extension marketplace landing and discovery.
+- `/marketplace/apps`, `/marketplace/categories/:category`, `/marketplace/:slug` — browse, category and item details where consistent with current route conventions.
+- `/tools/short-links` — public Short Links product page and allowed tool entry flow.
+- `/features/audience-manager` — public Audience Manager landing page.
+- `/features` — public feature index linking the product pillars.
+- Existing templates, themes, pricing, resources, and help routes.
+
+Public marketing pages and listing details should be viewable without login. Actions involving workspace install/configuration, private contact data, audience exports, managing short links, editing or publishing require authentication and authorization. Public previews must not reveal workspace data or private drafts.
+
+## 25.3 Creator Pages
+
+Use the same canonical page document, Canvas, blocks, templates, themes, public renderer, publishing lifecycle, slug/domain system, analytics and permissions. Creator onboarding should configure common KUBICU components with a creator-appropriate starting preset; it must not introduce a separate editor.
+
+Creator landing page content: value-led hero; real page previews; use cases (video, music, fashion, writing, photography, design, education, professional services); templates and themes; audience capture; content/media; profile/portfolio; supported monetization; campaign links/QR; analytics; FAQs; privacy/trust and clear create-page CTA. Do not fabricate endorsements, creator metrics or capabilities.
+
+Creator public pages should compose identity, links, content, media, portfolio, lead capture, forms, events, products/services, collaboration/contact actions and other supported blocks. Shared short links can point to the whole page or supported destinations. Forms feed the canonical CRM/Audience Manager only through defined rules, lawful disclosures and consent handling.
+
+## 25.4 Marketplace — separate platform extension catalogue from commerce
+
+Expose a public Marketplace for approved platform extensions and reusable assets. Taxonomy:
+
+- Apps and integrations.
+- Themes.
+- Templates.
+- Blocks and section packs.
+- Automation recipes.
+- Industry kits.
+- AI workflow packs only when technically supported and approved.
+
+Do not conflate this platform extension marketplace with individual sellers' product catalogues. If a future creator-to-brand collaboration marketplace is introduced, give it a separate product definition and name.
+
+Each listing should provide identity/publisher, description, screenshots/previews, type/category, version, compatibility, dependencies, price/entitlement, data/permission requirements, integration or region constraints, privacy/terms, support contact, changelog, status and moderation outcome. Ratings must be genuine and abuse-moderated.
+
+Installation lifecycle: discover → inspect → preview → permission disclosure → compatibility/entitlement check → user approval → install/connect → configure → attach to page/workspace → health verification → update/rollback/uninstall. External packages must not receive unrestricted application database/filesystem/tenant access. Use reviewed adapters, constrained APIs and/or isolated runtimes. Preserve customer-owned data on uninstall where required. Super-admin needs catalogue moderation, versions, dependency review, permission declarations, rollout, disable/rollback, audit and incident response.
+
+## 25.5 Short Links and QR
+
+Short Links must be a complete product, not only a public marketing page. User journeys: create a shortened URL; validate destination; optionally choose a unique custom slug; add channel/campaign/tags; create QR; copy/share; manage destinations; inspect clicks and attribution; export or delete according to plan/privacy controls.
+
+Required foundation: atomic slug uniqueness, supported protocol allowlist (normally HTTP/HTTPS), abuse/malware screening, rate limits, redirect-loop/open-redirect protection, safe destination checking, cache invalidation after edits, stable redirect runtime, abuse reporting, auditing of destination changes and privacy-preserving event collection. Redirects must remain available when analytics/AI/CRM services are degraded.
+
+Analytics must distinguish raw clicks, filtered bot events, estimated unique visitors and QR scans. Do not interpret a click as a known person. Capture channel, campaign, tag, timestamp and limited source/device information only as permitted. Optional advanced capabilities include UTM presets, scheduled/expiring links, broken-link alerts, dynamic QR destination changes with history, controlled A/B routing, API/webhooks and branded/custom short domains after domain/security validation. These advanced items must be staged rather than silently assumed in MVP.
+
+## 25.6 Audience Manager / lightweight CRM
+
+Audience Manager should be a focused interface on the existing canonical contact/CRM foundation rather than a second silo. Public landing page: explain consent-aware capture, source attribution, groups/tags, segmentation, export/deletion, integration syncing and shared analytics. Show realistic sample dashboard data only when clearly illustrative.
+
+App screens: audience overview; contacts; contact detail/timeline; search/filter/tagging; segment builder; source/campaign view; import/export; duplicate review/merge; consent/subscription state; integration connections and field mapping; sync logs/retries; permitted notification/campaign tools; retention, deletion and privacy controls.
+
+Potential sources: page forms, newsletter/waitlist, service and booking enquiries, supported product/checkouts, QR/short-link campaign metadata, approved integrations and other KUBICU events with defined purpose. A click alone must not create an identified contact. Contact creation/update requires a real identifying interaction or other approved basis. Consent is distinct from attribution; never infer permission to send marketing from a click. Enforce tenant isolation, role permissions, minimization, retention, export/deletion and audit trails. Suppression/unsubscribe states must be honored by outbound systems.
+
+## 25.7 Shared integration graph
+
+Connect the four pillars through shared services and canonical entities:
+
+- Workspace owns pages, short links, campaigns, marketplace installations and audience records.
+- Creator pages use the standard page document, block schemas, theme/template references and publishing runtime.
+- Short links may point to pages, approved sections, products, bookings, campaigns or external URLs.
+- QR assets reference valid destinations and the same attribution model.
+- Campaigns group short links, QR assets, tags/channels and eligible conversion events.
+- Forms can create/update contacts under configured validation/consent rules and preserve source/campaign metadata.
+- Marketplace installation makes approved blocks/integrations available in the common Canvas/workspace, while respecting permissions and entitlements.
+- Copilot-created pages are ordinary canonical page documents, and can be published and shared through the same Short Links, QR, analytics and Audience Manager services.
+
+Suggested shared events, adapt to current telemetry: `public_page_view`, `public_link_click`, `short_link_redirect`, `qr_scan`, `form_view`, `form_submission`, `audience_contact_created`, `audience_contact_updated`, `marketplace_listing_view`, `marketplace_install_started`, `marketplace_install_completed`, `marketplace_install_failed`, and supported booking/commerce conversion events. Define source, bot filtering, attribution window and PII rules.
+
+## 25.8 Public-site mega menu
+
+Build a shared, accessible, configuration-backed desktop mega-menu and mobile drawer/accordion. Top-level groups should be concise: Product, Solutions, Marketplace, Resources, Pricing, plus Log in and a primary Get Started/Create Page action. Exact labels may be refined to fit the current brand architecture.
+
+Use an icon-rich sub-header/category row and grouped entries with a relevant icon, short title, and one-line description. Suggested Product entries: Canvas Website Builder, Creator Pages, Mini-Websites, Store & Digital Products, Services & Bookings, Audience Manager, Short Links & QR, Analytics & Growth, AI Copilot. Solutions entries: Creators, Freelancers/Portfolios, Shops/Social Sellers, Service Businesses, Artists/Musicians/Podcasters, Educators/Digital Products, Events/Communities, Agencies. Marketplace entries: Apps & Integrations, Templates, Themes, Blocks/Section Packs, Automation Recipes, Industry Kits, developer/partner program when approved. Resources: guides, help, updates, template inspiration.
+
+The desktop menu must support pointer hover **and** click/focus; keyboard access, Escape close, focus restoration, stable pointer transitions, visible focus/active states, viewport-aware sizing, and reduced motion. Mobile must use a purpose-built drawer/accordion with touch-sized controls, not a squeezed desktop panel. Avoid dead links and burying Pricing. Use KUBICU-original styling and assets while matching the usability of a mature icon-rich mega menu; do not pixel-copy Linktree. Keep public mega-menu navigation distinct from logged-in workspace navigation.
+
+## 25.9 Public landing pages and SEO
+
+Each pillar page must be a complete marketing experience, not a hero-only mockup: Creator page previews and use cases; Marketplace search/categories/listing previews and trust model; Short Links demo/QR/campaign use cases and safety; Audience Manager dashboard preview, capture workflow, consent, segment/export/integration value. Cross-link the pillars intentionally.
+
+Use unique titles/descriptions, canonical metadata, Open Graph cards, sitemap/robots configuration, useful internal links, responsive optimized media and sensible lazy-loading. Private drafts and authenticated dashboards must not be indexed. Never publish fake user counts, fake testimonials, fake ratings, unapproved partner logos, or unsupported product claims.
+
+## 25.10 Staging
+
+Phase A: inspect repository, routes, schemas, current modules and Magic Patterns work; produce route and data-contract register.
+
+Phase B: ship shared navigation/mega menu and public landing pages with accurate links and SEO; label future functionality honestly.
+
+Phase C: reliable Short Links core, redirect safety, slug uniqueness, tags/channels, QR and privacy-safe events.
+
+Phase D: Audience Manager on canonical contact/forms/CRM data, source and consent, segments, export/deletion and one validated integration adapter.
+
+Phase E: marketplace manifest, permissions, compatibility/entitlement checks, secure install/connect, versioning, rollback and super-admin governance.
+
+Phase F: end-to-end journeys, monitoring, security review, mobile/accessibility QA and staged rollout. Do not declare full integration until data, permissions, UI and workflows work end-to-end.
+
+**Release gate:** All public routes work; mega menu supports pointer/keyboard/touch; creator public pages use the canonical renderer; marketplace listing/install operations are permissioned and auditable; redirects are safe and resilient; Audience Manager enforces consent, tenant isolation, export/deletion; creator → short link/QR → form → audience workflow passes; marketplace → install → Canvas passes; and metrics/error recovery are monitored.

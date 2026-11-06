@@ -894,3 +894,245 @@ Use this prompt with the chosen implementation AI or engineering team:
 ## 13. Final implementation principle
 
 **Ship a reliable, lovable core; then earn the right to add complexity.** KUBICU can become an ambitious creator-business platform, but the defensible product is built through fast first success, trusted commerce, reliable operations, strong mobile performance and user-owned distribution—not through an unvalidated accumulation of features.
+
+# 14. New epic — KUBICU WhatsApp-first Copilot
+
+## Outcome
+A prospective user can describe a website/page idea through an approved conversational channel, receive a validated KUBICU draft plus PNG and interactive web preview, then create an account or sign in and securely claim the draft in Canvas. KUBICU remains the source of truth for page documents, permissions, publishing, and billing.
+
+## Non-negotiable feasibility gate
+Do not assume the WhatsApp Business Platform API is eligible for a product whose primary purpose is AI-assisted website creation. The published WhatsApp Business Solution Terms restrict AI Providers using the Business Solution when AI is the primary rather than incidental functionality, with exceptions stated for EEA/Brazil phone numbers. Verify the current policy and obtain explicit eligibility confirmation before using that route for Nigerian Copilot users.
+
+Evaluate the official WhatsApp Third-Party Agent Platform separately. Its published terms currently state that the platform is free of charge, but official help material says availability is limited by country. Verify Nigeria availability, agent-provider access, user setup experience, rate limits, technical API usage, and developer terms. Third-party-agent chats are not end-to-end encrypted like personal chats; the privacy notice must disclose this clearly. Do not use unofficial WhatsApp Web automation or session bridges.
+
+If approved WhatsApp access is unavailable or unsuitable, ship the web Copilot first and provide a conventional WhatsApp handoff as fallback. Do not represent a simple `wa.me` link as an AI integration.
+
+Official sources to review at implementation time:
+- https://www.whatsapp.com/legal/third-party-agents-terms
+- https://faq.whatsapp.com/1050934623978152
+- https://faq.whatsapp.com/1002544104126998
+- https://www.whatsapp.com/legal/business-solution-terms
+- https://whatsappbusiness.com/policy/
+- https://whatsappbusiness.com/resources/faq/
+- https://www.whatsapp.com/developer/WhatsApp-Agent-Platform-Developer-Manual.pdf
+
+## Epic sequence and tickets
+
+### KUB-WA-001 — Channel feasibility and policy ADR
+**Priority:** Blocker / Phase 0
+
+- Verify Third-Party Agent Platform access, product eligibility and Nigerian availability.
+- Verify the actual consumer connection flow; do not assume the user can simply message a business number.
+- Obtain current policy guidance for the Business Platform route.
+- Document privacy/encryption implications, developer terms, rate limits, pricing and operational risks.
+- Compare official routes and select a primary path plus fallback.
+- **Acceptance:** ADR has official sources, dated findings, unresolved questions, go/no-go status and an approved fallback.
+
+### KUB-WA-002 — Cost and provider strategy
+**Priority:** High / Phase 0
+
+- Estimate model tokens/compute, conversation turns, PNG rendering, storage, delivery, logs and hosting per successful page draft.
+- Define model-provider abstraction and evaluate hosted inference versus self-hosted open-weight inference using total cost of ownership.
+- Establish rate limits, quota policy, per-session budget, abuse controls and platform budget alerts.
+- **Acceptance:** cost model uses measured pilot data or explicitly labelled assumptions; no “zero cost” claim; provider can be swapped without rewriting conversation/domain logic.
+
+### KUB-WA-003 — Copilot conversation and session state
+**Priority:** High / Phase 1
+
+- Implement a resumable conversation state machine independent of the transport channel.
+- Capture page goal, target audience, market, brand identity, style, content, assets, desired sections, primary CTA and missing facts.
+- Ask only relevant missing questions; support skip, correction, “not sure”, and confirmation of a concise brief.
+- Keep deterministic decisions outside the LLM.
+- **Acceptance:** interrupted sessions resume; context is not lost; duplicate incoming events are idempotent; question flow passes usability tests.
+
+### KUB-WA-004 — Structured page brief and schema contract
+**Priority:** High / Phase 1
+
+- Define a versioned `PageBrief` schema and map it to the existing page document schema.
+- Connect generation to existing templates, themes, block registry, compatibility rules and section presets.
+- Validate every generated operation server-side; never execute model-generated scripts or SQL.
+- Represent unknown business facts as explicit editable placeholders.
+- **Acceptance:** invalid block types, bad URLs, unsupported features and malformed page documents are rejected or repaired through deterministic validation with useful errors.
+
+### KUB-WA-005 — Draft generation service
+**Priority:** High / Phase 1
+
+- Create a draft page owned by an anonymous Copilot session before account creation.
+- Preserve template, theme, block IDs, content, assets and schema version.
+- Store assumptions and missing information for the user to review.
+- Require explicit confirmation before generation when an action would be costly, and always require explicit approval before publishing.
+- **Acceptance:** draft is editable in Canvas after claim; prices, stock, testimonials, credentials, policies and guarantees are never invented.
+
+### KUB-WA-006 — PNG and interactive preview rendering
+**Priority:** High / Phase 1
+
+- Render the draft with the canonical KUBICU renderer in a non-indexed preview environment.
+- Generate at least a mobile PNG, with desktop PNG optional where valuable.
+- Provide an interactive preview URL that opens in the browser/in-app browser; do not imply full arbitrary page interactivity can be embedded directly inside WhatsApp.
+- Cache unchanged renders and expire obsolete assets safely.
+- **Acceptance:** image corresponds to the exact saved draft version; render errors are recoverable; preview is read-only, noindex, and has suitable cache controls.
+
+### KUB-WA-007 — Secure draft claim and account handoff
+**Priority:** Blocker / Phase 1
+
+- Introduce a one-time or otherwise race-safe claim mechanism using cryptographically random tokens and server-side validation.
+- Separate preview rights, claim rights, authenticated editing and publishing authorization.
+- Route unauthenticated users to sign-up/login; never create accounts silently.
+- Atomically assign the draft to an authenticated account/workspace and prevent duplicate claims.
+- Handle expired tokens, reused tokens, account conflicts and interrupted sign-in.
+- **Acceptance:** authorization, replay, cross-user access and duplicate-event tests pass; no phone number or internal database ID is exposed in a token URL.
+
+### KUB-WA-008 — Approved WhatsApp channel adapter
+**Priority:** Conditional / Phase 2
+
+- Implement only after KUB-WA-001 approves a supported production route.
+- Isolate receiving, sending, button/list replies, media handling, delivery status, rate limiting and retry from the page-generation domain logic.
+- Provide explicit consent and privacy messaging; implement clear human/support escalation.
+- **Acceptance:** production access and policy are evidenced; test and production credentials are separate; delivery failures do not lose the draft; unsupported regions route to the web fallback.
+
+### KUB-WA-009 — Web Copilot fallback
+**Priority:** High / Phase 1
+
+- Implement the same conversational journey on KUBICU web using the same session, brief, generation, preview and claim services.
+- Offer a conventional click-to-chat/human-support handoff where appropriate, without claiming the link is an automated AI bot.
+- **Acceptance:** entire core creation journey can be completed without WhatsApp and still produces the same canonical draft.
+
+### KUB-WA-010 — Privacy, retention and controls
+**Priority:** Blocker before pilot
+
+- Publish a clear disclosure covering messages/media processing, provider/channel, retention, deletion, and third-party-agent encryption limitations where applicable.
+- Implement retention limits, user data access/deletion handling, minimal collection, secret storage, upload validation and prompt-injection controls.
+- Keep phone/channel identifiers out of the public page unless the user explicitly adds them.
+- **Acceptance:** privacy review, security review, retention job, deletion test and incident/escalation procedures are documented and validated.
+
+### KUB-WA-011 — Cost and quality telemetry
+**Priority:** High / Phase 1
+
+- Track first response latency, clarification turns, generation latency, model/provider use, usage/cost estimate, render success, delivery status, edits, draft claims, and publication conversion.
+- Build rate-limit and budget alerts and fallback states.
+- **Acceptance:** per-session usage can be audited; spikes are rate-limited; the team can calculate cost per successful draft.
+
+### KUB-WA-012 — QA, staged rollout and release gates
+**Priority:** Blocker before production
+
+- Test happy path, session interruption, malformed inputs, missing facts, unsupported blocks, model refusal/outage, render failures, channel outage, expired links, replayed claim tokens, duplicate webhooks, account conflict, mobile accessibility and publish validation.
+- Pilot with invited users and synthetic/non-sensitive data before opening broadly.
+- **Acceptance:** all critical tests pass; measured quality and cost are within approved thresholds; rollback/fallback is rehearsed.
+
+## Metrics to instrument
+- Time from first message to confirmed brief.
+- Time from confirmed brief to first preview.
+- Successful draft generation and preview-render rates.
+- Percentage of users who edit the AI draft.
+- Preview-to-account and account-to-claim conversion.
+- Claim-to-publish conversion.
+- Average conversation turns per successful draft.
+- Model and channel cost per successful draft.
+- Fallback usage, failed deliveries, expired-link rate and support escalations.
+- Safety corrections and user-reported inaccurate business facts.
+
+## Execution order
+1. KUB-WA-001 feasibility/policy ADR.
+2. KUB-WA-002 cost model and provider strategy.
+3. KUB-WA-003, KUB-WA-004 and KUB-WA-005 conversation-to-draft vertical slice.
+4. KUB-WA-006 preview renderer and KUB-WA-007 secure claim flow.
+5. KUB-WA-009 web fallback pilot.
+6. KUB-WA-010 and KUB-WA-011 privacy, security and telemetry hardening.
+7. KUB-WA-008 approved WhatsApp adapter only when the gate passes.
+8. KUB-WA-012 staged pilot and release review.
+
+**Implementation principle:** build the Copilot as a channel-independent page-creation capability first. WhatsApp should make the experience easier to enter, not own the business logic or become a single point of failure.
+
+
+# 15. New epic — Creator Pages, Marketplace, Short Links, Audience Manager & Public Mega Menu
+
+**Revision date:** 29 October 2026. This epic extends existing page publishing, marketplace, CRM, QR, link/redirect, analytics and Copilot work; it is not permission to duplicate existing modules.
+
+## Outcome
+KUBICU exposes four public product pillars—Creator Pages, Marketplace, Short Links, and Audience Manager—with polished public landing pages, complete connected functionality in the authenticated product, and a shared icon-rich accessible mega menu across the public marketing website.
+
+## Competitive baseline to exceed
+Official Linktree public pages reviewed 29 October 2026 describe creator pages/mini-websites; a categorized marketplace of link apps and integrations; short links with channel/tag attribution and click statistics; and an Audience Manager for contacts/leads, source grouping, exports, integrations and subscriber notifications. Sources: https://linktr.ee/for/creators, https://linktr.ee/marketplace, https://linktr.ee/features/link-shortener, https://linktr.ee/features/audience-management. Revalidate before implementation. Use original KUBICU architecture, wording and visual identity.
+
+## Non-negotiable rules
+- Extend the current blueprint and existing schemas; do not create disconnected duplicate editors, CRM contact stores, URL services or analytics systems.
+- Public marketing pages are distinct from user-created public pages and from authenticated app screens.
+- Extension Marketplace is distinct from sellers' commerce catalogues and any future creator-brand deal marketplace.
+- Click telemetry alone does not create an identifiable audience contact or marketing consent.
+- Public page rendering and short-link redirects must not depend on non-critical AI, CRM or analytics availability.
+- Marketplace extensions receive least-privilege access and use reviewed adapters, constrained APIs or isolation.
+- Do not clone Linktree pixel-for-pixel; implement an original KUBICU icon-rich mega menu with comparable or better usability.
+- Design prototypes may use illustrative data, but production claims/capabilities must be accurate.
+
+## Ticket sequence
+
+### KUB-PUB-001 — Public route inventory and navigation schema (P0)
+Inspect existing routes and map/introduce `/for/creators`, `/marketplace`, marketplace browse/category/detail routes, `/tools/short-links`, `/features/audience-manager`, `/features`, and existing templates/themes/pricing/resources. Use an established alias if an equivalent route already exists. Define a route registry with SEO metadata and valid destinations.
+**Acceptance:** Route and public/app split inventory reviewed; no duplicate canonical routes or dead links.
+
+### KUB-PUB-002 — Shared public mega menu (P0)
+Build shared desktop mega menu and mobile drawer/accordion. Include icon-rich grouped entries, short descriptions, featured CTA, keyboard/click/hover/touch support, Escape/focus restoration, active states, reduced motion and viewport-safe panel sizing.
+**Acceptance:** Keyboard, screen-reader semantics, mouse/pointer, touch and mobile tests pass; menu is consistent across all public pages and distinct from app navigation.
+
+### KUB-CRE-001 — Creator landing page (P1)
+Produce full public page with realistic creator page previews, use cases, supported monetization, content, templates/themes, audience tools, Short Links, analytics and CTA.
+**Acceptance:** Complete page, mobile/desktop, unique metadata, real links and no unsupported claims.
+
+### KUB-CRE-002 — Creator page starter experience (P0/P1)
+Use current Canvas/page schema, templates, themes, blocks, public renderer, URL resolver and analytics. Add creator-oriented presets only as configuration/composition.
+**Acceptance:** Published creator page uses the standard page renderer and remains editable by owner in standard Canvas.
+
+### KUB-MKT-001 — Marketplace listing schema and public discovery (P1/P2)
+Define listing types: integrations, apps/block packs, themes, templates, section packs, automation recipes, industry kits and approved AI packs. Implement search/category/filter and detail pages. Keep marketplace extensions distinct from user product inventory.
+**Acceptance:** Listings show version, publisher, compatibility, dependencies, entitlement, permissions/data access, support/privacy, changelog, pricing and true status.
+
+### KUB-MKT-002 — Compatibility, permission disclosure and install lifecycle (P1/P2)
+Implement sign-in, compatibility/entitlement preflight, consent to permissions, install/connect, configure, enable for workspace/page, status, update/rollback/uninstall and audit events.
+**Acceptance:** No install bypasses server authorization; extensions are least-privilege; failed installs are recoverable; user data is preserved on uninstall as required.
+
+### KUB-MKT-003 — Super-admin marketplace operations (P1/P2)
+Integrate listing moderation, publisher metadata, manifest/version checks, review state, dependencies, feature flags, rollout, disable/rollback, incident actions and audit trail with existing admin console.
+**Acceptance:** Admin actions are permissioned/audited; external code never gets unrestricted database/filesystem access.
+
+### KUB-LNK-001 — ShortLink model, create API and redirect service (P0/P1)
+Reuse existing link/redirect entities where appropriate. Add atomic unique slugs, URL validation, safe schemes, destination screening, rate limits, redirect-loop/open-redirect protections, caching/invalidation, abuse reporting and audit history.
+**Acceptance:** Unique slug race test passes; unsafe URL blocked; redirects keep working when analytics/CRM/AI is unavailable; destination updates invalidate cache safely.
+
+### KUB-LNK-002 — Short-link manager, QR and campaign metadata (P1)
+Implement create, optional custom slug, destination preview, channel/campaign/tag metadata, QR generation, copy/share, list/detail, filtering, destination update, status and export/deletion.
+**Acceptance:** QR points to the correct validated destination; campaign metadata is reproducible in analytics; permissions/limits are enforced server-side.
+
+### KUB-LNK-003 — Short-link analytics and health (P1/P2)
+Record privacy-minimized click/redirect events; bot filtering; optional link health; channel/tag/source reports; basic export and retention. Stage UTM presets, scheduled links, dynamic QR updates, branded domains and A/B routing only after foundation is stable.
+**Acceptance:** UI separates raw clicks, filtered bots and estimated unique visitors; no click is labelled as a known contact; A/B claims require a documented experiment design.
+
+### KUB-AUD-001 — Audience Manager over canonical contact/CRM data (P1)
+Deliver overview, contacts, contact details, search/filter/tagging, segments, source/campaign view, imports/exports, duplicate review and meaningful empty/error states.
+**Acceptance:** No second siloed contact database; all reads/exports are tenant scoped and role authorized.
+
+### KUB-AUD-002 — Consent, source events, retention and deletion (P0/P1)
+Define consent records, purpose/scope, timestamps, notices, unsubscribe/suppression, contact source events, safe dedupe, retention, export/deletion and audit. Integrate form, booking and supported commerce leads.
+**Acceptance:** A click alone never creates an identified contact or marketing permission; suppression blocks outbound marketing; deletion/export tested.
+
+### KUB-AUD-003 — Approved sync integrations (P2)
+Implement adapter contracts for email/CRM tools or spreadsheets only after provider review; field mapping, least-privilege credentials, rate limits, retries/idempotency, logs and connection health.
+**Acceptance:** Secrets never reach the client; failed sync can be retried; field mapping and consent scopes are visible.
+
+### KUB-ANA-001 — Shared cross-feature event taxonomy (P1)
+Connect page views/clicks, short-link redirects, QR scans, forms, audience contacts, marketplace visits/install events and supported conversions through shared event schema and attribution definitions.
+**Acceptance:** Events are typed/versioned, tenant scoped, privacy reviewed, and analytics explain bot filtering, attribution windows and missing data.
+
+### KUB-INT-001 — Creator/campaign/audience end-to-end integration QA (P1)
+Test creator page → short link/QR → public page activity → form submission → contact with source/consent → permitted integration sync.
+**Acceptance:** End-to-end tests pass; analytics and contact records agree within documented attribution constraints.
+
+### KUB-INT-002 — Marketplace to Canvas integration QA (P1/P2)
+Test listing browse → inspect permissions → sign in → compatibility check → install/connect → block/integration appears in correct workspace/Canvas → disable/rollback.
+**Acceptance:** Entitlement and permissions persist; install status is truthful; rollback is audited.
+
+### KUB-SEO-001 — Public landing-page SEO and performance (P1)
+Unique metadata, canonical URLs, Open Graph images, sitemap, route tests, responsive images, lazy loading, low-bandwidth performance, and noindex on private previews/app pages.
+**Acceptance:** No private draft is indexed; pages pass agreed performance/accessibility budgets; every nav link resolves.
+
+## Release gates
+Do not call these features fully integrated until public landing pages, real authenticated tools, shared data models, permissions, analytics, error handling, and cross-feature journeys work end to end. All work must pass tenant-isolation, redirect-safety, consent, data export/deletion, mobile, accessibility, regression and operational monitoring gates.
