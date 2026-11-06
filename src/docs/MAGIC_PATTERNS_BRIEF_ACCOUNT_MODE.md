@@ -174,7 +174,8 @@ States to draw:
 **Server behaviour:**
 - **The list:** only active account workspaces where you are an active member.
 - **Create:** name and **country (required)**. D495 forbids a workspace without a country, and the currency follows the country. Owner name, type and WhatsApp are optional.
-- **Workspace limit:** the server limits how many workspaces one person may own (20 by default), and the approved limit message already exists. The prototype says "unlimited" (D137, `DESIGN_GAP_AUDIT.md`), so record a decision that account mode has a limit.
+- **Workspace limit (decided, D-AI-2):** the server limits how many workspaces one person may own (20 by default), and the approved limit message already exists. The prototype says "unlimited" (D137, `DESIGN_GAP_AUDIT.md`); record that account mode has a limit.
+- **Payouts (decided, D-AI-3):** in account mode, the prototype's "password + two-step code" (D92) becomes the same "Confirm it’s you" step as §1: a fresh e-mail code, plus the second factor when one is set up.
 - **Remove = archive:** the server **archives**; nothing is deleted. It needs `workspace.delete` (Owner) and a "confirm it’s you". An archived workspace disappears from everyone's list.
 
 **Design:** the prototype says "Remove". In account mode it should say **"Archive workspace"**, with honest copy: "It disappears for everyone in the team. Its data is kept." Don't promise a restore button: there isn't one yet. Browser workspaces keep their current "Remove" behaviour.
@@ -263,7 +264,9 @@ States to draw:
 
 **Design:** add **"On hold"** to the existing meter, so it reads used, on hold and left, with help text: "Held while AI work is running. Anything unused comes back when it finishes." Keep the existing amber at 80% and red at 100% (D65).
 
-**Unsettled charges: do not design this note yet.** The app already promises "Declines, errors and timeouts cost nothing" (`AI_ASSISTANT_INTEGRATION.md`; D211d). Charging a task that stopped without reporting its usage conflicts with that promise. The owner must decide first; engineering will send the outcome.
+**Credit wording: owner decision D-AI-1 (6 Nov 2026).**
+- **Change the promise:** wherever the app promises "Declines, errors and timeouts cost nothing" (D211d), it now says **"You're only charged for steps that finished; anything that fails costs nothing."** Change it in all eight languages and record the decision.
+- **Unsettled-charges note:** "{n} AI tasks stopped before reporting usage, so they were charged in full." Write it in the "Label: n" form, for example "Charged in full (stopped before reporting): 2 tasks, 14 credits", and keep it quiet: a footnote, not a warning.
 
 Viewing needs `ai.use`. Without it, keep the existing locked or upsell treatment.
 
@@ -321,7 +324,7 @@ The run store is being built (M3.1). The owner decided the AI screens come in **
   - Rejected
 - **Live progress:** steps appear as they happen and survive a page reload.
 - **Cancelling:** the person who started a run, or anyone with `workflows.admin`, can cancel it. Actions already carried out aren't undone, so the screen must list them.
-- **Credits:** each model step is charged after it answers; a step that fails costs nothing. Whether steps already done are charged when a run later fails is **pending an owner decision**, because the app promises that errors cost nothing. Don't show a charge on failed runs until engineering confirms.
+- **Credits (decided, D-AI-1):** each model step is charged after it answers, and a step that fails costs nothing. When a run fails or is cancelled partway, the steps that already finished stay charged. The run detail shows "Credits used: n" in every end state.
 - **Approvals:**
   - **What can be approved:** sensitive actions pause the run for approval (`workflows.approve`). The approval shows **exactly** what will happen, as a plain summary of the real action, not AI-written text.
   - **Who may approve:** with separation of duties on, the requester can’t approve their own request ("Someone else must approve this").
