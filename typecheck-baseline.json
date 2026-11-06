@@ -1,7 +1,7 @@
 {
   "description": "Known TypeScript errors accepted at the time of recording. CI fails on any error not in this list. Re-record only after fixing errors.",
   "typescript": "5.9.3",
-  "total": 845,
+  "total": 844,
   "errors": [
     {
       "file": "src/components/account/AccountAvatar.tsx",
@@ -41,12 +41,6 @@
     },
     {
       "file": "src/components/account/TwoStepDialog.tsx",
-      "line": 1,
-      "code": "TS6133",
-      "message": "'React' is declared but its value is never read."
-    },
-    {
-      "file": "src/components/account/WorkspacesTab.tsx",
       "line": 1,
       "code": "TS6133",
       "message": "'React' is declared but its value is never read."
@@ -3593,7 +3587,7 @@
     },
     {
       "file": "src/components/shell/Sidebar.tsx",
-      "line": 29,
+      "line": 30,
       "code": "TS6133",
       "message": "'reviewsWaiting' is declared but its value is never read."
     },

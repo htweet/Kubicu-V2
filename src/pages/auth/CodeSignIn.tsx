@@ -56,6 +56,12 @@ export function CodeSignIn() {
   const next = safeNext(nextParam, startPageOptions.find((o) => o.value === readAccount().prefs.startPage)?.to ?? '/app');
   const backTo = nextParam ? screenName(next) : null;
 
+  // Keyboard and screen-reader users land on the code field as soon as it is shown. In an effect, after React has
+  // rendered the code step; a next-frame focus could run before that on slow devices and lose focus.
+  useEffect(() => {
+    if (step === 'code') codeRef.current?.focus();
+  }, [step]);
+
   // Already signed in: go straight on.
   useEffect(() => {
     if (auth.status === 'signedIn' && !reauth) navigate(next, { replace: true });
@@ -73,7 +79,6 @@ export function CodeSignIn() {
       setSubmitted(false);
       setCode('');
       setCodeError('');
-      window.requestAnimationFrame(() => codeRef.current?.focus());
     } catch (error) {
       setProblem(describeError(error));
     } finally {
