@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useMemo } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useEditorStore, type EditorStore } from '../hooks/useEditorStore';
 import { useWorkspace } from './WorkspaceContext';
 import { useCommerce } from './CommerceContext';
@@ -35,7 +35,9 @@ import { usePublicPassport } from '../hooks/usePublicPassport';
 import { useLocalStore } from '../hooks/useLocalStore';
 import { emptyPartnerships, partnershipKey } from '../utils/partnerships';
 import { coBrandIssues } from '../utils/coBrand';
-import { readPersistedPage } from '../utils/workspaceStorage';
+import { editorStorageKey, readPersistedPage, writePersistedPage } from '../utils/workspaceStorage';
+import { realAuthEnabled } from '../utils/auth/realAuth';
+import { connectSpace, SERVER_LINK_EVENT, type PageSync } from '../utils/serverSpaces';
 
 function nextPlanAbove(plan: WorkspacePlan): WorkspacePlan | undefined {
   return planOrder[planOrder.indexOf(plan) + 1];
@@ -119,7 +121,49 @@ export function EditorProvider({ children }: {children: React.ReactNode;}) {
     },
     [plan.id, plan.name, isMain, spaceIndex, currentSpace.kind, currentSpace.id, current, data, ops, trustAppOn, trustLevel, partnerships, storageId]
   );
-  const store = useEditorStore(storageId, taken, extra, siteLevel);
+  // Server page store (S2): with real sign-in, a workspace linked to the account keeps this space's page on the server.
+  const syncRef = useRef<PageSync | null>(null);
+  const getSync = useCallback(() => syncRef.current, []);
+  const store = useEditorStore(storageId, taken, extra, siteLevel, getSync);
+  const storeRef = useRef(store);
+  storeRef.current = store;
+  const [linkEpoch, setLinkEpoch] = useState(0);
+  useEffect(() => {
+    const onLink = (): void => setLinkEpoch((n) => n + 1);
+    window.addEventListener(SERVER_LINK_EVENT, onLink);
+    return () => window.removeEventListener(SERVER_LINK_EVENT, onLink);
+  }, []);
+  useEffect(() => {
+    if (!realAuthEnabled()) return;
+    let live = true;
+    const { state } = storeRef.current;
+    const local = readPersistedPage(storageId) ?? { draft: state.draft, published: state.published, publishedAt: state.publishedAt, versions: state.versions, lastSavedAt: state.lastSavedAt, scheduled: state.scheduled };
+    connectSpace({ localWorkspaceId: current.id, localSpaceId: currentSpace.id, isMain, kind: currentSpace.kind, name: isMain ? current.name : currentSpace.name, storageKey: editorStorageKey(storageId), local }).then(
+      (connected) => {
+        if (!live || !connected) return;
+        syncRef.current = connected.sync;
+        const { outcome } = connected;
+        const { actions } = storeRef.current;
+        if (typeof outcome === 'object' && 'take' in outcome) {
+          writePersistedPage(storageId, outcome.take);
+          actions.reloadFromStorage();
+        } else if (typeof outcome === 'object' && 'conflict' in outcome) {
+          actions.showConflict(outcome.conflict);
+        } else if (outcome === 'dirty') {
+          actions.syncNow();
+        }
+      },
+      () => {
+        // The account could not be reached: the page stays in this browser and is sent on the next visit.
+      }
+    );
+    return () => {
+      live = false;
+      syncRef.current = null;
+    };
+    // Reconnect when the space changes; the provider is remounted per space anyway.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [storageId, linkEpoch]);
   return <EditorContext.Provider value={store}>{children}</EditorContext.Provider>;
 }
 

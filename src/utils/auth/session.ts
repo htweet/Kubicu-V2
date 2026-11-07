@@ -37,7 +37,9 @@ export class ApiError extends Error {
     readonly detail?: string,
     readonly retryAfterSeconds?: number,
     /** The limit reached, as the server reports it (a count, or bytes for payload_too_large). */
-    readonly limit?: number
+    readonly limit?: number,
+    /** The whole response body, for answers that carry more (e.g. a page conflict carries the current page). */
+    readonly body?: unknown
   ) {
     super(title);
   }
@@ -75,7 +77,7 @@ async function apiError(res: Response): Promise<ApiError> {
   const slug = body.type?.split('/').pop() ?? '';
   const code: ApiErrorCode = CODES[slug] ?? (res.status === 401 ? 'unauthenticated' : res.status === 429 ? 'rate_limited' : res.status >= 500 ? 'unavailable' : 'unknown');
   const limit = typeof body.limit === 'number' && Number.isInteger(body.limit) && body.limit >= 0 ? body.limit : undefined;
-  return new ApiError(res.status, code, body.title ?? `Request failed (${res.status})`, body.detail, retryAfter(res), limit);
+  return new ApiError(res.status, code, body.title ?? `Request failed (${res.status})`, body.detail, retryAfter(res), limit, body);
 }
 
 async function send(input: string, init: RequestInit): Promise<Response> {

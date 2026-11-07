@@ -1,3 +1,4 @@
+import { realAuthEnabled } from '../../utils/auth/realAuth';
 import React from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { toast } from 'sonner';
@@ -27,7 +28,7 @@ export function ConflictBanner() {
             <p className="flex items-start gap-2 text-label text-fg">
               <CopyIcon size={15} className="mt-0.5 shrink-0 text-warning" aria-hidden />
               <span>
-                <span className="font-semibold">This page was changed in another tab{theirs ? ` ${formatRelative(theirs)}` : ''}.</span>{' '}
+                <span className="font-semibold">This page was changed {realAuthEnabled() ? 'on another device or tab' : 'in another tab'}{theirs ? ` ${formatRelative(theirs)}` : ''}.</span>{' '}
                 <span className="text-fg-muted">Saving is paused here until you choose which version to keep.</span>
               </span>
             </p>
@@ -37,7 +38,7 @@ export function ConflictBanner() {
               variant="secondary"
               onClick={() => {
                 actions.loadTheirs();
-                toast('Loaded the other tab’s version');
+                toast(realAuthEnabled() ? 'Loaded the other version' : 'Loaded the other tab’s version');
               }}>
               
                 Load other version
@@ -46,7 +47,7 @@ export function ConflictBanner() {
               size="sm"
               onClick={() => {
                 actions.keepMine();
-                toast('Kept this version', { description: 'It replaced the copy from the other tab.' });
+                toast('Kept this version', { description: realAuthEnabled() ? 'It replaced the other copy.' : 'It replaced the copy from the other tab.' });
               }}>
               
                 Keep this version

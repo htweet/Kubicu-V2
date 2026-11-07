@@ -25,6 +25,8 @@ import { groupRange, nextGroupName, normalizeGroups } from '../utils/groups';
 import { DEMO_WORKSPACE_ID, editorStorageKey, parsePersistedPage, readPersistedPage } from '../utils/workspaceStorage';
 import { pageThemePresets } from '../data/pageThemes';
 import type { PersistedPage } from '../types/workspace';
+import type { PageSync } from '../utils/serverSpaces';
+import { toast } from 'sonner';
 import * as groups from '../utils/groupOps';
 import type { BlockPreset } from '../data/blockCatalog';
 import { convertBlock as convertBlockType } from '../utils/blockConvert';
@@ -259,7 +261,9 @@ takenHandles?: ReadonlySet<string>,
 /** Extra checks (e.g. catalogue links) merged into the pre-publish issues. */
 extraIssues?: (doc: PageDocument) => ValidationIssue[],
 /** Site-wide checks (e.g. page limit for the plan). */
-siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
+siteLevelIssues?: (doc: PageDocument) => ValidationIssue[],
+/** Server page store (S2): when the workspace is linked to the account, each save also goes to the server. */
+getSync?: () => PageSync | null)
 {
   const storageKey = editorStorageKey(workspaceId);
   const [state, dispatch] = useReducer(reducer, undefined, () => ({
@@ -293,14 +297,31 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
       dispatch({ type: 'saveStatus', status: 'offline' });
       return;
     }
+    let at: string;
     try {
-      const at = new Date().toISOString();
+      at = new Date().toISOString();
       persist({ ...s, lastSavedAt: at });
-      dispatch({ type: 'saveStatus', status: 'saved', at });
     } catch {
       dispatch({ type: 'saveStatus', status: 'error' });
+      return;
     }
-  }, [persist]);
+    const sync = getSync?.();
+    if (!sync) {
+      dispatch({ type: 'saveStatus', status: 'saved', at });
+      return;
+    }
+    // Saved in this browser; "saved" only once the server has it too.
+    dispatch({ type: 'saveStatus', status: 'saving' });
+    void sync.push(toPersisted({ ...s, lastSavedAt: at }), force).then((r) => {
+      if (r.kind === 'saved') dispatch({ type: 'saveStatus', status: 'saved', at });
+      else if (r.kind === 'conflict') dispatch({ type: 'conflict', remote: r.remote });
+      else if (r.kind === 'offline') dispatch({ type: 'saveStatus', status: 'offline' });
+      else {
+        dispatch({ type: 'saveStatus', status: 'error' });
+        if (r.kind === 'refused') toast.error('Not saved to your account', { description: r.message });
+      }
+    });
+  }, [persist, getSync]);
 
   useEffect(() => {
     if (isFirstRun.current) {
@@ -975,11 +996,19 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
           // Storage unavailable — nothing to reload.
         }},
 
-      /** Conflict: load the copy saved in the other tab. */
+      /** Conflict: load the copy saved in the other tab (or, for a page kept in the account, on the server). */
       loadTheirs: () => {
         const remote = stateRef.current.remote;
-        if (remote) dispatch({ type: 'reset', persisted: remote });
+        if (!remote) return;
+        getSync?.()?.adoptRemote();
+        dispatch({ type: 'reset', persisted: remote });
       },
+
+      /** Server page store: saves now (e.g. changes made here while offline, found when the editor opens). */
+      syncNow: () => save(),
+
+      /** Server page store: a newer copy on the server and changes here too; the owner chooses. */
+      showConflict: (remote: PersistedState) => dispatch({ type: 'conflict', remote }),
 
       saveSnapshot: (label: string) => {
         const s = stateRef.current;
@@ -1009,7 +1038,7 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
         }dispatch({ type: 'reset', persisted: initialPersisted(workspaceId) });
       }
     };
-  }, [persist, save, storageKey, workspaceId]);
+  }, [persist, save, storageKey, workspaceId, getSync]);
 
   const issues = useMemo(
     () => siteIssues(state.draft, takenHandles, extraIssues, siteLevelIssues ? siteLevelIssues(state.draft) : []),

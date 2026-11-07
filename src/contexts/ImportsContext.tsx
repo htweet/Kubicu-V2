@@ -1,3 +1,4 @@
+import { announceServerLinkChange } from '../utils/serverSpaces';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useOptionalAuth } from './AuthContext';
 import { api } from '../utils/auth/session';
@@ -72,11 +73,13 @@ export function ImportsProvider({ children }: { children: React.ReactNode }) {
       upload: async (bundle) => {
         const r = await api<ImportRecord>('POST', '/v1/imports/legacy-workspace', bundle);
         await refresh().catch(() => undefined);
+        announceServerLinkChange();
         return { ...r, legacyWorkspaceId: bundle.legacyWorkspaceId, mode: 'primary' };
       },
       undo: async (importId) => {
         await api('POST', `/v1/imports/${importId}/undo`);
         await refresh().catch(() => undefined);
+        announceServerLinkChange();
       },
       sealedCopy: (importId) => api('GET', `/v1/imports/${importId}/bundle`)
     }),
