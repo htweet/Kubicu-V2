@@ -3,6 +3,8 @@ import type { PageDocument } from '../types/page';
 import type { WorkspacePlan } from '../types/plan';
 import type { PersistedPage, Space, SpaceKind, Workspace } from '../types/workspace';
 import { DEMO_WORKSPACE_ID, setDemoSeed, writePersistedPage } from '../utils/workspaceStorage';
+import { realAuthEnabled } from '../utils/auth/realAuth';
+import { setArchivedInAccount } from '../utils/serverSpaces';
 import { MAIN_SPACE_ID, mainSpace, spaceStorageId, workspaceSpaces } from '../utils/spaces';
 import { uid } from '../utils/id';
 import type { CountryCode } from '../types/country';
@@ -223,6 +225,8 @@ export function WorkspaceProvider({ planControl, children }: {planControl: Works
   const setSpaceArchived = useCallback(
     (spaceId: string, archived: boolean) => {
       if (spaceId === MAIN_SPACE_ID) return;
+      // Server page store: a linked workspace archives or restores the space in the account too.
+      if (realAuthEnabled()) void setArchivedInAccount(current.id, spaceId, archived).catch(() => undefined);
       setWorkspaces((list) =>
       list.map((w) => w.id === current.id ? { ...w, spaces: (w.spaces ?? []).map((s) => s.id === spaceId ? { ...s, archivedAt: archived ? new Date().toISOString() : null } : s) } : w)
       );

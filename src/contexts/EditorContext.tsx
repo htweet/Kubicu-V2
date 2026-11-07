@@ -47,7 +47,7 @@ const EditorContext = createContext<EditorStore | null>(null);
 
 /** The editor for the space open in this workspace. Remount (key by space id) when switching. */
 export function EditorProvider({ children }: {children: React.ReactNode;}) {
-  const { current, currentSpace, workspaces, addAccountSpace } = useWorkspace();
+  const { current, currentSpace, workspaces, addAccountSpace, setSpaceArchived } = useWorkspace();
   const { data } = useCommerce();
   const ops = useOps().data;
   const plan = usePlan();
@@ -144,7 +144,8 @@ export function EditorProvider({ children }: {children: React.ReactNode;}) {
       localSpaces: current.spaces ?? [],
       readLocalPage: (spaceId) => readPersistedPage(spaceStorageId(current.id, spaceId)),
       storageKeyFor: (spaceId) => editorStorageKey(spaceStorageId(current.id, spaceId)),
-      addLocal: (input) => addAccountSpace(current.id, input)
+      addLocal: (input) => addAccountSpace(current.id, input),
+      setLocalArchived: (spaceId, archived) => setSpaceArchived(spaceId, archived)
     })
       .catch(() => undefined)
       .then(() => (live ? connectSpace({ localWorkspaceId: current.id, localSpaceId: currentSpace.id, isMain, kind: currentSpace.kind, name: isMain ? current.name : currentSpace.name, storageKey: editorStorageKey(storageId), local }) : null))

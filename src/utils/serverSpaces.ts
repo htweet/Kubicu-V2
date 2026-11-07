@@ -173,7 +173,8 @@ export async function connectSpace(o: {
         lastSynced = signature(current.page);
         return { kind: 'conflict', remote: current.page };
       }
-      if (e instanceof ApiError && (e.status === 403 || e.status === 413 || e.status === 422)) return { kind: 'refused', message: e.detail ?? e.message };
+      // Refused with a reason: no permission, too large, invalid, or (409 without a newer page) the address is taken.
+      if (e instanceof ApiError && (e.status === 403 || e.status === 409 || e.status === 413 || e.status === 422)) return { kind: 'refused', message: e.detail ?? e.message };
       if (isOffline(e)) return { kind: 'offline' };
       return { kind: 'error' };
     }
@@ -209,7 +210,7 @@ interface ServerSpaceRow { id: string; kind: SpaceKind; name: string; createdAt:
 /**
  * S3: keeps a linked workspace's list of spaces the same in this browser and in the account. Spaces only in this
  * browser move to the account (with their page); spaces only in the account (made on another device, or opened from
- * an AI page draft) are added here. The main space is handled by connectSpace. Archiving is not mirrored yet.
+ * an AI page draft) are added here, and archiving is mirrored. The main space is handled by connectSpace.
  */
 export async function reconcileSpaces(o: {
   localWorkspaceId: string;
@@ -217,6 +218,7 @@ export async function reconcileSpaces(o: {
   readLocalPage: (spaceId: string) => PersistedPage | null;
   storageKeyFor: (spaceId: string) => string;
   addLocal: (input: { kind: Exclude<SpaceKind, 'main'>; name: string; createdAt: string; page: PersistedPage }) => { id: string };
+  setLocalArchived?: (spaceId: string, archived: boolean) => void;
 }): Promise<void> {
   const serverWorkspaceId = await serverWorkspaceFor(o.localWorkspaceId);
   if (!serverWorkspaceId) return;
@@ -232,6 +234,16 @@ export async function reconcileSpaces(o: {
     markSynced(o.storageKeyFor(local.id), serverWorkspaceId, made.space.id, made.revision);
     known.add(made.space.id);
   }
+  // Archived in one place but not the other: the account's state wins for spaces it has; a space archived here
+  // while the account still shows it active is archived there too.
+  const byServerId = new Map(list.map((r) => [r.id, r]));
+  for (const local of o.localSpaces) {
+    const serverId = serverSpaceIdFor(o.localWorkspaceId, local.id);
+    const remote = serverId ? byServerId.get(serverId) : undefined;
+    if (!remote || local.kind === 'main') continue;
+    if (local.archivedAt && !remote.archivedAt) await api('PATCH', `${base}/${remote.id}`, { archived: true });
+    else if (!local.archivedAt && remote.archivedAt) o.setLocalArchived?.(local.id, true);
+  }
   for (const remote of list) {
     if (remote.kind === 'main' || remote.archivedAt || known.has(remote.id)) continue;
     const got = await api<{ revision: number; page: PersistedPage }>('GET', `${base}/${remote.id}`);
@@ -239,4 +251,12 @@ export async function reconcileSpaces(o: {
     rememberServerSpace(o.localWorkspaceId, added.id, remote.id);
     markSynced(o.storageKeyFor(added.id), serverWorkspaceId, remote.id, got.revision);
   }
+}
+
+/** Archives or restores a space of a linked workspace in the account too (fire and forget; the next visit re-checks). */
+export async function setArchivedInAccount(localWorkspaceId: string, localSpaceId: string, archived: boolean): Promise<void> {
+  const serverWorkspaceId = await serverWorkspaceFor(localWorkspaceId);
+  const serverSpaceId = serverSpaceIdFor(localWorkspaceId, localSpaceId);
+  if (!serverWorkspaceId || !serverSpaceId) return;
+  await api('PATCH', `/v1/workspaces/${serverWorkspaceId}/spaces/${serverSpaceId}`, { archived });
 }
