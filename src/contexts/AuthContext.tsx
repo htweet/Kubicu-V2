@@ -1,3 +1,4 @@
+import { setSignedInNow } from '../utils/autoLink';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { fetchMe, signOutSession, type Me } from '../utils/auth/session';
 
@@ -25,9 +26,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const next = await fetchMe();
       setMe(next);
       setStatus(next ? 'signedIn' : 'signedOut');
+      setSignedInNow(!!next);
       return next;
     } catch {
       setStatus('error');
+      setSignedInNow(false);
       return null;
     }
   }, []);
@@ -38,6 +41,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setMe(null);
       setStatus('signedOut');
+      setSignedInNow(false);
     }
   }, []);
 

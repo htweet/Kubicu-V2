@@ -5,6 +5,7 @@ import type { PersistedPage, Space, SpaceKind, Workspace } from '../types/worksp
 import { DEMO_WORKSPACE_ID, setDemoSeed, writePersistedPage } from '../utils/workspaceStorage';
 import { realAuthEnabled } from '../utils/auth/realAuth';
 import { setArchivedInAccount } from '../utils/serverSpaces';
+import { isSignedInNow, markForAutoLink } from '../utils/autoLink';
 import { MAIN_SPACE_ID, mainSpace, spaceStorageId, workspaceSpaces } from '../utils/spaces';
 import { uid } from '../utils/id';
 import type { CountryCode } from '../types/country';
@@ -193,6 +194,8 @@ export function WorkspaceProvider({ planControl, children }: {planControl: Works
       ...(input.demoData ? { demoData: demoExpiry(), spaces: seedSampleSpaces(id) } : {})
     };
     setWorkspaces((list) => [...list, workspace]);
+    // Created while signed in: it goes straight to the account (owner decision, 7 Nov 2026).
+    if (realAuthEnabled() && isSignedInNow()) markForAutoLink(id);
     setCurrentId(id);
     setSpaceMap((m) => ({ ...m, [id]: MAIN_SPACE_ID }));
     return workspace;

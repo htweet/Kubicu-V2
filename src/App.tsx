@@ -75,6 +75,7 @@ import { CopilotLanding } from './pages/marketing/CopilotLanding';
 import { CopilotWeb } from './pages/copilot/CopilotWeb';
 import { CopilotWhatsApp } from './pages/copilot/CopilotWhatsApp';
 import { CopilotPreview } from './pages/copilot/CopilotPreview';
+import { AutoLink } from './components/shell/AutoLink';
 import { ServerDraftPreview } from './pages/drafts/ServerDraftPreview';
 import { CopilotContinue } from './pages/copilot/CopilotContinue';
 import { Onboarding } from './pages/Onboarding';
@@ -174,7 +175,7 @@ interface AppProps {
  * On: GET /v1/me decides who is signed in, and every /app/* screen needs a session (D-UI-3).
  */
 function SessionScope({ children }: {children: React.ReactNode;}) {
-  return realAuthEnabled() ? <AuthProvider><ImportsProvider>{children}</ImportsProvider></AuthProvider> : <>{children}</>;
+  return realAuthEnabled() ? <AuthProvider><ImportsProvider><AutoLink />{children}</ImportsProvider></AuthProvider> : <>{children}</>;
 }
 // G-1: the prototype staff console exists only in builds with VITE_KUBICU_STAFF_CONSOLE=prototype.
 const StaffConsole = STAFF_CONSOLE_BUILD ? lazy(() => import('./routes/StaffConsoleRoutes')) : null;
