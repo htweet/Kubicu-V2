@@ -1,6 +1,13 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { CircleDashedIcon } from 'lucide-react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { ArrowRightIcon, CircleDashedIcon } from 'lucide-react';
+import { toast } from 'sonner';
+import { useWorkspace } from '../../contexts/WorkspaceContext';
+import { useImports } from '../../contexts/ImportsContext';
+import { editorStorageKey } from '../../utils/workspaceStorage';
+import { spaceStorageId } from '../../utils/spaces';
+import { markSynced, rememberServerSpace } from '../../utils/serverSpaces';
+import type { PersistedPage } from '../../types/workspace';
 import { RenderPlanProvider } from '../../contexts/RenderPlanContext';
 import { PageSurface } from '../../components/blocks/PageSurface';
 import { PageLayoutView } from '../../components/blocks/PageLayoutView';
@@ -11,7 +18,7 @@ import { plans } from '../../data/plans';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { realAuthEnabled } from '../../utils/auth/realAuth';
 import { api } from '../../utils/auth/session';
-import { documentFromDraft, type ServerPageDraft } from '../../utils/pageDraft';
+import { documentFromDraft, handleFromTitle, type ServerPageDraft } from '../../utils/pageDraft';
 import type { PageDocument } from '../../types/page';
 
 type State =
@@ -30,6 +37,13 @@ export function ServerDraftPreview() {
   const wide = useMediaQuery('(min-width: 768px)');
   const [state, setState] = useState<State>({ kind: 'loading' });
   const [gapsOpen, setGapsOpen] = useState(false);
+  const [opening, setOpening] = useState(false);
+  const navigate = useNavigate();
+  const { workspaces, switchTo, addAccountSpace } = useWorkspace();
+  const imports = useImports();
+  // The browser workspace linked to the draft's account workspace, if it is in this browser.
+  const linkedLocal = imports?.imports.find((i) => i.workspaceId === wsId && i.mode === 'primary' && i.status === 'completed')?.legacyWorkspaceId;
+  const localWorkspace = linkedLocal && workspaces.some((w) => w.id === linkedLocal) ? linkedLocal : null;
 
   useEffect(() => {
     if (!realAuthEnabled()) {
@@ -78,6 +92,26 @@ export function ServerDraftPreview() {
 
   const { draft, doc } = state;
   const gaps = draft.spec.missingInformation;
+
+  /** Server page store S3: the draft becomes a new space in the account and in this browser, then opens in the Canvas. */
+  const openInCanvas = async (): Promise<void> => {
+    if (!localWorkspace) return;
+    setOpening(true);
+    try {
+      const pageDoc = documentFromDraft(draft, { pageId: `page_${localWorkspace}_d${draft.id.slice(0, 8)}`, handle: handleFromTitle(draft.title) });
+      if (!pageDoc) throw new Error('unknown draft');
+      const page: PersistedPage = { draft: pageDoc, published: null, publishedAt: null, versions: [], lastSavedAt: null, scheduled: null };
+      const made = await api<{ space: { id: string; createdAt: string }; revision: number }>('POST', `/v1/workspaces/${encodeURIComponent(wsId)}/spaces`, { kind: 'page', name: draft.title, page, fromDraftId: draft.id });
+      const space = addAccountSpace(localWorkspace, { kind: 'page', name: draft.title, createdAt: made.space.createdAt, page });
+      rememberServerSpace(localWorkspace, space.id, made.space.id);
+      markSynced(editorStorageKey(spaceStorageId(localWorkspace, space.id)), wsId, made.space.id, made.revision);
+      switchTo(localWorkspace, space.id);
+      navigate('/app/canvas');
+    } catch {
+      toast.error('Couldn’t open the draft', { description: 'Nothing was changed. Try again in a moment.' });
+      setOpening(false);
+    }
+  };
   const visible = doc.blocks.filter((b) => !b.visibility.hidden);
 
   return (
@@ -100,6 +134,16 @@ export function ServerDraftPreview() {
               onClick={() => setGapsOpen((o) => !o)}
               className="inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-label font-medium text-fg-muted hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
                 <CircleDashedIcon size={14} aria-hidden /> {gaps.length} to fill in
+              </button>
+            }
+            {localWorkspace &&
+            <button
+              type="button"
+              disabled={opening}
+              aria-label="Open in Canvas"
+              onClick={() => void openInCanvas()}
+              className="inline-flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-action px-4 text-label font-semibold text-action-fg transition-transform duration-150 ease-out active:scale-[0.97] disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+                Open<span className="hidden sm:inline"> in Canvas</span> <ArrowRightIcon size={15} aria-hidden />
               </button>
             }
           </div>

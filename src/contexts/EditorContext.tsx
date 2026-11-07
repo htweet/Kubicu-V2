@@ -37,7 +37,7 @@ import { emptyPartnerships, partnershipKey } from '../utils/partnerships';
 import { coBrandIssues } from '../utils/coBrand';
 import { editorStorageKey, readPersistedPage, writePersistedPage } from '../utils/workspaceStorage';
 import { realAuthEnabled } from '../utils/auth/realAuth';
-import { connectSpace, SERVER_LINK_EVENT, type PageSync } from '../utils/serverSpaces';
+import { connectSpace, reconcileSpaces, SERVER_LINK_EVENT, type PageSync } from '../utils/serverSpaces';
 
 function nextPlanAbove(plan: WorkspacePlan): WorkspacePlan | undefined {
   return planOrder[planOrder.indexOf(plan) + 1];
@@ -47,7 +47,7 @@ const EditorContext = createContext<EditorStore | null>(null);
 
 /** The editor for the space open in this workspace. Remount (key by space id) when switching. */
 export function EditorProvider({ children }: {children: React.ReactNode;}) {
-  const { current, currentSpace, workspaces } = useWorkspace();
+  const { current, currentSpace, workspaces, addAccountSpace } = useWorkspace();
   const { data } = useCommerce();
   const ops = useOps().data;
   const plan = usePlan();
@@ -138,7 +138,17 @@ export function EditorProvider({ children }: {children: React.ReactNode;}) {
     let live = true;
     const { state } = storeRef.current;
     const local = readPersistedPage(storageId) ?? { draft: state.draft, published: state.published, publishedAt: state.publishedAt, versions: state.versions, lastSavedAt: state.lastSavedAt, scheduled: state.scheduled };
-    connectSpace({ localWorkspaceId: current.id, localSpaceId: currentSpace.id, isMain, kind: currentSpace.kind, name: isMain ? current.name : currentSpace.name, storageKey: editorStorageKey(storageId), local }).then(
+    // S3: first make the list of spaces the same here and in the account, then connect this space.
+    reconcileSpaces({
+      localWorkspaceId: current.id,
+      localSpaces: current.spaces ?? [],
+      readLocalPage: (spaceId) => readPersistedPage(spaceStorageId(current.id, spaceId)),
+      storageKeyFor: (spaceId) => editorStorageKey(spaceStorageId(current.id, spaceId)),
+      addLocal: (input) => addAccountSpace(current.id, input)
+    })
+      .catch(() => undefined)
+      .then(() => (live ? connectSpace({ localWorkspaceId: current.id, localSpaceId: currentSpace.id, isMain, kind: currentSpace.kind, name: isMain ? current.name : currentSpace.name, storageKey: editorStorageKey(storageId), local }) : null))
+      .then(
       (connected) => {
         if (!live || !connected) return;
         syncRef.current = connected.sync;

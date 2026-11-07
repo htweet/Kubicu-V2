@@ -56,6 +56,11 @@ function writeJson(key: string, value: unknown): void {
 export const readSyncMeta = (storageKey: string): SyncMeta | null => readJson<SyncMeta>(metaKey(storageKey));
 const writeSyncMeta = (storageKey: string, meta: SyncMeta): void => writeJson(metaKey(storageKey), meta);
 
+/** Records that a browser copy matches this server revision (after creating or bringing in a space). */
+export function markSynced(storageKey: string, serverWorkspaceId: string, serverSpaceId: string, revision: number): void {
+  writeSyncMeta(storageKey, { serverWorkspaceId, serverSpaceId, revision, dirty: false });
+}
+
 /** Which server space holds each local space of a workspace (the main space is the server's main space). */
 export function serverSpaceIdFor(localWorkspaceId: string, localSpaceId: string): string | null {
   return readJson<Record<string, string>>(mapKey(localWorkspaceId))?.[localSpaceId] ?? null;
@@ -197,4 +202,41 @@ export async function connectSpace(o: {
     }
   };
   return { sync, outcome };
+}
+
+interface ServerSpaceRow { id: string; kind: SpaceKind; name: string; createdAt: string; archivedAt: string | null }
+
+/**
+ * S3: keeps a linked workspace's list of spaces the same in this browser and in the account. Spaces only in this
+ * browser move to the account (with their page); spaces only in the account (made on another device, or opened from
+ * an AI page draft) are added here. The main space is handled by connectSpace. Archiving is not mirrored yet.
+ */
+export async function reconcileSpaces(o: {
+  localWorkspaceId: string;
+  localSpaces: ReadonlyArray<{ id: string; kind: SpaceKind; name: string; archivedAt: string | null }>;
+  readLocalPage: (spaceId: string) => PersistedPage | null;
+  storageKeyFor: (spaceId: string) => string;
+  addLocal: (input: { kind: Exclude<SpaceKind, 'main'>; name: string; createdAt: string; page: PersistedPage }) => { id: string };
+}): Promise<void> {
+  const serverWorkspaceId = await serverWorkspaceFor(o.localWorkspaceId);
+  if (!serverWorkspaceId) return;
+  const base = `/v1/workspaces/${serverWorkspaceId}/spaces`;
+  const list = (await api<{ spaces: ServerSpaceRow[] }>('GET', base)).spaces;
+  const known = new Set(Object.values(readJson<Record<string, string>>(mapKey(o.localWorkspaceId)) ?? {}));
+  for (const local of o.localSpaces) {
+    if (local.kind === 'main' || local.archivedAt || serverSpaceIdFor(o.localWorkspaceId, local.id)) continue;
+    const page = o.readLocalPage(local.id);
+    if (!page) continue;
+    const made = await api<{ space: { id: string }; revision: number }>('POST', base, { kind: local.kind, name: local.name.slice(0, 80) || 'Untitled space', page });
+    rememberServerSpace(o.localWorkspaceId, local.id, made.space.id);
+    markSynced(o.storageKeyFor(local.id), serverWorkspaceId, made.space.id, made.revision);
+    known.add(made.space.id);
+  }
+  for (const remote of list) {
+    if (remote.kind === 'main' || remote.archivedAt || known.has(remote.id)) continue;
+    const got = await api<{ revision: number; page: PersistedPage }>('GET', `${base}/${remote.id}`);
+    const added = o.addLocal({ kind: remote.kind as Exclude<SpaceKind, 'main'>, name: remote.name, createdAt: remote.createdAt, page: got.page });
+    rememberServerSpace(o.localWorkspaceId, added.id, remote.id);
+    markSynced(o.storageKeyFor(added.id), serverWorkspaceId, remote.id, got.revision);
+  }
 }

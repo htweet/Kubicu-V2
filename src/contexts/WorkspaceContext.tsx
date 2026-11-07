@@ -46,6 +46,11 @@ interface WorkspaceValue {
   create: (input: CreateWorkspaceInput) => Workspace;
   /** Adds a campaign or DealRoom to the current workspace. Throws if storage fails. */
   createSpace: (input: CreateSpaceInput) => Space;
+  /**
+   * Server page store (S3): adds a space that already exists in the account (made on another device, or opened from an
+   * AI page draft) to a workspace in this browser, with its page. Throws if storage fails.
+   */
+  addAccountSpace: (workspaceId: string, input: {kind: Exclude<SpaceKind, 'main'>;name: string;createdAt: string;page: PersistedPage;}) => Space;
   setSpaceArchived: (spaceId: string, archived: boolean) => void;
   update: (id: string, patch: Partial<Pick<Workspace, 'name' | 'ownerName' | 'plan' | 'currency' | 'country' | 'whatsapp'>>) => void;
   /** Removes the current workspace's demo data everywhere, then reloads so every screen reads clean data (D200). */
@@ -204,6 +209,17 @@ export function WorkspaceProvider({ planControl, children }: {planControl: Works
     [current.id]
   );
 
+  const addAccountSpace = useCallback(
+    (workspaceId: string, input: {kind: Exclude<SpaceKind, 'main'>;name: string;createdAt: string;page: PersistedPage;}) => {
+      const spaceId = uid('sp');
+      writePersistedPage(spaceStorageId(workspaceId, spaceId), input.page);
+      const space: Space = { id: spaceId, kind: input.kind, name: input.name.trim() || 'Untitled space', createdAt: input.createdAt, archivedAt: null };
+      setWorkspaces((list) => list.map((w) => w.id === workspaceId ? { ...w, spaces: [...(w.spaces ?? []), space] } : w));
+      return space;
+    },
+    []
+  );
+
   const setSpaceArchived = useCallback(
     (spaceId: string, archived: boolean) => {
       if (spaceId === MAIN_SPACE_ID) return;
@@ -278,8 +294,8 @@ export function WorkspaceProvider({ planControl, children }: {planControl: Works
   }, [workspaces, spaceMap, planControl, switchTo]);
 
   const value = useMemo(
-    () => ({ workspaces, current, currentSpace, switchTo, switchSpace, create, createSpace, setSpaceArchived, update, removeDemoData, removeDemoWorkspace, restoreDemoWorkspace }),
-    [workspaces, current, currentSpace, switchTo, switchSpace, create, createSpace, setSpaceArchived, update, removeDemoData, removeDemoWorkspace, restoreDemoWorkspace]
+    () => ({ workspaces, current, currentSpace, switchTo, switchSpace, create, createSpace, addAccountSpace, setSpaceArchived, update, removeDemoData, removeDemoWorkspace, restoreDemoWorkspace }),
+    [workspaces, current, currentSpace, switchTo, switchSpace, create, createSpace, addAccountSpace, setSpaceArchived, update, removeDemoData, removeDemoWorkspace, restoreDemoWorkspace]
   );
   return <WorkspaceContext.Provider value={value}>{children}</WorkspaceContext.Provider>;
 }
