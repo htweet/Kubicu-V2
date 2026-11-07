@@ -37,7 +37,7 @@ export function SavedSectionsList({ query, touch, onInserted }: SavedSectionsLis
     const removed = library.deleteSection(s.id);
     toast(`Deleted “${s.name}” from your library`, {
       description: 'Pages that already use it keep their copy.',
-      action: removed ? { label: 'Undo', onClick: () => library.restoreSection(removed) } : undefined
+      action: removed ? { label: 'Undo', onClick: () => library.restoreSection(removed) } : undefined,
     });
   };
 
@@ -47,16 +47,16 @@ export function SavedSectionsList({ query, touch, onInserted }: SavedSectionsLis
         Your sections
       </h3>
       <ul className="flex flex-col">
-        {items.map((s) =>
-        <li key={s.id} className="group flex items-center gap-1 rounded-md pr-1 hover:bg-sunken">
+        {items.map((s) => (
+          <li key={s.id} className="group flex items-center gap-1 rounded-md pr-1 hover:bg-sunken">
             <button
-            type="button"
-            onClick={() => insert(s)}
-            className={cn(
-              'flex min-w-0 flex-1 items-center gap-3 rounded-md px-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
-              touch ? 'py-3' : 'py-2'
-            )}>
-            
+              type="button"
+              onClick={() => insert(s)}
+              className={cn(
+                'flex min-w-0 flex-1 items-center gap-3 rounded-md px-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
+                touch ? 'py-3' : 'py-2',
+              )}
+            >
               <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm border border-line bg-canvas text-action">
                 <BookmarkIcon size={15} aria-hidden />
               </span>
@@ -68,34 +68,34 @@ export function SavedSectionsList({ query, touch, onInserted }: SavedSectionsLis
               </span>
             </button>
             <Menu
-            items={[
-            {
-              id: 'rename',
-              label: 'Rename',
-              icon: PencilIcon,
-              onSelect: () => {
-                setName(s.name);
-                setRenaming(s);
-              }
-            },
-            { id: 'delete', label: 'Delete from library', icon: Trash2Icon, destructive: true, onSelect: () => remove(s) }]
-            }
-            trigger={(props) =>
-            <button
-              type="button"
-              {...props}
-              aria-label={`More actions for ${s.name}`}
-              className={cn(
-                'inline-flex shrink-0 items-center justify-center rounded-sm text-fg-subtle hover:bg-raised hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
-                touch ? 'h-10 w-10' : 'h-7 w-7 opacity-0 group-hover:opacity-100 focus-visible:opacity-100'
-              )}>
-              
+              items={[
+                {
+                  id: 'rename',
+                  label: 'Rename',
+                  icon: PencilIcon,
+                  onSelect: () => {
+                    setName(s.name);
+                    setRenaming(s);
+                  },
+                },
+                { id: 'delete', label: 'Delete from library', icon: Trash2Icon, destructive: true, onSelect: () => remove(s) },
+              ]}
+              trigger={(props) => (
+                <button
+                  type="button"
+                  {...props}
+                  aria-label={`More actions for ${s.name}`}
+                  className={cn(
+                    'inline-flex shrink-0 items-center justify-center rounded-sm text-fg-subtle hover:bg-raised hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
+                    touch ? 'h-10 w-10' : 'h-7 w-7 opacity-0 group-hover:opacity-100 focus-visible:opacity-100',
+                  )}
+                >
                   <MoreHorizontalIcon size={14} aria-hidden />
                 </button>
-            } />
-          
+              )}
+            />
           </li>
-        )}
+        ))}
       </ul>
 
       <Dialog
@@ -104,26 +104,26 @@ export function SavedSectionsList({ query, touch, onInserted }: SavedSectionsLis
         size="sm"
         title="Rename section"
         footer={
-        <>
+          <>
             <Button variant="secondary" onClick={() => setRenaming(null)}>
               Cancel
             </Button>
             <Button
-            disabled={!name.trim()}
-            onClick={() => {
-              if (renaming) library.renameSection(renaming.id, name);
-              setRenaming(null);
-            }}>
-            
+              disabled={!name.trim()}
+              onClick={() => {
+                if (renaming) library.renameSection(renaming.id, name);
+                setRenaming(null);
+              }}
+            >
               Save
             </Button>
           </>
-        }>
-        
+        }
+      >
         <div className="pb-2">
           <TextInput id="rename-section" label="Section name" value={name} maxLength={48} onChange={(e) => setName(e.target.value)} />
         </div>
       </Dialog>
-    </section>);
-
+    </section>
+  );
 }

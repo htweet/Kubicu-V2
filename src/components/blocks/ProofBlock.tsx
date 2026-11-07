@@ -35,14 +35,14 @@ export function ProofBlock({ block, theme: t, mode }: BlockProps<'proof'>) {
 
   return (
     <section className="flex flex-col gap-4" aria-label={c.title || tr('Proof of work')}>
-      {c.title &&
-      <h2 className="text-[20px] font-semibold leading-tight" style={{ fontFamily: fontsFor(t).display, color: t.text }}>
+      {c.title && (
+        <h2 className="text-[20px] font-semibold leading-tight" style={{ fontFamily: fontsFor(t).display, color: t.text }}>
           {c.title}
         </h2>
-      }
+      )}
 
-      {showReviews && count > 0 &&
-      <div className="flex flex-col gap-3">
+      {showReviews && count > 0 && (
+        <div className="flex flex-col gap-3">
           <p className="flex flex-wrap items-center gap-2 text-[15px]" style={{ color: t.text }}>
             <Stars rating={average} size={16} />
             <span className="font-semibold tabular-nums">{average.toFixed(1)}</span>
@@ -53,8 +53,8 @@ export function ProofBlock({ block, theme: t, mode }: BlockProps<'proof'>) {
           <p className="text-[12.5px]" style={muted}>
             {tr('Every review comes from a real order, booking or job. The business can’t edit them, and hidden ones still count in the rating.')}
           </p>
-          {reviews.map((r) =>
-        <figure key={r.id} className="p-4" style={cardStyle(t)}>
+          {reviews.map((r) => (
+            <figure key={r.id} className="p-4" style={cardStyle(t)}>
               <Stars rating={r.rating} size={13} color={t.text} />
               <blockquote className="mt-2 text-[15px] leading-relaxed" style={{ color: t.text }}>
                 “{r.text}”
@@ -68,23 +68,23 @@ export function ProofBlock({ block, theme: t, mode }: BlockProps<'proof'>) {
                 </span>
                 <span>· {monthYear(r.createdAt, loc)}</span>
               </figcaption>
-              {r.reply &&
-          <p className="mt-3 border-l-2 pl-3 text-[13px]" style={{ ...muted, borderColor: `${t.mutedText}55` }}>
+              {r.reply && (
+                <p className="mt-3 border-l-2 pl-3 text-[13px]" style={{ ...muted, borderColor: `${t.mutedText}55` }}>
                   <span className="font-semibold" style={{ color: t.text }}>
                     {tr('Reply from the business:')}
                   </span>{' '}
                   {r.reply}
                 </p>
-          }
+              )}
             </figure>
-        )}
+          ))}
         </div>
-      }
+      )}
 
-      {showWork && work.length > 0 &&
-      <ol className="flex flex-col gap-4 border-l pl-5" style={{ borderColor: `${t.mutedText}44` }} aria-label={tr('Delivered work')}>
-          {work.map((w) =>
-        <li key={w.id} className="relative">
+      {showWork && work.length > 0 && (
+        <ol className="flex flex-col gap-4 border-l pl-5" style={{ borderColor: `${t.mutedText}44` }} aria-label={tr('Delivered work')}>
+          {work.map((w) => (
+            <li key={w.id} className="relative">
               <span aria-hidden className="absolute -left-[25px] top-1.5 h-2.5 w-2.5 rounded-full" style={{ background: t.text }} />
               <p className="text-[12.5px]" style={muted}>
                 {shortDay(w.date, loc)}
@@ -92,24 +92,24 @@ export function ProofBlock({ block, theme: t, mode }: BlockProps<'proof'>) {
               <p className="text-[15px] font-semibold" style={{ color: t.text }}>
                 {w.title}
               </p>
-              {w.description &&
-          <p className="mt-0.5 text-[14px] leading-relaxed" style={muted}>
+              {w.description && (
+                <p className="mt-0.5 text-[14px] leading-relaxed" style={muted}>
                   {w.description}
                 </p>
-          }
+              )}
               {w.imageUrl && <MediaImage src={w.imageUrl} alt={w.imageAlt} loading="lazy" className="mt-2 aspect-video w-full rounded-[12px] object-cover" />}
               <p className="mt-1.5 flex flex-wrap gap-x-3 text-[12.5px]" style={muted}>
-                {w.source &&
-            <span className="inline-flex items-center gap-1">
+                {w.source && (
+                  <span className="inline-flex items-center gap-1">
                     <BadgeCheckIcon size={12} aria-hidden /> {tr(matchedLabel[w.source.kind])}
                   </span>
-            }
+                )}
                 {w.clientName && <span>{tr('Client: {name}', { name: w.clientName })}</span>}
               </p>
             </li>
-        )}
+          ))}
         </ol>
-      }
-    </section>);
-
+      )}
+    </section>
+  );
 }

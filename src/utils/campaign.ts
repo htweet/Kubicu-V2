@@ -13,19 +13,19 @@ export const phaseOrder: CampaignPhase[] = ['before', 'live', 'ended'];
 export const phaseLabels: Record<CampaignPhase, string> = {
   before: 'Before',
   live: 'Live',
-  ended: 'Ended'
+  ended: 'Ended',
 };
 
 export const phaseDescriptions: Record<CampaignPhase, string> = {
   before: 'Before it starts — tease it and collect sign-ups.',
   live: 'While it’s on — the offer and how to buy.',
-  ended: 'After it ends — say thanks and point people on.'
+  ended: 'After it ends — say thanks and point people on.',
 };
 
-export const starterLabels: Record<CampaignStarter, {label: string;blurb: string;}> = {
+export const starterLabels: Record<CampaignStarter, { label: string; blurb: string }> = {
   sale: { label: 'Sale', blurb: 'A discount for a set time — Eid, Black Friday, clearance.' },
   launch: { label: 'Product launch', blurb: 'A countdown to a new drop, then the products go live.' },
-  event: { label: 'Event', blurb: 'A pop-up, workshop or show with a date and RSVP.' }
+  event: { label: 'Event', blurb: 'A pop-up, workshop or show with a date and RSVP.' },
 };
 
 export function campaignPhase(c: CampaignSettings, now = Date.now()): CampaignPhase {
@@ -58,7 +58,7 @@ export function campaignTotals(data: CommerceData | null, handle: string) {
   return {
     orders: orders.length,
     revenueNgn: paid.reduce((t, o) => t + orderMoney(o).gross, 0),
-    discountNgn: orders.reduce((t, o) => t + o.discountNgn, 0)
+    discountNgn: orders.reduce((t, o) => t + o.discountNgn, 0),
   };
 }
 
@@ -67,13 +67,13 @@ export function campaignIssues(c: CampaignSettings, blocks: Block[], data: Comme
   const out: ValidationIssue[] = [];
   const push = (id: string, severity: ValidationIssue['severity'], message: string) => out.push({ id: `campaign:${id}`, blockId: null, severity, message });
   if (!c.endsAt) push('no-end', 'error', 'Set when the campaign ends, so visitors see the Ended version afterwards.');
-  if (c.startsAt && c.endsAt && Date.parse(c.endsAt) <= Date.parse(c.startsAt)) push('order', 'error', 'The campaign ends before it starts. Check the dates.');else
-  if (c.endsAt && Date.parse(c.endsAt) <= now) push('over', 'warning', 'This campaign has already ended — visitors will see the Ended version.');
+  if (c.startsAt && c.endsAt && Date.parse(c.endsAt) <= Date.parse(c.startsAt)) push('order', 'error', 'The campaign ends before it starts. Check the dates.');
+  else if (c.endsAt && Date.parse(c.endsAt) <= now) push('over', 'warning', 'This campaign has already ended — visitors will see the Ended version.');
 
   if (c.discountId) {
     const d = data?.discounts.find((x) => x.id === c.discountId);
-    if (!d) push('discount-missing', 'error', 'The linked discount was deleted. Pick another or remove it.');else
-    {
+    if (!d) push('discount-missing', 'error', 'The linked discount was deleted. Pick another or remove it.');
+    else {
       const status = discountStatus(d, data!, now);
       if (status === 'paused') push('discount-paused', 'warning', `${d.code || d.title} is paused, so it won’t apply.`);
       if (d.endsAt && c.endsAt && Date.parse(d.endsAt) < Date.parse(c.endsAt)) push('discount-ends', 'warning', `${d.code || d.title} ends before the campaign does (${formatSchedule(d.endsAt)}).`);
@@ -83,9 +83,9 @@ export function campaignIssues(c: CampaignSettings, blocks: Block[], data: Comme
 
   c.productIds.forEach((id) => {
     const p = data?.products.find((x) => x.id === id);
-    if (!p) push(`p-${id}`, 'warning', 'A featured product was deleted from Commerce.');else
-    if (p.status !== 'active') push(`p-${id}`, 'warning', `“${p.name}” is ${p.status} in Commerce and won’t show.`);else
-    if (isSoldOut(p)) push(`p-${id}`, 'warning', `“${p.name}” is sold out.`);
+    if (!p) push(`p-${id}`, 'warning', 'A featured product was deleted from Commerce.');
+    else if (p.status !== 'active') push(`p-${id}`, 'warning', `“${p.name}” is ${p.status} in Commerce and won’t show.`);
+    else if (isSoldOut(p)) push(`p-${id}`, 'warning', `“${p.name}” is sold out.`);
   });
 
   phaseOrder.forEach((phase) => {

@@ -9,13 +9,13 @@ const families: Record<KitFont, string> = {
   modern: "'Inter', Arial, sans-serif",
   elegant: "'Playfair Display', Georgia, serif",
   friendly: "'Nunito', Arial, sans-serif",
-  heritage: "'Libre Baskerville', Georgia, serif"
+  heritage: "'Libre Baskerville', Georgia, serif",
 };
 
 const tones: Record<KitTone, string> = {
   natural: 'none',
   warm: 'sepia(0.22) saturate(1.18) brightness(1.02)',
-  bw: 'grayscale(1) contrast(1.06)'
+  bw: 'grayscale(1) contrast(1.06)',
 };
 
 /** Pieces that have a Photo design. Receipts (black-only thermal), stamp cards and labels don't. */
@@ -23,7 +23,7 @@ export const PHOTO_ITEMS = new Set<KitItem>(['card', 'sticker', 'insert', 'hangt
 
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const img = (src: string) => esc(src);
-const num = (v: number | undefined, fallback: number, min: number, max: number) => typeof v === 'number' && Number.isFinite(v) ? Math.min(max, Math.max(min, v)) : fallback;
+const num = (v: number | undefined, fallback: number, min: number, max: number) => (typeof v === 'number' && Number.isFinite(v) ? Math.min(max, Math.max(min, v)) : fallback);
 
 export function paperColour(paper: KitPaper, ink: string): string {
   return paper === 'cream' ? '#FBF6EC' : paper === 'tint' ? mixHex(ink, '#FFFFFF', 0.92) : '#FFFFFF';
@@ -51,7 +51,7 @@ export function kitStyleOf(item: KitItem, d: KitDetails): KitStyle {
   return d.photo && PHOTO_ITEMS.has(item) ? 'photo' : 'classic';
 }
 
-const logo = (d: KitDetails, cls = 'logo') => d.logo ? `<img class="${cls}" src="${img(d.logo)}" alt=""/>` : `<span class="mono ${cls}">${esc(initials(d.name))}</span>`;
+const logo = (d: KitDetails, cls = 'logo') => (d.logo ? `<img class="${cls}" src="${img(d.logo)}" alt=""/>` : `<span class="mono ${cls}">${esc(initials(d.name))}</span>`);
 const qr = (src: string, cls = 'qr') => `<img class="${cls}" src="${img(src)}" alt="QR code"/>`;
 /** A QR code inside four corner marks — a clear "scan here" target. */
 const framedQr = (src: string) => `<div class="frame"><span class="c tl"></span><span class="c tr"></span><span class="c bl"></span><span class="c br"></span>${qr(src)}</div>`;
@@ -75,7 +75,7 @@ function contactRows(d: KitDetails, withEmail = true): string {
 }
 
 const signature = (d: KitDetails) =>
-d.signature || d.signer ? `<div class="sign">${d.signature ? `<img class="sig" src="${img(d.signature)}" alt="Signature"/>` : ''}${d.signer ? `<span class="signer">${esc(d.signer)}</span>` : ''}</div>` : '';
+  d.signature || d.signer ? `<div class="sign">${d.signature ? `<img class="sig" src="${img(d.signature)}" alt="Signature"/>` : ''}${d.signer ? `<span class="signer">${esc(d.signer)}</span>` : ''}</div>` : '';
 
 /** Curved lettering for round stickers, sized to fit the arc (the name size can grow short names). */
 function stickerArc(top: string, bottom: string, ns: number): string {
@@ -94,54 +94,54 @@ export function kitItemHtml(item: KitItem, d: KitDetails, qrSrc: string): string
     case 'card':
       return root(
         'card',
-        `${s === 'photo' ? photo : ''}<span class="bar"></span><div class="text"><div class="brand">${logo(d)}<div class="bt">${name}${d.line ? `<p class="line">${esc(d.line)}</p>` : ''}</div></div><div class="meta">${contactRows(d)}</div></div><div class="qrbox">${qr(qrSrc)}<span class="cap">Scan me</span></div>`
+        `${s === 'photo' ? photo : ''}<span class="bar"></span><div class="text"><div class="brand">${logo(d)}<div class="bt">${name}${d.line ? `<p class="line">${esc(d.line)}</p>` : ''}</div></div><div class="meta">${contactRows(d)}</div></div><div class="qrbox">${qr(qrSrc)}<span class="cap">Scan me</span></div>`,
       );
     case 'sticker':
       return root(
         'sticker',
-        `${s === 'photo' ? `${photo}<span class="veil"></span>` : ''}${s === 'minimal' ? '' : stickerArc(d.name, d.line || 'Scan me', ns)}<div class="core">${qr(qrSrc)}</div>${s === 'minimal' ? `<p class="name">${esc(d.name)}</p>` : ''}`
+        `${s === 'photo' ? `${photo}<span class="veil"></span>` : ''}${s === 'minimal' ? '' : stickerArc(d.name, d.line || 'Scan me', ns)}<div class="core">${qr(qrSrc)}</div>${s === 'minimal' ? `<p class="name">${esc(d.name)}</p>` : ''}`,
       );
     case 'insert':
       return root(
         'insert',
-        `<div class="head">${d.photo && s !== 'minimal' ? photo : ''}<div class="brand">${logo(d)}${name}</div></div><div class="body">${d.message ? `<p class="eyebrow">A note from us</p><p class="msg">${esc(d.message)}</p>` : ''}${signature(d)}<div class="qrwrap">${framedQr(qrSrc)}<p class="cta">Scan to reorder, track or review</p></div><p class="foot">${[d.social && `@${d.social.replace(/^@/, '')}`, d.address].filter(Boolean).map((v) => esc(v as string)).join(' · ')}</p></div>`
+        `<div class="head">${d.photo && s !== 'minimal' ? photo : ''}<div class="brand">${logo(d)}${name}</div></div><div class="body">${d.message ? `<p class="eyebrow">A note from us</p><p class="msg">${esc(d.message)}</p>` : ''}${signature(d)}<div class="qrwrap">${framedQr(qrSrc)}<p class="cta">Scan to reorder, track or review</p></div><p class="foot">${[d.social && `@${d.social.replace(/^@/, '')}`, d.address].filter(Boolean).map((v) => esc(v as string)).join(' · ')}</p></div>`,
       );
     case 'receipt':
       return root('receipt', `<div class="brand">${logo(d)}${name}</div>${d.message ? `<p class="msg">${esc(d.message)}</p>` : ''}${qr(qrSrc)}<p class="foot">${[d.address, d.phone, d.social && `@${d.social.replace(/^@/, '')}`].filter(Boolean).map((v) => esc(v as string)).join('<br/>')}</p>`);
     case 'hangtag':
       return root(
         'hangtag',
-        `${s === 'photo' ? photo : ''}<span class="hole"></span><div class="top">${logo(d)}${name}${d.line ? `<p class="line">${esc(d.line)}</p>` : ''}</div><div class="fill"><span>Size</span><i></i><span>Price&nbsp;₦</span><i></i></div><div class="qrbox">${qr(qrSrc)}<span class="cap">Scan to reorder</span></div>`
+        `${s === 'photo' ? photo : ''}<span class="hole"></span><div class="top">${logo(d)}${name}${d.line ? `<p class="line">${esc(d.line)}</p>` : ''}</div><div class="fill"><span>Size</span><i></i><span>Price&nbsp;₦</span><i></i></div><div class="qrbox">${qr(qrSrc)}<span class="cap">Scan to reorder</span></div>`,
       );
     case 'voucher':
       return root(
         'voucher',
-        `<div class="panel">${s === 'photo' ? photo : ''}<div class="pin"><p class="kicker">${esc(d.headline || 'Gift voucher')}</p><p class="offer">${esc(d.offer || 'Your offer')}</p>${d.expiry ? `<p class="exp">Valid until ${esc(d.expiry)}</p>` : ''}</div></div><div class="side"><div class="brand">${logo(d)}${name}</div>${d.message ? `<p class="msg">${esc(d.message)}</p>` : ''}<div class="bottom"><div class="left">${d.code ? `<p class="code"><span>Code</span>${esc(d.code)}</p>` : '<p class="code blank"><span>Code</span>&nbsp;</p>'}${signature(d)}</div><div class="qrbox">${qr(qrSrc)}<span class="cap">Scan to redeem</span></div></div></div>`
+        `<div class="panel">${s === 'photo' ? photo : ''}<div class="pin"><p class="kicker">${esc(d.headline || 'Gift voucher')}</p><p class="offer">${esc(d.offer || 'Your offer')}</p>${d.expiry ? `<p class="exp">Valid until ${esc(d.expiry)}</p>` : ''}</div></div><div class="side"><div class="brand">${logo(d)}${name}</div>${d.message ? `<p class="msg">${esc(d.message)}</p>` : ''}<div class="bottom"><div class="left">${d.code ? `<p class="code"><span>Code</span>${esc(d.code)}</p>` : '<p class="code blank"><span>Code</span>&nbsp;</p>'}${signature(d)}</div><div class="qrbox">${qr(qrSrc)}<span class="cap">Scan to redeem</span></div></div></div>`,
       );
     case 'flyer':
       return root(
         'flyer',
-        `<div class="hero">${d.photo ? photo : `<div class="mark">${logo(d, 'logo big')}</div>`}${d.offer ? `<span class="pill">${esc(d.offer)}</span>` : ''}</div><div class="body"><div class="brand">${d.photo ? logo(d) : ''}${name}</div><h1 class="hl">${esc(d.headline || d.line || 'Now taking orders')}</h1>${d.message ? `<p class="msg">${esc(d.message)}</p>` : ''}<div class="bottom">${qr(qrSrc)}<div class="info"><p class="cta">Scan to order</p><div class="meta">${contactRows(d, false)}</div></div></div></div>`
+        `<div class="hero">${d.photo ? photo : `<div class="mark">${logo(d, 'logo big')}</div>`}${d.offer ? `<span class="pill">${esc(d.offer)}</span>` : ''}</div><div class="body"><div class="brand">${d.photo ? logo(d) : ''}${name}</div><h1 class="hl">${esc(d.headline || d.line || 'Now taking orders')}</h1>${d.message ? `<p class="msg">${esc(d.message)}</p>` : ''}<div class="bottom">${qr(qrSrc)}<div class="info"><p class="cta">Scan to order</p><div class="meta">${contactRows(d, false)}</div></div></div></div>`,
       );
     case 'counter':
       return root(
         'counter',
-        `${s === 'photo' ? `${photo}<span class="veil"></span>` : ''}<div class="brand">${logo(d)}${name}</div><h1 class="hl">${esc(d.headline || 'Scan to see what’s available and order')}</h1>${framedQr(qrSrc)}${d.message ? `<p class="msg">${esc(d.message)}</p>` : ''}<p class="foot">${[d.phone && `WhatsApp ${d.phone}`, d.address].filter(Boolean).map((v) => esc(v as string)).join(' · ')}</p>`
+        `${s === 'photo' ? `${photo}<span class="veil"></span>` : ''}<div class="brand">${logo(d)}${name}</div><h1 class="hl">${esc(d.headline || 'Scan to see what’s available and order')}</h1>${framedQr(qrSrc)}${d.message ? `<p class="msg">${esc(d.message)}</p>` : ''}<p class="foot">${[d.phone && `WhatsApp ${d.phone}`, d.address].filter(Boolean).map((v) => esc(v as string)).join(' · ')}</p>`,
       );
-    case 'stamp':{
-        const n = [6, 8, 10].includes(d.stamps) ? d.stamps : 10;
-        const dots = Array.from({ length: n }, (_, i) => i === n - 1 ? '<span class="st free">FREE</span>' : `<span class="st">${i + 1}</span>`).join('');
-        return root(
-          'stamp',
-          `<div class="top"><div class="brand">${logo(d)}<div class="bt">${name}${d.line ? `<p class="line">${esc(d.line)}</p>` : ''}</div></div>${qr(qrSrc)}</div><p class="rw">Collect ${n - 1} stamps, get <b>${esc(d.reward || 'your reward')}</b></p><div class="grid g${n}">${dots}</div>`
-        );
-      }
+    case 'stamp': {
+      const n = [6, 8, 10].includes(d.stamps) ? d.stamps : 10;
+      const dots = Array.from({ length: n }, (_, i) => (i === n - 1 ? '<span class="st free">FREE</span>' : `<span class="st">${i + 1}</span>`)).join('');
+      return root(
+        'stamp',
+        `<div class="top"><div class="brand">${logo(d)}<div class="bt">${name}${d.line ? `<p class="line">${esc(d.line)}</p>` : ''}</div></div>${qr(qrSrc)}</div><p class="rw">Collect ${n - 1} stamps, get <b>${esc(d.reward || 'your reward')}</b></p><div class="grid g${n}">${dots}</div>`,
+      );
+    }
     case 'label':
       return root(
         'label',
-        `<div class="hd"><div class="brand">${logo(d)}<div class="bt"><span class="k2">From</span>${name}${d.phone ? `<p class="line">${esc(d.phone)}</p>` : ''}</div></div><div class="ord"><span>Order no.</span><i></i></div></div><div class="to"><span class="k2">Deliver to</span>${['Name', 'Phone', 'Address', '', 'Nearest landmark'].
-        map((l) => `<div class="ln"><span>${l}</span><i></i></div>`).
-        join('')}</div>${d.note ? `<p class="note">${esc(d.note)}</p>` : ''}<div class="ft">${qr(qrSrc)}<div class="info"><p class="cta">Scan to track, reorder or review</p><div class="meta">${contactRows(d, false)}</div></div></div>`
+        `<div class="hd"><div class="brand">${logo(d)}<div class="bt"><span class="k2">From</span>${name}${d.phone ? `<p class="line">${esc(d.phone)}</p>` : ''}</div></div><div class="ord"><span>Order no.</span><i></i></div></div><div class="to"><span class="k2">Deliver to</span>${['Name', 'Phone', 'Address', '', 'Nearest landmark']
+          .map((l) => `<div class="ln"><span>${l}</span><i></i></div>`)
+          .join('')}</div>${d.note ? `<p class="note">${esc(d.note)}</p>` : ''}<div class="ft">${qr(qrSrc)}<div class="info"><p class="cta">Scan to track, reorder or review</p><div class="meta">${contactRows(d, false)}</div></div></div>`,
       );
   }
 }
@@ -159,13 +159,13 @@ export function kitCardBackHtml(d: KitDetails): string {
  */
 function scaleCss(css: string): string {
   const mul = (body: string, props: string[], v: string) =>
-  body.replace(new RegExp(`(^|;)(${props.join('|')}):([\\d.]+)(mm|pt|px)`, 'g'), (_m, pre: string, p: string, n: string, u: string) => `${pre}${p}:calc(${n}${u} * var(${v},1))`);
+    body.replace(new RegExp(`(^|;)(${props.join('|')}):([\\d.]+)(mm|pt|px)`, 'g'), (_m, pre: string, p: string, n: string, u: string) => `${pre}${p}:calc(${n}${u} * var(${v},1))`);
   return css.replace(/([^{}]+)\{([^{}]*)\}/g, (_m, sel: string, body: string) => {
     let b = body;
-    if (/\.(logo|mono)(?![\w-])/.test(sel)) b = mul(b, ['width', 'height', 'font-size'], '--ls');else
-    if (/\.(name|hl|offer)(?![\w-])/.test(sel)) b = mul(b, ['font-size'], '--ns');else
-    if (/\.sig(?![\w-])/.test(sel)) b = mul(b, ['height', 'max-width'], '--ss');else
-    if (/\.qr(?![\w-])/.test(sel)) b = mul(b, ['width', 'height'], '--qs');
+    if (/\.(logo|mono)(?![\w-])/.test(sel)) b = mul(b, ['width', 'height', 'font-size'], '--ls');
+    else if (/\.(name|hl|offer)(?![\w-])/.test(sel)) b = mul(b, ['font-size'], '--ns');
+    else if (/\.sig(?![\w-])/.test(sel)) b = mul(b, ['height', 'max-width'], '--ss');
+    else if (/\.qr(?![\w-])/.test(sel)) b = mul(b, ['width', 'height'], '--qs');
     b = mul(b, ['font-size'], '--ts');
     return `${sel}{${b}}`;
   });

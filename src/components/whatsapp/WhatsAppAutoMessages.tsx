@@ -36,7 +36,7 @@ export function WhatsAppAutoMessages({ data, canEdit, unlocked, onUpgrade, updat
   const submitForReview = (id: WaUpdateId) => {
     setUpdate(id, { approval: 'in_review' });
     toast('Sent to WhatsApp for review', { description: 'Simulated — approved in a few seconds.' });
-    window.setTimeout(() => update((d) => d.updates[id].approval === 'in_review' ? { ...d, updates: { ...d.updates, [id]: { ...d.updates[id], approval: 'approved' } } } : d), 3000);
+    window.setTimeout(() => update((d) => (d.updates[id].approval === 'in_review' ? { ...d, updates: { ...d.updates, [id]: { ...d.updates[id], approval: 'approved' } } } : d)), 3000);
   };
 
   return (
@@ -69,19 +69,19 @@ export function WhatsAppAutoMessages({ data, canEdit, unlocked, onUpgrade, updat
         </div>
       </section>
 
-      {!unlocked &&
-      <InlineAlert
-        tone="info"
-        title="Keyword replies and order updates are on Creator and above"
-        action={
-        <Button size="sm" leadingIcon={LockIcon} onClick={onUpgrade}>
+      {!unlocked && (
+        <InlineAlert
+          tone="info"
+          title="Keyword replies and order updates are on Creator and above"
+          action={
+            <Button size="sm" leadingIcon={LockIcon} onClick={onUpgrade}>
               Upgrade
             </Button>
-        }>
-        
+          }
+        >
           You can look through them below. Greeting, welcome back and away messages stay free.
         </InlineAlert>
-      }
+      )}
 
       {/* Keyword replies */}
       <section aria-labelledby="wa-kw" className="flex flex-col gap-4 border-t border-line pt-8">
@@ -97,8 +97,8 @@ export function WhatsAppAutoMessages({ data, canEdit, unlocked, onUpgrade, updat
             variant="secondary"
             leadingIcon={PlusIcon}
             disabled={!proEdit || data.keywordReplies.length >= MAX_KEYWORD_REPLIES}
-            onClick={() => update((d) => ({ ...d, keywordReplies: [...d.keywordReplies, { id: uid('kw'), on: true, keywords: '', text: '' }] }))}>
-            
+            onClick={() => update((d) => ({ ...d, keywordReplies: [...d.keywordReplies, { id: uid('kw'), on: true, keywords: '', text: '' }] }))}
+          >
             Add keyword reply
           </Button>
         </div>
@@ -106,7 +106,7 @@ export function WhatsAppAutoMessages({ data, canEdit, unlocked, onUpgrade, updat
           {data.keywordReplies.length === 0 && <li className="px-4 py-6 text-center text-body text-fg-muted">No keyword replies yet.</li>}
           {data.keywordReplies.map((k, i) => {
             const words = keywordList(k);
-            const set = (patch: Partial<typeof k>) => update((d) => ({ ...d, keywordReplies: d.keywordReplies.map((x) => x.id === k.id ? { ...x, ...patch } : x) }));
+            const set = (patch: Partial<typeof k>) => update((d) => ({ ...d, keywordReplies: d.keywordReplies.map((x) => (x.id === k.id ? { ...x, ...patch } : x)) }));
             return (
               <li key={k.id} className="grid gap-3 p-4 md:grid-cols-[14rem_minmax(0,1fr)_auto] md:items-start">
                 <TextInput
@@ -117,15 +117,15 @@ export function WhatsAppAutoMessages({ data, canEdit, unlocked, onUpgrade, updat
                   value={k.keywords}
                   maxLength={120}
                   disabled={!proEdit}
-                  onChange={(e) => set({ keywords: e.target.value })} />
-                
+                  onChange={(e) => set({ keywords: e.target.value })}
+                />
                 <TextArea id={`kw-x-${k.id}`} label="Reply with" rows={2} maxLength={500} value={k.text} disabled={!proEdit} onChange={(e) => set({ text: e.target.value })} />
                 <div className="flex items-center gap-1 md:mt-6">
                   <Switch id={`kw-on-${k.id}`} label="On" checked={k.on} disabled={!proEdit} onChange={(v) => set({ on: v })} />
                   <IconButton icon={Trash2Icon} label={`Delete keyword reply ${i + 1}`} disabled={!proEdit} onClick={() => update((d) => ({ ...d, keywordReplies: d.keywordReplies.filter((x) => x.id !== k.id) }))} />
                 </div>
-              </li>);
-
+              </li>
+            );
           })}
         </ul>
       </section>
@@ -142,20 +142,20 @@ export function WhatsAppAutoMessages({ data, canEdit, unlocked, onUpgrade, updat
           </p>
         </div>
 
-        {groups.map((g) =>
-        <div key={g} className="flex flex-col gap-2">
+        {groups.map((g) => (
+          <div key={g} className="flex flex-col gap-2">
             <h3 className="text-label font-semibold text-fg-muted">{g}</h3>
             <ul className="divide-y divide-line rounded-lg border border-line bg-raised">
-              {updateIds.
-            filter((id) => updateInfo[id].group === g).
-            map((id) => {
-              const info = updateInfo[id];
-              const t = data.updates[id];
-              const unknown = unknownPlaceholders(id, t.text);
-              return (
-                <li key={id} className="grid gap-4 p-4 lg:grid-cols-[minmax(0,15rem)_minmax(0,1fr)_minmax(0,16rem)] lg:items-start">
+              {updateIds
+                .filter((id) => updateInfo[id].group === g)
+                .map((id) => {
+                  const info = updateInfo[id];
+                  const t = data.updates[id];
+                  const unknown = unknownPlaceholders(id, t.text);
+                  return (
+                    <li key={id} className="grid gap-4 p-4 lg:grid-cols-[minmax(0,15rem)_minmax(0,1fr)_minmax(0,16rem)] lg:items-start">
                       <div className="flex flex-col gap-2">
-                        <Switch id={`upd-on-${id}`} label={info.label} description={info.when} checked={t.on} disabled={!proEdit || t.approval !== 'approved' && !t.on} onChange={(v) => setUpdate(id, { on: v })} />
+                        <Switch id={`upd-on-${id}`} label={info.label} description={info.when} checked={t.on} disabled={!proEdit || (t.approval !== 'approved' && !t.on)} onChange={(v) => setUpdate(id, { on: v })} />
                         <span>
                           <Badge tone={approvalTone[t.approval]} dot>
                             {approvalLabel[t.approval]}
@@ -163,47 +163,47 @@ export function WhatsAppAutoMessages({ data, canEdit, unlocked, onUpgrade, updat
                         </span>
                       </div>
                       <TextArea
-                    id={`upd-x-${id}`}
-                    label="Message"
-                    rows={3}
-                    maxLength={500}
-                    value={t.text}
-                    hint={`Fills in: ${info.placeholders.map((p) => `{${p}}`).join(' ')}`}
-                    error={unknown.length ? `Can’t fill ${unknown.map((u) => `{${u}}`).join(', ')} here.` : !t.text.trim() ? 'Write the message.' : undefined}
-                    disabled={!proEdit}
-                    onChange={(e) => setUpdate(id, { text: e.target.value, approval: 'draft', on: false })} />
-                  
+                        id={`upd-x-${id}`}
+                        label="Message"
+                        rows={3}
+                        maxLength={500}
+                        value={t.text}
+                        hint={`Fills in: ${info.placeholders.map((p) => `{${p}}`).join(' ')}`}
+                        error={unknown.length ? `Can’t fill ${unknown.map((u) => `{${u}}`).join(', ')} here.` : !t.text.trim() ? 'Write the message.' : undefined}
+                        disabled={!proEdit}
+                        onChange={(e) => setUpdate(id, { text: e.target.value, approval: 'draft', on: false })}
+                      />
                       <div className="flex flex-col gap-2">
                         <p className="text-caption font-medium text-fg-muted">Preview</p>
                         <p className="rounded-lg rounded-tl-sm bg-sunken px-3 py-2 text-caption text-fg">{fillPlaceholders(t.text) || '—'}</p>
                         <div className="flex flex-wrap gap-2">
-                          {t.approval === 'draft' &&
-                      <Button size="sm" disabled={!proEdit || !!unknown.length || !t.text.trim()} onClick={() => submitForReview(id)}>
+                          {t.approval === 'draft' && (
+                            <Button size="sm" disabled={!proEdit || !!unknown.length || !t.text.trim()} onClick={() => submitForReview(id)}>
                               Submit for review
                             </Button>
-                      }
+                          )}
                           <Button
-                        size="sm"
-                        variant="secondary"
-                        leadingIcon={SendIcon}
-                        disabled={!proEdit || !t.text.trim()}
-                        onClick={() => {
-                          update((d) => sendTestUpdate(d, id));
-                          toast('Test sent', { description: 'Open “Test messages” in Chats to see it.' });
-                        }}>
-                        
+                            size="sm"
+                            variant="secondary"
+                            leadingIcon={SendIcon}
+                            disabled={!proEdit || !t.text.trim()}
+                            onClick={() => {
+                              update((d) => sendTestUpdate(d, id));
+                              toast('Test sent', { description: 'Open “Test messages” in Chats to see it.' });
+                            }}
+                          >
                             Send test
                           </Button>
                         </div>
                       </div>
-                    </li>);
-
-            })}
+                    </li>
+                  );
+                })}
             </ul>
           </div>
-        )}
+        ))}
         <p className="text-caption text-fg-subtle">Customers only get updates if they gave a WhatsApp number at checkout or booking. Order and booking updates aren’t marketing; win-back messages respect each contact’s marketing choice.</p>
       </section>
-    </div>);
-
+    </div>
+  );
 }

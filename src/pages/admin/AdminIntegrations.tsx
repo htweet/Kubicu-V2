@@ -17,16 +17,16 @@ import { ServicesCard } from '../../components/admin/integrations/ServicesCard';
 import { MessageTemplatesCard } from '../../components/admin/integrations/MessageTemplatesCard';
 
 const channels = [
-{ name: 'In-app notifications', state: 'Live', tone: 'success' as const, note: 'Delivered to the bell and inbox' },
-{ name: 'Email', state: 'Preview', tone: 'info' as const, note: 'Written and shown, not sent — no email provider yet' },
-{ name: 'WhatsApp', state: 'Preview', tone: 'info' as const, note: 'Needs a WhatsApp Business partner' },
-{ name: 'SMS (two-step codes)', state: 'Preview', tone: 'info' as const, note: 'Codes are simulated' }];
+  { name: 'In-app notifications', state: 'Live', tone: 'success' as const, note: 'Delivered to the bell and inbox' },
+  { name: 'Email', state: 'Preview', tone: 'info' as const, note: 'Written and shown, not sent — no email provider yet' },
+  { name: 'WhatsApp', state: 'Preview', tone: 'info' as const, note: 'Needs a WhatsApp Business partner' },
+  { name: 'SMS (two-step codes)', state: 'Preview', tone: 'info' as const, note: 'Codes are simulated' },
+];
 
+const areaLabel = (p: string | null) => (p ? p.split('.')[0].replace(/^\w/, (c) => c.toUpperCase()) : 'Everyone it’s for');
+const on = (v: boolean) => (v ? <span className="text-success">On</span> : <span className="text-fg-subtle">Off</span>);
 
-const areaLabel = (p: string | null) => p ? p.split('.')[0].replace(/^\w/, (c) => c.toUpperCase()) : 'Everyone it’s for';
-const on = (v: boolean) => v ? <span className="text-success">On</span> : <span className="text-fg-subtle">Off</span>;
-
-type Pending = {kind: 'pull' | 'restore';ext: ExtensionInfo;} | null;
+type Pending = { kind: 'pull' | 'restore'; ext: ExtensionInfo } | null;
 
 /** Super admin → Integrations & notifications (D130): channels, the event catalogue, and extension versions in use. */
 export function AdminIntegrations() {
@@ -35,10 +35,10 @@ export function AdminIntegrations() {
   const [pending, setPending] = useState<Pending>(null);
 
   const usage = useMemo(() => {
-    const out: Record<string, {installs: number;versions: Record<string, number>;}> = {};
+    const out: Record<string, { installs: number; versions: Record<string, number> }> = {};
     for (const w of workspaces) {
       for (const rec of Object.values(readMarketplace(w.id).installed)) {
-        const u = out[rec.id] ??= { installs: 0, versions: {} };
+        const u = (out[rec.id] ??= { installs: 0, versions: {} });
         u.installs += 1;
         u.versions[rec.version] = (u.versions[rec.version] ?? 0) + 1;
       }
@@ -73,8 +73,8 @@ export function AdminIntegrations() {
       <div className="mt-8 grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
         <Card id="channels" title="Channels" body="flush">
           <ul className="divide-y divide-line">
-            {channels.map((c) =>
-            <li key={c.name} className="flex items-start justify-between gap-4 px-5 py-3 md:px-6">
+            {channels.map((c) => (
+              <li key={c.name} className="flex items-start justify-between gap-4 px-5 py-3 md:px-6">
                 <span className="min-w-0">
                   <span className="block text-label font-semibold text-fg">{c.name}</span>
                   <span className="block text-caption text-fg-subtle">{c.note}</span>
@@ -83,7 +83,7 @@ export function AdminIntegrations() {
                   {c.state}
                 </Badge>
               </li>
-            )}
+            ))}
           </ul>
         </Card>
 
@@ -106,19 +106,19 @@ export function AdminIntegrations() {
                       {pull && ` · by ${pull.by.split(' ·')[0]} ${formatRelative(pull.at)}`}
                     </span>
                   </span>
-                  {pull ?
-                  <Button size="sm" variant="tertiary" leadingIcon={Undo2Icon} onClick={() => setPending({ kind: 'restore', ext })}>
+                  {pull ? (
+                    <Button size="sm" variant="tertiary" leadingIcon={Undo2Icon} onClick={() => setPending({ kind: 'restore', ext })}>
                       Put {pull.pulledVersion} back…
-                    </Button> :
-                  canPull ?
-                  <Button size="sm" variant="tertiary" leadingIcon={RotateCcwIcon} onClick={() => setPending({ kind: 'pull', ext })}>
+                    </Button>
+                  ) : canPull ? (
+                    <Button size="sm" variant="tertiary" leadingIcon={RotateCcwIcon} onClick={() => setPending({ kind: 'pull', ext })}>
                       Withdraw {ext.version}…
-                    </Button> :
-
-                  <span className="text-caption text-fg-subtle">Only one version</span>
-                  }
-                </li>);
-
+                    </Button>
+                  ) : (
+                    <span className="text-caption text-fg-subtle">Only one version</span>
+                  )}
+                </li>
+              );
             })}
           </ul>
         </Card>
@@ -143,8 +143,8 @@ export function AdminIntegrations() {
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
-              {notifEvents.map((e) =>
-              <tr key={e.id}>
+              {notifEvents.map((e) => (
+                <tr key={e.id}>
                   <th scope="row" className="px-3 py-2.5 pl-5 text-left text-label font-normal text-fg md:pl-6">
                     {e.label}
                   </th>
@@ -153,7 +153,7 @@ export function AdminIntegrations() {
                   <td className="px-3 py-2.5 text-center text-caption">{on(e.defaults.email)}</td>
                   <td className="px-3 py-2.5 pr-5 text-center text-caption md:pr-6">{on(e.defaults.whatsapp)}</td>
                 </tr>
-              )}
+              ))}
             </tbody>
           </table>
         </div>
@@ -166,12 +166,12 @@ export function AdminIntegrations() {
         destructive={pending?.kind === 'pull'}
         title={pending?.kind === 'pull' ? `Withdraw ${pending.ext.name} ${pending.ext.version}?` : `Put ${pending?.ext.name} ${pending?.ext.version} back?`}
         description={
-        pending?.kind === 'pull' ?
-        `Every workspace running ${pending.ext.version} moves to ${pending.ext.versions[1]?.version}, and owners see your reason. New installs get ${pending.ext.versions[1]?.version}. Settings are kept.` :
-        'New installs get this version again. Use this once the problem is fixed.'
+          pending?.kind === 'pull'
+            ? `Every workspace running ${pending.ext.version} moves to ${pending.ext.versions[1]?.version}, and owners see your reason. New installs get ${pending.ext.versions[1]?.version}. Settings are kept.`
+            : 'New installs get this version again. Use this once the problem is fixed.'
         }
-        confirmLabel={pending?.kind === 'pull' ? 'Withdraw version' : 'Put back'} />
-      
-    </div>);
-
+        confirmLabel={pending?.kind === 'pull' ? 'Withdraw version' : 'Put back'}
+      />
+    </div>
+  );
 }

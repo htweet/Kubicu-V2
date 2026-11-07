@@ -21,24 +21,24 @@ export function SaveIndicator({ status, lastSavedAt, onRetry, compact }: SaveInd
       <span className={cn(base, 'text-fg-subtle')} role="status" aria-live="polite">
         <Loader2Icon size={13} className="animate-spin" aria-hidden />
         {tr('Saving…')}
-      </span>);
-
+      </span>
+    );
   }
   if (status === 'offline') {
     return (
       <span className={cn(base, 'text-warning')} role="status" aria-live="polite" title={tr('Changes are kept on this device and will save when you reconnect.')}>
         <CloudOffIcon size={13} aria-hidden />
         {compact ? tr('Offline') : tr('Offline — kept on this device')}
-      </span>);
-
+      </span>
+    );
   }
   if (status === 'conflict') {
     return (
       <span className={cn(base, 'text-warning')} role="status" aria-live="polite" title={tr('This page was changed in another tab. Choose which version to keep.')}>
         <AlertTriangleIcon size={13} aria-hidden />
         {compact ? tr('Paused') : tr('Saving paused')}
-      </span>);
-
+      </span>
+    );
   }
   if (status === 'error') {
     return (
@@ -48,17 +48,17 @@ export function SaveIndicator({ status, lastSavedAt, onRetry, compact }: SaveInd
         <button
           type="button"
           onClick={onRetry}
-          className="ml-0.5 rounded-sm px-1 font-semibold underline underline-offset-2 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-          
+          className="ml-0.5 rounded-sm px-1 font-semibold underline underline-offset-2 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+        >
           {tr('Retry')}
         </button>
-      </span>);
-
+      </span>
+    );
   }
   return (
     <span className={cn(base, 'text-fg-subtle')} role="status" aria-live="polite">
       <CheckIcon size={13} className="text-success" aria-hidden />
       {compact || !lastSavedAt ? tr('Saved') : tr('Saved {when}', { when: formatRelative(lastSavedAt) })}
-    </span>);
-
+    </span>
+  );
 }

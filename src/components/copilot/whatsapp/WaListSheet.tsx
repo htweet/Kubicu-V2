@@ -31,8 +31,8 @@ export function WaListSheet({ title, rows, onPick, onClose }: Props) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        transition={{ duration: 0.18 }} />
-      
+        transition={{ duration: 0.18 }}
+      />
       <motion.div
         role="dialog"
         aria-modal="true"
@@ -42,8 +42,8 @@ export function WaListSheet({ title, rows, onPick, onClose }: Props) {
         initial={{ y: 40, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 40, opacity: 0 }}
-        transition={{ duration: 0.22, ease }}>
-        
+        transition={{ duration: 0.22, ease }}
+      >
         <div className="sticky top-0 flex items-center gap-3 bg-white px-4 pb-2 pt-4">
           <button type="button" onClick={onClose} aria-label={tr('Close')} className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-black/5 focus-visible:outline-none focus-visible:ring-2" style={{ color: wa.meta }}>
             <XIcon size={20} aria-hidden />
@@ -51,14 +51,14 @@ export function WaListSheet({ title, rows, onPick, onClose }: Props) {
           <p className="text-[16px] font-semibold">{title}</p>
         </div>
         <ul>
-          {rows.map((r, i) =>
-          <li key={r.value} style={{ borderTop: i ? `1px solid ${wa.divider}` : undefined }}>
+          {rows.map((r, i) => (
+            <li key={r.value} style={{ borderTop: i ? `1px solid ${wa.divider}` : undefined }}>
               <button
-              ref={i === 0 ? first : undefined}
-              type="button"
-              onClick={() => onPick(r)}
-              className="flex min-h-[56px] w-full items-center gap-3 px-5 py-2.5 text-left hover:bg-black/[0.03] focus-visible:bg-black/[0.05] focus-visible:outline-none">
-              
+                ref={i === 0 ? first : undefined}
+                type="button"
+                onClick={() => onPick(r)}
+                className="flex min-h-[56px] w-full items-center gap-3 px-5 py-2.5 text-left hover:bg-black/[0.03] focus-visible:bg-black/[0.05] focus-visible:outline-none"
+              >
                 <span className="min-w-0 flex-1">
                   <span className="block text-[15px]">{tr(r.label)}</span>
                   {r.description && <span className="block text-[13px]" style={{ color: wa.meta }}>{tr(r.description)}</span>}
@@ -66,9 +66,9 @@ export function WaListSheet({ title, rows, onPick, onClose }: Props) {
                 <span aria-hidden className="h-5 w-5 shrink-0 rounded-full border-2" style={{ borderColor: wa.meta }} />
               </button>
             </li>
-          )}
+          ))}
         </ul>
       </motion.div>
-    </div>);
-
+    </div>
+  );
 }

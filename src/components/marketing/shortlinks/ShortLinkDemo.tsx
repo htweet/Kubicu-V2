@@ -11,13 +11,13 @@ import { useT } from '../../../contexts/LocaleContext';
 import { cn } from '../../../utils/cn';
 
 const channels = [
-{ id: 'whatsapp', label: 'WhatsApp' },
-{ id: 'instagram', label: 'Instagram' },
-{ id: 'tiktok', label: 'TikTok' },
-{ id: 'qr', label: 'Flyer or QR' },
-{ id: 'email', label: 'Email' },
-{ id: 'ads', label: 'Paid ad' }] as
-const;
+  { id: 'whatsapp', label: 'WhatsApp' },
+  { id: 'instagram', label: 'Instagram' },
+  { id: 'tiktok', label: 'TikTok' },
+  { id: 'qr', label: 'Flyer or QR' },
+  { id: 'email', label: 'Email' },
+  { id: 'ads', label: 'Paid ad' },
+] as const;
 
 const RESERVED = ['admin', 'login', 'signin', 'signup', 'api', 'app', 'help'];
 const DEMO_LIMIT = 5;
@@ -53,7 +53,7 @@ export function ShortLinkDemo() {
   const [slug, setSlug] = useState('');
   const [channel, setChannel] = useState<string>('whatsapp');
   const [tag, setTag] = useState('');
-  const [error, setError] = useState<{field: 'url' | 'slug';text: string;} | null>(null);
+  const [error, setError] = useState<{ field: 'url' | 'slug'; text: string } | null>(null);
   const [result, setResult] = useState<Result | null>(null);
   const [count, setCount] = useState(demoCount);
   const limited = count >= DEMO_LIMIT;
@@ -78,8 +78,8 @@ export function ShortLinkDemo() {
     try {
       sessionStorage.setItem(COUNT_KEY, String(next));
     } catch {
-
-      /* private mode: the limit just resets */}
+      /* private mode: the limit just resets */
+    }
     setCount(next);
     setResult({ short: `kub.icu/yourname/s/${s}`, slug: s, destination: check.url, host: check.host, channel: channels.find((c) => c.id === channel)!.label, tag: tag.trim(), upgraded: check.upgraded });
   };
@@ -115,13 +115,13 @@ export function ShortLinkDemo() {
           placeholder="https://yourshop.com/products/ankara-wrap-dress?ref=story"
           aria-invalid={error?.field === 'url' || undefined}
           aria-describedby={error?.field === 'url' ? 'demo-url-err' : undefined}
-          className={cn(field, 'mt-2', error?.field === 'url' && 'border-danger')} />
-        
-        {error?.field === 'url' &&
-        <p id="demo-url-err" className="mt-2 flex items-start gap-1.5 text-[13px] text-danger">
+          className={cn(field, 'mt-2', error?.field === 'url' && 'border-danger')}
+        />
+        {error?.field === 'url' && (
+          <p id="demo-url-err" className="mt-2 flex items-start gap-1.5 text-[13px] text-danger">
             <AlertCircleIcon size={14} aria-hidden className="mt-0.5 shrink-0" /> {error.text}
           </p>
-        }
+        )}
 
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <div>
@@ -145,14 +145,14 @@ export function ShortLinkDemo() {
                 spellCheck={false}
                 aria-invalid={error?.field === 'slug' || undefined}
                 aria-describedby={error?.field === 'slug' ? 'demo-slug-err' : undefined}
-                className="h-full min-w-0 flex-1 bg-transparent pr-3 text-[15px] text-fg placeholder:text-fg-subtle focus:outline-none" />
-              
+                className="h-full min-w-0 flex-1 bg-transparent pr-3 text-[15px] text-fg placeholder:text-fg-subtle focus:outline-none"
+              />
             </div>
-            {error?.field === 'slug' &&
-            <p id="demo-slug-err" className="mt-2 text-[13px] text-danger">
+            {error?.field === 'slug' && (
+              <p id="demo-slug-err" className="mt-2 text-[13px] text-danger">
                 {error.text}
               </p>
-            }
+            )}
           </div>
           <div>
             <label htmlFor="demo-tag" className="text-[14px] font-bold">
@@ -165,53 +165,53 @@ export function ShortLinkDemo() {
         <fieldset className="mt-4">
           <legend className="text-[14px] font-bold">{tr('Where you’ll share it')}</legend>
           <div className="mt-2 flex flex-wrap gap-2">
-            {channels.map((c) =>
-            <label
-              key={c.id}
-              className={cn(
-                'inline-flex h-10 cursor-pointer items-center rounded-full px-4 text-[14px] font-semibold transition-colors duration-150 focus-within:ring-2 focus-within:ring-focus',
-                channel === c.id ? 'bg-[rgb(20_20_18)] text-white' : 'bg-[rgb(238_233_221)] hover:bg-[rgb(224_217_202)]'
-              )}>
-              
+            {channels.map((c) => (
+              <label
+                key={c.id}
+                className={cn(
+                  'inline-flex h-10 cursor-pointer items-center rounded-full px-4 text-[14px] font-semibold transition-colors duration-150 focus-within:ring-2 focus-within:ring-focus',
+                  channel === c.id ? 'bg-[rgb(20_20_18)] text-white' : 'bg-[rgb(238_233_221)] hover:bg-[rgb(224_217_202)]',
+                )}
+              >
                 <input type="radio" name="demo-channel" value={c.id} checked={channel === c.id} onChange={() => setChannel(c.id)} className="sr-only" />
                 {tr(c.label)}
               </label>
-            )}
+            ))}
           </div>
         </fieldset>
 
-        {limited ?
-        <div role="status" className="mt-6 rounded-2xl bg-[rgb(238_233_221)] p-4">
+        {limited ? (
+          <div role="status" className="mt-6 rounded-2xl bg-[rgb(238_233_221)] p-4">
             <p className="text-[15px] font-bold">{tr('Demo links tried this visit: {n}', { n: DEMO_LIMIT })}</p>
             <p className="mt-1 text-[14px] text-[rgb(70_68_62)]">{tr('That’s the limit for the demo. Make real, saved links free in your workspace.')}</p>
             <Link to="/signup" className="mt-3 inline-flex h-11 items-center gap-2 rounded-full bg-[rgb(20_20_18)] px-5 text-[14px] font-bold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
               {tr('Sign up free')} <ArrowRightIcon size={15} aria-hidden />
             </Link>
-          </div> :
-
-        <button
-          type="submit"
-          className="mt-6 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[rgb(20_20_18)] px-6 text-[15px] font-bold text-white transition-transform duration-150 ease-out hover:scale-[1.01] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 sm:w-auto">
-          
+          </div>
+        ) : (
+          <button
+            type="submit"
+            className="mt-6 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[rgb(20_20_18)] px-6 text-[15px] font-bold text-white transition-transform duration-150 ease-out hover:scale-[1.01] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 sm:w-auto"
+          >
             {tr('Shorten it')} <ArrowRightIcon size={16} aria-hidden />
           </button>
-        }
+        )}
         <p id="demo-note" className="mt-3 text-[12px] text-fg-subtle">
           {tr('Demo only: nothing is saved and the link won’t open.')} {tr('Tries left this visit: {left} of {total}', { left: DEMO_LIMIT - Math.min(count, DEMO_LIMIT), total: DEMO_LIMIT })}
         </p>
       </form>
 
       <AnimatePresence>
-        {result &&
-        <motion.div
-          key={result.short + count}
-          initial={reduce ? false : { opacity: 0, y: 10, scale: 0.98 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.24, ease: [0.23, 1, 0.32, 1] }}
-          className="mt-6 grid gap-5 rounded-[24px] bg-[rgb(var(--kb-lime))] p-5 text-[rgb(var(--kb-forest))] sm:grid-cols-[minmax(0,1fr)_128px]"
-          aria-live="polite">
-          
+        {result && (
+          <motion.div
+            key={result.short + count}
+            initial={reduce ? false : { opacity: 0, y: 10, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.24, ease: [0.23, 1, 0.32, 1] }}
+            className="mt-6 grid gap-5 rounded-[24px] bg-[rgb(var(--kb-lime))] p-5 text-[rgb(var(--kb-forest))] sm:grid-cols-[minmax(0,1fr)_128px]"
+            aria-live="polite"
+          >
             <div className="min-w-0">
               <p className="flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-[0.08em]">
                 <ShieldCheckIcon size={14} aria-hidden /> {tr('Address checked')}
@@ -221,11 +221,11 @@ export function ShortLinkDemo() {
               <div className="mt-3 flex flex-wrap gap-1.5 text-[12px] font-semibold">
                 <span className="rounded-full bg-white/70 px-2.5 py-1">{tr('Source: {name}', { name: tr(result.channel) })}</span>
                 {result.tag && <span className="rounded-full bg-white/70 px-2.5 py-1">{tr('Tag: {name}', { name: result.tag })}</span>}
-                {result.upgraded &&
-              <span className="inline-flex items-center gap-1 rounded-full bg-white/70 px-2.5 py-1">
+                {result.upgraded && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-white/70 px-2.5 py-1">
                     <CheckIcon size={11} aria-hidden /> {tr('Switched to https')}
                   </span>
-              }
+                )}
               </div>
               <div className="mt-4 flex flex-wrap gap-2">
                 <button type="button" onClick={copy} className="inline-flex h-11 items-center gap-2 rounded-full bg-[rgb(var(--kb-forest))] px-5 text-[14px] font-bold text-[rgb(var(--kb-lime))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--kb-forest))] focus-visible:ring-offset-2">
@@ -240,8 +240,8 @@ export function ShortLinkDemo() {
               <QrPreview url={`https://${result.short}`} style={qrStyle} alt={tr('QR code preview for {link}', { link: result.short })} />
             </div>
           </motion.div>
-        }
+        )}
       </AnimatePresence>
-    </div>);
-
+    </div>
+  );
 }

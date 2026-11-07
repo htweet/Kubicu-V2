@@ -10,11 +10,11 @@ import { cn } from '../utils/cn';
 
 const HISTORY_DAYS = 14;
 
-const stateStyle: Record<ServiceState, {text: string;bg: string;icon: typeof CheckCircle2Icon;}> = {
+const stateStyle: Record<ServiceState, { text: string; bg: string; icon: typeof CheckCircle2Icon }> = {
   operational: { text: 'text-success', bg: 'bg-success-soft', icon: CheckCircle2Icon },
   minor: { text: 'text-warning', bg: 'bg-warning-soft', icon: AlertTriangleIcon },
   major: { text: 'text-danger', bg: 'bg-danger-soft', icon: AlertTriangleIcon },
-  outage: { text: 'text-danger', bg: 'bg-danger-soft', icon: XCircleIcon }
+  outage: { text: 'text-danger', bg: 'bg-danger-soft', icon: XCircleIcon },
 };
 
 const when = (iso: string) => new Date(iso).toLocaleString('en-NG', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
@@ -56,18 +56,18 @@ export function PublicStatus() {
           </div>
         </section>
 
-        {open.length > 0 &&
-        <section aria-labelledby="open-heading" className="mt-10">
+        {open.length > 0 && (
+          <section aria-labelledby="open-heading" className="mt-10">
             <h2 id="open-heading" className="text-heading font-semibold text-fg">
               Happening now
             </h2>
             <div className="mt-4 flex flex-col gap-6">
-              {open.map((i) =>
-            <IncidentTimeline key={i.id} incident={i} />
-            )}
+              {open.map((i) => (
+                <IncidentTimeline key={i.id} incident={i} />
+              ))}
             </div>
           </section>
-        }
+        )}
 
         <section aria-labelledby="services-heading" className="mt-10">
           <h2 id="services-heading" className="text-heading font-semibold text-fg">
@@ -84,8 +84,8 @@ export function PublicStatus() {
                     <S.icon size={15} aria-hidden />
                     {serviceStateLabels[st]}
                   </span>
-                </li>);
-
+                </li>
+              );
             })}
           </ul>
         </section>
@@ -94,26 +94,26 @@ export function PublicStatus() {
           <h2 id="past-heading" className="text-heading font-semibold text-fg">
             Past {HISTORY_DAYS} days
           </h2>
-          {past.length === 0 ?
-          <p className="mt-3 text-label text-fg-muted">No incidents.</p> :
-
-          <div className="mt-4 flex flex-col gap-6">
-              {past.map((i) =>
-            <IncidentTimeline key={i.id} incident={i} />
-            )}
+          {past.length === 0 ? (
+            <p className="mt-3 text-label text-fg-muted">No incidents.</p>
+          ) : (
+            <div className="mt-4 flex flex-col gap-6">
+              {past.map((i) => (
+                <IncidentTimeline key={i.id} incident={i} />
+              ))}
             </div>
-          }
+          )}
         </section>
 
         <p className="mt-12 border-t border-line pt-6 text-caption text-fg-subtle">
           Prototype: statuses here are written by KUBICU staff in the staff console, not by live monitoring. Problem with your own page or a payment? <Link to="/help" className="font-medium text-action hover:underline">Get help</Link>.
         </p>
       </main>
-    </div>);
-
+    </div>
+  );
 }
 
-function IncidentTimeline({ incident: i }: {incident: Incident;}) {
+function IncidentTimeline({ incident: i }: { incident: Incident }) {
   return (
     <article className="rounded-lg border border-line bg-raised px-5 py-4">
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
@@ -123,15 +123,15 @@ function IncidentTimeline({ incident: i }: {incident: Incident;}) {
         </span>
       </div>
       <ol className="mt-3 flex flex-col gap-3 border-l border-line pl-4">
-        {[...i.updates].reverse().map((u) =>
-        <li key={u.id}>
+        {[...i.updates].reverse().map((u) => (
+          <li key={u.id}>
             <p className="text-caption text-fg-subtle">
               <span className="font-semibold text-fg">{incidentStatusLabels[u.status]}</span> · {when(u.at)}
             </p>
             <p className="mt-0.5 text-label text-fg-muted">{u.message}</p>
           </li>
-        )}
+        ))}
       </ol>
-    </article>);
-
+    </article>
+  );
 }

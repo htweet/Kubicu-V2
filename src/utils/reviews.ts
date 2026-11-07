@@ -25,8 +25,8 @@ export function changedBlocks(live: PageDocument | null, proposed: PageDocument)
   const out: BlockChange[] = [];
   after.forEach((b, id) => {
     const old = before.get(id);
-    if (!old) out.push({ id, kind: 'added', label: blockName(b), page: pageOf(proposed, b) });else
-    if (JSON.stringify({ c: old.content, v: old.visibility, s: old.style }) !== JSON.stringify({ c: b.content, v: b.visibility, s: b.style })) out.push({ id, kind: 'changed', label: blockName(b), page: pageOf(proposed, b) });
+    if (!old) out.push({ id, kind: 'added', label: blockName(b), page: pageOf(proposed, b) });
+    else if (JSON.stringify({ c: old.content, v: old.visibility, s: old.style }) !== JSON.stringify({ c: b.content, v: b.visibility, s: b.style })) out.push({ id, kind: 'changed', label: blockName(b), page: pageOf(proposed, b) });
   });
   before.forEach((b, id) => {
     if (!after.has(id) && live) out.push({ id, kind: 'removed', label: blockName(b), page: pageOf(live, b) });

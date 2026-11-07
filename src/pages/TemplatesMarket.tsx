@@ -81,14 +81,14 @@ export function TemplatesMarket() {
 
   const items: Item[] = useMemo(
     () => [
-    ...countryFirst(examplePages, activeCountry()).map((ex) => ({ ex, type: ex.category })),
-    ...store.listings.
-    filter((l) => l.status === 'listed' && l.listedDoc).
-    map((l) => ({ ex: listingAsExample(l, activeSale(store, l.id, current.id)?.doc ?? l.listedDoc as NonNullable<typeof l.listedDoc>), listing: l, type: l.category }))],
-
-    [store, current.id]
+      ...countryFirst(examplePages, activeCountry()).map((ex) => ({ ex, type: ex.category })),
+      ...store.listings
+        .filter((l) => l.status === 'listed' && l.listedDoc)
+        .map((l) => ({ ex: listingAsExample(l, activeSale(store, l.id, current.id)?.doc ?? (l.listedDoc as NonNullable<typeof l.listedDoc>)), listing: l, type: l.category })),
+    ],
+    [store, current.id],
   );
-  const owns = (it: Item) => it.listing ? it.listing.priceNgn === 0 || it.listing.workspaceId === current.id || !!activeSale(store, it.listing.id, current.id) : market.hasLicence(it.ex.id);
+  const owns = (it: Item) => (it.listing ? it.listing.priceNgn === 0 || it.listing.workspaceId === current.id || !!activeSale(store, it.listing.id, current.id) : market.hasLicence(it.ex.id));
   const types = useMemo(() => Array.from(new Set(items.map((i) => i.type))).sort(), [items]);
   const inCountry = (ex: ExamplePage, listing?: TemplateListing) => country === 'all' || !!listing || !!ex.elite || !!ex.artwork || exampleCountry(ex) === country;
   const regions = useMemo(() => Array.from(new Set(items.filter((i) => inCountry(i.ex, i.listing)).map((i) => i.ex.city))).sort(), [items, country]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -96,14 +96,14 @@ export function TemplatesMarket() {
     const term = q.trim().toLowerCase();
     const p = templatePrice(ex.id);
     return (
-      inCountry(ex, listing) && (
-      type === 'all' || t === type) && (
-      region === 'all' || ex.city === region) && (
-      mood === 'all' || templateMood(ex) === mood) && (
-      price === 'all' || (price === 'premium' ? p > 0 : p === 0)) && (
-      source === 'all' || (source === 'themes' ? listing?.kind === 'theme' : source === 'creators' ? !!listing : !listing)) && (
-      !term || `${ex.name} ${ex.category} ${ex.bestFor} ${ex.description} ${listing?.creatorName ?? ''}`.toLowerCase().includes(term)));
-
+      inCountry(ex, listing) &&
+      (type === 'all' || t === type) &&
+      (region === 'all' || ex.city === region) &&
+      (mood === 'all' || templateMood(ex) === mood) &&
+      (price === 'all' || (price === 'premium' ? p > 0 : p === 0)) &&
+      (source === 'all' || (source === 'themes' ? listing?.kind === 'theme' : source === 'creators' ? !!listing : !listing)) &&
+      (!term || `${ex.name} ${ex.category} ${ex.bestFor} ${ex.description} ${listing?.creatorName ?? ''}`.toLowerCase().includes(term))
+    );
   });
 
   const confirmIsTheme = !!confirm && items.find((i) => i.ex.id === confirm.id)?.listing?.kind === 'theme';
@@ -116,46 +116,46 @@ export function TemplatesMarket() {
       <div className="mt-6">
         <Tabs<Tab>
           items={[
-          { id: 'browse', label: 'Browse' },
-          { id: 'themes', label: 'Themes' },
-          { id: 'kits', label: 'Business kits' },
-          { id: 'mine', label: 'My templates' }]
-          }
+            { id: 'browse', label: 'Browse' },
+            { id: 'themes', label: 'Themes' },
+            { id: 'kits', label: 'Business kits' },
+            { id: 'mine', label: 'My templates' },
+          ]}
           value={tab}
           onChange={setTab}
           ariaLabel="Templates"
-          idPrefix="tpl" />
-        
+          idPrefix="tpl"
+        />
       </div>
 
-      {tab === 'themes' ?
-      <div role="tabpanel" id="tpl-panel-themes" aria-labelledby="tpl-tab-themes">
+      {tab === 'themes' ? (
+        <div role="tabpanel" id="tpl-panel-themes" aria-labelledby="tpl-tab-themes">
           <ThemeGallery
-          myPage={state.draft}
-          canUse={(t) => !!t.free || planAtLeast(planId, 'creator')}
-          onUpgrade={() => openUpgrade({ plan: 'creator', feature: 'All 24 Signature themes' })}
-          onUse={
-          canEdit ?
-          (theme, t) => {
-            // Keeps every block; only the look changes (D164).
-            actions.replaceBlocks(state.draft.blocks, theme);
-            toast(`${t.name} applied to ${state.draft.title || 'your page'}`, { description: 'Undo from the canvas if you change your mind.' });
-            navigate('/app/canvas');
-          } :
-          undefined
-          } />
-        
-        </div> :
-      tab === 'kits' ?
-      <div className="mt-8" role="tabpanel" id="tpl-panel-kits" aria-labelledby="tpl-tab-kits">
+            myPage={state.draft}
+            canUse={(t) => !!t.free || planAtLeast(planId, 'creator')}
+            onUpgrade={() => openUpgrade({ plan: 'creator', feature: 'All 24 Signature themes' })}
+            onUse={
+              canEdit
+                ? (theme, t) => {
+                    // Keeps every block; only the look changes (D164).
+                    actions.replaceBlocks(state.draft.blocks, theme);
+                    toast(`${t.name} applied to ${state.draft.title || 'your page'}`, { description: 'Undo from the canvas if you change your mind.' });
+                    navigate('/app/canvas');
+                  }
+                : undefined
+            }
+          />
+        </div>
+      ) : tab === 'kits' ? (
+        <div className="mt-8" role="tabpanel" id="tpl-panel-kits" aria-labelledby="tpl-tab-kits">
           <BusinessKits />
-        </div> :
-      tab === 'mine' ?
-      <div className="mt-8" role="tabpanel" id="tpl-panel-mine" aria-labelledby="tpl-tab-mine">
+        </div>
+      ) : tab === 'mine' ? (
+        <div className="mt-8" role="tabpanel" id="tpl-panel-mine" aria-labelledby="tpl-tab-mine">
           <MyTemplates sellOpen={sellOpen} setSellOpen={setSellOpen} />
-        </div> :
-
-      <div role="tabpanel" id="tpl-panel-browse" aria-labelledby="tpl-tab-browse">
+        </div>
+      ) : (
+        <div role="tabpanel" id="tpl-panel-browse" aria-labelledby="tpl-tab-browse">
           <EliteCollection templates={examplePages} hrefFor={(e) => `/templates/${e.id}`} onOpen={(e) => setPreview({ ex: e, type: e.category })} />
           <ArtworkCollection templates={examplePages} hrefFor={(e) => `/templates/${e.id}`} onOpen={(e) => setPreview({ ex: e, type: e.category })} />
           <h2 className="mt-12 text-heading font-semibold text-fg">All templates</h2>
@@ -166,91 +166,91 @@ export function TemplatesMarket() {
             <SelectInput<string> id="tpl-region" label="City" value={region} onChange={setRegion} options={[{ value: 'all', label: 'Every city' }, ...regions.map((r) => ({ value: r, label: r }))]} />
             <SelectInput<ColourMood | 'all'> id="tpl-mood" label="Colour mood" value={mood} onChange={setMood} options={[{ value: 'all', label: 'Any' }, ...(Object.keys(moodLabels) as ColourMood[]).map((m) => ({ value: m, label: moodLabels[m] }))]} />
             <SelectInput<Price>
-            id="tpl-price"
-            label="Price"
-            value={price}
-            onChange={setPrice}
-            options={[
-            { value: 'all', label: 'Free and paid' },
-            { value: 'free', label: 'Free' },
-            { value: 'premium', label: 'Paid' }]
-            } />
-          
+              id="tpl-price"
+              label="Price"
+              value={price}
+              onChange={setPrice}
+              options={[
+                { value: 'all', label: 'Free and paid' },
+                { value: 'free', label: 'Free' },
+                { value: 'premium', label: 'Paid' },
+              ]}
+            />
             <SelectInput<Source>
-            id="tpl-source"
-            label="Made by"
-            value={source}
-            onChange={setSource}
-            options={[
-            { value: 'all', label: 'Everyone' },
-            { value: 'kubicu', label: 'KUBICU' },
-            { value: 'creators', label: 'Creators' },
-            { value: 'themes', label: 'Themes only' }]
-            } />
-          
+              id="tpl-source"
+              label="Made by"
+              value={source}
+              onChange={setSource}
+              options={[
+                { value: 'all', label: 'Everyone' },
+                { value: 'kubicu', label: 'KUBICU' },
+                { value: 'creators', label: 'Creators' },
+                { value: 'themes', label: 'Themes only' },
+              ]}
+            />
           </div>
 
-          {list.length === 0 ?
-        <EmptyState className="mt-8" icon={LayoutTemplateIcon} title="No templates match" description="Try fewer filters." /> :
-
-        <ul className="mt-8 grid grid-cols-2 gap-x-5 gap-y-8 md:grid-cols-3 lg:grid-cols-4">
+          {list.length === 0 ? (
+            <EmptyState className="mt-8" icon={LayoutTemplateIcon} title="No templates match" description="Try fewer filters." />
+          ) : (
+            <ul className="mt-8 grid grid-cols-2 gap-x-5 gap-y-8 md:grid-cols-3 lg:grid-cols-4">
               {list.map((it) => {
-            const { ex, listing } = it;
-            const p = templatePrice(ex.id);
-            const owned = owns(it);
-            const avg = listing ? averageStars(listing) : null;
-            return (
-              <li key={ex.id}>
+                const { ex, listing } = it;
+                const p = templatePrice(ex.id);
+                const owned = owns(it);
+                const avg = listing ? averageStars(listing) : null;
+                return (
+                  <li key={ex.id}>
                     <button type="button" onClick={() => setPreview(it)} className="group flex w-full flex-col gap-3 rounded-md text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
                       <span className="relative block overflow-hidden rounded-[16px] transition-transform duration-150 ease-out group-hover:-translate-y-0.5">
                         <TemplateThumb doc={ex.doc} width={240} height={340} />
-                        {listing?.kind === 'theme' &&
-                    <span className="absolute right-2 top-2">
+                        {listing?.kind === 'theme' && (
+                          <span className="absolute right-2 top-2">
                             <Badge tone="info" icon={PaletteIcon}>
                               Theme
                             </Badge>
                           </span>
-                    }
-                        {p > 0 &&
-                    <span className="absolute left-2 top-2">
+                        )}
+                        {p > 0 && (
+                          <span className="absolute left-2 top-2">
                             <Badge tone="accent" icon={owned ? undefined : LockIcon}>
                               {owned ? 'Owned' : formatNgn(p)}
                             </Badge>
                           </span>
-                    }
+                        )}
                       </span>
                       <span className="min-w-0">
                         <span className="block truncate text-label font-semibold text-fg">{ex.category}</span>
                         <span className="flex items-center gap-1.5 truncate text-caption text-fg-subtle">
-                          {listing ?
-                      <>
+                          {listing ? (
+                            <>
                               <BadgeCheckIcon size={12} className="shrink-0 text-action" aria-hidden />
                               <span className="truncate">{listing.creatorName}</span>
-                              {avg !== null &&
-                        <span className="flex shrink-0 items-center gap-0.5">
+                              {avg !== null && (
+                                <span className="flex shrink-0 items-center gap-0.5">
                                   · <StarIcon size={11} className="fill-current text-warning" aria-hidden /> {avg}
                                 </span>
-                        }
-                            </> :
-
-                      <>
+                              )}
+                            </>
+                          ) : (
+                            <>
                               {ex.name} · {ex.city}
                             </>
-                      }
+                          )}
                         </span>
                       </span>
                     </button>
-                  </li>);
-
-          })}
+                  </li>
+                );
+              })}
             </ul>
-        }
+          )}
 
           <div className="mt-16 border-t border-line pt-10">
             <SharedLibrary />
           </div>
         </div>
-      }
+      )}
 
       <TemplatePreviewSheet
         template={preview?.ex ?? null}
@@ -263,8 +263,8 @@ export function TemplatesMarket() {
           setPreview(null);
           setSpaceFrom(t);
         }}
-        extra={preview?.listing ? <CreatorListingInfo listing={store.listings.find((l) => l.id === preview.listing?.id) ?? preview.listing} store={store} update={update} workspaceId={current.id} workspaceName={current.name} canBuy={canBuy} /> : undefined} />
-      
+        extra={preview?.listing ? <CreatorListingInfo listing={store.listings.find((l) => l.id === preview.listing?.id) ?? preview.listing} store={store} update={update} workspaceId={current.id} workspaceName={current.name} canBuy={canBuy} /> : undefined}
+      />
       <BuyTemplateDialog
         template={buying}
         onClose={() => setBuying(null)}
@@ -272,38 +272,38 @@ export function TemplatesMarket() {
           // Re-point the open preview at the version just bought.
           const it = items.find((i) => i.ex.id === t.id);
           if (it) setPreview(it);
-        }} />
-      
+        }}
+      />
       <Dialog
         open={!!confirm}
         onClose={() => setConfirm(null)}
-        title={confirm ? confirmIsTheme ? `Use the “${confirm.category}” theme?` : `Apply “${confirm.category}” to your main page?` : ''}
+        title={confirm ? (confirmIsTheme ? `Use the “${confirm.category}” theme?` : `Apply “${confirm.category}” to your main page?`) : ''}
         description={
-        confirmIsTheme ?
-        'Only the look changes — colours, fonts, button shape and background. Your blocks and words stay. You can undo in the canvas, and your live page doesn’t change until you publish.' :
-        'Your current draft is saved as a snapshot first. Your live page doesn’t change until you publish.'
+          confirmIsTheme
+            ? 'Only the look changes — colours, fonts, button shape and background. Your blocks and words stay. You can undo in the canvas, and your live page doesn’t change until you publish.'
+            : 'Your current draft is saved as a snapshot first. Your live page doesn’t change until you publish.'
         }
         footer={
-        <>
+          <>
             <Button variant="secondary" onClick={() => setConfirm(null)}>
               Cancel
             </Button>
             <Button
-            onClick={() => {
-              if (!confirm) return;
-              if (confirmIsTheme) actions.replaceBlocks(state.draft.blocks, confirm.doc.theme);else
-              applyTemplate(confirm.category, confirm.doc);
-              setConfirm(null);
-              setPreview(null);
-              navigate('/app/canvas');
-            }}>
-            
+              onClick={() => {
+                if (!confirm) return;
+                if (confirmIsTheme) actions.replaceBlocks(state.draft.blocks, confirm.doc.theme);
+                else applyTemplate(confirm.category, confirm.doc);
+                setConfirm(null);
+                setPreview(null);
+                navigate('/app/canvas');
+              }}
+            >
               {confirmIsTheme ? 'Use theme and open canvas' : 'Apply and open canvas'}
             </Button>
           </>
-        } />
-      
+        }
+      />
       <NewSpaceDialog open={!!spaceFrom} onClose={() => setSpaceFrom(null)} mainDoc={state.draft} initialKind="campaign" template={spaceFrom ? { name: spaceFrom.category, doc: spaceFrom.doc } : null} />
-    </div>);
-
+    </div>
+  );
 }

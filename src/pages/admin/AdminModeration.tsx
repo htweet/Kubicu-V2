@@ -22,7 +22,7 @@ import { ReasonDialog } from '../../components/admin/ReasonDialog';
 import { List } from '../../components/ui/layout/ListRow';
 
 type Tab = 'open' | 'auto' | 'decided' | 'takedowns';
-type Decision = {kind: 'takedown' | 'dismiss';report: PageReport;} | {kind: 'restore';handle: string;} | null;
+type Decision = { kind: 'takedown' | 'dismiss'; report: PageReport } | { kind: 'restore'; handle: string } | null;
 
 /**
  * Super admin → Moderation & trust: reports from “Report this page”, takedowns and restores (D75b).
@@ -77,13 +77,13 @@ export function AdminModeration() {
         let next: typeof s = {
           ...s,
           // Deciding one report decides every open report for the same page.
-          reports: s.reports.map((r) => r.handle === report.handle && r.status === 'open' ? { ...r, status, decision: reason, decidedAt: now } : r)
+          reports: s.reports.map((r) => (r.handle === report.handle && r.status === 'open' ? { ...r, status, decision: reason, decidedAt: now } : r)),
         };
         if (decision.kind === 'takedown' && !s.takedowns.some((t) => t.handle === report.handle)) next = { ...next, takedowns: [{ handle: report.handle, reason, at: now }, ...next.takedowns] };
         return audit(next, { area: 'moderation', action: decision.kind === 'takedown' ? 'Took page down' : 'Dismissed report', target: `kub.icu/${report.handle}`, reason });
       });
       toast.success(decision.kind === 'takedown' ? tr('{page} taken down', { page: `kub.icu/${report.handle}` }) : tr('Report dismissed'), {
-        description: decision.kind === 'takedown' ? tr('Visitors see “removed for breaking KUBICU’s rules”. The owner keeps their data and can appeal.') : undefined
+        description: decision.kind === 'takedown' ? tr('Visitors see “removed for breaking KUBICU’s rules”. The owner keeps their data and can appeal.') : undefined,
       });
       setOpenId(null);
     }
@@ -93,15 +93,15 @@ export function AdminModeration() {
   return (
     <div className="mx-auto w-full max-w-5xl px-5 py-8 md:px-10 md:py-12">
       <PageHeader title="Moderation & trust" description="Reports from visitors and the actions taken. Act proportionately: dismiss, or take a page down — accounts are suspended from Users & tenants." />
-      {kycQueue.length > 0 &&
-      <Link to="/admin/payments?tab=identity" className="mt-6 flex items-center justify-between gap-4 rounded-lg border border-line bg-raised px-5 py-3.5 text-label transition-colors duration-150 hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+      {kycQueue.length > 0 && (
+        <Link to="/admin/payments?tab=identity" className="mt-6 flex items-center justify-between gap-4 rounded-lg border border-line bg-raised px-5 py-3.5 text-label transition-colors duration-150 hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
           <span className="text-fg">
             <span className="font-semibold">{tr('Verifications waiting for review: {n}', { n: kycQueue.length })}</span>
             <span className="text-fg-muted"> · {tr('identity and business checks are decided in Payments & providers')}</span>
           </span>
           <span className="shrink-0 font-medium text-action">{tr('Review')}</span>
         </Link>
-      }
+      )}
 
       <div className="mt-8">
         <Tabs<Tab>
@@ -110,26 +110,26 @@ export function AdminModeration() {
           value={tab}
           onChange={setTab}
           items={[
-          { id: 'open', label: tr('Open reports'), badge: openReports.length || undefined },
-          { id: 'auto', label: tr('Automatic flags'), badge: flags.length || undefined },
-          { id: 'decided', label: tr('Decided') },
-          { id: 'takedowns', label: tr('Taken down'), badge: store.takedowns.length || undefined }]
-          } />
-        
+            { id: 'open', label: tr('Open reports'), badge: openReports.length || undefined },
+            { id: 'auto', label: tr('Automatic flags'), badge: flags.length || undefined },
+            { id: 'decided', label: tr('Decided') },
+            { id: 'takedowns', label: tr('Taken down'), badge: store.takedowns.length || undefined },
+          ]}
+        />
       </div>
 
       <div className="mt-6" role="tabpanel" id={`mod-panel-${tab}`} aria-labelledby={`mod-tab-${tab}`}>
-        {tab === 'auto' ?
-        <>
+        {tab === 'auto' ? (
+          <>
             <p className="mb-4 max-w-3xl text-label text-fg-muted">
               {tr('Live pages are checked for wording common in scams and fakes. A flag is only a prompt to look — it never takes a page down, and the owner isn’t told. Open it as a report to decide it, or clear it if it’s fine.')}
             </p>
-            {flags.length === 0 ?
-          <EmptyState icon={ShieldCheckIcon} title={tr('No automatic flags')} description={tr('Nothing on live pages matches the checks right now.')} /> :
-
-          <List ruled label={tr('Automatic flags')}>
-                {flags.map((f) =>
-            <li key={f.key} className="flex flex-col gap-3 py-4 md:flex-row md:items-start md:gap-6">
+            {flags.length === 0 ? (
+              <EmptyState icon={ShieldCheckIcon} title={tr('No automatic flags')} description={tr('Nothing on live pages matches the checks right now.')} />
+            ) : (
+              <List ruled label={tr('Automatic flags')}>
+                {flags.map((f) => (
+                  <li key={f.key} className="flex flex-col gap-3 py-4 md:flex-row md:items-start md:gap-6">
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="font-semibold text-fg">kub.icu/{f.handle}</span>
@@ -154,27 +154,27 @@ export function AdminModeration() {
                       </Button>
                     </div>
                   </li>
-            )}
+                ))}
               </List>
-          }
+            )}
             <details className="mt-6 text-label">
               <summary className="cursor-pointer font-medium text-fg">{tr('What the checks look for')}</summary>
               <ul className="mt-3 flex flex-col gap-2">
-                {autoFlagRules.map((r) =>
-              <li key={r.id}>
+                {autoFlagRules.map((r) => (
+                  <li key={r.id}>
                     <span className="font-medium text-fg">{tr(r.label)}</span> <span className="text-fg-muted">— {tr(r.why)}</span>
                   </li>
-              )}
+                ))}
               </ul>
             </details>
-          </> :
-        tab === 'takedowns' ?
-        store.takedowns.length === 0 ?
-        <EmptyState icon={ShieldCheckIcon} title={tr('No pages taken down')} description={tr('Pages you take down are listed here so they can be restored after an appeal.')} /> :
-
-        <List ruled label={tr('Pages taken down')}>
-              {store.takedowns.map((t) =>
-          <li key={t.handle} className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
+          </>
+        ) : tab === 'takedowns' ? (
+          store.takedowns.length === 0 ? (
+            <EmptyState icon={ShieldCheckIcon} title={tr('No pages taken down')} description={tr('Pages you take down are listed here so they can be restored after an appeal.')} />
+          ) : (
+            <List ruled label={tr('Pages taken down')}>
+              {store.takedowns.map((t) => (
+                <li key={t.handle} className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
                   <span className="min-w-0">
                     <span className="block font-semibold text-fg">kub.icu/{t.handle}</span>
                     <span className="block text-caption text-fg-subtle">
@@ -185,15 +185,15 @@ export function AdminModeration() {
                     Restore…
                   </Button>
                 </li>
-          )}
-            </List> :
-
-        list.length === 0 ?
-        <EmptyState icon={ShieldCheckIcon} title={tab === 'open' ? tr('No open reports') : tr('Nothing decided yet')} description={tr('Visitors report pages from the “Report this page” link at the bottom of every public page.')} /> :
-
-        <List ruled label={tr('Reports')}>
-            {list.map((r) =>
-          <li key={r.id}>
+              ))}
+            </List>
+          )
+        ) : list.length === 0 ? (
+          <EmptyState icon={ShieldCheckIcon} title={tab === 'open' ? tr('No open reports') : tr('Nothing decided yet')} description={tr('Visitors report pages from the “Report this page” link at the bottom of every public page.')} />
+        ) : (
+          <List ruled label={tr('Reports')}>
+            {list.map((r) => (
+              <li key={r.id}>
                 <button type="button" onClick={() => setOpenId(r.id)} className="flex w-full flex-col gap-1 py-4 text-left transition-colors duration-150 hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus sm:flex-row sm:items-center sm:gap-4 sm:px-2">
                   <span className="min-w-0 flex-1">
                     <span className="flex flex-wrap items-center gap-2">
@@ -209,9 +209,9 @@ export function AdminModeration() {
                   </span>
                 </button>
               </li>
-          )}
+            ))}
           </List>
-        }
+        )}
       </div>
 
       <Sheet
@@ -221,20 +221,20 @@ export function AdminModeration() {
         title={open ? `kub.icu/${open.handle}` : tr('Report')}
         description={open ? tr(reportReasonLabels[open.reason]) : undefined}
         footer={
-        open?.status === 'open' ?
-        <div className="flex flex-wrap justify-end gap-2">
+          open?.status === 'open' ? (
+            <div className="flex flex-wrap justify-end gap-2">
               <Button variant="secondary" onClick={() => setDecision({ kind: 'dismiss', report: open })}>
                 Dismiss…
               </Button>
               <Button variant="destructive" onClick={() => setDecision({ kind: 'takedown', report: open })}>
                 Take page down…
               </Button>
-            </div> :
-        undefined
-        }>
-        
-        {open &&
-        <div className="flex flex-col gap-6">
+            </div>
+          ) : undefined
+        }
+      >
+        {open && (
+          <div className="flex flex-col gap-6">
             <section aria-labelledby="rep-what" className="flex flex-col gap-2">
               <h3 id="rep-what" className="text-label font-semibold text-fg">
                 {tr('What the visitor said')}
@@ -255,8 +255,8 @@ export function AdminModeration() {
                 Open the page
               </Button>
             </section>
-            {open.status !== 'open' &&
-          <section aria-labelledby="rep-decision" className="flex flex-col gap-1 border-t border-line pt-4">
+            {open.status !== 'open' && (
+              <section aria-labelledby="rep-decision" className="flex flex-col gap-1 border-t border-line pt-4">
                 <h3 id="rep-decision" className="text-label font-semibold text-fg">
                   {open.status === 'actioned' ? tr('Taken down') : tr('Dismissed')}
                 </h3>
@@ -264,9 +264,9 @@ export function AdminModeration() {
                   “{open.decision}” · {open.decidedAt ? formatTimestamp(open.decidedAt) : ''}
                 </p>
               </section>
-          }
+            )}
           </div>
-        }
+        )}
       </Sheet>
 
       <ReasonDialog
@@ -276,22 +276,22 @@ export function AdminModeration() {
         destructive={decision?.kind === 'takedown'}
         title={decision?.kind === 'takedown' ? tr('Take this page down?') : decision?.kind === 'dismiss' ? tr('Dismiss this report?') : tr('Restore this page?')}
         description={
-        decision?.kind === 'takedown' ?
-        tr('Visitors see “This page was removed for breaking KUBICU’s rules”. Orders, contacts and the owner’s account aren’t touched. Every open report for this page is closed.') :
-        decision?.kind === 'dismiss' ?
-        tr('The page stays up. Every open report for this page is closed with your reason.') :
-        tr('The page comes back straight away, for example after a successful appeal.')
+          decision?.kind === 'takedown'
+            ? tr('Visitors see “This page was removed for breaking KUBICU’s rules”. Orders, contacts and the owner’s account aren’t touched. Every open report for this page is closed.')
+            : decision?.kind === 'dismiss'
+              ? tr('The page stays up. Every open report for this page is closed with your reason.')
+              : tr('The page comes back straight away, for example after a successful appeal.')
         }
-        confirmLabel={decision?.kind === 'takedown' ? tr('Take down') : decision?.kind === 'dismiss' ? tr('Dismiss') : tr('Restore')} />
-      
+        confirmLabel={decision?.kind === 'takedown' ? tr('Take down') : decision?.kind === 'dismiss' ? tr('Dismiss') : tr('Restore')}
+      />
       <ReasonDialog
         open={!!clearing}
         onClose={() => setClearing(null)}
         onConfirm={clearFlag}
         title={tr('Clear this flag?')}
         description={clearing ? `kub.icu/${clearing.handle} — ${tr(clearing.rule.label)}. ${tr('Say why it’s fine, e.g. “Sells phone cases, not phones”.')}` : ''}
-        confirmLabel={tr('Clear flag')} />
-      
-    </div>);
-
+        confirmLabel={tr('Clear flag')}
+      />
+    </div>
+  );
 }

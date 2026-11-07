@@ -28,18 +28,18 @@ export function PasswordInput({ id, label, hint, error, trailing, className, ...
           aria-invalid={error ? true : undefined}
           aria-describedby={describedBy}
           className={cn(fieldControlClass, 'h-12 rounded-xl pl-10 pr-12', className)}
-          {...rest} />
-        
+          {...rest}
+        />
         <button
           type="button"
           onClick={() => setShown((s) => !s)}
           aria-pressed={shown}
           aria-label={shown ? t('Hide password') : t('Show password')}
-          className="absolute right-1.5 flex h-9 w-9 items-center justify-center rounded-lg text-fg-subtle transition-colors duration-150 hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-          
+          className="absolute right-1.5 flex h-9 w-9 items-center justify-center rounded-lg text-fg-subtle transition-colors duration-150 hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+        >
           {shown ? <EyeOffIcon size={17} aria-hidden /> : <EyeIcon size={17} aria-hidden />}
         </button>
       </div>
-    </Field>);
-
+    </Field>
+  );
 }

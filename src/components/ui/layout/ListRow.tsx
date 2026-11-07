@@ -26,8 +26,8 @@ const interactive = 'transition-colors duration-150 hover:bg-sunken focus-visibl
 /** One row of a list: lead, title + meta, trailing — always on the same baselines (D75). */
 export function ListRow({ leading, title, meta, trailing, to, onClick, chevron, inset = 'card', className }: ListRowProps) {
   const pad = inset === 'card' ? 'px-5 md:px-6' : 'px-0';
-  const inner =
-  <>
+  const inner = (
+    <>
       {leading && <span className="flex shrink-0 items-center">{leading}</span>}
       <span className="min-w-0 flex-1">
         <span className="block truncate text-label font-semibold text-fg">{title}</span>
@@ -35,24 +35,24 @@ export function ListRow({ leading, title, meta, trailing, to, onClick, chevron, 
       </span>
       {trailing && <span className="flex shrink-0 items-center gap-3 text-right">{trailing}</span>}
       {chevron && (to || onClick) && <ChevronRightIcon size={16} className="shrink-0 text-fg-subtle" aria-hidden />}
-    </>;
-
+    </>
+  );
   if (to)
-  return (
-    <li>
+    return (
+      <li>
         <Link to={to} className={cn(rowBase, pad, interactive, inset === 'none' && '-mx-2 rounded-md px-2', className)}>
           {inner}
         </Link>
-      </li>);
-
+      </li>
+    );
   if (onClick)
-  return (
-    <li>
+    return (
+      <li>
         <button type="button" onClick={onClick} className={cn(rowBase, pad, interactive, inset === 'none' && '-mx-2 rounded-md px-2', className)}>
           {inner}
         </button>
-      </li>);
-
+      </li>
+    );
   return <li className={cn(rowBase, pad, className)}>{inner}</li>;
 }
 
@@ -60,11 +60,11 @@ export function ListRow({ leading, title, meta, trailing, to, onClick, chevron, 
  * Hairline-divided list for ListRow children. `ruled` adds a hairline above and below for
  * chrome-free lists that sit straight on the page (no Card); `ordered` renders an <ol>.
  */
-export function List({ label, ruled, ordered, className, children }: {label?: string;ruled?: boolean;ordered?: boolean;className?: string;children: React.ReactNode;}) {
+export function List({ label, ruled, ordered, className, children }: { label?: string; ruled?: boolean; ordered?: boolean; className?: string; children: React.ReactNode }) {
   const Tag = ordered ? 'ol' : 'ul';
   return (
     <Tag aria-label={label} className={cn('flex flex-col divide-y divide-line', ruled && 'border-y border-line', className)}>
       {children}
-    </Tag>);
-
+    </Tag>
+  );
 }

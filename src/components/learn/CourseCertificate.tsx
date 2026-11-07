@@ -22,14 +22,14 @@ export function CourseCertificate({ theme: t, course, enrolment, business, onSav
 
   return (
     <div className="flex flex-col gap-5">
-      {!ready || name !== enrolment.name ?
-      <form
-        className="flex flex-col gap-2 print:hidden sm:flex-row sm:items-end"
-        onSubmit={(e) => {
-          e.preventDefault();
-          if (name.trim()) onSaveName(name);
-        }}>
-        
+      {!ready || name !== enrolment.name ? (
+        <form
+          className="flex flex-col gap-2 print:hidden sm:flex-row sm:items-end"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (name.trim()) onSaveName(name);
+          }}
+        >
           <label className="flex flex-1 flex-col gap-1.5 text-[13px] font-medium" style={{ color: t.text }}>
             Your name, as it should appear
             <input value={name} maxLength={60} onChange={(e) => setName(e.target.value)} className="h-12 px-3.5 text-[15px] outline-none focus:ring-2" style={inputStyle(t)} />
@@ -37,9 +37,9 @@ export function CourseCertificate({ theme: t, course, enrolment, business, onSav
           <button type="submit" disabled={!name.trim()} className="flex h-12 items-center justify-center px-6 text-[15px] font-semibold disabled:opacity-50" style={buttonStyle(t, 'featured')}>
             Save name
           </button>
-        </form> :
-
-      <div className="flex flex-col gap-2 print:hidden sm:flex-row sm:items-center sm:justify-between">
+        </form>
+      ) : (
+        <div className="flex flex-col gap-2 print:hidden sm:flex-row sm:items-center sm:justify-between">
           <button type="button" onClick={() => window.print()} className="flex h-12 items-center justify-center gap-2 px-6 text-[15px] font-semibold" style={buttonStyle(t, 'featured')}>
             <PrinterIcon size={16} aria-hidden /> Print or save as PDF
           </button>
@@ -47,7 +47,7 @@ export function CourseCertificate({ theme: t, course, enrolment, business, onSav
             Prints on one A4 page, landscape.
           </p>
         </div>
-      }
+      )}
 
       <CertificateSheet
         label="Certificate of completion"
@@ -62,8 +62,8 @@ export function CourseCertificate({ theme: t, course, enrolment, business, onSav
         seal={{ rim: 'Course completed · Certified ·', mark: initials(business) }}
         code={enrolment.certificateNo ? `No. ${enrolment.certificateNo}` : undefined}
         footnote={`Issued by ${business} through KUBICU. This confirms course completion only. It is not an accredited qualification.`}
-        accent={t.accent} />
-      
-    </div>);
-
+        accent={t.accent}
+      />
+    </div>
+  );
 }

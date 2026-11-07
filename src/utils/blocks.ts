@@ -19,7 +19,7 @@ export function createBlock<K extends BlockType>(type: K): BlockOf<K> {
     visibility: { hidden: false },
     accessibility: { label: '' },
     createdAt: now,
-    updatedAt: now
+    updatedAt: now,
   };
   return block as unknown as BlockOf<K>;
 }
@@ -77,11 +77,11 @@ export function cloneBlock(block: Block): Block {
   if (copy.type === 'recommendations') copy.content.items = copy.content.items.map((i) => ({ ...i, id: uid('rec') }));
   if (copy.type === 'faqAssistant') copy.content.facts = copy.content.facts.map((f) => ({ ...f, id: uid('fact') }));
   if (copy.type === 'menu')
-  copy.content.categories = copy.content.categories.map((cat) => ({
-    ...cat,
-    id: uid('mc'),
-    items: cat.items.map((i) => ({ ...i, id: uid('mi') }))
-  }));
+    copy.content.categories = copy.content.categories.map((cat) => ({
+      ...cat,
+      id: uid('mc'),
+      items: cat.items.map((i) => ({ ...i, id: uid('mi') })),
+    }));
   return copy;
 }
 
@@ -98,7 +98,7 @@ export function cloneDocument(doc: PageDocument, overrides: Partial<PageDocument
     ...overrides,
     blocks,
     pages: copy.pages?.map((p) => ({ ...p, blocks: relinkClones(p.blocks, p.blocks.map((b) => ({ ...cloneBlock(b), groupId: null }))), groups: undefined })),
-    updatedAt: new Date().toISOString()
+    updatedAt: new Date().toISOString(),
   };
 }
 
@@ -126,7 +126,7 @@ export function summarizeBlock(block: Block): string {
     case 'image':
       return block.content.alt || (block.content.url ? 'Image' : 'No image chosen');
     case 'video':
-      return block.content.title || (block.content.url ? (() => {const r = parseEmbed(block.content.url);return r.ok ? `${r.name} embed` : 'Link can’t be embedded';})() : 'Nothing embedded yet');
+      return block.content.title || (block.content.url ? (() => { const r = parseEmbed(block.content.url); return r.ok ? `${r.name} embed` : 'Link can’t be embedded'; })() : 'Nothing embedded yet');
     case 'divider':
       return block.content.label || 'Hairline';
     case 'spacer':
@@ -138,9 +138,9 @@ export function summarizeBlock(block: Block): string {
     case 'leadForm':
       return block.content.title || 'Form';
     case 'product':
-      return block.content.name ?
-      `${block.content.name}${block.content.priceNgn !== null ? ` · ${formatNgn(block.content.priceNgn)}` : ''}` :
-      'No product details';
+      return block.content.name
+        ? `${block.content.name}${block.content.priceNgn !== null ? ` · ${formatNgn(block.content.priceNgn)}` : ''}`
+        : 'No product details';
     case 'booking':
       return block.content.title || 'Booking';
     case 'whatsapp':
@@ -181,10 +181,10 @@ export function summarizeBlock(block: Block): string {
       return block.content.style === 'verified' ? 'Verified seal' : block.content.style === 'compact' ? 'Compact badge' : 'Full badge';
     case 'audio':
       return block.content.title || (block.content.url ? 'Audio track' : 'No track yet');
-    case 'playlist':{
-        const n = block.content.tracks.filter((t) => t.url).length;
-        return `${block.content.title ? `${block.content.title} · ` : ''}${n} track${n === 1 ? '' : 's'}`;
-      }
+    case 'playlist': {
+      const n = block.content.tracks.filter((t) => t.url).length;
+      return `${block.content.title ? `${block.content.title} · ` : ''}${n} track${n === 1 ? '' : 's'}`;
+    }
     case 'collection':
       return block.content.collectionId ? block.content.title || 'Collection' : 'No collection chosen';
     case 'support':
@@ -217,10 +217,10 @@ export function summarizeBlock(block: Block): string {
     case 'credentials':
     case 'press':
     case 'agenda':
-    case 'policies':{
-        const n = block.content.items.length;
-        return `${block.content.title ? `${block.content.title} · ` : ''}${n} item${n === 1 ? '' : 's'}`;
-      }
+    case 'policies': {
+      const n = block.content.items.length;
+      return `${block.content.title ? `${block.content.title} · ` : ''}${n} item${n === 1 ? '' : 's'}`;
+    }
     case 'delivery':
       return block.content.source === 'shop' ? 'Rates from your shop' : `${block.content.zones.filter((z) => z.area.trim()).length} areas written by hand`;
     case 'comparison':
@@ -239,10 +239,10 @@ export function summarizeBlock(block: Block): string {
       return `${block.content.slides.length} slide${block.content.slides.length === 1 ? '' : 's'}`;
     case 'brandHeader':
       return block.content.name || (block.content.logoUrl ? 'Logo' : 'No name yet');
-    case 'linkCollection':{
-        const n = block.content.groups.reduce((s, g) => s + g.links.length, 0);
-        return `${n} link${n === 1 ? '' : 's'} in ${block.content.groups.length} group${block.content.groups.length === 1 ? '' : 's'}`;
-      }
+    case 'linkCollection': {
+      const n = block.content.groups.reduce((s, g) => s + g.links.length, 0);
+      return `${n} link${n === 1 ? '' : 's'} in ${block.content.groups.length} group${block.content.groups.length === 1 ? '' : 's'}`;
+    }
     case 'qrCode':
       return block.content.target === 'page' ? 'Opens this page' : block.content.url || 'No link yet';
     case 'document':
@@ -252,7 +252,7 @@ export function summarizeBlock(block: Block): string {
     case 'shopCategories':
       return block.content.collectionIds.length ? `${block.content.collectionIds.length} collections` : 'All collections';
     case 'checkoutButton':
-      return block.content.mode === 'checkout' ? block.content.productId ? block.content.label || 'Buy now' : 'No product chosen' : block.content.url ? 'Payment link' : 'No payment link';
+      return block.content.mode === 'checkout' ? (block.content.productId ? block.content.label || 'Buy now' : 'No product chosen') : block.content.url ? 'Payment link' : 'No payment link';
     case 'poll':
       return block.content.question || 'No question yet';
     case 'community':
@@ -269,10 +269,10 @@ export function summarizeBlock(block: Block): string {
       return `${block.content.items.length} pick${block.content.items.length === 1 ? '' : 's'}`;
     case 'backToTop':
       return block.content.label || 'Back to top';
-    case 'faqAssistant':{
-        const n = block.content.facts.filter((f) => f.question.trim() && f.answer.trim()).length;
-        return n ? `${n} approved answer${n === 1 ? '' : 's'}` : 'No approved answers yet';
-      }
+    case 'faqAssistant': {
+      const n = block.content.facts.filter((f) => f.question.trim() && f.answer.trim()).length;
+      return n ? `${n} approved answer${n === 1 ? '' : 's'}` : 'No approved answers yet';
+    }
     default:
       return '';
   }
@@ -283,12 +283,12 @@ function stableJson(value: unknown): string {
   return JSON.stringify(value, (_k, v: unknown) => {
     if (v && typeof v === 'object' && !Array.isArray(v)) {
       const o = v as Record<string, unknown>;
-      return Object.keys(o).
-      sort().
-      reduce<Record<string, unknown>>((acc, k) => {
-        if (o[k] !== undefined) acc[k] = o[k];
-        return acc;
-      }, {});
+      return Object.keys(o)
+        .sort()
+        .reduce<Record<string, unknown>>((acc, k) => {
+          if (o[k] !== undefined) acc[k] = o[k];
+          return acc;
+        }, {});
     }
     return v;
   });
@@ -317,6 +317,6 @@ export function docSignature(doc: PageDocument | null): string {
     homeLabel: doc.homeLabel ?? null,
     pages: (doc.pages ?? []).map((p) => ({ id: p.id, title: p.title, path: p.path, seo: p.seo, hideFromNav: !!p.hideFromNav, membersOnly: p.membersOnly ?? null, blocks: visible(p.blocks) })),
     redirects: doc.redirects ?? [],
-    coBrand: doc.coBrand ? { p: doc.coBrand.partnershipId, n: doc.coBrand.partnerName, l: doc.coBrand.leadName } : null
+    coBrand: doc.coBrand ? { p: doc.coBrand.partnershipId, n: doc.coBrand.partnerName, l: doc.coBrand.leadName } : null,
   });
 }

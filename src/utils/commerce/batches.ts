@@ -26,18 +26,18 @@ const norm = (loc?: string) => loc ?? MAIN_BRANCH;
 export const sortBatches = (list: StockBatch[]) => [...list].sort((a, b) => (a.expiresOn ?? '9999').localeCompare(b.expiresOn ?? '9999') || a.receivedAt.localeCompare(b.receivedAt));
 
 /** Batches at one location, or every batch when no location is given. */
-export const batchesAt = (v: ProductVariant, loc?: string) => loc === undefined ? v.batches ?? [] : (v.batches ?? []).filter((b) => locOf(b) === loc);
+export const batchesAt = (v: ProductVariant, loc?: string) => (loc === undefined ? v.batches ?? [] : (v.batches ?? []).filter((b) => locOf(b) === loc));
 
 export const batchedQty = (v: ProductVariant, loc?: string) => batchesAt(v, loc).reduce((s, b) => s + b.qty, 0);
 
 /** Adds a received batch at a location (main shop by default). Same code, expiry and location tops up the existing one. */
 export function addBatch(v: ProductVariant, code: string, expiresOn: string | null, qty: number, loc?: string): ProductVariant {
-  if (qty <= 0 || !code.trim() && !expiresOn) return v;
+  if (qty <= 0 || (!code.trim() && !expiresOn)) return v;
   const where = norm(loc);
   const list = v.batches ?? [];
   const same = list.find((b) => b.code === code.trim() && b.expiresOn === expiresOn && locOf(b) === where);
   const fresh: StockBatch = { id: uid('lot'), code: code.trim(), expiresOn, qty, receivedAt: new Date().toISOString(), ...(where === MAIN_BRANCH ? {} : { branchId: where }) };
-  const next = same ? list.map((b) => b === same ? { ...b, qty: b.qty + qty } : b) : [...list, fresh];
+  const next = same ? list.map((b) => (b === same ? { ...b, qty: b.qty + qty } : b)) : [...list, fresh];
   return { ...v, batches: sortBatches(next) };
 }
 
@@ -50,13 +50,13 @@ function takeFefo(v: ProductVariant, loc: string, n: number, batchId: string | u
   const taken: StockBatch[] = [];
   let left = n;
   const take = (list: StockBatch[], pick: (b: StockBatch) => boolean) =>
-  list.map((b) => {
-    if (left <= 0 || locOf(b) !== loc || !pick(b)) return b;
-    const used = Math.min(b.qty, left);
-    left -= used;
-    if (used > 0) taken.push({ ...b, qty: used });
-    return { ...b, qty: b.qty - used };
-  });
+    list.map((b) => {
+      if (left <= 0 || locOf(b) !== loc || !pick(b)) return b;
+      const used = Math.min(b.qty, left);
+      left -= used;
+      if (used > 0) taken.push({ ...b, qty: used });
+      return { ...b, qty: b.qty - used };
+    });
   let list = sortBatches(v.batches ?? []);
   if (batchId) list = take(list, (b) => b.id === batchId);
   list = take(list, (b) => !!b.expiresOn && !isExpired(b, today));
@@ -81,7 +81,7 @@ export function moveBatches(v: ProductVariant, from: string, to: string, qty: nu
   taken.forEach((t) => {
     const same = list.find((b) => b.code === t.code && b.expiresOn === t.expiresOn && locOf(b) === to);
     const moved: StockBatch = { ...t, id: uid('lot'), branchId: to === MAIN_BRANCH ? undefined : to };
-    list = same ? list.map((b) => b === same ? { ...b, qty: b.qty + t.qty } : b) : [...list, moved];
+    list = same ? list.map((b) => (b === same ? { ...b, qty: b.qty + t.qty } : b)) : [...list, moved];
   });
   return sortBatches(list);
 }

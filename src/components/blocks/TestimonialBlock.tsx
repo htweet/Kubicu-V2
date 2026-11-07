@@ -15,9 +15,9 @@ export function TestimonialBlock({ block, theme, mode }: BlockProps<'testimonial
         icon={QuoteIcon}
         title={c.quote && c.name && !c.permission ? 'Hidden until you confirm permission' : 'Add a real customer quote'}
         hint={c.quote && c.name ? 'Tick “I have permission” in the inspector to show this' : 'Quote, name and where it came from'}
-        theme={theme} />);
-
-
+        theme={theme}
+      />
+    );
   }
 
   return (
@@ -30,13 +30,13 @@ export function TestimonialBlock({ block, theme, mode }: BlockProps<'testimonial
         {c.avatarUrl && <MediaImage src={c.avatarUrl} alt={c.avatarAlt} loading="lazy" className="h-10 w-10 rounded-full object-cover" />}
         <span>
           <span className="block text-[14px] font-semibold" style={{ color: theme.text }}>{c.name}</span>
-          {(c.role || c.source) &&
-          <span className="block text-[12px]" style={{ color: theme.mutedText }}>
+          {(c.role || c.source) && (
+            <span className="block text-[12px]" style={{ color: theme.mutedText }}>
               {[c.role, c.source && `via ${c.source}`].filter(Boolean).join(' · ')}
             </span>
-          }
+          )}
         </span>
       </figcaption>
-    </figure>);
-
+    </figure>
+  );
 }

@@ -16,7 +16,7 @@ export const kubicuCompany = {
   /** kub.icu is KUBICU's only domain. Three public addresses only (D235). */
   legalEmail: 'legal@kub.icu',
   salesEmail: 'sales@kub.icu',
-  generalEmail: 'hello@kub.icu'
+  generalEmail: 'hello@kub.icu',
 };
 
 /** One-line identification used in legal pages, invoices and the footer. */

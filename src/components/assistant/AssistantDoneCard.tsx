@@ -28,7 +28,7 @@ export function AssistantDoneCard({
         <div className="min-w-0">
           <p className="text-label font-semibold text-fg">{session.answers.mode === 'add' ? 'New sections added to your page' : 'Your page is ready to finish'}</p>
           <ul className="mt-1.5 flex flex-col gap-0.5">
-            {plan.creates.map((c) => <li key={c} className="text-caption text-fg-muted">
+            {plan.creates.map(c => <li key={c} className="text-caption text-fg-muted">
                 · {c}
               </li>)}
           </ul>
@@ -48,7 +48,7 @@ export function AssistantDoneCard({
       {plan.gaps.length > 0 && <div className="mt-4 border-t border-line pt-3">
           <p className="text-caption font-semibold text-fg">Before you publish</p>
           <ul className="mt-1.5 flex flex-col divide-y divide-line">
-            {plan.gaps.map((g) => <li key={g} className="flex items-center gap-2 py-1.5">
+            {plan.gaps.map(g => <li key={g} className="flex items-center gap-2 py-1.5">
                 <PencilLineIcon size={13} className="shrink-0 text-warning" aria-hidden />
                 <span className="min-w-0 flex-1 text-caption text-fg">{g}</span>
                 <button type="button" onClick={() => navigate(canvas)} className="shrink-0 text-caption font-semibold text-action hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
@@ -76,11 +76,11 @@ function QuickLink({
   to,
   icon: Icon,
   label
-
-
-
-
-}: {to: string;icon: BoxIcon;label: string;}) {
+}: {
+  to: string;
+  icon: BoxIcon;
+  label: string;
+}) {
   return <li>
       <Link to={to} className="inline-flex h-8 items-center gap-1.5 rounded-full border border-line px-3 text-caption font-medium text-fg transition-colors duration-150 hover:border-line-strong hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
         <Icon size={13} aria-hidden /> {label} <ArrowUpRightIcon size={12} className="text-fg-subtle" aria-hidden />

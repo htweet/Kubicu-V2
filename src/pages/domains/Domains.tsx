@@ -32,10 +32,10 @@ export function Domains() {
 
   const spaces = useMemo(
     () =>
-    [{ id: MAIN_SPACE_ID, name: tr('Main page') }, ...activeExtraSpaces(current).map((s) => ({ id: s.id, name: s.name }))].
-    map((s) => ({ id: s.id, label: `${s.name} · kub.icu/${spaceHandle(current.id, s.id) ?? '…'}`, short: s.name })).
-    filter((s) => spaceDoc(current.id, s.id)),
-    [current, tr]
+      [{ id: MAIN_SPACE_ID, name: tr('Main page') }, ...activeExtraSpaces(current).map((s) => ({ id: s.id, name: s.name }))]
+        .map((s) => ({ id: s.id, label: `${s.name} · kub.icu/${spaceHandle(current.id, s.id) ?? '…'}`, short: s.name }))
+        .filter((s) => spaceDoc(current.id, s.id)),
+    [current, tr],
   );
   const labelFor = (id: string) => spaces.find((s) => s.id === id)?.short ?? tr('an archived space');
   const mainHandle = spaceHandle(current.id, MAIN_SPACE_ID) ?? '';
@@ -46,15 +46,15 @@ export function Domains() {
         title="Domains"
         description="Show your page on a domain you own, like adaeze.com. Your kub.icu link always keeps working."
         actions={
-        planOk ?
-        <Button leadingIcon={PlusIcon} disabled={!can.allowed} title={can.allowed ? undefined : can.reason} onClick={() => setOpen(true)}>
+          planOk ? (
+            <Button leadingIcon={PlusIcon} disabled={!can.allowed} title={can.allowed ? undefined : can.reason} onClick={() => setOpen(true)}>
               Connect a domain
-            </Button> :
-
-        <UpgradeButton plan={DOMAIN_PLAN} feature="Custom domains" variant="primary" />
-
-        } />
-      
+            </Button>
+          ) : (
+            <UpgradeButton plan={DOMAIN_PLAN} feature="Custom domains" variant="primary" />
+          )
+        }
+      />
 
       <section aria-label={tr('Your free address')} className="flex flex-wrap items-center justify-between gap-3 border-y border-line py-4">
         <div className="min-w-0">
@@ -66,8 +66,8 @@ export function Domains() {
         </Button>
       </section>
 
-      {!planOk && data.domains.length === 0 ?
-      <Card id="domain-upsell" emphasis="primary">
+      {!planOk && data.domains.length === 0 ? (
+        <Card id="domain-upsell" emphasis="primary">
         <div className="grid gap-8 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           <div>
             <h2 className="text-heading font-semibold text-fg">{tr('Your own domain, on Creator')}</h2>
@@ -84,40 +84,40 @@ export function Domains() {
             <li className="text-caption text-fg-subtle">{tr('QR codes and campaign links are on every plan.')}</li>
           </ul>
         </div>
-        </Card> :
-
-      <>
-          {!planOk &&
-        <InlineAlert tone="warning" title="Your plan no longer includes custom domains" action={<UpgradeButton plan={DOMAIN_PLAN} feature="Custom domains" />}>
+        </Card>
+      ) : (
+        <>
+          {!planOk && (
+            <InlineAlert tone="warning" title="Your plan no longer includes custom domains" action={<UpgradeButton plan={DOMAIN_PLAN} feature="Custom domains" />}>
               {tr('Connected domains keep working, but you can’t add new ones.')}
             </InlineAlert>
-        }
-          {data.domains.length === 0 ?
-        <EmptyState
-          framed
-          icon={GlobeIcon}
-          title="No domains yet"
-          description="Bought a domain from Whogohost, Qservers, Namecheap or elsewhere? Connect it in about 5 minutes."
-          action={
-          <Button leadingIcon={PlusIcon} disabled={!can.allowed} onClick={() => setOpen(true)}>
+          )}
+          {data.domains.length === 0 ? (
+              <EmptyState
+                framed
+                icon={GlobeIcon}
+                title="No domains yet"
+                description="Bought a domain from Whogohost, Qservers, Namecheap or elsewhere? Connect it in about 5 minutes."
+                action={
+                  <Button leadingIcon={PlusIcon} disabled={!can.allowed} onClick={() => setOpen(true)}>
                     Connect a domain
                   </Button>
-          } /> :
-
-
-        <div className="flex flex-col gap-4">
-              {data.domains.map((d) =>
-          <DomainCard key={d.id} domain={d} spaceLabel={labelFor(d.spaceId)} spaces={spaces.map((s) => ({ id: s.id, label: s.label, short: s.short }))} canManage={can.allowed} reason={can.reason} />
-          )}
+                }
+              />
+          ) : (
+            <div className="flex flex-col gap-4">
+              {data.domains.map((d) => (
+                <DomainCard key={d.id} domain={d} spaceLabel={labelFor(d.spaceId)} spaces={spaces.map((s) => ({ id: s.id, label: s.label, short: s.short }))} canManage={can.allowed} reason={can.reason} />
+              ))}
             </div>
-        }
+          )}
           <p className="text-caption text-fg-subtle">
             {tr('Prototype: DNS checks and certificates are simulated, and the record targets are examples until hosting is chosen.')}
           </p>
         </>
-      }
+      )}
 
       <ConnectDomainDialog open={open} onClose={() => setOpen(false)} spaces={spaces} />
-    </div>);
-
+    </div>
+  );
 }

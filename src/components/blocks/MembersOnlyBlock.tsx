@@ -30,6 +30,6 @@ export function MembersOnlyBlock({ block, theme: t, mode }: BlockProps<'membersO
           Visitors see your teaser and a sign-in button instead.
         </span>
       </span>
-    </div>);
-
+    </div>
+  );
 }

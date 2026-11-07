@@ -21,8 +21,8 @@ export function ServicesCard() {
       const message = ok ? `Test ${svc.mode === 'test' ? 'transaction' : 'message'} accepted by the simulated ${svc.name.toLowerCase()} service` : svc.failsWith!;
       setStore((s) => audit({ ...s, integrationTests: { ...s.integrationTests, [svc.id]: { at: new Date().toISOString(), ok, message, by: staffActor(s) } } }, { area: 'integrations', action: `Sent a test to ${svc.name} — ${ok ? 'passed' : 'failed'}`, target: svc.name, reason: message }));
       setBusy(null);
-      if (ok) toast.success(`${svc.name}: test passed`, { description: message });else
-      toast.error(`${svc.name}: test failed`, { description: message });
+      if (ok) toast.success(`${svc.name}: test passed`, { description: message });
+      else toast.error(`${svc.name}: test failed`, { description: message });
     }, 700);
   };
 
@@ -37,28 +37,28 @@ export function ServicesCard() {
                 <span className="flex flex-wrap items-center gap-2 text-label font-semibold text-fg">
                   {svc.name}
                   <Badge tone={svc.mode === 'test' ? 'info' : 'neutral'}>{svc.mode === 'test' ? 'Test mode' : 'Preview'}</Badge>
-                  {last &&
-                  <Badge tone={last.ok ? 'success' : 'danger'} dot>
+                  {last && (
+                    <Badge tone={last.ok ? 'success' : 'danger'} dot>
                       {last.ok ? 'Last test passed' : 'Last test failed'}
                     </Badge>
-                  }
+                  )}
                 </span>
                 <span className="block text-caption text-fg-subtle">
                   {svc.purpose} · needs: {svc.partner}
                 </span>
-                {last &&
-                <span className={last.ok ? 'block text-caption text-fg-muted' : 'block text-caption text-danger'}>
+                {last && (
+                  <span className={last.ok ? 'block text-caption text-fg-muted' : 'block text-caption text-danger'}>
                     {last.message} · {last.by.split(' ·')[0]} · {formatRelative(last.at)}
                   </span>
-                }
+                )}
               </span>
               <Button size="sm" variant="secondary" leadingIcon={SendIcon} loading={busy === svc.id} onClick={() => test(svc)}>
                 Send test
               </Button>
-            </li>);
-
+            </li>
+          );
         })}
       </ul>
-    </Card>);
-
+    </Card>
+  );
 }

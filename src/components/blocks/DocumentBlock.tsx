@@ -40,6 +40,6 @@ export function DocumentBlock({ block, theme, mode }: BlockProps<'document'>) {
           {host && <span className="ml-3 text-[12px]" style={{ color: theme.mutedText }}>{tr('on {site}', { site: host })}</span>}
         </div>
       </div>
-    </section>);
-
+    </section>
+  );
 }

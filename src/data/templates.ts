@@ -11,18 +11,18 @@ export const blankTemplateDoc: PageDocument = {
   seo: { title: 'Untitled page', description: '' },
   theme: pageThemePresets[0].theme,
   blocks: [
-  {
-    id: 'tpl_b_profile',
-    type: 'profile',
-    schemaVersion: 1,
-    style: { align: 'center', emphasis: 'default' },
-    layout: { spacing: 'normal' },
-    behaviour: { trackClicks: true, openInNewTab: true },
-    visibility: { hidden: false },
-    accessibility: { label: '' },
-    createdAt: '2026-10-01T09:00:00.000Z',
-    updatedAt: '2026-10-01T09:00:00.000Z',
-    content: { name: 'Your name', tagline: '', avatarUrl: '', avatarAlt: '', location: '' }
-  }]
-
+    {
+      id: 'tpl_b_profile',
+      type: 'profile',
+      schemaVersion: 1,
+      style: { align: 'center', emphasis: 'default' },
+      layout: { spacing: 'normal' },
+      behaviour: { trackClicks: true, openInNewTab: true },
+      visibility: { hidden: false },
+      accessibility: { label: '' },
+      createdAt: '2026-10-01T09:00:00.000Z',
+      updatedAt: '2026-10-01T09:00:00.000Z',
+      content: { name: 'Your name', tagline: '', avatarUrl: '', avatarAlt: '', location: '' },
+    },
+  ],
 };

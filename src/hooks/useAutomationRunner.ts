@@ -30,11 +30,11 @@ export function useAutomationRunner() {
       if (active.length === 0) return;
       const fired = new Set(data.firedKeys ?? []);
       const now = Date.now();
-      const due: {a: Automation;ev: LiveEvent;}[] = [];
+      const due: { a: Automation; ev: LiveEvent }[] = [];
       for (const a of active) for (const ev of eventsFor(a, fired, { ops: data, commerce, workspace: current, now })) due.push({ a, ev });
       if (due.length === 0) return;
       const memberName = (id: string | null | undefined) => team.data.members.find((m) => m.id === id)?.name ?? 'a team member';
-      applySystem((d) => due.slice(0, PER_PASS).reduce<OpsData>((acc, { a, ev }) => (acc.firedKeys ?? []).includes(ev.key) ? acc : runLive(acc, a, ev, { commerce, memberName }), d));
+      applySystem((d) => due.slice(0, PER_PASS).reduce<OpsData>((acc, { a, ev }) => ((acc.firedKeys ?? []).includes(ev.key) ? acc : runLive(acc, a, ev, { commerce, memberName })), d));
     };
     // A short delay lets the change that triggered this render settle first.
     const soon = window.setTimeout(pass, 1500);

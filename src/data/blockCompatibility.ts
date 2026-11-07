@@ -19,7 +19,7 @@ export const pageLevelOnly: Partial<Record<BlockType, string>> = {
   anchorNav: 'Jump links point at page sections, so they sit on the page.',
   backToTop: 'Back to top belongs at the very end of the page.',
   membersOnly: 'Members-only hides the page blocks below it, so it can’t sit inside a container.',
-  campaignSpotlight: 'A campaign spotlight is a page-level feature with its own schedule.'
+  campaignSpotlight: 'A campaign spotlight is a page-level feature with its own schedule.',
 };
 
 /** Extra limits per container, on top of `pageLevelOnly`. */
@@ -37,12 +37,12 @@ const notIn: Record<ContainerType, Partial<Record<BlockType, string>>> = {
     team: 'Team portraits get too small inside a column. Use a Section.',
     figures: 'Figures already sit side by side; use a Section.',
     logoStrip: 'A logo strip runs edge to edge; use a Section.',
-    agenda: 'An agenda reads best at full width; use a Section or Tabs.'
+    agenda: 'An agenda reads best at full width; use a Section or Tabs.',
   },
   tabs: {
     spacer: 'Spacing inside a tab comes from the tab itself.',
-    divider: 'Tabs already separate their contents.'
-  }
+    divider: 'Tabs already separate their contents.',
+  },
 };
 
 export interface Fit {
@@ -62,5 +62,5 @@ export function fitsIn(type: BlockType, container: ContainerType): Fit {
 export const containerRules: Record<ContainerType, string> = {
   section: 'Holds up to 4 blocks stacked under one heading, width and background. Anything except containers and page-level blocks.',
   columns: 'Each block is one column (2–4). Best for text, images, forms, single products, quotes and contact details. Grids, galleries and wide tables need a Section instead. Columns stack on phones.',
-  tabs: 'Each block is one tab (up to 4). Becomes an accordion on phones. Spacers and dividers aren’t needed inside tabs.'
+  tabs: 'Each block is one tab (up to 4). Becomes an accordion on phones. Spacers and dividers aren’t needed inside tabs.',
 };

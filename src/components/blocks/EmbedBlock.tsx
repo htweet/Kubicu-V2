@@ -25,8 +25,8 @@ export function EmbedBlock({ block, theme, mode }: BlockProps<'embed'>) {
       <figure>
         <VideoBlock block={asVideo} theme={theme} mode={mode} />
         {c.caption && <figcaption className="mt-2 text-[13px]" style={{ color: theme.mutedText }}>{c.caption}</figcaption>}
-      </figure>);
-
+      </figure>
+    );
   }
   const host = (() => {
     try {
@@ -45,6 +45,6 @@ export function EmbedBlock({ block, theme, mode }: BlockProps<'embed'>) {
         <ExternalLinkIcon size={18} aria-hidden style={{ color: theme.text }} />
       </PageAction>
       {mode === 'edit' && <p className="mt-2 text-[12px]" style={{ color: theme.mutedText }}>{tr('Shown as a link card:')} {tr(parsed.reason)}</p>}
-    </div>);
-
+    </div>
+  );
 }

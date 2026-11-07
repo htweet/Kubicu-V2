@@ -8,7 +8,7 @@ import { PageHeader } from './PageHeader';
  * A workspace screen KUBICU has switched off for now (D464). The page stays reachable and named so owners know
  * it exists; nothing they saved is lost.
  */
-export function ModuleUnavailable({ name, description }: {name: string;description?: string;}) {
+export function ModuleUnavailable({ name, description }: { name: string; description?: string }) {
   const { t: tr } = useT();
   return (
     <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-8 px-5 py-8 md:px-10 md:py-12">
@@ -23,11 +23,11 @@ export function ModuleUnavailable({ name, description }: {name: string;descripti
         </div>
         <Link
           to="/app"
-          className="inline-flex h-10 items-center rounded-md border border-line bg-canvas px-4 text-label font-semibold text-fg transition-colors duration-150 hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-          
+          className="inline-flex h-10 items-center rounded-md border border-line bg-canvas px-4 text-label font-semibold text-fg transition-colors duration-150 hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+        >
           {tr('Back to Overview')}
         </Link>
       </section>
-    </div>);
-
+    </div>
+  );
 }

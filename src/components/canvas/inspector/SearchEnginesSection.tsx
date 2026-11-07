@@ -38,8 +38,8 @@ export function SearchEnginesSection() {
       </div>
       <IndexingFields idPrefix="search" />
 
-      {!hidden &&
-      <>
+      {!hidden && (
+        <>
           <div className="rounded-md border border-line bg-canvas p-3" aria-label={tr('How it may look on Google')}>
             <p className="flex items-center gap-1.5 text-meta text-fg-subtle"><SearchIcon size={11} aria-hidden /> {tr('Google result (example)')}</p>
             <p className="mt-1.5 truncate text-caption text-fg-muted">{publicUrl(site.handle)}</p>
@@ -51,15 +51,15 @@ export function SearchEnginesSection() {
           <div className="flex flex-col divide-y divide-line rounded-md border border-line">
             <Disclosure open={showMap} onToggle={() => setShowMap((v) => !v)} label={tr('Sitemap')} summary={mapSummary}>
               <ul className="flex max-h-64 flex-col gap-1.5 overflow-y-auto scroll-quiet">
-                {entries.map((e, i) =>
-              <li key={`${e.url}-${i}`} className="grid grid-cols-[4.5rem_minmax(0,1fr)] gap-2 text-caption">
+                {entries.map((e, i) => (
+                  <li key={`${e.url}-${i}`} className="grid grid-cols-[4.5rem_minmax(0,1fr)] gap-2 text-caption">
                     <span className="text-fg-subtle">{tr(e.kind)}</span>
                     <span className="min-w-0">
                       <span className="block truncate text-fg">{e.label}</span>
                       <span className="block truncate text-fg-subtle">{e.url.replace('https://', '')}</span>
                     </span>
                   </li>
-              )}
+                ))}
               </ul>
               <p className="mt-2 text-caption text-fg-subtle">{tr('Drafts, hidden and members-only pages, sold-out-forever products and past events are left out. Updated automatically when you publish.')}</p>
             </Disclosure>
@@ -69,12 +69,12 @@ export function SearchEnginesSection() {
             </Disclosure>
           </div>
         </>
-      }
-    </section>);
-
+      )}
+    </section>
+  );
 }
 
-function Disclosure({ open, onToggle, label, summary, children }: {open: boolean;onToggle: () => void;label: string;summary: string;children: React.ReactNode;}) {
+function Disclosure({ open, onToggle, label, summary, children }: { open: boolean; onToggle: () => void; label: string; summary: string; children: React.ReactNode }) {
   return (
     <div className="px-3 py-2.5">
       <button type="button" onClick={onToggle} aria-expanded={open} className="flex w-full items-start gap-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
@@ -85,6 +85,6 @@ function Disclosure({ open, onToggle, label, summary, children }: {open: boolean
         </span>
       </button>
       {open && <div className="mt-3">{children}</div>}
-    </div>);
-
+    </div>
+  );
 }

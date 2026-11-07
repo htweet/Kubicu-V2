@@ -2,447 +2,448 @@ import type { HelpCategory } from '../../types/help';
 
 /** Step-by-step guides for spaces, Commerce settings, money tools, services and workspace settings (D274). */
 export const businessGuides: HelpCategory[] = [
-{
-  id: 'spaces',
-  title: 'Spaces',
-  summary: 'Extra pages with their own link: a plain page, events, fundraisers, pop-up shops and more.',
-  icon: 'layout',
-  group: 'Build',
-  articles: [
   {
-    id: 'space-new',
-    q: 'How do I add a new space?',
-    a: 'A space is an extra page with its own link. Choose a plain Page, or a type built for a job — Campaign, DealRoom, Event, Fundraiser, Pop-up shop, Booking page or Members area.',
-    steps: ['Open My Spaces and choose “New space”.', 'Pick a type. “Page” is an ordinary page with no dates or rules.', 'Name it — the link is made from the name.', 'Choose Create. It opens in the canvas.'],
-    where: 'My Spaces → New space',
-    shot: {
-      frame: 'app',
-      nav: 'My Spaces',
-      title: 'My Spaces',
-      sheet: 'New space',
-      items: [
-      { kind: 'row', label: 'Page', meta: 'An ordinary page on its own link', badge: 'Selected', marker: 2 },
-      { kind: 'row', label: 'Event', meta: 'Tickets, guest list, check-in' },
-      { kind: 'row', label: 'Fundraiser', meta: 'Verified workspaces only' },
-      { kind: 'field', label: 'Name', value: 'Our story', marker: 3 },
-      { kind: 'button', label: 'Create', primary: true, marker: 4 }]
-
-    },
-    tips: ['Extra spaces count toward your plan’s space allowance.'],
-    related: ['spaces', 'space-event', 'space-fundraiser']
+    id: 'spaces',
+    title: 'Spaces',
+    summary: 'Extra pages with their own link: a plain page, events, fundraisers, pop-up shops and more.',
+    icon: 'layout',
+    group: 'Build',
+    articles: [
+      {
+        id: 'space-new',
+        q: 'How do I add a new space?',
+        a: 'A space is an extra page with its own link. Choose a plain Page, or a type built for a job — Campaign, DealRoom, Event, Fundraiser, Pop-up shop, Booking page or Members area.',
+        steps: ['Open My Spaces and choose “New space”.', 'Pick a type. “Page” is an ordinary page with no dates or rules.', 'Name it — the link is made from the name.', 'Choose Create. It opens in the canvas.'],
+        where: 'My Spaces → New space',
+        shot: {
+          frame: 'app',
+          nav: 'My Spaces',
+          title: 'My Spaces',
+          sheet: 'New space',
+          items: [
+            { kind: 'row', label: 'Page', meta: 'An ordinary page on its own link', badge: 'Selected', marker: 2 },
+            { kind: 'row', label: 'Event', meta: 'Tickets, guest list, check-in' },
+            { kind: 'row', label: 'Fundraiser', meta: 'Verified workspaces only' },
+            { kind: 'field', label: 'Name', value: 'Our story', marker: 3 },
+            { kind: 'button', label: 'Create', primary: true, marker: 4 },
+          ],
+        },
+        tips: ['Extra spaces count toward your plan’s space allowance.'],
+        related: ['spaces', 'space-event', 'space-fundraiser'],
+      },
+      {
+        id: 'space-event',
+        q: 'How do I make an event page?',
+        a: 'An Event space is linked to one event in Commerce → Events. Before it starts, tickets are on sale; during it, directions and updates move up; afterwards it becomes a recap with a sign-up for the next one.',
+        steps: ['New space → Event.', 'Pick an existing event or create one.', 'Arrange the page in the canvas; use “Show during” on blocks for Before, During and After.', 'Publish. Sold out shows a waitlist automatically.'],
+        where: 'My Spaces → New space → Event',
+        related: ['create-event', 'checkin'],
+      },
+      {
+        id: 'space-fundraiser',
+        q: 'How do I run a fundraiser?',
+        a: 'Fundraisers need Creator or above and a verified workspace. Every payment goes to you as it arrives — the goal is a target, not a condition.',
+        steps: ['Finish verification first (Commerce → Verification).', 'New space → Fundraiser.', 'Set a goal, an end date and a required “what the money is for”.', 'Publish. The counter shows only real payments, minus refunds.', 'Post updates and export supporters from the fundraiser panel in the canvas.'],
+        where: 'My Spaces → New space → Fundraiser',
+        plan: 'Creator and above · verified workspaces',
+        tips: ['Supporters stay anonymous unless they choose to show their name.', 'The page says plainly that it’s a payment to the organiser, not a tax-deductible donation.'],
+        related: ['verify'],
+      },
+      {
+        id: 'space-popup',
+        q: 'How do I set up a pop-up shop?',
+        a: 'A Pop-up shop space is tied to one place and up to 5 opening sessions, with chosen products for pickup only.',
+        steps: ['New space → Pop-up shop.', 'Add the address and sessions.', 'Pick the products and an optional stall stock limit.', 'Publish. The page shows Open now, Opens at or Closed.'],
+        where: 'My Spaces → New space → Pop-up shop',
+      },
+      {
+        id: 'space-booking',
+        q: 'What are Booking page and Members area spaces?',
+        a: 'A Booking page is a focused page for one or more services. A Members area holds pages only signed-in subscribers can see, with a welcome card for everyone else.',
+        where: 'My Spaces → New space',
+        related: ['services', 'members-signin'],
+        plan: 'Members area: Pro and above',
+      },
+    ],
   },
   {
-    id: 'space-event',
-    q: 'How do I make an event page?',
-    a: 'An Event space is linked to one event in Commerce → Events. Before it starts, tickets are on sale; during it, directions and updates move up; afterwards it becomes a recap with a sign-up for the next one.',
-    steps: ['New space → Event.', 'Pick an existing event or create one.', 'Arrange the page in the canvas; use “Show during” on blocks for Before, During and After.', 'Publish. Sold out shows a waitlist automatically.'],
-    where: 'My Spaces → New space → Event',
-    related: ['create-event', 'checkin']
+    id: 'commerce-settings',
+    title: 'Commerce settings',
+    summary: 'Receipts, checkout, payment methods, bank accounts, VAT, policies and opening hours.',
+    icon: 'store',
+    group: 'Sell & get paid',
+    articles: [
+      {
+        id: 'cs-receipts',
+        q: 'How do I put my business details on receipts?',
+        a: 'Add your address, CAC number, TIN, logo and a footer note. A live receipt preview shows exactly what buyers get.',
+        steps: ['Open Commerce → Settings → Business & receipts.', 'Fill in the details you want shown.', 'Check the preview on the right, then Save.'],
+        where: 'Commerce → Settings → Business & receipts',
+        shot: {
+          frame: 'app',
+          nav: 'Commerce',
+          path: 'Commerce → Settings',
+          title: 'Business & receipts',
+          items: [
+            { kind: 'tabs', tabs: ['Business & receipts', 'Checkout', 'Payment methods', 'Tax', 'Policies'], active: 0, marker: 1 },
+            { kind: 'field', label: 'CAC number', value: 'RC 1234567', marker: 2 },
+            { kind: 'field', label: 'Footer note', value: 'Thank you for buying from us!' },
+            { kind: 'row', label: 'Receipt preview', meta: 'Adaeze Atelier · RC 1234567', marker: 3 },
+            { kind: 'button', label: 'Save', primary: true },
+          ],
+        },
+      },
+      {
+        id: 'cs-checkout',
+        q: 'How do I change what checkout asks for?',
+        a: 'Choose which details are required, set a minimum order value and add an optional terms tick box. Phone is always required because it’s how orders reach buyers.',
+        steps: ['Commerce → Settings → Checkout.', 'Set each detail to Required, Optional or Off.', 'Add a minimum order and terms if you want them. Save.'],
+        where: 'Commerce → Settings → Checkout',
+      },
+      {
+        id: 'cs-payment-methods',
+        q: 'How do I choose payment methods and add my bank accounts?',
+        a: 'Turn on card, bank transfer and pay on delivery. Bank transfer can be a one-time account from the provider, your own accounts, or both — the payer chooses.',
+        steps: [
+          'Commerce → Settings → Payment methods.',
+          'Switch on the methods you accept.',
+          'Under Bank transfer, choose “Provider account”, “My own accounts” or both.',
+          'Add each of your accounts with bank, number and account name.',
+          'Save. Transfers to your own accounts wait for you to confirm them.',
+        ],
+        where: 'Commerce → Settings → Payment methods',
+        shot: {
+          frame: 'app',
+          nav: 'Commerce',
+          path: 'Commerce → Settings',
+          title: 'Payment methods',
+          items: [
+            { kind: 'toggle', label: 'Card', on: true, marker: 2 },
+            { kind: 'toggle', label: 'Bank transfer', on: true },
+            { kind: 'toggle', label: 'Pay on delivery', on: false },
+            { kind: 'chips', chips: ['Provider account', 'My own accounts', 'Both'], active: 2, marker: 3 },
+            { kind: 'row', label: 'GTBank · 0123456789', meta: 'Adaeze Atelier Ltd', badge: 'Default', marker: 4 },
+            { kind: 'button', label: 'Add account' },
+            { kind: 'note', label: 'USSD isn’t available yet.' },
+          ],
+        },
+        related: ['pl-confirm', 'pod'],
+      },
+      {
+        id: 'cs-tax',
+        q: 'How do I charge VAT?',
+        a: 'Turn VAT on and choose whether your prices already include it or it’s added at checkout. Receipts and the Sales report show VAT separately.',
+        steps: ['Commerce → Settings → Tax.', 'Switch VAT on (7.5%, example figure).', 'Choose “Prices include VAT” or “Add VAT at checkout”. Save.'],
+        where: 'Commerce → Settings → Tax',
+      },
+      {
+        id: 'cs-store-status',
+        q: 'Can I pause my shop or set opening hours?',
+        a: 'Pause the store with a message for visitors, and set opening hours by day. Pickup uses the same hours. Payment links can pause too.',
+        steps: ['Commerce → Settings → Store status.', 'Switch on “Pause store” and write a message, or set hours per day.', 'Tick “Pause payment links too” if needed. Save.'],
+        where: 'Commerce → Settings → Store status',
+      },
+      {
+        id: 'cs-policies',
+        q: 'Where do I set my returns policy?',
+        a: 'Policies holds structured returns rules used at checkout, on receipts and in the Delivery & returns block — set once, shown everywhere.',
+        where: 'Commerce → Settings → Policies',
+        steps: ['Commerce → Settings → Policies.', 'Choose how many days, condition and who pays return delivery.', 'Save. Your page and receipts update.'],
+      },
+    ],
   },
   {
-    id: 'space-fundraiser',
-    q: 'How do I run a fundraiser?',
-    a: 'Fundraisers need Creator or above and a verified workspace. Every payment goes to you as it arrives — the goal is a target, not a condition.',
-    steps: ['Finish verification first (Commerce → Verification).', 'New space → Fundraiser.', 'Set a goal, an end date and a required “what the money is for”.', 'Publish. The counter shows only real payments, minus refunds.', 'Post updates and export supporters from the fundraiser panel in the canvas.'],
-    where: 'My Spaces → New space → Fundraiser',
-    plan: 'Creator and above · verified workspaces',
-    tips: ['Supporters stay anonymous unless they choose to show their name.', 'The page says plainly that it’s a payment to the organiser, not a tax-deductible donation.'],
-    related: ['verify']
+    id: 'money-tools',
+    title: 'Payment links and the Sales report',
+    summary: 'Get paid without a product, confirm transfers, and understand your sales.',
+    icon: 'wallet',
+    group: 'Sell & get paid',
+    articles: [
+      {
+        id: 'pl-create',
+        q: 'How do I create a payment link?',
+        a: 'A payment link gets you paid without a product: a fixed amount, an amount the payer chooses, or a list of items. You choose what details to collect and what happens after paying.',
+        steps: [
+          'Commerce → Payment links → New link.',
+          'Choose the amount type and enter the amount (or a maximum and up to 4 suggested amounts).',
+          'Add an image and description for the pay page.',
+          'Under Details to collect, set email and address and add up to 5 questions.',
+          'Choose payment methods, whether the payer covers the fee, and a thank-you message. Save and share.',
+        ],
+        where: 'Commerce → Payment links',
+        shot: {
+          frame: 'app',
+          nav: 'Commerce',
+          path: 'Commerce → Payment links',
+          title: 'Payment links',
+          sheet: 'New payment link',
+          items: [
+            { kind: 'tabs', tabs: ['Fixed', 'Payer chooses', 'Items'], active: 1, marker: 2 },
+            { kind: 'chips', chips: ['₦5,000', '₦10,000', '₦20,000'], marker: 2 },
+            { kind: 'field', label: 'Description', value: 'Deposit for your outfit', marker: 3 },
+            { kind: 'field', label: 'Your question', value: 'Event date', marker: 4 },
+            { kind: 'toggle', label: 'Payer covers the processing fee', on: true, marker: 5 },
+            { kind: 'button', label: 'Create link', primary: true },
+          ],
+        },
+        related: ['pl-confirm', 'payment-links'],
+      },
+      {
+        id: 'pl-confirm',
+        q: 'How do I confirm a transfer to my own account?',
+        a: 'When a payer sends money to your own account and taps “I’ve sent it”, the payment waits in “Waiting for you to confirm”. It only counts once you confirm.',
+        steps: ['Open the payment link (or order) and find “Waiting for you to confirm”.', 'Check your bank app — not an SMS alert.', 'Choose “Confirm received” or “Not received”.'],
+        where: 'Commerce → Payment links → a link',
+        tips: ['You’re notified each time a transfer needs confirming.'],
+      },
+      {
+        id: 'pl-refund',
+        q: 'How do I refund a payment-link payment?',
+        a: 'Open the payment, choose Refund, pick full or partial and give a reason. Your processing fee isn’t returned.',
+        where: 'Commerce → Payment links → a payment',
+      },
+      {
+        id: 'sales-report',
+        q: 'How do I read the Sales report?',
+        a: 'What you receive leads, with average order value and repeat customers, a revenue chart, income by type, payment method, product, visitor source and VAT collected.',
+        steps: ['Commerce → Reports.', 'Choose the dates, and turn on “Compare with previous period”.', 'Filter by space if you want.', 'Export CSV or PDF, or an accounting file with the Accounting export extension.'],
+        where: 'Commerce → Reports',
+        shot: {
+          frame: 'app',
+          nav: 'Commerce',
+          path: 'Commerce → Reports',
+          title: 'Sales report',
+          actions: [{ kind: 'button', label: 'Export', marker: 4 }],
+          items: [
+            { kind: 'chips', chips: ['This month', 'Last month', 'Custom'], active: 0, marker: 2 },
+            { kind: 'stats', stats: [{ label: 'You receive', value: '₦1.24m' }, { label: 'Orders', value: '86' }, { label: 'Avg order', value: '₦14,400' }, { label: 'Repeat', value: '31%' }] },
+            { kind: 'chart', label: 'Revenue' },
+            { kind: 'row', label: 'By source', meta: 'Instagram ₦520k · WhatsApp ₦410k', marker: 3 },
+          ],
+        },
+        tips: ['Sample entries are always left out of exports.'],
+      },
+      {
+        id: 'loyalty',
+        q: 'How do loyalty points work?',
+        a: 'With the Loyalty points extension, customers earn 1 point per ₦100 spent, matched by phone number. 500 points become a one-time ₦500 code at checkout (example figures). Refunds take points back.',
+        steps: ['Extensions → Loyalty points → Install.', 'Customers see points earned on their receipt.', 'Each contact in Audience shows their balance.'],
+        where: 'Extensions → Loyalty points',
+        plan: 'Creator and above',
+      },
+    ],
   },
   {
-    id: 'space-popup',
-    q: 'How do I set up a pop-up shop?',
-    a: 'A Pop-up shop space is tied to one place and up to 5 opening sessions, with chosen products for pickup only.',
-    steps: ['New space → Pop-up shop.', 'Add the address and sessions.', 'Pick the products and an optional stall stock limit.', 'Publish. The page shows Open now, Opens at or Closed.'],
-    where: 'My Spaces → New space → Pop-up shop'
+    id: 'services-tools',
+    title: 'Quotes, jobs, deliveries and calls',
+    summary: 'Quote and invoice work, book riders, add meeting links and show proof of your work.',
+    icon: 'briefcase',
+    group: 'Serve & grow',
+    articles: [
+      {
+        id: 'qj-quote',
+        q: 'How do I send a quote and turn it into a job?',
+        a: 'Quotes & jobs lets you price work line by line, send a link the client can accept, then track it as a job and invoice it.',
+        steps: ['Install Quotes & jobs from Extensions (free).', 'Quotes & jobs → New quote. Add the client and line items.', 'Send the link on WhatsApp.', 'When accepted, it becomes a job. Mark stages as you go.', 'Choose Invoice to bill the balance.'],
+        where: 'Quotes & jobs',
+        shot: {
+          frame: 'app',
+          nav: 'Quotes & jobs',
+          title: 'Quotes & jobs',
+          actions: [{ kind: 'button', label: 'New quote', primary: true, marker: 2 }],
+          items: [
+            { kind: 'tabs', tabs: ['Quotes', 'Jobs', 'Invoices'], active: 0 },
+            { kind: 'row', label: 'Q-0042 · Bridal party of six', meta: 'Sent · ₦180,000', badge: 'Sent', marker: 3 },
+            { kind: 'row', label: 'Q-0041 · Birthday shoot', meta: 'Accepted → Job', badge: 'Accepted', marker: 4 },
+          ],
+        },
+        related: ['milestones'],
+      },
+      {
+        id: 'bk-video',
+        q: 'How do online bookings get a meeting link?',
+        a: 'Connect Google Meet, Zoom or Microsoft Teams, then pick it on each online service. Every booking gets its own link straight away.',
+        steps: ['Bookings → Availability → Video calls → Connect.', 'Open an online service and set Meeting link to the app.', 'New bookings show the link with Copy, Open and New link. Customers see “Join on …”.'],
+        where: 'Bookings → Availability → Video calls',
+        simulated: 'Links look real but don’t open meetings in this version.',
+        related: ['services'],
+      },
+      {
+        id: 'deliveries',
+        q: 'How do I book a rider for an order?',
+        a: 'Deliveries gets quotes from courier partners for an order, books a rider and gives the buyer a delivery code.',
+        steps: ['Open the order and choose “Book delivery”.', 'Compare the quotes and pick one.', 'Share the delivery code with the buyer; the rider enters it on hand-over.'],
+        where: 'Deliveries',
+        simulated: 'Couriers are simulated in this version.',
+      },
+      {
+        id: 'voice-store',
+        q: 'Can I add products by speaking?',
+        a: 'Voice-to-Store turns what you say into draft products — name, price and options — for you to check before saving.',
+        steps: ['Open Voice-to-Store and tap the microphone.', 'Say, for example, “Ankara wrap dress, fifteen thousand, sizes S to L”.', 'Check the drafts and choose Save to products.'],
+        where: 'Voice-to-Store',
+        tips: ['English speech only for now.'],
+      },
+      {
+        id: 'proof-work',
+        q: 'How do I show proof of my work and ask for reviews?',
+        a: 'Proof of work lists finished jobs linked to real orders, bookings or quotes, and sends review links only to customers who completed one.',
+        steps: ['Open Proof of work → Add work.', 'Link it to a completed order, booking or job and add a photo.', 'Publish it, and send a review request from the same screen.', 'Add a Proof block to your page.'],
+        where: 'Proof of work',
+      },
+      {
+        id: 'trust-share',
+        q: 'How do I share my Trust Passport card?',
+        a: 'Share a picture of your Trust Passport card — business name, level, the checks you’ve met, your score in a ring and a QR code to your public passport page.',
+        steps: ['Open Trust Passport → Share card.', 'Keep “Show my score on the card” ticked, or untick it.', 'Download the picture or share it on WhatsApp.'],
+        where: 'Trust Passport → Share card',
+        shot: {
+          frame: 'app',
+          nav: 'Trust Passport',
+          title: 'Trust Passport',
+          sheet: 'Share your card',
+          items: [
+            { kind: 'row', label: 'Adaeze Atelier · Trusted', meta: 'Verified · 42 completed orders · Few refunds', badge: '82/100', marker: 2 },
+            { kind: 'toggle', label: 'Show my score on the card', on: true, marker: 2 },
+            { kind: 'button', label: 'Share on WhatsApp', primary: true, marker: 3 },
+            { kind: 'button', label: 'Download picture', marker: 3 },
+          ],
+        },
+        related: ['trust'],
+      },
+    ],
   },
   {
-    id: 'space-booking',
-    q: 'What are Booking page and Members area spaces?',
-    a: 'A Booking page is a focused page for one or more services. A Members area holds pages only signed-in subscribers can see, with a welcome card for everyone else.',
-    where: 'My Spaces → New space',
-    related: ['services', 'members-signin'],
-    plan: 'Members area: Pro and above'
-  }]
-
-},
-{
-  id: 'commerce-settings',
-  title: 'Commerce settings',
-  summary: 'Receipts, checkout, payment methods, bank accounts, VAT, policies and opening hours.',
-  icon: 'store',
-  group: 'Sell & get paid',
-  articles: [
-  {
-    id: 'cs-receipts',
-    q: 'How do I put my business details on receipts?',
-    a: 'Add your address, CAC number, TIN, logo and a footer note. A live receipt preview shows exactly what buyers get.',
-    steps: ['Open Commerce → Settings → Business & receipts.', 'Fill in the details you want shown.', 'Check the preview on the right, then Save.'],
-    where: 'Commerce → Settings → Business & receipts',
-    shot: {
-      frame: 'app',
-      nav: 'Commerce',
-      path: 'Commerce → Settings',
-      title: 'Business & receipts',
-      items: [
-      { kind: 'tabs', tabs: ['Business & receipts', 'Checkout', 'Payment methods', 'Tax', 'Policies'], active: 0, marker: 1 },
-      { kind: 'field', label: 'CAC number', value: 'RC 1234567', marker: 2 },
-      { kind: 'field', label: 'Footer note', value: 'Thank you for buying from us!' },
-      { kind: 'row', label: 'Receipt preview', meta: 'Adaeze Atelier · RC 1234567', marker: 3 },
-      { kind: 'button', label: 'Save', primary: true }]
-
-    }
+    id: 'workspace-settings',
+    title: 'Workspace settings',
+    summary: 'Business details, roles, notifications, privacy, sign-in for teams and developer tools.',
+    icon: 'settings',
+    group: 'Run your workspace',
+    articles: [
+      {
+        id: 'set-business',
+        q: 'Where do I set my business name, currency and WhatsApp?',
+        a: 'Settings → Business holds the details used everywhere: business name, currency, business WhatsApp and location.',
+        steps: ['Open Settings → Business.', 'Update the details.', 'Save. Pages, receipts and messages use them straight away.'],
+        where: 'Settings → Business',
+        shot: {
+          frame: 'app',
+          nav: 'Settings',
+          title: 'Settings',
+          items: [
+            { kind: 'tabs', tabs: ['Team', 'Business', 'Roles', 'Plan & billing', 'Notifications', 'Privacy'], active: 1, marker: 1 },
+            { kind: 'field', label: 'Business name', value: 'Adaeze Atelier', marker: 2 },
+            { kind: 'field', label: 'Business WhatsApp', value: '+234 803 000 0000' },
+            { kind: 'button', label: 'Save', primary: true, marker: 3 },
+          ],
+        },
+      },
+      {
+        id: 'set-roles',
+        q: 'What can each role do?',
+        a: 'Owner, Admin, Editor, Sales and Viewer each have a fixed set of permissions. Settings → Roles shows them in a table.',
+        where: 'Settings → Roles',
+        related: ['invite', 'approvals'],
+      },
+      {
+        id: 'set-notifications',
+        q: 'How do I choose which notifications I get?',
+        a: 'The bell collects orders, stock, bookings, payments, link checks and more. Choose which events reach you in the app, by email or by WhatsApp, plus a daily digest and quiet hours.',
+        steps: ['Settings → Notifications.', 'Tick In app, Email or WhatsApp for each event.', 'Set quiet hours or the daily digest. Save.'],
+        where: 'Settings → Notifications',
+        simulated: 'Only in-app notifications are delivered in this version.',
+      },
+      {
+        id: 'set-privacy',
+        q: 'How do I control visit recording and data?',
+        a: 'Settings → Privacy turns visit recording on or off, can leave out your own visits, manages sample visits and deletes all visit data.',
+        where: 'Settings → Privacy',
+        steps: ['Settings → Privacy.', 'Switch recording or “Don’t count my own visits”.', 'Use “Delete all visit data” only if you mean it — it asks to confirm.'],
+      },
+      {
+        id: 'set-developers',
+        q: 'Where are API keys and webhooks?',
+        a: 'Settings → Developers has API keys, webhook addresses with signed deliveries and retries, and a sandbox. Automations can also “Call a webhook”.',
+        where: 'Settings → Developers',
+        plan: 'Business and above',
+      },
+      {
+        id: 'set-workspaces',
+        q: 'Can I have more than one workspace?',
+        a: 'Yes. Each workspace has its own pages, team and plan. Switch from the workspace menu at the top of the sidebar, or create a new one there.',
+        where: 'Sidebar → workspace menu',
+      },
+      {
+        id: 'media',
+        q: 'Where are my photos and files kept?',
+        a: 'Media holds everything you upload, in folders such as Brand assets and Product images. Pick from it anywhere you add an image.',
+        where: 'Media',
+        steps: ['Open Media.', 'Upload, or drag photos in.', 'Move them into folders and add alt text.'],
+      },
+      {
+        id: 'side-sheets',
+        q: 'Why do forms open from the side?',
+        a: 'Workspace actions — adding a contact, a product, changing plan — open in a panel from the right so you can still see the screen behind. On phones the panel rises from the bottom. Close it with ✕ or Escape.',
+      },
+    ],
   },
   {
-    id: 'cs-checkout',
-    q: 'How do I change what checkout asks for?',
-    a: 'Choose which details are required, set a minimum order value and add an optional terms tick box. Phone is always required because it’s how orders reach buyers.',
-    steps: ['Commerce → Settings → Checkout.', 'Set each detail to Required, Optional or Off.', 'Add a minimum order and terms if you want them. Save.'],
-    where: 'Commerce → Settings → Checkout'
+    id: 'marketplace-guides',
+    title: 'Marketplace, extensions and templates',
+    summary: 'Find add-ons, see what they connect to, and choose templates and themes.',
+    icon: 'puzzle',
+    group: 'Run your workspace',
+    articles: [
+      {
+        id: 'mk-browse',
+        q: 'How do I find something in the Marketplace?',
+        a: 'The public Marketplace lists apps, templates, themes, blocks and sections, automation recipes and industry kits. Search in everyday words — “appointment” finds Bookings.',
+        steps: ['Go to kub.icu/marketplace.', 'Search, or pick a kind and category.', 'Open a listing to see what’s inside, what it can read or change and what it works with.', 'Use the action box to add it to your workspace.'],
+        where: 'kub.icu/marketplace',
+        shot: {
+          frame: 'site',
+          path: 'kub.icu/marketplace',
+          title: 'Marketplace',
+          items: [
+            { kind: 'field', label: 'Search', value: 'appointment', marker: 2 },
+            { kind: 'chips', chips: ['Apps', 'Templates', 'Themes', 'Blocks', 'Recipes'], active: 0, marker: 2 },
+            { kind: 'row', label: 'Bookings', meta: 'Works with Pages · Checkout · Audience', badge: 'Free', marker: 3 },
+            { kind: 'button', label: 'Add to workspace', primary: true, marker: 4 },
+          ],
+        },
+        related: ['install', 'ext-works-with'],
+      },
+      {
+        id: 'ext-works-with',
+        q: 'What does “Works with” on an extension mean?',
+        a: 'Every extension connects to at least two parts of KUBICU. “Works with” lists them, each with what the extension does there and a link to that screen.',
+        where: 'Extensions → an extension',
+      },
+      {
+        id: 'ext-tracking',
+        q: 'How do I add Meta Pixel, TikTok Pixel or Google tag?',
+        a: 'Install the extension, paste your ID, and it loads on your pages after the visitor accepts the cookie notice. Paid checkouts are recorded with their value.',
+        steps: ['Extensions → Meta Pixel (or TikTok Pixel, Google tag) → Install.', 'Paste your pixel or tag ID.', 'Publish your page.'],
+        where: 'Extensions',
+        plan: 'Creator and above',
+      },
+      {
+        id: 'ext-feed-seo',
+        q: 'How do I list products on Google or Meta, and get found in search?',
+        a: 'Product feed creates a Meta and a Google file to upload, and lists anything left out and why. Search Console & SEO adds Google’s verification tag, a sitemap and a list of pages missing a search description.',
+        steps: ['Install Product feed and download each file.', 'Upload it in Meta Commerce Manager or Google Merchant Center.', 'Install Search Console & SEO, paste the verification code, and download the sitemap.'],
+        where: 'Extensions → Product feed / Search Console & SEO',
+        tips: ['Re-upload the feed after big product changes — it doesn’t update itself yet.'],
+      },
+      {
+        id: 'tpl-elite',
+        q: 'What are Elite templates and Signature themes?',
+        a: 'Elite templates are 24 complete page layouts for particular businesses. Signature themes change only colours, fonts and finishes — your layout never moves. Try any theme on your own draft before applying it.',
+        steps: ['Open Templates and pick the Elite or Themes tab.', 'Open one to preview it on phone and desktop.', 'For a theme, choose “Try on my page”, then Apply.'],
+        where: 'Templates',
+        plan: 'Free plan: 4 themes · Creator and above: all',
+        related: ['theme', 'templates'],
+      },
+    ],
   },
-  {
-    id: 'cs-payment-methods',
-    q: 'How do I choose payment methods and add my bank accounts?',
-    a: 'Turn on card, bank transfer and pay on delivery. Bank transfer can be a one-time account from the provider, your own accounts, or both — the payer chooses.',
-    steps: [
-    'Commerce → Settings → Payment methods.',
-    'Switch on the methods you accept.',
-    'Under Bank transfer, choose “Provider account”, “My own accounts” or both.',
-    'Add each of your accounts with bank, number and account name.',
-    'Save. Transfers to your own accounts wait for you to confirm them.'],
-
-    where: 'Commerce → Settings → Payment methods',
-    shot: {
-      frame: 'app',
-      nav: 'Commerce',
-      path: 'Commerce → Settings',
-      title: 'Payment methods',
-      items: [
-      { kind: 'toggle', label: 'Card', on: true, marker: 2 },
-      { kind: 'toggle', label: 'Bank transfer', on: true },
-      { kind: 'toggle', label: 'Pay on delivery', on: false },
-      { kind: 'chips', chips: ['Provider account', 'My own accounts', 'Both'], active: 2, marker: 3 },
-      { kind: 'row', label: 'GTBank · 0123456789', meta: 'Adaeze Atelier Ltd', badge: 'Default', marker: 4 },
-      { kind: 'button', label: 'Add account' },
-      { kind: 'note', label: 'USSD isn’t available yet.' }]
-
-    },
-    related: ['pl-confirm', 'pod']
-  },
-  {
-    id: 'cs-tax',
-    q: 'How do I charge VAT?',
-    a: 'Turn VAT on and choose whether your prices already include it or it’s added at checkout. Receipts and the Sales report show VAT separately.',
-    steps: ['Commerce → Settings → Tax.', 'Switch VAT on (7.5%, example figure).', 'Choose “Prices include VAT” or “Add VAT at checkout”. Save.'],
-    where: 'Commerce → Settings → Tax'
-  },
-  {
-    id: 'cs-store-status',
-    q: 'Can I pause my shop or set opening hours?',
-    a: 'Pause the store with a message for visitors, and set opening hours by day. Pickup uses the same hours. Payment links can pause too.',
-    steps: ['Commerce → Settings → Store status.', 'Switch on “Pause store” and write a message, or set hours per day.', 'Tick “Pause payment links too” if needed. Save.'],
-    where: 'Commerce → Settings → Store status'
-  },
-  {
-    id: 'cs-policies',
-    q: 'Where do I set my returns policy?',
-    a: 'Policies holds structured returns rules used at checkout, on receipts and in the Delivery & returns block — set once, shown everywhere.',
-    where: 'Commerce → Settings → Policies',
-    steps: ['Commerce → Settings → Policies.', 'Choose how many days, condition and who pays return delivery.', 'Save. Your page and receipts update.']
-  }]
-
-},
-{
-  id: 'money-tools',
-  title: 'Payment links and the Sales report',
-  summary: 'Get paid without a product, confirm transfers, and understand your sales.',
-  icon: 'wallet',
-  group: 'Sell & get paid',
-  articles: [
-  {
-    id: 'pl-create',
-    q: 'How do I create a payment link?',
-    a: 'A payment link gets you paid without a product: a fixed amount, an amount the payer chooses, or a list of items. You choose what details to collect and what happens after paying.',
-    steps: [
-    'Commerce → Payment links → New link.',
-    'Choose the amount type and enter the amount (or a maximum and up to 4 suggested amounts).',
-    'Add an image and description for the pay page.',
-    'Under Details to collect, set email and address and add up to 5 questions.',
-    'Choose payment methods, whether the payer covers the fee, and a thank-you message. Save and share.'],
-
-    where: 'Commerce → Payment links',
-    shot: {
-      frame: 'app',
-      nav: 'Commerce',
-      path: 'Commerce → Payment links',
-      title: 'Payment links',
-      sheet: 'New payment link',
-      items: [
-      { kind: 'tabs', tabs: ['Fixed', 'Payer chooses', 'Items'], active: 1, marker: 2 },
-      { kind: 'chips', chips: ['₦5,000', '₦10,000', '₦20,000'], marker: 2 },
-      { kind: 'field', label: 'Description', value: 'Deposit for your outfit', marker: 3 },
-      { kind: 'field', label: 'Your question', value: 'Event date', marker: 4 },
-      { kind: 'toggle', label: 'Payer covers the processing fee', on: true, marker: 5 },
-      { kind: 'button', label: 'Create link', primary: true }]
-
-    },
-    related: ['pl-confirm', 'payment-links']
-  },
-  {
-    id: 'pl-confirm',
-    q: 'How do I confirm a transfer to my own account?',
-    a: 'When a payer sends money to your own account and taps “I’ve sent it”, the payment waits in “Waiting for you to confirm”. It only counts once you confirm.',
-    steps: ['Open the payment link (or order) and find “Waiting for you to confirm”.', 'Check your bank app — not an SMS alert.', 'Choose “Confirm received” or “Not received”.'],
-    where: 'Commerce → Payment links → a link',
-    tips: ['You’re notified each time a transfer needs confirming.']
-  },
-  {
-    id: 'pl-refund',
-    q: 'How do I refund a payment-link payment?',
-    a: 'Open the payment, choose Refund, pick full or partial and give a reason. Your processing fee isn’t returned.',
-    where: 'Commerce → Payment links → a payment'
-  },
-  {
-    id: 'sales-report',
-    q: 'How do I read the Sales report?',
-    a: 'What you receive leads, with average order value and repeat customers, a revenue chart, income by type, payment method, product, visitor source and VAT collected.',
-    steps: ['Commerce → Reports.', 'Choose the dates, and turn on “Compare with previous period”.', 'Filter by space if you want.', 'Export CSV or PDF, or an accounting file with the Accounting export extension.'],
-    where: 'Commerce → Reports',
-    shot: {
-      frame: 'app',
-      nav: 'Commerce',
-      path: 'Commerce → Reports',
-      title: 'Sales report',
-      actions: [{ kind: 'button', label: 'Export', marker: 4 }],
-      items: [
-      { kind: 'chips', chips: ['This month', 'Last month', 'Custom'], active: 0, marker: 2 },
-      { kind: 'stats', stats: [{ label: 'You receive', value: '₦1.24m' }, { label: 'Orders', value: '86' }, { label: 'Avg order', value: '₦14,400' }, { label: 'Repeat', value: '31%' }] },
-      { kind: 'chart', label: 'Revenue' },
-      { kind: 'row', label: 'By source', meta: 'Instagram ₦520k · WhatsApp ₦410k', marker: 3 }]
-
-    },
-    tips: ['Sample entries are always left out of exports.']
-  },
-  {
-    id: 'loyalty',
-    q: 'How do loyalty points work?',
-    a: 'With the Loyalty points extension, customers earn 1 point per ₦100 spent, matched by phone number. 500 points become a one-time ₦500 code at checkout (example figures). Refunds take points back.',
-    steps: ['Extensions → Loyalty points → Install.', 'Customers see points earned on their receipt.', 'Each contact in Audience shows their balance.'],
-    where: 'Extensions → Loyalty points',
-    plan: 'Creator and above'
-  }]
-
-},
-{
-  id: 'services-tools',
-  title: 'Quotes, jobs, deliveries and calls',
-  summary: 'Quote and invoice work, book riders, add meeting links and show proof of your work.',
-  icon: 'briefcase',
-  group: 'Serve & grow',
-  articles: [
-  {
-    id: 'qj-quote',
-    q: 'How do I send a quote and turn it into a job?',
-    a: 'Quotes & jobs lets you price work line by line, send a link the client can accept, then track it as a job and invoice it.',
-    steps: ['Install Quotes & jobs from Extensions (free).', 'Quotes & jobs → New quote. Add the client and line items.', 'Send the link on WhatsApp.', 'When accepted, it becomes a job. Mark stages as you go.', 'Choose Invoice to bill the balance.'],
-    where: 'Quotes & jobs',
-    shot: {
-      frame: 'app',
-      nav: 'Quotes & jobs',
-      title: 'Quotes & jobs',
-      actions: [{ kind: 'button', label: 'New quote', primary: true, marker: 2 }],
-      items: [
-      { kind: 'tabs', tabs: ['Quotes', 'Jobs', 'Invoices'], active: 0 },
-      { kind: 'row', label: 'Q-0042 · Bridal party of six', meta: 'Sent · ₦180,000', badge: 'Sent', marker: 3 },
-      { kind: 'row', label: 'Q-0041 · Birthday shoot', meta: 'Accepted → Job', badge: 'Accepted', marker: 4 }]
-
-    },
-    related: ['milestones']
-  },
-  {
-    id: 'bk-video',
-    q: 'How do online bookings get a meeting link?',
-    a: 'Connect Google Meet, Zoom or Microsoft Teams, then pick it on each online service. Every booking gets its own link straight away.',
-    steps: ['Bookings → Availability → Video calls → Connect.', 'Open an online service and set Meeting link to the app.', 'New bookings show the link with Copy, Open and New link. Customers see “Join on …”.'],
-    where: 'Bookings → Availability → Video calls',
-    simulated: 'Links look real but don’t open meetings in this version.',
-    related: ['services']
-  },
-  {
-    id: 'deliveries',
-    q: 'How do I book a rider for an order?',
-    a: 'Deliveries gets quotes from courier partners for an order, books a rider and gives the buyer a delivery code.',
-    steps: ['Open the order and choose “Book delivery”.', 'Compare the quotes and pick one.', 'Share the delivery code with the buyer; the rider enters it on hand-over.'],
-    where: 'Deliveries',
-    simulated: 'Couriers are simulated in this version.'
-  },
-  {
-    id: 'voice-store',
-    q: 'Can I add products by speaking?',
-    a: 'Voice-to-Store turns what you say into draft products — name, price and options — for you to check before saving.',
-    steps: ['Open Voice-to-Store and tap the microphone.', 'Say, for example, “Ankara wrap dress, fifteen thousand, sizes S to L”.', 'Check the drafts and choose Save to products.'],
-    where: 'Voice-to-Store',
-    tips: ['English speech only for now.']
-  },
-  {
-    id: 'proof-work',
-    q: 'How do I show proof of my work and ask for reviews?',
-    a: 'Proof of work lists finished jobs linked to real orders, bookings or quotes, and sends review links only to customers who completed one.',
-    steps: ['Open Proof of work → Add work.', 'Link it to a completed order, booking or job and add a photo.', 'Publish it, and send a review request from the same screen.', 'Add a Proof block to your page.'],
-    where: 'Proof of work'
-  },
-  {
-    id: 'trust-share',
-    q: 'How do I share my Trust Passport card?',
-    a: 'Share a picture of your Trust Passport card — business name, level, the checks you’ve met, your score in a ring and a QR code to your public passport page.',
-    steps: ['Open Trust Passport → Share card.', 'Keep “Show my score on the card” ticked, or untick it.', 'Download the picture or share it on WhatsApp.'],
-    where: 'Trust Passport → Share card',
-    shot: {
-      frame: 'app',
-      nav: 'Trust Passport',
-      title: 'Trust Passport',
-      sheet: 'Share your card',
-      items: [
-      { kind: 'row', label: 'Adaeze Atelier · Trusted', meta: 'Verified · 42 completed orders · Few refunds', badge: '82/100', marker: 2 },
-      { kind: 'toggle', label: 'Show my score on the card', on: true, marker: 2 },
-      { kind: 'button', label: 'Share on WhatsApp', primary: true, marker: 3 },
-      { kind: 'button', label: 'Download picture', marker: 3 }]
-
-    },
-    related: ['trust']
-  }]
-
-},
-{
-  id: 'workspace-settings',
-  title: 'Workspace settings',
-  summary: 'Business details, roles, notifications, privacy, sign-in for teams and developer tools.',
-  icon: 'settings',
-  group: 'Run your workspace',
-  articles: [
-  {
-    id: 'set-business',
-    q: 'Where do I set my business name, currency and WhatsApp?',
-    a: 'Settings → Business holds the details used everywhere: business name, currency, business WhatsApp and location.',
-    steps: ['Open Settings → Business.', 'Update the details.', 'Save. Pages, receipts and messages use them straight away.'],
-    where: 'Settings → Business',
-    shot: {
-      frame: 'app',
-      nav: 'Settings',
-      title: 'Settings',
-      items: [
-      { kind: 'tabs', tabs: ['Team', 'Business', 'Roles', 'Plan & billing', 'Notifications', 'Privacy'], active: 1, marker: 1 },
-      { kind: 'field', label: 'Business name', value: 'Adaeze Atelier', marker: 2 },
-      { kind: 'field', label: 'Business WhatsApp', value: '+234 803 000 0000' },
-      { kind: 'button', label: 'Save', primary: true, marker: 3 }]
-
-    }
-  },
-  {
-    id: 'set-roles',
-    q: 'What can each role do?',
-    a: 'Owner, Admin, Editor, Sales and Viewer each have a fixed set of permissions. Settings → Roles shows them in a table.',
-    where: 'Settings → Roles',
-    related: ['invite', 'approvals']
-  },
-  {
-    id: 'set-notifications',
-    q: 'How do I choose which notifications I get?',
-    a: 'The bell collects orders, stock, bookings, payments, link checks and more. Choose which events reach you in the app, by email or by WhatsApp, plus a daily digest and quiet hours.',
-    steps: ['Settings → Notifications.', 'Tick In app, Email or WhatsApp for each event.', 'Set quiet hours or the daily digest. Save.'],
-    where: 'Settings → Notifications',
-    simulated: 'Only in-app notifications are delivered in this version.'
-  },
-  {
-    id: 'set-privacy',
-    q: 'How do I control visit recording and data?',
-    a: 'Settings → Privacy turns visit recording on or off, can leave out your own visits, manages sample visits and deletes all visit data.',
-    where: 'Settings → Privacy',
-    steps: ['Settings → Privacy.', 'Switch recording or “Don’t count my own visits”.', 'Use “Delete all visit data” only if you mean it — it asks to confirm.']
-  },
-  {
-    id: 'set-developers',
-    q: 'Where are API keys and webhooks?',
-    a: 'Settings → Developers has API keys, webhook addresses with signed deliveries and retries, and a sandbox. Automations can also “Call a webhook”.',
-    where: 'Settings → Developers',
-    plan: 'Business and above'
-  },
-  {
-    id: 'set-workspaces',
-    q: 'Can I have more than one workspace?',
-    a: 'Yes. Each workspace has its own pages, team and plan. Switch from the workspace menu at the top of the sidebar, or create a new one there.',
-    where: 'Sidebar → workspace menu'
-  },
-  {
-    id: 'media',
-    q: 'Where are my photos and files kept?',
-    a: 'Media holds everything you upload, in folders such as Brand assets and Product images. Pick from it anywhere you add an image.',
-    where: 'Media',
-    steps: ['Open Media.', 'Upload, or drag photos in.', 'Move them into folders and add alt text.']
-  },
-  {
-    id: 'side-sheets',
-    q: 'Why do forms open from the side?',
-    a: 'Workspace actions — adding a contact, a product, changing plan — open in a panel from the right so you can still see the screen behind. On phones the panel rises from the bottom. Close it with ✕ or Escape.'
-  }]
-
-},
-{
-  id: 'marketplace-guides',
-  title: 'Marketplace, extensions and templates',
-  summary: 'Find add-ons, see what they connect to, and choose templates and themes.',
-  icon: 'puzzle',
-  group: 'Run your workspace',
-  articles: [
-  {
-    id: 'mk-browse',
-    q: 'How do I find something in the Marketplace?',
-    a: 'The public Marketplace lists apps, templates, themes, blocks and sections, automation recipes and industry kits. Search in everyday words — “appointment” finds Bookings.',
-    steps: ['Go to kub.icu/marketplace.', 'Search, or pick a kind and category.', 'Open a listing to see what’s inside, what it can read or change and what it works with.', 'Use the action box to add it to your workspace.'],
-    where: 'kub.icu/marketplace',
-    shot: {
-      frame: 'site',
-      path: 'kub.icu/marketplace',
-      title: 'Marketplace',
-      items: [
-      { kind: 'field', label: 'Search', value: 'appointment', marker: 2 },
-      { kind: 'chips', chips: ['Apps', 'Templates', 'Themes', 'Blocks', 'Recipes'], active: 0, marker: 2 },
-      { kind: 'row', label: 'Bookings', meta: 'Works with Pages · Checkout · Audience', badge: 'Free', marker: 3 },
-      { kind: 'button', label: 'Add to workspace', primary: true, marker: 4 }]
-
-    },
-    related: ['install', 'ext-works-with']
-  },
-  {
-    id: 'ext-works-with',
-    q: 'What does “Works with” on an extension mean?',
-    a: 'Every extension connects to at least two parts of KUBICU. “Works with” lists them, each with what the extension does there and a link to that screen.',
-    where: 'Extensions → an extension'
-  },
-  {
-    id: 'ext-tracking',
-    q: 'How do I add Meta Pixel, TikTok Pixel or Google tag?',
-    a: 'Install the extension, paste your ID, and it loads on your pages after the visitor accepts the cookie notice. Paid checkouts are recorded with their value.',
-    steps: ['Extensions → Meta Pixel (or TikTok Pixel, Google tag) → Install.', 'Paste your pixel or tag ID.', 'Publish your page.'],
-    where: 'Extensions',
-    plan: 'Creator and above'
-  },
-  {
-    id: 'ext-feed-seo',
-    q: 'How do I list products on Google or Meta, and get found in search?',
-    a: 'Product feed creates a Meta and a Google file to upload, and lists anything left out and why. Search Console & SEO adds Google’s verification tag, a sitemap and a list of pages missing a search description.',
-    steps: ['Install Product feed and download each file.', 'Upload it in Meta Commerce Manager or Google Merchant Center.', 'Install Search Console & SEO, paste the verification code, and download the sitemap.'],
-    where: 'Extensions → Product feed / Search Console & SEO',
-    tips: ['Re-upload the feed after big product changes — it doesn’t update itself yet.']
-  },
-  {
-    id: 'tpl-elite',
-    q: 'What are Elite templates and Signature themes?',
-    a: 'Elite templates are 24 complete page layouts for particular businesses. Signature themes change only colours, fonts and finishes — your layout never moves. Try any theme on your own draft before applying it.',
-    steps: ['Open Templates and pick the Elite or Themes tab.', 'Open one to preview it on phone and desktop.', 'For a theme, choose “Try on my page”, then Apply.'],
-    where: 'Templates',
-    plan: 'Free plan: 4 themes · Creator and above: all',
-    related: ['theme', 'templates']
-  }]
-
-}];
+];

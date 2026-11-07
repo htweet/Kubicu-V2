@@ -19,15 +19,15 @@ export function findUses(assetId: string, src: UsageSources): MediaUse[] {
   const uses: MediaUse[] = [];
 
   const onPage = (blocks: Block[], pageId: string | null, where: string) =>
-  blocks.forEach((b) => {
-    if (containsString(b, ref))
-    uses.push({
-      kind: 'block',
-      label: blockName(b),
-      detail: `${b.visibility.hidden ? 'Hidden block' : 'Block'} on ${where}`,
-      to: `/app/canvas/${src.draft.id}?block=${b.id}${pageId ? `&page=${pageId}` : ''}`
+    blocks.forEach((b) => {
+      if (containsString(b, ref))
+        uses.push({
+          kind: 'block',
+          label: blockName(b),
+          detail: `${b.visibility.hidden ? 'Hidden block' : 'Block'} on ${where}`,
+          to: `/app/canvas/${src.draft.id}?block=${b.id}${pageId ? `&page=${pageId}` : ''}`,
+        });
     });
-  });
   const multi = sitePages(src.draft).length > 0;
   onPage(src.draft.blocks, null, multi ? `your ${homeLabel(src.draft)} page` : 'your page');
   sitePages(src.draft).forEach((p) => onPage(p.blocks, p.id, `your ${p.title || 'Untitled'} page`));
@@ -53,5 +53,5 @@ export function isInUse(uses: MediaUse[]): boolean {
 /** Whether the data must be kept after removal (live page or history still point at it). */
 export function needsKeeping(assetId: string, src: Pick<UsageSources, 'published' | 'versions'>): boolean {
   const ref = mediaRef(assetId);
-  return !!src.published && containsString(src.published, ref) || src.versions.some((v) => containsString(v.doc, ref));
+  return (!!src.published && containsString(src.published, ref)) || src.versions.some((v) => containsString(v.doc, ref));
 }

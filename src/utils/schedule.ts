@@ -64,9 +64,9 @@ export function timeZoneLabel(): string {
   try {
     const zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     if (zone === 'Africa/Lagos') return 'WAT (Lagos)';
-    const part = new Intl.DateTimeFormat('en-GB', { timeZoneName: 'short' }).
-    formatToParts(new Date()).
-    find((p) => p.type === 'timeZoneName');
+    const part = new Intl.DateTimeFormat('en-GB', { timeZoneName: 'short' })
+      .formatToParts(new Date())
+      .find((p) => p.type === 'timeZoneName');
     return part ? `${part.value} (${zone.split('/').pop()?.replace('_', ' ')})` : zone;
   } catch {
     return 'your local time';

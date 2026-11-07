@@ -20,7 +20,7 @@ interface Props {
   onClose: () => void;
   redirect?: CustomRedirect;
   workspaceId: string;
-  spaces: {id: string;label: string;}[];
+  spaces: { id: string; label: string }[];
 }
 
 const PATH_PATTERN = /^[a-z0-9-]+(?:\/[a-z0-9-]+)*$/;
@@ -60,17 +60,17 @@ export function RedirectDialog({ open, onClose, redirect, workspaceId, spaces }:
   }, [doc, spaceId, commerce, tr]);
 
   const clean = from.trim().replace(/^\/+|\/+$/g, '').toLowerCase();
-  const fromError = !clean ?
-  'Type the address people will visit.' :
-  !PATH_PATTERN.test(clean) ?
-  'Use lowercase letters, numbers, hyphens and / only.' :
-  RESERVED.includes(clean.split('/')[0]) ?
-  tr('“{word}” is used by KUBICU. Pick another word.', { word: clean.split('/')[0] }) :
-  doc && sitePages(doc).some((p) => p.path === clean) ?
-  'A page already uses this address — the page would win. Pick another.' :
-  data.redirects.some((r) => r.spaceId === spaceId && r.from === clean && r.id !== redirect?.id) ?
-  'You already have a redirect from this address.' :
-  undefined;
+  const fromError = !clean
+    ? 'Type the address people will visit.'
+    : !PATH_PATTERN.test(clean)
+      ? 'Use lowercase letters, numbers, hyphens and / only.'
+      : RESERVED.includes(clean.split('/')[0])
+        ? tr('“{word}” is used by KUBICU. Pick another word.', { word: clean.split('/')[0] })
+        : doc && sitePages(doc).some((p) => p.path === clean)
+          ? 'A page already uses this address — the page would win. Pick another.'
+          : data.redirects.some((r) => r.spaceId === spaceId && r.from === clean && r.id !== redirect?.id)
+            ? 'You already have a redirect from this address.'
+            : undefined;
   let urlError: string | undefined;
   if (kind === 'url') {
     try {
@@ -99,14 +99,14 @@ export function RedirectDialog({ open, onClose, redirect, workspaceId, spaces }:
       title={redirect ? 'Edit redirect' : 'Add a redirect'}
       description="Forward an address you choose — handy for printed links, old addresses, or a quick link to your Instagram."
       footer={
-      <>
+        <>
           <Button variant="secondary" onClick={onClose}>
             Cancel
           </Button>
           <Button onClick={save}>{redirect ? 'Save' : 'Add redirect'}</Button>
         </>
-      }>
-      
+      }
+    >
       <div className="flex flex-col gap-4">
         {spaces.length > 1 && <SelectInput id="rd-space" label="Space" value={spaceId} options={spaces.map((s) => ({ value: s.id, label: s.label }))} onChange={setSpaceId} />}
         <TextInput id="rd-from" label="From" prefix={`/${handle}/`.length > 14 ? '…/' : `/${handle}/`} placeholder="menu" value={from} onChange={(e) => setFrom(e.target.value)} error={tried ? fromError : undefined} hint={`kub.icu/${handle}/${clean || 'menu'}`} />
@@ -118,17 +118,17 @@ export function RedirectDialog({ open, onClose, redirect, workspaceId, spaces }:
             value={kind}
             onChange={setKind}
             options={[
-            { value: 'page', label: 'One of my pages' },
-            { value: 'url', label: 'Another website' }]
-            } />
-          
+              { value: 'page', label: 'One of my pages' },
+              { value: 'url', label: 'Another website' },
+            ]}
+          />
         </div>
-        {kind === 'page' ?
-        <SelectInput id="rd-page" label="Page" value={page} options={targets} onChange={setPage} hint={loopError && tried ? loopError : undefined} /> :
-
-        <TextInput id="rd-url" label="Website address" type="url" value={url} onChange={(e) => setUrl(e.target.value)} error={tried ? urlError : undefined} />
-        }
+        {kind === 'page' ? (
+          <SelectInput id="rd-page" label="Page" value={page} options={targets} onChange={setPage} hint={loopError && tried ? loopError : undefined} />
+        ) : (
+          <TextInput id="rd-url" label="Website address" type="url" value={url} onChange={(e) => setUrl(e.target.value)} error={tried ? urlError : undefined} />
+        )}
       </div>
-    </Dialog>);
-
+    </Dialog>
+  );
 }

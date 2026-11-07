@@ -31,7 +31,7 @@ export interface CreateSpaceInput {
   kind: Exclude<SpaceKind, 'main'>;
   name: string;
   /** Builds the first draft once the space id is known. */
-  buildDoc: (ids: {spaceId: string;pageId: string;}) => PageDocument;
+  buildDoc: (ids: { spaceId: string; pageId: string }) => PageDocument;
 }
 
 interface WorkspaceValue {
@@ -71,7 +71,7 @@ function demoWorkspace(plan: WorkspacePlan): Workspace {
     sampleSpacesSeeded: true,
     sampleSpaces2Seeded: true,
     sampleSpacesRound: SAMPLE_SPACES_ROUND,
-    createdAt: '2026-10-14T09:00:00.000Z'
+    createdAt: '2026-10-14T09:00:00.000Z',
   };
 }
 
@@ -82,14 +82,14 @@ function readList(plan: WorkspacePlan): Workspace[] {
     if (Array.isArray(parsed) && parsed.length > 0)
       // The demo workspace gets each round of sample spaces once (they can be archived like any space).
       return parsed.map((w) =>
-      w.id === DEMO_WORKSPACE_ID && (!w.sampleSpacesSeeded || !w.sampleSpaces2Seeded || (w.sampleSpacesRound ?? 2) < SAMPLE_SPACES_ROUND) ?
-      { ...w, spaces: [...(w.spaces ?? []), ...seedSampleSpaces().filter((s) => !(w.spaces ?? []).some((x) => x.id === s.id))], sampleSpacesSeeded: true, sampleSpaces2Seeded: true, sampleSpacesRound: SAMPLE_SPACES_ROUND } :
-      w
+        w.id === DEMO_WORKSPACE_ID && (!w.sampleSpacesSeeded || !w.sampleSpaces2Seeded || (w.sampleSpacesRound ?? 2) < SAMPLE_SPACES_ROUND)
+          ? { ...w, spaces: [...(w.spaces ?? []), ...seedSampleSpaces().filter((s) => !(w.spaces ?? []).some((x) => x.id === s.id))], sampleSpacesSeeded: true, sampleSpaces2Seeded: true, sampleSpacesRound: SAMPLE_SPACES_ROUND }
+          : w,
       );
   } catch {
-
     // Fall through to the default list.
-  }return [demoWorkspace(plan)];
+  }
+  return [demoWorkspace(plan)];
 }
 
 function readSpaceMap(): Record<string, string> {
@@ -108,7 +108,7 @@ function firstPersisted(doc: PageDocument, publish: boolean, now: string): Persi
     publishedAt: publish ? now : null,
     versions: publish ? [{ id: uid('ver'), label: 'Version 1', note: 'First publish', createdAt: now, kind: 'published', doc }] : [],
     lastSavedAt: now,
-    scheduled: null
+    scheduled: null,
   };
 }
 
@@ -123,7 +123,7 @@ export function workspaceInitials(name: string): string {
  * campaigns and DealRooms (D50), sharing one set of products, orders and contacts.
  * `planControl` (Controls panel) sets the current workspace's plan.
  */
-export function WorkspaceProvider({ planControl, children }: {planControl: WorkspacePlan;children: React.ReactNode;}) {
+export function WorkspaceProvider({ planControl, children }: { planControl: WorkspacePlan; children: React.ReactNode }) {
   const [workspaces, setWorkspaces] = useState<Workspace[]>(() => readList(planControl));
   const [currentId, setCurrentId] = useState<string>(() => {
     try {
@@ -142,9 +142,9 @@ export function WorkspaceProvider({ planControl, children }: {planControl: Works
       window.localStorage.setItem(CURRENT_KEY, current.id);
       window.localStorage.setItem(SPACE_KEY, JSON.stringify(spaceMap));
     } catch {
-
       // Storage unavailable — switching still works for this session.
-    }}, [workspaces, current.id, spaceMap]);
+    }
+  }, [workspaces, current.id, spaceMap]);
 
   // Changing the plan in the Controls panel applies it to the workspace you're in.
   const firstRun = useRef(true);
@@ -153,7 +153,7 @@ export function WorkspaceProvider({ planControl, children }: {planControl: Works
       firstRun.current = false;
       return;
     }
-    setWorkspaces((list) => list.map((w) => w.id === currentId ? { ...w, plan: planControl } : w));
+    setWorkspaces((list) => list.map((w) => (w.id === currentId ? { ...w, plan: planControl } : w)));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [planControl]);
 
@@ -163,8 +163,8 @@ export function WorkspaceProvider({ planControl, children }: {planControl: Works
   }, []);
 
   const switchSpace = useCallback(
-    (spaceId: string) => setSpaceMap((m) => m[current.id] === spaceId ? m : { ...m, [current.id]: spaceId }),
-    [current.id]
+    (spaceId: string) => setSpaceMap((m) => (m[current.id] === spaceId ? m : { ...m, [current.id]: spaceId })),
+    [current.id],
   );
 
   const create = useCallback((input: CreateWorkspaceInput) => {
@@ -183,7 +183,7 @@ export function WorkspaceProvider({ planControl, children }: {planControl: Works
       createdAt: now,
       ...(input.whatsapp?.trim() ? { whatsapp: input.whatsapp.trim() } : {}),
       ...(input.country ? { country: input.country, currency: countryInfo(input.country).currency } : {}),
-      ...(input.demoData ? { demoData: demoExpiry(), spaces: seedSampleSpaces(id) } : {})
+      ...(input.demoData ? { demoData: demoExpiry(), spaces: seedSampleSpaces(id) } : {}),
     };
     setWorkspaces((list) => [...list, workspace]);
     setCurrentId(id);
@@ -198,25 +198,25 @@ export function WorkspaceProvider({ planControl, children }: {planControl: Works
       const doc = input.buildDoc({ spaceId, pageId: `page_${current.id}_${spaceId}` });
       writePersistedPage(spaceStorageId(current.id, spaceId), firstPersisted(doc, false, now));
       const space: Space = { id: spaceId, kind: input.kind, name: input.name.trim() || 'Untitled space', createdAt: now, archivedAt: null };
-      setWorkspaces((list) => list.map((w) => w.id === current.id ? { ...w, spaces: [...(w.spaces ?? []), space] } : w));
+      setWorkspaces((list) => list.map((w) => (w.id === current.id ? { ...w, spaces: [...(w.spaces ?? []), space] } : w)));
       return space;
     },
-    [current.id]
+    [current.id],
   );
 
   const setSpaceArchived = useCallback(
     (spaceId: string, archived: boolean) => {
       if (spaceId === MAIN_SPACE_ID) return;
       setWorkspaces((list) =>
-      list.map((w) => w.id === current.id ? { ...w, spaces: (w.spaces ?? []).map((s) => s.id === spaceId ? { ...s, archivedAt: archived ? new Date().toISOString() : null } : s) } : w)
+        list.map((w) => (w.id === current.id ? { ...w, spaces: (w.spaces ?? []).map((s) => (s.id === spaceId ? { ...s, archivedAt: archived ? new Date().toISOString() : null } : s)) } : w)),
       );
-      if (archived) setSpaceMap((m) => m[current.id] === spaceId ? { ...m, [current.id]: MAIN_SPACE_ID } : m);
+      if (archived) setSpaceMap((m) => (m[current.id] === spaceId ? { ...m, [current.id]: MAIN_SPACE_ID } : m));
     },
-    [current.id]
+    [current.id],
   );
 
   const update = useCallback((id: string, patch: Partial<Pick<Workspace, 'name' | 'ownerName' | 'plan' | 'currency' | 'country' | 'whatsapp'>>) => {
-    setWorkspaces((list) => list.map((w) => w.id === id ? { ...w, ...patch } : w));
+    setWorkspaces((list) => list.map((w) => (w.id === id ? { ...w, ...patch } : w)));
   }, []);
 
   const removeDemoData = useCallback(
@@ -224,19 +224,19 @@ export function WorkspaceProvider({ planControl, children }: {planControl: Works
       const ws = current;
       if (!ws.demoData) return;
       removeDemoDataFromStorage(ws.id, (ws.spaces ?? []).map((s) => s.id));
-      const next = workspaces.map((w) => w.id === ws.id ? { ...w, demoData: null, spaces: (w.spaces ?? []).filter((s) => !s.id.startsWith(SAMPLE_SPACE_PREFIX)) } : w);
+      const next = workspaces.map((w) => (w.id === ws.id ? { ...w, demoData: null, spaces: (w.spaces ?? []).filter((s) => !s.id.startsWith(SAMPLE_SPACE_PREFIX)) } : w));
       try {
         window.localStorage.setItem(LIST_KEY, JSON.stringify(next));
         window.localStorage.setItem(SPACE_KEY, JSON.stringify({ ...spaceMap, [ws.id]: MAIN_SPACE_ID }));
       } catch {
-
         // Storage unavailable — the in-memory list still drops the sample spaces.
-      }setWorkspaces(next);
+      }
+      setWorkspaces(next);
       writeRemovedNotice(reason, ws.name);
       // Every module keeps its data in memory; a reload makes them all read the cleaned copies.
       window.location.reload();
     },
-    [current, workspaces, spaceMap]
+    [current, workspaces, spaceMap],
   );
 
   const removeDemoWorkspace = useCallback(() => {
@@ -250,9 +250,9 @@ export function WorkspaceProvider({ planControl, children }: {planControl: Works
       window.localStorage.setItem(CURRENT_KEY, current.id === DEMO_WORKSPACE_ID ? rest[0].id : current.id);
       window.localStorage.setItem(SPACE_KEY, JSON.stringify(nextMap));
     } catch {
-
       // Storage unavailable — the in-memory list still drops it.
-    }setWorkspaces(rest);
+    }
+    setWorkspaces(rest);
     writeDemoWorkspaceNotice('removed');
     window.location.assign('/app');
   }, [workspaces, spaceMap, current.id]);
@@ -270,16 +270,16 @@ export function WorkspaceProvider({ planControl, children }: {planControl: Works
       window.localStorage.setItem(CURRENT_KEY, DEMO_WORKSPACE_ID);
       window.localStorage.setItem(SPACE_KEY, JSON.stringify({ ...spaceMap, [DEMO_WORKSPACE_ID]: MAIN_SPACE_ID }));
     } catch {
-
       // Storage unavailable.
-    }setWorkspaces(next);
+    }
+    setWorkspaces(next);
     writeDemoWorkspaceNotice('restored');
     window.location.assign('/app');
   }, [workspaces, spaceMap, planControl, switchTo]);
 
   const value = useMemo(
     () => ({ workspaces, current, currentSpace, switchTo, switchSpace, create, createSpace, setSpaceArchived, update, removeDemoData, removeDemoWorkspace, restoreDemoWorkspace }),
-    [workspaces, current, currentSpace, switchTo, switchSpace, create, createSpace, setSpaceArchived, update, removeDemoData, removeDemoWorkspace, restoreDemoWorkspace]
+    [workspaces, current, currentSpace, switchTo, switchSpace, create, createSpace, setSpaceArchived, update, removeDemoData, removeDemoWorkspace, restoreDemoWorkspace],
   );
   return <WorkspaceContext.Provider value={value}>{children}</WorkspaceContext.Provider>;
 }

@@ -5,7 +5,7 @@ import { usePlan } from './PlanContext';
 const RenderPlanContext = createContext<PlanInfo | null>(null);
 
 /** The plan of the page being rendered (may differ from the signed-in workspace on public pages). */
-export function RenderPlanProvider({ plan, children }: {plan: PlanInfo;children: React.ReactNode;}) {
+export function RenderPlanProvider({ plan, children }: { plan: PlanInfo; children: React.ReactNode }) {
   return <RenderPlanContext.Provider value={plan}>{children}</RenderPlanContext.Provider>;
 }
 

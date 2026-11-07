@@ -85,7 +85,7 @@ export function PrintKit() {
   const qr = usable.find((q) => q.id === qrId) ?? usable[0];
   const link = qr ? data.links.find((l) => l.id === qr.linkId) : undefined;
   // Small prints need the bare code — captions and frames from the designer would shrink it below scanning size.
-  const style = useMemo(() => qr ? { ...styleOf(qr, initialsOf(current.name)), frame: 'none' as const, frameText: '' } : null, [qr, current.name]);
+  const style = useMemo(() => (qr ? { ...styleOf(qr, initialsOf(current.name)), frame: 'none' as const, frameText: '' } : null), [qr, current.name]);
   const weak = style ? qrChecks(style).contrast.level === 'fail' : false;
   const kit: KitDetails = { ...draft, ink, address: link ? shortDisplay(mainHandle, link.slug, host) : '' };
   const spec = kitItems.find((k) => k.id === item)!;
@@ -97,9 +97,9 @@ export function PrintKit() {
   useEffect(() => {
     if (!link || !style) return setQrUrl(null);
     let alive = true;
-    qrSvg(shortUrl(mainHandle, link.slug, host), style).
-    then((svg) => alive && setQrUrl(svgDataUrl(svg))).
-    catch(() => alive && setQrUrl(null));
+    qrSvg(shortUrl(mainHandle, link.slug, host), style)
+      .then((svg) => alive && setQrUrl(svgDataUrl(svg)))
+      .catch(() => alive && setQrUrl(null));
     return () => {
       alive = false;
     };
@@ -117,22 +117,22 @@ export function PrintKit() {
   };
 
   if (usable.length === 0)
-  return (
-    <div className="flex flex-col gap-6">
+    return (
+      <div className="flex flex-col gap-6">
         <PageHeader title="Print kit" description="Business cards, stickers, swing tags, vouchers, flyers and more — each carrying your QR code." />
           <EmptyState
-        framed
-        icon={QrCodeIcon}
-        title="Make a QR code first"
-        description="Every printed piece uses one of your QR codes, so scans are counted and you can change where it goes without reprinting."
-        action={
-        <Link to="/app/qr" className="inline-flex h-10 items-center gap-2 rounded-md bg-action px-4 text-label font-semibold text-action-fg transition-colors duration-150 hover:bg-action-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+            framed
+            icon={QrCodeIcon}
+            title="Make a QR code first"
+            description="Every printed piece uses one of your QR codes, so scans are counted and you can change where it goes without reprinting."
+            action={
+              <Link to="/app/qr" className="inline-flex h-10 items-center gap-2 rounded-md bg-action px-4 text-label font-semibold text-action-fg transition-colors duration-150 hover:bg-action-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
                 <PlusIcon size={16} aria-hidden /> {tr('New QR code')}
               </Link>
-        } />
-      
-      </div>);
-
+            }
+          />
+      </div>
+    );
 
   const scale = Math.min(1, PREVIEW_W / (spec.widthMm * MM), PREVIEW_H / (spec.heightMm * MM));
   const w = spec.widthMm * MM;
@@ -146,11 +146,11 @@ export function PrintKit() {
         title="Print kit"
         description="Designed print pieces that carry your tracked QR code. Print at home, save a PDF for a print shop, or have them printed and delivered."
         actions={
-        <Button variant="tertiary" leadingIcon={RotateCcwIcon} disabled={!store.data.draft} onClick={reset}>
+          <Button variant="tertiary" leadingIcon={RotateCcwIcon} disabled={!store.data.draft} onClick={reset}>
             Reset design
           </Button>
-        } />
-      
+        }
+      />
 
       <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_420px]">
         <div className="flex min-w-0 flex-col gap-10">
@@ -171,9 +171,9 @@ export function PrintKit() {
                     onClick={() => setItem(k.id)}
                     className={cn(
                       'flex items-start gap-3 rounded-lg border p-3.5 text-left transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
-                      selected ? 'border-action bg-action-soft' : 'border-line bg-raised hover:border-line-strong'
-                    )}>
-                    
+                      selected ? 'border-action bg-action-soft' : 'border-line bg-raised hover:border-line-strong',
+                    )}
+                  >
                     <span className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-md', selected ? 'bg-action text-action-fg' : 'bg-sunken text-fg-muted')} aria-hidden>
                       <Icon size={18} />
                     </span>
@@ -184,8 +184,8 @@ export function PrintKit() {
                         {tr(k.detail)} · {tr(k.perSheet)}
                       </span>
                     </span>
-                  </button>);
-
+                  </button>
+                );
               })}
             </div>
             <p className="mt-3 text-caption text-fg-muted">
@@ -211,8 +211,8 @@ export function PrintKit() {
               pageInk={pageInk}
               photoAllowed={PHOTO_ITEMS.has(item)}
               disabled={!can.allowed}
-              onInk={(mode, custom) => store.update((s) => ({ ...s, inkMode: mode, customInk: custom ?? s.customInk }))} />
-            
+              onInk={(mode, custom) => store.update((s) => ({ ...s, inkMode: mode, customInk: custom ?? s.customInk }))}
+            />
           </section>
 
           <section aria-labelledby="kit-content" className="flex flex-col gap-4 border-t border-line pt-8">
@@ -225,8 +225,8 @@ export function PrintKit() {
               value={qr?.id ?? ''}
               onChange={setQrId}
               options={usable.map((q) => ({ value: q.id, label: data.links.find((l) => l.id === q.linkId)?.name ?? 'QR code' }))}
-              hint={link ? tr('Opens {link} — scans are counted in Analytics, and you can change where it goes without reprinting.', { link: shortDisplay(mainHandle, link.slug, host) }) : undefined} />
-            
+              hint={link ? tr('Opens {link} — scans are counted in Analytics, and you can change where it goes without reprinting.', { link: shortDisplay(mainHandle, link.slug, host) }) : undefined}
+            />
             <KitContentFields
               spec={spec}
               details={kit}
@@ -235,9 +235,9 @@ export function PrintKit() {
               nameError={nameError || undefined}
               onPhoto={(url, px) => {
                 setDraft({ photo: url });
-                store.update((s) => ({ ...s, photoPx: url ? px ?? null : null }));
-              }} />
-            
+                store.update((s) => ({ ...s, photoPx: url ? (px ?? null) : null }));
+              }}
+            />
           </section>
         </div>
 
@@ -247,36 +247,36 @@ export function PrintKit() {
               <h2 id="kit-preview" className="text-label font-semibold text-fg">
                 {tr('Preview · actual design')}
               </h2>
-              {showBack ?
-              <Segmented<'front' | 'back'>
-                ariaLabel="Card side"
-                size="sm"
-                value={side}
-                onChange={setSide}
-                options={[
-                { value: 'front', label: 'Front' },
-                { value: 'back', label: 'Back', icon: FlipHorizontalIcon }]
-                } /> :
-
-
-              <span className="text-caption text-fg-subtle">
+              {showBack ? (
+                <Segmented<'front' | 'back'>
+                  ariaLabel="Card side"
+                  size="sm"
+                  value={side}
+                  onChange={setSide}
+                  options={[
+                    { value: 'front', label: 'Front' },
+                    { value: 'back', label: 'Back', icon: FlipHorizontalIcon },
+                  ]}
+                />
+              ) : (
+                <span className="text-caption text-fg-subtle">
                   {spec.widthMm} × {spec.heightMm} mm
                 </span>
-              }
+              )}
             </div>
             <div className="dot-stage flex min-h-[320px] items-center justify-center px-4 py-8">
-              {qrUrl ?
-              <div style={{ width: w * scale, height: item === 'receipt' ? undefined : h * scale }} className={cn('shadow-lg', item === 'sticker' && 'rounded-full')}>
+              {qrUrl ? (
+                <div style={{ width: w * scale, height: item === 'receipt' ? undefined : h * scale }} className={cn('shadow-lg', item === 'sticker' && 'rounded-full')}>
                   <iframe
-                  title={`${spec.label} preview${previewSide === 'back' ? ', back' : ''}`}
-                  srcDoc={kitPreviewDoc(item, kit, qrUrl, previewSide)}
-                  style={{ width: w, height: h, transform: `scale(${scale})`, transformOrigin: 'top left', border: 0, background: 'transparent', display: 'block' }}
-                  tabIndex={-1} />
-                
-                </div> :
-
-              <QrCodeIcon size={28} className="text-fg-subtle" aria-hidden />
-              }
+                    title={`${spec.label} preview${previewSide === 'back' ? ', back' : ''}`}
+                    srcDoc={kitPreviewDoc(item, kit, qrUrl, previewSide)}
+                    style={{ width: w, height: h, transform: `scale(${scale})`, transformOrigin: 'top left', border: 0, background: 'transparent', display: 'block' }}
+                    tabIndex={-1}
+                  />
+                </div>
+              ) : (
+                <QrCodeIcon size={28} className="text-fg-subtle" aria-hidden />
+              )}
             </div>
             <div className="flex items-center justify-between gap-3 border-t border-line px-4 py-2.5">
               <span className="text-caption text-fg-subtle">{tr('Scaled to fit')}</span>
@@ -297,8 +297,8 @@ export function PrintKit() {
                         <span className="sr-only">{tr(c.level === 'pass' ? 'OK' : c.level === 'warn' ? 'Warning' : 'Must fix')}: </span>
                         {tr(c.text)}
                       </span>
-                    </li>);
-
+                    </li>
+                  );
                 })}
               </ul>
             </div>
@@ -307,15 +307,15 @@ export function PrintKit() {
               <Button leadingIcon={PrinterIcon} fullWidth disabled={!can.allowed || !ready} title={can.allowed ? undefined : can.reason} onClick={print}>
                 {tr('Print it yourself')}
               </Button>
-              {item !== 'receipt' &&
-              <Button variant="secondary" leadingIcon={TruckIcon} fullWidth disabled={!can.allowed || !ready} title={can.allowed ? undefined : can.reason} onClick={() => setOrdering(true)}>
+              {item !== 'receipt' && (
+                <Button variant="secondary" leadingIcon={TruckIcon} fullWidth disabled={!can.allowed || !ready} title={can.allowed ? undefined : can.reason} onClick={() => setOrdering(true)}>
                   Order professionally printed
                 </Button>
-              }
+              )}
               <p className="text-caption text-fg-subtle">
-                {item === 'receipt' ?
-                tr('Opens a print sheet for your 80 mm receipt printer. Print at 100% scale.') :
-                tr('Print at home ({sheet}, at 100% scale — choose “Save as PDF” for a print shop), or have it printed and delivered anywhere in Nigeria from {price}.', { sheet: tr(spec.perSheet), price: formatNgn(printPrices[item as OrderableItem][0].ngn) })}
+                {item === 'receipt'
+                  ? tr('Opens a print sheet for your 80 mm receipt printer. Print at 100% scale.')
+                  : tr('Print at home ({sheet}, at 100% scale — choose “Save as PDF” for a print shop), or have it printed and delivered anywhere in Nigeria from {price}.', { sheet: tr(spec.perSheet), price: formatNgn(printPrices[item as OrderableItem][0].ngn) })}
               </p>
             </div>
           </div>
@@ -326,20 +326,20 @@ export function PrintKit() {
 
       {qrUrl && <KitActualSize open={actual} onClose={() => setActual(false)} spec={spec} kit={kit} qrUrl={qrUrl} />}
 
-      {qrUrl && link && item !== 'receipt' &&
-      <PrintOrderSheet
-        open={ordering}
-        onClose={() => setOrdering(false)}
-        initialItem={item as OrderableItem}
-        kit={kit}
-        qrUrl={qrUrl}
-        qrLinkName={link.name}
-        onPlaced={(o) => {
-          setOrdering(false);
-          setPlacedId(o.id);
-        }} />
-
-      }
-    </div>);
-
+      {qrUrl && link && item !== 'receipt' && (
+        <PrintOrderSheet
+          open={ordering}
+          onClose={() => setOrdering(false)}
+          initialItem={item as OrderableItem}
+          kit={kit}
+          qrUrl={qrUrl}
+          qrLinkName={link.name}
+          onPlaced={(o) => {
+            setOrdering(false);
+            setPlacedId(o.id);
+          }}
+        />
+      )}
+    </div>
+  );
 }

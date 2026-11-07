@@ -5,7 +5,7 @@ interface Recognition {
   lang: string;
   interimResults: boolean;
   continuous: boolean;
-  onresult: ((e: {results: ArrayLike<ArrayLike<{transcript: string;}>>;}) => void) | null;
+  onresult: ((e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null;
   onend: (() => void) | null;
   onerror: (() => void) | null;
   start: () => void;
@@ -15,7 +15,7 @@ type RecognitionCtor = new () => Recognition;
 
 function recognitionCtor(): RecognitionCtor | null {
   if (typeof window === 'undefined') return null;
-  const w = window as unknown as {SpeechRecognition?: RecognitionCtor;webkitSpeechRecognition?: RecognitionCtor;};
+  const w = window as unknown as { SpeechRecognition?: RecognitionCtor; webkitSpeechRecognition?: RecognitionCtor };
   return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
 }
 

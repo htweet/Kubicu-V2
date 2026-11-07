@@ -33,7 +33,7 @@ const BUILD_STEP_MS = 150;
 function readSession(key: string): AssistantSession | null {
   try {
     const raw = window.localStorage.getItem(key);
-    return raw ? JSON.parse(raw) as AssistantSession : null;
+    return raw ? (JSON.parse(raw) as AssistantSession) : null;
   } catch {
     return null;
   }
@@ -72,9 +72,9 @@ export function useAssistant() {
       currentTheme: state.draft.theme,
       pageHasContent: state.draft.blocks.length > 1,
       bookingsReady: market.isActive('bookings'),
-      workspaceName: current.name || undefined
+      workspaceName: current.name || undefined,
     }),
-    [market, plan.id, state.draft.theme, state.draft.blocks.length, current.name]
+    [market, plan.id, state.draft.theme, state.draft.blocks.length, current.name],
   );
   const ctxRef = useRef(ctx);
   ctxRef.current = ctx;
@@ -83,8 +83,8 @@ export function useAssistant() {
     try {
       window.localStorage.setItem(key, JSON.stringify(session));
     } catch {
-
-      /* storage full — the session lasts for this visit */}
+      /* storage full — the session lasts for this visit */
+    }
   }, [key, session]);
 
   useEffect(() => () => window.clearTimeout(typingTimer.current), []);
@@ -101,7 +101,7 @@ export function useAssistant() {
       setTyping(true);
       typingTimer.current = window.setTimeout(run, 450);
     },
-    [typing, reduceMotion]
+    [typing, reduceMotion],
   );
 
   /** Saves photos to Media (logo → Brand assets, product photos → Product images) and hands them to the chat. */
@@ -131,12 +131,12 @@ export function useAssistant() {
       if (items.length) send({ kind: 'images', items });
       return problem;
     },
-    [media, send, session.answers.offer]
+    [media, send, session.answers.offer],
   );
 
   const approve = useCallback((): string | null => {
     if (!usage.canSpend(aiCost.page)) {
-      setSession((s) => s.messages[s.messages.length - 1]?.card === 'credits' ? s : { ...s, messages: [...s.messages, msg(`Building needs ${aiCost.page} AI credits and you have ${usage.remaining} left this month. Nothing has been charged and your plan is kept — you can come back after ${usage.resetsOn}, get more credits, or build it yourself in the canvas.`, { card: 'credits' })] });
+      setSession((s) => (s.messages[s.messages.length - 1]?.card === 'credits' ? s : { ...s, messages: [...s.messages, msg(`Building needs ${aiCost.page} AI credits and you have ${usage.remaining} left this month. Nothing has been charged and your plan is kept — you can come back after ${usage.resetsOn}, get more credits, or build it yourself in the canvas.`, { card: 'credits' })] }));
       return null;
     }
     usage.spend(aiCost.page, 'AI page assistant');
@@ -157,7 +157,7 @@ export function useAssistant() {
       const request = text.trim();
       if (!request) return;
       const focusId = session.focusId;
-      setSession((s) => ({ ...s, changes: (s.changes ?? []).map((c) => c.status === 'pending' ? { ...c, status: 'discarded' } : c), messages: [...s.messages, { id: uid('msg'), role: 'user', text: request, createdAt: new Date().toISOString() }] }));
+      setSession((s) => ({ ...s, changes: (s.changes ?? []).map((c) => (c.status === 'pending' ? { ...c, status: 'discarded' } : c)), messages: [...s.messages, { id: uid('msg'), role: 'user', text: request, createdAt: new Date().toISOString() }] }));
       const run = () => {
         setTyping(false);
         if (typeof navigator !== 'undefined' && navigator.onLine === false) {
@@ -192,7 +192,7 @@ export function useAssistant() {
       setTyping(true);
       typingTimer.current = window.setTimeout(run, 450);
     },
-    [typing, session.stage, session.removed, session.focusId, session.images, usage, state.draft.blocks, state.draft.theme, reduceMotion]
+    [typing, session.stage, session.removed, session.focusId, session.images, usage, state.draft.blocks, state.draft.theme, reduceMotion],
   );
 
   const keepChange = useCallback(
@@ -201,13 +201,13 @@ export function useAssistant() {
       if (!c) return;
       actions.replaceBlocks(c.blocks, c.theme);
       team.log('pages', `changed ${state.draft.title || 'a page'} with the AI page assistant`);
-      setSession((s) => ({ ...s, focusId: undefined, changes: (s.changes ?? []).map((x) => x.id === id ? { ...x, status: 'kept' } : x) }));
+      setSession((s) => ({ ...s, focusId: undefined, changes: (s.changes ?? []).map((x) => (x.id === id ? { ...x, status: 'kept' } : x)) }));
     },
-    [session.changes, actions, team, state.draft.title]
+    [session.changes, actions, team, state.draft.title],
   );
 
   const discardChange = useCallback((id: string) => {
-    setSession((s) => ({ ...s, changes: (s.changes ?? []).map((x) => x.id === id && x.status === 'pending' ? { ...x, status: 'discarded' } : x) }));
+    setSession((s) => ({ ...s, changes: (s.changes ?? []).map((x) => (x.id === id && x.status === 'pending' ? { ...x, status: 'discarded' } : x)) }));
   }, []);
 
   /** Undoes the most recent kept change (one editor undo step). */
@@ -215,9 +215,9 @@ export function useAssistant() {
     (id: string) => {
       if (lastKept?.id !== id || lastKept.status !== 'kept') return;
       actions.undo();
-      setSession((s) => ({ ...s, changes: (s.changes ?? []).map((x) => x.id === id ? { ...x, status: 'undone' } : x) }));
+      setSession((s) => ({ ...s, changes: (s.changes ?? []).map((x) => (x.id === id ? { ...x, status: 'undone' } : x)) }));
     },
-    [lastKept, actions]
+    [lastKept, actions],
   );
 
   /** Tapping a section in the preview: "this" in the next message means it. */
@@ -227,18 +227,18 @@ export function useAssistant() {
       if (!blockId) return setSession((s) => ({ ...s, focusId: undefined }));
       const b = state.draft.blocks.find((x) => x.id === blockId);
       if (!b) return;
-      setSession((s) => s.focusId === blockId ? s : { ...s, focusId: blockId, messages: [...s.messages, msg(`What should change about the ${blockName(b).toLowerCase()}? Tap a suggestion or tell me.`)] });
+      setSession((s) => (s.focusId === blockId ? s : { ...s, focusId: blockId, messages: [...s.messages, msg(`What should change about the ${blockName(b).toLowerCase()}? Tap a suggestion or tell me.`)] }));
     },
-    [session.stage, session.removed, state.draft.blocks]
+    [session.stage, session.removed, state.draft.blocks],
   );
 
   /** Removes everything the assistant made: the page goes back to how it was, and untouched items are deleted. */
-  const removeEverything = useCallback((): {kept: string[];} => {
+  const removeEverything = useCallback((): { kept: string[] } => {
     const s = session;
     if (!s.applied || s.removed) return { kept: [] };
     const kept: string[] = [];
-    if (s.before) actions.replaceBlocks(s.before.blocks, s.before.theme);else
-    actions.undo();
+    if (s.before) actions.replaceBlocks(s.before.blocks, s.before.theme);
+    else actions.undo();
     const created = s.created ?? { productIds: [], serviceIds: [] };
     if (created.productIds.length) {
       const ids = new Set(created.productIds);
@@ -260,14 +260,14 @@ export function useAssistant() {
       ...x,
       removed: true,
       focusId: undefined,
-      changes: (x.changes ?? []).map((c) => c.status === 'pending' ? { ...c, status: 'discarded' } : c),
-      messages: [...x.messages, msg(`Done — your page is back to how it was before the build, and what I created is gone.${kept.length ? ` I kept ${kept.join(' and ')} so no customer loses anything.` : ''} Your photos stay in Media.`, { card: 'removed' })]
+      changes: (x.changes ?? []).map((c) => (c.status === 'pending' ? { ...c, status: 'discarded' } : c)),
+      messages: [...x.messages, msg(`Done — your page is back to how it was before the build, and what I created is gone.${kept.length ? ` I kept ${kept.join(' and ')} so no customer loses anything.` : ''} Your photos stay in Media.`, { card: 'removed' })],
     }));
     return { kept };
   }, [session, actions, commerce, ops, domains, library, team, state.draft.title]);
 
   const setPaused = useCallback((paused: boolean) => {
-    setSession((s) => s.stage === 'building' || s.stage === 'paused' ? { ...s, stage: paused ? 'paused' : 'building' } : s);
+    setSession((s) => (s.stage === 'building' || s.stage === 'paused' ? { ...s, stage: paused ? 'paused' : 'building' } : s));
   }, []);
 
   /** Creates the owner's products or services, and the QR code, once the plan has been approved and built. */
@@ -283,7 +283,7 @@ export function useAssistant() {
         priceNgn: i.priceNgn,
         status: i.priceNgn !== null ? 'active' : 'draft',
         trackStock: false,
-        images: i.imageSrc ? [{ id: uid('img'), url: i.imageSrc, alt: i.name }] : []
+        images: i.imageSrc ? [{ id: uid('img'), url: i.imageSrc, alt: i.name }] : [],
       }));
       if (commerce.apply((d) => products.reduce((acc, prod) => upsertProduct(acc, prod), d))) out.productIds = products.map((x) => x.id);
     }
@@ -320,15 +320,15 @@ export function useAssistant() {
       return;
     }
     if (session.built < total) {
-      const t = window.setTimeout(() => setSession((s) => s.stage === 'building' ? { ...s, built: s.built + 1 } : s), reduceMotion ? 0 : BUILD_STEP_MS);
+      const t = window.setTimeout(() => setSession((s) => (s.stage === 'building' ? { ...s, built: s.built + 1 } : s)), reduceMotion ? 0 : BUILD_STEP_MS);
       return () => window.clearTimeout(t);
     }
     if (session.applied) return;
     const before = { blocks: state.draft.blocks, theme: state.draft.theme };
     const created = createBusinessItems(session);
     const blocks: Block[] = session.plan.units.flatMap((u) => u.blocks);
-    if (session.answers.mode === 'add') actions.insertBlocks(blocks, 'Added by the assistant');else
-    actions.replaceBlocks(blocks, session.plan.theme);
+    if (session.answers.mode === 'add') actions.insertBlocks(blocks, 'Added by the assistant');
+    else actions.replaceBlocks(blocks, session.plan.theme);
     let savedTemplateId: string | undefined;
     if (session.plan.source.kind === 'composed') savedTemplateId = library.saveTemplate(session.plan.source.name, blocks, session.plan.theme, 'assistant').id;
     team.log('pages', `built ${state.draft.title || 'a page'} with the AI page assistant`);
@@ -341,15 +341,15 @@ export function useAssistant() {
       created,
       before,
       messages: [
-      ...s.messages,
-      {
-        id: uid('msg'),
-        role: 'assistant',
-        text: `Your page is built.${gaps ? ` ${gaps} thing${gaps === 1 ? '' : 's'} still need${gaps === 1 ? 's' : ''} your details before you publish — they’re listed below.` : ''} Nothing is live until you publish. Want changes? Tap a suggestion, tap a section in the preview, or tell me — each change uses ${aiCost.block} credit and you keep or discard it.`,
-        card: 'done',
-        createdAt: new Date().toISOString()
-      }]
-
+        ...s.messages,
+        {
+          id: uid('msg'),
+          role: 'assistant',
+          text: `Your page is built.${gaps ? ` ${gaps} thing${gaps === 1 ? '' : 's'} still need${gaps === 1 ? 's' : ''} your details before you publish — they’re listed below.` : ''} Nothing is live until you publish. Want changes? Tap a suggestion, tap a section in the preview, or tell me — each change uses ${aiCost.block} credit and you keep or discard it.`,
+          card: 'done',
+          createdAt: new Date().toISOString(),
+        },
+      ],
     }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session.stage, session.built, session.applied, session.question]);
@@ -389,7 +389,7 @@ export function useAssistant() {
     removeEverything,
     undo: actions.undo,
     doc: state.draft,
-    usage
+    usage,
   };
 }
 

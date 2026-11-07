@@ -17,21 +17,21 @@ export function emptyAccount(): AccountData {
     prefs: { language: 'en-NG', timeZone: 'Africa/Lagos', dateFormat: 'dmy', startPage: 'overview', textSize: 'default', motion: 'device' },
     security: { passwordSetAt: ago(60 * 24 * 94), twoStep: 'none', twoStepSince: null, backupCodes: [], signInAlerts: true },
     sessions: [
-    { id: 'ses_this', device: 'This device', browser: browserName(), place: 'Lagos, Nigeria', lastActiveAt: new Date().toISOString(), current: true },
-    { id: 'ses_phone', device: 'Tecno Camon 20 (Android)', browser: 'Chrome', place: 'Lagos, Nigeria', lastActiveAt: ago(95), current: false },
-    { id: 'ses_laptop', device: 'Windows laptop', browser: 'Edge', place: 'Abuja, Nigeria', lastActiveAt: ago(60 * 24 * 6), current: false }],
-
+      { id: 'ses_this', device: 'This device', browser: browserName(), place: 'Lagos, Nigeria', lastActiveAt: new Date().toISOString(), current: true },
+      { id: 'ses_phone', device: 'Tecno Camon 20 (Android)', browser: 'Chrome', place: 'Lagos, Nigeria', lastActiveAt: ago(95), current: false },
+      { id: 'ses_laptop', device: 'Windows laptop', browser: 'Edge', place: 'Abuja, Nigeria', lastActiveAt: ago(60 * 24 * 6), current: false },
+    ],
     signIns: [
-    { id: 'si_1', at: ago(12), device: `${browserName()} · This device`, place: 'Lagos, Nigeria', outcome: 'ok' },
-    { id: 'si_2', at: ago(95), device: 'Chrome · Android', place: 'Lagos, Nigeria', outcome: 'ok' },
-    { id: 'si_3', at: ago(60 * 26), device: 'Unknown · Linux', place: 'Kano, Nigeria', outcome: 'wrong_password' },
-    { id: 'si_4', at: ago(60 * 24 * 6), device: 'Edge · Windows', place: 'Abuja, Nigeria', outcome: 'ok' }],
-
+      { id: 'si_1', at: ago(12), device: `${browserName()} · This device`, place: 'Lagos, Nigeria', outcome: 'ok' },
+      { id: 'si_2', at: ago(95), device: 'Chrome · Android', place: 'Lagos, Nigeria', outcome: 'ok' },
+      { id: 'si_3', at: ago(60 * 26), device: 'Unknown · Linux', place: 'Kano, Nigeria', outcome: 'wrong_password' },
+      { id: 'si_4', at: ago(60 * 24 * 6), device: 'Edge · Windows', place: 'Abuja, Nigeria', outcome: 'ok' },
+    ],
     connected: [{ provider: 'google', email: 'adaeze@example.com', connectedAt: ago(60 * 24 * 120) }],
     comms: { productNews: true, tips: true, research: false },
     exports: [],
     deletion: null,
-    createdAt: ago(60 * 24 * 120)
+    createdAt: ago(60 * 24 * 120),
   };
 }
 
@@ -58,9 +58,9 @@ export function readAccount(): AccountData {
       return cache;
     }
   } catch {
-
     // Fall through to defaults.
-  }cache = base;
+  }
+  cache = base;
   return cache;
 }
 
@@ -102,7 +102,7 @@ export function initialsOf(name: string): string {
 }
 
 /** Formats a date in the person's chosen time zone and date order. */
-export function formatAccountDate(iso: string, prefs: {timeZone: string;dateFormat: DateFormatId;}, withTime = true): string {
+export function formatAccountDate(iso: string, prefs: { timeZone: string; dateFormat: DateFormatId }, withTime = true): string {
   const d = new Date(iso);
   const parts = new Intl.DateTimeFormat('en-GB', { timeZone: prefs.timeZone, day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(d);
   const get = (t: string) => parts.find((p) => p.type === t)?.value ?? '';
@@ -128,7 +128,7 @@ export function newExport() {
 }
 
 /** 0–4, with a plain reason. */
-export function passwordStrength(pw: string): {score: number;label: string;} {
+export function passwordStrength(pw: string): { score: number; label: string } {
   if (!pw) return { score: 0, label: '' };
   let score = 0;
   if (pw.length >= 8) score++;

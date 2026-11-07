@@ -41,7 +41,7 @@ export function shareLibraryItem(item: Omit<SharedLibraryItem, 'code' | 'created
 export function readShared(code: string): SharedLibraryItem | null {
   try {
     const raw = window.localStorage.getItem(sharedKey(code.trim()));
-    return raw ? JSON.parse(raw) as SharedLibraryItem : null;
+    return raw ? (JSON.parse(raw) as SharedLibraryItem) : null;
   } catch {
     return null;
   }

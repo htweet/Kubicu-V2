@@ -36,23 +36,23 @@ export function PublicTrustPassport() {
 
   if (!resolved || !wid) return <Unavailable handle={`${handle}/trust`} />;
   if (!appOn)
-  return (
-    <Unavailable
-      handle={`${handle}/trust`}
-      title="No Trust Passport here"
-      body="{name} doesn’t show a Trust Passport right now."
-      homeHref={pageHref(handle, '')}
-      homeLabel="Go to {name}"
-      name={resolved.doc.title} />);
-
-
+    return (
+      <Unavailable
+        handle={`${handle}/trust`}
+        title="No Trust Passport here"
+        body="{name} doesn’t show a Trust Passport right now."
+        homeHref={pageHref(handle, '')}
+        homeLabel="Go to {name}"
+        name={resolved.doc.title}
+      />
+    );
 
   const t = resolved.doc.theme;
   const name = resolved.doc.title;
   const met = publicSignals(passport);
   const notYet = passport.signals.filter((s) => !s.met);
   const longDate = (d: Date) => d.toLocaleDateString(loc, { day: 'numeric', month: 'long', year: 'numeric' });
-  const title = (s: {id: string;title: string;}) => s.id === 'tenure' ? tr('Selling for {n} days', { n: MIN_DAYS }) : tr(s.title);
+  const title = (s: { id: string; title: string }) => (s.id === 'tenure' ? tr('Selling for {n} days', { n: MIN_DAYS }) : tr(s.title));
   const box = { background: t.surface, borderRadius: cardRadius(t), border: `1px solid ${mix(t.text, 12)}` };
 
   return (
@@ -87,35 +87,35 @@ export function PublicTrustPassport() {
           <h2 id="tp-met" className="text-[18px] font-medium" style={{ fontFamily: fontsFor(t).display }}>
             {tr('What’s been checked')}
           </h2>
-          {met.length === 0 ?
-          <p className="text-[14.5px] leading-relaxed" style={{ color: t.mutedText }}>
+          {met.length === 0 ? (
+            <p className="text-[14.5px] leading-relaxed" style={{ color: t.mutedText }}>
               {tr('{name} is new on KUBICU, so there’s nothing to show yet. That doesn’t mean anything is wrong — checks build up with verification, completed orders and verified reviews.', { name })}
-            </p> :
-
-          <ul className="flex flex-col" style={box}>
-              {met.map((s, i) =>
-            <li key={s.id} className="flex items-start gap-3 px-4 py-3.5" style={{ borderTop: i ? `1px solid ${mix(t.text, 8)}` : undefined }}>
+            </p>
+          ) : (
+            <ul className="flex flex-col" style={box}>
+              {met.map((s, i) => (
+                <li key={s.id} className="flex items-start gap-3 px-4 py-3.5" style={{ borderTop: i ? `1px solid ${mix(t.text, 8)}` : undefined }}>
                   <CheckIcon size={17} className="mt-0.5 shrink-0" aria-hidden />
                   <span>
                     <span className="block text-[15px] font-semibold">{title(s)}</span>
                     <span className="block text-[13.5px]" style={{ color: t.mutedText }}>
                       {tr(s.evidencePhrase.t, s.evidencePhrase.v)}
                     </span>
-                    {s.validUntil &&
-                <span className="mt-0.5 block text-[12.5px]" style={{ color: t.mutedText }}>
+                    {s.validUntil && (
+                      <span className="mt-0.5 block text-[12.5px]" style={{ color: t.mutedText }}>
                         {tr('Valid until {date}', { date: longDate(new Date(s.validUntil)) })}
                       </span>
-                }
+                    )}
                   </span>
                 </li>
-            )}
+              ))}
             </ul>
-          }
-          {notYet.length > 0 &&
-          <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px]" style={{ color: t.mutedText }}>
+          )}
+          {notYet.length > 0 && (
+            <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px]" style={{ color: t.mutedText }}>
               <CircleIcon size={10} aria-hidden /> {tr('Not met yet:')} {notYet.map(title).join(', ')}
             </p>
-          }
+          )}
         </section>
 
         <section aria-labelledby="tp-how" className="flex flex-col gap-2 text-[14px] leading-relaxed" style={{ color: t.mutedText }}>
@@ -140,6 +140,6 @@ export function PublicTrustPassport() {
         </section>
         <ReportPageDialog open={reporting} onClose={() => setReporting(false)} handle={handle} workspaceId={wid} />
       </div>
-    </main>);
-
+    </main>
+  );
 }

@@ -34,12 +34,12 @@ export function AuthLayout({ title, description, children, footer, aside, back, 
         <div className="flex min-w-0 flex-col px-5 py-5 md:px-10 md:py-6">
           <header className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              {back &&
-              <>
+              {back && (
+                <>
                   <span className="-ml-2.5">{back}</span>
                   <span className="h-5 w-px bg-line" aria-hidden />
                 </>
-              }
+              )}
               <Link to="/" aria-label={t('KUBICU home')} className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
                 <KubicuLogo />
               </Link>
@@ -66,13 +66,13 @@ export function AuthLayout({ title, description, children, footer, aside, back, 
           </p>
         </div>
         <aside aria-hidden className="hidden p-4 lg:block">
-          {aside ?
-          <div className="relative flex h-full flex-col items-center justify-center gap-8 overflow-hidden rounded-[36px] bg-[rgb(var(--kb-lime))] px-10 text-[rgb(var(--kb-forest))]">{aside}</div> :
-
-          <AuthShowcase kind={showcase} />
-          }
+          {aside ? (
+            <div className="relative flex h-full flex-col items-center justify-center gap-8 overflow-hidden rounded-[36px] bg-[rgb(var(--kb-lime))] px-10 text-[rgb(var(--kb-forest))]">{aside}</div>
+          ) : (
+            <AuthShowcase kind={showcase} />
+          )}
         </aside>
       </div>
-    </PlatformLook>);
-
+    </PlatformLook>
+  );
 }

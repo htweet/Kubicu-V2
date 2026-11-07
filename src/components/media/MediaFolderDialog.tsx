@@ -40,14 +40,14 @@ export function MediaFolderDialog({ open, mode, initialName = '', onClose, onSub
       title={mode === 'create' ? 'New folder' : 'Rename folder'}
       description={mode === 'create' ? 'Group images your way — for a campaign, a season or a client.' : undefined}
       footer={
-      <>
+        <>
           <Button variant="secondary" onClick={onClose}>
             Cancel
           </Button>
           <Button onClick={() => submit()}>{mode === 'create' ? 'Create folder' : 'Save'}</Button>
         </>
-      }>
-      
+      }
+    >
       <form onSubmit={submit}>
         <TextInput
           id="media-folder-name"
@@ -60,9 +60,9 @@ export function MediaFolderDialog({ open, mode, initialName = '', onClose, onSub
             setName(e.target.value);
             setError(null);
           }}
-          data-autofocus />
-        
+          data-autofocus
+        />
       </form>
-    </Dialog>);
-
+    </Dialog>
+  );
 }

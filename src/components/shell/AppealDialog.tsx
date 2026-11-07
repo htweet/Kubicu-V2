@@ -47,14 +47,14 @@ export function AppealDialog({ open, onClose, kind, handle, workspaceId, workspa
       title={kind === 'takedown' ? `Appeal the removal of kub.icu/${handle}` : 'Appeal the pause on your pages'}
       description="A different KUBICU staff member reviews every appeal. Nothing has been deleted while you wait."
       footer={
-      <>
+        <>
           <Button variant="secondary" onClick={onClose}>
             Cancel
           </Button>
           <Button onClick={send}>Send appeal</Button>
         </>
-      }>
-      
+      }
+    >
       <div className="flex flex-col gap-4">
         <div className="rounded-md bg-sunken px-3.5 py-3">
           <p className="text-caption font-semibold text-fg-subtle">Our reason</p>
@@ -67,9 +67,9 @@ export function AppealDialog({ open, onClose, kind, handle, workspaceId, workspa
           value={statement}
           onChange={(e) => setStatement(e.target.value)}
           error={tried ? error || undefined : undefined}
-          hint="Mention receipts, permissions or changes you’ve made. Don’t include card numbers or passwords." />
-        
+          hint="Mention receipts, permissions or changes you’ve made. Don’t include card numbers or passwords."
+        />
       </div>
-    </Dialog>);
-
+    </Dialog>
+  );
 }

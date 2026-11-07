@@ -48,7 +48,7 @@ export function QuoteView() {
   const staged = hasStages(quote);
   const decide = (patch: Partial<Quote>) => {
     const d = readServiceOs(workspaceId);
-    let next = { ...d, quotes: d.quotes.map((q) => q.id === quote.id ? { ...q, ...patch, decidedAt: new Date().toISOString() } : q) };
+    let next = { ...d, quotes: d.quotes.map((q) => (q.id === quote.id ? { ...q, ...patch, decidedAt: new Date().toISOString() } : q)) };
     // Accepting a staged quote requests every stage due on acceptance, so the first pay link is ready straight away (D95).
     if (patch.status === 'accepted' && staged) next = requestDueStages(next, quote.id).data;
     writeServiceOs(workspaceId, next);
@@ -76,15 +76,15 @@ export function QuoteView() {
             theme={t}
             level={1}
             sub={
-            view === 'accepted' ?
-            `You accepted on ${quote.decidedAt ? formatDay(quote.decidedAt.slice(0, 10)) : 'this device'}. ${staged ? payable ? 'Your first payment is ready below.' : `${business} will send each payment link when it’s due.` : `${business} will be in touch${quote.depositPct ? ' with the deposit invoice' : ''}.`}` :
-            view === 'declined' ?
-            `You declined this quote. ${business} has been told.` :
-            view === 'expired' ?
-            `This quote was valid until ${formatDay(quote.validUntil)}. Ask ${business} for a new one.` :
-            `From ${business} for ${quote.client.name}. Valid until ${formatDay(quote.validUntil)}.`
-            }>
-            
+              view === 'accepted'
+                ? `You accepted on ${quote.decidedAt ? formatDay(quote.decidedAt.slice(0, 10)) : 'this device'}. ${staged ? (payable ? 'Your first payment is ready below.' : `${business} will send each payment link when it’s due.`) : `${business} will be in touch${quote.depositPct ? ' with the deposit invoice' : ''}.`}`
+                : view === 'declined'
+                  ? `You declined this quote. ${business} has been told.`
+                  : view === 'expired'
+                    ? `This quote was valid until ${formatDay(quote.validUntil)}. Ask ${business} for a new one.`
+                    : `From ${business} for ${quote.client.name}. Valid until ${formatDay(quote.validUntil)}.`
+            }
+          >
             {quote.title}
           </CheckoutHeading>
 
@@ -93,40 +93,40 @@ export function QuoteView() {
               Quote {quote.number}
             </p>
             <ul className="mt-3 flex flex-col">
-              {quote.items.map((i) =>
-              <li key={i.id} className="flex items-baseline justify-between gap-4 border-b py-2.5 text-[14.5px]" style={{ borderColor: `${t.mutedText}33`, color: t.text }}>
+              {quote.items.map((i) => (
+                <li key={i.id} className="flex items-baseline justify-between gap-4 border-b py-2.5 text-[14.5px]" style={{ borderColor: `${t.mutedText}33`, color: t.text }}>
                   <span className="min-w-0">
                     {i.label}
-                    {i.qty > 1 &&
-                  <span className="block text-[12.5px]" style={muted}>
+                    {i.qty > 1 && (
+                      <span className="block text-[12.5px]" style={muted}>
                         {i.qty} × {formatNgn(i.unitNgn)}
                       </span>
-                  }
+                    )}
                   </span>
                   <span className="shrink-0 tabular-nums">{formatNgn(lineTotal(i))}</span>
                 </li>
-              )}
+              ))}
             </ul>
-            {quote.vat && split.vat > 0 &&
-            <div className="mt-3 flex items-baseline justify-between text-[13.5px]" style={muted}>
+            {quote.vat && split.vat > 0 && (
+              <div className="mt-3 flex items-baseline justify-between text-[13.5px]" style={muted}>
                 <span>
                   {quote.vat.inclusive ? 'Includes VAT' : 'VAT'} ({vatRateLabel(quote.vat.ratePct)})
                 </span>
                 <span className="tabular-nums">{formatNgn(split.vat)}</span>
               </div>
-            }
+            )}
             <div className="mt-3 flex items-baseline justify-between text-[16px] font-semibold" style={{ color: t.text }}>
               <span>Total</span>
               <span className="tabular-nums">{formatNgn(total)}</span>
             </div>
-            {staged &&
-            <div className="mt-4 flex flex-col gap-1">
+            {staged && (
+              <div className="mt-4 flex flex-col gap-1">
                 <p className="text-[13px] font-semibold" style={{ color: t.text }}>
                   Paid in {rows.length} stages{vatOnTop ? ' (plus VAT on each)' : ''}
                 </p>
                 <ol className="flex flex-col">
-                  {rows.map((r, i) =>
-                <li key={r.m.id} className="flex items-baseline justify-between gap-4 py-1.5 text-[13.5px]" style={{ color: t.text }}>
+                  {rows.map((r, i) => (
+                    <li key={r.m.id} className="flex items-baseline justify-between gap-4 py-1.5 text-[13.5px]" style={{ color: t.text }}>
                       <span className="min-w-0">
                         {i + 1}. {r.m.label} ({r.m.pct}%)
                         <span className="block text-[12.5px]" style={muted}>
@@ -135,37 +135,37 @@ export function QuoteView() {
                       </span>
                       <span className="shrink-0 tabular-nums">{formatNgn(r.amount)}</span>
                     </li>
-                )}
+                  ))}
                 </ol>
               </div>
-            }
-            {!staged && quote.depositPct > 0 &&
-            <div className="mt-1 flex items-baseline justify-between text-[13.5px]" style={muted}>
+            )}
+            {!staged && quote.depositPct > 0 && (
+              <div className="mt-1 flex items-baseline justify-between text-[13.5px]" style={muted}>
                 <span>
                   Deposit to book ({quote.depositPct}%){vatOnTop ? ' + VAT' : ''}
                 </span>
                 <span className="tabular-nums">{formatNgn(depositOf(quote))}</span>
               </div>
-            }
-            {quote.note &&
-            <p className="mt-4 whitespace-pre-line text-[13.5px] leading-relaxed" style={muted}>
+            )}
+            {quote.note && (
+              <p className="mt-4 whitespace-pre-line text-[13.5px] leading-relaxed" style={muted}>
                 {quote.note}
               </p>
-            }
+            )}
           </section>
 
-          {view === 'accepted' && payable?.invoice &&
-          <Link
-            to={invoicePayPath(handle, payable.invoice.id)}
-            className="flex h-12 w-full items-center justify-center gap-2 text-[15px] font-semibold"
-            style={buttonStyle(t, 'featured')}>
-            
+          {view === 'accepted' && payable?.invoice && (
+            <Link
+              to={invoicePayPath(handle, payable.invoice.id)}
+              className="flex h-12 w-full items-center justify-center gap-2 text-[15px] font-semibold"
+              style={buttonStyle(t, 'featured')}
+            >
               Pay “{payable.m.label}” · {formatNgn(payable.amount - payable.paid)}
             </Link>
-          }
+          )}
 
-          {view === 'sent' && mode === 'view' &&
-          <div className="flex flex-col gap-2.5">
+          {view === 'sent' && mode === 'view' && (
+            <div className="flex flex-col gap-2.5">
               <PrimaryButton theme={t} onClick={() => setMode('accept')}>
                 Accept quote
               </PrimaryButton>
@@ -173,10 +173,10 @@ export function QuoteView() {
                 Decline
               </SecondaryButton>
             </div>
-          }
+          )}
 
-          {view === 'sent' && mode === 'accept' &&
-          <section aria-labelledby="qv-accept" className="flex flex-col gap-4 p-5" style={cardStyle(t)}>
+          {view === 'sent' && mode === 'accept' && (
+            <section aria-labelledby="qv-accept" className="flex flex-col gap-4 p-5" style={cardStyle(t)}>
               <h2 id="qv-accept" className="text-[15px] font-semibold" style={{ color: t.text }}>
                 Accept {formatNgn(total)}
               </h2>
@@ -191,10 +191,10 @@ export function QuoteView() {
                 Back
               </SecondaryButton>
             </section>
-          }
+          )}
 
-          {view === 'sent' && mode === 'decline' &&
-          <section aria-labelledby="qv-decline" className="flex flex-col gap-4 p-5" style={cardStyle(t)}>
+          {view === 'sent' && mode === 'decline' && (
+            <section aria-labelledby="qv-decline" className="flex flex-col gap-4 p-5" style={cardStyle(t)}>
               <h2 id="qv-decline" className="text-[15px] font-semibold" style={{ color: t.text }}>
                 Decline this quote
               </h2>
@@ -206,13 +206,13 @@ export function QuoteView() {
                 Back
               </SecondaryButton>
             </section>
-          }
+          )}
 
           <p className="text-[12.5px] leading-relaxed" style={muted}>
             Sent with KUBICU on behalf of {business}. Questions? Reply to the message this link came in.
           </p>
         </main>
       </PageSurface>
-    </div>);
-
+    </div>
+  );
 }

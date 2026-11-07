@@ -40,15 +40,15 @@ export function BillingBanner() {
             {!can && ' Ask the Owner to sort it out.'}
           </span>
         </p>
-        {can &&
-        <Link
-          to="/app/settings/billing"
-          className="inline-flex h-9 shrink-0 items-center justify-center self-start rounded-md bg-action px-3 text-label font-medium text-action-fg hover:bg-action-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus sm:self-auto">
-          
+        {can && (
+          <Link
+            to="/app/settings/billing"
+            className="inline-flex h-9 shrink-0 items-center justify-center self-start rounded-md bg-action px-3 text-label font-medium text-action-fg hover:bg-action-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus sm:self-auto"
+          >
             {tone === 'danger' ? 'Update card' : 'Choose a plan'}
           </Link>
-        }
+        )}
       </div>
-    </div>);
-
+    </div>
+  );
 }

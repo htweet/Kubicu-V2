@@ -83,10 +83,10 @@ export function MediaDetail({ asset, uses, onClose }: MediaDetailProps) {
   const doDelete = async () => {
     setBusy(true);
     try {
-      if (containsString(state.site, ref)) actions.transformDocument((doc) => mapStrings(doc, (s) => s === ref ? '' : s));
+      if (containsString(state.site, ref)) actions.transformDocument((doc) => mapStrings(doc, (s) => (s === ref ? '' : s)));
       if (commerce.data.products.some((p) => containsString(p.images, ref))) {
         // Removing a deleted image from products is part of the media action, allowed by media.manage.
-        commerce.applySystem((d) => ({ ...d, products: d.products.map((p) => containsString(p.images, ref) ? { ...p, images: p.images.filter((i) => i.url !== ref) } : p) }));
+        commerce.applySystem((d) => ({ ...d, products: d.products.map((p) => (containsString(p.images, ref) ? { ...p, images: p.images.filter((i) => i.url !== ref) } : p)) }));
       }
       const keep = needsKeeping(asset.id, state) || sections.some((s) => containsString(s.blocks, ref));
       const removed = await media.remove(asset.id, keep);
@@ -96,7 +96,7 @@ export function MediaDetail({ asset, uses, onClose }: MediaDetailProps) {
         toast(`Deleted “${removed.name}”`, { action: { label: 'Undo', onClick: () => void media.restore(removed) } });
       } else {
         toast(`Deleted “${asset.name}”`, {
-          description: inUse ? `Removed from ${placeCount} place${placeCount === 1 ? '' : 's'}${keep ? '. A copy is kept for your live page and version history.' : '.'}` : keep ? 'A copy is kept for version history.' : undefined
+          description: inUse ? `Removed from ${placeCount} place${placeCount === 1 ? '' : 's'}${keep ? '. A copy is kept for your live page and version history.' : '.'}` : keep ? 'A copy is kept for version history.' : undefined,
         });
       }
     } catch {
@@ -115,16 +115,16 @@ export function MediaDetail({ asset, uses, onClose }: MediaDetailProps) {
         title={asset.name}
         description={`${shapeText[shapeOf(asset.width, asset.height)]} · ${asset.width}×${asset.height} · ${formatBytes(asset.bytes)}`}
         footer={
-        <div className="flex items-center justify-between gap-2">
-            <Button variant="tertiary" size="sm" leadingIcon={Trash2Icon} className="text-danger hover:text-danger" onClick={() => inUse ? setConfirmDelete(true) : doDelete()} disabled={busy}>
+          <div className="flex items-center justify-between gap-2">
+            <Button variant="tertiary" size="sm" leadingIcon={Trash2Icon} className="text-danger hover:text-danger" onClick={() => (inUse ? setConfirmDelete(true) : doDelete())} disabled={busy}>
               Delete
             </Button>
             <Button variant="secondary" leadingIcon={RefreshCwIcon} onClick={() => fileRef.current?.click()} disabled={busy}>
               Replace
             </Button>
           </div>
-        }>
-        
+        }
+      >
         <input ref={fileRef} type="file" accept={ACCEPTED_IMAGE_TYPES.join(',')} className="sr-only" tabIndex={-1} aria-hidden onChange={(e) => pickReplacement(e.target.files?.[0])} />
         <div className="flex flex-col gap-6 px-5 py-5">
           <div className="dot-stage flex items-center justify-center rounded-md p-4">
@@ -141,8 +141,8 @@ export function MediaDetail({ asset, uses, onClose }: MediaDetailProps) {
               placeholder="What’s in the photo, for screen readers"
               hint="Filled in when you place this image somewhere. Each spot can still change it."
               onChange={(e) => setAlt(e.target.value)}
-              onBlur={() => alt !== asset.alt && media.update(asset.id, { alt: alt.trim() })} />
-            
+              onBlur={() => alt !== asset.alt && media.update(asset.id, { alt: alt.trim() })}
+            />
             <div className="flex flex-col gap-1.5">
               <label htmlFor="media-folder" className="text-label font-medium text-fg">
                 Folder
@@ -154,25 +154,25 @@ export function MediaDetail({ asset, uses, onClose }: MediaDetailProps) {
                   const target = media.folders.find((f) => f.id === e.target.value);
                   void media.moveTo([asset.id], target?.id ?? null).then(() => toast(target ? `Moved to ${target.name}` : 'Taken out of its folder'));
                 }}
-                className={fieldControlClass}>
-                
+                className={fieldControlClass}
+              >
                 <option value="">Not in a folder</option>
                 <optgroup label="Default folders">
-                  {media.folders.filter((f) => f.system).map((f) =>
-                  <option key={f.id} value={f.id}>
+                  {media.folders.filter((f) => f.system).map((f) => (
+                    <option key={f.id} value={f.id}>
                       {f.name}
                     </option>
-                  )}
+                  ))}
                 </optgroup>
-                {media.folders.some((f) => !f.system) &&
-                <optgroup label="Your folders">
-                    {media.folders.filter((f) => !f.system).map((f) =>
-                  <option key={f.id} value={f.id}>
+                {media.folders.some((f) => !f.system) && (
+                  <optgroup label="Your folders">
+                    {media.folders.filter((f) => !f.system).map((f) => (
+                      <option key={f.id} value={f.id}>
                         {f.name}
                       </option>
-                  )}
+                    ))}
                   </optgroup>
-                }
+                )}
               </select>
               <p className="text-caption text-fg-subtle">Moving it doesn’t change where it’s used.</p>
             </div>
@@ -182,26 +182,26 @@ export function MediaDetail({ asset, uses, onClose }: MediaDetailProps) {
             <h3 id="media-uses" className="text-label font-semibold text-fg">
               Where it’s used
             </h3>
-            {uses.length === 0 ?
-            <p className="mt-1.5 text-label text-fg-muted">Not used anywhere. Safe to delete.</p> :
-
-            <ul className="mt-2 flex flex-col divide-y divide-line rounded-md border border-line">
-                {uses.map((u, i) =>
-              <li key={`${u.kind}-${i}`} className="flex items-center gap-3 px-3 py-2.5">
+            {uses.length === 0 ? (
+              <p className="mt-1.5 text-label text-fg-muted">Not used anywhere. Safe to delete.</p>
+            ) : (
+              <ul className="mt-2 flex flex-col divide-y divide-line rounded-md border border-line">
+                {uses.map((u, i) => (
+                  <li key={`${u.kind}-${i}`} className="flex items-center gap-3 px-3 py-2.5">
                     {u.kind === 'history' && <HistoryIcon size={15} className="shrink-0 text-fg-subtle" aria-hidden />}
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-label font-medium text-fg">{u.label}</span>
                       <span className="block text-caption text-fg-subtle">{u.detail}</span>
                     </span>
-                    {u.to &&
-                <Link to={u.to} className="inline-flex shrink-0 items-center gap-1 text-caption font-semibold text-action hover:underline">
+                    {u.to && (
+                      <Link to={u.to} className="inline-flex shrink-0 items-center gap-1 text-caption font-semibold text-action hover:underline">
                         Open <ArrowUpRightIcon size={12} aria-hidden />
                       </Link>
-                }
+                    )}
                   </li>
-              )}
+                ))}
               </ul>
-            }
+            )}
           </section>
 
           <p className="text-caption text-fg-subtle">Uploaded {formatTimestamp(asset.createdAt)}{asset.updatedAt !== asset.createdAt ? ` · changed ${formatTimestamp(asset.updatedAt)}` : ''}</p>
@@ -214,7 +214,7 @@ export function MediaDetail({ asset, uses, onClose }: MediaDetailProps) {
         title="Replace everywhere?"
         description={inUse ? `The new picture appears in all ${placeCount} place${placeCount === 1 ? '' : 's'} below${uses.some((u) => u.kind === 'live') || state.published ? ', including your live page' : ''}.` : 'This image isn’t used yet, so nothing else changes.'}
         footer={
-        <>
+          <>
             <Button variant="secondary" onClick={() => setReplacement(null)}>
               Cancel
             </Button>
@@ -222,8 +222,8 @@ export function MediaDetail({ asset, uses, onClose }: MediaDetailProps) {
               Replace
             </Button>
           </>
-        }>
-        
+        }
+      >
         <div className="grid grid-cols-2 gap-3">
           <figure>
             <MediaImage src={ref} alt="" className="aspect-square w-full rounded-md bg-sunken object-cover" />
@@ -234,13 +234,13 @@ export function MediaDetail({ asset, uses, onClose }: MediaDetailProps) {
             <figcaption className="mt-1 text-caption text-fg-subtle">New</figcaption>
           </figure>
         </div>
-        {inUse &&
-        <ul className="mt-4 flex flex-col gap-1 text-label text-fg-muted">
-            {uses.filter((u) => u.kind !== 'history').map((u, i) =>
-          <li key={i}>· {u.label} <span className="text-fg-subtle">({u.detail.toLowerCase()})</span></li>
-          )}
+        {inUse && (
+          <ul className="mt-4 flex flex-col gap-1 text-label text-fg-muted">
+            {uses.filter((u) => u.kind !== 'history').map((u, i) => (
+              <li key={i}>· {u.label} <span className="text-fg-subtle">({u.detail.toLowerCase()})</span></li>
+            ))}
           </ul>
-        }
+        )}
       </Dialog>
 
       <Dialog
@@ -250,7 +250,7 @@ export function MediaDetail({ asset, uses, onClose }: MediaDetailProps) {
         title={`Delete “${asset.name}”?`}
         description={`It’s used in ${placeCount} place${placeCount === 1 ? '' : 's'}. Deleting removes it from your draft and products, leaving those spots empty.`}
         footer={
-        <>
+          <>
             <Button variant="secondary" onClick={() => setConfirmDelete(false)} data-autofocus>
               Keep it
             </Button>
@@ -258,15 +258,15 @@ export function MediaDetail({ asset, uses, onClose }: MediaDetailProps) {
               Remove and delete
             </Button>
           </>
-        }>
-        
+        }
+      >
         <ul className="flex flex-col gap-1 text-label text-fg-muted">
-          {uses.filter((u) => u.kind !== 'history').map((u, i) =>
-          <li key={i}>· {u.label}</li>
-          )}
+          {uses.filter((u) => u.kind !== 'history').map((u, i) => (
+            <li key={i}>· {u.label}</li>
+          ))}
         </ul>
         {(uses.some((u) => u.kind === 'live') || state.published) && <p className="mt-3 text-caption text-fg-subtle">Your live page keeps showing it until you next publish. You can undo on the canvas.</p>}
       </Dialog>
-    </>);
-
+    </>
+  );
 }

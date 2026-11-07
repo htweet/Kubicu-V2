@@ -27,7 +27,7 @@ interface BookDeliverySheetProps {
 }
 
 const pickupSlots = () => {
-  const out: {value: string;label: string;}[] = [];
+  const out: { value: string; label: string }[] = [];
   const base = new Date();
   base.setMinutes(0, 0, 0);
   for (let h = 1; h <= 30 && out.length < 8; h++) {
@@ -45,23 +45,23 @@ export function BookDeliverySheet({ order, escrow, savedRiders, onClose, onBook 
   const crossBorder = !!order?.fulfilment.zoneId && isCrossBorderMethod(order.fulfilment.zoneId);
   const quotes = useMemo<PartnerQuote[]>(
     () =>
-    !order ?
-    [] :
-    crossBorder ?
-    [{ partnerId: order.fulfilment.zoneId ?? 'intl', name: order.fulfilment.zoneName ?? 'International courier', tagline: 'Cross-border · tracked door to door (example courier)', feeNgn: order.deliveryNgn, eta: order.fulfilment.eta ?? '', available: true }] :
-    quotesFor(order.fulfilment.address ?? ''),
-    [order, crossBorder]
+      !order
+        ? []
+        : crossBorder
+          ? [{ partnerId: order.fulfilment.zoneId ?? 'intl', name: order.fulfilment.zoneName ?? 'International courier', tagline: 'Cross-border · tracked door to door (example courier)', feeNgn: order.deliveryNgn, eta: order.fulfilment.eta ?? '', available: true }]
+          : quotesFor(order.fulfilment.address ?? ''),
+    [order, crossBorder],
   );
   const { data: commerce } = useCommerce();
   const customs = useMemo(
     () =>
-    crossBorder && order ?
-    order.items.map((i) => {
-      const p = commerce.products.find((x) => x.id === i.productId);
-      return { name: i.name, qty: i.qty, value: i.unitPriceNgn * i.qty, description: p?.shipping?.customsDescription?.trim() ?? '', origin: p?.shipping?.originCountry ?? activeCountry(), kg: (p?.weightKg ?? DEFAULT_ITEM_KG) * i.qty };
-    }) :
-    [],
-    [crossBorder, order, commerce.products]
+      crossBorder && order
+        ? order.items.map((i) => {
+            const p = commerce.products.find((x) => x.id === i.productId);
+            return { name: i.name, qty: i.qty, value: i.unitPriceNgn * i.qty, description: p?.shipping?.customsDescription?.trim() ?? '', origin: p?.shipping?.originCountry ?? activeCountry(), kg: (p?.weightKg ?? DEFAULT_ITEM_KG) * i.qty };
+          })
+        : [],
+    [crossBorder, order, commerce.products],
   );
   const customsMissing = customs.filter((c) => !c.description);
   const printCustoms = () => {
@@ -108,10 +108,10 @@ export function BookDeliverySheet({ order, escrow, savedRiders, onClose, onBook 
       title={tr('Book delivery · order {ref}', { ref: orderRef(order) })}
       description={`${order.customer.name || tr('Customer')} · ${order.fulfilment.address || tr('No address')}`}
       footer={
-      <div className="flex w-full items-center justify-between gap-3">
+        <div className="flex w-full items-center justify-between gap-3">
           <p className="text-caption text-fg-subtle">
             {order.pod && !order.pod.collected && <span className="block font-semibold text-fg">{tr('Rider collects {amount} at the door', { amount: formatNgn(order.pod.amountNgn) })}</span>}
-            {chosen?.available ? chosen.feeNgn ? tr('{amount} partner fee', { amount: formatNgn(chosen.feeNgn) }) : tr('No partner fee') : ''}
+            {chosen?.available ? (chosen.feeNgn ? tr('{amount} partner fee', { amount: formatNgn(chosen.feeNgn) }) : tr('No partner fee')) : ''}
           </p>
           <span className="flex gap-2">
             <Button variant="secondary" onClick={onClose}>
@@ -122,20 +122,20 @@ export function BookDeliverySheet({ order, escrow, savedRiders, onClose, onBook 
             </Button>
           </span>
         </div>
-      }>
-      
+      }
+    >
       <div className="flex flex-col gap-6 p-5">
         <InlineAlert tone="info" title={tr('Simulated courier')}>
           {tr('Partner names, prices and riders are examples. No rider is booked and nothing is charged until a delivery partner is connected.')}
         </InlineAlert>
-        {noAddress &&
-        <InlineAlert tone="danger" title={tr('This order has no delivery address')}>
+        {noAddress && (
+          <InlineAlert tone="danger" title={tr('This order has no delivery address')}>
             {tr('Add it on the order first, or switch the order to pickup.')}
           </InlineAlert>
-        }
+        )}
 
-        {crossBorder &&
-        <section aria-labelledby="customs" className="flex flex-col gap-3 rounded-md border border-line p-4">
+        {crossBorder && (
+          <section aria-labelledby="customs" className="flex flex-col gap-3 rounded-md border border-line p-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h3 id="customs" className="text-label font-semibold text-fg">
                 {tr('Customs declaration')}
@@ -145,8 +145,8 @@ export function BookDeliverySheet({ order, escrow, savedRiders, onClose, onBook 
               </Button>
             </div>
             <ul className="flex flex-col divide-y divide-line text-caption">
-              {customs.map((c, i) =>
-            <li key={`${c.name}-${i}`} className="flex flex-wrap justify-between gap-2 py-2">
+              {customs.map((c, i) => (
+                <li key={`${c.name}-${i}`} className="flex flex-wrap justify-between gap-2 py-2">
                   <span className="text-fg">
                     {c.qty} × {c.description || <span className="text-danger">{tr('{name} — no customs description', { name: c.name })}</span>}
                   </span>
@@ -154,41 +154,41 @@ export function BookDeliverySheet({ order, escrow, savedRiders, onClose, onBook 
                     {c.kg.toFixed(1)} kg · {tr(countryInfo(c.origin).name)} · {formatNgn(c.value)}
                   </span>
                 </li>
-            )}
+              ))}
             </ul>
             {customsMissing.length > 0 && <p className="text-caption text-warning">{tr('Add a customs description on each product so the parcel isn’t held at the border.')}</p>}
             <p className="text-caption text-fg-subtle">{tr('Tracking includes the customs steps. If the parcel is held at customs or sent back, mark it on the delivery.')}</p>
           </section>
-        }
+        )}
 
         <fieldset className="flex flex-col gap-3">
           <legend className="mb-1 text-label font-semibold text-fg">{tr('Who delivers it')}</legend>
-          {quotes.map((q) =>
-          <label
-            key={q.partnerId}
-            className={cn(
-              'flex cursor-pointer items-start gap-3 rounded-md border p-4 transition-colors duration-150',
-              partnerId === q.partnerId ? 'border-action bg-action-soft/40' : 'border-line hover:bg-sunken',
-              !q.available && 'cursor-not-allowed opacity-60 hover:bg-transparent'
-            )}>
-            
+          {quotes.map((q) => (
+            <label
+              key={q.partnerId}
+              className={cn(
+                'flex cursor-pointer items-start gap-3 rounded-md border p-4 transition-colors duration-150',
+                partnerId === q.partnerId ? 'border-action bg-action-soft/40' : 'border-line hover:bg-sunken',
+                !q.available && 'cursor-not-allowed opacity-60 hover:bg-transparent',
+              )}
+            >
               <input type="radio" name="partner" value={q.partnerId} checked={partnerId === q.partnerId} disabled={!q.available} onChange={() => setPartnerId(q.partnerId)} className="mt-1 accent-[rgb(var(--action))]" />
               <span className="min-w-0 flex-1">
                 <span className="block text-label font-semibold text-fg">{q.own ? tr(q.name) : q.name}</span>
-                <span className="block text-caption text-fg-subtle">{tr(q.available ? q.tagline : q.note ?? '')}</span>
+                <span className="block text-caption text-fg-subtle">{tr(q.available ? q.tagline : (q.note ?? ''))}</span>
               </span>
-              {q.available &&
-            <span className="shrink-0 text-right">
+              {q.available && (
+                <span className="shrink-0 text-right">
                   <span className="block text-label font-semibold tabular-nums text-fg">{q.own ? '—' : formatNgn(q.feeNgn)}</span>
                   <span className="block text-caption text-fg-subtle">{tr(q.eta)}</span>
                 </span>
-            }
+              )}
             </label>
-          )}
+          ))}
         </fieldset>
 
-        {chosen?.own &&
-        <section aria-labelledby="own-rider" className="flex flex-col gap-4 border-t border-line pt-6">
+        {chosen?.own && (
+          <section aria-labelledby="own-rider" className="flex flex-col gap-4 border-t border-line pt-6">
             <h3 id="own-rider" className="text-label font-semibold text-fg">
               {tr('Your rider')}
             </h3>
@@ -198,7 +198,7 @@ export function BookDeliverySheet({ order, escrow, savedRiders, onClose, onBook 
             </div>
             <TextInput id="rider-vehicle" label={tr('Vehicle')} optional placeholder={tr('e.g. Bike · LSR 482 KJ')} value={rider.vehicle} onChange={(e) => setRider({ ...rider, vehicle: e.target.value })} />
           </section>
-        }
+        )}
 
         <section aria-labelledby="pickup" className="flex flex-col gap-4 border-t border-line pt-6">
           <h3 id="pickup" className="text-label font-semibold text-fg">
@@ -214,13 +214,13 @@ export function BookDeliverySheet({ order, escrow, savedRiders, onClose, onBook 
               {tr('Handover with a delivery code')}
             </h3>
             <p className="mt-1 text-caption text-fg-muted">
-              {tr(escrow ?
-              'The customer gets a 4-digit code by text. The rider only hands over the order when the customer reads it out, and a matching code releases the escrow payment to your wallet straight away.' :
-              'The customer gets a 4-digit code by text. The rider only hands over the order when the customer reads it out.')}
+              {tr(escrow
+                ? 'The customer gets a 4-digit code by text. The rider only hands over the order when the customer reads it out, and a matching code releases the escrow payment to your wallet straight away.'
+                : 'The customer gets a 4-digit code by text. The rider only hands over the order when the customer reads it out.')}
             </p>
           </div>
         </section>
       </div>
-    </Sheet>);
-
+    </Sheet>
+  );
 }

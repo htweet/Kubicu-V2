@@ -18,27 +18,27 @@ const small = new Set(['card', 'sticker', 'hangtag', 'stamp']);
 const photoWidth: Record<string, number> = { card: 27, sticker: 50, insert: 105, hangtag: 50, voucher: 74, flyer: 148, counter: 148 };
 
 /** Print-readiness review shown beside the preview (D118, D119). Fails block printing and ordering. */
-export function kitChecks(spec: KitItemSpec, d: KitDetails, opts: {photoPx: number | null;qrWeak: boolean;}): KitCheck[] {
+export function kitChecks(spec: KitItemSpec, d: KitDetails, opts: { photoPx: number | null; qrWeak: boolean }): KitCheck[] {
   const out: KitCheck[] = [];
   const paper = paperColour(d.paper, d.ink);
 
   const qrMm = Math.round(spec.qrMm * (d.qrScale || 1));
-  if (opts.qrWeak) out.push({ id: 'qr', level: 'fail', text: 'The QR code’s colours are too close to scan. Raise the contrast in QR codes.' });else
-  if (qrMm < 15) out.push({ id: 'qr', level: 'fail', text: `The QR code would print at ${qrMm} mm — too small for most phones. Make it bigger.` });else
-  if (qrMm < 18) out.push({ id: 'qr', level: 'warn', text: `The QR code prints at ${qrMm} mm. It scans up close; a little bigger is safer.` });else
-  out.push({ id: 'qr', level: 'pass', text: `QR code prints at ${qrMm} mm — large and clear enough to scan.` });
+  if (opts.qrWeak) out.push({ id: 'qr', level: 'fail', text: 'The QR code’s colours are too close to scan. Raise the contrast in QR codes.' });
+  else if (qrMm < 15) out.push({ id: 'qr', level: 'fail', text: `The QR code would print at ${qrMm} mm — too small for most phones. Make it bigger.` });
+  else if (qrMm < 18) out.push({ id: 'qr', level: 'warn', text: `The QR code prints at ${qrMm} mm. It scans up close; a little bigger is safer.` });
+  else out.push({ id: 'qr', level: 'pass', text: `QR code prints at ${qrMm} mm — large and clear enough to scan.` });
 
   const inkRatio = contrastRatio(d.ink, paper);
-  if (inkRatio < 3) out.push({ id: 'ink', level: 'fail', text: `Your colour is too light on ${d.paper} paper (${inkRatio.toFixed(1)}:1). Choose a darker one.` });else
-  if (inkRatio < 4.5) out.push({ id: 'ink', level: 'warn', text: `Small text in your colour may look faint on ${d.paper} paper. A darker shade prints more clearly.` });else
-  out.push({ id: 'ink', level: 'pass', text: 'Colours read clearly on the paper.' });
+  if (inkRatio < 3) out.push({ id: 'ink', level: 'fail', text: `Your colour is too light on ${d.paper} paper (${inkRatio.toFixed(1)}:1). Choose a darker one.` });
+  else if (inkRatio < 4.5) out.push({ id: 'ink', level: 'warn', text: `Small text in your colour may look faint on ${d.paper} paper. A darker shade prints more clearly.` });
+  else out.push({ id: 'ink', level: 'pass', text: 'Colours read clearly on the paper.' });
 
   if (d.style === 'bold' && contrastRatio(onInk(d.ink), d.ink) < 4.5) out.push({ id: 'bold', level: 'warn', text: 'Text on your solid colour is a little faint. A deeper colour works better for Bold.' });
 
   if (d.name.length > (nameLimit[spec.id] ?? 28)) out.push({ id: 'name', level: 'warn', text: `Your business name is long for ${spec.label.toLowerCase()} and will be squeezed. A shorter version reads better.` });
 
   if (small.has(spec.id) && ((d.nameScale || 1) > 1.15 || (d.textScale || 1) > 1.15))
-  out.push({ id: 'big', level: 'warn', text: 'Larger text can run out of room on small pieces. Check it in the actual-size view before printing.' });
+    out.push({ id: 'big', level: 'warn', text: 'Larger text can run out of room on small pieces. Check it in the actual-size view before printing.' });
   if ((d.textScale || 1) < 0.9 && small.has(spec.id)) out.push({ id: 'tiny', level: 'warn', text: 'Smaller body text may be hard to read on a small card — especially for older customers.' });
 
   if (spec.fields.includes('message') && d.message.length > (spec.id === 'receipt' ? 120 : 220)) out.push({ id: 'msg', level: 'warn', text: 'The message is long for this size — keep it to two or three short sentences.' });

@@ -30,16 +30,16 @@ export function ShopCategoriesBlock({ block, theme, mode }: BlockProps<'shopCate
       <section>
         <SectionHeading theme={theme} title={c.title} />
         <ul className="flex flex-wrap gap-2">
-          {chosen.map((col) =>
-          <li key={col.id}>
+          {chosen.map((col) => (
+            <li key={col.id}>
               <PageAction mode={mode} href={href(col.id)} newTab={false} className="inline-flex h-11 items-center px-5 text-[14px] font-semibold" style={{ background: mix(theme.text, 6), color: theme.text, borderRadius: buttonRadius(theme) }}>
                 {col.name}
               </PageAction>
             </li>
-          )}
+          ))}
         </ul>
-      </section>);
-
+      </section>
+    );
   }
   return (
     <section>
@@ -60,10 +60,10 @@ export function ShopCategoriesBlock({ block, theme, mode }: BlockProps<'shopCate
                 </span>
                 <span className="text-[13px]" style={{ color: theme.mutedText }}>{tr('Items: {n}', { n: items.length })}</span>
               </PageAction>
-            </li>);
-
+            </li>
+          );
         })}
       </ul>
-    </section>);
-
+    </section>
+  );
 }

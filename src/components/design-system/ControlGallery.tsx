@@ -30,8 +30,8 @@ export function ControlGallery() {
       <div>
         <DsLabel>Buttons — default · disabled · loading</DsLabel>
         <div className="flex flex-col gap-3">
-          {(['primary', 'secondary', 'tertiary', 'destructive'] as const).map((v) =>
-          <div key={v} className="flex flex-wrap items-center gap-3">
+          {(['primary', 'secondary', 'tertiary', 'destructive'] as const).map((v) => (
+            <div key={v} className="flex flex-wrap items-center gap-3">
               <span className="w-24 font-mono text-caption text-fg-subtle">{v}</span>
               <Button variant={v} leadingIcon={v === 'destructive' ? Trash2Icon : undefined}>
                 {v === 'destructive' ? 'Delete block' : v === 'primary' ? 'Publish' : v === 'secondary' ? 'Preview' : 'Cancel'}
@@ -43,7 +43,7 @@ export function ControlGallery() {
                 Saving
               </Button>
             </div>
-          )}
+          ))}
           <div className="flex flex-wrap items-center gap-3">
             <span className="w-24 font-mono text-caption text-fg-subtle">sizes</span>
             <Button size="sm">Small</Button>
@@ -81,10 +81,10 @@ export function ControlGallery() {
             value="h2"
             onChange={() => undefined}
             options={[
-            { value: 'h2', label: 'Section' },
-            { value: 'h3', label: 'Sub-section' }]
-            } />
-          
+              { value: 'h2', label: 'Section' },
+              { value: 'h3', label: 'Sub-section' },
+            ]}
+          />
         </div>
       </div>
 
@@ -119,21 +119,21 @@ export function ControlGallery() {
             value={vp}
             onChange={setVp}
             options={[
-            { value: 'phone', label: 'Phone', icon: SmartphoneIcon, iconOnly: true },
-            { value: 'tablet', label: 'Tablet', icon: TabletIcon, iconOnly: true },
-            { value: 'desktop', label: 'Desktop', icon: MonitorIcon, iconOnly: true }]
-            } />
-          
+              { value: 'phone', label: 'Phone', icon: SmartphoneIcon, iconOnly: true },
+              { value: 'tablet', label: 'Tablet', icon: TabletIcon, iconOnly: true },
+              { value: 'desktop', label: 'Desktop', icon: MonitorIcon, iconOnly: true },
+            ]}
+          />
           <Segmented
             ariaLabel="Button shape"
             value={shape}
             onChange={setShape}
             options={[
-            { value: 'pill', label: 'Pill' },
-            { value: 'rounded', label: 'Rounded' },
-            { value: 'square', label: 'Square' }]
-            } />
-          
+              { value: 'pill', label: 'Pill' },
+              { value: 'rounded', label: 'Rounded' },
+              { value: 'square', label: 'Square' },
+            ]}
+          />
         </div>
         <div>
           <DsLabel>Tabs</DsLabel>
@@ -143,14 +143,14 @@ export function ControlGallery() {
             value={tab}
             onChange={setTab}
             items={[
-            { id: 'content', label: 'Content', badge: 2 },
-            { id: 'style', label: 'Style' },
-            { id: 'behaviour', label: 'Behaviour' }]
-            } />
-          
+              { id: 'content', label: 'Content', badge: 2 },
+              { id: 'style', label: 'Style' },
+              { id: 'behaviour', label: 'Behaviour' },
+            ]}
+          />
           <p className="pt-4 text-label text-fg-muted">Arrow keys move between tabs. The badge counts issues in that tab.</p>
         </div>
       </div>
-    </div>);
-
+    </div>
+  );
 }

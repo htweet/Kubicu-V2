@@ -8,7 +8,7 @@ interface Point {
 }
 
 /** The one primary chart: visits per day, with the previous period as a dashed line (D61). */
-export function VisitsChart({ data, compare, summary }: {data: Point[];compare: boolean;summary: string;}) {
+export function VisitsChart({ data, compare, summary }: { data: Point[]; compare: boolean; summary: string }) {
   return (
     <figure className="flex flex-col gap-2">
       <div className="h-64 w-full" aria-hidden>
@@ -20,16 +20,16 @@ export function VisitsChart({ data, compare, summary }: {data: Point[];compare: 
             <Tooltip
               cursor={{ stroke: 'rgb(var(--border-strong))' }}
               formatter={(v: number, name: string) => [`${v} visits`, name === 'previous' ? 'Previous period' : 'This period']}
-              contentStyle={{ background: 'rgb(var(--overlay))', border: '1px solid rgb(var(--border-subtle))', borderRadius: 8, color: 'rgb(var(--text-primary))', fontSize: 12 }} />
-            
+              contentStyle={{ background: 'rgb(var(--overlay))', border: '1px solid rgb(var(--border-subtle))', borderRadius: 8, color: 'rgb(var(--text-primary))', fontSize: 12 }}
+            />
             <Area type="monotone" dataKey="value" stroke="rgb(var(--action))" strokeWidth={2} fill="rgb(var(--action))" fillOpacity={0.12} isAnimationActive={false} />
             {compare && <Line type="monotone" dataKey="previous" stroke="rgb(var(--text-subtle))" strokeWidth={1.5} strokeDasharray="4 4" dot={false} isAnimationActive={false} />}
           </ComposedChart>
         </ResponsiveContainer>
       </div>
       <figcaption className="text-caption text-fg-muted">{summary}</figcaption>
-    </figure>);
-
+    </figure>
+  );
 }
 
 export type { Point as VisitsPoint };

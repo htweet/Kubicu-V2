@@ -12,7 +12,7 @@ export interface BillingCountry {
   taxRate: number;
   /** Line label on quotes and invoices. */
   taxLabel: string;
-  entity: {name: string;address: string;taxId: string;};
+  entity: { name: string; address: string; taxId: string };
   /** Invoice numbers run per country: KUB-2026-0001 (Nigeria), KUB-KE-2026-0001 … */
   invoicePrefix: string;
 }
@@ -24,22 +24,22 @@ export const billingCountries: Record<'NGN' | 'KES' | 'GHS' | 'ZAR', BillingCoun
     taxRate: 0.16,
     taxLabel: 'VAT (16%, example)',
     entity: { name: 'KUBICU Kenya (example entity)', address: 'Nairobi, Kenya — address to be confirmed', taxId: 'KRA PIN to be confirmed' },
-    invoicePrefix: 'KUB-KE'
+    invoicePrefix: 'KUB-KE',
   },
   GHS: {
     currency: 'GHS',
     taxRate: 0.2,
     taxLabel: 'VAT and levies (20%, example)',
     entity: { name: 'KUBICU Ghana (example entity)', address: 'Accra, Ghana — address to be confirmed', taxId: 'TIN to be confirmed' },
-    invoicePrefix: 'KUB-GH'
+    invoicePrefix: 'KUB-GH',
   },
   ZAR: {
     currency: 'ZAR',
     taxRate: 0.15,
     taxLabel: 'VAT (15%, example)',
     entity: { name: 'KUBICU South Africa (example entity)', address: 'Johannesburg, South Africa — address to be confirmed', taxId: 'VAT number to be confirmed' },
-    invoicePrefix: 'KUB-ZA'
-  }
+    invoicePrefix: 'KUB-ZA',
+  },
 };
 
 export const billingCountryFor = (code: CurrencyCode): BillingCountry => (billingCountries as Record<string, BillingCountry>)[code] ?? billingCountries.NGN;

@@ -6,7 +6,7 @@ import { useEditor } from '../../contexts/EditorContext';
 import { cn } from '../../utils/cn';
 
 /** Ready-made sections in the picker (D172). Inserting adds real, editable blocks below the selection. */
-export function SectionPresetList({ query, touch, onInserted }: {query: string;touch?: boolean;onInserted?: () => void;}) {
+export function SectionPresetList({ query, touch, onInserted }: { query: string; touch?: boolean; onInserted?: () => void }) {
   const { state, actions } = useEditor();
   const q = query.trim().toLowerCase();
   const items = sectionPresets.filter((p) => !q || `${p.name} ${p.description} ${p.shape} ${p.group} section`.toLowerCase().includes(q));
@@ -27,14 +27,14 @@ export function SectionPresetList({ query, touch, onInserted }: {query: string;t
           <section key={g} aria-label={g}>
             <h4 className="mb-1 px-1 text-[11.5px] font-medium text-fg-subtle">{g}</h4>
             <ul className="flex flex-col gap-0.5">
-              {list.map((p) =>
-              <li key={p.id}>
+              {list.map((p) => (
+                <li key={p.id}>
                   <button
-                  type="button"
-                  onClick={() => insert(p)}
-                  aria-label={`Add section: ${p.name}. ${p.shape}`}
-                  className={cn('group relative flex w-full items-start gap-3 rounded-md px-2 text-left transition-colors duration-150 hover:bg-sunken focus-visible:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus', touch ? 'py-3 pr-14' : 'py-2')}>
-                  
+                    type="button"
+                    onClick={() => insert(p)}
+                    aria-label={`Add section: ${p.name}. ${p.shape}`}
+                    className={cn('group relative flex w-full items-start gap-3 rounded-md px-2 text-left transition-colors duration-150 hover:bg-sunken focus-visible:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus', touch ? 'py-3 pr-14' : 'py-2')}
+                  >
                     <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-line bg-canvas text-action">
                       <LayoutTemplateIcon size={15} aria-hidden />
                     </span>
@@ -50,11 +50,11 @@ export function SectionPresetList({ query, touch, onInserted }: {query: string;t
                     </span>
                   </button>
                 </li>
-              )}
+              ))}
             </ul>
-          </section>);
-
+          </section>
+        );
       })}
-    </div>);
-
+    </div>
+  );
 }

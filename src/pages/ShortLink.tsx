@@ -50,7 +50,7 @@ export function ShortLink() {
       pageId: null,
       label: wa ? 'whatsapp' : externalTarget ? 'website' : 'page',
       via: clickVia(),
-      ...(invalid ? { invalid } : {})
+      ...(invalid ? { invalid } : {}),
     });
   }, [hit, target, externalTarget, wa, handle]);
   useEffect(() => {
@@ -60,21 +60,21 @@ export function ShortLink() {
   if (target) return <Navigate to={target} replace />;
   const home = hit ? spaceHandle(hit.workspace.id, MAIN_SPACE_ID) : handle;
 
-  const state = wa ?
-  { icon: MessageCircleIcon, title: 'Opening WhatsApp', text: 'This short link starts a WhatsApp chat. You can edit the message before sending.' } :
-  external?.ok ?
-  { icon: LinkIcon, title: `Taking you to ${external.host}`, text: 'This short link goes to another website.' } :
-  scheduled && hit?.link.startsAt ?
-  { icon: CalendarClockIcon, title: 'This link isn’t live yet', text: `It starts on ${new Date(hit.link.startsAt).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}. Their main page is open now.` } :
-  hit?.link.whatsapp && live ?
-  { icon: ShieldAlertIcon, title: 'This link can’t open WhatsApp', text: 'Its WhatsApp number isn’t valid. Their main page is still open.' } :
-  external && !external.ok ?
-  { icon: ShieldAlertIcon, title: 'This link was stopped', text: 'Its website address didn’t pass KUBICU’s safety check, so we haven’t sent you there.' } :
-  hit?.link.pausedAt ?
-  { icon: PauseCircleIcon, title: 'This link is paused', text: 'The owner has paused it for now. Their main page is still open.' } :
-  hit ?
-  { icon: LinkIcon, title: 'This link has ended', text: 'The owner stopped using this link or QR code.' } :
-  { icon: LinkIcon, title: 'This link doesn’t exist', text: 'Check the address, or visit the page directly.' };
+  const state = wa
+    ? { icon: MessageCircleIcon, title: 'Opening WhatsApp', text: 'This short link starts a WhatsApp chat. You can edit the message before sending.' }
+    : external?.ok
+    ? { icon: LinkIcon, title: `Taking you to ${external.host}`, text: 'This short link goes to another website.' }
+    : scheduled && hit?.link.startsAt
+      ? { icon: CalendarClockIcon, title: 'This link isn’t live yet', text: `It starts on ${new Date(hit.link.startsAt).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}. Their main page is open now.` }
+    : hit?.link.whatsapp && live
+      ? { icon: ShieldAlertIcon, title: 'This link can’t open WhatsApp', text: 'Its WhatsApp number isn’t valid. Their main page is still open.' }
+    : external && !external.ok
+      ? { icon: ShieldAlertIcon, title: 'This link was stopped', text: 'Its website address didn’t pass KUBICU’s safety check, so we haven’t sent you there.' }
+      : hit?.link.pausedAt
+        ? { icon: PauseCircleIcon, title: 'This link is paused', text: 'The owner has paused it for now. Their main page is still open.' }
+        : hit
+          ? { icon: LinkIcon, title: 'This link has ended', text: 'The owner stopped using this link or QR code.' }
+          : { icon: LinkIcon, title: 'This link doesn’t exist', text: 'Check the address, or visit the page directly.' };
 
   return (
     <main className="flex min-h-screen w-full items-center justify-center bg-[#F7F4EE] px-6">
@@ -84,20 +84,20 @@ export function ShortLink() {
         </span>
         <h1 className="text-[20px] font-semibold text-[#1F1B16]">{state.title}</h1>
         <p className="text-[14px] text-[#6B6459]">{state.text}</p>
-        {wa ?
-        <a href={wa} rel="noopener noreferrer" className="mt-2 inline-flex h-11 items-center rounded-full bg-[#1F1B16] px-5 text-[14px] font-semibold text-white">
+        {wa ? (
+          <a href={wa} rel="noopener noreferrer" className="mt-2 inline-flex h-11 items-center rounded-full bg-[#1F1B16] px-5 text-[14px] font-semibold text-white">
             Open WhatsApp
-          </a> :
-        external?.ok ?
-        <a href={external.url} rel="noopener noreferrer" className="mt-2 inline-flex h-11 items-center rounded-full bg-[#1F1B16] px-5 text-[14px] font-semibold text-white">
+          </a>
+        ) : external?.ok ? (
+          <a href={external.url} rel="noopener noreferrer" className="mt-2 inline-flex h-11 items-center rounded-full bg-[#1F1B16] px-5 text-[14px] font-semibold text-white">
             Continue to {external.host}
-          </a> :
-
-        <Link to={pageHref(home ?? handle, '')} className="mt-2 inline-flex h-11 items-center rounded-full bg-[#1F1B16] px-5 text-[14px] font-semibold text-white">
+          </a>
+        ) : (
+          <Link to={pageHref(home ?? handle, '')} className="mt-2 inline-flex h-11 items-center rounded-full bg-[#1F1B16] px-5 text-[14px] font-semibold text-white">
             Go to kub.icu/{home ?? handle}
           </Link>
-        }
+        )}
       </div>
-    </main>);
-
+    </main>
+  );
 }

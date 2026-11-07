@@ -26,34 +26,34 @@ export function ShopPaymentMethodsSection() {
   const own = transferDetails(current.id, current.name);
   const pay = payOptionsOf(s.data);
   const local = localPayments();
-  const anyOn = m.card || naira && (m.transfer || USSD_AVAILABLE && m.ussd) || !!local.mobileMoney && m.mobileMoney !== false || local.eft && m.eft !== false;
+  const anyOn = m.card || (naira && (m.transfer || (USSD_AVAILABLE && m.ussd))) || (!!local.mobileMoney && m.mobileMoney !== false) || (local.eft && m.eft !== false);
   const error = anyOn ? '' : 'Keep at least one way to pay on, or buyers can’t check out.';
 
   return (
     <SettingsSection id="methods" title="Payment methods" description="The ways buyers can pay at checkout and on payment links." dirty={s.dirty} justSaved={s.justSaved} onSave={() => s.save()} onReset={s.reset} saveDisabled={!!error}>
-      {error &&
-      <p className="rounded-md bg-danger-soft px-3 py-2.5 text-label text-danger" role="alert">
+      {error && (
+        <p className="rounded-md bg-danger-soft px-3 py-2.5 text-label text-danger" role="alert">
           {error}
         </p>
-      }
-      {local.mobileMoney &&
-      <Switch
-        id="pm-momo"
-        label={local.mobileMoney.name}
-        description="Buyers approve a payment request on their phone with their PIN. Simulated until KUBICU has a payment partner in your country."
-        checked={m.mobileMoney !== false}
-        onChange={(mobileMoney) => s.patch({ mobileMoney })} />
-
-      }
-      {local.eft &&
-      <Switch
-        id="pm-eft"
-        label="EFT bank transfer"
-        description="Buyers get a one-time account number to pay into. The order confirms itself when the money lands. Simulated until KUBICU has a payment partner in your country."
-        checked={m.eft !== false}
-        onChange={(eft) => s.patch({ eft })} />
-
-      }
+      )}
+      {local.mobileMoney && (
+        <Switch
+          id="pm-momo"
+          label={local.mobileMoney.name}
+          description="Buyers approve a payment request on their phone with their PIN. Simulated until KUBICU has a payment partner in your country."
+          checked={m.mobileMoney !== false}
+          onChange={(mobileMoney) => s.patch({ mobileMoney })}
+        />
+      )}
+      {local.eft && (
+        <Switch
+          id="pm-eft"
+          label="EFT bank transfer"
+          description="Buyers get a one-time account number to pay into. The order confirms itself when the money lands. Simulated until KUBICU has a payment partner in your country."
+          checked={m.eft !== false}
+          onChange={(eft) => s.patch({ eft })}
+        />
+      )}
       <Switch id="pm-card" label="Card" description={naira ? 'Visa, Mastercard and Verve through your payment provider. Paying in instalments always needs a card.' : 'Visa and Mastercard through your payment provider.'} checked={m.card} onChange={(card) => s.patch({ card })} />
 
       <div className="flex flex-col gap-4 border-t border-line pt-5">
@@ -63,35 +63,35 @@ export function ShopPaymentMethodsSection() {
           disabled={!naira}
           description={naira ? `Buyers get a one-time account number from your provider, valid for ${TRANSFER_ACCOUNT_MINUTES} minutes. The order confirms itself when the money lands — no checking for you.` : 'Naira shops only.'}
           checked={naira && m.transfer}
-          onChange={(transfer) => s.patch({ transfer })} />
-        
-        {naira && m.transfer &&
-        <div className="ml-0 flex flex-col gap-3 border-l-2 border-line pl-4 sm:ml-1">
+          onChange={(transfer) => s.patch({ transfer })}
+        />
+        {naira && m.transfer && (
+          <div className="ml-0 flex flex-col gap-3 border-l-2 border-line pl-4 sm:ml-1">
             <Switch
-            id="pm-own"
-            label="Also offer my own bank details"
-            description="Buyers can choose to transfer straight to your account and tap “I’ve paid”. The order waits until you confirm the money arrived."
-            checked={m.transferOwn}
-            onChange={(transferOwn) => s.patch({ transferOwn })} />
-          
-            {m.transferOwn && !own &&
-          <InlineAlert tone="info" title="Add your bank details first">
+              id="pm-own"
+              label="Also offer my own bank details"
+              description="Buyers can choose to transfer straight to your account and tap “I’ve paid”. The order waits until you confirm the money arrived."
+              checked={m.transferOwn}
+              onChange={(transferOwn) => s.patch({ transferOwn })}
+            />
+            {m.transferOwn && !own && (
+              <InlineAlert tone="info" title="Add your bank details first">
                 Your own account shows at checkout once the Bank transfer payments app has your bank and 10-digit account number.{' '}
                 <Link to="/app/extensions" className="font-semibold underline underline-offset-2">
                   Set it up in Extensions
                 </Link>
               </InlineAlert>
-          }
-            {m.transferOwn && own &&
-          <p className="text-caption text-fg-muted">
+            )}
+            {m.transferOwn && own && (
+              <p className="text-caption text-fg-muted">
                 Showing {own.bank} · {own.account}.{' '}
                 <Link to="/app/extensions" className="font-medium text-action hover:underline">
                   Change in Extensions
                 </Link>
               </p>
-          }
+            )}
           </div>
-        }
+        )}
       </div>
 
       <div className="border-t border-line pt-5">
@@ -101,16 +101,16 @@ export function ShopPaymentMethodsSection() {
           disabled={!USSD_AVAILABLE || !naira}
           description={!USSD_AVAILABLE ? 'Not available yet. Buyers can pay by card or bank transfer for now.' : naira ? 'Buyers dial a code from their bank phone and approve with their PIN — no card or data needed.' : 'Naira shops only.'}
           checked={USSD_AVAILABLE && naira && m.ussd}
-          onChange={(ussd) => s.patch({ ussd })} />
-        
+          onChange={(ussd) => s.patch({ ussd })}
+        />
       </div>
 
       <ul className="flex flex-col divide-y divide-line rounded-md border border-line">
         {[
-        { label: 'Pay on delivery', on: naira && pay.pod.enabled },
-        { label: 'Pay in instalments', on: naira && pay.instalments.enabled }].
-        map((row) =>
-        <li key={row.label} className="flex flex-wrap items-center justify-between gap-3 px-3.5 py-3">
+          { label: 'Pay on delivery', on: naira && pay.pod.enabled },
+          { label: 'Pay in instalments', on: naira && pay.instalments.enabled },
+        ].map((row) => (
+          <li key={row.label} className="flex flex-wrap items-center justify-between gap-3 px-3.5 py-3">
             <span className="flex items-center gap-2 text-label font-medium text-fg">
               {row.label}
               <Badge tone={row.on ? 'success' : 'neutral'}>{row.on ? 'On' : 'Off'}</Badge>
@@ -119,8 +119,8 @@ export function ShopPaymentMethodsSection() {
               Set up in Payments <ArrowUpRightIcon size={12} aria-hidden />
             </Link>
           </li>
-        )}
+        ))}
       </ul>
-    </SettingsSection>);
-
+    </SettingsSection>
+  );
 }

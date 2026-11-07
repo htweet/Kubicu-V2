@@ -24,7 +24,7 @@ interface TimeOffHit {
 }
 
 /** This person's own window for a day, or null when they don't work it. Narrowed later to the business hours. */
-export function staffHoursFor(s: StaffHours, dateKey: string): {open: string;close: string;} | 'business' | null {
+export function staffHoursFor(s: StaffHours, dateKey: string): { open: string; close: string } | 'business' | null {
   if (isAway(s, dateKey)) return null;
   if (!s.weekly) return 'business';
   const w = s.weekly.find((h) => h.day === weekdayOfKey(dateKey));
@@ -32,7 +32,7 @@ export function staffHoursFor(s: StaffHours, dateKey: string): {open: string;clo
 }
 
 /** Busy events from this person's own connected calendar. */
-export function staffBusy(s: StaffHours, a: Availability): {start: number;end: number;}[] {
+export function staffBusy(s: StaffHours, a: Availability): { start: number; end: number }[] {
   if (!s.calendarId) return [];
   const c = (a.calendars ?? []).find((x) => x.id === s.calendarId && x.status === 'ok');
   if (!c) return [];
@@ -61,10 +61,10 @@ export function staffName(a: Availability, id: string | null | undefined): strin
 }
 
 export function initialsOf(name: string): string {
-  return name.
-  split(/\s+/).
-  filter(Boolean).
-  slice(0, 2).
-  map((p) => p[0]?.toUpperCase()).
-  join('');
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase())
+    .join('');
 }

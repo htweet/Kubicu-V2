@@ -13,8 +13,8 @@ export function AdminAreaNotFound() {
         icon={CompassIcon}
         title="That staff area doesn’t exist"
         description="The address may be mistyped, or the area may have moved. Use the menu to find it."
-        action={<Button onClick={() => navigate('/admin')}>Staff console overview</Button>} />
-      
-    </div>);
-
+        action={<Button onClick={() => navigate('/admin')}>Staff console overview</Button>}
+      />
+    </div>
+  );
 }

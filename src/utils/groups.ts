@@ -1,9 +1,9 @@
 import type { Block, BlockGroup, PageDocument } from '../types/page';
 
 export type LayerUnit =
-/** `children`: blocks inside a container (D167); they move with it and are never units themselves. */
-{kind: 'block';key: string;block: Block;children: Block[];} |
-{kind: 'group';key: string;group: BlockGroup;blocks: Block[];};
+  /** `children`: blocks inside a container (D167); they move with it and are never units themselves. */
+  | { kind: 'block'; key: string; block: Block; children: Block[] }
+  | { kind: 'group'; key: string; group: BlockGroup; blocks: Block[] };
 
 /**
  * Keeps groups valid: each group is one contiguous run of at least two blocks.
@@ -32,8 +32,8 @@ export function normalizeGroups(doc: PageDocument): PageDocument {
 
   return {
     ...doc,
-    blocks: blocks.map((b) => b.groupId && !keepIds.has(b.groupId) ? { ...b, groupId: null } : b),
-    groups: keep
+    blocks: blocks.map((b) => (b.groupId && !keepIds.has(b.groupId) ? { ...b, groupId: null } : b)),
+    groups: keep,
   };
 }
 
@@ -53,8 +53,8 @@ export function toUnits(doc: PageDocument): LayerUnit[] {
     const group = block.groupId ? byId.get(block.groupId) : undefined;
     const last = units[units.length - 1];
     if (group) {
-      if (last && last.kind === 'group' && last.group.id === group.id) last.blocks.push(block);else
-      units.push({ kind: 'group', key: `group:${group.id}`, group, blocks: [block] });
+      if (last && last.kind === 'group' && last.group.id === group.id) last.blocks.push(block);
+      else units.push({ kind: 'group', key: `group:${group.id}`, group, blocks: [block] });
     } else {
       units.push({ kind: 'block', key: block.id, block, children: doc.blocks.filter((b) => b.parentId === block.id) });
     }
@@ -63,7 +63,7 @@ export function toUnits(doc: PageDocument): LayerUnit[] {
 }
 
 export function flattenUnits(units: LayerUnit[]): Block[] {
-  return units.flatMap((u) => u.kind === 'block' ? [u.block, ...u.children] : u.blocks);
+  return units.flatMap((u) => (u.kind === 'block' ? [u.block, ...u.children] : u.blocks));
 }
 
 export function findGroup(doc: PageDocument, groupId: string | null | undefined): BlockGroup | undefined {

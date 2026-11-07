@@ -12,38 +12,38 @@ import { ClosingCta } from '../../components/marketing/home/ClosingCta';
 import { useT } from '../../contexts/LocaleContext';
 
 const uses = [
-{ place: 'WhatsApp status', link: 'kub.icu/bisikitchen/s/menu-wa', learn: 'How many people opened your menu from status' },
-{ place: 'Instagram bio', link: 'kub.icu/bisikitchen/s/ig', learn: 'Taps from your bio, separate from story links' },
-{ place: 'TikTok video', link: 'kub.icu/bisikitchen/s/jollof-tt', learn: 'Which video sent people to order' },
-{ place: 'Stall poster (QR)', link: 'kub.icu/bisikitchen/s/stall', learn: 'Scans at the stall, counted apart from taps' },
-{ place: 'Packaging sticker', link: 'kub.icu/bisikitchen/s/reorder', learn: 'Repeat orders from people who kept the sticker' },
-{ place: 'Paid ad', link: 'kub.icu/bisikitchen/s/dec-ad', learn: 'Visits and orders from the ad, with UTM tags for your ad tool' }];
-
+  { place: 'WhatsApp status', link: 'kub.icu/bisikitchen/s/menu-wa', learn: 'How many people opened your menu from status' },
+  { place: 'Instagram bio', link: 'kub.icu/bisikitchen/s/ig', learn: 'Taps from your bio, separate from story links' },
+  { place: 'TikTok video', link: 'kub.icu/bisikitchen/s/jollof-tt', learn: 'Which video sent people to order' },
+  { place: 'Stall poster (QR)', link: 'kub.icu/bisikitchen/s/stall', learn: 'Scans at the stall, counted apart from taps' },
+  { place: 'Packaging sticker', link: 'kub.icu/bisikitchen/s/reorder', learn: 'Repeat orders from people who kept the sticker' },
+  { place: 'Paid ad', link: 'kub.icu/bisikitchen/s/dec-ad', learn: 'Visits and orders from the ad, with UTM tags for your ad tool' },
+];
 
 const statsList = ['Clicks over time, by day', 'Source and campaign tag', 'Phone, tablet or computer', 'Rough region — never an exact location', 'Orders and bookings that followed'];
 
 const history = [
-{ when: 'Today', what: 'Christmas menu', who: 'Bisi' },
-{ when: '3 Nov', what: 'November menu', who: 'Bisi' },
-{ when: '12 Oct', what: 'Main page', who: 'Tunde (Editor)' }];
-
+  { when: 'Today', what: 'Christmas menu', who: 'Bisi' },
+  { when: '3 Nov', what: 'November menu', who: 'Bisi' },
+  { when: '12 Oct', what: 'Main page', who: 'Tunde (Editor)' },
+];
 
 const safety = [
-'Only web addresses (https) — no app links, files or scripts.',
-'Addresses inside private networks are refused, so links can’t be used to probe them.',
-'A short link can’t point at another short link, so nobody goes in circles.',
-'Addresses reported as phishing or scams are blocked, and links can be paused by KUBICU staff.',
-'Every change of destination is recorded with who changed it and when.',
-'Short names can’t be guessed in bulk: repeated misses are slowed down.'];
-
+  'Only web addresses (https) — no app links, files or scripts.',
+  'Addresses inside private networks are refused, so links can’t be used to probe them.',
+  'A short link can’t point at another short link, so nobody goes in circles.',
+  'Addresses reported as phishing or scams are blocked, and links can be paused by KUBICU staff.',
+  'Every change of destination is recorded with who changed it and when.',
+  'Short names can’t be guessed in bulk: repeated misses are slowed down.',
+];
 
 const faqs = [
-{ q: 'Is it free?', a: 'Short links and QR codes are on every plan. Your own short domain needs a connected custom domain, which starts on Creator.' },
-{ q: 'Can I change where a link goes after I’ve printed it?', a: 'Yes. The QR code encodes the short link, not the destination, so you can point it somewhere new without reprinting. The change is recorded in the link’s history.' },
-{ q: 'Does a click give me the person’s details?', a: 'No. A click is anonymous: we count it with its source, time, device type and rough region. Someone only becomes a contact when they fill in a form or buy — and they see what they’re agreeing to.' },
-{ q: 'What about bots?', a: 'Obvious bots and link-preview fetchers are counted separately from real clicks, and the numbers say when they’re estimates.' },
-{ q: 'Can links expire?', a: 'Yes — set an end date and the link sends people to your main page afterwards instead of a dead end. You can also pause a link at any time.' }];
-
+  { q: 'Is it free?', a: 'Short links and QR codes are on every plan. Your own short domain needs a connected custom domain, which starts on Creator.' },
+  { q: 'Can I change where a link goes after I’ve printed it?', a: 'Yes. The QR code encodes the short link, not the destination, so you can point it somewhere new without reprinting. The change is recorded in the link’s history.' },
+  { q: 'Does a click give me the person’s details?', a: 'No. A click is anonymous: we count it with its source, time, device type and rough region. Someone only becomes a contact when they fill in a form or buy — and they see what they’re agreeing to.' },
+  { q: 'What about bots?', a: 'Obvious bots and link-preview fetchers are counted separately from real clicks, and the numbers say when they’re estimates.' },
+  { q: 'Can links expire?', a: 'Yes — set an end date and the link sends people to your main page afterwards instead of a dead end. You can also pause a link at any time.' },
+];
 
 /** /tools/short-links — the public Short Links page (D268). Translated in D324; sample link addresses and names stay as written. */
 export function ShortLinksLanding() {
@@ -59,15 +59,15 @@ export function ShortLinksLanding() {
         fg="rgb(var(--kb-forest))"
         primary={{ label: 'Make real links free', to: '/signup', bg: 'rgb(var(--kb-forest))', fg: 'rgb(var(--kb-lime))' }}
         secondary={{ label: 'See the stats', to: '#stats' }}
-        visual={<ShortLinkDemo />} />
-      
+        visual={<ShortLinkDemo />}
+      />
 
       <section aria-labelledby="sl-uses" className="mx-auto w-full max-w-7xl px-5 py-20 md:px-8 md:py-24">
         <SectionHeading
           id="sl-uses"
           title={tr('One link for every place you share')}
-          lead={tr('Same destination, a different short link per place — so each one’s numbers stay apart. Example business: Bisi’s Kitchen (fictional).')} />
-        
+          lead={tr('Same destination, a different short link per place — so each one’s numbers stay apart. Example business: Bisi’s Kitchen (fictional).')}
+        />
         <Reveal className="mt-10 overflow-x-auto">
           <table className="w-full min-w-[640px] border-collapse text-left">
             <caption className="sr-only">{tr('Example short links by where they’re shared')}</caption>
@@ -85,15 +85,15 @@ export function ShortLinksLanding() {
               </tr>
             </thead>
             <tbody>
-              {uses.map((u) =>
-              <tr key={u.place} className="border-b border-line">
+              {uses.map((u) => (
+                <tr key={u.place} className="border-b border-line">
                   <th scope="row" className="whitespace-nowrap py-5 pr-6 text-[16px] font-bold text-fg">
                     {tr(u.place)}
                   </th>
                   <td className="whitespace-nowrap py-5 pr-6 font-mono text-[14px] text-fg">{u.link}</td>
                   <td className="py-5 text-[15px] text-fg-muted">{tr(u.learn)}</td>
                 </tr>
-              )}
+              ))}
             </tbody>
           </table>
         </Reveal>
@@ -109,12 +109,12 @@ export function ShortLinksLanding() {
               {tr('Clicks, estimated visitors, QR scans and filtered bot traffic are kept apart — and anything estimated says so. Clicks that lead to an order or booking are credited to the link.')}
             </p>
             <ul className="mt-7 flex flex-col gap-3 text-[15px]">
-              {statsList.map((x) =>
-              <li key={x} className="flex gap-2.5">
+              {statsList.map((x) => (
+                <li key={x} className="flex gap-2.5">
                   <CheckIcon size={18} aria-hidden className="mt-0.5 shrink-0 text-[rgb(var(--kb-lime))]" />
                   {tr(x)}
                 </li>
-              )}
+              ))}
             </ul>
           </div>
           <LinkStatsSample />
@@ -126,8 +126,8 @@ export function ShortLinksLanding() {
           <SectionHeading
             id="sl-qr"
             title={tr('Change the destination. Keep the poster.')}
-            lead={tr('Your QR code holds the short link, so when the menu, price list or event page changes, you point the link somewhere new — nothing to reprint.')} />
-          
+            lead={tr('Your QR code holds the short link, so when the menu, price list or event page changes, you point the link somewhere new — nothing to reprint.')}
+          />
           <Link to="/signup" className="mt-8 inline-flex h-12 items-center gap-2 whitespace-nowrap rounded-full bg-fg px-6 text-[15px] font-bold text-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2">
             {tr('Design your QR code')} <ArrowRightIcon size={16} aria-hidden />
           </Link>
@@ -147,8 +147,8 @@ export function ShortLinksLanding() {
               <HistoryIcon size={13} aria-hidden /> {tr('Destination history')}
             </p>
             <ol className="mt-3 flex flex-col">
-              {history.map((h, i) =>
-              <li key={h.when} className="grid grid-cols-[72px_minmax(0,1fr)] gap-3 border-t border-line py-3 text-[14px]">
+              {history.map((h, i) => (
+                <li key={h.when} className="grid grid-cols-[72px_minmax(0,1fr)] gap-3 border-t border-line py-3 text-[14px]">
                   <span className="text-fg-subtle">{tr(h.when)}</span>
                   <span className="text-fg">
                     <span className="font-bold">{tr(h.what)}</span>
@@ -156,7 +156,7 @@ export function ShortLinksLanding() {
                     <span className="block text-[13px] text-fg-muted">{tr('Changed by {name}', { name: tr(h.who) })}</span>
                   </span>
                 </li>
-              )}
+              ))}
             </ol>
           </div>
         </Reveal>
@@ -166,12 +166,12 @@ export function ShortLinksLanding() {
         <div className="mx-auto grid w-full max-w-7xl gap-10 px-5 py-20 md:px-8 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
           <SectionHeading id="sl-safe" title={tr('Safe to tap')} lead={tr('Short links hide where they go, so every destination is checked before it’s saved — and again before anyone is sent there.')} />
           <ul className="grid gap-x-8 gap-y-4 sm:grid-cols-2">
-            {safety.map((s) =>
-            <li key={s} className="flex gap-2.5 border-b border-[rgb(var(--kb-cobalt)/0.2)] pb-4 text-[15px] leading-relaxed text-fg">
+            {safety.map((s) => (
+              <li key={s} className="flex gap-2.5 border-b border-[rgb(var(--kb-cobalt)/0.2)] pb-4 text-[15px] leading-relaxed text-fg">
                 <CheckIcon size={18} aria-hidden className="mt-0.5 shrink-0 text-[rgb(var(--kb-cobalt))]" />
                 {tr(s)}
               </li>
-            )}
+            ))}
           </ul>
         </div>
       </section>
@@ -187,6 +187,6 @@ export function ShortLinksLanding() {
       </section>
 
       <ClosingCta title="Every link you share, accounted for." />
-    </>);
-
+    </>
+  );
 }

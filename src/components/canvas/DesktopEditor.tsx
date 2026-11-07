@@ -54,7 +54,7 @@ export function DesktopEditor() {
     onEscape: () => actions.select(null),
     onCommand: () => setCommandOpen(true),
     onCopy: () => state.selectedId && clipboard.copy(state.selectedId),
-    onPaste: clipboard.paste
+    onPaste: clipboard.paste,
   });
 
   // ⌘\ / Ctrl+\ hides both panels for a clear view of the page, and brings them back.
@@ -98,35 +98,35 @@ export function DesktopEditor() {
         rightOpen={panels.right}
         onToggleLeft={panels.toggleLeft}
         onToggleRight={panels.toggleRight}
-        onManagePages={() => openLeft('pages')} />
-      
+        onManagePages={() => openLeft('pages')}
+      />
       <ConflictBanner />
       <div className="flex min-h-0 flex-1">
         <aside
           id="canvas-left-panel"
           aria-label={tr('Blocks and layers')}
           className={cn('shrink-0 overflow-hidden border-r border-line bg-raised', panelMotion)}
-          style={{ width: panels.left ? LEFT_W : RAIL }}>
-          
-          {panels.left ?
-          <div className="h-full" style={{ width: LEFT_W }}>
+          style={{ width: panels.left ? LEFT_W : RAIL }}
+        >
+          {panels.left ? (
+            <div className="h-full" style={{ width: LEFT_W }}>
               <LeftPanel tab={leftTab} onTabChange={setLeftTab} onCollapse={() => panels.setLeft(false)} />
-            </div> :
-
-          <div className="h-full" style={{ width: RAIL }}>
-              <PanelRail
-              side="left"
-              expandLabel={tr('Expand panel')}
-              onExpand={() => panels.setLeft(true)}
-              items={[
-              { id: 'blocks', label: tr('Add blocks'), icon: PlusSquareIcon, onSelect: () => openLeft('blocks') },
-              { id: 'layers', label: tr('Layers'), icon: LayersIcon, badge: state.draft.blocks.length, onSelect: () => openLeft('layers') },
-              { id: 'pages', label: tr('Pages'), icon: FilesIcon, badge: pageCount(state.site), onSelect: () => openLeft('pages') },
-              { id: 'templates', label: tr('Templates'), icon: LayoutTemplateIcon, onSelect: () => openLeft('templates') }]
-              } />
-            
             </div>
-          }
+          ) : (
+            <div className="h-full" style={{ width: RAIL }}>
+              <PanelRail
+                side="left"
+                expandLabel={tr('Expand panel')}
+                onExpand={() => panels.setLeft(true)}
+                items={[
+                  { id: 'blocks', label: tr('Add blocks'), icon: PlusSquareIcon, onSelect: () => openLeft('blocks') },
+                  { id: 'layers', label: tr('Layers'), icon: LayersIcon, badge: state.draft.blocks.length, onSelect: () => openLeft('layers') },
+                  { id: 'pages', label: tr('Pages'), icon: FilesIcon, badge: pageCount(state.site), onSelect: () => openLeft('pages') },
+                  { id: 'templates', label: tr('Templates'), icon: LayoutTemplateIcon, onSelect: () => openLeft('templates') },
+                ]}
+              />
+            </div>
+          )}
         </aside>
 
         <main id="canvas-main" tabIndex={-1} aria-label={tr('Canvas')} className="min-w-0 flex-1 focus:outline-none">
@@ -139,28 +139,28 @@ export function DesktopEditor() {
           id="canvas-right-panel"
           aria-label={tr('Inspector')}
           className={cn('shrink-0 overflow-hidden border-l border-line bg-raised', panelMotion)}
-          style={{ width: panels.right ? RIGHT_W : RAIL }}>
-          
-          {panels.right ?
-          <div className="h-full" style={{ width: RIGHT_W }}>
+          style={{ width: panels.right ? RIGHT_W : RAIL }}
+        >
+          {panels.right ? (
+            <div className="h-full" style={{ width: RIGHT_W }}>
               <Inspector pageTab={pageTab} onPageTabChange={setPageTab} onCollapse={() => panels.setRight(false)} />
-            </div> :
-
-          <div className="h-full" style={{ width: RAIL }}>
-              <PanelRail
-              side="right"
-              expandLabel={tr('Expand inspector')}
-              onExpand={() => panels.setRight(true)}
-              items={[
-              ...(selected && selectedDef ?
-              [{ id: 'block', label: tr('Edit {name}', { name: tr(selectedDef.name) }), icon: selectedDef.icon ?? SlidersHorizontalIcon, active: true, onSelect: () => panels.setRight(true) }] :
-              []),
-              { id: 'theme', label: tr('Theme'), icon: PaletteIcon, active: !selected && pageTab === 'theme', onSelect: () => openPage('theme') },
-              { id: 'page', label: tr('Page settings'), icon: SlidersHorizontalIcon, active: !selected && pageTab === 'page', onSelect: () => openPage('page') }]
-              } />
-            
             </div>
-          }
+          ) : (
+            <div className="h-full" style={{ width: RAIL }}>
+              <PanelRail
+                side="right"
+                expandLabel={tr('Expand inspector')}
+                onExpand={() => panels.setRight(true)}
+                items={[
+                  ...(selected && selectedDef
+                    ? [{ id: 'block', label: tr('Edit {name}', { name: tr(selectedDef.name) }), icon: selectedDef.icon ?? SlidersHorizontalIcon, active: true, onSelect: () => panels.setRight(true) }]
+                    : []),
+                  { id: 'theme', label: tr('Theme'), icon: PaletteIcon, active: !selected && pageTab === 'theme', onSelect: () => openPage('theme') },
+                  { id: 'page', label: tr('Page settings'), icon: SlidersHorizontalIcon, active: !selected && pageTab === 'page', onSelect: () => openPage('page') },
+                ]}
+              />
+            </div>
+          )}
         </aside>
       </div>
 
@@ -171,8 +171,8 @@ export function DesktopEditor() {
           actions.select(id);
           panels.setRight(true);
         }}
-        onOpenTheme={() => openPage('theme')} />
-      
+        onOpenTheme={() => openPage('theme')}
+      />
       <Sheet open={versionsOpen} onClose={() => setVersionsOpen(false)} side="right" title={tr('Version history')} description={tr('Publishes and snapshots, newest first')}>
         <VersionHistory />
       </Sheet>
@@ -181,8 +181,8 @@ export function DesktopEditor() {
         onClose={() => setCommandOpen(false)}
         onPublish={() => setPublishOpen(true)}
         onVersions={() => setVersionsOpen(true)}
-        onViewport={setViewport} />
-      
-    </div>);
-
+        onViewport={setViewport}
+      />
+    </div>
+  );
 }

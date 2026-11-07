@@ -21,7 +21,7 @@ export const roomStateLabel: Record<RoomState, string> = {
   goal_reached: 'Goal reached',
   sold_out: 'Sold out',
   ended_success: 'Ended',
-  ended_missed: 'Goal missed'
+  ended_missed: 'Goal missed',
 };
 
 export const roomTypeLabel = { drop: 'Limited drop', goal: 'Group goal' } as const;
@@ -29,7 +29,7 @@ export const roomTypeLabel = { drop: 'Limited drop', goal: 'Group goal' } as con
 /** Orders that count towards the room: placed from its link, paid, not cancelled or refunded. */
 export function roomOrders(data: CommerceData | null, handle: string): Order[] {
   return (data?.orders ?? []).filter(
-    (o) => o.sourceHandle === handle && o.status !== 'cancelled' && (o.paymentStatus === 'paid' || o.paymentStatus === 'partially_refunded')
+    (o) => o.sourceHandle === handle && o.status !== 'cancelled' && (o.paymentStatus === 'paid' || o.paymentStatus === 'partially_refunded'),
   );
 }
 
@@ -54,20 +54,20 @@ export function roomProgress(room: DealRoomSettings, handle: string, data: Comme
   const product = data?.products.find((p) => p.id === room.productId);
   const settled = data?.settledRooms?.[handle];
   const orders = roomOrders(data, handle);
-  const normal = product ? priceRange(product)?.[0] ?? null : null;
+  const normal = product ? (priceRange(product)?.[0] ?? null) : null;
   const unitPriceNgn = room.priceNgn ?? normal;
   const endedAt = room.endedAt ?? null;
   const deadline = room.deadline;
-  const over = endedAt && Date.parse(endedAt) <= now || deadline && Date.parse(deadline) <= now;
+  const over = (endedAt && Date.parse(endedAt) <= now) || (deadline && Date.parse(deadline) <= now);
 
   if (room.type === 'goal') {
     const buyers = new Set(orders.map((o) => o.customer.phone.replace(/\D/g, '') || o.id)).size;
     const count = settled?.outcome === 'missed' ? settled.refunded : buyers;
     const target = Math.max(1, room.goal ?? 1);
     let state: RoomState = 'live';
-    if (room.opensAt && Date.parse(room.opensAt) > now) state = 'scheduled';else
-    if (over) state = settled?.outcome === 'missed' || count < target ? 'ended_missed' : 'ended_success';else
-    if (count >= target) state = 'goal_reached';
+    if (room.opensAt && Date.parse(room.opensAt) > now) state = 'scheduled';
+    else if (over) state = settled?.outcome === 'missed' || count < target ? 'ended_missed' : 'ended_success';
+    else if (count >= target) state = 'goal_reached';
     return { state, count, target, remaining: Math.max(0, target - count), deadline, product, unitPriceNgn, normalPriceNgn: normal };
   }
 
@@ -76,9 +76,9 @@ export function roomProgress(room: DealRoomSettings, handle: string, data: Comme
   const target = Math.max(1, room.seats ?? 1);
   const left = Math.max(0, Math.min(target - sold, stock));
   let state: RoomState = 'live';
-  if (room.opensAt && Date.parse(room.opensAt) > now) state = 'scheduled';else
-  if (over) state = 'ended_success';else
-  if (left <= 0 || product && !canSell(product)) state = 'sold_out';
+  if (room.opensAt && Date.parse(room.opensAt) > now) state = 'scheduled';
+  else if (over) state = 'ended_success';
+  else if (left <= 0 || (product && !canSell(product))) state = 'sold_out';
   return { state, count: sold, target, remaining: left, deadline, product, unitPriceNgn, normalPriceNgn: normal };
 }
 
@@ -115,8 +115,8 @@ export function settleRoom(data: CommerceData, room: DealRoomSettings, handle: s
     const at = new Date(now).toISOString();
     return {
       ...data,
-      orders: data.orders.map((o) => ids.has(o.id) ? { ...o, held: false, events: [{ id: `ev_goal_${o.id}`, at, kind: 'note' as const, label: 'Group goal reached — ready to fulfil' }, ...o.events] } : o),
-      ...(p.state === 'ended_success' ? { settledRooms: { ...data.settledRooms, [handle]: { at, outcome: 'reached' as const, refunded: 0 } } } : {})
+      orders: data.orders.map((o) => (ids.has(o.id) ? { ...o, held: false, events: [{ id: `ev_goal_${o.id}`, at, kind: 'note' as const, label: 'Group goal reached — ready to fulfil' }, ...o.events] } : o)),
+      ...(p.state === 'ended_success' ? { settledRooms: { ...data.settledRooms, [handle]: { at, outcome: 'reached' as const, refunded: 0 } } } : {}),
     };
   }
   if (p.state === 'ended_missed') {
@@ -126,7 +126,7 @@ export function settleRoom(data: CommerceData, room: DealRoomSettings, handle: s
       const refundable = orderMoney(o).gross - orderMoney(o).refunded;
       if (o.paymentStatus === 'paid' || o.paymentStatus === 'partially_refunded') next = refundOrder(next, o.id, refundable, 'Group goal missed — automatic full refund', true);
       // KUBICU waives its fee on missed-goal refunds; the provider fee stays (D55).
-      next = { ...next, orders: next.orders.map((x) => x.id === o.id ? { ...x, held: false, kubicuFeeNgn: 0, status: 'refunded' as const, events: [{ id: `ev_miss_${o.id}`, at: new Date(now).toISOString(), kind: 'refund' as const, label: 'Group goal missed — refunded in full automatically' }, ...x.events] } : x) };
+      next = { ...next, orders: next.orders.map((x) => (x.id === o.id ? { ...x, held: false, kubicuFeeNgn: 0, status: 'refunded' as const, events: [{ id: `ev_miss_${o.id}`, at: new Date(now).toISOString(), kind: 'refund' as const, label: 'Group goal missed — refunded in full automatically' }, ...x.events] } : x)) };
     });
     return { ...next, settledRooms: { ...next.settledRooms, [handle]: { at: new Date(now).toISOString(), outcome: 'missed', refunded: buyers } } };
   }
@@ -146,9 +146,9 @@ export function roomReferrers(data: CommerceData | null, handle: string): Referr
   orders.forEach((o) => o.referralCode && owners.set(o.referralCode, o.customer.name));
   const counts = new Map<string, number>();
   orders.forEach((o) => o.referredBy && counts.set(o.referredBy, (counts.get(o.referredBy) ?? 0) + 1));
-  return Array.from(counts.entries()).
-  map(([code, joined]) => ({ code, joined, name: owners.get(code) ?? 'A buyer' })).
-  sort((a, b) => b.joined - a.joined);
+  return Array.from(counts.entries())
+    .map(([code, joined]) => ({ code, joined, name: owners.get(code) ?? 'A buyer' }))
+    .sort((a, b) => b.joined - a.joined);
 }
 
 /** First name of whoever owns a share code in this room, if it's real. */
@@ -163,7 +163,7 @@ export function referrerName(data: CommerceData | null, handle: string, code: st
  * fee is waived on those orders; the provider's processing fee is usually not returned on refunds,
  * so it stays a cost to the seller. Rates are illustrative until a provider is confirmed.
  */
-export function missedGoalFeeImpact(orders: Order[]): {refundNgn: number;providerFeesNgn: number;} {
+export function missedGoalFeeImpact(orders: Order[]): { refundNgn: number; providerFeesNgn: number } {
   return orders.reduce((t, o) => ({ refundNgn: t.refundNgn + orderMoney(o).gross, providerFeesNgn: t.providerFeesNgn + o.providerFeeNgn }), { refundNgn: 0, providerFeesNgn: 0 });
 }
 
@@ -191,12 +191,12 @@ export function dealRoomCheckout(room: DealRoomSettings, handle: string, data: C
     remaining: room.type === 'drop' ? p.remaining : Infinity,
     open: canJoin(p),
     notice:
-    room.type === 'goal' ?
-    p.count < p.target ?
-    `You pay now. If ${p.target} people haven’t joined by ${p.deadline ? formatSchedule(p.deadline) : 'the deadline'}, you’ll be refunded in full automatically.` :
-    'The goal has been reached — your order will be packed and sent.' :
-    `Room price, limited to ${p.target} in total.`,
-    handle
+      room.type === 'goal'
+        ? p.count < p.target
+          ? `You pay now. If ${p.target} people haven’t joined by ${p.deadline ? formatSchedule(p.deadline) : 'the deadline'}, you’ll be refunded in full automatically.`
+          : 'The goal has been reached — your order will be packed and sent.'
+        : `Room price, limited to ${p.target} in total.`,
+    handle,
   };
 }
 
@@ -212,13 +212,13 @@ export function dealRoomIssues(room: DealRoomSettings, blocks: Block[], data: Co
   const out: ValidationIssue[] = [];
   const push = (id: string, severity: ValidationIssue['severity'], message: string) => out.push({ id: `room:${id}`, blockId: null, severity, message });
   const product = data?.products.find((p) => p.id === room.productId);
-  if (!product) push('product', 'error', 'Choose the product this room sells.');else
-  if (product.status !== 'active') push('product', 'error', `“${product.name}” is ${product.status} in Commerce. Make it active to open the room.`);else
-  if (room.type === 'drop' && product.trackStock && room.seats !== null && totalStock(product) < room.seats && joined === 0)
-  push('stock', 'warning', `You have ${totalStock(product)} in stock but offer ${room.seats}. The room sells out when stock runs out.`);
+  if (!product) push('product', 'error', 'Choose the product this room sells.');
+  else if (product.status !== 'active') push('product', 'error', `“${product.name}” is ${product.status} in Commerce. Make it active to open the room.`);
+  else if (room.type === 'drop' && product.trackStock && room.seats !== null && totalStock(product) < room.seats && joined === 0)
+    push('stock', 'warning', `You have ${totalStock(product)} in stock but offer ${room.seats}. The room sells out when stock runs out.`);
   if (product && (room.priceNgn ?? priceRange(product)?.[0] ?? null) === null) push('price', 'error', 'Set a room price — the product has no price.');
-  if (!room.deadline) push('deadline', 'error', 'Set a deadline.');else
-  if (Date.parse(room.deadline) <= now && joined === 0) push('deadline', 'error', 'The deadline has already passed.');
+  if (!room.deadline) push('deadline', 'error', 'Set a deadline.');
+  else if (Date.parse(room.deadline) <= now && joined === 0) push('deadline', 'error', 'The deadline has already passed.');
   if (room.opensAt && room.deadline && Date.parse(room.deadline) <= Date.parse(room.opensAt)) push('order', 'error', 'The deadline is before the room opens.');
   if (room.type === 'goal' && (!room.goal || room.goal < 2)) push('goal', 'error', 'A group goal needs at least 2 buyers.');
   if (room.type === 'drop' && (!room.seats || room.seats < 1)) push('seats', 'error', 'How many are available in this drop?');

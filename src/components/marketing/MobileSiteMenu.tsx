@@ -31,34 +31,34 @@ export function MobileSiteMenu() {
                   if (!isOpen) recordMenuOpen(g.id, 'mobile');
                   setOpen(isOpen ? null : g.id);
                 }}
-                className="flex h-14 w-full items-center justify-between rounded-2xl px-4 text-left text-[18px] font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-                
+                className="flex h-14 w-full items-center justify-between rounded-2xl px-4 text-left text-[18px] font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+              >
                 {tr(g.label)}
                 <ChevronDownIcon size={20} aria-hidden className={cn('text-[rgb(104_100_92)] transition-transform duration-200 ease-out', isOpen && 'rotate-180')} />
               </button>
               <AnimatePresence initial={false}>
-                {isOpen &&
-                <motion.div
-                  id={`m-menu-${g.id}`}
-                  initial={reduce ? false : { height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={reduce ? { opacity: 0 } : { height: 0, opacity: 0 }}
-                  transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
-                  className="overflow-hidden">
-                  
+                {isOpen && (
+                  <motion.div
+                    id={`m-menu-${g.id}`}
+                    initial={reduce ? false : { height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={reduce ? { opacity: 0 } : { height: 0, opacity: 0 }}
+                    transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
+                    className="overflow-hidden"
+                  >
                     <div className="flex flex-col gap-4 px-1 pb-4">
-                      {g.columns.map((c) =>
-                    <div key={c.heading}>
+                      {g.columns.map((c) => (
+                        <div key={c.heading}>
                           <h3 className="px-3 text-[12px] font-bold uppercase tracking-[0.08em] text-[rgb(104_100_92)]">{tr(c.heading)}</h3>
                           <ul className="mt-1">
-                            {c.items.map((i) =>
-                        <li key={i.to + i.title}>
+                            {c.items.map((i) => (
+                              <li key={i.to + i.title}>
                                 <Link
-                            to={i.to}
-                            onClick={() => recordMenuLink(i.to, i.title, 'mobile')}
-                            aria-current={isCurrentLink(i.to, pathname) ? 'page' : undefined}
-                            className="flex min-h-[56px] items-center gap-3 rounded-2xl px-3 py-2 hover:bg-[rgb(246_243_236)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-                            
+                                  to={i.to}
+                                  onClick={() => recordMenuLink(i.to, i.title, 'mobile')}
+                                  aria-current={isCurrentLink(i.to, pathname) ? 'page' : undefined}
+                                  className="flex min-h-[56px] items-center gap-3 rounded-2xl px-3 py-2 hover:bg-[rgb(246_243_236)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+                                >
                                   <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[rgb(238_233_221)]">
                                     <i.icon size={19} strokeWidth={2.1} aria-hidden />
                                   </span>
@@ -68,16 +68,16 @@ export function MobileSiteMenu() {
                                   </span>
                                 </Link>
                               </li>
-                        )}
+                            ))}
                           </ul>
                         </div>
-                    )}
+                      ))}
                       <Link
-                      to={g.feature.cta.to}
-                      onClick={() => recordMenuLink(g.feature.cta.to, g.feature.cta.label, 'mobile')}
-                      style={{ backgroundColor: tone.bg, color: tone.fg }}
-                      className="flex items-center justify-between gap-3 rounded-2xl px-4 py-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-                      
+                        to={g.feature.cta.to}
+                        onClick={() => recordMenuLink(g.feature.cta.to, g.feature.cta.label, 'mobile')}
+                        style={{ backgroundColor: tone.bg, color: tone.fg }}
+                        className="flex items-center justify-between gap-3 rounded-2xl px-4 py-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+                      >
                         <span>
                           <span className="block text-[15px] font-extrabold">{tr(g.feature.title)}</span>
                           <span className="block text-[13px] font-medium opacity-90">{tr(g.feature.cta.label)}</span>
@@ -86,20 +86,20 @@ export function MobileSiteMenu() {
                       </Link>
                     </div>
                   </motion.div>
-                }
+                )}
               </AnimatePresence>
-            </li>);
-
+            </li>
+          );
         })}
-        {siteMenuLinks.map((l) =>
-        <li key={l.to}>
+        {siteMenuLinks.map((l) => (
+          <li key={l.to}>
             <Link to={l.to} onClick={() => recordMenuLink(l.to, l.label, 'mobile')} className="flex h-14 items-center justify-between rounded-2xl px-4 text-[18px] font-bold hover:bg-[rgb(238_233_221)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
               {tr(l.label)}
               <ArrowRightIcon size={18} aria-hidden className="text-[rgb(104_100_92)]" />
             </Link>
           </li>
-        )}
+        ))}
       </ul>
-    </div>);
-
+    </div>
+  );
 }

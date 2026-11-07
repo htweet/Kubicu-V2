@@ -12,7 +12,7 @@ import { announce } from '../../utils/announce';
 export function CanvasAnnouncer() {
   const { state } = useEditor();
   const blocks = state.draft.blocks;
-  const prev = useRef<{page: string | null;ids: string[];}>({ page: state.activePageId, ids: blocks.map((b) => b.id) });
+  const prev = useRef<{ page: string | null; ids: string[] }>({ page: state.activePageId, ids: blocks.map((b) => b.id) });
   const removed = useRef<Set<string>>(new Set());
 
   useEffect(() => {
@@ -26,8 +26,8 @@ export function CanvasAnnouncer() {
       const changed = ids.filter((id, i) => before.ids[i] !== id);
       if (changed.length === 0) return;
       const moved =
-      (state.selectedId && changed.includes(state.selectedId) ? state.selectedId : null) ??
-      changed.reduce((best, id) => Math.abs(ids.indexOf(id) - before.ids.indexOf(id)) > Math.abs(ids.indexOf(best) - before.ids.indexOf(best)) ? id : best, changed[0]);
+        (state.selectedId && changed.includes(state.selectedId) ? state.selectedId : null) ??
+        changed.reduce((best, id) => (Math.abs(ids.indexOf(id) - before.ids.indexOf(id)) > Math.abs(ids.indexOf(best) - before.ids.indexOf(best)) ? id : best), changed[0]);
       const block = blocks.find((b) => b.id === moved);
       if (!block) return;
       const to = ids.indexOf(moved);
@@ -46,9 +46,9 @@ export function CanvasAnnouncer() {
         if (active && active !== document.body && document.contains(active)) return;
         const at = before.ids.indexOf(gone[0]);
         const nextId = ids[at] ?? ids[at - 1];
-        const target = nextId ?
-        document.querySelector<HTMLElement>(`[data-block-id="${nextId}"]`) :
-        document.querySelector<HTMLElement>('#canvas-main');
+        const target = nextId
+          ? document.querySelector<HTMLElement>(`[data-block-id="${nextId}"]`)
+          : document.querySelector<HTMLElement>('#canvas-main');
         target?.focus();
       }, 30);
       return;

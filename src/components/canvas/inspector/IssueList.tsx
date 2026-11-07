@@ -6,7 +6,7 @@ import { UpgradeButton } from '../../ui/UpgradeButton';
 import { cn } from '../../../utils/cn';
 
 /** Things to fix on a block. Messages translate where a fixed sentence matches; ones built from your content stay English. */
-export function IssueList({ issues, className, actionFor }: {issues: ValidationIssue[];className?: string;actionFor?: (issue: ValidationIssue) => React.ReactNode;}) {
+export function IssueList({ issues, className, actionFor }: { issues: ValidationIssue[]; className?: string; actionFor?: (issue: ValidationIssue) => React.ReactNode }) {
   const { t: tr } = useT();
   if (issues.length === 0) return null;
   return (
@@ -17,8 +17,8 @@ export function IssueList({ issues, className, actionFor }: {issues: ValidationI
         return (
           <li
             key={issue.id}
-            className={cn('flex items-start gap-2 rounded-sm px-2.5 py-2 text-caption', error ? 'bg-danger-soft text-danger' : 'bg-warning-soft text-warning')}>
-            
+            className={cn('flex items-start gap-2 rounded-sm px-2.5 py-2 text-caption', error ? 'bg-danger-soft text-danger' : 'bg-warning-soft text-warning')}
+          >
             <Icon size={13} className="mt-px shrink-0" aria-hidden />
             <span className="flex min-w-0 flex-col gap-2">
               <span>
@@ -28,9 +28,9 @@ export function IssueList({ issues, className, actionFor }: {issues: ValidationI
               {issue.upgradeTo && <UpgradeButton plan={issue.upgradeTo} feature={issue.upgradeFeature ?? 'This feature'} className="self-start" />}
               {actionFor?.(issue)}
             </span>
-          </li>);
-
+          </li>
+        );
       })}
-    </ul>);
-
+    </ul>
+  );
 }

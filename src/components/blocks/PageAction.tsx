@@ -20,8 +20,8 @@ export function PageAction({ mode, href, newTab = true, className, style, ariaLa
     return (
       <span className={className} style={style} aria-label={ariaLabel}>
         {children}
-      </span>);
-
+      </span>
+    );
   }
   return (
     <a
@@ -30,9 +30,9 @@ export function PageAction({ mode, href, newTab = true, className, style, ariaLa
       rel={newTab ? 'noopener noreferrer' : undefined}
       aria-label={ariaLabel}
       className={className}
-      style={style}>
-      
+      style={style}
+    >
       {children}
-    </a>);
-
+    </a>
+  );
 }

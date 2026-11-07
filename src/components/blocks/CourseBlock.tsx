@@ -19,7 +19,7 @@ export function CourseBlock({ block, theme: t, mode }: BlockProps<'course'>) {
   const { handle = '' } = useParams();
   const course = findCourse(catalog, c.courseId ?? undefined);
 
-  if (!course || course.status !== 'published' && mode === 'live') {
+  if (!course || (course.status !== 'published' && mode === 'live')) {
     return mode === 'edit' ? <BlockPlaceholder icon={GraduationCapIcon} title={course ? 'Publish this course to show it' : 'Choose a course'} hint="Build it in Commerce → Courses" theme={t} tall /> : null;
   }
 
@@ -29,30 +29,30 @@ export function CourseBlock({ block, theme: t, mode }: BlockProps<'course'>) {
   const href = learnUrl(handle, course.id);
   const btnClass = 'flex h-11 w-full items-center justify-center gap-2 text-[14.5px] font-semibold sm:w-auto sm:px-6';
   const button =
-  mode === 'live' && handle ?
-  <Link to={href} className={btnClass} style={buttonStyle(t, 'featured')}>
+    mode === 'live' && handle ? (
+      <Link to={href} className={btnClass} style={buttonStyle(t, 'featured')}>
         {label}
-      </Link> :
-
-  <span className={btnClass} style={buttonStyle(t, 'featured')}>
+      </Link>
+    ) : (
+      <span className={btnClass} style={buttonStyle(t, 'featured')}>
         {label}
-      </span>;
-
-  const meta =
-  <p className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[13px]" style={{ color: t.mutedText }}>
+      </span>
+    );
+  const meta = (
+    <p className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[13px]" style={{ color: t.mutedText }}>
       <span>{tr('Lessons: {n}', { n: lessons })}</span>
       <span aria-hidden>·</span>
       <span className="inline-flex items-center gap-1">
         <ClockIcon size={12} aria-hidden /> {durationLabel(totalMinutes(course), tr)}
       </span>
-      {course.instructor &&
-    <>
+      {course.instructor && (
+        <>
           <span aria-hidden>·</span>
           <span>{course.instructor}</span>
         </>
-    }
-    </p>;
-
+      )}
+    </p>
+  );
 
   return (
     <section className="overflow-hidden" style={{ ...cardStyle(t), borderRadius: cardRadius(t), padding: 0 }} aria-label={course.title}>
@@ -66,42 +66,42 @@ export function CourseBlock({ block, theme: t, mode }: BlockProps<'course'>) {
             {price}
           </PageChip>
         </div>
-        {course.subtitle &&
-        <p className="text-[14px] leading-relaxed" style={{ color: t.mutedText }}>
+        {course.subtitle && (
+          <p className="text-[14px] leading-relaxed" style={{ color: t.mutedText }}>
             {course.subtitle}
           </p>
-        }
+        )}
         {meta}
-        {c.style === 'outline' &&
-        <ol className="mt-1 flex flex-col" style={{ borderTop: `1px solid ${mix(t.text, 10)}` }}>
-            {course.modules.slice(0, 6).map((m, i) =>
-          <li key={m.id} className="flex items-center gap-3 py-2.5 text-[14px]" style={{ borderBottom: `1px solid ${mix(t.text, 8)}`, color: t.text }}>
+        {c.style === 'outline' && (
+          <ol className="mt-1 flex flex-col" style={{ borderTop: `1px solid ${mix(t.text, 10)}` }}>
+            {course.modules.slice(0, 6).map((m, i) => (
+              <li key={m.id} className="flex items-center gap-3 py-2.5 text-[14px]" style={{ borderBottom: `1px solid ${mix(t.text, 8)}`, color: t.text }}>
                 <span className="w-5 shrink-0 text-[12.5px] tabular-nums" style={{ color: t.mutedText }}>
                   {i + 1}
                 </span>
                 <span className="min-w-0 flex-1 truncate">{m.title}</span>
                 <span className="shrink-0 text-[12px]" style={{ color: t.mutedText }}>
-                  {m.lessons.some((l) => l.preview) ?
-              <span className="inline-flex items-center gap-1">
+                  {m.lessons.some((l) => l.preview) ? (
+                    <span className="inline-flex items-center gap-1">
                       <PlayCircleIcon size={12} aria-hidden /> {tr('Preview')}
-                    </span> :
-
-              <span className="inline-flex items-center gap-1">
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1">
                       <LockIcon size={11} aria-hidden /> {m.lessons.length}
                     </span>
-              }
+                  )}
                 </span>
               </li>
-          )}
-            {course.modules.length > 6 &&
-          <li className="py-2.5 text-[13px]" style={{ color: t.mutedText }}>
+            ))}
+            {course.modules.length > 6 && (
+              <li className="py-2.5 text-[13px]" style={{ color: t.mutedText }}>
                 {tr('More modules: {n}', { n: course.modules.length - 6 })}
               </li>
-          }
+            )}
           </ol>
-        }
+        )}
         <div className="mt-1">{button}</div>
       </div>
-    </section>);
-
+    </section>
+  );
 }

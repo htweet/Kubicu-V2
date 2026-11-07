@@ -37,17 +37,17 @@ export function useKycQueue(): KycQueueItem[] {
 
   return useMemo(
     () =>
-    workspaces.
-    map((w) => ({ w, kyc: readMoney(w.id).kyc })).
-    filter(({ kyc }) => kyc.status === 'in_review').
-    map(({ w, kyc }) => ({
-      workspaceId: w.id,
-      workspace: w.name,
-      entityLabel: kyc.entity ? entityInfo[kyc.entity].label : 'Not chosen',
-      submittedAt: kyc.submittedAt ?? new Date().toISOString(),
-      attempts: kyc.attempts
-    })).
-    sort((a, b) => Date.parse(a.submittedAt) - Date.parse(b.submittedAt)),
-    [workspaces, tick] // eslint-disable-line react-hooks/exhaustive-deps
+      workspaces
+        .map((w) => ({ w, kyc: readMoney(w.id).kyc }))
+        .filter(({ kyc }) => kyc.status === 'in_review')
+        .map(({ w, kyc }) => ({
+          workspaceId: w.id,
+          workspace: w.name,
+          entityLabel: kyc.entity ? entityInfo[kyc.entity].label : 'Not chosen',
+          submittedAt: kyc.submittedAt ?? new Date().toISOString(),
+          attempts: kyc.attempts,
+        }))
+        .sort((a, b) => Date.parse(a.submittedAt) - Date.parse(b.submittedAt)),
+    [workspaces, tick], // eslint-disable-line react-hooks/exhaustive-deps
   );
 }

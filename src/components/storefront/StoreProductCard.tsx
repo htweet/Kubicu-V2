@@ -26,7 +26,7 @@ interface StoreProductCardProps {
   addMode?: ShopAddMode;
   ordering?: 'checkout' | 'whatsapp';
   whatsappPhone?: string;
-  saved?: {on: boolean;toggle: () => void;} | null;
+  saved?: { on: boolean; toggle: () => void } | null;
 }
 
 /** One product in the storefront. The photo and name open the product page; Add and the heart sit beside that link. */
@@ -42,7 +42,7 @@ export function StoreProductCard({
   addMode = 'page',
   ordering = 'checkout',
   whatsappPhone = '',
-  saved = null
+  saved = null,
 }: StoreProductCardProps) {
   // Buyer wording follows the visitor's language (D480); names and options stay as the seller wrote them.
   const { t: tr } = useT();
@@ -54,64 +54,64 @@ export function StoreProductCard({
   const image = product.images[0];
   const soldOutStyle = soldOut ? { filter: 'grayscale(0.7)', opacity: 0.7 } : undefined;
 
-  const badges =
-  <>
+  const badges = (
+    <>
       {soldOut ? <PageChip theme={theme}>{tr(product.preorder ? 'Pre-orders full' : 'Sold out')}</PageChip> : onSale && showSale ? <PageChip theme={theme}>{tr('Sale')}</PageChip> : null}
       {product.preorder && !soldOut && <PageChip theme={theme}>{tr('Pre-order')}</PageChip>}
       {(product.bulkPrices?.length ?? 0) > 0 && !soldOut && <PageChip theme={theme}>{tr('Bulk prices')}</PageChip>}
       {featured && !soldOut && <PageChip theme={theme}>{tr('Featured')}</PageChip>}
       {low && !soldOut && <PageChip theme={theme}>{tr('Left: {n}', { n: totalStock(product) })}</PageChip>}
-    </>;
+    </>
+  );
 
-
-  const price = (size: 'sm' | 'md' = 'md') =>
-  <span className={cn('flex items-baseline gap-1.5 font-semibold tabular-nums', size === 'md' ? 'text-[14.5px]' : 'text-[13.5px]')} style={{ color: theme.text }}>
-      {range ?
-    <>
+  const price = (size: 'sm' | 'md' = 'md') => (
+    <span className={cn('flex items-baseline gap-1.5 font-semibold tabular-nums', size === 'md' ? 'text-[14.5px]' : 'text-[13.5px]')} style={{ color: theme.text }}>
+      {range ? (
+        <>
           {range[0] !== range[1] && <span className="text-[11px] font-medium" style={{ color: theme.mutedText }}>{tr('from')}</span>}
           {formatNgn(range[0])}
-          {onSale && showSale &&
-      <s className="text-[12px] font-medium" style={{ color: theme.mutedText }}>
+          {onSale && showSale && (
+            <s className="text-[12px] font-medium" style={{ color: theme.mutedText }}>
               {formatNgn(product.compareAtNgn as number)}
             </s>
-      }
-        </> :
-
-    <span style={{ color: theme.mutedText, fontWeight: 500 }}>{tr('Price on request')}</span>
-    }
-    </span>;
-
+          )}
+        </>
+      ) : (
+        <span style={{ color: theme.mutedText, fontWeight: 500 }}>{tr('Price on request')}</span>
+      )}
+    </span>
+  );
 
   const photo = (cls: string) =>
-  image ?
-  <MediaImage src={image.url} alt={image.alt} loading="lazy" className={cn('w-full object-cover', cls)} style={soldOutStyle} /> :
-
-  <div className={cn('flex w-full items-center justify-center', cls)} style={{ background: mix(theme.text, 6), color: theme.mutedText }}>
+    image ? (
+      <MediaImage src={image.url} alt={image.alt} loading="lazy" className={cn('w-full object-cover', cls)} style={soldOutStyle} />
+    ) : (
+      <div className={cn('flex w-full items-center justify-center', cls)} style={{ background: mix(theme.text, 6), color: theme.mutedText }}>
         <ShoppingBagIcon size={22} aria-hidden />
-      </div>;
+      </div>
+    );
 
-
-  const options = product.variants.length > 1 &&
-  <span className="block text-[12px]" style={{ color: theme.mutedText }}>
+  const options = product.variants.length > 1 && (
+    <span className="block text-[12px]" style={{ color: theme.mutedText }}>
       {product.options.map((o) => `${o.name}: ${o.values.length}`).join(' · ')}
-    </span>;
-
+    </span>
+  );
 
   const inline = variant === 'row' || variant === 'pricelist';
   const add = addMode !== 'page' ? <CardAddControl product={product} theme={theme} mode={addMode} ordering={ordering} whatsappPhone={whatsappPhone} block={!inline} /> : null;
 
-  const heart = saved &&
-  <button
-    type="button"
-    onClick={saved.toggle}
-    aria-pressed={saved.on}
-    aria-label={saved.on ? tr('Remove {name} from saved', { name: product.name }) : tr('Save {name}', { name: product.name })}
-    className={cn('flex h-10 w-10 items-center justify-center rounded-full transition-transform duration-150 ease-out active:scale-95 focus-visible:outline-none focus-visible:ring-2', !inline && 'absolute right-2 top-2 z-10')}
-    style={{ background: inline ? 'transparent' : mix(theme.background, 88), color: theme.text }}>
-    
+  const heart = saved && (
+    <button
+      type="button"
+      onClick={saved.toggle}
+      aria-pressed={saved.on}
+      aria-label={saved.on ? tr('Remove {name} from saved', { name: product.name }) : tr('Save {name}', { name: product.name })}
+      className={cn('flex h-10 w-10 items-center justify-center rounded-full transition-transform duration-150 ease-out active:scale-95 focus-visible:outline-none focus-visible:ring-2', !inline && 'absolute right-2 top-2 z-10')}
+      style={{ background: inline ? 'transparent' : mix(theme.background, 88), color: theme.text }}
+    >
       <HeartIcon size={17} aria-hidden fill={saved.on ? 'currentColor' : 'none'} />
-    </button>;
-
+    </button>
+  );
 
   const linkFocus = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2';
 
@@ -128,12 +128,12 @@ export function StoreProductCard({
             </span>
             <span aria-hidden className="hidden min-w-[24px] flex-1 translate-y-[-3px] border-b border-dotted sm:block" style={{ borderColor: mix(theme.text, 30) }} />
           </span>
-          {blurb &&
-          <span className="mt-0.5 line-clamp-1 block text-[13.5px] leading-snug" style={{ color: theme.mutedText }}>
+          {blurb && (
+            <span className="mt-0.5 line-clamp-1 block text-[13.5px] leading-snug" style={{ color: theme.mutedText }}>
               {blurb}
             </span>
-          }
-          {(soldOut || low || onSale && showSale || !!product.preorder || !!product.bulkPrices?.length) && <span className="mt-1.5 flex flex-wrap gap-1">{badges}</span>}
+          )}
+          {(soldOut || low || (onSale && showSale) || !!product.preorder || !!product.bulkPrices?.length) && <span className="mt-1.5 flex flex-wrap gap-1">{badges}</span>}
         </Link>
         <div className="flex shrink-0 flex-col items-end gap-1.5">
           {price('md')}
@@ -142,8 +142,8 @@ export function StoreProductCard({
             {add}
           </div>
         </div>
-      </li>);
-
+      </li>
+    );
   }
 
   if (variant === 'row' && addMode === 'stepper') {
@@ -158,7 +158,7 @@ export function StoreProductCard({
             </span>
             <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
               {price('sm')}
-              {(soldOut || onSale && showSale || low || !!product.preorder) && <span className="flex flex-wrap gap-1">{badges}</span>}
+              {(soldOut || (onSale && showSale) || low || !!product.preorder) && <span className="flex flex-wrap gap-1">{badges}</span>}
             </span>
           </span>
         </Link>
@@ -166,8 +166,8 @@ export function StoreProductCard({
           {heart}
           {add}
         </div>
-      </li>);
-
+      </li>
+    );
   }
 
   if (variant === 'row') {
@@ -190,8 +190,8 @@ export function StoreProductCard({
             {add}
           </div>
         </div>
-      </li>);
-
+      </li>
+    );
   }
 
   if (variant === 'overlay') {
@@ -211,8 +211,8 @@ export function StoreProductCard({
           </Link>
           {add}
         </div>
-      </li>);
-
+      </li>
+    );
   }
 
   const minimal = variant === 'minimal';
@@ -235,6 +235,6 @@ export function StoreProductCard({
         </Link>
         {add && <div className={minimal ? 'pt-2' : 'px-3 pb-3'}>{add}</div>}
       </div>
-    </li>);
-
+    </li>
+  );
 }

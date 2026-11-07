@@ -40,7 +40,7 @@ export function BusinessCoach() {
   const moves = brief.moves.filter((m) => !data.dismissed.includes(m.id));
   const open = moves.filter((m) => !data.done.includes(m.id));
   const done = moves.filter((m) => data.done.includes(m.id));
-  const change = brief.revenuePrev7 ? Math.round((brief.revenue7 - brief.revenuePrev7) / brief.revenuePrev7 * 100) : null;
+  const change = brief.revenuePrev7 ? Math.round(((brief.revenue7 - brief.revenuePrev7) / brief.revenuePrev7) * 100) : null;
 
   const gate = () => {
     if (!unlocked) {
@@ -86,26 +86,26 @@ export function BusinessCoach() {
         context={current.name}
         description="A short weekly brief and straight answers, worked out only from your own orders, products and wallet. Every suggestion shows the numbers behind it."
         actions={
-        <Button variant="ai" leadingIcon={unlocked ? RefreshCwIcon : LockIcon} onClick={refresh}>
+          <Button variant="ai" leadingIcon={unlocked ? RefreshCwIcon : LockIcon} onClick={refresh}>
             Refresh brief
           </Button>
-        } />
-      
+        }
+      />
 
-      {!unlocked &&
-      <InlineAlert
-        tone="info"
-        title="Business Coach is on Creator and above"
-        className="mt-6"
-        action={
-        <Button size="sm" onClick={() => openUpgrade({ plan: COACH_PLAN, feature: 'AI Business Coach' })}>
+      {!unlocked && (
+        <InlineAlert
+          tone="info"
+          title="Business Coach is on Creator and above"
+          className="mt-6"
+          action={
+            <Button size="sm" onClick={() => openUpgrade({ plan: COACH_PLAN, feature: 'AI Business Coach' })}>
               Upgrade
             </Button>
-        }>
-        
+          }
+        >
           You can read this week’s brief. Refreshing it and asking questions use AI credits on Creator and above.
         </InlineAlert>
-      }
+      )}
 
       <div className="mt-8 grid items-start gap-8 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] lg:gap-10">
         {/* Weekly brief */}
@@ -125,13 +125,13 @@ export function BusinessCoach() {
               <dt className="text-label text-fg-muted">Sales, last 7 days</dt>
               <dd className="mt-1 flex items-baseline gap-2">
                 <span className="font-display text-[2rem] font-semibold leading-tight tabular-nums text-fg">{formatNgn(brief.revenue7)}</span>
-                {change !== null &&
-                <span className={cn('inline-flex items-center gap-1 text-label font-medium', change >= 0 ? 'text-success' : 'text-danger')}>
+                {change !== null && (
+                  <span className={cn('inline-flex items-center gap-1 text-label font-medium', change >= 0 ? 'text-success' : 'text-danger')}>
                     {change >= 0 ? <TrendingUpIcon size={15} aria-hidden /> : <TrendingDownIcon size={15} aria-hidden />}
                     {`${change >= 0 ? '+' : ''}${change}%`}
                     <span className="sr-only">compared with the week before</span>
                   </span>
-                }
+                )}
               </dd>
               <dd className="mt-1 text-caption text-fg-subtle">{change === null ? 'No sales the week before to compare with' : `vs ${formatNgn(brief.revenuePrev7)} the week before`}</dd>
             </div>
@@ -146,16 +146,16 @@ export function BusinessCoach() {
             <h3 className="text-label font-semibold text-fg">{open.length ? `${open.length} thing${open.length === 1 ? '' : 's'} to do` : 'All done for now'}</h3>
             <ul className="flex flex-col gap-2">
               <AnimatePresence initial={false}>
-                {open.map((m) =>
-                <motion.li
-                  key={m.id}
-                  layout={!reduce}
-                  initial={reduce ? false : { opacity: 0, y: 4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={reduce ? { opacity: 0 } : { opacity: 0, height: 0 }}
-                  transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
-                  className="overflow-hidden rounded-lg border border-line bg-canvas">
-                  
+                {open.map((m) => (
+                  <motion.li
+                    key={m.id}
+                    layout={!reduce}
+                    initial={reduce ? false : { opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={reduce ? { opacity: 0 } : { opacity: 0, height: 0 }}
+                    transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+                    className="overflow-hidden rounded-lg border border-line bg-canvas"
+                  >
                     <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-start">
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
@@ -179,17 +179,17 @@ export function BusinessCoach() {
                       </div>
                     </div>
                   </motion.li>
-                )}
+                ))}
               </AnimatePresence>
             </ul>
-            {done.length > 0 &&
-            <p className="text-caption text-fg-subtle">
+            {done.length > 0 && (
+              <p className="text-caption text-fg-subtle">
                 Done: {done.map((m) => m.title).join(' · ')}{' '}
                 <button type="button" className="font-medium text-fg underline-offset-2 hover:underline" onClick={() => update((d) => ({ ...d, done: [] }))}>
                   Undo
                 </button>
               </p>
-            }
+            )}
           </div>
 
           <p className="border-t border-line pt-4 text-caption text-fg-subtle">
@@ -209,37 +209,37 @@ export function BusinessCoach() {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            {coachQuestions.map((q) =>
-            <Button key={q.id} size="sm" variant="secondary" leadingIcon={SparklesIcon} loading={asking === q.id} disabled={!!asking} onClick={() => ask(q.id)}>
+            {coachQuestions.map((q) => (
+              <Button key={q.id} size="sm" variant="secondary" leadingIcon={SparklesIcon} loading={asking === q.id} disabled={!!asking} onClick={() => ask(q.id)}>
                 {q.label}
               </Button>
-            )}
+            ))}
           </div>
 
-          {data.answers.length === 0 ?
-          <p className="rounded-lg border border-dashed border-line-strong px-4 py-8 text-center text-caption text-fg-muted">Pick a question. Answers use only your records — if there isn’t enough data, the coach says so.</p> :
-
-          <ul className="flex flex-col gap-3">
-              {data.answers.map((a) =>
-            <li key={a.id} className="ai-frame rounded-lg bg-raised p-4">
+          {data.answers.length === 0 ? (
+            <p className="rounded-lg border border-dashed border-line-strong px-4 py-8 text-center text-caption text-fg-muted">Pick a question. Answers use only your records — if there isn’t enough data, the coach says so.</p>
+          ) : (
+            <ul className="flex flex-col gap-3">
+              {data.answers.map((a) => (
+                <li key={a.id} className="ai-frame rounded-lg bg-raised p-4">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <p className="text-label font-semibold text-fg">{a.question}</p>
                     <AiPreviewTag />
                   </div>
                   <ul className="mt-3 flex list-disc flex-col gap-1.5 pl-5 text-label text-fg-muted marker:text-fg-subtle">
-                    {a.answer.map((line) =>
-                <li key={line}>{line}</li>
-                )}
+                    {a.answer.map((line) => (
+                      <li key={line}>{line}</li>
+                    ))}
                   </ul>
                   <p className="mt-3 text-caption text-fg-subtle">
                     Based on {a.basis} · {formatTimestamp(a.at)}
                   </p>
                 </li>
-            )}
+              ))}
             </ul>
-          }
+          )}
         </section>
       </div>
-    </div>);
-
+    </div>
+  );
 }

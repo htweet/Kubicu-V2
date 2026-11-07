@@ -30,8 +30,8 @@ export function FormTriggerPicker({ value, onChange }: FormTriggerPickerProps) {
           Extensions
         </Link>
         . Until then this automation has nothing to react to.
-      </InlineAlert>);
-
+      </InlineAlert>
+    );
   }
 
   return (
@@ -42,13 +42,13 @@ export function FormTriggerPicker({ value, onChange }: FormTriggerPickerProps) {
         value={missing ? ANY : value ?? ANY}
         options={[{ value: ANY, label: 'Any form' }, ...forms.map((f) => ({ value: f.id, label: f.status === 'live' ? f.name : `${f.name} (${f.status === 'draft' ? 'draft' : 'closed'})` }))]}
         onChange={(v) => onChange(v === ANY ? null : v)}
-        hint="Use {name}, {first_name}, {email}, {form} and {total} in messages." />
-      
-      {missing &&
-      <InlineAlert tone="warning" title="That form was deleted">
+        hint="Use {name}, {first_name}, {email}, {form} and {total} in messages."
+      />
+      {missing && (
+        <InlineAlert tone="warning" title="That form was deleted">
           This automation now listens to every form until you choose another.
         </InlineAlert>
-      }
-    </div>);
-
+      )}
+    </div>
+  );
 }

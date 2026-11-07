@@ -21,7 +21,7 @@ export function ExchangeRatesCard() {
   const [editing, setEditing] = useState<FxCode | null>(null);
   const [value, setValue] = useState('');
   const [error, setError] = useState<string | undefined>();
-  const [confirm, setConfirm] = useState<{code: FxCode;rate: number | null;} | null>(null);
+  const [confirm, setConfirm] = useState<{ code: FxCode; rate: number | null } | null>(null);
 
   useEffect(() => {
     const on = () => bump((n) => n + 1);
@@ -63,20 +63,20 @@ export function ExchangeRatesCard() {
                 </div>
                 <div className="flex items-center gap-2">
                   {r.source === 'staff' && <Badge tone="info">Set today</Badge>}
-                  {editing !== code &&
-                  <Button size="sm" variant="secondary" onClick={() => startEdit(code)}>
+                  {editing !== code && (
+                    <Button size="sm" variant="secondary" onClick={() => startEdit(code)}>
                       Set today’s rate
                     </Button>
-                  }
-                  {r.source === 'staff' && editing !== code &&
-                  <Button size="sm" variant="tertiary" onClick={() => setConfirm({ code, rate: null })}>
+                  )}
+                  {r.source === 'staff' && editing !== code && (
+                    <Button size="sm" variant="tertiary" onClick={() => setConfirm({ code, rate: null })}>
                       Use automatic
                     </Button>
-                  }
+                  )}
                 </div>
               </div>
-              {editing === code &&
-              <div className="flex flex-wrap items-start gap-2">
+              {editing === code && (
+                <div className="flex flex-wrap items-start gap-2">
                   <TextInput id={`fx-${code}`} label={`Naira per ${symbols[code]} 1`} inputMode="decimal" value={value} error={error} onChange={(e) => (setValue(e.target.value), setError(undefined))} fieldClassName="w-48" />
                   <div className="flex gap-2 pt-6">
                     <Button size="sm" onClick={review}>
@@ -87,9 +87,9 @@ export function ExchangeRatesCard() {
                     </Button>
                   </div>
                 </div>
-              }
-            </li>);
-
+              )}
+            </li>
+          );
         })}
       </ul>
       <details className="border-t border-line">
@@ -100,27 +100,27 @@ export function ExchangeRatesCard() {
             <thead>
               <tr>
                 <th scope="col" className={`${th} pl-5 md:pl-6`}>Date</th>
-                {fxCodes.map((c) =>
-                <th key={c} scope="col" className={`${th} text-right`}>
+                {fxCodes.map((c) => (
+                  <th key={c} scope="col" className={`${th} text-right`}>
                     {symbols[c]}
                   </th>
-                )}
+                ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
-              {history.map((h) =>
-              <tr key={h.date}>
+              {history.map((h) => (
+                <tr key={h.date}>
                   <th scope="row" className="px-3 py-2 pl-5 text-left text-caption font-normal text-fg-muted md:pl-6">
                     {new Date(h.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
                   </th>
-                  {fxCodes.map((c) =>
-                <td key={c} className="px-3 py-2 text-right text-caption tabular-nums text-fg">
+                  {fxCodes.map((c) => (
+                    <td key={c} className="px-3 py-2 text-right text-caption tabular-nums text-fg">
                       {h.rates[c].rate.toFixed(2)}
                       {h.rates[c].source === 'staff' && <span className="text-fg-subtle"> · set</span>}
                     </td>
-                )}
+                  ))}
                 </tr>
-              )}
+              ))}
             </tbody>
           </table>
         </div>
@@ -133,14 +133,14 @@ export function ExchangeRatesCard() {
         confirmLabel={confirm?.rate ? 'Set rate' : 'Use automatic'}
         onConfirm={(reason) => {
           if (!confirm) return;
-          if (confirm.rate) setRateToday(confirm.code, confirm.rate, staffActor(store));else
-          clearRateToday(confirm.code);
+          if (confirm.rate) setRateToday(confirm.code, confirm.rate, staffActor(store));
+          else clearRateToday(confirm.code);
           setStore((s) => audit(s, { area: 'plans', action: confirm.rate ? `Set ${confirm.code} rate to ₦${confirm.rate.toFixed(2)}` : `Reset ${confirm.code} rate to automatic`, target: 'Exchange rates', reason }));
           toast.success(confirm.rate ? 'Today’s rate saved' : 'Back to the automatic rate');
           setConfirm(null);
           setEditing(null);
-        }} />
-      
-    </Card>);
-
+        }}
+      />
+    </Card>
+  );
 }

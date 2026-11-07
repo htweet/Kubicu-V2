@@ -37,7 +37,7 @@ export interface Workspace {
    * Created with "Start with demo data" (D200): every module has labelled sample records until they're
    * removed in Settings → Business, or automatically once `expiresAt` passes.
    */
-  demoData?: {seededAt: string;expiresAt: string;} | null;
+  demoData?: { seededAt: string; expiresAt: string } | null;
   /** One currency for everything this workspace sells (D136). Missing = naira. */
   currency?: CurrencyCode;
   /** Where this business sells from (D352). Sets defaults for currency, phone numbers, regions, banks and checkout. Missing = from the currency, else Nigeria. */

@@ -57,7 +57,7 @@ const foldersKey = (ws: string) => `kubicu.mediaFolders.${ws}`;
 function loadFolders(ws: string): MediaFolder[] {
   try {
     const raw = localStorage.getItem(foldersKey(ws));
-    const list = raw ? JSON.parse(raw) as MediaFolder[] : [];
+    const list = raw ? (JSON.parse(raw) as MediaFolder[]) : [];
     return Array.isArray(list) ? list.filter((f) => f && typeof f.id === 'string' && typeof f.name === 'string').map((f) => ({ ...f, system: false })) : [];
   } catch {
     return [];
@@ -65,7 +65,7 @@ function loadFolders(ws: string): MediaFolder[] {
 }
 
 /** Workspace media library. Waits for the library (and the one-time move of embedded photos) before rendering the workspace. */
-export function MediaProvider({ children }: {children: React.ReactNode;}) {
+export function MediaProvider({ children }: { children: React.ReactNode }) {
   const workspaceId = useWorkspace().current.id;
   const plan = usePlan();
   const [ready, setReady] = useState(false);
@@ -88,10 +88,10 @@ export function MediaProvider({ children }: {children: React.ReactNode;}) {
       try {
         localStorage.setItem(foldersKey(workspaceId), JSON.stringify(next));
       } catch {
-
-        /* storage full — folders still work for this session */}
+        /* storage full — folders still work for this session */
+      }
     },
-    [workspaceId]
+    [workspaceId],
   );
 
   useEffect(() => {
@@ -130,7 +130,7 @@ export function MediaProvider({ children }: {children: React.ReactNode;}) {
   }, []);
 
   const folders = useMemo(() => [...systemMediaFolders, ...[...own].sort((a, b) => a.name.localeCompare(b.name))], [own]);
-  const validFolder = useCallback((id: string | undefined) => id && (systemMediaFolders.some((f) => f.id === id) || ownRef.current.some((f) => f.id === id)) ? id : undefined, []);
+  const validFolder = useCallback((id: string | undefined) => (id && (systemMediaFolders.some((f) => f.id === id) || ownRef.current.some((f) => f.id === id)) ? id : undefined), []);
 
   const quotaBytes = mediaQuota[plan.id];
   const usedBytes = useMemo(() => all.reduce((s, a) => s + a.bytes, 0), [all]);
@@ -154,7 +154,7 @@ export function MediaProvider({ children }: {children: React.ReactNode;}) {
       await save(asset);
       return { src: mediaRef(asset.id), asset, duplicate: false };
     },
-    [available, save, quotaBytes, plan.name, workspaceId, validFolder]
+    [available, save, quotaBytes, plan.name, workspaceId, validFolder],
   );
 
   const addFile = useCallback(async (file: File, folderId?: string) => addDataUrl(await processUpload(file), nameFrom(file), '', folderId), [addDataUrl]);
@@ -164,7 +164,7 @@ export function MediaProvider({ children }: {children: React.ReactNode;}) {
       const a = allRef.current.find((x) => x.id === id);
       if (a) await save({ ...a, ...patch, updatedAt: new Date().toISOString() });
     },
-    [save]
+    [save],
   );
 
   const moveTo = useCallback(
@@ -175,7 +175,7 @@ export function MediaProvider({ children }: {children: React.ReactNode;}) {
         if (a && a.folderId !== target) await save({ ...a, folderId: target, updatedAt: new Date().toISOString() });
       }
     },
-    [save, validFolder]
+    [save, validFolder],
   );
 
   const replaceWithDataUrl = useCallback(
@@ -185,7 +185,7 @@ export function MediaProvider({ children }: {children: React.ReactNode;}) {
       const { width, height } = await imageSize(dataUrl);
       await save({ ...a, dataUrl, width, height, bytes: dataUrlBytes(dataUrl), hash: hashString(dataUrl), updatedAt: new Date().toISOString() });
     },
-    [save]
+    [save],
   );
 
   const remove = useCallback(
@@ -201,7 +201,7 @@ export function MediaProvider({ children }: {children: React.ReactNode;}) {
       }
       return a;
     },
-    [save]
+    [save],
   );
 
   const restore = useCallback((asset: MediaAsset) => save({ ...asset, archived: false }), [save]);
@@ -220,16 +220,16 @@ export function MediaProvider({ children }: {children: React.ReactNode;}) {
       persistFolders([...ownRef.current, folder]);
       return folder;
     },
-    [checkName, persistFolders]
+    [checkName, persistFolders],
   );
 
   const renameFolder = useCallback(
     (id: string, name: string) => {
       if (!ownRef.current.some((f) => f.id === id)) return;
       const clean = checkName(name, id);
-      persistFolders(ownRef.current.map((f) => f.id === id ? { ...f, name: clean } : f));
+      persistFolders(ownRef.current.map((f) => (f.id === id ? { ...f, name: clean } : f)));
     },
-    [checkName, persistFolders]
+    [checkName, persistFolders],
   );
 
   const deleteFolder = useCallback(
@@ -240,24 +240,24 @@ export function MediaProvider({ children }: {children: React.ReactNode;}) {
       persistFolders(ownRef.current.filter((f) => f.id !== id));
       return inside.filter((a) => !a.archived).length;
     },
-    [save, persistFolders]
+    [save, persistFolders],
   );
 
   const assets = useMemo(() => all.filter((a) => !a.archived).sort((a, b) => b.createdAt.localeCompare(a.createdAt)), [all]);
   const get = useCallback((id: string) => allRef.current.find((a) => a.id === id), []);
-  const folderOf = useCallback((a: MediaAsset) => a.folderId ? folders.find((f) => f.id === a.folderId) : undefined, [folders]);
+  const folderOf = useCallback((a: MediaAsset) => (a.folderId ? folders.find((f) => f.id === a.folderId) : undefined), [folders]);
 
   const value = useMemo(
     () => ({ available, assets, folders, usedBytes, quotaBytes, get, folderOf, addFile, addDataUrl, update, moveTo, replaceWithDataUrl, remove, restore, createFolder, renameFolder, deleteFolder }),
-    [available, assets, folders, usedBytes, quotaBytes, get, folderOf, addFile, addDataUrl, update, moveTo, replaceWithDataUrl, remove, restore, createFolder, renameFolder, deleteFolder]
+    [available, assets, folders, usedBytes, quotaBytes, get, folderOf, addFile, addDataUrl, update, moveTo, replaceWithDataUrl, remove, restore, createFolder, renameFolder, deleteFolder],
   );
 
   if (!ready) {
     return (
       <div className="flex min-h-screen w-full items-center justify-center bg-canvas" role="status" aria-label="Loading your workspace">
         <Loader2Icon size={20} className="animate-spin text-fg-subtle" aria-hidden />
-      </div>);
-
+      </div>
+    );
   }
   return <MediaContext.Provider value={value}>{children}</MediaContext.Provider>;
 }

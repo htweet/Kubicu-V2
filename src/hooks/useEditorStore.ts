@@ -13,8 +13,8 @@ import type {
   PageTheme,
   PageVersion,
   SaveStatus,
-  ScheduledPublish } from
-'../types/page';
+  ScheduledPublish,
+} from '../types/page';
 import { samplePage, samplePublishedAt } from '../data/samplePage';
 import { cloneBlock, cloneDocument, createBlock, docSignature } from '../utils/blocks';
 import type { ValidationIssue } from '../utils/validation';
@@ -53,19 +53,19 @@ export interface EditorState extends PersistedState {
 }
 
 type Action =
-{type: 'mutate';fn: (doc: PageDocument) => PageDocument;coalesceKey?: string;at: number;select?: string | null;scope?: 'page' | 'site';} |
-{type: 'select';id: string | null;} |
-{type: 'setPage';id: string | null;} |
-{type: 'undo';} |
-{type: 'redo';} |
-{type: 'publish';at: string;version: PageVersion;doc: PageDocument;} |
-{type: 'unpublish';} |
-{type: 'schedule';scheduled: ScheduledPublish | null;} |
-{type: 'conflict';remote: PersistedState;} |
-{type: 'snapshot';version: PageVersion;} |
-{type: 'restoreVersion';id: string;at: number;} |
-{type: 'saveStatus';status: SaveStatus;at?: string;} |
-{type: 'reset';persisted: PersistedState;};
+  | { type: 'mutate'; fn: (doc: PageDocument) => PageDocument; coalesceKey?: string; at: number; select?: string | null; scope?: 'page' | 'site' }
+  | { type: 'select'; id: string | null }
+  | { type: 'setPage'; id: string | null }
+  | { type: 'undo' }
+  | { type: 'redo' }
+  | { type: 'publish'; at: string; version: PageVersion; doc: PageDocument }
+  | { type: 'unpublish' }
+  | { type: 'schedule'; scheduled: ScheduledPublish | null }
+  | { type: 'conflict'; remote: PersistedState }
+  | { type: 'snapshot'; version: PageVersion }
+  | { type: 'restoreVersion'; id: string; at: number }
+  | { type: 'saveStatus'; status: SaveStatus; at?: string }
+  | { type: 'reset'; persisted: PersistedState };
 
 type MetaPatch = { [P in keyof BlockMeta]?: Partial<BlockMeta[P]> };
 
@@ -80,13 +80,13 @@ function blankPersisted(workspaceId: string): PersistedState {
       theme: { ...pageThemePresets[0].theme },
       seo: { title: '', description: '' },
       blocks: [createBlock('profile')],
-      updatedAt: now
+      updatedAt: now,
     },
     published: null,
     publishedAt: null,
     versions: [],
     lastSavedAt: null,
-    scheduled: null
+    scheduled: null,
   };
 }
 
@@ -97,17 +97,17 @@ function initialPersisted(workspaceId: string): PersistedState {
     published: samplePage,
     publishedAt: samplePublishedAt,
     versions: [
-    {
-      id: 'ver_initial',
-      label: 'Version 1',
-      note: 'First publish',
-      createdAt: samplePublishedAt,
-      kind: 'published',
-      doc: samplePage
-    }],
-
+      {
+        id: 'ver_initial',
+        label: 'Version 1',
+        note: 'First publish',
+        createdAt: samplePublishedAt,
+        kind: 'published',
+        doc: samplePage,
+      },
+    ],
     lastSavedAt: samplePublishedAt,
-    scheduled: null
+    scheduled: null,
   };
 }
 
@@ -122,7 +122,7 @@ function toPersisted(s: PersistedState): PersistedState {
     publishedAt: s.publishedAt,
     versions: s.versions.slice(0, VERSION_LIMIT),
     lastSavedAt: s.lastSavedAt,
-    scheduled: s.scheduled
+    scheduled: s.scheduled,
   };
 }
 
@@ -140,77 +140,77 @@ function viewOf(s: Pick<EditorState, 'draft' | 'activePageId'>): PageDocument {
 
 function reducer(state: EditorState, action: Action): EditorState {
   switch (action.type) {
-    case 'mutate':{
-        const pid = state.activePageId;
-        let next: PageDocument;
-        if (action.scope === 'site') {
-          const raw = action.fn(state.draft);
-          if (raw === state.draft) return state;
-          next = normalizeGroups(raw);
-        } else {
-          // Block edits apply to the page being edited; everything else is shared.
-          const view = viewOf(state);
-          const raw = action.fn(view);
-          if (raw === view) return state;
-          // Containers (D167) first: they keep children after their container and out of groups.
-          next = writeView(state.draft, pid, normalizeGroups(normalizeContainerDoc(raw)));
-        }
-        const coalesce =
-        !!action.coalesceKey && action.coalesceKey === state.lastKey && action.at - state.lastAt < COALESCE_MS;
-        const draft = { ...next, updatedAt: new Date(action.at).toISOString() };
-        const selected = action.select !== undefined ? action.select : state.selectedId;
-        const activePageId = fitPage(draft, pid);
-        return {
-          ...state,
-          draft,
-          activePageId,
-          past: coalesce ? state.past : [...state.past, state.draft].slice(-HISTORY_LIMIT),
-          future: [],
-          lastKey: action.coalesceKey ?? null,
-          lastAt: action.at,
-          selectedId: keepSelection(draft, activePageId, selected)
-        };
+    case 'mutate': {
+      const pid = state.activePageId;
+      let next: PageDocument;
+      if (action.scope === 'site') {
+        const raw = action.fn(state.draft);
+        if (raw === state.draft) return state;
+        next = normalizeGroups(raw);
+      } else {
+        // Block edits apply to the page being edited; everything else is shared.
+        const view = viewOf(state);
+        const raw = action.fn(view);
+        if (raw === view) return state;
+        // Containers (D167) first: they keep children after their container and out of groups.
+        next = writeView(state.draft, pid, normalizeGroups(normalizeContainerDoc(raw)));
       }
+      const coalesce =
+        !!action.coalesceKey && action.coalesceKey === state.lastKey && action.at - state.lastAt < COALESCE_MS;
+      const draft = { ...next, updatedAt: new Date(action.at).toISOString() };
+      const selected = action.select !== undefined ? action.select : state.selectedId;
+      const activePageId = fitPage(draft, pid);
+      return {
+        ...state,
+        draft,
+        activePageId,
+        past: coalesce ? state.past : [...state.past, state.draft].slice(-HISTORY_LIMIT),
+        future: [],
+        lastKey: action.coalesceKey ?? null,
+        lastAt: action.at,
+        selectedId: keepSelection(draft, activePageId, selected),
+      };
+    }
     case 'select':
       return { ...state, selectedId: action.id };
-    case 'setPage':{
-        const id = fitPage(state.draft, action.id);
-        return id === state.activePageId ? state : { ...state, activePageId: id, selectedId: null, lastKey: null };
-      }
-    case 'undo':{
-        if (state.past.length === 0) return state;
-        const prev = state.past[state.past.length - 1];
-        const activePageId = fitPage(prev, state.activePageId);
-        return {
-          ...state,
-          draft: prev,
-          activePageId,
-          past: state.past.slice(0, -1),
-          future: [state.draft, ...state.future],
-          lastKey: null,
-          selectedId: keepSelection(prev, activePageId, state.selectedId)
-        };
-      }
-    case 'redo':{
-        if (state.future.length === 0) return state;
-        const [next, ...rest] = state.future;
-        const activePageId = fitPage(next, state.activePageId);
-        return {
-          ...state,
-          draft: next,
-          activePageId,
-          past: [...state.past, state.draft],
-          future: rest,
-          lastKey: null,
-          selectedId: keepSelection(next, activePageId, state.selectedId)
-        };
-      }
+    case 'setPage': {
+      const id = fitPage(state.draft, action.id);
+      return id === state.activePageId ? state : { ...state, activePageId: id, selectedId: null, lastKey: null };
+    }
+    case 'undo': {
+      if (state.past.length === 0) return state;
+      const prev = state.past[state.past.length - 1];
+      const activePageId = fitPage(prev, state.activePageId);
+      return {
+        ...state,
+        draft: prev,
+        activePageId,
+        past: state.past.slice(0, -1),
+        future: [state.draft, ...state.future],
+        lastKey: null,
+        selectedId: keepSelection(prev, activePageId, state.selectedId),
+      };
+    }
+    case 'redo': {
+      if (state.future.length === 0) return state;
+      const [next, ...rest] = state.future;
+      const activePageId = fitPage(next, state.activePageId);
+      return {
+        ...state,
+        draft: next,
+        activePageId,
+        past: [...state.past, state.draft],
+        future: rest,
+        lastKey: null,
+        selectedId: keepSelection(next, activePageId, state.selectedId),
+      };
+    }
     case 'publish':
       return {
         ...state,
         published: action.doc,
         publishedAt: action.at,
-        versions: [action.version, ...state.versions].slice(0, VERSION_LIMIT)
+        versions: [action.version, ...state.versions].slice(0, VERSION_LIMIT),
       };
     case 'unpublish':
       return { ...state, published: null, publishedAt: null, scheduled: null };
@@ -220,20 +220,20 @@ function reducer(state: EditorState, action: Action): EditorState {
       return { ...state, remote: action.remote, saveStatus: 'conflict' };
     case 'snapshot':
       return { ...state, versions: [action.version, ...state.versions].slice(0, VERSION_LIMIT) };
-    case 'restoreVersion':{
-        const version = state.versions.find((v) => v.id === action.id);
-        if (!version) return state;
-        const draft = { ...version.doc, updatedAt: new Date(action.at).toISOString() };
-        return {
-          ...state,
-          draft,
-          activePageId: fitPage(draft, state.activePageId),
-          past: [...state.past, state.draft].slice(-HISTORY_LIMIT),
-          future: [],
-          lastKey: null,
-          selectedId: null
-        };
-      }
+    case 'restoreVersion': {
+      const version = state.versions.find((v) => v.id === action.id);
+      if (!version) return state;
+      const draft = { ...version.doc, updatedAt: new Date(action.at).toISOString() };
+      return {
+        ...state,
+        draft,
+        activePageId: fitPage(draft, state.activePageId),
+        past: [...state.past, state.draft].slice(-HISTORY_LIMIT),
+        future: [],
+        lastKey: null,
+        selectedId: null,
+      };
+    }
     case 'saveStatus':
       return { ...state, saveStatus: action.status, lastSavedAt: action.at ?? state.lastSavedAt };
     case 'reset':
@@ -246,7 +246,7 @@ function reducer(state: EditorState, action: Action): EditorState {
         saveStatus: 'saved',
         lastKey: null,
         lastAt: 0,
-        activePageId: fitPage(action.persisted.draft, state.activePageId)
+        activePageId: fitPage(action.persisted.draft, state.activePageId),
       };
     default:
       return state;
@@ -254,13 +254,13 @@ function reducer(state: EditorState, action: Action): EditorState {
 }
 
 export function useEditorStore(
-workspaceId: string = DEMO_WORKSPACE_ID,
-takenHandles?: ReadonlySet<string>,
-/** Extra checks (e.g. catalogue links) merged into the pre-publish issues. */
-extraIssues?: (doc: PageDocument) => ValidationIssue[],
-/** Site-wide checks (e.g. page limit for the plan). */
-siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
-{
+  workspaceId: string = DEMO_WORKSPACE_ID,
+  takenHandles?: ReadonlySet<string>,
+  /** Extra checks (e.g. catalogue links) merged into the pre-publish issues. */
+  extraIssues?: (doc: PageDocument) => ValidationIssue[],
+  /** Site-wide checks (e.g. page limit for the plan). */
+  siteLevelIssues?: (doc: PageDocument) => ValidationIssue[],
+) {
   const storageKey = editorStorageKey(workspaceId);
   const [state, dispatch] = useReducer(reducer, undefined, () => ({
     ...loadPersisted(workspaceId),
@@ -271,7 +271,7 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
     saveStatus: 'saved' as SaveStatus,
     lastKey: null,
     lastAt: 0,
-    activePageId: null
+    activePageId: null,
   }));
 
   const stateRef = useRef(state);
@@ -282,7 +282,7 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
     (s: PersistedState) => {
       window.localStorage.setItem(storageKey, JSON.stringify(toPersisted(s)));
     },
-    [storageKey]
+    [storageKey],
   );
 
   const save = useCallback((force = false) => {
@@ -344,8 +344,8 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
           note: scheduled.note ? `${scheduled.note} (scheduled)` : 'Scheduled publish',
           createdAt: scheduled.at,
           kind: 'published',
-          doc: scheduled.doc
-        }
+          doc: scheduled.doc,
+        },
       });
       dispatch({ type: 'schedule', scheduled: null });
     };
@@ -367,20 +367,20 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
 
   const actions = useMemo(() => {
     const mutate = (fn: (doc: PageDocument) => PageDocument, coalesceKey?: string, select?: string | null) =>
-    dispatch({ type: 'mutate', fn, coalesceKey, at: Date.now(), select });
+      dispatch({ type: 'mutate', fn, coalesceKey, at: Date.now(), select });
     const mutateSite = (fn: (doc: PageDocument) => PageDocument, coalesceKey?: string, select?: string | null) =>
-    dispatch({ type: 'mutate', fn, coalesceKey, at: Date.now(), select, scope: 'site' });
+      dispatch({ type: 'mutate', fn, coalesceKey, at: Date.now(), select, scope: 'site' });
     const updateSitePage = (id: string, fn: (p: SitePage) => SitePage, coalesceKey?: string) =>
-    mutateSite((doc) => ({ ...doc, pages: sitePages(doc).map((p) => p.id === id ? fn(p) : p) }), coalesceKey);
+      mutateSite((doc) => ({ ...doc, pages: sitePages(doc).map((p) => (p.id === id ? fn(p) : p)) }), coalesceKey);
 
     const updateBlock = (id: string, fn: (block: Block) => Block, coalesceKey?: string) =>
-    mutate(
-      (doc) => ({
-        ...doc,
-        blocks: doc.blocks.map((b) => b.id === id ? { ...fn(b), updatedAt: new Date().toISOString() } : b)
-      }),
-      coalesceKey
-    );
+      mutate(
+        (doc) => ({
+          ...doc,
+          blocks: doc.blocks.map((b) => (b.id === id ? { ...fn(b), updatedAt: new Date().toISOString() } : b)),
+        }),
+        coalesceKey,
+      );
 
     return {
       select: (id: string | null) => dispatch({ type: 'select', id }),
@@ -392,9 +392,9 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
       addBlock: (type: BlockType, index?: number, parentId?: string, preset?: BlockPreset) => {
         const fresh = createBlock(type);
         // Ready-made looks (D171): the same block with different starting settings.
-        const created = preset ?
-        { ...fresh, content: { ...fresh.content, ...preset.content }, style: { ...fresh.style, ...preset.style }, layout: { ...fresh.layout, ...preset.layout } } as Block :
-        fresh;
+        const created = preset
+          ? ({ ...fresh, content: { ...fresh.content, ...preset.content }, style: { ...fresh.style, ...preset.style }, layout: { ...fresh.layout, ...preset.layout } } as Block)
+          : fresh;
         const { selectedId } = stateRef.current;
         const draft = viewOf(stateRef.current);
         let at: number;
@@ -415,7 +415,7 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
           at = p.index;
           parent = p.parentId;
         }
-        const block = parent ? { ...created, parentId: parent } as Block : created;
+        const block = parent ? ({ ...created, parentId: parent } as Block) : created;
         mutate(
           (doc) => {
             const blocks = [...doc.blocks];
@@ -423,26 +423,26 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
             return { ...doc, blocks };
           },
           undefined,
-          block.id
+          block.id,
         );
         return block.id;
       },
 
       /** Change block type (D171): only safe pairs; keeps id, layout, visibility and container. Undoable. */
       convertBlock: (id: string, to: BlockType) =>
-      mutate(
-        (doc) => {
-          const b = doc.blocks.find((x) => x.id === id);
-          if (!b || b.locked) return doc;
-          const next = convertBlockType(b, to);
-          return next ? { ...doc, blocks: doc.blocks.map((x) => x.id === id ? next : x) } : doc;
-        },
-        undefined,
-        id
-      ),
+        mutate(
+          (doc) => {
+            const b = doc.blocks.find((x) => x.id === id);
+            if (!b || b.locked) return doc;
+            const next = convertBlockType(b, to);
+            return next ? { ...doc, blocks: doc.blocks.map((x) => (x.id === id ? next : x)) } : doc;
+          },
+          undefined,
+          id,
+        ),
 
       /** Switch an existing block's look (D177): shape only — words, photos and items stay. One undo step. */
-      applyLook: (id: string, look: LookOption) => updateBlock(id, (b) => b.locked ? b : withLook(b, look)),
+      applyLook: (id: string, look: LookOption) => updateBlock(id, (b) => (b.locked ? b : withLook(b, look))),
 
       /** Editor-only block name for Layers (D175). Empty clears it. */
       renameBlock: (id: string, name: string) => updateBlock(id, (b) => ({ ...b, name: name.trim() || undefined }), `name:${id}`),
@@ -452,122 +452,122 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
 
       /** Puts a page block inside a container (D167). It becomes the container's last block. */
       moveIntoContainer: (id: string, containerId: string) =>
-      mutate((doc) => {
-        const b = doc.blocks.find((x) => x.id === id);
-        const c = doc.blocks.find((x) => x.id === containerId);
-        if (!b || b.locked || !isContainer(c) || isContainer(b) || b.parentId === containerId || !fitsIn(b.type, c.type).ok) return doc;
-        const rest = doc.blocks.filter((x) => x.id !== id);
-        const kids = childrenOf(rest, containerId);
-        if (kids.length >= MAX_CHILDREN) return doc;
-        const anchor = kids[kids.length - 1] ?? c;
-        rest.splice(rest.indexOf(anchor) + 1, 0, { ...b, parentId: containerId, groupId: null, layout: { ...b.layout, pair: null } } as Block);
-        return { ...doc, blocks: rest };
-      }),
+        mutate((doc) => {
+          const b = doc.blocks.find((x) => x.id === id);
+          const c = doc.blocks.find((x) => x.id === containerId);
+          if (!b || b.locked || !isContainer(c) || isContainer(b) || b.parentId === containerId || !fitsIn(b.type, c.type).ok) return doc;
+          const rest = doc.blocks.filter((x) => x.id !== id);
+          const kids = childrenOf(rest, containerId);
+          if (kids.length >= MAX_CHILDREN) return doc;
+          const anchor = kids[kids.length - 1] ?? c;
+          rest.splice(rest.indexOf(anchor) + 1, 0, { ...b, parentId: containerId, groupId: null, layout: { ...b.layout, pair: null } } as Block);
+          return { ...doc, blocks: rest };
+        }),
 
       /**
        * Puts a block at an exact spot (D191): inside `parentId` (a container) or on the page (null),
        * before `beforeId` — or at the end when null. Used by drag and drop; respects locks, fit and capacity.
        */
       placeBlock: (id: string, parentId: string | null, beforeId: string | null) =>
-      mutate((doc) => {
-        const b = doc.blocks.find((x) => x.id === id);
-        if (!b || b.locked) return doc;
-        const rest = doc.blocks.filter((x) => x.id !== id);
-        if (parentId) {
-          const c = rest.find((x) => x.id === parentId);
-          if (!isContainer(c) || isContainer(b) || !fitsIn(b.type, c.type).ok) return doc;
-          if (b.parentId !== parentId && childrenOf(rest, parentId).length >= MAX_CHILDREN) return doc;
-        }
-        const moved = (parentId ? { ...b, parentId, groupId: null, layout: { ...b.layout, pair: null } } : { ...b, parentId: null, slotLabel: undefined }) as Block;
-        let at = rest.length;
-        const before = beforeId ? rest.find((x) => x.id === beforeId) : undefined;
-        if (before) at = rest.indexOf(before);else
-        if (parentId) {
-          const kids = childrenOf(rest, parentId);
-          const anchor = kids[kids.length - 1] ?? rest.find((x) => x.id === parentId);
-          at = anchor ? rest.indexOf(anchor) + 1 : rest.length;
-        }
-        rest.splice(at, 0, moved);
-        return { ...doc, blocks: rest };
-      }),
+        mutate((doc) => {
+          const b = doc.blocks.find((x) => x.id === id);
+          if (!b || b.locked) return doc;
+          const rest = doc.blocks.filter((x) => x.id !== id);
+          if (parentId) {
+            const c = rest.find((x) => x.id === parentId);
+            if (!isContainer(c) || isContainer(b) || !fitsIn(b.type, c.type).ok) return doc;
+            if (b.parentId !== parentId && childrenOf(rest, parentId).length >= MAX_CHILDREN) return doc;
+          }
+          const moved = (parentId ? { ...b, parentId, groupId: null, layout: { ...b.layout, pair: null } } : { ...b, parentId: null, slotLabel: undefined }) as Block;
+          let at = rest.length;
+          const before = beforeId ? rest.find((x) => x.id === beforeId) : undefined;
+          if (before) at = rest.indexOf(before);
+          else if (parentId) {
+            const kids = childrenOf(rest, parentId);
+            const anchor = kids[kids.length - 1] ?? rest.find((x) => x.id === parentId);
+            at = anchor ? rest.indexOf(anchor) + 1 : rest.length;
+          }
+          rest.splice(at, 0, moved);
+          return { ...doc, blocks: rest };
+        }),
 
       /** Takes a block out of its container; it lands on the page just below the container. */
       moveOutOfContainer: (id: string) =>
-      mutate((doc) => {
-        const b = doc.blocks.find((x) => x.id === id);
-        if (!b?.parentId || b.locked) return doc;
-        const parentId = b.parentId;
-        const rest = doc.blocks.filter((x) => x.id !== id);
-        const kids = childrenOf(rest, parentId);
-        const anchor = kids[kids.length - 1] ?? rest.find((x) => x.id === parentId);
-        rest.splice(anchor ? rest.indexOf(anchor) + 1 : rest.length, 0, { ...b, parentId: null, slotLabel: undefined } as Block);
-        return { ...doc, blocks: rest };
-      }),
+        mutate((doc) => {
+          const b = doc.blocks.find((x) => x.id === id);
+          if (!b?.parentId || b.locked) return doc;
+          const parentId = b.parentId;
+          const rest = doc.blocks.filter((x) => x.id !== id);
+          const kids = childrenOf(rest, parentId);
+          const anchor = kids[kids.length - 1] ?? rest.find((x) => x.id === parentId);
+          rest.splice(anchor ? rest.indexOf(anchor) + 1 : rest.length, 0, { ...b, parentId: null, slotLabel: undefined } as Block);
+          return { ...doc, blocks: rest };
+        }),
 
       /** Removes a container but keeps its blocks on the page, in place. */
       unwrapContainer: (id: string) =>
-      mutate(
-        (doc) => {
-          const c = doc.blocks.find((x) => x.id === id);
-          if (!isContainer(c) || c.locked) return doc;
-          return { ...doc, blocks: doc.blocks.filter((x) => x.id !== id).map((x) => x.parentId === id ? { ...x, parentId: null, slotLabel: undefined } as Block : x) };
-        },
-        undefined,
-        null
-      ),
+        mutate(
+          (doc) => {
+            const c = doc.blocks.find((x) => x.id === id);
+            if (!isContainer(c) || c.locked) return doc;
+            return { ...doc, blocks: doc.blocks.filter((x) => x.id !== id).map((x) => (x.parentId === id ? ({ ...x, parentId: null, slotLabel: undefined } as Block) : x)) };
+          },
+          undefined,
+          null,
+        ),
 
       /** Puts back several blocks at once (a container and its contents) — the undo for deleting a container. */
       restoreBlocks: (list: Block[], index: number) =>
-      mutate(
-        (doc) => {
-          const fresh = list.filter((b) => !doc.blocks.some((x) => x.id === b.id));
-          if (!fresh.length) return doc;
-          const blocks = [...doc.blocks];
-          blocks.splice(Math.min(index, blocks.length), 0, ...fresh);
-          return { ...doc, blocks };
-        },
-        undefined,
-        list[0]?.id ?? null
-      ),
+        mutate(
+          (doc) => {
+            const fresh = list.filter((b) => !doc.blocks.some((x) => x.id === b.id));
+            if (!fresh.length) return doc;
+            const blocks = [...doc.blocks];
+            blocks.splice(Math.min(index, blocks.length), 0, ...fresh);
+            return { ...doc, blocks };
+          },
+          undefined,
+          list[0]?.id ?? null,
+        ),
 
-      updateContent: <K extends BlockType,>(id: string, _type: K, patch: Partial<BlockContentMap[K]>, field = 'content') =>
-      updateBlock(id, (b) => ({ ...b, content: { ...b.content, ...patch } }) as Block, `content:${id}:${field}`),
+      updateContent: <K extends BlockType>(id: string, _type: K, patch: Partial<BlockContentMap[K]>, field = 'content') =>
+        updateBlock(id, (b) => ({ ...b, content: { ...b.content, ...patch } }) as Block, `content:${id}:${field}`),
 
       updateMeta: (id: string, patch: MetaPatch, field?: string) =>
-      updateBlock(
-        id,
-        (b) => ({
-          ...b,
-          style: { ...b.style, ...patch.style },
-          layout: { ...b.layout, ...patch.layout },
-          behaviour: { ...b.behaviour, ...patch.behaviour },
-          visibility: { ...b.visibility, ...patch.visibility },
-          accessibility: { ...b.accessibility, ...patch.accessibility }
-        }),
-        field ? `meta:${id}:${field}` : undefined
-      ),
+        updateBlock(
+          id,
+          (b) => ({
+            ...b,
+            style: { ...b.style, ...patch.style },
+            layout: { ...b.layout, ...patch.layout },
+            behaviour: { ...b.behaviour, ...patch.behaviour },
+            visibility: { ...b.visibility, ...patch.visibility },
+            accessibility: { ...b.accessibility, ...patch.accessibility },
+          }),
+          field ? `meta:${id}:${field}` : undefined,
+        ),
 
       // Containers (D167): a child moves among its siblings; a page block moves past the next page block with its contents.
       moveBlock: (id: string, direction: -1 | 1) =>
-      mutate((doc) => {
-        const blocks = moveInPage(doc.blocks, id, direction);
-        return blocks === doc.blocks ? doc : { ...doc, blocks };
-      }),
+        mutate((doc) => {
+          const blocks = moveInPage(doc.blocks, id, direction);
+          return blocks === doc.blocks ? doc : { ...doc, blocks };
+        }),
 
       reorderBlocks: (ids: string[]) =>
-      mutate((doc) => {
-        // The canvas drags page blocks only; containers carry their contents along.
-        if (ids.length !== doc.blocks.length && ids.length === topLevel(doc.blocks).length) {
-          if (ids.join('|') === topLevel(doc.blocks).map((b) => b.id).join('|')) return doc;
-          const blocks = expandTop(ids, doc.blocks);
-          return blocks === doc.blocks ? doc : { ...doc, blocks };
-        }
-        if (ids.join('|') === doc.blocks.map((b) => b.id).join('|')) return doc;
-        const byId = new Map(doc.blocks.map((b) => [b.id, b]));
-        const blocks = ids.map((id) => byId.get(id)).filter((b): b is Block => !!b);
-        if (blocks.length !== doc.blocks.length) return doc;
-        return { ...doc, blocks };
-      }, 'reorder'),
+        mutate((doc) => {
+          // The canvas drags page blocks only; containers carry their contents along.
+          if (ids.length !== doc.blocks.length && ids.length === topLevel(doc.blocks).length) {
+            if (ids.join('|') === topLevel(doc.blocks).map((b) => b.id).join('|')) return doc;
+            const blocks = expandTop(ids, doc.blocks);
+            return blocks === doc.blocks ? doc : { ...doc, blocks };
+          }
+          if (ids.join('|') === doc.blocks.map((b) => b.id).join('|')) return doc;
+          const byId = new Map(doc.blocks.map((b) => [b.id, b]));
+          const blocks = ids.map((id) => byId.get(id)).filter((b): b is Block => !!b);
+          if (blocks.length !== doc.blocks.length) return doc;
+          return { ...doc, blocks };
+        }, 'reorder'),
 
       /** A/B test (D127): marks this block as version A and adds a copy below it as version B. */
       startAbTest: (id: string, goal: IntentGoal) => {
@@ -579,21 +579,21 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
         mutate(
           (doc) => {
             const i = doc.blocks.findIndex((x) => x.id === id);
-            const blocks = doc.blocks.map((x) => x.id === id ? { ...x, visibility: { ...x.visibility, abTest: { ...test, arm: 'A' as const } } } as Block : x);
+            const blocks = doc.blocks.map((x) => (x.id === id ? ({ ...x, visibility: { ...x.visibility, abTest: { ...test, arm: 'A' as const } } } as Block) : x));
             blocks.splice(i + 1, 0, b);
             return { ...doc, blocks };
           },
           undefined,
-          b.id
+          b.id,
         );
       },
 
       /** Ends an A/B test, keeping one version for everyone and removing the other. */
       endAbTest: (testId: string, keep: 'A' | 'B') => {
         mutate((doc) => {
-          const blocks = doc.blocks.
-          filter((x) => !(x.visibility.abTest?.id === testId && x.visibility.abTest.arm !== keep)).
-          map((x) => x.visibility.abTest?.id === testId ? { ...x, visibility: { ...x.visibility, abTest: undefined } } as Block : x);
+          const blocks = doc.blocks
+            .filter((x) => !(x.visibility.abTest?.id === testId && x.visibility.abTest.arm !== keep))
+            .map((x) => (x.visibility.abTest?.id === testId ? ({ ...x, visibility: { ...x.visibility, abTest: undefined } } as Block) : x));
           return { ...doc, blocks };
         });
       },
@@ -604,7 +604,7 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
         if (!source) return;
         const cloned = cloneBlock(source);
         // A copy of a test version isn't part of the test (D127).
-        const copy = cloned.visibility.abTest ? { ...cloned, visibility: { ...cloned.visibility, abTest: undefined } } as Block : cloned;
+        const copy = cloned.visibility.abTest ? ({ ...cloned, visibility: { ...cloned.visibility, abTest: undefined } } as Block) : cloned;
         // Containers (D167) copy with everything inside them.
         const kids = isContainer(source) ? childrenOf(all, source.id) : [];
         const copies = kids.length ? relinkClones([source, ...kids], [copy, ...kids.map(cloneBlock)]) : [copy];
@@ -617,18 +617,18 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
             return { ...doc, blocks };
           },
           undefined,
-          copy.id
+          copy.id,
         );
       },
 
       toggleHidden: (id: string) =>
-      updateBlock(id, (b) => ({ ...b, visibility: { ...b.visibility, hidden: !b.visibility.hidden } })),
+        updateBlock(id, (b) => ({ ...b, visibility: { ...b.visibility, hidden: !b.visibility.hidden } })),
 
       removeBlock: (id: string) =>
-      mutate((doc) =>
-      // Deleting a container deletes what's inside it too (undo puts both back).
-      doc.blocks.some((b) => b.id === id && b.locked) ? doc : { ...doc, blocks: doc.blocks.filter((b) => b.id !== id && b.parentId !== id) }
-      ),
+        mutate((doc) =>
+          // Deleting a container deletes what's inside it too (undo puts both back).
+          doc.blocks.some((b) => b.id === id && b.locked) ? doc : { ...doc, blocks: doc.blocks.filter((b) => b.id !== id && b.parentId !== id) },
+        ),
 
       toggleLocked: (id: string) => updateBlock(id, (b) => ({ ...b, locked: !b.locked })),
 
@@ -646,60 +646,60 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
       moveGroup: (groupId: string, direction: -1 | 1) => mutate((doc) => groups.moveGroup(doc, groupId, direction)),
       reorderUnits: (keys: string[]) => mutate((doc) => groups.reorderUnits(doc, keys), 'reorder'),
       reorderWithinGroup: (groupId: string, ids: string[]) =>
-      mutate((doc) => groups.reorderWithinGroup(doc, groupId, ids), `reorder:${groupId}`),
+        mutate((doc) => groups.reorderWithinGroup(doc, groupId, ids), `reorder:${groupId}`),
       moveWithinGroup: (id: string, direction: -1 | 1) => mutate((doc) => groups.moveWithinGroup(doc, id, direction)),
       removeFromGroup: (id: string) => mutate((doc) => groups.removeFromGroup(doc, id)),
       duplicateGroup: (groupId: string) => mutate((doc) => groups.duplicateGroup(doc, groupId), undefined, null),
       removeGroup: (groupId: string) => mutate((doc) => groups.removeGroup(doc, groupId), undefined, null),
 
       updateBranding: (patch: Partial<PageBranding>) =>
-      mutate((doc) => ({
-        ...doc,
-        branding: { hideKubicuBadge: false, ...doc.branding, ...patch }
-      })),
+        mutate((doc) => ({
+          ...doc,
+          branding: { hideKubicuBadge: false, ...doc.branding, ...patch },
+        })),
 
       restoreBlock: (block: Block, index: number) =>
-      mutate(
-        (doc) => {
-          if (doc.blocks.some((b) => b.id === block.id)) return doc;
-          const blocks = [...doc.blocks];
-          blocks.splice(Math.min(index, blocks.length), 0, block);
-          return { ...doc, blocks };
-        },
-        undefined,
-        block.id
-      ),
+        mutate(
+          (doc) => {
+            if (doc.blocks.some((b) => b.id === block.id)) return doc;
+            const blocks = [...doc.blocks];
+            blocks.splice(Math.min(index, blocks.length), 0, block);
+            return { ...doc, blocks };
+          },
+          undefined,
+          block.id,
+        ),
 
       updateTheme: (patch: Partial<PageTheme>, field = 'theme') =>
-      mutate((doc) => ({ ...doc, theme: { ...doc.theme, ...patch } }), `theme:${field}`),
+        mutate((doc) => ({ ...doc, theme: { ...doc.theme, ...patch } }), `theme:${field}`),
 
       // D182: an owner's own gradient or image background survives a theme change; "Theme default" pages take the new theme's.
       applyThemePreset: (theme: PageTheme) =>
-      mutate((doc) => {
-        const own = doc.theme;
-        const keep = own.backgroundMode === 'gradient' || own.backgroundMode === 'image' || own.backgroundMode === 'solid';
-        if (!keep || theme.backgroundMode) return { ...doc, theme: { ...theme } };
-        return {
-          ...doc,
-          theme: {
-            ...theme,
-            backgroundMode: own.backgroundMode,
-            backgroundGradient: own.backgroundGradient,
-            ...(own.backgroundMode === 'image' ? { backgroundImage: own.backgroundImage, backgroundVeil: own.backgroundVeil, backgroundFocus: own.backgroundFocus, backgroundScroll: own.backgroundScroll, backgroundTone: own.backgroundTone } : {})
-          }
-        };
-      }),
-
-      updatePage: (patch: {title?: string;handle?: string;seo?: Partial<PageSeo>;}, field: string) =>
-      mutate(
-        (doc) => ({
-          ...doc,
-          title: patch.title ?? doc.title,
-          handle: patch.handle ?? doc.handle,
-          seo: { ...doc.seo, ...patch.seo }
+        mutate((doc) => {
+          const own = doc.theme;
+          const keep = own.backgroundMode === 'gradient' || own.backgroundMode === 'image' || own.backgroundMode === 'solid';
+          if (!keep || theme.backgroundMode) return { ...doc, theme: { ...theme } };
+          return {
+            ...doc,
+            theme: {
+              ...theme,
+              backgroundMode: own.backgroundMode,
+              backgroundGradient: own.backgroundGradient,
+              ...(own.backgroundMode === 'image' ? { backgroundImage: own.backgroundImage, backgroundVeil: own.backgroundVeil, backgroundFocus: own.backgroundFocus, backgroundScroll: own.backgroundScroll, backgroundTone: own.backgroundTone } : {}),
+            },
+          };
         }),
-        `page:${field}`
-      ),
+
+      updatePage: (patch: { title?: string; handle?: string; seo?: Partial<PageSeo> }, field: string) =>
+        mutate(
+          (doc) => ({
+            ...doc,
+            title: patch.title ?? doc.title,
+            handle: patch.handle ?? doc.handle,
+            seo: { ...doc.seo, ...patch.seo },
+          }),
+          `page:${field}`,
+        ),
 
       /** The language visitors' browsers and screen readers use for the whole site (D76). */
       setLanguage: (language: string) => mutateSite((doc) => ({ ...doc, language }), 'page:language'),
@@ -708,15 +708,15 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
       updateLayout: (patch: Partial<PageLayoutSettings>, field = 'layout') => mutateSite((doc) => ({ ...doc, layout: { ...doc.layout, ...patch } }), `page:${field}`),
 
       applyTemplate: (template: PageDocument) =>
-      mutate(
-        (doc) => cloneDocument(template, { id: doc.id, handle: doc.handle, title: doc.title, branding: doc.branding }),
-        undefined,
-        null
-      ),
+        mutate(
+          (doc) => cloneDocument(template, { id: doc.id, handle: doc.handle, title: doc.title, branding: doc.branding }),
+          undefined,
+          null,
+        ),
 
       /** Replaces the current page's blocks (and optionally its look) in one undoable step — used by AI page setup (D63). */
       replaceBlocks: (blocks: Block[], theme?: PageTheme) =>
-      mutate((doc) => ({ ...doc, blocks, theme: theme ? { ...theme } : doc.theme, updatedAt: new Date().toISOString() }), undefined, null),
+        mutate((doc) => ({ ...doc, blocks, theme: theme ? { ...theme } : doc.theme, updatedAt: new Date().toISOString() }), undefined, null),
 
       /** Whole-site change from outside the canvas (e.g. removing a deleted library image). Undoable. */
       transformDocument: (fn: (doc: PageDocument) => PageDocument) => mutateSite(fn),
@@ -731,14 +731,14 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
         const first = heading.type === 'heading' ? { ...heading, content: { ...heading.content, text: name } } : heading;
         mutateSite((doc) => ({
           ...doc,
-          pages: [...sitePages(doc), { id, title: name, path: uniquePath(doc, name), seo: { title: '', description: '' }, blocks: [first], createdAt: new Date().toISOString() }]
+          pages: [...sitePages(doc), { id, title: name, path: uniquePath(doc, name), seo: { title: '', description: '' }, blocks: [first], createdAt: new Date().toISOString() }],
         }));
         dispatch({ type: 'setPage', id });
         return id;
       },
 
       /** Adds several ready-made pages in one undoable step (site kits, D127). Titles already used are skipped. */
-      addPages: (list: {title: string;blocks: Block[];}[]): number => {
+      addPages: (list: { title: string; blocks: Block[] }[]): number => {
         const existing = new Set(sitePages(stateRef.current.draft).map((p) => p.title.trim().toLowerCase()));
         const fresh = list.filter((p) => !existing.has(p.title.trim().toLowerCase()));
         if (!fresh.length) return 0;
@@ -760,13 +760,13 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
         mutateSite(
           (doc) => ({
             ...doc,
-            pages: sitePages(doc).map((p) => p.id === id ? { ...p, path } : p),
+            pages: sitePages(doc).map((p) => (p.id === id ? { ...p, path } : p)),
             redirects:
-            old && old !== path ?
-            [...(doc.redirects ?? []).filter((r) => r.from !== old && r.from !== path), { from: old, to: path }] :
-            (doc.redirects ?? []).filter((r) => r.from !== path)
+              old && old !== path
+                ? [...(doc.redirects ?? []).filter((r) => r.from !== old && r.from !== path), { from: old, to: path }]
+                : (doc.redirects ?? []).filter((r) => r.from !== path),
           }),
-          `pg:${id}:path`
+          `pg:${id}:path`,
         );
       },
 
@@ -778,14 +778,14 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
       setHomeLabel: (label: string) => mutateSite((doc) => ({ ...doc, homeLabel: label }), 'homeLabel'),
 
       movePage: (id: string, direction: -1 | 1) =>
-      mutateSite((doc) => {
-        const list = [...sitePages(doc)];
-        const i = list.findIndex((p) => p.id === id);
-        const j = i + direction;
-        if (i < 0 || j < 0 || j >= list.length) return doc;
-        [list[i], list[j]] = [list[j], list[i]];
-        return { ...doc, pages: list };
-      }),
+        mutateSite((doc) => {
+          const list = [...sitePages(doc)];
+          const i = list.findIndex((p) => p.id === id);
+          const j = i + direction;
+          if (i < 0 || j < 0 || j >= list.length) return doc;
+          [list[i], list[j]] = [list[j], list[i]];
+          return { ...doc, pages: list };
+        }),
 
       duplicatePage: (id: string): string | null => {
         const source = findPage(stateRef.current.draft, id);
@@ -801,7 +801,7 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
             path: uniquePath(doc, title),
             blocks: source.blocks.map((b) => ({ ...cloneBlock(b), groupId: null })),
             groups: undefined,
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
           });
           return { ...doc, pages: list };
         });
@@ -815,7 +815,7 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
         mutateSite((doc) => ({
           ...doc,
           pages: sitePages(doc).filter((p) => p.id !== id),
-          redirects: old ? [...(doc.redirects ?? []).filter((r) => r.from !== old), { from: old, to: '' }] : doc.redirects
+          redirects: old ? [...(doc.redirects ?? []).filter((r) => r.from !== old), { from: old, to: '' }] : doc.redirects,
         }));
       },
 
@@ -832,7 +832,7 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
             seo: doc.seo,
             blocks: doc.blocks,
             groups: doc.groups,
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
           };
           return {
             ...doc,
@@ -840,8 +840,8 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
             groups: p.groups,
             seo: p.seo,
             homeLabel: p.title,
-            pages: sitePages(doc).map((x) => x.id === id ? oldHome : x),
-            redirects: [...(doc.redirects ?? []).filter((r) => r.from !== p.path), { from: p.path, to: '' }]
+            pages: sitePages(doc).map((x) => (x.id === id ? oldHome : x)),
+            redirects: [...(doc.redirects ?? []).filter((r) => r.from !== p.path), { from: p.path, to: '' }],
           };
         });
         dispatch({ type: 'setPage', id: null });
@@ -862,7 +862,7 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
           note: note.trim(),
           createdAt: at,
           kind: 'published',
-          doc: live
+          doc: live,
         };
         try {
           persist({ ...s, published: live, publishedAt: at, versions: [version, ...s.versions], scheduled: null });
@@ -894,7 +894,7 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
           at,
           note: note.trim(),
           doc: doc ?? s.draft,
-          createdAt: new Date().toISOString()
+          createdAt: new Date().toISOString(),
         };
         try {
           persist({ ...s, scheduled });
@@ -913,7 +913,7 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
        * `smart` (paste, D516): when the selection is a container or sits in one, and everything fits with room left,
        * the copies go inside it, right after the selection. Returns where they landed.
        */
-      insertBlocks: (source: Block[], groupName?: string, opts?: {smart?: boolean;}): {parentId: string | null;} | null => {
+      insertBlocks: (source: Block[], groupName?: string, opts?: { smart?: boolean }): { parentId: string | null } | null => {
         if (source.length === 0) return null;
         const { selectedId } = stateRef.current;
         const draft = viewOf(stateRef.current);
@@ -926,10 +926,10 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
         if (opts?.smart && sel) {
           const container = isContainer(sel) ? sel : sel.parentId ? draft.blocks.find((b) => b.id === sel.parentId) : undefined;
           if (
-          isContainer(container) &&
-          roots.every((r) => !isContainer(r) && fitsIn(r.type, container.type).ok) &&
-          childrenOf(draft.blocks, container.id).length + roots.length <= MAX_CHILDREN)
-          {
+            isContainer(container) &&
+            roots.every((r) => !isContainer(r) && fitsIn(r.type, container.type).ok) &&
+            childrenOf(draft.blocks, container.id).length + roots.length <= MAX_CHILDREN
+          ) {
             const kids = childrenOf(draft.blocks, container.id);
             const anchor = sel.id === container.id ? kids[kids.length - 1] ?? container : sel;
             parent = container.id;
@@ -946,7 +946,7 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
         }
         const group: BlockGroup | null = !parent && roots.length > 1 && roots.every((r) => !isContainer(r)) ? { id: uid('grp'), name: groupName ?? nextGroupName(draft) } : null;
         const cloned = relinkClones(source, source.map((b) => ({ ...cloneBlock(b), groupId: group?.id ?? null })));
-        const copies = cloned.map((c, i) => isRoot(source[i]) ? { ...c, parentId: parent } as Block : c);
+        const copies = cloned.map((c, i) => (isRoot(source[i]) ? ({ ...c, parentId: parent } as Block) : c));
         mutate(
           (doc) => {
             const blocks = [...doc.blocks];
@@ -954,7 +954,7 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
             return { ...doc, blocks, groups: group ? [...(doc.groups ?? []), group] : doc.groups };
           },
           undefined,
-          copies[0].id
+          copies[0].id,
         );
         return { parentId: parent };
       },
@@ -971,9 +971,9 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
           const saved = parsePersistedPage(window.localStorage.getItem(storageKey));
           if (saved) dispatch({ type: 'reset', persisted: saved });
         } catch {
-
           // Storage unavailable — nothing to reload.
-        }},
+        }
+      },
 
       /** Conflict: load the copy saved in the other tab. */
       loadTheirs: () => {
@@ -991,8 +991,8 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
             note: '',
             createdAt: new Date().toISOString(),
             kind: 'snapshot',
-            doc: s.draft
-          }
+            doc: s.draft,
+          },
         });
       },
 
@@ -1004,20 +1004,20 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
         try {
           window.localStorage.removeItem(storageKey);
         } catch {
-
           // Storage unavailable — the in-memory reset below still applies.
-        }dispatch({ type: 'reset', persisted: initialPersisted(workspaceId) });
-      }
+        }
+        dispatch({ type: 'reset', persisted: initialPersisted(workspaceId) });
+      },
     };
   }, [persist, save, storageKey, workspaceId]);
 
   const issues = useMemo(
     () => siteIssues(state.draft, takenHandles, extraIssues, siteLevelIssues ? siteLevelIssues(state.draft) : []),
-    [state.draft, takenHandles, extraIssues, siteLevelIssues]
+    [state.draft, takenHandles, extraIssues, siteLevelIssues],
   );
   const hasUnpublishedChanges = useMemo(
     () => docSignature(state.draft) !== docSignature(state.published),
-    [state.draft, state.published]
+    [state.draft, state.published],
   );
 
   // Canvas components work on the page being edited; `site` is the whole space.
@@ -1030,7 +1030,7 @@ siteLevelIssues?: (doc: PageDocument) => ValidationIssue[])
     issues,
     hasUnpublishedChanges,
     canUndo: state.past.length > 0,
-    canRedo: state.future.length > 0
+    canRedo: state.future.length > 0,
   };
 }
 

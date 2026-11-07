@@ -20,16 +20,16 @@ import { Stat, StatGroup } from '../ui/layout/Stat';
 import { Card } from '../ui/layout/Card';
 import { List } from '../ui/layout/ListRow';
 
-const statusInfo: Record<ListingStatus, {label: string;tone: BadgeTone;}> = {
+const statusInfo: Record<ListingStatus, { label: string; tone: BadgeTone }> = {
   in_review: { label: 'In review', tone: 'info' },
   changes_requested: { label: 'Changes requested', tone: 'warning' },
   listed: { label: 'Listed', tone: 'success' },
   rejected: { label: 'Not approved', tone: 'danger' },
-  unlisted: { label: 'Unlisted', tone: 'neutral' }
+  unlisted: { label: 'Unlisted', tone: 'neutral' },
 };
 
 /** Templates → My templates: listings, sales, earnings and payouts (D70). Owner and Admins. */
-export function MyTemplates({ sellOpen, setSellOpen }: {sellOpen: boolean;setSellOpen: (v: boolean) => void;}) {
+export function MyTemplates({ sellOpen, setSellOpen }: { sellOpen: boolean; setSellOpen: (v: boolean) => void }) {
   const { current } = useWorkspace();
   const team = useTeam();
   const can = team.can('extensions.manage');
@@ -49,8 +49,8 @@ export function MyTemplates({ sellOpen, setSellOpen }: {sellOpen: boolean;setSel
   }
 
   const setListed = (l: TemplateListing, listed: boolean) =>
-  update((s) => ({ ...s, listings: s.listings.map((x) => x.id === l.id ? { ...x, status: listed ? 'listed' : 'unlisted', events: [listingEvent(listed ? 'Listed again' : 'Unlisted by the creator', 'creator'), ...x.events] } : x) })) &&
-  toast(listed ? 'Listed again' : 'Unlisted', { description: listed ? 'Buyers can find it in Templates.' : 'Buyers can’t find it any more. People who bought it keep it.' });
+    update((s) => ({ ...s, listings: s.listings.map((x) => (x.id === l.id ? { ...x, status: listed ? 'listed' : 'unlisted', events: [listingEvent(listed ? 'Listed again' : 'Unlisted by the creator', 'creator'), ...x.events] } : x)) })) &&
+    toast(listed ? 'Listed again' : 'Unlisted', { description: listed ? 'Buyers can find it in Templates.' : 'Buyers can’t find it any more. People who bought it keep it.' });
 
   const requestPayout = () => {
     const digits = bank.accountNumber.replace(/\D/g, '');
@@ -59,7 +59,7 @@ export function MyTemplates({ sellOpen, setSellOpen }: {sellOpen: boolean;setSel
     update((s) => ({
       ...s,
       accounts: { ...s.accounts, [current.id]: { bankName: bank.bankName.trim(), accountNumber: digits, accountName: bank.accountName.trim() } },
-      payouts: amount >= PAYOUT_MIN_NGN ? [{ id: uid('pout'), workspaceId: current.id, amountNgn: amount, bankName: bank.bankName.trim(), accountLast4: digits.slice(-4), at: new Date().toISOString() }, ...s.payouts] : s.payouts
+      payouts: amount >= PAYOUT_MIN_NGN ? [{ id: uid('pout'), workspaceId: current.id, amountNgn: amount, bankName: bank.bankName.trim(), accountLast4: digits.slice(-4), at: new Date().toISOString() }, ...s.payouts] : s.payouts,
     }));
     if (amount >= PAYOUT_MIN_NGN) {
       team.log('settings', `requested a template earnings payout of ${formatNgn(amount)}`, '/app/templates?tab=mine');
@@ -88,10 +88,10 @@ export function MyTemplates({ sellOpen, setSellOpen }: {sellOpen: boolean;setSel
         </div>
       </div>
 
-      {mine.length === 0 ?
-      <EmptyState icon={LayoutTemplateIcon} title="You haven’t listed a template yet" description="Turn one of your spaces into a template. KUBICU removes your details, reviews it, then lists it with your name on it." action={<Button leadingIcon={PlusIcon} onClick={() => setSellOpen(true)}>Sell a template</Button>} /> :
-
-      <Card as="div" body="flush">
+      {mine.length === 0 ? (
+        <EmptyState icon={LayoutTemplateIcon} title="You haven’t listed a template yet" description="Turn one of your spaces into a template. KUBICU removes your details, reviews it, then lists it with your name on it." action={<Button leadingIcon={PlusIcon} onClick={() => setSellOpen(true)}>Sell a template</Button>} />
+      ) : (
+        <Card as="div" body="flush">
         <List label="Your templates">
           {mine.map((l) => {
             const doc = l.listedDoc ?? l.pendingDoc;
@@ -112,53 +112,53 @@ export function MyTemplates({ sellOpen, setSellOpen }: {sellOpen: boolean;setSel
                     {l.kind === 'theme' ? 'Theme · ' : ''}{l.category} · {l.region} · {l.priceNgn ? formatNgn(l.priceNgn) : 'Free'}
                     {l.listedVersion ? ` · v${l.listedVersion} on sale` : ''}
                   </p>
-                  {l.reviewNote && (l.status === 'changes_requested' || l.status === 'rejected') &&
-                  <p className="mt-2 rounded-md bg-warning-soft px-3 py-2 text-caption text-fg">
+                  {l.reviewNote && (l.status === 'changes_requested' || l.status === 'rejected') && (
+                    <p className="mt-2 rounded-md bg-warning-soft px-3 py-2 text-caption text-fg">
                       <span className="font-semibold">KUBICU review: </span>
                       {l.reviewNote}
                     </p>
-                  }
+                  )}
                   <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-caption text-fg-muted">
                     <span>{lSales.length} sale{lSales.length === 1 ? '' : 's'}</span>
                     <span>{formatNgn(lSales.reduce((t, s) => t + s.creatorShareNgn, 0))} earned</span>
-                    {avg !== null &&
-                    <span className="flex items-center gap-1">
+                    {avg !== null && (
+                      <span className="flex items-center gap-1">
                         <StarIcon size={12} className="fill-current text-warning" aria-hidden /> {avg} ({l.reviews.length})
                       </span>
-                    }
+                    )}
                     <span>Updated {formatTimestamp(l.events[0]?.at ?? l.submittedAt)}</span>
                   </p>
                 </div>
                 <div className="flex shrink-0 flex-wrap gap-2">
-                  {l.status !== 'rejected' &&
-                  <Button size="sm" variant="secondary" leadingIcon={PencilIcon} onClick={() => setEditing(l)}>
+                  {l.status !== 'rejected' && (
+                    <Button size="sm" variant="secondary" leadingIcon={PencilIcon} onClick={() => setEditing(l)}>
                       {l.status === 'changes_requested' ? 'Fix and resubmit' : 'Update'}
                     </Button>
-                  }
-                  {l.status === 'listed' &&
-                  <Button size="sm" variant="tertiary" leadingIcon={EyeOffIcon} onClick={() => setListed(l, false)}>
+                  )}
+                  {l.status === 'listed' && (
+                    <Button size="sm" variant="tertiary" leadingIcon={EyeOffIcon} onClick={() => setListed(l, false)}>
                       Unlist
                     </Button>
-                  }
-                  {l.status === 'unlisted' && l.listedDoc &&
-                  <Button size="sm" variant="tertiary" leadingIcon={RotateCcwIcon} onClick={() => setListed(l, true)}>
+                  )}
+                  {l.status === 'unlisted' && l.listedDoc && (
+                    <Button size="sm" variant="tertiary" leadingIcon={RotateCcwIcon} onClick={() => setListed(l, true)}>
                       List again
                     </Button>
-                  }
+                  )}
                 </div>
-              </li>);
-
+              </li>
+            );
           })}
         </List>
         </Card>
-      }
+      )}
 
-      {(sales.length > 0 || payouts.length > 0) &&
-      <div className="grid gap-8 lg:grid-cols-2">
+      {(sales.length > 0 || payouts.length > 0) && (
+        <div className="grid gap-8 lg:grid-cols-2">
           <Card id="tpl-sales" title="Sales" body="flush">
             <List label="Sales">
-              {sales.slice(0, 12).map((s) =>
-            <li key={s.id} className="flex items-center justify-between gap-3 px-5 py-3 text-label md:px-6">
+              {sales.slice(0, 12).map((s) => (
+                <li key={s.id} className="flex items-center justify-between gap-3 px-5 py-3 text-label md:px-6">
                   <span className="min-w-0">
                     <span className="block truncate text-fg">{s.buyerName}</span>
                     <span className="block text-caption text-fg-subtle">
@@ -167,28 +167,28 @@ export function MyTemplates({ sellOpen, setSellOpen }: {sellOpen: boolean;setSel
                   </span>
                   <span className={s.refundedAt ? 'tabular-nums text-fg-subtle line-through' : 'tabular-nums text-fg'}>+{formatNgn(s.creatorShareNgn)}</span>
                 </li>
-            )}
+              ))}
               {sales.length === 0 && <li className="px-5 py-3 text-caption text-fg-muted md:px-6">No sales yet.</li>}
             </List>
           </Card>
           <Card id="tpl-payouts" title="Payouts" body="flush">
             <List label="Payouts">
-              {payouts.map((p) =>
-            <li key={p.id} className="flex items-center justify-between gap-3 px-5 py-3 text-label md:px-6">
+              {payouts.map((p) => (
+                <li key={p.id} className="flex items-center justify-between gap-3 px-5 py-3 text-label md:px-6">
                   <span>
                     {p.bankName} •••• {p.accountLast4}
                     <span className="block text-caption text-fg-subtle">{formatTimestamp(p.at)} · test mode</span>
                   </span>
                   <span className="tabular-nums text-fg">{formatNgn(p.amountNgn)}</span>
                 </li>
-            )}
+              ))}
               {payouts.length === 0 && <li className="px-5 py-3 text-caption text-fg-muted md:px-6">No payouts yet.</li>}
             </List>
           </Card>
         </div>
-      }
+      )}
 
-      <SellTemplateDialog open={sellOpen || !!editing} listing={editing} onClose={() => {setSellOpen(false);setEditing(null);}} />
+      <SellTemplateDialog open={sellOpen || !!editing} listing={editing} onClose={() => { setSellOpen(false); setEditing(null); }} />
 
       <Dialog
         open={payoutOpen}
@@ -196,20 +196,20 @@ export function MyTemplates({ sellOpen, setSellOpen }: {sellOpen: boolean;setSel
         title={money.available >= PAYOUT_MIN_NGN ? `Pay out ${formatNgn(money.available)}` : 'Payout account'}
         description={money.available >= PAYOUT_MIN_NGN ? 'Sent to this account. Test mode — no money moves.' : `Save your account now. Payouts open once ${formatNgn(PAYOUT_MIN_NGN)} has cleared the ${REFUND_DAYS}-day refund window.`}
         footer={
-        <>
+          <>
             <Button variant="secondary" onClick={() => setPayoutOpen(false)}>
               Cancel
             </Button>
             <Button onClick={requestPayout}>{money.available >= PAYOUT_MIN_NGN ? 'Pay out' : 'Save'}</Button>
           </>
-        }>
-        
+        }
+      >
         <div className="flex flex-col gap-4">
           <TextInput id="po-bank" label="Bank" value={bank.bankName} placeholder="e.g. GTBank" onChange={(e) => setBank((b) => ({ ...b, bankName: e.target.value }))} />
           <TextInput id="po-acct" label="Account number" inputMode="numeric" value={bank.accountNumber} placeholder="10 digits" onChange={(e) => setBank((b) => ({ ...b, accountNumber: e.target.value }))} />
           <TextInput id="po-name" label="Account name" value={bank.accountName} onChange={(e) => setBank((b) => ({ ...b, accountName: e.target.value }))} hint="Must match your business name in production." />
         </div>
       </Dialog>
-    </div>);
-
+    </div>
+  );
 }

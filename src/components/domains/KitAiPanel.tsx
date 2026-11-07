@@ -63,43 +63,43 @@ export function KitAiPanel({ details, spec, disabled, onApply }: KitAiPanelProps
           <span className="text-caption text-fg-subtle">
             Uses {aiCost.block} AI credit · {ai.remaining} left this month
           </span>
-          {paused ?
-          <span className="text-caption font-medium text-fg-muted">Paused by KUBICU for now</span> :
-          ai.canSpend(aiCost.block) ?
-          <Button size="sm" variant="ai" leadingIcon={SparklesIcon} disabled={disabled || !details.name.trim()} onClick={run}>
+          {paused ? (
+            <span className="text-caption font-medium text-fg-muted">Paused by KUBICU for now</span>
+          ) : ai.canSpend(aiCost.block) ? (
+            <Button size="sm" variant="ai" leadingIcon={SparklesIcon} disabled={disabled || !details.name.trim()} onClick={run}>
               {draft ? 'Try again' : 'Write it for me'}
-            </Button> :
-
-          <UpgradeButton plan="pro" feature="More AI credits" />
-          }
+            </Button>
+          ) : (
+            <UpgradeButton plan="pro" feature="More AI credits" />
+          )}
         </div>
 
-        {draft &&
-        <div className="flex flex-col gap-4 border-t border-line pt-4">
+        {draft && (
+          <div className="flex flex-col gap-4 border-t border-line pt-4">
             <p className="text-caption text-fg-muted">
               Reads as <span className="font-semibold text-fg">{categoryLabels[draft.category]}</span>. Edit anything after you use it.
             </p>
 
-            {(wants('line') || spec.id === 'card' || spec.id === 'sticker') &&
-          <Group title="Tagline">
-                {draft.taglines.map((t) =>
-            <Option key={t} text={t} done={used.has(`line:${t}`)} disabled={disabled} onUse={() => apply(`line:${t}`, { line: t }, 'Tagline')} />
-            )}
+            {(wants('line') || spec.id === 'card' || spec.id === 'sticker') && (
+              <Group title="Tagline">
+                {draft.taglines.map((t) => (
+                  <Option key={t} text={t} done={used.has(`line:${t}`)} disabled={disabled} onUse={() => apply(`line:${t}`, { line: t }, 'Tagline')} />
+                ))}
               </Group>
-          }
-            {wants('message') &&
-          <Group title="Message">
+            )}
+            {wants('message') && (
+              <Group title="Message">
                 <Option text={draft.message} done={used.has('message')} disabled={disabled} onUse={() => apply('message', { message: draft.message }, 'Message')} />
               </Group>
-          }
-            {wants('headline') &&
-          <Group title="Headline">
+            )}
+            {wants('headline') && (
+              <Group title="Headline">
                 {(() => {
-              const h = spec.id === 'counter' ? draft.counterHeadline : spec.id === 'voucher' ? draft.voucherHeadline : draft.headline;
-              return <Option text={h} done={used.has('headline')} disabled={disabled} onUse={() => apply('headline', { headline: h }, 'Headline')} />;
-            })()}
+                  const h = spec.id === 'counter' ? draft.counterHeadline : spec.id === 'voucher' ? draft.voucherHeadline : draft.headline;
+                  return <Option text={h} done={used.has('headline')} disabled={disabled} onUse={() => apply('headline', { headline: h }, 'Headline')} />;
+                })()}
               </Group>
-          }
+            )}
 
             <Group title="Suggested design">
               <div className="flex flex-col gap-2 rounded-md border border-line bg-raised p-3">
@@ -113,22 +113,22 @@ export function KitAiPanel({ details, spec, disabled, onApply }: KitAiPanelProps
               </div>
             </Group>
           </div>
-        }
+        )}
       </div>
-    </section>);
-
+    </section>
+  );
 }
 
-function Group({ title, children }: {title: string;children: React.ReactNode;}) {
+function Group({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-2">
       <p className="text-caption font-semibold text-fg-subtle">{title}</p>
       {children}
-    </div>);
-
+    </div>
+  );
 }
 
-function Option({ text, done, disabled, onUse }: {text: string;done: boolean;disabled?: boolean;onUse: () => void;}) {
+function Option({ text, done, disabled, onUse }: { text: string; done: boolean; disabled?: boolean; onUse: () => void }) {
   return (
     <div className="flex items-start gap-3 rounded-md border border-line bg-raised px-3 py-2.5">
       <p className="min-w-0 flex-1 text-label text-fg">{text}</p>
@@ -141,10 +141,10 @@ function Option({ text, done, disabled, onUse }: {text: string;done: boolean;dis
           onUse();
           if (!done) toast.success('Added to your design');
         }}
-        className="shrink-0">
-        
+        className="shrink-0"
+      >
         {done ? 'Used' : 'Use'}
       </Button>
-    </div>);
-
+    </div>
+  );
 }

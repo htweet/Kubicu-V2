@@ -32,21 +32,21 @@ export function DestinationSelect({ id, label, value, options, onChange, hint, e
           disabled={disabled}
           aria-invalid={error ? true : undefined}
           onChange={(e) => onChange(e.target.value)}
-          className={cn(fieldControlClass, 'h-10 appearance-none pr-9')}>
-          
+          className={cn(fieldControlClass, 'h-10 appearance-none pr-9')}
+        >
           {missing && <option value={value}>Missing page — choose another</option>}
-          {groups.map(([group, items]) =>
-          <optgroup key={group} label={group}>
-              {items.map((o) =>
-            <option key={o.value} value={o.value}>
+          {groups.map(([group, items]) => (
+            <optgroup key={group} label={group}>
+              {items.map((o) => (
+                <option key={o.value} value={o.value}>
                   {o.label}
                 </option>
-            )}
+              ))}
             </optgroup>
-          )}
+          ))}
         </select>
         <ChevronDownIcon size={15} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-fg-subtle" aria-hidden />
       </div>
-    </Field>);
-
+    </Field>
+  );
 }

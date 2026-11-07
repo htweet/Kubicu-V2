@@ -26,5 +26,5 @@ export const helpIcons: Record<HelpIcon, LucideIcon> = {
   link: Link2Icon,
   message: MessageCircleIcon,
   settings: SettingsIcon,
-  store: StoreIcon
+  store: StoreIcon,
 };

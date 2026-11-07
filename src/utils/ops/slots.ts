@@ -3,10 +3,10 @@ import { eligibleStaff, personalCalendarIds, staffBusy, staffHoursFor, usesStaff
 import { durationText, type FormatTr } from '../localeFormat';
 
 /** Busy times that block bookings: events from calendars ticked "blocks", on working connections, not KUBICU's own (D137). */
-export function busyTimes(a: Availability): {start: number;end: number;}[] {
-  return (a.calendars ?? []).
-  filter((c) => c.status === 'ok').
-  flatMap((c) => c.events.filter((e) => !e.bookingId && c.calendars.find((x) => x.id === e.calendarId)?.blocks).map((e) => ({ start: Date.parse(e.start), end: Date.parse(e.end) })));
+export function busyTimes(a: Availability): { start: number; end: number }[] {
+  return (a.calendars ?? [])
+    .filter((c) => c.status === 'ok')
+    .flatMap((c) => c.events.filter((e) => !e.bookingId && c.calendars.find((x) => x.id === e.calendarId)?.blocks).map((e) => ({ start: Date.parse(e.start), end: Date.parse(e.end) })));
 }
 
 /** Milliseconds the zone is ahead of UTC at this instant. */
@@ -66,7 +66,7 @@ export function visitorTimeZone(): string {
 }
 
 /** Opening window for a date, honouring overrides. Null = closed. */
-export function hoursFor(dateKey: string, a: Availability): {open: string;close: string;} | null {
+export function hoursFor(dateKey: string, a: Availability): { open: string; close: string } | null {
   const override = a.overrides.find((o) => o.date === dateKey);
   if (override) return override.closed ? null : { open: override.open, close: override.close };
   const w = a.weekly.find((h) => h.day === weekdayOfKey(dateKey));
@@ -129,7 +129,7 @@ export function slotsFor(dateKey: string, service: Service, a: Availability, boo
   // Everyone in one group class counts as one appointment towards the daily limit (D198).
   const sessions = new Set(sameDay.map((b) => `${b.serviceId}@${Date.parse(b.start)}`)).size;
   const clashes = (list: Booking[], t: number) => list.some((b) => t < Date.parse(b.end) + buffer && t + dur + buffer > Date.parse(b.start));
-  const overlaps = (list: {start: number;end: number;}[], t: number) => list.some((x) => t < x.end && t + dur > x.start);
+  const overlaps = (list: { start: number; end: number }[], t: number) => list.some((x) => t < x.end && t + dur > x.start);
 
   const cap = classCapacity(service);
   if (cap > 1) {
@@ -150,7 +150,7 @@ export function slotsFor(dateKey: string, service: Service, a: Availability, boo
   if (sessions >= a.maxPerDay) return [];
 
   const staff = eligibleStaff(service, a).filter((s) => !staffId || s.memberId === staffId);
-  if (!usesStaff(a) || !staff.length && !staffId && !eligibleStaff(service, a).length) {
+  if (!usesStaff(a) || (!staff.length && !staffId && !eligibleStaff(service, a).length)) {
     // Booked as one business. Busy times from connected calendars block slots too (D137).
     const busy = busyTimes(a).filter((x) => x.end > open && x.start < close);
     const out: Slot[] = [];
@@ -164,19 +164,19 @@ export function slotsFor(dateKey: string, service: Service, a: Availability, boo
   // Per person: their hours inside the business hours, not away, no clash with their own bookings
   // (unassigned bookings block everyone), not busy on their own calendar. Shared calendars block all.
   const personal = personalCalendarIds(a);
-  const sharedBusy = (a.calendars ?? []).
-  filter((c) => c.status === 'ok' && !personal.has(c.id)).
-  flatMap((c) => c.events.filter((e) => !e.bookingId && c.calendars.find((x) => x.id === e.calendarId)?.blocks).map((e) => ({ start: Date.parse(e.start), end: Date.parse(e.end) })));
+  const sharedBusy = (a.calendars ?? [])
+    .filter((c) => c.status === 'ok' && !personal.has(c.id))
+    .flatMap((c) => c.events.filter((e) => !e.bookingId && c.calendars.find((x) => x.id === e.calendarId)?.blocks).map((e) => ({ start: Date.parse(e.start), end: Date.parse(e.end) })));
   const unassigned = sameDay.filter((b) => !b.assigneeId);
-  const windows = staff.
-  map((s) => {
-    const h = staffHoursFor(s, dateKey);
-    if (!h) return null;
-    const from = h === 'business' ? open : Math.max(open, zonedToUtc(dateKey, h.open, a.timeZone));
-    const to = h === 'business' ? close : Math.min(close, zonedToUtc(dateKey, h.close, a.timeZone));
-    return { id: s.memberId, from, to, own: sameDay.filter((b) => b.assigneeId === s.memberId), busy: staffBusy(s, a) };
-  }).
-  filter((w): w is NonNullable<typeof w> => !!w && w.to > w.from);
+  const windows = staff
+    .map((s) => {
+      const h = staffHoursFor(s, dateKey);
+      if (!h) return null;
+      const from = h === 'business' ? open : Math.max(open, zonedToUtc(dateKey, h.open, a.timeZone));
+      const to = h === 'business' ? close : Math.min(close, zonedToUtc(dateKey, h.close, a.timeZone));
+      return { id: s.memberId, from, to, own: sameDay.filter((b) => b.assigneeId === s.memberId), busy: staffBusy(s, a) };
+    })
+    .filter((w): w is NonNullable<typeof w> => !!w && w.to > w.from);
   const out: Slot[] = [];
   for (let t = open; t + dur <= close; t += STEP_MIN * 60000) {
     if (t < earliest || clashes(unassigned, t) || overlaps(sharedBusy, t)) continue;

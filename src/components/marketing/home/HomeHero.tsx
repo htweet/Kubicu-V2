@@ -19,14 +19,14 @@ const ease = [0.23, 1, 0.32, 1] as const;
 export function HomeHero() {
   const { t: tr, lang } = useT();
   const reduce = useReducedMotion();
-  const pop = (delay: number) => reduce ? {} : { initial: { opacity: 0, scale: 0.96, y: 10 }, animate: { opacity: 1, scale: 1, y: 0 }, transition: { duration: 0.28, delay, ease } };
+  const pop = (delay: number) => (reduce ? {} : { initial: { opacity: 0, scale: 0.96, y: 10 }, animate: { opacity: 1, scale: 1, y: 0 }, transition: { duration: 0.28, delay, ease } });
 
   return (
     <section
       aria-labelledby="hero-heading"
       className="relative -mt-[88px] overflow-hidden pt-[88px] text-white"
-      style={{ backgroundColor: 'rgb(30 30 33)', backgroundImage: 'linear-gradient(160deg, rgb(48 48 52) 0%, rgb(34 34 38) 50%, rgb(22 22 25) 100%)' }}>
-      
+      style={{ backgroundColor: 'rgb(30 30 33)', backgroundImage: 'linear-gradient(160deg, rgb(48 48 52) 0%, rgb(34 34 38) 50%, rgb(22 22 25) 100%)' }}
+    >
       <div className="mx-auto grid w-full max-w-7xl items-center gap-12 px-5 pb-16 pt-10 md:px-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:gap-10 lg:pb-24 lg:pt-16">
         <div className="relative z-10 max-w-2xl">
           <h1 id="hero-heading" className="kb-display text-[52px] leading-[0.95] sm:text-[72px] lg:text-[88px]">
@@ -34,18 +34,18 @@ export function HomeHero() {
           </h1>
           <motion.p
             className="mt-7 max-w-lg text-[18px] font-medium leading-relaxed opacity-90 md:text-[20px]"
-            {...reduce ? {} : { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.3, delay: 0.35, ease } }}>
-            
+            {...(reduce ? {} : { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.3, delay: 0.35, ease } })}
+          >
             {tr('Sell, take bookings, sell tickets and collect enquiries from one page — built on a real canvas, made for phones and for how customers buy across Africa — in Nigeria, Kenya, Ghana, South Africa and beyond.')}
           </motion.p>
-          <motion.div className="mt-9" {...reduce ? {} : { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.3, delay: 0.45, ease } }}>
+          <motion.div className="mt-9" {...(reduce ? {} : { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.3, delay: 0.45, ease } })}>
             <HandleClaim />
           </motion.div>
           <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2">
             <Link
               to="/copilot"
-              className="group inline-flex items-center gap-1.5 rounded-sm text-label font-bold text-white underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-              
+              className="group inline-flex items-center gap-1.5 rounded-sm text-label font-bold text-white underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+            >
               {tr('Not sure where to start? Describe it in a chat')} <ArrowRightIcon size={15} aria-hidden className="transition-transform duration-150 ease-out group-hover:translate-x-0.5" />
             </Link>
             <Link to="/templates" className="rounded-sm text-label font-medium text-white/80 underline-offset-4 hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
@@ -64,8 +64,8 @@ export function HomeHero() {
               src={homeImages.fashion}
               alt={tr('A fashion designer in her Lagos studio, holding her phone')}
               className="h-full w-full rounded-[36px] object-cover object-[50%_25%] shadow-3"
-              {...reduce ? {} : { initial: { opacity: 0, scale: 0.96 }, animate: { opacity: 1, scale: 1 }, transition: { duration: 0.3, delay: 0.1, ease } }} />
-            
+              {...(reduce ? {} : { initial: { opacity: 0, scale: 0.96 }, animate: { opacity: 1, scale: 1 }, transition: { duration: 0.3, delay: 0.1, ease } })}
+            />
           </Parallax>
 
           <motion.div className="absolute bottom-0 left-0 z-10 origin-bottom-left -rotate-[4deg] sm:left-2" {...pop(0.3)}>
@@ -103,6 +103,6 @@ export function HomeHero() {
           <figcaption className="sr-only">{tr('Example page for a fictional fashion business, with a sample WhatsApp enquiry and order.')}</figcaption>
         </figure>
       </div>
-    </section>);
-
+    </section>
+  );
 }

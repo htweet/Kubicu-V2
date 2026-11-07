@@ -24,7 +24,7 @@ import { useT } from '../../contexts/LocaleContext';
 /** Step label in the reader's language; delays carry a number, so they get their own phrase. */
 export function useStepLabel() {
   const { t } = useT();
-  return (s: Automation['steps'][number]) => s.kind === 'delay' ? s.delayHours === 1 ? t('Wait 1 hour') : t('Wait {n} hours', { n: s.delayHours ?? 0 }) : t(stepLabel(s));
+  return (s: Automation['steps'][number]) => (s.kind === 'delay' ? (s.delayHours === 1 ? t('Wait 1 hour') : t('Wait {n} hours', { n: s.delayHours ?? 0 })) : t(stepLabel(s)));
 }
 
 export function newAutomation(recipeId: string | null): Automation {
@@ -39,12 +39,12 @@ export function newAutomation(recipeId: string | null): Automation {
     conditions: r ? r.conditions.map((c) => ({ ...c, id: uid('cond') })) : [],
     steps: r ? r.steps.map((s) => ({ ...s, id: uid('step') })) : [{ id: uid('step'), kind: 'action', action: 'notify_owner', value: '' }],
     runs: [],
-    updatedAt: new Date().toISOString()
+    updatedAt: new Date().toISOString(),
   };
 }
 
 /** Readable top-to-bottom builder: Trigger → Conditions → Actions/Delays → Outcome. */
-export function AutomationBuilder({ automation, onClose }: {automation: Automation | null;onClose: () => void;}) {
+export function AutomationBuilder({ automation, onClose }: { automation: Automation | null; onClose: () => void }) {
   const { t: tr } = useT();
   const { data, apply } = useOps();
   const team = useTeam();
@@ -76,8 +76,8 @@ export function AutomationBuilder({ automation, onClose }: {automation: Automati
   const exists = data.automations.some((a) => a.id === draft.id);
   const problems = automationProblems(draft);
   const marketing = draft.steps.some((s) => s.kind === 'action' && (s.action === 'send_email' || s.action === 'send_whatsapp')) && draft.trigger === 'checkout_abandoned';
-  const patch = (p: Partial<Automation>) => setDraft((d) => d ? { ...d, ...p } : d);
-  const setStep = (id: string, p: Partial<Automation['steps'][number]>) => patch({ steps: draft.steps.map((s) => s.id === id ? { ...s, ...p } : s) });
+  const patch = (p: Partial<Automation>) => setDraft((d) => (d ? { ...d, ...p } : d));
+  const setStep = (id: string, p: Partial<Automation['steps'][number]>) => patch({ steps: draft.steps.map((s) => (s.id === id ? { ...s, ...p } : s)) });
   const move = (i: number, dir: -1 | 1) => {
     const steps = [...draft.steps];
     const [s] = steps.splice(i, 1);
@@ -90,7 +90,7 @@ export function AutomationBuilder({ automation, onClose }: {automation: Automati
     const turningOn = status === 'active' && data.automations.find((a) => a.id === draft.id)?.status !== 'active';
     const next = { ...draft, status: status ?? draft.status, updatedAt: at, liveSince: turningOn ? at : draft.liveSince ?? (draft.status === 'active' ? draft.updatedAt : undefined) };
     if (status === 'active' && problems.length) return;
-    if (apply((d) => ({ ...d, automations: exists ? d.automations.map((a) => a.id === next.id ? { ...next, runs: a.runs } : a) : [next, ...d.automations] }))) {
+    if (apply((d) => ({ ...d, automations: exists ? d.automations.map((a) => (a.id === next.id ? { ...next, runs: a.runs } : a)) : [next, ...d.automations] }))) {
       toast(tr(status === 'active' ? 'Automation is on' : status === 'paused' ? 'Automation paused' : 'Saved as draft'), { description: status === 'active' ? tr('It reacts to things that happen from now on. Customer messages are written, not sent, in this prototype.') : undefined });
       onClose();
     }
@@ -105,8 +105,8 @@ export function AutomationBuilder({ automation, onClose }: {automation: Automati
       setLastRun(run);
       setTesting(false);
       if (exists) apply((d) => addTestRun(d, draft.id, run));
-      if (run.status === 'succeeded') toast.success(tr('Test run passed'), { description: tr('All steps ran with sample details. Nothing was sent.') });else
-      toast(tr('Test run stopped at a condition'), { description: tr('The sample didn’t meet a condition — see the result below.') });
+      if (run.status === 'succeeded') toast.success(tr('Test run passed'), { description: tr('All steps ran with sample details. Nothing was sent.') });
+      else toast(tr('Test run stopped at a condition'), { description: tr('The sample didn’t meet a condition — see the result below.') });
     }, 450);
   };
 
@@ -119,34 +119,34 @@ export function AutomationBuilder({ automation, onClose }: {automation: Automati
       title={exists ? draft.name : 'New automation'}
       description={draft.status === 'active' ? 'On' : draft.status === 'paused' ? 'Paused' : 'Draft'}
       footer={
-      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <Button variant="secondary" leadingIcon={FlaskConicalIcon} onClick={runTest} loading={testing}>
             {testing ? 'Testing…' : lastRun ? 'Test again' : 'Test run'}
           </Button>
           <div className="flex gap-2">
-            {draft.status === 'active' ?
-          <Button variant="secondary" onClick={() => save('paused')}>
+            {draft.status === 'active' ? (
+              <Button variant="secondary" onClick={() => save('paused')}>
                 Pause
-              </Button> :
-
-          <Button variant="secondary" onClick={() => save('draft')}>
+              </Button>
+            ) : (
+              <Button variant="secondary" onClick={() => save('draft')}>
                 Save draft
               </Button>
-          }
+            )}
             <Button onClick={() => save('active')} disabled={problems.length > 0}>
               {draft.status === 'active' ? 'Save' : 'Turn on'}
             </Button>
           </div>
         </div>
-      }>
-      
+      }
+    >
       <div className="flex flex-col gap-6 px-5 py-5">
         <TextInput id="auto-name" label="Name" value={draft.name} onChange={(e) => patch({ name: e.target.value })} />
-        {data.automationsPaused &&
-        <InlineAlert tone="warning" title="All automations are paused">
+        {data.automationsPaused && (
+          <InlineAlert tone="warning" title="All automations are paused">
             {tr('Nothing runs until you resume them from the Automations page.')}
           </InlineAlert>
-        }
+        )}
 
         <ol className="flex flex-col">
           <li className="relative pb-5 pl-9">
@@ -157,9 +157,9 @@ export function AutomationBuilder({ automation, onClose }: {automation: Automati
             <p className="text-caption font-semibold text-fg-subtle">{tr('When')}</p>
             <SelectInput<TriggerId> id="auto-trigger" label="Trigger" value={draft.trigger} options={(Object.keys(triggerLabels) as TriggerId[]).map((t) => ({ value: t, label: triggerLabels[t].label }))} hint={triggerLabels[draft.trigger].hint} onChange={(trigger) => patch(trigger === 'contact_quiet' && !draft.triggerDays ? { trigger, triggerDays: 30 } : { trigger })} />
             {draft.trigger === 'form_sent' && <FormTriggerPicker value={draft.triggerFormId ?? null} onChange={(triggerFormId) => patch({ triggerFormId })} />}
-            {draft.trigger === 'contact_quiet' &&
-            <TextInput id="auto-quiet-days" label="Quiet for (days)" inputMode="numeric" value={String(draft.triggerDays ?? '')} fieldClassName="mt-3 w-40" hint="Counted from their last order, booking or message. At least 7." onChange={(e) => patch({ triggerDays: Number(e.target.value.replace(/[^0-9]/g, '').slice(0, 3) || '0') })} />
-            }
+            {draft.trigger === 'contact_quiet' && (
+              <TextInput id="auto-quiet-days" label="Quiet for (days)" inputMode="numeric" value={String(draft.triggerDays ?? '')} fieldClassName="mt-3 w-40" hint="Counted from their last order, booking or message. At least 7." onChange={(e) => patch({ triggerDays: Number(e.target.value.replace(/[^0-9]/g, '').slice(0, 3) || '0') })} />
+            )}
           </li>
 
           <li className="relative pb-5 pl-9">
@@ -169,23 +169,23 @@ export function AutomationBuilder({ automation, onClose }: {automation: Automati
             </span>
             <p className="text-caption font-semibold text-fg-subtle">{tr('Only if (optional)')}</p>
             <div className="mt-2 flex flex-col gap-2">
-              {draft.conditions.map((c) =>
-              <div key={c.id} className="flex items-end gap-2">
-                  <SelectInput<AutomationCondition['field']> id={`cond-f-${c.id}`} label="Condition" value={c.field} options={(Object.keys(conditionLabels) as AutomationCondition['field'][]).map((f) => ({ value: f, label: conditionLabels[f] }))} onChange={(field) => patch({ conditions: draft.conditions.map((x) => x.id === c.id ? { ...x, field } : x) })} />
-                  {c.field !== 'consent_subscribed' &&
-                <TextInput id={`cond-v-${c.id}`} label="Value" value={c.value} placeholder={c.field === 'total_over' ? '50000' : c.field === 'source_is' ? 'order' : 'VIP'} fieldClassName="w-32" onChange={(e) => patch({ conditions: draft.conditions.map((x) => x.id === c.id ? { ...x, value: e.target.value } : x) })} />
-                }
+              {draft.conditions.map((c) => (
+                <div key={c.id} className="flex items-end gap-2">
+                  <SelectInput<AutomationCondition['field']> id={`cond-f-${c.id}`} label="Condition" value={c.field} options={(Object.keys(conditionLabels) as AutomationCondition['field'][]).map((f) => ({ value: f, label: conditionLabels[f] }))} onChange={(field) => patch({ conditions: draft.conditions.map((x) => (x.id === c.id ? { ...x, field } : x)) })} />
+                  {c.field !== 'consent_subscribed' && (
+                    <TextInput id={`cond-v-${c.id}`} label="Value" value={c.value} placeholder={c.field === 'total_over' ? '50000' : c.field === 'source_is' ? 'order' : 'VIP'} fieldClassName="w-32" onChange={(e) => patch({ conditions: draft.conditions.map((x) => (x.id === c.id ? { ...x, value: e.target.value } : x)) })} />
+                  )}
                   <IconButton icon={Trash2Icon} label="Remove condition" onClick={() => patch({ conditions: draft.conditions.filter((x) => x.id !== c.id) })} />
                 </div>
-              )}
+              ))}
               <Button size="sm" variant="tertiary" leadingIcon={PlusIcon} className="self-start" onClick={() => patch({ conditions: [...draft.conditions, { id: uid('cond'), field: 'consent_subscribed', value: 'yes' }] })}>
                 Add condition
               </Button>
             </div>
           </li>
 
-          {draft.steps.map((s, i) =>
-          <li key={s.id} className="relative pb-5 pl-9">
+          {draft.steps.map((s, i) => (
+            <li key={s.id} className="relative pb-5 pl-9">
               <span aria-hidden className="absolute left-[13px] top-7 h-full w-px bg-line" />
               <span aria-hidden className="absolute left-0 top-0 flex h-7 w-7 items-center justify-center rounded-full border-2 border-action bg-raised text-caption font-bold text-action">
                 {s.kind === 'delay' ? <ClockIcon size={13} strokeWidth={2.5} /> : i + 1}
@@ -198,67 +198,67 @@ export function AutomationBuilder({ automation, onClose }: {automation: Automati
                   <IconButton icon={Trash2Icon} size={wide ? 'sm' : 'lg'} label="Remove step" disabled={draft.steps.length === 1} onClick={() => patch({ steps: draft.steps.filter((x) => x.id !== s.id) })} />
                 </div>
               </div>
-              {s.kind === 'delay' ?
-            <TextInput id={`delay-${s.id}`} label="Hours" inputMode="numeric" value={String(s.delayHours ?? '')} fieldClassName="mt-1 w-32" onChange={(e) => setStep(s.id, { delayHours: Number(e.target.value.replace(/[^0-9]/g, '').slice(0, 3) || '0') })} /> :
-
-            <div className="mt-1 flex flex-col gap-2">
+              {s.kind === 'delay' ? (
+                <TextInput id={`delay-${s.id}`} label="Hours" inputMode="numeric" value={String(s.delayHours ?? '')} fieldClassName="mt-1 w-32" onChange={(e) => setStep(s.id, { delayHours: Number(e.target.value.replace(/[^0-9]/g, '').slice(0, 3) || '0') })} />
+              ) : (
+                <div className="mt-1 flex flex-col gap-2">
                   <SelectInput<ActionId> id={`act-${s.id}`} label="Action" value={s.action ?? 'notify_owner'} options={(Object.keys(actionLabels) as ActionId[]).map((a) => ({ value: a, label: actionLabels[a].label }))} onChange={(action) => setStep(s.id, { action })} />
-                  {(s.action === 'notify_member' || s.action === 'create_task') &&
-              <AssigneeSelect id={`who-${s.id}`} label={s.action === 'notify_member' ? 'Who to notify' : 'Assign the follow-up to'} value={s.memberId} onChange={(memberId) => setStep(s.id, { memberId })} />
-              }
-                  {s.action === 'send_report' ?
-              <SelectInput id={`val-${s.id}`} label="Report" value={s.value || ''} options={[{ value: '', label: 'Choose…' }, ...reportOptions]} hint="Arrives in your notifications. Email delivery comes with a messaging partner." onChange={(value) => setStep(s.id, { value })} /> :
-              s.action === 'call_webhook' ?
-              <TextInput id={`val-${s.id}`} label="Webhook address" type="url" value={s.value} placeholder={actionLabels.call_webhook.placeholder} hint="We POST the event as JSON, signed with your secret from Settings → Developers. Retried 3 times on failure." onChange={(e) => setStep(s.id, { value: e.target.value.trim() })} /> :
-              s.action === 'ai_draft' ?
-              <div className="flex flex-col gap-1.5">
+                  {(s.action === 'notify_member' || s.action === 'create_task') && (
+                    <AssigneeSelect id={`who-${s.id}`} label={s.action === 'notify_member' ? 'Who to notify' : 'Assign the follow-up to'} value={s.memberId} onChange={(memberId) => setStep(s.id, { memberId })} />
+                  )}
+                  {s.action === 'send_report' ? (
+                    <SelectInput id={`val-${s.id}`} label="Report" value={s.value || ''} options={[{ value: '', label: 'Choose…' }, ...reportOptions]} hint="Arrives in your notifications. Email delivery comes with a messaging partner." onChange={(value) => setStep(s.id, { value })} />
+                  ) : s.action === 'call_webhook' ? (
+                    <TextInput id={`val-${s.id}`} label="Webhook address" type="url" value={s.value} placeholder={actionLabels.call_webhook.placeholder} hint="We POST the event as JSON, signed with your secret from Settings → Developers. Retried 3 times on failure." onChange={(e) => setStep(s.id, { value: e.target.value.trim() })} />
+                  ) : s.action === 'ai_draft' ? (
+                    <div className="flex flex-col gap-1.5">
                       <TextArea id={`val-${s.id}`} label="What should the message say?" rows={3} value={s.value} placeholder={actionLabels.ai_draft.placeholder} hint="AI preview: drafts from your real records and never invents prices or promises. Nothing is sent until you approve it." onChange={(e) => setStep(s.id, { value: e.target.value })} />
-                    </div> :
-              s.action === 'add_tag' || s.action === 'create_task' ?
-              <TextInput id={`val-${s.id}`} label={s.action === 'add_tag' ? 'Tag' : 'Task'} value={s.value} placeholder={actionLabels[s.action].placeholder} onChange={(e) => setStep(s.id, { value: e.target.value })} /> :
-
-              <TextArea id={`val-${s.id}`} label="Message" rows={3} value={s.value} placeholder={actionLabels[s.action ?? 'notify_owner'].placeholder} hint="Use {first_name}, {order_number}, {service}, {time}." onChange={(e) => setStep(s.id, { value: e.target.value })} />
-              }
+                    </div>
+                  ) : s.action === 'add_tag' || s.action === 'create_task' ? (
+                    <TextInput id={`val-${s.id}`} label={s.action === 'add_tag' ? 'Tag' : 'Task'} value={s.value} placeholder={actionLabels[s.action].placeholder} onChange={(e) => setStep(s.id, { value: e.target.value })} />
+                  ) : (
+                    <TextArea id={`val-${s.id}`} label="Message" rows={3} value={s.value} placeholder={actionLabels[s.action ?? 'notify_owner'].placeholder} hint="Use {first_name}, {order_number}, {service}, {time}." onChange={(e) => setStep(s.id, { value: e.target.value })} />
+                  )}
                 </div>
-            }
+              )}
             </li>
-          )}
+          ))}
 
           <li className="pl-9">
-            {wide ?
-            <div className="flex gap-2">
+            {wide ? (
+              <div className="flex gap-2">
                 <Button size="sm" variant="secondary" leadingIcon={PlusIcon} onClick={() => addStep({ id: uid('step'), kind: 'action', action: opsSettingsOf(data).defaultChannel, value: '' })}>
                   Action
                 </Button>
                 <Button size="sm" variant="secondary" leadingIcon={ClockIcon} onClick={() => addStep({ id: uid('step'), kind: 'delay', value: '', delayHours: 24 })}>
                   Delay
                 </Button>
-              </div> :
-
-            <Button variant="secondary" leadingIcon={PlusIcon} fullWidth className="min-h-[44px]" onClick={() => setAddOpen(true)}>
+              </div>
+            ) : (
+              <Button variant="secondary" leadingIcon={PlusIcon} fullWidth className="min-h-[44px]" onClick={() => setAddOpen(true)}>
                 Add a step
               </Button>
-            }
+            )}
             <p className="mt-3 text-caption text-fg-subtle">{tr('Outcome:')} {draft.steps.map(label).join(' → ')}</p>
           </li>
         </ol>
 
-        {marketing &&
-        <InlineAlert tone="info" title="Marketing message">
+        {marketing && (
+          <InlineAlert tone="info" title="Marketing message">
             {tr('Keep the “subscribed to marketing” condition so only people who opted in are contacted. Unsubscribed contacts are always skipped.')}
           </InlineAlert>
-        }
-        {problems.length > 0 &&
-        <InlineAlert tone="warning" title="Before you turn it on">
+        )}
+        {problems.length > 0 && (
+          <InlineAlert tone="warning" title="Before you turn it on">
             <ul className="list-disc pl-4">
-              {problems.map((p) =>
-            <li key={p}>{tr(p)}</li>
-            )}
+              {problems.map((p) => (
+                <li key={p}>{tr(p)}</li>
+              ))}
             </ul>
           </InlineAlert>
-        }
-        {lastRun &&
-        <section key={lastRun.id} ref={resultRef} tabIndex={-1} aria-label={tr('Test result')} aria-live="polite" className="scroll-mb-4 rounded-md border border-line p-4 focus:outline-none">
+        )}
+        {lastRun && (
+          <section key={lastRun.id} ref={resultRef} tabIndex={-1} aria-label={tr('Test result')} aria-live="polite" className="scroll-mb-4 rounded-md border border-line p-4 focus:outline-none">
             <p className="text-label font-semibold text-fg">{tr('Test run')} · {tr(lastRun.status === 'succeeded' ? 'all steps passed' : 'stopped at a condition')}</p>
             <p className="text-caption text-fg-subtle">
               {lastRun.subject}. {tr('Nothing was sent.')} {tr('Ran at {time}', { time: new Date(lastRun.at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', second: '2-digit' }) })}
@@ -266,19 +266,19 @@ export function AutomationBuilder({ automation, onClose }: {automation: Automati
             </p>
             <RunSteps run={lastRun} />
           </section>
-        }
+        )}
 
         {/* Phones: pick the step type from a bottom sheet. */}
         <Sheet open={addOpen} onClose={() => setAddOpen(false)} title="Add a step" description="It’s added at the end — move it up if needed">
           <ul className="flex flex-col divide-y divide-line pb-2">
-            {(Object.keys(actionLabels) as ActionId[]).map((a) =>
-            <li key={a}>
+            {(Object.keys(actionLabels) as ActionId[]).map((a) => (
+              <li key={a}>
                 <button type="button" onClick={() => addStep({ id: uid('step'), kind: 'action', action: a, value: '' })} className="flex min-h-[52px] w-full items-center gap-3 px-5 text-left text-label font-medium text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus">
                   <ZapIcon size={16} className="shrink-0 text-action" aria-hidden />
                   {tr(actionLabels[a].label)}
                 </button>
               </li>
-            )}
+            ))}
             <li>
               <button type="button" onClick={() => addStep({ id: uid('step'), kind: 'delay', value: '', delayHours: 24 })} className="flex min-h-[52px] w-full items-center gap-3 px-5 text-left text-label font-medium text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus">
                 <ClockIcon size={16} className="shrink-0 text-fg-subtle" aria-hidden />
@@ -288,6 +288,6 @@ export function AutomationBuilder({ automation, onClose }: {automation: Automati
           </ul>
         </Sheet>
       </div>
-    </Sheet>);
-
+    </Sheet>
+  );
 }

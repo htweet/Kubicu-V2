@@ -134,11 +134,11 @@ export interface CalendarConnection {
   connectedAt: string;
   status: 'ok' | 'revoked';
   lastSyncedAt: string;
-  calendars: {id: string;name: string;blocks: boolean;}[];
+  calendars: { id: string; name: string; blocks: boolean }[];
   /** Calendar new bookings are added to. */
   addTo: string;
   events: BusyEvent[];
-  log: {at: string;text: string;}[];
+  log: { at: string; text: string }[];
 }
 
 /** 'requested' (D256): waiting for the seller to accept. The time is held meanwhile. Declining cancels it. */
@@ -157,10 +157,10 @@ export interface Booking {
   serviceName: string;
   start: string;
   end: string;
-  customer: {name: string;phone: string;email: string;};
+  customer: { name: string; phone: string; email: string };
   intake: string;
   /** Answers to the service's own questions, with the question copied so later edits don't change them (D256). */
-  answers?: {question: string;answer: string;}[];
+  answers?: { question: string; answer: string }[];
   status: BookingStatus;
   depositPaidNgn: number;
   priceNgn: number | null;
@@ -210,7 +210,7 @@ export interface Contact {
   sources: ContactSource[];
   consent: ConsentStatus;
   tags: string[];
-  notes: {id: string;at: string;text: string;}[];
+  notes: { id: string; at: string; text: string }[];
   tasks: ContactTask[];
   stage: ContactStage;
   activity: ContactActivity[];
@@ -225,7 +225,7 @@ export interface Contact {
   /** First channel, short link and page that brought them in (D268). A click alone never creates a contact. */
   attribution?: ContactAttribution;
   /** What they agreed to and when — kept apart from where they came from (D268). */
-  consentRecord?: {at: string;wording: string;addedBy?: 'owner';};
+  consentRecord?: { at: string; wording: string; addedBy?: 'owner' };
 }
 
 export interface ContactAttribution {
@@ -267,19 +267,19 @@ export interface SegmentRule {
 }
 
 export type TriggerId =
-'order_paid' |
-'booking_created' |
-'checkout_abandoned' |
-'lead_submitted' |
-'form_sent' |
-'stock_low' |
-'sub_started' |
-'sub_failed' |
-'sub_cancelled' |
-'stage_due' |
-'campaign_started' |
-'campaign_ended' |
-'contact_quiet';
+  | 'order_paid'
+  | 'booking_created'
+  | 'checkout_abandoned'
+  | 'lead_submitted'
+  | 'form_sent'
+  | 'stock_low'
+  | 'sub_started'
+  | 'sub_failed'
+  | 'sub_cancelled'
+  | 'stage_due'
+  | 'campaign_started'
+  | 'campaign_ended'
+  | 'contact_quiet';
 export type ActionId = 'send_email' | 'send_whatsapp' | 'create_task' | 'add_tag' | 'notify_owner' | 'notify_member' | 'ai_draft' | 'send_report' | 'call_webhook';
 
 export interface AutomationStep {
@@ -371,7 +371,7 @@ export interface OpsSettings {
   /** Standard consent note for sign-up forms. */
   consentText: string;
   /** Automations hold customer messages written in these hours (business time zone). */
-  quietHours: {on: boolean;from: string;to: string;};
+  quietHours: { on: boolean; from: string; to: string };
   /** Channel a new "send a message" step starts with. */
   defaultChannel: 'send_whatsapp' | 'send_email';
   /** Saved Audience filters (D268). */

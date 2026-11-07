@@ -62,7 +62,7 @@ export function Collaborations() {
   const [openPns, setOpenPns] = useState<string | null>(null);
   const [shopOpen, setShopOpen] = useState(false);
   const { workspaces } = useWorkspace();
-  const startShop = () => planAtLeast(plan.id, SHARED_SHOP_PLAN) ? setShopOpen(true) : openUpgrade({ plan: SHARED_SHOP_PLAN, feature: 'Shared shops' });
+  const startShop = () => (planAtLeast(plan.id, SHARED_SHOP_PLAN) ? setShopOpen(true) : openUpgrade({ plan: SHARED_SHOP_PLAN, feature: 'Shared shops' }));
   const team = useTeam();
   const partnerships = useLocalStore(partnershipKey(current.id), emptyPartnerships);
 
@@ -73,26 +73,26 @@ export function Collaborations() {
   useEffect(() => {
     if (!partnerships.data.sampleSeeded) {
       if (seedsSample(current.id)) partnerships.update((d) => seedPartnerships(d));
-    } else
-    partnerships.update((d) => syncPartnerships(d));
+    }
+    else partnerships.update((d) => syncPartnerships(d));
     // Seed once, then let notice periods run out.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [partnerships.data.sampleSeeded]);
 
   const openPartnership = partnerships.data.partnerships.find((x) => x.id === openPns) ?? null;
   const invitesWaiting = partnerships.data.partnerships.filter((x) => x.status === 'invited' || !!x.pending).length;
-  const startWorkTogether = () => unlocked ? setWorking(true) : openUpgrade({ plan: PARTNERSHIP_PLAN, feature: 'Working with another business' });
+  const startWorkTogether = () => (unlocked ? setWorking(true) : openUpgrade({ plan: PARTNERSHIP_PLAN, feature: 'Working with another business' }));
 
   const handle = editor.published?.handle ?? editor.site.handle;
   const linkFor = (p: Partner) => `https://${publicUrl(handle)}?partner=${p.code}`;
 
   const rows = useMemo(
     () =>
-    data.partners.map((p) => {
-      const lines = commissionLines(p, orders, data.payouts, Date.now(), collabSettings.holdDays);
-      return { partner: p, lines, totals: partnerTotals(lines) };
-    }),
-    [data.partners, data.payouts, orders, collabSettings.holdDays]
+      data.partners.map((p) => {
+        const lines = commissionLines(p, orders, data.payouts, Date.now(), collabSettings.holdDays);
+        return { partner: p, lines, totals: partnerTotals(lines) };
+      }),
+    [data.partners, data.payouts, orders, collabSettings.holdDays],
   );
   const sum = (k: 'sales' | 'pending' | 'payable' | 'paid') => rows.reduce((s, r) => s + r.totals[k], 0);
   const open = rows.find((r) => r.partner.id === openId) ?? null;
@@ -100,10 +100,10 @@ export function Collaborations() {
   const verified = isVerified(money.data);
   const available = balances(money.data).available;
   const openPayable = open ? open.totals.payable : 0;
-  const walletBlock = !canPay.allowed ? canPay.reason ?? tr('Only the Owner can pay from the wallet.') : !verified ? tr('Finish business verification to pay from your wallet.') : available < openPayable ? tr('Your wallet has {amount} available.', { amount: formatNgn(available) }) : null;
+  const walletBlock = !canPay.allowed ? (canPay.reason ?? tr('Only the Owner can pay from the wallet.')) : !verified ? tr('Finish business verification to pay from your wallet.') : available < openPayable ? tr('Your wallet has {amount} available.', { amount: formatNgn(available) }) : null;
 
   const savePartner = (p: Partner) => {
-    update((d) => ({ ...d, partners: d.partners.some((x) => x.id === p.id) ? d.partners.map((x) => x.id === p.id ? p : x) : [p, ...d.partners] }));
+    update((d) => ({ ...d, partners: d.partners.some((x) => x.id === p.id) ? d.partners.map((x) => (x.id === p.id ? p : x)) : [p, ...d.partners] }));
     toast.success(editing === 'new' ? tr('Partner invited') : tr('Partner updated'), { description: editing === 'new' ? tr('Send them the invite from their page.') : undefined });
     setEditing(null);
     if (editing === 'new') setOpenId(p.id);
@@ -111,7 +111,7 @@ export function Collaborations() {
 
   const setStatus = (id: string, status: Partner['status']) => {
     const now = new Date().toISOString();
-    update((d) => ({ ...d, partners: d.partners.map((x) => x.id === id ? { ...x, status, stoppedAt: status === 'active' ? undefined : x.stoppedAt ?? now } : x) }));
+    update((d) => ({ ...d, partners: d.partners.map((x) => (x.id === id ? { ...x, status, stoppedAt: status === 'active' ? undefined : (x.stoppedAt ?? now) } : x)) }));
     toast(`${tr('Partner')}: ${tr(partnerStatusLabels[status])}`);
   };
 
@@ -124,7 +124,7 @@ export function Collaborations() {
       if (walletBlock) return toast.error(tr('Can’t pay from the wallet'), { description: walletBlock });
       money.update((m) => ({
         ...m,
-        ledger: [{ id: uid('led'), at: new Date().toISOString(), kind: 'commission', amountNgn: -amount, state: 'available', label: `Commission · ${open.partner.name}` }, ...m.ledger]
+        ledger: [{ id: uid('led'), at: new Date().toISOString(), kind: 'commission', amountNgn: -amount, state: 'available', label: `Commission · ${open.partner.name}` }, ...m.ledger],
       }));
     }
     update((d) => ({ ...d, payouts: [{ id: uid('cpo'), partnerId: open.partner.id, amountNgn: amount, orderIds: due.map((l) => l.order.id), method, at: new Date().toISOString(), note: '' }, ...d.payouts] }));
@@ -138,41 +138,41 @@ export function Collaborations() {
         context={current.name}
         description={tr(tab === 'shops' ? 'One shop link for a group of sellers. Customers browse everyone’s products; each seller takes their own orders, money and delivery.' : tab === 'business' ? 'Run a page and sell bundles with another business. Each of you is paid your own part, the moment the customer pays.' : 'Creators and resellers share your link and earn a commission on what they sell. Every naira is worked out from real orders.')}
         actions={
-        tab === 'shops' ?
-        <Button leadingIcon={planAtLeast(plan.id, SHARED_SHOP_PLAN) ? StoreIcon : LockIcon} disabled={!can.allowed} title={can.allowed ? undefined : can.reason} onClick={startShop}>
+          tab === 'shops' ? (
+            <Button leadingIcon={planAtLeast(plan.id, SHARED_SHOP_PLAN) ? StoreIcon : LockIcon} disabled={!can.allowed} title={can.allowed ? undefined : can.reason} onClick={startShop}>
               {tr('New shared shop')}
-            </Button> :
-        tab === 'business' ?
-        <Button leadingIcon={unlocked ? HandshakeIcon : LockIcon} disabled={!can.allowed} title={can.allowed ? undefined : can.reason} onClick={startWorkTogether}>
+            </Button>
+          ) : tab === 'business' ? (
+            <Button leadingIcon={unlocked ? HandshakeIcon : LockIcon} disabled={!can.allowed} title={can.allowed ? undefined : can.reason} onClick={startWorkTogether}>
               {tr('Work together')}
-            </Button> :
-
-        <>
+            </Button>
+          ) : (
+            <>
               <Button variant="tertiary" leadingIcon={SettingsIcon} onClick={() => setSettingsOpen(true)}>
                 {tr('Settings')}
               </Button>
-              <Button leadingIcon={unlocked ? UserPlusIcon : LockIcon} disabled={!can.allowed} title={can.allowed ? undefined : can.reason} onClick={() => unlocked ? setEditing('new') : openUpgrade({ plan: COLLAB_PLAN, feature: 'Creator Collaboration' })}>
+              <Button leadingIcon={unlocked ? UserPlusIcon : LockIcon} disabled={!can.allowed} title={can.allowed ? undefined : can.reason} onClick={() => (unlocked ? setEditing('new') : openUpgrade({ plan: COLLAB_PLAN, feature: 'Creator Collaboration' }))}>
                 {tr('Invite referral partner')}
               </Button>
             </>
+          )
+        }
+      />
 
-        } />
-      
-
-      {!unlocked &&
-      <InlineAlert
-        tone="info"
-        title={tr('Creator Collaboration is on Pro and above')}
-        className="mt-6"
-        action={
-        <Button size="sm" onClick={() => openUpgrade({ plan: COLLAB_PLAN, feature: 'Creator Collaboration' })}>
+      {!unlocked && (
+        <InlineAlert
+          tone="info"
+          title={tr('Creator Collaboration is on Pro and above')}
+          className="mt-6"
+          action={
+            <Button size="sm" onClick={() => openUpgrade({ plan: COLLAB_PLAN, feature: 'Creator Collaboration' })}>
               {tr('Upgrade')}
             </Button>
-        }>
-        
+          }
+        >
           {tr('The sample partners below show how it works. Working with another business, inviting partners and paying commission need Pro.')}
         </InlineAlert>
-      }
+      )}
 
       <Tabs<CollabTab>
         ariaLabel={tr('Collaborations')}
@@ -181,25 +181,25 @@ export function Collaborations() {
         value={tab}
         onChange={setTab}
         items={[
-        { id: 'business', label: tr('Business partners'), badge: invitesWaiting || undefined },
-        { id: 'shops', label: tr('Shared shops') },
-        { id: 'referral', label: tr('Referral partners') }]
-        } />
-      
+          { id: 'business', label: tr('Business partners'), badge: invitesWaiting || undefined },
+          { id: 'shops', label: tr('Shared shops') },
+          { id: 'referral', label: tr('Referral partners') },
+        ]}
+      />
 
       <SharedShopDialog open={shopOpen} onClose={() => setShopOpen(false)} host={current} hostHandle={handle} partners={partnerships.data.partnerships} workspaces={workspaces} />
 
-      {tab === 'shops' ?
-      <SharedShops workspaceId={current.id} canEdit={can.allowed} onCreate={startShop} /> :
-      tab === 'business' ?
-      <BusinessPartners
-        rows={partnerships.data.partnerships}
-        leadName={current.name}
-        onOpen={setOpenPns}
-        onStart={startWorkTogether}
-        canStart={can.allowed} /> :
-
-
+      {tab === 'shops' ? (
+        <SharedShops workspaceId={current.id} canEdit={can.allowed} onCreate={startShop} />
+      ) : tab === 'business' ? (
+        <BusinessPartners
+          rows={partnerships.data.partnerships}
+          leadName={current.name}
+          onOpen={setOpenPns}
+          onStart={startWorkTogether}
+          canStart={can.allowed}
+        />
+      ) : (
       <>
       <section aria-label={tr('Summary')} className="mt-8 grid gap-6 border-b border-line pb-8 sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)]">
         <div>
@@ -220,18 +220,18 @@ export function Collaborations() {
       </section>
 
       <Section id="partners" title={tr('Partners')} className="mt-8">
-        {rows.length === 0 ?
-          <EmptyState framed icon={HandshakeIcon} title={tr('No partners yet')} description={tr('Invite someone who already talks to your customers — a stylist, a creator or a reseller.')} /> :
-
+        {rows.length === 0 ? (
+          <EmptyState framed icon={HandshakeIcon} title={tr('No partners yet')} description={tr('Invite someone who already talks to your customers — a stylist, a creator or a reseller.')} />
+        ) : (
           <Card as="div" body="flush">
           <List label={tr('Partners')}>
-            {rows.map(({ partner: p, totals }) =>
+            {rows.map(({ partner: p, totals }) => (
               <li key={p.id}>
                 <button
                   type="button"
                   onClick={() => setOpenId(p.id)}
-                  className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-2 px-5 py-3.5 text-left transition-colors duration-150 hover:bg-sunken md:px-6 focus-visible:bg-sunken focus-visible:outline-none sm:grid-cols-[minmax(0,1fr)_7rem_7rem_6rem]">
-                  
+                  className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-2 px-5 py-3.5 text-left transition-colors duration-150 hover:bg-sunken md:px-6 focus-visible:bg-sunken focus-visible:outline-none sm:grid-cols-[minmax(0,1fr)_7rem_7rem_6rem]"
+                >
                   <span className="min-w-0">
                     <span className="flex flex-wrap items-center gap-2">
                       <span className="text-label font-semibold text-fg">{p.name}</span>
@@ -256,14 +256,14 @@ export function Collaborations() {
                   </span>
                 </button>
               </li>
-              )}
+            ))}
           </List>
           </Card>
-          }
+        )}
         <p className="text-caption text-fg-subtle">{tr('Commission becomes payable once an order is delivered, or 7 days after payment with no refund or dispute. Rates and the 7-day hold are example figures.')}</p>
       </Section>
       </>
-      }
+      )}
 
       <WorkTogetherSheet
         open={working}
@@ -274,16 +274,16 @@ export function Collaborations() {
         onCreate={(pn) => {
           partnerships.update((d) => ({ ...d, partnerships: [pn, ...d.partnerships] }));
           team.log('commerce', `invited ${pn.partner.name} to work together`, '/app/collaborations');
-        }} />
-      
+        }}
+      />
 
       <PartnershipDetail
         partnership={openPartnership}
         leadName={current.name}
         canEdit={can.allowed && unlocked}
         onClose={() => setOpenPns(null)}
-        onChange={(pn) => partnerships.update((d) => ({ ...d, partnerships: d.partnerships.map((x) => x.id === pn.id ? pn : x) }))} />
-      
+        onChange={(pn) => partnerships.update((d) => ({ ...d, partnerships: d.partnerships.map((x) => (x.id === pn.id ? pn : x)) }))}
+      />
 
       <PartnerEditor
         open={!!editing}
@@ -292,8 +292,8 @@ export function Collaborations() {
         products={commerce.data.products}
         onClose={() => setEditing(null)}
         onSave={savePartner}
-        defaults={collabSettings} />
-      
+        defaults={collabSettings}
+      />
 
       <CollabSettingsSheet
         open={settingsOpen}
@@ -304,8 +304,8 @@ export function Collaborations() {
           update((d) => ({ ...d, settings: s }));
           toast.success(tr('Referral partner settings saved'));
           setSettingsOpen(false);
-        }} />
-      
+        }}
+      />
 
       <PartnerDetail
         partner={open?.partner ?? null}
@@ -322,11 +322,11 @@ export function Collaborations() {
         onStatus={(s) => open && setStatus(open.partner.id, s)}
         onAccept={() => {
           if (!open) return;
-          update((d) => ({ ...d, partners: d.partners.map((x) => x.id === open.partner.id ? { ...x, status: 'active', acceptedAt: new Date().toISOString() } : x) }));
+          update((d) => ({ ...d, partners: d.partners.map((x) => (x.id === open.partner.id ? { ...x, status: 'active', acceptedAt: new Date().toISOString() } : x)) }));
           toast.success(tr('{name} accepted', { name: open.partner.name }), { description: tr('Orders through their link now earn commission.') });
         }}
-        onPay={pay} />
-      
-    </div>);
-
+        onPay={pay}
+      />
+    </div>
+  );
 }

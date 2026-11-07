@@ -17,11 +17,11 @@ interface Session {
   serviceName: string;
   start: number;
   capacity: number;
-  people: {id: string;name: string;phone: string;deposit: number;ref: string;}[];
+  people: { id: string; name: string; phone: string; deposit: number; ref: string }[];
 }
 
 /** Coming group classes (D198): seats taken, who's coming, and cancelling a class for everyone. */
-export function ClassSessions({ onOpenBooking }: {onOpenBooking: (id: string) => void;}) {
+export function ClassSessions({ onOpenBooking }: { onOpenBooking: (id: string) => void }) {
   const { data, apply } = useOps();
   const tz = data.availability.timeZone;
   const [openKey, setOpenKey] = useState<string | null>(null);
@@ -31,17 +31,17 @@ export function ClassSessions({ onOpenBooking }: {onOpenBooking: (id: string) =>
   const sessions = useMemo(() => {
     const groups = new Map<string, Session>();
     const services = new Map(data.services.map((s) => [s.id, s]));
-    activeBookings(data.bookings).
-    filter((b) => Date.parse(b.end) >= Date.now()).
-    forEach((b) => {
-      const svc = services.get(b.serviceId);
-      if (!svc || classCapacity(svc) < 2) return;
-      const start = Date.parse(b.start);
-      const key = `${b.serviceId}@${start}`;
-      const g = groups.get(key) ?? { key, serviceId: b.serviceId, serviceName: svc.name, start, capacity: classCapacity(svc), people: [] };
-      g.people.push({ id: b.id, name: b.customer.name, phone: b.customer.phone, deposit: b.depositPaidNgn, ref: b.ref });
-      groups.set(key, g);
-    });
+    activeBookings(data.bookings)
+      .filter((b) => Date.parse(b.end) >= Date.now())
+      .forEach((b) => {
+        const svc = services.get(b.serviceId);
+        if (!svc || classCapacity(svc) < 2) return;
+        const start = Date.parse(b.start);
+        const key = `${b.serviceId}@${start}`;
+        const g = groups.get(key) ?? { key, serviceId: b.serviceId, serviceName: svc.name, start, capacity: classCapacity(svc), people: [] };
+        g.people.push({ id: b.id, name: b.customer.name, phone: b.customer.phone, deposit: b.depositPaidNgn, ref: b.ref });
+        groups.set(key, g);
+      });
     return [...groups.values()].sort((a, b) => a.start - b.start).slice(0, 8);
   }, [data.bookings, data.services]);
 
@@ -68,7 +68,7 @@ export function ClassSessions({ onOpenBooking }: {onOpenBooking: (id: string) =>
       <Card as="div" body="flush">
         <ul>
           {sessions.map((s) => {
-            const pct = Math.round(s.people.length / s.capacity * 100);
+            const pct = Math.round((s.people.length / s.capacity) * 100);
             const open = openKey === s.key;
             return (
               <li key={s.key} className="border-b border-line last:border-0">
@@ -96,10 +96,10 @@ export function ClassSessions({ onOpenBooking }: {onOpenBooking: (id: string) =>
                     <span className="sr-only sm:hidden">Cancel {s.serviceName}</span>
                   </Button>
                 </div>
-                {open &&
-                <ul aria-label={`Who’s coming to ${s.serviceName}`} className="border-t border-line bg-sunken/40 px-5 py-2 md:px-6">
-                    {s.people.map((p) =>
-                  <li key={p.id}>
+                {open && (
+                  <ul aria-label={`Who’s coming to ${s.serviceName}`} className="border-t border-line bg-sunken/40 px-5 py-2 md:px-6">
+                    {s.people.map((p) => (
+                      <li key={p.id}>
                         <button type="button" onClick={() => onOpenBooking(p.id)} className="flex min-h-[44px] w-full items-center gap-3 rounded-sm text-left text-label hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
                           <UsersIcon size={14} className="shrink-0 text-fg-subtle" aria-hidden />
                           <span className="min-w-0 flex-1 truncate font-medium text-fg">{p.name}</span>
@@ -107,11 +107,11 @@ export function ClassSessions({ onOpenBooking }: {onOpenBooking: (id: string) =>
                           <span className="text-caption tabular-nums text-fg-subtle">{p.deposit ? `${formatNgn(p.deposit)} paid` : p.ref}</span>
                         </button>
                       </li>
-                  )}
+                    ))}
                   </ul>
-                }
-              </li>);
-
+                )}
+              </li>
+            );
           })}
         </ul>
       </Card>
@@ -122,7 +122,7 @@ export function ClassSessions({ onOpenBooking }: {onOpenBooking: (id: string) =>
         title={`Cancel ${cancelling?.serviceName ?? 'class'}?`}
         description="Everyone booked into this time is cancelled and every deposit is refunded in full."
         footer={
-        <div className="flex justify-end gap-2">
+          <div className="flex justify-end gap-2">
             <Button variant="secondary" onClick={() => setCancelling(null)}>
               Keep class
             </Button>
@@ -130,18 +130,18 @@ export function ClassSessions({ onOpenBooking }: {onOpenBooking: (id: string) =>
               Cancel for everyone
             </Button>
           </div>
-        }>
-        
-        {cancelling &&
-        <div className="flex flex-col gap-4">
+        }
+      >
+        {cancelling && (
+          <div className="flex flex-col gap-4">
             <p className="text-label font-semibold tabular-nums text-fg">
               {cancelling.people.length} {cancelling.people.length === 1 ? 'person' : 'people'} · {formatNgn(cancelling.people.reduce((t, p) => t + p.deposit, 0))} to refund
             </p>
             <TextArea id="class-cancel-reason" label="Reason people will see" optional rows={2} value={reason} placeholder="e.g. The tutor is unwell. We’ll share a new date soon." onChange={(e) => setReason(e.target.value)} />
             <p className="rounded-md border border-line bg-sunken px-3.5 py-3 text-caption text-fg-muted">Preview only — messages aren’t sent in the prototype.</p>
           </div>
-        }
+        )}
       </Dialog>
-    </section>);
-
+    </section>
+  );
 }

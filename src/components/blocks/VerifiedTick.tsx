@@ -10,7 +10,7 @@ import { contrastRatio } from '../../utils/contrast';
  * The tick after a seller's name (D254). It can't be added or styled by the seller — it appears only while
  * KUBICU has approved their verification and operations haven't hidden it.
  */
-export function VerifiedTick({ theme, size = 22 }: {theme: PageTheme;size?: number;}) {
+export function VerifiedTick({ theme, size = 22 }: { theme: PageTheme; size?: number }) {
   const pageOps = usePageOpsContext();
   const { current } = useWorkspace();
   const tick = useVerifiedTick(pageOps.workspaceId ?? current.id);
@@ -21,6 +21,6 @@ export function VerifiedTick({ theme, size = 22 }: {theme: PageTheme;size?: numb
     <span className="relative inline-flex shrink-0 align-[-0.12em]" title={tick.label}>
       <BadgeCheckIcon size={size} strokeWidth={2.2} style={{ color }} aria-hidden />
       <span className="sr-only">{tick.label}</span>
-    </span>);
-
+    </span>
+  );
 }

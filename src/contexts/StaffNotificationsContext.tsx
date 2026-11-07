@@ -35,14 +35,14 @@ const READ_MAX = 400;
 function readPrefs(staffId: string): StaffNotifPrefs {
   try {
     const raw = window.localStorage.getItem(keyFor(staffId));
-    const p = raw ? JSON.parse(raw) as Partial<StaffNotifPrefs> : {};
+    const p = raw ? (JSON.parse(raw) as Partial<StaffNotifPrefs>) : {};
     return { read: p.read ?? [], muted: p.muted ?? [] };
   } catch {
     return { read: [], muted: [] };
   }
 }
 
-export function StaffNotificationsProvider({ staff, children }: {staff: StaffMember;children: React.ReactNode;}) {
+export function StaffNotificationsProvider({ staff, children }: { staff: StaffMember; children: React.ReactNode }) {
   const [store] = useAdminStore();
   const [templates] = useTemplateStore();
   const [subs] = useSubmissions();
@@ -60,8 +60,8 @@ export function StaffNotificationsProvider({ staff, children }: {staff: StaffMem
     try {
       window.localStorage.setItem(keyFor(staff.id), JSON.stringify(prefs));
     } catch {
-
-      /* storage full — read state just won't persist */}
+      /* storage full — read state just won't persist */
+    }
   }, [prefs, staff.id]);
 
   const kyc = useKycQueue();
@@ -70,7 +70,7 @@ export function StaffNotificationsProvider({ staff, children }: {staff: StaffMem
   const areas = useMemo(() => Array.from(new Set(all.map((n) => n.area))), [all]);
   const readSet = useMemo(() => new Set(prefs.read), [prefs.read]);
   const isRead = useCallback((n: StaffNotif) => readSet.has(n.id), [readSet]);
-  const markRead = useCallback((n: StaffNotif) => setPrefs((p) => p.read.includes(n.id) ? p : { ...p, read: [n.id, ...p.read].slice(0, READ_MAX) }), []);
+  const markRead = useCallback((n: StaffNotif) => setPrefs((p) => (p.read.includes(n.id) ? p : { ...p, read: [n.id, ...p.read].slice(0, READ_MAX) })), []);
   const markAllRead = useCallback(() => setPrefs((p) => ({ ...p, read: Array.from(new Set([...items.map((n) => n.id), ...p.read])).slice(0, READ_MAX) })), [items]);
   const toggleMuted = useCallback((area: string) => setPrefs((p) => ({ ...p, muted: p.muted.includes(area) ? p.muted.filter((a) => a !== area) : [...p.muted, area] })), []);
 
@@ -86,7 +86,7 @@ export function StaffNotificationsProvider({ staff, children }: {staff: StaffMem
     toggleMuted,
     areas,
     open,
-    setOpen
+    setOpen,
   };
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

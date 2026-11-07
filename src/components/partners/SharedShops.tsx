@@ -25,25 +25,25 @@ export function SharedShops({ workspaceId, canEdit, onCreate }: Props) {
   const mine = shops.filter((s) => s.hostWorkspaceId === workspaceId || s.members.some((m) => m.workspaceId === workspaceId && m.status !== 'left'));
 
   const patchMember = (shopId: string, memberId: string, patch: Partial<SharedShopMember>) =>
-  updateSharedShops((l) => l.map((s) => s.id === shopId ? { ...s, members: s.members.map((m) => m.id === memberId ? { ...m, ...patch } : m) } : s));
-  const patchShop = (shopId: string, patch: Partial<SharedShop>) => updateSharedShops((l) => l.map((s) => s.id === shopId ? { ...s, ...patch } : s));
+    updateSharedShops((l) => l.map((s) => (s.id === shopId ? { ...s, members: s.members.map((m) => (m.id === memberId ? { ...m, ...patch } : m)) } : s)));
+  const patchShop = (shopId: string, patch: Partial<SharedShop>) => updateSharedShops((l) => l.map((s) => (s.id === shopId ? { ...s, ...patch } : s)));
 
   if (!mine.length)
-  return (
-    <div className="mt-8">
+    return (
+      <div className="mt-8">
         <EmptyState
-        framed
-        icon={StoreIcon}
-        title={tr('One shop link for a group of sellers')}
-        description={tr('A market line, a designers’ collective, a church or school fair — show everyone’s products on one link. Each seller still takes their own orders and money.')}
-        action={
-        <Button disabled={!canEdit} onClick={onCreate}>
+          framed
+          icon={StoreIcon}
+          title={tr('One shop link for a group of sellers')}
+          description={tr('A market line, a designers’ collective, a church or school fair — show everyone’s products on one link. Each seller still takes their own orders and money.')}
+          action={
+            <Button disabled={!canEdit} onClick={onCreate}>
               {tr('New shared shop')}
             </Button>
-        } />
-      
-      </div>);
-
+          }
+        />
+      </div>
+    );
 
   return (
     <ul className="mt-8 flex flex-col gap-6">
@@ -71,8 +71,8 @@ export function SharedShops({ workspaceId, canEdit, onCreate }: Props) {
                   onClick={() => {
                     void navigator.clipboard?.writeText(sharedShopUrl(s.slug));
                     toast(tr('Link copied'), { description: tr('Share it on WhatsApp status, flyers or your group chat.') });
-                  }}>
-                  
+                  }}
+                >
                   {tr('Copy link')}
                 </Button>
                 <Button size="sm" variant="tertiary" leadingIcon={ExternalLinkIcon} onClick={() => window.open(`/m/${s.slug}`, '_blank')}>
@@ -98,34 +98,34 @@ export function SharedShops({ workspaceId, canEdit, onCreate }: Props) {
                       </span>
                     </span>
                     <Badge tone={tone[m.status]}>{tr(memberStatusLabels[m.status])}</Badge>
-                    {m.status === 'invited' && host && canEdit &&
-                    <Button size="sm" variant="tertiary" onClick={() => (patchMember(s.id, m.id, { status: 'joined', joinedAt: new Date().toISOString() }), toast(tr('{name} joined', { name: m.name }), { description: tr('Simulated — in real use they accept from their own Collaborations.') }))}>
+                    {m.status === 'invited' && host && canEdit && (
+                      <Button size="sm" variant="tertiary" onClick={() => (patchMember(s.id, m.id, { status: 'joined', joinedAt: new Date().toISOString() }), toast(tr('{name} joined', { name: m.name }), { description: tr('Simulated — in real use they accept from their own Collaborations.') }))}>
                         {tr('Accept as {name}', { name: m.name.split(' ')[0] })}
                       </Button>
-                    }
-                    {m.status === 'joined' && (host || self) && !(host && self) && canEdit &&
-                    <Button size="sm" variant="tertiary" onClick={() => (patchMember(s.id, m.id, { status: 'left' }), toast(self ? tr('You left the shop') : tr('{name} removed', { name: m.name }), { description: tr('Their products no longer show. Orders already placed aren’t affected.') }))}>
+                    )}
+                    {m.status === 'joined' && (host || self) && !(host && self) && canEdit && (
+                      <Button size="sm" variant="tertiary" onClick={() => (patchMember(s.id, m.id, { status: 'left' }), toast(self ? tr('You left the shop') : tr('{name} removed', { name: m.name }), { description: tr('Their products no longer show. Orders already placed aren’t affected.') }))}>
                         {self ? tr('Leave') : tr('Remove')}
                       </Button>
-                    }
-                    {m.status === 'left' && host && canEdit &&
-                    <Button size="sm" variant="tertiary" onClick={() => patchMember(s.id, m.id, { status: 'invited' })}>
+                    )}
+                    {m.status === 'left' && host && canEdit && (
+                      <Button size="sm" variant="tertiary" onClick={() => patchMember(s.id, m.id, { status: 'invited' })}>
                         {tr('Invite again')}
                       </Button>
-                    }
-                  </li>);
-
+                    )}
+                  </li>
+                );
               })}
             </ul>
 
-            {host &&
-            <div className="border-t border-line px-5 py-4">
+            {host && (
+              <div className="border-t border-line px-5 py-4">
                 <Switch id={`ss-pause-${s.id}`} label={tr('Close the shop for now')} description={tr('Visitors see a short “closed for now” note with links to each seller. Nothing is deleted.')} checked={!!s.paused} disabled={!canEdit} onChange={(paused) => patchShop(s.id, { paused })} />
               </div>
-            }
-          </li>);
-
+            )}
+          </li>
+        );
       })}
-    </ul>);
-
+    </ul>
+  );
 }

@@ -4,10 +4,10 @@ import { toCsv } from './csv';
 /** Accounting export (D232): the Sales report's entries in formats accounting tools import. Sample entries are left out. */
 export type AccountingFormat = 'quickbooks' | 'zoho' | 'journal';
 
-export const accountingFormats: Record<AccountingFormat, {label: string;hint: string;}> = {
+export const accountingFormats: Record<AccountingFormat, { label: string; hint: string }> = {
   quickbooks: { label: 'QuickBooks', hint: 'Bank transactions upload (Date, Description, Amount). Fees and refunds are their own lines.' },
   zoho: { label: 'Zoho Books', hint: 'Statement import with reference, account and VAT columns.' },
-  journal: { label: 'Spreadsheet', hint: 'One row per payment: gross, fees, refunds, net and VAT — for your accountant.' }
+  journal: { label: 'Spreadsheet', hint: 'One row per payment: gross, fees, refunds, net and VAT — for your accountant.' },
 };
 
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -40,6 +40,6 @@ export function accountingCsv(entries: IncomeEntry[], format: AccountingFormat):
   }
   return toCsv(
     ['date', 'reference', 'type', 'customer', 'method', 'gross', 'fees', 'refunds', 'net', 'vat'],
-    live.map((e) => [ymd(e.at), e.ref, incomeLabels[e.type].label, e.customer, e.method ? methodLabels[e.method] : '', e.paid, e.fees, e.refunded, e.net, e.vat])
+    live.map((e) => [ymd(e.at), e.ref, incomeLabels[e.type].label, e.customer, e.method ? methodLabels[e.method] : '', e.paid, e.fees, e.refunded, e.net, e.vat]),
   );
 }

@@ -49,19 +49,19 @@ function readStored(fallbackDefault: VisualDirection): AppearancePolicy {
  * Platform-wide appearance policy, controlled from the super-admin Design system.
  * Decides which of the directions workspace users may choose and which one is the default.
  */
-export function AppearancePolicyProvider({ initialDefault, children }: {initialDefault: VisualDirection;children: React.ReactNode;}) {
+export function AppearancePolicyProvider({ initialDefault, children }: { initialDefault: VisualDirection; children: React.ReactNode }) {
   const [policy, setPolicy] = useState<AppearancePolicy>(() => readStored(initialDefault));
 
   useEffect(() => {
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(policy));
     } catch {
-
       // Storage unavailable — policy applies for this session only.
-    }}, [policy]);
+    }
+  }, [policy]);
 
   const log = (prev: AppearancePolicy, summary: string): PolicyChange[] =>
-  [{ id: uid('chg'), at: new Date().toISOString(), actor: ADMIN_ACTOR, summary }, ...prev.changes].slice(0, 20);
+    [{ id: uid('chg'), at: new Date().toISOString(), actor: ADMIN_ACTOR, summary }, ...prev.changes].slice(0, 20);
 
   const setEnabled = useCallback((id: VisualDirection, on: boolean) => {
     setPolicy((prev) => {

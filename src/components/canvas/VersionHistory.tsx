@@ -18,7 +18,7 @@ export function VersionHistory() {
     actions.restoreVersion(id);
     toast(`Restored “${name}” to your draft`, {
       description: 'Publish to make it live.',
-      action: { label: 'Undo', onClick: () => actions.undo() }
+      action: { label: 'Undo', onClick: () => actions.undo() },
     });
   };
 
@@ -31,8 +31,8 @@ export function VersionHistory() {
           actions.saveSnapshot(label);
           toast('Snapshot saved');
           setLabel('');
-        }}>
-        
+        }}
+      >
         <label htmlFor="snapshot-name" className="text-label font-medium text-fg">
           Save a snapshot of your draft
         </label>
@@ -42,33 +42,33 @@ export function VersionHistory() {
             value={label}
             onChange={(e) => setLabel(e.target.value)}
             placeholder="e.g. Before Harmattan launch"
-            className={cn(fieldControlClass, 'h-9 min-w-0 flex-1 text-label')} />
-          
+            className={cn(fieldControlClass, 'h-9 min-w-0 flex-1 text-label')}
+          />
           <Button type="submit" variant="secondary" size="md" leadingIcon={BookmarkPlusIcon} className="h-9">
             Save
           </Button>
         </div>
       </form>
 
-      {state.versions.length === 0 ?
-      <EmptyState icon={HistoryIcon} title="No versions yet" description="Each publish and snapshot is saved here." /> :
-
-      <ol className="relative flex flex-col">
-          {state.versions.map((v, i) =>
-        <li key={v.id} className="relative flex gap-3 pb-5 last:pb-0">
+      {state.versions.length === 0 ? (
+        <EmptyState icon={HistoryIcon} title="No versions yet" description="Each publish and snapshot is saved here." />
+      ) : (
+        <ol className="relative flex flex-col">
+          {state.versions.map((v, i) => (
+            <li key={v.id} className="relative flex gap-3 pb-5 last:pb-0">
               {i < state.versions.length - 1 && <span aria-hidden className="absolute left-[5px] top-4 h-full w-px bg-line" />}
               <span
-            aria-hidden
-            className={cn('relative mt-1.5 h-[11px] w-[11px] shrink-0 rounded-full border-2', v.id === liveId ? 'border-success bg-success' : 'border-line-strong bg-raised')} />
-          
+                aria-hidden
+                className={cn('relative mt-1.5 h-[11px] w-[11px] shrink-0 rounded-full border-2', v.id === liveId ? 'border-success bg-success' : 'border-line-strong bg-raised')}
+              />
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-1.5">
                   <p className="text-label font-semibold text-fg">{v.label}</p>
-                  {v.id === liveId ?
-              <Badge tone="success">Live</Badge> :
-
-              <Badge tone={v.kind === 'published' ? 'neutral' : 'info'}>{v.kind === 'published' ? 'Published' : 'Snapshot'}</Badge>
-              }
+                  {v.id === liveId ? (
+                    <Badge tone="success">Live</Badge>
+                  ) : (
+                    <Badge tone={v.kind === 'published' ? 'neutral' : 'info'}>{v.kind === 'published' ? 'Published' : 'Snapshot'}</Badge>
+                  )}
                 </div>
                 <p className="text-caption text-fg-subtle" title={formatTimestamp(v.createdAt)}>
                   {formatRelative(v.createdAt)} · {v.doc.blocks.length} blocks
@@ -79,9 +79,9 @@ export function VersionHistory() {
                 </Button>
               </div>
             </li>
-        )}
+          ))}
         </ol>
-      }
-    </div>);
-
+      )}
+    </div>
+  );
 }

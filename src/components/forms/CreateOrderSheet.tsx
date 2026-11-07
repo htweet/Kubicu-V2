@@ -68,10 +68,10 @@ export function CreateOrderSheet({ open, onClose, form, field, submission, onCre
   const total = subtotal + deliveryNgn;
   const paidInForm = submission.payment?.amountNgn ?? 0;
   const fullyPaid = paidInForm > 0 && paidInForm >= total;
-  const blocked = lines.some((l) => l.problem) || !lines.length || method === 'delivery' && !address.trim();
+  const blocked = lines.some((l) => l.problem) || !lines.length || (method === 'delivery' && !address.trim());
 
   const create = () => {
-    let placed: {id: string;number: number;} | null = null;
+    let placed: { id: string; number: number } | null = null;
     let message: string | null = null;
     const ok = commerce.apply((d: CommerceData) => {
       const r = placeOrder(d, {
@@ -81,24 +81,24 @@ export function CreateOrderSheet({ open, onClose, form, field, submission, onCre
         deliveryNgn,
         outcome: fullyPaid ? 'success' : 'pending',
         plan: current.plan,
-        sourceHandle: submission.pageHandle ?? undefined
+        sourceHandle: submission.pageHandle ?? undefined,
       });
       if (!r.ok) {
         message = r.message.replace('Nothing was charged.', '').trim();
         return d;
       }
       const label = (e: OrderEvent): OrderEvent =>
-      e.kind === 'placed' ?
-      { ...e, label: `Created from a response to “${form.name}”` } :
-      e.kind === 'paid' ?
-      { ...e, label: `Paid in the form (test mode${submission.payment ? `, ref ${submission.payment.reference}` : ''})` } :
-      e.kind === 'payment' ?
-      { ...e, label: paidInForm ? `${formatNgn(paidInForm)} was paid in the form — ${formatNgn(total - paidInForm)} still to collect` : 'Awaiting payment — send the customer a payment link' } :
-      e;
+        e.kind === 'placed'
+          ? { ...e, label: `Created from a response to “${form.name}”` }
+          : e.kind === 'paid'
+            ? { ...e, label: `Paid in the form (test mode${submission.payment ? `, ref ${submission.payment.reference}` : ''})` }
+            : e.kind === 'payment'
+              ? { ...e, label: paidInForm ? `${formatNgn(paidInForm)} was paid in the form — ${formatNgn(total - paidInForm)} still to collect` : 'Awaiting payment — send the customer a payment link' }
+              : e;
       placed = { id: r.order.id, number: r.order.number };
-      return { ...r.data, orders: r.data.orders.map((o) => o.id === r.order.id ? { ...o, events: o.events.map(label), note: `From a “${form.name}” form response.` } : o) };
+      return { ...r.data, orders: r.data.orders.map((o) => (o.id === r.order.id ? { ...o, events: o.events.map(label), note: `From a “${form.name}” form response.` } : o)) };
     });
-    const p = placed as {id: string;number: number;} | null;
+    const p = placed as { id: string; number: number } | null;
     if (!ok) return;
     if (!p) {
       setFailure(message ?? 'The order couldn’t be created.');
@@ -118,7 +118,7 @@ export function CreateOrderSheet({ open, onClose, form, field, submission, onCre
       title="Create order"
       description={`From ${submission.contactName || 'this response'}`}
       footer={
-      <div className="flex justify-end gap-2">
+        <div className="flex justify-end gap-2">
           <Button variant="secondary" onClick={onClose}>
             Cancel
           </Button>
@@ -126,41 +126,41 @@ export function CreateOrderSheet({ open, onClose, form, field, submission, onCre
             Create order · {formatNgn(total)}
           </Button>
         </div>
-      }>
-      
+      }
+    >
       <div className="flex flex-col gap-6 px-5 py-5">
-        {failure &&
-        <InlineAlert tone="danger" title="Couldn’t create the order">
+        {failure && (
+          <InlineAlert tone="danger" title="Couldn’t create the order">
             {failure}
           </InlineAlert>
-        }
+        )}
 
         <section aria-labelledby="co-items" className="flex flex-col gap-3">
           <h3 id="co-items" className="text-label font-semibold text-fg">
             Items
           </h3>
           <ul className="flex flex-col divide-y divide-line border-y border-line">
-            {lines.map((l) =>
-            <li key={l.pick.id} className="flex flex-col gap-2 py-3">
+            {lines.map((l) => (
+              <li key={l.pick.id} className="flex flex-col gap-2 py-3">
                 <div className="flex items-baseline justify-between gap-3">
                   <span className="min-w-0 truncate text-label text-fg">
                     {l.pick.qty} × {l.product?.name ?? field.products?.find((x) => x.id === l.pick.id)?.name ?? 'Removed product'}
                   </span>
                   <span className="shrink-0 text-label tabular-nums text-fg">{l.price === null ? '—' : formatNgn(l.price * l.pick.qty)}</span>
                 </div>
-                {l.product && l.product.variants.length > 1 &&
-              <SelectInput
-                id={`co-var-${l.pick.id}`}
-                label="Option"
-                value={variants[l.pick.id] ?? ''}
-                options={l.product.variants.map((v) => ({ value: v.id, label: `${variantLabel(v)}${l.product!.trackStock && l.product!.kind === 'physical' ? ` · ${v.stock} in stock` : ''}` }))}
-                onChange={(v) => setVariants((s) => ({ ...s, [l.pick.id]: v }))}
-                hint="The form didn’t ask which option — check with the customer." />
-
-              }
+                {l.product && l.product.variants.length > 1 && (
+                  <SelectInput
+                    id={`co-var-${l.pick.id}`}
+                    label="Option"
+                    value={variants[l.pick.id] ?? ''}
+                    options={l.product.variants.map((v) => ({ value: v.id, label: `${variantLabel(v)}${l.product!.trackStock && l.product!.kind === 'physical' ? ` · ${v.stock} in stock` : ''}` }))}
+                    onChange={(v) => setVariants((s) => ({ ...s, [l.pick.id]: v }))}
+                    hint="The form didn’t ask which option — check with the customer."
+                  />
+                )}
                 {l.problem && <p className="text-caption font-medium text-danger">{l.problem}</p>}
               </li>
-            )}
+            ))}
           </ul>
           <p className="text-caption text-fg-muted">Prices come from Commerce today, which may differ from what the form showed.</p>
         </section>
@@ -174,17 +174,17 @@ export function CreateOrderSheet({ open, onClose, form, field, submission, onCre
             value={method}
             onChange={setMethod}
             options={[
-            { value: 'pickup', label: 'Pickup' },
-            { value: 'delivery', label: 'Delivery' }]
-            }
-            size="sm" />
-          
-          {method === 'delivery' &&
-          <>
+              { value: 'pickup', label: 'Pickup' },
+              { value: 'delivery', label: 'Delivery' },
+            ]}
+            size="sm"
+          />
+          {method === 'delivery' && (
+            <>
               <TextArea id="co-addr" label="Delivery address" rows={2} value={address} onChange={(e) => setAddress(e.target.value)} error={address.trim() ? undefined : 'Add an address'} />
               <TextInput id="co-fee" label="Delivery fee (₦)" type="number" inputMode="numeric" min={0} value={fee} onChange={(e) => setFee(e.target.value)} fieldClassName="w-48" />
             </>
-          }
+          )}
         </section>
 
         <section aria-labelledby="co-pay" className="flex flex-col gap-2 border-t border-line pt-5">
@@ -197,6 +197,6 @@ export function CreateOrderSheet({ open, onClose, form, field, submission, onCre
           <p className="text-caption text-fg-muted">Stock is reserved as soon as the order is created, and the customer is added to Audience like any order.</p>
         </section>
       </div>
-    </Sheet>);
-
+    </Sheet>
+  );
 }

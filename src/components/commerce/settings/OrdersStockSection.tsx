@@ -22,8 +22,8 @@ export function OrdersStockSection() {
           placeholder="e.g. ADA"
           value={o.prefix}
           hint={`Your next order will be ${o.prefix ? `${o.prefix}-${next}` : `#${next}`}. Up to 6 letters or numbers; past orders keep theirs.`}
-          onChange={(e) => s.patch({ prefix: cleanPrefix(e.target.value) })} />
-        
+          onChange={(e) => s.patch({ prefix: cleanPrefix(e.target.value) })}
+        />
         <TextInput
           id="ord-low"
           label="Low-stock warning for new products"
@@ -31,30 +31,30 @@ export function OrdersStockSection() {
           value={Number.isFinite(o.lowStockDefault) ? String(o.lowStockDefault) : ''}
           error={lowError || undefined}
           hint="Warn when a product has this many or fewer left. Each product can still set its own."
-          onChange={(e) => s.patch({ lowStockDefault: e.target.value === '' ? NaN : Number(e.target.value.replace(/\D/g, '')) })} />
-        
+          onChange={(e) => s.patch({ lowStockDefault: e.target.value === '' ? NaN : Number(e.target.value.replace(/\D/g, '')) })}
+        />
       </div>
       <div className="flex flex-col gap-5 border-t border-line pt-5">
         <Switch
           id="ord-hold"
           label={`Keep stock for buyers during checkout`}
           description={
-          o.backorders ?
-          'Not needed while backorders are on — nothing can run out.' :
-          `When a buyer presses Checkout, their items are kept for them for ${STOCK_HOLD_MINUTES} minutes, so two people can’t pay for the last one. Leaving checkout or paying gives them back straight away.`
+            o.backorders
+              ? 'Not needed while backorders are on — nothing can run out.'
+              : `When a buyer presses Checkout, their items are kept for them for ${STOCK_HOLD_MINUTES} minutes, so two people can’t pay for the last one. Leaving checkout or paying gives them back straight away.`
           }
           checked={o.holdStock && !o.backorders}
           disabled={o.backorders}
-          onChange={(holdStock) => s.patch({ holdStock })} />
-        
+          onChange={(holdStock) => s.patch({ holdStock })}
+        />
         <Switch
           id="ord-backorders"
           label="Allow backorders"
           description="Keep selling physical products after stock reaches zero. Buyers see “Ships later”, and the order is labelled so you know to wait for new stock. Pre-orders keep their own limits."
           checked={o.backorders}
-          onChange={(backorders) => s.patch({ backorders })} />
-        
+          onChange={(backorders) => s.patch({ backorders })}
+        />
       </div>
-    </SettingsSection>);
-
+    </SettingsSection>
+  );
 }

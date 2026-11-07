@@ -33,14 +33,14 @@ export function emptyCommerce(): CommerceData {
       pickupHours: '',
       deliveryEnabled: false,
       zones: [],
-      freeDeliveryOverNgn: null
+      freeDeliveryOverNgn: null,
     },
     payments: { provider: null, connectedAt: null, businessName: '', methods: ['Card', 'Bank transfer', 'USSD'] },
     subPlans: [],
     subscriptions: [],
     events: [],
     nextOrderNumber: 1001,
-    sampleSeeded: false
+    sampleSeeded: false,
   };
 }
 
@@ -64,15 +64,15 @@ export function readCommerce(workspaceId: string): CommerceData | null {
       settledRooms: parsed.settledRooms ?? {},
       nextOrderNumber: Math.max(parsed.nextOrderNumber ?? base.nextOrderNumber, withRoomSamples(parsed).reduce((m, o) => Math.max(m, o.number + 1), 0)),
       // Workspaces saved before discounts existed get the sample offers if they still hold sample data.
-      discounts: Array.isArray(parsed.discounts) ?
-      parsed.discounts :
-      Array.isArray(parsed.products) && parsed.products.some((p) => p.sample) ?
-      sampleDiscounts() :
-      [],
+      discounts: Array.isArray(parsed.discounts)
+        ? parsed.discounts
+        : Array.isArray(parsed.products) && parsed.products.some((p) => p.sample)
+          ? sampleDiscounts()
+          : [],
       // Saved before subscriptions existed (D69): workspaces holding sample data get the sample plans.
       subPlans: Array.isArray(parsed.subPlans) ? parsed.subPlans : hasSampleProducts(parsed) ? sampleSubPlans() : [],
       subscriptions: Array.isArray(parsed.subscriptions) ? parsed.subscriptions : hasSampleProducts(parsed) ? sampleSubscriptions() : [],
-      events: Array.isArray(parsed.events) ? parsed.events : []
+      events: Array.isArray(parsed.events) ? parsed.events : [],
     };
     // Saved before ticketing existed (D73): workspaces holding sample data get the sample event once.
     return !Array.isArray(parsed.events) && hasSampleProducts(parsed) ? withSampleEvent(read) : read;

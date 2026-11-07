@@ -29,7 +29,7 @@ export function PlanCatalogue() {
   const [editing, setEditing] = useState<WorkspacePlan | null>(null);
   const [price, setPrice] = useState('');
   const [credits, setCredits] = useState('');
-  const [errors, setErrors] = useState<{price?: string;credits?: string;}>({});
+  const [errors, setErrors] = useState<{ price?: string; credits?: string }>({});
   const th = 'px-3 py-2.5 text-left text-caption font-semibold text-fg-subtle';
   const td = 'px-3 py-3 text-label tabular-nums';
   const pendingFor = (p: WorkspacePlan) => store.approvals.find((a) => a.kind === 'plan_change' && a.plan === p && effectiveStatus(a) === 'pending');
@@ -58,10 +58,10 @@ export function PlanCatalogue() {
     const name = plans[editing].name;
     const summary = `Change ${name}: ${formatNgn(monthlyPrice(editing, store) ?? 0)} → ${formatNgn(priceN)}/month, ${aiAllowance(editing, store)} → ${creditsN} AI credits`;
     const ok = setStore((s) =>
-    audit(
-      { ...s, approvals: [newApproval({ kind: 'plan_change', summary, targetId: editing, targetEmail: `${name} plan`, reason, requestedById: me?.id ?? 'unknown', requestedBy: staffActor(s).split(' ·')[0], plan: editing, priceNgn: priceN, aiCredits: creditsN }), ...s.approvals] },
-      { area: 'plans', action: `Asked to ${summary.charAt(0).toLowerCase()}${summary.slice(1)}`, target: `${name} plan`, reason }
-    )
+      audit(
+        { ...s, approvals: [newApproval({ kind: 'plan_change', summary, targetId: editing, targetEmail: `${name} plan`, reason, requestedById: me?.id ?? 'unknown', requestedBy: staffActor(s).split(' ·')[0], plan: editing, priceNgn: priceN, aiCredits: creditsN }), ...s.approvals] },
+        { area: 'plans', action: `Asked to ${summary.charAt(0).toLowerCase()}${summary.slice(1)}`, target: `${name} plan`, reason },
+      ),
     );
     if (!ok) return toast.error('Couldn’t save the request');
     toast.success('Sent for approval', { description: 'Another Platform lead or Finance member must approve within 24 hours. Nothing changes until then.' });
@@ -114,8 +114,8 @@ export function PlanCatalogue() {
                     <td className={`${td} text-right text-fg-muted`}>{(kubicuRateByPlan[p] * 100).toLocaleString(undefined, { maximumFractionDigits: 1 })}%</td>
                     <td className={`${td} text-right text-fg`}>{workspaces.filter((w) => w.plan === p).length}</td>
                     <td className={`${td} pr-5 text-right md:pr-6`}>{p !== 'enterprise' && <IconButton icon={PencilIcon} label={`Change ${plans[p].name}`} size="sm" disabled={!!pending} onClick={() => open(p)} />}</td>
-                  </tr>);
-
+                  </tr>
+                );
               })}
             </tbody>
           </table>
@@ -129,6 +129,6 @@ export function PlanCatalogue() {
           <TextInput id="plan-credits" label="AI credits a month" inputMode="numeric" value={credits} error={errors.credits} onChange={(e) => setCredits(digits(e.target.value))} />
         </div>
       </ReasonDialog>
-    </>);
-
+    </>
+  );
 }

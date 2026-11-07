@@ -10,7 +10,7 @@ let cache: Record<string, PhraseReview> | null = null;
 function load(): Record<string, PhraseReview> {
   try {
     const raw = localStorage.getItem('kubicu.admin');
-    cache = raw ? (JSON.parse(raw) as {phraseReviews?: Record<string, PhraseReview>;}).phraseReviews ?? {} : {};
+    cache = raw ? ((JSON.parse(raw) as { phraseReviews?: Record<string, PhraseReview> }).phraseReviews ?? {}) : {};
   } catch {
     cache = {};
   }

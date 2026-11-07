@@ -31,7 +31,7 @@ export const HEARTBEAT_MS = 3000;
 export const STALE_MS = 9000;
 
 /** Join a named channel. Returns a function that updates our payload, and a cleanup. */
-export function joinChannel<T>(name: string, initial: T, onPeers: (peers: Beat<T>[]) => void): {update: (p: T) => void;leave: () => void;} {
+export function joinChannel<T>(name: string, initial: T, onPeers: (peers: Beat<T>[]) => void): { update: (p: T) => void; leave: () => void } {
   const me = tabId();
   let payload = initial;
   const peers = new Map<string, Beat<T>>();
@@ -39,11 +39,11 @@ export function joinChannel<T>(name: string, initial: T, onPeers: (peers: Beat<T
   const ch = new BroadcastChannel(`kubicu:${name}`);
   const emit = () => onPeers([...peers.values()].filter((p) => Date.now() - p.at < STALE_MS));
   const send = (bye = false) => ch.postMessage({ tab: me, at: Date.now(), bye, payload } satisfies Beat<T>);
-  ch.onmessage = (e: MessageEvent<Beat<T> & {hello?: boolean;}>) => {
+  ch.onmessage = (e: MessageEvent<Beat<T> & { hello?: boolean }>) => {
     const b = e.data;
     if (!b || b.tab === me) return;
-    if (b.bye) peers.delete(b.tab);else
-    peers.set(b.tab, { ...b, at: Date.now() });
+    if (b.bye) peers.delete(b.tab);
+    else peers.set(b.tab, { ...b, at: Date.now() });
     if (b.hello) send();
     emit();
   };
@@ -71,6 +71,6 @@ export function joinChannel<T>(name: string, initial: T, onPeers: (peers: Beat<T
       window.clearInterval(beat);
       window.removeEventListener('pagehide', onUnload);
       ch.close();
-    }
+    },
   };
 }

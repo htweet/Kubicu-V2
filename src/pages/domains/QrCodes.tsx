@@ -78,34 +78,34 @@ export function QrCodes() {
         title="QR codes"
         description="Print them on flyers, counters and packaging. Each scan is counted, so you know which placement works."
         actions={
-        <Button leadingIcon={PlusIcon} disabled={!can.allowed} title={can.allowed ? undefined : can.reason} onClick={() => setEditing('new')}>
+          <Button leadingIcon={PlusIcon} disabled={!can.allowed} title={can.allowed ? undefined : can.reason} onClick={() => setEditing('new')}>
             New QR code
           </Button>
-        } />
-      
+        }
+      />
 
-      {data.qrs.length === 0 ?
-      <EmptyState
-        framed
-        icon={QrCodeIcon}
-        title="No QR codes yet"
-        description="Point one at your page, your shop or a single product. You can change where it goes later without reprinting."
-        action={
-        <Button leadingIcon={PlusIcon} disabled={!can.allowed} onClick={() => setEditing('new')}>
+      {data.qrs.length === 0 ? (
+          <EmptyState
+            framed
+            icon={QrCodeIcon}
+            title="No QR codes yet"
+            description="Point one at your page, your shop or a single product. You can change where it goes later without reprinting."
+            action={
+              <Button leadingIcon={PlusIcon} disabled={!can.allowed} onClick={() => setEditing('new')}>
                 New QR code
               </Button>
-        } /> :
-
-
-      <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            }
+          />
+      ) : (
+        <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {data.qrs.map((q) => {
-          const link = data.links.find((l) => l.id === q.linkId);
-          if (!link) return null;
-          const scans = stats.get(link.slug)?.visits ?? 0;
-          const ok = !!(link.whatsapp || link.externalUrl) || destinationExists(current, commerce, link.destination);
-          const weak = qrChecks(styleOf(q, initials)).contrast.level === 'fail';
-          return (
-            <li key={q.id} className="flex flex-col rounded-lg border border-line bg-raised">
+            const link = data.links.find((l) => l.id === q.linkId);
+            if (!link) return null;
+            const scans = stats.get(link.slug)?.visits ?? 0;
+            const ok = !!(link.whatsapp || link.externalUrl) || destinationExists(current, commerce, link.destination);
+            const weak = qrChecks(styleOf(q, initials)).contrast.level === 'fail';
+            return (
+              <li key={q.id} className="flex flex-col rounded-lg border border-line bg-raised">
                 <div className="rounded-t-lg border-b border-line p-5" style={{ background: q.transparent ? undefined : q.bg }}>
                   <QrPreview url={shortUrl(mainHandle, link.slug, host)} style={styleOf(q, initials)} alt={`${tr('QR code')}: ${link.name}`} className="mx-auto max-w-[180px]" />
                 </div>
@@ -133,11 +133,11 @@ export function QrCodes() {
                     <IconButton icon={Trash2Icon} label={tr('Delete {name}', { name: link.name })} size="sm" disabled={!can.allowed} onClick={() => setRemoving(q)} />
                   </div>
                 </div>
-              </li>);
-
-        })}
+              </li>
+            );
+          })}
         </ul>
-      }
+      )}
 
       <QrDesigner
         open={editing !== null}
@@ -145,8 +145,8 @@ export function QrCodes() {
         qr={editing && editing !== 'new' ? editing : undefined}
         presetLink={editing === 'new' ? presetLink : undefined}
         presetDest={editing === 'new' && !presetLink ? presetDest : undefined}
-        presetName={editing === 'new' && !presetLink ? presetName : undefined} />
-      
+        presetName={editing === 'new' && !presetLink ? presetName : undefined}
+      />
 
       <Dialog
         open={!!removing}
@@ -155,25 +155,25 @@ export function QrCodes() {
         title="Delete this QR design?"
         description="Codes you’ve already printed keep working — the link stays on Campaign links. Archive the link there to stop them."
         footer={
-        <>
+          <>
             <Button variant="secondary" onClick={() => setRemoving(null)}>
               Keep it
             </Button>
             <Button
-            variant="destructive"
-            onClick={() => {
-              if (removing) {
-                deleteQr(removing.id);
-                team.log('pages', 'deleted a QR design', '/app/qr');
-              }
-              setRemoving(null);
-            }}>
-            
+              variant="destructive"
+              onClick={() => {
+                if (removing) {
+                  deleteQr(removing.id);
+                  team.log('pages', 'deleted a QR design', '/app/qr');
+                }
+                setRemoving(null);
+              }}
+            >
               Delete design
             </Button>
           </>
-        } />
-      
-    </div>);
-
+        }
+      />
+    </div>
+  );
 }

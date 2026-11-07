@@ -32,11 +32,11 @@ export function Section({ title, description, actions, id, className, children }
         {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
       </div>
       {children}
-    </section>);
-
+    </section>
+  );
 }
 
 /** Vertical rhythm under a PageHeader: 32px to the first block, 32px between blocks. */
-export function PageStack({ className, children }: {className?: string;children: React.ReactNode;}) {
+export function PageStack({ className, children }: { className?: string; children: React.ReactNode }) {
   return <div className={cn('mt-8 flex flex-col gap-8', className)}>{children}</div>;
 }

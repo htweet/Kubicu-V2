@@ -6,7 +6,7 @@ export const socialPlatformLabels: Record<SocialPlatform, string> = {
   x: 'X',
   facebook: 'Facebook',
   youtube: 'YouTube',
-  linkedin: 'LinkedIn'
+  linkedin: 'LinkedIn',
 };
 
 export const socialPlatforms: SocialPlatform[] = ['instagram', 'tiktok', 'x', 'facebook', 'youtube', 'linkedin'];

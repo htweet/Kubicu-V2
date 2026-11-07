@@ -44,8 +44,8 @@ export function normalizeContainers(blocks: Block[]): Block[] {
       const p = byId.get(parent);
       const ok = !!p && p.id !== b.id && containerTypes.has(p.type) && !containerTypes.has(b.type);
       const n = counts.get(parent) ?? 0;
-      if (!ok || n >= MAX_CHILDREN) parent = null;else
-      counts.set(parent, n + 1);
+      if (!ok || n >= MAX_CHILDREN) parent = null;
+      else counts.set(parent, n + 1);
     }
     const ungroup = (!!parent || containerTypes.has(b.type)) && !!b.groupId;
     if ((b.parentId ?? null) === parent && !ungroup) return b;
@@ -80,7 +80,7 @@ export interface Placement {
   index: number;
   container: ContainerBlock | null;
   /** Compatibility (D174): the selected container can't hold this block, so it goes on the page below it. */
-  blocked?: {container: ContainerBlock;reason: string;};
+  blocked?: { container: ContainerBlock; reason: string };
 }
 
 /**
@@ -149,7 +149,7 @@ export function moveInPage(blocks: Block[], id: string, direction: -1 | 1): Bloc
 export function relinkClones(originals: Block[], clones: Block[]): Block[] {
   const map = new Map(originals.map((o, i) => [o.id, clones[i]?.id]));
   return clones.map((c) => {
-    let next = c.parentId ? { ...c, parentId: map.get(c.parentId) ?? null } as Block : c;
+    let next = c.parentId ? ({ ...c, parentId: map.get(c.parentId) ?? null } as Block) : c;
     // Jump links (D169) follow the blocks they point at.
     if (next.type === 'anchorNav') next = { ...next, content: { ...next.content, items: next.content.items.map((i) => ({ ...i, blockId: map.get(i.blockId) ?? i.blockId })) } };
     return next;
@@ -173,12 +173,12 @@ export function containerIssues(blocks: Block[]): ValidationIssue[] {
       if (!fit.ok) out.push({ id: `ctr:fit:${k.id}`, blockId: k.id, severity: 'warning', message: `This block isn’t designed to sit inside ${b.type === 'section' ? 'a Section' : b.type === 'columns' ? 'Columns' : 'Tabs'}. ${fit.reason} Use “Move out” to put it on the page.` });
     });
     if (b.type === 'columns' && kids.length === 1)
-    out.push({ id: `ctr:one:${b.id}`, blockId: b.id, severity: 'warning', message: 'Columns with one block shows as a single column. Add a second block, or remove Columns and keep the block.' });
+      out.push({ id: `ctr:one:${b.id}`, blockId: b.id, severity: 'warning', message: 'Columns with one block shows as a single column. Add a second block, or remove Columns and keep the block.' });
     if (b.type === 'tabs')
-    kids.forEach((k, i) => {
-      if (!k.slotLabel?.trim())
-      out.push({ id: `ctr:label:${k.id}`, blockId: k.id, severity: 'warning', field: 'slotLabel', message: `Tab ${i + 1} has no label, so visitors see “Tab ${i + 1}”. Give it a name that says what's inside.` });
-    });
+      kids.forEach((k, i) => {
+        if (!k.slotLabel?.trim())
+          out.push({ id: `ctr:label:${k.id}`, blockId: k.id, severity: 'warning', field: 'slotLabel', message: `Tab ${i + 1} has no label, so visitors see “Tab ${i + 1}”. Give it a name that says what's inside.` });
+      });
   });
   return out;
 }

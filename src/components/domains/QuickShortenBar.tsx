@@ -67,7 +67,7 @@ export function QuickShortenBar() {
       pausedAt: null,
       externalUrl: check.url,
       tags: [],
-      history: [{ at: now, by: team.me.name, to: check.host }]
+      history: [{ at: now, by: team.me.name, to: check.host }],
     };
     if (!saveLink(link)) {
       toast.error(tr('Couldn’t save the link'), { description: tr('Your browser storage may be full. Try again.') });
@@ -105,24 +105,24 @@ export function QuickShortenBar() {
             aria-invalid={!!error}
             aria-describedby={error ? 'quick-shorten-error' : 'quick-shorten-hint'}
             disabled={!can.allowed}
-            className="h-12 w-full rounded-md border border-line-strong bg-canvas pl-9 pr-3 text-body text-fg placeholder:text-fg-subtle focus-visible:border-focus focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus disabled:opacity-60" />
-          
+            className="h-12 w-full rounded-md border border-line-strong bg-canvas pl-9 pr-3 text-body text-fg placeholder:text-fg-subtle focus-visible:border-focus focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus disabled:opacity-60"
+          />
         </div>
         <Button type="submit" size="lg" trailingIcon={ArrowRightIcon} disabled={!can.allowed || !url.trim()} className="shrink-0">
           Shorten
         </Button>
       </form>
-      {error ?
-      <p id="quick-shorten-error" role="alert" className="text-caption text-danger">
+      {error ? (
+        <p id="quick-shorten-error" role="alert" className="text-caption text-danger">
           {tr(error)}
-        </p> :
-
-      <p id="quick-shorten-hint" className="text-caption text-fg-subtle">
+        </p>
+      ) : (
+        <p id="quick-shorten-hint" className="text-caption text-fg-subtle">
           {can.allowed ? tr('Any https address. It’s checked for safety now and on every tap. For one of your own pages, use New link.') : can.reason}
         </p>
-      }
-      {made &&
-      <div className="flex flex-wrap items-center gap-2 rounded-md bg-success-soft px-3 py-2" role="status">
+      )}
+      {made && (
+        <div className="flex flex-wrap items-center gap-2 rounded-md bg-success-soft px-3 py-2" role="status">
           <CheckIcon size={16} aria-hidden className="text-success" />
           <span className="min-w-0 flex-1 truncate font-mono text-label text-fg">{shortDisplay(mainHandle, made.slug, host)}</span>
           <Button size="sm" variant="secondary" leadingIcon={CopyIcon} onClick={() => void copyToClipboard(shortUrl(mainHandle, made.slug, host), tr('Short link copied'))}>
@@ -132,7 +132,7 @@ export function QuickShortenBar() {
             Stats
           </Button>
         </div>
-      }
-    </section>);
-
+      )}
+    </section>
+  );
 }

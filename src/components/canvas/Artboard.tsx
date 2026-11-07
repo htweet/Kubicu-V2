@@ -50,7 +50,7 @@ export const viewportWidths: Record<Viewport, number> = {
   phone: 390,
   widePhone: 430,
   tablet: 768,
-  desktop: 1180
+  desktop: 1180,
 };
 
 interface ArtboardProps {
@@ -60,12 +60,12 @@ interface ArtboardProps {
   onEditBlock?: (id: string) => void;
 }
 
-const quickStart: {type: BlockType;label: string;icon: typeof Link2Icon;}[] = [
-{ type: 'profile', label: 'Profile', icon: CircleUserRoundIcon },
-{ type: 'link', label: 'Link button', icon: Link2Icon },
-{ type: 'product', label: 'Product', icon: ShoppingBagIcon },
-{ type: 'whatsapp', label: 'WhatsApp', icon: MessageCircleIcon }];
-
+const quickStart: { type: BlockType; label: string; icon: typeof Link2Icon }[] = [
+  { type: 'profile', label: 'Profile', icon: CircleUserRoundIcon },
+  { type: 'link', label: 'Link button', icon: Link2Icon },
+  { type: 'product', label: 'Product', icon: ShoppingBagIcon },
+  { type: 'whatsapp', label: 'WhatsApp', icon: MessageCircleIcon },
+];
 
 export function Artboard({ viewport = 'phone', framed = true, touch = false, onEditBlock }: ArtboardProps) {
   const { state, actions, issues } = useEditor();
@@ -80,7 +80,7 @@ export function Artboard({ viewport = 'phone', framed = true, touch = false, onE
   const commerceData = useOptionalCommerce()?.data ?? null;
   const nowPhase = docPhase(state.site, commerceData);
   const currentWorkspaceId = useWorkspace().current.id;
-  const phase: CampaignPhase | null = nowPhase ? preview.phase ?? nowPhase : null;
+  const phase: CampaignPhase | null = nowPhase ? (preview.phase ?? nowPhase) : null;
   const copy = phaseCopy(state.site);
   // Campaigns show only the blocks for the previewed phase; reordering keeps the others in place.
   // IntentFlow preview (D64): show only what visitors from one source would see.
@@ -94,9 +94,9 @@ export function Artboard({ viewport = 'phone', framed = true, touch = false, onE
   const hasRules = allBlocks(state.site).some((b) => !!b.visibility.sources);
   const sourceHidden = source ? draft.blocks.filter((b) => (!phase || blockInPhase(b, phase)) && !showsForSource(b.visibility, source)).length : 0;
   const sourceBar =
-  hasRules || source ?
-  <SourcePreviewBar source={source} onChange={preview.setSource} hiddenCount={sourceHidden} className={framed ? 'mx-auto mb-4 w-full' : 'mx-3 mb-3 mt-3'} /> :
-  null;
+    hasRules || source ? (
+      <SourcePreviewBar source={source} onChange={preview.setSource} hiddenCount={sourceHidden} className={framed ? 'mx-auto mb-4 w-full' : 'mx-3 mb-3 mt-3'} />
+    ) : null;
   // Dragging into containers (D180): hovering a container pauses reordering; dropping moves the block in.
   const drop = useContainerDrop({ blocks: draft.blocks, placeBlock: actions.placeBlock, undo: actions.undo });
   const dropCtx = { onChildDrag: drop.onChildDrag, onChildDragEnd: drop.onChildDragEnd };
@@ -106,24 +106,24 @@ export function Artboard({ viewport = 'phone', framed = true, touch = false, onE
     if (!filtered) return actions.reorderBlocks(next);
     const shown = new Set(ids);
     let k = 0;
-    actions.reorderBlocks(allIds.map((id) => shown.has(id) ? next[k++] : id));
+    actions.reorderBlocks(allIds.map((id) => (shown.has(id) ? next[k++] : id)));
   };
   const activeGroupId = draft.blocks.find((b) => b.id === selectedId)?.groupId ?? null;
   const phaseBar =
-  nowPhase && phase ?
-  <CampaignPhaseBar
-    now={nowPhase}
-    summary={phasedSummary(state.site, commerceData)}
-    labels={copy.labels}
-    descriptions={copy.descriptions}
-    phase={phase}
-    onChange={preview.setPhase} hiddenCount={draft.blocks.length - shownBlocks.length} className={framed ? 'mx-auto mb-4 w-full' : 'mx-3 mb-3 mt-3'} /> :
-  null;
+    nowPhase && phase ? (
+      <CampaignPhaseBar
+        now={nowPhase}
+        summary={phasedSummary(state.site, commerceData)}
+        labels={copy.labels}
+        descriptions={copy.descriptions}
+        phase={phase}
+        onChange={preview.setPhase} hiddenCount={draft.blocks.length - shownBlocks.length} className={framed ? 'mx-auto mb-4 w-full' : 'mx-3 mb-3 mt-3'} />
+    ) : null;
 
   // Members areas (D185): switch between what members see (editable) and the welcome card.
   const [memberView, setMemberView] = React.useState<MemberView>('member');
-  const [dropLine, setDropLine] = React.useState<{beforeId: string | null;y: number;} | null>(null);
-  const [dropInto, setDropInto] = React.useState<{target: DropTarget;rect: {top: number;left: number;width: number;height: number;};} | null>(null);
+  const [dropLine, setDropLine] = React.useState<{ beforeId: string | null; y: number } | null>(null);
+  const [dropInto, setDropInto] = React.useState<{ target: DropTarget; rect: { top: number; left: number; width: number; height: number } } | null>(null);
   const clipboard = useBlockClipboard();
   const area = state.site.membersArea && !state.activePageId ? state.site.membersArea : null;
   const asVisitor = !!area && memberView === 'visitor';
@@ -146,49 +146,49 @@ export function Artboard({ viewport = 'phone', framed = true, touch = false, onE
   const childCtx: BlockChildrenValue = {
     childrenOf: (id) => shownBlocks.filter((b) => b.parentId === id),
     selectedId,
-    render: (child, theme, slot) =>
-    <ChildFrame
-      block={child}
-      theme={theme}
-      container={slot.container}
-      index={slot.index}
-      count={slot.count}
-      selected={child.id === selectedId}
-      issues={byBlock[child.id] ?? []}
-      touch={touch}
-      onSelect={selectBlock}
-      onEdit={onEditBlock} />,
-
-
-    addSlot: (container, theme) =>
-    <ContainerAddSlot container={container} theme={theme} count={draft.blocks.filter((b) => b.parentId === container.id).length} onAdded={touch && onEditBlock ? onEditBlock : undefined} />
-
+    render: (child, theme, slot) => (
+      <ChildFrame
+        block={child}
+        theme={theme}
+        container={slot.container}
+        index={slot.index}
+        count={slot.count}
+        selected={child.id === selectedId}
+        issues={byBlock[child.id] ?? []}
+        touch={touch}
+        onSelect={selectBlock}
+        onEdit={onEditBlock}
+      />
+    ),
+    addSlot: (container, theme) => (
+      <ContainerAddSlot container={container} theme={theme} count={draft.blocks.filter((b) => b.parentId === container.id).length} onAdded={touch && onEditBlock ? onEditBlock : undefined} />
+    ),
   };
-  const page =
-  <PageSurface
-    fluid
-    theme={draft.theme}
-    className={cn(framed ? 'min-h-[720px]' : 'min-h-full')}
-    columnClassName={touch ? 'pb-28' : undefined}
-    footer={draft.blocks.length > 0 && showsKubicuBadge(draft, plan) ? <MadeWithKubicu theme={draft.theme} mode="edit" /> : undefined}
-    header={
-    showsNav(state.site) || state.site.coBrand ?
-    <>
+  const page = (
+    <PageSurface
+      fluid
+      theme={draft.theme}
+      className={cn(framed ? 'min-h-[720px]' : 'min-h-full')}
+      columnClassName={touch ? 'pb-28' : undefined}
+      footer={draft.blocks.length > 0 && showsKubicuBadge(draft, plan) ? <MadeWithKubicu theme={draft.theme} mode="edit" /> : undefined}
+      header={
+        showsNav(state.site) || state.site.coBrand ? (
+          <>
             {state.site.coBrand && <CoBrandStrip coBrand={state.site.coBrand} theme={draft.theme} />}
             {showsNav(state.site) && <SiteNav theme={draft.theme} title={state.site.title} items={navItems(state.site)} activeId={state.activePageId} onSelect={actions.setPage} />}
-          </> :
-    undefined
-    }>
-    
-      {asVisitor && area ?
-    <div className="mx-auto w-full px-5 py-6" style={{ maxWidth: columnPx }} onClick={(e) => e.stopPropagation()}>
+          </>
+        ) : undefined
+      }
+    >
+      {asVisitor && area ? (
+        <div className="mx-auto w-full px-5 py-6" style={{ maxWidth: columnPx }} onClick={(e) => e.stopPropagation()}>
           <MembersAreaWelcomePreview area={area} theme={draft.theme} handle={state.site.handle} />
           <p className="mt-2 text-center text-[12px]" style={{ color: draft.theme.mutedText }}>
             Welcome card · edit it in Page settings → Members area
           </p>
-        </div> :
-    draft.blocks.length === 0 ?
-    <div className="mx-auto my-16 flex max-w-xs flex-col items-center px-5 text-center" onClick={(e) => e.stopPropagation()}>
+        </div>
+      ) : draft.blocks.length === 0 ? (
+        <div className="mx-auto my-16 flex max-w-xs flex-col items-center px-5 text-center" onClick={(e) => e.stopPropagation()}>
           <span className="flex h-12 w-12 items-center justify-center rounded-full bg-black/5" style={{ color: draft.theme.mutedText }}>
             <SparklesIcon size={20} aria-hidden />
           </span>
@@ -199,102 +199,102 @@ export function Artboard({ viewport = 'phone', framed = true, touch = false, onE
             Most pages begin with a profile and one clear action. Pick a block to begin.
           </p>
           <div className="mt-5 grid w-full grid-cols-2 gap-2">
-            {quickStart.map((q) =>
-        <Button key={q.type} variant="secondary" size="md" leadingIcon={q.icon} onClick={() => actions.addBlock(q.type)}>
+            {quickStart.map((q) => (
+              <Button key={q.type} variant="secondary" size="md" leadingIcon={q.icon} onClick={() => actions.addBlock(q.type)}>
                 {q.label}
               </Button>
-        )}
+            ))}
           </div>
-        </div> :
-
-    <BlockChildrenProvider value={childCtx}>
+        </div>
+      ) : (
+        <BlockChildrenProvider value={childCtx}>
         <CanvasDropContext.Provider value={dropCtx}>
         <Reorder.Group axis="y" values={ids} onReorder={onReorder} as="div" className="flex flex-col">
-          {state.site.dealRoom && !state.activePageId &&
-          <div className="mx-auto mb-4 w-full px-5" style={{ maxWidth: columnPx }} onClick={(e) => e.stopPropagation()}>
+          {state.site.dealRoom && !state.activePageId && (
+            <div className="mx-auto mb-4 w-full px-5" style={{ maxWidth: columnPx }} onClick={(e) => e.stopPropagation()}>
               <DealRoomPanel room={state.site.dealRoom} handle={state.site.handle} theme={draft.theme} mode="edit" />
               <p className="mt-1.5 text-center text-[12px]" style={{ color: draft.theme.mutedText }}>
                 Room offer · edit it in Page settings
               </p>
             </div>
-          }
-          {state.site.popup && !state.activePageId &&
-          <div className="mx-auto mb-4 w-full px-5" style={{ maxWidth: columnPx }} onClick={(e) => e.stopPropagation()}>
+          )}
+          {state.site.popup && !state.activePageId && (
+            <div className="mx-auto mb-4 w-full px-5" style={{ maxWidth: columnPx }} onClick={(e) => e.stopPropagation()}>
               <PopupPanel popup={state.site.popup} handle={state.published?.handle ?? state.site.handle} theme={draft.theme} mode="edit" />
               <p className="mt-1.5 text-center text-[12px]" style={{ color: draft.theme.mutedText }}>
                 Opening times and place · edit them in Page settings
               </p>
             </div>
-          }
-          {state.site.bookingPage && !state.activePageId &&
-          <div className="mx-auto mb-4 w-full px-5" style={{ maxWidth: columnPx }} onClick={(e) => e.stopPropagation()}>
+          )}
+          {state.site.bookingPage && !state.activePageId && (
+            <div className="mx-auto mb-4 w-full px-5" style={{ maxWidth: columnPx }} onClick={(e) => e.stopPropagation()}>
               <BookingPagePanel settings={state.site.bookingPage} pageName={state.site.title} theme={draft.theme} mode="edit" />
               <p className="mt-1.5 text-center text-[12px]" style={{ color: draft.theme.mutedText }}>
                 Services and next free times · choose them in Page settings
               </p>
             </div>
-          }
-          {state.site.fundraiser && !state.activePageId &&
-          <div className="mx-auto mb-4 w-full px-5" style={{ maxWidth: columnPx }} onClick={(e) => e.stopPropagation()}>
+          )}
+          {state.site.fundraiser && !state.activePageId && (
+            <div className="mx-auto mb-4 w-full px-5" style={{ maxWidth: columnPx }} onClick={(e) => e.stopPropagation()}>
               <FundraiserPanel f={state.site.fundraiser} handle={state.published?.handle ?? state.site.handle} theme={draft.theme} mode="edit" workspaceId={currentWorkspaceId} />
               <p className="mt-1.5 text-center text-[12px]" style={{ color: draft.theme.mutedText }}>
                 Progress, giving and terms · edit them in Page settings
               </p>
             </div>
-          }
-          {blocks.length === 0 && source && !phase &&
-          <p className="mx-auto my-12 max-w-xs px-5 text-center text-[14px]" style={{ color: draft.theme.mutedText }}>
+          )}
+          {blocks.length === 0 && source && !phase && (
+            <p className="mx-auto my-12 max-w-xs px-5 text-center text-[14px]" style={{ color: draft.theme.mutedText }}>
               Visitors from this source would see nothing on this page. Remove a rule so every visitor sees at least one block.
             </p>
-          }
-          {blocks.length === 0 && phase &&
-          <p className="mx-auto my-12 max-w-xs px-5 text-center text-[14px]" style={{ color: draft.theme.mutedText }}>
+          )}
+          {blocks.length === 0 && phase && (
+            <p className="mx-auto my-12 max-w-xs px-5 text-center text-[14px]" style={{ color: draft.theme.mutedText }}>
               Nothing shows in the {copy.labels[phase]} phase yet. Select a block and tick “{copy.labels[phase]}” under Visibility, or add a new one.
             </p>
-          }
-          {blocks.map((block, i) =>
-          <BlockFrame
-            key={block.id}
-            block={block}
-            theme={draft.theme}
-            columnPx={columnPx}
-            density={state.site.layout?.density}
-            pairedWithPrevious={!!blocks[i - 1]?.layout.pair}
-            joinPrev={(block.layout.background ?? 'none') !== 'none' && blocks[i - 1]?.layout.background === block.layout.background}
-            joinNext={(block.layout.background ?? 'none') !== 'none' && blocks[i + 1]?.layout.background === block.layout.background}
-            groupName={findGroup(draft, block.groupId)?.name}
-            groupActive={!!block.groupId && block.groupId === activeGroupId}
-            groupEdge={{
-              first: blocks[i - 1]?.groupId !== block.groupId,
-              last: blocks[i + 1]?.groupId !== block.groupId
-            }}
-            onToggleLocked={actions.toggleLocked}
-            edited={isEdited(block)}
-            selected={block.id === selectedId}
-            issues={byBlock[block.id] ?? []}
-            isFirst={i === 0}
-            isLast={i === blocks.length - 1}
-            touch={touch}
-            onSelect={selectBlock}
-            onMove={actions.moveBlock}
-            onDuplicate={actions.duplicateBlock}
-            onToggleHidden={actions.toggleHidden}
-            onDelete={removeBlock}
-            onEdit={onEditBlock}
-            onCopy={clipboard.copy}
-            onPaste={clipboard.paste}
-            pasteName={clipboard.clipName}
-            onDragMove={drop.onDrag}
-            onDragDone={drop.onDragEnd}
-            dropTarget={drop.target?.frameId === block.id ? drop.target : null} />
-
           )}
+          {blocks.map((block, i) => (
+            <BlockFrame
+              key={block.id}
+              block={block}
+              theme={draft.theme}
+              columnPx={columnPx}
+              density={state.site.layout?.density}
+              pairedWithPrevious={!!blocks[i - 1]?.layout.pair}
+              joinPrev={(block.layout.background ?? 'none') !== 'none' && blocks[i - 1]?.layout.background === block.layout.background}
+              joinNext={(block.layout.background ?? 'none') !== 'none' && blocks[i + 1]?.layout.background === block.layout.background}
+              groupName={findGroup(draft, block.groupId)?.name}
+              groupActive={!!block.groupId && block.groupId === activeGroupId}
+              groupEdge={{
+                first: blocks[i - 1]?.groupId !== block.groupId,
+                last: blocks[i + 1]?.groupId !== block.groupId,
+              }}
+              onToggleLocked={actions.toggleLocked}
+              edited={isEdited(block)}
+              selected={block.id === selectedId}
+              issues={byBlock[block.id] ?? []}
+              isFirst={i === 0}
+              isLast={i === blocks.length - 1}
+              touch={touch}
+              onSelect={selectBlock}
+              onMove={actions.moveBlock}
+              onDuplicate={actions.duplicateBlock}
+              onToggleHidden={actions.toggleHidden}
+              onDelete={removeBlock}
+              onEdit={onEditBlock}
+              onCopy={clipboard.copy}
+              onPaste={clipboard.paste}
+              pasteName={clipboard.clipName}
+              onDragMove={drop.onDrag}
+              onDragDone={drop.onDragEnd}
+              dropTarget={drop.target?.frameId === block.id ? drop.target : null}
+            />
+          ))}
         </Reorder.Group>
         </CanvasDropContext.Provider>
         </BlockChildrenProvider>
-    }
-    </PageSurface>;
-
+      )}
+    </PageSurface>
+  );
 
   if (!framed) {
     return (
@@ -303,8 +303,8 @@ export function Artboard({ viewport = 'phone', framed = true, touch = false, onE
         {phaseBar}
         {sourceBar}
         {page}
-      </div>);
-
+      </div>
+    );
   }
 
   const width = viewportWidths[viewport];
@@ -339,13 +339,13 @@ export function Artboard({ viewport = 'phone', framed = true, touch = false, onE
       e.dataTransfer.dropEffect = into.ok ? 'copy' : 'none';
       const rect = boxFor(e, into);
       setDropLine(null);
-      setDropInto((cur) => cur && cur.target.frameId === into.frameId && cur.target.beforeId === into.beforeId && cur.target.ok === into.ok ? cur : rect ? { target: into, rect } : null);
+      setDropInto((cur) => (cur && cur.target.frameId === into.frameId && cur.target.beforeId === into.beforeId && cur.target.ok === into.ok ? cur : rect ? { target: into, rect } : null));
       return;
     }
     e.dataTransfer.dropEffect = 'copy';
     setDropInto(null);
     const at = placeFor(e);
-    setDropLine((cur) => cur?.y === at.y ? cur : at);
+    setDropLine((cur) => (cur?.y === at.y ? cur : at));
   };
   const clearDrop = () => {
     setDropLine(null);
@@ -388,7 +388,7 @@ export function Artboard({ viewport = 'phone', framed = true, touch = false, onE
           className={cn(
             // A size container (D158): display type scales to the chosen device width, not the browser window.
             'relative h-fit w-full overflow-hidden border border-line-strong shadow-3 transition-[max-width] duration-300 ease-out [container-type:inline-size]',
-            isPhone ? 'rounded-[32px]' : viewport === 'tablet' ? 'rounded-[20px]' : 'rounded-[12px]'
+            isPhone ? 'rounded-[32px]' : viewport === 'tablet' ? 'rounded-[20px]' : 'rounded-[12px]',
           )}
           style={{ maxWidth: width }}
           aria-label={`Page preview at ${width}px wide`}
@@ -396,31 +396,31 @@ export function Artboard({ viewport = 'phone', framed = true, touch = false, onE
           onDragLeave={(e) => {
             if (!e.currentTarget.contains(e.relatedTarget as Node | null)) clearDrop();
           }}
-          onDrop={onLibraryDrop}>
-          
+          onDrop={onLibraryDrop}
+        >
           {page}
           {dropLine && <span aria-hidden className="pointer-events-none absolute inset-x-4 z-20 h-[3px] -translate-y-1/2 rounded-full bg-action" style={{ top: dropLine.y }} />}
-          {dropInto &&
-          <div
-            aria-hidden
-            className={cn(
-              'pointer-events-none absolute z-20 rounded-md border-2 border-dashed',
-              dropInto.target.ok ? 'border-select bg-select/10' : 'border-danger bg-danger/10'
-            )}
-            style={dropInto.rect}>
-            
-              <span
+          {dropInto && (
+            <div
+              aria-hidden
               className={cn(
-                'absolute left-2 top-2 max-w-[calc(100%-16px)] truncate rounded-sm px-2 py-1 text-caption font-medium shadow-2',
-                dropInto.target.ok ? 'bg-select text-white' : 'bg-danger text-white'
-              )}>
-              
+                'pointer-events-none absolute z-20 rounded-md border-2 border-dashed',
+                dropInto.target.ok ? 'border-select bg-select/10' : 'border-danger bg-danger/10',
+              )}
+              style={dropInto.rect}
+            >
+              <span
+                className={cn(
+                  'absolute left-2 top-2 max-w-[calc(100%-16px)] truncate rounded-sm px-2 py-1 text-caption font-medium shadow-2',
+                  dropInto.target.ok ? 'bg-select text-white' : 'bg-danger text-white',
+                )}
+              >
                 {dropInto.target.message}
               </span>
             </div>
-          }
+          )}
         </div>
       </div>
-    </div>);
-
+    </div>
+  );
 }

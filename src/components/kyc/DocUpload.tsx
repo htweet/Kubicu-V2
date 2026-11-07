@@ -34,7 +34,7 @@ export function DocUpload({ id, label, hint, value, onChange, error, disabled }:
   const [sizeError, setSizeError] = useState('');
   const [busy, setBusy] = useState(false);
   const [viewing, setViewing] = useState(false);
-  const shown = sizeError || error && tr(error);
+  const shown = sizeError || (error && tr(error));
 
   const pick = async (file: File | undefined) => {
     if (input.current) input.current.value = '';
@@ -70,15 +70,15 @@ export function DocUpload({ id, label, hint, value, onChange, error, disabled }:
       </p>
       {hint && <p className="mt-0.5 text-caption text-fg-subtle">{tr(hint)}</p>}
       <input ref={input} id={id} type="file" accept="image/*,application/pdf" className="sr-only" aria-labelledby={`${id}-label`} aria-describedby={shown ? `${id}-error` : undefined} onChange={(e) => void pick(e.target.files?.[0])} disabled={disabled} />
-      {value ?
-      <div className="mt-2 flex items-center gap-3 rounded-md border border-line bg-raised p-2.5">
+      {value ? (
+        <div className="mt-2 flex items-center gap-3 rounded-md border border-line bg-raised p-2.5">
           <button
-          type="button"
-          onClick={() => canView && setViewing(true)}
-          disabled={!canView}
-          aria-label={canView ? tr('View {name}', { name: value.name }) : undefined}
-          className={cn('flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-sm border border-line bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus', canView && 'cursor-zoom-in')}>
-          
+            type="button"
+            onClick={() => canView && setViewing(true)}
+            disabled={!canView}
+            aria-label={canView ? tr('View {name}', { name: value.name }) : undefined}
+            className={cn('flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-sm border border-line bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus', canView && 'cursor-zoom-in')}
+          >
             {busy ? <Loader2Icon size={18} className="animate-spin text-fg-subtle" aria-hidden /> : value.previewUrl ? <img src={value.previewUrl} alt="" className="h-full w-full object-cover" /> : <FileTextIcon size={22} className="text-fg-muted" aria-hidden />}
           </button>
           <span className="min-w-0 flex-1">
@@ -89,13 +89,13 @@ export function DocUpload({ id, label, hint, value, onChange, error, disabled }:
             </span>
             {value.kind === 'pdf' && !pdfUrl && <span className="block text-caption text-fg-subtle">{tr('Added earlier — choose Replace to view it again.')}</span>}
           </span>
-          {!disabled &&
-        <span className="flex shrink-0 flex-wrap justify-end gap-1">
-              {canView &&
-          <Button size="sm" variant="tertiary" leadingIcon={EyeIcon} onClick={() => setViewing(true)} className="hidden sm:inline-flex">
+          {!disabled && (
+            <span className="flex shrink-0 flex-wrap justify-end gap-1">
+              {canView && (
+                <Button size="sm" variant="tertiary" leadingIcon={EyeIcon} onClick={() => setViewing(true)} className="hidden sm:inline-flex">
                   View
                 </Button>
-          }
+              )}
               <Button size="sm" variant="tertiary" onClick={() => input.current?.click()}>
                 Replace
               </Button>
@@ -103,45 +103,45 @@ export function DocUpload({ id, label, hint, value, onChange, error, disabled }:
                 Remove
               </Button>
             </span>
-        }
-        </div> :
-
-      <button
-        type="button"
-        disabled={disabled || busy}
-        onClick={() => input.current?.click()}
-        onDragOver={(e) => e.preventDefault()}
-        onDrop={(e) => {
-          e.preventDefault();
-          void pick(e.dataTransfer.files?.[0]);
-        }}
-        className={cn(
-          'mt-2 flex w-full flex-wrap items-center justify-center gap-x-2 gap-y-0.5 rounded-md border border-dashed px-4 py-5 text-label font-medium transition-colors duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
-          shown ? 'border-danger text-danger' : 'border-line-strong text-fg-muted hover:border-action hover:text-action',
-          (disabled || busy) && 'cursor-not-allowed opacity-50'
-        )}>
-        
+          )}
+        </div>
+      ) : (
+        <button
+          type="button"
+          disabled={disabled || busy}
+          onClick={() => input.current?.click()}
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={(e) => {
+            e.preventDefault();
+            void pick(e.dataTransfer.files?.[0]);
+          }}
+          className={cn(
+            'mt-2 flex w-full flex-wrap items-center justify-center gap-x-2 gap-y-0.5 rounded-md border border-dashed px-4 py-5 text-label font-medium transition-colors duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
+            shown ? 'border-danger text-danger' : 'border-line-strong text-fg-muted hover:border-action hover:text-action',
+            (disabled || busy) && 'cursor-not-allowed opacity-50',
+          )}
+        >
           {busy ? <Loader2Icon size={16} className="animate-spin" aria-hidden /> : <UploadIcon size={16} aria-hidden />} {tr('Choose a photo or PDF')}
           <span className="font-normal text-fg-subtle">· {tr('up to {n} MB', { n: MAX_MB })}</span>
         </button>
-      }
-      {shown &&
-      <p id={`${id}-error`} role="alert" className="mt-1.5 text-caption font-medium text-danger">
+      )}
+      {shown && (
+        <p id={`${id}-error`} role="alert" className="mt-1.5 text-caption font-medium text-danger">
           {shown}
         </p>
-      }
-      {value && canView &&
-      <Dialog open={viewing} onClose={() => setViewing(false)} title={tr(label)} description={value.name}>
-          {value.previewUrl ?
-        <img src={value.previewUrl} alt={tr(label)} className="mx-auto max-h-[65vh] w-auto rounded-sm border border-line object-contain" /> :
-
-        <iframe title={value.name} src={pdfUrl} className="h-[65vh] w-full rounded-sm border border-line" />
-        }
+      )}
+      {value && canView && (
+        <Dialog open={viewing} onClose={() => setViewing(false)} title={tr(label)} description={value.name}>
+          {value.previewUrl ? (
+            <img src={value.previewUrl} alt={tr(label)} className="mx-auto max-h-[65vh] w-auto rounded-sm border border-line object-contain" />
+          ) : (
+            <iframe title={value.name} src={pdfUrl} className="h-[65vh] w-full rounded-sm border border-line" />
+          )}
           <p className="mt-3 flex items-center gap-1.5 text-caption text-fg-subtle">
             <LockIcon size={12} aria-hidden /> {tr('Only used for verification. It isn’t added to Media or shown on your pages.')}
           </p>
         </Dialog>
-      }
-    </div>);
-
+      )}
+    </div>
+  );
 }

@@ -4,7 +4,7 @@ import { toUiLang } from '../contexts/LocaleContext';
 import type { UiLang } from '../data/translations';
 
 /** Applies the signed-in person's text size, motion and language preferences to the whole app (D80, D133). */
-export function useAccountEffects(): {reduceMotion: boolean;lang: UiLang;} {
+export function useAccountEffects(): { reduceMotion: boolean; lang: UiLang } {
   const { prefs } = useAccount();
   const lang = toUiLang(prefs.language);
   useEffect(() => {

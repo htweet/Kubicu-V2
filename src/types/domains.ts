@@ -46,7 +46,7 @@ export interface CampaignLink {
   createdAt: string;
   archivedAt: string | null;
   /** Optional tags passed on for Google Analytics and ad tools (D230). Source comes from `source`. */
-  utm?: {medium: string;campaign: string;content: string;};
+  utm?: { medium: string; campaign: string; content: string };
   /** Optional end: after this, the link shows "This link has ended" like an archived one (D230). */
   endsAt?: string | null;
   /** Another website instead of one of your pages (D268). Checked by utils/linkSafety on save and on every visit. */
@@ -60,7 +60,7 @@ export interface CampaignLink {
   /** Optional start: before this, the link says “not live yet” (D271). */
   startsAt?: string | null;
   /** Opens a WhatsApp chat with a message already written, instead of a page or website (D271). */
-  whatsapp?: {phone: string;message: string;} | null;
+  whatsapp?: { phone: string; message: string } | null;
   /** Result of the latest scheduled or manual check (D271). */
   health?: LinkHealth;
 }

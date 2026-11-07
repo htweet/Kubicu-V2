@@ -14,7 +14,7 @@ import { Button } from '../ui/Button';
 import { cn } from '../../utils/cn';
 
 /** Print orders with live tracking, cancel-before-printing and a prototype fast-forward (D114). */
-export function PrintOrdersList({ highlightId }: {highlightId?: string | null;}) {
+export function PrintOrdersList({ highlightId }: { highlightId?: string | null }) {
   const { current } = useWorkspace();
   const team = useTeam();
   const money = useMoney(current.id);
@@ -33,12 +33,12 @@ export function PrintOrdersList({ highlightId }: {highlightId?: string | null;})
     if (!canCancel(o)) return toast.error('Printing has started', { description: 'This order can’t be cancelled any more.' });
     const at = new Date().toISOString();
     if (o.payMethod === 'wallet') money.update((m) => ({ ...m, ledger: [{ id: uid('led'), at, kind: 'purchase', amountNgn: o.totalNgn, state: 'available', label: `Print order cancelled · ${o.ref}` }, ...m.ledger] }));
-    update((d) => ({ ...d, orders: d.orders.map((x) => x.id === o.id ? { ...x, cancelledAt: at, refundedTo: o.payMethod } : x) }));
+    update((d) => ({ ...d, orders: d.orders.map((x) => (x.id === o.id ? { ...x, cancelledAt: at, refundedTo: o.payMethod } : x)) }));
     team.log('pages', `cancelled print order ${o.ref}`, '/app/print-kit');
     toast.success(`${o.ref} cancelled`, { description: `${formatNgn(o.totalNgn)} refunded to your ${o.payMethod === 'wallet' ? 'wallet' : 'card'}.` });
   };
 
-  const skip = (o: PrintOrder) => update((d) => ({ ...d, orders: d.orders.map((x) => x.id === o.id ? { ...x, skipped: x.skipped + 1 } : x) }));
+  const skip = (o: PrintOrder) => update((d) => ({ ...d, orders: d.orders.map((x) => (x.id === o.id ? { ...x, skipped: x.skipped + 1 } : x)) }));
 
   return (
     <section aria-labelledby="print-orders" className="flex flex-col gap-4">
@@ -75,49 +75,49 @@ export function PrintOrdersList({ highlightId }: {highlightId?: string | null;})
                 </Badge>
               </div>
 
-              {stage === 'cancelled' ?
-              <p className="text-caption text-fg-muted">Cancelled before printing · {formatNgn(o.totalNgn)} refunded to your {o.refundedTo === 'wallet' ? 'wallet' : 'card'}.</p> :
-
-              <ol className="grid grid-cols-4 gap-2" aria-label={`Progress: ${stageLabels[stage]}`}>
-                  {flowStages.map((s, i) =>
-                <li key={s} className="flex flex-col gap-1.5">
+              {stage === 'cancelled' ? (
+                <p className="text-caption text-fg-muted">Cancelled before printing · {formatNgn(o.totalNgn)} refunded to your {o.refundedTo === 'wallet' ? 'wallet' : 'card'}.</p>
+              ) : (
+                <ol className="grid grid-cols-4 gap-2" aria-label={`Progress: ${stageLabels[stage]}`}>
+                  {flowStages.map((s, i) => (
+                    <li key={s} className="flex flex-col gap-1.5">
                       <span className={cn('h-1 rounded-full', i <= at ? 'bg-action' : 'bg-line')} />
                       <span className={cn('flex items-center gap-1 text-caption', i === at ? 'font-semibold text-fg' : i < at ? 'text-fg-muted' : 'text-fg-subtle')}>
                         {i < at && <CheckIcon size={12} aria-hidden />}
                         {stageLabels[s]}
                       </span>
                     </li>
-                )}
+                  ))}
                 </ol>
-              }
+              )}
 
-              {stage !== 'cancelled' &&
-              <div className="flex flex-wrap items-center justify-between gap-3">
+              {stage !== 'cancelled' && (
+                <div className="flex flex-wrap items-center justify-between gap-3">
                   <p className="text-caption text-fg-muted">
-                    {stage === 'delivered' ?
-                  o.zone === 'pickup' ?
-                  'Collected from the print shop.' :
-                  `Delivered to ${o.recipient.name}.` :
-                  `${o.zone === 'pickup' ? 'Ready to pick up' : `To ${o.recipient.state}`} · expected ${eta.earliest.toLocaleDateString('en-NG', { day: 'numeric', month: 'short' })}${eta.latest.getTime() !== eta.earliest.getTime() ? `–${eta.latest.toLocaleDateString('en-NG', { day: 'numeric', month: 'short' })}` : ''} · ${deliveryZones.find((z) => z.id === o.zone)?.label}`}
+                    {stage === 'delivered'
+                      ? o.zone === 'pickup'
+                        ? 'Collected from the print shop.'
+                        : `Delivered to ${o.recipient.name}.`
+                      : `${o.zone === 'pickup' ? 'Ready to pick up' : `To ${o.recipient.state}`} · expected ${eta.earliest.toLocaleDateString('en-NG', { day: 'numeric', month: 'short' })}${eta.latest.getTime() !== eta.earliest.getTime() ? `–${eta.latest.toLocaleDateString('en-NG', { day: 'numeric', month: 'short' })}` : ''} · ${deliveryZones.find((z) => z.id === o.zone)?.label}`}
                   </p>
                   <div className="flex gap-2">
-                    {canCancel(o) &&
-                  <Button size="sm" variant="tertiary" onClick={() => cancel(o)}>
+                    {canCancel(o) && (
+                      <Button size="sm" variant="tertiary" onClick={() => cancel(o)}>
                         Cancel & refund
                       </Button>
-                  }
-                    {stage !== 'delivered' &&
-                  <Button size="sm" variant="secondary" leadingIcon={FastForwardIcon} onClick={() => skip(o)} title="Prototype only">
+                    )}
+                    {stage !== 'delivered' && (
+                      <Button size="sm" variant="secondary" leadingIcon={FastForwardIcon} onClick={() => skip(o)} title="Prototype only">
                         Prototype: next stage
                       </Button>
-                  }
+                    )}
                   </div>
                 </div>
-              }
-            </li>);
-
+              )}
+            </li>
+          );
         })}
       </ul>
-    </section>);
-
+    </section>
+  );
 }

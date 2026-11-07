@@ -35,23 +35,23 @@ export function PlatformBanner() {
 
   // Any of this workspace's links that staff took down.
   const takedown = useMemo(() => {
-    const handles = workspaceSpaces(current).
-    filter((s) => !s.archivedAt).
-    map((s) => spaceHandle(current.id, s.id)).
-    filter((h): h is string => !!h);
+    const handles = workspaceSpaces(current)
+      .filter((s) => !s.archivedAt)
+      .map((s) => spaceHandle(current.id, s.id))
+      .filter((h): h is string => !!h);
     return store.takedowns.find((t) => handles.includes(t.handle)) ?? null;
   }, [current, store.takedowns]);
 
-  const notice: {kind: AppealKind;key: string;handle: string | null;reason: string;title: string;} | null = suspension ?
-  { kind: 'suspension', key: current.id, handle: null, reason: suspension.reason, title: 'Your public pages are paused by KUBICU.' } :
-  takedown ?
-  { kind: 'takedown', key: takedown.handle, handle: takedown.handle, reason: takedown.reason, title: `kub.icu/${takedown.handle} was taken down by KUBICU.` } :
-  null;
+  const notice: { kind: AppealKind; key: string; handle: string | null; reason: string; title: string } | null = suspension
+    ? { kind: 'suspension', key: current.id, handle: null, reason: suspension.reason, title: 'Your public pages are paused by KUBICU.' }
+    : takedown
+      ? { kind: 'takedown', key: takedown.handle, handle: takedown.handle, reason: takedown.reason, title: `kub.icu/${takedown.handle} was taken down by KUBICU.` }
+      : null;
 
   if (notice) {
     const appeal = appealFor(store, notice.kind, notice.key);
     // An appeal decided before this decision was made doesn't count; a new one can be sent.
-    const current_appeal: Appeal | undefined = appeal && (appeal.status === 'open' || appeal.decidedAt && Date.parse(appeal.decidedAt) >= Date.parse(suspension?.at ?? takedown?.at ?? '0')) ? appeal : undefined;
+    const current_appeal: Appeal | undefined = appeal && (appeal.status === 'open' || (appeal.decidedAt && Date.parse(appeal.decidedAt) >= Date.parse(suspension?.at ?? takedown?.at ?? '0'))) ? appeal : undefined;
     return (
       <div role="alert" className="flex flex-col gap-3 border-b border-line bg-danger-soft px-5 py-3 sm:flex-row sm:items-start md:px-8">
         <BanIcon size={18} className="mt-0.5 shrink-0 text-danger max-sm:hidden" aria-hidden />
@@ -60,17 +60,17 @@ export function PlatformBanner() {
             <span className="font-semibold">{notice.title}</span> {notice.reason} Nothing has been deleted.
           </p>
           {current_appeal?.status === 'open' && <p className="mt-1 text-fg-muted">Appeal sent {new Date(current_appeal.createdAt).toLocaleDateString('en-NG', { day: 'numeric', month: 'short' })} — a different staff member is reviewing it.</p>}
-          {current_appeal?.status === 'upheld' &&
-          <p className="mt-1 text-fg-muted">
+          {current_appeal?.status === 'upheld' && (
+            <p className="mt-1 text-fg-muted">
               <span className="font-semibold text-fg">Appeal reviewed — decision kept.</span> “{current_appeal.decision}” Contact support from Help if something has changed.
             </p>
-          }
+          )}
         </div>
-        {!current_appeal &&
-        <Button size="sm" variant="secondary" className="shrink-0 self-start" onClick={() => setAppealing(true)}>
+        {!current_appeal && (
+          <Button size="sm" variant="secondary" className="shrink-0 self-start" onClick={() => setAppealing(true)}>
             Appeal this decision
           </Button>
-        }
+        )}
         <AppealDialog
           open={appealing}
           onClose={() => setAppealing(false)}
@@ -79,10 +79,10 @@ export function PlatformBanner() {
           workspaceId={current.id}
           workspaceName={current.name}
           from={account.profile.name}
-          originalReason={notice.reason} />
-        
-      </div>);
-
+          originalReason={notice.reason}
+        />
+      </div>
+    );
   }
   if (!announcement) return null;
 
@@ -92,8 +92,8 @@ export function PlatformBanner() {
     try {
       localStorage.setItem(DISMISS_KEY, JSON.stringify(next));
     } catch {
-
-      /* storage blocked — dismissed for this visit only */}
+      /* storage blocked — dismissed for this visit only */
+    }
   };
 
   return (
@@ -105,6 +105,6 @@ export function PlatformBanner() {
       <button type="button" onClick={dismiss} aria-label="Dismiss announcement" className="shrink-0 rounded p-1 text-fg-subtle transition-colors duration-150 hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
         <XIcon size={16} aria-hidden />
       </button>
-    </div>);
-
+    </div>
+  );
 }

@@ -25,6 +25,6 @@ export function ReceiptBusinessFooter({ business: b, fallbackName, muted, border
         {contact && <p style={muted}>{contact}</p>}
         {b.receiptFooter.trim() && <p className="mt-1.5">{b.receiptFooter.trim()}</p>}
       </div>
-    </div>);
-
+    </div>
+  );
 }

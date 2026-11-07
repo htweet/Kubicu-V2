@@ -19,28 +19,28 @@ export const kycRules = (country?: CountryCode): KycCountryRules => kycCountries
 
 const tiers: Record<EntityType, KycTier> = { individual: 2, business_name: 3, company: 3 };
 const entityEntry = (id: EntityType) => ({
-  get label() {return kycRules().entities[id].label;},
-  get short() {return kycRules().entities[id].short;},
-  get blurb() {return kycRules().entities[id].blurb;},
-  get needs() {return kycRules().entities[id].needs;},
-  tier: tiers[id]
+  get label() { return kycRules().entities[id].label; },
+  get short() { return kycRules().entities[id].short; },
+  get blurb() { return kycRules().entities[id].blurb; },
+  get needs() { return kycRules().entities[id].needs; },
+  tier: tiers[id],
 });
 
-export const entityInfo: Record<EntityType, {label: string;short: string;blurb: string;needs: string[];tier: KycTier;}> = {
+export const entityInfo: Record<EntityType, { label: string; short: string; blurb: string; needs: string[]; tier: KycTier }> = {
   individual: entityEntry('individual'),
   business_name: entityEntry('business_name'),
-  company: entityEntry('company')
+  company: entityEntry('company'),
 };
 
-export const stepLabels: Record<KycStepId, {label: string;hint: string;}> = {
+export const stepLabels: Record<KycStepId, { label: string; hint: string }> = {
   type: { label: 'Business type', hint: 'Who is getting paid' },
-  identity: { label: 'Your identity', get hint() {return kycRules().identityHint;} },
+  identity: { label: 'Your identity', get hint() { return kycRules().identityHint; } },
   address: { label: 'Address', hint: 'Where you live or trade' },
-  business: { label: 'Business details', get hint() {return `${kycRules().registry.short} registration and documents`;} },
+  business: { label: 'Business details', get hint() { return `${kycRules().registry.short} registration and documents`; } },
   people: { label: 'Directors & owners', hint: 'Everyone who controls the business' },
   payout: { label: 'Payout account', hint: 'Must match the verified name' },
   declarations: { label: 'Declarations', hint: 'Expected volume and source of funds' },
-  review: { label: 'Review & submit', hint: 'Check everything once' }
+  review: { label: 'Review & submit', hint: 'Check everything once' },
 };
 
 export function stepsFor(entity: EntityType | null): KycStepId[] {
@@ -69,12 +69,12 @@ export const blankKyc = (): KycCase => ({
   entity: null,
   identity: {
     legalName: '', dob: '', phone: '', phoneVerified: false, bvn: '', nin: '', idType: 'nin', idNumber: '', idExpiry: '', idFront: null, selfie: false,
-    checks: { bvn: 'not_run', nin: 'not_run', liveness: 'not_run', nameOnBvn: '' }
+    checks: { bvn: 'not_run', nin: 'not_run', liveness: 'not_run', nameOnBvn: '' },
   },
   address: { line1: '', city: '', state: activeCountryInfo().defaultRegion, proofType: 'utility', proof: null },
   business: {
     registeredName: '', number: '', incorporatedOn: '', tin: '', industry: '', description: '', website: '', certificate: null, statusReport: null, memart: null,
-    checks: { cac: 'not_run', registeredNameOnCac: '', tin: 'not_run' }
+    checks: { cac: 'not_run', registeredNameOnCac: '', tin: 'not_run' },
   },
   people: [],
   payoutBankId: null,
@@ -85,7 +85,7 @@ export const blankKyc = (): KycCase => ({
   note: null,
   requests: [],
   history: [],
-  attempts: 0
+  attempts: 0,
 });
 
 /** Brings an older stored case up to the current shape. */
@@ -103,7 +103,7 @@ export function normaliseKyc(raw: Partial<KycCase> | undefined): KycCase {
     declarations: { ...base.declarations, ...raw.declarations },
     people: raw.people ?? [],
     requests: raw.requests ?? [],
-    history: raw.history ?? []
+    history: raw.history ?? [],
   };
 }
 
@@ -147,7 +147,7 @@ export const checkTones = { not_run: 'neutral', pass: 'success', review: 'warnin
 
 export type StepErrors = Record<string, string>;
 
-const ageOf = (dob: string) => dob ? (Date.now() - Date.parse(dob)) / (365.25 * 86_400_000) : 0;
+const ageOf = (dob: string) => (dob ? (Date.now() - Date.parse(dob)) / (365.25 * 86_400_000) : 0);
 
 export function stepErrors(k: KycCase, step: KycStepId, banks: BankAccount[]): StepErrors {
   const e: StepErrors = {};
@@ -157,74 +157,74 @@ export function stepErrors(k: KycCase, step: KycStepId, banks: BankAccount[]): S
     case 'type':
       if (!k.entity) e.entity = 'Choose how your business is set up.';
       break;
-    case 'identity':{
-        const r = kycRules();
-        if (i.legalName.trim().split(/\s+/).length < 2) e.legalName = r.legalNameError;
-        if (!i.dob) e.dob = 'Enter your date of birth.';else
-        if (ageOf(i.dob) < 18) e.dob = 'You must be 18 or older to receive payouts.';
-        if (!i.phone.trim() || phoneIssue(i.phone) !== null) e.phone = activeCountry() === 'NG' && !i.phone.trim().startsWith('+') ? 'Enter an 11-digit Nigerian number starting with 0.' : 'Enter a complete mobile number.';else
-        if (!i.phoneVerified) e.phone = 'Confirm your phone with the code we send.';
-        if (!r.primary.pattern.test(i.bvn.trim())) e.bvn = r.primary.formatError;else
-        if (i.checks.bvn === 'fail') e.bvn = r.primary.mismatch;
-        if (r.secondary) {
-          if (!r.secondary.pattern.test(i.nin.trim())) e.nin = r.secondary.formatError;else
-          if (i.checks.nin === 'fail') e.nin = r.secondary.mismatch;
-        }
-        if (i.idNumber.trim().length < 6) e.idNumber = 'Enter the number on your ID.';
-        if (idNeedsExpiry(i.idType)) {
-          if (!i.idExpiry) e.idExpiry = 'Enter the expiry date.';else
-          if (Date.parse(i.idExpiry) < Date.now()) e.idExpiry = 'This ID has expired. Use a valid one.';
-        }
-        if (!i.idFront) e.idFront = 'Upload a clear photo of your ID.';
-        if (!i.selfie) e.selfie = 'Take a selfie so we can match it to your ID.';
-        break;
+    case 'identity': {
+      const r = kycRules();
+      if (i.legalName.trim().split(/\s+/).length < 2) e.legalName = r.legalNameError;
+      if (!i.dob) e.dob = 'Enter your date of birth.';
+      else if (ageOf(i.dob) < 18) e.dob = 'You must be 18 or older to receive payouts.';
+      if (!i.phone.trim() || phoneIssue(i.phone) !== null) e.phone = activeCountry() === 'NG' && !i.phone.trim().startsWith('+') ? 'Enter an 11-digit Nigerian number starting with 0.' : 'Enter a complete mobile number.';
+      else if (!i.phoneVerified) e.phone = 'Confirm your phone with the code we send.';
+      if (!r.primary.pattern.test(i.bvn.trim())) e.bvn = r.primary.formatError;
+      else if (i.checks.bvn === 'fail') e.bvn = r.primary.mismatch;
+      if (r.secondary) {
+        if (!r.secondary.pattern.test(i.nin.trim())) e.nin = r.secondary.formatError;
+        else if (i.checks.nin === 'fail') e.nin = r.secondary.mismatch;
       }
+      if (i.idNumber.trim().length < 6) e.idNumber = 'Enter the number on your ID.';
+      if (idNeedsExpiry(i.idType)) {
+        if (!i.idExpiry) e.idExpiry = 'Enter the expiry date.';
+        else if (Date.parse(i.idExpiry) < Date.now()) e.idExpiry = 'This ID has expired. Use a valid one.';
+      }
+      if (!i.idFront) e.idFront = 'Upload a clear photo of your ID.';
+      if (!i.selfie) e.selfie = 'Take a selfie so we can match it to your ID.';
+      break;
+    }
     case 'address':
       if (k.address.line1.trim().length < 6) e.line1 = 'Enter your street address.';
       if (k.address.city.trim().length < 2) e.city = 'Enter your city or town.';
       if (!k.address.proof) e.proof = 'Upload a proof of address dated in the last 3 months.';
       break;
-    case 'business':{
-        const reg = kycRules().registry;
-        const tax = kycRules().tax;
-        const company = k.entity === 'company';
-        if (b.registeredName.trim().length < 3) e.registeredName = reg.nameError;
-        if (!(company ? reg.companyPattern : reg.bnPattern).test(b.number.trim())) e.number = company ? reg.companyError : reg.bnError;else
-        if (b.checks.cac === 'fail') e.number = reg.notFound;
-        if (!b.incorporatedOn) e.incorporatedOn = 'Enter the registration date.';
-        if (company && !tax.pattern.test(b.tin.trim())) e.tin = tax.error;
-        if (!b.industry) e.industry = 'Choose what the business does.';
-        if (b.description.trim().length < 20) e.description = 'Describe what you sell and how in a sentence or two.';
-        if (!b.certificate) e.certificate = reg.certificateError;
-        if (!b.statusReport) e.statusReport = company ? reg.companyRecordError : reg.bnRecordError;
-        if (company && !b.memart) e.memart = reg.constitutionError;
-        break;
-      }
-    case 'people':{
-        if (!k.people.length) e.people = k.entity === 'company' ? 'Add every director and anyone who owns 25% or more.' : 'Add every proprietor.';
-        const bad = k.people.find((p) => personErrors(p).length);
-        if (bad) e.people = `Finish the details for ${bad.fullName || 'each person'}.`;
-        if (k.entity === 'company' && k.people.length && !k.people.some((p) => p.role !== 'owner')) e.people = 'Add at least one director.';
-        const total = k.people.reduce((s, p) => s + (p.role === 'director' ? 0 : p.ownershipPct), 0);
-        if (total > 100) e.people = `Ownership adds up to ${total}%. It can’t be more than 100%.`;
-        break;
-      }
-    case 'payout':{
-        const bank = banks.find((x) => x.id === k.payoutBankId);
-        if (!bank) e.payoutBankId = 'Choose the account that will receive payouts.';else
-        if (bank.nameMatch === 'mismatch') e.payoutBankId = 'The name on this account doesn’t match. Choose an account in the verified name.';
-        break;
-      }
-    case 'declarations':{
-        const d = k.declarations;
-        if (!d.monthlyVolume) e.monthlyVolume = 'Choose your expected monthly sales.';
-        if (!d.sourceOfFunds) e.sourceOfFunds = 'Choose where your money mainly comes from.';
-        if (d.sourceOfFunds === 'other' && d.sourceDetail.trim().length < 5) e.sourceDetail = 'Tell us a little more.';
-        if (d.pep && d.pepDetail.trim().length < 5) e.pepDetail = 'Say which public role and who holds it.';
-        if (!d.accurate) e.accurate = 'Confirm the information is true.';
-        if (!d.terms) e.terms = 'Agree to the partner’s terms to continue.';
-        break;
-      }
+    case 'business': {
+      const reg = kycRules().registry;
+      const tax = kycRules().tax;
+      const company = k.entity === 'company';
+      if (b.registeredName.trim().length < 3) e.registeredName = reg.nameError;
+      if (!(company ? reg.companyPattern : reg.bnPattern).test(b.number.trim())) e.number = company ? reg.companyError : reg.bnError;
+      else if (b.checks.cac === 'fail') e.number = reg.notFound;
+      if (!b.incorporatedOn) e.incorporatedOn = 'Enter the registration date.';
+      if (company && !tax.pattern.test(b.tin.trim())) e.tin = tax.error;
+      if (!b.industry) e.industry = 'Choose what the business does.';
+      if (b.description.trim().length < 20) e.description = 'Describe what you sell and how in a sentence or two.';
+      if (!b.certificate) e.certificate = reg.certificateError;
+      if (!b.statusReport) e.statusReport = company ? reg.companyRecordError : reg.bnRecordError;
+      if (company && !b.memart) e.memart = reg.constitutionError;
+      break;
+    }
+    case 'people': {
+      if (!k.people.length) e.people = k.entity === 'company' ? 'Add every director and anyone who owns 25% or more.' : 'Add every proprietor.';
+      const bad = k.people.find((p) => personErrors(p).length);
+      if (bad) e.people = `Finish the details for ${bad.fullName || 'each person'}.`;
+      if (k.entity === 'company' && k.people.length && !k.people.some((p) => p.role !== 'owner')) e.people = 'Add at least one director.';
+      const total = k.people.reduce((s, p) => s + (p.role === 'director' ? 0 : p.ownershipPct), 0);
+      if (total > 100) e.people = `Ownership adds up to ${total}%. It can’t be more than 100%.`;
+      break;
+    }
+    case 'payout': {
+      const bank = banks.find((x) => x.id === k.payoutBankId);
+      if (!bank) e.payoutBankId = 'Choose the account that will receive payouts.';
+      else if (bank.nameMatch === 'mismatch') e.payoutBankId = 'The name on this account doesn’t match. Choose an account in the verified name.';
+      break;
+    }
+    case 'declarations': {
+      const d = k.declarations;
+      if (!d.monthlyVolume) e.monthlyVolume = 'Choose your expected monthly sales.';
+      if (!d.sourceOfFunds) e.sourceOfFunds = 'Choose where your money mainly comes from.';
+      if (d.sourceOfFunds === 'other' && d.sourceDetail.trim().length < 5) e.sourceDetail = 'Tell us a little more.';
+      if (d.pep && d.pepDetail.trim().length < 5) e.pepDetail = 'Say which public role and who holds it.';
+      if (!d.accurate) e.accurate = 'Confirm the information is true.';
+      if (!d.terms) e.terms = 'Agree to the partner’s terms to continue.';
+      break;
+    }
     case 'review':
       break;
   }
@@ -249,7 +249,7 @@ export function readyToSubmit(k: KycCase, banks: BankAccount[]): KycStepId | nul
 export const blankPerson = (): KycPerson => ({ id: uid('kp'), fullName: '', role: 'director', ownershipPct: 0, dob: '', bvn: '', pep: false, check: 'not_run' });
 
 /** The name a payout account must match: the person for individuals, the registered name for businesses. */
-export const verifiedName = (k: KycCase) => k.entity === 'individual' || !k.entity ? k.identity.legalName : k.business.registeredName;
+export const verifiedName = (k: KycCase) => (k.entity === 'individual' || !k.entity ? k.identity.legalName : k.business.registeredName);
 
 export const industries = ['Fashion & clothing', 'Beauty & wellness', 'Food & drinks', 'Events & entertainment', 'Home services', 'Education & coaching', 'Electronics & gadgets', 'Health products', 'Digital products', 'Professional services', 'Other'];
 
@@ -278,7 +278,7 @@ export const statusLabels: Record<KycCase['status'], string> = {
   in_review: 'In review',
   needs_info: 'Action needed',
   approved: 'Verified',
-  rejected: 'Not approved'
+  rejected: 'Not approved',
 };
 export const statusTones = { not_started: 'neutral', in_progress: 'info', in_review: 'info', needs_info: 'warning', approved: 'success', rejected: 'danger' } as const;
 

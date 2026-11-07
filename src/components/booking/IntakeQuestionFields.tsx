@@ -31,17 +31,17 @@ export function IntakeQuestionFields({ theme, questions, answers, onChange, show
       {questions.map((q) => {
         const err = showErrors ? errors[q.id] : undefined;
         if (q.kind === 'text')
-        return (
-          <ThemedField
-            key={q.id}
-            theme={theme}
-            label={q.label}
-            optional={!q.required}
-            value={answers[q.id] ?? ''}
-            error={err}
-            onChange={(v) => onChange(q.id, v.slice(0, 300))} />);
-
-
+          return (
+            <ThemedField
+              key={q.id}
+              theme={theme}
+              label={q.label}
+              optional={!q.required}
+              value={answers[q.id] ?? ''}
+              error={err}
+              onChange={(v) => onChange(q.id, v.slice(0, 300))}
+            />
+          );
         const options = q.kind === 'yesno' ? ['Yes', 'No'] : q.options;
         const errId = `iq-err-${q.id}`;
         return (
@@ -56,22 +56,22 @@ export function IntakeQuestionFields({ theme, questions, answers, onChange, show
                   <label
                     key={o}
                     className="flex min-h-[44px] cursor-pointer items-center gap-3 px-3.5 text-[14.5px] focus-within:ring-2"
-                    style={{ background: theme.background, color: theme.text, borderRadius: 10, border: `1.5px solid ${on ? theme.text : mix(theme.text, 18)}` }}>
-                    
+                    style={{ background: theme.background, color: theme.text, borderRadius: 10, border: `1.5px solid ${on ? theme.text : mix(theme.text, 18)}` }}
+                  >
                     <input type="radio" name={`iq-${q.id}`} checked={on} onChange={() => onChange(q.id, o)} style={{ accentColor: theme.text }} />
                     {o}
-                  </label>);
-
+                  </label>
+                );
               })}
             </div>
-            {err &&
-            <p id={errId} className="text-[12.5px] font-semibold" role="alert">
+            {err && (
+              <p id={errId} className="text-[12.5px] font-semibold" role="alert">
                 {err}
               </p>
-            }
-          </fieldset>);
-
+            )}
+          </fieldset>
+        );
       })}
-    </>);
-
+    </>
+  );
 }

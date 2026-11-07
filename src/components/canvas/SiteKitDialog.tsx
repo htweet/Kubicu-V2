@@ -16,7 +16,7 @@ interface SiteKitDialogProps {
   onClose: () => void;
   /** Pages the plan still allows. */
   room: number;
-  nextPlan?: {id: WorkspacePlan;name: string;};
+  nextPlan?: { id: WorkspacePlan; name: string };
   /** Opened from onboarding with an industry already chosen (D137). */
   initialKitId?: string | null;
 }
@@ -57,7 +57,7 @@ export function SiteKitDialog({ open, onClose, room, nextPlan, initialKitId }: S
     }
     toast.success(`Added ${n} page${n === 1 ? '' : 's'}`, {
       description: 'Replace anything in [brackets], set up each block, then publish. They join your menu automatically.',
-      action: { label: 'Undo', onClick: () => actions.undo() }
+      action: { label: 'Undo', onClick: () => actions.undo() },
     });
   };
 
@@ -69,28 +69,28 @@ export function SiteKitDialog({ open, onClose, room, nextPlan, initialKitId }: S
       title="Add a ready-made site"
       description="A full set of pages laid out for your kind of business. Your home page isn’t changed."
       footer={
-      <>
+        <>
           <Button variant="secondary" onClick={onClose}>
             Cancel
           </Button>
-          {noRoom && nextPlan ?
-        <UpgradeButton plan={nextPlan.id} feature="More pages on your site" /> :
-
-        <Button onClick={add} disabled={picked.size === 0 || over}>
+          {noRoom && nextPlan ? (
+            <UpgradeButton plan={nextPlan.id} feature="More pages on your site" />
+          ) : (
+            <Button onClick={add} disabled={picked.size === 0 || over}>
               {picked.size ? `Add ${picked.size} page${picked.size === 1 ? '' : 's'}` : 'Add pages'}
             </Button>
-        }
+          )}
         </>
-      }>
-      
-      {noRoom &&
-      <div className="mb-5 rounded-md border border-warning/40 bg-warning-soft px-3 py-2.5" role="status">
+      }
+    >
+      {noRoom && (
+        <div className="mb-5 rounded-md border border-warning/40 bg-warning-soft px-3 py-2.5" role="status">
           <p className="text-label font-semibold text-fg">Your plan has no room for more pages</p>
           <p className="mt-0.5 text-caption text-fg-muted">
             Your current plan includes your home page only.{nextPlan ? ` Upgrade to ${nextPlan.name} to add a ready-made site.` : ''} You can still look through the kits below.
           </p>
         </div>
-      }
+      )}
       <fieldset>
         <legend className="text-label font-semibold text-fg">Your industry</legend>
         <div className="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -105,8 +105,8 @@ export function SiteKitDialog({ open, onClose, room, nextPlan, initialKitId }: S
                   <span className="block text-label font-semibold text-fg">{k.name}</span>
                   <span className="block text-caption text-fg-muted">{k.forWho}</span>
                 </span>
-              </label>);
-
+              </label>
+            );
           })}
         </div>
       </fieldset>
@@ -118,11 +118,11 @@ export function SiteKitDialog({ open, onClose, room, nextPlan, initialKitId }: S
       <fieldset className="mt-5">
         <legend className="flex w-full items-baseline justify-between gap-3 text-label font-semibold text-fg">
           <span>Pages to add</span>
-          {!noRoom &&
-          <span className={cn('text-caption font-medium tabular-nums', over ? 'text-danger' : 'text-fg-subtle')}>
+          {!noRoom && (
+            <span className={cn('text-caption font-medium tabular-nums', over ? 'text-danger' : 'text-fg-subtle')}>
               {picked.size} of {room} that fit your plan
             </span>
-          }
+          )}
         </legend>
         <ul className="mt-2 divide-y divide-line rounded-md border border-line">
           {kit.pages.map((p) => {
@@ -137,14 +137,14 @@ export function SiteKitDialog({ open, onClose, room, nextPlan, initialKitId }: S
                     checked={on}
                     disabled={exists || noRoom}
                     onChange={() =>
-                    setPicked((s) => {
-                      const n = new Set(s);
-                      if (n.has(p.title)) n.delete(p.title);else
-                      n.add(p.title);
-                      return n;
-                    })
-                    } />
-                  
+                      setPicked((s) => {
+                        const n = new Set(s);
+                        if (n.has(p.title)) n.delete(p.title);
+                        else n.add(p.title);
+                        return n;
+                      })
+                    }
+                  />
                   <span className="min-w-0">
                     <span className="block text-label font-medium text-fg">{p.title}</span>
                     <span className="block text-caption text-fg-muted">{exists ? 'You already have a page with this name' : p.purpose}</span>
@@ -157,29 +157,29 @@ export function SiteKitDialog({ open, onClose, room, nextPlan, initialKitId }: S
                           <span key={`${type}-${i}`} className="inline-flex h-6 items-center gap-1 rounded-sm border border-line bg-raised px-1.5 text-meta text-fg-muted">
                             {Icon && <Icon size={11} aria-hidden />}
                             {def?.name ?? type}
-                          </span>);
-
+                          </span>
+                        );
                       })}
                     </span>
                   </span>
                   {on && <CheckIcon size={14} className="ml-auto mt-1 shrink-0 text-action" aria-hidden />}
                 </label>
-              </li>);
-
+              </li>
+            );
           })}
         </ul>
       </fieldset>
 
-      {noRoom ? null : over ?
-      <div className="mt-4 flex flex-col gap-2" role="status">
+      {noRoom ? null : over ? (
+        <div className="mt-4 flex flex-col gap-2" role="status">
           <p className="text-caption text-danger">
             Your plan has room for {room} more page{room === 1 ? '' : 's'}. Untick {picked.size - room} or upgrade.
           </p>
           {nextPlan && <UpgradeButton plan={nextPlan.id} feature="More pages on your site" className="self-start" />}
-        </div> :
-
-      <p className="mt-4 text-caption text-fg-subtle">Prices, policies and your story are left as [Add …] gaps — publishing waits until you’ve filled them.</p>
-      }
-    </Dialog>);
-
+        </div>
+      ) : (
+        <p className="mt-4 text-caption text-fg-subtle">Prices, policies and your story are left as [Add …] gaps — publishing waits until you’ve filled them.</p>
+      )}
+    </Dialog>
+  );
 }

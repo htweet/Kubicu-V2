@@ -44,7 +44,7 @@ export function ReasonDialog({ open, title, description, confirmLabel, destructi
       title={title}
       description={description}
       footer={
-      <>
+        <>
           <Button variant="secondary" onClick={onClose}>
             {t('Cancel')}
           </Button>
@@ -52,12 +52,12 @@ export function ReasonDialog({ open, title, description, confirmLabel, destructi
             {confirmLabel}
           </Button>
         </>
-      }>
-      
+      }
+    >
       <div className="flex flex-col gap-4">
         {children}
         <TextArea id="admin-reason" label={t('Reason')} rows={3} value={reason} error={tried ? error || undefined : undefined} placeholder={t('e.g. Confirmed fraud reports from three buyers')} onChange={(e) => setReason(e.target.value)} />
       </div>
-    </Dialog>);
-
+    </Dialog>
+  );
 }

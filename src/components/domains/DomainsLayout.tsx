@@ -9,9 +9,9 @@ export function DomainsLayout() {
     <ModuleLayout
       label="Domains"
       items={[
-      { to: '/app/domains', label: 'Domains', end: true, badge: problems },
-      { to: '/app/domains/redirects', label: 'Redirects' }]
-      } />);
-
-
+        { to: '/app/domains', label: 'Domains', end: true, badge: problems },
+        { to: '/app/domains/redirects', label: 'Redirects' },
+      ]}
+    />
+  );
 }

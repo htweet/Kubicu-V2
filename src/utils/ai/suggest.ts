@@ -44,14 +44,14 @@ export function headingOptions(text: string, name: string): string[] {
 export function buttonOptions(label: string, url: string): string[] {
   const lower = url.toLowerCase();
   const fromUrl: string[] = [];
-  if (/wa\.me|whatsapp/.test(lower)) fromUrl.push('Chat on WhatsApp', 'Order on WhatsApp');else
-  if (/instagram/.test(lower)) fromUrl.push('See us on Instagram');else
-  if (/tiktok/.test(lower)) fromUrl.push('Watch on TikTok');else
-  if (/youtube|youtu\.be/.test(lower)) fromUrl.push('Watch on YouTube');else
-  if (/calendly|book/.test(lower)) fromUrl.push('Book a time');else
-  if (/maps|goo\.gl/.test(lower)) fromUrl.push('Get directions');
+  if (/wa\.me|whatsapp/.test(lower)) fromUrl.push('Chat on WhatsApp', 'Order on WhatsApp');
+  else if (/instagram/.test(lower)) fromUrl.push('See us on Instagram');
+  else if (/tiktok/.test(lower)) fromUrl.push('Watch on TikTok');
+  else if (/youtube|youtu\.be/.test(lower)) fromUrl.push('Watch on YouTube');
+  else if (/calendly|book/.test(lower)) fromUrl.push('Book a time');
+  else if (/maps|goo\.gl/.test(lower)) fromUrl.push('Get directions');
   const stripped = tidy(label.replace(/^(click|tap)\s+(here\s+)?(to\s+)?/i, ''));
-  const opts = [stripped, shorter(stripped, 3), ...fromUrl].map((s) => s.length > 28 ? shorter(s, 3) : s);
+  const opts = [stripped, shorter(stripped, 3), ...fromUrl].map((s) => (s.length > 28 ? shorter(s, 3) : s));
   return unique(label, opts).slice(0, 3);
 }
 
@@ -61,8 +61,8 @@ export function productDescription(product: Product | undefined, collections: Co
   const parts: string[] = [];
   parts.push(`${product.name}.`);
   product.options.forEach((o) => {
-    if (o.values.length > 1) parts.push(`Comes in ${o.values.length} ${o.name.toLowerCase()} options: ${listOf(o.values)}.`);else
-    if (o.values.length === 1) parts.push(`${o.name}: ${o.values[0]}.`);
+    if (o.values.length > 1) parts.push(`Comes in ${o.values.length} ${o.name.toLowerCase()} options: ${listOf(o.values)}.`);
+    else if (o.values.length === 1) parts.push(`${o.name}: ${o.values[0]}.`);
   });
   if (product.kind === 'digital') {
     parts.push('A digital download — you get the file after paying.');
@@ -87,17 +87,17 @@ export interface PageFacts {
 }
 
 export function pageFacts(doc: PageDocument): PageFacts {
-  const profile = doc.blocks.find((b): b is Extract<Block, {type: 'profile';}> => b.type === 'profile');
-  const wa = doc.blocks.find((b): b is Extract<Block, {type: 'whatsapp';}> => b.type === 'whatsapp' && !!b.content.phone);
+  const profile = doc.blocks.find((b): b is Extract<Block, { type: 'profile' }> => b.type === 'profile');
+  const wa = doc.blocks.find((b): b is Extract<Block, { type: 'whatsapp' }> => b.type === 'whatsapp' && !!b.content.phone);
   return { location: profile?.content.location ?? '', whatsapp: wa?.content.phone ?? '', name: profile?.content.name ?? doc.title };
 }
 
 /** Drafts an answer only from facts on the page. Anything else stays a placeholder. */
-export function faqAnswer(question: string, facts: PageFacts): {answer: string;fromFacts: boolean;} {
+export function faqAnswer(question: string, facts: PageFacts): { answer: string; fromFacts: boolean } {
   const q = question.toLowerCase();
   if (/where|locat|address|find you|based/.test(q) && facts.location) return { answer: `We’re in ${facts.location}.`, fromFacts: true };
   if (/contact|reach|whatsapp|call|talk|message|order/.test(q) && facts.whatsapp)
-  return { answer: `Message us on WhatsApp at ${facts.whatsapp} and we’ll reply as soon as we can.`, fromFacts: true };
+    return { answer: `Message us on WhatsApp at ${facts.whatsapp} and we’ll reply as soon as we can.`, fromFacts: true };
   if (/deliver|ship|refund|return|exchange|cancel|guarantee|warrant/.test(q)) return { answer: placeholder('your policy — in your own words'), fromFacts: false };
   return { answer: placeholder('your answer'), fromFacts: false };
 }

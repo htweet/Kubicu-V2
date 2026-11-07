@@ -29,7 +29,7 @@ export function PreviewFrame({ width, height, title, children }: PreviewFramePro
     doc.write('<!doctype html><html><head><meta charset="utf-8"></head><body></body></html>');
     doc.close();
     Array.from(document.documentElement.attributes).forEach((a) => doc.documentElement.setAttribute(a.name, a.value));
-    const isStyle = (n: Node): n is HTMLElement => n instanceof HTMLStyleElement || n instanceof HTMLLinkElement && (n.rel === 'stylesheet' || n.rel === 'preconnect');
+    const isStyle = (n: Node): n is HTMLElement => n instanceof HTMLStyleElement || (n instanceof HTMLLinkElement && (n.rel === 'stylesheet' || n.rel === 'preconnect'));
     document.head.querySelectorAll('style, link[rel="stylesheet"], link[rel="preconnect"]').forEach((n) => doc.head.appendChild(n.cloneNode(true)));
     const own = doc.createElement('style');
     own.textContent = 'html{scrollbar-width:thin;overscroll-behavior:contain}body{margin:0;background:transparent}a,button,input,select,label{cursor:default!important}';
@@ -55,6 +55,6 @@ export function PreviewFrame({ width, height, title, children }: PreviewFramePro
     <>
       <iframe ref={ref} title={title} tabIndex={-1} aria-hidden className="block border-0" style={{ width, height }} />
       {mount && createPortal(children, mount)}
-    </>);
-
+    </>
+  );
 }

@@ -6,12 +6,12 @@ export function GrowthToolLayout() {
   return (
     <div className="mx-auto w-full max-w-[1200px] px-5 pb-16 pt-8 md:px-10 md:pt-12">
       <Outlet />
-    </div>);
-
+    </div>
+  );
 }
 
 /** Old Domains & QR addresses forward to the tool's new home, keeping any ?link=… query. */
-export function MovedTo({ to }: {to: string;}) {
+export function MovedTo({ to }: { to: string }) {
   const { search } = useLocation();
   return <Navigate to={`${to}${search}`} replace />;
 }

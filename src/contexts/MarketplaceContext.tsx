@@ -37,7 +37,7 @@ interface MarketplaceValue {
 const MarketplaceContext = createContext<MarketplaceValue | null>(null);
 
 /** Installed extensions and template licences for the current workspace (D67). */
-export function MarketplaceProvider({ children }: {children: React.ReactNode;}) {
+export function MarketplaceProvider({ children }: { children: React.ReactNode }) {
   const { current } = useWorkspace();
   const team = useTeam();
   const ops = useOps();
@@ -65,10 +65,10 @@ export function MarketplaceProvider({ children }: {children: React.ReactNode;}) 
         toast.error('Couldn’t save', { description: 'Browser storage is full.' });
       }
     },
-    [current.id]
+    [current.id],
   );
 
-  const patch = useCallback((id: string, p: Partial<InstalledExtension>) => apply((d) => d.installed[id] ? { ...d, installed: { ...d.installed, [id]: { ...d.installed[id], ...p } } } : d), [apply]);
+  const patch = useCallback((id: string, p: Partial<InstalledExtension>) => apply((d) => (d.installed[id] ? { ...d, installed: { ...d.installed, [id]: { ...d.installed[id], ...p } } } : d)), [apply]);
 
   // KUBICU pulled a version platform-wide (D130): move this workspace off it and say why.
   const [adminStore] = useAdminStore();
@@ -98,7 +98,7 @@ export function MarketplaceProvider({ children }: {children: React.ReactNode;}) 
       toast(`${info.name} is now part of ${r.movedTo}`, {
         description: 'Nothing stops working. Open Extensions to move it when you’re ready.',
         duration: 10000,
-        action: { label: 'See where', onClick: () => navigate(`/app/extensions?ext=${id}`) }
+        action: { label: 'See where', onClick: () => navigate(`/app/extensions?ext=${id}`) },
       });
     });
     apply((d) => ({ ...d, retiredNoticed: Array.from(new Set([...(d.retiredNoticed ?? []), ...fresh])) }));
@@ -170,9 +170,9 @@ export function MarketplaceProvider({ children }: {children: React.ReactNode;}) 
         team.log('settings', `moved ${info.name} to ${r.movedTo}`, r.href);
       },
       hasLicence: (templateId) => data.templateLicences.includes(templateId),
-      addLicence: (templateId) => apply((d) => ({ ...d, templateLicences: Array.from(new Set([...d.templateLicences, templateId])) }))
+      addLicence: (templateId) => apply((d) => ({ ...d, templateLicences: Array.from(new Set([...d.templateLicences, templateId])) })),
     }),
-    [data, apply, patch, ops, commerce, team, pulls, adminStore]
+    [data, apply, patch, ops, commerce, team, pulls, adminStore],
   );
 
   return <MarketplaceContext.Provider value={value}>{children}</MarketplaceContext.Provider>;

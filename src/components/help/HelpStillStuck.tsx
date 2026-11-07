@@ -20,6 +20,6 @@ export function HelpStillStuck() {
           {tr('Contact us')}
         </Link>
       </div>
-    </div>);
-
+    </div>
+  );
 }

@@ -42,29 +42,29 @@ export function TaxSection() {
   return (
     <SettingsSection id="tax" title="Tax" description="Tax on what you sell, at home and in other countries you’re registered in. Leave it off if you’re not registered." dirty={s.dirty} justSaved={s.justSaved} onSave={() => s.save()} onReset={s.reset} saveDisabled={!!rateError || regError}>
       <Switch id="tax-on" label={`Charge tax in ${homeInfo.name}`} description="Applies to products, tickets, courses and delivery at checkout, and to payment links unless a link turns it off. Items marked zero-rated or exempt are left out." checked={t.enabled} onChange={(enabled) => s.patch({ enabled })} />
-      {t.enabled &&
-      <>
+      {t.enabled && (
+        <>
           <div className="grid items-start gap-5 md:grid-cols-[10rem_minmax(0,1fr)]">
             <TextInput
-            id="tax-rate"
-            label="Rate (%)"
-            inputMode="decimal"
-            value={Number.isFinite(t.ratePct) ? String(t.ratePct) : ''}
-            error={rateError || undefined}
-            hint={`${homeInfo.vatPct}% is the usual rate in ${homeInfo.name} — check with your accountant.`}
-            onChange={(e) => s.patch({ ratePct: Number(e.target.value.replace(/[^\d.]/g, '')) })} />
-          
+              id="tax-rate"
+              label="Rate (%)"
+              inputMode="decimal"
+              value={Number.isFinite(t.ratePct) ? String(t.ratePct) : ''}
+              error={rateError || undefined}
+              hint={`${homeInfo.vatPct}% is the usual rate in ${homeInfo.name} — check with your accountant.`}
+              onChange={(e) => s.patch({ ratePct: Number(e.target.value.replace(/[^\d.]/g, '')) })}
+            />
             <Field id="tax-mode" label="Your prices">
               <Segmented
-              ariaLabel="Do your prices include tax?"
-              fullWidth
-              value={t.inclusive ? 'inclusive' : 'exclusive'}
-              onChange={(v) => s.patch({ inclusive: v === 'inclusive' })}
-              options={[
-              { value: 'inclusive', label: 'Already include tax' },
-              { value: 'exclusive', label: 'Tax added at checkout' }]
-              } />
-            
+                ariaLabel="Do your prices include tax?"
+                fullWidth
+                value={t.inclusive ? 'inclusive' : 'exclusive'}
+                onChange={(v) => s.patch({ inclusive: v === 'inclusive' })}
+                options={[
+                  { value: 'inclusive', label: 'Already include tax' },
+                  { value: 'exclusive', label: 'Tax added at checkout' },
+                ]}
+              />
             </Field>
           </div>
           <p className="text-caption text-fg-muted">
@@ -73,22 +73,22 @@ export function TaxSection() {
               Go to Business & receipts
             </a>
           </p>
-          {example &&
-        <div className="rounded-md bg-sunken px-4 py-3 text-caption text-fg-muted">
+          {example && (
+            <div className="rounded-md bg-sunken px-4 py-3 text-caption text-fg-muted">
               <p className="font-semibold text-fg">Example: a {formatNgn(EXAMPLE_PRICE)} item</p>
-              {example.inclusive ?
-          <p className="mt-1">
+              {example.inclusive ? (
+                <p className="mt-1">
                   The buyer pays <strong className="text-fg">{formatNgn(EXAMPLE_PRICE)}</strong>. The receipt shows “Includes VAT ({vatRateLabel(example.ratePct)}) {formatNgn(example.amountNgn)}”, and you keep {formatNgn(EXAMPLE_PRICE - example.amountNgn)} before fees.
-                </p> :
-
-          <p className="mt-1">
+                </p>
+              ) : (
+                <p className="mt-1">
                   The buyer pays <strong className="text-fg">{formatNgn(EXAMPLE_PRICE + example.addedNgn)}</strong> — {formatNgn(EXAMPLE_PRICE)} plus {formatNgn(example.addedNgn)} VAT, shown as its own line at checkout and on the receipt.
                 </p>
-          }
+              )}
             </div>
-        }
+          )}
         </>
-      }
+      )}
 
       <div className="flex flex-col gap-3 border-t border-line pt-5">
         <div>
@@ -102,18 +102,18 @@ export function TaxSection() {
             return (
               <li key={c.code} className="flex flex-col gap-3 px-4 py-3">
                 <Switch id={`tax-reg-${c.code}`} label={`Registered for tax in ${c.name}`} checked={on} onChange={(registered) => setReg(c.code, { registered })} />
-                {on && r &&
-                <div className="grid gap-3 sm:grid-cols-[8rem_minmax(0,1fr)]">
+                {on && r && (
+                  <div className="grid gap-3 sm:grid-cols-[8rem_minmax(0,1fr)]">
                     <TextInput id={`tax-reg-rate-${c.code}`} label="Rate (%)" inputMode="decimal" value={String(r.ratePct)} error={!(r.ratePct > 0) || r.ratePct > 50 ? 'Between 0.1% and 50%' : undefined} onChange={(e) => setReg(c.code, { ratePct: Number(e.target.value.replace(/[^\d.]/g, '')) })} />
                     <TextInput id={`tax-reg-no-${c.code}`} label={taxNumberLabel[c.code].label} placeholder={taxNumberLabel[c.code].placeholder} value={r.taxNumber} error={!r.taxNumber.trim() ? 'Add your number in this country' : undefined} onChange={(e) => setReg(c.code, { taxNumber: e.target.value })} />
                   </div>
-                }
-              </li>);
-
+                )}
+              </li>
+            );
           })}
         </ul>
       </div>
       <p className="text-caption text-fg-subtle">Changing this affects new orders only. Past orders keep the tax they were placed with. Rates and rules are examples — check with your accountant.</p>
-    </SettingsSection>);
-
+    </SettingsSection>
+  );
 }

@@ -47,7 +47,7 @@ export interface SponsorDispute {
   /** The other side's answer. */
   reply?: string;
   /** Files either side added while it's open (D463). Names only in the prototype — nothing is uploaded. */
-  evidence?: {id: string;by: 'brand' | 'creator';name: string;at: string;}[];
+  evidence?: { id: string; by: 'brand' | 'creator'; name: string; at: string }[];
   outcome?: DisputeOutcome;
   /** Paid to the creator / returned to the brand when decided. */
   toCreatorNgn?: number;

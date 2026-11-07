@@ -8,9 +8,9 @@ export interface ActivityRow extends ActivityEntry {
   workspace: string;
 }
 
-export const activityFormats: Record<ActivityFormat, {label: string;hint: string;ext: string;mime: string;}> = {
+export const activityFormats: Record<ActivityFormat, { label: string; hint: string; ext: string; mime: string }> = {
   csv: { label: 'Spreadsheet (CSV)', hint: 'Opens in Excel or Google Sheets.', ext: 'csv', mime: 'text/csv' },
-  jsonl: { label: 'JSON Lines', hint: 'One event per line, for security tools like Splunk, Microsoft Sentinel or Datadog.', ext: 'jsonl', mime: 'application/x-ndjson' }
+  jsonl: { label: 'JSON Lines', hint: 'One event per line, for security tools like Splunk, Microsoft Sentinel or Datadog.', ext: 'jsonl', mime: 'application/x-ndjson' },
 };
 
 export function activityFile(rows: ActivityRow[], format: ActivityFormat): string {
@@ -23,12 +23,12 @@ export function activityFile(rows: ActivityRow[], format: ActivityFormat): strin
 export async function fingerprint(text: string): Promise<string> {
   try {
     const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
-    return Array.from(new Uint8Array(buf)).
-    map((b) => b.toString(16).padStart(2, '0')).
-    join('');
+    return Array.from(new Uint8Array(buf))
+      .map((b) => b.toString(16).padStart(2, '0'))
+      .join('');
   } catch {
     let h = 0;
-    for (let i = 0; i < text.length; i++) h = h * 31 + text.charCodeAt(i) >>> 0;
+    for (let i = 0; i < text.length; i++) h = (h * 31 + text.charCodeAt(i)) >>> 0;
     return `fallback-${h.toString(16)}`;
   }
 }

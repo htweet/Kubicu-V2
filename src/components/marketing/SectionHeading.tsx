@@ -22,6 +22,6 @@ export function SectionHeading({ id, title, lead, align = 'left', action, classN
         {lead && <p className="mt-4 text-[17px] leading-relaxed text-fg-muted">{lead}</p>}
       </div>
       {action}
-    </Reveal>);
-
+    </Reveal>
+  );
 }

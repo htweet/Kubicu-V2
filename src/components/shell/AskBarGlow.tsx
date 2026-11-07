@@ -14,14 +14,14 @@ const GAP_CALM: [number, number] = [25, 45];
 
 /** Colours travel round the border as one bright arc that fades in and out at its tail. */
 const ARC =
-'conic-gradient(from 0deg, transparent 0deg, transparent 190deg, #4285F4 225deg, #A142F4 255deg, #EA4335 285deg, #FBBC04 318deg, #34A853 345deg, transparent 360deg)';
+  'conic-gradient(from 0deg, transparent 0deg, transparent 190deg, #4285F4 225deg, #A142F4 255deg, #EA4335 285deg, #FBBC04 318deg, #34A853 345deg, transparent 360deg)';
 
 /** Shows only a 2px ring (D527): the inner area is masked out so the bar's own surface stays untouched. */
 const RING_MASK: React.CSSProperties = {
   padding: '2px',
   WebkitMask: 'linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)',
   WebkitMaskComposite: 'xor',
-  maskComposite: 'exclude'
+  maskComposite: 'exclude',
 };
 
 const SWEEP_SECONDS = 2.4;
@@ -37,7 +37,7 @@ function randomBetween(min: number, max: number): number {
  */
 export function AskBarGlow({ active, calm = false }: AskBarGlowProps) {
   const reduce = useReducedMotion();
-  const [sweep, setSweep] = useState<{id: number;from: number;} | null>(null);
+  const [sweep, setSweep] = useState<{ id: number; from: number } | null>(null);
 
   useEffect(() => {
     if (!active || reduce) {
@@ -70,21 +70,21 @@ export function AskBarGlow({ active, calm = false }: AskBarGlowProps) {
   return (
     <span aria-hidden className="pointer-events-none absolute -inset-px overflow-hidden rounded-full" style={RING_MASK}>
       <AnimatePresence>
-        {sweep &&
-        <motion.span
-          key={sweep.id}
-          className="absolute left-1/2 top-1/2 block aspect-square w-[160%]"
-          style={{ x: '-50%', y: '-50%', background: ARC }}
-          initial={{ rotate: sweep.from, opacity: 0 }}
-          animate={{ rotate: sweep.from + 360, opacity: [0, 1, 1, 0] }}
-          exit={{ opacity: 0, transition: { duration: 0.2, ease: 'easeOut' } }}
-          transition={{
-            rotate: { duration: SWEEP_SECONDS, ease: [0.45, 0, 0.55, 1] },
-            opacity: { duration: SWEEP_SECONDS, times: [0, 0.15, 0.8, 1], ease: 'linear' }
-          }} />
-
-        }
+        {sweep && (
+          <motion.span
+            key={sweep.id}
+            className="absolute left-1/2 top-1/2 block aspect-square w-[160%]"
+            style={{ x: '-50%', y: '-50%', background: ARC }}
+            initial={{ rotate: sweep.from, opacity: 0 }}
+            animate={{ rotate: sweep.from + 360, opacity: [0, 1, 1, 0] }}
+            exit={{ opacity: 0, transition: { duration: 0.2, ease: 'easeOut' } }}
+            transition={{
+              rotate: { duration: SWEEP_SECONDS, ease: [0.45, 0, 0.55, 1] },
+              opacity: { duration: SWEEP_SECONDS, times: [0, 0.15, 0.8, 1], ease: 'linear' },
+            }}
+          />
+        )}
       </AnimatePresence>
-    </span>);
-
+    </span>
+  );
 }

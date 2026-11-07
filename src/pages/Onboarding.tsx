@@ -14,6 +14,7 @@ import { ActionStep } from '../components/onboarding/ActionStep';
 import { PreviewStep } from '../components/onboarding/PreviewStep';
 import { ShareStep } from '../components/onboarding/ShareStep';
 import { PageMiniPreview } from '../components/overview/PageMiniPreview';
+import { onboardingGoals } from '../data/onboarding';
 
 /** Six short, skippable, resumable steps from goal to a published page with one real action. */
 export function Onboarding() {
@@ -40,7 +41,7 @@ export function Onboarding() {
         }
         navigate(`/app/canvas/${workspace.pageId}${state.siteKitId ? `?siteKit=${state.siteKitId}` : ''}`);
         toast('Your page is ready to edit', {
-          description: state.demoData ? 'Demo data is in every area, labelled “Sample”. It’s removed automatically in 7 days.' : 'Publish from the top bar when you’re happy with it.'
+          description: state.demoData ? 'Demo data is in every area, labelled “Sample”. It’s removed automatically in 7 days.' : 'Publish from the top bar when you’re happy with it.',
         });
       }
     } catch {
@@ -59,12 +60,14 @@ export function Onboarding() {
     navigate(state.useAssistant ? '/app/assistant' : state.siteKitId ? `/app/canvas/${current.pageId}?siteKit=${state.siteKitId}` : '/app');
   };
 
-  const livePreview = state.step <= 3 ?
-  <>
+  const livePreview = state.step <= 3 ? (
+    <>
       <PageMiniPreview doc={built.doc} scale={0.82} height={620} />
-      <p className="text-caption text-fg-subtle">Live preview</p>
-    </> :
-  undefined;
+      <p className="text-caption text-fg-subtle" aria-live="polite">
+        {state.kitId === null && state.goal && state.goal !== 'other' ? `Example for “${onboardingGoals.find((g) => g.id === state.goal)?.label ?? ''}”` : 'Live preview'}
+      </p>
+    </>
+  ) : undefined;
 
   const stepProps = { state, update, go };
 
@@ -76,6 +79,6 @@ export function Onboarding() {
       {state.step === 3 && <ActionStep {...stepProps} />}
       {state.step === 4 && <PreviewStep state={state} update={update} built={built} go={go} onFinish={finish} />}
       {state.step === 5 && <ShareStep state={state} onDone={done} />}
-    </OnboardingLayout>);
-
+    </OnboardingLayout>
+  );
 }

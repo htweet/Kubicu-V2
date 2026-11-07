@@ -89,7 +89,7 @@ export function BankAccountDialog({ open, onClose, data, update, businessName }:
       addedAt: new Date(now).toISOString(),
       usableAt: new Date(first ? now : now + BANK_COOLDOWN_HOURS * 3_600_000).toISOString(),
       primary: first,
-      kind: isWallet ? 'mobile_money' : 'bank'
+      kind: isWallet ? 'mobile_money' : 'bank',
     };
     update((d) => ({ ...d, banks: [...d.banks, account] }));
     setConfirming(false);
@@ -97,7 +97,7 @@ export function BankAccountDialog({ open, onClose, data, update, businessName }:
     toast.success(tr(isWallet ? 'Payout wallet added' : 'Bank account added'), { description: first ? tr('You can pay out to it now.') : tr('For your safety it can receive payouts in {n} hours. We’ve emailed you about this change.', { n: BANK_COOLDOWN_HOURS }) });
   };
 
-  const numberError = number.length > 0 && !lengthOk ? country.code === 'NG' ? tr('Account numbers have 10 digits.') : tr('Account numbers here are {rule}.', { rule: tr(rule.label) }) : undefined;
+  const numberError = number.length > 0 && !lengthOk ? (country.code === 'NG' ? tr('Account numbers have 10 digits.') : tr('Account numbers here are {rule}.', { rule: tr(rule.label) })) : undefined;
 
   return (
     <>
@@ -107,77 +107,77 @@ export function BankAccountDialog({ open, onClose, data, update, businessName }:
         title={wallet ? 'Add a payout account' : 'Add a bank account'}
         description="Payouts can only go to an account in your business’s name."
         footer={
-        <>
+          <>
             <Button variant="secondary" onClick={onClose}>
               Cancel
             </Button>
-            {looked ?
-          <Button onClick={() => setConfirming(true)} disabled={match === 'mismatch'}>
+            {looked ? (
+              <Button onClick={() => setConfirming(true)} disabled={match === 'mismatch'}>
                 Add account
-              </Button> :
-
-          <Button onClick={lookUp} loading={looking} disabled={!valid}>
+              </Button>
+            ) : (
+              <Button onClick={lookUp} loading={looking} disabled={!valid}>
                 Check account
               </Button>
-          }
+            )}
           </>
-        }>
-        
+        }
+      >
         <div className="flex flex-col gap-4">
-          {wallet &&
-          <Segmented<Kind>
-            ariaLabel={tr('Pay out to')}
-            fullWidth
-            value={kind}
-            onChange={setKind}
-            options={[
-            { value: 'bank', label: 'Bank account' },
-            { value: 'mobile_money', label: wallet.name }]
-            } />
-
-          }
-          {isWallet && networks &&
-          <SelectInput id="wallet-network" required label={tr('Network')} value={networkId} onChange={setNetworkId} options={networks.map((n) => ({ value: n.id, label: n.name }))} />
-          }
-          {isWallet && wallet ?
-          <PhoneInput id="wallet-number" label={tr('{wallet} number', { wallet: wallet.name })} value={phone} onChange={setPhone} error={phone.trim() ? phoneIssueIn(tr, phone) ?? undefined : undefined} hint={tr('The phone number your {wallet} wallet is registered to.', { wallet: wallet.name })} /> :
-
-          <>
+          {wallet && (
+            <Segmented<Kind>
+              ariaLabel={tr('Pay out to')}
+              fullWidth
+              value={kind}
+              onChange={setKind}
+              options={[
+                { value: 'bank', label: 'Bank account' },
+                { value: 'mobile_money', label: wallet.name },
+              ]}
+            />
+          )}
+          {isWallet && networks && (
+            <SelectInput id="wallet-network" required label={tr('Network')} value={networkId} onChange={setNetworkId} options={networks.map((n) => ({ value: n.id, label: n.name }))} />
+          )}
+          {isWallet && wallet ? (
+            <PhoneInput id="wallet-number" label={tr('{wallet} number', { wallet: wallet.name })} value={phone} onChange={setPhone} error={phone.trim() ? phoneIssueIn(tr, phone) ?? undefined : undefined} hint={tr('The phone number your {wallet} wallet is registered to.', { wallet: wallet.name })} />
+          ) : (
+            <>
               <SelectInput id="bank-name" label={tr('Bank')} value={bank} onChange={setBank} options={banks.map((b) => ({ value: b, label: b }))} required />
               <TextInput
-              id="bank-number"
-              label="Account number"
-              inputMode="numeric"
-              maxLength={rule.max}
-              value={number}
-              onChange={(e) => setNumber(e.target.value.replace(/\D/g, ''))}
-              hint={country.code === 'NG' ? tr('10 digits (NUBAN)') : tr(rule.label)}
-              error={numberError} />
-            
+                id="bank-number"
+                label="Account number"
+                inputMode="numeric"
+                maxLength={rule.max}
+                value={number}
+                onChange={(e) => setNumber(e.target.value.replace(/\D/g, ''))}
+                hint={country.code === 'NG' ? tr('10 digits (NUBAN)') : tr(rule.label)}
+                error={numberError}
+              />
             </>
-          }
+          )}
           {!looked && <p className="text-caption text-fg-subtle">{tr(isWallet ? 'We’ll ask for the name on this wallet and check it matches {name}.' : 'We’ll ask your bank for the name on this account and check it matches {name}.', { name: businessName })}</p>}
-          {looked && match &&
-          <div className={match === 'mismatch' ? 'rounded-md bg-danger-soft px-4 py-3 text-danger' : match === 'close' ? 'rounded-md bg-warning-soft px-4 py-3 text-warning' : 'rounded-md bg-success-soft px-4 py-3 text-success'} role="status">
+          {looked && match && (
+            <div className={match === 'mismatch' ? 'rounded-md bg-danger-soft px-4 py-3 text-danger' : match === 'close' ? 'rounded-md bg-warning-soft px-4 py-3 text-warning' : 'rounded-md bg-success-soft px-4 py-3 text-success'} role="status">
               <p className="flex items-center gap-2 text-label font-semibold">
                 {match === 'match' ? <CheckCircle2Icon size={16} aria-hidden /> : match === 'close' ? <AlertTriangleIcon size={16} aria-hidden /> : <XCircleIcon size={16} aria-hidden />}
                 {looked}
               </p>
               <p className="mt-1 text-caption">
-                {match === 'match' ?
-              tr('Matches {name}.', { name: businessName }) :
-              match === 'close' ?
-              tr('Partly matches {name}. Payouts to this account may be checked by KUBICU first.', { name: businessName }) :
-              tr('Doesn’t match {name}. Use an account in your business’s name, or update your business name in Settings.', { name: businessName })}
+                {match === 'match'
+                  ? tr('Matches {name}.', { name: businessName })
+                  : match === 'close'
+                    ? tr('Partly matches {name}. Payouts to this account may be checked by KUBICU first.', { name: businessName })
+                    : tr('Doesn’t match {name}. Use an account in your business’s name, or update your business name in Settings.', { name: businessName })}
               </p>
             </div>
-          }
+          )}
           {isWallet && wallet && <p className="text-caption text-fg-subtle">{tr('Payouts to a mobile money wallet usually arrive {when}.', { when: tr(wallet.payoutArrival) })}</p>}
           {country.code !== 'NG' && <p className="text-caption text-fg-subtle">{tr('Payouts in {country} are simulated until KUBICU has a payment partner there.', { country: tr(country.name) })}</p>}
           {!first && <p className="text-caption text-fg-subtle">{tr('New accounts wait {n} hours before they can receive payouts. This protects you if someone gets into your account.', { n: BANK_COOLDOWN_HOURS })}</p>}
         </div>
       </Dialog>
       <ConfirmMoneyDialog open={confirming} onClose={() => setConfirming(false)} title={tr(isWallet ? 'Confirm new payout wallet' : 'Confirm new bank account')} summary={tr('Add {bank} ····{last4} for payouts.', { bank: label, last4: digits.slice(-4) })} confirmLabel={tr('Add account')} onConfirm={save} />
-    </>);
-
+    </>
+  );
 }

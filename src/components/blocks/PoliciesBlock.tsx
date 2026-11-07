@@ -14,13 +14,13 @@ export function PoliciesBlock({ block, theme, mode }: BlockProps<'policies'>) {
     <section>
       <SectionHeading theme={theme} title={c.title} intro={c.intro} />
       <dl className="grid gap-x-10 gap-y-0 md:grid-cols-2">
-        {items.map((i) =>
-        <div key={i.id} className="py-5" style={{ borderTop: `1px solid ${mix(theme.text, 10)}` }}>
+        {items.map((i) => (
+          <div key={i.id} className="py-5" style={{ borderTop: `1px solid ${mix(theme.text, 10)}` }}>
             <dt className="text-[17px] font-medium" style={{ fontFamily: fontsFor(theme).display, color: theme.text }}>{i.title}</dt>
             <dd className="mt-2 whitespace-pre-line text-[15px] leading-relaxed" style={{ color: theme.mutedText }}>{i.text}</dd>
           </div>
-        )}
+        ))}
       </dl>
-    </section>);
-
+    </section>
+  );
 }

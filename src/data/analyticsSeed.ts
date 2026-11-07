@@ -24,15 +24,15 @@ export function sampleAnalytics(now = Date.now()): AnalyticsEvent[] {
 
   const clickable = samplePage.blocks.filter((b) => ['link', 'product', 'booking', 'whatsapp', 'productGrid', 'social', 'contact'].includes(b.type));
   // Weighted so one popular button sits low on the page — Link Intelligence has something real to say.
-  const links: [{id: string;label: string;}, number][] = clickable.map((b, i) => [{ id: b.id, label: blockName(b) }, i === clickable.length - 1 ? 9 : Math.max(1, 6 - i)]);
+  const links: [{ id: string; label: string }, number][] = clickable.map((b, i) => [{ id: b.id, label: blockName(b) }, i === clickable.length - 1 ? 9 : Math.max(1, 6 - i)]);
   const sources: [SourceId, number][] = [
-  ['instagram', 34],
-  ['whatsapp', 27],
-  ['tiktok', 20],
-  ['direct', 9],
-  ['qr', 5],
-  ['google', 5]];
-
+    ['instagram', 34],
+    ['whatsapp', 27],
+    ['tiktok', 20],
+    ['direct', 9],
+    ['qr', 5],
+    ['google', 5],
+  ];
   // TikTok visitors browse but rarely buy (an honest pattern, not a claim).
   const buyBoost: Partial<Record<SourceId, number>> = { tiktok: 0.15, whatsapp: 1.6, qr: 1.3 };
 

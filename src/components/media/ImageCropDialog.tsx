@@ -18,8 +18,8 @@ const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(mi
 
 export function ImageCropDialog({ open, src, aspect, aspectLabel, onClose, onCropped }: ImageCropDialogProps) {
   const frameRef = useRef<HTMLDivElement>(null);
-  const drag = useRef<{x: number;y: number;box: CropBox;} | null>(null);
-  const [natural, setNatural] = useState<{w: number;h: number;} | null>(null);
+  const drag = useRef<{ x: number; y: number; box: CropBox } | null>(null);
+  const [natural, setNatural] = useState<{ w: number; h: number } | null>(null);
   const [frameW, setFrameW] = useState(0);
   const [box, setBox] = useState<CropBox>(initialBox);
   const [busy, setBusy] = useState(false);
@@ -51,12 +51,12 @@ export function ImageCropDialog({ open, src, aspect, aspectLabel, onClose, onCro
   const pan = (dxPx: number, dyPx: number, from: CropBox) => {
     if (!natural || !scale) return from;
     const r = cropRect(natural.w, natural.h, aspect, from);
-    const slackX = (natural.w - r.w) * scale / 2;
-    const slackY = (natural.h - r.h) * scale / 2;
+    const slackX = ((natural.w - r.w) * scale) / 2;
+    const slackY = ((natural.h - r.h) * scale) / 2;
     return {
       ...from,
       x: slackX > 0 ? clamp(from.x - dxPx / slackX, -1, 1) : 0,
-      y: slackY > 0 ? clamp(from.y - dyPx / slackY, -1, 1) : 0
+      y: slackY > 0 ? clamp(from.y - dyPx / slackY, -1, 1) : 0,
     };
   };
 
@@ -80,7 +80,7 @@ export function ImageCropDialog({ open, src, aspect, aspectLabel, onClose, onCro
       title="Crop photo"
       description={`Drag to position. Shape: ${aspectLabel}.`}
       footer={
-      <>
+        <>
           <Button variant="secondary" onClick={onClose}>
             Cancel
           </Button>
@@ -88,8 +88,8 @@ export function ImageCropDialog({ open, src, aspect, aspectLabel, onClose, onCro
             Apply crop
           </Button>
         </>
-      }>
-      
+      }
+    >
       <div className="flex flex-col gap-4 pb-2">
         <div
           ref={frameRef}
@@ -106,37 +106,37 @@ export function ImageCropDialog({ open, src, aspect, aspectLabel, onClose, onCro
             if (!drag.current) return;
             setBox(pan(e.clientX - drag.current.x, e.clientY - drag.current.y, drag.current.box));
           }}
-          onPointerUp={() => drag.current = null}
-          onPointerCancel={() => drag.current = null}
+          onPointerUp={() => (drag.current = null)}
+          onPointerCancel={() => (drag.current = null)}
           onKeyDown={(e) => {
             const step = e.shiftKey ? 40 : 12;
             const moves: Record<string, [number, number]> = {
               ArrowLeft: [step, 0],
               ArrowRight: [-step, 0],
               ArrowUp: [0, step],
-              ArrowDown: [0, -step]
+              ArrowDown: [0, -step],
             };
             const m = moves[e.key];
             if (m) {
               e.preventDefault();
               setBox((b) => pan(m[0], m[1], b));
             }
-          }}>
-          
-          {natural && rect && scale > 0 &&
-          <img
-            src={src}
-            alt=""
-            draggable={false}
-            className="pointer-events-none absolute max-w-none"
-            style={{ width: natural.w * scale, height: natural.h * scale, left: -rect.sx * scale, top: -rect.sy * scale }} />
-
-          }
+          }}
+        >
+          {natural && rect && scale > 0 && (
+            <img
+              src={src}
+              alt=""
+              draggable={false}
+              className="pointer-events-none absolute max-w-none"
+              style={{ width: natural.w * scale, height: natural.h * scale, left: -rect.sx * scale, top: -rect.sy * scale }}
+            />
+          )}
           {/* Rule-of-thirds guide */}
           <span aria-hidden className="pointer-events-none absolute inset-0 grid grid-cols-3 grid-rows-3">
-            {Array.from({ length: 9 }).map((_, i) =>
-            <span key={i} className="border border-white/25" />
-            )}
+            {Array.from({ length: 9 }).map((_, i) => (
+              <span key={i} className="border border-white/25" />
+            ))}
           </span>
         </div>
 
@@ -153,8 +153,8 @@ export function ImageCropDialog({ open, src, aspect, aspectLabel, onClose, onCro
             step={0.01}
             value={box.zoom}
             onChange={(e) => setBox((b) => ({ ...b, zoom: Number(e.target.value) }))}
-            className="h-1.5 flex-1 cursor-pointer accent-[rgb(var(--action))]" />
-          
+            className="h-1.5 flex-1 cursor-pointer accent-[rgb(var(--action))]"
+          />
           <span className="w-10 text-right text-caption tabular-nums text-fg-muted">{box.zoom.toFixed(1)}×</span>
           <Button size="sm" variant="tertiary" leadingIcon={RotateCcwIcon} onClick={() => setBox(initialBox)}>
             Reset
@@ -162,6 +162,6 @@ export function ImageCropDialog({ open, src, aspect, aspectLabel, onClose, onCro
         </div>
         {error && <p className="text-caption text-danger">{error}</p>}
       </div>
-    </Dialog>);
-
+    </Dialog>
+  );
 }

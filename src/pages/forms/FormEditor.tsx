@@ -30,8 +30,8 @@ export function FormEditor() {
   return (
     <FormsGate>
       <FormEditorInner />
-    </FormsGate>);
-
+    </FormsGate>
+  );
 }
 
 function FormEditorInner() {
@@ -46,7 +46,7 @@ function FormEditorInner() {
   const [previewing, setPreviewing] = useState(false);
   const [run, setRun] = useState(0);
   const [deleting, setDeleting] = useState(false);
-  const tab: Tab = tabs.includes(params.get('tab') as Tab) ? params.get('tab') as Tab : 'build';
+  const tab: Tab = tabs.includes(params.get('tab') as Tab) ? (params.get('tab') as Tab) : 'build';
   const form = data?.forms.find((f) => f.id === formId);
 
   if (!data) return null;
@@ -57,9 +57,9 @@ function FormEditorInner() {
   const issues = formIssues(form);
   const disabled = !can.allowed;
 
-  const save = (patch: Partial<FormDef>) => update((d) => ({ ...d, forms: d.forms.map((f) => f.id === form.id ? { ...f, ...patch, updatedAt: new Date().toISOString() } : f) }));
+  const save = (patch: Partial<FormDef>) => update((d) => ({ ...d, forms: d.forms.map((f) => (f.id === form.id ? { ...f, ...patch, updatedAt: new Date().toISOString() } : f)) }));
   const setFields = (fields: FormField[]) => save({ fields });
-  const updateSub = (id: string, patch: Partial<FormSubmission>) => update((d) => ({ ...d, submissions: d.submissions.map((s) => s.id === id ? { ...s, ...patch } : s) }));
+  const updateSub = (id: string, patch: Partial<FormSubmission>) => update((d) => ({ ...d, submissions: d.submissions.map((s) => (s.id === id ? { ...s, ...patch } : s)) }));
 
   const setStatus = (status: FormDef['status']) => {
     if (status === 'live' && issues.length) {
@@ -69,7 +69,7 @@ function FormEditorInner() {
     save({ status });
     team.log('audience', `${status === 'live' ? 'Set live' : status === 'closed' ? 'Closed' : 'Moved to draft'} the form “${form.name}”`, `/app/forms/${form.id}`);
     toast.success(tr(status === 'live' ? 'Form is live' : status === 'closed' ? 'Form closed' : 'Back to draft'), {
-      description: tr(status === 'live' ? 'Add it to a page with the Form block in the canvas.' : 'Form blocks show a “not accepting responses” message.')
+      description: tr(status === 'live' ? 'Add it to a page with the Form block in the canvas.' : 'Form blocks show a “not accepting responses” message.'),
     });
   };
 
@@ -111,25 +111,25 @@ function FormEditorInner() {
             <Button variant="secondary" leadingIcon={EyeIcon} onClick={() => setPreviewing(true)}>
               Preview
             </Button>
-            {form.status === 'live' ?
-            <Button variant="secondary" leadingIcon={LockIcon} disabled={disabled} onClick={() => setStatus('closed')}>
+            {form.status === 'live' ? (
+              <Button variant="secondary" leadingIcon={LockIcon} disabled={disabled} onClick={() => setStatus('closed')}>
                 Close form
-              </Button> :
-
-            <Button leadingIcon={PlayIcon} disabled={disabled} onClick={() => setStatus('live')} title={issues[0]}>
+              </Button>
+            ) : (
+              <Button leadingIcon={PlayIcon} disabled={disabled} onClick={() => setStatus('live')} title={issues[0]}>
                 {form.status === 'closed' ? 'Reopen' : 'Set live'}
               </Button>
-            }
+            )}
           </div>
         </div>
       </div>
 
       <Tabs<Tab>
         items={[
-        { id: 'build', label: 'Build' },
-        { id: 'responses', label: 'Responses', badge: unread || undefined },
-        { id: 'settings', label: 'Settings' }]
-        }
+          { id: 'build', label: 'Build' },
+          { id: 'responses', label: 'Responses', badge: unread || undefined },
+          { id: 'settings', label: 'Settings' },
+        ]}
         value={tab}
         onChange={(t) => {
           const next = new URLSearchParams(params);
@@ -138,30 +138,30 @@ function FormEditorInner() {
           setParams(next, { replace: true });
         }}
         ariaLabel="Form sections"
-        idPrefix="form-tab" />
-      
+        idPrefix="form-tab"
+      />
 
       <div role="tabpanel" id={`form-tab-panel-${tab}`} aria-labelledby={`form-tab-tab-${tab}`}>
         {tab === 'build' && <FormBuilder form={form} onChange={setFields} disabled={disabled} />}
         {tab === 'responses' && <ResponsesInbox form={form} submissions={data.submissions} onUpdate={updateSub} disabled={disabled} />}
-        {tab === 'settings' &&
-        <>
+        {tab === 'settings' && (
+          <>
             <FormSettingsTab form={form} onChange={save} disabled={disabled} />
             <section className="mt-2 flex flex-wrap items-center gap-2 border-t border-line pt-6">
               <Button variant="secondary" leadingIcon={CopyIcon} disabled={disabled} onClick={duplicate}>
                 Duplicate form
               </Button>
-              {form.status !== 'draft' &&
-            <Button variant="tertiary" disabled={disabled} onClick={() => setStatus('draft')}>
+              {form.status !== 'draft' && (
+                <Button variant="tertiary" disabled={disabled} onClick={() => setStatus('draft')}>
                   Move back to draft
                 </Button>
-            }
+              )}
               <Button variant="destructive" leadingIcon={Trash2Icon} disabled={disabled} onClick={() => setDeleting(true)} className="sm:ml-auto">
                 Delete form
               </Button>
             </section>
           </>
-        }
+        )}
       </div>
 
       {disabled && <p className="text-caption text-fg-subtle">{can.reason}</p>}
@@ -174,7 +174,7 @@ function FormEditorInner() {
         side="right"
         bodyClassName="bg-sunken"
         footer={
-        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center justify-between gap-3">
             <span className="inline-flex items-center gap-1.5 text-caption text-fg-subtle">
               <EyeIcon size={14} aria-hidden /> {tr(form.status === 'live' ? 'Live' : form.status === 'closed' ? 'Closed' : 'Draft')} · {tr('{n} questions', { n: form.fields.length })}
             </span>
@@ -187,15 +187,15 @@ function FormEditorInner() {
               </Button>
             </div>
           </div>
-        }>
-        
+        }
+      >
         <div className="flex min-h-full flex-col gap-3 p-4 md:p-5">
           <div className="rounded-lg border border-line bg-overlay p-5 shadow-1 md:p-6">
-            {form.fields.length === 0 ?
-            <p className="py-6 text-center text-label text-fg-muted">{tr('Add a question in Build to preview the form.')}</p> :
-
-            <FormRunner key={`${form.id}-${form.updatedAt}-${run}`} form={form} skin={appSkin} mode="preview" headingLevel="h3" />
-            }
+            {form.fields.length === 0 ? (
+              <p className="py-6 text-center text-label text-fg-muted">{tr('Add a question in Build to preview the form.')}</p>
+            ) : (
+              <FormRunner key={`${form.id}-${form.updatedAt}-${run}`} form={form} skin={appSkin} mode="preview" headingLevel="h3" />
+            )}
           </div>
           <p className="px-1 text-caption text-fg-subtle">{tr('On your page, the form uses the page’s own colours and fonts.')}</p>
         </div>
@@ -208,7 +208,7 @@ function FormEditorInner() {
         description={tr('Its {n} responses are deleted too. Contacts already added to Audience stay. Form blocks using it will ask you to choose another form before you can publish.', { n: subs.length })}
         size="sm"
         footer={
-        <>
+          <>
             <Button variant="tertiary" onClick={() => setDeleting(false)}>
               Cancel
             </Button>
@@ -216,8 +216,8 @@ function FormEditorInner() {
               Delete form
             </Button>
           </>
-        } />
-      
-    </div>);
-
+        }
+      />
+    </div>
+  );
 }

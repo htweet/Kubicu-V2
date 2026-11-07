@@ -47,8 +47,8 @@ export function ShortLinkFilters({ value, onChange, channels, tags, showStatus, 
               value={value.q}
               onChange={(e) => set({ q: e.target.value })}
               placeholder="Name, short link, destination or tag"
-              className="h-10 w-full rounded-md border border-line-strong bg-canvas pl-9 pr-3 text-body text-fg placeholder:text-fg-subtle focus-visible:border-focus focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus" />
-            
+              className="h-10 w-full rounded-md border border-line-strong bg-canvas pl-9 pr-3 text-body text-fg placeholder:text-fg-subtle focus-visible:border-focus focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+            />
           </div>
         </div>
         <SelectInput<'all' | SourceId>
@@ -56,60 +56,60 @@ export function ShortLinkFilters({ value, onChange, channels, tags, showStatus, 
           label="Shared on"
           value={value.channel}
           onChange={(channel) => set({ channel })}
-          options={[{ value: 'all', label: 'All channels' }, ...channels.map((c) => ({ value: c, label: sourceLabels[c] }))]} />
-        
+          options={[{ value: 'all', label: 'All channels' }, ...channels.map((c) => ({ value: c, label: sourceLabels[c] }))]}
+        />
         <SelectInput
           id="links-tag"
           label="Tag"
           value={value.tag}
           onChange={(tag) => set({ tag })}
           disabled={tags.length === 0}
-          options={[{ value: 'all', label: tags.length ? 'All tags' : 'No tags yet' }, ...tags.map((t) => ({ value: t, label: `#${t}` }))]} />
-        
-        {showStatus ?
-        <SelectInput<StatusFilter>
-          id="links-status"
-          label="Status"
-          value={value.status}
-          onChange={(status) => set({ status })}
-          options={[
-          { value: 'all', label: 'Any status' },
-          { value: 'live', label: 'Live' },
-          { value: 'scheduled', label: 'Scheduled' },
-          { value: 'paused', label: 'Paused' },
-          { value: 'ended', label: 'Ended' },
-          { value: 'attention', label: 'Needs attention' }]
-          } /> :
-
-
-        <span className="hidden md:block" />
-        }
+          options={[{ value: 'all', label: tags.length ? 'All tags' : 'No tags yet' }, ...tags.map((t) => ({ value: t, label: `#${t}` }))]}
+        />
+        {showStatus ? (
+          <SelectInput<StatusFilter>
+            id="links-status"
+            label="Status"
+            value={value.status}
+            onChange={(status) => set({ status })}
+            options={[
+              { value: 'all', label: 'Any status' },
+              { value: 'live', label: 'Live' },
+              { value: 'scheduled', label: 'Scheduled' },
+              { value: 'paused', label: 'Paused' },
+              { value: 'ended', label: 'Ended' },
+              { value: 'attention', label: 'Needs attention' },
+            ]}
+          />
+        ) : (
+          <span className="hidden md:block" />
+        )}
         <SelectInput<LinkSort>
           id="links-sort"
           label="Sort by"
           value={value.sort}
           onChange={(sort) => set({ sort })}
           options={[
-          { value: 'newest', label: 'Newest first' },
-          { value: 'clicks', label: 'Most clicks' },
-          { value: 'recent', label: 'Last clicked' },
-          { value: 'name', label: 'Name (A–Z)' }]
-          } />
-        
+            { value: 'newest', label: 'Newest first' },
+            { value: 'clicks', label: 'Most clicks' },
+            { value: 'recent', label: 'Last clicked' },
+            { value: 'name', label: 'Name (A–Z)' },
+          ]}
+        />
       </div>
-      {active &&
-      <p className="flex flex-wrap items-center gap-2 text-caption text-fg-muted" role="status">
+      {active && (
+        <p className="flex flex-wrap items-center gap-2 text-caption text-fg-muted" role="status">
           Showing {shown} of {total}
           <button
-          type="button"
-          onClick={() => onChange({ ...emptyLinkFilters, sort: value.sort })}
-          className="inline-flex items-center gap-1 rounded-sm font-medium text-action hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-          
+            type="button"
+            onClick={() => onChange({ ...emptyLinkFilters, sort: value.sort })}
+            className="inline-flex items-center gap-1 rounded-sm font-medium text-action hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+          >
             <XIcon size={13} aria-hidden />
             Clear filters
           </button>
         </p>
-      }
-    </div>);
-
+      )}
+    </div>
+  );
 }

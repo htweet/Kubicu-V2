@@ -46,8 +46,8 @@ export function LiveLessonPanel({ theme: t, lesson: l, courseTitle }: Props) {
         <p className="text-[12.5px]" style={muted}>
           Recording of the live session on {when}.
         </p>
-      </div>);
-
+      </div>
+    );
   }
 
   return (
@@ -63,28 +63,28 @@ export function LiveLessonPanel({ theme: t, lesson: l, courseTitle }: Props) {
           <p className="text-[18px] font-semibold leading-snug" style={{ color: t.text }}>
             {when || 'The course owner hasn’t set the time yet'}
           </p>
-          {l.minutes > 0 &&
-          <p className="text-[13px]" style={muted}>
+          {l.minutes > 0 && (
+            <p className="text-[13px]" style={muted}>
               About {l.minutes} min{l.live ? ` · on ${appName(l.live)}` : ''}
             </p>
-          }
+          )}
         </div>
       </div>
 
       {state === 'open' && (
-      url ?
-      <a href={url} target="_blank" rel="noopener noreferrer" className="flex h-12 items-center justify-center gap-2 px-6 text-[15px] font-semibold sm:self-start" style={buttonStyle(t, 'featured')}>
+        url ? (
+          <a href={url} target="_blank" rel="noopener noreferrer" className="flex h-12 items-center justify-center gap-2 px-6 text-[15px] font-semibold sm:self-start" style={buttonStyle(t, 'featured')}>
             <VideoIcon size={17} aria-hidden /> Join the session
-          </a> :
-
-      <p className="text-[14px]" style={{ color: t.text }} role="status">
+          </a>
+        ) : (
+          <p className="text-[14px]" style={{ color: t.text }} role="status">
             The meeting link isn’t ready. Contact the course owner.
-          </p>)
+          </p>
+        )
+      )}
 
-      }
-
-      {state === 'upcoming' &&
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+      {state === 'upcoming' && (
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <button type="button" onClick={downloadIcs} className="flex h-11 items-center justify-center gap-2 px-5 text-[14px] font-semibold" style={buttonStyle(t, 'default')}>
             <CalendarPlusIcon size={16} aria-hidden /> Add to my calendar
           </button>
@@ -92,13 +92,13 @@ export function LiveLessonPanel({ theme: t, lesson: l, courseTitle }: Props) {
             The Join button appears here {JOIN_EARLY_MIN} minutes before the start. Your calendar reminds you 30 minutes before.
           </p>
         </div>
-      }
+      )}
 
-      {state === 'ended' &&
-      <p className="text-[14px]" style={{ color: t.text }}>
+      {state === 'ended' && (
+        <p className="text-[14px]" style={{ color: t.text }}>
           {l.videoUrl.trim() && !hasRecording ? 'The recording can’t be shown right now. Ask the course owner to check the link.' : 'The recording will appear here once the course owner adds it.'}
         </p>
-      }
-    </div>);
-
+      )}
+    </div>
+  );
 }

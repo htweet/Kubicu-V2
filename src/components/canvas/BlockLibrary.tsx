@@ -56,11 +56,11 @@ export function BlockLibrary({ onAdded, touch }: BlockLibraryProps) {
   const selected = state.draft.blocks.find((b) => b.id === state.selectedId);
   // Containers (D167): with a container (or a block in one) selected, new blocks go inside while there's room.
   const inside = placementFor(state.draft.blocks, state.selectedId, 'text').container;
-  const placement = inside ?
-  tr('Adds inside “{name}” · {used} of {max} used', { name: layerName(inside), used: childrenOf(state.draft.blocks, inside.id).length, max: MAX_CHILDREN }) :
-  selected ?
-  tr('Adds below “{name}”', { name: layerName(selected) }) :
-  tr('Adds to the end of your page');
+  const placement = inside
+    ? tr('Adds inside “{name}” · {used} of {max} used', { name: layerName(inside), used: childrenOf(state.draft.blocks, inside.id).length, max: MAX_CHILDREN })
+    : selected
+      ? tr('Adds below “{name}”', { name: layerName(selected) })
+      : tr('Adds to the end of your page');
 
   const statusOf = (type: BlockType): BlockStatus => {
     const def = blockDefinitions[type];
@@ -77,7 +77,7 @@ export function BlockLibrary({ onAdded, touch }: BlockLibraryProps) {
     () => suggestBlocks(state.draft.blocks, { bookingsActive: market.isActive('bookings') }, shelf.dismissed).filter((s) => statusOf(s.type) !== 'app'),
     // statusOf reads plan/market, both in deps via market
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [state.draft.blocks, market, shelf.dismissed]
+    [state.draft.blocks, market, shelf.dismissed],
   );
 
   const add = (type: BlockType, preset?: BlockPreset) => {
@@ -93,62 +93,62 @@ export function BlockLibrary({ onAdded, touch }: BlockLibraryProps) {
   // Ready-made looks (D171): every idea in the brief that is a setup of an existing block.
   const lookMatches = useMemo(
     () => catalogLooks.filter((e) => e.type && (filter === 'all' || e.category === filter) && (!q || `${e.name} ${tr(e.name)} ${e.note ?? ''} ${blockSearchText(e.type, tr, lang)}`.toLowerCase().includes(q))),
-    [q, filter, tr, lang]
+    [q, filter, tr, lang],
   );
   // Voice to content (D342): a tool, not a block — shown while browsing and when a search asks for it.
   const voiceWords = `voice speak dictate microphone mic talk record ${tr('Voice to content')} ${tr('Speak, review the words, then add them as blocks')}`.toLowerCase();
-  const showVoice = !q && (filter === 'all' || filter === 'smart') || !!q && voiceWords.includes(q);
+  const showVoice = (!q && (filter === 'all' || filter === 'smart')) || (!!q && voiceWords.includes(q));
   const howtos = blockCatalog.filter((e) => e.kind === 'howto' && (filter === 'all' || e.category === filter) && (!q || `${e.name} ${e.note}`.toLowerCase().includes(q)));
 
   const listView = shelf.view === 'list';
   // Drag a block onto the page to drop it exactly where you want (D515); clicking still adds it in the usual place.
   const draggable = (type: BlockType, node: React.ReactNode, key: string) =>
-  touch || statusOf(type) === 'app' ?
-  node :
-
-  <div
-    key={key}
-    draggable
-    onDragStart={(e) => {
-      e.dataTransfer.setData(LIBRARY_DRAG_TYPE, type);
-      e.dataTransfer.effectAllowed = 'copy';
-      setLibraryDrag(type);
-    }}
-    onDragEnd={() => setLibraryDrag(null)}
-    className="cursor-grab active:cursor-grabbing"
-    title={tr('Drag onto the page, or click to add')}>
-    
+    touch || statusOf(type) === 'app' ? (
+      node
+    ) : (
+      <div
+        key={key}
+        draggable
+        onDragStart={(e) => {
+          e.dataTransfer.setData(LIBRARY_DRAG_TYPE, type);
+          e.dataTransfer.effectAllowed = 'copy';
+          setLibraryDrag(type);
+        }}
+        onDragEnd={() => setLibraryDrag(null)}
+        className="cursor-grab active:cursor-grabbing"
+        title={tr('Drag onto the page, or click to add')}
+      >
         {node}
-      </div>;
-
+      </div>
+    );
   const card = (type: BlockType, note?: string, key?: string) => draggable(type, cardNode(type, note, key), key ?? type);
   const cardNode = (type: BlockType, note?: string, key?: string) =>
-  listView ?
-  <BlockRow
-    key={key ?? type}
-    type={type}
-    status={statusOf(type)}
-    favourite={shelf.favourites.includes(type)}
-    touch={touch}
-    note={note}
-    onOpen={() => setDetail(type)}
-    onAdd={() => add(type)}
-    onToggleFavourite={() => shelf.toggleFavourite(type)} /> :
-
-
-  <BlockCard
-    key={key ?? type}
-    type={type}
-    theme={theme}
-    status={statusOf(type)}
-    favourite={shelf.favourites.includes(type)}
-    touch={touch}
-    note={note}
-    onOpen={() => setDetail(type)}
-    onAdd={() => add(type)}
-    onToggleFavourite={() => shelf.toggleFavourite(type)} />;
-
-
+    listView ? (
+      <BlockRow
+        key={key ?? type}
+        type={type}
+        status={statusOf(type)}
+        favourite={shelf.favourites.includes(type)}
+        touch={touch}
+        note={note}
+        onOpen={() => setDetail(type)}
+        onAdd={() => add(type)}
+        onToggleFavourite={() => shelf.toggleFavourite(type)}
+      />
+    ) : (
+    <BlockCard
+      key={key ?? type}
+      type={type}
+      theme={theme}
+      status={statusOf(type)}
+      favourite={shelf.favourites.includes(type)}
+      touch={touch}
+      note={note}
+      onOpen={() => setDetail(type)}
+      onAdd={() => add(type)}
+      onToggleFavourite={() => shelf.toggleFavourite(type)}
+    />
+  );
   const grid = listView ? 'flex flex-col gap-0.5' : 'grid grid-cols-2 gap-2.5';
 
   if (detail) {
@@ -162,9 +162,9 @@ export function BlockLibrary({ onAdded, touch }: BlockLibraryProps) {
         touch={touch}
         onBack={() => setDetail(null)}
         onAdd={() => add(detail)}
-        onToggleFavourite={() => shelf.toggleFavourite(detail)} />);
-
-
+        onToggleFavourite={() => shelf.toggleFavourite(detail)}
+      />
+    );
   }
 
   const browsing = !q && filter === 'all';
@@ -186,12 +186,12 @@ export function BlockLibrary({ onAdded, touch }: BlockLibraryProps) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={tr('Search — try “photo”, “appointment”, “shop”')}
-            className={cn(fieldControlClass, 'pl-9 text-label', touch ? 'h-11' : 'h-9')} />
-          
+            className={cn(fieldControlClass, 'pl-9 text-label', touch ? 'h-11' : 'h-9')}
+          />
         </div>
         {/* Horizontal-only strip (no vertical scroll): category chips. */}
         <div className="scroll-quiet -mx-4 flex gap-1.5 overflow-x-auto overflow-y-hidden px-4 pb-0.5" role="group" aria-label={tr('Block categories')}>
-          {([{ id: 'all', label: 'All', icon: null }, { id: 'sections', label: 'Sections', icon: LayoutTemplateIcon }, ...libraryCategories] as {id: Filter;label: string;icon: typeof SearchIcon | null;}[]).map((c) => {
+          {([{ id: 'all', label: 'All', icon: null }, { id: 'sections', label: 'Sections', icon: LayoutTemplateIcon }, ...libraryCategories] as { id: Filter; label: string; icon: typeof SearchIcon | null }[]).map((c) => {
             const Icon = c.icon;
             const active = filter === c.id;
             return (
@@ -203,13 +203,13 @@ export function BlockLibrary({ onAdded, touch }: BlockLibraryProps) {
                 className={cn(
                   'inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 text-caption font-medium transition-[background-color,border-color,color] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
                   touch ? 'h-9' : 'h-7',
-                  active ? 'border-transparent bg-inverse text-fg-inverse' : 'border-line text-fg-muted hover:border-line-strong hover:text-fg'
-                )}>
-                
+                  active ? 'border-transparent bg-inverse text-fg-inverse' : 'border-line text-fg-muted hover:border-line-strong hover:text-fg',
+                )}
+              >
                 {Icon && <Icon size={12} aria-hidden />}
                 {tr(c.label)}
-              </button>);
-
+              </button>
+            );
           })}
         </div>
         <div className="flex items-center justify-between gap-3">
@@ -217,51 +217,51 @@ export function BlockLibrary({ onAdded, touch }: BlockLibraryProps) {
           {/* List (compact) or grid (previews) — remembered on this device. */}
           <div role="group" aria-label={tr('Block view')} className="flex shrink-0 rounded-md border border-line p-0.5">
             {([
-            { v: 'list', icon: ListIcon, label: 'List view' },
-            { v: 'grid', icon: LayoutGridIcon, label: 'Grid view with previews' }] as
-            const).map(({ v, icon: Icon, label }) =>
-            <button
-              key={v}
-              type="button"
-              aria-pressed={shelf.view === v}
-              aria-label={tr(label)}
-              title={tr(label)}
-              onClick={() => shelf.setView(v)}
-              className={cn(
-                'flex items-center justify-center rounded-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
-                touch ? 'h-9 w-9' : 'h-6 w-7',
-                shelf.view === v ? 'bg-sunken text-fg' : 'text-fg-subtle hover:text-fg'
-              )}>
-              
+              { v: 'list', icon: ListIcon, label: 'List view' },
+              { v: 'grid', icon: LayoutGridIcon, label: 'Grid view with previews' },
+            ] as const).map(({ v, icon: Icon, label }) => (
+              <button
+                key={v}
+                type="button"
+                aria-pressed={shelf.view === v}
+                aria-label={tr(label)}
+                title={tr(label)}
+                onClick={() => shelf.setView(v)}
+                className={cn(
+                  'flex items-center justify-center rounded-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
+                  touch ? 'h-9 w-9' : 'h-6 w-7',
+                  shelf.view === v ? 'bg-sunken text-fg' : 'text-fg-subtle hover:text-fg',
+                )}
+              >
                 <Icon size={14} aria-hidden />
               </button>
-            )}
+            ))}
           </div>
         </div>
       </div>
 
-      {browsing &&
-      <p className="px-4 pb-1 text-[11.5px] text-fg-subtle">
+      {browsing && (
+        <p className="px-4 pb-1 text-[11.5px] text-fg-subtle">
           {tr('{blocks} blocks and {looks} ready-made looks — all {all} ideas in the block catalogue.', { blocks: blockOrder.length, looks: catalogLooks.length, all: blockCatalog.length })}
         </p>
-      }
-      {filter === 'sections' ?
-      <div className="flex flex-col gap-6 px-3 pb-6">
+      )}
+      {filter === 'sections' ? (
+        <div className="flex flex-col gap-6 px-3 pb-6">
           <SavedSectionsList query={query} touch={touch} onInserted={() => onAdded?.(state.selectedId ?? '')} />
           <Shelf title={tr('Ready-made sections')} hint={tr('Real blocks you can edit. Anything marked [Add …] must be replaced before publishing.')}>
             <SectionPresetList query={query} touch={touch} onInserted={() => onAdded?.(state.selectedId ?? '')} />
           </Shelf>
-        </div> :
-      matches.length === 0 && plannedMatches.length === 0 && lookMatches.length === 0 && !showVoice && !(q && sectionMatchCount > 0) ?
-      <EmptyState icon={SearchXIcon} title={tr('No blocks found')} description={tr('Nothing matches “{q}”. Try “button”, “photo”, “form” or pick a category.', { q: query })} /> :
-
-      <div className="flex flex-col gap-6 px-3 pb-6">
-          {browsing &&
-        <button
-          type="button"
-          onClick={() => setFilter('sections')}
-          className="flex items-center gap-3 rounded-md border border-line bg-canvas px-3 py-3 text-left transition-colors duration-150 hover:border-line-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-          
+        </div>
+      ) : matches.length === 0 && plannedMatches.length === 0 && lookMatches.length === 0 && !showVoice && !(q && sectionMatchCount > 0) ? (
+        <EmptyState icon={SearchXIcon} title={tr('No blocks found')} description={tr('Nothing matches “{q}”. Try “button”, “photo”, “form” or pick a category.', { q: query })} />
+      ) : (
+        <div className="flex flex-col gap-6 px-3 pb-6">
+          {browsing && (
+            <button
+              type="button"
+              onClick={() => setFilter('sections')}
+              className="flex items-center gap-3 rounded-md border border-line bg-canvas px-3 py-3 text-left transition-colors duration-150 hover:border-line-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+            >
               <LayoutTemplateIcon size={18} className="shrink-0 text-action" aria-hidden />
               <span className="min-w-0 flex-1">
                 <span className="block text-label font-semibold text-fg">{tr('Ready-made sections: {n}', { n: sectionPresets.length })}</span>
@@ -269,13 +269,13 @@ export function BlockLibrary({ onAdded, touch }: BlockLibraryProps) {
               </span>
               <ChevronRightIcon size={16} className="shrink-0 text-fg-subtle" aria-hidden />
             </button>
-        }
-          {showVoice &&
-        <button
-          type="button"
-          onClick={() => setVoiceOpen(true)}
-          className="flex items-center gap-3 rounded-md border border-line bg-canvas px-3 py-3 text-left transition-colors duration-150 hover:border-line-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-          
+          )}
+          {showVoice && (
+            <button
+              type="button"
+              onClick={() => setVoiceOpen(true)}
+              className="flex items-center gap-3 rounded-md border border-line bg-canvas px-3 py-3 text-left transition-colors duration-150 hover:border-line-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+            >
               <MicIcon size={18} className="shrink-0 text-action" aria-hidden />
               <span className="min-w-0 flex-1">
                 <span className="block text-label font-semibold text-fg">{tr('Voice to content')}</span>
@@ -283,101 +283,101 @@ export function BlockLibrary({ onAdded, touch }: BlockLibraryProps) {
               </span>
               <ChevronRightIcon size={16} className="shrink-0 text-fg-subtle" aria-hidden />
             </button>
-        }
-          {q && sectionMatchCount > 0 &&
-        <Shelf title={tr('Ready-made sections')}>
+          )}
+          {q && sectionMatchCount > 0 && (
+            <Shelf title={tr('Ready-made sections')}>
               <SectionPresetList query={query} touch={touch} onInserted={() => onAdded?.(state.selectedId ?? '')} />
             </Shelf>
-        }
-          {browsing && suggestions.length > 0 &&
-        <Shelf title={tr('Suggested')} hint={tr('Simple rules based on what’s on your page')}>
+          )}
+          {browsing && suggestions.length > 0 && (
+            <Shelf title={tr('Suggested')} hint={tr('Simple rules based on what’s on your page')}>
               <ul className={grid}>
                 {suggestions.map((s) => card(s.type, tr(s.reason), s.id))}
               </ul>
               <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1">
-                {suggestions.map((s) =>
-            <button key={s.id} type="button" onClick={() => shelf.dismiss(s.id)} className="inline-flex items-center gap-1 text-caption text-fg-subtle hover:text-fg">
+                {suggestions.map((s) => (
+                  <button key={s.id} type="button" onClick={() => shelf.dismiss(s.id)} className="inline-flex items-center gap-1 text-caption text-fg-subtle hover:text-fg">
                     <XIcon size={11} aria-hidden /> {tr('Don’t suggest {name}', { name: tr(blockDefinitions[s.type].name).toLowerCase() })}
                   </button>
-            )}
+                ))}
               </div>
             </Shelf>
-        }
-          {browsing && favourites.length > 0 &&
-        <Shelf title={tr('Favourites')}>
+          )}
+          {browsing && favourites.length > 0 && (
+            <Shelf title={tr('Favourites')}>
               <ul className={grid}>{favourites.map((t) => card(t))}</ul>
             </Shelf>
-        }
-          {browsing && recent.length > 0 &&
-        <Shelf title={tr('Recently used')}>
+          )}
+          {browsing && recent.length > 0 && (
+            <Shelf title={tr('Recently used')}>
               <ul className={grid}>{recent.map((t) => card(t))}</ul>
             </Shelf>
-        }
+          )}
           {(browsing || q) && <SavedSectionsList query={query} touch={touch} onInserted={() => onAdded?.(state.selectedId ?? '')} />}
 
           {libraryCategories.map((c) => {
-          const items = matches.filter((t) => libraryCategoryOf(t) === c.id);
-          const looks = lookMatches.filter((e) => e.category === c.id);
-          const tips = howtos.filter((e) => e.category === c.id);
-          if (items.length === 0 && looks.length === 0 && tips.length === 0) return null;
-          return (
-            <Shelf key={c.id} title={tr(c.label)} hint={filter === c.id ? tr(c.description) : undefined}>
+            const items = matches.filter((t) => libraryCategoryOf(t) === c.id);
+            const looks = lookMatches.filter((e) => e.category === c.id);
+            const tips = howtos.filter((e) => e.category === c.id);
+            if (items.length === 0 && looks.length === 0 && tips.length === 0) return null;
+            return (
+              <Shelf key={c.id} title={tr(c.label)} hint={filter === c.id ? tr(c.description) : undefined}>
                 {items.length > 0 && <ul className={grid}>{items.map((t) => card(t))}</ul>}
-                {looks.length > 0 &&
-              <div className={items.length ? 'mt-3' : undefined}>
+                {looks.length > 0 && (
+                  <div className={items.length ? 'mt-3' : undefined}>
                     <p className="mb-1 px-1 text-[11.5px] font-medium text-fg-subtle">{tr('Ready-made looks')}</p>
                     <ul className="flex flex-col gap-0.5">
-                      {looks.map((e) =>
-                  <LookRow key={e.n} entry={e} status={statusOf(e.type as BlockType)} touch={touch} onAdd={() => add(e.type as BlockType, e.preset?.())} />
-                  )}
+                      {looks.map((e) => (
+                        <LookRow key={e.n} entry={e} status={statusOf(e.type as BlockType)} touch={touch} onAdd={() => add(e.type as BlockType, e.preset?.())} />
+                      ))}
                     </ul>
                   </div>
-              }
-                {tips.map((e) =>
-              <p key={e.n} className="mt-2 rounded-md bg-sunken px-3 py-2 text-caption text-fg-muted">
+                )}
+                {tips.map((e) => (
+                  <p key={e.n} className="mt-2 rounded-md bg-sunken px-3 py-2 text-caption text-fg-muted">
                     <span className="font-semibold text-fg">{e.name}:</span> {e.note}
                   </p>
-              )}
-              </Shelf>);
+                ))}
+              </Shelf>
+            );
+          })}
 
-        })}
-
-          {plannedMatches.length > 0 &&
-        <Shelf title={tr('Planned')} hint={tr('Shown so you know they’re coming — they can’t be added yet')}>
+          {plannedMatches.length > 0 && (
+            <Shelf title={tr('Planned')} hint={tr('Shown so you know they’re coming — they can’t be added yet')}>
               <ul className="flex flex-col gap-1.5">
                 {plannedMatches.map((p) => {
-              const Icon = p.icon;
-              return (
-                <li key={p.id} className="flex items-center gap-3 rounded-md border border-dashed border-line-strong px-2.5 py-2" aria-disabled="true">
+                  const Icon = p.icon;
+                  return (
+                    <li key={p.id} className="flex items-center gap-3 rounded-md border border-dashed border-line-strong px-2.5 py-2" aria-disabled="true">
                       <Icon size={15} className="shrink-0 text-fg-subtle" aria-hidden />
                       <span className="min-w-0">
                         <span className="block text-label font-medium text-fg-muted">{tr(p.name)}</span>
                         <span className="block text-caption text-fg-subtle">{tr(p.description)}</span>
                         <PlanLock kind={p.availability}>{tr(p.note)}</PlanLock>
                       </span>
-                    </li>);
-
-            })}
+                    </li>
+                  );
+                })}
               </ul>
             </Shelf>
-        }
+          )}
 
-          {!market.isActive('bookings') && browsing &&
-        <p className="rounded-md bg-sunken px-3 py-2.5 text-caption text-fg-muted">
+          {!market.isActive('bookings') && browsing && (
+            <p className="rounded-md bg-sunken px-3 py-2.5 text-caption text-fg-muted">
               {tr('Want customers to book a time? The Booking block comes with the free Bookings app.')}{' '}
               <Link to="/app/extensions?ext=bookings" className="font-semibold text-fg underline-offset-2 hover:underline">
                 {tr('Get Bookings')}
               </Link>
             </p>
-        }
+          )}
         </div>
-      }
+      )}
       <VoiceToContentDialog open={voiceOpen} onClose={() => setVoiceOpen(false)} onAdded={onAdded} />
-    </div>);
-
+    </div>
+  );
 }
 
-function Shelf({ title, hint, children }: {title: string;hint?: string;children: React.ReactNode;}) {
+function Shelf({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) {
   const id = `shelf-${React.useId().replace(/:/g, '')}`;
   return (
     <section aria-labelledby={id}>
@@ -388,6 +388,6 @@ function Shelf({ title, hint, children }: {title: string;hint?: string;children:
         {hint && <p className="text-[11.5px] text-fg-subtle">{hint}</p>}
       </div>
       {children}
-    </section>);
-
+    </section>
+  );
 }

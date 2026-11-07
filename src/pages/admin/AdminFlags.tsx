@@ -17,7 +17,7 @@ import { CountryRolloutSection } from '../../components/admin/CountryRolloutSect
 import { cn } from '../../utils/cn';
 
 /** `summary` is the English audit line; `title` is what staff read in the confirm box. */
-type Pending = {id: FlagId;on: boolean;plans: WorkspacePlan[];summary: string;title: string;} | null;
+type Pending = { id: FlagId; on: boolean; plans: WorkspacePlan[]; summary: string; title: string } | null;
 
 /**
  * Super admin → Feature flags: kill switches and plan targeting that really change the app (D75b).
@@ -33,7 +33,7 @@ export function AdminFlags() {
     if (!pending) return;
     const name = featureFlags.find((f) => f.id === pending.id)?.name ?? pending.id;
     setStore((s) =>
-    audit({ ...s, flags: { ...s.flags, [pending.id]: { on: pending.on, plans: pending.plans, updatedAt: new Date().toISOString() } } }, { area: 'flags', action: pending.summary, target: name, reason })
+      audit({ ...s, flags: { ...s.flags, [pending.id]: { on: pending.on, plans: pending.plans, updatedAt: new Date().toISOString() } } }, { area: 'flags', action: pending.summary, target: name, reason }),
     );
     toast.success(`${tr(name)}: ${pending.title}`, { description: tr('Applies straight away in every open tab.') });
     setPending(null);
@@ -54,7 +54,7 @@ export function AdminFlags() {
               on: state.on,
               plans: next,
               summary: `${removing ? 'Removed' : 'Released to'} ${plans[p].name}`,
-              title: removing ? tr('Remove from {plan}', { plan: tr(plans[p].name) }) : tr('Release to {plan}', { plan: tr(plans[p].name) })
+              title: removing ? tr('Remove from {plan}', { plan: tr(plans[p].name) }) : tr('Release to {plan}', { plan: tr(plans[p].name) }),
             });
           };
           return (
@@ -65,61 +65,61 @@ export function AdminFlags() {
               description={tr(f.description)}
               emphasis={state.on ? 'default' : 'primary'}
               actions={
-              <Badge tone={state.on ? 'success' : 'danger'} dot>
+                <Badge tone={state.on ? 'success' : 'danger'} dot>
                   {state.on ? tr('On') : tr('Off for everyone')}
                 </Badge>
               }
               footer={
-              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex flex-wrap items-center justify-between gap-3">
                   <span className="text-caption text-fg-subtle">
                     {tr('Affects: {where}', { where: tr(f.affects) })} · {tr('changed {when}', { when: formatRelative(state.updatedAt) })}
                   </span>
                   <Button
-                  size="sm"
-                  variant={state.on ? 'destructive' : 'primary'}
-                  onClick={() =>
-                  setPending({
-                    id: f.id,
-                    on: !state.on,
-                    plans: state.plans,
-                    summary: state.on ? 'Turned off (kill switch)' : 'Turned back on',
-                    title: state.on ? tr('Turn off for everyone') : tr('Turn back on')
-                  })
-                  }>
-                  
+                    size="sm"
+                    variant={state.on ? 'destructive' : 'primary'}
+                    onClick={() =>
+                      setPending({
+                        id: f.id,
+                        on: !state.on,
+                        plans: state.plans,
+                        summary: state.on ? 'Turned off (kill switch)' : 'Turned back on',
+                        title: state.on ? tr('Turn off for everyone') : tr('Turn back on'),
+                      })
+                    }
+                  >
                     {state.on ? tr('Turn off for everyone') : tr('Turn back on')}
                   </Button>
                 </div>
-              }>
-              
-              {f.planTargeted ?
-              <fieldset disabled={!state.on}>
+              }
+            >
+              {f.planTargeted ? (
+                <fieldset disabled={!state.on}>
                   <legend className="text-caption font-medium text-fg-muted">{tr('Released to')}</legend>
                   <div className="mt-2 flex flex-wrap gap-2">
                     {planOrder.map((p) => {
-                    const on = state.plans.includes(p);
-                    return (
-                      <button
-                        key={p}
-                        type="button"
-                        aria-pressed={on}
-                        onClick={() => togglePlan(p)}
-                        className={cn(
-                          'h-8 whitespace-nowrap rounded-full border px-3 text-caption font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus disabled:opacity-50',
-                          on ? 'border-fg bg-fg text-canvas' : 'border-line text-fg-muted hover:border-line-strong'
-                        )}>
-                        
+                      const on = state.plans.includes(p);
+                      return (
+                        <button
+                          key={p}
+                          type="button"
+                          aria-pressed={on}
+                          onClick={() => togglePlan(p)}
+                          className={cn(
+                            'h-8 whitespace-nowrap rounded-full border px-3 text-caption font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus disabled:opacity-50',
+                            on ? 'border-fg bg-fg text-canvas' : 'border-line text-fg-muted hover:border-line-strong',
+                          )}
+                        >
                           {tr(plans[p].name)}
-                        </button>);
-
-                  })}
+                        </button>
+                      );
+                    })}
                   </div>
-                </fieldset> :
-
-              <p className="text-caption text-fg-muted">{tr('Not targeted by plan — it follows each workspace’s own settings while the flag is on.')}</p>
-              }
-            </Card>);
-
+                </fieldset>
+              ) : (
+                <p className="text-caption text-fg-muted">{tr('Not targeted by plan — it follows each workspace’s own settings while the flag is on.')}</p>
+              )}
+            </Card>
+          );
         })}
       </div>
 
@@ -131,12 +131,12 @@ export function AdminFlags() {
         <h2 id="flag-history" className="text-heading font-semibold text-fg">
           {tr('Recent changes')}
         </h2>
-        {history.length === 0 ?
-        <p className="mt-3 text-label text-fg-muted">{tr('No flag changes yet.')}</p> :
-
-        <ol className="mt-4 flex flex-col divide-y divide-line border-y border-line">
-            {history.map((h) =>
-          <li key={h.id} className="flex flex-col gap-0.5 py-3 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
+        {history.length === 0 ? (
+          <p className="mt-3 text-label text-fg-muted">{tr('No flag changes yet.')}</p>
+        ) : (
+          <ol className="mt-4 flex flex-col divide-y divide-line border-y border-line">
+            {history.map((h) => (
+              <li key={h.id} className="flex flex-col gap-0.5 py-3 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
                 <span className="text-label text-fg">
                   <span className="font-semibold">{h.target}</span> · {h.action}
                   <span className="block text-caption text-fg-subtle">“{h.reason}”</span>
@@ -145,9 +145,9 @@ export function AdminFlags() {
                   {h.actor} · {formatRelative(h.at)}
                 </span>
               </li>
-          )}
+            ))}
           </ol>
-        }
+        )}
       </section>
 
       <ReasonDialog
@@ -157,8 +157,8 @@ export function AdminFlags() {
         destructive={pending ? !pending.on : false}
         title={pending ? `${tr(featureFlags.find((f) => f.id === pending.id)?.name ?? pending.id)}: ${pending.title}` : ''}
         description={tr('This changes the app for real workspaces straight away.')}
-        confirmLabel={tr('Apply change')} />
-      
-    </div>);
-
+        confirmLabel={tr('Apply change')}
+      />
+    </div>
+  );
 }

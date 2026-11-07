@@ -60,7 +60,7 @@ export function AdminEscrow() {
 
   const rows: Row[] = useMemo(
     () => workspaces.flatMap((w) => readMoney(w.id).escrow.filter((c) => c.dispute).map((c) => ({ id: `${w.id}:${c.id}`, workspaceId: w.id, workspace: w.name, currency: workspaceCurrency(w), c }))),
-    [workspaces, tick] // eslint-disable-line react-hooks/exhaustive-deps
+    [workspaces, tick], // eslint-disable-line react-hooks/exhaustive-deps
   );
 
   const toDecide = rows.filter((r) => r.c.stage === 'escalated').sort((a, b) => Date.parse(a.c.dispute?.escalatedAt ?? '') - Date.parse(b.c.dispute?.escalatedAt ?? ''));
@@ -73,43 +73,43 @@ export function AdminEscrow() {
   const open = openId ? rows.find((r) => r.id === openId) ?? null : null;
 
   const columns: DataColumn<Row>[] = [
-  {
-    key: 'case',
-    header: t('Order'),
-    render: (r) =>
-    <span className="min-w-0">
+    {
+      key: 'case',
+      header: t('Order'),
+      render: (r) => (
+        <span className="min-w-0">
           <span className="block truncate font-semibold text-fg">
             #{r.c.orderNumber} · {r.c.buyerName}
           </span>
           <span className="block truncate text-caption text-fg-subtle">{r.workspace}</span>
         </span>
-
-  },
-  { key: 'issue', header: t('Problem'), hideOnMobile: true, render: (r) => <span className="text-fg-muted">{r.c.dispute ? t(issueLabels[r.c.dispute.issue]) : '—'}</span> },
-  { key: 'stage', header: t('Status'), render: (r) => <Badge tone={stageTones[r.c.stage]}>{t(r.c.dispute?.decision ? decisionLabel(r.c) : stageLabels[r.c.stage])}</Badge> },
-  {
-    key: 'when',
-    header: t(tab === 'decide' ? 'Waiting' : tab === 'seller' ? 'Seller reply due' : 'Decided'),
-    hideOnMobile: true,
-    sortValue: (r) => Date.parse((tab === 'decide' ? r.c.dispute?.escalatedAt : tab === 'seller' ? r.c.dispute?.respondBy : r.c.dispute?.decision?.at) ?? ''),
-    render: (r) => {
-      const at = tab === 'decide' ? r.c.dispute?.escalatedAt : tab === 'seller' ? r.c.dispute?.respondBy : r.c.dispute?.decision?.at;
-      const late = tab === 'decide' && at && Date.now() - Date.parse(at) > DECIDE_HOURS * 3_600_000;
-      return <span className={late ? 'font-medium text-danger' : 'text-fg-muted'}>{at ? tab === 'seller' ? formatTimestamp(at) : `${formatRelative(at)}${late ? ` · ${t('overdue')}` : ''}` : '—'}</span>;
-    }
-  },
-  { key: 'amount', header: t('Paid'), align: 'right', sortValue: (r) => r.c.grossNgn, render: (r) => <span className="font-semibold tabular-nums text-fg">{formatMoney(r.c.grossNgn, r.currency)}</span> },
-  {
-    key: 'actions',
-    header: '',
-    align: 'right',
-    render: (r) =>
-    <Button size="sm" variant="secondary" onClick={() => setOpenId(r.id)}>
+      ),
+    },
+    { key: 'issue', header: t('Problem'), hideOnMobile: true, render: (r) => <span className="text-fg-muted">{r.c.dispute ? t(issueLabels[r.c.dispute.issue]) : '—'}</span> },
+    { key: 'stage', header: t('Status'), render: (r) => <Badge tone={stageTones[r.c.stage]}>{t(r.c.dispute?.decision ? decisionLabel(r.c) : stageLabels[r.c.stage])}</Badge> },
+    {
+      key: 'when',
+      header: t(tab === 'decide' ? 'Waiting' : tab === 'seller' ? 'Seller reply due' : 'Decided'),
+      hideOnMobile: true,
+      sortValue: (r) => Date.parse((tab === 'decide' ? r.c.dispute?.escalatedAt : tab === 'seller' ? r.c.dispute?.respondBy : r.c.dispute?.decision?.at) ?? ''),
+      render: (r) => {
+        const at = tab === 'decide' ? r.c.dispute?.escalatedAt : tab === 'seller' ? r.c.dispute?.respondBy : r.c.dispute?.decision?.at;
+        const late = tab === 'decide' && at && Date.now() - Date.parse(at) > DECIDE_HOURS * 3_600_000;
+        return <span className={late ? 'font-medium text-danger' : 'text-fg-muted'}>{at ? (tab === 'seller' ? formatTimestamp(at) : `${formatRelative(at)}${late ? ` · ${t('overdue')}` : ''}`) : '—'}</span>;
+      },
+    },
+    { key: 'amount', header: t('Paid'), align: 'right', sortValue: (r) => r.c.grossNgn, render: (r) => <span className="font-semibold tabular-nums text-fg">{formatMoney(r.c.grossNgn, r.currency)}</span> },
+    {
+      key: 'actions',
+      header: '',
+      align: 'right',
+      render: (r) => (
+        <Button size="sm" variant="secondary" onClick={() => setOpenId(r.id)}>
           {t(r.c.stage === 'escalated' ? 'Decide' : 'View')}
         </Button>
-
-  }];
-
+      ),
+    },
+  ];
 
   const decide = (r: Row, outcome: Outcome, note: string, partialNgn?: number) => {
     const before = readMoney(r.workspaceId);
@@ -144,11 +144,11 @@ export function AdminEscrow() {
           value={tab}
           onChange={setTab}
           items={[
-          { id: 'decide', label: t('To decide'), badge: toDecide.length || undefined },
-          { id: 'seller', label: t('Waiting on seller'), badge: withSeller.length || undefined },
-          { id: 'decided', label: t('Decided') }]
-          } />
-        
+            { id: 'decide', label: t('To decide'), badge: toDecide.length || undefined },
+            { id: 'seller', label: t('Waiting on seller'), badge: withSeller.length || undefined },
+            { id: 'decided', label: t('Decided') },
+          ]}
+        />
         <div role="tabpanel" id={`admin-escrow-panel-${tab}`} aria-labelledby={`admin-escrow-tab-${tab}`}>
           <DataTable
             caption={t('Escrow cases')}
@@ -157,8 +157,8 @@ export function AdminEscrow() {
             filterText={(r) => `${r.c.orderNumber} ${r.c.buyerName} ${r.workspace}`}
             filterPlaceholder={t('Search order, buyer or workspace')}
             emptyTitle={t(tab === 'decide' ? 'Nothing to decide' : tab === 'seller' ? 'No sellers are mid-reply' : 'No decisions yet')}
-            emptyDescription={t('Cases arrive when a buyer or seller asks KUBICU to decide, or a seller misses the 48-hour reply.')} />
-          
+            emptyDescription={t('Cases arrive when a buyer or seller asks KUBICU to decide, or a seller misses the 48-hour reply.')}
+          />
         </div>
       </div>
 
@@ -168,12 +168,12 @@ export function AdminEscrow() {
         side="right"
         size="lg"
         title={open ? t('Order #{n}', { n: open.c.orderNumber }) : t('Case')}
-        description={open ? `${open.workspace} · ${t(stageLabels[open.c.stage])}` : undefined}>
-        
+        description={open ? `${open.workspace} · ${t(stageLabels[open.c.stage])}` : undefined}
+      >
         {open && <CaseReview row={open} onDecide={decide} t={t} />}
       </Sheet>
-    </div>);
-
+    </div>
+  );
 }
 
 function decisionLabel(c: EscrowCase): string {
@@ -182,7 +182,7 @@ function decisionLabel(c: EscrowCase): string {
   return d.outcome === 'release' ? 'Released to seller' : d.outcome === 'refund' ? 'Refunded to buyer' : 'Split';
 }
 
-function CaseReview({ row, onDecide, t }: {row: Row;onDecide: (r: Row, outcome: Outcome, note: string, partialNgn?: number) => void;t: Tr;}) {
+function CaseReview({ row, onDecide, t }: { row: Row; onDecide: (r: Row, outcome: Outcome, note: string, partialNgn?: number) => void; t: Tr }) {
   const { c } = row;
   const d = c.dispute!;
   const formatNgn = (n: number) => formatMoney(n, row.currency);
@@ -193,7 +193,7 @@ function CaseReview({ row, onDecide, t }: {row: Row;onDecide: (r: Row, outcome: 
   const partial = Number(amount) || 0;
   const errors = {
     amount: outcome === 'partial' && (partial <= 0 || partial >= c.grossNgn) ? t('Enter an amount between {min} and {max}.', { min: formatNgn(1), max: formatNgn(c.grossNgn - 1) }) : undefined,
-    note: note.trim().length < 20 ? t('Explain the decision in at least 20 characters. Buyer and seller see it word for word.') : undefined
+    note: note.trim().length < 20 ? t('Explain the decision in at least 20 characters. Buyer and seller see it word for word.') : undefined,
   };
 
   return (
@@ -201,12 +201,12 @@ function CaseReview({ row, onDecide, t }: {row: Row;onDecide: (r: Row, outcome: 
       <DetailSection title={t('Case')}>
         <DetailList
           items={[
-          { label: t('Buyer'), value: `${c.buyerName}${c.buyerPhone ? ` · ${c.buyerPhone}` : ''}` },
-          { label: t('Buyer paid'), value: <span className="font-semibold tabular-nums">{formatNgn(c.grossNgn)}</span> },
-          { label: t('Delivered'), value: c.deliveredAt ? formatTimestamp(c.deliveredAt) : t('Not marked delivered') },
-          { label: t('Escalated'), value: d.escalatedAt ? `${formatRelative(d.escalatedAt)} · ${d.escalatedBy === 'system' ? t('by the deadline') : t('by {name}', { name: d.escalatedBy ?? '' })}` : '—' }]
-          } />
-        
+            { label: t('Buyer'), value: `${c.buyerName}${c.buyerPhone ? ` · ${c.buyerPhone}` : ''}` },
+            { label: t('Buyer paid'), value: <span className="font-semibold tabular-nums">{formatNgn(c.grossNgn)}</span> },
+            { label: t('Delivered'), value: c.deliveredAt ? formatTimestamp(c.deliveredAt) : t('Not marked delivered') },
+            { label: t('Escalated'), value: d.escalatedAt ? `${formatRelative(d.escalatedAt)} · ${d.escalatedBy === 'system' ? t('by the deadline') : t('by {name}', { name: d.escalatedBy ?? '' })}` : '—' },
+          ]}
+        />
       </DetailSection>
 
       <DetailSection title={`${t('Buyer')} · ${t(issueLabels[d.issue])}`}>
@@ -220,87 +220,87 @@ function CaseReview({ row, onDecide, t }: {row: Row;onDecide: (r: Row, outcome: 
 
       <DetailSection title={t('Seller')}>
         <div>
-          {d.response ?
-          <>
+          {d.response ? (
+            <>
               <p className="text-caption text-fg-subtle">
                 {d.response.kind === 'partial' ? t('Offered {amount} back', { amount: formatNgn(d.response.partialNgn ?? 0) }) : t('Disagrees')} · {formatTimestamp(d.response.at)}
               </p>
               <blockquote className="mt-2 border-l-2 border-line-strong pl-3 text-label text-fg-muted">“{d.response.text}”</blockquote>
               <Files label={t('Seller’s evidence')} names={d.response.evidence.map((f) => f.name)} />
-            </> :
-
-          <p className="text-label text-warning">{t('The seller didn’t reply within 48 hours.')}</p>
-          }
+            </>
+          ) : (
+            <p className="text-label text-warning">{t('The seller didn’t reply within 48 hours.')}</p>
+          )}
           {c.deliveryNote && <p className="mt-2 text-label text-fg-muted">{t('Delivery note:')} “{c.deliveryNote}”</p>}
           <Files label={t('Proof of delivery')} names={c.proof.map((f) => f.name)} />
         </div>
       </DetailSection>
 
-      {c.stage === 'escalated' ?
-      <DetailSection
-        title={
-        <span className="flex items-center gap-2">
+      {c.stage === 'escalated' ? (
+        <DetailSection
+          title={
+            <span className="flex items-center gap-2">
               <GavelIcon size={16} aria-hidden /> {t('Decision')}
             </span>
-        }>
-        
+          }
+        >
           <fieldset className="flex flex-col gap-2">
             <legend className="sr-only">{t('Outcome')}</legend>
             {(
-          [
-          ['refund', t('Refund the buyer in full'), t('{amount} back to the buyer.', { amount: formatNgn(c.grossNgn) })],
-          ['partial', t('Split'), t('Part back to the buyer, the rest released to the seller.')],
-          ['release', t('Release to the seller'), t('The buyer’s problem isn’t upheld.')]] as
-          const).
-          map(([k, title, desc]) =>
-          <label key={k} className={cn('flex min-h-[44px] cursor-pointer gap-3 rounded-md border px-3 py-2.5 transition-colors duration-150', outcome === k ? 'border-action bg-action-soft' : 'border-line hover:bg-sunken')}>
+              [
+                ['refund', t('Refund the buyer in full'), t('{amount} back to the buyer.', { amount: formatNgn(c.grossNgn) })],
+                ['partial', t('Split'), t('Part back to the buyer, the rest released to the seller.')],
+                ['release', t('Release to the seller'), t('The buyer’s problem isn’t upheld.')],
+              ] as const
+            ).map(([k, title, desc]) => (
+              <label key={k} className={cn('flex min-h-[44px] cursor-pointer gap-3 rounded-md border px-3 py-2.5 transition-colors duration-150', outcome === k ? 'border-action bg-action-soft' : 'border-line hover:bg-sunken')}>
                 <input type="radio" name="ae-outcome" className="mt-1" checked={outcome === k} onChange={() => setOutcome(k)} />
                 <span>
                   <span className="block text-label font-medium text-fg">{title}</span>
                   <span className="block text-caption text-fg-subtle">{desc}</span>
                 </span>
               </label>
-          )}
+            ))}
           </fieldset>
           {outcome === 'partial' && <TextInput id="ae-amount" label={t('Refund to buyer ({symbol})', { symbol: currencySymbol(row.currency) })} inputMode="numeric" value={amount} onChange={(e) => setAmount(e.target.value.replace(/\D/g, ''))} error={tried ? errors.amount : undefined} />}
           <TextArea id="ae-note" label={t('Note to buyer and seller')} rows={4} value={note} onChange={(e) => setNote(e.target.value)} error={tried ? errors.note : undefined} hint={t('Shown word for word to both, and kept in the audit log.')} />
           <Button
-          className="self-start"
-          variant={outcome === 'release' ? 'primary' : 'destructive'}
-          onClick={() => {
-            setTried(true);
-            if (errors.note || errors.amount) return;
-            onDecide(row, outcome, note.trim(), outcome === 'partial' ? partial : undefined);
-          }}>
-          
+            className="self-start"
+            variant={outcome === 'release' ? 'primary' : 'destructive'}
+            onClick={() => {
+              setTried(true);
+              if (errors.note || errors.amount) return;
+              onDecide(row, outcome, note.trim(), outcome === 'partial' ? partial : undefined);
+            }}
+          >
             {outcome === 'release' ? t('Release to seller') : outcome === 'refund' ? t('Refund {amount}', { amount: formatNgn(c.grossNgn) }) : t('Record split')}
           </Button>
-        </DetailSection> :
-      d.decision ?
-      <DetailSection title={t('Decided by {name}', { name: d.decision.by })}>
+        </DetailSection>
+      ) : d.decision ? (
+        <DetailSection title={t('Decided by {name}', { name: d.decision.by })}>
           <p className="text-label text-fg-muted">“{d.decision.note}”</p>
-        </DetailSection> :
-      null}
+        </DetailSection>
+      ) : null}
 
       <DetailSection title={t('History')}>
         <EscrowTimeline events={c.events} id={`ae-tl-${c.id}`} />
       </DetailSection>
-    </div>);
-
+    </div>
+  );
 }
 
-function Files({ label, names }: {label: string;names: string[];}) {
+function Files({ label, names }: { label: string; names: string[] }) {
   if (!names.length) return null;
   return (
     <div className="mt-2">
       <p className="text-caption font-semibold text-fg-subtle">{label}</p>
       <ul className="mt-1 flex flex-wrap gap-1.5">
-        {names.map((n, i) =>
-        <li key={`${n}-${i}`} className="inline-flex items-center gap-1 rounded-md bg-sunken px-2 py-1 text-caption text-fg">
+        {names.map((n, i) => (
+          <li key={`${n}-${i}`} className="inline-flex items-center gap-1 rounded-md bg-sunken px-2 py-1 text-caption text-fg">
             <PaperclipIcon size={12} aria-hidden /> {n}
           </li>
-        )}
+        ))}
       </ul>
-    </div>);
-
+    </div>
+  );
 }

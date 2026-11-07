@@ -16,6 +16,6 @@ export function CommerceLayout() {
       <div className="pb-16 pt-6 md:pt-8">
         <Outlet />
       </div>
-    </div>);
-
+    </div>
+  );
 }

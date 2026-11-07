@@ -11,6 +11,6 @@ export function BookingsPlanNote() {
   return (
     <InlineAlert tone="info" title={`Built-in booking is on ${plans[BOOKINGS_PLAN].name}`} className="mt-6" action={<UpgradeButton plan={BOOKINGS_PLAN} feature="Built-in booking on your page" />}>
       Set up services and availability now. Booking blocks can’t be published on {plan.name}; you can still link to an outside booking page.
-    </InlineAlert>);
-
+    </InlineAlert>
+  );
 }

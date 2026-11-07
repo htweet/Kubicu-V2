@@ -14,16 +14,16 @@ import {
   ShieldCheckIcon,
   TableIcon,
   TruckIcon,
-  UsersIcon } from
-'lucide-react';
+  UsersIcon,
+} from 'lucide-react';
 import type { BlockDefinition } from './blockRegistry';
 import { uid } from '../utils/id';
 import { defaultHours } from '../utils/openHours';
 
 /** Round 1 of the expanded block library (D169). Merged into `blockDefinitions`. */
 export type StoryBlockType =
-'announcement' | 'cta' | 'quote' | 'timeline' | 'comparison' | 'beforeAfter' | 'team' | 'credentials' |
-'press' | 'hours' | 'agenda' | 'contactActions' | 'share' | 'anchorNav' | 'policies' | 'delivery';
+  | 'announcement' | 'cta' | 'quote' | 'timeline' | 'comparison' | 'beforeAfter' | 'team' | 'credentials'
+  | 'press' | 'hours' | 'agenda' | 'contactActions' | 'share' | 'anchorNav' | 'policies' | 'delivery';
 
 const base = { supportsEmphasis: false, defaultAlign: 'left' as const };
 
@@ -37,7 +37,7 @@ export const storyBlockDefinitions: { [K in StoryBlockType]: BlockDefinition<K> 
     icon: MegaphoneIcon,
     keywords: ['announcement', 'banner', 'notice', 'news', 'offer', 'alert'],
     clickable: true,
-    defaults: () => ({ text: 'New collection drops Friday', linkLabel: '', url: '', tone: 'accent' })
+    defaults: () => ({ text: 'New collection drops Friday', linkLabel: '', url: '', tone: 'accent' }),
   },
   cta: {
     ...base,
@@ -48,7 +48,7 @@ export const storyBlockDefinitions: { [K in StoryBlockType]: BlockDefinition<K> 
     icon: MousePointerClickIcon,
     keywords: ['cta', 'call to action', 'button', 'book now', 'get started', 'banner'],
     clickable: true,
-    defaults: () => ({ title: 'Ready when you are', text: '', primaryLabel: 'Get in touch', primaryUrl: '', secondaryLabel: '', secondaryUrl: '', layout: 'band' })
+    defaults: () => ({ title: 'Ready when you are', text: '', primaryLabel: 'Get in touch', primaryUrl: '', secondaryLabel: '', secondaryUrl: '', layout: 'band' }),
   },
   quote: {
     ...base,
@@ -59,7 +59,7 @@ export const storyBlockDefinitions: { [K in StoryBlockType]: BlockDefinition<K> 
     icon: QuoteIcon,
     keywords: ['quote', 'pull quote', 'statement', 'motto'],
     clickable: false,
-    defaults: () => ({ text: '', name: '', role: '', style: 'editorial' })
+    defaults: () => ({ text: '', name: '', role: '', style: 'editorial' }),
   },
   timeline: {
     ...base,
@@ -70,7 +70,7 @@ export const storyBlockDefinitions: { [K in StoryBlockType]: BlockDefinition<K> 
     icon: GitCommitVerticalIcon,
     keywords: ['timeline', 'history', 'journey', 'milestones', 'story'],
     clickable: false,
-    defaults: () => ({ title: 'Our story', intro: '', items: [{ id: uid('tl'), date: '2019', title: 'Where it started', text: '' }, { id: uid('tl'), date: '2022', title: 'A turning point', text: '' }] })
+    defaults: () => ({ title: 'Our story', intro: '', items: [{ id: uid('tl'), date: '2019', title: 'Where it started', text: '' }, { id: uid('tl'), date: '2022', title: 'A turning point', text: '' }] }),
   },
   comparison: {
     ...base,
@@ -86,14 +86,14 @@ export const storyBlockDefinitions: { [K in StoryBlockType]: BlockDefinition<K> 
       title: 'Compare packages',
       intro: '',
       columns: [
-      { id: uid('cc'), name: 'Basic', price: '', highlight: false },
-      { id: uid('cc'), name: 'Standard', price: '', highlight: true }],
-
+        { id: uid('cc'), name: 'Basic', price: '', highlight: false },
+        { id: uid('cc'), name: 'Standard', price: '', highlight: true },
+      ],
       rows: [
-      { id: uid('cr'), label: 'What’s included', values: ['', ''] },
-      { id: uid('cr'), label: 'Turnaround', values: ['', ''] }]
-
-    })
+        { id: uid('cr'), label: 'What’s included', values: ['', ''] },
+        { id: uid('cr'), label: 'Turnaround', values: ['', ''] },
+      ],
+    }),
   },
   beforeAfter: {
     ...base,
@@ -105,7 +105,7 @@ export const storyBlockDefinitions: { [K in StoryBlockType]: BlockDefinition<K> 
     keywords: ['before after', 'comparison', 'transformation', 'makeover', 'result', 'slider'],
     clickable: false,
     minPlan: 'creator',
-    defaults: () => ({ title: '', beforeUrl: '', beforeAlt: '', afterUrl: '', afterAlt: '', beforeLabel: 'Before', afterLabel: 'After', caption: '', permission: false })
+    defaults: () => ({ title: '', beforeUrl: '', beforeAlt: '', afterUrl: '', afterAlt: '', beforeLabel: 'Before', afterLabel: 'After', caption: '', permission: false }),
   },
   team: {
     ...base,
@@ -116,7 +116,7 @@ export const storyBlockDefinitions: { [K in StoryBlockType]: BlockDefinition<K> 
     icon: UsersIcon,
     keywords: ['team', 'people', 'staff', 'speakers', 'performers', 'hosts', 'about us'],
     clickable: true,
-    defaults: () => ({ title: 'Meet the team', intro: '', variant: 'team', items: [{ id: uid('tm'), name: 'Your name', role: '', bio: '', imageUrl: '', imageAlt: '', url: '' }] })
+    defaults: () => ({ title: 'Meet the team', intro: '', variant: 'team', items: [{ id: uid('tm'), name: 'Your name', role: '', bio: '', imageUrl: '', imageAlt: '', url: '' }] }),
   },
   credentials: {
     ...base,
@@ -127,7 +127,7 @@ export const storyBlockDefinitions: { [K in StoryBlockType]: BlockDefinition<K> 
     icon: AwardIcon,
     keywords: ['credentials', 'certifications', 'qualifications', 'experience', 'cv', 'resume', 'career'],
     clickable: false,
-    defaults: () => ({ title: 'Experience', variant: 'credentials', summary: '', items: [{ id: uid('cd'), title: '', org: '', year: '', text: '' }], cvUrl: '' })
+    defaults: () => ({ title: 'Experience', variant: 'credentials', summary: '', items: [{ id: uid('cd'), title: '', org: '', year: '', text: '' }], cvUrl: '' }),
   },
   press: {
     ...base,
@@ -138,7 +138,7 @@ export const storyBlockDefinitions: { [K in StoryBlockType]: BlockDefinition<K> 
     icon: NewspaperIcon,
     keywords: ['press', 'media', 'featured in', 'publications', 'articles', 'interviews', 'books'],
     clickable: true,
-    defaults: () => ({ title: 'In the press', items: [{ id: uid('pr'), outlet: '', title: '', date: '', url: '', kind: 'article' }] })
+    defaults: () => ({ title: 'In the press', items: [{ id: uid('pr'), outlet: '', title: '', date: '', url: '', kind: 'article' }] }),
   },
   hours: {
     ...base,
@@ -149,7 +149,7 @@ export const storyBlockDefinitions: { [K in StoryBlockType]: BlockDefinition<K> 
     icon: ClockIcon,
     keywords: ['hours', 'opening hours', 'open', 'times', 'schedule'],
     clickable: false,
-    defaults: () => ({ title: 'Opening hours', timeZone: 'Africa/Lagos', hours: defaultHours(), note: '' })
+    defaults: () => ({ title: 'Opening hours', timeZone: 'Africa/Lagos', hours: defaultHours(), note: '' }),
   },
   agenda: {
     ...base,
@@ -160,7 +160,7 @@ export const storyBlockDefinitions: { [K in StoryBlockType]: BlockDefinition<K> 
     icon: CalendarClockIcon,
     keywords: ['agenda', 'schedule', 'programme', 'program', 'running order', 'lineup', 'sessions'],
     clickable: false,
-    defaults: () => ({ title: 'Agenda', date: '', items: [{ id: uid('ag'), time: '10:00', title: 'Doors open', speaker: '', text: '' }, { id: uid('ag'), time: '11:00', title: 'First session', speaker: '', text: '' }] })
+    defaults: () => ({ title: 'Agenda', date: '', items: [{ id: uid('ag'), time: '10:00', title: 'Doors open', speaker: '', text: '' }, { id: uid('ag'), time: '11:00', title: 'First session', speaker: '', text: '' }] }),
   },
   contactActions: {
     ...base,
@@ -171,7 +171,7 @@ export const storyBlockDefinitions: { [K in StoryBlockType]: BlockDefinition<K> 
     icon: PhoneCallIcon,
     keywords: ['contact', 'call', 'email', 'whatsapp', 'phone', 'reach'],
     clickable: true,
-    defaults: () => ({ title: '', phone: '', email: '', whatsapp: '', website: '', layout: 'row' })
+    defaults: () => ({ title: '', phone: '', email: '', whatsapp: '', website: '', layout: 'row' }),
   },
   share: {
     ...base,
@@ -182,7 +182,7 @@ export const storyBlockDefinitions: { [K in StoryBlockType]: BlockDefinition<K> 
     icon: Share2Icon,
     keywords: ['share', 'social share', 'copy link', 'spread the word'],
     clickable: true,
-    defaults: () => ({ title: 'Share this page', text: '' })
+    defaults: () => ({ title: 'Share this page', text: '' }),
   },
   anchorNav: {
     ...base,
@@ -193,7 +193,7 @@ export const storyBlockDefinitions: { [K in StoryBlockType]: BlockDefinition<K> 
     icon: NavigationIcon,
     keywords: ['anchor', 'jump', 'table of contents', 'index', 'menu', 'navigation', 'sections'],
     clickable: true,
-    defaults: () => ({ title: '', items: [] })
+    defaults: () => ({ title: '', items: [] }),
   },
   policies: {
     ...base,
@@ -204,7 +204,7 @@ export const storyBlockDefinitions: { [K in StoryBlockType]: BlockDefinition<K> 
     icon: ShieldCheckIcon,
     keywords: ['policies', 'refunds', 'guarantee', 'support', 'terms', 'assurance'],
     clickable: false,
-    defaults: () => ({ title: 'Good to know', intro: '', items: [{ id: uid('pol'), title: 'Support', text: '' }, { id: uid('pol'), title: 'Guarantee', text: '' }] })
+    defaults: () => ({ title: 'Good to know', intro: '', items: [{ id: uid('pol'), title: 'Support', text: '' }, { id: uid('pol'), title: 'Guarantee', text: '' }] }),
   },
   delivery: {
     ...base,
@@ -215,10 +215,11 @@ export const storyBlockDefinitions: { [K in StoryBlockType]: BlockDefinition<K> 
     icon: TruckIcon,
     keywords: ['delivery', 'shipping', 'returns', 'pickup', 'collection', 'dispatch', 'courier', 'refund policy', 'exchange'],
     clickable: false,
-    defaults: () => ({ title: 'Delivery & returns', intro: '', source: 'shop', zones: [], pickup: '', returns: '', note: '' })
-  }
+    defaults: () => ({ title: 'Delivery & returns', intro: '', source: 'shop', zones: [], pickup: '', returns: '', note: '' }),
+  },
 };
 
 export const storyBlockOrder: StoryBlockType[] = [
-'announcement', 'cta', 'quote', 'timeline', 'comparison', 'beforeAfter', 'team', 'credentials',
-'press', 'hours', 'agenda', 'contactActions', 'share', 'anchorNav', 'policies', 'delivery'];
+  'announcement', 'cta', 'quote', 'timeline', 'comparison', 'beforeAfter', 'team', 'credentials',
+  'press', 'hours', 'agenda', 'contactActions', 'share', 'anchorNav', 'policies', 'delivery',
+];

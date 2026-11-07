@@ -38,10 +38,10 @@ export function StickyActionBar({ theme, label, blockId, url }: StickyActionBarP
         target={blockId ? undefined : '_blank'}
         rel={blockId ? undefined : 'noopener noreferrer'}
         className="flex h-12 w-full items-center justify-center px-5 text-[15px] font-semibold shadow-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
-        style={{ background: theme.accent, color: theme.accentText, borderRadius: Math.min(buttonRadius(theme), 999) }}>
-        
+        style={{ background: theme.accent, color: theme.accentText, borderRadius: Math.min(buttonRadius(theme), 999) }}
+      >
         <span className="truncate">{label}</span>
       </a>
-    </div>);
-
+    </div>
+  );
 }

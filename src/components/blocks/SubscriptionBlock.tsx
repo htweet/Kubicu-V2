@@ -28,11 +28,11 @@ export function SubscriptionBlock({ block, theme, mode }: BlockProps<'subscripti
   return (
     <section>
       {c.title && <BlockTitle theme={theme}>{c.title}</BlockTitle>}
-      {c.intro &&
-      <p className="-mt-1 mb-3 text-[14px] leading-relaxed" style={{ color: theme.mutedText }}>
+      {c.intro && (
+        <p className="-mt-1 mb-3 text-[14px] leading-relaxed" style={{ color: theme.mutedText }}>
           {c.intro}
         </p>
-      }
+      )}
       <ul className="grid gap-3">
         {plans.map((p) => {
           const highlighted = c.highlightPlanId === p.id;
@@ -45,17 +45,17 @@ export function SubscriptionBlock({ block, theme, mode }: BlockProps<'subscripti
             <li
               key={p.id}
               className="flex flex-col p-5"
-              style={{ ...cardStyle(theme), borderRadius: cardRadius(theme), border: highlighted ? `2px solid ${theme.accent}` : `1px solid ${theme.material ? borderColor(theme, 10) : mix(theme.text, 10)}` }}>
-              
+              style={{ ...cardStyle(theme), borderRadius: cardRadius(theme), border: highlighted ? `2px solid ${theme.accent}` : `1px solid ${theme.material ? borderColor(theme, 10) : mix(theme.text, 10)}` }}
+            >
               <div className="flex items-start justify-between gap-3">
                 <h3 className="text-[18px] font-medium leading-tight" style={{ fontFamily: fontsFor(theme).display, color: theme.text }}>
                   {p.name}
                 </h3>
-                {highlighted &&
-                <PageChip theme={theme} tone="strong">
+                {highlighted && (
+                  <PageChip theme={theme} tone="strong">
                     {tr('Most chosen')}
                   </PageChip>
-                }
+                )}
               </div>
               <p className="mt-2 text-[24px] font-semibold tabular-nums" style={{ color: theme.text }}>
                 {formatNgn(p.priceNgn)}
@@ -63,45 +63,45 @@ export function SubscriptionBlock({ block, theme, mode }: BlockProps<'subscripti
                   / {tr(intervalWord[p.interval])}
                 </span>
               </p>
-              {(p.trialDays > 0 || p.setupFeeNgn > 0 || p.kind === 'box') &&
-              <p className="mt-0.5 text-[12.5px]" style={{ color: theme.mutedText }}>
+              {(p.trialDays > 0 || p.setupFeeNgn > 0 || p.kind === 'box') && (
+                <p className="mt-0.5 text-[12.5px]" style={{ color: theme.mutedText }}>
                   {[
-                p.trialDays ? tr('Free days: {n}', { n: p.trialDays }) : '',
-                p.setupFeeNgn ? tr('One-off setup: {amount}', { amount: formatNgn(p.setupFeeNgn) }) : '',
-                p.kind === 'box' ? tr('plus delivery') : ''].
-
-                filter(Boolean).
-                join(' · ')}
+                    p.trialDays ? tr('Free days: {n}', { n: p.trialDays }) : '',
+                    p.setupFeeNgn ? tr('One-off setup: {amount}', { amount: formatNgn(p.setupFeeNgn) }) : '',
+                    p.kind === 'box' ? tr('plus delivery') : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')}
                 </p>
-              }
-              {p.description &&
-              <p className="mt-2 text-[13px] leading-relaxed" style={{ color: theme.mutedText }}>
+              )}
+              {p.description && (
+                <p className="mt-2 text-[13px] leading-relaxed" style={{ color: theme.mutedText }}>
                   {p.description}
                 </p>
-              }
-              {benefits.length > 0 &&
-              <ul className="mt-4 flex flex-col gap-2">
-                  {benefits.map((b) =>
-                <li key={b} className="flex items-start gap-2 text-[14px] leading-snug" style={{ color: theme.text }}>
+              )}
+              {benefits.length > 0 && (
+                <ul className="mt-4 flex flex-col gap-2">
+                  {benefits.map((b) => (
+                    <li key={b} className="flex items-start gap-2 text-[14px] leading-snug" style={{ color: theme.text }}>
                       <CheckIcon size={15} className="mt-0.5 shrink-0" style={{ color: theme.mutedText }} aria-hidden />
                       {b}
                     </li>
-                )}
+                  ))}
                 </ul>
-              }
-              {mode === 'live' && open && !full ?
-              <button type="button" onClick={() => open(p.id)} className={btnClass} style={btnStyle}>
+              )}
+              {mode === 'live' && open && !full ? (
+                <button type="button" onClick={() => open(p.id)} className={btnClass} style={btnStyle}>
                   {label}
-                </button> :
-
-              <span className={btnClass} style={btnStyle} aria-disabled={full || undefined}>
+                </button>
+              ) : (
+                <span className={btnClass} style={btnStyle} aria-disabled={full || undefined}>
                   {label}
                 </span>
-              }
-            </li>);
-
+              )}
+            </li>
+          );
         })}
       </ul>
-    </section>);
-
+    </section>
+  );
 }

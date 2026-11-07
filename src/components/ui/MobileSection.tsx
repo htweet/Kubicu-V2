@@ -33,8 +33,8 @@ export function MobileSection({ id, title, summary, open, onToggle, invalid, chi
           aria-expanded={open}
           aria-controls={`${id}-body`}
           onClick={onToggle}
-          className="flex min-h-[56px] w-full items-center gap-3 px-5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus">
-          
+          className="flex min-h-[56px] w-full items-center gap-3 px-5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus"
+        >
           <span className="min-w-0 flex-1">
             <span className={cn('block text-label font-semibold', invalid ? 'text-danger' : 'text-fg')}>{title}</span>
             {!open && summary && <span className="block truncate text-caption text-fg-subtle">{summary}</span>}
@@ -42,11 +42,11 @@ export function MobileSection({ id, title, summary, open, onToggle, invalid, chi
           <ChevronDownIcon size={18} aria-hidden className={cn('shrink-0 text-fg-subtle transition-transform duration-200 ease-out', open && 'rotate-180')} />
         </button>
       </h3>
-      {open &&
-      <div id={`${id}-body`} className="flex flex-col gap-6 px-5 pb-6 pt-1">
+      {open && (
+        <div id={`${id}-body`} className="flex flex-col gap-6 px-5 pb-6 pt-1">
           {children}
         </div>
-      }
-    </section>);
-
+      )}
+    </section>
+  );
 }

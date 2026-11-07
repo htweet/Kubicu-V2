@@ -66,7 +66,7 @@ export function b<K extends BlockType>(id: string, type: K, content: BlockConten
     visibility: { hidden: false },
     accessibility: { label: '' },
     createdAt: stamp,
-    updatedAt: stamp
+    updatedAt: stamp,
   } as unknown as Block;
 }
 
@@ -85,7 +85,7 @@ export function doc(handle: string, title: string, seoDescription: string, theme
     theme,
     seo: { title, description: seoDescription },
     blocks,
-    updatedAt: stamp
+    updatedAt: stamp,
   };
 }
 
@@ -94,6 +94,6 @@ export function hours(open: string, close: string, closedDays: number[] = [0], o
     day,
     open: overrides[day]?.[0] ?? open,
     close: overrides[day]?.[1] ?? close,
-    closed: closedDays.includes(day)
+    closed: closedDays.includes(day),
   }));
 }

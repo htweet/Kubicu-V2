@@ -19,8 +19,8 @@ export function StepsBlock({ block, theme, mode }: BlockProps<'steps'>) {
     <section>
       <SectionHeading theme={theme} title={c.title} intro={c.intro} />
       <ol className="grid gap-x-8 gap-y-10" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))' }}>
-        {items.map((i, n) =>
-        <li key={i.id} className="relative flex flex-col pt-6" style={{ borderTop: `1px solid ${mix(theme.text, 22)}` }}>
+        {items.map((i, n) => (
+          <li key={i.id} className="relative flex flex-col pt-6" style={{ borderTop: `1px solid ${mix(theme.text, 22)}` }}>
             <span aria-hidden className="absolute -top-[5px] left-0 h-[9px] w-[9px] rounded-full" style={{ background: accent }} />
             <span aria-hidden className="text-[44px] font-medium leading-none tracking-[-0.04em] tabular-nums md:text-[56px]" style={{ fontFamily: display, color: mix(accent, 70, theme.background) }}>
               {String(n + 1).padStart(2, '0')}
@@ -31,8 +31,8 @@ export function StepsBlock({ block, theme, mode }: BlockProps<'steps'>) {
             </h3>
             {i.text && <p className="mt-2 text-[15px] leading-relaxed" style={{ color: theme.mutedText }}>{i.text}</p>}
           </li>
-        )}
+        ))}
       </ol>
-    </section>);
-
+    </section>
+  );
 }

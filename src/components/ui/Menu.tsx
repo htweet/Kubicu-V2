@@ -41,14 +41,14 @@ export function Menu({
 }: MenuProps) {
   const [open, setOpen] = useState(false);
   const { t } = useT();
-  items = items.map((i) => ({ ...i, label: t(i.label), reason: i.reason && t(i.reason) }));
+  items = items.map(i => ({ ...i, label: t(i.label), reason: i.reason && t(i.reason) }));
   const rootRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<Array<HTMLButtonElement | null>>([]);
   // D250: the menu floats over the page (fixed position) so a scrolling list or card can't clip it,
   // and flips above the trigger when there isn't room below.
   const [placed, setPlaced] = useState<'top' | 'bottom'>(side);
-  const [pos, setPos] = useState<{top: number;left: number;width?: number;} | null>(null);
+  const [pos, setPos] = useState<{ top: number; left: number; width?: number } | null>(null);
   const place = useCallback(() => {
     const root = rootRef.current;
     const menu = menuRef.current;
@@ -65,11 +65,11 @@ export function Menu({
     const vh = window.innerHeight;
     const vw = window.innerWidth;
     let s: 'top' | 'bottom' = side;
-    if (s === 'bottom' && r.bottom + gap + h > vh - edge && r.top - gap - h >= edge) s = 'top';else
-    if (s === 'top' && r.top - gap - h < edge && r.bottom + gap + h <= vh - edge) s = 'bottom';
+    if (s === 'bottom' && r.bottom + gap + h > vh - edge && r.top - gap - h >= edge) s = 'top';
+    else if (s === 'top' && r.top - gap - h < edge && r.bottom + gap + h <= vh - edge) s = 'bottom';
     const top = Math.max(edge, Math.min(s === 'bottom' ? r.bottom + gap : r.top - gap - h, vh - h - edge));
     const left = Math.max(edge, Math.min(align === 'end' ? r.right - w : r.left, vw - w - edge));
-    setPos((p) => p && p.top === top && p.left === left && p.width === width ? p : { top, left, width });
+    setPos((p) => (p && p.top === top && p.left === left && p.width === width ? p : { top, left, width }));
     setPlaced(s);
   }, [align, side]);
   useLayoutEffect(() => {
@@ -95,7 +95,7 @@ export function Menu({
     };
     document.addEventListener('mousedown', onDown);
     document.addEventListener('keydown', onKey);
-    const first = itemRefs.current.find((el) => el && !el.disabled);
+    const first = itemRefs.current.find(el => el && !el.disabled);
     first?.focus();
     return () => {
       document.removeEventListener('mousedown', onDown);
@@ -126,7 +126,7 @@ export function Menu({
   };
   return <div ref={rootRef} className={cn('relative inline-flex', className)}>
       {trigger({
-      onClick: () => setOpen((o) => !o),
+      onClick: () => setOpen(o => !o),
       'aria-expanded': open,
       'aria-haspopup': 'menu'
     })}
@@ -145,7 +145,7 @@ export function Menu({
       }} transition={{
         duration: 0.15,
         ease: [0.23, 1, 0.32, 1]
-      }} className={cn('fixed z-[80] max-h-[calc(100vh-16px)] min-w-[220px] overflow-y-auto rounded-md border border-line bg-overlay p-1 shadow-3', pos?.width ? 'max-w-[calc(100vw-16px)]' : 'max-w-[min(340px,calc(100vw-16px))]', placed === 'bottom' ? align === 'end' ? 'origin-top-right' : 'origin-top-left' : align === 'end' ? 'origin-bottom-right' : 'origin-bottom-left')}>
+      }} className={cn('fixed z-[80] max-h-[calc(100vh-16px)] min-w-[220px] overflow-y-auto rounded-md border border-line bg-overlay p-1 shadow-3', pos?.width ? 'max-w-[calc(100vw-16px)]' : 'max-w-[min(340px,calc(100vw-16px))]', placed === 'bottom' ? (align === 'end' ? 'origin-top-right' : 'origin-top-left') : align === 'end' ? 'origin-bottom-right' : 'origin-bottom-left')}>
             {header && <div className="border-b border-line px-2.5 pb-2 pt-1.5">{header}</div>}
             {items.map((item, i) => {
           const Icon = item.icon;
@@ -153,10 +153,10 @@ export function Menu({
               {item.groupLabel && <p role="presentation" className={cn('px-2.5 pb-1 text-caption font-semibold text-fg-subtle', i === 0 ? 'pt-1.5' : 'mt-1 border-t border-line pt-2.5')}>
                   {item.groupLabel}
                 </p>}
-              <button ref={(el) => itemRefs.current[i] = el} role="menuitem" type="button" disabled={item.disabled} onKeyDown={(e) => onItemKey(e, i)} onClick={() => {
-              item.onSelect?.();
-              setOpen(false);
-            }} className={cn('flex w-full items-start gap-2.5 rounded-sm px-2.5 py-2 text-left text-label', 'transition-colors duration-100 focus-visible:bg-sunken focus-visible:outline-none', item.disabled ? 'cursor-not-allowed text-fg-subtle' : 'hover:bg-sunken', item.destructive && !item.disabled ? 'text-danger' : !item.disabled && 'text-fg')}>
+              <button ref={el => itemRefs.current[i] = el} role="menuitem" type="button" disabled={item.disabled} onKeyDown={e => onItemKey(e, i)} onClick={() => {
+            item.onSelect?.();
+            setOpen(false);
+          }} className={cn('flex w-full items-start gap-2.5 rounded-sm px-2.5 py-2 text-left text-label', 'transition-colors duration-100 focus-visible:bg-sunken focus-visible:outline-none', item.disabled ? 'cursor-not-allowed text-fg-subtle' : 'hover:bg-sunken', item.destructive && !item.disabled ? 'text-danger' : !item.disabled && 'text-fg')}>
                   {item.leading ? <span className="mt-px shrink-0">{item.leading}</span> : Icon && <Icon size={15} className="mt-px shrink-0" aria-hidden />}
                   <span className="min-w-0 flex-1">
                     <span className="block">{item.label}</span>

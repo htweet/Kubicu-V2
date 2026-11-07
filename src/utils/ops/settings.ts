@@ -10,7 +10,7 @@ export const defaultOpsSettings: OpsSettings = {
   consentText: '',
   quietHours: { on: false, from: '21:00', to: '07:00' },
   defaultChannel: 'send_whatsapp',
-  segments: []
+  segments: [],
 };
 
 export const MAX_SEGMENTS = 12;

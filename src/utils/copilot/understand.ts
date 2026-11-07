@@ -22,10 +22,10 @@ const column: Record<Exclude<UiLang, 'en'>, number> = { pcm: 1, yo: 2, ha: 3, ig
 const none: Understood = { hints: '', skip: false, decide: false, confused: false, rename: null };
 
 const phrasesOf = (row: UnderstandRow, lang: Exclude<UiLang, 'en'>) =>
-row[column[lang]].
-split('|').
-map((p) => foldSearch(p).replace(/[^\p{L}\p{N}]+/gu, ' ').trim()).
-filter(Boolean);
+  row[column[lang]]
+    .split('|')
+    .map((p) => foldSearch(p).replace(/[^\p{L}\p{N}]+/gu, ' ').trim())
+    .filter(Boolean);
 
 /** Whole-phrase match on a folded, space-padded sentence. */
 const hasPhrase = (padded: string, phrases: string[]) => phrases.some((p) => padded.includes(` ${p} `));

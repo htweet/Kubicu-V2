@@ -29,10 +29,10 @@ const DirectionContext = createContext<DirectionContextValue>({ direction: DARK,
 function readStored(workspaceId: string): AppearancePreference | null {
   try {
     const raw =
-    window.localStorage.getItem(storageKey(workspaceId)) ?? (
-    workspaceId === DEMO_WORKSPACE_ID ? window.localStorage.getItem(LEGACY_KEY) : null);
+      window.localStorage.getItem(storageKey(workspaceId)) ??
+      (workspaceId === DEMO_WORKSPACE_ID ? window.localStorage.getItem(LEGACY_KEY) : null);
     if (raw === 'system') return 'system';
-    return visualDirections.some((d) => d.id === raw) ? raw as VisualDirection : null;
+    return visualDirections.some((d) => d.id === raw) ? (raw as VisualDirection) : null;
   } catch {
     return null;
   }
@@ -58,7 +58,7 @@ function usePrefersDark(): boolean {
  * In System mode, dark devices get Dark studio and light devices get the light appearance —
  * the platform default when it's light, otherwise the first light one allowed.
  */
-export function DirectionProvider({ direction: controlDefault, children }: {direction: VisualDirection;children: React.ReactNode;}) {
+export function DirectionProvider({ direction: controlDefault, children }: { direction: VisualDirection; children: React.ReactNode }) {
   const policy = useAppearancePolicy();
   const workspaceId = useWorkspace().current.id;
   const [preference, setPreference] = useState<AppearancePreference | null>(() => readStored(workspaceId));
@@ -78,15 +78,15 @@ export function DirectionProvider({ direction: controlDefault, children }: {dire
   const systemAvailable = policy.enabled.includes(DARK) && !!lightOption;
 
   const direction: VisualDirection =
-  preference === 'system' ?
-  systemAvailable ?
-  prefersDark ?
-  DARK :
-  lightOption as VisualDirection :
-  policy.defaultDirection :
-  preference && policy.enabled.includes(preference) ?
-  preference :
-  policy.defaultDirection;
+    preference === 'system'
+      ? systemAvailable
+        ? prefersDark
+          ? DARK
+          : (lightOption as VisualDirection)
+        : policy.defaultDirection
+      : preference && policy.enabled.includes(preference)
+        ? preference
+        : policy.defaultDirection;
 
   useEffect(() => {
     document.documentElement.dataset.direction = direction;
@@ -98,17 +98,17 @@ export function DirectionProvider({ direction: controlDefault, children }: {dire
     try {
       window.localStorage.setItem(storageKey(workspaceId), preference);
     } catch {
-
       // Storage unavailable — the choice still applies for this session.
-    }}, [preference, workspaceId]);
+    }
+  }, [preference, workspaceId]);
 
   return (
     <DirectionContext.Provider value={{ direction, preference: preference ?? direction, systemAvailable, setDirection: setPreference }}>
       <div data-direction={direction} className="h-full">
         {children}
       </div>
-    </DirectionContext.Provider>);
-
+    </DirectionContext.Provider>
+  );
 }
 
 export function useDirection(): VisualDirection {

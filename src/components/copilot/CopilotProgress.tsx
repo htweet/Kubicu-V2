@@ -5,7 +5,7 @@ import { progressSteps } from '../../utils/copilot/engine';
 import { cn } from '../../utils/cn';
 
 /** Generation steps that map to real work — no percentages (D262). `step` past the end means done. Translated in D339. */
-export function CopilotProgress({ step, failed }: {step: number;failed?: boolean;}) {
+export function CopilotProgress({ step, failed }: { step: number; failed?: boolean }) {
   const { t: tr } = useT();
   const steps = progressSteps();
   return (
@@ -20,9 +20,9 @@ export function CopilotProgress({ step, failed }: {step: number;failed?: boolean
             </span>
             {tr(label)}
             {active && <span className="sr-only">({tr('in progress')})</span>}
-          </li>);
-
+          </li>
+        );
       })}
-    </ol>);
-
+    </ol>
+  );
 }

@@ -48,7 +48,7 @@ export function DealRoomSettingsPanel() {
   const impact = missedGoalFeeImpact(data.orders.filter((o) => o.sourceHandle === handle && o.held));
   const referrers = roomReferrers(data, handle);
 
-  const patch = (patchRoom: Partial<DealRoomSettings>) => actions.transformDocument((doc) => doc.dealRoom ? { ...doc, dealRoom: { ...doc.dealRoom, ...patchRoom } } : doc);
+  const patch = (patchRoom: Partial<DealRoomSettings>) => actions.transformDocument((doc) => (doc.dealRoom ? { ...doc, dealRoom: { ...doc.dealRoom, ...patchRoom } } : doc));
 
   const postUpdate = () => {
     if (!update.trim()) return;
@@ -71,11 +71,11 @@ export function DealRoomSettingsPanel() {
     toast(tr('Room will end when you publish'), { description: tr(room.type === 'goal' && p.count < p.target ? 'The goal isn’t met, so everyone will be refunded in full automatically.' : 'No new orders after that.') });
   };
 
-  const lockNote = locked ?
-  <p className="flex items-start gap-1.5 text-caption text-fg-subtle">
+  const lockNote = locked ? (
+    <p className="flex items-start gap-1.5 text-caption text-fg-subtle">
       <LockIcon size={12} className="mt-0.5 shrink-0" aria-hidden /> {tr('Terms are locked because people have joined. You can still extend the deadline.')}
-    </p> :
-  null;
+    </p>
+  ) : null;
 
   return (
     <section aria-labelledby="room-heading-settings" className="flex flex-col gap-4 border-b border-line pb-5">
@@ -111,26 +111,26 @@ export function DealRoomSettingsPanel() {
           <dd className="text-label font-semibold tabular-nums text-fg">{held}</dd>
         </div>
       </dl>
-      {settled?.outcome === 'missed' &&
-      <p className="rounded-md bg-danger-soft px-3 py-2.5 text-caption text-danger">
+      {settled?.outcome === 'missed' && (
+        <p className="rounded-md bg-danger-soft px-3 py-2.5 text-caption text-danger">
           {tr('Goal missed on {when}. Buyers refunded in full: {n}. Stock was returned.', { when: formatSchedule(settled.at), n: settled.refunded })}
         </p>
-      }
+      )}
       {held > 0 && !ended && <p className="text-caption text-fg-muted">{tr('Orders paid and waiting for the goal: {n}. Don’t pack them yet — they’re released automatically when the goal is reached.', { n: held })}</p>}
-      {room.type === 'goal' && !ended &&
-      <div className="rounded-md border border-line px-3 py-2.5 text-caption text-fg-muted">
+      {room.type === 'goal' && !ended && (
+        <div className="rounded-md border border-line px-3 py-2.5 text-caption text-fg-muted">
           <p className="flex items-center gap-1.5 font-medium text-fg">
             {tr('If the goal is missed')} <IllustrativeTag note={tr('Illustrative provider rate. Many providers keep their processing fee when a payment is refunded — confirm with yours before going live.')} />
           </p>
           <p className="mt-1">
             {held > 0 ? tr('{amount} goes back in full to buyers: {n}.', { amount: formatNgn(impact.refundNgn), n: held }) : tr('Every buyer gets 100% back.')}{' '}
             {tr('KUBICU waives its fee on those orders.')}{' '}
-            {held > 0 ?
-          tr('The payment provider usually keeps its processing fee — about {amount} here, a cost to you.', { amount: formatNgn(impact.providerFeesNgn) }) :
-          tr('The payment provider usually keeps its processing fee, so each refund costs you that fee.')}
+            {held > 0
+              ? tr('The payment provider usually keeps its processing fee — about {amount} here, a cost to you.', { amount: formatNgn(impact.providerFeesNgn) })
+              : tr('The payment provider usually keeps its processing fee, so each refund costs you that fee.')}
           </p>
         </div>
-      }
+      )}
 
       <fieldset disabled={locked} className="flex flex-col gap-3">
         <Segmented<DealRoomType>
@@ -139,30 +139,30 @@ export function DealRoomSettingsPanel() {
           value={room.type}
           onChange={(type) => patch({ type, goal: type === 'goal' ? room.goal ?? 10 : room.goal, seats: type === 'drop' ? room.seats ?? 20 : room.seats })}
           options={[
-          { value: 'drop', label: 'Limited drop' },
-          { value: 'goal', label: 'Group goal' }]
-          } />
-        
+            { value: 'drop', label: 'Limited drop' },
+            { value: 'goal', label: 'Group goal' },
+          ]}
+        />
         <div className="flex flex-col gap-1.5">
           <label htmlFor="room-product" className="text-label font-medium text-fg">
             {tr('Product')}
           </label>
           <select id="room-product" value={room.productId} disabled={locked} onChange={(e) => patch({ productId: e.target.value })} className={cn(fieldControlClass, 'h-10')}>
             <option value="">{tr('Choose a product')}</option>
-            {products.map((x) =>
-            <option key={x.id} value={x.id}>
+            {products.map((x) => (
+              <option key={x.id} value={x.id}>
                 {x.name}
               </option>
-            )}
+            ))}
           </select>
-          {products.length === 0 &&
-          <p className="text-caption text-fg-subtle">
+          {products.length === 0 && (
+            <p className="text-caption text-fg-subtle">
               {tr('No active physical products.')}{' '}
               <Link to="/app/commerce/products" className="font-medium text-fg underline underline-offset-2">
                 {tr('Add one')}
               </Link>
             </p>
-          }
+          )}
         </div>
         <CurrencyInput
           id="room-price"
@@ -171,14 +171,14 @@ export function DealRoomSettingsPanel() {
           value={room.priceNgn}
           disabled={locked}
           onChange={(priceNgn) => patch({ priceNgn })}
-          hint={p.normalPriceNgn !== null ? tr('Usually {amount}. Empty uses the normal price.', { amount: formatNgn(p.normalPriceNgn) }) : tr('Empty uses the product’s price.')} />
-        
+          hint={p.normalPriceNgn !== null ? tr('Usually {amount}. Empty uses the normal price.', { amount: formatNgn(p.normalPriceNgn) }) : tr('Empty uses the product’s price.')}
+        />
         <div className="grid grid-cols-2 gap-3">
-          {room.type === 'goal' ?
-          <TextInput id="room-goal" label="Buyers needed" type="number" min={2} value={room.goal ?? ''} disabled={locked} onChange={(e) => patch({ goal: e.target.value ? Math.max(0, Math.floor(Number(e.target.value))) : null })} /> :
-
-          <TextInput id="room-seats" label="Units in the drop" type="number" min={1} value={room.seats ?? ''} disabled={locked} onChange={(e) => patch({ seats: e.target.value ? Math.max(0, Math.floor(Number(e.target.value))) : null })} />
-          }
+          {room.type === 'goal' ? (
+            <TextInput id="room-goal" label="Buyers needed" type="number" min={2} value={room.goal ?? ''} disabled={locked} onChange={(e) => patch({ goal: e.target.value ? Math.max(0, Math.floor(Number(e.target.value))) : null })} />
+          ) : (
+            <TextInput id="room-seats" label="Units in the drop" type="number" min={1} value={room.seats ?? ''} disabled={locked} onChange={(e) => patch({ seats: e.target.value ? Math.max(0, Math.floor(Number(e.target.value))) : null })} />
+          )}
           <TextInput id="room-limit" label="Per person" type="number" min={1} value={room.perPersonLimit} disabled={locked} onChange={(e) => patch({ perPersonLimit: Math.max(0, Math.floor(Number(e.target.value) || 0)) })} />
         </div>
         <DateTimeInput id="room-open" label={tr('Opens')} optional clearable value={room.opensAt} disabled={locked} onChange={(opensAt) => patch({ opensAt })} hint={tr('Empty = when published')} />
@@ -186,42 +186,42 @@ export function DealRoomSettingsPanel() {
       {!locked && <DateTimeInput id="room-deadline" label={tr('Deadline')} value={room.deadline} clearable onChange={(deadline) => patch({ deadline })} hint={tr('In {zone}', { zone: timeZoneLabel() })} />}
       {lockNote}
 
-      {!ended &&
-      <div className="flex flex-wrap gap-2">
-          {locked && room.deadline &&
-        <Button
-          size="sm"
-          variant="secondary"
-          onClick={() => {
-            setNewDeadline(new Date(Date.parse(room.deadline as string) + 2 * 86400000).toISOString());
-            setReason('');
-            setDialog('extend');
-          }}>
-          
+      {!ended && (
+        <div className="flex flex-wrap gap-2">
+          {locked && room.deadline && (
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => {
+                setNewDeadline(new Date(Date.parse(room.deadline as string) + 2 * 86400000).toISOString());
+                setReason('');
+                setDialog('extend');
+              }}
+            >
               {tr('Extend deadline')}
             </Button>
-        }
+          )}
           <Button
-          size="sm"
-          variant="tertiary"
-          onClick={() => {
-            setReason('');
-            setDialog('end');
-          }}>
-          
+            size="sm"
+            variant="tertiary"
+            onClick={() => {
+              setReason('');
+              setDialog('end');
+            }}
+          >
             {tr('End early')}
           </Button>
         </div>
-      }
-      {room.extensions.length > 0 &&
-      <ul className="flex flex-col gap-1 text-caption text-fg-muted">
-          {room.extensions.map((x) =>
-        <li key={x.at}>
+      )}
+      {room.extensions.length > 0 && (
+        <ul className="flex flex-col gap-1 text-caption text-fg-muted">
+          {room.extensions.map((x) => (
+            <li key={x.at}>
               {tr('Extended to {when}', { when: formatSchedule(x.to) })} — {x.reason}
             </li>
-        )}
+          ))}
         </ul>
-      }
+      )}
 
       <div className="flex flex-col gap-2 border-t border-line pt-4">
         <TextInput
@@ -231,20 +231,20 @@ export function DealRoomSettingsPanel() {
           value={room.referralReward ?? ''}
           placeholder={tr('e.g. Bring 3 friends and get free delivery')}
           hint="Every buyer gets their own link. You honour the reward — nothing is paid automatically."
-          onChange={(e) => patch({ referralReward: e.target.value || undefined })} />
-        
-        {referrers.length > 0 &&
-        <ol className="flex flex-col divide-y divide-line text-caption">
-            {referrers.slice(0, 5).map((r) =>
-          <li key={r.code} className="flex justify-between gap-2 py-1.5">
+          onChange={(e) => patch({ referralReward: e.target.value || undefined })}
+        />
+        {referrers.length > 0 && (
+          <ol className="flex flex-col divide-y divide-line text-caption">
+            {referrers.slice(0, 5).map((r) => (
+              <li key={r.code} className="flex justify-between gap-2 py-1.5">
                 <span className="truncate text-fg">
                   {r.name} <span className="font-mono text-fg-subtle">{r.code}</span>
                 </span>
                 <span className="shrink-0 font-semibold tabular-nums text-fg">{tr('Joined: {n}', { n: r.joined })}</span>
               </li>
-          )}
+            ))}
           </ol>
-        }
+        )}
       </div>
 
       <div className="flex flex-col gap-2 border-t border-line pt-4">
@@ -254,12 +254,12 @@ export function DealRoomSettingsPanel() {
         </Button>
       </div>
 
-      {orders.length > 0 &&
-      <div className="flex flex-col gap-1.5 border-t border-line pt-4">
+      {orders.length > 0 && (
+        <div className="flex flex-col gap-1.5 border-t border-line pt-4">
           <p className="text-label font-medium text-fg">{tr('Who joined')}</p>
           <ul className="flex flex-col divide-y divide-line text-caption">
-            {orders.slice(0, 6).map((o) =>
-          <li key={o.id} className="flex justify-between gap-2 py-1.5">
+            {orders.slice(0, 6).map((o) => (
+              <li key={o.id} className="flex justify-between gap-2 py-1.5">
                 <span className="truncate text-fg">
                   {o.customer.name} <span className="text-fg-subtle">#{o.number}</span>
                 </span>
@@ -268,13 +268,13 @@ export function DealRoomSettingsPanel() {
                   {tr(o.held ? 'Held' : 'Ready')}
                 </span>
               </li>
-          )}
+            ))}
           </ul>
           <Link to="/app/commerce/orders" className="text-caption font-medium text-fg underline underline-offset-2">
             {tr('All orders')}
           </Link>
         </div>
-      }
+      )}
 
       <Dialog
         open={!!dialog}
@@ -282,34 +282,34 @@ export function DealRoomSettingsPanel() {
         size="sm"
         title={tr(dialog === 'extend' ? 'Extend the deadline' : 'End the room early?')}
         description={
-        dialog === 'extend' ?
-        tr('Buyers are told the new deadline. Other terms stay as they are.') :
-        room.type === 'goal' && p.count < p.target ?
-        tr('The goal isn’t met, so every buyer is refunded in full. Buyers: {n}.', { n: p.count }) :
-        tr('No new orders after it ends. Existing orders are kept.')
+          dialog === 'extend'
+            ? tr('Buyers are told the new deadline. Other terms stay as they are.')
+            : room.type === 'goal' && p.count < p.target
+              ? tr('The goal isn’t met, so every buyer is refunded in full. Buyers: {n}.', { n: p.count })
+              : tr('No new orders after it ends. Existing orders are kept.')
         }
         footer={
-        <>
+          <>
             <Button variant="secondary" onClick={() => setDialog(null)}>
               {tr('Cancel')}
             </Button>
-            {dialog === 'extend' ?
-          <Button onClick={extend} disabled={!reason.trim() || !newDeadline || !room.deadline || Date.parse(newDeadline) <= Date.parse(room.deadline)}>
+            {dialog === 'extend' ? (
+              <Button onClick={extend} disabled={!reason.trim() || !newDeadline || !room.deadline || Date.parse(newDeadline) <= Date.parse(room.deadline)}>
                 {tr('Extend')}
-              </Button> :
-
-          <Button variant="destructive" onClick={endNow} disabled={!reason.trim()}>
+              </Button>
+            ) : (
+              <Button variant="destructive" onClick={endNow} disabled={!reason.trim()}>
                 {tr('End room')}
               </Button>
-          }
+            )}
           </>
-        }>
-        
+        }
+      >
         <div className="flex flex-col gap-3">
           {dialog === 'extend' && <DateTimeInput id="room-new-deadline" label={tr('New deadline')} value={newDeadline} onChange={setNewDeadline} />}
           <TextInput id="room-reason" label={tr('Reason (recorded and shown to buyers)')} value={reason} onChange={(e) => setReason(e.target.value)} placeholder={tr(dialog === 'extend' ? 'e.g. Supplier delay, more time to fill' : 'e.g. Stock problem')} />
         </div>
       </Dialog>
-    </section>);
-
+    </section>
+  );
 }

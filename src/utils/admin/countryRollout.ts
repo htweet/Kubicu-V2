@@ -10,13 +10,13 @@ export const LAUNCH_COUNTRY: CountryCode = 'NG';
 
 export const countryOpen = (store: AdminStore, code: CountryCode): boolean => code === LAUNCH_COUNTRY || store.countries?.[code]?.open !== false;
 
-export const countryOpensOn = (store: AdminStore, code: CountryCode): string | null => countryOpen(store, code) ? null : store.countries?.[code]?.opensOn || null;
+export const countryOpensOn = (store: AdminStore, code: CountryCode): string | null => (countryOpen(store, code) ? null : store.countries?.[code]?.opensOn || null);
 
 export function useCountryRollout() {
   const [store] = useAdminStore();
   return {
     open: (code: CountryCode) => countryOpen(store, code),
-    opensOn: (code: CountryCode) => countryOpensOn(store, code)
+    opensOn: (code: CountryCode) => countryOpensOn(store, code),
   };
 }
 

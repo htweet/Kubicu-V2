@@ -39,7 +39,7 @@ export function Tabs<T extends string>({ items, value, onChange, ariaLabel, idPr
         return (
           <button
             key={item.id}
-            ref={(el) => refs.current[i] = el}
+            ref={(el) => (refs.current[i] = el)}
             id={`${idPrefix}-tab-${item.id}`}
             role="tab"
             type="button"
@@ -53,18 +53,18 @@ export function Tabs<T extends string>({ items, value, onChange, ariaLabel, idPr
               dense ? 'px-1.5' : 'px-2.5',
               'transition-colors duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus',
               fullWidth && 'flex-1',
-              selected ? 'border-action text-fg' : 'border-transparent text-fg-subtle hover:text-fg'
-            )}>
-            
+              selected ? 'border-action text-fg' : 'border-transparent text-fg-subtle hover:text-fg',
+            )}
+          >
             {t(item.label)}
-            {item.badge ?
-            <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-warning-soft px-1 text-meta font-semibold text-warning">
+            {item.badge ? (
+              <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-warning-soft px-1 text-meta font-semibold text-warning">
                 {item.badge}
-              </span> :
-            null}
-          </button>);
-
+              </span>
+            ) : null}
+          </button>
+        );
       })}
-    </div>);
-
+    </div>
+  );
 }

@@ -21,7 +21,7 @@ export function emptyTeam(w: Workspace): TeamData {
     notices: [],
     salesRefundLimitNgn: 50000,
     activity: [],
-    sampleSeeded: false
+    sampleSeeded: false,
   };
 }
 
@@ -40,7 +40,7 @@ export function readTeam(workspaceId: string): TeamData | null {
       notices: Array.isArray(parsed.notices) ? parsed.notices : [],
       salesRefundLimitNgn: typeof parsed.salesRefundLimitNgn === 'number' ? parsed.salesRefundLimitNgn : 50000,
       activity: Array.isArray(parsed.activity) ? parsed.activity : [],
-      sampleSeeded: !!parsed.sampleSeeded
+      sampleSeeded: !!parsed.sampleSeeded,
     };
   } catch {
     return null;
@@ -56,23 +56,23 @@ const hoursAgo = (h: number) => new Date(Date.now() - h * 3600000).toISOString()
 /** SAMPLE teammates for the demo workspace (D59). */
 export function withSampleTeam(t: TeamData): TeamData {
   const members: Member[] = [
-  { id: 'member_ngozi', name: 'Ngozi Eze', contact: 'ngozi@example.com', role: 'editor', spaceIds: ['main', 'sp_sample_eid'], joinedAt: hoursAgo(24 * 9), lastActiveAt: hoursAgo(3), sample: true },
-  { id: 'member_tunde', name: 'Tunde Bello', contact: '+234 809 000 3101', role: 'sales', spaceIds: null, joinedAt: hoursAgo(24 * 6), lastActiveAt: hoursAgo(20), sample: true }];
-
+    { id: 'member_ngozi', name: 'Ngozi Eze', contact: 'ngozi@example.com', role: 'editor', spaceIds: ['main', 'sp_sample_eid'], joinedAt: hoursAgo(24 * 9), lastActiveAt: hoursAgo(3), sample: true },
+    { id: 'member_tunde', name: 'Tunde Bello', contact: '+234 809 000 3101', role: 'sales', spaceIds: null, joinedAt: hoursAgo(24 * 6), lastActiveAt: hoursAgo(20), sample: true },
+  ];
   const invites: Invite[] = [
-  { id: 'inv_kemi', token: 'sample-kemi', contact: 'kemi@example.com', role: 'viewer', spaceIds: null, invitedBy: t.members[0]?.name ?? 'Owner', createdAt: hoursAgo(24), expiresAt: new Date(Date.now() + (INVITE_DAYS - 1) * 86400000).toISOString(), status: 'pending', sample: true }];
-
+    { id: 'inv_kemi', token: 'sample-kemi', contact: 'kemi@example.com', role: 'viewer', spaceIds: null, invitedBy: t.members[0]?.name ?? 'Owner', createdAt: hoursAgo(24), expiresAt: new Date(Date.now() + (INVITE_DAYS - 1) * 86400000).toISOString(), status: 'pending', sample: true },
+  ];
   const activity: ActivityEntry[] = [
-  { id: 'act_s1', at: hoursAgo(3), actor: 'Ngozi Eze', area: 'pages', text: 'edited the Eid sale campaign', href: '/app/spaces' },
-  { id: 'act_s2', at: hoursAgo(20), actor: 'Tunde Bello', area: 'commerce', text: 'marked order #1007 as packing', href: '/app/commerce/orders' },
-  { id: 'act_s3', at: hoursAgo(24), actor: t.members[0]?.name ?? 'Owner', area: 'team', text: 'invited kemi@example.com as a Viewer', href: '/app/settings' }];
-
+    { id: 'act_s1', at: hoursAgo(3), actor: 'Ngozi Eze', area: 'pages', text: 'edited the Eid sale campaign', href: '/app/spaces' },
+    { id: 'act_s2', at: hoursAgo(20), actor: 'Tunde Bello', area: 'commerce', text: 'marked order #1007 as packing', href: '/app/commerce/orders' },
+    { id: 'act_s3', at: hoursAgo(24), actor: t.members[0]?.name ?? 'Owner', area: 'team', text: 'invited kemi@example.com as a Viewer', href: '/app/settings' },
+  ];
   return {
     ...t,
     members: [...t.members, ...members.filter((m) => !t.members.some((x) => x.id === m.id))],
     invites: [...t.invites, ...invites.filter((i) => !t.invites.some((x) => x.id === i.id))],
     activity: [...activity, ...t.activity],
-    sampleSeeded: true
+    sampleSeeded: true,
   };
 }
 
@@ -106,10 +106,10 @@ export function activity(actor: string, area: ActivityArea, text: string, href?:
 /** Members whose full name follows an @ in the text (D116). Longest names first so "Ada Obi" beats "Ada". */
 export function mentionedIds(text: string, members: Member[]): string[] {
   const lower = text.toLowerCase();
-  return [...members].
-  sort((a, b) => b.name.length - a.name.length).
-  filter((m) => lower.includes(`@${m.name.toLowerCase()}`)).
-  map((m) => m.id);
+  return [...members]
+    .sort((a, b) => b.name.length - a.name.length)
+    .filter((m) => lower.includes(`@${m.name.toLowerCase()}`))
+    .map((m) => m.id);
 }
 
 export function initials(name: string): string {

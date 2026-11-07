@@ -11,7 +11,7 @@ export const extraSpaceLimits: Record<WorkspacePlan, number> = {
   pro: 15,
   business: 15,
   agency: 15,
-  enterprise: 15
+  enterprise: 15,
 };
 
 export function mainSpace(w: Workspace): Space {
@@ -52,7 +52,7 @@ export function spaceStatus(space: Space, page: Pick<PersistedPage, 'published' 
 export function spaceForPageId(w: Workspace, pageId: string): Space | null {
   for (const s of workspaceSpaces(w)) {
     const draftId = readSpacePage(w.id, s.id)?.draft.id;
-    if (draftId === pageId || s.id === MAIN_SPACE_ID && w.pageId === pageId) return s;
+    if (draftId === pageId || (s.id === MAIN_SPACE_ID && w.pageId === pageId)) return s;
   }
   return null;
 }

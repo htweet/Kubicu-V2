@@ -31,13 +31,13 @@ export function usesBusinessWhatsApp(own: string | undefined | null): boolean {
 
 /** Inspector hint for any WhatsApp number field. */
 export function waFieldHint(own: string | undefined | null, extra?: string): string {
-  const base = (own ?? '').trim() ?
-  active ?
-  'Uses this number instead of your business number. Clear it to use the business number again.' :
-  '' :
-  active ?
-  `Using your business number, ${active}. Type a number only to send this somewhere else.` :
-  'Include the country code. Tip: set it once in Settings → Business and every WhatsApp button uses it.';
+  const base = (own ?? '').trim()
+    ? active
+      ? 'Uses this number instead of your business number. Clear it to use the business number again.'
+      : ''
+    : active
+      ? `Using your business number, ${active}. Type a number only to send this somewhere else.`
+      : 'Include the country code. Tip: set it once in Settings → Business and every WhatsApp button uses it.';
   return [base, extra].filter(Boolean).join(' ');
 }
 
@@ -45,13 +45,13 @@ type Translate = (text: string, vars?: Record<string, string | number>) => strin
 
 /** Same hint in the editor's language (D296). */
 export function waFieldHintIn(tr: Translate, own: string | undefined | null, extra?: string): string {
-  const base = (own ?? '').trim() ?
-  active ?
-  tr('Uses this number instead of your business number. Clear it to use the business number again.') :
-  '' :
-  active ?
-  tr('Using your business number, {phone}. Type a number only to send this somewhere else.', { phone: active }) :
-  tr('Include the country code. Tip: set it once in Settings → Business and every WhatsApp button uses it.');
+  const base = (own ?? '').trim()
+    ? active
+      ? tr('Uses this number instead of your business number. Clear it to use the business number again.')
+      : ''
+    : active
+      ? tr('Using your business number, {phone}. Type a number only to send this somewhere else.', { phone: active })
+      : tr('Include the country code. Tip: set it once in Settings → Business and every WhatsApp button uses it.');
   return [base, extra].filter(Boolean).join(' ');
 }
 

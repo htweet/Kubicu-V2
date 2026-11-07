@@ -41,15 +41,15 @@ export function BlockMiniPreview({ type, theme, width, height }: BlockMiniPrevie
       ref={ref}
       aria-hidden
       // inert: nothing inside a preview can be focused or clicked.
-      {...{ inert: '' } as Record<string, string>}
+      {...({ inert: '' } as Record<string, string>)}
       className="pointer-events-none relative overflow-hidden"
-      style={{ width, height, background: theme.material?.backdrop ?? theme.background, color: theme.text, fontFamily: fontsFor(theme).body }}>
-      
-      {visible &&
-      <div className="absolute left-0 top-0 origin-top-left p-4" style={{ width: DRAW, transform: `scale(${scale})` }}>
+      style={{ width, height, background: theme.material?.backdrop ?? theme.background, color: theme.text, fontFamily: fontsFor(theme).body }}
+    >
+      {visible && (
+        <div className="absolute left-0 top-0 origin-top-left p-4" style={{ width: DRAW, transform: `scale(${scale})` }}>
           <BlockRenderer block={block} theme={theme} mode="edit" />
         </div>
-      }
-    </div>);
-
+      )}
+    </div>
+  );
 }

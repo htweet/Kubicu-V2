@@ -24,8 +24,8 @@ export function startStaffSession(staffId: string) {
   try {
     sessionStorage.setItem(KEY, JSON.stringify({ staffId, expiresAt: new Date(Date.now() + STAFF_SESSION_HOURS * 3600000).toISOString() }));
   } catch {
-
-    /* storage blocked — session lasts until reload */}
+    /* storage blocked — session lasts until reload */
+  }
   window.dispatchEvent(new Event(EVENT));
 }
 
@@ -33,8 +33,8 @@ export function endStaffSession() {
   try {
     sessionStorage.removeItem(KEY);
   } catch {
-
-    /* ignore */}
+    /* ignore */
+  }
   window.dispatchEvent(new Event(EVENT));
 }
 

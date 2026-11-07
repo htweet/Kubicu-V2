@@ -34,8 +34,8 @@ export function CommentComposer({ id, label, placeholder = 'Write a comment — 
     return m ? m[2] : null;
   }, [text, caret]);
   const matches = useMemo(
-    () => query === null ? [] : team.data.members.filter((m) => m.id !== team.me.id && m.name.toLowerCase().includes(query.toLowerCase())).slice(0, 5),
-    [query, team.data.members, team.me.id]
+    () => (query === null ? [] : team.data.members.filter((m) => m.id !== team.me.id && m.name.toLowerCase().includes(query.toLowerCase())).slice(0, 5)),
+    [query, team.data.members, team.me.id],
   );
   const open = !dismissed && matches.length > 0;
 
@@ -112,45 +112,45 @@ export function CommentComposer({ id, label, placeholder = 'Write a comment — 
         }}
         onKeyUp={(e) => track(e.currentTarget)}
         onClick={(e) => track(e.currentTarget)}
-        onKeyDown={onKeyDown} />
-      
-      {open &&
-      <ul id={listId} role="listbox" aria-label="Mention a teammate" className="flex flex-col overflow-hidden rounded-md border border-line bg-raised py-1 shadow-sm">
-          {matches.map((m, i) =>
-        <li
-          key={m.id}
-          id={`${listId}-${i}`}
-          role="option"
-          aria-selected={i === active}
-          onMouseDown={(e) => {
-            e.preventDefault();
-            insert(m.name);
-          }}
-          onMouseEnter={() => setActive(i)}
-          className={cn('flex cursor-pointer items-center gap-2.5 px-3 py-2 text-label', i === active ? 'bg-sunken text-fg' : 'text-fg-muted')}>
-          
+        onKeyDown={onKeyDown}
+      />
+      {open && (
+        <ul id={listId} role="listbox" aria-label="Mention a teammate" className="flex flex-col overflow-hidden rounded-md border border-line bg-raised py-1 shadow-sm">
+          {matches.map((m, i) => (
+            <li
+              key={m.id}
+              id={`${listId}-${i}`}
+              role="option"
+              aria-selected={i === active}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                insert(m.name);
+              }}
+              onMouseEnter={() => setActive(i)}
+              className={cn('flex cursor-pointer items-center gap-2.5 px-3 py-2 text-label', i === active ? 'bg-sunken text-fg' : 'text-fg-muted')}
+            >
               <span aria-hidden className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sunken text-[10px] font-semibold text-fg">
                 {initials(m.name)}
               </span>
               <span className="min-w-0 flex-1 truncate font-medium text-fg">{m.name}</span>
               <span className="shrink-0 text-caption capitalize text-fg-subtle">{m.role}</span>
             </li>
-        )}
+          ))}
         </ul>
-      }
+      )}
       <div className="flex items-center justify-between gap-3">
         <span className="text-caption text-fg-subtle">{text.length > MAX - 100 ? `${text.length}/${MAX}` : 'Ctrl/⌘ + Enter to send'}</span>
         <div className="flex gap-2">
-          {onCancel &&
-          <Button size="sm" variant="tertiary" onClick={onCancel}>
+          {onCancel && (
+            <Button size="sm" variant="tertiary" onClick={onCancel}>
               Cancel
             </Button>
-          }
+          )}
           <Button size="sm" variant="secondary" leadingIcon={SendIcon} disabled={!text.trim()} onClick={send}>
             {submitLabel}
           </Button>
         </div>
       </div>
-    </div>);
-
+    </div>
+  );
 }

@@ -25,6 +25,6 @@ export function LiveAnnouncer() {
       <div role="alert" aria-live="assertive" aria-atomic="true">
         {assertive}
       </div>
-    </div>);
-
+    </div>
+  );
 }

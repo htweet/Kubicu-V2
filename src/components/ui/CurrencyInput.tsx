@@ -39,9 +39,9 @@ export function CurrencyInput({ id, label, value, onChange, placeholder, hint, e
             const digits = e.target.value.replace(/[^0-9]/g, '').slice(0, 12);
             onChange(digits === '' ? null : Number(digits));
           }}
-          className={cn(fieldControlClass, 'h-10 tabular-nums', symbol.length > 1 ? 'pl-12' : 'pl-8')} />
-        
+          className={cn(fieldControlClass, 'h-10 tabular-nums', symbol.length > 1 ? 'pl-12' : 'pl-8')}
+        />
       </div>
-    </Field>);
-
+    </Field>
+  );
 }

@@ -22,10 +22,10 @@ export function KeyLookup() {
   return (
     <Section id="keys" title="Check a licence key" description={`${issued} key${issued === 1 ? '' : 's'} issued. Paste one a customer sent you.`}>
       <TextInput id="key-lookup" label="Licence key" value={q} placeholder="e.g. ADAZ-7K2Q-M4XP-9WTR" onChange={(e) => setQ(e.target.value.toUpperCase())} />
-      {q.trim().length >= 4 &&
-      <div className="mt-3 rounded-md border border-line px-3 py-3" role="status">
-          {hit ?
-        <div className="flex flex-col gap-1.5">
+      {q.trim().length >= 4 && (
+        <div className="mt-3 rounded-md border border-line px-3 py-3" role="status">
+          {hit ? (
+            <div className="flex flex-col gap-1.5">
               <div className="flex items-center justify-between gap-2">
                 <span className="truncate text-label font-semibold text-fg">{hit.order.customer.name}</span>
                 <Badge tone={hit.key.status === 'active' ? 'success' : 'neutral'}>{hit.key.status === 'active' ? 'Valid' : 'Revoked'}</Badge>
@@ -33,12 +33,12 @@ export function KeyLookup() {
               <span className="text-caption text-fg-muted">{name} · order #{hit.order.number} · issued {formatTimestamp(hit.key.issuedAt)}</span>
               <span className="text-caption text-fg-muted">{hit.key.activations} of {hit.key.activationsAllowed} devices used</span>
               <Button size="sm" variant="secondary" className="mt-1 self-start" onClick={() => navigate(`/app/commerce/orders?order=${hit.order.id}`)}>Open order</Button>
-            </div> :
-
-        <p className="flex items-center gap-2 text-label text-fg-muted"><SearchIcon size={14} aria-hidden /> No key matches. It may be mistyped or not from your shop.</p>
-        }
+            </div>
+          ) : (
+            <p className="flex items-center gap-2 text-label text-fg-muted"><SearchIcon size={14} aria-hidden /> No key matches. It may be mistyped or not from your shop.</p>
+          )}
         </div>
-      }
-    </Section>);
-
+      )}
+    </Section>
+  );
 }

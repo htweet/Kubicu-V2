@@ -39,15 +39,15 @@ export function TemplatePreviewSheet({ template, owned, canEdit, onClose, onAppl
       title={template.category}
       description={`${template.name} · ${template.city} — ${template.bestFor}`}
       footer={
-      locked ?
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        locked ? (
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <span className="text-caption text-fg-muted">Premium · {formatNgn(price)} once, for this workspace</span>
             <Button leadingIcon={LockIcon} onClick={() => onBuy(template)}>
               Buy for {formatNgn(price)}
             </Button>
-          </div> :
-
-      <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          </div>
+        ) : (
+          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             <Button variant="secondary" leadingIcon={LayersIcon} disabled={!canEdit} onClick={() => onNewSpace(template)}>
               Use on a new campaign
             </Button>
@@ -55,18 +55,18 @@ export function TemplatePreviewSheet({ template, owned, canEdit, onClose, onAppl
               Apply to my main page
             </Button>
           </div>
-
-      }>
-      
+        )
+      }
+    >
       <div className="flex flex-col gap-5 p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap gap-1.5">
             {price > 0 ? <Badge tone="accent">{owned ? `${formatNgn(price)} · owned` : 'Premium'}</Badge> : <Badge tone="neutral">Free</Badge>}
-            {template.goals.map((g) =>
-            <Badge key={g} tone="neutral">
+            {template.goals.map((g) => (
+              <Badge key={g} tone="neutral">
                 {goalLabels[g]}
               </Badge>
-            )}
+            ))}
           </div>
           <Segmented<'phone' | 'desktop'>
             ariaLabel="Preview size"
@@ -74,10 +74,10 @@ export function TemplatePreviewSheet({ template, owned, canEdit, onClose, onAppl
             value={device}
             onChange={setDevice}
             options={[
-            { value: 'phone', label: 'Phone', icon: SmartphoneIcon },
-            { value: 'desktop', label: 'Desktop', icon: MonitorIcon }]
-            } />
-          
+              { value: 'phone', label: 'Phone', icon: SmartphoneIcon },
+              { value: 'desktop', label: 'Desktop', icon: MonitorIcon },
+            ]}
+          />
         </div>
         <div className="rounded-lg bg-sunken p-3">
           <TemplateLivePreview doc={template.doc} plan={template.plan} device={device} name={template.name} height={600} />
@@ -88,6 +88,6 @@ export function TemplatePreviewSheet({ template, owned, canEdit, onClose, onAppl
         </p>
         {extra}
       </div>
-    </Sheet>);
-
+    </Sheet>
+  );
 }

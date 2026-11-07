@@ -31,16 +31,16 @@ export function LocationBlock({ block, theme, mode }: BlockProps<'location'>) {
         {status && <PageChip theme={theme} tone={status.open ? 'strong' : 'muted'}>{status.open ? tr('Open now') : tr('Closed')}</PageChip>}
       </div>
       {status && <p className="mt-3 text-[13px] font-medium" style={{ color: theme.text }}>{status.label}</p>}
-      {rows.length > 0 &&
-      <dl className="mt-3 flex flex-col">
-          {rows.map((r) =>
-        <div key={r.days} className="flex justify-between gap-3 py-1.5 text-[13px]" style={{ borderTop: `1px solid ${mix(theme.text, 8)}` }}>
+      {rows.length > 0 && (
+        <dl className="mt-3 flex flex-col">
+          {rows.map((r) => (
+            <div key={r.days} className="flex justify-between gap-3 py-1.5 text-[13px]" style={{ borderTop: `1px solid ${mix(theme.text, 8)}` }}>
               <dt style={{ color: theme.mutedText }}>{r.days}</dt>
               <dd className="tabular-nums" style={{ color: theme.text }}>{r.time}</dd>
             </div>
-        )}
+          ))}
         </dl>
-      }
+      )}
       {c.note && <p className="mt-3 text-[13px] leading-snug" style={{ color: theme.mutedText }}>{c.note}</p>}
       <div className="mt-4 grid grid-cols-2 gap-2">
         <PageAction mode={mode} href={`https://www.google.com/maps/search/?api=1&query=${query}`} className="flex h-11 items-center justify-center gap-1.5 text-[14px] font-semibold" style={buttonStyle(theme, 'featured')}>
@@ -52,6 +52,6 @@ export function LocationBlock({ block, theme, mode }: BlockProps<'location'>) {
         </PageAction>
       </div>
       <p className="mt-2 text-[11px]" style={{ color: theme.mutedText }}>{tr('Hours shown in {zone}. No map is loaded, to save your data.', { zone: timeZoneName(c.timeZone, tr) })}</p>
-    </section>);
-
+    </section>
+  );
 }

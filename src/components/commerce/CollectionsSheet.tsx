@@ -10,7 +10,7 @@ import { TextInput } from '../ui/TextInput';
 import { SampleTag } from './StatusBadges';
 
 /** Collections group products, e.g. a seasonal drop. A product grid can show a whole collection. */
-export function CollectionsSheet({ open, onClose }: {open: boolean;onClose: () => void;}) {
+export function CollectionsSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { data, apply } = useCommerce();
   const [name, setName] = useState('');
 
@@ -24,7 +24,7 @@ export function CollectionsSheet({ open, onClose }: {open: boolean;onClose: () =
     if (apply((d) => ({ ...d, collections: [...d.collections, { id: uid('col'), name: n, description: '' }] }))) setName('');
   };
 
-  const rename = (id: string, value: string) => apply((d) => ({ ...d, collections: d.collections.map((c) => c.id === id ? { ...c, name: value } : c) }));
+  const rename = (id: string, value: string) => apply((d) => ({ ...d, collections: d.collections.map((c) => (c.id === id ? { ...c, name: value } : c)) }));
 
   const remove = (id: string) => {
     const col = data.collections.find((c) => c.id === id);
@@ -32,7 +32,7 @@ export function CollectionsSheet({ open, onClose }: {open: boolean;onClose: () =
     apply((d) => ({ ...d, collections: d.collections.filter((c) => c.id !== id), products: d.products.map((p) => ({ ...p, collectionIds: p.collectionIds.filter((x) => x !== id) })) }));
     toast(`Deleted “${col.name}”`, {
       description: 'Products stay; they’re just no longer grouped.',
-      action: { label: 'Undo', onClick: () => apply((d) => ({ ...d, collections: [...d.collections, col] })) }
+      action: { label: 'Undo', onClick: () => apply((d) => ({ ...d, collections: [...d.collections, col] })) },
     });
   };
 
@@ -44,41 +44,41 @@ export function CollectionsSheet({ open, onClose }: {open: boolean;onClose: () =
           onSubmit={(e) => {
             e.preventDefault();
             add();
-          }}>
-          
+          }}
+        >
           <TextInput id="col-new" label="New collection" placeholder="e.g. Harmattan drop" value={name} fieldClassName="flex-1" onChange={(e) => setName(e.target.value)} />
           <Button type="submit" leadingIcon={PlusIcon} disabled={!name.trim()}>
             Add
           </Button>
         </form>
-        {data.collections.length === 0 ?
-        <p className="text-label text-fg-muted">No collections yet.</p> :
-
-        <ul className="flex flex-col divide-y divide-line border-y border-line">
+        {data.collections.length === 0 ? (
+          <p className="text-label text-fg-muted">No collections yet.</p>
+        ) : (
+          <ul className="flex flex-col divide-y divide-line border-y border-line">
             {data.collections.map((c) => {
-            const count = data.products.filter((p) => p.collectionIds.includes(c.id)).length;
-            return (
-              <li key={c.id} className="flex items-center gap-2 py-2.5">
+              const count = data.products.filter((p) => p.collectionIds.includes(c.id)).length;
+              return (
+                <li key={c.id} className="flex items-center gap-2 py-2.5">
                   <label htmlFor={`col-${c.id}`} className="sr-only">
                     Collection name
                   </label>
                   <input
-                  id={`col-${c.id}`}
-                  value={c.name}
-                  onChange={(e) => rename(c.id, e.target.value)}
-                  className="h-9 min-w-0 flex-1 rounded-md border border-transparent bg-transparent px-2 text-label font-semibold text-fg hover:border-line focus:border-action focus:outline-none" />
-                
+                    id={`col-${c.id}`}
+                    value={c.name}
+                    onChange={(e) => rename(c.id, e.target.value)}
+                    className="h-9 min-w-0 flex-1 rounded-md border border-transparent bg-transparent px-2 text-label font-semibold text-fg hover:border-line focus:border-action focus:outline-none"
+                  />
                   {c.sample && <SampleTag />}
                   <span className="shrink-0 text-caption tabular-nums text-fg-subtle">
                     {count} product{count === 1 ? '' : 's'}
                   </span>
                   <IconButton icon={Trash2Icon} size="sm" label={`Delete ${c.name}`} onClick={() => remove(c.id)} />
-                </li>);
-
-          })}
+                </li>
+              );
+            })}
           </ul>
-        }
+        )}
       </div>
-    </Sheet>);
-
+    </Sheet>
+  );
 }

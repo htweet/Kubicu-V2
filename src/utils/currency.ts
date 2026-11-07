@@ -16,14 +16,14 @@ export interface CurrencyInfo {
 }
 
 export const currencies: CurrencyInfo[] = [
-{ code: 'NGN', name: 'Nigerian naira', symbol: '₦', locale: 'en-NG', country: 'Nigeria' },
-{ code: 'GHS', name: 'Ghanaian cedi', symbol: 'GH₵', locale: 'en-GH', country: 'Ghana' },
-{ code: 'KES', name: 'Kenyan shilling', symbol: 'KSh', locale: 'en-KE', country: 'Kenya' },
-{ code: 'ZAR', name: 'South African rand', symbol: 'R', locale: 'en-ZA', country: 'South Africa' },
-{ code: 'USD', name: 'US dollar', symbol: '$', locale: 'en-US', country: 'United States' },
-{ code: 'GBP', name: 'British pound', symbol: '£', locale: 'en-GB', country: 'United Kingdom' },
-{ code: 'EUR', name: 'Euro', symbol: '€', locale: 'en-IE', country: 'Euro area' }];
-
+  { code: 'NGN', name: 'Nigerian naira', symbol: '₦', locale: 'en-NG', country: 'Nigeria' },
+  { code: 'GHS', name: 'Ghanaian cedi', symbol: 'GH₵', locale: 'en-GH', country: 'Ghana' },
+  { code: 'KES', name: 'Kenyan shilling', symbol: 'KSh', locale: 'en-KE', country: 'Kenya' },
+  { code: 'ZAR', name: 'South African rand', symbol: 'R', locale: 'en-ZA', country: 'South Africa' },
+  { code: 'USD', name: 'US dollar', symbol: '$', locale: 'en-US', country: 'United States' },
+  { code: 'GBP', name: 'British pound', symbol: '£', locale: 'en-GB', country: 'United Kingdom' },
+  { code: 'EUR', name: 'Euro', symbol: '€', locale: 'en-IE', country: 'Euro area' },
+];
 
 export const currencyInfo = (code: CurrencyCode): CurrencyInfo => currencies.find((c) => c.code === code) ?? currencies[0];
 
@@ -85,7 +85,7 @@ export const displayConversion = (): CurrencyCode | null => display;
 /** Rounds a converted example amount to a natural-looking figure for its currency. */
 export function tidyAmount(amount: number, code: CurrencyCode): number {
   if (amount === 0) return 0;
-  const step = code === 'GHS' ? 5 : code === 'ZAR' ? 10 : code === 'KES' ? amount >= 1000 ? 50 : 10 : 1;
+  const step = code === 'GHS' ? 5 : code === 'ZAR' ? 10 : code === 'KES' ? (amount >= 1000 ? 50 : 10) : 1;
   return Math.max(step, Math.round(amount / step) * step);
 }
 

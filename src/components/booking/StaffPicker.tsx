@@ -20,7 +20,7 @@ export function StaffPicker({ theme, staff, value, onChange }: StaffPickerProps)
     borderRadius: 999,
     border: `1.5px solid ${active ? theme.text : mix(theme.text, 14)}`,
     background: active ? theme.text : 'transparent',
-    color: active ? theme.background : theme.text
+    color: active ? theme.background : theme.text,
   });
   return (
     <div>
@@ -38,18 +38,18 @@ export function StaffPicker({ theme, staff, value, onChange }: StaffPickerProps)
           const active = value === s.memberId;
           return (
             <button key={s.memberId} type="button" role="radio" aria-checked={active} onClick={() => onChange(s.memberId)} className="flex h-10 shrink-0 items-center gap-2 whitespace-nowrap pl-1.5 pr-3.5 text-[13.5px] font-medium" style={chip(active)}>
-              {s.photo ?
-              <img src={s.photo} alt="" className="h-7 w-7 rounded-full object-cover" /> :
-
-              <span className="flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-semibold" style={{ background: mix(active ? theme.background : theme.text, 14) }} aria-hidden>
+              {s.photo ? (
+                <img src={s.photo} alt="" className="h-7 w-7 rounded-full object-cover" />
+              ) : (
+                <span className="flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-semibold" style={{ background: mix(active ? theme.background : theme.text, 14) }} aria-hidden>
                   {initialsOf(s.name)}
                 </span>
-              }
+              )}
               {s.name.split(' ')[0]}
-            </button>);
-
+            </button>
+          );
         })}
       </div>
-    </div>);
-
+    </div>
+  );
 }

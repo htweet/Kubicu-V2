@@ -33,7 +33,7 @@ export function AudienceGrowth({ contacts, subscribed, openTasks, action }: Audi
     const times = contacts.map((c) => Date.parse(c.createdAt)).filter((n) => !Number.isNaN(n)).sort((a, b) => a - b);
     let i = 0;
     let running = 0;
-    const pts: {label: string;total: number;}[] = [];
+    const pts: { label: string; total: number }[] = [];
     // Weekly points for a year, daily otherwise — keeps the line readable.
     const step = days > 90 ? 7 : 1;
     for (let d = days - 1; d >= 0; d -= step) {
@@ -49,16 +49,16 @@ export function AudienceGrowth({ contacts, subscribed, openTasks, action }: Audi
       points: pts,
       added: times.filter((t) => inRange(t, start, end)).length,
       previous: times.filter((t) => inRange(t, start - days * DAY, start)).length,
-      newSubscribed: contacts.filter((c) => c.consent === 'subscribed' && inRange(Date.parse(c.createdAt), start, end)).length
+      newSubscribed: contacts.filter((c) => c.consent === 'subscribed' && inRange(Date.parse(c.createdAt), start, end)).length,
     };
   }, [contacts, days]);
 
-  const change = previous === 0 ? null : Math.round((added - previous) / previous * 100);
+  const change = previous === 0 ? null : Math.round(((added - previous) / previous) * 100);
   const periodLabel = range === '365' ? tr('the last 12 months') : tr('the last {n} days', { n: days });
   const summary =
-  added === 0 ?
-  tr('No new contacts in {p}.', { p: periodLabel }) :
-  tr('{n} new in {p}', { n: added, p: periodLabel }) + (change === null ? previous === 0 ? ` · ${tr('none in the period before')}` : '' : ` · ${change >= 0 ? '+' : ''}${change}% ${tr('vs the period before')}`);
+    added === 0
+      ? tr('No new contacts in {p}.', { p: periodLabel })
+      : tr('{n} new in {p}', { n: added, p: periodLabel }) + (change === null ? (previous === 0 ? ` · ${tr('none in the period before')}` : '') : ` · ${change >= 0 ? '+' : ''}${change}% ${tr('vs the period before')}`);
 
   return (
     <section aria-labelledby="aud-growth" className="mt-8 border-b border-line pb-6">
@@ -77,11 +77,11 @@ export function AudienceGrowth({ contacts, subscribed, openTasks, action }: Audi
             value={range}
             onChange={setRange}
             options={[
-            { value: '30', label: '30 days' },
-            { value: '90', label: '90 days' },
-            { value: '365', label: '12 months' }]
-            } />
-          
+              { value: '30', label: '30 days' },
+              { value: '90', label: '90 days' },
+              { value: '365', label: '12 months' },
+            ]}
+          />
         </div>
       </div>
 
@@ -95,8 +95,8 @@ export function AudienceGrowth({ contacts, subscribed, openTasks, action }: Audi
               <Tooltip
                 cursor={{ stroke: 'rgb(var(--border-strong))' }}
                 formatter={(v: number) => [`${v} contacts`, 'Total']}
-                contentStyle={{ background: 'rgb(var(--overlay))', border: '1px solid rgb(var(--border-subtle))', borderRadius: 8, color: 'rgb(var(--text-primary))', fontSize: 12 }} />
-              
+                contentStyle={{ background: 'rgb(var(--overlay))', border: '1px solid rgb(var(--border-subtle))', borderRadius: 8, color: 'rgb(var(--text-primary))', fontSize: 12 }}
+              />
               <Area type="monotone" dataKey="total" stroke="rgb(var(--action))" strokeWidth={2} fill="rgb(var(--action))" fillOpacity={0.12} isAnimationActive={false} />
             </AreaChart>
           </ResponsiveContainer>
@@ -108,9 +108,9 @@ export function AudienceGrowth({ contacts, subscribed, openTasks, action }: Audi
 
       <StatGroup columns={3} divided className="mt-4">
         <Stat label="New subscribers" value={newSubscribed} hint={periodLabel} />
-        <Stat label="Can receive marketing" value={subscribed} hint={contacts.length ? tr('{n}% of contacts', { n: Math.round(subscribed / contacts.length * 100) }) : undefined} />
+        <Stat label="Can receive marketing" value={subscribed} hint={contacts.length ? tr('{n}% of contacts', { n: Math.round((subscribed / contacts.length) * 100) }) : undefined} />
         <Stat label="Open follow-ups" value={openTasks} />
       </StatGroup>
-    </section>);
-
+    </section>
+  );
 }

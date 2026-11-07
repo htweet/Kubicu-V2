@@ -58,7 +58,7 @@ export function Events() {
     return c;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [events]);
-  const shown = events.filter((e) => tabOf(e, now) === tab).sort((a, b) => tab === 'past' ? Date.parse(b.startsAt) - Date.parse(a.startsAt) : Date.parse(a.startsAt) - Date.parse(b.startsAt));
+  const shown = events.filter((e) => tabOf(e, now) === tab).sort((a, b) => (tab === 'past' ? Date.parse(b.startsAt) - Date.parse(a.startsAt) : Date.parse(a.startsAt) - Date.parse(b.startsAt)));
 
   const upcomingSold = events.filter((e) => tabOf(e, now) === 'upcoming' || tabOf(e, now) === 'live').reduce((s, e) => s + eventSold(data, e), 0);
   const revenue = events.reduce((s, e) => s + eventRevenue(data, e), 0);
@@ -80,20 +80,20 @@ export function Events() {
     setReason('');
   };
 
-  const newButton =
-  <Button leadingIcon={PlusIcon} onClick={() => setParams({ new: '1' })}>
+  const newButton = (
+    <Button leadingIcon={PlusIcon} onClick={() => setParams({ new: '1' })}>
       New event
-    </Button>;
-
+    </Button>
+  );
 
   return (
     <>
       <PageHeader title="Events" description="Sell tickets with real seat limits. Link an event from an Event block on any page, or give it its own Event page in Spaces — orders, refunds and reports work like any sale." actions={newButton} />
 
-      {events.length === 0 ?
-      <EmptyState framed className="mt-8" icon={TicketIcon} title="No events yet" description="A pop-up, workshop, show or class. Set ticket types and seats, then link it from your page." action={newButton} /> :
-
-      <>
+      {events.length === 0 ? (
+        <EmptyState framed className="mt-8" icon={TicketIcon} title="No events yet" description="A pop-up, workshop, show or class. Set ticket types and seats, then link it from your page." action={newButton} />
+      ) : (
+        <>
           <StatGroup columns={3} className="mt-8 items-end border-b border-line pb-6">
             <Stat primary label="Tickets sold for coming events" value={upcomingSold} hint={tr(counts.upcoming + counts.live === 1 ? '{n} event on the calendar' : '{n} events on the calendar', { n: counts.upcoming + counts.live })} />
             <Stat label="Ticket revenue, all time" value={formatNgn(revenue)} />
@@ -102,37 +102,37 @@ export function Events() {
 
           <div className="mt-8 max-w-full overflow-x-auto overflow-y-hidden">
             <Segmented<Tab>
-            ariaLabel="Show events"
-            value={tab}
-            onChange={setTab}
-            options={[
-            { value: 'upcoming', label: `${tr('Upcoming')} · ${counts.upcoming}` },
-            { value: 'live', label: `${tr('Happening now')} · ${counts.live}` },
-            { value: 'past', label: `${tr('Past')} · ${counts.past}` },
-            { value: 'drafts', label: `${tr('Drafts')} · ${counts.drafts}` }]
-            } />
-          
+              ariaLabel="Show events"
+              value={tab}
+              onChange={setTab}
+              options={[
+                { value: 'upcoming', label: `${tr('Upcoming')} · ${counts.upcoming}` },
+                { value: 'live', label: `${tr('Happening now')} · ${counts.live}` },
+                { value: 'past', label: `${tr('Past')} · ${counts.past}` },
+                { value: 'drafts', label: `${tr('Drafts')} · ${counts.drafts}` },
+              ]}
+            />
           </div>
 
-          {shown.length === 0 ?
-        <p className="mt-6 rounded-lg border border-dashed border-line-strong px-5 py-8 text-center text-label text-fg-muted">{tr('Nothing here right now.')}</p> :
-
-        <Card as="div" body="flush" className="mt-4">
+          {shown.length === 0 ? (
+            <p className="mt-6 rounded-lg border border-dashed border-line-strong px-5 py-8 text-center text-label text-fg-muted">{tr('Nothing here right now.')}</p>
+          ) : (
+            <Card as="div" body="flush" className="mt-4">
             <List label={tr('Events')}>
               {shown.map((ev) => {
-              const display = eventDisplay(data, ev, now);
-              const sold = eventSold(data, ev);
-              const total = eventTotalSeats(ev);
-              const pct = total ? Math.min(100, Math.round(sold / total * 100)) : 0;
-              const d = new Date(ev.startsAt);
-              const canCancel = ev.status !== 'cancelled' && eventPhase(ev, now) !== 'past';
-              return (
-                <li key={ev.id} className="flex items-center gap-4 px-5 py-4 md:px-6">
+                const display = eventDisplay(data, ev, now);
+                const sold = eventSold(data, ev);
+                const total = eventTotalSeats(ev);
+                const pct = total ? Math.min(100, Math.round((sold / total) * 100)) : 0;
+                const d = new Date(ev.startsAt);
+                const canCancel = ev.status !== 'cancelled' && eventPhase(ev, now) !== 'past';
+                return (
+                  <li key={ev.id} className="flex items-center gap-4 px-5 py-4 md:px-6">
                     <span aria-hidden className="flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-md border border-line bg-sunken leading-none">
                       <span className="text-[11px] font-semibold uppercase text-fg-subtle">{d.toLocaleDateString('en-GB', { month: 'short' })}</span>
                       <span className="mt-1 text-[20px] font-semibold tabular-nums text-fg">{d.getDate()}</span>
                     </span>
-                    <button type="button" onClick={() => ev.status === 'draft' ? setParams({ edit: ev.id }) : navigate(`/app/commerce/events/${ev.id}/guests`)} className="min-w-0 flex-1 rounded-sm text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+                    <button type="button" onClick={() => (ev.status === 'draft' ? setParams({ edit: ev.id }) : navigate(`/app/commerce/events/${ev.id}/guests`))} className="min-w-0 flex-1 rounded-sm text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
                       <span className="flex flex-wrap items-center gap-2">
                         <span className="truncate text-label font-semibold text-fg">{ev.name || tr('Untitled event')}</span>
                         {ev.sample && <SampleTag />}
@@ -166,38 +166,38 @@ export function Events() {
                       {eventDisplayLabel[display]}
                     </Badge>
                     <Menu
-                    align="end"
-                    items={[
-                    { id: 'guests', label: 'Guest list', icon: UsersIcon, onSelect: () => navigate(`/app/commerce/events/${ev.id}/guests`) },
-                    ...(ev.status !== 'cancelled' && ev.status !== 'draft' ? [{ id: 'checkin', label: 'Check in guests', icon: ScanLineIcon, onSelect: () => navigate(`/app/commerce/events/${ev.id}/check-in`) }] : []),
-                    { id: 'edit', label: 'Edit event', icon: TicketIcon, onSelect: () => setParams({ edit: ev.id }) },
-                    ...(pageFor.has(ev.id) ?
-                    [
-                    {
-                      id: 'page',
-                      label: `Edit event page (${publicUrl(pageFor.get(ev.id)!.handle)})`,
-                      icon: CalendarDaysIcon,
-                      onSelect: () => {
-                        switchSpace(pageFor.get(ev.id)!.spaceId);
-                        navigate('/app/canvas');
-                      }
-                    }] :
-
-                    []),
-                    ...(ev.status === 'on_sale' && canCancel ? [{ id: 'pause', label: 'Pause sales', icon: PauseIcon, onSelect: () => setStatus(ev, 'paused') }] : []),
-                    ...((ev.status === 'paused' || ev.status === 'draft') && canCancel ? [{ id: 'resume', label: 'Put on sale', icon: PlayIcon, onSelect: () => setStatus(ev, 'on_sale') }] : []),
-                    ...(canCancel ? [{ id: 'cancel', label: 'Cancel event…', icon: XCircleIcon, destructive: true, onSelect: () => setCancelling(ev) }] : [])]
-                    }
-                    trigger={(props) => <IconButton {...props} size="sm" icon={MoreHorizontalIcon} label={tr('More actions for {name}', { name: ev.name })} />} />
-                  
-                  </li>);
-
-            })}
+                      align="end"
+                      items={[
+                        { id: 'guests', label: 'Guest list', icon: UsersIcon, onSelect: () => navigate(`/app/commerce/events/${ev.id}/guests`) },
+                        ...(ev.status !== 'cancelled' && ev.status !== 'draft' ? [{ id: 'checkin', label: 'Check in guests', icon: ScanLineIcon, onSelect: () => navigate(`/app/commerce/events/${ev.id}/check-in`) }] : []),
+                        { id: 'edit', label: 'Edit event', icon: TicketIcon, onSelect: () => setParams({ edit: ev.id }) },
+                        ...(pageFor.has(ev.id)
+                          ? [
+                              {
+                                id: 'page',
+                                label: `Edit event page (${publicUrl(pageFor.get(ev.id)!.handle)})`,
+                                icon: CalendarDaysIcon,
+                                onSelect: () => {
+                                  switchSpace(pageFor.get(ev.id)!.spaceId);
+                                  navigate('/app/canvas');
+                                },
+                              },
+                            ]
+                          : []),
+                        ...(ev.status === 'on_sale' && canCancel ? [{ id: 'pause', label: 'Pause sales', icon: PauseIcon, onSelect: () => setStatus(ev, 'paused') }] : []),
+                        ...((ev.status === 'paused' || ev.status === 'draft') && canCancel ? [{ id: 'resume', label: 'Put on sale', icon: PlayIcon, onSelect: () => setStatus(ev, 'on_sale') }] : []),
+                        ...(canCancel ? [{ id: 'cancel', label: 'Cancel event…', icon: XCircleIcon, destructive: true, onSelect: () => setCancelling(ev) }] : []),
+                      ]}
+                      trigger={(props) => <IconButton {...props} size="sm" icon={MoreHorizontalIcon} label={tr('More actions for {name}', { name: ev.name })} />}
+                    />
+                  </li>
+                );
+              })}
             </List>
             </Card>
-        }
+          )}
         </>
-      }
+      )}
 
       <EventEditor target={target} onClose={() => setParams({})} />
 
@@ -207,7 +207,7 @@ export function Events() {
         title={tr('Cancel {name}?', { name: cancelling?.name ?? tr('event') })}
         description="Ticket sales stop and every paid ticket order is refunded in full. Unpaid orders are cancelled and all tickets stop working."
         footer={
-        <div className="flex justify-end gap-2">
+          <div className="flex justify-end gap-2">
             <Button variant="secondary" onClick={() => setCancelling(null)}>
               Keep event
             </Button>
@@ -215,16 +215,16 @@ export function Events() {
               Cancel and refund everyone
             </Button>
           </div>
-        }>
-        
-        {cancelling &&
-        <div className="flex flex-col gap-4">
+        }
+      >
+        {cancelling && (
+          <div className="flex flex-col gap-4">
             <p className="text-label font-semibold tabular-nums text-fg">
               {tr('{orders} orders · {tickets} tickets · {amount} to refund', {
-              orders: ordersForEvent(data, cancelling).filter((o) => o.status !== 'cancelled' && o.status !== 'refunded').length,
-              tickets: eventSold(data, cancelling),
-              amount: formatNgn(eventRevenue(data, cancelling))
-            })}
+                orders: ordersForEvent(data, cancelling).filter((o) => o.status !== 'cancelled' && o.status !== 'refunded').length,
+                tickets: eventSold(data, cancelling),
+                amount: formatNgn(eventRevenue(data, cancelling)),
+              })}
             </p>
             <TextArea id="ev-cancel-reason" label="Reason guests will see" optional rows={2} value={reason} placeholder="e.g. The venue flooded. We’re so sorry." onChange={(e) => setReason(e.target.value)} />
             <div className="rounded-md border border-line bg-sunken px-3.5 py-3 text-caption text-fg-muted">
@@ -235,8 +235,8 @@ export function Events() {
               <p className="mt-1.5 text-fg-subtle">{tr('Preview only — messages aren’t sent in the prototype.')}</p>
             </div>
           </div>
-        }
+        )}
       </Dialog>
-    </>);
-
+    </>
+  );
 }

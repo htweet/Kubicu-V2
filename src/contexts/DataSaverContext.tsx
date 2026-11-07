@@ -28,7 +28,7 @@ interface NetworkInformationLike {
 }
 
 function connectionIsSlow(): boolean {
-  const c = (navigator as Navigator & {connection?: NetworkInformationLike;}).connection;
+  const c = (navigator as Navigator & { connection?: NetworkInformationLike }).connection;
   return !!c && (c.saveData === true || c.effectiveType === '2g' || c.effectiveType === 'slow-2g');
 }
 
@@ -41,31 +41,31 @@ function readChoice(): 'on' | 'off' | null {
   }
 }
 
-export function DataSaverProvider({ children, disabled = false, sellerDefault = false }: {children: React.ReactNode;disabled?: boolean;sellerDefault?: boolean;}) {
+export function DataSaverProvider({ children, disabled = false, sellerDefault = false }: { children: React.ReactNode; disabled?: boolean; sellerDefault?: boolean }) {
   const [choice, setChoice] = useState<'on' | 'off' | null>(() => readChoice());
   const [slow] = useState(() => connectionIsSlow());
   const [imagesShown, setImagesShown] = useState(false);
 
   // The visitor's own choice always wins; otherwise the connection, then the seller's default.
   const on = !disabled && (choice ? choice === 'on' : slow || sellerDefault);
-  const reason: DataSaverValue['reason'] = on && !choice ? slow ? 'network' : 'seller' : null;
+  const reason: DataSaverValue['reason'] = on && !choice ? (slow ? 'network' : 'seller') : null;
   const setOn = useCallback((next: boolean) => {
     setChoice(next ? 'on' : 'off');
     setImagesShown(false);
     try {
       window.localStorage.setItem(KEY, next ? 'on' : 'off');
     } catch {
-
       // Choice lasts for this visit only.
-    }}, []);
+    }
+  }, []);
   const showImages = useCallback(() => setImagesShown(true), []);
 
   const value = useMemo(() => ({ on, auto: reason === 'network', reason, imagesShown: !on || imagesShown, setOn, showImages }), [on, reason, imagesShown, setOn, showImages]);
   return (
     <DataSaverContext.Provider value={value}>
       {on ? <MotionConfig reducedMotion="always">{children}</MotionConfig> : children}
-    </DataSaverContext.Provider>);
-
+    </DataSaverContext.Provider>
+  );
 }
 
 export function useDataSaver(): DataSaverValue {

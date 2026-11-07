@@ -71,36 +71,36 @@ export function CommandPalette({
   const market = useMarketplace();
   const commands = useMemo<Command[]>(() => {
     const list: Command[] = [
-    { id: 'publish', group: 'Actions', label: 'Publish…', icon: RocketIcon, keywords: 'live schedule', run: onPublish },
-    { id: 'preview', group: 'Actions', label: 'Preview draft', icon: EyeIcon, run: () => navigate(`/p/${state.draft.handle}?draft=1`) },
-    { id: 'theme', group: 'Actions', label: 'Page theme', icon: PaletteIcon, keywords: 'colours fonts design', run: () => actions.select(null) },
-    { id: 'versions', group: 'Actions', label: 'Version history', icon: HistoryIcon, keywords: 'restore snapshot', run: onVersions },
-    { id: 'phone', group: 'Actions', label: 'Preview on phone', icon: SmartphoneIcon, keywords: 'viewport mobile', run: () => onViewport('phone') },
-    { id: 'tablet', group: 'Actions', label: 'Preview on tablet', icon: TabletIcon, keywords: 'viewport', run: () => onViewport('tablet') },
-    { id: 'desktop', group: 'Actions', label: 'Preview on desktop', icon: MonitorIcon, keywords: 'viewport', run: () => onViewport('desktop') }];
-
+      { id: 'publish', group: 'Actions', label: 'Publish…', icon: RocketIcon, keywords: 'live schedule', run: onPublish },
+      { id: 'preview', group: 'Actions', label: 'Preview draft', icon: EyeIcon, run: () => navigate(`/p/${state.draft.handle}?draft=1`) },
+      { id: 'theme', group: 'Actions', label: 'Page theme', icon: PaletteIcon, keywords: 'colours fonts design', run: () => actions.select(null) },
+      { id: 'versions', group: 'Actions', label: 'Version history', icon: HistoryIcon, keywords: 'restore snapshot', run: onVersions },
+      { id: 'phone', group: 'Actions', label: 'Preview on phone', icon: SmartphoneIcon, keywords: 'viewport mobile', run: () => onViewport('phone') },
+      { id: 'tablet', group: 'Actions', label: 'Preview on tablet', icon: TabletIcon, keywords: 'viewport', run: () => onViewport('tablet') },
+      { id: 'desktop', group: 'Actions', label: 'Preview on desktop', icon: MonitorIcon, keywords: 'viewport', run: () => onViewport('desktop') },
+    ];
     if (canUndo) list.push({ id: 'undo', group: 'Actions', label: 'Undo', icon: Undo2Icon, run: actions.undo });
     if (canRedo) list.push({ id: 'redo', group: 'Actions', label: 'Redo', icon: Redo2Icon, run: actions.redo });
     list.push(
       { id: 'commerce:add', group: 'Actions', label: 'Add product', icon: ShoppingBagIcon, keywords: 'commerce catalogue sell', run: () => navigate('/app/commerce/products?new=1') },
       { id: 'commerce:orders', group: 'Actions', label: 'Find order', icon: ReceiptIcon, keywords: 'commerce orders customer', run: () => navigate('/app/commerce/orders') },
-      { id: 'audience:add', group: 'Actions', label: 'Add contact', icon: UsersIcon, keywords: 'audience crm lead customer', run: () => navigate('/app/audience') }
+      { id: 'audience:add', group: 'Actions', label: 'Add contact', icon: UsersIcon, keywords: 'audience crm lead customer', run: () => navigate('/app/audience') },
     );
-    blockOrder.forEach((type) => {
+    blockOrder.forEach(type => {
       const def = blockDefinitions[type];
       if (def.requiresApp && !market.isActive(def.requiresApp)) return;
       list.push({
         id: `add:${type}`,
         group: 'Add a block',
         label: def.name,
-        hint: libraryCategories.find((c) => c.id === libraryCategoryOf(type))?.label ?? def.category,
+        hint: libraryCategories.find(c => c.id === libraryCategoryOf(type))?.label ?? def.category,
         icon: def.icon,
         // Same search text as the picker, synonyms included (D166).
         keywords: blockSearchText(type, tr, lang),
         run: () => actions.addBlock(type)
       });
     });
-    library.sections.forEach((s) => list.push({
+    library.sections.forEach(s => list.push({
       id: `sec:${s.id}`,
       group: 'Your sections',
       label: s.name,
@@ -108,7 +108,7 @@ export function CommandPalette({
       icon: BookmarkIcon,
       run: () => actions.insertBlocks(s.blocks, s.name)
     }));
-    state.draft.blocks.forEach((b) => list.push({
+    state.draft.blocks.forEach(b => list.push({
       id: `go:${b.id}`,
       group: 'Go to block',
       label: layerName(b),
@@ -121,12 +121,12 @@ export function CommandPalette({
   // Section names and block summaries are the owner's own words; tr() returns them unchanged when no draft exists.
   const shown = (c: Command) => ({ label: tr(c.label), hint: c.hint && c.group === 'Add a block' ? tr(c.hint) : c.hint });
   const q = query.trim().toLowerCase();
-  const results = q ?
-  commands.filter((c) => {
-    const s = shown(c);
-    return `${c.label} ${s.label} ${c.hint ?? ''} ${s.hint ?? ''} ${c.keywords ?? ''} ${c.group} ${tr(c.group)}`.toLowerCase().includes(q);
-  }) :
-  commands.filter((c) => c.group !== 'Go to block');
+  const results = q
+    ? commands.filter(c => {
+        const s = shown(c);
+        return `${c.label} ${s.label} ${c.hint ?? ''} ${s.hint ?? ''} ${c.keywords ?? ''} ${c.group} ${tr(c.group)}`.toLowerCase().includes(q);
+      })
+    : commands.filter(c => c.group !== 'Go to block');
   useEffect(() => setActive(0), [q]);
   useEffect(() => {
     listRef.current?.querySelector<HTMLElement>(`[data-index="${active}"]`)?.scrollIntoView({
@@ -164,17 +164,17 @@ export function CommandPalette({
       }} transition={{
         duration: 0.16,
         ease: [0.23, 1, 0.32, 1]
-      }} className="relative flex max-h-[min(560px,70vh)] w-full max-w-lg flex-col overflow-hidden rounded-lg border border-line bg-overlay text-fg shadow-3" onKeyDown={(e) => {
+      }} className="relative flex max-h-[min(560px,70vh)] w-full max-w-lg flex-col overflow-hidden rounded-lg border border-line bg-overlay text-fg shadow-3" onKeyDown={e => {
         // The search box is the only stop inside the menu, so Tab stays on it instead of leaving the dialog (D429).
         if (e.key === 'Tab') {
           e.preventDefault();
           inputRef.current?.focus();
         } else if (e.key === 'Escape') onClose();else if (e.key === 'ArrowDown') {
           e.preventDefault();
-          setActive((i) => Math.min(results.length - 1, i + 1));
+          setActive(i => Math.min(results.length - 1, i + 1));
         } else if (e.key === 'ArrowUp') {
           e.preventDefault();
-          setActive((i) => Math.max(0, i - 1));
+          setActive(i => Math.max(0, i - 1));
         } else if (e.key === 'Enter') {
           e.preventDefault();
           run(results[active]);
@@ -182,7 +182,7 @@ export function CommandPalette({
       }}>
             <div className="flex items-center gap-2.5 border-b border-line px-4">
               <SearchIcon size={16} className="shrink-0 text-fg-subtle" aria-hidden />
-              <input ref={inputRef} role="combobox" aria-autocomplete="list" aria-expanded={results.length > 0} aria-controls="command-list" aria-activedescendant={results[active] ? `cmd-${results[active].id}` : undefined} aria-label={tr('Search actions and blocks')} value={query} onChange={(e) => setQuery(e.target.value)} placeholder={tr('Add a block, find a block, or run an action…')} className="h-12 min-w-0 flex-1 bg-transparent text-body text-fg placeholder:text-fg-subtle focus:outline-none" />
+              <input ref={inputRef} role="combobox" aria-autocomplete="list" aria-expanded={results.length > 0} aria-controls="command-list" aria-activedescendant={results[active] ? `cmd-${results[active].id}` : undefined} aria-label={tr('Search actions and blocks')} value={query} onChange={e => setQuery(e.target.value)} placeholder={tr('Add a block, find a block, or run an action…')} className="h-12 min-w-0 flex-1 bg-transparent text-body text-fg placeholder:text-fg-subtle focus:outline-none" />
               <Kbd>Esc</Kbd>
             </div>
             <ul ref={listRef} id="command-list" role="listbox" className="scroll-quiet min-h-0 flex-1 overflow-y-auto p-1.5">

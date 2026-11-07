@@ -14,8 +14,8 @@ export function readProviders(workspaceId: string): ProvidersData {
     const raw = window.localStorage.getItem(key(workspaceId));
     if (raw) return { connections: {}, defaults: {}, log: [], ...(JSON.parse(raw) as Partial<ProvidersData>) };
   } catch {
-
-    /* nothing saved */}
+    /* nothing saved */
+  }
   return { connections: {}, defaults: {}, log: [] };
 }
 
@@ -23,9 +23,9 @@ export function readProviders(workspaceId: string): ProvidersData {
 export function activeProvider(data: ProvidersData, category: ProviderCategory): ProviderDef | undefined {
   const chosen = data.defaults[category];
   if (chosen && data.connections[chosen]) return providerById(chosen);
-  return Object.keys(data.connections).
-  map(providerById).
-  find((p) => p?.category === category);
+  return Object.keys(data.connections)
+    .map(providerById)
+    .find((p) => p?.category === category);
 }
 
 /** Adds an entry to Settings → Integrations → Activity and tells open screens to refresh. */
@@ -36,8 +36,8 @@ export function appendProviderLog(workspaceId: string, providerId: string, actio
     window.localStorage.setItem(key(workspaceId), JSON.stringify(next));
     window.dispatchEvent(new Event(`kubicu:store:${key(workspaceId)}`));
   } catch {
-
-    /* storage full — the send still counts for this visit */}
+    /* storage full — the send still counts for this visit */
+  }
 }
 
 /** "a•••@gmail.com" — enough to recognise, not enough to copy. */

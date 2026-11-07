@@ -18,7 +18,7 @@ import { TemplateThumb } from '../../templates/TemplateThumb';
  * D335: headings and labels are translated; the kit's own example wording (products, services, policies) stays as written,
  * since it's the sample content the seller replaces. Automation names pass through the translator.
  */
-export function KitShowcase({ kit }: {kit: BusinessKit;}) {
+export function KitShowcase({ kit }: { kit: BusinessKit }) {
   const { t: tr, lang } = useT();
   const photo = kitPhotos[kit.id];
   // The starter from the visitor's country where the kit has one (D494).
@@ -26,24 +26,24 @@ export function KitShowcase({ kit }: {kit: BusinessKit;}) {
   const elite = kit.eliteTemplateId ? findExampleById(kit.eliteTemplateId) : undefined;
   const kitRecipes = kit.recipes.map((id) => recipes.find((r) => r.id === id)).filter((r): r is (typeof recipes)[number] => !!r);
   const policies = [
-  { label: 'Refunds', text: kit.policies.refunds },
-  { label: 'Delivery', text: kit.policies.delivery },
-  { label: 'Cancellation', text: kit.policies.cancellation }].
-  filter((p) => p.text);
+    { label: 'Refunds', text: kit.policies.refunds },
+    { label: 'Delivery', text: kit.policies.delivery },
+    { label: 'Cancellation', text: kit.policies.cancellation },
+  ].filter((p) => p.text);
 
   return (
     <div className="flex flex-col gap-12">
-      {photo &&
-      <figure className="overflow-hidden rounded-[28px] bg-sunken">
+      {photo && (
+        <figure className="overflow-hidden rounded-[28px] bg-sunken">
           <img src={photo.url} alt={photo.alt} className="aspect-[16/9] w-full object-cover" />
           <figcaption className="px-5 py-3 text-[13px] text-fg-muted">
             {tr(kit.forWho)} <span className="text-fg-subtle">· {tr('Illustration, not a KUBICU customer')}</span>
           </figcaption>
         </figure>
-      }
+      )}
 
-      {starter &&
-      <section aria-labelledby="kit-pages">
+      {starter && (
+        <section aria-labelledby="kit-pages">
           <h2 id="kit-pages" className="text-[22px] font-extrabold text-fg">
             {tr('The page it starts you with')}
           </h2>
@@ -52,19 +52,19 @@ export function KitShowcase({ kit }: {kit: BusinessKit;}) {
           </p>
           <div className="mt-6 grid gap-5 sm:grid-cols-2">
             <PagePreview label={tr('Included free')} title={starter.name} note={starter.bestFor} doc={starter.doc} to={`/templates/${starter.id}`} openLabel={tr('Open full preview')} />
-            {elite &&
-          <PagePreview
-            label={tr('Optional upgrade · {price} once', { price: formatNgn(templatePrice(elite.id)) })}
-            title={elite.name}
-            note={tr('Same content, an Elite look. You can switch any time.')}
-            doc={elite.doc}
-            to={`/templates/${elite.id}`}
-            openLabel={tr('Open full preview')} />
-
-          }
+            {elite && (
+              <PagePreview
+                label={tr('Optional upgrade · {price} once', { price: formatNgn(templatePrice(elite.id)) })}
+                title={elite.name}
+                note={tr('Same content, an Elite look. You can switch any time.')}
+                doc={elite.doc}
+                to={`/templates/${elite.id}`}
+                openLabel={tr('Open full preview')}
+              />
+            )}
           </div>
         </section>
-      }
+      )}
 
       <section aria-labelledby="kit-items">
         <h2 id="kit-items" className="text-[22px] font-extrabold text-fg">
@@ -72,50 +72,50 @@ export function KitShowcase({ kit }: {kit: BusinessKit;}) {
         </h2>
         <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-fg-muted">{tr('Everything arrives as a draft without prices, so nothing goes live until you’ve checked it.')}</p>
         <div className="mt-6 grid gap-x-10 gap-y-8 md:grid-cols-2">
-          {kit.products.length > 0 &&
-          <ItemGroup icon={PackageIcon} title={tr('Starter products: {n}', { n: kit.products.length })}>
-              {kit.products.map((p) =>
-            <Item key={p.name} name={p.name} text={p.description} tag={p.kind === 'digital' ? tr('Digital') : undefined} />
-            )}
+          {kit.products.length > 0 && (
+            <ItemGroup icon={PackageIcon} title={tr('Starter products: {n}', { n: kit.products.length })}>
+              {kit.products.map((p) => (
+                <Item key={p.name} name={p.name} text={p.description} tag={p.kind === 'digital' ? tr('Digital') : undefined} />
+              ))}
             </ItemGroup>
-          }
-          {kit.services.length > 0 &&
-          <ItemGroup icon={CalendarClockIcon} title={tr('Starter services: {n}', { n: kit.services.length })}>
-              {kit.services.map((s) =>
-            <Item key={s.name} name={s.name} text={s.description} tag={tr('{n} min', { n: s.durationMin })} />
-            )}
+          )}
+          {kit.services.length > 0 && (
+            <ItemGroup icon={CalendarClockIcon} title={tr('Starter services: {n}', { n: kit.services.length })}>
+              {kit.services.map((s) => (
+                <Item key={s.name} name={s.name} text={s.description} tag={tr('{n} min', { n: s.durationMin })} />
+              ))}
             </ItemGroup>
-          }
-          {policies.length > 0 &&
-          <ItemGroup icon={FileTextIcon} title={tr('Draft policies')}>
-              {policies.map((p) =>
-            <Item key={p.label} name={tr(p.label)} text={p.text} clamp />
-            )}
+          )}
+          {policies.length > 0 && (
+            <ItemGroup icon={FileTextIcon} title={tr('Draft policies')}>
+              {policies.map((p) => (
+                <Item key={p.label} name={tr(p.label)} text={p.text} clamp />
+              ))}
             </ItemGroup>
-          }
-          {kitRecipes.length > 0 &&
-          <ItemGroup icon={WorkflowIcon} title={tr('Automations: {n}', { n: kitRecipes.length })}>
-              {kitRecipes.map((r) =>
-            <Item key={r.id} name={tr(r.name)} text={tr(r.description)} />
-            )}
+          )}
+          {kitRecipes.length > 0 && (
+            <ItemGroup icon={WorkflowIcon} title={tr('Automations: {n}', { n: kitRecipes.length })}>
+              {kitRecipes.map((r) => (
+                <Item key={r.id} name={tr(r.name)} text={tr(r.description)} />
+              ))}
             </ItemGroup>
-          }
+          )}
         </div>
         <p className="mt-6 flex items-start gap-2 text-[13px] text-fg-subtle">
           <SparklesIcon size={14} aria-hidden className="mt-0.5 shrink-0" />
           {tr('Example wording only. KUBICU never invents prices, reviews or results for your business.')}
         </p>
       </section>
-    </div>);
-
+    </div>
+  );
 }
 
-function PagePreview({ label, title, note, doc, to, openLabel }: {label: string;title: string;note: string;doc: Parameters<typeof TemplateThumb>[0]['doc'];to: string;openLabel: string;}) {
+function PagePreview({ label, title, note, doc, to, openLabel }: { label: string; title: string; note: string; doc: Parameters<typeof TemplateThumb>[0]['doc']; to: string; openLabel: string }) {
   return (
     <Link
       to={to}
-      className="group flex flex-col overflow-hidden rounded-[24px] border border-line bg-raised transition-colors duration-150 hover:border-line-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-      
+      className="group flex flex-col overflow-hidden rounded-[24px] border border-line bg-raised transition-colors duration-150 hover:border-line-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+    >
       <div aria-hidden className="flex justify-center bg-sunken px-6 pt-6">
         <div className="overflow-hidden rounded-t-[18px] border-[4px] border-b-0 border-[rgb(18_18_20)] bg-[rgb(18_18_20)] shadow-2">
           <TemplateThumb doc={doc} width={180} height={300} />
@@ -129,11 +129,11 @@ function PagePreview({ label, title, note, doc, to, openLabel }: {label: string;
           {openLabel} <ArrowUpRightIcon size={15} aria-hidden className="transition-transform duration-150 ease-out group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
         </span>
       </div>
-    </Link>);
-
+    </Link>
+  );
 }
 
-function ItemGroup({ icon: Icon, title, children }: {icon: typeof PackageIcon;title: string;children: React.ReactNode;}) {
+function ItemGroup({ icon: Icon, title, children }: { icon: typeof PackageIcon; title: string; children: React.ReactNode }) {
   return (
     <div>
       <h3 className="flex items-center gap-2 text-[15px] font-bold text-fg">
@@ -141,11 +141,11 @@ function ItemGroup({ icon: Icon, title, children }: {icon: typeof PackageIcon;ti
         {title}
       </h3>
       <ul className="mt-3 flex flex-col divide-y divide-line border-y border-line">{children}</ul>
-    </div>);
-
+    </div>
+  );
 }
 
-function Item({ name, text, tag, clamp }: {name: string;text: string;tag?: string;clamp?: boolean;}) {
+function Item({ name, text, tag, clamp }: { name: string; text: string; tag?: string; clamp?: boolean }) {
   return (
     <li className="py-3">
       <p className="flex items-baseline justify-between gap-3 text-[15px] font-semibold text-fg">
@@ -153,6 +153,6 @@ function Item({ name, text, tag, clamp }: {name: string;text: string;tag?: strin
         {tag && <span className="shrink-0 text-[12px] font-medium text-fg-subtle">{tag}</span>}
       </p>
       <p className={clamp ? 'mt-0.5 line-clamp-2 text-[14px] leading-snug text-fg-muted' : 'mt-0.5 text-[14px] leading-snug text-fg-muted'}>{text}</p>
-    </li>);
-
+    </li>
+  );
 }

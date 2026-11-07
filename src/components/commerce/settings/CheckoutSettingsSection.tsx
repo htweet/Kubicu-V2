@@ -7,11 +7,11 @@ import { Switch } from '../../ui/Switch';
 import { CurrencyInput } from '../../ui/CurrencyInput';
 import { SettingsSection } from './SettingsSection';
 
-const askOptions: {value: FieldAsk;label: string;}[] = [
-{ value: 'required', label: 'Required' },
-{ value: 'optional', label: 'Optional' },
-{ value: 'off', label: 'Don’t ask' }];
-
+const askOptions: { value: FieldAsk; label: string }[] = [
+  { value: 'required', label: 'Required' },
+  { value: 'optional', label: 'Optional' },
+  { value: 'off', label: 'Don’t ask' },
+];
 
 /** What checkout asks for (D222). Phone is always asked — it's how orders reach buyers. */
 export function CheckoutSettingsSection() {
@@ -35,6 +35,6 @@ export function CheckoutSettingsSection() {
         <Switch id="co-terms" label="Ask buyers to agree to your terms" description="A tick box before paying, with your returns policy written out. Pay is disabled until it’s ticked." checked={c.termsTick} onChange={(termsTick) => s.patch({ termsTick })} />
         <Switch id="co-note" label="Let buyers add a note" description="An optional box for things like gift wrapping or delivery directions. It shows on the order." checked={c.orderNote} onChange={(orderNote) => s.patch({ orderNote })} />
       </div>
-    </SettingsSection>);
-
+    </SettingsSection>
+  );
 }

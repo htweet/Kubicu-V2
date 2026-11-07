@@ -2,385 +2,386 @@ import type { HelpCategory } from '../../types/help';
 
 /** Step-by-step guides for Copilot, the AI page assistant, Short links and Audience Manager (D274). */
 export const growthGuides: HelpCategory[] = [
-{
-  id: 'copilot',
-  title: 'Copilot and the AI page assistant',
-  summary: 'Describe your business in a chat, get a draft page, then carry on in KUBICU.',
-  icon: 'sparkles',
-  group: 'Start',
-  articles: [
   {
-    id: 'copilot-start',
-    q: 'How do I make a page by chatting with Copilot?',
-    a: 'Copilot asks a few plain questions about your business, shows you a summary, then builds a draft page you can look at before signing up. You don’t need an account to try it.',
-    steps: [
-    'Go to kub.icu/copilot and choose “Start a chat” (or “Try it on WhatsApp”).',
-    'Answer “What are you creating today?” — tap an answer or type in your own words.',
-    'Answer the next few questions. “You decide” and “Skip for now” always work.',
-    'Send your logo when asked, then up to 5 photos — or say you don’t have any.',
-    'Check the summary card and choose “Create my draft”.'],
-
-    shot: {
-      frame: 'site',
-      path: 'kub.icu/copilot/chat',
-      title: 'Copilot',
-      items: [
-      { kind: 'chat', from: 'them', label: 'What are you creating today?', marker: 2 },
-      { kind: 'chips', chips: ['A shop', 'Bookings', 'Food', 'Creator', 'Something else'], active: 2, marker: 2 },
-      { kind: 'chat', from: 'you', label: 'Small chops and party trays in Surulere', marker: 3 },
-      { kind: 'chat', from: 'them', label: 'Do you have a logo? Send it here, or tap “I don’t have one”.', marker: 4 },
-      { kind: 'button', label: 'Create my draft', primary: true, marker: 5 },
-      { kind: 'button', label: 'Change something' }]
-
-    },
-    tips: ['Never send card numbers, passwords, PINs, BVN or NIN — Copilot removes them and doesn’t keep them.', 'Prices, hours and policies are never made up. Gaps show as “[Add …]” for you to fill in.'],
-    related: ['copilot-preview', 'copilot-claim', 'copilot-limits'],
-    simulated: 'Replies come from rules in this version, not a live AI model.'
+    id: 'copilot',
+    title: 'Copilot and the AI page assistant',
+    summary: 'Describe your business in a chat, get a draft page, then carry on in KUBICU.',
+    icon: 'sparkles',
+    group: 'Start',
+    articles: [
+      {
+        id: 'copilot-start',
+        q: 'How do I make a page by chatting with Copilot?',
+        a: 'Copilot asks a few plain questions about your business, shows you a summary, then builds a draft page you can look at before signing up. You don’t need an account to try it.',
+        steps: [
+          'Go to kub.icu/copilot and choose “Start a chat” (or “Try it on WhatsApp”).',
+          'Answer “What are you creating today?” — tap an answer or type in your own words.',
+          'Answer the next few questions. “You decide” and “Skip for now” always work.',
+          'Send your logo when asked, then up to 5 photos — or say you don’t have any.',
+          'Check the summary card and choose “Create my draft”.',
+        ],
+        shot: {
+          frame: 'site',
+          path: 'kub.icu/copilot/chat',
+          title: 'Copilot',
+          items: [
+            { kind: 'chat', from: 'them', label: 'What are you creating today?', marker: 2 },
+            { kind: 'chips', chips: ['A shop', 'Bookings', 'Food', 'Creator', 'Something else'], active: 2, marker: 2 },
+            { kind: 'chat', from: 'you', label: 'Small chops and party trays in Surulere', marker: 3 },
+            { kind: 'chat', from: 'them', label: 'Do you have a logo? Send it here, or tap “I don’t have one”.', marker: 4 },
+            { kind: 'button', label: 'Create my draft', primary: true, marker: 5 },
+            { kind: 'button', label: 'Change something' },
+          ],
+        },
+        tips: ['Never send card numbers, passwords, PINs, BVN or NIN — Copilot removes them and doesn’t keep them.', 'Prices, hours and policies are never made up. Gaps show as “[Add …]” for you to fill in.'],
+        related: ['copilot-preview', 'copilot-claim', 'copilot-limits'],
+        simulated: 'Replies come from rules in this version, not a live AI model.',
+      },
+      {
+        id: 'copilot-preview',
+        q: 'How do I see and change my Copilot draft?',
+        a: 'When the draft is ready you get a picture of it and a private preview link. Ask for changes in plain words and Copilot lists exactly what will change before it rebuilds.',
+        steps: [
+          'Tap “Open preview” to see the page as visitors would.',
+          'Back in the chat, type a change, for example “make it warmer” or “call it Tolu’s Kitchen”.',
+          'Read the list of changes Copilot shows you.',
+          'Tap “Create my draft” to apply them — nothing changes until you do.',
+        ],
+        shot: {
+          frame: 'phone',
+          path: 'kub.icu/d/…',
+          title: 'Draft preview · not published',
+          items: [
+            { kind: 'note', label: 'Expires in 7 days · 3 to fill in', marker: 1 },
+            { kind: 'chat', from: 'you', label: 'Make it warmer', marker: 2 },
+            { kind: 'chat', from: 'them', label: 'Look: Bold → Warm & natural. Everything else stays the same.', marker: 3 },
+            { kind: 'button', label: 'Create my draft', primary: true, marker: 4 },
+          ],
+        },
+        tips: ['The preview link only lets people look. It can’t be used to edit or claim your page.', 'Search engines are told not to list drafts.'],
+        related: ['copilot-claim'],
+      },
+      {
+        id: 'copilot-claim',
+        q: 'How do I move my Copilot draft into KUBICU?',
+        a: 'Choose “Continue to KUBICU” in the chat that made the draft. New people sign up; existing users sign in and pick a workspace. The draft opens in the canvas as a normal page.',
+        steps: [
+          'In the chat, tap “Continue to KUBICU”.',
+          'Choose “I’m new” or “I already have an account”.',
+          'New: sign up, enter the 6-digit email code and check the setup we’ve filled in from your chat.',
+          'Existing: sign in and choose the workspace. The draft is added as a new space.',
+          'The canvas opens with a welcome panel listing what’s still to fill in.',
+        ],
+        shot: {
+          frame: 'site',
+          path: 'kub.icu/copilot/continue',
+          title: 'Continue with your draft',
+          items: [
+            { kind: 'row', label: 'I’m new to KUBICU', meta: 'Sign up — your draft becomes your page', marker: 2 },
+            { kind: 'row', label: 'I already have an account', meta: 'Add it to a workspace as a new space', marker: 2 },
+            { kind: 'field', label: 'Email code', value: '• • • • • •', marker: 3 },
+            { kind: 'button', label: 'Continue', primary: true },
+          ],
+        },
+        tips: ['Only the device whose chat made the draft can continue it.', 'If you stop part-way, you come back to the same step.', 'Copilot never publishes your page — you do, from the canvas.'],
+        related: ['first-page', 'publish-check'],
+      },
+      {
+        id: 'copilot-limits',
+        q: 'Are there limits on Copilot drafts?',
+        a: 'Up to 3 drafts and 10 changes a day are free before you have an account (example figures). Drafts nobody claims are deleted after 7 days.',
+        steps: ['If you reach the limit, your answers and last draft are kept.', 'Come back tomorrow, or continue the draft into KUBICU and use the in-app assistant.'],
+        tips: ['A failed build doesn’t count toward the limit — tap “Try again”.'],
+        related: ['ai-assistant'],
+      },
+      {
+        id: 'ai-assistant',
+        q: 'How do I build a page with the AI page assistant inside KUBICU?',
+        a: 'The assistant asks 3–6 questions, shows a plan you approve, then builds your page section by section. It can also add products, services, a WhatsApp button and a QR code — each one confirmed by you.',
+        steps: [
+          'Choose “Build with AI” on Overview or My Spaces (or the AI box in the canvas Pages panel).',
+          'Describe your business, or drop photos.',
+          'Answer the questions — tap an option or type.',
+          'Read the plan card: sections, theme, what it will create and the gaps. Choose “Approve and build”.',
+          'Watch it build, then choose “Open in canvas”, “Keep as draft” or “Undo the build”.',
+        ],
+        where: 'Overview → Build with AI',
+        shot: {
+          frame: 'app',
+          nav: 'Overview',
+          path: 'Overview → Build with AI',
+          title: 'Page assistant',
+          items: [
+            { kind: 'chat', from: 'them', label: 'What does your business do, and who is it for?', marker: 2 },
+            { kind: 'chat', from: 'you', label: 'Braids and silk press in Yaba, mostly students', marker: 3 },
+            { kind: 'heading', label: 'Plan', sub: 'Using “Glow” template · 6 sections · 2 gaps to fill' },
+            { kind: 'button', label: 'Approve and build · 5 credits', primary: true, marker: 4 },
+            { kind: 'button', label: 'Change something' },
+          ],
+        },
+        tips: ['If no template fits, it composes a new layout and saves it privately under Templates → Yours.', 'Made-up prices, reviews, payments and publishing are never done for you.'],
+        related: ['ai-refine', 'copilot-start'],
+        plan: 'Uses AI credits',
+        simulated: 'Replies come from rules in this version.',
+      },
+      {
+        id: 'ai-refine',
+        q: 'Can I change the page by chatting after it’s built?',
+        a: 'Yes. Ask for a change, or tap a section in the preview to talk about just that part. Each change shows a before and after with Keep or Undo.',
+        steps: ['Type a request such as “add a gallery” or tap a section first.', 'Compare before and after.', 'Choose Keep, or Undo to put it back.'],
+        where: 'Page assistant → after building',
+        related: ['ai-assistant'],
+        plan: '1 AI credit per change (example figure)',
+      },
+    ],
   },
   {
-    id: 'copilot-preview',
-    q: 'How do I see and change my Copilot draft?',
-    a: 'When the draft is ready you get a picture of it and a private preview link. Ask for changes in plain words and Copilot lists exactly what will change before it rebuilds.',
-    steps: [
-    'Tap “Open preview” to see the page as visitors would.',
-    'Back in the chat, type a change, for example “make it warmer” or “call it Tolu’s Kitchen”.',
-    'Read the list of changes Copilot shows you.',
-    'Tap “Create my draft” to apply them — nothing changes until you do.'],
-
-    shot: {
-      frame: 'phone',
-      path: 'kub.icu/d/…',
-      title: 'Draft preview · not published',
-      items: [
-      { kind: 'note', label: 'Expires in 7 days · 3 to fill in', marker: 1 },
-      { kind: 'chat', from: 'you', label: 'Make it warmer', marker: 2 },
-      { kind: 'chat', from: 'them', label: 'Look: Bold → Warm & natural. Everything else stays the same.', marker: 3 },
-      { kind: 'button', label: 'Create my draft', primary: true, marker: 4 }]
-
-    },
-    tips: ['The preview link only lets people look. It can’t be used to edit or claim your page.', 'Search engines are told not to list drafts.'],
-    related: ['copilot-claim']
+    id: 'short-links',
+    title: 'Short links',
+    summary: 'Shorten any link, share it anywhere, and see every click.',
+    icon: 'link',
+    group: 'Serve & grow',
+    articles: [
+      {
+        id: 'sl-shorten',
+        q: 'How do I shorten a link?',
+        a: 'Paste any long web address into the bar at the top of Short links. It’s safety-checked, given a short name and copied for you.',
+        steps: ['Open Short links in the sidebar (Growth).', 'Paste the address into “Shorten a link”.', 'Tap Shorten. The short link is copied — paste it anywhere.', 'Use Stats beside it to see clicks later.'],
+        where: 'Growth → Short links',
+        shot: {
+          frame: 'app',
+          nav: 'Short links',
+          title: 'Short links',
+          actions: [{ kind: 'button', label: 'New link', primary: true }],
+          items: [
+            { kind: 'field', label: 'Shorten a link', value: 'https://www.example.com/very/long/address?ref=…', marker: 2 },
+            { kind: 'button', label: 'Shorten', primary: true, marker: 3 },
+            { kind: 'row', label: 'kub.icu/tolus/s/menu-whatsapp', meta: 'Copied · 0 clicks', badge: 'Stats', marker: 4 },
+          ],
+        },
+        tips: ['Private, unsafe and other short-link addresses are refused.', 'You can make up to 30 links an hour (example figure).'],
+        related: ['sl-new', 'sl-stats'],
+      },
+      {
+        id: 'sl-new',
+        q: 'How do I make a link with tags, a channel and an end date?',
+        a: 'Use New link for links to your own pages, another website or a WhatsApp chat, with the place you’ll share it, your own tags, campaign tags and optional start and end dates.',
+        steps: [
+          'In Short links, choose New link.',
+          'Pick where it goes: one of your pages (or a product, event or section), a website, or a WhatsApp chat.',
+          'Choose where you’ll share it — this is how it’s grouped in Analytics.',
+          'Edit the short name if you like. It can’t change once shared.',
+          'Add tags, a saved campaign-tag set, and start or end dates if needed. Save.',
+        ],
+        where: 'Growth → Short links → New link',
+        shot: {
+          frame: 'app',
+          nav: 'Short links',
+          title: 'Short links',
+          sheet: 'New link',
+          items: [
+            { kind: 'tabs', tabs: ['My page', 'A website', 'WhatsApp chat'], active: 0, marker: 2 },
+            { kind: 'chips', chips: ['WhatsApp', 'Instagram', 'TikTok', 'Printed QR'], active: 1, marker: 3 },
+            { kind: 'field', label: 'Short name', value: 'kub.icu/tolus/s/eid-instagram', marker: 4 },
+            { kind: 'field', label: 'Tags', value: 'Eid, Paid post', marker: 5 },
+            { kind: 'button', label: 'Create link', primary: true },
+          ],
+        },
+        related: ['sl-whatsapp', 'sl-schedule'],
+      },
+      {
+        id: 'sl-canvas',
+        q: 'Can I make a short link while editing my page?',
+        a: 'Yes — from Page settings → Short link, or from “Make a short link to share” on the screen you see after publishing. It points to the page you’re editing.',
+        steps: ['In the canvas, open Page settings and scroll to Short link (or publish first).', 'Choose where you’ll share it.', 'Check the suggested short name.', 'Tap “Create and copy”.'],
+        where: 'Canvas → Page settings → Short link',
+        shot: {
+          frame: 'canvas',
+          nav: 'Pages',
+          title: 'Short link',
+          items: [
+            { kind: 'note', label: 'Works once this page is published.' },
+            { kind: 'chips', chips: ['WhatsApp', 'Instagram', 'TikTok'], active: 0, marker: 2 },
+            { kind: 'field', label: 'Short name', value: 'tolus-kitchen-whatsapp', marker: 3 },
+            { kind: 'button', label: 'Create and copy', primary: true, marker: 4 },
+          ],
+        },
+        related: ['sl-shorten'],
+      },
+      {
+        id: 'sl-whatsapp',
+        q: 'How do I make a link that opens a WhatsApp chat?',
+        a: 'Choose “WhatsApp chat” as the destination, enter the number and an optional message that’s already typed when the chat opens.',
+        steps: ['New link → WhatsApp chat.', 'Enter the number. Numbers starting with 0 become +234.', 'Write the message (up to 500 characters), for example “Hi, I’d like to order”.', 'Save and share the short link.'],
+        where: 'Growth → Short links → New link',
+        related: ['sl-new'],
+      },
+      {
+        id: 'sl-schedule',
+        q: 'Can a link start later, or be paused?',
+        a: 'Set a start date so you can print the QR code early — visitors see “This link isn’t live yet” until then. Pause a link any time; paused links send nobody anywhere and point to your main page.',
+        steps: ['Open the link’s ⋯ menu and choose Edit to set a start or end date.', 'Or choose Pause from the same menu. Resume puts it back.'],
+        where: 'Growth → Short links → ⋯',
+        tips: ['Every change of where a link goes is kept in its destination history, with who changed it.'],
+      },
+      {
+        id: 'sl-stats',
+        q: 'How do I read a link’s stats?',
+        a: 'Each link has its own stats page: clicks over time, unique people, what they did next, devices, time of day, where they landed, where the taps came from and the latest clicks.',
+        steps: [
+          'Tap a link’s name (or its chart button) in Short links.',
+          'Pick 7, 30 or 90 days or All time. The change from the previous period is shown.',
+          'Read “What happened after the click” to see orders, bookings and sign-ups.',
+          'Check “Where the taps came from” — Instagram, WhatsApp, a QR scan and so on.',
+          'Export a CSV of every click in the period.',
+        ],
+        where: 'Growth → Short links → a link',
+        shot: {
+          frame: 'app',
+          nav: 'Short links',
+          path: 'Short links → eid-instagram',
+          title: 'eid-instagram',
+          actions: [{ kind: 'button', label: 'Export CSV', marker: 5 }],
+          items: [
+            { kind: 'chips', chips: ['7 days', '30 days', '90 days', 'All time'], active: 1, marker: 2 },
+            { kind: 'stats', stats: [{ label: 'Clicks', value: '412' }, { label: 'People', value: '356' }, { label: 'Orders', value: '9' }, { label: 'Revenue', value: '₦184,500' }] },
+            { kind: 'chart', label: 'Clicks per day' },
+            { kind: 'row', label: 'What happened after the click', meta: 'Paid 9 · Booked 2 · Browsed 140', marker: 3 },
+            { kind: 'row', label: 'Where the taps came from', meta: 'Instagram 61% · WhatsApp 22% · Scanned or typed 17%', marker: 4 },
+          ],
+        },
+        tips: ['A click counts once per visit, so two taps within 30 minutes count once.', 'No names, numbers or locations are kept for clicks.'],
+        related: ['sl-invalid', 'analytics'],
+      },
+      {
+        id: 'sl-invalid',
+        q: 'Why are some taps “left out” of my clicks?',
+        a: 'Link previews (WhatsApp, Telegram, Slack), search crawlers, automated browsers and 5 or more taps from one browser in a minute are recorded but never counted. The stats page says how many were left out and why.',
+        related: ['sl-stats'],
+      },
+      {
+        id: 'sl-health',
+        q: 'What does “Needs attention” on a link mean?',
+        a: 'Each link is checked once a day. It needs attention if its website no longer passes the safety check, its WhatsApp number isn’t valid, or the page, product or block it points to was removed.',
+        steps: ['Filter Short links by “Needs attention”.', 'Open the link to read the reason.', 'Edit where it goes, then tap “Check now”.'],
+        where: 'Growth → Short links',
+        tips: ['You’re also told in Notifications.'],
+      },
+      {
+        id: 'sl-find',
+        q: 'How do I find a link among many?',
+        a: 'Search by name, short link, destination or tag, filter by channel, tag or status, and sort by newest, most clicks, last clicked or name. Export includes only what’s shown.',
+        where: 'Growth → Short links',
+        shot: {
+          frame: 'app',
+          nav: 'Short links',
+          title: 'Short links',
+          items: [
+            { kind: 'field', label: 'Search', value: 'eid', marker: 1 },
+            { kind: 'chips', chips: ['All', 'Live', 'Scheduled', 'Paused', 'Needs attention'], active: 1, marker: 2 },
+            { kind: 'row', label: 'eid-instagram', meta: '412 clicks · last click 2 h ago', badge: 'Live' },
+            { kind: 'row', label: 'eid-flyer-qr', meta: '88 clicks · last click yesterday', badge: 'Live' },
+          ],
+        },
+        steps: ['Type in Search.', 'Tap a status chip, or open Filters for channel and tag.'],
+      },
+      {
+        id: 'sl-delete-data',
+        q: 'Can I delete a link’s click data?',
+        a: 'Yes. “Delete click data” on the stats page removes its taps. Visits it brought stay in Analytics without being tied to the link. Deleting a link offers the same option.',
+        where: 'Growth → Short links → a link → Delete click data',
+        tips: ['Both are recorded in the activity log.'],
+      },
+    ],
   },
   {
-    id: 'copilot-claim',
-    q: 'How do I move my Copilot draft into KUBICU?',
-    a: 'Choose “Continue to KUBICU” in the chat that made the draft. New people sign up; existing users sign in and pick a workspace. The draft opens in the canvas as a normal page.',
-    steps: [
-    'In the chat, tap “Continue to KUBICU”.',
-    'Choose “I’m new” or “I already have an account”.',
-    'New: sign up, enter the 6-digit email code and check the setup we’ve filled in from your chat.',
-    'Existing: sign in and choose the workspace. The draft is added as a new space.',
-    'The canvas opens with a welcome panel listing what’s still to fill in.'],
-
-    shot: {
-      frame: 'site',
-      path: 'kub.icu/copilot/continue',
-      title: 'Continue with your draft',
-      items: [
-      { kind: 'row', label: 'I’m new to KUBICU', meta: 'Sign up — your draft becomes your page', marker: 2 },
-      { kind: 'row', label: 'I already have an account', meta: 'Add it to a workspace as a new space', marker: 2 },
-      { kind: 'field', label: 'Email code', value: '• • • • • •', marker: 3 },
-      { kind: 'button', label: 'Continue', primary: true }]
-
-    },
-    tips: ['Only the device whose chat made the draft can continue it.', 'If you stop part-way, you come back to the same step.', 'Copilot never publishes your page — you do, from the canvas.'],
-    related: ['first-page', 'publish-check']
+    id: 'audience-manager',
+    title: 'Audience Manager',
+    summary: 'Grow your contact list, group it with segments, and see where people came from.',
+    icon: 'users',
+    group: 'Your customers',
+    articles: [
+      {
+        id: 'aud-overview',
+        q: 'How do I see how my audience is growing?',
+        a: 'The top of Audience shows total contacts and how many joined in the last 30 days, 90 days or 12 months compared with the period before, with a chart of the running total.',
+        steps: ['Open Audience.', 'Pick 30 days, 90 days or 12 months.', 'Below the chart: new subscribers, people you can send marketing to, and open follow-ups.'],
+        where: 'Audience',
+        shot: {
+          frame: 'app',
+          nav: 'Audience',
+          title: 'Audience',
+          items: [
+            { kind: 'chips', chips: ['30 days', '90 days', '12 months'], active: 0, marker: 2 },
+            { kind: 'stats', stats: [{ label: 'Contacts', value: '1,284' }, { label: 'New', value: '+96' }, { label: 'Can receive marketing', value: '742' }, { label: 'Follow-ups', value: '5' }], marker: 3 },
+            { kind: 'chart', label: 'Total contacts' },
+          ],
+        },
+        tips: ['Deleted contacts aren’t counted in the history.'],
+        related: ['contacts', 'aud-segments'],
+      },
+      {
+        id: 'aud-segments',
+        q: 'How do I create a segment?',
+        a: 'A segment is a saved set of rules, like “Consent is Subscribed and Tag is VIP”. People join and leave automatically as their details change.',
+        steps: [
+          'In Audience, open the segment bar and choose “New segment”.',
+          'Choose “All of” (every rule must match) or “Any of”.',
+          'Add up to 8 conditions — consent, came from, tag, stage, first channel, short link, date added, email or phone filled in.',
+          'Watch the live match count, name the segment and save.',
+          'Tap the segment any time to apply it. Use Edit under the bar to change it.',
+        ],
+        where: 'Audience → Segments',
+        shot: {
+          frame: 'app',
+          nav: 'Audience',
+          title: 'Audience',
+          sheet: 'New segment',
+          items: [
+            { kind: 'tabs', tabs: ['All of', 'Any of'], active: 0, marker: 2 },
+            { kind: 'row', label: 'Consent is Subscribed', badge: 'Rule', marker: 3 },
+            { kind: 'row', label: 'Tag is VIP', badge: 'Rule' },
+            { kind: 'note', label: '214 contacts match', marker: 4 },
+            { kind: 'field', label: 'Name', value: 'VIP subscribers' },
+            { kind: 'button', label: 'Save segment', primary: true },
+          ],
+        },
+        tips: ['If a segment has no consent rule, you’re reminded to add “Consent is Subscribed” before using it for marketing.'],
+        related: ['consent', 'aud-sources'],
+      },
+      {
+        id: 'aud-sources',
+        q: 'How do I see where my contacts came from?',
+        a: 'The Sources view counts contacts by how they arrived (form, order, booking…), by first channel, and by short link. Tap a short link to see its contacts.',
+        steps: ['Open Audience and switch to Sources.', 'Read the three breakdowns.', 'Tap a short link row to filter the list to those contacts.'],
+        where: 'Audience → Sources',
+        tips: ['Contacts added before this was introduced show as “Not recorded”.', 'A click alone never creates a contact.'],
+        related: ['sl-stats'],
+      },
+      {
+        id: 'aud-export',
+        q: 'How do I export or import contacts?',
+        a: 'Export downloads the contacts you’re viewing as a CSV, including first channel, short link and consent record. Import adds contacts from a CSV and marks them as transactional (no marketing) unless they agreed.',
+        steps: ['Apply the segment or filters you want.', 'Choose Export. It’s recorded in the activity log.', 'To import, choose Import and pick a CSV with name, email or phone columns.'],
+        where: 'Audience → Export / Import',
+      },
+      {
+        id: 'aud-email-sync',
+        q: 'How do I send contacts to Mailchimp or Brevo?',
+        a: 'Install Email marketing sync. Only contacts who subscribed and have an email are sent. Each sync appears in its history; a failed one has a Retry button.',
+        steps: ['Extensions → Email marketing sync → Install.', 'Choose Mailchimp or Brevo and add your key.', 'Choose Sync now, or download the list.', 'Check the sync history for anything left out and why.'],
+        where: 'Audience → Email sync',
+        simulated: 'Nothing is actually sent to Mailchimp or Brevo in this version.',
+        related: ['aud-sheets-sync'],
+      },
+      {
+        id: 'aud-sheets-sync',
+        q: 'How do I copy orders, bookings and form answers into Google Sheets?',
+        a: 'Install Google Sheets sync and paste your sheet’s address. Orders, Bookings and Responses each get their own tab, and each sync only adds new rows.',
+        steps: ['Extensions → Google Sheets sync → Install.', 'Paste the sheet address.', 'Sync now, or download each tab.', 'If a sync fails, read the reason and tap Retry.'],
+        where: 'Extensions → Google Sheets sync',
+        simulated: 'Syncing is simulated in this version.',
+      },
+    ],
   },
-  {
-    id: 'copilot-limits',
-    q: 'Are there limits on Copilot drafts?',
-    a: 'Up to 3 drafts and 10 changes a day are free before you have an account (example figures). Drafts nobody claims are deleted after 7 days.',
-    steps: ['If you reach the limit, your answers and last draft are kept.', 'Come back tomorrow, or continue the draft into KUBICU and use the in-app assistant.'],
-    tips: ['A failed build doesn’t count toward the limit — tap “Try again”.'],
-    related: ['ai-assistant']
-  },
-  {
-    id: 'ai-assistant',
-    q: 'How do I build a page with the AI page assistant inside KUBICU?',
-    a: 'The assistant asks 3–6 questions, shows a plan you approve, then builds your page section by section. It can also add products, services, a WhatsApp button and a QR code — each one confirmed by you.',
-    steps: [
-    'Choose “Build with AI” on Overview or My Spaces (or the AI box in the canvas Pages panel).',
-    'Describe your business, or drop photos.',
-    'Answer the questions — tap an option or type.',
-    'Read the plan card: sections, theme, what it will create and the gaps. Choose “Approve and build”.',
-    'Watch it build, then choose “Open in canvas”, “Keep as draft” or “Undo the build”.'],
-
-    where: 'Overview → Build with AI',
-    shot: {
-      frame: 'app',
-      nav: 'Overview',
-      path: 'Overview → Build with AI',
-      title: 'Page assistant',
-      items: [
-      { kind: 'chat', from: 'them', label: 'What does your business do, and who is it for?', marker: 2 },
-      { kind: 'chat', from: 'you', label: 'Braids and silk press in Yaba, mostly students', marker: 3 },
-      { kind: 'heading', label: 'Plan', sub: 'Using “Glow” template · 6 sections · 2 gaps to fill' },
-      { kind: 'button', label: 'Approve and build · 5 credits', primary: true, marker: 4 },
-      { kind: 'button', label: 'Change something' }]
-
-    },
-    tips: ['If no template fits, it composes a new layout and saves it privately under Templates → Yours.', 'Made-up prices, reviews, payments and publishing are never done for you.'],
-    related: ['ai-refine', 'copilot-start'],
-    plan: 'Uses AI credits',
-    simulated: 'Replies come from rules in this version.'
-  },
-  {
-    id: 'ai-refine',
-    q: 'Can I change the page by chatting after it’s built?',
-    a: 'Yes. Ask for a change, or tap a section in the preview to talk about just that part. Each change shows a before and after with Keep or Undo.',
-    steps: ['Type a request such as “add a gallery” or tap a section first.', 'Compare before and after.', 'Choose Keep, or Undo to put it back.'],
-    where: 'Page assistant → after building',
-    related: ['ai-assistant'],
-    plan: '1 AI credit per change (example figure)'
-  }]
-
-},
-{
-  id: 'short-links',
-  title: 'Short links',
-  summary: 'Shorten any link, share it anywhere, and see every click.',
-  icon: 'link',
-  group: 'Serve & grow',
-  articles: [
-  {
-    id: 'sl-shorten',
-    q: 'How do I shorten a link?',
-    a: 'Paste any long web address into the bar at the top of Short links. It’s safety-checked, given a short name and copied for you.',
-    steps: ['Open Short links in the sidebar (Growth).', 'Paste the address into “Shorten a link”.', 'Tap Shorten. The short link is copied — paste it anywhere.', 'Use Stats beside it to see clicks later.'],
-    where: 'Growth → Short links',
-    shot: {
-      frame: 'app',
-      nav: 'Short links',
-      title: 'Short links',
-      actions: [{ kind: 'button', label: 'New link', primary: true }],
-      items: [
-      { kind: 'field', label: 'Shorten a link', value: 'https://www.example.com/very/long/address?ref=…', marker: 2 },
-      { kind: 'button', label: 'Shorten', primary: true, marker: 3 },
-      { kind: 'row', label: 'kub.icu/tolus/s/menu-whatsapp', meta: 'Copied · 0 clicks', badge: 'Stats', marker: 4 }]
-
-    },
-    tips: ['Private, unsafe and other short-link addresses are refused.', 'You can make up to 30 links an hour (example figure).'],
-    related: ['sl-new', 'sl-stats']
-  },
-  {
-    id: 'sl-new',
-    q: 'How do I make a link with tags, a channel and an end date?',
-    a: 'Use New link for links to your own pages, another website or a WhatsApp chat, with the place you’ll share it, your own tags, campaign tags and optional start and end dates.',
-    steps: [
-    'In Short links, choose New link.',
-    'Pick where it goes: one of your pages (or a product, event or section), a website, or a WhatsApp chat.',
-    'Choose where you’ll share it — this is how it’s grouped in Analytics.',
-    'Edit the short name if you like. It can’t change once shared.',
-    'Add tags, a saved campaign-tag set, and start or end dates if needed. Save.'],
-
-    where: 'Growth → Short links → New link',
-    shot: {
-      frame: 'app',
-      nav: 'Short links',
-      title: 'Short links',
-      sheet: 'New link',
-      items: [
-      { kind: 'tabs', tabs: ['My page', 'A website', 'WhatsApp chat'], active: 0, marker: 2 },
-      { kind: 'chips', chips: ['WhatsApp', 'Instagram', 'TikTok', 'Printed QR'], active: 1, marker: 3 },
-      { kind: 'field', label: 'Short name', value: 'kub.icu/tolus/s/eid-instagram', marker: 4 },
-      { kind: 'field', label: 'Tags', value: 'Eid, Paid post', marker: 5 },
-      { kind: 'button', label: 'Create link', primary: true }]
-
-    },
-    related: ['sl-whatsapp', 'sl-schedule']
-  },
-  {
-    id: 'sl-canvas',
-    q: 'Can I make a short link while editing my page?',
-    a: 'Yes — from Page settings → Short link, or from “Make a short link to share” on the screen you see after publishing. It points to the page you’re editing.',
-    steps: ['In the canvas, open Page settings and scroll to Short link (or publish first).', 'Choose where you’ll share it.', 'Check the suggested short name.', 'Tap “Create and copy”.'],
-    where: 'Canvas → Page settings → Short link',
-    shot: {
-      frame: 'canvas',
-      nav: 'Pages',
-      title: 'Short link',
-      items: [
-      { kind: 'note', label: 'Works once this page is published.' },
-      { kind: 'chips', chips: ['WhatsApp', 'Instagram', 'TikTok'], active: 0, marker: 2 },
-      { kind: 'field', label: 'Short name', value: 'tolus-kitchen-whatsapp', marker: 3 },
-      { kind: 'button', label: 'Create and copy', primary: true, marker: 4 }]
-
-    },
-    related: ['sl-shorten']
-  },
-  {
-    id: 'sl-whatsapp',
-    q: 'How do I make a link that opens a WhatsApp chat?',
-    a: 'Choose “WhatsApp chat” as the destination, enter the number and an optional message that’s already typed when the chat opens.',
-    steps: ['New link → WhatsApp chat.', 'Enter the number. Numbers starting with 0 become +234.', 'Write the message (up to 500 characters), for example “Hi, I’d like to order”.', 'Save and share the short link.'],
-    where: 'Growth → Short links → New link',
-    related: ['sl-new']
-  },
-  {
-    id: 'sl-schedule',
-    q: 'Can a link start later, or be paused?',
-    a: 'Set a start date so you can print the QR code early — visitors see “This link isn’t live yet” until then. Pause a link any time; paused links send nobody anywhere and point to your main page.',
-    steps: ['Open the link’s ⋯ menu and choose Edit to set a start or end date.', 'Or choose Pause from the same menu. Resume puts it back.'],
-    where: 'Growth → Short links → ⋯',
-    tips: ['Every change of where a link goes is kept in its destination history, with who changed it.']
-  },
-  {
-    id: 'sl-stats',
-    q: 'How do I read a link’s stats?',
-    a: 'Each link has its own stats page: clicks over time, unique people, what they did next, devices, time of day, where they landed, where the taps came from and the latest clicks.',
-    steps: [
-    'Tap a link’s name (or its chart button) in Short links.',
-    'Pick 7, 30 or 90 days or All time. The change from the previous period is shown.',
-    'Read “What happened after the click” to see orders, bookings and sign-ups.',
-    'Check “Where the taps came from” — Instagram, WhatsApp, a QR scan and so on.',
-    'Export a CSV of every click in the period.'],
-
-    where: 'Growth → Short links → a link',
-    shot: {
-      frame: 'app',
-      nav: 'Short links',
-      path: 'Short links → eid-instagram',
-      title: 'eid-instagram',
-      actions: [{ kind: 'button', label: 'Export CSV', marker: 5 }],
-      items: [
-      { kind: 'chips', chips: ['7 days', '30 days', '90 days', 'All time'], active: 1, marker: 2 },
-      { kind: 'stats', stats: [{ label: 'Clicks', value: '412' }, { label: 'People', value: '356' }, { label: 'Orders', value: '9' }, { label: 'Revenue', value: '₦184,500' }] },
-      { kind: 'chart', label: 'Clicks per day' },
-      { kind: 'row', label: 'What happened after the click', meta: 'Paid 9 · Booked 2 · Browsed 140', marker: 3 },
-      { kind: 'row', label: 'Where the taps came from', meta: 'Instagram 61% · WhatsApp 22% · Scanned or typed 17%', marker: 4 }]
-
-    },
-    tips: ['A click counts once per visit, so two taps within 30 minutes count once.', 'No names, numbers or locations are kept for clicks.'],
-    related: ['sl-invalid', 'analytics']
-  },
-  {
-    id: 'sl-invalid',
-    q: 'Why are some taps “left out” of my clicks?',
-    a: 'Link previews (WhatsApp, Telegram, Slack), search crawlers, automated browsers and 5 or more taps from one browser in a minute are recorded but never counted. The stats page says how many were left out and why.',
-    related: ['sl-stats']
-  },
-  {
-    id: 'sl-health',
-    q: 'What does “Needs attention” on a link mean?',
-    a: 'Each link is checked once a day. It needs attention if its website no longer passes the safety check, its WhatsApp number isn’t valid, or the page, product or block it points to was removed.',
-    steps: ['Filter Short links by “Needs attention”.', 'Open the link to read the reason.', 'Edit where it goes, then tap “Check now”.'],
-    where: 'Growth → Short links',
-    tips: ['You’re also told in Notifications.']
-  },
-  {
-    id: 'sl-find',
-    q: 'How do I find a link among many?',
-    a: 'Search by name, short link, destination or tag, filter by channel, tag or status, and sort by newest, most clicks, last clicked or name. Export includes only what’s shown.',
-    where: 'Growth → Short links',
-    shot: {
-      frame: 'app',
-      nav: 'Short links',
-      title: 'Short links',
-      items: [
-      { kind: 'field', label: 'Search', value: 'eid', marker: 1 },
-      { kind: 'chips', chips: ['All', 'Live', 'Scheduled', 'Paused', 'Needs attention'], active: 1, marker: 2 },
-      { kind: 'row', label: 'eid-instagram', meta: '412 clicks · last click 2 h ago', badge: 'Live' },
-      { kind: 'row', label: 'eid-flyer-qr', meta: '88 clicks · last click yesterday', badge: 'Live' }]
-
-    },
-    steps: ['Type in Search.', 'Tap a status chip, or open Filters for channel and tag.']
-  },
-  {
-    id: 'sl-delete-data',
-    q: 'Can I delete a link’s click data?',
-    a: 'Yes. “Delete click data” on the stats page removes its taps. Visits it brought stay in Analytics without being tied to the link. Deleting a link offers the same option.',
-    where: 'Growth → Short links → a link → Delete click data',
-    tips: ['Both are recorded in the activity log.']
-  }]
-
-},
-{
-  id: 'audience-manager',
-  title: 'Audience Manager',
-  summary: 'Grow your contact list, group it with segments, and see where people came from.',
-  icon: 'users',
-  group: 'Your customers',
-  articles: [
-  {
-    id: 'aud-overview',
-    q: 'How do I see how my audience is growing?',
-    a: 'The top of Audience shows total contacts and how many joined in the last 30 days, 90 days or 12 months compared with the period before, with a chart of the running total.',
-    steps: ['Open Audience.', 'Pick 30 days, 90 days or 12 months.', 'Below the chart: new subscribers, people you can send marketing to, and open follow-ups.'],
-    where: 'Audience',
-    shot: {
-      frame: 'app',
-      nav: 'Audience',
-      title: 'Audience',
-      items: [
-      { kind: 'chips', chips: ['30 days', '90 days', '12 months'], active: 0, marker: 2 },
-      { kind: 'stats', stats: [{ label: 'Contacts', value: '1,284' }, { label: 'New', value: '+96' }, { label: 'Can receive marketing', value: '742' }, { label: 'Follow-ups', value: '5' }], marker: 3 },
-      { kind: 'chart', label: 'Total contacts' }]
-
-    },
-    tips: ['Deleted contacts aren’t counted in the history.'],
-    related: ['contacts', 'aud-segments']
-  },
-  {
-    id: 'aud-segments',
-    q: 'How do I create a segment?',
-    a: 'A segment is a saved set of rules, like “Consent is Subscribed and Tag is VIP”. People join and leave automatically as their details change.',
-    steps: [
-    'In Audience, open the segment bar and choose “New segment”.',
-    'Choose “All of” (every rule must match) or “Any of”.',
-    'Add up to 8 conditions — consent, came from, tag, stage, first channel, short link, date added, email or phone filled in.',
-    'Watch the live match count, name the segment and save.',
-    'Tap the segment any time to apply it. Use Edit under the bar to change it.'],
-
-    where: 'Audience → Segments',
-    shot: {
-      frame: 'app',
-      nav: 'Audience',
-      title: 'Audience',
-      sheet: 'New segment',
-      items: [
-      { kind: 'tabs', tabs: ['All of', 'Any of'], active: 0, marker: 2 },
-      { kind: 'row', label: 'Consent is Subscribed', badge: 'Rule', marker: 3 },
-      { kind: 'row', label: 'Tag is VIP', badge: 'Rule' },
-      { kind: 'note', label: '214 contacts match', marker: 4 },
-      { kind: 'field', label: 'Name', value: 'VIP subscribers' },
-      { kind: 'button', label: 'Save segment', primary: true }]
-
-    },
-    tips: ['If a segment has no consent rule, you’re reminded to add “Consent is Subscribed” before using it for marketing.'],
-    related: ['consent', 'aud-sources']
-  },
-  {
-    id: 'aud-sources',
-    q: 'How do I see where my contacts came from?',
-    a: 'The Sources view counts contacts by how they arrived (form, order, booking…), by first channel, and by short link. Tap a short link to see its contacts.',
-    steps: ['Open Audience and switch to Sources.', 'Read the three breakdowns.', 'Tap a short link row to filter the list to those contacts.'],
-    where: 'Audience → Sources',
-    tips: ['Contacts added before this was introduced show as “Not recorded”.', 'A click alone never creates a contact.'],
-    related: ['sl-stats']
-  },
-  {
-    id: 'aud-export',
-    q: 'How do I export or import contacts?',
-    a: 'Export downloads the contacts you’re viewing as a CSV, including first channel, short link and consent record. Import adds contacts from a CSV and marks them as transactional (no marketing) unless they agreed.',
-    steps: ['Apply the segment or filters you want.', 'Choose Export. It’s recorded in the activity log.', 'To import, choose Import and pick a CSV with name, email or phone columns.'],
-    where: 'Audience → Export / Import'
-  },
-  {
-    id: 'aud-email-sync',
-    q: 'How do I send contacts to Mailchimp or Brevo?',
-    a: 'Install Email marketing sync. Only contacts who subscribed and have an email are sent. Each sync appears in its history; a failed one has a Retry button.',
-    steps: ['Extensions → Email marketing sync → Install.', 'Choose Mailchimp or Brevo and add your key.', 'Choose Sync now, or download the list.', 'Check the sync history for anything left out and why.'],
-    where: 'Audience → Email sync',
-    simulated: 'Nothing is actually sent to Mailchimp or Brevo in this version.',
-    related: ['aud-sheets-sync']
-  },
-  {
-    id: 'aud-sheets-sync',
-    q: 'How do I copy orders, bookings and form answers into Google Sheets?',
-    a: 'Install Google Sheets sync and paste your sheet’s address. Orders, Bookings and Responses each get their own tab, and each sync only adds new rows.',
-    steps: ['Extensions → Google Sheets sync → Install.', 'Paste the sheet address.', 'Sync now, or download each tab.', 'If a sync fails, read the reason and tap Retry.'],
-    where: 'Extensions → Google Sheets sync',
-    simulated: 'Syncing is simulated in this version.'
-  }]
-
-}];
+];

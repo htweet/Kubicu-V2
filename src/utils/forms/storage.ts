@@ -22,7 +22,7 @@ export const defaultSettings = (): FormSettings => ({
   minFillSeconds: 3,
   perVisitorLimit: 3,
   privacyNote: 'We only use your details to reply to you.',
-  assigneeId: null
+  assigneeId: null,
 });
 
 export function createForm(templateId: string, name?: string): FormDef {
@@ -48,11 +48,11 @@ function seed(): FormsData {
     contactEmail: '',
     marketingConsent: false,
     createdAt: ago(days),
-    sample: true
+    sample: true,
   });
   return {
     forms: [form],
-    submissions: [sub('sub_s1', 'Funke Adeyemi', 'Bridal', '450000', 1, 'new'), sub('sub_s2', 'Zainab Bello', 'Owambe outfit', '120000', 3, 'read'), sub('sub_s3', 'Ifeoma Obi', 'Bridal', '600000', 6, 'read')]
+    submissions: [sub('sub_s1', 'Funke Adeyemi', 'Bridal', '450000', 1, 'new'), sub('sub_s2', 'Zainab Bello', 'Owambe outfit', '120000', 3, 'read'), sub('sub_s3', 'Ifeoma Obi', 'Bridal', '600000', 6, 'read')],
   };
 }
 
@@ -61,8 +61,8 @@ export function readForms(workspaceId: string): FormsData {
     const raw = window.localStorage.getItem(formsKey(workspaceId));
     if (raw) return JSON.parse(raw) as FormsData;
   } catch {
-
-    /* fall through */}
+    /* fall through */
+  }
   const fresh: FormsData = seedsSample(workspaceId) ? seed() : { forms: [], submissions: [] };
   writeForms(workspaceId, fresh, false);
   return fresh;
@@ -96,8 +96,8 @@ export function bumpVisitor(formId: string): void {
   try {
     raw = JSON.parse(window.localStorage.getItem('kubicu.formRate') ?? '{}');
   } catch {
-
-    /* reset */}
+    /* reset */
+  }
   raw[`${formId}:${today}`] = (raw[`${formId}:${today}`] ?? 0) + 1;
   window.localStorage.setItem('kubicu.formRate', JSON.stringify(raw));
 }
@@ -107,7 +107,7 @@ export function formsAddOnActive(workspaceId: string): boolean {
   try {
     const raw = window.localStorage.getItem(`kubicu.marketplace.${workspaceId}`);
     if (!raw) return false;
-    const m = JSON.parse(raw) as {installed?: Record<string, {paused?: boolean;}>;};
+    const m = JSON.parse(raw) as { installed?: Record<string, { paused?: boolean }> };
     const ext = m.installed?.[FORMS_EXTENSION_ID];
     return !!ext && !ext.paused;
   } catch {

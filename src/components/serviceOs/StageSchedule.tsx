@@ -56,11 +56,11 @@ export function StageSchedule({ quote, data, businessName, canEdit, update, onOp
         </span>
       </div>
       <div className="h-1.5 overflow-hidden rounded-full bg-sunken" aria-hidden>
-        <div className="h-full rounded-full bg-success" style={{ width: `${total ? Math.min(100, paid / total * 100) : 0}%` }} />
+        <div className="h-full rounded-full bg-success" style={{ width: `${total ? Math.min(100, (paid / total) * 100) : 0}%` }} />
       </div>
       <ol className="flex flex-col divide-y divide-line rounded-lg border border-line">
-        {rows.map((r, i) =>
-        <li key={r.m.id} className="flex flex-col gap-2.5 p-3 sm:flex-row sm:items-center sm:gap-4">
+        {rows.map((r, i) => (
+          <li key={r.m.id} className="flex flex-col gap-2.5 p-3 sm:flex-row sm:items-center sm:gap-4">
             <div className="flex min-w-0 flex-1 items-start gap-3">
               <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sunken text-caption font-semibold tabular-nums text-fg">{i + 1}</span>
               <div className="min-w-0">
@@ -78,37 +78,37 @@ export function StageSchedule({ quote, data, businessName, canEdit, update, onOp
               </div>
             </div>
             <div className="flex shrink-0 flex-wrap gap-2 pl-9 sm:pl-0">
-              {r.state === 'due' &&
-            <Button size="sm" leadingIcon={SendIcon} disabled={!canEdit} onClick={() => request(r.m.id, r.m.label, r.amount)}>
+              {r.state === 'due' && (
+                <Button size="sm" leadingIcon={SendIcon} disabled={!canEdit} onClick={() => request(r.m.id, r.m.label, r.amount)}>
                   Request payment
                 </Button>
-            }
-              {r.state === 'upcoming' && quote.status === 'accepted' &&
-            <Button size="sm" variant="tertiary" disabled={!canEdit} onClick={() => request(r.m.id, r.m.label, r.amount)} title="Ask for this stage before it’s due">
+              )}
+              {r.state === 'upcoming' && quote.status === 'accepted' && (
+                <Button size="sm" variant="tertiary" disabled={!canEdit} onClick={() => request(r.m.id, r.m.label, r.amount)} title="Ask for this stage before it’s due">
                   Request early
                 </Button>
-            }
-              {r.invoice && (r.state === 'requested' || r.state === 'part_paid') &&
-            <>
+              )}
+              {r.invoice && (r.state === 'requested' || r.state === 'part_paid') && (
+                <>
                   <Button size="sm" variant="secondary" leadingIcon={CopyIcon} onClick={() => navigator.clipboard?.writeText(payUrl(r.invoice!.id)).then(() => toast.success('Pay link copied'))}>
                     Pay link
                   </Button>
-                  {quote.client.phone &&
-              <Button size="sm" variant="secondary" leadingIcon={MessageCircleIcon} onClick={() => sendLink(r.invoice!.id, r.m.label, r.amount - r.paid)}>
+                  {quote.client.phone && (
+                    <Button size="sm" variant="secondary" leadingIcon={MessageCircleIcon} onClick={() => sendLink(r.invoice!.id, r.m.label, r.amount - r.paid)}>
                       Send
                     </Button>
-              }
+                  )}
                 </>
-            }
-              {r.invoice && onOpenInvoice &&
-            <Button size="sm" variant="tertiary" onClick={() => onOpenInvoice(r.invoice!.id)}>
+              )}
+              {r.invoice && onOpenInvoice && (
+                <Button size="sm" variant="tertiary" onClick={() => onOpenInvoice(r.invoice!.id)}>
                   {r.invoice.number}
                 </Button>
-            }
+              )}
             </div>
           </li>
-        )}
+        ))}
       </ol>
-    </section>);
-
+    </section>
+  );
 }

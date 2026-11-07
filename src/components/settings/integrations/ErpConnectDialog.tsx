@@ -51,7 +51,7 @@ export function ErpConnectDialog({ open, onClose, onConnect }: ErpConnectDialogP
       title="Connect inventory or ERP"
       description="Your ERP keeps the stock count; KUBICU follows it and sends paid orders back. Simulated — nothing reaches the ERP."
       footer={
-      <>
+        <>
           <Button variant="secondary" onClick={onClose}>
             Cancel
           </Button>
@@ -59,25 +59,25 @@ export function ErpConnectDialog({ open, onClose, onConnect }: ErpConnectDialogP
             Connect
           </Button>
         </>
-      }>
-      
+      }
+    >
       <div className="flex flex-col gap-5">
         <fieldset className="flex flex-col gap-2" disabled={busy}>
           <legend className="mb-2 text-label font-semibold text-fg">{tr('System')}</legend>
-          {(Object.keys(erpProviders) as ErpProviderId[]).map((id) =>
-          <label key={id} className={cn('flex cursor-pointer items-start gap-3 rounded-md border px-3 py-3 transition-colors duration-150', provider === id ? 'border-action bg-action-soft' : 'border-line hover:bg-sunken')}>
+          {(Object.keys(erpProviders) as ErpProviderId[]).map((id) => (
+            <label key={id} className={cn('flex cursor-pointer items-start gap-3 rounded-md border px-3 py-3 transition-colors duration-150', provider === id ? 'border-action bg-action-soft' : 'border-line hover:bg-sunken')}>
               <input type="radio" name="erp-provider" value={id} checked={provider === id} onChange={() => setProvider(id)} className="mt-1 accent-[rgb(var(--action))]" />
               <span className="min-w-0">
                 <span className="block text-label font-medium text-fg">{erpProviders[id].name}</span>
                 <span className="block text-caption text-fg-muted">{tr(erpProviders[id].blurb)}</span>
               </span>
             </label>
-          )}
+          ))}
         </fieldset>
         <TextInput id="erp-server" label={p.serverLabel} placeholder={p.serverPlaceholder} value={server} disabled={busy} error={tried ? errs.server : undefined} onChange={(e) => setServer(e.target.value)} />
         <TextInput id="erp-company" label={p.companyLabel} value={company} disabled={busy} error={tried ? errs.company : undefined} onChange={(e) => setCompany(e.target.value)} />
         <TextInput id="erp-key" label="API key" type="password" autoComplete="off" value={apiKey} disabled={busy} error={tried ? keyErr : undefined} hint="Create one for a user that can read stock and create sales orders." onChange={(e) => setApiKey(e.target.value)} />
       </div>
-    </Dialog>);
-
+    </Dialog>
+  );
 }

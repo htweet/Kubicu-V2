@@ -43,7 +43,7 @@ export interface LedgerEntry {
   amountNgn: number;
   state: LedgerState;
   label: string;
-  ref?: {type: LedgerRefType;id: string;label?: string;};
+  ref?: { type: LedgerRefType; id: string; label?: string };
   /** When a pending or held credit becomes available. */
   availableAt?: string;
   sample?: boolean;
@@ -103,7 +103,7 @@ export type KycTier = 0 | 1 | 2 | 3;
 export interface Verification {
   tier: KycTier;
   /** A higher tier waiting for KUBICU review. */
-  pending: {tier: KycTier;submittedAt: string;detail: string;} | null;
+  pending: { tier: KycTier; submittedAt: string; detail: string } | null;
   rejectedNote: string | null;
 }
 
@@ -126,7 +126,7 @@ export interface LinkPayment {
   payerPhone: string;
   note: string;
   method: PayMethod;
-  items?: {label: string;qty: number;unitNgn: number;}[];
+  items?: { label: string; qty: number; unitNgn: number }[];
   receipt: string;
   /** Staged links: which stage this payment covered (D95). */
   stageId?: string;
@@ -140,7 +140,7 @@ export interface LinkPayment {
   payerEmail?: string;
   payerAddress?: string;
   /** Answers to the link's own questions, frozen with their labels. */
-  answers?: {label: string;value: string;}[];
+  answers?: { label: string; value: string }[];
   /** Processing fee the payer covered on top (included in amountNgn). */
   feeNgn?: number;
   /** VAT in this payment (inside amountNgn). */
@@ -148,7 +148,7 @@ export interface LinkPayment {
   /** How they paid. */
   payBy?: 'card' | 'ussd' | 'account' | 'transfer';
   /** Which of the seller's own accounts a transfer went to. */
-  transferTo?: {bank: string;account: string;accountName: string;};
+  transferTo?: { bank: string; account: string; accountName: string };
   refundReason?: string;
 }
 
@@ -192,7 +192,7 @@ export interface PaymentLink {
   reusable: boolean;
   expiresAt: string | null;
   maxUses: number | null;
-  fields: {name: boolean;phone: boolean;note: boolean;};
+  fields: { name: boolean; phone: boolean; note: boolean };
   /** 'default' follows the Payment links area setting. */
   method: PayMethod | 'default';
   status: LinkStatus;
@@ -202,7 +202,7 @@ export interface PaymentLink {
   /** Fixed links only: pay the amount in stages, one payer, in order (D95). */
   stages?: LinkStage[];
   /** The open link behind a Fundraiser space (D179): fixed wording and the "show my name" choice on the pay page. */
-  fundraiser?: {handle: string;organiser: string;};
+  fundraiser?: { handle: string; organiser: string };
   sample?: boolean;
   // ——— D224 standard payment links (all optional; missing = how links worked before) ———
   /** "Payer chooses": highest amount allowed. */
@@ -211,14 +211,14 @@ export interface PaymentLink {
   suggested?: number[];
   imageUrl?: string;
   /** Extra details to collect. Name and phone stay on `fields`. */
-  ask?: {email: 'required' | 'optional' | 'off';address: 'required' | 'optional' | 'off';};
+  ask?: { email: 'required' | 'optional' | 'off'; address: 'required' | 'optional' | 'off' };
   questions?: LinkQuestion[];
   /** The payer pays the processing fee on top, so the seller receives the full amount. */
   payerCoversFee?: boolean;
   /** Ways to pay on this link; missing = follow Commerce settings. */
-  methods?: {card: boolean;transfer: boolean;ussd: boolean;};
+  methods?: { card: boolean; transfer: boolean; ussd: boolean };
   /** After paying: a thank-you message, or send the payer to a page (https only). */
-  after?: {message: string;redirectUrl: string;};
+  after?: { message: string; redirectUrl: string };
   /** Turn VAT off for this link (e.g. a deposit). */
   noVat?: boolean;
   pendingTransfers?: PendingTransfer[];
@@ -236,15 +236,15 @@ export interface MoneyData {
   /** Admins can also make payouts when the Owner allows it. */
   adminsCanPayout: boolean;
   /** Set by KUBICU staff; blocks payouts. */
-  frozen: {reason: string;at: string;by: string;} | null;
+  frozen: { reason: string; at: string; by: string } | null;
   links: PaymentLink[];
   /** Escrow cases for orders paid into escrow or held for a DealRoom goal (D94). */
   escrow: EscrowCase[];
   /** Commerce orders and refunds already reflected in the ledger. */
-  synced: {orders: string[];refunds: string[];};
+  synced: { orders: string[]; refunds: string[] };
   /** When the wallet started taking sales — earlier orders are never back-filled. */
   walletSince: string;
-  counters: {receipt: number;};
+  counters: { receipt: number };
   seeded: boolean;
   /** Demo workspace only: the sample fundraiser's payment link has been added once (D179). */
   sampleFundraiserSeeded?: boolean;

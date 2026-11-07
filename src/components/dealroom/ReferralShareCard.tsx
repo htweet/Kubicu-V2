@@ -55,13 +55,13 @@ export function ReferralShareCard({ theme, handle, code, productName, joinedThro
         target="_blank"
         rel="noopener noreferrer"
         className="flex h-12 items-center justify-center gap-2 text-[15px] font-semibold"
-        style={{ background: theme.accent, color: theme.accentText, borderRadius: 999 }}>
-        
+        style={{ background: theme.accent, color: theme.accentText, borderRadius: 999 }}
+      >
         <MessageCircleIcon size={17} aria-hidden /> Share on WhatsApp
       </a>
       <p className="text-[13px] font-medium" aria-live="polite">
         {joinedThroughYou === 0 ? 'No one has joined through your link yet.' : `${joinedThroughYou} ${joinedThroughYou === 1 ? 'person has' : 'people have'} joined through your link.`}
       </p>
-    </section>);
-
+    </section>
+  );
 }

@@ -30,32 +30,32 @@ export function BeforeAfterBlock({ block, theme, mode }: BlockProps<'beforeAfter
         <SectionHeading theme={theme} title={c.title} />
         <div className="grid grid-cols-2 gap-3">
           {[
-          [c.beforeUrl, c.beforeAlt, c.beforeLabel],
-          [c.afterUrl, c.afterAlt, c.afterLabel]].
-          map(([src, alt, label]) =>
-          <div key={label}>
+            [c.beforeUrl, c.beforeAlt, c.beforeLabel],
+            [c.afterUrl, c.afterAlt, c.afterLabel],
+          ].map(([src, alt, label]) => (
+            <div key={label}>
               <MediaImage src={src} alt={alt} className="aspect-[4/5] w-full object-cover" style={{ borderRadius: radius }} />
               <p className="mt-2 text-[13px] font-semibold" style={{ color: theme.text }}>{label}</p>
             </div>
-          )}
+          ))}
         </div>
         {c.caption && <figcaption className="mt-3 text-[14px]" style={{ color: theme.mutedText }}>{c.caption}</figcaption>}
-      </figure>);
-
+      </figure>
+    );
   }
 
   const fromPointer = (clientX: number) => {
     const r = box.current?.getBoundingClientRect();
     if (!r) return;
-    setPos(Math.max(0, Math.min(100, (clientX - r.left) / r.width * 100)));
+    setPos(Math.max(0, Math.min(100, ((clientX - r.left) / r.width) * 100)));
   };
   const onKey = (e: React.KeyboardEvent) => {
     const step = e.shiftKey ? 10 : 5;
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') setPos((p) => Math.max(0, p - step));else
-    if (e.key === 'ArrowRight' || e.key === 'ArrowUp') setPos((p) => Math.min(100, p + step));else
-    if (e.key === 'Home') setPos(0);else
-    if (e.key === 'End') setPos(100);else
-    return;
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') setPos((p) => Math.max(0, p - step));
+    else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') setPos((p) => Math.min(100, p + step));
+    else if (e.key === 'Home') setPos(0);
+    else if (e.key === 'End') setPos(100);
+    else return;
     e.preventDefault();
   };
   const interactive = mode === 'live' || mode === 'edit';
@@ -72,8 +72,8 @@ export function BeforeAfterBlock({ block, theme, mode }: BlockProps<'beforeAfter
           (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
           fromPointer(e.clientX);
         }}
-        onPointerMove={(e) => e.buttons === 1 && fromPointer(e.clientX)}>
-        
+        onPointerMove={(e) => e.buttons === 1 && fromPointer(e.clientX)}
+      >
         <MediaImage src={c.afterUrl} alt={c.afterAlt} className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0" style={{ clipPath: `inset(0 ${100 - pos}% 0 0)` }}>
           <MediaImage src={c.beforeUrl} alt={c.beforeAlt} className="absolute inset-0 h-full w-full object-cover" />
@@ -90,8 +90,8 @@ export function BeforeAfterBlock({ block, theme, mode }: BlockProps<'beforeAfter
           aria-valuetext={`${c.beforeLabel}: ${Math.round(pos)}%`}
           onKeyDown={onKey}
           className="absolute inset-y-0 -ml-5 flex w-10 cursor-ew-resize items-center justify-center focus-visible:outline-none [&:focus-visible>span]:ring-4 [&:focus-visible>span]:ring-white/70"
-          style={{ left: `${pos}%` }}>
-          
+          style={{ left: `${pos}%` }}
+        >
           <span aria-hidden className="absolute inset-y-0 left-1/2 w-0.5 -translate-x-1/2 bg-white shadow" />
           <span aria-hidden className="relative flex h-10 w-10 items-center justify-center rounded-full bg-white text-black shadow-lg">
             <ArrowRightLeftIcon size={16} />
@@ -109,6 +109,6 @@ export function BeforeAfterBlock({ block, theme, mode }: BlockProps<'beforeAfter
           </button>
         </div>
       </div>
-    </figure>);
-
+    </figure>
+  );
 }

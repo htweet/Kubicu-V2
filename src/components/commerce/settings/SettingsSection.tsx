@@ -25,28 +25,28 @@ export function SettingsSection({ id, title, description, dirty, justSaved, onSa
       description={description}
       className="scroll-mt-24"
       footer={
-      onSave ?
-      <div className="flex flex-wrap items-center justify-end gap-3">
+        onSave ? (
+          <div className="flex flex-wrap items-center justify-end gap-3">
             <p className="mr-auto text-caption text-fg-subtle" aria-live="polite">
-              {dirty ? 'Unsaved changes' : justSaved ?
-          <span className="inline-flex items-center gap-1 text-success">
+              {dirty ? 'Unsaved changes' : justSaved ? (
+                <span className="inline-flex items-center gap-1 text-success">
                   <CheckIcon size={13} aria-hidden /> Saved
-                </span> :
-          ''}
+                </span>
+              ) : ''}
             </p>
-            {dirty && onReset &&
-        <Button variant="tertiary" size="sm" onClick={onReset}>
+            {dirty && onReset && (
+              <Button variant="tertiary" size="sm" onClick={onReset}>
                 Discard
               </Button>
-        }
+            )}
             <Button size="sm" onClick={onSave} disabled={!dirty || saveDisabled}>
               Save
             </Button>
-          </div> :
-      undefined
-      }>
-      
+          </div>
+        ) : undefined
+      }
+    >
       <div className="flex flex-col gap-5">{children}</div>
-    </Card>);
-
+    </Card>
+  );
 }

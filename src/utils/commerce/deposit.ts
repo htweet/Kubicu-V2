@@ -8,7 +8,7 @@ export const depositPctOptions = [20, 30, 40, 50, 60, 70, 80];
 export const DEFAULT_DEPOSIT_PCT = 50;
 export const DEFAULT_LEAD_DAYS = 7;
 
-export function isMadeToOrder(p: Product | undefined): p is Product & {madeToOrder: NonNullable<Product['madeToOrder']>;} {
+export function isMadeToOrder(p: Product | undefined): p is Product & { madeToOrder: NonNullable<Product['madeToOrder']> } {
   return !!p && p.kind === 'physical' && !!p.madeToOrder;
 }
 
@@ -17,11 +17,11 @@ export function lineBalanceNgn(p: Product | undefined, lineTotalNgn: number): nu
   // Pre-orders with a part-payment (D202) work like made-to-order: the rest is due before dispatch.
   const pct = isMadeToOrder(p) ? p.madeToOrder.depositPct : p?.kind === 'physical' && p.preorder?.depositPct ? p.preorder.depositPct : null;
   if (pct === null) return 0;
-  return Math.round(lineTotalNgn * (100 - pct) / 100);
+  return Math.round((lineTotalNgn * (100 - pct)) / 100);
 }
 
 /** Balance for a set of lines, never more than the order total. */
-export function cartBalanceNgn(products: Product[], lines: {productId: string;amountNgn: number;}[], orderTotalNgn: number): number {
+export function cartBalanceNgn(products: Product[], lines: { productId: string; amountNgn: number }[], orderTotalNgn: number): number {
   const sum = lines.reduce((s, l) => s + lineBalanceNgn(products.find((p) => p.id === l.productId), l.amountNgn), 0);
   return Math.max(0, Math.min(sum, orderTotalNgn));
 }
@@ -51,7 +51,7 @@ function stamp(o: Order, kind: OrderEventKind, label: string): OrderEvent[] {
 export function requestOrderBalance(data: CommerceData, orderId: string): CommerceData {
   return {
     ...data,
-    orders: data.orders.map((o) => o.id === orderId && o.balance && !o.balance.paidAt ? { ...o, balance: { ...o.balance, requestedAt: new Date().toISOString() }, events: stamp(o, 'note', 'Balance requested from the customer') } : o)
+    orders: data.orders.map((o) => (o.id === orderId && o.balance && !o.balance.paidAt ? { ...o, balance: { ...o.balance, requestedAt: new Date().toISOString() }, events: stamp(o, 'note', 'Balance requested from the customer') } : o)),
   };
 }
 
@@ -70,8 +70,8 @@ export function payOrderBalance(data: CommerceData, orderId: string, how: 'onlin
         providerFeeNgn: o.providerFeeNgn + (online ? providerFee(due) : 0),
         kubicuFeeNgn: o.kubicuFeeNgn + (online ? Math.round(due * kubicuRate) : 0),
         balance: { ...o.balance, paidAt: new Date().toISOString(), how },
-        events: stamp(o, 'paid', online ? `Balance paid online (test mode) — ready to dispatch` : 'Balance recorded as paid by you — ready to dispatch')
+        events: stamp(o, 'paid', online ? `Balance paid online (test mode) — ready to dispatch` : 'Balance recorded as paid by you — ready to dispatch'),
       };
-    })
+    }),
   };
 }

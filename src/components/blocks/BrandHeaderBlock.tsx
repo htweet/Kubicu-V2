@@ -18,19 +18,19 @@ export function BrandHeaderBlock({ block, theme, mode }: BlockProps<'brandHeader
       <div className={cn('flex items-center gap-4', center && 'flex-col')}>
         {c.logoUrl && <MediaImage src={c.logoUrl} alt={c.logoAlt || c.name} className="h-14 w-auto max-w-[180px] object-contain md:h-16" />}
         <div className="min-w-0">
-          {c.name &&
-          <h1 className="break-words text-[clamp(1.6rem,3.6cqw,2.4rem)] font-medium leading-[1.08] tracking-[-0.02em]" style={{ ...headingStyle(theme), color: theme.text }}>
+          {c.name && (
+            <h1 className="break-words text-[clamp(1.6rem,3.6cqw,2.4rem)] font-medium leading-[1.08] tracking-[-0.02em]" style={{ ...headingStyle(theme), color: theme.text }}>
               {c.name} <VerifiedTick theme={theme} size={26} />
             </h1>
-          }
+          )}
           {c.tagline && <p className="mt-1.5 text-[16px] leading-snug" style={{ color: theme.mutedText }}>{c.tagline}</p>}
         </div>
       </div>
-      {c.ctaLabel && c.url &&
-      <PageAction mode={mode} href={c.url} className="inline-flex h-11 shrink-0 items-center gap-2 px-5 text-[14px] font-semibold" style={buttonStyle(theme, 'featured')}>
+      {c.ctaLabel && c.url && (
+        <PageAction mode={mode} href={c.url} className="inline-flex h-11 shrink-0 items-center gap-2 px-5 text-[14px] font-semibold" style={buttonStyle(theme, 'featured')}>
           {c.ctaLabel} <ArrowRightIcon size={15} aria-hidden />
         </PageAction>
-      }
-    </header>);
-
+      )}
+    </header>
+  );
 }

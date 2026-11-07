@@ -38,13 +38,13 @@ function settleInterrupted(d: DomainsData): DomainsData {
   return {
     ...d,
     domains: d.domains.map((x) =>
-    x.status === 'issuing' ? { ...x, status: 'live', liveAt: x.liveAt ?? new Date().toISOString() } : x.status === 'verifying' ? { ...x, status: 'waiting_dns' } : x
-    )
+      x.status === 'issuing' ? { ...x, status: 'live', liveAt: x.liveAt ?? new Date().toISOString() } : x.status === 'verifying' ? { ...x, status: 'waiting_dns' } : x,
+    ),
   };
 }
 
 /** Custom domains, short links, QR codes and redirects for the current workspace (D62). */
-export function DomainsProvider({ children }: {children: React.ReactNode;}) {
+export function DomainsProvider({ children }: { children: React.ReactNode }) {
   const workspaceId = useWorkspace().current.id;
   const [data, setData] = useState<DomainsData>(() => settleInterrupted(initial(workspaceId)));
   const ref = useRef(data);
@@ -55,9 +55,9 @@ export function DomainsProvider({ children }: {children: React.ReactNode;}) {
     try {
       writeDomains(workspaceId, ref.current);
     } catch {
-
       // Storage unavailable — changes last until the tab closes.
-    }const refresh = () => {
+    }
+    const refresh = () => {
       const next = readDomains(workspaceId);
       if (next) setData(next);
     };
@@ -83,10 +83,10 @@ export function DomainsProvider({ children }: {children: React.ReactNode;}) {
       setData(next);
       return true;
     },
-    [workspaceId]
+    [workspaceId],
   );
 
-  const patchDomain = useCallback((id: string, patch: Partial<CustomDomain>) => apply((d) => ({ ...d, domains: d.domains.map((x) => x.id === id ? { ...x, ...patch } : x) })), [apply]);
+  const patchDomain = useCallback((id: string, patch: Partial<CustomDomain>) => apply((d) => ({ ...d, domains: d.domains.map((x) => (x.id === id ? { ...x, ...patch } : x)) })), [apply]);
 
   const value = useMemo<DomainsValue>(
     () => ({
@@ -110,29 +110,29 @@ export function DomainsProvider({ children }: {children: React.ReactNode;}) {
                   const dom = d.domains.find((x) => x.id === id);
                   if (!dom) return d;
                   const hasPrimary = d.domains.some((x) => x.id !== id && x.spaceId === dom.spaceId && x.status === 'live' && x.primary);
-                  return { ...d, domains: d.domains.map((x) => x.id === id ? { ...x, status: 'live', liveAt: new Date().toISOString(), primary: !hasPrimary } : x) };
+                  return { ...d, domains: d.domains.map((x) => (x.id === id ? { ...x, status: 'live', liveAt: new Date().toISOString(), primary: !hasPrimary } : x)) };
                 });
                 const host = ref.current.domains.find((x) => x.id === id)?.host;
                 toast.success(`${host ?? 'Your domain'} is live`, { description: 'Secure (https) and showing your page.' });
-              }, 1700)
+              }, 1700),
             );
-          }, 1500)
+          }, 1500),
         );
       },
       removeDomain: (id) => apply((d) => ({ ...d, domains: d.domains.filter((x) => x.id !== id) })),
-      saveLink: (link) => apply((d) => ({ ...d, links: d.links.some((l) => l.id === link.id) ? d.links.map((l) => l.id === link.id ? link : l) : [...d.links, link] })),
-      deleteLink: (id) => ref.current.qrs.some((q) => q.linkId === id) ? false : apply((d) => ({ ...d, links: d.links.filter((l) => l.id !== id) })),
+      saveLink: (link) => apply((d) => ({ ...d, links: d.links.some((l) => l.id === link.id) ? d.links.map((l) => (l.id === link.id ? link : l)) : [...d.links, link] })),
+      deleteLink: (id) => (ref.current.qrs.some((q) => q.linkId === id) ? false : apply((d) => ({ ...d, links: d.links.filter((l) => l.id !== id) }))),
       saveQr: (qr, link) =>
-      apply((d) => ({
-        ...d,
-        links: d.links.some((l) => l.id === link.id) ? d.links.map((l) => l.id === link.id ? link : l) : [...d.links, link],
-        qrs: d.qrs.some((q) => q.id === qr.id) ? d.qrs.map((q) => q.id === qr.id ? qr : q) : [...d.qrs, qr]
-      })),
+        apply((d) => ({
+          ...d,
+          links: d.links.some((l) => l.id === link.id) ? d.links.map((l) => (l.id === link.id ? link : l)) : [...d.links, link],
+          qrs: d.qrs.some((q) => q.id === qr.id) ? d.qrs.map((q) => (q.id === qr.id ? qr : q)) : [...d.qrs, qr],
+        })),
       deleteQr: (id) => apply((d) => ({ ...d, qrs: d.qrs.filter((q) => q.id !== id) })),
-      saveRedirect: (r) => apply((d) => ({ ...d, redirects: d.redirects.some((x) => x.id === r.id) ? d.redirects.map((x) => x.id === r.id ? r : x) : [...d.redirects, r] })),
-      deleteRedirect: (id) => apply((d) => ({ ...d, redirects: d.redirects.filter((x) => x.id !== id) }))
+      saveRedirect: (r) => apply((d) => ({ ...d, redirects: d.redirects.some((x) => x.id === r.id) ? d.redirects.map((x) => (x.id === r.id ? r : x)) : [...d.redirects, r] })),
+      deleteRedirect: (id) => apply((d) => ({ ...d, redirects: d.redirects.filter((x) => x.id !== id) })),
     }),
-    [data, apply, patchDomain]
+    [data, apply, patchDomain],
   );
   return <DomainsContext.Provider value={value}>{children}</DomainsContext.Provider>;
 }

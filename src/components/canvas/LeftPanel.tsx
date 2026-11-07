@@ -36,28 +36,28 @@ export function LeftPanel({ tab, onTabChange, onCollapse }: LeftPanelProps) {
           dense
           className="min-w-0 flex-1 px-1"
           items={[
-          { id: 'blocks', label: tr('Blocks') },
-          { id: 'layers', label: tr('Layers') },
-          { id: 'pages', label: tr('Pages') },
-          { id: 'templates', label: tr('Templates') },
-          // Things to fix show as a badge so the label never grows wider than the panel.
-          { id: 'check', label: tr('Check'), badge: fixCount || undefined }]
-          } />
-        
+            { id: 'blocks', label: tr('Blocks') },
+            { id: 'layers', label: tr('Layers') },
+            { id: 'pages', label: tr('Pages') },
+            { id: 'templates', label: tr('Templates') },
+            // Things to fix show as a badge so the label never grows wider than the panel.
+            { id: 'check', label: tr('Check'), badge: fixCount || undefined },
+          ]}
+        />
         {onCollapse && <IconButton icon={PanelLeftCloseIcon} size="sm" label={tr('Collapse panel')} onClick={onCollapse} />}
       </div>
       <div
         role="tabpanel"
         id={`left-panel-${tab}`}
         aria-labelledby={`left-tab-${tab}`}
-        className="scroll-quiet min-h-0 flex-1 overflow-y-auto bg-raised">
-        
+        className="scroll-quiet min-h-0 flex-1 overflow-y-auto bg-raised"
+      >
         {tab === 'blocks' && <BlockLibrary />}
         {tab === 'layers' && <LayersList />}
         {tab === 'pages' && <PagesPanel />}
         {tab === 'templates' && <TemplatesPanel />}
         {tab === 'check' && <PageCheckPanel />}
       </div>
-    </div>);
-
+    </div>
+  );
 }

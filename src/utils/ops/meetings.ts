@@ -2,10 +2,10 @@ import type { Availability, Booking, BookingMeeting, MeetingApp, MeetingConnecti
 import { uid } from '../id';
 
 /** Google Meet, Zoom and Microsoft Teams links for online bookings (D225). Links are simulated in this prototype. */
-export const meetingApps: Record<MeetingApp, {name: string;short: string;accountHint: string;domain: string;}> = {
+export const meetingApps: Record<MeetingApp, { name: string; short: string; accountHint: string; domain: string }> = {
   google_meet: { name: 'Google Meet', short: 'Meet', accountHint: 'Your Google Workspace or Gmail address', domain: 'meet.google.com' },
   zoom: { name: 'Zoom', short: 'Zoom', accountHint: 'The email you sign in to Zoom with', domain: 'zoom.us' },
-  teams: { name: 'Microsoft Teams', short: 'Teams', accountHint: 'Your Microsoft 365 work or school address', domain: 'teams.microsoft.com' }
+  teams: { name: 'Microsoft Teams', short: 'Teams', accountHint: 'Your Microsoft 365 work or school address', domain: 'teams.microsoft.com' },
 };
 
 export const meetingAppIds = Object.keys(meetingApps) as MeetingApp[];
@@ -18,7 +18,7 @@ function seeded(seed: string): () => number {
   let h = 2166136261;
   for (let i = 0; i < seed.length; i++) h = Math.imul(h ^ seed.charCodeAt(i), 16777619);
   return () => {
-    h = Math.imul(h ^ h >>> 13, 1274126177);
+    h = Math.imul(h ^ (h >>> 13), 1274126177);
     return ((h ^= h >>> 16) >>> 0) / 4294967296;
   };
 }
@@ -60,7 +60,7 @@ export function renewMeeting(data: OpsData, bookingId: string, app: MeetingApp):
       if (b.id !== bookingId) return b;
       const meeting = makeMeeting(app, `${b.id}:${app}:${Date.now()}`);
       return { ...b, meeting, events: [...b.events, { id: uid('bev'), at: meeting.createdAt, label: `New ${meetingApps[app].name} link made` }] };
-    })
+    }),
   };
 }
 

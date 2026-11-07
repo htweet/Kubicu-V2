@@ -79,7 +79,7 @@ export function FormRunner({ form, skin, mode, closed, onSubmit, onStart, showTi
     if (!step) return true;
     const next: Record<string, string> = {};
     step.fields.forEach((f) => {
-      const msg = f.type === 'payment' ? f.required && answers[f.id] !== 'paid' ? 'Complete the payment to continue' : '' : fieldError(f, answers[f.id]);
+      const msg = f.type === 'payment' ? (f.required && answers[f.id] !== 'paid' ? 'Complete the payment to continue' : '') : fieldError(f, answers[f.id]);
       if (msg) next[f.id] = msg;
     });
     setErrors(next);
@@ -129,11 +129,11 @@ export function FormRunner({ form, skin, mode, closed, onSubmit, onStart, showTi
     startedAt.current = Date.now();
   };
 
-  const title = showTitle &&
-  <Heading ref={headingRef} tabIndex={-1} className="text-[20px] font-medium tracking-[-0.01em] outline-none" style={{ fontFamily: skin.display, color: skin.text }}>
+  const title = showTitle && (
+    <Heading ref={headingRef} tabIndex={-1} className="text-[20px] font-medium tracking-[-0.01em] outline-none" style={{ fontFamily: skin.display, color: skin.text }}>
       {form.name}
-    </Heading>;
-
+    </Heading>
+  );
 
   if (closed) {
     return (
@@ -142,8 +142,8 @@ export function FormRunner({ form, skin, mode, closed, onSubmit, onStart, showTi
         <p className="inline-flex items-center gap-2 text-[14px]" role="status" style={{ color: skin.muted }}>
           <LockIcon size={15} aria-hidden /> {closed}
         </p>
-      </div>);
-
+      </div>
+    );
   }
 
   if (done) {
@@ -155,33 +155,33 @@ export function FormRunner({ form, skin, mode, closed, onSubmit, onStart, showTi
         <span className="text-[13.5px]" style={{ color: skin.muted }}>
           {mode === 'preview' ? tr('Preview — nothing was saved.') : form.settings.successText}
         </span>
-        {form.settings.redirectUrl && mode === 'live' &&
-        <a href={form.settings.redirectUrl} className="mt-2 text-[13.5px] font-semibold underline" style={{ color: skin.text }}>
+        {form.settings.redirectUrl && mode === 'live' && (
+          <a href={form.settings.redirectUrl} className="mt-2 text-[13.5px] font-semibold underline" style={{ color: skin.text }}>
             {tr('Continue')}
           </a>
-        }
-        {mode === 'preview' &&
-        <button type="button" onClick={reset} className="mt-2 text-[13px] font-medium underline" style={{ color: skin.text }}>
+        )}
+        {mode === 'preview' && (
+          <button type="button" onClick={reset} className="mt-2 text-[13px] font-medium underline" style={{ color: skin.text }}>
             {tr('Run again')}
           </button>
-        }
-      </div>);
-
+        )}
+      </div>
+    );
   }
 
   return (
     <form noValidate onSubmit={submit} className="relative flex min-w-0 flex-col gap-4" aria-describedby={form.description ? `${uid}-desc` : undefined}>
       <div>
         {title}
-        {form.description &&
-        <p id={`${uid}-desc`} className="mt-1 text-[14px] leading-relaxed" style={{ color: skin.muted }}>
+        {form.description && (
+          <p id={`${uid}-desc`} className="mt-1 text-[14px] leading-relaxed" style={{ color: skin.muted }}>
             {form.description}
           </p>
-        }
+        )}
       </div>
 
-      {liveSteps.length > 1 &&
-      <div>
+      {liveSteps.length > 1 && (
+        <div>
           <div className="flex items-center justify-between text-[12px]" style={{ color: skin.muted }}>
             <span aria-live="polite">{step?.title}</span>
             <span>
@@ -189,14 +189,14 @@ export function FormRunner({ form, skin, mode, closed, onSubmit, onStart, showTi
             </span>
           </div>
           <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full" style={{ background: `color-mix(in srgb, ${skin.text} 12%, transparent)` }} role="progressbar" aria-label={tr('Form progress')} aria-valuemin={1} aria-valuemax={liveSteps.length} aria-valuenow={safeIndex + 1}>
-            <div className="h-full rounded-full transition-[width] duration-200 ease-out" style={{ width: `${(safeIndex + 1) / liveSteps.length * 100}%`, background: skin.text }} />
+            <div className="h-full rounded-full transition-[width] duration-200 ease-out" style={{ width: `${((safeIndex + 1) / liveSteps.length) * 100}%`, background: skin.text }} />
           </div>
         </div>
-      }
-
-      {step?.fields.map((f) =>
-      <FormFieldInput key={f.id} field={f} value={answers[f.id]} onChange={(v) => set(f.id, v)} error={errors[f.id]} skin={skin} inert={inert} idPrefix={uid} amount={f.type === 'payment' ? paymentAmount(f, answers, form.fields) : f.type === 'calculated' ? calcValue(f, answers, form.fields) : undefined} />
       )}
+
+      {step?.fields.map((f) => (
+        <FormFieldInput key={f.id} field={f} value={answers[f.id]} onChange={(v) => set(f.id, v)} error={errors[f.id]} skin={skin} inert={inert} idPrefix={uid} amount={f.type === 'payment' ? paymentAmount(f, answers, form.fields) : f.type === 'calculated' ? calcValue(f, answers, form.fields) : undefined} />
+      ))}
 
       {/* Spam trap: invisible to people, tempting to bots. */}
       <div aria-hidden className="pointer-events-none absolute left-0 top-0 h-px w-px overflow-hidden opacity-0 [clip:rect(0,0,0,0)]">
@@ -206,26 +206,26 @@ export function FormRunner({ form, skin, mode, closed, onSubmit, onStart, showTi
         </label>
       </div>
 
-      {failure &&
-      <p role="alert" className="text-[13px] font-medium" style={{ color: skin.danger }}>
+      {failure && (
+        <p role="alert" className="text-[13px] font-medium" style={{ color: skin.danger }}>
           {tr(failure)}
         </p>
-      }
-      {last && form.settings.privacyNote &&
-      <p className="text-[12px] leading-snug" style={{ color: skin.muted }}>
+      )}
+      {last && form.settings.privacyNote && (
+        <p className="text-[12px] leading-snug" style={{ color: skin.muted }}>
           {form.settings.privacyNote}
         </p>
-      }
+      )}
       <div className="flex gap-2">
-        {safeIndex > 0 &&
-        <button type="button" disabled={inert} tabIndex={inert ? -1 : undefined} onClick={() => goTo(safeIndex - 1)} className="h-12 px-4 text-[14.5px] font-medium" style={{ ...skin.input, color: skin.text }}>
+        {safeIndex > 0 && (
+          <button type="button" disabled={inert} tabIndex={inert ? -1 : undefined} onClick={() => goTo(safeIndex - 1)} className="h-12 px-4 text-[14.5px] font-medium" style={{ ...skin.input, color: skin.text }}>
             {tr('Back')}
           </button>
-        }
+        )}
         <button type="submit" tabIndex={inert ? -1 : undefined} className="h-12 flex-1 text-[15px] font-semibold" style={skin.button}>
           {last ? form.settings.submitLabel || tr('Send') : tr('Next')}
         </button>
       </div>
-    </form>);
-
+    </form>
+  );
 }

@@ -26,21 +26,22 @@ export function GoalStep({ state, update, go }: StepProps) {
                 key={g.id}
                 name="goal"
                 selected={selected}
-                onSelect={() => update({ goal: g.id, actionType: state.actionType ?? defaultActionFor[g.id], kitId: null })}
+                // Follow the goal's suggested action until the person has typed their own (D557).
+                onSelect={() => update({ goal: g.id, actionType: state.actionValue.trim() ? state.actionType ?? defaultActionFor[g.id] : defaultActionFor[g.id], kitId: null })}
                 title={g.label}
-                description={g.description}>
-                
+                description={g.description}
+              >
                 <span
                   aria-hidden
                   className={cn(
                     'mb-3 flex h-10 w-10 items-center justify-center rounded-md transition-colors duration-150',
-                    selected ? 'bg-action text-action-fg' : 'bg-sunken text-fg-muted'
-                  )}>
-                  
+                    selected ? 'bg-action text-action-fg' : 'bg-sunken text-fg-muted',
+                  )}
+                >
                   <Icon size={20} strokeWidth={2.25} />
                 </span>
-              </ChoiceCard>);
-
+              </ChoiceCard>
+            );
           })}
         </div>
       </fieldset>
@@ -51,10 +52,10 @@ export function GoalStep({ state, update, go }: StepProps) {
           optional
           placeholder="e.g. Bakery, photographer, salon"
           value={state.businessType}
-          onChange={(e) => update({ businessType: e.target.value })} />
-        
+          onChange={(e) => update({ businessType: e.target.value })}
+        />
       </div>
       <StepNav onSkip={() => update({ goal: 'other', step: 1 })} onNext={() => go(1)} nextDisabled={!state.goal} />
-    </>);
-
+    </>
+  );
 }

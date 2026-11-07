@@ -20,10 +20,10 @@ export function formatEventDate(iso: string, timeZone: string, locale = 'en-GB')
 
 export function formatEventTime(iso: string, timeZone: string, locale = 'en-GB'): string {
   try {
-    return new Intl.DateTimeFormat(locale, { timeZone, hour: 'numeric', minute: '2-digit', hour12: true, timeZoneName: 'short' }).
-    format(new Date(iso)).
-    replace(' am', 'am').
-    replace(' pm', 'pm');
+    return new Intl.DateTimeFormat(locale, { timeZone, hour: 'numeric', minute: '2-digit', hour12: true, timeZoneName: 'short' })
+      .format(new Date(iso))
+      .replace(' am', 'am')
+      .replace(' pm', 'pm');
   } catch {
     return new Date(iso).toLocaleTimeString();
   }
@@ -43,10 +43,10 @@ export function remainingUntil(target: string | null, now = Date.now()): Remaini
   const s = Math.floor(diff / 1000);
   return {
     days: Math.floor(s / 86400),
-    hours: Math.floor(s % 86400 / 3600),
-    minutes: Math.floor(s % 3600 / 60),
+    hours: Math.floor((s % 86400) / 3600),
+    minutes: Math.floor((s % 3600) / 60),
     seconds: s % 60,
-    done: diff === 0
+    done: diff === 0,
   };
 }
 

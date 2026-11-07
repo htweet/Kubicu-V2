@@ -29,22 +29,22 @@ export function StatusFaqSection() {
                 </Link>
               </div>
               <ul>
-                {capabilityStatus.map((c) =>
-                <li key={c.name} className="flex items-start justify-between gap-4 border-t border-line px-6 py-4">
+                {capabilityStatus.map((c) => (
+                  <li key={c.name} className="flex items-start justify-between gap-4 border-t border-line px-6 py-4">
                     <div className="min-w-0">
                       <p className="text-label font-semibold text-fg">{tr(c.name)}</p>
                       <p className="mt-0.5 text-caption text-fg-subtle">{tr(c.detail)}</p>
                     </div>
                     <span
-                    className={cn(
-                      'shrink-0 whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-bold',
-                      c.ready ? 'bg-[rgb(var(--kb-lime))] text-[rgb(var(--kb-forest))]' : c.status === 'Preview' ? 'bg-[rgb(var(--kb-peach))] text-[rgb(var(--kb-clay))]' : 'bg-sunken text-fg-muted'
-                    )}>
-                    
+                      className={cn(
+                        'shrink-0 whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-bold',
+                        c.ready ? 'bg-[rgb(var(--kb-lime))] text-[rgb(var(--kb-forest))]' : c.status === 'Preview' ? 'bg-[rgb(var(--kb-peach))] text-[rgb(var(--kb-clay))]' : 'bg-sunken text-fg-muted',
+                      )}
+                    >
                       {tr(c.ready ? 'Ready' : c.status)}
                     </span>
                   </li>
-                )}
+                ))}
               </ul>
             </div>
           </Reveal>
@@ -53,6 +53,6 @@ export function StatusFaqSection() {
           <FaqList items={homeFaq} />
         </Reveal>
       </div>
-    </section>);
-
+    </section>
+  );
 }

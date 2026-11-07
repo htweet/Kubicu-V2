@@ -9,7 +9,7 @@ export type PairRatio = NonNullable<BlockLayout['pair']>;
 export const contentWidthPx: Record<NonNullable<NonNullable<PageDocument['layout']>['contentWidth']>, number> = {
   narrow: 480,
   standard: 560,
-  wide: 760
+  wide: 760,
 };
 
 export const WIDE_PX = 1120;
@@ -17,7 +17,7 @@ export const WIDE_PX = 1120;
 export const pairColumns: Record<PairRatio, string> = {
   equal: 'minmax(0,1fr) minmax(0,1fr)',
   'wide-first': 'minmax(0,3fr) minmax(0,2fr)',
-  'narrow-first': 'minmax(0,2fr) minmax(0,3fr)'
+  'narrow-first': 'minmax(0,2fr) minmax(0,3fr)',
 };
 
 export const widthOf = (b: Pick<Block, 'layout'>): LayoutWidth => b.layout.width ?? 'column';
@@ -30,8 +30,8 @@ export function pageContentWidth(doc: Pick<PageDocument, 'layout'>): number {
 export function usesLayout(blocks: Block[], doc?: Pick<PageDocument, 'layout'>): boolean {
   return (
     (doc?.layout?.contentWidth ?? 'standard') !== 'standard' ||
-    blocks.some((b) => (b.layout.width ?? 'column') !== 'column' || !!b.layout.pair || (b.layout.background ?? 'none') !== 'none'));
-
+    blocks.some((b) => (b.layout.width ?? 'column') !== 'column' || !!b.layout.pair || (b.layout.background ?? 'none') !== 'none')
+  );
 }
 
 export interface LayoutRowOf<T> {
@@ -64,7 +64,7 @@ export function layoutRows<T>(items: T[], blockOf: (item: T) => Block | null, ke
         width: width === 'column' ? 'wide' : width,
         background,
         ratio: b.layout.pair,
-        firstSecondOnPhone: !!b.layout.phoneSecond
+        firstSecondOnPhone: !!b.layout.phoneSecond,
       });
       i++;
       continue;
@@ -78,7 +78,7 @@ export function layoutRows<T>(items: T[], blockOf: (item: T) => Block | null, ke
  * Whether row i shares its section background with the row above / below (D216).
  * Matching tinted or inverted rows that touch read as one band, so their shared edge drops the band padding.
  */
-export function bandJoins<T extends {background: NonNullable<BlockLayout['background']>;}>(rows: T[], i: number): {joinPrev: boolean;joinNext: boolean;} {
+export function bandJoins<T extends { background: NonNullable<BlockLayout['background']> }>(rows: T[], i: number): { joinPrev: boolean; joinNext: boolean } {
   const bg = rows[i]?.background ?? 'none';
   if (bg === 'none') return { joinPrev: false, joinNext: false };
   return { joinPrev: rows[i - 1]?.background === bg, joinNext: rows[i + 1]?.background === bg };
@@ -99,9 +99,9 @@ export function sectionTheme(theme: PageTheme, background: NonNullable<BlockLayo
       mutedText: mix(theme.background, 74, theme.text),
       accent: theme.background,
       accentText: theme.text,
-      material: m ?
-      { ...m, surfaceFinish: m.surfaceFinish === 'glass' ? 'matte' : m.surfaceFinish, border: undefined, subtleText: undefined, buttonFinish: 'solid', buttonGradient: undefined, shadow: m.shadow === 'glow' ? 'soft' : m.shadow, backdrop: undefined } :
-      undefined
+      material: m
+        ? { ...m, surfaceFinish: m.surfaceFinish === 'glass' ? 'matte' : m.surfaceFinish, border: undefined, subtleText: undefined, buttonFinish: 'solid', buttonGradient: undefined, shadow: m.shadow === 'glow' ? 'soft' : m.shadow, backdrop: undefined }
+        : undefined,
     };
   }
   return theme;

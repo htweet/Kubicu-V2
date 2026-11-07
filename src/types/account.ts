@@ -38,7 +38,7 @@ export interface AccountSecurity {
   /** Email me when there's a sign-in from a new device. */
   signInAlerts: boolean;
   /** D125: the last time a security change signed out other devices, shown as a confirmation. */
-  lastSignOut?: {at: string;reason: 'password' | 'two_step_on' | 'two_step_off' | 'manual';devices: string[];seen?: boolean;} | null;
+  lastSignOut?: { at: string; reason: 'password' | 'two_step_on' | 'two_step_off' | 'manual'; devices: string[]; seen?: boolean } | null;
 }
 
 export interface AccountSession {
@@ -91,6 +91,6 @@ export interface AccountData {
   connected: ConnectedLogin[];
   comms: AccountComms;
   exports: DataExport[];
-  deletion: {requestedAt: string;scheduledFor: string;reason: string;} | null;
+  deletion: { requestedAt: string; scheduledFor: string; reason: string } | null;
   createdAt: string;
 }

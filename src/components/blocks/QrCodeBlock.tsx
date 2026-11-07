@@ -19,7 +19,7 @@ export function QrCodeBlock({ block, theme, mode }: BlockProps<'qrCode'>) {
   const { handle } = useParams();
   const origin = typeof window !== 'undefined' ? window.location.origin : 'https://kubicu.app';
   const url = c.target === 'url' ? c.url.trim() : `${origin}${pageHref(handle ?? 'your-page', '')}?src=qr`;
-  if (!url || c.target === 'url' && !/^https?:\/\//i.test(url)) return mode === 'edit' ? <BlockPlaceholder icon={QrCodeIcon} title="Add a link for the code" hint="Or choose “This page”" theme={theme} /> : null;
+  if (!url || (c.target === 'url' && !/^https?:\/\//i.test(url))) return mode === 'edit' ? <BlockPlaceholder icon={QrCodeIcon} title="Add a link for the code" hint="Or choose “This page”" theme={theme} /> : null;
   const px = sizes[c.size];
   return (
     <figure className="mx-auto flex w-fit flex-col items-center p-5" style={cardStyle(theme)}>
@@ -28,6 +28,6 @@ export function QrCodeBlock({ block, theme, mode }: BlockProps<'qrCode'>) {
       </div>
       {c.caption && <figcaption className="mt-3 max-w-[16rem] text-center text-[14px] font-medium" style={{ color: theme.text }}>{c.caption}</figcaption>}
       {mode === 'edit' && c.target === 'page' && <p className="mt-1 text-center text-[11px]" style={{ color: theme.mutedText }}>On your live page this opens your page’s address.</p>}
-    </figure>);
-
+    </figure>
+  );
 }

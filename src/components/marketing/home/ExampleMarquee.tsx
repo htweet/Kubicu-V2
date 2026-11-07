@@ -45,19 +45,19 @@ export function ExampleMarquee() {
                 <Link
                   to={`/p/${e.doc.handle}`}
                   tabIndex={dup ? -1 : undefined}
-                  className="group block rounded-[28px] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgb(var(--kb-cobalt))]">
-                  
+                  className="group block rounded-[28px] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgb(var(--kb-cobalt))]"
+                >
                   <span className="block overflow-hidden rounded-[28px] border-[6px] border-[rgb(20_20_18)] bg-[rgb(20_20_18)] shadow-2 transition-transform duration-200 ease-out group-hover:-translate-y-1.5 group-hover:rotate-[-1.5deg]">
                     <TemplateThumb doc={e.doc} width={190} height={380} />
                   </span>
                   <span className="mt-4 block text-[15px] font-bold">{e.name}</span>
                   <span className="block text-[13px] font-medium text-[rgb(20_20_18)]/70">{tr(e.category)}</span>
                 </Link>
-              </li>);
-
+              </li>
+            );
           })}
         </ul>
       </div>
-    </section>);
-
+    </section>
+  );
 }

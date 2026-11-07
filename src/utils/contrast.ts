@@ -3,7 +3,7 @@ export function hexToRgb(hex: string): [number, number, number] | null {
   const full = raw.length === 3 ? raw.split('').map((c) => c + c).join('') : raw;
   if (!/^[0-9a-fA-F]{6}$/.test(full)) return null;
   const n = parseInt(full, 16);
-  return [n >> 16 & 255, n >> 8 & 255, n & 255];
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
 }
 
 export function isHexColor(value: string): boolean {

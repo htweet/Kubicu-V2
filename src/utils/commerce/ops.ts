@@ -12,8 +12,8 @@ import type {
   Product,
   StockMovement,
   StockReason,
-  TestPaymentOutcome } from
-'../../types/commerce';
+  TestPaymentOutcome,
+} from '../../types/commerce';
 import type { WorkspacePlan } from '../../types/plan';
 import { uid } from '../id';
 import { variantLabel, variantPrice } from './catalog';
@@ -43,18 +43,18 @@ function now() {
 
 /** Applies a stock change to one variant and records the movement. */
 export function moveStock(
-data: CommerceData,
-productId: string,
-variantId: string,
-delta: number,
-reason: StockReason,
-note = '',
-orderNumber?: number,
-/** Location the units leave or arrive at (D437); the main shop when missing. */
-branchId?: string,
-/** Batch the units leave from (D476); otherwise sales use the batch that expires soonest. */
-batchId?: string)
-: CommerceData {
+  data: CommerceData,
+  productId: string,
+  variantId: string,
+  delta: number,
+  reason: StockReason,
+  note = '',
+  orderNumber?: number,
+  /** Location the units leave or arrive at (D437); the main shop when missing. */
+  branchId?: string,
+  /** Batch the units leave from (D476); otherwise sales use the batch that expires soonest. */
+  batchId?: string,
+): CommerceData {
   let after = 0;
   const products = data.products.map((p) => {
     if (p.id !== productId || !p.trackStock || p.kind === 'digital') return p;
@@ -66,7 +66,7 @@ batchId?: string)
         const batches = delta < 0 ? consumeBatches(v, -delta, batchId, branchId) : v.batches;
         const moved = shiftBranchStock({ ...v, stock: after, batches }, branchId, delta);
         return { ...moved, batches: fitBatches(moved) };
-      })
+      }),
     };
   });
   const product = data.products.find((p) => p.id === productId);
@@ -78,7 +78,7 @@ batchId?: string)
 export function upsertProduct(data: CommerceData, product: Product): CommerceData {
   const prev = data.products.find((p) => p.id === product.id);
   const next = { ...product, updatedAt: now() };
-  let out: CommerceData = { ...data, products: prev ? data.products.map((p) => p.id === product.id ? next : p) : [next, ...data.products] };
+  let out: CommerceData = { ...data, products: prev ? data.products.map((p) => (p.id === product.id ? next : p)) : [next, ...data.products] };
   // Record stock differences as corrections so the history stays complete.
   if (next.trackStock && next.kind === 'physical') {
     next.variants.forEach((v) => {
@@ -93,7 +93,7 @@ export function upsertProduct(data: CommerceData, product: Product): CommerceDat
           reason: prev ? 'correction' : 'created',
           note: prev ? 'Edited in product' : 'Opening stock',
           by: OWNER_ACTOR,
-          at: now()
+          at: now(),
         };
         out = { ...out, movements: [movement, ...out.movements] };
       }
@@ -114,7 +114,7 @@ export interface CheckoutInput {
   /** Which link the order came from. */
   sourceHandle?: string;
   /** DealRoom checkout: room price for its product, and whether orders wait for the goal. */
-  dealRoom?: {productId: string;priceNgn: number | null;held: boolean;};
+  dealRoom?: { productId: string; priceNgn: number | null; held: boolean };
   /** Share code from a DealRoom link (?ref=), checked against the room's real orders. */
   referredBy?: string;
   /** Optional names for each ticket seat, keyed by ticket type (variant) id (D73). */
@@ -124,7 +124,7 @@ export interface CheckoutInput {
   /** How the buyer pays (D112). Defaults to paying in full now. Rules are re-checked here. */
   payWith?: 'now' | 'pod' | 'instalments';
   /** Pop-up shop pickup (D183): the chosen session, and whether the buyer pays at the stall. */
-  popup?: {sessionId: string;sessionLabel: string;payAtStall: boolean;};
+  popup?: { sessionId: string; sessionLabel: string; payAtStall: boolean };
   /** Pop-up stall limits still available, re-checked here so a stall never oversells its allocation. */
   stallLeft?: Record<string, number | null>;
   /** Gift card code the buyer entered (D202), re-checked here against live balances. */
@@ -133,7 +133,7 @@ export interface CheckoutInput {
   buyerNote?: string;
   buyerAddress?: string;
   /** Paid to a one-time provider transfer account (D222). */
-  transferAccount?: {bank: string;account: string;};
+  transferAccount?: { bank: string; account: string };
   /** Cross-border delivery (D438): the buyer's country. Decides whose tax applies (D435). */
   shipTo?: CountryCode;
 }
@@ -149,8 +149,8 @@ export function makeReferralCode(name: string, taken: Set<string>): string {
 }
 
 export type CheckoutResult =
-{ok: true;data: CommerceData;order: Order;} |
-{ok: false;reason: 'failed' | 'cancelled' | 'unavailable';message: string;};
+  | { ok: true; data: CommerceData; order: Order }
+  | { ok: false; reason: 'failed' | 'cancelled' | 'unavailable'; message: string };
 
 /** Gives a DealRoom buyer their own code, and credits the person whose link they used (never themselves). */
 function roomReferral(data: CommerceData, input: CheckoutInput): Pick<Order, 'referralCode' | 'referredBy'> {
@@ -187,7 +187,7 @@ export function placeOrder(data: CommerceData, input: CheckoutInput): CheckoutRe
     const variant = product?.variants.find((v) => v.id === line.variantId);
     const roomPrice = input.dealRoom && input.dealRoom.productId === line.productId ? input.dealRoom.priceNgn : null;
     const base = product && variant ? variantPrice(product, variant) : null;
-    const price = product && variant ? roomPrice ?? (base !== null ? bulkUnitPrice(product, base, qtyByProduct[product.id] ?? line.qty) : null) : null;
+    const price = product && variant ? (roomPrice ?? (base !== null ? bulkUnitPrice(product, base, qtyByProduct[product.id] ?? line.qty) : null)) : null;
     if (!product || !variant || product.status !== 'active' || price === null) {
       return { ok: false, reason: 'unavailable', message: `${product?.name ?? 'An item'} is no longer available.` };
     }
@@ -218,7 +218,7 @@ export function placeOrder(data: CommerceData, input: CheckoutInput): CheckoutRe
       imageUrl: product.images[0]?.url ?? '',
       kind: product.kind,
       seats: product.kind === 'ticket' && line.seats?.length ? line.seats : undefined,
-      bundle: bundleLineFor(product, price)
+      bundle: bundleLineFor(product, price),
     });
   }
 
@@ -243,14 +243,14 @@ export function placeOrder(data: CommerceData, input: CheckoutInput): CheckoutRe
       lines: items.map((i) => ({ productId: i.productId, collectionIds: data.products.find((p) => p.id === i.productId)?.collectionIds ?? [], amountNgn: i.unitPriceNgn * i.qty })),
       subtotalNgn: subtotal,
       deliveryNgn: input.deliveryNgn,
-      phone: input.customer.phone
+      phone: input.customer.phone,
     },
-    input.discountCode ?? ''
+    input.discountCode ?? '',
   );
   const codeDiscountNgn = Math.min(applied?.amountNgn ?? 0, subtotal + input.deliveryNgn);
   // Minimum order value (D222), on goods after any discount code.
   if (shop.checkout.minOrderNgn && subtotal - codeDiscountNgn < shop.checkout.minOrderNgn)
-  return { ok: false, reason: 'unavailable', message: `The minimum order is ${formatNgn(shop.checkout.minOrderNgn)}. Nothing was charged.` };
+    return { ok: false, reason: 'unavailable', message: `The minimum order is ${formatNgn(shop.checkout.minOrderNgn)}. Nothing was charged.` };
   // VAT (D222): on goods after discount, plus delivery. Exclusive VAT is added before any gift card is spent.
   // Zero-rated and exempt items, and buyers in other countries, follow the tax rules (D435).
   const untaxedNgn = untaxedAmount(items.map((i) => ({ amountNgn: i.unitPriceNgn * i.qty, taxClass: data.products.find((p) => p.id === i.productId)?.taxClass })));
@@ -264,13 +264,13 @@ export function placeOrder(data: CommerceData, input: CheckoutInput): CheckoutRe
   const discountNgn = codeDiscountNgn + giftNgn;
   const fullTotal = subtotal - discountNgn + input.deliveryNgn + vatAdded;
   // Made-to-order items: only the deposit is charged now; the rest before dispatch (D95). Not for DealRooms.
-  const balanceNgn = input.dealRoom ?
-  0 :
-  cartBalanceNgn(
-    data.products,
-    items.map((i) => ({ productId: i.productId, amountNgn: i.unitPriceNgn * i.qty })),
-    fullTotal
-  );
+  const balanceNgn = input.dealRoom
+    ? 0
+    : cartBalanceNgn(
+        data.products,
+        items.map((i) => ({ productId: i.productId, amountNgn: i.unitPriceNgn * i.qty })),
+        fullTotal,
+      );
   // Pay on delivery and instalments are re-checked against live settings (D112).
   const productsInCart = items.map((i) => data.products.find((p) => p.id === i.productId));
   if (pod) {
@@ -320,8 +320,8 @@ export function placeOrder(data: CommerceData, input: CheckoutInput): CheckoutRe
     events.unshift(event('note', `Pay on delivery — collect ${formatNgn(fullTotal)} (${accept === 'cash' ? 'cash' : accept === 'transfer' ? 'transfer' : 'cash or transfer'}) at the door`, placedAt));
   }
   if (paid && parts && instalmentPlan?.ok)
-  events.unshift(event('paid', `Instalment 1 of ${parts.length} — ${formatNgn(gross)} paid (test mode). ${formatNgn(fullTotal - gross)} to be charged ${everyLabels[instalmentPlan.plan.every]}${instalmentPlan.plan.ship === 'last' ? '; sent once fully paid' : ''}`));else
-  if (paid) events.unshift(event('paid', balanceNgn ? `Deposit of ${formatNgn(gross)} confirmed (test mode) — ${formatNgn(balanceNgn)} due before dispatch` : 'Payment confirmed by provider (test mode)'));
+    events.unshift(event('paid', `Instalment 1 of ${parts.length} — ${formatNgn(gross)} paid (test mode). ${formatNgn(fullTotal - gross)} to be charged ${everyLabels[instalmentPlan.plan.every]}${instalmentPlan.plan.ship === 'last' ? '; sent once fully paid' : ''}`));
+  else if (paid) events.unshift(event('paid', balanceNgn ? `Deposit of ${formatNgn(gross)} confirmed (test mode) — ${formatNgn(balanceNgn)} due before dispatch` : 'Payment confirmed by provider (test mode)'));
   if (input.dealRoom?.held) events.unshift(event('note', 'Joined the group buy — held until the goal is reached, refunded automatically if it isn’t', placedAt));
   if (paid && partnerGross > 0) {
     const names = [...new Set(items.filter((i) => i.bundle).map((i) => i.bundle!.partnerName))].join(' and ');
@@ -351,7 +351,7 @@ export function placeOrder(data: CommerceData, input: CheckoutInput): CheckoutRe
     deliveryNgn: input.deliveryNgn,
     providerFeeNgn: providerFee(gross),
     kubicuFeeNgn: kubicuFee(Math.max(0, gross - partnerGross), input.plan),
-    status: paid ? digitalOnly && !input.dealRoom?.held ? 'completed' : 'paid' : 'new',
+    status: paid ? (digitalOnly && !input.dealRoom?.held ? 'completed' : 'paid') : 'new',
     paymentStatus: paid ? 'paid' : 'pending',
     paymentNote: input.outcome === 'timeout' ? 'Provider timed out' : undefined,
     refunds: [],
@@ -369,7 +369,7 @@ export function placeOrder(data: CommerceData, input: CheckoutInput): CheckoutRe
     buyerNote: input.buyerNote?.trim().slice(0, 300) || undefined,
     buyerAddress: input.buyerAddress?.trim() || undefined,
     backorder: backordered || undefined,
-    transferAccount: input.transferAccount
+    transferAccount: input.transferAccount,
   };
 
   let next: CommerceData = { ...data, orders: [order, ...data.orders], nextOrderNumber: number + 1 };
@@ -380,7 +380,7 @@ export function placeOrder(data: CommerceData, input: CheckoutInput): CheckoutRe
     next = moveStock(next, i.productId, i.variantId, -i.qty, 'order', 'Reserved by order', number, input.fulfilment.branchId);
   });
   if (preIds.size)
-  next = { ...next, products: next.products.map((p) => preIds.has(p.id) && p.preorder ? { ...p, preorder: { ...p.preorder, taken: p.preorder.taken + (qtyByProduct[p.id] ?? 0) } } : p) };
+    next = { ...next, products: next.products.map((p) => (preIds.has(p.id) && p.preorder ? { ...p, preorder: { ...p.preorder, taken: p.preorder.taken + (qtyByProduct[p.id] ?? 0) } } : p)) };
   if (gift?.ok && giftNgn > 0) next = spendGiftCard(next, gift.card.code, giftNgn, order);
   if (hasGiftCards) next = issueGiftCardsForOrder(next, order.id);
   // Courses (D197): the buyer is enrolled now; access opens once the payment is confirmed.
@@ -392,7 +392,7 @@ const statusEvent: Partial<Record<OrderStatus, [OrderEventKind, string]>> = {
   paid: ['paid', 'Payment confirmed'],
   packing: ['packing', 'Marked as packing'],
   out_for_delivery: ['shipped', 'Out for delivery'],
-  completed: ['completed', 'Marked as completed']
+  completed: ['completed', 'Marked as completed'],
 };
 
 export function setOrderStatus(data: CommerceData, orderId: string, status: OrderStatus, label?: string): CommerceData {
@@ -417,9 +417,9 @@ function setOrderStatusOnly(data: CommerceData, orderId: string, status: OrderSt
         ...o,
         status,
         paymentStatus: status === 'paid' && o.paymentStatus === 'pending' ? 'paid' : o.paymentStatus,
-        events: e ? [e, ...o.events] : o.events
+        events: e ? [e, ...o.events] : o.events,
       };
-    })
+    }),
   };
 }
 
@@ -430,13 +430,13 @@ export function confirmPayment(data: CommerceData, orderId: string): CommerceDat
   const next = issueGiftCardsForOrder(setOrderStatus(data, orderId, 'paid', 'Payment confirmed by provider (test mode)'), orderId);
   const gifts = new Set(data.products.filter((p) => p.giftCard).map((p) => p.id));
   if (order && order.items.every((i) => i.kind === 'digital' || i.kind === 'ticket' || i.kind === 'course' || gifts.has(i.productId)))
-  return setOrderStatus(next, orderId, 'completed', order.items.some((i) => i.kind === 'ticket') ? 'Tickets issued' : order.items.some((i) => i.kind === 'course') ? 'Course access opened' : order.items.every((i) => gifts.has(i.productId)) ? 'Gift card codes issued' : 'Delivered by secure download link');
+    return setOrderStatus(next, orderId, 'completed', order.items.some((i) => i.kind === 'ticket') ? 'Tickets issued' : order.items.some((i) => i.kind === 'course') ? 'Course access opened' : order.items.every((i) => gifts.has(i.productId)) ? 'Gift card codes issued' : 'Delivered by secure download link');
   return next;
 }
 
 /** Refunded or cancelled orders can't admit anyone. */
 function voidTickets(data: CommerceData, orderId: string): CommerceData {
-  return { ...data, orders: data.orders.map((o) => o.id === orderId && o.tickets ? { ...o, tickets: o.tickets.map((t) => ({ ...t, status: 'void' as const })) } : o) };
+  return { ...data, orders: data.orders.map((o) => (o.id === orderId && o.tickets ? { ...o, tickets: o.tickets.map((t) => ({ ...t, status: 'void' as const })) } : o)) };
 }
 
 export function cancelOrder(data: CommerceData, orderId: string, reason: string, restock: boolean): CommerceData {
@@ -445,15 +445,15 @@ export function cancelOrder(data: CommerceData, orderId: string, reason: string,
   let next: CommerceData = {
     ...data,
     orders: data.orders.map((o) =>
-    o.id === orderId ?
-    {
-      ...o,
-      status: 'cancelled' as const,
-      paymentStatus: o.paymentStatus === 'pending' ? 'cancelled' as const : o.paymentStatus,
-      events: [event('cancelled', `Cancelled${reason ? ` — ${reason}` : ''}`), ...o.events]
-    } :
-    o
-    )
+      o.id === orderId
+        ? {
+            ...o,
+            status: 'cancelled' as const,
+            paymentStatus: o.paymentStatus === 'pending' ? ('cancelled' as const) : o.paymentStatus,
+            events: [event('cancelled', `Cancelled${reason ? ` — ${reason}` : ''}`), ...o.events],
+          }
+        : o,
+    ),
   };
   // Ticket seats always go back on sale when an order is cancelled.
   order.items.forEach((i) => {
@@ -471,22 +471,22 @@ export function refundOrder(data: CommerceData, orderId: string, amountNgn: numb
   let next: CommerceData = {
     ...data,
     orders: data.orders.map((o) =>
-    o.id === orderId ?
-    {
-      ...o,
-      refunds: [...o.refunds, { id: uid('rf'), amountNgn: amount, reason, restocked: restock, at: now() }],
-      paymentStatus: full ? 'refunded' as const : 'partially_refunded' as const,
-      status: full ? 'refunded' as const : o.status,
-      // KUBICU returns its fee when an order is refunded in full; the provider fee stays (D55).
-      kubicuFeeNgn: full ? 0 : o.kubicuFeeNgn,
-      events: [event('refund', `${full ? 'Refunded in full' : 'Partial refund'} — ${formatNgn(amount)}${reason ? ` · ${reason}` : ''}`), ...o.events]
-    } :
-    o
-    )
+      o.id === orderId
+        ? {
+            ...o,
+            refunds: [...o.refunds, { id: uid('rf'), amountNgn: amount, reason, restocked: restock, at: now() }],
+            paymentStatus: full ? ('refunded' as const) : ('partially_refunded' as const),
+            status: full ? ('refunded' as const) : o.status,
+            // KUBICU returns its fee when an order is refunded in full; the provider fee stays (D55).
+            kubicuFeeNgn: full ? 0 : o.kubicuFeeNgn,
+            events: [event('refund', `${full ? 'Refunded in full' : 'Partial refund'} — ${formatNgn(amount)}${reason ? ` · ${reason}` : ''}`), ...o.events],
+          }
+        : o,
+    ),
   };
   // A full refund voids the order's tickets and frees their seats (D73).
   order.items.forEach((i) => {
-    if (restock || full && i.kind === 'ticket') next = moveStock(next, i.productId, i.variantId, i.qty, 'returned', 'Returned with refund', order.number, order.fulfilment.branchId);
+    if (restock || (full && i.kind === 'ticket')) next = moveStock(next, i.productId, i.variantId, i.qty, 'returned', 'Returned with refund', order.number, order.fulfilment.branchId);
   });
   // A full refund puts any gift card amount back on the card (D202); the card is never refunded as cash.
   if (full && order.giftCard && order.giftCard.amountNgn > 0) {
@@ -494,15 +494,15 @@ export function refundOrder(data: CommerceData, orderId: string, amountNgn: numb
     next = {
       ...next,
       giftCards: (next.giftCards ?? []).map((g) =>
-      g.code === gc.code && g.uses.some((u) => u.orderId === order.id && u.amountNgn > 0) ?
-      { ...g, balanceNgn: Math.min(g.initialNgn, g.balanceNgn + gc.amountNgn), uses: [{ orderId: order.id, orderNumber: order.number, amountNgn: -gc.amountNgn, at: now() }, ...g.uses] } :
-      g
+        g.code === gc.code && g.uses.some((u) => u.orderId === order.id && u.amountNgn > 0)
+          ? { ...g, balanceNgn: Math.min(g.initialNgn, g.balanceNgn + gc.amountNgn), uses: [{ orderId: order.id, orderNumber: order.number, amountNgn: -gc.amountNgn, at: now() }, ...g.uses] }
+          : g,
       ),
-      orders: next.orders.map((o) => o.id === orderId ? { ...o, events: [event('note', `${formatNgn(gc.amountNgn)} put back on gift card ${gc.code}`), ...o.events] } : o)
+      orders: next.orders.map((o) => (o.id === orderId ? { ...o, events: [event('note', `${formatNgn(gc.amountNgn)} put back on gift card ${gc.code}`), ...o.events] } : o)),
     };
   }
   // Refunding a gift card purchase turns its codes off so they can't be spent after the money is returned.
-  if (full) next = { ...next, giftCards: (next.giftCards ?? []).map((g) => g.orderId === orderId && g.status === 'active' ? { ...g, status: 'disabled' as const } : g) };
+  if (full) next = { ...next, giftCards: (next.giftCards ?? []).map((g) => (g.orderId === orderId && g.status === 'active' ? { ...g, status: 'disabled' as const } : g)) };
   return full ? voidTickets(next, orderId) : next;
 }
 
@@ -510,18 +510,18 @@ export function updateDispute(data: CommerceData, orderId: string, patch: Partia
   return {
     ...data,
     orders: data.orders.map((o) =>
-    o.id === orderId && o.dispute ? { ...o, dispute: { ...o.dispute, ...patch }, events: label ? [event('dispute', label), ...o.events] : o.events } : o
-    )
+      o.id === orderId && o.dispute ? { ...o, dispute: { ...o.dispute, ...patch }, events: label ? [event('dispute', label), ...o.events] : o.events } : o,
+    ),
   };
 }
 
 export function addOrderNote(data: CommerceData, orderId: string, note: string): CommerceData {
-  return { ...data, orders: data.orders.map((o) => o.id === orderId ? { ...o, events: [event('note', note), ...o.events] } : o) };
+  return { ...data, orders: data.orders.map((o) => (o.id === orderId ? { ...o, events: [event('note', note), ...o.events] } : o)) };
 }
 
 export type DownloadCheck =
-{ok: true;remaining: number | null;expiresAt: string | null;} |
-{ok: false;reason: 'revoked' | 'limit' | 'expired' | 'not_ready' | 'pending';};
+  | { ok: true; remaining: number | null; expiresAt: string | null }
+  | { ok: false; reason: 'revoked' | 'limit' | 'expired' | 'not_ready' | 'pending' };
 
 export function checkDownload(order: Order, product: Product): DownloadCheck {
   const asset = product.digital;
@@ -544,7 +544,7 @@ export function recordDownload(data: CommerceData, orderId: string, productId: s
       // Watermarked files record whose copy left the shop, so a leaked file can be traced (D136).
       const copy = asset && watermarkKind(asset) ? copyLabel(o) : undefined;
       return { ...o, downloads: [...o.downloads, { id: uid('dlr'), productId, at: now(), copy }], events: [event('download', copy ? `Customer downloaded their stamped copy (${copy})` : 'Customer downloaded their file'), ...o.events] };
-    })
+    }),
   };
 }
 
@@ -563,6 +563,6 @@ export function clearSample(data: CommerceData): CommerceData {
     events: (data.events ?? []).filter((e) => !e.sample),
     courses: (data.courses ?? []).filter((c) => !c.sample),
     enrolments: (data.enrolments ?? []).filter((e) => !e.sample),
-    giftCards: (data.giftCards ?? []).filter((g) => !g.sample)
+    giftCards: (data.giftCards ?? []).filter((g) => !g.sample),
   };
 }

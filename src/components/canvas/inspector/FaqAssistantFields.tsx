@@ -13,7 +13,7 @@ import { Button } from '../../ui/Button';
 import { ItemListEditor } from './ItemListEditor';
 
 /** Content tab for the FAQ assistant (D342): approved answers, a way to copy them from FAQ blocks, and the fallback. */
-export function FaqAssistantFields({ block, issues }: {block: Extract<Block, {type: 'faqAssistant';}>;issues: ValidationIssue[];}) {
+export function FaqAssistantFields({ block, issues }: { block: Extract<Block, { type: 'faqAssistant' }>; issues: ValidationIssue[] }) {
   const { t: tr } = useT();
   const { state, actions } = useEditor();
   const c = block.content;
@@ -58,15 +58,15 @@ export function FaqAssistantFields({ block, issues }: {block: Extract<Block, {ty
         error={warn('facts')}
         onChange={(facts, f) => set({ facts }, `facts:${f}`)}
         title={(f) => f.question}
-        meta={(f) => f.answer.trim() ? undefined : tr('No answer yet')}
+        meta={(f) => (f.answer.trim() ? undefined : tr('No answer yet'))}
         create={() => ({ id: uid('fact'), question: '', answer: '' })}
-        render={(f, up) =>
-        <>
+        render={(f, up) => (
+          <>
             <TextInput id={id(`${f.id}-q`)} label="Question" value={f.question} onChange={(e) => up({ question: e.target.value }, 'question')} />
             <TextArea id={id(`${f.id}-a`)} label="Answer" rows={3} value={f.answer} onChange={(e) => up({ answer: e.target.value }, 'answer')} />
           </>
-        } />
-      
+        )}
+      />
       <Button variant="secondary" size="sm" leadingIcon={CopyPlusIcon} onClick={copyFromFaq} className="self-start">
         Copy answered questions from FAQ blocks
       </Button>
@@ -75,6 +75,6 @@ export function FaqAssistantFields({ block, issues }: {block: Extract<Block, {ty
       <InlineAlert tone="info" title={tr('How it answers')}>
         {tr('It matches the visitor’s words to your questions and shows your answer exactly as written. It never writes new answers, prices or policies. Rule-based in this prototype — no AI provider is called.')}
       </InlineAlert>
-    </div>);
-
+    </div>
+  );
 }

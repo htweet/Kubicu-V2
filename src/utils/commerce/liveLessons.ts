@@ -85,25 +85,25 @@ export function liveIcs(l: CourseLesson, courseTitle: string): string | null {
   const esc = (s: string) => s.replace(/([,;\\])/g, '\\$1').replace(/\n/g, '\\n');
   const url = joinUrl(l.live) ?? '';
   return [
-  'BEGIN:VCALENDAR',
-  'VERSION:2.0',
-  'PRODID:-//KUBICU//Courses//EN',
-  'BEGIN:VEVENT',
-  `UID:${l.id}@kubicu`,
-  `DTSTAMP:${f(new Date())}`,
-  `DTSTART:${f(start)}`,
-  `DTEND:${f(end)}`,
-  `SUMMARY:${esc(`${l.title} — ${courseTitle}`)}`,
-  url ? `URL:${url}` : '',
-  `DESCRIPTION:${esc(url ? `Join: ${url}` : 'Open the course to join.')}`,
-  'BEGIN:VALARM',
-  'TRIGGER:-PT30M',
-  'ACTION:DISPLAY',
-  'DESCRIPTION:Live session in 30 minutes',
-  'END:VALARM',
-  'END:VEVENT',
-  'END:VCALENDAR'].
-
-  filter(Boolean).
-  join('\r\n');
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//KUBICU//Courses//EN',
+    'BEGIN:VEVENT',
+    `UID:${l.id}@kubicu`,
+    `DTSTAMP:${f(new Date())}`,
+    `DTSTART:${f(start)}`,
+    `DTEND:${f(end)}`,
+    `SUMMARY:${esc(`${l.title} — ${courseTitle}`)}`,
+    url ? `URL:${url}` : '',
+    `DESCRIPTION:${esc(url ? `Join: ${url}` : 'Open the course to join.')}`,
+    'BEGIN:VALARM',
+    'TRIGGER:-PT30M',
+    'ACTION:DISPLAY',
+    'DESCRIPTION:Live session in 30 minutes',
+    'END:VALARM',
+    'END:VEVENT',
+    'END:VCALENDAR',
+  ]
+    .filter(Boolean)
+    .join('\r\n');
 }

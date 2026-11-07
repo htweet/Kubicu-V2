@@ -24,24 +24,24 @@ export function DemoWorkspaceCard() {
       id="demo-workspace"
       title="Demo workspace"
       description="Adaeze Atelier is a ready-made workspace for exploring KUBICU. Everything in it is sample data, labelled “Sample”, and it never takes real payments."
-      actions={<Badge tone="info">Demo</Badge>}>
-      
+      actions={<Badge tone="info">Demo</Badge>}
+    >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-label text-fg-muted">
-          {hasOwn ? tr('Finished exploring? Remove it to keep only your own workspaces.') :
-          <>
+          {hasOwn ? tr('Finished exploring? Remove it to keep only your own workspaces.') : (
+            <>
               {tr('Create your own workspace first, then you can remove this one.')}{' '}
               <Link to="/start" className="font-medium text-fg underline underline-offset-4 hover:text-action focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
                 {tr('Create a workspace')}
               </Link>
             </>
-          }
+          )}
         </p>
         <Button variant="destructive" leadingIcon={Trash2Icon} disabled={!hasOwn || !can.allowed} title={!can.allowed ? can.reason : undefined} onClick={() => setOpen(true)} className="shrink-0">
           Remove demo workspace
         </Button>
       </div>
       <RemoveDemoWorkspaceDialog open={open} onClose={() => setOpen(false)} />
-    </Card>);
-
+    </Card>
+  );
 }

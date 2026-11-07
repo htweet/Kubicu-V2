@@ -32,12 +32,12 @@ export function CourseLearners({ courseId, onClose }: Props) {
 
   const rows = useMemo(() => {
     if (!course) return [];
-    return enrolmentsFor(data, course.id).
-    map((e) => {
-      const session = e.phone ? { contact: e.phone, channel: 'phone' as const, signedInAt: '', expiresAt: '' } : { contact: e.email, channel: 'email' as const, signedInAt: '', expiresAt: '' };
-      return { e, p: progressOf(course, e), access: courseAccess(data, course, session) };
-    }).
-    sort((a, b) => Date.parse(b.e.lastAt ?? b.e.enrolledAt) - Date.parse(a.e.lastAt ?? a.e.enrolledAt));
+    return enrolmentsFor(data, course.id)
+      .map((e) => {
+        const session = e.phone ? { contact: e.phone, channel: 'phone' as const, signedInAt: '', expiresAt: '' } : { contact: e.email, channel: 'email' as const, signedInAt: '', expiresAt: '' };
+        return { e, p: progressOf(course, e), access: courseAccess(data, course, session) };
+      })
+      .sort((a, b) => Date.parse(b.e.lastAt ?? b.e.enrolledAt) - Date.parse(a.e.lastAt ?? a.e.enrolledAt));
   }, [data, course]);
 
   if (!course) return <Sheet open={false} onClose={onClose} title="Learners">{null}</Sheet>;
@@ -48,7 +48,7 @@ export function CourseLearners({ courseId, onClose }: Props) {
 
   const add = () => {
     setTried(true);
-    if (phoneErr || emailErr || !who.phone.trim() && !who.email.trim()) return;
+    if (phoneErr || emailErr || (!who.phone.trim() && !who.email.trim())) return;
     if (apply((d) => addLearner(d, course.id, who))) {
       toast.success(`${who.name || 'Learner'} added`, { description: 'They sign in on the course page with that phone or email.' });
       setWho({ name: '', phone: '', email: '' });
@@ -58,13 +58,13 @@ export function CourseLearners({ courseId, onClose }: Props) {
   };
 
   const exportCsv = () =>
-  downloadCsv(
-    `${course.title || 'course'}-learners.csv`,
-    toCsv(
-      ['Name', 'Phone', 'Email', 'How they joined', 'Enrolled', 'Lessons done', 'Progress %', 'Last active', 'Completed', 'Certificate'],
-      rows.map(({ e, p }) => [e.name, e.phone, e.email, enrolSourceLabels[e.source], e.enrolledAt, `${p.done}/${p.total}`, String(p.pct), e.lastAt ?? '', e.completedAt ?? '', e.certificateNo ?? ''])
-    )
-  );
+    downloadCsv(
+      `${course.title || 'course'}-learners.csv`,
+      toCsv(
+        ['Name', 'Phone', 'Email', 'How they joined', 'Enrolled', 'Lessons done', 'Progress %', 'Last active', 'Completed', 'Certificate'],
+        rows.map(({ e, p }) => [e.name, e.phone, e.email, enrolSourceLabels[e.source], e.enrolledAt, `${p.done}/${p.total}`, String(p.pct), e.lastAt ?? '', e.completedAt ?? '', e.certificateNo ?? '']),
+      ),
+    );
 
   return (
     <>
@@ -76,11 +76,11 @@ export function CourseLearners({ courseId, onClose }: Props) {
         title={`Learners · ${course.title || 'Untitled course'}`}
         description={`${rows.length} enrolled · ${rows.filter((r) => r.e.completedAt).length} finished`}
         headerActions={rows.length ? <IconButton icon={DownloadIcon} label="Export learners as CSV" onClick={exportCsv} /> : undefined}
-        bodyClassName="p-0">
-        
+        bodyClassName="p-0"
+      >
         <div className="border-b border-line px-5 py-4">
-          {adding ?
-          <div className="flex flex-col gap-3">
+          {adding ? (
+            <div className="flex flex-col gap-3">
               <TextInput id="lrn-name" label="Name" optional value={who.name} onChange={(e) => setWho((w) => ({ ...w, name: e.target.value }))} />
               <div className="grid gap-3 sm:grid-cols-2">
                 <PhoneInput id="lrn-phone" label="Phone" value={who.phone} error={phoneErr ?? missing} onChange={(phone) => setWho((w) => ({ ...w, phone }))} />
@@ -93,28 +93,28 @@ export function CourseLearners({ courseId, onClose }: Props) {
                   Cancel
                 </Button>
               </div>
-            </div> :
-
-          <Button variant="secondary" leadingIcon={UserPlusIcon} onClick={() => setAdding(true)}>
+            </div>
+          ) : (
+            <Button variant="secondary" leadingIcon={UserPlusIcon} onClick={() => setAdding(true)}>
               Add a learner
             </Button>
-          }
+          )}
         </div>
 
-        {rows.length === 0 ?
-        <p className="px-5 py-10 text-center text-label text-fg-muted">No one has enrolled yet. Share the course page, or add someone by hand.</p> :
-
-        <ul aria-label="Learners">
-            {rows.map(({ e, p, access }) =>
-          <li key={e.id} className="flex items-center gap-4 border-b border-line px-5 py-3.5 last:border-0">
+        {rows.length === 0 ? (
+          <p className="px-5 py-10 text-center text-label text-fg-muted">No one has enrolled yet. Share the course page, or add someone by hand.</p>
+        ) : (
+          <ul aria-label="Learners">
+            {rows.map(({ e, p, access }) => (
+              <li key={e.id} className="flex items-center gap-4 border-b border-line px-5 py-3.5 last:border-0">
                 <div className="min-w-0 flex-1">
                   <p className="flex flex-wrap items-center gap-2">
                     <span className="truncate text-label font-semibold text-fg">{e.name || e.phone || e.email}</span>
-                    {e.completedAt &&
-                <Badge tone="success">
+                    {e.completedAt && (
+                      <Badge tone="success">
                         <AwardIcon size={12} aria-hidden /> Finished
                       </Badge>
-                }
+                    )}
                     {!access.ok && !e.completedAt && <Badge tone="warning">{access.reason === 'refunded' ? 'Refunded' : access.reason === 'payment_pending' ? 'Payment pending' : access.reason === 'membership_lapsed' || access.reason === 'no_membership' ? 'Membership ended' : 'No access'}</Badge>}
                   </p>
                   <p className="mt-0.5 truncate text-caption text-fg-subtle">
@@ -132,9 +132,9 @@ export function CourseLearners({ courseId, onClose }: Props) {
                 <span className="text-caption font-semibold tabular-nums text-fg sm:hidden">{p.pct}%</span>
                 <IconButton size="sm" icon={UserMinusIcon} label={`Remove ${e.name || 'learner'}`} onClick={() => setRemoving(e.id)} />
               </li>
-          )}
+            ))}
           </ul>
-        }
+        )}
       </Sheet>
 
       <Dialog
@@ -143,24 +143,24 @@ export function CourseLearners({ courseId, onClose }: Props) {
         title="Remove this learner?"
         description="They lose access to the course straight away. Paid orders aren’t refunded — do that in Orders if you need to."
         footer={
-        <div className="flex justify-end gap-2">
+          <div className="flex justify-end gap-2">
             <Button variant="secondary" onClick={() => setRemoving(null)}>
               Keep
             </Button>
             <Button
-            variant="destructive"
-            onClick={() => {
-              if (removing && apply((d) => removeLearner(d, removing))) toast.success('Learner removed');
-              setRemoving(null);
-            }}>
-            
+              variant="destructive"
+              onClick={() => {
+                if (removing && apply((d) => removeLearner(d, removing))) toast.success('Learner removed');
+                setRemoving(null);
+              }}
+            >
               Remove
             </Button>
           </div>
-        }>
-        
+        }
+      >
         {null}
       </Dialog>
-    </>);
-
+    </>
+  );
 }

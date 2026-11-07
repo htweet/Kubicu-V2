@@ -47,36 +47,36 @@ export function AccountingConnectDialog({ open, defaultOrganisation, onClose, on
       title={step === 'org' ? tr('Choose your {tool} organisation', { tool: name }) : tr('Connect accounting')}
       description={step === 'org' ? 'Payments will post to this organisation’s books.' : 'You’ll sign in on the provider’s own page and allow KUBICU to post sales, fees and refunds. Simulated — nothing reaches the provider.'}
       footer={
-      <>
+        <>
           <Button variant="secondary" onClick={onClose}>
             Cancel
           </Button>
-          {step === 'org' ?
-        <Button onClick={connect}>Connect</Button> :
-
-        <Button onClick={signIn} loading={step === 'signing'}>
+          {step === 'org' ? (
+            <Button onClick={connect}>Connect</Button>
+          ) : (
+            <Button onClick={signIn} loading={step === 'signing'}>
               {tr('Continue to {tool}', { tool: name })}
             </Button>
-        }
+          )}
         </>
-      }>
-      
-      {step === 'org' ?
-      <TextInput id="acct-org" label="Organisation" value={org} error={tried && !org.trim() ? 'Choose the organisation to post to' : undefined} hint="In a live connection you’d pick from the organisations on your account." onChange={(e) => setOrg(e.target.value)} /> :
-
-      <fieldset className="flex flex-col gap-2" disabled={step === 'signing'}>
+      }
+    >
+      {step === 'org' ? (
+        <TextInput id="acct-org" label="Organisation" value={org} error={tried && !org.trim() ? 'Choose the organisation to post to' : undefined} hint="In a live connection you’d pick from the organisations on your account." onChange={(e) => setOrg(e.target.value)} />
+      ) : (
+        <fieldset className="flex flex-col gap-2" disabled={step === 'signing'}>
           <legend className="mb-2 text-label font-semibold text-fg">{tr('Accounting tool')}</legend>
-          {(Object.keys(accountingProviders) as AccountingProviderId[]).map((id) =>
-        <label key={id} className={cn('flex cursor-pointer items-start gap-3 rounded-md border px-3 py-3 transition-colors duration-150', provider === id ? 'border-action bg-action-soft' : 'border-line hover:bg-sunken')}>
+          {(Object.keys(accountingProviders) as AccountingProviderId[]).map((id) => (
+            <label key={id} className={cn('flex cursor-pointer items-start gap-3 rounded-md border px-3 py-3 transition-colors duration-150', provider === id ? 'border-action bg-action-soft' : 'border-line hover:bg-sunken')}>
               <input type="radio" name="acct-provider" value={id} checked={provider === id} onChange={() => setProvider(id)} className="mt-1 accent-[rgb(var(--action))]" />
               <span className="min-w-0">
                 <span className="block text-label font-medium text-fg">{accountingProviders[id].name}</span>
                 <span className="block text-caption text-fg-muted">{tr(accountingProviders[id].blurb)}</span>
               </span>
             </label>
-        )}
+          ))}
         </fieldset>
-      }
-    </Dialog>);
-
+      )}
+    </Dialog>
+  );
 }

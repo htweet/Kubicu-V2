@@ -32,7 +32,7 @@ export function BranchSheet({ branch, onClose }: BranchSheetProps) {
 
   const isNew = branch === 'new';
   const errors = branchErrors(draft, branchesOf(data));
-  const show = (k: keyof typeof errors) => tried && errors[k] ? tr(errors[k] as string) : undefined;
+  const show = (k: keyof typeof errors) => (tried && errors[k] ? tr(errors[k] as string) : undefined);
   const patch = (p: Partial<Branch>) => setDraft((d) => ({ ...d, ...p }));
   const franchise = draft.franchise ?? { operator: '', royaltyPct: 5, since: new Date().toISOString().slice(0, 10) };
 
@@ -41,7 +41,7 @@ export function BranchSheet({ branch, onClose }: BranchSheetProps) {
     if (Object.keys(errors).length) return;
     if (apply((d) => upsertBranch(d, draft))) {
       toast.success(isNew ? tr('{name} added', { name: draft.name.trim() }) : tr('{name} saved', { name: draft.name.trim() }), {
-        description: isNew ? tr('Move stock to it from Branches → Stock by location.') : undefined
+        description: isNew ? tr('Move stock to it from Branches → Stock by location.') : undefined,
       });
       onClose();
     }
@@ -56,14 +56,14 @@ export function BranchSheet({ branch, onClose }: BranchSheetProps) {
       title={isNew ? tr('Add a branch') : draft.name ? tr('Edit {name}', { name: draft.name }) : tr('Edit branch')}
       description={tr('Another place you sell from. Stock is counted separately here, and buyers can collect from it.')}
       footer={
-      <div className="flex w-full justify-end gap-2">
+        <div className="flex w-full justify-end gap-2">
           <Button variant="secondary" onClick={onClose}>
             {tr('Cancel')}
           </Button>
           <Button onClick={save}>{isNew ? tr('Add branch') : tr('Save')}</Button>
         </div>
-      }>
-      
+      }
+    >
       <div className="flex flex-col gap-5">
         <TextInput id="br-name" label={tr('Name')} placeholder={tr('e.g. Ikeja branch')} maxLength={40} value={draft.name} error={show('name')} onChange={(e) => patch({ name: e.target.value })} />
         <TextInput id="br-address" label={tr('Address')} placeholder={tr('Street, area, city')} value={draft.address} error={show('address')} onChange={(e) => patch({ address: e.target.value })} />
@@ -83,31 +83,31 @@ export function BranchSheet({ branch, onClose }: BranchSheetProps) {
               value={draft.kind}
               onChange={(kind) => patch({ kind, franchise: kind === 'franchise' ? franchise : undefined })}
               options={[
-              { value: 'owned', label: tr('You') },
-              { value: 'franchise', label: tr('A franchise partner') }]
-              } />
-            
+                { value: 'owned', label: tr('You') },
+                { value: 'franchise', label: tr('A franchise partner') },
+              ]}
+            />
           </Field>
-          {draft.kind === 'franchise' &&
-          <>
+          {draft.kind === 'franchise' && (
+            <>
               <p className="text-caption text-fg-muted">{tr('The partner runs the branch under your brand and pays you a share of its sales. You see its stock and orders; they don’t see yours.')}</p>
               <TextInput id="br-operator" label={tr('Partner’s business name')} value={franchise.operator} error={show('operator')} onChange={(e) => patch({ franchise: { ...franchise, operator: e.target.value } })} />
               <div className="grid gap-4 sm:grid-cols-2">
                 <TextInput
-                id="br-royalty"
-                label={tr('Royalty (% of sales)')}
-                inputMode="decimal"
-                value={String(franchise.royaltyPct)}
-                error={show('royalty')}
-                hint={tr('Worked out on sales after discounts and refunds.')}
-                onChange={(e) => patch({ franchise: { ...franchise, royaltyPct: Number(e.target.value.replace(/[^\d.]/g, '')) || 0 } })} />
-              
+                  id="br-royalty"
+                  label={tr('Royalty (% of sales)')}
+                  inputMode="decimal"
+                  value={String(franchise.royaltyPct)}
+                  error={show('royalty')}
+                  hint={tr('Worked out on sales after discounts and refunds.')}
+                  onChange={(e) => patch({ franchise: { ...franchise, royaltyPct: Number(e.target.value.replace(/[^\d.]/g, '')) || 0 } })}
+                />
                 <TextInput id="br-since" label={tr('Agreement start')} type="date" value={franchise.since} onChange={(e) => patch({ franchise: { ...franchise, since: e.target.value } })} />
               </div>
             </>
-          }
+          )}
         </div>
       </div>
-    </Sheet>);
-
+    </Sheet>
+  );
 }

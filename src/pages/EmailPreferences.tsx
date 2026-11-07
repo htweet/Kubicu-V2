@@ -52,13 +52,13 @@ export function EmailPreferences() {
             theme={t}
             level={1}
             sub={
-            justChanged === 'out' ?
-            `You won’t get offers or updates from ${business} any more. It can take up to a day for messages already scheduled to stop.` :
-            justChanged === 'in' ?
-            `Welcome back. ${business} can send you offers and updates again.` :
-            `Choose what ${business} can send you. Messages about your own orders and bookings always arrive.`
-            }>
-            
+              justChanged === 'out'
+                ? `You won’t get offers or updates from ${business} any more. It can take up to a day for messages already scheduled to stop.`
+                : justChanged === 'in'
+                  ? `Welcome back. ${business} can send you offers and updates again.`
+                  : `Choose what ${business} can send you. Messages about your own orders and bookings always arrive.`
+            }
+          >
             {justChanged === 'out' ? 'You’re unsubscribed' : justChanged === 'in' ? 'You’re subscribed again' : 'Your message preferences'}
           </CheckoutHeading>
 
@@ -77,25 +77,25 @@ export function EmailPreferences() {
               </span>
             </div>
 
-            {subscribed ?
-            <>
+            {subscribed ? (
+              <>
                 <label className="flex flex-col gap-1.5">
                   <span className="text-[13px] font-medium" style={{ color: t.text }}>
                     Why are you leaving? (optional)
                   </span>
                   <select value={reason} onChange={(e) => setReason(e.target.value)} className="h-11 w-full rounded-[10px] px-3 text-[14.5px]" style={{ background: 'transparent', color: t.text, border: `1px solid ${t.mutedText}` }}>
                     <option value="">Choose…</option>
-                    {reasons.map((r) =>
-                  <option key={r}>{r}</option>
-                  )}
+                    {reasons.map((r) => (
+                      <option key={r}>{r}</option>
+                    ))}
                   </select>
                 </label>
                 <PrimaryButton theme={t} onClick={optOut}>
                   Unsubscribe from offers
                 </PrimaryButton>
-              </> :
-
-            <>
+              </>
+            ) : (
+              <>
                 <p className="text-[13.5px] leading-relaxed" style={muted}>
                   {contact.consent === 'unsubscribed' ? 'You’ve opted out. Only you can turn this back on.' : 'You only get messages about your orders and bookings.'}
                 </p>
@@ -103,7 +103,7 @@ export function EmailPreferences() {
                   Send me offers and updates
                 </SecondaryButton>
               </>
-            }
+            )}
           </section>
 
           <p className="text-[12.5px] leading-relaxed" style={muted}>
@@ -111,6 +111,6 @@ export function EmailPreferences() {
           </p>
         </main>
       </PageSurface>
-    </div>);
-
+    </div>
+  );
 }

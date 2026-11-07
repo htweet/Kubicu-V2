@@ -274,15 +274,15 @@ export interface AdminStore {
   /** Example figures changed by staff, by key from `data/adjustableFigures.ts` (D465). Missing = the default. */
   figures?: Record<string, number>;
   /** Plan names and "intended for" lines changed by staff (D465). */
-  planNames?: Partial<Record<WorkspacePlan, {name?: string;intendedFor?: string;}>>;
+  planNames?: Partial<Record<WorkspacePlan, { name?: string; intendedFor?: string }>>;
   /** Automatic moderation flags staff marked as fine. Keyed `${handle}:${ruleId}`. */
-  autoFlagsCleared: Record<string, {at: string;by: string;reason: string;}>;
+  autoFlagsCleared: Record<string, { at: string; by: string; reason: string }>;
   /** Approved catalogue changes (D135). Apply to new sign-ups and at each workspace's next renewal. */
   planOverrides: Partial<Record<WorkspacePlan, PlanOverride>>;
   coupons: Coupon[];
   grants: CreditGrant[];
   /** AI features staff have switched off for everyone (D135). */
-  aiOff: Partial<Record<AiFeatureId, {at: string;by: string;reason: string;}>>;
+  aiOff: Partial<Record<AiFeatureId, { at: string; by: string; reason: string }>>;
   /** Last "Send test" per outside service (D135). */
   integrationTests: Record<string, IntegrationTest>;
   /** Native-speaker review of drafted phrases (D135). Keyed `${lang}::${english}`. */
@@ -290,15 +290,15 @@ export interface AdminStore {
   /** Policy versions staff published (D135). Keyed by legal doc slug, newest first. */
   policyReleases: Record<string, PolicyRelease[]>;
   /** Fundraisers staff paused while reviewing (D179). Keyed by page handle. */
-  pausedFundraisers?: Record<string, {reason: string;at: string;by: string;}>;
+  pausedFundraisers?: Record<string, { reason: string; at: string; by: string }>;
   /** Verified workspaces whose public tick staff have hidden without withdrawing verification (D254). Keyed by workspace id. */
-  verifiedTickOff?: Record<string, {reason: string;at: string;by: string;}>;
+  verifiedTickOff?: Record<string, { reason: string; at: string; by: string }>;
   /** Staff-side state for each customer person, keyed by `personKey` (D472). */
   people?: Record<string, PersonStaffState>;
   /** Internal staff notes on a workspace, newest first (D472). Never shown to the customer. */
   workspaceNotes?: Record<string, StaffNote[]>;
   /** Fundraisers started on this device, so staff are told about new ones (D179). */
-  fundraisers?: {handle: string;workspaceId: string;workspaceName: string;name: string;goalNgn: number;createdAt: string;}[];
+  fundraisers?: { handle: string; workspaceId: string; workspaceName: string; name: string; goalNgn: number; createdAt: string }[];
 }
 
 /** One country's rollout switch (D494). */
@@ -320,7 +320,7 @@ export interface StaffNote {
 /** What staff have done to one customer person (D472). */
 export interface PersonStaffState {
   /** Locked accounts can't sign in to any workspace until unlocked. */
-  locked?: {reason: string;at: string;by: string;} | null;
+  locked?: { reason: string; at: string; by: string } | null;
   signedOutAt?: string;
   twoStepResetAt?: string;
   verificationSentAt?: string;

@@ -61,16 +61,16 @@ export const inspectionDays: Record<PayArea, number> = { shop: 3, tickets: 1, bo
  */
 const tier = (id: KycTier, label: string, checks: () => string) => ({
   label,
-  get checks() {return checks();},
-  get dailyPayoutNgn() {return payoutRulesFor().limits[id].daily;},
-  get balanceCapNgn() {return payoutRulesFor().limits[id].cap;}
+  get checks() { return checks(); },
+  get dailyPayoutNgn() { return payoutRulesFor().limits[id].daily; },
+  get balanceCapNgn() { return payoutRulesFor().limits[id].cap; },
 });
 
-export const tierInfo: Record<KycTier, {label: string;checks: string;dailyPayoutNgn: number;balanceCapNgn: number | null;}> = {
+export const tierInfo: Record<KycTier, { label: string; checks: string; dailyPayoutNgn: number; balanceCapNgn: number | null }> = {
   0: tier(0, 'Not verified', () => 'Sales still arrive; payouts are off until you’re verified'),
-  1: tier(1, 'Starter payouts', () => kycRules().secondary ? `Phone, ${kycRules().primary.label}, ${kycRules().secondary?.label}, ID and selfie checked automatically, with a bank account in your own name. Finish verification for higher limits.` : `Phone, ${kycRules().primary.label}, ID and selfie checked automatically, with a bank account in your own name. Finish verification for higher limits.`),
+  1: tier(1, 'Starter payouts', () => (kycRules().secondary ? `Phone, ${kycRules().primary.label}, ${kycRules().secondary?.label}, ID and selfie checked automatically, with a bank account in your own name. Finish verification for higher limits.` : `Phone, ${kycRules().primary.label}, ID and selfie checked automatically, with a bank account in your own name. Finish verification for higher limits.`)),
   2: tier(2, 'Verified individual', () => 'Identity, address and payout account checked'),
-  3: tier(3, 'Verified business', () => `Identity, ${kycRules().registry.short} registration, directors and payout account checked`)
+  3: tier(3, 'Verified business', () => `Identity, ${kycRules().registry.short} registration, directors and payout account checked`),
 };
 
 /** A tier's daily limit for any country, in that country's currency — for staff reviewing another country's case. */
@@ -109,7 +109,7 @@ export const starterEligible = (d: MoneyData) => d.kyc.entity === null || d.kyc.
 export const starterReady = (d: MoneyData) => starterEligible(d) && !isVerified(d) && !d.frozen && d.kyc.status !== 'rejected' && starterMissing(d).length === 0;
 
 /** The limits that apply right now: full tier when verified, Starter while the basics are done, otherwise none. */
-export const payoutTier = (d: MoneyData): KycTier => isVerified(d) ? d.verification.tier : starterReady(d) ? 1 : 0;
+export const payoutTier = (d: MoneyData): KycTier => (isVerified(d) ? d.verification.tier : starterReady(d) ? 1 : 0);
 export const canPayOut = (d: MoneyData) => payoutTier(d) >= 1;
 
 export const methodLabels: Record<PayMethod, string> = { direct: 'Direct to bank', wallet: 'KUBICU wallet', escrow: 'Escrow' };
@@ -133,7 +133,7 @@ export const emptyMoney = (): MoneyData => ({
   synced: { orders: [], refunds: [] },
   walletSince: new Date().toISOString(),
   counters: { receipt: 0 },
-  seeded: false
+  seeded: false,
 });
 
 export function readMoneyRaw(workspaceId: string): MoneyData {
@@ -152,8 +152,8 @@ export function readMoneyRaw(workspaceId: string): MoneyData {
       return withFund;
     }
   } catch {
-
-    /* fall through to a fresh store */}
+    /* fall through to a fresh store */
+  }
   // A sample wallet history only for the demo workspace or one created with demo data (D200).
   const seeded = withSampleFundraiser(workspaceId, seedsSample(workspaceId) ? seedMoney() : { ...emptyMoney(), seeded: true });
   persist(workspaceId, seeded);
@@ -172,8 +172,8 @@ function persist(workspaceId: string, data: MoneyData) {
   try {
     window.localStorage.setItem(key(workspaceId), JSON.stringify(data));
   } catch {
-
-    /* storage full — the change lasts for this visit */}
+    /* storage full — the change lasts for this visit */
+  }
 }
 
 export function writeMoney(workspaceId: string, data: MoneyData): void {
@@ -375,9 +375,9 @@ export function payoutArrival(kind: 'bank' | 'mobile_money' | undefined, now = n
 }
 
 export function createPayout(
-d: MoneyData,
-input: {amountNgn: number;bankId: string;by: string;outcome: 'paid' | 'failed';auto: boolean;returnReason?: string;})
-: {data: MoneyData;payout: Payout;} | {error: string;} {
+  d: MoneyData,
+  input: { amountNgn: number; bankId: string; by: string; outcome: 'paid' | 'failed'; auto: boolean; returnReason?: string },
+): { data: MoneyData; payout: Payout } | { error: string } {
   const bank = d.banks.find((b) => b.id === input.bankId);
   if (!bank) return { error: 'Choose a bank account.' };
   if (!usableBanks(d).some((b) => b.id === bank.id)) return { error: 'This account is still in its safety wait.' };
@@ -439,11 +439,11 @@ export function linkTotal(l: PaymentLink): number {
 }
 
 export const slugify = (s: string) =>
-s.
-toLowerCase().
-replace(/[^a-z0-9]+/g, '-').
-replace(/^-+|-+$/g, '').
-slice(0, 40);
+  s
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 40);
 
 export function uniqueSlug(d: MoneyData, base: string, ignoreId?: string): string {
   const root = slugify(base) || 'pay';
@@ -471,12 +471,12 @@ export function blankLink(): PaymentLink {
     status: 'active',
     views: 0,
     createdAt: new Date().toISOString(),
-    payments: []
+    payments: [],
   };
 }
 
 /** A payer's successful payment: recorded on the link and, for wallet/escrow, in the ledger. */
-export function recordLinkPayment(d: MoneyData, linkId: string, p: Omit<LinkPayment, 'id' | 'at' | 'receipt' | 'method'>): {data: MoneyData;payment: LinkPayment;} | null {
+export function recordLinkPayment(d: MoneyData, linkId: string, p: Omit<LinkPayment, 'id' | 'at' | 'receipt' | 'method'>): { data: MoneyData; payment: LinkPayment } | null {
   const link = d.links.find((l) => l.id === linkId);
   if (!link || linkView(link) !== 'active') return null;
   const method = linkMethod(d, link);
@@ -494,8 +494,8 @@ export function recordLinkPayment(d: MoneyData, linkId: string, p: Omit<LinkPaym
     if (fee) entries.push({ id: uid('led'), at, kind: 'fee', amountNgn: -fee, state: 'held', availableAt: until, label: `Escrow fee · ${payment.receipt}`, ref: { type: 'link', id: link.id } });
   }
   return {
-    data: { ...d, counters: { receipt: n }, ledger: [...entries, ...d.ledger], links: d.links.map((l) => l.id === linkId ? { ...l, payments: [payment, ...l.payments] } : l) },
-    payment
+    data: { ...d, counters: { receipt: n }, ledger: [...entries, ...d.ledger], links: d.links.map((l) => (l.id === linkId ? { ...l, payments: [payment, ...l.payments] } : l)) },
+    payment,
   };
 }
 
@@ -512,7 +512,7 @@ export function refundLinkPayment(d: MoneyData, linkId: string, paymentId: strin
   return {
     ...d,
     ledger: [entry, ...d.ledger],
-    links: d.links.map((l) => l.id === linkId ? { ...l, payments: l.payments.map((x) => x.id === paymentId ? { ...x, refundedNgn: x.amountNgn, refundedAt: at } : x) } : l)
+    links: d.links.map((l) => (l.id === linkId ? { ...l, payments: l.payments.map((x) => (x.id === paymentId ? { ...x, refundedNgn: x.amountNgn, refundedAt: at } : x)) } : l)),
   };
 }
 
@@ -521,21 +521,21 @@ export function refundLinkPayment(d: MoneyData, linkId: string, paymentId: strin
  * Follows the Quotes & jobs payment setting: direct = straight to the bank (no wallet entry), wallet = settles in 24h, escrow = held for the inspection window.
  */
 export function recordInvoicePayment(
-d: MoneyData,
-p: {invoiceId: string;label: string;amountNgn: number;milestone: boolean;})
-: {data: MoneyData;receipt: string;method: PayMethod;} {
+  d: MoneyData,
+  p: { invoiceId: string; label: string; amountNgn: number; milestone: boolean },
+): { data: MoneyData; receipt: string; method: PayMethod } {
   return recordStagePayment(d, 'quotes', { type: 'invoice', id: p.invoiceId }, p.label, p.amountNgn, p.milestone);
 }
 
 /** A staged payment (quote stage, booking balance, made-to-order balance) following that area's payment setting (D95). */
 export function recordStagePayment(
-d: MoneyData,
-area: PayArea,
-refBase: {type: LedgerRefType;id: string;},
-label: string,
-amountNgn: number,
-milestone = true)
-: {data: MoneyData;receipt: string;method: PayMethod;} {
+  d: MoneyData,
+  area: PayArea,
+  refBase: { type: LedgerRefType; id: string },
+  label: string,
+  amountNgn: number,
+  milestone = true,
+): { data: MoneyData; receipt: string; method: PayMethod } {
   const method = methodFor(d, area);
   const n = d.counters.receipt + 1;
   const receipt = `R-${String(n).padStart(5, '0')}`;
@@ -562,18 +562,18 @@ function seedMoney(): MoneyData {
   const bank: BankAccount = { id: 'bank_s1', bankName: 'GTBank', last4: '4821', accountName: 'Adaeze Atelier', nameMatch: 'match', addedAt: iso(now - 40 * DAY), usableAt: iso(now - 39 * DAY), primary: true };
   const payout: Payout = { id: 'po_s1', amountNgn: 60_000, feeNgn: payoutRules.NG.manualFee, bankId: bank.id, bankLabel: 'GTBank ····4821', status: 'paid', createdAt: iso(now - 5 * DAY), settledAt: iso(now - 5 * DAY + 2 * HOUR), outcome: 'paid', failureReason: null, holdReason: null, auto: false, by: 'Owner', sample: true };
   const linkPayments: LinkPayment[] = [
-  { id: 'lp_s1', at: iso(now - 3 * DAY), amountNgn: 15_000, payerName: 'Temi A.', payerPhone: '0803 000 1122', note: '', method: 'wallet', receipt: 'R-00001', sample: true, payBy: 'card', payerEmail: 'temi@example.com', answers: [{ label: 'Which class?', value: 'Saturday 10am' }] },
-  { id: 'lp_s2', at: iso(now - 6 * HOUR), amountNgn: 15_000, payerName: 'Bisi O.', payerPhone: '0812 000 3344', note: 'Saturday class please', method: 'wallet', receipt: 'R-00002', sample: true, payBy: 'account', answers: [{ label: 'Which class?', value: 'Saturday 2pm' }] }];
-
+    { id: 'lp_s1', at: iso(now - 3 * DAY), amountNgn: 15_000, payerName: 'Temi A.', payerPhone: '0803 000 1122', note: '', method: 'wallet', receipt: 'R-00001', sample: true, payBy: 'card', payerEmail: 'temi@example.com', answers: [{ label: 'Which class?', value: 'Saturday 10am' }] },
+    { id: 'lp_s2', at: iso(now - 6 * HOUR), amountNgn: 15_000, payerName: 'Bisi O.', payerPhone: '0812 000 3344', note: 'Saturday class please', method: 'wallet', receipt: 'R-00002', sample: true, payBy: 'account', answers: [{ label: 'Which class?', value: 'Saturday 2pm' }] },
+  ];
   // D224 sample: one transfer to the seller's own account waiting to be confirmed.
   const pending: PendingTransfer[] = [
-  {
-    id: 'pt_s1',
-    at: iso(now - 2 * HOUR),
-    status: 'waiting',
-    payment: { amountNgn: 15_000, payerName: 'Ngozi E.', payerPhone: '0809 000 5566', note: '', payBy: 'transfer', transferTo: { bank: 'GTBank', account: '0123454821', accountName: 'Adaeze Atelier' }, answers: [{ label: 'Which class?', value: 'Saturday 10am' }], sample: true }
-  }];
-
+    {
+      id: 'pt_s1',
+      at: iso(now - 2 * HOUR),
+      status: 'waiting',
+      payment: { amountNgn: 15_000, payerName: 'Ngozi E.', payerPhone: '0809 000 5566', note: '', payBy: 'transfer', transferTo: { bank: 'GTBank', account: '0123454821', accountName: 'Adaeze Atelier' }, answers: [{ label: 'Which class?', value: 'Saturday 10am' }], sample: true },
+    },
+  ];
   const link: PaymentLink = {
     ...blankLink(),
     id: 'pl_s1',
@@ -592,18 +592,18 @@ function seedMoney(): MoneyData {
     ask: { email: 'optional', address: 'off' },
     questions: [{ id: 'q_s1', label: 'Which class?', type: 'choice', options: ['Saturday 10am', 'Saturday 2pm'], required: true }],
     after: { message: 'Thank you! We’ll send directions to the studio the day before your class.', redirectUrl: '' },
-    pendingTransfers: pending
+    pendingTransfers: pending,
   };
   const ledger: LedgerEntry[] = [
-  { id: 'led_s1', at: iso(now - 6 * HOUR), kind: 'link', amountNgn: 15_000 - linkProviderFee(15_000), state: 'pending', availableAt: iso(now + 18 * HOUR), label: 'Gele tying masterclass · Bisi O.', ref: { type: 'link', id: link.id, label: 'R-00002' }, sample: true },
-  { id: 'led_s2', at: iso(now - 3 * DAY), kind: 'link', amountNgn: 15_000 - linkProviderFee(15_000), state: 'available', label: 'Gele tying masterclass · Temi A.', ref: { type: 'link', id: link.id, label: 'R-00001' }, sample: true },
-  { id: 'led_s3', at: iso(now - 4 * DAY), kind: 'sale', amountNgn: 62_000, state: 'available', label: 'Order #1038 · Kemi B.', sample: true },
-  { id: 'led_s4', at: iso(now - 5 * DAY), kind: 'fee', amountNgn: -payoutRules.NG.manualFee, state: 'available', label: 'Payout fee', ref: { type: 'payout', id: payout.id }, sample: true },
-  { id: 'led_s5', at: iso(now - 5 * DAY), kind: 'payout', amountNgn: -60_000, state: 'available', label: 'Payout to GTBank ····4821', ref: { type: 'payout', id: payout.id }, sample: true },
-  { id: 'led_s6', at: iso(now - 7 * DAY), kind: 'sale', amountNgn: 45_000, state: 'available', label: 'Order #1031 · Ifeoma N.', sample: true },
-  { id: 'led_s7', at: iso(now - 9 * DAY), kind: 'sale', amountNgn: 28_500, state: 'available', label: 'Order #1027 · Chuka E.', sample: true },
-  { id: 'led_s8', at: iso(now - 12 * DAY), kind: 'topup', amountNgn: 20_000, state: 'available', label: 'Top-up by bank transfer', sample: true }];
-
+    { id: 'led_s1', at: iso(now - 6 * HOUR), kind: 'link', amountNgn: 15_000 - linkProviderFee(15_000), state: 'pending', availableAt: iso(now + 18 * HOUR), label: 'Gele tying masterclass · Bisi O.', ref: { type: 'link', id: link.id, label: 'R-00002' }, sample: true },
+    { id: 'led_s2', at: iso(now - 3 * DAY), kind: 'link', amountNgn: 15_000 - linkProviderFee(15_000), state: 'available', label: 'Gele tying masterclass · Temi A.', ref: { type: 'link', id: link.id, label: 'R-00001' }, sample: true },
+    { id: 'led_s3', at: iso(now - 4 * DAY), kind: 'sale', amountNgn: 62_000, state: 'available', label: 'Order #1038 · Kemi B.', sample: true },
+    { id: 'led_s4', at: iso(now - 5 * DAY), kind: 'fee', amountNgn: -payoutRules.NG.manualFee, state: 'available', label: 'Payout fee', ref: { type: 'payout', id: payout.id }, sample: true },
+    { id: 'led_s5', at: iso(now - 5 * DAY), kind: 'payout', amountNgn: -60_000, state: 'available', label: 'Payout to GTBank ····4821', ref: { type: 'payout', id: payout.id }, sample: true },
+    { id: 'led_s6', at: iso(now - 7 * DAY), kind: 'sale', amountNgn: 45_000, state: 'available', label: 'Order #1031 · Ifeoma N.', sample: true },
+    { id: 'led_s7', at: iso(now - 9 * DAY), kind: 'sale', amountNgn: 28_500, state: 'available', label: 'Order #1027 · Chuka E.', sample: true },
+    { id: 'led_s8', at: iso(now - 12 * DAY), kind: 'topup', amountNgn: 20_000, state: 'available', label: 'Top-up by bank transfer', sample: true },
+  ];
   // Demo starts unverified so the verification flow is the first thing to try (D93).
   return { ...base, ledger, banks: [bank], payouts: [payout], verification: { tier: 0, pending: null, rejectedNote: null }, links: [link], counters: { receipt: 2 }, seeded: true };
 }

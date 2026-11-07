@@ -17,137 +17,137 @@ function seed(): AdminStore {
   const now = new Date().toISOString();
   return {
     staff: [
-    { id: 'stf-tolu', name: 'Tolu Bakare', email: 'tolu@kub.icu', role: 'lead', status: 'active', twoStep: true, lastActiveAt: ago(1), invitedAt: ago(24 * 200) },
-    SECOND_LEAD,
-    { id: 'stf-ifeanyi', name: 'Ifeanyi Okafor', email: 'ifeanyi@kub.icu', role: 'trust', status: 'active', twoStep: true, lastActiveAt: ago(6), invitedAt: ago(24 * 120) },
-    { id: 'stf-kemi', name: 'Kemi Adeyemi', email: 'kemi@kub.icu', role: 'support', status: 'active', twoStep: true, lastActiveAt: ago(3), invitedAt: ago(24 * 90) },
-    { id: 'stf-dayo', name: 'Dayo Ajayi', email: 'dayo@kub.icu', role: 'engineering', status: 'active', twoStep: true, lastActiveAt: ago(30), invitedAt: ago(24 * 60) },
-    { id: 'stf-zainab', name: 'Zainab Musa', email: 'zainab@kub.icu', role: 'finance', status: 'invited', twoStep: false, lastActiveAt: null, invitedAt: ago(20) }],
-
+      { id: 'stf-tolu', name: 'Tolu Bakare', email: 'tolu@kub.icu', role: 'lead', status: 'active', twoStep: true, lastActiveAt: ago(1), invitedAt: ago(24 * 200) },
+      SECOND_LEAD,
+      { id: 'stf-ifeanyi', name: 'Ifeanyi Okafor', email: 'ifeanyi@kub.icu', role: 'trust', status: 'active', twoStep: true, lastActiveAt: ago(6), invitedAt: ago(24 * 120) },
+      { id: 'stf-kemi', name: 'Kemi Adeyemi', email: 'kemi@kub.icu', role: 'support', status: 'active', twoStep: true, lastActiveAt: ago(3), invitedAt: ago(24 * 90) },
+      { id: 'stf-dayo', name: 'Dayo Ajayi', email: 'dayo@kub.icu', role: 'engineering', status: 'active', twoStep: true, lastActiveAt: ago(30), invitedAt: ago(24 * 60) },
+      { id: 'stf-zainab', name: 'Zainab Musa', email: 'zainab@kub.icu', role: 'finance', status: 'invited', twoStep: false, lastActiveAt: null, invitedAt: ago(20) },
+    ],
     appeals: [
-    {
-      id: uid('apl'),
-      kind: 'takedown',
-      handle: 'glow-by-halima',
-      workspaceId: 'sample',
-      workspaceName: 'Glow by Halima',
-      from: 'Halima Yusuf',
-      originalReason: 'Gallery used a photographer’s bridal photos without permission (copyright report).',
-      originalBy: 'Ifeanyi Okafor · Trust & safety',
-      statement: 'I bought those photos from the studio in 2024 and have the receipt. I’ve also added credit under each picture. Please restore my page — bookings come through it.',
-      createdAt: ago(20),
-      status: 'open',
-      decision: null,
-      decidedBy: null,
-      decidedAt: null,
-      sample: true
-    }],
-
+      {
+        id: uid('apl'),
+        kind: 'takedown',
+        handle: 'glow-by-halima',
+        workspaceId: 'sample',
+        workspaceName: 'Glow by Halima',
+        from: 'Halima Yusuf',
+        originalReason: 'Gallery used a photographer’s bridal photos without permission (copyright report).',
+        originalBy: 'Ifeanyi Okafor · Trust & safety',
+        statement: 'I bought those photos from the studio in 2024 and have the receipt. I’ve also added credit under each picture. Please restore my page — bookings come through it.',
+        createdAt: ago(20),
+        status: 'open',
+        decision: null,
+        decidedBy: null,
+        decidedAt: null,
+        sample: true,
+      },
+    ],
     flags: {
       ai_page_setup: { on: true, plans: [...planOrder], updatedAt: now },
       storefront: { on: true, plans: [...planOrder], updatedAt: now },
-      verified_tick: { on: true, plans: [...planOrder], updatedAt: now }
+      verified_tick: { on: true, plans: [...planOrder], updatedAt: now },
     },
     reports: [
-    {
-      id: uid('rep'),
-      handle: 'cheap-iphones-lagos',
-      workspaceId: null,
-      reason: 'scam',
-      details: 'Took my transfer for an iPhone 15 and blocked me on WhatsApp. Three friends say the same.',
-      reporterEmail: 'tobi@example.com',
-      createdAt: ago(5),
-      status: 'open',
-      decision: null,
-      decidedAt: null,
-      sample: true
-    },
-    {
-      id: uid('rep'),
-      handle: 'glow-by-halima',
-      workspaceId: null,
-      reason: 'copyright',
-      details: 'The gallery uses four of my bridal photos without credit.',
-      reporterEmail: 'studio@example.com',
-      createdAt: ago(30),
-      status: 'open',
-      decision: null,
-      decidedAt: null,
-      sample: true
-    }],
-
+      {
+        id: uid('rep'),
+        handle: 'cheap-iphones-lagos',
+        workspaceId: null,
+        reason: 'scam',
+        details: 'Took my transfer for an iPhone 15 and blocked me on WhatsApp. Three friends say the same.',
+        reporterEmail: 'tobi@example.com',
+        createdAt: ago(5),
+        status: 'open',
+        decision: null,
+        decidedAt: null,
+        sample: true,
+      },
+      {
+        id: uid('rep'),
+        handle: 'glow-by-halima',
+        workspaceId: null,
+        reason: 'copyright',
+        details: 'The gallery uses four of my bridal photos without credit.',
+        reporterEmail: 'studio@example.com',
+        createdAt: ago(30),
+        status: 'open',
+        decision: null,
+        decidedAt: null,
+        sample: true,
+      },
+    ],
     takedowns: [],
     suspended: {},
     tickets: [
-    {
-      id: uid('tkt'),
-      number: 1041,
-      workspaceId: 'sample',
-      workspaceName: 'Ade’s Kitchen',
-      from: 'Ade Bello',
-      topic: 'payments',
-      subject: 'Payout hasn’t arrived',
-      status: 'open',
-      createdAt: ago(3),
-      updatedAt: ago(3),
-      messages: [{ id: uid('msg'), by: 'customer', name: 'Ade Bello', text: 'My payout from Monday still shows pending. Is something wrong with my bank details?', at: ago(3) }],
-      sample: true
-    },
-    {
-      id: uid('tkt'),
-      number: 1038,
-      workspaceId: 'sample',
-      workspaceName: 'Lekki Lash Bar',
-      from: 'Funmi O.',
-      topic: 'pages',
-      subject: 'Domain stuck on “Verifying”',
-      status: 'waiting',
-      createdAt: ago(52),
-      updatedAt: ago(20),
-      messages: [
-      { id: uid('msg'), by: 'customer', name: 'Funmi O.', text: 'I added the records yesterday and it still says verifying.', at: ago(52) },
-      { id: uid('msg'), by: 'staff', name: STAFF_NAME, text: 'Your CNAME points to kub.icu.com instead of kub.icu — could you remove the “.com” and press Check now?', at: ago(20) }],
-
-      sample: true
-    }],
-
+      {
+        id: uid('tkt'),
+        number: 1041,
+        workspaceId: 'sample',
+        workspaceName: 'Ade’s Kitchen',
+        from: 'Ade Bello',
+        topic: 'payments',
+        subject: 'Payout hasn’t arrived',
+        status: 'open',
+        createdAt: ago(3),
+        updatedAt: ago(3),
+        messages: [{ id: uid('msg'), by: 'customer', name: 'Ade Bello', text: 'My payout from Monday still shows pending. Is something wrong with my bank details?', at: ago(3) }],
+        sample: true,
+      },
+      {
+        id: uid('tkt'),
+        number: 1038,
+        workspaceId: 'sample',
+        workspaceName: 'Lekki Lash Bar',
+        from: 'Funmi O.',
+        topic: 'pages',
+        subject: 'Domain stuck on “Verifying”',
+        status: 'waiting',
+        createdAt: ago(52),
+        updatedAt: ago(20),
+        messages: [
+          { id: uid('msg'), by: 'customer', name: 'Funmi O.', text: 'I added the records yesterday and it still says verifying.', at: ago(52) },
+          { id: uid('msg'), by: 'staff', name: STAFF_NAME, text: 'Your CNAME points to kub.icu.com instead of kub.icu — could you remove the “.com” and press Check now?', at: ago(20) },
+        ],
+        sample: true,
+      },
+    ],
     announcements: [],
     audit: [],
     orderNotes: {},
     dataRequests: [
-    {
-      id: uid('dsr'),
-      kind: 'export',
-      subject: 'visitor',
-      name: 'Chiamaka Obi',
-      email: 'chiamaka@example.com',
-      workspaceName: 'Adaeze Atelier',
-      details: 'Please send me everything Adaeze Atelier holds about me — orders, messages and whether I’m on any mailing list.',
-      receivedAt: ago(26),
-      dueAt: new Date(Date.now() - 26 * 3600000 + DATA_REQUEST_DAYS * 86400000).toISOString(),
-      status: 'new',
-      steps: [],
-      outcome: null,
-      closedAt: null,
-      sample: true
-    },
-    {
-      id: uid('dsr'),
-      kind: 'correct',
-      subject: 'visitor',
-      name: 'Musa Ibrahim',
-      email: 'musa.i@example.com',
-      workspaceName: 'Lekki Lash Bar',
-      details: 'My phone number on my bookings is wrong (last digits should be 4471). Please fix it.',
-      receivedAt: ago(24 * 9),
-      dueAt: new Date(Date.now() - 24 * 9 * 3600000 + DATA_REQUEST_DAYS * 86400000).toISOString(),
-      status: 'in_progress',
-      steps: ['verify'],
-      outcome: null,
-      closedAt: null,
-      sample: true
-    }],
-
+      {
+        id: uid('dsr'),
+        kind: 'export',
+        subject: 'visitor',
+        name: 'Chiamaka Obi',
+        email: 'chiamaka@example.com',
+        workspaceName: 'Adaeze Atelier',
+        details: 'Please send me everything Adaeze Atelier holds about me — orders, messages and whether I’m on any mailing list.',
+        receivedAt: ago(26),
+        dueAt: new Date(Date.now() - 26 * 3600000 + DATA_REQUEST_DAYS * 86400000).toISOString(),
+        status: 'new',
+        steps: [],
+        outcome: null,
+        closedAt: null,
+        sample: true,
+      },
+      {
+        id: uid('dsr'),
+        kind: 'correct',
+        subject: 'visitor',
+        name: 'Musa Ibrahim',
+        email: 'musa.i@example.com',
+        workspaceName: 'Lekki Lash Bar',
+        details: 'My phone number on my bookings is wrong (last digits should be 4471). Please fix it.',
+        receivedAt: ago(24 * 9),
+        dueAt: new Date(Date.now() - 24 * 9 * 3600000 + DATA_REQUEST_DAYS * 86400000).toISOString(),
+        status: 'in_progress',
+        steps: ['verify'],
+        outcome: null,
+        closedAt: null,
+        sample: true,
+      },
+    ],
     approvals: [],
     accessReviews: [],
     extensionPulls: {},
@@ -161,21 +161,21 @@ function seed(): AdminStore {
     phraseReviews: {},
     policyReleases: {},
     incidents: [
-    {
-      id: 'inc-sample-1',
-      title: 'Slow image uploads',
-      impact: 'minor',
-      services: ['Media storage'],
-      status: 'resolved',
-      startedAt: ago(24 * 4 + 3),
-      resolvedAt: ago(24 * 4 + 1),
-      updates: [
-      { id: 'incu-s1', at: ago(24 * 4 + 3), status: 'investigating', message: 'Some sellers are seeing slow photo uploads in the canvas. Pages and checkout are not affected.', by: 'Dayo (KUBICU staff)' },
-      { id: 'incu-s2', at: ago(24 * 4 + 1), status: 'resolved', message: 'Uploads are back to normal. Photos that failed can be added again — nothing already saved was lost.', by: 'Dayo (KUBICU staff)' }],
-
-      sample: true
-    }]
-
+      {
+        id: 'inc-sample-1',
+        title: 'Slow image uploads',
+        impact: 'minor',
+        services: ['Media storage'],
+        status: 'resolved',
+        startedAt: ago(24 * 4 + 3),
+        resolvedAt: ago(24 * 4 + 1),
+        updates: [
+          { id: 'incu-s1', at: ago(24 * 4 + 3), status: 'investigating', message: 'Some sellers are seeing slow photo uploads in the canvas. Pages and checkout are not affected.', by: 'Dayo (KUBICU staff)' },
+          { id: 'incu-s2', at: ago(24 * 4 + 1), status: 'resolved', message: 'Uploads are back to normal. Photos that failed can be added again — nothing already saved was lost.', by: 'Dayo (KUBICU staff)' },
+        ],
+        sample: true,
+      },
+    ],
   };
 }
 
@@ -194,7 +194,7 @@ const SAMPLE_COUPON = {
   createdAt: ago(24 * 10),
   createdBy: 'Tolu Bakare · Platform lead',
   note: 'Launch offer for market traders’ association members.',
-  sample: true
+  sample: true,
 };
 
 /** A second Platform lead so two-person approval can be tried in the prototype (D129). */
@@ -210,7 +210,7 @@ export function readAdminStore(): AdminStore {
       const parsed = JSON.parse(raw) as AdminStore;
       const base = seed();
       // Older saved stores get the second sample lead once, so approvals have someone to approve them.
-      const staff = parsed.staff ? parsed.staff.some((m) => m.id === SECOND_LEAD.id) ? parsed.staff : [...parsed.staff, SECOND_LEAD] : base.staff;
+      const staff = parsed.staff ? (parsed.staff.some((m) => m.id === SECOND_LEAD.id) ? parsed.staff : [...parsed.staff, SECOND_LEAD]) : base.staff;
       return {
         ...base,
         ...parsed,
@@ -231,18 +231,18 @@ export function readAdminStore(): AdminStore {
         aiOff: parsed.aiOff ?? {},
         integrationTests: parsed.integrationTests ?? {},
         phraseReviews: parsed.phraseReviews ?? {},
-        policyReleases: parsed.policyReleases ?? {}
+        policyReleases: parsed.policyReleases ?? {},
       };
     }
   } catch {
-
-    /* fall through to seed */}
+    /* fall through to seed */
+  }
   const fresh = seed();
   try {
     localStorage.setItem(KEY, JSON.stringify(fresh));
   } catch {
-
-    /* storage blocked — keep in memory */}
+    /* storage blocked — keep in memory */
+  }
   return fresh;
 }
 

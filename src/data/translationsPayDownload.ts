@@ -63,7 +63,7 @@ export const payPcm: Dict = {
   '{paid} of {total}': '{paid} out of {total}',
   'Paid {when}': 'Paid {when}',
   'Due now': 'Pay now',
-  Later: 'Later'
+  Later: 'Later',
 };
 
 export const payYo: Dict = {
@@ -128,7 +128,7 @@ export const payYo: Dict = {
   '{paid} of {total}': '{paid} nínú {total}',
   'Paid {when}': 'A san ní {when}',
   'Due now': 'Ó yẹ báyìí',
-  Later: 'Lẹ́yìn náà'
+  Later: 'Lẹ́yìn náà',
 };
 
 export const payHa: Dict = {
@@ -193,7 +193,7 @@ export const payHa: Dict = {
   '{paid} of {total}': '{paid} cikin {total}',
   'Paid {when}': 'An biya {when}',
   'Due now': 'Yanzu ya kamata',
-  Later: 'Daga baya'
+  Later: 'Daga baya',
 };
 
 export const payIg: Dict = {
@@ -258,5 +258,5 @@ export const payIg: Dict = {
   '{paid} of {total}': '{paid} n’ime {total}',
   'Paid {when}': 'Akwụrụ {when}',
   'Due now': 'Ọ ruola ugbu a',
-  Later: 'Emechaa'
+  Later: 'Emechaa',
 };

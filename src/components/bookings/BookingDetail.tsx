@@ -29,10 +29,10 @@ export const bookingStatusCopy = {
   pending_deposit: { label: 'Awaiting deposit', tone: 'warning' as const },
   cancelled: { label: 'Cancelled', tone: 'neutral' as const },
   completed: { label: 'Completed', tone: 'neutral' as const },
-  no_show: { label: 'No-show', tone: 'danger' as const }
+  no_show: { label: 'No-show', tone: 'danger' as const },
 };
 
-export function BookingDetail({ bookingId, onClose }: {bookingId: string | null;onClose: () => void;}) {
+export function BookingDetail({ bookingId, onClose }: { bookingId: string | null; onClose: () => void }) {
   const { data, apply } = useOps();
   const { t: tr } = useT();
   const team = useTeam();
@@ -56,7 +56,7 @@ export function BookingDetail({ bookingId, onClose }: {bookingId: string | null;
   const reschedule = () => {
     if (!service || newStart === null) return;
     let msg: string | undefined;
-    if (apply((d) => {const r = rescheduleBooking(d, b.id, newStart, service, 'owner');msg = r.message;return r.data;}) && !msg) {
+    if (apply((d) => { const r = rescheduleBooking(d, b.id, newStart, service, 'owner'); msg = r.message; return r.data; }) && !msg) {
       toast(tr('Moved to {when}', { when: `${dayLabel(newStart, tz)}, ${timeLabel(newStart, tz)}` }), { description: tr('The customer would get an update (preview only).') });
       setDialog(null);
     } else if (msg) toast.error(msg);
@@ -71,78 +71,78 @@ export function BookingDetail({ bookingId, onClose }: {bookingId: string | null;
         title={`${b.serviceName} · ${b.ref}`}
         description={`${dayLabel(start, tz)}, ${timeLabel(start, tz)}`}
         footer={
-        b.status === 'requested' ?
-        <div className="flex flex-wrap items-center justify-between gap-2">
+          b.status === 'requested' ? (
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <Button variant="tertiary" size="sm" leadingIcon={XIcon} onClick={() => setDialog('decline')}>
                 Decline
               </Button>
-              {past ?
-          <span className="text-caption text-fg-subtle">{tr('The time has passed, so it can only be declined.')}</span> :
-
-          <Button
-            size="sm"
-            leadingIcon={CheckIcon}
-            onClick={() => {
-              if (apply((d) => acceptBooking(d, b.id))) toast.success(tr('Booking accepted'), { description: tr('{name} would get a confirmation (preview only).', { name: b.customer.name }) });
-            }}>
-            
+              {past ? (
+                <span className="text-caption text-fg-subtle">{tr('The time has passed, so it can only be declined.')}</span>
+              ) : (
+                <Button
+                  size="sm"
+                  leadingIcon={CheckIcon}
+                  onClick={() => {
+                    if (apply((d) => acceptBooking(d, b.id))) toast.success(tr('Booking accepted'), { description: tr('{name} would get a confirmation (preview only).', { name: b.customer.name }) });
+                  }}
+                >
                   Accept booking
                 </Button>
-          }
-            </div> :
-        open ?
-        <div className="flex flex-wrap items-center justify-between gap-2">
+              )}
+            </div>
+          ) : open ? (
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <Button variant="tertiary" size="sm" leadingIcon={BanIcon} onClick={() => setDialog('cancel')}>
                 Cancel
               </Button>
-              {past ?
-          <div className="flex gap-2">
+              {past ? (
+                <div className="flex gap-2">
                   <Button variant="secondary" size="sm" leadingIcon={UserXIcon} onClick={() => apply((d) => setBookingStatus(d, b.id, 'no_show', 'Marked as no-show'))}>
                     No-show
                   </Button>
                   <Button size="sm" leadingIcon={CheckCircle2Icon} onClick={() => apply((d) => setBookingStatus(d, b.id, 'completed', 'Marked as completed'))}>
                     Completed
                   </Button>
-                </div> :
-
-          <Button size="sm" leadingIcon={CalendarClockIcon} onClick={() => setDialog('reschedule')}>
+                </div>
+              ) : (
+                <Button size="sm" leadingIcon={CalendarClockIcon} onClick={() => setDialog('reschedule')}>
                   Reschedule
                 </Button>
-          }
-            </div> :
-        undefined
-        }>
-        
+              )}
+            </div>
+          ) : undefined
+        }
+      >
         <div className="flex flex-col gap-6 px-5 py-5">
           <div className="flex flex-wrap items-center gap-2">
             <Badge tone={bookingStatusCopy[b.status].tone} dot>
               {tr(bookingStatusCopy[b.status].label)}
             </Badge>
             {b.sample && <SampleTag />}
-            {source.handle &&
-            <span className="text-caption text-fg-subtle">
+            {source.handle && (
+              <span className="text-caption text-fg-subtle">
                 {tr('Booked on {name}', { name: source.label })}
               </span>
-            }
+            )}
           </div>
           <AssigneeSelect
             id={`bk-assignee-${b.id}`}
             value={b.assigneeId}
             className="max-w-xs"
             onChange={(assigneeId) => {
-              if (apply((d) => ({ ...d, bookings: d.bookings.map((x) => x.id === b.id ? { ...x, assigneeId } : x) }))) {
+              if (apply((d) => ({ ...d, bookings: d.bookings.map((x) => (x.id === b.id ? { ...x, assigneeId } : x)) }))) {
                 const who = team.data.members.find((m) => m.id === assigneeId)?.name;
                 team.log('bookings', who ? `assigned booking ${b.ref} to ${who}` : `unassigned booking ${b.ref}`, `/app/bookings?booking=${b.id}`);
               }
-            }} />
-          
-          {b.meeting &&
-          <MeetingLinkPanel
-            meeting={b.meeting}
-            canRenew={open && !!connectionFor(data.availability, b.meeting.app)}
-            onRenew={(app) => apply((d) => renewMeeting(d, b.id, app)) && toast(tr('New meeting link made'), { description: tr('Send it to the customer — the old link no longer applies.') })} />
-
-          }
+            }}
+          />
+          {b.meeting && (
+            <MeetingLinkPanel
+              meeting={b.meeting}
+              canRenew={open && !!connectionFor(data.availability, b.meeting.app)}
+              onRenew={(app) => apply((d) => renewMeeting(d, b.id, app)) && toast(tr('New meeting link made'), { description: tr('Send it to the customer — the old link no longer applies.') })}
+            />
+          )}
           <dl className="grid grid-cols-2 gap-4 text-label">
             <div>
               <dt className="text-caption text-fg-subtle">{tr('When')}</dt>
@@ -155,26 +155,26 @@ export function BookingDetail({ bookingId, onClose }: {bookingId: string | null;
               <dt className="text-caption text-fg-subtle">{tr('Money')}</dt>
               <dd className="font-semibold text-fg">{b.priceNgn !== null ? formatNgn(b.priceNgn) : tr('Price on request')}</dd>
               <dd className="text-caption text-fg-subtle">{b.depositPaidNgn ? tr('{amount} booking fee paid (test)', { amount: formatNgn(b.depositPaidNgn) }) : tr('No deposit')}</dd>
-              {bal.state !== 'none' &&
-              <dd className={cn('text-caption', bal.state === 'overdue' ? 'font-medium text-danger' : bal.state === 'paid' ? 'text-success' : 'text-fg-subtle')}>
+              {bal.state !== 'none' && (
+                <dd className={cn('text-caption', bal.state === 'overdue' ? 'font-medium text-danger' : bal.state === 'paid' ? 'text-success' : 'text-fg-subtle')}>
                   {tr(balanceLabels[bal.state])}
                   {bal.state !== 'paid' && ` · ${formatNgn(bal.amount)}`}
                   {bal.dueAt && bal.state !== 'paid' && ` · ${tr('by {when}', { when: `${dayLabel(bal.dueAt, tz)}, ${timeLabel(bal.dueAt, tz)}` })}`}
                   {bal.state === 'paid' && b.balancePaidHow === 'recorded' && ` ${tr('(recorded by you)')}`}
                 </dd>
-              }
-              {open && (bal.state === 'upcoming' || bal.state === 'due' || bal.state === 'overdue' || bal.state === 'at_appointment') &&
-              <dd className="mt-1.5 flex flex-wrap gap-1.5">
-                  {bal.state !== 'at_appointment' &&
-                <Button size="sm" variant="secondary" leadingIcon={CopyIcon} onClick={() => navigator.clipboard?.writeText(balanceLink).then(() => toast.success(tr('Balance link copied')))}>
+              )}
+              {open && (bal.state === 'upcoming' || bal.state === 'due' || bal.state === 'overdue' || bal.state === 'at_appointment') && (
+                <dd className="mt-1.5 flex flex-wrap gap-1.5">
+                  {bal.state !== 'at_appointment' && (
+                    <Button size="sm" variant="secondary" leadingIcon={CopyIcon} onClick={() => navigator.clipboard?.writeText(balanceLink).then(() => toast.success(tr('Balance link copied')))}>
                       Pay link
                     </Button>
-                }
+                  )}
                   <Button size="sm" variant="tertiary" onClick={() => apply((d) => payBookingBalance(d, b.id, 'recorded')) && toast.success(tr('Balance recorded as paid'))}>
                     Record as paid
                   </Button>
                 </dd>
-              }
+              )}
             </div>
             <div className="col-span-2">
               <dt className="text-caption text-fg-subtle">{tr('Customer')}</dt>
@@ -183,34 +183,34 @@ export function BookingDetail({ bookingId, onClose }: {bookingId: string | null;
                 {b.customer.phone} · {b.customer.email}
               </dd>
               {b.customerTimeZone !== tz && <dd className="text-caption text-fg-subtle">{tr('Their time zone: {tz}', { tz: b.customerTimeZone })}</dd>}
-              {b.customer.phone &&
-              <a href={whatsappLink(b.customer.phone, `Hi ${b.customer.name.split(' ')[0]}, about your ${b.serviceName} booking…`)} target="_blank" rel="noopener noreferrer" className="mt-1 inline-flex items-center gap-1.5 font-semibold text-action hover:underline">
+              {b.customer.phone && (
+                <a href={whatsappLink(b.customer.phone, `Hi ${b.customer.name.split(' ')[0]}, about your ${b.serviceName} booking…`)} target="_blank" rel="noopener noreferrer" className="mt-1 inline-flex items-center gap-1.5 font-semibold text-action hover:underline">
                   <MessageCircleIcon size={14} aria-hidden /> {tr('Message on WhatsApp')}
                 </a>
-              }
+              )}
             </div>
-            {(b.answers ?? []).map((x, i) =>
-            <div key={i} className="col-span-2">
+            {(b.answers ?? []).map((x, i) => (
+              <div key={i} className="col-span-2">
                 <dt className="text-caption text-fg-subtle">{x.question}</dt>
                 <dd className="font-medium text-fg">{x.answer}</dd>
               </div>
-            )}
-            {b.intake &&
-            <div className="col-span-2">
+            ))}
+            {b.intake && (
+              <div className="col-span-2">
                 <dt className="text-caption text-fg-subtle">{tr('They told you')}</dt>
                 <dd className="rounded-md bg-sunken px-3 py-2 text-fg">{b.intake}</dd>
               </div>
-            }
+            )}
           </dl>
           <section aria-label={tr('History')}>
             <h3 className="text-label font-semibold text-fg">{tr('History')}</h3>
             <ol className="mt-2 flex flex-col divide-y divide-line border-y border-line">
-              {b.events.map((e) =>
-              <li key={e.id} className="flex justify-between gap-3 py-2 text-label">
+              {b.events.map((e) => (
+                <li key={e.id} className="flex justify-between gap-3 py-2 text-label">
                   <span className="text-fg">{tr(e.label)}</span>
                   <span className="shrink-0 text-caption text-fg-subtle">{formatTimestamp(e.at)}</span>
                 </li>
-              )}
+              ))}
             </ol>
           </section>
 
@@ -225,25 +225,25 @@ export function BookingDetail({ bookingId, onClose }: {bookingId: string | null;
         title={tr('Cancel {name}’s booking?', { name: b.customer.name })}
         description={b.depositPaidNgn ? tr('When you cancel, the {amount} deposit is refunded in full (test mode).', { amount: formatNgn(b.depositPaidNgn) }) : tr('Nothing was paid.')}
         footer={
-        <>
+          <>
             <Button variant="secondary" onClick={() => setDialog(null)}>
               Keep it
             </Button>
             <Button
-            variant="destructive"
-            onClick={() => {
-              if (apply((d) => cancelBooking(d, b.id, 'owner', reason.trim()))) {
-                toast(tr('Booking cancelled'), { description: tr('The customer would get a message (preview only).') });
-                setDialog(null);
-                setReason('');
-              }
-            }}>
-            
+              variant="destructive"
+              onClick={() => {
+                if (apply((d) => cancelBooking(d, b.id, 'owner', reason.trim()))) {
+                  toast(tr('Booking cancelled'), { description: tr('The customer would get a message (preview only).') });
+                  setDialog(null);
+                  setReason('');
+                }
+              }}
+            >
               Cancel booking
             </Button>
           </>
-        }>
-        
+        }
+      >
         <TextInput id="bk-cancel-reason" label="Reason for the customer" optional value={reason} placeholder={tr('e.g. Studio closed for a family event')} onChange={(e) => setReason(e.target.value)} />
       </Dialog>
 
@@ -254,25 +254,25 @@ export function BookingDetail({ bookingId, onClose }: {bookingId: string | null;
         title={tr('Decline {name}’s request?', { name: b.customer.name })}
         description={b.depositPaidNgn ? tr('The time is freed and the {amount} deposit is refunded in full (test mode).', { amount: formatNgn(b.depositPaidNgn) }) : tr('The time is freed for someone else. Nothing was paid.')}
         footer={
-        <>
+          <>
             <Button variant="secondary" onClick={() => setDialog(null)}>
               Keep it
             </Button>
             <Button
-            variant="destructive"
-            onClick={() => {
-              if (apply((d) => declineBooking(d, b.id, reason.trim()))) {
-                toast(tr('Request declined'), { description: tr('The customer would get a message (preview only).') });
-                setDialog(null);
-                setReason('');
-              }
-            }}>
-            
+              variant="destructive"
+              onClick={() => {
+                if (apply((d) => declineBooking(d, b.id, reason.trim()))) {
+                  toast(tr('Request declined'), { description: tr('The customer would get a message (preview only).') });
+                  setDialog(null);
+                  setReason('');
+                }
+              }}
+            >
               Decline request
             </Button>
           </>
-        }>
-        
+        }
+      >
         <TextInput id="bk-decline-reason" label="Reason for the customer" optional value={reason} placeholder={tr('e.g. Fully booked that day — could you do Friday?')} onChange={(e) => setReason(e.target.value)} />
       </Dialog>
 
@@ -283,7 +283,7 @@ export function BookingDetail({ bookingId, onClose }: {bookingId: string | null;
         title="Move to another time"
         description="Only free times are shown. The customer is told the new time."
         footer={
-        <>
+          <>
             <Button variant="secondary" onClick={() => setDialog(null)}>
               Cancel
             </Button>
@@ -291,10 +291,10 @@ export function BookingDetail({ bookingId, onClose }: {bookingId: string | null;
               Move booking
             </Button>
           </>
-        }>
-        
+        }
+      >
         {service ? <OwnerSlotPicker service={service} value={newStart} onChange={setNewStart} ignoreId={b.id} /> : <p className="text-label text-fg-muted">{tr('The service was deleted, so it can’t be rescheduled.')}</p>}
       </Dialog>
-    </>);
-
+    </>
+  );
 }

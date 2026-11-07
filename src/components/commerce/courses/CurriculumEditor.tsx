@@ -30,9 +30,9 @@ function move<T>(list: T[], from: number, to: number): T[] {
 export function CurriculumEditor({ modules, onChange, showErrors }: Props) {
   const [openLesson, setOpenLesson] = useState<string | null>(null);
 
-  const setModule = (mid: string, patch: Partial<CourseModule>) => onChange(modules.map((m) => m.id === mid ? { ...m, ...patch } : m));
+  const setModule = (mid: string, patch: Partial<CourseModule>) => onChange(modules.map((m) => (m.id === mid ? { ...m, ...patch } : m)));
   const setLesson = (mid: string, lid: string, patch: Partial<CourseLesson>) =>
-  onChange(modules.map((m) => m.id === mid ? { ...m, lessons: m.lessons.map((l) => l.id === lid ? { ...l, ...patch } : l) } : m));
+    onChange(modules.map((m) => (m.id === mid ? { ...m, lessons: m.lessons.map((l) => (l.id === lid ? { ...l, ...patch } : l)) } : m)));
 
   const addLesson = (mid: string, kind: LessonKind) => {
     const l = blankLesson(kind);
@@ -59,34 +59,34 @@ export function CurriculumEditor({ modules, onChange, showErrors }: Props) {
                 maxLength={80}
                 onChange={(e) => setModule(m.id, { title: e.target.value })}
                 placeholder="Module title"
-                className={cn('h-9 min-w-0 flex-1 rounded-md border bg-transparent px-2 text-label font-semibold text-fg placeholder:text-fg-subtle focus:border-action focus:outline-none', showErrors && !m.title.trim() ? 'border-danger/60' : 'border-transparent hover:border-line')} />
-              
+                className={cn('h-9 min-w-0 flex-1 rounded-md border bg-transparent px-2 text-label font-semibold text-fg placeholder:text-fg-subtle focus:border-action focus:outline-none', showErrors && !m.title.trim() ? 'border-danger/60' : 'border-transparent hover:border-line')}
+              />
               <span className="hidden shrink-0 text-caption text-fg-subtle sm:inline">
                 {m.lessons.length} {m.lessons.length === 1 ? 'lesson' : 'lessons'}
                 {minutes ? ` · ${durationLabel(minutes)}` : ''}
               </span>
-              <IconButton size="sm" icon={ArrowUpIcon} label={`Move module ${mi + 1} up`} disabled={mi === 0} onClick={() => {onChange(move(modules, mi, mi - 1));announce(`Moved ${m.title || 'module'} up`);}} />
-              <IconButton size="sm" icon={ArrowDownIcon} label={`Move module ${mi + 1} down`} disabled={mi === modules.length - 1} onClick={() => {onChange(move(modules, mi, mi + 1));announce(`Moved ${m.title || 'module'} down`);}} />
+              <IconButton size="sm" icon={ArrowUpIcon} label={`Move module ${mi + 1} up`} disabled={mi === 0} onClick={() => { onChange(move(modules, mi, mi - 1)); announce(`Moved ${m.title || 'module'} up`); }} />
+              <IconButton size="sm" icon={ArrowDownIcon} label={`Move module ${mi + 1} down`} disabled={mi === modules.length - 1} onClick={() => { onChange(move(modules, mi, mi + 1)); announce(`Moved ${m.title || 'module'} down`); }} />
               <IconButton size="sm" icon={Trash2Icon} label={`Remove module ${mi + 1}`} disabled={modules.length === 1 || m.lessons.length > 0} title={m.lessons.length ? 'Remove or move its lessons first' : undefined} onClick={() => onChange(modules.filter((x) => x.id !== m.id))} />
             </header>
 
-            {m.lessons.length === 0 ?
-            <p className="px-4 py-4 text-caption text-fg-subtle">No lessons in this module yet.</p> :
-
-            <ol className="flex flex-col">
+            {m.lessons.length === 0 ? (
+              <p className="px-4 py-4 text-caption text-fg-subtle">No lessons in this module yet.</p>
+            ) : (
+              <ol className="flex flex-col">
                 {m.lessons.map((l, li) => {
-                const Icon = lessonIcons[l.kind];
-                const issue = lessonIssue(l);
-                const open = openLesson === l.id;
-                return (
-                  <li key={l.id} className="border-b border-line last:border-0">
+                  const Icon = lessonIcons[l.kind];
+                  const issue = lessonIssue(l);
+                  const open = openLesson === l.id;
+                  return (
+                    <li key={l.id} className="border-b border-line last:border-0">
                       <div className="flex items-center gap-2 px-3 py-2">
                         <button
-                        type="button"
-                        aria-expanded={open}
-                        onClick={() => setOpenLesson(open ? null : l.id)}
-                        className="flex min-h-[44px] min-w-0 flex-1 items-center gap-3 rounded-md px-1 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-                        
+                          type="button"
+                          aria-expanded={open}
+                          onClick={() => setOpenLesson(open ? null : l.id)}
+                          className="flex min-h-[44px] min-w-0 flex-1 items-center gap-3 rounded-md px-1 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+                        >
                           <Icon size={16} className="shrink-0 text-fg-subtle" aria-hidden />
                           <span className="min-w-0 flex-1">
                             <span className="block truncate text-label font-medium text-fg">{l.title || <span className="text-fg-subtle">Untitled {lessonKindLabels[l.kind].toLowerCase()}</span>}</span>
@@ -97,55 +97,55 @@ export function CurriculumEditor({ modules, onChange, showErrors }: Props) {
                             </span>
                           </span>
                           {l.preview && <Badge tone="info">Preview</Badge>}
-                          {issue &&
-                        <span className={cn('inline-flex shrink-0 items-center gap-1 text-caption', showErrors ? 'text-danger' : 'text-warning')}>
+                          {issue && (
+                            <span className={cn('inline-flex shrink-0 items-center gap-1 text-caption', showErrors ? 'text-danger' : 'text-warning')}>
                               <AlertCircleIcon size={13} aria-hidden />
                               <span className="hidden md:inline">{issue}</span>
                               <span className="sr-only md:hidden">{issue}</span>
                             </span>
-                        }
+                          )}
                           <ChevronDownIcon size={15} className={cn('shrink-0 text-fg-subtle transition-transform duration-150 ease-out', open && 'rotate-180')} aria-hidden />
                         </button>
                         <IconButton size="sm" icon={ArrowUpIcon} label={`Move ${l.title || 'lesson'} up`} disabled={li === 0 && mi === 0} onClick={() => {
-                        if (li > 0) setModule(m.id, { lessons: move(m.lessons, li, li - 1) });else
-                        onChange(modules.map((x, xi) => xi === mi - 1 ? { ...x, lessons: [...x.lessons, l] } : xi === mi ? { ...x, lessons: x.lessons.slice(1) } : x));
-                        announce(li > 0 ? `Moved ${l.title || 'lesson'} up` : `Moved ${l.title || 'lesson'} to module ${mi}`);
-                      }} />
+                          if (li > 0) setModule(m.id, { lessons: move(m.lessons, li, li - 1) });
+                          else onChange(modules.map((x, xi) => (xi === mi - 1 ? { ...x, lessons: [...x.lessons, l] } : xi === mi ? { ...x, lessons: x.lessons.slice(1) } : x)));
+                          announce(li > 0 ? `Moved ${l.title || 'lesson'} up` : `Moved ${l.title || 'lesson'} to module ${mi}`);
+                        }} />
                         <IconButton size="sm" icon={ArrowDownIcon} label={`Move ${l.title || 'lesson'} down`} disabled={li === m.lessons.length - 1 && mi === modules.length - 1} onClick={() => {
-                        if (li < m.lessons.length - 1) setModule(m.id, { lessons: move(m.lessons, li, li + 1) });else
-                        onChange(modules.map((x, xi) => xi === mi + 1 ? { ...x, lessons: [l, ...x.lessons] } : xi === mi ? { ...x, lessons: x.lessons.slice(0, -1) } : x));
-                        announce(li < m.lessons.length - 1 ? `Moved ${l.title || 'lesson'} down` : `Moved ${l.title || 'lesson'} to module ${mi + 2}`);
-                      }} />
+                          if (li < m.lessons.length - 1) setModule(m.id, { lessons: move(m.lessons, li, li + 1) });
+                          else onChange(modules.map((x, xi) => (xi === mi + 1 ? { ...x, lessons: [l, ...x.lessons] } : xi === mi ? { ...x, lessons: x.lessons.slice(0, -1) } : x)));
+                          announce(li < m.lessons.length - 1 ? `Moved ${l.title || 'lesson'} down` : `Moved ${l.title || 'lesson'} to module ${mi + 2}`);
+                        }} />
                         <IconButton size="sm" icon={Trash2Icon} label={`Remove ${l.title || 'lesson'}`} onClick={() => setModule(m.id, { lessons: m.lessons.filter((x) => x.id !== l.id) })} />
                       </div>
-                      {open &&
-                    <div className="border-t border-line bg-sunken/50 px-4 py-4">
+                      {open && (
+                        <div className="border-t border-line bg-sunken/50 px-4 py-4">
                           <LessonEditor lesson={l} showErrors={showErrors} onChange={(patch) => setLesson(m.id, l.id, patch)} />
                         </div>
-                    }
-                    </li>);
-
-              })}
+                      )}
+                    </li>
+                  );
+                })}
               </ol>
-            }
+            )}
 
             <div className="border-t border-line px-3 py-2">
               <Menu
                 align="start"
                 items={(['video', 'live', 'text', 'file', 'quiz'] as LessonKind[]).map((k) => ({ id: k, label: lessonKindLabels[k], icon: lessonIcons[k], disabled: m.lessons.length >= MAX_LESSONS_PER_MODULE, reason: `Up to ${MAX_LESSONS_PER_MODULE} lessons per module`, onSelect: () => addLesson(m.id, k) }))}
-                trigger={(props) =>
-                <Button {...props} size="sm" variant="tertiary" leadingIcon={PlusIcon}>
+                trigger={(props) => (
+                  <Button {...props} size="sm" variant="tertiary" leadingIcon={PlusIcon}>
                     Add lesson
                   </Button>
-                } />
-              
+                )}
+              />
             </div>
-          </section>);
-
+          </section>
+        );
       })}
       <Button variant="secondary" leadingIcon={PlusIcon} className="self-start" disabled={modules.length >= MAX_MODULES} onClick={() => onChange([...modules, blankModule(modules.length + 1)])}>
         Add module
       </Button>
-    </div>);
-
+    </div>
+  );
 }

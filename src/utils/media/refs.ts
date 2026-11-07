@@ -74,7 +74,7 @@ export function hashString(s: string): string {
 
 export function dataUrlBytes(dataUrl: string): number {
   const comma = dataUrl.indexOf(',');
-  return Math.round((dataUrl.length - comma - 1) * 3 / 4);
+  return Math.round(((dataUrl.length - comma - 1) * 3) / 4);
 }
 
 export function shapeOf(width: number, height: number): MediaShape {
@@ -101,8 +101,8 @@ export function mapStrings<T>(value: T, fn: (s: string) => string): T {
 export function collectStrings(value: unknown, test: (s: string) => boolean, into: Set<string> = new Set()): Set<string> {
   if (typeof value === 'string') {
     if (test(value)) into.add(value);
-  } else if (Array.isArray(value)) value.forEach((v) => collectStrings(v, test, into));else
-  if (value && typeof value === 'object') Object.values(value as Record<string, unknown>).forEach((v) => collectStrings(v, test, into));
+  } else if (Array.isArray(value)) value.forEach((v) => collectStrings(v, test, into));
+  else if (value && typeof value === 'object') Object.values(value as Record<string, unknown>).forEach((v) => collectStrings(v, test, into));
   return into;
 }
 

@@ -41,23 +41,23 @@ export function AppearancePolicyPanel() {
           const available = policy.enabled.includes(d.id);
           const isDefault = d.id === policy.defaultDirection;
           const previewing = d.id === direction;
-          const lockedOn = isDefault || available && policy.enabled.length <= 1;
+          const lockedOn = isDefault || (available && policy.enabled.length <= 1);
           return (
             <li key={d.id} className={cn('flex flex-col rounded-md border bg-raised', available ? 'border-line' : 'border-dashed border-line')}>
               <div className={cn('flex h-16 overflow-hidden rounded-t-md', !available && 'opacity-50')} aria-hidden>
-                {d.swatches.map((c, i) =>
-                <span key={c + i} className={i === 0 ? 'flex-[2]' : 'flex-1'} style={{ background: c }} />
-                )}
+                {d.swatches.map((c, i) => (
+                  <span key={c + i} className={i === 0 ? 'flex-[2]' : 'flex-1'} style={{ background: c }} />
+                ))}
               </div>
               <div className="flex flex-1 flex-col gap-3 p-4">
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
                     <h3 className="text-label font-semibold text-fg">{d.name}</h3>
-                    {isDefault &&
-                    <Badge tone="action" icon={StarIcon}>
+                    {isDefault && (
+                      <Badge tone="action" icon={StarIcon}>
                         Default
                       </Badge>
-                    }
+                    )}
                     {!available && <Badge tone="neutral">Withdrawn</Badge>}
                   </div>
                   <p className="mt-1 text-caption text-fg-muted">{d.description}</p>
@@ -67,31 +67,31 @@ export function AppearancePolicyPanel() {
                   <Switch
                     id={`avail-${d.id}`}
                     label="Available to workspaces"
-                    description={lockedOn ? isDefault ? 'The default is always available.' : 'At least one appearance must stay available.' : undefined}
+                    description={lockedOn ? (isDefault ? 'The default is always available.' : 'At least one appearance must stay available.') : undefined}
                     checked={available}
                     disabled={lockedOn}
-                    onChange={(on) => toggle(d, on)} />
-                  
+                    onChange={(on) => toggle(d, on)}
+                  />
                   <div className="flex flex-wrap gap-2">
                     <Button
                       size="sm"
                       variant="secondary"
                       leadingIcon={previewing ? CheckIcon : EyeIcon}
                       disabled={previewing}
-                      onClick={() => setDirection(d.id)}>
-                      
+                      onClick={() => setDirection(d.id)}
+                    >
                       {previewing ? 'Previewing' : 'Preview'}
                     </Button>
-                    {!isDefault &&
-                    <Button size="sm" variant="tertiary" leadingIcon={StarIcon} onClick={() => makeDefault(d.id, d.name)}>
+                    {!isDefault && (
+                      <Button size="sm" variant="tertiary" leadingIcon={StarIcon} onClick={() => makeDefault(d.id, d.name)}>
                         Make default
                       </Button>
-                    }
+                    )}
                   </div>
                 </div>
               </div>
-            </li>);
-
+            </li>
+          );
         })}
       </ul>
 
@@ -107,22 +107,22 @@ export function AppearancePolicyPanel() {
           </h3>
           <IllustrativeTag />
         </div>
-        {policy.changes.length === 0 ?
-        <p className="rounded-md border border-line px-4 py-3 text-caption text-fg-subtle">
+        {policy.changes.length === 0 ? (
+          <p className="rounded-md border border-line px-4 py-3 text-caption text-fg-subtle">
             No changes yet. Both appearances are available; the default is {defaultInfo?.name}.
-          </p> :
-
-        <ol className="divide-y divide-line overflow-hidden rounded-md border border-line">
-            {policy.changes.map((c) =>
-          <li key={c.id} className="flex flex-col gap-0.5 px-4 py-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+          </p>
+        ) : (
+          <ol className="divide-y divide-line overflow-hidden rounded-md border border-line">
+            {policy.changes.map((c) => (
+              <li key={c.id} className="flex flex-col gap-0.5 px-4 py-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
                 <span className="text-label text-fg">{c.summary}</span>
                 <span className="shrink-0 text-caption text-fg-subtle">
                   {c.actor.split(' · ')[0]} · {formatRelative(c.at)}
                 </span>
               </li>
-          )}
+            ))}
           </ol>
-        }
+        )}
       </section>
 
       <Dialog
@@ -131,29 +131,29 @@ export function AppearancePolicyPanel() {
         title={`Withdraw “${confirmWithdraw?.name}”?`}
         description="Workspace users won’t be able to pick it any more."
         footer={
-        <>
+          <>
             <Button variant="secondary" onClick={() => setConfirmWithdraw(null)}>
               Cancel
             </Button>
             <Button
-            data-autofocus
-            onClick={() => {
-              if (confirmWithdraw) {
-                policy.setEnabled(confirmWithdraw.id, false);
-                toast(`“${confirmWithdraw.name}” withdrawn`, { description: `Affected users now see ${defaultInfo?.name}.` });
-              }
-              setConfirmWithdraw(null);
-            }}>
-            
+              data-autofocus
+              onClick={() => {
+                if (confirmWithdraw) {
+                  policy.setEnabled(confirmWithdraw.id, false);
+                  toast(`“${confirmWithdraw.name}” withdrawn`, { description: `Affected users now see ${defaultInfo?.name}.` });
+                }
+                setConfirmWithdraw(null);
+              }}
+            >
               Withdraw
             </Button>
           </>
-        }>
-        
+        }
+      >
         <p className="pb-2 text-label text-fg-muted">
           Workspaces currently using it will switch to the default, <span className="font-medium text-fg">{defaultInfo?.name}</span>. Their choice is remembered and comes back if you make it available again. Public pages aren’t affected.
         </p>
       </Dialog>
-    </div>);
-
+    </div>
+  );
 }

@@ -17,7 +17,7 @@ interface AudioPlayerProps {
   inert?: boolean;
 }
 
-const fmt = (s: number) => Number.isFinite(s) ? `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}` : '0:00';
+const fmt = (s: number) => (Number.isFinite(s) ? `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}` : '0:00');
 
 /** A themed, keyboard-friendly audio player (D124). Native <audio> underneath for reliability. */
 export function AudioPlayer({ src, title, theme: t, deferLoad, allowDownload, fileName, onEnded, autoPlay, inert }: AudioPlayerProps) {
@@ -43,8 +43,8 @@ export function AudioPlayer({ src, title, theme: t, deferLoad, allowDownload, fi
     }
     const a = ref.current;
     if (!a) return;
-    if (a.paused) a.play().catch(() => setFailed(true));else
-    a.pause();
+    if (a.paused) a.play().catch(() => setFailed(true));
+    else a.pause();
   };
 
   const seek = (v: number) => {
@@ -60,8 +60,8 @@ export function AudioPlayer({ src, title, theme: t, deferLoad, allowDownload, fi
           onClick={toggle}
           aria-label={`${playing ? 'Pause' : 'Play'} ${title || 'track'}`}
           className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-transform duration-100 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
-          style={{ background: t.accent, color: t.accentText }}>
-          
+          style={{ background: t.accent, color: t.accentText }}
+        >
           {playing ? <PauseIcon size={18} aria-hidden /> : <PlayIcon size={18} className="translate-x-px" aria-hidden />}
         </button>
         <div className="flex min-w-0 flex-1 flex-col gap-1">
@@ -76,47 +76,47 @@ export function AudioPlayer({ src, title, theme: t, deferLoad, allowDownload, fi
             aria-label={`Position in ${title || 'track'}`}
             aria-valuetext={`${fmt(time)} of ${fmt(duration)}`}
             className="h-1.5 w-full cursor-pointer disabled:cursor-default"
-            style={{ accentColor: t.accent }} />
-          
+            style={{ accentColor: t.accent }}
+          />
           <div className="flex justify-between text-[11.5px] tabular-nums" style={{ color: t.mutedText }}>
             <span>{fmt(time)}</span>
             <span>{loaded ? fmt(duration) : deferLoad ? 'Tap play to load' : '–:––'}</span>
           </div>
         </div>
-        {allowDownload && !inert &&
-        <a
-          href={src}
-          download={fileName || title || 'track'}
-          aria-label={`Download ${title || 'track'}`}
-          className="flex h-10 w-10 shrink-0 items-center justify-center focus-visible:outline-none focus-visible:ring-2"
-          style={{ color: t.text, border: `1px solid ${mix(t.text, 16)}`, borderRadius: buttonRadius(t) }}>
-          
+        {allowDownload && !inert && (
+          <a
+            href={src}
+            download={fileName || title || 'track'}
+            aria-label={`Download ${title || 'track'}`}
+            className="flex h-10 w-10 shrink-0 items-center justify-center focus-visible:outline-none focus-visible:ring-2"
+            style={{ color: t.text, border: `1px solid ${mix(t.text, 16)}`, borderRadius: buttonRadius(t) }}
+          >
             <DownloadIcon size={16} aria-hidden />
           </a>
-        }
+        )}
       </div>
-      {failed &&
-      <p role="alert" className="text-[12px]" style={{ color: t.mutedText }}>
+      {failed && (
+        <p role="alert" className="text-[12px]" style={{ color: t.mutedText }}>
           This track can’t play right now. Check your connection and try again.
         </p>
-      }
-      {loaded && !inert &&
-      <audio
-        ref={ref}
-        src={src}
-        preload={deferLoad ? 'none' : 'metadata'}
-        onPlay={() => setPlaying(true)}
-        onPause={() => setPlaying(false)}
-        onTimeUpdate={(e) => setTime(e.currentTarget.currentTime)}
-        onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
-        onEnded={() => {
-          setPlaying(false);
-          onEnded?.();
-        }}
-        onError={() => setFailed(true)}
-        className="hidden" />
-
-      }
-    </div>);
-
+      )}
+      {loaded && !inert && (
+        <audio
+          ref={ref}
+          src={src}
+          preload={deferLoad ? 'none' : 'metadata'}
+          onPlay={() => setPlaying(true)}
+          onPause={() => setPlaying(false)}
+          onTimeUpdate={(e) => setTime(e.currentTarget.currentTime)}
+          onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
+          onEnded={() => {
+            setPlaying(false);
+            onEnded?.();
+          }}
+          onError={() => setFailed(true)}
+          className="hidden"
+        />
+      )}
+    </div>
+  );
 }

@@ -27,32 +27,32 @@ export function PrivacyTab() {
           title="Visitor analytics"
           description="What your pages record, and how long it’s kept."
           footer={
-          <div className="flex flex-wrap gap-2">
-              {sampleCount > 0 ?
-            <Button size="sm" variant="secondary" disabled={!manage.allowed} onClick={clearSample}>
+            <div className="flex flex-wrap gap-2">
+              {sampleCount > 0 ? (
+                <Button size="sm" variant="secondary" disabled={!manage.allowed} onClick={clearSample}>
                   {tr('Clear sample events ({n})', { n: sampleCount.toLocaleString() })}
-                </Button> :
-
-            <Button size="sm" variant="secondary" disabled={!manage.allowed} onClick={loadSample}>
+                </Button>
+              ) : (
+                <Button size="sm" variant="secondary" disabled={!manage.allowed} onClick={loadSample}>
                   Add sample visits
                 </Button>
-            }
+              )}
               <Button size="sm" variant="destructive" disabled={!manage.allowed || data.events.length === 0} onClick={() => setConfirm(true)}>
                 Delete all visit data
               </Button>
             </div>
-          }>
-          
+          }
+        >
           <div className="flex flex-col gap-5">
           <Switch id="priv-enabled" label="Record visits to my pages" description={manage.allowed ? 'Views, taps, where visitors came from, and steps towards an order, booking or form.' : manage.reason} checked={s.enabled} disabled={!manage.allowed} onChange={(enabled) => updateSettings({ enabled })} />
           <Switch
-              id="priv-own"
-              label="Don’t count my own visits"
-              description="In this prototype you’re both the owner and the visitor on this device, so it’s off — turn it on to stop your own testing showing up."
-              checked={s.excludeOwn}
-              disabled={!manage.allowed || !s.enabled}
-              onChange={(excludeOwn) => updateSettings({ excludeOwn })} />
-            
+            id="priv-own"
+            label="Don’t count my own visits"
+            description="In this prototype you’re both the owner and the visitor on this device, so it’s off — turn it on to stop your own testing showing up."
+            checked={s.excludeOwn}
+            disabled={!manage.allowed || !s.enabled}
+            onChange={(excludeOwn) => updateSettings({ excludeOwn })}
+          />
           <div className="flex items-center justify-between gap-3 border-t border-line pt-4">
             <div>
               <p className="text-label font-medium text-fg">{tr('Kept for {n} days', { n: s.retentionDays })}</p>
@@ -84,23 +84,23 @@ export function PrivacyTab() {
         title="Delete all visit data?"
         description="Every recorded visit, tap and step is removed for this workspace. Orders, bookings and contacts aren’t affected."
         footer={
-        <>
+          <>
             <Button variant="secondary" onClick={() => setConfirm(false)}>
               Keep it
             </Button>
             <Button
-            variant="destructive"
-            onClick={() => {
-              clearAll();
-              team.log('settings', 'deleted all visit data');
-              setConfirm(false);
-            }}>
-            
+              variant="destructive"
+              onClick={() => {
+                clearAll();
+                team.log('settings', 'deleted all visit data');
+                setConfirm(false);
+              }}
+            >
               Delete
             </Button>
           </>
-        } />
-      
-    </div>);
-
+        }
+      />
+    </div>
+  );
 }

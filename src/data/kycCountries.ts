@@ -32,7 +32,7 @@ export interface KycCountryRules {
   /** "Name on BVN: {name}" in Nigeria. */
   nameOnRecord: string;
   identityHint: string;
-  idTypes: {value: IdType;label: string;}[];
+  idTypes: { value: IdType; label: string }[];
   /** ID types that carry an expiry date. */
   expiring: IdType[];
   officialLetter: string;
@@ -66,8 +66,8 @@ export interface KycCountryRules {
     peopleCompany: string;
     peopleBn: string;
   };
-  tax: {label: string;placeholder: string;pattern: RegExp;error: string;badge: string;};
-  entities: Record<EntityType, {label: string;short: string;blurb: string;needs: string[];}>;
+  tax: { label: string; placeholder: string; pattern: RegExp; error: string; badge: string };
+  entities: Record<EntityType, { label: string; short: string; blurb: string; needs: string[] }>;
   notSure: string;
   consent: string;
   volume: Record<Exclude<KycDeclarations['monthlyVolume'], ''>, string>;
@@ -77,7 +77,7 @@ export interface KycCountryRules {
 const proofBase: Omit<Record<KycAddress['proofType'], string>, 'lga_letter'> = {
   utility: 'Utility bill (last 3 months)',
   bank_statement: 'Bank statement (last 3 months)',
-  tenancy: 'Tenancy agreement'
+  tenancy: 'Tenancy agreement',
 };
 
 export const proofLabelsFor = (r: KycCountryRules): Record<KycAddress['proofType'], string> => ({ ...proofBase, lga_letter: r.officialLetter });
@@ -94,11 +94,11 @@ export const kycCountries: Record<CountryCode, KycCountryRules> = {
     nameOnRecord: 'Name on BVN: {name}',
     identityHint: 'BVN, NIN, ID and selfie',
     idTypes: [
-    { value: 'nin', label: 'NIN slip or card' },
-    { value: 'passport', label: 'International passport' },
-    { value: 'licence', label: 'Driver’s licence' },
-    { value: 'voters', label: 'Voter’s card' }],
-
+      { value: 'nin', label: 'NIN slip or card' },
+      { value: 'passport', label: 'International passport' },
+      { value: 'licence', label: 'Driver’s licence' },
+      { value: 'voters', label: 'Voter’s card' },
+    ],
     expiring: ['passport', 'licence'],
     officialLetter: 'Letter from your LGA',
     addressPlaceholder: '12 Admiralty Way, Lekki Phase 1',
@@ -128,18 +128,18 @@ export const kycCountries: Record<CountryCode, KycCountryRules> = {
       constitutionError: 'Upload your memorandum and articles of association.',
       simulated: 'Prototype: CAC numbers ending in 000 aren’t found; ending in 7 show as inactive.',
       peopleCompany: 'List every director, and anyone who owns or controls 25% or more of the company. They should match your CAC status report.',
-      peopleBn: 'List every proprietor named on your BN registration.'
+      peopleBn: 'List every proprietor named on your BN registration.',
     },
     tax: { label: 'Tax ID (TIN)', placeholder: '12345678-0001', pattern: /^\d{8}-\d{4}$/, error: 'Enter your TIN, e.g. 12345678-0001.', badge: 'FIRS' },
     entities: {
       individual: { label: 'Individual or freelancer', short: 'Individual', blurb: 'You sell under your own name and aren’t registered with CAC.', needs: ['BVN and NIN', 'A government ID and a selfie', 'Proof of address', 'A bank account in your name'] },
       business_name: { label: 'Registered business name', short: 'Business name (BN)', blurb: 'Registered with CAC as a business name or sole proprietorship (BN number).', needs: ['Everything for individuals', 'CAC certificate and BN number', 'Proprietors listed', 'A bank account in the business name'] },
-      company: { label: 'Limited company', short: 'Company (RC)', blurb: 'Registered with CAC as a limited liability company (RC number).', needs: ['The person applying: BVN, ID, selfie', 'CAC certificate, status report and MEMART', 'Directors and owners of 25% or more', 'A corporate bank account'] }
+      company: { label: 'Limited company', short: 'Company (RC)', blurb: 'Registered with CAC as a limited liability company (RC number).', needs: ['The person applying: BVN, ID, selfie', 'CAC certificate, status report and MEMART', 'Directors and owners of 25% or more', 'A corporate bank account'] },
     },
     notSure: 'Not sure? If you have a CAC certificate, choose the type printed on it. Registered businesses get higher payout limits.',
     consent: 'I agree that KUBICU’s licensed payment partner can check these details with NIBSS, NIMC, CAC and FIRS, and keep the results as the law requires.',
     volume: { under_500k: 'Under ₦500,000', '500k_2m': '₦500,000 – ₦2 million', '2m_10m': '₦2 – 10 million', '10m_50m': '₦10 – 50 million', over_50m: 'Over ₦50 million' },
-    describeExample: 'For example: “Made-to-order Ankara dresses, sold on Instagram and delivered across Lagos.”'
+    describeExample: 'For example: “Made-to-order Ankara dresses, sold on Instagram and delivered across Lagos.”',
   },
   KE: {
     checkedWith: 'Checked with IPRS and KRA through our partner. We only see whether your details match — never your bank balance.',
@@ -150,10 +150,10 @@ export const kycCountries: Record<CountryCode, KycCountryRules> = {
     nameOnRecord: 'Name on record: {name}',
     identityHint: 'National ID, KRA PIN and selfie',
     idTypes: [
-    { value: 'nin', label: 'National ID card' },
-    { value: 'passport', label: 'Passport' },
-    { value: 'licence', label: 'Driving licence' }],
-
+      { value: 'nin', label: 'National ID card' },
+      { value: 'passport', label: 'Passport' },
+      { value: 'licence', label: 'Driving licence' },
+    ],
     expiring: ['passport', 'licence'],
     officialLetter: 'Letter from your chief',
     addressPlaceholder: 'Ngong Road, Kilimani',
@@ -183,18 +183,18 @@ export const kycCountries: Record<CountryCode, KycCountryRules> = {
       constitutionError: 'Upload your memorandum and articles of association.',
       simulated: 'Prototype: registry numbers ending in 000 aren’t found; ending in 7 show as inactive.',
       peopleCompany: 'List every director, and anyone who owns or controls 25% or more of the company. They should match your CR12.',
-      peopleBn: 'List every proprietor named on your business name registration.'
+      peopleBn: 'List every proprietor named on your business name registration.',
     },
     tax: { label: 'Company KRA PIN', placeholder: 'P051234567X', pattern: /^P\d{9}[A-Z]$/i, error: 'Enter the company’s KRA PIN, e.g. P051234567X.', badge: 'KRA' },
     entities: {
       individual: { label: 'Individual or freelancer', short: 'Individual', blurb: 'You sell under your own name and aren’t registered with BRS.', needs: ['National ID and KRA PIN', 'A government ID and a selfie', 'Proof of address', 'A bank or M-Pesa account in your name'] },
       business_name: { label: 'Registered business name', short: 'Business name (BN)', blurb: 'Registered with BRS as a business name or sole proprietorship.', needs: ['Everything for individuals', 'BRS certificate and business name number', 'Proprietors listed', 'An account in the business name'] },
-      company: { label: 'Limited company', short: 'Company (PVT)', blurb: 'Registered with BRS as a private limited company.', needs: ['The person applying: ID, KRA PIN, selfie', 'Certificate of incorporation, CR12 and articles', 'Directors and owners of 25% or more', 'A company bank account'] }
+      company: { label: 'Limited company', short: 'Company (PVT)', blurb: 'Registered with BRS as a private limited company.', needs: ['The person applying: ID, KRA PIN, selfie', 'Certificate of incorporation, CR12 and articles', 'Directors and owners of 25% or more', 'A company bank account'] },
     },
     notSure: 'Not sure? If you have a BRS certificate, choose the type printed on it. Registered businesses get higher payout limits.',
     consent: 'I agree that KUBICU’s licensed payment partner can check these details with IPRS, KRA and the Business Registration Service, and keep the results as the law requires.',
     volume: { under_500k: 'Under KSh 50,000', '500k_2m': 'KSh 50,000 – 200,000', '2m_10m': 'KSh 200,000 – 1 million', '10m_50m': 'KSh 1 – 5 million', over_50m: 'Over KSh 5 million' },
-    describeExample: 'For example: “Made-to-order kitenge dresses, sold on Instagram and delivered across Nairobi.”'
+    describeExample: 'For example: “Made-to-order kitenge dresses, sold on Instagram and delivered across Nairobi.”',
   },
   GH: {
     checkedWith: 'Checked with the National Identification Authority and GRA through our partner. We only see whether your details match — never your bank balance.',
@@ -205,11 +205,11 @@ export const kycCountries: Record<CountryCode, KycCountryRules> = {
     nameOnRecord: 'Name on record: {name}',
     identityHint: 'Ghana Card, ID and selfie',
     idTypes: [
-    { value: 'nin', label: 'Ghana Card' },
-    { value: 'passport', label: 'Passport' },
-    { value: 'licence', label: 'Driver’s licence' },
-    { value: 'voters', label: 'Voter ID card' }],
-
+      { value: 'nin', label: 'Ghana Card' },
+      { value: 'passport', label: 'Passport' },
+      { value: 'licence', label: 'Driver’s licence' },
+      { value: 'voters', label: 'Voter ID card' },
+    ],
     expiring: ['nin', 'passport', 'licence'],
     officialLetter: 'Letter from your assembly member',
     addressPlaceholder: '12 Oxford Street, Osu',
@@ -239,18 +239,18 @@ export const kycCountries: Record<CountryCode, KycCountryRules> = {
       constitutionError: 'Upload your company constitution.',
       simulated: 'Prototype: registry numbers ending in 000 aren’t found; ending in 7 show as inactive.',
       peopleCompany: 'List every director, and anyone who owns or controls 25% or more of the company. They should match your company profile.',
-      peopleBn: 'List every proprietor named on your business name registration.'
+      peopleBn: 'List every proprietor named on your business name registration.',
     },
     tax: { label: 'Company TIN', placeholder: 'C0012345678', pattern: /^C\d{10}$/i, error: 'Enter the company’s TIN, e.g. C0012345678.', badge: 'GRA' },
     entities: {
       individual: { label: 'Individual or freelancer', short: 'Individual', blurb: 'You sell under your own name and aren’t registered with the ORC.', needs: ['Ghana Card number', 'A government ID and a selfie', 'Proof of address', 'A bank or mobile money account in your name'] },
       business_name: { label: 'Registered business name', short: 'Business name (BN)', blurb: 'Registered with the ORC as a business name or sole proprietorship.', needs: ['Everything for individuals', 'ORC certificate and business name number', 'Proprietors listed', 'An account in the business name'] },
-      company: { label: 'Limited company', short: 'Company (Ltd)', blurb: 'Registered with the ORC as a company limited by shares.', needs: ['The person applying: Ghana Card, ID, selfie', 'Certificate of incorporation, company profile and constitution', 'Directors and owners of 25% or more', 'A company bank account'] }
+      company: { label: 'Limited company', short: 'Company (Ltd)', blurb: 'Registered with the ORC as a company limited by shares.', needs: ['The person applying: Ghana Card, ID, selfie', 'Certificate of incorporation, company profile and constitution', 'Directors and owners of 25% or more', 'A company bank account'] },
     },
     notSure: 'Not sure? If you have an ORC certificate, choose the type printed on it. Registered businesses get higher payout limits.',
     consent: 'I agree that KUBICU’s licensed payment partner can check these details with the National Identification Authority, GRA and the ORC, and keep the results as the law requires.',
     volume: { under_500k: 'Under GH₵ 5,000', '500k_2m': 'GH₵ 5,000 – 20,000', '2m_10m': 'GH₵ 20,000 – 100,000', '10m_50m': 'GH₵ 100,000 – 500,000', over_50m: 'Over GH₵ 500,000' },
-    describeExample: 'For example: “Made-to-order kente dresses, sold on Instagram and delivered across Accra.”'
+    describeExample: 'For example: “Made-to-order kente dresses, sold on Instagram and delivered across Accra.”',
   },
   ZA: {
     checkedWith: 'Checked with Home Affairs and SARS through our partner. We only see whether your details match — never your bank balance.',
@@ -261,10 +261,10 @@ export const kycCountries: Record<CountryCode, KycCountryRules> = {
     nameOnRecord: 'Name on record: {name}',
     identityHint: 'SA ID, photo ID and selfie',
     idTypes: [
-    { value: 'nin', label: 'Smart ID card or green ID book' },
-    { value: 'passport', label: 'Passport' },
-    { value: 'licence', label: 'Driving licence' }],
-
+      { value: 'nin', label: 'Smart ID card or green ID book' },
+      { value: 'passport', label: 'Passport' },
+      { value: 'licence', label: 'Driving licence' },
+    ],
     expiring: ['passport', 'licence'],
     officialLetter: 'Letter from your ward councillor',
     addressPlaceholder: '12 Jan Smuts Avenue, Rosebank',
@@ -294,19 +294,19 @@ export const kycCountries: Record<CountryCode, KycCountryRules> = {
       constitutionError: 'Upload your memorandum of incorporation.',
       simulated: 'Prototype: registration numbers ending in 000 aren’t found; ending in 7 show as inactive.',
       peopleCompany: 'List every director, and anyone who owns or controls 25% or more of the company. They should match your CIPC disclosure certificate.',
-      peopleBn: 'List every member named on your founding statement.'
+      peopleBn: 'List every member named on your founding statement.',
     },
     tax: { label: 'Income tax number', placeholder: '9012345678', pattern: /^\d{10}$/, error: 'Enter the 10-digit SARS income tax number.', badge: 'SARS' },
     entities: {
       individual: { label: 'Individual or sole proprietor', short: 'Individual', blurb: 'You sell under your own name. Sole proprietors don’t register with CIPC.', needs: ['SA ID number', 'A government ID and a selfie', 'Proof of address', 'A bank account in your name'] },
       business_name: { label: 'Close corporation', short: 'Close corporation (CC)', blurb: 'Registered with CIPC as a close corporation (CK number).', needs: ['Everything for individuals', 'CIPC certificate and CK number', 'Members listed', 'A bank account in the CC’s name'] },
-      company: { label: 'Private company', short: 'Company (Pty) Ltd', blurb: 'Registered with CIPC as a private company, (Pty) Ltd.', needs: ['The person applying: SA ID, photo ID, selfie', 'CIPC certificate, disclosure certificate and MOI', 'Directors and owners of 25% or more', 'A company bank account'] }
+      company: { label: 'Private company', short: 'Company (Pty) Ltd', blurb: 'Registered with CIPC as a private company, (Pty) Ltd.', needs: ['The person applying: SA ID, photo ID, selfie', 'CIPC certificate, disclosure certificate and MOI', 'Directors and owners of 25% or more', 'A company bank account'] },
     },
     notSure: 'Not sure? If you have a CIPC certificate, choose the type printed on it. Registered businesses get higher payout limits.',
     consent: 'I agree that KUBICU’s licensed payment partner can check these details with Home Affairs, SARS and CIPC, and keep the results as the law requires.',
     volume: { under_500k: 'Under R 10,000', '500k_2m': 'R 10,000 – 40,000', '2m_10m': 'R 40,000 – 200,000', '10m_50m': 'R 200,000 – 1 million', over_50m: 'Over R 1 million' },
-    describeExample: 'For example: “Made-to-order shweshwe dresses, sold on Instagram and delivered across Johannesburg.”'
-  }
+    describeExample: 'For example: “Made-to-order shweshwe dresses, sold on Instagram and delivered across Johannesburg.”',
+  },
 };
 
 export { simulatedIds };

@@ -50,8 +50,8 @@ export function BlockDetails({ type, theme, status, favourite, placement, touch,
           type="button"
           onClick={onToggleFavourite}
           aria-pressed={favourite}
-          className="inline-flex h-9 items-center gap-1.5 rounded-md px-2 text-caption text-fg-muted hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-          
+          className="inline-flex h-9 items-center gap-1.5 rounded-md px-2 text-caption text-fg-muted hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+        >
           <StarIcon size={14} className={favourite ? 'text-warning' : ''} fill={favourite ? 'currentColor' : 'none'} aria-hidden />
           {favourite ? tr('Favourite') : tr('Add to favourites')}
         </button>
@@ -61,55 +61,55 @@ export function BlockDetails({ type, theme, status, favourite, placement, touch,
         <p className="text-caption text-fg-subtle">{cat ? tr(cat.label) : ''}</p>
         <h3 className="mt-0.5 text-heading font-semibold text-fg">{name}</h3>
         <p className="mt-1 text-label text-fg-muted">{tr(def.description)}</p>
-        {status !== 'available' &&
-        <div className="mt-2">
+        {status !== 'available' && (
+          <div className="mt-2">
             <BlockStatusChip status={status} />
           </div>
-        }
+        )}
       </div>
 
       <div ref={previewRef} className="overflow-hidden rounded-md border border-line">
         <BlockMiniPreview type={type} theme={theme} width={w} height={touch ? 260 : 220} />
       </div>
 
-      {(needs.length > 0 || def.minPlan || def.requiresApp) &&
-      <section aria-labelledby="bd-needs">
+      {(needs.length > 0 || def.minPlan || def.requiresApp) && (
+        <section aria-labelledby="bd-needs">
           <h4 id="bd-needs" className="text-caption font-semibold text-fg">{tr('What it needs')}</h4>
           <ul className="mt-1.5 flex list-disc flex-col gap-1 pl-4 text-caption text-fg-muted">
-            {needs.map((n) =>
-          <li key={n}>{tr(n)}</li>
-          )}
+            {needs.map((n) => (
+              <li key={n}>{tr(n)}</li>
+            ))}
             {def.minPlan && <li>{tr('Full block on {plan} and above; a limited version shows on lower plans.', { plan: plans[def.minPlan].name })}</li>}
-            {def.requiresApp && status === 'app' &&
-          <li>
+            {def.requiresApp && status === 'app' && (
+              <li>
                 {tr('Install the app first.')}{' '}
                 <Link to={`/app/extensions?ext=${def.requiresApp}`} className="font-semibold text-fg underline underline-offset-2">
                   {tr('Open Extensions')}
                 </Link>
               </li>
-          }
+            )}
           </ul>
         </section>
-      }
+      )}
 
-      {variants &&
-      <section aria-labelledby="bd-looks">
+      {variants && (
+        <section aria-labelledby="bd-looks">
           <h4 id="bd-looks" className="text-caption font-semibold text-fg">{tr('Looks')}</h4>
           <p className="mt-1 text-caption text-fg-muted">{tr('{looks} — change any time in Style.', { looks: variants.map((v) => tr(v)).join(' · ') })}</p>
         </section>
-      }
+      )}
 
       <div className="sticky bottom-0 -mx-4 mt-1 flex flex-col gap-1.5 border-t border-line bg-raised px-4 pb-1 pt-3">
         <Button onClick={onAdd} disabled={status === 'app' || status === 'planned'} className={touch ? 'h-12' : undefined}>
           {tr('Add {name}', { name: name.toLowerCase() })}
         </Button>
         <p className="text-center text-caption text-fg-subtle">{placement}</p>
-        {touch &&
-        <Button variant="secondary" onClick={onBack} className="h-12">
+        {touch && (
+          <Button variant="secondary" onClick={onBack} className="h-12">
             {tr('Cancel')}
           </Button>
-        }
+        )}
       </div>
-    </div>);
-
+    </div>
+  );
 }

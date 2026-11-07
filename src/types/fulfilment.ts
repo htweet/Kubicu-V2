@@ -47,7 +47,7 @@ export interface Delivery {
   createdAt: string;
   sample?: boolean;
   /** Parcel going to another country (D451): country codes and how far it has got after pickup. */
-  crossBorder?: {from: string;to?: string;stage: CrossBorderStage;};
+  crossBorder?: { from: string; to?: string; stage: CrossBorderStage };
 }
 
 export interface FulfilmentData {

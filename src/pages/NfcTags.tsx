@@ -39,32 +39,32 @@ export function NfcTags() {
   };
 
   const setStatus = (t: NfcTag, status: NfcTag['status']) => {
-    if (!update((list) => list.map((x) => x.id === t.id ? { ...x, status } : x))) return;
+    if (!update((list) => list.map((x) => (x.id === t.id ? { ...x, status } : x)))) return;
     team.log('settings', `${status === 'off' ? 'turned off' : 'turned on'} NFC tag “${t.label}”`, '/app/nfc');
     toast(status === 'off' ? tr('{name} turned off', { name: t.label }) : tr('{name} is on again', { name: t.label }), { description: status === 'off' ? tr('Taps now show a “turned off” notice instead of your page.') : undefined });
   };
 
-  const orderButton =
-  <Button leadingIcon={PlusIcon} disabled={!can.allowed} onClick={() => setOrdering(true)}>
+  const orderButton = (
+    <Button leadingIcon={PlusIcon} disabled={!can.allowed} onClick={() => setOrdering(true)}>
       {tr('Order tags')}
-    </Button>;
-
+    </Button>
+  );
 
   return (
     <div className="mx-auto w-full max-w-[1200px] px-5 py-8 md:px-10 md:py-12">
       <PageHeader title={tr('NFC tags')} description={tr('Stickers, cards and keyrings customers tap with their phone to open your page. Point each one anywhere, change it later, or switch it off if it’s lost.')} actions={orderButton} />
 
-      {tags.length === 0 ?
-      <EmptyState
-        framed
-        className="mt-8"
-        icon={NfcIcon}
-        title={tr('No tags yet')}
-        description={tr('Put one on your counter, a product box or a rider’s keyring. Taps are counted here, separately from QR scans.')}
-        action={can.allowed ? orderButton : undefined} /> :
-
-
-      <>
+      {tags.length === 0 ? (
+        <EmptyState
+          framed
+          className="mt-8"
+          icon={NfcIcon}
+          title={tr('No tags yet')}
+          description={tr('Put one on your counter, a product box or a rider’s keyring. Taps are counted here, separately from QR scans.')}
+          action={can.allowed ? orderButton : undefined}
+        />
+      ) : (
+        <>
           <div className="mt-8 flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
             <p className="text-label text-fg-muted">{tr('Taps in the last 7 days: {n} · Tags: {tags}', { n: weekTaps, tags: tags.length })}</p>
             <Link to="/app/qr" className="shrink-0 text-label text-action hover:underline">
@@ -72,8 +72,8 @@ export function NfcTags() {
             </Link>
           </div>
           <ul className="mt-4 divide-y divide-line border-y border-line">
-            {tags.map((t) =>
-          <li key={t.id} className="-mx-2 flex items-center gap-2 rounded-md px-2 transition-colors duration-150 hover:bg-sunken">
+            {tags.map((t) => (
+              <li key={t.id} className="-mx-2 flex items-center gap-2 rounded-md px-2 transition-colors duration-150 hover:bg-sunken">
                 <button type="button" disabled={!can.allowed} onClick={() => setEditing(t)} className="flex min-w-0 flex-1 items-center gap-4 rounded-md py-3.5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus disabled:cursor-default">
                   <span className="min-w-0 flex-1">
                     <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
@@ -90,25 +90,25 @@ export function NfcTags() {
                   </span>
                 </button>
                 <Menu
-              align="end"
-              trigger={(p) => <IconButton {...p} icon={MoreHorizontalIcon} label={tr('Actions for {name}', { name: t.label })} variant="ghost" />}
-              items={[
-              { id: 'edit', label: tr('Rename or re-point'), icon: PencilIcon, disabled: !can.allowed, onSelect: () => setEditing(t) },
-              { id: 'test', label: tr('Test a tap'), icon: ExternalLinkIcon, onSelect: () => window.open(tapPath(t), '_blank', 'noopener') },
-              t.status === 'active' ?
-              { id: 'off', label: tr('Turn off (lost or stolen)'), icon: PowerIcon, destructive: true, disabled: !can.allowed, onSelect: () => setStatus(t, 'off') } :
-              { id: 'on', label: tr('Turn back on'), icon: PowerIcon, disabled: !can.allowed, onSelect: () => setStatus(t, 'active') }]
-              } />
-            
+                  align="end"
+                  trigger={(p) => <IconButton {...p} icon={MoreHorizontalIcon} label={tr('Actions for {name}', { name: t.label })} variant="ghost" />}
+                  items={[
+                    { id: 'edit', label: tr('Rename or re-point'), icon: PencilIcon, disabled: !can.allowed, onSelect: () => setEditing(t) },
+                    { id: 'test', label: tr('Test a tap'), icon: ExternalLinkIcon, onSelect: () => window.open(tapPath(t), '_blank', 'noopener') },
+                    t.status === 'active'
+                      ? { id: 'off', label: tr('Turn off (lost or stolen)'), icon: PowerIcon, destructive: true, disabled: !can.allowed, onSelect: () => setStatus(t, 'off') }
+                      : { id: 'on', label: tr('Turn back on'), icon: PowerIcon, disabled: !can.allowed, onSelect: () => setStatus(t, 'active') },
+                  ]}
+                />
               </li>
-          )}
+            ))}
           </ul>
           <p className="mt-3 text-caption text-fg-subtle">{tr('“Test a tap” opens the tag’s address in a new tab and counts as a tap. Ordering and delivery are simulated.')}</p>
         </>
-      }
+      )}
 
       <NfcOrderSheet open={ordering} onClose={() => setOrdering(false)} />
       <NfcTagSheet tag={editing} onClose={() => setEditing(null)} />
-    </div>);
-
+    </div>
+  );
 }

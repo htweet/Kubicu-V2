@@ -26,7 +26,7 @@ export interface Opportunity {
   /** Where to handle it in the app. */
   to: string;
   /** Customer to nudge, when we have a phone number. */
-  nudge?: {phone: string;message: string;};
+  nudge?: { phone: string; message: string };
   sample?: boolean;
 }
 
@@ -40,14 +40,14 @@ export const kindLabels: Record<OpportunityKind, string> = {
   lead: 'Unanswered lead',
   followup: 'Follow-up overdue',
   soldout: 'Sold out',
-  automation: 'Automation failed'
+  automation: 'Automation failed',
 };
 
 export const groupLabels: Record<OpportunityGroup, string> = {
   payments: 'Payments',
   customers: 'Leads & follow-ups',
   bookings: 'Bookings',
-  stock: 'Stock & tools'
+  stock: 'Stock & tools',
 };
 
 const HOUR = 3600000;
@@ -74,7 +74,7 @@ export function buildOpportunities(commerce: CommerceData, ops: OpsData, busines
       since: b.start,
       to: `/app/bookings?booking=${b.id}`,
       nudge: b.customer.phone ? { phone: b.customer.phone, message: `Hi ${first(b.customer.name)}, it's ${business}. Your ${b.serviceName} balance of ${formatMoney(bal.amount)} is due before your appointment — you can pay it from your booking link. See you soon!` } : undefined,
-      sample: b.sample
+      sample: b.sample,
     });
   });
 
@@ -91,14 +91,14 @@ export function buildOpportunities(commerce: CommerceData, ops: OpsData, busines
       since: o.balance.requestedAt ?? o.createdAt,
       to: `/app/commerce/orders?order=${o.id}`,
       nudge: o.customer.phone ? { phone: o.customer.phone, message: `Hi ${first(o.customer.name)}, it's ${business}. Your order ${orderRef(o)} is nearly ready! The balance is ${formatMoney(o.balance.dueNgn)} — pay it from your order page and we'll send it out.` } : undefined,
-      sample: o.sample
+      sample: o.sample,
     });
   });
 
   // D112: instalments that failed and are waiting on a retry, or used up their retries.
   commerce.orders.forEach((o) => {
     const inst = o.instalments;
-    if (!inst || inst.status !== 'active' && inst.status !== 'defaulted' || o.status === 'cancelled' || o.status === 'refunded') return;
+    if (!inst || (inst.status !== 'active' && inst.status !== 'defaulted') || o.status === 'cancelled' || o.status === 'refunded') return;
     const failed = inst.parts.find((p) => p.status === 'failed');
     if (!failed) return;
     out.push({
@@ -111,7 +111,7 @@ export function buildOpportunities(commerce: CommerceData, ops: OpsData, busines
       since: failed.failedAt ?? failed.dueAt,
       to: `/app/commerce/orders?order=${o.id}`,
       nudge: o.customer.phone ? { phone: o.customer.phone, message: `Hi ${first(o.customer.name)}, it’s ${business}. Part ${failed.n} of your order ${orderRef(o)} (${formatMoney(failed.amountNgn)}) didn’t go through. You can pay it or update your card from your order page.` } : undefined,
-      sample: o.sample
+      sample: o.sample,
     });
   });
 
@@ -129,7 +129,7 @@ export function buildOpportunities(commerce: CommerceData, ops: OpsData, busines
       since: last.at,
       to: `/app/commerce/orders?order=${o.id}`,
       nudge: o.customer.phone && last.reason !== 'refused' ? { phone: o.customer.phone, message: `Hi ${first(o.customer.name)}, it’s ${business}. We tried to deliver order ${orderRef(o)} but couldn’t reach you. When’s a good time to try again?` } : undefined,
-      sample: o.sample
+      sample: o.sample,
     });
   });
 
@@ -146,7 +146,7 @@ export function buildOpportunities(commerce: CommerceData, ops: OpsData, busines
         valueNgn: r.amount,
         since: q.decidedAt ?? q.createdAt,
         to: '/app/services',
-        sample: q.sample
+        sample: q.sample,
       });
     });
   });
@@ -165,7 +165,7 @@ export function buildOpportunities(commerce: CommerceData, ops: OpsData, busines
       since: o.createdAt,
       to: '/app/commerce/orders?status=new',
       nudge: o.customer.phone ? { phone: o.customer.phone, message: `Hi ${first(o.customer.name)}, it’s ${business}. Your order ${orderRef(o)} is saved but not paid yet — can I help you finish it?` } : undefined,
-      sample: o.sample
+      sample: o.sample,
     });
   });
 
@@ -183,7 +183,7 @@ export function buildOpportunities(commerce: CommerceData, ops: OpsData, busines
       since: s.failedAt ?? s.periodEnd,
       to: '/app/commerce/subscriptions',
       nudge: s.customer.phone ? { phone: s.customer.phone, message: `Hi ${first(s.customer.name)}, it’s ${business}. Your ${plan?.name ?? 'subscription'} payment didn’t go through. You can update your card from your subscription link — want me to resend it?` } : undefined,
-      sample: s.sample
+      sample: s.sample,
     });
   });
 
@@ -200,7 +200,7 @@ export function buildOpportunities(commerce: CommerceData, ops: OpsData, busines
         since: b.events[0]?.at ?? b.start,
         to: '/app/bookings',
         nudge: b.customer.phone ? { phone: b.customer.phone, message: `Hi ${first(b.customer.name)}, it’s ${business}. Your booking is held but the deposit isn’t paid yet — shall I send the link again?` } : undefined,
-        sample: b.sample
+        sample: b.sample,
       });
     }
     if (b.status === 'no_show' && now - start < 30 * DAY) {
@@ -214,7 +214,7 @@ export function buildOpportunities(commerce: CommerceData, ops: OpsData, busines
         since: b.start,
         to: '/app/bookings',
         nudge: b.customer.phone ? { phone: b.customer.phone, message: `Hi ${first(b.customer.name)}, it’s ${business}. We missed you on ${new Date(b.start).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} — would you like to pick a new time?` } : undefined,
-        sample: b.sample
+        sample: b.sample,
       });
     }
   });
@@ -231,7 +231,7 @@ export function buildOpportunities(commerce: CommerceData, ops: OpsData, busines
         since: c.createdAt,
         to: '/app/audience',
         nudge: c.phone ? { phone: c.phone, message: `Hi ${first(c.name)}, it’s ${business} — thanks for your enquiry. How can I help?` } : undefined,
-        sample: c.sample
+        sample: c.sample,
       });
     }
     c.tasks.forEach((t) => {
@@ -246,7 +246,7 @@ export function buildOpportunities(commerce: CommerceData, ops: OpsData, busines
         since: t.due,
         to: '/app/audience',
         nudge: c.phone ? { phone: c.phone, message: `Hi ${first(c.name)}, it’s ${business}. ` } : undefined,
-        sample: c.sample
+        sample: c.sample,
       });
     });
   });
@@ -262,7 +262,7 @@ export function buildOpportunities(commerce: CommerceData, ops: OpsData, busines
       valueNgn: null,
       since: p.updatedAt ?? p.createdAt,
       to: '/app/commerce/inventory',
-      sample: p.sample
+      sample: p.sample,
     });
   });
 
@@ -278,7 +278,7 @@ export function buildOpportunities(commerce: CommerceData, ops: OpsData, busines
       valueNgn: null,
       since: failed[0].at,
       to: '/app/automations',
-      sample: a.sample
+      sample: a.sample,
     });
   });
 

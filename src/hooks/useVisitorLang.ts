@@ -19,8 +19,8 @@ export function useVisitorLang(pageLang?: string | null): [UiLang, (lang: UiLang
     try {
       localStorage.setItem(KEY, lang);
     } catch {
-
-      /* private mode — keep it for this visit only */}
+      /* private mode — keep it for this visit only */
+    }
   }, []);
   return [picked ?? toUiLang(pageLang), set];
 }

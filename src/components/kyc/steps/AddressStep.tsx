@@ -32,10 +32,10 @@ export function AddressStep({ k, set, errors, disabled }: KycStepProps) {
           onChange={(proofType) => setA({ proofType })}
           options={(Object.keys(proofLabels) as KycAddress['proofType'][]).map((v) => ({ value: v, label: tr(proofLabels[v]) }))}
           disabled={disabled}
-          hint="It must show the same name and address as above." />
-        
+          hint="It must show the same name and address as above."
+        />
         <DocUpload id="kyc-proof" label="Upload it" value={a.proof} onChange={(proof) => setA({ proof })} error={errors.proof} disabled={disabled} />
       </div>
-    </div>);
-
+    </div>
+  );
 }

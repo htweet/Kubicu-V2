@@ -10,7 +10,7 @@ import { Segmented } from '../../ui/Segmented';
  * Who looks after this block in a co-branded space (D121). New blocks belong to whoever adds them.
  * In own-sections mode, the other business's blocks are read-only here.
  */
-export function CoBrandBlockBar({ block }: {block: Block;}) {
+export function CoBrandBlockBar({ block }: { block: Block }) {
   const { actions } = useEditor();
   const { cb, actor } = useCoBrand();
 
@@ -35,30 +35,30 @@ export function CoBrandBlockBar({ block }: {block: Block;}) {
           Looked after by <span className="font-semibold text-fg">{owner === 'shared' ? 'both of you' : ownerLabel(owner, actor, cb) === 'Yours' ? 'you' : ownerLabel(owner, actor, cb)}</span>
         </p>
       </div>
-      {cb.mode === 'sections' && (
-      reassign ?
-      <Segmented<BlockOwner>
-        ariaLabel="Who looks after this block"
-        size="sm"
-        fullWidth
-        value={owner}
-        onChange={(next) => actions.transformDocument((d) => setOwner(d, block.id, next))}
-        options={[
-        { value: actor, label: 'Yours' },
-        { value: 'shared', label: 'Shared' },
-        { value: other, label: other === 'lead' ? cb.leadName : cb.partnerName }]
-        } /> :
-
-      null)}
-      {!editable &&
-      <p className="flex items-start gap-1.5 text-caption text-fg-muted">
+      {cb.mode === 'sections' &&
+        (reassign ? (
+          <Segmented<BlockOwner>
+            ariaLabel="Who looks after this block"
+            size="sm"
+            fullWidth
+            value={owner}
+            onChange={(next) => actions.transformDocument((d) => setOwner(d, block.id, next))}
+            options={[
+              { value: actor, label: 'Yours' },
+              { value: 'shared', label: 'Shared' },
+              { value: other, label: other === 'lead' ? cb.leadName : cb.partnerName },
+            ]}
+          />
+        ) : null)}
+      {!editable && (
+        <p className="flex items-start gap-1.5 text-caption text-fg-muted">
           <LockIcon size={12} className="mt-0.5 shrink-0" aria-hidden />
           <span>
             This is {ownerLabel(owner, actor, cb)}’s block, so you can’t change it. Leave them a comment in the partner panel, or ask them to make it shared.
           </span>
         </p>
-      }
+      )}
       {cb.mode === 'open' && <p className="text-caption text-fg-subtle">Open editing: both of you can change it. Changes are listed in the partner panel.</p>}
-    </div>);
-
+    </div>
+  );
 }

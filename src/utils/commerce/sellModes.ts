@@ -14,15 +14,15 @@ export const DEFAULT_GIFT_AMOUNTS = [5000, 10000, 20000, 50000];
 // ——— Bulk prices ———
 
 /** Levels in ascending quantity, keeping only ones that actually lower the price. */
-export function bulkLevels(p: Product): {minQty: number;priceNgn: number;}[] {
+export function bulkLevels(p: Product): { minQty: number; priceNgn: number }[] {
   return (p.bulkPrices ?? []).filter((b) => b.minQty >= 2 && b.priceNgn > 0).sort((a, b) => a.minQty - b.minQty);
 }
 
 /** The price per item for `qty` of this product in one order. Never higher than the normal price. */
 export function bulkUnitPrice(p: Product, base: number, qty: number): number {
-  const level = bulkLevels(p).
-  filter((b) => qty >= b.minQty).
-  pop();
+  const level = bulkLevels(p)
+    .filter((b) => qty >= b.minQty)
+    .pop();
   return level ? Math.min(base, level.priceNgn) : base;
 }
 
@@ -41,7 +41,7 @@ export function bulkIssues(p: Product): string | null {
 
 // ——— Pre-orders ———
 
-export function isPreorder(p: Product | undefined): p is Product & {preorder: NonNullable<Product['preorder']>;} {
+export function isPreorder(p: Product | undefined): p is Product & { preorder: NonNullable<Product['preorder']> } {
   return !!p && p.kind === 'physical' && !!p.preorder;
 }
 
@@ -88,7 +88,7 @@ export function findGiftCard(data: CommerceData, code: string): GiftCard | undef
   return c ? (data.giftCards ?? []).find((g) => g.code === c) : undefined;
 }
 
-export type GiftCardResolution = {ok: true;card: GiftCard;amountNgn: number;} | {ok: false;message: string;} | null;
+export type GiftCardResolution = { ok: true; card: GiftCard; amountNgn: number } | { ok: false; message: string } | null;
 
 /** Checks a code against live data and works out how much of `payableNgn` it covers. */
 export function resolveGiftCard(data: CommerceData, code: string, payableNgn: number, cartHasGiftCards: boolean): GiftCardResolution {
@@ -121,14 +121,14 @@ export function issueGiftCardsForOrder(data: CommerceData, orderId: string): Com
   const issued: GiftCard[] = [];
   lines.forEach((l) => {
     for (let n = 0; n < l.qty; n++)
-    issued.push(newCard(data, taken, { initialNgn: l.unitPriceNgn, source: 'sold', orderId: order.id, orderNumber: order.number, buyerName: order.customer.name, recipientName: '', message: '', expiresAt: null }));
+      issued.push(newCard(data, taken, { initialNgn: l.unitPriceNgn, source: 'sold', orderId: order.id, orderNumber: order.number, buyerName: order.customer.name, recipientName: '', message: '', expiresAt: null }));
   });
   const ev = { id: uid('ev'), kind: 'note' as const, label: `${issued.length} gift card code${issued.length === 1 ? '' : 's'} issued — shown on the buyer’s order page`, at: new Date().toISOString() };
-  return { ...data, giftCards: [...issued, ...cards], orders: data.orders.map((o) => o.id === order.id ? { ...o, events: [ev, ...o.events] } : o) };
+  return { ...data, giftCards: [...issued, ...cards], orders: data.orders.map((o) => (o.id === order.id ? { ...o, events: [ev, ...o.events] } : o)) };
 }
 
 /** A card the seller issues by hand: store credit, a prize, or one sold in person. */
-export function issueGiftCard(data: CommerceData, input: {amountNgn: number;recipientName: string;message: string;note: string;expiresAt: string | null;buyerName: string;}): {data: CommerceData;card: GiftCard;} {
+export function issueGiftCard(data: CommerceData, input: { amountNgn: number; recipientName: string; message: string; note: string; expiresAt: string | null; buyerName: string }): { data: CommerceData; card: GiftCard } {
   const cards = data.giftCards ?? [];
   const card = newCard(data, new Set(cards.map((c) => c.code)), { initialNgn: input.amountNgn, source: 'issued', buyerName: input.buyerName, recipientName: input.recipientName, message: input.message, note: input.note, expiresAt: input.expiresAt });
   return { data: { ...data, giftCards: [card, ...cards] }, card };
@@ -139,13 +139,13 @@ export function spendGiftCard(data: CommerceData, code: string, amountNgn: numbe
   return {
     ...data,
     giftCards: (data.giftCards ?? []).map((g) =>
-    g.code === c ? { ...g, balanceNgn: Math.max(0, g.balanceNgn - amountNgn), uses: [{ orderId: order.id, orderNumber: order.number, amountNgn, at: new Date().toISOString() }, ...g.uses] } : g
-    )
+      g.code === c ? { ...g, balanceNgn: Math.max(0, g.balanceNgn - amountNgn), uses: [{ orderId: order.id, orderNumber: order.number, amountNgn, at: new Date().toISOString() }, ...g.uses] } : g,
+    ),
   };
 }
 
 export function setGiftCardStatus(data: CommerceData, id: string, status: GiftCard['status']): CommerceData {
-  return { ...data, giftCards: (data.giftCards ?? []).map((g) => g.id === id ? { ...g, status } : g) };
+  return { ...data, giftCards: (data.giftCards ?? []).map((g) => (g.id === id ? { ...g, status } : g)) };
 }
 
 /** Creates or updates the shop's gift card product with the chosen amounts. */
@@ -171,7 +171,7 @@ export function upsertGiftCardProduct(data: CommerceData, amounts: number[], act
     weightKg: null,
     giftCard: true,
     createdAt: prev?.createdAt ?? now,
-    updatedAt: now
+    updatedAt: now,
   };
-  return { ...data, products: prev ? data.products.map((p) => p.id === product.id ? product : p) : [product, ...data.products] };
+  return { ...data, products: prev ? data.products.map((p) => (p.id === product.id ? product : p)) : [product, ...data.products] };
 }

@@ -24,7 +24,7 @@ interface Ctx {
 
 const first = (name: string) => name.trim().split(/\s+/)[0] || 'there';
 const findContact = (ops: OpsData, email: string, phone: string): Contact | undefined =>
-ops.contacts.find((c) => email && c.email.toLowerCase() === email.toLowerCase() || phone && c.phone.replace(/\D/g, '').slice(-10) === phone.replace(/\D/g, '').slice(-10));
+  ops.contacts.find((c) => (email && c.email.toLowerCase() === email.toLowerCase()) || (phone && c.phone.replace(/\D/g, '').slice(-10) === phone.replace(/\D/g, '').slice(-10)));
 const isPaid = (o: Order) => o.paymentStatus !== 'pending' && o.paymentStatus !== 'cancelled';
 
 /** When the automation started listening. Anything before this is never replayed. */
@@ -46,12 +46,12 @@ function orderEvent(a: Automation, o: Order, ctx: Ctx, key: string, subject: str
       link: o.sourceHandle ? publicUrl(o.sourceHandle) : '',
       // The order's own page: pay a pending checkout, or follow an order (D230).
       cart_link: o.sourceHandle ? `${publicUrl(o.sourceHandle)}/order/${o.id}` : '',
-      order_link: o.sourceHandle ? `${publicUrl(o.sourceHandle)}/order/${o.id}` : ''
+      order_link: o.sourceHandle ? `${publicUrl(o.sourceHandle)}/order/${o.id}` : '',
     },
     total,
     source: 'order',
     subscribed: c ? c.consent === 'subscribed' : false,
-    contactId: c?.id
+    contactId: c?.id,
   };
 }
 
@@ -97,33 +97,33 @@ export function eventsFor(a: Automation, fired: Set<string>, ctx: Ctx): LiveEven
       for (const c of ops.contacts) {
         if (c.sample) continue;
         for (const act of c.activity) {
-          if (act.kind !== 'form' && act.kind !== 'newsletter' || !after(act.at)) continue;
+          if ((act.kind !== 'form' && act.kind !== 'newsletter') || !after(act.at)) continue;
           push({ key: `${a.id}:lead:${act.id}`, subject: `${c.name} — ${act.label}`, vars: { first_name: first(c.name), name: c.name, form: act.label }, total: 0, source: act.kind, subscribed: c.consent === 'subscribed', contactId: c.id });
         }
       }
       break;
 
     // Forms add-on (D195): every real response, optionally for one form only.
-    case 'form_sent':{
-        const forms = readForms(workspace.id);
-        const names = new Map(forms.forms.map((f) => [f.id, f.name]));
-        for (const s of forms.submissions) {
-          if (s.sample || !after(s.createdAt)) continue;
-          if (a.triggerFormId && s.formId !== a.triggerFormId) continue;
-          const formName = names.get(s.formId) ?? 'a form';
-          const c = findContact(ops, s.contactEmail, s.contactPhone ?? '');
-          push({
-            key: `${a.id}:form:${s.id}`,
-            subject: `${s.contactName || 'Someone'} sent “${formName}”`,
-            vars: { first_name: first(s.contactName), name: s.contactName, email: s.contactEmail, form: formName, total: s.payment ? formatNgn(s.payment.amountNgn) : '' },
-            total: s.payment?.amountNgn ?? 0,
-            source: s.source ?? 'form',
-            subscribed: s.marketingConsent,
-            contactId: c?.id
-          });
-        }
-        break;
+    case 'form_sent': {
+      const forms = readForms(workspace.id);
+      const names = new Map(forms.forms.map((f) => [f.id, f.name]));
+      for (const s of forms.submissions) {
+        if (s.sample || !after(s.createdAt)) continue;
+        if (a.triggerFormId && s.formId !== a.triggerFormId) continue;
+        const formName = names.get(s.formId) ?? 'a form';
+        const c = findContact(ops, s.contactEmail, s.contactPhone ?? '');
+        push({
+          key: `${a.id}:form:${s.id}`,
+          subject: `${s.contactName || 'Someone'} sent “${formName}”`,
+          vars: { first_name: first(s.contactName), name: s.contactName, email: s.contactEmail, form: formName, total: s.payment ? formatNgn(s.payment.amountNgn) : '' },
+          total: s.payment?.amountNgn ?? 0,
+          source: s.source ?? 'form',
+          subscribed: s.marketingConsent,
+          contactId: c?.id,
+        });
       }
+      break;
+    }
 
     case 'stock_low':
       for (const p of commerce.products) {
@@ -144,7 +144,7 @@ export function eventsFor(a: Automation, fired: Set<string>, ctx: Ctx): LiveEven
         const base = { vars: { first_name: first(s.customer.name), name: s.customer.name, plan }, total: 0, source: 'order', subscribed: c ? c.consent === 'subscribed' : false, contactId: c?.id };
         if (a.trigger === 'sub_started' && after(s.startedAt)) push({ ...base, key: `${a.id}:subs:${s.id}`, subject: `${s.customer.name} subscribed to ${plan}${s.trialEndsAt ? ' (free trial)' : ''}` });
         if (a.trigger === 'sub_failed' && s.failedAt && after(s.failedAt)) push({ ...base, key: `${a.id}:subf:${s.id}:${s.failedAt}`, subject: `${s.customer.name}’s ${plan} payment failed` });
-        if (a.trigger === 'sub_cancelled' && (s.status === 'cancelling' || s.status === 'ended' && s.cancelReason)) {
+        if (a.trigger === 'sub_cancelled' && (s.status === 'cancelling' || (s.status === 'ended' && s.cancelReason))) {
           const at = s.events[s.events.length - 1]?.at ?? s.endedAt;
           if (after(at)) push({ ...base, key: `${a.id}:subc:${s.id}`, subject: `${s.customer.name} cancelled ${plan}${s.cancelReason ? ` — “${s.cancelReason}”` : ''}` });
         }
@@ -172,18 +172,18 @@ export function eventsFor(a: Automation, fired: Set<string>, ctx: Ctx): LiveEven
       }
       break;
 
-    case 'contact_quiet':{
-        const days = Math.max(7, a.triggerDays ?? 30);
-        for (const c of ops.contacts) {
-          const last = lastActivity(c);
-          const quiet = Math.floor((now - last) / DAY);
-          const key = `${a.id}:quiet:${c.id}:${last}`;
-          if (quiet < days) continue;
-          const lastItem = c.activity.find((x) => x.kind === 'order')?.label.replace(/^.*?:\s*/, '') ?? '';
-          push({ key, subject: `${c.name} has been quiet for ${quiet} days`, vars: { first_name: first(c.name), days: String(quiet), last_item: lastItem }, total: 0, source: c.sources[0] ?? 'manual', subscribed: c.consent === 'subscribed', contactId: c.id });
-        }
-        break;
+    case 'contact_quiet': {
+      const days = Math.max(7, a.triggerDays ?? 30);
+      for (const c of ops.contacts) {
+        const last = lastActivity(c);
+        const quiet = Math.floor((now - last) / DAY);
+        const key = `${a.id}:quiet:${c.id}:${last}`;
+        if (quiet < days) continue;
+        const lastItem = c.activity.find((x) => x.kind === 'order')?.label.replace(/^.*?:\s*/, '') ?? '';
+        push({ key, subject: `${c.name} has been quiet for ${quiet} days`, vars: { first_name: first(c.name), days: String(quiet), last_item: lastItem }, total: 0, source: c.sources[0] ?? 'manual', subscribed: c.consent === 'subscribed', contactId: c.id });
       }
+      break;
+    }
 
     case 'campaign_started':
     case 'campaign_ended':

@@ -9,7 +9,7 @@ interface CatalogOverride {
 const CatalogContext = createContext<CatalogOverride | undefined>(undefined);
 
 /** The catalogue of the page being rendered — another workspace's on public pages, none for examples. */
-export function CatalogProvider({ data, children }: {data: CommerceData | null;children: React.ReactNode;}) {
+export function CatalogProvider({ data, children }: { data: CommerceData | null; children: React.ReactNode }) {
   return <CatalogContext.Provider value={{ data }}>{children}</CatalogContext.Provider>;
 }
 

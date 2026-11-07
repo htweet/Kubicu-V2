@@ -18,7 +18,7 @@ export type TicketTypeState = 'on_sale' | 'not_yet' | 'closed' | 'sold_out';
 export type EventPhase = 'upcoming' | 'live' | 'past';
 
 export const eventsOf = (data: CommerceData | null | undefined): CommerceEvent[] => data?.events ?? [];
-export const findEvent = (data: CommerceData | null | undefined, id: string | undefined | null) => id ? eventsOf(data).find((e) => e.id === id) : undefined;
+export const findEvent = (data: CommerceData | null | undefined, id: string | undefined | null) => (id ? eventsOf(data).find((e) => e.id === id) : undefined);
 export const eventProduct = (data: CommerceData | null | undefined, ev: CommerceEvent): Product | undefined => data?.products.find((p) => p.id === ev.productId);
 
 export function eventPhase(ev: CommerceEvent, now = Date.now()): EventPhase {
@@ -55,9 +55,9 @@ export function eventSeatsLeft(data: CommerceData | null | undefined, ev: Commer
 }
 
 export function eventRevenue(data: CommerceData, ev: CommerceEvent): number {
-  return data.orders.
-  filter((o) => o.paymentStatus !== 'pending' && o.paymentStatus !== 'cancelled' && o.items.some((i) => i.productId === ev.productId)).
-  reduce((s, o) => s + o.items.filter((i) => i.productId === ev.productId).reduce((t, i) => t + i.unitPriceNgn * i.qty, 0), 0);
+  return data.orders
+    .filter((o) => o.paymentStatus !== 'pending' && o.paymentStatus !== 'cancelled' && o.items.some((i) => i.productId === ev.productId))
+    .reduce((s, o) => s + o.items.filter((i) => i.productId === ev.productId).reduce((t, i) => t + i.unitPriceNgn * i.qty, 0), 0);
 }
 
 /* ---------- Seat holds during checkout (D73a) ---------- */
@@ -85,9 +85,9 @@ export function activeHolds(data: CommerceData | null | undefined, now = Date.no
 }
 
 const heldOfType = (data: CommerceData | null | undefined, variantId: string, now: number, except?: string) =>
-activeHolds(data, now, except).reduce((s, h) => s + (h.variantId === variantId ? h.qty : 0), 0);
+  activeHolds(data, now, except).reduce((s, h) => s + (h.variantId === variantId ? h.qty : 0), 0);
 const heldOfEvent = (data: CommerceData | null | undefined, eventId: string, now: number, except?: string) =>
-activeHolds(data, now, except).reduce((s, h) => s + (h.eventId === eventId ? h.qty : 0), 0);
+  activeHolds(data, now, except).reduce((s, h) => s + (h.eventId === eventId ? h.qty : 0), 0);
 
 /** Seats of one type a buyer can take now: left minus other buyers' holds. */
 export function availableOfType(data: CommerceData | null | undefined, ev: CommerceEvent, tt: TicketType, now = Date.now(), except?: string): number {
@@ -119,7 +119,7 @@ export function heldByOthers(data: CommerceData | null | undefined, variantId: s
 }
 
 /** Stock this buyer can take now: stock minus what other people are holding in checkout. */
-export function stockFree(data: CommerceData | null | undefined, variant: {id: string;stock: number;}, holder?: string, now = Date.now()): number {
+export function stockFree(data: CommerceData | null | undefined, variant: { id: string; stock: number }, holder?: string, now = Date.now()): number {
   return Math.max(0, variant.stock - heldByOthers(data, variant.id, holder, now));
 }
 
@@ -150,13 +150,13 @@ export function releaseHolds(data: CommerceData, holder: string, now = Date.now(
  * so the timer can't be extended by going back and forth. Returns an issue when seats aren't there.
  */
 export function placeHolds(
-data: CommerceData,
-holder: string,
-lines: Pick<CartLine, 'productId' | 'variantId' | 'qty' | 'seats'>[],
-now = Date.now(),
-/** Also hold stock-tracked physical items (D255) — off when the shop allows backorders or turned holds off. */
-holdStock = false)
-: {data: CommerceData;issue: string;expiresAt: string | null;} {
+  data: CommerceData,
+  holder: string,
+  lines: Pick<CartLine, 'productId' | 'variantId' | 'qty' | 'seats'>[],
+  now = Date.now(),
+  /** Also hold stock-tracked physical items (D255) — off when the shop allows backorders or turned holds off. */
+  holdStock = false,
+): { data: CommerceData; issue: string; expiresAt: string | null } {
   const product = (id: string) => data.products.find((p) => p.id === id);
   const ticketLines = lines.filter((l) => product(l.productId)?.kind === 'ticket');
   const stockLines = holdStock ? lines.filter((l) => stockHoldable(product(l.productId))) : [];
@@ -179,9 +179,9 @@ holdStock = false)
   const expiresAt = holdExpiry(data, holder, now) ?? new Date(now + minutes * 60_000).toISOString();
   const base = releaseHolds(data, holder, now);
   const holds: TicketHold[] = [
-  ...ticketLines.map((l) => ({ id: uid(), holder, eventId: product(l.productId)?.eventId ?? '', productId: l.productId, variantId: l.variantId, qty: l.qty, expiresAt, seats: l.seats?.length ? l.seats : undefined })),
-  ...stockLines.map((l) => ({ id: uid(), holder, eventId: '', productId: l.productId, variantId: l.variantId, qty: l.qty, expiresAt, kind: 'stock' as const }))];
-
+    ...ticketLines.map((l) => ({ id: uid(), holder, eventId: product(l.productId)?.eventId ?? '', productId: l.productId, variantId: l.variantId, qty: l.qty, expiresAt, seats: l.seats?.length ? l.seats : undefined })),
+    ...stockLines.map((l) => ({ id: uid(), holder, eventId: '', productId: l.productId, variantId: l.variantId, qty: l.qty, expiresAt, kind: 'stock' as const })),
+  ];
   return { data: { ...base, ticketHolds: [...(base.ticketHolds ?? []), ...holds] }, issue: '', expiresAt };
 }
 
@@ -189,13 +189,13 @@ holdStock = false)
  * "Need more time?" (WCAG 2.2.1, D76): pushes this holder's running holds back by HOLD_MINUTES.
  * Works only while the holds are still running — the seats are then still reserved for this buyer.
  */
-export function extendHolds(data: CommerceData, holder: string, now = Date.now(), minutes = HOLD_MINUTES): {data: CommerceData;expiresAt: string | null;} {
+export function extendHolds(data: CommerceData, holder: string, now = Date.now(), minutes = HOLD_MINUTES): { data: CommerceData; expiresAt: string | null } {
   const current = holdExpiry(data, holder, now);
   if (!current) return { data, expiresAt: null };
   const expiresAt = new Date(Date.parse(current) + minutes * 60_000).toISOString();
   return {
-    data: { ...data, ticketHolds: (data.ticketHolds ?? []).map((h) => h.holder === holder && Date.parse(h.expiresAt) > now ? { ...h, expiresAt } : h) },
-    expiresAt
+    data: { ...data, ticketHolds: (data.ticketHolds ?? []).map((h) => (h.holder === holder && Date.parse(h.expiresAt) > now ? { ...h, expiresAt } : h)) },
+    expiresAt,
   };
 }
 
@@ -231,7 +231,7 @@ export const eventDisplayLabel: Record<EventDisplay, string> = {
   cancelled: 'Cancelled',
   sold_out: 'Sold out',
   past: 'Ended',
-  not_yet: 'Sales not open'
+  not_yet: 'Sales not open',
 };
 
 /** Why a ticket line can't be bought, or '' when it can. */
@@ -290,20 +290,20 @@ export function allTickets(data: CommerceData): IssuedTicket[] {
 export function issueTickets(data: CommerceData, items: OrderItem[], buyerName: string, guestNames?: Record<string, string[]>): IssuedTicket[] {
   const taken = new Set(allTickets(data).map((t) => t.code));
   const out: IssuedTicket[] = [];
-  items.
-  filter((i) => i.kind === 'ticket').
-  forEach((i) => {
-    const product = data.products.find((p) => p.id === i.productId);
-    const ev = findEvent(data, product?.eventId);
-    const tt = ev?.ticketTypes.find((t) => t.id === i.variantId);
-    if (!ev) return;
-    for (let n = 0; n < i.qty; n++) {
-      const code = ticketCode(taken);
-      taken.add(code);
-      const seat = i.seats?.[n] ? findSeat(ev, i.seats[n]) : undefined;
-      out.push({ id: uid('tkt'), code, eventId: ev.id, ticketTypeId: i.variantId, typeName: tt?.name ?? i.variantLabel, guestName: guestNames?.[i.variantId]?.[n]?.trim() || buyerName, status: 'valid', seatId: seat?.id, seat: seat?.label });
-    }
-  });
+  items
+    .filter((i) => i.kind === 'ticket')
+    .forEach((i) => {
+      const product = data.products.find((p) => p.id === i.productId);
+      const ev = findEvent(data, product?.eventId);
+      const tt = ev?.ticketTypes.find((t) => t.id === i.variantId);
+      if (!ev) return;
+      for (let n = 0; n < i.qty; n++) {
+        const code = ticketCode(taken);
+        taken.add(code);
+        const seat = i.seats?.[n] ? findSeat(ev, i.seats[n]) : undefined;
+        out.push({ id: uid('tkt'), code, eventId: ev.id, ticketTypeId: i.variantId, typeName: tt?.name ?? i.variantLabel, guestName: guestNames?.[i.variantId]?.[n]?.trim() || buyerName, status: 'valid', seatId: seat?.id, seat: seat?.label });
+      }
+    });
   return out;
 }
 
@@ -333,7 +333,7 @@ export function blankEvent(): CommerceEvent {
     productId: uid('prd'),
     ticketTypes: [blankTicketType('General admission')],
     createdAt: at,
-    updatedAt: at
+    updatedAt: at,
   };
 }
 
@@ -366,14 +366,14 @@ export function upsertEvent(data: CommerceData, input: CommerceEvent): CommerceD
     eventId: ev.id,
     sample: ev.sample,
     createdAt: prevProduct?.createdAt ?? at,
-    updatedAt: at
+    updatedAt: at,
   };
   const saved = { ...ev, updatedAt: at };
   const events = eventsOf(data);
   return {
     ...data,
-    events: prevEvent ? events.map((e) => e.id === ev.id ? saved : e) : [saved, ...events],
-    products: prevProduct ? data.products.map((p) => p.id === product.id ? product : p) : [product, ...data.products]
+    events: prevEvent ? events.map((e) => (e.id === ev.id ? saved : e)) : [saved, ...events],
+    products: prevProduct ? data.products.map((p) => (p.id === product.id ? product : p)) : [product, ...data.products],
   };
 }
 
@@ -400,9 +400,9 @@ export interface TicketRef {
   order: Order;
 }
 
-export function findTicket(data: CommerceData | null | undefined, by: {id?: string;code?: string;}): TicketRef | undefined {
+export function findTicket(data: CommerceData | null | undefined, by: { id?: string; code?: string }): TicketRef | undefined {
   for (const order of data?.orders ?? []) {
-    const ticket = (order.tickets ?? []).find((t) => by.id ? t.id === by.id : t.code === by.code);
+    const ticket = (order.tickets ?? []).find((t) => (by.id ? t.id === by.id : t.code === by.code));
     if (ticket) return { ticket, order };
   }
   return undefined;
@@ -420,15 +420,15 @@ export function ticketStatus(ref: TicketRef, ev?: CommerceEvent): TicketStatus {
 export const ticketStatusLabel: Record<TicketStatus, string> = { valid: 'Not checked in', checked_in: 'Checked in', void: 'Refunded / void', pending: 'Payment pending' };
 
 export type ScanOutcome =
-{kind: 'admitted';ref: TicketRef;} |
-{kind: 'already';ref: TicketRef;} |
-{kind: 'void';ref: TicketRef;} |
-{kind: 'pending';ref: TicketRef;} |
-{kind: 'wrong_event';ref: TicketRef;otherEvent: string;} |
-{kind: 'unknown';code: string;};
+  | { kind: 'admitted'; ref: TicketRef }
+  | { kind: 'already'; ref: TicketRef }
+  | { kind: 'void'; ref: TicketRef }
+  | { kind: 'pending'; ref: TicketRef }
+  | { kind: 'wrong_event'; ref: TicketRef; otherEvent: string }
+  | { kind: 'unknown'; code: string };
 
 /** What happens when a ticket is scanned at this event's door (D74). Admits valid tickets. */
-export function scanTicket(data: CommerceData, eventId: string, raw: string, by: string, door?: string, at?: string): {data: CommerceData;outcome: ScanOutcome;} {
+export function scanTicket(data: CommerceData, eventId: string, raw: string, by: string, door?: string, at?: string): { data: CommerceData; outcome: ScanOutcome } {
   const code = parseTicketCode(raw);
   const ref = code ? findTicket(data, { code }) : undefined;
   if (!ref) return { data, outcome: { kind: 'unknown', code: code ?? raw.trim().slice(0, 24) } };
@@ -445,24 +445,24 @@ export function setCheckedIn(data: CommerceData, ticketId: string, by: string | 
   return {
     ...data,
     orders: data.orders.map((o) =>
-    o.tickets?.some((t) => t.id === ticketId) ?
-    {
-      ...o,
-      tickets: o.tickets.map((t) =>
-      t.id === ticketId ? by ? { ...t, checkedInAt: at, checkedInBy: by, checkedInDoor: door } : { ...t, checkedInAt: undefined, checkedInBy: undefined, checkedInDoor: undefined } : t
-      )
-    } :
-    o
-    )
+      o.tickets?.some((t) => t.id === ticketId)
+        ? {
+            ...o,
+            tickets: o.tickets.map((t) =>
+              t.id === ticketId ? (by ? { ...t, checkedInAt: at, checkedInBy: by, checkedInDoor: door } : { ...t, checkedInAt: undefined, checkedInBy: undefined, checkedInDoor: undefined }) : t,
+            ),
+          }
+        : o,
+    ),
   };
 }
 
 /** Latest check-ins at every door, newest first. */
 export function recentCheckIns(data: CommerceData, eventId: string, limit = 6): TicketRef[] {
-  return eventTickets(data, eventId).
-  filter((r) => r.ticket.checkedInAt).
-  sort((a, b) => Date.parse(b.ticket.checkedInAt!) - Date.parse(a.ticket.checkedInAt!)).
-  slice(0, limit);
+  return eventTickets(data, eventId)
+    .filter((r) => r.ticket.checkedInAt)
+    .sort((a, b) => Date.parse(b.ticket.checkedInAt!) - Date.parse(a.ticket.checkedInAt!))
+    .slice(0, limit);
 }
 
 /** Check-ins per door name, for the doors panel. */
@@ -481,7 +481,7 @@ export function checkedInCount(data: CommerceData, ev: CommerceEvent): number {
 }
 
 /** A free ticket added by the seller: a ₦0 order so seats, the guest list and check-in stay consistent. */
-export function addCompTicket(data: CommerceData, eventId: string, typeId: string, guest: {name: string;phone: string;email: string;}, qty = 1): {data: CommerceData;order?: Order;error?: string;} {
+export function addCompTicket(data: CommerceData, eventId: string, typeId: string, guest: { name: string; phone: string; email: string }, qty = 1): { data: CommerceData; order?: Order; error?: string } {
   const ev = findEvent(data, eventId);
   const tt = ev?.ticketTypes.find((t) => t.id === typeId);
   const product = ev ? eventProduct(data, ev) : undefined;
@@ -509,13 +509,13 @@ export function addCompTicket(data: CommerceData, eventId: string, typeId: strin
     events: [{ id: uid('ev'), at, kind: 'completed', label: `Complimentary ticket${qty === 1 ? '' : 's'} added by the seller` }],
     downloads: [],
     note: 'Complimentary',
-    tickets
+    tickets,
   };
   const next: CommerceData = {
     ...data,
     orders: [order, ...data.orders],
     nextOrderNumber: data.nextOrderNumber + 1,
-    products: data.products.map((p) => p.id === product.id ? { ...p, variants: p.variants.map((v) => v.id === tt.id ? { ...v, stock: v.stock - qty } : v) } : p)
+    products: data.products.map((p) => (p.id === product.id ? { ...p, variants: p.variants.map((v) => (v.id === tt.id ? { ...v, stock: v.stock - qty } : v)) } : p)),
   };
   return { data: next, order };
 }
@@ -526,34 +526,34 @@ export function eventIcs(ev: CommerceEvent, url: string): string {
   const end = ev.endsAt ?? new Date(Date.parse(ev.startsAt) + 3 * 3600_000).toISOString();
   const text = (s: string) => s.replace(/([,;\\])/g, '\\$1').replace(/\n/g, '\\n');
   return [
-  'BEGIN:VCALENDAR',
-  'VERSION:2.0',
-  'PRODID:-//KUBICU//Tickets//EN',
-  'BEGIN:VEVENT',
-  `UID:${ev.id}@kubicu`,
-  `DTSTAMP:${stamp(new Date().toISOString())}`,
-  `DTSTART:${stamp(ev.startsAt)}`,
-  `DTEND:${stamp(end)}`,
-  `SUMMARY:${text(ev.name)}`,
-  `LOCATION:${text(ev.online ? 'Online' : [ev.venue, ev.address].filter(Boolean).join(', '))}`,
-  `DESCRIPTION:${text(`Your ticket: ${url}`)}`,
-  'END:VEVENT',
-  'END:VCALENDAR'].
-  join('\r\n');
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//KUBICU//Tickets//EN',
+    'BEGIN:VEVENT',
+    `UID:${ev.id}@kubicu`,
+    `DTSTAMP:${stamp(new Date().toISOString())}`,
+    `DTSTART:${stamp(ev.startsAt)}`,
+    `DTEND:${stamp(end)}`,
+    `SUMMARY:${text(ev.name)}`,
+    `LOCATION:${text(ev.online ? 'Online' : [ev.venue, ev.address].filter(Boolean).join(', '))}`,
+    `DESCRIPTION:${text(`Your ticket: ${url}`)}`,
+    'END:VEVENT',
+    'END:VCALENDAR',
+  ].join('\r\n');
 }
 
 export const ordersForEvent = (data: CommerceData, ev: CommerceEvent) => data.orders.filter((o) => o.items.some((i) => i.productId === ev.productId));
 
 /** Cancels the event and refunds every ticket order in full; unpaid orders are cancelled. */
-export function cancelEventAndRefund(data: CommerceData, eventId: string, reason: string): {data: CommerceData;refunded: number;} {
+export function cancelEventAndRefund(data: CommerceData, eventId: string, reason: string): { data: CommerceData; refunded: number } {
   const ev = findEvent(data, eventId);
   if (!ev) return { data, refunded: 0 };
   let next = upsertEvent(data, { ...ev, status: 'cancelled', cancelledAt: new Date().toISOString() });
   let refunded = 0;
   ordersForEvent(next, ev).forEach((o) => {
     if (o.status === 'cancelled' || o.status === 'refunded') return;
-    if (o.paymentStatus === 'pending') next = cancelOrder(next, o.id, reason || 'Event cancelled', true);else
-    if (refundableNgn(o) > 0) {
+    if (o.paymentStatus === 'pending') next = cancelOrder(next, o.id, reason || 'Event cancelled', true);
+    else if (refundableNgn(o) > 0) {
       next = refundOrder(next, o.id, refundableNgn(o), reason || 'Event cancelled', true);
       refunded++;
     }

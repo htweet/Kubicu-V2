@@ -35,8 +35,8 @@ export type BranchErrors = Partial<Record<'name' | 'address' | 'operator' | 'roy
 export function branchErrors(b: Branch, others: Branch[]): BranchErrors {
   const e: BranchErrors = {};
   const name = b.name.trim();
-  if (!name) e.name = 'Give the branch a name';else
-  if (name.toLowerCase() === 'main shop' || others.some((o) => o.id !== b.id && o.name.trim().toLowerCase() === name.toLowerCase())) e.name = 'You already have a location with this name';
+  if (!name) e.name = 'Give the branch a name';
+  else if (name.toLowerCase() === 'main shop' || others.some((o) => o.id !== b.id && o.name.trim().toLowerCase() === name.toLowerCase())) e.name = 'You already have a location with this name';
   if (b.address.trim().length < 6) e.address = 'Add the street address';
   if (b.kind === 'franchise') {
     if (!b.franchise?.operator.trim()) e.operator = 'Who runs this branch?';
@@ -49,7 +49,7 @@ export function branchErrors(b: Branch, others: Branch[]): BranchErrors {
 export function upsertBranch(data: CommerceData, b: Branch): CommerceData {
   const list = branchesOf(data);
   const clean: Branch = { ...b, name: b.name.trim(), address: b.address.trim(), hours: b.hours.trim(), phone: b.phone.trim(), franchise: b.kind === 'franchise' ? b.franchise : undefined };
-  return { ...data, branches: list.some((x) => x.id === b.id) ? list.map((x) => x.id === b.id ? clean : x) : [...list, clean] };
+  return { ...data, branches: list.some((x) => x.id === b.id) ? list.map((x) => (x.id === b.id ? clean : x)) : [...list, clean] };
 }
 
 /** Removing a branch hands its stock back to the main shop; past orders keep their pickup details. */
@@ -63,9 +63,9 @@ export function removeBranch(data: CommerceData, id: string): CommerceData {
         if (!v.branchStock || !(id in v.branchStock)) return v;
         const { [id]: _gone, ...rest } = v.branchStock;
         // The branch's batches go back to the main shop with its stock (D478).
-        return { ...v, branchStock: rest, batches: v.batches?.map((b) => b.branchId === id ? { ...b, branchId: undefined } : b) };
-      })
-    }))
+        return { ...v, branchStock: rest, batches: v.batches?.map((b) => (b.branchId === id ? { ...b, branchId: undefined } : b)) };
+      }),
+    })),
   };
 }
 
@@ -75,7 +75,7 @@ export function shiftBranchStock(v: ProductVariant, branchId: string | undefined
   return { ...v, branchStock: { ...v.branchStock, [branchId]: Math.max(0, (v.branchStock[branchId] ?? 0) + delta) } };
 }
 
-export type TransferResult = {ok: true;data: CommerceData;} | {ok: false;message: string;};
+export type TransferResult = { ok: true; data: CommerceData } | { ok: false; message: string };
 
 /** Moves units between two locations. Total stock doesn't change; the move is recorded on both sides. */
 export function transferStock(data: CommerceData, productId: string, variantId: string, from: string, to: string, qty: number, by: string): TransferResult {
@@ -89,19 +89,19 @@ export function transferStock(data: CommerceData, productId: string, variantId: 
   const at = new Date().toISOString();
   const note = `${locationName(data, from)} → ${locationName(data, to)}`;
   const products = data.products.map((p) =>
-  p.id !== productId ?
-  p :
-  {
-    ...p,
-    variants: p.variants.map((v) => {
-      if (v.id !== variantId) return v;
-      const bs = { ...(v.branchStock ?? {}) };
-      if (from !== MAIN_BRANCH) bs[from] = Math.max(0, (bs[from] ?? 0) - qty);
-      if (to !== MAIN_BRANCH) bs[to] = (bs[to] ?? 0) + qty;
-      // Batches travel with the units, soonest-expiring first (D478).
-      return { ...v, branchStock: bs, batches: moveBatches(v, from, to, qty) };
-    })
-  }
+    p.id !== productId
+      ? p
+      : {
+          ...p,
+          variants: p.variants.map((v) => {
+            if (v.id !== variantId) return v;
+            const bs = { ...(v.branchStock ?? {}) };
+            if (from !== MAIN_BRANCH) bs[from] = Math.max(0, (bs[from] ?? 0) - qty);
+            if (to !== MAIN_BRANCH) bs[to] = (bs[to] ?? 0) + qty;
+            // Batches travel with the units, soonest-expiring first (D478).
+            return { ...v, branchStock: bs, batches: moveBatches(v, from, to, qty) };
+          }),
+        },
   );
   const out = { id: uid('mv'), productId, variantId, delta: -qty, after: available - qty, reason: 'transfer' as const, note, by, at };
   const inn = { id: uid('mv'), productId, variantId, delta: qty, after: stockAt(variant, to) + qty, reason: 'transfer' as const, note, by, at };
@@ -109,8 +109,8 @@ export function transferStock(data: CommerceData, productId: string, variantId: 
 }
 
 /** Paid sales picked up at each location, for branch and franchise reports. */
-export function salesByLocation(data: CommerceData, sinceIso?: string): Record<string, {orders: number;salesNgn: number;}> {
-  const out: Record<string, {orders: number;salesNgn: number;}> = {};
+export function salesByLocation(data: CommerceData, sinceIso?: string): Record<string, { orders: number; salesNgn: number }> {
+  const out: Record<string, { orders: number; salesNgn: number }> = {};
   data.orders.forEach((o: Order) => {
     if (o.paymentStatus !== 'paid' && o.paymentStatus !== 'partially_refunded') return;
     if (sinceIso && o.createdAt < sinceIso) return;
@@ -122,7 +122,7 @@ export function salesByLocation(data: CommerceData, sinceIso?: string): Record<s
   return out;
 }
 
-export const royaltyFor = (b: Branch, salesNgn: number) => b.kind === 'franchise' && b.franchise ? Math.round(salesNgn * b.franchise.royaltyPct / 100) : 0;
+export const royaltyFor = (b: Branch, salesNgn: number) => (b.kind === 'franchise' && b.franchise ? Math.round((salesNgn * b.franchise.royaltyPct) / 100) : 0);
 
 /** Open branches buyers can collect from, after the main shop's own pickup. */
 export const pickupBranches = (data: CommerceData) => branchesOf(data).filter((b) => b.status === 'open' && b.pickup);

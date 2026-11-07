@@ -62,43 +62,43 @@ export function SidebarGroupToggle({
   onToggle,
   controls,
   badge,
-  active
-
-
-
-
-
-
-
-
-}: {label: string;open: boolean;onToggle: () => void;controls: string;badge?: number; /** The current screen is inside this (closed) section. */active?: boolean;}) {
+  active,
+}: {
+  label: string;
+  open: boolean;
+  onToggle: () => void;
+  controls: string;
+  badge?: number;
+  /** The current screen is inside this (closed) section. */
+  active?: boolean;
+}) {
   return (
     <button
       type="button"
       onClick={onToggle}
       aria-expanded={open}
       aria-controls={controls}
-      className="group mb-0.5 flex h-8 w-full items-center gap-2 rounded-md px-2.5 text-left text-caption font-semibold text-fg-subtle transition-colors duration-150 hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-      
+      className="group mb-0.5 flex h-8 w-full items-center gap-2 rounded-md px-2.5 text-left text-caption font-semibold text-fg-subtle transition-colors duration-150 hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+    >
       <span className="min-w-0 flex-1 truncate">{useT().t(label)}</span>
       {!open && active && <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-action" />}
-      {!open && !!badge &&
-      <span className="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-warning-soft px-1 text-meta font-semibold text-warning" aria-label={`${badge} waiting`}>
+      {!open && !!badge && (
+        <span className="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-warning-soft px-1 text-meta font-semibold text-warning" aria-label={`${badge} waiting`}>
           {badge}
         </span>
-      }
+      )}
       <ChevronDownIcon size={14} strokeWidth={2.2} aria-hidden className={cn('shrink-0 transition-transform duration-200 ease-out', open ? 'rotate-0' : '-rotate-90')} />
-    </button>);
-
+    </button>
+  );
 }
 
 export function SidebarGroupLabel({
   children,
   collapsed
-
-
-
-}: {children: React.ReactNode;collapsed?: boolean;}) {
+}: {
+  children: React.ReactNode;
+  collapsed?: boolean;
+}) {
   if (collapsed) return <span aria-hidden className="mx-auto mb-2 mt-1 block h-px w-6 bg-line-strong" />;
   return <p className="mb-1.5 px-2.5 text-caption font-semibold text-fg-subtle">{children}</p>;
 }

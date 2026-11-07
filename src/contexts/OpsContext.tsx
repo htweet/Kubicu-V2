@@ -30,7 +30,7 @@ function initial(workspaceId: string): OpsData {
 }
 
 /** Bookings, contacts and automations for the current workspace, saved in this browser. */
-export function OpsProvider({ children }: {children: React.ReactNode;}) {
+export function OpsProvider({ children }: { children: React.ReactNode }) {
   const workspaceId = useWorkspace().current.id;
   const [data, setData] = useState<OpsData>(() => initial(workspaceId));
   const ref = useRef(data);
@@ -41,9 +41,9 @@ export function OpsProvider({ children }: {children: React.ReactNode;}) {
     try {
       writeOps(workspaceId, ref.current);
     } catch {
-
       // Storage unavailable.
-    }}, [workspaceId]);
+    }
+  }, [workspaceId]);
 
   useEffect(() => {
     const onStorage = (e: StorageEvent) => {
@@ -69,7 +69,7 @@ export function OpsProvider({ children }: {children: React.ReactNode;}) {
       setData(next);
       return true;
     },
-    [workspaceId]
+    [workspaceId],
   );
 
   // Team members' changes follow their role (D57); visitors' bookings and sign-ups use applySystem.
@@ -83,7 +83,7 @@ export function OpsProvider({ children }: {children: React.ReactNode;}) {
       }
       return applySystem(fn);
     },
-    [applySystem, writer, team]
+    [applySystem, writer, team],
   );
 
   const loadSample = useCallback(() => {

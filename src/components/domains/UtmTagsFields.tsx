@@ -14,7 +14,7 @@ interface Props {
   medium: string;
   campaign: string;
   content: string;
-  onChange: (patch: Partial<{medium: string;campaign: string;content: string;}>) => void;
+  onChange: (patch: Partial<{ medium: string; campaign: string; content: string }>) => void;
   mediumPlaceholder: string;
   campaignPlaceholder: string;
   error?: string;
@@ -53,27 +53,27 @@ export function UtmTagsFields({ medium, campaign, content, onChange, mediumPlace
       <legend className="text-label font-medium text-fg">Tags for Google Analytics and ad tools</legend>
       <p className="-mt-1 text-caption text-fg-subtle">Only needed if you use those tools. KUBICU Analytics works without them. Leave blank to use the grey defaults.</p>
 
-      {presets.length > 0 &&
-      <div className="flex items-end gap-2">
+      {presets.length > 0 && (
+        <div className="flex items-end gap-2">
           <div className="min-w-0 flex-1">
             <SelectInput
-            id="cl-preset"
-            label="Use a saved set"
-            value={matching?.id ?? ''}
-            options={[{ value: '', label: matching ? '' : 'Choose a set…' }, ...presets.map((p) => ({ value: p.id, label: p.name }))].filter((o) => o.label)}
-            onChange={(id) => {
-              const p = presets.find((x) => x.id === id);
-              if (p) onChange({ medium: p.medium, campaign: p.campaign, content: p.content });
-            }} />
-          
+              id="cl-preset"
+              label="Use a saved set"
+              value={matching?.id ?? ''}
+              options={[{ value: '', label: matching ? '' : 'Choose a set…' }, ...presets.map((p) => ({ value: p.id, label: p.name }))].filter((o) => o.label)}
+              onChange={(id) => {
+                const p = presets.find((x) => x.id === id);
+                if (p) onChange({ medium: p.medium, campaign: p.campaign, content: p.content });
+              }}
+            />
           </div>
-          {matching &&
-        <div className="mb-0.5">
+          {matching && (
+            <div className="mb-0.5">
               <IconButton icon={Trash2Icon} label={`Remove the saved set ${matching.name}`} onClick={() => removePreset(matching)} />
             </div>
-        }
+          )}
         </div>
-      }
+      )}
 
       <div className="grid gap-4 sm:grid-cols-3">
         <TextInput id="cl-medium" label="Type of channel" optional value={medium} placeholder={mediumPlaceholder} onChange={(e) => onChange({ medium: e.target.value })} hint="utm_medium" />
@@ -83,8 +83,8 @@ export function UtmTagsFields({ medium, campaign, content, onChange, mediumPlace
       {error && <p className="text-caption text-danger">{error}</p>}
 
       {!empty && valid && !matching && (
-      naming ?
-      <div className="flex items-end gap-2">
+        naming ? (
+          <div className="flex items-end gap-2">
             <div className="min-w-0 flex-1">
               <TextInput id="cl-preset-name" label="Name this set" value={presetName} placeholder="e.g. December sale ads" autoFocus onChange={(e) => setPresetName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), savePreset())} />
             </div>
@@ -94,21 +94,21 @@ export function UtmTagsFields({ medium, campaign, content, onChange, mediumPlace
             <Button size="sm" onClick={savePreset} disabled={!presetName.trim()} className="mb-0.5">
               Save set
             </Button>
-          </div> :
-
-      <Button
-        size="sm"
-        variant="tertiary"
-        leadingIcon={BookmarkPlusIcon}
-        className="self-start"
-        disabled={presets.length >= MAX_PRESETS}
-        title={presets.length >= MAX_PRESETS ? `Up to ${MAX_PRESETS} saved sets. Remove one first.` : undefined}
-        onClick={() => setNaming(true)}>
-        
+          </div>
+        ) : (
+          <Button
+            size="sm"
+            variant="tertiary"
+            leadingIcon={BookmarkPlusIcon}
+            className="self-start"
+            disabled={presets.length >= MAX_PRESETS}
+            title={presets.length >= MAX_PRESETS ? `Up to ${MAX_PRESETS} saved sets. Remove one first.` : undefined}
+            onClick={() => setNaming(true)}
+          >
             Save these tags as a set
-          </Button>)
-
-      }
-    </fieldset>);
-
+          </Button>
+        )
+      )}
+    </fieldset>
+  );
 }

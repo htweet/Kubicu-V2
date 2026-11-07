@@ -4,16 +4,16 @@ import { useT } from '../../../contexts/LocaleContext';
 
 const days = [14, 22, 18, 31, 27, 19, 24, 38, 52, 41, 29, 33, 36, 28];
 const devices = [
-{ label: 'Phone', pct: 88 },
-{ label: 'Computer', pct: 9 },
-{ label: 'Tablet', pct: 3 }];
-
+  { label: 'Phone', pct: 88 },
+  { label: 'Computer', pct: 9 },
+  { label: 'Tablet', pct: 3 },
+];
 // Sample cities follow the visitor's language (D485): Kiswahili → Kenya, Twi → Ghana, isiZulu → South Africa,
 // every other language → Nigeria. These are display-only names for this sample, never looked up as real regions.
 const sampleCities: Record<string, [string, string]> = {
   sw: ['Nairobi', 'Mombasa'],
   tw: ['Accra', 'Kumasi'],
-  zu: ['eGoli', 'eThekwini']
+  zu: ['eGoli', 'eThekwini'],
 };
 
 /** Illustrative per-link stats for the Short Links page (D268). Labelled as sample everywhere it shows. */
@@ -21,10 +21,10 @@ export function LinkStatsSample() {
   const { t: tr, lang } = useT();
   const cities = sampleCities[lang];
   const regions = [
-  { label: cities ? cities[0] : 'Lagos', pct: 64 },
-  { label: cities ? cities[1] : 'Abuja', pct: 14 },
-  { label: 'Elsewhere', pct: 22 }];
-
+    { label: cities ? cities[0] : 'Lagos', pct: 64 },
+    { label: cities ? cities[1] : 'Abuja', pct: 14 },
+    { label: 'Elsewhere', pct: 22 },
+  ];
   const reduce = useReducedMotion();
   const max = Math.max(...days);
   return (
@@ -56,29 +56,29 @@ export function LinkStatsSample() {
       </div>
 
       <div className="mt-6 flex h-28 items-end gap-1.5" aria-hidden>
-        {days.map((d, i) =>
-        <motion.div
-          key={i}
-          className="flex-1 origin-bottom rounded-t-md bg-[rgb(var(--kb-forest))]"
-          style={{ height: `${d / max * 100}%` }}
-          initial={reduce ? false : { scaleY: 0 }}
-          whileInView={{ scaleY: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.3, delay: i * 0.03, ease: [0.23, 1, 0.32, 1] }} />
-
-        )}
+        {days.map((d, i) => (
+          <motion.div
+            key={i}
+            className="flex-1 origin-bottom rounded-t-md bg-[rgb(var(--kb-forest))]"
+            style={{ height: `${(d / max) * 100}%` }}
+            initial={reduce ? false : { scaleY: 0 }}
+            whileInView={{ scaleY: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.3, delay: i * 0.03, ease: [0.23, 1, 0.32, 1] }}
+          />
+        ))}
       </div>
 
       <div className="mt-6 grid gap-5 sm:grid-cols-2">
         {[
-        { title: 'Device', rows: devices },
-        { title: 'Rough region', rows: regions }].
-        map((g) =>
-        <div key={g.title}>
+          { title: 'Device', rows: devices },
+          { title: 'Rough region', rows: regions },
+        ].map((g) => (
+          <div key={g.title}>
             <p className="text-[12px] font-bold uppercase tracking-[0.08em] text-[rgb(104_100_92)]">{tr(g.title)}</p>
             <ul className="mt-2 flex flex-col gap-2">
-              {g.rows.map((r) =>
-            <li key={r.label} className="text-[13px]">
+              {g.rows.map((r) => (
+                <li key={r.label} className="text-[13px]">
                   <span className="flex justify-between">
                     <span>{tr(r.label)}</span>
                     <span className="font-bold tabular-nums">{r.pct}%</span>
@@ -87,12 +87,12 @@ export function LinkStatsSample() {
                     <span className="block h-full rounded-full bg-[rgb(var(--kb-cobalt))]" style={{ width: `${r.pct}%` }} />
                   </span>
                 </li>
-            )}
+              ))}
             </ul>
           </div>
-        )}
+        ))}
       </div>
       <figcaption className="mt-5 text-[12px] text-[rgb(104_100_92)]">{tr('Fictional figures for a fictional business. Your own numbers appear in Analytics once people use your links.')}</figcaption>
-    </figure>);
-
+    </figure>
+  );
 }

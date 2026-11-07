@@ -6,7 +6,7 @@ const RECENT_MAX = 8;
 function read(key: string): string[] {
   try {
     const raw = window.localStorage.getItem(key);
-    const parsed = raw ? JSON.parse(raw) as unknown : [];
+    const parsed = raw ? (JSON.parse(raw) as unknown) : [];
     return Array.isArray(parsed) ? parsed.filter((x): x is string => typeof x === 'string') : [];
   } catch {
     return [];
@@ -17,13 +17,13 @@ function write(key: string, ids: string[]) {
   try {
     window.localStorage.setItem(key, JSON.stringify(ids));
   } catch {
-
-    /* storage unavailable — lasts until refresh */}
+    /* storage unavailable — lasts until refresh */
+  }
   window.dispatchEvent(new CustomEvent(EVENT, { detail: key }));
 }
 
 function useList(key: string | null) {
-  const [ids, setIds] = useState<string[]>(() => key ? read(key) : []);
+  const [ids, setIds] = useState<string[]>(() => (key ? read(key) : []));
   useEffect(() => {
     if (!key) return;
     setIds(read(key));
@@ -49,7 +49,7 @@ export function useSavedItems(shopKey: string | null) {
       const now = read(key);
       write(key, now.includes(id) ? now.filter((x) => x !== id) : [id, ...now].slice(0, 60));
     },
-    [key]
+    [key],
   );
   return { ids, toggle, has: (id: string) => ids.includes(id) };
 }
@@ -63,7 +63,7 @@ export function useRecentlyViewed(shopKey: string | null) {
       if (!key) return;
       write(key, [id, ...read(key).filter((x) => x !== id)].slice(0, RECENT_MAX));
     },
-    [key]
+    [key],
   );
   return { ids, record };
 }

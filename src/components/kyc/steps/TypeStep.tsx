@@ -26,9 +26,9 @@ export function TypeStep({ k, set, errors, disabled }: KycStepProps) {
               className={cn(
                 'relative flex cursor-pointer flex-col rounded-lg border p-4 transition-colors duration-150 ease-out focus-within:ring-2 focus-within:ring-focus',
                 on ? 'border-select bg-action-soft' : 'border-line bg-raised hover:border-line-strong',
-                disabled && 'cursor-not-allowed opacity-60'
-              )}>
-              
+                disabled && 'cursor-not-allowed opacity-60',
+              )}
+            >
               <input type="radio" name="kyc-entity" value={id} checked={on} disabled={disabled} onChange={() => choose(id)} className="sr-only" />
               <span className="flex items-center justify-between">
                 <span className={cn('flex h-9 w-9 items-center justify-center rounded-md', on ? 'bg-action text-action-fg' : 'bg-sunken text-fg-muted')}>
@@ -40,22 +40,22 @@ export function TypeStep({ k, set, errors, disabled }: KycStepProps) {
               <span className="mt-1 text-caption text-fg-muted">{tr(info.blurb)}</span>
               <span className="mt-3 border-t border-line pt-3 text-caption text-fg-subtle">{tr('You’ll need')}</span>
               <ul className="mt-1.5 flex flex-col gap-1">
-                {info.needs.map((n) =>
-                <li key={n} className="text-caption text-fg-muted">
+                {info.needs.map((n) => (
+                  <li key={n} className="text-caption text-fg-muted">
                     · {tr(n)}
                   </li>
-                )}
+                ))}
               </ul>
-            </label>);
-
+            </label>
+          );
         })}
       </div>
-      {errors.entity &&
-      <p id="kyc-entity-error" className="mt-2 text-caption font-medium text-danger">
+      {errors.entity && (
+        <p id="kyc-entity-error" className="mt-2 text-caption font-medium text-danger">
           {tr(errors.entity)}
         </p>
-      }
+      )}
       <p className="mt-4 text-caption text-fg-subtle">{tr(kycRules().notSure)}</p>
-    </fieldset>);
-
+    </fieldset>
+  );
 }

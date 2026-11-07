@@ -16,7 +16,7 @@ export const kubicuRateByPlan: Record<WorkspacePlan, number> = {
   pro: 0.01,
   business: 0.005,
   agency: 0,
-  enterprise: 0
+  enterprise: 0,
 };
 
 export function providerFee(totalNgn: number): number {
@@ -69,7 +69,7 @@ export function orderMoney(order: Order): OrderMoney {
     net: paid ? gross - providerFeeNgn - kubicuFeeNgn - refunded : 0,
     vat: order.vat?.amountNgn ?? 0,
     vatInclusive: order.vat?.inclusive ?? true,
-    vatRatePct: order.vat?.ratePct ?? 0
+    vatRatePct: order.vat?.ratePct ?? 0,
   };
 }
 

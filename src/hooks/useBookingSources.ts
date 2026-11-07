@@ -18,7 +18,7 @@ export interface BookingSource {
 export function useBookingSources(bookings: Booking[]) {
   const { current } = useWorkspace();
   const byHandle = useMemo(() => {
-    const map = new Map<string, {name: string;main: boolean;}>();
+    const map = new Map<string, { name: string; main: boolean }>();
     const main = spaceHandle(current.id, MAIN_SPACE_ID);
     if (main) map.set(main.toLowerCase(), { name: 'Main page', main: true });
     activeExtraSpaces(current).forEach((s) => {
@@ -41,7 +41,7 @@ export function useBookingSources(bookings: Booking[]) {
       const s = sourceOf(b);
       if (!seen.has(s.handle)) seen.set(s.handle, s.label);
     });
-    return [...seen.entries()].map(([handle, label]) => ({ handle, label })).sort((a, b) => a.handle === '' ? 1 : b.handle === '' ? -1 : a.label.localeCompare(b.label));
+    return [...seen.entries()].map(([handle, label]) => ({ handle, label })).sort((a, b) => (a.handle === '' ? 1 : b.handle === '' ? -1 : a.label.localeCompare(b.label)));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bookings, byHandle]);
 

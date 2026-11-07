@@ -76,7 +76,7 @@ onOpsSettings(() => {
 });
 export const collabSettingsOf = (d: Pick<CollabData, 'settings'>): CollabSettings => ({ ...defaultCollabSettings, ...(d.settings ?? {}) });
 export const termsFor = (ratePct: number, holdDays: number) =>
-`${ratePct}% on sales through your link, paid ${holdDays === 0 ? 'once the order is paid with no refund or dispute' : `once the order is delivered, or ${holdDays} days after payment with no refund or dispute`}.`;
+  `${ratePct}% on sales through your link, paid ${holdDays === 0 ? 'once the order is paid with no refund or dispute' : `once the order is delivered, or ${holdDays} days after payment with no refund or dispute`}.`;
 
 export const emptyCollabs = (): CollabData => ({ partners: [], payouts: [], sampleSeeded: false });
 export const collabKey = (workspaceId: string) => `kubicu.collabs.${workspaceId}`;
@@ -128,35 +128,35 @@ function commissionBase(p: Partner, o: Order): number {
 
 export function commissionLines(p: Partner, orders: Order[], payouts: CommissionPayout[], now = Date.now(), holdDays = COMMISSION_HOLD_DAYS): CommissionLine[] {
   const paidIds = new Set(payouts.filter((x) => x.partnerId === p.id).flatMap((x) => x.orderIds));
-  return partnerOrders(p, orders).
-  map((o) => {
-    const baseNgn = commissionBase(p, o);
-    const commissionNgn = Math.round(baseNgn * p.ratePct / 100);
-    const paidAt = o.events.find((e) => e.kind === 'paid' || e.kind === 'payment')?.at ?? o.createdAt;
-    let state: CommissionState;
-    let reason: string;
-    if (paidIds.has(o.id)) {
-      state = 'paid';
-      reason = 'Paid out';
-    } else if (o.paymentStatus === 'pending') {
-      state = 'pending';
-      reason = 'Waiting for payment';
-    } else if (o.status === 'cancelled' || o.status === 'refunded' || commissionNgn <= 0) {
-      state = 'void';
-      reason = 'Refunded or cancelled';
-    } else if (o.dispute && (o.dispute.status === 'needs_response' || o.dispute.status === 'under_review')) {
-      state = 'pending';
-      reason = 'Dispute open';
-    } else if (o.status === 'completed' || now - new Date(paidAt).getTime() >= holdDays * DAY) {
-      state = 'payable';
-      reason = 'Ready to pay';
-    } else {
-      state = 'pending';
-      reason = `Payable ${holdDays} days after payment`;
-    }
-    return { order: o, baseNgn, commissionNgn, state, reason };
-  }).
-  sort((a, b) => new Date(b.order.createdAt).getTime() - new Date(a.order.createdAt).getTime());
+  return partnerOrders(p, orders)
+    .map((o) => {
+      const baseNgn = commissionBase(p, o);
+      const commissionNgn = Math.round((baseNgn * p.ratePct) / 100);
+      const paidAt = o.events.find((e) => e.kind === 'paid' || e.kind === 'payment')?.at ?? o.createdAt;
+      let state: CommissionState;
+      let reason: string;
+      if (paidIds.has(o.id)) {
+        state = 'paid';
+        reason = 'Paid out';
+      } else if (o.paymentStatus === 'pending') {
+        state = 'pending';
+        reason = 'Waiting for payment';
+      } else if (o.status === 'cancelled' || o.status === 'refunded' || commissionNgn <= 0) {
+        state = 'void';
+        reason = 'Refunded or cancelled';
+      } else if (o.dispute && (o.dispute.status === 'needs_response' || o.dispute.status === 'under_review')) {
+        state = 'pending';
+        reason = 'Dispute open';
+      } else if (o.status === 'completed' || now - new Date(paidAt).getTime() >= holdDays * DAY) {
+        state = 'payable';
+        reason = 'Ready to pay';
+      } else {
+        state = 'pending';
+        reason = `Payable ${holdDays} days after payment`;
+      }
+      return { order: o, baseNgn, commissionNgn, state, reason };
+    })
+    .sort((a, b) => new Date(b.order.createdAt).getTime() - new Date(a.order.createdAt).getTime());
 }
 
 export function partnerTotals(lines: CommissionLine[]) {
@@ -166,7 +166,7 @@ export function partnerTotals(lines: CommissionLine[]) {
     orders: lines.filter((l) => l.state !== 'void').length,
     pending: sum('pending'),
     payable: sum('payable'),
-    paid: sum('paid')
+    paid: sum('paid'),
   };
 }
 
@@ -188,7 +188,7 @@ export function seedCollabs(d: CollabData, orders: Order[]): CollabData {
     invitedAt: ago(40),
     acceptedAt: ago(39),
     sample: true,
-    sampleOrderIds: sampleOrders.slice(0, 3).map((o) => o.id)
+    sampleOrderIds: sampleOrders.slice(0, 3).map((o) => o.id),
   };
   const kunle: Partner = {
     id: uid('ptn'),
@@ -202,7 +202,7 @@ export function seedCollabs(d: CollabData, orders: Order[]): CollabData {
     terms: '8% on sales through your link.',
     status: 'invited',
     invitedAt: ago(2),
-    sample: true
+    sample: true,
   };
   return { ...d, partners: [temi, kunle, ...d.partners], sampleSeeded: true };
 }

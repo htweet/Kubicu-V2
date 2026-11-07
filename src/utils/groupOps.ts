@@ -19,23 +19,23 @@ export function groupBlocks(doc: PageDocument, ids: string[], group: BlockGroup)
 export function ungroup(doc: PageDocument, groupId: string): PageDocument {
   return {
     ...doc,
-    blocks: doc.blocks.map((b) => b.groupId === groupId ? { ...b, groupId: null } : b),
-    groups: (doc.groups ?? []).filter((g) => g.id !== groupId)
+    blocks: doc.blocks.map((b) => (b.groupId === groupId ? { ...b, groupId: null } : b)),
+    groups: (doc.groups ?? []).filter((g) => g.id !== groupId),
   };
 }
 
 export function renameGroup(doc: PageDocument, groupId: string, name: string): PageDocument {
-  return { ...doc, groups: (doc.groups ?? []).map((g) => g.id === groupId ? { ...g, name } : g) };
+  return { ...doc, groups: (doc.groups ?? []).map((g) => (g.id === groupId ? { ...g, name } : g)) };
 }
 
 export function setGroupLocked(doc: PageDocument, groupId: string, locked: boolean): PageDocument {
-  return { ...doc, blocks: doc.blocks.map((b) => b.groupId === groupId ? { ...b, locked } : b) };
+  return { ...doc, blocks: doc.blocks.map((b) => (b.groupId === groupId ? { ...b, locked } : b)) };
 }
 
 export function setGroupHidden(doc: PageDocument, groupId: string, hidden: boolean): PageDocument {
   return {
     ...doc,
-    blocks: doc.blocks.map((b) => b.groupId === groupId ? { ...b, visibility: { ...b.visibility, hidden } } : b)
+    blocks: doc.blocks.map((b) => (b.groupId === groupId ? { ...b, visibility: { ...b.visibility, hidden } } : b)),
   };
 }
 
@@ -107,7 +107,7 @@ export function duplicateGroup(doc: PageDocument, groupId: string): PageDocument
 export function removeGroup(doc: PageDocument, groupId: string): PageDocument {
   return {
     ...doc,
-    blocks: doc.blocks.filter((b) => b.groupId !== groupId || b.locked).map((b) => b.groupId === groupId ? { ...b, groupId: null } : b),
-    groups: (doc.groups ?? []).filter((g) => g.id !== groupId)
+    blocks: doc.blocks.filter((b) => b.groupId !== groupId || b.locked).map((b) => (b.groupId === groupId ? { ...b, groupId: null } : b)),
+    groups: (doc.groups ?? []).filter((g) => g.id !== groupId),
   };
 }

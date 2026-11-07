@@ -20,7 +20,7 @@ export const fieldDefs: Record<SegmentField, FieldDef> = {
   campaign: { label: 'Short link', ops: ['is', 'isNot'], kind: 'campaign' },
   added: { label: 'Added', ops: ['within', 'olderThan'], kind: 'days' },
   email: { label: 'Email', ops: ['has', 'missing'], kind: 'presence' },
-  phone: { label: 'Phone', ops: ['has', 'missing'], kind: 'presence' }
+  phone: { label: 'Phone', ops: ['has', 'missing'], kind: 'presence' },
 };
 
 export const opLabels: Record<SegmentOp, string> = {
@@ -29,21 +29,21 @@ export const opLabels: Record<SegmentOp, string> = {
   within: 'in the last',
   olderThan: 'more than',
   has: 'is filled in',
-  missing: 'is empty'
+  missing: 'is empty',
 };
 
 export const dayOptions = ['7', '30', '90', '180', '365'];
 
-export function choiceOptions(field: SegmentField): {value: string;label: string;}[] {
+export function choiceOptions(field: SegmentField): { value: string; label: string }[] {
   const map: Record<string, string> =
-  field === 'consent' ? consentLabels : field === 'source' ? sourceLabels : field === 'stage' ? stageLabels : field === 'channel' ? channelLabels : {};
+    field === 'consent' ? consentLabels : field === 'source' ? sourceLabels : field === 'stage' ? stageLabels : field === 'channel' ? channelLabels : {};
   return Object.entries(map).map(([value, label]) => ({ value, label }));
 }
 
 export function defaultRule(field: SegmentField, id: string, tags: string[], campaigns: string[]): SegmentRule {
   const def = fieldDefs[field];
   const value =
-  def.kind === 'choice' ? choiceOptions(field)[0]?.value ?? '' : def.kind === 'tag' ? tags[0] ?? '' : def.kind === 'campaign' ? campaigns[0] ?? '' : def.kind === 'days' ? '30' : '';
+    def.kind === 'choice' ? choiceOptions(field)[0]?.value ?? '' : def.kind === 'tag' ? tags[0] ?? '' : def.kind === 'campaign' ? campaigns[0] ?? '' : def.kind === 'days' ? '30' : '';
   return { id, field, op: def.ops[0], value };
 }
 
@@ -64,11 +64,11 @@ export function ruleMatches(c: Contact, r: SegmentRule, now = Date.now()): boole
         return c.attribution?.channel === r.value;
       case 'campaign':
         return c.attribution?.campaign === r.value;
-      case 'added':{
-          const age = now - Date.parse(c.createdAt);
-          const days = Number(r.value) * DAY;
-          return r.op === 'within' ? age <= days : age > days;
-        }
+      case 'added': {
+        const age = now - Date.parse(c.createdAt);
+        const days = Number(r.value) * DAY;
+        return r.op === 'within' ? age <= days : age > days;
+      }
       case 'email':
         return !!c.email.trim();
       case 'phone':

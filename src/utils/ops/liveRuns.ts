@@ -58,7 +58,7 @@ export function reportText(kind: string, commerce: CommerceData, ops: OpsData, n
  * AI drafts wait for approval; reports are written from live numbers; webhooks are called (simulated).
  * Customer messages are still written but not sent — that needs a messaging partner.
  */
-export function runLive(data: OpsData, a: Automation, ev: LiveEvent, ctx: {commerce: CommerceData;memberName: (id: string | null | undefined) => string;}): OpsData {
+export function runLive(data: OpsData, a: Automation, ev: LiveEvent, ctx: { commerce: CommerceData; memberName: (id: string | null | undefined) => string }): OpsData {
   const steps: AutomationRunStep[] = [{ label: triggerLabels[a.trigger].label, status: 'done', detail: ev.subject }];
   let blocked = false;
   let contacts = data.contacts;
@@ -86,10 +86,10 @@ export function runLive(data: OpsData, a: Automation, ev: LiveEvent, ctx: {comme
       }
       const text = fill(step.value, ev.vars);
       if (step.action === 'add_tag' && contact) {
-        contacts = contacts.map((c) => c.id === contact.id && !c.tags.includes(step.value) ? { ...c, tags: [...c.tags, step.value] } : c);
+        contacts = contacts.map((c) => (c.id === contact.id && !c.tags.includes(step.value) ? { ...c, tags: [...c.tags, step.value] } : c));
         steps.push({ label: stepLabel(step), status: 'done', detail: `Tagged ${contact.name} “${step.value}”` });
       } else if (step.action === 'create_task' && contact) {
-        contacts = contacts.map((c) => c.id === contact.id ? { ...c, tasks: [...c.tasks, { id: uid('task'), text, due: new Date(Date.now() + DAY).toISOString(), done: false, assigneeId: step.memberId ?? null }] } : c);
+        contacts = contacts.map((c) => (c.id === contact.id ? { ...c, tasks: [...c.tasks, { id: uid('task'), text, due: new Date(Date.now() + DAY).toISOString(), done: false, assigneeId: step.memberId ?? null }] } : c));
         steps.push({ label: stepLabel(step), status: 'done', detail: `Follow-up “${text}” added to ${contact.name}${step.memberId ? ` for ${ctx.memberName(step.memberId)}` : ''}, due tomorrow` });
       } else if (step.action === 'notify_owner' || step.action === 'notify_member') {
         steps.push({ label: stepLabel(step), status: 'done', detail: `In your notifications: “${text}”${step.action === 'notify_member' ? ` (for ${ctx.memberName(step.memberId)})` : ''}` });
@@ -108,7 +108,7 @@ export function runLive(data: OpsData, a: Automation, ev: LiveEvent, ctx: {comme
         steps.push({
           label: stepLabel(step),
           status: 'done',
-          detail: held ? `Written: “${text}” — held for quiet hours, would go at ${quiet.to}; not sent, sending needs a messaging partner` : `Written: “${text}” — not sent; sending needs a messaging partner`
+          detail: held ? `Written: “${text}” — held for quiet hours, would go at ${quiet.to}; not sent, sending needs a messaging partner` : `Written: “${text}” — not sent; sending needs a messaging partner`,
         });
       }
     }
@@ -118,8 +118,8 @@ export function runLive(data: OpsData, a: Automation, ev: LiveEvent, ctx: {comme
   return {
     ...data,
     contacts,
-    automations: data.automations.map((x) => x.id === a.id ? { ...x, runs: [run, ...x.runs].slice(0, 50) } : x),
-    firedKeys: [ev.key, ...(data.firedKeys ?? [])].slice(0, 500)
+    automations: data.automations.map((x) => (x.id === a.id ? { ...x, runs: [run, ...x.runs].slice(0, 50) } : x)),
+    firedKeys: [ev.key, ...(data.firedKeys ?? [])].slice(0, 500),
   };
 }
 
@@ -128,9 +128,9 @@ export function decideDraft(data: OpsData, automationId: string, runId: string, 
   return {
     ...data,
     automations: data.automations.map((a) =>
-    a.id !== automationId ?
-    a :
-    { ...a, runs: a.runs.map((r) => r.id !== runId ? r : { ...r, steps: r.steps.map((s, i) => i !== stepIndex ? s : { ...s, status: approve ? 'done' : 'skipped', detail: `${approve ? `Approved by ${by}` : `Discarded by ${by}`}: “${s.detail.replace(/^(Approved|Discarded) by [^:]+: “|”$/g, '')}”` }) }) }
-    )
+      a.id !== automationId
+        ? a
+        : { ...a, runs: a.runs.map((r) => (r.id !== runId ? r : { ...r, steps: r.steps.map((s, i) => (i !== stepIndex ? s : { ...s, status: approve ? 'done' : 'skipped', detail: `${approve ? `Approved by ${by}` : `Discarded by ${by}`}: “${s.detail.replace(/^(Approved|Discarded) by [^:]+: “|”$/g, '')}”` })) })) },
+    ),
   };
 }

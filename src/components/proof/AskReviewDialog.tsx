@@ -51,12 +51,12 @@ export function AskReviewDialog({ open, data, update, onClose }: Props) {
 
   return (
     <Dialog open={open} onClose={onClose} size="lg" title="Ask for a review" description="Only customers with a completed order, completed booking or finished job in the last 120 days can be asked. Each gets a link that works once.">
-      {list.length === 0 ?
-      <EmptyState icon={StarIcon} title="No one to ask right now" description="Mark orders and bookings as completed, or jobs as done, and they’ll appear here." /> :
-
-      <ul className="-mx-1 flex max-h-[55vh] flex-col divide-y divide-line overflow-y-auto">
-          {list.map((e) =>
-        <li key={`${e.source.kind}:${e.source.id}`} className="flex flex-col gap-3 px-1 py-3 sm:flex-row sm:items-center">
+      {list.length === 0 ? (
+        <EmptyState icon={StarIcon} title="No one to ask right now" description="Mark orders and bookings as completed, or jobs as done, and they’ll appear here." />
+      ) : (
+        <ul className="-mx-1 flex max-h-[55vh] flex-col divide-y divide-line overflow-y-auto">
+          {list.map((e) => (
+            <li key={`${e.source.kind}:${e.source.id}`} className="flex flex-col gap-3 px-1 py-3 sm:flex-row sm:items-center">
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-label font-medium text-fg">{e.customerName || 'Customer'}</span>
                 <span className="block truncate text-caption text-fg-subtle">
@@ -72,9 +72,9 @@ export function AskReviewDialog({ open, data, update, onClose }: Props) {
                 </Button>
               </span>
             </li>
-        )}
+          ))}
         </ul>
-      }
-    </Dialog>);
-
+      )}
+    </Dialog>
+  );
 }

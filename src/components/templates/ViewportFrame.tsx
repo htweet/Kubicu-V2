@@ -35,13 +35,13 @@ export function ViewportFrame({ title, height, background, children }: ViewportF
     doc.body.style.background = background;
     const observer = new MutationObserver(sync);
     observer.observe(document.head, { childList: true, subtree: true, characterData: true });
-    (ref.current as HTMLIFrameElement & {_kbObserver?: MutationObserver;})._kbObserver?.disconnect();
-    (ref.current as HTMLIFrameElement & {_kbObserver?: MutationObserver;})._kbObserver = observer;
+    (ref.current as HTMLIFrameElement & { _kbObserver?: MutationObserver })._kbObserver?.disconnect();
+    (ref.current as HTMLIFrameElement & { _kbObserver?: MutationObserver })._kbObserver = observer;
     setMount(doc.body);
   }, [background]);
 
   useEffect(() => {
-    const frame = ref.current as (HTMLIFrameElement & {_kbObserver?: MutationObserver;}) | null;
+    const frame = ref.current as (HTMLIFrameElement & { _kbObserver?: MutationObserver }) | null;
     // Some browsers have the document ready before onLoad fires.
     if (frame?.contentDocument?.readyState === 'complete' && frame.contentDocument.body) setup();
     return () => frame?._kbObserver?.disconnect();
@@ -50,6 +50,6 @@ export function ViewportFrame({ title, height, background, children }: ViewportF
   return (
     <iframe ref={ref} title={title} srcDoc={SHELL} onLoad={setup} className="block w-full border-0" style={{ height, background }}>
       {mount && createPortal(children, mount)}
-    </iframe>);
-
+    </iframe>
+  );
 }

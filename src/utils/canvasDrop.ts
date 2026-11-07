@@ -65,7 +65,7 @@ export function resolveLibraryDrop(blocks: Block[], type: BlockType, p: Point, t
     return {
       ...base,
       ok: true,
-      message: beforeName ? tr('Drop to add {block} before {before}', { block: name, before: beforeName }) : tr('Drop to add {block} at the end of {container}', { block: name, container: cname })
+      message: beforeName ? tr('Drop to add {block} before {before}', { block: name, before: beforeName }) : tr('Drop to add {block} at the end of {container}', { block: name, container: cname }),
     };
   }
   return null;

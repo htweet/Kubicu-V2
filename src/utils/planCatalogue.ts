@@ -40,7 +40,7 @@ export function creditAvailable(workspaceId: string, usedNgn: number | undefined
 }
 
 /** Checks a code against the plan and cycle being bought. */
-export function checkCoupon(code: string, plan: WorkspacePlan, store: AdminStore = readAdminStore(), now = Date.now()): {coupon: Coupon;} | {error: string;} {
+export function checkCoupon(code: string, plan: WorkspacePlan, store: AdminStore = readAdminStore(), now = Date.now()): { coupon: Coupon } | { error: string } {
   const c = (store.coupons ?? []).find((x) => x.code.toUpperCase() === code.trim().toUpperCase());
   if (!c || !c.active) return { error: 'That code isn’t valid. Check the spelling.' };
   if (c.expiresAt && Date.parse(c.expiresAt) < now) return { error: 'That code has expired.' };
@@ -64,12 +64,12 @@ export interface Adjusted {
  * Applies a coupon, then account credit, to invoice lines (D135).
  * The coupon is capped at COUPON_MAX_SHARE of the charge; credit is used before the card.
  */
-export function adjustLines(lines: InvoiceLine[], opts: {coupon?: Pick<Coupon, 'code' | 'kind' | 'value'> | null;credit?: number;}): Adjusted {
+export function adjustLines(lines: InvoiceLine[], opts: { coupon?: Pick<Coupon, 'code' | 'kind' | 'value'> | null; credit?: number }): Adjusted {
   const base = Math.max(0, lines.reduce((s, l) => s + l.amountNgn, 0));
   const out = [...lines];
   let couponOff = 0;
   if (opts.coupon && base > 0) {
-    const raw = opts.coupon.kind === 'percent' ? Math.round(base * opts.coupon.value / 100) : opts.coupon.value;
+    const raw = opts.coupon.kind === 'percent' ? Math.round((base * opts.coupon.value) / 100) : opts.coupon.value;
     couponOff = Math.min(raw, Math.floor(base * COUPON_MAX_SHARE));
     if (couponOff > 0) out.push({ label: `Code ${opts.coupon.code}`, amountNgn: -couponOff });
   }
@@ -82,4 +82,4 @@ export function adjustLines(lines: InvoiceLine[], opts: {coupon?: Pick<Coupon, '
   return { lines: out, creditUsed, couponOff };
 }
 
-export const cycleWord = (c: BillingCycle) => c === 'yearly' ? 'year' : 'month';
+export const cycleWord = (c: BillingCycle) => (c === 'yearly' ? 'year' : 'month');

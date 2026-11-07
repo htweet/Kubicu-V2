@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { ArrowUpRightIcon, BellIcon, PaletteIcon } from 'lucide-react';
 import type { AccountPrefs } from '../../types/account';
 import { useAccount, updateAccount, formatAccountDate } from '../../utils/account/store';
-import { dateFormatOptions, startPageOptions } from '../../data/accountOptions';
+import { dateFormatOptions, languageOptions, startPageOptions } from '../../data/accountOptions';
 import { LanguagePicker } from '../ui/LanguagePicker';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
 import { Card } from '../ui/layout/Card';
@@ -32,11 +32,11 @@ export function PreferencesTab() {
           <Field id="pref-lang" label="Language" hint="Naijá, Yorùbá, Hausa and Igbo are drafts: menus, screen names and buttons change first, and anything not translated yet stays in English. French is coming later.">
             <LanguagePicker variant="field" id="pref-lang" align="start" />
           </Field>
-          {!!languageOptions.find((o) => o.value === p.language)?.draft &&
-          <p className="rounded-md bg-sunken px-3 py-2.5 text-caption text-fg-muted">
+          {!!languageOptions.find((o) => o.value === p.language)?.draft && (
+            <p className="rounded-md bg-sunken px-3 py-2.5 text-caption text-fg-muted">
               {tr('These words were drafted and haven’t been checked by a native speaker yet. If something reads wrong, tell us from Help → Contact support. Your customers choose their own language at the bottom of your page.')}
             </p>
-          }
+          )}
           <TimezoneSelect id="pref-tz" value={p.timeZone} onChange={(timeZone) => set({ timeZone }, 'Time zone saved')} hint="Used for your sign-in history and scheduled times you see." />
           <SelectInput id="pref-date" label="Date format" value={p.dateFormat} options={dateFormatOptions} onChange={(dateFormat) => set({ dateFormat }, 'Date format saved')} />
           <p className="rounded-md bg-sunken px-3 py-2.5 text-caption text-fg-muted">
@@ -53,11 +53,11 @@ export function PreferencesTab() {
               value={p.textSize}
               fullWidth
               options={[
-              { value: 'default', label: 'Standard' },
-              { value: 'large', label: 'Larger' }]
-              }
-              onChange={(textSize) => set({ textSize }, textSize === 'large' ? 'Larger text on' : 'Standard text size')} />
-            
+                { value: 'default', label: 'Standard' },
+                { value: 'large', label: 'Larger' },
+              ]}
+              onChange={(textSize) => set({ textSize }, textSize === 'large' ? 'Larger text on' : 'Standard text size')}
+            />
           </Field>
           <Field id="pref-motion" label="Motion" hint="“Always reduce” calms animations even if your device allows them.">
             <Segmented
@@ -65,11 +65,11 @@ export function PreferencesTab() {
               value={p.motion}
               fullWidth
               options={[
-              { value: 'device', label: 'Follow my device' },
-              { value: 'reduce', label: 'Always reduce' }]
-              }
-              onChange={(motion) => set({ motion }, 'Motion preference saved')} />
-            
+                { value: 'device', label: 'Follow my device' },
+                { value: 'reduce', label: 'Always reduce' },
+              ]}
+              onChange={(motion) => set({ motion }, 'Motion preference saved')}
+            />
           </Field>
         </div>
       </Card>
@@ -84,11 +84,11 @@ export function PreferencesTab() {
           <LinkRow icon={PaletteIcon} to="/app" title="Workspace appearance" meta="Chosen by the Owner for everyone — from Appearance at the bottom of the sidebar." />
         </ul>
       </Card>
-    </div>);
-
+    </div>
+  );
 }
 
-function LinkRow({ icon: Icon, to, title, meta }: {icon: typeof BellIcon;to: string;title: string;meta: string;}) {
+function LinkRow({ icon: Icon, to, title, meta }: { icon: typeof BellIcon; to: string; title: string; meta: string }) {
   const { t } = useT();
   title = t(title);
   meta = t(meta);
@@ -104,6 +104,6 @@ function LinkRow({ icon: Icon, to, title, meta }: {icon: typeof BellIcon;to: str
         </span>
         <ArrowUpRightIcon size={16} className="shrink-0 text-fg-subtle" aria-hidden />
       </Link>
-    </li>);
-
+    </li>
+  );
 }

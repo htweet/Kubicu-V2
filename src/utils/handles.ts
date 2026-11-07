@@ -1,23 +1,23 @@
 import type { Workspace } from '../types/workspace';
 import { examplePages } from '../data/examples';
-import { DEMO_WORKSPACE_ID, readPersistedPage } from './workspaceStorage';
+import { readPersistedPage } from './workspaceStorage';
 import { spaceStorageId, workspaceSpaces } from './spaces';
 
 /** Addresses KUBICU itself uses, so nobody can claim them. */
 export const RESERVED_HANDLES = [
-'app', 'admin', 'api', 'about', 'help', 'kubicu', 'p', 'pricing', 'signin', 'signup', 'start', 'templates', 'www', 'reset', 'verify'];
-
+  'app', 'admin', 'api', 'about', 'help', 'kubicu', 'p', 'pricing', 'signin', 'signup', 'start', 'templates', 'www', 'reset', 'verify',
+];
 
 export const HANDLE_PATTERN = /^[a-z0-9-]{3,30}$/;
 
 export function slugifyHandle(value: string): string {
-  return value.
-  toLowerCase().
-  normalize('NFD').
-  replace(/[\u0300-\u036f]/g, '').
-  replace(/&/g, 'and').
-  replace(/[^a-z0-9]+/g, '').
-  slice(0, 30);
+  return value
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/&/g, 'and')
+    .replace(/[^a-z0-9]+/g, '')
+    .slice(0, 30);
 }
 
 /**
@@ -25,13 +25,7 @@ export function slugifyHandle(value: string): string {
  * being edited (its storage id — for a main space that's the workspace id).
  */
 export function takenHandles(workspaces: Workspace[], exceptStorageId?: string): Set<string> {
-  // The Adaeze Atelier example reuses the demo workspace's own page, so its handle must not
-  // block the demo workspace's main space from publishing (L-14). Other examples stay taken.
-  const editingDemo = exceptStorageId === DEMO_WORKSPACE_ID;
-  const exampleHandles = examplePages.
-  map((e) => e.doc.handle).
-  filter((h) => !(editingDemo && h === 'adaeze'));
-  const taken = new Set<string>([...RESERVED_HANDLES, ...exampleHandles]);
+  const taken = new Set<string>([...RESERVED_HANDLES, ...examplePages.map((e) => e.doc.handle)]);
   workspaces.forEach((w) => {
     workspaceSpaces(w).forEach((s) => {
       const id = spaceStorageId(w.id, s.id);
@@ -59,14 +53,14 @@ export function handleStatus(handle: string, taken: ReadonlySet<string>): Handle
 export function suggestHandles(base: string, taken: ReadonlySet<string>, city?: string): string[] {
   const root = slugifyHandle(base) || 'mypage';
   const candidates = [
-  root,
-  `${root}ng`,
-  city ? `${root}${slugifyHandle(city)}` : `${root}hq`,
-  `the${root}`,
-  `${root}-official`,
-  `${root}2`];
-
-  return Array.from(new Set(candidates.map((c) => c.slice(0, 30)))).
-  filter((c) => handleStatus(c, taken) === 'available').
-  slice(0, 3);
+    root,
+    `${root}ng`,
+    city ? `${root}${slugifyHandle(city)}` : `${root}hq`,
+    `the${root}`,
+    `${root}-official`,
+    `${root}2`,
+  ];
+  return Array.from(new Set(candidates.map((c) => c.slice(0, 30))))
+    .filter((c) => handleStatus(c, taken) === 'available')
+    .slice(0, 3);
 }

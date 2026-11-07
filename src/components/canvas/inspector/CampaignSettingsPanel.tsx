@@ -23,35 +23,35 @@ export function CampaignSettingsPanel() {
   const phase = campaignPhase(c);
   // Same facts as phaseSummary(), with the date placed inside a translatable sentence.
   const summary =
-  phase === 'before' && c.startsAt ?
-  tr('Starts {when}', { when: formatSchedule(c.startsAt) }) :
-  phase === 'live' ?
-  c.endsAt ?
-  tr('Ends {when}', { when: formatSchedule(c.endsAt) }) :
-  tr('No end date') :
-  c.endsAt ?
-  tr('Ended {when}', { when: formatSchedule(c.endsAt) }) :
-  tr('Ended');
+    phase === 'before' && c.startsAt
+      ? tr('Starts {when}', { when: formatSchedule(c.startsAt) })
+      : phase === 'live'
+        ? c.endsAt
+          ? tr('Ends {when}', { when: formatSchedule(c.endsAt) })
+          : tr('No end date')
+        : c.endsAt
+          ? tr('Ended {when}', { when: formatSchedule(c.endsAt) })
+          : tr('Ended');
   const totals = campaignTotals(data, state.site.handle);
   const codes = data.discounts.filter((d) => d.kind === 'code');
   const products = data.products.filter((p) => p.status !== 'archived' && p.kind !== 'ticket');
 
   const update = (patch: Partial<CampaignSettings>) =>
-  actions.transformDocument((doc) => {
-    if (!doc.campaign) return doc;
-    const prev = doc.campaign;
-    const next = { ...prev, ...patch };
-    // Countdowns that pointed at the old start/end follow the new dates.
-    const retarget = (d: PageDocument['blocks']) =>
-    d.map((b) => {
-      if (b.type !== 'countdown') return b;
-      const t = b.content.target;
-      if ('startsAt' in patch && t === prev.startsAt) return { ...b, content: { ...b.content, target: next.startsAt } };
-      if ('endsAt' in patch && t === prev.endsAt) return { ...b, content: { ...b.content, target: next.endsAt } };
-      return b;
+    actions.transformDocument((doc) => {
+      if (!doc.campaign) return doc;
+      const prev = doc.campaign;
+      const next = { ...prev, ...patch };
+      // Countdowns that pointed at the old start/end follow the new dates.
+      const retarget = (d: PageDocument['blocks']) =>
+        d.map((b) => {
+          if (b.type !== 'countdown') return b;
+          const t = b.content.target;
+          if ('startsAt' in patch && t === prev.startsAt) return { ...b, content: { ...b.content, target: next.startsAt } };
+          if ('endsAt' in patch && t === prev.endsAt) return { ...b, content: { ...b.content, target: next.endsAt } };
+          return b;
+        });
+      return { ...doc, campaign: next, blocks: retarget(doc.blocks) };
     });
-    return { ...doc, campaign: next, blocks: retarget(doc.blocks) };
-  });
 
   const toggleProduct = (id: string) => update({ productIds: c.productIds.includes(id) ? c.productIds.filter((x) => x !== id) : [...c.productIds, id] });
 
@@ -79,8 +79,8 @@ export function CampaignSettingsPanel() {
           clearable
           value={c.endsAt}
           onChange={(endsAt) => update({ endsAt })}
-          error={c.startsAt && c.endsAt && Date.parse(c.endsAt) <= Date.parse(c.startsAt) ? tr('End after it starts.') : !c.endsAt ? tr('Needed to publish.') : undefined} />
-        
+          error={c.startsAt && c.endsAt && Date.parse(c.endsAt) <= Date.parse(c.startsAt) ? tr('End after it starts.') : !c.endsAt ? tr('Needed to publish.') : undefined}
+        />
         <p className="text-caption text-fg-subtle">{tr('Times are in {zone}. Visitors see the Before, Live and Ended versions automatically.', { zone: timeZoneLabel() })}</p>
       </div>
 
@@ -90,11 +90,11 @@ export function CampaignSettingsPanel() {
         </label>
         <select id="camp-discount" value={c.discountId ?? ''} onChange={(e) => update({ discountId: e.target.value || null })} className={cn(fieldControlClass, 'h-10')}>
           <option value="">{tr('No discount')}</option>
-          {codes.map((d) =>
-          <option key={d.id} value={d.id}>
+          {codes.map((d) => (
+            <option key={d.id} value={d.id}>
               {d.code} — {valueLabel(d.value)} ({tr(discountStatusLabel[discountStatus(d, data)])})
             </option>
-          )}
+          ))}
         </select>
         <p className="text-caption text-fg-subtle">
           {tr('Applied automatically at checkout while the campaign is live.')}{' '}
@@ -106,25 +106,25 @@ export function CampaignSettingsPanel() {
 
       <fieldset>
         <legend className="mb-1.5 text-label font-medium text-fg">{tr('Featured products')}</legend>
-        {products.length === 0 ?
-        <p className="text-caption text-fg-subtle">
+        {products.length === 0 ? (
+          <p className="text-caption text-fg-subtle">
             {tr('No products yet.')}{' '}
             <Link to="/app/commerce/products" className="font-medium text-fg underline underline-offset-2">
               {tr('Add products')}
             </Link>
-          </p> :
-
-        <ul className="scroll-quiet flex max-h-44 flex-col overflow-y-auto rounded-md border border-line">
-            {products.map((p) =>
-          <li key={p.id} className="border-b border-line last:border-0">
+          </p>
+        ) : (
+          <ul className="scroll-quiet flex max-h-44 flex-col overflow-y-auto rounded-md border border-line">
+            {products.map((p) => (
+              <li key={p.id} className="border-b border-line last:border-0">
                 <label className="flex min-h-[40px] cursor-pointer items-center gap-2.5 px-3 py-1.5 text-label text-fg hover:bg-sunken">
                   <input type="checkbox" className="h-4 w-4" checked={c.productIds.includes(p.id)} onChange={() => toggleProduct(p.id)} />
                   <span className="truncate">{p.name}</span>
                 </label>
               </li>
-          )}
+            ))}
           </ul>
-        }
+        )}
         <p className="mt-1.5 text-caption text-fg-subtle">{tr('Checked before publishing for stock and status. Add a Product grid block to show them.')}</p>
       </fieldset>
 
@@ -142,6 +142,6 @@ export function CampaignSettingsPanel() {
           <dd className="text-label font-semibold tabular-nums text-fg">{totals.discountNgn ? `−${formatNgn(totals.discountNgn)}` : '—'}</dd>
         </div>
       </dl>
-    </section>);
-
+    </section>
+  );
 }

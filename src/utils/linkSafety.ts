@@ -4,16 +4,16 @@
  */
 
 export type DestinationProblem =
-'empty' |
-'notUrl' |
-'scheme' |
-'credentials' |
-'private' |
-'loop' |
-'blocked' |
-'tooLong';
+  | 'empty'
+  | 'notUrl'
+  | 'scheme'
+  | 'credentials'
+  | 'private'
+  | 'loop'
+  | 'blocked'
+  | 'tooLong';
 
-export type DestinationCheck = {ok: true;url: string;host: string;upgraded: boolean;} | {ok: false;problem: DestinationProblem;message: string;};
+export type DestinationCheck = { ok: true; url: string; host: string; upgraded: boolean } | { ok: false; problem: DestinationProblem; message: string };
 
 /** Sample of hosts a screening service would flag. Illustrative only. */
 const BLOCKED_HOSTS = ['free-airtime-ng.example', 'bank-verify-login.example', 'bvn-update.example'];
@@ -28,7 +28,7 @@ const messages: Record<DestinationProblem, string> = {
   private: 'That address only works inside one network or computer, so visitors couldn’t open it.',
   loop: 'That’s already a KUBICU short link. Shortening it again would send people in a circle.',
   blocked: 'This address has been reported as unsafe, so it can’t be shortened.',
-  tooLong: 'That address is longer than 2,048 characters. Shorten its tracking tags and try again.'
+  tooLong: 'That address is longer than 2,048 characters. Shorten its tracking tags and try again.',
 };
 
 function isPrivateHost(host: string): boolean {
@@ -36,7 +36,7 @@ function isPrivateHost(host: string): boolean {
   const m = host.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
   if (!m) return host === '[::1]';
   const [a, b] = [Number(m[1]), Number(m[2])];
-  return a === 10 || a === 127 || a === 0 || a === 169 && b === 254 || a === 172 && b >= 16 && b <= 31 || a === 192 && b === 168;
+  return a === 10 || a === 127 || a === 0 || (a === 169 && b === 254) || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168);
 }
 
 export function checkDestination(input: string): DestinationCheck {

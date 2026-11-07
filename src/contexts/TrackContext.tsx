@@ -13,7 +13,7 @@ interface TrackerOptions {
   workspaceId: string | null;
   handle: string;
   pageId: string | null;
-  source: {source: SourceId;campaign?: string;};
+  source: { source: SourceId; campaign?: string };
   /** Draft previews and the canvas never record. */
   disabled: boolean;
   /** The viewer is the page's owner on this device. */
@@ -29,7 +29,7 @@ export function createTracker({ workspaceId, handle, pageId, source, disabled, i
   };
 }
 
-export function TrackProvider({ value, children }: {value: TrackFn;children: React.ReactNode;}) {
+export function TrackProvider({ value, children }: { value: TrackFn; children: React.ReactNode }) {
   return <TrackContext.Provider value={value}>{children}</TrackContext.Provider>;
 }
 

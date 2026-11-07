@@ -5,21 +5,21 @@
  */
 
 export type EmbedProvider =
-'youtube' |
-'vimeo' |
-'tiktok' |
-'instagram' |
-'facebook' |
-'loom' |
-'spotify' |
-'soundcloud' |
-'audiomack' |
-'maps' |
-'calendly';
+  | 'youtube'
+  | 'vimeo'
+  | 'tiktok'
+  | 'instagram'
+  | 'facebook'
+  | 'loom'
+  | 'spotify'
+  | 'soundcloud'
+  | 'audiomack'
+  | 'maps'
+  | 'calendly';
 
 export type EmbedKind = 'video' | 'audio' | 'map' | 'scheduler';
 
-export type EmbedFrame = {type: 'ratio';ratio: string;} | {type: 'fixed';height: number;maxWidth?: number;};
+export type EmbedFrame = { type: 'ratio'; ratio: string } | { type: 'fixed'; height: number; maxWidth?: number };
 
 export interface EmbedInfo {
   ok: true;
@@ -52,18 +52,18 @@ export interface ProviderMeta {
 }
 
 export const EMBED_PROVIDERS: ProviderMeta[] = [
-{ id: 'youtube', name: 'YouTube', kind: 'video', example: 'youtube.com/watch?v=…', captionsHow: 'In YouTube Studio, open the video → Subtitles → Add language, then upload or type captions. Automatic captions are a start, but check names and Nigerian words.' },
-{ id: 'vimeo', name: 'Vimeo', kind: 'video', example: 'vimeo.com/123456789', captionsHow: 'On Vimeo, open the video → Distribution → Subtitles, then upload a caption file or use automatic captions.' },
-{ id: 'tiktok', name: 'TikTok', kind: 'video', example: 'tiktok.com/@you/video/…', captionsHow: 'In TikTok, turn on Auto captions before posting, or add on-screen text. Edit the captions after they’re generated.' },
-{ id: 'instagram', name: 'Instagram', kind: 'video', example: 'instagram.com/reel/…', captionsHow: 'When posting a reel, tap Captions (or Text) to add automatic captions, and check them before sharing.' },
-{ id: 'facebook', name: 'Facebook video', kind: 'video', example: 'facebook.com/…/videos/…', captionsHow: 'In Meta Business Suite, open the video → Edit → Subtitles & captions, then generate or upload them.' },
-{ id: 'loom', name: 'Loom', kind: 'video', example: 'loom.com/share/…', captionsHow: 'Loom adds captions automatically. Open the video → Settings and make sure captions are on for viewers.' },
-{ id: 'spotify', name: 'Spotify', kind: 'audio', example: 'open.spotify.com/track/…' },
-{ id: 'soundcloud', name: 'SoundCloud', kind: 'audio', example: 'soundcloud.com/artist/track' },
-{ id: 'audiomack', name: 'Audiomack', kind: 'audio', example: 'audiomack.com/artist/song/…' },
-{ id: 'maps', name: 'Google Maps', kind: 'map', example: 'google.com/maps/place/…' },
-{ id: 'calendly', name: 'Calendly', kind: 'scheduler', example: 'calendly.com/you/30min' }];
-
+  { id: 'youtube', name: 'YouTube', kind: 'video', example: 'youtube.com/watch?v=…', captionsHow: 'In YouTube Studio, open the video → Subtitles → Add language, then upload or type captions. Automatic captions are a start, but check names and Nigerian words.' },
+  { id: 'vimeo', name: 'Vimeo', kind: 'video', example: 'vimeo.com/123456789', captionsHow: 'On Vimeo, open the video → Distribution → Subtitles, then upload a caption file or use automatic captions.' },
+  { id: 'tiktok', name: 'TikTok', kind: 'video', example: 'tiktok.com/@you/video/…', captionsHow: 'In TikTok, turn on Auto captions before posting, or add on-screen text. Edit the captions after they’re generated.' },
+  { id: 'instagram', name: 'Instagram', kind: 'video', example: 'instagram.com/reel/…', captionsHow: 'When posting a reel, tap Captions (or Text) to add automatic captions, and check them before sharing.' },
+  { id: 'facebook', name: 'Facebook video', kind: 'video', example: 'facebook.com/…/videos/…', captionsHow: 'In Meta Business Suite, open the video → Edit → Subtitles & captions, then generate or upload them.' },
+  { id: 'loom', name: 'Loom', kind: 'video', example: 'loom.com/share/…', captionsHow: 'Loom adds captions automatically. Open the video → Settings and make sure captions are on for viewers.' },
+  { id: 'spotify', name: 'Spotify', kind: 'audio', example: 'open.spotify.com/track/…' },
+  { id: 'soundcloud', name: 'SoundCloud', kind: 'audio', example: 'soundcloud.com/artist/track' },
+  { id: 'audiomack', name: 'Audiomack', kind: 'audio', example: 'audiomack.com/artist/song/…' },
+  { id: 'maps', name: 'Google Maps', kind: 'map', example: 'google.com/maps/place/…' },
+  { id: 'calendly', name: 'Calendly', kind: 'scheduler', example: 'calendly.com/you/30min' },
+];
 
 export const providerMeta = (id: EmbedProvider) => EMBED_PROVIDERS.find((p) => p.id === id)!;
 

@@ -16,6 +16,6 @@ export function BackToTopBlock({ block, theme, mode }: BlockProps<'backToTop'>) 
       <button type="button" onClick={go} className="inline-flex min-h-[44px] items-center gap-1.5 px-4 text-[14px] font-medium transition-[background-color] duration-150 ease-out" style={{ color: theme.mutedText, borderRadius: buttonRadius(theme), background: mix(theme.text, 4) }}>
         <ArrowUpIcon size={15} aria-hidden /> {block.content.label || 'Back to top'}
       </button>
-    </div>);
-
+    </div>
+  );
 }

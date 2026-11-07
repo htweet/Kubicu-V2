@@ -32,14 +32,14 @@ export function useBlockShelf() {
     try {
       window.localStorage.setItem(KEY, JSON.stringify(shelf));
     } catch {
-
-      /* storage full or blocked — the shelf just won't persist */}
+      /* storage full or blocked — the shelf just won't persist */
+    }
   }, [shelf]);
 
   const used = useCallback((type: BlockType) => setShelf((s) => ({ ...s, recent: [type, ...s.recent.filter((t) => t !== type)].slice(0, RECENT_MAX) })), []);
   const toggleFavourite = useCallback(
     (type: BlockType) => setShelf((s) => ({ ...s, favourites: s.favourites.includes(type) ? s.favourites.filter((t) => t !== type) : [...s.favourites, type] })),
-    []
+    [],
   );
   const dismiss = useCallback((id: string) => setShelf((s) => ({ ...s, dismissed: s.dismissed.includes(id) ? s.dismissed : [...s.dismissed, id] })), []);
 

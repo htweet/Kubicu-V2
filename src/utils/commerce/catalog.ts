@@ -61,15 +61,15 @@ export function displayStatus(product: Product): 'active' | 'draft' | 'archived'
 
 function skuBase(name: string): string {
   return (
-    name.
-    toUpperCase().
-    replace(/[^A-Z0-9 ]/g, '').
-    split(/\s+/).
-    filter(Boolean).
-    map((w) => w.slice(0, 3)).
-    join('-').
-    slice(0, 12) || 'SKU');
-
+    name
+      .toUpperCase()
+      .replace(/[^A-Z0-9 ]/g, '')
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((w) => w.slice(0, 3))
+      .join('-')
+      .slice(0, 12) || 'SKU'
+  );
 }
 
 /** Rebuilds the variant grid from options, keeping price and stock for combinations that still exist. */
@@ -77,7 +77,7 @@ export function regenerateVariants(product: Pick<Product, 'name' | 'options' | '
   const opts: ProductOption[] = product.options.filter((o) => o.name.trim() && o.values.some((v) => v.trim()));
   const combos: Record<string, string>[] = opts.reduce<Record<string, string>[]>(
     (acc, opt) => acc.flatMap((c) => opt.values.filter((v) => v.trim()).map((v) => ({ ...c, [opt.name.trim()]: v.trim() }))),
-    [{}]
+    [{}],
   );
   const key = (o: Record<string, string>) => JSON.stringify(Object.entries(o).sort());
   const existing = new Map(product.variants.map((v) => [key(v.options), v]));
@@ -85,9 +85,9 @@ export function regenerateVariants(product: Pick<Product, 'name' | 'options' | '
   return combos.map((options) => {
     const found = existing.get(key(options));
     if (found) return found;
-    const suffix = Object.values(options).
-    map((v) => v.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4)).
-    join('-');
+    const suffix = Object.values(options)
+      .map((v) => v.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4))
+      .join('-');
     return { id: uid('var'), sku: suffix ? `${base}-${suffix}` : base, options, priceNgn: null, stock: 0 };
   });
 }
@@ -110,7 +110,7 @@ export function linkedGridProducts(c: BlockContentMap['productGrid'], data: Comm
  * availability from Commerce; drafted/archived products are hidden. If the product was
  * deleted, the last typed details are shown so the menu never breaks.
  */
-export function resolveMenuItem(item: MenuItem, data: CommerceData | null): (MenuItem & {linked: boolean;}) | null {
+export function resolveMenuItem(item: MenuItem, data: CommerceData | null): (MenuItem & { linked: boolean }) | null {
   if (!item.productId) return { ...item, linked: false };
   const p = findProduct(data, item.productId);
   if (!p) return { ...item, linked: false };

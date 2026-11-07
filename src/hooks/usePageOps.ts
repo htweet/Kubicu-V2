@@ -12,7 +12,7 @@ export interface PageOps {
 /** Bookings and contacts for the page being viewed (own workspace or another on this device). */
 export function usePageOps(workspaceId: string | null, isOwn: boolean): PageOps {
   const own = useOps();
-  const [other, setOther] = useState<OpsData | null>(() => !isOwn && workspaceId ? readOps(workspaceId) : null);
+  const [other, setOther] = useState<OpsData | null>(() => (!isOwn && workspaceId ? readOps(workspaceId) : null));
 
   useEffect(() => {
     if (!isOwn && workspaceId) setOther(readOps(workspaceId));
@@ -33,7 +33,7 @@ export function usePageOps(workspaceId: string | null, isOwn: boolean): PageOps 
       setOther(next);
       return true;
     },
-    [workspaceId]
+    [workspaceId],
   );
 
   return isOwn ? { data: own.data, apply: own.applySystem } : { data: other, apply: applyOther };

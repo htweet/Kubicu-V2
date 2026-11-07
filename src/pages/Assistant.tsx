@@ -38,8 +38,8 @@ export function Assistant() {
             Back to your workspace
           </Button>
         </div>
-      </main>);
-
+      </main>
+    );
   }
   return <AssistantWorkspace />;
 }
@@ -73,12 +73,12 @@ function AssistantWorkspace() {
   }, []);
   const created = session.created ?? { productIds: [], serviceIds: [] };
   const removeList = [
-  session.answers.mode === 'add' ? 'The sections it added, and any changes since' : 'The built page and any changes since — your page goes back to how it was',
-  created.productIds.length ? `${created.productIds.length} product${created.productIds.length === 1 ? '' : 's'} in Commerce (any with orders are kept)` : '',
-  created.serviceIds.length ? `${created.serviceIds.length} Bookings service${created.serviceIds.length === 1 ? '' : 's'} (any with bookings are kept)` : '',
-  created.qrId ? 'The QR code and its campaign link' : '',
-  session.savedTemplateId ? 'The layout saved in your templates' : ''].
-  filter(Boolean);
+    session.answers.mode === 'add' ? 'The sections it added, and any changes since' : 'The built page and any changes since — your page goes back to how it was',
+    created.productIds.length ? `${created.productIds.length} product${created.productIds.length === 1 ? '' : 's'} in Commerce (any with orders are kept)` : '',
+    created.serviceIds.length ? `${created.serviceIds.length} Bookings service${created.serviceIds.length === 1 ? '' : 's'} (any with bookings are kept)` : '',
+    created.qrId ? 'The QR code and its campaign link' : '',
+    session.savedTemplateId ? 'The layout saved in your templates' : '',
+  ].filter(Boolean);
 
   const doRemove = () => {
     const { kept } = assistant.removeEverything();
@@ -92,7 +92,7 @@ function AssistantWorkspace() {
   const [confirmLeave, setConfirmLeave] = useState(false);
   const canvasPath = `/app/canvas/${session.pageId}`;
   // A change still waiting for Keep or Discard would be lost silently — ask first.
-  const openCanvas = () => assistant.pending ? setConfirmLeave(true) : navigate(canvasPath);
+  const openCanvas = () => (assistant.pending ? setConfirmLeave(true) : navigate(canvasPath));
   const leaveWith = (keep: boolean) => {
     const id = assistant.pending?.id;
     if (id) (keep ? assistant.keepChange : assistant.discardChange)(id);
@@ -122,35 +122,35 @@ function AssistantWorkspace() {
           <span className="sr-only sm:hidden">Start over</span>
         </Button>
         {/* Always-visible way on to the canvas once the page is built, however far the chat has scrolled. */}
-        {builtPage &&
-        <Button size="sm" leadingIcon={PenToolIcon} onClick={openCanvas}>
+        {builtPage && (
+          <Button size="sm" leadingIcon={PenToolIcon} onClick={openCanvas}>
             <span className="hidden sm:inline">Open in canvas</span>
             <span className="sm:hidden">Canvas</span>
           </Button>
-        }
+        )}
       </header>
 
       {/* Phones: Chat and Preview are tabs. */}
       <div role="tablist" aria-label="Assistant view" className="flex shrink-0 border-b border-line bg-raised lg:hidden">
-        {(['chat', 'preview'] as MobileTab[]).map((t) =>
-        <button
-          key={t}
-          type="button"
-          role="tab"
-          aria-selected={tab === t}
-          onClick={() => setTab(t)}
-          className={cn('flex h-11 flex-1 items-center justify-center gap-1.5 text-label font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus', tab === t ? 'text-fg shadow-[inset_0_-2px_0_rgb(var(--action))]' : 'text-fg-muted')}>
-          
+        {(['chat', 'preview'] as MobileTab[]).map((t) => (
+          <button
+            key={t}
+            type="button"
+            role="tab"
+            aria-selected={tab === t}
+            onClick={() => setTab(t)}
+            className={cn('flex h-11 flex-1 items-center justify-center gap-1.5 text-label font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus', tab === t ? 'text-fg shadow-[inset_0_-2px_0_rgb(var(--action))]' : 'text-fg-muted')}
+          >
             {t === 'chat' ? <MessageSquareIcon size={15} aria-hidden /> : <MonitorSmartphoneIcon size={15} aria-hidden />}
             {t === 'chat' ? 'Chat' : 'Preview'}
           </button>
-        )}
+        ))}
       </div>
 
       <div className="flex min-h-0 flex-1">
         <div className={cn('min-h-0 w-full flex-col border-line bg-raised lg:flex lg:w-[440px] lg:shrink-0 lg:border-r', tab === 'chat' ? 'flex' : 'hidden')}>
-          {showResume && session.stage !== 'done' &&
-          <div className="flex shrink-0 items-center gap-3 border-b border-line bg-action-soft px-4 py-2.5">
+          {showResume && session.stage !== 'done' && (
+            <div className="flex shrink-0 items-center gap-3 border-b border-line bg-action-soft px-4 py-2.5">
               <PauseCircleIcon size={16} className="shrink-0 text-action" aria-hidden />
               <p className="min-w-0 flex-1 text-caption text-fg">Continuing where you left off.</p>
               <button type="button" className="text-caption font-semibold text-action hover:underline" onClick={() => setShowResume(false)}>
@@ -160,13 +160,13 @@ function AssistantWorkspace() {
                 Start fresh
               </button>
             </div>
-          }
+          )}
           <AssistantChat assistant={assistant} onRestart={() => setConfirmRestart(true)} onUndo={() => setConfirmRemove(true)} />
-          {tab === 'chat' && (session.stage === 'plan' || session.stage === 'building' || !!assistant.pending) &&
-          <button type="button" onClick={() => setTab('preview')} className="mx-4 mb-3 inline-flex h-9 items-center justify-center gap-1.5 rounded-full bg-sunken text-caption font-semibold text-fg lg:hidden">
+          {tab === 'chat' && (session.stage === 'plan' || session.stage === 'building' || !!assistant.pending) && (
+            <button type="button" onClick={() => setTab('preview')} className="mx-4 mb-3 inline-flex h-9 items-center justify-center gap-1.5 rounded-full bg-sunken text-caption font-semibold text-fg lg:hidden">
               <MonitorSmartphoneIcon size={14} aria-hidden /> See preview
             </button>
-          }
+          )}
         </div>
         <div className={cn('min-h-0 min-w-0 flex-1 flex-col lg:flex', tab === 'preview' ? 'flex' : 'hidden')}>
           <AssistantPreview
@@ -178,14 +178,14 @@ function AssistantWorkspace() {
             before={assistant.beforeChange}
             highlightId={assistant.pending?.focusId ?? session.focusId}
             onPickSection={
-            session.stage === 'done' && !session.removed && !assistant.pending ?
-            (id) => {
-              assistant.focusSection(id);
-              setTab('chat');
-            } :
-            undefined
-            } />
-          
+              session.stage === 'done' && !session.removed && !assistant.pending
+                ? (id) => {
+                    assistant.focusSection(id);
+                    setTab('chat');
+                  }
+                : undefined
+            }
+          />
         </div>
       </div>
 
@@ -196,14 +196,14 @@ function AssistantWorkspace() {
         title="Start a new conversation?"
         description={session.applied ? 'Your page keeps what was built. The conversation and plan are cleared.' : 'The conversation and plan are cleared. Your page hasn’t changed. Photos you added stay in Media.'}
         footer={
-        <>
+          <>
             <Button variant="secondary" onClick={() => setConfirmRestart(false)}>
               Keep going
             </Button>
             <Button onClick={doRestart}>Start over</Button>
           </>
-        } />
-      
+        }
+      />
 
       <Dialog
         open={confirmRemove}
@@ -212,7 +212,7 @@ function AssistantWorkspace() {
         title="Remove everything the assistant made?"
         description="This is one step, and you can rebuild any time by starting over."
         footer={
-        <>
+          <>
             <Button variant="secondary" onClick={() => setConfirmRemove(false)}>
               Keep it
             </Button>
@@ -220,12 +220,12 @@ function AssistantWorkspace() {
               Remove everything
             </Button>
           </>
-        }>
-        
+        }
+      >
         <ul className="flex flex-col gap-1.5 text-label text-fg">
-          {removeList.map((r) =>
-          <li key={r}>· {r}</li>
-          )}
+          {removeList.map((r) => (
+            <li key={r}>· {r}</li>
+          ))}
         </ul>
         <p className="mt-3 text-caption text-fg-muted">Photos you added stay in Media. AI credits already used aren’t returned.</p>
       </Dialog>
@@ -236,15 +236,15 @@ function AssistantWorkspace() {
         title="Keep the last change before opening the canvas?"
         description={assistant.pending ? `“${assistant.pending.summary}” is still waiting for Keep or Discard. Kept changes go on your page; discarded ones don’t.` : ''}
         footer={
-        <>
+          <>
             <Button variant="secondary" onClick={() => leaveWith(false)}>
               Discard and open
             </Button>
             <Button onClick={() => leaveWith(true)}>Keep and open</Button>
           </>
-        } />
-      
+        }
+      />
       <AssistantExampleDialog open={showExample} onClose={() => setShowExample(false)} />
-    </div>);
-
+    </div>
+  );
 }

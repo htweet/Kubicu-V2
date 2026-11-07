@@ -32,8 +32,8 @@ export function DeclarationsStep({ k, set, errors, disabled }: KycStepProps) {
             options={[{ value: '' as Vol, label: tr('Choose a range'), disabled: true }, ...(Object.keys(volumeLabels) as Exclude<Vol, ''>[]).map((v) => ({ value: v as Vol, label: tr(volumeLabels[v]) }))]}
             error={errors.monthlyVolume}
             disabled={disabled}
-            hint="A rough guess is fine. It helps avoid unexpected holds." />
-          
+            hint="A rough guess is fine. It helps avoid unexpected holds."
+          />
           <SelectInput<Funds>
             id="kyc-funds"
             required
@@ -42,8 +42,8 @@ export function DeclarationsStep({ k, set, errors, disabled }: KycStepProps) {
             onChange={(sourceOfFunds) => setD({ sourceOfFunds })}
             options={[{ value: '' as Funds, label: tr('Choose one'), disabled: true }, ...(Object.keys(fundsLabels) as Exclude<Funds, ''>[]).map((v) => ({ value: v as Funds, label: tr(fundsLabels[v]) }))]}
             error={errors.sourceOfFunds}
-            disabled={disabled} />
-          
+            disabled={disabled}
+          />
         </div>
         {d.sourceOfFunds === 'other' && <TextInput id="kyc-funds-detail" label="Tell us more" value={d.sourceDetail} onChange={(e) => setD({ sourceDetail: e.target.value })} error={errors.sourceDetail} disabled={disabled} />}
       </section>
@@ -58,8 +58,8 @@ export function DeclarationsStep({ k, set, errors, disabled }: KycStepProps) {
           onChange={(pep) => setD({ pep })}
           disabled={disabled}
           label="I hold, or am closely related to someone who holds, a prominent public role"
-          description="For example a minister, legislator, senior judge, military officer or head of a state-owned company. Saying yes doesn’t stop you being verified." />
-        
+          description="For example a minister, legislator, senior judge, military officer or head of a state-owned company. Saying yes doesn’t stop you being verified."
+        />
         {d.pep && <TextInput id="kyc-pep-detail" label="Which role, and who holds it?" value={d.pepDetail} onChange={(e) => setD({ pepDetail: e.target.value })} error={errors.pepDetail} disabled={disabled} />}
       </section>
 
@@ -74,9 +74,9 @@ export function DeclarationsStep({ k, set, errors, disabled }: KycStepProps) {
           onChange={(terms) => setD({ terms })}
           error={errors.terms}
           disabled={disabled}
-          label={kycRules().consent} />
-        
+          label={kycRules().consent}
+        />
       </section>
-    </div>);
-
+    </div>
+  );
 }

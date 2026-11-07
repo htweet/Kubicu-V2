@@ -36,15 +36,15 @@ export const emptyVoice = (): VoiceData => ({ sessions: [] });
 export const voiceKey = (workspaceId: string) => `kubicu.voice.${workspaceId}`;
 
 export const voiceLanguages = [
-{ value: 'en-NG', label: 'English (Nigeria)', ready: true },
-{ value: 'pcm', label: 'Nigerian Pidgin', ready: false },
-{ value: 'yo', label: 'Yorùbá', ready: false },
-{ value: 'ha', label: 'Hausa', ready: false },
-{ value: 'ig', label: 'Igbo', ready: false }] as
-const;
+  { value: 'en-NG', label: 'English (Nigeria)', ready: true },
+  { value: 'pcm', label: 'Nigerian Pidgin', ready: false },
+  { value: 'yo', label: 'Yorùbá', ready: false },
+  { value: 'ha', label: 'Hausa', ready: false },
+  { value: 'ig', label: 'Igbo', ready: false },
+] as const;
 
 export const SAMPLE_TRANSCRIPT =
-'Ankara wrap dress, fully lined with side pockets, 15k, I have 6 pieces. Next, silk gele in wine colour, 8,500 naira, 10 in stock. Next, beaded clutch bag for 12000, 3 pieces. Next, gift wrapping.';
+  'Ankara wrap dress, fully lined with side pockets, 15k, I have 6 pieces. Next, silk gele in wine colour, 8,500 naira, 10 in stock. Next, beaded clutch bag for 12000, 3 pieces. Next, gift wrapping.';
 
 const toNumber = (digits: string, unit?: string) => {
   const n = Number(digits.replace(/,/g, ''));
@@ -54,35 +54,35 @@ const toNumber = (digits: string, unit?: string) => {
 };
 
 const pricePatterns: RegExp[] = [
-/(?:₦|\bngn\s?|\bn(?=\d))\s?(\d[\d,]*(?:\.\d+)?)\s*(k|thousand)?\b/i,
-/\b(\d[\d,]*(?:\.\d+)?)\s*(k|thousand)?\s*naira\b/i,
-/\b(?:for|at|price(?:\s+is)?|costs?|selling\s+at)\s+(\d[\d,]*(?:\.\d+)?)\s*(k|thousand)?\b/i,
-/\b(\d+(?:\.\d+)?)\s?(k)\b/i];
-
+  /(?:₦|\bngn\s?|\bn(?=\d))\s?(\d[\d,]*(?:\.\d+)?)\s*(k|thousand)?\b/i,
+  /\b(\d[\d,]*(?:\.\d+)?)\s*(k|thousand)?\s*naira\b/i,
+  /\b(?:for|at|price(?:\s+is)?|costs?|selling\s+at)\s+(\d[\d,]*(?:\.\d+)?)\s*(k|thousand)?\b/i,
+  /\b(\d+(?:\.\d+)?)\s?(k)\b/i,
+];
 
 const qtyPatterns: RegExp[] = [
-/\b(?:i\s+have|we\s+have|there\s+are)\s+(\d+)\b(?:\s*(?:pieces|pcs|pc|units|of\s+them))?/i,
-/\b(\d+)\s*(?:pieces|pcs|pc|units|in\s+stock|left|available)\b/i,
-/\b(?:qty|quantity|stock(?:\s+of)?)\s*:?\s*(\d+)\b/i];
-
+  /\b(?:i\s+have|we\s+have|there\s+are)\s+(\d+)\b(?:\s*(?:pieces|pcs|pc|units|of\s+them))?/i,
+  /\b(\d+)\s*(?:pieces|pcs|pc|units|in\s+stock|left|available)\b/i,
+  /\b(?:qty|quantity|stock(?:\s+of)?)\s*:?\s*(\d+)\b/i,
+];
 
 const filler = /\b(i'?m selling|i am selling|selling|i have|we have|the price is|price is|each|naira|and then|also)\b/gi;
 
 const tidy = (s: string) =>
-s.
-replace(filler, ' ').
-replace(/\s{2,}/g, ' ').
-replace(/^[\s,.:;-]+|[\s,.:;-]+$/g, '').
-trim();
+  s
+    .replace(filler, ' ')
+    .replace(/\s{2,}/g, ' ')
+    .replace(/^[\s,.:;-]+|[\s,.:;-]+$/g, '')
+    .trim();
 
-const capitalise = (s: string) => s ? s[0].toUpperCase() + s.slice(1) : s;
+const capitalise = (s: string) => (s ? s[0].toUpperCase() + s.slice(1) : s);
 
 /** Splits on “next”, new lines, semicolons and full stops, then reads a name, price, quantity and description from each piece. */
 export function parseTranscript(text: string): VoiceDraft[] {
-  const chunks = text.
-  split(/\n|;|\.(?=\s|$)|\bnext(?:\s+item)?\b[,:]?/i).
-  map((c) => c.trim()).
-  filter((c) => /[a-z]{2,}/i.test(c));
+  const chunks = text
+    .split(/\n|;|\.(?=\s|$)|\bnext(?:\s+item)?\b[,:]?/i)
+    .map((c) => c.trim())
+    .filter((c) => /[a-z]{2,}/i.test(c));
 
   return chunks.slice(0, MAX_DRAFTS).map((heard) => {
     let rest = heard;
@@ -121,7 +121,7 @@ export function draftIssue(d: VoiceDraft): string | null {
 
 export interface SpeechResultLike {
   isFinal: boolean;
-  0: {transcript: string;};
+  0: { transcript: string };
 }
 export interface SpeechEventLike {
   resultIndex: number;
@@ -134,11 +134,11 @@ export interface SpeechRecognitionLike {
   start: () => void;
   stop: () => void;
   onresult: ((e: SpeechEventLike) => void) | null;
-  onerror: ((e: {error: string;}) => void) | null;
+  onerror: ((e: { error: string }) => void) | null;
   onend: (() => void) | null;
 }
 
 export function speechRecognition(): (new () => SpeechRecognitionLike) | null {
-  const w = window as unknown as {SpeechRecognition?: new () => SpeechRecognitionLike;webkitSpeechRecognition?: new () => SpeechRecognitionLike;};
+  const w = window as unknown as { SpeechRecognition?: new () => SpeechRecognitionLike; webkitSpeechRecognition?: new () => SpeechRecognitionLike };
   return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
 }

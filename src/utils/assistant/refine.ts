@@ -21,56 +21,56 @@ export interface RefineInput {
   focusId?: string;
   signatureAllowed: boolean;
   /** Photos from the conversation, used when adding a gallery. */
-  photos: {src: string;name: string;}[];
+  photos: { src: string; name: string }[];
 }
 
 export type RefineResult =
-{kind: 'change';blocks: Block[];theme: PageTheme;summary: string;focusId?: string;} |
-{kind: 'decline';message: string;};
+  | { kind: 'change'; blocks: Block[]; theme: PageTheme; summary: string; focusId?: string }
+  | { kind: 'decline'; message: string };
 
 /** What the owner can ask for, shown when a request isn't understood. */
 export const REFINE_HELP = 'I can change the look (warmer, bolder, darker, lighter, editorial, glass) or the button colour (“make the buttons green”), add a section (gallery, FAQ, hours, location, newsletter, WhatsApp, contact form, video, share, delivery, policies, team, call to action), remove or move a section, or change the main headline to words you give me.';
 
 const ADDABLE: [RegExp, BlockType][] = [
-[/\bgaller(y|ies)\b|\bphotos?\b|\bpictures?\b/, 'gallery'],
-[/\bfaqs?\b|\bquestions\b/, 'faq'],
-[/\b(opening )?hours\b|\bopening times\b/, 'hours'],
-[/\blocation\b|\bmap\b|\baddress\b|\bdirections\b/, 'location'],
-[/\bnewsletter\b|\bmailing list\b|\bsubscribe\b|\bsign[- ]?up\b/, 'newsletter'],
-[/\bwhatsapp\b/, 'whatsapp'],
-[/\bcontact form\b|\benquiry\b|\binquiry\b|\bform\b/, 'leadForm'],
-[/\bvideo\b|\byoutube\b/, 'video'],
-[/\bshare\b/, 'share'],
-[/\bdelivery\b|\bshipping\b/, 'delivery'],
-[/\bpolic(y|ies)\b|\breturns?\b|\brefunds?\b/, 'policies'],
-[/\bteam\b|\bstaff\b/, 'team'],
-[/\bcall to action\b|\bcta\b|\bbutton\b|\bbanner\b/, 'cta'],
-[/\bsocials?\b|\binstagram\b|\btiktok\b/, 'social'],
-[/\bcountdown\b/, 'countdown'],
-[/\breview summary\b|\breal reviews\b/, 'reviewSummary'],
-[/\bparagraph\b|\btext\b/, 'text'],
-[/\bheading\b|\btitle\b/, 'heading']];
-
+  [/\bgaller(y|ies)\b|\bphotos?\b|\bpictures?\b/, 'gallery'],
+  [/\bfaqs?\b|\bquestions\b/, 'faq'],
+  [/\b(opening )?hours\b|\bopening times\b/, 'hours'],
+  [/\blocation\b|\bmap\b|\baddress\b|\bdirections\b/, 'location'],
+  [/\bnewsletter\b|\bmailing list\b|\bsubscribe\b|\bsign[- ]?up\b/, 'newsletter'],
+  [/\bwhatsapp\b/, 'whatsapp'],
+  [/\bcontact form\b|\benquiry\b|\binquiry\b|\bform\b/, 'leadForm'],
+  [/\bvideo\b|\byoutube\b/, 'video'],
+  [/\bshare\b/, 'share'],
+  [/\bdelivery\b|\bshipping\b/, 'delivery'],
+  [/\bpolic(y|ies)\b|\breturns?\b|\brefunds?\b/, 'policies'],
+  [/\bteam\b|\bstaff\b/, 'team'],
+  [/\bcall to action\b|\bcta\b|\bbutton\b|\bbanner\b/, 'cta'],
+  [/\bsocials?\b|\binstagram\b|\btiktok\b/, 'social'],
+  [/\bcountdown\b/, 'countdown'],
+  [/\breview summary\b|\breal reviews\b/, 'reviewSummary'],
+  [/\bparagraph\b|\btext\b/, 'text'],
+  [/\bheading\b|\btitle\b/, 'heading'],
+];
 
 /** Words that point at an existing section, for "remove the gallery" or "move the menu up". */
 const NAMED: [RegExp, BlockType[]][] = [
-[/\bgaller(y|ies)\b|\bphotos\b/, ['gallery', 'carousel']],
-[/\bfaqs?\b/, ['faq']],
-[/\bhours\b/, ['hours']],
-[/\blocation\b|\bmap\b|\baddress\b/, ['location']],
-[/\bmenu\b/, ['menu']],
-[/\bproducts?\b|\bshop\b/, ['productGrid', 'product', 'shopCategories']],
-[/\bservices?\b|\bpric(es|ing)\b|\bpackages?\b/, ['pricing', 'featureGrid']],
-[/\bnewsletter\b/, ['newsletter']],
-[/\bwhatsapp\b/, ['whatsapp']],
-[/\bform\b|\benquiry\b/, ['leadForm', 'form']],
-[/\bbooking\b/, ['booking']],
-[/\bhero\b|\bbanner\b|\bheadline\b/, ['hero']],
-[/\bcontact\b/, ['contactActions', 'contact']],
-[/\babout\b/, ['text']],
-[/\bvideo\b/, ['video']],
-[/\bsocials?\b/, ['social']]];
-
+  [/\bgaller(y|ies)\b|\bphotos\b/, ['gallery', 'carousel']],
+  [/\bfaqs?\b/, ['faq']],
+  [/\bhours\b/, ['hours']],
+  [/\blocation\b|\bmap\b|\baddress\b/, ['location']],
+  [/\bmenu\b/, ['menu']],
+  [/\bproducts?\b|\bshop\b/, ['productGrid', 'product', 'shopCategories']],
+  [/\bservices?\b|\bpric(es|ing)\b|\bpackages?\b/, ['pricing', 'featureGrid']],
+  [/\bnewsletter\b/, ['newsletter']],
+  [/\bwhatsapp\b/, ['whatsapp']],
+  [/\bform\b|\benquiry\b/, ['leadForm', 'form']],
+  [/\bbooking\b/, ['booking']],
+  [/\bhero\b|\bbanner\b|\bheadline\b/, ['hero']],
+  [/\bcontact\b/, ['contactActions', 'contact']],
+  [/\babout\b/, ['text']],
+  [/\bvideo\b/, ['video']],
+  [/\bsocials?\b/, ['social']],
+];
 
 const CLOSERS: BlockType[] = ['contactActions', 'contact', 'social', 'share', 'whatsapp'];
 
@@ -81,15 +81,15 @@ export function proposeChange(input: RefineInput): RefineResult {
   // Never write facts only the owner knows.
   // (Adding an empty Testimonial block is fine — the owner fills it with real quotes.)
   if (/\b(write|invent|generate|make up|fake)\b.*\b(reviews?|testimonials?|ratings?|stars)\b/.test(lower) && !/review summary|real reviews/.test(lower))
-  return { kind: 'decline', message: 'I won’t write reviews or testimonials — they have to come from real customers. I can add a Review summary that shows only reviews people actually left, or you can send review requests from Audience.' };
+    return { kind: 'decline', message: 'I won’t write reviews or testimonials — they have to come from real customers. I can add a Review summary that shows only reviews people actually left, or you can send review requests from Audience.' };
   if (/\b(make up|invent|guess|suggest)\b.*\bpric/.test(lower))
-  return { kind: 'decline', message: 'I only use prices you give me. Tell me them like “Asun 4500” and I’ll add them, or set them in Commerce.' };
+    return { kind: 'decline', message: 'I only use prices you give me. Tell me them like “Asun 4500” and I’ll add them, or set them in Commerce.' };
   if (/\b(guarantee|certified|award|qualified|licensed)\b/.test(lower) && /\b(add|say|write|claim)\b/.test(lower))
-  return { kind: 'decline', message: 'I don’t add guarantees, awards or qualifications for you. If you have them, add them yourself in the canvas so the wording is exactly yours.' };
+    return { kind: 'decline', message: 'I don’t add guarantees, awards or qualifications for you. If you have them, add them yourself in the canvas so the wording is exactly yours.' };
 
   // A whole new look.
   const feel = (Object.keys(feelLabels) as AssistantFeel[]).find(
-    (f) => lower.includes(f) || f === 'warm' && /warmer|cosy|cozy/.test(lower) || f === 'bold' && /bolder|louder|brighter|vibrant/.test(lower) || f === 'dark' && /darker/.test(lower) || f === 'light' && /lighter|airy|cleaner|brighter background/.test(lower) || f === 'editorial' && /magazine|elegant/.test(lower)
+    (f) => lower.includes(f) || (f === 'warm' && /warmer|cosy|cozy/.test(lower)) || (f === 'bold' && /bolder|louder|brighter|vibrant/.test(lower)) || (f === 'dark' && /darker/.test(lower)) || (f === 'light' && /lighter|airy|cleaner|brighter background/.test(lower)) || (f === 'editorial' && /magazine|elegant/.test(lower)),
   );
   if (feel && !/\b(add|remove|delete|move)\b/.test(lower) && !/\b(button|buttons|accent)\b/.test(lower)) {
     const { theme, name } = themeForFeel(feel, input.signatureAllowed);
@@ -132,7 +132,7 @@ export function proposeChange(input: RefineInput): RefineResult {
 
   // Move a section.
   const dir = /\b(to the top|first)\b/.test(lower) ? 'top' : /\b(to the bottom|to the end|last)\b/.test(lower) ? 'bottom' : /\b(up|higher|earlier|above)\b/.test(lower) ? 'up' : /\b(down|lower|later|below)\b/.test(lower) ? 'down' : null;
-  if (/\bmove\b/.test(lower) || dir && target) {
+  if (/\bmove\b/.test(lower) || (dir && target)) {
     if (!target) return { kind: 'decline', message: 'Which section should I move? Tap it in the preview, or name it — for example “move the menu up”.' };
     if (!dir) return { kind: 'decline', message: `Where should the ${blockName(target).toLowerCase()} go — up, down, to the top or to the end?` };
     const i = top.findIndex((b) => b.id === target.id);
@@ -149,7 +149,7 @@ export function proposeChange(input: RefineInput): RefineResult {
     const words = headline[1].trim().slice(0, 90);
     const host = focus && (focus.type === 'hero' || focus.type === 'heading') ? focus : top.find((b) => b.type === 'hero') ?? top.find((b) => b.type === 'heading');
     if (!host || !words) return { kind: 'decline', message: 'There’s no headline on the page yet — ask me to “add a heading” first.' };
-    const blocks = input.blocks.map((b) => b.id !== host.id ? b : b.type === 'hero' ? { ...b, content: { ...b.content, title: words } } as Block : b.type === 'heading' ? { ...b, content: { ...b.content, text: words } } as Block : b);
+    const blocks = input.blocks.map((b) => (b.id !== host.id ? b : b.type === 'hero' ? ({ ...b, content: { ...b.content, title: words } } as Block) : b.type === 'heading' ? ({ ...b, content: { ...b.content, text: words } } as Block) : b));
     return { kind: 'change', blocks, theme: input.theme, summary: `The headline now reads “${words}”.`, focusId: host.id };
   }
   // Any section's words, in the owner's own words: "change this title to …", "make the button say …".
@@ -164,12 +164,12 @@ export function proposeChange(input: RefineInput): RefineResult {
     const content = host.content as Record<string, unknown>;
     const key = keys.find((k) => typeof content[k] === 'string');
     if (!key) return { kind: 'decline', message: `The ${blockName(host).toLowerCase()} doesn’t have ${wantsLabel ? 'a button label' : 'that kind of text'} I can change from here. Open it in the canvas to edit its words.` };
-    const blocks = input.blocks.map((b) => b.id === host.id ? { ...b, content: { ...b.content, [key]: words } } as Block : b);
+    const blocks = input.blocks.map((b) => (b.id === host.id ? ({ ...b, content: { ...b.content, [key]: words } } as Block) : b));
     return { kind: 'change', blocks, theme: input.theme, summary: `The ${blockName(host).toLowerCase()} ${wantsLabel ? 'button now says' : wantsSub ? 'text now reads' : 'now reads'} “${words}”.`, focusId: host.id };
   }
 
   if (/\b(rewrite|shorter|longer|catchier|better)\b.*\b(headline|text|copy|words)\b/.test(lower))
-  return { kind: 'decline', message: 'In this preview I can’t rewrite your words yet. Give me the exact words — “change the headline to …” — or edit any text in the canvas.' };
+    return { kind: 'decline', message: 'In this preview I can’t rewrite your words yet. Give me the exact words — “change the headline to …” — or edit any text in the canvas.' };
 
   // Last try: a section type named on its own ("testimonials", "a pricing table").
   if (lower.split(/\s+/).length <= 4 && matchAnyBlock(lower)) return addSection(input, lower, top, focus);
@@ -191,16 +191,16 @@ function addSection(input: RefineInput, lower: string, top: Block[], focus: Bloc
   const order = [...top];
   // A section named in the request ("below the hero") anchors the position.
   const tail = lower.slice(head.length);
-  const anchor = tail ? /\b(this|it)\b/.test(tail) ? focus : findNamed(top, tail) : undefined;
-  const at = anchor ?
-  order.findIndex((b) => b.id === anchor.id) + (/\b(before|above)\b/.test(lower) ? 0 : 1) :
-  /\b(top|start|first)\b/.test(lower) ?
-  order[0] && (order[0].type === 'profile' || order[0].type === 'brandHeader' || order[0].type === 'hero') ? 1 : 0 :
-  focus && !/\b(end|bottom|last)\b/.test(lower) ?
-  order.findIndex((b) => b.id === focus.id) + 1 :
-  /\b(end|bottom|last)\b/.test(lower) || !CLOSERS.includes(order[order.length - 1]?.type as BlockType) ?
-  order.length :
-  order.length - 1;
+  const anchor = tail ? (/\b(this|it)\b/.test(tail) ? focus : findNamed(top, tail)) : undefined;
+  const at = anchor
+    ? order.findIndex((b) => b.id === anchor.id) + (/\b(before|above)\b/.test(lower) ? 0 : 1)
+    : /\b(top|start|first)\b/.test(lower)
+      ? order[0] && (order[0].type === 'profile' || order[0].type === 'brandHeader' || order[0].type === 'hero') ? 1 : 0
+      : focus && !/\b(end|bottom|last)\b/.test(lower)
+        ? order.findIndex((b) => b.id === focus.id) + 1
+        : /\b(end|bottom|last)\b/.test(lower) || !CLOSERS.includes(order[order.length - 1]?.type as BlockType)
+          ? order.length
+          : order.length - 1;
   order.splice(Math.max(0, at), 0, block);
   const filled = type === 'gallery' && input.photos.length ? ` with your ${input.photos.length} photo${input.photos.length === 1 ? '' : 's'}` : '';
   const gaps = ['faq', 'hours', 'location', 'team', 'policies', 'delivery', 'testimonial', 'pricing', 'comparison', 'timeline', 'credentials'].includes(type) ? ' It has spaces for your own details — fill them in the canvas.' : '';
@@ -213,7 +213,7 @@ const STOP = new Set(['add', 'adding', 'the', 'and', 'section', 'sections', 'blo
 function matchAnyBlock(lower: string): BlockType | null {
   const words = lower.replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).filter((w) => w.length > 2 && !STOP.has(w));
   if (!words.length) return null;
-  let best: {type: BlockType;score: number;} | null = null;
+  let best: { type: BlockType; score: number } | null = null;
   for (const type of Object.keys(blockDefinitions) as BlockType[]) {
     const name = blockDefinitions[type].name.toLowerCase();
     const text = blockSearchText(type);
@@ -225,23 +225,23 @@ function matchAnyBlock(lower: string): BlockType | null {
 }
 
 const COLOURS: [string, string][] = [
-['navy', '#1A2A6C'],
-['teal', '#00796B'],
-['red', '#C62828'],
-['orange', '#E65100'],
-['yellow', '#F9A825'],
-['gold', '#B8860B'],
-['green', '#2E7D32'],
-['blue', '#1565C0'],
-['purple', '#6A1B9A'],
-['pink', '#C2185B'],
-['brown', '#6D4C41'],
-['black', '#111111'],
-['grey', '#4B5563'],
-['gray', '#4B5563']];
+  ['navy', '#1A2A6C'],
+  ['teal', '#00796B'],
+  ['red', '#C62828'],
+  ['orange', '#E65100'],
+  ['yellow', '#F9A825'],
+  ['gold', '#B8860B'],
+  ['green', '#2E7D32'],
+  ['blue', '#1565C0'],
+  ['purple', '#6A1B9A'],
+  ['pink', '#C2185B'],
+  ['brown', '#6D4C41'],
+  ['black', '#111111'],
+  ['grey', '#4B5563'],
+  ['gray', '#4B5563'],
+];
 
-
-function readColour(lower: string): {name: string;hex: string;} | null {
+function readColour(lower: string): { name: string; hex: string } | null {
   const hex = /#([0-9a-f]{6}|[0-9a-f]{3})\b/.exec(lower)?.[0];
   if (hex) return { name: hex.toUpperCase(), hex: hex.length === 4 ? `#${hex[1]}${hex[1]}${hex[2]}${hex[2]}${hex[3]}${hex[3]}` : hex };
   const hit = COLOURS.find(([n]) => new RegExp(`\\b${n}\\b`).test(lower));
@@ -251,12 +251,12 @@ function readColour(lower: string): {name: string;hex: string;} | null {
 /** White or near-black text, whichever reads better on the button colour. */
 function readableOn(hex: string): string {
   const n = parseInt(hex.slice(1), 16);
-  const ch = [n >> 16 & 255, n >> 8 & 255, n & 255].map((v) => {
+  const ch = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((v) => {
     const c = v / 255;
     return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
   });
   const l = 0.2126 * ch[0] + 0.7152 * ch[1] + 0.0722 * ch[2];
-  return 1.05 / (l + 0.05) >= (l + 0.05) / 0.0625 ? '#FFFFFF' : '#111111';
+  return (1.05) / (l + 0.05) >= (l + 0.05) / 0.0625 ? '#FFFFFF' : '#111111';
 }
 
 function findNamed(top: Block[], lower: string): Block | undefined {
@@ -272,7 +272,7 @@ function reassemble(all: Block[], order: Block[]): Block[] {
   return order.flatMap((b) => [b, ...all.filter((c) => c.parentId === b.id)]);
 }
 
-function newSection(type: BlockType, photos: {src: string;name: string;}[]): Block {
+function newSection(type: BlockType, photos: { src: string; name: string }[]): Block {
   const b = createBlock(type) as Block;
   if (b.type === 'gallery' && photos.length) return { ...b, content: { ...b.content, images: photos.slice(0, 12).map((p) => ({ id: uid('img'), url: p.src, alt: '' })) } } as Block;
   return b;

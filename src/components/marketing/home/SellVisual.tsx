@@ -17,7 +17,7 @@ export function SellVisual() {
     initial: reduce ? false : { opacity: 0, x },
     whileInView: { opacity: 1, x: 0 },
     viewport: { once: true },
-    transition: { duration: 0.28, delay, ease }
+    transition: { duration: 0.28, delay, ease },
   });
   return (
     <div className="relative mx-auto max-w-[580px] pb-10 pt-6" aria-hidden>
@@ -53,6 +53,6 @@ export function SellVisual() {
           <span className="block text-[11px] text-white/80">{previewAmount(5000, lang)} deposit paid</span>
         </span>
       </motion.div>
-    </div>);
-
+    </div>
+  );
 }

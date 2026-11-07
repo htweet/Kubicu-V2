@@ -11,7 +11,7 @@ import { formatDate } from '../../utils/billing';
 import { cn } from '../../utils/cn';
 
 /** One reason question, what's lost, then the plan ends at the period end (D65). */
-export function CancelPlanDialog({ open, onClose }: {open: boolean;onClose: () => void;}) {
+export function CancelPlanDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const billing = useBilling();
   const plan = usePlan();
   const impact = useDowngradeImpact('free');
@@ -42,7 +42,7 @@ export function CancelPlanDialog({ open, onClose }: {open: boolean;onClose: () =
       title={`Cancel ${plan.name}?`}
       description={`You keep ${plan.name} until ${end}, then move to Free. No further charges.`}
       footer={
-      <>
+        <>
           <Button variant="secondary" onClick={onClose}>
             Keep {plan.name}
           </Button>
@@ -50,27 +50,27 @@ export function CancelPlanDialog({ open, onClose }: {open: boolean;onClose: () =
             Cancel at {end}
           </Button>
         </>
-      }>
-      
+      }
+    >
       <div className="flex flex-col gap-6">
         <fieldset>
           <legend className="text-label font-semibold text-fg">What’s the main reason?</legend>
-          {tried && !reason &&
-          <p className="mt-1 text-caption text-danger" role="alert">
+          {tried && !reason && (
+            <p className="mt-1 text-caption text-danger" role="alert">
               Choose a reason — it helps us improve.
             </p>
-          }
+          )}
           <div className="mt-2 grid gap-2 sm:grid-cols-2">
-            {cancelReasons.map((r) =>
-            <label key={r} className={cn('flex min-h-[44px] cursor-pointer items-center gap-2.5 rounded-md border px-3 text-label text-fg transition-colors duration-150', reason === r ? 'border-action bg-action-soft' : 'border-line hover:bg-sunken')}>
+            {cancelReasons.map((r) => (
+              <label key={r} className={cn('flex min-h-[44px] cursor-pointer items-center gap-2.5 rounded-md border px-3 text-label text-fg transition-colors duration-150', reason === r ? 'border-action bg-action-soft' : 'border-line hover:bg-sunken')}>
                 <input type="radio" name="cancel-reason" value={r} checked={reason === r} onChange={() => setReason(r)} />
                 {r}
               </label>
-            )}
+            ))}
           </div>
         </fieldset>
         <ImpactList items={impact} target="free" />
       </div>
-    </Dialog>);
-
+    </Dialog>
+  );
 }

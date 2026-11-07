@@ -52,7 +52,7 @@ export function useDowngradeImpact(target: WorkspacePlan): ImpactItem[] {
   if (aiCredits[target] < aiCredits[from]) items.push({ id: 'ai', severity: 'limit', label: `${aiCredits[target]} AI credits a month`, detail: `Down from ${aiCredits[from]}.` });
 
   if (planAtLeast(from, 'pro') && !planAtLeast(target, 'pro'))
-  items.push({ id: 'checkout', severity: 'stops', label: 'Checkout turns off', detail: 'Card checkout, digital file sales, built-in bookings, discounts and DealRooms stop on your pages. WhatsApp ordering keeps working.' });
+    items.push({ id: 'checkout', severity: 'stops', label: 'Checkout turns off', detail: 'Card checkout, digital file sales, built-in bookings, discounts and DealRooms stop on your pages. WhatsApp ordering keeps working.' });
 
   const liveDomains = domains.domains.filter((d) => d.status === 'live').length;
   if (liveDomains > 0 && !planAtLeast(target, 'creator')) items.push({ id: 'domains', severity: 'stops', label: `${liveDomains} custom domain${liveDomains === 1 ? '' : 's'} stop${liveDomains === 1 ? 's' : ''} showing your page`, detail: 'Your kub.icu link keeps working. Reconnect by upgrading.' });

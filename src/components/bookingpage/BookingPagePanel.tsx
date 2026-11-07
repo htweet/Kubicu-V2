@@ -29,7 +29,7 @@ export function BookingPagePanel({ settings, pageName, theme, mode }: BookingPag
   const next = useMemo(
     () => new Map(services.map((s) => [s.id, data ? nextFreeSlot(s, data.availability, data.bookings, now) : null])),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [services.map((s) => s.id).join(','), data?.availability, data?.bookings, Math.floor(now / 60_000)]
+    [services.map((s) => s.id).join(','), data?.availability, data?.bookings, Math.floor(now / 60_000)],
   );
   const muted = { color: theme.mutedText };
   const display = { fontFamily: fontsFor(theme).display, color: theme.text };
@@ -41,32 +41,32 @@ export function BookingPagePanel({ settings, pageName, theme, mode }: BookingPag
   const btn = 'inline-flex min-h-[44px] shrink-0 items-center justify-center px-4 text-[14px] font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2';
 
   if (!services.length) {
-    return mode === 'edit' ?
-    <section aria-label="Booking page" className="mb-4 flex flex-col gap-1.5 p-5" style={cardStyle(theme)}>
+    return mode === 'edit' ? (
+      <section aria-label="Booking page" className="mb-4 flex flex-col gap-1.5 p-5" style={cardStyle(theme)}>
         <p className="text-[16px] font-semibold" style={display}>
           No services to show yet
         </p>
         <p className="text-[14px]" style={muted}>
           Choose services in Page settings → Booking page. Only services switched on in Bookings appear.
         </p>
-      </section> :
-    null;
+      </section>
+    ) : null;
   }
 
-  const fallback = (wa || waitlistHref) &&
-  <div className="flex flex-wrap gap-2">
-      {waitlistHref &&
-    <a href={mode === 'live' ? waitlistHref : undefined} className={btn} style={buttonStyle(theme, allFull ? 'featured' : 'default')}>
+  const fallback = (wa || waitlistHref) && (
+    <div className="flex flex-wrap gap-2">
+      {waitlistHref && (
+        <a href={mode === 'live' ? waitlistHref : undefined} className={btn} style={buttonStyle(theme, allFull ? 'featured' : 'default')}>
           Join the waitlist
         </a>
-    }
-      {wa &&
-    <a href={mode === 'live' ? wa : undefined} target="_blank" rel="noopener noreferrer" className={`${btn} gap-2`} style={buttonStyle(theme, allFull && !waitlistHref ? 'featured' : 'default')}>
+      )}
+      {wa && (
+        <a href={mode === 'live' ? wa : undefined} target="_blank" rel="noopener noreferrer" className={`${btn} gap-2`} style={buttonStyle(theme, allFull && !waitlistHref ? 'featured' : 'default')}>
           <MessageCircleIcon size={16} aria-hidden /> Message on WhatsApp
         </a>
-    }
-    </div>;
-
+      )}
+    </div>
+  );
 
   return (
     <section aria-labelledby="bp-heading" className="mb-4 flex flex-col gap-4 p-5" style={cardStyle(theme)}>
@@ -97,28 +97,28 @@ export function BookingPagePanel({ settings, pageName, theme, mode }: BookingPag
                   {slot && data ? `Next free: ${slotWhen(slot, data.availability)}` : `Fully booked for the next ${data ? lookaheadDays(data.availability) : 30} days`}
                 </p>
               </div>
-              {slot ?
-              live ?
-              <button type="button" onClick={() => actions!.openBooking(s.id)} className={btn} style={buttonStyle(theme, 'featured')} aria-label={`Choose a time for ${s.name}`}>
+              {slot ? (
+                live ? (
+                  <button type="button" onClick={() => actions!.openBooking(s.id)} className={btn} style={buttonStyle(theme, 'featured')} aria-label={`Choose a time for ${s.name}`}>
                     Choose a time
-                  </button> :
-
-              <span className={btn} style={buttonStyle(theme, 'featured')}>
+                  </button>
+                ) : (
+                  <span className={btn} style={buttonStyle(theme, 'featured')}>
                     Choose a time
-                  </span> :
-
-
-              <span className="text-[13.5px] font-medium sm:text-right" style={muted}>
+                  </span>
+                )
+              ) : (
+                <span className="text-[13.5px] font-medium sm:text-right" style={muted}>
                   No times free
                 </span>
-              }
-            </li>);
-
+              )}
+            </li>
+          );
         })}
       </ul>
 
-      {allFull ?
-      <div className="flex flex-col gap-3 rounded-[inherit] p-4" style={{ background: mix(theme.text, 6) }}>
+      {allFull ? (
+        <div className="flex flex-col gap-3 rounded-[inherit] p-4" style={{ background: mix(theme.text, 6) }}>
           <p role="status" className="text-[15px] font-semibold" style={{ color: theme.text }}>
             No free times right now
           </p>
@@ -126,17 +126,17 @@ export function BookingPagePanel({ settings, pageName, theme, mode }: BookingPag
             {wa || waitlistHref ? 'Join the waitlist to hear when new times open, or message us and we’ll try to fit you in.' : 'Please check back soon — new times open regularly.'}
           </p>
           {fallback}
-        </div> :
-
-      fallback &&
-      <div className="flex flex-col gap-2 pt-1">
+        </div>
+      ) : (
+        fallback && (
+          <div className="flex flex-col gap-2 pt-1">
             <p className="text-[13.5px]" style={muted}>
               Can’t find a time that suits you?
             </p>
             {fallback}
           </div>
-
-      }
-    </section>);
-
+        )
+      )}
+    </section>
+  );
 }

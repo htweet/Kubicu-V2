@@ -59,18 +59,18 @@ export function PolicyAgreement() {
             <FileTextIcon size={15} className="mt-0.5 shrink-0" aria-hidden />
             <span>
               KUBICU updated its {nameList}.{' '}
-              {isOwner ?
-              overdue ?
-              'Agree to carry on using your workspace.' :
-              `Please agree by ${formatDate(new Date(deadline).toISOString())}.` :
-              `${current.ownerName} (the Owner) needs to agree by ${formatDate(new Date(deadline).toISOString())}. Nothing changes for you.`}
+              {isOwner
+                ? overdue
+                  ? 'Agree to carry on using your workspace.'
+                  : `Please agree by ${formatDate(new Date(deadline).toISOString())}.`
+                : `${current.ownerName} (the Owner) needs to agree by ${formatDate(new Date(deadline).toISOString())}. Nothing changes for you.`}
             </span>
           </p>
-          {isOwner &&
-          <Button size="sm" className="shrink-0 self-start sm:self-auto" onClick={() => setReviewing(true)}>
+          {isOwner && (
+            <Button size="sm" className="shrink-0 self-start sm:self-auto" onClick={() => setReviewing(true)}>
               Review and agree
             </Button>
-          }
+          )}
         </div>
       </div>
 
@@ -81,26 +81,26 @@ export function PolicyAgreement() {
         size="lg"
         title={pending.length === 1 ? `${names[0]} updated` : 'KUBICU policies updated'}
         description={
-        overdue ?
-        `The ${POLICY_GRACE_DAYS} days to review have passed. Agree to keep using ${current.name}. Your public pages stay online either way.` :
-        `As the Owner of ${current.name}, please read what changed and agree by ${formatDate(new Date(deadline).toISOString())}.`
+          overdue
+            ? `The ${POLICY_GRACE_DAYS} days to review have passed. Agree to keep using ${current.name}. Your public pages stay online either way.`
+            : `As the Owner of ${current.name}, please read what changed and agree by ${formatDate(new Date(deadline).toISOString())}.`
         }
         footer={
-        <>
-            {!overdue &&
-          <Button variant="secondary" onClick={later}>
+          <>
+            {!overdue && (
+              <Button variant="secondary" onClick={later}>
                 Later
               </Button>
-          }
+            )}
             <Button onClick={agree} disabled={!read}>
               I agree
             </Button>
           </>
-        }>
-        
+        }
+      >
         <ul className="flex flex-col divide-y divide-line">
-          {pending.map((p) =>
-          <li key={p.doc.slug} className="py-4 first:pt-1">
+          {pending.map((p) => (
+            <li key={p.doc.slug} className="py-4 first:pt-1">
               <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
                 <h3 className="text-label font-semibold text-fg">
                   {p.doc.title} <span className="font-normal text-fg-muted">· version {p.release.version}</span>
@@ -114,7 +114,7 @@ export function PolicyAgreement() {
                 <span className="sr-only">(opens in a new tab)</span>
               </a>
             </li>
-          )}
+          ))}
         </ul>
         <label className="mt-2 flex min-h-[44px] cursor-pointer items-start gap-3 rounded-md border border-line bg-sunken px-3 py-3 text-label text-fg">
           <input type="checkbox" checked={read} onChange={(e) => setRead(e.target.checked)} className="mt-0.5 h-4 w-4 shrink-0" />
@@ -122,6 +122,6 @@ export function PolicyAgreement() {
         </label>
         <p className="mt-2 text-caption text-fg-subtle">KUBICU records who agreed and when.</p>
       </Dialog>
-    </>);
-
+    </>
+  );
 }

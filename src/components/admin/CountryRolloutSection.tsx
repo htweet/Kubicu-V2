@@ -16,10 +16,10 @@ import { ReasonDialog } from './ReasonDialog';
 type Action = 'open' | 'close' | 'date';
 
 /** Confirm-box copy per action. `title` is a phrase with {country}. */
-const dialog: Record<Action, {title: string;description: string;label: string;}> = {
+const dialog: Record<Action, { title: string; description: string; label: string }> = {
   open: { title: 'Open {country}', description: 'People can sign up from this country straight away, and its workspaces open again for their teams.', label: 'Open country' },
   close: { title: 'Close {country}', description: 'Sign-up turns this country away and its workspaces close to their teams until you open it. Published pages stay live for buyers; nothing is deleted.', label: 'Close country' },
-  date: { title: 'Planned opening for {country}', description: 'Shown to people turned away at sign-up and to closed workspaces. It doesn’t open the country by itself.', label: 'Save date' }
+  date: { title: 'Planned opening for {country}', description: 'Shown to people turned away at sign-up and to closed workspaces. It doesn’t open the country by itself.', label: 'Save date' },
 };
 
 /**
@@ -31,7 +31,7 @@ export function CountryRolloutSection() {
   const { t: tr } = useT();
   const [store, setStore] = useAdminStore();
   const { workspaces } = useWorkspace();
-  const [pending, setPending] = useState<{code: CountryCode;action: Action;} | null>(null);
+  const [pending, setPending] = useState<{ code: CountryCode; action: Action } | null>(null);
   const [opensOn, setOpensOn] = useState('');
 
   const englishName = (code: CountryCode) => countries.find((c) => c.code === code)?.name ?? code;
@@ -53,11 +53,11 @@ export function CountryRolloutSection() {
     setStore((s) => audit({ ...s, countries: { ...s.countries, [code]: { open, opensOn: date, updatedAt: now } } }, { area: 'flags', action: label, target: englishName(code), reason }));
     toast.success(action === 'open' ? tr('{country} is open', { country: name(code) }) : action === 'close' ? tr('{country} is closed', { country: name(code) }) : tr('Planned opening saved'), {
       description:
-      action === 'open' ?
-      tr('People can sign up from there, and its workspaces open again.') :
-      action === 'close' ?
-      tr('New sign-ups are turned away and its workspaces are closed to their teams. Published pages stay live.') :
-      undefined
+        action === 'open'
+          ? tr('People can sign up from there, and its workspaces open again.')
+          : action === 'close'
+            ? tr('New sign-ups are turned away and its workspaces are closed to their teams. Published pages stay live.')
+            : undefined,
     });
     setPending(null);
   };
@@ -91,29 +91,29 @@ export function CountryRolloutSection() {
                 </span>
                 <span className="mt-0.5 block text-caption text-fg-subtle">
                   {[
-                  launch ? tr('Launch market — always open') : null,
-                  tr('Workspaces on this device: {n}', { n }),
-                  !open && row?.opensOn ? tr('Planned opening {date}', { date: formatOpeningDay(row.opensOn) }) : null,
-                  row?.updatedAt ? tr('changed {when}', { when: formatRelative(row.updatedAt) }) : null].
-
-                  filter(Boolean).
-                  join(' · ')}
+                    launch ? tr('Launch market — always open') : null,
+                    tr('Workspaces on this device: {n}', { n }),
+                    !open && row?.opensOn ? tr('Planned opening {date}', { date: formatOpeningDay(row.opensOn) }) : null,
+                    row?.updatedAt ? tr('changed {when}', { when: formatRelative(row.updatedAt) }) : null,
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')}
                 </span>
               </span>
-              {!launch &&
-              <span className="flex flex-wrap gap-2">
-                  {!open &&
-                <Button size="sm" variant="tertiary" onClick={() => start(c.code, 'date')}>
+              {!launch && (
+                <span className="flex flex-wrap gap-2">
+                  {!open && (
+                    <Button size="sm" variant="tertiary" onClick={() => start(c.code, 'date')}>
                       {tr('Planned opening…')}
                     </Button>
-                }
+                  )}
                   <Button size="sm" variant={open ? 'secondary' : 'primary'} onClick={() => start(c.code, open ? 'close' : 'open')}>
                     {open ? tr('Close…') : tr('Open…')}
                   </Button>
                 </span>
-              }
-            </li>);
-
+              )}
+            </li>
+          );
         })}
       </ul>
 
@@ -123,13 +123,13 @@ export function CountryRolloutSection() {
         onConfirm={confirm}
         destructive={pending?.action === 'close'}
         title={pending && copy ? tr(copy.title, { country: name(pending.code) }) : ''}
-        description={copy ? pending?.action === 'close' && affected > 0 ? `${tr(copy.description)} ${tr('Workspaces affected on this device: {n}.', { n: affected })}` : tr(copy.description) : ''}
-        confirmLabel={copy ? tr(copy.label) : tr('Apply change')}>
-        
-        {pending && pending.action !== 'open' &&
-        <TextInput id="country-opens-on" label={tr('Planned opening (optional)')} type="date" value={opensOn} onChange={(e) => setOpensOn(e.target.value)} hint={tr('Leave empty if there’s no date yet.')} />
-        }
+        description={copy ? (pending?.action === 'close' && affected > 0 ? `${tr(copy.description)} ${tr('Workspaces affected on this device: {n}.', { n: affected })}` : tr(copy.description)) : ''}
+        confirmLabel={copy ? tr(copy.label) : tr('Apply change')}
+      >
+        {pending && pending.action !== 'open' && (
+          <TextInput id="country-opens-on" label={tr('Planned opening (optional)')} type="date" value={opensOn} onChange={(e) => setOpensOn(e.target.value)} hint={tr('Leave empty if there’s no date yet.')} />
+        )}
       </ReasonDialog>
-    </section>);
-
+    </section>
+  );
 }

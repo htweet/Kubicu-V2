@@ -30,8 +30,8 @@ export function OrderBalancePanel({ order, handle, business, apply }: OrderBalan
             {b.how === 'recorded' ? 'Recorded by you' : 'Paid online (test)'} · {formatTimestamp(b.paidAt)} · ready to dispatch
           </span>
         </p>
-      </section>);
-
+      </section>
+    );
   }
 
   const request = () => {
@@ -58,15 +58,15 @@ export function OrderBalancePanel({ order, handle, business, apply }: OrderBalan
         <Button size="sm" leadingIcon={CopyIcon} onClick={request}>
           {b.requestedAt ? 'Copy pay link again' : 'Request balance'}
         </Button>
-        {order.customer.phone &&
-        <Button size="sm" variant="secondary" leadingIcon={MessageCircleIcon} onClick={() => {apply((d) => requestOrderBalance(d, order.id));window.open(whatsappLink(order.customer.phone, message), '_blank', 'noopener,noreferrer');}}>
+        {order.customer.phone && (
+          <Button size="sm" variant="secondary" leadingIcon={MessageCircleIcon} onClick={() => { apply((d) => requestOrderBalance(d, order.id)); window.open(whatsappLink(order.customer.phone, message), '_blank', 'noopener,noreferrer'); }}>
             WhatsApp
           </Button>
-        }
+        )}
         <Button size="sm" variant="tertiary" onClick={() => apply((d) => payOrderBalance(d, order.id, 'recorded')) && toast.success('Balance recorded as paid')}>
           Record as paid
         </Button>
       </div>
-    </section>);
-
+    </section>
+  );
 }

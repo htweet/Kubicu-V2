@@ -3,7 +3,7 @@ import { uid } from '../id';
 
 /** Who made the decision being appealed — the most recent matching audit entry. */
 export function originalDecider(s: AdminStore, kind: AppealKind, target: string): string | null {
-  const hit = s.audit.find((a) => kind === 'takedown' ? /^took .*down/i.test(a.action) && a.target.includes(target) : /^suspended/i.test(a.action) && a.target.includes(target));
+  const hit = s.audit.find((a) => (kind === 'takedown' ? /^took .*down/i.test(a.action) && a.target.includes(target) : /^suspended/i.test(a.action) && a.target.includes(target)));
   return hit?.actor ?? null;
 }
 
@@ -28,7 +28,7 @@ export function fileAppeal(s: AdminStore, a: NewAppeal): AdminStore {
     status: 'open',
     decision: null,
     decidedBy: null,
-    decidedAt: null
+    decidedAt: null,
   };
   return { ...s, appeals: [appeal, ...s.appeals] };
 }

@@ -11,7 +11,7 @@ export function countryForCurrency(code: CurrencyCode | undefined): CountryCode 
 }
 
 /** A workspace's country: its own setting, else inferred from its currency, else Nigeria. */
-export function workspaceCountry(ws: {country?: CountryCode;currency?: CurrencyCode;} | null | undefined): CountryCode {
+export function workspaceCountry(ws: { country?: CountryCode; currency?: CurrencyCode } | null | undefined): CountryCode {
   return ws?.country ?? countryForCurrency(ws?.currency);
 }
 
@@ -45,7 +45,7 @@ const SIGNUP_KEY = 'kubicu.signup.country';
 export function readSignupCountry(): CountryCode | null {
   try {
     const v = localStorage.getItem(SIGNUP_KEY);
-    return countries.some((c) => c.code === v) ? v as CountryCode : null;
+    return countries.some((c) => c.code === v) ? (v as CountryCode) : null;
   } catch {
     return null;
   }
@@ -55,8 +55,8 @@ export function writeSignupCountry(code: CountryCode): void {
   try {
     localStorage.setItem(SIGNUP_KEY, code);
   } catch {
-
-    /* private mode: the workspace falls back to Nigeria and can be changed in Settings */}
+    /* private mode: the workspace falls back to Nigeria and can be changed in Settings */
+  }
 }
 
 /** Is this account number the right length for the country's banks? Returns an English message or null. */

@@ -6,7 +6,7 @@ import { findExampleById } from './examples';
 export const premiumTemplatePrices: Record<string, number> = {
   'adaeze-atelier': 5000,
   'glow-by-halima': 4000,
-  'afrobeats-brunch': 3500
+  'afrobeats-brunch': 3500,
 };
 
 export type ColourMood = 'light' | 'dark' | 'bold';

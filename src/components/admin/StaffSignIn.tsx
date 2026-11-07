@@ -60,10 +60,10 @@ export function StaffSignIn() {
       setNewCodes(codes);
       setSaved(false);
       setStore((s) =>
-      audit(
-        { ...s, staff: s.staff.map((x) => x.id === member.id ? { ...x, twoStep: true, status: 'active', backupCodes: codes } : x) },
-        { area: 'staff', action: enrolling ? 'Set up two-step and made backup codes' : 'Made backup codes', target: member.email, reason: enrolling ? 'First sign-in: authenticator app enrolled.' : 'Backup codes are now required for every staff account.' }
-      )
+        audit(
+          { ...s, staff: s.staff.map((x) => (x.id === member.id ? { ...x, twoStep: true, status: 'active', backupCodes: codes } : x)) },
+          { area: 'staff', action: enrolling ? 'Set up two-step and made backup codes' : 'Made backup codes', target: member.email, reason: enrolling ? 'First sign-in: authenticator app enrolled.' : 'Backup codes are now required for every staff account.' },
+        ),
       );
       setStep('codes');
       return;
@@ -74,7 +74,7 @@ export function StaffSignIn() {
   const finishSignIn = (action: string, reason: string, patch: Partial<StaffMember> = {}) => {
     if (!member) return;
     startStaffSession(member.id);
-    setStore((s) => audit({ ...s, staff: s.staff.map((x) => x.id === member.id ? { ...x, ...patch, lastActiveAt: new Date().toISOString() } : x) }, { area: 'staff', action, target: member.email, reason }));
+    setStore((s) => audit({ ...s, staff: s.staff.map((x) => (x.id === member.id ? { ...x, ...patch, lastActiveAt: new Date().toISOString() } : x)) }, { area: 'staff', action, target: member.email, reason }));
   };
 
   const submitBackup = (e: React.FormEvent) => {
@@ -115,8 +115,8 @@ export function StaffSignIn() {
         </div>
 
         <main className="mt-8 rounded-xl border border-line bg-raised p-6 shadow-sm md:p-8">
-          {step === 'password' ?
-          <form onSubmit={submitPassword} noValidate className="flex flex-col gap-5">
+          {step === 'password' ? (
+            <form onSubmit={submitPassword} noValidate className="flex flex-col gap-5">
               <div>
                 <h1 ref={headingRef} tabIndex={-1} className="text-title font-semibold text-fg focus:outline-none">
                   Sign in to the staff console
@@ -129,9 +129,9 @@ export function StaffSignIn() {
               <Button type="submit" fullWidth>
                 Continue
               </Button>
-            </form> :
-          step === 'codes' ?
-          <div className="flex flex-col gap-5">
+            </form>
+          ) : step === 'codes' ? (
+            <div className="flex flex-col gap-5">
               <div>
                 <span aria-hidden className="flex h-10 w-10 items-center justify-center rounded-full bg-action-soft text-action">
                   <LifeBuoyIcon size={20} />
@@ -142,11 +142,11 @@ export function StaffSignIn() {
                 <p className="mt-1 text-label text-fg-muted">If you lose your phone, each code lets you sign in once. Keep them somewhere safe and offline — not in WhatsApp or email. You won’t see them again.</p>
               </div>
               <ul className="grid grid-cols-2 gap-x-6 gap-y-2 rounded-lg border border-line bg-sunken px-4 py-4" aria-label="Backup codes">
-                {newCodes.map((c) =>
-              <li key={c} className="font-mono text-label font-semibold tracking-wider text-fg">
+                {newCodes.map((c) => (
+                  <li key={c} className="font-mono text-label font-semibold tracking-wider text-fg">
                     {c}
                   </li>
-              )}
+                ))}
               </ul>
               <div className="flex flex-wrap gap-2">
                 <Button variant="secondary" size="sm" leadingIcon={copied ? CheckIcon : CopyIcon} onClick={copyCodes}>
@@ -164,9 +164,9 @@ export function StaffSignIn() {
               <Button fullWidth disabled={!saved} onClick={() => finishSignIn('Signed in', 'Two-step code verified and backup codes saved.')}>
                 Continue to the console
               </Button>
-            </div> :
-          step === 'backup' ?
-          <form onSubmit={submitBackup} noValidate className="flex flex-col gap-5">
+            </div>
+          ) : step === 'backup' ? (
+            <form onSubmit={submitBackup} noValidate className="flex flex-col gap-5">
               <div>
                 <span aria-hidden className="flex h-10 w-10 items-center justify-center rounded-full bg-action-soft text-action">
                   <LifeBuoyIcon size={20} />
@@ -182,19 +182,19 @@ export function StaffSignIn() {
                 Verify and sign in
               </Button>
               <button
-              type="button"
-              onClick={() => {
-                setStep('code');
-                setCode('');
-                setError('');
-              }}
-              className="self-start rounded text-label font-medium text-fg-muted hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-              
+                type="button"
+                onClick={() => {
+                  setStep('code');
+                  setCode('');
+                  setError('');
+                }}
+                className="self-start rounded text-label font-medium text-fg-muted hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+              >
                 Use my authenticator app instead
               </button>
-            </form> :
-
-          <form onSubmit={submitCode} noValidate className="flex flex-col gap-5">
+            </form>
+          ) : (
+            <form onSubmit={submitCode} noValidate className="flex flex-col gap-5">
               <div>
                 <span aria-hidden className="flex h-10 w-10 items-center justify-center rounded-full bg-action-soft text-action">
                   {step === 'enrol' ? <KeyRoundIcon size={20} /> : <ShieldCheckIcon size={20} />}
@@ -203,57 +203,57 @@ export function StaffSignIn() {
                   {step === 'enrol' ? 'Set up two-step sign-in' : 'Enter your code'}
                 </h1>
                 <p className="mt-1 text-label text-fg-muted">
-                  {step === 'enrol' ?
-                `Welcome, ${member?.name.split(' ')[0]}. Staff can’t use the console without two-step sign-in. Add this key to your authenticator app, then enter the code it shows.` :
-                `Open your authenticator app and enter the 6-digit code for ${member?.email}.`}
+                  {step === 'enrol'
+                    ? `Welcome, ${member?.name.split(' ')[0]}. Staff can’t use the console without two-step sign-in. Add this key to your authenticator app, then enter the code it shows.`
+                    : `Open your authenticator app and enter the 6-digit code for ${member?.email}.`}
                 </p>
               </div>
-              {step === 'enrol' &&
-            <div className="rounded-lg border border-line bg-sunken px-4 py-3">
+              {step === 'enrol' && (
+                <div className="rounded-lg border border-line bg-sunken px-4 py-3">
                   <p className="text-caption text-fg-subtle">Setup key</p>
                   <p className="mt-0.5 font-mono text-body font-semibold tracking-wider text-fg">{SETUP_KEY}</p>
                 </div>
-            }
+              )}
               {error && <InlineAlert tone="danger" title={error} />}
               <TextInput
-              id="staff-code"
-              label="6-digit code"
-              inputMode="numeric"
-              autoComplete="one-time-code"
-              maxLength={6}
-              value={code}
-              onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
-              className="font-mono tracking-[0.3em]"
-              hint="Prototype: any 6 digits except 000000." />
-            
+                id="staff-code"
+                label="6-digit code"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                maxLength={6}
+                value={code}
+                onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
+                className="font-mono tracking-[0.3em]"
+                hint="Prototype: any 6 digits except 000000."
+              />
               <Button type="submit" fullWidth>
                 {step === 'enrol' ? 'Turn on and continue' : 'Verify and sign in'}
               </Button>
-              {step === 'code' &&
-            <button
-              type="button"
-              onClick={() => {
-                setStep('backup');
-                setCode('');
-                setError('');
-              }}
-              className="self-start rounded text-label font-medium text-action hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-              
+              {step === 'code' && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStep('backup');
+                    setCode('');
+                    setError('');
+                  }}
+                  className="self-start rounded text-label font-medium text-action hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+                >
                   Lost your phone? Use a backup code
                 </button>
-            }
+              )}
               <button
-              type="button"
-              onClick={() => {
-                setStep('password');
-                setError('');
-              }}
-              className="self-start rounded text-label font-medium text-fg-muted hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-              
+                type="button"
+                onClick={() => {
+                  setStep('password');
+                  setError('');
+                }}
+                className="self-start rounded text-label font-medium text-fg-muted hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+              >
                 Use a different account
               </button>
             </form>
-          }
+          )}
         </main>
 
         <section aria-labelledby="staff-demo" className="mt-6">
@@ -261,20 +261,20 @@ export function StaffSignIn() {
             Prototype staff accounts
           </h2>
           <ul className="mt-2 divide-y divide-line rounded-lg border border-line bg-raised">
-            {store.staff.
-            filter((m) => m.status !== 'disabled').
-            map((m) =>
-            <li key={m.id}>
+            {store.staff
+              .filter((m) => m.status !== 'disabled')
+              .map((m) => (
+                <li key={m.id}>
                   <button
-                type="button"
-                onClick={() => {
-                  setEmail(m.email);
-                  setPassword('prototype-pass');
-                  setStep('password');
-                  setError('');
-                }}
-                className="flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left transition-colors duration-150 hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus">
-                
+                    type="button"
+                    onClick={() => {
+                      setEmail(m.email);
+                      setPassword('prototype-pass');
+                      setStep('password');
+                      setError('');
+                    }}
+                    className="flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left transition-colors duration-150 hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus"
+                  >
                     <span className="min-w-0">
                       <span className="block truncate text-label font-semibold text-fg">{m.name}</span>
                       <span className="block truncate text-caption text-fg-subtle">{m.email}</span>
@@ -285,7 +285,7 @@ export function StaffSignIn() {
                     </span>
                   </button>
                 </li>
-            )}
+              ))}
           </ul>
           <p className="mt-2 text-caption text-fg-subtle">Pick one to fill the form. Sessions end after {STAFF_SESSION_HOURS} hours (example figure).</p>
         </section>
@@ -295,6 +295,6 @@ export function StaffSignIn() {
           Back to customer sign-in
         </Link>
       </div>
-    </div>);
-
+    </div>
+  );
 }

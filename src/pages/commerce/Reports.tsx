@@ -60,23 +60,23 @@ export function Reports() {
   // A teammate limited to one location sees that location's shop orders only (D482). Bookings, invoices, payment
   // links, gift cards and memberships belong to the whole business, so they're left out for them.
   const { myBranchId } = useTeam();
-  const scopedOrders = useMemo(() => myBranchId ? data.orders.filter((o) => (o.fulfilment.branchId ?? MAIN_BRANCH) === myBranchId) : data.orders, [data.orders, myBranchId]);
+  const scopedOrders = useMemo(() => (myBranchId ? data.orders.filter((o) => (o.fulfilment.branchId ?? MAIN_BRANCH) === myBranchId) : data.orders), [data.orders, myBranchId]);
 
   const mainHandle = state.published?.handle ?? state.site.handle;
   const spaceOptions = useMemo(
     () => [
-    { value: 'all', label: 'All spaces' },
-    { value: mainHandle, label: `Main page · ${mainHandle}` },
-    ...activeExtraSpaces(current).
-    map((s) => readSpacePage(current.id, s.id)?.published?.handle ?? readSpacePage(current.id, s.id)?.draft.handle).
-    filter((h): h is string => !!h && h !== mainHandle).
-    map((h) => ({ value: h, label: h }))],
-
-    [current, mainHandle]
+      { value: 'all', label: 'All spaces' },
+      { value: mainHandle, label: `Main page · ${mainHandle}` },
+      ...activeExtraSpaces(current)
+        .map((s) => readSpacePage(current.id, s.id)?.published?.handle ?? readSpacePage(current.id, s.id)?.draft.handle)
+        .filter((h): h is string => !!h && h !== mainHandle)
+        .map((h) => ({ value: h, label: h })),
+    ],
+    [current, mainHandle],
   );
   const space = handle === 'all' ? null : handle;
 
-  const ranges = useMemo((): {current: ReportRange;previous: ReportRange | null;} => {
+  const ranges = useMemo((): { current: ReportRange; previous: ReportRange | null } => {
     const now = Date.now();
     if (period === 'all') return { current: { from: 0, to: now + 1 }, previous: null };
     if (period === 'custom') {
@@ -91,17 +91,17 @@ export function Reports() {
 
   const inputs = useMemo(
     () =>
-    myBranchId ?
-    { orders: scopedOrders, subscriptions: [], giftCards: [], bookings: [], invoices: [], linkPayments: [] } :
-    {
-      orders: data.orders,
-      subscriptions: data.subscriptions ?? [],
-      giftCards: data.giftCards ?? [],
-      bookings: ops.bookings,
-      invoices: sos.invoices,
-      linkPayments: money.links.flatMap((l) => l.payments.map((p) => ({ ...p, linkTitle: l.title })))
-    },
-    [myBranchId, scopedOrders, data.orders, data.subscriptions, data.giftCards, ops.bookings, sos.invoices, money.links]
+      myBranchId
+        ? { orders: scopedOrders, subscriptions: [], giftCards: [], bookings: [], invoices: [], linkPayments: [] }
+        : {
+            orders: data.orders,
+            subscriptions: data.subscriptions ?? [],
+            giftCards: data.giftCards ?? [],
+            bookings: ops.bookings,
+            invoices: sos.invoices,
+            linkPayments: money.links.flatMap((l) => l.payments.map((p) => ({ ...p, linkTitle: l.title }))),
+          },
+    [myBranchId, scopedOrders, data.orders, data.subscriptions, data.giftCards, ops.bookings, sos.invoices, money.links],
   );
 
   const periodOrders = (r: ReportRange) => scopedOrders.filter((o) => isPaidOrder(o) && Date.parse(o.createdAt) >= r.from && Date.parse(o.createdAt) < r.to && (!space || o.sourceHandle === space));
@@ -126,7 +126,7 @@ export function Reports() {
   const series = incomeSeries(entries, chartRange);
   const prevSeries = prev && ranges.previous ? incomeSeries(prev.entries, ranges.previous) : [];
   const chart = series.map((d, i) => ({ label: d.label, value: d.value, previous: prevSeries[i]?.value ?? 0 }));
-  const best = series.reduce((b, d) => d.value > b.value ? d : b, { label: '', value: 0, key: '' });
+  const best = series.reduce((b, d) => (d.value > b.value ? d : b), { label: '', value: 0, key: '' });
 
   const income = byIncomeType(entries);
   const methods = byMethod(entries);
@@ -157,18 +157,18 @@ export function Reports() {
         <Icon size={13} aria-hidden />
         {ch >= 0 ? '+' : ''}
         {Math.round(ch * 100)}%<span className="sr-only"> {tr('vs previous period')}</span>
-      </span>);
-
+      </span>
+    );
   };
 
   const exportCsv = () =>
-  downloadCsv(
-    `kubicu-sales-${period === 'custom' ? `${from}_${to}` : period}.csv`,
-    toCsv(
-      ['date', 'type', 'reference', 'customer', 'method', 'paid', 'fees', 'refunded', 'you_receive', 'vat', 'sample'],
-      entries.map((e) => [e.at, incomeLabels[e.type].label, e.ref, e.customer, e.method ? methodLabels[e.method] : '', e.paid, e.fees, e.refunded, e.net, e.vat, e.sample ? 'yes' : ''])
-    )
-  );
+    downloadCsv(
+      `kubicu-sales-${period === 'custom' ? `${from}_${to}` : period}.csv`,
+      toCsv(
+        ['date', 'type', 'reference', 'customer', 'method', 'paid', 'fees', 'refunded', 'you_receive', 'vat', 'sample'],
+        entries.map((e) => [e.at, incomeLabels[e.type].label, e.ref, e.customer, e.method ? methodLabels[e.method] : '', e.paid, e.fees, e.refunded, e.net, e.vat, e.sample ? 'yes' : '']),
+      ),
+    );
 
   const exportPdf = () => {
     const ok = printSalesSummary({ business: current.name, rangeText, spaceText, summary, income, methods, products, vat: vatOn || vat.total > 0 ? vat : null, sample });
@@ -176,12 +176,12 @@ export function Reports() {
   };
 
   const columns: DataColumn<IncomeEntry>[] = [
-  { key: 'd', header: 'Date', sortValue: (e) => Date.parse(e.at), render: (e) => <span className="text-fg-muted">{formatTimestamp(e.at)}</span> },
-  {
-    key: 't',
-    header: 'What',
-    render: (e) =>
-    <span className="flex min-w-0 flex-col">
+    { key: 'd', header: 'Date', sortValue: (e) => Date.parse(e.at), render: (e) => <span className="text-fg-muted">{formatTimestamp(e.at)}</span> },
+    {
+      key: 't',
+      header: 'What',
+      render: (e) => (
+        <span className="flex min-w-0 flex-col">
           <span className="truncate font-medium text-fg">
             {e.ref}
             {e.sample && <span className="ml-2 text-caption font-normal text-fg-subtle">{tr('Sample')}</span>}
@@ -191,13 +191,13 @@ export function Reports() {
             {e.customer ? ` · ${e.customer}` : ''}
           </span>
         </span>
-
-  },
-  { key: 'm', header: 'Method', hideOnMobile: true, render: (e) => <span className="text-fg-muted">{e.method ? tr(methodLabels[e.method]) : '—'}</span> },
-  { key: 'f', header: 'Fees', align: 'right', hideOnMobile: true, render: (e) => e.fees ? <span className="text-fg-muted">−{formatNgn(e.fees)}</span> : <span className="text-fg-subtle">—</span> },
-  { key: 'r', header: 'Refunded', align: 'right', hideOnMobile: true, render: (e) => e.refunded ? <span className="text-fg-muted">−{formatNgn(e.refunded)}</span> : <span className="text-fg-subtle">—</span> },
-  { key: 'net', header: 'You receive', align: 'right', sortValue: (e) => e.net, render: (e) => <span className="font-semibold">{formatNgn(e.net)}</span> }];
-
+      ),
+    },
+    { key: 'm', header: 'Method', hideOnMobile: true, render: (e) => <span className="text-fg-muted">{e.method ? tr(methodLabels[e.method]) : '—'}</span> },
+    { key: 'f', header: 'Fees', align: 'right', hideOnMobile: true, render: (e) => (e.fees ? <span className="text-fg-muted">−{formatNgn(e.fees)}</span> : <span className="text-fg-subtle">—</span>) },
+    { key: 'r', header: 'Refunded', align: 'right', hideOnMobile: true, render: (e) => (e.refunded ? <span className="text-fg-muted">−{formatNgn(e.refunded)}</span> : <span className="text-fg-subtle">—</span>) },
+    { key: 'net', header: 'You receive', align: 'right', sortValue: (e) => e.net, render: (e) => <span className="font-semibold">{formatNgn(e.net)}</span> },
+  ];
 
   return (
     <>
@@ -205,7 +205,7 @@ export function Reports() {
         title="Sales report"
         description="All money paid in — shop, bookings, invoices, payment links and memberships. Fees and refunds are always shown on their own lines."
         actions={
-        <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button variant="secondary" leadingIcon={PrinterIcon} onClick={exportPdf} disabled={entries.length === 0}>
               PDF summary
             </Button>
@@ -214,56 +214,56 @@ export function Reports() {
             </Button>
             <AccountingExportButton entries={entries} fileTag={period === 'custom' ? `${from}_${to}` : period} rangeText={rangeText} />
           </div>
-        } />
-      
-      {myBranchId &&
-      <p className="mt-4 text-label text-fg-muted">
+        }
+      />
+      {myBranchId && (
+        <p className="mt-4 text-label text-fg-muted">
           {tr('Showing {location} only — the location you work at.', { location: locationName(data, myBranchId, tr('Main shop')) })}{' '}
           {tr('Bookings, invoices, payment links, gift cards and memberships belong to the whole business, so they aren’t included.')}
         </p>
-      }
+      )}
       <PageStack>
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div className="flex min-w-0 flex-wrap items-end gap-3">
             <div className="-mx-1 max-w-full overflow-x-auto overflow-y-hidden px-1">
             <Segmented<Period>
-                ariaLabel="Period"
-                value={period}
-                onChange={setPeriod}
-                options={[
+              ariaLabel="Period"
+              value={period}
+              onChange={setPeriod}
+              options={[
                 { value: '7', label: '7 days' },
                 { value: '30', label: '30 days' },
                 { value: '90', label: '90 days' },
                 { value: 'custom', label: 'Custom' },
-                { value: 'all', label: 'All time' }]
-                } />
-              
+                { value: 'all', label: 'All time' },
+              ]}
+            />
             </div>
-            {period === 'custom' &&
-            <div className="flex items-center gap-2">
+            {period === 'custom' && (
+              <div className="flex items-center gap-2">
                 <label className="sr-only" htmlFor="sr-from">{tr('From')}</label>
                 <input id="sr-from" type="date" value={from} max={to} onChange={(e) => e.target.value && setFrom(e.target.value)} className="h-9 rounded-md border border-line bg-raised px-2.5 text-label text-fg" />
                 <span className="text-caption text-fg-subtle">{tr('to')}</span>
                 <label className="sr-only" htmlFor="sr-to">{tr('To')}</label>
                 <input id="sr-to" type="date" value={to} min={from} max={dayKey(Date.now())} onChange={(e) => e.target.value && setTo(e.target.value)} className="h-9 rounded-md border border-line bg-raised px-2.5 text-label text-fg" />
               </div>
-            }
+            )}
             <div className="min-w-[200px]">
               <label htmlFor="sr-space" className="sr-only">{tr('Space')}</label>
               <select id="sr-space" value={handle} onChange={(e) => setHandle(e.target.value)} className="h-9 w-full rounded-md border border-line bg-raised px-2.5 text-label text-fg">
-                {spaceOptions.map((o) =>
-                <option key={o.value} value={o.value}>{tr(o.label)}</option>
-                )}
+                {spaceOptions.map((o) => (
+                  <option key={o.value} value={o.value}>{tr(o.label)}</option>
+                ))}
               </select>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-4">
             {sample && <Badge tone="neutral">{tr('Includes sample data')}</Badge>}
-            {prev &&
-            <div className="w-52">
+            {prev && (
+              <div className="w-52">
                 <Switch id="sr-compare" label="Compare to previous period" checked={compare} onChange={setCompare} />
               </div>
-            }
+            )}
           </div>
         </div>
         {space && <p className="-mt-3 text-caption text-fg-subtle">{tr('Invoices, payment links and gift cards don’t belong to a space, so they’re left out while one is chosen.')}</p>}
@@ -274,12 +274,12 @@ export function Reports() {
           title="You receive"
           description={`${tr(rangeText)} · ${tr('test mode')}`}
           footer={
-          <p className="flex items-center gap-1.5 text-caption text-fg-subtle">
+            <p className="flex items-center gap-1.5 text-caption text-fg-subtle">
               {tr('Fees are itemised for shop orders; other income is shown as received. Provider rate is illustrative.')}
               <IllustrativeTag note="Provider 1.5% + ₦100 (waived under ₦2,500, capped ₦2,000) until a payment partner is chosen. KUBICU fees are confirmed (D105)." />
             </p>
-          }>
-          
+          }
+        >
           <div className="grid gap-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
             <div className="flex flex-col gap-6">
               <div>
@@ -287,12 +287,12 @@ export function Reports() {
                 <p className="mt-2">{delta(summary.received, prev?.summary.received)}</p>
               </div>
               <dl className="flex flex-col divide-y divide-line border-t border-line">
-                {([['Customers paid', summary.paid], ['Fees', -summary.fees], ['Refunds', -summary.refunded]] as [string, number][]).map(([label, v]) =>
-                <div key={label} className="flex items-baseline justify-between gap-3 py-2.5">
+                {([['Customers paid', summary.paid], ['Fees', -summary.fees], ['Refunds', -summary.refunded]] as [string, number][]).map(([label, v]) => (
+                  <div key={label} className="flex items-baseline justify-between gap-3 py-2.5">
                     <dt className="text-label text-fg-muted">{tr(label)}</dt>
                     <dd className="text-label tabular-nums text-fg">{v < 0 ? `−${formatNgn(-v)}` : formatNgn(v)}</dd>
                   </div>
-                )}
+                ))}
               </dl>
               <StatGroup columns={3} divided>
                 <Stat label="Paid orders" value={summary.orders} hint={delta(summary.orders, prev?.summary.orders)} />
@@ -303,8 +303,8 @@ export function Reports() {
             <IncomeChart
               data={chart}
               compare={showCompare}
-              summary={entries.length === 0 ? tr('No money in during this period.') : `${tr('Money received over time')}${best.value > 0 ? ` — ${tr('best')} ${best.label}: ${formatNgn(best.value)}` : ''}${showCompare ? `. ${tr('Dashed line: previous period.')}` : '.'}`} />
-            
+              summary={entries.length === 0 ? tr('No money in during this period.') : `${tr('Money received over time')}${best.value > 0 ? ` — ${tr('best')} ${best.label}: ${formatNgn(best.value)}` : ''}${showCompare ? `. ${tr('Dashed line: previous period.')}` : '.'}`}
+            />
           </div>
         </Card>
 
@@ -312,42 +312,42 @@ export function Reports() {
           <Card id="income" title="Where the money came from" description="After fees and refunds.">
             <BarList
               empty={tr('No income in this period.')}
-              rows={income.map((i) => ({ key: i.id, label: tr(incomeLabels[i.id].label), value: i.amount, valueText: formatNgn(i.amount), meta: tr(i.count === 1 ? '{n} payment' : '{n} payments', { n: i.count }) }))} />
-            
+              rows={income.map((i) => ({ key: i.id, label: tr(incomeLabels[i.id].label), value: i.amount, valueText: formatNgn(i.amount), meta: tr(i.count === 1 ? '{n} payment' : '{n} payments', { n: i.count }) }))}
+            />
           </Card>
           <Card id="methods" title="Payment methods" description="What customers paid with, before fees.">
             <BarList
               empty={tr('No payments in this period.')}
-              rows={methods.map((m) => ({ key: m.id, label: tr(methodLabels[m.id]), value: m.amount, valueText: formatNgn(m.amount), meta: summary.paid ? pct(m.amount / summary.paid) : undefined }))} />
-            
+              rows={methods.map((m) => ({ key: m.id, label: tr(methodLabels[m.id]), value: m.amount, valueText: formatNgn(m.amount), meta: summary.paid ? pct(m.amount / summary.paid) : undefined }))}
+            />
           </Card>
           <Card id="products" title="Products" description="By revenue, refunded orders left out.">
             <BarList
               empty={tr('No product sales in this period.')}
-              rows={products.slice(0, 8).map((p) => ({ key: p.name, label: p.name, value: p.revenue, valueText: formatNgn(p.revenue), meta: tr('{n} sold', { n: p.qty }) }))} />
-            
+              rows={products.slice(0, 8).map((p) => ({ key: p.name, label: p.name, value: p.revenue, valueText: formatNgn(p.revenue), meta: tr('{n} sold', { n: p.qty }) }))}
+            />
             {products.length > 8 && <p className="mt-4 text-caption text-fg-subtle">{tr('{n} more in the CSV export.', { n: products.length - 8 })}</p>}
           </Card>
           <Card id="customers" title="New and returning customers" description="Shop orders. Returning means they’d paid you before this period, matched by phone or email.">
-            {summary.orders === 0 ?
-            <p className="text-label text-fg-muted">{tr('No paid orders in this period.')}</p> :
-
-            <StatGroup columns={2}>
+            {summary.orders === 0 ? (
+              <p className="text-label text-fg-muted">{tr('No paid orders in this period.')}</p>
+            ) : (
+              <StatGroup columns={2}>
                 <Stat label="New" value={summary.newCustomers} hint={`${formatNgn(summary.newRevenue)} ${tr('spent')}`} />
                 <Stat label="Returning" value={summary.returningCustomers} hint={`${formatNgn(summary.returningRevenue)} ${tr('spent')}`} />
               </StatGroup>
-            }
+            )}
           </Card>
         </div>
 
         <Section id="sources" title="Where buyers came from" description="From Analytics: visits by source and how many went on to buy, book or sign up. Only sales made in a recorded visit are counted here.">
-          {sourceRows.length === 0 ?
-          <p className="text-label text-fg-muted">
+          {sourceRows.length === 0 ? (
+            <p className="text-label text-fg-muted">
               {tr('No recorded visits in this period.')}{' '}
               <Link to="/app/analytics" className="font-medium text-action hover:underline">{tr('Open Analytics')}</Link>
-            </p> :
-
-          <div className="overflow-x-auto rounded-md border border-line">
+            </p>
+          ) : (
+            <div className="overflow-x-auto rounded-md border border-line">
               <table className="w-full min-w-[520px] text-label">
                 <caption className="sr-only">{tr('Sales by visitor source')}</caption>
                 <thead className="bg-sunken text-left text-caption text-fg-subtle">
@@ -360,30 +360,30 @@ export function Reports() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-line">
-                  {sourceRows.map((s) =>
-                <tr key={s.id}>
+                  {sourceRows.map((s) => (
+                    <tr key={s.id}>
                       <th scope="row" className="px-4 py-2.5 text-left font-medium text-fg">{tr(sourceLabels[s.id])}</th>
                       <td className="px-4 py-2.5 text-right tabular-nums text-fg-muted">{s.visits}</td>
                       <td className="px-4 py-2.5 text-right tabular-nums text-fg-muted">{s.conversions}</td>
                       <td className="px-4 py-2.5 text-right tabular-nums text-fg">{pct(s.rate)}</td>
                       <td className="px-4 py-2.5 text-right tabular-nums text-fg">{s.revenue ? formatNgn(s.revenue) : '—'}</td>
                     </tr>
-                )}
+                  ))}
                 </tbody>
               </table>
             </div>
-          }
+          )}
         </Section>
 
-        {(vatOn || vat.total > 0) &&
-        <Card id="vat" title="VAT collected" description="VAT inside or added to sales in this period, from Commerce settings → Tax." footer={<p className="text-caption text-fg-subtle">{tr('For your records — check with your accountant before filing.')}</p>}>
+        {(vatOn || vat.total > 0) && (
+          <Card id="vat" title="VAT collected" description="VAT inside or added to sales in this period, from Commerce settings → Tax." footer={<p className="text-caption text-fg-subtle">{tr('For your records — check with your accountant before filing.')}</p>}>
             <StatGroup columns={3}>
               <Stat label="VAT collected" value={formatNgn(vat.total)} hint={tr(vat.count === 1 ? 'On {n} sale' : 'On {n} sales', { n: vat.count })} />
               <Stat label="Current rate" value={vatOn ? vatRateLabel(shopSettingsOf(data).tax.ratePct) : tr('Off')} hint={vatOn ? tr(shopSettingsOf(data).tax.inclusive ? 'Included in prices' : 'Added at checkout') : undefined} />
               <Stat label="Sales before VAT" value={formatNgn(Math.max(0, summary.paid - vat.total))} />
             </StatGroup>
           </Card>
-        }
+        )}
 
         <TaxByCountryCard orders={orders.filter(isPaidOrder)} business={current.name} />
 
@@ -393,6 +393,6 @@ export function Reports() {
           <DataTable caption="Transactions" rows={entries} columns={columns} emptyTitle="Nothing paid in this period" emptyDescription="Try a longer period or another space." />
         </Section>
       </PageStack>
-    </>);
-
+    </>
+  );
 }

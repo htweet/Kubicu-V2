@@ -34,13 +34,13 @@ const PresenceContext = createContext<Presence[]>([]);
  * they've selected. Teammates who could edit are added as clearly labelled simulated presence (D60),
  * so the several-phones experience is designed before a real-time server exists.
  */
-export function PresenceProvider({ children }: {children: React.ReactNode;}) {
+export function PresenceProvider({ children }: { children: React.ReactNode }) {
   const team = useTeam();
   const { state } = useEditor();
   const { currentSpace } = useWorkspace();
   const [tick, setTick] = useState(0);
   const [peers, setPeers] = useState<Beat<PeerPayload>[]>([]);
-  const channel = useRef<{update: (p: PeerPayload) => void;leave: () => void;} | null>(null);
+  const channel = useRef<{ update: (p: PeerPayload) => void; leave: () => void } | null>(null);
 
   useEffect(() => {
     const t = window.setInterval(() => setTick((n) => n + 1), 25000);
@@ -77,18 +77,18 @@ export function PresenceProvider({ children }: {children: React.ReactNode;}) {
       colour: liveColours[i % liveColours.length],
       blockId: p.payload.pageId === state.activePageId ? p.payload.blockId : null,
       pageId: p.payload.pageId,
-      live: true
+      live: true,
     }));
-    const others = team.data.members.
-    filter((m) => m.id !== team.me.id && !team.paused.has(m.id) && rolePermissions[m.role].has('pages.edit') && (m.role === 'owner' || m.role === 'admin' || !m.spaceIds || m.spaceIds.includes(currentSpace.id))).
-    slice(0, 2);
+    const others = team.data.members
+      .filter((m) => m.id !== team.me.id && !team.paused.has(m.id) && rolePermissions[m.role].has('pages.edit') && (m.role === 'owner' || m.role === 'admin' || !m.spaceIds || m.spaceIds.includes(currentSpace.id)))
+      .slice(0, 2);
     const blocks = state.draft.blocks.filter((b) => !b.locked && !live.some((l) => l.blockId === b.id));
     const sims: Presence[] = others.map((member, i) => ({
       id: member.id,
       name: member.name,
       colour: simColours[i % simColours.length],
       blockId: i === 0 && blocks.length > 1 ? blocks[(tick + 1) % blocks.length].id : null,
-      live: false
+      live: false,
     }));
     return [...live, ...sims];
   }, [peers, team.data.members, team.me.id, team.paused, currentSpace.id, state.draft.blocks, state.activePageId, tick]);

@@ -16,7 +16,7 @@ const statusText: Record<AssistantChange['status'], string> = {
   pending: 'Proposed — not on your page yet',
   kept: 'Kept',
   discarded: 'Discarded',
-  undone: 'Undone'
+  undone: 'Undone',
 };
 
 /** One requested change after the build: Keep or Discard while proposed, Undo once kept (D211, Pass D). */
@@ -38,20 +38,20 @@ export function AssistantChangeCard({ change, canUndo, onKeep, onDiscard, onUndo
         {statusText[change.status]}
         {pending && <span className="font-normal"> · compare Before and After in the preview</span>}
       </p>
-      {pending ?
-      <div className="mt-2.5 flex flex-wrap gap-2">
+      {pending ? (
+        <div className="mt-2.5 flex flex-wrap gap-2">
           <Button size="sm" leadingIcon={CheckIcon} onClick={onKeep}>
             Keep
           </Button>
           <Button size="sm" variant="secondary" leadingIcon={XIcon} onClick={onDiscard}>
             Discard
           </Button>
-        </div> :
-      change.status === 'kept' && canUndo ?
-      <Button size="sm" variant="tertiary" className="mt-2" leadingIcon={Undo2Icon} onClick={onUndo}>
+        </div>
+      ) : change.status === 'kept' && canUndo ? (
+        <Button size="sm" variant="tertiary" className="mt-2" leadingIcon={Undo2Icon} onClick={onUndo}>
           Undo this change
-        </Button> :
-      null}
-    </div>);
-
+        </Button>
+      ) : null}
+    </div>
+  );
 }

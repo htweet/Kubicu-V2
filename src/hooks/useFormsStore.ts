@@ -4,7 +4,7 @@ import { readForms, subscribeForms, updateForms } from '../utils/forms/storage';
 
 /** Forms and submissions for a workspace, shared across every screen and the live page (D79). */
 export function useFormsStore(workspaceId: string | null) {
-  const [data, setData] = useState<FormsData | null>(() => workspaceId ? readForms(workspaceId) : null);
+  const [data, setData] = useState<FormsData | null>(() => (workspaceId ? readForms(workspaceId) : null));
 
   useEffect(() => {
     if (!workspaceId) {
@@ -28,7 +28,7 @@ export function useFormsStore(workspaceId: string | null) {
     (fn: (d: FormsData) => FormsData) => {
       if (workspaceId) setData(updateForms(workspaceId, fn));
     },
-    [workspaceId]
+    [workspaceId],
   );
 
   return { data, update };

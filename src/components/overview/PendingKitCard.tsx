@@ -50,7 +50,7 @@ export function PendingKitCard() {
         </h2>
         <p className="mt-0.5 text-caption text-fg-muted">
           {tr('Your page is set up. Add the rest: {list}. All drafts — nothing goes live or gets a price until you set it.', {
-            list: parts.map((p) => tr(kitPartLabels[p].label).toLowerCase()).join(', ')
+            list: parts.map((p) => tr(kitPartLabels[p].label).toLowerCase()).join(', '),
           })}
         </p>
         {!can.allowed && <p className="mt-1 text-caption text-fg-subtle">{can.reason}</p>}
@@ -66,6 +66,6 @@ export function PendingKitCard() {
           {tr('See all kits')}
         </Link>
       </div>
-    </section>);
-
+    </section>
+  );
 }

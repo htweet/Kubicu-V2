@@ -13,7 +13,7 @@ const shortcuts: Record<string, string> = {
   schedule: '/app/bookings',
   events: '/app/commerce/events',
   wallet: '/app/commerce/wallet',
-  account: '/app/account'
+  account: '/app/account',
 };
 const handleShape = /^[a-z0-9][a-z0-9-]{1,48}$/i;
 

@@ -7,52 +7,52 @@ import { uid } from './id';
 export const MAX_STAGES = 6;
 
 export const builtInTemplates: MilestoneTemplate[] = [
-{
-  id: 'tpl-bridal',
-  name: 'Bridal & events — 30 / 20 / 50',
-  builtIn: true,
-  stages: [
-  { label: 'Booking', pct: 30, trigger: 'accept' },
-  { label: 'Trial session', pct: 20, trigger: 'step', stepLabel: 'Trial session' },
-  { label: 'On the day', pct: 50, trigger: 'step', stepLabel: 'Event day' }]
-
-},
-{
-  id: 'tpl-half',
-  name: 'Half now, half when done',
-  builtIn: true,
-  stages: [
-  { label: 'To start', pct: 50, trigger: 'accept' },
-  { label: 'On completion', pct: 50, trigger: 'done' }]
-
-},
-{
-  id: 'tpl-thirds',
-  name: 'Thirds — start, midway, finish',
-  builtIn: true,
-  stages: [
-  { label: 'To start', pct: 34, trigger: 'accept' },
-  { label: 'Midway', pct: 33, trigger: 'step', stepLabel: 'Midway check-in' },
-  { label: 'On completion', pct: 33, trigger: 'done' }]
-
-},
-{
-  id: 'tpl-build',
-  name: 'Materials, then labour',
-  builtIn: true,
-  stages: [
-  { label: 'Materials', pct: 40, trigger: 'accept' },
-  { label: 'Work starts', pct: 30, trigger: 'step', stepLabel: 'Work started' },
-  { label: 'Handover', pct: 30, trigger: 'done' }]
-
-}];
-
+  {
+    id: 'tpl-bridal',
+    name: 'Bridal & events — 30 / 20 / 50',
+    builtIn: true,
+    stages: [
+      { label: 'Booking', pct: 30, trigger: 'accept' },
+      { label: 'Trial session', pct: 20, trigger: 'step', stepLabel: 'Trial session' },
+      { label: 'On the day', pct: 50, trigger: 'step', stepLabel: 'Event day' },
+    ],
+  },
+  {
+    id: 'tpl-half',
+    name: 'Half now, half when done',
+    builtIn: true,
+    stages: [
+      { label: 'To start', pct: 50, trigger: 'accept' },
+      { label: 'On completion', pct: 50, trigger: 'done' },
+    ],
+  },
+  {
+    id: 'tpl-thirds',
+    name: 'Thirds — start, midway, finish',
+    builtIn: true,
+    stages: [
+      { label: 'To start', pct: 34, trigger: 'accept' },
+      { label: 'Midway', pct: 33, trigger: 'step', stepLabel: 'Midway check-in' },
+      { label: 'On completion', pct: 33, trigger: 'done' },
+    ],
+  },
+  {
+    id: 'tpl-build',
+    name: 'Materials, then labour',
+    builtIn: true,
+    stages: [
+      { label: 'Materials', pct: 40, trigger: 'accept' },
+      { label: 'Work starts', pct: 30, trigger: 'step', stepLabel: 'Work started' },
+      { label: 'Handover', pct: 30, trigger: 'done' },
+    ],
+  },
+];
 
 export const triggerLabels: Record<MilestoneTrigger, string> = {
   accept: 'When the client accepts',
   step: 'When a job step is ticked',
   date: 'On a date',
-  done: 'When the job is done'
+  done: 'When the job is done',
 };
 
 export const stagesFromTemplate = (t: MilestoneTemplate): Milestone[] => t.stages.map((s) => ({ id: uid('ms'), label: s.label, pct: s.pct, trigger: s.trigger, stepLabel: s.stepLabel }));
@@ -68,7 +68,7 @@ export function stageAmounts(q: Quote): Record<string, number> {
   const out: Record<string, number> = {};
   let used = 0;
   ms.forEach((m, i) => {
-    const amt = i === ms.length - 1 ? Math.max(0, total - used) : Math.round(total * m.pct / 100);
+    const amt = i === ms.length - 1 ? Math.max(0, total - used) : Math.round((total * m.pct) / 100);
     out[m.id] = amt;
     used += amt;
   });
@@ -125,7 +125,7 @@ export function stageRows(d: ServiceOsData, q: Quote): StageRow[] {
   return (q.milestones ?? []).map((m) => {
     const invoice = m.invoiceId ? d.invoices.find((i) => i.id === m.invoiceId && i.status !== 'void') : undefined;
     const paid = invoice ? paidOf(invoice) : 0;
-    const state: StageState = invoice ? invoice.status === 'paid' ? 'paid' : paid > 0 ? 'part_paid' : 'requested' : triggered(m, q, job) ? 'due' : 'upcoming';
+    const state: StageState = invoice ? (invoice.status === 'paid' ? 'paid' : paid > 0 ? 'part_paid' : 'requested') : triggered(m, q, job) ? 'due' : 'upcoming';
     return { m, amount: amounts[m.id] ?? 0, state, invoice, paid, when: stageWhen(m) };
   });
 }
@@ -136,7 +136,7 @@ export const dueUnrequested = (d: ServiceOsData, q: Quote) => stageRows(d, q).fi
 // ——— Requesting a stage ———
 
 /** Creates the stage's invoice, already sent so its pay link works straight away. */
-export function requestStage(d: ServiceOsData, quoteId: string, stageId: string): {data: ServiceOsData;invoice: Invoice;} | null {
+export function requestStage(d: ServiceOsData, quoteId: string, stageId: string): { data: ServiceOsData; invoice: Invoice } | null {
   const q = d.quotes.find((x) => x.id === quoteId);
   const m = q?.milestones?.find((x) => x.id === stageId);
   if (!q || !m || q.status !== 'accepted') return null;
@@ -160,21 +160,21 @@ export function requestStage(d: ServiceOsData, quoteId: string, stageId: string)
     dueDate: m.trigger === 'date' && m.date && m.date > todayKey() ? m.date : addDays(s.dueDays),
     status: 'sent',
     payments: [],
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
   };
   return {
     data: {
       ...d,
       counters: { ...d.counters, invoice: n },
       invoices: [invoice, ...d.invoices],
-      quotes: d.quotes.map((x) => x.id === q.id ? { ...x, invoiceIds: [...x.invoiceIds, invoice.id], milestones: x.milestones!.map((s) => s.id === m.id ? { ...s, invoiceId: invoice.id } : s) } : x)
+      quotes: d.quotes.map((x) => (x.id === q.id ? { ...x, invoiceIds: [...x.invoiceIds, invoice.id], milestones: x.milestones!.map((s) => (s.id === m.id ? { ...s, invoiceId: invoice.id } : s)) } : x)),
     },
-    invoice
+    invoice,
   };
 }
 
 /** Requests every stage that's due now (used when the client accepts, so the first pay link exists immediately). */
-export function requestDueStages(d: ServiceOsData, quoteId: string): {data: ServiceOsData;invoices: Invoice[];} {
+export function requestDueStages(d: ServiceOsData, quoteId: string): { data: ServiceOsData; invoices: Invoice[] } {
   let data = d;
   const invoices: Invoice[] = [];
   const q = d.quotes.find((x) => x.id === quoteId);
@@ -205,6 +205,6 @@ export function templateFrom(name: string, ms: Milestone[]): MilestoneTemplate {
   return {
     id: uid('tpl'),
     name: name.trim(),
-    stages: ms.map((m) => ({ label: m.label.trim(), pct: m.pct, trigger: m.trigger === 'date' ? 'done' : m.trigger, stepLabel: m.trigger === 'step' ? m.stepLabel?.trim() : undefined }))
+    stages: ms.map((m) => ({ label: m.label.trim(), pct: m.pct, trigger: m.trigger === 'date' ? 'done' : m.trigger, stepLabel: m.trigger === 'step' ? m.stepLabel?.trim() : undefined })),
   };
 }

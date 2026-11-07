@@ -68,7 +68,7 @@ export interface CountryInfo {
   /** Typical price of 1 GB of mobile data, in this country's currency — example figure for page-weight estimates (D404). */
   dataPerGb: number;
   /** BCP-47 tag of the main local language this country adds, for defaults and speech input. */
-  localLanguage: {code: string;name: string;};
+  localLanguage: { code: string; name: string };
   /** Biggest cities, used for delivery areas. */
   mainCity: string;
 }

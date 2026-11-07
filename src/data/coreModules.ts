@@ -1,7 +1,7 @@
 import type { CoreModule } from '../types/marketplace';
 
 /** Where each core module lives, for the "Works with" row on extensions (D231). */
-export const coreModules: Record<CoreModule, {label: string;href: string;}> = {
+export const coreModules: Record<CoreModule, { label: string; href: string }> = {
   orders: { label: 'Orders', href: '/app/commerce/orders' },
   products: { label: 'Products', href: '/app/commerce/products' },
   checkout: { label: 'Checkout', href: '/app/commerce/settings' },
@@ -19,5 +19,5 @@ export const coreModules: Record<CoreModule, {label: string;href: string;}> = {
   campaignLinks: { label: 'Short links', href: '/app/links' },
   quotes: { label: 'Quotes & jobs', href: '/app/services' },
   proof: { label: 'Proof of work', href: '/app/proof' },
-  settings: { label: 'Settings', href: '/app/settings' }
+  settings: { label: 'Settings', href: '/app/settings' },
 };

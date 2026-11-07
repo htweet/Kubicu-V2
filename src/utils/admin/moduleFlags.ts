@@ -25,6 +25,6 @@ export function useModuleAvailability() {
   const [store] = useAdminStore();
   return {
     nav: (nav: Pick<NavItem, 'id' | 'appId'>) => navAvailable(store, nav),
-    ext: (extId: string) => moduleOn(store, extKey(extId))
+    ext: (extId: string) => moduleOn(store, extKey(extId)),
   };
 }

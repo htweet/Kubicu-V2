@@ -39,24 +39,24 @@ export function LayoutRow({ theme, columnPx, width, background, ratio, firstSeco
   const paired = children.length === 2 && ratio;
   const forced = typeof sideBySide === 'boolean';
 
-  const inner = paired ?
-  <div
-    className={cn('grid gap-8', !forced && 'md:items-center md:gap-16 md:[grid-template-columns:var(--kb-cols)]', forced && sideBySide && 'items-center gap-16')}
-    style={{ ['--kb-cols' as string]: pairColumns[ratio], ...(forced && sideBySide ? { gridTemplateColumns: pairColumns[ratio] } : {}) }}>
-    
+  const inner = paired ? (
+    <div
+      className={cn('grid gap-8', !forced && 'md:items-center md:gap-16 md:[grid-template-columns:var(--kb-cols)]', forced && sideBySide && 'items-center gap-16')}
+      style={{ ['--kb-cols' as string]: pairColumns[ratio], ...(forced && sideBySide ? { gridTemplateColumns: pairColumns[ratio] } : {}) }}
+    >
       <div className={cn('min-w-0', firstSecondOnPhone && (forced ? !sideBySide && 'order-2' : 'order-2 md:order-none'))}>{children[0]}</div>
       <div className="min-w-0">{children[1]}</div>
-    </div> :
-
-  children;
-
+    </div>
+  ) : (
+    children
+  );
 
   // Wide sections get real breathing room (D157). Column rows keep today's spacing so existing pages don't move.
-  const body =
-  <div className={cn('mx-auto w-full', width !== 'full' && 'px-5 md:px-8', width === 'wide' && background === 'none' && (compact ? 'py-3 md:py-6' : 'py-6 md:py-12'))} style={{ maxWidth: maxWidth ? maxWidth + (width === 'wide' ? 64 : 0) : undefined }}>
+  const body = (
+    <div className={cn('mx-auto w-full', width !== 'full' && 'px-5 md:px-8', width === 'wide' && background === 'none' && (compact ? 'py-3 md:py-6' : 'py-6 md:py-12'))} style={{ maxWidth: maxWidth ? maxWidth + (width === 'wide' ? 64 : 0) : undefined }}>
       {inner}
-    </div>;
-
+    </div>
+  );
 
   if (background === 'none') return body;
   return (
@@ -66,11 +66,11 @@ export function LayoutRow({ theme, columnPx, width, background, ratio, firstSeco
         // Band edges (D218): enough to frame the section without a screen of empty colour above the first block.
         // Joined edges add nothing — the blocks' own spacing separates them, as on a plain background.
         joinPrev ? 'pt-0' : compact ? 'pt-6 md:pt-8' : 'pt-8 md:pt-12',
-        joinNext ? 'pb-0' : compact ? 'pb-6 md:pb-8' : 'pb-8 md:pb-12'
+        joinNext ? 'pb-0' : compact ? 'pb-6 md:pb-8' : 'pb-8 md:pb-12',
       )}
-      style={{ background: st.background, color: st.text }}>
-      
+      style={{ background: st.background, color: st.text }}
+    >
       {body}
-    </div>);
-
+    </div>
+  );
 }

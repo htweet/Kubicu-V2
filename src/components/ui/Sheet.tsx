@@ -35,7 +35,7 @@ export function Sheet({
   footer,
   children,
   bodyClassName,
-  size = 'md'
+  size = 'md',
 }: SheetProps) {
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
@@ -55,39 +55,39 @@ export function Sheet({
 
   return createPortal(
     <AnimatePresence>
-      {open &&
-      <div className="fixed inset-0 z-[70]">
+      {open && (
+        <div className="fixed inset-0 z-[70]">
           <motion.div
-          className="absolute inset-0 bg-black/45"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-          onClick={onClose}
-          aria-hidden />
-        
+            className="absolute inset-0 bg-black/45"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={onClose}
+            aria-hidden
+          />
           <motion.div
-          ref={panelRef}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby={titleId}
-          tabIndex={-1}
-          initial={isBottom ? { y: '100%' } : { x: '100%' }}
-          animate={isBottom ? { y: 0 } : { x: 0 }}
-          exit={isBottom ? { y: '100%' } : { x: '100%' }}
-          transition={{ duration: 0.26, ease: [0.23, 1, 0.32, 1] }}
-          className={cn(
-            'absolute flex flex-col border-line bg-overlay text-fg shadow-3 focus:outline-none',
-            fullScreen ?
-            'inset-0 pt-[env(safe-area-inset-top)] safe-bottom' :
-            isBottom ?
-            cn(
-              'inset-x-0 bottom-0 rounded-t-lg border-t safe-bottom',
-              height === 'full' ? 'top-[max(env(safe-area-inset-top),2.5rem)]' : 'max-h-[85vh]'
-            ) :
-            cn('inset-y-0 right-0 w-full border-l', size === 'lg' ? 'max-w-2xl' : 'max-w-md')
-          )}>
-          
+            ref={panelRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={titleId}
+            tabIndex={-1}
+            initial={isBottom ? { y: '100%' } : { x: '100%' }}
+            animate={isBottom ? { y: 0 } : { x: 0 }}
+            exit={isBottom ? { y: '100%' } : { x: '100%' }}
+            transition={{ duration: 0.26, ease: [0.23, 1, 0.32, 1] }}
+            className={cn(
+              'absolute flex flex-col border-line bg-overlay text-fg shadow-3 focus:outline-none',
+              fullScreen
+                ? 'inset-0 pt-[env(safe-area-inset-top)] safe-bottom'
+                : isBottom
+                  ? cn(
+                      'inset-x-0 bottom-0 rounded-t-lg border-t safe-bottom',
+                      height === 'full' ? 'top-[max(env(safe-area-inset-top),2.5rem)]' : 'max-h-[85vh]',
+                    )
+                  : cn('inset-y-0 right-0 w-full border-l', size === 'lg' ? 'max-w-2xl' : 'max-w-md'),
+            )}
+          >
             {isBottom && !fullScreen && <div aria-hidden className="mx-auto mt-2 h-1 w-10 shrink-0 rounded-full bg-line-strong" />}
             <div className={cn('flex shrink-0 items-start justify-between gap-3 border-b border-line py-4', fullScreen ? 'pl-5 pr-2' : 'pl-5 pr-3')}>
               <div className="min-w-0">
@@ -105,8 +105,8 @@ export function Sheet({
             {footer && <div className={cn('shrink-0 border-t border-line bg-overlay px-5 py-3', fullScreen && '[&_button]:min-h-[44px]')}>{footer}</div>}
           </motion.div>
         </div>
-      }
+      )}
     </AnimatePresence>,
-    document.body
+    document.body,
   );
 }

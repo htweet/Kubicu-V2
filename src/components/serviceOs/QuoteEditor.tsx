@@ -54,12 +54,12 @@ export function QuoteEditor({ quote, data, businessName, canEdit, update, onClos
   const staged = hasStages(draft);
   const problems = [...quoteProblems(draft), ...(staged ? milestoneProblems(draft.milestones!) : [])];
   const setPlan = (plan: 'deposit' | 'stages') =>
-  setDraft(plan === 'stages' ? { ...draft, depositPct: 0, milestones: draft.milestones?.length ? draft.milestones : stagesFromTemplate(builtInTemplates[1]) } : { ...draft, milestones: undefined });
+    setDraft(plan === 'stages' ? { ...draft, depositPct: 0, milestones: draft.milestones?.length ? draft.milestones : stagesFromTemplate(builtInTemplates[1]) } : { ...draft, milestones: undefined });
   const link = `${window.location.origin}${quotePath(mainHandle, quote.id)}`;
   const dirty = JSON.stringify(draft) !== JSON.stringify(quote);
   const left = quote.status === 'accepted' ? uninvoiced(data, quote) : 0;
 
-  const save = (patch: Partial<Quote> = {}) => update((d) => ({ ...d, quotes: d.quotes.map((q) => q.id === quote.id ? { ...draft, ...patch } : q) }));
+  const save = (patch: Partial<Quote> = {}) => update((d) => ({ ...d, quotes: d.quotes.map((q) => (q.id === quote.id ? { ...draft, ...patch } : q)) }));
   const send = () => {
     setTried(true);
     if (problems.length) return;
@@ -91,18 +91,18 @@ export function QuoteEditor({ quote, data, businessName, canEdit, update, onClos
     onOpenJob(id);
   };
 
-  const footer = editable ?
-  <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+  const footer = editable ? (
+    <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
       <Button variant="secondary" disabled={!dirty} onClick={() => (save(), toast.success('Draft saved'))}>
         Save draft
       </Button>
       <Button leadingIcon={SendIcon} onClick={send}>
         Save and get link
       </Button>
-    </div> :
-  quote.status === 'sent' ?
-  <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-      <Button variant="secondary" disabled={!canEdit} onClick={() => update((d) => ({ ...d, quotes: d.quotes.map((q) => q.id === quote.id ? { ...q, status: 'draft' } : q) }))}>
+    </div>
+  ) : quote.status === 'sent' ? (
+    <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+      <Button variant="secondary" disabled={!canEdit} onClick={() => update((d) => ({ ...d, quotes: d.quotes.map((q) => (q.id === quote.id ? { ...q, status: 'draft' } : q)) }))}>
         Edit (back to draft)
       </Button>
       <Button variant="secondary" leadingIcon={CopyIcon} onClick={() => navigator.clipboard?.writeText(link).then(() => toast.success('Link copied'))}>
@@ -111,25 +111,25 @@ export function QuoteEditor({ quote, data, businessName, canEdit, update, onClos
       <Button leadingIcon={MessageCircleIcon} disabled={!quote.client.phone} onClick={share}>
         Send on WhatsApp
       </Button>
-    </div> :
-  quote.status === 'accepted' ?
-  <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-      {quote.jobId ?
-    <Button variant="secondary" leadingIcon={BriefcaseIcon} onClick={() => onOpenJob(quote.jobId!)}>
+    </div>
+  ) : quote.status === 'accepted' ? (
+    <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+      {quote.jobId ? (
+        <Button variant="secondary" leadingIcon={BriefcaseIcon} onClick={() => onOpenJob(quote.jobId!)}>
           Open job
-        </Button> :
-
-    <Button variant="secondary" leadingIcon={BriefcaseIcon} disabled={!canEdit} onClick={job}>
+        </Button>
+      ) : (
+        <Button variant="secondary" leadingIcon={BriefcaseIcon} disabled={!canEdit} onClick={job}>
           Start job
         </Button>
-    }
-      {!hasStages(quote) &&
-    <Button leadingIcon={ReceiptIcon} disabled={!canEdit || left === 0} onClick={invoice}>
-          {quote.invoiceIds.length === 0 ? quote.depositPct ? 'Invoice the deposit' : 'Create invoice' : left ? `Invoice the balance (${formatNgn(left)})` : 'Fully invoiced'}
+      )}
+      {!hasStages(quote) && (
+        <Button leadingIcon={ReceiptIcon} disabled={!canEdit || left === 0} onClick={invoice}>
+          {quote.invoiceIds.length === 0 ? (quote.depositPct ? 'Invoice the deposit' : 'Create invoice') : left ? `Invoice the balance (${formatNgn(left)})` : 'Fully invoiced'}
         </Button>
-    }
-    </div> :
-  undefined;
+      )}
+    </div>
+  ) : undefined;
 
   return (
     <Sheet open onClose={onClose} side="right" size="lg" title={`${quote.number} · ${quote.title || 'New quote'}`} description={editable ? 'Your client sees exactly this, with Accept and Decline buttons.' : undefined} footer={footer}>
@@ -139,18 +139,18 @@ export function QuoteEditor({ quote, data, businessName, canEdit, update, onClos
             {quoteLabels[view]}
           </Badge>
           {quote.sample && <SampleTag />}
-          {quote.status === 'accepted' &&
-          <span className="text-caption text-fg-muted">
+          {quote.status === 'accepted' && (
+            <span className="text-caption text-fg-muted">
               Accepted by {quote.acceptedBy} on {quote.decidedAt ? formatDay(quote.decidedAt.slice(0, 10)) : '—'}
             </span>
-          }
+          )}
           {view === 'expired' && <span className="text-caption text-fg-muted">The client can no longer accept it. Move it back to draft to change the date.</span>}
         </div>
-        {quote.status === 'declined' &&
-        <InlineAlert tone="warning" title="Your client declined this quote">
+        {quote.status === 'declined' && (
+          <InlineAlert tone="warning" title="Your client declined this quote">
             {quote.declineReason ? `“${quote.declineReason}”` : 'They didn’t give a reason.'}
           </InlineAlert>
-        }
+        )}
 
         <section aria-labelledby="qe-client" className="flex flex-col gap-4">
           <h3 id="qe-client" className="text-label font-semibold text-fg">
@@ -173,17 +173,17 @@ export function QuoteEditor({ quote, data, businessName, canEdit, update, onClos
             vat={draft.vat}
             readOnly={!editable}
             onChange={(items) => setDraft({ ...draft, items })}
-            footer={!staged && draft.depositPct > 0 ? <TotalRow label={`Deposit to book (${draft.depositPct}%)${draft.vat && !draft.vat.inclusive ? ' + VAT' : ''}`} value={formatNgn(depositOf(draft))} /> : undefined} />
-          
-          {editable && (draft.vat || data.settings?.vat) &&
-          <label className="flex items-start gap-2.5 text-label text-fg">
+            footer={!staged && draft.depositPct > 0 ? <TotalRow label={`Deposit to book (${draft.depositPct}%)${draft.vat && !draft.vat.inclusive ? ' + VAT' : ''}`} value={formatNgn(depositOf(draft))} /> : undefined}
+          />
+          {editable && (draft.vat || data.settings?.vat) && (
+            <label className="flex items-start gap-2.5 text-label text-fg">
               <input
-              type="checkbox"
-              className="mt-1 h-4 w-4"
-              checked={!!draft.vat}
-              disabled={!draft.vat && !vatRate}
-              onChange={(e) => setDraft({ ...draft, vat: e.target.checked && vatRate ? vatRate : undefined })} />
-            
+                type="checkbox"
+                className="mt-1 h-4 w-4"
+                checked={!!draft.vat}
+                disabled={!draft.vat && !vatRate}
+                onChange={(e) => setDraft({ ...draft, vat: e.target.checked && vatRate ? vatRate : undefined })}
+              />
               <span>
                 Charge VAT on this quote
                 <span className="block text-caption text-fg-subtle">
@@ -191,49 +191,49 @@ export function QuoteEditor({ quote, data, businessName, canEdit, update, onClos
                 </span>
               </span>
             </label>
-          }
+          )}
         </section>
 
-        {quote.status === 'accepted' && hasStages(quote) ?
-        <div className="border-t border-line pt-6">
+        {quote.status === 'accepted' && hasStages(quote) ? (
+          <div className="border-t border-line pt-6">
             <StageSchedule quote={quote} data={data} businessName={businessName} canEdit={canEdit} update={update} onOpenInvoice={onOpenInvoice} headingId="qe-stages" />
-          </div> :
-
-        <section aria-labelledby="qe-pay" className="flex flex-col gap-4 border-t border-line pt-6">
+          </div>
+        ) : (
+          <section aria-labelledby="qe-pay" className="flex flex-col gap-4 border-t border-line pt-6">
             <div className="flex flex-col gap-1">
               <h3 id="qe-pay" className="text-label font-semibold text-fg">
                 How the client pays
               </h3>
               <p className="text-caption text-fg-muted">Stages suit longer jobs: each one gets its own pay link when it’s due.</p>
             </div>
-            {editable &&
-          <Segmented<'deposit' | 'stages'>
-            ariaLabel="How the client pays"
-            value={staged ? 'stages' : 'deposit'}
-            onChange={setPlan}
-            options={[
-            { value: 'deposit', label: 'Deposit + balance' },
-            { value: 'stages', label: 'In stages' }]
-            } />
-
-          }
-            {staged ?
-          <MilestoneEditor
-            stages={draft.milestones!}
-            total={itemsTotal(draft.items)}
-            readOnly={!editable}
-            savedTemplates={data.milestoneTemplates ?? []}
-            onChange={(milestones) => setDraft({ ...draft, milestones })}
-            onSaveTemplate={(t) => update((d) => ({ ...d, milestoneTemplates: [...(d.milestoneTemplates ?? []), t] }))}
-            onDeleteTemplate={(id) => update((d) => ({ ...d, milestoneTemplates: (d.milestoneTemplates ?? []).filter((t) => t.id !== id) }))} /> :
-
-
-          <div className="sm:max-w-[50%] sm:pr-2">
+            {editable && (
+              <Segmented<'deposit' | 'stages'>
+                ariaLabel="How the client pays"
+                value={staged ? 'stages' : 'deposit'}
+                onChange={setPlan}
+                options={[
+                  { value: 'deposit', label: 'Deposit + balance' },
+                  { value: 'stages', label: 'In stages' },
+                ]}
+              />
+            )}
+            {staged ? (
+              <MilestoneEditor
+                stages={draft.milestones!}
+                total={itemsTotal(draft.items)}
+                readOnly={!editable}
+                savedTemplates={data.milestoneTemplates ?? []}
+                onChange={(milestones) => setDraft({ ...draft, milestones })}
+                onSaveTemplate={(t) => update((d) => ({ ...d, milestoneTemplates: [...(d.milestoneTemplates ?? []), t] }))}
+                onDeleteTemplate={(id) => update((d) => ({ ...d, milestoneTemplates: (d.milestoneTemplates ?? []).filter((t) => t.id !== id) }))}
+              />
+            ) : (
+              <div className="sm:max-w-[50%] sm:pr-2">
                 <SelectInput<string> id="qe-deposit" label="Deposit" value={String(draft.depositPct)} disabled={!editable} options={depositOptions} onChange={(v) => setDraft({ ...draft, depositPct: Number(v) })} />
               </div>
-          }
+            )}
           </section>
-        }
+        )}
 
         <section aria-labelledby="qe-terms" className="flex flex-col gap-4 border-t border-line pt-6">
           <h3 id="qe-terms" className="text-label font-semibold text-fg">
@@ -243,27 +243,27 @@ export function QuoteEditor({ quote, data, businessName, canEdit, update, onClos
           <TextArea id="qe-note" label="Note to client" optional rows={3} maxLength={400} value={draft.note} disabled={!editable} onChange={(e) => setDraft({ ...draft, note: e.target.value })} hint="Timings, what’s included, what you need from them." />
         </section>
 
-        {editable && tried && problems.length > 0 &&
-        <InlineAlert tone="danger" title="Fix these before getting a link">
+        {editable && tried && problems.length > 0 && (
+          <InlineAlert tone="danger" title="Fix these before getting a link">
             <ul className="list-disc pl-4">
-              {problems.map((p) =>
-            <li key={p}>{p}</li>
-            )}
+              {problems.map((p) => (
+                <li key={p}>{p}</li>
+              ))}
             </ul>
           </InlineAlert>
-        }
+        )}
 
-        {(quote.invoiceIds.length > 0 || quote.jobId) &&
-        <section aria-labelledby="qe-linked" className="flex flex-col gap-2 border-t border-line pt-6">
+        {(quote.invoiceIds.length > 0 || quote.jobId) && (
+          <section aria-labelledby="qe-linked" className="flex flex-col gap-2 border-t border-line pt-6">
             <h3 id="qe-linked" className="text-label font-semibold text-fg">
               From this quote
             </h3>
             <ul className="flex flex-col divide-y divide-line rounded-lg border border-line">
               {quote.invoiceIds.map((id) => {
-              const inv = data.invoices.find((i) => i.id === id);
-              if (!inv) return null;
-              return (
-                <li key={id}>
+                const inv = data.invoices.find((i) => i.id === id);
+                if (!inv) return null;
+                return (
+                  <li key={id}>
                     <button type="button" onClick={() => onOpenInvoice(id)} className="flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left text-label hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus">
                       <span className="text-fg">
                         Invoice {inv.number}
@@ -271,21 +271,21 @@ export function QuoteEditor({ quote, data, businessName, canEdit, update, onClos
                       </span>
                       <span className="tabular-nums text-fg-muted">{formatNgn(invoiceTotal(inv))}</span>
                     </button>
-                  </li>);
-
-            })}
-              {quote.jobId &&
-            <li>
+                  </li>
+                );
+              })}
+              {quote.jobId && (
+                <li>
                   <button type="button" onClick={() => onOpenJob(quote.jobId!)} className="flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left text-label hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus">
                     <span className="text-fg">Job</span>
                     <span className="text-fg-muted">Open</span>
                   </button>
                 </li>
-            }
+              )}
             </ul>
           </section>
-        }
+        )}
       </div>
-    </Sheet>);
-
+    </Sheet>
+  );
 }

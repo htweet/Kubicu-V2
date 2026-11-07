@@ -13,18 +13,18 @@ export interface UpgradeRequest {
 interface UpgradeValue {
   openUpgrade: (req: UpgradeRequest) => void;
   /** Open plan comparison, optionally jumping to one plan and cycle. */
-  openPlans: (initial?: {plan: WorkspacePlan;cycle: BillingCycle;}) => void;
+  openPlans: (initial?: { plan: WorkspacePlan; cycle: BillingCycle }) => void;
 }
 
-type Open = {kind: 'feature';req: UpgradeRequest;} | {kind: 'plans';initial?: {plan: WorkspacePlan;cycle: BillingCycle;};} | null;
+type Open = { kind: 'feature'; req: UpgradeRequest } | { kind: 'plans'; initial?: { plan: WorkspacePlan; cycle: BillingCycle } } | null;
 
 const UpgradeContext = createContext<UpgradeValue | null>(null);
 
 /** Every upgrade button opens the same plan-change flow with billing (D65). */
-export function UpgradeProvider({ children }: {children: React.ReactNode;}) {
+export function UpgradeProvider({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState<Open>(null);
   const openUpgrade = useCallback((req: UpgradeRequest) => setOpen({ kind: 'feature', req }), []);
-  const openPlans = useCallback((initial?: {plan: WorkspacePlan;cycle: BillingCycle;}) => setOpen({ kind: 'plans', initial }), []);
+  const openPlans = useCallback((initial?: { plan: WorkspacePlan; cycle: BillingCycle }) => setOpen({ kind: 'plans', initial }), []);
   const value = useMemo(() => ({ openUpgrade, openPlans }), [openUpgrade, openPlans]);
 
   return (
@@ -35,10 +35,10 @@ export function UpgradeProvider({ children }: {children: React.ReactNode;}) {
         onClose={() => setOpen(null)}
         feature={open?.kind === 'feature' ? open.req.feature : undefined}
         minPlan={open?.kind === 'feature' ? open.req.plan : undefined}
-        initial={open?.kind === 'plans' ? open.initial : undefined} />
-      
-    </UpgradeContext.Provider>);
-
+        initial={open?.kind === 'plans' ? open.initial : undefined}
+      />
+    </UpgradeContext.Provider>
+  );
 }
 
 export function useUpgrade(): UpgradeValue {

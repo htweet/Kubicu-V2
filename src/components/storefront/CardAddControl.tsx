@@ -50,16 +50,16 @@ export function CardAddControl({ product, theme, mode, ordering, whatsappPhone, 
     return (
       <a href={href} target="_blank" rel="noreferrer" aria-label={tr('Order {name} on WhatsApp', { name })} className={`${base} ${width}`} style={secondary}>
         <MessageCircleIcon size={14} aria-hidden /> {tr('Order')}
-      </a>);
-
+      </a>
+    );
   }
 
   if (!single) {
     return (
       <button type="button" onClick={() => cart?.add(product.id)} aria-label={tr('Choose options for {name}', { name })} className={`${base} ${width}`} style={secondary}>
         {tr('Choose')}
-      </button>);
-
+      </button>
+    );
   }
   if (!canSell(product, single)) return null;
 
@@ -81,8 +81,8 @@ export function CardAddControl({ product, theme, mode, ordering, whatsappPhone, 
         <button type="button" className={stepBtn} aria-label={tr('One more {name}', { name })} disabled={qty >= max} onClick={() => cart?.setQty(single.id, qty + 1)}>
           <PlusIcon size={15} aria-hidden />
         </button>
-      </div>);
-
+      </div>
+    );
   }
 
   const primary: React.CSSProperties = mode === 'stepper' ? { ...buttonStyle(theme, 'featured'), borderRadius: radius } : added ? { ...secondary, background: mix(theme.accent, 14, theme.background) } : secondary;
@@ -96,10 +96,10 @@ export function CardAddControl({ product, theme, mode, ordering, whatsappPhone, 
         setAdded(true);
       }}
       className={`${base} ${width} disabled:opacity-50`}
-      style={primary}>
-      
+      style={primary}
+    >
       {added && mode === 'button' ? <CheckIcon size={14} aria-hidden /> : <PlusIcon size={14} aria-hidden />}
       {tr(added && mode === 'button' ? 'Added' : 'Add')}
-    </button>);
-
+    </button>
+  );
 }

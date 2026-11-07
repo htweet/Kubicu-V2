@@ -22,7 +22,7 @@ export const plans: Record<WorkspacePlan, PlanInfo> = {
     name: 'Creator',
     priceHypothesis: '₦2,500–₦4,000/month',
     intendedFor: 'Creators and solo professionals',
-    canHideBadge: true
+    canHideBadge: true,
   },
   pro: { id: 'pro', name: 'Pro', priceHypothesis: '₦6,000–₦10,000/month', intendedFor: 'Sellers and service providers', canHideBadge: true },
   business: {
@@ -30,23 +30,23 @@ export const plans: Record<WorkspacePlan, PlanInfo> = {
     name: 'Business',
     priceHypothesis: '₦15,000–₦30,000/month',
     intendedFor: 'Growing SMEs and teams',
-    canHideBadge: true
+    canHideBadge: true,
   },
   agency: {
     id: 'agency',
     name: 'Agency',
     priceHypothesis: '₦35,000–₦100,000+/month',
     intendedFor: 'Agencies and multi-brand operators',
-    canHideBadge: true
+    canHideBadge: true,
   },
-  enterprise: { id: 'enterprise', name: 'Enterprise', priceHypothesis: 'Custom', intendedFor: 'Large networks and partners', canHideBadge: true }
+  enterprise: { id: 'enterprise', name: 'Enterprise', priceHypothesis: 'Custom', intendedFor: 'Large networks and partners', canHideBadge: true },
 };
 
 export const planOrder: WorkspacePlan[] = ['free', 'creator', 'pro', 'business', 'agency', 'enterprise'];
 
 // Plan names and "intended for" lines staff can change in Super admin → Figures & names (D465).
 // Updated in place, so every screen that reads `plans[id].name` shows the new name on its next render.
-const originalText = Object.fromEntries(planOrder.map((p) => [p, { name: plans[p].name, intendedFor: plans[p].intendedFor }])) as Record<WorkspacePlan, {name: string;intendedFor: string;}>;
+const originalText = Object.fromEntries(planOrder.map((p) => [p, { name: plans[p].name, intendedFor: plans[p].intendedFor }])) as Record<WorkspacePlan, { name: string; intendedFor: string }>;
 export const originalPlanText = originalText;
 onOpsSettings(() => {
   planOrder.forEach((p) => {

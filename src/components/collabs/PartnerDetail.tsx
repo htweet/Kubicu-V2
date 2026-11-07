@@ -55,8 +55,8 @@ export function PartnerDetail({ partner: p, lines, payouts, link, canEdit, walle
       size="lg"
       title={p.name}
       description={`${p.handle ? `${p.handle} · ` : ''}${tr(platformLabels[p.platform])} · ${tr('{n}% commission', { n: p.ratePct })}`}
-      headerActions={canEdit ? <Button size="sm" variant="tertiary" leadingIcon={PencilIcon} onClick={onEdit}>{tr('Edit')}</Button> : undefined}>
-      
+      headerActions={canEdit ? <Button size="sm" variant="tertiary" leadingIcon={PencilIcon} onClick={onEdit}>{tr('Edit')}</Button> : undefined}
+    >
       <div className="flex flex-col gap-8 px-5 py-6">
         <div className="flex flex-wrap items-center gap-2">
           <Badge tone={partnerStatusTones[p.status]} dot>
@@ -66,19 +66,19 @@ export function PartnerDetail({ partner: p, lines, payouts, link, canEdit, walle
           <span className="text-caption text-fg-subtle">{tr('Invited {when}', { when: formatTimestamp(p.invitedAt) })}</span>
         </div>
 
-        {p.status === 'invited' &&
-        <InlineAlert
-          tone="info"
-          title={tr('Waiting for them to accept')}
-          action={
-          <Button size="sm" variant="secondary" onClick={onAccept} disabled={!canEdit}>
+        {p.status === 'invited' && (
+          <InlineAlert
+            tone="info"
+            title={tr('Waiting for them to accept')}
+            action={
+              <Button size="sm" variant="secondary" onClick={onAccept} disabled={!canEdit}>
                 {tr('Prototype: they accept')}
               </Button>
-          }>
-          
+            }
+          >
             {tr('Sales only count once they accept your terms. Send the invite on WhatsApp below.')}
           </InlineAlert>
-        }
+        )}
 
         <section aria-labelledby="pd-link" className="flex flex-col gap-3">
           <h3 id="pd-link" className="text-label font-semibold text-fg">
@@ -111,10 +111,10 @@ export function PartnerDetail({ partner: p, lines, payouts, link, canEdit, walle
             onChange={setMethod}
             fullWidth
             options={[
-            { value: 'wallet', label: tr('From KUBICU wallet') },
-            { value: 'outside', label: tr('I paid them myself') }]
-            } />
-          
+              { value: 'wallet', label: tr('From KUBICU wallet') },
+              { value: 'outside', label: tr('I paid them myself') },
+            ]}
+          />
           {method === 'wallet' && walletBlock && <p className="text-caption text-warning">{walletBlock}</p>}
           <Button disabled={!canEdit || payable <= 0} leadingIcon={WalletIcon} onClick={() => onPay(effective)}>
             {tr(effective === 'wallet' ? 'Pay {amount} from wallet' : 'Record {amount} as paid', { amount: formatNgn(payable) })}
@@ -126,12 +126,12 @@ export function PartnerDetail({ partner: p, lines, payouts, link, canEdit, walle
           <h3 id="pd-orders" className="text-label font-semibold text-fg">
             {tr('Orders through their link')}
           </h3>
-          {lines.length === 0 ?
-          <p className="rounded-lg border border-dashed border-line-strong px-4 py-6 text-center text-caption text-fg-muted">{tr('No orders yet. Orders placed from their link show here.')}</p> :
-
-          <ul className="divide-y divide-line rounded-lg border border-line">
-              {lines.map((l) =>
-            <li key={l.order.id} className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-4 gap-y-1 px-4 py-3">
+          {lines.length === 0 ? (
+            <p className="rounded-lg border border-dashed border-line-strong px-4 py-6 text-center text-caption text-fg-muted">{tr('No orders yet. Orders placed from their link show here.')}</p>
+          ) : (
+            <ul className="divide-y divide-line rounded-lg border border-line">
+              {lines.map((l) => (
+                <li key={l.order.id} className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-4 gap-y-1 px-4 py-3">
                   <span className="min-w-0">
                     <span className="block text-label font-medium text-fg">
                       #{l.order.number} · {l.order.customer.name}
@@ -145,49 +145,49 @@ export function PartnerDetail({ partner: p, lines, payouts, link, canEdit, walle
                     <Badge tone={stateTone[l.state]}>{tr(stateLabel[l.state])}</Badge>
                   </span>
                 </li>
-            )}
+              ))}
             </ul>
-          }
+          )}
         </section>
 
-        {payouts.length > 0 &&
-        <section aria-labelledby="pd-history" className="flex flex-col gap-3">
+        {payouts.length > 0 && (
+          <section aria-labelledby="pd-history" className="flex flex-col gap-3">
             <h3 id="pd-history" className="text-label font-semibold text-fg">
               {tr('Payments to them')}
             </h3>
             <ul className="divide-y divide-line rounded-lg border border-line">
-              {payouts.map((x) =>
-            <li key={x.id} className="flex items-center justify-between gap-4 px-4 py-3">
+              {payouts.map((x) => (
+                <li key={x.id} className="flex items-center justify-between gap-4 px-4 py-3">
                   <span className="text-caption text-fg-muted">
                     {formatTimestamp(x.at)} · {x.method === 'wallet' ? tr('From wallet') : tr('Paid outside KUBICU')} · {tr('Orders: {n}', { n: x.orderIds.length })}
                   </span>
                   <span className="text-label font-semibold tabular-nums text-fg">{formatNgn(x.amountNgn)}</span>
                 </li>
-            )}
+              ))}
             </ul>
           </section>
-        }
+        )}
 
-        {canEdit && p.status !== 'invited' &&
-        <div className="flex flex-wrap gap-2 border-t border-line pt-5">
-            {p.status === 'active' &&
-          <Button size="sm" variant="secondary" onClick={() => onStatus('paused')}>
+        {canEdit && p.status !== 'invited' && (
+          <div className="flex flex-wrap gap-2 border-t border-line pt-5">
+            {p.status === 'active' && (
+              <Button size="sm" variant="secondary" onClick={() => onStatus('paused')}>
                 {tr('Pause — new sales won’t earn')}
               </Button>
-          }
-            {p.status === 'paused' &&
-          <Button size="sm" variant="secondary" onClick={() => onStatus('active')}>
+            )}
+            {p.status === 'paused' && (
+              <Button size="sm" variant="secondary" onClick={() => onStatus('active')}>
                 {tr('Resume')}
               </Button>
-          }
-            {p.status !== 'ended' &&
-          <Button size="sm" variant="destructive" onClick={() => onStatus('ended')}>
+            )}
+            {p.status !== 'ended' && (
+              <Button size="sm" variant="destructive" onClick={() => onStatus('ended')}>
                 {tr('End partnership')}
               </Button>
-          }
+            )}
           </div>
-        }
+        )}
       </div>
-    </Sheet>);
-
+    </Sheet>
+  );
 }

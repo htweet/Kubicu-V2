@@ -51,7 +51,7 @@ export interface AssistantChip {
   value: string;
   label: string;
   /** Feel chips show a small swatch of the theme they lead to. */
-  swatch?: {background: string;accent: string;text: string;};
+  swatch?: { background: string; accent: string; text: string };
 }
 
 export interface AssistantQuestion {
@@ -126,7 +126,7 @@ export interface PlanUnit {
 export interface AssistantPlan {
   source: PlanSource;
   /** Other starters worth offering ("Prefer something else?"). */
-  alternatives: {id: string;name: string;}[];
+  alternatives: { id: string; name: string }[];
   units: PlanUnit[];
   theme: PageTheme;
   themeName: string;
@@ -163,7 +163,7 @@ export interface AssistantSession {
   savedTemplateId?: string;
   created?: AssistantCreated;
   /** The page as it was before the build, so "Remove everything" can put it back. */
-  before?: {blocks: Block[];theme: PageTheme;};
+  before?: { blocks: Block[]; theme: PageTheme };
   /** Changes asked for after the build. */
   changes?: AssistantChange[];
   /** A section tapped in the preview, so "this" in the next message means it. */
@@ -175,10 +175,10 @@ export interface AssistantSession {
 }
 
 export type AssistantInput =
-{kind: 'text';text: string;} |
-{kind: 'choice';value: string;label: string;} |
-{kind: 'images';items: AssistantImage[];} |
-{kind: 'skip';} |
-{kind: 'approve';} |
-{kind: 'change';} |
-{kind: 'alternative';exampleId: string;};
+  | { kind: 'text'; text: string }
+  | { kind: 'choice'; value: string; label: string }
+  | { kind: 'images'; items: AssistantImage[] }
+  | { kind: 'skip' }
+  | { kind: 'approve' }
+  | { kind: 'change' }
+  | { kind: 'alternative'; exampleId: string };

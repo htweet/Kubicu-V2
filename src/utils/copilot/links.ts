@@ -21,7 +21,7 @@ export function previewHref(draftId: string): string {
 }
 
 type Translate = (key: string, vars?: Record<string, string | number>) => string;
-const plain: Translate = (key, vars) => vars ? key.replace(/\{(\w+)\}/g, (_, k: string) => String(vars[k] ?? '')) : key;
+const plain: Translate = (key, vars) => (vars ? key.replace(/\{(\w+)\}/g, (_, k: string) => String(vars[k] ?? '')) : key);
 
 /** "Expires in 6 days", "Expires within a day". Pass the translator to get it in the chosen language (D339). */
 export function expiryLabel(d: CopilotDraft, now = Date.now(), t: Translate = plain): string {

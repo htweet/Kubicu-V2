@@ -27,10 +27,10 @@ export function AudienceBreakdown({ id, title, caption, rows, note }: Props) {
   const { t } = useT();
   return (
     <Section id={id} title={title} className="gap-3">
-      {rows.length === 0 ?
-      <p className="text-label text-fg-muted">{t('No visits in this period.')}</p> :
-
-      <table className="w-full text-label">
+      {rows.length === 0 ? (
+        <p className="text-label text-fg-muted">{t('No visits in this period.')}</p>
+      ) : (
+        <table className="w-full text-label">
           <caption className="sr-only">{t(caption)}</caption>
           <thead>
             <tr className="border-b border-line text-caption text-fg-subtle">
@@ -46,8 +46,8 @@ export function AudienceBreakdown({ id, title, caption, rows, note }: Props) {
             </tr>
           </thead>
           <tbody>
-            {rows.map((r) =>
-          <tr key={r.id} className="border-b border-line">
+            {rows.map((r) => (
+              <tr key={r.id} className="border-b border-line">
                 <td className="py-2.5 pr-4">
                   <span className="flex items-baseline justify-between gap-2">
                     <span className="text-fg">{t(r.label)}</span>
@@ -62,11 +62,11 @@ export function AudienceBreakdown({ id, title, caption, rows, note }: Props) {
                   {r.conversions} <span className="text-caption">({pct(r.rate)})</span>
                 </td>
               </tr>
-          )}
+            ))}
           </tbody>
         </table>
-      }
+      )}
       <p className="text-caption text-fg-subtle">{t(note)}</p>
-    </Section>);
-
+    </Section>
+  );
 }

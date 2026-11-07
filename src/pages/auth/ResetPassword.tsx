@@ -27,22 +27,22 @@ export function ResetPassword() {
             If an account exists for <span className="font-semibold text-fg">{email.trim()}</span>, we’ve sent a link to reset your password. It expires in 30 minutes. Check spam if it doesn’t arrive.
           </p>
         </div>
-      </AuthLayout>);
-
+      </AuthLayout>
+    );
   }
 
   return (
     <AuthLayout
       title="Reset your password"
       description="Enter your email and we’ll send you a reset link."
-      footer={<Link to="/signin" className="font-semibold text-action hover:underline">Back to sign in</Link>}>
-      
+      footer={<Link to="/signin" className="font-semibold text-action hover:underline">Back to sign in</Link>}
+    >
       <form onSubmit={submit} noValidate className="flex flex-col gap-4">
         <TextInput id="rp-email" label="Email" type="email" inputMode="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} error={submitted ? error || undefined : undefined} />
         <Button type="submit" variant="brand" size="lg" fullWidth>
           Send reset link
         </Button>
       </form>
-    </AuthLayout>);
-
+    </AuthLayout>
+  );
 }

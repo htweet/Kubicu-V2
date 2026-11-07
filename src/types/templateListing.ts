@@ -82,6 +82,6 @@ export interface TemplateStore {
   sales: TemplateSale[];
   payouts: TemplatePayout[];
   /** Payout account per selling workspace. */
-  accounts: Record<string, {bankName: string;accountNumber: string;accountName: string;}>;
+  accounts: Record<string, { bankName: string; accountNumber: string; accountName: string }>;
   seeded: boolean;
 }

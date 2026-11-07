@@ -8,23 +8,23 @@ const esc = (v: string) => v.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&
  * Printable packing slips for one pop-up session (D191): one slip per order with the buyer, what to
  * pack, what to collect at the stall and a tick box. Three slips per A4 page, cut along the dashes.
  */
-export function pickupSlipsHtml(opts: {shop: string;venue: string;sessionWhen: string;orders: Order[];}): string {
+export function pickupSlipsHtml(opts: { shop: string; venue: string; sessionWhen: string; orders: Order[] }): string {
   const { shop, venue, sessionWhen, orders } = opts;
-  const slips = orders.
-  map((o) => {
-    const owe = o.popup?.payAtStall && o.paymentStatus === 'pending';
-    const total = o.subtotalNgn - o.discountNgn;
-    const items = o.items.
-    map((i) => `<tr><td class="q">${i.qty}×</td><td>${esc(i.name)}${i.variantLabel ? ` <span class="m">(${esc(i.variantLabel)})</span>` : ''}</td><td class="box"></td></tr>`).
-    join('');
-    return `<section class="slip">
+  const slips = orders
+    .map((o) => {
+      const owe = o.popup?.payAtStall && o.paymentStatus === 'pending';
+      const total = o.subtotalNgn - o.discountNgn;
+      const items = o.items
+        .map((i) => `<tr><td class="q">${i.qty}×</td><td>${esc(i.name)}${i.variantLabel ? ` <span class="m">(${esc(i.variantLabel)})</span>` : ''}</td><td class="box"></td></tr>`)
+        .join('');
+      return `<section class="slip">
   <header><div><p class="m">${esc(shop)} · ${esc(venue)}</p><h2>Order ${esc(orderRef(o))}</h2></div><p class="when">${esc(sessionWhen)}</p></header>
   <p class="who"><strong>${esc(o.customer.name || 'Customer')}</strong>${o.customer.phone ? ` · ${esc(o.customer.phone)}` : ''}</p>
   <table><thead><tr><th>Qty</th><th>Item</th><th>Packed</th></tr></thead><tbody>${items}</tbody></table>
   <footer><p class="pay">${owe ? `Collect <strong>${esc(formatNgn(total))}</strong> at the stall` : `Paid online · ${esc(formatNgn(total))}`}</p><p class="m">Handed over ☐ &nbsp; Signature ____________</p></footer>
 </section>`;
-  }).
-  join('');
+    })
+    .join('');
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Pickup slips — ${esc(sessionWhen)}</title>
 <style>
 @page{size:A4;margin:10mm}

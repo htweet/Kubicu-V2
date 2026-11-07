@@ -10,10 +10,10 @@ import { cn } from '../../utils/cn';
 import { useOptionalMedia } from '../../contexts/MediaContext';
 import { resolveMediaSrc } from '../../utils/media/refs';
 
-const config: Record<KitImage, {maxPx: number;knockout: boolean;jpeg: boolean;label: string;hint: string;}> = {
+const config: Record<KitImage, { maxPx: number; knockout: boolean; jpeg: boolean; label: string; hint: string }> = {
   logo: { maxPx: 700, knockout: true, jpeg: false, label: 'Logo', hint: 'PNG with a clear background works best. Without one we use your initials.' },
   photo: { maxPx: 1800, knockout: false, jpeg: true, label: 'Photo', hint: 'A bright product or work photo. Used by the Photo design, inserts and flyers. Crop and tone it below.' },
-  signature: { maxPx: 800, knockout: true, jpeg: false, label: 'Signature', hint: 'Sign on plain white paper and take a photo, or draw it here.' }
+  signature: { maxPx: 800, knockout: true, jpeg: false, label: 'Signature', hint: 'Sign on plain white paper and take a photo, or draw it here.' },
 };
 
 interface KitImageFieldProps {
@@ -84,60 +84,60 @@ export function KitImageField({ kind, value, disabled, onChange }: KitImageField
         </label>
         <span className="text-caption text-fg-subtle">Optional</span>
       </div>
-      {drawing ?
-      <SignaturePad
-        onCancel={() => setDrawing(false)}
-        onSave={(url, w) => {
-          original.current = null;
-          onChange(url, w);
-          setDrawing(false);
-        }} /> :
-
-
-      <div className="flex items-center gap-3">
+      {drawing ? (
+        <SignaturePad
+          onCancel={() => setDrawing(false)}
+          onSave={(url, w) => {
+            original.current = null;
+            onChange(url, w);
+            setDrawing(false);
+          }}
+        />
+      ) : (
+        <div className="flex items-center gap-3">
           <div
-          className={cn('flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-md border border-line', value ? 'bg-white' : 'bg-sunken')}
-          style={value && kind !== 'photo' ? { backgroundImage: 'conic-gradient(#e5e5e5 25%, #fff 0 50%, #e5e5e5 0 75%, #fff 0)', backgroundSize: '10px 10px' } : undefined}>
-          
+            className={cn('flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-md border border-line', value ? 'bg-white' : 'bg-sunken')}
+            style={value && kind !== 'photo' ? { backgroundImage: 'conic-gradient(#e5e5e5 25%, #fff 0 50%, #e5e5e5 0 75%, #fff 0)', backgroundSize: '10px 10px' } : undefined}
+          >
             {value ? <img src={value} alt={`${c.label} preview`} className={cn('h-full w-full', kind === 'photo' ? 'object-cover' : 'object-contain p-1')} /> : <ImagePlusIcon size={18} className="text-fg-subtle" aria-hidden />}
           </div>
           <div className="flex min-w-0 flex-1 flex-wrap gap-2">
-            {useLibrary ?
-          <Button id={id} size="sm" variant="secondary" leadingIcon={value ? RefreshCwIcon : ImagesIcon} loading={busy} disabled={disabled} onClick={() => setLibraryOpen(true)}>
+            {useLibrary ? (
+              <Button id={id} size="sm" variant="secondary" leadingIcon={value ? RefreshCwIcon : ImagesIcon} loading={busy} disabled={disabled} onClick={() => setLibraryOpen(true)}>
                 {value ? 'Change' : 'Choose image'}
-              </Button> :
-
-          <>
+              </Button>
+            ) : (
+              <>
                 <input ref={input} id={id} type="file" accept="image/png,image/jpeg,image/webp" className="sr-only" disabled={disabled || busy} onChange={(e) => onFile(e.target.files?.[0])} />
                 <Button size="sm" variant="secondary" leadingIcon={value ? RefreshCwIcon : ImagePlusIcon} loading={busy} disabled={disabled} onClick={() => input.current?.click()}>
                   {value ? 'Replace' : 'Upload'}
                 </Button>
               </>
-          }
-            {kind === 'signature' &&
-          <Button size="sm" variant="tertiary" leadingIcon={PenLineIcon} disabled={disabled} onClick={() => setDrawing(true)}>
+            )}
+            {kind === 'signature' && (
+              <Button size="sm" variant="tertiary" leadingIcon={PenLineIcon} disabled={disabled} onClick={() => setDrawing(true)}>
                 Draw
               </Button>
-          }
-            {value &&
-          <Button size="sm" variant="tertiary" leadingIcon={Trash2Icon} disabled={disabled} onClick={() => {original.current = null;onChange(null);}}>
+            )}
+            {value && (
+              <Button size="sm" variant="tertiary" leadingIcon={Trash2Icon} disabled={disabled} onClick={() => { original.current = null; onChange(null); }}>
                 Remove
               </Button>
-          }
+            )}
           </div>
         </div>
-      }
-      {!drawing && kind !== 'photo' &&
-      <label className="flex cursor-pointer items-center gap-2 text-caption text-fg-muted">
+      )}
+      {!drawing && kind !== 'photo' && (
+        <label className="flex cursor-pointer items-center gap-2 text-caption text-fg-muted">
           <input type="checkbox" className="h-4 w-4 accent-[rgb(var(--action))]" checked={knockout} disabled={disabled} onChange={(e) => toggleKnockout(e.target.checked)} />
           Remove white background{original.current ? '' : value ? ' (applies to the next upload)' : ''}
         </label>
-      }
+      )}
       <p className="text-caption text-fg-subtle">
         {c.hint}
         {useLibrary ? ` Pick from Media or upload a new one — uploads are saved to Media${kind === 'logo' ? ' → Brand assets' : ''}.` : ''}
       </p>
       {useLibrary && <MediaLibraryDialog open={libraryOpen} onClose={() => setLibraryOpen(false)} shapeLabel={kind === 'logo' ? 'logo' : 'photo'} folder={kind === 'logo' ? 'brand' : undefined} onPick={(r) => void onPick(r)} />}
-    </div>);
-
+    </div>
+  );
 }

@@ -55,11 +55,11 @@ export function FormSettingsTab({ form, onChange, disabled }: FormSettingsTabPro
       <Group title="Privacy" text="Shown above the Send button. Keep it honest and short." last>
         <TextArea id="fs-privacy" label="Privacy note" rows={2} value={s.privacyNote} maxLength={240} onChange={(e) => set({ privacyNote: e.target.value })} />
       </Group>
-    </fieldset>);
-
+    </fieldset>
+  );
 }
 
-function Group({ title, text, children, last }: {title: string;text: string;children: React.ReactNode;last?: boolean;}) {
+function Group({ title, text, children, last }: { title: string; text: string; children: React.ReactNode; last?: boolean }) {
   const { t } = useT();
   title = t(title);
   text = t(text);
@@ -70,6 +70,6 @@ function Group({ title, text, children, last }: {title: string;text: string;chil
         <p className="mt-1 text-caption text-fg-muted">{text}</p>
       </div>
       <div className="flex flex-col gap-4">{children}</div>
-    </section>);
-
+    </section>
+  );
 }

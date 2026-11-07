@@ -22,7 +22,7 @@ function normPhone(s: string) {
 
 export function matchContact(contacts: Contact[], input: ContactInput): Contact | undefined {
   return contacts.find(
-    (c) => input.email && norm(c.email) === norm(input.email) || input.phone && normPhone(input.phone).length >= 7 && normPhone(c.phone) === normPhone(input.phone)
+    (c) => (input.email && norm(c.email) === norm(input.email)) || (input.phone && normPhone(input.phone).length >= 7 && normPhone(c.phone) === normPhone(input.phone)),
   );
 }
 
@@ -31,12 +31,12 @@ export function matchContact(contacts: Contact[], input: ContactInput): Contact 
  * moves toward “subscribed” when the person ticked it; it never overrides an opt-out.
  */
 export function upsertContact(
-data: OpsData,
-input: ContactInput,
-source: ContactSource,
-label: string,
-opts: {linkedId?: string;consent?: ConsentStatus;at?: string;attribution?: Omit<ContactAttribution, 'at'>;consentWording?: string;} = {})
-: OpsData {
+  data: OpsData,
+  input: ContactInput,
+  source: ContactSource,
+  label: string,
+  opts: { linkedId?: string; consent?: ConsentStatus; at?: string; attribution?: Omit<ContactAttribution, 'at'>; consentWording?: string } = {},
+): OpsData {
   const at = opts.at ?? now();
   const attribution = opts.attribution ? { ...opts.attribution, at } : undefined;
   const consentRecord = opts.consent === 'subscribed' ? { at, wording: opts.consentWording?.trim() || label } : undefined;
@@ -56,12 +56,12 @@ opts: {linkedId?: string;consent?: ConsentStatus;at?: string;attribution?: Omit<
       consent,
       linked: opts.linkedId ? [...existing.linked, opts.linkedId] : existing.linked,
       activity: [
-      { id: uid('act'), at, kind: source, label },
-      ...(consent !== existing.consent ? [{ id: uid('act'), at, kind: 'consent' as const, label: 'Subscribed to updates' }] : []),
-      ...existing.activity]
-
+        { id: uid('act'), at, kind: source, label },
+        ...(consent !== existing.consent ? [{ id: uid('act'), at, kind: 'consent' as const, label: 'Subscribed to updates' }] : []),
+        ...existing.activity,
+      ],
     };
-    return { ...data, contacts: data.contacts.map((c) => c.id === existing.id ? updated : c) };
+    return { ...data, contacts: data.contacts.map((c) => (c.id === existing.id ? updated : c)) };
   }
   const contact: Contact = {
     id: uid('ct'),
@@ -78,17 +78,17 @@ opts: {linkedId?: string;consent?: ConsentStatus;at?: string;attribution?: Omit<
     linked: opts.linkedId ? [opts.linkedId] : [],
     createdAt: at,
     attribution,
-    consentRecord: (opts.consent ?? 'transactional') === 'subscribed' ? consentRecord : undefined
+    consentRecord: (opts.consent ?? 'transactional') === 'subscribed' ? consentRecord : undefined,
   };
   return { ...data, contacts: [contact, ...data.contacts] };
 }
 
-export function patchContact(data: OpsData, id: string, patch: Partial<Contact>, activity?: {kind: Contact['activity'][number]['kind'];label: string;}): OpsData {
+export function patchContact(data: OpsData, id: string, patch: Partial<Contact>, activity?: { kind: Contact['activity'][number]['kind']; label: string }): OpsData {
   return {
     ...data,
     contacts: data.contacts.map((c) =>
-    c.id === id ? { ...c, ...patch, activity: activity ? [{ id: uid('act'), at: now(), ...activity }, ...(patch.activity ?? c.activity)] : patch.activity ?? c.activity } : c
-    )
+      c.id === id ? { ...c, ...patch, activity: activity ? [{ id: uid('act'), at: now(), ...activity }, ...(patch.activity ?? c.activity)] : patch.activity ?? c.activity } : c,
+    ),
   };
 }
 
@@ -125,9 +125,9 @@ export function mergeContacts(data: OpsData, keepId: string, dropId: string): Op
     linked: Array.from(new Set([...keep.linked, ...drop.linked])),
     consent,
     activity: [{ id: uid('act'), at: now(), kind: 'merge', label: `Merged with duplicate “${drop.name}”` }, ...keep.activity, ...drop.activity].sort((a, b) => Date.parse(b.at) - Date.parse(a.at)),
-    createdAt: Date.parse(drop.createdAt) < Date.parse(keep.createdAt) ? drop.createdAt : keep.createdAt
+    createdAt: Date.parse(drop.createdAt) < Date.parse(keep.createdAt) ? drop.createdAt : keep.createdAt,
   };
-  return { ...data, contacts: data.contacts.filter((c) => c.id !== dropId).map((c) => c.id === keepId ? merged : c) };
+  return { ...data, contacts: data.contacts.filter((c) => c.id !== dropId).map((c) => (c.id === keepId ? merged : c)) };
 }
 
 // ——— Bookings ———
@@ -135,7 +135,7 @@ export function mergeContacts(data: OpsData, keepId: string, dropId: string): Op
 export interface BookingInput {
   service: Service;
   start: number;
-  customer: {name: string;phone: string;email: string;};
+  customer: { name: string; phone: string; email: string };
   intake: string;
   depositOutcome: 'paid' | 'failed' | 'none';
   customerTimeZone: string;
@@ -145,10 +145,10 @@ export interface BookingInput {
   /** The page or space handle the booking sheet was opened on (D191). */
   sourceHandle?: string;
   /** Answers to the service's own questions (D256). */
-  answers?: {question: string;answer: string;}[];
+  answers?: { question: string; answer: string }[];
 }
 
-export type BookingResult = {ok: true;data: OpsData;booking: Booking;} | {ok: false;reason: 'taken' | 'failed';message: string;};
+export type BookingResult = { ok: true; data: OpsData; booking: Booking } | { ok: false; reason: 'taken' | 'failed'; message: string };
 
 export function createBooking(data: OpsData, input: BookingInput): BookingResult {
   const slot = findSlot(input.start, input.service, data.availability, data.bookings, undefined, input.staffId);
@@ -182,19 +182,19 @@ export function createBooking(data: OpsData, input: BookingInput): BookingResult
     assigneeId: assigneeId ?? undefined,
     sourceHandle: input.sourceHandle || undefined,
     events: [
-    ...(input.depositOutcome === 'paid' ? [{ id: uid('bev'), at, label: `Deposit paid (test mode)` }] : []),
-    {
-      id: uid('bev'),
-      at,
-      label: request ?
-      `Requested on your page${assigneeName ? ` with ${assigneeName}` : ''} — waiting for you to accept` :
-      slot.capacity ?
-      `Booked a seat on your page — seat ${slot.capacity - (slot.seatsLeft ?? 1) + 1} of ${slot.capacity}` :
-      assigneeName ?
-      `Booked on your page with ${assigneeName}${input.staffId ? '' : ' (anyone available)'}` :
-      'Booked on your page'
-    }]
-
+      ...(input.depositOutcome === 'paid' ? [{ id: uid('bev'), at, label: `Deposit paid (test mode)` }] : []),
+      {
+        id: uid('bev'),
+        at,
+        label: request
+          ? `Requested on your page${assigneeName ? ` with ${assigneeName}` : ''} — waiting for you to accept`
+          : slot.capacity
+          ? `Booked a seat on your page — seat ${slot.capacity - (slot.seatsLeft ?? 1) + 1} of ${slot.capacity}`
+          : assigneeName
+            ? `Booked on your page with ${assigneeName}${input.staffId ? '' : ' (anyone available)'}`
+            : 'Booked on your page',
+      },
+    ],
   };
   // Online services with a connected video app get their meeting link now (D225) — requests get theirs once accepted.
   const withMeeting = request ? booking : attachMeeting(booking, input.service, data.availability);
@@ -203,7 +203,7 @@ export function createBooking(data: OpsData, input: BookingInput): BookingResult
   return { ok: true, data: next, booking: withMeeting };
 }
 
-export function rescheduleBooking(data: OpsData, bookingId: string, start: number, service: Service, by: 'customer' | 'owner'): {ok: boolean;data: OpsData;message?: string;} {
+export function rescheduleBooking(data: OpsData, bookingId: string, start: number, service: Service, by: 'customer' | 'owner'): { ok: boolean; data: OpsData; message?: string } {
   const b = data.bookings.find((x) => x.id === bookingId);
   if (!b) return { ok: false, data, message: 'Booking not found' };
   const slot = findSlot(start, service, data.availability, data.bookings, bookingId);
@@ -222,9 +222,9 @@ export function rescheduleBooking(data: OpsData, bookingId: string, start: numbe
     assigneeId,
     start: new Date(start).toISOString(),
     end: new Date(start + service.durationMin * 60000).toISOString(),
-    events: [{ id: uid('bev'), at: now(), label: `Rescheduled by ${by === 'customer' ? 'customer' : 'you'}${moved}` }, ...b.events]
+    events: [{ id: uid('bev'), at: now(), label: `Rescheduled by ${by === 'customer' ? 'customer' : 'you'}${moved}` }, ...b.events],
   };
-  return { ok: true, data: { ...data, bookings: data.bookings.map((x) => x.id === bookingId ? updated : x) } };
+  return { ok: true, data: { ...data, bookings: data.bookings.map((x) => (x.id === bookingId ? updated : x)) } };
 }
 
 /** Within the free-cancellation window the deposit is refunded; after it, it’s kept. */
@@ -236,14 +236,14 @@ export function cancelBooking(data: OpsData, bookingId: string, by: 'customer' |
       const inWindow = Date.parse(b.start) - Date.now() >= data.availability.cancelHours * 3600000;
       // A request that was never accepted (D256) always gets its deposit back.
       const refund = b.depositPaidNgn > 0 && (inWindow || by === 'owner' || b.status === 'requested');
-      const label = `Cancelled by ${by === 'customer' ? 'customer' : 'you'}${reason ? ` — ${reason}` : ''}${b.depositPaidNgn ? refund ? ' · deposit refunded' : ' · deposit kept under policy' : ''}`;
+      const label = `Cancelled by ${by === 'customer' ? 'customer' : 'you'}${reason ? ` — ${reason}` : ''}${b.depositPaidNgn ? (refund ? ' · deposit refunded' : ' · deposit kept under policy') : ''}`;
       return { ...b, status: 'cancelled' as const, events: [{ id: uid('bev'), at: now(), label }, ...b.events] };
-    })
+    }),
   };
 }
 
 /** Cancels a whole group class time (D198): every attendee is cancelled by you, so every deposit is refunded. */
-export function cancelClass(data: OpsData, serviceId: string, start: number, reason: string): {data: OpsData;cancelled: number;refundedNgn: number;} {
+export function cancelClass(data: OpsData, serviceId: string, start: number, reason: string): { data: OpsData; cancelled: number; refundedNgn: number } {
   const ids = activeBookingsFor(data, serviceId, start);
   let next = data;
   ids.forEach((b) => {
@@ -265,7 +265,7 @@ export function acceptBooking(data: OpsData, bookingId: string): OpsData {
       const accepted: Booking = { ...b, status: 'confirmed', events: [{ id: uid('bev'), at: now(), label: 'Accepted by you' }, ...b.events] };
       const service = data.services.find((s) => s.id === b.serviceId);
       return service ? attachMeeting(accepted, service, data.availability) : accepted;
-    })
+    }),
   };
 }
 
@@ -277,7 +277,7 @@ export function declineBooking(data: OpsData, bookingId: string, reason: string)
       if (b.id !== bookingId || b.status !== 'requested') return b;
       const label = `Declined by you${reason ? ` — ${reason}` : ''}${b.depositPaidNgn ? ' · deposit refunded in full' : ''}`;
       return { ...b, status: 'cancelled' as const, events: [{ id: uid('bev'), at: now(), label }, ...b.events] };
-    })
+    }),
   };
 }
 
@@ -311,7 +311,7 @@ export function autoDeclineDue(data: OpsData, at = Date.now()): OpsData {
 }
 
 export function setBookingStatus(data: OpsData, bookingId: string, status: BookingStatus, label: string): OpsData {
-  return { ...data, bookings: data.bookings.map((b) => b.id === bookingId ? { ...b, status, events: [{ id: uid('bev'), at: now(), label }, ...b.events] } : b) };
+  return { ...data, bookings: data.bookings.map((b) => (b.id === bookingId ? { ...b, status, events: [{ id: uid('bev'), at: now(), label }, ...b.events] } : b)) };
 }
 
 export function clearOpsSample(data: OpsData): OpsData {
@@ -320,6 +320,6 @@ export function clearOpsSample(data: OpsData): OpsData {
     services: data.services.filter((s) => !s.sample),
     bookings: data.bookings.filter((b) => !b.sample),
     contacts: data.contacts.filter((c) => !c.sample),
-    automations: data.automations.filter((a) => !a.sample)
+    automations: data.automations.filter((a) => !a.sample),
   };
 }

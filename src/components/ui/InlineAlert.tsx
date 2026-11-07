@@ -9,7 +9,7 @@ const config = {
   info: { icon: InfoIcon, cls: 'bg-info-soft text-info' },
   success: { icon: CheckCircle2Icon, cls: 'bg-success-soft text-success' },
   warning: { icon: AlertTriangleIcon, cls: 'bg-warning-soft text-warning' },
-  danger: { icon: XCircleIcon, cls: 'bg-danger-soft text-danger' }
+  danger: { icon: XCircleIcon, cls: 'bg-danger-soft text-danger' },
 };
 
 interface InlineAlertProps {
@@ -33,6 +33,6 @@ export function InlineAlert({ tone = 'info', title, children, action, className 
         {children && <div className="mt-0.5 text-caption text-fg-muted">{children}</div>}
         {action && <div className="mt-2">{action}</div>}
       </div>
-    </div>);
-
+    </div>
+  );
 }

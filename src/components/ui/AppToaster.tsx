@@ -19,15 +19,15 @@ export function AppToaster() {
           borderRadius: '10px',
           boxShadow: 'var(--shadow-3)',
           fontFamily: 'Inter, system-ui, sans-serif',
-          fontSize: '13px'
+          fontSize: '13px',
         },
         actionButtonStyle: {
           background: 'rgb(var(--action))',
           color: 'rgb(var(--on-action))',
           borderRadius: '6px',
-          fontWeight: 600
-        }
-      }} />);
-
-
+          fontWeight: 600,
+        },
+      }}
+    />
+  );
 }

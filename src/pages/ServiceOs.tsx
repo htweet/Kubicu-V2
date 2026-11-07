@@ -19,7 +19,7 @@ import { InvoiceDetail } from '../components/serviceOs/InvoiceDetail';
 import { JobDetail } from '../components/serviceOs/JobDetail';
 
 type Tab = 'quotes' | 'invoices' | 'jobs' | 'settings';
-type Open = {kind: 'quote' | 'invoice' | 'job';id: string;} | null;
+type Open = { kind: 'quote' | 'invoice' | 'job'; id: string } | null;
 
 const rowCls = 'flex w-full items-center gap-4 px-4 py-3.5 text-left transition-colors duration-150 hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus';
 
@@ -62,11 +62,11 @@ export function ServiceOs() {
         context={current.name}
         description="Send a quote your client accepts from a link, invoice the deposit and balance, and track the work until it’s done."
         actions={
-        <Button leadingIcon={PlusIcon} disabled={!can.allowed} title={can.allowed ? undefined : can.reason} onClick={create}>
+          <Button leadingIcon={PlusIcon} disabled={!can.allowed} title={can.allowed ? undefined : can.reason} onClick={create}>
             New quote
           </Button>
-        } />
-      
+        }
+      />
 
       <section aria-label="Summary" className="mt-8 grid gap-6 border-b border-line pb-8 sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)]">
         <div>
@@ -93,23 +93,23 @@ export function ServiceOs() {
         onChange={setTab}
         className="mt-6"
         items={[
-        { id: 'quotes', label: 'Quotes', badge: waitingQuotes.length || undefined },
-        { id: 'invoices', label: 'Invoices', badge: overdue || undefined },
-        { id: 'jobs', label: 'Jobs' },
-        { id: 'settings', label: 'Settings' }]
-        } />
-      
+          { id: 'quotes', label: 'Quotes', badge: waitingQuotes.length || undefined },
+          { id: 'invoices', label: 'Invoices', badge: overdue || undefined },
+          { id: 'jobs', label: 'Jobs' },
+          { id: 'settings', label: 'Settings' },
+        ]}
+      />
 
       <div role="tabpanel" id={`sos-panel-${tab}`} aria-labelledby={`sos-tab-${tab}`} className="mt-4">
-        {tab === 'quotes' && (
-        data.quotes.length === 0 ?
-        <EmptyState icon={FileTextIcon} title="No quotes yet" description="Price up a job, send the link, and your client accepts it in one tap." /> :
-
-        <ul className="divide-y divide-line rounded-lg border border-line bg-raised">
+        {tab === 'quotes' &&
+          (data.quotes.length === 0 ? (
+            <EmptyState icon={FileTextIcon} title="No quotes yet" description="Price up a job, send the link, and your client accepts it in one tap." />
+          ) : (
+            <ul className="divide-y divide-line rounded-lg border border-line bg-raised">
               {data.quotes.map((q) => {
-            const v = quoteView(q);
-            return (
-              <li key={q.id}>
+                const v = quoteView(q);
+                return (
+                  <li key={q.id}>
                     <button type="button" onClick={() => setOpen({ kind: 'quote', id: q.id })} className={rowCls}>
                       <span className="min-w-0 flex-1">
                         <span className="flex flex-wrap items-center gap-2">
@@ -125,21 +125,21 @@ export function ServiceOs() {
                         {quoteLabels[v]}
                       </Badge>
                     </button>
-                  </li>);
+                  </li>
+                );
+              })}
+            </ul>
+          ))}
 
-          })}
-            </ul>)
-        }
-
-        {tab === 'invoices' && (
-        data.invoices.length === 0 ?
-        <EmptyState icon={ReceiptIcon} title="No invoices yet" description="Open an accepted quote to invoice the deposit or the full amount." /> :
-
-        <ul className="divide-y divide-line rounded-lg border border-line bg-raised">
+        {tab === 'invoices' &&
+          (data.invoices.length === 0 ? (
+            <EmptyState icon={ReceiptIcon} title="No invoices yet" description="Open an accepted quote to invoice the deposit or the full amount." />
+          ) : (
+            <ul className="divide-y divide-line rounded-lg border border-line bg-raised">
               {data.invoices.map((inv) => {
-            const v = invoiceView(inv);
-            return (
-              <li key={inv.id}>
+                const v = invoiceView(inv);
+                return (
+                  <li key={inv.id}>
                     <button type="button" onClick={() => setOpen({ kind: 'invoice', id: inv.id })} className={rowCls}>
                       <span className="min-w-0 flex-1">
                         <span className="flex flex-wrap items-center gap-2">
@@ -160,21 +160,21 @@ export function ServiceOs() {
                         {invoiceLabels[v]}
                       </Badge>
                     </button>
-                  </li>);
+                  </li>
+                );
+              })}
+            </ul>
+          ))}
 
-          })}
-            </ul>)
-        }
-
-        {tab === 'jobs' && (
-        jobs.length === 0 ?
-        <EmptyState icon={BriefcaseIcon} title="No jobs yet" description="Start a job from an accepted quote to track its steps and updates." /> :
-
-        <ul className="divide-y divide-line rounded-lg border border-line bg-raised">
+        {tab === 'jobs' &&
+          (jobs.length === 0 ? (
+            <EmptyState icon={BriefcaseIcon} title="No jobs yet" description="Start a job from an accepted quote to track its steps and updates." />
+          ) : (
+            <ul className="divide-y divide-line rounded-lg border border-line bg-raised">
               {jobs.map((j) => {
-            const done = j.checklist.filter((c) => c.done).length;
-            return (
-              <li key={j.id}>
+                const done = j.checklist.filter((c) => c.done).length;
+                return (
+                  <li key={j.id}>
                     <button type="button" onClick={() => setOpen({ kind: 'job', id: j.id })} className={rowCls}>
                       <span className="min-w-0 flex-1">
                         <span className="flex flex-wrap items-center gap-2">
@@ -190,11 +190,11 @@ export function ServiceOs() {
                         {jobLabels[j.status]}
                       </Badge>
                     </button>
-                  </li>);
-
-          })}
-            </ul>)
-        }
+                  </li>
+                );
+              })}
+            </ul>
+          ))}
 
         {tab === 'settings' && <ServiceOsSettingsPanel data={data} tax={tax} canEdit={can.allowed} update={update} />}
       </div>
@@ -208,10 +208,10 @@ export function ServiceOs() {
         onClose={() => setOpen(null)}
         onOpenInvoice={(id) => (setTab('invoices'), setOpen({ kind: 'invoice', id }))}
         onOpenJob={(id) => (setTab('jobs'), setOpen({ kind: 'job', id }))}
-        vatRate={vatRate} />
-      
+        vatRate={vatRate}
+      />
       <InvoiceDetail invoice={invoice} businessName={current.name} canEdit={can.allowed} update={update} onClose={() => setOpen(null)} onOpenQuote={(id) => (setTab('quotes'), setOpen({ kind: 'quote', id }))} />
       <JobDetail job={job} data={data} onOpenInvoice={(id) => (setTab('invoices'), setOpen({ kind: 'invoice', id }))} businessName={current.name} canEdit={can.allowed} update={update} onClose={() => setOpen(null)} onOpenQuote={(id) => (setTab('quotes'), setOpen({ kind: 'quote', id }))} />
-    </div>);
-
+    </div>
+  );
 }

@@ -56,7 +56,7 @@ export function CopilotPreview() {
   const copy = () => {
     navigator.clipboard?.writeText(previewHref(draft.id)).then(
       () => toast.success('Preview link copied', { description: 'Anyone with it can look. Only your chat can continue the draft.' }),
-      () => toast.error('Couldn’t copy the link')
+      () => toast.error('Couldn’t copy the link'),
     );
   };
 
@@ -74,69 +74,69 @@ export function CopilotPreview() {
                 {' '}· <ClockIcon size={12} className="inline -translate-y-px" aria-hidden /> {expiryLabel(draft)}
               </span>
             </p>
-            {gaps.length > 0 &&
-            <button
-              type="button"
-              aria-expanded={gapsOpen}
-              aria-controls="draft-gaps"
-              onClick={() => setGapsOpen((o) => !o)}
-              className="hidden h-9 items-center gap-1.5 rounded-full px-3 text-label font-medium text-fg-muted hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus sm:inline-flex">
-              
+            {gaps.length > 0 && (
+              <button
+                type="button"
+                aria-expanded={gapsOpen}
+                aria-controls="draft-gaps"
+                onClick={() => setGapsOpen((o) => !o)}
+                className="hidden h-9 items-center gap-1.5 rounded-full px-3 text-label font-medium text-fg-muted hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus sm:inline-flex"
+              >
                 <CircleDashedIcon size={14} aria-hidden /> {gaps.length} to fill in
               </button>
-            }
+            )}
             <button type="button" onClick={copy} aria-label="Copy preview link" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-fg-muted hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
               <LinkIcon size={16} aria-hidden />
             </button>
-            {chatPath &&
-            <Link
-              to={chatPath}
-              aria-label="Back to chat"
-              className={
-              canContinue ?
-              'flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-fg-muted hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus sm:w-auto sm:gap-1.5 sm:px-3 sm:text-label sm:font-medium' :
-              'inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-action px-4 text-label font-semibold text-action-fg transition-transform duration-150 ease-out active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus'
-              }>
-              
+            {chatPath && (
+              <Link
+                to={chatPath}
+                aria-label="Back to chat"
+                className={
+                  canContinue
+                    ? 'flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-fg-muted hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus sm:w-auto sm:gap-1.5 sm:px-3 sm:text-label sm:font-medium'
+                    : 'inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-action px-4 text-label font-semibold text-action-fg transition-transform duration-150 ease-out active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus'
+                }
+              >
                 <MessageCircleIcon size={15} aria-hidden /> <span className={canContinue ? 'hidden sm:inline' : undefined}>Back to chat</span>
               </Link>
-            }
-            {canContinue &&
-            <button
-              type="button"
-              onClick={() => {
-                if (startClaim(draft.id)) navigate('/copilot/continue');
-              }}
-              className="inline-flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-action px-4 text-label font-semibold text-action-fg transition-transform duration-150 ease-out active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-              
+            )}
+            {canContinue && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (startClaim(draft.id)) navigate('/copilot/continue');
+                }}
+                className="inline-flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-action px-4 text-label font-semibold text-action-fg transition-transform duration-150 ease-out active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+              >
                 Continue<span className="hidden sm:inline"> in KUBICU</span> <ArrowRightIcon size={15} aria-hidden />
               </button>
-            }
-            {draft.claimed &&
-            <span className="hidden shrink-0 items-center gap-1.5 text-caption font-semibold text-fg sm:inline-flex">
+            )}
+            {draft.claimed && (
+              <span className="hidden shrink-0 items-center gap-1.5 text-caption font-semibold text-fg sm:inline-flex">
                 <CheckCircle2Icon size={14} className="text-success" aria-hidden /> In KUBICU
               </span>
-            }
+            )}
           </div>
           <AnimatePresence initial={false}>
-            {gapsOpen &&
-            <motion.div
-              id="draft-gaps"
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.2, ease }}
-              className="overflow-hidden border-t border-line">
-              
+            {gapsOpen && (
+              <motion.div
+                id="draft-gaps"
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2, ease }}
+                className="overflow-hidden border-t border-line"
+              >
                 <div className="mx-auto flex w-full max-w-6xl items-start justify-between gap-4 px-3 py-3 md:px-6">
                   <div>
                     <p className="text-label font-semibold text-fg">Still to fill in before publishing</p>
                     <ul className="mt-1.5 flex flex-col gap-1">
-                      {gaps.map((g) =>
-                    <li key={g} className="flex items-start gap-2 text-caption text-fg-muted">
+                      {gaps.map((g) => (
+                        <li key={g} className="flex items-start gap-2 text-caption text-fg-muted">
                           <CircleDashedIcon size={12} className="mt-0.5 shrink-0" aria-hidden /> {g}
                         </li>
-                    )}
+                      ))}
                     </ul>
                     <p className="mt-2 text-caption text-fg-subtle">Copilot never makes these up — they stay marked on the page until you add them.</p>
                   </div>
@@ -145,7 +145,7 @@ export function CopilotPreview() {
                   </button>
                 </div>
               </motion.div>
-            }
+            )}
           </AnimatePresence>
         </div>
 
@@ -157,11 +157,11 @@ export function CopilotPreview() {
           </RenderPlanProvider>
         </main>
       </div>
-    </PlatformLook>);
-
+    </PlatformLook>
+  );
 }
 
-function PreviewState({ kind, chatPath }: {kind: 'missing' | 'expired';chatPath?: string | null;}) {
+function PreviewState({ kind, chatPath }: { kind: 'missing' | 'expired'; chatPath?: string | null }) {
   const expired = kind === 'expired';
   return (
     <PlatformLook night>
@@ -169,22 +169,22 @@ function PreviewState({ kind, chatPath }: {kind: 'missing' | 'expired';chatPath?
         <KubicuLogo />
         <h1 className="mt-10 max-w-md text-[28px] font-bold leading-tight text-fg">{expired ? 'This preview has expired' : 'This preview isn’t available'}</h1>
         <p className="mt-3 max-w-md text-body text-fg-muted">
-          {expired ?
-          `Drafts that aren’t continued into KUBICU are deleted after ${DRAFT_DAYS} days, so this link no longer opens.` :
-          'The link may be incomplete, or the draft was deleted. Preview links only show a draft — they never let anyone edit it.'}
+          {expired
+            ? `Drafts that aren’t continued into KUBICU are deleted after ${DRAFT_DAYS} days, so this link no longer opens.`
+            : 'The link may be incomplete, or the draft was deleted. Preview links only show a draft — they never let anyone edit it.'}
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-          {chatPath &&
-          <Link to={chatPath} className="inline-flex h-12 items-center justify-center rounded-full bg-action px-6 text-label font-semibold text-action-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+          {chatPath && (
+            <Link to={chatPath} className="inline-flex h-12 items-center justify-center rounded-full bg-action px-6 text-label font-semibold text-action-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
               {expired ? 'Return to your chat' : 'Back to your chat'}
             </Link>
-          }
+          )}
           <Link to="/copilot/chat" className="inline-flex h-12 items-center justify-center rounded-full border border-line-strong px-6 text-label font-semibold text-fg hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
             Start a new draft
           </Link>
         </div>
         {expired && chatPath && <p className="mt-4 max-w-sm text-caption text-fg-subtle">Your answers are still in the chat — ask Copilot to make the draft again.</p>}
       </main>
-    </PlatformLook>);
-
+    </PlatformLook>
+  );
 }

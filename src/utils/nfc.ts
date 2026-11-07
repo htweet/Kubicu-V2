@@ -14,10 +14,10 @@ export const NFC_EVENT = 'kubicu:nfc';
 export let NFC_MAX_ORDER = 50;
 
 /** `one` is the singular, used in tag lists and default names. Every label is a translation key (D444). */
-export const nfcKinds: Record<NfcKind, {label: string;one: string;detail: string;unitNgn: number;}> = {
+export const nfcKinds: Record<NfcKind, { label: string; one: string; detail: string; unitNgn: number }> = {
   sticker: { label: 'Round stickers', one: 'Round sticker', detail: '30 mm · for counters, packaging and windows', unitNgn: 1_500 },
   card: { label: 'Tap cards', one: 'Tap card', detail: 'Card size · for your wallet or a till', unitNgn: 4_000 },
-  keyring: { label: 'Keyrings', one: 'Keyring', detail: 'Epoxy fob · for staff and delivery riders', unitNgn: 3_000 }
+  keyring: { label: 'Keyrings', one: 'Keyring', detail: 'Epoxy fob · for staff and delivery riders', unitNgn: 3_000 },
 };
 
 export let NFC_DELIVERY_NGN = 2_500;
@@ -35,7 +35,7 @@ onOpsSettings(() => {
  * Prices in the workspace country's own money (D471). Nigeria keeps the naira figures above; Kenya, Ghana and
  * South Africa have their own example prices (Figures & names → NFC tags), each delivered within that country.
  */
-export function nfcPrices(country: CountryCode): {unit: Record<NfcKind, number>;delivery: number;currency: CountryInfo['currency'];} {
+export function nfcPrices(country: CountryCode): { unit: Record<NfcKind, number>; delivery: number; currency: CountryInfo['currency'] } {
   const currency = countryInfo(country).currency;
   if (country === 'NG') return { unit: { sticker: nfcKinds.sticker.unitNgn, card: nfcKinds.card.unitNgn, keyring: nfcKinds.keyring.unitNgn }, delivery: NFC_DELIVERY_NGN, currency };
   const f = (k: string) => figure(`nfc.${country}.${k}`);
@@ -62,7 +62,7 @@ export function writeTags(list: NfcTag[]): boolean {
 
 const code = () => Math.random().toString(36).slice(2, 8);
 
-export function orderTags(workspaceId: string, handle: string, kind: NfcKind, qty: number, destination: NfcDestination): {tags: NfcTag[];ref: string;} {
+export function orderTags(workspaceId: string, handle: string, kind: NfcKind, qty: number, destination: NfcDestination): { tags: NfcTag[]; ref: string } {
   const ref = `NFC-${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
   const now = new Date();
   const arrivesBy = new Date(now.getTime() + 5 * 86_400_000).toISOString();
@@ -78,7 +78,7 @@ export function orderTags(workspaceId: string, handle: string, kind: NfcKind, qt
     orderRef: ref,
     arrivesBy,
     createdAt: now.toISOString(),
-    taps: []
+    taps: [],
   }));
   return { tags, ref };
 }
@@ -101,6 +101,6 @@ export function recordTap(handle: string, tapCode: string): NfcTag | null {
   const list = readTags();
   const tag = list.find((t) => t.code === tapCode && t.handle === handle);
   if (!tag) return null;
-  if (tag.status === 'active') writeTags(list.map((t) => t.id === tag.id ? { ...t, taps: [new Date().toISOString(), ...t.taps].slice(0, 500) } : t));
+  if (tag.status === 'active') writeTags(list.map((t) => (t.id === tag.id ? { ...t, taps: [new Date().toISOString(), ...t.taps].slice(0, 500) } : t)));
   return tag;
 }

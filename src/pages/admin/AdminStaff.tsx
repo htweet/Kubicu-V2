@@ -25,7 +25,7 @@ import { ReasonDialog } from '../../components/admin/ReasonDialog';
 import { Section } from '../../components/ui/layout/Section';
 import { List } from '../../components/ui/layout/ListRow';
 
-type Action = {kind: 'invite';} | {kind: 'role' | 'reset' | 'disable' | 'enable' | 'cancel';member: StaffMember;} | null;
+type Action = { kind: 'invite' } | { kind: 'role' | 'reset' | 'disable' | 'enable' | 'cancel'; member: StaffMember } | null;
 
 const roleOptions = staffRoles.map((r) => ({ value: r.id, label: r.label }));
 const isEmail = (v: string) => /^[^\s@]+@kubicu\.com$/i.test(v.trim());
@@ -60,18 +60,18 @@ export function AdminStaff() {
       error = r.error;
       return r.store;
     });
-    if (error) toast.error('Couldn’t approve', { description: error });else
-    toast.success('Approved and applied', { description: a.summary });
+    if (error) toast.error('Couldn’t approve', { description: error });
+    else toast.success('Approved and applied', { description: a.summary });
   };
   const reject = (note: string) => {
     if (!rejecting) return;
     const a = rejecting;
-    setStore((s) => audit({ ...s, approvals: s.approvals.map((x) => x.id === a.id ? { ...x, status: 'rejected', decidedBy: staffActor(s), decidedAt: new Date().toISOString(), decisionNote: note } : x) }, { area: 'approvals', action: `Rejected: ${a.summary}`, target: a.targetEmail, reason: note }));
+    setStore((s) => audit({ ...s, approvals: s.approvals.map((x) => (x.id === a.id ? { ...x, status: 'rejected', decidedBy: staffActor(s), decidedAt: new Date().toISOString(), decisionNote: note } : x)) }, { area: 'approvals', action: `Rejected: ${a.summary}`, target: a.targetEmail, reason: note }));
     toast('Request rejected', { description: 'Nothing was changed. The requester sees your note.' });
     setRejecting(null);
   };
   const withdraw = (a: PendingApproval) => {
-    setStore((s) => audit({ ...s, approvals: s.approvals.map((x) => x.id === a.id ? { ...x, status: 'withdrawn', decidedBy: staffActor(s), decidedAt: new Date().toISOString() } : x) }, { area: 'approvals', action: `Withdrew: ${a.summary}`, target: a.targetEmail, reason: 'Withdrawn by the requester.' }));
+    setStore((s) => audit({ ...s, approvals: s.approvals.map((x) => (x.id === a.id ? { ...x, status: 'withdrawn', decidedBy: staffActor(s), decidedAt: new Date().toISOString() } : x)) }, { area: 'approvals', action: `Withdrew: ${a.summary}`, target: a.targetEmail, reason: 'Withdrawn by the requester.' }));
     toast('Request withdrawn');
   };
 
@@ -95,7 +95,7 @@ export function AdminStaff() {
       return;
     }
     const m = action.member;
-    const patch = (p: Partial<StaffMember>) => (s: typeof store) => ({ ...s, staff: s.staff.map((x) => x.id === m.id ? { ...x, ...p } : x) });
+    const patch = (p: Partial<StaffMember>) => (s: typeof store) => ({ ...s, staff: s.staff.map((x) => (x.id === m.id ? { ...x, ...p } : x)) });
     // Role changes, disabling and two-step resets on active accounts need a second Platform lead (D129).
     if ((action.kind === 'role' || action.kind === 'reset' || action.kind === 'disable') && m.status === 'active') {
       if (action.kind === 'role' && role === m.role) return setAction(null);
@@ -116,7 +116,7 @@ export function AdminStaff() {
         status: 'pending',
         decidedBy: null,
         decidedAt: null,
-        decisionNote: null
+        decisionNote: null,
       };
       setStore((s) => audit({ ...s, approvals: [request, ...s.approvals] }, { area: 'approvals', action: `Requested: ${request.summary}`, target: m.email, reason }));
       toast.success('Sent for a second approval', { description: `Another Platform lead must approve within ${APPROVAL_HOURS} hours. Nothing changes until then.` });
@@ -138,76 +138,76 @@ export function AdminStaff() {
   };
 
   const statusBadge = (m: StaffMember) =>
-  m.status === 'disabled' ?
-  <Badge>Disabled</Badge> :
-  m.status === 'invited' ?
-  <Badge tone="info" dot>
+    m.status === 'disabled' ? (
+      <Badge>Disabled</Badge>
+    ) : m.status === 'invited' ? (
+      <Badge tone="info" dot>
         Invited
-      </Badge> :
-  m.twoStep ?
-  <Badge tone="success" dot>
+      </Badge>
+    ) : m.twoStep ? (
+      <Badge tone="success" dot>
         Active · two-step on
-      </Badge> :
-
-  <Badge tone="warning" dot>
+      </Badge>
+    ) : (
+      <Badge tone="warning" dot>
         Two-step needed
-      </Badge>;
-
+      </Badge>
+    );
 
   const columns: DataColumn<StaffMember>[] = [
-  {
-    key: 'who',
-    header: 'Staff member',
-    sortValue: (m) => m.name,
-    render: (m) =>
-    <span className="min-w-0">
+    {
+      key: 'who',
+      header: 'Staff member',
+      sortValue: (m) => m.name,
+      render: (m) => (
+        <span className="min-w-0">
           <span className="block truncate font-semibold text-fg">
             {m.name}
             {m.id === me?.id && <span className="font-normal text-fg-subtle"> (you)</span>}
           </span>
           <span className="block truncate text-caption text-fg-subtle">{m.email}</span>
         </span>
-
-  },
-  { key: 'role', header: 'Role', sortValue: (m) => roleInfo(m.role).label, render: (m) => <span className="text-fg">{roleInfo(m.role).label}</span> },
-  { key: 'status', header: 'Status', render: statusBadge },
-  {
-    key: 'active',
-    header: 'Last active',
-    hideOnMobile: true,
-    sortValue: (m) => m.lastActiveAt ? Date.parse(m.lastActiveAt) : 0,
-    render: (m) => <span className="text-fg-muted">{m.lastActiveAt ? formatRelative(m.lastActiveAt) : `Invited ${formatRelative(m.invitedAt)}`}</span>
-  },
-  {
-    key: 'actions',
-    header: '',
-    align: 'right',
-    render: (m) => {
-      const self = m.id === me?.id;
-      const lastLead = isLastLead(m);
-      const guard = self ? 'You can’t change your own access' : lastLead ? 'Keep at least one active Platform lead' : waitingFor(m) ? 'A change is already waiting for approval' : undefined;
-      return (
-        <Menu
-          items={
-          m.status === 'invited' ?
-          [
-          { id: 'role', label: 'Change role…', icon: UserCogIcon, onSelect: () => (setRole(m.role), setAction({ kind: 'role', member: m })) },
-          { id: 'cancel', label: 'Cancel invitation…', icon: XIcon, destructive: true, onSelect: () => setAction({ kind: 'cancel', member: m }) }] :
-
-          m.status === 'disabled' ?
-          [{ id: 'enable', label: 'Turn back on…', icon: PowerIcon, onSelect: () => setAction({ kind: 'enable', member: m }) }] :
-          [
-          { id: 'role', label: 'Change role…', icon: UserCogIcon, disabled: !!guard, reason: guard, onSelect: () => (setRole(m.role), setAction({ kind: 'role', member: m })) },
-          { id: 'reset', label: 'Reset two-step…', icon: KeyRoundIcon, disabled: self || waitingFor(m), reason: self ? 'Ask another Platform lead' : waitingFor(m) ? 'A change is already waiting for approval' : undefined, onSelect: () => setAction({ kind: 'reset', member: m }) },
-          { id: 'disable', label: 'Disable account…', icon: PowerIcon, destructive: true, disabled: !!guard, reason: guard, onSelect: () => setAction({ kind: 'disable', member: m }) }]
-
-          }
-          trigger={(props) => <IconButton {...props} size="sm" icon={MoreHorizontalIcon} label={`Actions for ${m.name}`} />} />);
-
-
-    }
-  }];
-
+      ),
+    },
+    { key: 'role', header: 'Role', sortValue: (m) => roleInfo(m.role).label, render: (m) => <span className="text-fg">{roleInfo(m.role).label}</span> },
+    { key: 'status', header: 'Status', render: statusBadge },
+    {
+      key: 'active',
+      header: 'Last active',
+      hideOnMobile: true,
+      sortValue: (m) => (m.lastActiveAt ? Date.parse(m.lastActiveAt) : 0),
+      render: (m) => <span className="text-fg-muted">{m.lastActiveAt ? formatRelative(m.lastActiveAt) : `Invited ${formatRelative(m.invitedAt)}`}</span>,
+    },
+    {
+      key: 'actions',
+      header: '',
+      align: 'right',
+      render: (m) => {
+        const self = m.id === me?.id;
+        const lastLead = isLastLead(m);
+        const guard = self ? 'You can’t change your own access' : lastLead ? 'Keep at least one active Platform lead' : waitingFor(m) ? 'A change is already waiting for approval' : undefined;
+        return (
+          <Menu
+            items={
+              m.status === 'invited'
+                ? [
+                    { id: 'role', label: 'Change role…', icon: UserCogIcon, onSelect: () => (setRole(m.role), setAction({ kind: 'role', member: m })) },
+                    { id: 'cancel', label: 'Cancel invitation…', icon: XIcon, destructive: true, onSelect: () => setAction({ kind: 'cancel', member: m }) },
+                  ]
+                : m.status === 'disabled'
+                  ? [{ id: 'enable', label: 'Turn back on…', icon: PowerIcon, onSelect: () => setAction({ kind: 'enable', member: m }) }]
+                  : [
+                      { id: 'role', label: 'Change role…', icon: UserCogIcon, disabled: !!guard, reason: guard, onSelect: () => (setRole(m.role), setAction({ kind: 'role', member: m })) },
+                      { id: 'reset', label: 'Reset two-step…', icon: KeyRoundIcon, disabled: self || waitingFor(m), reason: self ? 'Ask another Platform lead' : waitingFor(m) ? 'A change is already waiting for approval' : undefined, onSelect: () => setAction({ kind: 'reset', member: m }) },
+                      { id: 'disable', label: 'Disable account…', icon: PowerIcon, destructive: true, disabled: !!guard, reason: guard, onSelect: () => setAction({ kind: 'disable', member: m }) },
+                    ]
+            }
+            trigger={(props) => <IconButton {...props} size="sm" icon={MoreHorizontalIcon} label={`Actions for ${m.name}`} />}
+          />
+        );
+      },
+    },
+  ];
 
   const dialog = (() => {
     if (!action) return { title: '', description: '', confirmLabel: '' };
@@ -215,9 +215,9 @@ export function AdminStaff() {
     const first = action.member.name.split(' ')[0];
     switch (action.kind) {
       case 'role':
-        return action.member.status === 'active' ?
-        { title: `Change ${first}’s role`, description: `Another Platform lead must approve this within ${APPROVAL_HOURS} hours. The new role applies once they do.`, confirmLabel: 'Send for approval' } :
-        { title: `Change ${first}’s role`, description: 'They haven’t signed in yet, so this applies straight away.', confirmLabel: 'Change role' };
+        return action.member.status === 'active'
+          ? { title: `Change ${first}’s role`, description: `Another Platform lead must approve this within ${APPROVAL_HOURS} hours. The new role applies once they do.`, confirmLabel: 'Send for approval' }
+          : { title: `Change ${first}’s role`, description: 'They haven’t signed in yet, so this applies straight away.', confirmLabel: 'Change role' };
       case 'reset':
         return { title: `Reset ${first}’s two-step sign-in?`, description: `Use this when they lose their phone and backup codes. Another Platform lead must approve. Once approved they’re locked out until they set it up again.`, confirmLabel: 'Send for approval' };
       case 'disable':
@@ -235,11 +235,11 @@ export function AdminStaff() {
         title="Staff & access"
         description="Who at KUBICU can open the staff console, what each role can reach, and two-step sign-in. Only Platform leads see this screen."
         actions={
-        <Button leadingIcon={UserPlusIcon} onClick={openInvite}>
+          <Button leadingIcon={UserPlusIcon} onClick={openInvite}>
             Invite staff
           </Button>
-        } />
-      
+        }
+      />
 
       <StatGroup columns={3} className="mt-8 items-end border-b border-line pb-6">
         <Stat primary label="Active staff" value={active.length} hint={`${activeLeads.length} Platform lead${activeLeads.length === 1 ? '' : 's'}`} />
@@ -247,8 +247,8 @@ export function AdminStaff() {
         <Stat label="Invitations waiting" value={invited} />
       </StatGroup>
 
-      {pending.length > 0 &&
-      <section aria-labelledby="approvals-heading" className="mt-8 rounded-lg border border-warning/40 bg-warning-soft">
+      {pending.length > 0 && (
+        <section aria-labelledby="approvals-heading" className="mt-8 rounded-lg border border-warning/40 bg-warning-soft">
           <header className="px-5 pb-3 pt-4 md:px-6">
             <h2 id="approvals-heading" className="text-heading font-semibold text-fg">
               Waiting for a second Platform lead · {pending.length}
@@ -257,9 +257,9 @@ export function AdminStaff() {
           </header>
           <ul className="divide-y divide-line border-t border-line bg-raised">
             {pending.map((a) => {
-            const mine = a.requestedById === me?.id;
-            return (
-              <li key={a.id} className="flex flex-col gap-3 px-5 py-4 md:flex-row md:items-start md:gap-6 md:px-6">
+              const mine = a.requestedById === me?.id;
+              return (
+                <li key={a.id} className="flex flex-col gap-3 px-5 py-4 md:flex-row md:items-start md:gap-6 md:px-6">
                   <div className="min-w-0 flex-1">
                     <p className="text-label font-semibold text-fg">{a.summary}</p>
                     <p className="mt-0.5 text-caption text-fg-subtle">
@@ -268,15 +268,15 @@ export function AdminStaff() {
                     <p className="mt-2 text-label text-fg-muted">“{a.reason}”</p>
                   </div>
                   <div className="flex shrink-0 gap-2">
-                    {mine ?
-                  <>
+                    {mine ? (
+                      <>
                         <span className="self-center text-caption text-fg-subtle">Waiting for another lead</span>
                         <Button size="sm" variant="secondary" onClick={() => withdraw(a)}>
                           Withdraw
                         </Button>
-                      </> :
-
-                  <>
+                      </>
+                    ) : (
+                      <>
                         <Button size="sm" variant="secondary" onClick={() => setRejecting(a)}>
                           Reject
                         </Button>
@@ -284,14 +284,14 @@ export function AdminStaff() {
                           Approve
                         </Button>
                       </>
-                  }
+                    )}
                   </div>
-                </li>);
-
-          })}
+                </li>
+              );
+            })}
           </ul>
         </section>
-      }
+      )}
 
       <section aria-labelledby="staff-list" className="mt-8">
         <h2 id="staff-list" className="sr-only">
@@ -300,23 +300,23 @@ export function AdminStaff() {
         <DataTable caption="Staff accounts" rows={staff} columns={columns} filterText={(m) => `${m.name} ${m.email} ${roleInfo(m.role).label}`} filterPlaceholder="Search name, email or role" emptyTitle="No staff match" />
       </section>
 
-      {recentDecided.length > 0 &&
-      <Section id="decided" title="Recent approval decisions" className="mt-8">
+      {recentDecided.length > 0 && (
+        <Section id="decided" title="Recent approval decisions" className="mt-8">
           <List ruled label="Recent approval decisions">
             {recentDecided.map((a) => {
-            const st = effectiveStatus(a);
-            return (
-              <li key={a.id} className="flex min-h-[48px] flex-wrap items-center gap-x-4 gap-y-1 py-3">
+              const st = effectiveStatus(a);
+              return (
+                <li key={a.id} className="flex min-h-[48px] flex-wrap items-center gap-x-4 gap-y-1 py-3">
                   <span className="min-w-0 flex-1 text-label text-fg">{a.summary}</span>
                   <span className="text-caption text-fg-subtle">{st === 'expired' ? `Expired ${formatRelative(a.expiresAt)}` : `${a.decidedBy ?? ''} · ${a.decidedAt ? formatRelative(a.decidedAt) : ''}`}</span>
                   <Badge tone={st === 'approved' ? 'success' : st === 'rejected' ? 'danger' : 'neutral'}>{approvalStatusLabels[st]}</Badge>
                   {a.decisionNote && <p className="w-full text-caption text-fg-muted">“{a.decisionNote}”</p>}
-                </li>);
-
-          })}
+                </li>
+              );
+            })}
           </List>
         </Section>
-      }
+      )}
 
       <AccessReviewSection />
 
@@ -324,11 +324,11 @@ export function AdminStaff() {
         id="roles"
         title="What each role can open"
         description="Roles are fixed so access reviews stay simple. Every action inside an area still needs a written reason and lands in the audit log."
-        className="mt-12 border-t border-line pt-8">
-        
+        className="mt-12 border-t border-line pt-8"
+      >
         <dl className="flex flex-col divide-y divide-line">
-          {staffRoles.map((r) =>
-          <div key={r.id} className="grid gap-2 py-4 md:grid-cols-[220px_1fr] md:gap-8">
+          {staffRoles.map((r) => (
+            <div key={r.id} className="grid gap-2 py-4 md:grid-cols-[220px_1fr] md:gap-8">
               <dt>
                 <span className="block text-label font-semibold text-fg">{r.label}</span>
                 <span className="mt-0.5 block text-caption text-fg-subtle">
@@ -338,28 +338,28 @@ export function AdminStaff() {
               <dd>
                 <p className="text-label text-fg-muted">{r.description}</p>
                 <ul className="mt-2 flex flex-wrap gap-1.5" aria-label={`${r.label} areas`}>
-                  {(r.areas === '*' ? [{ id: '*', label: 'Every area' }] : adminNavItems.filter((i) => (r.areas as string[]).includes(i.id))).map((i) =>
-                <li key={i.id} className="rounded-md bg-sunken px-2 py-0.5 text-caption text-fg">
+                  {(r.areas === '*' ? [{ id: '*', label: 'Every area' }] : adminNavItems.filter((i) => (r.areas as string[]).includes(i.id))).map((i) => (
+                    <li key={i.id} className="rounded-md bg-sunken px-2 py-0.5 text-caption text-fg">
                       {i.label}
                     </li>
-                )}
+                  ))}
                 </ul>
               </dd>
             </div>
-          )}
+          ))}
         </dl>
       </Section>
 
       <ReasonDialog open={!!action} onClose={() => setAction(null)} onConfirm={confirm} destructive={action?.kind === 'disable' || action?.kind === 'cancel' || action?.kind === 'reset'} {...dialog}>
-        {action?.kind === 'invite' &&
-        <>
+        {action?.kind === 'invite' && (
+          <>
             <TextInput id="staff-invite-name" label="Full name" value={name} onChange={(e) => setName(e.target.value)} />
             <TextInput id="staff-invite-email" label="Work email" type="email" placeholder="name@kub.icu" value={email} onChange={(e) => setEmail(e.target.value)} error={inviteError || undefined} />
           </>
-        }
+        )}
         {(action?.kind === 'invite' || action?.kind === 'role') && <SelectInput<StaffRole> id="staff-role" label="Role" value={role} options={roleOptions} onChange={setRole} hint={roleInfo(role).description} />}
       </ReasonDialog>
       <ReasonDialog open={!!rejecting} onClose={() => setRejecting(null)} onConfirm={reject} destructive title="Reject this request?" description={rejecting ? `${rejecting.summary}. Nothing changes; ${rejecting.requestedBy.split(' ·')[0]} sees your note.` : ''} confirmLabel="Reject" />
-    </div>);
-
+    </div>
+  );
 }

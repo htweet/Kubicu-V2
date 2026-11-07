@@ -27,10 +27,10 @@ export function Redirects() {
 
   const spaces = useMemo(
     () =>
-    [{ id: MAIN_SPACE_ID, name: 'Main page' }, ...activeExtraSpaces(current).map((s) => ({ id: s.id, name: s.name }))].
-    filter((s) => spaceDoc(current.id, s.id)).
-    map((s) => ({ id: s.id, label: `${s.name} · kub.icu/${spaceHandle(current.id, s.id)}` })),
-    [current]
+      [{ id: MAIN_SPACE_ID, name: 'Main page' }, ...activeExtraSpaces(current).map((s) => ({ id: s.id, name: s.name }))]
+        .filter((s) => spaceDoc(current.id, s.id))
+        .map((s) => ({ id: s.id, label: `${s.name} · kub.icu/${spaceHandle(current.id, s.id)}` })),
+    [current],
   );
 
   const pageTitle = (spaceId: string, path: string) => {
@@ -43,21 +43,21 @@ export function Redirects() {
   };
 
   const automatic = useMemo(() => {
-    const rows: {key: string;from: string;to: string;why: string;}[] = [];
+    const rows: { key: string; from: string; to: string; why: string }[] = [];
     [{ id: MAIN_SPACE_ID }, ...activeExtraSpaces(current)].forEach((s) => {
       const doc = spaceDoc(current.id, s.id);
       if (!doc) return;
       (doc.redirects ?? []).forEach((r) =>
-      rows.push({ key: `${s.id}-${r.from}`, from: `kub.icu/${doc.handle}/${r.from}`, to: r.to ? `kub.icu/${doc.handle}/${r.to}` : `kub.icu/${doc.handle}`, why: tr('You renamed or removed this page') })
+        rows.push({ key: `${s.id}-${r.from}`, from: `kub.icu/${doc.handle}/${r.from}`, to: r.to ? `kub.icu/${doc.handle}/${r.to}` : `kub.icu/${doc.handle}`, why: tr('You renamed or removed this page') }),
       );
     });
     const mainHandle = spaceHandle(current.id, MAIN_SPACE_ID);
-    (current.spaces ?? []).
-    filter((s) => s.archivedAt).
-    forEach((s) => {
-      const h = spaceHandle(current.id, s.id);
-      if (h && mainHandle) rows.push({ key: `arch-${s.id}`, from: `kub.icu/${h}`, to: `kub.icu/${mainHandle}`, why: tr('“{name}” was archived', { name: s.name }) });
-    });
+    (current.spaces ?? [])
+      .filter((s) => s.archivedAt)
+      .forEach((s) => {
+        const h = spaceHandle(current.id, s.id);
+        if (h && mainHandle) rows.push({ key: `arch-${s.id}`, from: `kub.icu/${h}`, to: `kub.icu/${mainHandle}`, why: tr('“{name}” was archived', { name: s.name }) });
+      });
     return rows;
   }, [current, tr]);
 
@@ -67,22 +67,22 @@ export function Redirects() {
         title="Redirects"
         description="Addresses that forward somewhere else. Nothing you’ve shared breaks when you rename a page or end a campaign."
         actions={
-        <Button leadingIcon={PlusIcon} disabled={!can.allowed} title={can.allowed ? undefined : can.reason} onClick={() => setEditing('new')}>
+          <Button leadingIcon={PlusIcon} disabled={!can.allowed} title={can.allowed ? undefined : can.reason} onClick={() => setEditing('new')}>
             Add a redirect
           </Button>
-        } />
-      
+        }
+      />
 
       <Section id="rd-yours" title="Your redirects">
-        {data.redirects.length === 0 ?
-        <p className="max-w-xl text-label text-fg-muted">{tr('None yet. For example, make {link} forward to your Instagram, or /menu to a page.', { link: `kub.icu/${spaceHandle(current.id, MAIN_SPACE_ID)}/ig` })}</p> :
-
-        <List ruled label="Your redirects">
+        {data.redirects.length === 0 ? (
+          <p className="max-w-xl text-label text-fg-muted">{tr('None yet. For example, make {link} forward to your Instagram, or /menu to a page.', { link: `kub.icu/${spaceHandle(current.id, MAIN_SPACE_ID)}/ig` })}</p>
+        ) : (
+          <List ruled label="Your redirects">
             {data.redirects.map((r) => {
-            const h = spaceHandle(current.id, r.spaceId) ?? '…';
-            const dest = pageTitle(r.spaceId, r.to);
-            return (
-              <li key={r.id} className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:gap-4">
+              const h = spaceHandle(current.id, r.spaceId) ?? '…';
+              const dest = pageTitle(r.spaceId, r.to);
+              return (
+                <li key={r.id} className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:gap-4">
                   <p className="min-w-0 flex-1 truncate text-label font-medium text-fg">
                     kub.icu/{h}/{r.from}
                   </p>
@@ -93,30 +93,30 @@ export function Redirects() {
                   <div className="flex gap-1">
                     <IconButton icon={PencilIcon} label={tr('Edit redirect from {path}', { path: r.from })} size="sm" disabled={!can.allowed} onClick={() => setEditing(r)} />
                     <IconButton
-                    icon={Trash2Icon}
-                    label={tr('Delete redirect from {path}', { path: r.from })}
-                    size="sm"
-                    disabled={!can.allowed}
-                    onClick={() => {
-                      deleteRedirect(r.id);
-                      team.log('pages', `deleted the redirect kub.icu/${h}/${r.from}`, '/app/domains/redirects');
-                    }} />
-                  
+                      icon={Trash2Icon}
+                      label={tr('Delete redirect from {path}', { path: r.from })}
+                      size="sm"
+                      disabled={!can.allowed}
+                      onClick={() => {
+                        deleteRedirect(r.id);
+                        team.log('pages', `deleted the redirect kub.icu/${h}/${r.from}`, '/app/domains/redirects');
+                      }}
+                    />
                   </div>
-                </li>);
-
-          })}
+                </li>
+              );
+            })}
           </List>
-        }
+        )}
       </Section>
 
       <Section id="rd-auto" title="Made automatically" description="KUBICU keeps these so old links keep working. Change them by editing the page or restoring the space.">
-        {automatic.length === 0 ?
-        <p className="text-label text-fg-muted">{tr('None yet.')}</p> :
-
-        <List ruled label="Made automatically">
-            {automatic.map((r) =>
-          <li key={r.key} className="flex flex-col gap-1 py-3 sm:flex-row sm:items-center sm:gap-4">
+        {automatic.length === 0 ? (
+          <p className="text-label text-fg-muted">{tr('None yet.')}</p>
+        ) : (
+          <List ruled label="Made automatically">
+            {automatic.map((r) => (
+              <li key={r.key} className="flex flex-col gap-1 py-3 sm:flex-row sm:items-center sm:gap-4">
                 <p className="min-w-0 flex-1 truncate text-label text-fg">{r.from}</p>
                 <p className="flex min-w-0 flex-1 items-center gap-1.5 truncate text-label text-fg-muted">
                   <ArrowRightIcon size={14} className="shrink-0" aria-hidden />
@@ -127,9 +127,9 @@ export function Redirects() {
                   {r.why}
                 </p>
               </li>
-          )}
+            ))}
           </List>
-        }
+        )}
       </Section>
 
       <p className="text-caption text-fg-subtle">
@@ -137,6 +137,6 @@ export function Redirects() {
       </p>
 
       <RedirectDialog open={editing !== null} onClose={() => setEditing(null)} redirect={editing && editing !== 'new' ? editing : undefined} workspaceId={current.id} spaces={spaces} />
-    </div>);
-
+    </div>
+  );
 }

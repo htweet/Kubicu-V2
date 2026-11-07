@@ -58,6 +58,6 @@ export function CanvasPage() {
         {isDesktop ? <DesktopEditor /> : <MobileEditor />}
         <CopilotCanvasWelcome pageId={state.draft.id} />
       </PresenceProvider>
-    </CampaignPreviewProvider>);
-
+    </CampaignPreviewProvider>
+  );
 }

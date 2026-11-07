@@ -50,19 +50,19 @@ export function KitActualSize({ open, onClose, spec, kit, qrUrl }: KitActualSize
 
   return createPortal(
     <AnimatePresence>
-      {open &&
-      <motion.div
-        ref={panel}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="kit-actual-title"
-        tabIndex={-1}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
-        className="fixed inset-0 z-[85] flex flex-col bg-canvas text-fg focus:outline-none">
-        
+      {open && (
+        <motion.div
+          ref={panel}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="kit-actual-title"
+          tabIndex={-1}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
+          className="fixed inset-0 z-[85] flex flex-col bg-canvas text-fg focus:outline-none"
+        >
           <header className="flex flex-wrap items-center gap-x-4 gap-y-3 border-b border-line bg-raised px-4 py-3 sm:px-6">
             <div className="min-w-0 flex-1">
               <h2 id="kit-actual-title" className="truncate text-heading font-semibold text-fg">
@@ -74,30 +74,30 @@ export function KitActualSize({ open, onClose, spec, kit, qrUrl }: KitActualSize
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              {sheet &&
-            <Segmented<'piece' | 'sheet'>
-              ariaLabel="What to show"
-              size="sm"
-              value={view}
-              onChange={setView}
-              options={[
-              { value: 'piece', label: 'One piece' },
-              { value: 'sheet', label: 'Whole sheet' }]
-              } />
-
-            }
-              {hasBack &&
-            <Segmented<'front' | 'back'>
-              ariaLabel="Card side"
-              size="sm"
-              value={side}
-              onChange={setSide}
-              options={[
-              { value: 'front', label: 'Front' },
-              { value: 'back', label: 'Back', icon: FlipHorizontalIcon }]
-              } />
-
-            }
+              {sheet && (
+                <Segmented<'piece' | 'sheet'>
+                  ariaLabel="What to show"
+                  size="sm"
+                  value={view}
+                  onChange={setView}
+                  options={[
+                    { value: 'piece', label: 'One piece' },
+                    { value: 'sheet', label: 'Whole sheet' },
+                  ]}
+                />
+              )}
+              {hasBack && (
+                <Segmented<'front' | 'back'>
+                  ariaLabel="Card side"
+                  size="sm"
+                  value={side}
+                  onChange={setSide}
+                  options={[
+                    { value: 'front', label: 'Front' },
+                    { value: 'back', label: 'Back', icon: FlipHorizontalIcon },
+                  ]}
+                />
+              )}
               <Button size="sm" variant={calibrating ? 'primary' : 'secondary'} leadingIcon={RulerIcon} onClick={() => setCalibrating((v) => !v)} aria-expanded={calibrating}>
                 Match my screen
               </Button>
@@ -105,8 +105,8 @@ export function KitActualSize({ open, onClose, spec, kit, qrUrl }: KitActualSize
             </div>
           </header>
 
-          {calibrating &&
-        <section aria-label="Match my screen" className="flex flex-col gap-4 border-b border-line bg-raised px-4 py-5 sm:flex-row sm:items-center sm:gap-8 sm:px-6">
+          {calibrating && (
+            <section aria-label="Match my screen" className="flex flex-col gap-4 border-b border-line bg-raised px-4 py-5 sm:flex-row sm:items-center sm:gap-8 sm:px-6">
               <div className="flex shrink-0 justify-center">
                 <div className="relative rounded-[3mm] border-2 border-dashed border-action bg-action-soft" style={{ width: CARD_W * MM * k, height: CARD_H * MM * k }} aria-hidden>
                   <span className="absolute left-[8%] top-[34%] h-[18%] w-[16%] rounded-sm bg-line-strong" />
@@ -117,7 +117,7 @@ export function KitActualSize({ open, onClose, spec, kit, qrUrl }: KitActualSize
                 <p className="text-label text-fg">Hold any bank (ATM) card flat against your screen and move the slider until the outline matches it exactly.</p>
                 <RangeInput label="Screen size" value={k} min={0.6} max={1.6} step={0.01} onChange={(v) => screen.update(() => ({ scale: v, checked: true }))} />
                 <div className="flex flex-wrap gap-2">
-                  <Button size="sm" onClick={() => {screen.update((s) => ({ ...s, checked: true }));setCalibrating(false);}}>
+                  <Button size="sm" onClick={() => { screen.update((s) => ({ ...s, checked: true })); setCalibrating(false); }}>
                     It matches
                   </Button>
                   <Button size="sm" variant="tertiary" onClick={() => screen.update(() => ({ scale: 1, checked: false }))}>
@@ -127,17 +127,17 @@ export function KitActualSize({ open, onClose, spec, kit, qrUrl }: KitActualSize
                 <p className="text-caption text-fg-subtle">Saved on this device. Browser zoom changes it — keep zoom at 100%.</p>
               </div>
             </section>
-        }
+          )}
 
           <div className="dot-stage scroll-quiet min-h-0 flex-1 overflow-auto">
             <div className="flex min-h-full min-w-max items-center justify-center p-8 sm:p-12">
               <div className={cn('shrink-0 bg-white shadow-lg', spec.id === 'sticker' && !showSheet && 'rounded-full')} style={{ width: pxW * k, height: spec.id === 'receipt' ? undefined : pxH * k, minHeight: spec.id === 'receipt' ? pxH * k : undefined }}>
                 <iframe
-                title={`${spec.label}, actual size${hasBack && side === 'back' ? ', back' : ''}`}
-                srcDoc={doc}
-                tabIndex={-1}
-                style={{ width: pxW, height: pxH, transform: `scale(${k})`, transformOrigin: 'top left', border: 0, display: 'block', background: 'transparent' }} />
-              
+                  title={`${spec.label}, actual size${hasBack && side === 'back' ? ', back' : ''}`}
+                  srcDoc={doc}
+                  tabIndex={-1}
+                  style={{ width: pxW, height: pxH, transform: `scale(${k})`, transformOrigin: 'top left', border: 0, display: 'block', background: 'transparent' }}
+                />
               </div>
             </div>
           </div>
@@ -147,8 +147,8 @@ export function KitActualSize({ open, onClose, spec, kit, qrUrl }: KitActualSize
             Phone screens are small, so large pieces won’t fit; scroll to see the rest.
           </p>
         </motion.div>
-      }
+      )}
     </AnimatePresence>,
-    document.body
+    document.body,
   );
 }

@@ -27,7 +27,7 @@ interface TeamValue {
   canAccessSpace: (spaceId: string) => boolean;
   /** The location the signed-in member is limited to (D474); null = every location. Owners and Admins are never limited. */
   myBranchId: string | null;
-  invite: (input: {contact: string;role: Role;spaceIds: string[] | null;branchId?: string | null;}) => Invite | null;
+  invite: (input: { contact: string; role: Role; spaceIds: string[] | null; branchId?: string | null }) => Invite | null;
   setBranch: (memberId: string, branchId: string | null) => void;
   cancelInvite: (id: string) => void;
   resendInvite: (id: string) => void;
@@ -49,7 +49,7 @@ interface TeamValue {
   myNotices: Notice[];
   markNoticesSeen: () => void;
   /** Team comments (D116). */
-  addComment: (input: {subject: string;subjectLabel: string;href?: string;area: ActivityArea;text: string;parentId?: string;}) => TeamComment | null;
+  addComment: (input: { subject: string; subjectLabel: string; href?: string; area: ActivityArea; text: string; parentId?: string }) => TeamComment | null;
   editComment: (id: string, text: string) => void;
   deleteComment: (id: string) => void;
   resolveThread: (id: string, resolved: boolean) => void;
@@ -58,7 +58,7 @@ interface TeamValue {
 const TeamContext = createContext<TeamValue | null>(null);
 
 /** Members, invites, roles and the activity log of the current workspace (D57–D59). */
-export function TeamProvider({ viewingAs, children }: {viewingAs: Role;children: React.ReactNode;}) {
+export function TeamProvider({ viewingAs, children }: { viewingAs: Role; children: React.ReactNode }) {
   const { current } = useWorkspace();
   const [data, setData] = useState<TeamData>(() => {
     const stored = readTeam(current.id);
@@ -72,9 +72,9 @@ export function TeamProvider({ viewingAs, children }: {viewingAs: Role;children:
     try {
       if (!readTeam(current.id)) writeTeam(current.id, ref.current);
     } catch {
-
       // Storage unavailable — team lasts for this visit.
-    }const onStorage = (e: StorageEvent) => {
+    }
+    const onStorage = (e: StorageEvent) => {
       if (e.key !== teamKey(current.id)) return;
       const next = readTeam(current.id);
       if (next) setData(next);
@@ -96,7 +96,7 @@ export function TeamProvider({ viewingAs, children }: {viewingAs: Role;children:
       setData(next);
       return true;
     },
-    [current.id]
+    [current.id],
   );
 
   const paused = useMemo(() => pausedMemberIds(data, current.plan), [data, current.plan]);
@@ -109,7 +109,7 @@ export function TeamProvider({ viewingAs, children }: {viewingAs: Role;children:
   }, [viewingAs, data.members, owner, current.createdAt]);
   const role = me.id.startsWith('preview_') ? me.role : effectiveRole(me, paused);
 
-  const myBranchId = role === 'owner' || role === 'admin' ? null : me.branchId ?? null;
+  const myBranchId = role === 'owner' || role === 'admin' ? null : (me.branchId ?? null);
 
   const canAccessSpace = useCallback((spaceId: string) => role === 'owner' || role === 'admin' || !me.spaceIds || me.spaceIds.includes(spaceId), [role, me.spaceIds]);
 
@@ -122,7 +122,7 @@ export function TeamProvider({ viewingAs, children }: {viewingAs: Role;children:
       if (spaceId && !canAccessSpace(spaceId)) return { allowed: false, reason: 'You don’t have access to this space. Ask an Admin to add you.' };
       return { allowed: true, reason: '' };
     },
-    [role, me.role, canAccessSpace]
+    [role, me.role, canAccessSpace],
   );
 
   const log = useCallback((area: ActivityArea, text: string, href?: string) => {
@@ -133,7 +133,7 @@ export function TeamProvider({ viewingAs, children }: {viewingAs: Role;children:
   const used = seatsUsed(data);
 
   const invite = useCallback(
-    (input: {contact: string;role: Role;spaceIds: string[] | null;branchId?: string | null;}) => {
+    (input: { contact: string; role: Role; spaceIds: string[] | null; branchId?: string | null }) => {
       const contact = input.contact.trim();
       if (seatsUsed(ref.current) >= seatLimits[current.plan]) return null;
       const now = new Date();
@@ -143,26 +143,26 @@ export function TeamProvider({ viewingAs, children }: {viewingAs: Role;children:
         contact,
         role: input.role,
         spaceIds: input.spaceIds,
-        branchId: input.role === 'admin' ? null : input.branchId ?? null,
+        branchId: input.role === 'admin' ? null : (input.branchId ?? null),
         invitedBy: me.name,
         createdAt: now.toISOString(),
         expiresAt: new Date(now.getTime() + INVITE_DAYS * 86400000).toISOString(),
-        status: 'pending'
+        status: 'pending',
       };
       apply((d) => ({ ...d, invites: [inv, ...d.invites], activity: [activity(me.name, 'team', `invited ${contact} as ${articled(input.role)}`, '/app/settings'), ...d.activity] }));
       return inv;
     },
-    [apply, current.plan, me.name]
+    [apply, current.plan, me.name],
   );
 
   const cancelInvite = useCallback(
-    (id: string) => apply((d) => ({ ...d, invites: d.invites.map((i) => i.id === id ? { ...i, status: 'cancelled' as const } : i), activity: [activity(me.name, 'team', `cancelled the invite for ${d.invites.find((i) => i.id === id)?.contact ?? 'someone'}`), ...d.activity] })),
-    [apply, me.name]
+    (id: string) => apply((d) => ({ ...d, invites: d.invites.map((i) => (i.id === id ? { ...i, status: 'cancelled' as const } : i)), activity: [activity(me.name, 'team', `cancelled the invite for ${d.invites.find((i) => i.id === id)?.contact ?? 'someone'}`), ...d.activity] })),
+    [apply, me.name],
   );
 
   const resendInvite = useCallback(
-    (id: string) => apply((d) => ({ ...d, invites: d.invites.map((i) => i.id === id ? { ...i, expiresAt: new Date(Date.now() + INVITE_DAYS * 86400000).toISOString() } : i) })),
-    [apply]
+    (id: string) => apply((d) => ({ ...d, invites: d.invites.map((i) => (i.id === id ? { ...i, expiresAt: new Date(Date.now() + INVITE_DAYS * 86400000).toISOString() } : i)) })),
+    [apply],
   );
 
   const acceptInvite = useCallback(
@@ -170,77 +170,77 @@ export function TeamProvider({ viewingAs, children }: {viewingAs: Role;children:
       const inv = ref.current.invites.find((i) => i.token === token);
       if (!inv || inviteState(inv) !== 'pending') return null;
       const member: Member = { id: uid('member'), name: name.trim() || inv.contact, contact: inv.contact, role: inv.role, spaceIds: inv.spaceIds, branchId: inv.branchId ?? null, joinedAt: new Date().toISOString(), lastActiveAt: new Date().toISOString() };
-      apply((d) => ({ ...d, members: [...d.members, member], invites: d.invites.map((i) => i.id === inv.id ? { ...i, status: 'accepted' as const } : i), activity: [activity(member.name, 'team', `joined as ${articled(inv.role)}`, '/app/settings'), ...d.activity] }));
+      apply((d) => ({ ...d, members: [...d.members, member], invites: d.invites.map((i) => (i.id === inv.id ? { ...i, status: 'accepted' as const } : i)), activity: [activity(member.name, 'team', `joined as ${articled(inv.role)}`, '/app/settings'), ...d.activity] }));
       return member;
     },
-    [apply]
+    [apply],
   );
 
   const changeRole = useCallback(
     (memberId: string, next: Role) =>
-    apply((d) => {
-      const m = d.members.find((x) => x.id === memberId);
-      if (!m || m.role === 'owner' || next === 'owner') return d;
-      return { ...d, members: d.members.map((x) => x.id === memberId ? { ...x, role: next } : x), activity: [activity(me.name, 'team', `changed ${m.name}’s role to ${roleInfo[next].label}`, '/app/settings'), ...d.activity] };
-    }),
-    [apply, me.name]
+      apply((d) => {
+        const m = d.members.find((x) => x.id === memberId);
+        if (!m || m.role === 'owner' || next === 'owner') return d;
+        return { ...d, members: d.members.map((x) => (x.id === memberId ? { ...x, role: next } : x)), activity: [activity(me.name, 'team', `changed ${m.name}’s role to ${roleInfo[next].label}`, '/app/settings'), ...d.activity] };
+      }),
+    [apply, me.name],
   );
 
   const setSpaces = useCallback(
     (memberId: string, spaceIds: string[] | null) =>
-    apply((d) => {
-      const m = d.members.find((x) => x.id === memberId);
-      if (!m) return d;
-      return { ...d, members: d.members.map((x) => x.id === memberId ? { ...x, spaceIds } : x), activity: [activity(me.name, 'team', `changed which spaces ${m.name} can edit`, '/app/settings'), ...d.activity] };
-    }),
-    [apply, me.name]
+      apply((d) => {
+        const m = d.members.find((x) => x.id === memberId);
+        if (!m) return d;
+        return { ...d, members: d.members.map((x) => (x.id === memberId ? { ...x, spaceIds } : x)), activity: [activity(me.name, 'team', `changed which spaces ${m.name} can edit`, '/app/settings'), ...d.activity] };
+      }),
+    [apply, me.name],
   );
 
   const setBranch = useCallback(
     (memberId: string, branchId: string | null) =>
-    apply((d) => {
-      const m = d.members.find((x) => x.id === memberId);
-      if (!m || m.role === 'owner' || m.role === 'admin') return d;
-      return { ...d, members: d.members.map((x) => x.id === memberId ? { ...x, branchId } : x), activity: [activity(me.name, 'team', branchId ? `limited ${m.name} to one location` : `gave ${m.name} every location`, '/app/settings'), ...d.activity] };
-    }),
-    [apply, me.name]
+      apply((d) => {
+        const m = d.members.find((x) => x.id === memberId);
+        if (!m || m.role === 'owner' || m.role === 'admin') return d;
+        return { ...d, members: d.members.map((x) => (x.id === memberId ? { ...x, branchId } : x)), activity: [activity(me.name, 'team', branchId ? `limited ${m.name} to one location` : `gave ${m.name} every location`, '/app/settings'), ...d.activity] };
+      }),
+    [apply, me.name],
   );
 
   const removeMember = useCallback(
     (memberId: string) =>
-    apply((d) => {
-      const m = d.members.find((x) => x.id === memberId);
-      if (!m || m.role === 'owner') return d;
-      return { ...d, members: d.members.filter((x) => x.id !== memberId), activity: [activity(me.name, 'team', `removed ${m.name} from the workspace`, '/app/settings'), ...d.activity] };
-    }),
-    [apply, me.name]
+      apply((d) => {
+        const m = d.members.find((x) => x.id === memberId);
+        if (!m || m.role === 'owner') return d;
+        return { ...d, members: d.members.filter((x) => x.id !== memberId), activity: [activity(me.name, 'team', `removed ${m.name} from the workspace`, '/app/settings'), ...d.activity] };
+      }),
+    [apply, me.name],
   );
 
   const transferOwnership = useCallback(
     (memberId: string) =>
-    apply((d) => {
-      const to = d.members.find((x) => x.id === memberId);
-      const from = d.members.find((x) => x.role === 'owner');
-      if (!to || !from || to.id === from.id) return d;
-      return {
-        ...d,
-        members: d.members.map((x) => x.id === to.id ? { ...x, role: 'owner' as const, spaceIds: null, branchId: null } : x.id === from.id ? { ...x, role: 'admin' as const } : x),
-        activity: [activity(me.name, 'team', `transferred ownership to ${to.name}`, '/app/settings'), ...d.activity]
-      };
-    }),
-    [apply, me.name]
+      apply((d) => {
+        const to = d.members.find((x) => x.id === memberId);
+        const from = d.members.find((x) => x.role === 'owner');
+        if (!to || !from || to.id === from.id) return d;
+        return {
+          ...d,
+          members: d.members.map((x) => (x.id === to.id ? { ...x, role: 'owner' as const, spaceIds: null, branchId: null } : x.id === from.id ? { ...x, role: 'admin' as const } : x)),
+          activity: [activity(me.name, 'team', `transferred ownership to ${to.name}`, '/app/settings'), ...d.activity],
+        };
+      }),
+    [apply, me.name],
   );
 
   const updateMember = useCallback(
     (memberId: string, patch: Partial<Pick<Member, 'name' | 'contact'>>) =>
-    apply((d) => d.members.some((m) => m.id === memberId) ? { ...d, members: d.members.map((m) => m.id === memberId ? { ...m, ...patch } : m) } : d),
-    [apply]
+      apply((d) => (d.members.some((m) => m.id === memberId) ? { ...d, members: d.members.map((m) => (m.id === memberId ? { ...m, ...patch } : m)) } : d)),
+    [apply],
   );
 
   const update = useCallback(
     (patch: Partial<Pick<TeamData, 'approvalsOn' | 'salesRefundLimitNgn'>>) =>
-    apply((d) => ({ ...d, ...patch, activity: 'approvalsOn' in patch ? [activity(me.name, 'settings', patch.approvalsOn ? 'turned on approvals for publishing' : 'turned off approvals for publishing', '/app/settings/approvals'), ...d.activity] : d.activity })),
-    [apply, me.name]
+      apply((d) => ({ ...d, ...patch, activity: 'approvalsOn' in patch ? [activity(me.name, 'settings', patch.approvalsOn ? 'turned on approvals for publishing' : 'turned off approvals for publishing', '/app/settings/approvals'), ...d.activity] : d.activity })),
+    [apply, me.name],
   );
 
   // Approvals (D58): Owners and Admins publish directly; everyone else sends for review when it's on.
@@ -255,45 +255,45 @@ export function TeamProvider({ viewingAs, children }: {viewingAs: Role;children:
       apply((d) => ({
         ...d,
         // One open request per space: a new one replaces the old.
-        reviews: [req, ...d.reviews.map((r) => r.spaceId === input.spaceId && r.status === 'pending' ? { ...r, status: 'withdrawn' as const } : r)],
+        reviews: [req, ...d.reviews.map((r) => (r.spaceId === input.spaceId && r.status === 'pending' ? { ...r, status: 'withdrawn' as const } : r))],
         notices: [...reviewers(d).map((m) => notice(m.id, `${me.name} sent ${input.spaceName} for review`, `/app/settings/approvals?review=${req.id}`)), ...d.notices],
-        activity: [activity(me.name, 'pages', `sent ${input.spaceName} for review`, `/app/settings/approvals?review=${req.id}`), ...d.activity]
+        activity: [activity(me.name, 'pages', `sent ${input.spaceName} for review`, `/app/settings/approvals?review=${req.id}`), ...d.activity],
       }));
       return req;
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [apply, me.name, me.id, current.plan]
+    [apply, me.name, me.id, current.plan],
   );
 
-  const updateReviewDoc = useCallback((id: string, doc: ReviewRequest['doc']) => apply((d) => ({ ...d, reviews: d.reviews.map((r) => r.id === id && r.status === 'pending' ? { ...r, doc, updatedAt: new Date().toISOString() } : r) })), [apply]);
+  const updateReviewDoc = useCallback((id: string, doc: ReviewRequest['doc']) => apply((d) => ({ ...d, reviews: d.reviews.map((r) => (r.id === id && r.status === 'pending' ? { ...r, doc, updatedAt: new Date().toISOString() } : r)) })), [apply]);
 
   const withdrawReview = useCallback(
-    (id: string) => apply((d) => ({ ...d, reviews: d.reviews.map((r) => r.id === id && r.status === 'pending' ? { ...r, status: 'withdrawn' as const } : r), activity: [activity(me.name, 'pages', `withdrew the review request for ${d.reviews.find((r) => r.id === id)?.spaceName ?? 'a space'}`), ...d.activity] })),
-    [apply, me.name]
+    (id: string) => apply((d) => ({ ...d, reviews: d.reviews.map((r) => (r.id === id && r.status === 'pending' ? { ...r, status: 'withdrawn' as const } : r)), activity: [activity(me.name, 'pages', `withdrew the review request for ${d.reviews.find((r) => r.id === id)?.spaceName ?? 'a space'}`), ...d.activity] })),
+    [apply, me.name],
   );
 
   const decideReview = useCallback(
     (id: string, outcome: 'approved' | 'changes', comment: string) =>
-    apply((d) => {
-      const r = d.reviews.find((x) => x.id === id);
-      if (!r || r.status !== 'pending') return d;
-      const text = outcome === 'approved' ? `${me.name} approved ${r.spaceName}${r.scheduleAt ? ' — it’s scheduled' : ' — it’s live'}` : `${me.name} asked for changes to ${r.spaceName}: “${comment}”`;
-      return {
-        ...d,
-        reviews: d.reviews.map((x) => x.id === id ? { ...x, status: outcome, comment: comment.trim() || undefined, decidedBy: me.name, decidedAt: new Date().toISOString() } : x),
-        notices: [notice(r.requestedById, text, '/app/canvas'), ...d.notices],
-        activity: [activity(me.name, 'pages', outcome === 'approved' ? `approved and published ${r.spaceName}` : `asked for changes to ${r.spaceName}`, `/app/settings/approvals?review=${id}`), ...d.activity]
-      };
-    }),
-    [apply, me.name]
+      apply((d) => {
+        const r = d.reviews.find((x) => x.id === id);
+        if (!r || r.status !== 'pending') return d;
+        const text = outcome === 'approved' ? `${me.name} approved ${r.spaceName}${r.scheduleAt ? ' — it’s scheduled' : ' — it’s live'}` : `${me.name} asked for changes to ${r.spaceName}: “${comment}”`;
+        return {
+          ...d,
+          reviews: d.reviews.map((x) => (x.id === id ? { ...x, status: outcome, comment: comment.trim() || undefined, decidedBy: me.name, decidedAt: new Date().toISOString() } : x)),
+          notices: [notice(r.requestedById, text, '/app/canvas'), ...d.notices],
+          activity: [activity(me.name, 'pages', outcome === 'approved' ? `approved and published ${r.spaceName}` : `asked for changes to ${r.spaceName}`, `/app/settings/approvals?review=${id}`), ...d.activity],
+        };
+      }),
+    [apply, me.name],
   );
 
   const myNotices = useMemo(() => data.notices.filter((n) => n.memberId === me.id), [data.notices, me.id]);
-  const markNoticesSeen = useCallback(() => apply((d) => d.notices.some((n) => n.memberId === me.id && !n.seen) ? { ...d, notices: d.notices.map((n) => n.memberId === me.id ? { ...n, seen: true } : n) } : d), [apply, me.id]);
+  const markNoticesSeen = useCallback(() => apply((d) => (d.notices.some((n) => n.memberId === me.id && !n.seen) ? { ...d, notices: d.notices.map((n) => (n.memberId === me.id ? { ...n, seen: true } : n)) } : d)), [apply, me.id]);
 
   // Team comments (D116): anyone in the workspace can comment; mentions and thread participants are told.
   const addComment = useCallback(
-    (input: {subject: string;subjectLabel: string;href?: string;area: ActivityArea;text: string;parentId?: string;}) => {
+    (input: { subject: string; subjectLabel: string; href?: string; area: ActivityArea; text: string; parentId?: string }) => {
       const text = input.text.trim();
       if (!text) return null;
       const d0 = ref.current;
@@ -307,51 +307,51 @@ export function TeamProvider({ viewingAs, children }: {viewingAs: Role;children:
         ...d,
         comments: [...d.comments, c],
         notices: [
-        ...mentions.map((id) => notice(id, `${me.name} mentioned you on ${input.subjectLabel}: “${short}”`, input.href)),
-        ...participants.map((id) => notice(id, `${me.name} replied on ${input.subjectLabel}: “${short}”`, input.href)),
-        ...d.notices],
-
-        activity: [activity(me.name, input.area, `commented on ${input.subjectLabel}`, input.href), ...d.activity].slice(0, 500)
+          ...mentions.map((id) => notice(id, `${me.name} mentioned you on ${input.subjectLabel}: “${short}”`, input.href)),
+          ...participants.map((id) => notice(id, `${me.name} replied on ${input.subjectLabel}: “${short}”`, input.href)),
+          ...d.notices,
+        ],
+        activity: [activity(me.name, input.area, `commented on ${input.subjectLabel}`, input.href), ...d.activity].slice(0, 500),
       }));
       return ok ? c : null;
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [apply, me.id, me.name]
+    [apply, me.id, me.name],
   );
 
   const editComment = useCallback(
     (id: string, text: string) => {
       const t = text.trim();
       if (!t) return;
-      apply((d) => ({ ...d, comments: d.comments.map((c) => c.id === id && c.authorId === me.id && !c.deletedAt ? { ...c, text: t.slice(0, 1000), mentions: mentionedIds(t, d.members).filter((m) => m !== me.id), editedAt: new Date().toISOString() } : c) }));
+      apply((d) => ({ ...d, comments: d.comments.map((c) => (c.id === id && c.authorId === me.id && !c.deletedAt ? { ...c, text: t.slice(0, 1000), mentions: mentionedIds(t, d.members).filter((m) => m !== me.id), editedAt: new Date().toISOString() } : c)) }));
     },
-    [apply, me.id]
+    [apply, me.id],
   );
 
   // Authors delete their own; Owners and Admins can remove anyone's. The slot stays so replies keep their context.
   const deleteComment = useCallback(
-    (id: string) => apply((d) => ({ ...d, comments: d.comments.map((c) => c.id === id && (c.authorId === me.id || role === 'owner' || role === 'admin') ? { ...c, text: '', mentions: [], deletedAt: new Date().toISOString() } : c) })),
-    [apply, me.id, role]
+    (id: string) => apply((d) => ({ ...d, comments: d.comments.map((c) => (c.id === id && (c.authorId === me.id || role === 'owner' || role === 'admin') ? { ...c, text: '', mentions: [], deletedAt: new Date().toISOString() } : c)) })),
+    [apply, me.id, role],
   );
 
   const resolveThread = useCallback(
     (id: string, resolved: boolean) =>
-    apply((d) => {
-      const c = d.comments.find((x) => x.id === id && !x.parentId);
-      if (!c) return d;
-      return {
-        ...d,
-        comments: d.comments.map((x) => x.id === id ? { ...x, resolvedAt: resolved ? new Date().toISOString() : undefined, resolvedBy: resolved ? me.name : undefined } : x),
-        notices: resolved && c.authorId !== me.id ? [notice(c.authorId, `${me.name} resolved your comment on ${c.subjectLabel}`, c.href), ...d.notices] : d.notices
-      };
-    }),
+      apply((d) => {
+        const c = d.comments.find((x) => x.id === id && !x.parentId);
+        if (!c) return d;
+        return {
+          ...d,
+          comments: d.comments.map((x) => (x.id === id ? { ...x, resolvedAt: resolved ? new Date().toISOString() : undefined, resolvedBy: resolved ? me.name : undefined } : x)),
+          notices: resolved && c.authorId !== me.id ? [notice(c.authorId, `${me.name} resolved your comment on ${c.subjectLabel}`, c.href), ...d.notices] : d.notices,
+        };
+      }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [apply, me.id, me.name]
+    [apply, me.id, me.name],
   );
 
   const value = useMemo<TeamValue>(
     () => ({ data, me, role, paused, seatLimit, seatsUsed: used, can, canAccessSpace, myBranchId, invite, setBranch, cancelInvite, resendInvite, acceptInvite, changeRole, setSpaces, removeMember, transferOwnership, updateMember, update, log, needsReview, requestReview, updateReviewDoc, withdrawReview, decideReview, myNotices, markNoticesSeen, addComment, editComment, deleteComment, resolveThread }),
-    [data, me, role, paused, seatLimit, used, can, canAccessSpace, myBranchId, invite, setBranch, cancelInvite, resendInvite, acceptInvite, changeRole, setSpaces, removeMember, transferOwnership, updateMember, update, log, needsReview, requestReview, updateReviewDoc, withdrawReview, decideReview, myNotices, markNoticesSeen, addComment, editComment, deleteComment, resolveThread]
+    [data, me, role, paused, seatLimit, used, can, canAccessSpace, myBranchId, invite, setBranch, cancelInvite, resendInvite, acceptInvite, changeRole, setSpaces, removeMember, transferOwnership, updateMember, update, log, needsReview, requestReview, updateReviewDoc, withdrawReview, decideReview, myNotices, markNoticesSeen, addComment, editComment, deleteComment, resolveThread],
   );
   return <TeamContext.Provider value={value}>{children}</TeamContext.Provider>;
 }

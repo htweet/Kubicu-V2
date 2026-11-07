@@ -7,10 +7,10 @@ const labels: Record<DeliverableStatus, [string, BadgeTone]> = {
   todo: ['To do', 'neutral'],
   submitted: ['Waiting for approval', 'info'],
   changes: ['Changes asked', 'warning'],
-  approved: ['Approved · paid', 'success']
+  approved: ['Approved · paid', 'success'],
 };
 
-export function DeliverableStatusBadge({ status }: {status: DeliverableStatus;}) {
+export function DeliverableStatusBadge({ status }: { status: DeliverableStatus }) {
   const [label, tone] = labels[status];
   return <Badge tone={tone}>{label}</Badge>;
 }

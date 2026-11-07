@@ -26,6 +26,6 @@ export function PrototypeNote({ id, title, children, actions, className }: Proto
       </h2>
       <div className="text-caption text-fg-muted">{children}</div>
       {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
-    </section>);
-
+    </section>
+  );
 }

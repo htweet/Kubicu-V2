@@ -17,7 +17,7 @@ const queueKey = (eventId: string) => `kubicu.door.queue.${eventId}`;
 const read = <T,>(key: string, fallback: T): T => {
   try {
     const v = localStorage.getItem(key);
-    return v ? JSON.parse(v) as T : fallback;
+    return v ? (JSON.parse(v) as T) : fallback;
   } catch {
     return fallback;
   }
@@ -30,7 +30,7 @@ const read = <T,>(key: string, fallback: T): T => {
 export function useDoor(eventId: string, by: string) {
   const [door, setDoorState] = useState<string>(() => read<string>(NAME_KEY, ''));
   const [peers, setPeers] = useState<Beat<DoorPayload>[]>([]);
-  const [online, setOnline] = useState(() => typeof navigator === 'undefined' ? true : navigator.onLine);
+  const [online, setOnline] = useState(() => (typeof navigator === 'undefined' ? true : navigator.onLine));
   const [simOffline, setSimOffline] = useState(false);
   const [queue, setQueue] = useState<QueuedScan[]>(() => read<QueuedScan[]>(queueKey(eventId), []));
 
@@ -40,8 +40,8 @@ export function useDoor(eventId: string, by: string) {
     try {
       localStorage.setItem(NAME_KEY, JSON.stringify(v));
     } catch {
-
-      /* storage full or blocked: keep it for this session */}
+      /* storage full or blocked: keep it for this session */
+    }
   }, []);
 
   useEffect(() => {
@@ -70,10 +70,10 @@ export function useDoor(eventId: string, by: string) {
       try {
         localStorage.setItem(queueKey(eventId), JSON.stringify(next));
       } catch {
-
-        /* ignore */}
+        /* ignore */
+      }
     },
-    [eventId]
+    [eventId],
   );
 
   const enqueue = useCallback((raw: string) => saveQueue([...read<QueuedScan[]>(queueKey(eventId), []), { raw, at: new Date().toISOString() }]), [eventId, saveQueue]);

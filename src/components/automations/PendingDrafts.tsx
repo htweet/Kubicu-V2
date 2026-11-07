@@ -24,7 +24,7 @@ export function PendingDrafts() {
 
   const decide = (aId: string, rId: string, i: number, approve: boolean, newText?: string) => {
     const ok = apply((d) => {
-      const edited = newText ? { ...d, automations: d.automations.map((a) => a.id !== aId ? a : { ...a, runs: a.runs.map((r) => r.id !== rId ? r : { ...r, steps: r.steps.map((s, j) => j === i ? { ...s, detail: newText } : s) }) }) } : d;
+      const edited = newText ? { ...d, automations: d.automations.map((a) => (a.id !== aId ? a : { ...a, runs: a.runs.map((r) => (r.id !== rId ? r : { ...r, steps: r.steps.map((s, j) => (j === i ? { ...s, detail: newText } : s)) })) })) } : d;
       return decideDraft(edited, aId, rId, i, approve, me);
     });
     if (!ok) return;
@@ -50,23 +50,23 @@ export function PendingDrafts() {
                 <p className="text-caption text-fg-subtle">
                   <span className="font-medium text-fg">{a.name}</span> · {r.subject} · {formatRelative(r.at)}
                 </p>
-                {editing === key ?
-                <TextArea id={`draft-${key}`} label="Message" rows={3} value={text} onChange={(e) => setText(e.target.value)} /> :
-
-                <p className="text-label text-fg">{s.detail}</p>
-                }
+                {editing === key ? (
+                  <TextArea id={`draft-${key}`} label="Message" rows={3} value={text} onChange={(e) => setText(e.target.value)} />
+                ) : (
+                  <p className="text-label text-fg">{s.detail}</p>
+                )}
                 <div className="flex flex-wrap gap-2">
-                  {editing === key ?
-                  <>
+                  {editing === key ? (
+                    <>
                       <Button size="sm" leadingIcon={CheckIcon} disabled={!text.trim()} onClick={() => decide(a.id, r.id, i, true, text.trim())}>
                         Save and approve
                       </Button>
                       <Button size="sm" variant="tertiary" onClick={() => setEditing(null)}>
                         Cancel
                       </Button>
-                    </> :
-
-                  <>
+                    </>
+                  ) : (
+                    <>
                       <Button size="sm" leadingIcon={CheckIcon} onClick={() => decide(a.id, r.id, i, true)}>
                         Approve
                       </Button>
@@ -77,13 +77,13 @@ export function PendingDrafts() {
                         Discard
                       </Button>
                     </>
-                  }
+                  )}
                 </div>
-              </li>);
-
+              </li>
+            );
           })}
         </ul>
       </div>
-    </section>);
-
+    </section>
+  );
 }

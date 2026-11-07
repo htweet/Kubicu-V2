@@ -12,7 +12,7 @@ export function signOutOthers(a: AccountData, reason: Reason): AccountData {
   return {
     ...a,
     sessions: a.sessions.filter((s) => s.current),
-    security: { ...a.security, lastSignOut: { at: new Date().toISOString(), reason, devices: others.map((s) => `${s.device} · ${s.browser}`) } }
+    security: { ...a.security, lastSignOut: { at: new Date().toISOString(), reason, devices: others.map((s) => `${s.device} · ${s.browser}`) } },
   };
 }
 
@@ -20,5 +20,5 @@ export const signOutReasonCopy: Record<Reason, string> = {
   password: 'you changed your password',
   two_step_on: 'you turned on two-step sign-in',
   two_step_off: 'you turned off two-step sign-in',
-  manual: 'you chose “Sign out others”'
+  manual: 'you chose “Sign out others”',
 };

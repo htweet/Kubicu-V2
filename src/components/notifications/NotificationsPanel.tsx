@@ -30,22 +30,22 @@ export function NotificationsPanel() {
   };
 
   const list = (title: string, items: AppNotification[]) =>
-  items.length > 0 &&
-  <section aria-label={title} className="flex flex-col">
+    items.length > 0 && (
+      <section aria-label={title} className="flex flex-col">
         <h3 className="px-5 pb-1 pt-4 text-caption font-semibold text-fg-subtle">
           {title} · {items.length}
         </h3>
         <ul>
           {items.map((item) => {
-        const A = notifAreas[item.area];
-        const read = n.isRead(item);
-        return (
-          <li key={item.id}>
+            const A = notifAreas[item.area];
+            const read = n.isRead(item);
+            return (
+              <li key={item.id}>
                 <button
-              type="button"
-              onClick={() => go(item)}
-              className="flex w-full items-start gap-3 px-5 py-3 text-left transition-colors duration-150 hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus">
-              
+                  type="button"
+                  onClick={() => go(item)}
+                  className="flex w-full items-start gap-3 px-5 py-3 text-left transition-colors duration-150 hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus"
+                >
                   <span className={cn('mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md', item.kind === 'action' ? 'bg-action-soft text-action' : 'bg-sunken text-fg-muted')}>
                     <A.icon size={16} strokeWidth={2.25} aria-hidden />
                   </span>
@@ -57,12 +57,12 @@ export function NotificationsPanel() {
                   </span>
                   {!read && <span aria-label="Unread" className="mt-2 h-2 w-2 shrink-0 rounded-full bg-action" />}
                 </button>
-              </li>);
-
-      })}
+              </li>
+            );
+          })}
         </ul>
-      </section>;
-
+      </section>
+    );
 
   return (
     <Sheet
@@ -74,51 +74,51 @@ export function NotificationsPanel() {
       description={n.unread ? `${n.unread} unread` : 'You’re all caught up'}
       bodyClassName="p-0"
       headerActions={
-      n.unread > 0 ?
-      <Button size="sm" variant="tertiary" leadingIcon={CheckCheckIcon} onClick={n.markAllRead}>
+        n.unread > 0 ? (
+          <Button size="sm" variant="tertiary" leadingIcon={CheckCheckIcon} onClick={n.markAllRead}>
             Mark all read
-          </Button> :
-      undefined
+          </Button>
+        ) : undefined
       }
       footer={
-      <button
-        type="button"
-        onClick={() => {
-          n.setOpen(false);
-          navigate('/app/settings/notifications');
-        }}
-        className="inline-flex items-center gap-2 text-label font-medium text-fg-muted hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-        
+        <button
+          type="button"
+          onClick={() => {
+            n.setOpen(false);
+            navigate('/app/settings/notifications');
+          }}
+          className="inline-flex items-center gap-2 text-label font-medium text-fg-muted hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+        >
           <SettingsIcon size={15} aria-hidden /> Notification settings
         </button>
-      }>
-      
-      {areas.length > 1 &&
-      <div className="scroll-quiet flex gap-1.5 overflow-x-auto overflow-y-hidden border-b border-line px-5 py-3" role="group" aria-label="Filter by area">
-          {(['all', ...areas] as const).map((a) =>
-        <button
-          key={a}
-          type="button"
-          aria-pressed={area === a}
-          onClick={() => setArea(a)}
-          className={cn(
-            'h-8 shrink-0 rounded-full border px-3 text-caption font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
-            area === a ? 'border-action bg-action-soft text-action' : 'border-line text-fg-muted hover:bg-sunken'
-          )}>
-          
+      }
+    >
+      {areas.length > 1 && (
+        <div className="scroll-quiet flex gap-1.5 overflow-x-auto overflow-y-hidden border-b border-line px-5 py-3" role="group" aria-label="Filter by area">
+          {(['all', ...areas] as const).map((a) => (
+            <button
+              key={a}
+              type="button"
+              aria-pressed={area === a}
+              onClick={() => setArea(a)}
+              className={cn(
+                'h-8 shrink-0 rounded-full border px-3 text-caption font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
+                area === a ? 'border-action bg-action-soft text-action' : 'border-line text-fg-muted hover:bg-sunken',
+              )}
+            >
               {a === 'all' ? 'All' : notifAreas[a].label}
             </button>
-        )}
+          ))}
         </div>
-      }
-      {shown.length === 0 ?
-      <EmptyState icon={BellOffIcon} title="Nothing here" description="New orders, bookings, reviews and anything that needs you will show up here." className="py-16" /> :
-
-      <div className="pb-4">
+      )}
+      {shown.length === 0 ? (
+        <EmptyState icon={BellOffIcon} title="Nothing here" description="New orders, bookings, reviews and anything that needs you will show up here." className="py-16" />
+      ) : (
+        <div className="pb-4">
           {list('Needs action', action)}
           {list('Updates', updates)}
         </div>
-      }
-    </Sheet>);
-
+      )}
+    </Sheet>
+  );
 }

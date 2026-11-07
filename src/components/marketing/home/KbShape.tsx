@@ -22,30 +22,30 @@ export function KbShape({ kind, color, size, motion: m = 'none', className, phas
 
   const loop = { repeat: Infinity, ease: 'easeInOut' as const, delay: phase };
   const animate =
-  reduce || m === 'none' ?
-  undefined :
-  m === 'spin' ?
-  { rotate: 360 } :
-  m === 'float' ?
-  { y: [0, -14, 0], rotate: [0, 6, 0] } :
-  m === 'bob' ?
-  { y: [0, 10, 0] } :
-  { rotate: [-8, 8, -8] };
+    reduce || m === 'none'
+      ? undefined
+      : m === 'spin'
+        ? { rotate: 360 }
+        : m === 'float'
+          ? { y: [0, -14, 0], rotate: [0, 6, 0] }
+          : m === 'bob'
+            ? { y: [0, 10, 0] }
+            : { rotate: [-8, 8, -8] };
   const transition = m === 'spin' ? { repeat: Infinity, ease: 'linear' as const, duration: 18 } : { ...loop, duration: m === 'bob' ? 4.5 : 6 };
   return (
     <motion.div aria-hidden className={className} style={{ width: size, height: size }} animate={animate} transition={transition}>
       <svg viewBox="0 0 100 100" width={size} height={size} className="block overflow-visible">
         {shape(kind, color)}
       </svg>
-    </motion.div>);
-
+    </motion.div>
+  );
 }
 
 /**
  * KUBICU's own mark (D266): the logo's rounded tile with its three blocks cut out.
  * The two small blocks trade places now and then — "building blocks" — while the tile tilts gently.
  */
-function KubeMark({ color, size, still, className, phase }: {color: string;size: number;still: boolean;className?: string;phase: number;}) {
+function KubeMark({ color, size, still, className, phase }: { color: string; size: number; still: boolean; className?: string; phase: number }) {
   const id = useId().replace(/:/g, '');
   const cycle = 5.2;
   // Hold, swap (~0.5s), hold, swap back (~0.5s).
@@ -57,8 +57,8 @@ function KubeMark({ color, size, still, className, phase }: {color: string;size:
       className={className}
       style={{ width: size, height: size }}
       animate={still ? undefined : { rotate: [-7, 7, -7], y: [0, -6, 0] }}
-      transition={{ repeat: Infinity, duration: 7, ease: 'easeInOut', delay: phase }}>
-      
+      transition={{ repeat: Infinity, duration: 7, ease: 'easeInOut', delay: phase }}
+    >
       <svg viewBox="0 0 100 100" width={size} height={size} className="block overflow-visible">
         <defs>
           <mask id={`kube-${id}`} maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="100">
@@ -70,8 +70,8 @@ function KubeMark({ color, size, still, className, phase }: {color: string;size:
               fill="black"
               initial={{ x: 22, y: 22 }}
               animate={still ? undefined : { height: [56, 56, 48, 56, 56], y: [22, 22, 26, 22, 22] }}
-              transition={swap} />
-            
+              transition={swap}
+            />
             <motion.rect
               width="22"
               height="22"
@@ -79,8 +79,8 @@ function KubeMark({ color, size, still, className, phase }: {color: string;size:
               fill="black"
               initial={{ x: 56, y: 22 }}
               animate={still ? undefined : { y: [22, 22, 56, 56, 22], x: [56, 56, 56, 56, 56] }}
-              transition={swap} />
-            
+              transition={swap}
+            />
             <motion.rect
               width="22"
               height="22"
@@ -88,8 +88,8 @@ function KubeMark({ color, size, still, className, phase }: {color: string;size:
               fill="black"
               initial={{ x: 56, y: 56 }}
               animate={still ? undefined : { y: [56, 56, 22, 22, 56] }}
-              transition={swap} />
-            
+              transition={swap}
+            />
           </mask>
         </defs>
         <rect x="0" y="0" width="100" height="100" rx="28" fill={color} mask={`url(#kube-${id})`} />
@@ -102,11 +102,11 @@ function KubeMark({ color, size, still, className, phase }: {color: string;size:
           opacity={0.45}
           initial={{ x: 56, y: 22 }}
           animate={still ? undefined : { y: [22, 22, 56, 56, 22] }}
-          transition={swap} />
-        
+          transition={swap}
+        />
       </svg>
-    </motion.div>);
-
+    </motion.div>
+  );
 }
 
 function shape(kind: Exclude<KbShapeKind, 'kube'>, c: string) {

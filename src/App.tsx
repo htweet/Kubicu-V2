@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { MotionConfig } from 'framer-motion';
 import { LocaleProvider } from './contexts/LocaleContext';
+import { AccountModeProvider } from './contexts/AccountModeContext';
 import { LiveAnnouncer } from './components/ui/LiveAnnouncer';
 import { AskBar } from './components/shell/AskBar';
 import { AppearancePolicyProvider } from './contexts/AppearancePolicyContext';
@@ -172,6 +173,8 @@ type ViewingAsOption = 'owner' | 'admin' | 'editor' | 'sales' | 'viewer';
 type RenewalOption = 'succeeds' | 'fails';
 type CopilotWhatsAppOption = 'available' | 'unavailable';
 type CopilotFailureOption = 'none' | 'generation' | 'previewImage' | 'expiredLink' | 'signIn';
+type AuthModeOption = 'browser' | 'account';
+type AccountSimulationOption = 'normal' | 'stepUpRequired' | 'stepUpRateLimited' | 'offline' | 'serverDown' | 'rateLimited' | 'lostAccess' | 'sessionEnded' | 'noSeats' | 'refused' | 'conflict' | 'logUnverified' | 'unsettledCharges' | 'empty' | 'queueFull' | 'aiOff' | 'approvalExpired' | 'approvalDecidedElsewhere' | 'ownRequest' | 'runFailed' | 'runTimedOut';
 
 interface AppProps {
   /** KUBICU Copilot's WhatsApp channel (D262, proposed): off shows the web fallback. */
@@ -184,9 +187,13 @@ interface AppProps {
   viewingAs?: ViewingAsOption;
   /** What happens at the next plan renewal (D65, test mode). */
   simulateNextRenewal?: RenewalOption;
+  /** Browser = today's prototype. Account = workspaces live on Kubicu's server (D529, stub of realAuthEnabled()). */
+  authMode?: AuthModeOption;
+  /** Account mode only: which server outcome to preview (D529). */
+  accountSimulation?: AccountSimulationOption;
 }
 
-export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', viewingAs = 'owner', simulateNextRenewal = 'succeeds', copilotWhatsApp = 'available', copilotFailure = 'none' }: AppProps) {
+export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', viewingAs = 'owner', simulateNextRenewal = 'succeeds', copilotWhatsApp = 'available', copilotFailure = 'none', authMode = 'browser', accountSimulation = 'normal' }: AppProps) {
   // Personal text size and motion preferences (D80).
   const { reduceMotion, lang } = useAccountEffects();
   return (
@@ -194,6 +201,7 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
     <LocaleProvider lang={lang}>
     <MotionConfig reducedMotion={reduceMotion ? 'always' : 'user'}>
     <BrowserRouter>
+      <AccountModeProvider authMode={authMode} simulation={accountSimulation}>
       <CopilotSimProvider whatsapp={copilotWhatsApp} failure={copilotFailure}>
       <AppearancePolicyProvider initialDefault={visualDirection}>
         <WorkspaceProvider planControl={workspacePlan}>
@@ -376,14 +384,15 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
         </WorkspaceProvider>
       </AppearancePolicyProvider>
       </CopilotSimProvider>
+      </AccountModeProvider>
     </BrowserRouter>
     </MotionConfig>
-    </LocaleProvider>);
-
+    </LocaleProvider>
+  );
 }
 
 /** Everything that belongs to one workspace remounts when you switch workspaces. */
-function WorkspaceScope({ visualDirection, viewingAs, renewal, children }: {visualDirection: VisualDirectionOption;viewingAs: ViewingAsOption;renewal: RenewalOption;children: React.ReactNode;}) {
+function WorkspaceScope({ visualDirection, viewingAs, renewal, children }: { visualDirection: VisualDirectionOption; viewingAs: ViewingAsOption; renewal: RenewalOption; children: React.ReactNode }) {
   const { current, currentSpace } = useWorkspace();
   return (
     <DirectionProvider key={current.id} direction={visualDirection}>
@@ -419,6 +428,6 @@ function WorkspaceScope({ visualDirection, viewingAs, renewal, children }: {visu
        </AnalyticsProvider>
        </TeamProvider>
       </PlanProvider>
-    </DirectionProvider>);
-
+    </DirectionProvider>
+  );
 }

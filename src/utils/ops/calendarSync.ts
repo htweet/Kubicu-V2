@@ -9,7 +9,7 @@ export const providerName = { google: 'Google Calendar', outlook: 'Outlook' } as
 export { busyTimes };
 
 /** A few believable busy times over the next two weeks so the effect shows straight away. */
-function sampleEvents(tz: string, calIds: {main: string;family: string;}): BusyEvent[] {
+function sampleEvents(tz: string, calIds: { main: string; family: string }): BusyEvent[] {
   const today = dateKeyInTz(Date.now(), tz);
   const out: BusyEvent[] = [];
   const add = (dayOffset: number, from: string, to: string, title: string, cal: string) => out.push({ id: uid('evt'), calendarId: cal, title, start: new Date(zonedToUtc(addDaysKey(today, dayOffset), from, tz)).toISOString(), end: new Date(zonedToUtc(addDaysKey(today, dayOffset), to, tz)).toISOString() });
@@ -37,13 +37,13 @@ export function newConnection(provider: CalendarConnection['provider'], account:
     status: 'ok',
     lastSyncedAt: now,
     calendars: [
-    { id: main, name: provider === 'google' ? account : 'Calendar', blocks: true },
-    { id: family, name: 'Family', blocks: true },
-    { id: uid('cal'), name: provider === 'google' ? 'Nigerian public holidays' : 'Holidays in Nigeria', blocks: false }],
-
+      { id: main, name: provider === 'google' ? account : 'Calendar', blocks: true },
+      { id: family, name: 'Family', blocks: true },
+      { id: uid('cal'), name: provider === 'google' ? 'Nigerian public holidays' : 'Holidays in Nigeria', blocks: false },
+    ],
     addTo: main,
     events: sampleEvents(tz, { main, family }),
-    log: [{ at: now, text: `Connected ${providerName[provider]} (${account})` }]
+    log: [{ at: now, text: `Connected ${providerName[provider]} (${account})` }],
   };
 }
 
@@ -61,8 +61,8 @@ export function syncConnection(c: CalendarConnection, bookings: Booking[]): Cale
   const kept: BusyEvent[] = [];
   for (const b of live) {
     const ex = mirrored.find((e) => e.bookingId === b.id);
-    if (!ex) added++;else
-    if (ex.start !== b.start || ex.end !== b.end) moved++;
+    if (!ex) added++;
+    else if (ex.start !== b.start || ex.end !== b.end) moved++;
     kept.push({ id: ex?.id ?? uid('evt'), calendarId: c.addTo, title: `${b.serviceName} — ${b.customer.name} (KUBICU)`, start: b.start, end: b.end, bookingId: b.id });
   }
   const removed = mirrored.filter((e) => !live.some((b) => b.id === e.bookingId)).length;

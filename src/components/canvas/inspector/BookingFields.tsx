@@ -16,7 +16,7 @@ import { InlineAlert } from '../../ui/InlineAlert';
 import { SourceSwitch, useCheckoutAllowed } from './CatalogFields';
 
 /** Booking block fields. Field labels and hints translate inside the shared inputs; the rest here (D299). */
-export function BookingFields({ block, issues }: {block: BlockOf<'booking'>;issues: ValidationIssue[];}) {
+export function BookingFields({ block, issues }: { block: BlockOf<'booking'>; issues: ValidationIssue[] }) {
   const { t: tr } = useT();
   const { actions } = useEditor();
   const { data } = useOps();
@@ -42,35 +42,35 @@ export function BookingFields({ block, issues }: {block: BlockOf<'booking'>;issu
         catalogHint="A service you’ve set up in Bookings. Visitors pick a free time and book right here."
         manualHint="Already take bookings somewhere else (Calendly, a form, another website)? Add its details and link — the button opens it."
         value={linked ? 'catalog' : 'manual'}
-        onChange={(source) => set({ source, ctaLabel: source === 'catalog' ? 'Pick a time' : 'Book' }, 'source')} />
-      
-      {linked ?
-      <>
-          {!allowed &&
-        <InlineAlert tone="info" title={tr('Built-in booking is on {plan}', { plan: needed })}>
+        onChange={(source) => set({ source, ctaLabel: source === 'catalog' ? 'Pick a time' : 'Book' }, 'source')}
+      />
+      {linked ? (
+        <>
+          {!allowed && (
+            <InlineAlert tone="info" title={tr('Built-in booking is on {plan}', { plan: needed })}>
               {tr('You can set it up now; it can’t be published on your current plan.')}
             </InlineAlert>
-        }
-          {data.services.length === 0 ?
-        <div className="rounded-md border border-dashed border-line-strong px-3 py-3">
+          )}
+          {data.services.length === 0 ? (
+            <div className="rounded-md border border-dashed border-line-strong px-3 py-3">
               <p className="text-label font-semibold text-fg">{tr('No services yet')}</p>
               <Link to="/app/bookings/services?new=1" className="mt-1 inline-flex items-center gap-1 text-caption font-semibold text-action hover:underline">
                 {tr('Add a service')} <ArrowUpRightIcon size={12} aria-hidden />
               </Link>
-            </div> :
-
-        <SelectInput
-          id={id('service')}
-          label={tr('Service')}
-          value={c.serviceId ?? ''}
-          onChange={(serviceId) => set({ serviceId }, 'serviceId')}
-          options={[{ value: '', label: tr('Choose…') }, ...data.services.map((s) => ({ value: s.id, label: s.active ? s.name : `${s.name} (${tr('off')})` }))]} />
-
-        }
+            </div>
+          ) : (
+            <SelectInput
+              id={id('service')}
+              label={tr('Service')}
+              value={c.serviceId ?? ''}
+              onChange={(serviceId) => set({ serviceId }, 'serviceId')}
+              options={[{ value: '', label: tr('Choose…') }, ...data.services.map((s) => ({ value: s.id, label: s.active ? s.name : `${s.name} (${tr('off')})` }))]}
+            />
+          )}
           {err('serviceId') && <p className="-mt-2 text-caption text-danger">{err('serviceId')}</p>}
           {!err('serviceId') && warn('serviceId') && <p className="-mt-2 text-caption text-warning">{warn('serviceId')}</p>}
-          {service &&
-        <div className="flex items-start gap-3 rounded-md border border-line bg-sunken px-3 py-2.5">
+          {service && (
+            <div className="flex items-start gap-3 rounded-md border border-line bg-sunken px-3 py-2.5">
               <RefreshCwIcon size={15} className="mt-0.5 shrink-0 text-success" aria-hidden />
               <div>
                 <p className="text-label font-semibold text-fg">{tr('Synced with Bookings')}</p>
@@ -83,12 +83,12 @@ export function BookingFields({ block, issues }: {block: BlockOf<'booking'>;issu
                 </Link>
               </div>
             </div>
-        }
+          )}
           <TextInput id={id('title')} label={tr('Title')} optional placeholder={service?.name} value={c.title} hint={tr('Leave blank to use the service name.')} onChange={(e) => set({ title: e.target.value }, 'title')} />
           <TextInput id={id('cta')} label={tr('Button label')} value={c.ctaLabel} onChange={(e) => set({ ctaLabel: e.target.value }, 'ctaLabel')} />
-        </> :
-
-      <>
+        </>
+      ) : (
+        <>
           <TextInput id={id('title')} label={tr('Service name')} value={c.title} error={err('title')} onChange={(e) => set({ title: e.target.value }, 'title')} />
           <TextArea id={id('description')} label={tr('Description')} optional rows={2} value={c.description} onChange={(e) => set({ description: e.target.value }, 'description')} />
           <div className="grid grid-cols-2 gap-3">
@@ -99,7 +99,7 @@ export function BookingFields({ block, issues }: {block: BlockOf<'booking'>;issu
           <TextInput id={id('cta')} label={tr('Button label')} value={c.ctaLabel} onChange={(e) => set({ ctaLabel: e.target.value }, 'ctaLabel')} />
           <p className="text-caption text-fg-subtle">{tr('For a calendar on your page with deposits and reminders, switch to “My services” above.')}</p>
         </>
-      }
-    </div>);
-
+      )}
+    </div>
+  );
 }

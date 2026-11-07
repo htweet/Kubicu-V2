@@ -22,7 +22,7 @@ export function SignatureInput({ id, value, onChange, skin, inert, describedBy, 
   const [mode, setMode] = useState<'draw' | 'type'>(value && !isDrawnSignature(value) ? 'type' : 'draw');
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const drawing = useRef(false);
-  const last = useRef<{x: number;y: number;} | null>(null);
+  const last = useRef<{ x: number; y: number } | null>(null);
   const typed = value.startsWith('typed:') ? value.slice(6) : '';
 
   // Size the canvas to its box (sharp on high-density screens) and redraw an existing signature.
@@ -92,21 +92,21 @@ export function SignatureInput({ id, value, onChange, skin, inert, describedBy, 
     onChange('');
   };
 
-  const tab = (m: 'draw' | 'type', text: string, first: boolean) =>
-  <button
-    id={first ? id : undefined}
-    type="button"
-    role="radio"
-    aria-checked={mode === m}
-    disabled={inert}
-    tabIndex={inert ? -1 : undefined}
-    onClick={() => switchTo(m)}
-    className="h-9 rounded-md px-3 text-[13px] font-medium focus-visible:outline-none focus-visible:ring-2"
-    style={mode === m ? { ...skin.button, borderRadius: 8 } : { color: skin.muted }}>
-    
+  const tab = (m: 'draw' | 'type', text: string, first: boolean) => (
+    <button
+      id={first ? id : undefined}
+      type="button"
+      role="radio"
+      aria-checked={mode === m}
+      disabled={inert}
+      tabIndex={inert ? -1 : undefined}
+      onClick={() => switchTo(m)}
+      className="h-9 rounded-md px-3 text-[13px] font-medium focus-visible:outline-none focus-visible:ring-2"
+      style={mode === m ? { ...skin.button, borderRadius: 8 } : { color: skin.muted }}
+    >
       {text}
-    </button>;
-
+    </button>
+  );
 
   return (
     <div className="flex flex-col gap-2" aria-describedby={describedBy}>
@@ -114,25 +114,25 @@ export function SignatureInput({ id, value, onChange, skin, inert, describedBy, 
         {tab('draw', 'Draw', true)}
         {tab('type', 'Type', false)}
       </div>
-      {mode === 'draw' ?
-      <div className="flex flex-col gap-1.5">
+      {mode === 'draw' ? (
+        <div className="flex flex-col gap-1.5">
           <div className="relative overflow-hidden" style={{ ...skin.input, background: '#ffffff', height: 'auto' }}>
             <canvas
-            ref={canvasRef}
-            role="img"
-            aria-labelledby={labelledBy}
-            aria-invalid={invalid || undefined}
-            onPointerDown={down}
-            onPointerMove={move}
-            onPointerUp={up}
-            onPointerCancel={up}
-            className="block h-36 w-full cursor-crosshair touch-none" />
-          
-            {!value &&
-          <span aria-hidden className="pointer-events-none absolute inset-x-4 bottom-6 border-b border-dashed text-[11px]" style={{ borderColor: '#9ca3af', color: '#6b7280' }}>
+              ref={canvasRef}
+              role="img"
+              aria-labelledby={labelledBy}
+              aria-invalid={invalid || undefined}
+              onPointerDown={down}
+              onPointerMove={move}
+              onPointerUp={up}
+              onPointerCancel={up}
+              className="block h-36 w-full cursor-crosshair touch-none"
+            />
+            {!value && (
+              <span aria-hidden className="pointer-events-none absolute inset-x-4 bottom-6 border-b border-dashed text-[11px]" style={{ borderColor: '#9ca3af', color: '#6b7280' }}>
                 <span className="relative top-4">Sign above the line</span>
               </span>
-          }
+            )}
           </div>
           <div className="flex items-center justify-between gap-2 text-[12px]" style={{ color: skin.muted }}>
             <span>Can’t draw here? Choose Type.</span>
@@ -140,33 +140,33 @@ export function SignatureInput({ id, value, onChange, skin, inert, describedBy, 
               Clear
             </button>
           </div>
-        </div> :
-
-      <div className="flex flex-col gap-1.5">
+        </div>
+      ) : (
+        <div className="flex flex-col gap-1.5">
           <input
-          aria-labelledby={labelledBy}
-          aria-invalid={invalid || undefined}
-          aria-describedby={describedBy}
-          disabled={inert}
-          tabIndex={inert ? -1 : undefined}
-          autoComplete="name"
-          maxLength={80}
-          value={typed}
-          placeholder="Type your full name"
-          onChange={(e) => onChange(e.target.value ? `typed:${e.target.value}` : '')}
-          className="h-11 w-full px-3.5 text-[14.5px] outline-none focus:ring-2"
-          style={skin.input} />
-        
-          {typed.trim() &&
-        <p aria-hidden className="truncate text-[26px] leading-tight" style={{ color: skin.text, fontFamily: '"Brush Script MT", "Segoe Script", cursive', fontStyle: 'italic' }}>
+            aria-labelledby={labelledBy}
+            aria-invalid={invalid || undefined}
+            aria-describedby={describedBy}
+            disabled={inert}
+            tabIndex={inert ? -1 : undefined}
+            autoComplete="name"
+            maxLength={80}
+            value={typed}
+            placeholder="Type your full name"
+            onChange={(e) => onChange(e.target.value ? `typed:${e.target.value}` : '')}
+            className="h-11 w-full px-3.5 text-[14.5px] outline-none focus:ring-2"
+            style={skin.input}
+          />
+          {typed.trim() && (
+            <p aria-hidden className="truncate text-[26px] leading-tight" style={{ color: skin.text, fontFamily: '"Brush Script MT", "Segoe Script", cursive', fontStyle: 'italic' }}>
               {typed}
             </p>
-        }
+          )}
           <p className="text-[12px]" style={{ color: skin.muted }}>
             Typing your name counts as your signature on this form.
           </p>
         </div>
-      }
-    </div>);
-
+      )}
+    </div>
+  );
 }

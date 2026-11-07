@@ -30,7 +30,7 @@ export function SignIn() {
 
   const errors = {
     email: isValidEmail(email) ? '' : mode === 'sso' ? 'Enter your work email' : 'Enter the email you signed up with',
-    password: password ? '' : 'Enter your password'
+    password: password ? '' : 'Enter your password',
   };
 
   // Lands on the start screen chosen in Account → Preferences (D80).
@@ -77,7 +77,7 @@ export function SignIn() {
       title={mode === 'sso' ? t('Sign in with single sign-on') : t('Welcome back')}
       description={mode === 'sso' ? t('For teams on Enterprise. We’ll send you to your company’s sign-in page.') : t('Sign in to manage your pages, orders and bookings.')}
       footer={
-      <>
+        <>
           {t('New to KUBICU?')}{' '}
           <Link to="/signup" className="font-semibold text-fg underline underline-offset-4 hover:no-underline">
             {t('Create an account')}
@@ -89,41 +89,41 @@ export function SignIn() {
             </Link>
           </span>
         </>
-      }>
-      
-      {mode === 'password' ?
-      <form onSubmit={submit} noValidate className="flex flex-col gap-5">
+      }
+    >
+      {mode === 'password' ? (
+        <form onSubmit={submit} noValidate className="flex flex-col gap-5">
           <TextInput
-          id="si-email"
-          label="Email"
-          type="email"
-          inputMode="email"
-          autoComplete="email"
-          leadingIcon={MailIcon}
-          placeholder="you@example.com"
-          className={inputClass}
-          value={email}
-          onChange={(e) => {
-            setEmail(e.target.value);
-            setRequired(false);
-          }}
-          error={submitted ? errors.email || undefined : undefined} />
-        
+            id="si-email"
+            label="Email"
+            type="email"
+            inputMode="email"
+            autoComplete="email"
+            leadingIcon={MailIcon}
+            placeholder="you@example.com"
+            className={inputClass}
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              setRequired(false);
+            }}
+            error={submitted ? errors.email || undefined : undefined}
+          />
           <PasswordInput
-          id="si-password"
-          label="Password"
-          autoComplete="current-password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          error={submitted ? errors.password || undefined : undefined}
-          trailing={
-          <Link to="/reset" className="text-caption font-semibold text-fg-muted underline-offset-4 hover:text-fg hover:underline">
+            id="si-password"
+            label="Password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            error={submitted ? errors.password || undefined : undefined}
+            trailing={
+              <Link to="/reset" className="text-caption font-semibold text-fg-muted underline-offset-4 hover:text-fg hover:underline">
                 {t('Forgot password?')}
               </Link>
-          } />
-        
-          {required &&
-        <InlineAlert tone="warning" title="Your company uses single sign-on">
+            }
+          />
+          {required && (
+            <InlineAlert tone="warning" title="Your company uses single sign-on">
               <span className="block">{t('Sign in with your work account instead of a password.')}</span>
               <span className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
                 <button type="button" className="font-semibold underline underline-offset-2" onClick={() => switchMode('sso')}>
@@ -134,7 +134,7 @@ export function SignIn() {
                 </button>
               </span>
             </InlineAlert>
-        }
+          )}
           <Button type="submit" variant="brand" size="lg" fullWidth loading={loading} trailingIcon={ArrowRightIcon} className="mt-1 h-12 rounded-xl">
             Sign in
           </Button>
@@ -146,26 +146,26 @@ export function SignIn() {
           <Button type="button" variant="secondary" size="lg" fullWidth leadingIcon={KeyRoundIcon} className="h-12 rounded-xl" onClick={() => switchMode('sso')}>
             Sign in with single sign-on
           </Button>
-        </form> :
-
-      <form onSubmit={submitSso} noValidate className="flex flex-col gap-5">
+        </form>
+      ) : (
+        <form onSubmit={submitSso} noValidate className="flex flex-col gap-5">
           <TextInput
-          id="si-sso-email"
-          label="Work email"
-          type="email"
-          inputMode="email"
-          autoComplete="email"
-          leadingIcon={Building2Icon}
-          placeholder="you@company.com"
-          className={inputClass}
-          value={email}
-          onChange={(e) => {
-            setEmail(e.target.value);
-            setSsoMessage('');
-          }}
-          error={submitted ? errors.email || undefined : undefined}
-          hint={sso ? `${sso.workspaceName} · ${providerInfo[sso.provider].label}` : undefined} />
-        
+            id="si-sso-email"
+            label="Work email"
+            type="email"
+            inputMode="email"
+            autoComplete="email"
+            leadingIcon={Building2Icon}
+            placeholder="you@company.com"
+            className={inputClass}
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              setSsoMessage('');
+            }}
+            error={submitted ? errors.email || undefined : undefined}
+            hint={sso ? `${sso.workspaceName} · ${providerInfo[sso.provider].label}` : undefined}
+          />
           {ssoMessage && <InlineAlert tone="warning" title="No single sign-on for this email">{ssoMessage}</InlineAlert>}
           <Button type="submit" variant="brand" size="lg" fullWidth loading={loading} className="h-12 rounded-xl">
             {loading && sso ? t('Opening {provider}…', { provider: providerInfo[sso.provider].label }) : t('Continue')}
@@ -174,7 +174,7 @@ export function SignIn() {
             {t('Sign in with a password instead')}
           </button>
         </form>
-      }
-    </AuthLayout>);
-
+      )}
+    </AuthLayout>
+  );
 }

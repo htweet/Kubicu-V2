@@ -13,7 +13,7 @@ const preferred: Record<UiLang, string[]> = {
   ig: ['ig-NG', 'en-NG', 'en-GB'],
   sw: ['sw-KE', 'sw', 'en-GB'],
   tw: ['ak-GH', 'ak', 'en-GH', 'en-GB'],
-  zu: ['zu-ZA', 'zu', 'en-ZA', 'en-GB']
+  zu: ['zu-ZA', 'zu', 'en-ZA', 'en-GB'],
 };
 
 const cache = new Map<UiLang, string>();
@@ -26,8 +26,8 @@ export function dateLocale(lang: UiLang = 'en'): string {
   try {
     chosen = Intl.DateTimeFormat.supportedLocalesOf(preferred[lang] ?? ['en-GB'])[0] ?? 'en-GB';
   } catch {
-
-    /* very old browser — keep English */}
+    /* very old browser — keep English */
+  }
   cache.set(lang, chosen);
   return chosen;
 }
@@ -62,7 +62,7 @@ const ownPhrases = {
   hour: ['{n} h ago', 'in {n} h'],
   day: ['{n} days ago', 'in {n} days'],
   month: ['{n} months ago', 'in {n} months'],
-  year: ['{n} years ago', 'in {n} years']
+  year: ['{n} years ago', 'in {n} years'],
 } as const;
 
 /**
@@ -106,7 +106,7 @@ export function ownMonthName(englishShort: string): string {
 
 /** A translator: English phrase with {placeholders} in, display text out. Plain English when none is given. */
 export type FormatTr = (phrase: string, vars?: Record<string, string | number>) => string;
-export const plainTr: FormatTr = (s, v) => v ? s.replace(/\{(\w+)\}/g, (_, k: string) => String(v[k] ?? '')) : s;
+export const plainTr: FormatTr = (s, v) => (v ? s.replace(/\{(\w+)\}/g, (_, k: string) => String(v[k] ?? '')) : s);
 
 /** "45 min", "1 h 30 min", "2 h" — through the translator so the units follow the reader's language. */
 export function durationText(minutes: number, tr: FormatTr = plainTr): string {

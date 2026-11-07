@@ -49,11 +49,11 @@ export function Storefront() {
   useEffect(() => setDraft(saved), [saved]);
 
   const dirty = JSON.stringify(draft) !== JSON.stringify(saved);
-  const set = <K extends keyof StorefrontConfig,>(k: K, v: StorefrontConfig[K]) => setDraft((d) => ({ ...d, [k]: v }));
+  const set = <K extends keyof StorefrontConfig>(k: K, v: StorefrontConfig[K]) => setDraft((d) => ({ ...d, [k]: v }));
   const checkoutAllowed = planAtLeast(plan.id, CHECKOUT_PLAN);
   const usesWhatsApp = draft.ordering === 'whatsapp' || !checkoutAllowed;
   const shopPhone = waNumber(draft.whatsappPhone);
-  const phoneError = draft.enabled && usesWhatsApp && !isValidPhone(shopPhone) ? shopPhone ? 'Add the WhatsApp number with its country code, e.g. +234 803 123 4567.' : NO_WA_NUMBER : '';
+  const phoneError = draft.enabled && usesWhatsApp && !isValidPhone(shopPhone) ? (shopPhone ? 'Add the WhatsApp number with its country code, e.g. +234 803 123 4567.' : NO_WA_NUMBER) : '';
   const titleError = draft.enabled && !draft.title.trim() ? 'Give the shop a title.' : '';
   const bannerAltError = draft.bannerUrl && !draft.bannerAlt.trim() ? 'Describe the banner for people who can’t see it.' : '';
   const clash = shopPathTaken(state.site);
@@ -87,16 +87,16 @@ export function Storefront() {
       returnsNote: draft.returnsNote.trim(),
       seoTitle: draft.seoTitle.trim(),
       seoDescription: draft.seoDescription.trim(),
-      featuredIds: draft.featuredIds.filter((id) => allShop.some((p) => p.id === id))
+      featuredIds: draft.featuredIds.filter((id) => allShop.some((p) => p.id === id)),
     };
     if (apply((d) => ({ ...d, storefront: clean })))
-    toast.success(draft.enabled ? tr('Storefront saved') : tr('Storefront turned off'), {
-      description: draft.enabled ?
-      live ?
-      tr('Live at {url}.', { url: shopUrl }) :
-      tr('Live at {url} once your page is published.', { url: shopUrl }) :
-      tr('The /shop address now shows “page doesn’t exist”.')
-    });
+      toast.success(draft.enabled ? tr('Storefront saved') : tr('Storefront turned off'), {
+        description: draft.enabled
+          ? live
+            ? tr('Live at {url}.', { url: shopUrl })
+            : tr('Live at {url} once your page is published.', { url: shopUrl })
+          : tr('The /shop address now shows “page doesn’t exist”.'),
+      });
   };
 
   return (
@@ -105,38 +105,38 @@ export function Storefront() {
         title="Storefront"
         description="Every active product in one shop at /shop, with collections, search and product pages. It updates as you edit products — nothing to publish."
         actions={
-        <>
-            {data.storefront.enabled && live &&
-          <Button variant="secondary" leadingIcon={ExternalLinkIcon} onClick={() => window.open(`/p/${handle}/${STOREFRONT_PATH}`, '_blank', 'noopener')}>
+          <>
+            {data.storefront.enabled && live && (
+              <Button variant="secondary" leadingIcon={ExternalLinkIcon} onClick={() => window.open(`/p/${handle}/${STOREFRONT_PATH}`, '_blank', 'noopener')}>
                 View shop
               </Button>
-          }
-            {dirty &&
-          <Button variant="tertiary" onClick={() => {setDraft(saved);setTried(false);}}>
+            )}
+            {dirty && (
+              <Button variant="tertiary" onClick={() => { setDraft(saved); setTried(false); }}>
                 Discard
               </Button>
-          }
+            )}
             <Button onClick={save} disabled={!dirty}>
               Save changes
             </Button>
           </>
-        } />
-      
+        }
+      />
 
       <div className="mt-8 grid items-start gap-8 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] lg:gap-10">
         <div className="flex flex-col gap-6">
           <Card emphasis="primary" as="div">
             <Switch id="sf-enabled" label="Show a storefront" description={tr('At {url}. Draft and archived products never appear.', { url: shopUrl })} checked={draft.enabled} onChange={(v) => set('enabled', v)} />
-            {clash && draft.enabled &&
-            <InlineAlert tone="warning" title={tr('Your “{page}” page already uses /shop', { page: clash })} className="mt-4">
+            {clash && draft.enabled && (
+              <InlineAlert tone="warning" title={tr('Your “{page}” page already uses /shop', { page: clash })} className="mt-4">
                 {tr('The storefront stays hidden so that page keeps working. Change the page’s address in the canvas (Pages tab) to use the storefront instead.')}
               </InlineAlert>
-            }
-            {!live && draft.enabled &&
-            <p className="mt-4 text-caption text-fg-muted">
+            )}
+            {!live && draft.enabled && (
+              <p className="mt-4 text-caption text-fg-muted">
                 {tr('Your main page isn’t published yet, so visitors can’t reach the shop.')} <Link to={`/app/canvas/${state.site.id}`} className="font-medium text-fg underline underline-offset-2">{tr('Open the canvas')}</Link>
               </p>
-            }
+            )}
           </Card>
 
           <Card id="sf-look" title="Look" description="Pick a complete layout, then fine-tune its parts. Colours and fonts come from your page’s theme. Free on every plan." className={offCls}>
@@ -150,8 +150,8 @@ export function Storefront() {
                 hasFeatured={draft.featuredIds.length > 0}
                 usesWhatsApp={usesWhatsApp}
                 onChange={(k, v) => set(k, v as StorefrontConfig[typeof k])}
-                onReset={() => setDraft((d) => ({ ...d, ...lookDef(d.look).parts }))} />
-              
+                onReset={() => setDraft((d) => ({ ...d, ...lookDef(d.look).parts }))}
+              />
             </div>
           </Card>
 
@@ -169,8 +169,8 @@ export function Storefront() {
                 disabled={off}
                 placeholder={tr('e.g. Free delivery in Lekki this week')}
                 hint={`${draft.announcement.length}/${ANNOUNCEMENT_MAX}. ${tr('A slim bar above the shop. Leave empty to hide it.')}`}
-                onChange={(e) => set('announcement', e.target.value)} />
-              
+                onChange={(e) => set('announcement', e.target.value)}
+              />
               <MediaPicker id="sf-banner" label="Banner" optional aspect="16:9" folder="brand" value={draft.bannerUrl} disabled={off} hint="Wide photo across the top of the shop. Hidden when a collection is open." onChange={(src, meta) => setDraft((d) => ({ ...d, bannerUrl: src, bannerAlt: src ? d.bannerAlt || meta?.alt || '' : '' }))} />
               {draft.bannerUrl && <TextInput id="sf-banner-alt" label="Banner description" value={draft.bannerAlt} disabled={off} error={tried ? bannerAltError || undefined : undefined} placeholder={tr('e.g. Model wearing the wine gele in the studio')} onChange={(e) => set('bannerAlt', e.target.value)} />}
             </div>
@@ -192,26 +192,26 @@ export function Storefront() {
                 value={draft.ordering}
                 onChange={(v) => set('ordering', v)}
                 options={[
-                { value: 'checkout', label: 'Cart and checkout' },
-                { value: 'whatsapp', label: 'WhatsApp' }]
-                } />
-              
-              {draft.ordering === 'checkout' && !checkoutAllowed &&
-              <InlineAlert tone="info" title={tr('Checkout is on {plan}', { plan: plans[CHECKOUT_PLAN].name })} action={<UpgradeButton plan={CHECKOUT_PLAN} feature="Checkout in your storefront" />}>
+                  { value: 'checkout', label: 'Cart and checkout' },
+                  { value: 'whatsapp', label: 'WhatsApp' },
+                ]}
+              />
+              {draft.ordering === 'checkout' && !checkoutAllowed && (
+                <InlineAlert tone="info" title={tr('Checkout is on {plan}', { plan: plans[CHECKOUT_PLAN].name })} action={<UpgradeButton plan={CHECKOUT_PLAN} feature="Checkout in your storefront" />}>
                   {tr('Until then, the shop uses WhatsApp ordering.')}
                 </InlineAlert>
-              }
-              {usesWhatsApp &&
-              <PhoneInput id="sf-phone" label="WhatsApp number" value={draft.whatsappPhone} placeholder={businessWhatsApp() || undefined} error={tried ? phoneError || undefined : undefined} hint={waFieldHint(draft.whatsappPhone, 'Each product sends a pre-filled message with the chosen option and price.')} onChange={(v) => set('whatsappPhone', v)} />
-              }
-              {!usesWhatsApp &&
-              <p className="text-caption text-fg-muted">
+              )}
+              {usesWhatsApp && (
+                <PhoneInput id="sf-phone" label="WhatsApp number" value={draft.whatsappPhone} placeholder={businessWhatsApp() || undefined} error={tried ? phoneError || undefined : undefined} hint={waFieldHint(draft.whatsappPhone, 'Each product sends a pre-filled message with the chosen option and price.')} onChange={(v) => set('whatsappPhone', v)} />
+              )}
+              {!usesWhatsApp && (
+                <p className="text-caption text-fg-muted">
                   {tr('Shoppers add to a cart and pay at checkout, with your delivery options, discount codes and payment settings.')}{' '}
                   <Link to="/app/commerce/settings#delivery" className="font-medium text-fg underline underline-offset-2">{tr('Delivery options')}</Link>
                   {' · '}
                   <Link to="/app/commerce/payments" className="font-medium text-fg underline underline-offset-2">{tr('Payment settings')}</Link>
                 </p>
-              }
+              )}
               <div className="flex flex-col gap-3 border-t border-line pt-5">
                 <Switch id="sf-menu" label="Add to the site menu" description="Shoppers can get to the shop from any of your pages." checked={draft.showInMenu} disabled={off} onChange={(v) => set('showInMenu', v)} />
                 {draft.showInMenu && <TextInput id="sf-menu-label" label="Menu label" value={draft.menuLabel} disabled={off} fieldClassName="max-w-[220px]" onChange={(e) => set('menuLabel', e.target.value)} />}
@@ -222,8 +222,8 @@ export function Storefront() {
           <Card id="sf-notes" title="Good to know" description="Short notes at the bottom of the shop. Leave one empty to hide it." className={offCls}>
             <div className="flex flex-col gap-4">
               <TextArea id="sf-delivery" label="Delivery" optional rows={2} maxLength={300} value={draft.deliveryNote} disabled={off} placeholder={tr('e.g. Same-day in Lagos if you order by 2pm. Nationwide in 2–4 days.')} onChange={(e) => set('deliveryNote', e.target.value)} />
-              {shopSettingsOf(data).policy.set ?
-              <div>
+              {shopSettingsOf(data).policy.set ? (
+                <div>
                   <p className="text-label font-medium text-fg">{tr('Returns & exchanges')}</p>
                   <p className="mt-1 text-caption text-fg-muted">
                     {tr('Your shop shows the returns policy from Commerce settings.')}{' '}
@@ -231,10 +231,10 @@ export function Storefront() {
                       {tr('Edit in Policies')}
                     </Link>
                   </p>
-                </div> :
-
-              <TextArea id="sf-returns" label="Returns & exchanges" optional rows={2} maxLength={300} value={draft.returnsNote} disabled={off} placeholder={tr('e.g. Exchanges within 7 days on unworn items with tags.')} hint={tr('Or set a full returns policy in Commerce settings → Policies.')} onChange={(e) => set('returnsNote', e.target.value)} />
-              }
+                </div>
+              ) : (
+                <TextArea id="sf-returns" label="Returns & exchanges" optional rows={2} maxLength={300} value={draft.returnsNote} disabled={off} placeholder={tr('e.g. Exchanges within 7 days on unworn items with tags.')} hint={tr('Or set a full returns policy in Commerce settings → Policies.')} onChange={(e) => set('returnsNote', e.target.value)} />
+              )}
             </div>
           </Card>
 
@@ -256,35 +256,35 @@ export function Storefront() {
           title="In the shop"
           className="lg:sticky lg:top-6"
           description={[
-          tr(products.length === 1 ? '{n} product' : '{n} products', { n: products.length }),
-          soldOutCount ? tr('{n} sold out', { n: soldOutCount }) : '',
-          draftCount ? tr(draftCount === 1 ? '{n} draft not shown' : '{n} drafts not shown', { n: draftCount }) : ''].
-
-          filter(Boolean).
-          join(' · ')}>
-          
-          {products.length === 0 ?
-          <div className="flex flex-col items-start gap-3 rounded-lg border border-dashed border-line-strong p-5">
+            tr(products.length === 1 ? '{n} product' : '{n} products', { n: products.length }),
+            soldOutCount ? tr('{n} sold out', { n: soldOutCount }) : '',
+            draftCount ? tr(draftCount === 1 ? '{n} draft not shown' : '{n} drafts not shown', { n: draftCount }) : '',
+          ]
+            .filter(Boolean)
+            .join(' · ')}
+        >
+          {products.length === 0 ? (
+            <div className="flex flex-col items-start gap-3 rounded-lg border border-dashed border-line-strong p-5">
               <StoreIcon size={20} className="text-fg-subtle" aria-hidden />
               <p className="text-label text-fg-muted">{tr('No active products yet. Shoppers will see an empty shop.')}</p>
               <Link to="/app/commerce/products" className="text-label font-medium text-fg underline underline-offset-2">
                 {tr('Add products')}
               </Link>
-            </div> :
-
-          <StorefrontLivePreview theme={state.site.theme} data={{ ...data, storefront: draft }} ordering={usesWhatsApp ? 'whatsapp' : 'checkout'} whatsappPhone={shopPhone} />
-          }
-          {(noPhoto > 0 || noPrice > 0) &&
-          <InlineAlert tone="warning" title="Some products look unfinished">
+            </div>
+          ) : (
+            <StorefrontLivePreview theme={state.site.theme} data={{ ...data, storefront: draft }} ordering={usesWhatsApp ? 'whatsapp' : 'checkout'} whatsappPhone={shopPhone} />
+          )}
+          {(noPhoto > 0 || noPrice > 0) && (
+            <InlineAlert tone="warning" title="Some products look unfinished">
               {[noPhoto && tr('{n} without a photo', { n: noPhoto }), noPrice && tr('{n} without a price (shown as “Price on request”)', { n: noPrice })].filter(Boolean).join(' · ')}.{' '}
               <Link to="/app/commerce/products" className="font-medium underline underline-offset-2">
                 {tr('Fix in Products')}
               </Link>
             </InlineAlert>
-          }
+          )}
           <p className="text-caption text-fg-subtle">{tr('Your real shop with unsaved changes, in your page’s theme. Save to make it live.')}</p>
         </Section>
       </div>
-    </>);
-
+    </>
+  );
 }

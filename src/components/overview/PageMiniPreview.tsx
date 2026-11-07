@@ -22,15 +22,16 @@ export function PageMiniPreview({ doc, scale = 0.52, height = 420 }: PageMiniPre
   return (
     <div
       aria-hidden
+      data-mbar-ignore=""
       className="pointer-events-none relative shrink-0 overflow-hidden rounded-[22px] border border-line-strong shadow-2"
-      style={{ width: WIDTH * scale, height, background: doc.theme.background }}>
-      
+      style={{ width: WIDTH * scale, height, background: doc.theme.background }}
+    >
       {/* A size container, so display type scales to the 390px phone, not the browser window (D158). */}
       <div className="[container-type:inline-size]" style={{ width: WIDTH, transform: `scale(${scale})`, transformOrigin: 'top left' }}>
         <PageSurface theme={doc.theme} fluid>
           <PageLayoutView doc={doc} blocks={visible} theme={doc.theme} mode="edit" wide={false} />
         </PageSurface>
       </div>
-    </div>);
-
+    </div>
+  );
 }

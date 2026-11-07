@@ -7,11 +7,11 @@ export const aiCredits: Record<WorkspacePlan, number> = {
   pro: 200,
   business: 500,
   agency: 1500,
-  enterprise: 5000
+  enterprise: 5000,
 };
 
 /** What each kind of request uses. */
 export const aiCost = {
   page: 5,
-  block: 1
+  block: 1,
 } as const;

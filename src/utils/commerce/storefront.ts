@@ -15,7 +15,7 @@ export const sortLabels: Record<StorefrontSort, string> = {
   featured: 'Featured first',
   newest: 'Newest',
   price_asc: 'Price: low to high',
-  price_desc: 'Price: high to low'
+  price_desc: 'Price: high to low',
 };
 
 /** A page of the site already uses /shop, so the storefront steps aside instead of breaking it. */
@@ -70,14 +70,14 @@ export function storefrontConfig(s: StorefrontSettings): StorefrontConfig {
     askWhatsApp: false,
     shareButtons: false,
     showReviews: false,
-    ...s
+    ...s,
   } as StorefrontConfig;
 }
 
 export const imageShapeClass: Record<StorefrontConfig['imageShape'], string> = {
   portrait: 'aspect-[4/5]',
   square: 'aspect-square',
-  landscape: 'aspect-[4/3]'
+  landscape: 'aspect-[4/3]',
 };
 
 export function shopProducts(data: CommerceData | null): Product[] {
@@ -101,13 +101,13 @@ export function sortProducts(list: Product[], sort: StorefrontSort, featuredIds:
 }
 
 function baseSlug(name: string): string {
-  return name.
-  toLowerCase().
-  normalize('NFKD').
-  replace(/[\u0300-\u036f]/g, '').
-  replace(/[^a-z0-9]+/g, '-').
-  replace(/^-+|-+$/g, '').
-  slice(0, 60) || 'product';
+  return name
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 60) || 'product';
 }
 
 /** Readable product address used on custom domains (D62): /shop/ankara-wrap-dress. Same names get a short suffix. */

@@ -1,45 +1,45 @@
 export type HelpIcon =
-'rocket' |
-'layout' |
-'blocks' |
-'palette' |
-'globe' |
-'bag' |
-'wallet' |
-'shield' |
-'ticket' |
-'calendar' |
-'repeat' |
-'users' |
-'chart' |
-'zap' |
-'puzzle' |
-'briefcase' |
-'phone' |
-'user' |
-'lifebuoy' |
-'sparkles' |
-'link' |
-'message' |
-'settings' |
-'store';
+  | 'rocket'
+  | 'layout'
+  | 'blocks'
+  | 'palette'
+  | 'globe'
+  | 'bag'
+  | 'wallet'
+  | 'shield'
+  | 'ticket'
+  | 'calendar'
+  | 'repeat'
+  | 'users'
+  | 'chart'
+  | 'zap'
+  | 'puzzle'
+  | 'briefcase'
+  | 'phone'
+  | 'user'
+  | 'lifebuoy'
+  | 'sparkles'
+  | 'link'
+  | 'message'
+  | 'settings'
+  | 'store';
 
 /**
  * One element in a guide picture (D274). Pictures are drawn from these, not captured, so they stay
  * in step with the app and work in every language. `marker` ties an element to the step with that number.
  */
 export type HelpShotItem =
-{kind: 'heading';label: string;sub?: string;} |
-{kind: 'button';label: string;primary?: boolean;marker?: number;} |
-{kind: 'field';label: string;value?: string;marker?: number;} |
-{kind: 'toggle';label: string;on?: boolean;marker?: number;} |
-{kind: 'tabs';tabs: string[];active?: number;marker?: number;} |
-{kind: 'chips';chips: string[];active?: number;marker?: number;} |
-{kind: 'row';label: string;meta?: string;badge?: string;marker?: number;} |
-{kind: 'stats';stats: {label: string;value: string;}[];marker?: number;} |
-{kind: 'chart';label?: string;marker?: number;} |
-{kind: 'note';label: string;tone?: 'info' | 'warning' | 'success';marker?: number;} |
-{kind: 'chat';from: 'you' | 'them';label: string;marker?: number;};
+  | { kind: 'heading'; label: string; sub?: string }
+  | { kind: 'button'; label: string; primary?: boolean; marker?: number }
+  | { kind: 'field'; label: string; value?: string; marker?: number }
+  | { kind: 'toggle'; label: string; on?: boolean; marker?: number }
+  | { kind: 'tabs'; tabs: string[]; active?: number; marker?: number }
+  | { kind: 'chips'; chips: string[]; active?: number; marker?: number }
+  | { kind: 'row'; label: string; meta?: string; badge?: string; marker?: number }
+  | { kind: 'stats'; stats: { label: string; value: string }[]; marker?: number }
+  | { kind: 'chart'; label?: string; marker?: number }
+  | { kind: 'note'; label: string; tone?: 'info' | 'warning' | 'success'; marker?: number }
+  | { kind: 'chat'; from: 'you' | 'them'; label: string; marker?: number };
 
 export interface HelpShot {
   /** app: workspace screen · canvas: page editor · phone: what a phone shows · site: a public web page. */

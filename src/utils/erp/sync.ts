@@ -30,7 +30,7 @@ export interface ErpLine {
 
 const hash = (s: string) => {
   let h = 0;
-  for (let i = 0; i < s.length; i++) h = h * 31 + s.charCodeAt(i) >>> 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
   return h;
 };
 
@@ -38,28 +38,28 @@ const hash = (s: string) => {
 function erpCount(kubicu: number, sku: string, warehouse: string, round: number): number {
   const h = hash(`${sku}|${warehouse}|${round}`);
   if (h % 3 !== 0) return kubicu;
-  return Math.max(0, kubicu + (h >> 3) % 9 - 4);
+  return Math.max(0, kubicu + ((h >> 3) % 9) - 4);
 }
 
 /** Every line the sync covers, and the SKUs it can't match. */
-export function previewPull(data: CommerceData, s: ErpState): {lines: ErpLine[];changed: ErpLine[];unmatched: string[];} {
+export function previewPull(data: CommerceData, s: ErpState): { lines: ErpLine[]; changed: ErpLine[]; unmatched: string[] } {
   const round = s.runs.length;
   const mapped = Object.entries(s.warehouses).filter(([, code]) => code.trim());
   const lines: ErpLine[] = [];
   const unmatched: string[] = [];
-  data.products.
-  filter((p) => p.kind === 'physical' && p.trackStock && !p.sample && p.status !== 'archived').
-  forEach((p) =>
-  p.variants.forEach((v) => {
-    const sku = v.sku.trim();
-    if (!sku) return void unmatched.push(p.name);
-    mapped.forEach(([loc, code]) => {
-      if (loc !== MAIN_BRANCH && !(data.branches ?? []).some((b) => b.id === loc)) return;
-      const kubicu = stockAt(v, loc);
-      lines.push({ productId: p.id, variantId: v.id, sku, name: p.name, location: loc, locationName: locationName(data, loc), warehouse: code.trim(), kubicu, erp: erpCount(kubicu, sku, code.trim(), round) });
-    });
-  })
-  );
+  data.products
+    .filter((p) => p.kind === 'physical' && p.trackStock && !p.sample && p.status !== 'archived')
+    .forEach((p) =>
+      p.variants.forEach((v) => {
+        const sku = v.sku.trim();
+        if (!sku) return void unmatched.push(p.name);
+        mapped.forEach(([loc, code]) => {
+          if (loc !== MAIN_BRANCH && !(data.branches ?? []).some((b) => b.id === loc)) return;
+          const kubicu = stockAt(v, loc);
+          lines.push({ productId: p.id, variantId: v.id, sku, name: p.name, location: loc, locationName: locationName(data, loc), warehouse: code.trim(), kubicu, erp: erpCount(kubicu, sku, code.trim(), round) });
+        });
+      }),
+    );
   return { lines, changed: lines.filter((l) => l.erp !== l.kubicu), unmatched };
 }
 
@@ -69,7 +69,7 @@ export function ordersToSend(data: CommerceData, s: ErpState) {
 }
 
 /** Applies the ERP's counts as corrections (recorded in stock history) and marks orders as sent. */
-export function runErpSync(data: CommerceData, s: ErpState, trigger: ErpRun['trigger'], providerName: string): {data: CommerceData;state: ErpState;run: ErpRun;} {
+export function runErpSync(data: CommerceData, s: ErpState, trigger: ErpRun['trigger'], providerName: string): { data: CommerceData; state: ErpState; run: ErpRun } {
   const { changed, unmatched } = previewPull(data, s);
   let next = data;
   let unitsIn = 0;
@@ -78,29 +78,29 @@ export function runErpSync(data: CommerceData, s: ErpState, trigger: ErpRun['tri
   const round = s.runs.length + 1;
   changed.forEach((l) => {
     const delta = l.erp - l.kubicu;
-    if (delta > 0) unitsIn += delta;else
-    unitsOut += delta;
+    if (delta > 0) unitsIn += delta;
+    else unitsOut += delta;
     next = moveStock(next, l.productId, l.variantId, delta, 'correction', `Synced from ${providerName} · ${l.warehouse}`, undefined, l.location === MAIN_BRANCH ? undefined : l.location);
     // Batches (D476): items already tracked by batch get the ERP's lot for units it added. The lot code and expiry are
     // simulated — a real ERP sends them with each stock line.
     const v = next.products.find((p) => p.id === l.productId)?.variants.find((x) => x.id === l.variantId);
     if (delta > 0 && v?.batches?.length) {
-      const days = 90 + hash(`${l.sku}|${round}`) % 90;
+      const days = 90 + (hash(`${l.sku}|${round}`) % 90);
       const expires = new Date(Date.now() + days * 86_400_000).toISOString().slice(0, 10);
-      next = { ...next, products: next.products.map((p) => p.id === l.productId ? { ...p, variants: p.variants.map((x) => x.id === l.variantId ? addBatch(x, `${l.warehouse}-${round}`, expires, delta, l.location) : x) } : p) };
+      next = { ...next, products: next.products.map((p) => (p.id === l.productId ? { ...p, variants: p.variants.map((x) => (x.id === l.variantId ? addBatch(x, `${l.warehouse}-${round}`, expires, delta, l.location) : x)) } : p)) };
       batchesIn += 1;
     }
   });
   const at = new Date().toISOString();
   const orders = ordersToSend(data, s);
   const sentOrders = { ...s.sentOrders };
-  orders.forEach((o) => sentOrders[o.id] = at);
+  orders.forEach((o) => (sentOrders[o.id] = at));
   const run: ErpRun = { id: uid('erp'), at, trigger, updated: changed.length, unitsIn, unitsOut, ordersSent: orders.length, unmatched: unmatched.length, batchesIn };
   return { data: next, state: { ...s, sentOrders, runs: [run, ...s.runs].slice(0, 20) }, run };
 }
 
-export function erpErrors(server: string, company: string): {server?: string;company?: string;} {
-  const e: {server?: string;company?: string;} = {};
+export function erpErrors(server: string, company: string): { server?: string; company?: string } {
+  const e: { server?: string; company?: string } = {};
   if (!/^https:\/\/[^\s]+\.[^\s]+/.test(server.trim()) && !/^https:\/\/[^\s]+:\d+/.test(server.trim())) e.server = 'Must start with https://';
   if (!company.trim()) e.company = 'Required';
   return e;

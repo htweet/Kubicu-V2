@@ -69,7 +69,7 @@ export function OpportunityRow({
               </a> : <Button size="sm" variant="secondary" trailingIcon={ArrowRightIcon} onClick={() => navigate(item.to)}>
                 {tr('Open')}
               </Button>}
-            <Menu trigger={(p) => <IconButton {...p} icon={MoreHorizontalIcon} label={tr('More for {name}', { name: item.title })} size="sm" />} items={[...(item.nudge ? [{
+            <Menu trigger={p => <IconButton {...p} icon={MoreHorizontalIcon} label={tr('More for {name}', { name: item.title })} size="sm" />} items={[...(item.nudge ? [{
           id: 'open',
           label: tr('Open in the app'),
           icon: ArrowRightIcon,

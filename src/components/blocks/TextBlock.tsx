@@ -19,8 +19,8 @@ export function TextBlock({ block, theme, mode }: BlockProps<'text'>) {
     return (
       <p className={cn('whitespace-pre-line text-[15px] leading-[1.65]', center && 'text-center')} style={{ color: theme.text }}>
         {body}
-      </p>);
-
+      </p>
+    );
   }
 
   const parts = body.trim().split(/\n\s*\n/).map((p) => p.trim());
@@ -41,16 +41,16 @@ export function TextBlock({ block, theme, mode }: BlockProps<'text'>) {
   return (
     <div className={cn('py-2', center && 'text-center')}>
       {kicker && <p className="text-[13px] font-semibold tracking-[0.01em] md:text-[14px]" style={{ color: theme.mutedText }}>{kicker}</p>}
-      {heading &&
-      <h2 className={cn('break-words text-[clamp(1.75rem,3.6cqw,2.75rem)] font-medium leading-[1.06] tracking-[-0.025em]', kicker && 'mt-4')} style={{ fontFamily: fontsFor(theme).display, color: theme.text }}>
+      {heading && (
+        <h2 className={cn('break-words text-[clamp(1.75rem,3.6cqw,2.75rem)] font-medium leading-[1.06] tracking-[-0.025em]', kicker && 'mt-4')} style={{ fontFamily: fontsFor(theme).display, color: theme.text }}>
           {heading}
         </h2>
-      }
-      {rest.map((p, i) =>
-      <p key={i} className={cn('whitespace-pre-line leading-[1.7]', heading || i > 0 ? 'mt-5' : '', i === 0 ? 'text-[17px] md:text-[19px]' : 'text-[16px] md:text-[17px]', center && 'mx-auto max-w-[56ch]')} style={{ color: i === 0 ? theme.text : theme.mutedText }}>
+      )}
+      {rest.map((p, i) => (
+        <p key={i} className={cn('whitespace-pre-line leading-[1.7]', heading || i > 0 ? 'mt-5' : '', i === 0 ? 'text-[17px] md:text-[19px]' : 'text-[16px] md:text-[17px]', center && 'mx-auto max-w-[56ch]')} style={{ color: i === 0 ? theme.text : theme.mutedText }}>
           {p}
         </p>
-      )}
-    </div>);
-
+      ))}
+    </div>
+  );
 }

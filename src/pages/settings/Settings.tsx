@@ -20,18 +20,18 @@ import { useBilling } from '../../contexts/BillingContext';
 import { useT } from '../../contexts/LocaleContext';
 
 const tabs = [
-{ id: 'team', label: 'Team', to: '/app/settings', end: true },
-{ id: 'business', label: 'Business', to: '/app/settings/business' },
-{ id: 'roles', label: 'Roles', to: '/app/settings/roles' },
-{ id: 'approvals', label: 'Approvals', to: '/app/settings/approvals' },
-{ id: 'billing', label: 'Plan & billing', to: '/app/settings/billing' },
-{ id: 'notifications', label: 'Notifications', to: '/app/settings/notifications' },
-{ id: 'activity', label: 'Activity', to: '/app/settings/activity' },
-{ id: 'privacy', label: 'Privacy', to: '/app/settings/privacy' },
-{ id: 'integrations', label: 'Integrations', to: '/app/settings/integrations' },
-{ id: 'sso', label: 'Single sign-on', to: '/app/settings/sso' },
-{ id: 'developers', label: 'Developers', to: '/app/settings/developers' }];
-
+  { id: 'team', label: 'Team', to: '/app/settings', end: true },
+  { id: 'business', label: 'Business', to: '/app/settings/business' },
+  { id: 'roles', label: 'Roles', to: '/app/settings/roles' },
+  { id: 'approvals', label: 'Approvals', to: '/app/settings/approvals' },
+  { id: 'billing', label: 'Plan & billing', to: '/app/settings/billing' },
+  { id: 'notifications', label: 'Notifications', to: '/app/settings/notifications' },
+  { id: 'activity', label: 'Activity', to: '/app/settings/activity' },
+  { id: 'privacy', label: 'Privacy', to: '/app/settings/privacy' },
+  { id: 'integrations', label: 'Integrations', to: '/app/settings/integrations' },
+  { id: 'sso', label: 'Single sign-on', to: '/app/settings/sso' },
+  { id: 'developers', label: 'Developers', to: '/app/settings/developers' },
+];
 
 const panels: Record<string, () => React.ReactElement | null> = {
   team: TeamTab,
@@ -44,7 +44,7 @@ const panels: Record<string, () => React.ReactElement | null> = {
   privacy: PrivacyTab,
   integrations: IntegrationsTab,
   sso: SsoTab,
-  developers: DevelopersTab
+  developers: DevelopersTab,
 };
 
 /** Workspace settings. Team and Roles now; approvals and the activity log follow (D57–D59). */
@@ -64,8 +64,8 @@ export function Settings() {
       <PageHeader
         title="Settings"
         context={current.name}
-        description={tr('Settings for everyone in {workspace}. You’re {name} — {role}.', { workspace: current.name, name: me.name, role: tr(roleInfo[role].label) })} />
-      
+        description={tr('Settings for everyone in {workspace}. You’re {name} — {role}.', { workspace: current.name, name: me.name, role: tr(roleInfo[role].label) })}
+      />
       <p className="mt-2 text-caption text-fg-subtle">
         {tr('Your own profile, password and preferences are in')}{' '}
         <Link to="/app/account" className="font-medium text-fg underline-offset-2 hover:underline">
@@ -79,6 +79,6 @@ export function Settings() {
       <div className="pt-6 md:pt-8">
         <Panel />
       </div>
-    </div>);
-
+    </div>
+  );
 }

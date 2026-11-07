@@ -55,33 +55,33 @@ export function OrderStatus() {
   const Icon = refunded ? XCircleIcon : pending ? ClockIcon : CheckCircle2Icon;
   const eta = order.fulfilment.eta ?? tx('the seller will confirm');
   const title = tx(order.status === 'cancelled' ? 'Order cancelled' : order.paymentStatus === 'refunded' ? 'Order refunded' : pending ? 'Order received — payment pending' : 'Thank you, your order is confirmed');
-  const sub = podDue && order.pod ?
-  tx('Pay {amount} when it arrives ({how}). The seller will call before delivery — keep your phone on. Expected: {eta}.', {
-    amount: formatNgn(order.pod.amountNgn),
-    how: tx(order.pod.accept === 'cash' ? 'cash' : order.pod.accept === 'transfer' ? 'transfer' : 'cash or transfer'),
-    eta
-  }) :
-  pending ?
-  order.bankTransfer ?
-  tx(order.bankTransfer.sentAt ? 'Thanks — the seller will confirm when your transfer arrives. Nothing is sent before then.' : 'Transfer the amount below using your order number as the reference. The seller confirms when it arrives.') :
-  order.paymentNote === 'Provider timed out' ?
-  tx('Your bank didn’t confirm in time. If you were charged, the seller will see it once the provider updates — usually within minutes. Don’t pay twice.') :
-  tx('We’re waiting for the payment provider to confirm. You’ll get a confirmation when it does.') :
-  order.status === 'cancelled' ?
-  tx('Any payment has been refunded to your original payment method.') :
-  order.fulfilment.method === 'tickets' ?
-  tx('Your tickets are below and in your receipt email. Open each one to show its QR code at the door.') :
-  order.fulfilment.method === 'digital' ?
-  tx('Your files are ready. Your download link is below and in your receipt email.') :
-  order.balance && !order.balance.paidAt ?
-  tx('Your deposit is confirmed and your order is being made. Pay the balance below before it’s sent out.') :
-  order.popup ?
-  order.popup.payAtStall && order.paymentStatus === 'pending' ?
-  tx('Collect at the stall: {when}. Pay when you collect and show your order number.', { when: order.popup.sessionLabel }) :
-  tx('Collect at the stall: {when}. Show your order number.', { when: order.popup.sessionLabel }) :
-  order.fulfilment.method === 'pickup' ?
-  tx('The seller will let you know when it’s ready to collect.') :
-  tx('Expected delivery: {eta}.', { eta });
+  const sub = podDue && order.pod
+    ? tx('Pay {amount} when it arrives ({how}). The seller will call before delivery — keep your phone on. Expected: {eta}.', {
+        amount: formatNgn(order.pod.amountNgn),
+        how: tx(order.pod.accept === 'cash' ? 'cash' : order.pod.accept === 'transfer' ? 'transfer' : 'cash or transfer'),
+        eta,
+      })
+    : pending
+    ? order.bankTransfer
+      ? tx(order.bankTransfer.sentAt ? 'Thanks — the seller will confirm when your transfer arrives. Nothing is sent before then.' : 'Transfer the amount below using your order number as the reference. The seller confirms when it arrives.')
+      : order.paymentNote === 'Provider timed out'
+      ? tx('Your bank didn’t confirm in time. If you were charged, the seller will see it once the provider updates — usually within minutes. Don’t pay twice.')
+      : tx('We’re waiting for the payment provider to confirm. You’ll get a confirmation when it does.')
+    : order.status === 'cancelled'
+      ? tx('Any payment has been refunded to your original payment method.')
+      : order.fulfilment.method === 'tickets'
+        ? tx('Your tickets are below and in your receipt email. Open each one to show its QR code at the door.')
+        : order.fulfilment.method === 'digital'
+        ? tx('Your files are ready. Your download link is below and in your receipt email.')
+        : order.balance && !order.balance.paidAt
+          ? tx('Your deposit is confirmed and your order is being made. Pay the balance below before it’s sent out.')
+          : order.popup
+          ? order.popup.payAtStall && order.paymentStatus === 'pending'
+            ? tx('Collect at the stall: {when}. Pay when you collect and show your order number.', { when: order.popup.sessionLabel })
+            : tx('Collect at the stall: {when}. Show your order number.', { when: order.popup.sessionLabel })
+          : order.fulfilment.method === 'pickup'
+          ? tx('The seller will let you know when it’s ready to collect.')
+          : tx('Expected delivery: {eta}.', { eta });
 
   return (
     <LocaleProvider lang={lang} setLang={setLang}>
@@ -99,7 +99,7 @@ export function OrderStatus() {
           </div>
           <TestModeNote theme={t} />
 
-          {pending && order.bankTransfer &&
+          {pending && order.bankTransfer && (
             <section className="flex flex-col gap-3 p-5" style={cardStyle(t)} aria-label={tx('Bank transfer details')}>
               <p className="text-[15px] font-semibold">{tx('Transfer {amount} to:', { amount: formatNgn(orderMoney(order).gross) })}</p>
               <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-[14px]">
@@ -107,34 +107,34 @@ export function OrderStatus() {
                 <dd className="font-medium">{order.bankTransfer.bank}</dd>
                 <dt style={muted}>{tx('Account number')}</dt>
                 <dd className="font-mono font-medium tracking-wide">{order.bankTransfer.account}</dd>
-                {order.bankTransfer.accountName &&
-                <>
+                {order.bankTransfer.accountName && (
+                  <>
                     <dt style={muted}>{tx('Account name')}</dt>
                     <dd className="font-medium">{order.bankTransfer.accountName}</dd>
                   </>
-                }
+                )}
                 <dt style={muted}>{tx('Reference')}</dt>
                 <dd className="font-mono font-semibold">{orderRef(order)}</dd>
               </dl>
-              {order.bankTransfer.sentAt ?
-              <p className="flex items-center gap-1.5 text-[13.5px] font-medium">
+              {order.bankTransfer.sentAt ? (
+                <p className="flex items-center gap-1.5 text-[13.5px] font-medium">
                   <CheckCircle2Icon size={15} aria-hidden /> {tx('You marked it as sent {when}.', { when: formatTimestamp(order.bankTransfer.sentAt) })}
-                </p> :
-
-              <button
-                type="button"
-                onClick={() => commerce.apply((d) => markTransferSent(d, order.id))}
-                className="h-11 self-start px-5 text-[14px] font-semibold focus-visible:outline-none focus-visible:ring-2"
-                style={{ background: t.accent, color: t.accentText, borderRadius: 999 }}>
-                
+                </p>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => commerce.apply((d) => markTransferSent(d, order.id))}
+                  className="h-11 self-start px-5 text-[14px] font-semibold focus-visible:outline-none focus-visible:ring-2"
+                  style={{ background: t.accent, color: t.accentText, borderRadius: 999 }}
+                >
                   {tx('I’ve sent the money')}
                 </button>
-              }
+              )}
               <p className="text-[12.5px]" style={muted}>
                 {tx('Only transfer to the account shown here. KUBICU doesn’t hold this money and can’t refund a transfer to the wrong account.')}
               </p>
             </section>
-            }
+          )}
 
           {tracking?.applies && !pending && <OrderTrackingCard theme={t} view={tracking} tx={tx} />}
 
@@ -146,7 +146,7 @@ export function OrderStatus() {
               </p>
             </div>
             <ul className="flex flex-col gap-1.5 border-t pt-3 text-[14px]" style={{ borderColor: mix(t.text, 12) }}>
-              {order.items.map((i) =>
+              {order.items.map((i) => (
                 <li key={i.variantId} className="flex justify-between gap-3">
                   <span>
                     {i.qty} × {i.name}
@@ -154,27 +154,27 @@ export function OrderStatus() {
                   </span>
                   <span className="tabular-nums">{formatNgn(i.unitPriceNgn * i.qty)}</span>
                 </li>
-                )}
+              ))}
             </ul>
             <div className="border-t pt-2" style={{ borderColor: mix(t.text, 12) }}>
               <div style={{ color: t.text }} className="[&_dd]:!text-inherit [&_dt]:!text-inherit">
                 <MoneyBreakdown money={orderMoney(order)} audience="customer" discountLabel={order.discount ? discountLineLabel(order.discount) : undefined} />
               </div>
-              {order.refunds.length > 0 &&
+              {order.refunds.length > 0 && (
                 <p className="mt-2 flex items-center gap-1.5 text-[13px]" style={muted}>
                   <RotateCcwIcon size={13} aria-hidden /> {tx('Refunded {amount}', { amount: formatNgn(order.refunds.reduce((s, r) => s + r.amountNgn, 0)) })}
                 </p>
-                }
+              )}
             </div>
             <div className="border-t pt-3 text-[13.5px]" style={{ borderColor: mix(t.text, 12) }}>
               <p className="font-semibold">
-                {order.fulfilment.method === 'pickup' ?
-                  tx('Pickup') :
-                  order.fulfilment.method === 'tickets' ?
-                  tx('Event tickets') :
-                  order.fulfilment.method === 'digital' ?
-                  tx('Digital delivery') :
-                  tx('Delivery to {zone}', { zone: order.fulfilment.zoneName ?? '' })}
+                {order.fulfilment.method === 'pickup'
+                  ? tx('Pickup')
+                  : order.fulfilment.method === 'tickets'
+                    ? tx('Event tickets')
+                    : order.fulfilment.method === 'digital'
+                      ? tx('Digital delivery')
+                      : tx('Delivery to {zone}', { zone: order.fulfilment.zoneName ?? '' })}
               </p>
               {order.fulfilment.address && <p style={muted}>{order.fulfilment.address}</p>}
               {order.popup && <p style={muted}>{tx('Pop-up pickup · {when}', { when: order.popup.sessionLabel })}</p>}
@@ -200,13 +200,13 @@ export function OrderStatus() {
 
           {order.tickets && order.tickets.length > 0 && !pending && <OrderTickets theme={t} tickets={order.tickets} data={commerce.data} handle={handle} />}
 
-          {order.held && !refunded &&
+          {order.held && !refunded && (
             <p className="rounded-md px-3 py-2.5 text-[13.5px] font-medium leading-snug" style={{ background: mix(t.text, 6) }}>
               {tx('You’ve joined the group buy. Your order is packed once the goal is reached — if it isn’t reached by the deadline, you’re refunded in full automatically.')}
             </p>
-            }
+          )}
 
-          {order.referralCode && room && !refunded &&
+          {order.referralCode && room && !refunded && (
             <ReferralShareCard
               theme={t}
               handle={handle}
@@ -214,42 +214,42 @@ export function OrderStatus() {
               productName={order.items[0]?.name ?? 'this'}
               joinedThroughYou={roomReferrers(commerce.data, handle).find((r) => r.code === order.referralCode)?.joined ?? 0}
               reward={room.referralReward}
-              needed={roomStats && room.type === 'goal' && roomStats.remaining > 0 ? roomStats.remaining : null} />
+              needed={roomStats && room.type === 'goal' && roomStats.remaining > 0 ? roomStats.remaining : null}
+            />
+          )}
 
-            }
-
-          {order.downloadToken && !pending && !refunded &&
+          {order.downloadToken && !pending && !refunded && (
             <Link
               to={`/p/${handle}/download/${order.downloadToken}`}
               className="flex h-12 items-center justify-center gap-2 text-[15px] font-semibold"
-              style={{ background: t.accent, color: t.accentText, borderRadius: 999 }}>
-              
+              style={{ background: t.accent, color: t.accentText, borderRadius: 999 }}
+            >
               <DownloadIcon size={17} aria-hidden /> {tx('Go to your downloads')}
             </Link>
-            }
+          )}
 
           {(() => {
-              // Gift card codes (D202) appear once the payment is confirmed.
-              const codes = (commerce.data?.giftCards ?? []).filter((g) => g.orderId === order.id);
-              const hasGiftItems = order.items.some((i) => commerce.data?.products.find((p) => p.id === i.productId)?.giftCard);
-              if (!hasGiftItems || refunded) return null;
-              return (
-                <section aria-labelledby="order-gift-codes" className="p-5" style={{ ...cardStyle(t), borderRadius: 16 }}>
+            // Gift card codes (D202) appear once the payment is confirmed.
+            const codes = (commerce.data?.giftCards ?? []).filter((g) => g.orderId === order.id);
+            const hasGiftItems = order.items.some((i) => commerce.data?.products.find((p) => p.id === i.productId)?.giftCard);
+            if (!hasGiftItems || refunded) return null;
+            return (
+              <section aria-labelledby="order-gift-codes" className="p-5" style={{ ...cardStyle(t), borderRadius: 16 }}>
                 <h2 id="order-gift-codes" className="flex items-center gap-2 text-[15px] font-semibold">
                   <GiftIcon size={16} aria-hidden /> {tx(codes.length === 1 ? 'Your gift card' : 'Your gift cards')}
                 </h2>
-                {pending || codes.length === 0 ?
+                {pending || codes.length === 0 ? (
                   <p className="mt-1.5 text-[13.5px]" style={{ color: t.mutedText }}>
                     {tx('Your code appears here as soon as the payment is confirmed.')}
-                  </p> :
-
+                  </p>
+                ) : (
                   <>
                     <p className="mt-1.5 text-[13.5px]" style={{ color: t.mutedText }}>
                       {tx('Send the code to whoever it’s for. It works at this shop’s checkout; anything left over carries to the next order.')}
                     </p>
                     <ul className="mt-3 flex flex-col gap-2">
-                      {codes.map((g) =>
-                      <li key={g.id} className="flex items-center justify-between gap-3 rounded-md px-3 py-2.5" style={{ background: mix(t.text, 6) }}>
+                      {codes.map((g) => (
+                        <li key={g.id} className="flex items-center justify-between gap-3 rounded-md px-3 py-2.5" style={{ background: mix(t.text, 6) }}>
                           <span className="min-w-0">
                             <span className="block truncate font-mono text-[15px] font-semibold tracking-wide">{g.code}</span>
                             <span className="text-[12.5px]" style={{ color: t.mutedText }}>
@@ -257,57 +257,57 @@ export function OrderStatus() {
                             </span>
                           </span>
                           <button
-                          type="button"
-                          onClick={() => navigator.clipboard?.writeText(g.code).catch(() => undefined)}
-                          className="flex h-10 shrink-0 items-center gap-1.5 px-3.5 text-[13.5px] font-semibold focus-visible:outline-none focus-visible:ring-2"
-                          style={{ ...cardStyle(t), borderRadius: 999 }}
-                          aria-label={tx('Copy code {code}', { code: g.code })}>
-                          
+                            type="button"
+                            onClick={() => navigator.clipboard?.writeText(g.code).catch(() => undefined)}
+                            className="flex h-10 shrink-0 items-center gap-1.5 px-3.5 text-[13.5px] font-semibold focus-visible:outline-none focus-visible:ring-2"
+                            style={{ ...cardStyle(t), borderRadius: 999 }}
+                            aria-label={tx('Copy code {code}', { code: g.code })}
+                          >
                             <CopyIcon size={14} aria-hidden /> {tx('Copy')}
                           </button>
                         </li>
-                      )}
+                      ))}
                     </ul>
                   </>
-                  }
-              </section>);
-
-            })()}
+                )}
+              </section>
+            );
+          })()}
 
           {!pending && !refunded &&
-            order.items.
-            filter((i) => i.kind === 'course').
-            map((i) => {
-              const courseId = commerce.data?.products.find((p) => p.id === i.productId)?.courseId;
-              return courseId ?
-              <Link
-                key={i.productId}
-                to={learnUrl(handle, courseId)}
-                className="flex h-12 items-center justify-center gap-2 text-[15px] font-semibold"
-                style={{ background: t.accent, color: t.accentText, borderRadius: 999 }}>
-                
+            order.items
+              .filter((i) => i.kind === 'course')
+              .map((i) => {
+                const courseId = commerce.data?.products.find((p) => p.id === i.productId)?.courseId;
+                return courseId ? (
+                  <Link
+                    key={i.productId}
+                    to={learnUrl(handle, courseId)}
+                    className="flex h-12 items-center justify-center gap-2 text-[15px] font-semibold"
+                    style={{ background: t.accent, color: t.accentText, borderRadius: 999 }}
+                  >
                     <GraduationCapIcon size={17} aria-hidden /> {tx('Start learning: {name}', { name: i.name })}
-                  </Link> :
-              null;
-            })}
+                  </Link>
+                ) : null;
+              })}
 
-          {phone &&
+          {phone && (
             <a
               href={whatsappLink(phone, `Hi! About my order ${orderRef(order)}…`)}
               target="_blank"
               rel="noopener noreferrer"
               className="flex h-12 items-center justify-center gap-2 text-[15px] font-semibold"
-              style={{ ...cardStyle(t), borderRadius: 999 }}>
-              
+              style={{ ...cardStyle(t), borderRadius: 999 }}
+            >
               <MessageCircleIcon size={17} aria-hidden /> {tx('Message the seller')}
             </a>
-            }
+          )}
           <p className="text-[12px] leading-snug" style={muted}>
             {tx('Keep this page or your order number. Refunds and returns are handled by the seller under their policy and Nigerian consumer law.')}
           </p>
         </main>
       </PageSurface>
     </div>
-    </LocaleProvider>);
-
+    </LocaleProvider>
+  );
 }

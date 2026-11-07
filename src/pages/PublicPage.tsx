@@ -75,7 +75,7 @@ import { checkAccess, coveredCount, maskContact, memberAreas, readSession, write
 import { announce } from '../utils/announce';
 import { sitePages } from '../utils/sitePages';
 
-export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
+export function PublicPage({ view = 'page' }: { view?: 'page' | 'shop' }) {
   const { handle = '', pagePath: rawPath, productId } = useParams();
   const [params] = useSearchParams();
   const navigate = useNavigate();
@@ -89,7 +89,7 @@ export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
   const [visitorLang, setVisitorLang] = useVisitorLang(resolved?.doc.language);
   // Members-only content (D110): the member's session on this device, and the sign-in sheet.
   const memberWid = resolved && !resolved.example ? resolved.workspaceId ?? null : null;
-  const [memberSession, setMemberSession] = useState<MemberSession | null>(() => memberWid ? readSession(memberWid) : null);
+  const [memberSession, setMemberSession] = useState<MemberSession | null>(() => (memberWid ? readSession(memberWid) : null));
   const [signInOpen, setSignInOpen] = useState(false);
   useEffect(() => {
     setMemberSession(memberWid ? readSession(memberWid) : null);
@@ -97,10 +97,10 @@ export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
 
   // Visitor analytics (D61): where this visit came from, and a tracker for this page.
   const visit = useMemo(() => visitSource(params), [params]);
-  const trackPageId = view === 'shop' ? 'shop' : resolved && rawPath ? (resolvePath(resolved.doc, rawPath) as {pageId?: string | null;} | null)?.pageId ?? null : null;
+  const trackPageId = view === 'shop' ? 'shop' : (resolved && rawPath ? (resolvePath(resolved.doc, rawPath) as { pageId?: string | null } | null)?.pageId ?? null : null);
   const track = useMemo(
     () => createTracker({ workspaceId: resolved?.example ? null : resolved?.workspaceId ?? null, handle, pageId: trackPageId, source: visit, disabled: isDraft, isOwner: !!resolved?.isOwn }),
-    [resolved?.example, resolved?.workspaceId, resolved?.isOwn, handle, trackPageId, visit, isDraft]
+    [resolved?.example, resolved?.workspaceId, resolved?.isOwn, handle, trackPageId, visit, isDraft],
   );
   const viewKey = resolved ? `${handle}/${view}/${rawPath ?? ''}/${productId ?? ''}` : null;
   useEffect(() => {
@@ -116,21 +116,21 @@ export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
       submitLead: (v, formTitle, consent) => {
         track('lead', { label: formTitle });
         return ops.apply((d) =>
-        upsertContact(d, { name: v.name, email: v.email, phone: v.phone }, 'form', `Sent “${formTitle}”${v.message ? `: ${v.message.slice(0, 140)}` : ''}`, {
-          consent: consent ? 'subscribed' : 'transactional',
-          attribution: { channel: visit.source, campaign: visit.campaign ?? null, page: handle ?? null },
-          consentWording: opsSettingsOf(d).consentText || `Ticked “keep me updated” on “${formTitle}”`
-        })
+          upsertContact(d, { name: v.name, email: v.email, phone: v.phone }, 'form', `Sent “${formTitle}”${v.message ? `: ${v.message.slice(0, 140)}` : ''}`, {
+            consent: consent ? 'subscribed' : 'transactional',
+            attribution: { channel: visit.source, campaign: visit.campaign ?? null, page: handle ?? null },
+            consentWording: opsSettingsOf(d).consentText || `Ticked “keep me updated” on “${formTitle}”`,
+          }),
         );
       },
       subscribe: (v, title) => {
         track('signup', { label: title });
         return ops.apply((d) =>
-        upsertContact(d, { name: '', email: v.email, phone: '' }, 'newsletter', `Subscribed via “${title}”`, {
-          consent: 'subscribed',
-          attribution: { channel: visit.source, campaign: visit.campaign ?? null, page: handle ?? null },
-          consentWording: opsSettingsOf(d).consentText || `Signed up to “${title}”`
-        })
+          upsertContact(d, { name: '', email: v.email, phone: '' }, 'newsletter', `Subscribed via “${title}”`, {
+            consent: 'subscribed',
+            attribution: { channel: visit.source, campaign: visit.campaign ?? null, page: handle ?? null },
+            consentWording: opsSettingsOf(d).consentText || `Signed up to “${title}”`,
+          }),
         );
       },
       openBooking: (id) => {
@@ -146,16 +146,16 @@ export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
         const c = contactFrom(form, sub.answers);
         if (c.email || c.phone) {
           ops.apply((d) =>
-          upsertContact(d, { name: c.name, email: c.email, phone: c.phone }, 'form', `Sent “${form.name}”${paymentNgn ? ` and paid ${formatMoney(paymentNgn)} (test)` : ''}`, {
-            consent: c.consent ? 'subscribed' : 'transactional',
-            attribution: { channel: visit.source, campaign: visit.campaign ?? null, page: handle ?? null },
-            consentWording: `Consent question on “${form.name}”`
-          })
+            upsertContact(d, { name: c.name, email: c.email, phone: c.phone }, 'form', `Sent “${form.name}”${paymentNgn ? ` and paid ${formatMoney(paymentNgn)} (test)` : ''}`, {
+              consent: c.consent ? 'subscribed' : 'transactional',
+              attribution: { channel: visit.source, campaign: visit.campaign ?? null, page: handle ?? null },
+              consentWording: `Consent question on “${form.name}”`,
+            }),
           );
         }
         return true;
       },
-      trackForm: (formId, stage) => track(stage === 'view' ? 'form_view' : 'form_start', { label: formId })
+      trackForm: (formId, stage) => track(stage === 'view' ? 'form_view' : 'form_start', { label: formId }),
     };
   }, [resolved, ops, track, visit, handle]);
 
@@ -165,16 +165,16 @@ export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
   const [adminStore] = useAdminStore();
   const shopOn = !!resolved && flagOn(adminStore, 'storefront') && storefrontAvailable(resolved.doc, shopData);
   const wantShop = view === 'shop' && shopOn;
-  const pagePath = view === 'shop' && !shopOn ? productId ? '\u0000missing' : STOREFRONT_PATH : rawPath;
+  const pagePath = view === 'shop' && !shopOn ? (productId ? '\u0000missing' : STOREFRONT_PATH) : rawPath;
   const shopProduct = wantShop && productId ? findShopProduct(shopData, productId) : undefined;
   // Custom domains (D62): a live domain turns on readable product addresses; your own redirects apply to unknown paths.
   const domainsData = resolved?.workspaceId ? readDomains(resolved.workspaceId) : null;
   const readableProducts = !!domainsData?.domains.some((d) => d.status === 'live');
   const customRedirect =
-  resolved?.workspaceId && view === 'page' && rawPath ?
-  domainsData?.redirects.find((r) => r.from === rawPath && spaceHandle(resolved.workspaceId as string, r.spaceId) === handle) :
-  undefined;
-  const route = resolved ? wantShop ? { pageId: null } : resolvePath(resolved.doc, pagePath) : null;
+    resolved?.workspaceId && view === 'page' && rawPath
+      ? domainsData?.redirects.find((r) => r.from === rawPath && spaceHandle(resolved.workspaceId as string, r.spaceId) === handle)
+      : undefined;
+  const route = resolved ? (wantShop ? { pageId: null } : resolvePath(resolved.doc, pagePath)) : null;
   const pageId = route && 'pageId' in route ? route.pageId : null;
   const sub = resolved ? findPage(resolved.doc, pageId) : undefined;
 
@@ -182,14 +182,14 @@ export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
     const previous = document.title;
     const view = resolved ? pageView(resolved.doc, pageId) : null;
     const shopSeoTitle = shopData?.storefront.seoTitle?.trim();
-    const shopTitle = wantShop && resolved ? shopProduct ? `${shopProduct.name} · ${resolved.doc.title}` : shopSeoTitle || `${shopData?.storefront.title || 'Shop'} · ${resolved.doc.title}` : null;
+    const shopTitle = wantShop && resolved ? (shopProduct ? `${shopProduct.name} · ${resolved.doc.title}` : shopSeoTitle || `${shopData?.storefront.title || 'Shop'} · ${resolved.doc.title}`) : null;
     document.title = shopTitle ?? (resolved && view ? view.seo.title || (sub ? `${sub.title} · ${resolved.doc.title}` : resolved.doc.title) : 'Page not available · KUBICU');
     // Page language for screen readers and translation (WCAG 3.1.1, D76).
     const previousLang = document.documentElement.lang;
     document.documentElement.lang = visitorLang !== 'en' ? visitorLang : resolved?.doc.language || 'en';
     const meta = document.querySelector('meta[name="description"]');
     const previousDescription = meta?.getAttribute('content') ?? null;
-    if (meta && view) meta.setAttribute('content', wantShop ? shopProduct?.description.slice(0, 160) ?? (shopData?.storefront.seoDescription?.trim() || shopData?.storefront.intro || '') : view.seo.description);
+    if (meta && view) meta.setAttribute('content', wantShop ? (shopProduct?.description.slice(0, 160) ?? (shopData?.storefront.seoDescription?.trim() || shopData?.storefront.intro || '')) : view.seo.description);
     // Share previews (D219): Open Graph title, description and image. Real link previews need server-rendered tags;
     // these are set for the prototype so the values travel with the page.
     const og: HTMLMetaElement[] = [];
@@ -197,10 +197,10 @@ export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
       const profile = view.blocks.find((b) => b.type === 'profile');
       const ogImage = view.seo.image || (profile?.type === 'profile' ? profile.content.avatarUrl : '');
       const tags: [string, string][] = [
-      ['og:title', document.title],
-      ['og:description', view.seo.description],
-      ...(ogImage && /^https?:/.test(ogImage) ? [['og:image', ogImage], ['og:image:alt', view.seo.imageAlt ?? '']] as [string, string][] : [])];
-
+        ['og:title', document.title],
+        ['og:description', view.seo.description],
+        ...(ogImage && /^https?:/.test(ogImage) ? ([['og:image', ogImage], ['og:image:alt', view.seo.imageAlt ?? '']] as [string, string][]) : []),
+      ];
       tags.forEach(([property, content]) => {
         if (!content) return;
         const m = document.createElement('meta');
@@ -232,43 +232,43 @@ export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
   // Staff actions (D75b): a taken-down page or a suspended workspace isn't shown — the owner's own draft preview still is.
   if (!resolved.example && !isDraft) {
     if (adminStore.takedowns.some((t) => t.handle === handle))
-    return <Unavailable handle={handle} title="This page was removed" body="It was taken down for breaking KUBICU’s rules. If you own it, check your app for how to appeal." />;
+      return <Unavailable handle={handle} title="This page was removed" body="It was taken down for breaking KUBICU’s rules. If you own it, check your app for how to appeal." />;
     if (resolved.workspaceId && adminStore.suspended[resolved.workspaceId])
-    return <Unavailable handle={handle} title="This page is temporarily unavailable" body="The account behind it is paused while KUBICU looks into something. Please try again later." />;
+      return <Unavailable handle={handle} title="This page is temporarily unavailable" body="The account behind it is paused while KUBICU looks into something. Please try again later." />;
   }
   // An archived campaign or DealRoom forwards to the main page (D50).
   if (resolved.redirectTo && resolved.redirectTo !== handle) return <Navigate to={pageHref(resolved.redirectTo, '')} replace />;
   // Renamed or removed pages forward to their new address.
   if (route && 'redirect' in route) return <Navigate to={`${pageHref(handle, route.redirect)}${isDraft ? '?draft=1' : ''}`} replace />;
   if (!route && customRedirect)
-  return /^https?:\/\//.test(customRedirect.to) ?
-  <ExternalRedirect url={customRedirect.to} /> :
-
-  <Navigate to={`${pageHref(handle, customRedirect.to)}${isDraft ? '?draft=1' : ''}`} replace />;
-
+    return /^https?:\/\//.test(customRedirect.to) ? (
+      <ExternalRedirect url={customRedirect.to} />
+    ) : (
+      <Navigate to={`${pageHref(handle, customRedirect.to)}${isDraft ? '?draft=1' : ''}`} replace />
+    );
   if (!route)
-  return (
-    <Unavailable
-      handle={`${handle}/${view === 'shop' ? STOREFRONT_PATH : rawPath ?? ''}`}
-      title="This page doesn’t exist"
-      body="{name} doesn’t have a page at this address. It may have been renamed or removed."
-      homeHref={`${pageHref(handle, '')}${isDraft ? '?draft=1' : ''}`}
-      homeLabel="Go to {name}"
-      name={resolved.doc.title} />);
-
-
+    return (
+      <Unavailable
+        handle={`${handle}/${view === 'shop' ? STOREFRONT_PATH : rawPath ?? ''}`}
+        title="This page doesn’t exist"
+        body="{name} doesn’t have a page at this address. It may have been renamed or removed."
+        homeHref={`${pageHref(handle, '')}${isDraft ? '?draft=1' : ''}`}
+        homeLabel="Go to {name}"
+        name={resolved.doc.title}
+      />
+    );
   const draftQs = isDraft ? '?draft=1' : '';
   const shopHref = `${pageHref(handle, STOREFRONT_PATH)}${draftQs}`;
   if (wantShop && productId && !shopProduct)
-  return (
-    <Unavailable
-      handle={`${handle}/${STOREFRONT_PATH}`}
-      title="This product isn’t available"
-      body="It may have sold out for good, been renamed or removed. Everything else is still in the shop."
-      homeHref={shopHref}
-      homeLabel="Back to the shop" />);
-
-
+    return (
+      <Unavailable
+        handle={`${handle}/${STOREFRONT_PATH}`}
+        title="This product isn’t available"
+        body="It may have sold out for good, been renamed or removed. Everything else is still in the shop."
+        homeHref={shopHref}
+        homeLabel="Back to the shop"
+      />
+    );
   const { doc, plan, example } = resolved;
   // Examples never sell anything; their catalogue is empty.
   const catalog = example ? null : commerce.data;
@@ -286,20 +286,20 @@ export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
   const previewPhase = params.get('phase');
   // Event spaces (D178) follow the linked event's own times; the same phase field and preview links apply.
   const livePhase = docPhase(doc, catalog);
-  const phase: CampaignPhase | null = livePhase ?
-  isDraft && (previewPhase === 'before' || previewPhase === 'live' || previewPhase === 'ended') ?
-  previewPhase :
-  livePhase :
-  null;
+  const phase: CampaignPhase | null = livePhase
+    ? isDraft && (previewPhase === 'before' || previewPhase === 'live' || previewPhase === 'ended')
+      ? previewPhase
+      : livePhase
+    : null;
   const phaseNames = phaseCopy(doc).labels;
   const campaignCode = doc.campaign?.discountId ? catalog?.discounts.find((d) => d.id === doc.campaign?.discountId)?.code || undefined : undefined;
   const hasMemberContent = !!doc.membersArea || memberAreas([{ id: null, title: '', blocks: doc.blocks }, ...sitePages(doc).map((p) => ({ id: p.id, title: p.title, blocks: p.blocks, rule: p.membersOnly ?? null }))]).length > 0;
-  const memberPreview: MembersValue['preview'] = isDraft ? params.get('member') === '1' ? 'member' : 'visitor' : null;
+  const memberPreview: MembersValue['preview'] = isDraft ? (params.get('member') === '1' ? 'member' : 'visitor') : null;
   const membersValue: MembersValue = {
     handle,
     session: memberPreview ? null : memberSession,
     preview: memberPreview,
-    check: (rule) => memberPreview === 'member' ? { ok: true } : memberPreview === 'visitor' ? { ok: false, reason: 'signed_out' } : checkAccess(catalog, memberSession, rule),
+    check: (rule) => (memberPreview === 'member' ? { ok: true } : memberPreview === 'visitor' ? { ok: false, reason: 'signed_out' } : checkAccess(catalog, memberSession, rule)),
     openSignIn: () => {
       if (memberPreview || example) return;
       setSignInOpen(true);
@@ -312,19 +312,19 @@ export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
     join: isDraft || example || !catalog ? null : (id) => {
       track('subscribe_open', { label: id });
       setSubPlanId(id);
-    }
+    },
   };
   const memberQs = (m: boolean) => {
     const next = new URLSearchParams(params);
-    if (m) next.set('member', '1');else
-    next.delete('member');
+    if (m) next.set('member', '1');
+    else next.delete('member');
     return `?${next.toString()}`;
   };
 
   return (
     <LocaleProvider lang={visitorLang} setLang={setVisitorLang}>
     <div className="min-h-screen w-full" style={{ background: doc.theme.background }}>
-      {isDraft &&
+      {isDraft && (
         <div className="sticky top-0 z-40 flex items-center justify-between gap-3 border-b border-line bg-raised px-3 py-2 text-fg shadow-1">
           <span className="inline-flex min-w-0 items-center gap-2 text-label">
             <EyeIcon size={15} className="shrink-0 text-action" aria-hidden />
@@ -334,43 +334,43 @@ export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
             </span>
           </span>
           <div className="flex shrink-0 items-center gap-2">
-            {hasMemberContent &&
-            <nav aria-label="View members-only content as" className="flex items-center gap-0.5 rounded-md border border-line p-0.5">
-                {([false, true] as const).map((m) =>
-              <Link
-                key={String(m)}
-                to={memberQs(m)}
-                replace
-                aria-current={memberPreview === 'member' === m ? 'true' : undefined}
-                className={cn('whitespace-nowrap rounded-sm px-2.5 py-1 text-caption font-medium', memberPreview === 'member' === m ? 'bg-sunken text-fg' : 'text-fg-muted hover:text-fg')}>
-                
+            {hasMemberContent && (
+              <nav aria-label="View members-only content as" className="flex items-center gap-0.5 rounded-md border border-line p-0.5">
+                {([false, true] as const).map((m) => (
+                  <Link
+                    key={String(m)}
+                    to={memberQs(m)}
+                    replace
+                    aria-current={(memberPreview === 'member') === m ? 'true' : undefined}
+                    className={cn('whitespace-nowrap rounded-sm px-2.5 py-1 text-caption font-medium', (memberPreview === 'member') === m ? 'bg-sunken text-fg' : 'text-fg-muted hover:text-fg')}
+                  >
                     {m ? 'Member' : 'Visitor'}
                   </Link>
-              )}
+                ))}
               </nav>
-            }
-            {phase &&
-            <nav aria-label="Preview phase" className="hidden items-center gap-0.5 rounded-md border border-line p-0.5 sm:flex">
-                {phaseOrder.map((p) =>
-              <Link
-                key={p}
-                to={`?draft=1&phase=${p}`}
-                replace
-                aria-current={p === phase ? 'true' : undefined}
-                className={cn('rounded-sm px-2.5 py-1 text-caption font-medium', p === phase ? 'bg-sunken text-fg' : 'text-fg-muted hover:text-fg')}>
-                
+            )}
+            {phase && (
+              <nav aria-label="Preview phase" className="hidden items-center gap-0.5 rounded-md border border-line p-0.5 sm:flex">
+                {phaseOrder.map((p) => (
+                  <Link
+                    key={p}
+                    to={`?draft=1&phase=${p}`}
+                    replace
+                    aria-current={p === phase ? 'true' : undefined}
+                    className={cn('rounded-sm px-2.5 py-1 text-caption font-medium', p === phase ? 'bg-sunken text-fg' : 'text-fg-muted hover:text-fg')}
+                  >
                     {phaseNames[p]}
                   </Link>
-              )}
+                ))}
               </nav>
-            }
+            )}
             <Button size="sm" variant="secondary" leadingIcon={ArrowLeftIcon} onClick={() => navigate(`/app/canvas/${doc.id}`)}>
               Back to editor
             </Button>
           </div>
         </div>
-        }
-      {example &&
+      )}
+      {example && (
         <div className="flex items-center justify-center gap-2 px-4 py-2 text-center text-[12px] font-medium" style={{ background: doc.theme.text, color: doc.theme.background }}>
           <InfoIcon size={13} aria-hidden className="shrink-0" />
           <span>
@@ -380,7 +380,7 @@ export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
             </Link>
           </span>
         </div>
-        }
+      )}
       <DataSaverProvider disabled={isDraft} sellerDefault={!!doc.branding?.startLightweight}>
       <DataSaverBar theme={doc.theme} />
       <TrackProvider value={track}>
@@ -388,76 +388,76 @@ export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
         <CatalogProvider data={catalog}>
           <PageOpsProvider value={{ data: example ? null : ops.data, actions: isDraft ? null : opsActions, workspaceId: example ? null : resolved.workspaceId ?? null }}>
           <SubscribeProvider
-                    open={
-                    isDraft || example || !catalog ?
-                    null :
-                    (id) => {
-                      track('subscribe_open', { label: id });
-                      setSubPlanId(id);
-                    }
-                    }>
-                    
+            open={
+              isDraft || example || !catalog
+                ? null
+                : (id) => {
+                    track('subscribe_open', { label: id });
+                    setSubPlanId(id);
+                  }
+            }
+          >
             <MembersProvider value={membersValue}>
             <CartProvider pageKey={`${resolved.workspaceId ?? 'example'}:${handle}`}>
-              {wantShop && catalog ?
-                        <main>
+              {wantShop && catalog ? (
+                <main>
                   {nav.length > 1 && <SkipLink target="page-content" />}
                   <PageSurface
-                            theme={doc.theme}
-                            columnClassName="max-w-[1120px] md:px-8"
-                            footer={<PublicFooter theme={doc.theme} badge={showsKubicuBadge(doc, plan)} handle={handle} workspaceId={resolved.workspaceId ?? null} />}
-                            header={nav.length > 1 ? <SiteNav theme={doc.theme} title={doc.title} items={nav} activeId={SHOP_NAV_ID} hrefFor={navHref} /> : undefined}>
-                            
+                    theme={doc.theme}
+                    columnClassName="max-w-[1120px] md:px-8"
+                    footer={<PublicFooter theme={doc.theme} badge={showsKubicuBadge(doc, plan)} handle={handle} workspaceId={resolved.workspaceId ?? null} />}
+                    header={nav.length > 1 ? <SiteNav theme={doc.theme} title={doc.title} items={nav} activeId={SHOP_NAV_ID} hrefFor={navHref} /> : undefined}
+                  >
                     <span id="page-content" tabIndex={-1} className="sr-only">Page content</span>
-                    {shopProduct ?
-                            <ProductDetailView theme={doc.theme} data={catalog} product={shopProduct} ordering={storefrontOrdering(catalog, plan.id)} whatsappPhone={catalog.storefront.whatsappPhone.trim() || sellerPhone(doc)} shopHref={shopHref} productHref={productHref} shopKey={`${resolved.workspaceId ?? 'example'}:${handle}`} /> :
-
-                            <StorefrontView theme={doc.theme} data={catalog} productHref={productHref} ordering={storefrontOrdering(catalog, plan.id)} whatsappPhone={catalog.storefront.whatsappPhone || sellerPhone(doc)} shopKey={`${resolved.workspaceId ?? 'example'}:${handle}`} />
-                            }
+                    {shopProduct ? (
+                      <ProductDetailView theme={doc.theme} data={catalog} product={shopProduct} ordering={storefrontOrdering(catalog, plan.id)} whatsappPhone={catalog.storefront.whatsappPhone.trim() || sellerPhone(doc)} shopHref={shopHref} productHref={productHref} shopKey={`${resolved.workspaceId ?? 'example'}:${handle}`} />
+                    ) : (
+                      <StorefrontView theme={doc.theme} data={catalog} productHref={productHref} ordering={storefrontOrdering(catalog, plan.id)} whatsappPhone={catalog.storefront.whatsappPhone || sellerPhone(doc)} shopKey={`${resolved.workspaceId ?? 'example'}:${handle}`} />
+                    )}
                   </PageSurface>
-                </main> :
-
-                        <PageBody site={doc} pageId={pageId} plan={plan} isDraft={isDraft} phase={phase} nav={nav} navHref={navHref} handle={handle} />
-                        }
+                </main>
+              ) : (
+                <PageBody site={doc} pageId={pageId} plan={plan} isDraft={isDraft} phase={phase} nav={nav} navHref={navHref} handle={handle} />
+              )}
               {catalog && <CheckoutSheet theme={doc.theme} commerce={commerce} ownerPlan={plan.id} handle={handle} defaultCode={phase === 'live' ? campaignCode : undefined} dealRoom={roomCheckout} popup={stallCheckout} workspaceId={resolved && !resolved.example && !isDraft ? resolved.workspaceId : null} businessName={doc.title} />}
               <CartButton theme={doc.theme} />
               {resolved?.workspaceId && !resolved.example && !isDraft && <ConsentStrip workspaceId={resolved.workspaceId} theme={doc.theme} />}
               {resolved?.workspaceId && !resolved.example && !isDraft && <SearchVerificationTag workspaceId={resolved.workspaceId} />}
             </CartProvider>
-            {hasMemberContent && !isDraft && !example &&
-                      <MemberSignInSheet
-                        open={signInOpen}
-                        onClose={() => setSignInOpen(false)}
-                        theme={doc.theme}
-                        data={catalog}
-                        business={doc.title}
-                        onJoin={membersValue.join ? () => {
-                          setSignInOpen(false);
-                          const first = catalog?.subPlans.find((p) => p.status === 'active');
-                          if (first) membersValue.join?.(first.id);
-                        } : null}
-                        onSignedIn={(s) => {
-                          if (memberWid) writeSession(memberWid, s);
-                          setMemberSession(s);
-                          setSignInOpen(false);
-                          track('member_signin');
-                          announce(`Signed in as ${maskContact(s.contact, s.channel)}. Members-only content is now showing.`);
-                        }} />
-
-                      }
+            {hasMemberContent && !isDraft && !example && (
+              <MemberSignInSheet
+                open={signInOpen}
+                onClose={() => setSignInOpen(false)}
+                theme={doc.theme}
+                data={catalog}
+                business={doc.title}
+                onJoin={membersValue.join ? () => {
+                  setSignInOpen(false);
+                  const first = catalog?.subPlans.find((p) => p.status === 'active');
+                  if (first) membersValue.join?.(first.id);
+                } : null}
+                onSignedIn={(s) => {
+                  if (memberWid) writeSession(memberWid, s);
+                  setMemberSession(s);
+                  setSignInOpen(false);
+                  track('member_signin');
+                  announce(`Signed in as ${maskContact(s.contact, s.channel)}. Members-only content is now showing.`);
+                }}
+              />
+            )}
             </MembersProvider>
             <BookingSheet theme={doc.theme} ops={ops} serviceId={bookingService} handle={handle} onClose={() => setBookingService(null)} />
-            {catalog &&
-                    <SubscribeSheet
-                      theme={doc.theme}
-                      commerce={commerce}
-                      planId={subPlanId}
-                      handle={handle}
-                      ownerPlan={plan.id}
-                      onClose={() => setSubPlanId(null)}
-                      onSubscribed={(c, planName, consent) => ops.apply((d) => upsertContact(d, c, 'order', `Subscribed to ${planName}`, { consent: consent ? 'subscribed' : 'transactional' }))} />
-
-                    }
+            {catalog && (
+              <SubscribeSheet
+                theme={doc.theme}
+                commerce={commerce}
+                planId={subPlanId}
+                handle={handle}
+                ownerPlan={plan.id}
+                onClose={() => setSubPlanId(null)}
+                onSubscribed={(c, planName, consent) => ops.apply((d) => upsertContact(d, c, 'order', `Subscribed to ${planName}`, { consent: consent ? 'subscribed' : 'transactional' }))}
+              />
+            )}
           </SubscribeProvider>
           </PageOpsProvider>
         </CatalogProvider>
@@ -465,8 +465,8 @@ export function PublicPage({ view = 'page' }: {view?: 'page' | 'shop';}) {
       </TrackProvider>
       </DataSaverProvider>
     </div>
-    </LocaleProvider>);
-
+    </LocaleProvider>
+  );
 }
 
 function PageBody({
@@ -477,28 +477,28 @@ function PageBody({
   phase,
   nav,
   navHref,
-  handle
-
-
-
-
-
-
-
-
-
-}: {site: PageDocument;pageId: string | null;plan: PlanInfo;isDraft: boolean;phase: CampaignPhase | null;nav: NavItem[];navHref: (item: NavItem) => string;handle: string;}) {
+  handle,
+}: {
+  site: PageDocument;
+  pageId: string | null;
+  plan: PlanInfo;
+  isDraft: boolean;
+  phase: CampaignPhase | null;
+  nav: NavItem[];
+  navHref: (item: NavItem) => string;
+  handle: string;
+}) {
   const doc = pageView(site, pageId);
   const track = useTrack();
   // Draft preview shows scheduled blocks too, so owners can check them before their window opens.
   // IntentFlow (D64): blocks follow the visit's source; draft previews can pick one with ?as=.
   const [params] = useSearchParams();
-  const asParam = isDraft ? params.get('as') as SourceId | null : null;
+  const asParam = isDraft ? (params.get('as') as SourceId | null) : null;
   const source: SourceId = asParam && intentSources.includes(asParam) ? asParam : visitSource(params).source;
   // A/B tests (D127): each visit sees one version; draft previews show A, or B with ?arm=B.
-  const armParam = isDraft ? params.get('arm') === 'B' ? 'B' : 'A' : null;
+  const armParam = isDraft ? (params.get('arm') === 'B' ? 'B' : 'A') : null;
   const [visit] = useState(() => sessionId());
-  const inArm = (b: (typeof doc.blocks)[number]) => armParam ? !b.visibility.abTest || b.visibility.abTest.arm === armParam : showsForArm(b.visibility, visit);
+  const inArm = (b: (typeof doc.blocks)[number]) => (armParam ? !b.visibility.abTest || b.visibility.abTest.arm === armParam : showsForArm(b.visibility, visit));
   const visible = doc.blocks.filter((b) => (isDraft ? !b.visibility.hidden : isLiveNow(b.visibility)) && (!phase || blockInPhase(b, phase)) && showsForSource(b.visibility, source) && inArm(b));
   // Members-only (D110): a members-only page shows one sign-in card; a section hides the blocks below it.
   const members = useMembers();
@@ -524,7 +524,7 @@ function PageBody({
       document.getElementById(`b-${target.id}`)?.scrollIntoView({ block: 'center', behavior: reduce ? 'auto' : 'smooth' });
       setMarked(target.id);
       if (target.type === 'booking') {
-        const c = target.content as {source?: string;serviceId?: string | null;};
+        const c = target.content as { source?: string; serviceId?: string | null };
         if (c.source === 'catalog' && c.serviceId && opsCtx.data?.services.some((s) => s.id === c.serviceId && s.active)) opsCtx.actions?.openBooking(c.serviceId);
       }
     }, 120);
@@ -537,36 +537,36 @@ function PageBody({
   }, [pageId, anchor]);
   // Layout sections (D153): rows of one block or two side by side, each with its own width and background.
   const columnPx = pageContentWidth(site);
-  const column = (node: React.ReactNode) =>
-  <div className="mx-auto w-full px-5" style={{ maxWidth: columnPx }}>
+  const column = (node: React.ReactNode) => (
+    <div className="mx-auto w-full px-5" style={{ maxWidth: columnPx }}>
       {node}
-    </div>;
-
-  const renderBlock = (block: Block, theme: PageTheme) =>
-  <div
-    key={block.id}
-    id={`b-${block.id}`}
-    data-block-type={block.type}
-    className={cn(spacingClass[block.layout.spacing], 'scroll-mt-20 rounded-[14px] transition-[outline-color] duration-300 ease-out')}
-    style={{ outline: '2px solid', outlineOffset: 4, outlineColor: marked === block.id ? theme.text : 'transparent' }}
-    // Taps on any link or button inside a block are counted for that block (D61), unless the block's "Count taps" is off.
-    onClickCapture={(e) => {
-      const el = (e.target as HTMLElement).closest('a,button');
-      if (!el || block.behaviour.trackClicks === false) return;
-      track('tap', { blockId: block.id, label: (el.getAttribute('aria-label') || el.textContent || blockName(block)).trim().slice(0, 80) });
-    }}>
-    
+    </div>
+  );
+  const renderBlock = (block: Block, theme: PageTheme) => (
+    <div
+      key={block.id}
+      id={`b-${block.id}`}
+      data-block-type={block.type}
+      className={cn(spacingClass[block.layout.spacing], 'scroll-mt-20 rounded-[14px] transition-[outline-color] duration-300 ease-out')}
+      style={{ outline: '2px solid', outlineOffset: 4, outlineColor: marked === block.id ? theme.text : 'transparent' }}
+      // Taps on any link or button inside a block are counted for that block (D61), unless the block's "Count taps" is off.
+      onClickCapture={(e) => {
+        const el = (e.target as HTMLElement).closest('a,button');
+        if (!el || block.behaviour.trackClicks === false) return;
+        track('tap', { blockId: block.id, label: (el.getAttribute('aria-label') || el.textContent || blockName(block)).trim().slice(0, 80) });
+      }}
+    >
       <BlockRenderer block={block} theme={theme} mode="live" />
-    </div>;
-
+    </div>
+  );
   const childCtx: BlockChildrenValue = {
     childrenOf: (id) => visible.filter((b) => b.parentId === id),
-    render: (child, theme) => renderBlock(child, theme)
+    render: (child, theme) => renderBlock(child, theme),
   };
   const rows = layoutRows(
     renderList,
-    (item) => item.kind === 'block' ? item.block : null,
-    (item) => item.block.id
+    (item) => (item.kind === 'block' ? item.block : null),
+    (item) => item.block.id,
   );
   const actionBar = site.layout?.actionBar?.enabled && site.layout.actionBar.label.trim() ? site.layout.actionBar : null;
   return (
@@ -578,30 +578,30 @@ function PageBody({
         theme={doc.theme}
         footer={<PublicFooter theme={doc.theme} badge={showsKubicuBadge(doc, plan)} handle={handle} workspaceId={null} />}
         header={
-        nav.length > 1 || site.coBrand ?
-        <>
+          nav.length > 1 || site.coBrand ? (
+            <>
               {site.coBrand && <CoBrandStrip coBrand={site.coBrand} theme={doc.theme} />}
               {nav.length > 1 && <SiteNav theme={doc.theme} title={site.title} items={nav} activeId={pageId} hrefFor={navHref} />}
-            </> :
-        undefined
-        }>
-        
+            </>
+          ) : undefined
+        }
+      >
         <span id="page-content" tabIndex={-1} className="sr-only">Page content</span>
         {site.eventSpace && !pageId && column(<EventSpaceNotice eventId={site.eventSpace.eventId} theme={doc.theme} />)}
         {site.popup && !pageId && column(<PopupPanel popup={site.popup} handle={handle} theme={doc.theme} mode="live" />)}
         {site.bookingPage && !pageId && column(<BookingPagePanel settings={site.bookingPage} pageName={site.title} theme={doc.theme} mode="live" />)}
         {site.fundraiser && !pageId &&
-        column(
-          <div className="mb-4">
+          column(
+            <div className="mb-4">
               <FundraiserPanel f={site.fundraiser} handle={handle} theme={doc.theme} mode="live" workspaceId={opsCtx.workspaceId} />
-            </div>
-        )}
+            </div>,
+          )}
         {site.dealRoom && !pageId &&
-        column(
-          <div className="mb-4">
+          column(
+            <div className="mb-4">
               <DealRoomPanel room={site.dealRoom} handle={handle} theme={doc.theme} mode="live" />
-            </div>
-        )}
+            </div>,
+          )}
         {pageLocked && pageRule && members ? column(
           <MembersLocked
             theme={doc.theme}
@@ -612,46 +612,46 @@ function PageBody({
             teaser={area ? area.teaser : pageRule.teaser}
             joinLabel={area ? area.joinLabel : 'Become a member'}
             hiddenCount={0}
-            access={pageAccess} />
-
-        ) :
-        <BlockChildrenProvider value={childCtx}>
+            access={pageAccess}
+          />,
+        ) : (
+          <BlockChildrenProvider value={childCtx}>
             {pageRule && members && column(<div className="mb-3"><MembersOpenBar theme={doc.theme} title={area ? site.title || 'Members area' : 'Members-only page'} id={area ? `area-${handle}` : `page-${pageId}`} access={pageAccess} /></div>)}
             {rows.map((row, rowIndex) => {
-            const themeFor = sectionTheme(doc.theme, row.background);
-            const nodes = row.items.map((item) => {
-              if (item.kind === 'locked')
-              return (
-                <div key={item.block.id} id={`b-${item.block.id}`} className={cn(spacingClass[item.block.layout.spacing], 'scroll-mt-20')}>
+              const themeFor = sectionTheme(doc.theme, row.background);
+              const nodes = row.items.map((item) => {
+                if (item.kind === 'locked')
+                  return (
+                    <div key={item.block.id} id={`b-${item.block.id}`} className={cn(spacingClass[item.block.layout.spacing], 'scroll-mt-20')}>
                       <MembersLocked theme={doc.theme} rule={item.block.content} id={item.block.id} kind="section" title={item.block.content.title} teaser={item.block.content.teaser} joinLabel={item.block.content.joinLabel} hiddenCount={item.hidden} access={item.access} />
-                    </div>);
-
-              if (item.kind === 'open')
-              return (
-                <div key={item.block.id} id={`b-${item.block.id}`} className={cn(spacingClass[item.block.layout.spacing], 'scroll-mt-20')}>
+                    </div>
+                  );
+                if (item.kind === 'open')
+                  return (
+                    <div key={item.block.id} id={`b-${item.block.id}`} className={cn(spacingClass[item.block.layout.spacing], 'scroll-mt-20')}>
                       <MembersOpenBar theme={doc.theme} title={item.block.content.title} id={item.block.id} access={item.access} />
-                    </div>);
-
-              return renderBlock(item.block, themeFor);
-            });
-            return (
-              <LayoutRow key={row.key} {...bandJoins(rows, rowIndex)} theme={doc.theme} columnPx={columnPx} density={site.layout?.density} width={row.width} background={row.background} ratio={row.ratio} firstSecondOnPhone={row.firstSecondOnPhone}>
+                    </div>
+                  );
+                return renderBlock(item.block, themeFor);
+              });
+              return (
+                <LayoutRow key={row.key} {...bandJoins(rows, rowIndex)} theme={doc.theme} columnPx={columnPx} density={site.layout?.density} width={row.width} background={row.background} ratio={row.ratio} firstSecondOnPhone={row.firstSecondOnPhone}>
                   {nodes}
-                </LayoutRow>);
-
-          })}
+                </LayoutRow>
+              );
+            })}
           </BlockChildrenProvider>
-        }
+        )}
       </PageSurface>
       {actionBar && <StickyActionBar theme={doc.theme} label={actionBar.label} blockId={actionBar.blockId} url={actionBar.url} />}
-    </main>);
-
+    </main>
+  );
 }
 
 type RenderItem =
-{kind: 'block';block: Block;} |
-{kind: 'locked';block: Extract<Block, {type: 'membersOnly';}>;hidden: number;access: ReturnType<MembersValue['check']>;} |
-{kind: 'open';block: Extract<Block, {type: 'membersOnly';}>;access: ReturnType<MembersValue['check']>;};
+  | { kind: 'block'; block: Block }
+  | { kind: 'locked'; block: Extract<Block, { type: 'membersOnly' }>; hidden: number; access: ReturnType<MembersValue['check']> }
+  | { kind: 'open'; block: Extract<Block, { type: 'membersOnly' }>; access: ReturnType<MembersValue['check']> };
 
 /** Swaps each members-only section for a sign-in card (and drops what it hides) or a members strip. */
 function buildRenderList(blocks: Block[], members: MembersValue | null): RenderItem[] {
@@ -685,15 +685,15 @@ export function Unavailable({
   body = 'It may not be published yet, or the owner may have changed its link. Check the address and try again.',
   homeHref = '/',
   homeLabel = 'Create your own KUBICU page',
-  name = ''
-
-
-
-
-
-
-
-}: {handle: string;title?: string;body?: string;homeHref?: string;homeLabel?: string;name?: string;}) {
+  name = '',
+}: {
+  handle: string;
+  title?: string;
+  body?: string;
+  homeHref?: string;
+  homeLabel?: string;
+  name?: string;
+}) {
   const { t } = useT();
   return (
     <main className="flex min-h-screen w-full flex-col items-center justify-center bg-[#F4F1EA] px-6 text-center text-[#171717]">
@@ -703,6 +703,6 @@ export function Unavailable({
       <Link to={homeHref} className="mt-8 inline-flex h-12 items-center rounded-full bg-[#171717] px-6 text-[15px] font-semibold text-[#F4F1EA]">
         {t(homeLabel, { name })}
       </Link>
-    </main>);
-
+    </main>
+  );
 }

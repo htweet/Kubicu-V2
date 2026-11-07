@@ -34,8 +34,8 @@ export function BlockRow({ type, status, favourite, touch, note, onOpen, onAdd, 
         type="button"
         onClick={onOpen}
         aria-label={tr('{name} — details', { name })}
-        className={cn('flex w-full min-w-0 items-center gap-3 rounded-md px-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus', touch ? 'min-h-[60px] py-2 pr-24' : 'min-h-[52px] py-1.5')}>
-        
+        className={cn('flex w-full min-w-0 items-center gap-3 rounded-md px-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus', touch ? 'min-h-[60px] py-2 pr-24' : 'min-h-[52px] py-1.5')}
+      >
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-line bg-raised text-fg-muted">
           <Icon size={16} aria-hidden />
         </span>
@@ -54,29 +54,29 @@ export function BlockRow({ type, status, favourite, touch, note, onOpen, onAdd, 
       <span
         className={cn(
           'absolute inset-y-0 right-0 flex items-center gap-0.5 rounded-r-md bg-sunken pl-2 pr-1 transition-opacity duration-150',
-          touch ? 'bg-transparent opacity-100' : 'pointer-events-none opacity-0 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100'
-        )}>
-        
+          touch ? 'bg-transparent opacity-100' : 'pointer-events-none opacity-0 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100',
+        )}
+      >
         <button
           type="button"
           onClick={onToggleFavourite}
           aria-pressed={favourite}
           aria-label={favourite ? tr('Remove {name} from favourites', { name }) : tr('Add {name} to favourites', { name })}
-          className={cn('relative flex items-center justify-center rounded-full hover:bg-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus', touch ? 'h-10 w-10' : 'h-8 w-8', favourite ? 'text-warning' : 'text-fg-subtle')}>
-          
+          className={cn('relative flex items-center justify-center rounded-full hover:bg-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus', touch ? 'h-10 w-10' : 'h-8 w-8', favourite ? 'text-warning' : 'text-fg-subtle')}
+        >
           <StarIcon size={14} fill={favourite ? 'currentColor' : 'none'} aria-hidden />
         </button>
-        {canAdd &&
-        <button
-          type="button"
-          onClick={onAdd}
-          aria-label={tr('Add {name}', { name })}
-          className={cn('relative flex items-center justify-center rounded-full bg-action text-action-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus', touch ? 'h-10 w-10' : 'h-8 w-8')}>
-          
+        {canAdd && (
+          <button
+            type="button"
+            onClick={onAdd}
+            aria-label={tr('Add {name}', { name })}
+            className={cn('relative flex items-center justify-center rounded-full bg-action text-action-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus', touch ? 'h-10 w-10' : 'h-8 w-8')}
+          >
             <PlusIcon size={15} aria-hidden />
           </button>
-        }
+        )}
       </span>
-    </li>);
-
+    </li>
+  );
 }

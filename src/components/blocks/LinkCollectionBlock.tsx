@@ -17,12 +17,12 @@ export function LinkCollectionBlock({ block, theme, mode }: BlockProps<'linkColl
     <section>
       <SectionHeading theme={theme} title={c.title} />
       <div className="flex flex-col gap-8">
-        {groups.map((g) =>
-        <div key={g.id}>
+        {groups.map((g) => (
+          <div key={g.id}>
             {g.name && groups.length > 1 && <h3 className="mb-3 text-[13px] font-semibold uppercase tracking-[0.08em]" style={{ color: theme.mutedText }}>{g.name}</h3>}
             <ul className={grid ? 'grid gap-3' : 'flex flex-col gap-2'} style={grid ? { gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 220px), 1fr))' } : undefined}>
-              {g.links.map((l) =>
-            <li key={l.id} className="flex">
+              {g.links.map((l) => (
+                <li key={l.id} className="flex">
                   <PageAction mode={mode} href={l.url} className={grid ? 'group flex w-full flex-col p-4' : 'group flex min-h-[56px] w-full items-center justify-between gap-3 px-4 py-3'} style={grid ? cardStyle(theme) : buttonStyle(theme, 'default')}>
                     <span className="min-w-0">
                       <span className={grid ? 'block text-[16px] font-medium' : 'block text-[15px] font-medium'} style={{ color: theme.text, fontFamily: grid ? display : undefined }}>{l.label}</span>
@@ -31,11 +31,11 @@ export function LinkCollectionBlock({ block, theme, mode }: BlockProps<'linkColl
                     <ArrowUpRightIcon size={16} aria-hidden className={grid ? 'mt-3 transition-transform duration-150 ease-out group-hover:-translate-y-0.5 group-hover:translate-x-0.5' : 'shrink-0'} style={{ color: mix(theme.text, 60) }} />
                   </PageAction>
                 </li>
-            )}
+              ))}
             </ul>
           </div>
-        )}
+        ))}
       </div>
-    </section>);
-
+    </section>
+  );
 }

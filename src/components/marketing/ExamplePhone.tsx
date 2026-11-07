@@ -21,15 +21,15 @@ export function ExamplePhone({ doc, width = 220, className, bezel = 'dark' }: Ex
       className={cn(
         'overflow-hidden rounded-[28px] border-[6px] shadow-3',
         bezel === 'dark' ? 'border-[rgb(18_18_20)] bg-[rgb(18_18_20)]' : 'border-white bg-white',
-        className
-      )}>
-      
+        className,
+      )}
+    >
       <div className="hidden sm:block">
         <TemplateThumb doc={doc} width={width} height={Math.round(width * 2)} />
       </div>
       <div className="sm:hidden">
         <TemplateThumb doc={doc} width={small} height={Math.round(small * 2)} />
       </div>
-    </div>);
-
+    </div>
+  );
 }

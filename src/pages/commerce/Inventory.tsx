@@ -37,23 +37,23 @@ export function Inventory() {
   const { t: tr } = useT();
   const [params, setParams] = useSearchParams();
   const [view, setView] = useState<View>('all');
-  const [adjust, setAdjust] = useState<{product: Product;variantId: string;mode?: 'damaged';batchId?: string;} | null>(null);
+  const [adjust, setAdjust] = useState<{ product: Product; variantId: string; mode?: 'damaged'; batchId?: string } | null>(null);
   const productFilter = params.get('product') ?? 'all';
   // A teammate limited to one location sees that location's count only (D475). Adjusting changes the main shop's
   // count, so it's only offered there; stock history covers every location, so it's hidden from branch staff.
   const { myBranchId } = useTeam();
-  const qty = (v: ProductVariant) => myBranchId ? stockAt(v, myBranchId) : v.stock;
+  const qty = (v: ProductVariant) => (myBranchId ? stockAt(v, myBranchId) : v.stock);
   const canAdjust = !myBranchId || myBranchId === MAIN_BRANCH;
 
   const tracked = data.products.filter((p) => p.kind === 'physical' && p.trackStock && p.status !== 'archived');
   const rows = useMemo<StockRow[]>(
     () =>
-    tracked.
-    flatMap((p) => p.variants.map((v) => ({ id: v.id, product: p, variant: v }))).
-    filter((r) => productFilter === 'all' ? true : r.product.id === productFilter).
-    filter((r) => view === 'out' ? qty(r.variant) <= 0 : view === 'low' ? qty(r.variant) > 0 && qty(r.variant) <= r.product.lowStockAt : true),
+      tracked
+        .flatMap((p) => p.variants.map((v) => ({ id: v.id, product: p, variant: v })))
+        .filter((r) => (productFilter === 'all' ? true : r.product.id === productFilter))
+        .filter((r) => (view === 'out' ? qty(r.variant) <= 0 : view === 'low' ? qty(r.variant) > 0 && qty(r.variant) <= r.product.lowStockAt : true)),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [tracked, view, productFilter, myBranchId]
+    [tracked, view, productFilter, myBranchId],
   );
 
   const allVariants = tracked.flatMap((p) => p.variants.map((v) => ({ p, v })));
@@ -73,142 +73,142 @@ export function Inventory() {
   };
 
   const columns: DataColumn<StockRow>[] = [
-  {
-    key: 'product',
-    header: 'Item',
-    sortValue: (r) => r.product.name.toLowerCase(),
-    render: (r) =>
-    <span className="flex items-center gap-2">
+    {
+      key: 'product',
+      header: 'Item',
+      sortValue: (r) => r.product.name.toLowerCase(),
+      render: (r) => (
+        <span className="flex items-center gap-2">
           <span className="min-w-0">
             <span className="block truncate font-semibold text-fg">{r.product.name}</span>
             <span className="block text-caption text-fg-subtle">{Object.keys(r.variant.options).length ? variantLabel(r.variant) : tr('Single item')}</span>
           </span>
           {r.product.sample && <SampleTag />}
         </span>
-
-  },
-  { key: 'sku', header: 'SKU', hideOnMobile: true, render: (r) => <span className="font-mono text-caption text-fg-muted">{r.variant.sku}</span> },
-  {
-    key: 'stock',
-    header: 'On hand',
-    align: 'right',
-    sortValue: (r) => qty(r.variant),
-    render: (r) =>
-    <span className={cn('font-semibold', qty(r.variant) <= 0 ? 'text-danger' : qty(r.variant) <= r.product.lowStockAt ? 'text-warning' : 'text-fg')}>{qty(r.variant)}</span>
-
-  },
-  {
-    key: 'state',
-    header: 'Status',
-    hideOnMobile: true,
-    render: (r) =>
-    qty(r.variant) <= 0 ? <Badge tone="danger">Out of stock</Badge> : qty(r.variant) <= r.product.lowStockAt ? <Badge tone="warning">{tr('Low · alert at {n}', { n: r.product.lowStockAt })}</Badge> : <Badge tone="success">In stock</Badge>
-  },
-  ...(hasBatches ?
-  [
-  {
-    key: 'expiry',
-    header: 'Expiry',
-    hideOnMobile: true,
-    sortValue: (r: StockRow) => expiries.get(r.variant.id)?.next?.expiresOn ?? '9999',
-    render: (r: StockRow) => {
-      const e = expiries.get(r.variant.id);
-      const here = batchesAt(r.variant, myBranchId || undefined);
-      if (!e || !here.length) return <span className="text-fg-subtle">—</span>;
-      return (
-        <span className="flex flex-col items-start gap-1">
+      ),
+    },
+    { key: 'sku', header: 'SKU', hideOnMobile: true, render: (r) => <span className="font-mono text-caption text-fg-muted">{r.variant.sku}</span> },
+    {
+      key: 'stock',
+      header: 'On hand',
+      align: 'right',
+      sortValue: (r) => qty(r.variant),
+      render: (r) => (
+        <span className={cn('font-semibold', qty(r.variant) <= 0 ? 'text-danger' : qty(r.variant) <= r.product.lowStockAt ? 'text-warning' : 'text-fg')}>{qty(r.variant)}</span>
+      ),
+    },
+    {
+      key: 'state',
+      header: 'Status',
+      hideOnMobile: true,
+      render: (r) =>
+        qty(r.variant) <= 0 ? <Badge tone="danger">Out of stock</Badge> : qty(r.variant) <= r.product.lowStockAt ? <Badge tone="warning">{tr('Low · alert at {n}', { n: r.product.lowStockAt })}</Badge> : <Badge tone="success">In stock</Badge>,
+    },
+    ...(hasBatches
+      ? [
+          {
+            key: 'expiry',
+            header: 'Expiry',
+            hideOnMobile: true,
+            sortValue: (r: StockRow) => expiries.get(r.variant.id)?.next?.expiresOn ?? '9999',
+            render: (r: StockRow) => {
+              const e = expiries.get(r.variant.id);
+              const here = batchesAt(r.variant, myBranchId || undefined);
+              if (!e || !here.length) return <span className="text-fg-subtle">—</span>;
+              return (
+                <span className="flex flex-col items-start gap-1">
                   {e.expiredQty > 0 && <Badge tone="danger">{tr('Expired: {n}', { n: e.expiredQty })}</Badge>}
-                  {e.soon?.expiresOn ?
-          <Badge tone="warning">{tr('Expires {date}', { date: formatExpiry(e.soon.expiresOn) })}</Badge> :
-          e.next?.expiresOn ?
-          <span className="text-caption text-fg-muted">{tr('Next expiry {date}', { date: formatExpiry(e.next.expiresOn) })}</span> :
-          null}
+                  {e.soon?.expiresOn ? (
+                    <Badge tone="warning">{tr('Expires {date}', { date: formatExpiry(e.soon.expiresOn) })}</Badge>
+                  ) : e.next?.expiresOn ? (
+                    <span className="text-caption text-fg-muted">{tr('Next expiry {date}', { date: formatExpiry(e.next.expiresOn) })}</span>
+                  ) : null}
                   <span className="text-caption text-fg-subtle">{tr('Batches: {n}', { n: here.length })}</span>
-                </span>);
-
-    }
-  } as DataColumn<StockRow>] :
-
-  []),
-  {
-    key: 'adjust',
-    header: '',
-    align: 'right',
-    render: (r) => {
-      const expired = expiries.get(r.variant.id)?.expiredBatches[0];
-      return expired && canAdjust ?
-      <span className="flex justify-end gap-1.5">
+                </span>
+              );
+            },
+          } as DataColumn<StockRow>,
+        ]
+      : []),
+    {
+      key: 'adjust',
+      header: '',
+      align: 'right',
+      render: (r) => {
+        const expired = expiries.get(r.variant.id)?.expiredBatches[0];
+        return expired && canAdjust ? (
+          <span className="flex justify-end gap-1.5">
             <Button size="sm" variant="secondary" onClick={() => setAdjust({ product: r.product, variantId: r.variant.id, mode: 'damaged', batchId: expired.id })}>
               {tr('Write off expired')}
             </Button>
             <Button size="sm" variant="tertiary" onClick={() => setAdjust({ product: r.product, variantId: r.variant.id })}>
               Adjust
             </Button>
-          </span> :
-
-      <Button size="sm" variant="secondary" disabled={!canAdjust} title={canAdjust ? undefined : tr('Ask the owner to move stock to your location from Branches.')} onClick={() => setAdjust({ product: r.product, variantId: r.variant.id })}>
+          </span>
+        ) : (
+        <Button size="sm" variant="secondary" disabled={!canAdjust} title={canAdjust ? undefined : tr('Ask the owner to move stock to your location from Branches.')} onClick={() => setAdjust({ product: r.product, variantId: r.variant.id })}>
           Adjust
-        </Button>;
-
-    }
-  }];
-
+        </Button>
+        );
+      },
+    },
+  ];
 
   return (
     <>
       <PageHeader title="Inventory" description="Stock for every variant. Orders reserve stock automatically and cancellations put it back." />
       {myBranchId && <p className="mt-4 text-label text-fg-muted">{tr('Showing {location} only — the location you work at.', { location: locationName(data, myBranchId, tr('Main shop')) })}</p>}
-      {(expiredUnits > 0 || soonCount > 0) &&
-      <InlineAlert tone={expiredUnits > 0 ? 'danger' : 'warning'} className="mt-6" title={expiredUnits > 0 ? tr('Expired units still counted as stock: {n}', { n: expiredUnits }) : tr('Items with a batch expiring soon: {n}', { n: soonCount })}>
+      {(expiredUnits > 0 || soonCount > 0) && (
+        <InlineAlert tone={expiredUnits > 0 ? 'danger' : 'warning'} className="mt-6" title={expiredUnits > 0 ? tr('Expired units still counted as stock: {n}', { n: expiredUnits }) : tr('Items with a batch expiring soon: {n}', { n: soonCount })}>
           {expiredUnits > 0 ? tr('Sales never use an expired batch while other stock is left. Write expired units off so your counts are right.') : tr('Sales already use the batch that expires soonest. Consider a discount to sell it in time.')}
         </InlineAlert>
-      }
+      )}
 
-      {tracked.length === 0 ?
-      <EmptyState framed className="mt-8" icon={PackageIcon} title="No stock to track yet" description="Products with “Track stock” switched on appear here." action={<Link to="/app/commerce/products?new=1" className="text-label font-semibold text-action hover:underline">{tr('Add a product')}</Link>} /> :
-
-      <div className={cn('mt-8 grid items-start gap-8 xl:gap-10', !myBranchId && 'xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]')}>
+      {tracked.length === 0 ? (
+        <EmptyState framed className="mt-8" icon={PackageIcon} title="No stock to track yet" description="Products with “Track stock” switched on appear here." action={<Link to="/app/commerce/products?new=1" className="text-label font-semibold text-action hover:underline">{tr('Add a product')}</Link>} />
+      ) : (
+        <div className={cn('mt-8 grid items-start gap-8 xl:gap-10', !myBranchId && 'xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]')}>
           <Section
-          id="stock"
-          title="Stock levels"
-          description={tr('{n} tracked items · {out} out of stock · {low} low', { n: tracked.reduce((s, p) => s + p.variants.length, 0), out: outCount, low: lowCount })}>
-          
+            id="stock"
+            title="Stock levels"
+            description={tr('{n} tracked items · {out} out of stock · {low} low', { n: tracked.reduce((s, p) => s + p.variants.length, 0), out: outCount, low: lowCount })}
+          >
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <Segmented<View>
-              ariaLabel="Filter stock"
-              value={view}
-              onChange={setView}
-              options={[
-              { value: 'all', label: 'All' },
-              { value: 'low', label: 'Low' },
-              { value: 'out', label: 'Out of stock' }]
-              } />
-            
+                ariaLabel="Filter stock"
+                value={view}
+                onChange={setView}
+                options={[
+                  { value: 'all', label: 'All' },
+                  { value: 'low', label: 'Low' },
+                  { value: 'out', label: 'Out of stock' },
+                ]}
+              />
               <div className="sm:w-56">
                 <SelectInput
-                id="inv-product"
-                label="Product"
-                value={productFilter}
-                onChange={(v) => setParams(v === 'all' ? {} : { product: v })}
-                options={[{ value: 'all', label: 'All products' }, ...tracked.map((p) => ({ value: p.id, label: p.name }))]} />
-              
+                  id="inv-product"
+                  label="Product"
+                  value={productFilter}
+                  onChange={(v) => setParams(v === 'all' ? {} : { product: v })}
+                  options={[{ value: 'all', label: 'All products' }, ...tracked.map((p) => ({ value: p.id, label: p.name }))]}
+                />
               </div>
             </div>
             <DataTable caption="Stock levels" rows={rows} columns={columns} filterText={(r) => `${r.product.name} ${r.variant.sku}`} filterPlaceholder="Search item or SKU" emptyTitle="Nothing here" emptyDescription="No items match this filter." />
           </Section>
 
-          {!myBranchId &&
-        <Section id="moves" title="Stock history" description="Who changed what, when and why.">
-            {movements.length === 0 ?
-          <p className="text-label text-fg-muted">{tr('No stock changes yet.')}</p> :
-
-          <List ordered ruled label={tr('Stock history')}>
-                {movements.map((m) =>
-            <li key={m.id} className="flex items-start gap-3 py-3">
+          {!myBranchId && (
+          <Section id="moves" title="Stock history" description="Who changed what, when and why.">
+            {movements.length === 0 ? (
+              <p className="text-label text-fg-muted">{tr('No stock changes yet.')}</p>
+            ) : (
+              <List ordered ruled label={tr('Stock history')}>
+                {movements.map((m) => (
+                  <li key={m.id} className="flex items-start gap-3 py-3">
                     <span
-                aria-hidden
-                className={cn('mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full', m.delta > 0 ? 'bg-success-soft text-success' : 'bg-sunken text-fg-muted')}>
-                
+                      aria-hidden
+                      className={cn('mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full', m.delta > 0 ? 'bg-success-soft text-success' : 'bg-sunken text-fg-muted')}
+                    >
                       {m.delta > 0 ? <ArrowUpRightIcon size={13} strokeWidth={2.5} /> : <ArrowDownRightIcon size={13} strokeWidth={2.5} />}
                     </span>
                     <div className="min-w-0 flex-1">
@@ -233,15 +233,15 @@ export function Inventory() {
                       <span className="block text-caption tabular-nums text-fg-subtle">→ {m.after}</span>
                     </span>
                   </li>
-            )}
+                ))}
               </List>
-          }
+            )}
           </Section>
-        }
+          )}
         </div>
-      }
+      )}
 
       <AdjustStockDialog product={adjust?.product ?? null} variantId={adjust?.variantId} initialMode={adjust?.mode} initialBatchId={adjust?.batchId} onClose={() => setAdjust(null)} />
-    </>);
-
+    </>
+  );
 }

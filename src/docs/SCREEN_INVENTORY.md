@@ -102,5 +102,7 @@ Built families point to their rows above (and to PROTOTYPE_STATUS.md for detail)
 | X. Public trust/legal/safety states | Report, appeal, suspension, consent, unsubscribe, export/deletion, disputes, warnings | 3/6 | ✅ (D75b, D78, D80, D81, D94) |
 | Translations | Language switch, drafted Pidgin/Yorùbá/Hausa/Igbo | 12 | 🟡 customer pages and most of Commerce (D133–D133r); other screens to follow |
 | Industry page sets | Creator, Retail, Food, Service, Event, Digital, Professional | 13 | ✅ (D137) |
+| Account mode (server-backed states) | Confirm it's you; Team members, invite (link shown once), team policies, transfer; accept invite; Workspaces archive/create; Sign out everywhere; verified activity log; AI credits on hold; shared offline/server/rate/lost-access/session states | Eng brief 6 Nov | 🟡 Batch 1 built behind `authMode = account` (D529–D548), including business details, Roles/Approvals states and draft translations |
+| Account mode — AI runs and approvals (Batch 2) | Automations · Runs · Approvals tabs; start-run confirm; runs list with filters and queue position; run detail with live timeline, cancel and end states; approval card and inbox | Eng brief 6 Nov, Batch 2 | 🟡 Built behind `authMode = account` (D549–D553) · field names provisional, live feed simulated, not opened in a browser |
 
 _Families table refreshed 24 Oct 2026 against the code (Batch 13, Pass A). Full gap list: docs/DESIGN_GAP_AUDIT.md._

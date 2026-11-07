@@ -16,47 +16,47 @@ export type { ExamplePage, ExampleGoal, ExampleStyle } from './build';
 
 // Declared before `examplePages` — it calls ambientArt while the module is still initialising (D160).
 const texture = {
-  paper: "/b302067a-ca94-4dcb-a2d2-c16683e5ff30.jpg",
-  geometry: "/803bd918-ec6c-4c9f-9621-db3ed9639d97.jpg",
-  warm: "/68df290d-1847-408d-9509-5c0beb660edc.jpg",
-  ink: "/775ad695-ba49-475f-854e-a50d6965e990.jpg",
-  deep: "/049d4687-bf81-4022-82fd-0822eeffa678.jpg"
+  paper: 'https://cdn.magicpatterns.com/patterns/generated-images/b302067a-ca94-4dcb-a2d2-c16683e5ff30.jpg',
+  geometry: 'https://cdn.magicpatterns.com/patterns/generated-images/803bd918-ec6c-4c9f-9621-db3ed9639d97.jpg',
+  warm: 'https://cdn.magicpatterns.com/patterns/generated-images/68df290d-1847-408d-9509-5c0beb660edc.jpg',
+  ink: 'https://cdn.magicpatterns.com/patterns/generated-images/775ad695-ba49-475f-854e-a50d6965e990.jpg',
+  deep: 'https://cdn.magicpatterns.com/patterns/generated-images/049d4687-bf81-4022-82fd-0822eeffa678.jpg',
 };
 
 /** Light-page texture per Elite number, chosen for the template's mood (D160). */
 const lightTexture: Record<number, keyof typeof texture> = {
   1: 'warm', 2: 'paper', 3: 'geometry', 4: 'geometry', 6: 'geometry', 7: 'paper', 10: 'geometry', 11: 'warm', 12: 'warm',
-  14: 'paper', 15: 'geometry', 16: 'paper', 17: 'geometry', 19: 'paper', 20: 'geometry', 21: 'paper', 22: 'warm', 23: 'geometry', 24: 'paper'
+  14: 'paper', 15: 'geometry', 16: 'paper', 17: 'geometry', 19: 'paper', 20: 'geometry', 21: 'paper', 22: 'warm', 23: 'geometry', 24: 'paper',
 };
 const darkTexture: Record<number, keyof typeof texture> = { 8: 'deep', 18: 'deep', 23: 'deep' };
 
 /** Fictional example pages — twelve Nigerian and twelve from Kenya, Ghana and South Africa (D434). Each is also a starter template (D32). */
 export const examplePages: ExamplePage[] = [
-adaezeAtelier,
-toluMakes,
-studioNnamdi,
-lagosBookshelf,
-glowByHalima,
-mamaPutKitchen,
-fixRightPlumbing,
-afrobeatsBrunch,
-kemiPresets,
-belloAndCo,
-ifeSounds,
-ikejaFoodBank,
-// Starters from Kenya, Ghana and South Africa (D434).
-...countryStarters,
-// Elite Template Library (D154); text passages use the editorial style (D157).
-// Each also gets a quiet AI-generated ambient texture behind it (D160).
-...[...eliteCreators, ...eliteProfessionals, ...eliteCommerce, ...eliteCommunityPages].map(editorialText).map(ambientArt),
-// Artwork collection (D158): classic pages over an AI-generated background, ₦3,000 or less.
-...artworkPages];
-
+  adaezeAtelier,
+  toluMakes,
+  studioNnamdi,
+  lagosBookshelf,
+  glowByHalima,
+  mamaPutKitchen,
+  fixRightPlumbing,
+  afrobeatsBrunch,
+  kemiPresets,
+  belloAndCo,
+  ifeSounds,
+  ikejaFoodBank,
+  // Starters from Kenya, Ghana and South Africa (D434).
+  ...countryStarters,
+  // Elite Template Library (D154); text passages use the editorial style (D157).
+  // Each also gets a quiet AI-generated ambient texture behind it (D160).
+  ...[...eliteCreators, ...eliteProfessionals, ...eliteCommerce, ...eliteCommunityPages].map(editorialText).map(ambientArt),
+  // Artwork collection (D158): classic pages over an AI-generated background, ₦3,000 or less.
+  ...artworkPages,
+];
 
 function editorialText(e: ExamplePage): ExamplePage {
   return {
     ...e,
-    doc: { ...e.doc, blocks: e.doc.blocks.map((b) => b.type === 'text' ? { ...b, content: { ...b.content, variant: 'editorial' } } as typeof b : b) }
+    doc: { ...e.doc, blocks: e.doc.blocks.map((b) => (b.type === 'text' ? ({ ...b, content: { ...b.content, variant: 'editorial' } } as typeof b) : b)) },
   };
 }
 
@@ -89,5 +89,5 @@ export const goalLabels: Record<ExamplePage['goals'][number], string> = {
   audience: 'Grow an audience',
   showcase: 'Show my work',
   events: 'Run an event',
-  support: 'Raise support'
+  support: 'Raise support',
 };

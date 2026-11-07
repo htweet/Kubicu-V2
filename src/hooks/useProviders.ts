@@ -6,7 +6,7 @@ import { uid } from '../utils/id';
 export interface ProviderConnection {
   values: Record<string, string>;
   connectedAt: string;
-  lastTest?: {ok: boolean;at: string;message: string;};
+  lastTest?: { ok: boolean; at: string; message: string };
 }
 
 export interface ProviderLogEntry {
@@ -43,29 +43,29 @@ export function useProviders() {
   };
 
   const log = (providerId: string, action: string, ok: boolean, detail: string) =>
-  update((d) => ({ ...d, log: [{ id: uid('plog'), at: new Date().toISOString(), providerId, action, ok, detail }, ...d.log].slice(0, 40) }));
+    update((d) => ({ ...d, log: [{ id: uid('plog'), at: new Date().toISOString(), providerId, action, ok, detail }, ...d.log].slice(0, 40) }));
 
   const connect = (id: string, values: Record<string, string>, message: string) =>
-  update((d) => {
-    const def = providerById(id);
-    const at = new Date().toISOString();
-    const defaults = def && !d.defaults[def.category] ? { ...d.defaults, [def.category]: id } : d.defaults;
-    return { ...d, defaults, connections: { ...d.connections, [id]: { values, connectedAt: at, lastTest: { ok: true, at, message } } } };
-  });
+    update((d) => {
+      const def = providerById(id);
+      const at = new Date().toISOString();
+      const defaults = def && !d.defaults[def.category] ? { ...d.defaults, [def.category]: id } : d.defaults;
+      return { ...d, defaults, connections: { ...d.connections, [id]: { values, connectedAt: at, lastTest: { ok: true, at, message } } } };
+    });
 
   const disconnect = (id: string) =>
-  update((d) => {
-    const { [id]: _gone, ...rest } = d.connections;
-    const def = providerById(id);
-    const defaults = { ...d.defaults };
-    if (def && defaults[def.category] === id) delete defaults[def.category];
-    return { ...d, connections: rest, defaults };
-  });
+    update((d) => {
+      const { [id]: _gone, ...rest } = d.connections;
+      const def = providerById(id);
+      const defaults = { ...d.defaults };
+      if (def && defaults[def.category] === id) delete defaults[def.category];
+      return { ...d, connections: rest, defaults };
+    });
 
   const setDefault = (c: ProviderCategory, id: string) => update((d) => ({ ...d, defaults: { ...d.defaults, [c]: id } }));
 
   const recordTest = (id: string, ok: boolean, message: string) =>
-  update((d) => d.connections[id] ? { ...d, connections: { ...d.connections, [id]: { ...d.connections[id], lastTest: { ok, at: new Date().toISOString(), message } } } } : d);
+    update((d) => (d.connections[id] ? { ...d, connections: { ...d.connections, [id]: { ...d.connections[id], lastTest: { ok, at: new Date().toISOString(), message } } } } : d));
 
   return { data, connected, active, connect, disconnect, setDefault, recordTest, log };
 }

@@ -50,8 +50,8 @@ export function ServiceOsSettingsPanel({ data, tax, canEdit, update }: Props) {
         justSaved={justSaved}
         onSave={canEdit ? save : undefined}
         onReset={() => setDraft(saved)}
-        saveDisabled={!!clash}>
-        
+        saveDisabled={!!clash}
+      >
         <fieldset disabled={!canEdit} className="flex flex-col gap-5">
           <div className="grid gap-4 sm:grid-cols-2">
             <TextInput
@@ -60,8 +60,8 @@ export function ServiceOsSettingsPanel({ data, tax, canEdit, update }: Props) {
               value={draft.quotePrefix}
               maxLength={8}
               hint={`Next quote: ${docNumber(draft.quotePrefix, data.counters.quote + 1)}`}
-              onChange={(e) => set({ quotePrefix: cleanDocPrefix(e.target.value) })} />
-            
+              onChange={(e) => set({ quotePrefix: cleanDocPrefix(e.target.value) })}
+            />
             <TextInput
               id="sos-ip"
               label="Invoice number prefix"
@@ -69,8 +69,8 @@ export function ServiceOsSettingsPanel({ data, tax, canEdit, update }: Props) {
               maxLength={8}
               error={clash || undefined}
               hint={clash ? undefined : `Next invoice: ${docNumber(draft.invoicePrefix, data.counters.invoice + 1)}`}
-              onChange={(e) => set({ invoicePrefix: cleanDocPrefix(e.target.value) })} />
-            
+              onChange={(e) => set({ invoicePrefix: cleanDocPrefix(e.target.value) })}
+            />
           </div>
           <div className="grid gap-4 border-t border-line pt-5 sm:grid-cols-2">
             <SelectInput
@@ -78,15 +78,15 @@ export function ServiceOsSettingsPanel({ data, tax, canEdit, update }: Props) {
               label="Quotes stay valid for"
               value={String(draft.validDays)}
               options={validDayOptions.map((n) => ({ value: String(n), label: `${n} days` }))}
-              onChange={(v) => set({ validDays: Number(v) })} />
-            
+              onChange={(v) => set({ validDays: Number(v) })}
+            />
             <SelectInput
               id="sos-due"
               label="Invoices are due"
               value={String(draft.dueDays)}
               options={dueDayOptions.map((n) => ({ value: String(n), label: n === 0 ? 'On receipt' : `${n} days after sending` }))}
-              onChange={(v) => set({ dueDays: Number(v) })} />
-            
+              onChange={(v) => set({ dueDays: Number(v) })}
+            />
           </div>
           <div className="flex flex-col gap-4 border-t border-line pt-5">
             <TextArea
@@ -98,8 +98,8 @@ export function ServiceOsSettingsPanel({ data, tax, canEdit, update }: Props) {
               value={draft.quoteNote}
               placeholder="e.g. Prices include materials. Travel outside Lagos is quoted separately."
               hint="You can still change it on each quote."
-              onChange={(e) => set({ quoteNote: e.target.value })} />
-            
+              onChange={(e) => set({ quoteNote: e.target.value })}
+            />
             <TextArea
               id="sos-inote"
               label="Payment terms on every invoice"
@@ -109,8 +109,8 @@ export function ServiceOsSettingsPanel({ data, tax, canEdit, update }: Props) {
               value={draft.invoiceNote}
               placeholder="e.g. Please use the invoice number as your transfer narration. Work starts once the deposit is received."
               hint="Shown on the pay page and the printed invoice."
-              onChange={(e) => set({ invoiceNote: e.target.value })} />
-            
+              onChange={(e) => set({ invoiceNote: e.target.value })}
+            />
           </div>
           <div className="border-t border-line pt-5">
             <Switch
@@ -118,14 +118,14 @@ export function ServiceOsSettingsPanel({ data, tax, canEdit, update }: Props) {
               label="Charge VAT on quotes and invoices"
               description={`${vatRateLabel(tax.ratePct)}, ${tax.inclusive ? 'included in your prices' : 'added on top of your prices'} — the rate and how it’s shown come from Commerce settings, so your shop and your quotes always match. You can switch it off for a single quote.`}
               checked={draft.vat}
-              onChange={(vat) => set({ vat })} />
-            
+              onChange={(vat) => set({ vat })}
+            />
             <Link to="/app/commerce/settings#tax" className="mt-2 inline-block text-caption font-medium text-action hover:underline">
               Change the VAT rate in Commerce settings
             </Link>
           </div>
         </fieldset>
       </SettingsSection>
-    </div>);
-
+    </div>
+  );
 }

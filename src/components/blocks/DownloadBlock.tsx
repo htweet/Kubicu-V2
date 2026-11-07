@@ -22,14 +22,14 @@ export function DownloadBlock({ block, theme, mode }: BlockProps<'download'>) {
 
   if (linked) {
     if (!product || product.kind !== 'digital' || !canSell(product)) {
-      return mode === 'edit' ?
-      <BlockPlaceholder
-        icon={LinkIcon}
-        title={product ? tr('Not ready to sell: {name}', { name: product.name }) : 'Choose a digital product'}
-        hint={product ? 'It must be active with a scanned file. Visitors won’t see this block yet.' : 'Pick one from Commerce in the inspector.'}
-        theme={theme} /> :
-
-      null;
+      return mode === 'edit' ? (
+        <BlockPlaceholder
+          icon={LinkIcon}
+          title={product ? tr('Not ready to sell: {name}', { name: product.name }) : 'Choose a digital product'}
+          hint={product ? 'It must be active with a scanned file. Visitors won’t see this block yet.' : 'Pick one from Commerce in the inspector.'}
+          theme={theme}
+        />
+      ) : null;
     }
     const asset = product.digital!;
     const ext = asset.fileName.split('.').pop()?.toUpperCase() ?? '';
@@ -37,13 +37,13 @@ export function DownloadBlock({ block, theme, mode }: BlockProps<'download'>) {
     const cover = product.images[0];
     return (
       <article className="flex gap-4 p-4" style={cardStyle(theme)}>
-        {cover ?
-        <MediaImage src={cover.url} alt={cover.alt} loading="lazy" className="h-24 w-20 shrink-0 rounded-md object-cover" /> :
-
-        <span className="flex h-24 w-20 shrink-0 items-center justify-center rounded-md" style={{ background: mix(theme.text, 6), color: theme.mutedText }}>
+        {cover ? (
+          <MediaImage src={cover.url} alt={cover.alt} loading="lazy" className="h-24 w-20 shrink-0 rounded-md object-cover" />
+        ) : (
+          <span className="flex h-24 w-20 shrink-0 items-center justify-center rounded-md" style={{ background: mix(theme.text, 6), color: theme.mutedText }}>
             <FileIcon size={22} aria-hidden />
           </span>
-        }
+        )}
         <div className="flex min-w-0 flex-1 flex-col">
           <div className="flex items-start justify-between gap-2">
             <h3 className="text-[16px] font-medium leading-snug" style={{ fontFamily: fontsFor(theme).display, color: theme.text }}>{c.title || product.name}</h3>
@@ -55,8 +55,8 @@ export function DownloadBlock({ block, theme, mode }: BlockProps<'download'>) {
             mode={mode}
             onAdd={(cart) => cart.add(product.id, product.variants[0]?.id)}
             className="mt-3 flex h-10 items-center justify-center gap-2 text-[14px] font-semibold"
-            style={buttonStyle(theme, 'featured')}>
-            
+            style={buttonStyle(theme, 'featured')}
+          >
             {c.ctaLabel || tr('Buy and download')}
           </CheckoutButton>
           <p className="mt-1.5 flex items-center gap-1 text-[11px]" style={{ color: theme.mutedText }}>
@@ -65,8 +65,8 @@ export function DownloadBlock({ block, theme, mode }: BlockProps<'download'>) {
             {limits ? ` · ${limits}` : ''}
           </p>
         </div>
-      </article>);
-
+      </article>
+    );
   }
 
   if (!c.title) {
@@ -77,18 +77,18 @@ export function DownloadBlock({ block, theme, mode }: BlockProps<'download'>) {
 
   return (
     <article className="flex gap-4 p-4" style={cardStyle(theme)}>
-      {c.coverUrl ?
-      <MediaImage src={c.coverUrl} alt={c.coverAlt} loading="lazy" className="h-24 w-20 shrink-0 rounded-md object-cover" /> :
-
-      <span className="flex h-24 w-20 shrink-0 items-center justify-center rounded-md" style={{ background: mix(theme.text, 6), color: theme.mutedText }}>
+      {c.coverUrl ? (
+        <MediaImage src={c.coverUrl} alt={c.coverAlt} loading="lazy" className="h-24 w-20 shrink-0 rounded-md object-cover" />
+      ) : (
+        <span className="flex h-24 w-20 shrink-0 items-center justify-center rounded-md" style={{ background: mix(theme.text, 6), color: theme.mutedText }}>
           <FileIcon size={22} aria-hidden />
         </span>
-      }
+      )}
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="flex items-start justify-between gap-2">
           <h3 className="text-[16px] font-medium leading-snug" style={{ fontFamily: fontsFor(theme).display, color: theme.text }}>{c.title}</h3>
           <PageChip theme={theme} tone={paid ? 'neutral' : 'muted'}>
-            {paid ? c.priceNgn !== null ? formatNgn(c.priceNgn) : tr('Paid') : tr('Free')}
+            {paid ? (c.priceNgn !== null ? formatNgn(c.priceNgn) : tr('Paid')) : tr('Free')}
           </PageChip>
         </div>
         {c.description && <p className="mt-1 text-[13px] leading-snug" style={{ color: theme.mutedText }}>{c.description}</p>}
@@ -98,13 +98,13 @@ export function DownloadBlock({ block, theme, mode }: BlockProps<'download'>) {
           href={c.url}
           className="mt-3 flex h-10 items-center justify-center gap-2 text-[14px] font-semibold"
           style={buttonStyle(theme, paid ? 'featured' : 'default')}
-          ariaLabel={`${c.ctaLabel || (paid ? tr('Buy') : tr('Download'))}: ${c.title}${paid ? ` (${tr('opens the seller’s payment page')})` : ''}`}>
-          
+          ariaLabel={`${c.ctaLabel || (paid ? tr('Buy') : tr('Download'))}: ${c.title}${paid ? ` (${tr('opens the seller’s payment page')})` : ''}`}
+        >
           {paid ? <ExternalLinkIcon size={15} aria-hidden /> : <DownloadIcon size={15} aria-hidden />}
           {c.ctaLabel || (paid ? tr('Buy') : tr('Download'))}
         </PageAction>
         {paid && <p className="mt-1.5 text-[11px]" style={{ color: theme.mutedText }}>{tr('Payment happens on the seller’s own checkout, not KUBICU.')}</p>}
       </div>
-    </article>);
-
+    </article>
+  );
 }

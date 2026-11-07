@@ -42,19 +42,19 @@ export function ResponsesInbox({ form, submissions, onUpdate, disabled }: Respon
 
   const list = useMemo(
     () =>
-    submissions.
-    filter((s) => s.formId === form.id).
-    filter((s) => filter === 'archived' ? s.status === 'archived' : s.status !== 'archived' && (filter === 'all' || s.status === 'new')).
-    filter((s) => !mine || s.assigneeId === team.me.id).
-    sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
-    [submissions, form.id, filter, mine, team.me.id]
+      submissions
+        .filter((s) => s.formId === form.id)
+        .filter((s) => (filter === 'archived' ? s.status === 'archived' : s.status !== 'archived' && (filter === 'all' || s.status === 'new')))
+        .filter((s) => !mine || s.assigneeId === team.me.id)
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
+    [submissions, form.id, filter, mine, team.me.id],
   );
   const open = submissions.find((s) => s.id === openId && s.formId === form.id) ?? null;
 
   const select = (id: string | null) => {
     const next = new URLSearchParams(params);
-    if (id) next.set('response', id);else
-    next.delete('response');
+    if (id) next.set('response', id);
+    else next.delete('response');
     setParams(next, { replace: true });
   };
 
@@ -66,16 +66,16 @@ export function ResponsesInbox({ form, submissions, onUpdate, disabled }: Respon
 
   const exportCsv = () => {
     const cols = form.fields.filter((f) => f.type !== 'payment' && f.type !== 'section');
-    const rows = submissions.
-    filter((s) => s.formId === form.id).
-    map((s) => [s.createdAt, s.status, ...cols.map((f) => answerText(s.answers[f.id], f)), s.payment ? s.payment.amountNgn : '', s.source ?? '', s.marketingConsent ? 'yes' : 'no', s.email ? s.email.status === 'sent' ? 'sent (simulated)' : 'not sent' : '', s.orderNumber ? `#${s.orderNumber}` : '', s.bookingRef ?? '']);
+    const rows = submissions
+      .filter((s) => s.formId === form.id)
+      .map((s) => [s.createdAt, s.status, ...cols.map((f) => answerText(s.answers[f.id], f)), s.payment ? s.payment.amountNgn : '', s.source ?? '', s.marketingConsent ? 'yes' : 'no', s.email ? (s.email.status === 'sent' ? 'sent (simulated)' : 'not sent') : '', s.orderNumber ? `#${s.orderNumber}` : '', s.bookingRef ?? '']);
     downloadCsv(`${form.name.replace(/\W+/g, '-').toLowerCase()}-responses.csv`, toCsv(['Sent at', 'Status', ...cols.map((f) => f.label), 'Paid (₦, test)', 'Source', 'Marketing consent', 'Confirmation email', 'Order', 'Booking'], rows));
   };
 
-  const memberName = (id: string | null) => id ? team.data.members.find((m) => m.id === id)?.name ?? tr('Former member') : null;
+  const memberName = (id: string | null) => (id ? team.data.members.find((m) => m.id === id)?.name ?? tr('Former member') : null);
 
-  const detail = open &&
-  <div className="flex flex-col gap-6">
+  const detail = open && (
+    <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-1">
         <p className="text-heading font-semibold text-fg">{open.contactName || tr('No name given')}</p>
         <p className="text-caption text-fg-muted">
@@ -90,46 +90,46 @@ export function ResponsesInbox({ form, submissions, onUpdate, disabled }: Respon
       </div>
 
       <dl className="flex flex-col divide-y divide-line border-y border-line">
-        {form.fields.
-      filter((f) => f.type !== 'payment' && f.type !== 'consent' && f.type !== 'section').
-      map((f) => {
-        const showFull = revealed === `${open.id}:${f.id}`;
-        const v = answerText(open.answers[f.id], f, { mask: f.type === 'bank' && !showFull });
-        const canReveal = f.type === 'bank' && !!v && !showFull;
-        const raw = open.answers[f.id];
-        const drawn = f.type === 'signature' && typeof raw === 'string' && raw.startsWith('data:image/') ? raw : null;
-        return (
-          <div key={f.id} className="grid gap-1 py-3 sm:grid-cols-[minmax(0,10rem)_minmax(0,1fr)] sm:gap-4">
+        {form.fields
+          .filter((f) => f.type !== 'payment' && f.type !== 'consent' && f.type !== 'section')
+          .map((f) => {
+            const showFull = revealed === `${open.id}:${f.id}`;
+            const v = answerText(open.answers[f.id], f, { mask: f.type === 'bank' && !showFull });
+            const canReveal = f.type === 'bank' && !!v && !showFull;
+            const raw = open.answers[f.id];
+            const drawn = f.type === 'signature' && typeof raw === 'string' && raw.startsWith('data:image/') ? raw : null;
+            return (
+              <div key={f.id} className="grid gap-1 py-3 sm:grid-cols-[minmax(0,10rem)_minmax(0,1fr)] sm:gap-4">
                 <dt className="text-caption text-fg-subtle">{f.label}</dt>
                 <dd className={cn('whitespace-pre-wrap break-words text-label', v ? 'text-fg' : 'text-fg-subtle')}>
                   {drawn ? <img src={drawn} alt={tr('Signature drawn by {name}', { name: open.contactName || tr('the sender') })} className="h-16 w-auto max-w-full rounded-md border border-line bg-white p-1" /> : v || tr('Not answered')}
-                  {canReveal &&
-              <button type="button" onClick={() => setRevealed(`${open.id}:${f.id}`)} className="ml-2 text-caption font-medium text-action underline-offset-2 hover:underline">
+                  {canReveal && (
+                    <button type="button" onClick={() => setRevealed(`${open.id}:${f.id}`)} className="ml-2 text-caption font-medium text-action underline-offset-2 hover:underline">
                       {tr('Show number')}
                     </button>
-              }
+                  )}
                 </dd>
-              </div>);
-
-      })}
+              </div>
+            );
+          })}
       </dl>
 
       <div className="flex flex-col gap-4">
         <SelectInput
-        id={`assign-${open.id}`}
-        label="Assigned to"
-        value={open.assigneeId ?? ''}
-        disabled={disabled}
-        options={[{ value: '', label: 'Nobody' }, ...team.data.members.map((m) => ({ value: m.id, label: m.id === team.me.id ? `${m.name} (${tr('you')})` : m.name }))]}
-        onChange={(v) => onUpdate(open.id, { assigneeId: v || null })} />
-      
+          id={`assign-${open.id}`}
+          label="Assigned to"
+          value={open.assigneeId ?? ''}
+          disabled={disabled}
+          options={[{ value: '', label: 'Nobody' }, ...team.data.members.map((m) => ({ value: m.id, label: m.id === team.me.id ? `${m.name} (${tr('you')})` : m.name }))]}
+          onChange={(v) => onUpdate(open.id, { assigneeId: v || null })}
+        />
         <div className="flex flex-wrap gap-2">
-          {open.status === 'archived' ?
-        <Button size="sm" variant="secondary" leadingIcon={ArchiveRestoreIcon} disabled={disabled} onClick={() => onUpdate(open.id, { status: 'read' })}>
+          {open.status === 'archived' ? (
+            <Button size="sm" variant="secondary" leadingIcon={ArchiveRestoreIcon} disabled={disabled} onClick={() => onUpdate(open.id, { status: 'read' })}>
               Move back to inbox
-            </Button> :
-
-        <>
+            </Button>
+          ) : (
+            <>
               <Button size="sm" variant="secondary" leadingIcon={MailIcon} disabled={disabled} onClick={() => onUpdate(open.id, { status: 'new' })}>
                 Mark unread
               </Button>
@@ -137,13 +137,13 @@ export function ResponsesInbox({ form, submissions, onUpdate, disabled }: Respon
                 Archive
               </Button>
             </>
-        }
+          )}
         </div>
       </div>
 
       <ResponseRecords form={form} submission={open} onUpdate={(patch) => onUpdate(open.id, patch)} disabled={disabled} />
-    </div>;
-
+    </div>
+  );
 
   return (
     <div className="flex flex-col gap-5">
@@ -153,12 +153,12 @@ export function ResponsesInbox({ form, submissions, onUpdate, disabled }: Respon
           value={filter}
           onChange={setFilter}
           options={[
-          { value: 'all', label: 'Inbox' },
-          { value: 'new', label: 'Unread' },
-          { value: 'archived', label: 'Archived' }]
-          }
-          size="sm" />
-        
+            { value: 'all', label: 'Inbox' },
+            { value: 'new', label: 'Unread' },
+            { value: 'archived', label: 'Archived' },
+          ]}
+          size="sm"
+        />
         <div className="flex items-center gap-2">
           <Button size="sm" variant={mine ? 'primary' : 'secondary'} aria-pressed={mine} onClick={() => setMine((m) => !m)}>
             Mine
@@ -169,13 +169,13 @@ export function ResponsesInbox({ form, submissions, onUpdate, disabled }: Respon
         </div>
       </div>
 
-      {list.length === 0 ?
-      <EmptyState framed icon={InboxIcon} title={filter === 'archived' ? 'Nothing archived' : mine ? 'Nothing assigned to you' : 'No responses yet'} description={form.status === 'live' ? 'Responses appear here as soon as someone sends the form from your page.' : 'Set the form live and add a Form block to a page to start collecting responses.'} /> :
-
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-start">
+      {list.length === 0 ? (
+          <EmptyState framed icon={InboxIcon} title={filter === 'archived' ? 'Nothing archived' : mine ? 'Nothing assigned to you' : 'No responses yet'} description={form.status === 'live' ? 'Responses appear here as soon as someone sends the form from your page.' : 'Set the form live and add a Form block to a page to start collecting responses.'} />
+      ) : (
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-start">
           <ul className="flex flex-col overflow-hidden rounded-lg border border-line bg-raised">
-            {list.map((s, i) =>
-          <li key={s.id} className={cn(i > 0 && 'border-t border-line')}>
+            {list.map((s, i) => (
+              <li key={s.id} className={cn(i > 0 && 'border-t border-line')}>
                 <button type="button" onClick={() => select(s.id)} aria-current={s.id === openId ? 'true' : undefined} className={cn('flex w-full items-start gap-3 px-4 py-3 text-left transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus', s.id === openId ? 'bg-action-soft' : 'hover:bg-sunken')}>
                   {s.status === 'new' ? <MailIcon size={16} className="mt-0.5 shrink-0 text-action" aria-label={tr('Unread')} /> : <MailOpenIcon size={16} className="mt-0.5 shrink-0 text-fg-subtle" aria-hidden />}
                   <span className="min-w-0 flex-1">
@@ -190,17 +190,17 @@ export function ResponsesInbox({ form, submissions, onUpdate, disabled }: Respon
                   </span>
                 </button>
               </li>
-          )}
+            ))}
           </ul>
           {wide && <section aria-label={tr('Response')} className="rounded-lg border border-line bg-raised p-5 lg:sticky lg:top-6">{detail || <p className="py-10 text-center text-caption text-fg-muted">{tr('Select a response to read it.')}</p>}</section>}
         </div>
-      }
+      )}
 
-      {!wide &&
-      <Sheet open={!!open} onClose={() => select(null)} title="Response" side="bottom" height="full">
+      {!wide && (
+        <Sheet open={!!open} onClose={() => select(null)} title="Response" side="bottom" height="full">
           {detail}
         </Sheet>
-      }
-    </div>);
-
+      )}
+    </div>
+  );
 }

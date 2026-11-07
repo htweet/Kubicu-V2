@@ -16,7 +16,7 @@ import { PolicyReleasesCard } from '../../components/admin/localisation/PolicyRe
 const pct = (n: number) => `${(n * 100).toLocaleString(undefined, { maximumFractionDigits: 2 })}%`;
 
 /** Account language codes → translation dictionaries. */
-const dictFor = (code: string): Exclude<UiLang, 'en'> | null => code === 'pcm' || code === 'yo' || code === 'ha' || code === 'ig' || code === 'sw' || code === 'tw' || code === 'zu' ? code : null;
+const dictFor = (code: string): Exclude<UiLang, 'en'> | null => (code === 'pcm' || code === 'yo' || code === 'ha' || code === 'ig' || code === 'sw' || code === 'tw' || code === 'zu' ? code : null);
 
 /**
  * Super admin → Localisation & policies (D130, editing D135): language readiness and native review,
@@ -25,15 +25,15 @@ const dictFor = (code: string): Exclude<UiLang, 'en'> | null => code === 'pcm' |
 export function AdminLocalisation() {
   const [store] = useAdminStore();
   const regional = [
-  ['Currencies a workspace can sell in', currencies.map((c) => c.code).join(', ')],
-  ['Naira-only', 'USSD, pay on delivery, instalments, Nigerian payouts'],
-  ['KUBICU plan prices', 'Always naira'],
-  ['Default time zone', 'West Africa Time (Africa/Lagos)'],
-  ['Countries a workspace can sell from', 'Nigeria, Kenya, Ghana, South Africa (sets currency, phone code, regions, banks, checkout)'],
-  ['Phone numbers', '+234, +254, +233, +27 — local 0 accepted and converted'],
-  ['Default date format', dateFormatOptions[0].label],
-  ['Other date formats', dateFormatOptions.slice(1).map((d) => d.label.split(' —')[0]).join(', ')]];
-
+    ['Currencies a workspace can sell in', currencies.map((c) => c.code).join(', ')],
+    ['Naira-only', 'USSD, pay on delivery, instalments, Nigerian payouts'],
+    ['KUBICU plan prices', 'Always naira'],
+    ['Default time zone', 'West Africa Time (Africa/Lagos)'],
+    ['Countries a workspace can sell from', 'Nigeria, Kenya, Ghana, South Africa (sets currency, phone code, regions, banks, checkout)'],
+    ['Phone numbers', '+234, +254, +233, +27 — local 0 accepted and converted'],
+    ['Default date format', dateFormatOptions[0].label],
+    ['Other date formats', dateFormatOptions.slice(1).map((d) => d.label.split(' —')[0]).join(', ')],
+  ];
 
   return (
     <div className="mx-auto w-full max-w-6xl px-5 py-8 md:px-10 md:py-12">
@@ -52,32 +52,32 @@ export function AdminLocalisation() {
                     <span className="block text-label font-medium text-fg">
                       {l.label} <span className="font-normal text-fg-subtle">· {l.value}</span>
                     </span>
-                    {dict &&
-                    <span className="mt-1.5 flex items-center gap-2">
+                    {dict && (
+                      <span className="mt-1.5 flex items-center gap-2">
                         <span className="h-1.5 w-28 overflow-hidden rounded-full bg-sunken" aria-hidden>
-                          <span className="block h-full rounded-full bg-success" style={{ width: `${total ? reviewed / total * 100 : 0}%` }} />
+                          <span className="block h-full rounded-full bg-success" style={{ width: `${total ? (reviewed / total) * 100 : 0}%` }} />
                         </span>
                         <span className="text-caption tabular-nums text-fg-subtle">
                           {reviewed.toLocaleString()} of {total.toLocaleString()} reviewed
                         </span>
                       </span>
-                    }
+                    )}
                   </span>
-                  {l.ready ?
-                  <Badge tone="success" dot>
+                  {l.ready ? (
+                    <Badge tone="success" dot>
                       Ready
-                    </Badge> :
-                  dict && reviewed === total && total > 0 ?
-                  <Badge tone="success" dot>
+                    </Badge>
+                  ) : dict && reviewed === total && total > 0 ? (
+                    <Badge tone="success" dot>
                       Reviewed
-                    </Badge> :
-                  l.draft ?
-                  <Badge tone="warning">Draft · needs native review</Badge> :
-
-                  <Badge tone="neutral">Coming</Badge>
-                  }
-                </li>);
-
+                    </Badge>
+                  ) : l.draft ? (
+                    <Badge tone="warning">Draft · needs native review</Badge>
+                  ) : (
+                    <Badge tone="neutral">Coming</Badge>
+                  )}
+                </li>
+              );
             })}
           </ul>
         </Card>
@@ -85,12 +85,12 @@ export function AdminLocalisation() {
         <div className="flex min-w-0 flex-col gap-8">
           <Card id="regional" title="Regional formats">
             <dl className="divide-y divide-line">
-              {regional.map(([k, v]) =>
-              <div key={k} className="flex justify-between gap-4 py-2.5 first:pt-0 last:pb-0">
+              {regional.map(([k, v]) => (
+                <div key={k} className="flex justify-between gap-4 py-2.5 first:pt-0 last:pb-0">
                   <dt className="text-label text-fg-muted">{k}</dt>
                   <dd className="text-right text-label font-medium text-fg">{v}</dd>
                 </div>
-              )}
+              ))}
             </dl>
           </Card>
 
@@ -98,24 +98,24 @@ export function AdminLocalisation() {
             <div className="px-5 pb-2 pt-4 md:px-6">
               <p className="text-caption font-semibold text-fg-subtle">KUBICU fee on sales, by plan</p>
               <ul className="mt-2 grid grid-cols-3 gap-x-4 gap-y-2 sm:grid-cols-6">
-                {planOrder.map((p) =>
-                <li key={p}>
+                {planOrder.map((p) => (
+                  <li key={p}>
                     <span className="block text-caption text-fg-subtle">{plans[p].name}</span>
                     <span className="block text-label font-semibold tabular-nums text-fg">{pct(kubicuRateByPlan[p])}</span>
                   </li>
-                )}
+                ))}
               </ul>
             </div>
             <dl className="mt-2 divide-y divide-line border-t border-line">
               {[
-              ['Payment provider (example)', `${pct(PROVIDER_RATE)} + ${formatNgn(PROVIDER_FLAT_NGN)}, capped at ${formatNgn(PROVIDER_CAP_NGN)}; no flat fee under ${formatNgn(PROVIDER_FLAT_WAIVED_UNDER_NGN)}`],
-              ['VAT on KUBICU plan invoices', pct(VAT_RATE)]].
-              map(([k, v]) =>
-              <div key={k} className="flex flex-col gap-0.5 px-5 py-3 sm:flex-row sm:justify-between sm:gap-6 md:px-6">
+                ['Payment provider (example)', `${pct(PROVIDER_RATE)} + ${formatNgn(PROVIDER_FLAT_NGN)}, capped at ${formatNgn(PROVIDER_CAP_NGN)}; no flat fee under ${formatNgn(PROVIDER_FLAT_WAIVED_UNDER_NGN)}`],
+                ['VAT on KUBICU plan invoices', pct(VAT_RATE)],
+              ].map(([k, v]) => (
+                <div key={k} className="flex flex-col gap-0.5 px-5 py-3 sm:flex-row sm:justify-between sm:gap-6 md:px-6">
                   <dt className="text-label text-fg-muted">{k}</dt>
                   <dd className="text-label font-medium text-fg sm:text-right">{v}</dd>
                 </div>
-              )}
+              ))}
             </dl>
           </Card>
         </div>
@@ -125,6 +125,6 @@ export function AdminLocalisation() {
         <PhraseReviewCard />
         <PolicyReleasesCard />
       </div>
-    </div>);
-
+    </div>
+  );
 }

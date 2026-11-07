@@ -54,7 +54,7 @@ export function Subscriptions() {
   const [tab, setTab] = useState<Tab>('subscribers');
   const [status, setStatus] = useState<StatusFilter>('all');
   const [openId, setOpenId] = useState<string | null>(null);
-  const [editing, setEditing] = useState<{plan: SubPlan;} | {kind: SubPlanKind;} | null>(null);
+  const [editing, setEditing] = useState<{ plan: SubPlan } | { kind: SubPlanKind } | null>(null);
   const allowed = planAtLeast(plan.id, CHECKOUT_PLAN);
   // Members-only pages and sections each plan unlocks on the current space (D110).
   const { state: editor } = useEditor();
@@ -65,7 +65,7 @@ export function Subscriptions() {
 
   const rows: SubRow[] = useMemo(
     () => data.subscriptions.map((s) => ({ ...s, planName: data.subPlans.find((p) => p.id === s.planId)?.name ?? tr('Removed plan'), next: nextDueAt(s) })).filter((s) => status === 'all' || s.status === status),
-    [data, status, tr]
+    [data, status, tr],
   );
   const recent = (iso: string | null) => !!iso && now - Date.parse(iso) <= 30 * DAY;
   const stats = {
@@ -74,67 +74,67 @@ export function Subscriptions() {
     trials: data.subscriptions.filter((s) => s.status === 'trialing').length,
     joined: data.subscriptions.filter((s) => recent(s.startedAt)).length,
     left: data.subscriptions.filter((s) => s.status === 'ended' && recent(s.endedAt)).length,
-    failing: data.subscriptions.filter((s) => s.status === 'past_due').length
+    failing: data.subscriptions.filter((s) => s.status === 'past_due').length,
   };
 
-  const newMenu =
-  <Menu
-    align="end"
-    items={[
-    { id: 'membership', label: 'Membership', icon: UsersIcon, onSelect: () => setEditing({ kind: 'membership' }) },
-    { id: 'box', label: 'Product box', icon: PackageIcon, onSelect: () => setEditing({ kind: 'box' }) }]
-    }
-    trigger={(props) =>
-    <Button {...props} leadingIcon={PlusIcon} trailingIcon={ChevronDownIcon} disabled={!canPlans.allowed}>
+  const newMenu = (
+    <Menu
+      align="end"
+      items={[
+        { id: 'membership', label: 'Membership', icon: UsersIcon, onSelect: () => setEditing({ kind: 'membership' }) },
+        { id: 'box', label: 'Product box', icon: PackageIcon, onSelect: () => setEditing({ kind: 'box' }) },
+      ]}
+      trigger={(props) => (
+        <Button {...props} leadingIcon={PlusIcon} trailingIcon={ChevronDownIcon} disabled={!canPlans.allowed}>
           {tr('New plan')}
         </Button>
-    } />;
-
-
+      )}
+    />
+  );
 
   const columns: DataColumn<SubRow>[] = [
-  {
-    key: 'name',
-    header: 'Subscriber',
-    sortValue: (r) => r.customer.name,
-    render: (r) =>
-    <button type="button" onClick={() => setOpenId(r.id)} className="min-w-0 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+    {
+      key: 'name',
+      header: 'Subscriber',
+      sortValue: (r) => r.customer.name,
+      render: (r) => (
+        <button type="button" onClick={() => setOpenId(r.id)} className="min-w-0 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
           <span className="flex items-center gap-2">
             <span className="font-semibold text-fg">{r.customer.name}</span>
             {r.sample && <SampleTag />}
           </span>
           <span className="block truncate text-caption text-fg-subtle">{r.planName}</span>
         </button>
-
-  },
-  { key: 'status', header: 'Status', sortValue: (r) => r.status, render: (r) => <SubStatusBadge status={r.status} /> },
-  {
-    key: 'next',
-    header: 'Next',
-    hideOnMobile: true,
-    sortValue: (r) => r.next ? Date.parse(r.next) : Infinity,
-    render: (r) =>
-    <span className="text-fg-muted">
-          {r.status === 'ended' ?
-      tr('Ended {date}', { date: r.endedAt ? subDate(r.endedAt) : '' }) :
-      r.status === 'cancelling' ?
-      tr('Ends {date}', { date: subDate(r.periodEnd) }) :
-      r.status === 'past_due' ?
-      tr('Retry {date}', { date: r.next ? subDate(r.next) : '' }) :
-      r.next ?
-      subDate(r.next) :
-      '—'}
+      ),
+    },
+    { key: 'status', header: 'Status', sortValue: (r) => r.status, render: (r) => <SubStatusBadge status={r.status} /> },
+    {
+      key: 'next',
+      header: 'Next',
+      hideOnMobile: true,
+      sortValue: (r) => (r.next ? Date.parse(r.next) : Infinity),
+      render: (r) => (
+        <span className="text-fg-muted">
+          {r.status === 'ended'
+            ? tr('Ended {date}', { date: r.endedAt ? subDate(r.endedAt) : '' })
+            : r.status === 'cancelling'
+              ? tr('Ends {date}', { date: subDate(r.periodEnd) })
+              : r.status === 'past_due'
+                ? tr('Retry {date}', { date: r.next ? subDate(r.next) : '' })
+                : r.next
+                  ? subDate(r.next)
+                  : '—'}
         </span>
-
-  },
-  {
-    key: 'paid',
-    header: 'Paid so far',
-    align: 'right',
-    sortValue: (r) => r.payments.filter((p) => p.status === 'paid').reduce((s, p) => s + p.amountNgn, 0),
-    render: (r) => <span className="tabular-nums">{formatNgn(r.payments.filter((p) => p.status === 'paid').reduce((s, p) => s + p.amountNgn, 0))}</span>
-  }];
-
+      ),
+    },
+    {
+      key: 'paid',
+      header: 'Paid so far',
+      align: 'right',
+      sortValue: (r) => r.payments.filter((p) => p.status === 'paid').reduce((s, p) => s + p.amountNgn, 0),
+      render: (r) => <span className="tabular-nums">{formatNgn(r.payments.filter((p) => p.status === 'paid').reduce((s, p) => s + p.amountNgn, 0))}</span>,
+    },
+  ];
 
   const runNow = () => {
     let count = 0;
@@ -144,9 +144,9 @@ export function Subscriptions() {
       return r.data;
     });
     toast(count ? tr(count === 1 ? 'Ran the next step for {n} subscription' : 'Ran the next step for {n} subscriptions', { n: count }) : tr('Nothing to run'), {
-      description: count ?
-      tr(renewalOutcome === 'succeeds' ? 'Renewals succeeded (Simulate next renewal in the Controls panel). Sample subscribers are left alone.' : 'Renewals failed (Simulate next renewal in the Controls panel). Sample subscribers are left alone.') :
-      tr('Sample subscribers are left alone — sign up from your page first.')
+      description: count
+        ? tr(renewalOutcome === 'succeeds' ? 'Renewals succeeded (Simulate next renewal in the Controls panel). Sample subscribers are left alone.' : 'Renewals failed (Simulate next renewal in the Controls panel). Sample subscribers are left alone.')
+        : tr('Sample subscribers are left alone — sign up from your page first.'),
     });
   };
 
@@ -154,11 +154,11 @@ export function Subscriptions() {
     <>
       <PageHeader title="Subscriptions" description="Memberships and product boxes your customers pay for every week, month or year. Subscribers manage their own plan from a personal link." actions={newMenu} />
 
-      {!allowed &&
-      <InlineAlert tone="info" title={tr('Taking subscriptions needs {plan}', { plan: plans[CHECKOUT_PLAN].name })} className="mt-6" action={<UpgradeButton plan={CHECKOUT_PLAN} feature="Subscriptions and recurring payments" />}>
+      {!allowed && (
+        <InlineAlert tone="info" title={tr('Taking subscriptions needs {plan}', { plan: plans[CHECKOUT_PLAN].name })} className="mt-6" action={<UpgradeButton plan={CHECKOUT_PLAN} feature="Subscriptions and recurring payments" />}>
           {tr('You can set up plans now. The Subscription block can’t be published on {plan}.', { plan: plan.name })}
         </InlineAlert>
-      }
+      )}
 
       <Card emphasis="primary" as="div" className="mt-8">
         <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] md:items-end">
@@ -179,34 +179,34 @@ export function Subscriptions() {
           value={tab}
           onChange={setTab}
           options={[
-          { value: 'subscribers', label: `${tr('Subscribers')} (${data.subscriptions.length})` },
-          { value: 'plans', label: `${tr('Plans')} (${data.subPlans.length})` }]
-          } />
-        
-        {tab === 'subscribers' && data.subscriptions.length > 0 &&
-        <div className="w-full sm:w-[220px]">
+            { value: 'subscribers', label: `${tr('Subscribers')} (${data.subscriptions.length})` },
+            { value: 'plans', label: `${tr('Plans')} (${data.subPlans.length})` },
+          ]}
+        />
+        {tab === 'subscribers' && data.subscriptions.length > 0 && (
+          <div className="w-full sm:w-[220px]">
             <SelectInput<StatusFilter> id="sub-status" label="Status" value={status} onChange={setStatus} options={[{ value: 'all', label: tr('All statuses') }, ...(Object.keys(subStatusLabels) as SubStatus[]).map((s) => ({ value: s, label: tr(subStatusLabels[s]) }))]} />
           </div>
-        }
+        )}
       </div>
 
       <div className="mt-4">
-        {tab === 'subscribers' ?
-        data.subscriptions.length === 0 ?
-        <EmptyState
-          framed
-          icon={RepeatIcon}
-          title="No subscribers yet"
-          description={data.subPlans.length ? 'Add a Subscription block to your page in the canvas. Sign-ups appear here.' : 'Create a membership or a product box, then add a Subscription block to your page.'}
-          action={data.subPlans.length ? undefined : newMenu} /> :
-
-
-        <DataTable caption="Subscribers" rows={rows} columns={columns} filterText={(r) => `${r.customer.name} ${r.customer.phone} ${r.customer.email} ${r.planName}`} filterPlaceholder="Search subscribers" emptyTitle="No subscribers match" /> :
-
-        data.subPlans.length === 0 ?
-        <EmptyState framed icon={RepeatIcon} title="No plans yet" description="A membership for recurring access, or a product box that delivers from your catalogue every cycle." action={newMenu} /> :
-
-        <Card as="div" body="flush">
+        {tab === 'subscribers' ? (
+          data.subscriptions.length === 0 ? (
+            <EmptyState
+              framed
+              icon={RepeatIcon}
+              title="No subscribers yet"
+              description={data.subPlans.length ? 'Add a Subscription block to your page in the canvas. Sign-ups appear here.' : 'Create a membership or a product box, then add a Subscription block to your page.'}
+              action={data.subPlans.length ? undefined : newMenu}
+            />
+          ) : (
+            <DataTable caption="Subscribers" rows={rows} columns={columns} filterText={(r) => `${r.customer.name} ${r.customer.phone} ${r.customer.email} ${r.planName}`} filterPlaceholder="Search subscribers" emptyTitle="No subscribers match" />
+          )
+        ) : data.subPlans.length === 0 ? (
+          <EmptyState framed icon={RepeatIcon} title="No plans yet" description="A membership for recurring access, or a product box that delivers from your catalogue every cycle." action={newMenu} />
+        ) : (
+          <Card as="div" body="flush">
           <List label={tr('Plans')}>
             {data.subPlans.map((p) => {
               const taken = seatsTaken(data, p.id);
@@ -229,12 +229,12 @@ export function Subscriptions() {
                       {short.length > 0 && <span className="block text-caption font-medium text-warning">{tr('Not enough stock for the next box:')} {short.join(', ')}</span>}
                       {(() => {
                         const unlocks = areas.filter((a) => a.rule.access === 'any' || a.rule.planIds.includes(p.id));
-                        return unlocks.length > 0 ?
-                        <span className="mt-0.5 flex items-center gap-1 text-caption text-fg-muted">
+                        return unlocks.length > 0 ? (
+                          <span className="mt-0.5 flex items-center gap-1 text-caption text-fg-muted">
                             <LockKeyholeIcon size={12} aria-hidden className="shrink-0" />
                             <span className="truncate">{tr('Content access:')} {unlocks.map((a) => a.label).join(' · ')}</span>
-                          </span> :
-                        null;
+                          </span>
+                        ) : null;
                       })()}
                     </span>
                     <span className="text-label tabular-nums text-fg-muted">
@@ -242,12 +242,12 @@ export function Subscriptions() {
                       {p.memberCap !== null ? ` / ${p.memberCap}` : ''} {tr(taken === 1 && p.memberCap === null ? 'subscriber' : 'subscribers')}
                     </span>
                   </button>
-                </li>);
-
+                </li>
+              );
             })}
           </List>
           </Card>
-        }
+        )}
       </div>
 
       <PrototypeNote
@@ -255,17 +255,17 @@ export function Subscriptions() {
         className="mt-10"
         title="Prototype: skip ahead in time"
         actions={
-        <Button size="sm" variant="secondary" onClick={runNow}>
+          <Button size="sm" variant="secondary" onClick={runNow}>
             {tr('Run renewals now')}
           </Button>
-        }>
-        
+        }
+      >
         {tr('Renewals, trial ends and retries run by themselves while KUBICU is open. To see the next step now, run it here. Outcomes follow “Simulate next renewal” in the Controls panel.')}{' '}
         <span className="font-medium text-fg">({tr(renewalOutcome === 'succeeds' ? 'now: succeeds' : 'now: fails')})</span>
       </PrototypeNote>
 
       <SubscriberDetail subId={openId} onClose={() => setOpenId(null)} />
       <SubPlanEditor target={editing} onClose={() => setEditing(null)} />
-    </>);
-
+    </>
+  );
 }

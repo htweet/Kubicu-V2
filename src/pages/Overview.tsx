@@ -39,11 +39,11 @@ export function Overview() {
   const canvas = `/app/canvas/${draft.id}`;
 
   const facts = [
-  { label: tr('Blocks'), value: `${visible}${hidden ? ` · ${tr('Hidden: {n}', { n: hidden })}` : ''}` },
-  { label: tr('Last edit'), value: formatRelative(draft.updatedAt) },
-  { label: tr('Published'), value: state.publishedAt ? formatRelative(state.publishedAt) : tr('Not yet') },
-  { label: tr('Fonts'), value: font }];
-
+    { label: tr('Blocks'), value: `${visible}${hidden ? ` · ${tr('Hidden: {n}', { n: hidden })}` : ''}` },
+    { label: tr('Last edit'), value: formatRelative(draft.updatedAt) },
+    { label: tr('Published'), value: state.publishedAt ? formatRelative(state.publishedAt) : tr('Not yet') },
+    { label: tr('Fonts'), value: font },
+  ];
 
   return (
     <div className="mx-auto w-full max-w-[1200px] px-5 py-8 md:px-10 md:py-12">
@@ -63,8 +63,8 @@ export function Overview() {
           <Link
             to={canvas}
             aria-label={tr('Open {name} in the canvas', { name: draft.title })}
-            className="dot-stage group flex min-h-[360px] items-end justify-center overflow-hidden px-6 pt-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus lg:min-h-[440px]">
-            
+            className="dot-stage group flex min-h-[360px] items-end justify-center overflow-hidden px-6 pt-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus lg:min-h-[440px]"
+          >
             <span className="block translate-y-6 transition-transform duration-200 ease-out group-hover:translate-y-3">
               <PageMiniPreview doc={draft} scale={0.66} height={440} />
             </span>
@@ -80,11 +80,11 @@ export function Overview() {
             </h2>
             <CopyLinkButton handle={draft.handle} className="mt-4 self-start" />
 
-            {issues.length > 0 &&
-            <Link
-              to={canvas}
-              className="group mt-5 flex items-center gap-3 self-start rounded-md bg-warning-soft px-3.5 py-2.5 text-label font-medium text-warning focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-              
+            {issues.length > 0 && (
+              <Link
+                to={canvas}
+                className="group mt-5 flex items-center gap-3 self-start rounded-md bg-warning-soft px-3.5 py-2.5 text-label font-medium text-warning focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+              >
                 <AlertTriangleIcon size={16} strokeWidth={2.25} aria-hidden />
                 <span>
                   {errors > 0 ? tr('To fix: {n}', { n: errors }) : ''}
@@ -93,15 +93,15 @@ export function Overview() {
                 </span>
                 <ArrowRightIcon size={14} className="transition-transform duration-150 group-hover:translate-x-0.5" aria-hidden />
               </Link>
-            }
+            )}
 
             <dl className="mt-8 grid grid-cols-2 gap-x-6 gap-y-5 border-t border-line pt-6 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
-              {facts.map((f) =>
-              <div key={f.label} className="min-w-0">
+              {facts.map((f) => (
+                <div key={f.label} className="min-w-0">
                   <dt className="text-caption text-fg-subtle">{f.label}</dt>
                   <dd className="mt-1 truncate text-label font-semibold text-fg">{f.value}</dd>
                 </div>
-              )}
+              ))}
             </dl>
 
             <div className="mt-auto flex flex-wrap gap-2 pt-8">
@@ -116,8 +116,8 @@ export function Overview() {
                 variant="secondary"
                 trailingIcon={ExternalLinkIcon}
                 disabled={!state.published}
-                onClick={() => navigate(`/p/${state.published?.handle ?? draft.handle}`)}>
-                
+                onClick={() => navigate(`/p/${state.published?.handle ?? draft.handle}`)}
+              >
                 {tr('View live page')}
               </Button>
             </div>
@@ -132,6 +132,6 @@ export function Overview() {
           <SetupChecklist />
         </aside>
       </div>
-    </div>);
-
+    </div>
+  );
 }

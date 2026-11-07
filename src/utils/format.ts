@@ -26,10 +26,10 @@ export function formatRelative(iso: string): string {
  * Dates follow the person's Account preferences — date order and time zone (D125).
  * Read straight from device storage so every screen agrees without threading props.
  */
-function datePrefs(): {dateFormat: 'dmy' | 'mdy' | 'iso';timeZone: string;} {
+function datePrefs(): { dateFormat: 'dmy' | 'mdy' | 'iso'; timeZone: string } {
   try {
     const raw = localStorage.getItem('kubicu.account');
-    const p = raw ? (JSON.parse(raw) as {prefs?: {dateFormat?: 'dmy' | 'mdy' | 'iso';timeZone?: string;};}).prefs : undefined;
+    const p = raw ? (JSON.parse(raw) as { prefs?: { dateFormat?: 'dmy' | 'mdy' | 'iso'; timeZone?: string } }).prefs : undefined;
     return { dateFormat: p?.dateFormat ?? 'dmy', timeZone: p?.timeZone ?? 'Africa/Lagos' };
   } catch {
     return { dateFormat: 'dmy', timeZone: 'Africa/Lagos' };
@@ -44,7 +44,7 @@ function zonedParts(d: Date, timeZone: string) {
     const native = lang === 'en' || browserKnows(lang);
     const parts = new Intl.DateTimeFormat(native && lang !== 'en' ? dateLocale(lang) : 'en-GB', { timeZone, day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false, numberingSystem: 'latn' }).formatToParts(d);
     const raw = (t: string) => parts.find((p) => p.type === t)?.value ?? '';
-    const get = (t: string) => t === 'month' && !native ? ownMonthName(raw(t)) : raw(t);
+    const get = (t: string) => (t === 'month' && !native ? ownMonthName(raw(t)) : raw(t));
     const num = new Intl.DateTimeFormat('en-GB', { timeZone, month: '2-digit', day: '2-digit' }).formatToParts(d);
     const getNum = (t: string) => num.find((p) => p.type === t)?.value ?? '';
     return { day: get('day'), mon: get('month'), year: get('year'), hour: get('hour') === '24' ? '00' : get('hour'), minute: get('minute'), mm: getNum('month'), dd: getNum('day') };

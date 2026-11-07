@@ -54,33 +54,33 @@ export function LoyaltyRedeem({ theme, workspaceId, data, apply, phone, code, on
         <AwardIcon size={15} aria-hidden />
         {usingPoints ? `Points code ${saved?.code} applied — ${formatNgn(REDEEM_NGN)} off` : `You have ${bal.balance.toLocaleString()} points`}
       </p>
-      {usingPoints ?
-      <p className="text-[12.5px]" style={muted}>
+      {usingPoints ? (
+        <p className="text-[12.5px]" style={muted}>
           If you don’t finish now, the code still works once on your next order.
-        </p> :
-      saved ?
-      <>
+        </p>
+      ) : saved ? (
+        <>
           <p className="text-[12.5px]" style={muted}>
             You already turned {REDEEM_POINTS} points into code {saved.code}. It replaces any other code on this order.
           </p>
           <button type="button" onClick={redeem} className="h-11 self-start px-4 text-[13.5px] font-semibold focus-visible:outline-none focus-visible:ring-2" style={{ ...cardStyle(theme), borderRadius: 999 }}>
             Use code {saved.code}
           </button>
-        </> :
-      bal.balance >= REDEEM_POINTS ?
-      <>
+        </>
+      ) : bal.balance >= REDEEM_POINTS ? (
+        <>
           <p className="text-[12.5px]" style={muted}>
             Use {REDEEM_POINTS} for {formatNgn(REDEEM_NGN)} off. It replaces any other code on this order.
           </p>
           <button type="button" onClick={redeem} className="h-11 self-start px-4 text-[13.5px] font-semibold focus-visible:outline-none focus-visible:ring-2" style={{ ...cardStyle(theme), borderRadius: 999 }}>
             Use {REDEEM_POINTS} points
           </button>
-        </> :
-
-      <p className="text-[12.5px]" style={muted}>
+        </>
+      ) : (
+        <p className="text-[12.5px]" style={muted}>
           {REDEEM_POINTS - bal.balance} more to {formatNgn(REDEEM_NGN)} off. You earn 1 point for every ₦100.
         </p>
-      }
-    </div>);
-
+      )}
+    </div>
+  );
 }

@@ -50,20 +50,20 @@ export function ActivityExportDialog({ open, rows, scopeText, onClose, onExporte
       title={tr('Export activity')}
       description={`${tr('Events: {n}', { n: rows.length })} · ${scopeText}`}
       footer={
-      <>
+        <>
           <Button variant="secondary" onClick={onClose}>
             {hash ? tr('Done') : tr('Cancel')}
           </Button>
-          {!hash &&
-        <Button onClick={download} loading={busy} disabled={rows.length === 0}>
+          {!hash && (
+            <Button onClick={download} loading={busy} disabled={rows.length === 0}>
               {tr('Download')}
             </Button>
-        }
+          )}
         </>
-      }>
-      
-      {hash ?
-      <div className="flex flex-col gap-3">
+      }
+    >
+      {hash ? (
+        <div className="flex flex-col gap-3">
           <p className="text-label text-fg">{tr('Downloaded. Keep this fingerprint with the file — if anyone changes even one character, the fingerprint won’t match.')}</p>
           <div className="flex items-center gap-2 rounded-md border border-line bg-sunken px-3 py-2.5">
             <code className="min-w-0 flex-1 break-all font-mono text-caption text-fg">SHA-256 {hash}</code>
@@ -72,21 +72,21 @@ export function ActivityExportDialog({ open, rows, scopeText, onClose, onExporte
             </Button>
           </div>
           <p className="text-caption text-fg-subtle">{tr('The export itself is recorded in the activity log.')}</p>
-        </div> :
-
-      <fieldset className="flex flex-col gap-2">
+        </div>
+      ) : (
+        <fieldset className="flex flex-col gap-2">
           <legend className="mb-2 text-label font-semibold text-fg">{tr('Format')}</legend>
-          {(Object.keys(activityFormats) as ActivityFormat[]).map((f) =>
-        <label key={f} className={cn('flex cursor-pointer items-start gap-3 rounded-md border px-3 py-3 transition-colors duration-150', format === f ? 'border-action bg-action-soft' : 'border-line hover:bg-sunken')}>
+          {(Object.keys(activityFormats) as ActivityFormat[]).map((f) => (
+            <label key={f} className={cn('flex cursor-pointer items-start gap-3 rounded-md border px-3 py-3 transition-colors duration-150', format === f ? 'border-action bg-action-soft' : 'border-line hover:bg-sunken')}>
               <input type="radio" name="act-format" value={f} checked={format === f} onChange={() => setFormat(f)} className="mt-1 accent-[rgb(var(--action))]" />
               <span className="min-w-0">
                 <span className="block text-label font-medium text-fg">{tr(activityFormats[f].label)}</span>
                 <span className="block text-caption text-fg-muted">{tr(activityFormats[f].hint)}</span>
               </span>
             </label>
-        )}
+          ))}
         </fieldset>
-      }
-    </Dialog>);
-
+      )}
+    </Dialog>
+  );
 }

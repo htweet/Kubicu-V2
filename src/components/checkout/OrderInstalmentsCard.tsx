@@ -38,8 +38,8 @@ export function OrderInstalmentsCard({ theme: t, order, workspaceId, apply }: Pr
     window.setTimeout(() => {
       setBusy(false);
       if (workspaceId) creditInstalment(workspaceId, order, next);
-      if (apply((d) => payPart(d, order.id, next.id, 'online'))) setMessage(`Part ${next.n} paid — thank you.`);else
-      setMessage('Couldn’t take the payment. Please try again.');
+      if (apply((d) => payPart(d, order.id, next.id, 'online'))) setMessage(`Part ${next.n} paid — thank you.`);
+      else setMessage('Couldn’t take the payment. Please try again.');
     }, 900);
   };
 
@@ -67,11 +67,11 @@ export function OrderInstalmentsCard({ theme: t, order, workspaceId, apply }: Pr
             {owed > 0 && inst.status !== 'cancelled' ? `Paying in ${total} parts · ${formatNgn(owed)} to go` : inst.status === 'completed' ? 'Fully paid — thank you' : `Paid in ${total} parts`}
           </h2>
           <p className="mt-0.5 text-[13px] leading-snug" style={muted}>
-            {inst.status === 'cancelled' ?
-            'The seller cancelled the remaining parts. Nothing more will be charged.' :
-            inst.status === 'defaulted' ?
-            'We couldn’t take a part after several tries. Pay it now or update your card — or message the seller.' :
-            `Charged ${everyLabels[inst.every]} to ${inst.card.brand} ····${inst.card.last4}. ${inst.ship === 'last' && owed > 0 ? 'Your order is sent once it’s fully paid.' : ''}`}
+            {inst.status === 'cancelled'
+              ? 'The seller cancelled the remaining parts. Nothing more will be charged.'
+              : inst.status === 'defaulted'
+                ? 'We couldn’t take a part after several tries. Pay it now or update your card — or message the seller.'
+                : `Charged ${everyLabels[inst.every]} to ${inst.card.brand} ····${inst.card.last4}. ${inst.ship === 'last' && owed > 0 ? 'Your order is sent once it’s fully paid.' : ''}`}
           </p>
         </div>
       </div>
@@ -90,28 +90,28 @@ export function OrderInstalmentsCard({ theme: t, order, workspaceId, apply }: Pr
               <span className="font-semibold tabular-nums" style={{ textDecoration: p.status === 'cancelled' ? 'line-through' : undefined }}>
                 {formatNgn(p.amountNgn)}
               </span>
-            </li>);
-
+            </li>
+          );
         })}
       </ol>
-      {message &&
-      <p className="text-[13px] font-semibold" role="status">
+      {message && (
+        <p className="text-[13px] font-semibold" role="status">
           {message}
         </p>
-      }
-      {live && next &&
-      <div className="flex flex-col gap-2">
+      )}
+      {live && next && (
+        <div className="flex flex-col gap-2">
           <PrimaryButton theme={t} onClick={payNext} disabled={busy}>
-            {busy ?
-          <span className="inline-flex items-center gap-2">
+            {busy ? (
+              <span className="inline-flex items-center gap-2">
                 <Loader2Icon size={16} className="animate-spin motion-reduce:animate-none" aria-hidden /> Paying…
-              </span> :
-
-          `Pay part ${next.n} now · ${formatNgn(next.amountNgn)}`
-          }
+              </span>
+            ) : (
+              `Pay part ${next.n} now · ${formatNgn(next.amountNgn)}`
+            )}
           </PrimaryButton>
-          {cardOpen ?
-        <form onSubmit={saveCard} className="flex items-end gap-2">
+          {cardOpen ? (
+            <form onSubmit={saveCard} className="flex items-end gap-2">
               <label className="flex flex-1 flex-col gap-1 text-[13px] font-medium">
                 Last 4 digits of the new card (test)
                 <input value={last4} onChange={(e) => setLast4(e.target.value.replace(/\D/g, '').slice(0, 4))} inputMode="numeric" className="h-11 rounded-md px-3 text-[15px]" style={{ background: t.background, border: `1px solid ${mix(t.text, 18)}`, color: t.text }} />
@@ -119,14 +119,14 @@ export function OrderInstalmentsCard({ theme: t, order, workspaceId, apply }: Pr
               <button type="submit" className="h-11 rounded-md px-4 text-[14px] font-semibold" style={{ background: mix(t.text, 8), color: t.text }}>
                 Save
               </button>
-            </form> :
-
-        <button type="button" onClick={() => setCardOpen(true)} className="self-center text-[13.5px] font-semibold underline underline-offset-2">
+            </form>
+          ) : (
+            <button type="button" onClick={() => setCardOpen(true)} className="self-center text-[13.5px] font-semibold underline underline-offset-2">
               Update my card
             </button>
-        }
+          )}
         </div>
-      }
-    </section>);
-
+      )}
+    </section>
+  );
 }

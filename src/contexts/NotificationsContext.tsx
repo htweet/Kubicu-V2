@@ -25,7 +25,7 @@ interface NotificationsValue {
 const NotificationsContext = createContext<NotificationsValue | null>(null);
 
 /** One inbox for everything that needs you (D66). Role-aware; only in-app notices are delivered. */
-export function NotificationsProvider({ children }: {children: React.ReactNode;}) {
+export function NotificationsProvider({ children }: { children: React.ReactNode }) {
   const team = useTeam();
   const { current } = useWorkspace();
   const feed = useNotificationFeed();
@@ -39,27 +39,27 @@ export function NotificationsProvider({ children }: {children: React.ReactNode;}
 
   const save = useCallback(
     (fn: (p: NotifPrefs) => NotifPrefs) =>
-    setPrefs((p) => {
-      const next = fn(p);
-      try {
-        writePrefs(current.id, memberId, next);
-      } catch {
-
-        // Storage unavailable — settings last for this visit.
-      }return next;
-    }),
-    [current.id, memberId]
+      setPrefs((p) => {
+        const next = fn(p);
+        try {
+          writePrefs(current.id, memberId, next);
+        } catch {
+          // Storage unavailable — settings last for this visit.
+        }
+        return next;
+      }),
+    [current.id, memberId],
   );
 
   const items = useMemo(
     () =>
-    feed.filter((n) => {
-      const ev = notifEventById[n.event];
-      if (ev.permission && !team.can(ev.permission).allowed) return false;
-      return channelOn(prefs, n.event, 'app');
-    }),
+      feed.filter((n) => {
+        const ev = notifEventById[n.event];
+        if (ev.permission && !team.can(ev.permission).allowed) return false;
+        return channelOn(prefs, n.event, 'app');
+      }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [feed, prefs, team.role]
+    [feed, prefs, team.role],
   );
 
   const readSet = useMemo(() => new Set(prefs.read), [prefs.read]);
@@ -68,7 +68,7 @@ export function NotificationsProvider({ children }: {children: React.ReactNode;}
       if (n.noticeId) return !!team.myNotices.find((x) => x.id === n.noticeId)?.seen || readSet.has(n.id);
       return readSet.has(n.id);
     },
-    [readSet, team.myNotices]
+    [readSet, team.myNotices],
   );
   const unread = items.filter((n) => !isRead(n)).length;
 
@@ -77,7 +77,7 @@ export function NotificationsProvider({ children }: {children: React.ReactNode;}
       items,
       unread,
       isRead,
-      markRead: (n) => save((p) => p.read.includes(n.id) ? p : { ...p, read: [...p.read, n.id] }),
+      markRead: (n) => save((p) => (p.read.includes(n.id) ? p : { ...p, read: [...p.read, n.id] })),
       markAllRead: () => {
         save((p) => ({ ...p, read: Array.from(new Set([...p.read, ...items.map((i) => i.id)])) }));
         if (team.myNotices.some((n) => !n.seen)) team.markNoticesSeen();
@@ -86,17 +86,17 @@ export function NotificationsProvider({ children }: {children: React.ReactNode;}
       setChannel: (event, channel, on) => save((p) => ({ ...p, channels: { ...p.channels, [event]: { ...p.channels[event], [channel]: on } } })),
       updatePrefs: (patch) => save((p) => ({ ...p, ...patch })),
       open,
-      setOpen
+      setOpen,
     }),
-    [items, unread, isRead, save, prefs, open, team]
+    [items, unread, isRead, save, prefs, open, team],
   );
 
   return (
     <NotificationsContext.Provider value={value}>
       {children}
       <NotificationsPanel />
-    </NotificationsContext.Provider>);
-
+    </NotificationsContext.Provider>
+  );
 }
 
 export function useNotifications(): NotificationsValue {

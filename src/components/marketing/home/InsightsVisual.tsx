@@ -25,38 +25,38 @@ export function InsightsVisual() {
           </span>
         </div>
         <div className="mt-6 flex h-36 items-end gap-1.5 sm:gap-2">
-          {insightBars.map((h, i) =>
-          <motion.span
-            key={i}
-            className="flex-1 origin-bottom rounded-t-lg"
-            style={{ height: `${h}%`, backgroundColor: i === insightBars.length - 1 ? 'rgb(var(--kb-forest))' : 'rgb(var(--kb-cobalt) / 0.75)' }}
-            initial={reduce ? false : { scaleY: 0 }}
-            whileInView={{ scaleY: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.3, delay: 0.15 + i * 0.04, ease }} />
-
-          )}
+          {insightBars.map((h, i) => (
+            <motion.span
+              key={i}
+              className="flex-1 origin-bottom rounded-t-lg"
+              style={{ height: `${h}%`, backgroundColor: i === insightBars.length - 1 ? 'rgb(var(--kb-forest))' : 'rgb(var(--kb-cobalt) / 0.75)' }}
+              initial={reduce ? false : { scaleY: 0 }}
+              whileInView={{ scaleY: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.3, delay: 0.15 + i * 0.04, ease }}
+            />
+          ))}
         </div>
         <ul className="mt-6 flex flex-col gap-3 border-t border-[rgb(224_217_202)] pt-5">
-          {insightSources.map((s, i) =>
-          <li key={s.name} className="grid grid-cols-[88px_minmax(0,1fr)_40px] items-center gap-3 text-[13px] font-semibold">
+          {insightSources.map((s, i) => (
+            <li key={s.name} className="grid grid-cols-[88px_minmax(0,1fr)_40px] items-center gap-3 text-[13px] font-semibold">
               <span>{s.name}</span>
               <span className="h-2.5 overflow-hidden rounded-full bg-[rgb(238_233_221)]">
                 <motion.span
-                className="block h-full origin-left rounded-full bg-[rgb(var(--kb-forest))]"
-                style={{ width: `${s.share}%` }}
-                initial={reduce ? false : { scaleX: 0 }}
-                whileInView={{ scaleX: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.3, delay: 0.6 + i * 0.05, ease }} />
-              
+                  className="block h-full origin-left rounded-full bg-[rgb(var(--kb-forest))]"
+                  style={{ width: `${s.share}%` }}
+                  initial={reduce ? false : { scaleX: 0 }}
+                  whileInView={{ scaleX: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.3, delay: 0.6 + i * 0.05, ease }}
+                />
               </span>
               <span className="text-right text-[rgb(70_68_62)]">{s.share}%</span>
             </li>
-          )}
+          ))}
         </ul>
         <p className="mt-5 text-[11px] text-[rgb(104_100_92)]">Sample data from a fictional page</p>
       </div>
-    </div>);
-
+    </div>
+  );
 }

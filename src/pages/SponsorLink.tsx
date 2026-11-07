@@ -24,20 +24,20 @@ export function SponsorLink() {
   return (
     <main className="flex min-h-screen w-full items-center justify-center bg-canvas px-6">
       <div className="max-w-sm text-center">
-        {missing ?
-        <>
+        {missing ? (
+          <>
             <h1 className="text-heading font-semibold text-fg">{tr('This link isn’t active')}</h1>
             <p className="mt-2 text-label text-fg-muted">{tr('The sponsorship it belonged to may have ended.')}</p>
             <Link to="/" className="mt-5 inline-flex h-11 items-center rounded-md bg-action px-5 text-label font-semibold text-action-fg">
               {tr('Go to KUBICU')}
             </Link>
-          </> :
-
-        <p className="text-label text-fg-muted" role="status">
+          </>
+        ) : (
+          <p className="text-label text-fg-muted" role="status">
             {tr('Opening…')}
           </p>
-        }
+        )}
       </div>
-    </main>);
-
+    </main>
+  );
 }

@@ -36,12 +36,12 @@ function Frame({
   radius,
   children,
   dark = true
-
-
-
-
-
-}: {frame: EmbedFrame;radius: number | string;children: React.ReactNode;dark?: boolean;}) {
+}: {
+  frame: EmbedFrame;
+  radius: number | string;
+  children: React.ReactNode;
+  dark?: boolean;
+}) {
   const style: React.CSSProperties = frame.type === 'ratio' ? {
     aspectRatio: frame.ratio,
     borderRadius: radius
@@ -60,11 +60,11 @@ function EditPreview({
   embed,
   title,
   radius
-
-
-
-
-}: {embed: EmbedInfo;title: string;radius: number | string;}) {
+}: {
+  embed: EmbedInfo;
+  title: string;
+  radius: number | string;
+}) {
   const Icon = KIND_ICON[embed.kind];
   return <Frame frame={embed.frame} radius={radius}>
       {embed.thumbnail && <img src={embed.thumbnail} alt="" className="h-full w-full object-cover opacity-90" />}
@@ -87,11 +87,11 @@ function LiveEmbed({
   embed,
   title,
   radius
-
-
-
-
-}: {embed: EmbedInfo;title: string;radius: number | string;}) {
+}: {
+  embed: EmbedInfo;
+  title: string;
+  radius: number | string;
+}) {
   const {
     on
   } = useDataSaver();

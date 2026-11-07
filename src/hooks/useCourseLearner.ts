@@ -10,11 +10,11 @@ import { announce } from '../utils/announce';
  * content on the same workspace), live access, enrolment and progress actions.
  */
 export function useCourseLearner(course: Course | undefined, commerce: PageCommerce, workspaceId: string | null, preview: boolean) {
-  const [session, setSession] = useState<MemberSession | null>(() => workspaceId ? readSession(workspaceId) : null);
+  const [session, setSession] = useState<MemberSession | null>(() => (workspaceId ? readSession(workspaceId) : null));
   useEffect(() => setSession(workspaceId ? readSession(workspaceId) : null), [workspaceId]);
 
   const data = commerce.data;
-  const access = useMemo(() => course ? courseAccess(data, course, session) : { ok: false as const }, [data, course, session]);
+  const access = useMemo(() => (course ? courseAccess(data, course, session) : { ok: false as const }), [data, course, session]);
   const enrolment = course ? enrolmentOf(data, course.id, session) : undefined;
   const progress = course ? progressOf(course, enrolment) : { done: 0, total: 0, pct: 0, nextLessonId: null };
 
@@ -55,7 +55,7 @@ export function useCourseLearner(course: Course | undefined, commerce: PageComme
     quiz: canSave && course && enrolment ? (lesson: CourseLesson, score: number) => commerce.apply((d) => recordQuiz(d, course, enrolment.id, lesson, score)) : null,
     saveName: (name: string) => {
       if (enrolment) commerce.apply((d) => setLearnerName(d, enrolment.id, name));
-    }
+    },
   };
 
   return { session, access, enrolment, progress, signIn, signOut, canSignIn, canSave, actions };

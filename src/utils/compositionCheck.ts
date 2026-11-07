@@ -8,9 +8,9 @@ import { blockName } from './blocks';
  */
 
 export type CompositionFix =
-{kind: 'add';type: BlockType;label: string;} |
-{kind: 'select';blockId: string;label: string;} |
-{kind: 'tighten';blockId: string;label: string;};
+  | { kind: 'add'; type: BlockType; label: string }
+  | { kind: 'select'; blockId: string; label: string }
+  | { kind: 'tighten'; blockId: string; label: string };
 
 export interface CompositionFinding {
   id: string;
@@ -39,12 +39,12 @@ export function compositionFindings(all: Block[]): CompositionFinding[] {
   // 1. A clear main action
   const hasAction = blocks.some((b) => actionTypes.has(b.type) || featured(b));
   if (!hasAction && top.length >= 3)
-  out.push({ id: 'no-action', title: 'No clear main action', why: 'Visitors can read your page but there’s no obvious next step — buy, book, sign up or get in touch.', fix: { kind: 'add', type: 'cta', label: 'Add a call to action' } });
+    out.push({ id: 'no-action', title: 'No clear main action', why: 'Visitors can read your page but there’s no obvious next step — buy, book, sign up or get in touch.', fix: { kind: 'add', type: 'cta', label: 'Add a call to action' } });
 
   // 2. Too many competing actions
   const loud = blocks.filter((b) => featured(b) || b.type === 'cta' || b.type === 'smartButton');
   if (loud.length > 3)
-  out.push({ id: 'competing', title: 'Blocks competing for attention: {n}', vars: { n: loud.length }, why: 'Featured links and calls to action are strongest when there are one or two. Set the rest to Standard so the main one stands out.', blockId: loud[loud.length - 1].id, fix: { kind: 'select', blockId: loud[loud.length - 1].id, label: 'Review the last one' } });
+    out.push({ id: 'competing', title: 'Blocks competing for attention: {n}', vars: { n: loud.length }, why: 'Featured links and calls to action are strongest when there are one or two. Set the rest to Standard so the main one stands out.', blockId: loud[loud.length - 1].id, fix: { kind: 'select', blockId: loud[loud.length - 1].id, label: 'Review the last one' } });
 
   // 3. Repeated structure
   for (let i = 0; i < top.length; i++) {
@@ -64,28 +64,28 @@ export function compositionFindings(all: Block[]): CompositionFinding[] {
 
   // 5. Opening
   if (!openingTypes.has(top[0].type) && top.length >= 3)
-  out.push({ id: 'opening', title: 'The page doesn’t start with who you are', why: 'Visitors decide in seconds. A profile, hero or brand header first tells them whose page this is.', fix: { kind: 'add', type: 'hero', label: 'Add a hero (then move it to the top)' } });
+    out.push({ id: 'opening', title: 'The page doesn’t start with who you are', why: 'Visitors decide in seconds. A profile, hero or brand header first tells them whose page this is.', fix: { kind: 'add', type: 'hero', label: 'Add a hero (then move it to the top)' } });
 
   // 6. Ending
   if (top.length >= 8 && !endingTypes.has(top[top.length - 1].type))
-  out.push({ id: 'ending', title: 'Long page with no clear ending', why: 'After scrolling this far, visitors look for a way to get in touch or act. End with contact details, a form or a call to action.', fix: { kind: 'add', type: 'contactActions', label: 'Add contact buttons' } });
+    out.push({ id: 'ending', title: 'Long page with no clear ending', why: 'After scrolling this far, visitors look for a way to get in touch or act. End with contact details, a form or a call to action.', fix: { kind: 'add', type: 'contactActions', label: 'Add contact buttons' } });
 
   // 7. Heading set apart from its text
   for (let i = 0; i < top.length - 1; i++) {
     const h = top[i];
     if (h.type === 'heading' && h.layout.spacing === 'loose' && top[i + 1].type === 'text')
-    out.push({ id: `bind:${h.id}`, title: 'Heading floats away from its text', why: 'A heading reads as part of the paragraph below when the space between them is small. Roomy spacing makes them look unrelated.', blockId: h.id, fix: { kind: 'tighten', blockId: h.id, label: 'Use tight spacing' } });
+      out.push({ id: `bind:${h.id}`, title: 'Heading floats away from its text', why: 'A heading reads as part of the paragraph below when the space between them is small. Roomy spacing makes them look unrelated.', blockId: h.id, fix: { kind: 'tighten', blockId: h.id, label: 'Use tight spacing' } });
   }
 
   // Copy and hierarchy (D342) — still rule-based: word counts, capitals and known vague labels.
   // 8. One opening
   const openings = top.filter((b) => b.type === 'hero' || b.type === 'brandHeader' || b.type === 'profile');
   if (openings.length > 1)
-  out.push({ id: 'openings', title: 'Openings competing: {n}', vars: { n: openings.length }, why: 'A page reads best with one opening. Extra heroes, profiles or brand headers make visitors wonder where the page starts.', blockId: openings[1].id, fix: { kind: 'select', blockId: openings[1].id, label: 'Review the second one' } });
+    out.push({ id: 'openings', title: 'Openings competing: {n}', vars: { n: openings.length }, why: 'A page reads best with one opening. Extra heroes, profiles or brand headers make visitors wonder where the page starts.', blockId: openings[1].id, fix: { kind: 'select', blockId: openings[1].id, label: 'Review the second one' } });
 
   // 9. Headings on long pages
   if (top.length >= 8 && !top.some((b) => b.type === 'heading' || b.type === 'section' || b.type === 'hero' || b.type === 'cta'))
-  out.push({ id: 'no-headings', title: 'Long page without headings', why: 'Headings let visitors jump to what they need. Add one above each group of blocks.', fix: { kind: 'add', type: 'heading', label: 'Add a heading' } });
+    out.push({ id: 'no-headings', title: 'Long page without headings', why: 'Headings let visitors jump to what they need. Add one above each group of blocks.', fix: { kind: 'add', type: 'heading', label: 'Add a heading' } });
 
   blocks.forEach((b) => {
     // 10. Headlines: length and capitals
@@ -144,5 +144,5 @@ export const nextFor: Partial<Record<BlockType, BlockType[]>> = {
   testimonial: ['reviewSummary', 'cta'],
   timeline: ['team', 'cta'],
   steps: ['cta', 'booking'],
-  leadForm: ['faq', 'policies']
+  leadForm: ['faq', 'policies'],
 };

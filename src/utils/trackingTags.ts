@@ -4,7 +4,7 @@
  */
 import { activeCurrency } from './currency';
 
-type FbqFn = ((...args: unknown[]) => void) & {callMethod?: (...a: unknown[]) => void;queue: unknown[];loaded: boolean;version: string;push: unknown;};
+type FbqFn = ((...args: unknown[]) => void) & { callMethod?: (...a: unknown[]) => void; queue: unknown[]; loaded: boolean; version: string; push: unknown };
 
 declare global {
   interface Window {
@@ -14,12 +14,12 @@ declare global {
     gtag?: (...args: unknown[]) => void;
     ttq?: TtqStub;
     TiktokAnalyticsObject?: string;
-    clarity?: ((...args: unknown[]) => void) & {q?: unknown[];};
+    clarity?: ((...args: unknown[]) => void) & { q?: unknown[] };
   }
 }
 
 type TtqFn = (...args: unknown[]) => void;
-type TtqStub = unknown[] & {[key: string]: unknown;};
+type TtqStub = unknown[] & { [key: string]: unknown };
 
 export const PIXEL_ID = /^\d{15,16}$/;
 export const GA_ID = /^G-[A-Z0-9]{6,12}$/;
@@ -42,8 +42,8 @@ export function loadMetaPixel(pixelId: string): void {
   loaded.add(`fb:${pixelId}`);
   if (!window.fbq) {
     const fbq = function (...args: unknown[]) {
-      if (fbq.callMethod) fbq.callMethod(...args);else
-      fbq.queue.push(args);
+      if (fbq.callMethod) fbq.callMethod(...args);
+      else fbq.queue.push(args);
     } as FbqFn;
     fbq.push = fbq;
     fbq.loaded = true;
@@ -76,7 +76,7 @@ export function loadTikTokPixel(pixelId: string): void {
   if (!TIKTOK_ID.test(pixelId) || loaded.has(`tt:${pixelId}`)) return;
   loaded.add(`tt:${pixelId}`);
   window.TiktokAnalyticsObject = 'ttq';
-  const ttq: TtqStub = window.ttq ?? [] as unknown as TtqStub;
+  const ttq: TtqStub = window.ttq ?? ([] as unknown as TtqStub);
   window.ttq = ttq;
   const methods = ['page', 'track', 'identify', 'instances', 'debug', 'on', 'off', 'once', 'ready', 'alias', 'group', 'enableCookie', 'disableCookie'];
   ttq.methods = methods;
@@ -84,11 +84,11 @@ export function loadTikTokPixel(pixelId: string): void {
     if (typeof ttq[m] !== 'function') ttq[m] = ((...args: unknown[]) => ttq.push([m, ...args])) as TtqFn;
   });
   const base = 'https://analytics.tiktok.com/i18n/pixel/events.js';
-  const inst = (ttq._i as Record<string, unknown[] & {_u?: string;}> | undefined ?? {}) as Record<string, unknown[] & {_u?: string;}>;
+  const inst = ((ttq._i as Record<string, unknown[] & { _u?: string }> | undefined) ?? {}) as Record<string, unknown[] & { _u?: string }>;
   inst[pixelId] = Object.assign([] as unknown[], { _u: base });
   ttq._i = inst;
-  ttq._t = { ...(ttq._t as Record<string, number> | undefined ?? {}), [pixelId]: Date.now() };
-  ttq._o = { ...(ttq._o as Record<string, object> | undefined ?? {}), [pixelId]: {} };
+  ttq._t = { ...((ttq._t as Record<string, number> | undefined) ?? {}), [pixelId]: Date.now() };
+  ttq._o = { ...((ttq._o as Record<string, object> | undefined) ?? {}), [pixelId]: {} };
   addScript(`${base}?sdkid=${encodeURIComponent(pixelId)}&lib=ttq`, `kubicu-tiktok-${pixelId}`);
   (ttq.page as TtqFn)();
 }
@@ -100,7 +100,7 @@ export function loadClarity(projectId: string): void {
   if (!window.clarity) {
     const clarity = function (...args: unknown[]) {
       (clarity.q = clarity.q ?? []).push(args);
-    } as ((...args: unknown[]) => void) & {q?: unknown[];};
+    } as ((...args: unknown[]) => void) & { q?: unknown[] };
     window.clarity = clarity;
   }
   addScript(`https://www.clarity.ms/tag/${encodeURIComponent(projectId)}`, `kubicu-clarity-${projectId}`);

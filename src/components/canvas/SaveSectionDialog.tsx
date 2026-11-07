@@ -35,7 +35,7 @@ export function SaveSectionDialog({ open, onClose, blocks, defaultName }: SaveSe
       title="Save as reusable section"
       description={`${blocks.length} block${blocks.length === 1 ? '' : 's'} · available on every page in this workspace.`}
       footer={
-      <>
+        <>
           <Button variant="secondary" onClick={onClose}>
             Cancel
           </Button>
@@ -43,17 +43,17 @@ export function SaveSectionDialog({ open, onClose, blocks, defaultName }: SaveSe
             Save section
           </Button>
         </>
-      }>
-      
+      }
+    >
       <form
         className="pb-2"
         onSubmit={(e) => {
           e.preventDefault();
           if (name.trim()) save();
-        }}>
-        
+        }}
+      >
         <TextInput id="section-name" label="Section name" value={name} maxLength={48} onChange={(e) => setName(e.target.value)} hint="e.g. Delivery & pickup FAQ" />
       </form>
-    </Dialog>);
-
+    </Dialog>
+  );
 }

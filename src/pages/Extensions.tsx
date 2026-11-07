@@ -35,7 +35,7 @@ export function Extensions() {
   const [view, setView] = useState<View>('browse');
   const [q, setQ] = useState('');
   const [cat, setCat] = useState<ExtensionCategory | 'all'>('all');
-  const [install, setInstall] = useState<{ext: ExtensionInfo;mode: 'install' | 'settings';} | null>(null);
+  const [install, setInstall] = useState<{ ext: ExtensionInfo; mode: 'install' | 'settings' } | null>(null);
   const [subs] = useSubmissions();
   const open = params.get('ext') ? extensionById[params.get('ext')!] ?? null : null;
   const setOpen = (id: string | null) => setParams(id ? { ext: id } : {}, { replace: true });
@@ -46,9 +46,9 @@ export function Extensions() {
     const term = q.trim().toLowerCase();
     return catalogue.filter(
       (e) =>
-      (view === 'browse' ? !e.retired || !!market.data.installed[e.id] : !!market.data.installed[e.id]) && (
-      cat === 'all' || e.category === cat) && (
-      !term || `${e.name} ${e.summary} ${e.publisher}`.toLowerCase().includes(term))
+        (view === 'browse' ? !e.retired || !!market.data.installed[e.id] : !!market.data.installed[e.id]) &&
+        (cat === 'all' || e.category === cat) &&
+        (!term || `${e.name} ${e.summary} ${e.publisher}`.toLowerCase().includes(term)),
     );
   }, [q, cat, view, market.data.installed, catalogue]);
   const picks = extensions.filter((e) => e.staffPick && !e.retired);
@@ -58,11 +58,11 @@ export function Extensions() {
     <div className="mx-auto w-full max-w-[1200px] px-5 pb-16 pt-6 md:px-10 md:pt-8">
       <PageHeader title="Extensions" context={current.name} description="Add features to your workspace. Every extension is built by KUBICU or reviewed by our team before it’s listed, and shows exactly what it can do before you install." />
 
-      {showPicks &&
-      <Section id="ext-picks" title="Staff picks" description="Chosen by the KUBICU team for most new workspaces." className="mt-8">
+      {showPicks && (
+        <Section id="ext-picks" title="Staff picks" description="Chosen by the KUBICU team for most new workspaces." className="mt-8">
           <ul className="grid gap-4 md:grid-cols-3">
-            {picks.map((e) =>
-          <li key={e.id}>
+            {picks.map((e) => (
+              <li key={e.id}>
                 <button type="button" onClick={() => setOpen(e.id)} className="flex h-full w-full flex-col gap-3 rounded-lg border border-line bg-raised p-5 text-left transition-colors duration-150 hover:border-line-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
                   <ExtensionIcon ext={e} size="lg" />
                   <span>
@@ -75,10 +75,10 @@ export function Extensions() {
                   </span>
                 </button>
               </li>
-          )}
+            ))}
           </ul>
         </Section>
-      }
+      )}
 
       <section aria-label="All extensions" className="mt-10">
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
@@ -88,32 +88,32 @@ export function Extensions() {
             value={view}
             onChange={setView}
             items={[
-            { id: 'browse', label: 'Browse' },
-            { id: 'installed', label: 'Installed', badge: installedCount || undefined }]
-            } />
-          
+              { id: 'browse', label: 'Browse' },
+              { id: 'installed', label: 'Installed', badge: installedCount || undefined },
+            ]}
+          />
           <div className="md:w-[280px]">
             <TextInput id="ext-search" label="Search extensions" leadingIcon={SearchIcon} placeholder="Search" value={q} onChange={(e) => setQ(e.target.value)} fieldClassName="[&>label]:sr-only" />
           </div>
         </div>
         <div className="scroll-quiet mt-4 flex gap-1.5 overflow-x-auto overflow-y-hidden" role="group" aria-label="Category">
-          {(['all', ...(Object.keys(extensionCategories) as ExtensionCategory[])] as const).map((c) =>
-          <button
-            key={c}
-            type="button"
-            aria-pressed={cat === c}
-            onClick={() => setCat(c)}
-            className={cn('h-8 shrink-0 rounded-full border px-3 text-caption font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus', cat === c ? 'border-action bg-action-soft text-action' : 'border-line text-fg-muted hover:bg-sunken')}>
-            
+          {(['all', ...(Object.keys(extensionCategories) as ExtensionCategory[])] as const).map((c) => (
+            <button
+              key={c}
+              type="button"
+              aria-pressed={cat === c}
+              onClick={() => setCat(c)}
+              className={cn('h-8 shrink-0 rounded-full border px-3 text-caption font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus', cat === c ? 'border-action bg-action-soft text-action' : 'border-line text-fg-muted hover:bg-sunken')}
+            >
               {c === 'all' ? 'All' : extensionCategories[c]}
             </button>
-          )}
+          ))}
         </div>
 
-        {list.length === 0 ?
-        <EmptyState className="mt-6" icon={PuzzleIcon} title={view === 'installed' && !installedCount ? 'Nothing installed yet' : 'No extensions match'} description={view === 'installed' && !installedCount ? 'Browse the catalogue to add features.' : 'Try another search or category.'} /> :
-
-        <Card as="div" body="flush" className="mt-4">
+        {list.length === 0 ? (
+          <EmptyState className="mt-6" icon={PuzzleIcon} title={view === 'installed' && !installedCount ? 'Nothing installed yet' : 'No extensions match'} description={view === 'installed' && !installedCount ? 'Browse the catalogue to add features.' : 'Try another search or category.'} />
+        ) : (
+          <Card as="div" body="flush" className="mt-4">
           <List label="Extensions">
             {list.map((e) => {
               const rec = market.data.installed[e.id];
@@ -134,31 +134,31 @@ export function Extensions() {
                       </span>
                     </span>
                     <span className="hidden shrink-0 text-right sm:block">
-                      {e.retired ?
-                      <Badge tone="info">Moved to {e.retired.movedTo}</Badge> :
-                      !availability.ext(e.id) ?
-                      <Badge tone="neutral">Currently not available</Badge> :
-                      rec ?
-                      <Badge tone={rec.paused ? 'warning' : 'success'} dot>
+                      {e.retired ? (
+                        <Badge tone="info">Moved to {e.retired.movedTo}</Badge>
+                      ) : !availability.ext(e.id) ? (
+                        <Badge tone="neutral">Currently not available</Badge>
+                      ) : rec ? (
+                        <Badge tone={rec.paused ? 'warning' : 'success'} dot>
                           {rec.paused ? 'Paused' : 'Installed'}
-                        </Badge> :
-
-                      <span className="text-caption text-fg-muted">
+                        </Badge>
+                      ) : (
+                        <span className="text-caption text-fg-muted">
                           {e.priceNgn ? `${formatNgn(e.priceNgn)}/mo` : 'Free'} · {plans[e.minPlan].name}+
                         </span>
-                      }
+                      )}
                     </span>
                   </button>
-                </li>);
-
+                </li>
+              );
             })}
           </List>
           </Card>
-        }
+        )}
       </section>
 
       <ExtensionDetail ext={open} onClose={() => setOpen(null)} onInstall={(ext, mode) => setInstall({ ext, mode })} />
       <InstallExtensionDialog ext={install?.ext ?? null} mode={install?.mode} onClose={() => setInstall(null)} />
-    </div>);
-
+    </div>
+  );
 }

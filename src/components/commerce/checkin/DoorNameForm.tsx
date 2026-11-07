@@ -7,7 +7,7 @@ import { cn } from '../../../utils/cn';
 const SUGGESTIONS = ['Main gate', 'Side gate', 'VIP entrance', 'Back door'];
 
 /** Each phone names its door, so every check-in says where it happened (D143). */
-export function DoorNameForm({ initial, onSave, onCancel }: {initial: string;onSave: (name: string) => void;onCancel?: () => void;}) {
+export function DoorNameForm({ initial, onSave, onCancel }: { initial: string; onSave: (name: string) => void; onCancel?: () => void }) {
   const [name, setName] = useState(initial);
   const [error, setError] = useState('');
   const save = () => {
@@ -32,34 +32,34 @@ export function DoorNameForm({ initial, onSave, onCancel }: {initial: string;onS
         onSubmit={(e) => {
           e.preventDefault();
           save();
-        }}>
-        
+        }}
+      >
         <TextInput id="ci-door" label="Door name" value={name} error={error} maxLength={30} onChange={(e) => (setName(e.target.value), setError(''))} />
         <div className="flex flex-wrap gap-2" role="group" aria-label="Suggestions">
-          {SUGGESTIONS.map((s) =>
-          <button
-            key={s}
-            type="button"
-            onClick={() => (setName(s), setError(''))}
-            aria-pressed={name === s}
-            className={cn(
-              'min-h-[44px] rounded-full border px-4 text-label transition-colors duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
-              name === s ? 'border-action bg-action text-action-fg' : 'border-line text-fg hover:bg-sunken'
-            )}>
-            
+          {SUGGESTIONS.map((s) => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => (setName(s), setError(''))}
+              aria-pressed={name === s}
+              className={cn(
+                'min-h-[44px] rounded-full border px-4 text-label transition-colors duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
+                name === s ? 'border-action bg-action text-action-fg' : 'border-line text-fg hover:bg-sunken',
+              )}
+            >
               {s}
             </button>
-          )}
+          ))}
         </div>
         <div className="flex justify-end gap-2">
-          {onCancel &&
-          <Button type="button" variant="secondary" onClick={onCancel}>
+          {onCancel && (
+            <Button type="button" variant="secondary" onClick={onCancel}>
               Cancel
             </Button>
-          }
+          )}
           <Button type="submit">Start checking in</Button>
         </div>
       </form>
-    </section>);
-
+    </section>
+  );
 }

@@ -21,7 +21,7 @@ export function PressBlock({ block, theme, mode }: BlockProps<'press'>) {
     interview: tr(kindNames.interview),
     book: lang === 'en' ? kindNames.book : tr('Book (publication)'),
     podcast: tr(kindNames.podcast),
-    talk: tr(kindNames.talk)
+    talk: tr(kindNames.talk),
   };
   const c = block.content;
   const items = c.items.filter((i) => i.title.trim() || i.outlet.trim());
@@ -32,8 +32,8 @@ export function PressBlock({ block, theme, mode }: BlockProps<'press'>) {
       <SectionHeading theme={theme} title={c.title} />
       <ul className="flex flex-col">
         {items.map((i) => {
-          const row =
-          <>
+          const row = (
+            <>
               <span className="min-w-0 flex-1">
                 <span className="block text-[12px] font-semibold uppercase tracking-[0.08em]" style={{ color: accentOf(theme) }}>
                   {i.outlet || kindLabels[i.kind]}
@@ -47,21 +47,21 @@ export function PressBlock({ block, theme, mode }: BlockProps<'press'>) {
                 </span>
               </span>
               {i.url && <ArrowUpRightIcon size={18} aria-hidden className="mt-1 shrink-0 transition-transform duration-150 ease-out group-hover:-translate-y-0.5 group-hover:translate-x-0.5" style={{ color: theme.text }} />}
-            </>;
-
+            </>
+          );
           return (
             <li key={i.id} style={{ borderTop: `1px solid ${mix(theme.text, 10)}` }}>
-              {i.url ?
-              <PageAction mode={mode} href={i.url} className="group flex items-start gap-4 py-5">
+              {i.url ? (
+                <PageAction mode={mode} href={i.url} className="group flex items-start gap-4 py-5">
                   {row}
-                </PageAction> :
-
-              <div className="flex items-start gap-4 py-5">{row}</div>
-              }
-            </li>);
-
+                </PageAction>
+              ) : (
+                <div className="flex items-start gap-4 py-5">{row}</div>
+              )}
+            </li>
+          );
         })}
       </ul>
-    </section>);
-
+    </section>
+  );
 }

@@ -26,8 +26,15 @@ function hiddenOn(path: string): boolean {
     path.startsWith('/app/assistant') ||
     path.startsWith('/app/coach') ||
     path.startsWith('/app/canvas/') ||
-    path.startsWith('/admin/ai'));
-
+    path.startsWith('/admin/ai') ||
+    // Sign-up, sign-in, password reset, email check, joining a team and first setup: one task at a time (D567).
+    path === '/signup' ||
+    path === '/signin' ||
+    path === '/reset' ||
+    path === '/verify' ||
+    path === '/start' ||
+    path.startsWith('/invite/')
+  );
 }
 
 /** Lifts the bar above bars that already sit at the bottom, such as the workspace phone nav. */
@@ -89,8 +96,8 @@ export function AskBar() {
     try {
       localStorage.setItem(STORE_KEY, minimised ? '1' : '0');
     } catch {
-
-      /* private mode: remember for this visit only */}
+      /* private mode: remember for this visit only */
+    }
   }, [minimised]);
 
   // Get out of the way while reading down a page, and at the very bottom so footers stay readable; come back on the way up.
@@ -158,45 +165,45 @@ export function AskBar() {
   return (
     <div className={cn('pointer-events-none fixed inset-x-0 z-40 flex px-3 print:hidden', bottomOffset(pathname), minimised ? 'justify-end md:px-5' : 'justify-center')}>
       <AnimatePresence mode="wait" initial={false}>
-        {minimised ?
-        <motion.button
-          key="tucked"
-          type="button"
-          onClick={open}
-          aria-label={t('Ask KUBICU Copilot')}
-          title={t('Ask KUBICU Copilot')}
-          initial={{ opacity: 0, scale: 0.96 }}
-          animate={{ opacity: away ? 0.4 : 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.96 }}
-          transition={{ duration: 0.18, ease }}
-          className="pointer-events-auto flex h-12 w-12 items-center justify-center rounded-full border border-line bg-raised shadow-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-          
+        {minimised ? (
+          <motion.button
+            key="tucked"
+            type="button"
+            onClick={open}
+            aria-label={t('Ask KUBICU Copilot')}
+            title={t('Ask KUBICU Copilot')}
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: away ? 0.4 : 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.96 }}
+            transition={{ duration: 0.18, ease }}
+            className="pointer-events-auto flex h-12 w-12 items-center justify-center rounded-full border border-line bg-raised shadow-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+          >
             <KubicuLogo withWordmark={false} />
-          </motion.button> :
-
-        <motion.form
-          key="bar"
-          role="search"
-          onSubmit={ask}
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: away ? 0 : 1, y: away ? 24 : 0 }}
-          exit={{ opacity: 0, y: 12 }}
-          transition={{ duration: 0.22, ease }}
-          onPointerDown={engage}
-          onFocusCapture={engage}
-          className={cn('relative flex h-14 w-full max-w-[560px] items-center gap-1 rounded-full border border-line bg-raised pl-2 pr-2 shadow-3', away ? 'pointer-events-none' : 'pointer-events-auto')}
-          aria-hidden={away || undefined}
-          // While it's slid away, its controls also leave the Tab order (D429).
-          {...away ? { inert: '' } : {}}>
-          
+          </motion.button>
+        ) : (
+          <motion.form
+            key="bar"
+            role="search"
+            onSubmit={ask}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: away ? 0 : 1, y: away ? 24 : 0 }}
+            exit={{ opacity: 0, y: 12 }}
+            transition={{ duration: 0.22, ease }}
+            onPointerDown={engage}
+            onFocusCapture={engage}
+            className={cn('relative flex h-14 w-full max-w-[560px] items-center gap-1 rounded-full border border-line bg-raised pl-2 pr-2 shadow-3', away ? 'pointer-events-none' : 'pointer-events-auto')}
+            aria-hidden={away || undefined}
+            // While it's slid away, its controls also leave the Tab order (D429).
+            {...(away ? { inert: '' } : {})}
+          >
             <AskBarGlow active={!engaged && !away && !text && !speech.listening} calm={usedOnce} />
             <button
-            type="button"
-            onClick={tuck}
-            aria-label={t('Minimise')}
-            title={t('Minimise')}
-            className="group relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors duration-150 ease-out hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-            
+              type="button"
+              onClick={tuck}
+              aria-label={t('Minimise')}
+              title={t('Minimise')}
+              className="group relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors duration-150 ease-out hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+            >
               <span className="transition-opacity duration-150 ease-out group-hover:opacity-0 group-focus-visible:opacity-0">
                 <KubicuLogo withWordmark={false} />
               </span>
@@ -207,67 +214,67 @@ export function AskBar() {
               {t('Ask KUBICU Copilot')}
             </label>
             <input
-            id="kubicu-ask"
-            ref={input}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            onFocus={() => setFocused(true)}
-            onBlur={() => setFocused(false)}
-            onKeyDown={(e) => {
-              if (e.key === 'Escape') {
-                e.currentTarget.blur();
-                tuck();
-              }
-            }}
-            placeholder={speech.listening ? t('Listening…') : t('Ask me anything')}
-            autoComplete="off"
-            enterKeyHint="send"
-            className="h-full min-w-0 flex-1 bg-transparent px-1 text-[16px] text-fg placeholder:text-fg-subtle focus:outline-none md:text-[15px]" />
-          
+              id="kubicu-ask"
+              ref={input}
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              onFocus={() => setFocused(true)}
+              onBlur={() => setFocused(false)}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') {
+                  e.currentTarget.blur();
+                  tuck();
+                }
+              }}
+              placeholder={speech.listening ? t('Listening…') : t('Ask me anything')}
+              autoComplete="off"
+              enterKeyHint="send"
+              className="h-full min-w-0 flex-1 bg-transparent px-1 text-[16px] text-fg placeholder:text-fg-subtle focus:outline-none md:text-[15px]"
+            />
 
-            {speech.supported &&
-          <button
-            type="button"
-            onClick={speech.toggle}
-            aria-label={speech.listening ? t('Stop listening') : t('Speak your question')}
-            aria-pressed={speech.listening}
-            title={speech.listening ? t('Stop listening') : t('Speak your question')}
-            className={cn(
-              'flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
-              speech.listening ? 'bg-danger-soft text-danger' : 'text-fg hover:bg-sunken'
-            )}>
-            
+            {speech.supported && (
+              <button
+                type="button"
+                onClick={speech.toggle}
+                aria-label={speech.listening ? t('Stop listening') : t('Speak your question')}
+                aria-pressed={speech.listening}
+                title={speech.listening ? t('Stop listening') : t('Speak your question')}
+                className={cn(
+                  'flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
+                  speech.listening ? 'bg-danger-soft text-danger' : 'text-fg hover:bg-sunken',
+                )}
+              >
                 {speech.listening ? <SquareIcon size={14} fill="currentColor" aria-hidden /> : <MicIcon size={18} aria-hidden />}
               </button>
-          }
+            )}
 
             <button
-            type="submit"
-            disabled={!canSend}
-            aria-label={t('Send to Copilot')}
-            title={t('Send to Copilot')}
-            className={cn(
-              'flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
-              canSend ? 'bg-action text-action-fg' : 'bg-sunken text-fg-subtle'
-            )}>
-            
+              type="submit"
+              disabled={!canSend}
+              aria-label={t('Send to Copilot')}
+              title={t('Send to Copilot')}
+              className={cn(
+                'flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
+                canSend ? 'bg-action text-action-fg' : 'bg-sunken text-fg-subtle',
+              )}
+            >
               <ArrowUpIcon size={18} aria-hidden />
             </button>
 
             <span aria-hidden className="mx-1 h-6 w-px shrink-0 bg-line" />
 
             <button
-            type="button"
-            onClick={() => navigate('/copilot/chat')}
-            aria-label={t('Open Copilot')}
-            title={t('Open Copilot')}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-fg transition-colors duration-150 ease-out hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-            
+              type="button"
+              onClick={() => navigate('/copilot/chat')}
+              aria-label={t('Open Copilot')}
+              title={t('Open Copilot')}
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-fg transition-colors duration-150 ease-out hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+            >
               <PanelLeftIcon size={19} aria-hidden />
             </button>
           </motion.form>
-        }
+        )}
       </AnimatePresence>
-    </div>);
-
+    </div>
+  );
 }

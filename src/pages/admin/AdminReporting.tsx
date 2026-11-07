@@ -41,7 +41,7 @@ interface WsStats {
 }
 
 /** Website menu usage (D273): anonymous counts of panel opens and link picks. */
-function MenuUsageCard({ days }: {days: number;}) {
+function MenuUsageCard({ days }: { days: number }) {
   const usage = useMemo(() => readMenuUsage(days), [days]);
   const groupLabel = (id: string) => siteMenu.find((g) => g.id === id)?.label ?? id;
   const maxOpen = Math.max(1, ...usage.opens.map((o) => o.total));
@@ -52,25 +52,25 @@ function MenuUsageCard({ days }: {days: number;}) {
       id="menu-usage"
       className="mt-8"
       title="Website menu"
-      description={`Which menu panels people open and which links they pick · last ${days} days · counts only, no personal data`}>
-      
-      {usage.totalOpens + usage.totalLinks === 0 ?
-      <p className="text-label text-fg-muted">No menu use recorded in this period. Open the KUBICU website menu on this device and pick a link to see it here.</p> :
-
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
+      description={`Which menu panels people open and which links they pick · last ${days} days · counts only, no personal data`}
+    >
+      {usage.totalOpens + usage.totalLinks === 0 ? (
+        <p className="text-label text-fg-muted">No menu use recorded in this period. Open the KUBICU website menu on this device and pick a link to see it here.</p>
+      ) : (
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
           <div>
             <h3 className="text-label font-semibold text-fg">Panels opened</h3>
             <p className="text-caption text-fg-subtle">{usage.totalOpens.toLocaleString('en-NG')} opens</p>
             <ul className="mt-4 flex flex-col gap-3">
-              {usage.opens.map((o) =>
-            <li key={o.group} className="grid grid-cols-[6.5rem_minmax(0,1fr)_3rem] items-center gap-3 text-label">
+              {usage.opens.map((o) => (
+                <li key={o.group} className="grid grid-cols-[6.5rem_minmax(0,1fr)_3rem] items-center gap-3 text-label">
                   <span className="truncate text-fg">{groupLabel(o.group)}</span>
                   <span className="h-2 overflow-hidden rounded-full bg-sunken" aria-hidden>
-                    <span className="block h-full rounded-full bg-action" style={{ width: `${o.total / maxOpen * 100}%` }} />
+                    <span className="block h-full rounded-full bg-action" style={{ width: `${(o.total / maxOpen) * 100}%` }} />
                   </span>
                   <span className="text-right tabular-nums text-fg-muted">{o.total}</span>
                 </li>
-            )}
+              ))}
             </ul>
           </div>
           <div className="min-w-0">
@@ -88,8 +88,8 @@ function MenuUsageCard({ days }: {days: number;}) {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-line border-t border-line">
-                  {top.map((l) =>
-                <tr key={l.to}>
+                  {top.map((l) => (
+                    <tr key={l.to}>
                       <th scope="row" className="py-2.5 pr-3 text-left font-medium text-fg">
                         {l.title}
                         <span className="block truncate font-mono text-caption font-normal text-fg-subtle">{l.to}</span>
@@ -98,15 +98,15 @@ function MenuUsageCard({ days }: {days: number;}) {
                       <td className="px-2 py-2.5 text-right tabular-nums text-fg-muted">{l.mobile}</td>
                       <td className="py-2.5 pl-2 text-right font-semibold tabular-nums text-fg">{l.total}</td>
                     </tr>
-                )}
+                  ))}
                 </tbody>
               </table>
             </div>
           </div>
         </div>
-      }
-    </Card>);
-
+      )}
+    </Card>
+  );
 }
 
 /** Super admin → Business reporting: growth, revenue and usage across workspaces, each with its definition (D82). */
@@ -122,7 +122,7 @@ export function AdminReporting() {
       const price = monthlyPrice(w.plan) ?? 0;
       // Trials pay nothing yet; a pending cancellation still pays until the period ends.
       const ended = billing?.status === 'trialing';
-      const mrr = ended ? 0 : billing?.cycle === 'yearly' ? Math.round(price * YEARLY_MONTHS / 12) : price;
+      const mrr = ended ? 0 : billing?.cycle === 'yearly' ? Math.round((price * YEARLY_MONTHS) / 12) : price;
       const paid = (readCommerce(w.id)?.orders ?? []).filter((o) => Date.parse(o.createdAt) >= since && o.paymentStatus !== 'pending' && o.paymentStatus !== 'cancelled');
       const views = (readAnalytics(w.id)?.events ?? []).filter((e) => e.type === 'view' && Date.parse(e.at) >= since);
       const currency = workspaceCurrency(w);
@@ -139,7 +139,7 @@ export function AdminReporting() {
         gmv: toNaira(gmvLocal, currency),
         orders: paid.length,
         fees: toNaira(paid.reduce((s, o) => s + o.kubicuFeeNgn, 0), currency),
-        visits: new Set(views.map((v) => v.session)).size
+        visits: new Set(views.map((v) => v.session)).size,
       };
     });
   }, [workspaces, days]);
@@ -156,8 +156,8 @@ export function AdminReporting() {
       <PageHeader
         title="Business reporting"
         description="Growth, revenue and usage across every workspace on this device. Each figure says exactly what it counts."
-        actions={<Segmented<Period> size="sm" ariaLabel="Period" value={period} onChange={setPeriod} options={[{ value: '7', label: '7 days' }, { value: '30', label: '30 days' }, { value: '90', label: '90 days' }]} />} />
-      
+        actions={<Segmented<Period> size="sm" ariaLabel="Period" value={period} onChange={setPeriod} options={[{ value: '7', label: '7 days' }, { value: '30', label: '30 days' }, { value: '90', label: '90 days' }]} />}
+      />
 
       <Card emphasis="primary" className="mt-8">
         <div className="flex flex-col gap-6">
@@ -190,20 +190,20 @@ export function AdminReporting() {
                 <li key={p} className="grid grid-cols-[6rem_minmax(0,1fr)_2rem] items-center gap-3 text-label">
                   <span className="text-fg">{plans[p].name}</span>
                   <span className="h-2 overflow-hidden rounded-full bg-sunken" aria-hidden>
-                    <span className="block h-full rounded-full bg-action" style={{ width: `${n / maxPlan * 100}%` }} />
+                    <span className="block h-full rounded-full bg-action" style={{ width: `${(n / maxPlan) * 100}%` }} />
                   </span>
                   <span className="text-right tabular-nums text-fg-muted">{n}</span>
-                </li>);
-
+                </li>
+              );
             })}
           </ul>
         </Card>
 
         <Card title="Top sellers" description={`By amount sold in the last ${days} days`} body="flush">
-          {top.every((w) => w.gmv === 0) ?
-          <p className="px-5 py-6 text-label text-fg-muted md:px-6">No paid orders in this period.</p> :
-
-          <table className="w-full text-label">
+          {top.every((w) => w.gmv === 0) ? (
+            <p className="px-5 py-6 text-label text-fg-muted md:px-6">No paid orders in this period.</p>
+          ) : (
+            <table className="w-full text-label">
               <caption className="sr-only">Top sellers by amount sold</caption>
               <thead>
                 <tr className="text-caption text-fg-subtle">
@@ -213,10 +213,10 @@ export function AdminReporting() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-line border-t border-line">
-                {top.
-              filter((w) => w.gmv > 0).
-              map((w) =>
-              <tr key={w.id}>
+                {top
+                  .filter((w) => w.gmv > 0)
+                  .map((w) => (
+                    <tr key={w.id}>
                       <th scope="row" className="px-5 py-3 text-left font-semibold text-fg md:px-6">
                         {w.name}
                         <span className="block text-caption font-normal text-fg-subtle">{plans[w.plan].name}</span>
@@ -224,10 +224,10 @@ export function AdminReporting() {
                       <td className="px-3 py-3 text-right tabular-nums text-fg-muted">{w.orders}</td>
                       <td className="px-5 py-3 text-right font-semibold tabular-nums text-fg md:px-6">{formatMoney(w.gmvLocal, w.currency)}</td>
                     </tr>
-              )}
+                  ))}
               </tbody>
             </table>
-          }
+          )}
         </Card>
       </div>
 
@@ -239,21 +239,21 @@ export function AdminReporting() {
         </h2>
         <dl className="mt-4 grid gap-x-10 gap-y-4 text-label md:grid-cols-2">
           {[
-          ['Monthly recurring revenue', 'Each active paid workspace’s plan list price per month. Yearly plans are divided by 12. Trials and Enterprise (quoted) count as ₦0; plans set to cancel still count until they end.'],
-          ['Sold through KUBICU', 'What customers paid for orders placed in the period, including delivery and after discounts. Pending and cancelled orders are excluded; refunds are not subtracted.'],
-          ['KUBICU fees earned', 'The platform fee on those orders. Example rates (D40) — no real money moves in the prototype.'],
-          ['Visits', 'Distinct visitor sessions (30 minutes) on public pages. Owner previews and template examples aren’t counted (D61).'],
-          ['New workspaces', 'Workspaces created in the period. “Live page” means at least one space is published.'],
-          ['Website menu', 'How often each menu panel was opened and each menu link was picked on the KUBICU website, split by computer and phone menus. Only daily counts are kept, for 90 days: no session, browser ID or address. Browsers that send Do Not Track or Global Privacy Control aren’t counted (D273).'],
-          ['Scope', 'Every workspace stored on this device. Production reporting will read the platform database and refresh hourly.']].
-          map(([term, def]) =>
-          <div key={term}>
+            ['Monthly recurring revenue', 'Each active paid workspace’s plan list price per month. Yearly plans are divided by 12. Trials and Enterprise (quoted) count as ₦0; plans set to cancel still count until they end.'],
+            ['Sold through KUBICU', 'What customers paid for orders placed in the period, including delivery and after discounts. Pending and cancelled orders are excluded; refunds are not subtracted.'],
+            ['KUBICU fees earned', 'The platform fee on those orders. Example rates (D40) — no real money moves in the prototype.'],
+            ['Visits', 'Distinct visitor sessions (30 minutes) on public pages. Owner previews and template examples aren’t counted (D61).'],
+            ['New workspaces', 'Workspaces created in the period. “Live page” means at least one space is published.'],
+            ['Website menu', 'How often each menu panel was opened and each menu link was picked on the KUBICU website, split by computer and phone menus. Only daily counts are kept, for 90 days: no session, browser ID or address. Browsers that send Do Not Track or Global Privacy Control aren’t counted (D273).'],
+            ['Scope', 'Every workspace stored on this device. Production reporting will read the platform database and refresh hourly.'],
+          ].map(([term, def]) => (
+            <div key={term}>
               <dt className="font-semibold text-fg">{term}</dt>
               <dd className="mt-0.5 text-fg-muted">{def}</dd>
             </div>
-          )}
+          ))}
         </dl>
       </section>
-    </div>);
-
+    </div>
+  );
 }

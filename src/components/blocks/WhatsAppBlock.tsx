@@ -20,10 +20,10 @@ export function WhatsAppBlock({ block, theme, mode }: BlockProps<'whatsapp'>) {
       newTab
       ariaLabel={block.accessibility.label || undefined}
       className="flex min-h-[56px] w-full items-center justify-center gap-2.5 px-5 py-3 text-[15px] font-semibold"
-      style={buttonStyle(theme, block.style.emphasis)}>
-      
+      style={buttonStyle(theme, block.style.emphasis)}
+    >
       <MessageCircleIcon size={18} aria-hidden />
       {label || tr('Chat on WhatsApp')}
-    </PageAction>);
-
+    </PageAction>
+  );
 }

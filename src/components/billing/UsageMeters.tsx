@@ -16,6 +16,8 @@ import { pageCount, pageLimits } from '../../utils/sitePages';
 import { formatBytes } from '../../utils/media/refs';
 import { UpgradeButton } from '../ui/UpgradeButton';
 import { cn } from '../../utils/cn';
+import { useAccountMode } from '../../contexts/AccountModeContext';
+import { useAccountCredits, AiCreditsNotes } from '../accountMode/AiCreditsAccount';
 
 interface Meter {
   id: string;
@@ -30,7 +32,7 @@ interface Meter {
 
 function nextHigher(current: WorkspacePlan, table: Record<WorkspacePlan, number | null>): WorkspacePlan | null {
   const now = table[current];
-  return planOrder.slice(planOrder.indexOf(current) + 1).find((p) => p !== 'enterprise' && (table[p] === null || now !== null && table[p] as number > now)) ?? null;
+  return planOrder.slice(planOrder.indexOf(current) + 1).find((p) => p !== 'enterprise' && (table[p] === null || (now !== null && (table[p] as number) > now))) ?? null;
 }
 
 /** Every plan limit in one place. Amber at 80%, red at 100% (D65). */
@@ -42,22 +44,27 @@ export function UsageMeters() {
   const media = useMedia();
   const ai = useAiUsage();
   const main = readSpacePage(current.id, MAIN_SPACE_ID);
+  // Account mode (D540): AI figures come from the server — used plus on hold against the plan's allowance.
+  const account = useAccountMode();
+  const credits = useAccountCredits();
   const productTable = Object.fromEntries(planOrder.map((p) => [p, productLimit(p)])) as Record<WorkspacePlan, number | null>;
 
   const meters: Meter[] = [
-  { id: 'products', label: 'Products', used: countedProducts(commerce), limit: productLimit(plan.id), feature: 'More products', next: nextHigher(plan.id, productTable) },
-  { id: 'spaces', label: 'Campaigns & DealRooms', used: activeExtraSpaces(current).length, limit: extraSpaceLimits[plan.id], feature: 'More campaigns and DealRooms', next: nextHigher(plan.id, extraSpaceLimits) },
-  { id: 'pages', label: 'Pages on your main site', used: main ? pageCount(main.draft) : 1, limit: pageLimits[plan.id], feature: 'More pages per site', next: nextHigher(plan.id, pageLimits) },
-  { id: 'seats', label: 'Team seats', used: team.seatsUsed, limit: seatLimits[plan.id], feature: 'More team seats', next: nextHigher(plan.id, seatLimits) },
-  { id: 'storage', label: 'Media storage', used: media.usedBytes, limit: mediaQuota[plan.id], format: formatBytes, feature: 'More media storage', next: nextHigher(plan.id, mediaQuota) },
-  { id: 'ai', label: `AI credits (resets ${ai.resetsOn})`, used: ai.used, limit: ai.limit, feature: 'More AI credits', next: nextHigher(plan.id, aiCredits) }];
-
+    { id: 'products', label: 'Products', used: countedProducts(commerce), limit: productLimit(plan.id), feature: 'More products', next: nextHigher(plan.id, productTable) },
+    { id: 'spaces', label: 'Campaigns & DealRooms', used: activeExtraSpaces(current).length, limit: extraSpaceLimits[plan.id], feature: 'More campaigns and DealRooms', next: nextHigher(plan.id, extraSpaceLimits) },
+    { id: 'pages', label: 'Pages on your main site', used: main ? pageCount(main.draft) : 1, limit: pageLimits[plan.id], feature: 'More pages per site', next: nextHigher(plan.id, pageLimits) },
+    { id: 'seats', label: 'Team seats', used: team.seatsUsed, limit: seatLimits[plan.id], feature: 'More team seats', next: nextHigher(plan.id, seatLimits) },
+    { id: 'storage', label: 'Media storage', used: media.usedBytes, limit: mediaQuota[plan.id], format: formatBytes, feature: 'More media storage', next: nextHigher(plan.id, mediaQuota) },
+    account.active
+      ? { id: 'ai', label: 'AI credits this month (used and on hold)', used: credits.committed + credits.held, limit: credits.allowance, feature: 'More AI credits', next: nextHigher(plan.id, aiCredits) }
+      : { id: 'ai', label: `AI credits (resets ${ai.resetsOn})`, used: ai.used, limit: ai.limit, feature: 'More AI credits', next: nextHigher(plan.id, aiCredits) },
+  ];
 
   return (
     <ul className="flex flex-col gap-4">
       {meters.map((m) => {
         const fmt = m.format ?? ((n: number) => n.toLocaleString());
-        const pct = m.limit ? Math.min(100, m.used / m.limit * 100) : 0;
+        const pct = m.limit ? Math.min(100, (m.used / m.limit) * 100) : 0;
         const tone = m.limit === null ? 'ok' : pct >= 100 ? 'full' : pct >= 80 ? 'near' : 'ok';
         return (
           <li key={m.id} className="flex flex-col gap-1.5">
@@ -68,15 +75,16 @@ export function UsageMeters() {
                 {tone === 'full' ? ' · Full' : tone === 'near' ? ' · Nearly full' : ''}
               </span>
             </div>
-            {m.limit !== null &&
-            <div className="h-1.5 overflow-hidden rounded-full bg-sunken" role="meter" aria-label={m.label} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(pct)} aria-valuetext={`${Math.round(pct)}% used`}>
+            {m.limit !== null && (
+              <div className="h-1.5 overflow-hidden rounded-full bg-sunken" role="meter" aria-label={m.label} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(pct)} aria-valuetext={`${Math.round(pct)}% used`}>
                 <div className={cn('h-full rounded-full', tone === 'full' ? 'bg-danger' : tone === 'near' ? 'bg-warning' : 'bg-action')} style={{ width: `${Math.max(pct, m.used > 0 ? 2 : 0)}%` }} />
               </div>
-            }
+            )}
+            {account.active && m.id === 'ai' && <AiCreditsNotes figures={credits} />}
             {tone !== 'ok' && m.next && <UpgradeButton plan={m.next} feature={m.feature} variant="tertiary" className="self-start" />}
-          </li>);
-
+          </li>
+        );
       })}
-    </ul>);
-
+    </ul>
+  );
 }

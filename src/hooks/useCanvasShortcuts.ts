@@ -35,8 +35,8 @@ export function useCanvasShortcuts(handlers: Shortcuts) {
       const key = e.key.toLowerCase();
       if (mod && key === 'z') {
         e.preventDefault();
-        if (e.shiftKey) ref.current.onRedo();else
-        ref.current.onUndo();
+        if (e.shiftKey) ref.current.onRedo();
+        else ref.current.onUndo();
       } else if (mod && key === 'y') {
         e.preventDefault();
         ref.current.onRedo();

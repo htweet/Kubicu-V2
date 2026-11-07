@@ -17,8 +17,8 @@ interface KycSummaryProps {
   flagged?: KycStepId[];
 }
 
-const mask = (v: string) => v ? `•••••••${v.slice(-4)}` : '—';
-const date = (v: string) => v ? formatDay(v.slice(0, 10)) : '—';
+const mask = (v: string) => (v ? `•••••••${v.slice(-4)}` : '—');
+const date = (v: string) => (v ? formatDay(v.slice(0, 10)) : '—');
 
 /** Everything submitted for verification, grouped by step. Used for the owner's review and the staff review sheet. */
 export function KycSummary({ k, banks, onEdit, flagged = [] }: KycSummaryProps) {
@@ -32,18 +32,18 @@ export function KycSummary({ k, banks, onEdit, flagged = [] }: KycSummaryProps) 
 
   const content: Record<Exclude<KycStepId, 'review'>, React.ReactNode> = {
     type: <Rows rows={[['Type', k.entity ? entityInfo[k.entity].label : '—']]} />,
-    identity:
-    <>
+    identity: (
+      <>
         <Rows
-        rows={[
-        ['Legal name', i.legalName || '—'],
-        ['Date of birth', date(i.dob)],
-        ['Phone', i.phone ? `${i.phone}${i.phoneVerified ? ' · confirmed' : ' · not confirmed'}` : '—'],
-        [rules.primary.label, mask(i.bvn)],
-        ...(rules.secondary ? [[rules.secondary.label, mask(i.nin)]] as [string, string][] : []),
-        ['ID', `${idTypeLabels[i.idType]} · ${i.idNumber || '—'}${i.idExpiry ? ` · expires ${date(i.idExpiry)}` : ''}`]]
-        } />
-      
+          rows={[
+            ['Legal name', i.legalName || '—'],
+            ['Date of birth', date(i.dob)],
+            ['Phone', i.phone ? `${i.phone}${i.phoneVerified ? ' · confirmed' : ' · not confirmed'}` : '—'],
+            [rules.primary.label, mask(i.bvn)],
+            ...(rules.secondary ? ([[rules.secondary.label, mask(i.nin)]] as [string, string][]) : []),
+            ['ID', `${idTypeLabels[i.idType]} · ${i.idNumber || '—'}${i.idExpiry ? ` · expires ${date(i.idExpiry)}` : ''}`],
+          ]}
+        />
         <div className="mt-3 flex flex-wrap gap-2">
           <CheckBadge result={i.checks.bvn} label={rules.primary.label} />
           {rules.secondary && <CheckBadge result={i.checks.nin} label={rules.secondary.label} />}
@@ -51,45 +51,45 @@ export function KycSummary({ k, banks, onEdit, flagged = [] }: KycSummaryProps) 
         </div>
         {i.checks.nameOnBvn && <p className="mt-2 text-caption text-fg-muted">{rules.nameOnRecord.replace('{name}', i.checks.nameOnBvn)}</p>}
         <Docs docs={[['Photo ID', i.idFront]]} />
-      </>,
-
-    address:
-    <>
+      </>
+    ),
+    address: (
+      <>
         <Rows rows={[['Address', [k.address.line1, k.address.city, k.address.state].filter(Boolean).join(', ') || '—'], ['Proof', proofLabels[k.address.proofType]]]} />
         <Docs docs={[['Proof of address', k.address.proof]]} />
-      </>,
-
-    business:
-    <>
+      </>
+    ),
+    business: (
+      <>
         <Rows
-        rows={[
-        ['Registered name', b.registeredName || '—'],
-        [k.entity === 'company' ? rules.registry.companyLabel : rules.registry.bnLabel, b.number || '—'],
-        ['Registered on', date(b.incorporatedOn)],
-        [rules.tax.label, b.tin || 'Not given'],
-        ['Industry', b.industry || '—'],
-        ['What it does', b.description || '—'],
-        ['Website', b.website || 'Not given']]
-        } />
-      
+          rows={[
+            ['Registered name', b.registeredName || '—'],
+            [k.entity === 'company' ? rules.registry.companyLabel : rules.registry.bnLabel, b.number || '—'],
+            ['Registered on', date(b.incorporatedOn)],
+            [rules.tax.label, b.tin || 'Not given'],
+            ['Industry', b.industry || '—'],
+            ['What it does', b.description || '—'],
+            ['Website', b.website || 'Not given'],
+          ]}
+        />
         <div className="mt-3 flex flex-wrap gap-2">
           <CheckBadge result={b.checks.cac} label={rules.registry.short} />
           {b.tin && <CheckBadge result={b.checks.tin} label={rules.tax.badge} />}
         </div>
         <Docs
-        docs={[
-        [rules.registry.certificate, b.certificate],
-        [k.entity === 'company' ? rules.registry.companyRecord : rules.registry.bnRecord, b.statusReport],
-        ...(k.entity === 'company' ? [[rules.registry.constitution, b.memart]] as [string, KycDoc | null][] : [])]
-        } />
-      
-      </>,
-
-    people:
-    <ul className="divide-y divide-line rounded-md border border-line">
+          docs={[
+            [rules.registry.certificate, b.certificate],
+            [k.entity === 'company' ? rules.registry.companyRecord : rules.registry.bnRecord, b.statusReport],
+            ...(k.entity === 'company' ? ([[rules.registry.constitution, b.memart]] as [string, KycDoc | null][]) : []),
+          ]}
+        />
+      </>
+    ),
+    people: (
+      <ul className="divide-y divide-line rounded-md border border-line">
         {k.people.length === 0 && <li className="px-3 py-2.5 text-caption text-fg-muted">No one listed</li>}
-        {k.people.map((p) =>
-      <li key={p.id} className="flex flex-wrap items-center justify-between gap-2 px-3 py-2.5">
+        {k.people.map((p) => (
+          <li key={p.id} className="flex flex-wrap items-center justify-between gap-2 px-3 py-2.5">
             <span className="min-w-0">
               <span className="block text-label font-medium text-fg">{p.fullName || 'Unnamed'}</span>
               <span className="block text-caption text-fg-subtle">
@@ -101,75 +101,75 @@ export function KycSummary({ k, banks, onEdit, flagged = [] }: KycSummaryProps) 
               <CheckBadge result={p.check} label={rules.primary.label} />
             </span>
           </li>
-      )}
-      </ul>,
-
-    payout: <Rows rows={[['Account', bank ? `${bank.bankName} ····${bank.last4} · ${bank.accountName}` : '—'], ['Name check', bank ? bank.nameMatch === 'match' ? 'Matches' : bank.nameMatch === 'close' ? 'Partly matches' : 'Doesn’t match' : '—']]} />,
-    declarations:
-    <Rows
-      rows={[
-      ['Monthly sales', d.monthlyVolume ? volumeLabels[d.monthlyVolume] : '—'],
-      ['Source of funds', d.sourceOfFunds ? `${fundsLabels[d.sourceOfFunds]}${d.sourceDetail ? ` — ${d.sourceDetail}` : ''}` : '—'],
-      ['Public role (PEP)', d.pep ? `Yes — ${d.pepDetail}` : 'No'],
-      ['Confirmed and agreed', d.accurate && d.terms ? 'Yes' : 'No']]
-      } />
-
-
+        ))}
+      </ul>
+    ),
+    payout: <Rows rows={[['Account', bank ? `${bank.bankName} ····${bank.last4} · ${bank.accountName}` : '—'], ['Name check', bank ? (bank.nameMatch === 'match' ? 'Matches' : bank.nameMatch === 'close' ? 'Partly matches' : 'Doesn’t match') : '—']]} />,
+    declarations: (
+      <Rows
+        rows={[
+          ['Monthly sales', d.monthlyVolume ? volumeLabels[d.monthlyVolume] : '—'],
+          ['Source of funds', d.sourceOfFunds ? `${fundsLabels[d.sourceOfFunds]}${d.sourceDetail ? ` — ${d.sourceDetail}` : ''}` : '—'],
+          ['Public role (PEP)', d.pep ? `Yes — ${d.pepDetail}` : 'No'],
+          ['Confirmed and agreed', d.accurate && d.terms ? 'Yes' : 'No'],
+        ]}
+      />
+    ),
   };
 
   return (
     <div className="flex flex-col divide-y divide-line">
-      {steps.map((s) =>
-      <section key={s} aria-labelledby={`kyc-sum-${s}`} className="py-5 first:pt-0 last:pb-0">
+      {steps.map((s) => (
+        <section key={s} aria-labelledby={`kyc-sum-${s}`} className="py-5 first:pt-0 last:pb-0">
           <div className="mb-3 flex items-center justify-between gap-3">
             <h3 id={`kyc-sum-${s}`} className="flex items-center gap-2 text-label font-semibold text-fg">
               {stepLabels[s].label}
               {flagged.includes(s) && <Badge tone="warning">Change requested</Badge>}
             </h3>
-            {onEdit &&
-          <Button size="sm" variant="tertiary" leadingIcon={PencilIcon} onClick={() => onEdit(s)} aria-label={`Edit ${stepLabels[s].label}`}>
+            {onEdit && (
+              <Button size="sm" variant="tertiary" leadingIcon={PencilIcon} onClick={() => onEdit(s)} aria-label={`Edit ${stepLabels[s].label}`}>
                 Edit
               </Button>
-          }
+            )}
           </div>
           {content[s as Exclude<KycStepId, 'review'>]}
         </section>
-      )}
-    </div>);
-
+      ))}
+    </div>
+  );
 }
 
-function Rows({ rows }: {rows: [string, string][];}) {
+function Rows({ rows }: { rows: [string, string][] }) {
   return (
     <dl className="grid gap-x-6 gap-y-2 sm:grid-cols-[10rem_minmax(0,1fr)]">
-      {rows.map(([label, value]) =>
-      <React.Fragment key={label}>
+      {rows.map(([label, value]) => (
+        <React.Fragment key={label}>
           <dt className="text-caption text-fg-subtle">{label}</dt>
           <dd className="break-words text-label text-fg">{value}</dd>
         </React.Fragment>
-      )}
-    </dl>);
-
+      ))}
+    </dl>
+  );
 }
 
-function Docs({ docs }: {docs: [string, KycDoc | null][];}) {
+function Docs({ docs }: { docs: [string, KycDoc | null][] }) {
   return (
     <ul className="mt-4 grid gap-2 sm:grid-cols-2">
-      {docs.map(([label, doc]) =>
-      <li key={label} className="flex min-w-0 items-center gap-3 rounded-md border border-line bg-sunken p-2">
-          {doc?.previewUrl ?
-        <img src={doc.previewUrl} alt={label} className="h-12 w-16 shrink-0 rounded object-cover" /> :
-
-        <span aria-hidden className="flex h-12 w-16 shrink-0 items-center justify-center rounded bg-raised text-fg-subtle">
+      {docs.map(([label, doc]) => (
+        <li key={label} className="flex min-w-0 items-center gap-3 rounded-md border border-line bg-sunken p-2">
+          {doc?.previewUrl ? (
+            <img src={doc.previewUrl} alt={label} className="h-12 w-16 shrink-0 rounded object-cover" />
+          ) : (
+            <span aria-hidden className="flex h-12 w-16 shrink-0 items-center justify-center rounded bg-raised text-fg-subtle">
               <FileTextIcon size={18} />
             </span>
-        }
+          )}
           <span className="min-w-0">
             <span className="block text-caption font-medium text-fg">{label}</span>
             <span className={doc ? 'block truncate text-caption text-fg-subtle' : 'block text-caption font-medium text-danger'}>{doc ? `${doc.name}${doc.sizeKb ? ` · ${doc.sizeKb} KB` : ''}` : 'Missing'}</span>
           </span>
         </li>
-      )}
-    </ul>);
-
+      ))}
+    </ul>
+  );
 }

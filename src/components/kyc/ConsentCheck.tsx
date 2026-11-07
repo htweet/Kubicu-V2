@@ -25,16 +25,16 @@ export function ConsentCheck({ id, checked, onChange, label, error, disabled }: 
             onChange={(e) => onChange(e.target.checked)}
             aria-invalid={error ? true : undefined}
             aria-describedby={error ? `${id}-error` : undefined}
-            className="h-4 w-4" />
-          
+            className="h-4 w-4"
+          />
         </span>
         <span className="pt-0.5 text-label text-fg">{typeof label === 'string' ? t(label) : label}</span>
       </label>
-      {error &&
-      <p id={`${id}-error`} role="alert" className="ml-9 mt-1 text-caption font-medium text-danger">
+      {error && (
+        <p id={`${id}-error`} role="alert" className="ml-9 mt-1 text-caption font-medium text-danger">
           {t(error)}
         </p>
-      }
-    </div>);
-
+      )}
+    </div>
+  );
 }

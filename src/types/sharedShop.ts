@@ -19,7 +19,7 @@ export interface SharedShopMember {
   productIds: string[];
   joinedAt?: string;
   /** Sample cards for fictional partners only, clearly labelled. */
-  sampleItems?: {id: string;name: string;priceNgn: number;imageUrl: string;imageAlt: string;}[];
+  sampleItems?: { id: string; name: string; priceNgn: number; imageUrl: string; imageAlt: string }[];
 }
 
 export interface SharedShop {

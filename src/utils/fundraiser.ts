@@ -18,17 +18,17 @@ export const fundraiserStateLabel: Record<FundraiserState, string> = {
   goal_reached: 'Goal reached',
   ended: 'Ended',
   paused: 'Paused by KUBICU',
-  unverified: 'Not taking payments'
+  unverified: 'Not taking payments',
 };
 
 /** Fixed wording on every fundraiser and its pay page. Not editable by the organiser. */
 export const fundraiserTerms = (organiser: string) =>
-`This is a payment to ${organiser || 'the organiser'}, not a tax-deductible donation. ${organiser || 'The organiser'} is responsible for using the money as described. KUBICU checked the organiser’s identity but doesn’t check how money is spent.`;
+  `This is a payment to ${organiser || 'the organiser'}, not a tax-deductible donation. ${organiser || 'The organiser'} is responsible for using the money as described. KUBICU checked the organiser’s identity but doesn’t check how money is spent.`;
 
 export const kept = (p: LinkPayment) => p.amountNgn - (p.refundedNgn ?? 0);
 
 /** First name only, and only when the supporter chose to show it. */
-export const supporterName = (p: LinkPayment) => p.showName && p.payerName.trim() ? p.payerName.trim().split(/\s+/)[0] : 'Anonymous';
+export const supporterName = (p: LinkPayment) => (p.showName && p.payerName.trim() ? p.payerName.trim().split(/\s+/)[0] : 'Anonymous');
 
 export function fundraiserEnd(f: FundraiserSettings): string | null {
   return f.closedAt ?? f.endsAt;
@@ -43,25 +43,25 @@ export interface FundraiserProgress {
   recent: LinkPayment[];
 }
 
-export function fundraiserProgress(f: FundraiserSettings, link: PaymentLink | undefined, opts: {verified: boolean;pausedByStaff: boolean;}, now = Date.now()): FundraiserProgress {
+export function fundraiserProgress(f: FundraiserSettings, link: PaymentLink | undefined, opts: { verified: boolean; pausedByStaff: boolean }, now = Date.now()): FundraiserProgress {
   const paid = (link?.payments ?? []).filter((p) => kept(p) > 0);
   const raisedNgn = paid.reduce((s, p) => s + kept(p), 0);
   const end = fundraiserEnd(f);
-  const state: FundraiserState = opts.pausedByStaff ?
-  'paused' :
-  end && Date.parse(end) <= now ?
-  'ended' :
-  !opts.verified ?
-  'unverified' :
-  raisedNgn >= f.goalNgn && f.goalNgn > 0 ?
-  'goal_reached' :
-  'live';
+  const state: FundraiserState = opts.pausedByStaff
+    ? 'paused'
+    : end && Date.parse(end) <= now
+      ? 'ended'
+      : !opts.verified
+        ? 'unverified'
+        : raisedNgn >= f.goalNgn && f.goalNgn > 0
+          ? 'goal_reached'
+          : 'live';
   return {
     state,
     raisedNgn,
     supporters: paid.length,
-    pct: f.goalNgn > 0 ? Math.min(100, Math.floor(raisedNgn / f.goalNgn * 100)) : 0,
-    recent: [...paid].sort((a, b) => Date.parse(b.at) - Date.parse(a.at))
+    pct: f.goalNgn > 0 ? Math.min(100, Math.floor((raisedNgn / f.goalNgn) * 100)) : 0,
+    recent: [...paid].sort((a, b) => Date.parse(b.at) - Date.parse(a.at)),
   };
 }
 
@@ -80,7 +80,7 @@ export function syncFundraiserLink(link: PaymentLink, f: FundraiserSettings, tit
     status: open ? 'active' : 'paused',
     reusable: true,
     maxUses: null,
-    fundraiser: { handle, organiser: f.organiser }
+    fundraiser: { handle, organiser: f.organiser },
   };
 }
 

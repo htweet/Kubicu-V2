@@ -40,8 +40,8 @@ export function LiveLessonFields({ lesson: l, onChange, showErrors }: Props) {
         value={toLocalInput(live.startsAt)}
         error={whenError}
         hint="In your device’s time zone. Students see it in theirs."
-        onChange={(e) => set({ ...live, startsAt: fromLocalInput(e.target.value) })} />
-      
+        onChange={(e) => set({ ...live, startsAt: fromLocalInput(e.target.value) })}
+      />
 
       <fieldset className="flex flex-col gap-2">
         <legend className="mb-1 text-label font-medium text-fg">Meeting link</legend>
@@ -57,41 +57,41 @@ export function LiveLessonFields({ lesson: l, onChange, showErrors }: Props) {
                 onClick={() => set(withApp(l.id, live, c))}
                 className={cn(
                   'h-9 rounded-md border px-3 text-label font-medium transition-[background-color,border-color,color] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
-                  on ? 'border-action bg-action-soft text-fg' : 'border-line-strong text-fg-muted hover:bg-sunken hover:text-fg'
-                )}>
-                
+                  on ? 'border-action bg-action-soft text-fg' : 'border-line-strong text-fg-muted hover:bg-sunken hover:text-fg',
+                )}
+              >
                 {c === 'own' ? 'I’ll add my own link' : meetingApps[c].name}
-              </button>);
-
+              </button>
+            );
           })}
         </div>
-        {connected.length === 0 &&
-        <p className="text-caption text-fg-subtle">
+        {connected.length === 0 && (
+          <p className="text-caption text-fg-subtle">
             Connect Google Meet, Zoom or Teams in{' '}
             <Link to="/app/bookings/availability" className="font-medium text-action hover:underline">
               Bookings → Availability
             </Link>{' '}
             to have a link made for you.
           </p>
-        }
+        )}
       </fieldset>
 
-      {live.app === 'own' ?
-      <TextInput id={id('own')} label="Your meeting link" value={live.ownUrl} placeholder="https://…" error={ownError} hint="Only students with access to the course can see it." onChange={(e) => set({ ...live, ownUrl: e.target.value })} /> :
-      live.meeting ?
-      <div className="flex flex-col gap-2 rounded-md border border-line bg-sunken px-3 py-2.5">
+      {live.app === 'own' ? (
+        <TextInput id={id('own')} label="Your meeting link" value={live.ownUrl} placeholder="https://…" error={ownError} hint="Only students with access to the course can see it." onChange={(e) => set({ ...live, ownUrl: e.target.value })} />
+      ) : live.meeting ? (
+        <div className="flex flex-col gap-2 rounded-md border border-line bg-sunken px-3 py-2.5">
           <span className="text-caption text-fg-subtle">{meetingApps[live.meeting.app].name} link for this session</span>
           <span className="break-all text-label text-fg">{live.meeting.url}</span>
           {live.meeting.code && <span className="text-caption text-fg-muted">{live.meeting.app === 'zoom' ? 'Passcode' : 'Meeting ID'}: {live.meeting.code}</span>}
           <div className="flex flex-wrap gap-2">
             <Button
-            size="sm"
-            variant="tertiary"
-            leadingIcon={CopyIcon}
-            onClick={() => {
-              navigator.clipboard?.writeText(live.meeting?.url ?? '').then(() => toast('Link copied'), () => toast.error('Couldn’t copy'));
-            }}>
-            
+              size="sm"
+              variant="tertiary"
+              leadingIcon={CopyIcon}
+              onClick={() => {
+                navigator.clipboard?.writeText(live.meeting?.url ?? '').then(() => toast('Link copied'), () => toast.error('Couldn’t copy'));
+              }}
+            >
               Copy
             </Button>
             <Button size="sm" variant="tertiary" leadingIcon={RefreshCwIcon} onClick={() => set(renewLiveMeeting(l.id, live))}>
@@ -99,8 +99,8 @@ export function LiveLessonFields({ lesson: l, onChange, showErrors }: Props) {
             </Button>
           </div>
           <span className="text-caption text-fg-subtle">Prototype: the link looks real but doesn’t open a meeting.</span>
-        </div> :
-      null}
-    </div>);
-
+        </div>
+      ) : null}
+    </div>
+  );
 }

@@ -26,7 +26,7 @@ interface Props {
   onSignedIn: (s: MemberSession) => void;
   onJoin: (() => void) | null;
   /** Learner sign-in (D197) reuses this sheet with its own wording and lookup. */
-  copy?: {title: string;intro: string;notFound: string;joinLabel: string;};
+  copy?: { title: string; intro: string; notFound: string; joinLabel: string };
   /** Whether this contact may get a code. Defaults to "has a subscription". */
   canSignIn?: (contact: string, channel: Channel) => boolean;
 }
@@ -43,7 +43,7 @@ export function MemberSignInSheet({ open, onClose, theme: t, data, business, onS
   const [value, setValue] = useState('');
   const [error, setError] = useState<string | undefined>();
   const [code, setCode] = useState('');
-  const [sent, setSent] = useState<{code: string;at: number;} | null>(null);
+  const [sent, setSent] = useState<{ code: string; at: number } | null>(null);
   const [entered, setEntered] = useState('');
   const [tries, setTries] = useState(0);
   const [now, setNow] = useState(Date.now());
@@ -107,49 +107,49 @@ export function MemberSignInSheet({ open, onClose, theme: t, data, business, onS
   return (
     <PageOverlay open={open} onClose={onClose} theme={t} label={copy?.title ?? 'Member sign-in'}>
       <div className="flex min-h-full flex-col gap-5 px-5 pt-6">
-        {step === 'enter' &&
-        <form onSubmit={submitContact} className="flex flex-1 flex-col gap-5" noValidate>
+        {step === 'enter' && (
+          <form onSubmit={submitContact} className="flex flex-1 flex-col gap-5" noValidate>
             <CheckoutHeading theme={t} sub={copy?.intro ?? `Use the phone number or email you subscribed to ${business} with. We’ll send a one-time code — no password needed.`}>
               {copy?.title ?? 'Member sign-in'}
             </CheckoutHeading>
             <div role="radiogroup" aria-label="Sign in with" className="grid grid-cols-2 gap-1 rounded-full p-1" style={{ background: mix(t.text, 6) }}>
               {(
-            [
-            ['phone', 'Phone', SmartphoneIcon],
-            ['email', 'Email', MailIcon]] as
-            const).
-            map(([id, label, Icon]) =>
-            <button
-              key={id}
-              type="button"
-              role="radio"
-              aria-checked={channel === id}
-              onClick={() => {
-                setChannel(id);
-                setValue('');
-                setError(undefined);
-              }}
-              className="flex h-10 items-center justify-center gap-2 rounded-full text-[14px] font-semibold"
-              style={tab(channel === id)}>
-              
+                [
+                  ['phone', 'Phone', SmartphoneIcon],
+                  ['email', 'Email', MailIcon],
+                ] as const
+              ).map(([id, label, Icon]) => (
+                <button
+                  key={id}
+                  type="button"
+                  role="radio"
+                  aria-checked={channel === id}
+                  onClick={() => {
+                    setChannel(id);
+                    setValue('');
+                    setError(undefined);
+                  }}
+                  className="flex h-10 items-center justify-center gap-2 rounded-full text-[14px] font-semibold"
+                  style={tab(channel === id)}
+                >
                   <Icon size={15} aria-hidden /> {label}
                 </button>
-            )}
+              ))}
             </div>
-            {channel === 'phone' ?
-          <>
+            {channel === 'phone' ? (
+              <>
                 <ThemedField theme={t} label="Phone number" type="tel" inputMode="tel" autoComplete="tel" placeholder={phonePlaceholder()} value={value} onChange={setValue} error={error} />
                 <fieldset className="flex flex-col gap-2">
                   <legend className="mb-1 text-[13px] font-medium" style={{ color: t.text }}>
                     Send the code by
                   </legend>
                   {(
-              [
-              ['whatsapp', 'WhatsApp', 'Usually arrives in seconds.'],
-              ['sms', 'Text message (SMS)', 'If you don’t use WhatsApp on this number. Can take a minute on some networks.']] as
-              const).
-              map(([id, label, hint]) =>
-              <label key={id} className="flex cursor-pointer items-start gap-3 rounded-[12px] px-3.5 py-3" style={{ background: t.surface, border: `1px solid ${delivery === id ? t.text : mix(t.text, 12)}` }}>
+                    [
+                      ['whatsapp', 'WhatsApp', 'Usually arrives in seconds.'],
+                      ['sms', 'Text message (SMS)', 'If you don’t use WhatsApp on this number. Can take a minute on some networks.'],
+                    ] as const
+                  ).map(([id, label, hint]) => (
+                    <label key={id} className="flex cursor-pointer items-start gap-3 rounded-[12px] px-3.5 py-3" style={{ background: t.surface, border: `1px solid ${delivery === id ? t.text : mix(t.text, 12)}` }}>
                       <input type="radio" name="delivery" className="mt-1 h-4 w-4" checked={delivery === id} onChange={() => setDelivery(id)} />
                       <span>
                         <span className="block text-[14px] font-semibold" style={{ color: t.text }}>
@@ -160,22 +160,22 @@ export function MemberSignInSheet({ open, onClose, theme: t, data, business, onS
                         </span>
                       </span>
                     </label>
-              )}
+                  ))}
                 </fieldset>
-              </> :
-
-          <ThemedField theme={t} label="Email" type="email" inputMode="email" autoComplete="email" placeholder="you@example.com" value={value} onChange={setValue} error={error} />
-          }
+              </>
+            ) : (
+              <ThemedField theme={t} label="Email" type="email" inputMode="email" autoComplete="email" placeholder="you@example.com" value={value} onChange={setValue} error={error} />
+            )}
             <SheetActions theme={t}>
               <PrimaryButton theme={t} type="submit">
                 {channel === 'phone' && delivery === 'whatsapp' && <MessageCircleIcon size={16} aria-hidden />} Send my code
               </PrimaryButton>
             </SheetActions>
           </form>
-        }
+        )}
 
-        {step === 'code' &&
-        <form onSubmit={verify} className="flex flex-1 flex-col gap-5" noValidate>
+        {step === 'code' && (
+          <form onSubmit={verify} className="flex flex-1 flex-col gap-5" noValidate>
             <CheckoutHeading theme={t} sub={`We sent a 6-digit code by ${via} to ${maskContact(contact, channel)}. It works for ${CODE_MINUTES} minutes.`}>
               Enter your code
             </CheckoutHeading>
@@ -184,26 +184,26 @@ export function MemberSignInSheet({ open, onClose, theme: t, data, business, onS
             </p>
             <ThemedField theme={t} label="6-digit code" inputMode="numeric" autoComplete="one-time-code" placeholder="••••••" value={entered} onChange={(v) => setEntered(v.replace(/\D/g, '').slice(0, 6))} error={error} />
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[13px]" style={muted}>
-              {wait > 0 ?
-            <span aria-live="off">Send again in {wait}s</span> :
-
-            <button type="button" onClick={send} className="font-semibold underline underline-offset-2" style={{ color: t.text }}>
+              {wait > 0 ? (
+                <span aria-live="off">Send again in {wait}s</span>
+              ) : (
+                <button type="button" onClick={send} className="font-semibold underline underline-offset-2" style={{ color: t.text }}>
                   Send a new code
                 </button>
-            }
-              {channel === 'phone' && delivery === 'whatsapp' &&
-            <button
-              type="button"
-              onClick={() => {
-                setDelivery('sms');
-                send();
-              }}
-              className="font-semibold underline underline-offset-2"
-              style={{ color: t.text }}>
-              
+              )}
+              {channel === 'phone' && delivery === 'whatsapp' && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDelivery('sms');
+                    send();
+                  }}
+                  className="font-semibold underline underline-offset-2"
+                  style={{ color: t.text }}
+                >
                   Text it to me instead
                 </button>
-            }
+              )}
               <button type="button" onClick={() => setStep('enter')} className="font-semibold underline underline-offset-2" style={{ color: t.text }}>
                 Use a different {channel === 'phone' ? 'number' : 'email'}
               </button>
@@ -214,10 +214,10 @@ export function MemberSignInSheet({ open, onClose, theme: t, data, business, onS
               </PrimaryButton>
             </SheetActions>
           </form>
-        }
+        )}
 
-        {step === 'none' &&
-        <div className="flex flex-1 flex-col gap-5">
+        {step === 'none' && (
+          <div className="flex flex-1 flex-col gap-5">
             <CheckoutHeading theme={t} sub={`${copy?.notFound ?? `We couldn’t find a membership with ${business}`} for ${channel === 'phone' ? maskContact(contact, 'phone') : value.trim()}.`}>
               {copy ? 'Not found' : 'No membership found'}
             </CheckoutHeading>
@@ -227,18 +227,18 @@ export function MemberSignInSheet({ open, onClose, theme: t, data, business, onS
               <li>Still stuck? Message {business} — they can see who has joined.</li>
             </ul>
             <SheetActions theme={t}>
-              {onJoin &&
-            <PrimaryButton theme={t} onClick={onJoin}>
+              {onJoin && (
+                <PrimaryButton theme={t} onClick={onJoin}>
                   {copy?.joinLabel ?? 'Become a member'}
                 </PrimaryButton>
-            }
+              )}
               <button type="button" onClick={() => setStep('enter')} className="flex h-11 items-center justify-center text-[14px] font-semibold underline underline-offset-2" style={{ color: t.text }}>
                 Try again
               </button>
             </SheetActions>
           </div>
-        }
+        )}
       </div>
-    </PageOverlay>);
-
+    </PageOverlay>
+  );
 }

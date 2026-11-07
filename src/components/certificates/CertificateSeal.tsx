@@ -14,7 +14,7 @@ interface CertificateSealProps {
 /** An embossed-style rosette seal drawn in one solid colour — no gradients, prints cleanly. */
 export function CertificateSeal({ rim, mark, colour, paper, id, size = 128 }: CertificateSealProps) {
   const points = Array.from({ length: 64 }, (_, i) => {
-    const a = i / 64 * Math.PI * 2;
+    const a = (i / 64) * Math.PI * 2;
     const r = i % 2 ? 57 : 61;
     return `${(64 + r * Math.cos(a)).toFixed(2)},${(64 + r * Math.sin(a)).toFixed(2)}`;
   }).join(' ');
@@ -36,6 +36,6 @@ export function CertificateSeal({ rim, mark, colour, paper, id, size = 128 }: Ce
       <text x="64" y="64" dy="0.36em" textAnchor="middle" fill={paper} fontSize={mark.length > 2 ? 17 : 22} fontFamily="'Cormorant Garamond', Georgia, serif" fontWeight="600" letterSpacing="0.5">
         {mark}
       </text>
-    </svg>);
-
+    </svg>
+  );
 }

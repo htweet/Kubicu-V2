@@ -26,22 +26,22 @@ export function sampleEvent(): CommerceEvent {
     status: 'on_sale',
     productId: SAMPLE_EVENT_PRODUCT,
     ticketTypes: [
-    { id: 'stt_general', name: 'General', priceNgn: 15000, quantity: 45, salesStart: null, salesEnd: null, minPerOrder: 1, maxPerOrder: 10, note: 'Entry, drinks and a fitting slot' },
-    { id: 'stt_vip', name: 'VIP', priceNgn: 35000, quantity: 15, salesStart: null, salesEnd: null, minPerOrder: 1, maxPerOrder: 4, note: 'Early entry, styling session and a gift' }],
-
+      { id: 'stt_general', name: 'General', priceNgn: 15000, quantity: 45, salesStart: null, salesEnd: null, minPerOrder: 1, maxPerOrder: 10, note: 'Entry, drinks and a fitting slot' },
+      { id: 'stt_vip', name: 'VIP', priceNgn: 35000, quantity: 15, salesStart: null, salesEnd: null, minPerOrder: 1, maxPerOrder: 4, note: 'Early entry, styling session and a gift' },
+    ],
     createdAt: at,
     updatedAt: at,
-    sample: true
+    sample: true,
   };
 }
 
-const buyers: {name: string;phone: string;type: 'stt_general' | 'stt_vip';qty: number;days: number;}[] = [
-{ name: 'Kemi Bello', phone: '+234 803 000 2201', type: 'stt_general', qty: 10, days: 9 },
-{ name: 'Ifeoma Nwosu', phone: '+234 805 000 2202', type: 'stt_general', qty: 12, days: 6 },
-{ name: 'Bisi Oyelaran', phone: '+234 806 000 2203', type: 'stt_general', qty: 10, days: 3 },
-{ name: 'Halima Yusuf', phone: '+234 809 000 2204', type: 'stt_vip', qty: 5, days: 4 },
-{ name: 'Ngozi Okeke', phone: '+234 802 000 2205', type: 'stt_vip', qty: 3, days: 1 }];
-
+const buyers: { name: string; phone: string; type: 'stt_general' | 'stt_vip'; qty: number; days: number }[] = [
+  { name: 'Kemi Bello', phone: '+234 803 000 2201', type: 'stt_general', qty: 10, days: 9 },
+  { name: 'Ifeoma Nwosu', phone: '+234 805 000 2202', type: 'stt_general', qty: 12, days: 6 },
+  { name: 'Bisi Oyelaran', phone: '+234 806 000 2203', type: 'stt_general', qty: 10, days: 3 },
+  { name: 'Halima Yusuf', phone: '+234 809 000 2204', type: 'stt_vip', qty: 5, days: 4 },
+  { name: 'Ngozi Okeke', phone: '+234 802 000 2205', type: 'stt_vip', qty: 3, days: 1 },
+];
 
 /** Adds the labelled sample event with 40 of 60 seats sold (D73). Skipped if it's already there. */
 export function withSampleEvent(data: CommerceData): CommerceData {
@@ -61,7 +61,7 @@ export function withSampleEvent(data: CommerceData): CommerceData {
       ticketTypeId: tt.id,
       typeName: tt.name,
       guestName: n === 0 ? b.name : `${b.name.split(' ')[0]}’s guest ${n}`,
-      status: 'valid'
+      status: 'valid',
     }));
     const num = number++;
     return {
@@ -80,24 +80,24 @@ export function withSampleEvent(data: CommerceData): CommerceData {
       paymentStatus: 'paid',
       refunds: [],
       events: [
-      { id: `sev_${i}_c`, at: createdAt, kind: 'completed', label: 'Tickets issued' },
-      { id: `sev_${i}_p`, at: createdAt, kind: 'paid', label: 'Payment confirmed by provider (test mode)' },
-      { id: `sev_${i}_o`, at: createdAt, kind: 'placed', label: 'Order placed on your page' }],
-
+        { id: `sev_${i}_c`, at: createdAt, kind: 'completed', label: 'Tickets issued' },
+        { id: `sev_${i}_p`, at: createdAt, kind: 'paid', label: 'Payment confirmed by provider (test mode)' },
+        { id: `sev_${i}_o`, at: createdAt, kind: 'placed', label: 'Order placed on your page' },
+      ],
       downloads: [],
       note: '',
       sample: true,
-      tickets
+      tickets,
     };
   });
   // Take the sold seats off each ticket type.
   next = {
     ...next,
     products: next.products.map((p) =>
-    p.id !== ev.productId ? p : { ...p, variants: p.variants.map((v) => ({ ...v, stock: v.stock - buyers.filter((b) => b.type === v.id).reduce((s, b) => s + b.qty, 0) })) }
+      p.id !== ev.productId ? p : { ...p, variants: p.variants.map((v) => ({ ...v, stock: v.stock - buyers.filter((b) => b.type === v.id).reduce((s, b) => s + b.qty, 0) })) },
     ),
     orders: [...orders, ...next.orders].sort((a, b) => b.number - a.number),
-    nextOrderNumber: number
+    nextOrderNumber: number,
   };
   return next;
 }

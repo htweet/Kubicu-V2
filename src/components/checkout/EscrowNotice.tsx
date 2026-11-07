@@ -7,7 +7,7 @@ import { caseSummary, stageLabels } from '../../utils/money/escrow';
 import { cardStyle } from '../blocks/pageStyle';
 
 /** On the order page: shows that the payment is protected and links to the buyer protection page (D94). */
-export function EscrowNotice({ workspaceId, handle, orderId, theme: t }: {workspaceId: string;handle: string;orderId: string;theme: PageTheme;}) {
+export function EscrowNotice({ workspaceId, handle, orderId, theme: t }: { workspaceId: string; handle: string; orderId: string; theme: PageTheme }) {
   const { data } = useMoney(workspaceId);
   const c = data.escrow.find((x) => x.orderId === orderId);
   if (!c) return null;
@@ -22,6 +22,6 @@ export function EscrowNotice({ workspaceId, handle, orderId, theme: t }: {worksp
         <span className="mt-1.5 block text-[13px] font-semibold underline">{c.stage === 'delivered' ? 'Confirm you got it, or report a problem' : 'Open buyer protection'}</span>
       </span>
       <ChevronRightIcon size={18} className="mt-0.5 shrink-0" aria-hidden />
-    </Link>);
-
+    </Link>
+  );
 }

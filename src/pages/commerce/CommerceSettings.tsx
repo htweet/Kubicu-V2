@@ -19,24 +19,24 @@ import { shopSettingsOf } from '../../utils/commerce/shopSettings';
 import { cn } from '../../utils/cn';
 
 const sections = [
-{ id: 'business', label: 'Business & receipts' },
-{ id: 'checkout', label: 'Checkout' },
-{ id: 'methods', label: 'Payment methods' },
-{ id: 'delivery', label: 'Delivery & pickup' },
-{ id: 'tax', label: 'Tax' },
-{ id: 'orders', label: 'Orders & stock' },
-{ id: 'policies', label: 'Policies' },
-{ id: 'status', label: 'Store status' },
-{ id: 'messages', label: 'Customer messages' }];
-
+  { id: 'business', label: 'Business & receipts' },
+  { id: 'checkout', label: 'Checkout' },
+  { id: 'methods', label: 'Payment methods' },
+  { id: 'delivery', label: 'Delivery & pickup' },
+  { id: 'tax', label: 'Tax' },
+  { id: 'orders', label: 'Orders & stock' },
+  { id: 'policies', label: 'Policies' },
+  { id: 'status', label: 'Store status' },
+  { id: 'messages', label: 'Customer messages' },
+];
 
 /** Settings that live on other screens, linked so nothing exists in two places (D222). */
 const elsewhere = [
-{ label: 'Currency and business WhatsApp', to: '/app/settings/business' },
-{ label: 'Payment provider, pay on delivery and instalments', to: '/app/commerce/payments' },
-{ label: 'Bank account and payouts', to: '/app/commerce/wallet' },
-{ label: 'Shop look and WhatsApp ordering', to: '/app/commerce/storefront' }];
-
+  { label: 'Currency and business WhatsApp', to: '/app/settings/business' },
+  { label: 'Payment provider, pay on delivery and instalments', to: '/app/commerce/payments' },
+  { label: 'Bank account and payouts', to: '/app/commerce/wallet' },
+  { label: 'Shop look and WhatsApp ordering', to: '/app/commerce/storefront' },
+];
 
 /** Commerce settings, one page with sections and a contents list (D222). Each section saves on its own. */
 export function CommerceSettings() {
@@ -53,7 +53,7 @@ export function CommerceSettings() {
         const visible = entries.filter((e) => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
         if (visible[0]) setActive(visible[0].target.id);
       },
-      { rootMargin: '-96px 0px -60% 0px' }
+      { rootMargin: '-96px 0px -60% 0px' },
     );
     els.forEach((el) => io.observe(el));
     return () => io.disconnect();
@@ -86,32 +86,32 @@ export function CommerceSettings() {
       <div className="mt-6 grid items-start gap-10 lg:mt-8 lg:grid-cols-[13rem_minmax(0,1fr)]">
         <nav aria-label="Commerce settings sections" className="sticky top-6 hidden lg:block">
           <ul className="flex flex-col gap-0.5 border-l border-line">
-            {sections.map((s) =>
-            <li key={s.id}>
+            {sections.map((s) => (
+              <li key={s.id}>
                 <a
-                href={`#${s.id}`}
-                aria-current={active === s.id ? 'true' : undefined}
-                onClick={(e) => {
-                  e.preventDefault();
-                  jump(s.id);
-                }}
-                className={cn(
-                  '-ml-px block border-l-2 py-1.5 pl-3 text-label transition-colors duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
-                  active === s.id ? 'border-action font-semibold text-fg' : 'border-transparent text-fg-muted hover:text-fg'
-                )}>
-                
+                  href={`#${s.id}`}
+                  aria-current={active === s.id ? 'true' : undefined}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    jump(s.id);
+                  }}
+                  className={cn(
+                    '-ml-px block border-l-2 py-1.5 pl-3 text-label transition-colors duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
+                    active === s.id ? 'border-action font-semibold text-fg' : 'border-transparent text-fg-muted hover:text-fg',
+                  )}
+                >
                   {s.label}
                 </a>
               </li>
-            )}
+            ))}
           </ul>
           <div className="mt-8 flex flex-col gap-2 pl-3">
             <p className="text-caption font-semibold text-fg-subtle">Set elsewhere</p>
-            {elsewhere.map((e) =>
-            <Link key={e.to} to={e.to} className="inline-flex items-start gap-1 text-caption text-fg-muted hover:text-fg hover:underline">
+            {elsewhere.map((e) => (
+              <Link key={e.to} to={e.to} className="inline-flex items-start gap-1 text-caption text-fg-muted hover:text-fg hover:underline">
                 {e.label} <ArrowUpRightIcon size={11} aria-hidden className="mt-0.5 shrink-0" />
               </Link>
-            )}
+            ))}
           </div>
         </nav>
 
@@ -133,24 +133,24 @@ export function CommerceSettings() {
               </h2>
               <p className="text-caption text-fg-subtle">{hasSample ? 'Sample products and orders are labelled “Sample”. Clear them before you start selling.' : 'Add labelled sample products and orders to explore every screen.'}</p>
             </div>
-            {hasSample ?
-            <Button variant="destructive" size="sm" onClick={() => setConfirmClear(true)}>
+            {hasSample ? (
+              <Button variant="destructive" size="sm" onClick={() => setConfirmClear(true)}>
                 Clear sample data
-              </Button> :
-
-            <Button variant="secondary" size="sm" onClick={loadSample}>
+              </Button>
+            ) : (
+              <Button variant="secondary" size="sm" onClick={loadSample}>
                 Add sample data
               </Button>
-            }
+            )}
           </section>
 
           <div className="flex flex-col gap-2 lg:hidden">
             <p className="text-caption font-semibold text-fg-subtle">Set elsewhere</p>
-            {elsewhere.map((e) =>
-            <Link key={e.to} to={e.to} className="inline-flex min-h-[36px] items-center gap-1 text-label text-fg-muted hover:text-fg hover:underline">
+            {elsewhere.map((e) => (
+              <Link key={e.to} to={e.to} className="inline-flex min-h-[36px] items-center gap-1 text-label text-fg-muted hover:text-fg hover:underline">
                 {e.label} <ArrowUpRightIcon size={12} aria-hidden />
               </Link>
-            )}
+            ))}
           </div>
         </div>
       </div>
@@ -162,22 +162,22 @@ export function CommerceSettings() {
         title="Clear all sample data?"
         description="Sample products, orders and stock history are removed. Anything you added yourself stays. Page blocks linked to sample products will show a warning."
         footer={
-        <>
+          <>
             <Button variant="secondary" onClick={() => setConfirmClear(false)} data-autofocus>
               Cancel
             </Button>
             <Button
-            variant="destructive"
-            onClick={() => {
-              clearSampleData();
-              setConfirmClear(false);
-            }}>
-            
+              variant="destructive"
+              onClick={() => {
+                clearSampleData();
+                setConfirmClear(false);
+              }}
+            >
               Clear sample data
             </Button>
           </>
-        } />
-      
-    </>);
-
+        }
+      />
+    </>
+  );
 }

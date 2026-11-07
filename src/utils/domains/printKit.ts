@@ -76,43 +76,43 @@ export interface KitItemSpec {
 }
 
 export const kitItems: KitItemSpec[] = [
-{ id: 'card', label: 'Business cards', detail: '85 × 55 mm, front and optional back', perSheet: '10 on an A4 sheet', widthMm: 85, heightMm: 55, fields: ['line', 'social', 'email'], images: ['logo', 'photo'], goodFor: 'Handing out at markets, events and meetings', qrMm: 24 },
-{ id: 'sticker', label: 'Round stickers', detail: '50 mm with curved lettering', perSheet: '12 on an A4 sheet', widthMm: 50, heightMm: 50, fields: ['line'], images: ['logo', 'photo'], goodFor: 'Sealing bags, boxes, jars and food packs', qrMm: 22 },
-{ id: 'insert', label: 'Package inserts', detail: 'A6 thank-you card, signed', perSheet: '4 on an A4 sheet', widthMm: 105, heightMm: 148, fields: ['message', 'signer', 'social'], images: ['logo', 'photo', 'signature'], goodFor: 'Inside every order — turns buyers into repeat buyers', qrMm: 36 },
-{ id: 'receipt', label: 'Receipt footer', detail: '80 mm strip for receipt printers', perSheet: 'One per print', widthMm: 80, heightMm: 112, fields: ['message', 'social'], images: ['logo'], goodFor: 'Bottom of every POS receipt', qrMm: 34 },
-{ id: 'hangtag', label: 'Swing tags', detail: '50 × 90 mm with hole, size and price lines', perSheet: '12 on an A4 sheet', widthMm: 50, heightMm: 90, fields: ['line', 'social'], images: ['logo', 'photo'], goodFor: 'Clothing, bags, jewellery and crafts', qrMm: 22 },
-{ id: 'voucher', label: 'Gift vouchers', detail: '210 × 99 mm, numbered code and signature', perSheet: '3 on an A4 sheet', widthMm: 210, heightMm: 99, fields: ['headline', 'offer', 'code', 'expiry', 'message', 'signer'], images: ['logo', 'photo', 'signature'], goodFor: 'Gifts, giveaways, loyalty rewards and festive promos', qrMm: 26 },
-{ id: 'flyer', label: 'A5 flyers', detail: '148 × 210 mm, photo-led', perSheet: '2 on an A4 sheet', widthMm: 148, heightMm: 210, fields: ['headline', 'line', 'message', 'offer', 'social'], images: ['logo', 'photo'], goodFor: 'Shop windows, churches, campuses, estates and events', qrMm: 30 },
-{ id: 'counter', label: 'Counter & table signs', detail: 'A5 “Scan to order” sign', perSheet: '2 on an A4 sheet', widthMm: 148, heightMm: 210, fields: ['headline', 'message'], images: ['logo', 'photo'], goodFor: 'Counters, tables, stalls and reception desks', qrMm: 72 },
-{ id: 'stamp', label: 'Loyalty stamp cards', detail: '85 × 55 mm, 6, 8 or 10 stamps', perSheet: '10 on an A4 sheet', widthMm: 85, heightMm: 55, fields: ['reward', 'line'], images: ['logo'], goodFor: 'Salons, food spots, laundries — “the 10th one is free”', qrMm: 16 },
-{ id: 'label', label: 'Delivery labels', detail: '100 × 150 mm with To and landmark lines', perSheet: '2 on an A4 sheet, or one per 4×6 label', widthMm: 100, heightMm: 150, fields: ['note', 'social'], images: ['logo'], goodFor: 'Every parcel you send with a rider or through a park', qrMm: 28 }];
+  { id: 'card', label: 'Business cards', detail: '85 × 55 mm, front and optional back', perSheet: '10 on an A4 sheet', widthMm: 85, heightMm: 55, fields: ['line', 'social', 'email'], images: ['logo', 'photo'], goodFor: 'Handing out at markets, events and meetings', qrMm: 24 },
+  { id: 'sticker', label: 'Round stickers', detail: '50 mm with curved lettering', perSheet: '12 on an A4 sheet', widthMm: 50, heightMm: 50, fields: ['line'], images: ['logo', 'photo'], goodFor: 'Sealing bags, boxes, jars and food packs', qrMm: 22 },
+  { id: 'insert', label: 'Package inserts', detail: 'A6 thank-you card, signed', perSheet: '4 on an A4 sheet', widthMm: 105, heightMm: 148, fields: ['message', 'signer', 'social'], images: ['logo', 'photo', 'signature'], goodFor: 'Inside every order — turns buyers into repeat buyers', qrMm: 36 },
+  { id: 'receipt', label: 'Receipt footer', detail: '80 mm strip for receipt printers', perSheet: 'One per print', widthMm: 80, heightMm: 112, fields: ['message', 'social'], images: ['logo'], goodFor: 'Bottom of every POS receipt', qrMm: 34 },
+  { id: 'hangtag', label: 'Swing tags', detail: '50 × 90 mm with hole, size and price lines', perSheet: '12 on an A4 sheet', widthMm: 50, heightMm: 90, fields: ['line', 'social'], images: ['logo', 'photo'], goodFor: 'Clothing, bags, jewellery and crafts', qrMm: 22 },
+  { id: 'voucher', label: 'Gift vouchers', detail: '210 × 99 mm, numbered code and signature', perSheet: '3 on an A4 sheet', widthMm: 210, heightMm: 99, fields: ['headline', 'offer', 'code', 'expiry', 'message', 'signer'], images: ['logo', 'photo', 'signature'], goodFor: 'Gifts, giveaways, loyalty rewards and festive promos', qrMm: 26 },
+  { id: 'flyer', label: 'A5 flyers', detail: '148 × 210 mm, photo-led', perSheet: '2 on an A4 sheet', widthMm: 148, heightMm: 210, fields: ['headline', 'line', 'message', 'offer', 'social'], images: ['logo', 'photo'], goodFor: 'Shop windows, churches, campuses, estates and events', qrMm: 30 },
+  { id: 'counter', label: 'Counter & table signs', detail: 'A5 “Scan to order” sign', perSheet: '2 on an A4 sheet', widthMm: 148, heightMm: 210, fields: ['headline', 'message'], images: ['logo', 'photo'], goodFor: 'Counters, tables, stalls and reception desks', qrMm: 72 },
+  { id: 'stamp', label: 'Loyalty stamp cards', detail: '85 × 55 mm, 6, 8 or 10 stamps', perSheet: '10 on an A4 sheet', widthMm: 85, heightMm: 55, fields: ['reward', 'line'], images: ['logo'], goodFor: 'Salons, food spots, laundries — “the 10th one is free”', qrMm: 16 },
+  { id: 'label', label: 'Delivery labels', detail: '100 × 150 mm with To and landmark lines', perSheet: '2 on an A4 sheet, or one per 4×6 label', widthMm: 100, heightMm: 150, fields: ['note', 'social'], images: ['logo'], goodFor: 'Every parcel you send with a rider or through a park', qrMm: 28 },
+];
 
+export const kitStyles: { id: KitStyle; label: string; detail: string }[] = [
+  { id: 'classic', label: 'Classic', detail: 'Colour bar, clean and trusted' },
+  { id: 'bold', label: 'Bold', detail: 'Solid colour, stands out' },
+  { id: 'minimal', label: 'Minimal', detail: 'Hairlines and space' },
+  { id: 'photo', label: 'Photo', detail: 'Led by your photo' },
+];
 
-export const kitStyles: {id: KitStyle;label: string;detail: string;}[] = [
-{ id: 'classic', label: 'Classic', detail: 'Colour bar, clean and trusted' },
-{ id: 'bold', label: 'Bold', detail: 'Solid colour, stands out' },
-{ id: 'minimal', label: 'Minimal', detail: 'Hairlines and space' },
-{ id: 'photo', label: 'Photo', detail: 'Led by your photo' }];
+export const kitFonts: { id: KitFont; label: string; family: string; detail: string }[] = [
+  { id: 'modern', label: 'Modern', family: "'Inter', Arial, sans-serif", detail: 'Inter' },
+  { id: 'elegant', label: 'Elegant', family: "'Playfair Display', Georgia, serif", detail: 'Playfair Display' },
+  { id: 'friendly', label: 'Friendly', family: "'Nunito', Arial, sans-serif", detail: 'Nunito' },
+  { id: 'heritage', label: 'Heritage', family: "'Libre Baskerville', Georgia, serif", detail: 'Libre Baskerville' },
+];
 
+export const kitPapers: { id: KitPaper; label: string }[] = [
+  { id: 'white', label: 'White' },
+  { id: 'cream', label: 'Cream' },
+  { id: 'tint', label: 'Tinted' },
+];
 
-export const kitFonts: {id: KitFont;label: string;family: string;detail: string;}[] = [
-{ id: 'modern', label: 'Modern', family: "'Inter', Arial, sans-serif", detail: 'Inter' },
-{ id: 'elegant', label: 'Elegant', family: "'Playfair Display', Georgia, serif", detail: 'Playfair Display' },
-{ id: 'friendly', label: 'Friendly', family: "'Nunito', Arial, sans-serif", detail: 'Nunito' },
-{ id: 'heritage', label: 'Heritage', family: "'Libre Baskerville', Georgia, serif", detail: 'Libre Baskerville' }];
-
-
-export const kitPapers: {id: KitPaper;label: string;}[] = [
-{ id: 'white', label: 'White' },
-{ id: 'cream', label: 'Cream' },
-{ id: 'tint', label: 'Tinted' }];
-
-
-export const kitTones: {id: KitTone;label: string;}[] = [
-{ id: 'natural', label: 'Natural' },
-{ id: 'warm', label: 'Warm' },
-{ id: 'bw', label: 'Black & white' }];
-
+export const kitTones: { id: KitTone; label: string }[] = [
+  { id: 'natural', label: 'Natural' },
+  { id: 'warm', label: 'Warm' },
+  { id: 'bw', label: 'Black & white' },
+];
 
 /** Sizes as designed — used by "Reset sizes". */
 export const kitDefaultSizes = { nameScale: 1, textScale: 1, qrScale: 1, logoScale: 1, sigScale: 1, photoZoom: 1, photoX: 50, photoY: 50 } as const;
@@ -143,7 +143,7 @@ export function defaultKitDetails(name: string, phone: string): KitDetails {
     paper: 'white',
     cardBack: false,
     ...kitDefaultSizes,
-    photoTone: 'natural'
+    photoTone: 'natural',
   };
 }
 
@@ -157,7 +157,7 @@ export function kitPreviewDoc(item: KitItem, d: KitDetails, qrDataUrl: string, s
   return `<!doctype html><html><head><link rel="stylesheet" href="${KIT_FONTS_URL}"/><style>${kitCss}body{display:flex;align-items:center;justify-content:center;min-height:100vh;background:transparent}</style></head><body>${kitItemHtml(item, d, qrDataUrl, side)}</body></html>`;
 }
 
-const sheets: Record<KitItem, {page: string;count: number;grid: string;sizeMm: [number, number] | null;}> = {
+const sheets: Record<KitItem, { page: string; count: number; grid: string; sizeMm: [number, number] | null }> = {
   card: { page: 'A4;margin:10mm', count: 10, grid: 'display:grid;grid-template-columns:repeat(2,85mm);grid-auto-rows:55mm;gap:0;justify-content:center', sizeMm: [210, 297] },
   sticker: { page: 'A4;margin:12mm', count: 12, grid: 'display:grid;grid-template-columns:repeat(3,50mm);grid-auto-rows:50mm;gap:10mm 12mm;justify-content:center', sizeMm: [210, 297] },
   insert: { page: 'A4;margin:0', count: 4, grid: 'display:grid;grid-template-columns:repeat(2,105mm);grid-auto-rows:148mm;gap:0', sizeMm: [210, 297] },
@@ -167,7 +167,7 @@ const sheets: Record<KitItem, {page: string;count: number;grid: string;sizeMm: [
   flyer: { page: 'A4 landscape;margin:0', count: 2, grid: 'display:grid;grid-template-columns:repeat(2,148mm);grid-auto-rows:210mm;gap:0;justify-content:center', sizeMm: [297, 210] },
   counter: { page: 'A4 landscape;margin:0', count: 2, grid: 'display:grid;grid-template-columns:repeat(2,148mm);grid-auto-rows:210mm;gap:0;justify-content:center', sizeMm: [297, 210] },
   stamp: { page: 'A4;margin:10mm', count: 10, grid: 'display:grid;grid-template-columns:repeat(2,85mm);grid-auto-rows:55mm;gap:0;justify-content:center', sizeMm: [210, 297] },
-  label: { page: 'A4;margin:0', count: 2, grid: 'display:grid;grid-template-columns:repeat(2,100mm);grid-auto-rows:150mm;gap:0;justify-content:center;padding-top:10mm', sizeMm: [210, 297] }
+  label: { page: 'A4;margin:0', count: 2, grid: 'display:grid;grid-template-columns:repeat(2,100mm);grid-auto-rows:150mm;gap:0;justify-content:center;padding-top:10mm', sizeMm: [210, 297] },
 };
 
 /** Paper size of the home-print sheet, or null for receipts (continuous roll). */
@@ -177,7 +177,7 @@ export const kitSheetCount = (item: KitItem): number => sheets[item].count;
 const esc = (v: string) => v.replace(/&/g, '&amp;').replace(/</g, '&lt;');
 
 /** The full print sheet as a document. `withPrint` adds the auto-print script. */
-export function kitSheetDoc(item: KitItem, d: KitDetails, qrDataUrl: string, opts: {withPrint?: boolean;side?: 'front' | 'back' | 'both';} = {}): string {
+export function kitSheetDoc(item: KitItem, d: KitDetails, qrDataUrl: string, opts: { withPrint?: boolean; side?: 'front' | 'back' | 'both' } = {}): string {
   const s = sheets[item];
   const side = opts.side ?? 'both';
   const cut = item === 'sticker' || item === 'receipt' ? '' : '.sheet>.item{outline:0.2mm dashed #c8c8c8;outline-offset:-0.1mm}';

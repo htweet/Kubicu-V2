@@ -30,8 +30,8 @@ export function Inspector({ pageTab, onPageTabChange, onCollapse }: InspectorPro
           <IconButton icon={XIcon} label={tr('Deselect block')} size="sm" onClick={() => actions.select(null)} />
         </div>
         <BlockInspector key={block.id} block={block} />
-      </div>);
-
+      </div>
+    );
   }
 
   return (
@@ -51,21 +51,21 @@ export function Inspector({ pageTab, onPageTabChange, onCollapse }: InspectorPro
         fullWidth
         className="px-2"
         items={[
-        { id: 'theme', label: tr('Theme') },
-        { id: 'page', label: tr('Settings') }]
-        } />
-      
+          { id: 'theme', label: tr('Theme') },
+          { id: 'page', label: tr('Settings') },
+        ]}
+      />
       <div
         role="tabpanel"
         id={`page-panel-${pageTab}`}
         aria-labelledby={`page-tab-${pageTab}`}
-        className="scroll-quiet min-h-0 flex-1 overflow-y-auto px-4 pb-8 pt-4">
-        
+        className="scroll-quiet min-h-0 flex-1 overflow-y-auto px-4 pb-8 pt-4"
+      >
         {pageTab === 'theme' ? <ThemePanel /> : <PageSettingsPanel />}
         <div className="mt-6 border-t border-line pt-5">
           <AiSuggestEntry />
         </div>
       </div>
-    </div>);
-
+    </div>
+  );
 }

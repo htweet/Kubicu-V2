@@ -16,13 +16,13 @@ export interface ReportRange {
 
 export type IncomeType = 'shop' | 'gift_cards' | 'bookings' | 'invoices' | 'links' | 'memberships';
 
-export const incomeLabels: Record<IncomeType, {label: string;hint: string;}> = {
+export const incomeLabels: Record<IncomeType, { label: string; hint: string }> = {
   shop: { label: 'Shop orders', hint: 'Paid orders, incl. delivery and tickets' },
   gift_cards: { label: 'Gift cards sold', hint: 'Bought at checkout; spent later as orders' },
   bookings: { label: 'Booking deposits & balances', hint: 'Cancelled bookings left out' },
   invoices: { label: 'Invoices paid', hint: 'Quotes & jobs' },
   links: { label: 'Payment links', hint: 'After refunds' },
-  memberships: { label: 'Memberships', hint: 'Subscription payments that aren’t box orders' }
+  memberships: { label: 'Memberships', hint: 'Subscription payments that aren’t box orders' },
 };
 
 export type MethodId = 'card' | 'transfer' | 'own_account' | 'ussd' | 'pod' | 'instalments';
@@ -33,7 +33,7 @@ export const methodLabels: Record<MethodId, string> = {
   own_account: 'Transfer to your account',
   ussd: 'USSD',
   pod: 'Pay on delivery',
-  instalments: 'Instalments'
+  instalments: 'Instalments',
 };
 
 /** One dated piece of money in. Orders keep their fees; everything else is shown as received. */
@@ -60,7 +60,7 @@ export interface ReportInputs {
   giftCards: GiftCard[];
   bookings: Booking[];
   invoices: Invoice[];
-  linkPayments: (LinkPayment & {linkTitle: string;})[];
+  linkPayments: (LinkPayment & { linkTitle: string })[];
 }
 
 export const isPaidOrder = (o: Order) => o.paymentStatus !== 'pending' && o.paymentStatus !== 'cancelled';
@@ -75,7 +75,7 @@ export function orderMethod(o: Order): MethodId {
 }
 
 // payBy 'account' = one-time transfer account; 'transfer' = the seller's own bank details (D224).
-const linkMethod = (p: LinkPayment): MethodId => p.payBy === 'account' ? 'transfer' : p.payBy === 'transfer' ? 'own_account' : p.payBy === 'ussd' ? 'ussd' : 'card';
+const linkMethod = (p: LinkPayment): MethodId => (p.payBy === 'account' ? 'transfer' : p.payBy === 'transfer' ? 'own_account' : p.payBy === 'ussd' ? 'ussd' : 'card');
 
 const inRange = (iso: string | undefined, r: ReportRange) => {
   if (!iso) return false;
@@ -109,24 +109,24 @@ export function incomeEntries(inp: ReportInputs, r: ReportRange, handle: string 
   });
 
   if (!handle) {
-    inp.invoices.
-    filter((i) => i.status !== 'void').
-    forEach((i) =>
-    i.payments.filter((p) => inRange(p.at, r)).forEach((p) => out.push({ at: p.at, type: 'invoices', ref: i.number, customer: p.payerName || i.client.name, paid: p.amountNgn, fees: 0, refunded: 0, net: p.amountNgn, vat: 0, method: null, sample: false }))
-    );
-    inp.linkPayments.
-    filter((p) => inRange(p.at, r)).
-    forEach((p) => {
-      const refunded = p.refundedNgn ?? 0;
-      out.push({ at: p.at, type: 'links', ref: p.receipt || p.linkTitle, customer: p.payerName, paid: p.amountNgn, fees: 0, refunded, net: p.amountNgn - refunded, vat: p.vatNgn ?? 0, method: linkMethod(p), sample: !!p.sample });
-    });
+    inp.invoices
+      .filter((i) => i.status !== 'void')
+      .forEach((i) =>
+        i.payments.filter((p) => inRange(p.at, r)).forEach((p) => out.push({ at: p.at, type: 'invoices', ref: i.number, customer: p.payerName || i.client.name, paid: p.amountNgn, fees: 0, refunded: 0, net: p.amountNgn, vat: 0, method: null, sample: false })),
+      );
+    inp.linkPayments
+      .filter((p) => inRange(p.at, r))
+      .forEach((p) => {
+        const refunded = p.refundedNgn ?? 0;
+        out.push({ at: p.at, type: 'links', ref: p.receipt || p.linkTitle, customer: p.payerName, paid: p.amountNgn, fees: 0, refunded, net: p.amountNgn - refunded, vat: p.vatNgn ?? 0, method: linkMethod(p), sample: !!p.sample });
+      });
   }
 
   inp.subscriptions.forEach((s) => {
     if (!spaceOk(s.sourceHandle)) return;
-    s.payments.
-    filter((p) => p.status === 'paid' && !p.orderId && inRange(p.at, r)).
-    forEach((p) => out.push({ at: p.at, type: 'memberships', ref: p.label, customer: s.customer.name, paid: p.amountNgn, fees: 0, refunded: 0, net: p.amountNgn, vat: 0, method: 'card', sample: !!s.sample }));
+    s.payments
+      .filter((p) => p.status === 'paid' && !p.orderId && inRange(p.at, r))
+      .forEach((p) => out.push({ at: p.at, type: 'memberships', ref: p.label, customer: s.customer.name, paid: p.amountNgn, fees: 0, refunded: 0, net: p.amountNgn, vat: 0, method: 'card', sample: !!s.sample }));
   });
 
   return raw.sort((a, b) => Date.parse(b.at) - Date.parse(a.at)).map((e, i) => ({ ...e, id: `${e.type}:${e.ref}:${e.at}:${i}` }));
@@ -147,7 +147,7 @@ export interface Summary {
   returningRevenue: number;
 }
 
-const customerKey = (o: Order) => o.customer.phone.replace(/\D/g, '').slice(-10) || o.customer.email.trim().toLowerCase() || o.customer.name.trim().toLowerCase();
+const customerKey = (o: Order) => (o.customer.phone.replace(/\D/g, '').slice(-10) || o.customer.email.trim().toLowerCase() || o.customer.name.trim().toLowerCase());
 
 export function summarise(entries: IncomeEntry[], allOrders: Order[], periodOrders: Order[], r: ReportRange): Summary {
   const shop = entries.filter((e) => e.type === 'shop');
@@ -159,8 +159,8 @@ export function summarise(entries: IncomeEntry[], allOrders: Order[], periodOrde
     const k = customerKey(o);
     const returning = before.has(k);
     firstSeen.set(k, returning);
-    if (returning) returningRevenue += orderMoney(o).gross;else
-    newRevenue += orderMoney(o).gross;
+    if (returning) returningRevenue += orderMoney(o).gross;
+    else newRevenue += orderMoney(o).gross;
   });
   const returningCustomers = Array.from(firstSeen.values()).filter(Boolean).length;
   const shopPaid = shop.reduce((t, e) => t + e.paid, 0);
@@ -175,21 +175,21 @@ export function summarise(entries: IncomeEntry[], allOrders: Order[], periodOrde
     newCustomers: firstSeen.size - returningCustomers,
     returningCustomers,
     newRevenue,
-    returningRevenue
+    returningRevenue,
   };
 }
 
-export function byIncomeType(entries: IncomeEntry[]): {id: IncomeType;amount: number;count: number;}[] {
-  return (Object.keys(incomeLabels) as IncomeType[]).
-  map((id) => {
-    const list = entries.filter((e) => e.type === id);
-    return { id, amount: list.reduce((t, e) => t + e.net, 0), count: list.length };
-  }).
-  filter((r) => r.count > 0);
+export function byIncomeType(entries: IncomeEntry[]): { id: IncomeType; amount: number; count: number }[] {
+  return (Object.keys(incomeLabels) as IncomeType[])
+    .map((id) => {
+      const list = entries.filter((e) => e.type === id);
+      return { id, amount: list.reduce((t, e) => t + e.net, 0), count: list.length };
+    })
+    .filter((r) => r.count > 0);
 }
 
-export function byMethod(entries: IncomeEntry[]): {id: MethodId;amount: number;count: number;}[] {
-  const map = new Map<MethodId, {amount: number;count: number;}>();
+export function byMethod(entries: IncomeEntry[]): { id: MethodId; amount: number; count: number }[] {
+  const map = new Map<MethodId, { amount: number; count: number }>();
   entries.forEach((e) => {
     if (!e.method) return;
     const cur = map.get(e.method) ?? { amount: 0, count: 0 };
@@ -198,28 +198,28 @@ export function byMethod(entries: IncomeEntry[]): {id: MethodId;amount: number;c
   return Array.from(map.entries()).map(([id, v]) => ({ id, ...v })).sort((a, b) => b.amount - a.amount);
 }
 
-export function byProduct(orders: Order[]): {name: string;qty: number;revenue: number;}[] {
-  const map = new Map<string, {name: string;qty: number;revenue: number;}>();
-  orders.
-  filter((o) => o.paymentStatus !== 'refunded').
-  forEach((o) =>
-  o.items.forEach((i) => {
-    const cur = map.get(i.productId) ?? { name: i.name, qty: 0, revenue: 0 };
-    map.set(i.productId, { ...cur, qty: cur.qty + i.qty, revenue: cur.revenue + i.unitPriceNgn * i.qty });
-  })
-  );
+export function byProduct(orders: Order[]): { name: string; qty: number; revenue: number }[] {
+  const map = new Map<string, { name: string; qty: number; revenue: number }>();
+  orders
+    .filter((o) => o.paymentStatus !== 'refunded')
+    .forEach((o) =>
+      o.items.forEach((i) => {
+        const cur = map.get(i.productId) ?? { name: i.name, qty: 0, revenue: 0 };
+        map.set(i.productId, { ...cur, qty: cur.qty + i.qty, revenue: cur.revenue + i.unitPriceNgn * i.qty });
+      }),
+    );
   return Array.from(map.values()).sort((a, b) => b.revenue - a.revenue);
 }
 
 /** Money in per day (or per month for long ranges), oldest first. */
-export function incomeSeries(entries: IncomeEntry[], r: ReportRange): {key: string;label: string;value: number;}[] {
+export function incomeSeries(entries: IncomeEntry[], r: ReportRange): { key: string; label: string; value: number }[] {
   const days = Math.max(1, Math.round((r.to - r.from) / 86400000));
   const monthly = days > 92;
   const keyOf = (t: number) => {
     const d = new Date(t);
     return monthly ? `${d.getFullYear()}-${d.getMonth()}` : d.toDateString();
   };
-  const buckets = new Map<string, {label: string;value: number;}>();
+  const buckets = new Map<string, { label: string; value: number }>();
   if (monthly) {
     const d = new Date(r.from);
     d.setDate(1);
@@ -240,7 +240,7 @@ export function incomeSeries(entries: IncomeEntry[], r: ReportRange): {key: stri
   return Array.from(buckets.entries()).map(([key, v]) => ({ key, ...v }));
 }
 
-export function vatSummary(entries: IncomeEntry[]): {total: number;count: number;} {
+export function vatSummary(entries: IncomeEntry[]): { total: number; count: number } {
   const list = entries.filter((e) => e.vat > 0);
   return { total: list.reduce((t, e) => t + e.vat, 0), count: list.length };
 }

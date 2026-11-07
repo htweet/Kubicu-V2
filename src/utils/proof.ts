@@ -17,8 +17,8 @@ export function readProof(workspaceId: string): ProofData {
     const raw = window.localStorage.getItem(key(workspaceId));
     if (raw) return { ...empty(), ...(JSON.parse(raw) as Partial<ProofData>) };
   } catch {
-
-    /* fresh store */}
+    /* fresh store */
+  }
   const seeded = seedsSample(workspaceId) ? seed() : { ...empty(), seeded: true };
   writeProof(workspaceId, seeded);
   return seeded;
@@ -28,8 +28,8 @@ export function writeProof(workspaceId: string, data: ProofData): void {
   try {
     window.localStorage.setItem(key(workspaceId), JSON.stringify(data));
   } catch {
-
-    /* storage full — lasts for this visit */}
+    /* storage full — lasts for this visit */
+  }
   window.dispatchEvent(new CustomEvent(PROOF_EVENT));
 }
 
@@ -38,17 +38,17 @@ export const reviewPath = (handle: string, token: string) => `/p/${handle}/revie
 export const sourceBadge: Record<ProofSourceKind, string> = { order: 'Verified order', booking: 'Verified booking', job: 'Verified job' };
 export const matchedLabel: Record<ProofSourceKind, string> = { order: 'Matched to a completed order', booking: 'Matched to a completed booking', job: 'Matched to a finished job' };
 
-export const hideReasons: {value: HideReason;label: string;}[] = [
-{ value: 'personal', label: 'It shares personal details' },
-{ value: 'abusive', label: 'Abusive or offensive' },
-{ value: 'unrelated', label: 'Not about my business' },
-{ value: 'other', label: 'Something else' }];
-
+export const hideReasons: { value: HideReason; label: string }[] = [
+  { value: 'personal', label: 'It shares personal details' },
+  { value: 'abusive', label: 'Abusive or offensive' },
+  { value: 'unrelated', label: 'Not about my business' },
+  { value: 'other', label: 'Something else' },
+];
 
 /** Every review counts towards the rating — hidden ones too — so hiding can't inflate the score. */
 export function ratingSummary(reviews: ProofReview[]) {
   const count = reviews.length;
-  const average = count ? Math.round(reviews.reduce((s, r) => s + r.rating, 0) / count * 10) / 10 : 0;
+  const average = count ? Math.round((reviews.reduce((s, r) => s + r.rating, 0) / count) * 10) / 10 : 0;
   return { count, average };
 }
 
@@ -71,15 +71,15 @@ export function eligibleSources(orders: Order[], bookings: Booking[], jobs: Job[
   const asked = new Set(requests.map((r) => `${r.source.kind}:${r.source.id}`));
   const since = Date.now() - WINDOW_DAYS * 86_400_000;
   const out: EligibleSource[] = [];
-  orders.
-  filter((o) => o.status === 'completed' && new Date(o.createdAt).getTime() >= since).
-  forEach((o) => out.push({ source: { kind: 'order', id: o.id, label: `Order ${orderRef(o)}`, date: o.createdAt }, customerName: o.customer.name, phone: o.customer.phone }));
-  bookings.
-  filter((b) => b.status === 'completed' && new Date(b.start).getTime() >= since).
-  forEach((b) => out.push({ source: { kind: 'booking', id: b.id, label: `${b.serviceName} · ${shortDay(b.start)}`, date: b.start }, customerName: b.customer.name, phone: b.customer.phone }));
-  jobs.
-  filter((j) => j.status === 'done').
-  forEach((j) => out.push({ source: { kind: 'job', id: j.id, label: j.title, date: j.updates[j.updates.length - 1]?.at ?? j.createdAt }, customerName: j.client.name, phone: j.client.phone }));
+  orders
+    .filter((o) => o.status === 'completed' && new Date(o.createdAt).getTime() >= since)
+    .forEach((o) => out.push({ source: { kind: 'order', id: o.id, label: `Order ${orderRef(o)}`, date: o.createdAt }, customerName: o.customer.name, phone: o.customer.phone }));
+  bookings
+    .filter((b) => b.status === 'completed' && new Date(b.start).getTime() >= since)
+    .forEach((b) => out.push({ source: { kind: 'booking', id: b.id, label: `${b.serviceName} · ${shortDay(b.start)}`, date: b.start }, customerName: b.customer.name, phone: b.customer.phone }));
+  jobs
+    .filter((j) => j.status === 'done')
+    .forEach((j) => out.push({ source: { kind: 'job', id: j.id, label: j.title, date: j.updates[j.updates.length - 1]?.at ?? j.createdAt }, customerName: j.client.name, phone: j.client.phone }));
   return out.filter((e) => !asked.has(`${e.source.kind}:${e.source.id}`)).sort((a, b) => b.source.date.localeCompare(a.source.date));
 }
 
@@ -100,12 +100,12 @@ function seed(): ProofData {
     seeded: true,
     requests: [r1, r2],
     reviews: [
-    { id: 'sample-rev-1', requestId: r1.id, source: s1, rating: 5, text: 'Arrived early, kept everyone calm and the makeup lasted through the whole reception.', displayName: 'Chiamaka', permission: true, hidden: false, createdAt: day(19), sample: true },
-    { id: 'sample-rev-2', requestId: r2.id, source: s2, rating: 4, text: 'Lovely fabric and well packed. Delivery took a day longer than I hoped.', displayName: 'Bayo A.', permission: true, hidden: false, reply: 'Thank you Bayo — we’ve changed delivery partner for your area.', createdAt: day(6), sample: true }],
-
+      { id: 'sample-rev-1', requestId: r1.id, source: s1, rating: 5, text: 'Arrived early, kept everyone calm and the makeup lasted through the whole reception.', displayName: 'Chiamaka', permission: true, hidden: false, createdAt: day(19), sample: true },
+      { id: 'sample-rev-2', requestId: r2.id, source: s2, rating: 4, text: 'Lovely fabric and well packed. Delivery took a day longer than I hoped.', displayName: 'Bayo A.', permission: true, hidden: false, reply: 'Thank you Bayo — we’ve changed delivery partner for your area.', createdAt: day(6), sample: true },
+    ],
     work: [
-    { id: 'sample-work-1', title: 'Family portrait session', date: s3.date.slice(0, 10), description: 'Outdoor shoot for three generations, 40 edited photos delivered in a week.', imageUrl: '', imageAlt: '', source: s3, clientName: '', published: true, createdAt: day(33), sample: true },
-    { id: 'sample-work-2', title: 'Bridal party of six', date: s1.date.slice(0, 10), description: 'Bride, mother and four bridesmaids, done on location before a 10am ceremony.', imageUrl: '', imageAlt: '', source: s1, clientName: 'Chiamaka', published: true, createdAt: day(20), sample: true }]
-
+      { id: 'sample-work-1', title: 'Family portrait session', date: s3.date.slice(0, 10), description: 'Outdoor shoot for three generations, 40 edited photos delivered in a week.', imageUrl: '', imageAlt: '', source: s3, clientName: '', published: true, createdAt: day(33), sample: true },
+      { id: 'sample-work-2', title: 'Bridal party of six', date: s1.date.slice(0, 10), description: 'Bride, mother and four bridesmaids, done on location before a 10am ceremony.', imageUrl: '', imageAlt: '', source: s1, clientName: 'Chiamaka', published: true, createdAt: day(20), sample: true },
+    ],
   };
 }

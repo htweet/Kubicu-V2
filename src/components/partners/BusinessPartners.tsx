@@ -27,20 +27,20 @@ export function BusinessPartners({ rows, leadName, onOpen, onStart, canStart }: 
   const past = sorted.filter((p) => p.status === 'ended' || p.status === 'declined');
 
   if (!rows.length)
-  return (
-    <div className="mt-8 rounded-lg border border-line bg-raised">
+    return (
+      <div className="mt-8 rounded-lg border border-line bg-raised">
         <EmptyState
-        icon={HandshakeIcon}
-        title={tr('Sell together with another business')}
-        description={tr('A makeup artist and a gele stylist, a caterer and a cake maker — share one page, sell packages of both, and each get paid your own part.')}
-        action={
-        <Button disabled={!canStart} onClick={onStart}>
+          icon={HandshakeIcon}
+          title={tr('Sell together with another business')}
+          description={tr('A makeup artist and a gele stylist, a caterer and a cake maker — share one page, sell packages of both, and each get paid your own part.')}
+          action={
+            <Button disabled={!canStart} onClick={onStart}>
               {tr('Work together')}
             </Button>
-        } />
-      
-      </div>);
-
+          }
+        />
+      </div>
+    );
 
   const waitingLine = (p: Partnership, expired: boolean) => {
     if (p.pending) return p.pending.by === 'lead' ? tr('Waiting for {name} to accept new terms', { name: p.partner.name }) : tr('{name} proposed new terms', { name: p.partner.name });
@@ -49,12 +49,12 @@ export function BusinessPartners({ rows, leadName, onOpen, onStart, canStart }: 
     return tr('{a}% {lead} · {b}% them', { a: p.agreement.leadSharePct, lead: leadName, b: 100 - p.agreement.leadSharePct });
   };
 
-  const list = (items: Partnership[]) =>
-  <ul className="divide-y divide-line rounded-lg border border-line bg-raised">
+  const list = (items: Partnership[]) => (
+    <ul className="divide-y divide-line rounded-lg border border-line bg-raised">
       {items.map((p) => {
-      const expired = isExpired(p);
-      return (
-        <li key={p.id}>
+        const expired = isExpired(p);
+        return (
+          <li key={p.id}>
             <button type="button" onClick={() => onOpen(p.id)} className="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 px-4 py-3.5 text-left hover:bg-sunken focus-visible:bg-sunken focus-visible:outline-none">
               <PartnerAvatar partner={p.partner} />
               <span className="min-w-0">
@@ -72,11 +72,11 @@ export function BusinessPartners({ rows, leadName, onOpen, onStart, canStart }: 
                 <ArrowRightIcon size={14} className="hidden text-fg-subtle sm:block" aria-hidden />
               </span>
             </button>
-          </li>);
-
-    })}
-    </ul>;
-
+          </li>
+        );
+      })}
+    </ul>
+  );
 
   return (
     <div className="mt-8 flex flex-col gap-8">
@@ -86,14 +86,14 @@ export function BusinessPartners({ rows, leadName, onOpen, onStart, canStart }: 
         </h2>
         {current.length ? list(current) : <p className="text-label text-fg-muted">{tr('No current partners.')}</p>}
       </section>
-      {past.length > 0 &&
-      <section aria-labelledby="bp-past" className="flex flex-col gap-3">
+      {past.length > 0 && (
+        <section aria-labelledby="bp-past" className="flex flex-col gap-3">
           <h2 id="bp-past" className="text-label font-semibold text-fg-muted">
             {tr('Past')}
           </h2>
           {list(past)}
         </section>
-      }
-    </div>);
-
+      )}
+    </div>
+  );
 }

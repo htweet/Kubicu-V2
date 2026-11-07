@@ -31,13 +31,13 @@ export function PartnerPortal() {
   return <Portal workspaceId={found.workspaceId} token={token} />;
 }
 
-function Portal({ workspaceId, token }: {workspaceId: string;token: string;}) {
+function Portal({ workspaceId, token }: { workspaceId: string; token: string }) {
   const store = useLocalStore(partnershipKey(workspaceId), emptyPartnerships);
   const p = store.data.partnerships.find((x) => x.token === token);
   const leadName = useMemo(() => {
     try {
       const raw = window.localStorage.getItem('kubicu.workspaces');
-      const list = raw ? JSON.parse(raw) as {id: string;name: string;}[] : [];
+      const list = raw ? (JSON.parse(raw) as { id: string; name: string }[]) : [];
       return list.find((w) => w.id === workspaceId)?.name ?? 'Your partner';
     } catch {
       return 'Your partner';
@@ -47,7 +47,7 @@ function Portal({ workspaceId, token }: {workspaceId: string;token: string;}) {
   if (!p) return <Shell><NotFoundCard /></Shell>;
   // The lead's orders, read-only, so the guest can see their share of bundle sales (D122).
   const lead = readCommerce(workspaceId);
-  const save = (next: Partnership) => store.update((d) => ({ ...d, partnerships: d.partnerships.map((x) => x.id === next.id ? next : x) }));
+  const save = (next: Partnership) => store.update((d) => ({ ...d, partnerships: d.partnerships.map((x) => (x.id === next.id ? next : x)) }));
   const expired = isExpired(p);
 
   return (
@@ -63,8 +63,8 @@ function Portal({ workspaceId, token }: {workspaceId: string;token: string;}) {
         </div>
       </header>
 
-      {p.status === 'invited' && !expired &&
-      <section aria-labelledby="pp-invite" className="flex flex-col gap-5 rounded-lg border border-line bg-raised p-5">
+      {p.status === 'invited' && !expired && (
+        <section aria-labelledby="pp-invite" className="flex flex-col gap-5 rounded-lg border border-line bg-raised p-5">
           <h2 id="pp-invite" className="text-heading font-semibold text-fg">
             {leadName} wants to work with you
           </h2>
@@ -73,28 +73,28 @@ function Portal({ workspaceId, token }: {workspaceId: string;token: string;}) {
           <p className="text-caption text-fg-muted">{leadName} suggested this split. If it doesn’t feel right, talk to them before accepting — they can send new terms, and nothing changes until you both agree.</p>
           <AgreementSummary agreement={p.agreement} leadName={leadName} partnerName={p.partner.name} />
           <div className="flex flex-wrap gap-2">
-            <Button onClick={() => {save(acceptInvite(p));toast.success('You’re working together', { description: 'Next, confirm your phone and add your bank so you can be paid.' });}}>Accept and continue</Button>
-            <Button variant="tertiary" onClick={() => {save(declineInvite(p));toast('Invite declined');}}>No, thanks</Button>
+            <Button onClick={() => { save(acceptInvite(p)); toast.success('You’re working together', { description: 'Next, confirm your phone and add your bank so you can be paid.' }); }}>Accept and continue</Button>
+            <Button variant="tertiary" onClick={() => { save(declineInvite(p)); toast('Invite declined'); }}>No, thanks</Button>
           </div>
         </section>
-      }
+      )}
       {expired && <InlineAlert tone="warning" title="This invite link has expired">Ask {leadName} to send you a new one on WhatsApp.</InlineAlert>}
       {p.status === 'declined' && <InlineAlert tone="info" title="You declined this invite">If you change your mind, ask {leadName} to invite you again.</InlineAlert>}
       {p.status === 'ended' && <InlineAlert tone="info" title="This partnership has ended">{p.endReason ?? ''} Money already paid to you still settles normally.</InlineAlert>}
       {p.status === 'ending' && p.endsAt && <InlineAlert tone="warning" title={`Ending on ${formatDate(p.endsAt)}`}>{p.endReason}.</InlineAlert>}
 
-      {(p.status === 'active' || p.status === 'ending') &&
-      <>
-          {p.pending && p.pending.by === 'lead' &&
-        <section aria-label="New terms" className="flex flex-col gap-4 rounded-lg border border-warning/40 bg-warning-soft/40 p-5">
+      {(p.status === 'active' || p.status === 'ending') && (
+        <>
+          {p.pending && p.pending.by === 'lead' && (
+            <section aria-label="New terms" className="flex flex-col gap-4 rounded-lg border border-warning/40 bg-warning-soft/40 p-5">
               <p className="text-label font-semibold text-fg">{leadName} proposed new terms</p>
               <AgreementSummary agreement={p.pending.agreement} leadName={leadName} partnerName={p.partner.name} title="Proposed" />
               <div className="flex flex-wrap gap-2">
-                <Button size="sm" onClick={() => {save(answerChange(p, 'partner', true));toast.success('New terms accepted');}}>Accept</Button>
-                <Button size="sm" variant="tertiary" onClick={() => {save(answerChange(p, 'partner', false));toast('Proposal turned down');}}>Turn down</Button>
+                <Button size="sm" onClick={() => { save(answerChange(p, 'partner', true)); toast.success('New terms accepted'); }}>Accept</Button>
+                <Button size="sm" variant="tertiary" onClick={() => { save(answerChange(p, 'partner', false)); toast('Proposal turned down'); }}>Turn down</Button>
               </div>
             </section>
-        }
+          )}
           <GettingPaid p={p} save={save} />
           <section aria-labelledby="pp-agreement" className="rounded-lg border border-line bg-raised p-5">
             <h2 id="pp-agreement" className="sr-only">
@@ -113,12 +113,12 @@ function Portal({ workspaceId, token }: {workspaceId: string;token: string;}) {
             <PartnerSales partnershipId={p.id} orders={lead?.orders ?? []} products={lead?.products ?? []} leadName={leadName} partnerName={p.partner.name} viewer="partner" />
           </section>
         </>
-      }
-    </Shell>);
-
+      )}
+    </Shell>
+  );
 }
 
-function GettingPaid({ p, save }: {p: Partnership;save: (p: Partnership) => void;}) {
+function GettingPaid({ p, save }: { p: Partnership; save: (p: Partnership) => void }) {
   // A guest has no workspace: their country comes from their phone number's code (D428), so banks, account
   // length and the ID check are their own country's, using the same rules as seller verification.
   const country = splitPhone(p.phone).country;
@@ -157,11 +157,11 @@ function GettingPaid({ p, save }: {p: Partnership;save: (p: Partnership) => void
   };
 
   if (guestReady(p))
-  return (
-    <InlineAlert tone="success" title="You’re ready to be paid">
+    return (
+      <InlineAlert tone="success" title="You’re ready to be paid">
         Payouts go to {p.guest?.bank?.bankName} ····{p.guest?.bank?.last4} ({p.guest?.bank?.accountName}).
-      </InlineAlert>);
-
+      </InlineAlert>
+    );
 
   return (
     <section aria-labelledby="pp-paid" className="flex flex-col gap-5 rounded-lg border border-line bg-raised p-5">
@@ -177,18 +177,18 @@ function GettingPaid({ p, save }: {p: Partnership;save: (p: Partnership) => void
         <StepIcon done={phoneOk} icon={PhoneIcon} />
         <div className="flex min-w-0 flex-1 flex-col gap-3">
           <p className="text-label font-semibold text-fg">Confirm your phone</p>
-          {phoneOk ?
-          <p className="text-caption text-fg-muted">{p.phone} confirmed</p> :
-          !codeSent ?
-          <Button size="sm" variant="secondary" className="self-start" disabled={!isMobileNumber(p.phone)} onClick={() => {setCodeSent(true);toast(`Code sent to ${p.phone}`, { description: 'Prototype: any 6 digits except 000000.' });}}>
+          {phoneOk ? (
+            <p className="text-caption text-fg-muted">{p.phone} confirmed</p>
+          ) : !codeSent ? (
+            <Button size="sm" variant="secondary" className="self-start" disabled={!isMobileNumber(p.phone)} onClick={() => { setCodeSent(true); toast(`Code sent to ${p.phone}`, { description: 'Prototype: any 6 digits except 000000.' }); }}>
               Text me a code
-            </Button> :
-
-          <div className="flex flex-wrap items-end gap-2">
+            </Button>
+          ) : (
+            <div className="flex flex-wrap items-end gap-2">
               <TextInput id="pp-code" label="6-digit code" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))} fieldClassName="w-40" />
               <Button onClick={confirmPhone}>Confirm</Button>
             </div>
-          }
+          )}
         </div>
       </div>
 
@@ -196,43 +196,43 @@ function GettingPaid({ p, save }: {p: Partnership;save: (p: Partnership) => void
         <StepIcon done={!!p.guest?.bank} icon={LandmarkIcon} />
         <div className="flex min-w-0 flex-1 flex-col gap-3">
           <p className="text-label font-semibold text-fg">Add the bank account to pay you</p>
-          {!phoneOk ?
-          <p className="flex items-center gap-1.5 text-caption text-fg-subtle">
+          {!phoneOk ? (
+            <p className="flex items-center gap-1.5 text-caption text-fg-subtle">
               <LockIcon size={12} aria-hidden /> Confirm your phone first
-            </p> :
-
-          <>
+            </p>
+          ) : (
+            <>
               <div className="grid gap-4 sm:grid-cols-2">
                 <SelectInput<string> id="pp-bank" label="Bank" value={bank} onChange={setBank} options={banks.map((b) => ({ value: b, label: b }))} required />
                 <TextInput id="pp-acct" label="Account number" inputMode="numeric" maxLength={info.accountNumber.max} value={account} onChange={(e) => setAccount(e.target.value.replace(/\D/g, ''))} />
               </div>
               <TextInput
-              id="pp-bvn"
-              label={rules.primary.label}
-              inputMode={rules.primary.numeric ? 'numeric' : 'text'}
-              maxLength={rules.primary.maxLength}
-              placeholder={rules.primary.placeholder || undefined}
-              value={bvn}
-              onChange={(e) => setBvn(rules.primary.numeric ? e.target.value.replace(/\D/g, '') : e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, ''))}
-              hint="Used once to check the account is in your name. We never see your bank balance." />
-            
+                id="pp-bvn"
+                label={rules.primary.label}
+                inputMode={rules.primary.numeric ? 'numeric' : 'text'}
+                maxLength={rules.primary.maxLength}
+                placeholder={rules.primary.placeholder || undefined}
+                value={bvn}
+                onChange={(e) => setBvn(rules.primary.numeric ? e.target.value.replace(/\D/g, '') : e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, ''))}
+                hint="Used once to check the account is in your name. We never see your bank balance."
+              />
               <Button className="self-start" loading={busy} onClick={addBank}>
                 Check and add
               </Button>
             </>
-          }
+          )}
         </div>
       </div>
-    </section>);
-
+    </section>
+  );
 }
 
-function StepIcon({ done, icon: Icon }: {done: boolean;icon: typeof PhoneIcon;}) {
+function StepIcon({ done, icon: Icon }: { done: boolean; icon: typeof PhoneIcon }) {
   return (
     <span className={done ? 'flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-success-soft text-success' : 'flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sunken text-fg-muted'} aria-hidden>
       {done ? <CheckCircle2Icon size={18} /> : <Icon size={18} />}
-    </span>);
-
+    </span>
+  );
 }
 
 function NotFoundCard() {
@@ -240,11 +240,11 @@ function NotFoundCard() {
     <div className="rounded-lg border border-line bg-raised p-6 text-center">
       <h1 className="text-heading font-semibold text-fg">We can’t find this partner page</h1>
       <p className="mt-2 text-label text-fg-muted">The link may be incomplete or replaced by a newer one. Ask the business that invited you to send it again.</p>
-    </div>);
-
+    </div>
+  );
 }
 
-function Shell({ children }: {children: React.ReactNode;}) {
+function Shell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen w-full bg-canvas">
       <div className="border-b border-line bg-raised">
@@ -261,6 +261,6 @@ function Shell({ children }: {children: React.ReactNode;}) {
       <p className="mx-auto flex max-w-2xl items-center gap-1.5 px-5 pb-10 text-caption text-fg-subtle">
         <BadgeCheckIcon size={12} aria-hidden /> Payments are held by our licensed payment partner. Phone codes and bank checks are simulated in this prototype.
       </p>
-    </div>);
-
+    </div>
+  );
 }

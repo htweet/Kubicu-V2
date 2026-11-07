@@ -24,7 +24,7 @@ interface PayoutDialogProps {
 /** Why a bank or wallet sends a payout back — test mode only (D433). */
 const returnReasons = {
   bank: ['The bank returned the transfer: the account is closed or dormant.', 'The bank returned the transfer: the account name didn’t match.'],
-  mobile_money: ['The wallet returned the payout: the wallet is full or over its limit.', 'The wallet returned the payout: the number isn’t registered for mobile money.']
+  mobile_money: ['The wallet returned the payout: the wallet is full or over its limit.', 'The wallet returned the payout: the number isn’t registered for mobile money.'],
 };
 
 /**
@@ -93,7 +93,7 @@ export function PayoutDialog({ open, onClose, data, update, by }: PayoutDialogPr
         title="Pay out"
         description={tr('{available} available · up to {left} more today on {tier}.', { available: formatNgn(available), left: formatNgn(todayLeft), tier: tierInfo[payoutTier(data)].label })}
         footer={
-        <>
+          <>
             <Button variant="secondary" onClick={onClose}>
               Cancel
             </Button>
@@ -101,8 +101,8 @@ export function PayoutDialog({ open, onClose, data, update, by }: PayoutDialogPr
               Continue
             </Button>
           </>
-        }>
-        
+        }
+      >
         <div className="flex flex-col gap-4">
           <TextInput
             id="payout-amount"
@@ -113,21 +113,21 @@ export function PayoutDialog({ open, onClose, data, update, by }: PayoutDialogPr
             onChange={(e) => setAmount(e.target.value.replace(/[^\d]/g, ''))}
             error={error ?? undefined}
             fieldClassName="w-full"
-            hint={max >= min ? tr('Most you can pay out now: {amount}', { amount: formatNgn(max) }) : undefined} />
-          
-          {max >= min && value !== max &&
-          <button type="button" onClick={() => setAmount(String(max))} className="-mt-2 self-start text-caption font-medium text-action underline-offset-2 hover:underline">
+            hint={max >= min ? tr('Most you can pay out now: {amount}', { amount: formatNgn(max) }) : undefined}
+          />
+          {max >= min && value !== max && (
+            <button type="button" onClick={() => setAmount(String(max))} className="-mt-2 self-start text-caption font-medium text-action underline-offset-2 hover:underline">
               {tr('Pay out {amount}', { amount: formatNgn(max) })}
             </button>
-          }
+          )}
           <SelectInput
             id="payout-bank"
             required
             label={tr('To')}
             value={bankId}
             onChange={setBankId}
-            options={banks.map((b) => ({ value: b.id, label: `${b.bankName} ····${b.last4} · ${b.kind === 'mobile_money' ? tr('wallet') : b.accountName}` }))} />
-          
+            options={banks.map((b) => ({ value: b.id, label: `${b.bankName} ····${b.last4} · ${b.kind === 'mobile_money' ? tr('wallet') : b.accountName}` }))}
+          />
           <dl className="grid grid-cols-[1fr_auto] gap-x-4 gap-y-1.5 rounded-md bg-sunken px-4 py-3 text-label">
             <dt className="text-fg-muted">{tr('You receive')}</dt>
             <dd className="text-right font-semibold tabular-nums text-fg">{formatNgn(value)}</dd>
@@ -152,8 +152,8 @@ export function PayoutDialog({ open, onClose, data, update, by }: PayoutDialogPr
         title={tr('Confirm payout')}
         summary={<>{tr('Send {amount} to {bank}.', { amount: formatNgn(value), bank: bank ? `${bank.bankName} ····${bank.last4}` : tr('your bank') })}</>}
         confirmLabel={tr('Pay out')}
-        onConfirm={confirm} />
-      
-    </>);
-
+        onConfirm={confirm}
+      />
+    </>
+  );
 }

@@ -1,4 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Button } from '../ui/Button';
+import { AccountStateAlert } from '../account/AccountStates';
+import { useAccountSave, SaveStatus } from '../accountMode/useAccountSave';
 import { CheckIcon, MinusIcon } from 'lucide-react';
 import { useTeam } from '../../contexts/TeamContext';
 import { permissionRows, roleInfo, roleOrder, rolePermissions } from '../../data/permissions';
@@ -12,6 +15,15 @@ export function RolesTab() {
   const { t: tr } = useT();
   const team = useTeam();
   const manage = team.can('team.manage');
+  // Account mode (D544): the limit is saved to the server with "Confirm it's you"; the old value stays until it succeeds.
+  const save = useAccountSave();
+  const [draft, setDraft] = useState<number | null>(team.data.salesRefundLimitNgn);
+  const saveLimit = async () => {
+    const next = draft ?? 0;
+    const outcome = await save.run({ action: 'policy.save', stepUp: true, refusal: tr('You need permission to manage the team to change this.') });
+    if (outcome === 'ok') team.update({ salesRefundLimitNgn: next });
+    else setDraft(team.data.salesRefundLimitNgn);
+  };
   return (
     <div className="flex flex-col gap-8">
       <div className="scroll-quiet -mx-5 overflow-x-auto px-5 md:mx-0 md:px-0">
@@ -22,31 +34,31 @@ export function RolesTab() {
               <th scope="col" className="py-2.5 pr-4 text-left text-caption font-medium text-fg-subtle">
                 {tr('Action')}
               </th>
-              {roleOrder.map((r) =>
-              <th key={r} scope="col" className={cn('px-3 py-2.5 text-center text-caption font-semibold', r === team.role ? 'text-action' : 'text-fg')}>
+              {roleOrder.map((r) => (
+                <th key={r} scope="col" className={cn('px-3 py-2.5 text-center text-caption font-semibold', r === team.role ? 'text-action' : 'text-fg')}>
                   {tr(roleInfo[r].label)}
                   {r === team.role && <span className="block text-meta font-normal">{tr('you')}</span>}
                 </th>
-              )}
+              ))}
             </tr>
           </thead>
           <tbody>
-            {permissionRows.map((row) =>
-            <tr key={row.id} className="border-b border-line">
+            {permissionRows.map((row) => (
+              <tr key={row.id} className="border-b border-line">
                 <th scope="row" className="py-2.5 pr-4 text-left font-normal text-fg">
                   {tr(row.label)}
                   {row.id === 'orders.refund' && <span className="block text-caption text-fg-subtle">{tr('Sales up to {amount}', { amount: formatNgn(team.data.salesRefundLimitNgn) })}</span>}
                 </th>
                 {roleOrder.map((r) => {
-                const yes = rolePermissions[r].has(row.id);
-                return (
-                  <td key={r} className={cn('px-3 py-2.5 text-center', r === team.role && 'bg-action-soft/40')}>
+                  const yes = rolePermissions[r].has(row.id);
+                  return (
+                    <td key={r} className={cn('px-3 py-2.5 text-center', r === team.role && 'bg-action-soft/40')}>
                       {yes ? <CheckIcon size={16} className="mx-auto text-success" aria-label={tr('Yes')} /> : <MinusIcon size={16} className="mx-auto text-fg-subtle" aria-label={tr('No')} />}
-                    </td>);
-
-              })}
+                    </td>
+                  );
+                })}
               </tr>
-            )}
+            ))}
           </tbody>
         </table>
       </div>
@@ -56,19 +68,34 @@ export function RolesTab() {
           {tr('Sales refund limit')}
         </h2>
         <p className="mt-0.5 text-caption text-fg-muted">{tr('Sales can refund up to this amount per order. Bigger refunds need an Admin or the Owner.')}</p>
-        <div className="mt-3">
-          <CurrencyInput
-            id="refund-limit"
-            label="Up to"
-            value={team.data.salesRefundLimitNgn}
-            disabled={!manage.allowed}
-            hint={!manage.allowed ? manage.reason : undefined}
-            onChange={(v) => {
-              team.update({ salesRefundLimitNgn: v ?? 0 });
-            }} />
-          
-        </div>
+        {save.screenFailure && <AccountStateAlert failure={save.screenFailure} className="mt-3" />}
+        {save.active ? (
+          <>
+            <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-end">
+              <div className="flex-1">
+                <CurrencyInput id="refund-limit" label="Up to" value={draft} disabled={!manage.allowed || save.busy} hint={!manage.allowed ? manage.reason : undefined} onChange={setDraft} />
+              </div>
+              <Button variant="secondary" disabled={!manage.allowed || (draft ?? 0) === team.data.salesRefundLimitNgn} loading={save.busy} onClick={() => void saveLimit()}>
+                {tr('Save')}
+              </Button>
+            </div>
+            <SaveStatus state={save.state} className="mt-1.5" />
+          </>
+        ) : (
+          <div className="mt-3">
+            <CurrencyInput
+              id="refund-limit"
+              label="Up to"
+              value={team.data.salesRefundLimitNgn}
+              disabled={!manage.allowed}
+              hint={!manage.allowed ? manage.reason : undefined}
+              onChange={(v) => {
+                team.update({ salesRefundLimitNgn: v ?? 0 });
+              }}
+            />
+          </div>
+        )}
       </section>
-    </div>);
-
+    </div>
+  );
 }

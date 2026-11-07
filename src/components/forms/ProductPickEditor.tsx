@@ -33,15 +33,15 @@ export function ProductPickEditor({ field, onChange }: ProductPickEditorProps) {
   });
 
   const toggle = (p: Product) => {
-    if (chosenIds.has(p.id)) onChange({ products: chosen.filter((c) => c.id !== p.id) });else
-    if (chosen.length < PRODUCT_PICK_MAX) onChange({ products: [...chosen, toPick(p)] });
+    if (chosenIds.has(p.id)) onChange({ products: chosen.filter((c) => c.id !== p.id) });
+    else if (chosen.length < PRODUCT_PICK_MAX) onChange({ products: [...chosen, toPick(p)] });
   };
 
   const refresh = () => {
-    const next = chosen.
-    map((c) => commerce?.data.products.find((p) => p.id === c.id && p.status === 'active')).
-    filter((p): p is Product => !!p && p.priceNgn !== null && p.priceNgn > 0).
-    map(toPick);
+    const next = chosen
+      .map((c) => commerce?.data.products.find((p) => p.id === c.id && p.status === 'active'))
+      .filter((p): p is Product => !!p && p.priceNgn !== null && p.priceNgn > 0)
+      .map(toPick);
     onChange({ products: next });
   };
 
@@ -54,8 +54,8 @@ export function ProductPickEditor({ field, onChange }: ProductPickEditorProps) {
         </span>
       </div>
 
-      {stale.length > 0 &&
-      <InlineAlert tone="warning" title={`${stale.length} product${stale.length === 1 ? ' has' : 's have'} changed in Commerce`}>
+      {stale.length > 0 && (
+        <InlineAlert tone="warning" title={`${stale.length} product${stale.length === 1 ? ' has' : 's have'} changed in Commerce`}>
           <span className="flex flex-col items-start gap-2">
             <span>The form still shows the old name or price{stale.some((s) => !commerce?.data.products.find((p) => p.id === s.id && p.status === 'active')) ? ', or a product that’s no longer for sale' : ''}.</span>
             <Button size="sm" variant="secondary" leadingIcon={RefreshCwIcon} onClick={refresh}>
@@ -63,34 +63,34 @@ export function ProductPickEditor({ field, onChange }: ProductPickEditorProps) {
             </Button>
           </span>
         </InlineAlert>
-      }
+      )}
 
-      {catalogue.length === 0 ?
-      <p className="rounded-lg border border-dashed border-line px-4 py-6 text-center text-caption text-fg-muted">
+      {catalogue.length === 0 ? (
+        <p className="rounded-lg border border-dashed border-line px-4 py-6 text-center text-caption text-fg-muted">
           No active products with a price yet.{' '}
           <Link to="/app/commerce/products" className="font-medium text-fg underline underline-offset-2">
             Add one in Commerce
           </Link>
           .
-        </p> :
-
-      <ul className="flex max-h-72 flex-col divide-y divide-line overflow-y-auto rounded-lg border border-line">
+        </p>
+      ) : (
+        <ul className="flex max-h-72 flex-col divide-y divide-line overflow-y-auto rounded-lg border border-line">
           {catalogue.map((p) => {
-          const on = chosenIds.has(p.id);
-          const full = !on && chosen.length >= PRODUCT_PICK_MAX;
-          return (
-            <li key={p.id}>
+            const on = chosenIds.has(p.id);
+            const full = !on && chosen.length >= PRODUCT_PICK_MAX;
+            return (
+              <li key={p.id}>
                 <label className={`flex min-h-[52px] items-center gap-3 px-3 py-2 ${full ? 'opacity-50' : 'cursor-pointer hover:bg-sunken'}`}>
                   <input type="checkbox" checked={on} disabled={full} onChange={() => toggle(p)} className="h-4 w-4 shrink-0 accent-[rgb(var(--action))]" />
                   <span className="h-9 w-9 shrink-0 overflow-hidden rounded bg-sunken">{p.images[0] && <img src={p.images[0].url} alt="" className="h-full w-full object-cover" />}</span>
                   <span className="min-w-0 flex-1 truncate text-label text-fg">{p.name}</span>
                   <span className="shrink-0 text-caption tabular-nums text-fg-muted">{formatNgn(p.priceNgn ?? 0)}</span>
                 </label>
-              </li>);
-
-        })}
+              </li>
+            );
+          })}
         </ul>
-      }
+      )}
 
       <TextInput
         id={`pp-max-${field.id}`}
@@ -100,11 +100,11 @@ export function ProductPickEditor({ field, onChange }: ProductPickEditorProps) {
         min={1}
         max={99}
         value={field.maxQty ?? 10}
-        onChange={(e) => onChange({ maxQty: Math.max(1, Math.min(99, Math.round(Number(e.target.value) || 1))) })} />
-      
+        onChange={(e) => onChange({ maxQty: Math.max(1, Math.min(99, Math.round(Number(e.target.value) || 1))) })}
+      />
       <p className="text-caption text-fg-muted">
         Picks don’t reserve stock or create an order — they arrive with the response. To take money for them, add a Payment field and set its amount to “From {field.label || 'this field'}”.
       </p>
-    </div>);
-
+    </div>
+  );
 }

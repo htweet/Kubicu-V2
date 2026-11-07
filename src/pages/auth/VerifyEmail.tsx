@@ -37,11 +37,11 @@ export function VerifyEmail() {
           onClick={() => {
             setWait(COOLDOWN);
             toast('Confirmation email sent again', { description: 'Prototype — no email is actually sent.' });
-          }}>
-          
+          }}
+        >
           {wait > 0 ? `Resend email in ${wait}s` : 'Resend email'}
         </Button>
       </div>
-    </AuthLayout>);
-
+    </AuthLayout>
+  );
 }

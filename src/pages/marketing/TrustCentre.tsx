@@ -6,18 +6,18 @@ import { SectionHeading } from '../../components/marketing/SectionHeading';
 import { useT } from '../../contexts/LocaleContext';
 
 const pillars = [
-{ icon: ShoppingBagIcon, title: 'Safety tips for buyers', text: 'How to shop safely and what to look for in a seller.', to: '/about/safety' },
-{ icon: FlagIcon, title: 'Report a page', text: 'Tell us about scams, counterfeits or harmful content.', to: '/about/report' },
-{ icon: GavelIcon, title: 'Takedowns and appeals', text: 'What happens after a report, and how to ask us to look again.', to: '/about/takedown' },
-{ icon: LockIcon, title: 'Security', text: 'How payments, accounts and data are protected.', to: '/about/security' }];
-
+  { icon: ShoppingBagIcon, title: 'Safety tips for buyers', text: 'How to shop safely and what to look for in a seller.', to: '/about/safety' },
+  { icon: FlagIcon, title: 'Report a page', text: 'Tell us about scams, counterfeits or harmful content.', to: '/about/report' },
+  { icon: GavelIcon, title: 'Takedowns and appeals', text: 'What happens after a report, and how to ask us to look again.', to: '/about/takedown' },
+  { icon: LockIcon, title: 'Security', text: 'How payments, accounts and data are protected.', to: '/about/security' },
+];
 
 const promises = [
-{ title: 'Counters are real', text: 'DealRoom progress, “only 6 left” and seat counts only ever use real orders and stock.' },
-{ title: 'No invented reviews', text: 'Reviews link to real purchases. AI never writes testimonials, prices or qualifications.' },
-{ title: 'Refunds are automatic when promised', text: 'Missed group goals and cancelled events refund every buyer in full.' },
-{ title: 'Reporters stay anonymous', text: 'Sellers are never told who reported their page.' }];
-
+  { title: 'Counters are real', text: 'DealRoom progress, “only 6 left” and seat counts only ever use real orders and stock.' },
+  { title: 'No invented reviews', text: 'Reviews link to real purchases. AI never writes testimonials, prices or qualifications.' },
+  { title: 'Refunds are automatic when promised', text: 'Missed group goals and cancelled events refund every buyer in full.' },
+  { title: 'Reporters stay anonymous', text: 'Sellers are never told who reported their page.' },
+];
 
 /** /about/trust. Translated in D331. */
 export function TrustCentre() {
@@ -31,8 +31,8 @@ export function TrustCentre() {
           {tr('Trust and safety topics')}
         </h2>
         <ul className="grid gap-4 sm:grid-cols-2">
-          {pillars.map((p) =>
-          <li key={p.to}>
+          {pillars.map((p) => (
+            <li key={p.to}>
               <Link to={p.to} className="group block h-full rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
                 <span className="nm-edge block h-full rounded-2xl">
                   <span className="flex h-full items-start gap-4 rounded-[15px] bg-raised p-6">
@@ -48,7 +48,7 @@ export function TrustCentre() {
                 </span>
               </Link>
             </li>
-          )}
+          ))}
         </ul>
       </section>
 
@@ -57,27 +57,28 @@ export function TrustCentre() {
           <SectionHeading
             id="promises-h"
             title={
-            <>
+              <>
                 {tr('Our')} <span className="nm-text">{tr('honesty rules')}</span>
               </>
             }
-            lead={tr('Built into the product, not just written in a policy.')} />
-          
+            lead={tr('Built into the product, not just written in a policy.')}
+          />
           <ul className="grid gap-x-10 sm:grid-cols-2">
-            {promises.map((p) =>
-            <li key={p.title} className="flex gap-3 border-t border-line py-5">
+            {promises.map((p) => (
+              <li key={p.title} className="flex gap-3 border-t border-line py-5">
                 <ShieldCheckIcon size={20} strokeWidth={2.2} className="mt-0.5 shrink-0 text-success" aria-hidden />
                 <div>
                   <h3 className="text-heading font-semibold text-fg">{tr(p.title)}</h3>
                   <p className="mt-1 text-label leading-relaxed text-fg-muted">{tr(p.text)}</p>
                 </div>
               </li>
-            )}
+            ))}
           </ul>
         </div>
       </section>
 
-      <section className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-5 py-14 md:flex-row md:items-center md:justify-between md:px-8">
+      {/* Closing call to action: stays open on phones (D562). */}
+      <section data-mbar-skip="" className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-5 py-14 md:flex-row md:items-center md:justify-between md:px-8">
         <div className="flex items-start gap-3">
           <LifeBuoyIcon size={20} className="mt-0.5 shrink-0 text-fg-muted" aria-hidden />
           <p className="text-label text-fg-muted">
@@ -88,6 +89,6 @@ export function TrustCentre() {
           {tr('Report a page')} <ArrowRightIcon size={15} aria-hidden />
         </Link>
       </section>
-    </>);
-
+    </>
+  );
 }

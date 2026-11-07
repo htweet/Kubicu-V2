@@ -41,7 +41,7 @@ export function invoiceTotals(inv: Invoice): LocalBreakdown {
 export const rateLine = (code: CurrencyCode, rate: number) => `₦${rate.toFixed(2)} = ${code === 'KES' ? 'KSh' : code === 'GHS' ? 'GH₵' : code === 'ZAR' ? 'R' : code} 1`;
 
 /** True when the day's rate has moved more than 10% since the last paid invoice — renewal reminders say so. */
-export function rateMovedSince(lastInvoice: Invoice | undefined): {moved: boolean;pct: number;} {
+export function rateMovedSince(lastInvoice: Invoice | undefined): { moved: boolean; pct: number } {
   const code = billingCurrency();
   if (!lastInvoice?.fx || !isFxCode(code) || lastInvoice.fx.currency !== code) return { moved: false, pct: 0 };
   const pct = rateMoveSince(code, lastInvoice.fx.date);

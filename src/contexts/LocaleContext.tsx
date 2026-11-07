@@ -23,7 +23,7 @@ interface LocaleValue {
   setLang?: (lang: UiLang) => void;
 }
 
-const fill = (s: string, vars?: Record<string, string | number>) => vars ? s.replace(/\{(\w+)\}/g, (m, k) => k in vars ? String(vars[k]) : m) : s;
+const fill = (s: string, vars?: Record<string, string | number>) => (vars ? s.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? String(vars[k]) : m)) : s);
 
 /** English wording staff changed in Super admin → Localisation → English (D465): any text, label, placeholder or name. */
 const englishT: LocaleValue['t'] = (text, vars) => fill(phraseOverride('en', text) ?? text, vars);
@@ -66,7 +66,7 @@ export function translatorFor(lang: UiLang): LocaleValue['t'] {
   return makeTranslator(lang);
 }
 
-export function LocaleProvider({ lang, setLang, children }: {lang: UiLang;setLang?: (lang: UiLang) => void;children: React.ReactNode;}) {
+export function LocaleProvider({ lang, setLang, children }: { lang: UiLang; setLang?: (lang: UiLang) => void; children: React.ReactNode }) {
   const value = useMemo<LocaleValue>(() => {
     if (lang === 'en') return { ...english, setLang };
     return { lang, setLang, t: makeTranslator(lang) };

@@ -34,39 +34,39 @@ export function BarChartCard({ title, context, data, summary, unit, state = 'rea
       <div className="h-48">
         {state === 'loading' && <Skeleton className="h-full w-full" />}
         {state === 'empty' && <EmptyState icon={BarChart3Icon} title="No data for this period" description="Share your page to start seeing activity." />}
-        {state === 'error' &&
-        <EmptyState
-          icon={AlertTriangleIcon}
-          title="Couldn’t load this chart"
-          description="Your data is safe. Try again in a moment."
-          action={onRetry ? <Button size="sm" variant="secondary" onClick={onRetry}>Try again</Button> : undefined} />
-
-        }
-        {state === 'ready' &&
-        <ResponsiveContainer width="100%" height="100%">
+        {state === 'error' && (
+          <EmptyState
+            icon={AlertTriangleIcon}
+            title="Couldn’t load this chart"
+            description="Your data is safe. Try again in a moment."
+            action={onRetry ? <Button size="sm" variant="secondary" onClick={onRetry}>Try again</Button> : undefined}
+          />
+        )}
+        {state === 'ready' && (
+          <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: -16 }} aria-hidden>
               <CartesianGrid vertical={false} stroke="rgb(var(--border-subtle))" />
               <XAxis dataKey="label" tickLine={false} axisLine={false} tick={{ fill: 'rgb(var(--text-muted))', fontSize: 12 }} />
               <YAxis tickLine={false} axisLine={false} allowDecimals={false} tick={{ fill: 'rgb(var(--text-muted))', fontSize: 12 }} />
               <Tooltip
-              cursor={{ fill: 'rgb(var(--sunken))' }}
-              formatter={(v: number) => [`${v} ${unit}`, '']}
-              separator=""
-              contentStyle={{
-                background: 'rgb(var(--overlay))',
-                border: '1px solid rgb(var(--border-subtle))',
-                borderRadius: 8,
-                color: 'rgb(var(--text-primary))',
-                fontSize: 12
-              }} />
-            
+                cursor={{ fill: 'rgb(var(--sunken))' }}
+                formatter={(v: number) => [`${v} ${unit}`, '']}
+                separator=""
+                contentStyle={{
+                  background: 'rgb(var(--overlay))',
+                  border: '1px solid rgb(var(--border-subtle))',
+                  borderRadius: 8,
+                  color: 'rgb(var(--text-primary))',
+                  fontSize: 12,
+                }}
+              />
               <Bar dataKey="value" fill="rgb(var(--action))" radius={[4, 4, 0, 0]} maxBarSize={36} />
             </BarChart>
           </ResponsiveContainer>
-        }
+        )}
       </div>
       {state === 'ready' && <figcaption className="text-caption text-fg-muted">{summary}</figcaption>}
       {footnote}
-    </figure>);
-
+    </figure>
+  );
 }

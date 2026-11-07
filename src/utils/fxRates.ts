@@ -28,7 +28,7 @@ const todayKey = (d = new Date()) => d.toISOString().slice(0, 10);
 function readSet(): FxEntry[] {
   try {
     const raw = window.localStorage.getItem(KEY);
-    return raw ? JSON.parse(raw) as FxEntry[] : [];
+    return raw ? (JSON.parse(raw) as FxEntry[]) : [];
   } catch {
     return [];
   }
@@ -37,8 +37,8 @@ function readSet(): FxEntry[] {
 /** A repeatable move of up to ±2.5% for a given day and currency, so the prototype's rate changes day to day. */
 function drift(date: string, code: FxCode): number {
   let h = 0;
-  for (const ch of `${date}:${code}`) h = h * 31 + ch.charCodeAt(0) >>> 0;
-  return (h % 1001 / 1000 - 0.5) * 0.05;
+  for (const ch of `${date}:${code}`) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return ((h % 1001) / 1000 - 0.5) * 0.05;
 }
 
 const round = (n: number) => Math.round(n * 100) / 100;
@@ -46,7 +46,7 @@ const round = (n: number) => Math.round(n * 100) / 100;
 export const isFxCode = (code: CurrencyCode | string): code is FxCode => (fxCodes as string[]).includes(code);
 
 /** The day's rate (naira per unit) and whether staff set it or it came from the automatic feed. */
-export function rateOn(code: FxCode, date = todayKey()): {rate: number;source: 'staff' | 'auto';entry?: FxEntry;} {
+export function rateOn(code: FxCode, date = todayKey()): { rate: number; source: 'staff' | 'auto'; entry?: FxEntry } {
   const set = readSet().filter((e) => e.code === code && e.date === date);
   const last = set[set.length - 1];
   if (last) return { rate: last.rate, source: 'staff', entry: last };
@@ -54,10 +54,10 @@ export function rateOn(code: FxCode, date = todayKey()): {rate: number;source: '
 }
 
 /** Naira per unit today; 1 for naira and for currencies KUBICU doesn't bill in. */
-export const nairaPerToday = (code: CurrencyCode): number => isFxCode(code) ? rateOn(code).rate : 1;
+export const nairaPerToday = (code: CurrencyCode): number => (isFxCode(code) ? rateOn(code).rate : 1);
 
 /** A KUBICU price in naira, in `code` at `rate` — always rounded up to a whole unit, so the charge is never short. */
-export const nairaToLocal = (naira: number, code: CurrencyCode, rate = nairaPerToday(code)): number => code === 'NGN' || !isFxCode(code) ? naira : Math.sign(naira) * Math.ceil(Math.abs(naira) / rate);
+export const nairaToLocal = (naira: number, code: CurrencyCode, rate = nairaPerToday(code)): number => (code === 'NGN' || !isFxCode(code) ? naira : Math.sign(naira) * Math.ceil(Math.abs(naira) / rate));
 
 /** Staff set today's rate (Super admin → Exchange rates). */
 export function setRateToday(code: FxCode, rate: number, by: string): void {
@@ -74,11 +74,11 @@ export function clearRateToday(code: FxCode): void {
 }
 
 /** The last `days` days of rates, newest first, for the staff history table. */
-export function rateHistory(days = 14): {date: string;rates: Record<FxCode, {rate: number;source: 'staff' | 'auto';}>;}[] {
+export function rateHistory(days = 14): { date: string; rates: Record<FxCode, { rate: number; source: 'staff' | 'auto' }> }[] {
   const out = [];
   for (let i = 0; i < days; i++) {
     const date = todayKey(new Date(Date.now() - i * 86_400_000));
-    out.push({ date, rates: Object.fromEntries(fxCodes.map((c) => [c, rateOn(c, date)])) as Record<FxCode, {rate: number;source: 'staff' | 'auto';}> });
+    out.push({ date, rates: Object.fromEntries(fxCodes.map((c) => [c, rateOn(c, date)])) as Record<FxCode, { rate: number; source: 'staff' | 'auto' }> });
   }
   return out;
 }

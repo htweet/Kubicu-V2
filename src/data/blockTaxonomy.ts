@@ -12,8 +12,8 @@ import {
   ShoppingBagIcon,
   SparklesIcon,
   TypeIcon,
-  WrenchIcon } from
-'lucide-react';
+  WrenchIcon,
+} from 'lucide-react';
 import type { BlockType } from '../types/page';
 import { blockDefinitions, type BlockCategory } from './blockRegistry';
 import type { UiLang } from './translations';
@@ -26,24 +26,24 @@ import { foldSearch, localSearchWords } from '../utils/searchGlossary';
  */
 
 export type LibraryCategoryId =
-'layout' | 'identity' | 'links' | 'text' | 'images' | 'media' | 'portfolio' |
-'commerce' | 'services' | 'forms' | 'trust' | 'utilities' | 'smart';
+  | 'layout' | 'identity' | 'links' | 'text' | 'images' | 'media' | 'portfolio'
+  | 'commerce' | 'services' | 'forms' | 'trust' | 'utilities' | 'smart';
 
-export const libraryCategories: {id: LibraryCategoryId;label: string;icon: LucideIcon;description: string;}[] = [
-{ id: 'layout', label: 'Layout', icon: LayoutTemplateIcon, description: 'Sections, columns, spacing and rhythm' },
-{ id: 'identity', label: 'Identity', icon: CircleUserRoundIcon, description: 'Who you are, up front' },
-{ id: 'links', label: 'Links & contact', icon: Link2Icon, description: 'Buttons, socials and ways to reach you' },
-{ id: 'text', label: 'Text & story', icon: TypeIcon, description: 'Explain, persuade and answer questions' },
-{ id: 'images', label: 'Images', icon: ImagesIcon, description: 'Photos, galleries and logos' },
-{ id: 'media', label: 'Media', icon: PlayCircleIcon, description: 'Video, audio, episodes and files' },
-{ id: 'portfolio', label: 'Professional', icon: BriefcaseIcon, description: 'Work, team and credentials' },
-{ id: 'commerce', label: 'Shop', icon: ShoppingBagIcon, description: 'Products, menus and payments' },
-{ id: 'services', label: 'Bookings & events', icon: CalendarCheckIcon, description: 'Appointments, events and dates' },
-{ id: 'forms', label: 'Forms & audience', icon: ClipboardListIcon, description: 'Sign-ups, enquiries and community' },
-{ id: 'trust', label: 'Trust', icon: ShieldCheckIcon, description: 'Reviews, proof and policies' },
-{ id: 'utilities', label: 'Business info', icon: WrenchIcon, description: 'Contact, location, hours and sharing' },
-{ id: 'smart', label: 'Smart', icon: SparklesIcon, description: 'Rule-based blocks that adapt' }];
-
+export const libraryCategories: { id: LibraryCategoryId; label: string; icon: LucideIcon; description: string }[] = [
+  { id: 'layout', label: 'Layout', icon: LayoutTemplateIcon, description: 'Sections, columns, spacing and rhythm' },
+  { id: 'identity', label: 'Identity', icon: CircleUserRoundIcon, description: 'Who you are, up front' },
+  { id: 'links', label: 'Links & contact', icon: Link2Icon, description: 'Buttons, socials and ways to reach you' },
+  { id: 'text', label: 'Text & story', icon: TypeIcon, description: 'Explain, persuade and answer questions' },
+  { id: 'images', label: 'Images', icon: ImagesIcon, description: 'Photos, galleries and logos' },
+  { id: 'media', label: 'Media', icon: PlayCircleIcon, description: 'Video, audio, episodes and files' },
+  { id: 'portfolio', label: 'Professional', icon: BriefcaseIcon, description: 'Work, team and credentials' },
+  { id: 'commerce', label: 'Shop', icon: ShoppingBagIcon, description: 'Products, menus and payments' },
+  { id: 'services', label: 'Bookings & events', icon: CalendarCheckIcon, description: 'Appointments, events and dates' },
+  { id: 'forms', label: 'Forms & audience', icon: ClipboardListIcon, description: 'Sign-ups, enquiries and community' },
+  { id: 'trust', label: 'Trust', icon: ShieldCheckIcon, description: 'Reviews, proof and policies' },
+  { id: 'utilities', label: 'Business info', icon: WrenchIcon, description: 'Contact, location, hours and sharing' },
+  { id: 'smart', label: 'Smart', icon: SparklesIcon, description: 'Rule-based blocks that adapt' },
+];
 
 const categoryOf: Partial<Record<BlockType, LibraryCategoryId>> = {
   section: 'layout', columns: 'layout', tabs: 'layout', anchorNav: 'layout',
@@ -72,7 +72,7 @@ const categoryOf: Partial<Record<BlockType, LibraryCategoryId>> = {
   booking: 'services', event: 'services', countdown: 'services',
   leadForm: 'forms', newsletter: 'forms', form: 'forms',
   proof: 'trust', trustBadge: 'trust',
-  contact: 'utilities', location: 'utilities'
+  contact: 'utilities', location: 'utilities',
 };
 
 const fallbackFor: Record<BlockCategory, LibraryCategoryId> = { Foundation: 'text', Showcase: 'layout', Conversion: 'forms', Commerce: 'commerce' };
@@ -152,7 +152,7 @@ const synonyms: Partial<Record<BlockType, string[]>> = {
   campaignSpotlight: ['promo', 'sale banner', 'limited offer', 'countdown offer'],
   recommendations: ['my picks', 'favourites', 'start here', 'gear', 'recommended'],
   course: ['online course', 'tutorial class', 'lessons', 'e-learning', 'curriculum', 'modules', 'school', 'tutor'],
-  faqAssistant: ['ai', 'bot', 'chat', 'ask a question', 'customer questions', 'auto answer']
+  faqAssistant: ['ai', 'bot', 'chat', 'ask a question', 'customer questions', 'auto answer'],
 };
 
 /**
@@ -189,7 +189,7 @@ export const blockVariants: Partial<Record<BlockType, string[]>> = {
   carousel: ['Wide', 'Square', 'Portrait'],
   linkCollection: ['List', 'Grid'],
   shopCategories: ['Cards', 'Chips'],
-  brandHeader: ['Centred', 'Left']
+  brandHeader: ['Centred', 'Left'],
 };
 
 /** What a block depends on, in plain words, for the details pane. */
@@ -219,7 +219,7 @@ export function blockNeeds(type: BlockType): string[] {
     embed: 'Works with the supported sites list — no custom code',
     smartButton: 'Uses the visitor’s source (IntentFlow); everyone else sees the default',
     campaignSpotlight: 'Shows only between your start and end dates',
-    poll: 'Votes are counted on each visitor’s device in this prototype'
+    poll: 'Votes are counted on each visitor’s device in this prototype',
   };
   return needs[type] ? [needs[type] as string] : [];
 }

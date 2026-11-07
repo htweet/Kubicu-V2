@@ -90,37 +90,37 @@ export function BookingStatus() {
           </Link>
           {booking.status === 'cancelled' ? <CalendarXIcon size={30} aria-hidden /> : booking.status === 'requested' ? <CalendarClockIcon size={30} aria-hidden /> : <CalendarCheck2Icon size={30} aria-hidden />}
           <CheckoutHeading
-              level={1}
-              theme={t}
-              sub={
-              declined ?
-              `${tx('The business couldn’t take this booking.')}${declineReason ? ` “${declineReason}”` : ''}${booking.depositPaidNgn ? ` ${tx('Your {amount} deposit is refunded in full.', { amount: formatNgn(booking.depositPaidNgn) })}` : ''}` :
-              booking.status === 'cancelled' ?
-              tx('This booking was cancelled.') :
-              requested ?
-              tx('{name} accepts each booking themselves. Your time is held, and you’ll hear at {to} when they reply (preview only in this prototype).', { name: page.doc.title, to: booking.customer.email || booking.customer.phone }) :
-              booking.status === 'requested' ?
-              tx('This request wasn’t answered before the appointment time.') :
-              upcoming ?
-              tx('A confirmation has been sent to {to} (preview only in this prototype).', { to: booking.customer.email || booking.customer.phone }) :
-              tx('This booking is in the past.')
-              }>
-              
+            level={1}
+            theme={t}
+            sub={
+              declined
+                ? `${tx('The business couldn’t take this booking.')}${declineReason ? ` “${declineReason}”` : ''}${booking.depositPaidNgn ? ` ${tx('Your {amount} deposit is refunded in full.', { amount: formatNgn(booking.depositPaidNgn) })}` : ''}`
+                : booking.status === 'cancelled'
+                ? tx('This booking was cancelled.')
+                : requested
+                  ? tx('{name} accepts each booking themselves. Your time is held, and you’ll hear at {to} when they reply (preview only in this prototype).', { name: page.doc.title, to: booking.customer.email || booking.customer.phone })
+                  : booking.status === 'requested'
+                    ? tx('This request wasn’t answered before the appointment time.')
+                    : upcoming
+                  ? tx('A confirmation has been sent to {to} (preview only in this prototype).', { to: booking.customer.email || booking.customer.phone })
+                  : tx('This booking is in the past.')
+            }
+          >
             {tx(declined ? 'Request declined' : booking.status === 'cancelled' ? 'Booking cancelled' : booking.status === 'requested' ? 'Request sent' : 'You’re booked in')}
           </CheckoutHeading>
           <TestModeNote theme={t} />
 
-          {booking.meeting && booking.status !== 'cancelled' && upcoming &&
+          {booking.meeting && booking.status !== 'cancelled' && upcoming && (
             <section aria-label={tx('How to join')} className="flex flex-col gap-2 p-5 text-[14px]" style={cardStyle(t)}>
               <p className="font-semibold">{tx('Join on {app}', { app: meetingApps[booking.meeting.app].name })}</p>
               <p className="break-all font-mono text-[12.5px]" style={muted}>
                 {booking.meeting.url}
               </p>
-              {booking.meeting.code &&
-              <p className="text-[13px]" style={muted}>
+              {booking.meeting.code && (
+                <p className="text-[13px]" style={muted}>
                   {booking.meeting.app === 'zoom' ? tx('Passcode') : tx('Meeting ID')}: {booking.meeting.code}
                 </p>
-              }
+              )}
               <a href={booking.meeting.url} target="_blank" rel="noopener noreferrer" className="mt-1 flex h-12 items-center justify-center gap-2 text-[15px] font-semibold focus-visible:outline-none focus-visible:ring-2" style={{ background: t.accent, color: t.accentText, borderRadius: 999 }}>
                 {tx('Join the call')}
               </a>
@@ -128,7 +128,7 @@ export function BookingStatus() {
                 {tx('The same link is in your confirmation and reminder. Preview link — it won’t open a real meeting in this prototype.')}
               </p>
             </section>
-            }
+          )}
 
           <dl className="flex flex-col gap-2 p-5 text-[14px]" style={cardStyle(t)}>
             <div className="flex justify-between gap-3">
@@ -148,52 +148,52 @@ export function BookingStatus() {
                 </span>
               </dd>
             </div>
-            {booking.depositPaidNgn > 0 &&
+            {booking.depositPaidNgn > 0 && (
               <div className="flex justify-between gap-3 border-t pt-2" style={{ borderColor: mix(t.text, 12) }}>
                 <dt style={muted}>{tx('Booking fee paid')}</dt>
                 <dd className="tabular-nums">{formatNgn(booking.depositPaidNgn)}</dd>
               </div>
-              }
-            {bal.state !== 'none' && booking.status !== 'cancelled' &&
+            )}
+            {bal.state !== 'none' && booking.status !== 'cancelled' && (
               <div className="flex justify-between gap-3">
                 <dt style={muted}>{tx(bal.state === 'paid' ? 'Balance paid' : bal.state === 'at_appointment' ? 'Pay at the appointment' : 'Balance')}</dt>
                 <dd className="text-right tabular-nums">
                   {formatNgn(bal.amount)}
-                  {bal.dueAt && bal.state !== 'paid' &&
-                  <span className="block text-[12px]" style={muted}>
+                  {bal.dueAt && bal.state !== 'paid' && (
+                    <span className="block text-[12px]" style={muted}>
                       {tx('Due by {when}', { when: `${dayLabel(bal.dueAt, tz)}, ${timeLabel(bal.dueAt, tz)}` })}
                     </span>
-                  }
+                  )}
                 </dd>
               </div>
-              }
+            )}
           </dl>
 
-          {upcoming && mode === 'view' && (bal.state === 'due' || bal.state === 'overdue' || bal.state === 'upcoming') &&
+          {upcoming && mode === 'view' && (bal.state === 'due' || bal.state === 'overdue' || bal.state === 'upcoming') && (
             <PrimaryButton theme={t} onClick={() => setMode('balance')}>
               {tx('Pay the balance · {amount}', { amount: formatNgn(bal.amount) })}
             </PrimaryButton>
-            }
+          )}
 
-          {mode === 'balance' &&
+          {mode === 'balance' && (
             <section aria-labelledby="bs-balance" className="flex flex-col gap-4 p-5" style={cardStyle(t)}>
               <h2 id="bs-balance" className="text-[15px] font-semibold">
                 {tx('Pay {amount} for {service}', { amount: formatNgn(bal.amount), service: booking.serviceName })}
               </h2>
               <fieldset className="flex flex-col gap-2">
                 <legend className="mb-1 text-[13px] font-medium">{tx('Test card')}</legend>
-                {(['success', 'declined'] as const).map((o) =>
-                <label key={o} className="flex cursor-pointer items-center gap-2.5 rounded-md px-3 py-2.5 text-[14px]" style={{ border: `1px solid ${mix(t.text, cardOutcome === o ? 40 : 14)}` }}>
+                {(['success', 'declined'] as const).map((o) => (
+                  <label key={o} className="flex cursor-pointer items-center gap-2.5 rounded-md px-3 py-2.5 text-[14px]" style={{ border: `1px solid ${mix(t.text, cardOutcome === o ? 40 : 14)}` }}>
                     <input type="radio" name="balance-card" checked={cardOutcome === o} onChange={() => setCardOutcome(o)} />
                     {o === 'success' ? `4242 4242 4242 4242 — ${tx('payment works')}` : `4000 0000 0000 0002 — ${tx('declined')}`}
                   </label>
-                )}
+                ))}
               </fieldset>
-              {error &&
-              <p className="text-[13px] font-semibold" role="alert">
+              {error && (
+                <p className="text-[13px] font-semibold" role="alert">
                   {error}
                 </p>
-              }
+              )}
               <PrimaryButton theme={t} disabled={paying} onClick={payBalance}>
                 {paying ? tx('Paying…') : tx('Pay {amount}', { amount: formatNgn(bal.amount) })}
               </PrimaryButton>
@@ -201,9 +201,9 @@ export function BookingStatus() {
                 Back
               </SecondaryButton>
             </section>
-            }
+          )}
 
-          {upcoming && mode === 'view' &&
+          {upcoming && mode === 'view' && (
             <div className="flex flex-col gap-2">
               <p className="text-[12.5px]" style={muted}>
                 {freeWindow ? tx('Free to change until {n} hours before.', { n: a.cancelHours }) : tx('It’s within {n} hours, so changes may lose your deposit.', { n: a.cancelHours })} {a.policy}
@@ -215,22 +215,22 @@ export function BookingStatus() {
                 Cancel booking
               </SecondaryButton>
             </div>
-            }
+          )}
 
-          {requested && mode === 'view' &&
+          {requested && mode === 'view' && (
             <SecondaryButton theme={t} onClick={() => setMode('cancel')}>
               Withdraw request
             </SecondaryButton>
-            }
+          )}
 
-          {mode === 'reschedule' && service &&
+          {mode === 'reschedule' && service && (
             <section className="flex flex-col gap-4" aria-label={tx('Pick a new time')}>
               <SlotPicker theme={t} service={service} availability={a} bookings={ops.data.bookings} value={newStart} onChange={setNewStart} ignoreId={booking.id} />
-              {error &&
-              <p className="text-[13px] font-semibold" role="alert">
+              {error && (
+                <p className="text-[13px] font-semibold" role="alert">
                   {error}
                 </p>
-              }
+              )}
               <PrimaryButton theme={t} disabled={newStart === null} onClick={reschedule}>
                 Move my booking
               </PrimaryButton>
@@ -238,41 +238,41 @@ export function BookingStatus() {
                 Keep the current time
               </SecondaryButton>
             </section>
-            }
+          )}
 
-          {mode === 'cancel' &&
+          {mode === 'cancel' && (
             <section className="flex flex-col gap-3 p-4" style={cardStyle(t)} aria-label={tx('Cancel booking')}>
               <p className="text-[15px] font-semibold">{tx(requested ? 'Withdraw this request?' : 'Cancel this booking?')}</p>
               <p className="text-[13.5px]" style={muted}>
-                {booking.depositPaidNgn > 0 ?
-                freeWindow || requested ?
-                tx('Your {amount} deposit will be refunded.', { amount: formatNgn(booking.depositPaidNgn) }) :
-                tx('It’s within {n} hours, so under the policy the {amount} deposit isn’t refunded.', { n: a.cancelHours, amount: formatNgn(booking.depositPaidNgn) }) :
-                tx('Nothing was paid, so there’s nothing to refund.')}
+                {booking.depositPaidNgn > 0
+                  ? freeWindow || requested
+                    ? tx('Your {amount} deposit will be refunded.', { amount: formatNgn(booking.depositPaidNgn) })
+                    : tx('It’s within {n} hours, so under the policy the {amount} deposit isn’t refunded.', { n: a.cancelHours, amount: formatNgn(booking.depositPaidNgn) })
+                  : tx('Nothing was paid, so there’s nothing to refund.')}
                 {bal.state === 'paid' && ` ${tx('The {amount} balance you paid is refunded in full.', { amount: formatNgn(booking.balancePaidNgn ?? 0) })}`}
               </p>
               <PrimaryButton
                 theme={t}
                 onClick={() => {
                   if (ops.apply((d) => cancelBooking(d, booking.id, 'customer', ''))) setMode('view');
-                }}>
-                
+                }}
+              >
                 Yes, cancel it
               </PrimaryButton>
               <SecondaryButton theme={t} onClick={() => setMode('view')}>
                 Keep my booking
               </SecondaryButton>
             </section>
-            }
+          )}
 
-          {phone &&
+          {phone && (
             <a href={whatsappLink(phone, `Hi! About my booking ${booking.ref}…`)} target="_blank" rel="noopener noreferrer" className="flex h-12 items-center justify-center gap-2 text-[15px] font-semibold" style={{ ...cardStyle(t), borderRadius: 999 }}>
               <MessageCircleIcon size={17} aria-hidden /> {tx('Message the business')}
             </a>
-            }
+          )}
         </main>
       </PageSurface>
     </div>
-    </LocaleProvider>);
-
+    </LocaleProvider>
+  );
 }

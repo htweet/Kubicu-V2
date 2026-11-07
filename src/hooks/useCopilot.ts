@@ -81,7 +81,7 @@ export function useCopilot(channel: CopilotChannel, chatPhone?: string, openId?:
       if (items.length) send({ kind: 'images', items });
       return null;
     },
-    [send, topic]
+    [send, topic],
   );
 
   // Generation: limits first, then the real steps (plan → layout → blocks → gaps → preview).
@@ -111,9 +111,9 @@ export function useCopilot(channel: CopilotChannel, chatPhone?: string, openId?:
         const doc = draftDocFrom(s, plan);
         const existing = s.draftId ? readDraft(s.draftId) : null;
         // An expired or claimed draft is never revived: changes after that make a fresh draft and link.
-        const draft: CopilotDraft = existing && !existing.claimed && !isExpired(existing) ?
-        { ...existing, doc, brief, themeName: plan.themeName, revisions: existing.revisions + 1 } :
-        { ...newDraftIds(), sessionId: s.id, doc, brief, themeName: plan.themeName, createdAt: new Date().toISOString(), revisions: 0 };
+        const draft: CopilotDraft = existing && !existing.claimed && !isExpired(existing)
+          ? { ...existing, doc, brief, themeName: plan.themeName, revisions: existing.revisions + 1 }
+          : { ...newDraftIds(), sessionId: s.id, doc, brief, themeName: plan.themeName, createdAt: new Date().toISOString(), revisions: 0 };
         if (!saveDraft(draft)) return { ...s, stage: 'failed', messages: [...s.messages, failedMessage()] };
         spend(key, isRevision ? 'changes' : 'drafts');
         return { ...s, stage: 'ready', brief, draftId: draft.id, progress: steps, messages: [...s.messages, readyMessage(s, draft.id, brief.gaps.length)] };

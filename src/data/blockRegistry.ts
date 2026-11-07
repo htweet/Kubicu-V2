@@ -44,8 +44,8 @@ import {
   RectangleHorizontalIcon,
   ColumnsIcon,
   AppWindowIcon,
-  GraduationCapIcon } from
-'lucide-react';
+  GraduationCapIcon,
+} from 'lucide-react';
 import type { BlockContentMap, BlockLayout, BlockType } from '../types/page';
 import type { WorkspacePlan } from '../types/plan';
 import { uid } from '../utils/id';
@@ -93,8 +93,8 @@ const supportBase = {
     minNgn: 500,
     askName: true,
     askMessage: true,
-    linkId: null
-  })
+    linkId: null,
+  }),
 };
 
 export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
@@ -108,7 +108,7 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
     defaultAlign: 'center',
     supportsEmphasis: false,
     clickable: false,
-    defaults: () => ({ name: 'Your name', tagline: '', avatarUrl: '', avatarAlt: '', location: '' })
+    defaults: () => ({ name: 'Your name', tagline: '', avatarUrl: '', avatarAlt: '', location: '' }),
   },
   heading: {
     type: 'heading',
@@ -120,7 +120,7 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
     defaultAlign: 'left',
     supportsEmphasis: false,
     clickable: false,
-    defaults: () => ({ text: 'New section', level: 'h2' })
+    defaults: () => ({ text: 'New section', level: 'h2' }),
   },
   text: {
     type: 'text',
@@ -132,7 +132,7 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
     defaultAlign: 'left',
     supportsEmphasis: false,
     clickable: false,
-    defaults: () => ({ body: '' })
+    defaults: () => ({ body: '' }),
   },
   link: {
     type: 'link',
@@ -144,7 +144,7 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
     defaultAlign: 'center',
     supportsEmphasis: true,
     clickable: true,
-    defaults: () => ({ label: 'New link', url: '', description: '' })
+    defaults: () => ({ label: 'New link', url: '', description: '' }),
   },
   social: {
     type: 'social',
@@ -156,7 +156,7 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
     defaultAlign: 'center',
     supportsEmphasis: false,
     clickable: true,
-    defaults: () => ({ items: [] })
+    defaults: () => ({ items: [] }),
   },
   image: {
     type: 'image',
@@ -168,7 +168,7 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
     defaultAlign: 'left',
     supportsEmphasis: false,
     clickable: false,
-    defaults: () => ({ url: '', alt: '', caption: '', aspect: '4:5' })
+    defaults: () => ({ url: '', alt: '', caption: '', aspect: '4:5' }),
   },
   video: {
     type: 'video',
@@ -180,7 +180,7 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
     defaultAlign: 'left',
     supportsEmphasis: false,
     clickable: false,
-    defaults: () => ({ url: '', title: '' })
+    defaults: () => ({ url: '', title: '' }),
   },
   divider: {
     type: 'divider',
@@ -192,7 +192,7 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
     defaultAlign: 'center',
     supportsEmphasis: false,
     clickable: false,
-    defaults: () => ({ label: '' })
+    defaults: () => ({ label: '' }),
   },
   spacer: {
     type: 'spacer',
@@ -204,7 +204,7 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
     defaultAlign: 'center',
     supportsEmphasis: false,
     clickable: false,
-    defaults: () => ({ size: 'md' })
+    defaults: () => ({ size: 'md' }),
   },
   contact: {
     type: 'contact',
@@ -216,7 +216,7 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
     defaultAlign: 'left',
     supportsEmphasis: false,
     clickable: true,
-    defaults: () => ({ phone: '', email: '', address: '', hours: '' })
+    defaults: () => ({ phone: '', email: '', address: '', hours: '' }),
   },
   faq: {
     type: 'faq',
@@ -228,7 +228,7 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
     defaultAlign: 'left',
     supportsEmphasis: false,
     clickable: false,
-    defaults: () => ({ title: 'Questions', items: [{ id: uid('faq'), question: '', answer: '' }] })
+    defaults: () => ({ title: 'Questions', items: [{ id: uid('faq'), question: '', answer: '' }] }),
   },
   leadForm: {
     type: 'leadForm',
@@ -245,8 +245,8 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
       description: '',
       fields: { name: true, email: true, phone: false, message: true },
       submitLabel: 'Send',
-      consentText: ''
-    })
+      consentText: '',
+    }),
   },
   whatsapp: {
     type: 'whatsapp',
@@ -258,7 +258,7 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
     defaultAlign: 'center',
     supportsEmphasis: true,
     clickable: true,
-    defaults: () => ({ label: 'Chat on WhatsApp', phone: '', message: 'Hello! I have a question.' })
+    defaults: () => ({ label: 'Chat on WhatsApp', phone: '', message: 'Hello! I have a question.' }),
   },
   booking: {
     type: 'booking',
@@ -277,8 +277,8 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
       duration: '',
       priceNote: '',
       ctaLabel: 'Book now',
-      url: ''
-    })
+      url: '',
+    }),
   },
   newsletter: {
     type: 'newsletter',
@@ -294,8 +294,8 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
       title: 'Stay in the loop',
       description: '',
       buttonLabel: 'Subscribe',
-      consentText: ''
-    })
+      consentText: '',
+    }),
   },
   product: {
     type: 'product',
@@ -317,8 +317,8 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
       ctaLabel: 'Order on WhatsApp',
       ctaAction: 'whatsapp',
       url: '',
-      whatsappPhone: ''
-    })
+      whatsappPhone: '',
+    }),
   },
   gallery: {
     type: 'gallery',
@@ -331,7 +331,7 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
     supportsEmphasis: false,
     clickable: false,
     minPlan: 'creator',
-    defaults: () => ({ title: '', layout: 'grid', images: [] })
+    defaults: () => ({ title: '', layout: 'grid', images: [] }),
   },
   portfolio: {
     type: 'portfolio',
@@ -345,8 +345,8 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
     clickable: true,
     defaults: () => ({
       title: 'Selected work',
-      items: [{ id: uid('pf'), title: '', client: '', role: '', outcome: '', summary: '', coverUrl: '', coverAlt: '', url: '' }]
-    })
+      items: [{ id: uid('pf'), title: '', client: '', role: '', outcome: '', summary: '', coverUrl: '', coverAlt: '', url: '' }],
+    }),
   },
   location: {
     type: 'location',
@@ -358,7 +358,7 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
     defaultAlign: 'left',
     supportsEmphasis: false,
     clickable: true,
-    defaults: () => ({ name: '', address: '', timeZone: 'Africa/Lagos', hours: defaultHours(), note: '' })
+    defaults: () => ({ name: '', address: '', timeZone: 'Africa/Lagos', hours: defaultHours(), note: '' }),
   },
   testimonial: {
     type: 'testimonial',
@@ -370,7 +370,7 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
     defaultAlign: 'left',
     supportsEmphasis: false,
     clickable: false,
-    defaults: () => ({ quote: '', name: '', role: '', source: '', avatarUrl: '', avatarAlt: '', permission: false })
+    defaults: () => ({ quote: '', name: '', role: '', source: '', avatarUrl: '', avatarAlt: '', permission: false }),
   },
   countdown: {
     type: 'countdown',
@@ -382,7 +382,7 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
     defaultAlign: 'center',
     supportsEmphasis: false,
     clickable: true,
-    defaults: () => ({ title: 'Launching soon', target: null, endedMessage: 'It’s here.', linkLabel: '', url: '' })
+    defaults: () => ({ title: 'Launching soon', target: null, endedMessage: 'It’s here.', linkLabel: '', url: '' }),
   },
   event: {
     type: 'event',
@@ -404,8 +404,8 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
       ticketUrl: '',
       ctaLabel: 'Get tickets',
       tiers: [],
-      soldOut: false
-    })
+      soldOut: false,
+    }),
   },
   productGrid: {
     type: 'productGrid',
@@ -420,13 +420,13 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
     defaults: () => ({
       title: 'Shop',
       items: [
-      { id: uid('gp'), name: '', priceNgn: null, imageUrl: '', imageAlt: '', note: '', soldOut: false, url: '' },
-      { id: uid('gp'), name: '', priceNgn: null, imageUrl: '', imageAlt: '', note: '', soldOut: false, url: '' }],
-
+        { id: uid('gp'), name: '', priceNgn: null, imageUrl: '', imageAlt: '', note: '', soldOut: false, url: '' },
+        { id: uid('gp'), name: '', priceNgn: null, imageUrl: '', imageAlt: '', note: '', soldOut: false, url: '' },
+      ],
       orderAction: 'whatsapp',
       whatsappPhone: '',
-      ctaLabel: 'Order'
-    })
+      ctaLabel: 'Order',
+    }),
   },
   menu: {
     type: 'menu',
@@ -444,8 +444,8 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
       categories: [{ id: uid('mc'), name: 'Mains', items: [{ id: uid('mi'), name: '', description: '', priceNgn: null, tags: '', available: true }] }],
       whatsappPhone: '',
       orderingOpen: true,
-      closedMessage: 'We’re not taking orders right now.'
-    })
+      closedMessage: 'We’re not taking orders right now.',
+    }),
   },
   pricing: {
     type: 'pricing',
@@ -460,10 +460,10 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
     defaults: () => ({
       title: 'Packages',
       packages: [
-      { id: uid('pk'), name: 'Starter', priceNgn: null, unit: '', description: '', features: '', ctaLabel: 'Enquire', url: '', highlighted: false },
-      { id: uid('pk'), name: 'Full', priceNgn: null, unit: '', description: '', features: '', ctaLabel: 'Enquire', url: '', highlighted: true }]
-
-    })
+        { id: uid('pk'), name: 'Starter', priceNgn: null, unit: '', description: '', features: '', ctaLabel: 'Enquire', url: '', highlighted: false },
+        { id: uid('pk'), name: 'Full', priceNgn: null, unit: '', description: '', features: '', ctaLabel: 'Enquire', url: '', highlighted: true },
+      ],
+    }),
   },
   download: {
     type: 'download',
@@ -486,8 +486,8 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
       url: '',
       ctaLabel: 'Download',
       coverUrl: '',
-      coverAlt: ''
-    })
+      coverAlt: '',
+    }),
   },
   subscription: {
     type: 'subscription',
@@ -500,7 +500,7 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
     supportsEmphasis: false,
     clickable: true,
     minPlan: 'pro',
-    defaults: () => ({ title: 'Join', intro: '', planIds: [], ctaLabel: 'Subscribe', highlightPlanId: null })
+    defaults: () => ({ title: 'Join', intro: '', planIds: [], ctaLabel: 'Subscribe', highlightPlanId: null }),
   },
   course: {
     type: 'course',
@@ -513,7 +513,7 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
     supportsEmphasis: false,
     clickable: true,
     minPlan: 'creator',
-    defaults: () => ({ courseId: null, style: 'card', ctaLabel: '' })
+    defaults: () => ({ courseId: null, style: 'card', ctaLabel: '' }),
   },
   form: {
     type: 'form',
@@ -525,7 +525,7 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
     defaultAlign: 'left',
     supportsEmphasis: false,
     clickable: false,
-    defaults: () => ({ formId: null, showTitle: true })
+    defaults: () => ({ formId: null, showTitle: true }),
   },
   proof: {
     type: 'proof',
@@ -538,7 +538,7 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
     supportsEmphasis: false,
     clickable: false,
     requiresApp: 'proof',
-    defaults: () => ({ title: 'What clients say', show: 'both', limit: 3 })
+    defaults: () => ({ title: 'What clients say', show: 'both', limit: 3 }),
   },
   membersOnly: {
     type: 'membersOnly',
@@ -551,7 +551,7 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
     supportsEmphasis: false,
     clickable: true,
     minPlan: 'pro',
-    defaults: () => ({ title: 'For members', teaser: '', joinLabel: 'Become a member', access: 'any', planIds: [], covers: 0 })
+    defaults: () => ({ title: 'For members', teaser: '', joinLabel: 'Become a member', access: 'any', planIds: [], covers: 0 }),
   },
   trustBadge: {
     type: 'trustBadge',
@@ -565,7 +565,7 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
     clickable: true,
     requiresApp: 'trust-passport',
     // D254: new badges hide the number and stay hidden while "Just starting".
-    defaults: () => ({ style: 'compact', showScore: false, hideBelow: true })
+    defaults: () => ({ style: 'compact', showScore: false, hideBelow: true }),
   },
   audio: {
     type: 'audio',
@@ -577,7 +577,7 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
     defaultAlign: 'left',
     supportsEmphasis: false,
     clickable: false,
-    defaults: () => ({ title: '', artist: '', url: '', fileName: '', coverUrl: '', coverAlt: '', allowDownload: false, transcript: '' })
+    defaults: () => ({ title: '', artist: '', url: '', fileName: '', coverUrl: '', coverAlt: '', allowDownload: false, transcript: '' }),
   },
   playlist: {
     type: 'playlist',
@@ -589,7 +589,7 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
     defaultAlign: 'left',
     supportsEmphasis: false,
     clickable: true,
-    defaults: () => ({ title: '', artist: '', coverUrl: '', coverAlt: '', allowDownload: false, tracks: [{ id: uid('tr'), title: '', artist: '', url: '', fileName: '', duration: '', productId: null }] })
+    defaults: () => ({ title: '', artist: '', coverUrl: '', coverAlt: '', allowDownload: false, tracks: [{ id: uid('tr'), title: '', artist: '', url: '', fileName: '', duration: '', productId: null }] }),
   },
   collection: {
     type: 'collection',
@@ -601,7 +601,7 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
     defaultAlign: 'left',
     supportsEmphasis: false,
     clickable: true,
-    defaults: () => ({ title: '', collectionId: null, layout: 'strip', limit: 8, showSeeAll: true })
+    defaults: () => ({ title: '', collectionId: null, layout: 'strip', limit: 8, showSeeAll: true }),
   },
   support: supportBase,
   // ——— Layout & showcase (D153) ———
@@ -627,8 +627,8 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
       primaryUrl: '',
       secondaryLabel: '',
       secondaryUrl: '',
-      meta: ''
-    })
+      meta: '',
+    }),
   },
   featureGrid: {
     type: 'featureGrid',
@@ -645,11 +645,11 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
       intro: '',
       columns: 3,
       items: [
-      { id: uid('ft'), title: 'First service', text: 'What it is and who it helps.', imageUrl: '', imageAlt: '', label: '', url: '' },
-      { id: uid('ft'), title: 'Second service', text: 'What it is and who it helps.', imageUrl: '', imageAlt: '', label: '', url: '' },
-      { id: uid('ft'), title: 'Third service', text: 'What it is and who it helps.', imageUrl: '', imageAlt: '', label: '', url: '' }]
-
-    })
+        { id: uid('ft'), title: 'First service', text: 'What it is and who it helps.', imageUrl: '', imageAlt: '', label: '', url: '' },
+        { id: uid('ft'), title: 'Second service', text: 'What it is and who it helps.', imageUrl: '', imageAlt: '', label: '', url: '' },
+        { id: uid('ft'), title: 'Third service', text: 'What it is and who it helps.', imageUrl: '', imageAlt: '', label: '', url: '' },
+      ],
+    }),
   },
   steps: {
     type: 'steps',
@@ -665,11 +665,11 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
       title: 'How it works',
       intro: '',
       items: [
-      { id: uid('st'), title: 'Tell me what you need', text: '' },
-      { id: uid('st'), title: 'I send a plan and price', text: '' },
-      { id: uid('st'), title: 'We get started', text: '' }]
-
-    })
+        { id: uid('st'), title: 'Tell me what you need', text: '' },
+        { id: uid('st'), title: 'I send a plan and price', text: '' },
+        { id: uid('st'), title: 'We get started', text: '' },
+      ],
+    }),
   },
   logoStrip: {
     type: 'logoStrip',
@@ -681,7 +681,7 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
     defaultAlign: 'center',
     supportsEmphasis: false,
     clickable: false,
-    defaults: () => ({ title: 'Worked with', items: [], permission: false })
+    defaults: () => ({ title: 'Worked with', items: [], permission: false }),
   },
   figures: {
     type: 'figures',
@@ -696,12 +696,12 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
     defaults: () => ({
       title: '',
       items: [
-      { id: uid('fg'), value: '120+', label: 'Projects delivered' },
-      { id: uid('fg'), value: '6 yrs', label: 'In business' },
-      { id: uid('fg'), value: '4', label: 'Cities served' }],
-
-      confirmed: false
-    })
+        { id: uid('fg'), value: '120+', label: 'Projects delivered' },
+        { id: uid('fg'), value: '6 yrs', label: 'In business' },
+        { id: uid('fg'), value: '4', label: 'Cities served' },
+      ],
+      confirmed: false,
+    }),
   },
   mediaList: {
     type: 'mediaList',
@@ -717,8 +717,8 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
       title: 'Latest episodes',
       kind: 'episodes',
       items: [{ id: uid('md'), title: 'Your first episode', meta: '', duration: '', imageUrl: '', url: '' }],
-      links: []
-    })
+      links: [],
+    }),
   },
   listings: {
     type: 'listings',
@@ -733,8 +733,8 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
     defaults: () => ({
       title: 'Available now',
       ctaLabel: 'Enquire',
-      items: [{ id: uid('ls'), title: 'Your first listing', imageUrl: '', imageAlt: '', price: '', facts: '', location: '', url: '', example: true }]
-    })
+      items: [{ id: uid('ls'), title: 'Your first listing', imageUrl: '', imageAlt: '', price: '', facts: '', location: '', url: '', example: true }],
+    }),
   },
   /* Containers (D167) */
   section: {
@@ -747,7 +747,7 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
     defaultAlign: 'left',
     supportsEmphasis: false,
     clickable: false,
-    defaults: () => ({ heading: '', intro: '', align: 'left' })
+    defaults: () => ({ heading: '', intro: '', align: 'left' }),
   },
   columns: {
     type: 'columns',
@@ -761,7 +761,7 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
     clickable: false,
     minPlan: 'creator',
     defaultLayout: { width: 'wide' },
-    defaults: () => ({ ratio: 'equal', gap: 'normal', valign: 'top', phoneReverse: false })
+    defaults: () => ({ ratio: 'equal', gap: 'normal', valign: 'top', phoneReverse: false }),
   },
   tabs: {
     type: 'tabs',
@@ -774,64 +774,64 @@ export const blockDefinitions: { [K in BlockType]: BlockDefinition<K> } = {
     supportsEmphasis: false,
     clickable: false,
     minPlan: 'creator',
-    defaults: () => ({ style: 'underline', phoneStyle: 'accordion' })
+    defaults: () => ({ style: 'underline', phoneStyle: 'accordion' }),
   },
   ...storyBlockDefinitions,
-  ...round2BlockDefinitions
+  ...round2BlockDefinitions,
 };
 
 export const blockCategories: BlockCategory[] = ['Foundation', 'Showcase', 'Conversion', 'Commerce'];
 
 export const blockOrder: BlockType[] = [
-'hero',
-'profile',
-'heading',
-'text',
-'link',
-'social',
-'image',
-'video',
-'audio',
-'playlist',
-'divider',
-'spacer',
-'contact',
-'faq',
-'leadForm',
-'form',
-'whatsapp',
-'booking',
-'newsletter',
-'product',
-'gallery',
-'portfolio',
-'location',
-'testimonial',
-'proof',
-'trustBadge',
-'countdown',
-'event',
-'productGrid',
-'collection',
-'menu',
-'pricing',
-'support',
-'subscription',
-'course',
-'membersOnly',
-'download',
-'featureGrid',
-'steps',
-'logoStrip',
-'figures',
-'mediaList',
-'listings',
-'section',
-'columns',
-'tabs',
-...storyBlockOrder,
-...round2BlockOrder];
-
+  'hero',
+  'profile',
+  'heading',
+  'text',
+  'link',
+  'social',
+  'image',
+  'video',
+  'audio',
+  'playlist',
+  'divider',
+  'spacer',
+  'contact',
+  'faq',
+  'leadForm',
+  'form',
+  'whatsapp',
+  'booking',
+  'newsletter',
+  'product',
+  'gallery',
+  'portfolio',
+  'location',
+  'testimonial',
+  'proof',
+  'trustBadge',
+  'countdown',
+  'event',
+  'productGrid',
+  'collection',
+  'menu',
+  'pricing',
+  'support',
+  'subscription',
+  'course',
+  'membersOnly',
+  'download',
+  'featureGrid',
+  'steps',
+  'logoStrip',
+  'figures',
+  'mediaList',
+  'listings',
+  'section',
+  'columns',
+  'tabs',
+  ...storyBlockOrder,
+  ...round2BlockOrder,
+];
 
 export interface PlannedBlock {
   id: string;

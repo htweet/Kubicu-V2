@@ -15,7 +15,7 @@ export function fontsFor(theme: PageTheme) {
   return {
     ...pair,
     display: m.headingFont ? themeFonts[m.headingFont].stack : pair.display,
-    body: m.bodyFont ? themeFonts[m.bodyFont].stack : pair.body
+    body: m.bodyFont ? themeFonts[m.bodyFont].stack : pair.body,
   };
 }
 
@@ -79,21 +79,21 @@ export function surfaceStyle(theme: PageTheme): React.CSSProperties {
   const insetHighlight = m?.edgeHighlight ? 'inset 0 1px 0 rgba(255,255,255,0.18)' : undefined;
   const shadow = [insetHighlight, shadowFor(theme)].filter(Boolean).join(', ') || undefined;
   switch (finish) {
-    case 'glass':{
-        const translucent = mix(theme.surface, m?.glassOpacity ?? 60);
-        return {
-          background: `var(--kb-glass-override, ${translucent})`,
-          backdropFilter: 'var(--kb-blur, none)',
-          WebkitBackdropFilter: 'var(--kb-blur, none)',
-          boxShadow: shadow
-        };
-      }
+    case 'glass': {
+      const translucent = mix(theme.surface, m?.glassOpacity ?? 60);
+      return {
+        background: `var(--kb-glass-override, ${translucent})`,
+        backdropFilter: 'var(--kb-blur, none)',
+        WebkitBackdropFilter: 'var(--kb-blur, none)',
+        boxShadow: shadow,
+      };
+    }
     case 'satin':
       return { background: `linear-gradient(180deg, ${mix('#FFFFFF', 7, theme.surface)}, ${theme.surface})`, boxShadow: shadow };
     case 'lacquer':
       return {
         background: `linear-gradient(180deg, ${mix('#FFFFFF', 10, theme.surface)} 0%, ${theme.surface} 38%, ${mix('#000000', 6, theme.surface)} 100%)`,
-        boxShadow: ['inset 0 1px 0 rgba(255,255,255,0.14)', shadowFor(theme)].filter(Boolean).join(', ')
+        boxShadow: ['inset 0 1px 0 rgba(255,255,255,0.14)', shadowFor(theme)].filter(Boolean).join(', '),
       };
     default:
       return { background: theme.surface, boxShadow: shadow };
@@ -111,13 +111,13 @@ function primaryFill(theme: PageTheme): React.CSSProperties {
       return {
         background: `linear-gradient(180deg, rgba(255,255,255,0.30) 0%, rgba(255,255,255,0.06) 48%, rgba(0,0,0,0) 52%), ${m.buttonGradient ?? theme.accent}`,
         border: `1px solid ${mix('#FFFFFF', 22, theme.accent)}`,
-        boxShadow: `inset 0 1px 0 rgba(255,255,255,0.35), 0 8px 22px -10px ${mix(theme.accent, 70)}`
+        boxShadow: `inset 0 1px 0 rgba(255,255,255,0.35), 0 8px 22px -10px ${mix(theme.accent, 70)}`,
       };
     case 'glow':
       return {
         background: m.buttonGradient ?? theme.accent,
         border: `1px solid ${mix(m.glow ?? theme.accent, 70, '#FFFFFF')}`,
-        boxShadow: `0 0 0 3px ${mix(m.glow ?? theme.accent, 18)}, 0 10px 30px -10px ${mix(m.glow ?? theme.accent, 70)}`
+        boxShadow: `0 0 0 3px ${mix(m.glow ?? theme.accent, 18)}, 0 10px 30px -10px ${mix(m.glow ?? theme.accent, 70)}`,
       };
     default:
       return { background: theme.accent, border: `1px solid ${theme.accent}` };
@@ -141,7 +141,7 @@ export function buttonStyle(theme: PageTheme, emphasis: BlockStyle['emphasis']):
         background: mix(theme.accent, 12, theme.background),
         color: theme.text,
         borderRadius: radius,
-        border: '1px solid transparent'
+        border: '1px solid transparent',
       };
     default:
       if (!m) return { background: theme.surface, color: theme.text, borderRadius: radius, border: `1px solid ${mix(theme.text, 12)}` };
@@ -162,7 +162,7 @@ export function inputStyle(theme: PageTheme): React.CSSProperties {
     background: m?.surfaceFinish === 'glass' ? mix(theme.background, 72) : theme.background,
     color: theme.text,
     borderRadius: inputRadius(theme),
-    border: `1px solid ${m?.border ? mix(m.border, 100) : mix(theme.text, 18)}`
+    border: `1px solid ${m?.border ? mix(m.border, 100) : mix(theme.text, 18)}`,
   };
 }
 

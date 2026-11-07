@@ -53,7 +53,7 @@ export function useContainerDrop({ blocks, placeBlock, undo }: Options) {
 
     placeBlock(dragId, t.parentId, t.beforeId);
     const container = t.parentId ? blocks.find((b) => b.id === t.parentId) : undefined;
-    const msg = container ? sameParent ? `Moved ${layerName(dragged)} within ${layerName(container)}` : `Moved ${layerName(dragged)} into ${layerName(container)}` : `Moved ${layerName(dragged)} out onto the page`;
+    const msg = container ? (sameParent ? `Moved ${layerName(dragged)} within ${layerName(container)}` : `Moved ${layerName(dragged)} into ${layerName(container)}`) : `Moved ${layerName(dragged)} out onto the page`;
     toast(msg, { action: { label: 'Undo', onClick: undo } });
     announce(msg);
   };

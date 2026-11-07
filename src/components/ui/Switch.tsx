@@ -37,17 +37,17 @@ export function Switch({ id, checked, onChange, label, description, disabled, hi
           'relative mt-0.5 inline-flex h-5 w-9 shrink-0 items-center rounded-full border transition-colors duration-150 ease-out before:absolute before:-inset-x-1 before:-inset-y-3',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-canvas',
           'disabled:cursor-not-allowed',
-          checked ? 'border-action bg-action' : 'border-line-strong bg-sunken'
-        )}>
-        
+          checked ? 'border-action bg-action' : 'border-line-strong bg-sunken',
+        )}
+      >
         <span
           aria-hidden
           className={cn(
             'inline-block h-3.5 w-3.5 rounded-full shadow-1 transition-transform duration-150 ease-out',
-            checked ? 'translate-x-[18px] bg-action-fg' : 'translate-x-[2px] bg-fg-subtle'
-          )} />
-        
+            checked ? 'translate-x-[18px] bg-action-fg' : 'translate-x-[2px] bg-fg-subtle',
+          )}
+        />
       </button>
-    </div>);
-
+    </div>
+  );
 }

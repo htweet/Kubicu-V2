@@ -15,8 +15,8 @@ export function AgendaBlock({ block, theme, mode }: BlockProps<'agenda'>) {
     <section>
       <SectionHeading theme={theme} title={c.title} intro={c.date || undefined} />
       <ol className="flex flex-col">
-        {items.map((i) =>
-        <li key={i.id} className="grid grid-cols-[4.5rem_minmax(0,1fr)] gap-4 py-5 md:grid-cols-[6rem_minmax(0,1fr)] md:gap-8" style={{ borderTop: `1px solid ${mix(theme.text, 10)}` }}>
+        {items.map((i) => (
+          <li key={i.id} className="grid grid-cols-[4.5rem_minmax(0,1fr)] gap-4 py-5 md:grid-cols-[6rem_minmax(0,1fr)] md:gap-8" style={{ borderTop: `1px solid ${mix(theme.text, 10)}` }}>
             <time className="pt-0.5 text-[15px] font-semibold tabular-nums" style={{ color: accentOf(theme) }}>{i.time}</time>
             <div className="min-w-0">
               <h3 className="text-[18px] font-medium leading-snug" style={{ fontFamily: display, color: theme.text }}>{i.title}</h3>
@@ -24,8 +24,8 @@ export function AgendaBlock({ block, theme, mode }: BlockProps<'agenda'>) {
               {i.text && <p className="mt-1.5 text-[14px] leading-relaxed" style={{ color: theme.mutedText }}>{i.text}</p>}
             </div>
           </li>
-        )}
+        ))}
       </ol>
-    </section>);
-
+    </section>
+  );
 }

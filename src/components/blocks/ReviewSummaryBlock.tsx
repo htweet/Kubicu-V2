@@ -40,8 +40,8 @@ export function ReviewSummaryBlock({ block, theme, mode }: BlockProps<'reviewSum
           </p>
         </div>
         <ul className="flex flex-col gap-3">
-          {latest.map((r) =>
-          <li key={r.id} className="p-4" style={cardStyle(theme)}>
+          {latest.map((r) => (
+            <li key={r.id} className="p-4" style={cardStyle(theme)}>
               <div className="flex items-center justify-between gap-3">
                 <Stars rating={r.rating} size={13} color={theme.text} />
                 <span className="text-[12px]" style={{ color: theme.mutedText }}>{tr(r.source.label)}</span>
@@ -49,9 +49,9 @@ export function ReviewSummaryBlock({ block, theme, mode }: BlockProps<'reviewSum
               {r.text && <p className="mt-2 text-[15px] leading-relaxed" style={{ color: theme.text }}>{r.text}</p>}
               <p className="mt-2 text-[13px] font-medium" style={{ color: mix(theme.text, 70) }}>{r.displayName}</p>
             </li>
-          )}
+          ))}
         </ul>
       </div>
-    </section>);
-
+    </section>
+  );
 }

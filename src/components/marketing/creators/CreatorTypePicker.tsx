@@ -34,7 +34,7 @@ export function CreatorTypePicker() {
           return (
             <button
               key={t.id}
-              ref={(el) => tabs.current[t.id] = el}
+              ref={(el) => (tabs.current[t.id] = el)}
               type="button"
               role="tab"
               id={`ct-tab-${t.id}`}
@@ -46,13 +46,13 @@ export function CreatorTypePicker() {
               className={cn(
                 'shrink-0 whitespace-nowrap rounded-full px-4 py-2.5 text-[15px] font-bold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
                 'lg:flex lg:items-center lg:justify-between lg:rounded-none lg:border-b lg:border-line lg:px-0 lg:py-5 lg:text-[clamp(22px,2.2vw,30px)] lg:font-extrabold lg:tracking-[-0.02em]',
-                on ? 'bg-[rgb(20_20_18)] text-white lg:bg-transparent lg:text-fg' : 'bg-[rgb(238_233_221)] text-[rgb(70_68_62)] hover:text-fg lg:bg-transparent lg:text-fg-subtle'
-              )}>
-              
+                on ? 'bg-[rgb(20_20_18)] text-white lg:bg-transparent lg:text-fg' : 'bg-[rgb(238_233_221)] text-[rgb(70_68_62)] hover:text-fg lg:bg-transparent lg:text-fg-subtle',
+              )}
+            >
               {tr(t.label)}
               <ArrowRightIcon size={22} aria-hidden className={cn('hidden transition-[opacity,transform] duration-200 ease-out lg:block', on ? 'translate-x-0 opacity-100' : '-translate-x-2 opacity-0')} />
-            </button>);
-
+            </button>
+          );
         })}
       </div>
 
@@ -64,32 +64,32 @@ export function CreatorTypePicker() {
             animate={{ opacity: 1, y: 0 }}
             exit={reduce ? { opacity: 0 } : { opacity: 0, y: -6 }}
             transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
-            className="grid items-center gap-8 sm:grid-cols-[auto_minmax(0,1fr)]">
-            
+            className="grid items-center gap-8 sm:grid-cols-[auto_minmax(0,1fr)]"
+          >
             {example && <ExamplePhone doc={example.doc} width={210} className="mx-auto" />}
             <div className="min-w-0">
               <p className="text-[13px] font-bold text-fg-subtle">{tr('The page leads with')}</p>
               <p className="mt-2 text-[20px] font-bold leading-snug text-fg md:text-[22px]">{tr(type.leads)}</p>
               <ol className="mt-6 flex flex-col">
-                {type.blocks.map((b, i) =>
-                <li key={b} className="flex items-baseline gap-3 border-t border-[rgb(226_220_206)] py-2.5 text-[15px] text-fg last:border-b">
+                {type.blocks.map((b, i) => (
+                  <li key={b} className="flex items-baseline gap-3 border-t border-[rgb(226_220_206)] py-2.5 text-[15px] text-fg last:border-b">
                     <span className="w-5 shrink-0 tabular-nums text-fg-subtle">{i + 1}</span>
                     {tr(b)}
                   </li>
-                )}
+                ))}
               </ol>
-              {example &&
-              <Link
-                to={`/templates/${example.id}`}
-                className="mt-6 inline-flex h-11 items-center gap-1.5 rounded-full bg-[rgb(20_20_18)] px-5 text-[14px] font-bold text-white transition-transform duration-150 ease-out hover:scale-[1.03] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2">
-                
+              {example && (
+                <Link
+                  to={`/templates/${example.id}`}
+                  className="mt-6 inline-flex h-11 items-center gap-1.5 rounded-full bg-[rgb(20_20_18)] px-5 text-[14px] font-bold text-white transition-transform duration-150 ease-out hover:scale-[1.03] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2"
+                >
                   {tr('See: {name}', { name: example.name })} <ArrowRightIcon size={15} aria-hidden />
                 </Link>
-              }
+              )}
             </div>
           </motion.div>
         </AnimatePresence>
       </div>
-    </div>);
-
+    </div>
+  );
 }

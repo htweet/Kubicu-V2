@@ -8,7 +8,7 @@ interface SelectInputProps<T extends string> {
   id: string;
   label: string;
   value: T;
-  options: {value: T;label: string;disabled?: boolean;}[];
+  options: { value: T; label: string; disabled?: boolean }[];
   onChange: (value: T) => void;
   hint?: string;
   error?: string;
@@ -31,20 +31,20 @@ export function SelectInput<T extends string>({ id, label, value, options, onCha
           aria-required={required || undefined}
           aria-describedby={error ? `${id}-error` : hint ? `${id}-hint` : undefined}
           onChange={(e) => onChange(e.target.value as T)}
-          className={cn(fieldControlClass, 'h-10 appearance-none pr-9')}>
-          
-          {options.map((o) =>
-          <option key={o.value} value={o.value} disabled={o.disabled}>
+          className={cn(fieldControlClass, 'h-10 appearance-none pr-9')}
+        >
+          {options.map((o) => (
+            <option key={o.value} value={o.value} disabled={o.disabled}>
               {t(o.label)}
             </option>
-          )}
+          ))}
         </select>
         <ChevronDownIcon
           size={15}
           className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-fg-subtle"
-          aria-hidden />
-        
+          aria-hidden
+        />
       </div>
-    </Field>);
-
+    </Field>
+  );
 }

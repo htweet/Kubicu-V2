@@ -36,7 +36,7 @@ export interface Milestone {
 export interface MilestoneTemplate {
   id: string;
   name: string;
-  stages: {label: string;pct: number;trigger: Exclude<MilestoneTrigger, 'date'>;stepLabel?: string;}[];
+  stages: { label: string; pct: number; trigger: Exclude<MilestoneTrigger, 'date'>; stepLabel?: string }[];
   builtIn?: boolean;
 }
 
@@ -132,8 +132,8 @@ export interface Job {
   status: JobStatus;
   /** YYYY-MM-DD */
   dueDate: string;
-  checklist: {id: string;label: string;done: boolean;}[];
-  updates: {id: string;at: string;text: string;}[];
+  checklist: { id: string; label: string; done: boolean }[];
+  updates: { id: string; at: string; text: string }[];
   createdAt: string;
   sample?: boolean;
 }
@@ -142,7 +142,7 @@ export interface ServiceOsData {
   quotes: Quote[];
   invoices: Invoice[];
   jobs: Job[];
-  counters: {quote: number;invoice: number;};
+  counters: { quote: number; invoice: number };
   /** The seller's own saved stage templates (built-ins live in code). */
   milestoneTemplates: MilestoneTemplate[];
   /** Missing on older saved data — read through serviceSettingsOf(). */

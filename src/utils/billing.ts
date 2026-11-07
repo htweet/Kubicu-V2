@@ -28,14 +28,14 @@ export function emptyBilling(): BillingData {
     card: null,
     invoices: [],
     history: [],
-    sampleSeeded: false
+    sampleSeeded: false,
   };
 }
 
 const HISTORY_CAP = 300;
 
 /** Prepends one history entry (D68). */
-export function withEvent(data: BillingData, e: Omit<BillingEvent, 'id' | 'at'> & {at?: string;}): BillingData {
+export function withEvent(data: BillingData, e: Omit<BillingEvent, 'id' | 'at'> & { at?: string }): BillingData {
   const event: BillingEvent = { id: uid('bev'), at: e.at ?? new Date().toISOString(), ...e };
   return { ...data, history: [event, ...data.history].slice(0, HISTORY_CAP) };
 }
@@ -85,8 +85,8 @@ export function yearlySaving(plan: WorkspacePlan): number {
 
 export function addCycle(fromIso: string, cycle: BillingCycle): string {
   const d = new Date(fromIso);
-  if (cycle === 'yearly') d.setFullYear(d.getFullYear() + 1);else
-  d.setMonth(d.getMonth() + 1);
+  if (cycle === 'yearly') d.setFullYear(d.getFullYear() + 1);
+  else d.setMonth(d.getMonth() + 1);
   return d.toISOString();
 }
 
@@ -201,7 +201,7 @@ export function makeInvoice(data: BillingData, lines: InvoiceLine[], status: Inv
     vatNgn: vat,
     totalNgn: total,
     cardLast4: card?.last4 ?? null,
-    note
+    note,
   };
 }
 

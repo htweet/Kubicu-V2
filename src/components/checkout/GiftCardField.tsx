@@ -23,8 +23,8 @@ export function GiftCardField({ theme, code, onApply, resolution }: GiftCardFiel
     return (
       <button type="button" onClick={() => setOpen(true)} className="flex items-center gap-1.5 self-start text-[13.5px] font-semibold underline underline-offset-4">
         <GiftIcon size={14} aria-hidden /> Use a gift card
-      </button>);
-
+      </button>
+    );
   }
 
   if (resolution?.ok) {
@@ -47,12 +47,12 @@ export function GiftCardField({ theme, code, onApply, resolution }: GiftCardFiel
             onApply('');
           }}
           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2"
-          style={{ background: mix(theme.text, 8) }}>
-          
+          style={{ background: mix(theme.text, 8) }}
+        >
           <XIcon size={14} aria-hidden />
         </button>
-      </div>);
-
+      </div>
+    );
   }
 
   return (
@@ -61,8 +61,8 @@ export function GiftCardField({ theme, code, onApply, resolution }: GiftCardFiel
       onSubmit={(e) => {
         e.preventDefault();
         onApply(normaliseGiftCode(draft));
-      }}>
-      
+      }}
+    >
       <label htmlFor={id} className="text-[13px] font-medium">
         Gift card code
       </label>
@@ -78,8 +78,8 @@ export function GiftCardField({ theme, code, onApply, resolution }: GiftCardFiel
           aria-describedby={`${id}-msg`}
           onChange={(e) => setDraft(e.target.value.toUpperCase())}
           className="h-11 min-w-0 flex-1 px-3.5 font-mono text-[15px] uppercase outline-none focus:ring-2"
-          style={inputStyle(theme)} />
-        
+          style={inputStyle(theme)}
+        />
         <button type="submit" disabled={!draft.trim()} className="h-11 shrink-0 px-4 text-[14px] font-semibold disabled:opacity-50" style={buttonStyle(theme, 'default')}>
           Apply
         </button>
@@ -87,6 +87,6 @@ export function GiftCardField({ theme, code, onApply, resolution }: GiftCardFiel
       <p id={`${id}-msg`} className="text-[12.5px] font-medium" role={resolution && !resolution.ok ? 'status' : undefined} style={resolution && !resolution.ok ? undefined : muted}>
         {resolution && !resolution.ok ? resolution.message : 'Used after any discount. Whatever it doesn’t cover is paid as normal.'}
       </p>
-    </form>);
-
+    </form>
+  );
 }

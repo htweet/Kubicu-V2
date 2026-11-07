@@ -28,7 +28,7 @@ export const DEMO_WARN_DAYS = 2;
 const DAY = 86400000;
 const NOTICE_KEY = 'kubicu.demoRemovedNotice';
 
-export function demoExpiry(now = Date.now()): {seededAt: string;expiresAt: string;} {
+export function demoExpiry(now = Date.now()): { seededAt: string; expiresAt: string } {
   return { seededAt: new Date(now).toISOString(), expiresAt: new Date(now + DEMO_DATA_DAYS * DAY).toISOString() };
 }
 
@@ -43,15 +43,15 @@ export function demoExpired(w: Pick<Workspace, 'demoData'>, now = Date.now()): b
 
 /** What demo data covers, in plain words, for setup and Settings. */
 export const demoDataCovers = [
-'Products, collections, orders, discounts, stock history and a delivery in progress',
-'Subscriptions, an event with tickets, and two courses with learners',
-'Bookings services, a group class with attendees, appointments, contacts and automations',
-'Quotes, invoices and jobs, review requests and published reviews',
-'Wallet history, a payment link, WhatsApp chats and partner collaborations',
-'A form with responses, short links, a QR code and 30 days of visits',
-'Two sample teammates and an invite',
-'Seven sample spaces: campaign, group buy, event, fundraiser, pop-up shop, booking page and members area'];
-
+  'Products, collections, orders, discounts, stock history and a delivery in progress',
+  'Subscriptions, an event with tickets, and two courses with learners',
+  'Bookings services, a group class with attendees, appointments, contacts and automations',
+  'Quotes, invoices and jobs, review requests and published reviews',
+  'Wallet history, a payment link, WhatsApp chats and partner collaborations',
+  'A form with responses, short links, a QR code and 30 days of visits',
+  'Two sample teammates and an invite',
+  'Seven sample spaces: campaign, group buy, event, fundraiser, pop-up shop, booking page and members area',
+];
 
 /**
  * Removes every record marked as sample from this workspace's saved data and deletes the sample
@@ -63,9 +63,9 @@ export function removeDemoDataFromStorage(workspaceId: string, spaceIds: string[
     try {
       fn();
     } catch {
-
       // One module failing to save must not stop the others.
-    }};
+    }
+  };
   safe(() => {
     const c = readCommerce(workspaceId);
     if (c) writeCommerce(workspaceId, { ...clearSample(c), sampleSeeded: true });
@@ -97,7 +97,7 @@ export function removeDemoDataFromStorage(workspaceId: string, spaceIds: string[
       ledger: m.ledger.filter((e) => !e.sample),
       payouts: m.payouts.filter((p) => !p.sample),
       banks: m.banks.filter((b) => !b.id.endsWith('_s1')),
-      sampleFundraiserSeeded: true
+      sampleFundraiserSeeded: true,
     });
   });
   safe(() => {
@@ -151,9 +151,9 @@ export function wipeWorkspaceStorage(workspaceId: string): void {
     }
     keys.forEach((k) => window.localStorage.removeItem(k));
   } catch {
-
     // Storage unavailable — nothing to clear.
-  }setDemoSeed(workspaceId, false);
+  }
+  setDemoSeed(workspaceId, false);
 }
 
 const DEMO_WS_NOTICE_KEY = 'kubicu.demoWorkspaceNotice';
@@ -162,9 +162,9 @@ export function writeDemoWorkspaceNotice(kind: 'removed' | 'restored'): void {
   try {
     window.sessionStorage.setItem(DEMO_WS_NOTICE_KEY, kind);
   } catch {
-
     // No message is fine.
-  }}
+  }
+}
 
 export function takeDemoWorkspaceNotice(): 'removed' | 'restored' | null {
   try {
@@ -181,16 +181,16 @@ export function writeRemovedNotice(reason: 'manual' | 'expired', workspaceName: 
   try {
     window.sessionStorage.setItem(NOTICE_KEY, JSON.stringify({ reason, workspaceName }));
   } catch {
-
     // No message is fine.
-  }}
+  }
+}
 
-export function takeRemovedNotice(): {reason: 'manual' | 'expired';workspaceName: string;} | null {
+export function takeRemovedNotice(): { reason: 'manual' | 'expired'; workspaceName: string } | null {
   try {
     const raw = window.sessionStorage.getItem(NOTICE_KEY);
     if (!raw) return null;
     window.sessionStorage.removeItem(NOTICE_KEY);
-    return JSON.parse(raw) as {reason: 'manual' | 'expired';workspaceName: string;};
+    return JSON.parse(raw) as { reason: 'manual' | 'expired'; workspaceName: string };
   } catch {
     return null;
   }

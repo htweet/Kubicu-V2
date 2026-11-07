@@ -1,28 +1,28 @@
 export type EventType =
-'view' |
-'tap' |
-'product_view' |
-'cart_add' |
-'checkout_start' |
-'order_paid' |
-'booking_open' |
-'booking_time' |
-'booking_confirmed' |
-'lead' |
-'signup' |
-'subscribe_open' |
-'subscribe_started' |
-'ticket_select' |
-'ticket_checkout' |
-'ticket_paid' |
-'form_view' |
-'form_start' |
-'form_submit' |
-'member_gate' |
-'member_signin' |
-'member_view'
-/** Someone tapped or scanned a short link, before it sent them on (D270). Counted for the link, never as a page visit. */ |
-'link_click';
+  | 'view'
+  | 'tap'
+  | 'product_view'
+  | 'cart_add'
+  | 'checkout_start'
+  | 'order_paid'
+  | 'booking_open'
+  | 'booking_time'
+  | 'booking_confirmed'
+  | 'lead'
+  | 'signup'
+  | 'subscribe_open'
+  | 'subscribe_started'
+  | 'ticket_select'
+  | 'ticket_checkout'
+  | 'ticket_paid'
+  | 'form_view'
+  | 'form_start'
+  | 'form_submit'
+  | 'member_gate'
+  | 'member_signin'
+  | 'member_view'
+  /** Someone tapped or scanned a short link, before it sent them on (D270). Counted for the link, never as a page visit. */
+  | 'link_click';
 
 export type DeviceKind = 'phone' | 'tablet' | 'desktop';
 

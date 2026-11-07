@@ -70,8 +70,8 @@ export function AdjustStockDialog({ product, variantId, initialMode, initialBatc
     const fullNote = [note.trim(), batchNote].filter(Boolean).join(' · ');
     const ok = apply((d) => {
       const moved = moveStock(d, product.id, variant.id, delta, reason, fullNote, undefined, mode === 'damaged' ? chosenBatch?.branchId : undefined, mode === 'damaged' && chosenBatch ? chosenBatch.id : undefined);
-      if (mode !== 'received' || !lot.trim() && !expiresOn) return moved;
-      return { ...moved, products: moved.products.map((p) => p.id === product.id ? { ...p, variants: p.variants.map((v) => v.id === variant.id ? addBatch(v, lot, expiresOn || null, n) : v) } : p) };
+      if (mode !== 'received' || (!lot.trim() && !expiresOn)) return moved;
+      return { ...moved, products: moved.products.map((p) => (p.id === product.id ? { ...p, variants: p.variants.map((v) => (v.id === variant.id ? addBatch(v, lot, expiresOn || null, n) : v)) } : p)) };
     });
     if (ok) {
       toast(`Stock updated: ${variant.stock} → ${after}`, { description: `${product.name}${Object.keys(variant.options).length ? ` · ${variantLabel(variant)}` : ''}` });
@@ -86,77 +86,77 @@ export function AdjustStockDialog({ product, variantId, initialMode, initialBatc
       size="sm"
       title={`Adjust stock${product ? ` · ${product.name}` : ''}`}
       footer={
-      <>
+        <>
           <Button variant="secondary" onClick={onClose}>
             Cancel
           </Button>
           <Button onClick={save}>Save</Button>
         </>
-      }>
-      
-      {product &&
-      <div className="flex flex-col gap-4">
-          {product.variants.length > 1 &&
-        <SelectInput id="adj-variant" label="Variant" value={vid} onChange={setVid} options={product.variants.map((v) => ({ value: v.id, label: `${variantLabel(v)} · ${v.stock} in stock` }))} />
-        }
+      }
+    >
+      {product && (
+        <div className="flex flex-col gap-4">
+          {product.variants.length > 1 && (
+            <SelectInput id="adj-variant" label="Variant" value={vid} onChange={setVid} options={product.variants.map((v) => ({ value: v.id, label: `${variantLabel(v)} · ${v.stock} in stock` }))} />
+          )}
           <Field id="adj-mode" label="What happened?">
             <Segmented<Mode>
-            ariaLabel="Adjustment type"
-            fullWidth
-            value={mode}
-            onChange={(m) => {
-              setMode(m);
-              setAmount('');
-            }}
-            options={[
-            { value: 'received', label: 'Received' },
-            { value: 'correction', label: 'Recount' },
-            { value: 'damaged', label: 'Damaged' }]
-            } />
-          
+              ariaLabel="Adjustment type"
+              fullWidth
+              value={mode}
+              onChange={(m) => {
+                setMode(m);
+                setAmount('');
+              }}
+              options={[
+                { value: 'received', label: 'Received' },
+                { value: 'correction', label: 'Recount' },
+                { value: 'damaged', label: 'Damaged' },
+              ]}
+            />
           </Field>
           <TextInput
-          id="adj-amount"
-          label={mode === 'received' ? 'How many arrived?' : mode === 'damaged' ? 'How many to write off?' : 'Actual count on hand'}
-          inputMode="numeric"
-          value={amount}
-          error={tried && !valid ? mode === 'correction' ? 'Enter a count different from the current one' : 'Enter a whole number above 0' : undefined}
-          hint={variant ? `Now ${variant.stock}${amount !== '' && valid ? ` → ${after} after saving` : ''}` : undefined}
-          onChange={(e) => setAmount(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))} />
-        
-          {mode === 'received' &&
-        <div className="grid gap-4 sm:grid-cols-2">
+            id="adj-amount"
+            label={mode === 'received' ? 'How many arrived?' : mode === 'damaged' ? 'How many to write off?' : 'Actual count on hand'}
+            inputMode="numeric"
+            value={amount}
+            error={tried && !valid ? (mode === 'correction' ? 'Enter a count different from the current one' : 'Enter a whole number above 0') : undefined}
+            hint={variant ? `Now ${variant.stock}${amount !== '' && valid ? ` → ${after} after saving` : ''}` : undefined}
+            onChange={(e) => setAmount(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))}
+          />
+          {mode === 'received' && (
+            <div className="grid gap-4 sm:grid-cols-2">
               <TextInput id="adj-lot" label={tr('Batch or lot number')} optional placeholder="L2611-04" value={lot} onChange={(e) => setLot(e.target.value.slice(0, 30))} />
               <TextInput id="adj-expiry" label={tr('Expiry date')} optional type="date" min={todayIso()} value={expiresOn} error={tried ? expiryError : undefined} onChange={(e) => setExpiresOn(e.target.value)} />
             </div>
-        }
+          )}
           {mode === 'received' && <p className="-mt-2 text-caption text-fg-subtle">{tr('For food, cosmetics and medicines. Sales use the batch that expires soonest first.')}</p>}
-          {mode === 'damaged' && batches.length > 0 &&
-        <SelectInput
-          id="adj-batch"
-          label={tr('Which batch?')}
-          value={batchId}
-          onChange={setBatchId}
-          options={[
-          { value: '', label: tr('Soonest to expire first') },
-          ...batches.map((b) => ({
-            value: b.id,
-            label: [b.code || tr('No batch number'), b.expiresOn ? tr('Expires {date}', { date: formatExpiry(b.expiresOn) }) : '', tr('Units: {n}', { n: b.qty }), b.branchId ? locationName(data, b.branchId) : ''].filter(Boolean).join(' · ')
-          }))]
-          } />
-
-        }
+          {mode === 'damaged' && batches.length > 0 && (
+            <SelectInput
+              id="adj-batch"
+              label={tr('Which batch?')}
+              value={batchId}
+              onChange={setBatchId}
+              options={[
+                { value: '', label: tr('Soonest to expire first') },
+                ...batches.map((b) => ({
+                  value: b.id,
+                  label: [b.code || tr('No batch number'), b.expiresOn ? tr('Expires {date}', { date: formatExpiry(b.expiresOn) }) : '', tr('Units: {n}', { n: b.qty }), b.branchId ? locationName(data, b.branchId) : ''].filter(Boolean).join(' · '),
+                })),
+              ]}
+            />
+          )}
           <TextInput
-          id="adj-note"
-          label="Reason"
-          optional={mode === 'received'}
-          placeholder={mode === 'received' ? 'e.g. New batch from tailor' : mode === 'damaged' ? 'e.g. Stain on the hem' : 'e.g. Counted at the studio'}
-          value={note}
-          error={tried && reasonNeeded ? 'Add a short reason for your records' : undefined}
-          onChange={(e) => setNote(e.target.value)} />
-        
+            id="adj-note"
+            label="Reason"
+            optional={mode === 'received'}
+            placeholder={mode === 'received' ? 'e.g. New batch from tailor' : mode === 'damaged' ? 'e.g. Stain on the hem' : 'e.g. Counted at the studio'}
+            value={note}
+            error={tried && reasonNeeded ? 'Add a short reason for your records' : undefined}
+            onChange={(e) => setNote(e.target.value)}
+          />
         </div>
-      }
-    </Dialog>);
-
+      )}
+    </Dialog>
+  );
 }

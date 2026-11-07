@@ -90,7 +90,7 @@ export const statusPcm: Dict = {
   'Online — the organiser sends the joining link before it starts': 'Online — di organiser go send di link before e start',
   'Open in Maps': 'Open for Maps',
   Calendar: 'Calendar',
-  'Copy link': 'Copy link'
+  'Copy link': 'Copy link',
 };
 
 export const statusYo: Dict = {
@@ -182,7 +182,7 @@ export const statusYo: Dict = {
   'Online — the organiser sends the joining link before it starts': 'Lórí ayélujára — olùṣètò yóò fi ìjápọ̀ ránṣẹ́ kí ó tó bẹ̀rẹ̀',
   'Open in Maps': 'Ṣí nínú Maps',
   Calendar: 'Kàlẹ́ńdà',
-  'Copy link': 'Da ìjápọ̀ kọ'
+  'Copy link': 'Da ìjápọ̀ kọ',
 };
 
 export const statusHa: Dict = {
@@ -274,7 +274,7 @@ export const statusHa: Dict = {
   'Online — the organiser sends the joining link before it starts': 'A intanet — mai shirya taro zai aika hanyar shiga kafin a fara',
   'Open in Maps': 'Buɗe a Maps',
   Calendar: 'Kalanda',
-  'Copy link': 'Kwafi hanya'
+  'Copy link': 'Kwafi hanya',
 };
 
 export const statusIg: Dict = {
@@ -366,5 +366,5 @@ export const statusIg: Dict = {
   'Online — the organiser sends the joining link before it starts': 'N’ịntanetị — onye hazira ya ga-ezite njikọ tupu ọ malite',
   'Open in Maps': 'Meghee na Maps',
   Calendar: 'Kalenda',
-  'Copy link': 'Depụta njikọ'
+  'Copy link': 'Depụta njikọ',
 };

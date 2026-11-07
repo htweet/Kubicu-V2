@@ -45,14 +45,14 @@ export function RefundDialog({ order, mode, onClose }: Props) {
   const team = useTeam();
   const { t } = useT();
   const limit = team.role === 'sales' ? team.data.salesRefundLimitNgn : Infinity;
-  const refundAmount = mode === 'cancel' ? paid ? max : 0 : amount ?? 0;
+  const refundAmount = mode === 'cancel' ? (paid ? max : 0) : amount ?? 0;
   const overLimit = refundAmount > limit;
   const amountError =
-  mode === 'refund' && (amount === null || amount <= 0 || amount > max) ?
-  withSymbol(t('Enter an amount between ₦1 and {amount}', { amount: formatNgn(max) })) :
-  overLimit ?
-  t('Sales can refund up to {amount}. Ask an Admin or the Owner for anything bigger.', { amount: formatNgn(limit) }) :
-  undefined;
+    mode === 'refund' && (amount === null || amount <= 0 || amount > max)
+      ? withSymbol(t('Enter an amount between ₦1 and {amount}', { amount: formatNgn(max) }))
+      : overLimit
+        ? t('Sales can refund up to {amount}. Ask an Admin or the Owner for anything bigger.', { amount: formatNgn(limit) })
+        : undefined;
   const reasonError = !reason.trim() ? t('Add a reason — it goes in the order timeline') : undefined;
 
   const submit = () => {
@@ -68,25 +68,25 @@ export function RefundDialog({ order, mode, onClose }: Props) {
     if (ok) {
       team.log('commerce', mode === 'cancel' ? `cancelled order ${orderRef(order)}` : `refunded ${formatNgn(amount ?? 0)} on order ${orderRef(order)}`, '/app/commerce/orders');
       toast(mode === 'cancel' ? `Order ${orderRef(order)} cancelled` : `Refund of ${formatNgn(amount ?? 0)} sent (test mode)`, {
-        description: paid ? 'In live mode the customer’s bank usually shows it within 5–10 working days.' : undefined
+        description: paid ? 'In live mode the customer’s bank usually shows it within 5–10 working days.' : undefined,
       });
       onClose();
     }
   };
 
   const notification =
-  mode === 'cancel' ?
-  `Hi ${order?.customer.name.split(' ')[0] ?? ''}, your order #${order?.number} has been cancelled${paid ? ` and ${formatNgn(max)} refunded to your original payment method` : ''}. Reason: ${reason.trim() || '…'}` :
-  `Hi ${order?.customer.name.split(' ')[0] ?? ''}, we’ve refunded ${formatNgn(amount ?? 0)} for order #${order?.number}. Reason: ${reason.trim() || '…'}`;
+    mode === 'cancel'
+      ? `Hi ${order?.customer.name.split(' ')[0] ?? ''}, your order #${order?.number} has been cancelled${paid ? ` and ${formatNgn(max)} refunded to your original payment method` : ''}. Reason: ${reason.trim() || '…'}`
+      : `Hi ${order?.customer.name.split(' ')[0] ?? ''}, we’ve refunded ${formatNgn(amount ?? 0)} for order #${order?.number}. Reason: ${reason.trim() || '…'}`;
 
   return (
     <Dialog
       open={!!order}
       onClose={onClose}
       title={mode === 'cancel' ? t('Cancel order #{n}?', { n: order?.number ?? '' }) : t('Refund order #{n}', { n: order?.number ?? '' })}
-      description={mode === 'cancel' ? paid ? t('It’s paid, so the full {amount} is refunded.', { amount: formatNgn(max) }) : 'Payment hasn’t been confirmed, so nothing needs refunding.' : t('Up to {amount} can be refunded.', { amount: formatNgn(max) })}
+      description={mode === 'cancel' ? (paid ? t('It’s paid, so the full {amount} is refunded.', { amount: formatNgn(max) }) : 'Payment hasn’t been confirmed, so nothing needs refunding.') : t('Up to {amount} can be refunded.', { amount: formatNgn(max) })}
       footer={
-      <>
+        <>
           <Button variant="secondary" onClick={onClose}>
             {mode === 'cancel' ? 'Keep order' : 'Cancel'}
           </Button>
@@ -94,28 +94,28 @@ export function RefundDialog({ order, mode, onClose }: Props) {
             {mode === 'cancel' ? 'Cancel order' : t('Refund {amount}', { amount: formatNgn(amount ?? 0) })}
           </Button>
         </>
-      }>
-      
+      }
+    >
       <div className="flex flex-col gap-4">
-        {mode === 'refund' &&
-        <>
+        {mode === 'refund' && (
+          <>
             <CurrencyInput id="rf-amount" label="Amount" value={amount} error={tried ? amountError : undefined} onChange={setAmount} />
             <div className="-mt-2 flex gap-2">
               <Button size="sm" variant="tertiary" onClick={() => setAmount(max)}>
                 Full amount
               </Button>
-              {order && order.deliveryNgn > 0 && max >= order.deliveryNgn &&
-            <Button size="sm" variant="tertiary" onClick={() => setAmount(order.deliveryNgn)}>
+              {order && order.deliveryNgn > 0 && max >= order.deliveryNgn && (
+                <Button size="sm" variant="tertiary" onClick={() => setAmount(order.deliveryNgn)}>
                   Delivery only
                 </Button>
-            }
+              )}
             </div>
           </>
-        }
+        )}
         <TextInput id="rf-reason" label="Reason" value={reason} placeholder={t(mode === 'cancel' ? 'e.g. Customer asked to cancel' : 'e.g. Wrong size, no exchange available')} error={tried ? reasonError : undefined} onChange={(e) => setReason(e.target.value)} />
-        {mode === 'refund' && physical &&
-        <Switch id="rf-restock" label="Put items back in stock" description="Turn off if the items weren’t returned or can’t be resold." checked={restock} onChange={setRestock} />
-        }
+        {mode === 'refund' && physical && (
+          <Switch id="rf-restock" label="Put items back in stock" description="Turn off if the items weren’t returned or can’t be resold." checked={restock} onChange={setRestock} />
+        )}
         {mode === 'cancel' && physical && <p className="text-caption text-fg-subtle">{t('Reserved stock goes back to inventory.')}</p>}
         {mode === 'cancel' && overLimit && <p className="text-caption font-medium text-danger">{amountError}</p>}
         <div>
@@ -127,6 +127,6 @@ export function RefundDialog({ order, mode, onClose }: Props) {
           KUBICU doesn’t hold funds. Fees already charged may not be returned by the provider.
         </InlineAlert>
       </div>
-    </Dialog>);
-
+    </Dialog>
+  );
 }

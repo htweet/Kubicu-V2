@@ -71,7 +71,7 @@ export function maskContact(contact: string, channel: 'phone' | 'email'): string
 function readAll(): Record<string, MemberSession> {
   try {
     const raw = window.localStorage.getItem(KEY);
-    return raw ? JSON.parse(raw) as Record<string, MemberSession> : {};
+    return raw ? (JSON.parse(raw) as Record<string, MemberSession>) : {};
   } catch {
     return {};
   }
@@ -85,8 +85,8 @@ export function readSession(workspaceId: string): MemberSession | null {
 
 export function writeSession(workspaceId: string, session: MemberSession | null): void {
   const all = readAll();
-  if (session) all[workspaceId] = session;else
-  delete all[workspaceId];
+  if (session) all[workspaceId] = session;
+  else delete all[workspaceId];
   window.localStorage.setItem(KEY, JSON.stringify(all));
 }
 
@@ -98,7 +98,7 @@ export function newSession(contact: string, channel: 'phone' | 'email'): MemberS
 /** Subscriptions bought with this phone or email. */
 export function membershipsFor(data: CommerceData | null, contact: string, channel: 'phone' | 'email'): Subscription[] {
   if (!data || !contact) return [];
-  return data.subscriptions.filter((s) => channel === 'phone' ? !!s.customer.phone && normalisePhone(s.customer.phone) === contact : s.customer.email.trim().toLowerCase() === contact);
+  return data.subscriptions.filter((s) => (channel === 'phone' ? !!s.customer.phone && normalisePhone(s.customer.phone) === contact : s.customer.email.trim().toLowerCase() === contact));
 }
 
 /** Whether one subscription currently grants access, ignoring which plan it is. */
@@ -144,8 +144,8 @@ export function coveredCount(blocks: Block[], index: number): number {
 }
 
 /** Everything on a site that is members-only, for the Subscriptions screen and publish checks. */
-export function memberAreas(pages: {id: string | null;title: string;blocks: Block[];rule?: SitePage['membersOnly'];}[]) {
-  const out: {pageId: string | null;pageTitle: string;kind: 'page' | 'section';label: string;rule: MemberRule;blockId?: string;}[] = [];
+export function memberAreas(pages: { id: string | null; title: string; blocks: Block[]; rule?: SitePage['membersOnly'] }[]) {
+  const out: { pageId: string | null; pageTitle: string; kind: 'page' | 'section'; label: string; rule: MemberRule; blockId?: string }[] = [];
   pages.forEach((p) => {
     if (p.rule) out.push({ pageId: p.id, pageTitle: p.title, kind: 'page', label: `${p.title} page`, rule: p.rule });
     p.blocks.forEach((b) => {

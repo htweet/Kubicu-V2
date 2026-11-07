@@ -19,16 +19,16 @@ export interface Seat {
 export const layoutLabels: Record<SeatingLayout, string> = {
   theatre: 'Theatre rows',
   banquet: 'Banquet tables',
-  stage: 'Stage + standing'
+  stage: 'Stage + standing',
 };
 
 export const layoutHints: Record<SeatingLayout, string> = {
   theatre: 'Numbered rows facing the stage — church halls, cinemas, recitals.',
   banquet: 'Round tables of 6–10 — weddings, dinners, award nights. Guests can book a whole table.',
-  stage: 'Seated rows near the stage, plus a standing ticket with no seat — concerts, comedy shows.'
+  stage: 'Seated rows near the stage, plus a standing ticket with no seat — concerts, comedy shows.',
 };
 
-const rowLetter = (i: number) => i < 26 ? String.fromCharCode(65 + i) : `${String.fromCharCode(65 + Math.floor(i / 26) - 1)}${String.fromCharCode(65 + i % 26)}`;
+const rowLetter = (i: number) => (i < 26 ? String.fromCharCode(65 + i) : `${String.fromCharCode(65 + Math.floor(i / 26) - 1)}${String.fromCharCode(65 + (i % 26))}`);
 
 export const isTable = (map: SeatingMap | undefined) => map?.layout === 'banquet';
 
@@ -85,7 +85,7 @@ export function seatCountOfType(ev: CommerceEvent, ticketTypeId: string): number
 export function syncSeatQuantities(ev: CommerceEvent): CommerceEvent {
   if (!ev.seating) return ev;
   const seated = seatedTypeIds(ev);
-  return { ...ev, ticketTypes: ev.ticketTypes.map((t) => seated.has(t.id) ? { ...t, quantity: seatCountOfType(ev, t.id) } : t) };
+  return { ...ev, ticketTypes: ev.ticketTypes.map((t) => (seated.has(t.id) ? { ...t, quantity: seatCountOfType(ev, t.id) } : t)) };
 }
 
 /** Seats sold (valid tickets) for this event. */
@@ -130,17 +130,17 @@ export function describeSeats(ev: CommerceEvent | undefined, ids: string[] | und
     const s = findSeat(ev, id);
     if (s) byRow.set(s.rowId, [...(byRow.get(s.rowId) ?? []), s.n]);
   });
-  return map.rows.
-  filter((r) => byRow.has(r.id)).
-  map((r) => {
-    const ns = (byRow.get(r.id) ?? []).sort((a, b) => a - b);
-    const contiguous = ns.length > 2 && ns[ns.length - 1] - ns[0] === ns.length - 1;
-    const list = contiguous ? `${ns[0]}–${ns[ns.length - 1]}` : ns.join(', ');
-    if (tr) return `${isTable(map) ? r.label : tr('Row {name}', { name: r.label })} · ${tr('Seats: {list}', { list })}`;
-    const name = isTable(map) ? r.label : `Row ${r.label}`;
-    return `${name}, seat${ns.length > 1 ? 's' : ''} ${list}`;
-  }).
-  join(' · ');
+  return map.rows
+    .filter((r) => byRow.has(r.id))
+    .map((r) => {
+      const ns = (byRow.get(r.id) ?? []).sort((a, b) => a - b);
+      const contiguous = ns.length > 2 && ns[ns.length - 1] - ns[0] === ns.length - 1;
+      const list = contiguous ? `${ns[0]}–${ns[ns.length - 1]}` : ns.join(', ');
+      if (tr) return `${isTable(map) ? r.label : tr('Row {name}', { name: r.label })} · ${tr('Seats: {list}', { list })}`;
+      const name = isTable(map) ? r.label : `Row ${r.label}`;
+      return `${name}, seat${ns.length > 1 ? 's' : ''} ${list}`;
+    })
+    .join(' · ');
 }
 
 /* ---------- Repeating events ---------- */
@@ -148,13 +148,13 @@ export function describeSeats(ev: CommerceEvent | undefined, ids: string[] | und
 export const repeatLabels: Record<RepeatEvery, string> = {
   weekly: 'Every week',
   fortnightly: 'Every 2 weeks',
-  monthly: 'Every month'
+  monthly: 'Every month',
 };
 
 export function shiftDate(iso: string, every: RepeatEvery, steps: number): string {
   const d = new Date(iso);
-  if (every === 'monthly') d.setMonth(d.getMonth() + steps);else
-  d.setDate(d.getDate() + steps * (every === 'weekly' ? 7 : 14));
+  if (every === 'monthly') d.setMonth(d.getMonth() + steps);
+  else d.setDate(d.getDate() + steps * (every === 'weekly' ? 7 : 14));
   return d.toISOString();
 }
 
@@ -164,7 +164,7 @@ export function shiftDate(iso: string, every: RepeatEvery, steps: number): strin
  */
 export function copyForDate(ev: CommerceEvent, startsAt: string): CommerceEvent {
   const offset = Date.parse(startsAt) - Date.parse(ev.startsAt);
-  const move = (iso: string | null) => iso ? new Date(Date.parse(iso) + offset).toISOString() : null;
+  const move = (iso: string | null) => (iso ? new Date(Date.parse(iso) + offset).toISOString() : null);
   const idMap = new Map(ev.ticketTypes.map((t) => [t.id, uid('tt')]));
   const at = new Date().toISOString();
   return {
@@ -179,7 +179,7 @@ export function copyForDate(ev: CommerceEvent, startsAt: string): CommerceEvent 
     ticketTypes: ev.ticketTypes.map((t) => ({ ...t, id: idMap.get(t.id) as string, salesStart: move(t.salesStart), salesEnd: move(t.salesEnd) })),
     seating: ev.seating ? { ...ev.seating, rows: ev.seating.rows.map((r) => ({ ...r, id: uid('row'), ticketTypeId: idMap.get(r.ticketTypeId) ?? r.ticketTypeId })) } : undefined,
     createdAt: at,
-    updatedAt: at
+    updatedAt: at,
   };
 }
 

@@ -12,13 +12,13 @@ export interface ResolvedPublicPage {
   /** The workspace that owns the page (null for examples). */
   workspaceId: string | null;
   /** A fictional sample page rather than one a workspace published. */
-  example?: {id: string;name: string;category: string;};
+  example?: { id: string; name: string; category: string };
   /** An archived space's link: forward visitors to this handle (the main page). */
   redirectTo?: string;
 }
 
 /** The demo page counts as published before its first save. */
-function readPage(workspaceId: string, spaceId: string): {published: PageDocument | null;} | null {
+function readPage(workspaceId: string, spaceId: string): { published: PageDocument | null } | null {
   const page = readSpacePage(workspaceId, spaceId);
   if (page) return page;
   return workspaceId === DEMO_WORKSPACE_ID && spaceId === MAIN_SPACE_ID ? { published: samplePage } : null;

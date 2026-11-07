@@ -39,19 +39,19 @@ export function ApprovalQueue({ kinds, title, description, onApproved }: Approva
   const reject = (note: string) => {
     if (!rejecting) return;
     const a = rejecting;
-    setStore((s) => audit({ ...s, approvals: s.approvals.map((x) => x.id === a.id ? { ...x, status: 'rejected', decidedBy: staffActor(s), decidedAt: new Date().toISOString(), decisionNote: note } : x) }, { area: 'approvals', action: `Rejected: ${a.summary}`, target: a.targetEmail, reason: note }));
+    setStore((s) => audit({ ...s, approvals: s.approvals.map((x) => (x.id === a.id ? { ...x, status: 'rejected', decidedBy: staffActor(s), decidedAt: new Date().toISOString(), decisionNote: note } : x)) }, { area: 'approvals', action: `Rejected: ${a.summary}`, target: a.targetEmail, reason: note }));
     toast('Request rejected', { description: 'Nothing was changed.' });
     setRejecting(null);
   };
   const withdraw = (a: PendingApproval) => {
-    setStore((s) => audit({ ...s, approvals: s.approvals.map((x) => x.id === a.id ? { ...x, status: 'withdrawn', decidedBy: staffActor(s), decidedAt: new Date().toISOString() } : x) }, { area: 'approvals', action: `Withdrew: ${a.summary}`, target: a.targetEmail, reason: 'Withdrawn by the requester.' }));
+    setStore((s) => audit({ ...s, approvals: s.approvals.map((x) => (x.id === a.id ? { ...x, status: 'withdrawn', decidedBy: staffActor(s), decidedAt: new Date().toISOString() } : x)) }, { area: 'approvals', action: `Withdrew: ${a.summary}`, target: a.targetEmail, reason: 'Withdrawn by the requester.' }));
     toast('Request withdrawn');
   };
 
   return (
     <>
-      {pending.length > 0 &&
-      <section aria-label={title} className="mt-8 rounded-lg border border-warning/40 bg-warning-soft">
+      {pending.length > 0 && (
+        <section aria-label={title} className="mt-8 rounded-lg border border-warning/40 bg-warning-soft">
           <header className="px-5 pb-3 pt-4 md:px-6">
             <h2 className="text-heading font-semibold text-fg">
               {title} · {pending.length}
@@ -60,9 +60,9 @@ export function ApprovalQueue({ kinds, title, description, onApproved }: Approva
           </header>
           <ul className="divide-y divide-line border-t border-line bg-raised">
             {pending.map((a) => {
-            const mine = a.requestedById === me?.id;
-            return (
-              <li key={a.id} className="flex flex-col gap-3 px-5 py-4 md:flex-row md:items-start md:gap-6 md:px-6">
+              const mine = a.requestedById === me?.id;
+              return (
+                <li key={a.id} className="flex flex-col gap-3 px-5 py-4 md:flex-row md:items-start md:gap-6 md:px-6">
                   <div className="min-w-0 flex-1">
                     <p className="text-label font-semibold text-fg">{a.summary}</p>
                     <p className="mt-0.5 text-caption text-fg-subtle">
@@ -71,15 +71,15 @@ export function ApprovalQueue({ kinds, title, description, onApproved }: Approva
                     <p className="mt-2 text-label text-fg-muted">“{a.reason}”</p>
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
-                    {mine ?
-                  <>
+                    {mine ? (
+                      <>
                         <span className="text-caption text-fg-subtle">Waiting for someone else</span>
                         <Button size="sm" variant="secondary" onClick={() => withdraw(a)}>
                           Withdraw
                         </Button>
-                      </> :
-
-                  <>
+                      </>
+                    ) : (
+                      <>
                         <Button size="sm" variant="secondary" onClick={() => setRejecting(a)}>
                           Reject
                         </Button>
@@ -87,15 +87,15 @@ export function ApprovalQueue({ kinds, title, description, onApproved }: Approva
                           Approve
                         </Button>
                       </>
-                  }
+                    )}
                   </div>
-                </li>);
-
-          })}
+                </li>
+              );
+            })}
           </ul>
         </section>
-      }
+      )}
       <ReasonDialog open={!!rejecting} onClose={() => setRejecting(null)} onConfirm={reject} destructive title="Reject this request?" description={rejecting ? `${rejecting.summary}. Nothing changes.` : ''} confirmLabel="Reject" />
-    </>);
-
+    </>
+  );
 }

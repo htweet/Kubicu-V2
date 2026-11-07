@@ -49,11 +49,11 @@ export function Availability() {
         title="Availability & policy"
         description="When people can book, and the rules they agree to."
         actions={
-        <Button onClick={save} disabled={!dirty || !!hoursError}>
+          <Button onClick={save} disabled={!dirty || !!hoursError}>
             Save changes
           </Button>
-        } />
-      
+        }
+      />
       <BookingsPlanNote />
       <div className="mt-8 grid items-start gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
         <div className="flex flex-col gap-6">
@@ -67,34 +67,34 @@ export function Availability() {
           </Card>
 
           <Card id="ov" title="Date changes" description="Holidays, travel or special hours. These override the weekly pattern." actions={
-          <Button size="sm" variant="secondary" leadingIcon={PlusIcon} onClick={() => patch({ overrides: [...draft.overrides, { id: uid('ov'), date: addDaysKey(dateKeyInTz(Date.now(), draft.timeZone), 7), closed: true, open: '10:00', close: '14:00', note: '' }] })}>
+              <Button size="sm" variant="secondary" leadingIcon={PlusIcon} onClick={() => patch({ overrides: [...draft.overrides, { id: uid('ov'), date: addDaysKey(dateKeyInTz(Date.now(), draft.timeZone), 7), closed: true, open: '10:00', close: '14:00', note: '' }] })}>
                 Add date
               </Button>
           }>
-            {draft.overrides.length === 0 ?
-            <p className="text-label text-fg-muted">{tr('No date changes.')}</p> :
-
-            <List label={tr('Date changes')} className="-my-3">
+            {draft.overrides.length === 0 ? (
+              <p className="text-label text-fg-muted">{tr('No date changes.')}</p>
+            ) : (
+              <List label={tr('Date changes')} className="-my-3">
                 {draft.overrides.map((o) => {
-                const set = (p: Partial<typeof o>) => patch({ overrides: draft.overrides.map((x) => x.id === o.id ? { ...x, ...p } : x) });
-                return (
-                  <li key={o.id} className="flex flex-wrap items-center gap-2 py-3">
+                  const set = (p: Partial<typeof o>) => patch({ overrides: draft.overrides.map((x) => (x.id === o.id ? { ...x, ...p } : x)) });
+                  return (
+                    <li key={o.id} className="flex flex-wrap items-center gap-2 py-3">
                       <label className="sr-only" htmlFor={`ov-d-${o.id}`}>{tr('Date')}</label>
                       <input id={`ov-d-${o.id}`} type="date" value={o.date} onChange={(e) => set({ date: e.target.value })} className={cn(fieldControlClass, 'h-9 w-40 text-label')} />
                       <SelectInput id={`ov-s-${o.id}`} label="Status" value={o.closed ? 'closed' : 'open'} onChange={(v) => set({ closed: v === 'closed' })} options={[{ value: 'closed', label: tr('Closed') }, { value: 'open', label: tr('Special hours') }]} />
-                      {!o.closed &&
-                    <>
+                      {!o.closed && (
+                        <>
                           <input aria-label={tr('Opens')} type="time" value={o.open} onChange={(e) => set({ open: e.target.value })} className={cn(fieldControlClass, 'h-9 w-28 text-label')} />
                           <input aria-label={tr('Closes')} type="time" value={o.close} onChange={(e) => set({ close: e.target.value })} className={cn(fieldControlClass, 'h-9 w-28 text-label')} />
                         </>
-                    }
+                      )}
                       <input aria-label={tr('Note')} placeholder={tr('Note (only you see it)')} value={o.note} onChange={(e) => set({ note: e.target.value })} className={cn(fieldControlClass, 'h-9 min-w-[140px] flex-1 text-label')} />
                       <IconButton icon={Trash2Icon} label="Remove date" onClick={() => patch({ overrides: draft.overrides.filter((x) => x.id !== o.id) })} />
-                    </li>);
-
-              })}
+                    </li>
+                  );
+                })}
               </List>
-            }
+            )}
           </Card>
 
           <TeamHoursCard draft={draft} bookings={data.bookings} onChange={(staff) => patch({ staff })} />
@@ -125,14 +125,14 @@ export function Availability() {
           <DetailSection title={tr('Reminders')}>
             <div>
             <Switch id="av-rem" label="Send booking reminders" description="WhatsApp or email in the customer’s own time zone. Preview only in this prototype." checked={draft.remindersOn} onChange={(remindersOn) => patch({ remindersOn })} />
-            {draft.remindersOn &&
-                  <>
+            {draft.remindersOn && (
+              <>
                 <div className="mt-4 max-w-[220px]">
                   <SelectInput id="av-remh" label="When" value={String(draft.reminderHours)} options={[2, 12, 24, 48].map((h) => ({ value: String(h), label: tr('{n} hours before', { n: h }) }))} onChange={(v) => patch({ reminderHours: Number(v) })} />
                 </div>
                 <p className="mt-3 rounded-md bg-sunken px-3 py-2.5 text-label text-fg-muted">{tr('“Hi Amaka, a reminder of your Studio fitting tomorrow at 11:00am (Lagos time). Need to move it? Use your booking link.”')}</p>
               </>
-                  }
+            )}
             </div>
           </DetailSection>
           </div>
@@ -140,19 +140,19 @@ export function Availability() {
 
           <aside className="flex flex-col divide-y divide-line px-1 pt-2">
             <AsideNote id="sample" title="Sample data" text={hasSample ? 'Sample services, bookings, contacts and automations are labelled “Sample”.' : 'Add labelled sample services and bookings to explore every screen.'}>
-              {hasSample ?
-              <Button size="sm" variant="destructive" onClick={clearSample}>
+              {hasSample ? (
+                <Button size="sm" variant="destructive" onClick={clearSample}>
                   Clear sample data
-                </Button> :
-
-              <Button size="sm" variant="secondary" onClick={loadSample}>
+                </Button>
+              ) : (
+                <Button size="sm" variant="secondary" onClick={loadSample}>
                   Add sample data
                 </Button>
-              }
+              )}
             </AsideNote>
           </aside>
         </div>
       </div>
-    </>);
-
+    </>
+  );
 }

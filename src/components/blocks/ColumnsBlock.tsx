@@ -29,22 +29,22 @@ export function ColumnsBlock({ block, theme, mode }: BlockProps<'columns'>) {
   const perRow = n === 4 && width < 920 ? 2 : n;
   const side = unlocked && n > 1 && width >= (perRow >= 3 ? 760 : 600);
   const template = !side ? 'minmax(0,1fr)' : n === 2 ? pairColumns[c.ratio] : `repeat(${perRow}, minmax(0,1fr))`;
-  const gap = c.gap === 'wide' ? side ? 56 : 28 : side ? 32 : 16;
+  const gap = c.gap === 'wide' ? (side ? 56 : 28) : side ? 32 : 16;
   const ordered = !side && c.phoneReverse ? [...kids].reverse() : kids;
 
   return (
     <div ref={ref}>
-      {n > 0 &&
-      <div className="grid" style={{ gridTemplateColumns: template, columnGap: gap, rowGap: gap, alignItems: c.valign === 'center' ? 'center' : 'start' }}>
-          {ordered.map((k) =>
-        <div key={k.id} className="min-w-0">
+      {n > 0 && (
+        <div className="grid" style={{ gridTemplateColumns: template, columnGap: gap, rowGap: gap, alignItems: c.valign === 'center' ? 'center' : 'start' }}>
+          {ordered.map((k) => (
+            <div key={k.id} className="min-w-0">
               {ctx.render(k, theme, { index: kids.indexOf(k), count: n, container: block })}
             </div>
-        )}
+          ))}
         </div>
-      }
+      )}
       {mode === 'edit' && n === 0 && <ContainerPlaceholder kind="columns" theme={theme} hint="Empty columns — each block you add is one column" />}
       {mode === 'edit' && n < MAX_CHILDREN && ctx.addSlot?.(block, theme)}
-    </div>);
-
+    </div>
+  );
 }

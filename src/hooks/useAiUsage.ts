@@ -52,13 +52,13 @@ export function useAiUsage() {
       try {
         window.localStorage.setItem(keyFor(current.id), JSON.stringify({ month: thisMonth(), used: next } satisfies Stored));
       } catch {
-
         // Storage blocked — the count resets on reload, which is acceptable in the prototype.
-      }logAiRequest({ workspaceId: current.id, workspaceName: current.name, feature, credits: cost, outcome: 'ok' });
+      }
+      logAiRequest({ workspaceId: current.id, workspaceName: current.name, feature, credits: cost, outcome: 'ok' });
       setUsed(next);
       window.dispatchEvent(new Event(EVENT));
     },
-    [current.id, current.name]
+    [current.id, current.name],
   );
 
   /** False when KUBICU staff have switched this feature off for everyone. */

@@ -6,7 +6,7 @@ import { Button } from '../../ui/Button';
 import { TextArea } from '../../ui/TextArea';
 
 /** Internal notes on a person or workspace (D472). Customers never see them. Notes stay as written (D489). */
-export function StaffNotes({ id, notes, onAdd }: {id: string;notes: StaffNote[];onAdd: (text: string) => void;}) {
+export function StaffNotes({ id, notes, onAdd }: { id: string; notes: StaffNote[]; onAdd: (text: string) => void }) {
   const { t } = useT();
   const [text, setText] = useState('');
   return (
@@ -25,24 +25,24 @@ export function StaffNotes({ id, notes, onAdd }: {id: string;notes: StaffNote[];
             onClick={() => {
               onAdd(text.trim());
               setText('');
-            }}>
-            
+            }}
+          >
             {t('Save note')}
           </Button>
         </div>
       </div>
-      {notes.length > 0 &&
-      <ul className="mt-3 divide-y divide-line border-y border-line">
-          {notes.map((n) =>
-        <li key={n.id} className="py-3">
+      {notes.length > 0 && (
+        <ul className="mt-3 divide-y divide-line border-y border-line">
+          {notes.map((n) => (
+            <li key={n.id} className="py-3">
               <p className="whitespace-pre-wrap text-label text-fg">{n.text}</p>
               <p className="mt-1 text-caption text-fg-subtle">
                 {n.by} · {formatTimestamp(n.at)}
               </p>
             </li>
-        )}
+          ))}
         </ul>
-      }
-    </section>);
-
+      )}
+    </section>
+  );
 }

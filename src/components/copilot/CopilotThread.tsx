@@ -62,78 +62,78 @@ export function CopilotThread({ session, onReply }: Props) {
             className={cn('flex list-none flex-col gap-2', mine ? 'items-end' : 'items-start')}
             initial={reduce ? false : { opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.2, ease }}>
-            
-            {!mine &&
-            <span className="flex items-center gap-1.5 text-caption font-semibold text-fg-subtle">
+            transition={{ duration: 0.2, ease }}
+          >
+            {!mine && (
+              <span className="flex items-center gap-1.5 text-caption font-semibold text-fg-subtle">
                 <SparklesIcon size={12} aria-hidden /> Copilot
               </span>
-            }
-            {m.text &&
-            <p
-              className={cn(
-                'max-w-[86%] whitespace-pre-line rounded-2xl px-4 py-2.5 text-body leading-relaxed',
-                mine ? 'rounded-br-md bg-action text-action-fg' : m.tone === 'warning' ? 'rounded-bl-md border border-warning/40 bg-warning-soft text-fg' : 'rounded-bl-md bg-raised text-fg shadow-1'
-              )}>
-              
+            )}
+            {m.text && (
+              <p
+                className={cn(
+                  'max-w-[86%] whitespace-pre-line rounded-2xl px-4 py-2.5 text-body leading-relaxed',
+                  mine ? 'rounded-br-md bg-action text-action-fg' : m.tone === 'warning' ? 'rounded-bl-md border border-warning/40 bg-warning-soft text-fg' : 'rounded-bl-md bg-raised text-fg shadow-1',
+                )}
+              >
                 {translateCopilotText(m.text, tr, lang)}
               </p>
-            }
-            {m.links && m.links.length > 0 &&
-            <div className="flex max-w-[86%] flex-wrap gap-2">
-                {m.links.map((l) =>
-              <Link
-                key={l.to}
-                to={l.to}
-                className="inline-flex min-h-10 items-center gap-1.5 whitespace-nowrap rounded-full bg-sunken px-4 text-label font-semibold text-fg transition-[background-color,transform] duration-150 ease-out hover:bg-line active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-                
+            )}
+            {m.links && m.links.length > 0 && (
+              <div className="flex max-w-[86%] flex-wrap gap-2">
+                {m.links.map((l) => (
+                  <Link
+                    key={l.to}
+                    to={l.to}
+                    className="inline-flex min-h-10 items-center gap-1.5 whitespace-nowrap rounded-full bg-sunken px-4 text-label font-semibold text-fg transition-[background-color,transform] duration-150 ease-out hover:bg-line active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+                  >
                     {tr(l.label)} <ArrowUpRightIcon size={15} aria-hidden />
                   </Link>
-              )}
+                ))}
               </div>
-            }
-            {m.images && m.images.length > 0 &&
-            <div className="flex max-w-[86%] flex-wrap justify-end gap-1.5">
-                {m.images.map((src, i) =>
-              <img key={i} src={src} alt="" className="h-20 w-20 rounded-xl object-cover" />
-              )}
+            )}
+            {m.images && m.images.length > 0 && (
+              <div className="flex max-w-[86%] flex-wrap justify-end gap-1.5">
+                {m.images.map((src, i) => (
+                  <img key={i} src={src} alt="" className="h-20 w-20 rounded-xl object-cover" />
+                ))}
               </div>
-            }
+            )}
             {m.card === 'looks' && <CopilotLookOptions replies={m.replies ?? []} kind={session.kind} exampleId={session.answers.business} active={m.id === lastCopilot?.id && session.question?.topic === 'look'} onPick={onReply} />}
             {m.card === 'brief' && session.brief && m.id === lastBriefId && <CopilotBriefCard brief={session.brief} />}
             {m.card === 'brief' && m.id !== lastBriefId && <p className="text-caption text-fg-subtle">{tr('Earlier version — replaced below.')}</p>}
             {m.card === 'progress' && <CopilotProgress step={m.id === lastProgressId && session.stage === 'generating' ? session.progress : m.id === lastProgressId && session.stage === 'failed' ? progressSteps().length - 1 : progressSteps().length} failed={m.id === lastProgressId && session.stage === 'failed'} />}
             {m.card === 'preview' && m.draftId && <PreviewCard draftId={m.draftId} onOpen={() => onReply({ value: 'open', label: 'Open preview' })} />}
-            {replies &&
-            <div className="flex max-w-full flex-wrap gap-2">
-                {replies.map((r) =>
-              <button
-                key={r.value}
-                type="button"
-                onClick={() => onReply(r)}
-                className="inline-flex min-h-10 items-center rounded-full border border-line-strong bg-raised px-4 text-label font-medium text-fg transition-[background-color,transform] duration-150 ease-out hover:bg-sunken active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-                
+            {replies && (
+              <div className="flex max-w-full flex-wrap gap-2">
+                {replies.map((r) => (
+                  <button
+                    key={r.value}
+                    type="button"
+                    onClick={() => onReply(r)}
+                    className="inline-flex min-h-10 items-center rounded-full border border-line-strong bg-raised px-4 text-label font-medium text-fg transition-[background-color,transform] duration-150 ease-out hover:bg-sunken active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+                  >
                     {tr(r.label)}
                   </button>
-              )}
+                ))}
               </div>
-            }
-          </motion.li>);
-
+            )}
+          </motion.li>
+        );
       })}
       <div ref={end} />
-    </ol>);
-
+    </ol>
+  );
 }
 
-function PreviewCard({ draftId, onOpen }: {draftId: string;onOpen: () => void;}) {
+function PreviewCard({ draftId, onOpen }: { draftId: string; onOpen: () => void }) {
   const { t: tr } = useT();
   const draft = readDraft(draftId);
   if (!draft) return null;
   const copy = () => {
     navigator.clipboard?.writeText(previewHref(draft.id)).then(
       () => toast.success(tr('Preview link copied'), { description: tr('Anyone with it can look. Only this chat can continue the draft.') }),
-      () => toast.error(tr('Couldn’t copy the link'))
+      () => toast.error(tr('Couldn’t copy the link')),
     );
   };
   return (
@@ -154,6 +154,6 @@ function PreviewCard({ draftId, onOpen }: {draftId: string;onOpen: () => void;})
       <p className="px-3 pb-2.5 text-caption text-fg-subtle">
         {tr('Private link')} · {expiryLabel(draft, Date.now(), tr)}
       </p>
-    </div>);
-
+    </div>
+  );
 }

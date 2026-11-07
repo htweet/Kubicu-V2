@@ -33,14 +33,14 @@ export function ResumeOnboardingBanner() {
           onClick={() => {
             clearOnboarding();
             setVisible(false);
-          }}>
-          
+          }}
+        >
           {tr('Discard')}
         </Button>
         <Button trailingIcon={ArrowRightIcon} onClick={() => navigate('/start')}>
           {tr('Continue setup')}
         </Button>
       </div>
-    </section>);
-
+    </section>
+  );
 }

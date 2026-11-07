@@ -4,18 +4,18 @@ export const sourceLabels = {
   form: 'Form',
   newsletter: 'Newsletter',
   import: 'Import',
-  manual: 'Added by you'
+  manual: 'Added by you',
 } as const;
 
 export const consentLabels = {
   subscribed: 'Subscribed',
   transactional: 'Service messages only',
-  unsubscribed: 'Unsubscribed'
+  unsubscribed: 'Unsubscribed',
 } as const;
 
 export const stageLabels = {
   new: 'New',
   contacted: 'Contacted',
   won: 'Won',
-  lost: 'Lost'
+  lost: 'Lost',
 } as const;

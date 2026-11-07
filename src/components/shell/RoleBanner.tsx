@@ -7,18 +7,18 @@ import { roleInfo } from '../../data/permissions';
 
 /** The permission that lets you change things on each workspace screen (D57). */
 const areas: [RegExp, Permission, string][] = [
-[/^\/app\/commerce\/(orders)/, 'orders.manage', 'orders'],
-[/^\/app\/commerce\/(products|inventory|digital)/, 'products.edit', 'products'],
-[/^\/app\/commerce\/discounts/, 'discounts.manage', 'discounts'],
-[/^\/app\/commerce\/(storefront|payments|settings)/, 'commerce.settings', 'these settings'],
-[/^\/app\/bookings/, 'bookings.manage', 'bookings'],
-[/^\/app\/audience/, 'contacts.manage', 'contacts'],
-[/^\/app\/automations/, 'automations.manage', 'automations'],
-[/^\/app\/media/, 'media.manage', 'media'],
-[/^\/app\/spaces/, 'spaces.manage', 'spaces'],
-[/^\/app\/domains\/?$/, 'domains.manage', 'domains'],
-[/^\/app\/domains\/(qr|links|redirects)/, 'pages.edit', 'QR codes, links and redirects']];
-
+  [/^\/app\/commerce\/(orders)/, 'orders.manage', 'orders'],
+  [/^\/app\/commerce\/(products|inventory|digital)/, 'products.edit', 'products'],
+  [/^\/app\/commerce\/discounts/, 'discounts.manage', 'discounts'],
+  [/^\/app\/commerce\/(storefront|payments|settings)/, 'commerce.settings', 'these settings'],
+  [/^\/app\/bookings/, 'bookings.manage', 'bookings'],
+  [/^\/app\/audience/, 'contacts.manage', 'contacts'],
+  [/^\/app\/automations/, 'automations.manage', 'automations'],
+  [/^\/app\/media/, 'media.manage', 'media'],
+  [/^\/app\/spaces/, 'spaces.manage', 'spaces'],
+  [/^\/app\/domains\/?$/, 'domains.manage', 'domains'],
+  [/^\/app\/domains\/(qr|links|redirects)/, 'pages.edit', 'QR codes, links and redirects'],
+];
 
 /** A quiet line above a screen when your role can look but not change it. */
 export function RoleBanner() {
@@ -36,6 +36,6 @@ export function RoleBanner() {
           <span className="font-semibold text-fg">View only.</span> {res.reason} You’re signed in as {team.me.name} ({roleInfo[team.role].label}), so changes to {match[2]} won’t save.
         </span>
       </p>
-    </div>);
-
+    </div>
+  );
 }

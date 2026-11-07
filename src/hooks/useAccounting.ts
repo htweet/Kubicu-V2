@@ -24,12 +24,12 @@ export function useAccounting(workspaceId: string) {
         try {
           localStorage.setItem(key(workspaceId), JSON.stringify(next));
         } catch {
-
           // Storage full — lasts for this visit.
-        }return next;
+        }
+        return next;
       });
     },
-    [workspaceId]
+    [workspaceId],
   );
   return { data, update };
 }

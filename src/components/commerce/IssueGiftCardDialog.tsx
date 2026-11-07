@@ -62,14 +62,14 @@ export function IssueGiftCardDialog({ open, onClose }: IssueGiftCardDialogProps)
       title="Issue a gift card"
       description="For store credit, a prize, or a card paid for in person. You get a code to send yourself — KUBICU doesn’t message anyone in this prototype."
       footer={
-      <>
+        <>
           <Button variant="secondary" onClick={onClose}>
             Cancel
           </Button>
           <Button onClick={submit}>Issue card</Button>
         </>
-      }>
-      
+      }
+    >
       <div className="flex flex-col gap-4">
         <CurrencyInput id="gc-amount" label="Amount" value={amount} onChange={setAmount} error={tried ? amountError : undefined} />
         <TextInput id="gc-to" label="For" optional placeholder="e.g. Chiamaka" value={recipient} maxLength={60} onChange={(e) => setRecipient(e.target.value)} />
@@ -77,6 +77,6 @@ export function IssueGiftCardDialog({ open, onClose }: IssueGiftCardDialogProps)
         <TextInput id="gc-note" label="Private note" optional placeholder="e.g. Replacement for order #1007" maxLength={120} value={note} hint="Only your team sees this." onChange={(e) => setNote(e.target.value)} />
         <TextInput id="gc-exp" type="date" label="Expires" optional min={today()} value={expires} hint="Leave empty for no expiry." error={tried ? expiryError : undefined} onChange={(e) => setExpires(e.target.value)} />
       </div>
-    </Dialog>);
-
+    </Dialog>
+  );
 }

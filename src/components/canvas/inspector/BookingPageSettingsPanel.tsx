@@ -28,7 +28,7 @@ export function BookingPageSettingsPanel() {
   const s = state.site.bookingPage;
   if (!s) return null;
 
-  const patch = (next: Partial<BookingPageSettings>) => actions.transformDocument((doc) => doc.bookingPage ? { ...doc, bookingPage: { ...doc.bookingPage, ...next } } : doc);
+  const patch = (next: Partial<BookingPageSettings>) => actions.transformDocument((doc) => (doc.bookingPage ? { ...doc, bookingPage: { ...doc.bookingPage, ...next } } : doc));
   const shown = bookingPageServices(s, ops);
   const free = shown.filter((sv) => nextFreeSlot(sv, ops.availability, ops.bookings, now)).length;
   const services = ops.services.filter((x) => x.active || s.serviceIds.includes(x.id));
@@ -70,38 +70,38 @@ export function BookingPageSettingsPanel() {
         <legend className="mb-1.5 text-label font-medium text-fg">
           {tr('Services')} <span className="font-normal tabular-nums text-fg-subtle">· {tr('{n} of up to {max}', { n: s.serviceIds.length, max: MAX_BOOKING_SERVICES })}</span>
         </legend>
-        {services.length === 0 ?
-        <p className="rounded-md border border-dashed border-line-strong px-3 py-3 text-caption text-fg-muted">
+        {services.length === 0 ? (
+          <p className="rounded-md border border-dashed border-line-strong px-3 py-3 text-caption text-fg-muted">
             {tr('No services in Bookings yet.')}{' '}
             <Link to="/app/bookings/services?new=1" className="font-semibold text-action hover:underline">
               {tr('Add a service')}
             </Link>
-          </p> :
-
-        <ul className="flex flex-col divide-y divide-line rounded-md border border-line">
+          </p>
+        ) : (
+          <ul className="flex flex-col divide-y divide-line rounded-md border border-line">
             {ordered.map((x) => {
-            const on = s.serviceIds.includes(x.id);
-            const pos = s.serviceIds.indexOf(x.id);
-            const slot = on && x.active ? nextFreeSlot(x, ops.availability, ops.bookings, now) : null;
-            return (
-              <li key={x.id} className="flex min-h-[48px] items-center gap-1 py-1 pl-3 pr-1">
+              const on = s.serviceIds.includes(x.id);
+              const pos = s.serviceIds.indexOf(x.id);
+              const slot = on && x.active ? nextFreeSlot(x, ops.availability, ops.bookings, now) : null;
+              return (
+                <li key={x.id} className="flex min-h-[48px] items-center gap-1 py-1 pl-3 pr-1">
                   <label className={cn('flex min-w-0 flex-1 cursor-pointer items-center gap-2.5', !on && full && 'cursor-not-allowed opacity-60')}>
                     <input
-                    type="checkbox"
-                    className="h-4 w-4"
-                    checked={on}
-                    disabled={!on && full}
-                    onChange={() => patch({ serviceIds: on ? s.serviceIds.filter((id) => id !== x.id) : [...s.serviceIds, x.id] })} />
-                  
+                      type="checkbox"
+                      className="h-4 w-4"
+                      checked={on}
+                      disabled={!on && full}
+                      onChange={() => patch({ serviceIds: on ? s.serviceIds.filter((id) => id !== x.id) : [...s.serviceIds, x.id] })}
+                    />
                     <span className="min-w-0">
                       <span className="block truncate text-label text-fg">{x.name}</span>
                       <span className="block truncate text-caption text-fg-subtle">
-                        {!x.active ? tr('Switched off in Bookings — won’t show') : on ? slot ? tr('Next free: {when}', { when: slotWhen(slot, ops.availability) }) : tr('No free times') : durationLabel(x.durationMin)}
+                        {!x.active ? tr('Switched off in Bookings — won’t show') : on ? (slot ? tr('Next free: {when}', { when: slotWhen(slot, ops.availability) }) : tr('No free times')) : durationLabel(x.durationMin)}
                       </span>
                     </span>
                   </label>
-                  {on &&
-                <>
+                  {on && (
+                    <>
                       <button type="button" className={iconBtn} disabled={pos === 0} onClick={() => move(x.id, -1)} aria-label={tr('Move {item} up', { item: x.name })}>
                         <ArrowUpIcon size={15} aria-hidden />
                       </button>
@@ -109,12 +109,12 @@ export function BookingPageSettingsPanel() {
                         <ArrowDownIcon size={15} aria-hidden />
                       </button>
                     </>
-                }
-                </li>);
-
-          })}
+                  )}
+                </li>
+              );
+            })}
           </ul>
-        }
+        )}
         <p className="mt-1.5 text-caption text-fg-subtle">{tr('Prices, durations, deposits, hours and cancellation rules come from Bookings — change them there.')}</p>
       </fieldset>
 
@@ -129,13 +129,13 @@ export function BookingPageSettingsPanel() {
           placeholder={businessWhatsApp() || tr('e.g. 0803 123 4567')}
           hint={businessWhatsApp() ? waFieldHintIn(tr, s.whatsapp, offered) : `${offered} ${tr('Empty = not offered.')}`}
           error={waError}
-          onChange={(e) => patch({ whatsapp: e.target.value })} />
-        
+          onChange={(e) => patch({ whatsapp: e.target.value })}
+        />
         <p className="text-caption text-fg-muted">
           {tr(
-            waitlistBlock && !waitlistBlock.visibility.hidden ?
-            'The “Join the waitlist” button jumps to the waitlist sign-up on this page.' :
-            'The waitlist sign-up has been removed or hidden, so only WhatsApp is offered.'
+            waitlistBlock && !waitlistBlock.visibility.hidden
+              ? 'The “Join the waitlist” button jumps to the waitlist sign-up on this page.'
+              : 'The waitlist sign-up has been removed or hidden, so only WhatsApp is offered.',
           )}
         </p>
       </div>
@@ -151,6 +151,6 @@ export function BookingPageSettingsPanel() {
           <QrCodeIcon size={13} aria-hidden /> {tr('QR code for flyers')}
         </Link>
       </div>
-    </section>);
-
+    </section>
+  );
 }

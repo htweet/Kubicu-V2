@@ -45,8 +45,8 @@ export function PhoneInput({ id, label, value, onChange, hint, error, optional, 
     return (
       <Field id={id} label={label} hint={hint} error={error} optional={optional} className={fieldClassName}>
         <input id={id} type="tel" inputMode="tel" autoComplete={autoComplete} disabled={disabled} aria-required={required || undefined} aria-invalid={error ? true : undefined} aria-describedby={describedBy} value={value} onChange={(e) => onChange(e.target.value)} className={cn(fieldControlClass, 'h-10 tabular-nums')} />
-      </Field>);
-
+      </Field>
+    );
   }
 
   return (
@@ -65,13 +65,13 @@ export function PhoneInput({ id, label, value, onChange, hint, error, optional, 
               setCountry(next);
               onChange(joinPhone(next, parsed.local));
             }}
-            className={cn(fieldControlClass, 'h-10 w-[6.75rem] appearance-none rounded-r-none border-r-0 pl-3 pr-7 tabular-nums')}>
-            
-            {countries.map((c) =>
-            <option key={c.code} value={c.code} aria-label={`${t(c.name)} +${c.dialCode}`}>
+            className={cn(fieldControlClass, 'h-10 w-[6.75rem] appearance-none rounded-r-none border-r-0 pl-3 pr-7 tabular-nums')}
+          >
+            {countries.map((c) => (
+              <option key={c.code} value={c.code} aria-label={`${t(c.name)} +${c.dialCode}`}>
                 {`${c.code} +${c.dialCode}`}
               </option>
-            )}
+            ))}
           </select>
           <ChevronDownIcon size={14} className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-fg-subtle" aria-hidden />
         </div>
@@ -92,9 +92,9 @@ export function PhoneInput({ id, label, value, onChange, hint, error, optional, 
             if (raw.trim().startsWith('+')) return onChange(raw);
             onChange(joinPhone(country, raw.replace(/\D/g, '').slice(0, 12)));
           }}
-          className={cn(fieldControlClass, 'h-10 min-w-0 flex-1 rounded-l-none tabular-nums')} />
-        
+          className={cn(fieldControlClass, 'h-10 min-w-0 flex-1 rounded-l-none tabular-nums')}
+        />
       </div>
-    </Field>);
-
+    </Field>
+  );
 }

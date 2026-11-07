@@ -15,7 +15,7 @@ export function linkStageAmounts(l: PaymentLink): Record<string, number> {
   const stages = l.stages ?? [];
   let used = 0;
   stages.forEach((s, i) => {
-    const amt = i === stages.length - 1 ? l.amountNgn - used : Math.round(l.amountNgn * s.pct / 100);
+    const amt = i === stages.length - 1 ? l.amountNgn - used : Math.round((l.amountNgn * s.pct) / 100);
     out[s.id] = amt;
     used += amt;
   });
@@ -41,9 +41,9 @@ export function linkStageProblems(stages: LinkStage[]): string | undefined {
 
 export function defaultLinkStages(): LinkStage[] {
   return [
-  { id: uid('pls'), label: 'Deposit', pct: 50 },
-  { id: uid('pls'), label: 'Balance', pct: 50 }];
-
+    { id: uid('pls'), label: 'Deposit', pct: 50 },
+    { id: uid('pls'), label: 'Balance', pct: 50 },
+  ];
 }
 
 /** Built-in milestone templates, reused as quick starts. */

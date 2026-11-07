@@ -32,32 +32,32 @@ export function DevelopersTab() {
       </div>
       {!can.allowed && <InlineAlert tone="info" title="View only">{can.reason ?? tr('Only Owners and Admins can change developer settings.')}</InlineAlert>}
 
-      {hasWebhooks ?
-      <WebhooksSection canManage={can.allowed} /> :
+      {hasWebhooks ? (
+        <WebhooksSection canManage={can.allowed} />
+      ) : (
+        <Locked title="Webhooks are on Pro" text="Send paid orders, bookings and form answers to your own tools the moment they happen." plan="pro" feature="Webhooks" />
+      )}
 
-      <Locked title="Webhooks are on Pro" text="Send paid orders, bookings and form answers to your own tools the moment they happen." plan="pro" feature="Webhooks" />
-      }
-
-      {hasApi ?
-      <>
+      {hasApi ? (
+        <>
           <ApiKeysSection canManage={can.allowed} />
           <ConnectedAppsSection canManage={can.allowed} />
-        </> :
-
-      <Locked title="API keys and connected apps are on Business" text="Sync stock with your shop till, pull orders into accounting, or let a trusted app work for you." plan="business" feature="API keys and connected apps" />
-      }
+        </>
+      ) : (
+        <Locked title="API keys and connected apps are on Business" text="Sync stock with your shop till, pull orders into accounting, or let a trusted app work for you." plan="business" feature="API keys and connected apps" />
+      )}
 
       {/* Every paid plan can sell extensions; the price cap rises with the plan (D134). */}
-      {canSubmitExtensions(plan.id) ?
-      <YourExtensionsSection canManage={can.allowed} /> :
-
-      <Locked title="Selling extensions starts on Creator" text="Build a tool other sellers need, list it in Extensions after KUBICU reviews it, and keep 80% of what it earns." plan="creator" feature="Selling your own extensions" />
-      }
-    </div>);
-
+      {canSubmitExtensions(plan.id) ? (
+        <YourExtensionsSection canManage={can.allowed} />
+      ) : (
+        <Locked title="Selling extensions starts on Creator" text="Build a tool other sellers need, list it in Extensions after KUBICU reviews it, and keep 80% of what it earns." plan="creator" feature="Selling your own extensions" />
+      )}
+    </div>
+  );
 }
 
-function Locked({ title, text, plan, feature }: {title: string;text: string;plan: 'creator' | 'pro' | 'business';feature: string;}) {
+function Locked({ title, text, plan, feature }: { title: string; text: string; plan: 'creator' | 'pro' | 'business'; feature: string }) {
   const { t } = useT();
   title = t(title);
   text = t(text);
@@ -71,6 +71,6 @@ function Locked({ title, text, plan, feature }: {title: string;text: string;plan
         </div>
       </div>
       <UpgradeButton plan={plan} feature={feature} className="shrink-0" />
-    </section>);
-
+    </section>
+  );
 }

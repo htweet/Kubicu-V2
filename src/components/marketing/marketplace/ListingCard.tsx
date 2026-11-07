@@ -25,11 +25,12 @@ export function ListingCard({ listing, installed, showKind }: ListingCardProps) 
   const { t: tr } = useT();
   const kind = listingKindById[listing.kind];
   return (
-    <li className="h-full">
+    // min-w-0: the card's one-line "what's inside" chips must not widen its grid column past the screen (D569).
+    <li className="h-full min-w-0">
       <Link
         to={`/marketplace/${listing.slug}`}
-        className="group flex h-full flex-col overflow-hidden rounded-[24px] bg-raised shadow-1 transition-[transform,box-shadow] duration-200 ease-out hover:-translate-y-0.5 hover:shadow-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-        
+        className="group flex h-full flex-col overflow-hidden rounded-[24px] bg-raised shadow-1 transition-[transform,box-shadow] duration-200 ease-out hover:-translate-y-0.5 hover:shadow-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+      >
         <div className="h-[168px] shrink-0">
           <ListingPreview listing={listing} />
         </div>
@@ -42,16 +43,16 @@ export function ListingCard({ listing, installed, showKind }: ListingCardProps) 
           <p className="mt-1.5 line-clamp-2 text-[14px] leading-snug text-fg-muted">{tr(listing.summary)}</p>
           <div className="mt-auto flex items-center justify-between gap-3 pt-4">
             <span className="truncate text-[13px] font-semibold text-fg">{localiseAmounts(tr(listing.priceLabel))}</span>
-            {installed ?
-            <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap text-[12px] font-semibold text-success">
+            {installed ? (
+              <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap text-[12px] font-semibold text-success">
                 <CheckIcon size={13} aria-hidden /> {tr('Installed')}
-              </span> :
-
-            <ListingStatusLabel status={listing.status} />
-            }
+              </span>
+            ) : (
+              <ListingStatusLabel status={listing.status} />
+            )}
           </div>
         </div>
       </Link>
-    </li>);
-
+    </li>
+  );
 }

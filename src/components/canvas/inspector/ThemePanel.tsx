@@ -40,7 +40,7 @@ export function ThemePanel() {
   const { openUpgrade } = useUpgrade();
   const navigate = useNavigate();
   const signature = parseSignatureId(theme.presetId);
-  const sigModes = signature ? Object.keys(signature.theme.modes) as ThemeMode[] : [];
+  const sigModes = signature ? (Object.keys(signature.theme.modes) as ThemeMode[]) : [];
 
   return (
     // min-w-0 + overflow-x-hidden: nothing in the panel may push it wider than the inspector.
@@ -61,40 +61,40 @@ export function ThemePanel() {
                   name={t.name}
                   theme={signatureTheme(t)}
                   active={signature?.theme.id === t.id}
-                  onClick={() => locked ? openUpgrade({ plan: 'creator', feature: `The ${t.name} theme` }) : actions.applyThemePreset(signatureTheme(t))} />
-                
-                {locked &&
-                <span className="pointer-events-none absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-overlay/90 text-fg-muted shadow-1" title={tr('Creator plan and above')}>
+                  onClick={() => (locked ? openUpgrade({ plan: 'creator', feature: `The ${t.name} theme` }) : actions.applyThemePreset(signatureTheme(t)))}
+                />
+                {locked && (
+                  <span className="pointer-events-none absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-overlay/90 text-fg-muted shadow-1" title={tr('Creator plan and above')}>
                     <LockIcon size={11} aria-label={tr('Creator plan and above')} />
                   </span>
-                }
-              </div>);
-
+                )}
+              </div>
+            );
           })}
         </div>
-        {!allThemes &&
-        <p className="mt-2 text-caption text-fg-subtle">
+        {!allThemes && (
+          <p className="mt-2 text-caption text-fg-subtle">
             {tr('Signature themes need Creator or above; the Classic themes below work on every plan.')} <button type="button" className="font-medium text-fg underline underline-offset-2" onClick={() => navigate('/app/templates?tab=themes')}>{tr('Preview all 24')}</button>
           </p>
-        }
-        {signature &&
-        <div className="mt-3 flex flex-col gap-2">
+        )}
+        {signature && (
+          <div className="mt-3 flex flex-col gap-2">
             <p className="text-caption text-fg-subtle">{tr(signature.theme.personality)}</p>
-            {sigModes.length > 1 &&
-          <Segmented
-            ariaLabel="Theme mode"
-            fullWidth
-            size="sm"
-            value={signature.mode}
-            onChange={(m) => actions.applyThemePreset(signatureTheme(signature.theme, m as ThemeMode))}
-            options={[
-            { value: 'light', label: 'Light' },
-            { value: 'dark', label: 'Dark' }]
-            } />
-
-          }
+            {sigModes.length > 1 && (
+              <Segmented
+                ariaLabel="Theme mode"
+                fullWidth
+                size="sm"
+                value={signature.mode}
+                onChange={(m) => actions.applyThemePreset(signatureTheme(signature.theme, m as ThemeMode))}
+                options={[
+                  { value: 'light', label: 'Light' },
+                  { value: 'dark', label: 'Dark' },
+                ]}
+              />
+            )}
           </div>
-        }
+        )}
       </section>
 
       <section aria-labelledby="theme-presets" className="border-t border-line pt-5">
@@ -102,22 +102,22 @@ export function ThemePanel() {
           {tr('Classic')}
         </h3>
         <div className="grid grid-cols-3 gap-2">
-          {pageThemePresets.map((preset) =>
-          <ThemeSwatch
-            key={preset.id}
-            name={preset.name}
-            theme={preset.theme}
-            active={theme.presetId === preset.id}
-            onClick={() => actions.applyThemePreset(preset.theme)} />
-
-          )}
+          {pageThemePresets.map((preset) => (
+            <ThemeSwatch
+              key={preset.id}
+              name={preset.name}
+              theme={preset.theme}
+              active={theme.presetId === preset.id}
+              onClick={() => actions.applyThemePreset(preset.theme)}
+            />
+          ))}
         </div>
-        {theme.presetId === 'custom' &&
-        <p className="mt-2 text-caption text-fg-subtle">{tr('Custom colours — save them below to reuse, or pick a theme to reset.')}</p>
-        }
-        {backgroundMode(theme) !== 'theme' &&
-        <p className="mt-2 text-caption text-fg-subtle">{tr('Your own page background is kept when you switch theme. Set Page background to Theme to use the theme’s.')}</p>
-        }
+        {theme.presetId === 'custom' && (
+          <p className="mt-2 text-caption text-fg-subtle">{tr('Custom colours — save them below to reuse, or pick a theme to reset.')}</p>
+        )}
+        {backgroundMode(theme) !== 'theme' && (
+          <p className="mt-2 text-caption text-fg-subtle">{tr('Your own page background is kept when you switch theme. Set Page background to Theme to use the theme’s.')}</p>
+        )}
       </section>
 
       <SavedThemes />
@@ -146,21 +146,21 @@ export function ThemePanel() {
         </p>
         <ul className="flex flex-col divide-y divide-line">
           {(
-          [
-          { key: 'text', label: 'Text on background', ratio: contrast.text },
-          { key: 'muted', label: 'Secondary text', ratio: contrast.muted },
-          { key: 'button', label: 'Featured button', ratio: contrast.button }] as
-          const).
-          map((row) =>
-          <ContrastRow
-            key={row.key}
-            label={tr(row.label)}
-            ratio={row.ratio}
-            guidance={tr(contrastCopy[row.key].guidance)}
-            fix={row.ratio < CONTRAST_TARGET ? suggestContrastFix(theme, row.key) : null}
-            onApply={(patch) => actions.updateTheme(patch, `fix-${row.key}-${Date.now()}`)} />
-
-          )}
+            [
+              { key: 'text', label: 'Text on background', ratio: contrast.text },
+              { key: 'muted', label: 'Secondary text', ratio: contrast.muted },
+              { key: 'button', label: 'Featured button', ratio: contrast.button },
+            ] as const
+          ).map((row) => (
+            <ContrastRow
+              key={row.key}
+              label={tr(row.label)}
+              ratio={row.ratio}
+              guidance={tr(contrastCopy[row.key].guidance)}
+              fix={row.ratio < CONTRAST_TARGET ? suggestContrastFix(theme, row.key) : null}
+              onApply={(patch) => actions.updateTheme(patch, `fix-${row.key}-${Date.now()}`)}
+            />
+          ))}
         </ul>
       </section>
 
@@ -179,15 +179,15 @@ export function ThemePanel() {
                   onClick={() => actions.updateTheme({ fontPair: f.id, ...(theme.material ? { material: { ...theme.material, headingFont: undefined, bodyFont: undefined } } : {}) }, 'fontPair')}
                   className={cn(
                     'flex min-w-0 flex-col items-center gap-0.5 rounded-sm border px-1 py-1.5 transition-[border-color,background-color] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
-                    active ? 'border-select bg-select/10 text-fg' : 'border-line text-fg-muted hover:border-line-strong'
-                  )}>
-                  
+                    active ? 'border-select bg-select/10 text-fg' : 'border-line text-fg-muted hover:border-line-strong',
+                  )}
+                >
                   <span className="text-[17px] leading-none text-fg" style={{ fontFamily: f.display }} aria-hidden>
                     Aa
                   </span>
                   <span className="w-full truncate text-center text-[11px]">{f.name}</span>
-                </button>);
-
+                </button>
+              );
             })}
           </div>
           {theme.material?.headingFont && <p className="mt-1.5 text-caption text-fg-subtle">{tr('Using the Signature theme’s own fonts. Pick a pairing to replace them.')}</p>}
@@ -200,11 +200,11 @@ export function ThemePanel() {
             value={theme.buttonShape}
             onChange={(buttonShape) => actions.updateTheme({ buttonShape }, 'buttonShape')}
             options={[
-            { value: 'pill', label: 'Pill' },
-            { value: 'rounded', label: 'Rounded' },
-            { value: 'square', label: 'Square' }]
-            } />
-          
+              { value: 'pill', label: 'Pill' },
+              { value: 'rounded', label: 'Rounded' },
+              { value: 'square', label: 'Square' },
+            ]}
+          />
         </Field>
         <Field id="theme-style" label="Standard buttons">
           <Segmented
@@ -214,15 +214,15 @@ export function ThemePanel() {
             value={theme.buttonStyle}
             onChange={(buttonStyle) => actions.updateTheme({ buttonStyle }, 'buttonStyle')}
             options={[
-            { value: 'solid', label: 'Card' },
-            { value: 'outline', label: 'Outline' },
-            { value: 'soft', label: 'Tinted' }]
-            } />
-          
+              { value: 'solid', label: 'Card' },
+              { value: 'outline', label: 'Outline' },
+              { value: 'soft', label: 'Tinted' },
+            ]}
+          />
         </Field>
       </section>
-    </div>);
-
+    </div>
+  );
 }
 
 interface ContrastRowProps {
@@ -247,15 +247,15 @@ function ContrastRow({ label, ratio, guidance, fix, onApply }: ContrastRowProps)
         <span
           className={cn(
             'inline-flex items-center gap-1 font-semibold tabular-nums',
-            pass ? 'text-success' : blocking ? 'text-danger' : 'text-warning'
-          )}>
-          
+            pass ? 'text-success' : blocking ? 'text-danger' : 'text-warning',
+          )}
+        >
           <Icon size={12} aria-hidden />
           {formatRatio(ratio)} · {status}
         </span>
       </div>
-      {fix &&
-      <div className={cn('rounded-sm px-2.5 py-2', blocking ? 'bg-danger-soft' : 'bg-warning-soft')}>
+      {fix && (
+        <div className={cn('rounded-sm px-2.5 py-2', blocking ? 'bg-danger-soft' : 'bg-warning-soft')}>
           {blocking && <p className="text-caption text-fg">{guidance}</p>}
           <div className={cn('flex items-center justify-between gap-2', blocking && 'mt-2')}>
             <span className="flex min-w-0 items-center gap-2 text-caption text-fg">
@@ -267,7 +267,7 @@ function ContrastRow({ label, ratio, guidance, fix, onApply }: ContrastRowProps)
             </Button>
           </div>
         </div>
-      }
-    </li>);
-
+      )}
+    </li>
+  );
 }

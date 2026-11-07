@@ -23,7 +23,7 @@ interface SegmentBuilderProps {
 }
 
 const selectCls =
-'h-10 w-full min-w-0 rounded-md border border-line bg-raised px-2.5 text-label text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus';
+  'h-10 w-full min-w-0 rounded-md border border-line bg-raised px-2.5 text-label text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus';
 
 /** Rule builder for segments (D272): "all of" or "any of" up to 8 conditions, with a live count. */
 export function SegmentBuilder({ open, onClose, segment, contacts, tags, campaigns, onSave }: SegmentBuilderProps) {
@@ -46,8 +46,8 @@ export function SegmentBuilder({ open, onClose, segment, contacts, tags, campaig
   const nameError = tried && !name.trim() ? 'Give the segment a name' : '';
   const rulesError = tried && complete.length === 0 ? 'Add at least one complete condition' : '';
 
-  const update = (id: string, patch: Partial<SegmentRule>) => setRules((rs) => rs.map((r) => r.id === id ? { ...r, ...patch } : r));
-  const changeField = (id: string, field: SegmentField) => setRules((rs) => rs.map((r) => r.id === id ? defaultRule(field, r.id, tags, campaigns) : r));
+  const update = (id: string, patch: Partial<SegmentRule>) => setRules((rs) => rs.map((r) => (r.id === id ? { ...r, ...patch } : r)));
+  const changeField = (id: string, field: SegmentField) => setRules((rs) => rs.map((r) => (r.id === id ? defaultRule(field, r.id, tags, campaigns) : r)));
 
   const save = () => {
     setTried(true);
@@ -63,14 +63,14 @@ export function SegmentBuilder({ open, onClose, segment, contacts, tags, campaig
       title={segment ? 'Edit segment' : 'Build a segment'}
       description="Choose who belongs. Membership updates by itself as contacts change."
       footer={
-      <>
+        <>
           <Button variant="secondary" onClick={onClose}>
             Cancel
           </Button>
           <Button onClick={save}>{segment ? 'Save changes' : 'Save segment'}</Button>
         </>
-      }>
-      
+      }
+    >
       <div className="flex flex-col gap-6">
         <TextInput id="segb-name" label="Name" value={name} maxLength={40} placeholder="VIP buyers who subscribed" error={nameError} onChange={(e) => setName(e.target.value)} />
 
@@ -81,10 +81,10 @@ export function SegmentBuilder({ open, onClose, segment, contacts, tags, campaig
             value={match}
             onChange={setMatch}
             options={[
-            { value: 'all', label: 'All of these' },
-            { value: 'any', label: 'Any of these' }]
-            } />
-          
+              { value: 'all', label: 'All of these' },
+              { value: 'any', label: 'Any of these' },
+            ]}
+          />
 
           <ol className="mt-1 flex flex-col gap-2">
             {rules.map((r, i) => {
@@ -94,26 +94,26 @@ export function SegmentBuilder({ open, onClose, segment, contacts, tags, campaig
                   <span className="w-10 shrink-0 text-caption font-semibold text-fg-subtle">{i === 0 ? 'Where' : match === 'all' ? 'and' : 'or'}</span>
                   <div className="grid flex-1 grid-cols-2 gap-2 sm:grid-cols-[1.1fr_0.9fr_1.2fr]">
                     <select aria-label={`Condition ${i + 1}: field`} className={selectCls} value={r.field} onChange={(e) => changeField(r.id, e.target.value as SegmentField)}>
-                      {(Object.keys(fieldDefs) as SegmentField[]).map((f) =>
-                      <option key={f} value={f}>
+                      {(Object.keys(fieldDefs) as SegmentField[]).map((f) => (
+                        <option key={f} value={f}>
                           {fieldDefs[f].label}
                         </option>
-                      )}
+                      ))}
                     </select>
                     <select aria-label={`Condition ${i + 1}: comparison`} className={selectCls} value={r.op} onChange={(e) => update(r.id, { op: e.target.value as SegmentOp })}>
-                      {def.ops.map((o) =>
-                      <option key={o} value={o}>
+                      {def.ops.map((o) => (
+                        <option key={o} value={o}>
                           {opLabels[o]}
                         </option>
-                      )}
+                      ))}
                     </select>
-                    {def.kind !== 'presence' &&
-                    <ValueSelect rule={r} index={i} tags={tags} campaigns={campaigns} onChange={(value) => update(r.id, { value })} />
-                    }
+                    {def.kind !== 'presence' && (
+                      <ValueSelect rule={r} index={i} tags={tags} campaigns={campaigns} onChange={(value) => update(r.id, { value })} />
+                    )}
                   </div>
                   <IconButton icon={Trash2Icon} label={`Remove condition ${i + 1}`} size="sm" disabled={rules.length === 1} onClick={() => setRules((rs) => rs.filter((x) => x.id !== r.id))} className="self-end sm:self-auto" />
-                </li>);
-
+                </li>
+              );
             })}
           </ol>
           {rulesError && <p className="text-caption text-danger">{rulesError}</p>}
@@ -133,30 +133,30 @@ export function SegmentBuilder({ open, onClose, segment, contacts, tags, campaig
           </p>
         </div>
       </div>
-    </Dialog>);
-
+    </Dialog>
+  );
 }
 
-function ValueSelect({ rule, index, tags, campaigns, onChange }: {rule: SegmentRule;index: number;tags: string[];campaigns: string[];onChange: (v: string) => void;}) {
+function ValueSelect({ rule, index, tags, campaigns, onChange }: { rule: SegmentRule; index: number; tags: string[]; campaigns: string[]; onChange: (v: string) => void }) {
   const kind = fieldDefs[rule.field].kind;
   const options =
-  kind === 'choice' ?
-  choiceOptions(rule.field) :
-  kind === 'tag' ?
-  tags.map((t) => ({ value: t, label: t })) :
-  kind === 'campaign' ?
-  campaigns.map((c) => ({ value: c, label: `/s/${c}` })) :
-  dayOptions.map((d) => ({ value: d, label: `${d} days` }));
+    kind === 'choice'
+      ? choiceOptions(rule.field)
+      : kind === 'tag'
+        ? tags.map((t) => ({ value: t, label: t }))
+        : kind === 'campaign'
+          ? campaigns.map((c) => ({ value: c, label: `/s/${c}` }))
+          : dayOptions.map((d) => ({ value: d, label: `${d} days` }));
   if (options.length === 0) {
     return <p className="col-span-2 self-center text-caption text-fg-subtle sm:col-span-1">{kind === 'tag' ? 'No tags yet' : 'No short links yet'}</p>;
   }
   return (
     <select aria-label={`Condition ${index + 1}: value`} className={`${selectCls} col-span-2 sm:col-span-1`} value={rule.value} onChange={(e) => onChange(e.target.value)}>
-      {options.map((o) =>
-      <option key={o.value} value={o.value}>
+      {options.map((o) => (
+        <option key={o.value} value={o.value}>
           {o.label}
         </option>
-      )}
-    </select>);
-
+      ))}
+    </select>
+  );
 }

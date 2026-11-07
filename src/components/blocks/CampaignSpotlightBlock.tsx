@@ -26,33 +26,33 @@ export function CampaignSpotlightBlock({ block, theme, mode }: BlockProps<'campa
   const span = [c.startsAt && `from ${fmt(c.startsAt)}`, c.endsAt && `until ${fmt(c.endsAt)}`].filter(Boolean).join(' ');
   return (
     <section className="overflow-hidden" style={cardStyle(theme)}>
-      {c.imageUrl && !ended &&
-      <div className="aspect-[16/7] overflow-hidden" style={imageFrameStyle(theme)}>
+      {c.imageUrl && !ended && (
+        <div className="aspect-[16/7] overflow-hidden" style={imageFrameStyle(theme)}>
           <MediaImage src={c.imageUrl} alt={c.imageAlt} className="h-full w-full object-cover" />
         </div>
-      }
+      )}
       <div className="p-6 md:p-8">
-        {mode === 'edit' &&
-        <p className="mb-3 text-[12px] font-semibold" style={{ color: theme.mutedText }}>
+        {mode === 'edit' && (
+          <p className="mb-3 text-[12px] font-semibold" style={{ color: theme.mutedText }}>
             {state === 'before' ? 'Not showing yet' : state === 'after' ? 'Ended' : 'Showing now'}
             {span && ` · ${span}`}
           </p>
-        }
+        )}
         <h2 className="text-[clamp(1.5rem,3cqw,2.2rem)] font-medium leading-[1.1] tracking-[-0.02em]" style={{ ...headingStyle(theme), color: theme.text }}>{c.title}</h2>
-        {ended ?
-        <p className="mt-2 text-[15px] leading-relaxed" style={{ color: theme.mutedText }}>{c.afterText || 'This campaign has ended.'}</p> :
-
-        <>
+        {ended ? (
+          <p className="mt-2 text-[15px] leading-relaxed" style={{ color: theme.mutedText }}>{c.afterText || 'This campaign has ended.'}</p>
+        ) : (
+          <>
             {c.text && <p className="mt-2 text-[15px] leading-relaxed" style={{ color: theme.mutedText }}>{c.text}</p>}
             {c.endsAt && <p className="mt-3 text-[13px] font-semibold" style={{ color: theme.text }}>Ends {fmt(c.endsAt)}</p>}
-            {c.ctaLabel && c.url &&
-          <PageAction mode={mode} href={c.url} className="mt-5 inline-flex h-12 items-center gap-2 px-6 text-[15px] font-semibold" style={buttonStyle(theme, 'featured')}>
+            {c.ctaLabel && c.url && (
+              <PageAction mode={mode} href={c.url} className="mt-5 inline-flex h-12 items-center gap-2 px-6 text-[15px] font-semibold" style={buttonStyle(theme, 'featured')}>
                 {c.ctaLabel} <ArrowRightIcon size={16} aria-hidden />
               </PageAction>
-          }
+            )}
           </>
-        }
+        )}
       </div>
-    </section>);
-
+    </section>
+  );
 }

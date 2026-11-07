@@ -9,13 +9,13 @@ const tone: Record<SubStatus, BadgeTone> = {
   paused: 'neutral',
   past_due: 'danger',
   cancelling: 'warning',
-  ended: 'neutral'
+  ended: 'neutral',
 };
 
-export function SubStatusBadge({ status }: {status: SubStatus;}) {
+export function SubStatusBadge({ status }: { status: SubStatus }) {
   return (
     <Badge tone={tone[status]} dot>
       {subStatusLabels[status]}
-    </Badge>);
-
+    </Badge>
+  );
 }

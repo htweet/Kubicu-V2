@@ -43,7 +43,7 @@ export function Media() {
   const [filter, setFilter] = useState<Filter>('all');
   const [query, setQuery] = useState('');
   const [openId, setOpenId] = useState<string | null>(null);
-  const [uploading, setUploading] = useState<{done: number;total: number;} | null>(null);
+  const [uploading, setUploading] = useState<{ done: number; total: number } | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const [folderDialog, setFolderDialog] = useState<'create' | 'rename' | null>(null);
   const [confirmFolderDelete, setConfirmFolderDelete] = useState(false);
@@ -94,7 +94,7 @@ export function Media() {
   });
   const unusedCount = inView.filter((a) => !isInUse(usage.get(a.id) ?? [])).length;
   const allUnused = media.assets.filter((a) => !isInUse(usage.get(a.id) ?? [])).length;
-  const pct = Math.min(100, media.usedBytes / media.quotaBytes * 100);
+  const pct = Math.min(100, (media.usedBytes / media.quotaBytes) * 100);
   const nextStoragePlan = plan.id === 'free' ? 'creator' : plan.id === 'creator' ? 'pro' : plan.id === 'pro' ? 'business' : null;
   const full = media.usedBytes >= media.quotaBytes;
   const uploadTarget = folder?.id;
@@ -113,8 +113,8 @@ export function Media() {
     for (const [i, file] of list.entries()) {
       try {
         const r = await media.addFile(file, uploadTarget);
-        if (r.duplicate) dupes += 1;else
-        added += 1;
+        if (r.duplicate) dupes += 1;
+        else added += 1;
       } catch (e) {
         problems.push(`${file.name}: ${e instanceof Error ? e.message : 'failed'}`);
       }
@@ -138,11 +138,11 @@ export function Media() {
 
   const openAsset = media.assets.find((a) => a.id === openId) ?? null;
   const viewTitle = folder ? folder.name : folderView === UNFILED_MEDIA ? 'Not in a folder' : 'All images';
-  const viewDescription = folder ?
-  folder.description ?? 'Your own folder.' :
-  folderView === UNFILED_MEDIA ?
-  'Images you uploaded without choosing a folder.' :
-  'Everything in your library, whatever folder it’s in.';
+  const viewDescription = folder
+    ? folder.description ?? 'Your own folder.'
+    : folderView === UNFILED_MEDIA
+      ? 'Images you uploaded without choosing a folder.'
+      : 'Everything in your library, whatever folder it’s in.';
 
   return (
     <div
@@ -159,25 +159,25 @@ export function Media() {
         e.preventDefault();
         setDragOver(false);
         if (media.available) void uploadMany(e.dataTransfer.files);
-      }}>
-      
+      }}
+    >
       <PageHeader
         title="Media"
         description="Every photo you upload, in one place. Brand and product uploads are filed for you; reuse anything anywhere."
         actions={
-        <Button leadingIcon={UploadIcon} disabled={!media.available || full || !!uploading || !mediaAllowed.allowed} title={mediaAllowed.allowed ? undefined : mediaAllowed.reason} onClick={() => fileRef.current?.click()}>
+          <Button leadingIcon={UploadIcon} disabled={!media.available || full || !!uploading || !mediaAllowed.allowed} title={mediaAllowed.allowed ? undefined : mediaAllowed.reason} onClick={() => fileRef.current?.click()}>
             {folder ? `Upload to ${folder.name}` : 'Upload'}
           </Button>
-        } />
-      
+        }
+      />
       <input ref={fileRef} type="file" multiple accept={ACCEPTED_IMAGE_TYPES.join(',')} className="sr-only" tabIndex={-1} aria-hidden onChange={(e) => uploadMany(e.target.files)} />
 
-      {!media.available ?
-      <InlineAlert tone="warning" title="Media storage isn’t available in this browser" className="mt-8">
+      {!media.available ? (
+        <InlineAlert tone="warning" title="Media storage isn’t available in this browser" className="mt-8">
           Photos you upload are saved inside each page or product instead, so they can’t be reused here. Private browsing often blocks this storage.
-        </InlineAlert> :
-
-      <>
+        </InlineAlert>
+      ) : (
+        <>
           <div className="mt-8 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
             <div className="h-2 w-full max-w-xs overflow-hidden rounded-full bg-sunken" role="meter" aria-label="Media storage used" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(pct)}>
               <div className={cn('h-full rounded-full', pct > 90 ? 'bg-danger' : pct > 70 ? 'bg-warning' : 'bg-action')} style={{ width: `${Math.max(pct, media.usedBytes ? 2 : 0)}%` }} />
@@ -195,26 +195,26 @@ export function Media() {
               </span>
             </p>
           </div>
-          {full &&
-        <InlineAlert tone="danger" title="Storage full" className="mt-4" action={nextStoragePlan ? <UpgradeButton plan={nextStoragePlan} feature="More media storage" /> : undefined}>
+          {full && (
+            <InlineAlert tone="danger" title="Storage full" className="mt-4" action={nextStoragePlan ? <UpgradeButton plan={nextStoragePlan} feature="More media storage" /> : undefined}>
               New uploads are paused. {allUnused > 0 ? `${allUnused} image${allUnused === 1 ? ' isn’t' : 's aren’t'} used anywhere — delete them to make room.` : 'Delete images you no longer need, or upgrade your plan.'}
             </InlineAlert>
-        }
+          )}
 
           <div className="mt-8 flex flex-col gap-6 lg:flex-row lg:gap-10">
             <MediaFolderRail
-            folders={media.folders}
-            counts={counts}
-            total={media.assets.length}
-            unfiled={unfiledCount}
-            value={folderView}
-            onChange={(id) => {
-              setFolderView(id);
-              setFilter('all');
-            }}
-            onNewFolder={() => setFolderDialog('create')}
-            canManage={mediaAllowed.allowed} />
-          
+              folders={media.folders}
+              counts={counts}
+              total={media.assets.length}
+              unfiled={unfiledCount}
+              value={folderView}
+              onChange={(id) => {
+                setFolderView(id);
+                setFilter('all');
+              }}
+              onNewFolder={() => setFolderDialog('create')}
+              canManage={mediaAllowed.allowed}
+            />
 
             <section aria-labelledby="media-view-title" className="min-w-0 flex-1">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -228,8 +228,8 @@ export function Media() {
                     <p className="mt-0.5 max-w-xl text-label text-fg-muted">{viewDescription}</p>
                   </div>
                 </div>
-                {folder && !folder.system && mediaAllowed.allowed &&
-              <div className="flex shrink-0 gap-1">
+                {folder && !folder.system && mediaAllowed.allowed && (
+                  <div className="flex shrink-0 gap-1">
                     <Button size="sm" variant="tertiary" leadingIcon={PencilIcon} onClick={() => setFolderDialog('rename')}>
                       Rename
                     </Button>
@@ -237,48 +237,48 @@ export function Media() {
                       Delete folder
                     </Button>
                   </div>
-              }
+                )}
               </div>
 
-              {inView.length === 0 ?
-            <button
-              type="button"
-              disabled={!mediaAllowed.allowed}
-              onClick={() => fileRef.current?.click()}
-              className={cn(
-                'disabled:cursor-not-allowed disabled:opacity-60',
-                'mt-6 flex w-full flex-col items-center gap-3 rounded-lg border-2 border-dashed px-6 py-16 text-center transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
-                dragOver ? 'border-action bg-action-soft' : 'border-line-strong hover:bg-sunken'
-              )}>
-              
+              {inView.length === 0 ? (
+                <button
+                  type="button"
+                  disabled={!mediaAllowed.allowed}
+                  onClick={() => fileRef.current?.click()}
+                  className={cn(
+                    'disabled:cursor-not-allowed disabled:opacity-60',
+                    'mt-6 flex w-full flex-col items-center gap-3 rounded-lg border-2 border-dashed px-6 py-16 text-center transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
+                    dragOver ? 'border-action bg-action-soft' : 'border-line-strong hover:bg-sunken',
+                  )}
+                >
                   <ImagesIcon size={26} className="text-fg-subtle" aria-hidden />
                   <span className="text-heading font-semibold text-fg">{media.assets.length === 0 ? 'Your library is empty' : folder ? `${folder.name} is empty` : 'Nothing here yet'}</span>
                   <span className="max-w-sm text-label text-fg-muted">
-                    {folder?.id === 'brand' ?
-                'Logos and profile photos you upload anywhere in KUBICU land here. You can also drop brand images straight in.' :
-                folder?.id === 'products' ?
-                'Photos you add to products in Commerce or product blocks land here. You can also drop product photos straight in.' :
-                folder ?
-                'Drop images here, or move images in from their details panel.' :
-                'Drop photos here or choose several from your device. Images you upload from the canvas or Commerce land here too.'}
+                    {folder?.id === 'brand'
+                      ? 'Logos and profile photos you upload anywhere in KUBICU land here. You can also drop brand images straight in.'
+                      : folder?.id === 'products'
+                        ? 'Photos you add to products in Commerce or product blocks land here. You can also drop product photos straight in.'
+                        : folder
+                          ? 'Drop images here, or move images in from their details panel.'
+                          : 'Drop photos here or choose several from your device. Images you upload from the canvas or Commerce land here too.'}
                   </span>
                   <span className="mt-1 inline-flex h-10 items-center gap-2 rounded-md bg-action px-4 text-label font-medium text-action-fg">
                     <UploadIcon size={16} aria-hidden /> Choose photos
                   </span>
-                </button> :
-
-            <>
+                </button>
+              ) : (
+                <>
                   <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <Segmented<Filter>
-                  ariaLabel="Show"
-                  value={filter}
-                  onChange={setFilter}
-                  options={[
-                  { value: 'all', label: `All · ${inView.length}` },
-                  { value: 'used', label: 'In use' },
-                  { value: 'unused', label: `Not used · ${unusedCount}` }]
-                  } />
-                
+                      ariaLabel="Show"
+                      value={filter}
+                      onChange={setFilter}
+                      options={[
+                        { value: 'all', label: `All · ${inView.length}` },
+                        { value: 'used', label: 'In use' },
+                        { value: 'unused', label: `Not used · ${unusedCount}` },
+                      ]}
+                    />
                     <div className="relative w-full sm:w-64">
                       <SearchIcon size={15} aria-hidden className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-fg-subtle" />
                       <label htmlFor="media-search" className="sr-only">
@@ -288,23 +288,23 @@ export function Media() {
                     </div>
                   </div>
 
-                  {uploading &&
-              <p role="status" className="mt-4 flex items-center gap-2 text-label text-fg-muted">
+                  {uploading && (
+                    <p role="status" className="mt-4 flex items-center gap-2 text-label text-fg-muted">
                       <Loader2Icon size={15} className="animate-spin" aria-hidden /> Uploading {uploading.done} of {uploading.total}…
                     </p>
-              }
+                  )}
 
                   <div className={cn('relative mt-5 rounded-lg transition-colors duration-150', dragOver && 'outline-dashed outline-2 outline-offset-4 outline-action')}>
-                    {visible.length === 0 ?
-                <p className="py-16 text-center text-label text-fg-muted">{filter === 'unused' ? 'Every image here is in use.' : 'Nothing matches.'}</p> :
-
-                <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
+                    {visible.length === 0 ? (
+                      <p className="py-16 text-center text-label text-fg-muted">{filter === 'unused' ? 'Every image here is in use.' : 'Nothing matches.'}</p>
+                    ) : (
+                      <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
                         {visible.map((a) => {
-                    const uses = usage.get(a.id) ?? [];
-                    const count = uses.filter((u) => u.kind !== 'history').length;
-                    const f = folderView === ALL_MEDIA ? media.folderOf(a) : undefined;
-                    return (
-                      <li key={a.id}>
+                          const uses = usage.get(a.id) ?? [];
+                          const count = uses.filter((u) => u.kind !== 'history').length;
+                          const f = folderView === ALL_MEDIA ? media.folderOf(a) : undefined;
+                          return (
+                            <li key={a.id}>
                               <button type="button" onClick={() => setOpenId(a.id)} className="group block w-full overflow-hidden rounded-md border border-line bg-raised text-left transition-colors duration-150 hover:border-line-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
                                 <span className="block overflow-hidden bg-sunken">
                                   <MediaImage src={mediaRef(a.id)} alt={a.alt} loading="lazy" className="aspect-square w-full object-cover transition-transform duration-200 ease-out group-hover:scale-[1.03]" />
@@ -318,19 +318,19 @@ export function Media() {
                                   </span>
                                 </span>
                               </button>
-                            </li>);
-
-                  })}
+                            </li>
+                          );
+                        })}
                       </ul>
-                }
+                    )}
                   </div>
                   <p className="mt-6 text-caption text-fg-subtle">Drop photos anywhere on this page to upload{folder ? ` to ${folder.name}` : ''}. Stored in this browser for the prototype.</p>
                 </>
-            }
+              )}
             </section>
           </div>
         </>
-      }
+      )}
 
       <MediaDetail asset={openAsset} uses={openAsset ? usage.get(openAsset.id) ?? [] : []} onClose={() => setOpenId(null)} />
 
@@ -349,8 +349,8 @@ export function Media() {
             toast(`Created “${created.name}”`);
           }
           setFolderDialog(null);
-        }} />
-      
+        }}
+      />
 
       <Dialog
         open={confirmFolderDelete}
@@ -359,7 +359,7 @@ export function Media() {
         title={`Delete “${folder?.name ?? ''}”?`}
         description={`The folder goes, but no images are deleted. ${folder && counts.get(folder.id) ? `Its ${counts.get(folder.id)} image${counts.get(folder.id) === 1 ? '' : 's'} move to Not in a folder.` : 'It’s empty.'}`}
         footer={
-        <>
+          <>
             <Button variant="secondary" onClick={() => setConfirmFolderDelete(false)} data-autofocus>
               Keep it
             </Button>
@@ -367,10 +367,10 @@ export function Media() {
               Delete folder
             </Button>
           </>
-        }>
-        
+        }
+      >
         {null}
       </Dialog>
-    </div>);
-
+    </div>
+  );
 }

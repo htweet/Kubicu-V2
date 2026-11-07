@@ -72,7 +72,7 @@ export interface Subscription {
   pendingPlanId: string | null;
   customer: OrderCustomer;
   /** Box delivery (or pickup) chosen at sign-up. */
-  delivery: {method: 'delivery' | 'pickup';zoneId?: string;zoneName?: string;address?: string;feeNgn: number;} | null;
+  delivery: { method: 'delivery' | 'pickup'; zoneId?: string; zoneName?: string; address?: string; feeNgn: number } | null;
   status: SubStatus;
   startedAt: string;
   trialEndsAt: string | null;
@@ -88,7 +88,7 @@ export interface Subscription {
   failedAt: string | null;
   retries: number;
   graceEndsAt: string | null;
-  card: {brand: 'Visa' | 'Mastercard' | 'Verve';last4: string;};
+  card: { brand: 'Visa' | 'Mastercard' | 'Verve'; last4: string };
   payments: SubPayment[];
   events: SubEvent[];
   sourceHandle?: string;

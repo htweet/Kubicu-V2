@@ -85,19 +85,19 @@ export function FeedbackGallery() {
           <Button variant="secondary" onClick={() => setSheet(true)}>Open sheet</Button>
           <Button
             variant="secondary"
-            onClick={() => toast('Link button deleted', { action: { label: 'Undo', onClick: () => toast('Restored') } })}>
-            
+            onClick={() => toast('Link button deleted', { action: { label: 'Undo', onClick: () => toast('Restored') } })}
+          >
             Show toast
           </Button>
           <Menu
             align="start"
             items={[
-            { id: 'a', label: 'Open canvas', icon: PenToolIcon },
-            { id: 'b', label: 'Duplicate', icon: CopyIcon, disabled: true, reason: 'Needs multiple spaces — planned.' },
-            { id: 'c', label: 'Hide from live page', icon: EyeOffIcon, destructive: true }]
-            }
-            trigger={(props) => <IconButton {...props} icon={MoreHorizontalIcon} label="Open menu" variant="outline" />} />
-          
+              { id: 'a', label: 'Open canvas', icon: PenToolIcon },
+              { id: 'b', label: 'Duplicate', icon: CopyIcon, disabled: true, reason: 'Needs multiple spaces — planned.' },
+              { id: 'c', label: 'Hide from live page', icon: EyeOffIcon, destructive: true },
+            ]}
+            trigger={(props) => <IconButton {...props} icon={MoreHorizontalIcon} label="Open menu" variant="outline" />}
+          />
         </div>
       </div>
 
@@ -107,15 +107,15 @@ export function FeedbackGallery() {
         title="Replace your draft?"
         description="We’ll save your current draft as a snapshot first."
         footer={
-        <>
+          <>
             <Button variant="secondary" onClick={() => setDialog(false)}>Cancel</Button>
             <Button onClick={() => setDialog(false)} data-autofocus>Replace draft</Button>
           </>
-        } />
-      
+        }
+      />
       <Sheet open={sheet} onClose={() => setSheet(false)} title="Example sheet" side="right">
         <p className="p-5 text-label text-fg-muted">Sheets hold secondary tasks like version history or, on mobile, block settings.</p>
       </Sheet>
-    </div>);
-
+    </div>
+  );
 }

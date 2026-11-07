@@ -50,17 +50,17 @@ export function HandleClaim() {
         claim(handle);
       }}
       className="w-full max-w-lg"
-      aria-describedby="claim-status">
-      
+      aria-describedby="claim-status"
+    >
       <label htmlFor="claim-handle" className="text-label font-semibold text-fg">
         {tr('Claim your link')}
       </label>
       <div
         className={cn(
           'mt-2 flex flex-col gap-2 rounded-[28px] border-2 bg-raised p-1.5 shadow-2 transition-colors duration-150 focus-within:ring-2 focus-within:ring-focus sm:flex-row sm:items-center sm:rounded-full',
-          message?.tone === 'bad' ? 'border-danger' : message?.tone === 'ok' ? 'border-success' : 'border-transparent'
-        )}>
-        
+          message?.tone === 'bad' ? 'border-danger' : message?.tone === 'ok' ? 'border-success' : 'border-transparent',
+        )}
+      >
         <div className="flex min-w-0 flex-1 items-center pl-4">
           <span className="shrink-0 select-none text-[17px] font-medium text-fg-subtle" aria-hidden>
             kub.icu/
@@ -75,8 +75,8 @@ export function HandleClaim() {
             spellCheck={false}
             maxLength={30}
             aria-invalid={message?.tone === 'bad' || undefined}
-            className="h-11 min-w-0 flex-1 bg-transparent text-[17px] font-medium text-fg placeholder:text-fg-subtle focus:outline-none" />
-          
+            className="h-11 min-w-0 flex-1 bg-transparent text-[17px] font-medium text-fg placeholder:text-fg-subtle focus:outline-none"
+          />
         </div>
         <Button type="submit" size="lg" variant="primary" trailingIcon={ArrowRightIcon} className="h-12 shrink-0 rounded-full px-6 text-[15px] font-bold">
           {tr('Claim it — free')}
@@ -84,31 +84,31 @@ export function HandleClaim() {
       </div>
 
       <div id="claim-status" aria-live="polite" className="mt-2.5 min-h-[20px]">
-        {message &&
-        <p className={cn('flex items-center gap-1.5 text-label', message.tone === 'ok' ? 'text-success' : 'text-danger')}>
+        {message && (
+          <p className={cn('flex items-center gap-1.5 text-label', message.tone === 'ok' ? 'text-success' : 'text-danger')}>
             {message.tone === 'ok' ? <CheckCircle2Icon size={15} aria-hidden /> : <XCircleIcon size={15} aria-hidden />}
             {message.text}
           </p>
-        }
-        {suggestions.length > 0 &&
-        <div className="mt-2 flex flex-wrap items-center gap-2">
+        )}
+        {suggestions.length > 0 && (
+          <div className="mt-2 flex flex-wrap items-center gap-2">
             <span className="text-caption text-fg-subtle">{tr('Free instead:')}</span>
-            {suggestions.map((s) =>
-          <button
-            key={s}
-            type="button"
-            onClick={() => setHandle(s)}
-            className="rounded-full border border-line-strong px-3 py-1 text-caption font-medium text-fg transition-colors duration-150 hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-            
+            {suggestions.map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => setHandle(s)}
+                className="rounded-full border border-line-strong px-3 py-1 text-caption font-medium text-fg transition-colors duration-150 hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+              >
                 kub.icu/{s}
               </button>
-          )}
+            ))}
           </div>
-        }
+        )}
       </div>
       <p className="mt-1 text-caption text-fg-subtle">
         {tr('We hold it for {n} minutes while you create your account. No card needed.', { n: CLAIM_HOLD_MINUTES })}
       </p>
-    </form>);
-
+    </form>
+  );
 }

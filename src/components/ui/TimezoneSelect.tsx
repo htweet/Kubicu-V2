@@ -3,14 +3,14 @@ import { SelectInput } from './SelectInput';
 
 /** Time zones offered first for KUBICU's launch markets; more come with localisation settings. */
 export const timeZones = [
-{ value: 'Africa/Lagos', label: 'Lagos, Abuja (WAT, UTC+1)' },
-{ value: 'Africa/Accra', label: 'Accra (GMT, UTC+0)' },
-{ value: 'Africa/Nairobi', label: 'Nairobi (EAT, UTC+3)' },
-{ value: 'Africa/Johannesburg', label: 'Johannesburg (SAST, UTC+2)' },
-{ value: 'Africa/Cairo', label: 'Cairo (EET, UTC+2)' },
-{ value: 'Europe/London', label: 'London (UK time)' },
-{ value: 'America/New_York', label: 'New York (US Eastern)' }] as
-const;
+  { value: 'Africa/Lagos', label: 'Lagos, Abuja (WAT, UTC+1)' },
+  { value: 'Africa/Accra', label: 'Accra (GMT, UTC+0)' },
+  { value: 'Africa/Nairobi', label: 'Nairobi (EAT, UTC+3)' },
+  { value: 'Africa/Johannesburg', label: 'Johannesburg (SAST, UTC+2)' },
+  { value: 'Africa/Cairo', label: 'Cairo (EET, UTC+2)' },
+  { value: 'Europe/London', label: 'London (UK time)' },
+  { value: 'America/New_York', label: 'New York (US Eastern)' },
+] as const;
 
 export type TimeZoneId = (typeof timeZones)[number]['value'];
 
@@ -32,7 +32,7 @@ export function TimezoneSelect({ id, label = 'Time zone', value, onChange, hint,
       onChange={onChange}
       hint={hint}
       disabled={disabled}
-      options={timeZones.map((t) => ({ value: t.value, label: t.label }))} />);
-
-
+      options={timeZones.map((t) => ({ value: t.value, label: t.label }))}
+    />
+  );
 }

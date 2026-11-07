@@ -44,7 +44,7 @@ function nextPlanAbove(plan: WorkspacePlan): WorkspacePlan | undefined {
 const EditorContext = createContext<EditorStore | null>(null);
 
 /** The editor for the space open in this workspace. Remount (key by space id) when switching. */
-export function EditorProvider({ children }: {children: React.ReactNode;}) {
+export function EditorProvider({ children }: { children: React.ReactNode }) {
   const { current, currentSpace, workspaces } = useWorkspace();
   const { data } = useCommerce();
   const ops = useOps().data;
@@ -59,7 +59,7 @@ export function EditorProvider({ children }: {children: React.ReactNode;}) {
   const partnerships = useLocalStore(partnershipKey(current.id), emptyPartnerships).data;
   const extra = useCallback(
     (doc: PageDocument) => [...catalogLinkIssues(doc, data, plan.id), ...opsLinkIssues(doc, ops, plan.id), ...formLinkIssues(doc, current.id)],
-    [data, ops, plan.id, current.id]
+    [data, ops, plan.id, current.id],
   );
   const siteLevel = useCallback(
     (doc: PageDocument): ValidationIssue[] => {
@@ -80,13 +80,13 @@ export function EditorProvider({ children }: {children: React.ReactNode;}) {
           severity: 'error',
           message: limit === 0 ? `Your ${plan.name} plan includes your main page only. Upgrade to publish extra spaces.` : `Your ${plan.name} plan includes ${limit} extra spaces. Archive one or upgrade to publish this.`,
           upgradeTo: nextPlanAbove(plan.id),
-          upgradeFeature: 'Publishing extra spaces'
+          upgradeFeature: 'Publishing extra spaces',
         });
       }
       // AI drafts mark gaps as "[Add …]" — they must be replaced with the owner's own words (D63).
       allBlocks(doc).forEach((b) => {
         if (!b.visibility.hidden && hasPlaceholder(b))
-        out.push({ id: `ai:placeholder:${b.id}`, blockId: b.id, severity: 'error', message: 'Replace the [Add …] placeholder with your own words before publishing.' });
+          out.push({ id: `ai:placeholder:${b.id}`, blockId: b.id, severity: 'error', message: 'Replace the [Add …] placeholder with your own words before publishing.' });
       });
       out.push(...intentIssues(doc));
       out.push(...containerIssues(allBlocks(doc)));
@@ -113,11 +113,11 @@ export function EditorProvider({ children }: {children: React.ReactNode;}) {
         out.push(...dealRoomIssues(doc.dealRoom, doc.blocks, data, roomOrders(data, doc.handle).length));
         // DealRooms take payment through checkout (D54).
         if (!planAtLeast(plan.id, CHECKOUT_PLAN))
-        out.push({ id: 'room:plan', blockId: null, severity: 'error', message: `DealRooms take payment at checkout, which is on the ${plans[CHECKOUT_PLAN].name} plan.`, upgradeTo: CHECKOUT_PLAN, upgradeFeature: 'DealRooms with checkout' });
+          out.push({ id: 'room:plan', blockId: null, severity: 'error', message: `DealRooms take payment at checkout, which is on the ${plans[CHECKOUT_PLAN].name} plan.`, upgradeTo: CHECKOUT_PLAN, upgradeFeature: 'DealRooms with checkout' });
       }
       return out;
     },
-    [plan.id, plan.name, isMain, spaceIndex, currentSpace.kind, currentSpace.id, current, data, ops, trustAppOn, trustLevel, partnerships, storageId]
+    [plan.id, plan.name, isMain, spaceIndex, currentSpace.kind, currentSpace.id, current, data, ops, trustAppOn, trustLevel, partnerships, storageId],
   );
   const store = useEditorStore(storageId, taken, extra, siteLevel);
   return <EditorContext.Provider value={store}>{children}</EditorContext.Provider>;

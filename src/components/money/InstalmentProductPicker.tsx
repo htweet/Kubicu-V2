@@ -22,7 +22,7 @@ function blocker(p: Product): string | null {
  * Commerce → Payments → Instalments: switch "Pay in instalments" on per product right here,
  * the same setting as Product → Stock & options (D112). Physical, non-archived products only.
  */
-export function InstalmentProductPicker({ disabled }: {disabled: boolean;}) {
+export function InstalmentProductPicker({ disabled }: { disabled: boolean }) {
   const { data, apply } = useCommerce();
   const { t: tr } = useT();
   const products = data.products.filter((p) => p.kind === 'physical' && !p.giftCard && p.status !== 'archived');
@@ -34,8 +34,8 @@ export function InstalmentProductPicker({ disabled }: {disabled: boolean;}) {
         <Link to="/app/commerce/products" className="font-medium text-fg underline underline-offset-2">
           {tr('Add a product')}
         </Link>
-      </p>);
-
+      </p>
+    );
   }
 
   const toggle = (p: Product, on: boolean) => {
@@ -67,10 +67,10 @@ export function InstalmentProductPicker({ disabled }: {disabled: boolean;}) {
                 </span>
               </span>
               <Switch id={`inst-p-${p.id}`} label={`Pay ${p.name} in instalments`} hideLabel checked={!!p.instalments} disabled={disabled || !!why} onChange={(v) => toggle(p, v)} />
-            </li>);
-
+            </li>
+          );
         })}
       </ul>
-    </fieldset>);
-
+    </fieldset>
+  );
 }

@@ -15,10 +15,10 @@ export function DsSection({ id, title, description, children }: DsSectionProps) 
       </h2>
       {description && <p className="mt-1 max-w-2xl text-label text-fg-muted">{description}</p>}
       <div className="mt-6">{children}</div>
-    </section>);
-
+    </section>
+  );
 }
 
-export function DsLabel({ children }: {children: React.ReactNode;}) {
+export function DsLabel({ children }: { children: React.ReactNode }) {
   return <p className="mb-3 text-caption font-medium text-fg-subtle">{children}</p>;
 }

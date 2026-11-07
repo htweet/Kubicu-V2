@@ -23,7 +23,7 @@ export function MembersAreaSettingsPanel() {
   const s = state.site.membersArea;
   if (!s) return null;
 
-  const patch = (next: Partial<MembersAreaSettings>) => actions.transformDocument((doc) => doc.membersArea ? { ...doc, membersArea: { ...doc.membersArea, ...next } } : doc);
+  const patch = (next: Partial<MembersAreaSettings>) => actions.transformDocument((doc) => (doc.membersArea ? { ...doc, membersArea: { ...doc.membersArea, ...next } } : doc));
   const plansList = membershipPlans(data).filter((p) => p.status === 'active' || s.rule.planIds.includes(p.id));
   const count = membersWithAccess(s, data);
   const toggle = (id: string) => {
@@ -49,17 +49,17 @@ export function MembersAreaSettingsPanel() {
 
       <fieldset className="min-w-0">
         <legend className="mb-1.5 text-label font-medium text-fg">{tr('Who gets in')}</legend>
-        {plansList.length === 0 ?
-        <p className="rounded-md border border-dashed border-line-strong px-3 py-3 text-caption text-fg-muted">
+        {plansList.length === 0 ? (
+          <p className="rounded-md border border-dashed border-line-strong px-3 py-3 text-caption text-fg-muted">
             {tr('No membership plans yet.')}{' '}
             <Link to="/app/commerce/subscriptions" className="font-semibold text-action hover:underline">
               {tr('Create one in Subscriptions')}
             </Link>
-          </p> :
-
-        <ul className="flex flex-col divide-y divide-line rounded-md border border-line">
-            {plansList.map((p) =>
-          <li key={p.id}>
+          </p>
+        ) : (
+          <ul className="flex flex-col divide-y divide-line rounded-md border border-line">
+            {plansList.map((p) => (
+              <li key={p.id}>
                 <label className="flex min-h-[48px] cursor-pointer items-center gap-2.5 px-3 py-1.5">
                   <input type="checkbox" className="h-4 w-4" checked={s.rule.planIds.includes(p.id)} onChange={() => toggle(p.id)} />
                   <span className="min-w-0 flex-1">
@@ -71,9 +71,9 @@ export function MembersAreaSettingsPanel() {
                   </span>
                 </label>
               </li>
-          )}
+            ))}
           </ul>
-        }
+        )}
         <p className="mt-1.5 text-caption text-fg-subtle">
           {tr('Active and trial subscribers get in. Cancelled members keep access until the end of the period they paid for; failed payments keep access during the grace period. Paused and ended subscriptions don’t get in.')}
         </p>
@@ -93,6 +93,6 @@ export function MembersAreaSettingsPanel() {
       <Link to="/app/commerce/subscriptions" className={linkClass}>
         <RepeatIcon size={13} aria-hidden /> {tr('Subscriptions & members')}
       </Link>
-    </section>);
-
+    </section>
+  );
 }

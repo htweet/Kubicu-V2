@@ -18,12 +18,12 @@ const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
  * currency at the rate of the day it was made, shows the naira list price and that rate, and names the local
  * KUBICU entity (D432).
  */
-export function InvoiceDialog({ invoice, onClose }: {invoice: Invoice | null;onClose: () => void;}) {
+export function InvoiceDialog({ invoice, onClose }: { invoice: Invoice | null; onClose: () => void }) {
   const { current } = useWorkspace();
 
   if (!invoice) return <Dialog open={false} onClose={onClose} title="Invoice">{null}</Dialog>;
 
-  const money = (n: number) => n < 0 ? `−${invoiceMoney(invoice, -n)}` : invoiceMoney(invoice, n);
+  const money = (n: number) => (n < 0 ? `−${invoiceMoney(invoice, -n)}` : invoiceMoney(invoice, n));
   const totals = invoiceTotals(invoice);
   const fmt = (n: number) => formatMoney(n, totals.code);
   const entity = billingCountryFor(totals.code).entity;
@@ -61,7 +61,7 @@ ${fxNote ? `<p class="muted">${esc(fxNote)}</p>` : ''}
       title={`Invoice ${invoice.number}`}
       description={`Issued ${formatDate(invoice.issuedAt)}`}
       footer={
-      <>
+        <>
           <Button variant="secondary" onClick={onClose}>
             Close
           </Button>
@@ -69,8 +69,8 @@ ${fxNote ? `<p class="muted">${esc(fxNote)}</p>` : ''}
             Print or save PDF
           </Button>
         </>
-      }>
-      
+      }
+    >
       <div className="relative flex flex-col gap-4 overflow-hidden">
         <span aria-hidden className="pointer-events-none absolute inset-x-0 top-1/3 -rotate-12 select-none text-center font-display text-[56px] font-bold text-danger opacity-[0.07]">
           TEST MODE
@@ -90,12 +90,12 @@ ${fxNote ? `<p class="muted">${esc(fxNote)}</p>` : ''}
           </div>
         </div>
         <dl className="flex flex-col gap-2 border-t border-line pt-3 text-label">
-          {invoice.lines.map((l) =>
-          <div key={l.label} className="flex justify-between gap-4">
+          {invoice.lines.map((l) => (
+            <div key={l.label} className="flex justify-between gap-4">
               <dt className="text-fg-muted">{l.label}</dt>
               <dd className="shrink-0 tabular-nums text-fg">{money(l.amountNgn)}</dd>
             </div>
-          )}
+          ))}
           <div className="flex justify-between gap-4 border-t border-line pt-2">
             <dt className="text-fg-muted">Subtotal</dt>
             <dd className="tabular-nums text-fg">{fmt(totals.subtotal)}</dd>
@@ -116,6 +116,6 @@ ${fxNote ? `<p class="muted">${esc(fxNote)}</p>` : ''}
           {invoice.sample ? ' · Sample' : ''}
         </p>
       </div>
-    </Dialog>);
-
+    </Dialog>
+  );
 }

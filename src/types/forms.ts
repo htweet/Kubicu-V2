@@ -2,39 +2,39 @@ import type { SourceId } from './analytics';
 
 /** Forms add-on (D79). */
 export type FormFieldType =
-'shortText' |
-'longText' |
-'email' |
-'phone' |
-'number' |
-'amount' |
-'dropdown' |
-'choice' |
-'checkboxes' |
-'date' |
-'time' |
-'file' |
-'address' |
-'rating' |
-'consent' |
-'hidden' |
-'payment'
-// D193 — richer fields
-| 'name' |
-'dateRange' |
-'signature' |
-'scale' |
-'imageChoice' |
-'products'
-// D194 — the remaining eight
-| 'section' |
-'ranking' |
-'grid' |
-'website' |
-'bookingSlot' |
-'bank' |
-'region' |
-'calculated';
+  | 'shortText'
+  | 'longText'
+  | 'email'
+  | 'phone'
+  | 'number'
+  | 'amount'
+  | 'dropdown'
+  | 'choice'
+  | 'checkboxes'
+  | 'date'
+  | 'time'
+  | 'file'
+  | 'address'
+  | 'rating'
+  | 'consent'
+  | 'hidden'
+  | 'payment'
+  // D193 — richer fields
+  | 'name'
+  | 'dateRange'
+  | 'signature'
+  | 'scale'
+  | 'imageChoice'
+  | 'products'
+  // D194 — the remaining eight
+  | 'section'
+  | 'ranking'
+  | 'grid'
+  | 'website'
+  | 'bookingSlot'
+  | 'bank'
+  | 'region'
+  | 'calculated';
 
 /** Calculated total: adds up earlier answers, then multiplies. */
 export interface FormCalc {
@@ -155,7 +155,7 @@ export interface FormSubmission {
   answers: Record<string, string | string[]>;
   source: SourceId | null;
   pageHandle: string | null;
-  payment: {amountNgn: number;status: 'paid' | 'test';reference: string;} | null;
+  payment: { amountNgn: number; status: 'paid' | 'test'; reference: string } | null;
   status: SubmissionStatus;
   assigneeId: string | null;
   contactName: string;

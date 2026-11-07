@@ -43,7 +43,7 @@ export function SignUp() {
     email: isValidEmail(email) ? '' : 'Enter a valid email, like you@example.com',
     password: password.length >= 8 ? '' : 'Use at least 8 characters',
     agreed: agreed ? '' : 'Please agree to continue',
-    country: closed ? 'Choose a country where KUBICU is open' : ''
+    country: closed ? 'Choose a country where KUBICU is open' : '',
   };
   const valid = Object.values(errors).every((e) => !e);
 
@@ -66,26 +66,26 @@ export function SignUp() {
       description={t('Free to start. You’ll build your page right after this.')}
       eyebrow={<Journey />}
       footer={
-      <>
+        <>
           {t('Already have an account?')}{' '}
           <Link to="/signin" className="font-semibold text-fg underline underline-offset-4 hover:no-underline">
             {t('Sign in')}
           </Link>
         </>
-      }>
-      
-      {claim ?
-      <div className="mb-6 flex items-start gap-3 rounded-2xl border border-success/40 bg-success-soft px-4 py-3.5">
+      }
+    >
+      {claim ? (
+        <div className="mb-6 flex items-start gap-3 rounded-2xl border border-success/40 bg-success-soft px-4 py-3.5">
           <CheckCircle2Icon size={18} className="mt-0.5 shrink-0 text-success" aria-hidden />
           <p className="text-label text-fg">
             {t('{link} is held for you for {n} more minutes. Create your account to make it yours.', { link: `kub.icu/${claim.handle}`, n: minutes })}
           </p>
-        </div> :
-
-      <Link
-        to="/copilot"
-        className="group mb-6 flex items-center gap-3 rounded-2xl border border-line bg-sunken/60 px-4 py-3.5 transition-colors duration-150 hover:border-line-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-        
+        </div>
+      ) : (
+        <Link
+          to="/copilot"
+          className="group mb-6 flex items-center gap-3 rounded-2xl border border-line bg-sunken/60 px-4 py-3.5 transition-colors duration-150 hover:border-line-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+        >
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-fg text-raised">
             <SparklesIcon size={16} aria-hidden />
           </span>
@@ -95,7 +95,7 @@ export function SignUp() {
           </span>
           <ArrowRightIcon size={16} className="shrink-0 text-fg-subtle transition-transform duration-150 ease-out group-hover:translate-x-0.5" aria-hidden />
         </Link>
-      }
+      )}
 
       <form onSubmit={submit} noValidate className="flex flex-col gap-5">
         <TextInput id="su-name" label="Your name" autoComplete="name" leadingIcon={UserIcon} placeholder="Adaeze Okafor" className={inputClass} value={name} onChange={(e) => setName(e.target.value)} error={submitted ? errors.name || undefined : undefined} />
@@ -113,13 +113,13 @@ export function SignUp() {
             value={country}
             onChange={setCountry}
             error={submitted && errors.country ? errors.country : undefined}
-            options={countries.map((c) => ({ value: c.code, label: c.name }))} />
-          
-          {closed &&
-          <InlineAlert tone="info" title={t('KUBICU isn’t open for businesses in {country} yet', { country: countryName })}>
+            options={countries.map((c) => ({ value: c.code, label: c.name }))}
+          />
+          {closed && (
+            <InlineAlert tone="info" title={t('KUBICU isn’t open for businesses in {country} yet', { country: countryName })}>
               {opensOn ? t('We plan to open there on {date}. Buyers can already shop on KUBICU pages.', { date: formatOpeningDay(opensOn) }) : t('We’re opening one country at a time. Buyers can already shop on KUBICU pages.')}
             </InlineAlert>
-          }
+          )}
         </div>
         <div>
           <label className={cn('flex cursor-pointer items-start gap-3 rounded-xl border px-4 py-3 text-label text-fg-muted transition-colors duration-150', submitted && errors.agreed ? 'border-danger' : 'border-line hover:border-line-strong')}>
@@ -136,18 +136,18 @@ export function SignUp() {
               .
             </span>
           </label>
-          {submitted && errors.agreed &&
-          <p id="su-agree-error" role="alert" className="mt-1.5 text-caption text-danger">
+          {submitted && errors.agreed && (
+            <p id="su-agree-error" role="alert" className="mt-1.5 text-caption text-danger">
               {t(errors.agreed)}
             </p>
-          }
+          )}
         </div>
         <Button type="submit" variant="brand" size="lg" fullWidth loading={loading} trailingIcon={ArrowRightIcon} className="mt-1 h-12 rounded-xl">
           Create account
         </Button>
       </form>
-    </AuthLayout>);
-
+    </AuthLayout>
+  );
 }
 
 /** Where sign-up sits in the journey: account → confirm email → your page. */
@@ -157,14 +157,14 @@ function Journey() {
   return (
     // Each step stays on one line; in longer languages whole steps move to the next row instead of splitting.
     <ol aria-label={t('Getting started')} className="flex flex-wrap items-center gap-x-1.5 gap-y-2 text-[12px] font-semibold sm:gap-x-2 sm:text-caption">
-      {steps.map((s, i) =>
-      <li key={s} className="flex items-center gap-1.5 sm:gap-2">
+      {steps.map((s, i) => (
+        <li key={s} className="flex items-center gap-1.5 sm:gap-2">
           <span aria-current={i === 0 ? 'step' : undefined} className={cn('whitespace-nowrap rounded-full px-2.5 py-1', i === 0 ? 'bg-fg text-raised' : 'bg-sunken text-fg-subtle')}>
             {s}
           </span>
           {i < steps.length - 1 && <span className="h-px w-2 bg-line-strong sm:w-3" aria-hidden />}
         </li>
-      )}
-    </ol>);
-
+      ))}
+    </ol>
+  );
 }

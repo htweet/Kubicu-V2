@@ -21,10 +21,10 @@ export function useCoBrandGuard() {
       if (!cb || !b) return;
       const owner = ownerLabel(b.owner ?? 'lead', actor, cb);
       toast(`${blockName(b)} belongs to ${owner}`, {
-        description: `Only ${owner} can ${verb} it. Ask them in the partner panel, or have them make it Shared.`
+        description: `Only ${owner} can ${verb} it. Ask them in the partner panel, or have them make it Shared.`,
       });
     },
-    [blocks, cb, actor]
+    [blocks, cb, actor],
   );
 
   /** True when the acting business may move or delete this block. Shows why not, otherwise. */
@@ -35,7 +35,7 @@ export function useCoBrandGuard() {
       explain(id, verb);
       return false;
     },
-    [blocks, cb, actor, explain]
+    [blocks, cb, actor, explain],
   );
 
   /** A drag reorder is allowed when the dragged item is one the acting business may move. */
@@ -51,7 +51,7 @@ export function useCoBrandGuard() {
       if (!ok) explain(moved[0], 'move');
       return ok;
     },
-    [blocks, cb, actor, explain]
+    [blocks, cb, actor, explain],
   );
 
   return { canTouch, canReorder, active: !!cb && cb.mode === 'sections' };

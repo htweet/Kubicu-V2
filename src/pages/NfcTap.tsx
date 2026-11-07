@@ -27,20 +27,20 @@ export function NfcTap() {
   return (
     <main className="flex min-h-screen w-full items-center justify-center bg-canvas px-6">
       <div className="max-w-sm text-center">
-        {state === 'going' ?
-        <p className="text-label text-fg-muted" role="status">
+        {state === 'going' ? (
+          <p className="text-label text-fg-muted" role="status">
             {tr('Opening…')}
-          </p> :
-
-        <>
+          </p>
+        ) : (
+          <>
             <h1 className="text-heading font-semibold text-fg">{state === 'off' ? tr('This tag has been turned off') : tr('This tag isn’t linked to anything')}</h1>
             <p className="mt-2 text-label text-fg-muted">{state === 'off' ? tr('The business switched it off — it may have been lost. You can still visit their page.') : tr('It may be an old or test tag.')}</p>
             <Link to={`/p/${handle}`} className="mt-5 inline-flex h-11 items-center rounded-md bg-action px-5 text-label font-semibold text-action-fg">
               {tr('Go to their page')}
             </Link>
           </>
-        }
+        )}
       </div>
-    </main>);
-
+    </main>
+  );
 }

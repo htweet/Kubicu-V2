@@ -42,10 +42,10 @@ export function Pricing() {
             value={cycle}
             onChange={setCycle}
             options={[
-            { value: 'monthly', label: 'Monthly' },
-            { value: 'yearly', label: 'Yearly · 2 months free' }]
-            } />
-          
+              { value: 'monthly', label: 'Monthly' },
+              { value: 'yearly', label: 'Yearly · 2 months free' },
+            ]}
+          />
           <p className="text-caption text-fg-subtle">{tr('Launch prices. Nobody is charged in this prototype.')}</p>
           {displayConversion() && <p className="text-caption text-fg-subtle">{tr('Converted from naira at today’s rate. The amount is fixed on your invoice.')}</p>}
         </div>
@@ -56,8 +56,8 @@ export function Pricing() {
         {shown.map((id) => {
           const price = priceFor(id, cycle);
           const isFeatured = id === featured;
-          const card =
-          <div className={cn('flex h-full flex-col rounded-2xl p-5', isFeatured ? 'rounded-[15px] bg-raised' : 'border border-line bg-raised/60')}>
+          const card = (
+            <div className={cn('flex h-full flex-col rounded-2xl p-5', isFeatured ? 'rounded-[15px] bg-raised' : 'border border-line bg-raised/60')}>
               <div className="flex min-h-[24px] items-center justify-between gap-2">
                 <h2 className="text-heading font-semibold text-fg">{plans[id].name}</h2>
                 {isFeatured && <span className="nm-fill whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-semibold text-[rgb(16_14_26)]">{tr('Most chosen')}</span>}
@@ -72,20 +72,20 @@ export function Pricing() {
                 {id === 'free' ? tr('Start free') : tr('Choose {plan}', { plan: plans[id].name })}
               </Button>
               <ul className="mt-6 flex flex-col gap-2.5 border-t border-line pt-5">
-                {planHighlights[id].map((h) =>
-              <li key={h} className="flex gap-2 text-label text-fg-muted">
+                {planHighlights[id].map((h) => (
+                  <li key={h} className="flex gap-2 text-label text-fg-muted">
                     <CheckIcon size={15} strokeWidth={2.4} className="mt-0.5 shrink-0 text-[rgb(var(--nm-1))]" aria-hidden />
                     {localiseAmounts(tr(h))}
                   </li>
-              )}
+                ))}
               </ul>
-            </div>;
-
+            </div>
+          );
           return (
             <li key={id} className={cn(isFeatured && 'nm-frame nm-glow rounded-2xl')}>
               {card}
-            </li>);
-
+            </li>
+          );
         })}
       </ul>
 
@@ -109,47 +109,47 @@ export function Pricing() {
                 <th scope="col" className="w-[30%] px-5 py-4 text-label font-medium text-fg-subtle">
                   {tr('Feature')}
                 </th>
-                {shown.map((id) =>
-                <th key={id} scope="col" className={cn('px-4 py-4 text-label font-semibold text-fg', id === featured && 'bg-sunken')}>
+                {shown.map((id) => (
+                  <th key={id} scope="col" className={cn('px-4 py-4 text-label font-semibold text-fg', id === featured && 'bg-sunken')}>
                     {plans[id].name}
                   </th>
-                )}
+                ))}
               </tr>
             </thead>
-            {groups.map((g) =>
-            <tbody key={g.area}>
+            {groups.map((g) => (
+              <tbody key={g.area}>
                 <tr>
                   <th scope="rowgroup" colSpan={shown.length + 1} className="border-b border-line px-5 pb-2 pt-6 text-caption font-semibold text-fg">
                     <span className="nm-text">{tr(g.area)}</span>
                   </th>
                 </tr>
-                {g.rows.map((row) =>
-              <tr key={row.label} className="border-b border-line last:border-0">
+                {g.rows.map((row) => (
+                  <tr key={row.label} className="border-b border-line last:border-0">
                     <th scope="row" className="px-5 py-3.5 text-label font-medium text-fg">
                       <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
                         {tr(row.label)}
-                        {row.status !== 'live' &&
-                    <span
-                      className={cn(
-                        'whitespace-nowrap rounded-full border px-1.5 py-px text-[11px] font-semibold leading-4',
-                        row.status === 'preview' ? 'border-[rgb(var(--nm-3)/0.5)] text-[rgb(var(--nm-3))]' : 'border-line-strong text-fg-subtle'
-                      )}>
-                      
+                        {row.status !== 'live' && (
+                          <span
+                            className={cn(
+                              'whitespace-nowrap rounded-full border px-1.5 py-px text-[11px] font-semibold leading-4',
+                              row.status === 'preview' ? 'border-[rgb(var(--nm-3)/0.5)] text-[rgb(var(--nm-3))]' : 'border-line-strong text-fg-subtle',
+                            )}
+                          >
                             {tr(featureStatusLabels[row.status])}
                           </span>
-                    }
+                        )}
                       </span>
                       {row.note && <span className="block text-caption font-normal text-fg-subtle">{localiseAmounts(tr(row.note))}</span>}
                     </th>
-                    {shown.map((id) =>
-                <td key={id} className={cn('px-4 py-3.5 text-label', id === featured && 'bg-sunken/50')}>
+                    {shown.map((id) => (
+                      <td key={id} className={cn('px-4 py-3.5 text-label', id === featured && 'bg-sunken/50')}>
                         <CellValue value={row.values[id]} />
                       </td>
-                )}
+                    ))}
                   </tr>
-              )}
+                ))}
               </tbody>
-            )}
+            ))}
           </table>
         </div>
       </section>
@@ -158,8 +158,8 @@ export function Pricing() {
       <section aria-labelledby="addons-heading" className="mt-24">
         <SectionHeading id="addons-heading" title={tr('Add-ons from the marketplace')} lead={tr('Install only what you need. Uninstalling never deletes your data.')} />
         <ul className="mt-10 grid gap-4 md:grid-cols-3">
-          {addOns.map((a) =>
-          <li key={a.name} className="flex flex-col rounded-2xl border border-line bg-raised p-5">
+          {addOns.map((a) => (
+            <li key={a.name} className="flex flex-col rounded-2xl border border-line bg-raised p-5">
               <div className="flex items-center gap-3">
                 <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-sunken">
                   <PuzzleIcon size={18} strokeWidth={2.2} className="text-[rgb(var(--nm-3))]" aria-hidden />
@@ -172,7 +172,7 @@ export function Pricing() {
                 <span className="text-right text-fg-subtle">{tr(a.plan)}</span>
               </div>
             </li>
-          )}
+          ))}
         </ul>
       </section>
 
@@ -196,11 +196,11 @@ export function Pricing() {
       </section>
 
       <p className="mt-12 text-center text-caption text-fg-subtle">{tr('Downgrading never deletes your content. Features above your plan pause until you upgrade again.')}</p>
-    </div>);
-
+    </div>
+  );
 }
 
-function CellValue({ value }: {value: Cell;}) {
+function CellValue({ value }: { value: Cell }) {
   const { t: tr } = useT();
   if (value === true) return <CheckIcon size={17} strokeWidth={2.4} className="text-success" aria-label={tr('Included')} />;
   if (value === false) return <MinusIcon size={17} className="text-fg-subtle" aria-label={tr('Not included')} />;

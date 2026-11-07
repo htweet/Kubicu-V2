@@ -13,7 +13,7 @@ const sampleByKind: Record<CopilotKind, string> = {
   shop: 'adaeze-atelier',
   service: 'glow-by-halima',
   event: 'afrobeats-brunch',
-  other: 'tolu-makes'
+  other: 'tolu-makes',
 };
 
 interface Props {
@@ -30,27 +30,27 @@ export function CopilotLookOptions({ replies, kind, exampleId, active, onPick }:
   const sample = findExampleById(exampleId ?? sampleByKind[kind ?? 'other']) ?? findExampleById('tolu-makes')!;
   const looks = useMemo(
     () =>
-    replies.
-    filter((r) => r.feel).
-    map((r) => {
-      const { theme, name } = themeForFeel(r.feel!, true);
-      return { r, name, doc: { ...sample.doc, theme } };
-    }),
-    [replies, sample]
+      replies
+        .filter((r) => r.feel)
+        .map((r) => {
+          const { theme, name } = themeForFeel(r.feel!, true);
+          return { r, name, doc: { ...sample.doc, theme } };
+        }),
+    [replies, sample],
   );
   return (
     <div className="grid w-full grid-cols-2 gap-3 sm:grid-cols-3">
-      {looks.map(({ r, name, doc }) =>
-      <button
-        key={r.value}
-        type="button"
-        disabled={!active}
-        onClick={() => onPick(r)}
-        className={cn(
-          'group flex flex-col items-start gap-2 rounded-2xl border border-line bg-raised p-2 text-left transition-[border-color,transform] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
-          active ? 'hover:border-line-strong active:scale-[0.98]' : 'opacity-60'
-        )}>
-        
+      {looks.map(({ r, name, doc }) => (
+        <button
+          key={r.value}
+          type="button"
+          disabled={!active}
+          onClick={() => onPick(r)}
+          className={cn(
+            'group flex flex-col items-start gap-2 rounded-2xl border border-line bg-raised p-2 text-left transition-[border-color,transform] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
+            active ? 'hover:border-line-strong active:scale-[0.98]' : 'opacity-60',
+          )}
+        >
           <span className="block w-full overflow-hidden rounded-xl">
             <TemplateThumb doc={doc} width={156} height={150} />
           </span>
@@ -59,7 +59,7 @@ export function CopilotLookOptions({ replies, kind, exampleId, active, onPick }:
             <span className="block text-caption text-fg-subtle">{name}</span>
           </span>
         </button>
-      )}
-    </div>);
-
+      ))}
+    </div>
+  );
 }

@@ -28,7 +28,7 @@ const actionGoals: Record<AssistantAction, ExampleGoal[]> = {
   book: ['book'],
   enquire: ['book', 'showcase'],
   follow: ['audience', 'showcase'],
-  donate: ['support']
+  donate: ['support'],
 };
 
 const offerGoals: Record<AssistantOffer, ExampleGoal[]> = {
@@ -37,7 +37,7 @@ const offerGoals: Record<AssistantOffer, ExampleGoal[]> = {
   services: ['book'],
   events: ['events'],
   content: ['showcase', 'audience'],
-  cause: ['support']
+  cause: ['support'],
 };
 
 const feelStyle: Partial<Record<AssistantFeel, ExamplePage['styles'][number]>> = { light: 'light', dark: 'dark', editorial: 'editorial', bold: 'bold' };
@@ -55,36 +55,36 @@ export function starterPool(owns: (id: string) => boolean): ExamplePage[] {
 
 export function scoreStarters(answers: AssistantAnswers, owns: (id: string) => boolean): StarterScore[] {
   const fromBrief = analyzeBrief(answers.brief);
-  return starterPool(owns).
-  map((example) => {
-    let score = 0;
-    const reasons: string[] = [];
-    if (answers.business && answers.business === example.id) {
-      score += 8;
-      reasons.push(`you said you’re closest to ${example.category.toLowerCase()}`);
-    } else if (fromBrief.exampleId === example.id) {
-      score += 5;
-      reasons.push(`you mentioned ${fromBrief.matched.slice(0, 2).map((w) => `“${w}”`).join(' and ')}`);
-    }
-    if (answers.action && actionGoals[answers.action].some((g) => example.goals.includes(g))) {
-      score += 3;
-      reasons.push(`it’s built for “${actionLabels[answers.action].toLowerCase()}”`);
-    }
-    if (answers.offer && offerGoals[answers.offer].some((g) => example.goals.includes(g))) score += 2;
-    const style = answers.feel ? feelStyle[answers.feel] : undefined;
-    if (style && example.styles.includes(style)) score += 1;
-    // Starters from the seller's own country win ties (D434).
-    if (exampleCountry(example) === activeCountry()) {
-      score += 1;
-      if (example.country) reasons.push(`it’s set up for ${countryInfo(example.country).name}`);
-    }
-    return { example, score, reasons };
-  }).
-  sort((a, b) => b.score - a.score);
+  return starterPool(owns)
+    .map((example) => {
+      let score = 0;
+      const reasons: string[] = [];
+      if (answers.business && answers.business === example.id) {
+        score += 8;
+        reasons.push(`you said you’re closest to ${example.category.toLowerCase()}`);
+      } else if (fromBrief.exampleId === example.id) {
+        score += 5;
+        reasons.push(`you mentioned ${fromBrief.matched.slice(0, 2).map((w) => `“${w}”`).join(' and ')}`);
+      }
+      if (answers.action && actionGoals[answers.action].some((g) => example.goals.includes(g))) {
+        score += 3;
+        reasons.push(`it’s built for “${actionLabels[answers.action].toLowerCase()}”`);
+      }
+      if (answers.offer && offerGoals[answers.offer].some((g) => example.goals.includes(g))) score += 2;
+      const style = answers.feel ? feelStyle[answers.feel] : undefined;
+      if (style && example.styles.includes(style)) score += 1;
+      // Starters from the seller's own country win ties (D434).
+      if (exampleCountry(example) === activeCountry()) {
+        score += 1;
+        if (example.country) reasons.push(`it’s set up for ${countryInfo(example.country).name}`);
+      }
+      return { example, score, reasons };
+    })
+    .sort((a, b) => b.score - a.score);
 }
 
 /** The look for a chosen feel: a Signature theme on Creator and above, a Classic theme on Free. */
-export function themeForFeel(feel: AssistantFeel, signatureAllowed: boolean): {theme: PageTheme;name: string;} {
+export function themeForFeel(feel: AssistantFeel, signatureAllowed: boolean): { theme: PageTheme; name: string } {
   if (signatureAllowed) {
     const preferred: Record<AssistantFeel, string> = { warm: 'Soft Clay', light: 'Arctic Prism', bold: 'Neo-Gloss Pop', dark: 'Obsidian Chrome', editorial: 'Monochrome Editorial', glass: 'Aurora Glass' };
     const t = signatureThemes.find((s) => s.name === preferred[feel]) ?? signatureThemes.find((s) => s.mood === feel) ?? signatureThemes[0];
@@ -119,7 +119,7 @@ const heroVariant = (answers: AssistantAnswers) => {
 };
 
 /** A new page assembled from sections and blocks: who you are → main action → the offer → about → practical → ending. */
-function composeBlocks(a: AssistantAnswers, images: AssistantImage[]): {blocks: Block[];notes: string[];} {
+function composeBlocks(a: AssistantAnswers, images: AssistantImage[]): { blocks: Block[]; notes: string[] } {
   const name = a.name?.trim() || placeholder('your business name');
   const pitch = pitchFrom(a.brief);
   const about = aboutFrom(a.brief);
@@ -135,8 +135,8 @@ function composeBlocks(a: AssistantAnswers, images: AssistantImage[]): {blocks: 
     mk(
       'hero',
       { variant: heroVariant(a), eyebrow: a.city ?? '', title: name, subtitle: pitch, imageUrl: hero?.src ?? '', imageAlt: hero ? `${a.name || 'Our'} work` : '', focal: 'center', primaryLabel: actionLabels[action], primaryUrl: '', secondaryLabel: '', secondaryUrl: '', meta: a.offer === 'events' ? placeholder('date and venue') : '' },
-      { layout: { width: 'full' } }
-    )
+      { layout: { width: 'full' } },
+    ),
   );
   notes.push(`Opened with a ${heroVariant(a)} hero carrying your name and your own first sentence.`);
 
@@ -168,11 +168,11 @@ function composeBlocks(a: AssistantAnswers, images: AssistantImage[]): {blocks: 
   blocks.push(mk('text', { variant: 'editorial', body: about ? `About ${a.name || 'us'}\n${about}` : `About ${a.name || 'us'}\n${placeholder('a few lines about who you are and who you help')}` }));
 
   // Practical details when people need to find or reach you.
-  if (a.city || offer === 'menu' || action === 'book' || action === 'order') blocks.push(...preset('location-hours', name).map((b) => b.type === 'location' && a.city ? { ...b, content: { ...b.content, address: `${placeholder('street address')}, ${a.city}` } } as Block : b));
+  if (a.city || offer === 'menu' || action === 'book' || action === 'order') blocks.push(...preset('location-hours', name).map((b) => (b.type === 'location' && a.city ? ({ ...b, content: { ...b.content, address: `${placeholder('street address')}, ${a.city}` } } as Block) : b)));
 
   // Questions, answered by the owner only.
   const faq = mk('faq');
-  blocks.push(faq.type === 'faq' ? { ...faq, content: { ...faq.content, items: faq.content.items.map((i) => ({ ...i, answer: placeholder('your answer') })) } } as Block : faq);
+  blocks.push(faq.type === 'faq' ? ({ ...faq, content: { ...faq.content, items: faq.content.items.map((i) => ({ ...i, answer: placeholder('your answer') })) } } as Block) : faq);
 
   // A clear ending.
   if (action !== 'enquire') blocks.push(mk('contactActions', { title: 'Get in touch', phone, whatsapp: phone, email: '', website: '', layout: 'row' }));
@@ -218,16 +218,16 @@ function placeImages(blocks: Block[], images: AssistantImage[], name: string): B
   if (gallery.length && !galleryUsed) {
     const end = out.findIndex((b) => b.type === 'faq' || b.type === 'contact' || b.type === 'contactActions');
     const spare =
-    gallery.length >= 2 ?
-    mk('gallery', { title: '', layout: 'grid', images: gallery.map((g) => ({ id: uid('gi'), url: g.src, alt: '' })) }, { layout: { width: 'wide' } }) :
-    mk('image', { url: gallery[0].src, alt: name, caption: '', aspect: gallery[0].width >= gallery[0].height ? '16:9' : '4:5' });
+      gallery.length >= 2
+        ? mk('gallery', { title: '', layout: 'grid', images: gallery.map((g) => ({ id: uid('gi'), url: g.src, alt: '' })) }, { layout: { width: 'wide' } })
+        : mk('image', { url: gallery[0].src, alt: name, caption: '', aspect: gallery[0].width >= gallery[0].height ? '16:9' : '4:5' });
     out = [...out.slice(0, end < 0 ? out.length : end), spare, ...out.slice(end < 0 ? out.length : end)];
   }
   return out;
 }
 
 /** Hides (never deletes) anything that can't publish yet, and lists what the owner still needs to fill. */
-function settle(blocks: Block[]): {blocks: Block[];gaps: string[];} {
+function settle(blocks: Block[]): { blocks: Block[]; gaps: string[] } {
   const gaps: string[] = [];
   const settled = blocks.map((b) => {
     if (b.type === 'profile' || b.type === 'hero') {
@@ -246,9 +246,9 @@ function settle(blocks: Block[]): {blocks: Block[];gaps: string[];} {
 
 /** Groups blocks into build steps: a top-level block plus anything inside it. */
 export function unitsFrom(blocks: Block[]): PlanUnit[] {
-  return blocks.
-  filter((b) => !b.parentId).
-  map((b) => ({ id: b.id, label: blockName(b), blocks: [b, ...blocks.filter((c) => c.parentId === b.id)] }));
+  return blocks
+    .filter((b) => !b.parentId)
+    .map((b) => ({ id: b.id, label: blockName(b), blocks: [b, ...blocks.filter((c) => c.parentId === b.id)] }));
 }
 
 interface PlanContext {
@@ -269,11 +269,11 @@ export function itemsAsFor(offer: AssistantOffer | undefined): 'products' | 'ser
 }
 
 /** Suggests where each photo goes: the first is the main image; for products, the next ones go to items in order. */
-export function placePhotos(items: AssistantItem[], images: AssistantImage[], itemsAs: 'products' | 'services' | null): {items: AssistantItem[];images: AssistantImage[];matched: number;} {
+export function placePhotos(items: AssistantItem[], images: AssistantImage[], itemsAs: 'products' | 'services' | null): { items: AssistantItem[]; images: AssistantImage[]; matched: number } {
   if (itemsAs !== 'products' || !items.length) return { items, images, matched: 0 };
   const spare = images.filter((i) => i.role === 'gallery');
   let n = 0;
-  const withPhotos = items.map((item) => item.imageSrc || n >= spare.length ? item : { ...item, imageSrc: spare[n++].src });
+  const withPhotos = items.map((item) => (item.imageSrc || n >= spare.length ? item : { ...item, imageSrc: spare[n++].src }));
   const used = new Set(spare.slice(0, n).map((i) => i.src));
   return { items: withPhotos, images: images.filter((i) => !used.has(i.src)), matched: n };
 }
@@ -286,19 +286,19 @@ function fillItems(blocks: Block[], a: AssistantAnswers, items: AssistantItem[],
     const menuItems = items.map((i) => ({ id: uid('mi'), name: i.name, description: '', priceNgn: i.priceNgn, tags: '', available: true, productId: i.id }));
     const gridContent = { source: 'catalog', productIds: items.map((i) => i.id), collectionId: null, items: [], orderAction: a.action === 'buy' ? 'checkout' : 'whatsapp', whatsappPhone: phone, ctaLabel: a.action === 'buy' ? 'Add to cart' : 'Order' };
     let placed = false;
-    out = out.
-    filter((b) => b.type !== 'shopCategories').
-    map((b) => {
-      if (b.type === 'menu') {
-        placed = true;
-        return { ...b, visibility: { ...b.visibility, hidden: false }, content: { ...b.content, whatsappPhone: phone || b.content.whatsappPhone, categories: [{ id: uid('mc'), name: 'Menu', items: menuItems }] } } as Block;
-      }
-      if (b.type === 'productGrid') {
-        placed = true;
-        return { ...b, visibility: { ...b.visibility, hidden: false }, content: { ...b.content, ...gridContent } } as Block;
-      }
-      return b;
-    });
+    out = out
+      .filter((b) => b.type !== 'shopCategories')
+      .map((b) => {
+        if (b.type === 'menu') {
+          placed = true;
+          return { ...b, visibility: { ...b.visibility, hidden: false }, content: { ...b.content, whatsappPhone: phone || b.content.whatsappPhone, categories: [{ id: uid('mc'), name: 'Menu', items: menuItems }] } } as Block;
+        }
+        if (b.type === 'productGrid') {
+          placed = true;
+          return { ...b, visibility: { ...b.visibility, hidden: false }, content: { ...b.content, ...gridContent } } as Block;
+        }
+        return b;
+      });
     if (!placed) {
       const block = a.offer === 'menu' ? mk('menu', { whatsappPhone: phone, categories: [{ id: uid('mc'), name: 'Menu', items: menuItems }] }) : mk('productGrid', { title: 'Shop', ...gridContent });
       const at = Math.max(0, out.findIndex((b) => b.type === 'whatsapp' || b.type === 'contactActions' || b.type === 'booking')) + 1;
@@ -309,7 +309,7 @@ function fillItems(blocks: Block[], a: AssistantAnswers, items: AssistantItem[],
     const packages = items.map((i, n) => ({ id: uid('pkg'), name: i.name, priceNgn: i.priceNgn, unit: '', description: '', features: '', ctaLabel: bookingsReady ? 'Book' : 'Enquire', url: '', highlighted: n === 0 && items.length > 2, serviceId: bookingsReady ? i.id : undefined }));
     let placed = false;
     out = out.map((b) => {
-      if (b.type === 'pricing' || b.type === 'featureGrid' && b.content.title === 'What I offer') {
+      if (b.type === 'pricing' || (b.type === 'featureGrid' && b.content.title === 'What I offer')) {
         if (placed) return b;
         placed = true;
         return mk('pricing', { title: 'Services', packages });
@@ -380,12 +380,12 @@ export function makePlan(answers: AssistantAnswers, allImages: AssistantImage[],
   if (itemsAs === 'services' && items.length) creates.push(ctx.bookingsReady ? `${items.length} Bookings service${items.length === 1 ? '' : 's'} (60 min each — adjust in Bookings)` : `${items.length} service${items.length === 1 ? '' : 's'} on the page, with an enquiry form`);
   if (answers.qr) creates.push('A QR code and campaign link for this page');
   if (source.kind === 'composed') creates.push('This layout saved as your own private template');
-  const suggestSpace = answers.offer === 'events' ? 'event' as const : undefined;
+  const suggestSpace = answers.offer === 'events' ? ('event' as const) : undefined;
 
-  const alternatives = scores.
-  filter((s) => s.example.id !== source.exampleId && s.score > 0).
-  slice(0, 2).
-  map((s) => ({ id: s.example.id, name: s.example.category }));
+  const alternatives = scores
+    .filter((s) => s.example.id !== source.exampleId && s.score > 0)
+    .slice(0, 2)
+    .map((s) => ({ id: s.example.id, name: s.example.category }));
 
   const gaps = [...settled.gaps];
   if (unpriced) gaps.push(`${unpriced} item${unpriced === 1 ? '' : 's'} without a price — add ${unpriced === 1 ? 'it' : 'them'} in ${itemsAs === 'services' ? 'Bookings' : 'Commerce'}`);

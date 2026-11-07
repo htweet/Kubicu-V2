@@ -24,7 +24,7 @@ export function ClaimExisting({ step, pending, failFirst, onStep, onAddSpace, ti
   return <WorkspaceStep onStep={onStep} onAddSpace={onAddSpace} title={title} />;
 }
 
-function SignInStep({ email: initial, failFirst, onStep }: {email: string;failFirst: boolean;onStep: Props['onStep'];}) {
+function SignInStep({ email: initial, failFirst, onStep }: { email: string; failFirst: boolean; onStep: Props['onStep'] }) {
   const [email, setEmail] = useState(initial);
   const [password, setPassword] = useState('');
   const [submitted, setSubmitted] = useState(false);
@@ -33,7 +33,7 @@ function SignInStep({ email: initial, failFirst, onStep }: {email: string;failFi
   const [loading, setLoading] = useState(false);
   const errors = {
     email: isValidEmail(email) ? '' : 'Enter a valid email, like you@example.com',
-    password: password ? '' : 'Enter your password'
+    password: password ? '' : 'Enter your password',
   };
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,11 +54,11 @@ function SignInStep({ email: initial, failFirst, onStep }: {email: string;failFi
   return (
     <form onSubmit={submit} noValidate className="flex flex-col gap-4">
       <BackButton onClick={() => onStep('choose')} />
-      {authError &&
-      <p role="alert" className="rounded-lg border border-danger/40 bg-danger-soft px-3.5 py-3 text-label text-fg">
+      {authError && (
+        <p role="alert" className="rounded-lg border border-danger/40 bg-danger-soft px-3.5 py-3 text-label text-fg">
           {authError}
         </p>
-      }
+      )}
       <TextInput id="ci-email" label="Email" type="email" inputMode="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} error={submitted ? errors.email : undefined} />
       <TextInput id="ci-password" label="Password" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} error={submitted ? errors.password : undefined} />
       <Button type="submit" variant="brand" size="lg" fullWidth loading={loading} className="mt-2">
@@ -67,11 +67,11 @@ function SignInStep({ email: initial, failFirst, onStep }: {email: string;failFi
       <a href="/reset" target="_blank" rel="noopener" className="self-start rounded-sm text-label font-semibold text-fg underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
         Forgot your password?
       </a>
-    </form>);
-
+    </form>
+  );
 }
 
-function WorkspaceStep({ onStep, onAddSpace, title }: {onStep: Props['onStep'];onAddSpace: () => void;title: string;}) {
+function WorkspaceStep({ onStep, onAddSpace, title }: { onStep: Props['onStep']; onAddSpace: () => void; title: string }) {
   const { workspaces, current, switchTo } = useWorkspace();
   const allowed = useCan('spaces.manage');
   const [busy, setBusy] = useState(false);
@@ -92,9 +92,9 @@ function WorkspaceStep({ onStep, onAddSpace, title }: {onStep: Props['onStep'];o
                 onClick={() => switchTo(w.id)}
                 className={cn(
                   'flex min-h-[52px] items-center gap-3 rounded-lg border px-3.5 py-2.5 text-left transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
-                  selected ? 'border-fg bg-raised' : 'border-line hover:border-line-strong'
-                )}>
-                
+                  selected ? 'border-fg bg-raised' : 'border-line hover:border-line-strong',
+                )}
+              >
                 <span aria-hidden className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-sunken text-caption font-bold text-fg">
                   {w.name.slice(0, 2).toUpperCase()}
                 </span>
@@ -103,14 +103,14 @@ function WorkspaceStep({ onStep, onAddSpace, title }: {onStep: Props['onStep'];o
                   <span className="block text-caption text-fg-muted">{(w.spaces?.filter((s) => !s.archivedAt).length ?? 0) + 1} space{(w.spaces?.filter((s) => !s.archivedAt).length ?? 0) === 0 ? '' : 's'}</span>
                 </span>
                 {selected && <CheckIcon size={16} className="shrink-0 text-fg" aria-hidden />}
-              </button>);
-
+              </button>
+            );
           })}
           <button
             type="button"
             onClick={() => onStep('setup')}
-            className="flex min-h-[52px] items-center gap-3 rounded-lg border border-dashed border-line-strong px-3.5 py-2.5 text-left hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-            
+            className="flex min-h-[52px] items-center gap-3 rounded-lg border border-dashed border-line-strong px-3.5 py-2.5 text-left hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+          >
             <span aria-hidden className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-sunken text-fg-muted">
               <PlusIcon size={16} />
             </span>
@@ -119,14 +119,14 @@ function WorkspaceStep({ onStep, onAddSpace, title }: {onStep: Props['onStep'];o
         </div>
       </fieldset>
 
-      {allowed.allowed ?
-      <p className="text-caption text-fg-muted">It joins {current.name} as a new space with its own link. Your main page and other spaces don’t change.</p> :
-
-      <p role="status" className="flex items-start gap-2 rounded-lg border border-warning/40 bg-warning-soft px-3.5 py-3 text-label text-fg">
+      {allowed.allowed ? (
+        <p className="text-caption text-fg-muted">It joins {current.name} as a new space with its own link. Your main page and other spaces don’t change.</p>
+      ) : (
+        <p role="status" className="flex items-start gap-2 rounded-lg border border-warning/40 bg-warning-soft px-3.5 py-3 text-label text-fg">
           <LockIcon size={15} className="mt-0.5 shrink-0" aria-hidden />
           <span>Your role in {current.name} can’t add spaces. Choose another workspace, start a new one, or ask an Owner or Admin to change your role.</span>
         </p>
-      }
+      )}
       <Button
         variant="brand"
         size="lg"
@@ -136,10 +136,10 @@ function WorkspaceStep({ onStep, onAddSpace, title }: {onStep: Props['onStep'];o
         onClick={() => {
           setBusy(true);
           window.setTimeout(onAddSpace, 350);
-        }}>
-        
+        }}
+      >
         <span className="truncate">Add to {current.name}</span>
       </Button>
-    </div>);
-
+    </div>
+  );
 }

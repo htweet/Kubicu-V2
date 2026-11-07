@@ -61,7 +61,7 @@ export function Deliveries() {
       created = r.delivery;
       return rider && !d.riders.some((x) => x.phone === rider.phone) ? { ...r.data, riders: [rider, ...r.data.riders].slice(0, 5) } : r.data;
     });
-    if (o.status === 'paid' || o.status === 'new' && o.pod) commerce.apply((c) => setOrderStatus(c, o.id, 'packing', `Delivery booked with ${q.name}`));
+    if (o.status === 'paid' || (o.status === 'new' && o.pod)) commerce.apply((c) => setOrderStatus(c, o.id, 'packing', `Delivery booked with ${q.name}`));
     setBooking(null);
     setTab('active');
     if (created) setOpenId((created as Delivery).id);
@@ -93,7 +93,7 @@ export function Deliveries() {
     if (d.escrow) {
       money.update((m) => {
         const c = caseForOrder(m, d.orderId);
-        if (!c || !isOpen(c) || c.stage !== 'held' && c.stage !== 'delivered') return m;
+        if (!c || !isOpen(c) || (c.stage !== 'held' && c.stage !== 'delivered')) return m;
         released = true;
         const delivered = c.stage === 'held' ? markDelivered(m, c.id, { note: `Delivered by ${d.rider?.name ?? d.partnerName} · code matched`, proof: [] }, 'system') : m;
         return release(delivered, c.id, 'delivery_code', 'system');
@@ -138,20 +138,20 @@ export function Deliveries() {
         onChange={setTab}
         className="mt-6"
         items={[
-        { id: 'ready', label: tr('Ready to send'), badge: ready.length || undefined },
-        { id: 'active', label: tr('On the way'), badge: active.length || undefined },
-        { id: 'done', label: tr('History') }]
-        } />
-      
+          { id: 'ready', label: tr('Ready to send'), badge: ready.length || undefined },
+          { id: 'active', label: tr('On the way'), badge: active.length || undefined },
+          { id: 'done', label: tr('History') },
+        ]}
+      />
 
       <div role="tabpanel" id={`dlv-panel-${tab}`} aria-labelledby={`dlv-tab-${tab}`} className="mt-4">
-        {tab === 'ready' && (
-        ready.length === 0 ?
-        <EmptyState icon={PackageIcon} title={tr('Nothing waiting')} description={tr('Paid orders with home delivery show here. Pickup and download orders don’t need a rider, and made-to-order items appear once the balance is paid.')} /> :
-
-        <ul className="divide-y divide-line rounded-lg border border-line bg-raised">
-              {ready.map((o) =>
-          <li key={o.id} className="flex flex-wrap items-center gap-4 px-4 py-3.5">
+        {tab === 'ready' &&
+          (ready.length === 0 ? (
+            <EmptyState icon={PackageIcon} title={tr('Nothing waiting')} description={tr('Paid orders with home delivery show here. Pickup and download orders don’t need a rider, and made-to-order items appear once the balance is paid.')} />
+          ) : (
+            <ul className="divide-y divide-line rounded-lg border border-line bg-raised">
+              {ready.map((o) => (
+                <li key={o.id} className="flex flex-wrap items-center gap-4 px-4 py-3.5">
                   <span className="min-w-0 flex-1">
                     <span className="flex flex-wrap items-center gap-2">
                       <span className="text-label font-semibold text-fg">#{o.number} · {o.customer.name || tr('Customer')}</span>
@@ -166,17 +166,17 @@ export function Deliveries() {
                     {tr('Book rider')}
                   </Button>
                 </li>
-          )}
-            </ul>)
-        }
+              ))}
+            </ul>
+          ))}
 
-        {tab !== 'ready' && (
-        (tab === 'active' ? active : done).length === 0 ?
-        <EmptyState icon={TruckIcon} title={tab === 'active' ? tr('No deliveries on the way') : tr('No past deliveries yet')} description={tab === 'active' ? tr('Book a rider from Ready to send.') : tr('Delivered, failed and cancelled deliveries are kept here.')} /> :
-
-        <ul className="divide-y divide-line rounded-lg border border-line bg-raised">
-              {(tab === 'active' ? active : done).map((d) =>
-          <li key={d.id}>
+        {tab !== 'ready' &&
+          ((tab === 'active' ? active : done).length === 0 ? (
+            <EmptyState icon={TruckIcon} title={tab === 'active' ? tr('No deliveries on the way') : tr('No past deliveries yet')} description={tab === 'active' ? tr('Book a rider from Ready to send.') : tr('Delivered, failed and cancelled deliveries are kept here.')} />
+          ) : (
+            <ul className="divide-y divide-line rounded-lg border border-line bg-raised">
+              {(tab === 'active' ? active : done).map((d) => (
+                <li key={d.id}>
                   <button type="button" onClick={() => setOpenId(d.id)} className={rowCls}>
                     <span className="min-w-0 flex-1">
                       <span className="flex flex-wrap items-center gap-2">
@@ -194,9 +194,9 @@ export function Deliveries() {
                     </Badge>
                   </button>
                 </li>
-          )}
-            </ul>)
-        }
+              ))}
+            </ul>
+          ))}
       </div>
 
       <BookDeliverySheet order={booking} escrow={booking ? escrowHeld(booking.id) : false} savedRiders={data.riders} onClose={() => setBooking(null)} onBook={onBook} />
@@ -222,8 +222,8 @@ export function Deliveries() {
           if (!o || activeFor(data, o.id)) return;
           setOpenId(null);
           setBooking(o);
-        }} />
-      
-    </div>);
-
+        }}
+      />
+    </div>
+  );
 }

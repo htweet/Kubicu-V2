@@ -1,7 +1,7 @@
 /** NFC tags (D442): ordered from KUBICU, each pointing at a page or link that can be changed after printing. */
 export type NfcKind = 'sticker' | 'card' | 'keyring';
 
-export type NfcDestination = {type: 'page';} | {type: 'link';linkId: string;} | {type: 'url';url: string;};
+export type NfcDestination = { type: 'page' } | { type: 'link'; linkId: string } | { type: 'url'; url: string };
 
 export interface NfcTag {
   id: string;

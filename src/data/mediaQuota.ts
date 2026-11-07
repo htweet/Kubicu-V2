@@ -9,5 +9,5 @@ export const mediaQuota: Record<WorkspacePlan, number> = {
   pro: 5 * 1024 * MB,
   business: 10 * 1024 * MB,
   agency: 25 * 1024 * MB,
-  enterprise: 50 * 1024 * MB
+  enterprise: 50 * 1024 * MB,
 };

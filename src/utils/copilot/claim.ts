@@ -27,17 +27,17 @@ export interface PendingClaim {
 }
 
 export type ClaimStatus =
-{kind: 'none';} |
-{kind: 'missing';} |
-{kind: 'expired';draft: CopilotDraft | null;reason: 'link' | 'draft';} |
-{kind: 'claimed';draft: CopilotDraft;} |
-{kind: 'invalid';draft: CopilotDraft;} |
-{kind: 'ok';draft: CopilotDraft;pending: PendingClaim;};
+  | { kind: 'none' }
+  | { kind: 'missing' }
+  | { kind: 'expired'; draft: CopilotDraft | null; reason: 'link' | 'draft' }
+  | { kind: 'claimed'; draft: CopilotDraft }
+  | { kind: 'invalid'; draft: CopilotDraft }
+  | { kind: 'ok'; draft: CopilotDraft; pending: PendingClaim };
 
 function read<T>(key: string): T | null {
   try {
     const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) as T : null;
+    return raw ? (JSON.parse(raw) as T) : null;
   } catch {
     return null;
   }
@@ -45,12 +45,12 @@ function read<T>(key: string): T | null {
 
 function write(key: string, value: unknown) {
   try {
-    if (value === null) localStorage.removeItem(key);else
-    localStorage.setItem(key, JSON.stringify(value));
+    if (value === null) localStorage.removeItem(key);
+    else localStorage.setItem(key, JSON.stringify(value));
   } catch {
-
     // Storage blocked: the claim simply has to be started again from the chat.
-  }}
+  }
+}
 
 /** Called only by the chat that made the draft — it holds the code. */
 export function startClaim(draftId: string): boolean {

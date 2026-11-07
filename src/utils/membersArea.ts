@@ -26,13 +26,13 @@ export function membersAreaIssues(s: MembersAreaSettings, data: CommerceData | n
   const out: ValidationIssue[] = [];
   const push = (id: string, severity: ValidationIssue['severity'], message: string, extra: Partial<ValidationIssue> = {}) => out.push({ id: `membersarea:${id}`, blockId: null, severity, message, ...extra });
   if (!planAtLeast(plan, CHECKOUT_PLAN))
-  push('plan', 'error', `Members areas are on the ${plans[CHECKOUT_PLAN].name} plan, because members join through subscriptions.`, { upgradeTo: CHECKOUT_PLAN, upgradeFeature: 'Members areas' });
+    push('plan', 'error', `Members areas are on the ${plans[CHECKOUT_PLAN].name} plan, because members join through subscriptions.`, { upgradeTo: CHECKOUT_PLAN, upgradeFeature: 'Members areas' });
   if (s.rule.access === 'plans') {
     if (!s.rule.planIds.length) push('none', 'error', 'Choose which membership plans get in, in Page settings → Members area.');
     const chosen = s.rule.planIds.map((id) => data?.subPlans.find((p) => p.id === id));
     const missing = chosen.filter((p) => !p).length;
-    if (missing) push('missing', 'error', `${missing} chosen plan${missing === 1 ? ' no longer exists' : 's no longer exist'} — choose again.`);else
-    if (chosen.length && chosen.every((p) => p?.status === 'archived')) push('archived', 'warning', 'Every chosen plan is archived, so nobody new can join. Current members still get in.');
+    if (missing) push('missing', 'error', `${missing} chosen plan${missing === 1 ? ' no longer exists' : 's no longer exist'} — choose again.`);
+    else if (chosen.length && chosen.every((p) => p?.status === 'archived')) push('archived', 'warning', 'Every chosen plan is archived, so nobody new can join. Current members still get in.');
   }
   if (!membershipPlans(data).some((p) => p.status === 'active')) push('noplans', 'error', 'Create a membership plan people can join in Commerce → Subscriptions.');
   if (!s.title.trim()) push('title', 'warning', 'Add a welcome heading for people who aren’t members yet.');

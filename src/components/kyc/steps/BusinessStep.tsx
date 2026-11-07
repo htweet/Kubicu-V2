@@ -16,7 +16,7 @@ export function BusinessStep({ k, set, errors, disabled }: KycStepProps) {
   const company = k.entity === 'company';
   const setB = (patch: Partial<KycBusiness>) => set((c) => ({ ...c, business: { ...c.business, ...patch } }));
 
-  const cacName = (name: string, result: KycBusiness['checks']['cac']) => result === 'pass' || result === 'review' ? name.trim().toUpperCase() : '';
+  const cacName = (name: string, result: KycBusiness['checks']['cac']) => (result === 'pass' || result === 'review' ? name.trim().toUpperCase() : '');
   const setNumber = (number: string) => {
     const cac = simulateCac(number);
     set((c) => ({ ...c, business: { ...c.business, number, checks: { ...c.business.checks, cac, registeredNameOnCac: cacName(c.business.registeredName, cac) } } }));
@@ -37,16 +37,16 @@ export function BusinessStep({ k, set, errors, disabled }: KycStepProps) {
         <div className="grid gap-4 md:grid-cols-2">
           <div className="flex flex-col gap-2">
             <TextInput id="kyc-reg-number" label={company ? reg.companyLabel : reg.bnLabel} placeholder={company ? reg.companyPlaceholder : reg.bnPlaceholder} value={b.number} onChange={(e) => setNumber(e.target.value)} error={errors.number} disabled={disabled} />
-            {b.checks.cac !== 'not_run' &&
-            <div className="flex flex-wrap items-center gap-2">
+            {b.checks.cac !== 'not_run' && (
+              <div className="flex flex-wrap items-center gap-2">
                 <CheckBadge result={b.checks.cac} label={reg.short} />
-                {b.checks.registeredNameOnCac &&
-              <span className="text-caption text-fg-muted">
+                {b.checks.registeredNameOnCac && (
+                  <span className="text-caption text-fg-muted">
                     {b.checks.registeredNameOnCac} · {tr(b.checks.cac === 'review' ? 'shows as inactive' : 'active')}
                   </span>
-              }
+                )}
               </div>
-            }
+            )}
           </div>
           <TextInput id="kyc-reg-date" label="Date registered" type="date" value={b.incorporatedOn} onChange={(e) => setB({ incorporatedOn: e.target.value })} error={errors.incorporatedOn} disabled={disabled} max={new Date().toISOString().slice(0, 10)} />
         </div>
@@ -80,10 +80,10 @@ export function BusinessStep({ k, set, errors, disabled }: KycStepProps) {
           value={b.statusReport}
           onChange={(statusReport) => setB({ statusReport })}
           error={errors.statusReport}
-          disabled={disabled} />
-        
+          disabled={disabled}
+        />
         {company && <DocUpload id="kyc-memart" label={reg.constitution} value={b.memart} onChange={(memart) => setB({ memart })} error={errors.memart} disabled={disabled} />}
       </section>
-    </div>);
-
+    </div>
+  );
 }

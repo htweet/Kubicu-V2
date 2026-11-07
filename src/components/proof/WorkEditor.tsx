@@ -58,9 +58,9 @@ export function WorkEditor({ item, canEdit, update, onClose }: Props) {
 
   const save = () => {
     setTried(true);
-    if (!draft.title.trim() || named && !draft.clientName.trim()) return;
+    if (!draft.title.trim() || (named && !draft.clientName.trim())) return;
     const next = { ...draft, title: draft.title.trim(), clientName: named ? draft.clientName.trim() : '' };
-    update((d) => ({ ...d, work: d.work.some((w) => w.id === next.id) ? d.work.map((w) => w.id === next.id ? next : w) : [next, ...d.work] }));
+    update((d) => ({ ...d, work: d.work.some((w) => w.id === next.id) ? d.work.map((w) => (w.id === next.id ? next : w)) : [next, ...d.work] }));
     onClose();
   };
 
@@ -72,19 +72,19 @@ export function WorkEditor({ item, canEdit, update, onClose }: Props) {
       title={isNew ? 'Add delivered work' : 'Edit delivered work'}
       description="Show what you’ve actually delivered. Matching it to a real record adds a “matched” label visitors can trust."
       footer={
-      <div className="flex items-center gap-2">
-          {!isNew && canEdit &&
-        <Button
-          variant="tertiary"
-          leadingIcon={Trash2Icon}
-          onClick={() => {
-            update((d) => ({ ...d, work: d.work.filter((w) => w.id !== draft.id) }));
-            onClose();
-          }}>
-          
+        <div className="flex items-center gap-2">
+          {!isNew && canEdit && (
+            <Button
+              variant="tertiary"
+              leadingIcon={Trash2Icon}
+              onClick={() => {
+                update((d) => ({ ...d, work: d.work.filter((w) => w.id !== draft.id) }));
+                onClose();
+              }}
+            >
               Delete
             </Button>
-        }
+          )}
           <span className="ml-auto flex gap-2">
             <Button variant="secondary" onClick={onClose}>
               Cancel
@@ -94,8 +94,8 @@ export function WorkEditor({ item, canEdit, update, onClose }: Props) {
             </Button>
           </span>
         </div>
-      }>
-      
+      }
+    >
       <div className="flex flex-col gap-5">
         <TextInput id="work-title" label="What you delivered" placeholder="e.g. Bridal party of six" value={draft.title} error={titleErr} disabled={!canEdit} onChange={(e) => set({ title: e.target.value })} />
         <TextInput id="work-date" label="Date delivered" type="date" value={draft.date} disabled={!canEdit} onChange={(e) => set({ date: e.target.value })} />
@@ -108,8 +108,8 @@ export function WorkEditor({ item, canEdit, update, onClose }: Props) {
           value={draft.source ? `${draft.source.kind}:${draft.source.id}` : ''}
           disabled={!canEdit}
           onChange={(v) => set({ source: options.find((s) => `${s.kind}:${s.id}` === v) ?? null })}
-          options={[{ value: '', label: 'Not matched' }, ...options.map((s) => ({ value: `${s.kind}:${s.id}`, label: s.label }))]} />
-        
+          options={[{ value: '', label: 'Not matched' }, ...options.map((s) => ({ value: `${s.kind}:${s.id}`, label: s.label }))]}
+        />
         <p className="-mt-3 text-caption text-fg-subtle">{draft.source ? `Visitors see “${matchedLabel[draft.source.kind]}”.` : 'Completed orders, completed bookings and finished jobs from the last 120 days can be matched.'}</p>
         <div className="flex flex-col gap-3 border-t border-line pt-5">
           <Switch id="work-named" checked={named} disabled={!canEdit} onChange={setNamed} label="Name the client" description="Only if they’ve agreed to be named on your page." />
@@ -117,6 +117,6 @@ export function WorkEditor({ item, canEdit, update, onClose }: Props) {
           <Switch id="work-published" checked={draft.published} disabled={!canEdit} onChange={(v) => set({ published: v })} label="Show on my page" description="Appears in Proof blocks on your page once you publish." />
         </div>
       </div>
-    </Sheet>);
-
+    </Sheet>
+  );
 }

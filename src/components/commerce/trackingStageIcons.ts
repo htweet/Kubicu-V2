@@ -10,5 +10,5 @@ export const trackingStageIcons: Record<StageKey, LucideIcon> = {
   on_the_way: MapPinIcon,
   delivered: PackageCheckIcon,
   ready: StoreIcon,
-  collected: HandshakeIcon
+  collected: HandshakeIcon,
 };

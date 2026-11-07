@@ -22,7 +22,7 @@ export const MAX_SYNC_ENTRIES = 20;
 export function readSyncLog(settings: Record<string, string>): SyncEntry[] {
   try {
     const parsed = JSON.parse(settings.syncLog ?? '[]');
-    return Array.isArray(parsed) ? parsed as SyncEntry[] : [];
+    return Array.isArray(parsed) ? (parsed as SyncEntry[]) : [];
   } catch {
     return [];
   }
@@ -34,7 +34,7 @@ export function withSyncEntry(settings: Record<string, string>, entry: SyncEntry
   return {
     ...settings,
     syncLog: JSON.stringify(log),
-    ...(lastOk ? { lastSyncAt: entry.at, lastSyncCount: String(entry.sent) } : {})
+    ...(lastOk ? { lastSyncAt: entry.at, lastSyncCount: String(entry.sent) } : {}),
   };
 }
 

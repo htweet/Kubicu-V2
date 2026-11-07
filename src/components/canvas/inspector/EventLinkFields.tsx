@@ -32,8 +32,8 @@ export function EventLinkFields({ id, eventId, error, onChange }: Props) {
         <Link to="/app/commerce/events?new=1" className="mt-1.5 inline-flex items-center gap-1 text-caption font-semibold text-action hover:underline">
           {tr('Create an event')} <ArrowUpRightIcon size={12} aria-hidden />
         </Link>
-      </div>);
-
+      </div>
+    );
   }
 
   const paid = !!ev?.ticketTypes.some((t) => t.priceNgn > 0);
@@ -45,10 +45,10 @@ export function EventLinkFields({ id, eventId, error, onChange }: Props) {
         value={eventId ?? ''}
         error={error ? tr(error) : undefined}
         onChange={onChange}
-        options={[{ value: '', label: tr('Choose…') }, ...events.map((e) => ({ value: e.id, label: `${e.name || tr('Untitled event')} · ${tr(eventDisplayLabel[eventDisplay(data, e)])}` }))]} />
-      
-      {ev &&
-      <div className="flex items-start gap-3 rounded-md border border-line bg-sunken px-3 py-2.5">
+        options={[{ value: '', label: tr('Choose…') }, ...events.map((e) => ({ value: e.id, label: `${e.name || tr('Untitled event')} · ${tr(eventDisplayLabel[eventDisplay(data, e)])}` }))]}
+      />
+      {ev && (
+        <div className="flex items-start gap-3 rounded-md border border-line bg-sunken px-3 py-2.5">
           <RefreshCwIcon size={15} className="mt-0.5 shrink-0 text-success" aria-hidden />
           <div className="min-w-0 flex-1">
             <p className="text-label font-semibold text-fg">{tr('Synced with Commerce')}</p>
@@ -61,13 +61,13 @@ export function EventLinkFields({ id, eventId, error, onChange }: Props) {
             </Link>
           </div>
         </div>
-      }
-      {ev && paid && !allowed &&
-      <div className="flex items-center justify-between gap-3 rounded-md border border-line px-3 py-2.5">
+      )}
+      {ev && paid && !allowed && (
+        <div className="flex items-center justify-between gap-3 rounded-md border border-line px-3 py-2.5">
           <p className="text-caption text-fg-muted">{tr('Paid tickets need {plan}. Free registration works on every plan.', { plan: needed })}</p>
           <PlanLock kind="plan">{needed}</PlanLock>
         </div>
-      }
-    </>);
-
+      )}
+    </>
+  );
 }

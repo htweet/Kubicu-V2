@@ -18,7 +18,7 @@ function countryOfDigits(d: string): CountryCode | null {
 }
 
 /** Splits a stored number into country and local digits (without the leading 0). */
-export function splitPhone(value: string, fallback: CountryCode = activeCountry()): {country: CountryCode;local: string;foreign: boolean;} {
+export function splitPhone(value: string, fallback: CountryCode = activeCountry()): { country: CountryCode; local: string; foreign: boolean } {
   const v = value.trim();
   const d = digitsOf(v);
   if (v.startsWith('+') || v.startsWith('00')) {

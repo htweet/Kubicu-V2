@@ -26,8 +26,8 @@ export function DiscountCodeField({ theme, code, onApply, resolution }: Discount
     return (
       <button type="button" onClick={() => setOpen(true)} className="flex items-center gap-1.5 self-start text-[13.5px] font-semibold underline underline-offset-4">
         <TagIcon size={14} aria-hidden /> Add discount code
-      </button>);
-
+      </button>
+    );
   }
 
   if (typedWorks && appliedCode) {
@@ -44,12 +44,12 @@ export function DiscountCodeField({ theme, code, onApply, resolution }: Discount
             onApply('');
           }}
           className="flex h-8 w-8 items-center justify-center rounded-full"
-          style={{ background: mix(theme.text, 8) }}>
-          
+          style={{ background: mix(theme.text, 8) }}
+        >
           <XIcon size={14} aria-hidden />
         </button>
-      </div>);
-
+      </div>
+    );
   }
 
   return (
@@ -58,8 +58,8 @@ export function DiscountCodeField({ theme, code, onApply, resolution }: Discount
       onSubmit={(e) => {
         e.preventDefault();
         onApply(normaliseCode(draft));
-      }}>
-      
+      }}
+    >
       <label htmlFor={id} className="text-[13px] font-medium">
         Discount code
       </label>
@@ -75,19 +75,19 @@ export function DiscountCodeField({ theme, code, onApply, resolution }: Discount
           aria-describedby={`${id}-msg`}
           onChange={(e) => setDraft(e.target.value.toUpperCase())}
           className="h-11 min-w-0 flex-1 px-3.5 font-mono text-[15px] uppercase outline-none focus:ring-2"
-          style={inputStyle(theme)} />
-        
+          style={inputStyle(theme)}
+        />
         <button type="submit" disabled={!draft.trim()} className="h-11 shrink-0 px-4 text-[14px] font-semibold disabled:opacity-50" style={buttonStyle(theme, 'default')}>
           Apply
         </button>
       </div>
       <p id={`${id}-msg`} className="text-[12.5px] font-medium" role={resolution.codeError || resolution.codeBeaten ? 'status' : undefined} style={resolution.codeError ? undefined : muted}>
-        {resolution.codeError ?
-        resolution.codeError :
-        resolution.codeBeaten ?
-        `${resolution.codeBeaten.code} would save ${formatNgn(resolution.codeBeaten.amountNgn)}, but “${resolution.applied?.discount.title}” saves more, so we applied that. One discount per order.` :
-        'One discount per order. If an automatic offer saves you more, we’ll use that.'}
+        {resolution.codeError
+          ? resolution.codeError
+          : resolution.codeBeaten
+            ? `${resolution.codeBeaten.code} would save ${formatNgn(resolution.codeBeaten.amountNgn)}, but “${resolution.applied?.discount.title}” saves more, so we applied that. One discount per order.`
+            : 'One discount per order. If an automatic offer saves you more, we’ll use that.'}
       </p>
-    </form>);
-
+    </form>
+  );
 }

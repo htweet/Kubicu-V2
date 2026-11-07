@@ -15,18 +15,18 @@ export function useIncomeEntries(): IncomeEntry[] {
   const sos = useServiceOs(current.id).data;
   return useMemo(
     () =>
-    incomeEntries(
-      {
-        orders: data.orders,
-        subscriptions: data.subscriptions ?? [],
-        giftCards: data.giftCards ?? [],
-        bookings: ops.bookings,
-        invoices: sos.invoices,
-        linkPayments: money.links.flatMap((l) => l.payments.map((p) => ({ ...p, linkTitle: l.title })))
-      },
-      { from: 0, to: Date.now() + 1 },
-      null
-    ),
-    [data.orders, data.subscriptions, data.giftCards, ops.bookings, sos.invoices, money.links]
+      incomeEntries(
+        {
+          orders: data.orders,
+          subscriptions: data.subscriptions ?? [],
+          giftCards: data.giftCards ?? [],
+          bookings: ops.bookings,
+          invoices: sos.invoices,
+          linkPayments: money.links.flatMap((l) => l.payments.map((p) => ({ ...p, linkTitle: l.title }))),
+        },
+        { from: 0, to: Date.now() + 1 },
+        null,
+      ),
+    [data.orders, data.subscriptions, data.giftCards, ops.bookings, sos.invoices, money.links],
   );
 }

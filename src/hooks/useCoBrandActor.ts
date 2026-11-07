@@ -29,12 +29,12 @@ export function useCoBrandActor(docId: string): [AgreementSide, (side: Agreement
       try {
         window.localStorage.setItem(key(docId), next);
       } catch {
-
-        /* storage unavailable */}
+        /* storage unavailable */
+      }
       setSide(next);
       window.dispatchEvent(new Event(event));
     },
-    [docId]
+    [docId],
   );
   return [side, set];
 }

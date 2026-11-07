@@ -16,24 +16,24 @@ export interface ExtensionSetupField {
 
 /** Core KUBICU modules an extension can connect to (D231). */
 export type CoreModule =
-'orders' |
-'products' |
-'checkout' |
-'storefront' |
-'paymentLinks' |
-'reports' |
-'wallet' |
-'pages' |
-'bookings' |
-'audience' |
-'automations' |
-'analytics' |
-'notifications' |
-'forms' |
-'campaignLinks' |
-'quotes' |
-'proof' |
-'settings';
+  | 'orders'
+  | 'products'
+  | 'checkout'
+  | 'storefront'
+  | 'paymentLinks'
+  | 'reports'
+  | 'wallet'
+  | 'pages'
+  | 'bookings'
+  | 'audience'
+  | 'automations'
+  | 'analytics'
+  | 'notifications'
+  | 'forms'
+  | 'campaignLinks'
+  | 'quotes'
+  | 'proof'
+  | 'settings';
 
 export interface ModuleConnection {
   module: CoreModule;
@@ -66,8 +66,8 @@ export interface ExtensionInfo {
   /** Monthly add-on price; 0 = free. */
   priceNgn: number;
   version: string;
-  versions: {version: string;date: string;notes: string;}[];
-  reviews: {name: string;business: string;rating: number;text: string;}[];
+  versions: { version: string; date: string; notes: string }[];
+  reviews: { name: string; business: string; rating: number; text: string }[];
   staffPick?: boolean;
   setup?: ExtensionSetupField[];
   /** Preview only: shows what it would do; nothing external happens. */

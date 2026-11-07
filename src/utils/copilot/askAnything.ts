@@ -29,9 +29,9 @@ const phrases = (row: UnderstandRow, lang: UiLang) => {
 const wantsPage = /\b(make|build|create|design|need|want|get|start)\b[^.?!]{0,40}\b(page|site|website|link in bio|landing|portfolio|online (shop|store))\b/i;
 /** Describing the business — means build only when it isn't a question ("how do I grow my business?" is a question). */
 const describesBusiness = [
-/\b(i|we)\s+(sell|bake|cook|make|run|own|offer|teach|organi[sz]e|braid|style|design|photograph)\b/i,
-/^\s*(my|our)\s+(business|shop|store|brand|restaurant|salon|bakery|studio|church|school)\b/i];
-
+  /\b(i|we)\s+(sell|bake|cook|make|run|own|offer|teach|organi[sz]e|braid|style|design|photograph)\b/i,
+  /^\s*(my|our)\s+(business|shop|store|brand|restaurant|salon|bakery|studio|church|school)\b/i,
+];
 
 const words = (cell: string) => cell.split('|').map(fold).filter(Boolean);
 
@@ -45,7 +45,7 @@ export function readQuestion(text: string, hints: string, lang: UiLang): Questio
   const question = text.includes('?') || englishStart || ownLanguage;
 
   const both = hints ? `${text}\n${hints}` : text;
-  const build = wantsPage.test(both) || !question && describesBusiness.some((re) => re.test(both));
+  const build = wantsPage.test(both) || (!question && describesBusiness.some((re) => re.test(both)));
 
   const topic = copilotHelpTopics.find((t) => has(t.words)) ?? null;
   return { topic, question, build };
@@ -57,7 +57,7 @@ export function readQuestion(text: string, hints: string, lang: UiLang): Questio
  * Copilot says it doesn't know. `hints` are English words for what was typed in another language (D518).
  */
 const stopWords = new Set(
-  'a an the and or but to of in on at for with from by is are was be been do does did can could should would will i me my we our you your it its this that these those how what where why when which who there here have has get got make use add set up out about into than then so if not no yes any some all more much many just also please want need know tell'.split(' ')
+  'a an the and or but to of in on at for with from by is are was be been do does did can could should would will i me my we our you your it its this that these those how what where why when which who there here have has get got make use add set up out about into than then so if not no yes any some all more much many just also please want need know tell'.split(' '),
 );
 
 const tokens = (s: string) => fold(s).split(' ').filter((w) => w.length >= 3 && !stopWords.has(w));
@@ -70,13 +70,13 @@ interface GuideIndex {
 
 let index: GuideIndex[] | null = null;
 const guideIndex = () =>
-index ??= helpTopics.flatMap((topic) =>
-topic.articles.map((article) => ({
-  article,
-  title: new Set(tokens(article.q)),
-  body: new Set(tokens(`${article.a} ${article.where ?? ''} ${topic.title}`))
-}))
-);
+  (index ??= helpTopics.flatMap((topic) =>
+    topic.articles.map((article) => ({
+      article,
+      title: new Set(tokens(article.q)),
+      body: new Set(tokens(`${article.a} ${article.where ?? ''} ${topic.title}`)),
+    })),
+  ));
 
 /** Word stems match loosely, so "bookings" finds "booking" and "deliveries" finds "delivery". */
 const stem = (w: string) => w.replace(/(ies|es|s|ing|ed)$/, '');
@@ -84,7 +84,7 @@ const stem = (w: string) => w.replace(/(ies|es|s|ing|ed)$/, '');
 export function findGuide(text: string, hints: string): HelpArticle | null {
   const asked = [...new Set([...tokens(text), ...tokens(hints)].map(stem))];
   if (!asked.length) return null;
-  let best: {article: HelpArticle;score: number;titleHits: number;} | null = null;
+  let best: { article: HelpArticle; score: number; titleHits: number } | null = null;
   for (const g of guideIndex()) {
     const title = [...g.title].map(stem);
     const body = [...g.body].map(stem);
@@ -99,6 +99,6 @@ export function findGuide(text: string, hints: string): HelpArticle | null {
     if (titleHits && (!best || score > best.score)) best = { article: g.article, score, titleHits };
   }
   // Enough overlap to be confident: two words in the guide's question, or one plus supporting words.
-  if (!best || best.score < 4 || best.titleHits < 2 && asked.length > 3 && best.score < 5) return null;
+  if (!best || best.score < 4 || (best.titleHits < 2 && asked.length > 3 && best.score < 5)) return null;
   return best.article;
 }

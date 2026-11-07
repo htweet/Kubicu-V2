@@ -14,6 +14,6 @@ export function DividerBlock({ block, theme }: BlockProps<'divider'>) {
         {block.content.label}
       </span>
       <span className="h-px flex-1" style={{ background: line }} />
-    </div>);
-
+    </div>
+  );
 }

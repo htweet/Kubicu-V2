@@ -19,7 +19,7 @@ import { ExchangeRatesCard } from '../../components/admin/plans/ExchangeRatesCar
 const statusTone = { live: 'success', preview: 'info', planned: 'neutral' } as const;
 const statusLabel = { live: 'Live', preview: 'Preview', planned: 'Planned' } as const;
 
-function Cell({ v }: {v: PlanCell;}) {
+function Cell({ v }: { v: PlanCell }) {
   if (v === true) return <CheckIcon size={15} className="mx-auto text-success" aria-label="Included" />;
   if (v === false) return <MinusIcon size={15} className="mx-auto text-fg-subtle" aria-label="Not included" />;
   return <span className="text-caption text-fg">{v}</span>;
@@ -31,7 +31,7 @@ function Cell({ v }: {v: PlanCell;}) {
  */
 export function AdminPlans() {
   const [store] = useAdminStore();
-  const overrides = store.audit.filter((e) => e.area === 'tenants' && e.action.startsWith('Changed plan') || e.area === 'plans').slice(0, 10);
+  const overrides = store.audit.filter((e) => (e.area === 'tenants' && e.action.startsWith('Changed plan')) || e.area === 'plans').slice(0, 10);
   const th = 'px-3 py-2.5 text-left text-caption font-semibold text-fg-subtle';
 
   return (
@@ -48,8 +48,8 @@ export function AdminPlans() {
 
           <Card id="matrix" title="What each plan includes" description="The same list the public Pricing page uses. Open an area to see its rows." body="flush">
             <div className="divide-y divide-line">
-              {planMatrix.map((g, gi) =>
-              <details key={g.area} open={gi === 0} className="group">
+              {planMatrix.map((g, gi) => (
+                <details key={g.area} open={gi === 0} className="group">
                   <summary className="flex cursor-pointer items-center justify-between gap-3 px-5 py-3.5 text-label font-semibold text-fg hover:bg-sunken md:px-6">
                     {g.area}
                     <span className="text-caption font-normal text-fg-subtle">{g.rows.length} features</span>
@@ -60,16 +60,16 @@ export function AdminPlans() {
                       <thead>
                         <tr>
                           <th scope="col" className={`${th} pl-5 md:pl-6`}>Feature</th>
-                          {planOrder.map((p) =>
-                        <th key={p} scope="col" className={`${th} text-center`}>
+                          {planOrder.map((p) => (
+                            <th key={p} scope="col" className={`${th} text-center`}>
                               {plans[p].name}
                             </th>
-                        )}
+                          ))}
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-line">
-                        {g.rows.map((r) =>
-                      <tr key={r.label}>
+                        {g.rows.map((r) => (
+                          <tr key={r.label}>
                             <th scope="row" className="px-3 py-2.5 pl-5 text-left text-label font-normal text-fg md:pl-6">
                               <span className="flex flex-wrap items-center gap-1.5">
                                 {r.label}
@@ -77,18 +77,18 @@ export function AdminPlans() {
                               </span>
                               {r.note && <span className="block text-caption text-fg-subtle">{r.note}</span>}
                             </th>
-                            {planOrder.map((p) =>
-                        <td key={p} className="px-3 py-2.5 text-center">
+                            {planOrder.map((p) => (
+                              <td key={p} className="px-3 py-2.5 text-center">
                                 <Cell v={r.values[p]} />
                               </td>
-                        )}
+                            ))}
                           </tr>
-                      )}
+                        ))}
                       </tbody>
                     </table>
                   </div>
                 </details>
-              )}
+              ))}
             </div>
           </Card>
         </div>
@@ -101,30 +101,30 @@ export function AdminPlans() {
           <Card id="rules" title="Billing rules">
             <dl className="divide-y divide-line">
               {[
-              ['Free trial', `${TRIAL_DAYS} days of Pro, once per workspace, no card`],
-              ['Failed renewal', `${GRACE_DAYS}-day grace period, then Free`],
-              ['Yearly billing', '12 months for the price of 10'],
-              ['Codes', `One per payment, at most ${COUPON_MAX_SHARE * 100}% off`],
-              ['Second approval for credit over', `${formatNgn(GRANT_APPROVAL_NGN)} or ${GRANT_APPROVAL_AI} AI credits`],
-              ['Tax on plan invoices', `NG ${(VAT_RATE * 100).toFixed(1)}% · KE 16% · GH 20% · ZA 15% (examples)`],
-              ['Outside Nigeria', 'Naira list at the day’s rate, rounded up; invoice amount held 7 days'],
-              ['Downgrades', 'At renewal; nothing is ever deleted']].
-              map(([k, v]) =>
-              <div key={k} className="flex justify-between gap-4 py-2.5 first:pt-0 last:pb-0">
+                ['Free trial', `${TRIAL_DAYS} days of Pro, once per workspace, no card`],
+                ['Failed renewal', `${GRACE_DAYS}-day grace period, then Free`],
+                ['Yearly billing', '12 months for the price of 10'],
+                ['Codes', `One per payment, at most ${COUPON_MAX_SHARE * 100}% off`],
+                ['Second approval for credit over', `${formatNgn(GRANT_APPROVAL_NGN)} or ${GRANT_APPROVAL_AI} AI credits`],
+                ['Tax on plan invoices', `NG ${(VAT_RATE * 100).toFixed(1)}% · KE 16% · GH 20% · ZA 15% (examples)`],
+                ['Outside Nigeria', 'Naira list at the day’s rate, rounded up; invoice amount held 7 days'],
+                ['Downgrades', 'At renewal; nothing is ever deleted'],
+              ].map(([k, v]) => (
+                <div key={k} className="flex justify-between gap-4 py-2.5 first:pt-0 last:pb-0">
                   <dt className="text-label text-fg-muted">{k}</dt>
                   <dd className="text-right text-label font-medium text-fg">{v}</dd>
                 </div>
-              )}
+              ))}
             </dl>
           </Card>
 
           <Card id="overrides" title="Recent changes" description="Plan swaps, trials, credit, codes and catalogue requests." actions={<Link to="/admin/audit" className="text-label font-medium text-action hover:underline">Audit log</Link>} body="flush">
-            {overrides.length === 0 ?
-            <p className="px-5 py-5 text-label text-fg-muted md:px-6">Nothing yet.</p> :
-
-            <ul className="divide-y divide-line">
-                {overrides.map((e) =>
-              <li key={e.id} className="px-5 py-3 md:px-6">
+            {overrides.length === 0 ? (
+              <p className="px-5 py-5 text-label text-fg-muted md:px-6">Nothing yet.</p>
+            ) : (
+              <ul className="divide-y divide-line">
+                {overrides.map((e) => (
+                  <li key={e.id} className="px-5 py-3 md:px-6">
                     <p className="text-label font-medium text-fg">
                       {e.target} <span className="font-normal text-fg-muted">· {e.action.replace('Changed plan ', '')}</span>
                     </p>
@@ -132,12 +132,12 @@ export function AdminPlans() {
                       “{e.reason}” · {e.actor.split(' ·')[0]} · {formatRelative(e.at)}
                     </p>
                   </li>
-              )}
+                ))}
               </ul>
-            }
+            )}
           </Card>
         </div>
       </div>
-    </div>);
-
+    </div>
+  );
 }

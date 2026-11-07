@@ -15,7 +15,7 @@ interface Props {
   total: number;
   pod: OptionCheck;
   podAccept: PayOptions['pod']['accept'];
-  instalments: (OptionCheck & {ok: false;}) | {ok: true;plan: ProductInstalments;};
+  instalments: (OptionCheck & { ok: false }) | { ok: true; plan: ProductInstalments };
   agreed: boolean;
   onAgree: (v: boolean) => void;
 }
@@ -39,8 +39,8 @@ export function PayWithChooser({ theme: t, value, onChange, total, pod, podAccep
       <label
         key={id}
         className={`flex items-start gap-3 p-4 ${disabledReason ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
-        style={{ ...cardStyle(t), border: `1.5px solid ${active ? t.text : mix(t.text, 12)}` }}>
-        
+        style={{ ...cardStyle(t), border: `1.5px solid ${active ? t.text : mix(t.text, 12)}` }}
+      >
         <input type="radio" name="pay-with" className="mt-1" checked={active} disabled={!!disabledReason} onChange={() => onChange(id)} style={{ accentColor: t.text }} />
         <Icon size={18} aria-hidden className="mt-0.5 shrink-0" />
         <span className="min-w-0">
@@ -49,8 +49,8 @@ export function PayWithChooser({ theme: t, value, onChange, total, pod, podAccep
             {disabledReason ?? detail}
           </span>
         </span>
-      </label>);
-
+      </label>
+    );
   };
 
   return (
@@ -59,32 +59,32 @@ export function PayWithChooser({ theme: t, value, onChange, total, pod, podAccep
       {option('now', CreditCardIcon, `Pay ${formatNgn(total)} now`, 'Card, bank transfer or USSD.')}
       {showPod && option('pod', BanknoteIcon, 'Pay when it arrives', `${acceptLabels[podAccept]} to the rider. Have ${formatNgn(total)} ready.`, pod.ok ? undefined : pod.reason)}
       {showInst &&
-      option(
-        'instalments',
-        CalendarClockIcon,
-        instalments.ok ? `Pay in ${instalments.plan.parts} parts` : 'Pay in parts',
-        instalments.ok ? `${formatNgn(parts[0].amountNgn)} today, then ${formatNgn(parts[1].amountNgn)} ${everyLabels[instalments.plan.every]}. No interest or fees.` : '',
-        instalments.ok ? undefined : instalments.reason
-      )}
+        option(
+          'instalments',
+          CalendarClockIcon,
+          instalments.ok ? `Pay in ${instalments.plan.parts} parts` : 'Pay in parts',
+          instalments.ok ? `${formatNgn(parts[0].amountNgn)} today, then ${formatNgn(parts[1].amountNgn)} ${everyLabels[instalments.plan.every]}. No interest or fees.` : '',
+          instalments.ok ? undefined : instalments.reason,
+        )}
 
-      {value === 'pod' && pod.ok &&
-      <p className="rounded-md px-3 py-2.5 text-[13px] leading-snug" style={{ background: mix(t.text, 6) }} role="note">
+      {value === 'pod' && pod.ok && (
+        <p className="rounded-md px-3 py-2.5 text-[13px] leading-snug" style={{ background: mix(t.text, 6) }} role="note">
           Nothing is charged now. The seller or their rider will call before coming — keep your phone on. Please only order if you’ll be there to pay; refused deliveries cost the seller money.
         </p>
-      }
+      )}
 
-      {value === 'instalments' && instalments.ok &&
-      <div className="flex flex-col gap-3 rounded-md p-3" style={{ background: mix(t.text, 6) }}>
+      {value === 'instalments' && instalments.ok && (
+        <div className="flex flex-col gap-3 rounded-md p-3" style={{ background: mix(t.text, 6) }}>
           <ol className="flex flex-col gap-1.5 text-[13.5px]" aria-label="Payment schedule">
-            {parts.map((p) =>
-          <li key={p.n} className="flex justify-between gap-3">
+            {parts.map((p) => (
+              <li key={p.n} className="flex justify-between gap-3">
                 <span>
                   {p.n === 1 ? 'Today' : day(p.dueAt)}
                   <span style={muted}> · part {p.n} of {parts.length}</span>
                 </span>
                 <span className="font-semibold tabular-nums">{formatNgn(p.amountNgn)}</span>
               </li>
-          )}
+            ))}
           </ol>
           <p className="text-[12.5px] leading-snug" style={muted}>
             {instalments.plan.ship === 'last' ? 'Your order is sent once the last part is paid.' : 'Your order is sent after the first part.'} Later parts are charged to the same card. If a charge fails we try again on days 1, 3 and 5, and you can pay any part early from your order page.
@@ -96,7 +96,7 @@ export function PayWithChooser({ theme: t, value, onChange, total, pod, podAccep
             </span>
           </label>
         </div>
-      }
-    </fieldset>);
-
+      )}
+    </fieldset>
+  );
 }

@@ -40,19 +40,19 @@ export function DateTimeInput({ id, label, value, onChange, mode = 'datetime', h
           aria-invalid={error ? true : undefined}
           value={inputValue}
           onChange={(e) => onChange(mode === 'datetime' ? fromLocalInput(e.target.value) : e.target.value || null)}
-          className={cn(fieldControlClass, 'h-10 tabular-nums [color-scheme:light_dark]', clearable && value && 'pr-10')} />
-        
-        {clearable && value && !disabled &&
-        <button
-          type="button"
-          onClick={() => onChange(null)}
-          aria-label={`Clear ${label.toLowerCase()}`}
-          className="absolute right-1.5 inline-flex h-7 w-7 items-center justify-center rounded-sm text-fg-subtle hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-          
+          className={cn(fieldControlClass, 'h-10 tabular-nums [color-scheme:light_dark]', clearable && value && 'pr-10')}
+        />
+        {clearable && value && !disabled && (
+          <button
+            type="button"
+            onClick={() => onChange(null)}
+            aria-label={`Clear ${label.toLowerCase()}`}
+            className="absolute right-1.5 inline-flex h-7 w-7 items-center justify-center rounded-sm text-fg-subtle hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+          >
             <XIcon size={14} aria-hidden />
           </button>
-        }
+        )}
       </div>
-    </Field>);
-
+    </Field>
+  );
 }

@@ -17,7 +17,7 @@ const statusCopy = {
   processing: { icon: Loader2Icon, text: 'Uploading…', cls: 'text-fg-muted', spin: true },
   scanning: { icon: Loader2Icon, text: 'Scanning for viruses…', cls: 'text-fg-muted', spin: true },
   ready: { icon: CheckCircle2Icon, text: 'Scanned and ready to sell', cls: 'text-success', spin: false },
-  failed: { icon: ShieldAlertIcon, text: 'Upload failed — try again', cls: 'text-danger', spin: false }
+  failed: { icon: ShieldAlertIcon, text: 'Upload failed — try again', cls: 'text-danger', spin: false },
 };
 
 interface DigitalFileFieldProps {
@@ -55,7 +55,7 @@ export function DigitalFileField({ product, onChange, error }: DigitalFileFieldP
       sizeBytes: file.size,
       status: 'processing' as const,
       version,
-      versions: [{ version, fileName: file.name, sizeBytes: file.size, uploadedAt: new Date().toISOString(), note: note.trim() }, ...asset.versions]
+      versions: [{ version, fileName: file.name, sizeBytes: file.size, uploadedAt: new Date().toISOString(), note: note.trim() }, ...asset.versions],
     };
     onChange({ digital: next });
     setNote('');
@@ -72,8 +72,8 @@ export function DigitalFileField({ product, onChange, error }: DigitalFileFieldP
       <legend className="mb-1 text-label font-medium text-fg">File and access</legend>
 
       <div className="rounded-md border border-line p-4">
-        {asset.fileName ?
-        <div className="flex items-start gap-3">
+        {asset.fileName ? (
+          <div className="flex items-start gap-3">
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-sunken text-fg-muted">
               <FileIcon size={18} aria-hidden />
             </span>
@@ -87,13 +87,13 @@ export function DigitalFileField({ product, onChange, error }: DigitalFileFieldP
                 {st.text}
               </p>
             </div>
-          </div> :
-
-        <p className="text-label text-fg-muted">No file yet. PDF, ZIP, EPUB, presets, audio or video up to 500 MB.</p>
-        }
-        {asset.fileName && asset.version > 0 &&
-        <TextInput id="dig-note" label="What changed in the next version?" optional value={note} placeholder="e.g. Added size 18" fieldClassName="mt-4" onChange={(e) => setNote(e.target.value)} />
-        }
+          </div>
+        ) : (
+          <p className="text-label text-fg-muted">No file yet. PDF, ZIP, EPUB, presets, audio or video up to 500 MB.</p>
+        )}
+        {asset.fileName && asset.version > 0 && (
+          <TextInput id="dig-note" label="What changed in the next version?" optional value={note} placeholder="e.g. Added size 18" fieldClassName="mt-4" onChange={(e) => setNote(e.target.value)} />
+        )}
         <input
           ref={inputRef}
           type="file"
@@ -104,8 +104,8 @@ export function DigitalFileField({ product, onChange, error }: DigitalFileFieldP
             const f = e.target.files?.[0];
             if (f) onFile(f);
             e.target.value = '';
-          }} />
-        
+          }}
+        />
         <Button variant="secondary" size="sm" leadingIcon={UploadIcon} className="mt-3" onClick={() => inputRef.current?.click()} disabled={asset.status === 'processing' || asset.status === 'scanning'}>
           {asset.fileName ? 'Upload a new version' : 'Choose file'}
         </Button>
@@ -124,8 +124,8 @@ export function DigitalFileField({ product, onChange, error }: DigitalFileFieldP
           onChange={(e) => {
             const v = e.target.value.replace(/[^0-9]/g, '').slice(0, 3);
             setAsset({ downloadLimit: v === '' ? null : Math.max(1, Number(v)) });
-          }} />
-        
+          }}
+        />
         <TextInput
           id="dig-expiry"
           label="Link works for (days)"
@@ -136,8 +136,8 @@ export function DigitalFileField({ product, onChange, error }: DigitalFileFieldP
           onChange={(e) => {
             const v = e.target.value.replace(/[^0-9]/g, '').slice(0, 4);
             setAsset({ expiryDays: v === '' ? null : Math.max(1, Number(v)) });
-          }} />
-        
+          }}
+        />
       </div>
       <TextArea id="dig-licence" label="Licence note" optional rows={2} value={asset.licence} placeholder="e.g. For personal use only. Please don’t resell or share." hint="Shown on the receipt and download page." onChange={(e) => setAsset({ licence: e.target.value })} />
 
@@ -152,72 +152,72 @@ export function DigitalFileField({ product, onChange, error }: DigitalFileFieldP
           description="Every page carries their name, email and order number in the footer, so a shared copy points back to them. PDF files only."
           checked={!!asset.stamp}
           disabled={!protectionAllowed}
-          onChange={(stamp) => setAsset({ stamp })} />
-        
-        {asset.stamp &&
-        <div className="rounded-sm border border-dashed border-line-strong bg-sunken px-3 py-2 text-caption text-fg-muted" aria-label="Stamp preview">
+          onChange={(stamp) => setAsset({ stamp })}
+        />
+        {asset.stamp && (
+          <div className="rounded-sm border border-dashed border-line-strong bg-sunken px-3 py-2 text-caption text-fg-muted" aria-label="Stamp preview">
             <span className="font-medium text-fg">Preview, bottom of each page:</span> Licensed to Chiamaka Obi · chiamaka@example.com · Order #1042 · Not for resale. A faint copy of the buyer’s name also runs across each page.
           </div>
-        }
+        )}
         <Switch
           id="dig-watermark-images"
           label="Watermark images with the buyer’s details"
           description="A faint, repeating name and order number across photos, presets previews and artwork. JPG, PNG and WebP files only."
           checked={!!asset.watermarkImages}
           disabled={!protectionAllowed}
-          onChange={(watermarkImages) => setAsset({ watermarkImages })} />
-        
+          onChange={(watermarkImages) => setAsset({ watermarkImages })}
+        />
         <Switch
           id="dig-keys"
           label="Issue a licence key to each buyer"
           description="For presets, software, courses and templates. Keys show on the buyer’s download page; you can revoke or replace them."
           checked={!!asset.keys?.enabled}
           disabled={!protectionAllowed}
-          onChange={(enabled) => setAsset({ keys: { prefix: asset.keys?.prefix ?? '', activations: asset.keys?.activations ?? 2, enabled } })} />
-        
-        {asset.keys?.enabled &&
-        <div className="grid gap-4 sm:grid-cols-2">
+          onChange={(enabled) => setAsset({ keys: { prefix: asset.keys?.prefix ?? '', activations: asset.keys?.activations ?? 2, enabled } })}
+        />
+        {asset.keys?.enabled && (
+          <div className="grid gap-4 sm:grid-cols-2">
             <TextInput
-            id="dig-key-prefix"
-            label="Key starts with"
-            optional
-            value={asset.keys.prefix}
-            placeholder="e.g. ADAZ"
-            hint={`Looks like ${asset.keys.prefix.trim().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6) || ''}${asset.keys.prefix.trim() ? '-' : ''}7K2Q-M4XP-9WTR`}
-            onChange={(e) => setAsset({ keys: { ...asset.keys!, prefix: e.target.value.slice(0, 6) } })} />
-          
+              id="dig-key-prefix"
+              label="Key starts with"
+              optional
+              value={asset.keys.prefix}
+              placeholder="e.g. ADAZ"
+              hint={`Looks like ${(asset.keys.prefix.trim().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6) || '')}${asset.keys.prefix.trim() ? '-' : ''}7K2Q-M4XP-9WTR`}
+              onChange={(e) => setAsset({ keys: { ...asset.keys!, prefix: e.target.value.slice(0, 6) } })}
+            />
             <TextInput
-            id="dig-key-acts"
-            label="Devices per key"
-            inputMode="numeric"
-            value={String(asset.keys.activations)}
-            hint="How many devices one buyer can use it on."
-            onChange={(e) => setAsset({ keys: { ...asset.keys!, activations: Math.min(50, Math.max(1, Number(e.target.value.replace(/[^0-9]/g, '') || '1'))) } })} />
-          
+              id="dig-key-acts"
+              label="Devices per key"
+              inputMode="numeric"
+              value={String(asset.keys.activations)}
+              hint="How many devices one buyer can use it on."
+              onChange={(e) => setAsset({ keys: { ...asset.keys!, activations: Math.min(50, Math.max(1, Number(e.target.value.replace(/[^0-9]/g, '') || '1'))) } })}
+            />
           </div>
-        }
+        )}
       </div>
 
       <InlineAlert tone="info" title="What protection really means">
         Limits and expiring links reduce casual sharing, but once someone downloads a file they can copy it. Your licence note sets expectations.
       </InlineAlert>
 
-      {asset.versions.length > 1 &&
-      <div>
+      {asset.versions.length > 1 && (
+        <div>
           <p className="text-label font-medium text-fg">Version history</p>
           <ol className="mt-2 flex flex-col divide-y divide-line border-y border-line">
-            {asset.versions.map((v) =>
-          <li key={v.version} className="flex items-baseline justify-between gap-3 py-2 text-caption">
+            {asset.versions.map((v) => (
+              <li key={v.version} className="flex items-baseline justify-between gap-3 py-2 text-caption">
                 <span className="min-w-0">
                   <span className="font-semibold text-fg">v{v.version}</span> <span className="text-fg-muted">{v.fileName}</span>
                   {v.note && <span className="block text-fg-subtle">{v.note}</span>}
                 </span>
                 <span className="shrink-0 text-fg-subtle">{formatTimestamp(v.uploadedAt)}</span>
               </li>
-          )}
+            ))}
           </ol>
         </div>
-      }
-    </fieldset>);
-
+      )}
+    </fieldset>
+  );
 }

@@ -46,8 +46,8 @@ export function writeAgreements(workspaceId: string, s: PolicyAgreementStore) {
   try {
     localStorage.setItem(key(workspaceId), JSON.stringify(s));
   } catch {
-
-    /* storage full — the prompt simply shows again */}
+    /* storage full — the prompt simply shows again */
+  }
   window.dispatchEvent(new Event(EVENT));
 }
 
@@ -74,7 +74,7 @@ export function pendingPolicies(releases: Record<string, PolicyRelease[]>, store
   const out: PendingPolicy[] = [];
   for (const doc of allLegalDocs) {
     const list = releases[doc.slug] ?? [];
-    const required = list.find((r) => r.reaccept === 'all' || r.reaccept === 'paid' && paid);
+    const required = list.find((r) => r.reaccept === 'all' || (r.reaccept === 'paid' && paid));
     if (!required) continue;
     const agreed = store.agreed[doc.slug];
     if (agreed && !versionBefore(agreed.version, required.version)) continue;
@@ -93,10 +93,10 @@ export function agreeAll(store: PolicyAgreementStore, pending: PendingPolicy[], 
 }
 
 /** Recently updated policies buyers should hear about at checkout. */
-export function recentBuyerUpdates(releases: Record<string, PolicyRelease[]>, now = Date.now()): {doc: LegalDoc;release: PolicyRelease;}[] {
+export function recentBuyerUpdates(releases: Record<string, PolicyRelease[]>, now = Date.now()): { doc: LegalDoc; release: PolicyRelease }[] {
   const buyerFacing = ['terms', 'privacy', 'refunds'];
-  return allLegalDocs.
-  filter((d) => buyerFacing.includes(d.slug)).
-  map((doc) => ({ doc, release: releases[doc.slug]?.[0] })).
-  filter((x): x is {doc: LegalDoc;release: PolicyRelease;} => !!x.release && now - Date.parse(x.release.publishedAt) < CHECKOUT_NOTICE_DAYS * DAY);
+  return allLegalDocs
+    .filter((d) => buyerFacing.includes(d.slug))
+    .map((doc) => ({ doc, release: releases[doc.slug]?.[0] }))
+    .filter((x): x is { doc: LegalDoc; release: PolicyRelease } => !!x.release && now - Date.parse(x.release.publishedAt) < CHECKOUT_NOTICE_DAYS * DAY);
 }

@@ -28,17 +28,17 @@ export function NeedsAttention() {
   const notifications = useNotifications();
 
   const items = [
-  // "Label: {n}" wording avoids English-only plural endings, so every language reads correctly (D385).
-  reviews > 0 && { id: 'reviews', icon: SendIcon, label: tr('Changes to review: {n}', { n: reviews }), to: '/app/settings/approvals' },
-  unseen[0] && { id: 'notice', icon: BellIcon, label: unseen.length > 1 ? `${tr(unseen[0].text)} ${tr('(+{n} more)', { n: unseen.length - 1 })}` : tr(unseen[0].text), to: unseen[0].href ?? '/app/settings/approvals' },
-  todayBookings > 0 && { id: 'today', icon: CalendarIcon, label: tr('Bookings today: {n}', { n: todayBookings }), to: '/app/bookings' },
-  newLeads > 0 && { id: 'leads', icon: UsersIcon, label: tr('New leads: {n}', { n: newLeads }), to: '/app/audience' },
-  dueTasks > 0 && { id: 'tasks', icon: UsersIcon, label: tr('Follow-ups due: {n}', { n: dueTasks }), to: '/app/audience' },
-  toFulfil > 0 && { id: 'fulfil', icon: ReceiptIcon, label: tr('Orders to fulfil: {n}', { n: toFulfil }), to: '/app/commerce/orders?status=paid' },
-  toConfirm > 0 && { id: 'confirm', icon: ReceiptIcon, label: tr('Awaiting payment: {n}', { n: toConfirm }), to: '/app/commerce/orders?status=new' },
-  disputes > 0 && { id: 'dispute', icon: GavelIcon, label: tr('Disputes to answer: {n}', { n: disputes }), to: '/app/commerce/orders' },
-  stock > 0 && { id: 'stock', icon: PackageIcon, label: tr('Products low or sold out: {n}', { n: stock }), to: '/app/commerce/inventory' }].
-  filter(Boolean) as {id: string;icon: typeof ReceiptIcon;label: string;to: string;}[];
+    // "Label: {n}" wording avoids English-only plural endings, so every language reads correctly (D385).
+    reviews > 0 && { id: 'reviews', icon: SendIcon, label: tr('Changes to review: {n}', { n: reviews }), to: '/app/settings/approvals' },
+    unseen[0] && { id: 'notice', icon: BellIcon, label: unseen.length > 1 ? `${tr(unseen[0].text)} ${tr('(+{n} more)', { n: unseen.length - 1 })}` : tr(unseen[0].text), to: unseen[0].href ?? '/app/settings/approvals' },
+    todayBookings > 0 && { id: 'today', icon: CalendarIcon, label: tr('Bookings today: {n}', { n: todayBookings }), to: '/app/bookings' },
+    newLeads > 0 && { id: 'leads', icon: UsersIcon, label: tr('New leads: {n}', { n: newLeads }), to: '/app/audience' },
+    dueTasks > 0 && { id: 'tasks', icon: UsersIcon, label: tr('Follow-ups due: {n}', { n: dueTasks }), to: '/app/audience' },
+    toFulfil > 0 && { id: 'fulfil', icon: ReceiptIcon, label: tr('Orders to fulfil: {n}', { n: toFulfil }), to: '/app/commerce/orders?status=paid' },
+    toConfirm > 0 && { id: 'confirm', icon: ReceiptIcon, label: tr('Awaiting payment: {n}', { n: toConfirm }), to: '/app/commerce/orders?status=new' },
+    disputes > 0 && { id: 'dispute', icon: GavelIcon, label: tr('Disputes to answer: {n}', { n: disputes }), to: '/app/commerce/orders' },
+    stock > 0 && { id: 'stock', icon: PackageIcon, label: tr('Products low or sold out: {n}', { n: stock }), to: '/app/commerce/inventory' },
+  ].filter(Boolean) as { id: string; icon: typeof ReceiptIcon; label: string; to: string }[];
 
   if (items.length === 0) return null;
 
@@ -54,20 +54,20 @@ export function NeedsAttention() {
         </button>
       </div>
       <ul className="mt-2 flex flex-wrap gap-2">
-        {items.map((i) =>
-        <li key={i.id}>
+        {items.map((i) => (
+          <li key={i.id}>
             <Link
-            to={i.to}
-            onClick={i.id === 'notice' ? team.markNoticesSeen : undefined}
-            className="group inline-flex h-10 items-center gap-2 rounded-full border border-line bg-raised px-4 text-label font-semibold text-fg transition-colors duration-150 hover:border-line-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-            
+              to={i.to}
+              onClick={i.id === 'notice' ? team.markNoticesSeen : undefined}
+              className="group inline-flex h-10 items-center gap-2 rounded-full border border-line bg-raised px-4 text-label font-semibold text-fg transition-colors duration-150 hover:border-line-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+            >
               <i.icon size={15} strokeWidth={2.25} className="text-action" aria-hidden />
               {i.label}
               <ArrowRightIcon size={14} className="text-fg-subtle transition-transform duration-150 group-hover:translate-x-0.5" aria-hidden />
             </Link>
           </li>
-        )}
+        ))}
       </ul>
-    </section>);
-
+    </section>
+  );
 }

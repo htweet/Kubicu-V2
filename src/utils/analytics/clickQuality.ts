@@ -59,5 +59,5 @@ export const viaLabels: Record<SourceId, string> = {
   nfc: 'NFC tag',
   campaign: 'Campaign link',
   direct: 'Scanned, typed or no app info',
-  other: 'Other websites'
+  other: 'Other websites',
 };

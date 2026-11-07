@@ -44,9 +44,9 @@ export function clearHandleClaim(): void {
   try {
     window.localStorage.removeItem(KEY);
   } catch {
-
     // Nothing to clear.
-  }}
+  }
+}
 
 /** Minutes left on the hold, rounded up. */
 export function claimMinutesLeft(claim: HandleClaim): number {

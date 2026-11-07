@@ -17,32 +17,32 @@ const ease = [0.23, 1, 0.32, 1] as const;
 
 /** Example starts: the label is translated; the opening message stays English because the chat itself is English for now. */
 const starts = [
-{ label: 'A caterer in Lekki', text: 'I make small chops and party trays for events in Lekki, and people order on WhatsApp.' },
-{ label: 'A wedding photographer', text: 'I’m a wedding and portrait photographer in Abuja and I want a portfolio that gets enquiries.' },
-{ label: 'A hair studio', text: 'I run a braids and wig studio in Ikeja and want people to book appointments.' }];
-
+  { label: 'A caterer in Lekki', text: 'I make small chops and party trays for events in Lekki, and people order on WhatsApp.' },
+  { label: 'A wedding photographer', text: 'I’m a wedding and portrait photographer in Abuja and I want a portfolio that gets enquiries.' },
+  { label: 'A hair studio', text: 'I run a braids and wig studio in Ikeja and want people to book appointments.' },
+];
 
 const steps = [
-{ title: 'Chat', text: 'Say what you’re creating in your own words. Copilot asks 3–6 short questions — only what it doesn’t already know.' },
-{ title: 'Check the brief', text: 'See the sections, look and main action it plans to use, and what’s left for you to fill in. Nothing is made until you say so.' },
-{ title: 'See your draft', text: 'A picture of your page on a phone, plus a private link to scroll through it. Ask for changes in plain words.' },
-{ title: 'Continue in KUBICU', text: 'Sign up or sign in to claim the draft. It opens in the editor as a normal page — publish only when you’re ready.' }];
-
+  { title: 'Chat', text: 'Say what you’re creating in your own words. Copilot asks 3–6 short questions — only what it doesn’t already know.' },
+  { title: 'Check the brief', text: 'See the sections, look and main action it plans to use, and what’s left for you to fill in. Nothing is made until you say so.' },
+  { title: 'See your draft', text: 'A picture of your page on a phone, plus a private link to scroll through it. Ask for changes in plain words.' },
+  { title: 'Continue in KUBICU', text: 'Sign up or sign in to claim the draft. It opens in the editor as a normal page — publish only when you’re ready.' },
+];
 
 const promises = [
-'Nothing is published until you choose to publish it inside KUBICU.',
-'Prices, reviews, opening hours and policies are never made up — missing details stay clearly marked.',
-'Drafts are private and not in search. Unclaimed drafts are deleted after {n} days.',
-'Copilot never asks for passwords, card numbers, BVN or NIN, and never creates an account for you.',
-'Free to try: 3 drafts and 10 changes a day. AI credits only start once you’re in KUBICU.'];
-
+  'Nothing is published until you choose to publish it inside KUBICU.',
+  'Prices, reviews, opening hours and policies are never made up — missing details stay clearly marked.',
+  'Drafts are private and not in search. Unclaimed drafts are deleted after {n} days.',
+  'Copilot never asks for passwords, card numbers, BVN or NIN, and never creates an account for you.',
+  'Free to try: 3 drafts and 10 changes a day. AI credits only start once you’re in KUBICU.',
+];
 
 /** /copilot (D262): the easiest way into KUBICU — start a chat on WhatsApp (proposed) or here in the browser. Translated in D329. */
 export function CopilotLanding() {
   const { t: tr } = useT();
   const { whatsapp } = useCopilotSim();
   const reduce = useReducedMotion();
-  const pop = (delay: number) => reduce ? {} : { initial: { opacity: 0, y: 10, scale: 0.97 }, animate: { opacity: 1, y: 0, scale: 1 }, transition: { duration: 0.28, delay, ease } };
+  const pop = (delay: number) => (reduce ? {} : { initial: { opacity: 0, y: 10, scale: 0.97 }, animate: { opacity: 1, y: 0, scale: 1 }, transition: { duration: 0.28, delay, ease } });
 
   return (
     <>
@@ -62,33 +62,33 @@ export function CopilotLanding() {
               <Link to="/copilot/chat" className="inline-flex h-14 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-white px-7 text-[16px] font-bold text-[rgb(20_20_18)] transition-transform duration-150 ease-out active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[rgb(var(--kb-cobalt))]">
                 <GlobeIcon size={18} aria-hidden /> {tr('Chat here in your browser')}
               </Link>
-              {whatsapp === 'available' &&
-              <Link to="/copilot/whatsapp" className="inline-flex h-14 items-center justify-center gap-2 whitespace-nowrap rounded-full border-2 border-white/70 px-7 text-[16px] font-bold text-white transition-[background-color,transform] duration-150 ease-out hover:bg-white/10 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
+              {whatsapp === 'available' && (
+                <Link to="/copilot/whatsapp" className="inline-flex h-14 items-center justify-center gap-2 whitespace-nowrap rounded-full border-2 border-white/70 px-7 text-[16px] font-bold text-white transition-[background-color,transform] duration-150 ease-out hover:bg-white/10 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
                   <MessageCircleIcon size={18} aria-hidden /> {tr('Try it on WhatsApp')}
                 </Link>
-              }
+              )}
             </div>
-            {whatsapp === 'available' ?
-            <p className="mt-4 flex items-start gap-2 text-caption text-white/80">
+            {whatsapp === 'available' ? (
+              <p className="mt-4 flex items-start gap-2 text-caption text-white/80">
                 <InfoIcon size={14} className="mt-0.5 shrink-0" aria-hidden />
                 {tr('WhatsApp is a proposed channel, shown here as a simulation. The browser chat asks the same questions and makes the same draft.')}
-              </p> :
-
-            <p role="status" className="mt-4 max-w-lg rounded-2xl bg-white/10 px-4 py-3 text-label text-white">
+              </p>
+            ) : (
+              <p role="status" className="mt-4 max-w-lg rounded-2xl bg-white/10 px-4 py-3 text-label text-white">
                 {tr('Copilot on WhatsApp isn’t available where you are yet. The browser chat is the same conversation and works on any phone.')}
               </p>
-            }
+            )}
             <p className="mt-4 text-caption text-white/75">{tr('Type your answers in your own language — Copilot understands everyday words, and its buttons always work.')}</p>
             <div className="mt-8">
               <p className="text-caption font-semibold text-white/80">{tr('Or start with an example')}</p>
               <ul className="mt-2 flex flex-wrap gap-2">
-                {starts.map((s) =>
-                <li key={s.label}>
+                {starts.map((s) => (
+                  <li key={s.label}>
                     <Link to={`/copilot/chat?start=${encodeURIComponent(s.text)}`} className="inline-flex h-10 items-center gap-1.5 whitespace-nowrap rounded-full bg-white/15 px-4 text-label font-semibold text-white transition-colors duration-150 hover:bg-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
                       {tr(s.label)} <ArrowRightIcon size={14} aria-hidden />
                     </Link>
                   </li>
-                )}
+                ))}
               </ul>
             </div>
           </div>
@@ -152,15 +152,15 @@ export function CopilotLanding() {
           {tr('From an idea to a page you can edit.')}
         </h2>
         <ol className="mt-12 grid gap-10 md:grid-cols-2 lg:grid-cols-4 lg:gap-8">
-          {steps.map((s, i) =>
-          <li key={s.title} className="border-t-2 border-fg pt-5">
+          {steps.map((s, i) => (
+            <li key={s.title} className="border-t-2 border-fg pt-5">
               <Reveal delay={i * 0.05}>
                 <span className="kb-display block text-[40px] leading-none text-fg">{i + 1}</span>
                 <h3 className="mt-4 text-[20px] font-bold text-fg">{tr(s.title)}</h3>
                 <p className="mt-2 text-body text-fg-muted">{tr(s.text)}</p>
               </Reveal>
             </li>
-          )}
+          ))}
         </ol>
       </section>
 
@@ -170,12 +170,12 @@ export function CopilotLanding() {
             {tr('Your draft, your call.')}
           </h2>
           <ul className="flex flex-col gap-5 text-[17px] font-medium text-white">
-            {promises.map((t) =>
-            <li key={t} className="flex gap-3">
+            {promises.map((t) => (
+              <li key={t} className="flex gap-3">
                 <ShieldCheckIcon size={20} className="mt-0.5 shrink-0 text-[rgb(var(--kb-lime))]" aria-hidden />
                 {tr(t, { n: DRAFT_DAYS })}
               </li>
-            )}
+            ))}
             <li>
               <Link to="/about/copilot" className="inline-flex items-center gap-1.5 font-bold text-[rgb(var(--kb-lime))] underline-offset-4 hover:underline">
                 {tr('Read the Copilot privacy notice')} <ArrowRightIcon size={16} aria-hidden />
@@ -184,6 +184,6 @@ export function CopilotLanding() {
           </ul>
         </div>
       </section>
-    </>);
-
+    </>
+  );
 }

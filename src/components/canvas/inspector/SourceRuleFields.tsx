@@ -17,7 +17,7 @@ import { cn } from '../../../utils/cn';
 type Mode = 'everyone' | 'only' | 'except';
 
 /** IntentFlow per block (D64): show by where a visit came from — never by who the visitor is. Translated in D314. */
-export function SourceRuleFields({ block }: {block: Block;}) {
+export function SourceRuleFields({ block }: { block: Block }) {
   const { t: tr } = useT();
   const { actions } = useEditor();
   const preview = useCampaignPreview();
@@ -45,7 +45,7 @@ export function SourceRuleFields({ block }: {block: Block;}) {
     return tr(r.mode === 'only' ? 'Only visits from {list}' : 'Everyone except visits from {list}', { list });
   };
 
-  const previewSource: SourceId | null = rule ? rule.mode === 'only' ? rule.ids[0] ?? null : intentSources.find((s) => !rule.ids.includes(s)) ?? null : null;
+  const previewSource: SourceId | null = rule ? (rule.mode === 'only' ? rule.ids[0] ?? null : intentSources.find((s) => !rule.ids.includes(s)) ?? null) : null;
 
   return (
     <section aria-labelledby={`${block.id}-intent`} className="flex flex-col gap-3 border-t border-line pt-5">
@@ -56,11 +56,11 @@ export function SourceRuleFields({ block }: {block: Block;}) {
           </h3>
           <p className="mt-0.5 text-caption text-fg-subtle">{tr('IntentFlow · based only on where the visit came from — a link, a QR code or the site that sent them.')}</p>
         </div>
-        {rule &&
-        <Badge tone={rule.paused ? 'neutral' : 'info'} icon={SplitIcon}>
+        {rule && (
+          <Badge tone={rule.paused ? 'neutral' : 'info'} icon={SplitIcon}>
             {tr(rule.paused ? 'Paused' : 'Rule on')}
           </Badge>
-        }
+        )}
       </div>
       <Segmented<Mode>
         ariaLabel={tr('Who sees this block')}
@@ -69,49 +69,49 @@ export function SourceRuleFields({ block }: {block: Block;}) {
         value={mode}
         onChange={setMode}
         options={[
-        { value: 'everyone', label: 'Everyone' },
-        { value: 'only', label: 'Only' },
-        { value: 'except', label: 'All except' }]
-        } />
-      
-      {rule &&
-      <>
+          { value: 'everyone', label: 'Everyone' },
+          { value: 'only', label: 'Only' },
+          { value: 'except', label: 'All except' },
+        ]}
+      />
+      {rule && (
+        <>
           <div className="grid grid-cols-2 gap-1.5" role="group" aria-label={tr(rule.mode === 'only' ? 'Show only to visits from' : 'Hide from visits from')}>
             {intentSources.map((id) => {
-            const on = rule.ids.includes(id);
-            return (
-              <label key={id} className={cn('flex min-h-[40px] cursor-pointer items-center gap-2 rounded-md border px-2.5 text-label transition-colors duration-150', on ? 'border-select bg-action-soft font-medium text-fg' : 'border-line text-fg-muted hover:bg-sunken')}>
+              const on = rule.ids.includes(id);
+              return (
+                <label key={id} className={cn('flex min-h-[40px] cursor-pointer items-center gap-2 rounded-md border px-2.5 text-label transition-colors duration-150', on ? 'border-select bg-action-soft font-medium text-fg' : 'border-line text-fg-muted hover:bg-sunken')}>
                   <input type="checkbox" className="sr-only" checked={on} onChange={() => toggle(id)} />
                   <span className={cn('flex h-4 w-4 shrink-0 items-center justify-center rounded-[4px] border', on ? 'border-select bg-select text-select-fg' : 'border-line-strong')}>{on && <CheckIcon size={11} aria-hidden />}</span>
                   <span className="truncate">{tr(sourceLabels[id])}</span>
-                </label>);
-
-          })}
+                </label>
+              );
+            })}
           </div>
           <p className="text-caption text-fg-muted">
             {ruleLine(rule)}. {tr(rule.mode === 'only' ? 'Everyone else doesn’t see it.' : 'Everyone else sees it as normal.')}
           </p>
           <SelectInput<IntentGoal>
-          id={`${block.id}-intent-goal`}
-          label={tr('Goal to measure')}
-          value={rule.goal}
-          options={(Object.keys(goalLabels) as IntentGoal[]).map((g) => ({ value: g, label: tr(goalLabels[g]) }))}
-          onChange={(goal) => patch({ goal })}
-          hint={tr('Shown on the IntentFlow screen, compared with visitors the rule doesn’t target.')} />
-        
+            id={`${block.id}-intent-goal`}
+            label={tr('Goal to measure')}
+            value={rule.goal}
+            options={(Object.keys(goalLabels) as IntentGoal[]).map((g) => ({ value: g, label: tr(goalLabels[g]) }))}
+            onChange={(goal) => patch({ goal })}
+            hint={tr('Shown on the IntentFlow screen, compared with visitors the rule doesn’t target.')}
+          />
           <Switch id={`${block.id}-intent-paused`} label={tr('Pause this rule')} description={tr('Paused, everyone sees the block. Your choices are kept.')} checked={!!rule.paused} onChange={(paused) => patch({ paused })} />
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-            {rule.ids[0] &&
-          <button type="button" className="text-caption font-medium text-action hover:underline" onClick={() => preview.setSource(previewSource)}>
+            {rule.ids[0] && (
+              <button type="button" className="text-caption font-medium text-action hover:underline" onClick={() => preview.setSource(previewSource)}>
                 {tr('Preview as: {source}', { source: tr(sourceLabels[previewSource ?? 'direct']) })}
               </button>
-          }
+            )}
             <Link to="/app/intentflow" className="text-caption font-medium text-fg-muted hover:text-fg hover:underline">
               {tr('See results')}
             </Link>
           </div>
         </>
-      }
-    </section>);
-
+      )}
+    </section>
+  );
 }

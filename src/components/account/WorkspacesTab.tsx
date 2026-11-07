@@ -12,9 +12,17 @@ import { Card } from '../ui/layout/Card';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import { useT } from '../../contexts/LocaleContext';
+import { useAccountMode } from '../../contexts/AccountModeContext';
+import { WorkspacesTabAccount } from '../accountMode/WorkspacesTabAccount';
+
+/** Account → Workspaces. Account mode uses the server-backed version (D537); browser mode is unchanged. */
+export function WorkspacesTab() {
+  const account = useAccountMode();
+  return account.active ? <WorkspacesTabAccount /> : <WorkspacesTabBrowser />;
+}
 
 /** Account → Workspaces: every workspace this account belongs to (D80). */
-export function WorkspacesTab() {
+function WorkspacesTabBrowser() {
   const { t: tr } = useT();
   const { workspaces, current, switchTo, restoreDemoWorkspace } = useWorkspace();
   const navigate = useNavigate();
@@ -37,11 +45,11 @@ export function WorkspacesTab() {
         description={`${workspaces.length === 1 ? tr('1 workspace.') : tr('{n} workspaces.', { n: workspaces.length })} ${tr('Each has its own pages, products, customers, team and plan.')}`}
         body="flush"
         actions={
-        <Button size="sm" variant="secondary" leadingIcon={PlusIcon} onClick={() => navigate('/start')}>
+          <Button size="sm" variant="secondary" leadingIcon={PlusIcon} onClick={() => navigate('/start')}>
             New workspace
           </Button>
-        }>
-        
+        }
+      >
         <ul className="divide-y divide-line">
           {rows.map(({ w, role, members }) => {
             const isCurrent = w.id === current.id;
@@ -63,30 +71,30 @@ export function WorkspacesTab() {
                   </span>
                 </div>
                 <div className="flex shrink-0 items-center gap-2 sm:justify-end">
-                  {!isCurrent &&
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    onClick={() => {
-                      switchTo(w.id);
-                      navigate('/app');
-                    }}>
-                    
+                  {!isCurrent && (
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => {
+                        switchTo(w.id);
+                        navigate('/app');
+                      }}
+                    >
                       Open
                     </Button>
-                  }
-                  {w.id === DEMO_WORKSPACE_ID ?
-                  <Button size="sm" variant="tertiary" disabled={!hasOwn} title={hasOwn ? undefined : tr('Create your own workspace first')} onClick={() => setRemoving(true)}>
+                  )}
+                  {w.id === DEMO_WORKSPACE_ID ? (
+                    <Button size="sm" variant="tertiary" disabled={!hasOwn} title={hasOwn ? undefined : tr('Create your own workspace first')} onClick={() => setRemoving(true)}>
                       Remove
-                    </Button> :
-
-                  <Button size="sm" variant="tertiary" disabled title={tr('Owners can’t leave. Transfer ownership in Settings → Team first.')}>
+                    </Button>
+                  ) : (
+                    <Button size="sm" variant="tertiary" disabled title={tr('Owners can’t leave. Transfer ownership in Settings → Team first.')}>
                       Leave
                     </Button>
-                  }
+                  )}
                 </div>
-              </li>);
-
+              </li>
+            );
           })}
         </ul>
         <p className="border-t border-line px-5 py-3 text-caption text-fg-muted md:px-6">
@@ -98,23 +106,23 @@ export function WorkspacesTab() {
         id="acc-demo"
         title="Demo workspace"
         description={
-        demoPresent ?
-        'Adaeze Atelier is a ready-made workspace with labelled sample data in every area. Remove it when you’ve finished exploring.' :
-        'Want to explore again? Add a fresh copy of Adaeze Atelier, with labelled sample data in every area. It never takes real payments.'
+          demoPresent
+            ? 'Adaeze Atelier is a ready-made workspace with labelled sample data in every area. Remove it when you’ve finished exploring.'
+            : 'Want to explore again? Add a fresh copy of Adaeze Atelier, with labelled sample data in every area. It never takes real payments.'
         }
         actions={
-        demoPresent ?
-        <Button size="sm" variant="secondary" disabled={!hasOwn} title={hasOwn ? undefined : tr('Create your own workspace first')} onClick={() => setRemoving(true)}>
+          demoPresent ? (
+            <Button size="sm" variant="secondary" disabled={!hasOwn} title={hasOwn ? undefined : tr('Create your own workspace first')} onClick={() => setRemoving(true)}>
               Remove
-            </Button> :
-
-        <Button size="sm" variant="secondary" leadingIcon={FlaskConicalIcon} onClick={restoreDemoWorkspace}>
+            </Button>
+          ) : (
+            <Button size="sm" variant="secondary" leadingIcon={FlaskConicalIcon} onClick={restoreDemoWorkspace}>
               Add demo workspace
             </Button>
-
-        } />
-      
+          )
+        }
+      />
       <RemoveDemoWorkspaceDialog open={removing} onClose={() => setRemoving(false)} />
-    </div>);
-
+    </div>
+  );
 }

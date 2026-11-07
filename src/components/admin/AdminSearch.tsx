@@ -31,11 +31,11 @@ export function AdminSearch({
   staff,
   open,
   onClose
-
-
-
-
-}: {staff: StaffMember;open: boolean;onClose: () => void;}) {
+}: {
+  staff: StaffMember;
+  open: boolean;
+  onClose: () => void;
+}) {
   const navigate = useNavigate();
   const {
     workspaces
@@ -51,7 +51,7 @@ export function AdminSearch({
   }, [open]);
   const can = (area: string) => roleCanOpen(staff.role, area);
   const all: Result[] = useMemo(() => {
-    const areas: Result[] = adminNavItems.filter((i) => can(i.id)).map((i) => ({
+    const areas: Result[] = adminNavItems.filter(i => can(i.id)).map(i => ({
       id: `area:${i.id}`,
       group: 'Areas',
       label: i.label,
@@ -60,7 +60,7 @@ export function AdminSearch({
       to: `/admin/${i.id}`
     }));
     const tenants = can('tenants');
-    const people: Result[] = tenants ? buildPeople(workspaces, account).map((p) => ({
+    const people: Result[] = tenants ? buildPeople(workspaces, account).map(p => ({
       id: `person:${p.key}`,
       group: 'People',
       label: p.name,
@@ -68,7 +68,7 @@ export function AdminSearch({
       icon: UserIcon,
       to: `/admin/tenants?person=${encodeURIComponent(p.key)}`
     })) : [];
-    const spaces: Result[] = tenants ? workspaces.map((w) => ({
+    const spaces: Result[] = tenants ? workspaces.map(w => ({
       id: `ws:${w.id}`,
       group: 'Workspaces',
       label: w.name,
@@ -76,7 +76,7 @@ export function AdminSearch({
       icon: BuildingIcon,
       to: `/admin/tenants?ws=${encodeURIComponent(w.id)}`
     })) : [];
-    const figures: Result[] = can('figures') ? adjustableFigures.map((f) => ({
+    const figures: Result[] = can('figures') ? adjustableFigures.map(f => ({
       id: `fig:${f.key}`,
       group: 'Figures',
       label: f.label,
@@ -84,14 +84,14 @@ export function AdminSearch({
       icon: SlidersHorizontalIcon,
       to: `/admin/figures?q=${encodeURIComponent(f.label)}`
     })) : [];
-    const switches: Result[] = can('flags') ? [...workspaceNav.map((n) => ({
+    const switches: Result[] = can('flags') ? [...workspaceNav.map(n => ({
       id: `nav:${n.id}`,
       group: 'Module switches',
       label: n.label,
       sub: 'Workspace module',
       icon: ToggleRightIcon,
       to: `/admin/flags?q=${encodeURIComponent(n.label)}`
-    })), ...extensions.filter((e) => !e.retired).map((e) => ({
+    })), ...extensions.filter(e => !e.retired).map(e => ({
       id: `ext:${e.id}`,
       group: 'Module switches',
       label: e.name,
@@ -104,11 +104,11 @@ export function AdminSearch({
   }, [workspaces, account, staff.role]);
   const results = useMemo(() => {
     const term = q.trim().toLowerCase();
-    if (!term) return all.filter((r) => r.group === 'Areas').slice(0, 8);
+    if (!term) return all.filter(r => r.group === 'Areas').slice(0, 8);
     const words = term.split(/\s+/);
-    const hit = all.filter((r) => words.every((w) => `${r.label} ${r.sub} ${r.group}`.toLowerCase().includes(w)));
-    const groups = [...new Set(hit.map((r) => r.group))];
-    return groups.flatMap((g) => hit.filter((r) => r.group === g).slice(0, MAX_PER_GROUP));
+    const hit = all.filter(r => words.every(w => `${r.label} ${r.sub} ${r.group}`.toLowerCase().includes(w)));
+    const groups = [...new Set(hit.map(r => r.group))];
+    return groups.flatMap(g => hit.filter(r => r.group === g).slice(0, MAX_PER_GROUP));
   }, [all, q]);
   useEffect(() => setActive(0), [q]);
   const go = (r: Result | undefined) => {
@@ -119,10 +119,10 @@ export function AdminSearch({
   const onKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowDown') {
       e.preventDefault();
-      setActive((a) => Math.min(results.length - 1, a + 1));
+      setActive(a => Math.min(results.length - 1, a + 1));
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
-      setActive((a) => Math.max(0, a - 1));
+      setActive(a => Math.max(0, a - 1));
     } else if (e.key === 'Enter') {
       e.preventDefault();
       go(results[active]);
@@ -134,7 +134,7 @@ export function AdminSearch({
         <label className="relative block">
           <span className="sr-only">Search</span>
           <SearchIcon size={18} aria-hidden className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-fg-subtle" />
-          <input autoFocus type="search" role="combobox" aria-expanded aria-controls="admin-search-results" aria-activedescendant={results[active] ? `admin-search-${results[active].id}` : undefined} value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={onKeyDown} placeholder="People, workspaces, areas, figures or modules" className="h-11 w-full rounded-md border border-line bg-raised pl-10 pr-3 text-body text-fg placeholder:text-fg-subtle focus:border-action focus:outline-none focus:ring-2 focus:ring-focus" />
+          <input autoFocus type="search" role="combobox" aria-expanded aria-controls="admin-search-results" aria-activedescendant={results[active] ? `admin-search-${results[active].id}` : undefined} value={q} onChange={e => setQ(e.target.value)} onKeyDown={onKeyDown} placeholder="People, workspaces, areas, figures or modules" className="h-11 w-full rounded-md border border-line bg-raised pl-10 pr-3 text-body text-fg placeholder:text-fg-subtle focus:border-action focus:outline-none focus:ring-2 focus:ring-focus" />
         </label>
         {q.trim() === '' && <p className="text-caption text-fg-subtle">Start typing — for example a person’s email, a workspace name, “trial” or “Kenya”.</p>}
         <ul id="admin-search-results" role="listbox" aria-label="Results" className="flex flex-col">

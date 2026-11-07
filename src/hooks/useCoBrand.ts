@@ -19,8 +19,8 @@ export function useCoBrand() {
   const live = state.published ?? null;
   const hasLive = !!live;
   const needsApproval = cb ? needsPartnerApproval(site, hasLive) : false;
-  const changes = useMemo(() => cb && live ? changesSinceLive(live, site) : [], [cb, live, site]);
-  const savePartnership = useCallback((next: Partnership) => store.update((d) => ({ ...d, partnerships: d.partnerships.map((p) => p.id === next.id ? next : p) })), [store]);
+  const changes = useMemo(() => (cb && live ? changesSinceLive(live, site) : []), [cb, live, site]);
+  const savePartnership = useCallback((next: Partnership) => store.update((d) => ({ ...d, partnerships: d.partnerships.map((p) => (p.id === next.id ? next : p)) })), [store]);
   const activePartnerships = store.data.partnerships.filter((p) => p.status === 'active');
-  return { cb, partnership, activePartnerships, savePartnership, actor: cb ? actor : 'lead' as const, setActor, live, hasLive, needsApproval, changes, leadName: current.name };
+  return { cb, partnership, activePartnerships, savePartnership, actor: cb ? actor : ('lead' as const), setActor, live, hasLive, needsApproval, changes, leadName: current.name };
 }

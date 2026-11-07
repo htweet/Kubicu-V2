@@ -34,7 +34,7 @@ export function SavedThemes() {
     const removed = library.deleteTheme(id);
     toast(tr('Deleted “{name}”', { name: label }), {
       description: tr('Pages using it keep their colours.'),
-      action: removed ? { label: tr('Undo'), onClick: () => library.restoreTheme(removed) } : undefined
+      action: removed ? { label: tr('Undo'), onClick: () => library.restoreTheme(removed) } : undefined,
     });
   };
 
@@ -53,30 +53,30 @@ export function SavedThemes() {
           onClick={() => {
             setName('');
             setOpen(true);
-          }}>
-          
+          }}
+        >
           {tr('Save current')}
         </Button>
       </div>
-      {library.themes.length === 0 ?
-      <p className="text-caption text-fg-subtle">{tr('Save your colours, fonts and button style to reuse them on other pages.')}</p> :
-
-      <ul className="grid grid-cols-3 gap-2">
-          {library.themes.map((t) =>
-        <li key={t.id} className="group relative">
+      {library.themes.length === 0 ? (
+        <p className="text-caption text-fg-subtle">{tr('Save your colours, fonts and button style to reuse them on other pages.')}</p>
+      ) : (
+        <ul className="grid grid-cols-3 gap-2">
+          {library.themes.map((t) => (
+            <li key={t.id} className="group relative">
               <ThemeSwatch name={t.name} theme={t.theme} active={current.presetId === t.theme.presetId} onClick={() => actions.applyThemePreset(t.theme)} />
               <button
-            type="button"
-            onClick={() => remove(t.id, t.name)}
-            aria-label={tr('Delete theme {name}', { name: t.name })}
-            className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full border border-line bg-overlay text-fg-subtle opacity-0 shadow-1 transition-opacity duration-150 hover:text-danger focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus group-hover:opacity-100">
-            
+                type="button"
+                onClick={() => remove(t.id, t.name)}
+                aria-label={tr('Delete theme {name}', { name: t.name })}
+                className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full border border-line bg-overlay text-fg-subtle opacity-0 shadow-1 transition-opacity duration-150 hover:text-danger focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus group-hover:opacity-100"
+              >
                 <XIcon size={12} aria-hidden />
               </button>
             </li>
-        )}
+          ))}
         </ul>
-      }
+      )}
 
       <Dialog
         open={open}
@@ -85,7 +85,7 @@ export function SavedThemes() {
         title={tr('Save theme')}
         description={tr('Colours, fonts and button style are saved together.')}
         footer={
-        <>
+          <>
             <Button variant="secondary" onClick={() => setOpen(false)}>
               {tr('Cancel')}
             </Button>
@@ -93,23 +93,23 @@ export function SavedThemes() {
               {tr('Save theme')}
             </Button>
           </>
-        }>
-        
+        }
+      >
         <form
           className="pb-2"
           onSubmit={(e) => {
             e.preventDefault();
             if (name.trim()) save();
-          }}>
-          
+          }}
+        >
           <TextInput id="theme-name" label={tr('Theme name')} value={name} maxLength={32} placeholder={tr('e.g. Harmattan campaign')} onChange={(e) => setName(e.target.value)} />
         </form>
       </Dialog>
-    </section>);
-
+    </section>
+  );
 }
 
-export function ThemeSwatch({ name, theme, active, onClick }: {name: string;theme: PageTheme;active: boolean;onClick: () => void;}) {
+export function ThemeSwatch({ name, theme, active, onClick }: { name: string; theme: PageTheme; active: boolean; onClick: () => void }) {
   const display = theme.material ? fontsFor(theme).display : fontPairs.find((f) => f.id === theme.fontPair)?.display;
   const action = buttonStyle(theme, 'featured').background as string;
   return (
@@ -120,9 +120,9 @@ export function ThemeSwatch({ name, theme, active, onClick }: {name: string;them
       className={cn(
         'flex w-full min-w-0 flex-col overflow-hidden rounded-md border text-left transition-[border-color] duration-150',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
-        active ? 'border-select ring-1 ring-select' : 'border-line hover:border-line-strong'
-      )}>
-      
+        active ? 'border-select ring-1 ring-select' : 'border-line hover:border-line-strong',
+      )}
+    >
       <span className="flex h-14 flex-col justify-between p-2" style={{ background: backgroundPreview(theme) }}>
         <span className="text-[15px] leading-none" style={{ fontFamily: display, color: theme.text }}>
           Aa
@@ -133,6 +133,6 @@ export function ThemeSwatch({ name, theme, active, onClick }: {name: string;them
         <span className="truncate">{name}</span>
         {active && <CheckIcon size={12} className="shrink-0 text-select" aria-hidden />}
       </span>
-    </button>);
-
+    </button>
+  );
 }

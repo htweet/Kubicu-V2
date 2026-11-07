@@ -59,9 +59,9 @@ export function Payments() {
       <Section id="provider" title={<span className="flex items-center gap-2">{tr('Payment provider')} <IllustrativeTag note={tr('Placeholder connections: test keys are format-checked and every payment is simulated. KUBICU hasn’t integrated a provider yet.')} /></span>} description={provider ? tr('One provider at a time. Disconnect {name} to switch.', { name: provider.name }) : tr('Connect one provider. Methods depend on the provider, your account and eligibility.')}>
         <ul className="grid gap-6 md:grid-cols-2">
           {paymentProviders.map((p) => {
-              const connected = data.payments.provider === p.id;
-              return (
-                <li key={p.id} className="flex">
+            const connected = data.payments.provider === p.id;
+            return (
+              <li key={p.id} className="flex">
                 <Card as="article" className={cn('w-full', connected && 'border-success shadow-1')}>
                 <div className="flex h-full flex-col">
                 <div className="flex items-center justify-between gap-2">
@@ -70,15 +70,15 @@ export function Payments() {
                 </div>
                 <p className="mt-2 text-label text-fg-muted">{p.blurb}</p>
                 <div className="mb-5 mt-4 flex flex-wrap gap-1.5">
-                  {p.methods.map((m) =>
-                        <span key={m} className="rounded-full bg-sunken px-2.5 py-1 text-caption font-medium text-fg-muted">
+                  {p.methods.map((m) => (
+                    <span key={m} className="rounded-full bg-sunken px-2.5 py-1 text-caption font-medium text-fg-muted">
                       {m}
                     </span>
-                        )}
+                  ))}
                 </div>
                 <div className="mt-auto border-t border-line pt-4">
-                  {connected ?
-                        <div className="flex flex-wrap items-center justify-between gap-2">
+                  {connected ? (
+                    <div className="flex flex-wrap items-center justify-between gap-2">
                       <span className="text-caption text-fg-subtle">
                         {data.payments.businessName} · {tr('since {date}', { date: data.payments.connectedAt ? formatTimestamp(data.payments.connectedAt) : '—' })}
                         {keys?.publicKey || keys?.apiKey ? <span className="block font-mono">{maskSecret(keys.publicKey || keys.apiKey)}</span> : null}
@@ -86,18 +86,18 @@ export function Payments() {
                       <Button size="sm" variant="tertiary" onClick={disconnect}>
                         {tr('Disconnect')}
                       </Button>
-                    </div> :
-
-                        <Button variant="secondary" leadingIcon={PlugIcon} onClick={() => startConnect(p.id)} disabled={!!provider}>
+                    </div>
+                  ) : (
+                    <Button variant="secondary" leadingIcon={PlugIcon} onClick={() => startConnect(p.id)} disabled={!!provider}>
                       {tr('Connect {name}', { name: p.name })}
                     </Button>
-                        }
+                  )}
                 </div>
                 </div>
                 </Card>
-              </li>);
-
-            })}
+              </li>
+            );
+          })}
         </ul>
       </Section>
 
@@ -106,7 +106,7 @@ export function Payments() {
           <Segmented ariaLabel={tr('Checkout mode')} value="test" onChange={() => toast(tr('Live mode is locked in the prototype'), { description: tr('It opens once a provider is integrated and your business is verified.') })} options={[{ value: 'test', label: tr('Test') }, { value: 'live', label: tr('Live') }]} />
           <LockIcon size={15} className="text-fg-subtle" aria-label={tr('Live mode locked')} />
         </div>
-        } />
+      } />
 
       <Card id="refund-fees" title={<span className="flex items-center gap-2">{tr('Fees when you refund')} <IllustrativeTag note={tr('Policy recommended for launch; confirm the provider’s refund-fee terms before going live.')} /></span>}>
         <dl className="grid gap-x-6 gap-y-4 md:grid-cols-3 md:divide-x md:divide-line [&>div]:md:pl-6 [&>div:first-child]:md:pl-0">
@@ -132,16 +132,16 @@ export function Payments() {
         extraValid={!!business.trim()}
         onConnected={onConnected}
         extra={
-        <TextInput
-          id="pay-business"
-          label={tr('Registered business name')}
-          value={business}
-          placeholder={activeCountry() === 'NG' ? tr('As it appears on your CAC certificate') : tr('As it appears on your registration certificate')}
-          hint={tr('Shown on your customers’ bank statements.')}
-          onChange={(e) => setBusiness(e.target.value)} />
-
-        } />
-      
-    </>);
-
+          <TextInput
+            id="pay-business"
+            label={tr('Registered business name')}
+            value={business}
+            placeholder={activeCountry() === 'NG' ? tr('As it appears on your CAC certificate') : tr('As it appears on your registration certificate')}
+            hint={tr('Shown on your customers’ bank statements.')}
+            onChange={(e) => setBusiness(e.target.value)}
+          />
+        }
+      />
+    </>
+  );
 }

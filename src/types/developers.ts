@@ -1,25 +1,25 @@
 export type ApiScope =
-'products:read' |
-'products:write' |
-'orders:read' |
-'orders:write' |
-'bookings:read' |
-'contacts:read' |
-'contacts:write' |
-'analytics:read';
+  | 'products:read'
+  | 'products:write'
+  | 'orders:read'
+  | 'orders:write'
+  | 'bookings:read'
+  | 'contacts:read'
+  | 'contacts:write'
+  | 'analytics:read';
 
 export type WebhookEvent =
-'order.paid' |
-'order.refunded' |
-'order.delivered' |
-'booking.created' |
-'booking.cancelled' |
-'contact.created' |
-'form.submitted' |
-'subscription.renewed' |
-'subscription.payment_failed' |
-'ticket.checked_in' |
-'payout.sent';
+  | 'order.paid'
+  | 'order.refunded'
+  | 'order.delivered'
+  | 'booking.created'
+  | 'booking.cancelled'
+  | 'contact.created'
+  | 'form.submitted'
+  | 'subscription.renewed'
+  | 'subscription.payment_failed'
+  | 'ticket.checked_in'
+  | 'payout.sent';
 
 export type KeyMode = 'test' | 'live';
 

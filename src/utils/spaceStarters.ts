@@ -60,9 +60,9 @@ function membersAreaBlocks(main: PageDocument, name: string): Block[] {
   const faq = createBlock('faq');
   faq.content.title = 'Your membership';
   faq.content.items = [
-  { id: uid('faq'), question: 'How do I sign in on another phone?', answer: 'Tap Sign in and enter the phone number or email you subscribed with. We’ll send a one-time code.' },
-  { id: uid('faq'), question: 'How do I pause, change or cancel?', answer: 'Use “My membership” at the top of this page. If you cancel, you keep access until the end of the period you’ve paid for.' }];
-
+    { id: uid('faq'), question: 'How do I sign in on another phone?', answer: 'Tap Sign in and enter the phone number or email you subscribed with. We’ll send a one-time code.' },
+    { id: uid('faq'), question: 'How do I pause, change or cancel?', answer: 'Use “My membership” at the top of this page. If you cancel, you keep access until the end of the period you’ve paid for.' },
+  ];
   const back = createBlock('link');
   back.content.label = `Visit ${main.title || 'our main page'}`;
   back.content.url = `https://kub.icu/${main.handle}`;
@@ -73,19 +73,19 @@ function membersAreaBlocks(main: PageDocument, name: string): Block[] {
  * Booking page starter (D184). The services panel (next free times, Choose a time) sits above these;
  * a short "before you book", a waitlist the panel links to when nothing is free, and a way back.
  */
-function bookingPageBlocks(main: PageDocument): {blocks: Block[];waitlistId: string;} {
+function bookingPageBlocks(main: PageDocument): { blocks: Block[]; waitlistId: string } {
   const faq = createBlock('faq');
   faq.content.title = 'Before you book';
   faq.content.items = [
-  { id: uid('faq'), question: 'Can I change or cancel?', answer: 'Yes — use the link in your confirmation, up to the cut-off shown there.' },
-  { id: uid('faq'), question: 'Do I pay now?', answer: 'Only if the service asks for a deposit; it’s shown next to the price. Anything else is paid as the service says.' },
-  { id: uid('faq'), question: 'Where is it?', answer: '[Add where appointments happen, or say they’re online]' }];
-
+    { id: uid('faq'), question: 'Can I change or cancel?', answer: 'Yes — use the link in your confirmation, up to the cut-off shown there.' },
+    { id: uid('faq'), question: 'Do I pay now?', answer: 'Only if the service asks for a deposit; it’s shown next to the price. Anything else is paid as the service says.' },
+    { id: uid('faq'), question: 'Where is it?', answer: '[Add where appointments happen, or say they’re online]' },
+  ];
   const waitlist = createBlock('newsletter');
   Object.assign(waitlist.content, {
     title: 'No time that suits you?',
     description: 'Leave your email and we’ll tell you when new times open.',
-    buttonLabel: 'Join the waitlist'
+    buttonLabel: 'Join the waitlist',
   });
   const back = createBlock('link');
   back.content.label = `Visit ${main.title || 'our main page'}`;
@@ -119,7 +119,7 @@ function popupBlocks(main: PageDocument, name: string, p: PopupSettings): Block[
     primaryLabel: 'Order for pickup',
     primaryUrl: `#b-${grid.id}`,
     secondaryLabel: '',
-    secondaryUrl: ''
+    secondaryUrl: '',
   });
   blocks.push(inPhases(hero, both));
 
@@ -148,10 +148,10 @@ function popupBlocks(main: PageDocument, name: string, p: PopupSettings): Block[
   const faq = createBlock('faq');
   faq.content.title = 'Good to know';
   faq.content.items = [
-  { id: uid('faq'), question: 'Can I just turn up?', answer: 'Yes — ordering ahead only makes sure what you want is kept for you.' },
-  { id: uid('faq'), question: 'Do you deliver?', answer: 'Not from the pop-up. Orders here are collected at the stall. Our main shop delivers as usual.' },
-  { id: uid('faq'), question: 'What if I miss my pickup time?', answer: 'Message us and we’ll sort out another session if there is one.' }];
-
+    { id: uid('faq'), question: 'Can I just turn up?', answer: 'Yes — ordering ahead only makes sure what you want is kept for you.' },
+    { id: uid('faq'), question: 'Do you deliver?', answer: 'Not from the pop-up. Orders here are collected at the stall. Our main shop delivers as usual.' },
+    { id: uid('faq'), question: 'What if I miss my pickup time?', answer: 'Message us and we’ll sort out another session if there is one.' },
+  ];
   blocks.push(inPhases(faq, both));
 
   const thanks = createBlock('text');
@@ -178,10 +178,10 @@ function fundraiserBlocks(f: FundraiserSettings): Block[] {
   const faq = createBlock('faq');
   faq.content.title = 'Questions';
   faq.content.items = [
-  { id: uid('faq'), question: 'Is my payment tax-deductible?', answer: `No. It’s a payment to ${f.organiser || 'the organiser'}, not a donation to a registered charity.` },
-  { id: uid('faq'), question: 'Will my name be shown?', answer: 'Only if you tick “Show my first name” when you pay. Otherwise you appear as Anonymous.' },
-  { id: uid('faq'), question: 'What if the goal isn’t reached?', answer: 'Everything raised still goes to the cause — the goal is a target, not a condition.' }];
-
+    { id: uid('faq'), question: 'Is my payment tax-deductible?', answer: `No. It’s a payment to ${f.organiser || 'the organiser'}, not a donation to a registered charity.` },
+    { id: uid('faq'), question: 'Will my name be shown?', answer: 'Only if you tick “Show my first name” when you pay. Otherwise you appear as Anonymous.' },
+    { id: uid('faq'), question: 'What if the goal isn’t reached?', answer: 'Everything raised still goes to the cause — the goal is a target, not a condition.' },
+  ];
   const share = createBlock('share');
   share.content.title = 'Help us reach the goal';
   share.content.text = 'Sharing this page helps as much as giving.';
@@ -202,7 +202,7 @@ function campaignBlocks(main: PageDocument, input: StarterInput, c: CampaignSett
   // Before
   const tease = createBlock('text');
   tease.content.body =
-  c.starter === 'launch' ? 'Something new is coming. Be the first to know when it drops.' : c.starter === 'event' ? 'Save the date — details and RSVP below.' : 'Our sale starts soon. Sign up and we’ll tell you the moment it opens.';
+    c.starter === 'launch' ? 'Something new is coming. Be the first to know when it drops.' : c.starter === 'event' ? 'Save the date — details and RSVP below.' : 'Our sale starts soon. Sign up and we’ll tell you the moment it opens.';
   blocks.push(inPhases(tease, ['before']));
   if (c.startsAt) {
     const startCount = createBlock('countdown');
@@ -220,13 +220,13 @@ function campaignBlocks(main: PageDocument, input: StarterInput, c: CampaignSett
   // Live
   const offer = createBlock('text');
   offer.content.body =
-  c.starter === 'sale' ?
-  input.discountCode ?
-  `It’s on. Code ${input.discountCode} is applied automatically at checkout.` :
-  'It’s on. Prices are marked down for a limited time.' :
-  c.starter === 'launch' ?
-  'It’s here. Limited quantities — order while stock lasts.' :
-  'Here’s everything you need for the day.';
+    c.starter === 'sale'
+      ? input.discountCode
+        ? `It’s on. Code ${input.discountCode} is applied automatically at checkout.`
+        : 'It’s on. Prices are marked down for a limited time.'
+      : c.starter === 'launch'
+        ? 'It’s here. Limited quantities — order while stock lasts.'
+        : 'Here’s everything you need for the day.';
   blocks.push(inPhases(offer, ['live']));
   if (c.starter === 'event') {
     const ev = createBlock('event');
@@ -299,7 +299,7 @@ function eventBlocks(main: PageDocument, ev: CommerceEvent): Block[] {
     primaryLabel: 'Get tickets',
     primaryUrl: `#b-${tickets.id}`,
     secondaryLabel: '',
-    secondaryUrl: ''
+    secondaryUrl: '',
   });
   blocks.push(inPhases(hero, both));
 
@@ -337,10 +337,10 @@ function eventBlocks(main: PageDocument, ev: CommerceEvent): Block[] {
   const faq = createBlock('faq');
   faq.content.title = 'Good to know';
   faq.content.items = [
-  { id: uid('faq'), question: 'How do I get in?', answer: 'Show the QR code on your ticket page, or the short code printed under it. One code per person.' },
-  { id: uid('faq'), question: 'Can I get a refund?', answer: ev.refundPolicy || 'See the refund policy on your ticket.' },
-  { id: uid('faq'), question: 'Can I buy tickets at the door?', answer: 'Only if seats are left — buying here first is the only way to be sure of a place.' }];
-
+    { id: uid('faq'), question: 'How do I get in?', answer: 'Show the QR code on your ticket page, or the short code printed under it. One code per person.' },
+    { id: uid('faq'), question: 'Can I get a refund?', answer: ev.refundPolicy || 'See the refund policy on your ticket.' },
+    { id: uid('faq'), question: 'Can I buy tickets at the door?', answer: 'Only if seats are left — buying here first is the only way to be sure of a place.' },
+  ];
   blocks.push(inPhases(faq, both));
 
   // After
@@ -397,23 +397,23 @@ export function starterSpaceDoc(kind: Exclude<SpaceKind, 'main'>, main: PageDocu
     blocks = [];
     const text = createBlock('text');
     text.content.body =
-    input.dealRoom?.type === 'goal' ?
-    'We’re buying together to unlock a better price. Join now — you only pay once, and if we don’t reach the goal by the deadline, everyone gets a full refund automatically.' :
-    'A small batch at a special price. When they’re gone, they’re gone.';
+      input.dealRoom?.type === 'goal'
+        ? 'We’re buying together to unlock a better price. Join now — you only pay once, and if we don’t reach the goal by the deadline, everyone gets a full refund automatically.'
+        : 'A small batch at a special price. When they’re gone, they’re gone.';
     blocks.push(text);
     const faq = createBlock('faq');
     faq.content.title = 'How it works';
     faq.content.items =
-    input.dealRoom?.type === 'goal' ?
-    [
-    { id: uid('faq'), question: 'When am I charged?', answer: 'When you join. Your payment is held for this group buy.' },
-    { id: uid('faq'), question: 'What if the goal isn’t reached?', answer: 'Everyone is refunded in full, automatically, right after the deadline. You don’t need to ask.' },
-    { id: uid('faq'), question: 'When will my order arrive?', answer: 'Orders are packed once the goal is reached, then delivered as usual.' }] :
-
-    [
-    { id: uid('faq'), question: 'How many are available?', answer: 'The counter above shows exactly how many are left — it updates with every order.' },
-    { id: uid('faq'), question: 'Can I buy more than one?', answer: 'Up to the per-person limit shown above, so more people get a chance.' }];
-
+      input.dealRoom?.type === 'goal'
+        ? [
+            { id: uid('faq'), question: 'When am I charged?', answer: 'When you join. Your payment is held for this group buy.' },
+            { id: uid('faq'), question: 'What if the goal isn’t reached?', answer: 'Everyone is refunded in full, automatically, right after the deadline. You don’t need to ask.' },
+            { id: uid('faq'), question: 'When will my order arrive?', answer: 'Orders are packed once the goal is reached, then delivered as usual.' },
+          ]
+        : [
+            { id: uid('faq'), question: 'How many are available?', answer: 'The counter above shows exactly how many are left — it updates with every order.' },
+            { id: uid('faq'), question: 'Can I buy more than one?', answer: 'Up to the per-person limit shown above, so more people get a chance.' },
+          ];
     blocks.push(faq);
   }
 
@@ -423,7 +423,7 @@ export function starterSpaceDoc(kind: Exclude<SpaceKind, 'main'>, main: PageDocu
     handle: input.handle,
     title: input.name,
     theme: JSON.parse(JSON.stringify(main.theme)) as PageDocument['theme'],
-    branding: main.branding ? JSON.parse(JSON.stringify(main.branding)) as PageDocument['branding'] : undefined,
+    branding: main.branding ? (JSON.parse(JSON.stringify(main.branding)) as PageDocument['branding']) : undefined,
     seo: { title: input.name, description: '' },
     blocks,
     campaign: kind === 'campaign' ? input.campaign : undefined,
@@ -433,6 +433,6 @@ export function starterSpaceDoc(kind: Exclude<SpaceKind, 'main'>, main: PageDocu
     popup: kind === 'popup' ? input.popup : undefined,
     bookingPage: kind === 'booking' ? bookingPage : undefined,
     membersArea: kind === 'members' ? input.membersArea : undefined,
-    updatedAt: now
+    updatedAt: now,
   };
 }

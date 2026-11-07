@@ -62,7 +62,7 @@ export function useBusinessKit() {
         record.policies = { ...kit.policies };
         // Only fill the Bookings policy when it's empty — never overwrite the seller's own words.
         if (kit.services.length) {
-          ops.apply((d) => d.availability.policy.trim() ? d : { ...d, availability: { ...d.availability, policy: kit.policies.cancellation, cancelHours: kit.policies.cancelHours ?? d.availability.cancelHours } });
+          ops.apply((d) => (d.availability.policy.trim() ? d : { ...d, availability: { ...d.availability, policy: kit.policies.cancellation, cancelHours: kit.policies.cancelHours ?? d.availability.cancelHours } }));
         }
       }
       if (has('automations') && kit.recipes.length) {
@@ -83,7 +83,7 @@ export function useBusinessKit() {
       team.log('settings', `applied the ${kit.name} kit`, '/app/templates?tab=kits');
       return record;
     },
-    [applyTemplate, commerce, ops, market, team, current]
+    [applyTemplate, commerce, ops, market, team, current],
   );
 
   /** Takes out only what's still untouched; anything the seller has edited or switched on stays. */
@@ -100,7 +100,7 @@ export function useBusinessKit() {
     commerce.apply((d) => ({ ...d, products: d.products.filter((p) => !untouchedProduct(p)) }));
 
     const untouchedService = (s: Service) => sIds.has(s.id) && !s.active && s.priceNgn === null;
-    const untouchedAuto = (a: {id: string;status: string;runs: unknown[];}) => aIds.has(a.id) && a.status === 'draft' && a.runs.length === 0;
+    const untouchedAuto = (a: { id: string; status: string; runs: unknown[] }) => aIds.has(a.id) && a.status === 'draft' && a.runs.length === 0;
     removed += ops.data.services.filter(untouchedService).length + ops.data.automations.filter(untouchedAuto).length;
     ops.apply((d) => ({ ...d, services: d.services.filter((s) => !untouchedService(s)), automations: d.automations.filter((a) => !untouchedAuto(a)) }));
 
@@ -117,7 +117,7 @@ export function useBusinessKit() {
       if (!applied) return;
       writeAppliedKit(current.id, { ...applied, policies });
     },
-    [applied, current.id]
+    [applied, current.id],
   );
 
   return { applied, apply, removeAdded, savePolicies };

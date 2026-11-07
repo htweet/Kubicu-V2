@@ -39,8 +39,8 @@ export function EventBlock({ block, theme, mode }: BlockProps<'event'>) {
           {ended ? <PageChip theme={theme} tone="muted">{tr('Event ended')}</PageChip> : state === 'live' ? <PageChip theme={theme} tone="strong">{tr('Happening now')}</PageChip> : soldOut ? <PageChip theme={theme}>{tr('Sold out')}</PageChip> : null}
         </div>
         <dl className="flex flex-col gap-2.5 text-[14px]" style={{ color: theme.text }}>
-          {c.startsAt &&
-          <div className="flex items-start gap-2.5">
+          {c.startsAt && (
+            <div className="flex items-start gap-2.5">
               <dt className="sr-only">{tr('When')}</dt>
               <CalendarIcon size={16} className="mt-0.5 shrink-0" style={{ color: theme.mutedText }} aria-hidden />
               <dd>
@@ -51,9 +51,9 @@ export function EventBlock({ block, theme, mode }: BlockProps<'event'>) {
                 </span>
               </dd>
             </div>
-          }
-          {(c.venue || c.address) &&
-          <div className="flex items-start gap-2.5">
+          )}
+          {(c.venue || c.address) && (
+            <div className="flex items-start gap-2.5">
               <dt className="sr-only">{tr('Where')}</dt>
               <MapPinIcon size={16} className="mt-0.5 shrink-0" style={{ color: theme.mutedText }} aria-hidden />
               <dd>
@@ -61,12 +61,12 @@ export function EventBlock({ block, theme, mode }: BlockProps<'event'>) {
                 {c.address && <span className="block text-[13px]" style={{ color: theme.mutedText }}>{c.address}</span>}
               </dd>
             </div>
-          }
+          )}
         </dl>
-        {c.tiers.length > 0 && !ended &&
-        <ul className="flex flex-col">
-            {c.tiers.map((t) =>
-          <li key={t.id} className="flex items-center justify-between gap-3 py-2.5" style={{ borderTop: `1px solid ${mix(theme.text, 9)}` }}>
+        {c.tiers.length > 0 && !ended && (
+          <ul className="flex flex-col">
+            {c.tiers.map((t) => (
+              <li key={t.id} className="flex items-center justify-between gap-3 py-2.5" style={{ borderTop: `1px solid ${mix(theme.text, 9)}` }}>
                 <span className="min-w-0">
                   <span className="block text-[14px] font-medium" style={{ color: theme.text, textDecoration: t.soldOut ? 'line-through' : undefined }}>{t.name}</span>
                   {t.note && <span className="block text-[12px]" style={{ color: theme.mutedText }}>{t.note}</span>}
@@ -75,22 +75,22 @@ export function EventBlock({ block, theme, mode }: BlockProps<'event'>) {
                   {t.soldOut ? tr('Sold out') : t.priceNgn === null ? tr('Price to be confirmed') : t.priceNgn === 0 ? tr('Free') : formatNgn(t.priceNgn)}
                 </span>
               </li>
-          )}
+            ))}
           </ul>
-        }
-        {ended ?
-        <p className="text-[13px]" style={{ color: theme.mutedText }}>{tr('This event has finished. Thanks to everyone who came.')}</p> :
-        soldOut ?
-        <span className="flex h-12 items-center justify-center text-[14px] font-medium" style={{ color: theme.mutedText, borderRadius: buttonRadius(theme), border: `1px dashed ${mix(theme.text, 22)}` }}>
+        )}
+        {ended ? (
+          <p className="text-[13px]" style={{ color: theme.mutedText }}>{tr('This event has finished. Thanks to everyone who came.')}</p>
+        ) : soldOut ? (
+          <span className="flex h-12 items-center justify-center text-[14px] font-medium" style={{ color: theme.mutedText, borderRadius: buttonRadius(theme), border: `1px dashed ${mix(theme.text, 22)}` }}>
             {tr('Tickets sold out')}
-          </span> :
-
-        <PageAction mode={mode} href={c.ticketUrl} className="flex h-12 w-full items-center justify-center gap-2 text-[15px] font-semibold" style={buttonStyle(theme, 'featured')}>
+          </span>
+        ) : (
+          <PageAction mode={mode} href={c.ticketUrl} className="flex h-12 w-full items-center justify-center gap-2 text-[15px] font-semibold" style={buttonStyle(theme, 'featured')}>
             <TicketIcon size={17} aria-hidden />
             {tr(c.ctaLabel || 'Get tickets')}
           </PageAction>
-        }
+        )}
       </div>
-    </article>);
-
+    </article>
+  );
 }

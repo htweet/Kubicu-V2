@@ -87,8 +87,8 @@ export function cropRect(width: number, height: number, aspect: number, box: Cro
   const coverH = coverW / aspect;
   const w = coverW / box.zoom;
   const h = coverH / box.zoom;
-  const sx = (width - w) / 2 + box.x * (width - w) / 2;
-  const sy = (height - h) / 2 + box.y * (height - h) / 2;
+  const sx = (width - w) / 2 + (box.x * (width - w)) / 2;
+  const sy = (height - h) / 2 + (box.y * (height - h)) / 2;
   return { sx, sy, w, h };
 }
 
@@ -112,7 +112,7 @@ export function isUploadedImage(src: string): boolean {
   return src.startsWith('data:image/') || src.startsWith('kmedia:');
 }
 
-export async function imageSize(src: string): Promise<{width: number;height: number;}> {
+export async function imageSize(src: string): Promise<{ width: number; height: number }> {
   try {
     const img = await loadImage(src);
     return { width: img.naturalWidth, height: img.naturalHeight };

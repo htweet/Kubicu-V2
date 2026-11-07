@@ -16,40 +16,40 @@ const appOnly = { app: true, email: false, whatsapp: false };
 const urgent = { app: true, email: true, whatsapp: true };
 
 export const notifEvents: NotifEventInfo[] = [
-{ id: 'order_paid', label: 'New paid order', area: 'orders', permission: 'orders.manage', defaults: urgent },
-{ id: 'order_pending', label: 'Order waiting for payment', area: 'orders', permission: 'orders.manage', defaults: appOnly },
-{ id: 'order_late', label: 'Order running late or delivery failed', area: 'orders', permission: 'orders.manage', defaults: urgent },
-{ id: 'dispute', label: 'Payment dispute opened', area: 'orders', permission: 'orders.refund', defaults: urgent },
-{ id: 'stage_due', label: 'Payment stage or booking balance due', area: 'orders', permission: 'orders.manage', defaults: urgent },
-{ id: 'escrow', label: 'Escrow: buyer problem or KUBICU decision', area: 'orders', permission: 'orders.refund', defaults: urgent },
-{ id: 'sub_new', label: 'New subscriber or trial', area: 'orders', permission: 'orders.manage', defaults: on },
-{ id: 'sub_failed', label: 'Subscription payment failed', area: 'orders', permission: 'orders.manage', defaults: urgent },
-{ id: 'sub_cancelled', label: 'Subscription cancelled', area: 'orders', permission: 'orders.manage', defaults: appOnly },
-{ id: 'stock', label: 'Product low or sold out', area: 'stock', permission: 'products.edit', defaults: on },
-{ id: 'booking_request', label: 'Booking request to accept or decline', area: 'bookings', permission: 'bookings.manage', defaults: urgent },
-{ id: 'booking_today', label: 'Bookings today', area: 'bookings', permission: 'bookings.manage', defaults: on },
-{ id: 'booking_cancelled', label: 'Booking cancelled', area: 'bookings', permission: 'bookings.manage', defaults: on },
-{ id: 'lead_new', label: 'New lead from a form', area: 'audience', permission: 'contacts.manage', defaults: on },
-{ id: 'automation', label: 'Automation results — drafts to approve, reports, notices', area: 'audience', permission: 'automations.manage', defaults: appOnly },
-{ id: 'form_response', label: 'New response to a form (Forms add-on)', area: 'audience', permission: 'contacts.manage', defaults: on },
-{ id: 'task_due', label: 'Follow-up due', area: 'audience', permission: 'contacts.manage', defaults: appOnly },
-{ id: 'review_pending', label: 'Change sent for review', area: 'pages', permission: 'approvals.review', defaults: on },
-{ id: 'team_notice', label: 'Messages for you (reviews, invites)', area: 'team', permission: null, defaults: on },
-{ id: 'verification', label: 'Verification submitted, approved, needs changes or not approved', area: 'billing', permission: 'commerce.settings', defaults: urgent },
-{ id: 'payment_failed', label: 'Plan payment failed', area: 'billing', permission: 'billing.manage', defaults: urgent },
-{ id: 'renewal_soon', label: 'Plan renews soon', area: 'billing', permission: 'billing.manage', defaults: on },
-{ id: 'trial_ending', label: 'Trial ending', area: 'billing', permission: 'billing.manage', defaults: on },
-{ id: 'ai_low', label: 'AI credits running low', area: 'ai', permission: 'pages.edit', defaults: appOnly },
-{ id: 'domain_status', label: 'Domain live or needs attention', area: 'domains', permission: 'domains.manage', defaults: on },
-{ id: 'dealroom_result', label: 'DealRoom goal met or missed', area: 'pages', permission: 'pages.edit', defaults: on },
-{ id: 'campaign_phase', label: 'Campaign went live or ended', area: 'pages', permission: 'pages.edit', defaults: appOnly },
-{ id: 'fundraiser', label: 'Fundraiser: someone gave, goal reached or paused by KUBICU', area: 'pages', permission: 'pages.edit', defaults: on },
-{ id: 'weekly_digest', label: 'Monday summary: sales, Link Intelligence and Opportunities', area: 'pages', permission: 'analytics.view', defaults: on }];
-
+  { id: 'order_paid', label: 'New paid order', area: 'orders', permission: 'orders.manage', defaults: urgent },
+  { id: 'order_pending', label: 'Order waiting for payment', area: 'orders', permission: 'orders.manage', defaults: appOnly },
+  { id: 'order_late', label: 'Order running late or delivery failed', area: 'orders', permission: 'orders.manage', defaults: urgent },
+  { id: 'dispute', label: 'Payment dispute opened', area: 'orders', permission: 'orders.refund', defaults: urgent },
+  { id: 'stage_due', label: 'Payment stage or booking balance due', area: 'orders', permission: 'orders.manage', defaults: urgent },
+  { id: 'escrow', label: 'Escrow: buyer problem or KUBICU decision', area: 'orders', permission: 'orders.refund', defaults: urgent },
+  { id: 'sub_new', label: 'New subscriber or trial', area: 'orders', permission: 'orders.manage', defaults: on },
+  { id: 'sub_failed', label: 'Subscription payment failed', area: 'orders', permission: 'orders.manage', defaults: urgent },
+  { id: 'sub_cancelled', label: 'Subscription cancelled', area: 'orders', permission: 'orders.manage', defaults: appOnly },
+  { id: 'stock', label: 'Product low or sold out', area: 'stock', permission: 'products.edit', defaults: on },
+  { id: 'booking_request', label: 'Booking request to accept or decline', area: 'bookings', permission: 'bookings.manage', defaults: urgent },
+  { id: 'booking_today', label: 'Bookings today', area: 'bookings', permission: 'bookings.manage', defaults: on },
+  { id: 'booking_cancelled', label: 'Booking cancelled', area: 'bookings', permission: 'bookings.manage', defaults: on },
+  { id: 'lead_new', label: 'New lead from a form', area: 'audience', permission: 'contacts.manage', defaults: on },
+  { id: 'automation', label: 'Automation results — drafts to approve, reports, notices', area: 'audience', permission: 'automations.manage', defaults: appOnly },
+  { id: 'form_response', label: 'New response to a form (Forms add-on)', area: 'audience', permission: 'contacts.manage', defaults: on },
+  { id: 'task_due', label: 'Follow-up due', area: 'audience', permission: 'contacts.manage', defaults: appOnly },
+  { id: 'review_pending', label: 'Change sent for review', area: 'pages', permission: 'approvals.review', defaults: on },
+  { id: 'team_notice', label: 'Messages for you (reviews, invites)', area: 'team', permission: null, defaults: on },
+  { id: 'verification', label: 'Verification submitted, approved, needs changes or not approved', area: 'billing', permission: 'commerce.settings', defaults: urgent },
+  { id: 'payment_failed', label: 'Plan payment failed', area: 'billing', permission: 'billing.manage', defaults: urgent },
+  { id: 'renewal_soon', label: 'Plan renews soon', area: 'billing', permission: 'billing.manage', defaults: on },
+  { id: 'trial_ending', label: 'Trial ending', area: 'billing', permission: 'billing.manage', defaults: on },
+  { id: 'ai_low', label: 'AI credits running low', area: 'ai', permission: 'pages.edit', defaults: appOnly },
+  { id: 'domain_status', label: 'Domain live or needs attention', area: 'domains', permission: 'domains.manage', defaults: on },
+  { id: 'dealroom_result', label: 'DealRoom goal met or missed', area: 'pages', permission: 'pages.edit', defaults: on },
+  { id: 'campaign_phase', label: 'Campaign went live or ended', area: 'pages', permission: 'pages.edit', defaults: appOnly },
+  { id: 'fundraiser', label: 'Fundraiser: someone gave, goal reached or paused by KUBICU', area: 'pages', permission: 'pages.edit', defaults: on },
+  { id: 'weekly_digest', label: 'Monday summary: sales, Link Intelligence and Opportunities', area: 'pages', permission: 'analytics.view', defaults: on },
+];
 
 export const notifEventById = Object.fromEntries(notifEvents.map((e) => [e.id, e])) as Record<NotifEventId, NotifEventInfo>;
 
-export const notifAreas: Record<NotifArea, {label: string;icon: LucideIcon;}> = {
+export const notifAreas: Record<NotifArea, { label: string; icon: LucideIcon }> = {
   orders: { label: 'Orders', icon: ReceiptIcon },
   stock: { label: 'Stock', icon: PackageIcon },
   bookings: { label: 'Bookings', icon: CalendarIcon },
@@ -58,7 +58,7 @@ export const notifAreas: Record<NotifArea, {label: string;icon: LucideIcon;}> = 
   team: { label: 'Team', icon: BellIcon },
   billing: { label: 'Billing', icon: CreditCardIcon },
   ai: { label: 'AI', icon: SparklesIcon },
-  domains: { label: 'Domains', icon: GlobeIcon }
+  domains: { label: 'Domains', icon: GlobeIcon },
 };
 
 export const channelLabels: Record<NotifChannel, string> = { app: 'In app', email: 'Email', whatsapp: 'WhatsApp' };

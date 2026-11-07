@@ -1,122 +1,123 @@
 import type { HelpCategory } from '../../types/help';
 
 export const sellHelp: HelpCategory[] = [
-{
-  id: 'products',
-  title: 'Products, shop and orders',
-  summary: 'Add products, run your shop, fulfil and refund orders.',
-  icon: 'bag',
-  group: 'Sell & get paid',
-  articles: [
   {
-    id: 'add-product',
-    q: 'How do I add a product?',
-    a: 'Add a name, price, photos and stock. Options like size and colour create variants with their own stock. You can also add products by voice with Voice-to-Store.',
-    where: 'Commerce → Products',
-    plan: 'Free up to 5 products'
+    id: 'products',
+    title: 'Products, shop and orders',
+    summary: 'Add products, run your shop, fulfil and refund orders.',
+    icon: 'bag',
+    group: 'Sell & get paid',
+    articles: [
+      {
+        id: 'add-product',
+        q: 'How do I add a product?',
+        a: 'Add a name, price, photos and stock. Options like size and colour create variants with their own stock. You can also add products by voice with Voice-to-Store.',
+        where: 'Commerce → Products',
+        plan: 'Free up to 5 products',
+      },
+      { id: 'storefront', q: 'How do I set up my shop page?', a: 'Storefront turns on a full shop at /shop with search, collections, sort and filters. Add an announcement, banner, featured products, layout and delivery and returns notes.', where: 'Commerce → Storefront' },
+      { id: 'featured', q: 'How do featured products work?', a: 'Pin up to 8. Shoppers can tap the “Featured” chip to see only those, and “Featured first” sorting puts them at the top of everything.' },
+      { id: 'collections', q: 'What are collections?', a: 'Groups such as “New in” or “Ankara”. They appear as tabs in your shop and can fill a Shop block.' },
+      {
+        id: 'fulfil',
+        q: 'How do I process an order?',
+        a: 'Open the order, then move it through Packed, Out for delivery and Delivered. Customers can follow progress on their order page.',
+        where: 'Commerce → Orders',
+      },
+      { id: 'refund', q: 'How do I refund an order?', a: 'Open the order and choose Refund — full or partial. Customers always get back what they paid. KUBICU’s fee is returned on full refunds; the payment provider’s fee usually isn’t.' },
+      { id: 'made-to-order', q: 'Can I take a deposit on made-to-order items?', a: 'Yes. Turn on Made to order for the product and set a deposit. The order can be packed but not sent until the balance is paid.' },
+      { id: 'discounts', q: 'How do discounts work?', a: 'Create a code or an automatic offer — percentage, fixed amount or free delivery — for everything, some products or one event. Only one discount applies per order, and the better one wins.', where: 'Commerce → Discounts' },
+      { id: 'wa-order', q: 'Can customers order on WhatsApp instead?', a: 'Yes. When checkout is off, “Order on WhatsApp” opens a chat with the product, option and price already written.' },
+    ],
   },
-  { id: 'storefront', q: 'How do I set up my shop page?', a: 'Storefront turns on a full shop at /shop with search, collections, sort and filters. Add an announcement, banner, featured products, layout and delivery and returns notes.', where: 'Commerce → Storefront' },
-  { id: 'featured', q: 'How do featured products work?', a: 'Pin up to 8. Shoppers can tap the “Featured” chip to see only those, and “Featured first” sorting puts them at the top of everything.' },
-  { id: 'collections', q: 'What are collections?', a: 'Groups such as “New in” or “Ankara”. They appear as tabs in your shop and can fill a Shop block.' },
   {
-    id: 'fulfil',
-    q: 'How do I process an order?',
-    a: 'Open the order, then move it through Packed, Out for delivery and Delivered. Customers can follow progress on their order page.',
-    where: 'Commerce → Orders'
+    id: 'payments',
+    title: 'Payments, wallet and payouts',
+    summary: 'Where money goes, how you get paid and staying verified.',
+    icon: 'wallet',
+    group: 'Sell & get paid',
+    articles: [
+      {
+        id: 'how-paid',
+        q: 'How do customers pay?',
+        a: 'Cards and bank transfers through our licensed payment partner, on Pro and above. On every plan customers can order on WhatsApp. You can also offer pay on delivery and instalments.',
+        where: 'Commerce → Payments',
+      },
+      { id: 'where-money', q: 'Where does my money go?', a: 'For each area (shop, tickets, bookings, quotes, payment links, DealRooms) choose Direct to bank, KUBICU wallet or Escrow. Changes affect new payments only.' },
+      { id: 'wallet', q: 'What is the wallet?', a: 'A balance held by our licensed payment partner. Money settles in 24 hours, then you can pay out. History shows every credit and debit with a running balance.', where: 'Commerce → Wallet' },
+      {
+        id: 'verify',
+        q: 'Why do I need to verify before paying out?',
+        a: 'Regulations in every country we serve require us to confirm who receives money. Verification checks your national identity number (BVN and NIN in Nigeria, national ID and KRA PIN in Kenya, Ghana Card in Ghana, SA ID in South Africa), a photo ID, a selfie and your address, plus registration details and directors for businesses. KUBICU aims to review within one business day.',
+        where: 'Commerce → Wallet → Verification',
+        steps: ['Choose individual or business.', 'Add your identity, address and (for businesses) CAC details and owners.', 'Pick a payout account whose name matches.', 'Send for review. Sales keep arriving while you wait.'],
+      },
+      { id: 'payout', q: 'How do I pay out?', a: 'Pay out now (₦50) or on a free schedule — daily, weekly or at an amount. Every payout needs your password and a two-step code. New bank accounts wait 24 hours.' },
+      { id: 'payment-links', q: 'What is a payment link?', a: 'A link you send to get paid without a product — a fixed amount, an amount the payer chooses, or a list of items. Share it on WhatsApp or as a QR code.', where: 'Commerce → Payment links' },
+      { id: 'pod', q: 'How does pay on delivery work?', a: 'For delivery orders up to the amount you set, in the areas you choose. When marking it delivered, record cash or transfer — and confirm transfers in your bank app, not from an alert.', plan: 'Pro and above' },
+      { id: 'instalments', q: 'How do instalments work?', a: 'Turn them on per product: 2–4 parts weekly, fortnightly or monthly. The first part is paid at checkout and the rest is charged to the same card. No interest or fees are added.', plan: 'Pro and above' },
+      { id: 'fees', q: 'What are the fees?', a: 'KUBICU’s fee per sale is 2% on Free down to 0% on Agency, plus the payment provider’s fee. Escrow is 1% capped at ₦5,000. See Pricing for the full list.' },
+    ],
   },
-  { id: 'refund', q: 'How do I refund an order?', a: 'Open the order and choose Refund — full or partial. Customers always get back what they paid. KUBICU’s fee is returned on full refunds; the payment provider’s fee usually isn’t.' },
-  { id: 'made-to-order', q: 'Can I take a deposit on made-to-order items?', a: 'Yes. Turn on Made to order for the product and set a deposit. The order can be packed but not sent until the balance is paid.' },
-  { id: 'discounts', q: 'How do discounts work?', a: 'Create a code or an automatic offer — percentage, fixed amount or free delivery — for everything, some products or one event. Only one discount applies per order, and the better one wins.', where: 'Commerce → Discounts' },
-  { id: 'wa-order', q: 'Can customers order on WhatsApp instead?', a: 'Yes. When checkout is off, “Order on WhatsApp” opens a chat with the product, option and price already written.' }]
-
-},
-{
-  id: 'payments',
-  title: 'Payments, wallet and payouts',
-  summary: 'Where money goes, how you get paid and staying verified.',
-  icon: 'wallet',
-  group: 'Sell & get paid',
-  articles: [
   {
-    id: 'how-paid',
-    q: 'How do customers pay?',
-    a: 'Cards and bank transfers through our licensed payment partner, on Pro and above. On every plan customers can order on WhatsApp. You can also offer pay on delivery and instalments.',
-    where: 'Commerce → Payments'
+    id: 'escrow',
+    title: 'Escrow and milestones',
+    summary: 'Buyer protection, disputes and staged payments.',
+    icon: 'shield',
+    group: 'Sell & get paid',
+    articles: [
+      { id: 'escrow-how', q: 'How does escrow work?', a: 'The buyer’s payment is held until you deliver. Then the buyer confirms, or the checking time ends (3 days for goods, 2 for services, 1 for downloads and tickets), and the money is released to your wallet.', plan: 'Pro and above' },
+      { id: 'mark-delivered', q: 'How do I mark an escrow order delivered?', a: 'Open the order’s Escrow section, add a delivery note and proof, and mark delivered. A rider’s delivery code can also release it.' },
+      { id: 'dispute', q: 'What if a buyer reports a problem?', a: 'You have 48 hours to refund in full, offer a partial refund, or explain your side with evidence. Either side can then ask KUBICU to decide. The money shows as Reserved meanwhile.' },
+      {
+        id: 'milestones',
+        q: 'How do milestone payments work?',
+        a: 'Split a job into stages that add up to 100% — for example bridal makeup at 30% to book, 20% at the trial and 50% on the day. Each stage gets its own pay link, and ticking a job step makes the next payment due.',
+        where: 'Quotes & jobs',
+      },
+      { id: 'milestone-templates', q: 'Can I reuse my stages?', a: 'Save any split as a milestone template. Bookings, made-to-order products and payment links can also use stages.' },
+    ],
   },
-  { id: 'where-money', q: 'Where does my money go?', a: 'For each area (shop, tickets, bookings, quotes, payment links, DealRooms) choose Direct to bank, KUBICU wallet or Escrow. Changes affect new payments only.' },
-  { id: 'wallet', q: 'What is the wallet?', a: 'A balance held by our licensed payment partner. Money settles in 24 hours, then you can pay out. History shows every credit and debit with a running balance.', where: 'Commerce → Wallet' },
   {
-    id: 'verify',
-    q: 'Why do I need to verify before paying out?',
-    a: 'Regulations in every country we serve require us to confirm who receives money. Verification checks your national identity number (BVN and NIN in Nigeria, national ID and KRA PIN in Kenya, Ghana Card in Ghana, SA ID in South Africa), a photo ID, a selfie and your address, plus registration details and directors for businesses. KUBICU aims to review within one business day.',
-    where: 'Commerce → Wallet → Verification',
-    steps: ['Choose individual or business.', 'Add your identity, address and (for businesses) CAC details and owners.', 'Pick a payout account whose name matches.', 'Send for review. Sales keep arriving while you wait.']
+    id: 'events',
+    title: 'Events and tickets',
+    summary: 'Sell tickets, seat guests, repeat dates and check people in.',
+    icon: 'ticket',
+    group: 'Sell & get paid',
+    articles: [
+      {
+        id: 'create-event',
+        q: 'How do I sell event tickets?',
+        a: 'Create the event, add up to 8 ticket types with prices, quantities and sales dates, then link it to an Event block. Free events work on every plan; paid tickets need Pro.',
+        where: 'Commerce → Events',
+      },
+      { id: 'seating', q: 'How do seating maps work?', a: 'In the event’s Seating section choose Theatre rows, Banquet tables or Stage + standing. Each row or table sells one ticket type. Guests pick seats on a map or in a list, and can book a whole table.', plan: 'Pro and above' },
+      { id: 'seat-map-view', q: 'How do I see who sits where?', a: 'Open the event’s Guest list and switch to Seat map. Seats show checked in, sold, held or free. Tap a sold seat to see its ticket.' },
+      { id: 'repeating', q: 'Can an event repeat?', a: 'Yes — weekly, fortnightly or monthly for up to 12 dates. Each date has its own seats, guest list and check-in. Buyers pick a date in the Event block.' },
+      { id: 'ticket-valid', q: 'How do I check if a ticket is valid?', a: 'Tap a guest in the Guest list to see a view-only ticket: Valid, Already checked in, Not valid (refunded) or Not valid yet (unpaid). Guests see the same on their own ticket page.' },
+      {
+        id: 'checkin',
+        q: 'How do I check guests in at the door?',
+        a: 'Open Check in guests on a phone. Scan each QR ticket with the camera, or search by name or code. It clearly shows already used, refunded and wrong-event tickets.',
+        steps: ['Open the event’s Guest list.', 'Press Check in guests.', 'Scan the ticket, or search the name.', 'Use Undo if you admit the wrong person.'],
+      },
+      { id: 'comp', q: 'Can I add free guests?', a: 'Use Add guest for speakers, friends or press. It takes a seat like any ticket.' },
+      { id: 'cancel-event', q: 'What if I cancel an event?', a: 'Cancelling refunds every paid order in full and voids all tickets. You see the totals and a message preview before confirming.' },
+      { id: 'seat-hold', q: 'Why does checkout show a timer?', a: 'Seats are held for 10 minutes during checkout so they can’t be sold twice. Buyers can add 10 more minutes once.' },
+    ],
   },
-  { id: 'payout', q: 'How do I pay out?', a: 'Pay out now (₦50) or on a free schedule — daily, weekly or at an amount. Every payout needs your password and a two-step code. New bank accounts wait 24 hours.' },
-  { id: 'payment-links', q: 'What is a payment link?', a: 'A link you send to get paid without a product — a fixed amount, an amount the payer chooses, or a list of items. Share it on WhatsApp or as a QR code.', where: 'Commerce → Payment links' },
-  { id: 'pod', q: 'How does pay on delivery work?', a: 'For delivery orders up to the amount you set, in the areas you choose. When marking it delivered, record cash or transfer — and confirm transfers in your bank app, not from an alert.', plan: 'Pro and above' },
-  { id: 'instalments', q: 'How do instalments work?', a: 'Turn them on per product: 2–4 parts weekly, fortnightly or monthly. The first part is paid at checkout and the rest is charged to the same card. No interest or fees are added.', plan: 'Pro and above' },
-  { id: 'fees', q: 'What are the fees?', a: 'KUBICU’s fee per sale is 2% on Free down to 0% on Agency, plus the payment provider’s fee. Escrow is 1% capped at ₦5,000. See Pricing for the full list.' }]
-
-},
-{
-  id: 'escrow',
-  title: 'Escrow and milestones',
-  summary: 'Buyer protection, disputes and staged payments.',
-  icon: 'shield',
-  group: 'Sell & get paid',
-  articles: [
-  { id: 'escrow-how', q: 'How does escrow work?', a: 'The buyer’s payment is held until you deliver. Then the buyer confirms, or the checking time ends (3 days for goods, 2 for services, 1 for downloads and tickets), and the money is released to your wallet.', plan: 'Pro and above' },
-  { id: 'mark-delivered', q: 'How do I mark an escrow order delivered?', a: 'Open the order’s Escrow section, add a delivery note and proof, and mark delivered. A rider’s delivery code can also release it.' },
-  { id: 'dispute', q: 'What if a buyer reports a problem?', a: 'You have 48 hours to refund in full, offer a partial refund, or explain your side with evidence. Either side can then ask KUBICU to decide. The money shows as Reserved meanwhile.' },
   {
-    id: 'milestones',
-    q: 'How do milestone payments work?',
-    a: 'Split a job into stages that add up to 100% — for example bridal makeup at 30% to book, 20% at the trial and 50% on the day. Each stage gets its own pay link, and ticking a job step makes the next payment due.',
-    where: 'Quotes & jobs'
+    id: 'subscriptions',
+    title: 'Subscriptions and members',
+    summary: 'Recurring payments, product boxes and members-only content.',
+    icon: 'repeat',
+    group: 'Sell & get paid',
+    articles: [
+      { id: 'sub-plans', q: 'How do I offer a subscription?', a: 'Create a membership or a product box with a weekly, monthly or yearly price, optional trial, setup fee and member limit, plus your rules for pausing, skipping and cancelling.', where: 'Commerce → Subscriptions', plan: 'Pro and above' },
+      { id: 'sub-portal', q: 'Can subscribers manage their own subscription?', a: 'Yes. Each subscriber gets a page to pause, skip, change plan, update their card or cancel, within your rules.' },
+      { id: 'courses', q: 'Can I sell a course or tutorial classes?', a: 'Yes. Build modules of video, reading, file and quiz lessons, then make the course free, paid at checkout, or included in a membership. Learners sign in with a one-time code, see their progress and get a printable completion certificate (never called accredited). Add a Course block to any page to show it. Videos play from YouTube, Vimeo or Loom.', where: 'Commerce → Courses', plan: 'Creator and above; paid courses on Pro' },
+      { id: 'sub-failed', q: 'What happens when a renewal fails?', a: 'It’s retried on days 1, 3 and 5, with a 7-day grace period before the subscription ends. You’re notified each time.' },
+      { id: 'members-signin', q: 'How do members sign in to members-only content?', a: 'With their phone number and a 6-digit code sent by WhatsApp (or text or email). No passwords. They stay signed in on that phone for 30 days.' },
+    ],
   },
-  { id: 'milestone-templates', q: 'Can I reuse my stages?', a: 'Save any split as a milestone template. Bookings, made-to-order products and payment links can also use stages.' }]
-
-},
-{
-  id: 'events',
-  title: 'Events and tickets',
-  summary: 'Sell tickets, seat guests, repeat dates and check people in.',
-  icon: 'ticket',
-  group: 'Sell & get paid',
-  articles: [
-  {
-    id: 'create-event',
-    q: 'How do I sell event tickets?',
-    a: 'Create the event, add up to 8 ticket types with prices, quantities and sales dates, then link it to an Event block. Free events work on every plan; paid tickets need Pro.',
-    where: 'Commerce → Events'
-  },
-  { id: 'seating', q: 'How do seating maps work?', a: 'In the event’s Seating section choose Theatre rows, Banquet tables or Stage + standing. Each row or table sells one ticket type. Guests pick seats on a map or in a list, and can book a whole table.', plan: 'Pro and above' },
-  { id: 'seat-map-view', q: 'How do I see who sits where?', a: 'Open the event’s Guest list and switch to Seat map. Seats show checked in, sold, held or free. Tap a sold seat to see its ticket.' },
-  { id: 'repeating', q: 'Can an event repeat?', a: 'Yes — weekly, fortnightly or monthly for up to 12 dates. Each date has its own seats, guest list and check-in. Buyers pick a date in the Event block.' },
-  { id: 'ticket-valid', q: 'How do I check if a ticket is valid?', a: 'Tap a guest in the Guest list to see a view-only ticket: Valid, Already checked in, Not valid (refunded) or Not valid yet (unpaid). Guests see the same on their own ticket page.' },
-  {
-    id: 'checkin',
-    q: 'How do I check guests in at the door?',
-    a: 'Open Check in guests on a phone. Scan each QR ticket with the camera, or search by name or code. It clearly shows already used, refunded and wrong-event tickets.',
-    steps: ['Open the event’s Guest list.', 'Press Check in guests.', 'Scan the ticket, or search the name.', 'Use Undo if you admit the wrong person.']
-  },
-  { id: 'comp', q: 'Can I add free guests?', a: 'Use Add guest for speakers, friends or press. It takes a seat like any ticket.' },
-  { id: 'cancel-event', q: 'What if I cancel an event?', a: 'Cancelling refunds every paid order in full and voids all tickets. You see the totals and a message preview before confirming.' },
-  { id: 'seat-hold', q: 'Why does checkout show a timer?', a: 'Seats are held for 10 minutes during checkout so they can’t be sold twice. Buyers can add 10 more minutes once.' }]
-
-},
-{
-  id: 'subscriptions',
-  title: 'Subscriptions and members',
-  summary: 'Recurring payments, product boxes and members-only content.',
-  icon: 'repeat',
-  group: 'Sell & get paid',
-  articles: [
-  { id: 'sub-plans', q: 'How do I offer a subscription?', a: 'Create a membership or a product box with a weekly, monthly or yearly price, optional trial, setup fee and member limit, plus your rules for pausing, skipping and cancelling.', where: 'Commerce → Subscriptions', plan: 'Pro and above' },
-  { id: 'sub-portal', q: 'Can subscribers manage their own subscription?', a: 'Yes. Each subscriber gets a page to pause, skip, change plan, update their card or cancel, within your rules.' },
-  { id: 'courses', q: 'Can I sell a course or tutorial classes?', a: 'Yes. Build modules of video, reading, file and quiz lessons, then make the course free, paid at checkout, or included in a membership. Learners sign in with a one-time code, see their progress and get a printable completion certificate (never called accredited). Add a Course block to any page to show it. Videos play from YouTube, Vimeo or Loom.', where: 'Commerce → Courses', plan: 'Creator and above; paid courses on Pro' },
-  { id: 'sub-failed', q: 'What happens when a renewal fails?', a: 'It’s retried on days 1, 3 and 5, with a 7-day grace period before the subscription ends. You’re notified each time.' },
-  { id: 'members-signin', q: 'How do members sign in to members-only content?', a: 'With their phone number and a 6-digit code sent by WhatsApp (or text or email). No passwords. They stay signed in on that phone for 30 days.' }]
-
-}];
+];

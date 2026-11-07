@@ -30,19 +30,19 @@ export function CanvasVisual() {
         <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-4 p-4 sm:gap-6 sm:p-6">
           <div className="flex flex-col gap-2">
             <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-[rgb(104_100_92)]">Your blocks</p>
-            {canvasBlocks.map((b, i) =>
-            <motion.div
-              key={b}
-              initial={reduce ? false : { opacity: 0, x: -14 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true, margin: '-40px' }}
-              transition={{ duration: 0.25, delay: 0.2 + i * 0.05, ease: [0.23, 1, 0.32, 1] }}
-              className={`flex h-10 items-center gap-2 rounded-xl border px-2.5 text-[13px] font-semibold ${i === 2 ? 'border-[rgb(var(--kb-cobalt))] bg-[rgb(var(--kb-sky)/0.4)]' : 'border-[rgb(224_217_202)] bg-white'}`}>
-              
+            {canvasBlocks.map((b, i) => (
+              <motion.div
+                key={b}
+                initial={reduce ? false : { opacity: 0, x: -14 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, margin: '-40px' }}
+                transition={{ duration: 0.25, delay: 0.2 + i * 0.05, ease: [0.23, 1, 0.32, 1] }}
+                className={`flex h-10 items-center gap-2 rounded-xl border px-2.5 text-[13px] font-semibold ${i === 2 ? 'border-[rgb(var(--kb-cobalt))] bg-[rgb(var(--kb-sky)/0.4)]' : 'border-[rgb(224_217_202)] bg-white'}`}
+              >
                 <GripVerticalIcon size={14} className="shrink-0 text-[rgb(150_145_135)]" />
                 <span className="truncate">{b}</span>
               </motion.div>
-            )}
+            ))}
             <div className="flex h-10 items-center justify-center gap-1.5 rounded-xl border border-dashed border-[rgb(186_177_158)] text-[12px] font-semibold text-[rgb(104_100_92)]">
               <PlusIcon size={14} /> Add a block
             </div>
@@ -63,13 +63,13 @@ export function CanvasVisual() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.28, delay: 0.55, ease: [0.23, 1, 0.32, 1] }}
-        className="absolute -bottom-6 left-6 z-20 flex items-center gap-2 rounded-full bg-[rgb(20_20_18)] py-2 pl-4 pr-2 text-white shadow-3">
-        
+        className="absolute -bottom-6 left-6 z-20 flex items-center gap-2 rounded-full bg-[rgb(20_20_18)] py-2 pl-4 pr-2 text-white shadow-3"
+      >
         <span className="text-[12px] font-semibold">Theme</span>
-        {swatches.map((s) =>
-        <span key={s} className="h-6 w-6 rounded-full border-2 border-white" style={{ backgroundColor: s }} />
-        )}
+        {swatches.map((s) => (
+          <span key={s} className="h-6 w-6 rounded-full border-2 border-white" style={{ backgroundColor: s }} />
+        ))}
       </motion.div>
-    </div>);
-
+    </div>
+  );
 }

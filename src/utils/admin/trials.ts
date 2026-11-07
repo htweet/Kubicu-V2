@@ -12,7 +12,7 @@ const STAFF = 'KUBICU support';
  * Staff trial changes for one workspace (D135). Writes that workspace's billing record and
  * returns the plan it should be on, or an error in plain words.
  */
-export function staffTrial(workspaceId: string, currentPlan: WorkspacePlan, action: TrialAction, days: number, reason: string): {plan: WorkspacePlan;summary: string;} | {error: string;} {
+export function staffTrial(workspaceId: string, currentPlan: WorkspacePlan, action: TrialAction, days: number, reason: string): { plan: WorkspacePlan; summary: string } | { error: string } {
   const d: BillingData = readBilling(workspaceId) ?? emptyBilling();
   const now = new Date().toISOString();
   let next: BillingData;

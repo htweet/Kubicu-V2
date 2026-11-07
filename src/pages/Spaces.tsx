@@ -16,8 +16,8 @@ import {
   QrCodeIcon,
   SparklesIcon,
   UsersIcon,
-  XCircleIcon } from
-'lucide-react';
+  XCircleIcon,
+} from 'lucide-react';
 import { useEditor } from '../contexts/EditorContext';
 import { useWorkspace } from '../contexts/WorkspaceContext';
 import { useCan, useTeam } from '../contexts/TeamContext';
@@ -48,7 +48,7 @@ export function Spaces() {
   const { state, actions, issues, hasUnpublishedChanges } = useEditor();
   const navigate = useNavigate();
   const { workspaces, current, switchTo, switchSpace, create, setSpaceArchived } = useWorkspace();
-  const [newSpace, setNewSpace] = useState<{kind: 'campaign' | 'dealroom' | 'event' | null;} | null>(null);
+  const [newSpace, setNewSpace] = useState<{ kind: 'campaign' | 'dealroom' | 'event' | null } | null>(null);
   const [archiving, setArchiving] = useState<SpaceRow | null>(null);
   const spacesAllowed = useCan('spaces.manage');
   const teamAllowed = useCan('team.manage');
@@ -80,18 +80,18 @@ export function Spaces() {
   // Workspace screens always hold the main space in the editor; other spaces are read from storage.
   const rows: SpaceRow[] = useMemo(
     () =>
-    workspaces.flatMap((w) =>
-    workspaceSpaces(w).map((s) => {
-      const inCurrentWorkspace = w.id === current.id;
-      if (inCurrentWorkspace && s.id === MAIN_SPACE_ID) {
-        return { id: `${w.id}:${s.id}`, workspace: w, space: s, doc: draft, status: spaceStatus(s, state, hasUnpublishedChanges), inCurrentWorkspace };
-      }
-      const page = readSpacePage(w.id, s.id);
-      const changed = !!page?.published && docSignature(page.draft) !== docSignature(page.published);
-      return { id: `${w.id}:${s.id}`, workspace: w, space: s, doc: page?.draft ?? null, status: spaceStatus(s, page, changed), inCurrentWorkspace };
-    })
-    ),
-    [workspaces, current.id, draft, state, hasUnpublishedChanges]
+      workspaces.flatMap((w) =>
+        workspaceSpaces(w).map((s) => {
+          const inCurrentWorkspace = w.id === current.id;
+          if (inCurrentWorkspace && s.id === MAIN_SPACE_ID) {
+            return { id: `${w.id}:${s.id}`, workspace: w, space: s, doc: draft, status: spaceStatus(s, state, hasUnpublishedChanges), inCurrentWorkspace };
+          }
+          const page = readSpacePage(w.id, s.id);
+          const changed = !!page?.published && docSignature(page.draft) !== docSignature(page.published);
+          return { id: `${w.id}:${s.id}`, workspace: w, space: s, doc: page?.draft ?? null, status: spaceStatus(s, page, changed), inCurrentWorkspace };
+        }),
+      ),
+    [workspaces, current.id, draft, state, hasUnpublishedChanges],
   );
 
   // Spaces you can't edit in this workspace aren't listed for you (D57).
@@ -116,7 +116,7 @@ export function Spaces() {
     icon: UsersIcon,
     disabled: !teamAllowed.allowed,
     reason: teamAllowed.reason,
-    onSelect: () => setAccessFor(r.space)
+    onSelect: () => setAccessFor(r.space),
   });
 
   // A printable code for any space — main page, campaign or DealRoom (D72).
@@ -126,33 +126,33 @@ export function Spaces() {
     icon: QrCodeIcon,
     disabled: r.status === 'ended' || !r.doc || !qrAllowed.allowed,
     reason: r.status === 'ended' ? 'Archived — its link forwards to your main page.' : !r.doc ? 'Save the space first.' : qrAllowed.reason,
-    onSelect: () => navigate(qrHref({ spaceId: r.space.id, path: '' }, r.space.kind === 'main' ? 'Main page' : r.space.name))
+    onSelect: () => navigate(qrHref({ spaceId: r.space.id, path: '' }, r.space.kind === 'main' ? 'Main page' : r.space.name)),
   });
 
   const rowMenu = (r: SpaceRow) =>
-  r.inCurrentWorkspace && r.space.kind === 'main' ?
-  <Menu align="end" items={[qrItem(r), accessItem(r)]} trigger={(props) => <IconButton {...props} size="sm" icon={MoreHorizontalIcon} label={`More actions for ${r.space.name}`} />} /> :
-  r.inCurrentWorkspace ?
-  <Menu
-    align="end"
-    items={[
-    qrItem(r),
-    accessItem(r),
-    {
-      id: 'live',
-      label: 'View live',
-      icon: ExternalLinkIcon,
-      disabled: !(r.status === 'live' || r.status === 'changes') || !r.doc,
-      reason: r.status === 'ended' ? 'Archived — its link forwards to your main page.' : 'Publish first.',
-      onSelect: () => r.doc && navigate(`/p/${r.doc.handle}`)
-    },
-    r.status === 'ended' ?
-    { id: 'restore', label: 'Restore', icon: ArchiveRestoreIcon, onSelect: () => restore(r) } :
-    { id: 'archive', label: 'Archive', icon: ArchiveIcon, destructive: true, disabled: !spacesAllowed.allowed, reason: spacesAllowed.reason, onSelect: () => setArchiving(r) }]
-    }
-    trigger={(props) => <IconButton {...props} size="sm" icon={MoreHorizontalIcon} label={`More actions for ${r.space.name}`} />} /> :
-
-  null;
+    r.inCurrentWorkspace && r.space.kind === 'main' ? (
+      <Menu align="end" items={[qrItem(r), accessItem(r)]} trigger={(props) => <IconButton {...props} size="sm" icon={MoreHorizontalIcon} label={`More actions for ${r.space.name}`} />} />
+    ) : r.inCurrentWorkspace ? (
+      <Menu
+        align="end"
+        items={[
+          qrItem(r),
+          accessItem(r),
+          {
+            id: 'live',
+            label: 'View live',
+            icon: ExternalLinkIcon,
+            disabled: !(r.status === 'live' || r.status === 'changes') || !r.doc,
+            reason: r.status === 'ended' ? 'Archived — its link forwards to your main page.' : 'Publish first.',
+            onSelect: () => r.doc && navigate(`/p/${r.doc.handle}`),
+          },
+          r.status === 'ended'
+            ? { id: 'restore', label: 'Restore', icon: ArchiveRestoreIcon, onSelect: () => restore(r) }
+            : { id: 'archive', label: 'Archive', icon: ArchiveIcon, destructive: true, disabled: !spacesAllowed.allowed, reason: spacesAllowed.reason, onSelect: () => setArchiving(r) },
+        ]}
+        trigger={(props) => <IconButton {...props} size="sm" icon={MoreHorizontalIcon} label={`More actions for ${r.space.name}`} />}
+      />
+    ) : null;
 
   const archive = () => {
     if (!archiving) return;
@@ -186,34 +186,34 @@ export function Spaces() {
     toast(`Created ${ws.name}`, { description: `A draft copy at ${publicUrl(handle)}. You’re now in the copy.` });
   };
 
-  const actionsMenu =
-  <Menu
-    align="end"
-    items={[
-    { id: 'open', label: 'Open canvas', icon: PenToolIcon, onSelect: () => navigate(canvas) },
-    { id: 'live', label: 'View live page', icon: ExternalLinkIcon, disabled: !state.published, reason: 'Publish first.', onSelect: () => navigate(`/p/${state.published?.handle ?? draft.handle}`) },
-    {
-      id: 'dup',
-      label: 'Duplicate as new workspace',
-      icon: CopyIcon,
-      onSelect: () => {
-        setCopyName(`${current.name} (copy)`);
-        setDialog('duplicate');
-      }
-    },
-    state.published ?
-    { id: 'unpub', label: 'Unpublish', icon: EyeOffIcon, destructive: true, onSelect: () => setDialog('unpublish') } :
-    { id: 'restore', label: 'Put back online', icon: ArchiveRestoreIcon, disabled: !lastLive, reason: 'It hasn’t been published before.', onSelect: () => setDialog('restore') }]
-    }
-    trigger={(props) => <IconButton {...props} icon={MoreHorizontalIcon} label={`More actions for ${draft.title}`} />} />;
+  const actionsMenu = (
+    <Menu
+      align="end"
+      items={[
+        { id: 'open', label: 'Open canvas', icon: PenToolIcon, onSelect: () => navigate(canvas) },
+        { id: 'live', label: 'View live page', icon: ExternalLinkIcon, disabled: !state.published, reason: 'Publish first.', onSelect: () => navigate(`/p/${state.published?.handle ?? draft.handle}`) },
+        {
+          id: 'dup',
+          label: 'Duplicate as new workspace',
+          icon: CopyIcon,
+          onSelect: () => {
+            setCopyName(`${current.name} (copy)`);
+            setDialog('duplicate');
+          },
+        },
+        state.published
+          ? { id: 'unpub', label: 'Unpublish', icon: EyeOffIcon, destructive: true, onSelect: () => setDialog('unpublish') }
+          : { id: 'restore', label: 'Put back online', icon: ArchiveRestoreIcon, disabled: !lastLive, reason: 'It hasn’t been published before.', onSelect: () => setDialog('restore') },
+      ]}
+      trigger={(props) => <IconButton {...props} icon={MoreHorizontalIcon} label={`More actions for ${draft.title}`} />}
+    />
+  );
 
-
-
-  const health = errors.length ?
-  { icon: XCircleIcon, tone: 'text-danger', title: `${errors.length} issue${errors.length === 1 ? '' : 's'} block publishing`, items: errors } :
-  warnings.length ?
-  { icon: AlertTriangleIcon, tone: 'text-warning', title: `${warnings.length} thing${warnings.length === 1 ? '' : 's'} worth a look`, items: warnings } :
-  { icon: CheckCircle2Icon, tone: 'text-success', title: 'Ready to publish', items: [] };
+  const health = errors.length
+    ? { icon: XCircleIcon, tone: 'text-danger', title: `${errors.length} issue${errors.length === 1 ? '' : 's'} block publishing`, items: errors }
+    : warnings.length
+      ? { icon: AlertTriangleIcon, tone: 'text-warning', title: `${warnings.length} thing${warnings.length === 1 ? '' : 's'} worth a look`, items: warnings }
+      : { icon: CheckCircle2Icon, tone: 'text-success', title: 'Ready to publish', items: [] };
 
   return (
     <div className="mx-auto w-full max-w-[1200px] px-5 py-8 md:px-10 md:py-12">
@@ -222,11 +222,11 @@ export function Spaces() {
         title="My Spaces"
         description="Your main page plus any campaigns, events and other spaces. Each has its own link, look and publishing; all share this workspace’s products, orders and contacts."
         actions={
-        <Button leadingIcon={PlusIcon} disabled={!spacesAllowed.allowed} title={spacesAllowed.allowed ? undefined : spacesAllowed.reason} onClick={() => setNewSpace({ kind: null })}>
+          <Button leadingIcon={PlusIcon} disabled={!spacesAllowed.allowed} title={spacesAllowed.allowed ? undefined : spacesAllowed.reason} onClick={() => setNewSpace({ kind: null })}>
             New space
           </Button>
-        } />
-      
+        }
+      />
 
       <article aria-labelledby="space-title" className="mt-8 overflow-hidden rounded-lg border border-line bg-raised shadow-1">
         <div className="grid md:grid-cols-[300px_minmax(0,1fr)] lg:grid-cols-[360px_minmax(0,1fr)]">
@@ -234,8 +234,8 @@ export function Spaces() {
             type="button"
             onClick={() => navigate(canvas)}
             aria-label={`Open ${draft.title} in the canvas`}
-            className="dot-stage group flex h-[300px] items-end justify-center overflow-hidden pt-8 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus md:h-auto md:min-h-[360px]">
-            
+            className="dot-stage group flex h-[300px] items-end justify-center overflow-hidden pt-8 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus md:h-auto md:min-h-[360px]"
+          >
             <span className="block translate-y-6 transition-transform duration-200 ease-out group-hover:translate-y-3">
               <PageMiniPreview doc={draft} scale={0.56} height={330} />
             </span>
@@ -269,16 +269,16 @@ export function Spaces() {
                 <health.icon size={16} strokeWidth={2.25} className={health.tone} aria-hidden />
                 {health.title}
               </h3>
-              {health.items.length > 0 &&
-              <ul className="mt-1.5 flex flex-col gap-0.5 pl-6">
-                  {health.items.slice(0, 3).map((i) =>
-                <li key={i.id} className="truncate text-caption text-fg-muted">
+              {health.items.length > 0 && (
+                <ul className="mt-1.5 flex flex-col gap-0.5 pl-6">
+                  {health.items.slice(0, 3).map((i) => (
+                    <li key={i.id} className="truncate text-caption text-fg-muted">
                       {i.message}
                     </li>
-                )}
+                  ))}
                   {health.items.length > 3 && <li className="text-caption text-fg-subtle">and {health.items.length - 3} more in the canvas</li>}
                 </ul>
-              }
+              )}
             </section>
 
             <div className="mt-auto flex flex-wrap gap-2 pt-6">
@@ -296,25 +296,25 @@ export function Spaces() {
         </div>
       </article>
 
-      {extras.length === 0 &&
-      <section aria-labelledby="more-spaces-heading" className="mt-12">
+      {extras.length === 0 && (
+        <section aria-labelledby="more-spaces-heading" className="mt-12">
           <h2 id="more-spaces-heading" className="text-heading font-semibold text-fg">
             Give something its own link
           </h2>
           <p className="mt-1 max-w-2xl text-label text-fg-muted">Extra spaces sell from the same products, stock and events as your main page, so orders and contacts all land in one place.</p>
           <ul className="mt-5 grid border-t border-line md:grid-cols-2 md:gap-x-10">
             {extraSpaceKindOrder.map((k) => {
-            const K = spaceKinds[k];
-            const locked = !spacesAllowed.allowed;
-            return (
-              <li key={k} className="border-b border-line">
+              const K = spaceKinds[k];
+              const locked = !spacesAllowed.allowed;
+              return (
+                <li key={k} className="border-b border-line">
                   <button
-                  type="button"
-                  disabled={locked}
-                  title={locked ? spacesAllowed.reason : undefined}
-                  onClick={() => setNewSpace({ kind: k })}
-                  className="group flex w-full items-start gap-3.5 rounded-sm py-4 text-left transition-colors duration-150 ease-out hover:bg-sunken/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus disabled:cursor-not-allowed disabled:opacity-60 md:px-2">
-                  
+                    type="button"
+                    disabled={locked}
+                    title={locked ? spacesAllowed.reason : undefined}
+                    onClick={() => setNewSpace({ kind: k })}
+                    className="group flex w-full items-start gap-3.5 rounded-sm py-4 text-left transition-colors duration-150 ease-out hover:bg-sunken/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus disabled:cursor-not-allowed disabled:opacity-60 md:px-2"
+                  >
                     <span aria-hidden className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-sunken text-fg-muted transition-colors duration-150 ease-out group-hover:text-fg">
                       <K.icon size={17} strokeWidth={2} />
                     </span>
@@ -324,19 +324,19 @@ export function Spaces() {
                     </span>
                     <ChevronRightIcon size={16} aria-hidden className="mt-2.5 shrink-0 text-fg-subtle transition-transform duration-150 ease-out group-hover:translate-x-0.5" />
                   </button>
-                </li>);
-
-          })}
+                </li>
+              );
+            })}
           </ul>
         </section>
-      }
+      )}
 
       <SpacesList rows={visibleRows} onOpen={openRow} menuFor={rowMenu} />
-      {hiddenCount > 0 &&
-      <p className="mt-3 text-caption text-fg-subtle">
+      {hiddenCount > 0 && (
+        <p className="mt-3 text-caption text-fg-subtle">
           {hiddenCount} space{hiddenCount === 1 ? ' is' : 's are'} limited to other people on the team. Ask an Admin if you need access.
         </p>
-      }
+      )}
       <SpaceAccessDialog space={accessFor} onClose={() => setAccessFor(null)} />
 
       <NewSpaceDialog open={!!newSpace} onClose={() => setNewSpace(null)} mainDoc={draft} initialKind={newSpace?.kind ?? null} />
@@ -348,7 +348,7 @@ export function Spaces() {
         title={`Archive ${archiving?.space.name ?? 'this space'}?`}
         description={archiving?.doc ? `${publicUrl(archiving.doc.handle)} will forward visitors to your main page.` : undefined}
         footer={
-        <>
+          <>
             <Button variant="secondary" onClick={() => setArchiving(null)} data-autofocus>
               Keep it
             </Button>
@@ -356,8 +356,8 @@ export function Spaces() {
               Archive
             </Button>
           </>
-        }>
-        
+        }
+      >
         <ul className="flex flex-col gap-1.5 text-label text-fg-muted">
           <li>Its orders, contacts and discount history are kept.</li>
           <li>Its draft and versions are kept — you can restore it later.</li>
@@ -373,7 +373,7 @@ export function Spaces() {
         title="Unpublish this page?"
         description={`Visitors to ${publicUrl(draft.handle)} will see “This page isn’t available”. Links you’ve shared stop working until you publish again.`}
         footer={
-        <>
+          <>
             <Button variant="secondary" onClick={() => setDialog(null)} data-autofocus>
               Keep it live
             </Button>
@@ -381,8 +381,8 @@ export function Spaces() {
               Unpublish
             </Button>
           </>
-        }>
-        
+        }
+      >
         <ul className="flex flex-col gap-1.5 text-label text-fg-muted">
           <li>Your draft, theme and all {state.versions.length} versions are kept.</li>
           <li>Your link stays reserved for you.</li>
@@ -397,14 +397,14 @@ export function Spaces() {
         title="Put this page back online?"
         description={lastLive ? `${publicUrl(lastLive.doc.handle)} will show ${lastLive.label}, last live ${formatRelative(lastLive.createdAt)}.` : undefined}
         footer={
-        <>
+          <>
             <Button variant="secondary" onClick={() => setDialog(null)}>
               Cancel
             </Button>
             <Button onClick={restoreLive}>Put back online</Button>
           </>
-        }>
-        
+        }
+      >
         <ul className="flex flex-col gap-1.5 text-label text-fg-muted">
           <li>Visitors see exactly what was live before you unpublished it.</li>
           <li>Your draft stays as it is{hasUnpublishedChanges ? ' — its newer changes still need publishing' : ''}.</li>
@@ -419,17 +419,17 @@ export function Spaces() {
         title="Duplicate as a new workspace"
         description="Copies this page’s blocks and theme into a new workspace as a draft with its own link. Commerce, bookings and contacts aren’t copied."
         footer={
-        <>
+          <>
             <Button variant="secondary" onClick={() => setDialog(null)}>
               Cancel
             </Button>
             <Button onClick={duplicate}>Create copy</Button>
           </>
-        }>
-        
+        }
+      >
         <TextInput id="dup-name" label="New workspace name" value={copyName} onChange={(e) => setCopyName(e.target.value)} />
         <p className={cn('mt-3 text-caption text-fg-subtle')}>Free plan to start. You’ll switch into the copy straight away.</p>
       </Dialog>
-    </div>);
-
+    </div>
+  );
 }

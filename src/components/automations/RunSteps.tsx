@@ -6,7 +6,7 @@ import { useT } from '../../contexts/LocaleContext';
 
 const icon = { done: CheckIcon, skipped: MinusIcon, failed: XIcon, waiting: ClockIcon };
 
-export function RunSteps({ run }: {run: AutomationRun;}) {
+export function RunSteps({ run }: { run: AutomationRun }) {
   const { t } = useT();
   const statusWord = { done: 'Done', skipped: 'Skipped', failed: 'Failed', waiting: 'Waiting' } as const;
   return (
@@ -19,9 +19,9 @@ export function RunSteps({ run }: {run: AutomationRun;}) {
               aria-hidden
               className={cn(
                 'mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full',
-                s.status === 'done' ? 'bg-success-soft text-success' : s.status === 'failed' ? 'bg-danger-soft text-danger' : 'bg-sunken text-fg-subtle'
-              )}>
-              
+                s.status === 'done' ? 'bg-success-soft text-success' : s.status === 'failed' ? 'bg-danger-soft text-danger' : 'bg-sunken text-fg-subtle',
+              )}
+            >
               <Icon size={11} strokeWidth={3} />
             </span>
             <div className="min-w-0">
@@ -31,9 +31,9 @@ export function RunSteps({ run }: {run: AutomationRun;}) {
               </p>
               <p className="text-caption text-fg-muted">{t(s.detail)}</p>
             </div>
-          </li>);
-
+          </li>
+        );
       })}
-    </ol>);
-
+    </ol>
+  );
 }

@@ -62,31 +62,31 @@ export function Courses() {
     if (apply((d) => upsertCourse(d, { ...c, status }))) toast.success(status === 'published' ? `${c.title} is live` : status === 'archived' ? `${c.title} archived` : `${c.title} is now a draft`);
   };
 
-  const newButton =
-  <Button leadingIcon={PlusIcon} onClick={() => setParams({ new: '1' })}>
+  const newButton = (
+    <Button leadingIcon={PlusIcon} onClick={() => setParams({ new: '1' })}>
       New course
-    </Button>;
-
+    </Button>
+  );
 
   return (
     <>
       <PageHeader
         title="Courses"
         description="Lessons people work through at their own pace — free, paid at checkout, or included in a membership. Learners sign in with a one-time code and pick up where they left off."
-        actions={newButton} />
-      
+        actions={newButton}
+      />
 
-      {courses.length === 0 ?
-      <EmptyState
-        framed
-        className="mt-8"
-        icon={GraduationCapIcon}
-        title="No courses yet"
-        description="Turn what you teach into modules of video, reading, files and short quizzes. Add a Course block to any page to sell it."
-        action={newButton} /> :
-
-
-      <>
+      {courses.length === 0 ? (
+        <EmptyState
+          framed
+          className="mt-8"
+          icon={GraduationCapIcon}
+          title="No courses yet"
+          description="Turn what you teach into modules of video, reading, files and short quizzes. Add a Course block to any page to sell it."
+          action={newButton}
+        />
+      ) : (
+        <>
           <StatGroup columns={3} className="mt-8 items-end border-b border-line pb-6">
             <Stat primary label="Learners" value={learners} hint={tr('{n} finished a course', { n: finished })} />
             <Stat label="Course sales, all time" value={formatNgn(revenue)} />
@@ -95,28 +95,28 @@ export function Courses() {
 
           <div className="mt-8 max-w-full overflow-x-auto overflow-y-hidden">
             <Segmented<Tab>
-            ariaLabel="Show courses"
-            value={tab}
-            onChange={setTab}
-            options={[
-            { value: 'published', label: `${tr('Live')} · ${counts.published}` },
-            { value: 'draft', label: `${tr('Drafts')} · ${counts.draft}` },
-            { value: 'archived', label: `${tr('Archived')} · ${counts.archived}` }]
-            } />
-          
+              ariaLabel="Show courses"
+              value={tab}
+              onChange={setTab}
+              options={[
+                { value: 'published', label: `${tr('Live')} · ${counts.published}` },
+                { value: 'draft', label: `${tr('Drafts')} · ${counts.draft}` },
+                { value: 'archived', label: `${tr('Archived')} · ${counts.archived}` },
+              ]}
+            />
           </div>
 
-          {shown.length === 0 ?
-        <p className="mt-6 rounded-lg border border-dashed border-line-strong px-5 py-8 text-center text-label text-fg-muted">{tr('Nothing here right now.')}</p> :
-
-        <Card as="div" body="flush" className="mt-4">
+          {shown.length === 0 ? (
+            <p className="mt-6 rounded-lg border border-dashed border-line-strong px-5 py-8 text-center text-label text-fg-muted">{tr('Nothing here right now.')}</p>
+          ) : (
+            <Card as="div" body="flush" className="mt-4">
               <List label={tr('Courses')}>
                 {shown.map((c) => {
-              const s = courseStats(data, c);
-              const enrolled = enrolmentsFor(data, c.id).length;
-              const url = learnUrl(handle, c.id);
-              return (
-                <li key={c.id} className="flex items-center gap-4 px-5 py-4 md:px-6">
+                  const s = courseStats(data, c);
+                  const enrolled = enrolmentsFor(data, c.id).length;
+                  const url = learnUrl(handle, c.id);
+                  return (
+                    <li key={c.id} className="flex items-center gap-4 px-5 py-4 md:px-6">
                       <span aria-hidden className="flex h-14 w-20 shrink-0 items-center justify-center overflow-hidden rounded-md border border-line bg-sunken">
                         {c.coverUrl ? <MediaImage src={c.coverUrl} alt="" className="h-full w-full object-cover" /> : <BookOpenIcon size={18} className="text-fg-subtle" />}
                       </span>
@@ -144,39 +144,39 @@ export function Courses() {
                         {tr(statusLabel[c.status])}
                       </Badge>
                       <Menu
-                    align="end"
-                    items={[
-                    { id: 'edit', label: 'Edit course', icon: PencilIcon, onSelect: () => setParams({ edit: c.id }) },
-                    { id: 'learners', label: `Learners (${enrolled})`, icon: UsersIcon, onSelect: () => setParams({ learners: c.id }) },
-                    { id: 'view', label: c.status === 'published' ? 'Open course page' : 'Preview course page', icon: EyeIcon, onSelect: () => window.open(url, '_blank', 'noopener') },
-                    { id: 'copy', label: 'Copy course link', icon: CopyIcon, disabled: c.status !== 'published', reason: 'Publish it first.', onSelect: () => {navigator.clipboard?.writeText(`${window.location.origin}${url}`);toast.success('Course link copied');} },
-                    ...(c.status === 'published' ? [{ id: 'unpublish', label: 'Unpublish', icon: EyeOffIcon, onSelect: () => setStatus(c, 'draft') }] : [{ id: 'publish', label: 'Publish', icon: EyeIcon, onSelect: () => setStatus(c, 'published') }]),
-                    ...(c.status !== 'archived' ? [{ id: 'archive', label: 'Archive', icon: ArchiveIcon, onSelect: () => setStatus(c, 'archived') }] : []),
-                    {
-                      id: 'delete',
-                      label: 'Delete',
-                      icon: Trash2Icon,
-                      destructive: true,
-                      disabled: enrolled > 0,
-                      reason: 'People are enrolled — archive it instead.',
-                      onSelect: () => {
-                        if (apply((d) => deleteCourse(d, c.id))) toast.success(`${c.title || 'Course'} deleted`);
-                      }
-                    }]
-                    }
-                    trigger={(props) => <IconButton {...props} size="sm" icon={MoreHorizontalIcon} label={tr('More actions for {name}', { name: c.title || tr('course') })} />} />
-                  
-                    </li>);
-
-            })}
+                        align="end"
+                        items={[
+                          { id: 'edit', label: 'Edit course', icon: PencilIcon, onSelect: () => setParams({ edit: c.id }) },
+                          { id: 'learners', label: `Learners (${enrolled})`, icon: UsersIcon, onSelect: () => setParams({ learners: c.id }) },
+                          { id: 'view', label: c.status === 'published' ? 'Open course page' : 'Preview course page', icon: EyeIcon, onSelect: () => window.open(url, '_blank', 'noopener') },
+                          { id: 'copy', label: 'Copy course link', icon: CopyIcon, disabled: c.status !== 'published', reason: 'Publish it first.', onSelect: () => { navigator.clipboard?.writeText(`${window.location.origin}${url}`); toast.success('Course link copied'); } },
+                          ...(c.status === 'published' ? [{ id: 'unpublish', label: 'Unpublish', icon: EyeOffIcon, onSelect: () => setStatus(c, 'draft') }] : [{ id: 'publish', label: 'Publish', icon: EyeIcon, onSelect: () => setStatus(c, 'published') }]),
+                          ...(c.status !== 'archived' ? [{ id: 'archive', label: 'Archive', icon: ArchiveIcon, onSelect: () => setStatus(c, 'archived') }] : []),
+                          {
+                            id: 'delete',
+                            label: 'Delete',
+                            icon: Trash2Icon,
+                            destructive: true,
+                            disabled: enrolled > 0,
+                            reason: 'People are enrolled — archive it instead.',
+                            onSelect: () => {
+                              if (apply((d) => deleteCourse(d, c.id))) toast.success(`${c.title || 'Course'} deleted`);
+                            },
+                          },
+                        ]}
+                        trigger={(props) => <IconButton {...props} size="sm" icon={MoreHorizontalIcon} label={tr('More actions for {name}', { name: c.title || tr('course') })} />}
+                      />
+                    </li>
+                  );
+                })}
               </List>
             </Card>
-        }
+          )}
         </>
-      }
+      )}
 
       <CourseEditor target={target} onClose={() => setParams({})} />
       <CourseLearners courseId={learnersFor} onClose={() => setParams({})} />
-    </>);
-
+    </>
+  );
 }

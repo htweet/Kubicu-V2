@@ -56,8 +56,8 @@ export function CoBrandSettingsPanel() {
         {!unlocked && <PlanLock kind="plan">{tr('{plan} plan', { plan: plans[COBRAND_PLAN].name })}</PlanLock>}
       </div>
 
-      {cb ?
-      <>
+      {cb ? (
+        <>
           <div className="flex items-center gap-3 rounded-md border border-line bg-raised px-3 py-2.5">
             <PartnerAvatar partner={co.partnership?.partner ?? { name: cb.partnerName, verified: false }} size="sm" />
             <div className="min-w-0 flex-1">
@@ -69,36 +69,36 @@ export function CoBrandSettingsPanel() {
             </Badge>
           </div>
           <SelectInput<Mode>
-          id="cobrand-mode"
-          label={tr('How you edit together')}
-          value={cb.mode}
-          onChange={(m) => actions.transformDocument((d) => d.coBrand ? { ...d, coBrand: { ...d.coBrand, mode: m } } : d)}
-          options={(Object.keys(modeLabels) as Mode[]).map((m) => ({ value: m, label: modeLabels[m].label }))}
-          hint={`${tr(modeLabels[cb.mode].detail)} ${tr('{name} chooses this, as the business that set it up.', { name: co.leadName })}`} />
-        
+            id="cobrand-mode"
+            label={tr('How you edit together')}
+            value={cb.mode}
+            onChange={(m) => actions.transformDocument((d) => (d.coBrand ? { ...d, coBrand: { ...d.coBrand, mode: m } } : d))}
+            options={(Object.keys(modeLabels) as Mode[]).map((m) => ({ value: m, label: modeLabels[m].label }))}
+            hint={`${tr(modeLabels[cb.mode].detail)} ${tr('{name} chooses this, as the business that set it up.', { name: co.leadName })}`}
+          />
           <div className="flex flex-wrap gap-2">
             <Button size="sm" onClick={() => setPanel(true)}>
               {tr('Open partner panel')}
             </Button>
-            {!confirmStop ?
-          <Button size="sm" variant="tertiary" onClick={() => setConfirmStop(true)}>
+            {!confirmStop ? (
+              <Button size="sm" variant="tertiary" onClick={() => setConfirmStop(true)}>
                 {tr('Stop co-branding')}
-              </Button> :
-          null}
+              </Button>
+            ) : null}
           </div>
-          {confirmStop &&
-        <div className="flex flex-col gap-3 rounded-md border border-danger/30 bg-danger-soft/40 p-3">
+          {confirmStop && (
+            <div className="flex flex-col gap-3 rounded-md border border-danger/30 bg-danger-soft/40 p-3">
               <p className="text-caption text-fg">{tr('Make this your own page again? {name}’s name comes off when you next publish, and every block becomes yours. Their comments stay in your partnership.', { name: cb.partnerName })}</p>
               <div className="flex gap-2">
                 <Button
-              size="sm"
-              variant="destructive"
-              onClick={() => {
-                actions.transformDocument(clearCoBrand);
-                setConfirmStop(false);
-                toast(tr('Co-branding stopped'), { description: tr('Publish to update the live page.') });
-              }}>
-              
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => {
+                    actions.transformDocument(clearCoBrand);
+                    setConfirmStop(false);
+                    toast(tr('Co-branding stopped'), { description: tr('Publish to update the live page.') });
+                  }}
+                >
                   {tr('Stop co-branding')}
                 </Button>
                 <Button size="sm" variant="tertiary" onClick={() => setConfirmStop(false)}>
@@ -106,22 +106,22 @@ export function CoBrandSettingsPanel() {
                 </Button>
               </div>
             </div>
-        }
+          )}
           <CoBrandSheet open={panel} onClose={() => setPanel(false)} />
-        </> :
-      !unlocked ?
-      <UpgradeButton plan={COBRAND_PLAN} feature="Co-branded spaces" className="self-start" /> :
-      co.activePartnerships.length === 0 ?
-      <Link to="/app/collaborations" className="inline-flex items-center gap-1 self-start text-caption font-semibold text-action hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+        </>
+      ) : !unlocked ? (
+        <UpgradeButton plan={COBRAND_PLAN} feature="Co-branded spaces" className="self-start" />
+      ) : co.activePartnerships.length === 0 ? (
+        <Link to="/app/collaborations" className="inline-flex items-center gap-1 self-start text-caption font-semibold text-action hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
           {tr('Start a partnership first')} <ArrowUpRightIcon size={12} aria-hidden />
-        </Link> :
-
-      <>
+        </Link>
+      ) : (
+        <>
           <SelectInput<string> id="cobrand-partner" label={tr('Partner')} value={pick} onChange={setPick} options={[{ value: '', label: 'Choose a partner…' }, ...co.activePartnerships.map((p) => ({ value: p.id, label: `${p.partner.name} · ${p.agreement.leadSharePct}/${100 - p.agreement.leadSharePct}` }))]} />
           <fieldset className="flex flex-col gap-2">
             <legend className="mb-1 text-label font-medium text-fg">{tr('How you edit together')}</legend>
-            {(Object.keys(modeLabels) as Mode[]).map((m) =>
-          <label key={m} className={cn('flex cursor-pointer items-start gap-2.5 rounded-md border px-3 py-2.5 transition-colors duration-150', mode === m ? 'border-action bg-action-soft' : 'border-line hover:border-line-strong')}>
+            {(Object.keys(modeLabels) as Mode[]).map((m) => (
+              <label key={m} className={cn('flex cursor-pointer items-start gap-2.5 rounded-md border px-3 py-2.5 transition-colors duration-150', mode === m ? 'border-action bg-action-soft' : 'border-line hover:border-line-strong')}>
                 <input type="radio" name="cobrand-mode-new" className="mt-0.5 h-4 w-4 accent-[rgb(var(--action))]" checked={mode === m} onChange={() => setMode(m)} />
                 <span>
                   <span className="block text-label font-medium text-fg">
@@ -131,14 +131,14 @@ export function CoBrandSettingsPanel() {
                   <span className="block text-caption text-fg-muted">{tr(modeLabels[m].detail)}</span>
                 </span>
               </label>
-          )}
+            ))}
           </fieldset>
           <p className="text-caption text-fg-subtle">{tr('Either way, the first publish and changes that affect both of you need their approval. Money from things sold here is split as your partnership agrees.')}</p>
           <Button size="sm" className="self-start" disabled={!pick} onClick={start}>
             {tr('Make it co-branded')}
           </Button>
         </>
-      }
-    </section>);
-
+      )}
+    </section>
+  );
 }

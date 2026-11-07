@@ -20,7 +20,7 @@ import { disputeOpen } from '../../utils/sponsorships';
 const statusLabel = { applied: 'Waiting for the brand', accepted: 'Accepted', declined: 'Not this time', withdrawn: 'Withdrawn', completed: 'Completed' } as const;
 
 /** A brief as a creator sees it: details, apply, then deliver and get paid (D441). */
-export function BriefSheet({ brief, onClose }: {brief: SponsorBrief | null;onClose: () => void;}) {
+export function BriefSheet({ brief, onClose }: { brief: SponsorBrief | null; onClose: () => void }) {
   const { t: tr } = useT();
   const { current } = useWorkspace();
   const { briefs, update } = useSponsorships();
@@ -49,13 +49,13 @@ export function BriefSheet({ brief, onClose }: {brief: SponsorBrief | null;onClo
     handle: handle.trim().length < 2 ? tr('Where can the brand see your work?') : undefined,
     audience: audience.trim().length < 3 ? tr('e.g. 18k followers, mostly Lagos, 18–30') : undefined,
     pitch: pitch.trim().length < 30 ? tr('A few lines on your idea (30 characters or more)') : undefined,
-    rate: !rate || rate < 5_000 ? tr('At least 5,000') : undefined
+    rate: !rate || rate < 5_000 ? tr('At least 5,000') : undefined,
   };
 
   const apply = () => {
     setTried(true);
     if (Object.values(errs).some(Boolean)) return;
-    const ok = update((list) => list.map((b) => b.id !== live.id ? b : { ...b, applications: [...b.applications, newApplication(b, { creatorWorkspaceId: current.id, creatorName: current.name, handle: handle.trim(), audience: audience.trim(), pitch: pitch.trim(), rateNgn: rate as number })] }));
+    const ok = update((list) => list.map((b) => (b.id !== live.id ? b : { ...b, applications: [...b.applications, newApplication(b, { creatorWorkspaceId: current.id, creatorName: current.name, handle: handle.trim(), audience: audience.trim(), pitch: pitch.trim(), rateNgn: rate as number })] })));
     if (ok) toast.success(tr('Application sent'), { description: tr('{brand} will reply here. You’re not committed until they accept.', { brand: live.brandName }) });
   };
 
@@ -77,16 +77,16 @@ export function BriefSheet({ brief, onClose }: {brief: SponsorBrief | null;onClo
       title={live.title}
       description={`${live.brandName} · ${tr(live.category)}`}
       footer={
-      !mine && isOpen(live) ?
-      <div className="flex w-full justify-end gap-2">
+        !mine && isOpen(live) ? (
+          <div className="flex w-full justify-end gap-2">
             <Button variant="secondary" onClick={onClose}>
               {tr('Close')}
             </Button>
             <Button onClick={apply}>{tr('Apply')}</Button>
-          </div> :
-      undefined
-      }>
-      
+          </div>
+        ) : undefined
+      }
+    >
       <div className="flex flex-col gap-6">
         <section className="flex flex-col gap-3">
           <p className="text-label text-fg">{live.description}</p>
@@ -111,9 +111,9 @@ export function BriefSheet({ brief, onClose }: {brief: SponsorBrief | null;onClo
           <div>
             <h3 className="text-caption font-semibold text-fg-subtle">{tr('You deliver')}</h3>
             <ul className="mt-1 list-disc pl-5 text-label text-fg">
-              {live.deliverables.map((d) =>
-              <li key={d}>{d}</li>
-              )}
+              {live.deliverables.map((d) => (
+                <li key={d}>{d}</li>
+              ))}
             </ul>
           </div>
           <p className="flex items-start gap-2 rounded-md bg-sunken px-3 py-2.5 text-caption text-fg-muted">
@@ -122,9 +122,9 @@ export function BriefSheet({ brief, onClose }: {brief: SponsorBrief | null;onClo
           </p>
         </section>
 
-        {!mine ?
-        isOpen(live) ?
-        <section aria-labelledby="apply-h" className="flex flex-col gap-4 border-t border-line pt-6">
+        {!mine ? (
+          isOpen(live) ? (
+            <section aria-labelledby="apply-h" className="flex flex-col gap-4 border-t border-line pt-6">
               <h3 id="apply-h" className="text-heading font-semibold text-fg">
                 {tr('Apply')}
               </h3>
@@ -136,12 +136,12 @@ export function BriefSheet({ brief, onClose }: {brief: SponsorBrief | null;onClo
               <div className="max-w-xs">
                 <CurrencyInput id="sp-rate" label={tr('Your fee')} value={rate} hint={tr('The brand’s budget is {amount}.', { amount: formatNgn(live.budgetNgn) })} error={tried ? errs.rate : undefined} onChange={setRate} />
               </div>
-            </section> :
-
-        <p className="text-label text-fg-muted">{tr('This brief isn’t taking applications any more.')}</p> :
-
-
-        <section aria-labelledby="mine-h" className="flex flex-col gap-4 border-t border-line pt-6">
+            </section>
+          ) : (
+            <p className="text-label text-fg-muted">{tr('This brief isn’t taking applications any more.')}</p>
+          )
+        ) : (
+          <section aria-labelledby="mine-h" className="flex flex-col gap-4 border-t border-line pt-6">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h3 id="mine-h" className="text-heading font-semibold text-fg">
                 {tr('Your application')}
@@ -152,27 +152,27 @@ export function BriefSheet({ brief, onClose }: {brief: SponsorBrief | null;onClo
               {tr('Fee {amount}', { amount: formatNgn(mine.rateNgn) })}
               {mine.heldNgn || mine.releasedNgn ? ` · ${tr('{paid} paid to you · {held} held', { paid: formatNgn(mine.releasedNgn), held: formatNgn(mine.heldNgn) })}` : ''}
             </p>
-            {mine.status === 'applied' &&
-          <Button variant="tertiary" className="self-start" onClick={() => update((list) => setAppStatus(list, live.id, mine.id, 'withdrawn')) && toast(tr('Application withdrawn'))}>
+            {mine.status === 'applied' && (
+              <Button variant="tertiary" className="self-start" onClick={() => update((list) => setAppStatus(list, live.id, mine.id, 'withdrawn')) && toast(tr('Application withdrawn'))}>
                 {tr('Withdraw application')}
               </Button>
-          }
-            {mine.deliverables.length > 0 &&
-          <ul className="divide-y divide-line border-y border-line">
-                {mine.deliverables.map((d) =>
-            <li key={d.id} className="flex flex-col gap-2 py-3">
+            )}
+            {mine.deliverables.length > 0 && (
+              <ul className="divide-y divide-line border-y border-line">
+                {mine.deliverables.map((d) => (
+                  <li key={d.id} className="flex flex-col gap-2 py-3">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <span className="text-label font-medium text-fg">{d.label}</span>
                       <DeliverableStatusBadge status={d.status} />
                     </div>
                     {d.note && <p className="text-caption text-warning">{tr('Brand’s note: {note}', { note: d.note })}</p>}
-                    {d.link && d.status !== 'changes' &&
-              <a href={d.link} target="_blank" rel="noreferrer" className="inline-flex min-w-0 items-center gap-1 text-caption text-action hover:underline">
+                    {d.link && d.status !== 'changes' && (
+                      <a href={d.link} target="_blank" rel="noreferrer" className="inline-flex min-w-0 items-center gap-1 text-caption text-action hover:underline">
                         <span className="truncate">{d.link}</span> <ExternalLinkIcon size={12} className="shrink-0" aria-hidden />
                       </a>
-              }
-                    {(d.status === 'todo' || d.status === 'changes') && !disputeOpen(mine) &&
-              <div className="flex items-end gap-2">
+                    )}
+                    {(d.status === 'todo' || d.status === 'changes') && !disputeOpen(mine) && (
+                      <div className="flex items-end gap-2">
                         <div className="min-w-0 flex-1">
                           <TextInput id={`sp-link-${d.id}`} label={tr('Link to the live post')} placeholder="https://" value={links[d.id] ?? ''} onChange={(e) => setLinks({ ...links, [d.id]: e.target.value })} />
                         </div>
@@ -180,14 +180,14 @@ export function BriefSheet({ brief, onClose }: {brief: SponsorBrief | null;onClo
                           {tr('Send')}
                         </Button>
                       </div>
-              }
+                    )}
                   </li>
-            )}
+                ))}
               </ul>
-          }
+            )}
             {mine.status !== 'applied' && <DisputePanel brief={live} app={mine} side="creator" update={update} />}
-            {mine.trackingCode && results &&
-          <div className="flex flex-col gap-1">
+            {mine.trackingCode && results && (
+              <div className="flex flex-col gap-1">
                 <p className="text-caption text-fg-muted">
                   {tr('Share this link in your posts so the brand sees results:')}{' '}
                   <a href={trackedPath(mine.trackingCode)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 font-mono text-action hover:underline">
@@ -198,10 +198,10 @@ export function BriefSheet({ brief, onClose }: {brief: SponsorBrief | null;onClo
                   <CheckCircle2Icon size={12} aria-hidden /> {tr('Visitors: {visits} · Taps: {clicks} · Sales: {sales} so far', { visits: results.visits, clicks: results.clicks, sales: results.sales })}
                 </p>
               </div>
-          }
+            )}
           </section>
-        }
+        )}
       </div>
-    </Sheet>);
-
+    </Sheet>
+  );
 }

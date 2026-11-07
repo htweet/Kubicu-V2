@@ -17,7 +17,7 @@ import { NfcDestinationFields, destinationValid } from './NfcDestinationFields';
 import { cn } from '../../utils/cn';
 
 /** Order NFC tags (D442). Delivered within the workspace's own country, priced in its money (D471); paid by test card. Prices are examples. */
-export function NfcOrderSheet({ open, onClose }: {open: boolean;onClose: () => void;}) {
+export function NfcOrderSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t: tr } = useT();
   const { current } = useWorkspace();
   const team = useTeam();
@@ -51,7 +51,7 @@ export function NfcOrderSheet({ open, onClose }: {open: boolean;onClose: () => v
   const errs = {
     qty: Number.isInteger(n) && n >= 1 && n <= NFC_MAX_ORDER ? undefined : tr('Between 1 and {max}', { max: NFC_MAX_ORDER }),
     address: address.trim().length < 8 ? tr('Add the street address, area and state') : undefined,
-    phone: phone.replace(/\D/g, '').length < 10 ? tr('So the rider can reach you') : undefined
+    phone: phone.replace(/\D/g, '').length < 10 ? tr('So the rider can reach you') : undefined,
   };
 
   const pay = () => {
@@ -78,7 +78,7 @@ export function NfcOrderSheet({ open, onClose }: {open: boolean;onClose: () => v
       title={tr('Order NFC tags')}
       description={tr('Customers tap their phone on the tag to open your page — no app or camera needed. Change where each tag points any time.')}
       footer={
-      <div className="flex w-full items-center justify-between gap-3">
+        <div className="flex w-full items-center justify-between gap-3">
           <p className="text-label text-fg">
             <span className="text-fg-muted">{tr('Total')}</span> <strong className="tabular-nums">{money(total)}</strong>
           </p>
@@ -86,13 +86,13 @@ export function NfcOrderSheet({ open, onClose }: {open: boolean;onClose: () => v
             {tr('Pay with test card')}
           </Button>
         </div>
-      }>
-      
+      }
+    >
       <div className="flex flex-col gap-6">
         <fieldset className="flex flex-col gap-2">
           <legend className="mb-2 text-label font-semibold text-fg">{tr('Type')}</legend>
-          {(Object.keys(nfcKinds) as NfcKind[]).map((k) =>
-          <label key={k} className={cn('flex cursor-pointer items-center gap-3 rounded-md border px-4 py-3 transition-colors duration-150 focus-within:ring-2 focus-within:ring-focus', kind === k ? 'border-action bg-action-soft' : 'border-line hover:bg-sunken')}>
+          {(Object.keys(nfcKinds) as NfcKind[]).map((k) => (
+            <label key={k} className={cn('flex cursor-pointer items-center gap-3 rounded-md border px-4 py-3 transition-colors duration-150 focus-within:ring-2 focus-within:ring-focus', kind === k ? 'border-action bg-action-soft' : 'border-line hover:bg-sunken')}>
               <input type="radio" name="nfc-kind" checked={kind === k} onChange={() => setKind(k)} className="h-4 w-4 shrink-0 accent-[rgb(var(--action))] focus:outline-none" />
               <span className="min-w-0 flex-1">
                 <span className="block text-label font-medium text-fg">{tr(nfcKinds[k].label)}</span>
@@ -100,7 +100,7 @@ export function NfcOrderSheet({ open, onClose }: {open: boolean;onClose: () => v
               </span>
               <span className="shrink-0 text-right text-label tabular-nums text-fg">{tr('{price} each', { price: money(prices.unit[k]) })}</span>
             </label>
-          )}
+          ))}
         </fieldset>
         <div className="w-full sm:max-w-[10rem]">
           <TextInput id="nfc-qty" label={tr('How many')} inputMode="numeric" value={qty} error={tried ? errs.qty : undefined} onChange={(e) => setQty(e.target.value.replace(/\D/g, '').slice(0, 2))} />
@@ -128,6 +128,6 @@ export function NfcOrderSheet({ open, onClose }: {open: boolean;onClose: () => v
         </dl>
         <p className="text-caption text-fg-subtle">{tr('Prices are examples. Works with most phones from the last few years — iPhones tap from the lock screen, and Android needs NFC switched on.')}</p>
       </div>
-    </Sheet>);
-
+    </Sheet>
+  );
 }

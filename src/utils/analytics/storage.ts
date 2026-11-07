@@ -17,7 +17,7 @@ export function readAnalytics(workspaceId: string): AnalyticsData | null {
       events: Array.isArray(p.events) ? p.events.map(sampleDevice) : [],
       settings: { ...base.settings, ...p.settings },
       dismissedInsights: Array.isArray(p.dismissedInsights) ? p.dismissedInsights : [],
-      sampleSeeded: !!p.sampleSeeded
+      sampleSeeded: !!p.sampleSeeded,
     };
   } catch {
     return null;
@@ -26,12 +26,12 @@ export function readAnalytics(workspaceId: string): AnalyticsData | null {
 
 /** Sample visits saved before devices were counted (D258) get one, from their session id — never real visits. */
 function sampleDevice(e: AnalyticsEvent): AnalyticsEvent {
-  if (!e.sample || e.device && (e.via || !e.campaign)) return e;
+  if (!e.sample || (e.device && (e.via || !e.campaign))) return e;
   let h = 0;
   for (let i = 0; i < e.session.length; i++) h = (h * 31 + e.session.charCodeAt(i)) % 100;
   const device = e.device ?? (h < 72 ? 'phone' : h < 94 ? 'desktop' : 'tablet');
   // Sample short-link clicks get where the tap came from (D271): mostly the place the link was made for.
-  const via = e.campaign && !e.via ? e.source === 'qr' ? 'direct' : h % 10 < 7 ? e.source : h % 10 < 9 ? 'direct' : 'other' : e.via;
+  const via = e.campaign && !e.via ? (e.source === 'qr' ? 'direct' : h % 10 < 7 ? e.source : h % 10 < 9 ? 'direct' : 'other') : e.via;
   return { ...e, device, via };
 }
 
@@ -55,6 +55,6 @@ export function appendEvent(workspaceId: string, event: AnalyticsEvent): void {
     // Same-tab listeners (the workspace screens) refresh from this.
     window.dispatchEvent(new CustomEvent('kubicu:analytics', { detail: workspaceId }));
   } catch {
-
     // Storage full — analytics are best-effort and never block the visitor.
-  }}
+  }
+}

@@ -16,14 +16,14 @@ export function emptyOps(): OpsData {
       cancelHours: 24,
       policy: 'Free to reschedule or cancel up to 24 hours before. After that, deposits aren’t refunded.',
       remindersOn: true,
-      reminderHours: 24
+      reminderHours: 24,
     },
     bookings: [],
     contacts: [],
     automations: [],
     automationsPaused: false,
     nextBookingRef: 2001,
-    sampleSeeded: false
+    sampleSeeded: false,
   };
 }
 
@@ -40,7 +40,7 @@ export function readOps(workspaceId: string): OpsData | null {
       services: Array.isArray(p.services) ? p.services : [],
       bookings: Array.isArray(p.bookings) ? p.bookings : [],
       contacts: Array.isArray(p.contacts) ? p.contacts : [],
-      automations: Array.isArray(p.automations) ? p.automations : []
+      automations: Array.isArray(p.automations) ? p.automations : [],
     };
   } catch {
     return null;

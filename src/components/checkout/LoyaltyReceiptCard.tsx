@@ -8,7 +8,7 @@ import { cardStyle } from '../blocks/pageStyle';
 import { formatNgn } from '../../utils/format';
 
 /** Points earned on this order and the new balance, on the customer's receipt (D232). */
-export function LoyaltyReceiptCard({ theme, workspaceId, order, data }: {theme: PageTheme;workspaceId: string | null;order: Order;data: CommerceData;}) {
+export function LoyaltyReceiptCard({ theme, workspaceId, order, data }: { theme: PageTheme; workspaceId: string | null; order: Order; data: CommerceData }) {
   if (!workspaceId) return null;
   const m = readMarketplace(workspaceId);
   const rec = extensionActive(m, LOYALTY_EXTENSION_ID) ? m.installed[LOYALTY_EXTENSION_ID] : null;
@@ -24,6 +24,6 @@ export function LoyaltyReceiptCard({ theme, workspaceId, order, data }: {theme: 
       <p className="mt-1.5 text-[13.5px]" style={{ color: theme.mutedText }}>
         You now have {bal.balance.toLocaleString()}. {REDEEM_POINTS} points give {formatNgn(REDEEM_NGN)} off at checkout — use the same phone number.
       </p>
-    </section>);
-
+    </section>
+  );
 }

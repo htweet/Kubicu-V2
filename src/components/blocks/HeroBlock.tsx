@@ -10,7 +10,7 @@ import { cn } from '../../utils/cn';
 
 const focalPos = { center: '50% 50%', top: '50% 20%', bottom: '50% 80%' } as const;
 const softShadow = '0 1px 2px rgba(0,0,0,0.05), 0 24px 48px -20px rgba(0,0,0,0.28)';
-const accentOf = (t: PageTheme) => t.accent === t.text ? t.mutedText : t.accent;
+const accentOf = (t: PageTheme) => (t.accent === t.text ? t.mutedText : t.accent);
 
 /**
  * Six designed openings (D153, refined in D157). Each lays itself out from its own width,
@@ -25,29 +25,29 @@ export function HeroBlock({ block, theme, mode }: BlockProps<'hero'>) {
   const radius = cardRadius(theme);
   const edge = block.layout.width === 'full';
   const img = (className = '', style?: React.CSSProperties) =>
-  c.imageUrl ? <MediaImage src={c.imageUrl} alt={c.imageAlt} className={cn('block h-full w-full object-cover', className)} style={{ objectPosition: focalPos[c.focal], ...style }} /> : null;
+    c.imageUrl ? <MediaImage src={c.imageUrl} alt={c.imageAlt} className={cn('block h-full w-full object-cover', className)} style={{ objectPosition: focalPos[c.focal], ...style }} /> : null;
   const eyebrow = (color = theme.mutedText) =>
-  c.eyebrow ?
-  <p className="flex items-center gap-3 text-[13px] font-semibold tracking-[0.01em] md:text-[14px]" style={{ color }}>
+    c.eyebrow ? (
+      <p className="flex items-center gap-3 text-[13px] font-semibold tracking-[0.01em] md:text-[14px]" style={{ color }}>
         <span aria-hidden className="h-px w-8" style={{ background: 'currentColor', opacity: 0.6 }} />
         {c.eyebrow}
-      </p> :
-  null;
+      </p>
+    ) : null;
 
   switch (c.variant) {
     case 'portrait':
       // A tall arched portrait above a confident name — reads as a personal brand, not an avatar in a list.
       return (
         <section className="flex flex-col items-center pb-4 pt-8 text-center md:pt-12">
-          {c.imageUrl &&
-          <div className="relative w-[min(78%,300px)]">
+          {c.imageUrl && (
+            <div className="relative w-[min(78%,300px)]">
               {/* A thin offset arch outline in the accent colour frames the portrait (D160). */}
               <span aria-hidden className="absolute inset-0 translate-x-3 translate-y-3" style={{ borderRadius: '999px 999px 28px 28px', border: `1.5px solid ${accentOf(theme)}` }} />
               <div className="relative aspect-[4/5] w-full overflow-hidden" style={{ borderRadius: '999px 999px 28px 28px', background: mix(theme.text, 8, theme.background), boxShadow: softShadow }}>
                 {img()}
               </div>
             </div>
-          }
+          )}
           {c.eyebrow && <p className="mt-8 text-[13px] font-semibold tracking-[0.01em] md:text-[14px]" style={{ color: theme.mutedText }}>{c.eyebrow}</p>}
           <h1 className={cn('break-words text-[clamp(2.5rem,9cqw,4rem)] font-medium leading-[0.98] tracking-[-0.035em]', c.eyebrow ? 'mt-3' : 'mt-8')} style={{ fontFamily: display, color: theme.text }}>
             {c.title}
@@ -55,8 +55,8 @@ export function HeroBlock({ block, theme, mode }: BlockProps<'hero'>) {
           {c.subtitle && <p className="mt-5 max-w-[32ch] text-[17px] leading-relaxed md:text-[19px]" style={{ color: theme.mutedText }}>{c.subtitle}</p>}
           <Actions c={c} theme={theme} mode={mode} center />
           {c.meta && <p className="mt-5 text-[13px]" style={{ color: theme.mutedText }}>{c.meta}</p>}
-        </section>);
-
+        </section>
+      );
 
     case 'cover':
       // Photograph at full strength; an even 52% black veil keeps white display type readable on any image.
@@ -81,26 +81,26 @@ export function HeroBlock({ block, theme, mode }: BlockProps<'hero'>) {
                   text: '#FFFFFF',
                   surface: 'transparent',
                   buttonStyle: 'outline',
-                  material: theme.material ? { ...theme.material, buttonFinish: 'solid', buttonGradient: undefined, border: undefined, sheen: false } : undefined
+                  material: theme.material ? { ...theme.material, buttonFinish: 'solid', buttonGradient: undefined, border: undefined, sheen: false } : undefined,
                 }}
-                mode={mode} />
-              
+                mode={mode}
+              />
               {c.meta && <p className="mt-6 text-[14px]" style={{ color: 'rgba(255,255,255,0.86)' }}>{c.meta}</p>}
             </div>
           </div>
-        </section>);
-
+        </section>
+      );
 
     case 'masthead':
       // A magazine nameplate: oversized title between rules, the dateline above.
       return (
         <section className="pb-6 pt-6 md:pt-10">
-          {(c.eyebrow || c.meta) &&
-          <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 pb-3 text-[13px] font-medium md:text-[14px]" style={{ color: theme.mutedText, borderBottom: `1px solid ${mix(theme.text, 18)}` }}>
+          {(c.eyebrow || c.meta) && (
+            <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 pb-3 text-[13px] font-medium md:text-[14px]" style={{ color: theme.mutedText, borderBottom: `1px solid ${mix(theme.text, 18)}` }}>
               <span>{c.eyebrow}</span>
               <span>{c.meta}</span>
             </div>
-          }
+          )}
           <h1 className="break-words pt-6 text-[clamp(2.75rem,11cqw,8.5rem)] font-medium leading-[0.9] tracking-[-0.045em] md:pt-8" style={{ fontFamily: display, color: theme.text }}>
             {c.title}
           </h1>
@@ -109,8 +109,8 @@ export function HeroBlock({ block, theme, mode }: BlockProps<'hero'>) {
             <Actions c={c} theme={theme} mode={mode} tight />
           </div>
           {c.imageUrl && <div className="mt-10 aspect-[16/9] w-full overflow-hidden" style={{ borderRadius: radius }}>{img()}</div>}
-        </section>);
-
+        </section>
+      );
 
     case 'poster':
       // Gig-poster energy: huge stacked title, the date line set big, photo filling the other half.
@@ -132,8 +132,8 @@ export function HeroBlock({ block, theme, mode }: BlockProps<'hero'>) {
             </div>
             {c.imageUrl && <div className="aspect-[4/5] min-w-0 flex-[1_1_320px] md:aspect-auto md:min-h-[600px]">{img()}</div>}
           </div>
-        </section>);
-
+        </section>
+      );
 
     case 'product':
       // The product on a soft stage, with name, price and action beside it.
@@ -151,8 +151,8 @@ export function HeroBlock({ block, theme, mode }: BlockProps<'hero'>) {
             {c.subtitle && <p className="mt-4 max-w-[44ch] text-[17px] leading-relaxed" style={{ color: theme.mutedText }}>{c.subtitle}</p>}
             <Actions c={c} theme={theme} mode={mode} full />
           </div>
-        </section>);
-
+        </section>
+      );
 
     default:
       // split — headline and photo share the opening; a caption chip sits on the photo.
@@ -166,42 +166,42 @@ export function HeroBlock({ block, theme, mode }: BlockProps<'hero'>) {
             {c.subtitle && <p className="mt-6 max-w-[44ch] text-[17px] leading-relaxed md:text-[19px]" style={{ color: theme.mutedText }}>{c.subtitle}</p>}
             <Actions c={c} theme={theme} mode={mode} />
           </div>
-          {c.imageUrl &&
-          <div className="relative w-full md:justify-self-end" style={{ maxWidth: 520 }}>
+          {c.imageUrl && (
+            <div className="relative w-full md:justify-self-end" style={{ maxWidth: 520 }}>
               {/* Offset accent panel behind the photo gives the opening depth without decoration (D160). */}
               <span aria-hidden className="absolute -bottom-4 -right-4 left-6 top-6 hidden sm:block" style={{ borderRadius: radius, background: mix(accentOf(theme), 22, theme.background) }} />
             <div className="relative aspect-[4/5] w-full overflow-hidden" style={{ borderRadius: radius, boxShadow: softShadow }}>
               {img()}
-              {c.meta &&
-              <span className="absolute bottom-4 left-4 right-4 inline-flex w-fit max-w-[calc(100%-2rem)] items-center gap-2 px-4 py-2.5 text-[13px] font-semibold" style={{ background: theme.background, color: theme.text, borderRadius: Math.min(radius, 999) }}>
+              {c.meta && (
+                <span className="absolute bottom-4 left-4 right-4 inline-flex w-fit max-w-[calc(100%-2rem)] items-center gap-2 px-4 py-2.5 text-[13px] font-semibold" style={{ background: theme.background, color: theme.text, borderRadius: Math.min(radius, 999) }}>
                   <span aria-hidden className="h-2 w-2 shrink-0 rounded-full" style={{ background: theme.accent }} />
                   {c.meta}
                 </span>
-              }
+              )}
             </div>
             </div>
-          }
+          )}
           {!c.imageUrl && c.meta && <p className="text-[14px]" style={{ color: theme.mutedText }}>{c.meta}</p>}
-        </section>);
-
+        </section>
+      );
   }
 }
 
-function Actions({ c, theme, mode, center, full, tight }: {c: BlockProps<'hero'>['block']['content'];theme: PageTheme;mode: RenderMode;center?: boolean;full?: boolean;tight?: boolean;}) {
+function Actions({ c, theme, mode, center, full, tight }: { c: BlockProps<'hero'>['block']['content']; theme: PageTheme; mode: RenderMode; center?: boolean; full?: boolean; tight?: boolean }) {
   if (!c.primaryLabel && !c.secondaryLabel) return null;
   return (
     <div className={cn('flex flex-wrap gap-3', tight ? '' : 'mt-9', center && 'justify-center')}>
-      {c.primaryLabel &&
-      <PageAction mode={mode} href={c.primaryUrl} newTab={!c.primaryUrl.startsWith('#')} className={cn('group inline-flex min-h-[52px] items-center justify-center gap-2 px-7 text-[15px] font-semibold', full && 'w-full sm:w-auto')} style={buttonStyle(theme, 'featured')}>
+      {c.primaryLabel && (
+        <PageAction mode={mode} href={c.primaryUrl} newTab={!c.primaryUrl.startsWith('#')} className={cn('group inline-flex min-h-[52px] items-center justify-center gap-2 px-7 text-[15px] font-semibold', full && 'w-full sm:w-auto')} style={buttonStyle(theme, 'featured')}>
           {c.primaryLabel}
           <ArrowRightIcon size={16} aria-hidden className="transition-transform duration-150 ease-out group-hover:translate-x-0.5" />
         </PageAction>
-      }
-      {c.secondaryLabel &&
-      <PageAction mode={mode} href={c.secondaryUrl} newTab={!c.secondaryUrl.startsWith('#')} className="inline-flex min-h-[52px] items-center justify-center px-7 text-[15px] font-semibold" style={buttonStyle(theme, 'default')}>
+      )}
+      {c.secondaryLabel && (
+        <PageAction mode={mode} href={c.secondaryUrl} newTab={!c.secondaryUrl.startsWith('#')} className="inline-flex min-h-[52px] items-center justify-center px-7 text-[15px] font-semibold" style={buttonStyle(theme, 'default')}>
           {c.secondaryLabel}
         </PageAction>
-      }
-    </div>);
-
+      )}
+    </div>
+  );
 }

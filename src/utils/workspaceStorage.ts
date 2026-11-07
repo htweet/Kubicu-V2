@@ -22,9 +22,9 @@ export function setDemoSeed(workspaceId: string, on: boolean): void {
   try {
     window.localStorage.setItem(DEMO_SEED_KEY, JSON.stringify(on ? [...list, workspaceId] : list));
   } catch {
-
     // Storage unavailable — modules simply start empty.
-  }}
+  }
+}
 
 /** True when this workspace should get labelled sample data in every module: the built-in demo, or one created with demo data. */
 export function seedsSample(workspaceId: string): boolean {

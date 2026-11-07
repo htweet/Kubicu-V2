@@ -10,7 +10,7 @@ const HOUR = 3_600_000;
  * Scheduled link checks (D271): every short link is checked once a day while the app is open, and on demand.
  * Newly broken links show in Notifications from their stored result. Returns a manual “Check now”.
  */
-export function useLinkHealthCheck(options: {schedule?: boolean;} = {}) {
+export function useLinkHealthCheck(options: { schedule?: boolean } = {}) {
   const { data, apply } = useDomains();
   const { current } = useWorkspace();
   const { data: commerce } = useCommerce();

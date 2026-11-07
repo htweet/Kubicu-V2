@@ -18,29 +18,29 @@ import { cn } from '../../utils/cn';
 import { ThemeGallery } from '../../components/themes/ThemeGallery';
 
 /** Templates set the layout; themes set the look (D164). */
-function LibraryNav({ active }: {active: 'templates' | 'themes';}) {
+function LibraryNav({ active }: { active: 'templates' | 'themes' }) {
   const { t: tr } = useT();
   const tabs = [
-  { id: 'templates', label: 'Templates', to: '/templates' },
-  { id: 'themes', label: 'Themes', to: '/templates?tab=themes' }] as
-  const;
+    { id: 'templates', label: 'Templates', to: '/templates' },
+    { id: 'themes', label: 'Themes', to: '/templates?tab=themes' },
+  ] as const;
   return (
     <nav aria-label={tr('Library')} className="flex gap-1 border-b border-line">
-      {tabs.map((t) =>
-      <Link
-        key={t.id}
-        to={t.to}
-        aria-current={active === t.id ? 'page' : undefined}
-        className={cn(
-          '-mb-px border-b-2 px-3 py-2.5 text-label font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
-          active === t.id ? 'border-fg text-fg' : 'border-transparent text-fg-muted hover:text-fg'
-        )}>
-        
+      {tabs.map((t) => (
+        <Link
+          key={t.id}
+          to={t.to}
+          aria-current={active === t.id ? 'page' : undefined}
+          className={cn(
+            '-mb-px border-b-2 px-3 py-2.5 text-label font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
+            active === t.id ? 'border-fg text-fg' : 'border-transparent text-fg-muted hover:text-fg',
+          )}
+        >
           {tr(t.label)}
         </Link>
-      )}
-    </nav>);
-
+      ))}
+    </nav>
+  );
 }
 
 const styleLabels: Record<ExampleStyle, string> = { light: 'Light', dark: 'Dark', editorial: 'Editorial', bold: 'Bold' };
@@ -56,7 +56,7 @@ export function Templates() {
   const initialGoal = params.get('goal');
   // Country, then city (D434). Defaults to the country of the visitor's language; Nigeria's starters show first in English.
   const [country, setCountry] = useState<CountryCode | 'all'>(() => countryForLang(lang));
-  const [goal, setGoal] = useState<ExampleGoal | 'all'>(initialGoal && initialGoal in goalLabels ? initialGoal as ExampleGoal : 'all');
+  const [goal, setGoal] = useState<ExampleGoal | 'all'>(initialGoal && initialGoal in goalLabels ? (initialGoal as ExampleGoal) : 'all');
   const [style, setStyle] = useState<ExampleStyle | 'all'>('all');
   const [query, setQuery] = useState('');
   const [region, setRegion] = useState('all');
@@ -70,12 +70,12 @@ export function Templates() {
     const inCountry = (e: (typeof examplePages)[number]) => country === 'all' || exampleCountry(e) === country || !!e.elite || !!e.artwork;
     return countryFirst(examplePages, country === 'all' ? countryForLang(lang) : country).filter(
       (e) =>
-      inCountry(e) && (
-      goal === 'all' || e.goals.includes(goal)) && (
-      style === 'all' || e.styles.includes(style)) && (
-      region === 'all' || e.city === region) && (
-      price === 'all' || (price === 'premium' ? templatePrice(e.id) > 0 : templatePrice(e.id) === 0)) && (
-      !q || [e.name, e.category, tr(e.category), e.bestFor, e.description, e.city].some((s) => s.toLowerCase().includes(q)))
+        inCountry(e) &&
+        (goal === 'all' || e.goals.includes(goal)) &&
+        (style === 'all' || e.styles.includes(style)) &&
+        (region === 'all' || e.city === region) &&
+        (price === 'all' || (price === 'premium' ? templatePrice(e.id) > 0 : templatePrice(e.id) === 0)) &&
+        (!q || [e.name, e.category, tr(e.category), e.bestFor, e.description, e.city].some((s) => s.toLowerCase().includes(q))),
     );
   }, [goal, style, query, region, price, tr, country, lang]);
 
@@ -101,8 +101,8 @@ export function Templates() {
           </p>
         </header>
         <ThemeGallery signUpHref="/signup" />
-      </div>);
-
+      </div>
+    );
   }
 
   return (
@@ -133,8 +133,8 @@ export function Templates() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={tr('Search, e.g. salon')}
-              className="h-10 w-full rounded-md border border-line-strong bg-field pl-9 pr-3 text-label text-fg placeholder:text-fg-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus" />
-            
+              className="h-10 w-full rounded-md border border-line-strong bg-field pl-9 pr-3 text-label text-fg placeholder:text-fg-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+            />
           </label>
         </div>
       </div>
@@ -145,11 +145,11 @@ export function Templates() {
           value={price}
           onChange={setPrice}
           options={[
-          ['all', tr('Free and premium')],
-          ['free', tr('Free')],
-          ['premium', tr('Premium')]]
-          } />
-        
+            ['all', tr('Free and premium')],
+            ['free', tr('Free')],
+            ['premium', tr('Premium')],
+          ]}
+        />
         <FilterRow<CountryCode | 'all'> label={tr('Country')} value={country} onChange={(c) => (setCountry(c), setRegion('all'))} options={[['all', tr('All countries')], ...countries.map((c) => [c.code, tr(c.name)] as [CountryCode, string])]} />
         <FilterRow label={tr('City')} value={region} onChange={setRegion} options={[['all', tr('Every city')], ...regions.map((r) => [r, tr(r)] as [string, string])]} />
       </div>
@@ -158,63 +158,63 @@ export function Templates() {
         {tr('Templates: {n}', { n: list.length })}
       </p>
 
-      {list.length === 0 ?
-      <div className="mt-8">
+      {list.length === 0 ? (
+        <div className="mt-8">
           <EmptyState
-          icon={SearchIcon}
-          title={tr('No templates match')}
-          description={tr('Try another goal or style, or start from a blank page.')}
-          action={
-          <Button variant="secondary" onClick={reset}>
+            icon={SearchIcon}
+            title={tr('No templates match')}
+            description={tr('Try another goal or style, or start from a blank page.')}
+            action={
+              <Button variant="secondary" onClick={reset}>
                 {tr('Clear filters')}
               </Button>
-          } />
-        
-        </div> :
-
-      <ul className="mt-6 grid grid-cols-2 gap-x-5 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
-          {list.map((e) =>
-        <li key={e.id} className="flex flex-col">
+            }
+          />
+        </div>
+      ) : (
+        <ul className="mt-6 grid grid-cols-2 gap-x-5 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
+          {list.map((e) => (
+            <li key={e.id} className="flex flex-col">
               <Link to={`/templates/${e.id}`} className="group flex flex-1 flex-col rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
                 <span className="nm-edge relative block rounded-[14px] transition-transform duration-150 ease-out group-hover:-translate-y-0.5">
                   <span className="block overflow-hidden rounded-[13px]">
                     <TemplateThumb doc={e.doc} width={220} height={330} />
                   </span>
-                  {templatePrice(e.id) > 0 &&
-              <span className="absolute left-2 top-2">
+                  {templatePrice(e.id) > 0 && (
+                    <span className="absolute left-2 top-2">
                       <Badge tone="accent">{tr('Premium · {price}', { price: formatNgn(templatePrice(e.id)) })}</Badge>
                     </span>
-              }
+                  )}
                 </span>
                 <span className="mt-4 text-caption font-medium text-fg-subtle">{tr(e.category)}</span>
                 <span className="mt-0.5 text-heading font-semibold text-fg">{e.name}</span>
                 <span className="mt-1 text-label text-fg-muted">{e.bestFor}</span>
               </Link>
             </li>
-        )}
+          ))}
         </ul>
-      }
-    </div>);
-
+      )}
+    </div>
+  );
 }
 
-function FilterRow<T extends string>({ label, value, onChange, options }: {label: string;value: T;onChange: (v: T) => void;options: [T, string][];}) {
+function FilterRow<T extends string>({ label, value, onChange, options }: { label: string; value: T; onChange: (v: T) => void; options: [T, string][] }) {
   return (
     <div role="group" aria-label={label} className="-mx-1 flex flex-wrap gap-1.5">
-      {options.map(([v, text]) =>
-      <button
-        key={v}
-        type="button"
-        aria-pressed={value === v}
-        onClick={() => onChange(v)}
-        className={cn(
-          'h-8 whitespace-nowrap rounded-full border px-3 text-label font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
-          value === v ? 'nm-fill border-transparent font-semibold text-[rgb(16_14_26)]' : 'border-line text-fg-muted hover:border-line-strong hover:text-fg'
-        )}>
-        
+      {options.map(([v, text]) => (
+        <button
+          key={v}
+          type="button"
+          aria-pressed={value === v}
+          onClick={() => onChange(v)}
+          className={cn(
+            'h-8 whitespace-nowrap rounded-full border px-3 text-label font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
+            value === v ? 'nm-fill border-transparent font-semibold text-[rgb(16_14_26)]' : 'border-line text-fg-muted hover:border-line-strong hover:text-fg',
+          )}
+        >
           {text}
         </button>
-      )}
-    </div>);
-
+      ))}
+    </div>
+  );
 }

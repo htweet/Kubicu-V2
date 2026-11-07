@@ -29,14 +29,14 @@ const C = {
   subtle: '#64748B',
   rule: '#E2E8F0',
   tint: '#F1F5F9',
-  check: '#15803D'
+  check: '#15803D',
 };
 
 const levelInk: Record<TrustLevel, string> = {
   starting: '#334155',
   building: '#1D4ED8',
   established: '#1D4ED8',
-  trusted: '#15803D'
+  trusted: '#15803D',
 };
 
 const FONT = "'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
@@ -118,8 +118,8 @@ export async function renderTrustCard(c: TrustCardContent): Promise<Blob> {
     const spaceTop = y - 10;
     const spaceBottom = footerTop - 30;
     const room = spaceBottom - spaceTop;
-    if (room >= 200) drawScoreBlock(ctx, c.score, levelInk[c.level], pad, spaceTop, CARD_W - pad * 2, room);else
-    {
+    if (room >= 200) drawScoreBlock(ctx, c.score, levelInk[c.level], pad, spaceTop, CARD_W - pad * 2, room);
+    else {
       // Long list of checks: no room for the large score, so it sits on its own line under the last check.
       ctx.fillStyle = C.ink;
       ctx.font = `700 40px ${FONT}`;
@@ -160,7 +160,7 @@ export async function renderTrustCard(c: TrustCardContent): Promise<Blob> {
   ctx.font = `500 24px ${FONT}`;
   ctx.fillText(`Made ${c.generatedAt.toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' })}`, tx, ty);
 
-  return new Promise((resolve, reject) => canvas.toBlob((b) => b ? resolve(b) : reject(new Error('Could not create image')), 'image/png'));
+  return new Promise((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('Could not create image'))), 'image/png'));
 }
 
 export function cardFileName(business: string): string {
@@ -174,8 +174,8 @@ function wrap(ctx: CanvasRenderingContext2D, text: string, max: number, maxLines
   let line = '';
   for (const w of words) {
     const test = line ? `${line} ${w}` : w;
-    if (ctx.measureText(test).width <= max) line = test;else
-    {
+    if (ctx.measureText(test).width <= max) line = test;
+    else {
       if (line) lines.push(line);
       line = w;
     }

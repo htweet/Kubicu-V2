@@ -27,7 +27,7 @@ export const subStatusLabels: Record<SubStatus, string> = {
   paused: 'Paused',
   past_due: 'Payment failed',
   cancelling: 'Cancelling',
-  ended: 'Ended'
+  ended: 'Ended',
 };
 
 export const defaultRules = (): SubRules => ({ pause: true, maxPauseCycles: 2, skip: true, switchPlan: true, cancelAnyTime: true, noticeDays: 0 });
@@ -47,15 +47,15 @@ export function emptySubPlan(kind: SubPlan['kind']): SubPlan {
     items: [],
     rules: defaultRules(),
     status: 'active',
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
   };
 }
 
 export function addInterval(iso: string, interval: SubInterval, n = 1): string {
   const d = new Date(iso);
-  if (interval === 'week') d.setDate(d.getDate() + 7 * n);else
-  if (interval === 'year') d.setFullYear(d.getFullYear() + n);else
-  d.setMonth(d.getMonth() + n);
+  if (interval === 'week') d.setDate(d.getDate() + 7 * n);
+  else if (interval === 'year') d.setFullYear(d.getFullYear() + n);
+  else d.setMonth(d.getMonth() + n);
   return d.toISOString();
 }
 
@@ -98,27 +98,27 @@ export function boxShortfall(data: CommerceData, plan: SubPlan): string[] {
   for (const it of plan.items) {
     const p = data.products.find((x) => x.id === it.productId);
     const v = p?.variants.find((x) => x.id === it.variantId);
-    if (!p || !v || p.status !== 'active') out.push(p?.name ?? 'A removed product');else
-    if (p.kind === 'physical' && p.trackStock && v.stock < it.qty) out.push(p.name);
+    if (!p || !v || p.status !== 'active') out.push(p?.name ?? 'A removed product');
+    else if (p.kind === 'physical' && p.trackStock && v.stock < it.qty) out.push(p.name);
   }
   return out;
 }
 
 /** Monthly value of one subscription at its plan's price. */
 export function monthlyValue(plan: Pick<SubPlan, 'priceNgn' | 'interval'>): number {
-  if (plan.interval === 'week') return Math.round(plan.priceNgn * 52 / 12);
+  if (plan.interval === 'week') return Math.round((plan.priceNgn * 52) / 12);
   if (plan.interval === 'year') return Math.round(plan.priceNgn / 12);
   return plan.priceNgn;
 }
 
 /** Monthly recurring revenue from paying subscribers (not trials or pauses). */
 export function mrr(data: CommerceData): number {
-  return data.subscriptions.
-  filter((s) => s.status === 'active' || s.status === 'cancelling' || s.status === 'past_due').
-  reduce((sum, s) => {
-    const plan = data.subPlans.find((p) => p.id === s.planId);
-    return sum + (plan ? monthlyValue(plan) : 0);
-  }, 0);
+  return data.subscriptions
+    .filter((s) => s.status === 'active' || s.status === 'cancelling' || s.status === 'past_due')
+    .reduce((sum, s) => {
+      const plan = data.subPlans.find((p) => p.id === s.planId);
+      return sum + (plan ? monthlyValue(plan) : 0);
+    }, 0);
 }
 
 export function nextDueAt(s: Subscription): string | null {
@@ -136,11 +136,11 @@ const withEv = (s: Subscription, e: SubEvent): Subscription => ({ ...s, events: 
 const payment = (label: string, amountNgn: number, status: SubPayment['status'], at: string, orderId?: string): SubPayment => ({ id: uid('spay'), at, label, amountNgn, status, orderId });
 
 function replaceSub(data: CommerceData, sub: Subscription): CommerceData {
-  return { ...data, subscriptions: data.subscriptions.map((s) => s.id === sub.id ? sub : s) };
+  return { ...data, subscriptions: data.subscriptions.map((s) => (s.id === sub.id ? sub : s)) };
 }
 
 /** Creates the box order for one cycle. Null when the box can't be filled. */
-function boxOrder(data: CommerceData, sub: Subscription, plan: SubPlan, wsPlan: WorkspacePlan, at: string, note: string): {data: CommerceData;order: Order;} | null {
+function boxOrder(data: CommerceData, sub: Subscription, plan: SubPlan, wsPlan: WorkspacePlan, at: string, note: string): { data: CommerceData; order: Order } | null {
   if (boxShortfall(data, plan).length > 0 || plan.items.length === 0) return null;
   const lines = plan.items.map((it) => {
     const p = data.products.find((x) => x.id === it.productId)!;
@@ -151,7 +151,7 @@ function boxOrder(data: CommerceData, sub: Subscription, plan: SubPlan, wsPlan: 
   const listTotal = lines.reduce((s, l) => s + l.list, 0) || 1;
   let allocated = 0;
   const items = lines.map((l, i) => {
-    const share = i === lines.length - 1 ? plan.priceNgn - allocated : Math.round(plan.priceNgn * l.list / listTotal);
+    const share = i === lines.length - 1 ? plan.priceNgn - allocated : Math.round((plan.priceNgn * l.list) / listTotal);
     allocated += share;
     return {
       productId: l.p.id,
@@ -161,7 +161,7 @@ function boxOrder(data: CommerceData, sub: Subscription, plan: SubPlan, wsPlan: 
       unitPriceNgn: Math.round(share / l.qty),
       qty: l.qty,
       imageUrl: l.p.images[0]?.url ?? '',
-      kind: l.p.kind
+      kind: l.p.kind,
     };
   });
   const subtotal = items.reduce((s, i) => s + i.unitPriceNgn * i.qty, 0);
@@ -175,9 +175,9 @@ function boxOrder(data: CommerceData, sub: Subscription, plan: SubPlan, wsPlan: 
     customer: sub.customer,
     items,
     fulfilment:
-    sub.delivery?.method === 'delivery' ?
-    { method: 'delivery', zoneId: sub.delivery.zoneId, zoneName: sub.delivery.zoneName, address: sub.delivery.address } :
-    { method: 'pickup', address: data.fulfilment.pickupAddress },
+      sub.delivery?.method === 'delivery'
+        ? { method: 'delivery', zoneId: sub.delivery.zoneId, zoneName: sub.delivery.zoneName, address: sub.delivery.address }
+        : { method: 'pickup', address: data.fulfilment.pickupAddress },
     subtotalNgn: subtotal,
     discountNgn: 0,
     deliveryNgn,
@@ -187,16 +187,16 @@ function boxOrder(data: CommerceData, sub: Subscription, plan: SubPlan, wsPlan: 
     paymentStatus: 'paid',
     refunds: [],
     events: [
-    { id: uid('ev'), kind: 'paid', label: 'Subscription payment taken (test mode)', at },
-    { id: uid('ev'), kind: 'placed', label: `${note} — ${plan.name}`, at }],
-
+      { id: uid('ev'), kind: 'paid', label: 'Subscription payment taken (test mode)', at },
+      { id: uid('ev'), kind: 'placed', label: `${note} — ${plan.name}`, at },
+    ],
     downloads: [],
     note: '',
     sourceHandle: sub.sourceHandle,
-    subscriptionId: sub.id
+    subscriptionId: sub.id,
   };
   let next: CommerceData = { ...data, orders: [order, ...data.orders], nextOrderNumber: number + 1 };
-  items.forEach((i) => next = moveStock(next, i.productId, i.variantId, -i.qty, 'order', 'Subscription box', number));
+  items.forEach((i) => (next = moveStock(next, i.productId, i.variantId, -i.qty, 'order', 'Subscription box', number)));
   return { data: next, order };
 }
 
@@ -212,7 +212,7 @@ export interface SignupInput {
   wsPlan: WorkspacePlan;
 }
 
-export type SignupResult = {ok: true;data: CommerceData;sub: Subscription;} | {ok: false;reason: 'declined' | 'full' | 'unavailable';message: string;};
+export type SignupResult = { ok: true; data: CommerceData; sub: Subscription } | { ok: false; reason: 'declined' | 'full' | 'unavailable'; message: string };
 
 /** Starts a subscription. "bank" is a successful payment after the bank confirmation step. */
 export function startSubscription(data: CommerceData, input: SignupInput): SignupResult {
@@ -244,7 +244,7 @@ export function startSubscription(data: CommerceData, input: SignupInput): Signu
     card: input.card,
     payments: [],
     events: [ev(trial ? `Started a ${plan.trialDays}-day free trial of ${plan.name}` : `Subscribed to ${plan.name}`, 'customer', at)],
-    sourceHandle: input.sourceHandle
+    sourceHandle: input.sourceHandle,
   };
   let next: CommerceData = { ...data, subscriptions: [sub, ...data.subscriptions] };
   if (plan.setupFeeNgn > 0) sub = { ...sub, payments: [payment('Setup fee', plan.setupFeeNgn, 'paid', at)] };
@@ -280,7 +280,7 @@ function charge(data: CommerceData, sub: Subscription, outcome: 'succeeds' | 'fa
     } else {
       s = withEv(
         { ...s, status: 'past_due', failedAt: at, retries: 0, graceEndsAt: plusDays(at, SUB_GRACE_DAYS), payments: [payment(`${intervalAdverb[plan.interval]} renewal`, amount, 'failed', at), ...s.payments] },
-        ev(`Renewal failed — retrying on days ${SUB_RETRY_DAYS.join(', ')}; ends ${subDate(plusDays(at, SUB_GRACE_DAYS))} if not paid`, 'automatic', at)
+        ev(`Renewal failed — retrying on days ${SUB_RETRY_DAYS.join(', ')}; ends ${subDate(plusDays(at, SUB_GRACE_DAYS))} if not paid`, 'automatic', at),
       );
     }
     return replaceSub(data, s);
@@ -309,9 +309,9 @@ function charge(data: CommerceData, sub: Subscription, outcome: 'succeeds' | 'fa
       pausedFrom: null,
       trialEndsAt: s.status === 'trialing' ? null : s.trialEndsAt,
       periodEnd: addInterval(at, plan.interval),
-      payments: [payment(isRetry ? 'Renewal (paid on retry)' : sub.status === 'trialing' ? 'First charge after trial' : `${intervalAdverb[plan.interval]} renewal`, amount, 'paid', at, orderId), ...s.payments]
+      payments: [payment(isRetry ? 'Renewal (paid on retry)' : sub.status === 'trialing' ? 'First charge after trial' : `${intervalAdverb[plan.interval]} renewal`, amount, 'paid', at, orderId), ...s.payments],
     },
-    ev(`${isRetry ? 'Retry succeeded' : 'Renewed'} — ${formatNgn(amount)} paid`, 'automatic', at)
+    ev(`${isRetry ? 'Retry succeeded' : 'Renewed'} — ${formatNgn(amount)} paid`, 'automatic', at),
   );
   return replaceSub(next, s);
 }
@@ -341,7 +341,7 @@ export function renewDue(data: CommerceData, outcome: 'succeeds' | 'fails', wsPl
 }
 
 /** Prototype: runs each live subscription's next step now. */
-export function runNextNow(data: CommerceData, outcome: 'succeeds' | 'fails', wsPlan: WorkspacePlan): {data: CommerceData;count: number;} {
+export function runNextNow(data: CommerceData, outcome: 'succeeds' | 'fails', wsPlan: WorkspacePlan): { data: CommerceData; count: number } {
   let next = data;
   let count = 0;
   const at = new Date().toISOString();
@@ -364,39 +364,39 @@ function edit(data: CommerceData, id: string, fn: (s: Subscription, plan: SubPla
 }
 
 export const pauseSub = (data: CommerceData, id: string, cycles: number, by: By) =>
-edit(data, id, (s, plan) => {
-  const until = addInterval(s.periodEnd, plan?.interval ?? 'month', cycles);
-  return withEv({ ...s, status: 'paused', pausedFrom: s.periodEnd, pausedUntil: until, periodEnd: until }, ev(`Paused for ${cycles} ${plan ? intervalWord[plan.interval] : 'cycle'}${cycles === 1 ? '' : 's'} — charges resume ${subDate(until)}`, by));
-});
+  edit(data, id, (s, plan) => {
+    const until = addInterval(s.periodEnd, plan?.interval ?? 'month', cycles);
+    return withEv({ ...s, status: 'paused', pausedFrom: s.periodEnd, pausedUntil: until, periodEnd: until }, ev(`Paused for ${cycles} ${plan ? intervalWord[plan.interval] : 'cycle'}${cycles === 1 ? '' : 's'} — charges resume ${subDate(until)}`, by));
+  });
 
 export const resumeSub = (data: CommerceData, id: string, by: By) =>
-edit(data, id, (s) => {
-  // Resuming early charges on the date the pause began (or tomorrow if that has passed).
-  const from = s.pausedFrom ?? s.periodEnd;
-  const periodEnd = Date.parse(from) > Date.now() ? from : new Date(Date.now() + DAY).toISOString();
-  return withEv({ ...s, status: 'active', pausedUntil: null, pausedFrom: null, periodEnd }, ev(`Resumed — next charge ${subDate(periodEnd)}`, by));
-});
+  edit(data, id, (s) => {
+    // Resuming early charges on the date the pause began (or tomorrow if that has passed).
+    const from = s.pausedFrom ?? s.periodEnd;
+    const periodEnd = Date.parse(from) > Date.now() ? from : new Date(Date.now() + DAY).toISOString();
+    return withEv({ ...s, status: 'active', pausedUntil: null, pausedFrom: null, periodEnd }, ev(`Resumed — next charge ${subDate(periodEnd)}`, by));
+  });
 
 export const skipNextCycle = (data: CommerceData, id: string, by: By) =>
-edit(data, id, (s, plan) => {
-  const periodEnd = addInterval(s.periodEnd, plan?.interval ?? 'month');
-  return withEv({ ...s, periodEnd }, ev(`Skipped the next ${plan ? intervalWord[plan.interval] : 'cycle'} — next charge ${subDate(periodEnd)}`, by));
-});
+  edit(data, id, (s, plan) => {
+    const periodEnd = addInterval(s.periodEnd, plan?.interval ?? 'month');
+    return withEv({ ...s, periodEnd }, ev(`Skipped the next ${plan ? intervalWord[plan.interval] : 'cycle'} — next charge ${subDate(periodEnd)}`, by));
+  });
 
 export const switchPlan = (data: CommerceData, id: string, planId: string, by: By) =>
-edit(data, id, (s) => {
-  const target = data.subPlans.find((p) => p.id === planId);
-  if (!target) return s;
-  if (planId === s.planId) return withEv({ ...s, pendingPlanId: null }, ev('Kept the current plan', by));
-  return withEv({ ...s, pendingPlanId: planId }, ev(`Switching to ${target.name} from ${subDate(s.periodEnd)} (${priceLine(target)})`, by));
-});
+  edit(data, id, (s) => {
+    const target = data.subPlans.find((p) => p.id === planId);
+    if (!target) return s;
+    if (planId === s.planId) return withEv({ ...s, pendingPlanId: null }, ev('Kept the current plan', by));
+    return withEv({ ...s, pendingPlanId: planId }, ev(`Switching to ${target.name} from ${subDate(s.periodEnd)} (${priceLine(target)})`, by));
+  });
 
 export const cancelSub = (data: CommerceData, id: string, reason: string, by: By, immediately = false) =>
-edit(data, id, (s) => {
-  const at = new Date().toISOString();
-  if (immediately || s.status === 'trialing' || s.status === 'past_due') return withEv({ ...s, status: 'ended', endedAt: at, cancelReason: reason || null, pendingPlanId: null }, ev(`Cancelled${reason ? ` — “${reason}”` : ''}. Ended straight away.`, by, at));
-  return withEv({ ...s, status: 'cancelling', cancelReason: reason || null, pendingPlanId: null, pausedUntil: null }, ev(`Cancelled${reason ? ` — “${reason}”` : ''}. Ends ${subDate(s.periodEnd)}.`, by, at));
-});
+  edit(data, id, (s) => {
+    const at = new Date().toISOString();
+    if (immediately || s.status === 'trialing' || s.status === 'past_due') return withEv({ ...s, status: 'ended', endedAt: at, cancelReason: reason || null, pendingPlanId: null }, ev(`Cancelled${reason ? ` — “${reason}”` : ''}. Ended straight away.`, by, at));
+    return withEv({ ...s, status: 'cancelling', cancelReason: reason || null, pendingPlanId: null, pausedUntil: null }, ev(`Cancelled${reason ? ` — “${reason}”` : ''}. Ends ${subDate(s.periodEnd)}.`, by, at));
+  });
 
 export const undoCancel = (data: CommerceData, id: string, by: By) => edit(data, id, (s) => withEv({ ...s, status: 'active', cancelReason: null }, ev(`Resumed — next charge ${subDate(s.periodEnd)}`, by)));
 
@@ -409,17 +409,17 @@ export function updateCard(data: CommerceData, id: string, card: Subscription['c
 }
 
 export const giveFreeCycle = (data: CommerceData, id: string) =>
-edit(data, id, (s, plan) => {
-  const periodEnd = addInterval(s.periodEnd, plan?.interval ?? 'month');
-  return withEv({ ...s, periodEnd }, ev(`Given a free ${plan ? intervalWord[plan.interval] : 'cycle'} — next charge ${subDate(periodEnd)}`, 'seller'));
-});
+  edit(data, id, (s, plan) => {
+    const periodEnd = addInterval(s.periodEnd, plan?.interval ?? 'month');
+    return withEv({ ...s, periodEnd }, ev(`Given a free ${plan ? intervalWord[plan.interval] : 'cycle'} — next charge ${subDate(periodEnd)}`, 'seller'));
+  });
 
 export function refundLastPayment(data: CommerceData, id: string): CommerceData {
   return edit(data, id, (s) => {
     const idx = s.payments.findIndex((p) => p.status === 'paid');
     if (idx < 0) return s;
     const p = s.payments[idx];
-    return withEv({ ...s, payments: s.payments.map((x, i) => i === idx ? { ...x, status: 'refunded' as const } : x) }, ev(`Refunded ${formatNgn(p.amountNgn)} (${p.label.toLowerCase()})`, 'seller'));
+    return withEv({ ...s, payments: s.payments.map((x, i) => (i === idx ? { ...x, status: 'refunded' as const } : x)) }, ev(`Refunded ${formatNgn(p.amountNgn)} (${p.label.toLowerCase()})`, 'seller'));
   });
 }
 
@@ -428,7 +428,7 @@ export function lastPaid(s: Subscription): SubPayment | undefined {
 }
 
 /** Can the subscriber cancel themselves right now under the plan's notice rule? */
-export function canSelfCancel(s: Subscription, plan: SubPlan | undefined, now = Date.now()): {ok: boolean;reason?: string;} {
+export function canSelfCancel(s: Subscription, plan: SubPlan | undefined, now = Date.now()): { ok: boolean; reason?: string } {
   if (!plan || plan.rules.cancelAnyTime || s.status === 'trialing') return { ok: true };
   const cutoff = Date.parse(s.periodEnd) - plan.rules.noticeDays * DAY;
   return now <= cutoff ? { ok: true } : { ok: false, reason: `Cancelling needs ${plan.rules.noticeDays} days’ notice before a charge. You can cancel after ${subDate(s.periodEnd)}, before the following one.` };

@@ -8,28 +8,28 @@ import { activeCountry } from '../country';
  */
 export const VAT_EXAMPLE_PCT = 7.5;
 
-export const weekdays: {id: WeekdayId;label: string;short: string;}[] = [
-{ id: 'mon', label: 'Monday', short: 'Mon' },
-{ id: 'tue', label: 'Tuesday', short: 'Tue' },
-{ id: 'wed', label: 'Wednesday', short: 'Wed' },
-{ id: 'thu', label: 'Thursday', short: 'Thu' },
-{ id: 'fri', label: 'Friday', short: 'Fri' },
-{ id: 'sat', label: 'Saturday', short: 'Sat' },
-{ id: 'sun', label: 'Sunday', short: 'Sun' }];
+export const weekdays: { id: WeekdayId; label: string; short: string }[] = [
+  { id: 'mon', label: 'Monday', short: 'Mon' },
+  { id: 'tue', label: 'Tuesday', short: 'Tue' },
+  { id: 'wed', label: 'Wednesday', short: 'Wed' },
+  { id: 'thu', label: 'Thursday', short: 'Thu' },
+  { id: 'fri', label: 'Friday', short: 'Fri' },
+  { id: 'sat', label: 'Saturday', short: 'Sat' },
+  { id: 'sun', label: 'Sunday', short: 'Sun' },
+];
 
-
-export const orderMessageLabels: Record<OrderMessageId, {label: string;preview: string;}> = {
+export const orderMessageLabels: Record<OrderMessageId, { label: string; preview: string }> = {
   confirmed: { label: 'Order confirmed', preview: 'Hi {name}, thanks for your order {order}! We’ve got it and will let you know when it’s on its way.' },
   ready: { label: 'Ready for pickup', preview: 'Hi {name}, order {order} is ready to collect from {address}.' },
   out_for_delivery: { label: 'Out for delivery', preview: 'Hi {name}, order {order} is on its way to you today.' },
   delivered: { label: 'Delivered', preview: 'Hi {name}, order {order} was delivered. We hope you love it!' },
-  refunded: { label: 'Refunded', preview: 'Hi {name}, we’ve refunded {amount} on order {order}. It can take a few days to reach your account.' }
+  refunded: { label: 'Refunded', preview: 'Hi {name}, we’ve refunded {amount} on order {order}. It can take a few days to reach your account.' },
 };
 
 export function defaultHours(): Record<WeekdayId, DayHours> {
   return weekdays.reduce(
     (m, d) => ({ ...m, [d.id]: { open: d.id !== 'sun', from: '09:00', to: d.id === 'sat' ? '16:00' : '18:00' } }),
-    {} as Record<WeekdayId, DayHours>
+    {} as Record<WeekdayId, DayHours>,
   );
 }
 
@@ -47,9 +47,9 @@ export const defaultShopSettings: ShopSettings = {
     ready: { whatsapp: true, email: false },
     out_for_delivery: { whatsapp: true, email: false },
     delivered: { whatsapp: true, email: false },
-    refunded: { whatsapp: true, email: true }
+    refunded: { whatsapp: true, email: true },
   },
-  weightUnit: 'kg'
+  weightUnit: 'kg',
 };
 
 /** Saved settings merged over the defaults, section by section. */
@@ -65,7 +65,7 @@ export function shopSettingsOf(data: Pick<CommerceData, 'shop'> | null | undefin
     policy: { ...d.policy, ...s.policy },
     status: { ...d.status, ...s.status },
     messages: { ...d.messages, ...s.messages },
-    weightUnit: s.weightUnit ?? d.weightUnit
+    weightUnit: s.weightUnit ?? d.weightUnit,
   };
 }
 
@@ -112,30 +112,30 @@ export function vatFor(settings: ShopSettings, taxableNgn: number, opts: VatOpti
   const base = Math.max(0, taxableNgn - (opts.untaxedNgn ?? 0));
   if (!on || r <= 0 || base <= 0) return null;
   if (settings.tax.inclusive) {
-    const amountNgn = Math.round(base * r / (100 + r));
+    const amountNgn = Math.round((base * r) / (100 + r));
     return { ratePct: r, amountNgn, inclusive: true, addedNgn: 0, country: where };
   }
-  const amountNgn = Math.round(base * r / 100);
+  const amountNgn = Math.round((base * r) / 100);
   return { ratePct: r, amountNgn, inclusive: false, addedNgn: amountNgn, country: where };
 }
 
 /** What each country calls the number on a tax-registered business's receipts — examples to confirm (D435). */
-export const taxNumberLabels: Record<CountryCode, {label: string;placeholder: string;}> = {
+export const taxNumberLabels: Record<CountryCode, { label: string; placeholder: string }> = {
   NG: { label: 'VAT number or TIN', placeholder: '12345678-0001' },
   KE: { label: 'KRA PIN', placeholder: 'P051234567X' },
   GH: { label: 'GRA TIN', placeholder: 'C0012345678' },
-  ZA: { label: 'VAT number', placeholder: '4123456789' }
+  ZA: { label: 'VAT number', placeholder: '4123456789' },
 };
 
 /** The tax types a product can have, per country wording (D435). Example labels — check with an accountant. */
-export const taxClassLabels: Record<TaxClass, {label: string;hint: string;}> = {
+export const taxClassLabels: Record<TaxClass, { label: string; hint: string }> = {
   standard: { label: 'Standard rate', hint: 'Most goods and services.' },
   zero: { label: 'Zero-rated', hint: 'Taxable at 0% — for example some basic foods, exports or books, depending on the country.' },
-  exempt: { label: 'Exempt', hint: 'Outside tax — for example some financial, medical or education services.' }
+  exempt: { label: 'Exempt', hint: 'Outside tax — for example some financial, medical or education services.' },
 };
 
 /** The amount of a set of lines that's zero-rated or exempt (D435). */
-export function untaxedAmount(lines: {amountNgn: number;taxClass?: TaxClass;}[]): number {
+export function untaxedAmount(lines: { amountNgn: number; taxClass?: TaxClass }[]): number {
   return lines.filter((l) => l.taxClass === 'zero' || l.taxClass === 'exempt').reduce((s, l) => s + l.amountNgn, 0);
 }
 
@@ -164,13 +164,13 @@ const fmtTime = (t: string) => {
 /** "Mon–Fri 9am–6pm · Sat 9am–4pm · Sun closed", grouping days with the same hours. */
 export function hoursSummary(hours: Record<WeekdayId, DayHours> | null): string {
   if (!hours) return '';
-  const label = (d: DayHours) => d.open ? `${fmtTime(d.from)}–${fmtTime(d.to)}` : 'closed';
-  const groups: {from: string;to: string;text: string;}[] = [];
+  const label = (d: DayHours) => (d.open ? `${fmtTime(d.from)}–${fmtTime(d.to)}` : 'closed');
+  const groups: { from: string; to: string; text: string }[] = [];
   weekdays.forEach((w) => {
     const text = label(hours[w.id]);
     const last = groups[groups.length - 1];
-    if (last && last.text === text) last.to = w.short;else
-    groups.push({ from: w.short, to: w.short, text });
+    if (last && last.text === text) last.to = w.short;
+    else groups.push({ from: w.short, to: w.short, text });
   });
   return groups.map((g) => `${g.from === g.to ? g.from : `${g.from}–${g.to}`} ${g.text}`).join(' · ');
 }

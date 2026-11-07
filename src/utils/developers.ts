@@ -15,7 +15,7 @@ export function randomToken(len: number): string {
 export const uid = (prefix: string) => `${prefix}_${randomToken(10)}`;
 
 /** A new key. The full secret is returned once and never stored. */
-export function makeKey(mode: KeyMode): {secret: string;prefix: string;last4: string;} {
+export function makeKey(mode: KeyMode): { secret: string; prefix: string; last4: string } {
   const body = randomToken(32);
   const prefix = `kub_${mode}_`;
   return { secret: `${prefix}${body}`, prefix, last4: body.slice(-4) };
@@ -62,13 +62,13 @@ export function samplePayload(event: WebhookEvent, workspaceId: string): string 
     'subscription.renewed': { subscription: { id: 'subs_3Ef4', plan: 'Scarf of the month', amount: { amount: 5000, currency: 'NGN' } } },
     'subscription.payment_failed': { subscription: { id: 'subs_3Ef4', attempt: 1, next_retry_at: '2026-10-25T09:00:00+01:00' } },
     'ticket.checked_in': { ticket: { code: 'KUB-7K2Q', event: 'Owambe Nights', checked_in_by: 'Door 1' } },
-    'payout.sent': { payout: { id: 'po_6Gh7', amount: { amount: 150000, currency: 'NGN' }, bank: 'GTBank ••3301' } }
+    'payout.sent': { payout: { id: 'po_6Gh7', amount: { amount: 150000, currency: 'NGN' }, bank: 'GTBank ••3301' } },
   };
   return JSON.stringify({ id: uid('evt'), type: event, created: new Date().toISOString(), workspace: workspaceId, livemode: false, data: data[event] }, null, 2);
 }
 
 /** Simulated receiving server: any address containing "fail" answers 500, "slow" times out; anything else 200. */
-export function simulateResponse(url: string): {status: number;ok: boolean;durationMs: number;} {
+export function simulateResponse(url: string): { status: number; ok: boolean; durationMs: number } {
   const u = url.toLowerCase();
   if (u.includes('slow')) return { status: 408, ok: false, durationMs: 10000 };
   if (u.includes('fail')) return { status: 500, ok: false, durationMs: 180 + Math.round(Math.random() * 120) };
@@ -89,7 +89,7 @@ export function deliver(d: DevelopersData, endpoint: WebhookEndpoint, event: Web
     nextRetryAt: res.ok ? undefined : new Date(now + RETRY_MINUTES[0] * 60000).toISOString(),
     durationMs: res.durationMs,
     payload: samplePayload(event, workspaceId),
-    test
+    test,
   };
   return checkAutoDisable({ ...d, deliveries: [delivery, ...d.deliveries].slice(0, 200) }, endpoint.id);
 }
@@ -102,16 +102,16 @@ export function retryDelivery(d: DevelopersData, deliveryId: string): Developers
   const attempts = del.attempts + 1;
   const next = res.ok || attempts > RETRY_MINUTES.length ? undefined : new Date(Date.now() + RETRY_MINUTES[attempts - 1] * 60000).toISOString();
   const updated: WebhookDelivery = { ...del, status: res.status, ok: res.ok, attempts, at: new Date().toISOString(), nextRetryAt: next, durationMs: res.durationMs };
-  return checkAutoDisable({ ...d, deliveries: d.deliveries.map((x) => x.id === deliveryId ? updated : x) }, ep.id);
+  return checkAutoDisable({ ...d, deliveries: d.deliveries.map((x) => (x.id === deliveryId ? updated : x)) }, ep.id);
 }
 
 function checkAutoDisable(d: DevelopersData, endpointId: string): DevelopersData {
   const recent = d.deliveries.filter((x) => x.endpointId === endpointId && !x.test).slice(0, AUTO_DISABLE_AFTER);
   if (recent.length < AUTO_DISABLE_AFTER || recent.some((x) => x.ok)) return d;
-  return { ...d, endpoints: d.endpoints.map((e) => e.id === endpointId && e.active ? { ...e, active: false, autoDisabledAt: new Date().toISOString() } : e) };
+  return { ...d, endpoints: d.endpoints.map((e) => (e.id === endpointId && e.active ? { ...e, active: false, autoDisabledAt: new Date().toISOString() } : e)) };
 }
 
-export const deliveryState = (x: WebhookDelivery): 'delivered' | 'retrying' | 'failed' => x.ok ? 'delivered' : x.nextRetryAt ? 'retrying' : 'failed';
+export const deliveryState = (x: WebhookDelivery): 'delivered' | 'retrying' | 'failed' => (x.ok ? 'delivered' : x.nextRetryAt ? 'retrying' : 'failed');
 
 export function seedDevelopers(d: DevelopersData): DevelopersData {
   if (d.seeded) return d;
@@ -120,16 +120,16 @@ export function seedDevelopers(d: DevelopersData): DevelopersData {
     ...d,
     seeded: true,
     apps: [
-    {
-      id: 'app_sabibooks',
-      name: 'SabiBooks Accounting',
-      developer: 'SabiBooks Ltd (sample)',
-      scopes,
-      connectedAt: new Date(Date.now() - 12 * 86400000).toISOString(),
-      connectedBy: 'Workspace owner',
-      lastUsedAt: new Date(Date.now() - 3 * 3600000).toISOString(),
-      sample: true
-    }]
-
+      {
+        id: 'app_sabibooks',
+        name: 'SabiBooks Accounting',
+        developer: 'SabiBooks Ltd (sample)',
+        scopes,
+        connectedAt: new Date(Date.now() - 12 * 86400000).toISOString(),
+        connectedBy: 'Workspace owner',
+        lastUsedAt: new Date(Date.now() - 3 * 3600000).toISOString(),
+        sample: true,
+      },
+    ],
   };
 }

@@ -11,8 +11,8 @@ function read(): NavGroupId | null {
     if (raw === 'none') return null;
     if (raw) return raw as NavGroupId;
   } catch {
-
-    /* fall through */}
+    /* fall through */
+  }
   return DEFAULT_OPEN;
 }
 
@@ -20,8 +20,8 @@ function save(id: NavGroupId | null) {
   try {
     window.localStorage.setItem(KEY, id ?? 'none');
   } catch {
-
-    /* storage full — lasts for this visit */}
+    /* storage full — lasts for this visit */
+  }
 }
 
 /**
@@ -32,9 +32,9 @@ export function useNavGroups() {
   const { pathname } = useLocation();
   const [openId, setOpenId] = useState<NavGroupId | null>(read);
 
-  const activeGroup = [...workspaceNav].
-  sort((a, b) => b.to.length - a.to.length).
-  find((n) => n.to === '/app' ? pathname === '/app' : pathname === n.to || pathname.startsWith(`${n.to}/`))?.group;
+  const activeGroup = [...workspaceNav]
+    .sort((a, b) => b.to.length - a.to.length)
+    .find((n) => (n.to === '/app' ? pathname === '/app' : pathname === n.to || pathname.startsWith(`${n.to}/`)))?.group;
 
   // Landing on a screen opens its section (and closes the other) so the current page is never hidden.
   useEffect(() => {

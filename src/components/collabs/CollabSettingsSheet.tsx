@@ -44,7 +44,7 @@ export function CollabSettingsSheet({ open, settings, canEdit, onClose, onSave }
       title={tr('Referral partner settings')}
       description={tr('Starting points for new invites. Each partner’s own rate and terms stay as agreed.')}
       footer={
-      <div className="flex justify-end gap-2">
+        <div className="flex justify-end gap-2">
           <Button variant="secondary" onClick={onClose}>
             {tr('Cancel')}
           </Button>
@@ -52,8 +52,8 @@ export function CollabSettingsSheet({ open, settings, canEdit, onClose, onSave }
             {tr('Save')}
           </Button>
         </div>
-      }>
-      
+      }
+    >
       <fieldset disabled={!canEdit} className="flex flex-col gap-6 px-5 py-5 md:px-6">
         <div className="sm:max-w-[50%]">
           <TextInput id="cs-rate" label={tr('Starting commission')} inputMode="decimal" value={rate} error={rateError || undefined} hint={tr('% of goods sold through their link, after discounts and refunds, never delivery.')} onChange={(e) => setRate(e.target.value.replace(/[^0-9.]/g, '').slice(0, 4))} />
@@ -65,8 +65,8 @@ export function CollabSettingsSheet({ open, settings, canEdit, onClose, onSave }
             value={String(holdDays)}
             hint={tr('Or as soon as the order is marked delivered. Open disputes always wait. Applies to commission not yet payable, for every partner.')}
             options={holdDayOptions.map((d) => ({ value: String(d), label: d === 0 ? tr('As soon as the order is paid') : tr('{n} days after payment', { n: d }) }))}
-            onChange={(v) => setHoldDays(Number(v))} />
-          
+            onChange={(v) => setHoldDays(Number(v))}
+          />
         </div>
         <div className="border-t border-line pt-6">
           <TextArea
@@ -78,10 +78,10 @@ export function CollabSettingsSheet({ open, settings, canEdit, onClose, onSave }
             value={terms}
             placeholder={termsFor(Number.isFinite(n) && n > 0 ? Math.round(n * 10) / 10 : 10, holdDays)}
             hint={tr('Filled in on every new invite, where you can still change it. Leave empty to use the sentence shown.')}
-            onChange={(e) => setTerms(e.target.value)} />
-          
+            onChange={(e) => setTerms(e.target.value)}
+          />
         </div>
       </fieldset>
-    </Sheet>);
-
+    </Sheet>
+  );
 }

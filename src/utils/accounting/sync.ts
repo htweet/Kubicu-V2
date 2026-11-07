@@ -20,7 +20,7 @@ export function emptyAccounting(): AccountingState {
     accounts: { sales: '', fees: '', refunds: '', vat: '', clearing: '', bank: '' },
     auto: true,
     synced: {},
-    runs: []
+    runs: [],
   };
 }
 
@@ -54,7 +54,7 @@ export function missingAccounts(s: AccountingState, list: IncomeEntry[], payouts
 }
 
 /** Tax for another country goes to that country's own tax account (D456). The shop's own country uses "Tax collected". */
-export const abroadTax = (e: IncomeEntry) => e.vat > 0 && e.vatCountry && e.vatCountry !== activeCountry() ? e.vatCountry : null;
+export const abroadTax = (e: IncomeEntry) => (e.vat > 0 && e.vatCountry && e.vatCountry !== activeCountry() ? e.vatCountry : null);
 
 /** Countries whose tax account code is missing for the lines waiting. */
 export function missingTaxCountries(s: AccountingState, list: IncomeEntry[]): string[] {

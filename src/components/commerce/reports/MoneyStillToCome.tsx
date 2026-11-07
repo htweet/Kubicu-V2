@@ -10,7 +10,7 @@ import { useT } from '../../../contexts/LocaleContext';
 import type { ReportRange } from '../../../utils/commerce/salesReport';
 
 /** Recurring revenue and money not yet collected (D95, D112) — kept out of “You receive”. */
-export function MoneyStillToCome({ data, links, range }: {data: CommerceData;links: PaymentLink[];range: ReportRange;}) {
+export function MoneyStillToCome({ data, links, range }: { data: CommerceData; links: PaymentLink[]; range: ReportRange }) {
   const { t: tr } = useT();
   const ordersN = (n: number, one: string, many: string) => tr(n === 1 ? one : many, { n });
   const inR = (iso?: string) => !!iso && Date.parse(iso) >= range.from && Date.parse(iso) < range.to;
@@ -38,7 +38,7 @@ export function MoneyStillToCome({ data, links, range }: {data: CommerceData;lin
       refused,
       owed: inst.reduce((t, o) => t + instalmentsOwed(o), 0),
       owedCount: inst.length,
-      defaulted: inst.filter((o) => o.instalments?.status === 'defaulted').length
+      defaulted: inst.filter((o) => o.instalments?.status === 'defaulted').length,
     };
   }, [data.orders, range]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -47,31 +47,31 @@ export function MoneyStillToCome({ data, links, range }: {data: CommerceData;lin
 
   return (
     <div className="grid items-start gap-6 lg:grid-cols-2">
-      {hasSubs &&
-      <Card id="recurring" title="Recurring revenue" description="What active subscriptions bring in each month, at today’s prices.">
+      {hasSubs && (
+        <Card id="recurring" title="Recurring revenue" description="What active subscriptions bring in each month, at today’s prices.">
           <dl>
             <Stat label="Monthly recurring" value={<>{formatNgn(mrr(data))}<span className="text-label font-normal text-fg-muted"> {tr('/mo')}</span></>} />
           </dl>
         </Card>
-      }
-      {staged.any &&
-      <Card id="staged" title="Staged payments" description="Made-to-order balances and payment links paid in stages. Still owed isn’t in “You receive”.">
+      )}
+      {staged.any && (
+        <Card id="staged" title="Staged payments" description="Made-to-order balances and payment links paid in stages. Still owed isn’t in “You receive”.">
           <StatGroup columns={3}>
             <Stat label="Still owed" value={formatNgn(staged.owed)} hint={ordersN(staged.owedCount, '{n} order waiting', '{n} orders waiting')} />
             <Stat label="Balances collected" value={formatNgn(staged.collected)} hint="This period" />
             <Stat label="Link stages paid" value={formatNgn(staged.linkStages)} hint="This period" />
           </StatGroup>
         </Card>
-      }
-      {payWays.any &&
-      <Card id="pay-ways" title="Pay on delivery and instalments" description="Cash and door transfers went to you directly. Money still to come isn’t in “You receive”.">
+      )}
+      {payWays.any && (
+        <Card id="pay-ways" title="Pay on delivery and instalments" description="Cash and door transfers went to you directly. Money still to come isn’t in “You receive”.">
           <StatGroup columns={3}>
             <Stat label="Collected on delivery" value={formatNgn(payWays.collected)} hint={ordersN(payWays.collectedCount, '{n} order this period', '{n} orders this period') + (payWays.refused ? ` · ${tr('{n} refused', { n: payWays.refused })}` : '')} />
             <Stat label="Out for collection" value={formatNgn(payWays.awaiting)} hint={ordersN(payWays.awaitingCount, '{n} order not yet paid', '{n} orders not yet paid')} />
             <Stat label="Owed in instalments" value={formatNgn(payWays.owed)} hint={ordersN(payWays.owedCount, '{n} order', '{n} orders') + (payWays.defaulted ? ` · ${tr('{n} defaulted', { n: payWays.defaulted })}` : '')} />
           </StatGroup>
         </Card>
-      }
-    </div>);
-
+      )}
+    </div>
+  );
 }

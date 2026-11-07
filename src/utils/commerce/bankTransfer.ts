@@ -24,18 +24,18 @@ export function parseAccounts(settings: Record<string, string> | undefined): Tra
       const list = JSON.parse(s.accounts) as Partial<TransferDetails>[];
       if (Array.isArray(list)) return list.map((a) => ({ bank: (a.bank ?? '').trim(), account: (a.account ?? '').trim(), accountName: (a.accountName ?? '').trim() }));
     } catch {
-
-      /* fall through to the old single account */}
+      /* fall through to the old single account */
+    }
   }
   if (s.bank || s.account) return [{ bank: (s.bank ?? '').trim(), account: (s.account ?? '').trim(), accountName: (s.accountName ?? '').trim() }];
   return [];
 }
 
-export function accountIssue(a: TransferDetails): {bank?: string;account?: string;accountName?: string;} {
+export function accountIssue(a: TransferDetails): { bank?: string; account?: string; accountName?: string } {
   return {
     bank: a.bank.trim().length < 2 ? 'Enter the bank name' : undefined,
     account: /^\d{10}$/.test(a.account.trim()) ? undefined : 'NUBAN account numbers are 10 digits',
-    accountName: a.accountName.trim().length < 2 ? 'Enter the name on the account' : undefined
+    accountName: a.accountName.trim().length < 2 ? 'Enter the name on the account' : undefined,
   };
 }
 
@@ -53,9 +53,9 @@ export function transferAccounts(workspaceId: string | null | undefined, fallbac
   if (!workspaceId) return [];
   const market = readMarketplace(workspaceId);
   if (!extensionActive(market, BANK_TRANSFER_ID)) return [];
-  return parseAccounts(market.installed[BANK_TRANSFER_ID]?.settings).
-  filter((a) => a.bank.length >= 2 && /^\d{10}$/.test(a.account)).
-  map((a) => ({ ...a, accountName: a.accountName || fallbackName.trim() }));
+  return parseAccounts(market.installed[BANK_TRANSFER_ID]?.settings)
+    .filter((a) => a.bank.length >= 2 && /^\d{10}$/.test(a.account))
+    .map((a) => ({ ...a, accountName: a.accountName || fallbackName.trim() }));
 }
 
 /** The first account (older callers). */
@@ -70,7 +70,7 @@ export function stampTransfer(o: Order, details: TransferDetails): Order {
     providerFeeNgn: 0,
     paymentNote: 'Bank transfer',
     bankTransfer: { ...details },
-    events: [...o.events, { id: uid('ev'), at: new Date().toISOString(), kind: 'payment', label: `Customer chose bank transfer to ${details.bank} ${details.account.slice(-4).padStart(details.account.length, '•')} — waiting for the money` }]
+    events: [...o.events, { id: uid('ev'), at: new Date().toISOString(), kind: 'payment', label: `Customer chose bank transfer to ${details.bank} ${details.account.slice(-4).padStart(details.account.length, '•')} — waiting for the money` }],
   };
 }
 
@@ -80,9 +80,9 @@ export function markTransferSent(data: CommerceData, orderId: string): CommerceD
   return {
     ...data,
     orders: data.orders.map((o) =>
-    o.id === orderId && o.bankTransfer && !o.bankTransfer.sentAt ?
-    { ...o, bankTransfer: { ...o.bankTransfer, sentAt: at }, events: [...o.events, { id: uid('ev'), at, kind: 'payment', label: 'Customer says the transfer was sent' }] } :
-    o
-    )
+      o.id === orderId && o.bankTransfer && !o.bankTransfer.sentAt
+        ? { ...o, bankTransfer: { ...o.bankTransfer, sentAt: at }, events: [...o.events, { id: uid('ev'), at, kind: 'payment', label: 'Customer says the transfer was sent' }] }
+        : o,
+    ),
   };
 }

@@ -15,7 +15,7 @@ export const goalLabels: Record<IntentGoal, string> = {
   tap: 'Taps on this block',
   order: 'Orders',
   lead: 'Enquiries and sign-ups',
-  booking: 'Bookings'
+  booking: 'Bookings',
 };
 
 /** Visits needed on each side before results say anything. */
@@ -52,12 +52,12 @@ export function intentIssues(doc: PageDocument): ValidationIssue[] {
     p.blocks.forEach((b) => {
       const r = b.visibility.sources;
       if (!r || r.paused) return;
-      if (r.ids.length === 0) out.push({ id: `intent:empty:${b.id}`, blockId: b.id, severity: 'warning', message: 'Pick at least one source, or remove the rule — right now everyone sees this block.' });else
-      if (r.mode === 'except' && r.ids.length >= intentSources.length)
-      out.push({ id: `intent:none:${b.id}`, blockId: b.id, severity: 'error', message: 'This rule hides the block from every visitor. Remove a source or turn the block off instead.' });
+      if (r.ids.length === 0) out.push({ id: `intent:empty:${b.id}`, blockId: b.id, severity: 'warning', message: 'Pick at least one source, or remove the rule — right now everyone sees this block.' });
+      else if (r.mode === 'except' && r.ids.length >= intentSources.length)
+        out.push({ id: `intent:none:${b.id}`, blockId: b.id, severity: 'error', message: 'This rule hides the block from every visitor. Remove a source or turn the block off instead.' });
     });
     if (visible.length > 0 && visible.every((b) => activeRule(b.visibility)))
-    out.push({ id: `intent:fallback:${p.title}`, blockId: visible[0].id, severity: 'error', message: `Every block on ${p.title} has a source rule. Keep at least one block every visitor sees.` });
+      out.push({ id: `intent:fallback:${p.title}`, blockId: visible[0].id, severity: 'error', message: `Every block on ${p.title} has a source rule. Keep at least one block every visitor sees.` });
   });
   return out;
 }
@@ -75,7 +75,7 @@ export interface IntentResult {
 export const goalTypes: Record<Exclude<IntentGoal, 'tap'>, AnalyticsEvent['type'][]> = {
   order: ['order_paid'],
   lead: ['lead', 'signup'],
-  booking: ['booking_confirmed']
+  booking: ['booking_confirmed'],
 };
 
 /**
@@ -85,7 +85,7 @@ export const goalTypes: Record<Exclude<IntentGoal, 'tap'>, AnalyticsEvent['type'
 export function intentResult(events: AnalyticsEvent[], handle: string, blockId: string, rule: SourceRule): IntentResult {
   const since = Date.parse(rule.createdAt);
   const evs = events.filter((e) => e.handle === handle && Date.parse(e.at) >= since);
-  const sessions = new Map<string, {source: SourceId;hit: boolean;}>();
+  const sessions = new Map<string, { source: SourceId; hit: boolean }>();
   evs.forEach((e) => {
     const s = sessions.get(e.session) ?? { source: e.source, hit: false };
     const targeted = rule.mode === 'only' ? rule.ids.includes(s.source) : !rule.ids.includes(s.source);
@@ -135,20 +135,20 @@ export function listRules(w: Workspace): RuleEntry[] {
   spaces.forEach((s) => {
     const p = readSpacePage(w.id, s.id);
     if (!p) return;
-    const pages: {id: string | null;title: string;blocks: Block[];}[] = [{ id: null, title: p.draft.title || 'Home', blocks: p.draft.blocks }, ...sitePages(p.draft).map((pg) => ({ id: pg.id, title: pg.title, blocks: pg.blocks }))];
+    const pages: { id: string | null; title: string; blocks: Block[] }[] = [{ id: null, title: p.draft.title || 'Home', blocks: p.draft.blocks }, ...sitePages(p.draft).map((pg) => ({ id: pg.id, title: pg.title, blocks: pg.blocks }))];
     pages.forEach((pg) =>
-    pg.blocks.forEach((b) => {
-      if (!b.visibility.sources) return;
-      out.push({ spaceId: s.id, spaceName: s.name, docId: p.draft.id, handle: p.draft.handle, pageId: pg.id, pageTitle: pg.title, block: b, rule: b.visibility.sources, live: findBlock(p.published ?? null, b.id)?.visibility.sources ?? null });
-    })
+      pg.blocks.forEach((b) => {
+        if (!b.visibility.sources) return;
+        out.push({ spaceId: s.id, spaceName: s.name, docId: p.draft.id, handle: p.draft.handle, pageId: pg.id, pageTitle: pg.title, block: b, rule: b.visibility.sources, live: findBlock(p.published ?? null, b.id)?.visibility.sources ?? null });
+      }),
     );
   });
   return out;
 }
 
 function mapDoc(doc: PageDocument, blockId: string, fn: (r: SourceRule | undefined) => SourceRule | undefined): PageDocument {
-  const f = (b: Block): Block => b.id === blockId ? { ...b, visibility: { ...b.visibility, sources: fn(b.visibility.sources) } } as Block : b;
-  const pages = (doc as PageDocument & {pages?: {blocks: Block[];}[];}).pages;
+  const f = (b: Block): Block => (b.id === blockId ? ({ ...b, visibility: { ...b.visibility, sources: fn(b.visibility.sources) } } as Block) : b);
+  const pages = (doc as PageDocument & { pages?: { blocks: Block[] }[] }).pages;
   return { ...doc, blocks: doc.blocks.map(f), ...(pages ? { pages: pages.map((pg) => ({ ...pg, blocks: pg.blocks.map(f) })) } : {}) } as PageDocument;
 }
 

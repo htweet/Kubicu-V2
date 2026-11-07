@@ -32,13 +32,13 @@ export function ResponseRecords({ form, submission: s, onUpdate, disabled }: Res
   const email = s.contactEmail || contact.email;
   const phone = s.contactPhone || contact.phone;
   const digits = (p: string) => p.replace(/\D/g, '').slice(-10);
-  const audience = ops.data.contacts.find((c) => email && c.email.toLowerCase() === email.toLowerCase() || phone && digits(c.phone) === digits(phone));
+  const audience = ops.data.contacts.find((c) => (email && c.email.toLowerCase() === email.toLowerCase()) || (phone && digits(c.phone) === digits(phone)));
 
   const productField = form.fields.find((f) => f.type === 'products' && parsePicks(s.answers[f.id]).length > 0);
   const order = s.orderId ? commerce.data.orders.find((o) => o.id === s.orderId) : undefined;
 
   const slotField = form.fields.find((f) => f.type === 'bookingSlot' && f.serviceId && Array.isArray(s.answers[f.id]) && (s.answers[f.id] as string[])[0]);
-  const slot = slotField ? s.answers[slotField.id] as string[] : null;
+  const slot = slotField ? (s.answers[slotField.id] as string[]) : null;
   const service = slotField ? ops.data.services.find((x) => x.id === slotField.serviceId) : undefined;
   const booking = s.bookingId ? ops.data.bookings.find((b) => b.id === s.bookingId) : undefined;
   const slotStart = slot ? Date.parse(slot[0]) : NaN;
@@ -46,7 +46,7 @@ export function ResponseRecords({ form, submission: s, onUpdate, disabled }: Res
 
   const book = () => {
     if (!service || !slot) return;
-    let made: {id: string;ref: string;} | null = null;
+    let made: { id: string; ref: string } | null = null;
     let failure: string | null = null;
     const ok = ops.apply((d) => {
       const r = createBooking(d, {
@@ -57,16 +57,16 @@ export function ResponseRecords({ form, submission: s, onUpdate, disabled }: Res
         depositOutcome: 'none',
         customerTimeZone: d.availability.timeZone,
         marketingConsent: s.marketingConsent,
-        sourceHandle: s.pageHandle ?? undefined
+        sourceHandle: s.pageHandle ?? undefined,
       });
       if (!r.ok) {
         failure = r.message;
         return d;
       }
       made = { id: r.booking.id, ref: r.booking.ref };
-      return { ...r.data, bookings: r.data.bookings.map((b) => b.id === r.booking.id ? { ...b, events: b.events.map((e) => /^Booked on your page/.test(e.label) ? { ...e, label: e.label.replace('Booked on your page', `Booked from a “${form.name}” response`) } : e) } : b) };
+      return { ...r.data, bookings: r.data.bookings.map((b) => (b.id === r.booking.id ? { ...b, events: b.events.map((e) => (/^Booked on your page/.test(e.label) ? { ...e, label: e.label.replace('Booked on your page', `Booked from a “${form.name}” response`) } : e)) } : b)) };
     });
-    const m = made as {id: string;ref: string;} | null;
+    const m = made as { id: string; ref: string } | null;
     if (!ok) return;
     if (!m) {
       toast.error('That time isn’t free any more', { description: failure ? `${failure.replace('Please pick another.', '')} Reply to the customer with another time.` : undefined });
@@ -80,26 +80,26 @@ export function ResponseRecords({ form, submission: s, onUpdate, disabled }: Res
 
   rows.push(
     <Row key="aud" icon={UserIcon} title="Audience">
-      {audience ?
-      <Link to={`/app/audience?contact=${audience.id}`} className="font-medium text-fg underline-offset-2 hover:underline">
+      {audience ? (
+        <Link to={`/app/audience?contact=${audience.id}`} className="font-medium text-fg underline-offset-2 hover:underline">
           Open {audience.name || 'contact'}
-        </Link> :
-      email || phone ?
-      <span className="text-fg-muted">
+        </Link>
+      ) : email || phone ? (
+        <span className="text-fg-muted">
           No matching contact — it may have been removed.{' '}
           <Link to="/app/audience" className="font-medium text-fg underline-offset-2 hover:underline">
             Open Audience
           </Link>
-        </span> :
-
-      <span className="text-fg-muted">
+        </span>
+      ) : (
+        <span className="text-fg-muted">
           No contact — the form didn’t collect an email or phone.{' '}
           <Link to="/app/audience" className="font-medium text-fg underline-offset-2 hover:underline">
             Open Audience
           </Link>
         </span>
-      }
-    </Row>
+      )}
+    </Row>,
   );
 
   if (s.email) {
@@ -116,43 +116,43 @@ export function ResponseRecords({ form, submission: s, onUpdate, disabled }: Res
             <p className="mt-2 whitespace-pre-wrap text-fg-muted">{e.body}</p>
           </div>
         </details>
-      </Row>
+      </Row>,
     );
   }
 
   if (productField) {
     rows.push(
       <Row key="order" icon={ShoppingBagIcon} title="Order">
-        {order ?
-        <Link to={`/app/commerce/orders?order=${order.id}`} className="font-medium text-fg underline-offset-2 hover:underline">
+        {order ? (
+          <Link to={`/app/commerce/orders?order=${order.id}`} className="font-medium text-fg underline-offset-2 hover:underline">
             Order #{order.number}
-          </Link> :
-
-        <div className="flex flex-col items-start gap-2">
+          </Link>
+        ) : (
+          <div className="flex flex-col items-start gap-2">
             <span className="text-fg-muted">{s.orderId ? `Order #${s.orderNumber ?? ''} was deleted.` : 'Picks don’t create an order on their own.'}</span>
             <Button size="sm" variant="secondary" disabled={disabled} onClick={() => setOrderOpen(true)}>
               Create order
             </Button>
           </div>
-        }
-      </Row>
+        )}
+      </Row>,
     );
   }
 
   if (slotField && slot) {
     rows.push(
       <Row key="booking" icon={CalendarPlusIcon} title="Booking">
-        {booking ?
-        <Link to={`/app/bookings?booking=${booking.id}`} className="font-medium text-fg underline-offset-2 hover:underline">
+        {booking ? (
+          <Link to={`/app/bookings?booking=${booking.id}`} className="font-medium text-fg underline-offset-2 hover:underline">
             Booking {booking.ref}
             {booking.status === 'cancelled' ? ' (cancelled)' : ''}
-          </Link> :
-        !service ?
-        <span className="text-fg-muted">The service for this time was removed from Bookings.</span> :
-        slotPassed ?
-        <span className="text-fg-muted">{slot[1]} has passed.</span> :
-
-        <div className="flex flex-col items-start gap-2">
+          </Link>
+        ) : !service ? (
+          <span className="text-fg-muted">The service for this time was removed from Bookings.</span>
+        ) : slotPassed ? (
+          <span className="text-fg-muted">{slot[1]} has passed.</span>
+        ) : (
+          <div className="flex flex-col items-start gap-2">
             <span className="text-fg-muted">
               Asked for {service.name}, {slot[1]}. Not booked yet.
             </span>
@@ -160,8 +160,8 @@ export function ResponseRecords({ form, submission: s, onUpdate, disabled }: Res
               Book this time
             </Button>
           </div>
-        }
-      </Row>
+        )}
+      </Row>,
     );
   }
 
@@ -171,14 +171,14 @@ export function ResponseRecords({ form, submission: s, onUpdate, disabled }: Res
         Connected
       </h3>
       <ul className="flex flex-col divide-y divide-line rounded-lg border border-line">{rows}</ul>
-      {productField &&
-      <CreateOrderSheet open={orderOpen} onClose={() => setOrderOpen(false)} form={form} field={productField} submission={s} onCreated={(orderId, orderNumber) => onUpdate({ orderId, orderNumber })} />
-      }
-    </section>);
-
+      {productField && (
+        <CreateOrderSheet open={orderOpen} onClose={() => setOrderOpen(false)} form={form} field={productField} submission={s} onCreated={(orderId, orderNumber) => onUpdate({ orderId, orderNumber })} />
+      )}
+    </section>
+  );
 }
 
-function Row({ icon: Icon, title, children }: {icon: React.ComponentType<{size?: number;className?: string;'aria-hidden'?: boolean;}>;title: string;children: React.ReactNode;}) {
+function Row({ icon: Icon, title, children }: { icon: React.ComponentType<{ size?: number; className?: string; 'aria-hidden'?: boolean }>; title: string; children: React.ReactNode }) {
   return (
     <li className="flex items-start gap-3 px-3.5 py-3 text-label">
       <Icon size={16} className="mt-0.5 shrink-0 text-fg-subtle" aria-hidden />
@@ -186,6 +186,6 @@ function Row({ icon: Icon, title, children }: {icon: React.ComponentType<{size?:
         <span className="text-caption text-fg-subtle">{title}</span>
         {children}
       </div>
-    </li>);
-
+    </li>
+  );
 }

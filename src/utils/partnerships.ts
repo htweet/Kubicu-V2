@@ -31,30 +31,30 @@ export function defaultAgreement(): Agreement {
     delivery: 'each',
     support: 'each',
     noticeDays: NOTICE_DAYS,
-    acceptedBy: {}
+    acceptedBy: {},
   };
 }
 
 export const isExpired = (p: Partnership, now = Date.now()) => p.status === 'invited' && new Date(p.expiresAt).getTime() < now;
 export const fullyAccepted = (a: Agreement) => !!a.acceptedBy.lead && !!a.acceptedBy.partner;
-export const sideName = (p: Partnership, side: AgreementSide, leadName: string) => side === 'lead' ? leadName : p.partner.name;
+export const sideName = (p: Partnership, side: AgreementSide, leadName: string) => (side === 'lead' ? leadName : p.partner.name);
 
 /** The agreement as short sentences — the same words both sides see and tick. */
 export function agreementLines(a: Agreement, leadName: string, partnerName: string): string[] {
-  const rel = (r: DeliveryRule | SupportRule, verbOwn: string, verbAll: string) => r === 'each' ? `Each business ${verbOwn}.` : `${r === 'lead' ? leadName : partnerName} ${verbAll}.`;
+  const rel = (r: DeliveryRule | SupportRule, verbOwn: string, verbAll: string) => (r === 'each' ? `Each business ${verbOwn}.` : `${r === 'lead' ? leadName : partnerName} ${verbAll}.`);
   return [
-  a.purpose.trim() || 'Work together on KUBICU.',
-  `Money from things we sell together is split ${a.leadSharePct}% to ${leadName} and ${100 - a.leadSharePct}% to ${partnerName}, as both of us agreed, at the moment the customer pays. It’s worked out on what the customer pays after discounts and before delivery fees. Each business pays its own KUBICU fee on its share, and refunds come back from each share in the same proportion.`,
-  rel(a.delivery, 'delivers its own part of an order', 'delivers whole orders'),
-  rel(a.support, 'answers customers and handles refunds for its own part', 'answers customers and handles refunds'),
-  `Either business can end this with ${a.noticeDays} days’ notice, or straight away if there’s a safety problem. Money already paid still settles normally.`,
-  'Changing the split, prices or these terms needs both businesses to agree again.'];
-
+    a.purpose.trim() || 'Work together on KUBICU.',
+    `Money from things we sell together is split ${a.leadSharePct}% to ${leadName} and ${100 - a.leadSharePct}% to ${partnerName}, as both of us agreed, at the moment the customer pays. It’s worked out on what the customer pays after discounts and before delivery fees. Each business pays its own KUBICU fee on its share, and refunds come back from each share in the same proportion.`,
+    rel(a.delivery, 'delivers its own part of an order', 'delivers whole orders'),
+    rel(a.support, 'answers customers and handles refunds for its own part', 'answers customers and handles refunds'),
+    `Either business can end this with ${a.noticeDays} days’ notice, or straight away if there’s a safety problem. Money already paid still settles normally.`,
+    'Changing the split, prices or these terms needs both businesses to agree again.',
+  ];
 }
 
 export const ev = (by: PartnershipEvent['by'], text: string): PartnershipEvent => ({ id: uid('pev'), at: new Date().toISOString(), by, text });
 
-export function invite(input: {kind: Partnership['kind'];partner: Partnership['partner'];contactName: string;phone: string;agreement: Agreement;referralPartnerId?: string;}): Partnership {
+export function invite(input: { kind: Partnership['kind']; partner: Partnership['partner']; contactName: string; phone: string; agreement: Agreement; referralPartnerId?: string }): Partnership {
   const now = Date.now();
   return {
     id: uid('pns'),
@@ -68,7 +68,7 @@ export function invite(input: {kind: Partnership['kind'];partner: Partnership['p
     status: 'invited',
     agreement: { ...input.agreement, acceptedBy: { lead: new Date(now).toISOString() } },
     referralPartnerId: input.referralPartnerId,
-    events: [ev('lead', input.kind === 'guest' ? `Invited ${input.contactName} by link` : `Invited ${input.partner.name} on KUBICU`)]
+    events: [ev('lead', input.kind === 'guest' ? `Invited ${input.contactName} by link` : `Invited ${input.partner.name} on KUBICU`)],
   };
 }
 
@@ -135,7 +135,7 @@ export function upgradeGuest(p: Partnership, handle: string): Partnership {
   return { ...p, kind: 'connected', partner: { ...biz }, events: [ev('partner', `Joined KUBICU as @${handle} — now a connected partner`), ...p.events] };
 }
 
-export const guestReady = (p: Partnership) => p.kind === 'connected' || !!p.guest?.phoneVerifiedAt && !!p.guest?.bank;
+export const guestReady = (p: Partnership) => p.kind === 'connected' || (!!p.guest?.phoneVerifiedAt && !!p.guest?.bank);
 
 export function seedPartnerships(d: PartnershipData): PartnershipData {
   if (d.sampleSeeded) return d;
@@ -154,10 +154,10 @@ export function seedPartnerships(d: PartnershipData): PartnershipData {
     status: 'active',
     agreement: { ...defaultAgreement(), purpose: 'Sell bridal packages together: makeup by us, gele by Halima.', leadSharePct: 60, acceptedBy: { lead: ago(20), partner: ago(19) } },
     events: [
-    { id: uid('pev'), at: ago(19), by: 'partner', text: 'Accepted the invite and the agreement' },
-    { id: uid('pev'), at: ago(20), by: 'lead', text: 'Invited Halima Gele Studio on KUBICU' }],
-
-    sample: true
+      { id: uid('pev'), at: ago(19), by: 'partner', text: 'Accepted the invite and the agreement' },
+      { id: uid('pev'), at: ago(20), by: 'lead', text: 'Invited Halima Gele Studio on KUBICU' },
+    ],
+    sample: true,
   };
   const guest: Partnership = {
     id: uid('pns'),
@@ -171,13 +171,13 @@ export function seedPartnerships(d: PartnershipData): PartnershipData {
     status: 'invited',
     agreement: { ...defaultAgreement(), purpose: 'Offer small chops trays with our bridal shower packages.', leadSharePct: 70, delivery: 'each', acceptedBy: { lead: ago(1) } },
     events: [{ id: uid('pev'), at: ago(1), by: 'lead', text: 'Invited Bayo Adeyemi by link' }],
-    sample: true
+    sample: true,
   };
   return { partnerships: [connected, guest, ...d.partnerships], sampleSeeded: true };
 }
 
 /** Finds a partnership from its invite token across workspaces on this device (guest partner page). */
-export function findByToken(token: string): {workspaceId: string;partnership: Partnership;} | null {
+export function findByToken(token: string): { workspaceId: string; partnership: Partnership } | null {
   try {
     for (let i = 0; i < window.localStorage.length; i++) {
       const key = window.localStorage.key(i);
@@ -187,7 +187,7 @@ export function findByToken(token: string): {workspaceId: string;partnership: Pa
       if (hit) return { workspaceId: key.slice('kubicu.partnerships.'.length), partnership: hit };
     }
   } catch {
-
-    /* unreadable storage — treat as not found */}
+    /* unreadable storage — treat as not found */
+  }
   return null;
 }

@@ -25,15 +25,15 @@ export function printServiceInvoice(inv: Invoice, o: PrintOptions): boolean {
   const accent = o.accent || '#111111';
   const split = vatSplit(inv.items, inv.vat);
   const total = split.total;
-  const vatRow = inv.vat && split.vat > 0 ?
-  `${inv.vat.inclusive ? '' : `<tr><td class="k">Subtotal</td><td class="r">${formatNgn(split.subtotal)}</td></tr>`}<tr><td class="k">${inv.vat.inclusive ? 'Includes VAT' : 'VAT'} (${esc(vatRateLabel(inv.vat.ratePct))})</td><td class="r">${formatNgn(split.vat)}</td></tr>` :
-  '';
+  const vatRow = inv.vat && split.vat > 0
+    ? `${inv.vat.inclusive ? '' : `<tr><td class="k">Subtotal</td><td class="r">${formatNgn(split.subtotal)}</td></tr>`}<tr><td class="k">${inv.vat.inclusive ? 'Includes VAT' : 'VAT'} (${esc(vatRateLabel(inv.vat.ratePct))})</td><td class="r">${formatNgn(split.vat)}</td></tr>`
+    : '';
   const paid = paidOf(inv);
   const balance = balanceOf(inv);
   const open = balance > 0 && inv.status !== 'void';
-  const rows = inv.items.
-  map((i) => `<tr><td>${esc(i.label)}</td><td class="r">${i.qty}</td><td class="r">${formatNgn(i.unitNgn)}</td><td class="r">${formatNgn(lineTotal(i))}</td></tr>`).
-  join('');
+  const rows = inv.items
+    .map((i) => `<tr><td>${esc(i.label)}</td><td class="r">${i.qty}</td><td class="r">${formatNgn(i.unitNgn)}</td><td class="r">${formatNgn(lineTotal(i))}</td></tr>`)
+    .join('');
   const pays = inv.payments.map((p) => `<tr><td>${esc(methodLabels[p.method])}</td><td>${formatTimestamp(p.at)}</td><td class="r">${formatNgn(p.amountNgn)}</td></tr>`).join('');
   const status = inv.status === 'void' ? 'VOID' : balance <= 0 ? 'PAID' : paid > 0 ? 'PART PAID' : 'DUE';
   w.document.write(`<!doctype html><html><head><title>${esc(inv.number)} · ${esc(o.business)}</title><style>

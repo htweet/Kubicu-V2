@@ -106,24 +106,24 @@ export function MediaLibraryDialog({ open, onClose, shapeLabel, folder, onPick }
   const pick = (crop: boolean) => chosen && onPick({ src: mediaRef(chosen.id), alt: chosen.alt, asset: chosen, crop });
 
   const footer =
-  tab === 'library' ?
-  <>
+    tab === 'library' ? (
+      <>
         <Button variant="secondary" disabled={!chosen} onClick={() => pick(true)}>
           Crop to {shapeLabel}
         </Button>
         <Button disabled={!chosen} onClick={() => pick(false)}>
           Use image
         </Button>
-      </> :
-  tab === 'link' ?
-  <Button disabled={!isValidUrl(link)} onClick={() => onPick({ src: link.trim(), alt: '', asset: null, crop: false })}>
+      </>
+    ) : tab === 'link' ? (
+      <Button disabled={!isValidUrl(link)} onClick={() => onPick({ src: link.trim(), alt: '', asset: null, crop: false })}>
         Use link
-      </Button> :
-
-  <Button variant="secondary" onClick={onClose}>
+      </Button>
+    ) : (
+      <Button variant="secondary" onClick={onClose}>
         Cancel
-      </Button>;
-
+      </Button>
+    );
 
   return (
     <Dialog open={open} onClose={onClose} size="lg" title="Choose an image" description={`This spot shows images ${shapeLabel}. Pick one as it is, or crop a copy — the original stays in your library.`} footer={footer}>
@@ -134,34 +134,34 @@ export function MediaLibraryDialog({ open, onClose, shapeLabel, folder, onPick }
         value={tab}
         onChange={setTab}
         items={[
-        { id: 'library', label: `Your uploads · ${media.assets.length}` },
-        { id: 'upload', label: 'Upload' },
-        { id: 'link', label: 'Link' }]
-        } />
-      
+          { id: 'library', label: `Your uploads · ${media.assets.length}` },
+          { id: 'upload', label: 'Upload' },
+          { id: 'link', label: 'Link' },
+        ]}
+      />
       <div role="tabpanel" id={`media-pick-panel-${tab}`} aria-labelledby={`media-pick-tab-${tab}`} className="pt-4">
-        {problem &&
-        <p role="alert" className="mb-3 rounded-md bg-danger-soft px-3 py-2 text-label text-danger">
+        {problem && (
+          <p role="alert" className="mb-3 rounded-md bg-danger-soft px-3 py-2 text-label text-danger">
             {problem}
           </p>
-        }
-        {notice && tab === 'library' &&
-        <p role="status" className="mb-3 rounded-md bg-success-soft px-3 py-2 text-label text-success">
+        )}
+        {notice && tab === 'library' && (
+          <p role="status" className="mb-3 rounded-md bg-success-soft px-3 py-2 text-label text-success">
             {notice}
           </p>
-        }
+        )}
 
-        {tab === 'library' && (
-        media.assets.length === 0 ?
-        <div className="flex flex-col items-center gap-3 py-10 text-center">
+        {tab === 'library' &&
+          (media.assets.length === 0 ? (
+            <div className="flex flex-col items-center gap-3 py-10 text-center">
               <ImagesIcon size={22} className="text-fg-subtle" aria-hidden />
               <p className="text-label text-fg-muted">No uploads yet. Photos you upload anywhere appear here to reuse.</p>
               <Button variant="secondary" leadingIcon={UploadIcon} onClick={() => setTab('upload')}>
                 Upload a photo
               </Button>
-            </div> :
-
-        <>
+            </div>
+          ) : (
+            <>
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                 <div className="relative flex-1">
                   <SearchIcon size={15} aria-hidden className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-fg-subtle" />
@@ -175,72 +175,72 @@ export function MediaLibraryDialog({ open, onClose, shapeLabel, folder, onPick }
                 </label>
                 <select id="media-pick-folder" value={folderFilter} onChange={(e) => setFolderFilter(e.target.value)} className={cn(fieldControlClass, 'h-9 text-label sm:w-44')}>
                   <option value={ALL}>All folders</option>
-                  {media.folders.map((f) =>
-              <option key={f.id} value={f.id}>
+                  {media.folders.map((f) => (
+                    <option key={f.id} value={f.id}>
                       {f.name}
                     </option>
-              )}
+                  ))}
                   <option value={NONE}>Not in a folder</option>
                 </select>
                 <Segmented<ShapeFilter>
-              ariaLabel="Shape"
-              value={shape}
-              onChange={setShape}
-              options={[
-              { value: 'all', label: 'All' },
-              { value: 'square', label: 'Square' },
-              { value: 'portrait', label: 'Portrait' },
-              { value: 'wide', label: 'Wide' }]
-              } />
-            
+                  ariaLabel="Shape"
+                  value={shape}
+                  onChange={setShape}
+                  options={[
+                    { value: 'all', label: 'All' },
+                    { value: 'square', label: 'Square' },
+                    { value: 'portrait', label: 'Portrait' },
+                    { value: 'wide', label: 'Wide' },
+                  ]}
+                />
               </div>
-              {visible.length === 0 ?
-          <p className="py-10 text-center text-label text-fg-muted">No uploads match.</p> :
-
-          <ul role="listbox" aria-label="Your uploads" className="scroll-quiet mt-3 grid max-h-[46vh] grid-cols-3 gap-2 overflow-y-auto pr-0.5 sm:grid-cols-4">
+              {visible.length === 0 ? (
+                <p className="py-10 text-center text-label text-fg-muted">No uploads match.</p>
+              ) : (
+                <ul role="listbox" aria-label="Your uploads" className="scroll-quiet mt-3 grid max-h-[46vh] grid-cols-3 gap-2 overflow-y-auto pr-0.5 sm:grid-cols-4">
                   {visible.map((a) => {
-              const on = a.id === selected;
-              return (
-                <li key={a.id} role="option" aria-selected={on}>
+                    const on = a.id === selected;
+                    return (
+                      <li key={a.id} role="option" aria-selected={on}>
                         <button
-                    type="button"
-                    onClick={() => setSelected(a.id)}
-                    onDoubleClick={() => onPick({ src: mediaRef(a.id), alt: a.alt, asset: a, crop: false })}
-                    className={cn(
-                      'group relative block w-full overflow-hidden rounded-md border-2 text-left transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
-                      on ? 'border-action' : 'border-transparent hover:border-line-strong'
-                    )}>
-                    
+                          type="button"
+                          onClick={() => setSelected(a.id)}
+                          onDoubleClick={() => onPick({ src: mediaRef(a.id), alt: a.alt, asset: a, crop: false })}
+                          className={cn(
+                            'group relative block w-full overflow-hidden rounded-md border-2 text-left transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
+                            on ? 'border-action' : 'border-transparent hover:border-line-strong',
+                          )}
+                        >
                           <MediaImage src={mediaRef(a.id)} alt="" className="aspect-square w-full bg-sunken object-cover" />
                           <span className="block truncate bg-raised px-1.5 py-1 text-caption text-fg-muted">{a.name}</span>
-                          {on &&
-                    <span className="absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-action text-action-fg">
+                          {on && (
+                            <span className="absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-action text-action-fg">
                               <CheckIcon size={12} strokeWidth={3} aria-hidden />
                             </span>
-                    }
+                          )}
                         </button>
-                      </li>);
-
-            })}
+                      </li>
+                    );
+                  })}
                 </ul>
-          }
-            </>)
-        }
+              )}
+            </>
+          ))}
 
-        {tab === 'upload' &&
-        <div
-          onDragOver={(e) => {
-            e.preventDefault();
-            setDragOver(true);
-          }}
-          onDragLeave={() => setDragOver(false)}
-          onDrop={(e) => {
-            e.preventDefault();
-            setDragOver(false);
-            upload(e.dataTransfer.files?.[0]);
-          }}
-          className={cn('flex flex-col items-center gap-3 rounded-lg border-2 border-dashed px-6 py-12 text-center transition-colors duration-150', dragOver ? 'border-action bg-action-soft' : 'border-line-strong')}>
-          
+        {tab === 'upload' && (
+          <div
+            onDragOver={(e) => {
+              e.preventDefault();
+              setDragOver(true);
+            }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={(e) => {
+              e.preventDefault();
+              setDragOver(false);
+              upload(e.dataTransfer.files?.[0]);
+            }}
+            className={cn('flex flex-col items-center gap-3 rounded-lg border-2 border-dashed px-6 py-12 text-center transition-colors duration-150', dragOver ? 'border-action bg-action-soft' : 'border-line-strong')}
+          >
             {busy ? <Loader2Icon size={22} className="animate-spin text-fg-subtle" aria-label="Processing photo" /> : <UploadIcon size={22} className="text-fg-subtle" aria-hidden />}
             <p className="text-label font-medium text-fg">{busy ? 'Resizing for fast loading…' : 'Drop a photo here'}</p>
             <p className="text-caption text-fg-subtle">JPG, PNG or WebP up to 10 MB. {homeFolder ? `It’s saved to ${homeFolder.name} in Media for reuse.` : 'It’s saved to your library for reuse.'}</p>
@@ -248,22 +248,22 @@ export function MediaLibraryDialog({ open, onClose, shapeLabel, folder, onPick }
               Choose from device
             </Button>
           </div>
-        }
+        )}
 
-        {tab === 'link' &&
-        <TextInput
-          id="media-pick-link"
-          label="Image link"
-          type="url"
-          inputMode="url"
-          placeholder="https://"
-          value={link}
-          hint="Links aren’t copied into your library and can’t be cropped. If the site removes the image, it disappears from your page."
-          error={link && !isValidUrl(link) ? 'Use a full link starting with https://' : undefined}
-          onChange={(e) => setLink(e.target.value)} />
-
-        }
+        {tab === 'link' && (
+          <TextInput
+            id="media-pick-link"
+            label="Image link"
+            type="url"
+            inputMode="url"
+            placeholder="https://"
+            value={link}
+            hint="Links aren’t copied into your library and can’t be cropped. If the site removes the image, it disappears from your page."
+            error={link && !isValidUrl(link) ? 'Use a full link starting with https://' : undefined}
+            onChange={(e) => setLink(e.target.value)}
+          />
+        )}
       </div>
-    </Dialog>);
-
+    </Dialog>
+  );
 }

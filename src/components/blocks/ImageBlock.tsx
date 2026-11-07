@@ -11,9 +11,9 @@ export function ImageBlock({ block, theme, mode }: BlockProps<'image'>) {
   const { url, caption, aspect, decorative } = block.content;
   const alt = decorative ? '' : block.content.alt;
   if (!url) {
-    return mode === 'edit' ?
-    <BlockPlaceholder icon={ImageIcon} title="No image chosen" hint="Paste an image link in the inspector" theme={theme} tall /> :
-    null;
+    return mode === 'edit' ? (
+      <BlockPlaceholder icon={ImageIcon} title="No image chosen" hint="Paste an image link in the inspector" theme={theme} tall />
+    ) : null;
   }
   return (
     <figure className="flex flex-col gap-2">
@@ -22,13 +22,13 @@ export function ImageBlock({ block, theme, mode }: BlockProps<'image'>) {
         alt={alt}
         loading="lazy"
         className={`w-full object-cover ${aspects[aspect]}`}
-        style={{ borderRadius: cardRadius(theme), ...imageFrameStyle(theme) }} />
-      
-      {caption &&
-      <figcaption className="text-[13px] leading-snug" style={{ color: theme.mutedText }}>
+        style={{ borderRadius: cardRadius(theme), ...imageFrameStyle(theme) }}
+      />
+      {caption && (
+        <figcaption className="text-[13px] leading-snug" style={{ color: theme.mutedText }}>
           {caption}
         </figcaption>
-      }
-    </figure>);
-
+      )}
+    </figure>
+  );
 }

@@ -31,15 +31,15 @@ const empty = (): TemplateStore => ({ listings: [], sales: [], payouts: [], acco
 export function readTemplateStore(): TemplateStore {
   try {
     const raw = window.localStorage.getItem(KEY);
-    const parsed = raw ? { ...empty(), ...(JSON.parse(raw) as Partial<TemplateStore>) } as TemplateStore : empty();
+    const parsed = raw ? ({ ...empty(), ...(JSON.parse(raw) as Partial<TemplateStore>) } as TemplateStore) : empty();
     if (parsed.seeded) return parsed;
     const seeded = { ...parsed, ...seed(parsed), seeded: true };
     try {
       window.localStorage.setItem(KEY, JSON.stringify(seeded));
     } catch {
-
       // Storage full — the sample stays in memory for this read.
-    }return seeded;
+    }
+    return seeded;
   } catch {
     return empty();
   }
@@ -84,12 +84,12 @@ export const listingEvent = (label: string, by: ListingEvent['by']): ListingEven
 
 export function averageStars(l: TemplateListing): number | null {
   if (!l.reviews.length) return null;
-  return Math.round(l.reviews.reduce((s, r) => s + r.stars, 0) / l.reviews.length * 10) / 10;
+  return Math.round((l.reviews.reduce((s, r) => s + r.stars, 0) / l.reviews.length) * 10) / 10;
 }
 
 /** The sale that gives this workspace the template, if any (refunded sales don't count). */
 export const activeSale = (store: TemplateStore, listingId: string, workspaceId: string) =>
-store.sales.find((s) => s.listingId === listingId && s.buyerWorkspaceId === workspaceId && !s.refundedAt);
+  store.sales.find((s) => s.listingId === listingId && s.buyerWorkspaceId === workspaceId && !s.refundedAt);
 
 export const canRefundSale = (sale: TemplateSale, now = Date.now()) => !sale.refundedAt && now - Date.parse(sale.at) <= REFUND_DAYS * DAY;
 
@@ -116,12 +116,12 @@ export function sanitiseForTemplate(doc: PageDocument): PageDocument {
     if (!v || typeof v !== 'object') return v;
     const out: Record<string, unknown> = {};
     Object.entries(v as Record<string, unknown>).forEach(([k, x]) => {
-      if (k === 'source' && x === 'catalog') out[k] = 'manual';else
-      if (k === 'productId' || k === 'serviceId' || k === 'discountId') out[k] = typeof x === 'string' ? '' : undefined;else
-      if (k === 'productIds' || k === 'planIds') out[k] = [];else
-      if (k === 'collectionId') out[k] = null;else
-      if (k === 'avatarUrl') out[k] = '';else
-      out[k] = unlink(x);
+      if (k === 'source' && x === 'catalog') out[k] = 'manual';
+      else if (k === 'productId' || k === 'serviceId' || k === 'discountId') out[k] = typeof x === 'string' ? '' : undefined;
+      else if (k === 'productIds' || k === 'planIds') out[k] = [];
+      else if (k === 'collectionId') out[k] = null;
+      else if (k === 'avatarUrl') out[k] = '';
+      else out[k] = unlink(x);
     });
     return out;
   };
@@ -130,9 +130,9 @@ export function sanitiseForTemplate(doc: PageDocument): PageDocument {
     title: 'Template',
     handle: 'template',
     blocks: unlink(prepared.blocks) as PageDocument['blocks'],
-    pages: prepared.pages ? unlink(prepared.pages) as PageDocument['pages'] : prepared.pages,
+    pages: prepared.pages ? (unlink(prepared.pages) as PageDocument['pages']) : prepared.pages,
     campaign: undefined,
-    dealRoom: undefined
+    dealRoom: undefined,
   } as PageDocument;
 }
 
@@ -163,10 +163,10 @@ function seed(store: TemplateStore): Partial<TemplateStore> {
       listedAt: ago(days),
       events: [{ id: `${id}_e2`, at: ago(days), label: 'Approved and listed', by: 'staff' }, { id: `${id}_e1`, at: ago(days + 2), label: 'Submitted for review', by: 'creator' }],
       reviews: [
-      { id: `${id}_r1`, workspaceId: 'sample_buyer_1', buyerName: 'Chidi’s Kitchen', stars: 5, text: 'Set up my page in an afternoon. The menu layout is spot on.', at: ago(days - 3) },
-      { id: `${id}_r2`, workspaceId: 'sample_buyer_2', buyerName: 'Bola Braids', stars: 4, text: 'Clean and easy to change. Wish it had one more colour option.', at: ago(days - 5) }],
-
-      sample: true
+        { id: `${id}_r1`, workspaceId: 'sample_buyer_1', buyerName: 'Chidi’s Kitchen', stars: 5, text: 'Set up my page in an afternoon. The menu layout is spot on.', at: ago(days - 3) },
+        { id: `${id}_r2`, workspaceId: 'sample_buyer_2', buyerName: 'Bola Braids', stars: 4, text: 'Clean and easy to change. Wish it had one more colour option.', at: ago(days - 5) },
+      ],
+      sample: true,
     };
   };
   const a = listed('ctl_nkem_menu', 'mama-put-kitchen', 'Bukka menu', 'Restaurant & food', 'Lagos', 'A warm, menu-first page for bukkas and home kitchens, with WhatsApp ordering up top.', 3000, 'Studio Ńkem', 20);
@@ -181,11 +181,11 @@ function seed(store: TemplateStore): Partial<TemplateStore> {
     pendingVersion: 1,
     listedAt: null,
     events: [{ id: 'ctl_dami_event_e1', at: ago(1), label: 'Submitted for review', by: 'creator' }],
-    reviews: []
+    reviews: [],
   };
   const sales: TemplateSale[] = [
-  { id: 'sale_s1', listingId: a.id, buyerWorkspaceId: 'sample_buyer_1', buyerName: 'Chidi’s Kitchen', priceNgn: 3000, creatorShareNgn: creatorShare(3000), version: 1, doc: a.listedDoc as PageDocument, at: ago(17), refundedAt: null, sample: true },
-  { id: 'sale_s2', listingId: a.id, buyerWorkspaceId: 'sample_buyer_3', buyerName: 'Iya Basira', priceNgn: 3000, creatorShareNgn: creatorShare(3000), version: 1, doc: a.listedDoc as PageDocument, at: ago(4), refundedAt: null, sample: true }];
-
+    { id: 'sale_s1', listingId: a.id, buyerWorkspaceId: 'sample_buyer_1', buyerName: 'Chidi’s Kitchen', priceNgn: 3000, creatorShareNgn: creatorShare(3000), version: 1, doc: a.listedDoc as PageDocument, at: ago(17), refundedAt: null, sample: true },
+    { id: 'sale_s2', listingId: a.id, buyerWorkspaceId: 'sample_buyer_3', buyerName: 'Iya Basira', priceNgn: 3000, creatorShareNgn: creatorShare(3000), version: 1, doc: a.listedDoc as PageDocument, at: ago(4), refundedAt: null, sample: true },
+  ];
   return { listings: [...store.listings, a, b, c], sales: [...store.sales, ...sales] };
 }

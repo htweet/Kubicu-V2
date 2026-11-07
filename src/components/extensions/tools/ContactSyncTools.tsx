@@ -22,7 +22,7 @@ const API_KEY = /^([0-9a-f]{32}-us\d{1,2}|xkeysib-[0-9a-f]{64}-[A-Za-z0-9]{16})$
 const SHEET_URL = /^https:\/\/docs\.google\.com\/spreadsheets\/d\/[A-Za-z0-9_-]{20,}/;
 
 /** Email marketing sync (D232, D272): only subscribed contacts with an email, never buyers-only or unsubscribed. */
-export function EmailSyncTool({ rec }: {rec: InstalledExtension;}) {
+export function EmailSyncTool({ rec }: { rec: InstalledExtension }) {
   const { data } = useOps();
   const market = useMarketplace();
   const provider = rec.settings.apiKey?.startsWith('xkeysib-') ? 'Brevo' : 'Mailchimp';
@@ -35,20 +35,20 @@ export function EmailSyncTool({ rec }: {rec: InstalledExtension;}) {
 
   const sync = (retryOf?: SyncEntry) => {
     const error = preflight(rec.settings.apiKey, API_KEY, `${provider} API key`);
-    const entry: SyncEntry = error ?
-    { id: uid('sync'), at: new Date().toISOString(), status: 'failed', sent: 0, skipped: 0, detail: '', error, retryOf: retryOf?.id } :
-    {
-      id: uid('sync'),
-      at: new Date().toISOString(),
-      status: noEmail > 0 ? 'partial' : 'ok',
-      sent: send.length,
-      skipped: noEmail,
-      detail: noEmail > 0 ? `${noEmail} subscribed without a valid email` : `to ${provider}, with tags`,
-      retryOf: retryOf?.id
-    };
+    const entry: SyncEntry = error
+      ? { id: uid('sync'), at: new Date().toISOString(), status: 'failed', sent: 0, skipped: 0, detail: '', error, retryOf: retryOf?.id }
+      : {
+          id: uid('sync'),
+          at: new Date().toISOString(),
+          status: noEmail > 0 ? 'partial' : 'ok',
+          sent: send.length,
+          skipped: noEmail,
+          detail: noEmail > 0 ? `${noEmail} subscribed without a valid email` : `to ${provider}, with tags`,
+          retryOf: retryOf?.id,
+        };
     market.updateSettings(rec.id, withSyncEntry(rec.settings, entry));
-    if (error) toast.error('Sync failed', { description: error });else
-    toast(`${send.length} contacts ready for ${provider}`, { description: 'Preview — nothing was sent. The live connection needs the KUBICU backend.' });
+    if (error) toast.error('Sync failed', { description: error });
+    else toast(`${send.length} contacts ready for ${provider}`, { description: 'Preview — nothing was sent. The live connection needs the KUBICU backend.' });
   };
 
   return (
@@ -68,20 +68,20 @@ export function EmailSyncTool({ rec }: {rec: InstalledExtension;}) {
           variant="secondary"
           leadingIcon={DownloadIcon}
           disabled={send.length === 0}
-          onClick={() => downloadCsv(`kubicu-subscribers-${today()}.csv`, toCsv(['email', 'name', 'phone', 'tags'], send.map((c) => [c.email, c.name, c.phone, c.tags.join(';')])))}>
-          
+          onClick={() => downloadCsv(`kubicu-subscribers-${today()}.csv`, toCsv(['email', 'name', 'phone', 'tags'], send.map((c) => [c.email, c.name, c.phone, c.tags.join(';')])))}
+        >
           Download list
         </Button>
       </div>
       <div className="border-t border-line pt-4">
         <SyncHistory entries={log} unit="contacts" onRetry={sync} />
       </div>
-    </ToolSection>);
-
+    </ToolSection>
+  );
 }
 
 /** Google Sheets sync (D232, D272): the rows each tab would get, downloadable per tab, with a history of syncs. */
-export function SheetsSyncTool({ rec }: {rec: InstalledExtension;}) {
+export function SheetsSyncTool({ rec }: { rec: InstalledExtension }) {
   const { data: commerce } = useCommerce();
   const { data: ops } = useOps();
   const { current } = useWorkspace();
@@ -92,25 +92,25 @@ export function SheetsSyncTool({ rec }: {rec: InstalledExtension;}) {
   const tabs = useMemo(() => {
     const formName = (id: string) => forms?.forms.find((f) => f.id === id)?.name ?? '';
     return [
-    {
-      id: 'orders',
-      label: 'Orders',
-      headers: ['date', 'order', 'customer', 'phone', 'items', 'total', 'payment', 'status'],
-      rows: commerce.orders.map((o) => [o.createdAt, orderRef(o), o.customer.name, o.customer.phone, o.items.map((i) => `${i.qty}× ${i.name}`).join('; '), o.subtotalNgn - o.discountNgn + o.deliveryNgn, o.paymentStatus, o.status])
-    },
-    {
-      id: 'bookings',
-      label: 'Bookings',
-      headers: ['booked_for', 'ref', 'service', 'customer', 'phone', 'status', 'deposit_paid'],
-      rows: ops.bookings.map((b) => [b.start, b.ref, b.serviceName, b.customer.name, b.customer.phone, b.status, b.depositPaidNgn])
-    },
-    {
-      id: 'responses',
-      label: 'Form responses',
-      headers: ['date', 'form', 'name', 'email', 'source', 'status'],
-      rows: (forms?.submissions ?? []).map((s) => [s.createdAt, formName(s.formId), s.contactName, s.contactEmail, s.source, s.status])
-    }];
-
+      {
+        id: 'orders',
+        label: 'Orders',
+        headers: ['date', 'order', 'customer', 'phone', 'items', 'total', 'payment', 'status'],
+        rows: commerce.orders.map((o) => [o.createdAt, orderRef(o), o.customer.name, o.customer.phone, o.items.map((i) => `${i.qty}× ${i.name}`).join('; '), o.subtotalNgn - o.discountNgn + o.deliveryNgn, o.paymentStatus, o.status]),
+      },
+      {
+        id: 'bookings',
+        label: 'Bookings',
+        headers: ['booked_for', 'ref', 'service', 'customer', 'phone', 'status', 'deposit_paid'],
+        rows: ops.bookings.map((b) => [b.start, b.ref, b.serviceName, b.customer.name, b.customer.phone, b.status, b.depositPaidNgn]),
+      },
+      {
+        id: 'responses',
+        label: 'Form responses',
+        headers: ['date', 'form', 'name', 'email', 'source', 'status'],
+        rows: (forms?.submissions ?? []).map((s) => [s.createdAt, formName(s.formId), s.contactName, s.contactEmail, s.source, s.status]),
+      },
+    ];
   }, [commerce.orders, ops.bookings, forms]);
 
   const sync = (retryOf?: SyncEntry) => {
@@ -119,27 +119,27 @@ export function SheetsSyncTool({ rec }: {rec: InstalledExtension;}) {
     const since = rec.settings.lastSyncAt ? Date.parse(rec.settings.lastSyncAt) : 0;
     const fresh = tabs.map((t) => ({ label: t.label, n: t.rows.filter((r) => Date.parse(String(r[0])) > since).length }));
     const sent = fresh.reduce((s, f) => s + f.n, 0);
-    const entry: SyncEntry = error ?
-    { id: uid('sync'), at: new Date().toISOString(), status: 'failed', sent: 0, skipped: 0, detail: '', error, retryOf: retryOf?.id } :
-    {
-      id: uid('sync'),
-      at: new Date().toISOString(),
-      status: 'ok',
-      sent,
-      skipped: 0,
-      detail: sent ? fresh.filter((f) => f.n).map((f) => `${f.label} ${f.n}`).join(', ') : 'nothing new since the last sync',
-      retryOf: retryOf?.id
-    };
+    const entry: SyncEntry = error
+      ? { id: uid('sync'), at: new Date().toISOString(), status: 'failed', sent: 0, skipped: 0, detail: '', error, retryOf: retryOf?.id }
+      : {
+          id: uid('sync'),
+          at: new Date().toISOString(),
+          status: 'ok',
+          sent,
+          skipped: 0,
+          detail: sent ? fresh.filter((f) => f.n).map((f) => `${f.label} ${f.n}`).join(', ') : 'nothing new since the last sync',
+          retryOf: retryOf?.id,
+        };
     market.updateSettings(rec.id, withSyncEntry(rec.settings, entry));
-    if (error) toast.error('Sync failed', { description: error });else
-    toast(sent ? `${sent} new rows checked` : 'Nothing new to add', { description: 'Preview — nothing was added to your sheet. Adding rows needs the KUBICU backend.' });
+    if (error) toast.error('Sync failed', { description: error });
+    else toast(sent ? `${sent} new rows checked` : 'Nothing new to add', { description: 'Preview — nothing was added to your sheet. Adding rows needs the KUBICU backend.' });
   };
 
   return (
     <ToolSection title="Your sheet" simulated="Preview: each tab shows the rows your sheet would get. Download a tab to paste it in yourself.">
       <ul className="flex flex-col divide-y divide-line">
-        {tabs.map((t) =>
-        <li key={t.id} className="flex items-center justify-between gap-3 py-2.5">
+        {tabs.map((t) => (
+          <li key={t.id} className="flex items-center justify-between gap-3 py-2.5">
             <span className="min-w-0">
               <span className="block text-label font-medium text-fg">{t.label}</span>
               <span className="block text-caption text-fg-muted">{t.rows.length} rows</span>
@@ -148,7 +148,7 @@ export function SheetsSyncTool({ rec }: {rec: InstalledExtension;}) {
               Download
             </Button>
           </li>
-        )}
+        ))}
       </ul>
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-caption text-fg-muted">{rec.settings.lastSyncAt ? `Last synced ${formatTimestamp(rec.settings.lastSyncAt)}` : 'Not synced yet.'}</p>
@@ -159,6 +159,6 @@ export function SheetsSyncTool({ rec }: {rec: InstalledExtension;}) {
       <div className="border-t border-line pt-4">
         <SyncHistory entries={log} unit="rows" onRetry={sync} />
       </div>
-    </ToolSection>);
-
+    </ToolSection>
+  );
 }

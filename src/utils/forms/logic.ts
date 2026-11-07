@@ -6,17 +6,17 @@ import { activeCountryInfo } from '../country';
 
 export type Answers = Record<string, string | string[]>;
 
-const asText = (v: string | string[] | undefined): string => Array.isArray(v) ? v.join(', ') : v ?? '';
+const asText = (v: string | string[] | undefined): string => (Array.isArray(v) ? v.join(', ') : v ?? '');
 
 /** Product picker answers are stored as "productId:qty". */
-export function parsePicks(v: string | string[] | undefined): {id: string;qty: number;}[] {
+export function parsePicks(v: string | string[] | undefined): { id: string; qty: number }[] {
   const list = Array.isArray(v) ? v : [];
-  return list.
-  map((s) => {
-    const [id, q] = s.split(':');
-    return { id, qty: Math.max(0, Math.floor(Number(q) || 0)) };
-  }).
-  filter((p) => p.id && p.qty > 0);
+  return list
+    .map((s) => {
+      const [id, q] = s.split(':');
+      return { id, qty: Math.max(0, Math.floor(Number(q) || 0)) };
+    })
+    .filter((p) => p.id && p.qty > 0);
 }
 
 export function picksTotal(field: FormField, v: string | string[] | undefined): number {
@@ -52,7 +52,7 @@ const WEBSITE_RE = /^(https?:\/\/)?([a-z0-9-]+\.)+[a-z]{2,}(:\d+)?(\/\S*)?$/i;
 const HANDLE_RE = /^@[a-z0-9._]{2,30}$/i;
 export const isValidWebsiteOrHandle = (s: string) => WEBSITE_RE.test(s) || HANDLE_RE.test(s);
 
-export const maskAccount = (n: string) => n.length > 4 ? `••••${n.slice(-4)}` : n;
+export const maskAccount = (n: string) => (n.length > 4 ? `••••${n.slice(-4)}` : n);
 
 export function ruleMatches(rule: FieldRule | null, answers: Answers): boolean {
   if (!rule) return true;
@@ -76,7 +76,7 @@ export function visibleFields(fields: FormField[], answers: Answers): FormField[
   const shown = new Set<string>();
   return fields.filter((f) => {
     if (f.type === 'hidden') return false;
-    const ok = !f.rule || shown.has(f.rule.fieldId) && ruleMatches(f.rule, answers);
+    const ok = !f.rule || (shown.has(f.rule.fieldId) && ruleMatches(f.rule, answers));
     if (ok) shown.add(f.id);
     return ok;
   });
@@ -172,13 +172,13 @@ export function fieldError(field: FormField, value: string | string[] | undefine
 }
 
 type Translate = (key: string, vars?: Record<string, string | number>) => string;
-const plain: Translate = (key, vars) => vars ? key.replace(/\{(\w+)\}/g, (m, k: string) => k in vars ? String(vars[k]) : m) : key;
+const plain: Translate = (key, vars) => (vars ? key.replace(/\{(\w+)\}/g, (m, k: string) => (k in vars ? String(vars[k]) : m)) : key);
 
 const ruleKeys: Record<FieldRule['op'], string> = {
   is: 'If {source} is {value}, show {field}',
   isNot: 'If {source} is not {value}, show {field}',
   contains: 'If {source} contains {value}, show {field}',
-  answered: 'If {source} is answered, show {field}'
+  answered: 'If {source} is answered, show {field}',
 };
 
 /** "If Topic is Press, show Your KUBICU link". Pass the translator to get it in the chosen language (D341). */
@@ -197,20 +197,20 @@ export function formIssues(form: FormDef): string[] {
     if (!f.label.trim()) issues.push(`Field ${i + 1} needs a label`);
     if (f.rule) {
       const idx = form.fields.findIndex((x) => x.id === f.rule!.fieldId);
-      if (idx === -1) issues.push(`“${f.label}” has a rule pointing to a deleted field`);else
-      if (idx >= i) issues.push(`“${f.label}” can only depend on a field above it`);
+      if (idx === -1) issues.push(`“${f.label}” has a rule pointing to a deleted field`);
+      else if (idx >= i) issues.push(`“${f.label}” can only depend on a field above it`);
     }
     if (choiceTypes.includes(f.type) && f.options.filter((o) => o.trim()).length < 2) issues.push(`“${f.label}” needs at least two options`);
     if (f.type === 'imageChoice' && f.options.some((o, j) => o.trim() && !f.optionImages?.[j])) issues.push(`“${f.label}” has options without a picture`);
-    if (f.type === 'products' && !f.products?.length) issues.push(`“${f.label}” needs at least one product`);
+    if (f.type === 'products' && !(f.products?.length)) issues.push(`“${f.label}” needs at least one product`);
     if (f.type === 'scale' && f.scale && (!f.scale.minLabel.trim() || !f.scale.maxLabel.trim())) issues.push(`“${f.label}” needs words for both ends of the scale`);
     if ((f.type === 'ranking' || f.type === 'grid') && f.options.filter((o) => o.trim()).length < 2) issues.push(`“${f.label}” needs at least two ${f.type === 'grid' ? 'rows' : 'items'}`);
     if (f.type === 'grid' && (f.gridColumns ?? []).filter((o) => o.trim()).length < 2) issues.push(`“${f.label}” needs at least two answer choices`);
     if (f.type === 'bookingSlot' && !f.serviceId) issues.push(`“${f.label}” needs a service from Bookings`);
     if (f.type === 'calculated') {
       const ids = f.calc?.fieldIds ?? [];
-      if (!ids.length) issues.push(`“${f.label}” needs at least one answer to add up`);else
-      if (ids.some((id) => form.fields.findIndex((x) => x.id === id) === -1 || form.fields.findIndex((x) => x.id === id) >= i)) issues.push(`“${f.label}” can only add up answers above it`);
+      if (!ids.length) issues.push(`“${f.label}” needs at least one answer to add up`);
+      else if (ids.some((id) => form.fields.findIndex((x) => x.id === id) === -1 || form.fields.findIndex((x) => x.id === id) >= i)) issues.push(`“${f.label}” can only add up answers above it`);
     }
     if (f.type === 'payment' && !f.amountFromFieldId && !(f.amountNgn && f.amountNgn > 0)) issues.push(`“${f.label}” needs an amount`);
   });
@@ -230,7 +230,7 @@ export function closedReason(form: FormDef, count: number, now = Date.now()): st
  * An answer as readable text. Pass the field so names, date ranges, signatures and picks read naturally.
  * `mask` hides all but the last 4 digits of bank account numbers.
  */
-export function answerText(v: string | string[] | undefined, field?: FormField, opts: {mask?: boolean;} = {}): string {
+export function answerText(v: string | string[] | undefined, field?: FormField, opts: { mask?: boolean } = {}): string {
   if (!field) return asText(v);
   const list = Array.isArray(v) ? v : [];
   switch (field.type) {
@@ -244,40 +244,40 @@ export function answerText(v: string | string[] | undefined, field?: FormField, 
       return list.map((x) => x.trim()).filter(Boolean).reverse().join(', ');
     case 'bookingSlot':
       return list[1] ?? list[0] ?? '';
-    case 'bank':{
-        const [bank = '', acct = '', holder = ''] = list;
-        if (!bank && !acct) return '';
-        return [bank, opts.mask ? maskAccount(acct) : acct, holder].filter(Boolean).join(' · ');
-      }
-    case 'calculated':{
-        const s = typeof v === 'string' ? v : '';
-        if (!s) return '';
-        return field.calc?.unit === 'number' ? Number(s).toLocaleString('en-NG') : formatNgn(Number(s));
-      }
+    case 'bank': {
+      const [bank = '', acct = '', holder = ''] = list;
+      if (!bank && !acct) return '';
+      return [bank, opts.mask ? maskAccount(acct) : acct, holder].filter(Boolean).join(' · ');
+    }
+    case 'calculated': {
+      const s = typeof v === 'string' ? v : '';
+      if (!s) return '';
+      return field.calc?.unit === 'number' ? Number(s).toLocaleString('en-NG') : formatNgn(Number(s));
+    }
     case 'name':
       return (Array.isArray(v) ? v : []).map((x) => x.trim()).filter(Boolean).join(' ');
-    case 'dateRange':{
-        const [from = '', to = ''] = Array.isArray(v) ? v : [];
-        return from && to ? `${from} → ${to}` : from || to;
-      }
-    case 'signature':{
-        const s = typeof v === 'string' ? v : '';
-        if (!s) return '';
-        return isDrawnSignature(s) ? 'Signed (drawn)' : `Signed: ${s.replace(/^typed:/, '')} (typed)`;
-      }
-    case 'scale':{
-        const s = typeof v === 'string' ? v : '';
-        return s && field.scale ? `${s} of ${field.scale.max}` : s;
-      }
-    case 'products':{
-        const picks = parsePicks(v);
-        if (!picks.length) return '';
-        const lines = picks.map((p) => {
-          const prod = field.products?.find((x) => x.id === p.id);
-          return `${p.qty} × ${prod?.name ?? 'Removed product'}${prod ? ` (${formatNgn(prod.priceNgn * p.qty)})` : ''}`;
-        });
-        return `${lines.join(', ')} · Total ${formatNgn(picksTotal(field, v))}`;
-      }
+    case 'dateRange': {
+      const [from = '', to = ''] = Array.isArray(v) ? v : [];
+      return from && to ? `${from} → ${to}` : from || to;
+    }
+    case 'signature': {
+      const s = typeof v === 'string' ? v : '';
+      if (!s) return '';
+      return isDrawnSignature(s) ? 'Signed (drawn)' : `Signed: ${s.replace(/^typed:/, '')} (typed)`;
+    }
+    case 'scale': {
+      const s = typeof v === 'string' ? v : '';
+      return s && field.scale ? `${s} of ${field.scale.max}` : s;
+    }
+    case 'products': {
+      const picks = parsePicks(v);
+      if (!picks.length) return '';
+      const lines = picks.map((p) => {
+        const prod = field.products?.find((x) => x.id === p.id);
+        return `${p.qty} × ${prod?.name ?? 'Removed product'}${prod ? ` (${formatNgn(prod.priceNgn * p.qty)})` : ''}`;
+      });
+      return `${lines.join(', ')} · Total ${formatNgn(picksTotal(field, v))}`;
+    }
     default:
       return asText(v);
   }

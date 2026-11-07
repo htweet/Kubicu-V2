@@ -29,18 +29,18 @@ export function Field({ id, label, hint, error, optional, trailing, className, c
         {trailing}
       </div>
       {children}
-      {error ?
-      <p id={`${id}-error`} role="alert" className="flex items-start gap-1.5 text-caption text-danger">
+      {error ? (
+        <p id={`${id}-error`} role="alert" className="flex items-start gap-1.5 text-caption text-danger">
           <AlertCircleIcon size={13} className="mt-px shrink-0" aria-hidden />
           {error}
-        </p> :
-      hint ?
-      <p id={`${id}-hint`} className="text-caption text-fg-subtle">
+        </p>
+      ) : hint ? (
+        <p id={`${id}-hint`} className="text-caption text-fg-subtle">
           {hint}
-        </p> :
-      null}
-    </div>);
-
+        </p>
+      ) : null}
+    </div>
+  );
 }
 
 export const fieldControlClass = cn(
@@ -48,5 +48,5 @@ export const fieldControlClass = cn(
   'transition-[border-color,box-shadow] duration-150 ease-out',
   'focus:border-action focus:outline-none focus:ring-2 focus:ring-action/25',
   'disabled:cursor-not-allowed disabled:opacity-50',
-  'aria-[invalid=true]:border-danger aria-[invalid=true]:focus:ring-danger/25'
+  'aria-[invalid=true]:border-danger aria-[invalid=true]:focus:ring-danger/25',
 );

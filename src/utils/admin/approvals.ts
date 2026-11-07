@@ -22,10 +22,10 @@ export function approvalSummary(kind: PendingApproval['kind'], m: StaffMember, r
 }
 
 /** Applies an approved request. Re-checks the rules at approval time, since things may have changed. */
-export function applyApproval(s: AdminStore, a: PendingApproval, approver: string): {store: AdminStore;error?: string;} {
+export function applyApproval(s: AdminStore, a: PendingApproval, approver: string): { store: AdminStore; error?: string } {
   const decidedAt = new Date().toISOString();
   if (a.kind === 'plan_change' || a.kind === 'credit_grant') {
-    let next: AdminStore = { ...s, approvals: s.approvals.map((x) => x.id === a.id ? { ...a, status: 'approved', decidedBy: approver, decidedAt, decisionNote: null } : x) };
+    let next: AdminStore = { ...s, approvals: s.approvals.map((x) => (x.id === a.id ? { ...a, status: 'approved', decidedBy: approver, decidedAt, decisionNote: null } : x)) };
     if (a.kind === 'plan_change') {
       if (!a.plan || a.priceNgn === undefined || a.aiCredits === undefined) return { store: s, error: 'This request is missing the new values.' };
       next = { ...next, planOverrides: { ...next.planOverrides, [a.plan]: { monthlyNgn: a.priceNgn, aiCredits: a.aiCredits, approvedAt: decidedAt, approvedBy: approver, requestedBy: a.requestedBy, reason: a.reason } } };
@@ -38,7 +38,7 @@ export function applyApproval(s: AdminStore, a: PendingApproval, approver: strin
   }
   if (a.kind === 'workspace_suspend' || a.kind === 'payout_release') {
     // Payout money moves are applied by the caller (they live in the workspace's wallet, not here).
-    let next: AdminStore = { ...s, approvals: s.approvals.map((x) => x.id === a.id ? { ...a, status: 'approved', decidedBy: approver, decidedAt, decisionNote: null } : x) };
+    let next: AdminStore = { ...s, approvals: s.approvals.map((x) => (x.id === a.id ? { ...a, status: 'approved', decidedBy: approver, decidedAt, decisionNote: null } : x)) };
     if (a.kind === 'workspace_suspend' && a.workspaceId) next = { ...next, suspended: { ...next.suspended, [a.workspaceId]: { reason: a.reason, at: decidedAt } } };
     next = audit(next, { area: a.kind === 'workspace_suspend' ? 'tenants' : 'payments', action: `${a.summary} (approved — requested by ${a.requestedBy})`, target: a.targetEmail, reason: a.reason });
     return { store: next };
@@ -46,15 +46,15 @@ export function applyApproval(s: AdminStore, a: PendingApproval, approver: strin
   const m = s.staff.find((x) => x.id === a.targetId);
   if (!m) return { store: s, error: 'That staff account no longer exists.' };
   const activeLeads = s.staff.filter((x) => x.role === 'lead' && x.status === 'active');
-  const removesLead = m.role === 'lead' && m.status === 'active' && (a.kind === 'staff_disable' || a.kind === 'staff_role' && a.role !== 'lead');
+  const removesLead = m.role === 'lead' && m.status === 'active' && (a.kind === 'staff_disable' || (a.kind === 'staff_role' && a.role !== 'lead'));
   if (removesLead && activeLeads.length <= 1) return { store: s, error: 'This would leave no active Platform lead.' };
 
   const patch: Partial<StaffMember> = a.kind === 'staff_role' ? { role: a.role } : a.kind === 'staff_disable' ? { status: 'disabled' } : { twoStep: false, backupCodes: [] };
   const decided: PendingApproval = { ...a, status: 'approved', decidedBy: approver, decidedAt: new Date().toISOString(), decisionNote: null };
   let next: AdminStore = {
     ...s,
-    staff: s.staff.map((x) => x.id === m.id ? { ...x, ...patch } : x),
-    approvals: s.approvals.map((x) => x.id === a.id ? decided : x)
+    staff: s.staff.map((x) => (x.id === m.id ? { ...x, ...patch } : x)),
+    approvals: s.approvals.map((x) => (x.id === a.id ? decided : x)),
   };
   next = audit(next, { area: 'staff', action: `${a.summary} (approved — requested by ${a.requestedBy})`, target: a.targetEmail, reason: a.reason });
   return { store: next };

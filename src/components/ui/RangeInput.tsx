@@ -20,19 +20,19 @@ interface RangeInputProps {
  */
 export function RangeInput({ label, value, min, max, step = 0.05, onChange, format = (v) => `${Math.round(v * 100)}%`, disabled, className }: RangeInputProps) {
   const id = useId();
-  const pct = Math.min(100, Math.max(0, (value - min) / (max - min) * 100));
+  const pct = Math.min(100, Math.max(0, ((value - min) / (max - min)) * 100));
   const sel = `#${CSS.escape(id)}`;
   const thumb = 'width:18px;height:18px;border-radius:999px;background:rgb(var(--action));border:3px solid rgb(var(--raised));box-shadow:0 0 0 1px rgb(var(--action)),0 1px 3px rgb(0 0 0 / 0.35);cursor:pointer;';
   const css = [
-  `${sel}{-webkit-appearance:none;appearance:none;background:transparent;}`,
-  `${sel}::-webkit-slider-runnable-track{height:6px;border-radius:999px;background:linear-gradient(to right, rgb(var(--action)) 0 ${pct}%, rgb(var(--border-strong)) ${pct}% 100%);}`,
-  `${sel}::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;margin-top:-6px;${thumb}}`,
-  `${sel}::-moz-range-track{height:6px;border-radius:999px;background:rgb(var(--border-strong));}`,
-  `${sel}::-moz-range-progress{height:6px;border-radius:999px;background:rgb(var(--action));}`,
-  `${sel}::-moz-range-thumb{${thumb}box-sizing:border-box;}`,
-  `${sel}:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 1px rgb(var(--action)),0 0 0 4px rgb(var(--focus) / 0.45);}`,
-  `${sel}:focus-visible::-moz-range-thumb{box-shadow:0 0 0 1px rgb(var(--action)),0 0 0 4px rgb(var(--focus) / 0.45);}`].
-  join('');
+    `${sel}{-webkit-appearance:none;appearance:none;background:transparent;}`,
+    `${sel}::-webkit-slider-runnable-track{height:6px;border-radius:999px;background:linear-gradient(to right, rgb(var(--action)) 0 ${pct}%, rgb(var(--border-strong)) ${pct}% 100%);}`,
+    `${sel}::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;margin-top:-6px;${thumb}}`,
+    `${sel}::-moz-range-track{height:6px;border-radius:999px;background:rgb(var(--border-strong));}`,
+    `${sel}::-moz-range-progress{height:6px;border-radius:999px;background:rgb(var(--action));}`,
+    `${sel}::-moz-range-thumb{${thumb}box-sizing:border-box;}`,
+    `${sel}:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 1px rgb(var(--action)),0 0 0 4px rgb(var(--focus) / 0.45);}`,
+    `${sel}:focus-visible::-moz-range-thumb{box-shadow:0 0 0 1px rgb(var(--action)),0 0 0 4px rgb(var(--focus) / 0.45);}`,
+  ].join('');
   return (
     <div className={cn('flex flex-col gap-1.5', className)}>
       <div className="flex items-baseline justify-between gap-3">
@@ -53,9 +53,9 @@ export function RangeInput({ label, value, min, max, step = 0.05, onChange, form
         disabled={disabled}
         aria-valuetext={format(value)}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="h-6 w-full cursor-pointer focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50" />
-      
+        className="h-6 w-full cursor-pointer focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+      />
       <style>{css}</style>
-    </div>);
-
+    </div>
+  );
 }

@@ -64,6 +64,6 @@ export function ShareStep({ state, onDone }: ShareStepProps) {
       <Button size="lg" className="mt-10" onClick={onDone}>
         Go to my workspace
       </Button>
-    </div>);
-
+    </div>
+  );
 }

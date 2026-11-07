@@ -15,7 +15,7 @@ export function useBlockClipboard() {
   const { state, actions } = useEditor();
   const { t: tr } = useT();
   const raw = useSyncExternalStore(subscribeClipboard, clipboardSnapshot, () => null);
-  const clip = useMemo(() => raw ? readClipboard() : [], [raw]);
+  const clip = useMemo(() => (raw ? readClipboard() : []), [raw]);
   const first = clip[0];
 
   const copy = (id: string) => {

@@ -35,11 +35,11 @@ interface Props {
 
 type Errors = Partial<Record<string, string>>;
 
-const statusOptions: {value: EventStatus;label: string;}[] = [
-{ value: 'draft', label: 'Draft' },
-{ value: 'on_sale', label: 'On sale' },
-{ value: 'paused', label: 'Paused' }];
-
+const statusOptions: { value: EventStatus; label: string }[] = [
+  { value: 'draft', label: 'Draft' },
+  { value: 'on_sale', label: 'On sale' },
+  { value: 'paused', label: 'Paused' },
+];
 
 /** Create or edit an event and its ticket types (D73). */
 export function EventEditor({ target, onClose }: Props) {
@@ -71,11 +71,11 @@ export function EventEditor({ target, onClose }: Props) {
     return prev ? soldOfType(product, prev) : 0;
   };
   const totalSold = draft.ticketTypes.reduce((s, t) => s + soldOf(t), 0);
-  const sold = useMemo(() => existing ? soldSeats(data, existing.id) : new Set<string>(), [data, existing]);
+  const sold = useMemo(() => (existing ? soldSeats(data, existing.id) : new Set<string>()), [data, existing]);
   const series = existing?.series ? seriesDates(data, existing) : [];
   const laterDates = series.filter((e) => Date.parse(e.startsAt) > Date.parse(existing?.startsAt ?? '') && e.status !== 'cancelled');
   const patch = (p: Partial<CommerceEvent>) => setDraft((d) => ({ ...d, ...p }));
-  const patchType = (id: string, p: Partial<TicketType>) => setDraft((d) => ({ ...d, ticketTypes: d.ticketTypes.map((t) => t.id === id ? { ...t, ...p } : t) }));
+  const patchType = (id: string, p: Partial<TicketType>) => setDraft((d) => ({ ...d, ticketTypes: d.ticketTypes.map((t) => (t.id === id ? { ...t, ...p } : t)) }));
 
   const errors = useMemo(() => {
     const e: Errors = {};
@@ -87,14 +87,14 @@ export function EventEditor({ target, onClose }: Props) {
     if (draft.capacity !== null && draft.capacity < totalSold) e.capacity = `${totalSold} tickets are already sold.`;
     if (draft.seating) {
       const labels = draft.seating.rows.map((r) => r.label.trim().toLowerCase());
-      if (labels.some((l) => !l)) e.seating = 'Every row or table needs a name.';else
-      if (new Set(labels).size !== labels.length) e.seating = 'Two rows or tables have the same name — guests wouldn’t know which is theirs.';else
-      if (draft.seating.rows.some((r) => r.seats < 1)) e.seating = 'Every row or table needs at least 1 seat.';
+      if (labels.some((l) => !l)) e.seating = 'Every row or table needs a name.';
+      else if (new Set(labels).size !== labels.length) e.seating = 'Two rows or tables have the same name — guests wouldn’t know which is theirs.';
+      else if (draft.seating.rows.some((r) => r.seats < 1)) e.seating = 'Every row or table needs at least 1 seat.';
     }
     syncSeatQuantities(draft).ticketTypes.forEach((t) => {
       if (!t.name.trim()) e[`${t.id}.name`] = 'Name this ticket.';
-      if (t.quantity < soldOf(t)) e[`${t.id}.quantity`] = `${soldOf(t)} already sold.`;else
-      if (t.quantity < 1) e[`${t.id}.quantity`] = 'At least 1.';
+      if (t.quantity < soldOf(t)) e[`${t.id}.quantity`] = `${soldOf(t)} already sold.`;
+      else if (t.quantity < 1) e[`${t.id}.quantity`] = 'At least 1.';
       if (t.minPerOrder < 1 || t.maxPerOrder < t.minPerOrder) e[`${t.id}.limits`] = 'Max must be at least the min, and min at least 1.';
       if (t.salesStart && t.salesEnd && Date.parse(t.salesEnd) <= Date.parse(t.salesStart)) e[`${t.id}.window`] = 'Sales must close after they open.';
       if (t.priceNgn > 0 && !paidAllowed && draft.status === 'on_sale') e[`${t.id}.price`] = `Paid tickets need ${plans[CHECKOUT_PLAN].name}.`;
@@ -102,7 +102,7 @@ export function EventEditor({ target, onClose }: Props) {
     return e;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draft, paidAllowed, totalSold]);
-  const err = (k: string) => tried ? errors[k] : undefined;
+  const err = (k: string) => (tried ? errors[k] : undefined);
 
   const save = () => {
     setTried(true);
@@ -115,7 +115,7 @@ export function EventEditor({ target, onClose }: Props) {
       name: draft.name.trim(),
       venue: draft.online ? '' : draft.venue.trim(),
       ticketTypes: draft.ticketTypes.map((t) => ({ ...t, name: t.name.trim() })),
-      seating: draft.seating ? { ...draft.seating, rows: draft.seating.rows.map((r) => ({ ...r, label: r.label.trim() })) } : undefined
+      seating: draft.seating ? { ...draft.seating, rows: draft.seating.rows.map((r) => ({ ...r, label: r.label.trim() })) } : undefined,
     };
     const repeating = !existing && repeat !== 'none';
     const next: CommerceEvent = repeating ? { ...base, series: { id: uid('ser'), every: repeat } } : base;
@@ -124,24 +124,24 @@ export function EventEditor({ target, onClose }: Props) {
       if (repeating) for (let i = 1; i < repeatCount; i++) out = upsertEvent(out, copyForDate(next, shiftDate(next.startsAt, repeat, i)));
       // Shared details flow to later dates; seats, sales and guest lists stay per date.
       if (existing && applyLater)
-      laterDates.forEach((later) => {
-        out = upsertEvent(out, {
-          ...later,
-          name: next.name,
-          description: next.description,
-          imageUrl: next.imageUrl,
-          online: next.online,
-          venue: next.venue,
-          address: next.address,
-          refundPolicy: next.refundPolicy,
-          ticketTypes: later.ticketTypes.map((t, i) => next.ticketTypes[i] ? { ...t, name: next.ticketTypes[i].name, priceNgn: next.ticketTypes[i].priceNgn, note: next.ticketTypes[i].note } : t)
+        laterDates.forEach((later) => {
+          out = upsertEvent(out, {
+            ...later,
+            name: next.name,
+            description: next.description,
+            imageUrl: next.imageUrl,
+            online: next.online,
+            venue: next.venue,
+            address: next.address,
+            refundPolicy: next.refundPolicy,
+            ticketTypes: later.ticketTypes.map((t, i) => (next.ticketTypes[i] ? { ...t, name: next.ticketTypes[i].name, priceNgn: next.ticketTypes[i].priceNgn, note: next.ticketTypes[i].note } : t)),
+          });
         });
-      });
       return out;
     });
     if (!ok) return;
-    toast.success(existing ? applyLater && laterDates.length ? `Saved on this and ${laterDates.length} later date${laterDates.length === 1 ? '' : 's'}` : 'Event saved' : repeating ? `${repeatCount} dates created` : 'Event created', {
-      description: next.status === 'on_sale' ? 'Link it from an Event block on your page to start selling.' : 'It’s a draft — put it on sale when you’re ready.'
+    toast.success(existing ? (applyLater && laterDates.length ? `Saved on this and ${laterDates.length} later date${laterDates.length === 1 ? '' : 's'}` : 'Event saved') : repeating ? `${repeatCount} dates created` : 'Event created', {
+      description: next.status === 'on_sale' ? 'Link it from an Event block on your page to start selling.' : 'It’s a draft — put it on sale when you’re ready.',
     });
     onClose();
   };
@@ -171,20 +171,20 @@ export function EventEditor({ target, onClose }: Props) {
       title={existing ? `Edit ${existing.name}` : 'New event'}
       description="Ticket types, seat limits and sales dates. Ticket orders appear in Orders like any sale."
       footer={
-      <div className="flex w-full items-center justify-between gap-2">
-          {existing && totalSold === 0 ?
-        confirmDelete ?
-        <Button variant="destructive" leadingIcon={Trash2Icon} onClick={remove}>
+        <div className="flex w-full items-center justify-between gap-2">
+          {existing && totalSold === 0 ? (
+            confirmDelete ? (
+              <Button variant="destructive" leadingIcon={Trash2Icon} onClick={remove}>
                 Confirm delete
-              </Button> :
-
-        <Button variant="tertiary" leadingIcon={Trash2Icon} onClick={() => setConfirmDelete(true)}>
+              </Button>
+            ) : (
+              <Button variant="tertiary" leadingIcon={Trash2Icon} onClick={() => setConfirmDelete(true)}>
                 Delete
-              </Button> :
-
-
-        <span />
-        }
+              </Button>
+            )
+          ) : (
+            <span />
+          )}
           <div className="flex gap-2">
             <Button variant="secondary" onClick={onClose}>
               Cancel
@@ -194,16 +194,16 @@ export function EventEditor({ target, onClose }: Props) {
             </Button>
           </div>
         </div>
-      }>
-      
+      }
+    >
       <div className="flex flex-col divide-y divide-line">
-        {cancelled &&
-        <div className="px-5 py-5">
+        {cancelled && (
+          <div className="px-5 py-5">
             <InlineAlert tone="warning" title="This event was cancelled">
               Cancelled events can’t be edited or put back on sale. Every ticket order was refunded.
             </InlineAlert>
           </div>
-        }
+        )}
 
         <section aria-labelledby="ev-basics" className="flex flex-col gap-4 px-5 py-6">
           <h3 id="ev-basics" className="text-label font-semibold text-fg">
@@ -223,52 +223,52 @@ export function EventEditor({ target, onClose }: Props) {
             <DateTimeInput id="ev-end" label="Ends" optional clearable value={draft.endsAt} error={err('endsAt')} onChange={(v) => patch({ endsAt: v })} />
           </div>
           <TimezoneSelect id="ev-tz" label="Time zone" value={draft.timeZone as TimeZoneId} onChange={(timeZone) => patch({ timeZone })} />
-          {!existing ?
-          <div className="flex flex-col gap-3 rounded-md border border-line px-4 py-3">
+          {!existing ? (
+            <div className="flex flex-col gap-3 rounded-md border border-line px-4 py-3">
               <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_140px]">
                 <SelectInput<RepeatEvery | 'none'>
-                id="ev-repeat"
-                label="Repeats"
-                value={repeat}
-                onChange={setRepeat}
-                options={[{ value: 'none', label: 'Doesn’t repeat' }, ...(Object.keys(repeatLabels) as RepeatEvery[]).map((value) => ({ value, label: repeatLabels[value] }))]} />
-              
-                {repeat !== 'none' &&
-              <TextInput id="ev-repeat-n" label="Number of dates" type="number" inputMode="numeric" min={2} max={MAX_SERIES_DATES} value={String(repeatCount)} onChange={(e) => setRepeatCount(Math.min(MAX_SERIES_DATES, Math.max(2, Math.floor(Number(e.target.value) || 2))))} />
-              }
+                  id="ev-repeat"
+                  label="Repeats"
+                  value={repeat}
+                  onChange={setRepeat}
+                  options={[{ value: 'none', label: 'Doesn’t repeat' }, ...(Object.keys(repeatLabels) as RepeatEvery[]).map((value) => ({ value, label: repeatLabels[value] }))]}
+                />
+                {repeat !== 'none' && (
+                  <TextInput id="ev-repeat-n" label="Number of dates" type="number" inputMode="numeric" min={2} max={MAX_SERIES_DATES} value={String(repeatCount)} onChange={(e) => setRepeatCount(Math.min(MAX_SERIES_DATES, Math.max(2, Math.floor(Number(e.target.value) || 2))))} />
+                )}
               </div>
               <p className="text-caption text-fg-muted">
-                {repeat === 'none' ?
-              'For weekly classes, monthly meet-ups or a show with several nights. Each date gets its own seats, guest list and check-in.' :
-              `${repeatCount} dates, from ${formatEventDate(draft.startsAt, draft.timeZone)} to ${formatEventDate(shiftDate(draft.startsAt, repeat, repeatCount - 1), draft.timeZone)}. Each has its own seats and guest list; your page shows a date picker.`}
+                {repeat === 'none'
+                  ? 'For weekly classes, monthly meet-ups or a show with several nights. Each date gets its own seats, guest list and check-in.'
+                  : `${repeatCount} dates, from ${formatEventDate(draft.startsAt, draft.timeZone)} to ${formatEventDate(shiftDate(draft.startsAt, repeat, repeatCount - 1), draft.timeZone)}. Each has its own seats and guest list; your page shows a date picker.`}
               </p>
-            </div> :
-          existing.series ?
-          <div className="flex flex-col gap-3 rounded-md border border-line px-4 py-3">
+            </div>
+          ) : existing.series ? (
+            <div className="flex flex-col gap-3 rounded-md border border-line px-4 py-3">
               <p className="text-label text-fg">
                 Date {series.findIndex((e) => e.id === existing.id) + 1} of {series.length} · {repeatLabels[existing.series.every].toLowerCase()}
               </p>
-              {laterDates.length > 0 &&
-            <Switch
-              id="ev-apply-later"
-              label={`Also update the ${laterDates.length} later date${laterDates.length === 1 ? '' : 's'}`}
-              description="Copies the name, description, cover, venue, refund policy and ticket names and prices. Seats, quantities, sales and guest lists stay separate."
-              checked={applyLater}
-              onChange={setApplyLater} />
-
-            }
+              {laterDates.length > 0 && (
+                <Switch
+                  id="ev-apply-later"
+                  label={`Also update the ${laterDates.length} later date${laterDates.length === 1 ? '' : 's'}`}
+                  description="Copies the name, description, cover, venue, refund policy and ticket names and prices. Seats, quantities, sales and guest lists stay separate."
+                  checked={applyLater}
+                  onChange={setApplyLater}
+                />
+              )}
               <Button variant="secondary" leadingIcon={PlusIcon} className="self-start" onClick={addNextDate}>
                 Add the next date
               </Button>
-            </div> :
-          null}
+            </div>
+          ) : null}
           <Switch id="ev-online" label="Online event" description="Guests get the joining link with their ticket." checked={draft.online} onChange={(online) => patch({ online })} />
-          {!draft.online &&
-          <div className="grid gap-4 sm:grid-cols-2">
+          {!draft.online && (
+            <div className="grid gap-4 sm:grid-cols-2">
               <TextInput id="ev-venue" label="Venue" value={draft.venue} error={err('venue')} placeholder="e.g. The Wheatbaker" onChange={(e) => patch({ venue: e.target.value })} />
               <TextInput id="ev-address" label="Address" optional value={draft.address} onChange={(e) => patch({ address: e.target.value })} />
             </div>
-          }
+          )}
         </section>
 
         <section aria-labelledby="ev-tickets" className="flex flex-col gap-4 px-5 py-6">
@@ -280,11 +280,11 @@ export function EventEditor({ target, onClose }: Props) {
               {draft.ticketTypes.length} of {MAX_TICKET_TYPES}
             </span>
           </div>
-          {!paidAllowed &&
-          <InlineAlert tone="info" title={`Free tickets work on ${plan.name}`} action={<UpgradeButton plan={CHECKOUT_PLAN} feature="Selling event tickets" />}>
+          {!paidAllowed && (
+            <InlineAlert tone="info" title={`Free tickets work on ${plan.name}`} action={<UpgradeButton plan={CHECKOUT_PLAN} feature="Selling event tickets" />}>
               Paid tickets need {plans[CHECKOUT_PLAN].name}, because they use KUBICU checkout.
             </InlineAlert>
-          }
+          )}
           {err('types') && <p className="text-caption font-medium text-danger">{err('types')}</p>}
           <ol className="flex flex-col gap-3">
             {draft.ticketTypes.map((t, i) => {
@@ -304,9 +304,9 @@ export function EventEditor({ target, onClose }: Props) {
                       onClick={() => {
                         const rest = draft.ticketTypes.filter((x) => x.id !== t.id);
                         // Rows that sold this type move to the first remaining type.
-                        patch({ ticketTypes: rest, seating: draft.seating ? { ...draft.seating, rows: draft.seating.rows.map((r) => r.ticketTypeId === t.id ? { ...r, ticketTypeId: rest[0]?.id ?? '' } : r) } : undefined });
-                      }} />
-                    
+                        patch({ ticketTypes: rest, seating: draft.seating ? { ...draft.seating, rows: draft.seating.rows.map((r) => (r.ticketTypeId === t.id ? { ...r, ticketTypeId: rest[0]?.id ?? '' } : r)) } : undefined });
+                      }}
+                    />
                   </div>
                   <div className="flex flex-col gap-4 p-4">
                     <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_160px]">
@@ -314,11 +314,11 @@ export function EventEditor({ target, onClose }: Props) {
                       <CurrencyInput id={`tt-p-${t.id}`} label="Price" value={t.priceNgn} error={err(`${t.id}.price`)} hint="0 = free" onChange={(v) => patchType(t.id, { priceNgn: Math.max(0, v ?? 0) })} />
                     </div>
                     <div className="grid grid-cols-3 gap-4">
-                      {isSeatedType(draft, t.id) ?
-                      <TextInput id={`tt-q-${t.id}`} label="Quantity" value={String(syncSeatQuantities(draft).ticketTypes.find((x) => x.id === t.id)?.quantity ?? 0)} disabled hint="Seats on the map" error={err(`${t.id}.quantity`)} onChange={() => undefined} /> :
-
-                      <TextInput id={`tt-q-${t.id}`} label="Quantity" type="number" inputMode="numeric" min={1} value={String(t.quantity)} error={err(`${t.id}.quantity`)} onChange={(e) => patchType(t.id, { quantity: Math.max(0, Math.floor(Number(e.target.value) || 0)) })} />
-                      }
+                      {isSeatedType(draft, t.id) ? (
+                        <TextInput id={`tt-q-${t.id}`} label="Quantity" value={String(syncSeatQuantities(draft).ticketTypes.find((x) => x.id === t.id)?.quantity ?? 0)} disabled hint="Seats on the map" error={err(`${t.id}.quantity`)} onChange={() => undefined} />
+                      ) : (
+                        <TextInput id={`tt-q-${t.id}`} label="Quantity" type="number" inputMode="numeric" min={1} value={String(t.quantity)} error={err(`${t.id}.quantity`)} onChange={(e) => patchType(t.id, { quantity: Math.max(0, Math.floor(Number(e.target.value) || 0)) })} />
+                      )}
                       <TextInput id={`tt-min-${t.id}`} label="Min / order" type="number" inputMode="numeric" min={1} value={String(t.minPerOrder)} onChange={(e) => patchType(t.id, { minPerOrder: Math.max(1, Math.floor(Number(e.target.value) || 1)) })} />
                       <TextInput id={`tt-max-${t.id}`} label="Max / order" type="number" inputMode="numeric" min={1} max={20} value={String(t.maxPerOrder)} onChange={(e) => patchType(t.id, { maxPerOrder: Math.min(20, Math.max(1, Math.floor(Number(e.target.value) || 1))) })} />
                     </div>
@@ -329,8 +329,8 @@ export function EventEditor({ target, onClose }: Props) {
                     </div>
                     <TextInput id={`tt-note-${t.id}`} label="Note" optional value={t.note} placeholder="e.g. Includes a welcome drink" onChange={(e) => patchType(t.id, { note: e.target.value })} />
                   </div>
-                </li>);
-
+                </li>
+              );
             })}
           </ol>
           <Button
@@ -338,8 +338,8 @@ export function EventEditor({ target, onClose }: Props) {
             leadingIcon={PlusIcon}
             className="self-start"
             disabled={draft.ticketTypes.length >= MAX_TICKET_TYPES}
-            onClick={() => patch({ ticketTypes: [...draft.ticketTypes, blankTicketType()] })}>
-            
+            onClick={() => patch({ ticketTypes: [...draft.ticketTypes, blankTicketType()] })}
+          >
             Add ticket type
           </Button>
         </section>
@@ -350,13 +350,13 @@ export function EventEditor({ target, onClose }: Props) {
           error={err('seating')}
           onChange={(seating) => patch({ seating })}
           locked={
-          planAtLeast(plan.id, 'pro') ? undefined :
-          <InlineAlert tone="info" title="Seat maps need Pro" action={<UpgradeButton plan="pro" feature="Seating maps" />}>
+            planAtLeast(plan.id, 'pro') ? undefined : (
+              <InlineAlert tone="info" title="Seat maps need Pro" action={<UpgradeButton plan="pro" feature="Seating maps" />}>
                 Let guests pick exact seats or book a whole table. Repeating dates work on every plan.
               </InlineAlert>
-
-          } />
-        
+            )
+          }
+        />
 
         <section aria-labelledby="ev-rules" className="flex flex-col gap-4 px-5 py-6">
           <h3 id="ev-rules" className="text-label font-semibold text-fg">
@@ -374,13 +374,13 @@ export function EventEditor({ target, onClose }: Props) {
             placeholder="Only the ticket quantities"
             hint="The most people the venue holds, across every ticket type."
             fieldClassName="max-w-[240px]"
-            onChange={(e) => patch({ capacity: e.target.value.trim() === '' ? null : Math.max(0, Math.floor(Number(e.target.value))) })} />
-          
+            onChange={(e) => patch({ capacity: e.target.value.trim() === '' ? null : Math.max(0, Math.floor(Number(e.target.value))) })}
+          />
           <TextArea id="ev-policy" label="Refund policy" rows={2} value={draft.refundPolicy} hint="Shown under the tickets and on every ticket. Keep it in line with KUBICU’s refund policy." onChange={(e) => patch({ refundPolicy: e.target.value })} />
         </section>
 
-        {!cancelled &&
-        <section aria-labelledby="ev-status" className="flex flex-col gap-3 px-5 py-6">
+        {!cancelled && (
+          <section aria-labelledby="ev-status" className="flex flex-col gap-3 px-5 py-6">
             <h3 id="ev-status" className="text-label font-semibold text-fg">
               Sales
             </h3>
@@ -389,8 +389,8 @@ export function EventEditor({ target, onClose }: Props) {
               {draft.status === 'draft' ? 'Hidden from your pages until it’s on sale.' : draft.status === 'paused' ? 'Visible on your page, but no one can buy until you resume.' : 'Anyone can buy within each ticket’s sales dates, until seats run out.'}
             </p>
           </section>
-        }
+        )}
       </div>
-    </Sheet>);
-
+    </Sheet>
+  );
 }

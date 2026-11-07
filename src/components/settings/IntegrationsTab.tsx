@@ -56,13 +56,13 @@ export function IntegrationsTab() {
       <Section id="int-payments" title={categoryInfo.payments.label} description={categoryInfo.payments.description}>
         <div className="flex flex-wrap items-center justify-between gap-3 border-y border-line py-4">
           <p className="text-label text-fg">
-            {payment ?
-            <>
+            {payment ? (
+              <>
                 <span className="font-semibold">{payment.name}</span> <span className="text-fg-subtle">· {tr('connected in test mode')}</span>
-              </> :
-
-            <span className="text-fg-muted">{tr('No payment provider yet — Paystack, Flutterwave, Monnify or Stripe.')}</span>
-            }
+              </>
+            ) : (
+              <span className="text-fg-muted">{tr('No payment provider yet — Paystack, Flutterwave, Monnify or Stripe.')}</span>
+            )}
           </p>
           <Link to="/app/commerce/payments" className="text-label font-medium text-action hover:underline">
             {tr(payment ? 'Manage in Commerce → Payments' : 'Connect in Commerce → Payments')}
@@ -92,74 +92,74 @@ export function IntegrationsTab() {
                           {on && isActive && connectedCount > 1 && <Badge tone="action">In use</Badge>}
                         </p>
                         <p className="mt-0.5 text-caption text-fg-muted">{tr(def.blurb)}</p>
-                        {conn &&
-                        <p className="mt-1 flex flex-wrap items-center gap-x-2 text-caption text-fg-subtle">
+                        {conn && (
+                          <p className="mt-1 flex flex-wrap items-center gap-x-2 text-caption text-fg-subtle">
                             {firstKey && <span className="font-mono">{def.fields[0].secret ? maskSecret(firstKey) : firstKey}</span>}
-                            {conn.lastTest &&
-                          <span className="inline-flex items-center gap-1">
+                            {conn.lastTest && (
+                              <span className="inline-flex items-center gap-1">
                                 {conn.lastTest.ok ? <CheckCircle2Icon size={12} className="text-success" aria-hidden /> : <XCircleIcon size={12} className="text-danger" aria-hidden />}
                                 {tr(conn.lastTest.ok ? 'Checked' : 'Failed')} {formatRelative(conn.lastTest.at)}
                               </span>
-                          }
+                            )}
                           </p>
-                        }
+                        )}
                       </div>
                       <div className="flex shrink-0 flex-wrap items-center gap-2">
-                        {on && !isActive &&
-                        <Button size="sm" variant="tertiary" disabled={!can.allowed} onClick={() => p.setDefault(c, def.id)}>
+                        {on && !isActive && (
+                          <Button size="sm" variant="tertiary" disabled={!can.allowed} onClick={() => p.setDefault(c, def.id)}>
                             Use this one
                           </Button>
-                        }
-                        {on && (c === 'email' || c === 'sms' || c === 'whatsapp') &&
-                        <Button size="sm" variant="secondary" leadingIcon={SendIcon} disabled={!can.allowed} onClick={() => setTesting(def)}>
+                        )}
+                        {on && (c === 'email' || c === 'sms' || c === 'whatsapp') && (
+                          <Button size="sm" variant="secondary" leadingIcon={SendIcon} disabled={!can.allowed} onClick={() => setTesting(def)}>
                             Send a test
                           </Button>
-                        }
-                        {on && (c === 'dns' || c === 'storage') &&
-                        <Button size="sm" variant="secondary" loading={busy === def.id} disabled={!can.allowed} onClick={() => runCheck(def)}>
+                        )}
+                        {on && (c === 'dns' || c === 'storage') && (
+                          <Button size="sm" variant="secondary" loading={busy === def.id} disabled={!can.allowed} onClick={() => runCheck(def)}>
                             Check
                           </Button>
-                        }
-                        {def.builtIn ? null : on ?
-                        <Button
-                          size="sm"
-                          variant="tertiary"
-                          disabled={!can.allowed}
-                          onClick={() => {
-                            p.disconnect(def.id);
-                            p.log(def.id, 'Disconnect', true, 'Keys removed from this browser.');
-                            toast(tr('{provider} disconnected', { provider: def.name }), { description: tr('Its keys were removed from this browser.') });
-                          }}>
-                          
+                        )}
+                        {def.builtIn ? null : on ? (
+                          <Button
+                            size="sm"
+                            variant="tertiary"
+                            disabled={!can.allowed}
+                            onClick={() => {
+                              p.disconnect(def.id);
+                              p.log(def.id, 'Disconnect', true, 'Keys removed from this browser.');
+                              toast(tr('{provider} disconnected', { provider: def.name }), { description: tr('Its keys were removed from this browser.') });
+                            }}
+                          >
                             Disconnect
-                          </Button> :
-
-                        <Button size="sm" variant="secondary" leadingIcon={PlugIcon} disabled={!can.allowed} onClick={() => setConnecting(def)}>
+                          </Button>
+                        ) : (
+                          <Button size="sm" variant="secondary" leadingIcon={PlugIcon} disabled={!can.allowed} onClick={() => setConnecting(def)}>
                             Connect
                           </Button>
-                        }
+                        )}
                       </div>
-                    </li>);
-
+                    </li>
+                  );
                 })}
               </List>
             </Card>
-            {c === 'storage' && active?.id !== 'browser' &&
-            <p className="text-caption text-fg-subtle">{tr('New uploads would go to {name}. In the prototype, files still stay in this browser.', { name: active?.name ?? '' })}</p>
-            }
+            {c === 'storage' && active?.id !== 'browser' && (
+              <p className="text-caption text-fg-subtle">{tr('New uploads would go to {name}. In the prototype, files still stay in this browser.', { name: active?.name ?? '' })}</p>
+            )}
             {c === 'dns' && <p className="text-caption text-fg-subtle">{tr('When you connect a domain bought from one of these, Domains offers to add the records for you.')}</p>}
-          </Section>);
-
+          </Section>
+        );
       })}
 
       <AccountingSection canManage={can.allowed} />
       <ErpSection canManage={can.allowed} />
 
-      {p.data.log.length > 0 &&
-      <Section id="int-log" title="Recent activity" description="Connections, checks and test messages on this device.">
+      {p.data.log.length > 0 && (
+        <Section id="int-log" title="Recent activity" description="Connections, checks and test messages on this device.">
           <List ruled label="Recent integration activity">
-            {p.data.log.slice(0, 10).map((e) =>
-          <li key={e.id} className="flex min-h-[48px] flex-wrap items-center gap-x-4 gap-y-1 py-3">
+            {p.data.log.slice(0, 10).map((e) => (
+              <li key={e.id} className="flex min-h-[48px] flex-wrap items-center gap-x-4 gap-y-1 py-3">
                 <span className="min-w-0 flex-1 text-label text-fg">
                   {providerById(e.providerId)?.name ?? e.providerId} · {e.action}
                   <span className="block truncate text-caption text-fg-subtle">{e.detail}</span>
@@ -167,25 +167,25 @@ export function IntegrationsTab() {
                 <Badge tone={e.ok ? 'success' : 'danger'}>{e.ok ? 'OK' : 'Failed'}</Badge>
                 <span className="text-caption text-fg-subtle">{formatRelative(e.at)}</span>
               </li>
-          )}
+            ))}
           </List>
         </Section>
-      }
+      )}
 
       <ProviderConnectDialog def={connecting} onClose={() => setConnecting(null)} />
       <SendTestDialog def={testing} onClose={() => setTesting(null)} />
-    </div>);
-
+    </div>
+  );
 }
 
-function SendTestDialog({ def, onClose }: {def: ProviderDef | null;onClose: () => void;}) {
+function SendTestDialog({ def, onClose }: { def: ProviderDef | null; onClose: () => void }) {
   const { t: tr } = useT();
   const p = useProviders();
   const [to, setTo] = useState('');
   const [tried, setTried] = useState(false);
   const [sending, setSending] = useState(false);
   const isEmail = def?.category === 'email';
-  const error = !to.trim() ? isEmail ? 'Enter an email address.' : 'Enter a phone number.' : isEmail ? isValidEmail(to) ? '' : 'Enter a valid email address.' : isValidPhone(to) ? '' : `Enter a phone number, e.g. ${phonePlaceholder()}.`;
+  const error = !to.trim() ? (isEmail ? 'Enter an email address.' : 'Enter a phone number.') : isEmail ? (isValidEmail(to) ? '' : 'Enter a valid email address.') : isValidPhone(to) ? '' : `Enter a phone number, e.g. ${phonePlaceholder()}.`;
 
   const send = async () => {
     if (!def) return;
@@ -209,7 +209,7 @@ function SendTestDialog({ def, onClose }: {def: ProviderDef | null;onClose: () =
       title={def ? tr('Send a test with {name}', { name: def.name }) : 'Send a test'}
       description="Nothing is delivered in the prototype — this checks the flow and logs the result."
       footer={
-      <>
+        <>
           <Button variant="secondary" onClick={onClose}>
             Cancel
           </Button>
@@ -217,9 +217,9 @@ function SendTestDialog({ def, onClose }: {def: ProviderDef | null;onClose: () =
             Send test
           </Button>
         </>
-      }>
-      
+      }
+    >
       <TextInput id="prov-test-to" label={isEmail ? 'Send to (email)' : 'Send to (phone)'} inputMode={isEmail ? 'email' : 'tel'} value={to} onChange={(e) => setTo(e.target.value)} error={tried ? error || undefined : undefined} />
-    </Dialog>);
-
+    </Dialog>
+  );
 }

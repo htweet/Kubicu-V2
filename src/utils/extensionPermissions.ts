@@ -18,7 +18,7 @@ export function classifyPermission(text: string): ClassifiedPermission {
   return { text, access: seeVerbs.test(text.trim()) ? 'see' : 'change', sensitive: sensitiveWords.test(text) };
 }
 
-export function groupPermissions(list: string[]): {see: ClassifiedPermission[];change: ClassifiedPermission[];} {
+export function groupPermissions(list: string[]): { see: ClassifiedPermission[]; change: ClassifiedPermission[] } {
   const all = list.map(classifyPermission);
   return { see: all.filter((p) => p.access === 'see'), change: all.filter((p) => p.access === 'change') };
 }

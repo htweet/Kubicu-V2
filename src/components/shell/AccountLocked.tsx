@@ -20,6 +20,6 @@ export function AccountLocked() {
           {tr('Contact support')}
         </Link>
       </div>
-    </main>);
-
+    </main>
+  );
 }

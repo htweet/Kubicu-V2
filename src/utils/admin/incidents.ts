@@ -5,13 +5,13 @@ export const incidentStatusLabels: Record<IncidentStatus, string> = {
   investigating: 'Investigating',
   identified: 'Cause found',
   monitoring: 'Fix in place, watching',
-  resolved: 'Resolved'
+  resolved: 'Resolved',
 };
 
 export const impactLabels: Record<IncidentImpact, string> = {
   minor: 'Slower than usual',
   major: 'Partly down',
-  outage: 'Down'
+  outage: 'Down',
 };
 
 export type ServiceState = 'operational' | IncidentImpact;
@@ -22,7 +22,7 @@ export const serviceStateLabels: Record<ServiceState, string> = {
   operational: 'Working normally',
   minor: 'Slower than usual',
   major: 'Partly down',
-  outage: 'Down'
+  outage: 'Down',
 };
 
 export const activeIncidents = (list: Incident[]) => list.filter((i) => i.status !== 'resolved');
@@ -35,5 +35,5 @@ export function serviceStates(list: Incident[]): Record<string, ServiceState> {
 }
 
 export function overallState(list: Incident[]): ServiceState {
-  return Object.values(serviceStates(list)).reduce<ServiceState>((w, s) => rank[s] > rank[w] ? s : w, 'operational');
+  return Object.values(serviceStates(list)).reduce<ServiceState>((w, s) => (rank[s] > rank[w] ? s : w), 'operational');
 }

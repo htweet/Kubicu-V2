@@ -38,6 +38,6 @@ export function InfoHero({ crumb, title, intro, meta, actions }: InfoHeroProps) 
         </div>
         {actions && <div className="flex shrink-0 gap-2">{actions}</div>}
       </div>
-    </header>);
-
+    </header>
+  );
 }

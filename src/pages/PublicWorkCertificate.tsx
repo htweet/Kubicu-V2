@@ -32,15 +32,15 @@ export function PublicWorkCertificate() {
 
   if (!page) return <Unavailable handle={`${handle}/work`} />;
   if (!item || !item.published || !item.source)
-  return (
-    <Unavailable
-      handle={`${handle}/work/${id}`}
-      title="No certificate here"
-      body="This certificate doesn’t exist, was withdrawn by the business, or the work isn’t matched to a KUBICU record."
-      homeHref={pageHref(handle, '')}
-      homeLabel={`Go to ${page.doc.title}`} />);
-
-
+    return (
+      <Unavailable
+        handle={`${handle}/work/${id}`}
+        title="No certificate here"
+        body="This certificate doesn’t exist, was withdrawn by the business, or the work isn’t matched to a KUBICU record."
+        homeHref={pageHref(handle, '')}
+        homeLabel={`Go to ${page.doc.title}`}
+      />
+    );
 
   const t = page.doc.theme;
   const fonts = fontsFor(t);
@@ -74,8 +74,8 @@ export function PublicWorkCertificate() {
           seal={{ rim: 'Matched to a KUBICU record · Certified ·', mark: initials(page.doc.title) }}
           code={code}
           footnote={`KUBICU matched this work to a real ${item.source.kind === 'job' ? 'job' : item.source.kind} in ${page.doc.title}’s records. Open this certificate’s link and check the code to confirm a printed copy.`}
-          accent={t.accent} />
-        
+          accent={t.accent}
+        />
 
         <article className="overflow-hidden print:hidden" style={{ background: t.surface, borderRadius: cardRadius(t), border: `1px solid ${mix(t.text, 14)}` }}>
           <header className="flex items-center gap-2.5 px-6 pb-4 pt-5" style={{ borderBottom: `1px solid ${mix(t.text, 10)}` }}>
@@ -96,22 +96,22 @@ export function PublicWorkCertificate() {
               <dt className="text-[12.5px]" style={{ color: t.mutedText }}>Matched to</dt>
               <dd className="text-[15px] font-semibold">{matchedLabel[item.source.kind]}</dd>
             </div>
-            {item.clientName &&
-            <div>
+            {item.clientName && (
+              <div>
                 <dt className="text-[12.5px]" style={{ color: t.mutedText }}>For</dt>
                 <dd className="text-[15px] font-semibold">{item.clientName}</dd>
               </div>
-            }
+            )}
             <div>
               <dt className="text-[12.5px]" style={{ color: t.mutedText }}>Certificate code</dt>
               <dd className="font-mono text-[15px] font-semibold tracking-wider">{code}</dd>
             </div>
-            {item.description &&
-            <div className="sm:col-span-2">
+            {item.description && (
+              <div className="sm:col-span-2">
                 <dt className="text-[12.5px]" style={{ color: t.mutedText }}>About the work</dt>
                 <dd className="text-[15px] leading-relaxed">{item.description}</dd>
               </div>
-            }
+            )}
           </dl>
 
           <footer className="px-6 py-4 text-[13px] leading-relaxed" style={{ background: mix(t.text, 4), color: t.mutedText }}>
@@ -119,6 +119,6 @@ export function PublicWorkCertificate() {
           </footer>
         </article>
       </div>
-    </main>);
-
+    </main>
+  );
 }

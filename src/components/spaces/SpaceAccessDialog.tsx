@@ -10,7 +10,7 @@ import { Dialog } from '../ui/Dialog';
 import { Button } from '../ui/Button';
 
 /** “Who can edit” for one space (D57). Owners and Admins always can; others are ticked here. */
-export function SpaceAccessDialog({ space, onClose }: {space: Space | null;onClose: () => void;}) {
+export function SpaceAccessDialog({ space, onClose }: { space: Space | null; onClose: () => void }) {
   const team = useTeam();
   const { current } = useWorkspace();
   const people = team.data.members.filter((m) => m.role !== 'owner' && m.role !== 'admin');
@@ -47,20 +47,20 @@ export function SpaceAccessDialog({ space, onClose }: {space: Space | null;onClo
       title={`Who can edit ${space.name}`}
       description="People not ticked can still see it in Overview, but can’t open it in the canvas."
       footer={
-      <>
+        <>
           <Button variant="secondary" onClick={onClose}>
             Cancel
           </Button>
           <Button onClick={save}>Save</Button>
         </>
-      }>
-      
+      }
+    >
       <div className="flex flex-col gap-4">
         <p className="text-caption text-fg-muted">Always: {always.map((m) => `${m.name} (${roleInfo[m.role].label})`).join(', ')}</p>
-        {people.length === 0 ?
-        <p className="text-label text-fg-muted">Nobody else to choose yet. Invite Editors or Sales from Settings → Team.</p> :
-
-        <div className="flex flex-col gap-2">
+        {people.length === 0 ? (
+          <p className="text-label text-fg-muted">Nobody else to choose yet. Invite Editors or Sales from Settings → Team.</p>
+        ) : (
+          <div className="flex flex-col gap-2">
             <div className="flex gap-2">
               <Button size="sm" variant="tertiary" onClick={() => setChecked(new Set(people.map((m) => m.id)))}>
                 Everyone on the team
@@ -70,10 +70,10 @@ export function SpaceAccessDialog({ space, onClose }: {space: Space | null;onClo
               </Button>
             </div>
             <ul className="flex flex-col rounded-md border border-line">
-              {people.map((m) =>
-            <li key={m.id} className="border-b border-line last:border-0">
+              {people.map((m) => (
+                <li key={m.id} className="border-b border-line last:border-0">
                   <label className="flex min-h-[48px] cursor-pointer items-center gap-3 px-3 text-label text-fg hover:bg-sunken">
-                    <input type="checkbox" className="h-4 w-4" checked={checked.has(m.id)} onChange={() => setChecked((s) => {const n = new Set(s);if (n.has(m.id)) n.delete(m.id);else n.add(m.id);return n;})} />
+                    <input type="checkbox" className="h-4 w-4" checked={checked.has(m.id)} onChange={() => setChecked((s) => { const n = new Set(s); if (n.has(m.id)) n.delete(m.id); else n.add(m.id); return n; })} />
                     <span aria-hidden className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-action-soft text-caption font-semibold text-action">
                       {initials(m.name)}
                     </span>
@@ -81,11 +81,11 @@ export function SpaceAccessDialog({ space, onClose }: {space: Space | null;onClo
                     <span className="text-caption text-fg-subtle">{roleInfo[m.role].label}</span>
                   </label>
                 </li>
-            )}
+              ))}
             </ul>
           </div>
-        }
+        )}
       </div>
-    </Dialog>);
-
+    </Dialog>
+  );
 }

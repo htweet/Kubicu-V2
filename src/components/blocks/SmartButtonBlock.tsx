@@ -32,11 +32,11 @@ export function SmartButtonBlock({ block, theme, mode }: BlockProps<'smartButton
       <PageAction mode={mode} href={url} className="flex h-14 w-full items-center justify-center gap-2 px-6 text-[16px] font-semibold" style={buttonStyle(theme, 'featured')}>
         {label} <ArrowRightIcon size={16} aria-hidden />
       </PageAction>
-      {mode === 'edit' &&
-      <p className="text-[11.5px]" style={{ color: theme.mutedText }}>
+      {mode === 'edit' && (
+        <p className="text-[11.5px]" style={{ color: theme.mutedText }}>
           {c.rules.length === 0 ? 'Everyone sees this. Add versions by source in the inspector.' : rule ? `Showing the ${sourceLabels[rule.source]} version` : `Default · ${c.rules.length} version${c.rules.length === 1 ? '' : 's'} by source — use “Preview as” to check`}
         </p>
-      }
-    </div>);
-
+      )}
+    </div>
+  );
 }

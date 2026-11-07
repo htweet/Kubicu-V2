@@ -19,8 +19,8 @@ export function useAdminNavCounts(): Record<string, number> {
   const { briefs } = useSponsorships();
   const now = Date.now();
 
-  const templateQueue = templates.listings.filter((l) => l.status === 'in_review' || l.status === 'listed' && l.pendingDoc).length;
-  const extensionQueue = subs.submissions.filter((s) => s.status === 'in_review' || s.status === 'listed' && s.pending).length;
+  const templateQueue = templates.listings.filter((l) => l.status === 'in_review' || (l.status === 'listed' && l.pendingDoc)).length;
+  const extensionQueue = subs.submissions.filter((s) => s.status === 'in_review' || (s.status === 'listed' && s.pending)).length;
 
   return {
     // "Verification" tab badge
@@ -38,6 +38,6 @@ export function useAdminNavCounts(): Record<string, number> {
     // Sponsorship problems "To decide" (D454)
     sponsorships: disputeRows(briefs).filter((r) => disputeOpen(r.app) || appealOpen(r.app)).length + briefs.filter((b) => b.status === 'review').length,
     // "Waiting for a second Platform lead"
-    staff: store.approvals.filter((a) => STAFF_KINDS.includes(a.kind) && effectiveStatus(a, now) === 'pending').length
+    staff: store.approvals.filter((a) => STAFF_KINDS.includes(a.kind) && effectiveStatus(a, now) === 'pending').length,
   };
 }

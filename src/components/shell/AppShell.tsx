@@ -55,9 +55,9 @@ export function AppShell() {
   const gatedApp = navMatch?.appId && !market.isInstalled(navMatch.appId) ? navMatch.appId : null;
   // Modules KUBICU has switched off stay reachable but say "Currently not available" (D464). Checked before the app gate.
   const availability = useModuleAvailability();
-  const screen = workspaceNav.
-  filter((n) => n.to !== '/app' && (pathname === n.to || pathname.startsWith(`${n.to}/`))).
-  sort((a, b) => b.to.length - a.to.length)[0];
+  const screen = workspaceNav
+    .filter((n) => n.to !== '/app' && (pathname === n.to || pathname.startsWith(`${n.to}/`)))
+    .sort((a, b) => b.to.length - a.to.length)[0];
   const offModule = screen && !availability.nav(screen) ? screen : null;
   const offInfo = offModule?.appId ? extensionById[offModule.appId] : null;
   // Staff can lock the signed-in account from Users & tenants (D472); every workspace is closed to it until unlocked.
@@ -86,6 +86,6 @@ export function AppShell() {
       </div>
       <MobileNav />
       <ExtensionsTour />
-    </div>);
-
+    </div>
+  );
 }

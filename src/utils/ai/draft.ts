@@ -40,9 +40,9 @@ export function buildDraft(brief: string, answers: BriefAnswers, analysis: Brief
   const assumptions: string[] = [];
 
   assumptions.push(
-    analysis.exampleId && !answers.category ?
-    `Used the ${example.category} layout because you mentioned ${analysis.matched.slice(0, 3).map((w) => `“${w}”`).join(', ')}.` :
-    `Used the ${example.category} layout you picked.`
+    analysis.exampleId && !answers.category
+      ? `Used the ${example.category} layout because you mentioned ${analysis.matched.slice(0, 3).map((w) => `“${w}”`).join(', ')}.`
+      : `Used the ${example.category} layout you picked.`,
   );
   assumptions.push(`Your one-line pitch is your own first sentence${pitch.endsWith('…') ? ', shortened' : ''}.`);
 
@@ -102,6 +102,6 @@ export function buildDraft(brief: string, answers: BriefAnswers, analysis: Brief
   return {
     doc: { ...prepared.doc, blocks, title: name, seo: { title: name, description: pitch } },
     exampleName: `${example.category} · ${example.name}`,
-    assumptions
+    assumptions,
   };
 }

@@ -28,7 +28,7 @@ import { UpgradeButton } from '../../ui/UpgradeButton';
 import { AccountingConnectDialog } from './AccountingConnectDialog';
 
 /** Settings → Integrations → Accounting (D438): post sales, fees, refunds and tax to Xero or Sage. */
-export function AccountingSection({ canManage }: {canManage: boolean;}) {
+export function AccountingSection({ canManage }: { canManage: boolean }) {
   const { t: tr } = useT();
   const { current } = useWorkspace();
   const plan = usePlan();
@@ -57,9 +57,9 @@ export function AccountingSection({ canManage }: {canManage: boolean;}) {
   const setAccount = (k: AccountKey, v: string) => update((x) => ({ ...x, accounts: { ...x.accounts, [k]: v.trim().slice(0, 12) } }));
   const setAbroad = (c: string, v: string) => update((x) => ({ ...x, accounts: { ...x.accounts, vatAbroad: { ...x.accounts.vatAbroad, [c]: v.trim().slice(0, 12) } } }));
   // Countries the shop is registered for tax in, besides its own (D435): each gets its own tax account (D456).
-  const taxAbroad = Object.entries(shopSettingsOf(commerce).tax.sellsTo ?? {}).
-  filter(([, r]) => r?.registered).
-  map(([c]) => c);
+  const taxAbroad = Object.entries(shopSettingsOf(commerce).tax.sellsTo ?? {})
+    .filter(([, r]) => r?.registered)
+    .map(([c]) => c);
   const missingAbroad = missingTaxCountries(s, list);
   const missingAll = [...missing.map((m) => tr(m)), ...missingAbroad.map((c) => tr('Tax collected — {country}', { country: tr(countryInfo(c as CountryCode).name) }))];
 
@@ -71,13 +71,13 @@ export function AccountingSection({ canManage }: {canManage: boolean;}) {
       update(() => next);
       setSyncing(false);
       const tool = s.provider ? accountingProviders[s.provider].name : '';
-      if (result.failed && !result.posted) toast.error(tr('Nothing posted'), { description: result.problems[0] });else
-
-      toast.success(tr('Posted to {tool}: {n}', { tool, n: result.posted }), {
-        description: result.failed ?
-        `${tr('Still waiting: {n}', { n: result.failed })} — ${result.problems[0]}` :
-        [tr('{amount} in sales', { amount: formatNgn(result.amountNgn) }), result.transfers ? tr('Payouts to your bank: {n}', { n: result.transfers }) : ''].filter(Boolean).join(' · ')
-      });
+      if (result.failed && !result.posted) toast.error(tr('Nothing posted'), { description: result.problems[0] });
+      else
+        toast.success(tr('Posted to {tool}: {n}', { tool, n: result.posted }), {
+          description: result.failed
+            ? `${tr('Still waiting: {n}', { n: result.failed })} — ${result.problems[0]}`
+            : [tr('{amount} in sales', { amount: formatNgn(result.amountNgn) }), result.transfers ? tr('Payouts to your bank: {n}', { n: result.transfers }) : ''].filter(Boolean).join(' · '),
+        });
     }, 700);
   };
 
@@ -88,21 +88,21 @@ export function AccountingSection({ canManage }: {canManage: boolean;}) {
 
   return (
     <Section id="int-accounting" title={tr('Accounting')} description={tr('Send every payment, fee, refund and tax amount to your accounting tool, so your books match your wallet without typing.')}>
-      {!allowed &&
-      <InlineAlert tone="info" title={tr('Accounting connections are on {plan}', { plan: plans[ACCOUNTING_PLAN].name })} action={<UpgradeButton plan={ACCOUNTING_PLAN} feature="Accounting connections" />}>
+      {!allowed && (
+        <InlineAlert tone="info" title={tr('Accounting connections are on {plan}', { plan: plans[ACCOUNTING_PLAN].name })} action={<UpgradeButton plan={ACCOUNTING_PLAN} feature="Accounting connections" />}>
           {tr('On every plan you can still download a QuickBooks, Zoho or spreadsheet file from the Sales report.')}
         </InlineAlert>
-      }
+      )}
 
-      {!s.provider ?
-      <div className="flex flex-wrap items-center justify-between gap-3 border-y border-line py-4">
+      {!s.provider ? (
+        <div className="flex flex-wrap items-center justify-between gap-3 border-y border-line py-4">
           <p className="text-label text-fg-muted">{tr('Xero or Sage Business Cloud — one at a time.')}</p>
           <Button size="sm" variant="secondary" leadingIcon={PlugIcon} disabled={!editable} onClick={() => setConnecting(true)}>
             Connect
           </Button>
-        </div> :
-
-      <div className="flex flex-col gap-6">
+        </div>
+      ) : (
+        <div className="flex flex-col gap-6">
           <div className="flex flex-wrap items-center justify-between gap-3 border-y border-line py-4">
             <p className="min-w-0 text-label text-fg">
               <span className="font-semibold">{accountingProviders[s.provider].name}</span> <span className="text-fg-subtle">· {s.organisation}</span>{' '}
@@ -121,9 +121,9 @@ export function AccountingSection({ canManage }: {canManage: boolean;}) {
                 {pending === 0 ? tr('All caught up') : [list.length ? tr('Payments waiting: {n}', { n: list.length }) : '', outs.length ? tr('Payouts waiting: {n}', { n: outs.length }) : ''].filter(Boolean).join(' · ')}
               </p>
               <p className="mt-0.5 text-caption text-fg-muted">
-                {lastRun ?
-              [tr('Last sync {when}', { when: formatRelative(lastRun.at) }) + (lastRun.trigger === 'auto' ? ` ${tr('(automatic)')}` : ''), tr('Posted: {n}', { n: lastRun.posted }), lastRun.failed ? tr('Held back: {n}', { n: lastRun.failed }) : ''].filter(Boolean).join(' · ') :
-              tr('Not synced yet.')}{' '}
+                {lastRun
+                  ? [tr('Last sync {when}', { when: formatRelative(lastRun.at) }) + (lastRun.trigger === 'auto' ? ` ${tr('(automatic)')}` : ''), tr('Posted: {n}', { n: lastRun.posted }), lastRun.failed ? tr('Held back: {n}', { n: lastRun.failed }) : ''].filter(Boolean).join(' · ')
+                  : tr('Not synced yet.')}{' '}
                 {s.auto ? tr('Syncs by itself once a day.') : ''}
               </p>
             </div>
@@ -132,58 +132,58 @@ export function AccountingSection({ canManage }: {canManage: boolean;}) {
             </Button>
           </div>
 
-          {missingAll.length > 0 && pending > 0 &&
-        <InlineAlert tone="warning" title="Add the missing account codes">
+          {missingAll.length > 0 && pending > 0 && (
+            <InlineAlert tone="warning" title="Add the missing account codes">
               {tr('Payments that need these wait until you add them below: {codes}', { codes: missingAll.join(', ') })}
             </InlineAlert>
-        }
+          )}
 
           <div className="grid gap-6 lg:grid-cols-2">
             <div className="flex flex-col gap-4">
               <Field id="acct-mode" label="How payments post">
                 <Segmented<AccountingPostMode>
-                ariaLabel="How payments post"
-                fullWidth
-                value={s.mode}
-                onChange={(mode) => editable && update((x) => ({ ...x, mode }))}
-                options={[
-                { value: 'each', label: 'Each payment' },
-                { value: 'daily', label: 'One summary a day' }]
-                } />
-              
+                  ariaLabel="How payments post"
+                  fullWidth
+                  value={s.mode}
+                  onChange={(mode) => editable && update((x) => ({ ...x, mode }))}
+                  options={[
+                    { value: 'each', label: 'Each payment' },
+                    { value: 'daily', label: 'One summary a day' },
+                  ]}
+                />
               </Field>
               <TextInput id="acct-from" label="Sync payments from" type="date" value={s.startFrom} disabled={!editable} hint="Earlier payments stay out, so nothing you already entered by hand is doubled." onChange={(e) => e.target.value && update((x) => ({ ...x, startFrom: e.target.value }))} />
               <Switch id="acct-auto" label="Sync once a day by itself" checked={s.auto} disabled={!editable} onChange={(auto) => update((x) => ({ ...x, auto }))} />
             </div>
             <fieldset className="flex flex-col gap-3">
               <legend className="mb-1 text-label font-semibold text-fg">{tr('Account codes')}</legend>
-              {(Object.keys(accountLabels) as AccountKey[]).map((k) =>
-            <TextInput key={k} id={`acct-${k}`} label={accountLabels[k].label} hint={accountLabels[k].hint} value={s.accounts[k] ?? ''} disabled={!editable} onChange={(e) => setAccount(k, e.target.value)} />
-            )}
+              {(Object.keys(accountLabels) as AccountKey[]).map((k) => (
+                <TextInput key={k} id={`acct-${k}`} label={accountLabels[k].label} hint={accountLabels[k].hint} value={s.accounts[k] ?? ''} disabled={!editable} onChange={(e) => setAccount(k, e.target.value)} />
+              ))}
               {taxAbroad.map((c) => {
-              const country = tr(countryInfo(c as CountryCode).name);
-              return (
-                <TextInput
-                  key={c}
-                  id={`acct-vat-${c}`}
-                  label={tr('Tax collected — {country}', { country })}
-                  hint={tr('Tax you owe {country}’s tax office, kept apart from your own country’s.', { country })}
-                  value={s.accounts.vatAbroad?.[c] ?? ''}
-                  disabled={!editable}
-                  onChange={(e) => setAbroad(c, e.target.value)} />);
-
-
-            })}
+                const country = tr(countryInfo(c as CountryCode).name);
+                return (
+                  <TextInput
+                    key={c}
+                    id={`acct-vat-${c}`}
+                    label={tr('Tax collected — {country}', { country })}
+                    hint={tr('Tax you owe {country}’s tax office, kept apart from your own country’s.', { country })}
+                    value={s.accounts.vatAbroad?.[c] ?? ''}
+                    disabled={!editable}
+                    onChange={(e) => setAbroad(c, e.target.value)}
+                  />
+                );
+              })}
               <p className="text-caption text-fg-subtle">{tr('Filled from {tool}’s standard list of accounts. Ask your accountant before changing them.', { tool: accountingProviders[s.provider].name })}</p>
             </fieldset>
           </div>
 
-          {s.runs.length > 0 &&
-        <div>
+          {s.runs.length > 0 && (
+            <div>
               <h4 className="text-label font-semibold text-fg">{tr('Sync history')}</h4>
               <ul className="mt-2 divide-y divide-line border-y border-line">
-                {s.runs.slice(0, 5).map((r) =>
-            <li key={r.id} className="flex items-start gap-3 py-3">
+                {s.runs.slice(0, 5).map((r) => (
+                  <li key={r.id} className="flex items-start gap-3 py-3">
                     {r.failed ? <AlertTriangleIcon size={16} className="mt-0.5 shrink-0 text-warning" aria-hidden /> : <CheckCircle2Icon size={16} className="mt-0.5 shrink-0 text-success" aria-hidden />}
                     <span className="min-w-0 flex-1 text-label text-fg">
                       {[tr('Posted: {n}', { n: r.posted }), r.failed ? tr('Held back: {n}', { n: r.failed }) : '', formatNgn(r.amountNgn), r.transfers ? tr('Payouts to your bank: {n}', { n: r.transfers }) : '', r.payoutFeesNgn ? tr('Payout fees: {amount}', { amount: formatNgn(r.payoutFeesNgn) }) : ''].filter(Boolean).join(' · ')}
@@ -191,12 +191,12 @@ export function AccountingSection({ canManage }: {canManage: boolean;}) {
                     </span>
                     <span className="shrink-0 text-caption text-fg-subtle">{formatRelative(r.at)}</span>
                   </li>
-            )}
+                ))}
               </ul>
             </div>
-        }
+          )}
         </div>
-      }
+      )}
 
       <AccountingConnectDialog
         open={connecting}
@@ -206,8 +206,8 @@ export function AccountingSection({ canManage }: {canManage: boolean;}) {
           update((x) => ({ ...x, provider, organisation, connectedAt: new Date().toISOString(), accounts: accountingProviders[provider].defaults }));
           setConnecting(false);
           toast.success(tr('{tool} connected', { tool: accountingProviders[provider].name }), { description: tr('Check the account codes, then sync.') });
-        }} />
-      
-    </Section>);
-
+        }}
+      />
+    </Section>
+  );
 }

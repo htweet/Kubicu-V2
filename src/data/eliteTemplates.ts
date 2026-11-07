@@ -8,7 +8,7 @@ export const eliteUseCaseLabels: Record<EliteUseCase, string> = {
   commerce: 'Commerce',
   services: 'Services',
   events: 'Events & community',
-  impact: 'Impact'
+  impact: 'Impact',
 };
 
 export const eliteGoalLabels: Record<EliteGoal, string> = {
@@ -16,7 +16,7 @@ export const eliteGoalLabels: Record<EliteGoal, string> = {
   enquiries: 'Get enquiries',
   sell: 'Sell',
   bookings: 'Get bookings',
-  register: 'Get sign-ups'
+  register: 'Get sign-ups',
 };
 
 /** Themes offered in "Try with theme" on a template's page. */

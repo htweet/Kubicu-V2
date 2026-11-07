@@ -47,25 +47,25 @@ export function SubmitExtensionDialog({ open, onClose, editing }: Props) {
     if (!open) return;
     setTried(false);
     setF(
-      editing ?
-      {
-        name: editing.name,
-        summary: editing.summary,
-        description: editing.description,
-        category: editing.category,
-        adds: editing.adds.join('\n'),
-        scopes: new Set(editing.scopes),
-        events: new Set(editing.events),
-        appUrl: editing.appUrl,
-        supportEmail: editing.supportEmail,
-        privacyUrl: editing.privacyUrl,
-        price: String(editing.priceNgn),
-        minPlan: editing.minPlan,
-        version: editing.status === 'listed' ? bump(editing.version) : editing.version,
-        releaseNotes: '',
-        agree: false
-      } :
-      blank(current.name)
+      editing
+        ? {
+            name: editing.name,
+            summary: editing.summary,
+            description: editing.description,
+            category: editing.category,
+            adds: editing.adds.join('\n'),
+            scopes: new Set(editing.scopes),
+            events: new Set(editing.events),
+            appUrl: editing.appUrl,
+            supportEmail: editing.supportEmail,
+            privacyUrl: editing.privacyUrl,
+            price: String(editing.priceNgn),
+            minPlan: editing.minPlan,
+            version: editing.status === 'listed' ? bump(editing.version) : editing.version,
+            releaseNotes: '',
+            agree: false,
+          }
+        : blank(current.name),
     );
   }, [open, editing, current.name]);
 
@@ -81,7 +81,7 @@ export function SubmitExtensionDialog({ open, onClose, editing }: Props) {
     privacyUrl: isValidEndpoint(f.privacyUrl) ? 'Link to your privacy policy (https://).' : undefined,
     price: Number.isNaN(price) || price < 0 || price > cap ? `On ${plan.name} you can charge up to ${formatNgn(cap)} a month. Higher plans allow more.` : undefined,
     version: versionOk(f.version) ? undefined : 'Use a version like 1.0.0.',
-    agree: f.agree ? undefined : 'Tick to confirm.'
+    agree: f.agree ? undefined : 'Tick to confirm.',
   };
   const invalid = Object.values(errors).some(Boolean);
 
@@ -103,21 +103,21 @@ export function SubmitExtensionDialog({ open, onClose, editing }: Props) {
       priceNgn: Math.round(price),
       minPlan: f.minPlan,
       version: f.version.trim(),
-      releaseNotes: f.releaseNotes.trim()
+      releaseNotes: f.releaseNotes.trim(),
     };
     const ok = updateSubmissions((s) => {
       if (editing?.status === 'listed')
-      return {
-        ...s,
-        submissions: s.submissions.map((x) => x.id === editing.id ? { ...x, pending: fields, reviewNote: null, history: [subEvent(`Update v${fields.version} submitted`, 'developer'), ...x.history] } : x)
-      };
+        return {
+          ...s,
+          submissions: s.submissions.map((x) => (x.id === editing.id ? { ...x, pending: fields, reviewNote: null, history: [subEvent(`Update v${fields.version} submitted`, 'developer'), ...x.history] } : x)),
+        };
       if (editing)
-      return {
-        ...s,
-        submissions: s.submissions.map((x) =>
-        x.id === editing.id ? { ...x, ...fields, status: 'in_review' as const, reviewNote: null, submittedAt: now, history: [subEvent(editing.status === 'listed' ? `Update v${fields.version} submitted` : 'Resubmitted for review', 'developer'), ...x.history] } : x
-        )
-      };
+        return {
+          ...s,
+          submissions: s.submissions.map((x) =>
+            x.id === editing.id ? { ...x, ...fields, status: 'in_review' as const, reviewNote: null, submittedAt: now, history: [subEvent(editing.status === 'listed' ? `Update v${fields.version} submitted` : 'Resubmitted for review', 'developer'), ...x.history] } : x,
+          ),
+        };
       const sub: ExtensionSubmission = { id: uid('cx'), workspaceId: current.id, developerName: current.name, ...fields, status: 'in_review', reviewNote: null, submittedAt: now, listedAt: null, history: [subEvent('Submitted for review', 'developer')] };
       return { ...s, submissions: [sub, ...s.submissions] };
     });
@@ -130,38 +130,38 @@ export function SubmitExtensionDialog({ open, onClose, editing }: Props) {
     onClose();
   };
 
-  const err = (k: keyof typeof errors) => tried ? errors[k] : undefined;
+  const err = (k: keyof typeof errors) => (tried ? errors[k] : undefined);
   const toggle = <T,>(key: 'scopes' | 'events', v: T) =>
-  setF((x) => {
-    const n = new Set(x[key] as Set<T>);
-    if (n.has(v)) n.delete(v);else
-    n.add(v);
-    return { ...x, [key]: n };
-  });
+    setF((x) => {
+      const n = new Set(x[key] as Set<T>);
+      if (n.has(v)) n.delete(v);
+      else n.add(v);
+      return { ...x, [key]: n };
+    });
 
   return (
     <Dialog
       open={open}
       onClose={onClose}
       size="lg"
-      title={editing ? editing.status === 'listed' ? `Release an update to ${editing.name}` : `Fix and resubmit ${editing.name}` : 'Submit an extension'}
+      title={editing ? (editing.status === 'listed' ? `Release an update to ${editing.name}` : `Fix and resubmit ${editing.name}`) : 'Submit an extension'}
       description="Our team checks every extension before any workspace can install it. While an update is reviewed, the listed version stays on sale."
       footer={
-      <>
+        <>
           <Button variant="secondary" onClick={onClose}>
             Cancel
           </Button>
           <Button onClick={submit}>{editing ? 'Send for review' : 'Submit for review'}</Button>
         </>
-      }>
-      
+      }
+    >
       <div className="flex flex-col gap-8">
-        {editing?.reviewNote &&
-        <div className="rounded-md border border-warning/40 bg-warning-soft px-3 py-2.5">
+        {editing?.reviewNote && (
+          <div className="rounded-md border border-warning/40 bg-warning-soft px-3 py-2.5">
             <p className="text-label font-semibold text-fg">What KUBICU asked for</p>
             <p className="mt-0.5 text-caption text-fg-muted">“{editing.reviewNote}”</p>
           </div>
-        }
+        )}
 
         <fieldset className="flex flex-col gap-4">
           <legend className="mb-1 text-label font-semibold text-fg">The listing</legend>
@@ -178,8 +178,8 @@ export function SubmitExtensionDialog({ open, onClose, editing }: Props) {
           <legend className="text-label font-semibold text-fg">Permissions it asks for</legend>
           <p className="mt-0.5 text-caption text-fg-muted">Owners see exactly these before installing. Asking for more than it needs is the most common reason we send extensions back.</p>
           <ul className="mt-3 grid gap-x-4 sm:grid-cols-2">
-            {scopeInfo.map((s) =>
-            <li key={s.id}>
+            {scopeInfo.map((s) => (
+              <li key={s.id}>
                 <label className="flex cursor-pointer items-start gap-2.5 py-1.5">
                   <input type="checkbox" className="mt-0.5 size-4 accent-[rgb(var(--action))]" checked={f.scopes.has(s.id)} onChange={() => toggle<ApiScope>('scopes', s.id)} />
                   <span className="min-w-0 text-label text-fg">
@@ -187,19 +187,19 @@ export function SubmitExtensionDialog({ open, onClose, editing }: Props) {
                   </span>
                 </label>
               </li>
-            )}
+            ))}
           </ul>
           {err('scopes') && <p className="mt-1 text-caption text-danger">{err('scopes')}</p>}
           <p className="mt-4 text-label font-medium text-fg">Events it receives (optional)</p>
           <ul className="mt-2 grid gap-x-4 sm:grid-cols-2">
-            {webhookEvents.map((e) =>
-            <li key={e.id}>
+            {webhookEvents.map((e) => (
+              <li key={e.id}>
                 <label className="flex cursor-pointer items-start gap-2.5 py-1.5">
                   <input type="checkbox" className="mt-0.5 size-4 accent-[rgb(var(--action))]" checked={f.events.has(e.id)} onChange={() => toggle<WebhookEvent>('events', e.id)} />
                   <span className="text-label text-fg">{e.label}</span>
                 </label>
               </li>
-            )}
+            ))}
           </ul>
         </fieldset>
 
@@ -230,8 +230,8 @@ export function SubmitExtensionDialog({ open, onClose, editing }: Props) {
           </span>
         </label>
       </div>
-    </Dialog>);
-
+    </Dialog>
+  );
 }
 
 function blank(_name: string) {
@@ -250,7 +250,7 @@ function blank(_name: string) {
     minPlan: 'creator' as WorkspacePlan,
     version: '1.0.0',
     releaseNotes: '',
-    agree: false
+    agree: false,
   };
 }
 

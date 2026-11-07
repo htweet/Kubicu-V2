@@ -3,7 +3,7 @@ import type { CopilotDraft } from '../../../types/copilot';
 import { TemplateThumb } from '../../templates/TemplateThumb';
 
 /** The lime panel beside the claim steps shows the person's own draft, so it's clear what's moving. */
-export function ClaimDraftAside({ draft }: {draft: CopilotDraft;}) {
+export function ClaimDraftAside({ draft }: { draft: CopilotDraft }) {
   return (
     <>
       <p className="kb-display relative max-w-sm text-center text-[40px] leading-[0.98]">Your draft, ready to move in.</p>
@@ -13,6 +13,6 @@ export function ClaimDraftAside({ draft }: {draft: CopilotDraft;}) {
       <p className="relative text-caption font-semibold">
         {draft.doc.title} · {draft.themeName} · not published
       </p>
-    </>);
-
+    </>
+  );
 }

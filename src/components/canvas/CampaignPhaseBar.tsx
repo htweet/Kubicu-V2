@@ -40,9 +40,9 @@ export function CampaignPhaseBar({ now, summary, labels, descriptions, phase, on
           fullWidth
           value={phase}
           onChange={onChange}
-          options={phaseOrder.map((p) => ({ value: p, label: p === now ? `${labels[p]} · now` : labels[p] }))} />
-        
+          options={phaseOrder.map((p) => ({ value: p, label: p === now ? `${labels[p]} · now` : labels[p] }))}
+        />
       </div>
-    </div>);
-
+    </div>
+  );
 }

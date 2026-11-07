@@ -15,7 +15,7 @@ export function containerMembershipApplies(blocks: Block[], block: Block): boole
   return isContainer(prev) && childrenOf(blocks, prev.id).length < MAX_CHILDREN && fitsIn(block.type, prev.type).ok;
 }
 
-export function ContainerMembership({ block, disabled }: {block: Block;disabled?: boolean;}) {
+export function ContainerMembership({ block, disabled }: { block: Block; disabled?: boolean }) {
   const { state, actions } = useEditor();
   const blocks = state.draft.blocks;
   const parent = parentOf(blocks, block);
@@ -35,8 +35,8 @@ export function ContainerMembership({ block, disabled }: {block: Block;disabled?
         <button type="button" disabled={disabled} onClick={() => actions.moveOutOfContainer(block.id)} className={`inline-flex items-center gap-1 ${link}`}>
           <LogOutIcon size={12} aria-hidden /> Move out
         </button>
-      </div>);
-
+      </div>
+    );
   }
 
   const tops = topLevel(blocks);
@@ -49,6 +49,6 @@ export function ContainerMembership({ block, disabled }: {block: Block;disabled?
       <button type="button" disabled={disabled} onClick={() => actions.moveIntoContainer(block.id, prev.id)} className={`inline-flex items-center gap-1 ${link}`}>
         <CornerDownLeftIcon size={12} aria-hidden /> Move into it
       </button>
-    </div>);
-
+    </div>
+  );
 }

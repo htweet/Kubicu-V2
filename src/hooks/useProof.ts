@@ -4,7 +4,7 @@ import { PROOF_EVENT, readProof, writeProof } from '../utils/proof';
 
 /** Review requests, reviews and delivered work for one workspace (D91). */
 export function useProof(workspaceId: string | null) {
-  const [data, setData] = useState<ProofData | null>(() => workspaceId ? readProof(workspaceId) : null);
+  const [data, setData] = useState<ProofData | null>(() => (workspaceId ? readProof(workspaceId) : null));
 
   useEffect(() => {
     if (!workspaceId) return;
@@ -22,7 +22,7 @@ export function useProof(workspaceId: string | null) {
     (fn: (d: ProofData) => ProofData) => {
       if (workspaceId) writeProof(workspaceId, fn(readProof(workspaceId)));
     },
-    [workspaceId]
+    [workspaceId],
   );
 
   return { data, update };

@@ -37,12 +37,12 @@ export function HoursBlock({ block, theme, mode }: BlockProps<'hours'>) {
                 {on && <span className="ml-1.5 text-[12px] font-semibold">· {tr('today')}</span>}
               </dt>
               <dd className="tabular-nums" style={{ color: theme.text }}>{r.time}</dd>
-            </div>);
-
+            </div>
+          );
         })}
       </dl>
       {c.note && <p className="mt-3 text-[13px] leading-snug" style={{ color: theme.mutedText }}>{c.note}</p>}
       <p className="mt-2 text-[11px]" style={{ color: theme.mutedText }}>{tr('Times in {zone}.', { zone: timeZoneName(c.timeZone, tr) })}</p>
-    </section>);
-
+    </section>
+  );
 }

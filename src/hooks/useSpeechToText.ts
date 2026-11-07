@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 /* Minimal typing for the browser's speech recognition (not in TypeScript's DOM library). */
 interface RecognitionResult {
   isFinal: boolean;
-  0: {transcript: string;};
+  0: { transcript: string };
 }
 interface RecognitionEvent {
   resultIndex: number;
@@ -17,14 +17,14 @@ interface Recognition {
   stop(): void;
   abort(): void;
   onresult: ((e: RecognitionEvent) => void) | null;
-  onerror: ((e: {error: string;}) => void) | null;
+  onerror: ((e: { error: string }) => void) | null;
   onend: (() => void) | null;
 }
 type RecognitionCtor = new () => Recognition;
 
 function recognitionCtor(): RecognitionCtor | null {
   if (typeof window === 'undefined') return null;
-  const w = window as unknown as {SpeechRecognition?: RecognitionCtor;webkitSpeechRecognition?: RecognitionCtor;};
+  const w = window as unknown as { SpeechRecognition?: RecognitionCtor; webkitSpeechRecognition?: RecognitionCtor };
   return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
 }
 
@@ -34,7 +34,7 @@ const errorMessages: Record<string, string> = {
   'service-not-allowed': 'Microphone access was blocked. Allow it in your browser, or type instead.',
   'no-speech': 'Didn’t catch anything. Try again a little closer to the microphone.',
   network: 'Listening needs an internet connection in this browser. You can type instead.',
-  'language-not-supported': 'This browser can’t listen in that language yet. Try English, or type instead.'
+  'language-not-supported': 'This browser can’t listen in that language yet. Try English, or type instead.',
 };
 
 /**
@@ -66,8 +66,8 @@ export function useSpeechToText(lang: string, onFinal: (text: string) => void) {
       let pending = '';
       for (let i = e.resultIndex; i < e.results.length; i++) {
         const res = e.results[i];
-        if (res.isFinal) finalRef.current(res[0].transcript.trim());else
-        pending += res[0].transcript;
+        if (res.isFinal) finalRef.current(res[0].transcript.trim());
+        else pending += res[0].transcript;
       }
       setInterim(pending.trim());
     };

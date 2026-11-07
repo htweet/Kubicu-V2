@@ -19,11 +19,11 @@ export function CustomerMessagesSection() {
   const [openId, setOpenId] = useState<OrderMessageId | null>(null);
   const prefix = shopSettingsOf(s.data).orders.prefix;
   const fill = (text: string) =>
-  text.
-  replace('{name}', 'Ngozi').
-  replace('{order}', prefix ? `${prefix}-1042` : '#1042').
-  replace('{amount}', formatNgn(28000)).
-  replace('{address}', s.data.fulfilment.pickupAddress || 'our studio');
+    text
+      .replace('{name}', 'Ngozi')
+      .replace('{order}', prefix ? `${prefix}-1042` : '#1042')
+      .replace('{amount}', formatNgn(28000))
+      .replace('{address}', s.data.fulfilment.pickupAddress || 'our studio');
 
   return (
     <SettingsSection id="messages" title="Customer messages" description="Order update emails buyers get. You can always message a buyer yourself from the order." dirty={s.dirty} justSaved={s.justSaved} onSave={() => s.save()} onReset={s.reset}>
@@ -65,12 +65,12 @@ export function CustomerMessagesSection() {
                         aria-label={`${orderMessageLabels[id].label} by email`}
                         checked={m.email}
                         onChange={(e) => s.patch({ [id]: { ...m, email: e.target.checked } } as Partial<typeof s.draft>)}
-                        className="h-5 w-5 cursor-pointer" />
-                      
+                        className="h-5 w-5 cursor-pointer"
+                      />
                     </td>
                   </tr>
-                  {open &&
-                  <tr>
+                  {open && (
+                    <tr>
                       <td colSpan={2} className="bg-canvas px-3.5 pb-3 pt-1">
                         <p className="rounded-md border border-line bg-raised px-3 py-2.5 text-caption text-fg">
                           <span className="mb-1 block text-meta font-semibold text-fg-subtle">From {current.name}</span>
@@ -78,13 +78,13 @@ export function CustomerMessagesSection() {
                         </p>
                       </td>
                     </tr>
-                  }
-                </React.Fragment>);
-
+                  )}
+                </React.Fragment>
+              );
             })}
           </tbody>
         </table>
       </div>
-    </SettingsSection>);
-
+    </SettingsSection>
+  );
 }

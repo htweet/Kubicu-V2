@@ -16,7 +16,7 @@ const panels: Record<string, () => React.ReactElement | null> = {
   security: SecurityTab,
   preferences: PreferencesTab,
   workspaces: WorkspacesTab,
-  privacy: DataPrivacyTab
+  privacy: DataPrivacyTab,
 };
 
 /** Your personal account — the same in every workspace (D80). Workspace settings stay under Settings. */
@@ -41,6 +41,6 @@ export function Account() {
       <div className="pt-6 md:pt-8">
         <Panel />
       </div>
-    </div>);
-
+    </div>
+  );
 }

@@ -51,7 +51,7 @@ export interface CopilotMessage {
   draftId?: string;
   tone?: 'default' | 'warning';
   /** D520: screens an answer points to ("Open Wallet" → /app/commerce/wallet). Copilot links; the person acts there. */
-  links?: {label: string;to: string;}[];
+  links?: { label: string; to: string }[];
   createdAt: string;
 }
 
@@ -108,14 +108,14 @@ export interface CopilotDraft {
   createdAt: string;
   expiresAt: string;
   revisions: number;
-  claimed?: {workspaceId: string;spaceId?: string;pageId: string;at: string;};
+  claimed?: { workspaceId: string; spaceId?: string; pageId: string; at: string };
 }
 
 export type CopilotInput =
-{kind: 'text';text: string;} |
-{kind: 'choice';value: string;label: string;} |
-{kind: 'images';items: AssistantImage[];} |
-{kind: 'skip';} |
-{kind: 'create';} |
-{kind: 'change';} |
-{kind: 'more';};
+  | { kind: 'text'; text: string }
+  | { kind: 'choice'; value: string; label: string }
+  | { kind: 'images'; items: AssistantImage[] }
+  | { kind: 'skip' }
+  | { kind: 'create' }
+  | { kind: 'change' }
+  | { kind: 'more' };

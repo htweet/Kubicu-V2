@@ -31,13 +31,13 @@ export function TemplateDetail() {
   const price = templatePrice(example.id);
   // Signature themes first (D164), then two classics — preview only, the template's layout never changes.
   const tryThemes = [
-  { id: 'original', name: tr('As designed'), theme: doc.theme },
-  ...['aurora-glass', 'pearl-atelier', 'emerald-luxe', 'sunset-haze'].map((sid) => {
-    const s = signatureThemes.find((t) => t.id === sid)!;
-    return { id: s.id, name: s.name, theme: signatureTheme(s) };
-  }),
-  ...pageThemePresets.filter((p) => p.theme.presetId !== doc.theme.presetId).slice(0, 2)];
-
+    { id: 'original', name: tr('As designed'), theme: doc.theme },
+    ...['aurora-glass', 'pearl-atelier', 'emerald-luxe', 'sunset-haze'].map((sid) => {
+      const s = signatureThemes.find((t) => t.id === sid)!;
+      return { id: s.id, name: s.name, theme: signatureTheme(s) };
+    }),
+    ...pageThemePresets.filter((p) => p.theme.presetId !== doc.theme.presetId).slice(0, 2),
+  ];
   const theme = tryThemes.find((t) => t.id === themeId)?.theme ?? doc.theme;
   const visible = doc.blocks.filter((b) => !b.visibility.hidden);
   const blockNames = Array.from(new Set(visible.map((b) => tr(blockName(b)))));
@@ -50,94 +50,61 @@ export function TemplateDetail() {
       </Link>
 
       <div className={cn('mt-8 grid gap-12 lg:gap-14', wide ? 'lg:grid-cols-1' : 'lg:grid-cols-[minmax(0,1fr)_400px]')}>
-        <div className="order-2 flex min-w-0 flex-col items-center gap-4 lg:order-1">
-          <div className="flex w-full flex-wrap items-center justify-between gap-3">
-            <Segmented
-              ariaLabel={tr('Preview size')}
-              value={view}
-              onChange={setView}
-              options={[
-              { value: 'phone', label: 'Phone', icon: SmartphoneIcon },
-              { value: 'desktop', label: 'Desktop', icon: MonitorIcon }]
-              } />
-            
-            <div role="group" aria-label={tr('Try with theme')} className="flex flex-wrap items-center gap-1.5">
-              <span className="mr-1 text-caption text-fg-subtle">{tr('Try with theme')}</span>
-              {tryThemes.map((t) =>
-              <button
-                key={t.id}
-                type="button"
-                aria-pressed={themeId === t.id}
-                title={t.name}
-                onClick={() => setThemeId(t.id)}
-                className={cn('flex h-9 items-center gap-1.5 rounded-full border px-2.5 text-caption font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus', themeId === t.id ? 'border-fg text-fg' : 'border-line text-fg-muted hover:border-line-strong')}>
-                
-                  <span aria-hidden className="flex h-4 w-6 overflow-hidden rounded-full border border-line">
-                    <span className="flex-1" style={{ background: t.theme.material?.backdrop ?? t.theme.background }} />
-                    <span className="flex-1" style={{ background: t.theme.accent }} />
-                  </span>
-                  <span className="hidden sm:inline">{t.name}</span>
-                </button>
-              )}
-            </div>
-          </div>
-          <div className="nm-frame w-full rounded-[34px]">
-            <TemplateLivePreview doc={doc} plan={example.plan} device={view} theme={theme} name={example.name} height={760} />
-          </div>
-        </div>
-
         <aside className={cn('order-1 lg:order-2', !wide && 'lg:pt-14')}>
-          <p className="text-label font-medium text-fg-subtle">
-            {elite ? `Elite ${String(elite.number).padStart(2, '0')} · ${tr(eliteUseCaseLabels[elite.useCase])}` : `${tr(example.category)} · ${tr(example.city)}`}
-          </p>
-          <h1 className="kb-display mt-2 text-[44px] leading-[0.98] text-fg">{example.name}</h1>
-          <p className="mt-4 text-body text-fg-muted">{example.description}</p>
-          <div className="mt-5 flex flex-wrap gap-1.5">
-            {elite ? <Badge>{tr(eliteGoalLabels[elite.goal])}</Badge> : example.goals.map((g) => <Badge key={g}>{tr(goalLabels[g])}</Badge>)}
-            {price > 0 && <Badge tone="accent">{tr('{price} · one-off', { price: formatNgn(price) })}</Badge>}
-          </div>
-          {elite &&
-          <p className="mt-4 text-label text-fg-muted">
-              <span className="font-semibold text-fg">{tr('Structure:')}</span> {elite.structure}
+          {/* The hero: title, price and the two actions. Everything after it folds on phones (D562). */}
+          <header>
+            <p className="text-label font-medium text-fg-subtle">
+              {elite ? `Elite ${String(elite.number).padStart(2, '0')} · ${tr(eliteUseCaseLabels[elite.useCase])}` : `${tr(example.category)} · ${tr(example.city)}`}
             </p>
-          }
+            <h1 className="kb-display mt-2 text-[44px] leading-[0.98] text-fg">{example.name}</h1>
+            <p className="mt-4 text-body text-fg-muted">{example.description}</p>
+            <div className="mt-5 flex flex-wrap gap-1.5">
+              {elite ? <Badge>{tr(eliteGoalLabels[elite.goal])}</Badge> : example.goals.map((g) => <Badge key={g}>{tr(goalLabels[g])}</Badge>)}
+              {price > 0 && <Badge tone="accent">{tr('{price} · one-off', { price: formatNgn(price) })}</Badge>}
+            </div>
+            {elite && (
+              <p className="mt-4 text-label text-fg-muted">
+                <span className="font-semibold text-fg">{tr('Structure:')}</span> {elite.structure}
+              </p>
+            )}
 
-          <div className="mt-8 flex flex-col gap-2 sm:flex-row lg:flex-col">
-            <Button size="lg" variant="brand" fullWidth onClick={() => navigate(`/start?kit=${example.id}`)}>
-              {price > 0 ? tr('Get this template · {price}', { price: formatNgn(price) }) : tr('Use this template')}
-            </Button>
-            <Button size="lg" variant="secondary" fullWidth trailingIcon={ExternalLinkIcon} onClick={() => navigate(`/p/${doc.handle}`)}>
-              {tr('Open full page')}
-            </Button>
-          </div>
-          {price > 0 && <p className="mt-2 text-caption text-fg-subtle">{tr('Preview is free. You pay once per workspace when you use it (test mode, example price).')}</p>}
+            <div className="mt-8 flex flex-col gap-2 sm:flex-row lg:flex-col">
+              <Button size="lg" variant="brand" fullWidth onClick={() => navigate(`/start?kit=${example.id}`)}>
+                {price > 0 ? tr('Get this template · {price}', { price: formatNgn(price) }) : tr('Use this template')}
+              </Button>
+              <Button size="lg" variant="secondary" fullWidth trailingIcon={ExternalLinkIcon} onClick={() => navigate(`/p/${doc.handle}`)}>
+                {tr('Open full page')}
+              </Button>
+            </div>
+            {price > 0 && <p className="mt-2 text-caption text-fg-subtle">{tr('Preview is free. You pay once per workspace when you use it (test mode, example price).')}</p>}
+          </header>
 
-          {elite &&
-          <div className="mt-8">
+          {elite && (
+            <div className="mt-8">
               <h2 className="text-label font-semibold text-fg">{tr('What’s inside')}</h2>
               <ol className="mt-3 flex flex-col gap-1.5">
-                {elite.inside.map((s, i) =>
-              <li key={s} className="flex gap-3 text-label text-fg-muted">
+                {elite.inside.map((s, i) => (
+                  <li key={s} className="flex gap-3 text-label text-fg-muted">
                     <span className="w-5 shrink-0 tabular-nums text-fg-subtle">{i + 1}</span>
                     {s}
                   </li>
-              )}
+                ))}
               </ol>
             </div>
-          }
+          )}
 
-          {elite && elite.goodToKnow.length > 0 &&
-          <div className="mt-8 rounded-md bg-sunken p-4">
+          {elite && elite.goodToKnow.length > 0 && (
+            <div className="mt-8 rounded-md bg-sunken p-4">
               <h2 className="flex items-center gap-1.5 text-label font-semibold text-fg">
                 <InfoIcon size={15} aria-hidden /> {tr('Good to know')}
               </h2>
               <ul className="mt-2 flex flex-col gap-1.5">
-                {elite.goodToKnow.map((g) =>
-              <li key={g} className="text-label text-fg-muted">{g}</li>
-              )}
+                {elite.goodToKnow.map((g) => (
+                  <li key={g} className="text-label text-fg-muted">{g}</li>
+                ))}
               </ul>
             </div>
-          }
+          )}
 
           <div className="mt-8 flex gap-3 border-t border-line pt-6">
             <ShieldCheckIcon size={18} className="mt-0.5 shrink-0 text-success" aria-hidden />
@@ -147,14 +114,52 @@ export function TemplateDetail() {
             </p>
           </div>
 
-          {!elite &&
-          <div className="mt-8">
+          {!elite && (
+            <div className="mt-8">
               <h2 className="text-label font-semibold text-fg">{tr('Blocks in this template')}</h2>
               <p className="mt-2 text-label leading-relaxed text-fg-muted">{blockNames.join(' · ')}</p>
             </div>
-          }
+          )}
         </aside>
-      </div>
-    </div>);
 
+        {/* After the details in page order so it folds on phones; on desktop it still shows on the left (D562). */}
+        <div className="order-2 flex min-w-0 flex-col items-center gap-4 lg:order-1">
+          <h2 className="sr-only">{tr('Preview')}</h2>
+          <div className="flex w-full flex-wrap items-center justify-between gap-3">
+            <Segmented
+              ariaLabel={tr('Preview size')}
+              value={view}
+              onChange={setView}
+              options={[
+                { value: 'phone', label: 'Phone', icon: SmartphoneIcon },
+                { value: 'desktop', label: 'Desktop', icon: MonitorIcon },
+              ]}
+            />
+            <div role="group" aria-label={tr('Try with theme')} className="flex flex-wrap items-center gap-1.5">
+              <span className="mr-1 text-caption text-fg-subtle">{tr('Try with theme')}</span>
+              {tryThemes.map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  aria-pressed={themeId === t.id}
+                  title={t.name}
+                  onClick={() => setThemeId(t.id)}
+                  className={cn('flex h-9 items-center gap-1.5 rounded-full border px-2.5 text-caption font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus', themeId === t.id ? 'border-fg text-fg' : 'border-line text-fg-muted hover:border-line-strong')}
+                >
+                  <span aria-hidden className="flex h-4 w-6 overflow-hidden rounded-full border border-line">
+                    <span className="flex-1" style={{ background: t.theme.material?.backdrop ?? t.theme.background }} />
+                    <span className="flex-1" style={{ background: t.theme.accent }} />
+                  </span>
+                  <span className="hidden sm:inline">{t.name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="nm-frame w-full rounded-[34px]">
+            <TemplateLivePreview doc={doc} plan={example.plan} device={view} theme={theme} name={example.name} height={760} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }

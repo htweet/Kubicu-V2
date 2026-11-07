@@ -35,7 +35,7 @@ export function EliteCollection({ templates, hrefFor, onOpen }: EliteCollectionP
   const useCases = (Object.keys(eliteUseCaseLabels) as EliteUseCase[]).filter((u) => elite.some((t) => t.elite?.useCase === u));
   if (elite.length === 0) return null;
 
-  const toggle = (id: string) => setCompare((c) => c.includes(id) ? c.filter((x) => x !== id) : c.length >= 3 ? c : [...c, id]);
+  const toggle = (id: string) => setCompare((c) => (c.includes(id) ? c.filter((x) => x !== id) : c.length >= 3 ? c : [...c, id]));
   const picked = compare.map((id) => elite.find((t) => t.id === id)).filter(Boolean) as ExamplePage[];
 
   return (
@@ -86,17 +86,17 @@ export function EliteCollection({ templates, hrefFor, onOpen }: EliteCollectionP
                 aria-pressed={on}
                 disabled={!on && compare.length >= 3}
                 onClick={() => toggle(t.id)}
-                className="mt-3 inline-flex h-9 items-center gap-1.5 self-start rounded-full border border-line px-3 text-caption font-medium text-fg-muted transition-colors duration-150 hover:border-line-strong hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus disabled:cursor-not-allowed disabled:opacity-50">
-                
+                className="mt-3 inline-flex h-9 items-center gap-1.5 self-start rounded-full border border-line px-3 text-caption font-medium text-fg-muted transition-colors duration-150 hover:border-line-strong hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus disabled:cursor-not-allowed disabled:opacity-50"
+              >
                 {on ? <CheckIcon size={13} aria-hidden /> : <PlusIcon size={13} aria-hidden />} {tr(on ? 'In compare' : 'Compare')}
               </button>
-            </li>);
-
+            </li>
+          );
         })}
       </ul>
 
-      {compare.length > 0 &&
-      <div className="sticky bottom-4 z-30 mt-8 flex justify-center">
+      {compare.length > 0 && (
+        <div className="sticky bottom-4 z-30 mt-8 flex justify-center">
           <div className="flex flex-wrap items-center gap-3 rounded-full border border-line-strong bg-raised px-4 py-2 shadow-3">
             <span className="text-label text-fg">{tr('Picked to compare: {n} of {max}', { n: compare.length, max: 3 })}</span>
             <Button size="sm" leadingIcon={Columns3Icon} disabled={compare.length < 2} onClick={() => setComparing(true)}>
@@ -107,43 +107,43 @@ export function EliteCollection({ templates, hrefFor, onOpen }: EliteCollectionP
             </button>
           </div>
         </div>
-      }
+      )}
 
       <Dialog open={comparing} onClose={() => setComparing(false)} size="lg" title={tr('Compare templates')} description={tr('Phone previews side by side. Scroll each one to see the whole page.')}>
         <div className="scroll-quiet -mx-1 flex gap-4 overflow-x-auto px-1 pb-2">
-          {picked.map((t) =>
-          <div key={t.id} className="flex shrink-0 flex-col items-center gap-2">
+          {picked.map((t) => (
+            <div key={t.id} className="flex shrink-0 flex-col items-center gap-2">
               <div className="scroll-quiet h-[460px] overflow-y-auto rounded-[22px]">
                 <TemplateThumb doc={t.doc} width={200} height={1600} />
               </div>
               <Link to={hrefFor(t)} className="text-label font-semibold text-fg hover:underline">{t.name}</Link>
               <span className="text-caption tabular-nums text-fg-subtle">{t.elite ? formatNgn(t.elite.priceNgn) : ''}</span>
             </div>
-          )}
+          ))}
         </div>
       </Dialog>
-    </section>);
-
+    </section>
+  );
 }
 
-function Chips<T extends string>({ label, value, onChange, options }: {label: string;value: T;onChange: (v: T) => void;options: [T, string][];}) {
+function Chips<T extends string>({ label, value, onChange, options }: { label: string; value: T; onChange: (v: T) => void; options: [T, string][] }) {
   return (
     <div role="group" aria-label={label} className="flex flex-wrap items-center gap-1.5">
       <span className="mr-1 w-20 shrink-0 text-caption text-fg-subtle">{label}</span>
-      {options.map(([v, text]) =>
-      <button
-        key={v}
-        type="button"
-        aria-pressed={value === v}
-        onClick={() => onChange(v)}
-        className={cn(
-          'h-8 whitespace-nowrap rounded-full border px-3 text-label font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
-          value === v ? 'border-fg bg-fg text-canvas' : 'border-line text-fg-muted hover:border-line-strong hover:text-fg'
-        )}>
-        
+      {options.map(([v, text]) => (
+        <button
+          key={v}
+          type="button"
+          aria-pressed={value === v}
+          onClick={() => onChange(v)}
+          className={cn(
+            'h-8 whitespace-nowrap rounded-full border px-3 text-label font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
+            value === v ? 'border-fg bg-fg text-canvas' : 'border-line text-fg-muted hover:border-line-strong hover:text-fg',
+          )}
+        >
           {text}
         </button>
-      )}
-    </div>);
-
+      ))}
+    </div>
+  );
 }

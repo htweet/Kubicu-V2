@@ -6,7 +6,7 @@ import { meetingApps } from '../../utils/ops/meetings';
 import { Button } from '../ui/Button';
 
 /** Seller view of a booking's meeting link (D225): copy, open, or make a new one. */
-export function MeetingLinkPanel({ meeting, canRenew, onRenew }: {meeting: BookingMeeting;canRenew: boolean;onRenew: (app: MeetingApp) => void;}) {
+export function MeetingLinkPanel({ meeting, canRenew, onRenew }: { meeting: BookingMeeting; canRenew: boolean; onRenew: (app: MeetingApp) => void }) {
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(meeting.url);
@@ -29,13 +29,13 @@ export function MeetingLinkPanel({ meeting, canRenew, onRenew }: {meeting: Booki
         <a href={meeting.url} target="_blank" rel="noopener noreferrer" className="inline-flex h-8 items-center gap-1.5 rounded-md px-3 text-label font-medium text-fg-muted transition-colors duration-150 ease-out hover:bg-sunken hover:text-fg">
           <ExternalLinkIcon size={14} aria-hidden /> Open
         </a>
-        {canRenew &&
-        <Button size="sm" variant="tertiary" leadingIcon={RefreshCwIcon} onClick={() => onRenew(meeting.app)}>
+        {canRenew && (
+          <Button size="sm" variant="tertiary" leadingIcon={RefreshCwIcon} onClick={() => onRenew(meeting.app)}>
             New link
           </Button>
-        }
+        )}
       </div>
       <p className="text-caption text-fg-subtle">Preview link — it won’t open a real meeting in this prototype.</p>
-    </section>);
-
+    </section>
+  );
 }

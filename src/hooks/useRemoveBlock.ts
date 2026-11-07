@@ -18,7 +18,7 @@ export function useRemoveBlock() {
       if (block.locked) {
         toast(`${blockName(block)} is locked`, {
           description: 'Unlock it to delete.',
-          action: { label: 'Unlock', onClick: () => actions.toggleLocked(id) }
+          action: { label: 'Unlock', onClick: () => actions.toggleLocked(id) },
         });
         return;
       }
@@ -37,14 +37,14 @@ export function useRemoveBlock() {
       }
       if (kids.length) {
         toast(`${blockName(block)} and ${kids.length} block${kids.length === 1 ? '' : 's'} inside deleted`, {
-          action: { label: 'Undo', onClick: () => actions.restoreBlocks([block, ...kids], index) }
+          action: { label: 'Undo', onClick: () => actions.restoreBlocks([block, ...kids], index) },
         });
         return;
       }
       toast(`${blockName(block)} deleted`, {
-        action: { label: 'Undo', onClick: () => actions.restoreBlock(block, index) }
+        action: { label: 'Undo', onClick: () => actions.restoreBlock(block, index) },
       });
     },
-    [state.draft.blocks, actions, canTouch]
+    [state.draft.blocks, actions, canTouch],
   );
 }

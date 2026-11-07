@@ -5,7 +5,7 @@
 export type Row3 = [string, string, string, string];
 export type Dict = Record<string, string>;
 
-export function columns(rows: Row3[]): {sw: Dict;tw: Dict;zu: Dict;} {
+export function columns(rows: Row3[]): { sw: Dict; tw: Dict; zu: Dict } {
   const pick = (i: 1 | 2 | 3): Dict => Object.fromEntries(rows.map((r) => [r[0], r[i]]));
   return { sw: pick(1), tw: pick(2), zu: pick(3) };
 }

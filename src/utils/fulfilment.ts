@@ -30,8 +30,8 @@ export function readFulfilment(workspaceId: string): FulfilmentData {
     const raw = window.localStorage.getItem(key(workspaceId));
     if (raw) return { ...emptyFulfilment(), ...(JSON.parse(raw) as Partial<FulfilmentData>) };
   } catch {
-
-    /* fresh store */}
+    /* fresh store */
+  }
   // Demo data (D200): one sample delivery on sample order #1007, so Deliveries has something to try.
   if (!seedsSample(workspaceId)) return emptyFulfilment();
   const seeded = sampleFulfilment();
@@ -46,31 +46,31 @@ function sampleFulfilment(): FulfilmentData {
     pickupAddress: 'Adaeze Atelier studio, Victoria Island (sample address)',
     pickupPhone: '0803 000 0000',
     deliveries: [
-    {
-      id: 'dl_sample_1007',
-      orderId: 'so_1007',
-      orderNumber: '1007',
-      customerName: 'Chiamaka Obi',
-      customerPhone: '+234 803 000 1107',
-      address: '4 Example Street, Yaba',
-      partnerId: 'swiftrun',
-      partnerName: 'SwiftRun Logistics',
-      feeNgn: 2000,
-      etaLabel: 'Today, by 6pm',
-      pickupAt: at(-1),
-      status: 'assigned',
-      rider: SIMULATED_RIDERS[0],
-      code: '4821',
-      codeAttempts: 0,
-      escrow: false,
-      events: [
-      { id: 'dle_s2', at: at(1), label: `Rider assigned: ${SIMULATED_RIDERS[0].name}` },
-      { id: 'dle_s1', at: at(2), label: 'Delivery booked with SwiftRun Logistics (simulated)' }],
-
-      createdAt: at(2),
-      sample: true
-    }]
-
+      {
+        id: 'dl_sample_1007',
+        orderId: 'so_1007',
+        orderNumber: '1007',
+        customerName: 'Chiamaka Obi',
+        customerPhone: '+234 803 000 1107',
+        address: '4 Example Street, Yaba',
+        partnerId: 'swiftrun',
+        partnerName: 'SwiftRun Logistics',
+        feeNgn: 2000,
+        etaLabel: 'Today, by 6pm',
+        pickupAt: at(-1),
+        status: 'assigned',
+        rider: SIMULATED_RIDERS[0],
+        code: '4821',
+        codeAttempts: 0,
+        escrow: false,
+        events: [
+          { id: 'dle_s2', at: at(1), label: `Rider assigned: ${SIMULATED_RIDERS[0].name}` },
+          { id: 'dle_s1', at: at(2), label: 'Delivery booked with SwiftRun Logistics (simulated)' },
+        ],
+        createdAt: at(2),
+        sample: true,
+      },
+    ],
   };
 }
 
@@ -78,8 +78,8 @@ export function writeFulfilment(workspaceId: string, data: FulfilmentData): void
   try {
     window.localStorage.setItem(key(workspaceId), JSON.stringify(data));
   } catch {
-
-    /* storage full — lasts for this visit */}
+    /* storage full — lasts for this visit */
+  }
   window.dispatchEvent(new CustomEvent(FULFILMENT_EVENT));
 }
 
@@ -91,7 +91,7 @@ export const deliveryLabels: Record<DeliveryStatus, string> = {
   picked_up: 'Out for delivery',
   delivered: 'Delivered',
   failed: 'Delivery failed',
-  cancelled: 'Cancelled'
+  cancelled: 'Cancelled',
 };
 
 export const deliveryTones: Record<DeliveryStatus, 'neutral' | 'info' | 'warning' | 'danger' | 'success'> = {
@@ -100,7 +100,7 @@ export const deliveryTones: Record<DeliveryStatus, 'neutral' | 'info' | 'warning
   picked_up: 'info',
   delivered: 'success',
   failed: 'danger',
-  cancelled: 'neutral'
+  cancelled: 'neutral',
 };
 
 export const failLabels: Record<FailReason, string> = {
@@ -111,7 +111,7 @@ export const failLabels: Record<FailReason, string> = {
   // Cross-border parcels (D436).
   held_customs: 'Held at customs — details or duties needed',
   returned_sender: 'Returned to sender from abroad',
-  other: 'Something else'
+  other: 'Something else',
 };
 
 export const isActive = (d: Delivery) => d.status === 'booked' || d.status === 'assigned' || d.status === 'picked_up';
@@ -120,19 +120,19 @@ export const activeFor = (data: FulfilmentData, orderId: string) => data.deliver
 // ——— Which orders can be booked ———
 
 export function readyOrders(orders: Order[], data: FulfilmentData): Order[] {
-  return orders.
-  filter(
-    (o) =>
-    o.fulfilment.method === 'delivery' && (
-    // Pay on delivery orders go out before they're paid (D112).
-    o.pod && !o.pod.collected ?
-    o.status === 'new' || o.status === 'packing' :
-    (o.status === 'paid' || o.status === 'packing') && (o.paymentStatus === 'paid' || o.paymentStatus === 'partially_refunded')) &&
-    !dispatchBlocked(o) &&
-    !activeFor(data, o.id) &&
-    !data.deliveries.some((d) => d.orderId === o.id && d.status === 'delivered')
-  ).
-  sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+  return orders
+    .filter(
+      (o) =>
+        o.fulfilment.method === 'delivery' &&
+        // Pay on delivery orders go out before they're paid (D112).
+        (o.pod && !o.pod.collected
+          ? o.status === 'new' || o.status === 'packing'
+          : (o.status === 'paid' || o.status === 'packing') && (o.paymentStatus === 'paid' || o.paymentStatus === 'partially_refunded')) &&
+        !dispatchBlocked(o) &&
+        !activeFor(data, o.id) &&
+        !data.deliveries.some((d) => d.orderId === o.id && d.status === 'delivered'),
+    )
+    .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
 }
 
 // ——— Quotes from partners (simulated) ———
@@ -172,9 +172,9 @@ export function quotesFor(address: string, now = new Date()): PartnerQuote[] {
 // ——— Lifecycle ———
 
 const ev = (label: string) => ({ id: uid('dev'), at: new Date().toISOString(), label });
-const patch = (data: FulfilmentData, id: string, fn: (d: Delivery) => Delivery): FulfilmentData => ({ ...data, deliveries: data.deliveries.map((d) => d.id === id ? fn(d) : d) });
+const patch = (data: FulfilmentData, id: string, fn: (d: Delivery) => Delivery): FulfilmentData => ({ ...data, deliveries: data.deliveries.map((d) => (d.id === id ? fn(d) : d)) });
 
-export function book(data: FulfilmentData, o: Order, q: PartnerQuote, pickupAt: string, escrow: boolean, rider?: Rider): {data: FulfilmentData;delivery: Delivery;} {
+export function book(data: FulfilmentData, o: Order, q: PartnerQuote, pickupAt: string, escrow: boolean, rider?: Rider): { data: FulfilmentData; delivery: Delivery } {
   const code = String(1000 + Math.floor(Math.random() * 9000));
   const delivery: Delivery = {
     id: uid('dlv'),
@@ -197,9 +197,9 @@ export function book(data: FulfilmentData, o: Order, q: PartnerQuote, pickupAt: 
     // Abroad (D451): tracking adds the customs steps between pickup and the handover.
     ...(o.fulfilment.zoneId && isCrossBorderMethod(o.fulfilment.zoneId) ? { crossBorder: { from: activeCountry(), to: o.fulfilment.country, stage: 0 as CrossBorderStage } } : {}),
     events: [
-    ...(rider ? [ev(`${rider.name} assigned`)] : []),
-    ev(`Booked with ${q.name}${q.feeNgn ? ` · ${formatMoney(q.feeNgn)}` : ''} — delivery code texted to the customer`)]
-
+      ...(rider ? [ev(`${rider.name} assigned`)] : []),
+      ev(`Booked with ${q.name}${q.feeNgn ? ` · ${formatMoney(q.feeNgn)}` : ''} — delivery code texted to the customer`),
+    ],
   };
   return { data: { ...data, deliveries: [delivery, ...data.deliveries] }, delivery };
 }
@@ -215,25 +215,25 @@ export function assignRider(data: FulfilmentData, id: string): FulfilmentData {
 }
 
 export function pickedUp(data: FulfilmentData, id: string): FulfilmentData {
-  return patch(data, id, (d) => d.status === 'assigned' ? { ...d, status: 'picked_up', events: [ev('Picked up from you — on the way to the customer'), ...d.events] } : d);
+  return patch(data, id, (d) => (d.status === 'assigned' ? { ...d, status: 'picked_up', events: [ev('Picked up from you — on the way to the customer'), ...d.events] } : d));
 }
 
 /** English country name for a stored code; shown through the translator. "the buyer’s country" when unknown. */
-export const crossBorderPlace = (code?: string) => code ? countryInfo(code as CountryCode).name : 'the buyer’s country';
+export const crossBorderPlace = (code?: string) => (code ? countryInfo(code as CountryCode).name : 'the buyer’s country');
 
 /** Event label for each stage after pickup (D451). `{from}`/`{to}` are filled from the delivery. */
 export const crossBorderStageLabels: Record<Exclude<CrossBorderStage, 0>, string> = {
   1: 'Left {from} — on the way abroad',
   2: 'At customs in {to}',
   3: 'Cleared customs',
-  4: 'Out for delivery in {to}'
+  4: 'Out for delivery in {to}',
 };
 
 /** Prototype: the courier's next tracking update for a parcel going abroad. */
 export function advanceCrossBorder(data: FulfilmentData, id: string): FulfilmentData {
   return patch(data, id, (d) => {
     if (d.status !== 'picked_up' || !d.crossBorder || d.crossBorder.stage >= 4) return d;
-    const stage = d.crossBorder.stage + 1 as Exclude<CrossBorderStage, 0>;
+    const stage = (d.crossBorder.stage + 1) as Exclude<CrossBorderStage, 0>;
     const vars = { from: crossBorderPlace(d.crossBorder.from), to: crossBorderPlace(d.crossBorder.to) };
     return { ...d, crossBorder: { ...d.crossBorder, stage }, events: [{ ...ev(crossBorderStageLabels[stage]), vars }, ...d.events] };
   });
@@ -242,7 +242,7 @@ export function advanceCrossBorder(data: FulfilmentData, id: string): Fulfilment
 /** The handover code can only be used once a parcel going abroad is out for delivery in the buyer's country. */
 export const awaitingCrossBorder = (d: Delivery) => !!d.crossBorder && d.status === 'picked_up' && d.crossBorder.stage < 4;
 
-export type CodeResult = {ok: true;data: FulfilmentData;} | {ok: false;data: FulfilmentData;left: number;};
+export type CodeResult = { ok: true; data: FulfilmentData } | { ok: false; data: FulfilmentData; left: number };
 
 export function enterCode(data: FulfilmentData, id: string, code: string): CodeResult {
   const d = data.deliveries.find((x) => x.id === id);
@@ -253,19 +253,19 @@ export function enterCode(data: FulfilmentData, id: string, code: string): CodeR
   const attempts = d.codeAttempts + 1;
   const left = MAX_CODE_ATTEMPTS - attempts;
   const next = patch(data, id, (x) =>
-  left <= 0 ?
-  { ...x, codeAttempts: attempts, status: 'failed', failReason: 'wrong_code', events: [ev('Stopped after 3 wrong delivery codes — order returned to you'), ...x.events] } :
-  { ...x, codeAttempts: attempts, events: [ev(`Wrong delivery code (${left} ${left === 1 ? 'try' : 'tries'} left)`), ...x.events] }
+    left <= 0
+      ? { ...x, codeAttempts: attempts, status: 'failed', failReason: 'wrong_code', events: [ev('Stopped after 3 wrong delivery codes — order returned to you'), ...x.events] }
+      : { ...x, codeAttempts: attempts, events: [ev(`Wrong delivery code (${left} ${left === 1 ? 'try' : 'tries'} left)`), ...x.events] },
   );
   return { ok: false, data: next, left: Math.max(0, left) };
 }
 
 export function fail(data: FulfilmentData, id: string, reason: FailReason, note: string): FulfilmentData {
-  return patch(data, id, (d) => isActive(d) ? { ...d, status: 'failed', failReason: reason, failNote: note.trim() || undefined, events: [ev(`Failed — ${failLabels[reason]}${note.trim() ? `: ${note.trim()}` : ''}`), ...d.events] } : d);
+  return patch(data, id, (d) => (isActive(d) ? { ...d, status: 'failed', failReason: reason, failNote: note.trim() || undefined, events: [ev(`Failed — ${failLabels[reason]}${note.trim() ? `: ${note.trim()}` : ''}`), ...d.events] } : d));
 }
 
 export function cancel(data: FulfilmentData, id: string): FulfilmentData {
-  return patch(data, id, (d) => d.status === 'booked' || d.status === 'assigned' ? { ...d, status: 'cancelled', events: [ev('Cancelled before pickup — no fee charged'), ...d.events] } : d);
+  return patch(data, id, (d) => (d.status === 'booked' || d.status === 'assigned' ? { ...d, status: 'cancelled', events: [ev('Cancelled before pickup — no fee charged'), ...d.events] } : d));
 }
 
 export function defaultPickup(): string {

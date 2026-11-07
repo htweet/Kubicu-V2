@@ -4,7 +4,7 @@ import { plans, type PlanInfo } from '../data/plans';
 
 const PlanContext = createContext<WorkspacePlan>('free');
 
-export function PlanProvider({ plan, children }: {plan: WorkspacePlan;children: React.ReactNode;}) {
+export function PlanProvider({ plan, children }: { plan: WorkspacePlan; children: React.ReactNode }) {
   return <PlanContext.Provider value={plan}>{children}</PlanContext.Provider>;
 }
 

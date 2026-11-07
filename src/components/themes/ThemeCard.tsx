@@ -45,9 +45,9 @@ export function ThemeCard({ theme, referenceDoc, selected, locked, comparing, co
         <div className="mt-auto flex flex-wrap items-center justify-between gap-2 pt-3">
           <span className="flex items-center gap-2">
             <span className="flex -space-x-1" aria-hidden>
-              {swatches.map((c, i) =>
-              <span key={i} className="h-4 w-4 rounded-full border border-line" style={{ background: c }} />
-              )}
+              {swatches.map((c, i) => (
+                <span key={i} className="h-4 w-4 rounded-full border border-line" style={{ background: c }} />
+              ))}
             </span>
             <span className="text-caption text-fg-subtle">{modes.length > 1 ? `${tr('Light')} · ${tr('Dark')}` : tr(modes[0] === 'dark' ? 'Dark' : 'Light')}</span>
           </span>
@@ -56,12 +56,12 @@ export function ThemeCard({ theme, referenceDoc, selected, locked, comparing, co
             {tr('Compare')}
           </label>
         </div>
-        {theme.free &&
-        <span className="mt-2 inline-flex w-fit items-center gap-1 text-caption text-success">
+        {theme.free && (
+          <span className="mt-2 inline-flex w-fit items-center gap-1 text-caption text-success">
             <CheckIcon size={12} aria-hidden /> {tr('On every plan')}
           </span>
-        }
+        )}
       </div>
-    </li>);
-
+    </li>
+  );
 }

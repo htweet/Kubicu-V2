@@ -37,7 +37,7 @@ export interface WorkspaceSummary {
  * One workspace: who's in it, its plan and country, and the staff actions (D472).
  * Follows the console language (D489); names, reasons, notes and audit entries stay as recorded.
  */
-type MemberAct = {kind: 'role' | 'remove';person: Person;memberId: string;role: Role;} | {kind: 'country';} | null;
+type MemberAct = { kind: 'role' | 'remove'; person: Person; memberId: string; role: Role } | { kind: 'country' } | null;
 
 export function WorkspaceSheet({
   item,
@@ -46,17 +46,17 @@ export function WorkspaceSheet({
   onOpenPerson,
   onAction,
   onVerification,
-  onTeamChanged
-
-
-
-
-
-
-
-
-
-}: {item: WorkspaceSummary | null;people: Person[];onClose: () => void;onOpenPerson: (key: string) => void;onAction: (kind: 'plan' | 'suspend' | 'restore') => void;onVerification: () => void; /** Called after staff change someone's role or remove them, so lists rebuild. */onTeamChanged: () => void;}) {
+  onTeamChanged,
+}: {
+  item: WorkspaceSummary | null;
+  people: Person[];
+  onClose: () => void;
+  onOpenPerson: (key: string) => void;
+  onAction: (kind: 'plan' | 'suspend' | 'restore') => void;
+  onVerification: () => void;
+  /** Called after staff change someone's role or remove them, so lists rebuild. */
+  onTeamChanged: () => void;
+}) {
   const { t } = useT();
   const [store, setStore] = useAdminStore();
   const { update } = useWorkspace();
@@ -76,9 +76,9 @@ export function WorkspaceSheet({
       const team = readTeam(w.id);
       if (!team) return setAct(null);
       const next =
-      act.kind === 'role' ?
-      { ...team, members: team.members.map((m) => m.id === act.memberId ? { ...m, role } : m) } :
-      { ...team, members: team.members.filter((m) => m.id !== act.memberId) };
+        act.kind === 'role'
+          ? { ...team, members: team.members.map((m) => (m.id === act.memberId ? { ...m, role } : m)) }
+          : { ...team, members: team.members.filter((m) => m.id !== act.memberId) };
       try {
         writeTeam(w.id, next);
       } catch {
@@ -86,12 +86,12 @@ export function WorkspaceSheet({
         return;
       }
       setStore((s) =>
-      audit(s, {
-        area: 'tenants',
-        action: act.kind === 'role' ? `Changed ${act.person.name}’s role ${roleNames[act.role]} → ${roleNames[role]}` : `Removed ${act.person.name} from the workspace`,
-        target: w.name,
-        reason
-      })
+        audit(s, {
+          area: 'tenants',
+          action: act.kind === 'role' ? `Changed ${act.person.name}’s role ${roleNames[act.role]} → ${roleNames[role]}` : `Removed ${act.person.name} from the workspace`,
+          target: w.name,
+          reason,
+        }),
       );
       toast.success(act.kind === 'role' ? t('{name} is now {role}', { name: act.person.name, role: t(roleNames[role]) }) : t('{name} removed', { name: act.person.name }));
       onTeamChanged();
@@ -101,7 +101,7 @@ export function WorkspaceSheet({
   const navigate = useNavigate();
   const w = item?.workspace;
   const team = w ? peopleIn(people, w.id) : [];
-  const notes = w && store.workspaceNotes?.[w.id] || [];
+  const notes = (w && store.workspaceNotes?.[w.id]) || [];
 
   const addNote = (text: string) => {
     if (!w) return;
@@ -113,20 +113,20 @@ export function WorkspaceSheet({
 
   return (
     <Sheet open={!!item} onClose={onClose} side="right" size="lg" bodyClassName="px-5 py-6" title={w?.name ?? ''} description={item ? `kub.icu/${item.handle}` : undefined}>
-      {item && w && country &&
-      <div className="flex flex-col gap-8">
+      {item && w && country && (
+        <div className="flex flex-col gap-8">
           <div className="flex flex-wrap items-center gap-2">
-            {item.suspended ?
-          <Badge tone="danger" dot>
+            {item.suspended ? (
+              <Badge tone="danger" dot>
                 {t('Suspended')}
-              </Badge> :
-          item.live ?
-          <Badge tone="success" dot>
+              </Badge>
+            ) : item.live ? (
+              <Badge tone="success" dot>
                 {t('Live')}
-              </Badge> :
-
-          <Badge tone="neutral">{t('Draft')}</Badge>
-          }
+              </Badge>
+            ) : (
+              <Badge tone="neutral">{t('Draft')}</Badge>
+            )}
             <Badge tone="neutral">{plans[w.plan].name}</Badge>
             {w.demoData && <Badge tone="info">{t('Demo data')}</Badge>}
           </div>
@@ -153,19 +153,19 @@ export function WorkspaceSheet({
           <section aria-labelledby="ws-team">
             <h3 id="ws-team" className="text-label font-semibold text-fg">{t('People: {n}', { n: team.length })}</h3>
             <ul className="mt-2 divide-y divide-line border-y border-line">
-              {team.map(({ person, ws }) =>
-            <li key={person.key} className="flex items-center gap-1">
+              {team.map(({ person, ws }) => (
+                <li key={person.key} className="flex items-center gap-1">
                   <button type="button" onClick={() => onOpenPerson(person.key)} className="-ml-2 flex min-w-0 flex-1 items-center justify-between gap-3 rounded-md px-2 py-3 text-left transition-colors duration-150 hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
                     <span className="min-w-0">
                       <span className="block truncate text-label font-medium text-fg">{person.name}</span>
                       <span className="block truncate text-caption text-fg-subtle">
                         {[
-                    person.email || person.phone,
-                    ws.lastActiveAt ? t('Last active {when}', { when: formatRelative(ws.lastActiveAt) }) : null,
-                    person.workspaces.length > 1 ? t('Workspaces: {n}', { n: person.workspaces.length }) : null].
-
-                    filter(Boolean).
-                    join(' · ')}
+                          person.email || person.phone,
+                          ws.lastActiveAt ? t('Last active {when}', { when: formatRelative(ws.lastActiveAt) }) : null,
+                          person.workspaces.length > 1 ? t('Workspaces: {n}', { n: person.workspaces.length }) : null,
+                        ]
+                          .filter(Boolean)
+                          .join(' · ')}
                       </span>
                     </span>
                     <span className="flex shrink-0 items-center gap-2">
@@ -173,18 +173,18 @@ export function WorkspaceSheet({
                       <Badge tone={ws.role === 'owner' ? 'accent' : 'neutral'}>{t(roleNames[ws.role])}</Badge>
                     </span>
                   </button>
-                  {ws.role !== 'owner' && ws.memberId &&
-              <Menu
-                align="end"
-                items={[
-                { id: 'role', label: t('Change role…'), icon: UserCogIcon, onSelect: () => (setRole(ws.role), setAct({ kind: 'role', person, memberId: ws.memberId!, role: ws.role })) },
-                { id: 'remove', label: t('Remove from workspace…'), icon: UserMinusIcon, destructive: true, onSelect: () => setAct({ kind: 'remove', person, memberId: ws.memberId!, role: ws.role }) }]
-                }
-                trigger={(p) => <IconButton {...p} size="sm" icon={MoreHorizontalIcon} label={t('Actions for {name}', { name: person.name })} />} />
-
-              }
+                  {ws.role !== 'owner' && ws.memberId && (
+                    <Menu
+                      align="end"
+                      items={[
+                        { id: 'role', label: t('Change role…'), icon: UserCogIcon, onSelect: () => (setRole(ws.role), setAct({ kind: 'role', person, memberId: ws.memberId!, role: ws.role })) },
+                        { id: 'remove', label: t('Remove from workspace…'), icon: UserMinusIcon, destructive: true, onSelect: () => setAct({ kind: 'remove', person, memberId: ws.memberId!, role: ws.role }) },
+                      ]}
+                      trigger={(p) => <IconButton {...p} size="sm" icon={MoreHorizontalIcon} label={t('Actions for {name}', { name: person.name })} />}
+                    />
+                  )}
                 </li>
-            )}
+              ))}
             </ul>
           </section>
 
@@ -193,11 +193,11 @@ export function WorkspaceSheet({
               {t('Actions')}
             </h3>
             <div className="mt-3 flex flex-wrap gap-2">
-              {item.live &&
-            <Button size="sm" variant="secondary" leadingIcon={ExternalLinkIcon} onClick={() => window.open(`/p/${item.handle}`, '_blank', 'noopener')}>
+              {item.live && (
+                <Button size="sm" variant="secondary" leadingIcon={ExternalLinkIcon} onClick={() => window.open(`/p/${item.handle}`, '_blank', 'noopener')}>
                   {t('Open live page')}
                 </Button>
-            }
+              )}
               <Button size="sm" variant="secondary" leadingIcon={ShieldCheckIcon} onClick={onVerification}>
                 {t('Verification')}
               </Button>
@@ -210,45 +210,45 @@ export function WorkspaceSheet({
               <Button size="sm" variant="secondary" leadingIcon={WalletIcon} onClick={() => navigate('/admin/plans')}>
                 {t('Billing and credits')}
               </Button>
-              {item.suspended ?
-            <Button size="sm" variant="secondary" leadingIcon={RotateCcwIcon} onClick={() => onAction('restore')}>
+              {item.suspended ? (
+                <Button size="sm" variant="secondary" leadingIcon={RotateCcwIcon} onClick={() => onAction('restore')}>
                   {t('Restore')}
-                </Button> :
-
-            <Button size="sm" variant="destructive" leadingIcon={BanIcon} onClick={() => onAction('suspend')}>
+                </Button>
+              ) : (
+                <Button size="sm" variant="destructive" leadingIcon={BanIcon} onClick={() => onAction('suspend')}>
                   {t('Suspend')}
                 </Button>
-            }
+              )}
             </div>
           </section>
 
           <StaffNotes id="ws" notes={notes} onAdd={addNote} />
         </div>
-      }
+      )}
       <ReasonDialog
         open={!!act}
         onClose={() => setAct(null)}
         onConfirm={confirmAct}
         destructive={act?.kind === 'remove'}
         title={
-        act?.kind === 'role' ?
-        t('Change the role for {name}', { name: act.person.name }) :
-        act?.kind === 'remove' ?
-        t('Remove {name}?', { name: act.person.name }) :
-        t('Change the country for {name}', { name: w?.name ?? '' })
+          act?.kind === 'role'
+            ? t('Change the role for {name}', { name: act.person.name })
+            : act?.kind === 'remove'
+              ? t('Remove {name}?', { name: act.person.name })
+              : t('Change the country for {name}', { name: w?.name ?? '' })
         }
         description={t(
-          act?.kind === 'role' ?
-          'Use when the owner can’t do it themselves — for example they’ve lost access. The owner sees the change in their Activity log.' :
-          act?.kind === 'remove' ?
-          'They lose access to this workspace straight away. Their other workspaces aren’t affected, and their past activity stays in the log.' :
-          'Sets where the business sells from: currency, phone formats, regions, banks and checkout options follow. Existing orders keep the currency they were paid in.'
+          act?.kind === 'role'
+            ? 'Use when the owner can’t do it themselves — for example they’ve lost access. The owner sees the change in their Activity log.'
+            : act?.kind === 'remove'
+              ? 'They lose access to this workspace straight away. Their other workspaces aren’t affected, and their past activity stays in the log.'
+              : 'Sets where the business sells from: currency, phone formats, regions, banks and checkout options follow. Existing orders keep the currency they were paid in.',
         )}
-        confirmLabel={t(act?.kind === 'role' ? 'Change role' : act?.kind === 'remove' ? 'Remove' : 'Change country')}>
-        
+        confirmLabel={t(act?.kind === 'role' ? 'Change role' : act?.kind === 'remove' ? 'Remove' : 'Change country')}
+      >
         {act?.kind === 'role' && <SelectInput<Role> id="ws-member-role" label={t('New role')} value={role} onChange={setRole} options={(['admin', 'editor', 'sales', 'viewer'] as Role[]).map((r) => ({ value: r, label: t(roleNames[r]) }))} />}
         {act?.kind === 'country' && <SelectInput<CountryCode> id="ws-country" label={t('Country')} value={newCountry} onChange={setNewCountry} options={countries.map((c) => ({ value: c.code, label: `${t(c.name)} · ${c.currency}` }))} />}
       </ReasonDialog>
-    </Sheet>);
-
+    </Sheet>
+  );
 }

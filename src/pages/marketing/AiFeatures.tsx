@@ -7,17 +7,17 @@ import { Button } from '../../components/ui/Button';
 import { useT } from '../../contexts/LocaleContext';
 
 const steps = [
-{ title: 'Tell us about your business', text: 'A few sentences: what you sell or do, who it’s for, and how people reach you.' },
-{ title: 'Answer up to four questions', text: 'Only what we can’t work out ourselves — your city, whether you take bookings, how you get paid.' },
-{ title: 'Review the draft', text: 'A full page built from templates and your answers, with a “What we assumed” list. Keep all of it, some blocks, or none.' }];
-
+  { title: 'Tell us about your business', text: 'A few sentences: what you sell or do, who it’s for, and how people reach you.' },
+  { title: 'Answer up to four questions', text: 'Only what we can’t work out ourselves — your city, whether you take bookings, how you get paid.' },
+  { title: 'Review the draft', text: 'A full page built from templates and your answers, with a “What we assumed” list. Keep all of it, some blocks, or none.' },
+];
 
 const helpers = [
-{ title: 'Rewrite a heading or button', text: 'Shorter, warmer or clearer — three options, your words stay until you pick one.' },
-{ title: 'Describe a product', text: 'Written from the product’s real details: name, price, sizes, materials. Nothing added that you didn’t enter.' },
-{ title: 'Draft FAQ answers', text: 'From your own settings — delivery areas, booking rules, refund policy — so answers match how you actually work.' },
-{ title: 'Suggest the next block', text: 'After a services list, a booking button; after products, delivery and returns. Simple rules, always dismissible.' }];
-
+  { title: 'Rewrite a heading or button', text: 'Shorter, warmer or clearer — three options, your words stay until you pick one.' },
+  { title: 'Describe a product', text: 'Written from the product’s real details: name, price, sizes, materials. Nothing added that you didn’t enter.' },
+  { title: 'Draft FAQ answers', text: 'From your own settings — delivery areas, booking rules, refund policy — so answers match how you actually work.' },
+  { title: 'Suggest the next block', text: 'After a services list, a booking button; after products, delivery and returns. Simple rules, always dismissible.' },
+];
 
 const never = ['Prices or discounts', 'Reviews, ratings or testimonials', 'Qualifications or awards', 'Delivery promises or guarantees', 'Customer counts or sales figures'];
 
@@ -34,11 +34,11 @@ export function AiFeatures() {
           <SectionHeading
             id="ai-setup-h"
             title={
-            <>
+              <>
                 {tr('Page setup from a')} <span className="nm-text">{tr('short brief')}</span>
               </>
-            } />
-          
+            }
+          />
           <p className="mt-4 max-w-md text-body leading-relaxed text-fg-muted">{tr('Labelled “AI preview” everywhere it appears, so you always know which words came from AI.')}</p>
           <p className="mt-4 max-w-md text-body leading-relaxed text-fg-muted">
             {tr('No account yet?')}{' '}
@@ -49,15 +49,15 @@ export function AiFeatures() {
           </p>
         </div>
         <ol className="flex flex-col divide-y divide-line border-y border-line">
-          {steps.map((s, i) =>
-          <li key={s.title} className="grid grid-cols-[40px_minmax(0,1fr)] gap-4 py-5">
+          {steps.map((s, i) => (
+            <li key={s.title} className="grid grid-cols-[40px_minmax(0,1fr)] gap-4 py-5">
               <span className="nm-text font-display text-[28px] font-semibold leading-none">{i + 1}</span>
               <div>
                 <h3 className="text-heading font-semibold text-fg">{tr(s.title)}</h3>
                 <p className="mt-1 text-label leading-relaxed text-fg-muted">{tr(s.text)}</p>
               </div>
             </li>
-          )}
+          ))}
         </ol>
       </section>
 
@@ -65,14 +65,14 @@ export function AiFeatures() {
         <div className="mx-auto w-full max-w-6xl px-5 py-16 md:px-8">
           <SectionHeading id="ai-help-h" title={tr('Help on any block')} />
           <div className="mt-10 grid gap-x-10 gap-y-8 md:grid-cols-2">
-            {helpers.map((h) =>
-            <div key={h.title} className="border-t border-line pt-5">
+            {helpers.map((h) => (
+              <div key={h.title} className="border-t border-line pt-5">
                 <h3 className="flex items-center gap-2 text-heading font-semibold text-fg">
                   <SparklesIcon size={16} className="shrink-0 text-fg-subtle" aria-hidden /> {tr(h.title)}
                 </h3>
                 <p className="mt-2 text-label leading-relaxed text-fg-muted">{tr(h.text)}</p>
               </div>
-            )}
+            ))}
           </div>
         </div>
       </section>
@@ -81,18 +81,18 @@ export function AiFeatures() {
         <SectionHeading
           id="ai-never-h"
           title={
-          <>
+            <>
               {tr('What it will')} <span className="nm-text">{tr('never')}</span> {tr('invent')}
             </>
-          } />
-        
+          }
+        />
         <div>
           <ul className="grid gap-x-8 gap-y-3 sm:grid-cols-2">
-            {never.map((n) =>
-            <li key={n} className="border-b border-line pb-3 text-body text-fg">
+            {never.map((n) => (
+              <li key={n} className="border-b border-line pb-3 text-body text-fg">
                 {tr(n)}
               </li>
-            )}
+            ))}
           </ul>
           <p className="mt-6 text-label leading-relaxed text-fg-muted">{tr('Where your page needs one of these, the draft leaves a clearly marked gap like “[Add your price]”. The page can’t be published until you fill it in.')}</p>
         </div>
@@ -113,12 +113,13 @@ export function AiFeatures() {
         </div>
       </section>
 
-      <section className="mx-auto flex w-full max-w-6xl flex-col items-start gap-4 px-5 pb-16 md:flex-row md:items-center md:justify-between md:px-8">
+      {/* Closing call to action: stays open on phones (D562). */}
+      <section data-mbar-skip="" className="mx-auto flex w-full max-w-6xl flex-col items-start gap-4 px-5 pb-16 md:flex-row md:items-center md:justify-between md:px-8">
         <p className="max-w-lg text-body text-fg-muted">{tr('KUBICU is a design prototype today. AI drafting here is rule-based and runs without an AI provider.')}</p>
         <Button variant="brand" trailingIcon={ArrowRightIcon} onClick={() => navigate('/signup')}>
           {tr('Try it on your page')}
         </Button>
       </section>
-    </>);
-
+    </>
+  );
 }

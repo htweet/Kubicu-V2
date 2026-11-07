@@ -18,12 +18,12 @@ export function invoiceWording(order: Order, tax?: ShopSettings['tax'], homeTin?
   const vat = order.vat && order.vat.amountNgn > 0 ? order.vat : null;
   const taxCountry: CountryCode = vat?.country ?? home;
   const buyerCountry = order.fulfilment.country;
-  const regNumber = vat ? taxCountry === home ? homeTin?.trim() ?? '' : tax?.sellsTo?.[taxCountry]?.taxNumber.trim() ?? '' : '';
+  const regNumber = vat ? (taxCountry === home ? homeTin?.trim() ?? '' : tax?.sellsTo?.[taxCountry]?.taxNumber.trim() ?? '') : '';
   return {
     title: vat ? 'Tax invoice' : 'Invoice',
     taxLine: vat ? `${taxCountry === home ? '' : `${countryInfo(taxCountry).name} `}VAT` : 'VAT',
     regLine: vat && regNumber ? `${taxNumberLabels[taxCountry].label} (${countryInfo(taxCountry).name}): ${regNumber}` : '',
-    exportNote: !vat && buyerCountry && buyerCountry !== home ? `Export to ${countryInfo(buyerCountry).name} — no ${countryInfo(home).name} VAT charged. Import duties and taxes may be due in ${countryInfo(buyerCountry).name}.` : ''
+    exportNote: !vat && buyerCountry && buyerCountry !== home ? `Export to ${countryInfo(buyerCountry).name} — no ${countryInfo(home).name} VAT charged. Import duties and taxes may be due in ${countryInfo(buyerCountry).name}.` : '',
   };
 }
 
@@ -38,14 +38,14 @@ export function printOrderInvoice(order: Order, business: string, details?: Shop
   const ref = orderRef(order);
   const name = details?.tradingName.trim() || business;
   const words = invoiceWording(order, tax, details?.tin);
-  const rows = order.items.
-  map((i) => `<tr><td>${esc(i.name)}${i.variantLabel ? ` <span class="m">(${esc(i.variantLabel)})</span>` : ''}</td><td class="r">${i.qty}</td><td class="r">${formatNgn(i.unitPriceNgn)}</td><td class="r">${formatNgn(i.unitPriceNgn * i.qty)}</td></tr>`).
-  join('');
+  const rows = order.items
+    .map((i) => `<tr><td>${esc(i.name)}${i.variantLabel ? ` <span class="m">(${esc(i.variantLabel)})</span>` : ''}</td><td class="r">${i.qty}</td><td class="r">${formatNgn(i.unitPriceNgn)}</td><td class="r">${formatNgn(i.unitPriceNgn * i.qty)}</td></tr>`)
+    .join('');
   const extra = [
-  order.discountNgn ? `<tr><td colspan="3">Discount${order.discount?.code ? ` (${esc(order.discount.code)})` : ''}</td><td class="r">−${formatNgn(order.discountNgn)}</td></tr>` : '',
-  order.deliveryNgn ? `<tr><td colspan="3">Delivery${order.fulfilment.zoneName ? ` — ${esc(order.fulfilment.zoneName)}` : ''}</td><td class="r">${formatNgn(order.deliveryNgn)}</td></tr>` : '',
-  m.vat && !m.vatInclusive ? `<tr><td colspan="3">${esc(words.taxLine)} (${vatRateLabel(m.vatRatePct)})</td><td class="r">${formatNgn(m.vat)}</td></tr>` : ''].
-  join('');
+    order.discountNgn ? `<tr><td colspan="3">Discount${order.discount?.code ? ` (${esc(order.discount.code)})` : ''}</td><td class="r">−${formatNgn(order.discountNgn)}</td></tr>` : '',
+    order.deliveryNgn ? `<tr><td colspan="3">Delivery${order.fulfilment.zoneName ? ` — ${esc(order.fulfilment.zoneName)}` : ''}</td><td class="r">${formatNgn(order.deliveryNgn)}</td></tr>` : '',
+    m.vat && !m.vatInclusive ? `<tr><td colspan="3">${esc(words.taxLine)} (${vatRateLabel(m.vatRatePct)})</td><td class="r">${formatNgn(m.vat)}</td></tr>` : '',
+  ].join('');
   const vatNote = m.vat && m.vatInclusive ? `<tr><td colspan="3" class="m">Includes ${esc(words.taxLine)} (${vatRateLabel(m.vatRatePct)})</td><td class="r m">${formatNgn(m.vat)}</td></tr>` : '';
   // The home TIN is shown in the tax registration line when this invoice carries home tax, so it isn't repeated here.
   const showTin = details?.tin.trim() && !words.regLine.includes(details.tin.trim());

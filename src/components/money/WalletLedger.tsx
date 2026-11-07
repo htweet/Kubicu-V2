@@ -27,7 +27,7 @@ const kindLabels: Record<LedgerKind, string> = {
   commission: 'Commission',
   topup: 'Top-up',
   purchase: 'Purchase',
-  partner_share: 'Partner share'
+  partner_share: 'Partner share',
 };
 const stateLabels: Record<LedgerState, string> = { available: 'Available', pending: 'Settling', held: 'In escrow', reserved: 'Reserved' };
 const stateTones = { available: 'success', pending: 'neutral', held: 'info', reserved: 'warning' } as const;
@@ -35,7 +35,7 @@ const payoutLabels: Record<PayoutStatus, string> = { processing: 'Processing', o
 const payoutTones = { processing: 'info', on_hold: 'warning', paid: 'success', failed: 'danger' } as const;
 
 /** Wallet history: every credit and debit with a running balance, and payouts on their own tab (D92). Follows the interface language (D133r); the CSV export stays English. */
-export function WalletLedger({ data }: {data: MoneyData;}) {
+export function WalletLedger({ data }: { data: MoneyData }) {
   const { t: tr } = useT();
   const [tab, setTab] = useState<Tab>('activity');
   const [filter, setFilter] = useState<StateFilter>('all');
@@ -69,11 +69,11 @@ export function WalletLedger({ data }: {data: MoneyData;}) {
       title={tr('History')}
       body="flush"
       actions={
-      <Button size="sm" variant="tertiary" leadingIcon={DownloadIcon} onClick={exportCsv} disabled={!rows.length}>
+        <Button size="sm" variant="tertiary" leadingIcon={DownloadIcon} onClick={exportCsv} disabled={!rows.length}>
           {tr('Export CSV')}
         </Button>
-      }>
-      
+      }
+    >
       <div className="px-5 md:px-6">
         <Tabs
           ariaLabel={tr('Wallet history')}
@@ -81,45 +81,45 @@ export function WalletLedger({ data }: {data: MoneyData;}) {
           value={tab}
           onChange={setTab}
           items={[
-          { id: 'activity', label: tr('Activity') },
-          { id: 'payouts', label: tr('Payouts'), badge: data.payouts.filter((p) => p.status === 'processing' || p.status === 'on_hold').length || undefined }]
-          } />
-        
+            { id: 'activity', label: tr('Activity') },
+            { id: 'payouts', label: tr('Payouts'), badge: data.payouts.filter((p) => p.status === 'processing' || p.status === 'on_hold').length || undefined },
+          ]}
+        />
       </div>
 
       <div role="tabpanel" id={`wallet-panel-${tab}`} aria-labelledby={`wallet-tab-${tab}`}>
-        {tab === 'activity' ?
-        <>
+        {tab === 'activity' ? (
+          <>
             <div className="scroll-quiet overflow-x-auto px-5 pt-4 md:px-6">
               <Segmented<StateFilter>
-              size="sm"
-              ariaLabel={tr('Filter by status')}
-              value={filter}
-              onChange={setFilter}
-              options={[
-              { value: 'all', label: tr('All') },
-              { value: 'available', label: tr('Available') },
-              { value: 'pending', label: tr('Settling') },
-              { value: 'held', label: tr('In escrow') }]
-              } />
-            
+                size="sm"
+                ariaLabel={tr('Filter by status')}
+                value={filter}
+                onChange={setFilter}
+                options={[
+                  { value: 'all', label: tr('All') },
+                  { value: 'available', label: tr('Available') },
+                  { value: 'pending', label: tr('Settling') },
+                  { value: 'held', label: tr('In escrow') },
+                ]}
+              />
             </div>
-            {shown.length === 0 ?
-          <EmptyState className="m-5" icon={LandmarkIcon} title={tr('Nothing here yet')} description={tr('Sales paid into your wallet or through escrow appear here, with payouts and fees.')} /> :
-
-          <ul className="mt-3 divide-y divide-line border-t border-line">
-                {shown.slice(0, 60).map(({ entry, balance }) =>
-            <LedgerRow key={entry.id} entry={entry} balance={balance} />
-            )}
+            {shown.length === 0 ? (
+              <EmptyState className="m-5" icon={LandmarkIcon} title={tr('Nothing here yet')} description={tr('Sales paid into your wallet or through escrow appear here, with payouts and fees.')} />
+            ) : (
+              <ul className="mt-3 divide-y divide-line border-t border-line">
+                {shown.slice(0, 60).map(({ entry, balance }) => (
+                  <LedgerRow key={entry.id} entry={entry} balance={balance} />
+                ))}
               </ul>
-          }
-          </> :
-        data.payouts.length === 0 ?
-        <EmptyState className="m-5" icon={LandmarkIcon} title={tr('No payouts yet')} description={tr('When you pay out, each transfer to your bank shows here with its status.')} /> :
-
-        <ul className="mt-3 divide-y divide-line border-t border-line">
-            {data.payouts.map((p) =>
-          <li key={p.id} className="flex items-center gap-3 px-5 py-3.5 md:px-6">
+            )}
+          </>
+        ) : data.payouts.length === 0 ? (
+          <EmptyState className="m-5" icon={LandmarkIcon} title={tr('No payouts yet')} description={tr('When you pay out, each transfer to your bank shows here with its status.')} />
+        ) : (
+          <ul className="mt-3 divide-y divide-line border-t border-line">
+            {data.payouts.map((p) => (
+              <li key={p.id} className="flex items-center gap-3 px-5 py-3.5 md:px-6">
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-sunken text-fg-muted">
                   <ArrowUpRightIcon size={16} aria-hidden />
                 </span>
@@ -133,9 +133,9 @@ export function WalletLedger({ data }: {data: MoneyData;}) {
                     {formatTimestamp(p.createdAt)} · {tr('by {name}', { name: p.by })}
                     {p.feeNgn ? ` · ${tr('fee {amount}', { amount: formatNgn(p.feeNgn) })}` : ` · ${tr('no fee')}`}
                   </span>
-                  {(p.failureReason || p.holdReason) &&
-              <span className="mt-0.5 block text-caption text-fg-muted">{p.failureReason ? tr(p.failureReason) : tr('KUBICU is checking this payout: {reason}', { reason: p.holdReason ?? '' })}</span>
-              }
+                  {(p.failureReason || p.holdReason) && (
+                    <span className="mt-0.5 block text-caption text-fg-muted">{p.failureReason ? tr(p.failureReason) : tr('KUBICU is checking this payout: {reason}', { reason: p.holdReason ?? '' })}</span>
+                  )}
                 </span>
                 <span className="flex shrink-0 flex-col items-end gap-1">
                   <span className="text-label font-semibold tabular-nums text-fg">{formatNgn(p.amountNgn)}</span>
@@ -144,15 +144,15 @@ export function WalletLedger({ data }: {data: MoneyData;}) {
                   </Badge>
                 </span>
               </li>
-          )}
+            ))}
           </ul>
-        }
+        )}
       </div>
-    </Card>);
-
+    </Card>
+  );
 }
 
-function LedgerRow({ entry, balance }: {entry: LedgerEntry;balance: number;}) {
+function LedgerRow({ entry, balance }: { entry: LedgerEntry; balance: number }) {
   const { t: tr } = useT();
   const credit = entry.amountNgn >= 0;
   return (
@@ -180,6 +180,6 @@ function LedgerRow({ entry, balance }: {entry: LedgerEntry;balance: number;}) {
           <span className="hidden text-caption tabular-nums text-fg-subtle sm:inline">{tr('Bal. {amount}', { amount: formatNgn(balance) })}</span>
         </span>
       </span>
-    </li>);
-
+    </li>
+  );
 }

@@ -12,7 +12,7 @@ import { Button } from '../ui/Button';
  * Shows the match, or adds them as a contact (source "manual", consent transactional — a quote
  * is never marketing consent).
  */
-export function ClientAudienceLink({ client, label, linkedId, canEdit }: {client: ServiceClient;label: string;linkedId: string;canEdit: boolean;}) {
+export function ClientAudienceLink({ client, label, linkedId, canEdit }: { client: ServiceClient; label: string; linkedId: string; canEdit: boolean }) {
   const ops = useOps();
   const match = matchContact(ops.data.contacts, { name: client.name, email: client.email, phone: client.phone });
   const add = () => {
@@ -25,15 +25,15 @@ export function ClientAudienceLink({ client, label, linkedId, canEdit }: {client
         <p className="text-caption text-fg-subtle">In Audience</p>
         <p className="truncate text-label text-fg">{match ? `${match.name} · ${match.tags.length ? match.tags.join(', ') : match.stage}` : 'Not a contact yet'}</p>
       </div>
-      {match ?
-      <Link to={`/app/audience?contact=${match.id}`} className="inline-flex shrink-0 items-center gap-1 text-caption font-semibold text-action hover:underline">
+      {match ? (
+        <Link to={`/app/audience?contact=${match.id}`} className="inline-flex shrink-0 items-center gap-1 text-caption font-semibold text-action hover:underline">
           Open contact <ArrowUpRightIcon size={12} aria-hidden />
-        </Link> :
-
-      <Button size="sm" variant="secondary" leadingIcon={UserPlusIcon} disabled={!canEdit || !client.phone && !client.email} onClick={add}>
+        </Link>
+      ) : (
+        <Button size="sm" variant="secondary" leadingIcon={UserPlusIcon} disabled={!canEdit || (!client.phone && !client.email)} onClick={add}>
           Add
         </Button>
-      }
-    </div>);
-
+      )}
+    </div>
+  );
 }

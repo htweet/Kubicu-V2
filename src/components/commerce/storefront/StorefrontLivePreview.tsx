@@ -64,10 +64,10 @@ export function StorefrontLivePreview({ theme, data, ordering, whatsappPhone }: 
           value={device}
           onChange={setDevice}
           options={[
-          { value: 'phone', label: 'Phone', icon: SmartphoneIcon, iconOnly: true },
-          { value: 'desktop', label: 'Desktop', icon: MonitorIcon, iconOnly: true }]
-          } />
-        
+            { value: 'phone', label: 'Phone', icon: SmartphoneIcon, iconOnly: true },
+            { value: 'desktop', label: 'Desktop', icon: MonitorIcon, iconOnly: true },
+          ]}
+        />
       </div>
       <div ref={outer} role="img" aria-label={label} className={cn('overflow-hidden rounded-lg border border-line', device === 'phone' ? 'bg-sunken py-5' : 'bg-sunken p-3')}>
         <div className="mx-auto" style={{ width: w * scale, height: h * scale }}>
@@ -78,26 +78,26 @@ export function StorefrontLivePreview({ theme, data, ordering, whatsappPhone }: 
               height: h,
               transform: `scale(${scale})`,
               background: theme.background,
-              boxShadow: device === 'phone' ? '0 0 0 7px #1c1c1e, 0 18px 40px -12px rgba(0,0,0,0.35)' : '0 10px 30px -14px rgba(0,0,0,0.3)'
-            }}>
-            
+              boxShadow: device === 'phone' ? '0 0 0 7px #1c1c1e, 0 18px 40px -12px rgba(0,0,0,0.35)' : '0 10px 30px -14px rgba(0,0,0,0.3)',
+            }}
+          >
             <PreviewFrame key={`${device}-${view}`} width={w} height={h} title={label}>
               <div style={{ background: theme.background, color: theme.text, fontFamily: fonts.body, padding: PAD[device], minHeight: h }}>
-                {view === 'product' && first ?
-                <ProductDetailView theme={theme} data={data} product={first} ordering={ordering} whatsappPhone={whatsappPhone} shopHref="#" productHref={() => '#'} shopKey={null} /> :
-                view === 'product' ?
-                <p className="py-16 text-center text-[15px]" style={{ color: theme.mutedText }}>
+                {view === 'product' && first ? (
+                  <ProductDetailView theme={theme} data={data} product={first} ordering={ordering} whatsappPhone={whatsappPhone} shopHref="#" productHref={() => '#'} shopKey={null} />
+                ) : view === 'product' ? (
+                  <p className="py-16 text-center text-[15px]" style={{ color: theme.mutedText }}>
                     Add a product to see its page.
-                  </p> :
-
-                <StorefrontView theme={theme} data={data} productHref={() => '#'} ordering={ordering} whatsappPhone={whatsappPhone} shopKey={null} />
-                }
+                  </p>
+                ) : (
+                  <StorefrontView theme={theme} data={data} productHref={() => '#'} ordering={ordering} whatsappPhone={whatsappPhone} shopKey={null} />
+                )}
               </div>
             </PreviewFrame>
           </div>
         </div>
       </div>
       <p className="text-caption text-fg-subtle">Scroll inside the preview to see the whole {view === 'shop' ? 'shop' : 'page'}. Taps are switched off here.</p>
-    </div>);
-
+    </div>
+  );
 }

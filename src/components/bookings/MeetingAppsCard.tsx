@@ -54,8 +54,8 @@ export function MeetingAppsCard() {
         title="Video calls"
         icon={VideoIcon}
         description="Connect the app you already use. Each online booking then gets its own meeting link, sent with the confirmation and the reminder."
-        actions={<IllustrativeTag note="Preview: no Google, Zoom or Microsoft connection is made in the prototype. Links look real but don’t open a meeting." />}>
-        
+        actions={<IllustrativeTag note="Preview: no Google, Zoom or Microsoft connection is made in the prototype. Links look real but don’t open a meeting." />}
+      >
         <ul className="flex flex-col divide-y divide-line rounded-md border border-line">
           {meetingAppIds.map((app) => {
             const c = connectionFor(av, app);
@@ -65,27 +65,27 @@ export function MeetingAppsCard() {
                 <div className="min-w-0">
                   <p className="flex flex-wrap items-center gap-2 text-label font-semibold text-fg">
                     {meetingApps[app].name}
-                    {c &&
-                    <Badge tone="success" dot>
+                    {c && (
+                      <Badge tone="success" dot>
                         Connected
                       </Badge>
-                    }
+                    )}
                   </p>
                   <p className="text-caption text-fg-subtle">
                     {c ? `${c.account} · connected ${formatRelative(c.connectedAt)}${n ? ` · used by ${n} service${n === 1 ? '' : 's'}` : ' · not used by a service yet'}` : `Not connected`}
                   </p>
                 </div>
-                {c ?
-                <Button size="sm" variant="tertiary" onClick={() => setRemoving(app)}>
+                {c ? (
+                  <Button size="sm" variant="tertiary" onClick={() => setRemoving(app)}>
                     Disconnect
-                  </Button> :
-
-                <Button size="sm" variant="secondary" onClick={() => start(app)}>
+                  </Button>
+                ) : (
+                  <Button size="sm" variant="secondary" onClick={() => start(app)}>
                     Connect
                   </Button>
-                }
-              </li>);
-
+                )}
+              </li>
+            );
           })}
         </ul>
         <p className="mt-3 text-caption text-fg-subtle">Then open Services, pick an online service and choose which app makes its links. Services without one keep the note you wrote.</p>
@@ -98,7 +98,7 @@ export function MeetingAppsCard() {
         title={open ? `Connect ${meetingApps[open].name}` : ''}
         description="You’ll sign in with that app and allow KUBICU to create meetings for your bookings."
         footer={
-        <>
+          <>
             <Button variant="secondary" onClick={() => setOpen(null)} disabled={busy}>
               Cancel
             </Button>
@@ -106,21 +106,21 @@ export function MeetingAppsCard() {
               {busy ? 'Connecting…' : 'Sign in and allow'}
             </Button>
           </>
-        }>
-        
-        {open &&
-        <div className="flex flex-col gap-4">
+        }
+      >
+        {open && (
+          <div className="flex flex-col gap-4">
             <TextInput id="mtg-account" label="Account email" type="email" inputMode="email" value={account} hint={meetingApps[open].accountHint} error={error} onChange={(e) => (setAccount(e.target.value), setError(undefined))} />
             <ul className="flex flex-col gap-2 text-label text-fg">
-              {['Create a meeting when someone books an online service', 'Change or cancel that meeting when the booking moves or is cancelled'].map((p) =>
-            <li key={p} className="flex items-start gap-2">
+              {['Create a meeting when someone books an online service', 'Change or cancel that meeting when the booking moves or is cancelled'].map((p) => (
+                <li key={p} className="flex items-start gap-2">
                   <ShieldCheckIcon size={15} className="mt-0.5 shrink-0 text-action" aria-hidden /> {p}
                 </li>
-            )}
+              ))}
             </ul>
             <p className="text-caption text-fg-muted">KUBICU can’t read your other meetings, chats or recordings.</p>
           </div>
-        }
+        )}
       </Dialog>
 
       <Dialog
@@ -130,25 +130,25 @@ export function MeetingAppsCard() {
         title={removing ? `Disconnect ${meetingApps[removing].name}?` : ''}
         description="New online bookings won’t get links from it. Bookings that already have a link keep it."
         footer={
-        <>
+          <>
             <Button variant="secondary" onClick={() => setRemoving(null)}>
               Cancel
             </Button>
             <Button
-            variant="destructive"
-            onClick={() => {
-              if (!removing) return;
-              const app = removing;
-              apply((d) => ({ ...d, availability: disconnectMeetingApp(d.availability, app) }));
-              setRemoving(null);
-              toast(`${meetingApps[app].name} disconnected`);
-            }}>
-            
+              variant="destructive"
+              onClick={() => {
+                if (!removing) return;
+                const app = removing;
+                apply((d) => ({ ...d, availability: disconnectMeetingApp(d.availability, app) }));
+                setRemoving(null);
+                toast(`${meetingApps[app].name} disconnected`);
+              }}
+            >
               Disconnect
             </Button>
           </>
-        } />
-      
-    </>);
-
+        }
+      />
+    </>
+  );
 }

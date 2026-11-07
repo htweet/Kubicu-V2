@@ -92,8 +92,8 @@ export function ExtensionsTour() {
       try {
         window.localStorage.setItem(tourKey(current.id), 'done');
       } catch {
-
-        /* ignore */}
+        /* ignore */
+      }
       setDone(true);
     };
     window.addEventListener('keydown', onKey);
@@ -106,8 +106,8 @@ export function ExtensionsTour() {
     try {
       window.localStorage.setItem(tourKey(current.id), 'done');
     } catch {
-
-      /* storage full — the tour simply shows again next time */}
+      /* storage full — the tour simply shows again next time */
+    }
     setDone(true);
     if (to) navigate(to);
   };
@@ -138,47 +138,47 @@ export function ExtensionsTour() {
     <div className="fixed inset-0 z-[80]">
       {/* Click shield + dimmer. With a spotlight, the cut-out's own shadow does the dimming. */}
       <div className={cn('absolute inset-0', spotlight ? 'bg-transparent' : 'bg-[rgb(10_10_15/0.6)]')} onClick={() => finish()} aria-hidden />
-      {spotlight &&
-      <div
-        aria-hidden
-        className="pointer-events-none absolute rounded-lg ring-2 ring-action transition-[top,left,width,height] duration-200 ease-out"
-        style={{ top: rect.top - 4, left: rect.left - 4, width: rect.width + 8, height: rect.height + 8, boxShadow: '0 0 0 9999px rgb(10 10 15 / 0.6)' }} />
-
-      }
+      {spotlight && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute rounded-lg ring-2 ring-action transition-[top,left,width,height] duration-200 ease-out"
+          style={{ top: rect.top - 4, left: rect.left - 4, width: rect.width + 8, height: rect.height + 8, boxShadow: '0 0 0 9999px rgb(10 10 15 / 0.6)' }}
+        />
+      )}
 
       {/* Positioning lives on this wrapper so the animated card's transform doesn't fight it. */}
       <div className={cn('absolute', spotlight ? '' : 'inset-0 flex items-center justify-center p-4')} style={spotlight ? { top: cardTop, left: rect.right + 20 } : undefined}>
       <AnimatePresence mode="wait">
         <motion.div
-            key={step}
-            ref={panelRef}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="ext-tour-title"
-            aria-describedby="ext-tour-body"
-            tabIndex={-1}
-            initial={{ opacity: 0, scale: 0.96 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.96 }}
-            transition={{ duration: 0.2, ease: EASE }}
-            className={cn(
-              'relative flex flex-col overflow-hidden rounded-xl border border-line bg-raised shadow-lg focus:outline-none',
-              spotlight ? 'w-[min(360px,calc(100vw-24px))]' : 'max-h-full w-full max-w-[520px]'
-            )}>
-            
+          key={step}
+          ref={panelRef}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="ext-tour-title"
+          aria-describedby="ext-tour-body"
+          tabIndex={-1}
+          initial={{ opacity: 0, scale: 0.96 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.96 }}
+          transition={{ duration: 0.2, ease: EASE }}
+          className={cn(
+            'relative flex flex-col overflow-hidden rounded-xl border border-line bg-raised shadow-lg focus:outline-none',
+            spotlight ? 'w-[min(360px,calc(100vw-24px))]' : 'max-h-full w-full max-w-[520px]',
+          )}
+        >
           <button
-              type="button"
-              onClick={() => finish()}
-              aria-label="Close tour"
-              className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-md text-fg-muted transition-colors duration-150 hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-              
+            type="button"
+            onClick={() => finish()}
+            aria-label="Close tour"
+            className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-md text-fg-muted transition-colors duration-150 hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+          >
             <XIcon size={18} aria-hidden />
           </button>
           <div className="pr-12">
             <Progress step={step} />
           </div>
 
-          {step === 'intro' &&
+          {step === 'intro' && (
             <div className="flex flex-col gap-4 p-6">
               <span className="grid h-11 w-11 place-items-center rounded-md bg-action-soft text-action" aria-hidden>
                 <PuzzleIcon size={22} />
@@ -201,9 +201,9 @@ export function ExtensionsTour() {
                 </Button>
               </div>
             </div>
-            }
+          )}
 
-          {step === 'pick' &&
+          {step === 'pick' && (
             <div className="flex min-h-0 flex-col">
               <div className="px-6 pt-6">
                 <h2 id="ext-tour-title" className="text-heading font-semibold text-fg">
@@ -228,9 +228,9 @@ export function ExtensionsTour() {
                         onClick={() => setChoice(id)}
                         className={cn(
                           'flex items-start gap-3 rounded-lg border p-3 text-left transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
-                          on ? 'border-action bg-action-soft' : 'border-line hover:border-line-strong'
-                        )}>
-                        
+                          on ? 'border-action bg-action-soft' : 'border-line hover:border-line-strong',
+                        )}
+                      >
                         <ExtensionIcon ext={ext} />
                         <span className="min-w-0 flex-1">
                           <span className="flex items-center gap-2">
@@ -242,23 +242,23 @@ export function ExtensionsTour() {
                         <span aria-hidden className={cn('mt-1 grid h-4 w-4 shrink-0 place-items-center rounded-full border-2', on ? 'border-action' : 'border-line-strong')}>
                           {on && <span className="h-1.5 w-1.5 rounded-full bg-action" />}
                         </span>
-                      </button>);
-
+                      </button>
+                    );
                   })}
                 </div>
-                {chosen &&
-                <div className="mt-5 border-t border-line pt-4">
+                {chosen && (
+                  <div className="mt-5 border-t border-line pt-4">
                     <p className="text-label font-semibold text-fg">{chosen.name} will be able to:</p>
                     <ul className="mt-2 flex flex-col gap-1.5">
-                      {chosen.permissions.map((p) =>
-                    <li key={p} className="flex items-start gap-2 text-caption text-fg">
+                      {chosen.permissions.map((p) => (
+                        <li key={p} className="flex items-start gap-2 text-caption text-fg">
                           <ShieldCheckIcon size={14} className="mt-0.5 shrink-0 text-action" aria-hidden />
                           {p}
                         </li>
-                    )}
+                      ))}
                     </ul>
                   </div>
-                }
+                )}
               </div>
               <div className="flex flex-col-reverse gap-2 border-t border-line px-6 py-4 sm:flex-row sm:justify-end">
                 <Button variant="secondary" onClick={() => finish()}>
@@ -267,9 +267,9 @@ export function ExtensionsTour() {
                 <Button onClick={install}>Allow and install {chosen?.name}</Button>
               </div>
             </div>
-            }
+          )}
 
-          {step === 'done' && app &&
+          {step === 'done' && app && (
             <div className="flex flex-col gap-5 p-6">
               <div className="flex items-start gap-3">
                 <CheckCircle2Icon size={26} className="mt-0.5 shrink-0 text-success" aria-hidden />
@@ -292,28 +292,28 @@ export function ExtensionsTour() {
                 <Button variant="secondary" onClick={() => finish()}>
                   Keep browsing Extensions
                 </Button>
-                {appRoute &&
-                <Button data-autofocus onClick={() => finish(appRoute)}>
+                {appRoute && (
+                  <Button data-autofocus onClick={() => finish(appRoute)}>
                     Open {app.name}
                   </Button>
-                }
+                )}
               </div>
             </div>
-            }
+          )}
         </motion.div>
       </AnimatePresence>
       </div>
-    </div>);
-
+    </div>
+  );
 }
 
-function Progress({ step }: {step: Step;}) {
+function Progress({ step }: { step: Step }) {
   const i = step === 'intro' ? 0 : step === 'pick' ? 1 : 2;
   return (
     <div className="flex gap-1 px-6 pt-5" aria-hidden>
-      {[0, 1, 2].map((n) =>
-      <span key={n} className={cn('h-1 flex-1 rounded-full transition-colors duration-200', n <= i ? 'bg-action' : 'bg-line')} />
-      )}
-    </div>);
-
+      {[0, 1, 2].map((n) => (
+        <span key={n} className={cn('h-1 flex-1 rounded-full transition-colors duration-200', n <= i ? 'bg-action' : 'bg-line')} />
+      ))}
+    </div>
+  );
 }

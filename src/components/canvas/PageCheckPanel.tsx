@@ -12,7 +12,7 @@ import { CompositionPanel } from './CompositionPanel';
 const ratingCopy = {
   light: { label: 'Light', tone: 'text-success', note: 'Opens quickly even on 3G.' },
   ok: { label: 'Fair', tone: 'text-warning', note: 'Fine on 4G; slow on 3G.' },
-  heavy: { label: 'Heavy', tone: 'text-danger', note: 'Many visitors on mobile data will wait or give up.' }
+  heavy: { label: 'Heavy', tone: 'text-danger', note: 'Many visitors on mobile data will wait or give up.' },
 } as const;
 
 /** Canvas → Check (D126): accessibility problems and page weight for the page being edited. Translated in D311. */
@@ -49,16 +49,16 @@ export function PageCheckPanel() {
           {findings.length === 0 ? tr('No problems found on this page') : tr('To fix: {fix} · to improve: {improve}', { fix: fixes, improve: findings.length - fixes })}
         </p>
 
-        {findings.length > 0 &&
-        <ul className="mt-3 divide-y divide-line rounded-md border border-line">
-            {findings.map((f) =>
-          <li key={f.id}>
+        {findings.length > 0 && (
+          <ul className="mt-3 divide-y divide-line rounded-md border border-line">
+            {findings.map((f) => (
+              <li key={f.id}>
                 <button
-              type="button"
-              onClick={() => f.blockId && actions.select(f.blockId)}
-              disabled={!f.blockId}
-              className="flex w-full items-start gap-2.5 px-3 py-2.5 text-left transition-colors duration-150 ease-out hover:bg-sunken focus-visible:bg-sunken focus-visible:outline-none disabled:cursor-default disabled:hover:bg-transparent">
-              
+                  type="button"
+                  onClick={() => f.blockId && actions.select(f.blockId)}
+                  disabled={!f.blockId}
+                  className="flex w-full items-start gap-2.5 px-3 py-2.5 text-left transition-colors duration-150 ease-out hover:bg-sunken focus-visible:bg-sunken focus-visible:outline-none disabled:cursor-default disabled:hover:bg-transparent"
+                >
                   <span className={cn('mt-1 size-2 shrink-0 rounded-full', f.level === 'fix' ? 'bg-danger' : 'bg-warning')} aria-hidden />
                   <span className="min-w-0 flex-1">
                     <span className="sr-only">{tr(f.level === 'fix' ? 'Fix:' : 'Improve:')} </span>
@@ -70,9 +70,9 @@ export function PageCheckPanel() {
                   </span>
                 </button>
               </li>
-          )}
+            ))}
           </ul>
-        }
+        )}
         <p className="mt-3 flex gap-1.5 text-caption text-fg-subtle">
           <InfoIcon size={13} className="mt-px shrink-0" aria-hidden />
           {tr('Automatic checks catch common problems only. Try your page with a screen reader before a big launch.')}
@@ -105,17 +105,17 @@ export function PageCheckPanel() {
         </dl>
         <p className="mt-2 text-caption text-fg-subtle">{tr('Estimates at typical mobile speeds and about {price} per GB of data. Videos aren’t counted until tapped.', { price: formatMoney(weight.dataPerGb, weight.dataCurrency) })}</p>
 
-        {weight.items.length > 0 &&
-        <>
+        {weight.items.length > 0 && (
+          <>
             <h3 className="mt-5 text-caption font-semibold text-fg-muted">{tr('Biggest images')}</h3>
             <ul className="mt-2 flex flex-col gap-1.5">
-              {weight.items.slice(0, 5).map((i, n) =>
-            <li key={`${i.blockId}-${n}`}>
+              {weight.items.slice(0, 5).map((i, n) => (
+                <li key={`${i.blockId}-${n}`}>
                   <button
-                type="button"
-                onClick={() => actions.select(i.blockId)}
-                className="flex w-full items-center justify-between gap-3 rounded-sm px-2 py-1.5 text-left text-caption transition-colors duration-150 ease-out hover:bg-sunken focus-visible:bg-sunken focus-visible:outline-none">
-                
+                    type="button"
+                    onClick={() => actions.select(i.blockId)}
+                    className="flex w-full items-center justify-between gap-3 rounded-sm px-2 py-1.5 text-left text-caption transition-colors duration-150 ease-out hover:bg-sunken focus-visible:bg-sunken focus-visible:outline-none"
+                  >
                     <span className="min-w-0 truncate text-fg">{tr(i.label)}</span>
                     <span className={cn('shrink-0 tabular-nums', i.kb > 400 ? 'font-semibold text-danger' : 'text-fg-muted')}>
                       {i.guessed ? '~' : ''}
@@ -123,16 +123,16 @@ export function PageCheckPanel() {
                     </span>
                   </button>
                 </li>
-            )}
+              ))}
             </ul>
-            {weight.items.some((i) => i.kb > 400) &&
-          <p className="mt-2 flex gap-1.5 text-caption text-fg-muted">
+            {weight.items.some((i) => i.kb > 400) && (
+              <p className="mt-2 flex gap-1.5 text-caption text-fg-muted">
                 <LightbulbIcon size={13} className="mt-px shrink-0 text-warning" aria-hidden />
                 {tr('Images over 400 KB are worth replacing. Re-upload from Media — uploads are shrunk automatically.')}
               </p>
-          }
+            )}
           </>
-        }
+        )}
 
         <div className="mt-5 rounded-md bg-sunken p-3">
           <Switch
@@ -140,10 +140,10 @@ export function PageCheckPanel() {
             label={tr('Open in data saver for everyone')}
             description={tr('Photos and videos wait until tapped, so first load is about {size}. Visitors can turn it off.', { size: formatKb(Math.max(140, weight.totalKb - weight.deferredKb)) })}
             checked={lightweight}
-            onChange={(on) => actions.updateBranding({ startLightweight: on })} />
-          
+            onChange={(on) => actions.updateBranding({ startLightweight: on })}
+          />
         </div>
       </section>
-    </div>);
-
+    </div>
+  );
 }

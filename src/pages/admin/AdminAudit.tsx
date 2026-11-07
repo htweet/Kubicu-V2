@@ -20,20 +20,20 @@ export function AdminAudit() {
   const rows = useMemo(() => store.audit.filter((a) => area === 'all' || a.area === area), [store.audit, area]);
 
   const columns: DataColumn<AuditEntry>[] = [
-  { key: 'at', header: 'When', sortValue: (r) => Date.parse(r.at), render: (r) => <span className="whitespace-nowrap text-fg-muted">{formatTimestamp(r.at)}</span> },
-  {
-    key: 'action',
-    header: 'Action',
-    render: (r) =>
-    <span className="min-w-0">
+    { key: 'at', header: 'When', sortValue: (r) => Date.parse(r.at), render: (r) => <span className="whitespace-nowrap text-fg-muted">{formatTimestamp(r.at)}</span> },
+    {
+      key: 'action',
+      header: 'Action',
+      render: (r) => (
+        <span className="min-w-0">
           <span className="block font-semibold text-fg">{r.action}</span>
           <span className="block truncate text-caption text-fg-subtle">{r.target}</span>
         </span>
-
-  },
-  { key: 'reason', header: 'Reason', hideOnMobile: true, render: (r) => <span className="text-fg-muted">{r.reason}</span> },
-  { key: 'actor', header: 'By', hideOnMobile: true, render: (r) => <span className="text-fg-muted">{r.actor}</span> }];
-
+      ),
+    },
+    { key: 'reason', header: 'Reason', hideOnMobile: true, render: (r) => <span className="text-fg-muted">{r.reason}</span> },
+    { key: 'actor', header: 'By', hideOnMobile: true, render: (r) => <span className="text-fg-muted">{r.actor}</span> },
+  ];
 
   return (
     <div className="mx-auto w-full max-w-6xl px-5 py-8 md:px-10 md:py-12">
@@ -41,23 +41,23 @@ export function AdminAudit() {
         title="Audit log"
         description="Every privileged staff action, who did it and why. Entries can’t be edited or deleted."
         actions={
-        <Button variant="secondary" leadingIcon={DownloadIcon} disabled={rows.length === 0} onClick={() => downloadCsv(`kubicu-staff-audit-${new Date().toISOString().slice(0, 10)}.csv`, toCsv(['at', 'area', 'action', 'target', 'reason', 'actor'], rows.map((r) => [r.at, r.area, r.action, r.target, r.reason, r.actor])))}>
+          <Button variant="secondary" leadingIcon={DownloadIcon} disabled={rows.length === 0} onClick={() => downloadCsv(`kubicu-staff-audit-${new Date().toISOString().slice(0, 10)}.csv`, toCsv(['at', 'area', 'action', 'target', 'reason', 'actor'], rows.map((r) => [r.at, r.area, r.action, r.target, r.reason, r.actor])))}>
             Export
           </Button>
-        } />
-      
-      {store.audit.length === 0 ?
-      <div className="mt-8">
+        }
+      />
+      {store.audit.length === 0 ? (
+        <div className="mt-8">
           <EmptyState icon={ScrollTextIcon} title="No staff actions yet" description="Changing a plan, suspending a workspace, switching a flag or taking a page down all appear here." />
-        </div> :
-
-      <div className="mt-8 flex flex-col gap-4">
+        </div>
+      ) : (
+        <div className="mt-8 flex flex-col gap-4">
           <div className="sm:w-56">
             <SelectInput<Area> id="audit-area" label="Area" value={area} onChange={setArea} options={[{ value: 'all', label: 'All areas' }, ...(Object.keys(areaLabels) as AuditEntry['area'][]).map((a) => ({ value: a, label: areaLabels[a] }))]} />
           </div>
           <DataTable caption="Staff audit log" rows={rows} columns={columns} filterText={(r) => `${r.action} ${r.target} ${r.reason}`} filterPlaceholder="Search actions" emptyTitle="No entries match" />
         </div>
-      }
-    </div>);
-
+      )}
+    </div>
+  );
 }

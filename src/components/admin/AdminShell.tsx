@@ -26,55 +26,55 @@ import { Kbd } from '../ui/Kbd';
 import { AdminSearch, useAdminSearchShortcut } from './AdminSearch';
 import { useT } from '../../contexts/LocaleContext';
 
-function AdminNavList({ staff, collapsed, tip, onNavigate }: {staff: StaffMember;collapsed?: boolean;tip?: SideTip;onNavigate?: () => void;}) {
+function AdminNavList({ staff, collapsed, tip, onNavigate }: { staff: StaffMember; collapsed?: boolean; tip?: SideTip; onNavigate?: () => void }) {
   const groups = adminNav.map((g) => ({ ...g, items: g.items.filter((i) => roleCanOpen(staff.role, i.id)) })).filter((g) => g.items.length);
   // D248: each badge repeats the waiting count shown on that area's own page.
   const waiting = useAdminNavCounts();
   const { t } = useT();
   return (
     <div className="flex flex-col gap-6">
-      {groups.map((group) =>
-      <div key={group.label}>
+      {groups.map((group) => (
+        <div key={group.label}>
           <SidebarGroupLabel collapsed={collapsed}>{t(group.label)}</SidebarGroupLabel>
           <ul className="flex flex-col gap-0.5">
-            {group.items.map((item) =>
-          <li key={item.id}>
+            {group.items.map((item) => (
+              <li key={item.id}>
                 <SidebarItem to={`/admin/${item.id}`} label={item.label} icon={item.icon} soon={!item.built} collapsed={collapsed} tip={tip} onNavigate={onNavigate} badge={waiting[item.id] || undefined} />
               </li>
-          )}
+            ))}
           </ul>
         </div>
-      )}
-    </div>);
-
+      ))}
+    </div>
+  );
 }
 
-function ActorCard({ staff, collapsed }: {staff: StaffMember;collapsed?: boolean;}) {
+function ActorCard({ staff, collapsed }: { staff: StaffMember; collapsed?: boolean }) {
   const { t } = useT();
   const role = t(roleInfo(staff.role).label);
-  const initials = staff.name.
-  split(/\s+/).
-  map((p) => p[0]).
-  join('').
-  slice(0, 2).
-  toUpperCase();
+  const initials = staff.name
+    .split(/\s+/)
+    .map((p) => p[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
   return (
     <div className={cn('flex items-center gap-3', collapsed ? 'justify-center' : 'rounded-md border border-line bg-canvas p-2')} title={`${staff.name} · ${role}`}>
       <span aria-hidden className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-inverse text-label font-bold text-fg-inverse">
         {initials}
       </span>
-      {collapsed ?
-      <span className="sr-only">
+      {collapsed ? (
+        <span className="sr-only">
           {staff.name}, {role}
-        </span> :
-
-      <span className="min-w-0 flex-1">
+        </span>
+      ) : (
+        <span className="min-w-0 flex-1">
           <span className="block truncate text-label font-semibold text-fg">{staff.name}</span>
           <span className="block truncate text-caption text-fg-subtle">{role} · {t('two-step on')}</span>
         </span>
-      }
-    </div>);
-
+      )}
+    </div>
+  );
 }
 
 function signOut(staff: StaffMember) {
@@ -83,7 +83,7 @@ function signOut(staff: StaffMember) {
 }
 
 /** Shown when a role opens an area it isn't allowed into (e.g. a bookmarked link). */
-function NoAccess({ staff, area }: {staff: StaffMember;area: string;}) {
+function NoAccess({ staff, area }: { staff: StaffMember; area: string }) {
   const { t } = useT();
   const found = adminNavItems.find((i) => i.id === area)?.label;
   const first = adminNavItems.find((i) => roleCanOpen(staff.role, i.id));
@@ -98,16 +98,16 @@ function NoAccess({ staff, area }: {staff: StaffMember;area: string;}) {
         {t('Your role: {role}.', { role })} {t(roleInfo(staff.role).description)}{' '}
         {t('If you need access, ask a Platform lead to change your role — the change is recorded in the audit log.')}
       </p>
-      {first &&
-      <Link
-        to={`/admin/${first.id}`}
-        className="mt-6 inline-flex h-10 items-center rounded-md border border-line-strong bg-raised px-4 text-label font-medium text-fg transition-colors duration-150 hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-        
+      {first && (
+        <Link
+          to={`/admin/${first.id}`}
+          className="mt-6 inline-flex h-10 items-center rounded-md border border-line-strong bg-raised px-4 text-label font-medium text-fg transition-colors duration-150 hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+        >
           {t('Go to {area}', { area: t(first.label) })}
         </Link>
-      }
-    </div>);
-
+      )}
+    </div>
+  );
 }
 
 function AdminTag() {
@@ -123,11 +123,11 @@ export function AdminShell() {
     <StaffNotificationsProvider staff={staff}>
       <AdminConsole staff={staff} />
       <StaffNotificationsPanel />
-    </StaffNotificationsProvider>);
-
+    </StaffNotificationsProvider>
+  );
 }
 
-function AdminConsole({ staff }: {staff: StaffMember;}) {
+function AdminConsole({ staff }: { staff: StaffMember }) {
   // The staff console reports in naira (D136).
   setActiveCurrency('NGN');
   setActiveCountry('NG');
@@ -159,53 +159,53 @@ function AdminConsole({ staff }: {staff: StaffMember;}) {
       <aside
         className={cn(
           'sticky top-0 hidden h-screen shrink-0 flex-col border-r border-line bg-raised transition-[width] duration-200 ease-out md:flex',
-          collapsed ? 'w-[72px]' : 'w-[264px]'
-        )}>
-        
+          collapsed ? 'w-[72px]' : 'w-[264px]',
+        )}
+      >
         <div className={cn('flex h-16 shrink-0 items-center', collapsed ? 'justify-center' : 'justify-between pl-4 pr-2.5')}>
           <span className="flex items-center gap-2.5">
             <KubicuLogo withWordmark={!collapsed} />
             {!collapsed && <AdminTag />}
           </span>
-          {!collapsed &&
-          <span className="flex items-center gap-0.5">
+          {!collapsed && (
+            <span className="flex items-center gap-0.5">
               <StaffNotificationBell />
               <button
-              type="button"
-              onClick={onToggle}
-              aria-label={toggleLabel}
-              aria-expanded
-              className="flex h-8 w-8 items-center justify-center rounded-md text-fg-subtle transition-colors duration-150 hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-              
+                type="button"
+                onClick={onToggle}
+                aria-label={toggleLabel}
+                aria-expanded
+                className="flex h-8 w-8 items-center justify-center rounded-md text-fg-subtle transition-colors duration-150 hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+              >
                 <ToggleIcon size={18} strokeWidth={2.1} aria-hidden />
               </button>
             </span>
-          }
+          )}
         </div>
 
         <div className={cn('shrink-0 pb-3', collapsed ? 'flex justify-center' : 'px-3')}>
-          {collapsed ?
-          <button
-            type="button"
-            onClick={openSearch}
-            aria-label={`${searchLabel} (Ctrl K)`}
-            onMouseEnter={tip.show(searchLabel)}
-            onMouseLeave={tip.hide}
-            className="flex h-10 w-10 items-center justify-center rounded-md text-fg-muted transition-colors duration-150 hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-            
+          {collapsed ? (
+            <button
+              type="button"
+              onClick={openSearch}
+              aria-label={`${searchLabel} (Ctrl K)`}
+              onMouseEnter={tip.show(searchLabel)}
+              onMouseLeave={tip.hide}
+              className="flex h-10 w-10 items-center justify-center rounded-md text-fg-muted transition-colors duration-150 hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+            >
               <SearchIcon size={20} strokeWidth={2.1} aria-hidden />
-            </button> :
-
-          <button
-            type="button"
-            onClick={openSearch}
-            className="flex h-9 w-full items-center gap-2 rounded-md border border-line bg-canvas px-2.5 text-label text-fg-subtle transition-colors duration-150 hover:border-line-strong hover:text-fg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-            
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={openSearch}
+              className="flex h-9 w-full items-center gap-2 rounded-md border border-line bg-canvas px-2.5 text-label text-fg-subtle transition-colors duration-150 hover:border-line-strong hover:text-fg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+            >
               <SearchIcon size={16} aria-hidden />
               <span className="flex-1 text-left">{searchLabel}</span>
               <Kbd>Ctrl K</Kbd>
             </button>
-          }
+          )}
         </div>
 
         <nav aria-label={t('Super admin')} className={cn('scroll-quiet min-h-0 flex-1 overflow-y-auto pb-4 pt-1', collapsed ? 'px-0' : 'px-3')}>
@@ -223,9 +223,9 @@ function AdminConsole({ staff }: {staff: StaffMember;}) {
             onMouseLeave={tip.hide}
             className={cn(
               'mt-1 flex h-10 items-center gap-3 rounded-md text-label font-medium text-fg-muted transition-colors duration-150 hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
-              collapsed ? 'w-10 justify-center' : 'px-2.5'
-            )}>
-            
+              collapsed ? 'w-10 justify-center' : 'px-2.5',
+            )}
+          >
             <LogOutIcon size={20} strokeWidth={2.1} aria-hidden />
             {!collapsed && signOutLabel}
           </button>
@@ -237,26 +237,26 @@ function AdminConsole({ staff }: {staff: StaffMember;}) {
             onMouseLeave={tip.hide}
             className={cn(
               'mt-1 flex h-10 items-center gap-3 rounded-md text-label font-medium text-fg-muted transition-colors duration-150 hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
-              collapsed ? 'w-10 justify-center' : 'px-2.5'
-            )}>
-            
+              collapsed ? 'w-10 justify-center' : 'px-2.5',
+            )}
+          >
             <ArrowLeftIcon size={20} strokeWidth={2.1} aria-hidden />
             {!collapsed && back}
           </button>
           {collapsed && <StaffNotificationBell size="md" onMouseEnter={tip.show(t('Staff notifications'))} onMouseLeave={tip.hide} />}
-          {collapsed &&
-          <button
-            type="button"
-            onClick={onToggle}
-            aria-label={toggleLabel}
-            aria-expanded={false}
-            onMouseEnter={tip.show(toggleLabel)}
-            onMouseLeave={tip.hide}
-            className="flex h-10 w-10 items-center justify-center rounded-md text-fg-subtle transition-colors duration-150 hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-            
+          {collapsed && (
+            <button
+              type="button"
+              onClick={onToggle}
+              aria-label={toggleLabel}
+              aria-expanded={false}
+              onMouseEnter={tip.show(toggleLabel)}
+              onMouseLeave={tip.hide}
+              className="flex h-10 w-10 items-center justify-center rounded-md text-fg-subtle transition-colors duration-150 hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+            >
               <ToggleIcon size={20} strokeWidth={2.1} aria-hidden />
             </button>
-          }
+          )}
         </div>
         {tip.node}
       </aside>
@@ -289,8 +289,8 @@ function AdminConsole({ staff }: {staff: StaffMember;}) {
               setMenuOpen(false);
               navigate('/app');
             }}
-            className="flex min-h-[48px] items-center gap-3 rounded-md border-t border-line px-2.5 text-body font-medium text-fg-muted hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-            
+            className="flex min-h-[48px] items-center gap-3 rounded-md border-t border-line px-2.5 text-body font-medium text-fg-muted hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+          >
             <ArrowLeftIcon size={20} strokeWidth={2.1} aria-hidden />
             {back}
           </button>
@@ -300,13 +300,13 @@ function AdminConsole({ staff }: {staff: StaffMember;}) {
               setMenuOpen(false);
               signOut(staff);
             }}
-            className="flex min-h-[48px] items-center gap-3 rounded-md px-2.5 text-body font-medium text-fg-muted hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-            
+            className="flex min-h-[48px] items-center gap-3 rounded-md px-2.5 text-body font-medium text-fg-muted hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+          >
             <LogOutIcon size={20} strokeWidth={2.1} aria-hidden />
             {signOutLabel}
           </button>
         </div>
       </Sheet>
-    </div>);
-
+    </div>
+  );
 }

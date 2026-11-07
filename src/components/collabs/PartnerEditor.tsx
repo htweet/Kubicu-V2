@@ -43,7 +43,7 @@ const toForm = (p: Partner | null, defaults: CollabSettings): Form => ({
   rate: p ? String(p.ratePct) : String(defaults.defaultRatePct),
   scope: p?.productIds.length ? 'some' : 'all',
   productIds: p?.productIds ?? [],
-  terms: p?.terms ?? defaults.defaultTerms
+  terms: p?.terms ?? defaults.defaultTerms,
 });
 
 /**
@@ -71,7 +71,7 @@ export function PartnerEditor({ open, partner, partners, products, onClose, onSa
     phone: f.phone.replace(/\D/g, '').length < 10 ? tr('Add a phone number so you can send the invite.') : '',
     code: !/^[A-Z0-9-]{3,20}$/.test(code) ? tr('Use 3–20 letters, numbers or dashes.') : taken.has(code) ? tr('Another partner already uses this code.') : '',
     rate: !Number.isFinite(rate) || rate < 1 || rate > MAX_RATE ? tr('Between 1% and {max}%', { max: MAX_RATE }) : '',
-    products: f.scope === 'some' && !f.productIds.length ? tr('Pick at least one product.') : ''
+    products: f.scope === 'some' && !f.productIds.length ? tr('Pick at least one product.') : '',
   };
   const valid = Object.values(errors).every((e) => !e);
   const set = (p: Partial<Form>) => setF((x) => ({ ...x, ...p }));
@@ -94,7 +94,7 @@ export function PartnerEditor({ open, partner, partners, products, onClose, onSa
       invitedAt: partner?.invitedAt ?? now,
       acceptedAt: partner?.acceptedAt,
       sample: partner?.sample,
-      sampleOrderIds: partner?.sampleOrderIds
+      sampleOrderIds: partner?.sampleOrderIds,
     });
   };
 
@@ -109,14 +109,14 @@ export function PartnerEditor({ open, partner, partners, products, onClose, onSa
       title={partner ? tr('Edit {name}', { name: partner.name }) : tr('Invite a partner')}
       description={tr('Creators, stylists or resellers who share your link and earn a commission on what sells.')}
       footer={
-      <div className="flex w-full justify-end gap-2">
+        <div className="flex w-full justify-end gap-2">
           <Button variant="tertiary" onClick={onClose}>
             {tr('Cancel')}
           </Button>
           <Button onClick={save}>{partner ? tr('Save changes') : tr('Create invite')}</Button>
         </div>
-      }>
-      
+      }
+    >
       <div className="flex flex-col gap-5 px-5 py-5 md:px-6">
         <TextInput id="pt-name" label={tr('Name')} value={f.name} maxLength={60} error={tried ? errors.name : undefined} onChange={(e) => set({ name: e.target.value })} />
         <div className="grid gap-4 sm:grid-cols-2">
@@ -132,8 +132,8 @@ export function PartnerEditor({ open, partner, partners, products, onClose, onSa
             value={code}
             disabled={codeLocked}
             error={tried ? errors.code : undefined}
-            onChange={(e) => set({ code: e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, '') })} />
-          
+            onChange={(e) => set({ code: e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, '') })}
+          />
           <TextInput id="pt-rate" label={tr('Commission')} inputMode="decimal" value={f.rate} error={tried ? errors.rate : undefined} onChange={(e) => set({ rate: e.target.value.replace(/[^0-9.]/g, '') })} />
         </div>
 
@@ -144,33 +144,33 @@ export function PartnerEditor({ open, partner, partners, products, onClose, onSa
             value={f.scope}
             onChange={(v) => set({ scope: v })}
             options={[
-            { value: 'all', label: tr('Every product') },
-            { value: 'some', label: tr('Chosen products') }]
-            } />
-          
-          {f.scope === 'some' &&
-          <fieldset className="flex max-h-56 flex-col gap-1 overflow-y-auto rounded-md border border-line p-2">
+              { value: 'all', label: tr('Every product') },
+              { value: 'some', label: tr('Chosen products') },
+            ]}
+          />
+          {f.scope === 'some' && (
+            <fieldset className="flex max-h-56 flex-col gap-1 overflow-y-auto rounded-md border border-line p-2">
               <legend className="sr-only">{tr('Products')}</legend>
               {sellable.length === 0 && <p className="px-2 py-3 text-caption text-fg-muted">{tr('No products yet.')}</p>}
-              {sellable.map((p) =>
-            <label key={p.id} className="flex min-h-[36px] cursor-pointer items-center gap-3 rounded px-2 text-label text-fg hover:bg-sunken">
+              {sellable.map((p) => (
+                <label key={p.id} className="flex min-h-[36px] cursor-pointer items-center gap-3 rounded px-2 text-label text-fg hover:bg-sunken">
                   <input
-                type="checkbox"
-                className="h-4 w-4 accent-[rgb(var(--action))]"
-                checked={f.productIds.includes(p.id)}
-                onChange={(e) => set({ productIds: e.target.checked ? [...f.productIds, p.id] : f.productIds.filter((x) => x !== p.id) })} />
-              
+                    type="checkbox"
+                    className="h-4 w-4 accent-[rgb(var(--action))]"
+                    checked={f.productIds.includes(p.id)}
+                    onChange={(e) => set({ productIds: e.target.checked ? [...f.productIds, p.id] : f.productIds.filter((x) => x !== p.id) })}
+                  />
                   <span className="min-w-0 flex-1 truncate">{p.name}</span>
                 </label>
-            )}
+              ))}
             </fieldset>
-          }
+          )}
           {tried && errors.products && <p className="text-caption text-danger">{errors.products}</p>}
         </div>
 
         <TextArea id="pt-terms" label={tr('Terms they’ll see')} optional rows={3} maxLength={400} placeholder={tr('e.g. 10% on every sale through your link, paid weekly once delivered.')} value={f.terms} onChange={(e) => set({ terms: e.target.value })} />
         <p className="text-caption text-fg-subtle">{tr('Commission is worked out on what the customer paid for the products, after discounts and refunds. Delivery fees never count.')}</p>
       </div>
-    </Sheet>);
-
+    </Sheet>
+  );
 }

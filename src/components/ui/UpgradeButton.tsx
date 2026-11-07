@@ -18,6 +18,6 @@ export function UpgradeButton({ plan, feature, variant = 'secondary', className 
   return (
     <Button size="sm" variant={variant} leadingIcon={ArrowUpCircleIcon} className={className} onClick={() => openUpgrade({ plan, feature })}>
       Upgrade to {plans[plan].name}
-    </Button>);
-
+    </Button>
+  );
 }

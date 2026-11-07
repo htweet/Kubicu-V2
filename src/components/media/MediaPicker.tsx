@@ -16,7 +16,7 @@ interface MediaPickerProps {
   label: string;
   value: string;
   /** `meta.alt` is the library's default description, when there is one. */
-  onChange: (src: string, meta?: {alt: string;}) => void;
+  onChange: (src: string, meta?: { alt: string }) => void;
   aspect: AspectRatio;
   optional?: boolean;
   error?: string;
@@ -35,7 +35,7 @@ export function MediaPicker({ id, label, value, onChange, aspect, optional, erro
   const media = useOptionalMedia();
   const fileRef = useRef<HTMLInputElement>(null);
   const [libraryOpen, setLibraryOpen] = useState(false);
-  const [crop, setCrop] = useState<{src: string;name: string;alt: string;} | null>(null);
+  const [crop, setCrop] = useState<{ src: string; name: string; alt: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
   const library = !!media?.available;
@@ -47,8 +47,8 @@ export function MediaPicker({ id, label, value, onChange, aspect, optional, erro
   const onPick = (r: PickResult) => {
     setLibraryOpen(false);
     setProblem(null);
-    if (r.crop) startCrop(r.src, r.asset?.name ?? 'Photo', r.alt);else
-    onChange(r.src, { alt: r.alt });
+    if (r.crop) startCrop(r.src, r.asset?.name ?? 'Photo', r.alt);
+    else onChange(r.src, { alt: r.alt });
   };
 
   const onCropped = async (dataUrl: string) => {
@@ -79,15 +79,15 @@ export function MediaPicker({ id, label, value, onChange, aspect, optional, erro
   };
 
   const assetFolder = asset && media ? media.folderOf(asset) : undefined;
-  const defaultHint = asset ?
-  `From your library · ${assetFolder ? `${assetFolder.name} · ` : ''}${asset.name}` :
-  uploaded ?
-  'Stored with this page. Resized for fast loading.' :
-  value ?
-  'Linked from another site.' :
-  library ?
-  'Choose from your uploads, upload a new photo or use a link.' :
-  'JPG, PNG or WebP up to 10 MB.';
+  const defaultHint = asset
+    ? `From your library · ${assetFolder ? `${assetFolder.name} · ` : ''}${asset.name}`
+    : uploaded
+      ? 'Stored with this page. Resized for fast loading.'
+      : value
+        ? 'Linked from another site.'
+        : library
+          ? 'Choose from your uploads, upload a new photo or use a link.'
+          : 'JPG, PNG or WebP up to 10 MB.';
 
   return (
     <Field id={`${id}-choose`} label={label} optional={optional} error={error ?? problem ?? undefined} hint={hint ?? defaultHint}>
@@ -96,32 +96,32 @@ export function MediaPicker({ id, label, value, onChange, aspect, optional, erro
           {busy ? <Loader2Icon size={18} className="animate-spin" aria-label="Processing photo" /> : value ? <MediaImage src={value} alt="" className="h-full w-full object-cover" /> : <ImageIcon size={18} aria-hidden />}
         </span>
         <div className="flex min-w-0 flex-1 flex-wrap gap-1.5">
-          {library ?
-          <Button id={`${id}-choose`} size="sm" variant="secondary" leadingIcon={ImagesIcon} disabled={disabled} onClick={() => setLibraryOpen(true)}>
+          {library ? (
+            <Button id={`${id}-choose`} size="sm" variant="secondary" leadingIcon={ImagesIcon} disabled={disabled} onClick={() => setLibraryOpen(true)}>
               {value ? 'Change' : 'Choose image'}
-            </Button> :
-
-          <>
+            </Button>
+          ) : (
+            <>
               <input ref={fileRef} type="file" accept={ACCEPTED_IMAGE_TYPES.join(',')} className="sr-only" tabIndex={-1} aria-hidden disabled={disabled || busy} onChange={(e) => onDirectFile(e.target.files?.[0])} />
               <Button id={`${id}-choose`} size="sm" variant="secondary" leadingIcon={UploadIcon} disabled={disabled || busy} onClick={() => fileRef.current?.click()}>
                 {value ? 'Replace' : 'Upload'}
               </Button>
             </>
-          }
-          {uploaded &&
-          <Button size="sm" variant="tertiary" leadingIcon={CropIcon} disabled={disabled} onClick={() => startCrop(value, asset?.name ?? 'Photo', asset?.alt ?? '')}>
+          )}
+          {uploaded && (
+            <Button size="sm" variant="tertiary" leadingIcon={CropIcon} disabled={disabled} onClick={() => startCrop(value, asset?.name ?? 'Photo', asset?.alt ?? '')}>
               Crop
             </Button>
-          }
-          {value &&
-          <Button size="sm" variant="tertiary" leadingIcon={Trash2Icon} disabled={disabled} onClick={() => onChange('')} aria-label={`Remove ${label.toLowerCase()}`}>
+          )}
+          {value && (
+            <Button size="sm" variant="tertiary" leadingIcon={Trash2Icon} disabled={disabled} onClick={() => onChange('')} aria-label={`Remove ${label.toLowerCase()}`}>
               Remove
             </Button>
-          }
+          )}
         </div>
       </div>
       {library && <MediaLibraryDialog open={libraryOpen} onClose={() => setLibraryOpen(false)} shapeLabel={aspectLabels[aspect]} folder={folder} onPick={onPick} />}
       <ImageCropDialog open={!!crop} src={crop?.src ?? ''} aspect={aspectValue[aspect]} aspectLabel={aspectLabels[aspect]} onClose={() => setCrop(null)} onCropped={onCropped} />
-    </Field>);
-
+    </Field>
+  );
 }

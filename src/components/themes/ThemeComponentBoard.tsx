@@ -8,7 +8,7 @@ import { accentOf, borderColor, buttonStyle, cardStyle, headingStyle, imageFrame
  * Every component the theme styles, in every state that can be shown statically (D164).
  * Rendered on the theme's own surface so glass, depth and contrast read as they would on a page.
  */
-export function ThemeComponentBoard({ theme }: {theme: PageTheme;}) {
+export function ThemeComponentBoard({ theme }: { theme: PageTheme }) {
   const m = theme.material;
   const error = m?.error ?? '#C0392B';
   const focus = m?.focus ?? theme.accent;
@@ -66,36 +66,36 @@ export function ThemeComponentBoard({ theme }: {theme: PageTheme;}) {
 
         <Group label="Photo frame" theme={theme}>
           <img
-            src="/43e71e50-b63a-4a2f-8a21-e99e84704b0e.jpg"
+            src="https://cdn.magicpatterns.com/patterns/generated-images/43e71e50-b63a-4a2f-8a21-e99e84704b0e.jpg"
             alt="Sample photo in the theme's frame"
             className="aspect-[16/9] w-full object-cover"
-            style={{ borderRadius: cardStyle(theme).borderRadius as number ?? 12, ...imageFrameStyle(theme) }} />
-          
+            style={{ borderRadius: (cardStyle(theme).borderRadius as number) ?? 12, ...imageFrameStyle(theme) }}
+          />
         </Group>
       </PageSurface>
-    </div>);
-
+    </div>
+  );
 }
 
-function Group({ label, theme, children }: {label: string;theme: PageTheme;children: React.ReactNode;}) {
+function Group({ label, theme, children }: { label: string; theme: PageTheme; children: React.ReactNode }) {
   return (
     <section>
       <h4 className="mb-2.5 text-[12px] font-semibold" style={{ color: theme.mutedText }}>{label}</h4>
       {children}
-    </section>);
-
+    </section>
+  );
 }
 
-function State({ label, children }: {label: string;children: React.ReactNode;}) {
+function State({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <span className="inline-flex flex-col items-start gap-1">
       {children}
       <span className="text-[11px] opacity-70">{label}</span>
-    </span>);
-
+    </span>
+  );
 }
 
-function Input({ theme, label, placeholder, value, style, hint, hintColor }: {theme: PageTheme;label: string;placeholder?: string;value?: string;style?: React.CSSProperties;hint?: string;hintColor?: string;}) {
+function Input({ theme, label, placeholder, value, style, hint, hintColor }: { theme: PageTheme; label: string; placeholder?: string; value?: string; style?: React.CSSProperties; hint?: string; hintColor?: string }) {
   return (
     <span className="flex flex-col gap-1">
       <span className="text-[12px] font-medium" style={{ color: theme.mutedText }}>{label}</span>
@@ -103,6 +103,6 @@ function Input({ theme, label, placeholder, value, style, hint, hintColor }: {th
         <span style={{ color: value ? theme.text : theme.mutedText }}>{value ?? placeholder}</span>
       </span>
       {hint && <span className="text-[12px] font-medium" style={{ color: hintColor }}>{hint}</span>}
-    </span>);
-
+    </span>
+  );
 }

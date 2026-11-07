@@ -41,8 +41,8 @@ export interface ExtensionSubmission {
 
 export type SubmissionFields = Pick<
   ExtensionSubmission,
-  'name' | 'summary' | 'description' | 'category' | 'adds' | 'scopes' | 'events' | 'appUrl' | 'supportEmail' | 'privacyUrl' | 'priceNgn' | 'minPlan' | 'version' | 'releaseNotes'>;
-
+  'name' | 'summary' | 'description' | 'category' | 'adds' | 'scopes' | 'events' | 'appUrl' | 'supportEmail' | 'privacyUrl' | 'priceNgn' | 'minPlan' | 'version' | 'releaseNotes'
+>;
 
 export interface SubmissionStore {
   submissions: ExtensionSubmission[];

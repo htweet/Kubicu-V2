@@ -19,7 +19,7 @@ interface SiteNavProps {
 export function SiteNav({ theme, title, items, activeId, hrefFor, onSelect }: SiteNavProps) {
   const pill = (active: boolean): React.CSSProperties => ({
     background: active ? theme.text : 'transparent',
-    color: active ? theme.background : theme.mutedText
+    color: active ? theme.background : theme.mutedText,
   });
   const cls = 'inline-flex h-9 shrink-0 items-center whitespace-nowrap rounded-full px-3.5 text-[14px] font-medium transition-opacity duration-150 hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1';
 
@@ -33,11 +33,11 @@ export function SiteNav({ theme, title, items, activeId, hrefFor, onSelect }: Si
           {items.map((item) => {
             const active = item.id === activeId;
             if (hrefFor)
-            return (
-              <Link key={item.id ?? 'home'} to={hrefFor(item)} aria-current={active ? 'page' : undefined} className={cls} style={pill(active)}>
+              return (
+                <Link key={item.id ?? 'home'} to={hrefFor(item)} aria-current={active ? 'page' : undefined} className={cls} style={pill(active)}>
                   {item.label}
-                </Link>);
-
+                </Link>
+              );
             return (
               <button
                 key={item.id ?? 'home'}
@@ -48,14 +48,14 @@ export function SiteNav({ theme, title, items, activeId, hrefFor, onSelect }: Si
                   onSelect?.(item.id);
                 }}
                 className={cls}
-                style={pill(active)}>
-                
+                style={pill(active)}
+              >
                 {item.label}
-              </button>);
-
+              </button>
+            );
           })}
         </nav>
       </div>
-    </header>);
-
+    </header>
+  );
 }

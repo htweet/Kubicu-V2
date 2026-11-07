@@ -58,7 +58,7 @@ export function ConfirmMoneyDialog({ open, title, summary, confirmLabel, onClose
       size="sm"
       title={title}
       footer={
-      <>
+        <>
           <Button variant="secondary" onClick={onClose}>
             Cancel
           </Button>
@@ -66,8 +66,8 @@ export function ConfirmMoneyDialog({ open, title, summary, confirmLabel, onClose
             {confirmLabel}
           </Button>
         </>
-      }>
-      
+      }
+    >
       <form onSubmit={submit} className="flex flex-col gap-4" noValidate>
         <p className="flex items-start gap-2 text-label text-fg-muted">
           <ShieldCheckIcon size={16} className="mt-0.5 shrink-0 text-success" aria-hidden />
@@ -83,12 +83,12 @@ export function ConfirmMoneyDialog({ open, title, summary, confirmLabel, onClose
           value={code}
           onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
           error={codeError}
-          hint="From your authenticator app. Prototype: any 6 digits except 000000." />
-        
+          hint="From your authenticator app. Prototype: any 6 digits except 000000."
+        />
         <button type="submit" className="sr-only">
           {confirmLabel}
         </button>
       </form>
-    </Dialog>);
-
+    </Dialog>
+  );
 }

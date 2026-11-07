@@ -38,7 +38,7 @@ export function shotFor(a: HelpArticle): HelpShot | null {
     nav: canvas ? undefined : parts[0] === 'Growth' ? parts[1] : parts[0],
     path: canvas ? undefined : parts.length > 1 ? a.where : undefined,
     title: parts[parts.length - 1],
-    items: a.steps.slice(0, 5).map((s, i) => ({ kind: 'row' as const, label: shorten(s), marker: i + 1 }))
+    items: a.steps.slice(0, 5).map((s, i) => ({ kind: 'row' as const, label: shorten(s), marker: i + 1 })),
   };
 }
 

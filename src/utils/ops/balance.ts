@@ -37,7 +37,7 @@ export const balanceLabels: Record<BalanceState, string> = {
   upcoming: 'Balance not due yet',
   due: 'Balance due',
   overdue: 'Balance overdue',
-  paid: 'Balance paid'
+  paid: 'Balance paid',
 };
 
 export function payBookingBalance(d: OpsData, bookingId: string, how: 'online' | 'recorded'): OpsData {
@@ -52,8 +52,8 @@ export function payBookingBalance(d: OpsData, bookingId: string, how: 'online' |
         balancePaidNgn: amount,
         balancePaidAt: at,
         balancePaidHow: how,
-        events: [...b.events, { id: uid('bev'), at, label: how === 'online' ? 'Balance paid online (test mode)' : 'Balance recorded as paid by the business' }]
+        events: [...b.events, { id: uid('bev'), at, label: how === 'online' ? 'Balance paid online (test mode)' : 'Balance recorded as paid by the business' }],
       };
-    })
+    }),
   };
 }

@@ -51,11 +51,11 @@ export interface Listing {
   worksWith: ModuleConnection[];
   limitations: string[];
   version?: string;
-  versions?: {version: string;date: string;notes: string;}[];
+  versions?: { version: string; date: string; notes: string }[];
   /** Newest change, for "Newly added" sorting. */
   updated: string;
   /** Where to act on it inside the product. */
-  action: {label: string;to: string;};
+  action: { label: string; to: string };
   /** Words search matches against. */
   keywords: string;
   ext?: ExtensionInfo;
@@ -95,15 +95,15 @@ function fromExtension(e: ExtensionInfo): Listing {
     dataAccess: e.permissions.filter((p) => /read|see|count|sync|send|copy|match|record|save/i.test(p)),
     worksWith: e.worksWith ?? [],
     limitations: [
-    ...(e.preview ? ['Preview only in this version: it shows what it would do, and nothing is sent to an outside service.'] : []),
-    `If you uninstall: ${e.uninstallNote}`],
-
+      ...(e.preview ? ['Preview only in this version: it shows what it would do, and nothing is sent to an outside service.'] : []),
+      `If you uninstall: ${e.uninstallNote}`,
+    ],
     version: e.version,
     versions: e.versions,
     updated: e.versions[0]?.date ?? LAUNCH,
     action: { label: 'Install', to: `/app/extensions?ext=${e.id}` },
     keywords: [e.name, e.summary, e.description, extensionCategories[e.category], ...e.adds].join(' '),
-    ext: e
+    ext: e,
   };
 }
 
@@ -129,14 +129,14 @@ function fromTemplate(e: ExamplePage): Listing {
     dataAccess: [],
     worksWith: [],
     limitations: [
-    'Sample names, photos and figures are illustrative and are removed when you use it.',
-    ...(e.elite?.goodToKnow ?? []),
-    ...(price > 0 ? ['Bought once per workspace (test mode).'] : [])],
-
+      'Sample names, photos and figures are illustrative and are removed when you use it.',
+      ...(e.elite?.goodToKnow ?? []),
+      ...(price > 0 ? ['Bought once per workspace (test mode).'] : []),
+    ],
     updated: LAUNCH,
     action: { label: 'Preview template', to: `/templates/${e.id}` },
     keywords: [e.name, e.category, e.bestFor, e.description, e.city, kind].join(' '),
-    example: e
+    example: e,
   };
 }
 
@@ -164,7 +164,7 @@ function fromTheme(t: SignatureTheme): Listing {
     updated: LAUNCH,
     action: { label: 'Try on a page', to: `/templates?tab=themes` },
     keywords: [t.name, t.personality, themeMoodLabels[t.mood], 'theme colour color'].join(' '),
-    theme: t
+    theme: t,
   };
 }
 
@@ -191,7 +191,7 @@ function fromSection(s: SectionPreset): Listing {
     updated: LAUNCH,
     action: { label: 'Use in canvas', to: '/app/canvas' },
     keywords: [s.name, s.description, s.shape, s.group].join(' '),
-    section: s
+    section: s,
   };
 }
 
@@ -219,7 +219,7 @@ function blockPacks(): Listing[] {
       limitations: entries.filter((e) => e.note).slice(0, 3).map((e) => `${e.name}: ${e.note}`),
       updated: LAUNCH,
       action: { label: 'Open the canvas', to: '/app/canvas' },
-      keywords: [c.label, c.description, ...entries.map((e) => e.name)].join(' ')
+      keywords: [c.label, c.description, ...entries.map((e) => e.name)].join(' '),
     };
   });
 }
@@ -244,14 +244,14 @@ function fromRecipe(r: Recipe): Listing {
     permissions: ['Run on the event it watches', 'Send the messages written in its steps'],
     dataAccess: ['The contact or order that started it'],
     worksWith: [
-    { module: 'automations', how: 'Added as a draft automation' },
-    { module: r.group === 'bookings' ? 'bookings' : r.group === 'audience' ? 'audience' : 'orders', how: 'Watches events from here' }],
-
+      { module: 'automations', how: 'Added as a draft automation' },
+      { module: r.group === 'bookings' ? 'bookings' : r.group === 'audience' ? 'audience' : 'orders', how: 'Watches events from here' },
+    ],
     limitations: [...(r.needs ? [`Needs: ${r.needs}`] : []), 'WhatsApp and email steps are previews until a messaging partner is connected.'],
     updated: LAUNCH,
     action: { label: 'Add as draft', to: `/app/automations?recipe=${r.id}` },
     keywords: [r.name, r.description, group, 'automation workflow'].join(' '),
-    recipe: r
+    recipe: r,
   };
 }
 
@@ -271,55 +271,55 @@ function fromKit(k: BusinessKit): Listing {
     minPlan: 'free',
     status: 'available',
     inside: [
-    'A matching page layout',
-    ...(k.products.length ? [`${k.products.length} starter products (no prices)`] : []),
-    ...(k.services.length ? [`${k.services.length} starter services (switched off)`] : []),
-    'Draft policies to review',
-    ...(k.recipes.length ? [`${k.recipes.length} automations as drafts`] : []),
-    ...(k.apps.length ? [`Free apps: ${k.apps.join(', ')}`] : [])],
-
+      'A matching page layout',
+      ...(k.products.length ? [`${k.products.length} starter products (no prices)`] : []),
+      ...(k.services.length ? [`${k.services.length} starter services (switched off)`] : []),
+      'Draft policies to review',
+      ...(k.recipes.length ? [`${k.recipes.length} automations as drafts`] : []),
+      ...(k.apps.length ? [`Free apps: ${k.apps.join(', ')}`] : []),
+    ],
     permissions: ['Add a page draft, products, services, policies and automations — each one listed before you apply'],
     dataAccess: [],
     worksWith: [
-    { module: 'pages', how: 'Sets up the page layout' },
-    ...(k.products.length ? [{ module: 'products' as const, how: 'Adds starter products as drafts' }] : []),
-    ...(k.services.length ? [{ module: 'bookings' as const, how: 'Adds starter services, switched off' }] : []),
-    ...(k.recipes.length ? [{ module: 'automations' as const, how: 'Adds automations as drafts' }] : [])],
-
+      { module: 'pages', how: 'Sets up the page layout' },
+      ...(k.products.length ? [{ module: 'products' as const, how: 'Adds starter products as drafts' }] : []),
+      ...(k.services.length ? [{ module: 'bookings' as const, how: 'Adds starter services, switched off' }] : []),
+      ...(k.recipes.length ? [{ module: 'automations' as const, how: 'Adds automations as drafts' }] : []),
+    ],
     limitations: ['Kits never invent facts: no prices, and policies are drafts that need your review.', 'Applying can be undone from the kit’s card.'],
     updated: LAUNCH,
     action: { label: 'Apply in workspace', to: '/app/templates?tab=kits' },
     keywords: [k.name, k.forWho, k.summary, 'kit business in a box'].join(' '),
-    kit: k
+    kit: k,
   };
 }
 
 function plannedAi(): Listing[] {
-  return blockCatalog.
-  filter((b) => b.kind === 'planned').
-  map((b) => ({
-    slug: `ai-${b.n}`,
-    kind: 'ai' as const,
-    title: b.name,
-    summary: b.note ?? 'Planned',
-    description: `${b.name} is planned and can’t be installed yet. ${b.note ?? ''} When it arrives it will name the provider it uses and exactly what it sends there.`,
-    publisher: 'KUBICU',
-    verified: 'kubicu' as const,
-    group: 'Planned',
-    icon: listingKindById.ai.icon,
-    priceNgn: 0,
-    priceLabel: 'Not available yet',
-    minPlan: 'free' as WorkspacePlan,
-    status: 'planned' as const,
-    inside: [],
-    permissions: [],
-    dataAccess: [],
-    worksWith: [],
-    limitations: ['Not available in any plan yet.'],
-    updated: LAUNCH,
-    action: { label: 'See the roadmap', to: '/about/roadmap' },
-    keywords: [b.name, b.note ?? '', 'ai planned'].join(' ')
-  }));
+  return blockCatalog
+    .filter((b) => b.kind === 'planned')
+    .map((b) => ({
+      slug: `ai-${b.n}`,
+      kind: 'ai' as const,
+      title: b.name,
+      summary: b.note ?? 'Planned',
+      description: `${b.name} is planned and can’t be installed yet. ${b.note ?? ''} When it arrives it will name the provider it uses and exactly what it sends there.`,
+      publisher: 'KUBICU',
+      verified: 'kubicu' as const,
+      group: 'Planned',
+      icon: listingKindById.ai.icon,
+      priceNgn: 0,
+      priceLabel: 'Not available yet',
+      minPlan: 'free' as WorkspacePlan,
+      status: 'planned' as const,
+      inside: [],
+      permissions: [],
+      dataAccess: [],
+      worksWith: [],
+      limitations: ['Not available in any plan yet.'],
+      updated: LAUNCH,
+      action: { label: 'See the roadmap', to: '/about/roadmap' },
+      keywords: [b.name, b.note ?? '', 'ai planned'].join(' '),
+    }));
 }
 
 let cache: Listing[] | null = null;
@@ -327,15 +327,15 @@ let cache: Listing[] | null = null;
 export function allListings(): Listing[] {
   if (cache) return cache;
   cache = [
-  ...extensions.filter((e) => !e.retired).map(fromExtension),
-  ...examplePages.map(fromTemplate),
-  ...signatureThemes.map(fromTheme),
-  ...blockPacks(),
-  ...sectionPresets.map(fromSection),
-  ...recipes.map(fromRecipe),
-  ...businessKits.map(fromKit),
-  ...plannedAi()];
-
+    ...extensions.filter((e) => !e.retired).map(fromExtension),
+    ...examplePages.map(fromTemplate),
+    ...signatureThemes.map(fromTheme),
+    ...blockPacks(),
+    ...sectionPresets.map(fromSection),
+    ...recipes.map(fromRecipe),
+    ...businessKits.map(fromKit),
+    ...plannedAi(),
+  ];
   return cache;
 }
 
@@ -363,8 +363,8 @@ export function sortListings(list: Listing[], sort: ListingSort): Listing[] {
 }
 
 export function relatedListings(l: Listing, n = 3): Listing[] {
-  return allListings().
-  filter((o) => o.slug !== l.slug && o.kind === l.kind && o.status !== 'planned').
-  sort((a, b) => Number(b.group === l.group) - Number(a.group === l.group)).
-  slice(0, n);
+  return allListings()
+    .filter((o) => o.slug !== l.slug && o.kind === l.kind && o.status !== 'planned')
+    .sort((a, b) => Number(b.group === l.group) - Number(a.group === l.group))
+    .slice(0, n);
 }

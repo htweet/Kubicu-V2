@@ -33,8 +33,8 @@ export function ArtworkCollection({ templates, hrefFor, onOpen }: ArtworkCollect
         </p>
       </div>
       <ul className="scroll-quiet -mx-1 mt-8 flex snap-x gap-5 overflow-x-auto px-1 pb-3">
-        {list.map((t) =>
-        <li key={t.id} className="flex w-[200px] shrink-0 snap-start flex-col">
+        {list.map((t) => (
+          <li key={t.id} className="flex w-[200px] shrink-0 snap-start flex-col">
             <Link to={hrefFor(t)} onClick={open(t)} className="group block rounded-[24px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
               <span className="block transition-transform duration-150 ease-out group-hover:-translate-y-0.5">
                 <TemplateThumb doc={t.doc} width={200} height={360} />
@@ -48,8 +48,8 @@ export function ArtworkCollection({ templates, hrefFor, onOpen }: ArtworkCollect
             </div>
             <p className="mt-0.5 truncate text-caption text-fg-subtle">{t.artwork!.art} · {t.bestFor}</p>
           </li>
-        )}
+        ))}
       </ul>
-    </section>);
-
+    </section>
+  );
 }

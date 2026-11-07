@@ -44,12 +44,12 @@ export function CopilotWeb() {
   }, [openId, session.id, setParams]);
 
   const setChatsOpen = (on: boolean) =>
-  setParams((p) => {
-    const next = new URLSearchParams(p);
-    if (on) next.set('view', 'chats');else
-    next.delete('view');
-    return next;
-  }, { replace: !on });
+    setParams((p) => {
+      const next = new URLSearchParams(p);
+      if (on) next.set('view', 'chats');
+      else next.delete('view');
+      return next;
+    }, { replace: !on });
 
   const newChat = () => {
     restart();
@@ -65,14 +65,14 @@ export function CopilotWeb() {
   useEffect(() => {
     const start = params.get('start');
     if (!start) return;
-    if (session.messages.length > 1) restart();else
-    send({ kind: 'text', text: start.slice(0, 400) });
+    if (session.messages.length > 1) restart();
+    else send({ kind: 'text', text: start.slice(0, 400) });
     if (session.messages.length <= 1) setParams({}, { replace: true });
   }, [params, session.messages.length, restart, send, setParams]);
 
   // When a fresh draft lands on a phone, show it.
   useEffect(() => {
-    if (session.stage === 'ready' && draft) setTab((t) => window.matchMedia('(min-width: 1024px)').matches ? t : 'preview');
+    if (session.stage === 'ready' && draft) setTab((t) => (window.matchMedia('(min-width: 1024px)').matches ? t : 'preview'));
   }, [session.stage, draft?.revisions, draft]);
 
   const onReply = (r: CopilotReply) => {
@@ -110,37 +110,37 @@ export function CopilotWeb() {
             <span className="hidden whitespace-nowrap text-caption text-fg-subtle xl:block">
               {tr('Free drafts left today: {n} of {total}', { n: limits.drafts, total: 3 })}
             </span>
-            {confirmRestart ?
-            <span className="flex items-center gap-1.5">
+            {confirmRestart ? (
+              <span className="flex items-center gap-1.5">
                 <button type="button" onClick={newChat} className="h-9 whitespace-nowrap rounded-full bg-action px-3 text-label font-semibold text-action-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
                   {tr('Start a new chat')}
                 </button>
                 <button type="button" onClick={() => setConfirmRestart(false)} className="h-9 whitespace-nowrap rounded-full px-3 text-label text-fg-muted hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
                   {tr('Keep this one')}
                 </button>
-              </span> :
-
-            <button type="button" onClick={() => setConfirmRestart(true)} className="inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-label font-medium text-fg-muted hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+              </span>
+            ) : (
+              <button type="button" onClick={() => setConfirmRestart(true)} className="inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-label font-medium text-fg-muted hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
                 <RotateCcwIcon size={15} aria-hidden /> <span className="whitespace-nowrap">{tr('Start over')}</span>
               </button>
-            }
+            )}
           </div>
         </header>
 
         <div role="tablist" aria-label={tr('View')} className="flex shrink-0 gap-1 border-b border-line p-1.5 lg:hidden">
-          {(['chat', 'preview'] as const).map((t) =>
-          <button
-            key={t}
-            role="tab"
-            type="button"
-            aria-selected={tab === t}
-            disabled={t === 'preview' && !draft}
-            onClick={() => setTab(t)}
-            className={cn('h-10 flex-1 rounded-full text-label font-semibold transition-colors duration-150 disabled:opacity-40', tab === t ? 'bg-raised text-fg shadow-1' : 'text-fg-muted')}>
-            
+          {(['chat', 'preview'] as const).map((t) => (
+            <button
+              key={t}
+              role="tab"
+              type="button"
+              aria-selected={tab === t}
+              disabled={t === 'preview' && !draft}
+              onClick={() => setTab(t)}
+              className={cn('h-10 flex-1 rounded-full text-label font-semibold transition-colors duration-150 disabled:opacity-40', tab === t ? 'bg-raised text-fg shadow-1' : 'text-fg-muted')}
+            >
               {tr(t === 'chat' ? 'Chat' : 'Preview')}
             </button>
-          )}
+          ))}
         </div>
 
         <div className="grid min-h-0 flex-1 lg:grid-cols-[minmax(0,1fr)_minmax(420px,0.8fr)]">
@@ -157,8 +157,8 @@ export function CopilotWeb() {
                   stage={session.stage}
                   onText={(text) => send({ kind: 'text', text })}
                   onSkip={() => send({ kind: 'skip' })}
-                  onPhotos={addPhotos} />
-                
+                  onPhotos={addPhotos}
+                />
                 <p className="mt-2 flex items-center gap-1.5 text-caption text-fg-subtle">
                   <FlaskConicalIcon size={12} aria-hidden className="shrink-0" /> {tr('Prototype: replies follow written rules, not a live AI model, and everything stays in this browser.')}
                 </p>
@@ -167,8 +167,8 @@ export function CopilotWeb() {
           </main>
 
           <aside aria-label={tr('Draft preview')} className={cn('min-h-0 flex-col items-center justify-center gap-4 border-l border-line bg-sunken/50 p-6', tab === 'preview' ? 'flex' : 'hidden lg:flex')}>
-            {draft ?
-            <>
+            {draft ? (
+              <>
                 <div className="flex w-full max-w-[390px] items-center justify-between">
                   <p className="text-label font-semibold text-fg">
                     {draft.doc.title} <span className="font-normal text-fg-subtle">· {tr('draft, not published')}</span>
@@ -187,10 +187,10 @@ export function CopilotWeb() {
                     <TemplateLivePreview doc={draft.doc} plan="creator" device="phone" name={draft.doc.title} height={Math.min(680, typeof window === 'undefined' ? 640 : window.innerHeight - 200)} />
                   </motion.div>
                 </AnimatePresence>
-              </> :
-
-            <EmptyPreview generating={session.stage === 'generating'} label={tr(session.stage === 'generating' ? 'Putting your page together…' : 'Your draft appears here once you confirm the brief.')} />
-            }
+              </>
+            ) : (
+              <EmptyPreview generating={session.stage === 'generating'} label={tr(session.stage === 'generating' ? 'Putting your page together…' : 'Your draft appears here once you confirm the brief.')} />
+            )}
           </aside>
         </div>
       </div>
@@ -202,22 +202,22 @@ export function CopilotWeb() {
         onOpenChat={(id) => {
           setParams({ c: id }, { replace: true });
         }}
-        onNewChat={newChat} />
-      
+        onNewChat={newChat}
+      />
 
       <AnimatePresence>
-        {full && draft &&
-        <motion.div
-          role="dialog"
-          aria-modal="true"
-          aria-label={tr('Preview of {title}', { title: draft.doc.title })}
-          className="fixed inset-0 z-50 flex flex-col bg-canvas"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2, ease }}
-          onKeyDown={(e) => e.key === 'Escape' && setFull(null)}>
-          
+        {full && draft && (
+          <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-label={tr('Preview of {title}', { title: draft.doc.title })}
+            className="fixed inset-0 z-50 flex flex-col bg-canvas"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2, ease }}
+            onKeyDown={(e) => e.key === 'Escape' && setFull(null)}
+          >
             <div className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-line px-4">
               <p className="truncate text-label text-fg">
                 <span className="font-semibold">{tr('Draft')}</span> · {tr('not published · only people you share it with can see it')}
@@ -238,13 +238,13 @@ export function CopilotWeb() {
               <TemplateLivePreview doc={draft.doc} plan="creator" device={full} name={draft.doc.title} height={typeof window === 'undefined' ? 700 : window.innerHeight - 100} />
             </div>
           </motion.div>
-        }
+        )}
       </AnimatePresence>
-    </PlatformLook>);
-
+    </PlatformLook>
+  );
 }
 
-function EmptyPreview({ generating, label }: {generating: boolean;label: string;}) {
+function EmptyPreview({ generating, label }: { generating: boolean; label: string }) {
   return (
     <div className="flex flex-col items-center gap-5 text-center">
       <div aria-hidden className="flex h-[360px] w-[190px] flex-col gap-3 rounded-[30px] border-[6px] border-line-strong bg-raised p-4">
@@ -255,6 +255,6 @@ function EmptyPreview({ generating, label }: {generating: boolean;label: string;
         <div className={cn('h-16 rounded-xl bg-sunken', generating && 'animate-pulse')} />
       </div>
       <p className="max-w-[260px] text-label text-fg-muted">{label}</p>
-    </div>);
-
+    </div>
+  );
 }

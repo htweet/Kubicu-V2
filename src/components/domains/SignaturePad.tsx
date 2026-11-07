@@ -3,10 +3,10 @@ import { EraserIcon } from 'lucide-react';
 import { Button } from '../ui/Button';
 
 /** Draw a signature with finger, pen or mouse; saved as a transparent PNG (D118). */
-export function SignaturePad({ onSave, onCancel }: {onSave: (dataUrl: string, widthPx: number) => void;onCancel: () => void;}) {
+export function SignaturePad({ onSave, onCancel }: { onSave: (dataUrl: string, widthPx: number) => void; onCancel: () => void }) {
   const ref = useRef<HTMLCanvasElement>(null);
   const drawing = useRef(false);
-  const last = useRef<{x: number;y: number;} | null>(null);
+  const last = useRef<{ x: number; y: number } | null>(null);
   const [empty, setEmpty] = useState(true);
 
   useEffect(() => {
@@ -77,8 +77,8 @@ export function SignaturePad({ onSave, onCancel }: {onSave: (dataUrl: string, wi
           onPointerDown={down}
           onPointerMove={move}
           onPointerUp={up}
-          onPointerLeave={up} />
-        
+          onPointerLeave={up}
+        />
         <span aria-hidden className="pointer-events-none absolute bottom-7 left-6 right-6 border-b border-dashed border-neutral-300" />
         {empty && <span className="pointer-events-none absolute inset-x-0 top-3 text-center text-caption text-neutral-400">Sign here</span>}
       </div>
@@ -96,6 +96,6 @@ export function SignaturePad({ onSave, onCancel }: {onSave: (dataUrl: string, wi
         </div>
       </div>
       <p className="text-caption text-fg-subtle">Drawing with a mouse is hard — on a phone, use your finger. Or upload a photo of your signature on white paper.</p>
-    </div>);
-
+    </div>
+  );
 }

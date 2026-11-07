@@ -30,13 +30,13 @@ export function TeamHoursCard({ draft, bookings, onChange }: Props) {
   const today = dateKeyInTz(Date.now(), tz);
   const members = team.data.members;
   // Everyone on the team has a row; people who left keep theirs (not bookable) until removed.
-  const rows: {s: StaffHours;left: boolean;}[] = [
-  ...members.map((m) => ({ s: staff.find((x) => x.memberId === m.id) ?? { memberId: m.id, name: m.name, photo: null, bookable: false, weekly: null, timeOff: [], calendarId: null }, left: false })),
-  ...staff.filter((x) => !members.some((m) => m.id === x.memberId)).map((s) => ({ s: { ...s, bookable: false }, left: true }))];
-
+  const rows: { s: StaffHours; left: boolean }[] = [
+    ...members.map((m) => ({ s: staff.find((x) => x.memberId === m.id) ?? { memberId: m.id, name: m.name, photo: null, bookable: false, weekly: null, timeOff: [], calendarId: null }, left: false })),
+    ...staff.filter((x) => !members.some((m) => m.id === x.memberId)).map((s) => ({ s: { ...s, bookable: false }, left: true })),
+  ];
   const upsert = (s: StaffHours) => {
     const exists = staff.some((x) => x.memberId === s.memberId);
-    onChange(exists ? staff.map((x) => x.memberId === s.memberId ? s : x) : [...staff, s]);
+    onChange(exists ? staff.map((x) => (x.memberId === s.memberId ? s : x)) : [...staff, s]);
   };
   const bookableCount = rows.filter((r) => r.s.bookable && !r.left).length;
   const editingRow = rows.find((r) => r.s.memberId === editing)?.s ?? null;
@@ -54,8 +54,8 @@ export function TeamHoursCard({ draft, bookings, onChange }: Props) {
       title="Team hours"
       icon={UsersIcon}
       description={bookableCount ? tr(bookableCount === 1 ? '{n} person customers can book. A time shows when someone who does the service is free.' : '{n} people customers can book. A time shows when someone who does the service is free.', { n: bookableCount }) : 'Customers book your business as one. Turn people on to let customers choose who they see.'}
-      body="flush">
-      
+      body="flush"
+    >
       <ul className="flex flex-col divide-y divide-line">
         {rows.map(({ s, left }) => {
           const away = s.timeOff.find((t) => t.to >= today);
@@ -76,12 +76,12 @@ export function TeamHoursCard({ draft, bookings, onChange }: Props) {
                       <ClockIcon size={12} aria-hidden />
                       {summary(s)}
                     </span>
-                    {away &&
-                    <span className="inline-flex items-center gap-1 text-fg-muted">
+                    {away && (
+                      <span className="inline-flex items-center gap-1 text-fg-muted">
                         <CalendarOffIcon size={12} aria-hidden />
                         {tr('Away {dates}', { dates: away.from === away.to ? away.from : `${away.from} → ${away.to}` })}
                       </span>
-                    }
+                    )}
                     {cal && <span>{tr('{provider} connected', { provider: providerName(cal.provider) })}</span>}
                   </span>
                 </span>
@@ -92,11 +92,11 @@ export function TeamHoursCard({ draft, bookings, onChange }: Props) {
                   Hours
                 </Button>
               </span>
-            </li>);
-
+            </li>
+          );
         })}
       </ul>
       <StaffHoursDialog open={!!editing} onClose={() => setEditing(null)} staff={editingRow} availability={draft} bookings={bookings} onSave={upsert} />
-    </Card>);
-
+    </Card>
+  );
 }

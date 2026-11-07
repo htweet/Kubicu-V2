@@ -37,7 +37,7 @@ interface PersonRow extends Person {
   locked: boolean;
 }
 
-type Action = {kind: 'suspend' | 'restore' | 'plan';row: WsRow;} | null;
+type Action = { kind: 'suspend' | 'restore' | 'plan'; row: WsRow } | null;
 
 /**
  * Super admin → Users & tenants (D75b, reworked D472). People and workspaces are separate lists: one person can own
@@ -55,12 +55,12 @@ export function AdminTenants() {
   // Follows the console language (D488); audit entries, names and reasons stay as recorded.
   const { t } = useT();
 
-  const tab: Tab = params.get('tab') === 'workspaces' || params.get('ws') && !params.get('person') ? 'workspaces' : 'people';
+  const tab: Tab = params.get('tab') === 'workspaces' || (params.get('ws') && !params.get('person')) ? 'workspaces' : 'people';
   const openPersonKey = params.get('person');
   const openWsId = params.get('ws');
   const setParam = (next: Record<string, string | null>) => {
     const p = new URLSearchParams(params);
-    Object.entries(next).forEach(([k, v]) => v === null ? p.delete(k) : p.set(k, v));
+    Object.entries(next).forEach(([k, v]) => (v === null ? p.delete(k) : p.set(k, v)));
     setParams(p, { replace: true });
   };
 
@@ -72,20 +72,20 @@ export function AdminTenants() {
 
   const wsRows: WsRow[] = useMemo(
     () =>
-    workspaces.map((w) => {
-      const page = readPersistedPage(w.id);
-      return {
-        id: w.id,
-        workspace: w,
-        owner: people[0]?.name ?? w.ownerName,
-        members: people.filter((p) => p.workspaces.some((x) => x.id === w.id)).length,
-        handle: page?.draft.handle ?? '—',
-        live: !!page?.published,
-        spaces: 1 + (w.spaces?.filter((s) => !s.archivedAt).length ?? 0),
-        suspended: !!store.suspended[w.id]
-      };
-    }),
-    [workspaces, people, store.suspended]
+      workspaces.map((w) => {
+        const page = readPersistedPage(w.id);
+        return {
+          id: w.id,
+          workspace: w,
+          owner: people[0]?.name ?? w.ownerName,
+          members: people.filter((p) => p.workspaces.some((x) => x.id === w.id)).length,
+          handle: page?.draft.handle ?? '—',
+          live: !!page?.published,
+          spaces: 1 + (w.spaces?.filter((s) => !s.archivedAt).length ?? 0),
+          suspended: !!store.suspended[w.id],
+        };
+      }),
+    [workspaces, people, store.suspended],
   );
 
   const openPerson = people.find((p) => p.key === openPersonKey) ?? null;
@@ -121,77 +121,77 @@ export function AdminTenants() {
     setAction(null);
   };
 
-  const nameButton = (label: string, sub: string, onClick: () => void) =>
-  <button type="button" onClick={onClick} className="min-w-0 rounded-sm text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+  const nameButton = (label: string, sub: string, onClick: () => void) => (
+    <button type="button" onClick={onClick} className="min-w-0 rounded-sm text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
       <span className="block truncate font-semibold text-fg hover:underline">{label}</span>
       <span className="block truncate text-caption text-fg-subtle">{sub}</span>
-    </button>;
-
+    </button>
+  );
 
   const personColumns: DataColumn<PersonRow>[] = [
-  { key: 'name', header: t('Person'), sortValue: (r) => r.name.toLowerCase(), render: (r) => nameButton(r.name, r.email || r.phone || '—', () => setParam({ person: r.key })) },
-  {
-    key: 'workspaces',
-    header: t('Workspaces'),
-    sortValue: (r) => r.workspaces.length,
-    render: (r) =>
-    <span className="min-w-0">
+    { key: 'name', header: t('Person'), sortValue: (r) => r.name.toLowerCase(), render: (r) => nameButton(r.name, r.email || r.phone || '—', () => setParam({ person: r.key })) },
+    {
+      key: 'workspaces',
+      header: t('Workspaces'),
+      sortValue: (r) => r.workspaces.length,
+      render: (r) => (
+        <span className="min-w-0">
           <span className="block tabular-nums text-fg">{r.workspaces.length}</span>
           <span className="block max-w-[16rem] truncate text-caption text-fg-subtle">{r.workspaces.map((w) => `${w.name} (${t(roleNames[w.role])})`).join(', ')}</span>
         </span>
-
-  },
-  {
-    key: 'status',
-    header: t('Status'),
-    render: (r) =>
-    r.locked ?
-    <Badge tone="danger" dot>
+      ),
+    },
+    {
+      key: 'status',
+      header: t('Status'),
+      render: (r) =>
+        r.locked ? (
+          <Badge tone="danger" dot>
             {t('Locked')}
-          </Badge> :
-
-    <Badge tone="success" dot>
+          </Badge>
+        ) : (
+          <Badge tone="success" dot>
             {t('Active')}
           </Badge>
-
-  },
-  { key: 'twostep', header: t('Two-step'), hideOnMobile: true, render: (r) => <span className="text-fg-muted">{r.twoStep === null ? '—' : t(r.twoStep === 'none' ? 'Off' : 'On')}</span> },
-  { key: 'active', header: t('Last active'), hideOnMobile: true, sortValue: (r) => r.lastActiveAt ? Date.parse(r.lastActiveAt) : 0, render: (r) => <span className="text-fg-muted">{r.lastActiveAt ? formatRelative(r.lastActiveAt) : '—'}</span> }];
-
+        ),
+    },
+    { key: 'twostep', header: t('Two-step'), hideOnMobile: true, render: (r) => <span className="text-fg-muted">{r.twoStep === null ? '—' : t(r.twoStep === 'none' ? 'Off' : 'On')}</span> },
+    { key: 'active', header: t('Last active'), hideOnMobile: true, sortValue: (r) => (r.lastActiveAt ? Date.parse(r.lastActiveAt) : 0), render: (r) => <span className="text-fg-muted">{r.lastActiveAt ? formatRelative(r.lastActiveAt) : '—'}</span> },
+  ];
 
   const wsColumns: DataColumn<WsRow>[] = [
-  { key: 'name', header: t('Workspace'), sortValue: (r) => r.workspace.name.toLowerCase(), render: (r) => nameButton(r.workspace.name, `kub.icu/${r.handle}`, () => setParam({ ws: r.id, person: null })) },
-  {
-    key: 'owner',
-    header: t('Owner'),
-    sortValue: (r) => r.owner.toLowerCase(),
-    render: (r) =>
-    <button type="button" onClick={() => setParam({ person: people[0]?.key ?? null })} className="truncate rounded-sm text-left text-fg-muted hover:text-fg hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+    { key: 'name', header: t('Workspace'), sortValue: (r) => r.workspace.name.toLowerCase(), render: (r) => nameButton(r.workspace.name, `kub.icu/${r.handle}`, () => setParam({ ws: r.id, person: null })) },
+    {
+      key: 'owner',
+      header: t('Owner'),
+      sortValue: (r) => r.owner.toLowerCase(),
+      render: (r) => (
+        <button type="button" onClick={() => setParam({ person: people[0]?.key ?? null })} className="truncate rounded-sm text-left text-fg-muted hover:text-fg hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
           {r.owner}
         </button>
-
-  },
-  { key: 'plan', header: t('Plan'), sortValue: (r) => planOrder.indexOf(r.workspace.plan), render: (r) => <span className="text-fg-muted">{plans[r.workspace.plan].name}</span> },
-  {
-    key: 'status',
-    header: t('Status'),
-    render: (r) =>
-    r.suspended ?
-    <Badge tone="danger" dot>
+      ),
+    },
+    { key: 'plan', header: t('Plan'), sortValue: (r) => planOrder.indexOf(r.workspace.plan), render: (r) => <span className="text-fg-muted">{plans[r.workspace.plan].name}</span> },
+    {
+      key: 'status',
+      header: t('Status'),
+      render: (r) =>
+        r.suspended ? (
+          <Badge tone="danger" dot>
             {t('Suspended')}
-          </Badge> :
-    r.live ?
-    <Badge tone="success" dot>
+          </Badge>
+        ) : r.live ? (
+          <Badge tone="success" dot>
             {t('Live')}
-          </Badge> :
-
-    <Badge tone="neutral">{t('Draft')}</Badge>
-
-  },
-  { key: 'country', header: t('Country'), hideOnMobile: true, sortValue: (r) => r.workspace.country ?? 'NG', render: (r) => <span className="text-fg-muted">{t(countryInfo(r.workspace.country ?? 'NG').name)}</span> },
-  { key: 'people', header: t('People'), align: 'right', hideOnMobile: true, sortValue: (r) => r.members, render: (r) => <span className="tabular-nums text-fg-muted">{r.members}</span> },
-  { key: 'created', header: t('Created'), hideOnMobile: true, sortValue: (r) => Date.parse(r.workspace.createdAt), render: (r) => <span className="text-fg-muted">{formatTimestamp(r.workspace.createdAt)}</span> }];
-
+          </Badge>
+        ) : (
+          <Badge tone="neutral">{t('Draft')}</Badge>
+        ),
+    },
+    { key: 'country', header: t('Country'), hideOnMobile: true, sortValue: (r) => r.workspace.country ?? 'NG', render: (r) => <span className="text-fg-muted">{t(countryInfo(r.workspace.country ?? 'NG').name)}</span> },
+    { key: 'people', header: t('People'), align: 'right', hideOnMobile: true, sortValue: (r) => r.members, render: (r) => <span className="tabular-nums text-fg-muted">{r.members}</span> },
+    { key: 'created', header: t('Created'), hideOnMobile: true, sortValue: (r) => Date.parse(r.workspace.createdAt), render: (r) => <span className="text-fg-muted">{formatTimestamp(r.workspace.createdAt)}</span> },
+  ];
 
   const startAction = (kind: 'plan' | 'suspend' | 'restore', row: WsRow) => {
     if (kind === 'plan') setNewPlan(row.workspace.plan);
@@ -218,16 +218,16 @@ export function AdminTenants() {
         value={tab}
         onChange={(v) => setParam({ tab: v === 'people' ? null : v })}
         items={[
-        { id: 'people', label: t('People') },
-        { id: 'workspaces', label: t('Workspaces') }]
-        } />
-      
+          { id: 'people', label: t('People') },
+          { id: 'workspaces', label: t('Workspaces') },
+        ]}
+      />
       <div role="tabpanel" id={`tenants-panel-${tab}`} aria-labelledby={`tenants-tab-${tab}`} className="mt-6">
-        {tab === 'people' ?
-        <DataTable caption={t('People')} rows={personRows} columns={personColumns} filterText={(r) => `${r.name} ${r.email} ${r.phone} ${r.workspaces.map((w) => w.name).join(' ')}`} filterPlaceholder={t('Search name, email, phone or workspace')} emptyTitle={t('No people match')} /> :
-
-        <DataTable caption={t('Workspaces')} rows={wsRows} columns={wsColumns} filterText={(r) => `${r.workspace.name} ${r.owner} ${r.handle} ${countryInfo(r.workspace.country ?? 'NG').name} ${t(countryInfo(r.workspace.country ?? 'NG').name)}`} filterPlaceholder={t('Search name, owner, link or country')} emptyTitle={t('No workspaces match')} />
-        }
+        {tab === 'people' ? (
+          <DataTable caption={t('People')} rows={personRows} columns={personColumns} filterText={(r) => `${r.name} ${r.email} ${r.phone} ${r.workspaces.map((w) => w.name).join(' ')}`} filterPlaceholder={t('Search name, email, phone or workspace')} emptyTitle={t('No people match')} />
+        ) : (
+          <DataTable caption={t('Workspaces')} rows={wsRows} columns={wsColumns} filterText={(r) => `${r.workspace.name} ${r.owner} ${r.handle} ${countryInfo(r.workspace.country ?? 'NG').name} ${t(countryInfo(r.workspace.country ?? 'NG').name)}`} filterPlaceholder={t('Search name, owner, link or country')} emptyTitle={t('No workspaces match')} />
+        )}
       </div>
 
       <PersonSheet person={openPerson} onClose={() => setParam({ person: null })} onOpenWorkspace={(id) => setParam({ ws: id, person: null })} />
@@ -238,8 +238,8 @@ export function AdminTenants() {
         onOpenPerson={(key) => setParam({ person: key, ws: null })}
         onAction={(kind) => openWs && startAction(kind, openWs)}
         onVerification={() => openWs && navigate(`/admin/payments?tab=identity&ws=${encodeURIComponent(openWs.id)}`)}
-        onTeamChanged={() => setTeamVersion((v) => v + 1)} />
-      
+        onTeamChanged={() => setTeamVersion((v) => v + 1)}
+      />
 
       <ReasonDialog
         open={!!action}
@@ -247,23 +247,23 @@ export function AdminTenants() {
         onConfirm={confirm}
         destructive={action?.kind === 'suspend'}
         title={
-        action?.kind === 'plan' ?
-        t('Change the plan for {name}', { name: action.row.workspace.name }) :
-        action?.kind === 'suspend' ?
-        t('Suspend {name}?', { name: action.row.workspace.name }) :
-        t('Restore {name}?', { name: action?.row.workspace.name ?? '' })
+          action?.kind === 'plan'
+            ? t('Change the plan for {name}', { name: action.row.workspace.name })
+            : action?.kind === 'suspend'
+              ? t('Suspend {name}?', { name: action.row.workspace.name })
+              : t('Restore {name}?', { name: action?.row.workspace.name ?? '' })
         }
         description={
-        action?.kind === 'plan' ?
-        t('Use for goodwill upgrades, partner deals or fixing a billing error. Their billing history isn’t changed.') :
-        action?.kind === 'suspend' ?
-        t('A second staff member must approve within {hours} hours. Once approved, their public pages show “temporarily unavailable” and the owner sees why in the app. Nothing is deleted, and you can restore at any time.', { hours: APPROVAL_HOURS }) :
-        t('Their pages come back straight away.')
+          action?.kind === 'plan'
+            ? t('Use for goodwill upgrades, partner deals or fixing a billing error. Their billing history isn’t changed.')
+            : action?.kind === 'suspend'
+              ? t('A second staff member must approve within {hours} hours. Once approved, their public pages show “temporarily unavailable” and the owner sees why in the app. Nothing is deleted, and you can restore at any time.', { hours: APPROVAL_HOURS })
+              : t('Their pages come back straight away.')
         }
-        confirmLabel={t(action?.kind === 'plan' ? 'Change plan' : action?.kind === 'suspend' ? 'Send for approval' : 'Restore')}>
-        
+        confirmLabel={t(action?.kind === 'plan' ? 'Change plan' : action?.kind === 'suspend' ? 'Send for approval' : 'Restore')}
+      >
         {action?.kind === 'plan' && <SelectInput<WorkspacePlan> id="admin-plan" label={t('New plan')} value={newPlan} onChange={setNewPlan} options={planOrder.map((p) => ({ value: p, label: plans[p].name }))} />}
       </ReasonDialog>
-    </div>);
-
+    </div>
+  );
 }

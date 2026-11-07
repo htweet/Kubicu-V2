@@ -11,8 +11,8 @@ export function useLocalStore<T extends object>(storageKey: string, empty: () =>
       const raw = window.localStorage.getItem(storageKey);
       if (raw) return { ...empty(), ...(JSON.parse(raw) as Partial<T>) };
     } catch {
-
-      /* fresh store */}
+      /* fresh store */
+    }
     return empty();
     // `empty` is a stable module-level factory in every caller.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -38,12 +38,12 @@ export function useLocalStore<T extends object>(storageKey: string, empty: () =>
       try {
         window.localStorage.setItem(storageKey, JSON.stringify(next));
       } catch {
-
-        /* storage full — the change lasts for this visit */}
+        /* storage full — the change lasts for this visit */
+      }
       setData(next);
       window.dispatchEvent(new Event(event));
     },
-    [storageKey, event, read]
+    [storageKey, event, read],
   );
 
   return { data, update };

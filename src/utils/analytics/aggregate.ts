@@ -7,7 +7,7 @@ export interface Range {
   to: number;
 }
 
-export function rangeFor(days: number, now = Date.now()): {current: Range;previous: Range;} {
+export function rangeFor(days: number, now = Date.now()): { current: Range; previous: Range } {
   const end = now;
   const start = end - days * 86400000;
   return { current: { from: start, to: end }, previous: { from: start - days * 86400000, to: start } };
@@ -48,7 +48,7 @@ export function headline(events: AnalyticsEvent[]): Headline {
     views: events.filter((e) => e.type === 'view').length,
     tapRate: viewSessions.size ? Array.from(tapSessions).filter((s) => viewSessions.has(s)).length / viewSessions.size : 0,
     revenueNgn: paid.reduce((t, e) => t + (e.valueNgn ?? 0), 0),
-    orders: paid.length
+    orders: paid.length,
   };
 }
 
@@ -58,7 +58,7 @@ export function change(current: number, previous: number): number | null {
 }
 
 /** Visits per day, oldest first. */
-export function visitsByDay(events: AnalyticsEvent[], r: Range): {label: string;value: number;key: string;}[] {
+export function visitsByDay(events: AnalyticsEvent[], r: Range): { label: string; value: number; key: string }[] {
   const days = Math.max(1, Math.round((r.to - r.from) / 86400000));
   const buckets = new Map<string, Set<string>>();
   for (let i = 0; i < days; i++) {
@@ -82,17 +82,17 @@ export interface LinkRow {
 
 export function topLinks(events: AnalyticsEvent[], visits: number): LinkRow[] {
   const map = new Map<string, LinkRow>();
-  events.
-  filter((e) => e.type === 'tap' && e.blockId).
-  forEach((e) => {
-    const key = `${e.blockId}::${e.label ?? ''}`;
-    const cur = map.get(key) ?? { id: key, label: e.label || 'Untitled', blockId: e.blockId as string, taps: 0, share: 0 };
-    cur.taps += 1;
-    map.set(key, cur);
-  });
-  return Array.from(map.values()).
-  map((r) => ({ ...r, share: visits ? r.taps / visits : 0 })).
-  sort((a, b) => b.taps - a.taps);
+  events
+    .filter((e) => e.type === 'tap' && e.blockId)
+    .forEach((e) => {
+      const key = `${e.blockId}::${e.label ?? ''}`;
+      const cur = map.get(key) ?? { id: key, label: e.label || 'Untitled', blockId: e.blockId as string, taps: 0, share: 0 };
+      cur.taps += 1;
+      map.set(key, cur);
+    });
+  return Array.from(map.values())
+    .map((r) => ({ ...r, share: visits ? r.taps / visits : 0 }))
+    .sort((a, b) => b.taps - a.taps);
 }
 
 export interface SourceRow {
@@ -114,12 +114,12 @@ export function sources(events: AnalyticsEvent[]): SourceRow[] {
     if (conversionTypes.includes(e.type)) (convBy.get(e.source) ?? convBy.set(e.source, new Set()).get(e.source)!).add(e.session);
   });
   const total = Array.from(visitsBy.values()).reduce((t, s) => t + s.size, 0);
-  return Array.from(visitsBy.entries()).
-  map(([id, s]) => {
-    const conversions = convBy.get(id)?.size ?? 0;
-    return { id, visits: s.size, share: total ? s.size / total : 0, conversions, rate: s.size ? conversions / s.size : 0 };
-  }).
-  sort((a, b) => b.visits - a.visits);
+  return Array.from(visitsBy.entries())
+    .map(([id, s]) => {
+      const conversions = convBy.get(id)?.size ?? 0;
+      return { id, visits: s.size, share: total ? s.size / total : 0, conversions, rate: s.size ? conversions / s.size : 0 };
+    })
+    .sort((a, b) => b.visits - a.visits);
 }
 
 // ——— Devices and returning visitors (D258) ———
@@ -135,8 +135,8 @@ export interface BreakdownRow<T extends string> {
 }
 
 /** Each visit's first view: when it started, which browser, which device. */
-function visitStarts(events: AnalyticsEvent[]): Map<string, {at: number;browser?: string;device?: DeviceKind;}> {
-  const out = new Map<string, {at: number;browser?: string;device?: DeviceKind;}>();
+function visitStarts(events: AnalyticsEvent[]): Map<string, { at: number; browser?: string; device?: DeviceKind }> {
+  const out = new Map<string, { at: number; browser?: string; device?: DeviceKind }>();
   events.forEach((e) => {
     if (e.type !== 'view') return;
     const t = Date.parse(e.at);
@@ -160,12 +160,12 @@ function breakdown<T extends string>(events: AnalyticsEvent[], groupOf: (session
     if (g !== null) (conv.get(g) ?? conv.set(g, new Set()).get(g)!).add(e.session);
   });
   const total = sessions.size;
-  return Array.from(visits.entries()).
-  map(([id, s]) => {
-    const conversions = conv.get(id)?.size ?? 0;
-    return { id, visits: s.size, share: total ? s.size / total : 0, conversions, rate: s.size ? conversions / s.size : 0 };
-  }).
-  sort((a, b) => b.visits - a.visits);
+  return Array.from(visits.entries())
+    .map(([id, s]) => {
+      const conversions = conv.get(id)?.size ?? 0;
+      return { id, visits: s.size, share: total ? s.size / total : 0, conversions, rate: s.size ? conversions / s.size : 0 };
+    })
+    .sort((a, b) => b.visits - a.visits);
 }
 
 /** Visits by phone, tablet or computer. Visits recorded before devices were counted show as "Not recorded". */
@@ -252,46 +252,46 @@ function funnel(events: AnalyticsEvent[], steps: [string, EventType][]): FunnelS
 export function funnels(events: AnalyticsEvent[]) {
   return {
     shop: funnel(events, [
-    ['Saw a product', 'product_view'],
-    ['Added to cart', 'cart_add'],
-    ['Started checkout', 'checkout_start'],
-    ['Paid', 'order_paid']]
-    ),
+      ['Saw a product', 'product_view'],
+      ['Added to cart', 'cart_add'],
+      ['Started checkout', 'checkout_start'],
+      ['Paid', 'order_paid'],
+    ]),
     // Product views happen on pages and in the shop; cart adds without a product view still count from step 2.
     shopFromCart: funnel(events, [
-    ['Added to cart', 'cart_add'],
-    ['Started checkout', 'checkout_start'],
-    ['Paid', 'order_paid']]
-    ),
+      ['Added to cart', 'cart_add'],
+      ['Started checkout', 'checkout_start'],
+      ['Paid', 'order_paid'],
+    ]),
     booking: funnel(events, [
-    ['Opened booking', 'booking_open'],
-    ['Chose a time', 'booking_time'],
-    ['Confirmed', 'booking_confirmed']]
-    ),
+      ['Opened booking', 'booking_open'],
+      ['Chose a time', 'booking_time'],
+      ['Confirmed', 'booking_confirmed'],
+    ]),
     leads: funnel(events, [
-    ['Visited', 'view'],
-    ['Sent a form or signed up', 'lead']]
-    ),
+      ['Visited', 'view'],
+      ['Sent a form or signed up', 'lead'],
+    ]),
     subscriptions: funnel(events, [
-    ['Opened a plan', 'subscribe_open'],
-    ['Subscribed or started a trial', 'subscribe_started']]
-    ),
+      ['Opened a plan', 'subscribe_open'],
+      ['Subscribed or started a trial', 'subscribe_started'],
+    ]),
     tickets: funnel(events, [
-    ['Chose tickets', 'ticket_select'],
-    ['Started checkout', 'ticket_checkout'],
-    ['Got tickets', 'ticket_paid']]
-    ),
+      ['Chose tickets', 'ticket_select'],
+      ['Started checkout', 'ticket_checkout'],
+      ['Got tickets', 'ticket_paid'],
+    ]),
     forms: funnel(events, [
-    ['Saw a form', 'form_view'],
-    ['Started filling in', 'form_start'],
-    ['Sent', 'form_submit']]
-    ),
+      ['Saw a form', 'form_view'],
+      ['Started filling in', 'form_start'],
+      ['Sent', 'form_submit'],
+    ]),
     // Members-only content (D110).
     members: funnel(events, [
-    ['Reached members-only content', 'member_gate'],
-    ['Signed in', 'member_signin'],
-    ['Saw members content', 'member_view']]
-    )
+      ['Reached members-only content', 'member_gate'],
+      ['Signed in', 'member_signin'],
+      ['Saw members content', 'member_view'],
+    ]),
   };
 }
 
@@ -313,7 +313,7 @@ export function insights(events: AnalyticsEvent[], blockOrder: string[], labelFo
   if (top && totalTaps >= 20) {
     const pos = blockOrder.indexOf(top.blockId);
     if (pos >= 3 && top.taps / totalTaps >= 0.25)
-    out.push({ id: `move-${top.blockId}`, title: `“${top.label}” gets ${Math.round(top.taps / totalTaps * 100)}% of taps but sits ${ordinal(pos + 1)} on the page`, evidence: `${top.taps} of ${totalTaps} taps from ${h.visits} visits. Moving it higher might help more people find it.`, blockId: top.blockId });
+      out.push({ id: `move-${top.blockId}`, title: `“${top.label}” gets ${Math.round((top.taps / totalTaps) * 100)}% of taps but sits ${ordinal(pos + 1)} on the page`, evidence: `${top.taps} of ${totalTaps} taps from ${h.visits} visits. Moving it higher might help more people find it.`, blockId: top.blockId });
   }
   const src = sources(events);
   const totalConv = src.reduce((t, s) => t + s.conversions, 0);
@@ -321,7 +321,7 @@ export function insights(events: AnalyticsEvent[], blockOrder: string[], labelFo
     if (out.length >= 3 || s.visits < 20 || totalConv < 5) return;
     const convShare = s.conversions / totalConv;
     if (s.share >= 0.25 && convShare < s.share / 3)
-    out.push({ id: `src-${s.id}`, title: `${labelSource(s.id)} brings ${Math.round(s.share * 100)}% of visits but ${Math.round(convShare * 100)}% of sales and sign-ups`, evidence: `${s.visits} visits, ${s.conversions} conversions. These visitors may want something different — IntentFlow can show them their own blocks.` });
+      out.push({ id: `src-${s.id}`, title: `${labelSource(s.id)} brings ${Math.round(s.share * 100)}% of visits but ${Math.round(convShare * 100)}% of sales and sign-ups`, evidence: `${s.visits} visits, ${s.conversions} conversions. These visitors may want something different — IntentFlow can show them their own blocks.` });
   });
   const unused = blockOrder.filter((id) => !links.some((l) => l.blockId === id)).map((id) => labelFor(id)).filter(Boolean);
   if (out.length < 3 && totalTaps >= 30 && links.length >= 2) {

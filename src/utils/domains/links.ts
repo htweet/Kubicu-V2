@@ -60,7 +60,7 @@ export function landingHref(workspaceId: string, link: CampaignLink): string | n
 
 /** Archived, or past its end date. */
 export function linkEnded(link: CampaignLink, now = Date.now()): boolean {
-  return !!link.archivedAt || !!link.endsAt && Date.parse(link.endsAt) <= now;
+  return !!link.archivedAt || (!!link.endsAt && Date.parse(link.endsAt) <= now);
 }
 
 export const UTM_PATTERN = /^[A-Za-z0-9._-]{0,60}$/;
@@ -68,14 +68,14 @@ export const UTM_PATTERN = /^[A-Za-z0-9._-]{0,60}$/;
 export const SLUG_PATTERN = /^[a-z0-9](?:[a-z0-9-]{0,38}[a-z0-9])?$/;
 
 export function slugify(text: string): string {
-  return text.
-  toLowerCase().
-  normalize('NFKD').
-  replace(/[\u0300-\u036f]/g, '').
-  replace(/[^a-z0-9]+/g, '-').
-  replace(/^-+|-+$/g, '').
-  slice(0, 40).
-  replace(/-+$/g, '');
+  return text
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 40)
+    .replace(/-+$/g, '');
 }
 
 export function slugError(slug: string, data: DomainsData, exceptId?: string): string | undefined {
@@ -103,7 +103,7 @@ export function decodeDestination(v: string): LinkDestination {
 /** Blocks a QR code can open straight onto. Booking blocks also open the booking sheet on arrival. */
 const anchorKinds: Partial<Record<Block['type'], string>> = { event: 'Event', booking: 'Booking', subscription: 'Subscription' };
 
-export type ServiceNames = {id: string;name: string;}[];
+export type ServiceNames = { id: string; name: string }[];
 
 function anchorLabel(block: Block, services?: ServiceNames): string {
   const kind = anchorKinds[block.type] ?? 'Block';
@@ -127,22 +127,22 @@ export function destinationOptions(workspace: Workspace, commerce: CommerceData 
     sitePages(doc).forEach((p) => out.push({ value: encodeDestination({ spaceId: s.id, path: p.path }), label: p.title || p.path, group }));
     if (s.id === MAIN_SPACE_ID && storefrontAvailable(doc, commerce)) {
       out.push({ value: encodeDestination({ spaceId: s.id, path: STOREFRONT_PATH }), label: 'Shop', group });
-      commerce?.products.
-      filter((p) => p.status === 'active').
-      forEach((p) => out.push({ value: encodeDestination({ spaceId: s.id, path: `${STOREFRONT_PATH}/${p.id}` }), label: `Shop · ${p.name}`, group }));
+      commerce?.products
+        .filter((p) => p.status === 'active')
+        .forEach((p) => out.push({ value: encodeDestination({ spaceId: s.id, path: `${STOREFRONT_PATH}/${p.id}` }), label: `Shop · ${p.name}`, group }));
     }
     const anchorGroup = `${s.id === MAIN_SPACE_ID ? 'Main page' : s.name} · events, bookings & plans`;
     const pages = [{ path: '', title: '', blocks: doc.blocks }, ...sitePages(doc)];
     pages.forEach((p) =>
-    p.blocks.
-    filter((b) => anchorKinds[b.type] && !b.visibility.hidden).
-    forEach((b) =>
-    out.push({
-      value: encodeDestination({ spaceId: s.id, path: p.path, anchor: b.id }),
-      label: `${anchorLabel(b, services)}${p.path ? ` (on ${p.title || p.path})` : ''}`,
-      group: anchorGroup
-    })
-    )
+      p.blocks
+        .filter((b) => anchorKinds[b.type] && !b.visibility.hidden)
+        .forEach((b) =>
+          out.push({
+            value: encodeDestination({ spaceId: s.id, path: p.path, anchor: b.id }),
+            label: `${anchorLabel(b, services)}${p.path ? ` (on ${p.title || p.path})` : ''}`,
+            group: anchorGroup,
+          }),
+        ),
     );
   });
   return out;
@@ -187,11 +187,11 @@ export function destinationExists(workspace: Workspace, commerce: CommerceData |
 
 /** Finds a short link by the main handle it lives under, across workspaces on this device. */
 export function findShortLink(
-workspaces: Workspace[],
-handle: string,
-slug: string,
-read: (workspaceId: string) => DomainsData | null)
-: {workspace: Workspace;link: CampaignLink;} | null {
+  workspaces: Workspace[],
+  handle: string,
+  slug: string,
+  read: (workspaceId: string) => DomainsData | null,
+): { workspace: Workspace; link: CampaignLink } | null {
   for (const w of workspaces) {
     if (spaceHandle(w.id, MAIN_SPACE_ID) !== handle) continue;
     const link = read(w.id)?.links.find((l) => l.slug === slug);

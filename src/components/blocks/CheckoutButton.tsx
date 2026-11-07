@@ -22,8 +22,8 @@ export function CheckoutButton({ mode, onAdd, className, style, ariaLabel, disab
       <span className={className} style={style} aria-label={ariaLabel}>
         {showIcon && <ShoppingBagIcon size={16} aria-hidden />}
         {children}
-      </span>);
-
+      </span>
+    );
   }
   return (
     <button
@@ -32,10 +32,10 @@ export function CheckoutButton({ mode, onAdd, className, style, ariaLabel, disab
       aria-label={ariaLabel}
       onClick={() => onAdd(cart)}
       className={`${className ?? ''} transition-opacity duration-150 disabled:cursor-not-allowed disabled:opacity-50`}
-      style={style}>
-      
+      style={style}
+    >
       {showIcon && <ShoppingBagIcon size={16} aria-hidden />}
       {children}
-    </button>);
-
+    </button>
+  );
 }

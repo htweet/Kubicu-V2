@@ -466,3 +466,140 @@ details.kb-faq > summary::-webkit-details-marker {
     scroll-behavior: auto !important;
   }
 }
+/* ── Mobile section bars (D558) ──────────────────────────────────────────────
+   Phones only. hooks/useMobileSectionBars.ts marks sections between the hero and the
+   closing call to action with data-mbar="closed|open", --mbar-bg / --mbar-fg (the section's
+   own colour) and data-mbar-title (its heading). The bar copies the site header: a 64px
+   rounded pill, label on the left, a 48px round button on the right. */
+@media (max-width: 767px) {
+  [data-mbar] {
+    position: relative;
+    scroll-margin-top: 92px;
+  }
+  /* The bar is placed absolutely so it keeps the same width open or folded (D566): folded it sits
+     12px in from the column; opened, --mbar-l / --mbar-r (set by the hook) pull it back to that
+     same column, whatever padding or margins the section has. 10px above and below (D564). */
+  [data-mbar]::before {
+    content: attr(data-mbar-title);
+    position: absolute;
+    z-index: 1;
+    top: 10px;
+    left: var(--mbar-l, 12px);
+    right: var(--mbar-r, 12px);
+    display: block;
+    box-sizing: border-box;
+    height: 64px;
+    margin: 0;
+    padding: 0 72px 0 24px;
+    border-radius: 9999px;
+    background: var(--mbar-bg);
+    color: var(--mbar-fg);
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 64px;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    box-shadow: 0 1px 2px rgb(20 20 18 / 0.06), 0 4px 14px rgb(20 20 18 / 0.08);
+    cursor: pointer;
+    transition: transform 140ms cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  [data-mbar]::after {
+    content: '';
+    position: absolute;
+    z-index: 2;
+    top: 18px;
+    right: calc(var(--mbar-r, 12px) + 8px);
+    width: 48px;
+    height: 48px;
+    border-radius: 9999px;
+    background-color: rgb(20 20 18 / 0.08);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 20px 20px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23141412' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    pointer-events: none;
+    transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  [data-mbar][data-mbar-tone='dark']::after {
+    background-color: rgb(255 255 255 / 0.18);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  }
+  [data-mbar='open']::after {
+    transform: rotate(180deg);
+  }
+  [data-mbar]:active::before {
+    transform: scale(0.985);
+  }
+  [data-mbar]:focus-visible {
+    outline: none;
+  }
+  [data-mbar]:focus-visible::before {
+    box-shadow: 0 0 0 3px rgb(var(--focus, 37 99 235));
+  }
+  /* Website pages on phones never scroll sideways (D569). Grid items default to their content's
+     widest line (one-line chips, long words), which pushed whole sections past the screen edge;
+     letting them shrink fixes the cause, and clipping main stops any leftover sideways scroll. */
+  #main {
+    overflow-x: clip;
+  }
+  #main .grid > * {
+    min-width: 0;
+  }
+  /* The page behind the folded bars is white (D561). */
+  #main:has([data-mbar]) {
+    background-color: rgb(255 255 255);
+  }
+  /* Folded: only the bar shows, on white. */
+  [data-mbar='closed'] {
+    display: block !important;
+    height: 84px !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: rgb(255 255 255) !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+    cursor: pointer;
+  }
+  [data-mbar='closed'] > * {
+    display: none !important;
+  }
+  /* A bare heading laid out flat is the bar for the content after it: the bar draws its words (D562). */
+  [data-mbar][data-mbar-kind='heading'] {
+    height: 84px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 0 !important;
+    line-height: 0 !important;
+    letter-spacing: normal !important;
+  }
+  [data-mbar][data-mbar-kind='heading'] > * {
+    display: none !important;
+  }
+  [data-mbar='open'][data-mbar-kind='heading'] {
+    margin-bottom: 16px !important;
+  }
+  /* Blocks without a heading travel with the bar before them (D559). */
+  [data-mbar-follow='closed'] {
+    display: none !important;
+  }
+  [data-mbar-follow='open'] {
+    animation: mbar-reveal 200ms cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  /* Opened: the section returns as designed, its content arriving quickly. */
+  [data-mbar='open'] {
+    padding-top: 84px !important;
+  }
+  [data-mbar='open'] > * {
+    animation: mbar-reveal 200ms cubic-bezier(0.23, 1, 0.32, 1);
+  }
+}
+@keyframes mbar-reveal {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: none; }
+}

@@ -51,33 +51,33 @@ export function PageSurface({ theme, children, className, columnClassName, foote
     <div
       className={cn('relative w-full', m && 'kb-page', layered && 'kb-bg', bg.custom && 'kb-bg-custom', (m || layered) && dataSaver.on && 'kb-lite', className)}
       data-material={m ? '' : undefined}
-      style={{ background: theme.background, color: theme.text, fontFamily: fontsFor(theme).body, ...vars }}>
-      
-      {layered &&
-      // Atmosphere (D161) and artwork (D158): one screen tall and sticky, so it stays behind the content as the page scrolls.
-      // An owner's image set to scroll (D182) instead covers the whole page height and moves with it.
-      <div
-        aria-hidden
-        className={cn('pointer-events-none z-0 w-full overflow-hidden', fixed ? 'sticky top-0 -mb-[100svh] h-[100svh]' : 'absolute inset-0')}>
-        
+      style={{ background: theme.background, color: theme.text, fontFamily: fontsFor(theme).body, ...vars }}
+    >
+      {layered && (
+        // Atmosphere (D161) and artwork (D158): one screen tall and sticky, so it stays behind the content as the page scrolls.
+        // An owner's image set to scroll (D182) instead covers the whole page height and moves with it.
+        <div
+          aria-hidden
+          className={cn('pointer-events-none z-0 w-full overflow-hidden', fixed ? 'sticky top-0 -mb-[100svh] h-[100svh]' : 'absolute inset-0')}
+        >
           {backdrop && <div className="kb-backdrop absolute inset-0" />}
-          {art &&
-        <div className="kb-art absolute inset-0">
+          {art && (
+            <div className="kb-art absolute inset-0">
               <img src={art} alt="" className="absolute inset-0 h-full w-full object-cover" style={{ objectPosition: bg.custom ? theme.backgroundFocus ?? 'center' : undefined }} />
               <div className="absolute inset-0" style={{ background: theme.background, opacity: veil }} />
               {/* Contrast scrim (D158a): pushes busy artwork away from the text colour. */}
               <div className="absolute inset-0" style={{ background: lightText ? '#000000' : '#FFFFFF', opacity: 0.14 }} />
             </div>
-        }
+          )}
         </div>
-      }
+      )}
       <div className={cn(layered && 'relative z-[1]')}>
         {header}
         <div className={cn('mx-auto flex w-full flex-col pb-10 pt-4', fluid ? 'max-w-none' : 'max-w-[560px] px-5', columnClassName)}>{children}</div>
         {footer}
       </div>
-    </div>);
-
+    </div>
+  );
 }
 
 /** Loads the Signature theme's extra Google faces once per document (only the ones it uses). */

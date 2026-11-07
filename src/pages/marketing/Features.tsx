@@ -14,7 +14,7 @@ import { cn } from '../../utils/cn';
 const statusClass: Record<FeatureStatus, string> = {
   Ready: 'bg-[rgb(var(--kb-lime))] text-[rgb(var(--kb-forest))]',
   'Needs a plan': 'bg-[rgb(var(--kb-sky))] text-[rgb(var(--kb-cobalt))]',
-  Simulated: 'bg-sunken text-fg-muted'
+  Simulated: 'bg-sunken text-fg-muted',
 };
 
 /** /features — every product area on one page, each with an honest status per capability (D268). Translated in D321. */
@@ -32,18 +32,18 @@ export function Features() {
         fg="#ffffff"
         primary={{ label: 'Create your page free', to: '/signup', bg: 'rgb(var(--kb-lime))', fg: 'rgb(var(--kb-forest))' }}
         secondary={{ label: 'See the roadmap', to: '/about/roadmap' }}
-        visual={hero ? <ExamplePhone doc={hero.doc} width={240} bezel="light" className="mx-auto w-fit rotate-[3deg]" /> : null} />
-      
+        visual={hero ? <ExamplePhone doc={hero.doc} width={240} bezel="light" className="mx-auto w-fit rotate-[3deg]" /> : null}
+      />
 
       <nav aria-label={tr('On this page')} className="sticky top-[88px] z-20 border-b border-line bg-canvas/95 backdrop-blur">
         <ul className="no-scrollbar mx-auto flex max-w-7xl gap-1 overflow-x-auto overflow-y-hidden px-5 py-2 md:px-8">
-          {featureAreas.map((a) =>
-          <li key={a.id}>
+          {featureAreas.map((a) => (
+            <li key={a.id}>
               <a href={`#${a.id}`} className="inline-flex h-10 items-center whitespace-nowrap rounded-full px-4 text-[14px] font-semibold text-fg-muted hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
                 {tr(a.title)}
               </a>
             </li>
-          )}
+          ))}
         </ul>
       </nav>
 
@@ -66,23 +66,23 @@ export function Features() {
               </Reveal>
               <div className={cn('flex flex-col gap-6 sm:flex-row sm:items-center', i % 2 === 1 && 'lg:order-1')}>
                 <ul className="flex flex-1 flex-col">
-                  {a.items.map((it) =>
-                  <li key={it.name} className="flex items-center justify-between gap-4 border-t border-line py-4 text-[16px] text-fg last:border-b">
+                  {a.items.map((it) => (
+                    <li key={it.name} className="flex items-center justify-between gap-4 border-t border-line py-4 text-[16px] text-fg last:border-b">
                       <span className="min-w-0">{tr(it.name)}</span>
                       <span className={cn('shrink-0 whitespace-nowrap rounded-full px-2.5 py-1 text-[12px] font-bold', statusClass[it.status])}>{tr(it.status)}</span>
                     </li>
-                  )}
+                  ))}
                 </ul>
                 {ex && <ExamplePhone doc={ex.doc} width={170} className="mx-auto shrink-0" />}
               </div>
-            </section>);
-
+            </section>
+          );
         })}
         <p className="py-8 text-[13px] text-fg-subtle">{tr('“Simulated” means it works in this prototype without the outside service it needs in production — payments, messaging, domains or an AI model.')}</p>
       </div>
 
       <PillarCrossLinks title="Four places to go next" />
       <ClosingCta />
-    </>);
-
+    </>
+  );
 }

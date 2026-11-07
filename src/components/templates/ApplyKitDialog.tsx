@@ -28,7 +28,7 @@ export function ApplyKitDialog({ kit, replacing, onClose, onApply }: Props) {
 
   if (!kit) return <Dialog open={false} onClose={onClose} title="" />;
 
-  const toggle = (p: KitPart, on: boolean) => setParts((cur) => on ? [...cur, p] : cur.filter((x) => x !== p));
+  const toggle = (p: KitPart, on: boolean) => setParts((cur) => (on ? [...cur, p] : cur.filter((x) => x !== p)));
   const newApps = kit.apps.filter((id) => !market.data.installed[id]);
 
   const detail = (p: KitPart): string => {
@@ -56,7 +56,7 @@ export function ApplyKitDialog({ kit, replacing, onClose, onApply }: Props) {
       title={`Set up as a ${kit.name}`}
       description="Turn off anything you don’t want. Nothing goes live until you publish, and untouched items can be removed again later."
       footer={
-      <>
+        <>
           <Button variant="secondary" onClick={onClose}>
             Cancel
           </Button>
@@ -64,19 +64,19 @@ export function ApplyKitDialog({ kit, replacing, onClose, onApply }: Props) {
             Apply {parts.length} part{parts.length === 1 ? '' : 's'}
           </Button>
         </>
-      }>
-      
+      }
+    >
       <div className="flex flex-col gap-4">
         {replacing && <InlineAlert tone="info">You’ve applied a kit before. This one adds to what’s already there — it doesn’t remove the earlier kit’s items.</InlineAlert>}
         <ul className="flex flex-col divide-y divide-line rounded-lg border border-line">
-          {kitParts(kit).map((p) =>
-          <li key={p} className="px-4 py-3.5">
+          {kitParts(kit).map((p) => (
+            <li key={p} className="px-4 py-3.5">
               <Switch id={`kit-part-${p}`} checked={parts.includes(p)} onChange={(on) => toggle(p, on)} label={kitPartLabels[p].label} description={kitPartLabels[p].description} />
               {detail(p) && <p className="mt-1.5 text-caption text-fg-muted">{detail(p)}</p>}
             </li>
-          )}
+          ))}
         </ul>
       </div>
-    </Dialog>);
-
+    </Dialog>
+  );
 }

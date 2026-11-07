@@ -39,6 +39,6 @@ export function ExampleDesktop({ doc, width = 720, height = 440, address = 'kub.
           </PageSurface>
         </div>
       </div>
-    </div>);
-
+    </div>
+  );
 }

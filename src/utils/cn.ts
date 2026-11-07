@@ -9,9 +9,9 @@ const twMerge = extendTailwindMerge({
   extend: {
     classGroups: {
       'font-size': [{ text: ['display', 'title', 'heading', 'body', 'label', 'caption', 'meta'] }],
-      shadow: [{ shadow: ['1', '2', '3'] }]
-    }
-  }
+      shadow: [{ shadow: ['1', '2', '3'] }],
+    },
+  },
 });
 
 export function cn(...classes: Array<string | false | null | undefined>): string {

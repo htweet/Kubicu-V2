@@ -7,11 +7,11 @@ import type { FaqItem } from '../types/page';
  */
 
 const STOP = new Set([
-'a', 'an', 'the', 'and', 'or', 'but', 'is', 'are', 'am', 'was', 'were', 'be', 'do', 'does', 'did', 'can', 'could', 'will', 'would', 'should',
-'i', 'me', 'my', 'we', 'our', 'you', 'your', 'it', 'its', 'this', 'that', 'there', 'they', 'them', 'he', 'she', 'to', 'of', 'in', 'on', 'at',
-'for', 'with', 'from', 'by', 'about', 'as', 'if', 'so', 'what', 'how', 'when', 'where', 'who', 'which', 'why', 'any', 'have', 'has', 'get',
-'please', 'pls', 'abeg', 'una', 'wetin', 'dey', 'na', 'no', 'not', 'yes', 'just', 'also', 'much', 'many', 'some']
-);
+  'a', 'an', 'the', 'and', 'or', 'but', 'is', 'are', 'am', 'was', 'were', 'be', 'do', 'does', 'did', 'can', 'could', 'will', 'would', 'should',
+  'i', 'me', 'my', 'we', 'our', 'you', 'your', 'it', 'its', 'this', 'that', 'there', 'they', 'them', 'he', 'she', 'to', 'of', 'in', 'on', 'at',
+  'for', 'with', 'from', 'by', 'about', 'as', 'if', 'so', 'what', 'how', 'when', 'where', 'who', 'which', 'why', 'any', 'have', 'has', 'get',
+  'please', 'pls', 'abeg', 'una', 'wetin', 'dey', 'na', 'no', 'not', 'yes', 'just', 'also', 'much', 'many', 'some',
+]);
 
 function stem(w: string): string {
   if (w.length > 5 && w.endsWith('ing')) return w.slice(0, -3);
@@ -24,13 +24,13 @@ function stem(w: string): string {
 
 export function keywords(text: string): Set<string> {
   return new Set(
-    text.
-    toLowerCase().
-    normalize('NFD').
-    replace(/[\u0300-\u036f]/g, '').
-    split(/[^a-z0-9₦]+/).
-    filter((w) => w.length > 1 && !STOP.has(w)).
-    map(stem)
+    text
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .split(/[^a-z0-9₦]+/)
+      .filter((w) => w.length > 1 && !STOP.has(w))
+      .map(stem),
   );
 }
 
@@ -47,9 +47,9 @@ export const approvedFacts = (facts: FaqItem[]) => facts.filter((f) => f.questio
 export function matchFaq(query: string, facts: FaqItem[]): FaqMatch {
   const q = keywords(query);
   if (q.size === 0) return { best: null, related: [] };
-  const scored = approvedFacts(facts).
-  map((f) => ({ f, score: overlap(q, keywords(f.question)) * 2 + overlap(q, keywords(f.answer)) })).
-  filter((s) => s.score >= 2).
-  sort((a, b) => b.score - a.score);
+  const scored = approvedFacts(facts)
+    .map((f) => ({ f, score: overlap(q, keywords(f.question)) * 2 + overlap(q, keywords(f.answer)) }))
+    .filter((s) => s.score >= 2)
+    .sort((a, b) => b.score - a.score);
   return { best: scored[0]?.f ?? null, related: scored.slice(1, 3).map((s) => s.f) };
 }

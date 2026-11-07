@@ -32,23 +32,23 @@ export function RecentActivity() {
           <HistoryIcon size={18} strokeWidth={2.25} className="text-fg-subtle" aria-hidden />
           {tr('Recent changes')}
         </h2>
-        {recent.length === 0 ?
-        <p className="mt-4 text-label text-fg-muted">{tr('Nothing published yet. Each publish and saved snapshot will appear here.')}</p> :
-
-        <ol className="relative mt-5 flex flex-col gap-5 pl-7">
+        {recent.length === 0 ? (
+          <p className="mt-4 text-label text-fg-muted">{tr('Nothing published yet. Each publish and saved snapshot will appear here.')}</p>
+        ) : (
+          <ol className="relative mt-5 flex flex-col gap-5 pl-7">
             <span aria-hidden className="absolute bottom-2 left-[9px] top-2 w-px bg-line" />
             {recent.map((v) => {
-            const Icon = v.kind === 'published' ? SendIcon : CameraIcon;
-            return (
-              <li key={v.id} className="relative">
+              const Icon = v.kind === 'published' ? SendIcon : CameraIcon;
+              return (
+                <li key={v.id} className="relative">
                   <span
-                  aria-hidden
-                  className={
-                  v.kind === 'published' ?
-                  'absolute -left-7 top-0 flex h-[19px] w-[19px] items-center justify-center rounded-full bg-success-soft text-success' :
-                  'absolute -left-7 top-0 flex h-[19px] w-[19px] items-center justify-center rounded-full bg-sunken text-fg-subtle'
-                  }>
-                  
+                    aria-hidden
+                    className={
+                      v.kind === 'published'
+                        ? 'absolute -left-7 top-0 flex h-[19px] w-[19px] items-center justify-center rounded-full bg-success-soft text-success'
+                        : 'absolute -left-7 top-0 flex h-[19px] w-[19px] items-center justify-center rounded-full bg-sunken text-fg-subtle'
+                    }
+                  >
                     <Icon size={10} strokeWidth={2.5} />
                   </span>
                   <p className="text-label font-semibold text-fg">
@@ -58,11 +58,11 @@ export function RecentActivity() {
                     {formatRelative(v.createdAt)}
                     {v.note ? ` · ${v.note}` : ''}
                   </p>
-                </li>);
-
-          })}
+                </li>
+              );
+            })}
           </ol>
-        }
+        )}
       </section>
 
       <section aria-labelledby="visits-heading">
@@ -71,21 +71,21 @@ export function RecentActivity() {
             <BarChart3Icon size={18} strokeWidth={2.25} className="text-fg-subtle" aria-hidden />
             {tr('Visitor activity')}
           </h2>
-          {canSee &&
-          <Link to="/app/analytics" className="inline-flex items-center gap-1 text-caption font-medium text-fg-muted hover:text-fg">
+          {canSee && (
+            <Link to="/app/analytics" className="inline-flex items-center gap-1 text-caption font-medium text-fg-muted hover:text-fg">
               {tr('Analytics')} <ArrowRightIcon size={13} aria-hidden />
             </Link>
-          }
+          )}
         </div>
-        {!canSee ?
-        <p className="mt-4 text-label text-fg-muted">{tr('Your role can’t see analytics.')}</p> :
-        week.visits === 0 ?
-        <div className="mt-5 rounded-md border border-dashed border-line-strong px-4 py-5">
+        {!canSee ? (
+          <p className="mt-4 text-label text-fg-muted">{tr('Your role can’t see analytics.')}</p>
+        ) : week.visits === 0 ? (
+          <div className="mt-5 rounded-md border border-dashed border-line-strong px-4 py-5">
             <p className="text-label text-fg-muted">{tr('No visits in the last 7 days yet.')}</p>
             <p className="mt-1 text-caption text-fg-subtle">{tr('Share your link — visits, taps and where people came from appear here as they happen.')}</p>
-          </div> :
-
-        <>
+          </div>
+        ) : (
+          <>
             <dl className="mt-5 grid grid-cols-3 gap-4">
               <div>
                 <dt className="text-caption text-fg-subtle">{tr('Visits · 7 days')}</dt>
@@ -101,17 +101,17 @@ export function RecentActivity() {
               </div>
             </dl>
             <div aria-hidden className="mt-4 flex h-16 items-end gap-1">
-              {days.map((d) =>
-            <span key={d.key} className="flex-1 rounded-t-sm bg-action/70" style={{ height: `${Math.max(4, d.value / maxDay * 100)}%` }} title={`${d.label}: ${d.value}`} />
-            )}
+              {days.map((d) => (
+                <span key={d.key} className="flex-1 rounded-t-sm bg-action/70" style={{ height: `${Math.max(4, (d.value / maxDay) * 100)}%` }} title={`${d.label}: ${d.value}`} />
+              ))}
             </div>
             <p className="mt-2 text-caption text-fg-subtle">
               {tr('Visits per day, last 7 days')}
               {sample ? ` · ${tr('includes sample visits')}` : ''}
             </p>
           </>
-        }
+        )}
       </section>
-    </div>);
-
+    </div>
+  );
 }

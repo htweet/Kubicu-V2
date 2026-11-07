@@ -10,43 +10,43 @@ import { DataGallery } from '../../components/design-system/DataGallery';
 import { AccessibilityRules } from '../../components/design-system/AccessibilityRules';
 
 const sections = [
-{ id: 'appearances', label: 'Workspace appearances' },
-{ id: 'colour', label: 'Colour tokens' },
-{ id: 'foundations', label: 'Type, space & motion' },
-{ id: 'controls', label: 'Controls' },
-{ id: 'data', label: 'Data' },
-{ id: 'feedback', label: 'Feedback & overlays' },
-{ id: 'accessibility', label: 'Accessibility rules' }];
-
+  { id: 'appearances', label: 'Workspace appearances' },
+  { id: 'colour', label: 'Colour tokens' },
+  { id: 'foundations', label: 'Type, space & motion' },
+  { id: 'controls', label: 'Controls' },
+  { id: 'data', label: 'Data' },
+  { id: 'feedback', label: 'Feedback & overlays' },
+  { id: 'accessibility', label: 'Accessibility rules' },
+];
 
 export function AdminDesignSystem() {
   return (
     <div className="mx-auto w-full max-w-6xl px-5 py-8 md:px-10 md:py-12">
       <PageHeader
         title="Design system"
-        description="Decide which appearances workspaces can use, and inspect the tokens and components every screen is built from." />
-      
+        description="Decide which appearances workspaces can use, and inspect the tokens and components every screen is built from."
+      />
       <div className="mt-10 grid gap-10 lg:grid-cols-[180px_minmax(0,1fr)]">
         <nav aria-label="On this page" className="hidden lg:block">
           <ul className="sticky top-8 flex flex-col gap-1 border-l border-line">
-            {sections.map((s) =>
-            <li key={s.id}>
+            {sections.map((s) => (
+              <li key={s.id}>
                 <a
-                href={`#${s.id}`}
-                className="-ml-px block border-l border-transparent py-1 pl-3 text-label text-fg-muted transition-colors duration-150 hover:border-line-strong hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-                
+                  href={`#${s.id}`}
+                  className="-ml-px block border-l border-transparent py-1 pl-3 text-label text-fg-muted transition-colors duration-150 hover:border-line-strong hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+                >
                   {s.label}
                 </a>
               </li>
-            )}
+            ))}
           </ul>
         </nav>
         <div className="flex min-w-0 flex-col gap-12">
           <DsSection
             id="appearances"
             title="Workspace appearances"
-            description="Four production appearances share one component library. Choose which ones workspace users can pick and which one new workspaces start with.">
-            
+            description="Four production appearances share one component library. Choose which ones workspace users can pick and which one new workspaces start with."
+          >
             <AppearancePolicyPanel />
           </DsSection>
           <DsSection id="colour" title="Colour tokens" description="Shown for the appearance you’re previewing. Components never reference a hex value directly.">
@@ -69,6 +69,6 @@ export function AdminDesignSystem() {
           </DsSection>
         </div>
       </div>
-    </div>);
-
+    </div>
+  );
 }

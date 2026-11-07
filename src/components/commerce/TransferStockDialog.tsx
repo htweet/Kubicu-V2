@@ -38,7 +38,7 @@ export function TransferStockDialog({ product, onClose }: TransferStockDialogPro
 
   const live = product ? data.products.find((p) => p.id === product.id) ?? product : null;
   const variant = live?.variants.find((v) => v.id === vid);
-  const nameOf = (id: string) => id === MAIN_BRANCH ? tr('Main shop') : locationName(data, id);
+  const nameOf = (id: string) => (id === MAIN_BRANCH ? tr('Main shop') : locationName(data, id));
   const locations = [{ value: MAIN_BRANCH, label: tr('Main shop') }, ...branches.map((b) => ({ value: b.id, label: b.name }))];
 
   const save = () => {
@@ -67,7 +67,7 @@ export function TransferStockDialog({ product, onClose }: TransferStockDialogPro
       title={live ? `${tr('Move stock')} · ${live.name}` : tr('Move stock')}
       description={tr('Total stock stays the same. The move is recorded at both locations.')}
       footer={
-      <>
+        <>
           <Button variant="secondary" onClick={onClose}>
             {tr('Cancel')}
           </Button>
@@ -75,29 +75,29 @@ export function TransferStockDialog({ product, onClose }: TransferStockDialogPro
             {tr('Move')}
           </Button>
         </>
-      }>
-      
-      {live && variant &&
-      <div className="flex flex-col gap-4">
+      }
+    >
+      {live && variant && (
+        <div className="flex flex-col gap-4">
           {live.variants.length > 1 && <SelectInput id="tr-variant" label={tr('Variant')} value={vid} onChange={setVid} options={live.variants.map((v) => ({ value: v.id, label: variantLabel(v) }))} />}
           <div className="grid gap-4 sm:grid-cols-2">
             <SelectInput id="tr-from" label={tr('From')} value={from} onChange={(v) => (setFrom(v), setError(''))} options={locations.map((l) => ({ ...l, label: `${l.label} · ${stockAt(variant, l.value)}` }))} />
             <SelectInput id="tr-to" label={tr('To')} value={to} onChange={(v) => (setTo(v), setError(''))} options={locations.map((l) => ({ ...l, disabled: l.value === from }))} />
           </div>
           <TextInput
-          id="tr-qty"
-          label={tr('How many?')}
-          inputMode="numeric"
-          value={qty}
-          error={error || undefined}
-          hint={tr('At {place}: {n}', { place: nameOf(from), n: stockAt(variant, from) })}
-          onChange={(e) => {
-            setQty(e.target.value.replace(/[^0-9]/g, '').slice(0, 5));
-            setError('');
-          }} />
-        
+            id="tr-qty"
+            label={tr('How many?')}
+            inputMode="numeric"
+            value={qty}
+            error={error || undefined}
+            hint={tr('At {place}: {n}', { place: nameOf(from), n: stockAt(variant, from) })}
+            onChange={(e) => {
+              setQty(e.target.value.replace(/[^0-9]/g, '').slice(0, 5));
+              setError('');
+            }}
+          />
         </div>
-      }
-    </Dialog>);
-
+      )}
+    </Dialog>
+  );
 }

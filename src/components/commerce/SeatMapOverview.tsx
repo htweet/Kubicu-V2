@@ -8,7 +8,7 @@ interface Props {
   data: CommerceData;
   event: CommerceEvent;
   /** Tickets with their live status, keyed by seat id. */
-  bySeat: Map<string, TicketRef & {status: TicketStatus;}>;
+  bySeat: Map<string, TicketRef & { status: TicketStatus }>;
   onOpen: (ticketId: string) => void;
 }
 
@@ -18,7 +18,7 @@ const swatch: Record<SeatState, string> = {
   in: 'bg-success border-success text-white',
   sold: 'bg-action border-action text-white',
   held: 'bg-warning-soft border-warning text-warning',
-  free: 'bg-raised border-line text-fg-subtle'
+  free: 'bg-raised border-line text-fg-subtle',
 };
 const words: Record<SeatState, string> = { in: 'Checked in', sold: 'Sold, not in yet', held: 'Held in a checkout', free: 'Free' };
 
@@ -44,15 +44,15 @@ export function SeatMapOverview({ data, event: ev, bySeat, onOpen }: Props) {
     const t = bySeat.get(s.id);
     const label = `${s.label} — ${words[st]}${t ? `, ${t.ticket.guestName}` : ''}`;
     const cls = cn('flex h-7 w-7 shrink-0 items-center justify-center rounded-md border text-[10.5px] font-semibold tabular-nums', swatch[st]);
-    return t ?
-    <button key={s.id} type="button" title={label} aria-label={label} onClick={() => onOpen(t.ticket.id)} className={cn(cls, 'transition-transform duration-100 ease-out hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-1')}>
+    return t ? (
+      <button key={s.id} type="button" title={label} aria-label={label} onClick={() => onOpen(t.ticket.id)} className={cn(cls, 'transition-transform duration-100 ease-out hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-1')}>
         {s.n}
-      </button> :
-
-    <span key={s.id} title={label} aria-label={label} role="img" className={cls}>
+      </button>
+    ) : (
+      <span key={s.id} title={label} aria-label={label} role="img" className={cls}>
         {s.n}
-      </span>;
-
+      </span>
+    );
   };
 
   return (
@@ -65,26 +65,26 @@ export function SeatMapOverview({ data, event: ev, bySeat, onOpen }: Props) {
           <p className="text-caption text-fg-muted">Tap a sold seat to see its ticket. Updates as guests check in.</p>
         </div>
         <ul className="flex flex-wrap gap-x-4 gap-y-1.5 text-caption text-fg-muted" aria-label="Key">
-          {(Object.keys(words) as SeatState[]).map((k) =>
-          <li key={k} className="flex items-center gap-1.5">
+          {(Object.keys(words) as SeatState[]).map((k) => (
+            <li key={k} className="flex items-center gap-1.5">
               <span aria-hidden className={cn('h-3.5 w-3.5 rounded border', swatch[k])} />
               {words[k]} · <span className="font-semibold text-fg tabular-nums">{counts[k]}</span>
             </li>
-          )}
+          ))}
         </ul>
       </div>
 
       <div className="rounded-lg border border-line bg-raised p-4 sm:p-5">
-        {map.layout !== 'banquet' &&
-        <div className="mx-auto mb-4 flex h-8 w-2/3 max-w-md items-center justify-center rounded-md bg-action-soft text-caption font-semibold text-action">Stage</div>
-        }
-        {isTable(map) ?
-        <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        {map.layout !== 'banquet' && (
+          <div className="mx-auto mb-4 flex h-8 w-2/3 max-w-md items-center justify-center rounded-md bg-action-soft text-caption font-semibold text-action">Stage</div>
+        )}
+        {isTable(map) ? (
+          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {map.rows.map((r) => {
-            const seats = seatsOfRow(map, r);
-            const filled = seats.filter((s) => stateOf(s) === 'sold' || stateOf(s) === 'in').length;
-            return (
-              <li key={r.id} className="flex flex-col gap-2.5 rounded-md border border-line p-3">
+              const seats = seatsOfRow(map, r);
+              const filled = seats.filter((s) => stateOf(s) === 'sold' || stateOf(s) === 'in').length;
+              return (
+                <li key={r.id} className="flex flex-col gap-2.5 rounded-md border border-line p-3">
                   <div className="flex items-baseline justify-between gap-2">
                     <span className="text-label font-semibold text-fg">{r.label}</span>
                     <span className="text-caption text-fg-muted">
@@ -92,24 +92,24 @@ export function SeatMapOverview({ data, event: ev, bySeat, onOpen }: Props) {
                     </span>
                   </div>
                   <div className="flex flex-wrap gap-1.5">{seats.map(seatEl)}</div>
-                </li>);
-
-          })}
-          </ul> :
-
-        <div className="kb-scroll overflow-x-auto">
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          <div className="kb-scroll overflow-x-auto">
             <ol className="mx-auto flex w-max flex-col gap-1.5">
-              {map.rows.map((r) =>
-            <li key={r.id} className="flex items-center gap-1.5">
+              {map.rows.map((r) => (
+                <li key={r.id} className="flex items-center gap-1.5">
                   <span className="w-7 shrink-0 text-right text-caption font-semibold text-fg-muted">{r.label}</span>
                   {seatsOfRow(map, r).map(seatEl)}
                   <span className="ml-2 shrink-0 text-meta text-fg-subtle">{typeName(r.ticketTypeId)}</span>
                 </li>
-            )}
+              ))}
             </ol>
           </div>
-        }
+        )}
       </div>
-    </section>);
-
+    </section>
+  );
 }

@@ -35,7 +35,7 @@ export interface Invoice {
    * Outside Nigeria (D432): the currency and the day's rate this invoice was made at. Amounts above stay in naira
    * (the price list); everything shown converts at this frozen rate. Older invoices have none and show naira.
    */
-  fx?: {currency: 'KES' | 'GHS' | 'ZAR';rate: number;date: string;};
+  fx?: { currency: 'KES' | 'GHS' | 'ZAR'; rate: number; date: string };
   /** How the invoice was paid, when not by card (D432). */
   paidWith?: string;
 }
@@ -69,7 +69,7 @@ export interface BillingData {
   pendingPlan: WorkspacePlan | null;
   pendingCycle: BillingCycle | null;
   cancelReason: string | null;
-  trial: {endsAt: string;previousPlan: WorkspacePlan;} | null;
+  trial: { endsAt: string; previousPlan: WorkspacePlan } | null;
   trialUsed: boolean;
   graceEndsAt: string | null;
   /** Card that failed, so a retry with the same card fails again when renewals are set to fail. */
@@ -80,7 +80,7 @@ export interface BillingData {
   history: BillingEvent[];
   sampleSeeded: boolean;
   /** A coupon that keeps applying at every renewal (D135). */
-  coupon?: {code: string;kind: 'percent' | 'fixed';value: number;} | null;
+  coupon?: { code: string; kind: 'percent' | 'fixed'; value: number } | null;
   /** Account credit from KUBICU already used on invoices (D135). */
   creditUsedNgn?: number;
 }

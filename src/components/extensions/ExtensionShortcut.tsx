@@ -8,11 +8,11 @@ export function ExtensionShortcut({
   id,
   label,
   icon
-
-
-
-
-}: {id: string;label: string;icon: BoxIcon;}) {
+}: {
+  id: string;
+  label: string;
+  icon: BoxIcon;
+}) {
   const market = useMarketplace();
   const navigate = useNavigate();
   if (!market.isActive(id)) return null;

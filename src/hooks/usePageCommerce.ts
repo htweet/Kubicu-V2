@@ -16,7 +16,7 @@ export interface PageCommerce {
  */
 export function usePageCommerce(workspaceId: string | null, isOwn: boolean): PageCommerce {
   const own = useCommerce();
-  const [other, setOther] = useState<CommerceData | null>(() => !isOwn && workspaceId ? readCommerce(workspaceId) : null);
+  const [other, setOther] = useState<CommerceData | null>(() => (!isOwn && workspaceId ? readCommerce(workspaceId) : null));
 
   useEffect(() => {
     if (isOwn || !workspaceId) return;
@@ -38,7 +38,7 @@ export function usePageCommerce(workspaceId: string | null, isOwn: boolean): Pag
       setOther(next);
       return true;
     },
-    [workspaceId]
+    [workspaceId],
   );
 
   // Visitors' checkouts aren't limited by the signed-in member's role.

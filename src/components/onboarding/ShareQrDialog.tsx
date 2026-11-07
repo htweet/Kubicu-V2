@@ -15,12 +15,12 @@ interface ShareQrDialogProps {
 }
 
 const initialsOf = (name: string) =>
-name.
-trim().
-split(/\s+/).
-slice(0, 2).
-map((w) => w[0]?.toUpperCase() ?? '').
-join('') || 'K';
+  name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() ?? '')
+    .join('') || 'K';
 
 /** A ready-to-use QR code for the page just published. Scans are tagged as QR visits in Analytics. */
 export function ShareQrDialog({ open, onClose, handle, name }: ShareQrDialogProps) {
@@ -50,11 +50,11 @@ export function ShareQrDialog({ open, onClose, handle, name }: ShareQrDialogProp
       title="Your QR code"
       description="Put it on your counter, packaging or flyers. Anyone who scans it lands on your page."
       footer={
-      <Button variant="secondary" onClick={onClose}>
+        <Button variant="secondary" onClick={onClose}>
           Done
         </Button>
-      }>
-      
+      }
+    >
       <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-start">
         <div className="w-48 shrink-0 rounded-lg border border-line bg-white p-3">
           <QrPreview url={url} style={style} alt={`QR code that opens ${address}`} onReady={setSvg} />
@@ -78,6 +78,6 @@ export function ShareQrDialog({ open, onClose, handle, name }: ShareQrDialogProp
           <p className="text-caption text-fg-subtle">Scans show as “QR code” visits in Analytics. To change colours, add your logo or see scans per code, open Domains &amp; QR from your workspace.</p>
         </div>
       </div>
-    </Dialog>);
-
+    </Dialog>
+  );
 }

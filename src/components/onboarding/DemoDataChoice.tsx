@@ -27,22 +27,22 @@ export function DemoDataChoice({ on, onChange }: DemoDataChoiceProps) {
           </span>
         </span>
       </label>
-      {on &&
-      <div className="mt-3 border-t border-line pl-8 pt-3">
+      {on && (
+        <div className="mt-3 border-t border-line pl-8 pt-3">
           <ul className="flex flex-col gap-1.5">
-            {demoDataCovers.map((c) =>
-          <li key={c} className="flex gap-2 text-caption text-fg-muted">
+            {demoDataCovers.map((c) => (
+              <li key={c} className="flex gap-2 text-caption text-fg-muted">
                 <CheckIcon size={13} className="mt-0.5 shrink-0 text-fg-subtle" aria-hidden />
                 {c}
               </li>
-          )}
+            ))}
           </ul>
           <p className="mt-3 flex items-start gap-2 text-caption font-medium text-fg">
             <Clock3Icon size={14} className="mt-0.5 shrink-0 text-warning" aria-hidden />
             It’s deleted automatically after {DEMO_DATA_DAYS} days, or remove it sooner in Settings → Business. This is the only time you can add it.
           </p>
         </div>
-      }
-    </div>);
-
+      )}
+    </div>
+  );
 }

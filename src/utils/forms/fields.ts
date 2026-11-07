@@ -30,12 +30,12 @@ import {
   LandmarkIcon,
   GlobeIcon,
   CalculatorIcon,
-  type LucideIcon } from
-'lucide-react';
+  type LucideIcon,
+} from 'lucide-react';
 import type { FormField, FormFieldType } from '../../types/forms';
 import { uid } from '../id';
 
-export const fieldTypeInfo: Record<FormFieldType, {label: string;icon: LucideIcon;group: 'Layout' | 'Text' | 'Choice' | 'Details' | 'Special';}> = {
+export const fieldTypeInfo: Record<FormFieldType, { label: string; icon: LucideIcon; group: 'Layout' | 'Text' | 'Choice' | 'Details' | 'Special' }> = {
   section: { label: 'Heading & text', icon: HeadingIcon, group: 'Layout' },
   name: { label: 'Name', icon: UserIcon, group: 'Text' },
   website: { label: 'Website or @handle', icon: LinkIcon, group: 'Text' },
@@ -66,7 +66,7 @@ export const fieldTypeInfo: Record<FormFieldType, {label: string;icon: LucideIco
   bank: { label: 'Bank details', icon: LandmarkIcon, group: 'Special' },
   consent: { label: 'Marketing consent', icon: ShieldCheckIcon, group: 'Special' },
   hidden: { label: 'Hidden attribution', icon: EyeOffIcon, group: 'Special' },
-  payment: { label: 'Payment', icon: CreditCardIcon, group: 'Special' }
+  payment: { label: 'Payment', icon: CreditCardIcon, group: 'Special' },
 };
 
 export const fieldGroups = ['Layout', 'Text', 'Choice', 'Details', 'Special'] as const;
@@ -101,7 +101,7 @@ export function makeField(type: FormFieldType, patch: Partial<FormField> = {}): 
     hiddenSource: 'source',
     stepBreak: false,
     stepTitle: '',
-    rule: null
+    rule: null,
   };
   if (type === 'consent') {
     base.label = 'Send me occasional updates and offers';

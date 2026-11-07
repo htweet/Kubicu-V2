@@ -14,7 +14,7 @@ import { useT } from '../../contexts/LocaleContext';
 type Draft = Pick<OpsSettings, 'quietHours' | 'defaultChannel'>;
 
 /** Automations → Settings (D259): quiet hours for customer messages, and the channel new message steps start with. */
-export function AutomationSettingsSheet({ open, onClose }: {open: boolean;onClose: () => void;}) {
+export function AutomationSettingsSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t: tr } = useT();
   const { data, apply } = useOps();
   const saved = opsSettingsOf(data);
@@ -45,7 +45,7 @@ export function AutomationSettingsSheet({ open, onClose }: {open: boolean;onClos
       title="Automation settings"
       description="For every automation in this workspace."
       footer={
-      <div className="flex justify-end gap-2">
+        <div className="flex justify-end gap-2">
           <Button variant="secondary" onClick={onClose}>
             Cancel
           </Button>
@@ -53,8 +53,8 @@ export function AutomationSettingsSheet({ open, onClose }: {open: boolean;onClos
             Save
           </Button>
         </div>
-      }>
-      
+      }
+    >
       <div className="flex flex-col gap-8 px-5 py-5 md:px-6">
         <section aria-labelledby="aset-quiet" className="flex flex-col gap-4">
           <h3 id="aset-quiet" className="sr-only">
@@ -65,14 +65,14 @@ export function AutomationSettingsSheet({ open, onClose }: {open: boolean;onClos
             label="Quiet hours"
             description={tr('Customer WhatsApp messages and emails written in these hours wait until they end, in your business time ({zone}). Tags, follow-ups and notices to you still happen straight away.', { zone: data.availability.timeZone.replace('_', ' ') })}
             checked={q.on}
-            onChange={(on) => setDraft((d) => ({ ...d, quietHours: { ...d.quietHours, on } }))} />
-          
-          {q.on &&
-          <div className="grid grid-cols-2 gap-4">
+            onChange={(on) => setDraft((d) => ({ ...d, quietHours: { ...d.quietHours, on } }))}
+          />
+          {q.on && (
+            <div className="grid grid-cols-2 gap-4">
               <TextInput id="aset-from" label="From" type="time" value={q.from} onChange={(e) => setDraft((d) => ({ ...d, quietHours: { ...d.quietHours, from: e.target.value } }))} />
               <TextInput id="aset-to" label="Until" type="time" value={q.to} error={same ? 'Pick a different time' : undefined} onChange={(e) => setDraft((d) => ({ ...d, quietHours: { ...d.quietHours, to: e.target.value } }))} />
             </div>
-          }
+          )}
         </section>
 
         <section aria-labelledby="aset-channel" className="flex flex-col gap-3 border-t border-line pt-6">
@@ -85,14 +85,14 @@ export function AutomationSettingsSheet({ open, onClose }: {open: boolean;onClos
               value={draft.defaultChannel}
               onChange={(defaultChannel) => setDraft((d) => ({ ...d, defaultChannel }))}
               options={[
-              { value: 'send_whatsapp', label: 'WhatsApp' },
-              { value: 'send_email', label: 'Email' }]
-              } />
-            
+                { value: 'send_whatsapp', label: 'WhatsApp' },
+                { value: 'send_email', label: 'Email' },
+              ]}
+            />
           </Field>
         </section>
         <p className="text-caption text-fg-subtle">{tr('Customer messages are written but not sent in this prototype — sending needs a messaging partner. Quiet hours show in each run’s history.')}</p>
       </div>
-    </Sheet>);
-
+    </Sheet>
+  );
 }

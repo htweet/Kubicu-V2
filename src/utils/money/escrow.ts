@@ -33,7 +33,7 @@ export const issueLabels: Record<EscrowIssue, string> = {
   not_as_described: 'It’s not what was described',
   damaged: 'It arrived damaged or faulty',
   incomplete: 'Part of my order is missing',
-  other: 'Something else'
+  other: 'Something else',
 };
 
 export const stageLabels: Record<EscrowStage, string> = {
@@ -42,7 +42,7 @@ export const stageLabels: Record<EscrowStage, string> = {
   delivered: 'Delivered · buyer checking',
   disputed: 'Problem reported',
   escalated: 'With KUBICU',
-  closed: 'Closed'
+  closed: 'Closed',
 };
 
 export const stageTones: Record<EscrowStage, 'neutral' | 'info' | 'warning' | 'danger' | 'success'> = {
@@ -51,7 +51,7 @@ export const stageTones: Record<EscrowStage, 'neutral' | 'info' | 'warning' | 'd
   delivered: 'info',
   disputed: 'warning',
   escalated: 'danger',
-  closed: 'success'
+  closed: 'success',
 };
 
 export const releaseLabels: Record<ReleaseReason, string> = {
@@ -62,7 +62,7 @@ export const releaseLabels: Record<ReleaseReason, string> = {
   staff: 'Decided by KUBICU',
   goal_missed: 'Group goal missed — refunded automatically',
   seller_refund: 'Seller refunded the order',
-  delivery_code: 'Buyer gave the rider their delivery code'
+  delivery_code: 'Buyer gave the rider their delivery code',
 };
 
 export const isOpen = (c: EscrowCase) => c.stage !== 'closed';
@@ -98,14 +98,14 @@ export function caseSummary(c: EscrowCase): string {
 
 function moveLedger(ledger: LedgerEntry[], orderId: string, to: LedgerState): LedgerEntry[] {
   return ledger.map((e) => {
-    if (e.ref?.type !== 'order' || e.ref.id !== orderId || e.state !== 'held' && e.state !== 'reserved') return e;
+    if (e.ref?.type !== 'order' || e.ref.id !== orderId || (e.state !== 'held' && e.state !== 'reserved')) return e;
     const label = to === 'available' ? e.label.replace(' · in escrow', ' · released from escrow') : e.label;
     return { ...e, state: to, availableAt: undefined, label };
   });
 }
 
 function patch(d: MoneyData, caseId: string, fn: (c: EscrowCase) => EscrowCase): MoneyData {
-  return { ...d, escrow: d.escrow.map((c) => c.id === caseId ? fn(c) : c) };
+  return { ...d, escrow: d.escrow.map((c) => (c.id === caseId ? fn(c) : c)) };
 }
 
 // ——— Creating cases (called from the commerce sync) ———
@@ -126,7 +126,7 @@ export function newCase(o: Order, kind: EscrowKind, netNgn: number, grossNgn: nu
     heldAt,
     inspectionDays,
     proof: [],
-    events: [ev(kind === 'goal' ? 'Paid into escrow while the group goal is open' : 'Paid into escrow', 'system', heldAt)]
+    events: [ev(kind === 'goal' ? 'Paid into escrow while the group goal is open' : 'Paid into escrow', 'system', heldAt)],
   };
   // Downloads and tickets are delivered the moment they're paid, so the inspection window starts straight away.
   if (!instant) return base;
@@ -135,7 +135,7 @@ export function newCase(o: Order, kind: EscrowKind, netNgn: number, grossNgn: nu
 
 // ——— Lifecycle actions ———
 
-export function markDelivered(d: MoneyData, caseId: string, input: {note: string;proof: string[];}, by: EscrowActor = 'seller'): MoneyData {
+export function markDelivered(d: MoneyData, caseId: string, input: { note: string; proof: string[] }, by: EscrowActor = 'seller'): MoneyData {
   return patch(d, caseId, (c) => {
     if (c.stage !== 'held') return c;
     const at = now();
@@ -146,7 +146,7 @@ export function markDelivered(d: MoneyData, caseId: string, input: {note: string
       deliveryNote: input.note.trim() || undefined,
       proof: [...c.proof, ...files(input.proof)],
       inspectUntil: iso(Date.now() + c.inspectionDays * DAY),
-      events: [ev(`Marked delivered${input.proof.length ? ` with ${input.proof.length} proof file${input.proof.length === 1 ? '' : 's'}` : ''} — ${c.inspectionDays}-day inspection window started`, by, at), ...c.events]
+      events: [ev(`Marked delivered${input.proof.length ? ` with ${input.proof.length} proof file${input.proof.length === 1 ? '' : 's'}` : ''} — ${c.inspectionDays}-day inspection window started`, by, at), ...c.events],
     };
   });
 }
@@ -157,39 +157,39 @@ export function release(d: MoneyData, caseId: string, reason: ReleaseReason, by:
   const at = now();
   return {
     ...patch(d, caseId, (x) => ({ ...x, stage: 'closed', outcome: 'released', releaseReason: reason, closedAt: at, events: [ev(`Released to the seller — ${releaseLabels[reason]}`, by, at), ...x.events] })),
-    ledger: moveLedger(d.ledger, c.orderId, 'available')
+    ledger: moveLedger(d.ledger, c.orderId, 'available'),
   };
 }
 
 export function confirmReceived(d: MoneyData, caseId: string): MoneyData {
   const c = d.escrow.find((x) => x.id === caseId);
-  if (!c || c.stage !== 'delivered' && c.stage !== 'held') return d;
+  if (!c || (c.stage !== 'delivered' && c.stage !== 'held')) return d;
   return release(d, caseId, 'buyer_confirmed', 'buyer');
 }
 
-export function openDispute(d: MoneyData, caseId: string, input: {issue: EscrowIssue;details: string;wants: 'full' | 'partial';partialNgn?: number;evidence: string[];}): MoneyData {
+export function openDispute(d: MoneyData, caseId: string, input: { issue: EscrowIssue; details: string; wants: 'full' | 'partial'; partialNgn?: number; evidence: string[] }): MoneyData {
   const c = d.escrow.find((x) => x.id === caseId);
-  if (!c || c.stage !== 'held' && c.stage !== 'delivered') return d;
+  if (!c || (c.stage !== 'held' && c.stage !== 'delivered')) return d;
   const at = now();
   return {
     ...patch(d, caseId, (x) => ({
       ...x,
       stage: 'disputed',
       dispute: { id: uid('edp'), openedAt: at, issue: input.issue, details: input.details.trim(), wants: input.wants, partialNgn: input.wants === 'partial' ? input.partialNgn : undefined, evidence: files(input.evidence), respondBy: iso(Date.now() + RESPOND_HOURS * HOUR) },
-      events: [ev(`Buyer reported a problem: ${issueLabels[input.issue]}`, 'buyer', at), ...x.events]
+      events: [ev(`Buyer reported a problem: ${issueLabels[input.issue]}`, 'buyer', at), ...x.events],
     })),
-    ledger: moveLedger(d.ledger, c.orderId, 'reserved')
+    ledger: moveLedger(d.ledger, c.orderId, 'reserved'),
   };
 }
 
-export function sellerRespond(workspaceId: string, d: MoneyData, caseId: string, input: Omit<SellerResponse, 'at' | 'evidence'> & {evidence: string[];}): MoneyData {
+export function sellerRespond(workspaceId: string, d: MoneyData, caseId: string, input: Omit<SellerResponse, 'at' | 'evidence'> & { evidence: string[] }): MoneyData {
   const c = d.escrow.find((x) => x.id === caseId);
   if (!c?.dispute || c.stage !== 'disputed' || c.dispute.response) return d;
   const response: SellerResponse = { ...input, text: input.text.trim(), at: now(), evidence: files(input.evidence) };
   const withResponse = patch(d, caseId, (x) => ({
     ...x,
     dispute: x.dispute && { ...x.dispute, response },
-    events: [ev(input.kind === 'full_refund' ? 'Seller agreed to a full refund' : input.kind === 'partial' ? `Seller offered a partial refund of ${formatMoney(input.partialNgn ?? 0)}` : 'Seller disagreed and shared their side', 'seller'), ...x.events]
+    events: [ev(input.kind === 'full_refund' ? 'Seller agreed to a full refund' : input.kind === 'partial' ? `Seller offered a partial refund of ${formatMoney(input.partialNgn ?? 0)}` : 'Seller disagreed and shared their side', 'seller'), ...x.events],
   }));
   if (input.kind === 'full_refund') return refundCase(workspaceId, withResponse, caseId, Number.MAX_SAFE_INTEGER, 'Escrow — seller agreed to refund', 'seller');
   return withResponse;
@@ -205,7 +205,7 @@ export function acceptOffer(workspaceId: string, d: MoneyData, caseId: string): 
 
 export function withdrawDispute(d: MoneyData, caseId: string): MoneyData {
   const c = d.escrow.find((x) => x.id === caseId);
-  if (!c || c.stage !== 'disputed' && c.stage !== 'escalated') return d;
+  if (!c || (c.stage !== 'disputed' && c.stage !== 'escalated')) return d;
   return release(d, caseId, 'dispute_withdrawn', 'buyer');
 }
 
@@ -251,12 +251,12 @@ export function refundCase(workspaceId: string, d: MoneyData, caseId: string, am
   return {
     ...d,
     escrow: d.escrow.map((x) =>
-    x.id === caseId ?
-    { ...x, stage: 'closed', outcome: full ? 'refunded' : 'partial', refundedNgn: amount, closedAt: at, releaseReason: full ? undefined : by === 'staff' ? 'staff' : undefined, events: [ev(full ? `Refunded to the buyer in full — ${formatMoney(amount)}` : `Refunded ${formatMoney(amount)} to the buyer; the rest released to the seller`, by, at), ...x.events] } :
-    x
+      x.id === caseId
+        ? { ...x, stage: 'closed', outcome: full ? 'refunded' : 'partial', refundedNgn: amount, closedAt: at, releaseReason: full ? undefined : by === 'staff' ? 'staff' : undefined, events: [ev(full ? `Refunded to the buyer in full — ${formatMoney(amount)}` : `Refunded ${formatMoney(amount)} to the buyer; the rest released to the seller`, by, at), ...x.events] }
+        : x,
     ),
     ledger: [...(entry ? [entry] : []), ...moveLedger(d.ledger, c.orderId, 'available')],
-    synced: refund ? { ...d.synced, refunds: [...d.synced.refunds, refund.id] } : d.synced
+    synced: refund ? { ...d.synced, refunds: [...d.synced.refunds, refund.id] } : d.synced,
   };
 }
 
@@ -268,15 +268,15 @@ export function markOrderDelivered(workspaceId: string, orderId: string): void {
   try {
     writeCommerce(workspaceId, setOrderStatus(commerce, orderId, 'completed', 'Marked delivered (escrow)'));
   } catch {
-
-    /* storage full — escrow still records it */}
+    /* storage full — escrow still records it */
+  }
 }
 
 /** Prototype only: skip the waiting so testers can see what happens when a window or deadline runs out. */
 export function fastForward(d: MoneyData, caseId: string): MoneyData {
   const past = iso(Date.now() - 1000);
   return patch(d, caseId, (c) =>
-  c.stage === 'delivered' ? { ...c, inspectUntil: past } : c.stage === 'disputed' && c.dispute && !c.dispute.response ? { ...c, dispute: { ...c.dispute, respondBy: past } } : c
+    c.stage === 'delivered' ? { ...c, inspectUntil: past } : c.stage === 'disputed' && c.dispute && !c.dispute.response ? { ...c, dispute: { ...c.dispute, respondBy: past } } : c,
   );
 }
 
@@ -292,9 +292,9 @@ export function syncEscrow(d: MoneyData, orders: Order[], dealroomsEscrow: boole
       if (o.paymentStatus === 'refunded') {
         next = { ...patch(next, c.id, (x) => ({ ...x, stage: 'closed', outcome: 'refunded', refundedNgn: x.grossNgn, releaseReason: 'goal_missed', closedAt: now(), events: [ev(releaseLabels.goal_missed, 'system'), ...x.events] })), ledger: moveLedger(next.ledger, c.orderId, 'available') };
       } else if (!o.held) {
-        next = dealroomsEscrow ?
-        patch(next, c.id, (x) => ({ ...x, stage: 'held', events: [ev('Group goal reached — now protected until delivery', 'system'), ...x.events] })) :
-        release(next, c.id, 'goal_reached', 'system');
+        next = dealroomsEscrow
+          ? patch(next, c.id, (x) => ({ ...x, stage: 'held', events: [ev('Group goal reached — now protected until delivery', 'system'), ...x.events] }))
+          : release(next, c.id, 'goal_reached', 'system');
       }
       continue;
     }

@@ -35,24 +35,24 @@ export function RemoveDemoWorkspaceDialog({ open, onClose }: RemoveDemoWorkspace
       title={`Remove ${demo.name}?`}
       description="The demo workspace and everything in it is deleted from this device."
       footer={
-      <>
+        <>
           <Button variant="secondary" disabled={busy} onClick={close}>
             Keep it
           </Button>
           <Button
-          variant="destructive"
-          loading={busy}
-          disabled={!ok}
-          onClick={() => {
-            setBusy(true);
-            removeDemoWorkspace();
-          }}>
-          
+            variant="destructive"
+            loading={busy}
+            disabled={!ok}
+            onClick={() => {
+              setBusy(true);
+              removeDemoWorkspace();
+            }}
+          >
             Remove demo workspace
           </Button>
         </>
-      }>
-      
+      }
+    >
       <div className="flex flex-col gap-4">
         <ul className="flex list-disc flex-col gap-1.5 pl-4 text-label text-fg-muted">
           <li>Its pages, spaces, products, orders, bookings, contacts and settings go — including anything you changed or added while trying it.</li>
@@ -61,6 +61,6 @@ export function RemoveDemoWorkspaceDialog({ open, onClose }: RemoveDemoWorkspace
         </ul>
         <TextInput id="remove-demo-confirm" label={`Type ${confirmWord} to confirm`} value={typed} onChange={(e) => setTyped(e.target.value)} autoComplete="off" />
       </div>
-    </Dialog>);
-
+    </Dialog>
+  );
 }

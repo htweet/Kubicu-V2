@@ -39,11 +39,11 @@ function initial(workspaceId: string): CommerceData {
   if (workspaceId === DEMO_WORKSPACE_ID) return seeded;
   // Demo-data workspaces (D200): sample group-buy orders point at this workspace's own sample room address.
   const room = sampleHandle(SAMPLE_ROOM_HANDLE, workspaceId);
-  return { ...seeded, orders: seeded.orders.map((o) => o.sourceHandle === SAMPLE_ROOM_HANDLE ? { ...o, sourceHandle: room } : o) };
+  return { ...seeded, orders: seeded.orders.map((o) => (o.sourceHandle === SAMPLE_ROOM_HANDLE ? { ...o, sourceHandle: room } : o)) };
 }
 
 /** The current workspace's products, stock and orders, saved in this browser. */
-export function CommerceProvider({ children }: {children: React.ReactNode;}) {
+export function CommerceProvider({ children }: { children: React.ReactNode }) {
   const workspaceId = useWorkspace().current.id;
   const [data, setData] = useState<CommerceData>(() => initial(workspaceId));
   const dataRef = useRef(data);
@@ -55,9 +55,9 @@ export function CommerceProvider({ children }: {children: React.ReactNode;}) {
     try {
       writeCommerce(workspaceId, dataRef.current);
     } catch {
-
       // Storage unavailable — data lasts for this visit.
-    }}, [workspaceId]);
+    }
+  }, [workspaceId]);
 
   // Orders placed from the public page in another tab.
   useEffect(() => {
@@ -95,7 +95,7 @@ export function CommerceProvider({ children }: {children: React.ReactNode;}) {
       setData(next);
       return true;
     },
-    [workspaceId]
+    [workspaceId],
   );
 
   // Team members' changes go through their role (D57). Visitors' checkouts and automatic settlement use applySystem.
@@ -109,7 +109,7 @@ export function CommerceProvider({ children }: {children: React.ReactNode;}) {
       }
       return applySystem(fn);
     },
-    [applySystem, writer, team]
+    [applySystem, writer, team],
   );
 
   const loadSample = useCallback(() => {

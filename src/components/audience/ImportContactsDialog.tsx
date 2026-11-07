@@ -12,13 +12,13 @@ import { Switch } from '../ui/Switch';
 import { useT } from '../../contexts/LocaleContext';
 
 type Target = 'skip' | 'name' | 'email' | 'phone' | 'tags';
-const targets: {value: Target;label: string;}[] = [
-{ value: 'skip', label: 'Don’t import' },
-{ value: 'name', label: 'Name' },
-{ value: 'email', label: 'Email' },
-{ value: 'phone', label: 'Phone' },
-{ value: 'tags', label: 'Tags' }];
-
+const targets: { value: Target; label: string }[] = [
+  { value: 'skip', label: 'Don’t import' },
+  { value: 'name', label: 'Name' },
+  { value: 'email', label: 'Email' },
+  { value: 'phone', label: 'Phone' },
+  { value: 'tags', label: 'Tags' },
+];
 
 function guess(h: string): Target {
   const s = h.toLowerCase();
@@ -30,7 +30,7 @@ function guess(h: string): Target {
 }
 
 /** CSV import: map columns, see row errors, confirm consent basis. Imported contacts are never auto-subscribed. */
-export function ImportContactsDialog({ open, onClose }: {open: boolean;onClose: () => void;}) {
+export function ImportContactsDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { apply } = useOps();
   const { t: tr } = useT();
   const [table, setTable] = useState<string[][] | null>(null);
@@ -56,7 +56,7 @@ export function ImportContactsDialog({ open, onClose }: {open: boolean;onClose: 
   };
 
   const rows = (table?.slice(1) ?? []).map((r, i) => {
-    const get = (k: Target) => map.map((m, idx) => m === k ? (r[idx] ?? '').trim() : '').filter(Boolean).join(' ');
+    const get = (k: Target) => map.map((m, idx) => (m === k ? (r[idx] ?? '').trim() : '')).filter(Boolean).join(' ');
     const email = get('email');
     const phone = get('phone');
     const errors: string[] = [];
@@ -70,10 +70,10 @@ export function ImportContactsDialog({ open, onClose }: {open: boolean;onClose: 
   const run = () => {
     if (!lawful) return;
     const ok = apply((d) =>
-    valid.reduce((acc, r) => {
-      const next = upsertContact(acc, { name: r.name, email: r.email, phone: r.phone }, 'import', 'Imported from CSV', { consent: 'transactional' });
-      return r.tags.length ? { ...next, contacts: next.contacts.map((c) => r.email && c.email === r.email || r.phone && c.phone === r.phone ? { ...c, tags: Array.from(new Set([...c.tags, ...r.tags])) } : c) } : next;
-    }, d)
+      valid.reduce((acc, r) => {
+        const next = upsertContact(acc, { name: r.name, email: r.email, phone: r.phone }, 'import', 'Imported from CSV', { consent: 'transactional' });
+        return r.tags.length ? { ...next, contacts: next.contacts.map((c) => ((r.email && c.email === r.email) || (r.phone && c.phone === r.phone) ? { ...c, tags: Array.from(new Set([...c.tags, ...r.tags])) } : c)) } : next;
+      }, d),
     );
     if (ok) {
       toast(tr(valid.length === 1 ? 'Imported {n} contact' : 'Imported {n} contacts', { n: valid.length }), { description: tr('Existing contacts were updated, not duplicated.') });
@@ -93,50 +93,50 @@ export function ImportContactsDialog({ open, onClose }: {open: boolean;onClose: 
       title="Import contacts"
       description="Map your columns, check the rows, then import. Matching emails or phones update existing contacts."
       footer={
-      table ?
-      <Button onClick={run} disabled={valid.length === 0 || !lawful}>
+        table ? (
+          <Button onClick={run} disabled={valid.length === 0 || !lawful}>
             {tr('Import {n}', { n: valid.length })}
-          </Button> :
-
-      <Button leadingIcon={UploadIcon} onClick={() => ref.current?.click()} data-autofocus>
+          </Button>
+        ) : (
+          <Button leadingIcon={UploadIcon} onClick={() => ref.current?.click()} data-autofocus>
             Choose CSV file
           </Button>
-
-      }>
-      
-      <input ref={ref} type="file" accept=".csv,text/csv" className="sr-only" tabIndex={-1} aria-hidden onChange={(e) => {const f = e.target.files?.[0];if (f) void onFile(f);e.target.value = '';}} />
-      {error &&
-      <p className="flex items-start gap-2 rounded-md bg-danger-soft px-3 py-2.5 text-label text-danger" role="alert">
+        )
+      }
+    >
+      <input ref={ref} type="file" accept=".csv,text/csv" className="sr-only" tabIndex={-1} aria-hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) void onFile(f); e.target.value = ''; }} />
+      {error && (
+        <p className="flex items-start gap-2 rounded-md bg-danger-soft px-3 py-2.5 text-label text-danger" role="alert">
           <AlertCircleIcon size={15} className="mt-0.5 shrink-0" aria-hidden /> {error}
         </p>
-      }
+      )}
       {!table && !error && <p className="text-label text-fg-muted">{tr('Exports from Google Contacts, Excel or another tool work. Headers in the first row.')}</p>}
-      {table &&
-      <div className="flex flex-col gap-4">
+      {table && (
+        <div className="flex flex-col gap-4">
           <fieldset>
             <legend className="mb-2 text-label font-semibold text-fg">{tr('Match columns')}</legend>
             <div className="grid gap-3 sm:grid-cols-2">
-              {table[0].map((h, i) =>
-            <SelectInput key={i} id={`map-${i}`} label={h || tr('Column {n}', { n: i + 1 })} value={map[i]} options={targets.map((o) => ({ ...o, label: tr(o.label) }))} onChange={(v) => setMap((m) => m.map((x, idx) => idx === i ? v : x))} />
-            )}
+              {table[0].map((h, i) => (
+                <SelectInput key={i} id={`map-${i}`} label={h || tr('Column {n}', { n: i + 1 })} value={map[i]} options={targets.map((o) => ({ ...o, label: tr(o.label) }))} onChange={(v) => setMap((m) => m.map((x, idx) => (idx === i ? v : x)))} />
+              ))}
             </div>
           </fieldset>
           <p className="text-label text-fg" aria-live="polite">
             <span className="font-semibold">{tr('{n} ready', { n: valid.length })}</span>
             {rows.length - valid.length > 0 && <span className="text-danger"> · {tr('{n} with errors (skipped)', { n: rows.length - valid.length })}</span>}
           </p>
-          {rows.some((r) => r.errors.length) &&
-        <ul className="max-h-32 overflow-auto rounded-md border border-line text-caption">
-              {rows.filter((r) => r.errors.length).map((r) =>
-          <li key={r.line} className="border-t border-line px-3 py-1.5 first:border-t-0">
+          {rows.some((r) => r.errors.length) && (
+            <ul className="max-h-32 overflow-auto rounded-md border border-line text-caption">
+              {rows.filter((r) => r.errors.length).map((r) => (
+                <li key={r.line} className="border-t border-line px-3 py-1.5 first:border-t-0">
                   <span className="font-mono text-fg-subtle">{tr('Row {n}', { n: r.line })}</span> <span className="text-danger">{r.errors.map((e) => tr(e)).join(' · ')}</span>
                 </li>
-          )}
+              ))}
             </ul>
-        }
+          )}
           <Switch id="imp-lawful" label="I have a lawful reason to hold these contacts" description="E.g. they’re existing customers. Imported contacts get service messages only — never marketing unless they opt in themselves." checked={lawful} onChange={setLawful} />
         </div>
-      }
-    </Dialog>);
-
+      )}
+    </Dialog>
+  );
 }

@@ -35,7 +35,7 @@ export interface Person {
 
 export const ACCOUNT_PERSON = 'account';
 const contactKey = (c: string) => `c:${c.trim().toLowerCase().replace(/\s+/g, '')}`;
-const latest = (a: string | null, b: string | null) => !a ? b : !b ? a : Date.parse(a) > Date.parse(b) ? a : b;
+const latest = (a: string | null, b: string | null) => (!a ? b : !b ? a : Date.parse(a) > Date.parse(b) ? a : b);
 
 export function buildPeople(workspaces: Workspace[], account: AccountData): Person[] {
   const holder: Person = {
@@ -50,7 +50,7 @@ export function buildPeople(workspaces: Workspace[], account: AccountData): Pers
     twoStep: account.security.twoStep,
     emailVerified: account.emailVerified,
     sessions: account.sessions.length,
-    sample: false
+    sample: false,
   };
   const others = new Map<string, Person>();
 
@@ -59,31 +59,31 @@ export function buildPeople(workspaces: Workspace[], account: AccountData): Pers
     const members = team?.members ?? [];
     const owner = members.find((m) => m.role === 'owner');
     holder.workspaces.push({ id: w.id, memberId: owner?.id, name: w.name, role: 'owner', lastActiveAt: owner?.lastActiveAt ?? null });
-    members.
-    filter((m) => m.role !== 'owner').
-    forEach((m) => {
-      const key = contactKey(m.contact || m.name);
-      const p =
-      others.get(key) ??
-      {
-        key,
-        name: m.name,
-        email: m.contact.includes('@') ? m.contact : '',
-        phone: m.contact.includes('@') ? '' : m.contact,
-        accountHolder: false,
-        workspaces: [],
-        lastActiveAt: null,
-        joinedAt: m.joinedAt,
-        twoStep: null,
-        emailVerified: null,
-        sessions: null,
-        sample: !!m.sample
-      } as Person;
-      p.workspaces.push({ id: w.id, memberId: m.id, name: w.name, role: m.role, lastActiveAt: m.lastActiveAt });
-      p.lastActiveAt = latest(p.lastActiveAt, m.lastActiveAt);
-      if (m.joinedAt && (!p.joinedAt || Date.parse(m.joinedAt) < Date.parse(p.joinedAt))) p.joinedAt = m.joinedAt;
-      others.set(key, p);
-    });
+    members
+      .filter((m) => m.role !== 'owner')
+      .forEach((m) => {
+        const key = contactKey(m.contact || m.name);
+        const p =
+          others.get(key) ??
+          ({
+            key,
+            name: m.name,
+            email: m.contact.includes('@') ? m.contact : '',
+            phone: m.contact.includes('@') ? '' : m.contact,
+            accountHolder: false,
+            workspaces: [],
+            lastActiveAt: null,
+            joinedAt: m.joinedAt,
+            twoStep: null,
+            emailVerified: null,
+            sessions: null,
+            sample: !!m.sample,
+          } as Person);
+        p.workspaces.push({ id: w.id, memberId: m.id, name: w.name, role: m.role, lastActiveAt: m.lastActiveAt });
+        p.lastActiveAt = latest(p.lastActiveAt, m.lastActiveAt);
+        if (m.joinedAt && (!p.joinedAt || Date.parse(m.joinedAt) < Date.parse(p.joinedAt))) p.joinedAt = m.joinedAt;
+        others.set(key, p);
+      });
   });
 
   return [holder, ...others.values()];
@@ -91,9 +91,9 @@ export function buildPeople(workspaces: Workspace[], account: AccountData): Pers
 
 /** Everyone in one workspace, owner first. */
 export const peopleIn = (people: Person[], workspaceId: string) =>
-people.
-map((p) => ({ person: p, ws: p.workspaces.find((w) => w.id === workspaceId) })).
-filter((x): x is {person: Person;ws: PersonWorkspace;} => !!x.ws).
-sort((a, b) => a.ws.role === 'owner' ? -1 : b.ws.role === 'owner' ? 1 : a.person.name.localeCompare(b.person.name));
+  people
+    .map((p) => ({ person: p, ws: p.workspaces.find((w) => w.id === workspaceId) }))
+    .filter((x): x is { person: Person; ws: PersonWorkspace } => !!x.ws)
+    .sort((a, b) => (a.ws.role === 'owner' ? -1 : b.ws.role === 'owner' ? 1 : a.person.name.localeCompare(b.person.name)));
 
 export const roleNames: Record<Role, string> = { owner: 'Owner', admin: 'Admin', editor: 'Editor', sales: 'Sales', viewer: 'Viewer' };

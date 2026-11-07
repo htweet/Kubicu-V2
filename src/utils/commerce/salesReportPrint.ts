@@ -8,10 +8,10 @@ export interface PrintableReport {
   rangeText: string;
   spaceText: string;
   summary: Summary;
-  income: {id: IncomeType;amount: number;count: number;}[];
-  methods: {id: MethodId;amount: number;count: number;}[];
-  products: {name: string;qty: number;revenue: number;}[];
-  vat: {total: number;count: number;} | null;
+  income: { id: IncomeType; amount: number; count: number }[];
+  methods: { id: MethodId; amount: number; count: number }[];
+  products: { name: string; qty: number; revenue: number }[];
+  vat: { total: number; count: number } | null;
   sample: boolean;
 }
 

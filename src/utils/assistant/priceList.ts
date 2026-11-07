@@ -19,10 +19,10 @@ export function parsePrice(raw: string, thousands: boolean): number | null {
 }
 
 export function parsePriceList(text: string, max = 30): AssistantItem[] {
-  const lines = text.
-  split(/\n|;|•/).
-  map((l) => l.replace(/^\s*(?:[-*•]|\d+[.)])\s*/, '').trim()).
-  filter(Boolean);
+  const lines = text
+    .split(/\n|;|•/)
+    .map((l) => l.replace(/^\s*(?:[-*•]|\d+[.)])\s*/, '').trim())
+    .filter(Boolean);
   // A single comma-separated line ("jollof, asun, small chops") is a list of names.
   const parts = lines.length === 1 && !LINE_PRICE.test(lines[0]) && lines[0].includes(',') ? lines[0].split(',').map((p) => p.trim()).filter(Boolean) : lines;
   const items: AssistantItem[] = [];
@@ -47,14 +47,14 @@ export function looksLikePriceList(text: string): boolean {
  * Fills missing prices from a reply like "Asun 4500, small chops 3000" or, when only one item is
  * missing, a bare "4500". Matches by the start of each item's name.
  */
-export function applyPrices(items: AssistantItem[], reply: string): {items: AssistantItem[];filled: number;} {
+export function applyPrices(items: AssistantItem[], reply: string): { items: AssistantItem[]; filled: number } {
   const missing = items.filter((i) => i.priceNgn === null);
   let filled = 0;
   const bare = /^\s*(?:₦|N)?\s*(\d[\d,]*(?:\.\d+)?)\s*(k)?\s*$/i.exec(reply);
   if (bare && missing.length === 1) {
     const price = parsePrice(bare[1], !!bare[2]);
     if (price === null) return { items, filled: 0 };
-    return { items: items.map((i) => i.id === missing[0].id ? { ...i, priceNgn: price } : i), filled: 1 };
+    return { items: items.map((i) => (i.id === missing[0].id ? { ...i, priceNgn: price } : i)), filled: 1 };
   }
   const given = parsePriceList(reply, 50).filter((g) => g.priceNgn !== null);
   const next = items.map((i) => {

@@ -15,9 +15,9 @@ function read(): PanelState {
       return { left: p.left !== false, right: p.right !== false };
     }
   } catch {
-
     // Fall through to defaults.
-  }return { left: true, right: true };
+  }
+  return { left: true, right: true };
 }
 
 /** Which canvas side panels are open. Both start open; the choice is remembered on this device. */
@@ -28,16 +28,16 @@ export function useCanvasPanels() {
     try {
       window.localStorage.setItem(KEY, JSON.stringify(panels));
     } catch {
-
       // Storage unavailable — the choice lasts for this visit.
-    }}, [panels]);
+    }
+  }, [panels]);
 
   const setLeft = useCallback((left: boolean) => setPanels((p) => ({ ...p, left })), []);
   const setRight = useCallback((right: boolean) => setPanels((p) => ({ ...p, right })), []);
   const toggleLeft = useCallback(() => setPanels((p) => ({ ...p, left: !p.left })), []);
   const toggleRight = useCallback(() => setPanels((p) => ({ ...p, right: !p.right })), []);
   /** Focus mode: hide both if either is open, otherwise bring both back. */
-  const toggleFocus = useCallback(() => setPanels((p) => p.left || p.right ? { left: false, right: false } : { left: true, right: true }), []);
+  const toggleFocus = useCallback(() => setPanels((p) => (p.left || p.right ? { left: false, right: false } : { left: true, right: true })), []);
 
   return { ...panels, focus: !panels.left && !panels.right, setLeft, setRight, toggleLeft, toggleRight, toggleFocus };
 }

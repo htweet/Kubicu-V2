@@ -1,35 +1,35 @@
 export type NotifArea = 'orders' | 'stock' | 'bookings' | 'audience' | 'pages' | 'team' | 'billing' | 'ai' | 'domains';
 
 export type NotifEventId =
-'order_paid' |
-'order_pending' |
-'order_late' |
-'dispute' |
-'escrow' |
-'stage_due' |
-'stock' |
-'booking_today' |
-'booking_request' |
-'booking_cancelled' |
-'lead_new' |
-'task_due' |
-'review_pending' |
-'team_notice' |
-'payment_failed' |
-'renewal_soon' |
-'trial_ending' |
-'ai_low' |
-'domain_status' |
-'dealroom_result' |
-'campaign_phase' |
-'fundraiser' |
-'sub_new' |
-'sub_failed' |
-'sub_cancelled' |
-'form_response' |
-'weekly_digest' |
-'automation' |
-'verification';
+  | 'order_paid'
+  | 'order_pending'
+  | 'order_late'
+  | 'dispute'
+  | 'escrow'
+  | 'stage_due'
+  | 'stock'
+  | 'booking_today'
+  | 'booking_request'
+  | 'booking_cancelled'
+  | 'lead_new'
+  | 'task_due'
+  | 'review_pending'
+  | 'team_notice'
+  | 'payment_failed'
+  | 'renewal_soon'
+  | 'trial_ending'
+  | 'ai_low'
+  | 'domain_status'
+  | 'dealroom_result'
+  | 'campaign_phase'
+  | 'fundraiser'
+  | 'sub_new'
+  | 'sub_failed'
+  | 'sub_cancelled'
+  | 'form_response'
+  | 'weekly_digest'
+  | 'automation'
+  | 'verification';
 
 export type NotifChannel = 'app' | 'email' | 'whatsapp';
 
@@ -51,6 +51,6 @@ export interface AppNotification {
 export interface NotifPrefs {
   channels: Partial<Record<NotifEventId, Partial<Record<NotifChannel, boolean>>>>;
   digest: boolean;
-  quietHours: {on: boolean;from: string;to: string;};
+  quietHours: { on: boolean; from: string; to: string };
   read: string[];
 }

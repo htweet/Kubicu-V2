@@ -12,7 +12,7 @@ interface ColourBandProps {
   fg: string;
   title: string;
   lead: string;
-  cta?: {label: string;to: string;bg: string;fg: string;};
+  cta?: { label: string; to: string; bg: string; fg: string };
   /** Extra content under the lead, e.g. a list. */
   children?: React.ReactNode;
   visual: React.ReactNode;
@@ -34,22 +34,22 @@ export function ColourBand({ id, bg, fg, title, lead, cta, children, visual, fli
             <p className="mt-6 text-[18px] font-medium leading-relaxed opacity-90">{lead}</p>
           </Reveal>
           {children && <Reveal delay={0.22}>{children}</Reveal>}
-          {cta &&
-          <Reveal delay={0.28}>
+          {cta && (
+            <Reveal delay={0.28}>
               <button
-              type="button"
-              onClick={() => navigate(cta.to)}
-              style={{ backgroundColor: cta.bg, color: cta.fg }}
-              className="group mt-9 inline-flex h-14 items-center gap-2 whitespace-nowrap rounded-full px-7 text-[16px] font-bold transition-transform duration-150 ease-out hover:scale-[1.03] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current focus-visible:ring-offset-2">
-              
+                type="button"
+                onClick={() => navigate(cta.to)}
+                style={{ backgroundColor: cta.bg, color: cta.fg }}
+                className="group mt-9 inline-flex h-14 items-center gap-2 whitespace-nowrap rounded-full px-7 text-[16px] font-bold transition-transform duration-150 ease-out hover:scale-[1.03] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current focus-visible:ring-offset-2"
+              >
                 {cta.label}
                 <ArrowRightIcon size={18} aria-hidden className="transition-transform duration-150 ease-out group-hover:translate-x-0.5" />
               </button>
             </Reveal>
-          }
+          )}
         </div>
         <div className={cn('relative', flip && 'lg:order-1')}>{visual}</div>
       </div>
-    </section>);
-
+    </section>
+  );
 }

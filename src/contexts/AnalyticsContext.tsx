@@ -30,7 +30,7 @@ function initial(workspaceId: string): AnalyticsData {
 }
 
 /** The workspace's recorded visits (D61). Public pages write; workspace screens read and refresh. */
-export function AnalyticsProvider({ children }: {children: React.ReactNode;}) {
+export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
   const workspaceId = useWorkspace().current.id;
   const [data, setData] = useState<AnalyticsData>(() => initial(workspaceId));
   const ref = useRef(data);
@@ -40,9 +40,9 @@ export function AnalyticsProvider({ children }: {children: React.ReactNode;}) {
     try {
       if (!readAnalytics(workspaceId)) writeAnalytics(workspaceId, ref.current);
     } catch {
-
       // Storage unavailable — nothing recorded this visit.
-    }const refresh = () => {
+    }
+    const refresh = () => {
       const next = readAnalytics(workspaceId);
       if (next) setData(next);
     };
@@ -67,7 +67,7 @@ export function AnalyticsProvider({ children }: {children: React.ReactNode;}) {
       }
       setData(readAnalytics(workspaceId) ?? next);
     },
-    [workspaceId]
+    [workspaceId],
   );
 
   const value = useMemo<AnalyticsValue>(
@@ -101,12 +101,12 @@ export function AnalyticsProvider({ children }: {children: React.ReactNode;}) {
             delete rest.campaign;
             delete rest.via;
             return [rest];
-          })
+          }),
         }));
         return removed;
-      }
+      },
     }),
-    [data, apply]
+    [data, apply],
   );
   return <AnalyticsContext.Provider value={value}>{children}</AnalyticsContext.Provider>;
 }

@@ -15,7 +15,7 @@ import { useT } from '../../contexts/LocaleContext';
 type Step = 'method' | 'setup' | 'codes';
 
 /** Turn on two-step sign-in: choose a method, prove it works, keep backup codes. */
-export function TwoStepDialog({ open, onClose }: {open: boolean;onClose: () => void;}) {
+export function TwoStepDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t: tr } = useT();
   const account = useAccount();
   const [step, setStep] = useState<Step>('method');
@@ -63,41 +63,41 @@ export function TwoStepDialog({ open, onClose }: {open: boolean;onClose: () => v
     setSaved(true);
   };
 
-  const title = step === 'method' ? 'Turn on two-step sign-in' : step === 'setup' ? method === 'app' ? 'Connect your authenticator app' : 'Confirm your phone' : 'Save your backup codes';
+  const title = step === 'method' ? 'Turn on two-step sign-in' : step === 'setup' ? (method === 'app' ? 'Connect your authenticator app' : 'Confirm your phone') : 'Save your backup codes';
   const description =
-  step === 'method' ?
-  'After your password, you’ll confirm it’s you with a code. It stops someone who only knows your password.' :
-  step === 'setup' ?
-  method === 'app' ?
-  'Scan this with Google Authenticator, Microsoft Authenticator or 1Password, then enter the 6-digit code it shows.' :
-  tr('We texted a code to {phone}.', { phone: account.profile.phone }) :
-  'If you lose your phone, each of these codes lets you in once. Keep them somewhere safe — we can’t show them again.';
+    step === 'method'
+      ? 'After your password, you’ll confirm it’s you with a code. It stops someone who only knows your password.'
+      : step === 'setup'
+        ? method === 'app'
+          ? 'Scan this with Google Authenticator, Microsoft Authenticator or 1Password, then enter the 6-digit code it shows.'
+          : tr('We texted a code to {phone}.', { phone: account.profile.phone })
+        : 'If you lose your phone, each of these codes lets you in once. Keep them somewhere safe — we can’t show them again.';
 
   const footer =
-  step === 'method' ?
-  <>
+    step === 'method' ? (
+      <>
         <Button variant="tertiary" onClick={onClose}>
           Cancel
         </Button>
         <Button
-      onClick={() => {
-        setStep('setup');
-        if (method === 'sms') toast(tr('Code sent'), { description: tr('Prototype: any 6 digits work except 000000.') });
-      }}>
-      
+          onClick={() => {
+            setStep('setup');
+            if (method === 'sms') toast(tr('Code sent'), { description: tr('Prototype: any 6 digits work except 000000.') });
+          }}
+        >
           Continue
         </Button>
-      </> :
-  step === 'setup' ?
-  <>
+      </>
+    ) : step === 'setup' ? (
+      <>
         <Button variant="tertiary" onClick={() => setStep('method')}>
           Back
         </Button>
         <Button onClick={verify}>Verify</Button>
-      </> :
-
-  <>
-        <Button variant="secondary" leadingIcon={CopyIcon} onClick={() => navigator.clipboard?.writeText(codes.join('\n')).then(() => {setSaved(true);toast.success(tr('Codes copied'));})}>
+      </>
+    ) : (
+      <>
+        <Button variant="secondary" leadingIcon={CopyIcon} onClick={() => navigator.clipboard?.writeText(codes.join('\n')).then(() => { setSaved(true); toast.success(tr('Codes copied')); })}>
           Copy
         </Button>
         <Button variant="secondary" leadingIcon={DownloadIcon} onClick={download}>
@@ -106,30 +106,30 @@ export function TwoStepDialog({ open, onClose }: {open: boolean;onClose: () => v
         <Button disabled={!saved} title={saved ? undefined : tr('Copy or download the codes first')} onClick={finish}>
           I’ve saved them
         </Button>
-      </>;
-
+      </>
+    );
 
   return (
     <Dialog open={open} onClose={onClose} title={title} description={description} footer={footer}>
-      {step === 'method' &&
-      <fieldset className="flex flex-col gap-3">
+      {step === 'method' && (
+        <fieldset className="flex flex-col gap-3">
           <legend className="sr-only">{tr('How you’ll get codes')}</legend>
           <MethodOption icon={SmartphoneIcon} checked={method === 'app'} onSelect={() => setMethod('app')} title="Authenticator app" text="Recommended. Works without signal or airtime." />
           <MethodOption
-          icon={MessageSquareIcon}
-          checked={method === 'sms'}
-          disabled={!smsReady}
-          onSelect={() => setMethod('sms')}
-          title="Text message"
-          text={smsReady ? tr('Codes go to {phone}.', { phone: account.profile.phone }) : 'Add and verify a phone on your Profile first.'} />
-        
+            icon={MessageSquareIcon}
+            checked={method === 'sms'}
+            disabled={!smsReady}
+            onSelect={() => setMethod('sms')}
+            title="Text message"
+            text={smsReady ? tr('Codes go to {phone}.', { phone: account.profile.phone }) : 'Add and verify a phone on your Profile first.'}
+          />
         </fieldset>
-      }
+      )}
 
-      {step === 'setup' &&
-      <div className="flex flex-col gap-5">
-          {method === 'app' &&
-        <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
+      {step === 'setup' && (
+        <div className="flex flex-col gap-5">
+          {method === 'app' && (
+            <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
               <div className="w-40 shrink-0 rounded-md border border-line bg-white p-2">
                 <QrPreview url={`otpauth://totp/KUBICU:${encodeURIComponent(account.profile.email)}?secret=${secret}&issuer=KUBICU`} style={qrStyle} alt={tr('QR code for your authenticator app')} />
               </div>
@@ -138,25 +138,25 @@ export function TwoStepDialog({ open, onClose }: {open: boolean;onClose: () => v
                 <p className="mt-2 break-all rounded-md bg-sunken px-3 py-2 font-mono text-label tracking-wider text-fg">{secret.match(/.{1,4}/g)?.join(' ')}</p>
               </div>
             </div>
-        }
+          )}
           <TextInput id="twostep-code" label="6-digit code" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={code} error={codeError} hint="Prototype: any 6 digits work except 000000." onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))} />
         </div>
-      }
+      )}
 
-      {step === 'codes' &&
-      <ol className="grid grid-cols-2 gap-2 rounded-md border border-line bg-sunken p-4 font-mono text-label text-fg">
-          {codes.map((c) =>
-        <li key={c} className="tabular-nums">
+      {step === 'codes' && (
+        <ol className="grid grid-cols-2 gap-2 rounded-md border border-line bg-sunken p-4 font-mono text-label text-fg">
+          {codes.map((c) => (
+            <li key={c} className="tabular-nums">
               {c}
             </li>
-        )}
+          ))}
         </ol>
-      }
-    </Dialog>);
-
+      )}
+    </Dialog>
+  );
 }
 
-function MethodOption({ icon: Icon, checked, disabled, onSelect, title, text }: {icon: typeof SmartphoneIcon;checked: boolean;disabled?: boolean;onSelect: () => void;title: string;text: string;}) {
+function MethodOption({ icon: Icon, checked, disabled, onSelect, title, text }: { icon: typeof SmartphoneIcon; checked: boolean; disabled?: boolean; onSelect: () => void; title: string; text: string }) {
   const { t } = useT();
   title = t(title);
   text = t(text);
@@ -170,6 +170,6 @@ function MethodOption({ icon: Icon, checked, disabled, onSelect, title, text }: 
         <span className="block text-label font-semibold text-fg">{title}</span>
         <span className="block text-caption text-fg-muted">{text}</span>
       </span>
-    </label>);
-
+    </label>
+  );
 }

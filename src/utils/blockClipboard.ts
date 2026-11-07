@@ -38,7 +38,7 @@ export function writeClipboard(blocks: Block[]): boolean {
 export function readClipboard(): Block[] {
   try {
     const raw = localStorage.getItem(KEY);
-    const parsed = raw ? JSON.parse(raw) as {blocks?: Block[];} : null;
+    const parsed = raw ? (JSON.parse(raw) as { blocks?: Block[] }) : null;
     return Array.isArray(parsed?.blocks) ? parsed.blocks : [];
   } catch {
     return [];

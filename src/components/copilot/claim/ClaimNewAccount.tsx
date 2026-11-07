@@ -19,7 +19,7 @@ interface Props {
   /** Reviewer switch: the first code or sign-in attempt fails. */
   failFirst: boolean;
   onStep: (step: ClaimStep, patch?: Partial<PendingClaim>) => void;
-  onFinish: (input: {workspaceName: string;ownerName: string;whatsapp: string;}) => void;
+  onFinish: (input: { workspaceName: string; ownerName: string; whatsapp: string }) => void;
   /** Signing in to an existing account can also end in a new workspace. */
   backTo?: ClaimStep;
 }
@@ -32,7 +32,7 @@ export function ClaimNewAccount({ step, pending, draft, chatPhone, failFirst, on
   return <SetupStep pending={pending} draft={draft} chatPhone={chatPhone} onStep={onStep} onFinish={onFinish} backTo={backTo ?? 'verify'} />;
 }
 
-function SignUpStep({ onStep }: {onStep: Props['onStep'];}) {
+function SignUpStep({ onStep }: { onStep: Props['onStep'] }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -42,7 +42,7 @@ function SignUpStep({ onStep }: {onStep: Props['onStep'];}) {
     name: name.trim() ? '' : 'Enter your name',
     email: isValidEmail(email) ? '' : 'Enter a valid email, like you@example.com',
     password: password.length >= 8 ? '' : 'Use at least 8 characters',
-    agreed: agreed ? '' : 'Please agree to continue'
+    agreed: agreed ? '' : 'Please agree to continue',
   };
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,11 +77,11 @@ function SignUpStep({ onStep }: {onStep: Props['onStep'];}) {
         Create account
       </Button>
       <p className="text-caption text-fg-subtle">We never create an account from your WhatsApp number — only from the email you type here.</p>
-    </form>);
-
+    </form>
+  );
 }
 
-function VerifyStep({ email, failFirst, onStep }: {email: string;failFirst: boolean;onStep: Props['onStep'];}) {
+function VerifyStep({ email, failFirst, onStep }: { email: string; failFirst: boolean; onStep: Props['onStep'] }) {
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const [failed, setFailed] = useState(false);
@@ -122,8 +122,8 @@ function VerifyStep({ email, failFirst, onStep }: {email: string;failFirst: bool
           setCode(e.target.value.replace(/\D/g, ''));
           setError('');
         }}
-        error={error || undefined} />
-      
+        error={error || undefined}
+      />
       <Button type="submit" variant="brand" size="lg" fullWidth loading={loading}>
         Confirm email
       </Button>
@@ -134,15 +134,15 @@ function VerifyStep({ email, failFirst, onStep }: {email: string;failFirst: bool
           setError('');
           setCode('');
         }}
-        className="self-start rounded-sm text-label font-semibold text-fg underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-        
+        className="self-start rounded-sm text-label font-semibold text-fg underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+      >
         {resent ? 'New code sent — send another' : 'Send a new code'}
       </button>
-    </form>);
-
+    </form>
+  );
 }
 
-function SetupStep({ pending, draft, chatPhone, onStep, onFinish, backTo }: {pending: PendingClaim;draft: CopilotDraft;chatPhone: string;onStep: Props['onStep'];onFinish: Props['onFinish'];backTo: ClaimStep;}) {
+function SetupStep({ pending, draft, chatPhone, onStep, onFinish, backTo }: { pending: PendingClaim; draft: CopilotDraft; chatPhone: string; onStep: Props['onStep']; onFinish: Props['onFinish']; backTo: ClaimStep }) {
   const [workspaceName, setWorkspaceName] = useState(draft.brief.name || draft.doc.title);
   const [ownerName, setOwnerName] = useState(pending.name ?? '');
   const [whatsapp, setWhatsapp] = useState(chatPhone);
@@ -154,7 +154,7 @@ function SetupStep({ pending, draft, chatPhone, onStep, onFinish, backTo }: {pen
   const errors = {
     workspaceName: workspaceName.trim() ? '' : 'Give your workspace a name',
     ownerName: ownerName.trim() ? '' : 'Enter your name',
-    whatsapp: phone === null ? 'Enter a complete mobile number with its country code, like +254 712 345 678' : ''
+    whatsapp: phone === null ? 'Enter a complete mobile number with its country code, like +254 712 345 678' : '',
   };
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -181,14 +181,14 @@ function SetupStep({ pending, draft, chatPhone, onStep, onFinish, backTo }: {pen
       <Button type="submit" variant="brand" size="lg" fullWidth loading={loading}>
         Open my draft in KUBICU
       </Button>
-    </form>);
-
+    </form>
+  );
 }
 
-export function BackButton({ onClick }: {onClick: () => void;}) {
+export function BackButton({ onClick }: { onClick: () => void }) {
   return (
     <button type="button" onClick={onClick} className="-ml-1 inline-flex h-9 items-center gap-1.5 self-start rounded-full px-2 text-label font-medium text-fg-muted hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
       <ArrowLeftIcon size={15} aria-hidden /> Back
-    </button>);
-
+    </button>
+  );
 }

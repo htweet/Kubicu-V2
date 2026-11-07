@@ -40,20 +40,20 @@ export function ReviewBadge() {
   const latest = team.data.reviews.find((r) => r.spaceId === currentSpace.id && r.status !== 'withdrawn');
   if (!latest || !team.data.approvalsOn) return null;
   if (latest.status === 'pending')
-  return (
-    <span title={`Sent by ${latest.requestedBy}${latest.updatedAt !== latest.createdAt ? ' · updated since' : ''}`}>
+    return (
+      <span title={`Sent by ${latest.requestedBy}${latest.updatedAt !== latest.createdAt ? ' · updated since' : ''}`}>
         <Badge tone="info" icon={SendIcon}>
           In review
         </Badge>
-      </span>);
-
+      </span>
+    );
   if (latest.status === 'changes')
-  return (
-    <span title={latest.comment ? `${latest.decidedBy}: “${latest.comment}”` : undefined}>
+    return (
+      <span title={latest.comment ? `${latest.decidedBy}: “${latest.comment}”` : undefined}>
         <Badge tone="warning" icon={MessageSquareWarningIcon}>
           Changes requested
         </Badge>
-      </span>);
-
+      </span>
+    );
   return null;
 }

@@ -14,11 +14,11 @@ const statusCopy = {
   needs_response: { label: 'Needs your response', tone: 'warning' as const },
   under_review: { label: 'With the provider', tone: 'info' as const },
   won: { label: 'Resolved in your favour', tone: 'success' as const },
-  lost: { label: 'Resolved for the customer', tone: 'neutral' as const }
+  lost: { label: 'Resolved for the customer', tone: 'neutral' as const },
 };
 
 /** Disputes are decided by the customer’s bank and the payment provider — KUBICU helps gather evidence. */
-export function DisputePanel({ order }: {order: Order;}) {
+export function DisputePanel({ order }: { order: Order }) {
   const { apply } = useCommerce();
   const d = order.dispute!;
   const [response, setResponse] = useState(d.response);
@@ -32,7 +32,7 @@ export function DisputePanel({ order }: {order: Order;}) {
       return;
     }
     if (apply((data) => updateDispute(data, order.id, { status: 'under_review', response: response.trim() }, 'Dispute response submitted to provider')))
-    toast('Response submitted (test mode)', { description: 'Providers usually decide within 30–75 days.' });
+      toast('Response submitted (test mode)', { description: 'Providers usually decide within 30–75 days.' });
   };
 
   return (
@@ -61,51 +61,51 @@ export function DisputePanel({ order }: {order: Order;}) {
 
       <div className="mt-4">
         <p className="text-label font-medium text-fg">Evidence</p>
-        {d.evidence.length === 0 ?
-        <p className="mt-1 text-caption text-fg-subtle">Delivery confirmation, chat screenshots or a signed receipt help most.</p> :
-
-        <ul className="mt-1.5 flex flex-col gap-1">
-            {d.evidence.map((e) =>
-          <li key={e.id} className="flex items-center gap-2 text-caption text-fg">
+        {d.evidence.length === 0 ? (
+          <p className="mt-1 text-caption text-fg-subtle">Delivery confirmation, chat screenshots or a signed receipt help most.</p>
+        ) : (
+          <ul className="mt-1.5 flex flex-col gap-1">
+            {d.evidence.map((e) => (
+              <li key={e.id} className="flex items-center gap-2 text-caption text-fg">
                 <FileTextIcon size={13} className="text-fg-subtle" aria-hidden /> {e.name}
               </li>
-          )}
+            ))}
           </ul>
-        }
-        {open &&
-        <>
+        )}
+        {open && (
+          <>
             <input
-            ref={fileRef}
-            type="file"
-            className="sr-only"
-            tabIndex={-1}
-            aria-hidden
-            onChange={(e) => {
-              const f = e.target.files?.[0];
-              if (f) apply((data) => updateDispute(data, order.id, { evidence: [...d.evidence, { id: uid('evd'), name: f.name, at: new Date().toISOString() }] }, `Evidence added: ${f.name}`));
-              e.target.value = '';
-            }} />
-          
+              ref={fileRef}
+              type="file"
+              className="sr-only"
+              tabIndex={-1}
+              aria-hidden
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) apply((data) => updateDispute(data, order.id, { evidence: [...d.evidence, { id: uid('evd'), name: f.name, at: new Date().toISOString() }] }, `Evidence added: ${f.name}`));
+                e.target.value = '';
+              }}
+            />
             <Button size="sm" variant="secondary" leadingIcon={PaperclipIcon} className="mt-2" onClick={() => fileRef.current?.click()}>
               Add evidence
             </Button>
           </>
-        }
+        )}
       </div>
 
-      {open ?
-      <div className="mt-4 flex flex-col gap-3">
+      {open ? (
+        <div className="mt-4 flex flex-col gap-3">
           <TextArea id={`dispute-resp-${order.id}`} label="Your response" rows={3} value={response} placeholder="What happened, with dates. Keep it factual." onChange={(e) => setResponse(e.target.value)} />
           <Button size="sm" className="self-start" onClick={submit}>
             Submit to provider
           </Button>
-        </div> :
+        </div>
+      ) : (
+        d.response && <p className="mt-4 rounded-md bg-raised px-3 py-2 text-caption text-fg-muted">“{d.response}”</p>
+      )}
 
-      d.response && <p className="mt-4 rounded-md bg-raised px-3 py-2 text-caption text-fg-muted">“{d.response}”</p>
-      }
-
-      {d.status === 'under_review' &&
-      <div className="mt-4 border-t border-line pt-3">
+      {d.status === 'under_review' && (
+        <div className="mt-4 border-t border-line pt-3">
           <p className="text-caption text-fg-subtle">Prototype only — simulate the provider’s decision:</p>
           <div className="mt-2 flex gap-2">
             <Button size="sm" variant="secondary" onClick={() => apply((data) => updateDispute(data, order.id, { status: 'won' }, 'Dispute resolved in your favour'))}>
@@ -116,8 +116,8 @@ export function DisputePanel({ order }: {order: Order;}) {
             </Button>
           </div>
         </div>
-      }
+      )}
       <p className="mt-3 text-caption text-fg-subtle">The customer’s bank and your payment provider decide disputes. KUBICU never holds or releases funds.</p>
-    </section>);
-
+    </section>
+  );
 }

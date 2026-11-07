@@ -25,10 +25,10 @@ export function isFromKubicu(rawBody, header, secret) {
 const sandboxOptions = apiResources.filter((r) => r.method === 'GET');
 
 const basics = [
-['Sign in with a key', 'Send your key as a Bearer token. Test keys (kub_test_) only see sample data; live keys see real data. Each key only gets the permissions you tick.'],
-['Money and phones', 'Amounts are whole numbers in the workspace’s currency: "NGN", "KES", "GHS" or "ZAR". Phones are international, with their country code, e.g. +254 712 345 678. Times are ISO 8601 with a time zone offset.'],
-['Limits and errors', 'Requests per minute per key: {n}. Over that you get 429 with Retry-After. Errors always carry a code and a plain message.']] as
-const;
+  ['Sign in with a key', 'Send your key as a Bearer token. Test keys (kub_test_) only see sample data; live keys see real data. Each key only gets the permissions you tick.'],
+  ['Money and phones', 'Amounts are whole numbers in the workspace’s currency: "NGN", "KES", "GHS" or "ZAR". Phones are international, with their country code, e.g. +254 712 345 678. Times are ISO 8601 with a time zone offset.'],
+  ['Limits and errors', 'Requests per minute per key: {n}. Over that you get 429 with Retry-After. Errors always carry a code and a plain message.'],
+] as const;
 
 /**
  * Public developer docs with a test sandbox and changelog (D131).
@@ -41,7 +41,7 @@ export function Developers() {
   const [ran, setRan] = useState<string | null>(null);
   const [running, setRunning] = useState(false);
   const navigate = useNavigate();
-  const retries = RETRY_MINUTES.map((m) => m >= 60 ? `${m / 60}h` : `${m}m`).join(', ');
+  const retries = RETRY_MINUTES.map((m) => (m >= 60 ? `${m / 60}h` : `${m}m`)).join(', ');
 
   const run = () => {
     setRunning(true);
@@ -77,12 +77,12 @@ export function Developers() {
       <section className="mt-24" aria-labelledby="basics">
         <SectionHeading id="basics" title={tr('The basics')} />
         <dl className="mt-8 grid gap-x-10 gap-y-6 border-t border-line pt-8 md:grid-cols-3">
-          {basics.map(([t, d]) =>
-          <div key={t}>
+          {basics.map(([t, d]) => (
+            <div key={t}>
               <dt className="text-label font-semibold text-fg">{tr(t)}</dt>
               <dd className="mt-1.5 text-label leading-relaxed text-fg-muted">{tr(d, { n: RATE_LIMIT_PER_MIN })}</dd>
             </div>
-          )}
+          ))}
         </dl>
       </section>
 
@@ -105,8 +105,8 @@ export function Developers() {
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
-              {apiResources.map((r) =>
-              <tr key={`${r.method}${r.path}`}>
+              {apiResources.map((r) => (
+                <tr key={`${r.method}${r.path}`}>
                   <th scope="row" className="whitespace-nowrap px-5 py-3 font-mono text-[13px] font-normal text-fg">
                     <span className={cn('mr-2 font-semibold', methodTone[r.method])}>{r.method}</span>
                     {r.path}
@@ -114,7 +114,7 @@ export function Developers() {
                   <td className="px-5 py-3 text-label text-fg-muted">{tr(r.summary)}</td>
                   <td className="whitespace-nowrap px-5 py-3 font-mono text-caption text-fg-subtle">{r.scope}</td>
                 </tr>
-              )}
+              ))}
             </tbody>
           </table>
         </div>
@@ -134,13 +134,13 @@ export function Developers() {
                 setPicked(e.target.value);
                 setRan(null);
               }}
-              className="h-11 rounded-md border border-line bg-raised px-3 font-mono text-[13px] text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-              
-              {sandboxOptions.map((r) =>
-              <option key={r.path} value={`${r.method} ${r.path}`}>
+              className="h-11 rounded-md border border-line bg-raised px-3 font-mono text-[13px] text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+            >
+              {sandboxOptions.map((r) => (
+                <option key={r.path} value={`${r.method} ${r.path}`}>
                   {r.method} {r.path}
                 </option>
-              )}
+              ))}
             </select>
             <Button variant="brand" leadingIcon={PlayIcon} loading={running} onClick={run} className="self-start">
               {tr('Send request')}
@@ -156,12 +156,12 @@ export function Developers() {
         <SectionHeading id="webhooks" title={tr('Webhooks')} lead={tr('Signed with your endpoint’s secret. Failed deliveries retry after: {list}.', { list: retries })} />
         <div className="mt-8 grid gap-10 lg:grid-cols-2">
           <ul className="grid grid-cols-1 gap-x-6 sm:grid-cols-2">
-            {webhookEvents.map((e) =>
-            <li key={e.id} className="border-b border-line py-2.5">
+            {webhookEvents.map((e) => (
+              <li key={e.id} className="border-b border-line py-2.5">
                 <span className="block font-mono text-[13px] text-fg">{e.id}</span>
                 <span className="block text-caption text-fg-subtle">{tr(e.label)}</span>
               </li>
-            )}
+            ))}
           </ul>
           <div>
             <p className="text-label font-semibold text-fg">{tr('Check the signature (Node.js)')}</p>
@@ -173,17 +173,17 @@ export function Developers() {
       <section className="mt-24" aria-labelledby="changelog">
         <SectionHeading id="changelog" title={tr('Changelog')} />
         <ol className="mt-8 border-t border-line">
-          {apiChangelog.map((c) =>
-          <li key={c.title} className="grid gap-1 border-b border-line py-5 md:grid-cols-[160px_minmax(0,1fr)] md:gap-8">
+          {apiChangelog.map((c) => (
+            <li key={c.title} className="grid gap-1 border-b border-line py-5 md:grid-cols-[160px_minmax(0,1fr)] md:gap-8">
               <span className="text-caption tabular-nums text-fg-subtle">{c.date}</span>
               <span>
                 <span className="block text-label font-semibold text-fg">{tr(c.title)}</span>
                 <span className="mt-1 block text-label text-fg-muted">{tr(c.body)}</span>
               </span>
             </li>
-          )}
+          ))}
         </ol>
       </section>
-    </div>);
-
+    </div>
+  );
 }

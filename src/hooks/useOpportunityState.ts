@@ -33,26 +33,26 @@ export function useOpportunityState(workspaceId: string) {
         try {
           window.localStorage.setItem(key(workspaceId), JSON.stringify(next));
         } catch {
-
-          /* storage full — keep in memory */}
+          /* storage full — keep in memory */
+        }
         return next;
       });
     },
-    [workspaceId]
+    [workspaceId],
   );
 
   const snooze = (id: string, days: number) => update((s) => ({ ...s, snoozed: { ...s.snoozed, [id]: new Date(Date.now() + days * 86400000).toISOString() } }));
   const dismiss = (id: string) => update((s) => ({ ...s, dismissed: { ...s.dismissed, [id]: new Date().toISOString() } }));
   const restore = (id: string) =>
-  update((s) => {
-    const snoozed = { ...s.snoozed };
-    const dismissed = { ...s.dismissed };
-    delete snoozed[id];
-    delete dismissed[id];
-    return { snoozed, dismissed };
-  });
+    update((s) => {
+      const snoozed = { ...s.snoozed };
+      const dismissed = { ...s.dismissed };
+      delete snoozed[id];
+      delete dismissed[id];
+      return { snoozed, dismissed };
+    });
 
-  const isHidden = (id: string, now = Date.now()) => !!state.dismissed[id] || !!state.snoozed[id] && Date.parse(state.snoozed[id]) > now;
+  const isHidden = (id: string, now = Date.now()) => !!state.dismissed[id] || (!!state.snoozed[id] && Date.parse(state.snoozed[id]) > now);
 
   return { state, snooze, dismiss, restore, isHidden };
 }

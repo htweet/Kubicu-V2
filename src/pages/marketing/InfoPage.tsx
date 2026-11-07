@@ -16,7 +16,7 @@ const pages: Record<string, () => JSX.Element> = {
   contact: Contact,
   about: About,
   roadmap: Roadmap,
-  report: ReportAPage
+  report: ReportAPage,
 };
 
 /** /about/:topic — legal and policy documents, plus trust, help, contact, about and roadmap (D78). */

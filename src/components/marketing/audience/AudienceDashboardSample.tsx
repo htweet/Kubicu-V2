@@ -4,11 +4,11 @@ import { SearchIcon } from 'lucide-react';
 import { useT } from '../../../contexts/LocaleContext';
 
 const contacts = [
-{ name: 'Amaka Eze', source: 'Newsletter · Instagram link', consent: 'Subscribed', tags: ['regular'] },
-{ name: 'Tunde Bello', source: 'Booking · WhatsApp link', consent: 'Updates only', tags: ['braids'] },
-{ name: 'Zainab Musa', source: 'Order · Stall QR', consent: 'Subscribed', tags: ['wholesale', 'abuja'] },
-{ name: 'Kelechi Obi', source: 'Enquiry form', consent: 'Updates only', tags: [] }];
-
+  { name: 'Amaka Eze', source: 'Newsletter · Instagram link', consent: 'Subscribed', tags: ['regular'] },
+  { name: 'Tunde Bello', source: 'Booking · WhatsApp link', consent: 'Updates only', tags: ['braids'] },
+  { name: 'Zainab Musa', source: 'Order · Stall QR', consent: 'Subscribed', tags: ['wholesale', 'abuja'] },
+  { name: 'Kelechi Obi', source: 'Enquiry form', consent: 'Updates only', tags: [] },
+];
 
 const ease = [0.23, 1, 0.32, 1] as const;
 
@@ -27,26 +27,26 @@ export function AudienceDashboardSample() {
           <SearchIcon size={14} aria-hidden /> {tr('Search name, phone or tag')}
         </div>
         <div className="mt-3 flex flex-wrap gap-1.5 text-[12px] font-semibold">
-          {['Subscribed', 'From Instagram', 'Tag: regular'].map((f, i) =>
-          <span key={f} className={i === 0 ? 'rounded-full bg-[rgb(20_20_18)] px-2.5 py-1 text-white' : 'rounded-full bg-[rgb(238_233_221)] px-2.5 py-1'}>
+          {['Subscribed', 'From Instagram', 'Tag: regular'].map((f, i) => (
+            <span key={f} className={i === 0 ? 'rounded-full bg-[rgb(20_20_18)] px-2.5 py-1 text-white' : 'rounded-full bg-[rgb(238_233_221)] px-2.5 py-1'}>
               {tr(f)}
             </span>
-          )}
+          ))}
         </div>
         <ul className="mt-3 flex flex-col">
-          {contacts.map((c, i) =>
-          <motion.li
-            key={c.name}
-            className="grid grid-cols-[36px_minmax(0,1fr)_auto] items-center gap-3 border-t border-[rgb(238_233_221)] py-3"
-            initial={reduce ? false : { opacity: 0, x: 10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.26, delay: 0.3 + i * 0.05, ease }}>
-            
+          {contacts.map((c, i) => (
+            <motion.li
+              key={c.name}
+              className="grid grid-cols-[36px_minmax(0,1fr)_auto] items-center gap-3 border-t border-[rgb(238_233_221)] py-3"
+              initial={reduce ? false : { opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.26, delay: 0.3 + i * 0.05, ease }}
+            >
               <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[rgb(var(--kb-peach))] text-[12px] font-extrabold text-[rgb(var(--kb-clay))]">
-                {c.name.
-              split(' ').
-              map((p) => p[0]).
-              join('')}
+                {c.name
+                  .split(' ')
+                  .map((p) => p[0])
+                  .join('')}
               </span>
               <span className="min-w-0">
                 <span className="block truncate text-[14px] font-bold">{c.name}</span>
@@ -56,30 +56,30 @@ export function AudienceDashboardSample() {
                 {tr(c.consent)}
               </span>
             </motion.li>
-          )}
+          ))}
         </ul>
       </div>
       <motion.div
         className="absolute -bottom-6 -left-3 z-10 w-[230px] rounded-[20px] bg-[rgb(var(--kb-clay))] p-4 text-white shadow-3 sm:-left-8"
         initial={reduce ? false : { opacity: 0, y: 12, scale: 0.96 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.28, delay: 0.6, ease }}>
-        
+        transition={{ duration: 0.28, delay: 0.6, ease }}
+      >
         <p className="text-[11px] font-bold uppercase tracking-[0.08em] opacity-80">{tr('Where they came from · 30 days')}</p>
         <ul className="mt-2 flex flex-col gap-1.5 text-[13px]">
           {[
-          ['Instagram link', 42],
-          ['Stall QR', 27],
-          ['WhatsApp link', 19]].
-          map(([l, n]) =>
-          <li key={l as string} className="flex justify-between">
+            ['Instagram link', 42],
+            ['Stall QR', 27],
+            ['WhatsApp link', 19],
+          ].map(([l, n]) => (
+            <li key={l as string} className="flex justify-between">
               <span>{tr(l as string)}</span>
               <span className="font-bold tabular-nums">{n}</span>
             </li>
-          )}
+          ))}
         </ul>
       </motion.div>
       <figcaption className="sr-only">{tr('Sample contacts list with sources, consent and tags. People and figures are fictional.')}</figcaption>
-    </figure>);
-
+    </figure>
+  );
 }

@@ -62,8 +62,8 @@ export function UssdPay({ theme: t, amount, onPaid, onBack, inline }: UssdPayPro
   const dialled = () => {
     setStage('waiting');
     window.setTimeout(() => {
-      if (simulate === 'declines') setStage('declined');else
-      onPaid(simulate === 'confirms' ? 'success' : 'pending');
+      if (simulate === 'declines') setStage('declined');
+      else onPaid(simulate === 'confirms' ? 'success' : 'pending');
     }, 2200);
   };
 
@@ -91,12 +91,12 @@ export function UssdPay({ theme: t, amount, onPaid, onBack, inline }: UssdPayPro
           <span className="text-[16px] font-semibold tabular-nums">{formatNgn(amount)}</span>
         </p>
 
-        {stage === 'bank' &&
-        <fieldset className="flex flex-col gap-2">
+        {stage === 'bank' && (
+          <fieldset className="flex flex-col gap-2">
             <legend className="mb-1 text-[14px] font-semibold">{tr('Choose your bank')}</legend>
             <ul className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-2">
-              {ussdBanks.map((b) =>
-            <li key={b.id}>
+              {ussdBanks.map((b) => (
+                <li key={b.id}>
                   <button type="button" onClick={() => getCode(b)} className="flex h-12 w-full items-center justify-between gap-2 px-3 text-left text-[14px] font-medium" style={{ ...cardStyle(t), border: `1px solid ${mix(t.text, 12)}` }}>
                     <span className="truncate">{b.name}</span>
                     <span className="shrink-0 font-mono text-[12px]" style={muted}>
@@ -104,13 +104,13 @@ export function UssdPay({ theme: t, amount, onPaid, onBack, inline }: UssdPayPro
                     </span>
                   </button>
                 </li>
-            )}
+              ))}
             </ul>
           </fieldset>
-        }
+        )}
 
-        {stage === 'code' && bank &&
-        <div className="flex flex-col gap-3">
+        {stage === 'code' && bank && (
+          <div className="flex flex-col gap-3">
             <div className="flex flex-col items-center gap-2 p-5 text-center" style={{ ...cardStyle(t), border: `1.5px solid ${t.text}` }}>
               <span className="text-[13px]" style={muted}>
                 {tr('Dial this on your {bank} phone', { bank: bank.name })}
@@ -142,56 +142,56 @@ export function UssdPay({ theme: t, amount, onPaid, onBack, inline }: UssdPayPro
               <legend className="sr-only">{tr('Test mode — choose what the bank does')}</legend>
               <span className="text-[12.5px] font-semibold">{tr('Test mode — choose what the bank does')}</span>
               {(
-            [
-            ['confirms', tr('Bank confirms')],
-            ['slow', tr('Bank is slow to confirm')],
-            ['declines', tr('Bank declines')]] as
-            [Simulate, string][]).
-            map(([v, label]) =>
-            <label key={v} className="flex cursor-pointer items-center gap-2 text-[13px]">
+                [
+                  ['confirms', tr('Bank confirms')],
+                  ['slow', tr('Bank is slow to confirm')],
+                  ['declines', tr('Bank declines')],
+                ] as [Simulate, string][]
+              ).map(([v, label]) => (
+                <label key={v} className="flex cursor-pointer items-center gap-2 text-[13px]">
                   <input type="radio" name="ussd-sim" checked={simulate === v} onChange={() => setSimulate(v)} style={{ accentColor: t.text }} />
                   {label}
                 </label>
-            )}
+              ))}
             </fieldset>
           </div>
-        }
+        )}
 
-        {stage === 'waiting' &&
-        <div className="flex flex-col items-center gap-3 py-8 text-center" role="status">
+        {stage === 'waiting' && (
+          <div className="flex flex-col items-center gap-3 py-8 text-center" role="status">
             <Loader2Icon size={28} className={reduce ? '' : 'animate-spin'} aria-hidden />
             <p className="text-[15px] font-semibold">{tr('Waiting for your bank')}</p>
             <p className="max-w-[280px] text-[13px]" style={muted}>
               {tr('Keep this page open. It usually takes a few seconds after you enter your PIN.')}
             </p>
           </div>
-        }
+        )}
 
-        {(stage === 'declined' || stage === 'expired') &&
-        <div className="flex flex-col gap-1 rounded-md p-4" style={{ background: mix(t.text, 6) }} role="alert">
+        {(stage === 'declined' || stage === 'expired') && (
+          <div className="flex flex-col gap-1 rounded-md p-4" style={{ background: mix(t.text, 6) }} role="alert">
             <p className="text-[15px] font-semibold">{stage === 'declined' ? tr('Your bank declined the payment') : tr('That code has expired')}</p>
             <p className="text-[13px] leading-snug" style={muted}>
               {stage === 'declined' ? tr('No money left your account. Check your balance or daily USSD limit, or try another bank or a card.') : tr('Codes work for {n} minutes. Get a new one — nothing was charged.', { n: USSD_MINUTES })}
             </p>
           </div>
-        }
+        )}
       </div>
 
       <Actions inline={inline} theme={t}>
         {stage === 'code' && <PrimaryButton theme={t} onClick={dialled}>{tr('I’ve dialled it')}</PrimaryButton>}
         {stage === 'expired' && bank && <PrimaryButton theme={t} onClick={() => getCode(bank)}>{tr('Get a new code')}</PrimaryButton>}
         {stage === 'declined' && <PrimaryButton theme={t} onClick={() => setStage('bank')}>{tr('Try another bank')}</PrimaryButton>}
-        {stage !== 'waiting' &&
-        <SecondaryButton theme={t} onClick={stage === 'code' ? () => setStage('bank') : onBack}>
+        {stage !== 'waiting' && (
+          <SecondaryButton theme={t} onClick={stage === 'code' ? () => setStage('bank') : onBack}>
             {stage === 'code' ? tr('Change bank') : tr('Pay another way')}
           </SecondaryButton>
-        }
+        )}
       </Actions>
-    </>);
-
+    </>
+  );
 }
 
-function Actions({ inline, theme, children }: {inline?: boolean;theme: PageTheme;children: React.ReactNode;}) {
+function Actions({ inline, theme, children }: { inline?: boolean; theme: PageTheme; children: React.ReactNode }) {
   if (inline) return <div className="flex flex-col gap-2">{children}</div>;
   return <SheetActions theme={theme}>{children}</SheetActions>;
 }

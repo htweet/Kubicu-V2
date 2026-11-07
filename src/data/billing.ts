@@ -13,7 +13,7 @@ export const monthlyPriceNgn: Record<WorkspacePlan, number | null> = {
   pro: 8000,
   business: 20000,
   agency: 50000,
-  enterprise: null
+  enterprise: null,
 };
 
 /** Yearly = 10 months — "2 months free". */
@@ -35,17 +35,17 @@ onOpsSettings(() => {
 export const cancelReasons = ['It costs too much', 'I’m not using it enough', 'A feature I need is missing', 'I’m moving to another tool', 'My business is closing or pausing', 'Something else'];
 
 /** Test card numbers choose the outcome, like a payment provider's test mode. */
-export const testCards: {number: string;outcome: CardOutcome;label: string;}[] = [
-{ number: '4242 4242 4242 4242', outcome: 'success', label: 'Pays' },
-{ number: '4000 0000 0000 3220', outcome: 'challenge', label: 'Asks your bank to confirm' },
-{ number: '4000 0000 0000 0002', outcome: 'declined', label: 'Declined' },
-{ number: '4000 0000 0000 0069', outcome: 'expired', label: 'Expired card' },
-{ number: '4000 0000 0000 9995', outcome: 'insufficient', label: 'Not enough money' }];
-
+export const testCards: { number: string; outcome: CardOutcome; label: string }[] = [
+  { number: '4242 4242 4242 4242', outcome: 'success', label: 'Pays' },
+  { number: '4000 0000 0000 3220', outcome: 'challenge', label: 'Asks your bank to confirm' },
+  { number: '4000 0000 0000 0002', outcome: 'declined', label: 'Declined' },
+  { number: '4000 0000 0000 0069', outcome: 'expired', label: 'Expired card' },
+  { number: '4000 0000 0000 9995', outcome: 'insufficient', label: 'Not enough money' },
+];
 
 /** Illustrative seller-of-record details printed on invoices. */
 export const kubicuBillingEntity = {
   name: `${kubicuCompany.legalName} (${kubicuCompany.rcNumber}) — trading as KUBICU`,
   address: kubicuCompany.registeredAddress,
-  taxId: `TIN ${kubicuCompany.tin}`
+  taxId: `TIN ${kubicuCompany.tin}`,
 };

@@ -21,14 +21,14 @@ import { useT } from '../../contexts/LocaleContext';
 interface Props {
   open: boolean;
   onClose: () => void;
-  spaces: {id: string;label: string;}[];
+  spaces: { id: string; label: string }[];
 }
 
-export const outcomeOptions: {value: CheckOutcome;label: string;}[] = [
-{ value: 'success', label: 'Records correct → goes live' },
-{ value: 'wrong_record', label: 'A record doesn’t match' },
-{ value: 'timeout', label: 'DNS hasn’t updated yet' }];
-
+export const outcomeOptions: { value: CheckOutcome; label: string }[] = [
+  { value: 'success', label: 'Records correct → goes live' },
+  { value: 'wrong_record', label: 'A record doesn’t match' },
+  { value: 'timeout', label: 'DNS hasn’t updated yet' },
+];
 
 /** Two steps: which domain and space, then the records to add and a first check (D62). */
 export function ConnectDomainDialog({ open, onClose, spaces }: Props) {
@@ -98,67 +98,67 @@ export function ConnectDomainDialog({ open, onClose, spaces }: Props) {
       title={step === 1 ? 'Connect a domain' : tr('Add these records for {host}', { host })}
       description={step === 1 ? 'Use a domain you already own. You’ll add a few records where you bought it — about 5 minutes.' : 'At your domain registrar, add each record exactly as shown. Then check — we’ll take it from there.'}
       footer={
-      step === 1 ?
-      <>
+        step === 1 ? (
+          <>
             <Button variant="secondary" onClick={close}>
               Cancel
             </Button>
             <Button onClick={next}>Continue</Button>
-          </> :
-
-      <>
+          </>
+        ) : (
+          <>
             <Button variant="secondary" leadingIcon={ArrowLeftIcon} onClick={() => setStep(1)}>
               Back
             </Button>
             <Button onClick={finish}>I’ve added them — check now</Button>
           </>
-
-      }>
-      
-      {step === 1 ?
-      <div className="flex flex-col gap-5">
+        )
+      }
+    >
+      {step === 1 ? (
+        <div className="flex flex-col gap-5">
           <TextInput
-          id="dom-host"
-          label="Your domain"
-          placeholder="adaeze.com"
-          leadingIcon={GlobeIcon}
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          autoCapitalize="off"
-          autoCorrect="off"
-          spellCheck={false}
-          error={tried ? error : undefined}
-          hint="Paste it any way you like — we’ll tidy it up." />
-        
+            id="dom-host"
+            label="Your domain"
+            placeholder="adaeze.com"
+            leadingIcon={GlobeIcon}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            autoCapitalize="off"
+            autoCorrect="off"
+            spellCheck={false}
+            error={tried ? error : undefined}
+            hint="Paste it any way you like — we’ll tidy it up."
+          />
           <div className="flex flex-col gap-1.5">
             <span className="text-label font-medium text-fg" id="dom-kind-label">
               {tr('Use it as')}
             </span>
             <Segmented<'root' | 'subdomain'>
-            ariaLabel="Use it as"
-            fullWidth
-            value={effectiveKind}
-            onChange={(v) => {
-              setKind(v);
-              setKindTouched(true);
-            }}
-            options={[
-            { value: 'root', label: 'The whole domain' },
-            { value: 'subdomain', label: 'A subdomain' }]
-            } />
-          
+              ariaLabel="Use it as"
+              fullWidth
+              value={effectiveKind}
+              onChange={(v) => {
+                setKind(v);
+                setKindTouched(true);
+              }}
+              options={[
+                { value: 'root', label: 'The whole domain' },
+                { value: 'subdomain', label: 'A subdomain' },
+              ]}
+            />
             <p className={tried && kindError ? 'text-caption text-danger' : 'text-caption text-fg-subtle'}>
-              {tried && kindError ?
-            tr(kindError) :
-            effectiveKind === 'root' ?
-            tr('{host} and www.{host} will show your page.', { host: host || 'adaeze.com' }) :
-            tr('Only {host} shows your page — your other website and email stay as they are.', { host: host || 'shop.adaeze.com' })}
+              {tried && kindError
+                ? tr(kindError)
+                : effectiveKind === 'root'
+                  ? tr('{host} and www.{host} will show your page.', { host: host || 'adaeze.com' })
+                  : tr('Only {host} shows your page — your other website and email stay as they are.', { host: host || 'shop.adaeze.com' })}
             </p>
           </div>
           <SelectInput id="dom-space" label="Page visitors see at this domain" value={spaceId} options={spaces.map((s) => ({ value: s.id, label: s.label }))} onChange={setSpaceId} hint="Anyone who types this domain lands on the page you choose. Its kub.icu link keeps working too." />
-        </div> :
-
-      <div className="flex flex-col gap-5">
+        </div>
+      ) : (
+        <div className="flex flex-col gap-5">
           <div className="flex flex-col gap-2">
             <SelectInput<RegistrarId> id="dom-registrar" label="Where did you buy it?" value={registrar} options={registrars.map((r) => ({ value: r.id, label: r.name }))} onChange={setRegistrar} />
             <p className="flex items-start gap-1.5 text-caption text-fg-muted">
@@ -166,19 +166,19 @@ export function ConnectDomainDialog({ open, onClose, spaces }: Props) {
               <IllustrativeTag note={tr('Registrar steps are illustrative — menus differ and change over time.')} />
             </p>
           </div>
-          {dnsDef &&
-        <InlineAlert
-          tone="info"
-          title={tr('Your {name} account is connected', { name: dnsDef.name })}
-          action={
-          <Button size="sm" loading={adding} onClick={addForMe}>
+          {dnsDef && (
+            <InlineAlert
+              tone="info"
+              title={tr('Your {name} account is connected', { name: dnsDef.name })}
+              action={
+                <Button size="sm" loading={adding} onClick={addForMe}>
                   Add them for me
                 </Button>
-          }>
-          
+              }
+            >
               {tr('KUBICU can add these records in {name} instead of you typing them. Simulated in the prototype.', { name: dnsDef.name })}
             </InlineAlert>
-        }
+          )}
           <DnsRecordsTable records={records} />
           <p className="flex items-center gap-1.5 text-caption text-fg-subtle">
             {tr('Changes usually show within an hour, sometimes up to 48 hours. You can close this — we’ll keep the records on the domain card.')}
@@ -188,7 +188,7 @@ export function ConnectDomainDialog({ open, onClose, spaces }: Props) {
             <SelectInput<CheckOutcome> id="dom-outcome" label="Prototype: what the check finds" value={outcome} options={outcomeOptions} onChange={setOutcome} hint="Real DNS isn’t checked in this prototype." />
           </div>
         </div>
-      }
-    </Dialog>);
-
+      )}
+    </Dialog>
+  );
 }

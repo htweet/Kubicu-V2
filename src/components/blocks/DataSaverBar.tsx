@@ -5,7 +5,7 @@ import { useDataSaver } from '../../contexts/DataSaverContext';
 import { useT } from '../../contexts/LocaleContext';
 
 /** Slim strip at the top of a public page while Lightweight mode is on (D85). Follows the visitor's language (D507). */
-export function DataSaverBar({ theme }: {theme: PageTheme;}) {
+export function DataSaverBar({ theme }: { theme: PageTheme }) {
   const { t: tr } = useT();
   const { on, reason, imagesShown, setOn, showImages } = useDataSaver();
   if (!on) return null;
@@ -17,15 +17,15 @@ export function DataSaverBar({ theme }: {theme: PageTheme;}) {
         {why} {imagesShown ? tr('Videos load when you tap them.') : tr('Photos and videos load when you ask.')}
       </span>
       <span className="inline-flex items-center gap-3">
-        {!imagesShown &&
-        <button type="button" onClick={showImages} className="whitespace-nowrap rounded px-1 font-semibold underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2">
+        {!imagesShown && (
+          <button type="button" onClick={showImages} className="whitespace-nowrap rounded px-1 font-semibold underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2">
             {tr('Show photos')}
           </button>
-        }
+        )}
         <button type="button" onClick={() => setOn(false)} className="whitespace-nowrap rounded px-1 underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2">
           {tr('Turn off')}
         </button>
       </span>
-    </div>);
-
+    </div>
+  );
 }

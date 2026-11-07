@@ -19,21 +19,21 @@ export function RiseText({ text, highlight = [], highlightClassName, stagger = 0
     <>
       <span className="sr-only">{text}</span>
       <span aria-hidden>
-        {words.map((w, i) =>
-        <span key={`${w}-${i}`} className="inline-block overflow-hidden pb-[0.08em] align-bottom">
+        {words.map((w, i) => (
+          <span key={`${w}-${i}`} className="inline-block overflow-hidden pb-[0.08em] align-bottom">
             <motion.span
-            className={highlight.includes(i) ? `inline-block ${highlightClassName ?? ''}` : 'inline-block'}
-            initial={reduce ? false : { y: '105%' }}
-            whileInView={{ y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.3, delay: delay + i * stagger, ease: [0.23, 1, 0.32, 1] }}>
-            
+              className={highlight.includes(i) ? `inline-block ${highlightClassName ?? ''}` : 'inline-block'}
+              initial={reduce ? false : { y: '105%' }}
+              whileInView={{ y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.3, delay: delay + i * stagger, ease: [0.23, 1, 0.32, 1] }}
+            >
               {w}
             </motion.span>
             {i < words.length - 1 && '\u00a0'}
           </span>
-        )}
+        ))}
       </span>
-    </>);
-
+    </>
+  );
 }

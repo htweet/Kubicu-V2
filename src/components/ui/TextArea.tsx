@@ -11,9 +11,9 @@ export interface TextAreaProps extends Omit<React.TextareaHTMLAttributes<HTMLTex
 }
 
 export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(function TextArea(
-{ id, label, hint, error, optional, className, rows = 3, required, ...rest },
-ref)
-{
+  { id, label, hint, error, optional, className, rows = 3, required, ...rest },
+  ref,
+) {
   rest = { ...rest, 'aria-required': rest['aria-required'] ?? (required || undefined) };
   const describedBy = error ? `${id}-error` : hint ? `${id}-hint` : undefined;
   return (
@@ -25,8 +25,8 @@ ref)
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy}
         className={cn(fieldControlClass, 'resize-y py-2.5 leading-relaxed', className)}
-        {...rest} />
-      
-    </Field>);
-
+        {...rest}
+      />
+    </Field>
+  );
 });

@@ -9,11 +9,11 @@ import { useT } from '../../../contexts/LocaleContext';
 import { swapPreviewAmount } from '../../../utils/previewMoney';
 
 const tiles = [
-{ bg: 'rgb(var(--kb-lime))', fg: 'rgb(var(--kb-forest))' },
-{ bg: 'rgb(var(--kb-plum))', fg: 'rgb(255 255 255)' },
-{ bg: 'rgb(var(--kb-peach))', fg: 'rgb(var(--kb-clay))' },
-{ bg: 'rgb(var(--kb-cobalt))', fg: 'rgb(255 255 255)' }];
-
+  { bg: 'rgb(var(--kb-lime))', fg: 'rgb(var(--kb-forest))' },
+  { bg: 'rgb(var(--kb-plum))', fg: 'rgb(255 255 255)' },
+  { bg: 'rgb(var(--kb-peach))', fg: 'rgb(var(--kb-clay))' },
+  { bg: 'rgb(var(--kb-cobalt))', fg: 'rgb(255 255 255)' },
+];
 
 /** "Built for how customers buy" bento: the WhatsApp tile leads with a photo, three supporting tiles (D260). */
 export function LocalSection() {
@@ -34,8 +34,8 @@ export function LocalSection() {
             viewport={{ once: true, margin: '-40px' }}
             transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
             className="relative grid overflow-hidden rounded-[36px] sm:col-span-2 sm:grid-cols-2 lg:row-span-2"
-            style={{ backgroundColor: tiles[0].bg, color: tiles[0].fg }}>
-            
+            style={{ backgroundColor: tiles[0].bg, color: tiles[0].fg }}
+          >
             <div className="relative z-10 flex flex-col p-8 md:p-10">
               <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[rgb(var(--kb-forest))] text-[rgb(var(--kb-lime))]">
                 <LeadIcon size={26} aria-hidden />
@@ -68,18 +68,18 @@ export function LocalSection() {
                   'flex flex-col rounded-[36px] p-8',
                   i === 0 && 'lg:col-start-3 lg:row-start-1',
                   i === 1 && 'lg:col-start-3 lg:row-start-2',
-                  i === 2 && 'sm:col-span-2 md:flex-row md:items-center md:gap-10 lg:col-span-3'
+                  i === 2 && 'sm:col-span-2 md:flex-row md:items-center md:gap-10 lg:col-span-3',
                 )}
-                style={{ backgroundColor: t.bg, color: t.fg }}>
-                
+                style={{ backgroundColor: t.bg, color: t.fg }}
+              >
                 <Icon size={30} aria-hidden className="shrink-0" />
                 <h3 className={cn('kb-display mt-6 text-[26px] leading-tight', i === 2 && 'md:mt-0 md:shrink-0')}>{tr(f.title)}</h3>
                 <p className={cn('mt-3 text-[15px] font-medium leading-relaxed opacity-90', i === 2 && 'md:mt-0 md:max-w-2xl md:text-[17px]')}>{tr(f.text)}</p>
-              </motion.article>);
-
+              </motion.article>
+            );
           })}
         </div>
       </div>
-    </section>);
-
+    </section>
+  );
 }

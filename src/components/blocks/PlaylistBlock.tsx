@@ -36,13 +36,13 @@ export function PlaylistBlock({ block, theme: t, mode }: BlockProps<'playlist'>)
       <div className="flex flex-col overflow-hidden" style={cardStyle(t)}>
         <div className="flex flex-col gap-3 p-4" style={{ borderBottom: `1px solid ${mix(t.text, 10)}` }}>
           <div className="flex items-center gap-3">
-            {c.coverUrl ?
-            <MediaImage src={c.coverUrl} alt={c.coverAlt} loading="lazy" className="h-14 w-14 shrink-0 rounded-md object-cover" /> :
-
-            <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-md" style={{ background: mix(t.text, 6), color: t.mutedText }}>
+            {c.coverUrl ? (
+              <MediaImage src={c.coverUrl} alt={c.coverAlt} loading="lazy" className="h-14 w-14 shrink-0 rounded-md object-cover" />
+            ) : (
+              <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-md" style={{ background: mix(t.text, 6), color: t.mutedText }}>
                 <MusicIcon size={20} aria-hidden />
               </span>
-            }
+            )}
             <div className="min-w-0">
               <p className="text-[11.5px] font-medium" style={{ color: t.mutedText }}>Now playing · {index + 1} of {tracks.length}</p>
               <p className="truncate text-[15px] font-semibold" style={{ color: t.text }}>{current.title || 'Untitled track'}</p>
@@ -58,8 +58,8 @@ export function PlaylistBlock({ block, theme: t, mode }: BlockProps<'playlist'>)
             fileName={current.fileName}
             autoPlay={auto}
             inert={mode === 'edit'}
-            onEnded={() => index < tracks.length - 1 && pick(index + 1)} />
-          
+            onEnded={() => index < tracks.length - 1 && pick(index + 1)}
+          />
         </div>
         <ol aria-label="Tracks">
           {tracks.map((tr, i) => {
@@ -73,8 +73,8 @@ export function PlaylistBlock({ block, theme: t, mode }: BlockProps<'playlist'>)
                   onClick={() => mode !== 'edit' && pick(i)}
                   aria-current={active ? 'true' : undefined}
                   aria-label={`Play ${tr.title || `track ${i + 1}`}`}
-                  className="flex min-h-[48px] min-w-0 flex-1 items-center gap-3 px-2 text-left focus-visible:outline-none focus-visible:ring-2">
-                  
+                  className="flex min-h-[48px] min-w-0 flex-1 items-center gap-3 px-2 text-left focus-visible:outline-none focus-visible:ring-2"
+                >
                   <span className="w-5 shrink-0 text-center text-[12.5px] tabular-nums" style={{ color: active ? t.text : t.mutedText }}>
                     {active ? <Volume2Icon size={14} aria-hidden className="mx-auto" /> : i + 1}
                   </span>
@@ -84,23 +84,23 @@ export function PlaylistBlock({ block, theme: t, mode }: BlockProps<'playlist'>)
                   </span>
                   {tr.duration && <span className="shrink-0 text-[12px] tabular-nums" style={{ color: t.mutedText }}>{tr.duration}</span>}
                 </button>
-                {sellable &&
-                <CheckoutButton
-                  mode={mode}
-                  showIcon={false}
-                  ariaLabel={`Buy ${tr.title} for ${product.priceNgn !== null ? formatNgn(product.priceNgn) : 'the listed price'}`}
-                  onAdd={(cart) => cart.add(product.id, product.variants[0]?.id)}
-                  className="flex h-8 shrink-0 items-center px-3 text-[12px] font-semibold"
-                  style={{ background: t.accent, color: t.accentText, borderRadius: buttonRadius(t) }}>
-                  
+                {sellable && (
+                  <CheckoutButton
+                    mode={mode}
+                    showIcon={false}
+                    ariaLabel={`Buy ${tr.title} for ${product.priceNgn !== null ? formatNgn(product.priceNgn) : 'the listed price'}`}
+                    onAdd={(cart) => cart.add(product.id, product.variants[0]?.id)}
+                    className="flex h-8 shrink-0 items-center px-3 text-[12px] font-semibold"
+                    style={{ background: t.accent, color: t.accentText, borderRadius: buttonRadius(t) }}
+                  >
                     {product.priceNgn !== null ? formatNgn(product.priceNgn) : 'Buy'}
                   </CheckoutButton>
-                }
-              </li>);
-
+                )}
+              </li>
+            );
           })}
         </ol>
       </div>
-    </section>);
-
+    </section>
+  );
 }

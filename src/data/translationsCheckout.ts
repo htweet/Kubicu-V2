@@ -42,7 +42,7 @@ export const checkoutPcm: Dict = {
   'Your details go to the seller to fulfil this order. See their page for how they handle personal data.': 'Your details go reach di seller so dem fit deliver. Check dia page to see how dem dey handle people data.',
   'This seller hasn’t set up pickup or delivery yet. Please message them before ordering.': 'Dis seller never set up pickup or delivery. Abeg message dem before you order.',
   'Confirm your booking': 'Confirm your booking',
-  'Pay now': 'Pay now'
+  'Pay now': 'Pay now',
 };
 
 export const checkoutYo: Dict = {
@@ -86,7 +86,7 @@ export const checkoutYo: Dict = {
   'Your details go to the seller to fulfil this order. See their page for how they handle personal data.': 'Àlàyé rẹ ń lọ sọ́dọ̀ olùtajà láti ṣe ìbéèrè yìí. Wo ojú-ewé wọn fún bí wọ́n ṣe ń tọ́jú àlàyé ara ẹni.',
   'This seller hasn’t set up pickup or delivery yet. Please message them before ordering.': 'Olùtajà yìí kò tíì ṣètò ìgbàwá tàbí ìfijíṣẹ́. Jọ̀wọ́ kàn sí wọn kí o tó bèrè.',
   'Confirm your booking': 'Jẹ́rìí ìfiṣura rẹ',
-  'Pay now': 'Sanwó báyìí'
+  'Pay now': 'Sanwó báyìí',
 };
 
 export const checkoutHa: Dict = {
@@ -130,7 +130,7 @@ export const checkoutHa: Dict = {
   'Your details go to the seller to fulfil this order. See their page for how they handle personal data.': 'Bayananka za su je wurin mai sayarwa don cika wannan oda. Duba shafinsu don ganin yadda suke kula da bayanan mutum.',
   'This seller hasn’t set up pickup or delivery yet. Please message them before ordering.': 'Wannan mai sayarwa bai saita ɗauka ko isarwa ba tukuna. Da fatan za a tura musu saƙo kafin oda.',
   'Confirm your booking': 'Tabbatar da ajiyarka',
-  'Pay now': 'Biya yanzu'
+  'Pay now': 'Biya yanzu',
 };
 
 export const checkoutIg: Dict = {
@@ -174,5 +174,5 @@ export const checkoutIg: Dict = {
   'Your details go to the seller to fulfil this order. See their page for how they handle personal data.': 'Nkọwa gị na-aga n’aka onye na-ere iji mezue iwu a. Lee ibe ha maka otu ha si elekọta data onwe.',
   'This seller hasn’t set up pickup or delivery yet. Please message them before ordering.': 'Onye na-ere a edobebeghị nnara ma ọ bụ nnyefe. Biko ziere ha ozi tupu i nye iwu.',
   'Confirm your booking': 'Kwado ndokwa gị',
-  'Pay now': 'Kwụọ ugbu a'
+  'Pay now': 'Kwụọ ugbu a',
 };

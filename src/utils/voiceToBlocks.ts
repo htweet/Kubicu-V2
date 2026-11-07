@@ -12,18 +12,18 @@ const tidy = (s: string) => {
 
 /** Splits after . ! ? (keeping the mark) — spoken text often has none, so the whole thing is one sentence then. */
 const sentences = (s: string) =>
-s.
-replace(/\s+/g, ' ').
-split(/(?<=[.!?])\s+/).
-map((x) => x.trim()).
-filter(Boolean);
+  s
+    .replace(/\s+/g, ' ')
+    .split(/(?<=[.!?])\s+/)
+    .map((x) => x.trim())
+    .filter(Boolean);
 
 const paragraphs = (s: string) =>
-s.
-split(/\n\s*\n/).
-map((p) => tidy(p)).
-filter(Boolean).
-map((p) => /[.!?…]$/.test(p) ? p : `${p}.`);
+  s
+    .split(/\n\s*\n/)
+    .map((p) => tidy(p))
+    .filter(Boolean)
+    .map((p) => (/[.!?…]$/.test(p) ? p : `${p}.`));
 
 /** Builds the blocks the words turn into. Empty when there's nothing usable (e.g. no "?" for questions). */
 export function voiceToBlocks(words: string, shape: VoiceShape): Block[] {
@@ -46,10 +46,10 @@ export function voiceToBlocks(words: string, shape: VoiceShape): Block[] {
     return [h, b];
   }
   // Questions and answers: each sentence ending in "?" starts a question; what follows is its answer.
-  const items: {id: string;question: string;answer: string;}[] = [];
+  const items: { id: string; question: string; answer: string }[] = [];
   sentences(text.replace(/\n+/g, ' ')).forEach((s) => {
-    if (s.endsWith('?')) items.push({ id: uid('faq'), question: tidy(s), answer: '' });else
-    if (items.length) items[items.length - 1].answer = tidy(`${items[items.length - 1].answer} ${s}`);
+    if (s.endsWith('?')) items.push({ id: uid('faq'), question: tidy(s), answer: '' });
+    else if (items.length) items[items.length - 1].answer = tidy(`${items[items.length - 1].answer} ${s}`);
   });
   if (items.length === 0) return [];
   const f = createBlock('faq');

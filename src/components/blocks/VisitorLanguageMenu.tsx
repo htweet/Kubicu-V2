@@ -71,77 +71,77 @@ export function VisitorLanguageMenu({ theme, variant, label, disabled, side = 't
 
   return (
     <div ref={rootRef} className={variant === 'field' ? 'relative w-full max-w-[16rem]' : 'relative inline-flex'}>
-      {variant === 'inline' ?
-      <button
-        type="button"
-        aria-haspopup="listbox"
-        aria-expanded={open}
-        aria-controls={listId}
-        aria-label={`${t('Language')}: ${current.native}`}
-        disabled={inactive}
-        onClick={() => setOpen((o) => !o)}
-        className="inline-flex items-center gap-1.5 rounded px-1 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2">
-        
+      {variant === 'inline' ? (
+        <button
+          type="button"
+          aria-haspopup="listbox"
+          aria-expanded={open}
+          aria-controls={listId}
+          aria-label={`${t('Language')}: ${current.native}`}
+          disabled={inactive}
+          onClick={() => setOpen((o) => !o)}
+          className="inline-flex items-center gap-1.5 rounded px-1 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2"
+        >
           <LanguagesIcon size={12} aria-hidden />
           {current.native}
           <ChevronDownIcon size={11} aria-hidden className={open ? 'rotate-180 transition-transform duration-150' : 'transition-transform duration-150'} />
-        </button> :
-
-      <button
-        type="button"
-        aria-haspopup="listbox"
-        aria-expanded={open}
-        aria-controls={listId}
-        aria-label={`${label || t('Language')}: ${current.native}`}
-        disabled={inactive}
-        onClick={() => setOpen((o) => !o)}
-        className="flex h-12 w-full items-center gap-3 px-3 text-left text-[15px] font-medium focus-visible:outline-none focus-visible:ring-2 disabled:cursor-default"
-        style={{ background: theme.background, color: theme.text, borderRadius: inputRadius(theme), border: `1px solid ${mix(theme.text, 18)}` }}>
-        
+        </button>
+      ) : (
+        <button
+          type="button"
+          aria-haspopup="listbox"
+          aria-expanded={open}
+          aria-controls={listId}
+          aria-label={`${label || t('Language')}: ${current.native}`}
+          disabled={inactive}
+          onClick={() => setOpen((o) => !o)}
+          className="flex h-12 w-full items-center gap-3 px-3 text-left text-[15px] font-medium focus-visible:outline-none focus-visible:ring-2 disabled:cursor-default"
+          style={{ background: theme.background, color: theme.text, borderRadius: inputRadius(theme), border: `1px solid ${mix(theme.text, 18)}` }}
+        >
           <Code code={codes[current.value]} theme={theme} />
           <span className="min-w-0 flex-1 truncate">{current.native}</span>
           <ChevronDownIcon size={16} aria-hidden style={{ color: theme.mutedText }} className={open ? 'rotate-180 transition-transform duration-150' : 'transition-transform duration-150'} />
         </button>
-      }
+      )}
 
       <AnimatePresence>
-        {open &&
-        <motion.div
-          id={listId}
-          role="listbox"
-          aria-label={t('Language')}
-          initial={reduce ? { opacity: 0, x: shiftX } : { opacity: 0, x: shiftX, scale: 0.96, y: side === 'top' ? 4 : -4 }}
-          animate={{ opacity: 1, x: shiftX, scale: 1, y: 0 }}
-          exit={{ opacity: 0, x: shiftX, scale: 0.98 }}
-          transition={{ duration: 0.15, ease: [0.23, 1, 0.32, 1] }}
-          className={[
-          'absolute z-50 max-h-[min(440px,70vh)] w-[232px] max-w-[calc(100vw-24px)] overflow-y-auto p-1.5',
-          align === 'end' ? 'right-0' : 'left-1/2',
-          side === 'top' ? 'bottom-full mb-2' : 'top-full mt-2',
-          side === 'top' ? align === 'end' ? 'origin-bottom-right' : 'origin-bottom' : align === 'end' ? 'origin-top-right' : 'origin-top'].
-          join(' ')}
-          style={{
-            // Glass themes have see-through cards; the menu needs a solid face to stay readable.
-            background: theme.material?.surfaceFinish === 'glass' ? theme.background : theme.surface,
-            color: theme.text,
-            borderRadius: radius + 4,
-            border: `1px solid ${mix(theme.text, 12)}`,
-            boxShadow: `0 18px 40px -18px ${mix('#000', 45)}, 0 2px 6px ${mix('#000', 8)}`
-          }}>
-          
+        {open && (
+          <motion.div
+            id={listId}
+            role="listbox"
+            aria-label={t('Language')}
+            initial={reduce ? { opacity: 0, x: shiftX } : { opacity: 0, x: shiftX, scale: 0.96, y: side === 'top' ? 4 : -4 }}
+            animate={{ opacity: 1, x: shiftX, scale: 1, y: 0 }}
+            exit={{ opacity: 0, x: shiftX, scale: 0.98 }}
+            transition={{ duration: 0.15, ease: [0.23, 1, 0.32, 1] }}
+            className={[
+              'absolute z-50 max-h-[min(440px,70vh)] w-[232px] max-w-[calc(100vw-24px)] overflow-y-auto p-1.5',
+              align === 'end' ? 'right-0' : 'left-1/2',
+              side === 'top' ? 'bottom-full mb-2' : 'top-full mt-2',
+              side === 'top' ? (align === 'end' ? 'origin-bottom-right' : 'origin-bottom') : align === 'end' ? 'origin-top-right' : 'origin-top',
+            ].join(' ')}
+            style={{
+              // Glass themes have see-through cards; the menu needs a solid face to stay readable.
+              background: theme.material?.surfaceFinish === 'glass' ? theme.background : theme.surface,
+              color: theme.text,
+              borderRadius: radius + 4,
+              border: `1px solid ${mix(theme.text, 12)}`,
+              boxShadow: `0 18px 40px -18px ${mix('#000', 45)}, 0 2px 6px ${mix('#000', 8)}`,
+            }}
+          >
             {uiLanguages.map((l, i) => {
-            const selected = l.value === lang;
-            // A small country heading where the list moves to the next country (D356).
-            const heading = l.country !== uiLanguages[i - 1]?.country ? l.country : null;
-            return (
-              <React.Fragment key={l.value}>
-                {heading &&
-                <p aria-hidden className={i === 0 ? 'px-2 pb-1 pt-1 text-[11px] font-semibold' : 'mx-2 mt-1 border-t px-0 pb-1 pt-2 text-[11px] font-semibold'} style={{ color: theme.mutedText, borderColor: mix(theme.text, 10) }}>
+              const selected = l.value === lang;
+              // A small country heading where the list moves to the next country (D356).
+              const heading = l.country !== uiLanguages[i - 1]?.country ? l.country : null;
+              return (
+                <React.Fragment key={l.value}>
+                {heading && (
+                  <p aria-hidden className={i === 0 ? 'px-2 pb-1 pt-1 text-[11px] font-semibold' : 'mx-2 mt-1 border-t px-0 pb-1 pt-2 text-[11px] font-semibold'} style={{ color: theme.mutedText, borderColor: mix(theme.text, 10) }}>
                     {t(heading)}
                   </p>
-                }
+                )}
                 <button
-                  ref={(el) => optionRefs.current[i] = el}
+                  ref={(el) => (optionRefs.current[i] = el)}
                   type="button"
                   role="option"
                   aria-selected={selected}
@@ -153,40 +153,40 @@ export function VisitorLanguageMenu({ theme, variant, label, disabled, side = 't
                   onMouseEnter={(e) => !selected && (e.currentTarget.style.background = mix(theme.text, 6))}
                   onMouseLeave={(e) => !selected && (e.currentTarget.style.background = '')}
                   onFocus={(e) => !selected && (e.currentTarget.style.background = mix(theme.text, 6))}
-                  onBlur={(e) => !selected && (e.currentTarget.style.background = '')}>
-                  
+                  onBlur={(e) => !selected && (e.currentTarget.style.background = '')}
+                >
                   <Code code={codes[l.value]} theme={theme} active={selected} />
                   <span className="min-w-0 flex-1">
                     <span className="block text-[14px] font-semibold leading-tight">{l.native}</span>
-                    {l.label !== l.native &&
-                    <span className="block text-[12px] leading-tight" style={{ color: theme.mutedText }}>
+                    {l.label !== l.native && (
+                      <span className="block text-[12px] leading-tight" style={{ color: theme.mutedText }}>
                         {l.label}
                       </span>
-                    }
+                    )}
                   </span>
                   {selected && <CheckIcon size={15} strokeWidth={2.5} aria-hidden style={{ color: theme.accent }} />}
                 </button>
-                </React.Fragment>);
-
-          })}
+                </React.Fragment>
+              );
+            })}
             <p className="mx-2 mt-1 border-t pt-2 text-[11px] leading-snug" style={{ color: theme.mutedText, borderColor: mix(theme.text, 10) }}>
               {t('Changes buttons and labels. Page text stays as written.')}
             </p>
           </motion.div>
-        }
+        )}
       </AnimatePresence>
-    </div>);
-
+    </div>
+  );
 }
 
-function Code({ code, theme, active }: {code: string;theme: PageTheme;active?: boolean;}) {
+function Code({ code, theme, active }: { code: string; theme: PageTheme; active?: boolean }) {
   return (
     <span
       aria-hidden
       className="inline-flex h-6 min-w-[30px] shrink-0 items-center justify-center rounded-md px-1 text-[10px] font-bold tracking-wide"
-      style={active ? { background: theme.accent, color: theme.accentText } : { background: mix(theme.text, 8), color: theme.mutedText }}>
-      
+      style={active ? { background: theme.accent, color: theme.accentText } : { background: mix(theme.text, 8), color: theme.mutedText }}
+    >
       {code}
-    </span>);
-
+    </span>
+  );
 }

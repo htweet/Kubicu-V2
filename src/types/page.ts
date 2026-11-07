@@ -1,107 +1,107 @@
 import type { SourceId } from './analytics';
 
 export type BlockType =
-'profile' |
-'heading' |
-'text' |
-'link' |
-'social' |
-'image' |
-'video' |
-'divider' |
-'spacer' |
-'contact' |
-'faq' |
-'leadForm' |
-'product' |
-'booking' |
-'whatsapp' |
-'newsletter' |
-'gallery' |
-'productGrid' |
-'menu' |
-'pricing' |
-'testimonial' |
-'event' |
-'countdown' |
-'download' |
-'portfolio' |
-'location' |
-'subscription' |
-'form' |
-'proof' |
-'membersOnly' |
-'trustBadge' |
-'audio' |
-'playlist' |
-'collection' |
-'support' |
-'hero' |
-'featureGrid' |
-'steps' |
-'logoStrip' |
-'figures' |
-'mediaList' |
-'listings' |
-'section' |
-'columns' |
-'tabs' |
-'announcement' |
-'cta' |
-'quote' |
-'timeline' |
-'comparison' |
-'beforeAfter' |
-'team' |
-'credentials' |
-'press' |
-'hours' |
-'agenda' |
-'contactActions' |
-'share' |
-'anchorNav' |
-'policies' |
-'carousel' |
-'brandHeader' |
-'linkCollection' |
-'qrCode' |
-'document' |
-'embed' |
-'shopCategories' |
-'checkoutButton' |
-'poll' |
-'community' |
-'reviewSummary' |
-'languageSwitch' |
-'smartButton' |
-'campaignSpotlight' |
-'recommendations' |
-'backToTop' |
-'delivery' |
-'course' |
-'faqAssistant';
+  | 'profile'
+  | 'heading'
+  | 'text'
+  | 'link'
+  | 'social'
+  | 'image'
+  | 'video'
+  | 'divider'
+  | 'spacer'
+  | 'contact'
+  | 'faq'
+  | 'leadForm'
+  | 'product'
+  | 'booking'
+  | 'whatsapp'
+  | 'newsletter'
+  | 'gallery'
+  | 'productGrid'
+  | 'menu'
+  | 'pricing'
+  | 'testimonial'
+  | 'event'
+  | 'countdown'
+  | 'download'
+  | 'portfolio'
+  | 'location'
+  | 'subscription'
+  | 'form'
+  | 'proof'
+  | 'membersOnly'
+  | 'trustBadge'
+  | 'audio'
+  | 'playlist'
+  | 'collection'
+  | 'support'
+  | 'hero'
+  | 'featureGrid'
+  | 'steps'
+  | 'logoStrip'
+  | 'figures'
+  | 'mediaList'
+  | 'listings'
+  | 'section'
+  | 'columns'
+  | 'tabs'
+  | 'announcement'
+  | 'cta'
+  | 'quote'
+  | 'timeline'
+  | 'comparison'
+  | 'beforeAfter'
+  | 'team'
+  | 'credentials'
+  | 'press'
+  | 'hours'
+  | 'agenda'
+  | 'contactActions'
+  | 'share'
+  | 'anchorNav'
+  | 'policies'
+  | 'carousel'
+  | 'brandHeader'
+  | 'linkCollection'
+  | 'qrCode'
+  | 'document'
+  | 'embed'
+  | 'shopCategories'
+  | 'checkoutButton'
+  | 'poll'
+  | 'community'
+  | 'reviewSummary'
+  | 'languageSwitch'
+  | 'smartButton'
+  | 'campaignSpotlight'
+  | 'recommendations'
+  | 'backToTop'
+  | 'delivery'
+  | 'course'
+  | 'faqAssistant';
 
 /* Delivery & returns (D181) */
-export interface DeliveryLine {id: string;area: string;price: string;time: string;}
+export interface DeliveryLine { id: string; area: string; price: string; time: string }
 
 /* Canvas ecosystem, round 2 (D170) */
-export interface CarouselSlide {id: string;imageUrl: string;imageAlt: string;title: string;text: string;url: string;}
-export interface CollectionLink {id: string;label: string;url: string;description: string;}
-export interface LinkGroup {id: string;name: string;links: CollectionLink[];}
-export interface PollOption {id: string;label: string;}
-export interface SmartRule {id: string;source: SourceId;label: string;url: string;}
-export interface RecommendationItem {id: string;title: string;text: string;url: string;imageUrl: string;imageAlt: string;reason: string;}
+export interface CarouselSlide { id: string; imageUrl: string; imageAlt: string; title: string; text: string; url: string }
+export interface CollectionLink { id: string; label: string; url: string; description: string }
+export interface LinkGroup { id: string; name: string; links: CollectionLink[] }
+export interface PollOption { id: string; label: string }
+export interface SmartRule { id: string; source: SourceId; label: string; url: string }
+export interface RecommendationItem { id: string; title: string; text: string; url: string; imageUrl: string; imageAlt: string; reason: string }
 
 /* Canvas ecosystem, round 1 (D169) */
-export interface TimelineItem {id: string;date: string;title: string;text: string;}
-export interface CompareColumn {id: string;name: string;price: string;highlight: boolean;}
-export interface CompareRow {id: string;label: string;values: string[];}
-export interface TeamMember {id: string;name: string;role: string;bio: string;imageUrl: string;imageAlt: string;url: string;}
-export interface CredentialItem {id: string;title: string;org: string;year: string;text: string;}
-export interface PressItem {id: string;outlet: string;title: string;date: string;url: string;kind: 'article' | 'interview' | 'book' | 'podcast' | 'talk';}
-export interface AgendaItem {id: string;time: string;title: string;speaker: string;text: string;}
-export interface AnchorItem {id: string;label: string;blockId: string;}
-export interface PolicyItem {id: string;title: string;text: string;}
+export interface TimelineItem { id: string; date: string; title: string; text: string }
+export interface CompareColumn { id: string; name: string; price: string; highlight: boolean }
+export interface CompareRow { id: string; label: string; values: string[] }
+export interface TeamMember { id: string; name: string; role: string; bio: string; imageUrl: string; imageAlt: string; url: string }
+export interface CredentialItem { id: string; title: string; org: string; year: string; text: string }
+export interface PressItem { id: string; outlet: string; title: string; date: string; url: string; kind: 'article' | 'interview' | 'book' | 'podcast' | 'talk' }
+export interface AgendaItem { id: string; time: string; title: string; speaker: string; text: string }
+export interface AnchorItem { id: string; label: string; blockId: string }
+export interface PolicyItem { id: string; title: string; text: string }
 
 /** Layout sections (D153): six designed openings for a page. */
 export type HeroVariant = 'portrait' | 'split' | 'cover' | 'masthead' | 'poster' | 'product';
@@ -285,20 +285,20 @@ export interface LeadFormFields {
 }
 
 export interface BlockContentMap {
-  profile: {name: string;tagline: string;avatarUrl: string;avatarAlt: string;location: string;};
-  heading: {text: string;level: 'h2' | 'h3';};
+  profile: { name: string; tagline: string; avatarUrl: string; avatarAlt: string; location: string };
+  heading: { text: string; level: 'h2' | 'h3' };
   /** `editorial` (D157): first line becomes a display heading, an optional short kicker above it. */
-  text: {body: string;variant?: 'plain' | 'editorial';};
-  link: {label: string;url: string;description: string;};
-  social: {items: SocialItem[];};
+  text: { body: string; variant?: 'plain' | 'editorial' };
+  link: { label: string; url: string; description: string };
+  social: { items: SocialItem[] };
   /** `decorative` images are skipped by screen readers (empty alt, D76). */
-  image: {url: string;alt: string;caption: string;aspect: '1:1' | '4:5' | '16:9';decorative?: boolean;};
+  image: { url: string; alt: string; caption: string; aspect: '1:1' | '4:5' | '16:9'; decorative?: boolean };
   /** Any link from the safe embed list (D142). `captioned` is the seller's own confirmation for video sites. */
-  video: {url: string;title: string;captioned?: boolean;};
-  divider: {label: string;};
-  spacer: {size: 'sm' | 'md' | 'lg';};
-  contact: {phone: string;email: string;address: string;hours: string;};
-  faq: {title: string;items: FaqItem[];};
+  video: { url: string; title: string; captioned?: boolean };
+  divider: { label: string };
+  spacer: { size: 'sm' | 'md' | 'lg' };
+  contact: { phone: string; email: string; address: string; hours: string };
+  faq: { title: string; items: FaqItem[] };
   leadForm: {
     title: string;
     description: string;
@@ -333,10 +333,10 @@ export interface BlockContentMap {
     source?: 'manual' | 'catalog';
     serviceId?: string;
   };
-  whatsapp: {label: string;phone: string;message: string;};
-  newsletter: {title: string;description: string;buttonLabel: string;consentText: string;};
+  whatsapp: { label: string; phone: string; message: string };
+  newsletter: { title: string; description: string; buttonLabel: string; consentText: string };
   /** `masonry` (D171): natural image heights in balanced columns. */
-  gallery: {title: string;layout: 'grid' | 'carousel' | 'masonry';images: GalleryImage[];};
+  gallery: { title: string; layout: 'grid' | 'carousel' | 'masonry'; images: GalleryImage[] };
   productGrid: {
     title: string;
     items: GridProduct[];
@@ -357,7 +357,7 @@ export interface BlockContentMap {
     orderingOpen: boolean;
     closedMessage: string;
   };
-  pricing: {title: string;packages: PricingPackage[];};
+  pricing: { title: string; packages: PricingPackage[] };
   testimonial: {
     quote: string;
     name: string;
@@ -383,7 +383,7 @@ export interface BlockContentMap {
     source?: 'manual' | 'catalog';
     eventId?: string | null;
   };
-  countdown: {title: string;target: string | null;endedMessage: string;linkLabel: string;url: string;};
+  countdown: { title: string; target: string | null; endedMessage: string; linkLabel: string; url: string };
   download: {
     title: string;
     description: string;
@@ -400,33 +400,33 @@ export interface BlockContentMap {
     source?: 'manual' | 'catalog';
     productId?: string;
   };
-  portfolio: {title: string;items: PortfolioItem[];};
-  location: {name: string;address: string;timeZone: string;hours: OpeningHours[];note: string;};
+  portfolio: { title: string; items: PortfolioItem[] };
+  location: { name: string; address: string; timeZone: string; hours: OpeningHours[]; note: string };
   /** Recurring plans from Commerce → Subscriptions, one to three side by side (D69). */
-  subscription: {title: string;intro: string;planIds: string[];ctaLabel: string;highlightPlanId: string | null;};
+  subscription: { title: string; intro: string; planIds: string[]; ctaLabel: string; highlightPlanId: string | null };
   /** A course from Commerce → Courses, with its outline and the right button (D197). */
-  course: {courseId: string | null;style: 'card' | 'outline';ctaLabel: string;};
+  course: { courseId: string | null; style: 'card' | 'outline'; ctaLabel: string };
   /** A saved form from the Forms add-on (D79). */
-  form: {formId: string | null;showTitle: boolean;};
+  form: { formId: string | null; showTitle: boolean };
   /** Verified reviews and delivered work from Proof of work (D91). */
-  proof: {title: string;show: 'both' | 'reviews' | 'work';limit: number;};
+  proof: { title: string; show: 'both' | 'reviews' | 'work'; limit: number };
   /**
    * Members-only section (D110): hides the blocks below it from anyone who isn't a signed-in subscriber.
    * `covers` = how many blocks below it are hidden; 0 = everything below it on this page.
    */
-  membersOnly: MemberRule & {title: string;teaser: string;joinLabel: string;covers: number;};
+  membersOnly: MemberRule & { title: string; teaser: string; joinLabel: string; covers: number };
   /** Trust Passport badge (D111): level and checked signals, worked out when the page is viewed. */
   /**
    * D254: 'verified' shows only the "Verified by KUBICU" seal. hideBelow hides the badge from visitors while the
    * level is "Just starting" (undefined on older blocks = always shown, as before).
    */
-  trustBadge: {style: 'compact' | 'full' | 'verified';showScore: boolean;hideBelow?: boolean;};
+  trustBadge: { style: 'compact' | 'full' | 'verified'; showScore: boolean; hideBelow?: boolean };
   /** One audio track (D124): a link or a small upload, with cover and optional transcript. */
-  audio: {title: string;artist: string;url: string;fileName: string;coverUrl: string;coverAlt: string;allowDownload: boolean;transcript: string;};
+  audio: { title: string; artist: string; url: string; fileName: string; coverUrl: string; coverAlt: string; allowDownload: boolean; transcript: string };
   /** Several tracks with a now-playing bar (D124). */
-  playlist: {title: string;artist: string;coverUrl: string;coverAlt: string;tracks: PlaylistTrack[];allowDownload: boolean;};
+  playlist: { title: string; artist: string; coverUrl: string; coverAlt: string; tracks: PlaylistTrack[]; allowDownload: boolean };
   /** One Commerce collection as a strip or grid, with "See all" into the shop filtered to it (D124). */
-  collection: {title: string;collectionId: string | null;layout: 'strip' | 'grid';limit: number;showSeeAll: boolean;};
+  collection: { title: string; collectionId: string | null; layout: 'strip' | 'grid'; limit: number; showSeeAll: boolean };
   /**
    * Support / pay-what-you-want (D124). Paid through a payment link of kind "open" that the
    * inspector creates and keeps in sync (`linkId`). It's a payment, never a tax-deductible donation.
@@ -457,28 +457,28 @@ export interface BlockContentMap {
     /** Poster: date and venue line. Product: price line. Others: a short credit line. */
     meta: string;
   };
-  featureGrid: {title: string;intro: string;columns: 2 | 3 | 4;items: FeatureItem[];};
-  steps: {title: string;intro: string;items: StepItem[];};
-  logoStrip: {title: string;items: LogoItem[];permission: boolean;};
-  figures: {title: string;items: FigureItem[];confirmed: boolean;};
-  mediaList: {title: string;kind: 'episodes' | 'tracks' | 'videos' | 'chapters';items: MediaListItem[];links: LinkItem[];};
-  listings: {title: string;ctaLabel: string;items: ListingItem[];};
+  featureGrid: { title: string; intro: string; columns: 2 | 3 | 4; items: FeatureItem[] };
+  steps: { title: string; intro: string; items: StepItem[] };
+  logoStrip: { title: string; items: LogoItem[]; permission: boolean };
+  figures: { title: string; items: FigureItem[]; confirmed: boolean };
+  mediaList: { title: string; kind: 'episodes' | 'tracks' | 'videos' | 'chapters'; items: MediaListItem[]; links: LinkItem[] };
+  listings: { title: string; ctaLabel: string; items: ListingItem[] };
   /* Containers (D167): hold up to 4 child blocks, one level deep. Children live in the same flat list with `parentId`. */
-  section: {heading: string;intro: string;align: 'left' | 'center';};
-  columns: {ratio: 'equal' | 'wide-first' | 'narrow-first';gap: 'normal' | 'wide';valign: 'top' | 'center';phoneReverse: boolean;};
-  tabs: {style: 'underline' | 'pills';phoneStyle: 'accordion' | 'tabs';};
+  section: { heading: string; intro: string; align: 'left' | 'center' };
+  columns: { ratio: 'equal' | 'wide-first' | 'narrow-first'; gap: 'normal' | 'wide'; valign: 'top' | 'center'; phoneReverse: boolean };
+  tabs: { style: 'underline' | 'pills'; phoneStyle: 'accordion' | 'tabs' };
   /* Round 1 blocks (D169) */
-  announcement: {text: string;linkLabel: string;url: string;tone: 'neutral' | 'accent' | 'invert';};
-  cta: {title: string;text: string;primaryLabel: string;primaryUrl: string;secondaryLabel: string;secondaryUrl: string;layout: 'band' | 'card' | 'split';};
-  quote: {text: string;name: string;role: string;style: 'editorial' | 'marked';};
-  timeline: {title: string;intro: string;items: TimelineItem[];};
-  comparison: {title: string;intro: string;columns: CompareColumn[];rows: CompareRow[];};
-  beforeAfter: {title: string;beforeUrl: string;beforeAlt: string;afterUrl: string;afterAlt: string;beforeLabel: string;afterLabel: string;caption: string;permission: boolean;};
-  team: {title: string;intro: string;variant: 'team' | 'speakers';items: TeamMember[];};
-  credentials: {title: string;variant: 'credentials' | 'resume';summary: string;items: CredentialItem[];cvUrl: string;};
-  press: {title: string;items: PressItem[];};
-  hours: {title: string;timeZone: string;hours: OpeningHours[];note: string;};
-  agenda: {title: string;date: string;items: AgendaItem[];};
+  announcement: { text: string; linkLabel: string; url: string; tone: 'neutral' | 'accent' | 'invert' };
+  cta: { title: string; text: string; primaryLabel: string; primaryUrl: string; secondaryLabel: string; secondaryUrl: string; layout: 'band' | 'card' | 'split' };
+  quote: { text: string; name: string; role: string; style: 'editorial' | 'marked' };
+  timeline: { title: string; intro: string; items: TimelineItem[] };
+  comparison: { title: string; intro: string; columns: CompareColumn[]; rows: CompareRow[] };
+  beforeAfter: { title: string; beforeUrl: string; beforeAlt: string; afterUrl: string; afterAlt: string; beforeLabel: string; afterLabel: string; caption: string; permission: boolean };
+  team: { title: string; intro: string; variant: 'team' | 'speakers'; items: TeamMember[] };
+  credentials: { title: string; variant: 'credentials' | 'resume'; summary: string; items: CredentialItem[]; cvUrl: string };
+  press: { title: string; items: PressItem[] };
+  hours: { title: string; timeZone: string; hours: OpeningHours[]; note: string };
+  agenda: { title: string; date: string; items: AgendaItem[] };
   contactActions: {
     title: string;
     phone: string;
@@ -489,30 +489,30 @@ export interface BlockContentMap {
     /** With no number typed in, show the Business WhatsApp number (D214). Missing = yes. */
     useBusinessWhatsApp?: boolean;
   };
-  share: {title: string;text: string;};
-  anchorNav: {title: string;items: AnchorItem[];};
-  policies: {title: string;intro: string;items: PolicyItem[];};
+  share: { title: string; text: string };
+  anchorNav: { title: string; items: AnchorItem[] };
+  policies: { title: string; intro: string; items: PolicyItem[] };
   /** Delivery & returns (D181): rates from the shop's own settings, or written by hand. Returns are always the owner's words. */
-  delivery: {title: string;intro: string;source: 'shop' | 'own';zones: DeliveryLine[];pickup: string;returns: string;note: string;};
+  delivery: { title: string; intro: string; source: 'shop' | 'own'; zones: DeliveryLine[]; pickup: string; returns: string; note: string };
   /* Round 2 blocks (D170) */
-  carousel: {title: string;slides: CarouselSlide[];aspect: 'wide' | 'square' | 'portrait';};
-  brandHeader: {logoUrl: string;logoAlt: string;name: string;tagline: string;ctaLabel: string;url: string;align: 'left' | 'center';};
-  linkCollection: {title: string;layout: 'list' | 'grid';groups: LinkGroup[];};
-  qrCode: {target: 'page' | 'url';url: string;caption: string;size: 'sm' | 'md' | 'lg';};
-  document: {title: string;description: string;url: string;coverUrl: string;coverAlt: string;fileType: string;pages: string;};
-  embed: {url: string;title: string;caption: string;};
-  shopCategories: {title: string;collectionIds: string[];layout: 'chips' | 'cards';};
-  checkoutButton: {mode: 'checkout' | 'link';productId: string | null;url: string;label: string;note: string;};
-  poll: {question: string;options: PollOption[];showResults: 'after' | 'never';};
-  community: {platform: 'whatsapp' | 'telegram' | 'discord' | 'facebook' | 'slack' | 'other';name: string;description: string;url: string;ctaLabel: string;rules: string;};
-  reviewSummary: {title: string;limit: number;};
-  languageSwitch: {label: string;};
-  smartButton: {label: string;url: string;rules: SmartRule[];};
-  campaignSpotlight: {title: string;text: string;ctaLabel: string;url: string;imageUrl: string;imageAlt: string;startsAt: string | null;endsAt: string | null;afterText: string;};
-  recommendations: {title: string;intro: string;items: RecommendationItem[];};
-  backToTop: {label: string;};
+  carousel: { title: string; slides: CarouselSlide[]; aspect: 'wide' | 'square' | 'portrait' };
+  brandHeader: { logoUrl: string; logoAlt: string; name: string; tagline: string; ctaLabel: string; url: string; align: 'left' | 'center' };
+  linkCollection: { title: string; layout: 'list' | 'grid'; groups: LinkGroup[] };
+  qrCode: { target: 'page' | 'url'; url: string; caption: string; size: 'sm' | 'md' | 'lg' };
+  document: { title: string; description: string; url: string; coverUrl: string; coverAlt: string; fileType: string; pages: string };
+  embed: { url: string; title: string; caption: string };
+  shopCategories: { title: string; collectionIds: string[]; layout: 'chips' | 'cards' };
+  checkoutButton: { mode: 'checkout' | 'link'; productId: string | null; url: string; label: string; note: string };
+  poll: { question: string; options: PollOption[]; showResults: 'after' | 'never' };
+  community: { platform: 'whatsapp' | 'telegram' | 'discord' | 'facebook' | 'slack' | 'other'; name: string; description: string; url: string; ctaLabel: string; rules: string };
+  reviewSummary: { title: string; limit: number };
+  languageSwitch: { label: string };
+  smartButton: { label: string; url: string; rules: SmartRule[] };
+  campaignSpotlight: { title: string; text: string; ctaLabel: string; url: string; imageUrl: string; imageAlt: string; startsAt: string | null; endsAt: string | null; afterText: string };
+  recommendations: { title: string; intro: string; items: RecommendationItem[] };
+  backToTop: { label: string };
   /** FAQ assistant (D342): visitors ask in their own words; only the owner's approved answers are ever shown. */
-  faqAssistant: {title: string;intro: string;facts: FaqItem[];fallbackLabel: string;fallbackUrl: string;};
+  faqAssistant: { title: string; intro: string; facts: FaqItem[]; fallbackLabel: string; fallbackUrl: string };
 }
 
 export interface BlockStyle {
@@ -538,7 +538,7 @@ export interface PageLayoutSettings {
   /** Spacing around wide sections and bands (D175). Missing = 'comfortable', today's spacing. */
   density?: 'comfortable' | 'compact';
   /** A sticky action bar on phones: one primary action. */
-  actionBar?: {enabled: boolean;label: string;blockId: string | null;url: string;} | null;
+  actionBar?: { enabled: boolean; label: string; blockId: string | null; url: string } | null;
 }
 
 export interface BlockBehaviour {
@@ -764,7 +764,7 @@ export interface CoBrandSettings {
   /** "sections": each block is Yours, Theirs or Shared. "open": both can change anything; changes are listed and undoable. */
   mode: 'sections' | 'open';
   /** The partner's sign-off on a version of the page; tied to a fingerprint so any later change needs it again. */
-  partnerApproval?: {sig: string;partnerSig: string;at: string;} | null;
+  partnerApproval?: { sig: string; partnerSig: string; at: string } | null;
   startedAt: string;
 }
 
@@ -784,11 +784,11 @@ export interface PageBranding {
   noFollowLinks?: boolean;
 }
 
-export type Block = { [K in
-BlockType]: BaseBlock & {type: K;content: BlockContentMap[K];} }[
-BlockType];
+export type Block = {
+  [K in BlockType]: BaseBlock & { type: K; content: BlockContentMap[K] };
+}[BlockType];
 
-export type BlockOf<K extends BlockType> = Extract<Block, {type: K;}>;
+export type BlockOf<K extends BlockType> = Extract<Block, { type: K }>;
 
 export type BlockMeta = Pick<BaseBlock, 'style' | 'layout' | 'behaviour' | 'visibility' | 'accessibility'>;
 
@@ -847,8 +847,8 @@ export type ButtonFinish = 'solid' | 'gradient' | 'gloss' | 'glow';
 export type ImageFrame = 'none' | 'hairline' | 'mat' | 'shadow';
 export type LinkStyle = 'underline' | 'accent' | 'arrow';
 export type ThemeFontId =
-'inter' | 'fraunces' | 'newsreader' | 'instrument' | 'archivo' | 'lora' | 'cormorant' | 'bricolage' |
-'manrope' | 'sora' | 'dmSerif' | 'playfair' | 'outfit' | 'syne';
+  | 'inter' | 'fraunces' | 'newsreader' | 'instrument' | 'archivo' | 'lora' | 'cormorant' | 'bricolage'
+  | 'manrope' | 'sora' | 'dmSerif' | 'playfair' | 'outfit' | 'syne';
 
 /**
  * Material layer for Signature themes (D161): atmosphere, surface finish, depth, shape, button finish and type.
@@ -922,7 +922,7 @@ export interface SitePage {
   groups?: BlockGroup[];
   hideFromNav?: boolean;
   /** Members-only page (D110). Home can't be members-only. */
-  membersOnly?: (MemberRule & {teaser: string;}) | null;
+  membersOnly?: (MemberRule & { teaser: string }) | null;
   createdAt: string;
 }
 

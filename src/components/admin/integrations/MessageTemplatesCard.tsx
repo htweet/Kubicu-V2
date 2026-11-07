@@ -14,8 +14,8 @@ export function MessageTemplatesCard() {
         <Segmented<UiLang> ariaLabel="Preview language" size="sm" value={lang} onChange={setLang} options={messageLangs} />
       </div>
       <ul className="mt-3 divide-y divide-line border-t border-line" lang={lang === 'pcm' ? 'pcm' : lang}>
-        {platformMessages.map((m) =>
-        <li key={m.id} className="px-5 py-3.5 md:px-6">
+        {platformMessages.map((m) => (
+          <li key={m.id} className="px-5 py-3.5 md:px-6">
             <p className="flex flex-wrap items-center gap-2 text-label font-semibold text-fg">
               {m.name}
               <Badge tone="neutral">{m.channel}</Badge>
@@ -23,18 +23,18 @@ export function MessageTemplatesCard() {
             </p>
             <p className="mt-1.5 rounded-md bg-sunken px-3 py-2 text-label text-fg">
               {m.text[lang].split(/(\{\w+\})/).map((part, i) =>
-            /^\{\w+\}$/.test(part) ?
-            <span key={i} className="rounded-sm bg-action-soft px-1 font-mono text-caption text-action">
+                /^\{\w+\}$/.test(part) ? (
+                  <span key={i} className="rounded-sm bg-action-soft px-1 font-mono text-caption text-action">
                     {part}
-                  </span> :
-
-            <React.Fragment key={i}>{part}</React.Fragment>
-
-            )}
+                  </span>
+                ) : (
+                  <React.Fragment key={i}>{part}</React.Fragment>
+                ),
+              )}
             </p>
           </li>
-        )}
+        ))}
       </ul>
-    </Card>);
-
+    </Card>
+  );
 }

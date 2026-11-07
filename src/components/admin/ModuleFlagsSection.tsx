@@ -41,25 +41,25 @@ export function ModuleFlagsSection() {
     if (v !== null) setQ(v);
   }, [params]);
   const [show, setShow] = useState<Show>('all');
-  const [pending, setPending] = useState<{row: Row;on: boolean;} | null>(null);
+  const [pending, setPending] = useState<{ row: Row; on: boolean } | null>(null);
 
   const rows = useMemo<Row[]>(
     () => [
-    ...workspaceNav.
-    filter((n) => !ALWAYS_ON_NAV.includes(n.id)).
-    map((n): Row => {
-      const addon = n.appId ? extensions.find((e) => e.id === n.appId)?.name ?? n.appId : null;
-      return {
-        key: navKey(n.id),
-        name: n.label,
-        label: tr(n.label),
-        detail: addon ? `${tr('Workspace screen')} · ${n.to} · ${tr('needs the {addon} add-on', { addon })}` : `${tr('Workspace screen')} · ${n.to}`,
-        kind: 'module'
-      };
-    }),
-    ...extensions.filter((e) => !e.retired).map((e): Row => ({ key: extKey(e.id), name: e.name, label: e.name, detail: `${tr('Marketplace add-on')} · ${e.publisher}`, kind: 'addon' }))],
-
-    [tr]
+      ...workspaceNav
+        .filter((n) => !ALWAYS_ON_NAV.includes(n.id))
+        .map((n): Row => {
+          const addon = n.appId ? extensions.find((e) => e.id === n.appId)?.name ?? n.appId : null;
+          return {
+            key: navKey(n.id),
+            name: n.label,
+            label: tr(n.label),
+            detail: addon ? `${tr('Workspace screen')} · ${n.to} · ${tr('needs the {addon} add-on', { addon })}` : `${tr('Workspace screen')} · ${n.to}`,
+            kind: 'module',
+          };
+        }),
+      ...extensions.filter((e) => !e.retired).map((e): Row => ({ key: extKey(e.id), name: e.name, label: e.name, detail: `${tr('Marketplace add-on')} · ${e.publisher}`, kind: 'addon' })),
+    ],
+    [tr],
   );
 
   const term = q.trim().toLowerCase();
@@ -70,7 +70,7 @@ export function ModuleFlagsSection() {
     if (!pending) return;
     const { row, on } = pending;
     setStore((s) =>
-    audit({ ...s, modules: { ...s.modules, [row.key]: { on, updatedAt: new Date().toISOString() } } }, { area: 'flags', action: on ? 'Made available again' : 'Switched off — shown as “Currently not available”', target: row.name, reason })
+      audit({ ...s, modules: { ...s.modules, [row.key]: { on, updatedAt: new Date().toISOString() } } }, { area: 'flags', action: on ? 'Made available again' : 'Switched off — shown as “Currently not available”', target: row.name, reason }),
     );
     toast.success(`${row.label}: ${on ? tr('available again') : tr('switched off')}`, { description: tr('Applies straight away in every open tab.') });
     setPending(null);
@@ -95,10 +95,10 @@ export function ModuleFlagsSection() {
           value={show}
           onChange={setShow}
           options={[
-          { value: 'all', label: tr('All: {n}', { n: rows.length }) },
-          { value: 'off', label: tr('Switched off: {n}', { n: offCount }) }]
-          } />
-        
+            { value: 'all', label: tr('All: {n}', { n: rows.length }) },
+            { value: 'off', label: tr('Switched off: {n}', { n: offCount }) },
+          ]}
+        />
       </div>
 
       {(['module', 'addon'] as const).map((kind) => {
@@ -106,15 +106,15 @@ export function ModuleFlagsSection() {
         return (
           <div key={kind} className="mt-6">
             <h3 className="text-label font-semibold text-fg">{kind === 'module' ? tr('Workspace modules') : tr('Marketplace add-ons')}</h3>
-            {items.length === 0 ?
-            <p className="mt-2 text-caption text-fg-muted">{show === 'off' ? tr('Nothing switched off.') : tr('No match.')}</p> :
-
-            <ul className="mt-2 divide-y divide-line border-y border-line">
+            {items.length === 0 ? (
+              <p className="mt-2 text-caption text-fg-muted">{show === 'off' ? tr('Nothing switched off.') : tr('No match.')}</p>
+            ) : (
+              <ul className="mt-2 divide-y divide-line border-y border-line">
                 {items.map((r) => {
-                const on = moduleOn(store, r.key);
-                const changed = store.modules?.[r.key]?.updatedAt;
-                return (
-                  <li key={r.key} className="flex flex-wrap items-center gap-3 py-3">
+                  const on = moduleOn(store, r.key);
+                  const changed = store.modules?.[r.key]?.updatedAt;
+                  return (
+                    <li key={r.key} className="flex flex-wrap items-center gap-3 py-3">
                       <span className="min-w-0 flex-1">
                         <span className="flex flex-wrap items-center gap-2">
                           <span className="text-label font-semibold text-fg">{r.label}</span>
@@ -130,13 +130,13 @@ export function ModuleFlagsSection() {
                       <Button size="sm" variant={on ? 'secondary' : 'primary'} onClick={() => setPending({ row: r, on: !on })}>
                         {on ? tr('Switch off') : tr('Make available')}
                       </Button>
-                    </li>);
-
-              })}
+                    </li>
+                  );
+                })}
               </ul>
-            }
-          </div>);
-
+            )}
+          </div>
+        );
       })}
 
       <ReasonDialog
@@ -146,8 +146,8 @@ export function ModuleFlagsSection() {
         destructive={pending ? !pending.on : false}
         title={pending ? `${pending.on ? tr('Make available') : tr('Switch off')}: ${pending.row.label}` : ''}
         description={pending?.on ? tr('Owners can use it again straight away.') : tr('Owners keep seeing it, marked “Currently not available”. Nothing they saved is deleted.')}
-        confirmLabel={tr('Apply change')} />
-      
-    </section>);
-
+        confirmLabel={tr('Apply change')}
+      />
+    </section>
+  );
 }

@@ -95,7 +95,7 @@ interface BlockRendererProps {
  * Super admin → Feature flags, visitors see a calm "isn't available right now" card instead, and the owner sees
  * the block with a note on the canvas. Nothing is deleted.
  */
-const blockModule: Partial<Record<Block['type'], {id: string;appId?: string;}>> = {
+const blockModule: Partial<Record<Block['type'], { id: string; appId?: string }>> = {
   product: { id: 'commerce' },
   productGrid: { id: 'commerce' },
   shopCategories: { id: 'commerce' },
@@ -110,7 +110,7 @@ const blockModule: Partial<Record<Block['type'], {id: string;appId?: string;}>> 
   booking: { id: 'bookings', appId: 'bookings' },
   form: { id: 'forms', appId: 'forms' },
   leadForm: { id: 'audience' },
-  newsletter: { id: 'audience' }
+  newsletter: { id: 'audience' },
 };
 
 export function BlockRenderer({ block, theme, mode }: BlockRendererProps) {
@@ -127,8 +127,8 @@ export function BlockRenderer({ block, theme, mode }: BlockRendererProps) {
           <PageChip theme={theme} tone="muted">
             {tr('Not available')}
           </PageChip>
-        </section>);
-
+        </section>
+      );
     }
     return (
       <div className="flex flex-col gap-2">
@@ -136,8 +136,8 @@ export function BlockRenderer({ block, theme, mode }: BlockRendererProps) {
           {tr('KUBICU has paused this for now, so visitors see “isn’t available right now” in its place. Your block is kept.')}
         </p>
         <BlockSwitch block={block} theme={theme} mode={mode} />
-      </div>);
-
+      </div>
+    );
   }
   return <BlockSwitch block={block} theme={theme} mode={mode} />;
 }
@@ -310,5 +310,5 @@ function BlockSwitch({ block, theme, mode }: BlockRendererProps) {
 export const spacingClass: Record<Block['layout']['spacing'], string> = {
   tight: 'py-1',
   normal: 'py-2',
-  loose: 'py-4'
+  loose: 'py-4',
 };

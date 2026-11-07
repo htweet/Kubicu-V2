@@ -44,7 +44,7 @@ export interface PartnershipEvent {
 /** What a guest partner has set up on their partner page. */
 export interface GuestSetup {
   phoneVerifiedAt?: string;
-  bank?: {bankName: string;last4: string;accountName: string;bvnLast4: string;verifiedAt: string;};
+  bank?: { bankName: string; last4: string; accountName: string; bvnLast4: string; verifiedAt: string };
 }
 
 export interface Partnership {
@@ -63,7 +63,7 @@ export interface Partnership {
   status: PartnershipStatus;
   agreement: Agreement;
   /** A proposed change waiting for the other side. */
-  pending?: {agreement: Agreement;by: AgreementSide;at: string;};
+  pending?: { agreement: Agreement; by: AgreementSide; at: string };
   guest?: GuestSetup;
   /** When "ending": the date the partnership stops. */
   endsAt?: string;

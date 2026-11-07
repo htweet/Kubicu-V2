@@ -14,7 +14,7 @@ interface CampaignPreviewValue {
 const CampaignPreviewContext = createContext<CampaignPreviewValue>({ phase: null, setPhase: () => undefined, source: null, setSource: () => undefined });
 
 /** What the canvas previews: a campaign phase (D52) and/or a visitor source (D64). */
-export function CampaignPreviewProvider({ children }: {children: React.ReactNode;}) {
+export function CampaignPreviewProvider({ children }: { children: React.ReactNode }) {
   const [phase, setPhase] = useState<CampaignPhase | null>(null);
   const [source, setSource] = useState<SourceId | null>(null);
   const value = useMemo(() => ({ phase, setPhase, source, setSource }), [phase, source]);

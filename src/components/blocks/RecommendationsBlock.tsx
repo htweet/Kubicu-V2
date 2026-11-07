@@ -25,42 +25,42 @@ export function RecommendationsBlock({ block, theme, mode }: BlockProps<'recomme
       <SectionHeading theme={theme} title={c.title} intro={c.intro} />
       <ol className="flex flex-col">
         {items.map((i, n) => {
-          const body =
-          <>
+          const body = (
+            <>
               <span aria-hidden className="w-9 shrink-0 pt-0.5 text-[28px] font-medium leading-none tabular-nums" style={{ fontFamily: display, color: mix(accent, 70, theme.background) }}>
                 {n + 1}
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block text-[18px] font-medium leading-snug" style={{ fontFamily: display, color: theme.text }}>{i.title}</span>
                 {i.text && <span className="mt-1 block text-[14px] leading-relaxed" style={{ color: theme.mutedText }}>{i.text}</span>}
-                {i.reason &&
-              <span className="mt-2 block text-[13px] italic leading-snug" style={{ color: theme.text }}>
+                {i.reason && (
+                  <span className="mt-2 block text-[13px] italic leading-snug" style={{ color: theme.text }}>
                     {tr('Why:')} {i.reason}
                   </span>
-              }
+                )}
               </span>
-              {i.imageUrl &&
-            <span className="h-16 w-16 shrink-0 overflow-hidden md:h-20 md:w-20" style={{ borderRadius: Math.max(cardRadius(theme) - 6, 4) }}>
+              {i.imageUrl && (
+                <span className="h-16 w-16 shrink-0 overflow-hidden md:h-20 md:w-20" style={{ borderRadius: Math.max(cardRadius(theme) - 6, 4) }}>
                   <MediaImage src={i.imageUrl} alt={i.imageAlt} className="h-full w-full object-cover" />
                 </span>
-            }
+              )}
               {i.url && !i.imageUrl && <ArrowUpRightIcon size={18} aria-hidden className="mt-1 shrink-0" style={{ color: theme.text }} />}
-            </>;
-
+            </>
+          );
           return (
             <li key={i.id} style={{ borderTop: `1px solid ${mix(theme.text, 10)}` }}>
               <span className="sr-only">{tr('Pick {n}:', { n: n + 1 })} </span>
-              {i.url ?
-              <PageAction mode={mode} href={i.url} className="flex items-start gap-4 py-5">
+              {i.url ? (
+                <PageAction mode={mode} href={i.url} className="flex items-start gap-4 py-5">
                   {body}
-                </PageAction> :
-
-              <div className="flex items-start gap-4 py-5">{body}</div>
-              }
-            </li>);
-
+                </PageAction>
+              ) : (
+                <div className="flex items-start gap-4 py-5">{body}</div>
+              )}
+            </li>
+          );
         })}
       </ol>
-    </section>);
-
+    </section>
+  );
 }

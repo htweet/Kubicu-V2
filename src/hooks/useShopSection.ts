@@ -30,7 +30,7 @@ export function useShopSection<K extends keyof ShopSettings>(key: K, savedLabel:
 
   const patch = (p: Partial<ShopSettings[K]>) => {
     setJustSaved(false);
-    setDraft((d) => typeof d === 'object' && d !== null ? { ...d, ...p } as ShopSettings[K] : p as ShopSettings[K]);
+    setDraft((d) => (typeof d === 'object' && d !== null ? ({ ...d, ...p } as ShopSettings[K]) : (p as ShopSettings[K])));
   };
 
   const save = (value: ShopSettings[K] = draft): boolean => {

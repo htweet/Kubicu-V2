@@ -78,7 +78,7 @@ export interface DigitalAsset {
   /** D136: tile a faint watermark with the buyer's details across image files (simulated). */
   watermarkImages?: boolean;
   /** D125: issue a licence key per buyer, with a number of activations. */
-  keys?: {enabled: boolean;prefix: string;activations: number;};
+  keys?: { enabled: boolean; prefix: string; activations: number };
 }
 
 /** A licence key issued to one buyer for one digital product (D125). */
@@ -130,7 +130,7 @@ export interface Product {
   /** How tax applies (D435): standard rate, zero-rated or exempt. Missing = standard. */
   taxClass?: TaxClass;
   /** Cross-border delivery (D436): customs description and where it was made (weight is `weightKg`). */
-  shipping?: {customsDescription: string;originCountry: CountryCode;};
+  shipping?: { customsDescription: string; originCountry: CountryCode };
   sample?: boolean;
   createdAt: string;
   updatedAt: string;
@@ -180,7 +180,7 @@ export interface GiftCard {
   status: 'active' | 'disabled';
   /** ISO; null = never expires. */
   expiresAt: string | null;
-  uses: {orderId: string;orderNumber: number;amountNgn: number;at: string;}[];
+  uses: { orderId: string; orderNumber: number; amountNgn: number; at: string }[];
   /** Why it was issued by hand, e.g. "Store credit for order #1012". */
   note?: string;
   createdAt: string;
@@ -243,7 +243,7 @@ export interface InstalmentPart {
 export interface OrderInstalments {
   every: InstalmentEvery;
   ship: 'first' | 'last';
-  card: {brand: 'Visa' | 'Mastercard' | 'Verve';last4: string;};
+  card: { brand: 'Visa' | 'Mastercard' | 'Verve'; last4: string };
   parts: InstalmentPart[];
   status: 'active' | 'completed' | 'defaulted' | 'cancelled';
   agreedAt: string;
@@ -253,8 +253,8 @@ export interface OrderInstalments {
 export interface OrderPod {
   amountNgn: number;
   accept: 'cash' | 'transfer' | 'both';
-  collected?: {how: 'cash' | 'transfer';at: string;};
-  failed?: {at: string;reason: PodFailReason;note?: string;}[];
+  collected?: { how: 'cash' | 'transfer'; at: string };
+  failed?: { at: string; reason: PodFailReason; note?: string }[];
 }
 
 export type PodFailReason = 'refused' | 'not_home' | 'unreachable' | 'wrong_address' | 'other';
@@ -271,7 +271,7 @@ export interface PayOptions {
     /** Buyers whose phone has refused a pay-on-delivery order before must pay online. */
     blockAfterRefusal: boolean;
   };
-  instalments: {enabled: boolean;};
+  instalments: { enabled: boolean };
 }
 
 export interface MadeToOrder {
@@ -454,7 +454,7 @@ export interface Dispute {
   openedAt: string;
   respondBy: string;
   status: DisputeStatus;
-  evidence: {id: string;name: string;at: string;}[];
+  evidence: { id: string; name: string; at: string }[];
   response: string;
 }
 
@@ -517,7 +517,7 @@ export interface Order {
   /** Shown in the timeline when the provider was slow to confirm. */
   paymentNote?: string;
   /** Paid by bank transfer to the seller's own account (D148); the seller confirms it arrived. */
-  bankTransfer?: {bank: string;account: string;accountName: string;sentAt?: string;};
+  bankTransfer?: { bank: string; account: string; accountName: string; sentAt?: string };
   refunds: Refund[];
   dispute?: Dispute;
   events: OrderEvent[];
@@ -555,13 +555,13 @@ export interface Order {
   /** Pop-up shop pickup (D183): which session the buyer collects at, and whether they pay there. */
   popup?: OrderPopup;
   /** Gift card spent on this order (D202). Its amount is included in discountNgn. */
-  giftCard?: {code: string;amountNgn: number;};
+  giftCard?: { code: string; amountNgn: number };
   /** Pre-ordered items in this order and the latest expected date (D202). */
-  preorder?: {shipsBy: string;};
+  preorder?: { shipsBy: string };
   // ——— D222 shop settings, frozen at order time ———
   /** VAT on this order. Inclusive VAT is already inside the prices; exclusive VAT was added on top. */
   /** `country`: whose tax this is (D435) — the buyer's country when the shop is registered there, else the shop's own. */
-  vat?: {ratePct: number;amountNgn: number;inclusive: boolean;country?: CountryCode;};
+  vat?: { ratePct: number; amountNgn: number; inclusive: boolean; country?: CountryCode };
   /** Order number prefix in force when the order was placed, e.g. "ADA" → ADA-1042. */
   numberPrefix?: string;
   /** What the buyer typed in the order-note box. */
@@ -571,7 +571,7 @@ export interface Order {
   /** Sold past zero stock under "Allow backorders". */
   backorder?: boolean;
   /** Paid to a one-time provider transfer account (confirms itself). */
-  transferAccount?: {bank: string;account: string;};
+  transferAccount?: { bank: string; account: string };
 }
 
 // ——— D222 Commerce settings ———
@@ -647,7 +647,7 @@ export interface ShopSettings {
     /** Opening hours by day; null = not set. */
     hours: Record<WeekdayId, DayHours> | null;
   };
-  messages: Record<OrderMessageId, {whatsapp: boolean;email: boolean;}>;
+  messages: Record<OrderMessageId, { whatsapp: boolean; email: boolean }>;
   weightUnit: 'kg' | 'g';
 }
 
@@ -671,9 +671,9 @@ export interface OrderDiscount {
 
 export type DiscountKind = 'code' | 'automatic' | 'referral';
 
-export type DiscountValue = {type: 'percent';percent: number;} | {type: 'fixed';amountNgn: number;} | {type: 'free_delivery';};
+export type DiscountValue = { type: 'percent'; percent: number } | { type: 'fixed'; amountNgn: number } | { type: 'free_delivery' };
 
-export type DiscountScope = {scope: 'all';} | {scope: 'products';productIds: string[];} | {scope: 'collections';collectionIds: string[];};
+export type DiscountScope = { scope: 'all' } | { scope: 'products'; productIds: string[] } | { scope: 'collections'; collectionIds: string[] };
 
 export interface Discount {
   id: string;
@@ -699,7 +699,7 @@ export interface Discount {
   createdAt: string;
   sample?: boolean;
   /** Loyalty points (D232): a single-use code a customer made from their points. */
-  loyalty?: {phone: string;points: number;};
+  loyalty?: { phone: string; points: number };
 }
 
 /** The auto-built shop at /shop on the workspace's pages (D53). */
@@ -778,7 +778,7 @@ export interface FulfilmentSettings {
   zones: DeliveryZone[];
   freeDeliveryOverNgn: number | null;
   /** Cross-border delivery (D436): other countries the shop ships to by courier. */
-  international?: {countries: CountryCode[];};
+  international?: { countries: CountryCode[] };
 }
 
 export type PaymentProviderId = 'paystack' | 'flutterwave' | 'monnify' | 'stripe';
@@ -798,7 +798,7 @@ export interface CommerceData {
   discounts: Discount[];
   storefront: StorefrontSettings;
   /** Group-goal DealRooms already settled at their deadline, by link (D54). */
-  settledRooms?: Record<string, {at: string;outcome: 'reached' | 'missed';refunded: number;}>;
+  settledRooms?: Record<string, { at: string; outcome: 'reached' | 'missed'; refunded: number }>;
   fulfilment: FulfilmentSettings;
   payments: PaymentSettings;
   /** Customer subscriptions (D69). */
@@ -841,7 +841,7 @@ export interface Branch {
   pickup: boolean;
   status: 'open' | 'closed';
   kind: 'owned' | 'franchise';
-  franchise?: {operator: string;royaltyPct: number;since: string;};
+  franchise?: { operator: string; royaltyPct: number; since: string };
   createdAt: string;
 }
 

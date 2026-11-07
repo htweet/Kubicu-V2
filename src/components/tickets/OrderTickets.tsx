@@ -34,8 +34,8 @@ export function OrderTickets({ theme: t, tickets, data, handle }: Props) {
                 <p className="text-[15px] font-semibold">
                   {list.length} ticket{list.length === 1 ? '' : 's'} · {ev?.name ?? 'Event'}
                 </p>
-                {ev &&
-                <p className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-[13px]" style={muted}>
+                {ev && (
+                  <p className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-[13px]" style={muted}>
                     <span className="inline-flex items-center gap-1">
                       <CalendarIcon size={12} aria-hidden /> {formatEventDate(ev.startsAt, ev.timeZone)} · {formatEventTime(ev.startsAt, ev.timeZone)}
                     </span>
@@ -43,7 +43,7 @@ export function OrderTickets({ theme: t, tickets, data, handle }: Props) {
                       <MapPinIcon size={12} aria-hidden /> {ev.online ? 'Online' : ev.venue}
                     </span>
                   </p>
-                }
+                )}
               </div>
             </div>
             <ul className="mt-4 flex flex-col" role="list">
@@ -69,18 +69,18 @@ export function OrderTickets({ theme: t, tickets, data, handle }: Props) {
                     </span>
                     <ChevronRightIcon size={16} className="shrink-0" style={muted} aria-hidden />
                     </Link>
-                  </li>);
-
+                  </li>
+                );
               })}
             </ul>
-            {ev?.refundPolicy &&
-            <p className="pt-3 text-[12px] leading-snug" style={{ ...muted, borderTop: `1px solid ${mix(t.text, 10)}` }}>
+            {ev?.refundPolicy && (
+              <p className="pt-3 text-[12px] leading-snug" style={{ ...muted, borderTop: `1px solid ${mix(t.text, 10)}` }}>
                 {ev.refundPolicy}
               </p>
-            }
-          </section>);
-
+            )}
+          </section>
+        );
       })}
-    </>);
-
+    </>
+  );
 }

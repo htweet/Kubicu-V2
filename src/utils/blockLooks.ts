@@ -20,13 +20,13 @@ type Bag = Record<string, unknown>;
 
 /** Settings-like values: on/off, numbers and short single-word options ("split", "grid", "wide-first"). */
 const isShapeValue = (v: unknown) =>
-typeof v === 'boolean' || typeof v === 'number' || typeof v === 'string' && v.length > 0 && v.length <= 24 && !/\s/.test(v);
+  typeof v === 'boolean' || typeof v === 'number' || (typeof v === 'string' && v.length > 0 && v.length <= 24 && !/\s/.test(v));
 
 function shapeOf(preset: BlockPreset): Required<BlockPreset> {
   return {
     content: Object.fromEntries(Object.entries(preset.content ?? {}).filter(([, v]) => isShapeValue(v))),
     style: { ...(preset.style ?? {}) },
-    layout: { ...(preset.layout ?? {}) }
+    layout: { ...(preset.layout ?? {}) },
   };
 }
 
@@ -60,7 +60,7 @@ export function looksFor(type: BlockType): LookOption[] {
   const standard: Required<BlockPreset> = {
     content: pick(fresh.content, keys.content),
     style: pick(fresh.style, keys.style),
-    layout: pick(fresh.layout, keys.layout)
+    layout: pick(fresh.layout, keys.layout),
   };
   const options = [{ id: 'standard', name: 'Standard', note: 'The block as it first arrives', shape: standard }, ...looks.filter((l) => key(l.shape) !== key(standard))];
   const result = options.length > 1 ? options : [];
@@ -73,7 +73,7 @@ const matches = (have: object, want: Bag) => Object.entries(want).every(([k, v])
 /** The look the block currently matches (the most specific one), or null for custom settings. */
 export function currentLook(block: Block, options = looksFor(block.type)): LookOption | null {
   const fits = options.filter(
-    (o) => matches(block.content, o.shape.content) && matches(block.style, o.shape.style) && (!!block.parentId || matches(block.layout, o.shape.layout))
+    (o) => matches(block.content, o.shape.content) && matches(block.style, o.shape.style) && (!!block.parentId || matches(block.layout, o.shape.layout)),
   );
   const specific = fits.filter((o) => o.id !== 'standard').sort((a, b) => size(b.shape) - size(a.shape));
   return specific[0] ?? fits.find((o) => o.id === 'standard') ?? null;
@@ -85,6 +85,6 @@ export function withLook(block: Block, look: LookOption): Block {
     ...block,
     content: { ...block.content, ...look.shape.content },
     style: { ...block.style, ...look.shape.style },
-    layout: block.parentId ? block.layout : { ...block.layout, ...look.shape.layout }
+    layout: block.parentId ? block.layout : { ...block.layout, ...look.shape.layout },
   } as Block;
 }

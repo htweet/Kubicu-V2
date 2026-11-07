@@ -17,15 +17,15 @@ export function AiSuggestEntry() {
   const enabled = useFlag('ai_page_setup', plan.id);
 
   if (!enabled)
-  return (
-    <div className="flex items-start gap-2.5 rounded-md border border-line bg-sunken p-3">
+    return (
+      <div className="flex items-start gap-2.5 rounded-md border border-line bg-sunken p-3">
         <PauseCircleIcon size={16} className="mt-0.5 shrink-0 text-fg-subtle" aria-hidden />
         <div>
           <p className="text-label font-semibold text-fg">The AI assistant is paused</p>
           <p className="mt-0.5 text-caption text-fg-muted">KUBICU has switched it off for {plan.name} for now. Your page and anything built before are unaffected.</p>
         </div>
-      </div>);
-
+      </div>
+    );
 
   return (
     <div className="ai-frame rounded-md">
@@ -41,6 +41,6 @@ export function AiSuggestEntry() {
           </Button>
         </div>
       </div>
-    </div>);
-
+    </div>
+  );
 }

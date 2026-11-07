@@ -22,7 +22,7 @@ export function SocialItemsEditor({ blockId, items, issues, onChange }: SocialIt
   const { t: tr } = useT();
   const unused = socialPlatforms.filter((p) => !items.some((i) => i.platform === p));
   const update = (id: string, patch: Partial<SocialItem>, field: string) =>
-  onChange(items.map((i) => i.id === id ? { ...i, ...patch } : i), `${id}:${field}`);
+    onChange(items.map((i) => (i.id === id ? { ...i, ...patch } : i)), `${id}:${field}`);
 
   return (
     <fieldset className="flex flex-col gap-3">
@@ -41,15 +41,15 @@ export function SocialItemsEditor({ blockId, items, issues, onChange }: SocialIt
                 id={`${blockId}-${item.id}-platform`}
                 value={item.platform}
                 onChange={(e) => update(item.id, { platform: e.target.value as SocialPlatform }, 'platform')}
-                className={cn(fieldControlClass, 'h-9 w-[118px] shrink-0 text-label')}>
-                
-                {socialPlatforms.
-                filter((p) => p === item.platform || unused.includes(p)).
-                map((p) =>
-                <option key={p} value={p}>
+                className={cn(fieldControlClass, 'h-9 w-[118px] shrink-0 text-label')}
+              >
+                {socialPlatforms
+                  .filter((p) => p === item.platform || unused.includes(p))
+                  .map((p) => (
+                    <option key={p} value={p}>
                       {socialPlatformLabels[p]}
                     </option>
-                )}
+                  ))}
               </select>
               <label htmlFor={`${blockId}-${item.id}-url`} className="sr-only">
                 {tr('{platform} link', { platform })}
@@ -62,18 +62,18 @@ export function SocialItemsEditor({ blockId, items, issues, onChange }: SocialIt
                 placeholder="https://"
                 aria-invalid={error ? true : undefined}
                 onChange={(e) => update(item.id, { url: e.target.value }, 'url')}
-                className={cn(fieldControlClass, 'h-9 min-w-0 flex-1 text-label')} />
-              
+                className={cn(fieldControlClass, 'h-9 min-w-0 flex-1 text-label')}
+              />
               <IconButton
                 icon={Trash2Icon}
                 label={tr('Remove {platform}', { platform })}
                 size="sm"
-                onClick={() => onChange(items.filter((i) => i.id !== item.id), 'remove')} />
-              
+                onClick={() => onChange(items.filter((i) => i.id !== item.id), 'remove')}
+              />
             </div>
             {error && <p className="text-caption text-danger">{tr(error)}</p>}
-          </div>);
-
+          </div>
+        );
       })}
       <Button
         variant="secondary"
@@ -81,10 +81,10 @@ export function SocialItemsEditor({ blockId, items, issues, onChange }: SocialIt
         leadingIcon={PlusIcon}
         className="self-start"
         disabled={unused.length === 0}
-        onClick={() => onChange([...items, { id: uid('soc'), platform: unused[0], url: '' }], 'add')}>
-        
+        onClick={() => onChange([...items, { id: uid('soc'), platform: unused[0], url: '' }], 'add')}
+      >
         {tr('Add profile')}
       </Button>
-    </fieldset>);
-
+    </fieldset>
+  );
 }

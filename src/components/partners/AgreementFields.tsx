@@ -32,6 +32,6 @@ export function AgreementFields({ value: a, onChange, leadName, partnerName, dis
         <SelectInput<DeliveryRule> id="agr-delivery" label={tr('Who delivers')} value={a.delivery} onChange={(v) => set({ delivery: v })} options={(Object.keys(deliveryLabels) as DeliveryRule[]).map((k) => ({ value: k, label: tr(deliveryLabels[k]) }))} />
         <SelectInput<SupportRule> id="agr-support" label={tr('Customer questions and refunds')} value={a.support} onChange={(v) => set({ support: v })} options={(Object.keys(supportLabels) as SupportRule[]).map((k) => ({ value: k, label: tr(supportLabels[k]) }))} />
       </div>
-    </fieldset>);
-
+    </fieldset>
+  );
 }

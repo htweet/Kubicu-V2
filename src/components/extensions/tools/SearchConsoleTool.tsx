@@ -16,7 +16,7 @@ import { ToolSection, ToolStat } from './ToolSection';
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
 /** Search Console & SEO (D232): sitemap from published spaces, plus pages missing a search description. */
-export function SearchConsoleTool({ rec }: {rec: InstalledExtension;}) {
+export function SearchConsoleTool({ rec }: { rec: InstalledExtension }) {
   const { data: commerce } = useCommerce();
   const { data: ops } = useOps();
   const { state } = useEditor();
@@ -27,11 +27,11 @@ export function SearchConsoleTool({ rec }: {rec: InstalledExtension;}) {
     const all = docs.flatMap((d, i) => sitemapEntries(d, i === 0 ? commerce : null, i === 0 ? ops.services : []));
     const unique = Array.from(new Map(all.map((e) => [e.url, e])).values());
     const gaps = docs.flatMap((d) => [
-    ...(!d.seo.noIndex && !d.seo.description?.trim() ? [`${d.title || d.handle} — home`] : []),
-    ...sitePages(d).
-    filter((p) => !p.membersOnly && !p.seo.noIndex && !p.seo.description?.trim()).
-    map((p) => `${d.title || d.handle} — ${p.title}`)]
-    );
+      ...(!d.seo.noIndex && !d.seo.description?.trim() ? [`${d.title || d.handle} — home`] : []),
+      ...sitePages(d)
+        .filter((p) => !p.membersOnly && !p.seo.noIndex && !p.seo.description?.trim())
+        .map((p) => `${d.title || d.handle} — ${p.title}`),
+    ]);
     return { entries: unique, missing: gaps };
   }, [state.published, current, commerce, ops.services]);
 
@@ -56,21 +56,21 @@ export function SearchConsoleTool({ rec }: {rec: InstalledExtension;}) {
         <ToolStat label="Addresses in the sitemap" value={entries.length} hint="Published spaces only" />
         <ToolStat label="Missing a search description" value={missing.length} />
       </dl>
-      {missing.length > 0 &&
-      <div>
+      {missing.length > 0 && (
+        <div>
           <ul className="flex max-h-40 flex-col divide-y divide-line overflow-y-auto">
-            {missing.map((m) =>
-          <li key={m} className="py-2 text-label text-fg">
+            {missing.map((m) => (
+              <li key={m} className="py-2 text-label text-fg">
                 {m}
               </li>
-          )}
+            ))}
           </ul>
           <p className="mt-1 text-caption text-fg-muted">Add one in the canvas: Publish → Search &amp; sharing.</p>
         </div>
-      }
+      )}
       <Button size="sm" leadingIcon={DownloadIcon} onClick={download} disabled={entries.length === 0} className="self-start">
         Download sitemap.xml
       </Button>
-    </ToolSection>);
-
+    </ToolSection>
+  );
 }

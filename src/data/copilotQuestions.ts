@@ -7,17 +7,17 @@ import type { CopilotKind, CopilotReply, CopilotTopic } from '../types/copilot';
  */
 
 export const COPILOT_GREETING =
-'Hi, I’m KUBICU Copilot. I’ll help you make a web page — one link you can put in your WhatsApp status, Instagram bio or on a flyer, so customers can see what you do and reach you.\n\nYou don’t need any experience. I’ll ask a few simple questions; there are no wrong answers, and you can say “you decide” to anything. Nothing goes live until you say so.\n\nFirst: what are you creating today?';
+  'Hi, I’m KUBICU Copilot. I’ll help you make a web page — one link you can put in your WhatsApp status, Instagram bio or on a flyer, so customers can see what you do and reach you.\n\nYou don’t need any experience. I’ll ask a few simple questions; there are no wrong answers, and you can say “you decide” to anything. Nothing goes live until you say so.\n\nFirst: what are you creating today?';
 
 export const kindReplies: CopilotReply[] = [
-{ value: 'business', label: 'My business', description: 'A page for what you sell or do' },
-{ value: 'portfolio', label: 'A portfolio', description: 'Show your work and get enquiries' },
-{ value: 'creator', label: 'My creator page', description: 'Links, content and your audience' },
-{ value: 'shop', label: 'An online shop', description: 'Products people can order' },
-{ value: 'service', label: 'A service or booking page', description: 'Appointments and enquiries' },
-{ value: 'event', label: 'An event page', description: 'Date, venue and registration' },
-{ value: 'other', label: 'Something else', description: 'Tell me in your own words' }];
-
+  { value: 'business', label: 'My business', description: 'A page for what you sell or do' },
+  { value: 'portfolio', label: 'A portfolio', description: 'Show your work and get enquiries' },
+  { value: 'creator', label: 'My creator page', description: 'Links, content and your audience' },
+  { value: 'shop', label: 'An online shop', description: 'Products people can order' },
+  { value: 'service', label: 'A service or booking page', description: 'Appointments and enquiries' },
+  { value: 'event', label: 'An event page', description: 'Date, venue and registration' },
+  { value: 'other', label: 'Something else', description: 'Tell me in your own words' },
+];
 
 export const kindLabels: Record<CopilotKind, string> = {
   business: 'A business page',
@@ -26,30 +26,30 @@ export const kindLabels: Record<CopilotKind, string> = {
   shop: 'An online shop',
   service: 'A service and booking page',
   event: 'An event page',
-  other: 'A page'
+  other: 'A page',
 };
 
 /** Sensible starting points for each kind, used until the person says otherwise. */
-export const kindDefaults: Record<CopilotKind, {offer?: AssistantOffer;action?: AssistantAction;}> = {
+export const kindDefaults: Record<CopilotKind, { offer?: AssistantOffer; action?: AssistantAction }> = {
   business: {},
   portfolio: { offer: 'content', action: 'enquire' },
   creator: { offer: 'content', action: 'follow' },
   shop: { offer: 'products', action: 'order' },
   service: { offer: 'services', action: 'book' },
   event: { offer: 'events', action: 'enquire' },
-  other: {}
+  other: {},
 };
 
 export const goalReplies: CopilotReply[] = [
-{ value: 'order', label: 'Message me on WhatsApp', description: 'Orders and questions come to your chat' },
-{ value: 'enquire', label: 'Send an enquiry', description: 'A short form or contact buttons' },
-{ value: 'book', label: 'Book a time', description: 'Shown as an enquiry until Bookings is set up' },
-{ value: 'buy', label: 'Buy online', description: 'Needs checkout set up in KUBICU first' },
-{ value: 'follow', label: 'Follow or subscribe', description: 'Grow your audience' },
-{ value: 'view', label: 'See my work', description: 'Portfolio first, contact after' },
-{ value: 'donate', label: 'Support a cause', description: 'Needs a verified account to take money' },
-{ value: 'decide', label: 'You decide', description: 'I’ll pick what fits best' }];
-
+  { value: 'order', label: 'Message me on WhatsApp', description: 'Orders and questions come to your chat' },
+  { value: 'enquire', label: 'Send an enquiry', description: 'A short form or contact buttons' },
+  { value: 'book', label: 'Book a time', description: 'Shown as an enquiry until Bookings is set up' },
+  { value: 'buy', label: 'Buy online', description: 'Needs checkout set up in KUBICU first' },
+  { value: 'follow', label: 'Follow or subscribe', description: 'Grow your audience' },
+  { value: 'view', label: 'See my work', description: 'Portfolio first, contact after' },
+  { value: 'donate', label: 'Support a cause', description: 'Needs a verified account to take money' },
+  { value: 'decide', label: 'You decide', description: 'I’ll pick what fits best' },
+];
 
 export const goalLabels: Record<AssistantAction, string> = {
   order: 'Message you on WhatsApp',
@@ -57,19 +57,19 @@ export const goalLabels: Record<AssistantAction, string> = {
   book: 'Ask to book a time',
   buy: 'Buy online',
   follow: 'Follow or subscribe',
-  donate: 'Support your cause'
+  donate: 'Support your cause',
 };
 
 /** The looks, each tied to a real Signature theme through `themeForFeel`. */
 export const lookReplies: CopilotReply[] = [
-{ value: 'light', label: 'Refined & minimal', feel: 'light', description: 'Calm, bright, lots of space' },
-{ value: 'glass', label: 'Premium dark glass', feel: 'glass', description: 'Deep colour with soft glow' },
-{ value: 'editorial', label: 'Editorial luxury', feel: 'editorial', description: 'Magazine type, black and cream' },
-{ value: 'bold', label: 'Vibrant & creative', feel: 'bold', description: 'Bright colour, confident shapes' },
-{ value: 'warm', label: 'Warm & natural', feel: 'warm', description: 'Clay, sand and soft light' },
-{ value: 'dark', label: 'Sleek & dark', feel: 'dark', description: 'Near-black with crisp detail' },
-{ value: 'decide', label: 'You choose', description: 'I’ll match it to your business' }];
-
+  { value: 'light', label: 'Refined & minimal', feel: 'light', description: 'Calm, bright, lots of space' },
+  { value: 'glass', label: 'Premium dark glass', feel: 'glass', description: 'Deep colour with soft glow' },
+  { value: 'editorial', label: 'Editorial luxury', feel: 'editorial', description: 'Magazine type, black and cream' },
+  { value: 'bold', label: 'Vibrant & creative', feel: 'bold', description: 'Bright colour, confident shapes' },
+  { value: 'warm', label: 'Warm & natural', feel: 'warm', description: 'Clay, sand and soft light' },
+  { value: 'dark', label: 'Sleek & dark', feel: 'dark', description: 'Near-black with crisp detail' },
+  { value: 'decide', label: 'You choose', description: 'I’ll match it to your business' },
+];
 
 export const lookLabels: Record<AssistantFeel, string> = {
   light: 'Refined & minimal',
@@ -77,25 +77,25 @@ export const lookLabels: Record<AssistantFeel, string> = {
   editorial: 'Editorial luxury',
   bold: 'Vibrant & creative',
   warm: 'Warm & natural',
-  dark: 'Sleek & dark'
+  dark: 'Sleek & dark',
 };
 
 /** Free-text words for looks ("make it more premium", "black and cream"). */
 export const lookWords: [AssistantFeel, RegExp][] = [
-['editorial', /\b(editorial|magazine|black and cream|cream|luxur|elegant|classy)/i],
-['glass', /\b(glass|glow|premium|neon|futur)/i],
-['dark', /\b(dark|black|sleek|night)/i],
-['warm', /\b(warm|natural|earth|clay|brown|cosy|cozy|emerald|green)/i],
-['bold', /\b(bold|vibrant|colou?rful|bright|fun|playful|pop)/i],
-['light', /\b(minimal|clean|simple|white|light|airy|calm)/i]];
-
+  ['editorial', /\b(editorial|magazine|black and cream|cream|luxur|elegant|classy)/i],
+  ['glass', /\b(glass|glow|premium|neon|futur)/i],
+  ['dark', /\b(dark|black|sleek|night)/i],
+  ['warm', /\b(warm|natural|earth|clay|brown|cosy|cozy|emerald|green)/i],
+  ['bold', /\b(bold|vibrant|colou?rful|bright|fun|playful|pop)/i],
+  ['light', /\b(minimal|clean|simple|white|light|airy|calm)/i],
+];
 
 export const audienceWords: [string, RegExp][] = [
-['People near you', /\b(near|local|area|estate|neighbou?r)/i],
-['Customers across Nigeria', /\b(nationwide|across nigeria|all over|anywhere in nigeria)/i],
-['Businesses and clients', /\b(business(es)?|clients?|companies|brands|offices?|corporate)/i],
-['Fans and followers', /\b(fans?|followers?|audience|listeners?|viewers?)/i]];
-
+  ['People near you', /\b(near|local|area|estate|neighbou?r)/i],
+  ['Customers across Nigeria', /\b(nationwide|across nigeria|all over|anywhere in nigeria)/i],
+  ['Businesses and clients', /\b(business(es)?|clients?|companies|brands|offices?|corporate)/i],
+  ['Fans and followers', /\b(fans?|followers?|audience|listeners?|viewers?)/i],
+];
 
 /** Most photos Copilot takes besides the logo: 1 main picture + up to 4 for a gallery. */
 export const MAX_PHOTOS = 5;
@@ -111,7 +111,7 @@ export const prompts: Record<Exclude<CopilotTopic, 'kind'>, string> = {
   phone: 'Which WhatsApp number should messages go to? You can skip this and add it later.',
   city: 'Where are you based? A city or area is enough.',
   change: 'Sure — what would you like to change?',
-  more: 'Go ahead — tell me anything else you want on the page.'
+  more: 'Go ahead — tell me anything else you want on the page.',
 };
 
 /**
@@ -127,7 +127,7 @@ export const helps: Partial<Record<CopilotTopic, string>> = {
   photos: 'Phone photos are fine. The first one becomes the big picture at the top of your page; the rest go in a photo gallery. No photos yet? Skip — you can add them any time.',
   items: 'Write each thing on its own line. Prices are optional — I never guess a price, so anything without one stays marked for you to fill in.',
   phone: 'This is where customers’ messages will go when they tap the WhatsApp button. It’s only shown as a button, never as a list of numbers.',
-  city: 'This helps nearby customers know you’re close. A city or area is enough — never your full home address.'
+  city: 'This helps nearby customers know you’re close. A city or area is enough — never your full home address.',
 };
 
 /** Longer explanations when someone says “what do you mean?” or “I don’t understand”. */
@@ -141,12 +141,12 @@ export const helpMore: Partial<Record<CopilotTopic, string>> = {
   photos: 'Photos help customers trust you. Send pictures of things you’ve made or sold, your shop or workspace, or you at work. Tap the photo button to choose them from your phone. The first photo is the big one at the top.',
   items: 'If you sell things, type them one per line. For example:\nJollof rice tray — 25,000\nSmall chops (50 pieces) — 15,000\nPrices are optional.',
   phone: 'When a customer taps the WhatsApp button on your page, a chat opens to this number. Use the number you do business on.',
-  city: 'Just the town or area you work in, like “Yaba, Lagos”. It shows on your page so local customers know where you are.'
+  city: 'Just the town or area you work in, like “Yaba, Lagos”. It shows on your page so local customers know where you are.',
 };
 
 export const skipWords = /^(skip|later|not now|no|none|nope|i don'?t have|nothing)\b/i;
 export const confusedWords =
-/^\s*(\?+|what\??|huh\??|help\??|explain( (that|this|please))?|meaning\??|i'?m confused)\s*[.!?]*\s*$|^\s*(what do you mean|what does (that|this|it) mean|what is (a |that|this)|i don'?t (understand|get it|know what (you mean|that is|to say)))/i;
+  /^\s*(\?+|what\??|huh\??|help\??|explain( (that|this|please))?|meaning\??|i'?m confused)\s*[.!?]*\s*$|^\s*(what do you mean|what does (that|this|it) mean|what is (a |that|this)|i don'?t (understand|get it|know what (you mean|that is|to say)))/i;
 export const decideWords = /\b(you (decide|choose|pick)|not sure|recommend|anything|whatever|up to you|surprise me)\b/i;
 
 /** Things Copilot never takes in chat. */

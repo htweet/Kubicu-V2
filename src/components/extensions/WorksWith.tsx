@@ -5,7 +5,7 @@ import type { ModuleConnection } from '../../types/marketplace';
 import { coreModules } from '../../data/coreModules';
 
 /** The core modules an extension genuinely connects to, each linking to that screen (D231). */
-export function WorksWith({ connections, onNavigate }: {connections: ModuleConnection[];onNavigate?: () => void;}) {
+export function WorksWith({ connections, onNavigate }: { connections: ModuleConnection[]; onNavigate?: () => void }) {
   if (!connections.length) return null;
   return (
     <section aria-labelledby="ext-works-h">
@@ -25,18 +25,18 @@ export function WorksWith({ connections, onNavigate }: {connections: ModuleConne
               <Link
                 to={m.href}
                 onClick={onNavigate}
-                className="inline-flex shrink-0 items-center gap-1 rounded-sm text-caption font-medium text-action hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-                
+                className="inline-flex shrink-0 items-center gap-1 rounded-sm text-caption font-medium text-action hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+              >
                 Open
                 <ArrowUpRightIcon size={13} aria-hidden />
                 <span className="sr-only">{m.label}</span>
               </Link>
-            </li>);
-
+            </li>
+          );
         })}
       </ul>
-    </section>);
-
+    </section>
+  );
 }
 
 /** "Orders · Checkout · Audience" for list rows. */

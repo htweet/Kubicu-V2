@@ -16,7 +16,7 @@ import { ReasonDialog } from '../ReasonDialog';
 
 const sellable = planOrder.filter((p) => p !== 'free' && p !== 'enterprise');
 
-function status(c: Coupon): {label: string;tone: 'success' | 'neutral' | 'warning';} {
+function status(c: Coupon): { label: string; tone: 'success' | 'neutral' | 'warning' } {
   if (!c.active) return { label: 'Switched off', tone: 'neutral' };
   if (c.expiresAt && Date.parse(c.expiresAt) < Date.now()) return { label: 'Expired', tone: 'neutral' };
   if (c.maxUses !== null && c.uses >= c.maxUses) return { label: 'Used up', tone: 'warning' };
@@ -52,8 +52,8 @@ export function CouponsCard() {
     const c = code.trim().toUpperCase();
     const v = Number(value);
     const e: Record<string, string> = {};
-    if (!/^[A-Z0-9]{4,16}$/.test(c)) e.code = '4–16 letters or numbers, no spaces.';else
-    if (store.coupons.some((x) => x.code === c)) e.code = 'That code already exists.';
+    if (!/^[A-Z0-9]{4,16}$/.test(c)) e.code = '4–16 letters or numbers, no spaces.';
+    else if (store.coupons.some((x) => x.code === c)) e.code = 'That code already exists.';
     if (kind === 'percent' && (!v || v > 100)) e.value = 'Enter 1–100%.';
     if (kind === 'fixed' && (!v || v > 1000000)) e.value = 'Enter ₦1–₦1,000,000.';
     if (selPlans.length === 0) e.plans = 'Choose at least one plan.';
@@ -70,7 +70,7 @@ export function CouponsCard() {
   const toggle = (reason: string) => {
     if (!toggling) return;
     const c = toggling;
-    setStore((s) => audit({ ...s, coupons: s.coupons.map((x) => x.id === c.id ? { ...x, active: !x.active } : x) }, { area: 'plans', action: `${c.active ? 'Switched off' : 'Switched on'} code ${c.code}`, target: c.code, reason }));
+    setStore((s) => audit({ ...s, coupons: s.coupons.map((x) => (x.id === c.id ? { ...x, active: !x.active } : x)) }, { area: 'plans', action: `${c.active ? 'Switched off' : 'Switched on'} code ${c.code}`, target: c.code, reason }));
     toast(c.active ? `${c.code} switched off` : `${c.code} switched on`, { description: c.active ? 'Anyone already using it at renewal keeps it.' : undefined });
     setToggling(null);
   };
@@ -78,14 +78,14 @@ export function CouponsCard() {
   return (
     <>
       <Card id="coupons" title="Codes" description={`One code per payment. It never takes more than ${COUPON_MAX_SHARE * 100}% off, even with yearly savings.`} actions={<Button size="sm" leadingIcon={PlusIcon} onClick={() => setOpen(true)}>New code</Button>} body="flush">
-        {store.coupons.length === 0 ?
-        <p className="px-5 py-5 text-label text-fg-muted md:px-6">No codes yet.</p> :
-
-        <ul className="divide-y divide-line">
+        {store.coupons.length === 0 ? (
+          <p className="px-5 py-5 text-label text-fg-muted md:px-6">No codes yet.</p>
+        ) : (
+          <ul className="divide-y divide-line">
             {store.coupons.map((c) => {
-            const st = status(c);
-            return (
-              <li key={c.id} className="flex flex-col gap-2 px-5 py-3.5 sm:flex-row sm:items-center sm:gap-4 md:px-6">
+              const st = status(c);
+              return (
+                <li key={c.id} className="flex flex-col gap-2 px-5 py-3.5 sm:flex-row sm:items-center sm:gap-4 md:px-6">
                   <span className="min-w-0 flex-1">
                     <span className="flex flex-wrap items-center gap-2">
                       <span className="font-mono text-label font-semibold tracking-wide text-fg">{c.code}</span>
@@ -105,11 +105,11 @@ export function CouponsCard() {
                   <Button size="sm" variant="tertiary" onClick={() => setToggling(c)}>
                     {c.active ? 'Switch off' : 'Switch on'}
                   </Button>
-                </li>);
-
-          })}
+                </li>
+              );
+            })}
           </ul>
-        }
+        )}
       </Card>
 
       <ReasonDialog open={open} onClose={() => (setOpen(false), reset())} onConfirm={create} title="New code" description="Live as soon as you create it. The reason is kept in the audit log, not shown to customers." confirmLabel="Create code">
@@ -123,22 +123,22 @@ export function CouponsCard() {
               value={kind}
               onChange={setKind}
               options={[
-              { value: 'percent', label: 'Percent' },
-              { value: 'fixed', label: 'Naira off' }]
-              } />
-            
+                { value: 'percent', label: 'Percent' },
+                { value: 'fixed', label: 'Naira off' },
+              ]}
+            />
             <TextInput id="cpn-value" label={kind === 'percent' ? 'Percent off' : 'Naira off'} placeholder={kind === 'percent' ? 'e.g. 20 (%)' : 'e.g. 1000'} prefix={kind === 'fixed' ? '₦' : undefined} inputMode="numeric" value={value} error={errors.value} onChange={(e) => setValue(e.target.value.replace(/\D/g, '').slice(0, 7))} fieldClassName="w-36 [&>div:first-child]:sr-only" />
           </div>
         </div>
         <fieldset>
           <legend className="text-label font-medium text-fg">Plans</legend>
           <div className="mt-2 flex flex-wrap gap-x-4 gap-y-2">
-            {sellable.map((p) =>
-            <label key={p} className="flex items-center gap-2 text-label text-fg">
-                <input type="checkbox" className="h-4 w-4 accent-[rgb(var(--action))]" checked={selPlans.includes(p)} onChange={(e) => setSelPlans((xs) => e.target.checked ? [...xs, p] : xs.filter((x) => x !== p))} />
+            {sellable.map((p) => (
+              <label key={p} className="flex items-center gap-2 text-label text-fg">
+                <input type="checkbox" className="h-4 w-4 accent-[rgb(var(--action))]" checked={selPlans.includes(p)} onChange={(e) => setSelPlans((xs) => (e.target.checked ? [...xs, p] : xs.filter((x) => x !== p)))} />
                 {plans[p].name}
               </label>
-            )}
+            ))}
           </div>
           {errors.plans && <p className="mt-1 text-caption text-danger">{errors.plans}</p>}
         </fieldset>
@@ -154,14 +154,14 @@ export function CouponsCard() {
             value={duration}
             onChange={setDuration}
             options={[
-            { value: 'first', label: 'First payment' },
-            { value: 'every', label: 'Every payment' }]
-            } />
-          
+              { value: 'first', label: 'First payment' },
+              { value: 'every', label: 'Every payment' },
+            ]}
+          />
         </div>
       </ReasonDialog>
 
       <ReasonDialog open={!!toggling} onClose={() => setToggling(null)} onConfirm={toggle} destructive={toggling?.active} title={toggling?.active ? `Switch off ${toggling.code}?` : `Switch on ${toggling?.code}?`} description={toggling?.active ? 'New customers can’t use it. Workspaces already getting it at every renewal keep it.' : 'Customers can use it again, within its limits and end date.'} confirmLabel={toggling?.active ? 'Switch off' : 'Switch on'} />
-    </>);
-
+    </>
+  );
 }

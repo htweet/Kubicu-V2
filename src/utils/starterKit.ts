@@ -31,12 +31,12 @@ function scrub(value: unknown, keepUrl: boolean, phone: string): unknown {
   if (!value || typeof value !== 'object') return value;
   const out: Record<string, unknown> = {};
   Object.entries(value as Record<string, unknown>).forEach(([key, v]) => {
-    if (key === 'priceNgn' || key === 'startsAt' || key === 'endsAt' || key === 'target') out[key] = null;else
-    if (key === 'permission') out[key] = false;else
-    if ((key === 'phone' || key === 'whatsappPhone') && phone) out[key] = phone;else
-    if (key === 'url' && keepUrl) out[key] = v;else
-    if (CLEAR_TO_EMPTY.has(key) && typeof v === 'string') out[key] = '';else
-    out[key] = scrub(v, keepUrl, phone);
+    if (key === 'priceNgn' || key === 'startsAt' || key === 'endsAt' || key === 'target') out[key] = null;
+    else if (key === 'permission') out[key] = false;
+    else if ((key === 'phone' || key === 'whatsappPhone') && phone) out[key] = phone;
+    else if (key === 'url' && keepUrl) out[key] = v;
+    else if (CLEAR_TO_EMPTY.has(key) && typeof v === 'string') out[key] = '';
+    else out[key] = scrub(v, keepUrl, phone);
   });
   return out;
 }
@@ -52,7 +52,7 @@ function scrubBlock(block: Block, phone: string): Block {
   if (block.type === 'social') return { ...block, content: { items: block.content.items.map((i) => ({ ...i, url: '' })) } };
   // Layout & showcase blocks (D153): keep photos and structure; drop the example's links, figures and listings data.
   if (block.type === 'hero') {
-    const keep = (u: string) => u.startsWith('#') ? u : '';
+    const keep = (u: string) => (u.startsWith('#') ? u : '');
     return { ...block, content: { ...block.content, primaryUrl: keep(block.content.primaryUrl), secondaryUrl: keep(block.content.secondaryUrl), meta: '' } };
   }
   if (block.type === 'figures') return { ...block, content: { ...block.content, confirmed: false } };
@@ -82,8 +82,8 @@ export function prepareStarter(example: PageDocument, identity: StarterIdentity 
           tagline: identity.tagline?.trim() ?? '',
           avatarUrl: identity.avatarUrl ?? '',
           avatarAlt: identity.avatarUrl ? `${identity.name?.trim() || 'Profile'} photo` : '',
-          location: identity.location?.trim() ?? ''
-        }
+          location: identity.location?.trim() ?? '',
+        },
       };
     }
     const errors = validateBlock(block).filter((i) => i.severity === 'error');
@@ -103,8 +103,8 @@ export function prepareStarter(example: PageDocument, identity: StarterIdentity 
       title: identity.name?.trim() || base.title,
       seo: { title: identity.name?.trim() || base.title, description: identity.tagline?.trim() ?? '' },
       // The example's price currency is preview-only; the owner's page uses their workspace currency (D434).
-      currency: undefined
+      currency: undefined,
     },
-    hidden
+    hidden,
   };
 }

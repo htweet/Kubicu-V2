@@ -28,7 +28,7 @@ export function PolicyReleasesCard() {
   const [version, setVersion] = useState('');
   const [summary, setSummary] = useState('');
   const [reaccept, setReaccept] = useState<PolicyRelease['reaccept']>('none');
-  const [errors, setErrors] = useState<{version?: string;summary?: string;}>({});
+  const [errors, setErrors] = useState<{ version?: string; summary?: string }>({});
 
   const currentVersion = (d: LegalDoc) => store.policyReleases[d.slug]?.[0]?.version ?? String(d.version);
 
@@ -44,22 +44,22 @@ export function PolicyReleasesCard() {
   const publish = (reason: string) => {
     if (!doc) return;
     const e: typeof errors = {};
-    if (!/^\d+(\.\d+){0,2}$/.test(version)) e.version = 'Use numbers like 2.1.';else
-    if (!newer(version, currentVersion(doc))) e.version = `Must be newer than ${versionParts(currentVersion(doc)).join('.')}.`;
+    if (!/^\d+(\.\d+){0,2}$/.test(version)) e.version = 'Use numbers like 2.1.';
+    else if (!newer(version, currentVersion(doc))) e.version = `Must be newer than ${versionParts(currentVersion(doc)).join('.')}.`;
     if (summary.trim().length < 20) e.summary = 'Explain the change in a sentence or two — customers read this.';
     setErrors(e);
     if (Object.keys(e).length) return;
     const at = new Date().toISOString();
     const release: PolicyRelease = { version, publishedAt: at, by: staffActor(store), summary: summary.trim(), reaccept };
     setStore((s) =>
-    audit(
-      {
-        ...s,
-        policyReleases: { ...s.policyReleases, [doc.slug]: [release, ...(s.policyReleases[doc.slug] ?? [])] },
-        announcements: [{ id: uid('ann'), title: `${doc.title} updated to version ${version}`, body: `${summary.trim()}${reaccept !== 'none' ? ` ${reaccept === 'all' ? 'Everyone' : 'Paid workspaces'} will be asked to agree to the new version.` : ''}`, tone: reaccept === 'none' ? 'info' : 'warning', audience: 'all', active: true, createdAt: at }, ...s.announcements]
-      },
-      { area: 'localisation', action: `Published ${doc.title} v${version} (${reacceptLabel[reaccept].toLowerCase()})`, target: doc.title, reason }
-    )
+      audit(
+        {
+          ...s,
+          policyReleases: { ...s.policyReleases, [doc.slug]: [release, ...(s.policyReleases[doc.slug] ?? [])] },
+          announcements: [{ id: uid('ann'), title: `${doc.title} updated to version ${version}`, body: `${summary.trim()}${reaccept !== 'none' ? ` ${reaccept === 'all' ? 'Everyone' : 'Paid workspaces'} will be asked to agree to the new version.` : ''}`, tone: reaccept === 'none' ? 'info' : 'warning', audience: 'all', active: true, createdAt: at }, ...s.announcements],
+        },
+        { area: 'localisation', action: `Published ${doc.title} v${version} (${reacceptLabel[reaccept].toLowerCase()})`, target: doc.title, reason },
+      ),
     );
     toast.success(`${doc.title} v${version} published`, { description: 'A notice now shows to every workspace. It can be switched off in Announcements.' });
     setDoc(null);
@@ -80,17 +80,17 @@ export function PolicyReleasesCard() {
                   <span className="block text-caption tabular-nums text-fg-subtle">
                     v{currentVersion(d)} · {last ? `published ${formatRelative(last.publishedAt)} by ${last.by.split(' ·')[0]}` : d.updated}
                   </span>
-                  {last && last.reaccept !== 'none' &&
-                  <Badge tone="warning" className="mt-1">
+                  {last && last.reaccept !== 'none' && (
+                    <Badge tone="warning" className="mt-1">
                       {reacceptLabel[last.reaccept]}
                     </Badge>
-                  }
+                  )}
                 </span>
                 <Button size="sm" variant="tertiary" leadingIcon={UploadIcon} onClick={() => open(d)}>
                   New version
                 </Button>
-              </li>);
-
+              </li>
+            );
           })}
         </ul>
       </Card>
@@ -104,12 +104,12 @@ export function PolicyReleasesCard() {
           value={reaccept}
           onChange={setReaccept}
           options={[
-          { value: 'none', label: 'Nobody — notice only' },
-          { value: 'paid', label: 'Paid workspaces' },
-          { value: 'all', label: 'Everyone' }]
-          } />
-        
+            { value: 'none', label: 'Nobody — notice only' },
+            { value: 'paid', label: 'Paid workspaces' },
+            { value: 'all', label: 'Everyone' },
+          ]}
+        />
       </ReasonDialog>
-    </>);
-
+    </>
+  );
 }

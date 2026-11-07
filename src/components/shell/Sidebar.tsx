@@ -51,26 +51,26 @@ export function Sidebar() {
     <aside
       className={cn(
         'sticky top-0 hidden h-screen shrink-0 flex-col border-r border-line bg-raised transition-[width] duration-200 ease-out md:flex',
-        collapsed ? 'w-[72px]' : 'w-[248px]'
-      )}>
-      
+        collapsed ? 'w-[72px]' : 'w-[248px]',
+      )}
+    >
       {/* Brand + collapse */}
       <div className={cn('flex h-16 shrink-0 items-center', collapsed ? 'justify-center' : 'justify-between pl-4 pr-2.5')}>
         <KubicuLogo withWordmark={!collapsed} />
-        {!collapsed &&
-        <div className="flex items-center gap-0.5">
+        {!collapsed && (
+          <div className="flex items-center gap-0.5">
             <NotificationBell />
             <button
-            type="button"
-            onClick={onToggle}
-            aria-label={toggleLabel}
-            aria-expanded
-            className="flex h-8 w-8 items-center justify-center rounded-md text-fg-subtle transition-colors duration-150 hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-            
+              type="button"
+              onClick={onToggle}
+              aria-label={toggleLabel}
+              aria-expanded
+              className="flex h-8 w-8 items-center justify-center rounded-md text-fg-subtle transition-colors duration-150 hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+            >
               <ToggleIcon size={18} strokeWidth={2.1} aria-hidden />
             </button>
           </div>
-        }
+        )}
       </div>
 
       {/* Workspace */}
@@ -83,48 +83,48 @@ export function Sidebar() {
           const items = visible.filter((n) => n.group === g.id);
           if (!items.length) return null;
           const badgeOf = (id: string) => waitingByNav[id] || undefined;
-          const list =
-          <ul id={`nav-group-${g.id}`} className="flex flex-col gap-0.5">
-              {items.map((item) =>
-            <li key={item.id} data-tour={`nav-${item.id}`}>
+          const list = (
+            <ul id={`nav-group-${g.id}`} className="flex flex-col gap-0.5">
+              {items.map((item) => (
+                <li key={item.id} data-tour={`nav-${item.id}`}>
                   <SidebarItem to={item.to} end={item.to === '/app'} label={item.label} icon={item.icon} soon={!!item.batch} unavailable={!availability.nav(item)} collapsed={collapsed} tip={tip} badge={badgeOf(item.id)} />
                 </li>
-            )}
-            </ul>;
-
+              ))}
+            </ul>
+          );
           // Collapsed rail: every icon stays reachable, sections separated by a hairline.
           if (collapsed)
-          return (
-            <div key={g.id}>
+            return (
+              <div key={g.id}>
                 <SidebarGroupLabel collapsed>{g.label}</SidebarGroupLabel>
                 {list}
-              </div>);
-
+              </div>
+            );
           const isOpen = groups.open.has(g.id);
           const waiting = items.reduce((s, i) => s + (badgeOf(i.id) ?? 0), 0);
           return (
             <div key={g.id} data-tour={!isOpen && items.some((i) => i.id === 'extensions') ? 'nav-extensions' : undefined}>
               <SidebarGroupToggle label={g.label} open={isOpen} onToggle={() => groups.toggle(g.id)} controls={`nav-group-${g.id}`} badge={waiting} active={groups.activeGroup === g.id} />
               <AnimatePresence initial={false}>
-                {isOpen &&
-                <motion.div
-                  key="items"
-                  initial={reduce ? { opacity: 0 } : { height: 0, opacity: 0 }}
-                  animate={reduce ? { opacity: 1 } : { height: 'auto', opacity: 1 }}
-                  exit={reduce ? { opacity: 0 } : { height: 0, opacity: 0 }}
-                  transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
-                  className="overflow-hidden">
-                  
+                {isOpen && (
+                  <motion.div
+                    key="items"
+                    initial={reduce ? { opacity: 0 } : { height: 0, opacity: 0 }}
+                    animate={reduce ? { opacity: 1 } : { height: 'auto', opacity: 1 }}
+                    exit={reduce ? { opacity: 0 } : { height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+                    className="overflow-hidden"
+                  >
                     {list}
                   </motion.div>
-                }
+                )}
               </AnimatePresence>
-            </div>);
-
+            </div>
+          );
         })}
         {/* Staff console: only for a signed-in Platform lead (D83 roles), never for workspace members. */}
-        {superAdmin &&
-        <div>
+        {superAdmin && (
+          <div>
             <SidebarGroupLabel collapsed={collapsed}>{t('KUBICU staff')}</SidebarGroupLabel>
             <ul className="flex flex-col gap-0.5">
               <li>
@@ -132,19 +132,19 @@ export function Sidebar() {
               </li>
             </ul>
           </div>
-        }
+        )}
         <SidebarCopilotChats collapsed={collapsed} tip={tip} />
       </nav>
 
       <div className={cn('flex shrink-0 flex-col gap-0.5 border-t border-line py-3', collapsed ? 'items-center px-0' : 'px-3')}>
-        {team.me.role !== 'owner' &&
-        <p
-          className={cn('mb-1 rounded-md bg-action-soft text-caption font-medium text-action', collapsed ? 'px-1.5 py-1 text-center' : 'px-2.5 py-1.5')}
-          title={`Viewing as ${team.me.name} (${roleInfo[team.role].label}) — change it in the Controls panel`}>
-          
+        {team.me.role !== 'owner' && (
+          <p
+            className={cn('mb-1 rounded-md bg-action-soft text-caption font-medium text-action', collapsed ? 'px-1.5 py-1 text-center' : 'px-2.5 py-1.5')}
+            title={`Viewing as ${team.me.name} (${roleInfo[team.role].label}) — change it in the Controls panel`}
+          >
             {collapsed ? roleInfo[team.role].label.slice(0, 1) : `Viewing as ${team.me.name.split(' ')[0]} · ${roleInfo[team.role].label}`}
           </p>
-        }
+        )}
         {collapsed && <NotificationBell size="md" onMouseEnter={tip.show(t('Notifications'))} onMouseLeave={tip.hide} onFocus={tip.show(t('Notifications'))} onBlur={tip.hide} />}
         <HelpMenu collapsed={collapsed} tip={tip} />
         <LanguagePicker variant="row" side="top" align="start" collapsed={collapsed} tip={tip} />
@@ -152,23 +152,23 @@ export function Sidebar() {
         <div className={cn('mt-1.5 border-t border-line pt-2', collapsed ? 'flex justify-center px-0' : '-mx-3 px-3')}>
           <AccountMenu collapsed={collapsed} tip={tip} />
         </div>
-        {collapsed &&
-        <button
-          type="button"
-          onClick={onToggle}
-          aria-label={toggleLabel}
-          aria-expanded={false}
-          onMouseEnter={tip.show(toggleLabel)}
-          onMouseLeave={tip.hide}
-          onFocus={tip.show(toggleLabel)}
-          onBlur={tip.hide}
-          className="flex h-10 w-10 items-center justify-center rounded-md text-fg-subtle transition-colors duration-150 hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-          
+        {collapsed && (
+          <button
+            type="button"
+            onClick={onToggle}
+            aria-label={toggleLabel}
+            aria-expanded={false}
+            onMouseEnter={tip.show(toggleLabel)}
+            onMouseLeave={tip.hide}
+            onFocus={tip.show(toggleLabel)}
+            onBlur={tip.hide}
+            className="flex h-10 w-10 items-center justify-center rounded-md text-fg-subtle transition-colors duration-150 hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+          >
             <ToggleIcon size={20} strokeWidth={2.1} aria-hidden />
           </button>
-        }
+        )}
       </div>
       {tip.node}
-    </aside>);
-
+    </aside>
+  );
 }

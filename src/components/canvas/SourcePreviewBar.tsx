@@ -24,23 +24,23 @@ export function SourcePreviewBar({ source, onChange, hiddenCount, className }: P
         id="preview-source"
         value={source ?? ''}
         onChange={(e) => onChange((e.target.value || null) as SourceId | null)}
-        className="h-8 rounded-md border border-line-strong bg-field px-2 text-label text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-        
+        className="h-8 rounded-md border border-line-strong bg-field px-2 text-label text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+      >
         <option value="">Editing — every block</option>
-        {intentSources.map((s) =>
-        <option key={s} value={s}>
+        {intentSources.map((s) => (
+          <option key={s} value={s}>
             {sourceLabels[s]} visitors
           </option>
-        )}
+        ))}
       </select>
       <span className="min-w-0 flex-1 text-caption text-fg-muted">
-        {source ? hiddenCount ? `${hiddenCount} block${hiddenCount === 1 ? '' : 's'} hidden for them` : 'They see every block' : 'Some blocks show only to certain sources'}
+        {source ? (hiddenCount ? `${hiddenCount} block${hiddenCount === 1 ? '' : 's'} hidden for them` : 'They see every block') : 'Some blocks show only to certain sources'}
       </span>
-      {source &&
-      <button type="button" onClick={() => onChange(null)} className="flex h-8 items-center gap-1 rounded-md px-2 text-caption font-medium text-fg hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+      {source && (
+        <button type="button" onClick={() => onChange(null)} className="flex h-8 items-center gap-1 rounded-md px-2 text-caption font-medium text-fg hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
           <XIcon size={13} aria-hidden /> Stop
         </button>
-      }
-    </div>);
-
+      )}
+    </div>
+  );
 }

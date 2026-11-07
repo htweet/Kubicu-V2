@@ -50,15 +50,15 @@ export function Opportunities() {
   const withAmount = open.filter((o) => o.valueNgn !== null).length;
 
   const counts = (g: OpportunityGroup) => (view === 'open' ? open : hidden).filter((o) => o.group === g).length;
-  const filterOptions: {value: Filter;label: string;}[] = [
-  { value: 'all', label: tr('All') },
-  ...(Object.keys(groupLabels) as OpportunityGroup[]).map((g) => ({ value: g, label: `${tr(groupLabels[g])}${counts(g) ? ` ${counts(g)}` : ''}` }))];
-
+  const filterOptions: { value: Filter; label: string }[] = [
+    { value: 'all', label: tr('All') },
+    ...(Object.keys(groupLabels) as OpportunityGroup[]).map((g) => ({ value: g, label: `${tr(groupLabels[g])}${counts(g) ? ` ${counts(g)}` : ''}` })),
+  ];
 
   const hiddenNote = (id: string) =>
-  state.dismissed[id] ?
-  tr('handled') :
-  tr('snoozed until {date}', { date: new Date(state.snoozed[id]).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }) });
+    state.dismissed[id]
+      ? tr('handled')
+      : tr('snoozed until {date}', { date: new Date(state.snoozed[id]).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }) });
 
   return (
     <div className="mx-auto w-full max-w-[1200px] px-5 py-8 md:px-10 md:py-12">
@@ -71,9 +71,9 @@ export function Opportunities() {
               <p className="text-caption text-fg-subtle">{tr('Still on the table')}</p>
               <p className="mt-1 font-display text-[2.25rem] font-semibold leading-none tracking-[-0.025em] tabular-nums text-fg md:text-[2.75rem]">{formatNgn(atStake)}</p>
               <p className="mt-2 max-w-xl text-label text-fg-muted">
-                {open.length === 0 ?
-                tr('Nothing waiting right now.') :
-                tr('Across {n} items with a known amount — unpaid checkouts, failed renewals, deposits and missed bookings. Leads and follow-ups have no amount, but they’re often worth the most.', { n: withAmount })}
+                {open.length === 0
+                  ? tr('Nothing waiting right now.')
+                  : tr('Across {n} items with a known amount — unpaid checkouts, failed renewals, deposits and missed bookings. Leads and follow-ups have no amount, but they’re often worth the most.', { n: withAmount })}
               </p>
             </div>
             <StatGroup columns={3} divided>
@@ -84,8 +84,8 @@ export function Opportunities() {
           </div>
         </Card>
 
-        {carts.count > 0 &&
-        <div className="flex flex-col gap-3 rounded-lg border border-line bg-raised px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+        {carts.count > 0 && (
+          <div className="flex flex-col gap-3 rounded-lg border border-line bg-raised px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-start gap-3">
               <ShoppingCartIcon size={18} className="mt-0.5 shrink-0 text-fg-subtle" aria-hidden />
               <div>
@@ -101,7 +101,7 @@ export function Opportunities() {
               {tr('Checkout settings')}
             </Link>
           </div>
-        }
+        )}
 
         <section aria-labelledby="opp-list-title" className="flex flex-col gap-4">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -117,45 +117,45 @@ export function Opportunities() {
                 ariaLabel={tr('List')}
                 value={view}
                 options={[
-                { value: 'open', label: `${tr('Open')} ${open.length}` },
-                { value: 'hidden', label: `${tr('Hidden')} ${hidden.length}` }]
-                }
-                onChange={setView} />
-              
+                  { value: 'open', label: `${tr('Open')} ${open.length}` },
+                  { value: 'hidden', label: `${tr('Hidden')} ${hidden.length}` },
+                ]}
+                onChange={setView}
+              />
             </div>
           </div>
 
           <Card body="flush">
-            {list.length === 0 ?
-            view === 'open' && open.length === 0 ?
-            <EmptyState icon={PartyPopperIcon} title={tr('You’re all caught up')} description={tr('New unpaid checkouts, failed renewals, no-shows and unanswered leads will appear here.')} /> :
-
-            <EmptyState icon={InboxIcon} title={tr('Nothing in this view')} description={view === 'open' ? tr('Try another filter.') : tr('Items you mark as handled or snooze appear here.')} /> :
-
-
-            <ul aria-labelledby="opp-list-title" className="flex flex-col divide-y divide-line">
-                {list.map((o) =>
-              <OpportunityRow
-                key={o.id}
-                item={o}
-                hiddenNote={view === 'hidden' ? hiddenNote(o.id) : undefined}
-                onSnooze={(days) => {
-                  snooze(o.id, days);
-                  toast(tr('Snoozed'), { description: days === 1 ? tr('It’ll come back tomorrow.') : tr('It’ll come back next week.'), action: { label: tr('Undo'), onClick: () => restore(o.id) } });
-                }}
-                onDismiss={() => {
-                  dismiss(o.id);
-                  toast(tr('Marked as handled'), { action: { label: tr('Undo'), onClick: () => restore(o.id) } });
-                }}
-                onRestore={() => restore(o.id)} />
-
-              )}
+            {list.length === 0 ? (
+              view === 'open' && open.length === 0 ? (
+                <EmptyState icon={PartyPopperIcon} title={tr('You’re all caught up')} description={tr('New unpaid checkouts, failed renewals, no-shows and unanswered leads will appear here.')} />
+              ) : (
+                <EmptyState icon={InboxIcon} title={tr('Nothing in this view')} description={view === 'open' ? tr('Try another filter.') : tr('Items you mark as handled or snooze appear here.')} />
+              )
+            ) : (
+              <ul aria-labelledby="opp-list-title" className="flex flex-col divide-y divide-line">
+                {list.map((o) => (
+                  <OpportunityRow
+                    key={o.id}
+                    item={o}
+                    hiddenNote={view === 'hidden' ? hiddenNote(o.id) : undefined}
+                    onSnooze={(days) => {
+                      snooze(o.id, days);
+                      toast(tr('Snoozed'), { description: days === 1 ? tr('It’ll come back tomorrow.') : tr('It’ll come back next week.'), action: { label: tr('Undo'), onClick: () => restore(o.id) } });
+                    }}
+                    onDismiss={() => {
+                      dismiss(o.id);
+                      toast(tr('Marked as handled'), { action: { label: tr('Undo'), onClick: () => restore(o.id) } });
+                    }}
+                    onRestore={() => restore(o.id)}
+                  />
+                ))}
               </ul>
-            }
+            )}
           </Card>
           <p className="text-caption text-fg-subtle">{tr('“Message” opens WhatsApp with a suggested note you can edit before sending. Nothing is sent automatically.')}</p>
         </section>
       </PageStack>
-    </div>);
-
+    </div>
+  );
 }

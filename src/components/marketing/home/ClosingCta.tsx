@@ -6,10 +6,11 @@ import { Reveal } from '../Reveal';
 import { useT } from '../../../contexts/LocaleContext';
 
 /** Last call: claim your link, framed by moving brand geometry (D260). The title is translated here (D318). */
-export function ClosingCta({ title = 'Start with one link. Grow into a whole business.' }: {title?: string;}) {
+export function ClosingCta({ title = 'Start with one link. Grow into a whole business.' }: { title?: string }) {
   const { t: tr } = useT();
   return (
-    <section aria-labelledby="cta-heading" className="relative overflow-hidden bg-[rgb(var(--kb-pink))] text-[rgb(var(--kb-plum))]">
+    // data-mbar-skip: the closing call to action stays open on phones (D558).
+    <section aria-labelledby="cta-heading" data-mbar-skip="" className="relative overflow-hidden bg-[rgb(var(--kb-pink))] text-[rgb(var(--kb-plum))]">
       <KbShape kind="kube" color="rgb(var(--kb-plum))" size={110} motion="spin" className="absolute -left-6 top-10 hidden md:block" />
       <KbShape kind="circle" color="rgb(var(--kb-lime))" size={150} motion="bob" className="absolute -bottom-12 right-[6%] hidden md:block" />
       <KbShape kind="arch" color="rgb(var(--kb-cobalt))" size={84} motion="sway" phase={0.6} className="absolute right-[12%] top-12 hidden lg:block" />
@@ -23,6 +24,6 @@ export function ClosingCta({ title = 'Start with one link. Grow into a whole bus
           <HandleClaim />
         </Reveal>
       </div>
-    </section>);
-
+    </section>
+  );
 }

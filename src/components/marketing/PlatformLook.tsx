@@ -16,6 +16,6 @@ export function PlatformLook({ children, night = false }: PlatformLookProps) {
   return (
     <div data-direction={night ? 'kubicuBold' : defaultDirection} className="min-h-screen w-full bg-canvas text-fg">
       {children}
-    </div>);
-
+    </div>
+  );
 }

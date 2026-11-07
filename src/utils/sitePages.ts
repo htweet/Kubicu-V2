@@ -52,7 +52,7 @@ export function writeView(doc: PageDocument, id: string | null | undefined, view
     groups: doc.groups,
     seo: doc.seo,
     ...shared,
-    pages: sitePages(doc).map((x) => x.id === p.id ? { ...x, blocks: view.blocks, groups: view.groups, seo: view.seo } : x)
+    pages: sitePages(doc).map((x) => (x.id === p.id ? { ...x, blocks: view.blocks, groups: view.groups, seo: view.seo } : x)),
   };
 }
 
@@ -67,16 +67,16 @@ export function pageOfBlock(doc: PageDocument, blockId: string): string | null |
 }
 
 export function slugifyPath(value: string): string {
-  return value.
-  toLowerCase().
-  normalize('NFKD').
-  replace(/[\u0300-\u036f]/g, '').
-  replace(/[^a-z0-9\s-]/g, '').
-  trim().
-  replace(/[\s_]+/g, '-').
-  replace(/-+/g, '-').
-  replace(/^-|-$/g, '').
-  slice(0, 40);
+  return value
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/[\s_]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 40);
 }
 
 export function uniquePath(doc: PageDocument, base: string, exceptId?: string): string {
@@ -105,7 +105,7 @@ export function showsNav(doc: PageDocument): boolean {
   return navItems(doc).length > 1;
 }
 
-export type PathResolution = {pageId: string | null;} | {redirect: string;} | null;
+export type PathResolution = { pageId: string | null } | { redirect: string } | null;
 
 /** Resolves an address inside a site: a page, a redirect to follow, or nothing. */
 export function resolvePath(doc: PageDocument, path: string | undefined): PathResolution {
@@ -129,11 +129,11 @@ export function pageHref(handle: string, path: string): string {
 
 /** Every pre-publish issue across the site, tagged with the page it's on. */
 export function siteIssues(
-doc: PageDocument,
-takenHandles: ReadonlySet<string> | undefined,
-extra: ((view: PageDocument) => ValidationIssue[]) | undefined,
-siteLevel: ValidationIssue[] = [])
-: ValidationIssue[] {
+  doc: PageDocument,
+  takenHandles: ReadonlySet<string> | undefined,
+  extra: ((view: PageDocument) => ValidationIssue[]) | undefined,
+  siteLevel: ValidationIssue[] = [],
+): ValidationIssue[] {
   const home = [...validateDocument(doc, takenHandles), ...(extra ? extra(doc) : [])].map((i) => ({ ...i, pageId: null }));
   const seen = new Set(home.filter((i) => !i.blockId).map((i) => i.message));
   const pages = sitePages(doc).flatMap((p) => {

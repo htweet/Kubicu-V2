@@ -16,14 +16,14 @@ type UsageStore = Record<string, Record<string, number>>;
 
 function trackingRefused(): boolean {
   if (typeof navigator === 'undefined') return true;
-  const nav = navigator as Navigator & {globalPrivacyControl?: boolean;};
+  const nav = navigator as Navigator & { globalPrivacyControl?: boolean };
   return nav.doNotTrack === '1' || nav.globalPrivacyControl === true;
 }
 
 function read(): UsageStore {
   try {
     const raw = localStorage.getItem(KEY);
-    return raw ? JSON.parse(raw) as UsageStore : {};
+    return raw ? (JSON.parse(raw) as UsageStore) : {};
   } catch {
     return {};
   }
@@ -35,9 +35,9 @@ function write(store: UsageStore) {
   try {
     localStorage.setItem(KEY, JSON.stringify(kept));
   } catch {
-
     // Storage full or blocked: menu counts are optional, so skip silently.
-  }}
+  }
+}
 
 function bump(key: string) {
   if (trackingRefused()) return;
@@ -60,8 +60,8 @@ export function recordMenuLink(to: string, title: string, surface: MenuSurface) 
 }
 
 export interface MenuUsageSummary {
-  opens: {group: string;desktop: number;mobile: number;total: number;}[];
-  links: {to: string;title: string;desktop: number;mobile: number;total: number;}[];
+  opens: { group: string; desktop: number; mobile: number; total: number }[];
+  links: { to: string; title: string; desktop: number; mobile: number; total: number }[];
   totalOpens: number;
   totalLinks: number;
 }
@@ -89,7 +89,7 @@ export function readMenuUsage(days: number): MenuUsageSummary {
       }
     }
   }
-  const byTotal = <T extends {total: number;},>(a: T, b: T) => b.total - a.total;
+  const byTotal = <T extends { total: number }>(a: T, b: T) => b.total - a.total;
   const o = [...opens.values()].sort(byTotal);
   const l = [...links.values()].sort(byTotal);
   return { opens: o, links: l, totalOpens: o.reduce((s, r) => s + r.total, 0), totalLinks: l.reduce((s, r) => s + r.total, 0) };
@@ -99,6 +99,6 @@ export function clearMenuUsage() {
   try {
     localStorage.removeItem(KEY);
   } catch {
-
     // ignore
-  }}
+  }
+}

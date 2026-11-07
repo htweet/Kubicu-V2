@@ -12,16 +12,16 @@ const orderTones: Record<OrderStatus, BadgeTone> = {
   out_for_delivery: 'accent',
   completed: 'success',
   cancelled: 'neutral',
-  refunded: 'neutral'
+  refunded: 'neutral',
 };
 
-export function OrderStatusBadge({ status, pickup }: {status: OrderStatus;pickup?: boolean;}) {
+export function OrderStatusBadge({ status, pickup }: { status: OrderStatus; pickup?: boolean }) {
   const label = status === 'out_for_delivery' && pickup ? 'Ready for pickup' : orderStatusLabels[status];
   return (
     <Badge tone={orderTones[status]} dot>
       {label}
-    </Badge>);
-
+    </Badge>
+  );
 }
 
 const paymentTones: Record<PaymentStatus, BadgeTone> = {
@@ -29,14 +29,14 @@ const paymentTones: Record<PaymentStatus, BadgeTone> = {
   paid: 'success',
   partially_refunded: 'neutral',
   refunded: 'neutral',
-  cancelled: 'neutral'
+  cancelled: 'neutral',
 };
 
-export function PaymentBadge({ status }: {status: PaymentStatus;}) {
+export function PaymentBadge({ status }: { status: PaymentStatus }) {
   return <Badge tone={paymentTones[status]}>{paymentStatusLabels[status]}</Badge>;
 }
 
-export function ProductStatusBadge({ product }: {product: Product;}) {
+export function ProductStatusBadge({ product }: { product: Product }) {
   const s = displayStatus(product);
   if (s === 'sold_out') return <Badge tone="danger">Sold out</Badge>;
   if (s === 'draft') return <Badge tone="neutral">Draft</Badge>;
@@ -50,6 +50,6 @@ export function SampleTag() {
   return (
     <span className="rounded-sm border border-dashed border-line-strong px-1.5 py-px text-meta font-medium text-fg-subtle" title={t('Sample data — clear it from Commerce settings')}>
       {t('Sample')}
-    </span>);
-
+    </span>
+  );
 }

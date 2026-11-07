@@ -37,22 +37,22 @@ export function BookingSlotInput({ field, value, onChange, skin, inert, id, labe
     }).filter((d) => d.slots.length);
   }, [service, a, data, tz]);
   const chosen = value[0] ? Date.parse(value[0]) : null;
-  const [day, setDay] = useState<string>(() => chosen ? dateKeyInTz(chosen, tz) : '');
+  const [day, setDay] = useState<string>(() => (chosen ? dateKeyInTz(chosen, tz) : ''));
   const current = days.find((d) => d.key === day) ?? days[0];
 
   if (!service || !a) {
     return (
       <p className="text-[13.5px]" style={{ color: skin.muted }} role="status">
         Times aren’t available right now. Add your preferred time in your message instead.
-      </p>);
-
+      </p>
+    );
   }
   if (!days.length) {
     return (
       <p className="text-[13.5px]" style={{ color: skin.muted }} role="status">
         No free times in the next {DAYS} days. We’ll suggest one when we reply.
-      </p>);
-
+      </p>
+    );
   }
 
   const pick = (start: number) => onChange([new Date(start).toISOString(), `${dayLabel(start, tz)}, ${timeLabel(start, tz)} · ${service.name}`]);
@@ -74,13 +74,13 @@ export function BookingSlotInput({ field, value, onChange, skin, inert, id, labe
           value={current.key}
           onChange={(e) => setDay(e.target.value)}
           className="h-11 w-full px-3.5 text-[14.5px] outline-none focus:ring-2"
-          style={skin.input}>
-          
-          {days.map((d) =>
-          <option key={d.key} value={d.key}>
+          style={skin.input}
+        >
+          {days.map((d) => (
+            <option key={d.key} value={d.key}>
               {dayLabel(d.slots[0].start, tz)} · {d.slots.length} free
             </option>
-          )}
+          ))}
         </select>
       </label>
       <div role="radiogroup" aria-label={`Times on ${dayLabel(current.slots[0].start, tz)}`} className="grid grid-cols-3 gap-2 sm:grid-cols-4">
@@ -96,13 +96,13 @@ export function BookingSlotInput({ field, value, onChange, skin, inert, id, labe
               tabIndex={inert ? -1 : undefined}
               onClick={() => pick(s.start)}
               className="flex h-11 items-center justify-center text-[14px] font-medium tabular-nums focus-visible:outline-none focus-visible:ring-2"
-              style={on ? { ...skin.input, ...skin.button } : { ...skin.input, color: skin.text }}>
-              
+              style={on ? { ...skin.input, ...skin.button } : { ...skin.input, color: skin.text }}
+            >
               {timeLabel(s.start, tz)}
-            </button>);
-
+            </button>
+          );
         })}
       </div>
-    </div>);
-
+    </div>
+  );
 }

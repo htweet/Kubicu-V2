@@ -9,7 +9,7 @@ interface DetectedBarcode {
 interface BarcodeDetectorLike {
   detect: (source: HTMLVideoElement) => Promise<DetectedBarcode[]>;
 }
-type BarcodeDetectorCtor = new (opts: {formats: string[];}) => BarcodeDetectorLike;
+type BarcodeDetectorCtor = new (opts: { formats: string[] }) => BarcodeDetectorLike;
 
 /**
  * Camera QR scanning for door check-in (D74). Uses the browser's built-in BarcodeDetector where
@@ -30,7 +30,7 @@ export function useQrScanner(onCode: (value: string) => void, paused: boolean) {
   const stop = useCallback(() => {
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
-    setState((s) => s === 'on' || s === 'starting' ? 'idle' : s);
+    setState((s) => (s === 'on' || s === 'starting' ? 'idle' : s));
   }, []);
 
   const start = useCallback(async () => {
@@ -42,7 +42,7 @@ export function useQrScanner(onCode: (value: string) => void, paused: boolean) {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } }, audio: false });
       streamRef.current = stream;
-      const Ctor = (window as unknown as {BarcodeDetector?: BarcodeDetectorCtor;}).BarcodeDetector;
+      const Ctor = (window as unknown as { BarcodeDetector?: BarcodeDetectorCtor }).BarcodeDetector;
       detectorRef.current = Ctor ? new Ctor({ formats: ['qr_code'] }) : null;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
@@ -68,7 +68,7 @@ export function useQrScanner(onCode: (value: string) => void, paused: boolean) {
           const w = video.videoWidth;
           const h = video.videoHeight;
           if (w && h) {
-            const canvas = canvasRef.current ??= document.createElement('canvas');
+            const canvas = (canvasRef.current ??= document.createElement('canvas'));
             const scale = Math.min(1, 640 / Math.max(w, h));
             canvas.width = Math.round(w * scale);
             canvas.height = Math.round(h * scale);
@@ -82,9 +82,9 @@ export function useQrScanner(onCode: (value: string) => void, paused: boolean) {
         }
         if (value) onCodeRef.current(value);
       } catch {
-
         // A frame that can't be read is simply skipped.
-      } finally {busyRef.current = false;
+      } finally {
+        busyRef.current = false;
       }
     }, 280);
     return () => window.clearInterval(id);

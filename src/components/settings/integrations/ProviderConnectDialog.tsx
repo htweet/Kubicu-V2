@@ -66,17 +66,17 @@ export function ProviderConnectDialog({ def, onClose, extra, extraValid = true, 
       title={phase === 'done' ? `${def.name} connected` : phase === 'failed' ? 'Couldn’t connect' : `Connect ${def.name}`}
       description={phase === 'form' || phase === 'working' ? def.whereToFind : undefined}
       footer={
-      phase === 'done' || phase === 'failed' ?
-      <>
-            {phase === 'failed' &&
-        <Button variant="secondary" onClick={() => setPhase('form')}>
+        phase === 'done' || phase === 'failed' ? (
+          <>
+            {phase === 'failed' && (
+              <Button variant="secondary" onClick={() => setPhase('form')}>
                 Try again
               </Button>
-        }
+            )}
             <Button onClick={onClose}>Done</Button>
-          </> :
-
-      <>
+          </>
+        ) : (
+          <>
             <Button variant="secondary" onClick={onClose}>
               Cancel
             </Button>
@@ -84,57 +84,57 @@ export function ProviderConnectDialog({ def, onClose, extra, extraValid = true, 
               Connect
             </Button>
           </>
-
-      }>
-      
-      {phase === 'done' ?
-      <p className="flex items-start gap-2 text-label text-fg-muted">
+        )
+      }
+    >
+      {phase === 'done' ? (
+        <p className="flex items-start gap-2 text-label text-fg-muted">
           <CheckCircle2Icon size={18} className="mt-0.5 shrink-0 text-success" aria-hidden />
           {message}
-        </p> :
-      phase === 'failed' ?
-      <p className="flex items-start gap-2 text-label text-fg-muted">
+        </p>
+      ) : phase === 'failed' ? (
+        <p className="flex items-start gap-2 text-label text-fg-muted">
           <XCircleIcon size={18} className="mt-0.5 shrink-0 text-danger" aria-hidden />
           {message}
-        </p> :
-
-      <div className="flex flex-col gap-4">
+        </p>
+      ) : (
+        <div className="flex flex-col gap-4">
           <InlineAlert tone="warning" title="Test keys only">
             Keys are saved in this browser for the prototype and every call is simulated. Never paste live keys.
           </InlineAlert>
           {extra}
-          {def.fields.map((f) =>
-        <TextInput
-          key={f.key}
-          id={`prov-${def.id}-${f.key}`}
-          label={f.label}
-          optional={f.optional}
-          type={f.secret ? 'password' : 'text'}
-          autoComplete="off"
-          spellCheck={false}
-          placeholder={f.placeholder}
-          hint={f.hint}
-          value={values[f.key] ?? ''}
-          error={tried ? errors[f.key] : undefined}
-          onChange={(e) => setValues((v) => ({ ...v, [f.key]: e.target.value }))} />
-
-        )}
+          {def.fields.map((f) => (
+            <TextInput
+              key={f.key}
+              id={`prov-${def.id}-${f.key}`}
+              label={f.label}
+              optional={f.optional}
+              type={f.secret ? 'password' : 'text'}
+              autoComplete="off"
+              spellCheck={false}
+              placeholder={f.placeholder}
+              hint={f.hint}
+              value={values[f.key] ?? ''}
+              error={tried ? errors[f.key] : undefined}
+              onChange={(e) => setValues((v) => ({ ...v, [f.key]: e.target.value }))}
+            />
+          ))}
           <div className="rounded-md border border-dashed border-line-strong p-3">
             <Field id={`prov-${def.id}-sim`} label="Prototype: what the provider says">
               <Segmented<SimulatedOutcome>
-              ariaLabel="Simulated result"
-              value={outcome}
-              onChange={setOutcome}
-              options={[
-              { value: 'success', label: 'Accepts' },
-              { value: 'rejected', label: 'Rejects keys' },
-              { value: 'down', label: 'No response' }]
-              } />
-            
+                ariaLabel="Simulated result"
+                value={outcome}
+                onChange={setOutcome}
+                options={[
+                  { value: 'success', label: 'Accepts' },
+                  { value: 'rejected', label: 'Rejects keys' },
+                  { value: 'down', label: 'No response' },
+                ]}
+              />
             </Field>
           </div>
         </div>
-      }
-    </Dialog>);
-
+      )}
+    </Dialog>
+  );
 }

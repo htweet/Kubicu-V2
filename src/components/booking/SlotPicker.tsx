@@ -30,11 +30,11 @@ export function SlotPicker({ theme, service, availability, bookings, value, onCh
   const today = dateKeyInTz(Date.now(), tz);
   const days = useMemo(
     () =>
-    Array.from({ length: Math.min(DAYS_SHOWN, availability.horizonDays) }).map((_, i) => {
-      const key = addDaysKey(today, i);
-      return { key, slots: slotsFor(key, service, availability, bookings, Date.now(), ignoreId, staffId) };
-    }),
-    [today, service, availability, bookings, ignoreId, staffId]
+      Array.from({ length: Math.min(DAYS_SHOWN, availability.horizonDays) }).map((_, i) => {
+        const key = addDaysKey(today, i);
+        return { key, slots: slotsFor(key, service, availability, bookings, Date.now(), ignoreId, staffId) };
+      }),
+    [today, service, availability, bookings, ignoreId, staffId],
   );
   const firstOpen = days.find((d) => d.slots.length)?.key ?? days[0]?.key;
   const [day, setDay] = useState<string>(value ? dateKeyInTz(value, tz) : firstOpen);
@@ -45,8 +45,8 @@ export function SlotPicker({ theme, service, availability, bookings, value, onCh
     return (
       <p className="p-4 text-[14px]" style={cardStyle(theme)} role="status">
         {tr('No times are free in the next {n} days. Please message the business to arrange a time.', { n: DAYS_SHOWN })}
-      </p>);
-
+      </p>
+    );
   }
 
   return (
@@ -65,12 +65,12 @@ export function SlotPicker({ theme, service, availability, bookings, value, onCh
               disabled={none}
               onClick={() => setDay(d.key)}
               className="flex h-16 w-14 shrink-0 flex-col items-center justify-center disabled:cursor-not-allowed disabled:opacity-40"
-              style={{ borderRadius: 12, border: `1.5px solid ${active ? theme.text : mix(theme.text, 12)}`, background: active ? theme.text : 'transparent', color: active ? theme.background : theme.text }}>
-              
+              style={{ borderRadius: 12, border: `1.5px solid ${active ? theme.text : mix(theme.text, 12)}`, background: active ? theme.text : 'transparent', color: active ? theme.background : theme.text }}
+            >
               <span className="text-[11px] font-medium uppercase">{new Intl.DateTimeFormat(loc, { timeZone: tz, weekday: 'short' }).format(noon)}</span>
               <span className="text-[17px] font-semibold tabular-nums">{new Intl.DateTimeFormat(loc, { timeZone: tz, day: 'numeric' }).format(noon)}</span>
-            </button>);
-
+            </button>
+          );
         })}
       </div>
       <div>
@@ -78,34 +78,34 @@ export function SlotPicker({ theme, service, availability, bookings, value, onCh
           {tr('Times in {zone}.', { zone: tz.replace('_', ' ') })}
           {differentZone ? ` ${tr('Your time ({zone}) is in brackets.', { zone: local.split('/').pop()?.replace('_', ' ') ?? '' })}` : ''}
         </p>
-        {current.slots.length === 0 ?
-        <p className="text-[14px]" style={muted}>
+        {current.slots.length === 0 ? (
+          <p className="text-[14px]" style={muted}>
             {tr('Nothing free this day. Try another.')}
-          </p> :
-
-        <div role="radiogroup" aria-label={tr('Choose a time')} className="grid grid-cols-3 gap-2">
+          </p>
+        ) : (
+          <div role="radiogroup" aria-label={tr('Choose a time')} className="grid grid-cols-3 gap-2">
             {current.slots.map((s) => {
-            const active = s.start === value;
-            return (
-              <button
-                key={s.start}
-                type="button"
-                role="radio"
-                aria-checked={active}
-                onClick={() => onChange(s.start)}
-                aria-label={s.capacity ? `${timeLabel(s.start, tz, loc)}, ${tr('Places left: {n} of {total}', { n: s.seatsLeft ?? 0, total: s.capacity })}` : undefined}
-                className={`flex ${s.capacity || differentZone ? 'min-h-[56px] py-1.5' : 'h-12'} flex-col items-center justify-center text-[14px] font-semibold tabular-nums`}
-                style={{ borderRadius: 10, border: `1.5px solid ${active ? theme.text : mix(theme.text, 12)}`, background: active ? theme.text : theme.surface, color: active ? theme.background : theme.text }}>
-                
+              const active = s.start === value;
+              return (
+                <button
+                  key={s.start}
+                  type="button"
+                  role="radio"
+                  aria-checked={active}
+                  onClick={() => onChange(s.start)}
+                  aria-label={s.capacity ? `${timeLabel(s.start, tz, loc)}, ${tr('Places left: {n} of {total}', { n: s.seatsLeft ?? 0, total: s.capacity })}` : undefined}
+                  className={`flex ${s.capacity || differentZone ? 'min-h-[56px] py-1.5' : 'h-12'} flex-col items-center justify-center text-[14px] font-semibold tabular-nums`}
+                  style={{ borderRadius: 10, border: `1.5px solid ${active ? theme.text : mix(theme.text, 12)}`, background: active ? theme.text : theme.surface, color: active ? theme.background : theme.text }}
+                >
                   {timeLabel(s.start, tz, loc)}
                   {differentZone && <span className="text-[10.5px] font-medium opacity-70">({timeLabel(s.start, local, loc)})</span>}
                   {s.capacity && <span className="text-[10.5px] font-medium opacity-75">{tr('Left: {n} of {total}', { n: s.seatsLeft ?? 0, total: s.capacity })}</span>}
-                </button>);
-
-          })}
+                </button>
+              );
+            })}
           </div>
-        }
+        )}
       </div>
-    </div>);
-
+    </div>
+  );
 }

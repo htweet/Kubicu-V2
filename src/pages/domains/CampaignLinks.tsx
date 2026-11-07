@@ -58,21 +58,21 @@ export function CampaignLinks() {
 
   // Live health for the list, so a removed page shows straight away rather than at the next daily check.
   const healthOf = (l: CampaignLink) => checkLinkHealth(current, commerce, l);
-  const inView = data.links.filter((l) => view === 'active' ? !l.archivedAt : !!l.archivedAt);
+  const inView = data.links.filter((l) => (view === 'active' ? !l.archivedAt : !!l.archivedAt));
   const channels = Array.from(new Set(data.links.map((l) => l.source))) as SourceId[];
   const tags = Array.from(new Set(data.links.flatMap((l) => l.tags ?? []))).sort();
   const q = filters.q.trim().toLowerCase();
-  const list = inView.
-  filter((l) => filters.channel === 'all' || l.source === filters.channel).
-  filter((l) => filters.tag === 'all' || (l.tags ?? []).includes(filters.tag)).
-  filter((l) => view === 'archived' || filters.status === 'all' || (filters.status === 'attention' ? !healthOf(l).ok : linkStatus(l) === filters.status)).
-  filter((l) => !q || [l.name, l.slug, linkGoesTo(current, commerce, l), ...(l.tags ?? [])].some((s) => s.toLowerCase().includes(q))).
-  sort((a, b) => {
-    if (filters.sort === 'clicks') return (clicks.get(b.slug)?.clicks ?? 0) - (clicks.get(a.slug)?.clicks ?? 0);
-    if (filters.sort === 'recent') return (clicks.get(b.slug)?.last ?? 0) - (clicks.get(a.slug)?.last ?? 0);
-    if (filters.sort === 'name') return a.name.localeCompare(b.name);
-    return Date.parse(b.createdAt) - Date.parse(a.createdAt);
-  });
+  const list = inView
+    .filter((l) => filters.channel === 'all' || l.source === filters.channel)
+    .filter((l) => filters.tag === 'all' || (l.tags ?? []).includes(filters.tag))
+    .filter((l) => view === 'archived' || filters.status === 'all' || (filters.status === 'attention' ? !healthOf(l).ok : linkStatus(l) === filters.status))
+    .filter((l) => !q || [l.name, l.slug, linkGoesTo(current, commerce, l), ...(l.tags ?? [])].some((s) => s.toLowerCase().includes(q)))
+    .sort((a, b) => {
+      if (filters.sort === 'clicks') return (clicks.get(b.slug)?.clicks ?? 0) - (clicks.get(a.slug)?.clicks ?? 0);
+      if (filters.sort === 'recent') return (clicks.get(b.slug)?.last ?? 0) - (clicks.get(a.slug)?.last ?? 0);
+      if (filters.sort === 'name') return a.name.localeCompare(b.name);
+      return Date.parse(b.createdAt) - Date.parse(a.createdAt);
+    });
   const archivedCount = data.links.filter((l) => l.archivedAt).length;
   const attention = data.links.filter((l) => !l.archivedAt && !healthOf(l).ok).length;
   const deletingTaps = deleting ? analytics.events.filter((e) => e.campaign === deleting.slug && e.type === 'link_click').length : 0;
@@ -113,36 +113,36 @@ export function CampaignLinks() {
         title="Short links"
         description="Short, tracked links to your pages, any website or a WhatsApp chat. Make one per place you share — Instagram bio, a flyer, a WhatsApp status — and see who taps, from where, and what they did next."
         actions={
-        <Button leadingIcon={PlusIcon} disabled={!can.allowed} title={can.allowed ? undefined : can.reason} onClick={() => setEditing('new')}>
+          <Button leadingIcon={PlusIcon} disabled={!can.allowed} title={can.allowed ? undefined : can.reason} onClick={() => setEditing('new')}>
             New link
           </Button>
-        } />
-      
+        }
+      />
 
       <QuickShortenBar />
 
-      {data.links.length > 0 &&
-      <div className="flex flex-col gap-4">
+      {data.links.length > 0 && (
+        <div className="flex flex-col gap-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <Segmented<View>
-            ariaLabel="Show"
-            size="sm"
-            value={view}
-            onChange={setView}
-            options={[
-            { value: 'active', label: 'Active' },
-            { value: 'archived', label: `${tr('Archived')}${archivedCount ? ` (${archivedCount})` : ''}` }]
-            } />
-          
+              ariaLabel="Show"
+              size="sm"
+              value={view}
+              onChange={setView}
+              options={[
+                { value: 'active', label: 'Active' },
+                { value: 'archived', label: `${tr('Archived')}${archivedCount ? ` (${archivedCount})` : ''}` },
+              ]}
+            />
             <div className="flex flex-wrap items-center gap-3">
               <p className="text-caption text-fg-subtle">
-                {attention > 0 ?
-              <button type="button" onClick={() => setFilters((f) => ({ ...f, status: 'attention' }))} className="font-semibold text-danger hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+                {attention > 0 ? (
+                  <button type="button" onClick={() => setFilters((f) => ({ ...f, status: 'attention' }))} className="font-semibold text-danger hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
                     {tr('Need attention: {n}', { n: attention })}
-                  </button> :
-
-              tr('All links pass their checks')
-              }
+                  </button>
+                ) : (
+                  tr('All links pass their checks')
+                )}
                 {' · '}{tr('checked daily')}{health.checkedAt ? `, ${tr('last {when}', { when: timeAgo(health.checkedAt) })}` : ''}
               </p>
               <Button size="sm" variant="tertiary" leadingIcon={RefreshCwIcon} onClick={checkNow}>
@@ -155,35 +155,35 @@ export function CampaignLinks() {
           </div>
           <ShortLinkFilters value={filters} onChange={setFilters} channels={channels} tags={tags} showStatus={view === 'active'} shown={list.length} total={inView.length} />
         </div>
-      }
+      )}
 
-      {list.length === 0 ?
-      inView.length > 0 ?
-      <EmptyState framed icon={LinkIcon} title="No links match" description="Try another search or clear the filters." action={<Button variant="secondary" onClick={() => setFilters({ ...emptyLinkFilters, sort: filters.sort })}>Clear filters</Button>} /> :
-
-      <EmptyState
-        framed
-        icon={LinkIcon}
-        title={view === 'archived' ? 'No archived links' : 'No short links yet'}
-        description={view === 'archived' ? 'Links you stop using show here. Archived links tell visitors they’ve ended.' : 'Make one for your Instagram bio and one for a flyer, then compare them.'}
-        action={
-        view === 'active' ?
-        <Button leadingIcon={PlusIcon} disabled={!can.allowed} onClick={() => setEditing('new')}>
+      {list.length === 0 ? (
+        inView.length > 0 ? (
+          <EmptyState framed icon={LinkIcon} title="No links match" description="Try another search or clear the filters." action={<Button variant="secondary" onClick={() => setFilters({ ...emptyLinkFilters, sort: filters.sort })}>Clear filters</Button>} />
+        ) : (
+          <EmptyState
+            framed
+            icon={LinkIcon}
+            title={view === 'archived' ? 'No archived links' : 'No short links yet'}
+            description={view === 'archived' ? 'Links you stop using show here. Archived links tell visitors they’ve ended.' : 'Make one for your Instagram bio and one for a flyer, then compare them.'}
+            action={
+              view === 'active' ? (
+                <Button leadingIcon={PlusIcon} disabled={!can.allowed} onClick={() => setEditing('new')}>
                   New link
-                </Button> :
-        undefined
-        } /> :
-
-
-
-      <List ruled label="Short links">
+                </Button>
+              ) : undefined
+            }
+          />
+        )
+      ) : (
+        <List ruled label="Short links">
           {list.map((l) => {
-          const s = stats.get(l.slug) ?? { visits: 0, orders: 0, revenueNgn: 0 };
-          const c = clicks.get(l.slug);
-          const h = healthOf(l);
-          const status = linkStatus(l);
-          return (
-            <li key={l.id} className="grid gap-3 py-4 md:grid-cols-[minmax(0,1.6fr)_repeat(4,minmax(0,0.5fr))_auto] md:items-center md:gap-6">
+            const s = stats.get(l.slug) ?? { visits: 0, orders: 0, revenueNgn: 0 };
+            const c = clicks.get(l.slug);
+            const h = healthOf(l);
+            const status = linkStatus(l);
+            return (
+              <li key={l.id} className="grid gap-3 py-4 md:grid-cols-[minmax(0,1.6fr)_repeat(4,minmax(0,0.5fr))_auto] md:items-center md:gap-6">
                 <div className="min-w-0">
                   <p className="flex items-center gap-2 text-label font-semibold text-fg">
                     <Link to={`/app/links/${l.id}`} className="truncate rounded-sm hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
@@ -215,36 +215,36 @@ export function CampaignLinks() {
                   <IconButton icon={ExternalLinkIcon} label={tr('Open {name} link (test visit)', { name: l.name })} size="sm" onClick={() => window.open(shortHref(mainHandle, l.slug), '_blank')} />
                   {!l.archivedAt && <IconButton icon={QrCodeIcon} label={tr('QR code for {name}', { name: l.name })} size="sm" onClick={() => navigate(`/app/qr?link=${l.id}`)} />}
                   <IconButton icon={PencilIcon} label={tr('Edit {name}', { name: l.name })} size="sm" disabled={!can.allowed} onClick={() => setEditing(l)} />
-                  {!l.archivedAt &&
-                <IconButton
-                  icon={l.pausedAt ? PlayIcon : PauseIcon}
-                  label={tr(l.pausedAt ? 'Resume {name}' : 'Pause {name}', { name: l.name })}
-                  size="sm"
-                  disabled={!can.allowed}
-                  onClick={() => {
-                    saveLink({ ...l, pausedAt: l.pausedAt ? null : new Date().toISOString() });
-                    team.log('pages', `${l.pausedAt ? 'resumed' : 'paused'} the short link ${shortDisplay(mainHandle, l.slug, host)}`, '/app/links');
-                    toast(tr(l.pausedAt ? 'Link resumed' : 'Link paused'), { description: tr(l.pausedAt ? 'It sends people to its destination again.' : 'Anyone who taps it sees that it’s paused, with a link to your main page.') });
-                  }} />
-
-                }
+                  {!l.archivedAt && (
+                    <IconButton
+                      icon={l.pausedAt ? PlayIcon : PauseIcon}
+                      label={tr(l.pausedAt ? 'Resume {name}' : 'Pause {name}', { name: l.name })}
+                      size="sm"
+                      disabled={!can.allowed}
+                      onClick={() => {
+                        saveLink({ ...l, pausedAt: l.pausedAt ? null : new Date().toISOString() });
+                        team.log('pages', `${l.pausedAt ? 'resumed' : 'paused'} the short link ${shortDisplay(mainHandle, l.slug, host)}`, '/app/links');
+                        toast(tr(l.pausedAt ? 'Link resumed' : 'Link paused'), { description: tr(l.pausedAt ? 'It sends people to its destination again.' : 'Anyone who taps it sees that it’s paused, with a link to your main page.') });
+                      }}
+                    />
+                  )}
                   <IconButton icon={l.archivedAt ? ArchiveRestoreIcon : ArchiveIcon} label={tr(l.archivedAt ? 'Restore {name}' : 'Archive {name}', { name: l.name })} size="sm" disabled={!can.allowed} onClick={() => setArchived(l, !l.archivedAt)} />
                   <IconButton
-                  icon={Trash2Icon}
-                  label={tr('Delete {name}', { name: l.name })}
-                  size="sm"
-                  disabled={!can.allowed}
-                  onClick={() => {
-                    setAlsoClicks(false);
-                    setDeleting(l);
-                  }} />
-                
+                    icon={Trash2Icon}
+                    label={tr('Delete {name}', { name: l.name })}
+                    size="sm"
+                    disabled={!can.allowed}
+                    onClick={() => {
+                      setAlsoClicks(false);
+                      setDeleting(l);
+                    }}
+                  />
                 </div>
-              </li>);
-
-        })}
+              </li>
+            );
+          })}
         </List>
-      }
+      )}
 
       <p className="text-caption text-fg-subtle">
         {tr('“Open” simulates a visit through the link, so it’s counted. Turn on “Don’t count my own visits” in Settings → Privacy to stop that. Daily checks confirm website addresses still pass the safety check, WhatsApp numbers are valid and your pages still exist; checking whether another website is down needs the live service.')}
@@ -256,7 +256,7 @@ export function CampaignLinks() {
         title="Delete this link?"
         description={deleting ? tr('{link} will stop working straight away, including anywhere it’s printed or shared. To keep it but stop using it, archive it instead.', { link: shortDisplay(mainHandle, deleting.slug, host) }) : undefined}
         footer={
-        <>
+          <>
             <Button variant="secondary" onClick={() => setDeleting(null)}>
               Cancel
             </Button>
@@ -264,28 +264,28 @@ export function CampaignLinks() {
               Delete link
             </Button>
           </>
-        }>
-        
-        {deleting && data.qrs.some((q) => q.linkId === deleting.id) ?
-        <p className="text-label text-danger">{tr('A QR code uses this link. Delete the QR code in QR codes first.')}</p> :
-
-        <label className="flex items-start gap-3 text-label text-fg">
+        }
+      >
+        {deleting && data.qrs.some((q) => q.linkId === deleting.id) ? (
+          <p className="text-label text-danger">{tr('A QR code uses this link. Delete the QR code in QR codes first.')}</p>
+        ) : (
+          <label className="flex items-start gap-3 text-label text-fg">
             <input type="checkbox" checked={alsoClicks} onChange={(e) => setAlsoClicks(e.target.checked)} className="mt-0.5 h-4 w-4 shrink-0" />
             <span>
               {tr('Also delete its click data')}{deletingTaps ? ` (${tr('{n} taps', { n: deletingTaps.toLocaleString() })})` : ''}
               <span className="block text-caption text-fg-subtle">{tr('Visits it brought stay in Analytics, no longer tied to this link. This can’t be undone.')}</span>
             </span>
           </label>
-        }
+        )}
       </Dialog>
 
       <CampaignLinkDialog open={editing !== null} onClose={() => setEditing(null)} link={editing && editing !== 'new' ? editing : undefined} />
-    </div>);
-
+    </div>
+  );
 }
 
 /** A figure inside a table-like row: label on phones, column caption on desktop. Not a stat strip, so not the shared Stat (D188). */
-function RowFigure({ label, value }: {label: string;value: string;}) {
+function RowFigure({ label, value }: { label: string; value: string }) {
   label = useT().t(label);
   return (
     <div className="min-w-0 md:text-right">
@@ -294,6 +294,6 @@ function RowFigure({ label, value }: {label: string;value: string;}) {
         {value}
         <span className="hidden text-caption font-normal text-fg-subtle md:block">{label}</span>
       </dd>
-    </div>);
-
+    </div>
+  );
 }

@@ -14,11 +14,11 @@ import { StatusFaqSection } from '../../components/marketing/home/StatusFaqSecti
 import { ClosingCta } from '../../components/marketing/home/ClosingCta';
 
 const sellList = [
-{ icon: ShoppingBagIcon, text: 'Products, stock, checkout and discounts' },
-{ icon: CalendarCheckIcon, text: 'Bookings with deposits and reschedule links' },
-{ icon: TicketIcon, text: 'Event tickets with QR check-in at the door' },
-{ icon: UsersIcon, text: 'Group buys and campaign pages with real progress' }];
-
+  { icon: ShoppingBagIcon, text: 'Products, stock, checkout and discounts' },
+  { icon: CalendarCheckIcon, text: 'Bookings with deposits and reschedule links' },
+  { icon: TicketIcon, text: 'Event tickets with QR check-in at the door' },
+  { icon: UsersIcon, text: 'Group buys and campaign pages with real progress' },
+];
 
 /** Website home (D260): colour-blocked chapters, each answering one question a new seller has. Top chapters translated in D318. */
 export function Home() {
@@ -35,8 +35,8 @@ export function Home() {
         lead={tr('Start from a layout built for your goal, then arrange blocks on a real canvas. Edit text in place, pick a theme, and a publish check catches broken links before anyone sees them.')}
         cta={{ label: tr('Start building — free'), to: '/signup', bg: 'rgb(var(--kb-lime))', fg: 'rgb(var(--kb-forest))' }}
         visual={<CanvasVisual />}
-        flip />
-      
+        flip
+      />
 
       <ColourBand
         id="share-heading"
@@ -45,27 +45,27 @@ export function Home() {
         title={tr('Share it everywhere they already are.')}
         lead={tr('Put your kub.icu link in your WhatsApp status and Instagram bio, or print the QR code on your stall, flyers and receipts. Every visit lands on one page that’s ready to sell.')}
         cta={{ label: tr('Claim your link'), to: '/signup', bg: 'rgb(var(--kb-plum))', fg: 'rgb(255 255 255)' }}
-        visual={<ShareVisual />} />
-      
+        visual={<ShareVisual />}
+      />
 
       <ColourBand
         id="sell-heading"
         bg="rgb(var(--kb-peach))"
         fg="rgb(var(--kb-clay))"
-        title={tr('Sell, book and get paid.')}
-        lead={tr('Grow from a link-in-bio into a shop, a booking desk and a box office without changing tools. Every order shows exactly what you receive.')}
+        title={tr('Sell anything and get paid.')}
+        lead={tr('Grow from a link-in-bio into a shop for whatever you sell: products, services, tickets or downloads, all without changing tools. Every order shows exactly what you receive.')}
         visual={<SellVisual />}
-        flip>
-        
+        flip
+      >
         <ul className="mt-8 flex flex-col gap-3">
-          {sellList.map(({ icon: Icon, text }) =>
-          <li key={text} className="flex items-center gap-3 text-[16px] font-semibold">
+          {sellList.map(({ icon: Icon, text }) => (
+            <li key={text} className="flex items-center gap-3 text-[16px] font-semibold">
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[rgb(var(--kb-clay))] text-[rgb(var(--kb-peach))]">
                 <Icon size={18} aria-hidden />
               </span>
               {tr(text)}
             </li>
-          )}
+          ))}
         </ul>
       </ColourBand>
 
@@ -76,14 +76,14 @@ export function Home() {
         title={tr('See what’s working.')}
         lead={tr('Visits, where they came from and where people drop off — with plain suggestions that show their evidence. No personal data, and your own visits can be left out.')}
         cta={{ label: tr('See plans'), to: '/pricing', bg: 'rgb(var(--kb-lime))', fg: 'rgb(var(--kb-forest))' }}
-        visual={<InsightsVisual />} />
-      
+        visual={<InsightsVisual />}
+      />
 
       <PeopleSection />
       <LocalSection />
       <ExampleMarquee />
       <StatusFaqSection />
       <ClosingCta />
-    </>);
-
+    </>
+  );
 }

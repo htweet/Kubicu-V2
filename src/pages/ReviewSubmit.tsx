@@ -39,7 +39,7 @@ export function ReviewSubmit() {
     setTried(true);
     if (!rating || shownName.trim().length < 1) return;
     const review: ProofReview = { id: uid('rev'), requestId: request.id, source: request.source, rating, text: text.trim(), displayName: shownName.trim(), permission, hidden: false, createdAt: new Date().toISOString() };
-    update((d) => ({ ...d, reviews: [review, ...d.reviews], requests: d.requests.map((r) => r.id === request.id ? { ...r, reviewId: review.id } : r) }));
+    update((d) => ({ ...d, reviews: [review, ...d.reviews], requests: d.requests.map((r) => (r.id === request.id ? { ...r, reviewId: review.id } : r)) }));
     setDone(true);
   };
 
@@ -51,15 +51,15 @@ export function ReviewSubmit() {
             <ArrowLeftIcon size={15} aria-hidden /> {business}
           </Link>
 
-          {done || used ?
-          <>
+          {done || used ? (
+            <>
               <BadgeCheckIcon size={30} aria-hidden style={{ color: t.text }} />
               <CheckoutHeading theme={t} level={1} sub={done ? `Thank you, ${firstName(request.customerName)}. ${permission ? `Your review can now appear on ${business}’s page with a “${sourceBadge[request.source.kind]}” label.` : 'Your rating counts towards their score. Your words stay private, as you asked.'}` : 'Each review link works once, and this one has already been used.'}>
                 {done ? 'Review sent' : 'You’ve already left a review'}
               </CheckoutHeading>
-            </> :
-
-          <>
+            </>
+          ) : (
+            <>
               <CheckoutHeading theme={t} level={1} sub={`For ${request.source.label}. Your review is labelled “${sourceBadge[request.source.kind]}” because it’s tied to this. ${business} can reply or hide it, but can’t change your words.`}>
                 How was {business}?
               </CheckoutHeading>
@@ -70,29 +70,29 @@ export function ReviewSubmit() {
                     Your rating
                   </legend>
                   <div className="mt-2 flex items-center gap-1" role="radiogroup" aria-label="Rating out of 5">
-                    {[1, 2, 3, 4, 5].map((n) =>
-                  <button
-                    key={n}
-                    type="button"
-                    role="radio"
-                    aria-checked={rating === n}
-                    aria-label={`${n} star${n === 1 ? '' : 's'} — ${ratingWords[n]}`}
-                    onClick={() => setRating(n)}
-                    className="grid h-11 w-11 place-items-center rounded-full focus-visible:outline-none focus-visible:ring-2"
-                    style={{ color: n <= rating ? t.text : t.mutedText }}>
-                    
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <button
+                        key={n}
+                        type="button"
+                        role="radio"
+                        aria-checked={rating === n}
+                        aria-label={`${n} star${n === 1 ? '' : 's'} — ${ratingWords[n]}`}
+                        onClick={() => setRating(n)}
+                        className="grid h-11 w-11 place-items-center rounded-full focus-visible:outline-none focus-visible:ring-2"
+                        style={{ color: n <= rating ? t.text : t.mutedText }}
+                      >
                         <StarIcon size={28} aria-hidden className={n <= rating ? 'fill-current' : ''} />
                       </button>
-                  )}
+                    ))}
                     <span className="ml-2 text-[14px]" style={muted} aria-live="polite">
                       {ratingWords[rating]}
                     </span>
                   </div>
-                  {tried && !rating &&
-                <p className="mt-1.5 text-[13px] font-medium" style={{ color: t.text }} role="alert">
+                  {tried && !rating && (
+                    <p className="mt-1.5 text-[13px] font-medium" style={{ color: t.text }} role="alert">
                       Choose a rating from 1 to 5.
                     </p>
-                }
+                  )}
                 </fieldset>
 
                 <label className="flex flex-col gap-1.5">
@@ -100,13 +100,13 @@ export function ReviewSubmit() {
                     Tell others about it <span className="font-normal" style={muted}>(optional)</span>
                   </span>
                   <textarea
-                  rows={4}
-                  maxLength={600}
-                  value={text}
-                  onChange={(e) => setText(e.target.value)}
-                  className="w-full rounded-[12px] border px-3 py-2.5 text-[15px] focus:outline-none focus-visible:ring-2"
-                  style={{ background: t.background, color: t.text, borderColor: `${t.mutedText}55` }} />
-                
+                    rows={4}
+                    maxLength={600}
+                    value={text}
+                    onChange={(e) => setText(e.target.value)}
+                    className="w-full rounded-[12px] border px-3 py-2.5 text-[15px] focus:outline-none focus-visible:ring-2"
+                    style={{ background: t.background, color: t.text, borderColor: `${t.mutedText}55` }}
+                  />
                 </label>
 
                 <ThemedField theme={t} label="Name to show" value={shownName} onChange={setName} error={tried && !shownName.trim() ? 'Add a name or initials.' : undefined} />
@@ -126,9 +126,9 @@ export function ReviewSubmit() {
                 </PrimaryButton>
               </section>
             </>
-          }
+          )}
         </main>
       </PageSurface>
-    </div>);
-
+    </div>
+  );
 }

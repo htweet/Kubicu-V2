@@ -51,19 +51,19 @@ export const emptySso = (): SsoConfig => ({
   requireSso: false,
   joinRole: 'viewer',
   autoJoin: false,
-  updatedAt: new Date().toISOString()
+  updatedAt: new Date().toISOString(),
 });
 
-export const providerInfo: Record<SsoProvider, {label: string;detail: string;where: string;}> = {
+export const providerInfo: Record<SsoProvider, { label: string; detail: string; where: string }> = {
   google: { label: 'Google Workspace', detail: 'Admin console → Apps → Web and mobile apps', where: 'In Google Admin, add a custom SAML app and paste the two KUBICU values below.' },
   microsoft: { label: 'Microsoft Entra ID', detail: 'Formerly Azure AD', where: 'In Entra, create an Enterprise application (non-gallery) and set up SAML single sign-on.' },
   okta: { label: 'Okta', detail: 'Applications → Create App Integration', where: 'In Okta, create a SAML 2.0 app integration and paste the two KUBICU values below.' },
-  saml: { label: 'Other (SAML 2.0)', detail: 'Any SAML 2.0 identity provider', where: 'Create a SAML 2.0 application in your identity provider and paste the two KUBICU values below.' }
+  saml: { label: 'Other (SAML 2.0)', detail: 'Any SAML 2.0 identity provider', where: 'Create a SAML 2.0 application in your identity provider and paste the two KUBICU values below.' },
 };
 
 export const spValues = (workspaceId: string) => ({
   acsUrl: `https://auth.kub.icu/sso/${workspaceId}/acs`,
-  entityId: `https://auth.kub.icu/sso/${workspaceId}`
+  entityId: `https://auth.kub.icu/sso/${workspaceId}`,
 });
 
 /** Free email providers can't be claimed for company sign-in. */
@@ -77,14 +77,14 @@ export function domainError(domain: string): string {
   return '';
 }
 
-export function idpErrors(c: SsoConfig): {metadataUrl: string;idpSsoUrl: string;idpEntityId: string;certificate: string;} {
+export function idpErrors(c: SsoConfig): { metadataUrl: string; idpSsoUrl: string; idpEntityId: string; certificate: string } {
   const https = (v: string) => /^https:\/\/[^\s]+\.[^\s]+/.test(v.trim());
   const usingMetadata = !!c.metadataUrl.trim();
   return {
     metadataUrl: usingMetadata && !https(c.metadataUrl) ? 'Must start with https://' : '',
     idpSsoUrl: usingMetadata ? '' : !c.idpSsoUrl.trim() ? 'Paste the sign-in URL, or use a metadata URL instead' : !https(c.idpSsoUrl) ? 'Must start with https://' : '',
     idpEntityId: usingMetadata ? '' : c.idpEntityId.trim() ? '' : 'Paste the issuer / entity ID',
-    certificate: usingMetadata ? '' : !c.certificate.trim() ? 'Paste the signing certificate' : !/-----BEGIN CERTIFICATE-----[\s\S]+-----END CERTIFICATE-----/.test(c.certificate.trim()) ? 'Paste the whole certificate, including the BEGIN and END lines' : ''
+    certificate: usingMetadata ? '' : !c.certificate.trim() ? 'Paste the signing certificate' : !/-----BEGIN CERTIFICATE-----[\s\S]+-----END CERTIFICATE-----/.test(c.certificate.trim()) ? 'Paste the whole certificate, including the BEGIN and END lines' : '',
   };
 }
 
@@ -93,7 +93,7 @@ export const idpComplete = (c: SsoConfig) => !Object.values(idpErrors(c)).some(B
 /** Short fingerprint shown instead of the whole certificate. */
 export function certFingerprint(cert: string): string {
   let h = 0;
-  for (const ch of cert.replace(/\s/g, '')) h = h * 31 + ch.charCodeAt(0) >>> 0;
+  for (const ch of cert.replace(/\s/g, '')) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
   const hex = h.toString(16).toUpperCase().padStart(8, '0');
   return `${hex.slice(0, 2)}:${hex.slice(2, 4)}:${hex.slice(4, 6)}:${hex.slice(6, 8)}`;
 }
@@ -121,8 +121,8 @@ export function syncSsoIndex(workspaceId: string, workspaceName: string, c: SsoC
   try {
     window.localStorage.setItem(INDEX_KEY, JSON.stringify(idx));
   } catch {
-
-    /* storage full */}
+    /* storage full */
+  }
 }
 
 export function ssoForEmail(email: string): IndexEntry | null {

@@ -14,7 +14,7 @@ const EVENT = 'kubicu:sharedShops';
 export function readSharedShops(): SharedShop[] {
   try {
     const raw = localStorage.getItem(SHARED_SHOPS_KEY);
-    return raw ? JSON.parse(raw) as SharedShop[] : [];
+    return raw ? (JSON.parse(raw) as SharedShop[]) : [];
   } catch {
     return [];
   }
@@ -44,11 +44,11 @@ export function onSharedShopsChange(cb: () => void): () => void {
 }
 
 export function slugify(s: string): string {
-  return s.
-  toLowerCase().
-  replace(/[^a-z0-9]+/g, '-').
-  replace(/^-+|-+$/g, '').
-  slice(0, 40);
+  return s
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 40);
 }
 
 export function slugProblem(slug: string, list: SharedShop[], selfId?: string): string | null {
@@ -86,13 +86,13 @@ export function memberItems(m: SharedShopMember): ShopItem[] {
         key: `${m.id}:${p.id}`,
         member: m,
         name: p.name,
-        priceLabel: r ? r[0] === r[1] ? naira(r[0]) : `From ${naira(r[0])}` : 'Ask for price',
+        priceLabel: r ? (r[0] === r[1] ? naira(r[0]) : `From ${naira(r[0])}`) : 'Ask for price',
         lowPrice: r?.[0] ?? Number.POSITIVE_INFINITY,
         imageUrl: p.images[0]?.url ?? '',
         imageAlt: p.images[0]?.alt ?? p.name,
         href: `/p/${m.handle}/shop/${p.id}`,
         soldOut: false,
-        sample: false
+        sample: false,
       };
     });
   }
@@ -106,7 +106,7 @@ export function memberItems(m: SharedShopMember): ShopItem[] {
     imageAlt: s.imageAlt,
     href: `/p/${m.handle}`,
     soldOut: false,
-    sample: true
+    sample: true,
   }));
 }
 

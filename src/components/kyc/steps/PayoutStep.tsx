@@ -16,7 +16,7 @@ interface PayoutStepProps extends KycStepProps {
 const matchCopy = {
   match: { icon: BadgeCheckIcon, text: 'Name matches', cls: 'text-success' },
   close: { icon: AlertTriangleIcon, text: 'Partly matches — a reviewer will check', cls: 'text-warning' },
-  mismatch: { icon: XCircleIcon, text: 'Name doesn’t match — can’t be used', cls: 'text-danger' }
+  mismatch: { icon: XCircleIcon, text: 'Name doesn’t match — can’t be used', cls: 'text-danger' },
 };
 
 /** The account payouts go to. Its name must match the verified person or registered business. */
@@ -29,23 +29,23 @@ export function PayoutStep({ k, set, errors, disabled, banks, onAddBank }: Payou
         {tr('Payouts can only go to an account in the name')} <span className="font-semibold text-fg">{name || '—'}</span>
         {k.entity === 'company' ? `. ${tr('Use a corporate account, not a personal one.')}` : '.'}
       </p>
-      {banks.length > 0 ?
-      <fieldset aria-describedby={errors.payoutBankId ? 'kyc-bank-error' : undefined}>
+      {banks.length > 0 ? (
+        <fieldset aria-describedby={errors.payoutBankId ? 'kyc-bank-error' : undefined}>
           <legend className="sr-only">{tr('Payout account')}</legend>
           <ul className="flex flex-col gap-2">
             {banks.map((b) => {
-            const m = matchCopy[b.nameMatch];
-            const on = k.payoutBankId === b.id;
-            const unusable = b.nameMatch === 'mismatch';
-            return (
-              <li key={b.id}>
+              const m = matchCopy[b.nameMatch];
+              const on = k.payoutBankId === b.id;
+              const unusable = b.nameMatch === 'mismatch';
+              return (
+                <li key={b.id}>
                   <label
-                  className={cn(
-                    'flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 transition-colors duration-150 ease-out focus-within:ring-2 focus-within:ring-focus',
-                    on ? 'border-select bg-action-soft' : 'border-line bg-raised hover:border-line-strong',
-                    (disabled || unusable) && 'cursor-not-allowed opacity-60'
-                  )}>
-                  
+                    className={cn(
+                      'flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 transition-colors duration-150 ease-out focus-within:ring-2 focus-within:ring-focus',
+                      on ? 'border-select bg-action-soft' : 'border-line bg-raised hover:border-line-strong',
+                      (disabled || unusable) && 'cursor-not-allowed opacity-60',
+                    )}
+                  >
                     <input type="radio" name="kyc-bank" className="sr-only" checked={on} disabled={disabled || unusable} onChange={() => set((c) => ({ ...c, payoutBankId: b.id }))} />
                     <span className={cn('flex h-5 w-5 shrink-0 items-center justify-center rounded-full border', on ? 'border-action bg-action text-action-fg' : 'border-line-strong')} aria-hidden>
                       {on && <CheckIcon size={12} strokeWidth={3} />}
@@ -61,26 +61,26 @@ export function PayoutStep({ k, set, errors, disabled, banks, onAddBank }: Payou
                       <span className="sr-only sm:hidden">{tr(m.text)}</span>
                     </span>
                   </label>
-                </li>);
-
-          })}
+                </li>
+              );
+            })}
           </ul>
-        </fieldset> :
-
-      <p className="rounded-md bg-sunken px-4 py-3 text-label text-fg-muted">{tr('No bank accounts yet. Add one in the verified name.')}</p>
-      }
-      {errors.payoutBankId &&
-      <p id="kyc-bank-error" role="alert" className="text-caption font-medium text-danger">
+        </fieldset>
+      ) : (
+        <p className="rounded-md bg-sunken px-4 py-3 text-label text-fg-muted">{tr('No bank accounts yet. Add one in the verified name.')}</p>
+      )}
+      {errors.payoutBankId && (
+        <p id="kyc-bank-error" role="alert" className="text-caption font-medium text-danger">
           {tr(errors.payoutBankId)}
         </p>
-      }
-      {!disabled &&
-      <div>
+      )}
+      {!disabled && (
+        <div>
           <Button variant="secondary" leadingIcon={PlusIcon} onClick={onAddBank}>
             Add a bank account
           </Button>
         </div>
-      }
-    </div>);
-
+      )}
+    </div>
+  );
 }

@@ -21,7 +21,7 @@ import { useT } from '../../contexts/LocaleContext';
 
 interface DiscountEditorProps {
   /** Existing discount to edit, or the kind of a new one. */
-  target: {discount: Discount;} | {kind: DiscountKind;} | null;
+  target: { discount: Discount } | { kind: DiscountKind } | null;
   onClose: () => void;
 }
 
@@ -64,11 +64,11 @@ function toForm(d: Discount | null, kind: DiscountKind): Form {
     perCustomerLimit: d?.perCustomerLimit != null ? String(d.perCustomerLimit) : kind === 'automatic' ? '' : '1',
     active: d?.active ?? true,
     referrerName: d?.referrerName ?? '',
-    rewardNote: d?.rewardNote ?? ''
+    rewardNote: d?.rewardNote ?? '',
   };
 }
 
-const intOrNull = (s: string) => s.trim() === '' ? null : Math.max(0, Math.floor(Number(s)));
+const intOrNull = (s: string) => (s.trim() === '' ? null : Math.max(0, Math.floor(Number(s))));
 
 /** Create or edit a code, automatic offer or referral code (D51). */
 export function DiscountEditor({ target, onClose }: DiscountEditorProps) {
@@ -89,18 +89,18 @@ export function DiscountEditor({ target, onClose }: DiscountEditorProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [target]);
 
-  const set = <K extends keyof Form,>(k: K, v: Form[K]) => setForm((f) => ({ ...f, [k]: v }));
+  const set = <K extends keyof Form>(k: K, v: Form[K]) => setForm((f) => ({ ...f, [k]: v }));
   const uses = existing ? discountOrders(data, existing.id).length : 0;
   // Event tickets are listed too, so a code can apply to one event (D73).
   const products = data.products.filter((p) => p.status !== 'archived');
-  const productLabel = (p: (typeof products)[number]) => p.kind === 'ticket' ? `${tr('Tickets')} · ${p.name}` : p.name;
+  const productLabel = (p: (typeof products)[number]) => (p.kind === 'ticket' ? `${tr('Tickets')} · ${p.name}` : p.name);
 
   const errors = useMemo(() => {
     const e: Partial<Record<keyof Form, string>> = {};
     if (kind !== 'automatic') {
       const c = normaliseCode(form.code);
-      if (!/^[A-Z0-9-]{3,20}$/.test(c)) e.code = '3–20 characters: letters, numbers and hyphens.';else
-      if (data.discounts.some((d) => d.id !== existing?.id && d.code === c)) e.code = 'Another discount already uses this code.';
+      if (!/^[A-Z0-9-]{3,20}$/.test(c)) e.code = '3–20 characters: letters, numbers and hyphens.';
+      else if (data.discounts.some((d) => d.id !== existing?.id && d.code === c)) e.code = 'Another discount already uses this code.';
     }
     if (kind === 'referral' && !form.referrerName.trim()) e.referrerName = 'Who shares this code?';
     if (!form.title.trim()) e.title = 'Customers see this at checkout.';
@@ -115,7 +115,7 @@ export function DiscountEditor({ target, onClose }: DiscountEditorProps) {
     if (kind === 'automatic' && form.scope === 'all' && form.minSubtotalNgn === null && form.valueType !== 'free_delivery') e.minSubtotalNgn = 'Automatic offers on everything need a minimum spend, or every order is discounted.';
     return e;
   }, [form, kind, data.discounts, existing?.id]);
-  const err = (k: keyof Form) => tried ? errors[k] : undefined;
+  const err = (k: keyof Form) => (tried ? errors[k] : undefined);
 
   const save = () => {
     setTried(true);
@@ -138,12 +138,12 @@ export function DiscountEditor({ target, onClose }: DiscountEditorProps) {
       referrerName: kind === 'referral' ? form.referrerName.trim() : undefined,
       rewardNote: kind === 'referral' ? form.rewardNote.trim() || undefined : undefined,
       createdAt: existing?.createdAt ?? new Date().toISOString(),
-      sample: existing?.sample
+      sample: existing?.sample,
     };
-    const ok = apply((d) => ({ ...d, discounts: existing ? d.discounts.map((x) => x.id === next.id ? next : x) : [next, ...d.discounts] }));
+    const ok = apply((d) => ({ ...d, discounts: existing ? d.discounts.map((x) => (x.id === next.id ? next : x)) : [next, ...d.discounts] }));
     if (!ok) return;
     toast.success(existing ? tr('Discount saved') : tr('{kind} created', { kind: tr(discountKindLabel[kind]) }), {
-      description: existing && uses ? tr('Changes apply to new orders only.') : next.code ? tr('Share {code} with customers.', { code: next.code }) : tr('It applies automatically at checkout.')
+      description: existing && uses ? tr('Changes apply to new orders only.') : next.code ? tr('Share {code} with customers.', { code: next.code }) : tr('It applies automatically at checkout.'),
     });
     onClose();
   };
@@ -168,20 +168,20 @@ export function DiscountEditor({ target, onClose }: DiscountEditorProps) {
       title={titleFor}
       description={kind === 'automatic' ? 'Applies at checkout without a code when the conditions are met.' : kind === 'referral' ? 'A personal code for someone who sends you customers. Their tally shows on this page.' : 'Customers type this code at checkout.'}
       footer={
-      <div className="flex w-full items-center justify-between gap-2">
-          {existing && uses === 0 ?
-        confirmDelete ?
-        <Button variant="destructive" leadingIcon={Trash2Icon} onClick={remove}>
+        <div className="flex w-full items-center justify-between gap-2">
+          {existing && uses === 0 ? (
+            confirmDelete ? (
+              <Button variant="destructive" leadingIcon={Trash2Icon} onClick={remove}>
                 Confirm delete
-              </Button> :
-
-        <Button variant="tertiary" leadingIcon={Trash2Icon} onClick={() => setConfirmDelete(true)}>
+              </Button>
+            ) : (
+              <Button variant="tertiary" leadingIcon={Trash2Icon} onClick={() => setConfirmDelete(true)}>
                 Delete
-              </Button> :
-
-
-        <span />
-        }
+              </Button>
+            )
+          ) : (
+            <span />
+          )}
           <div className="flex gap-2">
             <Button variant="secondary" onClick={onClose}>
               Cancel
@@ -189,44 +189,44 @@ export function DiscountEditor({ target, onClose }: DiscountEditorProps) {
             <Button onClick={save}>{existing ? 'Save' : 'Create'}</Button>
           </div>
         </div>
-      }>
-      
+      }
+    >
       <div className="flex flex-col gap-5 px-5 py-5">
-        {existing && uses > 0 &&
-        <InlineAlert tone="info" title={tr(uses === 1 ? 'Used on {n} order' : 'Used on {n} orders', { n: uses })}>
+        {existing && uses > 0 && (
+          <InlineAlert tone="info" title={tr(uses === 1 ? 'Used on {n} order' : 'Used on {n} orders', { n: uses })}>
             {tr('Changes apply to new orders only. Discounts with orders can be paused but not deleted, so your records stay complete.')}
           </InlineAlert>
-        }
+        )}
 
-        {kind === 'referral' &&
-        <div className="grid gap-4 sm:grid-cols-2">
+        {kind === 'referral' && (
+          <div className="grid gap-4 sm:grid-cols-2">
             <TextInput
-            id="disc-referrer"
-            label="Who shares it"
-            value={form.referrerName}
-            error={err('referrerName')}
-            placeholder={tr('e.g. Chioma Okafor')}
-            onChange={(e) => {
-              const name = e.target.value;
-              setForm((f) => ({ ...f, referrerName: name, code: existing || f.code && f.code !== suggestReferralCode(state.draft.handle, f.referrerName) ? f.code : suggestReferralCode(state.draft.handle, name) }));
-            }} />
-          
+              id="disc-referrer"
+              label="Who shares it"
+              value={form.referrerName}
+              error={err('referrerName')}
+              placeholder={tr('e.g. Chioma Okafor')}
+              onChange={(e) => {
+                const name = e.target.value;
+                setForm((f) => ({ ...f, referrerName: name, code: existing || f.code && f.code !== suggestReferralCode(state.draft.handle, f.referrerName) ? f.code : suggestReferralCode(state.draft.handle, name) }));
+              }}
+            />
             <TextInput id="disc-reward" label="Their reward" optional value={form.rewardNote} placeholder={tr('e.g. Free scarf after 5 orders')} hint="A note for you. Nothing is paid out automatically." onChange={(e) => set('rewardNote', e.target.value)} />
           </div>
-        }
+        )}
 
-        {kind !== 'automatic' &&
-        <TextInput
-          id="disc-code"
-          label="Code"
-          value={form.code}
-          error={err('code')}
-          className="font-mono uppercase"
-          placeholder="EID20"
-          hint="Not case-sensitive for customers."
-          onChange={(e) => set('code', e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, '').slice(0, 20))} />
-
-        }
+        {kind !== 'automatic' && (
+          <TextInput
+            id="disc-code"
+            label="Code"
+            value={form.code}
+            error={err('code')}
+            className="font-mono uppercase"
+            placeholder="EID20"
+            hint="Not case-sensitive for customers."
+            onChange={(e) => set('code', e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, '').slice(0, 20))}
+          />
+        )}
         <TextInput id="disc-title" label="What customers see" value={form.title} error={err('title')} placeholder={kind === 'automatic' ? withSymbol(tr('10% off orders over ₦50,000')) : tr('Eid sale — 20% off')} onChange={(e) => set('title', e.target.value)} />
 
         <fieldset className="flex flex-col gap-3">
@@ -237,11 +237,11 @@ export function DiscountEditor({ target, onClose }: DiscountEditorProps) {
             value={form.valueType}
             onChange={(v) => set('valueType', v)}
             options={[
-            { value: 'percent', label: 'Percentage' },
-            { value: 'fixed', label: 'Fixed amount' },
-            { value: 'free_delivery', label: 'Free delivery' }]
-            } />
-          
+              { value: 'percent', label: 'Percentage' },
+              { value: 'fixed', label: 'Fixed amount' },
+              { value: 'free_delivery', label: 'Free delivery' },
+            ]}
+          />
           {form.valueType === 'percent' && <TextInput id="disc-percent" label="Percentage off" type="number" inputMode="numeric" min={1} max={90} value={form.percent} error={err('percent')} fieldClassName="max-w-[180px]" onChange={(e) => set('percent', e.target.value)} />}
           {form.valueType === 'fixed' && <CurrencyInput id="disc-amount" label="Amount off" value={form.amountNgn} error={err('amountNgn')} onChange={(v) => set('amountNgn', v)} hint="Never more than the items it applies to." />}
           {form.valueType === 'free_delivery' && <p className="text-caption text-fg-muted">{tr('Removes the delivery fee. Doesn’t apply to pickup or digital orders.')}</p>}
@@ -255,31 +255,31 @@ export function DiscountEditor({ target, onClose }: DiscountEditorProps) {
             value={form.scope}
             onChange={(v) => set('scope', v)}
             options={[
-            { value: 'all', label: 'Everything' },
-            { value: 'products', label: 'Products & events' },
-            { value: 'collections', label: 'Collections' }]
-            } />
-          
-          {form.scope !== 'all' &&
-          <div>
+              { value: 'all', label: 'Everything' },
+              { value: 'products', label: 'Products & events' },
+              { value: 'collections', label: 'Collections' },
+            ]}
+          />
+          {form.scope !== 'all' && (
+            <div>
               <ul className="scroll-quiet flex max-h-56 flex-col overflow-y-auto rounded-md border border-line">
                 {(form.scope === 'products' ? products.map((p) => ({ id: p.id, name: productLabel(p) })) : data.collections.map((c) => ({ id: c.id, name: c.name }))).map((item) => {
-                const key = form.scope === 'products' ? 'productIds' : 'collectionIds';
-                const checked = form[key].includes(item.id);
-                return (
-                  <li key={item.id} className="border-b border-line last:border-0">
+                  const key = form.scope === 'products' ? 'productIds' : 'collectionIds';
+                  const checked = form[key].includes(item.id);
+                  return (
+                    <li key={item.id} className="border-b border-line last:border-0">
                       <label className="flex min-h-[44px] cursor-pointer items-center gap-3 px-3 py-2 text-label text-fg hover:bg-sunken">
                         <input type="checkbox" checked={checked} onChange={() => toggleIn(key, item.id)} className="h-4 w-4" />
                         <span className="truncate">{item.name}</span>
                       </label>
-                    </li>);
-
-              })}
+                    </li>
+                  );
+                })}
                 {(form.scope === 'products' ? products : data.collections).length === 0 && <li className="px-3 py-3 text-caption text-fg-subtle">{tr('Nothing here yet.')}</li>}
               </ul>
               {(err('productIds') || err('collectionIds')) && <p className="mt-1.5 text-caption font-medium text-danger">{tr((err('productIds') ?? err('collectionIds')) as string)}</p>}
             </div>
-          }
+          )}
           <CurrencyInput id="disc-min" label="Minimum spend" optional value={form.minSubtotalNgn} error={err('minSubtotalNgn')} onChange={(v) => set('minSubtotalNgn', v)} hint="Based on the items’ total before delivery." />
         </fieldset>
 
@@ -289,32 +289,32 @@ export function DiscountEditor({ target, onClose }: DiscountEditorProps) {
           <DateTimeInput id="disc-end" label="Ends" optional clearable value={form.endsAt} error={err('endsAt')} onChange={(v) => set('endsAt', v)} hint="Empty = no end" />
         </fieldset>
 
-        {kind !== 'automatic' &&
-        <fieldset className="grid gap-4 sm:grid-cols-2">
+        {kind !== 'automatic' && (
+          <fieldset className="grid gap-4 sm:grid-cols-2">
             <legend className="mb-2 text-label font-medium text-fg">{tr('Limits')}</legend>
             <TextInput id="disc-limit" label="Total uses" optional type="number" inputMode="numeric" min={1} value={form.usageLimit} placeholder={tr('No limit')} onChange={(e) => set('usageLimit', e.target.value)} />
             <TextInput id="disc-per" label="Uses per customer" optional type="number" inputMode="numeric" min={1} value={form.perCustomerLimit} placeholder={tr('No limit')} hint="Matched by phone number." onChange={(e) => set('perCustomerLimit', e.target.value)} />
           </fieldset>
-        }
+        )}
 
         <Switch id="disc-active" label="Active" description={form.active ? 'Can be used within its dates and limits.' : 'Paused — no one can use it until you turn it back on.'} checked={form.active} onChange={(v) => set('active', v)} />
 
         <p className={cn('rounded-md bg-sunken px-3.5 py-3 text-caption text-fg-muted')}>
           <span className="font-semibold text-fg">{tr('Summary:')} </span>
-          {form.valueType === 'percent' ?
-          tr('{v} off', { v: `${Number(form.percent) || 0}%` }) :
-          form.valueType === 'fixed' ?
-          tr('{v} off', { v: formatNgn(form.amountNgn ?? 0) }) :
-          tr('Free delivery')}{' '}
-          {form.scope === 'all' ?
-          tr('on everything') :
-          form.scope === 'products' ?
-          tr(form.productIds.length === 1 ? 'on {n} product' : 'on {n} products', { n: form.productIds.length }) :
-          tr(form.collectionIds.length === 1 ? 'on {n} collection' : 'on {n} collections', { n: form.collectionIds.length })}
+          {form.valueType === 'percent'
+            ? tr('{v} off', { v: `${Number(form.percent) || 0}%` })
+            : form.valueType === 'fixed'
+              ? tr('{v} off', { v: formatNgn(form.amountNgn ?? 0) })
+              : tr('Free delivery')}{' '}
+          {form.scope === 'all'
+            ? tr('on everything')
+            : form.scope === 'products'
+              ? tr(form.productIds.length === 1 ? 'on {n} product' : 'on {n} products', { n: form.productIds.length })
+              : tr(form.collectionIds.length === 1 ? 'on {n} collection' : 'on {n} collections', { n: form.collectionIds.length })}
           {form.minSubtotalNgn ? ` ${tr('when the items come to {amount} or more', { amount: formatNgn(form.minSubtotalNgn) })}` : ''}.{' '}
           {tr('One discount per order — if another applies, the customer gets whichever saves them more.')}
         </p>
       </div>
-    </Sheet>);
-
+    </Sheet>
+  );
 }

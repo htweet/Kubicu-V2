@@ -6,15 +6,15 @@ import { Button } from '../components/ui/Button';
 import { PlatformLook } from '../components/marketing/PlatformLook';
 import { KubicuLogo } from '../components/shell/KubicuLogo';
 
-export function NotFound({ embedded }: {embedded?: boolean;}) {
+export function NotFound({ embedded }: { embedded?: boolean }) {
   const navigate = useNavigate();
-  const body =
-  <EmptyState
-    icon={CompassIcon}
-    title="We couldn’t find that"
-    description="The link may be mistyped, or the page may have moved or ended."
-    action={
-    <div className="flex flex-wrap justify-center gap-2">
+  const body = (
+    <EmptyState
+      icon={CompassIcon}
+      title="We couldn’t find that"
+      description="The link may be mistyped, or the page may have moved or ended."
+      action={
+        <div className="flex flex-wrap justify-center gap-2">
           <Button variant={embedded ? 'primary' : 'brand'} onClick={() => navigate('/')}>
             KUBICU home
           </Button>
@@ -22,9 +22,9 @@ export function NotFound({ embedded }: {embedded?: boolean;}) {
             Go to your workspace
           </Button>
         </div>
-    } />;
-
-
+      }
+    />
+  );
   if (embedded) return <div className="py-16">{body}</div>;
   return (
     <PlatformLook night>
@@ -39,6 +39,6 @@ export function NotFound({ embedded }: {embedded?: boolean;}) {
           </div>
         </main>
       </div>
-    </PlatformLook>);
-
+    </PlatformLook>
+  );
 }

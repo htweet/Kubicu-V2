@@ -15,12 +15,12 @@ export interface AutoFlagRule {
 }
 
 export const autoFlagRules: AutoFlagRule[] = [
-{ id: 'returns', label: 'Promises guaranteed returns', why: 'Ponzi and “double your money” schemes promise fixed or guaranteed profit.', reason: 'scam', pattern: /(double your money|guaranteed (returns?|profit|income)|\b\d{2,3}% (returns?|profit|roi)\b|invest .{0,30}(get|earn) .{0,20}(weekly|daily))/i },
-{ id: 'credentials', label: 'Asks for PINs, BVN or codes', why: 'No genuine seller needs a buyer’s card PIN, OTP or BVN to sell to them.', reason: 'scam', pattern: /(send|share|give|drop|enter).{0,30}\b(bvn|atm pin|card pin|otp|one[- ]time (code|pin)|token)\b/i },
-{ id: 'counterfeit', label: 'Words used for copies of brands', why: '“First copy”, “master copy” and “replica” usually mean counterfeit branded goods.', reason: 'counterfeit', pattern: /\b(replica|first copy|master copy|mirror copy|aaa quality|1:1 copy|class a)\b/i },
-{ id: 'too_cheap', label: 'Big-brand electronics at very low prices', why: 'New phones and consoles far below market price are a common bait in transfer scams.', reason: 'scam', pattern: /(iphone ?1[4-9]|ps5|playstation 5|macbook|galaxy s2\d).{0,60}(₦|n|ngn)\s?([1-9]\d{1,2}),?\d{3}(?!,\d{3})/i },
-{ id: 'pressure', label: 'Pay-first pressure off the page', why: 'Pushing buyers to pay into a personal account or chat before delivery removes their protection.', reason: 'scam', pattern: /(pay|transfer|send money).{0,40}(personal account|my account|before (delivery|we deliver|i send)).{0,40}|(no pay on delivery).{0,30}(transfer|pay first)/i }];
-
+  { id: 'returns', label: 'Promises guaranteed returns', why: 'Ponzi and “double your money” schemes promise fixed or guaranteed profit.', reason: 'scam', pattern: /(double your money|guaranteed (returns?|profit|income)|\b\d{2,3}% (returns?|profit|roi)\b|invest .{0,30}(get|earn) .{0,20}(weekly|daily))/i },
+  { id: 'credentials', label: 'Asks for PINs, BVN or codes', why: 'No genuine seller needs a buyer’s card PIN, OTP or BVN to sell to them.', reason: 'scam', pattern: /(send|share|give|drop|enter).{0,30}\b(bvn|atm pin|card pin|otp|one[- ]time (code|pin)|token)\b/i },
+  { id: 'counterfeit', label: 'Words used for copies of brands', why: '“First copy”, “master copy” and “replica” usually mean counterfeit branded goods.', reason: 'counterfeit', pattern: /\b(replica|first copy|master copy|mirror copy|aaa quality|1:1 copy|class a)\b/i },
+  { id: 'too_cheap', label: 'Big-brand electronics at very low prices', why: 'New phones and consoles far below market price are a common bait in transfer scams.', reason: 'scam', pattern: /(iphone ?1[4-9]|ps5|playstation 5|macbook|galaxy s2\d).{0,60}(₦|n|ngn)\s?([1-9]\d{1,2}),?\d{3}(?!,\d{3})/i },
+  { id: 'pressure', label: 'Pay-first pressure off the page', why: 'Pushing buyers to pay into a personal account or chat before delivery removes their protection.', reason: 'scam', pattern: /(pay|transfer|send money).{0,40}(personal account|my account|before (delivery|we deliver|i send)).{0,40}|(no pay on delivery).{0,30}(transfer|pay first)/i },
+];
 
 export interface AutoFlag {
   key: string;
@@ -35,9 +35,9 @@ export interface AutoFlag {
 function textOf(value: unknown): string {
   const out: string[] = [];
   const walk = (v: unknown) => {
-    if (typeof v === 'string') out.push(v);else
-    if (Array.isArray(v)) v.forEach(walk);else
-    if (v && typeof v === 'object') Object.entries(v as Record<string, unknown>).forEach(([k, x]) => k !== 'id' && !k.endsWith('Url') && walk(x));
+    if (typeof v === 'string') out.push(v);
+    else if (Array.isArray(v)) v.forEach(walk);
+    else if (v && typeof v === 'object') Object.entries(v as Record<string, unknown>).forEach(([k, x]) => k !== 'id' && !k.endsWith('Url') && walk(x));
   };
   walk(value);
   return out.join(' \n ');
@@ -57,7 +57,7 @@ const sampleFlag: AutoFlag = {
   workspaceName: 'Not on this device (sample)',
   rule: autoFlagRules.find((r) => r.id === 'too_cheap')!,
   snippet: '…Brand new iPhone 15 Pro Max ₦185,000 only. Transfer first, delivery same day…',
-  sample: true
+  sample: true,
 };
 
 /** Scans every live page on this device. Only the published version is checked. */

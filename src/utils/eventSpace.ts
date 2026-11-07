@@ -18,7 +18,7 @@ export const eventPhaseLabels: Record<CampaignPhase, string> = { before: 'Before
 export const eventPhaseDescriptions: Record<CampaignPhase, string> = {
   before: 'Before it starts — tickets, agenda and how to get there.',
   live: 'While it’s on — doors, directions and live updates up top.',
-  ended: 'After it ends — thank-you, recap and the next one.'
+  ended: 'After it ends — thank-you, recap and the next one.',
 };
 
 const toPhase = { upcoming: 'before', live: 'live', past: 'ended' } as const;
@@ -60,8 +60,8 @@ export function eventSpaceTotals(data: CommerceData, ev: CommerceEvent) {
 }
 
 /** Which event each Event space in this workspace points at (draft first, then live). */
-export function eventSpaceLinks(w: Workspace): {spaceId: string;spaceName: string;handle: string;eventId: string;}[] {
-  const out: {spaceId: string;spaceName: string;handle: string;eventId: string;}[] = [];
+export function eventSpaceLinks(w: Workspace): { spaceId: string; spaceName: string; handle: string; eventId: string }[] {
+  const out: { spaceId: string; spaceName: string; handle: string; eventId: string }[] = [];
   for (const s of activeExtraSpaces(w)) {
     if (s.kind !== 'event') continue;
     const page = readSpacePage(w.id, s.id);
@@ -73,7 +73,7 @@ export function eventSpaceLinks(w: Workspace): {spaceId: string;spaceName: strin
 }
 
 /** Pre-publish checks for an Event space. */
-export function eventSpaceIssues(s: EventSpaceSettings, blocks: Block[], data: CommerceData | null, others: {eventId: string;spaceName: string;}[] = [], now = Date.now()): ValidationIssue[] {
+export function eventSpaceIssues(s: EventSpaceSettings, blocks: Block[], data: CommerceData | null, others: { eventId: string; spaceName: string }[] = [], now = Date.now()): ValidationIssue[] {
   const out: ValidationIssue[] = [];
   const push = (id: string, severity: ValidationIssue['severity'], message: string) => out.push({ id: `eventspace:${id}`, blockId: null, severity, message });
   const ev = findEvent(data, s.eventId);
@@ -89,7 +89,7 @@ export function eventSpaceIssues(s: EventSpaceSettings, blocks: Block[], data: C
   if (display === 'cancelled') push('cancelled', 'warning', `“${ev.name}” was cancelled. The page will say so above your blocks.`);
   phaseOrder.forEach((phase) => {
     if (!blocks.some((b) => !b.visibility.hidden && blockInPhase(b, phase)))
-    push(`empty-${phase}`, phase === 'before' ? 'error' : 'warning', `Nothing shows in the ${eventPhaseLabels[phase]} phase yet.`);
+      push(`empty-${phase}`, phase === 'before' ? 'error' : 'warning', `Nothing shows in the ${eventPhaseLabels[phase]} phase yet.`);
   });
   return out;
 }

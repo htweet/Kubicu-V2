@@ -59,7 +59,7 @@ export const initialOnboarding: OnboardingState = {
   actionValue: '',
   actionLabel: '',
   workspaceId: null,
-  published: false
+  published: false,
 };
 
 export function readOnboarding(): OnboardingState | null {
@@ -76,17 +76,17 @@ export function writeOnboarding(state: OnboardingState): void {
   try {
     window.localStorage.setItem(ONBOARDING_KEY, JSON.stringify(state));
   } catch {
-
     // Storage unavailable — progress lasts for this visit only.
-  }}
+  }
+}
 
 export function clearOnboarding(): void {
   try {
     window.localStorage.removeItem(ONBOARDING_KEY);
   } catch {
-
     // Nothing to clear.
-  }}
+  }
+}
 
 /** Unfinished onboarding that should show "Finish setting up". */
 export function hasUnfinishedOnboarding(): boolean {

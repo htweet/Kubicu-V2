@@ -51,7 +51,7 @@ export function TopUpDialog({ open, onClose, update, businessName, workspaceId, 
       title={tr('Top up your wallet')}
       description={tr('Transfer from any Nigerian bank app to this account. It lands in your wallet within minutes.')}
       footer={
-      <>
+        <>
           <Button variant="secondary" onClick={onClose}>
             {tr('Cancel')}
           </Button>
@@ -59,8 +59,8 @@ export function TopUpDialog({ open, onClose, update, businessName, workspaceId, 
             {tr('I’ve sent it (simulate)')}
           </Button>
         </>
-      }>
-      
+      }
+    >
       <div className="flex flex-col gap-4">
         <dl className="grid grid-cols-[auto_1fr_auto] items-center gap-x-4 gap-y-2 rounded-md bg-sunken px-4 py-3 text-label">
           <dt className="text-fg-muted">{tr('Bank')}</dt>
@@ -77,12 +77,12 @@ export function TopUpDialog({ open, onClose, update, businessName, workspaceId, 
         </dl>
         <TextInput id="topup-amount" label={tr('Amount you’re sending')} prefix={currencySymbol()} inputMode="numeric" value={amount} onChange={(e) => setAmount(e.target.value.replace(/\D/g, ''))} fieldClassName="w-full" />
       </div>
-    </Dialog>);
-
+    </Dialog>
+  );
 }
 
 function hash(s: string) {
   let h = 0;
-  for (let i = 0; i < s.length; i++) h = h * 31 + s.charCodeAt(i) | 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
   return h;
 }

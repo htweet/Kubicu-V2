@@ -15,16 +15,16 @@ import {
   ThumbsUpIcon,
   UsersRoundIcon,
   VoteIcon,
-  WandSparklesIcon } from
-'lucide-react';
+  WandSparklesIcon,
+} from 'lucide-react';
 import type { BlockDefinition } from './blockRegistry';
 import { uid } from '../utils/id';
 
 /** Round 2 of the expanded block library (D170): media, commerce, audience and rule-based smart blocks. */
 export type Round2BlockType =
-'carousel' | 'brandHeader' | 'linkCollection' | 'qrCode' | 'document' | 'embed' | 'shopCategories' | 'checkoutButton' |
-'poll' | 'community' | 'reviewSummary' | 'languageSwitch' | 'smartButton' | 'campaignSpotlight' | 'recommendations' | 'backToTop' |
-'faqAssistant';
+  | 'carousel' | 'brandHeader' | 'linkCollection' | 'qrCode' | 'document' | 'embed' | 'shopCategories' | 'checkoutButton'
+  | 'poll' | 'community' | 'reviewSummary' | 'languageSwitch' | 'smartButton' | 'campaignSpotlight' | 'recommendations' | 'backToTop'
+  | 'faqAssistant';
 
 const base = { supportsEmphasis: false, defaultAlign: 'left' as const };
 
@@ -39,7 +39,7 @@ export const round2BlockDefinitions: { [K in Round2BlockType]: BlockDefinition<K
     keywords: ['carousel', 'slider', 'slideshow', 'slides', 'swipe'],
     clickable: true,
     minPlan: 'creator',
-    defaults: () => ({ title: '', aspect: 'wide', slides: [{ id: uid('sl'), imageUrl: '', imageAlt: '', title: 'First slide', text: '', url: '' }] })
+    defaults: () => ({ title: '', aspect: 'wide', slides: [{ id: uid('sl'), imageUrl: '', imageAlt: '', title: 'First slide', text: '', url: '' }] }),
   },
   brandHeader: {
     ...base,
@@ -51,7 +51,7 @@ export const round2BlockDefinitions: { [K in Round2BlockType]: BlockDefinition<K
     keywords: ['brand', 'logo', 'business', 'header', 'company', 'name'],
     clickable: true,
     defaultAlign: 'center',
-    defaults: () => ({ logoUrl: '', logoAlt: '', name: '', tagline: '', ctaLabel: '', url: '', align: 'center' })
+    defaults: () => ({ logoUrl: '', logoAlt: '', name: '', tagline: '', ctaLabel: '', url: '', align: 'center' }),
   },
   linkCollection: {
     ...base,
@@ -62,7 +62,7 @@ export const round2BlockDefinitions: { [K in Round2BlockType]: BlockDefinition<K
     icon: ListTreeIcon,
     keywords: ['links', 'link list', 'groups', 'categories', 'directory', 'resources'],
     clickable: true,
-    defaults: () => ({ title: '', layout: 'list', groups: [{ id: uid('lgp'), name: 'Favourites', links: [{ id: uid('cl'), label: 'Your first link', url: '', description: '' }] }] })
+    defaults: () => ({ title: '', layout: 'list', groups: [{ id: uid('lgp'), name: 'Favourites', links: [{ id: uid('cl'), label: 'Your first link', url: '', description: '' }] }] }),
   },
   qrCode: {
     ...base,
@@ -74,7 +74,7 @@ export const round2BlockDefinitions: { [K in Round2BlockType]: BlockDefinition<K
     keywords: ['qr', 'qr code', 'scan', 'offline', 'print'],
     clickable: false,
     defaultAlign: 'center',
-    defaults: () => ({ target: 'page', url: '', caption: 'Scan to open on your phone', size: 'md' })
+    defaults: () => ({ target: 'page', url: '', caption: 'Scan to open on your phone', size: 'md' }),
   },
   document: {
     ...base,
@@ -85,7 +85,7 @@ export const round2BlockDefinitions: { [K in Round2BlockType]: BlockDefinition<K
     icon: FileTextIcon,
     keywords: ['document', 'pdf', 'brochure', 'menu pdf', 'deck', 'presentation', 'portfolio pdf'],
     clickable: true,
-    defaults: () => ({ title: '', description: '', url: '', coverUrl: '', coverAlt: '', fileType: 'PDF', pages: '' })
+    defaults: () => ({ title: '', description: '', url: '', coverUrl: '', coverAlt: '', fileType: 'PDF', pages: '' }),
   },
   embed: {
     ...base,
@@ -96,7 +96,7 @@ export const round2BlockDefinitions: { [K in Round2BlockType]: BlockDefinition<K
     icon: CodeXmlIcon,
     keywords: ['embed', 'iframe', 'spotify', 'soundcloud', 'calendly', 'google maps', 'widget'],
     clickable: false,
-    defaults: () => ({ url: '', title: '', caption: '' })
+    defaults: () => ({ url: '', title: '', caption: '' }),
   },
   shopCategories: {
     ...base,
@@ -107,7 +107,7 @@ export const round2BlockDefinitions: { [K in Round2BlockType]: BlockDefinition<K
     icon: TagsIcon,
     keywords: ['categories', 'collections', 'shop', 'browse', 'departments'],
     clickable: true,
-    defaults: () => ({ title: 'Shop by category', collectionIds: [], layout: 'cards' })
+    defaults: () => ({ title: 'Shop by category', collectionIds: [], layout: 'cards' }),
   },
   checkoutButton: {
     ...base,
@@ -118,7 +118,7 @@ export const round2BlockDefinitions: { [K in Round2BlockType]: BlockDefinition<K
     icon: CreditCardIcon,
     keywords: ['buy', 'buy now', 'pay', 'checkout', 'payment link', 'order'],
     clickable: true,
-    defaults: () => ({ mode: 'checkout', productId: null, url: '', label: 'Buy now', note: '' })
+    defaults: () => ({ mode: 'checkout', productId: null, url: '', label: 'Buy now', note: '' }),
   },
   poll: {
     ...base,
@@ -129,7 +129,7 @@ export const round2BlockDefinitions: { [K in Round2BlockType]: BlockDefinition<K
     icon: VoteIcon,
     keywords: ['poll', 'vote', 'survey', 'feedback', 'question', 'opinion'],
     clickable: true,
-    defaults: () => ({ question: 'What should we make next?', options: [{ id: uid('po'), label: 'Option A' }, { id: uid('po'), label: 'Option B' }], showResults: 'after' })
+    defaults: () => ({ question: 'What should we make next?', options: [{ id: uid('po'), label: 'Option A' }, { id: uid('po'), label: 'Option B' }], showResults: 'after' }),
   },
   community: {
     ...base,
@@ -140,7 +140,7 @@ export const round2BlockDefinitions: { [K in Round2BlockType]: BlockDefinition<K
     icon: UsersRoundIcon,
     keywords: ['community', 'group', 'join', 'whatsapp group', 'telegram', 'discord', 'members', 'club'],
     clickable: true,
-    defaults: () => ({ platform: 'whatsapp', name: '', description: '', url: '', ctaLabel: 'Join the group', rules: '' })
+    defaults: () => ({ platform: 'whatsapp', name: '', description: '', url: '', ctaLabel: 'Join the group', rules: '' }),
   },
   reviewSummary: {
     ...base,
@@ -152,7 +152,7 @@ export const round2BlockDefinitions: { [K in Round2BlockType]: BlockDefinition<K
     keywords: ['reviews', 'rating', 'stars', 'testimonials', 'verified'],
     clickable: false,
     requiresApp: 'proof',
-    defaults: () => ({ title: 'What customers say', limit: 3 })
+    defaults: () => ({ title: 'What customers say', limit: 3 }),
   },
   languageSwitch: {
     ...base,
@@ -163,7 +163,7 @@ export const round2BlockDefinitions: { [K in Round2BlockType]: BlockDefinition<K
     icon: LanguagesIcon,
     keywords: ['language', 'translate', 'pidgin', 'yoruba', 'hausa', 'igbo', 'locale'],
     clickable: true,
-    defaults: () => ({ label: 'Language' })
+    defaults: () => ({ label: 'Language' }),
   },
   smartButton: {
     ...base,
@@ -175,7 +175,7 @@ export const round2BlockDefinitions: { [K in Round2BlockType]: BlockDefinition<K
     keywords: ['smart', 'dynamic', 'personalised', 'intentflow', 'source', 'adaptive button'],
     clickable: true,
     minPlan: 'creator',
-    defaults: () => ({ label: 'Get in touch', url: '', rules: [] })
+    defaults: () => ({ label: 'Get in touch', url: '', rules: [] }),
   },
   campaignSpotlight: {
     ...base,
@@ -187,7 +187,7 @@ export const round2BlockDefinitions: { [K in Round2BlockType]: BlockDefinition<K
     keywords: ['campaign', 'promo', 'sale', 'launch', 'limited time', 'offer', 'spotlight'],
     clickable: true,
     minPlan: 'creator',
-    defaults: () => ({ title: 'Launch week', text: '', ctaLabel: 'See the offer', url: '', imageUrl: '', imageAlt: '', startsAt: null, endsAt: null, afterText: '' })
+    defaults: () => ({ title: 'Launch week', text: '', ctaLabel: 'See the offer', url: '', imageUrl: '', imageAlt: '', startsAt: null, endsAt: null, afterText: '' }),
   },
   recommendations: {
     ...base,
@@ -198,7 +198,7 @@ export const round2BlockDefinitions: { [K in Round2BlockType]: BlockDefinition<K
     icon: ThumbsUpIcon,
     keywords: ['recommendations', 'picks', 'favourites', 'start here', 'guide', 'my setup'],
     clickable: true,
-    defaults: () => ({ title: 'Start here', intro: '', items: [{ id: uid('rec'), title: '', text: '', url: '', imageUrl: '', imageAlt: '', reason: '' }] })
+    defaults: () => ({ title: 'Start here', intro: '', items: [{ id: uid('rec'), title: '', text: '', url: '', imageUrl: '', imageAlt: '', reason: '' }] }),
   },
   backToTop: {
     ...base,
@@ -210,7 +210,7 @@ export const round2BlockDefinitions: { [K in Round2BlockType]: BlockDefinition<K
     keywords: ['back to top', 'scroll up', 'top of page'],
     clickable: true,
     defaultAlign: 'center',
-    defaults: () => ({ label: 'Back to top' })
+    defaults: () => ({ label: 'Back to top' }),
   },
   // Built in D342 (was Planned): matching is rule-based, answers are always the owner's own words.
   faqAssistant: {
@@ -227,11 +227,12 @@ export const round2BlockDefinitions: { [K in Round2BlockType]: BlockDefinition<K
       intro: '',
       facts: [{ id: uid('fact'), question: '', answer: '' }],
       fallbackLabel: 'Message us',
-      fallbackUrl: ''
-    })
-  }
+      fallbackUrl: '',
+    }),
+  },
 };
 
 export const round2BlockOrder: Round2BlockType[] = [
-'brandHeader', 'carousel', 'linkCollection', 'qrCode', 'document', 'embed', 'shopCategories', 'checkoutButton',
-'poll', 'community', 'reviewSummary', 'languageSwitch', 'smartButton', 'campaignSpotlight', 'recommendations', 'faqAssistant', 'backToTop'];
+  'brandHeader', 'carousel', 'linkCollection', 'qrCode', 'document', 'embed', 'shopCategories', 'checkoutButton',
+  'poll', 'community', 'reviewSummary', 'languageSwitch', 'smartButton', 'campaignSpotlight', 'recommendations', 'faqAssistant', 'backToTop',
+];

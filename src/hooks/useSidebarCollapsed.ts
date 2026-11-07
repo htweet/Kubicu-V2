@@ -17,9 +17,9 @@ export function useSidebarCollapsed() {
     try {
       window.localStorage.setItem(KEY, collapsed ? '1' : '0');
     } catch {
-
       // Storage unavailable — the choice lasts for this visit.
-    }}, [collapsed]);
+    }
+  }, [collapsed]);
 
   const toggle = useCallback(() => setCollapsed((c) => !c), []);
   return { collapsed, toggle };

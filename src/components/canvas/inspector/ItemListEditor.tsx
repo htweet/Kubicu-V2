@@ -5,7 +5,7 @@ import { Button } from '../../ui/Button';
 import { IconButton } from '../../ui/IconButton';
 import { cn } from '../../../utils/cn';
 
-interface ItemListEditorProps<T extends {id: string;}> {
+interface ItemListEditorProps<T extends { id: string }> {
   /** English; translated here (D297). */
   legend: string;
   items: T[];
@@ -27,7 +27,7 @@ interface ItemListEditorProps<T extends {id: string;}> {
 }
 
 /** Ordered list of sub-items (products, packages, photos…). One row open at a time keeps the inspector short. */
-export function ItemListEditor<T extends {id: string;}>({
+export function ItemListEditor<T extends { id: string }>({
   legend,
   items,
   onChange,
@@ -40,12 +40,12 @@ export function ItemListEditor<T extends {id: string;}>({
   max = 12,
   min = 0,
   error,
-  hint
+  hint,
 }: ItemListEditorProps<T>) {
   const { t: tr } = useT();
   const [openId, setOpenId] = useState<string | null>(items[0]?.id ?? null);
   const update = (id: string) => (patch: Partial<T>, field: string) =>
-  onChange(items.map((i) => i.id === id ? { ...i, ...patch } : i), `${id}:${field}`);
+    onChange(items.map((i) => (i.id === id ? { ...i, ...patch } : i)), `${id}:${field}`);
   const move = (index: number, dir: -1 | 1) => {
     const next = [...items];
     [next[index], next[index + dir]] = [next[index + dir], next[index]];
@@ -75,8 +75,8 @@ export function ItemListEditor<T extends {id: string;}>({
                   type="button"
                   aria-expanded={open}
                   onClick={() => setOpenId(open ? null : item.id)}
-                  className="flex min-h-[40px] min-w-0 flex-1 items-center gap-2 rounded-sm px-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-                  
+                  className="flex min-h-[40px] min-w-0 flex-1 items-center gap-2 rounded-sm px-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+                >
                   <ChevronDownIcon size={14} className={cn('shrink-0 text-fg-subtle transition-transform duration-150', !open && '-rotate-90')} aria-hidden />
                   <span className="min-w-0">
                     <span className="block truncate text-label text-fg">{title(item, i) || label}</span>
@@ -90,12 +90,12 @@ export function ItemListEditor<T extends {id: string;}>({
                   label={tr('Remove {item}', { item: label })}
                   size="sm"
                   disabled={items.length <= min}
-                  onClick={() => onChange(items.filter((x) => x.id !== item.id), 'remove')} />
-                
+                  onClick={() => onChange(items.filter((x) => x.id !== item.id), 'remove')}
+                />
               </div>
               {open && <div className="flex flex-col gap-3 border-t border-line p-3">{render(item, update(item.id))}</div>}
-            </li>);
-
+            </li>
+          );
         })}
       </ul>
       <Button
@@ -108,10 +108,10 @@ export function ItemListEditor<T extends {id: string;}>({
           const next = create();
           onChange([...items, next], 'add');
           setOpenId(next.id);
-        }}>
-        
+        }}
+      >
         {items.length >= max ? tr('Limit of {n} reached', { n: max }) : tr(addLabel)}
       </Button>
-    </fieldset>);
-
+    </fieldset>
+  );
 }

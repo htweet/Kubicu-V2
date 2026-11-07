@@ -27,28 +27,28 @@ const kindPhrases: Record<string, string> = {
   'an online shop': 'An online shop',
   'a service and booking page': 'A service and booking page',
   'an event page': 'An event page',
-  'a page': 'A page'
+  'a page': 'A page',
 };
 
 const patterns: Pattern[] = [
-{ re: /^Lovely — “(.+)”\.$/, key: 'Lovely — “{name}”.', vars: (m) => ({ name: m[1] }) },
-{ re: /^Got (\d+) photos?\.$/, key: 'Photos received: {n}.', vars: (m) => ({ n: m[1] }) },
-{ re: /^Your first photo is the big picture at the top, and the other (\d+) go in a photo gallery\.$/, key: 'Your first photo is the big picture at the top. The rest go in a photo gallery: {n}.', vars: (m) => ({ n: m[1] }) },
-{ re: /^I could only keep (\d+) photos, so the last (\d+) weren’t added — you can add more later in KUBICU\.$/, key: 'I can keep {max} photos at most. Photos not added: {n} — you can add more later in KUBICU.', vars: (m) => ({ max: m[1], n: m[2] }) },
-{ re: /^You can send (\d+) more photos? of your work, products, space or you\.$/, key: 'More photos you can send: {n} — of your work, products, space or you.', vars: (m) => ({ n: m[1] }) },
-{ re: /^You already have (\d+) photos, the most I can use here — you can add more in KUBICU after you continue\.$/, key: 'You already have the most photos I can use here ({n}) — you can add more in KUBICU after you continue.', vars: (m) => ({ n: m[1] }) },
-{ re: /^Got (\d+) items?\.$/, key: 'Items received: {n}.', vars: (m) => ({ n: m[1] }) },
-{ re: /^Got (\d+) items? — (\d+) without a price will stay marked to fill in\.$/, key: 'Items received: {n}. Without a price, marked for you to fill in: {u}.', vars: (m) => ({ n: m[1], u: m[2] }) },
-{
-  re: /^I’ll use (.+) — it suits (.+)\.$/,
-  key: 'I’ll use {look} — it suits {kind}.',
-  vars: (m, t) => ({ look: t(m[1]), kind: kindPhrases[m[2]] ? t(kindPhrases[m[2]]).toLowerCase() : m[2] })
-},
-{ re: /^Your draft is ready, (.+)\.$/, key: 'Your draft is ready, {name}.', vars: (m) => ({ name: m[1] }) },
-{ re: /^(\d+) details? still needs? filling in before you publish\.$/, key: 'Details still to fill in before you publish: {n}.', vars: (m) => ({ n: m[1] }) },
-{ re: /^Sent (\d+) photos?$/, key: 'Photos sent: {n}', vars: (m) => ({ n: m[1] }) },
-{ re: /^Items: (\d+) on the list$/, key: 'Items on the list: {n}', vars: (m) => ({ n: m[1] }) }];
-
+  { re: /^Lovely — “(.+)”\.$/, key: 'Lovely — “{name}”.', vars: (m) => ({ name: m[1] }) },
+  { re: /^Got (\d+) photos?\.$/, key: 'Photos received: {n}.', vars: (m) => ({ n: m[1] }) },
+  { re: /^Your first photo is the big picture at the top, and the other (\d+) go in a photo gallery\.$/, key: 'Your first photo is the big picture at the top. The rest go in a photo gallery: {n}.', vars: (m) => ({ n: m[1] }) },
+  { re: /^I could only keep (\d+) photos, so the last (\d+) weren’t added — you can add more later in KUBICU\.$/, key: 'I can keep {max} photos at most. Photos not added: {n} — you can add more later in KUBICU.', vars: (m) => ({ max: m[1], n: m[2] }) },
+  { re: /^You can send (\d+) more photos? of your work, products, space or you\.$/, key: 'More photos you can send: {n} — of your work, products, space or you.', vars: (m) => ({ n: m[1] }) },
+  { re: /^You already have (\d+) photos, the most I can use here — you can add more in KUBICU after you continue\.$/, key: 'You already have the most photos I can use here ({n}) — you can add more in KUBICU after you continue.', vars: (m) => ({ n: m[1] }) },
+  { re: /^Got (\d+) items?\.$/, key: 'Items received: {n}.', vars: (m) => ({ n: m[1] }) },
+  { re: /^Got (\d+) items? — (\d+) without a price will stay marked to fill in\.$/, key: 'Items received: {n}. Without a price, marked for you to fill in: {u}.', vars: (m) => ({ n: m[1], u: m[2] }) },
+  {
+    re: /^I’ll use (.+) — it suits (.+)\.$/,
+    key: 'I’ll use {look} — it suits {kind}.',
+    vars: (m, t) => ({ look: t(m[1]), kind: kindPhrases[m[2]] ? t(kindPhrases[m[2]]).toLowerCase() : m[2] }),
+  },
+  { re: /^Your draft is ready, (.+)\.$/, key: 'Your draft is ready, {name}.', vars: (m) => ({ name: m[1] }) },
+  { re: /^(\d+) details? still needs? filling in before you publish\.$/, key: 'Details still to fill in before you publish: {n}.', vars: (m) => ({ n: m[1] }) },
+  { re: /^Sent (\d+) photos?$/, key: 'Photos sent: {n}', vars: (m) => ({ n: m[1] }) },
+  { re: /^Items: (\d+) on the list$/, key: 'Items on the list: {n}', vars: (m) => ({ n: m[1] }) },
+];
 
 const hasDraft = (t: Translate, key: string) => t(key) !== key;
 
@@ -96,15 +96,15 @@ export function translateCopilotText(text: string, t: Translate, lang: string): 
   if (lang === 'en') return text;
   const whole = t(text);
   if (whole !== text) return whole;
-  return text.
-  split('\n\n').
-  map((para) => {
-    const p = t(para);
-    if (p !== para) return p;
-    return para.
-    split('\n').
-    map((l) => line(l, t)).
-    join('\n');
-  }).
-  join('\n\n');
+  return text
+    .split('\n\n')
+    .map((para) => {
+      const p = t(para);
+      if (p !== para) return p;
+      return para
+        .split('\n')
+        .map((l) => line(l, t))
+        .join('\n');
+    })
+    .join('\n\n');
 }

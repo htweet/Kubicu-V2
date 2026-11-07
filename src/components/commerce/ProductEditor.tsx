@@ -71,7 +71,7 @@ export function blankProduct(kind: ProductKind, lowStockAt = 2): Product {
     lowStockAt,
     weightKg: null,
     createdAt: now,
-    updatedAt: now
+    updatedAt: now,
   };
   if (kind === 'digital') {
     base.digital = { fileName: '', sizeBytes: 0, status: 'processing', version: 0, versions: [], downloadLimit: 3, expiryDays: 30, licence: '' };
@@ -95,7 +95,7 @@ export function ProductEditor({ open, productId, kind, onClose }: ProductEditorP
   const [section, setSection] = useState<'details' | 'photos' | 'stock' | 'partner' | 'collections'>('details');
   const partnerStore = useLocalStore(partnershipKey(current.id), emptyPartnerships);
   const partnerships = partnerStore.data.partnerships;
-  const toggle = (s: typeof section) => setSection((cur) => cur === s ? cur : s);
+  const toggle = (s: typeof section) => setSection((cur) => (cur === s ? cur : s));
 
   useEffect(() => {
     if (!open) return;
@@ -131,7 +131,7 @@ export function ProductEditor({ open, productId, kind, onClose }: ProductEditorP
       setSection('stock');
       return;
     }
-    if (bulkIssues(draft) || draft.preorder && !draft.preorder.shipsBy) {
+    if (bulkIssues(draft) || (draft.preorder && !draft.preorder.shipsBy)) {
       setSection('stock');
       return;
     }
@@ -148,7 +148,7 @@ export function ProductEditor({ open, productId, kind, onClose }: ProductEditorP
     }
   };
 
-  const requestClose = () => dirty ? setConfirmClose(true) : onClose();
+  const requestClose = () => (dirty ? setConfirmClose(true) : onClose());
 
   const archive = () => {
     if (!existing) return;
@@ -183,30 +183,30 @@ export function ProductEditor({ open, productId, kind, onClose }: ProductEditorP
         title={title}
         description={dirty ? 'Unsaved changes' : existing ? 'All changes saved' : undefined}
         footer={
-        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex gap-1">
-              {existing &&
-            <Button variant="tertiary" size="sm" leadingIcon={existing.status === 'archived' ? RotateCcwIcon : ArchiveIcon} onClick={archive}>
+              {existing && (
+                <Button variant="tertiary" size="sm" leadingIcon={existing.status === 'archived' ? RotateCcwIcon : ArchiveIcon} onClick={archive}>
                   {existing.status === 'archived' ? 'Restore' : 'Archive'}
                 </Button>
-            }
-              {existing &&
-            <Button
-              variant="tertiary"
-              size="sm"
-              leadingIcon={QrCodeIcon}
-              disabled={!productQr}
-              title={tr(productQr ? 'A printable code that opens this product in your shop' : existing.status !== 'active' ? 'Make the product active first.' : 'Turn on the storefront to give products their own page.')}
-              onClick={() => productQr && navigate(qrHref(productQr, existing.name))}>
-              
+              )}
+              {existing && (
+                <Button
+                  variant="tertiary"
+                  size="sm"
+                  leadingIcon={QrCodeIcon}
+                  disabled={!productQr}
+                  title={tr(productQr ? 'A printable code that opens this product in your shop' : existing.status !== 'active' ? 'Make the product active first.' : 'Turn on the storefront to give products their own page.')}
+                  onClick={() => productQr && navigate(qrHref(productQr, existing.name))}
+                >
                   QR code
                 </Button>
-            }
-              {existing && !referenced &&
-            <Button variant="tertiary" size="sm" leadingIcon={Trash2Icon} className="text-danger hover:text-danger" onClick={() => setConfirmDelete(true)}>
+              )}
+              {existing && !referenced && (
+                <Button variant="tertiary" size="sm" leadingIcon={Trash2Icon} className="text-danger hover:text-danger" onClick={() => setConfirmDelete(true)}>
                   Delete
                 </Button>
-            }
+              )}
             </div>
             <div className="flex gap-2">
               <Button variant="secondary" onClick={requestClose}>
@@ -217,26 +217,26 @@ export function ProductEditor({ open, productId, kind, onClose }: ProductEditorP
               </Button>
             </div>
           </div>
-        }>
-        
+        }
+      >
         <div className="flex flex-col gap-6 px-5 py-5 max-md:gap-0 max-md:py-0">
-          {existing?.status === 'archived' &&
-          <InlineAlert tone="info" title="This product is archived">
+          {existing?.status === 'archived' && (
+            <InlineAlert tone="info" title="This product is archived">
               It’s hidden from your page and can’t be bought. Restore it to sell again.
             </InlineAlert>
-          }
+          )}
 
           <MobileSection id="prd-sec-details" title="Details" summary={[draft.name || tr('No name yet'), tr(draft.status === 'active' ? 'Active' : 'Draft'), draft.priceNgn !== null ? formatMoney(draft.priceNgn) : tr('No price')].join(' · ')} open={section === 'details'} onToggle={() => toggle('details')} invalid={!!nameError}>
           <Field id="prd-status" label="Status" hint={draft.status === 'draft' ? 'Drafts never appear on your page.' : 'Visible on any page block that links to it.'}>
             <Segmented
-                ariaLabel="Status"
-                value={draft.status === 'archived' ? 'draft' : draft.status}
-                onChange={(status) => patch({ status })}
-                options={[
+              ariaLabel="Status"
+              value={draft.status === 'archived' ? 'draft' : draft.status}
+              onChange={(status) => patch({ status })}
+              options={[
                 { value: 'active', label: 'Active' },
-                { value: 'draft', label: 'Draft' }]
-                } />
-              
+                { value: 'draft', label: 'Draft' },
+              ]}
+            />
           </Field>
 
           <TextInput id="prd-name" label="Name" value={draft.name} error={nameError} placeholder={tr(kind === 'digital' ? 'e.g. Lightroom preset pack' : 'e.g. Linen two-piece')} onChange={(e) => patch({ name: e.target.value })} />
@@ -248,13 +248,13 @@ export function ProductEditor({ open, productId, kind, onClose }: ProductEditorP
           </div>
           {/* Tax type (D435): zero-rated and exempt items are left out of tax at checkout. */}
           <SelectInput<TaxClass>
-              id="prd-tax"
-              label="Tax"
-              value={draft.taxClass ?? 'standard'}
-              onChange={(taxClass) => patch({ taxClass: taxClass === 'standard' ? undefined : taxClass })}
-              options={(Object.keys(taxClassLabels) as TaxClass[]).map((k) => ({ value: k, label: tr(taxClassLabels[k].label) }))}
-              hint={tr(taxClassLabels[draft.taxClass ?? 'standard'].hint)} />
-            
+            id="prd-tax"
+            label="Tax"
+            value={draft.taxClass ?? 'standard'}
+            onChange={(taxClass) => patch({ taxClass: taxClass === 'standard' ? undefined : taxClass })}
+            options={(Object.keys(taxClassLabels) as TaxClass[]).map((k) => ({ value: k, label: tr(taxClassLabels[k].label) }))}
+            hint={tr(taxClassLabels[draft.taxClass ?? 'standard'].hint)}
+          />
           </MobileSection>
 
           <MobileSection id="prd-sec-photos" title="Photos" summary={draft.images.length ? tr(draft.images.length === 1 ? '{n} photo' : '{n} photos', { n: draft.images.length }) : tr('No photos yet')} open={section === 'photos'} onToggle={() => toggle('photos')}>
@@ -267,78 +267,78 @@ export function ProductEditor({ open, productId, kind, onClose }: ProductEditorP
             summary={kind === 'digital' ? draft.digital?.fileName || tr('No file yet') : draft.trackStock ? tr('{v} variants · {n} in stock', { v: draft.variants.length, n: draft.variants.reduce((s, v) => s + v.stock, 0) }) : tr('Stock not tracked')}
             open={section === 'stock'}
             onToggle={() => toggle('stock')}
-            invalid={!!fileError}>
-            
-          {kind === 'digital' && draft.digital ?
-            <DigitalFileField product={draft} onChange={patch} error={fileError} /> :
-
+            invalid={!!fileError}
+          >
+          {kind === 'digital' && draft.digital ? (
+            <DigitalFileField product={draft} onChange={patch} error={fileError} />
+          ) : (
             <>
               <Switch
                 id="prd-track"
                 label="Track stock"
                 description="Orders reduce stock automatically and the item shows Sold out at zero."
                 checked={draft.trackStock}
-                onChange={(trackStock) => patch({ trackStock })} />
-              
-              {kind === 'physical' &&
-              <div id="prd-how-pay" className="border-t border-border pt-5">
+                onChange={(trackStock) => patch({ trackStock })}
+              />
+              {kind === 'physical' && (
+                <div id="prd-how-pay" className="border-t border-border pt-5">
                   <h3 className="text-label font-semibold text-fg">{tr('How buyers pay')}</h3>
                   <p className="mt-0.5 text-caption text-fg-muted">{tr('Pay in full is always on. Add instalments, a deposit or pre-orders for this product.')}</p>
                 </div>
-              }
+              )}
               {kind === 'physical' && !draft.bundle && <ProductInstalmentsField product={draft} onChange={patch} />}
-              {kind === 'physical' &&
-              <div className="flex flex-col gap-4 border-t border-border pt-4">
+              {kind === 'physical' && (
+                <div className="flex flex-col gap-4 border-t border-border pt-4">
                   <Switch
-                  id="prd-mto"
-                  label="Made to order — take a deposit"
-                  description="Buyers pay a deposit at checkout and the rest before you send it out. You can’t mark it out for delivery until the balance is in."
-                  checked={!!draft.madeToOrder}
-                  disabled={!!draft.instalments || !!draft.bundle}
-                  onChange={(on) => patch({ madeToOrder: on ? { depositPct: DEFAULT_DEPOSIT_PCT, leadDays: DEFAULT_LEAD_DAYS } : undefined })} />
-                
-                  {draft.madeToOrder &&
-                <div className="grid gap-4 sm:grid-cols-2">
-                      <Field id="prd-mto-pct" label="Deposit at checkout" hint={draft.priceNgn ? tr('{now} now, {later} before dispatch', { now: formatMoney(Math.round(draft.priceNgn * draft.madeToOrder.depositPct / 100)), later: formatMoney(draft.priceNgn - Math.round(draft.priceNgn * draft.madeToOrder.depositPct / 100)) }) : 'Share of the price paid now.'}>
+                    id="prd-mto"
+                    label="Made to order — take a deposit"
+                    description="Buyers pay a deposit at checkout and the rest before you send it out. You can’t mark it out for delivery until the balance is in."
+                    checked={!!draft.madeToOrder}
+                    disabled={!!draft.instalments || !!draft.bundle}
+                    onChange={(on) => patch({ madeToOrder: on ? { depositPct: DEFAULT_DEPOSIT_PCT, leadDays: DEFAULT_LEAD_DAYS } : undefined })}
+                  />
+                  {draft.madeToOrder && (
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <Field id="prd-mto-pct" label="Deposit at checkout" hint={draft.priceNgn ? tr('{now} now, {later} before dispatch', { now: formatMoney(Math.round((draft.priceNgn * draft.madeToOrder.depositPct) / 100)), later: formatMoney(draft.priceNgn - Math.round((draft.priceNgn * draft.madeToOrder.depositPct) / 100)) }) : 'Share of the price paid now.'}>
                         <select
-                      id="prd-mto-pct"
-                      className="h-10 w-full rounded-md border border-border-strong bg-surface px-3 text-body text-fg"
-                      value={draft.madeToOrder.depositPct}
-                      onChange={(e) => patch({ madeToOrder: { ...draft.madeToOrder!, depositPct: Number(e.target.value) } })}>
-                      
-                          {depositPctOptions.map((p) =>
-                      <option key={p} value={p}>
+                          id="prd-mto-pct"
+                          className="h-10 w-full rounded-md border border-border-strong bg-surface px-3 text-body text-fg"
+                          value={draft.madeToOrder.depositPct}
+                          onChange={(e) => patch({ madeToOrder: { ...draft.madeToOrder!, depositPct: Number(e.target.value) } })}
+                        >
+                          {depositPctOptions.map((p) => (
+                            <option key={p} value={p}>
                               {p}%
                             </option>
-                      )}
+                          ))}
                         </select>
                       </Field>
                       <TextInput
-                    id="prd-mto-days"
-                    label="Usually ready in (days)"
-                    inputMode="numeric"
-                    value={String(draft.madeToOrder.leadDays)}
-                    hint="Shown to buyers at checkout."
-                    onChange={(e) => patch({ madeToOrder: { ...draft.madeToOrder!, leadDays: Math.min(90, Number(e.target.value.replace(/[^0-9]/g, '').slice(0, 2) || '0')) } })} />
-                  
+                        id="prd-mto-days"
+                        label="Usually ready in (days)"
+                        inputMode="numeric"
+                        value={String(draft.madeToOrder.leadDays)}
+                        hint="Shown to buyers at checkout."
+                        onChange={(e) => patch({ madeToOrder: { ...draft.madeToOrder!, leadDays: Math.min(90, Number(e.target.value.replace(/[^0-9]/g, '').slice(0, 2) || '0')) } })}
+                      />
                     </div>
-                }
+                  )}
                 </div>
-              }
+              )}
               {kind === 'physical' && !draft.giftCard && <ProductSellModesField product={draft} onChange={patch} pricesLocked={!pricesAllowed.allowed} showErrors={triedSave} />}
               {kind === 'physical' && draft.bundle && <p className="border-t border-border pt-4 text-caption text-fg-muted">{tr('Deposits and instalments are off while this is sold with {name}.', { name: draft.bundle.partnerName })}</p>}
               <VariantsField product={draft} onChange={patch} />
               <div className="grid gap-4 sm:grid-cols-2">
-                {draft.trackStock &&
-                <TextInput
-                  id="prd-low"
-                  label="Low-stock alert at"
-                  inputMode="numeric"
-                  value={String(draft.lowStockAt)}
-                  hint="Per variant."
-                  onChange={(e) => patch({ lowStockAt: Number(e.target.value.replace(/[^0-9]/g, '').slice(0, 4) || '0') })} />
-
-                }
+                {draft.trackStock && (
+                  <TextInput
+                    id="prd-low"
+                    label="Low-stock alert at"
+                    inputMode="numeric"
+                    value={String(draft.lowStockAt)}
+                    hint="Per variant."
+                    onChange={(e) => patch({ lowStockAt: Number(e.target.value.replace(/[^0-9]/g, '').slice(0, 4) || '0') })}
+                  />
+                )}
                 <TextInput
                   id="prd-weight"
                   label="Weight (kg)"
@@ -349,11 +349,11 @@ export function ProductEditor({ open, productId, kind, onClose }: ProductEditorP
                   onChange={(e) => {
                     const v = e.target.value.replace(/[^0-9.]/g, '');
                     patch({ weightKg: v === '' ? null : Number(v) });
-                  }} />
-                
+                  }}
+                />
               </div>
-              {kind === 'physical' && !draft.giftCard &&
-              <div className="flex flex-col gap-4 border-t border-border pt-4">
+              {kind === 'physical' && !draft.giftCard && (
+                <div className="flex flex-col gap-4 border-t border-border pt-4">
                   <div>
                     <h3 className="text-label font-semibold text-fg">{tr('For delivery abroad')}</h3>
                     <p className="mt-0.5 text-caption text-fg-muted">{tr('Needed on customs forms when you ship to another country. Leave empty if you only deliver at home.')}</p>
@@ -363,9 +363,9 @@ export function ProductEditor({ open, productId, kind, onClose }: ProductEditorP
                     <SelectInput<CountryCode> id="prd-origin" label="Made in" value={draft.shipping?.originCountry ?? activeCountry()} onChange={(originCountry) => patch({ shipping: { customsDescription: draft.shipping?.customsDescription ?? '', originCountry } })} options={countries.map((c) => ({ value: c.code, label: tr(c.name) }))} />
                   </div>
                 </div>
-              }
+              )}
             </>
-            }
+          )}
           </MobileSection>
 
           <MobileSection
@@ -374,13 +374,13 @@ export function ProductEditor({ open, productId, kind, onClose }: ProductEditorP
             summary={draft.bundle ? `${tr('With {name}', { name: draft.bundle.partnerName })} · ${draft.bundle.split === 'agreement' ? `${draft.bundle.leadSharePct}/${100 - draft.bundle.leadSharePct}` : tr('exact amount')}` : tr('Just you')}
             open={section === 'partner'}
             onToggle={() => toggle('partner')}
-            invalid={!!bundleError}>
-            
+            invalid={!!bundleError}
+          >
             <ProductBundleField product={draft} onChange={patch} leadName={current.name} partnerships={partnerships} error={bundleError} disabled={!pricesAllowed.allowed} />
           </MobileSection>
 
-          {data.collections.length > 0 &&
-          <MobileSection id="prd-sec-coll" title="Collections" summary={draft.collectionIds.length ? data.collections.filter((c) => draft.collectionIds.includes(c.id)).map((c) => c.name).join(', ') : tr('None')} open={section === 'collections'} onToggle={() => toggle('collections')}>
+          {data.collections.length > 0 && (
+            <MobileSection id="prd-sec-coll" title="Collections" summary={draft.collectionIds.length ? data.collections.filter((c) => draft.collectionIds.includes(c.id)).map((c) => c.name).join(', ') : tr('None')} open={section === 'collections'} onToggle={() => toggle('collections')}>
             <fieldset>
               <legend className="mb-2 text-label font-medium text-fg">{tr('Collections')}</legend>
               <div className="flex flex-wrap gap-1.5">
@@ -395,18 +395,18 @@ export function ProductEditor({ open, productId, kind, onClose }: ProductEditorP
                       onClick={() => patch({ collectionIds: on ? draft.collectionIds.filter((x) => x !== c.id) : [...draft.collectionIds, c.id] })}
                       className={cn(
                         'inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-label font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
-                        on ? 'border-transparent bg-fg text-canvas' : 'border-line-strong text-fg-muted hover:text-fg'
-                      )}>
-                      
+                        on ? 'border-transparent bg-fg text-canvas' : 'border-line-strong text-fg-muted hover:text-fg',
+                      )}
+                    >
                       {on && <CheckIcon size={13} strokeWidth={3} aria-hidden />}
                       {c.name}
-                    </button>);
-
+                    </button>
+                  );
                 })}
               </div>
             </fieldset>
             </MobileSection>
-          }
+          )}
         </div>
       </Sheet>
 
@@ -417,22 +417,22 @@ export function ProductEditor({ open, productId, kind, onClose }: ProductEditorP
         title="Discard your changes?"
         description="You have edits that haven’t been saved."
         footer={
-        <>
+          <>
             <Button variant="secondary" onClick={() => setConfirmClose(false)} data-autofocus>
               Keep editing
             </Button>
             <Button
-            variant="destructive"
-            onClick={() => {
-              setConfirmClose(false);
-              onClose();
-            }}>
-            
+              variant="destructive"
+              onClick={() => {
+                setConfirmClose(false);
+                onClose();
+              }}
+            >
               Discard
             </Button>
           </>
-        } />
-      
+        }
+      />
       <Dialog
         open={confirmDelete}
         onClose={() => setConfirmDelete(false)}
@@ -440,7 +440,7 @@ export function ProductEditor({ open, productId, kind, onClose }: ProductEditorP
         title={tr('Delete “{name}”?', { name: existing?.name ?? '' })}
         description="This can’t be undone. Page blocks linked to it will show a warning until you pick another product."
         footer={
-        <>
+          <>
             <Button variant="secondary" onClick={() => setConfirmDelete(false)} data-autofocus>
               Cancel
             </Button>
@@ -448,8 +448,8 @@ export function ProductEditor({ open, productId, kind, onClose }: ProductEditorP
               Delete product
             </Button>
           </>
-        } />
-      
-    </>);
-
+        }
+      />
+    </>
+  );
 }

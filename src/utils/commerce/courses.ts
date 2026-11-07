@@ -73,11 +73,11 @@ export function blankCourse(): Course {
     instructor: '',
     modules: [blankModule(1)],
     createdAt: at,
-    updatedAt: at
+    updatedAt: at,
   };
 }
 
-export function allLessons(course: Course): {lesson: CourseLesson;module: CourseModule;moduleIndex: number;}[] {
+export function allLessons(course: Course): { lesson: CourseLesson; module: CourseModule; moduleIndex: number }[] {
   return course.modules.flatMap((module, moduleIndex) => module.lessons.map((lesson) => ({ lesson, module, moduleIndex })));
 }
 
@@ -129,7 +129,7 @@ export function publishIssues(data: CommerceData, course: Course, plan: Workspac
 }
 
 /** Keeps the hidden companion product in step with a paid course (name, price, status). */
-function syncProduct(data: CommerceData, course: Course): {products: Product[];productId?: string;} {
+function syncProduct(data: CommerceData, course: Course): { products: Product[]; productId?: string } {
   const existing = course.productId ? data.products.find((p) => p.id === course.productId) : undefined;
   const wantsProduct = course.access === 'paid';
   if (!wantsProduct && !existing) return { products: data.products, productId: course.productId };
@@ -153,7 +153,7 @@ function syncProduct(data: CommerceData, course: Course): {products: Product[];p
     courseId: course.id,
     sample: course.sample,
     createdAt: at,
-    updatedAt: at
+    updatedAt: at,
   };
   const next: Product = {
     ...base,
@@ -162,16 +162,16 @@ function syncProduct(data: CommerceData, course: Course): {products: Product[];p
     priceNgn: course.priceNgn,
     images: course.coverUrl ? [{ id: base.images[0]?.id ?? uid('img'), url: course.coverUrl, alt: course.coverAlt }] : [],
     status: wantsProduct ? status : 'draft',
-    updatedAt: at
+    updatedAt: at,
   };
-  return { products: existing ? data.products.map((p) => p.id === next.id ? next : p) : [...data.products, next], productId: next.id };
+  return { products: existing ? data.products.map((p) => (p.id === next.id ? next : p)) : [...data.products, next], productId: next.id };
 }
 
 export function upsertCourse(data: CommerceData, course: Course): CommerceData {
   const { products, productId } = syncProduct(data, course);
   const saved: Course = { ...course, productId, updatedAt: new Date().toISOString() };
   const list = coursesOf(data);
-  const courses = list.some((c) => c.id === saved.id) ? list.map((c) => c.id === saved.id ? saved : c) : [saved, ...list];
+  const courses = list.some((c) => c.id === saved.id) ? list.map((c) => (c.id === saved.id ? saved : c)) : [saved, ...list];
   return { ...data, products, courses };
 }
 
@@ -182,7 +182,7 @@ export function deleteCourse(data: CommerceData, id: string): CommerceData {
   return {
     ...data,
     courses: coursesOf(data).filter((c) => c.id !== id),
-    products: course.productId ? data.products.filter((p) => p.id !== course.productId || data.orders.some((o) => o.items.some((i) => i.productId === p.id))) : data.products
+    products: course.productId ? data.products.filter((p) => p.id !== course.productId || data.orders.some((o) => o.items.some((i) => i.productId === p.id))) : data.products,
   };
 }
 
@@ -197,7 +197,7 @@ export function enrolmentOf(data: CommerceData | null | undefined, courseId: str
   return enrolmentsFor(data, courseId).find((e) => matches(e, session));
 }
 
-function newEnrolment(courseId: string, who: {phone?: string;email?: string;name?: string;}, source: EnrolmentSource, orderId?: string): Enrolment {
+function newEnrolment(courseId: string, who: { phone?: string; email?: string; name?: string }, source: EnrolmentSource, orderId?: string): Enrolment {
   return {
     id: uid('enr'),
     courseId,
@@ -208,7 +208,7 @@ function newEnrolment(courseId: string, who: {phone?: string;email?: string;name
     orderId,
     enrolledAt: new Date().toISOString(),
     completedLessonIds: [],
-    quizScores: {}
+    quizScores: {},
   };
 }
 
@@ -220,28 +220,28 @@ export function ensureEnrolment(data: CommerceData, courseId: string, session: M
 }
 
 /** The seller adds someone by hand (e.g. paid by transfer). */
-export function addLearner(data: CommerceData, courseId: string, who: {name: string;phone: string;email: string;}): CommerceData {
+export function addLearner(data: CommerceData, courseId: string, who: { name: string; phone: string; email: string }): CommerceData {
   return { ...data, enrolments: [...(data.enrolments ?? []), newEnrolment(courseId, who, 'manual')] };
 }
 
 export function removeLearner(data: CommerceData, enrolmentId: string): CommerceData {
-  return { ...data, enrolments: (data.enrolments ?? []).map((e) => e.id === enrolmentId ? { ...e, removedAt: new Date().toISOString() } : e) };
+  return { ...data, enrolments: (data.enrolments ?? []).map((e) => (e.id === enrolmentId ? { ...e, removedAt: new Date().toISOString() } : e)) };
 }
 
 /** Called when an order is placed: one enrolment per course bought, matched by phone and email. */
 export function enrolFromOrder(data: CommerceData, order: Order): CommerceData {
-  const courseIds = order.items.
-  filter((i) => i.kind === 'course').
-  map((i) => data.products.find((p) => p.id === i.productId)?.courseId).
-  filter((id): id is string => !!id);
+  const courseIds = order.items
+    .filter((i) => i.kind === 'course')
+    .map((i) => data.products.find((p) => p.id === i.productId)?.courseId)
+    .filter((id): id is string => !!id);
   if (!courseIds.length) return data;
   const phone = order.customer.phone ? normalisePhone(order.customer.phone) : '';
   const email = order.customer.email.trim().toLowerCase();
   let enrolments = [...(data.enrolments ?? [])];
   courseIds.forEach((courseId) => {
-    const found = enrolments.find((e) => e.courseId === courseId && !e.removedAt && (phone && e.phone === phone || email && e.email === email));
-    if (found) enrolments = enrolments.map((e) => e.id === found.id ? { ...e, source: 'order', orderId: order.id, phone: e.phone || phone, email: e.email || email, name: e.name || order.customer.name } : e);else
-    enrolments.push(newEnrolment(courseId, { phone, email, name: order.customer.name }, 'order', order.id));
+    const found = enrolments.find((e) => e.courseId === courseId && !e.removedAt && ((phone && e.phone === phone) || (email && e.email === email)));
+    if (found) enrolments = enrolments.map((e) => (e.id === found.id ? { ...e, source: 'order', orderId: order.id, phone: e.phone || phone, email: e.email || email, name: e.name || order.customer.name } : e));
+    else enrolments.push(newEnrolment(courseId, { phone, email, name: order.customer.name }, 'order', order.id));
   });
   return { ...data, enrolments };
 }
@@ -298,11 +298,11 @@ export function progressOf(course: Course, enrolment: Enrolment | undefined): Co
   const done = lessons.filter(({ lesson }) => doneIds.has(lesson.id)).length;
   const total = lessons.length;
   const next = lessons.find(({ lesson }) => !doneIds.has(lesson.id))?.lesson.id ?? null;
-  return { done, total, pct: total ? Math.round(done / total * 100) : 0, nextLessonId: next };
+  return { done, total, pct: total ? Math.round((done / total) * 100) : 0, nextLessonId: next };
 }
 
 function patchEnrolment(data: CommerceData, enrolmentId: string, fn: (e: Enrolment) => Enrolment): CommerceData {
-  return { ...data, enrolments: (data.enrolments ?? []).map((e) => e.id === enrolmentId ? fn(e) : e) };
+  return { ...data, enrolments: (data.enrolments ?? []).map((e) => (e.id === enrolmentId ? fn(e) : e)) };
 }
 
 function withCompletion(course: Course, e: Enrolment): Enrolment {
@@ -316,8 +316,8 @@ function withCompletion(course: Course, e: Enrolment): Enrolment {
 export function markLesson(data: CommerceData, course: Course, enrolmentId: string, lessonId: string, done: boolean): CommerceData {
   return patchEnrolment(data, enrolmentId, (e) => {
     const ids = new Set(e.completedLessonIds);
-    if (done) ids.add(lessonId);else
-    ids.delete(lessonId);
+    if (done) ids.add(lessonId);
+    else ids.delete(lessonId);
     return withCompletion(course, { ...e, completedLessonIds: [...ids], lastLessonId: lessonId, lastAt: new Date().toISOString() });
   });
 }
@@ -330,7 +330,7 @@ export function visitLesson(data: CommerceData, enrolmentId: string, lessonId: s
 export function scoreQuiz(lesson: CourseLesson, answers: Record<string, number>): number {
   if (!lesson.questions.length) return 0;
   const right = lesson.questions.filter((q) => answers[q.id] === q.correct).length;
-  return Math.round(right / lesson.questions.length * 100);
+  return Math.round((right / lesson.questions.length) * 100);
 }
 
 export function recordQuiz(data: CommerceData, course: Course, enrolmentId: string, lesson: CourseLesson, score: number): CommerceData {
@@ -351,11 +351,11 @@ export function learnUrl(handle: string, courseId: string, lessonId?: string): s
 }
 
 /** Seller-facing summary of learners for one course. */
-export function courseStats(data: CommerceData, course: Course): {learners: number;completed: number;avgPct: number;revenueNgn: number;} {
+export function courseStats(data: CommerceData, course: Course): { learners: number; completed: number; avgPct: number; revenueNgn: number } {
   const list = enrolmentsFor(data, course.id);
   const pcts = list.map((e) => progressOf(course, e).pct);
-  const revenueNgn = course.productId ?
-  data.orders.filter((o) => o.paymentStatus === 'paid' || o.paymentStatus === 'partially_refunded').reduce((s, o) => s + o.items.filter((i) => i.productId === course.productId).reduce((t, i) => t + i.unitPriceNgn * i.qty, 0), 0) :
-  0;
+  const revenueNgn = course.productId
+    ? data.orders.filter((o) => o.paymentStatus === 'paid' || o.paymentStatus === 'partially_refunded').reduce((s, o) => s + o.items.filter((i) => i.productId === course.productId).reduce((t, i) => t + i.unitPriceNgn * i.qty, 0), 0)
+    : 0;
   return { learners: list.length, completed: list.filter((e) => e.completedAt).length, avgPct: pcts.length ? Math.round(pcts.reduce((a, b) => a + b, 0) / pcts.length) : 0, revenueNgn };
 }

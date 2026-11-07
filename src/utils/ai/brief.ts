@@ -42,7 +42,7 @@ const KEYWORDS: Record<string, string[]> = {
   'kemi-presets': ['presets', 'ebook', 'e-book', 'course', 'courses', 'templates', 'digital download', 'downloads', 'guide'],
   'glow-by-halima': ['beauty', 'makeup', 'make-up', 'hair', 'salon', 'nails', 'lashes', 'spa', 'skincare', 'barber', 'braids', 'wigs'],
   'fixright-plumbing': ['plumber', 'plumbing', 'repair', 'repairs', 'electrician', 'cleaning', 'cleaner', 'mechanic', 'installation', 'handyman', 'fumigation'],
-  'bello-and-co': ['lawyer', 'legal', 'accountant', 'accounting', 'consulting', 'consultant', 'coach', 'coaching', 'therapy', 'therapist', 'tax', 'firm']
+  'bello-and-co': ['lawyer', 'legal', 'accountant', 'accounting', 'consulting', 'consultant', 'coach', 'coaching', 'therapy', 'therapist', 'tax', 'firm'],
 };
 
 const CITIES = ['Lagos', 'Abuja', 'Ibadan', 'Port Harcourt', 'Kano', 'Enugu', 'Benin City', 'Kaduna', 'Abeokuta', 'Jos', 'Ilorin', 'Owerri', 'Uyo', 'Calabar', 'Warri', 'Akure', 'Lekki', 'Ikeja', 'Yaba', 'Surulere', 'Ajah', 'Wuse', 'Accra', 'Nairobi'];
@@ -57,12 +57,12 @@ function hasWord(text: string, word: string): boolean {
 
 export function analyzeBrief(brief: string): BriefAnalysis {
   const lower = brief.toLowerCase();
-  let best: {id: string;words: string[];} | null = null;
+  let best: { id: string; words: string[] } | null = null;
   Object.entries(KEYWORDS).forEach(([id, words]) => {
     const hits = words.filter((w) => hasWord(lower, w));
     if (hits.length && (!best || hits.length > best.words.length)) best = { id, words: hits };
   });
-  const found = best as {id: string;words: string[];} | null;
+  const found = best as { id: string; words: string[] } | null;
   const example = found ? examplePages.find((e) => e.id === found.id) : undefined;
 
   let name = '';
@@ -77,13 +77,13 @@ export function analyzeBrief(brief: string): BriefAnalysis {
   const city = CITIES.find((c) => hasWord(lower, c.toLowerCase())) ?? '';
   // Any of our four countries' mobile numbers (D420).
   const phone = findMobileNumber(brief) ?? '';
-  const suggestedAction: AiAction = /\bbook|appointment|session/.test(lower) || example?.goals.some((g) => BOOK_GOALS.has(g)) ?
-  'booking' :
-  /\bwhatsapp|dm|chat\b/.test(lower) || phone ?
-  'whatsapp' :
-  example?.goals.includes('sell') ?
-  'shop' :
-  'whatsapp';
+  const suggestedAction: AiAction = /\bbook|appointment|session/.test(lower) || example?.goals.some((g) => BOOK_GOALS.has(g))
+    ? 'booking'
+    : /\bwhatsapp|dm|chat\b/.test(lower) || phone
+      ? 'whatsapp'
+      : example?.goals.includes('sell')
+        ? 'shop'
+        : 'whatsapp';
 
   return { exampleId: example?.id ?? null, matched: found?.words ?? [], name, city, phone, suggestedAction };
 }

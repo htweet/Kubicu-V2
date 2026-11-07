@@ -21,5 +21,5 @@ export const appSkin: FormSkin = {
   muted: 'rgb(var(--text-secondary))',
   input: { background: 'rgb(var(--field))', color: 'rgb(var(--text-primary))', border: '1px solid rgb(var(--border-strong))', borderRadius: 10 },
   button: { background: 'rgb(var(--action))', color: 'rgb(var(--on-action))', borderRadius: 10 },
-  danger: 'rgb(var(--danger))'
+  danger: 'rgb(var(--danger))',
 };

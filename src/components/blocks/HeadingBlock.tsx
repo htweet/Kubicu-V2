@@ -11,11 +11,11 @@ export function HeadingBlock({ block, theme }: BlockProps<'heading'>) {
       className={cn(
         'pt-4 font-medium tracking-[-0.01em]',
         level === 'h2' ? 'text-[23px] leading-tight' : 'text-[18px] leading-snug',
-        block.style.align === 'center' ? 'text-center' : 'text-left'
+        block.style.align === 'center' ? 'text-center' : 'text-left',
       )}
-      style={{ ...headingStyle(theme), color: theme.text, opacity: text ? 1 : 0.4 }}>
-      
+      style={{ ...headingStyle(theme), color: theme.text, opacity: text ? 1 : 0.4 }}
+    >
       {text || 'Empty heading'}
-    </Tag>);
-
+    </Tag>
+  );
 }

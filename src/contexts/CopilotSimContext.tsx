@@ -11,7 +11,7 @@ interface CopilotSim {
 
 const CopilotSimContext = createContext<CopilotSim>({ whatsapp: 'available', failure: 'none' });
 
-export function CopilotSimProvider({ whatsapp, failure, children }: CopilotSim & {children: React.ReactNode;}) {
+export function CopilotSimProvider({ whatsapp, failure, children }: CopilotSim & { children: React.ReactNode }) {
   return <CopilotSimContext.Provider value={{ whatsapp, failure }}>{children}</CopilotSimContext.Provider>;
 }
 

@@ -63,13 +63,13 @@ export function TicketPage() {
   };
 
   const banner =
-  status === 'void' ?
-  { Icon: XCircleIcon, title: tx(ev.status === 'cancelled' ? 'This event was cancelled' : 'This ticket is no longer valid'), body: tx('It was refunded or the order was cancelled, so it won’t admit anyone.') } :
-  status === 'pending' ?
-  { Icon: ClockIcon, title: tx('Waiting for payment'), body: tx('Your QR appears here once the payment provider confirms.') } :
-  status === 'checked_in' ?
-  { Icon: CheckCircle2Icon, title: tx('Checked in'), body: tx('At {time}. Enjoy the event.', { time: new Date(ref.ticket.checkedInAt as string).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) }) } :
-  null;
+    status === 'void'
+      ? { Icon: XCircleIcon, title: tx(ev.status === 'cancelled' ? 'This event was cancelled' : 'This ticket is no longer valid'), body: tx('It was refunded or the order was cancelled, so it won’t admit anyone.') }
+      : status === 'pending'
+        ? { Icon: ClockIcon, title: tx('Waiting for payment'), body: tx('Your QR appears here once the payment provider confirms.') }
+        : status === 'checked_in'
+          ? { Icon: CheckCircle2Icon, title: tx('Checked in'), body: tx('At {time}. Enjoy the event.', { time: new Date(ref.ticket.checkedInAt as string).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) }) }
+          : null;
 
   return (
     <LocaleProvider lang={lang} setLang={setLang}>
@@ -89,36 +89,36 @@ export function TicketPage() {
               <h1 className="text-[24px] font-medium leading-tight" style={{ fontFamily: fontsFor(t).display, color: t.text }}>
                 {ev.name}
               </h1>
-              {ref.ticket.seat &&
+              {ref.ticket.seat && (
                 <p className="mt-1 text-[17px] font-semibold" style={{ color: t.text }}>
                   {ref.ticket.seat}
                 </p>
-                }
+              )}
               <p className="text-[15px] font-medium">{ref.ticket.guestName}</p>
             </div>
 
             <div className="flex flex-col items-center gap-3 px-5 pb-6 pt-1" style={{ borderTop: `1px dashed ${mix(t.text, 18)}` }}>
-              {banner ?
+              {banner ? (
                 <div className="mt-5 flex w-full flex-col items-center gap-2 rounded-md px-4 py-8 text-center" style={{ background: mix(t.text, 6) }} role="status">
                   <banner.Icon size={28} aria-hidden />
                   <p className="text-[16px] font-semibold">{banner.title}</p>
                   <p className="max-w-xs text-[13px]" style={muted}>
                     {banner.body}
                   </p>
-                </div> :
-
+                </div>
+              ) : (
                 <div className="mt-5 rounded-lg bg-white p-3">
                   {qr ? <img src={qr} alt={`QR code for ticket ${ref.ticket.code}`} className="h-56 w-56" /> : <div className="h-56 w-56 animate-pulse rounded-md bg-black/5" aria-hidden />}
                 </div>
-                }
+              )}
               <p className="font-mono text-[22px] font-semibold tracking-[0.12em]" style={{ textDecoration: status === 'void' ? 'line-through' : undefined }}>
                 {ref.ticket.code}
               </p>
-              {!banner &&
+              {!banner && (
                 <p className="text-center text-[12.5px]" style={muted}>
                   {tx('Show this at the door. Turn your screen brightness up.')}
                 </p>
-                }
+              )}
             </div>
 
             <dl className="flex flex-col gap-3 p-5 text-[14px]" style={{ borderTop: `1px solid ${mix(t.text, 10)}` }}>
@@ -137,17 +137,17 @@ export function TicketPage() {
                 {ev.online ? <VideoIcon size={15} className="mt-0.5 shrink-0" style={muted} aria-hidden /> : <MapPinIcon size={15} className="mt-0.5 shrink-0" style={muted} aria-hidden />}
                 <dd>
                   {ev.online ? tx('Online — the organiser sends the joining link before it starts') : place}
-                  {!ev.online && place &&
+                  {!ev.online && place && (
                     <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place)}`} target="_blank" rel="noopener noreferrer" className="block text-[13px] font-semibold underline underline-offset-2">
                       {tx('Open in Maps')}
                     </a>
-                    }
+                  )}
                 </dd>
               </div>
             </dl>
           </article>
 
-          {status !== 'void' &&
+          {status !== 'void' && (
             <div className="grid grid-cols-3 gap-2">
               <ActionButton theme={t} onClick={addToCalendar} icon={CalendarPlusIcon} label={tx('Calendar')} />
               <ActionButton theme={t} onClick={copy} icon={CopyIcon} label={tx('Copy link')} />
@@ -155,25 +155,25 @@ export function TicketPage() {
                 <MessageCircleIcon size={17} aria-hidden /> WhatsApp
               </a>
             </div>
-            }
+          )}
 
-          {ev.refundPolicy &&
+          {ev.refundPolicy && (
             <p className="text-[12px] leading-snug" style={muted}>
               {ev.refundPolicy}
             </p>
-            }
+          )}
           <TestModeNote theme={t} />
         </main>
       </PageSurface>
     </div>
-    </LocaleProvider>);
-
+    </LocaleProvider>
+  );
 }
 
-function ActionButton({ theme, onClick, icon: Icon, label }: {theme: Parameters<typeof cardStyle>[0];onClick: () => void;icon: React.ComponentType<{size?: number;'aria-hidden'?: boolean;}>;label: string;}) {
+function ActionButton({ theme, onClick, icon: Icon, label }: { theme: Parameters<typeof cardStyle>[0]; onClick: () => void; icon: React.ComponentType<{ size?: number; 'aria-hidden'?: boolean }>; label: string }) {
   return (
     <button type="button" onClick={onClick} className="flex h-14 flex-col items-center justify-center gap-1 text-[12.5px] font-semibold" style={cardStyle(theme)}>
       <Icon size={17} aria-hidden /> {label}
-    </button>);
-
+    </button>
+  );
 }

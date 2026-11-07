@@ -29,15 +29,15 @@ export function PeopleSection() {
         </div>
 
         <ul className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {peopleCards.map((p, i) =>
-          <motion.li
-            key={p.name}
-            initial={reduce ? false : { opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-40px' }}
-            transition={{ duration: 0.3, delay: i * 0.06, ease: [0.23, 1, 0.32, 1] }}
-            className={i % 2 ? 'lg:mt-12' : ''}>
-            
+          {peopleCards.map((p, i) => (
+            <motion.li
+              key={p.name}
+              initial={reduce ? false : { opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-40px' }}
+              transition={{ duration: 0.3, delay: i * 0.06, ease: [0.23, 1, 0.32, 1] }}
+              className={i % 2 ? 'lg:mt-12' : ''}
+            >
               <article className="flex h-full flex-col overflow-hidden rounded-[32px]" style={{ backgroundColor: p.bg }}>
                 <div className="overflow-hidden">
                   <img src={p.image} alt={tr(p.alt)} loading="lazy" className="aspect-[4/5] w-full object-cover object-top" />
@@ -48,7 +48,7 @@ export function PeopleSection() {
                 </div>
               </article>
             </motion.li>
-          )}
+          ))}
         </ul>
         <p className="mt-6 text-caption text-fg-subtle">{tr('People pictured are illustrative.')}</p>
       </div>
@@ -58,14 +58,14 @@ export function PeopleSection() {
       </div>
       <div className="kb-marquee-host mt-4 border-y-2 border-fg py-5" aria-label={tr('Business types')} data-paused={typesPaused}>
         <div className="kb-marquee flex w-max gap-10" style={{ ['--kb-marquee-duration' as string]: '40s' }}>
-          {[...businessTypes, ...businessTypes].map((t, i) =>
-          <span key={`${t}-${i}`} aria-hidden={i >= businessTypes.length || undefined} className="kb-display flex items-center gap-10 whitespace-nowrap text-[28px] text-fg md:text-[36px]">
+          {[...businessTypes, ...businessTypes].map((t, i) => (
+            <span key={`${t}-${i}`} aria-hidden={i >= businessTypes.length || undefined} className="kb-display flex items-center gap-10 whitespace-nowrap text-[28px] text-fg md:text-[36px]">
               {tr(t)}
               <span className="inline-block h-4 w-4 rotate-45 bg-[rgb(var(--kb-cobalt))]" aria-hidden />
             </span>
-          )}
+          ))}
         </div>
       </div>
-    </section>);
-
+    </section>
+  );
 }

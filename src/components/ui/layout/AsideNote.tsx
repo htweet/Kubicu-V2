@@ -23,6 +23,6 @@ export function AsideNote({ id, title, text, children }: AsideNoteProps) {
       </h2>
       <p className="text-label text-fg-muted">{typeof text === 'string' ? t(text) : text}</p>
       {children && <div className="mt-3">{children}</div>}
-    </section>);
-
+    </section>
+  );
 }

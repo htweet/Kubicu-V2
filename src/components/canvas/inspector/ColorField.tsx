@@ -26,8 +26,8 @@ export function ColorField({ id, label, value, onChange }: ColorFieldProps) {
             aria-label={`${label} colour picker`}
             value={isHexColor(value) ? value : '#000000'}
             onChange={(e) => onChange(e.target.value.toUpperCase())}
-            className="absolute inset-0 h-full w-full cursor-pointer opacity-0" />
-          
+            className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+          />
         </span>
         <input
           id={`${id}-hex`}
@@ -39,9 +39,9 @@ export function ColorField({ id, label, value, onChange }: ColorFieldProps) {
             if (isHexColor(v) && v.length === 7) onChange(v.toUpperCase());
           }}
           onBlur={() => setText(value)}
-          className={cn(fieldControlClass, 'h-8 w-[92px] px-2 font-mono text-caption uppercase')} />
-        
+          className={cn(fieldControlClass, 'h-8 w-[92px] px-2 font-mono text-caption uppercase')}
+        />
       </div>
-    </div>);
-
+    </div>
+  );
 }

@@ -7,5 +7,5 @@ export const planHighlights: Record<WorkspacePlan, string[]> = {
   pro: ['Checkout and test card payments', 'Sell digital files', 'Built-in bookings with deposits', 'Up to 20 pages per site', '15 campaigns or DealRooms', '5 GB of media'],
   business: ['Everything in Pro', 'Up to 5 team seats with roles', 'Priority support'],
   agency: ['Everything in Business', 'Many client workspaces', 'Client handover'],
-  enterprise: ['Custom limits and contracts', 'Dedicated support']
+  enterprise: ['Custom limits and contracts', 'Dedicated support'],
 };

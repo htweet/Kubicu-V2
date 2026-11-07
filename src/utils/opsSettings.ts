@@ -21,7 +21,7 @@ const listeners = new Set<() => void>();
 function load(): OpsValues {
   try {
     const raw = typeof localStorage !== 'undefined' ? localStorage.getItem('kubicu.admin') : null;
-    const p = raw ? JSON.parse(raw) as {figures?: Record<string, number>;planNames?: Partial<Record<WorkspacePlan, PlanText>>;} : {};
+    const p = raw ? (JSON.parse(raw) as { figures?: Record<string, number>; planNames?: Partial<Record<WorkspacePlan, PlanText>> }) : {};
     cache = { figures: p.figures ?? {}, planNames: p.planNames ?? {} };
   } catch {
     cache = { figures: {}, planNames: {} };

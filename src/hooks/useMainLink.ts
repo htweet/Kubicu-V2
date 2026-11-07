@@ -4,7 +4,7 @@ import { spaceHandle } from '../utils/domains/links';
 import { MAIN_SPACE_ID } from '../utils/spaces';
 
 /** The main page's handle and, when connected, its primary custom domain — short links live under these (D62). */
-export function useMainLink(): {mainHandle: string;host: string | null;} {
+export function useMainLink(): { mainHandle: string; host: string | null } {
   const { current } = useWorkspace();
   const { data } = useDomains();
   const mainHandle = spaceHandle(current.id, MAIN_SPACE_ID) ?? '';

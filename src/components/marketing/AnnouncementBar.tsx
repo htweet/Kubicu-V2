@@ -30,13 +30,13 @@ export function AnnouncementBar() {
           try {
             sessionStorage.setItem(KEY, '1');
           } catch {
-
-            /* storage unavailable */}
+            /* storage unavailable */
+          }
         }}
-        className="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full text-white/80 transition-colors duration-150 hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
-        
+        className="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full text-white/80 transition-colors duration-150 hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+      >
         <XIcon size={16} aria-hidden />
       </button>
-    </div>);
-
+    </div>
+  );
 }

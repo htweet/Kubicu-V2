@@ -14,7 +14,7 @@ export const discountStatusLabel: Record<DiscountStatus, string> = {
   scheduled: 'Scheduled',
   expired: 'Expired',
   used_up: 'Used up',
-  paused: 'Paused'
+  paused: 'Paused',
 };
 
 export const discountKindLabel = { code: 'Code', automatic: 'Automatic', referral: 'Referral' } as const;
@@ -57,14 +57,14 @@ export interface DiscountContext {
   now?: number;
 }
 
-export type Evaluation = {ok: true;amountNgn: number;} | {ok: false;reason: string;};
+export type Evaluation = { ok: true; amountNgn: number } | { ok: false; reason: string };
 
 function eligibleSubtotal(d: Discount, ctx: DiscountContext): number {
   const s = d.appliesTo;
   if (s.scope === 'all') return ctx.subtotalNgn;
-  return ctx.lines.
-  filter((l) => s.scope === 'products' ? s.productIds.includes(l.productId) : l.collectionIds.some((c) => s.collectionIds.includes(c))).
-  reduce((t, l) => t + l.amountNgn, 0);
+  return ctx.lines
+    .filter((l) => (s.scope === 'products' ? s.productIds.includes(l.productId) : l.collectionIds.some((c) => s.collectionIds.includes(c))))
+    .reduce((t, l) => t + l.amountNgn, 0);
 }
 
 export function evaluate(d: Discount, data: CommerceData, ctx: DiscountContext): Evaluation {
@@ -83,7 +83,7 @@ export function evaluate(d: Discount, data: CommerceData, ctx: DiscountContext):
   }
   const base = eligibleSubtotal(d, ctx);
   if (d.value.type !== 'free_delivery' && base <= 0) return { ok: false, reason: 'This code doesn’t apply to the items in your cart.' };
-  if (d.value.type === 'percent') return { ok: true, amountNgn: Math.round(base * d.value.percent / 100) };
+  if (d.value.type === 'percent') return { ok: true, amountNgn: Math.round((base * d.value.percent) / 100) };
   if (d.value.type === 'fixed') return { ok: true, amountNgn: Math.min(d.value.amountNgn, base) };
   if (ctx.deliveryNgn === 0) return { ok: false, reason: 'Delivery is already free on this order.' };
   return { ok: true, amountNgn: ctx.deliveryNgn ?? 0 };
@@ -99,7 +99,7 @@ export interface DiscountResolution {
   /** Problem with the code the customer typed, if any. */
   codeError?: string;
   /** The typed code worked, but an automatic offer saves more. */
-  codeBeaten?: {code: string;amountNgn: number;};
+  codeBeaten?: { code: string; amountNgn: number };
 }
 
 export function findByCode(data: CommerceData, code: string): Discount | undefined {
@@ -110,12 +110,12 @@ export function findByCode(data: CommerceData, code: string): Discount | undefin
 /** Picks the single best discount for this cart. */
 export function resolveDiscount(data: CommerceData, ctx: DiscountContext, code: string): DiscountResolution {
   const candidates: AppliedDiscount[] = [];
-  data.discounts.
-  filter((d) => d.kind === 'automatic').
-  forEach((d) => {
-    const r = evaluate(d, data, ctx);
-    if (r.ok && r.amountNgn > 0) candidates.push({ discount: d, amountNgn: r.amountNgn });
-  });
+  data.discounts
+    .filter((d) => d.kind === 'automatic')
+    .forEach((d) => {
+      const r = evaluate(d, data, ctx);
+      if (r.ok && r.amountNgn > 0) candidates.push({ discount: d, amountNgn: r.amountNgn });
+    });
   const bestAuto = candidates.sort((a, b) => b.amountNgn - a.amountNgn)[0] ?? null;
 
   if (!normaliseCode(code)) return { applied: bestAuto };
@@ -133,7 +133,7 @@ export function orderDiscountRecord(a: AppliedDiscount): OrderDiscount {
 }
 
 /** Customer-facing line label, e.g. “EID20 · Eid sale — 20% off”. */
-export function discountLineLabel(d: {code: string;title?: string;label?: string;}): string {
+export function discountLineLabel(d: { code: string; title?: string; label?: string }): string {
   const title = d.title ?? d.label ?? 'Discount';
   return d.code ? `${d.code} · ${title}` : title;
 }

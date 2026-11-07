@@ -30,7 +30,7 @@ export function TrustCardShare({ business, level, score, signals, url, summary, 
   const [blob, setBlob] = useState<Blob | null>(null);
   const [failed, setFailed] = useState(false);
   const [busy, setBusy] = useState(false);
-  const preview = useMemo(() => blob ? URL.createObjectURL(blob) : '', [blob]);
+  const preview = useMemo(() => (blob ? URL.createObjectURL(blob) : ''), [blob]);
   useEffect(() => () => {
     if (preview) URL.revokeObjectURL(preview);
   }, [preview]);
@@ -39,9 +39,9 @@ export function TrustCardShare({ business, level, score, signals, url, summary, 
   useEffect(() => {
     let alive = true;
     setFailed(false);
-    renderTrustCard({ business, level, score, showScore, signals, url, generatedAt: new Date() }).
-    then((b) => alive && setBlob(b)).
-    catch(() => alive && setFailed(true));
+    renderTrustCard({ business, level, score, showScore, signals, url, generatedAt: new Date() })
+      .then((b) => alive && setBlob(b))
+      .catch(() => alive && setFailed(true));
     return () => {
       alive = false;
     };
@@ -92,13 +92,13 @@ export function TrustCardShare({ business, level, score, signals, url, summary, 
   return (
     <div className="flex flex-col gap-4">
       <div className="overflow-hidden rounded-lg border border-line bg-sunken">
-        {preview ?
-        <img src={preview} alt={`Trust Passport card for ${business}: ${showScore ? `${score} out of 100, ` : ''}${signals.length} checks met, with a QR code to the live passport.`} className="block aspect-[4/5] w-full object-cover" /> :
-
-        <div className="flex aspect-[4/5] w-full items-center justify-center px-6 text-center text-caption text-fg-muted" role="status">
+        {preview ? (
+          <img src={preview} alt={`Trust Passport card for ${business}: ${showScore ? `${score} out of 100, ` : ''}${signals.length} checks met, with a QR code to the live passport.`} className="block aspect-[4/5] w-full object-cover" />
+        ) : (
+          <div className="flex aspect-[4/5] w-full items-center justify-center px-6 text-center text-caption text-fg-muted" role="status">
             {failed ? 'The card couldn’t be drawn on this device. You can still share the text and link.' : 'Drawing your card…'}
           </div>
-        }
+        )}
       </div>
 
       <div>
@@ -109,15 +109,15 @@ export function TrustCardShare({ business, level, score, signals, url, summary, 
       {unpublished && <p className="text-caption text-warning">Publish your page so the QR code and link open your live passport.</p>}
 
       <div className="flex flex-wrap gap-2">
-        {canShareFile ?
-        <Button size="sm" leadingIcon={busy ? Loader2Icon : Share2Icon} onClick={share} disabled={busy}>
+        {canShareFile ? (
+          <Button size="sm" leadingIcon={busy ? Loader2Icon : Share2Icon} onClick={share} disabled={busy}>
             Share image
-          </Button> :
-
-        <Button size="sm" leadingIcon={MessageCircleIcon} onClick={downloadAndWhatsApp} disabled={!blob}>
+          </Button>
+        ) : (
+          <Button size="sm" leadingIcon={MessageCircleIcon} onClick={downloadAndWhatsApp} disabled={!blob}>
             Save image & open WhatsApp
           </Button>
-        }
+        )}
         <Button size="sm" variant="secondary" leadingIcon={DownloadIcon} onClick={download} disabled={!blob}>
           Download
         </Button>
@@ -128,6 +128,6 @@ export function TrustCardShare({ business, level, score, signals, url, summary, 
       <p className="text-caption text-fg-subtle">
         {canShareFile ? 'Opens your phone’s share menu — pick WhatsApp, Status or any app. The text and link go with the image.' : 'WhatsApp on a computer can’t receive images from a link, so the image saves and you attach it in the chat.'} The QR code opens your live passport, so buyers can check the card is real.
       </p>
-    </div>);
-
+    </div>
+  );
 }

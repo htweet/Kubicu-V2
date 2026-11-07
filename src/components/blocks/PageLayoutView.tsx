@@ -32,11 +32,11 @@ export function PageLayoutView({ doc, blocks: source, theme, mode, wide }: PageL
   const columnPx = pageContentWidth(doc);
   const childCtx: BlockChildrenValue = {
     childrenOf: (id) => blocks.filter((b) => b.parentId === id),
-    render: (child, t) =>
-    <div className={spacingClass[child.layout.spacing]}>
+    render: (child, t) => (
+      <div className={spacingClass[child.layout.spacing]}>
         <BlockRenderer block={child} theme={t} mode={mode} />
       </div>
-
+    ),
   };
   return (
     <BlockChildrenProvider value={childCtx}>
@@ -44,15 +44,15 @@ export function PageLayoutView({ doc, blocks: source, theme, mode, wide }: PageL
         const t = sectionTheme(theme, row.background);
         return (
           <LayoutRow key={row.key} {...bandJoins(rows, i)} theme={theme} columnPx={columnPx} density={doc.layout?.density} width={row.width} background={row.background} ratio={row.ratio} firstSecondOnPhone={row.firstSecondOnPhone} sideBySide={wide}>
-            {row.items.map((b) =>
-            <div key={b.id} data-preview-block={b.id} className={spacingClass[b.layout.spacing]}>
+            {row.items.map((b) => (
+              <div key={b.id} data-preview-block={b.id} className={spacingClass[b.layout.spacing]}>
                 <BlockRenderer block={b} theme={t} mode={mode} />
               </div>
-            )}
-          </LayoutRow>);
-
+            ))}
+          </LayoutRow>
+        );
       })}
       {own && <EndPreviewCurrency />}
-    </BlockChildrenProvider>);
-
+    </BlockChildrenProvider>
+  );
 }

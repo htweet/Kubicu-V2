@@ -45,7 +45,7 @@ export function MobileMoneyPay({ theme: t, amount, wallet, payee, phone: initial
   const networks = wallet.networks ?? null;
   const [stage, setStage] = useState<Stage>('phone');
   const [phone, setPhone] = useState(initialPhone);
-  const [networkId, setNetworkId] = useState<MobileNetwork['id'] | null>(() => networks ? guessNetwork(networks, initialPhone)?.id ?? null : null);
+  const [networkId, setNetworkId] = useState<MobileNetwork['id'] | null>(() => (networks ? guessNetwork(networks, initialPhone)?.id ?? null : null));
   const [picked, setPicked] = useState(false);
   const [voucher, setVoucher] = useState('');
   const [paybillCode, setPaybillCode] = useState('');
@@ -99,8 +99,8 @@ export function MobileMoneyPay({ theme: t, amount, wallet, payee, phone: initial
       setLeft(Math.max(0, MOBILE_MONEY_SECONDS - gone));
       if (gone < settleAt) return;
       clear();
-      if (simulate === 'approves') finish(wallet.id === 'mpesa' ? mpesaCode() : momoTransactionId());else
-      setStage(simulate === 'declines' ? 'declined' : 'timeout');
+      if (simulate === 'approves') finish(wallet.id === 'mpesa' ? mpesaCode() : momoTransactionId());
+      else setStage(simulate === 'declines' ? 'declined' : 'timeout');
     }, 1000);
   };
 
@@ -122,11 +122,11 @@ export function MobileMoneyPay({ theme: t, amount, wallet, payee, phone: initial
       <div className="flex flex-col gap-4">
         <div>
           <h3 className="text-[18px] font-semibold">{stage === 'paybill' || stage === 'checking' ? tr('Pay with M-Pesa Paybill') : tr('Pay with {wallet}', { wallet: name })}</h3>
-          {stage !== 'paid' &&
-          <p className="mt-1 text-[13.5px] leading-snug" style={muted}>
+          {stage !== 'paid' && (
+            <p className="mt-1 text-[13.5px] leading-snug" style={muted}>
               {stage === 'paybill' || stage === 'checking' ? tr('Use the M-Pesa menu on your phone, then enter the code from the confirmation SMS.') : tr('We’ll send a payment request to your phone. Approve it and {hint}.', { hint: tr(hint) })}
             </p>
-          }
+          )}
         </div>
 
         <p className="flex items-baseline justify-between rounded-md px-3 py-2.5 text-[14px]" style={box}>
@@ -134,41 +134,41 @@ export function MobileMoneyPay({ theme: t, amount, wallet, payee, phone: initial
           <span className="text-[16px] font-semibold tabular-nums">{formatNgn(amount)}</span>
         </p>
 
-        {stage === 'phone' &&
-        <>
+        {stage === 'phone' && (
+          <>
             <ThemedField theme={t} label={tr('{wallet} number', { wallet: networks ? tr('Mobile money') : wallet.name })} type="tel" inputMode="tel" autoComplete="tel" placeholder={phonePlaceholder()} value={phone} onChange={setPhone} error={tried && phoneError ? phoneError : undefined} />
-            {networks &&
-          <fieldset className="flex flex-col gap-2">
+            {networks && (
+              <fieldset className="flex flex-col gap-2">
                 <legend className="mb-1 text-[14px] font-semibold">{tr('Your network')}</legend>
                 <div className="grid grid-cols-1 gap-2 min-[400px]:grid-cols-3">
-                  {networks.map((n) =>
-              <label key={n.id} className="flex cursor-pointer items-center gap-2 p-3 text-[13.5px] font-semibold focus-within:outline focus-within:outline-2 focus-within:outline-offset-2" style={{ ...cardStyle(t), border: `1.5px solid ${networkId === n.id ? t.text : mix(t.text, 12)}` }}>
+                  {networks.map((n) => (
+                    <label key={n.id} className="flex cursor-pointer items-center gap-2 p-3 text-[13.5px] font-semibold focus-within:outline focus-within:outline-2 focus-within:outline-offset-2" style={{ ...cardStyle(t), border: `1.5px solid ${networkId === n.id ? t.text : mix(t.text, 12)}` }}>
                       <input type="radio" name="momo-network" className="sr-only" checked={networkId === n.id} onChange={() => (setNetworkId(n.id), setPicked(true))} />
                       {n.name}
                     </label>
-              )}
+                  ))}
                 </div>
-                {tried && networkError &&
-            <p className="text-[13px] font-semibold" role="alert">
+                {tried && networkError && (
+                  <p className="text-[13px] font-semibold" role="alert">
                     {networkError}
                   </p>
-            }
+                )}
               </fieldset>
-          }
-            {network?.voucher &&
-          <div className="flex flex-col gap-2">
+            )}
+            {network?.voucher && (
+              <div className="flex flex-col gap-2">
                 <p className="rounded-md px-3 py-2.5 text-[13px] leading-snug" style={box}>
                   {tr('Telecel Cash asks for a voucher first: dial *110#, choose “Generate voucher”, then type the 6 digits here.')}
                 </p>
                 <ThemedField theme={t} label={tr('Voucher')} inputMode="numeric" autoComplete="one-time-code" placeholder="123456" value={voucher} onChange={(v) => setVoucher(v.replace(/\D/g, '').slice(0, 6))} error={tried && voucherError ? voucherError : undefined} />
               </div>
-          }
+            )}
             <SimulatePicker theme={t} value={simulate} onChange={setSimulate} />
           </>
-        }
+        )}
 
-        {stage === 'waiting' &&
-        <div className="flex flex-col items-center gap-3 p-5 text-center" style={{ ...cardStyle(t), border: `1.5px solid ${t.text}` }} role="status">
+        {stage === 'waiting' && (
+          <div className="flex flex-col items-center gap-3 p-5 text-center" style={{ ...cardStyle(t), border: `1.5px solid ${t.text}` }} role="status">
             <SmartphoneIcon size={26} aria-hidden />
             <p className="text-[15px] font-semibold">{tr('Check your phone')}</p>
             <p className="max-w-[300px] text-[13px] leading-snug" style={muted}>
@@ -178,25 +178,25 @@ export function MobileMoneyPay({ theme: t, amount, wallet, payee, phone: initial
               <Loader2Icon size={14} className={reduce ? '' : 'animate-spin'} aria-hidden />
               {tr('Waiting · {time} left', { time: `${mm}:${ss}` })}
             </p>
-            {wallet.paybill &&
-          <button type="button" onClick={() => (clear(), setTried(false), setStage('paybill'))} className="text-[13px] font-semibold underline underline-offset-2">
+            {wallet.paybill && (
+              <button type="button" onClick={() => (clear(), setTried(false), setStage('paybill'))} className="text-[13px] font-semibold underline underline-offset-2">
                 {tr('No prompt? Pay by Paybill instead')}
               </button>
-          }
+            )}
           </div>
-        }
+        )}
 
-        {(stage === 'declined' || stage === 'timeout') &&
-        <div className="flex flex-col gap-1 rounded-md p-4" style={box} role="alert">
+        {(stage === 'declined' || stage === 'timeout') && (
+          <div className="flex flex-col gap-1 rounded-md p-4" style={box} role="alert">
             <p className="text-[15px] font-semibold">{stage === 'declined' ? tr('The payment wasn’t approved') : tr('The request ran out')}</p>
             <p className="text-[13px] leading-snug" style={muted}>
               {stage === 'declined' ? tr('No money left your {wallet}. Check your balance and try again, or pay another way.', { wallet: name }) : tr('Nothing was charged. Send a new request and approve it within a minute.')}
             </p>
           </div>
-        }
+        )}
 
-        {(stage === 'paybill' || stage === 'checking') && wallet.paybill &&
-        <div className="flex flex-col gap-3">
+        {(stage === 'paybill' || stage === 'checking') && wallet.paybill && (
+          <div className="flex flex-col gap-3">
             <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 rounded-md p-4 text-[14px]" style={box}>
               <dt style={muted}>{tr('Paybill number')}</dt>
               <dd className="font-mono font-semibold tracking-wide">{wallet.paybill}</dd>
@@ -211,17 +211,17 @@ export function MobileMoneyPay({ theme: t, amount, wallet, payee, phone: initial
               <li>{tr('Enter your PIN. You’ll get an SMS with a 10-character code.')}</li>
             </ol>
             <ThemedField theme={t} label={tr('M-Pesa code from the SMS')} autoComplete="off" placeholder="SKJ4H7XQ2P" value={paybillCode} onChange={(v) => setPaybillCode(v.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 10))} error={tried && !paybillOk ? tr('The code has 10 letters and numbers, like SKJ4H7XQ2P') : undefined} />
-            {stage === 'checking' &&
-          <p className="flex items-center gap-2 text-[13px]" style={muted} role="status">
+            {stage === 'checking' && (
+              <p className="flex items-center gap-2 text-[13px]" style={muted} role="status">
                 <Loader2Icon size={14} className={reduce ? '' : 'animate-spin'} aria-hidden />
                 {tr('Checking the payment…')}
               </p>
-          }
+            )}
           </div>
-        }
+        )}
 
-        {stage === 'paid' &&
-        <div className="flex flex-col items-center gap-2 p-5 text-center" style={{ ...cardStyle(t), border: `1.5px solid ${t.text}` }} role="status">
+        {stage === 'paid' && (
+          <div className="flex flex-col items-center gap-2 p-5 text-center" style={{ ...cardStyle(t), border: `1.5px solid ${t.text}` }} role="status">
             <CheckCircle2Icon size={26} aria-hidden />
             <p className="text-[15px] font-semibold">{tr('Payment received')}</p>
             <p className="text-[13px]" style={muted}>
@@ -231,62 +231,62 @@ export function MobileMoneyPay({ theme: t, amount, wallet, payee, phone: initial
               {tr('Keep this code. It’s on your receipt too, and the seller can use it to find your payment.')}
             </p>
           </div>
-        }
+        )}
 
-        {stage !== 'paid' &&
-        <p className="text-[12px] leading-snug" style={muted}>
+        {stage !== 'paid' && (
+          <p className="text-[12px] leading-snug" style={muted}>
             {tr('Never share your PIN — not even with the seller. Simulated in this preview: no request is sent.')}
           </p>
-        }
+        )}
       </div>
 
       <Actions inline={inline} theme={t}>
         {stage === 'phone' && <PrimaryButton theme={t} onClick={send}>{tr('Send payment request')}</PrimaryButton>}
         {(stage === 'declined' || stage === 'timeout') && <PrimaryButton theme={t} onClick={send}>{tr('Send a new request')}</PrimaryButton>}
-        {stage === 'timeout' && wallet.paybill &&
-        <SecondaryButton theme={t} onClick={() => (setTried(false), setStage('paybill'))}>
+        {stage === 'timeout' && wallet.paybill && (
+          <SecondaryButton theme={t} onClick={() => (setTried(false), setStage('paybill'))}>
             {tr('Pay by Paybill instead')}
           </SecondaryButton>
-        }
+        )}
         {stage === 'paybill' && <PrimaryButton theme={t} onClick={confirmPaybill}>{tr('I’ve paid — confirm')}</PrimaryButton>}
         {stage === 'paid' && <PrimaryButton theme={t} onClick={() => onPaid(reference)}>{tr('Continue')}</PrimaryButton>}
-        {stage === 'waiting' || stage === 'paybill' ?
-        <SecondaryButton theme={t} onClick={() => (clear(), setStage('phone'))}>
+        {stage === 'waiting' || stage === 'paybill' ? (
+          <SecondaryButton theme={t} onClick={() => (clear(), setStage('phone'))}>
             {stage === 'paybill' ? tr('Back to the phone prompt') : tr('Change number')}
-          </SecondaryButton> :
-        stage !== 'paid' && stage !== 'checking' ?
-        <SecondaryButton theme={t} onClick={onBack}>
+          </SecondaryButton>
+        ) : stage !== 'paid' && stage !== 'checking' ? (
+          <SecondaryButton theme={t} onClick={onBack}>
             {tr('Pay another way')}
-          </SecondaryButton> :
-        null}
+          </SecondaryButton>
+        ) : null}
       </Actions>
-    </>);
-
+    </>
+  );
 }
 
-function SimulatePicker({ theme: t, value, onChange }: {theme: PageTheme;value: Simulate;onChange: (v: Simulate) => void;}) {
+function SimulatePicker({ theme: t, value, onChange }: { theme: PageTheme; value: Simulate; onChange: (v: Simulate) => void }) {
   const { t: tr } = useT();
   return (
     <fieldset className="flex flex-col gap-1.5 rounded-md p-3" style={{ background: mix('#d9a400', 12, t.background) }}>
       <legend className="sr-only">{tr('Test mode — choose what happens on the phone')}</legend>
       <span className="text-[12.5px] font-semibold">{tr('Test mode — choose what happens on the phone')}</span>
       {(
-      [
-      ['approves', tr('Buyer approves')],
-      ['declines', tr('Buyer declines or has too little money')],
-      ['no_answer', tr('No answer — the request runs out')]] as
-      [Simulate, string][]).
-      map(([v, label]) =>
-      <label key={v} className="flex cursor-pointer items-center gap-2 text-[13px]">
+        [
+          ['approves', tr('Buyer approves')],
+          ['declines', tr('Buyer declines or has too little money')],
+          ['no_answer', tr('No answer — the request runs out')],
+        ] as [Simulate, string][]
+      ).map(([v, label]) => (
+        <label key={v} className="flex cursor-pointer items-center gap-2 text-[13px]">
           <input type="radio" name="momo-sim" checked={value === v} onChange={() => onChange(v)} style={{ accentColor: t.text }} />
           {label}
         </label>
-      )}
-    </fieldset>);
-
+      ))}
+    </fieldset>
+  );
 }
 
-function Actions({ inline, theme, children }: {inline?: boolean;theme: PageTheme;children: React.ReactNode;}) {
+function Actions({ inline, theme, children }: { inline?: boolean; theme: PageTheme; children: React.ReactNode }) {
   if (inline) return <div className="flex flex-col gap-2">{children}</div>;
   return <SheetActions theme={theme}>{children}</SheetActions>;
 }

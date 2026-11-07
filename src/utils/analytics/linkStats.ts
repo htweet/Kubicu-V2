@@ -23,19 +23,19 @@ export interface LinkStatsResult {
   conversions: number;
   orders: number;
   revenueNgn: number;
-  daily: {label: string;value: number;previous?: number;}[];
+  daily: { label: string; value: number; previous?: number }[];
   previousClicks: number | null;
-  devices: {key: DeviceKind | 'unknown';label: string;count: number;}[];
+  devices: { key: DeviceKind | 'unknown'; label: string; count: number }[];
   hours: number[];
   busiestDay: string | null;
-  landed: {pageId: string | null;count: number;}[];
-  outcomes: {key: ClickOutcome;label: string;count: number;}[];
+  landed: { pageId: string | null; count: number }[];
+  outcomes: { key: ClickOutcome; label: string; count: number }[];
   recent: LinkClick[];
   hasSample: boolean;
   /** Where taps came from (D271). */
-  via: {key: SourceId | 'unknown';label: string;count: number;}[];
+  via: { key: SourceId | 'unknown'; label: string; count: number }[];
   /** Taps recorded but not counted as clicks (D271). */
-  filtered: {bots: number;bursts: number;};
+  filtered: { bots: number; bursts: number };
 }
 
 const ORDER: EventType[] = ['order_paid', 'ticket_paid'];
@@ -49,7 +49,7 @@ export const outcomeLabels: Record<ClickOutcome, string> = {
   signed_up: 'Signed up or sent a form',
   engaged: 'Tapped or browsed',
   looked: 'Just looked',
-  left: 'Went to the website'
+  left: 'Went to the website',
 };
 
 const deviceLabels: Record<DeviceKind | 'unknown', string> = { phone: 'Phone', tablet: 'Tablet', desktop: 'Computer', unknown: 'Not recorded' };
@@ -63,8 +63,8 @@ export function linkClicks(events: AnalyticsEvent[], slug: string): LinkClick[] 
     // Bots, link previews and rapid repeats are recorded but never become clicks (D271).
     if (e.campaign !== slug || e.invalid) return;
     const list = bySession.get(e.session);
-    if (list) list.push(e);else
-    bySession.set(e.session, [e]);
+    if (list) list.push(e);
+    else bySession.set(e.session, [e]);
   });
   const out: LinkClick[] = [];
   bySession.forEach((list, session) => {
@@ -72,17 +72,17 @@ export function linkClicks(events: AnalyticsEvent[], slug: string): LinkClick[] 
     if (!entry) return; // events without a click or landing aren't a click on this link
     const types = new Set(list.map((e) => e.type));
     const landedView = list.find((e) => e.type === 'view');
-    const outcome: ClickOutcome = ORDER.some((t) => types.has(t)) ?
-    'ordered' :
-    BOOK.some((t) => types.has(t)) ?
-    'booked' :
-    SIGNUP.some((t) => types.has(t)) ?
-    'signed_up' :
-    list.some((e) => !VIEW_ONLY.includes(e.type)) ?
-    'engaged' :
-    landedView ?
-    'looked' :
-    'left';
+    const outcome: ClickOutcome = ORDER.some((t) => types.has(t))
+      ? 'ordered'
+      : BOOK.some((t) => types.has(t))
+        ? 'booked'
+        : SIGNUP.some((t) => types.has(t))
+          ? 'signed_up'
+          : list.some((e) => !VIEW_ONLY.includes(e.type))
+            ? 'engaged'
+            : landedView
+              ? 'looked'
+              : 'left';
     out.push({
       session,
       at: Math.min(...list.map((e) => Date.parse(e.at))),
@@ -90,7 +90,7 @@ export function linkClicks(events: AnalyticsEvent[], slug: string): LinkClick[] 
       pageId: landedView?.pageId ?? null,
       outcome,
       sample: list.some((e) => e.sample),
-      via: entry.via ?? list.find((e) => e.via)?.via
+      via: entry.via ?? list.find((e) => e.via)?.via,
     });
   });
   return out.sort((a, b) => b.at - a.at);
@@ -111,9 +111,9 @@ export function linkStats(events: AnalyticsEvent[], slug: string, from: number, 
   const daily = Array.from({ length: buckets }, (_, i) => {
     const start = from + i * step * DAY;
     const end = start + step * DAY;
-    const point: {label: string;value: number;previous?: number;} = {
+    const point: { label: string; value: number; previous?: number } = {
       label: new Date(start).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
-      value: clicks.filter((c) => c.at >= start && c.at < end).length
+      value: clicks.filter((c) => c.at >= start && c.at < end).length,
     };
     if (prev) point.previous = prev.filter((c) => c.at >= start - span && c.at < end - span).length;
     return point;
@@ -146,31 +146,31 @@ export function linkStats(events: AnalyticsEvent[], slug: string, from: number, 
     revenueNgn: paid.reduce((s, e) => s + (e.valueNgn ?? 0), 0),
     daily,
     previousClicks: prev ? prev.length : null,
-    devices: Array.from(deviceCounts.entries()).
-    map(([key, count]) => ({ key, label: deviceLabels[key], count })).
-    sort((a, b) => b.count - a.count),
+    devices: Array.from(deviceCounts.entries())
+      .map(([key, count]) => ({ key, label: deviceLabels[key], count }))
+      .sort((a, b) => b.count - a.count),
     hours,
     busiestDay: top > 0 ? weekdays[weekday.indexOf(top)] : null,
-    landed: Array.from(landedMap.entries()).
-    map(([pageId, count]) => ({ pageId, count })).
-    sort((a, b) => b.count - a.count),
+    landed: Array.from(landedMap.entries())
+      .map(([pageId, count]) => ({ pageId, count }))
+      .sort((a, b) => b.count - a.count),
     outcomes: outcomeOrder.map((key) => ({ key, label: outcomeLabels[key], count: clicks.filter((c) => c.outcome === key).length })).filter((o) => o.count > 0),
     recent: clicks.slice(0, 20),
     hasSample: clicks.some((c) => c.sample),
-    via: Array.from(viaCounts.entries()).
-    map(([key, count]) => ({ key, label: key === 'unknown' ? 'Not recorded (older clicks)' : viaLabels[key], count })).
-    sort((a, b) => b.count - a.count),
-    filtered: { bots: invalid.filter((e) => e.invalid === 'bot').length, bursts: invalid.filter((e) => e.invalid === 'burst').length }
+    via: Array.from(viaCounts.entries())
+      .map(([key, count]) => ({ key, label: key === 'unknown' ? 'Not recorded (older clicks)' : viaLabels[key], count }))
+      .sort((a, b) => b.count - a.count),
+    filtered: { bots: invalid.filter((e) => e.invalid === 'bot').length, bursts: invalid.filter((e) => e.invalid === 'burst').length },
   };
 }
 
 /** Clicks per link, all time — for the list. */
-export function clicksBySlug(events: AnalyticsEvent[]): Map<string, {clicks: number;last7: number;last: number | null;}> {
-  const out = new Map<string, {clicks: number;last7: number;last: number | null;}>();
+export function clicksBySlug(events: AnalyticsEvent[]): Map<string, { clicks: number; last7: number; last: number | null }> {
+  const out = new Map<string, { clicks: number; last7: number; last: number | null }>();
   const seen = new Set<string>();
   const weekAgo = Date.now() - 7 * DAY;
   events.forEach((e) => {
-    if (!e.campaign || e.invalid || e.type !== 'view' && e.type !== 'link_click') return;
+    if (!e.campaign || e.invalid || (e.type !== 'view' && e.type !== 'link_click')) return;
     const at = Date.parse(e.at);
     const s = out.get(e.campaign) ?? { clicks: 0, last7: 0, last: null };
     s.last = s.last === null ? at : Math.max(s.last, at);

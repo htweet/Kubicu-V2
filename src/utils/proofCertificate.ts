@@ -11,7 +11,7 @@ export function certificateCode(workId: string): string {
   let out = '';
   for (let i = 0; i < 6; i++) {
     out += alphabet[n % alphabet.length];
-    n = Math.floor(n / alphabet.length) || h >>> i + 3;
+    n = Math.floor(n / alphabet.length) || (h >>> (i + 3));
   }
   return `KW-${out.slice(0, 3)}-${out.slice(3)}`;
 }

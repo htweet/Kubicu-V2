@@ -74,7 +74,7 @@ export function Audience() {
   const mineCount = data.contacts.filter(isMine).length;
   const rows = useMemo(
     () => data.contacts.filter((c) => matchesSegment(c, filters) && (!mine || c.assigneeId === me.id || c.tasks.some((t) => !t.done && t.assigneeId === me.id))),
-    [data.contacts, filters, mine, me.id]
+    [data.contacts, filters, mine, me.id],
   );
   const dupes = duplicatePairs(data.contacts).length;
   const subscribed = data.contacts.filter((c) => c.consent === 'subscribed').length;
@@ -91,21 +91,21 @@ export function Audience() {
       toCsv(
         ['name', 'email', 'phone', 'consent', 'consent_wording', 'consent_at', 'sources', 'channel', 'short_link', 'tags', 'stage', 'created', ...settings.contactFields.map((f) => f.label)],
         rows.map((c) => [
-        c.name,
-        c.email,
-        c.phone,
-        c.consent,
-        c.consentRecord?.wording ?? '',
-        c.consentRecord?.at ?? '',
-        c.sources.join('; '),
-        c.attribution?.channel ?? '',
-        c.attribution?.campaign ?? '',
-        c.tags.join('; '),
-        c.stage,
-        c.createdAt,
-        ...settings.contactFields.map((f) => c.fields?.[f.id] ?? '')]
-        )
-      )
+          c.name,
+          c.email,
+          c.phone,
+          c.consent,
+          c.consentRecord?.wording ?? '',
+          c.consentRecord?.at ?? '',
+          c.sources.join('; '),
+          c.attribution?.channel ?? '',
+          c.attribution?.campaign ?? '',
+          c.tags.join('; '),
+          c.stage,
+          c.createdAt,
+          ...settings.contactFields.map((f) => c.fields?.[f.id] ?? ''),
+        ]),
+      ),
     );
     // Exports leave the workspace, so each one is on the record (D268).
     team.log('audience', `exported ${rows.length} contact${rows.length === 1 ? '' : 's'} as CSV`, '/app/audience');
@@ -114,31 +114,31 @@ export function Audience() {
   const addErrors = {
     contact: !newContact.email.trim() && !newContact.phone.trim() ? 'Add an email or phone' : '',
     email: newContact.email.trim() && !isValidEmail(newContact.email) ? 'Email looks wrong' : '',
-    phone: newContact.phone.trim() && !isValidPhone(newContact.phone) ? 'Phone looks wrong' : ''
+    phone: newContact.phone.trim() && !isValidPhone(newContact.phone) ? 'Phone looks wrong' : '',
   };
 
   const columns: DataColumn<Contact>[] = [
-  {
-    key: 'name',
-    header: 'Contact',
-    sortValue: (c) => c.name.toLowerCase(),
-    render: (c) =>
-    <button type="button" onClick={() => setParams({ contact: c.id })} className={cn('group text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus', c.consent === 'unsubscribed' && 'opacity-60')}>
+    {
+      key: 'name',
+      header: 'Contact',
+      sortValue: (c) => c.name.toLowerCase(),
+      render: (c) => (
+        <button type="button" onClick={() => setParams({ contact: c.id })} className={cn('group text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus', c.consent === 'unsubscribed' && 'opacity-60')}>
           <span className="flex items-center gap-2">
             <span className="font-semibold text-fg group-hover:underline">{c.name || tr('(no name)')}</span>
             {c.sample && <SampleTag />}
           </span>
           <span className="block text-caption text-fg-subtle">{[c.email, c.phone].filter(Boolean).join(' · ')}</span>
         </button>
-
-  },
-  { key: 'consent', header: 'Consent', render: (c) => <ConsentBadge consent={c.consent} /> },
-  { key: 'source', header: 'Came from', hideOnMobile: true, render: (c) => <span className="text-fg-muted">{c.sources.map((s) => tr(sourceLabels[s])).join(', ')}</span> },
-  { key: 'tags', header: 'Tags', hideOnMobile: true, render: (c) => <span className="text-fg-muted">{c.tags.join(', ') || '—'}</span> },
-  { key: 'stage', header: 'Stage', hideOnMobile: true, sortValue: (c) => c.stage, render: (c) => <span className="text-fg-muted">{tr(stageLabels[c.stage])}</span> },
-  { key: 'owner', header: 'Looked after by', hideOnMobile: true, render: (c) => <AssigneeChip memberId={c.assigneeId} /> },
-  { key: 'last', header: 'Last activity', align: 'right', sortValue: (c) => Date.parse(c.activity[0]?.at ?? c.createdAt), render: (c) => <span className="text-fg-muted">{formatRelative(c.activity[0]?.at ?? c.createdAt)}</span> }];
-
+      ),
+    },
+    { key: 'consent', header: 'Consent', render: (c) => <ConsentBadge consent={c.consent} /> },
+    { key: 'source', header: 'Came from', hideOnMobile: true, render: (c) => <span className="text-fg-muted">{c.sources.map((s) => tr(sourceLabels[s])).join(', ')}</span> },
+    { key: 'tags', header: 'Tags', hideOnMobile: true, render: (c) => <span className="text-fg-muted">{c.tags.join(', ') || '—'}</span> },
+    { key: 'stage', header: 'Stage', hideOnMobile: true, sortValue: (c) => c.stage, render: (c) => <span className="text-fg-muted">{tr(stageLabels[c.stage])}</span> },
+    { key: 'owner', header: 'Looked after by', hideOnMobile: true, render: (c) => <AssigneeChip memberId={c.assigneeId} /> },
+    { key: 'last', header: 'Last activity', align: 'right', sortValue: (c) => Date.parse(c.activity[0]?.at ?? c.createdAt), render: (c) => <span className="text-fg-muted">{formatRelative(c.activity[0]?.at ?? c.createdAt)}</span> },
+  ];
 
   return (
     <div className="mx-auto w-full max-w-[1200px] px-5 py-8 md:px-10 md:py-12">
@@ -146,7 +146,7 @@ export function Audience() {
         title="Audience"
         description="Everyone your page brings in — customers, bookings, enquiries and subscribers — with their consent."
         actions={
-        <>
+          <>
             <ExtensionShortcut id="email-sync" label="Email sync" icon={MailIcon} />
             <Button variant="tertiary" leadingIcon={SettingsIcon} onClick={() => setDialog('settings')}>
               Settings
@@ -161,18 +161,18 @@ export function Audience() {
               Add contact
             </Button>
           </>
-        } />
-      
+        }
+      />
 
-      {data.contacts.length === 0 ?
-      <EmptyState
-        framed
-        className="mt-8"
-        icon={UsersIcon}
-        title="No contacts yet"
-        description="Orders, bookings, enquiry forms and newsletter signups on your page add people here automatically."
-        action={
-        <div className="flex flex-wrap justify-center gap-2">
+      {data.contacts.length === 0 ? (
+          <EmptyState
+            framed
+            className="mt-8"
+            icon={UsersIcon}
+            title="No contacts yet"
+            description="Orders, bookings, enquiry forms and newsletter signups on your page add people here automatically."
+            action={
+              <div className="flex flex-wrap justify-center gap-2">
                 <Button leadingIcon={UploadIcon} variant="secondary" onClick={() => setDialog('import')}>
                   Import CSV
                 </Button>
@@ -180,22 +180,22 @@ export function Audience() {
                   Explore with sample data
                 </Button>
               </div>
-        } /> :
-
-
-      <>
+            }
+          />
+      ) : (
+        <>
           <AudienceGrowth
-          contacts={data.contacts}
-          subscribed={subscribed}
-          openTasks={openTasks}
-          action={
-          dupes > 0 ?
-          <Button size="sm" variant="secondary" leadingIcon={CopyIcon} onClick={() => setDialog('dupes')}>
+            contacts={data.contacts}
+            subscribed={subscribed}
+            openTasks={openTasks}
+            action={
+              dupes > 0 ? (
+                <Button size="sm" variant="secondary" leadingIcon={CopyIcon} onClick={() => setDialog('dupes')}>
                   {tr(dupes === 1 ? 'Review {n} possible duplicate' : 'Review {n} possible duplicates', { n: dupes })}
-                </Button> :
-          undefined
-          } />
-        
+                </Button>
+              ) : undefined
+            }
+          />
 
           <SegmentBar filters={filters} onApply={setFilters} canEdit={canEdit} tags={tagOptions} />
 
@@ -205,11 +205,11 @@ export function Audience() {
               <MineToggle mine={mine} count={mineCount} onChange={setMine} />
             </div>
             <div className={cn('grid gap-3 md:flex', tagOptions.length ? 'grid-cols-2 sm:grid-cols-3' : 'grid-cols-2')}>
-              {tagOptions.length > 0 &&
-            <div className="md:w-40">
+              {tagOptions.length > 0 && (
+                <div className="md:w-40">
                   <SelectInput<string> id="aud-tag" label="Tag" value={tagFilter} onChange={setTagFilter} options={[{ value: 'all', label: tr('Any') }, ...tagOptions.map((t) => ({ value: t, label: t }))]} />
                 </div>
-            }
+              )}
               <div className="md:w-44">
                 <SelectInput id="aud-src" label="Came from" value={source} onChange={setSource} options={[{ value: 'all', label: tr('Anywhere') }, ...(Object.keys(sourceLabels) as ContactSource[]).map((s) => ({ value: s, label: tr(sourceLabels[s]) }))]} />
               </div>
@@ -219,105 +219,105 @@ export function Audience() {
             </div>
           </div>
 
-          {filters.campaign !== 'all' &&
-        <p className="mt-3 flex flex-wrap items-center gap-2 text-label text-fg-muted">
+          {filters.campaign !== 'all' && (
+            <p className="mt-3 flex flex-wrap items-center gap-2 text-label text-fg-muted">
               Came through short link <span className="font-semibold text-fg">/s/{filters.campaign}</span>
               <button type="button" onClick={() => setFilters((f) => ({ ...f, campaign: 'all' }))} className="text-action underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
                 Clear
               </button>
             </p>
-        }
+          )}
 
-          {view === 'sources' ?
-        <AudienceSources
-          contacts={rows}
-          onPickCampaign={(slug) => {
-            setFilters((f) => ({ ...f, campaign: slug }));
-            setView('list');
-          }} /> :
-
-        view === 'list' ?
-        <div className="mt-4">
+          {view === 'sources' ? (
+            <AudienceSources
+              contacts={rows}
+              onPickCampaign={(slug) => {
+                setFilters((f) => ({ ...f, campaign: slug }));
+                setView('list');
+              }}
+            />
+          ) : view === 'list' ? (
+            <div className="mt-4">
               <DataTable caption="Contacts" rows={rows} columns={columns} filterText={(c) => `${c.name} ${c.email} ${c.phone} ${c.tags.join(' ')}`} filterPlaceholder="Search name, email, phone or tag" emptyTitle="No contacts match" emptyDescription="Try other filters." />
-            </div> :
-        !wide ?
-        // Phones: one stage at a time, switched with tabs that show each stage's count.
-        <div className="mt-4">
+            </div>
+          ) : !wide ? (
+            // Phones: one stage at a time, switched with tabs that show each stage's count.
+            <div className="mt-4">
               <div role="tablist" aria-label={tr('Stage')} className="scroll-quiet -mx-5 flex gap-2 overflow-x-auto px-5 pb-1">
                 {(Object.keys(stageLabels) as ContactStage[]).map((stage) => {
-              const on = stage === stageTab;
-              const n = rows.filter((c) => c.stage === stage).length;
-              return (
-                <button
-                  key={stage}
-                  type="button"
-                  role="tab"
-                  aria-selected={on}
-                  onClick={() => setStageTab(stage)}
-                  className={cn(
-                    'inline-flex h-10 shrink-0 items-center gap-1.5 rounded-full border px-4 text-label font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
-                    on ? 'border-action bg-action-soft text-action' : 'border-line bg-raised text-fg-muted'
-                  )}>
-                  
+                  const on = stage === stageTab;
+                  const n = rows.filter((c) => c.stage === stage).length;
+                  return (
+                    <button
+                      key={stage}
+                      type="button"
+                      role="tab"
+                      aria-selected={on}
+                      onClick={() => setStageTab(stage)}
+                      className={cn(
+                        'inline-flex h-10 shrink-0 items-center gap-1.5 rounded-full border px-4 text-label font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
+                        on ? 'border-action bg-action-soft text-action' : 'border-line bg-raised text-fg-muted',
+                      )}
+                    >
                       {tr(stageLabels[stage])} <span className="tabular-nums opacity-70">{n}</span>
-                    </button>);
-
-            })}
+                    </button>
+                  );
+                })}
               </div>
               <div role="tabpanel" aria-label={tr(stageLabels[stageTab])} className="mt-3 overflow-hidden rounded-lg border border-line bg-raised">
-                {rows.every((c) => c.stage !== stageTab) ?
-            <p className="px-5 py-10 text-center text-label text-fg-muted">{tr('No one at this stage.')}</p> :
-
-            <List>
-                    {rows.
-              filter((c) => c.stage === stageTab).
-              map((c) =>
-              <ListRow
-                key={c.id}
-                onClick={() => setParams({ contact: c.id })}
-                title={c.name || c.email}
-                meta={c.activity[0]?.label}
-                trailing={
-                <span className="flex flex-col items-end gap-1">
+                {rows.every((c) => c.stage !== stageTab) ? (
+                  <p className="px-5 py-10 text-center text-label text-fg-muted">{tr('No one at this stage.')}</p>
+                ) : (
+                  <List>
+                    {rows
+                      .filter((c) => c.stage === stageTab)
+                      .map((c) => (
+                        <ListRow
+                          key={c.id}
+                          onClick={() => setParams({ contact: c.id })}
+                          title={c.name || c.email}
+                          meta={c.activity[0]?.label}
+                          trailing={
+                            <span className="flex flex-col items-end gap-1">
                               <ConsentBadge consent={c.consent} />
                               {c.tasks.some((t) => !t.done) && <span className="text-caption font-semibold text-action">{followUps(c)}</span>}
                             </span>
-                } />
-
-              )}
+                          }
+                        />
+                      ))}
                   </List>
-            }
+                )}
               </div>
-            </div> :
-
-        <div className="scroll-quiet mt-4 grid auto-cols-[minmax(240px,1fr)] grid-flow-col gap-4 overflow-x-auto pb-2">
+            </div>
+          ) : (
+            <div className="scroll-quiet mt-4 grid auto-cols-[minmax(240px,1fr)] grid-flow-col gap-4 overflow-x-auto pb-2">
               {(Object.keys(stageLabels) as ContactStage[]).map((stage) => {
-            const list = rows.filter((c) => c.stage === stage);
-            return (
-              <section key={stage} aria-label={tr(stageLabels[stage])} className="flex flex-col rounded-lg border border-line bg-sunken p-3">
+                const list = rows.filter((c) => c.stage === stage);
+                return (
+                  <section key={stage} aria-label={tr(stageLabels[stage])} className="flex flex-col rounded-lg border border-line bg-sunken p-3">
                     <h2 className="flex items-baseline justify-between px-1 text-label font-semibold text-fg">
                       {tr(stageLabels[stage])} <span className="tabular-nums text-fg-subtle">{list.length}</span>
                     </h2>
                     <ul className="mt-3 flex flex-col gap-2">
-                      {list.map((c) =>
-                  <li key={c.id}>
+                      {list.map((c) => (
+                        <li key={c.id}>
                           <button type="button" onClick={() => setParams({ contact: c.id })} className="w-full rounded-md border border-line bg-raised p-3 text-left shadow-1 transition-colors duration-150 hover:border-line-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
                             <span className="block truncate text-label font-semibold text-fg">{c.name || c.email}</span>
                             <span className="block truncate text-caption text-fg-subtle">{c.activity[0]?.label}</span>
                             {c.tasks.some((t) => !t.done) && <span className="mt-1.5 inline-block text-caption font-semibold text-action">{followUps(c)}</span>}
                           </button>
                         </li>
-                  )}
+                      ))}
                       {list.length === 0 && <li className="px-1 text-caption text-fg-subtle">{tr('No one here.')}</li>}
                     </ul>
-                  </section>);
-
-          })}
+                  </section>
+                );
+              })}
             </div>
-        }
+          )}
           <p className="mt-4 text-caption text-fg-subtle">{tr('Unsubscribed contacts are greyed and excluded from every marketing message and automation. Buying or booking isn’t marketing consent.')}</p>
         </>
-      }
+      )}
 
       <ContactDetail contactId={openId} onClose={() => setParams({})} />
       <ImportContactsDialog open={dialog === 'import'} onClose={() => setDialog(null)} />
@@ -330,33 +330,33 @@ export function Audience() {
         title="Add a contact"
         description="Added contacts get service messages only until they opt in themselves."
         footer={
-        <>
+          <>
             <Button variant="secondary" onClick={() => setDialog(null)}>
               Cancel
             </Button>
             <Button
-            onClick={() => {
-              setTried(true);
-              if (Object.values(addErrors).some(Boolean)) return;
-              if (apply((d) => upsertContact(d, newContact, 'manual', 'Added by you'))) {
-                toast(tr('Contact added'));
-                setNewContact({ name: '', email: '', phone: '' });
-                setTried(false);
-                setDialog(null);
-              }
-            }}>
-            
+              onClick={() => {
+                setTried(true);
+                if (Object.values(addErrors).some(Boolean)) return;
+                if (apply((d) => upsertContact(d, newContact, 'manual', 'Added by you'))) {
+                  toast(tr('Contact added'));
+                  setNewContact({ name: '', email: '', phone: '' });
+                  setTried(false);
+                  setDialog(null);
+                }
+              }}
+            >
               Add contact
             </Button>
           </>
-        }>
-        
+        }
+      >
         <div className="flex flex-col gap-4">
           <TextInput id="add-name" label="Name" value={newContact.name} onChange={(e) => setNewContact((c) => ({ ...c, name: e.target.value }))} />
           <TextInput id="add-email" label="Email" type="email" value={newContact.email} error={tried ? addErrors.email || addErrors.contact || undefined : undefined} onChange={(e) => setNewContact((c) => ({ ...c, email: e.target.value }))} />
           <PhoneInput id="add-phone" label="Phone" value={newContact.phone} error={tried ? addErrors.phone || undefined : undefined} onChange={(phone) => setNewContact((c) => ({ ...c, phone }))} />
         </div>
       </Dialog>
-    </div>);
-
+    </div>
+  );
 }

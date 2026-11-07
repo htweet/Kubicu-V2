@@ -11,7 +11,7 @@ import { TextInput } from '../ui/TextInput';
 import { NfcDestinationFields, destinationValid } from './NfcDestinationFields';
 
 /** Rename one tag and change where it points (D442). */
-export function NfcTagSheet({ tag, onClose }: {tag: NfcTag | null;onClose: () => void;}) {
+export function NfcTagSheet({ tag, onClose }: { tag: NfcTag | null; onClose: () => void }) {
   const { t: tr } = useT();
   const { tags, update } = useNfcTags(tag?.workspaceId ?? '');
   const live = tag ? tags.find((t) => t.id === tag.id) ?? tag : null;
@@ -31,7 +31,7 @@ export function NfcTagSheet({ tag, onClose }: {tag: NfcTag | null;onClose: () =>
   const save = () => {
     setTried(true);
     if (!label.trim() || !destinationValid(dest)) return;
-    if (update((list) => list.map((t) => t.id === live.id ? { ...t, label: label.trim().slice(0, 40), destination: dest } : t))) {
+    if (update((list) => list.map((t) => (t.id === live.id ? { ...t, label: label.trim().slice(0, 40), destination: dest } : t)))) {
       toast.success(tr('Tag updated'), { description: tr('The next tap goes to the new place. Nothing to reprint.') });
       onClose();
     }
@@ -46,14 +46,14 @@ export function NfcTagSheet({ tag, onClose }: {tag: NfcTag | null;onClose: () =>
       title={live.label}
       description={tr('Total taps: {total} · This week: {week}', { total: live.taps.length, week: tapsSince(live, 7) })}
       footer={
-      <div className="flex w-full justify-end gap-2">
+        <div className="flex w-full justify-end gap-2">
           <Button variant="secondary" onClick={onClose}>
             {tr('Cancel')}
           </Button>
           <Button onClick={save}>{tr('Save')}</Button>
         </div>
-      }>
-      
+      }
+    >
       <div className="flex flex-col gap-5">
         <TextInput id="nfc-label" label={tr('Name')} hint={tr('Where it is, so you can tell tags apart — e.g. Front counter, Rider Tunde.')} maxLength={40} value={label} error={tried && !label.trim() ? tr('Give it a name') : undefined} onChange={(e) => setLabel(e.target.value)} />
         <NfcDestinationFields id="nfc-edit" value={dest} onChange={setDest} tried={tried} />
@@ -63,6 +63,6 @@ export function NfcTagSheet({ tag, onClose }: {tag: NfcTag | null;onClose: () =>
           {live.taps[0] ? <span>{tr('Last tap {when}', { when: formatRelative(live.taps[0]) })}</span> : null}
         </div>
       </div>
-    </Sheet>);
-
+    </Sheet>
+  );
 }

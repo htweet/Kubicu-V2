@@ -22,12 +22,12 @@ interface Row {
 }
 
 const TEMPLATE = toCsv(['name', 'price_ngn', 'stock', 'sku', 'description'], [
-['Voile wrap blouse', 32000, 10, 'WRAP-M', 'Cream cotton voile'],
-['Adire scarf', '', 5, '', 'Leave price blank for “Price on request”']]
-);
+  ['Voile wrap blouse', 32000, 10, 'WRAP-M', 'Cream cotton voile'],
+  ['Adire scarf', '', 5, '', 'Leave price blank for “Price on request”'],
+]);
 
 /** CSV import with a row-by-row preview. Rows with errors are skipped, never half-imported. */
-export function ImportProductsDialog({ open, onClose, remaining }: {open: boolean;onClose: () => void;remaining: number | null;}) {
+export function ImportProductsDialog({ open, onClose, remaining }: { open: boolean; onClose: () => void; remaining: number | null }) {
   const { data, apply } = useCommerce();
   const [rows, setRows] = useState<Row[] | null>(null);
   const [fileError, setFileError] = useState('');
@@ -50,7 +50,7 @@ export function ImportProductsDialog({ open, onClose, remaining }: {open: boolea
     const existingSkus = new Set(data.products.flatMap((p) => p.variants.map((v) => v.sku)));
     const seen = new Set<string>();
     const parsed = table.slice(1).map((r, i): Row => {
-      const get = (n: string) => col(n) >= 0 ? (r[col(n)] ?? '').trim() : '';
+      const get = (n: string) => (col(n) >= 0 ? (r[col(n)] ?? '').trim() : '');
       const errors: string[] = [];
       const name = get('name');
       if (!name) errors.push('Missing name');
@@ -94,22 +94,22 @@ export function ImportProductsDialog({ open, onClose, remaining }: {open: boolea
       title="Import products from CSV"
       description="Columns: name, price_ngn, stock, sku, description. Products arrive as drafts so nothing goes live by accident."
       footer={
-      <>
+        <>
           <Button variant="secondary" leadingIcon={DownloadIcon} onClick={() => downloadCsv('kubicu-products-template.csv', TEMPLATE)}>
             Download template
           </Button>
-          {rows ?
-        <Button onClick={runImport} disabled={capped.length === 0}>
+          {rows ? (
+            <Button onClick={runImport} disabled={capped.length === 0}>
               Import {capped.length} product{capped.length === 1 ? '' : 's'}
-            </Button> :
-
-        <Button leadingIcon={UploadIcon} onClick={() => inputRef.current?.click()} data-autofocus>
+            </Button>
+          ) : (
+            <Button leadingIcon={UploadIcon} onClick={() => inputRef.current?.click()} data-autofocus>
               Choose CSV file
             </Button>
-        }
+          )}
         </>
-      }>
-      
+      }
+    >
       <input
         ref={inputRef}
         type="file"
@@ -121,17 +121,17 @@ export function ImportProductsDialog({ open, onClose, remaining }: {open: boolea
           const f = e.target.files?.[0];
           if (f) void onFile(f);
           e.target.value = '';
-        }} />
-      
-      {fileError &&
-      <p className="flex items-start gap-2 rounded-md bg-danger-soft px-3 py-2.5 text-label text-danger" role="alert">
+        }}
+      />
+      {fileError && (
+        <p className="flex items-start gap-2 rounded-md bg-danger-soft px-3 py-2.5 text-label text-danger" role="alert">
           <AlertCircleIcon size={15} className="mt-0.5 shrink-0" aria-hidden />
           {fileError}
         </p>
-      }
+      )}
       {!rows && !fileError && <p className="text-label text-fg-muted">You’ll see every row before anything is imported.</p>}
-      {rows &&
-      <div className="flex flex-col gap-3">
+      {rows && (
+        <div className="flex flex-col gap-3">
           <p className="text-label text-fg" aria-live="polite">
             <span className="font-semibold">{valid.length} ready</span>
             {rows.length - valid.length > 0 && <span className="text-danger"> · {rows.length - valid.length} with errors (skipped)</span>}
@@ -139,8 +139,8 @@ export function ImportProductsDialog({ open, onClose, remaining }: {open: boolea
           </p>
           {/* Phones: rows with problems first, as a readable list. */}
           <ul aria-label="Import preview" className="max-h-72 divide-y divide-line overflow-auto rounded-md border border-line sm:hidden">
-            {[...rows].sort((a, b) => Number(b.errors.length > 0) - Number(a.errors.length > 0)).map((r) =>
-          <li key={r.line} className={cn('px-3 py-2.5', r.errors.length && 'bg-danger-soft/50')}>
+            {[...rows].sort((a, b) => Number(b.errors.length > 0) - Number(a.errors.length > 0)).map((r) => (
+              <li key={r.line} className={cn('px-3 py-2.5', r.errors.length && 'bg-danger-soft/50')}>
                 <div className="flex items-baseline justify-between gap-3">
                   <span className="min-w-0 truncate text-label font-medium text-fg">
                     <span className="mr-1.5 text-caption tabular-nums text-fg-subtle">Row {r.line}</span>
@@ -150,15 +150,15 @@ export function ImportProductsDialog({ open, onClose, remaining }: {open: boolea
                     {r.price === null ? 'On request' : formatMoney(r.price)} · {r.stock}
                   </span>
                 </div>
-                {r.errors.length ?
-            <p className="mt-0.5 text-caption font-medium text-danger">{r.errors.join(' · ')}</p> :
-
-            <p className="mt-0.5 inline-flex items-center gap-1 text-caption font-medium text-success">
+                {r.errors.length ? (
+                  <p className="mt-0.5 text-caption font-medium text-danger">{r.errors.join(' · ')}</p>
+                ) : (
+                  <p className="mt-0.5 inline-flex items-center gap-1 text-caption font-medium text-success">
                     <CheckCircle2Icon size={13} aria-hidden /> Ready
                   </p>
-            }
+                )}
               </li>
-          )}
+            ))}
           </ul>
           <div className="hidden max-h-72 overflow-auto rounded-md border border-line sm:block">
             <table className="w-full text-left text-label">
@@ -173,23 +173,23 @@ export function ImportProductsDialog({ open, onClose, remaining }: {open: boolea
                 </tr>
               </thead>
               <tbody>
-                {rows.map((r) =>
-              <tr key={r.line} className={cn('border-t border-line', r.errors.length && 'bg-danger-soft/50')}>
+                {rows.map((r) => (
+                  <tr key={r.line} className={cn('border-t border-line', r.errors.length && 'bg-danger-soft/50')}>
                     <td className="px-3 py-2 tabular-nums text-fg-subtle">{r.line}</td>
                     <td className="px-3 py-2 text-fg">{r.name || '—'}</td>
                     <td className="px-3 py-2 text-right tabular-nums text-fg">{r.price === null ? 'On request' : formatMoney(r.price)}</td>
                     <td className="px-3 py-2 text-right tabular-nums text-fg">{r.stock}</td>
                     <td className="px-3 py-2">
-                      {r.errors.length ?
-                  <span className="text-caption font-medium text-danger">{r.errors.join(' · ')}</span> :
-
-                  <span className="inline-flex items-center gap-1 text-caption font-medium text-success">
+                      {r.errors.length ? (
+                        <span className="text-caption font-medium text-danger">{r.errors.join(' · ')}</span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-caption font-medium text-success">
                           <CheckCircle2Icon size={13} aria-hidden /> Ready
                         </span>
-                  }
+                      )}
                     </td>
                   </tr>
-              )}
+                ))}
               </tbody>
             </table>
           </div>
@@ -197,7 +197,7 @@ export function ImportProductsDialog({ open, onClose, remaining }: {open: boolea
             Choose a different file
           </Button>
         </div>
-      }
-    </Dialog>);
-
+      )}
+    </Dialog>
+  );
 }

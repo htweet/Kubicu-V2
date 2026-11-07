@@ -30,13 +30,13 @@ export function DeliveryBlock({ block, theme, mode }: BlockProps<'delivery'>) {
   const f = catalog?.fulfilment;
   const fromShop = c.source === 'shop';
 
-  const rows: Row[] = fromShop ?
-  f?.deliveryEnabled ?
-  f.zones.map((z) => ({ id: z.id, area: z.name, price: z.feeNgn > 0 ? formatNgn(z.feeNgn) : tr('Free'), time: z.eta })) :
-  [] :
-  c.zones.filter((z) => z.area.trim()).map((z) => ({ ...z, area: z.area.trim() }));
+  const rows: Row[] = fromShop
+    ? f?.deliveryEnabled
+      ? f.zones.map((z) => ({ id: z.id, area: z.name, price: z.feeNgn > 0 ? formatNgn(z.feeNgn) : tr('Free'), time: z.eta }))
+      : []
+    : c.zones.filter((z) => z.area.trim()).map((z) => ({ ...z, area: z.area.trim() }));
   const freeOver = fromShop && f?.deliveryEnabled && f.freeDeliveryOverNgn ? tr('Free delivery on orders over {amount}.', { amount: formatNgn(f.freeDeliveryOverNgn) }) : '';
-  const pickup = fromShop ? f?.pickupEnabled ? [f.pickupAddress, f.pickupHours].filter((s) => s.trim()).join(' · ') || tr('Available — details when you order') : '' : c.pickup.trim();
+  const pickup = fromShop ? (f?.pickupEnabled ? [f.pickupAddress, f.pickupHours].filter((s) => s.trim()).join(' · ') || tr('Available — details when you order') : '') : c.pickup.trim();
   const returns = c.returns.trim();
 
   if (!rows.length && !pickup && !returns) {
@@ -46,9 +46,9 @@ export function DeliveryBlock({ block, theme, mode }: BlockProps<'delivery'>) {
         icon={TruckIcon}
         title={fromShop ? 'No delivery or pickup set up in your shop yet' : 'Add where you deliver'}
         hint={fromShop ? 'Turn on delivery zones or pickup in Commerce → Settings, or write your own rates here. Add your returns policy too.' : 'Each area needs a name. Add your returns policy in your own words.'}
-        theme={theme} />);
-
-
+        theme={theme}
+      />
+    );
   }
 
   const label = { color: theme.mutedText };
@@ -64,8 +64,8 @@ export function DeliveryBlock({ block, theme, mode }: BlockProps<'delivery'>) {
       <SectionHeading theme={theme} title={c.title} intro={c.intro} />
       <div className={twoCol ? 'grid grid-cols-[minmax(0,3fr)_minmax(0,2fr)] gap-x-10' : 'flex flex-col'}>
         <div>
-          {rows.length > 0 &&
-          <div className="py-5" style={{ borderTop: rule }}>
+          {rows.length > 0 && (
+            <div className="py-5" style={{ borderTop: rule }}>
               <h3 className="text-[17px] font-medium" style={display}>
                 {tr('Delivery')}
               </h3>
@@ -79,37 +79,37 @@ export function DeliveryBlock({ block, theme, mode }: BlockProps<'delivery'>) {
                   </tr>
                 </thead>
                 <tbody>
-                  {rows.map((r) =>
-                <tr key={r.id} style={{ borderTop: `1px solid ${mix(theme.text, 7)}` }}>
+                  {rows.map((r) => (
+                    <tr key={r.id} style={{ borderTop: `1px solid ${mix(theme.text, 7)}` }}>
                       <th scope="row" className="py-2.5 pr-3 align-top font-normal" style={{ color: theme.text }}>
                         {r.area}
-                        {r.time && !showTime &&
-                    <span className="block text-[13px]" style={label}>
+                        {r.time && !showTime && (
+                          <span className="block text-[13px]" style={label}>
                             {r.time}
                           </span>
-                    }
+                        )}
                       </th>
                       <td className="whitespace-nowrap py-2.5 text-right align-top font-medium tabular-nums" style={{ color: theme.text }}>
                         {r.price || '—'}
                       </td>
-                      {showTime &&
-                  <td className="py-2.5 pl-4 text-right align-top" style={label}>
+                      {showTime && (
+                        <td className="py-2.5 pl-4 text-right align-top" style={label}>
                           {r.time || '—'}
                         </td>
-                  }
+                      )}
                     </tr>
-                )}
+                  ))}
                 </tbody>
               </table>
-              {freeOver &&
-            <p className="mt-3 text-[14px]" style={label}>
+              {freeOver && (
+                <p className="mt-3 text-[14px]" style={label}>
                   {freeOver}
                 </p>
-            }
+              )}
             </div>
-          }
-          {pickup &&
-          <div className="py-5" style={{ borderTop: rule }}>
+          )}
+          {pickup && (
+            <div className="py-5" style={{ borderTop: rule }}>
               <h3 className="text-[17px] font-medium" style={display}>
                 {tr('Pickup')}
               </h3>
@@ -117,10 +117,10 @@ export function DeliveryBlock({ block, theme, mode }: BlockProps<'delivery'>) {
                 {pickup}
               </p>
             </div>
-          }
+          )}
         </div>
-        {returns &&
-        <div className="py-5" style={{ borderTop: rule }}>
+        {returns && (
+          <div className="py-5" style={{ borderTop: rule }}>
             <h3 className="text-[17px] font-medium" style={display}>
               {tr('Returns')}
             </h3>
@@ -128,13 +128,13 @@ export function DeliveryBlock({ block, theme, mode }: BlockProps<'delivery'>) {
               {returns}
             </p>
           </div>
-        }
+        )}
       </div>
-      {c.note.trim() &&
-      <p className="mt-2 text-[13.5px]" style={label}>
+      {c.note.trim() && (
+        <p className="mt-2 text-[13.5px]" style={label}>
           {c.note.trim()}
         </p>
-      }
-    </section>);
-
+      )}
+    </section>
+  );
 }

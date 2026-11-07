@@ -18,7 +18,7 @@ export interface CrossBorderOption {
 
 const rates = {
   intl_express: { courier: 'Express courier (example)', baseNgn: 18_000, perKgNgn: 6_000, eta: '3–5 business days' },
-  intl_economy: { courier: 'Economy courier (example)', baseNgn: 9_000, perKgNgn: 3_500, eta: '7–12 business days' }
+  intl_economy: { courier: 'Economy courier (example)', baseNgn: 9_000, perKgNgn: 3_500, eta: '7–12 business days' },
 };
 // Courier rates are example figures staff can change (D465).
 onOpsSettings(() => {
@@ -31,12 +31,12 @@ onOpsSettings(() => {
 /** Each item counts this much when its weight isn't set. */
 export const DEFAULT_ITEM_KG = 0.5;
 
-export function parcelKg(lines: {product?: Product;qty: number;}[]): number {
+export function parcelKg(lines: { product?: Product; qty: number }[]): number {
   const kg = lines.reduce((s, l) => s + (l.product?.kind === 'physical' && !l.product.giftCard ? (l.product.weightKg ?? DEFAULT_ITEM_KG) * l.qty : 0), 0);
   return Math.max(0.5, Math.round(kg * 10) / 10);
 }
 
-const local = (ngn: number) => activeCurrency() === 'NGN' ? ngn : convertExampleNaira(ngn, activeCurrency());
+const local = (ngn: number) => (activeCurrency() === 'NGN' ? ngn : convertExampleNaira(ngn, activeCurrency()));
 
 /** Courier options to a country for a parcel of `kg`, cheapest last. */
 export function crossBorderOptions(to: CountryCode, kg: number): CrossBorderOption[] {

@@ -17,23 +17,23 @@ import { StaffNotes } from './StaffNotes';
 
 type Act = 'signout' | 'twostep' | 'lock' | 'unlock' | 'verify';
 
-const copy: Record<Act, {title: string;description: string;confirm: string;destructive?: boolean;}> = {
+const copy: Record<Act, { title: string; description: string; confirm: string; destructive?: boolean }> = {
   signout: { title: 'Sign out of every device?', description: 'Ends every signed-in session, so they have to sign in again with their password. Use after a suspected account takeover.', confirm: 'Sign out everywhere', destructive: true },
   twostep: { title: 'Reset two-step sign-in?', description: 'Turns two-step off and clears backup codes, so they can set it up again. Only after you’ve confirmed who they are (ID check or a call from their registered number).', confirm: 'Reset two-step', destructive: true },
   lock: { title: 'Lock this account?', description: 'They can’t sign in to any of their workspaces until it’s unlocked. Their pages stay live — suspend a workspace to take pages down.', confirm: 'Lock account', destructive: true },
   unlock: { title: 'Unlock this account?', description: 'They can sign in again straight away.', confirm: 'Unlock' },
-  verify: { title: 'Send the verification email again?', description: 'They get a fresh link to confirm their email address.', confirm: 'Send email' }
+  verify: { title: 'Send the verification email again?', description: 'They get a fresh link to confirm their email address.', confirm: 'Send email' },
 };
 
 /**
  * One customer person: who they are, every workspace they're in, their sign-in security and staff actions (D472).
  * Follows the console language (D489); names, reasons, notes and audit entries stay as recorded.
  */
-export function PersonSheet({ person, onClose, onOpenWorkspace }: {person: Person | null;onClose: () => void;onOpenWorkspace: (id: string) => void;}) {
+export function PersonSheet({ person, onClose, onOpenWorkspace }: { person: Person | null; onClose: () => void; onOpenWorkspace: (id: string) => void }) {
   const { t } = useT();
   const [store, setStore] = useAdminStore();
   const [act, setAct] = useState<Act | null>(null);
-  const state: PersonStaffState = person && store.people?.[person.key] || {};
+  const state: PersonStaffState = (person && store.people?.[person.key]) || {};
   const locked = !!state.locked;
 
   const patch = (fn: (s: PersonStaffState) => PersonStaffState, action: string, reason: string) => {
@@ -78,18 +78,18 @@ export function PersonSheet({ person, onClose, onOpenWorkspace }: {person: Perso
   return (
     <>
       <Sheet open={!!person} onClose={onClose} side="right" size="lg" bodyClassName="px-5 py-6" title={person?.name ?? ''} description={person ? [person.email, person.phone].filter(Boolean).join(' · ') || t('No contact details') : undefined}>
-        {person &&
-        <div className="flex flex-col gap-8">
+        {person && (
+          <div className="flex flex-col gap-8">
             <div className="flex flex-wrap items-center gap-2">
-              {locked ?
-            <Badge tone="danger" dot>
+              {locked ? (
+                <Badge tone="danger" dot>
                   {t('Locked')}
-                </Badge> :
-
-            <Badge tone="success" dot>
+                </Badge>
+              ) : (
+                <Badge tone="success" dot>
                   {t('Active')}
                 </Badge>
-            }
+              )}
               {person.accountHolder && <Badge tone="info">{t('Account holder')}</Badge>}
               {person.sample && <Badge tone="neutral">{t('Sample')}</Badge>}
             </div>
@@ -98,8 +98,8 @@ export function PersonSheet({ person, onClose, onOpenWorkspace }: {person: Perso
             <section aria-labelledby="person-ws">
               <h3 id="person-ws" className="text-label font-semibold text-fg">{t('Workspaces: {n}', { n: person.workspaces.length })}</h3>
               <ul className="mt-2 divide-y divide-line border-y border-line">
-                {person.workspaces.map((w) =>
-              <li key={w.id}>
+                {person.workspaces.map((w) => (
+                  <li key={w.id}>
                     <button type="button" onClick={() => onOpenWorkspace(w.id)} className="-mx-2 flex w-[calc(100%+1rem)] items-center justify-between gap-3 rounded-md px-2 py-3 text-left transition-colors duration-150 hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
                       <span className="min-w-0">
                         <span className="block truncate text-label font-medium text-fg">{w.name}</span>
@@ -108,7 +108,7 @@ export function PersonSheet({ person, onClose, onOpenWorkspace }: {person: Perso
                       <Badge tone={w.role === 'owner' ? 'accent' : 'neutral'}>{t(roleNames[w.role])}</Badge>
                     </button>
                   </li>
-              )}
+                ))}
               </ul>
             </section>
 
@@ -129,18 +129,18 @@ export function PersonSheet({ person, onClose, onOpenWorkspace }: {person: Perso
                 <dd className="text-fg">{person.joinedAt ? formatTimestamp(person.joinedAt) : '—'}</dd>
                 <dt className="text-fg-muted">{t('Last active')}</dt>
                 <dd className="text-fg">{person.lastActiveAt ? formatRelative(person.lastActiveAt) : '—'}</dd>
-                {state.signedOutAt &&
-              <>
+                {state.signedOutAt && (
+                  <>
                     <dt className="text-fg-muted">{t('Signed out by staff')}</dt>
                     <dd className="text-fg">{formatTimestamp(state.signedOutAt)}</dd>
                   </>
-              }
-                {state.twoStepResetAt &&
-              <>
+                )}
+                {state.twoStepResetAt && (
+                  <>
                     <dt className="text-fg-muted">{t('Two-step reset by staff')}</dt>
                     <dd className="text-fg">{formatTimestamp(state.twoStepResetAt)}</dd>
                   </>
-              }
+                )}
               </dl>
               {!person.accountHolder && <p className="mt-2 text-caption text-fg-subtle">{t('Teammates’ sign-in details live with their own account; the prototype only holds the account signed in on this device.')}</p>}
               <div className="mt-4 flex flex-wrap gap-2">
@@ -153,21 +153,21 @@ export function PersonSheet({ person, onClose, onOpenWorkspace }: {person: Perso
                 <Button size="sm" variant="secondary" leadingIcon={MailIcon} disabled={!person.email || person.emailVerified === true} onClick={() => setAct('verify')}>
                   {t('Resend verification')}
                 </Button>
-                {locked ?
-              <Button size="sm" variant="secondary" leadingIcon={UnlockIcon} onClick={() => setAct('unlock')}>
+                {locked ? (
+                  <Button size="sm" variant="secondary" leadingIcon={UnlockIcon} onClick={() => setAct('unlock')}>
                     {t('Unlock account')}
-                  </Button> :
-
-              <Button size="sm" variant="destructive" leadingIcon={LockIcon} onClick={() => setAct('lock')}>
+                  </Button>
+                ) : (
+                  <Button size="sm" variant="destructive" leadingIcon={LockIcon} onClick={() => setAct('lock')}>
                     {t('Lock account')}
                   </Button>
-              }
+                )}
               </div>
             </section>
 
             <StaffNotes id="person" notes={state.notes ?? []} onAdd={addNote} />
           </div>
-        }
+        )}
       </Sheet>
       <ReasonDialog
         open={!!act}
@@ -176,8 +176,8 @@ export function PersonSheet({ person, onClose, onOpenWorkspace }: {person: Perso
         destructive={act ? copy[act].destructive : false}
         title={act ? t(copy[act].title) : ''}
         description={act ? t(copy[act].description) : ''}
-        confirmLabel={act ? t(copy[act].confirm) : ''} />
-      
-    </>);
-
+        confirmLabel={act ? t(copy[act].confirm) : ''}
+      />
+    </>
+  );
 }

@@ -12,12 +12,12 @@ export const guideEnrichments: Record<string, Partial<HelpArticle>> = {
       path: 'kub.icu',
       title: 'Claim your link',
       items: [
-      { kind: 'field', label: 'kub.icu/', value: 'adaezeatelier', marker: 1 },
-      { kind: 'note', label: 'adaezeatelier is free', tone: 'success', marker: 2 },
-      { kind: 'button', label: 'Claim it', primary: true, marker: 3 }]
-
+        { kind: 'field', label: 'kub.icu/', value: 'adaezeatelier', marker: 1 },
+        { kind: 'note', label: 'adaezeatelier is free', tone: 'success', marker: 2 },
+        { kind: 'button', label: 'Claim it', primary: true, marker: 3 },
+      ],
     },
-    related: ['first-page', 'copilot-start']
+    related: ['first-page', 'copilot-start'],
   },
   'first-page': {
     steps: ['After sign-up, pick what you mainly want to do (sell, take bookings, show your work…).', 'Choose a starter, a business kit, or “Build it with the assistant”.', 'Edit the text and photos on the canvas.', 'Open Check, fix anything flagged, then Publish.'],
@@ -27,21 +27,21 @@ export const guideEnrichments: Record<string, Partial<HelpArticle>> = {
       path: 'My page',
       title: 'Profile',
       items: [
-      { kind: 'tabs', tabs: ['Content', 'Style', 'Visibility'], active: 0 },
-      { kind: 'field', label: 'Name', value: 'Adaeze Atelier', marker: 3 },
-      { kind: 'field', label: 'Short bio', value: 'Ready-to-wear, made in Lagos', marker: 3 },
-      { kind: 'button', label: 'Check page', marker: 4 }]
-
+        { kind: 'tabs', tabs: ['Content', 'Style', 'Visibility'], active: 0 },
+        { kind: 'field', label: 'Name', value: 'Adaeze Atelier', marker: 3 },
+        { kind: 'field', label: 'Short bio', value: 'Ready-to-wear, made in Lagos', marker: 3 },
+        { kind: 'button', label: 'Check page', marker: 4 },
+      ],
     },
-    related: ['add-blocks', 'publish-check', 'ai-assistant']
+    related: ['add-blocks', 'publish-check', 'ai-assistant'],
   },
   templates: {
     steps: ['Open Templates (or the Templates tab in the canvas).', 'Filter by goal or business type.', 'Preview it on phone and desktop.', 'Choose “Use template”. Example content is labelled so you can replace it.'],
     where: 'Templates',
-    related: ['tpl-elite', 'business-kits']
+    related: ['tpl-elite', 'business-kits'],
   },
   'business-kits': {
-    steps: ['During setup (or Templates → Kits), pick your business type.', 'Answer the short questions about your policies.', 'The kit adds a page, sample products or services and FAQs — all editable.']
+    steps: ['During setup (or Templates → Kits), pick your business type.', 'Answer the short questions about your policies.', 'The kit adds a page, sample products or services and FAQs — all editable.'],
   },
   spaces: { related: ['space-new', 'space-event', 'space-fundraiser'] },
   'extensions-first': { related: ['install', 'mk-browse'] },
@@ -53,15 +53,15 @@ export const guideEnrichments: Record<string, Partial<HelpArticle>> = {
       nav: 'Blocks',
       title: 'Add a block',
       items: [
-      { kind: 'field', label: 'Search blocks', value: 'gallery', marker: 2 },
-      { kind: 'chips', chips: ['All', 'Layout', 'Media', 'Sell', 'Smart'], active: 2 },
-      { kind: 'row', label: 'Gallery', meta: 'Photos in a grid or strip', badge: '+', marker: 3 },
-      { kind: 'row', label: 'Carousel', meta: 'One photo at a time', badge: 'Needs plan' },
-      { kind: 'button', label: 'Move up', marker: 4 },
-      { kind: 'button', label: 'Move down' }]
-
+        { kind: 'field', label: 'Search blocks', value: 'gallery', marker: 2 },
+        { kind: 'chips', chips: ['All', 'Layout', 'Media', 'Sell', 'Smart'], active: 2 },
+        { kind: 'row', label: 'Gallery', meta: 'Photos in a grid or strip', badge: '+', marker: 3 },
+        { kind: 'row', label: 'Carousel', meta: 'One photo at a time', badge: 'Needs plan' },
+        { kind: 'button', label: 'Move up', marker: 4 },
+        { kind: 'button', label: 'Move down' },
+      ],
     },
-    related: ['find-block', 'edit-block', 'containers']
+    related: ['find-block', 'edit-block', 'containers'],
   },
   'edit-block': {
     steps: ['Tap the block on the canvas.', 'Change words and pictures in Content.', 'Pick a look in Style.', 'Set who sees it and when in Visibility.'],
@@ -70,12 +70,12 @@ export const guideEnrichments: Record<string, Partial<HelpArticle>> = {
       nav: 'Layers',
       title: 'Link',
       items: [
-      { kind: 'tabs', tabs: ['Content', 'Style', 'Visibility'], active: 0, marker: 1 },
-      { kind: 'field', label: 'Label', value: 'Order on WhatsApp', marker: 2 },
-      { kind: 'chips', chips: ['Plain', 'Featured', 'Outline'], active: 1, marker: 3 },
-      { kind: 'toggle', label: 'Show only to visitors from Instagram', marker: 4 }]
-
-    }
+        { kind: 'tabs', tabs: ['Content', 'Style', 'Visibility'], active: 0, marker: 1 },
+        { kind: 'field', label: 'Label', value: 'Order on WhatsApp', marker: 2 },
+        { kind: 'chips', chips: ['Plain', 'Featured', 'Outline'], active: 1, marker: 3 },
+        { kind: 'toggle', label: 'Show only to visitors from Instagram', marker: 4 },
+      ],
+    },
   },
   embeds: { steps: ['Add a Video & embed block.', 'Paste the link from YouTube, Vimeo, Spotify, Google Maps or another listed site.', 'If a link isn’t allowed, the block says why.'] },
   pages: {
@@ -85,11 +85,11 @@ export const guideEnrichments: Record<string, Partial<HelpArticle>> = {
       nav: 'Pages',
       title: 'Pages',
       items: [
-      { kind: 'row', label: 'Home', meta: 'kub.icu/adaeze', badge: 'Home' },
-      { kind: 'row', label: 'Lookbook', meta: '/lookbook', marker: 3 },
-      { kind: 'button', label: 'Add page', primary: true, marker: 2 }]
-
-    }
+        { kind: 'row', label: 'Home', meta: 'kub.icu/adaeze', badge: 'Home' },
+        { kind: 'row', label: 'Lookbook', meta: '/lookbook', marker: 3 },
+        { kind: 'button', label: 'Add page', primary: true, marker: 2 },
+      ],
+    },
   },
   'publish-check': {
     steps: ['Open the Check tab in the canvas.', 'Fix each item marked “Must fix” — tap it to jump to the block.', 'Look at the suggestions; they don’t block publishing.', 'Choose Publish.'],
@@ -98,13 +98,13 @@ export const guideEnrichments: Record<string, Partial<HelpArticle>> = {
       nav: 'Check',
       title: 'Check',
       items: [
-      { kind: 'note', label: '2 must fix before publishing', tone: 'warning', marker: 1 },
-      { kind: 'row', label: 'Link has no address', meta: 'Link · “Shop now”', badge: 'Fix', marker: 2 },
-      { kind: 'row', label: '[Add price] still in Menu', meta: 'Menu block', badge: 'Fix', marker: 2 },
-      { kind: 'row', label: 'Long page has no ending', meta: 'Suggestion', badge: 'Dismiss', marker: 3 }]
-
+        { kind: 'note', label: '2 must fix before publishing', tone: 'warning', marker: 1 },
+        { kind: 'row', label: 'Link has no address', meta: 'Link · “Shop now”', badge: 'Fix', marker: 2 },
+        { kind: 'row', label: '[Add price] still in Menu', meta: 'Menu block', badge: 'Fix', marker: 2 },
+        { kind: 'row', label: 'Long page has no ending', meta: 'Suggestion', badge: 'Dismiss', marker: 3 },
+      ],
     },
-    related: ['contrast']
+    related: ['contrast'],
   },
   visibility: { steps: ['Select the block and open Visibility.', 'Set show-from and show-until dates, or hide it.', 'Choose who sees it by visitor source (IntentFlow).'] },
   saved: { steps: ['Select blocks and choose ⋯ → Save as section.', 'In Theme, choose Save theme.', 'Reuse them from Templates → Yours.'] },
@@ -116,13 +116,13 @@ export const guideEnrichments: Record<string, Partial<HelpArticle>> = {
       nav: 'Templates',
       title: 'Theme',
       items: [
-      { kind: 'chips', chips: ['Presets', 'Signature', 'Saved'], active: 1, marker: 2 },
-      { kind: 'row', label: 'Pearl Atelier', meta: 'Light · ivory and champagne', badge: 'Applied' },
-      { kind: 'row', label: 'Emerald Luxe', meta: 'Light and dark' },
-      { kind: 'field', label: 'Button shape', value: 'Rounded', marker: 3 }]
-
+        { kind: 'chips', chips: ['Presets', 'Signature', 'Saved'], active: 1, marker: 2 },
+        { kind: 'row', label: 'Pearl Atelier', meta: 'Light · ivory and champagne', badge: 'Applied' },
+        { kind: 'row', label: 'Emerald Luxe', meta: 'Light and dark' },
+        { kind: 'field', label: 'Button shape', value: 'Rounded', marker: 3 },
+      ],
     },
-    related: ['tpl-elite']
+    related: ['tpl-elite'],
   },
   domain: {
     steps: ['Domains → Connect a domain.', 'Type the domain you already own.', 'Add the records shown at the place you bought it.', 'Choose Check. Status goes Verifying → Issuing certificate → Live.'],
@@ -132,19 +132,19 @@ export const guideEnrichments: Record<string, Partial<HelpArticle>> = {
       title: 'Domains',
       sheet: 'Connect a domain',
       items: [
-      { kind: 'field', label: 'Your domain', value: 'adaezeatelier.com', marker: 2 },
-      { kind: 'row', label: 'A record · @', meta: '76.76.21.21', badge: 'Copy', marker: 3 },
-      { kind: 'row', label: 'CNAME · www', meta: 'pages.kub.icu', badge: 'Copy', marker: 3 },
-      { kind: 'button', label: 'Check', primary: true, marker: 4 }]
-
+        { kind: 'field', label: 'Your domain', value: 'adaezeatelier.com', marker: 2 },
+        { kind: 'row', label: 'A record · @', meta: '76.76.21.21', badge: 'Copy', marker: 3 },
+        { kind: 'row', label: 'CNAME · www', meta: 'pages.kub.icu', badge: 'Copy', marker: 3 },
+        { kind: 'button', label: 'Check', primary: true, marker: 4 },
+      ],
     },
-    simulated: 'Domain checks are simulated in this version.'
+    simulated: 'Domain checks are simulated in this version.',
   },
   'campaign-links': {
     q: 'Where did Campaign links go?',
     a: 'Campaign links are now called Short links and have their own place in the sidebar, with full stats for each link. Old addresses still open the new page.',
     where: 'Growth → Short links',
-    related: ['sl-shorten', 'sl-stats']
+    related: ['sl-shorten', 'sl-stats'],
   },
   qr: {
     steps: ['Open QR codes and choose New QR code.', 'Pick where it goes.', 'In Pattern, pick colours and shapes; in Centre, add your logo or text.', 'Add a caption, then download PNG, SVG or a print sheet.'],
@@ -154,12 +154,12 @@ export const guideEnrichments: Record<string, Partial<HelpArticle>> = {
       title: 'QR codes',
       sheet: 'Edit QR code',
       items: [
-      { kind: 'tabs', tabs: ['Link', 'Pattern', 'Centre', 'Caption', 'Export'], active: 2, marker: 3 },
-      { kind: 'chips', chips: ['Nothing', 'Initials', 'Text', 'Image'], active: 3, marker: 3 },
-      { kind: 'note', label: 'Contrast is good — downloads are on', tone: 'success' },
-      { kind: 'button', label: 'Download PNG', primary: true, marker: 4 }]
-
-    }
+        { kind: 'tabs', tabs: ['Link', 'Pattern', 'Centre', 'Caption', 'Export'], active: 2, marker: 3 },
+        { kind: 'chips', chips: ['Nothing', 'Initials', 'Text', 'Image'], active: 3, marker: 3 },
+        { kind: 'note', label: 'Contrast is good — downloads are on', tone: 'success' },
+        { kind: 'button', label: 'Download PNG', primary: true, marker: 4 },
+      ],
+    },
   },
   'print-kit': { steps: ['Open Print kit and pick a design.', 'Check your name, QR code and caption.', 'Print at 100% scale or save as PDF.'] },
   'add-product': {
@@ -171,13 +171,13 @@ export const guideEnrichments: Record<string, Partial<HelpArticle>> = {
       title: 'Products',
       sheet: 'Add product',
       items: [
-      { kind: 'field', label: 'Name', value: 'Ankara wrap dress', marker: 2 },
-      { kind: 'field', label: 'Price', value: '₦25,000', marker: 2 },
-      { kind: 'row', label: 'Size', meta: 'S · M · L — stock 4 · 6 · 2', marker: 3 },
-      { kind: 'button', label: 'Save product', primary: true, marker: 4 }]
-
+        { kind: 'field', label: 'Name', value: 'Ankara wrap dress', marker: 2 },
+        { kind: 'field', label: 'Price', value: '₦25,000', marker: 2 },
+        { kind: 'row', label: 'Size', meta: 'S · M · L — stock 4 · 6 · 2', marker: 3 },
+        { kind: 'button', label: 'Save product', primary: true, marker: 4 },
+      ],
     },
-    related: ['storefront', 'voice-store']
+    related: ['storefront', 'voice-store'],
   },
   storefront: { steps: ['Commerce → Storefront → turn it on.', 'Add an announcement, banner and featured products.', 'Choose a layout and write delivery and returns notes.', 'Save. Your shop is at /shop.'] },
   featured: { steps: ['Open a product and switch on Featured.', 'Up to 8 can be featured.'] },
@@ -190,13 +190,13 @@ export const guideEnrichments: Record<string, Partial<HelpArticle>> = {
       path: 'Commerce → Orders',
       title: 'Order #1008',
       items: [
-      { kind: 'row', label: 'Chioma A. · ₦31,500', meta: 'Paid · Lagos Island delivery', badge: 'Paid', marker: 1 },
-      { kind: 'button', label: 'Mark packed', primary: true, marker: 2 },
-      { kind: 'button', label: 'Book delivery', marker: 3 },
-      { kind: 'button', label: 'Refund' }]
-
+        { kind: 'row', label: 'Chioma A. · ₦31,500', meta: 'Paid · Lagos Island delivery', badge: 'Paid', marker: 1 },
+        { kind: 'button', label: 'Mark packed', primary: true, marker: 2 },
+        { kind: 'button', label: 'Book delivery', marker: 3 },
+        { kind: 'button', label: 'Refund' },
+      ],
     },
-    related: ['refund', 'deliveries']
+    related: ['refund', 'deliveries'],
   },
   refund: { steps: ['Open the order and choose Refund.', 'Pick Full or Partial and a reason.', 'Confirm. The buyer is told and the wallet updates.'] },
   'made-to-order': { steps: ['Open the product, switch on Made to order.', 'Set the deposit and how many days it takes.', 'Save. Orders can’t be sent until the balance is paid.'] },
@@ -209,13 +209,13 @@ export const guideEnrichments: Record<string, Partial<HelpArticle>> = {
       title: 'Discounts',
       sheet: 'New discount',
       items: [
-      { kind: 'tabs', tabs: ['Code', 'Automatic'], active: 0, marker: 2 },
-      { kind: 'field', label: 'Code', value: 'EID20' },
-      { kind: 'chips', chips: ['Percentage', 'Fixed amount', 'Free delivery'], active: 0, marker: 3 },
-      { kind: 'field', label: 'Ends', value: '14 Nov 2026', marker: 4 },
-      { kind: 'button', label: 'Save', primary: true }]
-
-    }
+        { kind: 'tabs', tabs: ['Code', 'Automatic'], active: 0, marker: 2 },
+        { kind: 'field', label: 'Code', value: 'EID20' },
+        { kind: 'chips', chips: ['Percentage', 'Fixed amount', 'Free delivery'], active: 0, marker: 3 },
+        { kind: 'field', label: 'Ends', value: '14 Nov 2026', marker: 4 },
+        { kind: 'button', label: 'Save', primary: true },
+      ],
+    },
   },
   'wa-order': { steps: ['Turn checkout off in Commerce → Settings, or set the product to WhatsApp ordering.', 'Make sure your business WhatsApp is set in Settings → Business.', 'Visitors tap “Order on WhatsApp” and the message is pre-written.'] },
   'how-paid': { related: ['cs-payment-methods', 'pod', 'instalments'] },
@@ -229,12 +229,12 @@ export const guideEnrichments: Record<string, Partial<HelpArticle>> = {
       title: 'Wallet',
       actions: [{ kind: 'button', label: 'Pay out', primary: true, marker: 1 }],
       items: [
-      { kind: 'stats', stats: [{ label: 'Available', value: '₦412,300' }, { label: 'Settling', value: '₦58,000' }, { label: 'Reserved', value: '₦0' }] },
-      { kind: 'field', label: 'Amount', value: '₦400,000', marker: 2 },
-      { kind: 'field', label: 'Two-step code', value: '• • • • • •', marker: 3 }]
-
+        { kind: 'stats', stats: [{ label: 'Available', value: '₦412,300' }, { label: 'Settling', value: '₦58,000' }, { label: 'Reserved', value: '₦0' }] },
+        { kind: 'field', label: 'Amount', value: '₦400,000', marker: 2 },
+        { kind: 'field', label: 'Two-step code', value: '• • • • • •', marker: 3 },
+      ],
     },
-    related: ['verify']
+    related: ['verify'],
   },
   'payment-links': { related: ['pl-create', 'pl-confirm'] },
   pod: { steps: ['Commerce → Settings → Payment methods → Pay on delivery.', 'Set the maximum order and the areas.', 'When delivered, record cash or transfer — check transfers in your bank app.'] },
@@ -252,26 +252,26 @@ export const guideEnrichments: Record<string, Partial<HelpArticle>> = {
       title: 'Events',
       sheet: 'New event',
       items: [
-      { kind: 'field', label: 'Name', value: 'Trunk show', marker: 2 },
-      { kind: 'field', label: 'Date', value: 'Sat 14 Nov · 12:00' },
-      { kind: 'row', label: 'Regular · ₦10,000', meta: '80 seats', badge: 'Ticket', marker: 2 },
-      { kind: 'button', label: 'Seating', marker: 3 },
-      { kind: 'button', label: 'Save event', primary: true }]
-
+        { kind: 'field', label: 'Name', value: 'Trunk show', marker: 2 },
+        { kind: 'field', label: 'Date', value: 'Sat 14 Nov · 12:00' },
+        { kind: 'row', label: 'Regular · ₦10,000', meta: '80 seats', badge: 'Ticket', marker: 2 },
+        { kind: 'button', label: 'Seating', marker: 3 },
+        { kind: 'button', label: 'Save event', primary: true },
+      ],
     },
-    related: ['space-event', 'checkin']
+    related: ['space-event', 'checkin'],
   },
   checkin: {
     shot: {
       frame: 'phone',
       title: 'Check in guests',
       items: [
-      { kind: 'button', label: 'Scan ticket', primary: true, marker: 3 },
-      { kind: 'field', label: 'Or search', value: 'Kemi', marker: 3 },
-      { kind: 'note', label: 'Kemi O. · Regular — Checked in', tone: 'success' },
-      { kind: 'button', label: 'Undo', marker: 4 }]
-
-    }
+        { kind: 'button', label: 'Scan ticket', primary: true, marker: 3 },
+        { kind: 'field', label: 'Or search', value: 'Kemi', marker: 3 },
+        { kind: 'note', label: 'Kemi O. · Regular — Checked in', tone: 'success' },
+        { kind: 'button', label: 'Undo', marker: 4 },
+      ],
+    },
   },
   'sub-plans': { steps: ['Commerce → Subscriptions → New plan.', 'Choose membership or product box, price and how often.', 'Add a trial, setup fee or member limit if you like.', 'Set your pause, skip and cancel rules, then add a Subscription block.'] },
   courses: { steps: ['Commerce → Courses → New course.', 'Add modules and lessons.', 'Choose free, paid or included in a membership.', 'Add a Course block to your page.'] },
@@ -284,14 +284,14 @@ export const guideEnrichments: Record<string, Partial<HelpArticle>> = {
       title: 'Services',
       sheet: 'New service',
       items: [
-      { kind: 'field', label: 'Name', value: 'Knotless braids', marker: 2 },
-      { kind: 'field', label: 'Length', value: '5 hours', marker: 2 },
-      { kind: 'field', label: 'Deposit', value: '₦5,000', marker: 2 },
-      { kind: 'chips', chips: ['In person', 'Online', 'At their place'], active: 0, marker: 3 },
-      { kind: 'button', label: 'Save service', primary: true }]
-
+        { kind: 'field', label: 'Name', value: 'Knotless braids', marker: 2 },
+        { kind: 'field', label: 'Length', value: '5 hours', marker: 2 },
+        { kind: 'field', label: 'Deposit', value: '₦5,000', marker: 2 },
+        { kind: 'chips', chips: ['In person', 'Online', 'At their place'], active: 0, marker: 3 },
+        { kind: 'button', label: 'Save service', primary: true },
+      ],
     },
-    related: ['availability', 'bk-video']
+    related: ['availability', 'bk-video'],
   },
   availability: { steps: ['Bookings → Availability.', 'Set hours for each day, and breaks.', 'Add time off.', 'Set how far ahead people can book, then Save.'] },
   deposit: { steps: ['Open a service and set a deposit.', 'Choose when the balance is due.', 'Unpaid balances appear in Opportunities.'] },
@@ -306,10 +306,10 @@ export const guideEnrichments: Record<string, Partial<HelpArticle>> = {
       title: 'Forms',
       actions: [{ kind: 'button', label: 'New form', primary: true, marker: 2 }],
       items: [
-      { kind: 'row', label: 'Wedding enquiry', meta: '3 steps · 11 fields', badge: '12 answers', marker: 3 },
-      { kind: 'row', label: 'Catering order', meta: '1 step · 8 fields · payment', badge: '4 answers' }]
-
-    }
+        { kind: 'row', label: 'Wedding enquiry', meta: '3 steps · 11 fields', badge: '12 answers', marker: 3 },
+        { kind: 'row', label: 'Catering order', meta: '1 step · 8 fields · payment', badge: '4 answers' },
+      ],
+    },
   },
   whatsapp: {
     steps: ['Open WhatsApp in the sidebar and connect your business number.', 'Set greetings, away messages and quick replies.', 'Open a chat to reply, send a product or a pay link, and save the person to Audience.'],
@@ -319,14 +319,14 @@ export const guideEnrichments: Record<string, Partial<HelpArticle>> = {
       title: 'WhatsApp',
       sheet: 'Chat with Ngozi',
       items: [
-      { kind: 'chat', from: 'them', label: 'Do you have the wrap dress in M?' },
-      { kind: 'chat', from: 'you', label: 'Yes! Here’s the link to order.' },
-      { kind: 'field', label: 'Label', value: 'Interested' },
-      { kind: 'button', label: 'Save to Audience', marker: 3 },
-      { kind: 'button', label: 'Open in WhatsApp', primary: true }]
-
+        { kind: 'chat', from: 'them', label: 'Do you have the wrap dress in M?' },
+        { kind: 'chat', from: 'you', label: 'Yes! Here’s the link to order.' },
+        { kind: 'field', label: 'Label', value: 'Interested' },
+        { kind: 'button', label: 'Save to Audience', marker: 3 },
+        { kind: 'button', label: 'Open in WhatsApp', primary: true },
+      ],
     },
-    simulated: 'WhatsApp is simulated in this version.'
+    simulated: 'WhatsApp is simulated in this version.',
   },
   opportunities: { steps: ['Open Opportunities.', 'Start at the top — it’s sorted by money waiting.', 'Tap the WhatsApp nudge to send a ready-written message, or mark it done.'] },
   analytics: {
@@ -337,13 +337,13 @@ export const guideEnrichments: Record<string, Partial<HelpArticle>> = {
       title: 'Analytics',
       actions: [{ kind: 'button', label: 'Export', marker: 5 }],
       items: [
-      { kind: 'chips', chips: ['7 days', '30 days', '90 days', 'Custom'], active: 1, marker: 2 },
-      { kind: 'stats', stats: [{ label: 'Visits', value: '3,412' }, { label: 'Visitors', value: '2,180' }, { label: 'Tapped something', value: '41%' }, { label: 'Revenue', value: '₦612k' }], marker: 3 },
-      { kind: 'chart', label: 'Visits' },
-      { kind: 'row', label: 'Where visitors come from', meta: 'Instagram · WhatsApp · TikTok · Direct', marker: 4 }]
-
+        { kind: 'chips', chips: ['7 days', '30 days', '90 days', 'Custom'], active: 1, marker: 2 },
+        { kind: 'stats', stats: [{ label: 'Visits', value: '3,412' }, { label: 'Visitors', value: '2,180' }, { label: 'Tapped something', value: '41%' }, { label: 'Revenue', value: '₦612k' }], marker: 3 },
+        { kind: 'chart', label: 'Visits' },
+        { kind: 'row', label: 'Where visitors come from', meta: 'Instagram · WhatsApp · TikTok · Direct', marker: 4 },
+      ],
     },
-    related: ['sl-stats', 'link-intel']
+    related: ['sl-stats', 'link-intel'],
   },
   intentflow: { steps: ['Select a block and open Visibility → Show by visitor source.', 'Pick everyone, only chosen sources, or everyone except them.', 'Use “Preview as” to check each audience.', 'See results in IntentFlow; pause or roll back any rule.'] },
   campaigns: { steps: ['My Spaces → New space → Campaign.', 'Set the start and end dates.', 'Edit the Before, Live and Ended versions.', 'Optionally attach a discount, then publish.'] },
@@ -359,13 +359,13 @@ export const guideEnrichments: Record<string, Partial<HelpArticle>> = {
       title: 'Automations',
       sheet: 'New automation',
       items: [
-      { kind: 'field', label: 'When', value: 'Order paid', marker: 2 },
-      { kind: 'row', label: 'Wait 3 days', badge: 'Step', marker: 3 },
-      { kind: 'row', label: 'Send WhatsApp: “How’s your dress?”', badge: 'Step', marker: 3 },
-      { kind: 'button', label: 'Test run', marker: 4 },
-      { kind: 'button', label: 'Turn on', primary: true, marker: 4 }]
-
-    }
+        { kind: 'field', label: 'When', value: 'Order paid', marker: 2 },
+        { kind: 'row', label: 'Wait 3 days', badge: 'Step', marker: 3 },
+        { kind: 'row', label: 'Send WhatsApp: “How’s your dress?”', badge: 'Step', marker: 3 },
+        { kind: 'button', label: 'Test run', marker: 4 },
+        { kind: 'button', label: 'Turn on', primary: true, marker: 4 },
+      ],
+    },
   },
   invite: {
     steps: ['Settings → Team → Invite.', 'Enter their email and pick a role.', 'They accept from the email link.', 'Change a role or remove someone from the ⋯ menu.'],
@@ -376,12 +376,12 @@ export const guideEnrichments: Record<string, Partial<HelpArticle>> = {
       title: 'Team',
       sheet: 'Invite a teammate',
       items: [
-      { kind: 'field', label: 'Email', value: 'ifeoma@example.com', marker: 2 },
-      { kind: 'chips', chips: ['Admin', 'Editor', 'Sales', 'Viewer'], active: 1, marker: 2 },
-      { kind: 'button', label: 'Send invite', primary: true }]
-
+        { kind: 'field', label: 'Email', value: 'ifeoma@example.com', marker: 2 },
+        { kind: 'chips', chips: ['Admin', 'Editor', 'Sales', 'Viewer'], active: 1, marker: 2 },
+        { kind: 'button', label: 'Send invite', primary: true },
+      ],
     },
-    related: ['set-roles', 'approvals']
+    related: ['set-roles', 'approvals'],
   },
   approvals: { steps: ['Settings → Approvals: choose which spaces need review.', 'Editors see “Send for review” instead of Publish.', 'Admins open the review, compare versions and approve or ask for changes.'] },
   activity: { steps: ['Settings → Activity.', 'Filter by person or area.', 'Export the list as CSV.'] },
@@ -393,12 +393,12 @@ export const guideEnrichments: Record<string, Partial<HelpArticle>> = {
       path: 'Settings → Plan & billing',
       title: 'Plan & billing',
       items: [
-      { kind: 'row', label: 'Pro · ₦8,000 / month', meta: 'Renews 3 Dec', badge: 'Active' },
-      { kind: 'button', label: 'Change plan', primary: true, marker: 1 },
-      { kind: 'button', label: 'Switch to yearly' },
-      { kind: 'stats', stats: [{ label: 'Products', value: '48 / 100' }, { label: 'Seats', value: '1 / 1' }, { label: 'AI credits', value: '62' }] }]
-
-    }
+        { kind: 'row', label: 'Pro · ₦8,000 / month', meta: 'Renews 3 Dec', badge: 'Active' },
+        { kind: 'button', label: 'Change plan', primary: true, marker: 1 },
+        { kind: 'button', label: 'Switch to yearly' },
+        { kind: 'stats', stats: [{ label: 'Products', value: '48 / 100' }, { label: 'Seats', value: '1 / 1' }, { label: 'AI credits', value: '62' }] },
+      ],
+    },
   },
   install: {
     steps: ['Open Extensions and pick one.', 'Read “Works with” and the permissions.', 'Choose Install. It appears in your sidebar.', 'Pause, uninstall or roll back from its page.'],
@@ -408,12 +408,12 @@ export const guideEnrichments: Record<string, Partial<HelpArticle>> = {
       title: 'Extensions',
       sheet: 'Forms',
       items: [
-      { kind: 'row', label: 'Works with', meta: 'Pages · Audience · Automations · Checkout', marker: 2 },
-      { kind: 'row', label: 'Can read', meta: 'Form answers you collect', marker: 2 },
-      { kind: 'button', label: 'Install · ₦2,500/month', primary: true, marker: 3 }]
-
+        { kind: 'row', label: 'Works with', meta: 'Pages · Audience · Automations · Checkout', marker: 2 },
+        { kind: 'row', label: 'Can read', meta: 'Form answers you collect', marker: 2 },
+        { kind: 'button', label: 'Install · ₦2,500/month', primary: true, marker: 3 },
+      ],
     },
-    related: ['ext-works-with', 'mk-browse']
+    related: ['ext-works-with', 'mk-browse'],
   },
   'sell-template': { steps: ['Templates → My templates → Submit.', 'Pick the space and check the version with personal details removed.', 'Set a price and send for review.', 'Once listed, see sales and pay out from My templates.'] },
   '2fa': { steps: ['Your account → Sign-in & security → Two-step sign-in.', 'Scan the QR code with an authenticator app (or choose text message).', 'Enter the code, then save your 10 backup codes.'] },
@@ -424,11 +424,11 @@ export const guideEnrichments: Record<string, Partial<HelpArticle>> = {
       frame: 'phone',
       title: 'My page',
       items: [
-      { kind: 'row', label: 'Profile', meta: 'Tap to edit' },
-      { kind: 'row', label: 'Order on WhatsApp', meta: 'Selected', badge: 'Edit' },
-      { kind: 'chips', chips: ['Blocks', 'Theme', 'Layers', 'Pages', 'Settings'], active: 0 }]
-
-    }
+        { kind: 'row', label: 'Profile', meta: 'Tap to edit' },
+        { kind: 'row', label: 'Order on WhatsApp', meta: 'Selected', badge: 'Edit' },
+        { kind: 'chips', chips: ['Blocks', 'Theme', 'Layers', 'Pages', 'Settings'], active: 0 },
+      ],
+    },
   },
-  sections: { related: ['find-block', 'containers'] }
+  sections: { related: ['find-block', 'containers'] },
 };

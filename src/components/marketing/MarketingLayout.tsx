@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowRightIcon, FlagIcon, MenuIcon, XIcon } from 'lucide-react';
@@ -12,59 +12,60 @@ import { useDocumentLang, useT } from '../../contexts/LocaleContext';
 import { cn } from '../../utils/cn';
 import { setDisplayConversion } from '../../utils/currency';
 import { currencyForLang } from '../../utils/previewMoney';
+import { useMobileSectionBars } from '../../hooks/useMobileSectionBars';
 
 const footer = [
-{
-  title: 'Product',
-  links: [
-  { to: '/features', label: 'All features' },
-  { to: '/templates', label: 'Templates' },
-  { to: '/themes', label: 'Themes' },
-  { to: '/pricing', label: 'Pricing' },
-  { to: '/ai', label: 'KUBICU AI' },
-  { to: '/copilot', label: 'Copilot' }]
-
-},
-{
-  title: 'Tools',
-  links: [
-  { to: '/tools/short-links', label: 'Short links & QR' },
-  { to: '/features/audience-manager', label: 'Audience Manager' },
-  { to: '/marketplace', label: 'Marketplace' },
-  { to: '/about/roadmap', label: 'Roadmap' }]
-
-},
-{
-  title: 'Solutions',
-  links: [
-  { to: '/for/creators', label: 'Creators' },
-  { to: '/for/shops', label: 'Shops & sellers' },
-  { to: '/for/services', label: 'Service businesses' },
-  { to: '/for/events', label: 'Events & communities' }]
-
-},
-{
-  title: 'Company',
-  links: [
-  { to: '/about/about', label: 'About' },
-  { to: '/about/help', label: 'Help centre' },
-  { to: '/about/contact', label: 'Contact' },
-  { to: '/about/trust', label: 'Trust centre' },
-  { to: '/developers', label: 'Developers' }]
-
-},
-{
-  title: 'Legal',
-  links: [
-  { to: '/about/terms', label: 'Terms' },
-  { to: '/about/privacy', label: 'Privacy' },
-  { to: '/about/cookies', label: 'Cookies' },
-  { to: '/about/acceptable-use', label: 'Acceptable use' },
-  { to: '/about/refunds', label: 'Refunds' },
-  { to: '/about/seller-terms', label: 'Seller terms' }]
-
-}];
-
+  {
+    title: 'Product',
+    links: [
+      { to: '/features', label: 'All features' },
+      { to: '/templates', label: 'Templates' },
+      { to: '/themes', label: 'Themes' },
+      { to: '/pricing', label: 'Pricing' },
+      { to: '/ai', label: 'KUBICU AI' },
+      { to: '/copilot', label: 'Copilot' },
+    ],
+  },
+  {
+    title: 'Tools',
+    links: [
+      { to: '/tools/short-links', label: 'Short links & QR' },
+      { to: '/features/audience-manager', label: 'Audience Manager' },
+      { to: '/marketplace', label: 'Marketplace' },
+      { to: '/about/roadmap', label: 'Roadmap' },
+    ],
+  },
+  {
+    title: 'Solutions',
+    links: [
+      { to: '/for/creators', label: 'Creators' },
+      { to: '/for/shops', label: 'Shops & sellers' },
+      { to: '/for/services', label: 'Service businesses' },
+      { to: '/for/events', label: 'Events & communities' },
+    ],
+  },
+  {
+    title: 'Company',
+    links: [
+      { to: '/about/about', label: 'About' },
+      { to: '/about/help', label: 'Help centre' },
+      { to: '/about/contact', label: 'Contact' },
+      { to: '/about/trust', label: 'Trust centre' },
+      { to: '/developers', label: 'Developers' },
+    ],
+  },
+  {
+    title: 'Legal',
+    links: [
+      { to: '/about/terms', label: 'Terms' },
+      { to: '/about/privacy', label: 'Privacy' },
+      { to: '/about/cookies', label: 'Cookies' },
+      { to: '/about/acceptable-use', label: 'Acceptable use' },
+      { to: '/about/refunds', label: 'Refunds' },
+      { to: '/about/seller-terms', label: 'Seller terms' },
+    ],
+  },
+];
 
 const pill = 'inline-flex h-12 items-center justify-center whitespace-nowrap rounded-full px-5 text-[15px] font-bold transition-[transform,background-color] duration-150 ease-out active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2';
 
@@ -78,6 +79,9 @@ export function MarketingLayout() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
+  // Phones: sections between the hero and the closing call to action fold into bars (D558).
+  const mainRef = useRef<HTMLElement>(null);
+  useMobileSectionBars(mainRef, location.pathname);
 
   useEffect(() => {
     setMenuOpen(false);
@@ -131,23 +135,23 @@ export function MarketingLayout() {
               aria-expanded={menuOpen}
               aria-controls="site-menu"
               onClick={() => setMenuOpen((o) => !o)}
-              className="flex h-12 w-12 items-center justify-center rounded-full bg-[rgb(238_233_221)] text-[rgb(20_20_18)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus lg:hidden">
-              
+              className="flex h-12 w-12 items-center justify-center rounded-full bg-[rgb(238_233_221)] text-[rgb(20_20_18)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus lg:hidden"
+            >
               {menuOpen ? <XIcon size={20} aria-hidden /> : <MenuIcon size={20} aria-hidden />}
             </button>
           </div>
         </div>
         <AnimatePresence>
-          {menuOpen &&
-          <motion.nav
-            id="site-menu"
-            aria-label={tr('Main')}
-            initial={{ opacity: 0, y: -8, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -8, scale: 0.98 }}
-            transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
-            className="mx-auto mt-2 max-h-[calc(100dvh-112px)] max-w-7xl origin-top overflow-y-auto overscroll-contain rounded-[28px] bg-white p-3 text-[rgb(20_20_18)] shadow-3 lg:hidden">
-            
+          {menuOpen && (
+            <motion.nav
+              id="site-menu"
+              aria-label={tr('Main')}
+              initial={{ opacity: 0, y: -8, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.98 }}
+              transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+              className="mx-auto mt-2 max-h-[calc(100dvh-112px)] max-w-7xl origin-top overflow-y-auto overscroll-contain rounded-[28px] bg-white p-3 text-[rgb(20_20_18)] shadow-3 lg:hidden"
+            >
               <MobileSiteMenu />
               <Link to="/copilot" className={cn(pill, 'mt-2 w-full gap-2 bg-[rgb(var(--kb-lime))] text-[rgb(var(--kb-forest))]')}>
                 {tr('Start with Copilot')} <ArrowRightIcon size={16} aria-hidden />
@@ -159,11 +163,11 @@ export function MarketingLayout() {
                 <LanguagePicker variant="site" stretch side="top" align="start" />
               </div>
             </motion.nav>
-          }
+          )}
         </AnimatePresence>
       </header>
 
-      <main id="main">
+      <main id="main" ref={mainRef}>
         <Outlet />
       </main>
 
@@ -180,20 +184,20 @@ export function MarketingLayout() {
               </Link>
             </div>
             <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:col-span-5 lg:grid-cols-5">
-              {footer.map((col) =>
-              <div key={col.title}>
+              {footer.map((col) => (
+                <div key={col.title}>
                   <h3 className="text-[15px] font-extrabold">{tr(col.title)}</h3>
                   <ul className="mt-4 flex flex-col gap-3">
-                    {col.links.map((l) =>
-                  <li key={l.to}>
+                    {col.links.map((l) => (
+                      <li key={l.to}>
                         <Link to={l.to} className="rounded-sm text-[15px] font-medium text-[rgb(70_68_62)] transition-colors duration-150 hover:text-[rgb(20_20_18)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
                           {tr(l.label)}
                         </Link>
                       </li>
-                  )}
+                    ))}
                   </ul>
                 </div>
-              )}
+              ))}
             </div>
           </div>
         </div>
@@ -210,6 +214,6 @@ export function MarketingLayout() {
           </p>
         </div>
       </footer>
-    </PlatformLook>);
-
+    </PlatformLook>
+  );
 }

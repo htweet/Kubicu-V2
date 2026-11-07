@@ -17,13 +17,13 @@ import { useT } from '../../contexts/LocaleContext';
 
 const EXPORT_DAYS = 7;
 const reasons = [
-{ value: '', label: 'Choose one (optional)' },
-{ value: 'not_using', label: 'I’m not using it any more' },
-{ value: 'switching', label: 'I’m moving to another tool' },
-{ value: 'cost', label: 'It costs too much' },
-{ value: 'privacy', label: 'Privacy concerns' },
-{ value: 'other', label: 'Something else' }];
-
+  { value: '', label: 'Choose one (optional)' },
+  { value: 'not_using', label: 'I’m not using it any more' },
+  { value: 'switching', label: 'I’m moving to another tool' },
+  { value: 'cost', label: 'It costs too much' },
+  { value: 'privacy', label: 'Privacy concerns' },
+  { value: 'other', label: 'Something else' },
+];
 
 /** Account → Data & privacy: emails from KUBICU, data export and account deletion (D80). */
 export function DataPrivacyTab() {
@@ -40,7 +40,7 @@ export function DataPrivacyTab() {
       exportedAt: new Date().toISOString(),
       note: 'KUBICU prototype export. A real export also includes each workspace’s pages, orders and contacts you have access to.',
       account: JSON.parse(localStorage.getItem(ACCOUNT_KEY) ?? 'null') ?? account,
-      workspaces: workspaces.map((w) => ({ id: w.id, name: w.name, plan: w.plan, createdAt: w.createdAt }))
+      workspaces: workspaces.map((w) => ({ id: w.id, name: w.name, plan: w.plan, createdAt: w.createdAt })),
     };
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
@@ -53,26 +53,26 @@ export function DataPrivacyTab() {
 
   return (
     <div className="flex flex-col gap-6">
-      {account.deletion &&
-      <InlineAlert
-        tone="danger"
-        title={tr('Your account will be deleted on {date}', { date: formatAccountDate(account.deletion.scheduledFor, account.prefs, false) })}
-        action={
-        <Button
-          size="sm"
-          variant="secondary"
-          onClick={() => {
-            updateAccount((a) => ({ ...a, deletion: null }));
-            toast.success(tr('Deletion cancelled'), { description: tr('Your account and workspaces stay as they are.') });
-          }}>
-          
+      {account.deletion && (
+        <InlineAlert
+          tone="danger"
+          title={tr('Your account will be deleted on {date}', { date: formatAccountDate(account.deletion.scheduledFor, account.prefs, false) })}
+          action={
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => {
+                updateAccount((a) => ({ ...a, deletion: null }));
+                toast.success(tr('Deletion cancelled'), { description: tr('Your account and workspaces stay as they are.') });
+              }}
+            >
               Keep my account
             </Button>
-        }>
-        
+          }
+        >
           {tr('Until then everything works as normal and you can change your mind.')}
         </InlineAlert>
-      }
+      )}
 
       <div className="grid items-start gap-6 lg:grid-cols-2">
         <Card id="dp-comms" title="Emails from KUBICU" description="Choose what we send you. Your customers’ messages are set in each workspace.">
@@ -89,46 +89,46 @@ export function DataPrivacyTab() {
           title="Download your data"
           description="A copy of your account details, sign-in history and the workspaces you belong to."
           footer={
-          <Button
-            size="sm"
-            variant="secondary"
-            leadingIcon={FileArchiveIcon}
-            disabled={preparing}
-            onClick={() => {
-              updateAccount((a) => ({ ...a, exports: [newExport(), ...a.exports].slice(0, 5) }));
-              toast(tr('Preparing your data'), { description: tr('We’ll email you when it’s ready. Prototype: it takes a few seconds.') });
-            }}>
-            
+            <Button
+              size="sm"
+              variant="secondary"
+              leadingIcon={FileArchiveIcon}
+              disabled={preparing}
+              onClick={() => {
+                updateAccount((a) => ({ ...a, exports: [newExport(), ...a.exports].slice(0, 5) }));
+                toast(tr('Preparing your data'), { description: tr('We’ll email you when it’s ready. Prototype: it takes a few seconds.') });
+              }}
+            >
               {tr(preparing ? 'Preparing…' : 'Request a copy')}
             </Button>
-          }>
-          
-          {exports.length === 0 ?
-          <p className="text-caption text-fg-muted">{tr('No copies yet. Each copy can be downloaded for {n} days.', { n: EXPORT_DAYS })}</p> :
-
-          <ul className="flex flex-col divide-y divide-line">
+          }
+        >
+          {exports.length === 0 ? (
+            <p className="text-caption text-fg-muted">{tr('No copies yet. Each copy can be downloaded for {n} days.', { n: EXPORT_DAYS })}</p>
+          ) : (
+            <ul className="flex flex-col divide-y divide-line">
               {exports.map((e) => {
-              const ready = Date.parse(e.readyAt) <= now;
-              return (
-                <li key={e.id} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
+                const ready = Date.parse(e.readyAt) <= now;
+                return (
+                  <li key={e.id} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
                     <span className="min-w-0 flex-1">
                       <span className="block text-label font-medium text-fg">{tr('Requested {date}', { date: formatAccountDate(e.requestedAt, account.prefs) })}</span>
                       <span className="block text-caption text-fg-subtle">{ready ? tr('Available until {date}', { date: formatAccountDate(new Date(Date.parse(e.readyAt) + EXPORT_DAYS * 86400000).toISOString(), account.prefs, false) }) : tr('Preparing your file…')}</span>
                     </span>
-                    {ready ?
-                  <Button size="sm" variant="secondary" leadingIcon={DownloadIcon} onClick={download}>
+                    {ready ? (
+                      <Button size="sm" variant="secondary" leadingIcon={DownloadIcon} onClick={download}>
                         Download
-                      </Button> :
-
-                  <Badge>
+                      </Button>
+                    ) : (
+                      <Badge>
                         <Loader2Icon size={12} className="mr-1 animate-spin motion-reduce:animate-none" aria-hidden /> {tr('Preparing')}
                       </Badge>
-                  }
-                  </li>);
-
-            })}
+                    )}
+                  </li>
+                );
+              })}
             </ul>
-          }
+          )}
         </Card>
       </div>
 
@@ -144,11 +144,11 @@ export function DataPrivacyTab() {
       </Card>
 
       <DeleteDialog open={deleting} onClose={() => setDeleting(false)} workspaceNames={workspaces.map((w) => w.name)} />
-    </div>);
-
+    </div>
+  );
 }
 
-function DeleteDialog({ open, onClose, workspaceNames }: {open: boolean;onClose: () => void;workspaceNames: string[];}) {
+function DeleteDialog({ open, onClose, workspaceNames }: { open: boolean; onClose: () => void; workspaceNames: string[] }) {
   const { t: tr } = useT();
   const [typed, setTyped] = useState('');
   const [reason, setReason] = useState('');
@@ -179,7 +179,7 @@ function DeleteDialog({ open, onClose, workspaceNames }: {open: boolean;onClose:
       title="Delete your account?"
       description={tr('After {n} days this can’t be undone.', { n: DELETION_GRACE_DAYS })}
       footer={
-      <>
+        <>
           <Button variant="secondary" onClick={onClose}>
             Cancel
           </Button>
@@ -187,21 +187,21 @@ function DeleteDialog({ open, onClose, workspaceNames }: {open: boolean;onClose:
             Schedule deletion
           </Button>
         </>
-      }>
-      
+      }
+    >
       <div className="flex flex-col gap-4">
         <div>
           <p className="text-label font-semibold text-fg">{tr('These workspaces are deleted with it')}</p>
           <ul className="mt-2 flex flex-col gap-1 text-label text-fg-muted">
-            {workspaceNames.map((n) =>
-            <li key={n}>· {n} — {tr('pages, products, orders, contacts and team')}</li>
-            )}
+            {workspaceNames.map((n) => (
+              <li key={n}>· {n} — {tr('pages, products, orders, contacts and team')}</li>
+            ))}
           </ul>
           <p className="mt-2 text-caption text-fg-subtle">{tr('To keep one, transfer its ownership to a teammate first.')}</p>
         </div>
         <SelectInput id="del-reason" label="Why are you leaving?" value={reason} options={reasons} onChange={setReason} />
         <TextInput id="del-typed" label="Type DELETE to confirm" autoComplete="off" value={typed} error={tried && typed.trim().toUpperCase() !== 'DELETE' ? 'Type DELETE exactly' : undefined} onChange={(e) => setTyped(e.target.value)} />
       </div>
-    </Dialog>);
-
+    </Dialog>
+  );
 }

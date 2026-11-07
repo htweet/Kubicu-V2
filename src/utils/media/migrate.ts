@@ -25,7 +25,7 @@ export async function migrateEmbeddedImages(workspaceId: string, existing: Media
   const raws = workspaceStorageKeys(workspaceId).map((key) => {
     try {
       const raw = window.localStorage.getItem(key);
-      return { key, data: raw ? JSON.parse(raw) as unknown : null };
+      return { key, data: raw ? (JSON.parse(raw) as unknown) : null };
     } catch {
       return { key, data: null };
     }
@@ -78,8 +78,8 @@ export async function migrateEmbeddedImages(workspaceId: string, existing: Media
     try {
       window.localStorage.setItem(r.key, JSON.stringify(next));
     } catch {
-
       // Leave this one embedded; it still renders.
-    }});
+    }
+  });
   return assets;
 }

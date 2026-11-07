@@ -49,7 +49,7 @@ export function unusedLoyaltyCode(data: CommerceData, phone: string): Discount |
 }
 
 /** Turns 500 points into a single-use ₦500 code in Commerce → Discounts. */
-export function redeemPoints(data: CommerceData, phone: string, since: string): {data: CommerceData;code: string;} | null {
+export function redeemPoints(data: CommerceData, phone: string, since: string): { data: CommerceData; code: string } | null {
   const bal = loyaltyBalance(data, phone, since);
   if (!bal || bal.balance < REDEEM_POINTS) return null;
   const code = `PTS-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
@@ -67,20 +67,20 @@ export function redeemPoints(data: CommerceData, phone: string, since: string): 
     perCustomerLimit: 1,
     active: true,
     createdAt: new Date().toISOString(),
-    loyalty: { phone: phone.trim(), points: REDEEM_POINTS }
+    loyalty: { phone: phone.trim(), points: REDEEM_POINTS },
   };
   return { data: { ...data, discounts: [discount, ...data.discounts] }, code };
 }
 
 /** Everyone with points, for the extension's summary. */
-export function loyaltyMembers(data: CommerceData, since: string): {phone: string;name: string;balance: number;}[] {
-  const seen = new Map<string, {phone: string;name: string;}>();
+export function loyaltyMembers(data: CommerceData, since: string): { phone: string; name: string; balance: number }[] {
+  const seen = new Map<string, { phone: string; name: string }>();
   data.orders.forEach((o) => {
     const k = phoneKey(o.customer.phone);
     if (k.length >= 7 && Date.parse(o.createdAt) >= Date.parse(since) && !seen.has(k)) seen.set(k, { phone: o.customer.phone, name: o.customer.name });
   });
-  return Array.from(seen.values()).
-  map((p) => ({ ...p, balance: loyaltyBalance(data, p.phone, since)?.balance ?? 0 })).
-  filter((p) => p.balance > 0).
-  sort((a, b) => b.balance - a.balance);
+  return Array.from(seen.values())
+    .map((p) => ({ ...p, balance: loyaltyBalance(data, p.phone, since)?.balance ?? 0 }))
+    .filter((p) => p.balance > 0)
+    .sort((a, b) => b.balance - a.balance);
 }

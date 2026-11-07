@@ -17,7 +17,7 @@ export const popupPhaseLabels: Record<CampaignPhase, string> = { before: 'Before
 export const popupPhaseDescriptions: Record<CampaignPhase, string> = {
   before: 'Before the first session — what’s coming, where and when.',
   live: 'From the first session to the last — ordering for pickup, today’s hours.',
-  ended: 'After the last session — thank-you and a link to your main shop.'
+  ended: 'After the last session — thank-you and a link to your main shop.',
 };
 
 export type PopupState = 'soon' | 'open' | 'between' | 'closed';
@@ -102,9 +102,9 @@ const counts = (o: Order) => o.status !== 'cancelled' && o.status !== 'refunded'
 
 /** Units of a product sold through this pop-up (cancelled and fully refunded orders don't count). */
 export function stallSold(data: CommerceData | null | undefined, handle: string, productId: string): number {
-  return popupOrders(data, handle).
-  filter(counts).
-  reduce((t, o) => t + o.items.filter((i) => i.productId === productId).reduce((s, i) => s + i.qty, 0), 0);
+  return popupOrders(data, handle)
+    .filter(counts)
+    .reduce((t, o) => t + o.items.filter((i) => i.productId === productId).reduce((s, i) => s + i.qty, 0), 0);
 }
 
 /** Units the stall can still sell, or null when the product has no stall limit. */
@@ -120,7 +120,7 @@ export interface PopupCheckout {
   venue: string;
   address: string;
   payment: PopupSettings['payment'];
-  sessions: {id: string;label: string;when: string;}[];
+  sessions: { id: string; label: string; when: string }[];
   productIds: string[];
   left: Record<string, number | null>;
   open: boolean;
@@ -129,7 +129,7 @@ export interface PopupCheckout {
 export function popupCheckout(p: PopupSettings, handle: string, data: CommerceData, now = Date.now()): PopupCheckout {
   const sessions = bookableSessions(p, now).map((s) => ({ id: s.id, label: sessionLabel(s, p.venue), when: sessionWhen(s) }));
   const left: Record<string, number | null> = {};
-  p.productIds.forEach((id) => left[id] = stallLeft(p, data, handle, id));
+  p.productIds.forEach((id) => (left[id] = stallLeft(p, data, handle, id)));
   return { handle, venue: p.venue, address: p.address, payment: p.payment, sessions, productIds: p.productIds, left, open: sessions.length > 0 };
 }
 
@@ -160,9 +160,9 @@ export function markCollected(data: CommerceData, orderId: string, at = new Date
         popup: { ...o.popup, collectedAt: at },
         status: 'completed',
         paymentStatus: o.popup.payAtStall && o.paymentStatus === 'pending' ? 'paid' : o.paymentStatus,
-        events
+        events,
       };
-    })
+    }),
   };
 }
 
@@ -172,7 +172,7 @@ export function undoCollected(data: CommerceData, orderId: string): CommerceData
     orders: data.orders.map((o) => {
       if (o.id !== orderId || !o.popup?.collectedAt) return o;
       return { ...o, popup: { ...o.popup, collectedAt: undefined }, status: o.popup.payAtStall ? 'new' : 'paid', paymentStatus: o.popup.payAtStall ? 'pending' : o.paymentStatus, events: o.events.slice(1) };
-    })
+    }),
   };
 }
 
@@ -180,16 +180,16 @@ export function popupOrdersCsv(orders: Order[]): string {
   const esc = (v: string | number) => `"${String(v).replace(/"/g, '""')}"`;
   const rows = [['Order', 'Session', 'Name', 'Phone', 'Items', 'Total (NGN)', 'Payment', 'Collected']];
   orders.forEach((o) =>
-  rows.push([
-  orderRef(o),
-  o.popup?.sessionLabel ?? '',
-  o.customer.name,
-  o.customer.phone,
-  o.items.map((i) => `${i.qty} × ${i.name}${i.variantLabel ? ` (${i.variantLabel})` : ''}`).join('; '),
-  o.subtotalNgn - o.discountNgn,
-  o.popup?.payAtStall && o.paymentStatus === 'pending' ? 'Pay at stall' : o.paymentStatus,
-  o.popup?.collectedAt ? new Date(o.popup.collectedAt).toLocaleString('en-GB') : 'Not yet']
-  )
+    rows.push([
+      orderRef(o),
+      o.popup?.sessionLabel ?? '',
+      o.customer.name,
+      o.customer.phone,
+      o.items.map((i) => `${i.qty} × ${i.name}${i.variantLabel ? ` (${i.variantLabel})` : ''}`).join('; '),
+      o.subtotalNgn - o.discountNgn,
+      o.popup?.payAtStall && o.paymentStatus === 'pending' ? 'Pay at stall' : o.paymentStatus,
+      o.popup?.collectedAt ? new Date(o.popup.collectedAt).toLocaleString('en-GB') : 'Not yet',
+    ]),
   );
   return rows.map((r) => r.map(esc).join(',')).join('\n');
 }
@@ -208,7 +208,7 @@ export function heldLeft(data: CommerceData, h: StallHold, now = Date.now()): nu
  * Units of a product set aside for pop-ups, which other checkouts can't sell. `exceptHandle`
  * is the pop-up doing the selling — its own hold never blocks it.
  */
-export function reservedForStalls(data: CommerceData | null | undefined, productId: string, exceptHandle?: string, now = Date.now()): {qty: number;labels: string[];} {
+export function reservedForStalls(data: CommerceData | null | undefined, productId: string, exceptHandle?: string, now = Date.now()): { qty: number; labels: string[] } {
   if (!data?.stallHolds?.length) return { qty: 0, labels: [] };
   let qty = 0;
   const labels: string[] = [];
@@ -228,9 +228,9 @@ export function syncStallHolds(data: CommerceData, handle: string, label: string
   const last = sortedSessions(p).slice(-1)[0];
   const until = last ? new Date(sessionEnd(last)).toISOString() : '';
   const on = !!p.holdStock && !p.closedAt && !!last && sessionEnd(last) > now;
-  const mine: StallHold[] = on ?
-  p.productIds.filter((id) => typeof p.stallLimits[id] === 'number').map((id) => ({ handle, label, productId: id, limit: p.stallLimits[id], until })) :
-  [];
+  const mine: StallHold[] = on
+    ? p.productIds.filter((id) => typeof p.stallLimits[id] === 'number').map((id) => ({ handle, label, productId: id, limit: p.stallLimits[id], until }))
+    : [];
   const others = (data.stallHolds ?? []).filter((h) => h.handle !== handle && activeHold(h, now));
   const before = JSON.stringify((data.stallHolds ?? []).filter((h) => h.handle === handle));
   if (before === JSON.stringify(mine) && others.length === (data.stallHolds ?? []).filter((h) => h.handle !== handle).length) return data;
@@ -252,7 +252,7 @@ export function popupIssues(p: PopupSettings, blocks: Block[], data: CommerceDat
   if (p.sessions.length && popupStatus(p, now).state === 'closed' && !p.closedAt) push('past', 'warning', 'Every session has already ended — visitors will see “Closed”. Add a new session to reopen.');
   phaseOrder.forEach((phase) => {
     if (!blocks.some((b) => !b.visibility.hidden && blockInPhase(b, phase)))
-    push(`empty-${phase}`, phase === 'live' ? 'error' : 'warning', `Nothing shows while the pop-up is ${popupPhaseLabels[phase].toLowerCase()}.`);
+      push(`empty-${phase}`, phase === 'live' ? 'error' : 'warning', `Nothing shows while the pop-up is ${popupPhaseLabels[phase].toLowerCase()}.`);
   });
   return out;
 }

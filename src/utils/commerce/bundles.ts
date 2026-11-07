@@ -19,7 +19,7 @@ export const NOT_FOR_BUNDLES = 'Not for things sold with a partner — pay onlin
 /** Naira the partner gets for one unit sold at `unitPriceNgn`, before discounts. */
 export function partnerUnitNgn(b: ProductBundle, unitPriceNgn: number): number {
   if (b.split === 'fixed') return Math.max(0, Math.min(unitPriceNgn, b.partnerFixedNgn ?? 0));
-  return Math.round(unitPriceNgn * (100 - b.leadSharePct) / 100);
+  return Math.round((unitPriceNgn * (100 - b.leadSharePct)) / 100);
 }
 
 export function bundleLineFor(product: Product, unitPriceNgn: number): OrderItem['bundle'] {
@@ -33,7 +33,7 @@ export function partnerGrossFor(items: Pick<OrderItem, 'bundle' | 'qty'>[], subt
   const raw = items.reduce((s, i) => s + (i.bundle ? i.bundle.partnerUnitNgn * i.qty : 0), 0);
   if (!raw || subtotalNgn <= 0) return 0;
   const goodsPaid = subtotalNgn - Math.min(discountNgn, subtotalNgn);
-  return Math.round(raw * goodsPaid / subtotalNgn);
+  return Math.round((raw * goodsPaid) / subtotalNgn);
 }
 
 export const hasBundle = (o: Order) => o.items.some((i) => !!i.bundle);
@@ -41,7 +41,7 @@ export const hasBundle = (o: Order) => o.items.some((i) => !!i.bundle);
 /** Problems that stop a bundle product being saved (status matters: some only block going live). */
 export function bundleIssue(b: ProductBundle, price: number | null, status: Product['status'], partnership: Partnership | undefined): string | null {
   const live = status === 'active';
-  if (live && (!partnership || partnership.status !== 'active' && partnership.status !== 'ending')) return 'That partnership isn’t active. Choose another partner, turn this off, or keep the product as a draft.';
+  if (live && (!partnership || (partnership.status !== 'active' && partnership.status !== 'ending'))) return 'That partnership isn’t active. Choose another partner, turn this off, or keep the product as a draft.';
   if (b.split === 'fixed') {
     if (!b.partnerFixedNgn) return `Enter what ${b.partnerName} gets for each one sold.`;
     if (price !== null && b.partnerFixedNgn >= price) return `${b.partnerName}’s amount has to be less than the price.`;
@@ -58,7 +58,7 @@ export const shareStatusLabels: Record<ShareStatus, string> = {
   in_wallet: 'In their KUBICU wallet',
   awaiting_delivery: 'Sent to their bank after delivery',
   paid_to_bank: 'Sent to their bank',
-  refunded: 'Refunded'
+  refunded: 'Refunded',
 };
 
 export const shareStatusTones: Record<ShareStatus, 'neutral' | 'info' | 'success' | 'warning'> = {
@@ -67,7 +67,7 @@ export const shareStatusTones: Record<ShareStatus, 'neutral' | 'info' | 'success
   in_wallet: 'success',
   awaiting_delivery: 'warning',
   paid_to_bank: 'success',
-  refunded: 'neutral'
+  refunded: 'neutral',
 };
 
 export interface PartnerShare {
@@ -106,7 +106,7 @@ export function orderPartnerShares(o: Order): PartnerShare[] {
     const refunded = Math.round(m.refunded * ratio);
     const fee = b.partnerKind === 'guest' && paid ? Math.round((gross - refunded) * GUEST_FEE_RATE) : null;
     const fullyRefunded = o.paymentStatus === 'refunded';
-    const status: ShareStatus = !paid ? 'pending' : fullyRefunded ? 'refunded' : b.partnerKind === 'guest' ? delivered ? 'paid_to_bank' : 'awaiting_delivery' : b.escrow && !delivered ? 'held' : 'in_wallet';
+    const status: ShareStatus = !paid ? 'pending' : fullyRefunded ? 'refunded' : b.partnerKind === 'guest' ? (delivered ? 'paid_to_bank' : 'awaiting_delivery') : b.escrow && !delivered ? 'held' : 'in_wallet';
     return {
       partnershipId: b.partnershipId,
       partnerName: b.partnerName,
@@ -117,7 +117,7 @@ export function orderPartnerShares(o: Order): PartnerShare[] {
       kubicuFeeNgn: fee,
       refundedNgn: refunded,
       netNgn: paid ? Math.max(0, gross - provider - refunded - (fee ?? 0)) : 0,
-      status
+      status,
     };
   });
 }

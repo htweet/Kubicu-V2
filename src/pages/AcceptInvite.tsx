@@ -9,9 +9,18 @@ import { inviteState, readTeam } from '../utils/team';
 import { AuthLayout } from '../components/auth/AuthLayout';
 import { Button } from '../components/ui/Button';
 import { TextInput } from '../components/ui/TextInput';
+import { useAccountMode } from '../contexts/AccountModeContext';
+import { AcceptInviteAccount } from '../components/accountMode/AcceptInviteAccount';
+
+/** /invite/:token — account mode uses the server-backed version (D534); browser mode is unchanged. */
+export function AcceptInvite() {
+  const { token = '' } = useParams();
+  const account = useAccountMode();
+  return account.active ? <AcceptInviteAccount token={token} /> : <AcceptInviteBrowser />;
+}
 
 /** Accept a team invite (simulated sign-in). Expired, cancelled and used links each explain themselves. */
-export function AcceptInvite() {
+function AcceptInviteBrowser() {
   const { token = '' } = useParams();
   const navigate = useNavigate();
   const { workspaces, current, switchTo } = useWorkspace();
@@ -45,14 +54,14 @@ export function AcceptInvite() {
     navigate('/app/settings');
   };
 
-  const shell = (icon: React.ReactNode, title: string, body: string, action?: React.ReactNode) =>
-  <AuthLayout title={title} description={body}>
+  const shell = (icon: React.ReactNode, title: string, body: string, action?: React.ReactNode) => (
+    <AuthLayout title={title} description={body}>
       <div className="flex flex-col items-start gap-4">
         <span className="flex h-11 w-11 items-center justify-center rounded-full bg-sunken text-fg-muted">{icon}</span>
         {action}
       </div>
-    </AuthLayout>;
-
+    </AuthLayout>
+  );
 
   if (!found) return shell(<MailXIcon size={20} aria-hidden />, 'This invite link doesn’t work', 'It may be incomplete or from another device. Ask the person who invited you to send a new one.', <Link to="/" className="text-label font-medium text-fg underline underline-offset-2">Go to KUBICU</Link>);
   if (state === 'expired') return shell(<ClockIcon size={20} aria-hidden />, 'This invite has expired', `Invites last 7 days. Ask ${found.invite.invitedBy} to resend it from ${found.workspace.name}’s team settings.`);
@@ -65,21 +74,21 @@ export function AcceptInvite() {
   return (
     <AuthLayout title={`${found.invite.invitedBy} invited you to ${found.workspace.name}`} description={`As ${r === 'admin' || r === 'editor' ? 'an' : 'a'} ${roleInfo[r].label}. ${roleInfo[r].summary}`}>
       <div className="flex flex-col gap-6">
-        {allowed.length > 0 &&
-        <ul className="flex flex-col gap-1.5">
-            {allowed.map((p) =>
-          <li key={p.id} className="flex items-center gap-2 text-label text-fg">
+        {allowed.length > 0 && (
+          <ul className="flex flex-col gap-1.5">
+            {allowed.map((p) => (
+              <li key={p.id} className="flex items-center gap-2 text-label text-fg">
                 <CheckIcon size={15} className="text-success" aria-hidden /> {p.label}
               </li>
-          )}
+            ))}
           </ul>
-        }
+        )}
         <TextInput id="invite-name" label="Your name" value={name} autoComplete="name" error={tried && !name.trim() ? 'Enter your name.' : undefined} onChange={(e) => setName(e.target.value)} />
         <Button fullWidth onClick={accept}>
           Join {found.workspace.name}
         </Button>
         <p className="text-caption text-fg-subtle">Prototype: joining doesn’t create a real account. Invited as {found.invite.contact}.</p>
       </div>
-    </AuthLayout>);
-
+    </AuthLayout>
+  );
 }

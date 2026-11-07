@@ -64,6 +64,6 @@ export function BusinessReceiptsSection() {
           </div>
         </figure>
       </div>
-    </SettingsSection>);
-
+    </SettingsSection>
+  );
 }

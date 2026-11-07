@@ -43,8 +43,8 @@ export function MobileNav() {
                   <Icon size={20} aria-hidden />
                   {t(item.label === 'My Spaces' ? 'Spaces' : item.label)}
                 </NavLink>
-              </li>);
-
+              </li>
+            );
           })}
           <li>
             <button type="button" onClick={() => setMoreOpen(true)} className={cn(itemCls, 'text-fg-subtle')} aria-haspopup="dialog">
@@ -63,8 +63,8 @@ export function MobileNav() {
               setMoreOpen(false);
               navigate('/app/account');
             }}
-            className="flex min-h-[60px] w-full items-center gap-3 rounded-md px-3 text-left hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-            
+            className="flex min-h-[60px] w-full items-center gap-3 rounded-md px-3 text-left hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+          >
             <AccountAvatar name={account.profile.name} photo={account.profile.photo} size="md" />
             <span className="min-w-0 flex-1">
               <span className="block truncate text-body font-semibold text-fg">{account.profile.name}</span>
@@ -76,8 +76,8 @@ export function MobileNav() {
         <div className="border-b border-line p-2">
           <WorkspaceSwitcher onNavigate={() => setMoreOpen(false)} />
         </div>
-        {canChoose &&
-        <section aria-labelledby="mobile-appearance" className="border-b border-line p-2 pb-3">
+        {canChoose && (
+          <section aria-labelledby="mobile-appearance" className="border-b border-line p-2 pb-3">
             <h3 id="mobile-appearance" className="px-3 pt-2 text-label font-medium text-fg">
               {t('Workspace appearance')}
             </h3>
@@ -86,54 +86,54 @@ export function MobileNav() {
             </p>
             <DirectionSwitcher variant="list" />
           </section>
-        }
+        )}
         <ul className="flex flex-col p-2">
           {navGroups.flatMap((g) => {
             const items = rest.filter((n) => n.group === g.id);
             if (!items.length) return [];
             return [
-            <li key={`h-${g.id}`} role="presentation" className="px-3 pb-1 pt-3 text-caption font-semibold text-fg-subtle first:pt-1">
+              <li key={`h-${g.id}`} role="presentation" className="px-3 pb-1 pt-3 text-caption font-semibold text-fg-subtle first:pt-1">
                 {t(g.label)}
               </li>,
-            ...items.map((item) => {
-              const Icon = item.icon;
-              return (
-                <li key={item.id}>
+              ...items.map((item) => {
+            const Icon = item.icon;
+            return (
+              <li key={item.id}>
                 <button
-                    type="button"
-                    onClick={() => {
-                      setMoreOpen(false);
-                      navigate(item.to);
-                    }}
-                    className="flex min-h-[52px] w-full items-center gap-3 rounded-md px-3 text-left text-body text-fg hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-                    
+                  type="button"
+                  onClick={() => {
+                    setMoreOpen(false);
+                    navigate(item.to);
+                  }}
+                  className="flex min-h-[52px] w-full items-center gap-3 rounded-md px-3 text-left text-body text-fg hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+                >
                   <Icon size={19} className="text-fg-subtle" aria-hidden />
                   <span className="flex-1">{t(item.label)}</span>
                   {item.batch && <span className="text-caption text-fg-subtle">Batch {item.batch}</span>}
                   <ChevronRightIcon size={16} className="text-fg-subtle" aria-hidden />
                 </button>
-              </li>);
-
-            })];
-
+              </li>
+            );
+              }),
+            ];
           })}
-          {superAdmin &&
-          <li className="mt-1 border-t border-line pt-1">
+          {superAdmin && (
+            <li className="mt-1 border-t border-line pt-1">
               <button
-              type="button"
-              onClick={() => {
-                setMoreOpen(false);
-                navigate('/admin');
-              }}
-              className="flex min-h-[52px] w-full items-center gap-3 rounded-md px-3 text-left text-body text-fg hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-              
+                type="button"
+                onClick={() => {
+                  setMoreOpen(false);
+                  navigate('/admin');
+                }}
+                className="flex min-h-[52px] w-full items-center gap-3 rounded-md px-3 text-left text-body text-fg hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+              >
                 <ShieldCheckIcon size={19} className="text-fg-subtle" aria-hidden />
                 <span className="flex-1">{t('Super admin')}</span>
                 <span className="text-caption text-fg-subtle">{t('KUBICU staff')}</span>
                 <ChevronRightIcon size={16} className="text-fg-subtle" aria-hidden />
               </button>
             </li>
-          }
+          )}
         </ul>
         {/* Support is reachable on phones too (D76). */}
         <div className="border-t border-line p-2">
@@ -146,13 +146,13 @@ export function MobileNav() {
               navigate('/signin');
               toast('Signed out', { description: 'Prototype — your data stays on this device.' });
             }}
-            className="flex h-10 w-full items-center gap-3 rounded-md px-2 text-left text-label font-medium text-fg hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-            
+            className="flex h-10 w-full items-center gap-3 rounded-md px-2 text-left text-label font-medium text-fg hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+          >
             <LogOutIcon size={18} className="text-fg-muted" aria-hidden />
             {t('Sign out')}
           </button>
         </div>
       </Sheet>
-    </>);
-
+    </>
+  );
 }

@@ -62,16 +62,16 @@ export function AdminOrders() {
   const rows: Row[] = useMemo(() => {
     const now = Date.now();
     return workspaces.flatMap((w) =>
-    (readCommerce(w.id)?.orders ?? []).map((o) => {
-      const m = orderMoney(o);
-      const currency = workspaceCurrency(w);
-      // The ₦50,000 rule at the day's rate for shops in other currencies.
-      const large = convertExampleNaira(LARGE_REFUND, currency);
-      const recentBigRefund = o.refunds.some((r) => r.amountNgn >= large && now - Date.parse(r.at) < 30 * 86400000);
-      const stuck = !o.pod && o.paymentStatus === 'pending' && o.status !== 'cancelled' && now - Date.parse(o.createdAt) > STUCK_HOURS * 3600000;
-      const flag: Row['flag'] = o.dispute && (o.dispute.status === 'needs_response' || o.dispute.status === 'under_review') ? 'dispute' : recentBigRefund ? 'refund' : stuck ? 'stuck' : null;
-      return { id: `${w.id}:${o.id}`, workspaceId: w.id, workspace: w.name, currency, order: o, gross: m.gross, refunded: m.refunded, flag, dueAt: o.dispute?.status === 'needs_response' ? o.dispute.respondBy : null };
-    })
+      (readCommerce(w.id)?.orders ?? []).map((o) => {
+        const m = orderMoney(o);
+        const currency = workspaceCurrency(w);
+        // The ₦50,000 rule at the day's rate for shops in other currencies.
+        const large = convertExampleNaira(LARGE_REFUND, currency);
+        const recentBigRefund = o.refunds.some((r) => r.amountNgn >= large && now - Date.parse(r.at) < 30 * 86400000);
+        const stuck = !o.pod && o.paymentStatus === 'pending' && o.status !== 'cancelled' && now - Date.parse(o.createdAt) > STUCK_HOURS * 3600000;
+        const flag: Row['flag'] = o.dispute && (o.dispute.status === 'needs_response' || o.dispute.status === 'under_review') ? 'dispute' : recentBigRefund ? 'refund' : stuck ? 'stuck' : null;
+        return { id: `${w.id}:${o.id}`, workspaceId: w.id, workspace: w.name, currency, order: o, gross: m.gross, refunded: m.refunded, flag, dueAt: o.dispute?.status === 'needs_response' ? o.dispute.respondBy : null };
+      }),
     );
   }, [workspaces]);
 
@@ -104,23 +104,23 @@ export function AdminOrders() {
         {
           ...s,
           tickets: [
-          {
-            id: uid('tkt'),
-            number,
-            workspaceId: r.workspaceId,
-            workspaceName: r.workspace,
-            from: staffReplyName(),
-            topic: 'payments',
-            subject: `About order #${r.order.number}`,
-            status: 'waiting',
-            createdAt: at,
-            updatedAt: at,
-            messages: [{ id: uid('msg'), by: 'staff', name: staffReplyName(), text: message.trim(), at }]
-          },
-          ...s.tickets]
-
+            {
+              id: uid('tkt'),
+              number,
+              workspaceId: r.workspaceId,
+              workspaceName: r.workspace,
+              from: staffReplyName(),
+              topic: 'payments',
+              subject: `About order #${r.order.number}`,
+              status: 'waiting',
+              createdAt: at,
+              updatedAt: at,
+              messages: [{ id: uid('msg'), by: 'staff', name: staffReplyName(), text: message.trim(), at }],
+            },
+            ...s.tickets,
+          ],
         },
-        { area: 'orders', action: 'Messaged seller about an order', target: `${r.workspace} · #${r.order.number}`, reason }
+        { area: 'orders', action: 'Messaged seller about an order', target: `${r.workspace} · #${r.order.number}`, reason },
       );
     });
     toast.success(tr('Message sent to the seller'), { description: tr('It appears in their Help → My requests, and in Support here.') });
@@ -129,12 +129,12 @@ export function AdminOrders() {
   };
 
   const columns: DataColumn<Row>[] = [
-  {
-    key: 'order',
-    header: tr('Order'),
-    sortValue: (r) => r.order.number,
-    render: (r) =>
-    <span className="min-w-0">
+    {
+      key: 'order',
+      header: tr('Order'),
+      sortValue: (r) => r.order.number,
+      render: (r) => (
+        <span className="min-w-0">
           <span className="block truncate font-semibold text-fg">
             #{r.order.number} · {r.order.customer.name || tr('Customer')}
           </span>
@@ -142,43 +142,43 @@ export function AdminOrders() {
             {r.workspace} · {formatRelative(r.order.createdAt)}
           </span>
         </span>
-
-  },
-  {
-    key: 'state',
-    header: tab === 'dispute' ? tr('Dispute') : tab === 'refund' ? tr('Refunded') : tr('Waiting'),
-    render: (r) =>
-    tab === 'dispute' && r.order.dispute ?
-    <span className="flex flex-col gap-0.5">
+      ),
+    },
+    {
+      key: 'state',
+      header: tab === 'dispute' ? tr('Dispute') : tab === 'refund' ? tr('Refunded') : tr('Waiting'),
+      render: (r) =>
+        tab === 'dispute' && r.order.dispute ? (
+          <span className="flex flex-col gap-0.5">
             <Badge tone={r.order.dispute.status === 'needs_response' ? 'warning' : 'info'} dot>
               {tr(disputeLabels[r.order.dispute.status])}
             </Badge>
             {r.dueAt && <span className="text-caption text-fg-subtle">{tr('Respond by {date}', { date: formatTimestamp(r.dueAt) })}</span>}
-          </span> :
-    tab === 'refund' ?
-    <span className="tabular-nums text-fg">{formatMoney(r.refunded, r.currency)}</span> :
-
-    <span className="text-fg-muted">{tr('Payment pending since {date}', { date: formatTimestamp(r.order.createdAt) })}</span>
-
-  },
-  { key: 'amount', header: tab === 'dispute' ? tr('Disputed') : tr('Order total'), align: 'right', sortValue: (r) => tab === 'dispute' ? r.order.dispute?.amountNgn ?? 0 : r.gross, render: (r) => <span className="font-semibold tabular-nums text-fg">{formatMoney(tab === 'dispute' ? r.order.dispute?.amountNgn ?? 0 : r.gross, r.currency)}</span> },
-  { key: 'notes', header: tr('Notes'), align: 'right', hideOnMobile: true, render: (r) => <span className="tabular-nums text-fg-subtle">{store.orderNotes[r.id]?.length || '—'}</span> },
-  {
-    key: 'actions',
-    header: '',
-    align: 'right',
-    render: (r) =>
-    <Menu
-      items={[
-      { id: 'view', label: tr('View details'), icon: EyeIcon, onSelect: () => setOpen(r) },
-      { id: 'note', label: tr('Add staff note…'), icon: StickyNoteIcon, onSelect: () => setNoteFor(r) },
-      { id: 'msg', label: tr('Message the seller…'), icon: MessageSquareIcon, onSelect: () => setMessageFor(r) }]
-      }
-      trigger={(props) => <IconButton {...props} size="sm" icon={MoreHorizontalIcon} label={tr('Actions for order #{number}', { number: r.order.number })} />} />
-
-
-  }];
-
+          </span>
+        ) : tab === 'refund' ? (
+          <span className="tabular-nums text-fg">{formatMoney(r.refunded, r.currency)}</span>
+        ) : (
+          <span className="text-fg-muted">{tr('Payment pending since {date}', { date: formatTimestamp(r.order.createdAt) })}</span>
+        ),
+    },
+    { key: 'amount', header: tab === 'dispute' ? tr('Disputed') : tr('Order total'), align: 'right', sortValue: (r) => (tab === 'dispute' ? r.order.dispute?.amountNgn ?? 0 : r.gross), render: (r) => <span className="font-semibold tabular-nums text-fg">{formatMoney(tab === 'dispute' ? r.order.dispute?.amountNgn ?? 0 : r.gross, r.currency)}</span> },
+    { key: 'notes', header: tr('Notes'), align: 'right', hideOnMobile: true, render: (r) => <span className="tabular-nums text-fg-subtle">{store.orderNotes[r.id]?.length || '—'}</span> },
+    {
+      key: 'actions',
+      header: '',
+      align: 'right',
+      render: (r) => (
+        <Menu
+          items={[
+            { id: 'view', label: tr('View details'), icon: EyeIcon, onSelect: () => setOpen(r) },
+            { id: 'note', label: tr('Add staff note…'), icon: StickyNoteIcon, onSelect: () => setNoteFor(r) },
+            { id: 'msg', label: tr('Message the seller…'), icon: MessageSquareIcon, onSelect: () => setMessageFor(r) },
+          ]}
+          trigger={(props) => <IconButton {...props} size="sm" icon={MoreHorizontalIcon} label={tr('Actions for order #{number}', { number: r.order.number })} />}
+        />
+      ),
+    },
+  ];
 
   const detail = open && rows.find((r) => r.id === open.id);
   const evidence = detail?.order.dispute?.evidence.length ?? 0;
@@ -200,11 +200,11 @@ export function AdminOrders() {
           value={tab}
           onChange={setTab}
           items={[
-          { id: 'dispute', label: tr('Disputes'), badge: disputes.length || undefined },
-          { id: 'refund', label: tr('Large refunds'), badge: refunds.length || undefined },
-          { id: 'stuck', label: tr('Stuck payments'), badge: stuck.length || undefined }]
-          } />
-        
+            { id: 'dispute', label: tr('Disputes'), badge: disputes.length || undefined },
+            { id: 'refund', label: tr('Large refunds'), badge: refunds.length || undefined },
+            { id: 'stuck', label: tr('Stuck payments'), badge: stuck.length || undefined },
+          ]}
+        />
         {tab === 'refund' && <p className="max-w-3xl text-label text-fg-muted">{tr('Refunds of {amount} or more in the last 30 days — for shops in other currencies, the same amount at the day’s rate.', { amount: formatNgn(LARGE_REFUND) })}</p>}
         <div role="tabpanel" id={`admin-orders-panel-${tab}`} aria-labelledby={`admin-orders-tab-${tab}`}>
           <DataTable
@@ -214,26 +214,26 @@ export function AdminOrders() {
             filterText={(r) => `${r.order.number} ${r.order.customer.name} ${r.workspace}`}
             filterPlaceholder={tr('Search order, customer or workspace')}
             emptyTitle={tab === 'dispute' ? tr('No open disputes') : tab === 'refund' ? tr('No large refunds in 30 days') : tr('No stuck payments')}
-            emptyDescription={tr('Queues fill from every workspace on this device.')} />
-          
+            emptyDescription={tr('Queues fill from every workspace on this device.')}
+          />
         </div>
       </div>
 
       <Sheet open={!!detail} onClose={() => setOpen(null)} side="right" title={detail ? tr('Order #{number}', { number: detail.order.number }) : tr('Order')} description={detail ? `${detail.workspace} · ${formatTimestamp(detail.order.createdAt)}` : undefined}>
-        {detail &&
-        <div className="flex flex-col gap-6 px-5 py-5">
+        {detail && (
+          <div className="flex flex-col gap-6 px-5 py-5">
             <DetailSection title={tr('Order')}>
               <DetailList
-              items={[
-              { label: tr('Customer'), value: detail.order.customer.name || '—' },
-              { label: tr('Total'), value: <span className="font-semibold tabular-nums">{formatMoney(detail.gross, detail.currency)}</span> },
-              { label: tr('Payment'), value: tr(paymentLabel(detail.order.paymentStatus)) },
-              { label: tr('Refunded'), value: <span className="tabular-nums">{detail.refunded ? formatMoney(detail.refunded, detail.currency) : '—'}</span> }]
-              } />
-            
+                items={[
+                  { label: tr('Customer'), value: detail.order.customer.name || '—' },
+                  { label: tr('Total'), value: <span className="font-semibold tabular-nums">{formatMoney(detail.gross, detail.currency)}</span> },
+                  { label: tr('Payment'), value: tr(paymentLabel(detail.order.paymentStatus)) },
+                  { label: tr('Refunded'), value: <span className="tabular-nums">{detail.refunded ? formatMoney(detail.refunded, detail.currency) : '—'}</span> },
+                ]}
+              />
             </DetailSection>
-            {detail.order.dispute &&
-          <DetailSection title={`${tr('Dispute')} · ${tr(disputeLabels[detail.order.dispute.status])}`}>
+            {detail.order.dispute && (
+              <DetailSection title={`${tr('Dispute')} · ${tr(disputeLabels[detail.order.dispute.status])}`}>
                 <div>
                   <p className="text-label text-fg-muted">“{detail.order.dispute.reason}”</p>
                   <p className="mt-2 text-caption text-fg-subtle">
@@ -241,32 +241,32 @@ export function AdminOrders() {
                   </p>
                 </div>
               </DetailSection>
-          }
+            )}
             <DetailSection
-            title={tr('Staff notes')}
-            actions={
-            <Button size="sm" variant="secondary" leadingIcon={StickyNoteIcon} onClick={() => setNoteFor(detail)}>
+              title={tr('Staff notes')}
+              actions={
+                <Button size="sm" variant="secondary" leadingIcon={StickyNoteIcon} onClick={() => setNoteFor(detail)}>
                   Add note
                 </Button>
-            }>
-            
-              {(store.orderNotes[detail.id] ?? []).length === 0 ?
-            <p className="text-caption text-fg-subtle">{tr('No notes yet. Only staff can see notes.')}</p> :
-
-            <ul className="flex flex-col gap-3">
-                  {store.orderNotes[detail.id].map((n) =>
-              <li key={n.id} className="text-label">
+              }
+            >
+              {(store.orderNotes[detail.id] ?? []).length === 0 ? (
+                <p className="text-caption text-fg-subtle">{tr('No notes yet. Only staff can see notes.')}</p>
+              ) : (
+                <ul className="flex flex-col gap-3">
+                  {store.orderNotes[detail.id].map((n) => (
+                    <li key={n.id} className="text-label">
                       <p className="text-fg">{n.text}</p>
                       <p className="mt-0.5 text-caption text-fg-subtle">
                         {n.by} · {formatRelative(n.at)}
                       </p>
                     </li>
-              )}
+                  ))}
                 </ul>
-            }
+              )}
             </DetailSection>
           </div>
-        }
+        )}
       </Sheet>
 
       <Dialog
@@ -276,7 +276,7 @@ export function AdminOrders() {
         title={tr('Note on order #{number}', { number: noteFor?.order.number ?? '' })}
         description={tr('Visible to KUBICU staff only, and kept in the audit log.')}
         footer={
-        <>
+          <>
             <Button variant="secondary" onClick={() => setNoteFor(null)}>
               Cancel
             </Button>
@@ -284,8 +284,8 @@ export function AdminOrders() {
               Add note
             </Button>
           </>
-        }>
-        
+        }
+      >
         <TextArea id="ao-note" label={tr('Note')} rows={4} value={note} onChange={(e) => setNote(e.target.value)} placeholder={tr('e.g. Seller sent courier proof by email — attach to response')} />
       </Dialog>
 
@@ -295,12 +295,12 @@ export function AdminOrders() {
         onConfirm={sendMessage}
         title={messageFor ? tr('Message {workspace}', { workspace: messageFor.workspace }) : tr('Message the seller')}
         description={tr('Opens a support request in their Help → My requests. Write the message, then why you’re contacting them (for the audit log).')}
-        confirmLabel={tr('Send message')}>
-        
+        confirmLabel={tr('Send message')}
+      >
         <TextArea id="ao-message" label={tr('Message to the seller')} rows={4} value={message} onChange={(e) => setMessage(e.target.value)} placeholder={tr('e.g. A buyer has disputed order #{number}. Please add delivery proof in Orders before the deadline.', { number: messageFor?.order.number ?? '' })} />
       </ReasonDialog>
-    </div>);
-
+    </div>
+  );
 }
 
 /** Payment status in words — "partially_refunded" → "Partially refunded". */

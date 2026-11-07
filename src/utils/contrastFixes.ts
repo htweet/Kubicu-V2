@@ -13,22 +13,22 @@ export interface ContrastFix {
   ratio: number;
 }
 
-export const contrastCopy: Record<ContrastKey, {name: string;guidance: string;}> = {
+export const contrastCopy: Record<ContrastKey, { name: string; guidance: string }> = {
   text: {
     name: 'Body text',
     guidance:
-    'Visitors on bright phone screens, in sunlight or with low vision may not be able to read your page. Use darker text on a light background, or lighter text on a dark one.'
+      'Visitors on bright phone screens, in sunlight or with low vision may not be able to read your page. Use darker text on a light background, or lighter text on a dark one.',
   },
   muted: {
     name: 'Secondary text',
     guidance:
-    'Taglines, captions and descriptions are too faint. Move the secondary text colour closer to your main text colour — it can stay softer, just not washed out.'
+      'Taglines, captions and descriptions are too faint. Move the secondary text colour closer to your main text colour — it can stay softer, just not washed out.',
   },
   button: {
     name: 'Featured button text',
     guidance:
-    'Your most important buttons are hard to read. Pick button text that is clearly lighter or darker than the button colour — white or near-black usually works.'
-  }
+      'Your most important buttons are hard to read. Pick button text that is clearly lighter or darker than the button colour — white or near-black usually works.',
+  },
 };
 
 /**
@@ -65,7 +65,7 @@ export function suggestContrastFix(theme: PageTheme, key: ContrastKey): Contrast
       theme: { mutedText, presetId: 'custom' },
       label: `Use ${mutedText}`,
       description: `Change secondary text to ${mutedText}`,
-      ratio
+      ratio,
     };
   }
   const accentText = readableOn(theme.accentText, theme.accent, CONTRAST_TARGET);
@@ -75,7 +75,7 @@ export function suggestContrastFix(theme: PageTheme, key: ContrastKey): Contrast
       theme: { accentText, presetId: 'custom' },
       label: `Use ${accentText}`,
       description: `Change button text to ${accentText}`,
-      ratio
+      ratio,
     };
   }
   const textColor = contrastRatio('#FFFFFF', theme.accent) >= contrastRatio('#000000', theme.accent) ? '#FFFFFF' : '#000000';
@@ -84,6 +84,6 @@ export function suggestContrastFix(theme: PageTheme, key: ContrastKey): Contrast
     theme: { accent, accentText: textColor, presetId: 'custom' },
     label: `Use ${accent}`,
     description: `Change button colour to ${accent} with ${textColor} text`,
-    ratio: contrastRatio(textColor, accent)
+    ratio: contrastRatio(textColor, accent),
   };
 }

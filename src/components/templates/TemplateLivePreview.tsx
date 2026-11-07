@@ -26,7 +26,8 @@ export function TemplateLivePreview({ doc, plan, device, theme = doc.theme, name
   const wide = device === 'desktop';
   const visible = doc.blocks.filter((b) => !b.visibility.hidden);
   return (
-    <div className={cn('mx-auto w-full overflow-hidden border border-line-strong', wide ? 'max-w-[1180px] rounded-[14px]' : 'max-w-[390px] rounded-[30px]')}>
+    // data-mbar-ignore: the sample page's own headings and sections aren't part of the website's phone folds (D563).
+    <div data-mbar-ignore="" className={cn('mx-auto w-full overflow-hidden border border-line-strong', wide ? 'max-w-[1180px] rounded-[14px]' : 'max-w-[390px] rounded-[30px]')}>
       <ViewportFrame key={device} title={`Scrollable ${device} preview of ${name}`} height={height} background={theme.background}>
         <RenderPlanProvider plan={plans[plan]}>
           <PageSurface theme={theme} fluid>
@@ -34,6 +35,6 @@ export function TemplateLivePreview({ doc, plan, device, theme = doc.theme, name
           </PageSurface>
         </RenderPlanProvider>
       </ViewportFrame>
-    </div>);
-
+    </div>
+  );
 }

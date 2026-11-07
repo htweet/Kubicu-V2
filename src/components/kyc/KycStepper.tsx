@@ -35,9 +35,9 @@ export function KycStepper({ steps, current, done, flagged, locked, onSelect }: 
           </span>
         </div>
         <div className="mt-2 flex gap-1" aria-hidden>
-          {steps.map((s) =>
-          <span key={s} className={cn('h-1.5 flex-1 rounded-full', s === current ? 'bg-action' : flagged.includes(s) ? 'bg-warning' : done(s) ? 'bg-success' : 'bg-sunken')} />
-          )}
+          {steps.map((s) => (
+            <span key={s} className={cn('h-1.5 flex-1 rounded-full', s === current ? 'bg-action' : flagged.includes(s) ? 'bg-warning' : done(s) ? 'bg-success' : 'bg-sunken')} />
+          ))}
         </div>
       </div>
 
@@ -58,16 +58,16 @@ export function KycStepper({ steps, current, done, flagged, locked, onSelect }: 
                 aria-current={isCurrent ? 'step' : undefined}
                 className={cn(
                   'flex w-full items-start gap-3 rounded-md px-0 py-2 text-left transition-colors duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
-                  isLocked ? 'cursor-not-allowed opacity-50' : 'hover:text-fg'
-                )}>
-                
+                  isLocked ? 'cursor-not-allowed opacity-50' : 'hover:text-fg',
+                )}
+              >
                 <span
                   className={cn(
                     'relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-caption font-semibold tabular-nums',
-                    isCurrent ? 'border-action bg-action text-action-fg' : isFlagged ? 'border-warning bg-warning-soft text-warning' : isDone ? 'border-success bg-success-soft text-success' : 'border-line bg-raised text-fg-subtle'
+                    isCurrent ? 'border-action bg-action text-action-fg' : isFlagged ? 'border-warning bg-warning-soft text-warning' : isDone ? 'border-success bg-success-soft text-success' : 'border-line bg-raised text-fg-subtle',
                   )}
-                  aria-hidden>
-                  
+                  aria-hidden
+                >
                   {isFlagged && !isCurrent ? <AlertTriangleIcon size={14} /> : isDone && !isCurrent ? <CheckIcon size={14} strokeWidth={3} /> : i + 1}
                 </span>
                 <span className="min-w-0 pt-0.5">
@@ -76,10 +76,10 @@ export function KycStepper({ steps, current, done, flagged, locked, onSelect }: 
                   <span className="sr-only">{isDone ? ` — ${tr('done')}` : isFlagged ? ` — ${tr('needs changes')}` : ''}</span>
                 </span>
               </button>
-            </li>);
-
+            </li>
+          );
         })}
       </ol>
-    </nav>);
-
+    </nav>
+  );
 }

@@ -21,7 +21,7 @@ function storageUsedKb(): number {
       const k = localStorage.key(i) ?? '';
       total += k.length + (localStorage.getItem(k)?.length ?? 0);
     }
-    return Math.round(total * 2 / 1024);
+    return Math.round((total * 2) / 1024);
   } catch {
     return 0;
   }
@@ -57,18 +57,18 @@ export function AdminHealth() {
       <div className="mt-8 grid items-start gap-8 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
         <Card id="services" title="Services" description="Statuses follow open incidents. No servers run behind the prototype, so notes describe how each part is simulated." actions={<IllustrativeTag note="Real monitoring comes with the engineering build. Here, a service changes only when staff declare an incident." />} body="flush">
           <List>
-            {platformServices.map((s) =>
-            <ListRow
-              key={s.name}
-              title={s.name}
-              meta={s.note}
-              trailing={
-              <Badge tone={stateTone[states[s.name] ?? 'operational']} dot>
+            {platformServices.map((s) => (
+              <ListRow
+                key={s.name}
+                title={s.name}
+                meta={s.note}
+                trailing={
+                  <Badge tone={stateTone[states[s.name] ?? 'operational']} dot>
                     {serviceStateLabels[states[s.name] ?? 'operational']}
                   </Badge>
-              } />
-
-            )}
+                }
+              />
+            ))}
           </List>
         </Card>
         <Card id="device" title="This device" description="Everything in the prototype is saved in this browser.">
@@ -78,6 +78,6 @@ export function AdminHealth() {
           </StatGroup>
         </Card>
       </div>
-    </div>);
-
+    </div>
+  );
 }

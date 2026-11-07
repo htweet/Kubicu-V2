@@ -24,10 +24,10 @@ export function onRadioGroupKeyDown(e: React.KeyboardEvent<HTMLElement>): void {
   e.preventDefault();
   const current = radios.indexOf(document.activeElement as HTMLElement);
   const last = radios.length - 1;
-  const next = e.key === 'Home' ? 0 : e.key === 'End' ? last : e.key === 'ArrowDown' || e.key === 'ArrowRight' ? current >= last ? 0 : current + 1 : current <= 0 ? last : current - 1;
+  const next = e.key === 'Home' ? 0 : e.key === 'End' ? last : e.key === 'ArrowDown' || e.key === 'ArrowRight' ? (current >= last ? 0 : current + 1) : current <= 0 ? last : current - 1;
   radios[next].focus();
   radios[next].click();
 }
 
 /** Roving tab stop: only the chosen option (or the first, when none is chosen) is in the Tab order. */
-export const radioTabIndex = (active: boolean, index: number, anyActive: boolean): 0 | -1 => active || !anyActive && index === 0 ? 0 : -1;
+export const radioTabIndex = (active: boolean, index: number, anyActive: boolean): 0 | -1 => (active || (!anyActive && index === 0) ? 0 : -1);

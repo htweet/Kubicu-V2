@@ -37,7 +37,7 @@ function WhatsAppChannel() {
   const sim = useCopilotSim();
   const { t: tr } = useT();
   const { session, send, retry, restart, addPhotos, limits } = useCopilot('whatsapp', SAMPLE_CHAT_PHONE);
-  const [sheet, setSheet] = useState<{title: string;rows: CopilotReply[];} | null>(null);
+  const [sheet, setSheet] = useState<{ title: string; rows: CopilotReply[] } | null>(null);
   const [retried, setRetried] = useState<Set<string>>(new Set());
   const [confirmRestart, setConfirmRestart] = useState(false);
 
@@ -70,8 +70,8 @@ function WhatsAppChannel() {
     return send({ kind: 'choice', value: r.value, label: r.label });
   };
 
-  const chat =
-  <div className="relative flex h-full min-h-0 flex-col overflow-hidden" style={{ background: wa.wall, color: wa.text }}>
+  const chat = (
+    <div className="relative flex h-full min-h-0 flex-col overflow-hidden" style={{ background: wa.wall, color: wa.text }}>
       <header className="flex h-14 shrink-0 items-center gap-2 px-2 text-white" style={{ background: wa.header }}>
         <Link to="/copilot" aria-label={tr('Leave the chat')} className="flex h-10 w-9 items-center justify-center rounded-full hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
           <ArrowLeftIcon size={20} aria-hidden />
@@ -91,8 +91,8 @@ function WhatsAppChannel() {
       </div>
       <WaComposer question={session.question} stage={session.stage} onText={(text) => send({ kind: 'text', text })} onPhotos={addPhotos} />
       <AnimatePresence>{sheet && <WaListSheet title={sheet.title} rows={sheet.rows} onPick={onReply} onClose={() => setSheet(null)} />}</AnimatePresence>
-    </div>;
-
+    </div>
+  );
 
   return (
     <PlatformLook night>
@@ -135,28 +135,28 @@ function WhatsAppChannel() {
               <Link to="/copilot/chat" className="inline-flex h-11 items-center gap-2 whitespace-nowrap rounded-full border border-line-strong px-5 text-label font-semibold text-fg hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
                 <GlobeIcon size={16} aria-hidden /> {tr('Use the browser chat')}
               </Link>
-              {confirmRestart ?
-              <span className="flex items-center gap-1.5">
-                  <button type="button" onClick={() => {restart();setConfirmRestart(false);setRetried(new Set());}} className="h-11 whitespace-nowrap rounded-full bg-action px-4 text-label font-semibold text-action-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+              {confirmRestart ? (
+                <span className="flex items-center gap-1.5">
+                  <button type="button" onClick={() => { restart(); setConfirmRestart(false); setRetried(new Set()); }} className="h-11 whitespace-nowrap rounded-full bg-action px-4 text-label font-semibold text-action-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
                     {tr('Start a new chat')}
                   </button>
                   <button type="button" onClick={() => setConfirmRestart(false)} className="h-11 whitespace-nowrap rounded-full px-4 text-label text-fg-muted hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
                     {tr('Keep this one')}
                   </button>
-                </span> :
-
-              <button type="button" onClick={() => setConfirmRestart(true)} className="inline-flex h-11 items-center gap-1.5 whitespace-nowrap rounded-full px-4 text-label font-medium text-fg-muted hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+                </span>
+              ) : (
+                <button type="button" onClick={() => setConfirmRestart(true)} className="inline-flex h-11 items-center gap-1.5 whitespace-nowrap rounded-full px-4 text-label font-medium text-fg-muted hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
                   <RotateCcwIcon size={15} aria-hidden /> {tr('Start over')}
                 </button>
-              }
+              )}
             </div>
             <p className="mt-6 text-caption text-fg-subtle">{tr('Replies follow written rules, not a live AI model. Nothing is sent to WhatsApp, and everything stays in this browser.')}</p>
           </div>
           <div className="h-[780px] max-h-[calc(100dvh-80px)] overflow-hidden rounded-[44px] border-[10px] border-[rgb(24_24_22)] shadow-3">{chat}</div>
         </div>
       </div>
-    </PlatformLook>);
-
+    </PlatformLook>
+  );
 }
 
 function ChannelUnavailable() {
@@ -174,6 +174,6 @@ function ChannelUnavailable() {
           {tr('Back to Copilot')}
         </Link>
       </main>
-    </PlatformLook>);
-
+    </PlatformLook>
+  );
 }

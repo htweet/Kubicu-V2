@@ -14,12 +14,12 @@ export function NotFoundInline() {
           title="This form doesn’t exist"
           description="It may have been deleted, or it belongs to another workspace."
           action={
-          <Link to="/app/forms">
+            <Link to="/app/forms">
               <Button>All forms</Button>
             </Link>
-          } />
-        
+          }
+        />
       </div>
-    </div>);
-
+    </div>
+  );
 }

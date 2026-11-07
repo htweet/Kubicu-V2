@@ -46,9 +46,9 @@ export function newSession(workspaceId: string, pageId: string, businessName: st
     stage: 'asking',
     answers: { brief: '' },
     messages: [
-    say(`Hi${businessName ? ` — let’s build ${businessName}’s page together` : ''}. I’ll ask a few quick questions — tap an answer, or type your own whenever you like. Nothing changes until you approve the plan.`),
-    say(questionPrompts.business)],
-
+      say(`Hi${businessName ? ` — let’s build ${businessName}’s page together` : ''}. I’ll ask a few quick questions — tap an answer, or type your own whenever you like. Nothing changes until you approve the plan.`),
+      say(questionPrompts.business),
+    ],
     question: businessQuestion(),
     asked: [],
     skipped: [],
@@ -57,7 +57,7 @@ export function newSession(workspaceId: string, pageId: string, businessName: st
     built: 0,
     applied: false,
     createdAt: now,
-    updatedAt: now
+    updatedAt: now,
   };
 }
 
@@ -77,7 +77,7 @@ function businessQuestion(): AssistantQuestion {
     allowText: true,
     input: 'choice',
     placeholder: 'Or type it in your own words',
-    skippable: false
+    skippable: false,
   };
 }
 
@@ -130,20 +130,20 @@ function nextQuestionId(s: AssistantSession, ctx: EngineContext): QuestionId | n
   const a = s.answers;
   const done = (id: QuestionId) => s.asked.includes(id) || s.skipped.includes(id);
   const order: [QuestionId, boolean][] = [
-  ['business', !a.business && !a.businessText],
-  ['name', !a.name],
-  ['audience', !a.audience],
-  ['action', !a.action],
-  ['offer', !a.offer],
-  ['items', !a.items?.length && !!itemsAsFor(a.offer)],
-  ['city', !a.city && (a.action === 'book' || a.action === 'order' || a.offer === 'menu' || a.offer === 'services' || a.audience === 'locals')],
-  ['phone', !a.phone && (a.action === 'order' || a.action === 'enquire')],
-  ['feel', !a.feel],
-  ['logo', !s.images.some((i) => i.role === 'logo')],
-  ['photos', !s.images.some((i) => i.role !== 'logo')],
-  ['qr', a.qr === undefined],
-  ['mode', ctx.pageHasContent && !a.mode]];
-
+    ['business', !a.business && !a.businessText],
+    ['name', !a.name],
+    ['audience', !a.audience],
+    ['action', !a.action],
+    ['offer', !a.offer],
+    ['items', !a.items?.length && !!itemsAsFor(a.offer)],
+    ['city', !a.city && (a.action === 'book' || a.action === 'order' || a.offer === 'menu' || a.offer === 'services' || a.audience === 'locals')],
+    ['phone', !a.phone && (a.action === 'order' || a.action === 'enquire')],
+    ['feel', !a.feel],
+    ['logo', !s.images.some((i) => i.role === 'logo')],
+    ['photos', !s.images.some((i) => i.role !== 'logo')],
+    ['qr', a.qr === undefined],
+    ['mode', ctx.pageHasContent && !a.mode],
+  ];
   return order.find(([id, needed]) => needed && !done(id))?.[0] ?? null;
 }
 
@@ -219,7 +219,7 @@ function respondInner(s: AssistantSession, input: AssistantInput, ctx: EngineCon
     if (input.kind === 'change') return { ...s, stage: 'asking', question: null, messages: [...s.messages, said('I’d like to change something.'), say('Of course — tell me what to change. For example “make it bolder”, “add testimonials after the menu”, “remove the FAQ”, “make the buttons green” or “it’s mainly for bookings”.')] };
     if (input.kind === 'text') return applyChange(s, input.text, ctx);
     if (input.kind === 'images') {
-      const items = input.items.slice(0, 8).map((i, n) => ({ ...i, role: n === 0 && !s.images.some((x) => x.role === 'hero') ? 'hero' as const : 'gallery' as const }));
+      const items = input.items.slice(0, 8).map((i, n) => ({ ...i, role: n === 0 && !s.images.some((x) => x.role === 'hero') ? ('hero' as const) : ('gallery' as const) }));
       return toPlan({ ...s, images: [...s.images, ...items], messages: [...s.messages, said(`${items.length} photo${items.length === 1 ? '' : 's'}`, items.map((i) => i.src))] }, ctx, 'Added your photos to the plan.');
     }
     return s;
@@ -260,14 +260,14 @@ function respondInner(s: AssistantSession, input: AssistantInput, ctx: EngineCon
   }
 
   if ((q.input === 'images' || q.input === 'image') && input.kind === 'images') {
-    const items = q.input === 'image' ? input.items.slice(0, 1).map((i) => ({ ...i, role: 'logo' as const })) : input.items.slice(0, 8).map((i, n) => ({ ...i, role: n === 0 && !s.images.some((x) => x.role === 'hero') ? 'hero' as const : 'gallery' as const }));
+    const items = q.input === 'image' ? input.items.slice(0, 1).map((i) => ({ ...i, role: 'logo' as const })) : input.items.slice(0, 8).map((i, n) => ({ ...i, role: n === 0 && !s.images.some((x) => x.role === 'hero') ? ('hero' as const) : ('gallery' as const) }));
     const lead = q.input === 'image' ? 'That’s going at the top, and it’s saved in Media → Brand assets.' : `Got ${items.length}. The first becomes the main image${items.length > 1 ? ', the rest go in a gallery' : ''}.`;
     return ask({ ...s, asked, question: null, images: [...s.images, ...items], messages: [...s.messages, said(`${items.length} image${items.length === 1 ? '' : 's'}`, items.map((i) => i.src))] }, ctx, lead);
   }
 
   // Photos dropped while answering something else: keep them, keep the question.
   if (input.kind === 'images') {
-    const items = input.items.slice(0, 8).map((i, n) => ({ ...i, role: n === 0 && !s.images.some((x) => x.role === 'hero') ? 'hero' as const : 'gallery' as const }));
+    const items = input.items.slice(0, 8).map((i, n) => ({ ...i, role: n === 0 && !s.images.some((x) => x.role === 'hero') ? ('hero' as const) : ('gallery' as const) }));
     return { ...s, images: [...s.images, ...items], messages: [...s.messages, said(`${items.length} photo${items.length === 1 ? '' : 's'}`, items.map((i) => i.src)), say(`Saved ${items.length === 1 ? 'it' : 'them'} to Media — I’ll use ${items.length === 1 ? 'it' : 'them'} on the page. ${questionPrompts[q.id]}`)] };
   }
 
@@ -283,13 +283,13 @@ function respondInner(s: AssistantSession, input: AssistantInput, ctx: EngineCon
         // Keep the same question open, as a short text answer.
         return { ...withUser, question: { ...q, chips: [], input: 'text', placeholder: 'e.g. small chops in Yaba' }, messages: [...withUser.messages, say('Tell me in a few words what you do — anything you add, like your area or a WhatsApp number, saves a question later.')] };
       }
-      if (input.kind === 'choice') a.business = value;else
-      {
+      if (input.kind === 'choice') a.business = value;
+      else {
         // A typed answer can carry more than the business type — pick up anything it already says.
         const m = analyzeBrief(value);
         const facts = readFacts(value);
-        if (m.exampleId) a.business = m.exampleId;else
-        a.businessText = value;
+        if (m.exampleId) a.business = m.exampleId;
+        else a.businessText = value;
         a.brief = a.brief || value;
         a.name = a.name ?? (m.name || undefined);
         a.city = a.city ?? (m.city || undefined);
@@ -308,42 +308,42 @@ function respondInner(s: AssistantSession, input: AssistantInput, ctx: EngineCon
     case 'audience':
       a.audience = value.slice(0, 80);
       break;
-    case 'action':{
-        const chosen = input.kind === 'choice' ? value as typeof a.action : readFacts(value).action;
-        if (!chosen) return { ...withUser, messages: [...withUser.messages, say('I didn’t quite catch that — is it closest to one of these?', { tone: 'warning' })] };
-        a.action = chosen;
-        break;
-      }
-    case 'offer':{
-        const chosen = input.kind === 'choice' ? value as typeof a.offer : readFacts(value).offer;
-        a.offer = chosen ?? 'content';
-        break;
-      }
+    case 'action': {
+      const chosen = input.kind === 'choice' ? (value as typeof a.action) : readFacts(value).action;
+      if (!chosen) return { ...withUser, messages: [...withUser.messages, say('I didn’t quite catch that — is it closest to one of these?', { tone: 'warning' })] };
+      a.action = chosen;
+      break;
+    }
+    case 'offer': {
+      const chosen = input.kind === 'choice' ? (value as typeof a.offer) : readFacts(value).offer;
+      a.offer = chosen ?? 'content';
+      break;
+    }
     case 'city':
       // "Online only" answers the question without putting an address on the page.
       if (!(input.kind === 'choice' && value === 'online')) a.city = value.slice(0, 60);
       break;
-    case 'phone':{
-        // The workspace's country, or any of our four with a country code (D420).
-        const clean = findMobileNumber(value);
-        if (!clean) return { ...withUser, messages: [...withUser.messages, say('That doesn’t look like a complete mobile number. Check the digits or add your country code (+234, +254, +233 or +27), or say skip.', { tone: 'warning' })] };
-        a.phone = clean;
-        break;
-      }
+    case 'phone': {
+      // The workspace's country, or any of our four with a country code (D420).
+      const clean = findMobileNumber(value);
+      if (!clean) return { ...withUser, messages: [...withUser.messages, say('That doesn’t look like a complete mobile number. Check the digits or add your country code (+234, +254, +233 or +27), or say skip.', { tone: 'warning' })] };
+      a.phone = clean;
+      break;
+    }
     case 'feel':
       a.feel = value as AssistantFeel;
       break;
     case 'mode':
       a.mode = value === 'add' ? 'add' : 'replace';
       break;
-    case 'items':{
-        const items = parsePriceList(value);
-        if (!items.length) return { ...withUser, messages: [...withUser.messages, say('I couldn’t read a list from that — put each item on its own line, like “Party tray (small) — 15,000”. Or skip and add them later.', { tone: 'warning' })] };
-        a.items = items;
-        const priced = items.filter((i) => i.priceNgn !== null);
-        const summary = items.slice(0, 4).map((i) => i.priceNgn !== null ? `${i.name} ${formatNgn(i.priceNgn)}` : i.name).join(' · ');
-        return ask({ ...withUser, answers: a, asked, question: null }, ctx, `Got ${items.length} item${items.length === 1 ? '' : 's'}${priced.length < items.length ? ` (${items.length - priced.length} without a price — I’ll ask while I build)` : ''}: ${summary}${items.length > 4 ? ' …' : ''}.`);
-      }
+    case 'items': {
+      const items = parsePriceList(value);
+      if (!items.length) return { ...withUser, messages: [...withUser.messages, say('I couldn’t read a list from that — put each item on its own line, like “Party tray (small) — 15,000”. Or skip and add them later.', { tone: 'warning' })] };
+      a.items = items;
+      const priced = items.filter((i) => i.priceNgn !== null);
+      const summary = items.slice(0, 4).map((i) => (i.priceNgn !== null ? `${i.name} ${formatNgn(i.priceNgn)}` : i.name)).join(' · ');
+      return ask({ ...withUser, answers: a, asked, question: null }, ctx, `Got ${items.length} item${items.length === 1 ? '' : 's'}${priced.length < items.length ? ` (${items.length - priced.length} without a price — I’ll ask while I build)` : ''}: ${summary}${items.length > 4 ? ' …' : ''}.`);
+    }
     case 'qr':
       a.qr = value === 'yes';
       break;
@@ -367,7 +367,7 @@ function applyChange(s: AssistantSession, text: string, ctx: EngineContext): Ass
   const a = { ...s.answers };
   const changed: string[] = [];
   const lower = text.toLowerCase();
-  const feel = (Object.keys(feelLabels) as AssistantFeel[]).find((f) => lower.includes(f) || f === 'warm' && /warmer|cosy|cozy/.test(lower) || f === 'bold' && /bolder|louder|brighter/.test(lower) || f === 'dark' && /darker/.test(lower) || f === 'light' && /lighter|airy|cleaner/.test(lower));
+  const feel = (Object.keys(feelLabels) as AssistantFeel[]).find((f) => lower.includes(f) || (f === 'warm' && /warmer|cosy|cozy/.test(lower)) || (f === 'bold' && /bolder|louder|brighter/.test(lower)) || (f === 'dark' && /darker/.test(lower)) || (f === 'light' && /lighter|airy|cleaner/.test(lower)));
   if (feel) {
     a.feel = feel;
     changed.push(`the look is now ${feelLabels[feel].toLowerCase()}`);

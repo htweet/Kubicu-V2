@@ -18,6 +18,6 @@ export function LanguageSwitchBlock({ block, theme, mode }: BlockProps<'language
         <LanguagesIcon size={14} aria-hidden /> {label}
       </p>
       <VisitorLanguageMenu theme={theme} variant="field" label={label} disabled={!live} side="bottom" />
-    </div>);
-
+    </div>
+  );
 }

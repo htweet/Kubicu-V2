@@ -35,7 +35,7 @@ function read(key: string): LibraryData {
     return {
       sections: Array.isArray(parsed.sections) ? parsed.sections : [],
       themes: Array.isArray(parsed.themes) ? parsed.themes : [],
-      templates: Array.isArray(parsed.templates) ? parsed.templates : []
+      templates: Array.isArray(parsed.templates) ? parsed.templates : [],
     };
   } catch {
     return { sections: [], themes: [], templates: [] };
@@ -48,7 +48,7 @@ function cleanBlock(b: Block): Block {
 }
 
 /** Workspace-wide reusable sections, themes and page layouts, shared by every page in the workspace. */
-export function LibraryProvider({ children }: {children: React.ReactNode;}) {
+export function LibraryProvider({ children }: { children: React.ReactNode }) {
   const key = storageKey(useWorkspace().current.id);
   const [data, setData] = useState<LibraryData>(() => read(key));
 
@@ -56,9 +56,9 @@ export function LibraryProvider({ children }: {children: React.ReactNode;}) {
     try {
       window.localStorage.setItem(key, JSON.stringify(data));
     } catch {
-
       // Storage full or blocked — library keeps working for this session.
-    }}, [data, key]);
+    }
+  }, [data, key]);
 
   const saveSection = useCallback((name: string, blocks: Block[]) => {
     const section: SavedSection = { id: uid('sec'), name: name.trim() || 'Untitled section', blocks: blocks.map(cleanBlock), createdAt: new Date().toISOString() };
@@ -67,7 +67,7 @@ export function LibraryProvider({ children }: {children: React.ReactNode;}) {
   }, []);
 
   const renameSection = useCallback((id: string, name: string) => {
-    setData((d) => ({ ...d, sections: d.sections.map((s) => s.id === id ? { ...s, name: name.trim() || s.name } : s) }));
+    setData((d) => ({ ...d, sections: d.sections.map((s) => (s.id === id ? { ...s, name: name.trim() || s.name } : s)) }));
   }, []);
 
   const deleteSection = useCallback(
@@ -76,11 +76,11 @@ export function LibraryProvider({ children }: {children: React.ReactNode;}) {
       setData((d) => ({ ...d, sections: d.sections.filter((s) => s.id !== id) }));
       return found;
     },
-    [data.sections]
+    [data.sections],
   );
 
   const restoreSection = useCallback((section: SavedSection) => {
-    setData((d) => d.sections.some((s) => s.id === section.id) ? d : { ...d, sections: [section, ...d.sections] });
+    setData((d) => (d.sections.some((s) => s.id === section.id) ? d : { ...d, sections: [section, ...d.sections] }));
   }, []);
 
   const saveTheme = useCallback((name: string, theme: PageTheme) => {
@@ -96,11 +96,11 @@ export function LibraryProvider({ children }: {children: React.ReactNode;}) {
       setData((d) => ({ ...d, themes: d.themes.filter((t) => t.id !== id) }));
       return found;
     },
-    [data.themes]
+    [data.themes],
   );
 
   const restoreTheme = useCallback((theme: SavedTheme) => {
-    setData((d) => d.themes.some((t) => t.id === theme.id) ? d : { ...d, themes: [theme, ...d.themes] });
+    setData((d) => (d.themes.some((t) => t.id === theme.id) ? d : { ...d, themes: [theme, ...d.themes] }));
   }, []);
 
   const saveTemplate = useCallback((name: string, blocks: Block[], theme: PageTheme, origin: SavedTemplate['origin'] = 'manual') => {
@@ -115,16 +115,16 @@ export function LibraryProvider({ children }: {children: React.ReactNode;}) {
       setData((d) => ({ ...d, templates: d.templates.filter((t) => t.id !== id) }));
       return found;
     },
-    [data.templates]
+    [data.templates],
   );
 
   const restoreTemplate = useCallback((template: SavedTemplate) => {
-    setData((d) => d.templates.some((t) => t.id === template.id) ? d : { ...d, templates: [template, ...d.templates] });
+    setData((d) => (d.templates.some((t) => t.id === template.id) ? d : { ...d, templates: [template, ...d.templates] }));
   }, []);
 
   const value = useMemo(
     () => ({ ...data, saveSection, renameSection, deleteSection, restoreSection, saveTheme, deleteTheme, restoreTheme, saveTemplate, deleteTemplate, restoreTemplate }),
-    [data, saveSection, renameSection, deleteSection, restoreSection, saveTheme, deleteTheme, restoreTheme, saveTemplate, deleteTemplate, restoreTemplate]
+    [data, saveSection, renameSection, deleteSection, restoreSection, saveTheme, deleteTheme, restoreTheme, saveTemplate, deleteTemplate, restoreTemplate],
   );
   return <LibraryContext.Provider value={value}>{children}</LibraryContext.Provider>;
 }

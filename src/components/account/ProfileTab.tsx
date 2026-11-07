@@ -31,7 +31,7 @@ export function ProfileTab() {
   const dirty = draft.name !== p.name || draft.displayName !== p.displayName || draft.jobTitle !== p.jobTitle || draft.bio !== p.bio;
   const nameError = tried && draft.name.trim().length < 2 ? 'Add your full name' : undefined;
 
-  const syncMember = (patch: {name?: string;contact?: string;}) => {
+  const syncMember = (patch: { name?: string; contact?: string }) => {
     // Previewing another role uses a stand-in, which has no account to sync.
     if (!team.me.id.startsWith('preview_') && team.me.role === 'owner') team.updateMember(team.me.id, patch);
   };
@@ -69,18 +69,18 @@ export function ProfileTab() {
           title="Your profile"
           description="How you appear to teammates in every workspace."
           footer={
-          <div className="flex items-center justify-end gap-2">
-              {dirty &&
-            <Button variant="tertiary" onClick={() => setDraft({ name: p.name, displayName: p.displayName, jobTitle: p.jobTitle, bio: p.bio })}>
+            <div className="flex items-center justify-end gap-2">
+              {dirty && (
+                <Button variant="tertiary" onClick={() => setDraft({ name: p.name, displayName: p.displayName, jobTitle: p.jobTitle, bio: p.bio })}>
                   Discard
                 </Button>
-            }
+              )}
               <Button disabled={!dirty} onClick={save}>
                 Save profile
               </Button>
             </div>
-          }>
-          
+          }
+        >
           <div className="flex flex-col gap-6">
             <div className="flex items-center gap-5">
               <AccountAvatar name={draft.name || p.name} photo={p.photo} size="lg" />
@@ -89,11 +89,11 @@ export function ProfileTab() {
                   <Button size="sm" variant="secondary" leadingIcon={CameraIcon} onClick={() => fileRef.current?.click()}>
                     {p.photo ? 'Change photo' : 'Add a photo'}
                   </Button>
-                  {p.photo &&
-                  <Button size="sm" variant="tertiary" leadingIcon={Trash2Icon} onClick={() => updateAccount((a) => ({ ...a, profile: { ...a.profile, photo: null } }))}>
+                  {p.photo && (
+                    <Button size="sm" variant="tertiary" leadingIcon={Trash2Icon} onClick={() => updateAccount((a) => ({ ...a, profile: { ...a.profile, photo: null } }))}>
                       Remove
                     </Button>
-                  }
+                  )}
                 </div>
                 <p className="text-caption text-fg-subtle">{tr('Square works best. JPG, PNG or WebP, up to 5 MB.')}</p>
                 <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp,image/gif" className="sr-only" tabIndex={-1} aria-hidden onChange={(e) => onPhoto(e.target.files?.[0])} />
@@ -117,11 +117,11 @@ export function ProfileTab() {
               status={account.pendingEmail ? <Badge tone="warning">Change pending</Badge> : account.emailVerified ? <Badge tone="success">Verified</Badge> : <Badge tone="warning">Not verified</Badge>}
               note={account.pendingEmail ? tr('Waiting for you to confirm {next}. Until then, we keep using {current}.', { next: account.pendingEmail, current: p.email }) : undefined}
               action={
-              <Button size="sm" variant="secondary" onClick={() => setDialog('email')}>
+                <Button size="sm" variant="secondary" onClick={() => setDialog('email')}>
                   {account.pendingEmail ? 'Review' : 'Change'}
                 </Button>
-              } />
-            
+              }
+            />
             <ContactRow
               icon={PhoneIcon}
               label="Phone"
@@ -129,11 +129,11 @@ export function ProfileTab() {
               status={p.phone ? account.phoneVerified ? <Badge tone="success">Verified</Badge> : <Badge tone="warning">Not verified</Badge> : null}
               note={p.phone ? undefined : tr('Needed for text-message codes and WhatsApp alerts.')}
               action={
-              <Button size="sm" variant="secondary" onClick={() => setDialog('phone')}>
-                  {p.phone ? account.phoneVerified ? 'Change' : 'Verify' : 'Add phone'}
+                <Button size="sm" variant="secondary" onClick={() => setDialog('phone')}>
+                  {p.phone ? (account.phoneVerified ? 'Change' : 'Verify') : 'Add phone'}
                 </Button>
-              } />
-            
+              }
+            />
           </ul>
         </Card>
       </div>
@@ -147,11 +147,11 @@ export function ProfileTab() {
 
       <EmailDialog open={dialog === 'email'} onClose={() => setDialog(null)} onConfirmed={(email) => syncMember({ contact: email })} />
       <PhoneDialog open={dialog === 'phone'} onClose={() => setDialog(null)} />
-    </div>);
-
+    </div>
+  );
 }
 
-function ContactRow({ icon: Icon, label, value, status, note, action }: {icon: typeof MailIcon;label: string;value: string;status: React.ReactNode;note?: string;action: React.ReactNode;}) {
+function ContactRow({ icon: Icon, label, value, status, note, action }: { icon: typeof MailIcon; label: string; value: string; status: React.ReactNode; note?: string; action: React.ReactNode }) {
   label = useT().t(label);
   return (
     <li className="flex items-start gap-4 px-5 py-4 md:px-6">
@@ -167,11 +167,11 @@ function ContactRow({ icon: Icon, label, value, status, note, action }: {icon: t
         {note && <p className="mt-1 text-caption text-fg-muted">{note}</p>}
       </div>
       <div className="shrink-0">{action}</div>
-    </li>);
-
+    </li>
+  );
 }
 
-function EmailDialog({ open, onClose, onConfirmed }: {open: boolean;onClose: () => void;onConfirmed: (email: string) => void;}) {
+function EmailDialog({ open, onClose, onConfirmed }: { open: boolean; onClose: () => void; onConfirmed: (email: string) => void }) {
   const { t: tr } = useT();
   const account = useAccount();
   const [email, setEmail] = useState('');
@@ -206,23 +206,23 @@ function EmailDialog({ open, onClose, onConfirmed }: {open: boolean;onClose: () 
   };
 
   if (account.pendingEmail)
-  return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      size="sm"
-      title="Confirm your new email"
-      description={tr('We sent a link to {email}. The change happens when you open it. The link expires in 24 hours.', { email: account.pendingEmail })}
-      footer={
-      <>
+    return (
+      <Dialog
+        open={open}
+        onClose={onClose}
+        size="sm"
+        title="Confirm your new email"
+        description={tr('We sent a link to {email}. The change happens when you open it. The link expires in 24 hours.', { email: account.pendingEmail })}
+        footer={
+          <>
             <Button
-          variant="tertiary"
-          onClick={() => {
-            updateAccount((a) => ({ ...a, pendingEmail: null }));
-            toast(tr('Email change cancelled'));
-            onClose();
-          }}>
-          
+              variant="tertiary"
+              onClick={() => {
+                updateAccount((a) => ({ ...a, pendingEmail: null }));
+                toast(tr('Email change cancelled'));
+                onClose();
+              }}
+            >
               Cancel the change
             </Button>
             <Button variant="secondary" onClick={() => toast.success(tr('Link sent again'), { description: tr('Preview only — nothing is sent.') })}>
@@ -232,9 +232,9 @@ function EmailDialog({ open, onClose, onConfirmed }: {open: boolean;onClose: () 
               Prototype: open the link
             </Button>
           </>
-      } />);
-
-
+        }
+      />
+    );
 
   return (
     <Dialog
@@ -244,23 +244,23 @@ function EmailDialog({ open, onClose, onConfirmed }: {open: boolean;onClose: () 
       title="Change your email"
       description="We’ll send a link to the new address. Your current email keeps working until you confirm."
       footer={
-      <>
+        <>
           <Button variant="tertiary" onClick={onClose}>
             Cancel
           </Button>
           <Button onClick={request}>Send link</Button>
         </>
-      }>
-      
+      }
+    >
       <div className="flex flex-col gap-4">
         <TextInput id="acc-new-email" label="New email" type="email" autoComplete="email" value={email} error={emailError} onChange={(e) => setEmail(e.target.value)} />
         <TextInput id="acc-email-pw" label="Current password" type="password" autoComplete="current-password" value={password} error={pwError} hint="So nobody else can change it from an unlocked device." onChange={(e) => setPassword(e.target.value)} />
       </div>
-    </Dialog>);
-
+    </Dialog>
+  );
 }
 
-function PhoneDialog({ open, onClose }: {open: boolean;onClose: () => void;}) {
+function PhoneDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t: tr } = useT();
   const account = useAccount();
   const [phone, setPhone] = useState('');
@@ -304,46 +304,46 @@ function PhoneDialog({ open, onClose }: {open: boolean;onClose: () => void;}) {
       open={open}
       onClose={onClose}
       size="sm"
-      title={step === 'number' ? account.profile.phone ? 'Change your phone' : 'Add your phone' : 'Enter the code'}
+      title={step === 'number' ? (account.profile.phone ? 'Change your phone' : 'Add your phone') : 'Enter the code'}
       description={step === 'number' ? 'We’ll text a 6-digit code to confirm it’s yours.' : tr('We texted a code to {phone}. It expires in 10 minutes.', { phone: account.profile.phone })}
       footer={
-      step === 'number' ?
-      <>
-            {account.profile.phone &&
-        <Button
-          variant="tertiary"
-          className="mr-auto"
-          disabled={account.security.twoStep === 'sms'}
-          title={account.security.twoStep === 'sms' ? tr('Switch two-step sign-in off text messages first') : undefined}
-          onClick={() => {
-            updateAccount((a) => ({ ...a, profile: { ...a.profile, phone: '' }, phoneVerified: false }));
-            toast(tr('Phone removed'));
-            onClose();
-          }}>
-          
+        step === 'number' ? (
+          <>
+            {account.profile.phone && (
+              <Button
+                variant="tertiary"
+                className="mr-auto"
+                disabled={account.security.twoStep === 'sms'}
+                title={account.security.twoStep === 'sms' ? tr('Switch two-step sign-in off text messages first') : undefined}
+                onClick={() => {
+                  updateAccount((a) => ({ ...a, profile: { ...a.profile, phone: '' }, phoneVerified: false }));
+                  toast(tr('Phone removed'));
+                  onClose();
+                }}
+              >
                 Remove phone
               </Button>
-        }
+            )}
             <Button variant="tertiary" onClick={onClose}>
               Cancel
             </Button>
             <Button onClick={send}>Send code</Button>
-          </> :
-
-      <>
+          </>
+        ) : (
+          <>
             <Button variant="tertiary" onClick={() => setStep('number')}>
               Change number
             </Button>
             <Button onClick={verify}>Verify</Button>
           </>
-
-      }>
-      
-      {step === 'number' ?
-      <TextInput id="acc-phone" label="Phone number" type="tel" autoComplete="tel" inputMode="tel" placeholder="+234 803 000 0000" value={phone} error={phoneError} onChange={(e) => setPhone(e.target.value)} /> :
-
-      <TextInput id="acc-phone-code" label="6-digit code" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={code} error={codeError} onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))} />
+        )
       }
-    </Dialog>);
-
+    >
+      {step === 'number' ? (
+        <TextInput id="acc-phone" label="Phone number" type="tel" autoComplete="tel" inputMode="tel" placeholder="+234 803 000 0000" value={phone} error={phoneError} onChange={(e) => setPhone(e.target.value)} />
+      ) : (
+        <TextInput id="acc-phone-code" label="6-digit code" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={code} error={codeError} onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))} />
+      )}
+    </Dialog>
+  );
 }

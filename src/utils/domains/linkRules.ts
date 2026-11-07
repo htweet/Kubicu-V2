@@ -19,7 +19,7 @@ export const linkStatusLabels: Record<LinkStatus, string> = {
   scheduled: 'Scheduled',
   paused: 'Paused',
   ended: 'Ended',
-  archived: 'Archived'
+  archived: 'Archived',
 };
 
 export function linkScheduled(link: CampaignLink, now = Date.now()): boolean {
@@ -65,7 +65,7 @@ export function waDisplay(phone: string): string {
   return `+${waNumber(phone)}`;
 }
 
-export function waHref(w: {phone: string;message: string;}): string {
+export function waHref(w: { phone: string; message: string }): string {
   return whatsappLink(waNumber(w.phone), w.message);
 }
 
@@ -90,7 +90,7 @@ export function destinationKey(link: Pick<CampaignLink, 'externalUrl' | 'whatsap
 export const LINKS_PER_HOUR = 30;
 const HOUR = 3_600_000;
 
-export type CreationCheck = {ok: true;left: number;} | {ok: false;message: string;resetAt: number;};
+export type CreationCheck = { ok: true; left: number } | { ok: false; message: string; resetAt: number };
 
 export function linkCreationCheck(data: DomainsData, now = Date.now()): CreationCheck {
   const recent = data.links.map((l) => Date.parse(l.createdAt)).filter((t) => now - t < HOUR).sort((a, b) => a - b);
@@ -118,13 +118,13 @@ export function checkLinkHealth(workspace: Workspace, commerce: CommerceData | n
     const c = checkDestination(link.externalUrl);
     return c.ok ? { ok: true, checkedAt } : { ok: false, reason: 'Its website address no longer passes the safety check, so visitors see a warning instead.', checkedAt };
   }
-  return destinationExists(workspace, commerce, link.destination) ?
-  { ok: true, checkedAt } :
-  { ok: false, reason: 'Its page, product or block was removed. Visitors go to the nearest page that still exists.', checkedAt };
+  return destinationExists(workspace, commerce, link.destination)
+    ? { ok: true, checkedAt }
+    : { ok: false, reason: 'Its page, product or block was removed. Visitors go to the nearest page that still exists.', checkedAt };
 }
 
 /** Runs every active link's check. Returns the updated data and the links that newly failed. */
-export function runHealthChecks(data: DomainsData, workspace: Workspace, commerce: CommerceData | null, now = Date.now()): {data: DomainsData;newlyBroken: CampaignLink[];} {
+export function runHealthChecks(data: DomainsData, workspace: Workspace, commerce: CommerceData | null, now = Date.now()): { data: DomainsData; newlyBroken: CampaignLink[] } {
   const newlyBroken: CampaignLink[] = [];
   const links = data.links.map((l) => {
     if (l.archivedAt) return l;

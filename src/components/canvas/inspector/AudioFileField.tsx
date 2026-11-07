@@ -11,7 +11,7 @@ interface AudioFileFieldProps {
   url: string;
   fileName: string;
   error?: string;
-  onChange: (patch: {url: string;fileName: string;}) => void;
+  onChange: (patch: { url: string; fileName: string }) => void;
 }
 
 /**
@@ -38,24 +38,24 @@ export function AudioFileField({ id, url, fileName, error, onChange }: AudioFile
 
   return (
     <div className="flex flex-col gap-2">
-      {uploaded ?
-      <div className="flex items-center justify-between gap-2 rounded-md border border-line bg-sunken px-3 py-2">
+      {uploaded ? (
+        <div className="flex items-center justify-between gap-2 rounded-md border border-line bg-sunken px-3 py-2">
           <span className="min-w-0 truncate text-label text-fg">{fileName || tr('Uploaded track')}</span>
           <button type="button" onClick={() => onChange({ url: '', fileName: '' })} aria-label={tr('Remove uploaded track')} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm text-fg-muted hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
             <XIcon size={15} aria-hidden />
           </button>
-        </div> :
-
-      <TextInput
-        id={id}
-        label={tr('Audio link')}
-        placeholder="https://…/track.mp3"
-        value={url}
-        error={error}
-        hint={tr('A direct link to an MP3, M4A or OGG file.')}
-        onChange={(e) => onChange({ url: e.target.value.trim(), fileName })} />
-
-      }
+        </div>
+      ) : (
+        <TextInput
+          id={id}
+          label={tr('Audio link')}
+          placeholder="https://…/track.mp3"
+          value={url}
+          error={error}
+          hint={tr('A direct link to an MP3, M4A or OGG file.')}
+          onChange={(e) => onChange({ url: e.target.value.trim(), fileName })}
+        />
+      )}
       <div className="flex items-center gap-2">
         <Button variant="secondary" size="sm" leadingIcon={UploadIcon} onClick={() => input.current?.click()}>
           {uploaded ? tr('Replace file') : tr('Or upload (up to 1.5 MB)')}
@@ -63,6 +63,6 @@ export function AudioFileField({ id, url, fileName, error, onChange }: AudioFile
         <input ref={input} type="file" accept="audio/*" className="sr-only" tabIndex={-1} aria-hidden onChange={(e) => onFile(e.target.files?.[0])} />
       </div>
       {problem && <p role="alert" className="text-caption font-medium text-danger">{tr(problem)}</p>}
-    </div>);
-
+    </div>
+  );
 }

@@ -30,7 +30,7 @@ export const platformLabels: Record<SponsorPlatform, string> = {
   youtube: 'YouTube',
   x: 'X',
   whatsapp: 'WhatsApp Status',
-  podcast: 'Podcast'
+  podcast: 'Podcast',
 };
 
 export const sponsorCategories = ['Fashion & beauty', 'Food & drink', 'Tech & gadgets', 'Finance', 'Health & fitness', 'Events & music', 'Education', 'Other'];
@@ -41,10 +41,10 @@ function sampleBriefs(): SponsorBrief[] {
   const at = new Date(Date.now() - 2 * 86_400_000).toISOString();
   const base = { brandWorkspaceId: 'sample-brand', status: 'open' as const, createdAt: at, sample: true, applications: [] };
   return [
-  { ...base, id: 'brief-sample-1', brandName: 'Zobo & Co. (sample)', title: 'Launch of our sugar-free zobo', description: 'Show your audience how you drink it — at work, after the gym, at a party. Honest takes welcome; we don’t script your words.', category: 'Food & drink', platforms: ['instagram', 'tiktok'], deliverables: ['1 Reel or TikTok (30–60s)', '3 Stories with the link'], budgetNgn: 120_000, slots: 5, applyBy: daysFromNow(9) },
-  { ...base, id: 'brief-sample-2', brandName: 'Kola Wallet (sample)', title: 'Explain saving in small amounts', description: 'A short explainer for people new to saving apps. You must say it’s a paid partnership. No promises of returns.', category: 'Finance', platforms: ['youtube', 'x'], deliverables: ['1 video, 3–6 minutes', '1 thread or post with the link'], budgetNgn: 350_000, slots: 3, applyBy: daysFromNow(14) },
-  { ...base, id: 'brief-sample-3', brandName: 'Ìlú Fest (sample)', title: 'Countdown to the festival', description: 'Build excitement in the two weeks before the gates open. Free tickets for you and a friend on top of the fee.', category: 'Events & music', platforms: ['instagram', 'whatsapp'], deliverables: ['2 posts', '5 WhatsApp Status updates'], budgetNgn: 80_000, slots: 10, applyBy: daysFromNow(6) }];
-
+    { ...base, id: 'brief-sample-1', brandName: 'Zobo & Co. (sample)', title: 'Launch of our sugar-free zobo', description: 'Show your audience how you drink it — at work, after the gym, at a party. Honest takes welcome; we don’t script your words.', category: 'Food & drink', platforms: ['instagram', 'tiktok'], deliverables: ['1 Reel or TikTok (30–60s)', '3 Stories with the link'], budgetNgn: 120_000, slots: 5, applyBy: daysFromNow(9) },
+    { ...base, id: 'brief-sample-2', brandName: 'Kola Wallet (sample)', title: 'Explain saving in small amounts', description: 'A short explainer for people new to saving apps. You must say it’s a paid partnership. No promises of returns.', category: 'Finance', platforms: ['youtube', 'x'], deliverables: ['1 video, 3–6 minutes', '1 thread or post with the link'], budgetNgn: 350_000, slots: 3, applyBy: daysFromNow(14) },
+    { ...base, id: 'brief-sample-3', brandName: 'Ìlú Fest (sample)', title: 'Countdown to the festival', description: 'Build excitement in the two weeks before the gates open. Free tickets for you and a friend on top of the fee.', category: 'Events & music', platforms: ['instagram', 'whatsapp'], deliverables: ['2 posts', '5 WhatsApp Status updates'], budgetNgn: 80_000, slots: 10, applyBy: daysFromNow(6) },
+  ];
 }
 
 export function readBriefs(): SponsorBrief[] {
@@ -52,9 +52,9 @@ export function readBriefs(): SponsorBrief[] {
     const raw = localStorage.getItem(SPONSOR_KEY);
     if (raw) return JSON.parse(raw) as SponsorBrief[];
   } catch {
-
     // fall through to samples
-  }return sampleBriefs();
+  }
+  return sampleBriefs();
 }
 
 export function writeBriefs(list: SponsorBrief[]): boolean {
@@ -72,7 +72,7 @@ export const slotsLeft = (b: SponsorBrief) => Math.max(0, b.slots - acceptedCoun
 export const isOpen = (b: SponsorBrief) => b.status === 'open' && b.applyBy >= new Date().toISOString().slice(0, 10) && slotsLeft(b) > 0;
 
 /** What the brand pays on top of the creator's fee. */
-export const brandFee = (rateNgn: number) => Math.round(rateNgn * SPONSOR_FEE_PCT / 100);
+export const brandFee = (rateNgn: number) => Math.round((rateNgn * SPONSOR_FEE_PCT) / 100);
 
 export function briefErrors(b: Pick<SponsorBrief, 'title' | 'description' | 'platforms' | 'deliverables' | 'budgetNgn' | 'slots' | 'applyBy'>) {
   const e: Partial<Record<'title' | 'description' | 'platforms' | 'deliverables' | 'budget' | 'slots' | 'applyBy', string>> = {};
@@ -91,40 +91,40 @@ export function newApplication(brief: SponsorBrief, a: Pick<SponsorApplication, 
 }
 
 const patchApp = (list: SponsorBrief[], briefId: string, appId: string, fn: (a: SponsorApplication, b: SponsorBrief) => SponsorApplication) =>
-list.map((b) => b.id !== briefId ? b : { ...b, applications: b.applications.map((a) => a.id === appId ? fn(a, b) : a) });
+  list.map((b) => (b.id !== briefId ? b : { ...b, applications: b.applications.map((a) => (a.id === appId ? fn(a, b) : a)) }));
 
 export const accept = (list: SponsorBrief[], briefId: string, appId: string) =>
-patchApp(list, briefId, appId, (a, b) => ({
-  ...a,
-  status: 'accepted',
-  acceptedAt: new Date().toISOString(),
-  heldNgn: a.rateNgn,
-  trackingCode: Math.random().toString(36).slice(2, 8),
-  deliverables: b.deliverables.filter((d) => d.trim()).map((label): Deliverable => ({ id: uid('dlv'), label, status: 'todo' }))
-}));
+  patchApp(list, briefId, appId, (a, b) => ({
+    ...a,
+    status: 'accepted',
+    acceptedAt: new Date().toISOString(),
+    heldNgn: a.rateNgn,
+    trackingCode: Math.random().toString(36).slice(2, 8),
+    deliverables: b.deliverables.filter((d) => d.trim()).map((label): Deliverable => ({ id: uid('dlv'), label, status: 'todo' })),
+  }));
 
 export const setAppStatus = (list: SponsorBrief[], briefId: string, appId: string, status: SponsorApplication['status']) => patchApp(list, briefId, appId, (a) => ({ ...a, status }));
 
 export const submitDeliverable = (list: SponsorBrief[], briefId: string, appId: string, dId: string, link: string) =>
-patchApp(list, briefId, appId, (a) => ({ ...a, deliverables: a.deliverables.map((d) => d.id === dId ? { ...d, status: 'submitted', link: link.trim(), note: undefined, submittedAt: new Date().toISOString() } : d) }));
+  patchApp(list, briefId, appId, (a) => ({ ...a, deliverables: a.deliverables.map((d) => (d.id === dId ? { ...d, status: 'submitted', link: link.trim(), note: undefined, submittedAt: new Date().toISOString() } : d)) }));
 
 export const requestChanges = (list: SponsorBrief[], briefId: string, appId: string, dId: string, note: string) =>
-patchApp(list, briefId, appId, (a) => ({ ...a, deliverables: a.deliverables.map((d) => d.id === dId ? { ...d, status: 'changes', note: note.trim() } : d) }));
+  patchApp(list, briefId, appId, (a) => ({ ...a, deliverables: a.deliverables.map((d) => (d.id === dId ? { ...d, status: 'changes', note: note.trim() } : d)) }));
 
 /** Approving releases this deliverable's share; the last one releases what's left and completes the deal. */
 export const approve = (list: SponsorBrief[], briefId: string, appId: string, dId: string) =>
-patchApp(list, briefId, appId, (a) => {
-  const deliverables = a.deliverables.map((d) => d.id === dId ? { ...d, status: 'approved' as const, approvedAt: new Date().toISOString() } : d);
-  const done = deliverables.every((d) => d.status === 'approved');
-  const share = done ? a.heldNgn : Math.round(a.rateNgn / a.deliverables.length);
-  return { ...a, deliverables, heldNgn: Math.max(0, a.heldNgn - share), releasedNgn: a.releasedNgn + share, status: done ? 'completed' : a.status };
-});
+  patchApp(list, briefId, appId, (a) => {
+    const deliverables = a.deliverables.map((d) => (d.id === dId ? { ...d, status: 'approved' as const, approvedAt: new Date().toISOString() } : d));
+    const done = deliverables.every((d) => d.status === 'approved');
+    const share = done ? a.heldNgn : Math.round(a.rateNgn / a.deliverables.length);
+    return { ...a, deliverables, heldNgn: Math.max(0, a.heldNgn - share), releasedNgn: a.releasedNgn + share, status: done ? 'completed' : a.status };
+  });
 
 // ——— Problems and KUBICU's decision (D453) ———
 
 export const disputeReasons = {
   brand: ['Work wasn’t delivered', 'Work doesn’t match the brief', 'Post isn’t labelled as a paid partnership', 'Something else'],
-  creator: ['The brand isn’t reviewing my work', 'The brand wants work outside the brief', 'Something else']
+  creator: ['The brand isn’t reviewing my work', 'The brand wants work outside the brief', 'Something else'],
 } as const;
 
 /** A problem can be reported while money is held and none is open yet. */
@@ -132,35 +132,35 @@ export const canDispute = (a: SponsorApplication) => a.status === 'accepted' && 
 export const disputeOpen = (a: SponsorApplication) => !!a.dispute && !a.dispute.outcome;
 
 export const openDispute = (list: SponsorBrief[], briefId: string, appId: string, by: 'brand' | 'creator', reason: string, note: string) =>
-patchApp(list, briefId, appId, (a) => canDispute(a) ? { ...a, dispute: { by, reason, note: note.trim(), openedAt: new Date().toISOString() } } : a);
+  patchApp(list, briefId, appId, (a) => (canDispute(a) ? { ...a, dispute: { by, reason, note: note.trim(), openedAt: new Date().toISOString() } } : a));
 
 
 export const addEvidence = (list: SponsorBrief[], briefId: string, appId: string, by: 'brand' | 'creator', name: string) =>
-patchApp(list, briefId, appId, (a) => {
-  if (!disputeOpen(a) || !a.dispute) return a;
-  const mine = (a.dispute.evidence ?? []).filter((e) => e.by === by);
-  if (mine.length >= MAX_EVIDENCE_PER_SIDE) return a;
-  return { ...a, dispute: { ...a.dispute, evidence: [...(a.dispute.evidence ?? []), { id: uid('evd'), by, name: name.slice(0, 120), at: new Date().toISOString() }] } };
-});
+  patchApp(list, briefId, appId, (a) => {
+    if (!disputeOpen(a) || !a.dispute) return a;
+    const mine = (a.dispute.evidence ?? []).filter((e) => e.by === by);
+    if (mine.length >= MAX_EVIDENCE_PER_SIDE) return a;
+    return { ...a, dispute: { ...a.dispute, evidence: [...(a.dispute.evidence ?? []), { id: uid('evd'), by, name: name.slice(0, 120), at: new Date().toISOString() }] } };
+  });
 
 export const replyDispute = (list: SponsorBrief[], briefId: string, appId: string, reply: string) =>
-patchApp(list, briefId, appId, (a) => disputeOpen(a) && a.dispute ? { ...a, dispute: { ...a.dispute, reply: reply.trim() } } : a);
+  patchApp(list, briefId, appId, (a) => (disputeOpen(a) && a.dispute ? { ...a, dispute: { ...a.dispute, reply: reply.trim() } } : a));
 
 // SPONSOR_DECIDE_DAYS (D454) and SPONSOR_REPLY_HOURS (D455) are set at the top of this file.
 export const replyDueAt = (openedAt: string) => new Date(Date.parse(openedAt) + SPONSOR_REPLY_HOURS * 3_600_000).toISOString();
-export const replyMissed = (d: {openedAt: string;reply?: string;}) => !d.reply && Date.now() > Date.parse(replyDueAt(d.openedAt));
+export const replyMissed = (d: { openedAt: string; reply?: string }) => !d.reply && Date.now() > Date.parse(replyDueAt(d.openedAt));
 
 /**
  * KUBICU's decision, made in the staff console (D454). Whatever is still held goes to the creator, back to the brand,
  * or half each; the deal then ends. `note` is shown word for word to both sides.
  */
 export const decideDispute = (list: SponsorBrief[], briefId: string, appId: string, outcome: DisputeOutcome, note: string, by: string) =>
-patchApp(list, briefId, appId, (a) => {
-  if (!disputeOpen(a) || !a.dispute) return a;
-  const toCreatorNgn = outcome === 'creator' ? a.heldNgn : outcome === 'split' ? Math.round(a.heldNgn / 2) : 0;
-  const toBrandNgn = a.heldNgn - toCreatorNgn;
-  return { ...a, status: 'completed', heldNgn: 0, releasedNgn: a.releasedNgn + toCreatorNgn, dispute: { ...a.dispute, outcome, toCreatorNgn, toBrandNgn, decidedAt: new Date().toISOString(), decisionNote: note.trim(), decidedBy: by } };
-});
+  patchApp(list, briefId, appId, (a) => {
+    if (!disputeOpen(a) || !a.dispute) return a;
+    const toCreatorNgn = outcome === 'creator' ? a.heldNgn : outcome === 'split' ? Math.round(a.heldNgn / 2) : 0;
+    const toBrandNgn = a.heldNgn - toCreatorNgn;
+    return { ...a, status: 'completed', heldNgn: 0, releasedNgn: a.releasedNgn + toCreatorNgn, dispute: { ...a.dispute, outcome, toCreatorNgn, toBrandNgn, decidedAt: new Date().toISOString(), decisionNote: note.trim(), decidedBy: by } };
+  });
 
 
 /** A side can appeal once, within the window, unless the decision went fully its way. */
@@ -174,30 +174,30 @@ export function canAppeal(a: SponsorApplication, side: 'brand' | 'creator'): boo
 export const appealOpen = (a: SponsorApplication) => !!a.dispute?.appeal && !a.dispute.appeal.result;
 
 export const openAppeal = (list: SponsorBrief[], briefId: string, appId: string, by: 'brand' | 'creator', reason: string) =>
-patchApp(list, briefId, appId, (a) => canAppeal(a, by) && a.dispute ? { ...a, dispute: { ...a.dispute, appeal: { by, reason: reason.trim(), at: new Date().toISOString() } } } : a);
+  patchApp(list, briefId, appId, (a) => (canAppeal(a, by) && a.dispute ? { ...a, dispute: { ...a.dispute, appeal: { by, reason: reason.trim(), at: new Date().toISOString() } } } : a));
 
 /**
  * A second staff member decides the appeal (D464): keep the decision, or change it. Changing moves the same total
  * (what was held at the first decision) to the new split, and updates what the creator has been paid.
  */
 export const decideAppeal = (list: SponsorBrief[], briefId: string, appId: string, outcome: DisputeOutcome | 'keep', note: string, by: string) =>
-patchApp(list, briefId, appId, (a) => {
-  const d = a.dispute;
-  if (!d?.appeal || d.appeal.result || !d.outcome) return a;
-  const at = new Date().toISOString();
-  if (outcome === 'keep' || outcome === d.outcome) return { ...a, dispute: { ...d, appeal: { ...d.appeal, result: 'upheld', note: note.trim(), decidedBy: by, decidedAt: at } } };
-  const total = (d.toCreatorNgn ?? 0) + (d.toBrandNgn ?? 0);
-  const toCreatorNgn = outcome === 'creator' ? total : outcome === 'split' ? Math.round(total / 2) : 0;
-  const toBrandNgn = total - toCreatorNgn;
-  return {
-    ...a,
-    releasedNgn: a.releasedNgn - (d.toCreatorNgn ?? 0) + toCreatorNgn,
-    dispute: { ...d, outcome, toCreatorNgn, toBrandNgn, appeal: { ...d.appeal, result: 'changed', note: note.trim(), decidedBy: by, decidedAt: at } }
-  };
-});
+  patchApp(list, briefId, appId, (a) => {
+    const d = a.dispute;
+    if (!d?.appeal || d.appeal.result || !d.outcome) return a;
+    const at = new Date().toISOString();
+    if (outcome === 'keep' || outcome === d.outcome) return { ...a, dispute: { ...d, appeal: { ...d.appeal, result: 'upheld', note: note.trim(), decidedBy: by, decidedAt: at } } };
+    const total = (d.toCreatorNgn ?? 0) + (d.toBrandNgn ?? 0);
+    const toCreatorNgn = outcome === 'creator' ? total : outcome === 'split' ? Math.round(total / 2) : 0;
+    const toBrandNgn = total - toCreatorNgn;
+    return {
+      ...a,
+      releasedNgn: a.releasedNgn - (d.toCreatorNgn ?? 0) + toCreatorNgn,
+      dispute: { ...d, outcome, toCreatorNgn, toBrandNgn, appeal: { ...d.appeal, result: 'changed', note: note.trim(), decidedBy: by, decidedAt: at } },
+    };
+  });
 
 /** Every sponsorship problem across all workspaces, for the staff console (D454). */
-export function disputeRows(briefs: SponsorBrief[]): {id: string;brief: SponsorBrief;app: SponsorApplication;}[] {
+export function disputeRows(briefs: SponsorBrief[]): { id: string; brief: SponsorBrief; app: SponsorApplication }[] {
   return briefs.flatMap((brief) => brief.applications.filter((a) => a.dispute).map((app) => ({ id: `${brief.id}:${app.id}`, brief, app })));
 }
 
@@ -217,7 +217,7 @@ export function creatorRecord(briefs: SponsorBrief[], creatorWorkspaceId: string
   return {
     verified: isVerified(readMoney(creatorWorkspaceId)),
     completed: apps.filter((a) => a.status === 'completed' && a.dispute?.outcome !== 'brand').length,
-    lostProblems: apps.filter((a) => a.dispute?.outcome === 'brand').length
+    lostProblems: apps.filter((a) => a.dispute?.outcome === 'brand').length,
   };
 }
 
@@ -227,14 +227,14 @@ export function creatorRecord(briefs: SponsorBrief[], creatorWorkspaceId: string
 export const briefRules = ['Says the posts will be labelled as a paid partnership, or doesn’t ask creators to hide it', 'No banned products (weapons, drugs, adult content, gambling for under-18s, unlicensed financial promises)', 'No fake reviews, follower buying or misleading health or money claims', 'Budget is real money for real work — no “exposure only” briefs'] as const;
 
 export const reviewBrief = (list: SponsorBrief[], briefId: string, approve: boolean, note: string) =>
-list.map((b) => b.id === briefId && b.status === 'review' ? { ...b, status: approve ? 'open' as const : 'rejected' as const, reviewNote: note.trim() || undefined, reviewedAt: new Date().toISOString() } : b);
+  list.map((b) => (b.id === briefId && b.status === 'review' ? { ...b, status: approve ? ('open' as const) : ('rejected' as const), reviewNote: note.trim() || undefined, reviewedAt: new Date().toISOString() } : b));
 
 /** Campaign name a creator's tracked link carries into the brand's Analytics (D457). */
 export const sponsorCampaign = (code: string) => `sp-${code}`;
 /** Where the tracked link lives: `/sp/{code}` forwards to the brand's main page with the campaign attached (D457). */
 export const trackedPath = (code: string) => `/sp/${code}`;
 
-export function findTracked(code: string): {brief: SponsorBrief;app: SponsorApplication;} | null {
+export function findTracked(code: string): { brief: SponsorBrief; app: SponsorApplication } | null {
   for (const brief of readBriefs()) {
     const app = brief.applications.find((a) => a.trackingCode === code);
     if (app) return { brief, app };
@@ -246,7 +246,7 @@ export function findTracked(code: string): {brief: SponsorBrief;app: SponsorAppl
  * Results for a creator's tracked link, read from the brand's own Analytics (D457): visitors (unique browsers that
  * viewed the page), taps on the page, and paid orders — all from visits that arrived through the link. Sample data never counts.
  */
-export function trackedResults(brief: SponsorBrief, a: SponsorApplication): {visits: number;clicks: number;sales: number;} {
+export function trackedResults(brief: SponsorBrief, a: SponsorApplication): { visits: number; clicks: number; sales: number } {
   if (!a.trackingCode) return { visits: 0, clicks: 0, sales: 0 };
   const campaign = sponsorCampaign(a.trackingCode);
   const events = (readAnalytics(brief.brandWorkspaceId)?.events ?? []).filter((e) => !e.sample && e.campaign === campaign);

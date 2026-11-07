@@ -27,7 +27,7 @@ import { GiftCardDetail } from '../../components/commerce/GiftCardDetail';
 
 type Tab = 'active' | 'used' | 'off';
 const tone: Record<GiftCardState, BadgeTone> = { active: 'success', used: 'neutral', expired: 'warning', disabled: 'neutral' };
-const tabOf = (s: GiftCardState): Tab => s === 'active' ? 'active' : s === 'used' ? 'used' : 'off';
+const tabOf = (s: GiftCardState): Tab => (s === 'active' ? 'active' : s === 'used' ? 'used' : 'off');
 const MAX_AMOUNTS = 6;
 
 /** Commerce → Gift cards: sell cards in the shop, issue them by hand and follow balances (D202). */
@@ -67,25 +67,25 @@ export function GiftCards() {
     toast.success(`${code} copied`);
   };
 
-  const issueButton =
-  <Button leadingIcon={PlusIcon} disabled={!allowed} onClick={() => setIssuing(true)}>
+  const issueButton = (
+    <Button leadingIcon={PlusIcon} disabled={!allowed} onClick={() => setIssuing(true)}>
       Issue a gift card
-    </Button>;
-
+    </Button>
+  );
 
   return (
     <>
       <PageHeader
         title="Gift cards"
         description="Sell gift cards in your shop or issue them by hand. Each code works at your checkout until its balance runs out; what’s left carries over to the next order."
-        actions={issueButton} />
-      
+        actions={issueButton}
+      />
 
-      {!allowed &&
-      <InlineAlert tone="info" title={`Gift cards are on ${plans[GIFT_CARD_PLAN].name}`} className="mt-6" action={<UpgradeButton plan={GIFT_CARD_PLAN} feature="Gift cards" />}>
+      {!allowed && (
+        <InlineAlert tone="info" title={`Gift cards are on ${plans[GIFT_CARD_PLAN].name}`} className="mt-6" action={<UpgradeButton plan={GIFT_CARD_PLAN} feature="Gift cards" />}>
           They’re sold and spent through your checkout. Codes you already have keep working.
         </InlineAlert>
-      }
+      )}
 
       <section aria-labelledby="gc-sell" className="mt-8 border-b border-line pb-8">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
@@ -101,23 +101,23 @@ export function GiftCards() {
           <div className="w-full lg:max-w-sm">
             <p className="text-label font-medium text-fg">Amounts</p>
             <ul className="mt-2 flex flex-wrap gap-1.5">
-              {amounts.map((a) =>
-              <li key={a} className="inline-flex h-10 items-center gap-0.5 rounded-full border border-line-strong pl-3.5 pr-0.5 text-label font-medium tabular-nums text-fg">
+              {amounts.map((a) => (
+                <li key={a} className="inline-flex h-10 items-center gap-0.5 rounded-full border border-line-strong pl-3.5 pr-0.5 text-label font-medium tabular-nums text-fg">
                   {formatNgn(a)}
                   <button
-                  type="button"
-                  aria-label={`Remove ${formatNgn(a)}`}
-                  disabled={!allowed || amounts.length <= 1}
-                  onClick={() => setAmounts(amounts.filter((x) => x !== a))}
-                  className="flex h-9 w-9 items-center justify-center rounded-full text-fg-subtle transition-colors duration-150 hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus disabled:opacity-40">
-                  
+                    type="button"
+                    aria-label={`Remove ${formatNgn(a)}`}
+                    disabled={!allowed || amounts.length <= 1}
+                    onClick={() => setAmounts(amounts.filter((x) => x !== a))}
+                    className="flex h-9 w-9 items-center justify-center rounded-full text-fg-subtle transition-colors duration-150 hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus disabled:opacity-40"
+                  >
                     <Trash2Icon size={12} aria-hidden />
                   </button>
                 </li>
-              )}
+              ))}
             </ul>
-            {amounts.length < MAX_AMOUNTS &&
-            <div className="mt-3 flex items-end gap-2">
+            {amounts.length < MAX_AMOUNTS && (
+              <div className="mt-3 flex items-end gap-2">
                 <div className="min-w-0 flex-1">
                   <CurrencyInput id="gc-new-amount" label="Add an amount" value={newAmount} disabled={!allowed} onChange={setNewAmount} />
                 </div>
@@ -125,22 +125,22 @@ export function GiftCards() {
                   Add
                 </Button>
               </div>
-            }
+            )}
           </div>
         </div>
       </section>
 
-      {cards.length === 0 ?
-      <EmptyState
-        framed
-        className="mt-8"
-        icon={GiftIcon}
-        title="No gift cards yet"
-        description="Cards appear here when someone buys one in your shop, or when you issue one by hand."
-        action={allowed ? issueButton : undefined} /> :
-
-
-      <>
+      {cards.length === 0 ? (
+        <EmptyState
+          framed
+          className="mt-8"
+          icon={GiftIcon}
+          title="No gift cards yet"
+          description="Cards appear here when someone buys one in your shop, or when you issue one by hand."
+          action={allowed ? issueButton : undefined}
+        />
+      ) : (
+        <>
           <StatGroup columns={3} className="mt-8 items-end border-b border-line pb-6">
             <Stat primary label="Unspent balance" value={formatNgn(outstanding)} hint="What your active cards can still pay for" />
             <Stat label="Sold in your shop" value={formatNgn(sold)} />
@@ -149,27 +149,27 @@ export function GiftCards() {
 
           <div className="mt-8 max-w-full overflow-x-auto overflow-y-hidden">
             <Segmented<Tab>
-            ariaLabel="Show gift cards"
-            value={tab}
-            onChange={setTab}
-            options={[
-            { value: 'active', label: `Active · ${counts.active}` },
-            { value: 'used', label: `Used · ${counts.used}` },
-            { value: 'off', label: `Off · ${counts.off}` }]
-            } />
-          
+              ariaLabel="Show gift cards"
+              value={tab}
+              onChange={setTab}
+              options={[
+                { value: 'active', label: `Active · ${counts.active}` },
+                { value: 'used', label: `Used · ${counts.used}` },
+                { value: 'off', label: `Off · ${counts.off}` },
+              ]}
+            />
           </div>
 
-          {shown.length === 0 ?
-        <p className="mt-6 rounded-lg border border-dashed border-line-strong px-5 py-8 text-center text-label text-fg-muted">Nothing here right now.</p> :
-
-        <Card as="div" body="flush" className="mt-4">
+          {shown.length === 0 ? (
+            <p className="mt-6 rounded-lg border border-dashed border-line-strong px-5 py-8 text-center text-label text-fg-muted">Nothing here right now.</p>
+          ) : (
+            <Card as="div" body="flush" className="mt-4">
               <List label="Gift cards">
                 {shown.map((c) => {
-              const state = giftCardState(c);
-              const pct = c.initialNgn ? Math.round(c.balanceNgn / c.initialNgn * 100) : 0;
-              return (
-                <li key={c.id} className="flex items-center gap-4 px-5 py-4 md:px-6">
+                  const state = giftCardState(c);
+                  const pct = c.initialNgn ? Math.round((c.balanceNgn / c.initialNgn) * 100) : 0;
+                  return (
+                    <li key={c.id} className="flex items-center gap-4 px-5 py-4 md:px-6">
                       <button type="button" onClick={() => setViewing(c)} className="min-w-0 flex-1 rounded-sm text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
                         <span className="flex flex-wrap items-center gap-2">
                           <span className="truncate font-mono text-label font-semibold text-fg">{c.code}</span>
@@ -190,27 +190,27 @@ export function GiftCards() {
                         </div>
                       </div>
                       <Menu
-                    align="end"
-                    trigger={(p) => <IconButton {...p} icon={MoreHorizontalIcon} label={`Actions for ${c.code}`} variant="ghost" />}
-                    items={[
-                    { id: 'view', label: 'View history', icon: EyeIcon, onSelect: () => setViewing(c) },
-                    { id: 'copy', label: 'Copy code', icon: CopyIcon, onSelect: () => copy(c.code) },
-                    c.status === 'active' ?
-                    { id: 'off', label: 'Turn off', icon: PowerIcon, destructive: true, onSelect: () => apply((d) => setGiftCardStatus(d, c.id, 'disabled')) && toast(`${c.code} turned off`, { description: 'It can’t be used at checkout until you turn it back on.' }) } :
-                    { id: 'on', label: 'Turn back on', icon: PowerIcon, onSelect: () => apply((d) => setGiftCardStatus(d, c.id, 'active')) && toast.success(`${c.code} turned back on`) }]
-                    } />
-                  
-                    </li>);
-
-            })}
+                        align="end"
+                        trigger={(p) => <IconButton {...p} icon={MoreHorizontalIcon} label={`Actions for ${c.code}`} variant="ghost" />}
+                        items={[
+                          { id: 'view', label: 'View history', icon: EyeIcon, onSelect: () => setViewing(c) },
+                          { id: 'copy', label: 'Copy code', icon: CopyIcon, onSelect: () => copy(c.code) },
+                          c.status === 'active'
+                            ? { id: 'off', label: 'Turn off', icon: PowerIcon, destructive: true, onSelect: () => apply((d) => setGiftCardStatus(d, c.id, 'disabled')) && toast(`${c.code} turned off`, { description: 'It can’t be used at checkout until you turn it back on.' }) }
+                            : { id: 'on', label: 'Turn back on', icon: PowerIcon, onSelect: () => apply((d) => setGiftCardStatus(d, c.id, 'active')) && toast.success(`${c.code} turned back on`) },
+                        ]}
+                      />
+                    </li>
+                  );
+                })}
               </List>
             </Card>
-        }
+          )}
         </>
-      }
+      )}
 
       <IssueGiftCardDialog open={issuing} onClose={() => setIssuing(false)} />
       <GiftCardDetail card={viewing ? cards.find((c) => c.id === viewing.id) ?? viewing : null} onClose={() => setViewing(null)} />
-    </>);
-
+    </>
+  );
 }

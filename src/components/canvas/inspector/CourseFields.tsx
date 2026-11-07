@@ -13,7 +13,7 @@ import { SelectInput } from '../../ui/SelectInput';
 import { Segmented } from '../../ui/Segmented';
 
 /** Inspector for the Course block: pick a course and how much of it to show (D197). Translated in D299. */
-export function CourseFields({ block, issues }: {block: BlockOf<'course'>;issues: ValidationIssue[];}) {
+export function CourseFields({ block, issues }: { block: BlockOf<'course'>; issues: ValidationIssue[] }) {
   const { t: tr } = useT();
   const { actions } = useEditor();
   const { data } = useCommerce();
@@ -33,8 +33,8 @@ export function CourseFields({ block, issues }: {block: BlockOf<'course'>;issues
         <Link to="/app/commerce/courses?new=1" className="mt-1.5 inline-flex items-center gap-1 text-caption font-semibold text-action hover:underline">
           {tr('Create a course')} <ArrowUpRightIcon size={12} aria-hidden />
         </Link>
-      </div>);
-
+      </div>
+    );
   }
 
   return (
@@ -46,13 +46,13 @@ export function CourseFields({ block, issues }: {block: BlockOf<'course'>;issues
         error={err('courseId')}
         onChange={(v) => set({ courseId: v || null }, 'courseId')}
         options={[
-        { value: '', label: tr('Choose a course…') },
-        ...courses.map((x) => ({
-          value: x.id,
-          label: `${x.title || tr('Untitled course')} · ${x.access === 'paid' && x.priceNgn ? formatNgn(x.priceNgn) : tr(accessLabels[x.access])} · ${tr('{n} lessons', { n: lessonCount(x) })}${x.status === 'draft' ? ` (${tr('draft')})` : ''}`
-        }))]
-        } />
-      
+          { value: '', label: tr('Choose a course…') },
+          ...courses.map((x) => ({
+            value: x.id,
+            label: `${x.title || tr('Untitled course')} · ${x.access === 'paid' && x.priceNgn ? formatNgn(x.priceNgn) : tr(accessLabels[x.access])} · ${tr('{n} lessons', { n: lessonCount(x) })}${x.status === 'draft' ? ` (${tr('draft')})` : ''}`,
+          })),
+        ]}
+      />
       <div className="flex flex-col gap-1.5">
         <span className="text-label font-medium text-fg">{tr('Show')}</span>
         <Segmented<'card' | 'outline'>
@@ -61,10 +61,10 @@ export function CourseFields({ block, issues }: {block: BlockOf<'course'>;issues
           value={c.style}
           onChange={(style) => set({ style }, 'style')}
           options={[
-          { value: 'card', label: tr('Card') },
-          { value: 'outline', label: tr('Card + modules') }]
-          } />
-        
+            { value: 'card', label: tr('Card') },
+            { value: 'outline', label: tr('Card + modules') },
+          ]}
+        />
       </div>
       <TextInput id={`${block.id}-cta`} label={tr('Button label')} optional value={c.ctaLabel} placeholder={tr('Start free / See the course')} hint={tr('Empty picks one to suit the course.')} onChange={(e) => set({ ctaLabel: e.target.value }, 'ctaLabel')} />
       <div className="flex items-start gap-3 rounded-md border border-line bg-sunken px-3 py-2.5">
@@ -77,6 +77,6 @@ export function CourseFields({ block, issues }: {block: BlockOf<'course'>;issues
           </Link>
         </div>
       </div>
-    </div>);
-
+    </div>
+  );
 }

@@ -17,11 +17,11 @@ export function ContactActionsBlock({ block, theme, mode }: BlockProps<'contactA
   const c = block.content;
   const wa = c.useBusinessWhatsApp === false ? c.whatsapp.trim() : waNumber(c.whatsapp);
   const actions = [
-  c.phone.trim() && { key: 'call', label: tr('Call'), icon: PhoneIcon, href: `tel:${digits(c.phone)}`, aria: `${tr('Call')}: ${c.phone}`, newTab: false },
-  wa && { key: 'wa', label: 'WhatsApp', icon: MessageCircleIcon, href: `https://wa.me/${digits(wa).replace(/^\+/, '')}`, aria: tr('Message on WhatsApp'), newTab: true },
-  c.email.trim() && { key: 'email', label: tr('Email'), icon: MailIcon, href: `mailto:${c.email.trim()}`, aria: `${tr('Email')}: ${c.email}`, newTab: false },
-  c.website.trim() && { key: 'web', label: tr('Website'), icon: GlobeIcon, href: c.website.trim(), aria: tr('Visit website'), newTab: true }].
-  filter(Boolean) as {key: string;label: string;icon: typeof PhoneIcon;href: string;aria: string;newTab: boolean;}[];
+    c.phone.trim() && { key: 'call', label: tr('Call'), icon: PhoneIcon, href: `tel:${digits(c.phone)}`, aria: `${tr('Call')}: ${c.phone}`, newTab: false },
+    wa && { key: 'wa', label: 'WhatsApp', icon: MessageCircleIcon, href: `https://wa.me/${digits(wa).replace(/^\+/, '')}`, aria: tr('Message on WhatsApp'), newTab: true },
+    c.email.trim() && { key: 'email', label: tr('Email'), icon: MailIcon, href: `mailto:${c.email.trim()}`, aria: `${tr('Email')}: ${c.email}`, newTab: false },
+    c.website.trim() && { key: 'web', label: tr('Website'), icon: GlobeIcon, href: c.website.trim(), aria: tr('Visit website'), newTab: true },
+  ].filter(Boolean) as { key: string; label: string; icon: typeof PhoneIcon; href: string; aria: string; newTab: boolean }[];
   if (actions.length === 0) return mode === 'edit' ? <BlockPlaceholder icon={PhoneCallIcon} title="Add a phone, email, WhatsApp or website" hint="Only the ones you fill in show" theme={theme} /> : null;
   const stack = c.layout === 'stack';
   return (
@@ -34,10 +34,10 @@ export function ContactActionsBlock({ block, theme, mode }: BlockProps<'contactA
             <PageAction key={a.key} mode={mode} href={a.href} newTab={a.newTab} ariaLabel={a.aria} className={cn('flex items-center justify-center gap-2 text-[14px] font-semibold', stack ? 'h-12' : 'h-14 flex-col gap-1 text-[12.5px]')} style={buttonStyle(theme, i === 0 ? 'featured' : 'default')}>
               <Icon size={stack ? 16 : 18} aria-hidden />
               {a.label}
-            </PageAction>);
-
+            </PageAction>
+          );
         })}
       </div>
-    </section>);
-
+    </section>
+  );
 }

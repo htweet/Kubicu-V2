@@ -27,19 +27,19 @@ export function resolveBackground(theme: PageTheme): ResolvedBackground {
   switch (mode) {
     case 'solid':
       return { mode, stops: [], custom: true };
-    case 'gradient':{
-        const g = theme.backgroundGradient ?? defaultGradient(theme);
-        return { mode, backdrop: gradientCss(g), backdropMobile: g.calmOnPhones ? calmGradientCss(g) : gradientCss(g), stops: g.stops, custom: true };
-      }
-    case 'image':{
-        if (!theme.backgroundImage) return { mode, stops: [], custom: true };
-        const tone = theme.backgroundTone ? [veiledTone(theme.backgroundTone, theme.background, theme.backgroundVeil ?? 40)] : [];
-        return { mode, image: theme.backgroundImage, stops: tone, custom: true };
-      }
-    default:{
-        const m = theme.material;
-        return { mode: 'theme', backdrop: m?.backdrop, backdropMobile: m?.backdropMobile ?? m?.backdrop, image: theme.backgroundImage, stops: m?.backdropStops ?? [], custom: false };
-      }
+    case 'gradient': {
+      const g = theme.backgroundGradient ?? defaultGradient(theme);
+      return { mode, backdrop: gradientCss(g), backdropMobile: g.calmOnPhones ? calmGradientCss(g) : gradientCss(g), stops: g.stops, custom: true };
+    }
+    case 'image': {
+      if (!theme.backgroundImage) return { mode, stops: [], custom: true };
+      const tone = theme.backgroundTone ? [veiledTone(theme.backgroundTone, theme.background, theme.backgroundVeil ?? 40)] : [];
+      return { mode, image: theme.backgroundImage, stops: tone, custom: true };
+    }
+    default: {
+      const m = theme.material;
+      return { mode: 'theme', backdrop: m?.backdrop, backdropMobile: m?.backdropMobile ?? m?.backdrop, image: theme.backgroundImage, stops: m?.backdropStops ?? [], custom: false };
+    }
   }
 }
 
@@ -65,14 +65,14 @@ export function calmGradientCss(g: PageGradient): string {
 }
 
 /** Starting blends drawn from the page's own colours. */
-export function gradientSuggestions(theme: PageTheme): {name: string;gradient: PageGradient;}[] {
+export function gradientSuggestions(theme: PageTheme): { name: string; gradient: PageGradient }[] {
   const bg = theme.background;
   return [
-  { name: 'Soft accent', gradient: { stops: [mixHex(theme.accent, bg, 0.22), bg], kind: 'linear', angle: 180, calmOnPhones: true } },
-  { name: 'Glow', gradient: { stops: [mixHex(theme.accent, bg, 0.3), mixHex(theme.surface, bg, 0.5), bg], kind: 'radial', angle: 315, calmOnPhones: true } },
-  { name: 'Two tone', gradient: { stops: [mixHex(theme.accent, bg, 0.16), mixHex(theme.mutedText, bg, 0.14)], kind: 'linear', angle: 135, calmOnPhones: true } },
-  { name: 'Surface', gradient: { stops: [theme.surface, bg], kind: 'linear', angle: 180, calmOnPhones: true } }];
-
+    { name: 'Soft accent', gradient: { stops: [mixHex(theme.accent, bg, 0.22), bg], kind: 'linear', angle: 180, calmOnPhones: true } },
+    { name: 'Glow', gradient: { stops: [mixHex(theme.accent, bg, 0.3), mixHex(theme.surface, bg, 0.5), bg], kind: 'radial', angle: 315, calmOnPhones: true } },
+    { name: 'Two tone', gradient: { stops: [mixHex(theme.accent, bg, 0.16), mixHex(theme.mutedText, bg, 0.14)], kind: 'linear', angle: 135, calmOnPhones: true } },
+    { name: 'Surface', gradient: { stops: [theme.surface, bg], kind: 'linear', angle: 180, calmOnPhones: true } },
+  ];
 }
 
 export function defaultGradient(theme: PageTheme): PageGradient {
@@ -129,6 +129,6 @@ function parseHex(hex: string): number[] | null {
 
 function radialOrigin(angle: number): [number, number] {
   // The light comes from the direction the angle points to; 0° = top centre.
-  const rad = angle * Math.PI / 180;
+  const rad = (angle * Math.PI) / 180;
   return [Math.round(50 + Math.sin(rad) * 45), Math.round(50 - Math.cos(rad) * 45)];
 }

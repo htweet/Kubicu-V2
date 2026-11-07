@@ -87,7 +87,7 @@ export function PartnershipDetail({ partnership: p, leadName, canEdit, onChange,
     commit(
       endPartnership(p, side, why, safety),
       safety || p.status === 'invited' ? tr('Partnership ended') : tr('Notice given — ends in {n} days', { n: a.noticeDays }),
-      safety ? tr('Shared pages come off the internet now. Money already paid still settles.') : undefined
+      safety ? tr('Shared pages come off the internet now. Money already paid still settles.') : undefined,
     );
     setEnding(false);
   };
@@ -105,20 +105,20 @@ export function PartnershipDetail({ partnership: p, leadName, canEdit, onChange,
       title={`${leadName} × ${p.partner.name}`}
       description={p.kind === 'connected' ? `${tr('KUBICU business')} · @${p.partner.handle}` : `${tr('Guest partner')} · ${p.contactName}`}
       footer={
-      <div className="flex flex-wrap items-center justify-between gap-2">
-          {live || p.status === 'invited' ?
-        <Button variant="tertiary" className="text-danger" disabled={!act || ending} onClick={() => setEnding(true)}>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          {live || p.status === 'invited' ? (
+            <Button variant="tertiary" className="text-danger" disabled={!act || ending} onClick={() => setEnding(true)}>
               {p.status === 'invited' ? tr('Cancel invite') : tr('End partnership')}
-            </Button> :
-
-        <span />
-        }
+            </Button>
+          ) : (
+            <span />
+          )}
           <Button variant="secondary" onClick={onClose}>
             {tr('Close')}
           </Button>
         </div>
-      }>
-      
+      }
+    >
       <div className="flex flex-col gap-8">
         {/* Who + status */}
         <section aria-label={tr('Partner')} className="flex flex-col gap-5">
@@ -169,24 +169,24 @@ export function PartnershipDetail({ partnership: p, leadName, canEdit, onChange,
               checked={asPartner}
               onChange={setAsPartner}
               label={tr('See as partner')}
-              description={tr(p.kind === 'guest' ? 'Prototype: act for {name}, exactly as they would on their partner page.' : 'Prototype: act for {name}, exactly as they would in their own KUBICU.', { name: p.partner.name })} />
-            
+              description={tr(p.kind === 'guest' ? 'Prototype: act for {name}, exactly as they would on their partner page.' : 'Prototype: act for {name}, exactly as they would in their own KUBICU.', { name: p.partner.name })}
+            />
           </div>
         </section>
 
         {/* Invite state */}
-        {p.status === 'invited' && (
-        asPartner ?
-        expired ?
-        <InlineAlert tone="warning" title={tr('This invite link has expired')}>
+        {p.status === 'invited' &&
+          (asPartner ? (
+            expired ? (
+              <InlineAlert tone="warning" title={tr('This invite link has expired')}>
                 {tr('Ask {name} to send a new one.', { name: leadName })}
-              </InlineAlert> :
-
-        <InlineAlert
-          tone="info"
-          title={tr('{name} wants to work with you', { name: leadName })}
-          action={
-          <div className="flex gap-2">
+              </InlineAlert>
+            ) : (
+              <InlineAlert
+                tone="info"
+                title={tr('{name} wants to work with you', { name: leadName })}
+                action={
+                  <div className="flex gap-2">
                     <Button size="sm" onClick={() => commit(acceptInvite(p), tr('Invite accepted'), p.kind === 'guest' ? tr('Next: verify your phone and add your bank on the partner page.') : tr('You can now build a co-branded space or bundle together.'))}>
                       {tr('Accept')}
                     </Button>
@@ -194,27 +194,27 @@ export function PartnershipDetail({ partnership: p, leadName, canEdit, onChange,
                       {tr('Decline')}
                     </Button>
                   </div>
-          }>
-          
+                }
+              >
                 {tr('Read the agreement and how the money is split below. Accepting means you agree to both.')}
-              </InlineAlert> :
-
-
-        <Section title={tr('Invite')}>
+              </InlineAlert>
+            )
+          ) : (
+            <Section title={tr('Invite')}>
               <p className="text-label text-fg-muted">{expired ? tr('The invite link expired on {date}.', { date: formatDate(p.expiresAt) }) : tr('Waiting for {name} to accept. The link works until {date}.', { name: p.partner.name, date: formatDate(p.expiresAt) })}</p>
               {!expired && <p className="break-all rounded-md border border-line bg-sunken px-3 py-2.5 font-mono text-caption text-fg">{url}</p>}
               <div className="flex flex-wrap gap-2">
-                {expired ?
-            <Button size="sm" leadingIcon={RefreshCwIcon} disabled={!canEdit} onClick={() => commit(resendInvite(p), tr('New invite link ready'), tr('The old link no longer works.'))}>
+                {expired ? (
+                  <Button size="sm" leadingIcon={RefreshCwIcon} disabled={!canEdit} onClick={() => commit(resendInvite(p), tr('New invite link ready'), tr('The old link no longer works.'))}>
                     {tr('Send a new link')}
-                  </Button> :
-
-            <>
-                    {p.phone &&
-              <a href={whatsappLink(p.phone.replace(/^0/, '234'), msg)} target="_blank" rel="noreferrer" className="inline-flex h-8 items-center gap-1.5 rounded-sm bg-action px-3 text-label font-semibold text-action-fg transition-colors duration-150 hover:bg-action-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+                  </Button>
+                ) : (
+                  <>
+                    {p.phone && (
+                      <a href={whatsappLink(p.phone.replace(/^0/, '234'), msg)} target="_blank" rel="noreferrer" className="inline-flex h-8 items-center gap-1.5 rounded-sm bg-action px-3 text-label font-semibold text-action-fg transition-colors duration-150 hover:bg-action-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
                         <MessageCircleIcon size={14} aria-hidden /> WhatsApp
                       </a>
-              }
+                    )}
                     <Button size="sm" variant="secondary" leadingIcon={CopyIcon} onClick={copy}>
                       {tr('Copy link')}
                     </Button>
@@ -222,43 +222,43 @@ export function PartnershipDetail({ partnership: p, leadName, canEdit, onChange,
                       {tr('New link')}
                     </Button>
                   </>
-            }
+                )}
               </div>
-            </Section>)
-        }
+            </Section>
+          ))}
 
-        {p.status === 'ending' && p.endsAt &&
-        <InlineAlert
-          tone="warning"
-          title={tr('Ending on {date}', { date: formatDate(p.endsAt) })}
-          action={
-          act ?
-          <Button size="sm" variant="secondary" onClick={() => commit(cancelEnding(p, side), tr('Notice cancelled'))}>
+        {p.status === 'ending' && p.endsAt && (
+          <InlineAlert
+            tone="warning"
+            title={tr('Ending on {date}', { date: formatDate(p.endsAt) })}
+            action={
+              act ? (
+                <Button size="sm" variant="secondary" onClick={() => commit(cancelEnding(p, side), tr('Notice cancelled'))}>
                   {tr('Keep working together')}
-                </Button> :
-          undefined
-          }>
-          
+                </Button>
+              ) : undefined
+            }
+          >
             {p.endReason ? `${tr(p.endReason)}. ` : ''}
             {tr('Shared pages come off the internet then; money already paid still settles.')}
           </InlineAlert>
-        }
-        {p.status === 'ended' &&
-        <InlineAlert tone="info" title={p.endsAt ? tr('Ended {date}', { date: formatDate(p.endsAt) }) : tr('Ended')}>
+        )}
+        {p.status === 'ended' && (
+          <InlineAlert tone="info" title={p.endsAt ? tr('Ended {date}', { date: formatDate(p.endsAt) }) : tr('Ended')}>
             {p.endReason ? `${tr(p.endReason)}.` : tr('This partnership has ended.')} {tr('Each of you keeps a copy of your own sections as a draft.')}
           </InlineAlert>
-        }
-        {p.status === 'declined' &&
-        <InlineAlert tone="info" title={tr('{name} declined', { name: p.partner.name })}>
+        )}
+        {p.status === 'declined' && (
+          <InlineAlert tone="info" title={tr('{name} declined', { name: p.partner.name })}>
             {tr('You can invite them again with different terms.')}
           </InlineAlert>
-        }
+        )}
 
-        {ending &&
-        <section aria-label={p.status === 'invited' ? tr('Cancel invite') : tr('End partnership')} className="flex flex-col gap-4 rounded-lg border border-danger/30 bg-danger-soft/40 p-4">
+        {ending && (
+          <section aria-label={p.status === 'invited' ? tr('Cancel invite') : tr('End partnership')} className="flex flex-col gap-4 rounded-lg border border-danger/30 bg-danger-soft/40 p-4">
             <p className="text-label font-semibold text-fg">{p.status === 'invited' ? tr('Cancel this invite?') : tr('End working with {name}?', { name: them })}</p>
-            {p.status !== 'invited' &&
-          <>
+            {p.status !== 'invited' && (
+              <>
                 <SelectInput<string> id="pns-end-reason" label={tr('Why?')} value={reason} onChange={setReason} options={endReasons.map((r) => ({ value: r, label: tr(r) }))} />
                 {reason === 'Something else' && <TextInput id="pns-end-other" label={tr('Tell them why')} value={other} maxLength={140} onChange={(e) => setOther(e.target.value)} />}
                 <label className="flex items-start gap-2 text-label text-fg">
@@ -269,7 +269,7 @@ export function PartnershipDetail({ partnership: p, leadName, canEdit, onChange,
                   </span>
                 </label>
               </>
-          }
+            )}
             <div className="flex flex-wrap gap-2">
               <Button variant="destructive" onClick={confirmEnd}>
                 {p.status === 'invited' ? tr('Cancel invite') : safety ? tr('End now') : tr('Give {n} days’ notice', { n: a.noticeDays })}
@@ -279,29 +279,29 @@ export function PartnershipDetail({ partnership: p, leadName, canEdit, onChange,
               </Button>
             </div>
           </section>
-        }
+        )}
 
         {/* Proposed change */}
-        {p.pending &&
-        <section aria-label={tr('Proposed new terms')} className="flex flex-col gap-4 rounded-lg border border-warning/40 bg-warning-soft/40 p-4">
+        {p.pending && (
+          <section aria-label={tr('Proposed new terms')} className="flex flex-col gap-4 rounded-lg border border-warning/40 bg-warning-soft/40 p-4">
             <p className="text-label font-semibold text-fg">{p.pending.by === side ? tr('Waiting for {name} to accept your new terms', { name: them }) : tr('{name} proposed new terms', { name: them })}</p>
-            {p.pending.agreement.leadSharePct !== a.leadSharePct &&
-          <p className="rounded-md bg-raised px-3 py-2 text-caption text-fg">
+            {p.pending.agreement.leadSharePct !== a.leadSharePct && (
+              <p className="rounded-md bg-raised px-3 py-2 text-caption text-fg">
                 {tr('Split changes from {from} to {to}. It only applies to sales after both accept.', {
-              from: `${a.leadSharePct}% · ${100 - a.leadSharePct}%`,
-              to: `${p.pending.agreement.leadSharePct}% · ${100 - p.pending.agreement.leadSharePct}%`
-            })}
+                  from: `${a.leadSharePct}% · ${100 - a.leadSharePct}%`,
+                  to: `${p.pending.agreement.leadSharePct}% · ${100 - p.pending.agreement.leadSharePct}%`,
+                })}
               </p>
-          }
+            )}
             <AgreementSummary agreement={p.pending.agreement} leadName={leadName} partnerName={p.partner.name} title={tr('Proposed')} />
             <p className="text-caption text-fg-muted">{tr('Version {n} still applies until both accept.', { n: a.version })}</p>
             <div className="flex flex-wrap gap-2">
-              {p.pending.by === side ?
-            <Button size="sm" variant="secondary" disabled={!act} onClick={() => commit(withdrawChange(p, side), tr('Proposal withdrawn'))}>
+              {p.pending.by === side ? (
+                <Button size="sm" variant="secondary" disabled={!act} onClick={() => commit(withdrawChange(p, side), tr('Proposal withdrawn'))}>
                   {tr('Withdraw')}
-                </Button> :
-
-            <>
+                </Button>
+              ) : (
+                <>
                   <Button size="sm" disabled={!act} onClick={() => commit(answerChange(p, side, true), tr('New terms accepted'), tr('Version {n} now applies.', { n: p.pending!.agreement.version }))}>
                     {tr('Accept new terms')}
                   </Button>
@@ -309,55 +309,55 @@ export function PartnershipDetail({ partnership: p, leadName, canEdit, onChange,
                     {tr('Turn down')}
                   </Button>
                 </>
-            }
+              )}
             </div>
           </section>
-        }
+        )}
 
         {/* Money + agreement */}
         <Section title={tr('Money and agreement')} border>
-          {editing ?
-          <div className="flex flex-col gap-5 rounded-lg border border-line bg-raised p-4">
+          {editing ? (
+            <div className="flex flex-col gap-5 rounded-lg border border-line bg-raised p-4">
               <p className="text-label font-semibold text-fg">{tr('Propose new terms')}</p>
               <AgreementFields value={editing} onChange={setEditing} leadName={leadName} partnerName={p.partner.name} />
               <div className="flex flex-wrap gap-2">
                 <Button
-                onClick={() => {
-                  commit(proposeChange(p, editing, side), tr('New terms sent'), tr('{name} needs to accept before they apply.', { name: them }));
-                  setEditing(null);
-                }}>
-                
+                  onClick={() => {
+                    commit(proposeChange(p, editing, side), tr('New terms sent'), tr('{name} needs to accept before they apply.', { name: them }));
+                    setEditing(null);
+                  }}
+                >
                   {tr('Send to {name}', { name: them })}
                 </Button>
                 <Button variant="tertiary" onClick={() => setEditing(null)}>
                   {tr('Cancel')}
                 </Button>
               </div>
-            </div> :
-
-          <>
+            </div>
+          ) : (
+            <>
               <SplitExplainer leadName={leadName} partnerName={p.partner.name} leadSharePct={a.leadSharePct} viewer={side} compact />
               <div className="rounded-lg border border-line bg-raised p-4">
                 <AgreementSummary agreement={a} leadName={leadName} partnerName={p.partner.name} />
               </div>
-              {live && !p.pending &&
-            <Button size="sm" variant="secondary" leadingIcon={PencilIcon} disabled={!act} className="self-start" onClick={() => setEditing({ ...a })}>
+              {live && !p.pending && (
+                <Button size="sm" variant="secondary" leadingIcon={PencilIcon} disabled={!act} className="self-start" onClick={() => setEditing({ ...a })}>
                   {tr('Propose changes')}
                 </Button>
-            }
+              )}
             </>
-          }
+          )}
         </Section>
 
-        {(live || p.status === 'ended') &&
-        <Section title={tr('Selling together')} border>
+        {(live || p.status === 'ended') && (
+          <Section title={tr('Selling together')} border>
             <PartnerSales partnershipId={p.id} orders={commerce.data.orders} products={commerce.data.products} leadName={leadName} partnerName={p.partner.name} viewer={side} />
           </Section>
-        }
+        )}
 
         {/* Guest setup */}
-        {p.kind === 'guest' &&
-        <Section title={tr('Their partner page')} border>
+        {p.kind === 'guest' && (
+          <Section title={tr('Their partner page')} border>
             <dl className="grid grid-cols-[max-content_minmax(0,1fr)] gap-x-6 gap-y-2.5 text-label">
               <dt className="text-fg-muted">{tr('Phone')}</dt>
               <dd className="text-fg">
@@ -370,8 +370,8 @@ export function PartnershipDetail({ partnership: p, leadName, canEdit, onChange,
             <a href={`/partner/${p.token}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 self-start text-label font-medium text-action underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
               <EyeIcon size={14} aria-hidden /> {tr('Open their partner page')} <ExternalLinkIcon size={12} aria-hidden />
             </a>
-            {live && asPartner &&
-          <div className="flex flex-col gap-3 rounded-lg bg-sunken p-4">
+            {live && asPartner && (
+              <div className="flex flex-col gap-3 rounded-lg bg-sunken p-4">
                 <p className="text-caption text-fg-muted">{tr('Prototype: if they make their own KUBICU page, they become a connected partner and keep all history.')}</p>
                 <div className="flex flex-wrap items-end gap-2">
                   <div className="min-w-[200px] flex-1">
@@ -382,49 +382,49 @@ export function PartnershipDetail({ partnership: p, leadName, canEdit, onChange,
                   </Button>
                 </div>
               </div>
-          }
+            )}
           </Section>
-        }
+        )}
 
-        {live &&
-        <div className="border-t border-line pt-6">
+        {live && (
+          <div className="border-t border-line pt-6">
             <PartnerComments partnership={p} leadName={leadName} side={side} onChange={onChange} disabled={!act} />
           </div>
-        }
+        )}
 
         {/* History */}
         <Section title={tr('History')} border>
           <ol className="flex flex-col gap-3">
-            {p.events.map((e) =>
-            <li key={e.id} className="grid grid-cols-[7.5rem_minmax(0,1fr)] gap-3 text-caption">
+            {p.events.map((e) => (
+              <li key={e.id} className="grid grid-cols-[7.5rem_minmax(0,1fr)] gap-3 text-caption">
                 <span className="tabular-nums text-fg-subtle">{formatTimestamp(e.at)}</span>
                 <span className="text-fg-muted">
                   <span className="font-medium text-fg">{e.by === 'system' ? 'KUBICU' : e.by === 'lead' ? leadName : p.partner.name}</span> · {e.text}
                 </span>
               </li>
-            )}
+            ))}
           </ol>
         </Section>
         <p className="text-caption text-fg-subtle">{tr('You’re seeing this as {name}. The agreement wording needs legal review; notice and invite periods are example figures (D120).', { name: me })}</p>
       </div>
-    </Sheet>);
-
+    </Sheet>
+  );
 }
 
-function Section({ title, border, children }: {title: string;border?: boolean;children: React.ReactNode;}) {
+function Section({ title, border, children }: { title: string; border?: boolean; children: React.ReactNode }) {
   return (
     <section className={border ? 'flex flex-col gap-4 border-t border-line pt-6' : 'flex flex-col gap-3'}>
       <h3 className="text-label font-semibold text-fg">{title}</h3>
       {children}
-    </section>);
-
+    </section>
+  );
 }
 
-function Fact({ label, value, title }: {label: string;value: string;title?: string;}) {
+function Fact({ label, value, title }: { label: string; value: string; title?: string }) {
   return (
     <div className="flex min-w-0 flex-col gap-0.5 border-line px-3.5 py-3 [&:not(:last-child)]:border-r max-sm:[&:nth-child(2)]:border-r-0 max-sm:[&:nth-child(-n+2)]:border-b" title={title}>
       <dt className="text-meta text-fg-subtle">{label}</dt>
       <dd className="truncate text-label font-semibold tabular-nums text-fg">{value}</dd>
-    </div>);
-
+    </div>
+  );
 }

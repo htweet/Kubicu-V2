@@ -27,7 +27,7 @@ export const podFailLabels: Record<PodFailReason, string> = {
   not_home: 'Customer wasn’t there',
   unreachable: 'Couldn’t reach the customer',
   wrong_address: 'Wrong or incomplete address',
-  other: 'Something else'
+  other: 'Something else',
 };
 export const acceptLabels: Record<PayOptions['pod']['accept'], string> = { cash: 'Cash', transfer: 'Transfer at the door', both: 'Cash or transfer' };
 
@@ -54,12 +54,12 @@ export function refusalsFor(data: CommerceData | null, phone: string): number {
   return data.orders.filter((o) => normalisePhone(o.customer.phone) === p && o.pod?.failed?.some((f) => f.reason === 'refused')).length;
 }
 
-export type OptionCheck = {ok: true;} | {ok: false;reason: string;hidden?: boolean;};
+export type OptionCheck = { ok: true } | { ok: false; reason: string; hidden?: boolean };
 
 export function podCheck(
-data: CommerceData | null,
-ctx: {total: number;zoneId: string | null;zoneName?: string;onlyPhysical: boolean;balanceLater: number;dealRoom: boolean;phone: string;bundle?: boolean;})
-: OptionCheck {
+  data: CommerceData | null,
+  ctx: { total: number; zoneId: string | null; zoneName?: string; onlyPhysical: boolean; balanceLater: number; dealRoom: boolean; phone: string; bundle?: boolean },
+): OptionCheck {
   const o = payOptionsOf(data).pod;
   // Pay on delivery is a Nigeria-only option (D136).
   if (!isNaira()) return { ok: false, reason: '', hidden: true };
@@ -91,9 +91,9 @@ export function collectPod(data: CommerceData, orderId: string, how: 'cash' | 't
         providerFeeNgn: 0,
         kubicuFeeNgn: kubicuFee(o.pod.amountNgn, plan),
         pod: { ...o.pod, collected: { how, at } },
-        events: stamp(o, 'completed', label ?? `Delivered — ${formatNgn(o.pod.amountNgn)} collected by ${how === 'cash' ? 'cash' : 'transfer'}`, at)
+        events: stamp(o, 'completed', label ?? `Delivered — ${formatNgn(o.pod.amountNgn)} collected by ${how === 'cash' ? 'cash' : 'transfer'}`, at),
       };
-    })
+    }),
   };
 }
 
@@ -108,9 +108,9 @@ export function failPod(data: CommerceData, orderId: string, reason: PodFailReas
         ...o,
         status: 'packing',
         pod: { ...o.pod, failed: [...(o.pod.failed ?? []), { at, reason, note: note || undefined }] },
-        events: stamp(o, 'note', `Delivery failed, not paid — ${podFailLabels[reason].toLowerCase()}${note ? ` (${note})` : ''}. Back with you to rebook or cancel.`, at)
+        events: stamp(o, 'note', `Delivery failed, not paid — ${podFailLabels[reason].toLowerCase()}${note ? ` (${note})` : ''}. Back with you to rebook or cancel.`, at),
       };
-    })
+    }),
   };
 }
 
@@ -118,12 +118,12 @@ export function failPod(data: CommerceData, orderId: string, reason: PodFailReas
 
 /** The plan a cart can use: fewest parts, shortest gap and the stricter shipping rule across its products. */
 export function instalmentCheck(
-data: CommerceData | null,
-ctx: {products: (Product | undefined)[];total: number;balanceLater: number;dealRoom: boolean;})
-: (OptionCheck & {ok: false;}) | {ok: true;plan: ProductInstalments;} {
+  data: CommerceData | null,
+  ctx: { products: (Product | undefined)[]; total: number; balanceLater: number; dealRoom: boolean },
+): (OptionCheck & { ok: false }) | { ok: true; plan: ProductInstalments } {
   if (!isNaira()) return { ok: false, reason: '', hidden: true };
   if (!payOptionsOf(data).instalments.enabled || ctx.dealRoom || ctx.balanceLater > 0 || ctx.products.length === 0) return { ok: false, reason: '', hidden: true };
-  const plans = ctx.products.map((p) => p && p.kind !== 'ticket' ? p.instalments : undefined);
+  const plans = ctx.products.map((p) => (p && p.kind !== 'ticket' ? p.instalments : undefined));
   if (plans.every((p) => !p)) return { ok: false, reason: '', hidden: true };
   if (ctx.products.some((p) => p?.bundle)) return { ok: false, reason: 'Not for things sold with a partner — pay online so each business gets its share.' };
   if (plans.some((p) => !p)) return { ok: false, reason: 'Only when everything in your cart can be paid in parts.' };
@@ -134,9 +134,9 @@ ctx: {products: (Product | undefined)[];total: number;balanceLater: number;dealR
     ok: true,
     plan: {
       parts: Math.min(...list.map((p) => p.parts)) as ProductInstalments['parts'],
-      every: list.reduce<InstalmentEvery>((m, p) => rank[p.every] < rank[m] ? p.every : m, 'month'),
-      ship: list.some((p) => p.ship === 'last') ? 'last' : 'first'
-    }
+      every: list.reduce<InstalmentEvery>((m, p) => (rank[p.every] < rank[m] ? p.every : m), 'month'),
+      ship: list.some((p) => p.ship === 'last') ? 'last' : 'first',
+    },
   };
 }
 
@@ -150,7 +150,7 @@ function addInterval(start: number, every: InstalmentEvery, i: number): string {
 }
 
 /** Equal parts; the first absorbs any odd naira so later charges are round. */
-export function schedule(total: number, plan: ProductInstalments, start = Date.now()): {n: number;dueAt: string;amountNgn: number;}[] {
+export function schedule(total: number, plan: ProductInstalments, start = Date.now()): { n: number; dueAt: string; amountNgn: number }[] {
   const each = Math.floor(total / plan.parts);
   return Array.from({ length: plan.parts }, (_, i) => ({ n: i + 1, dueAt: i === 0 ? new Date(start).toISOString() : addInterval(start, plan.every, i), amountNgn: i === 0 ? total - each * (plan.parts - 1) : each }));
 }
@@ -162,7 +162,7 @@ export function newParts(total: number, plan: ProductInstalments, start = Date.n
     status: p.n === 1 ? 'paid' : 'scheduled',
     paidAt: p.n === 1 ? new Date(start).toISOString() : undefined,
     how: p.n === 1 ? 'card' : undefined,
-    retries: 0
+    retries: 0,
   }));
 }
 
@@ -188,7 +188,7 @@ function markPaid(o: Order, partId: string, how: 'card' | 'online' | 'recorded',
   if (!part || part.status === 'paid' || part.status === 'cancelled') return o;
   const charged = o.subtotalNgn - o.discountNgn + o.deliveryNgn - instalmentsOwed(o);
   const rate = charged > 0 ? o.kubicuFeeNgn / charged : 0;
-  const parts = o.instalments.parts.map((p) => p.id === partId ? { ...p, status: 'paid' as const, paidAt: at, how } : p);
+  const parts = o.instalments.parts.map((p) => (p.id === partId ? { ...p, status: 'paid' as const, paidAt: at, how } : p));
   const done = parts.every((p) => p.status === 'paid' || p.status === 'cancelled');
   const total = parts.length;
   const words = how === 'recorded' ? 'recorded as paid by you' : how === 'online' ? 'paid online by the customer (test)' : 'charged to the saved card (test)';
@@ -197,18 +197,18 @@ function markPaid(o: Order, partId: string, how: 'card' | 'online' | 'recorded',
     providerFeeNgn: o.providerFeeNgn + (how === 'recorded' ? 0 : providerFee(part.amountNgn)),
     kubicuFeeNgn: o.kubicuFeeNgn + (how === 'recorded' ? 0 : Math.round(part.amountNgn * rate)),
     instalments: { ...o.instalments, parts, status: done ? 'completed' : o.instalments.status === 'defaulted' ? 'active' : o.instalments.status },
-    events: stamp(o, 'paid', `Instalment ${part.n} of ${total} — ${formatNgn(part.amountNgn)} ${words}${done ? '. Fully paid.' : ''}`, at)
+    events: stamp(o, 'paid', `Instalment ${part.n} of ${total} — ${formatNgn(part.amountNgn)} ${words}${done ? '. Fully paid.' : ''}`, at),
   };
 }
 
 export function payPart(data: CommerceData, orderId: string, partId: string, how: 'card' | 'online' | 'recorded'): CommerceData {
   const at = new Date().toISOString();
-  return { ...data, orders: data.orders.map((o) => o.id === orderId ? markPaid(o, partId, how, at) : o) };
+  return { ...data, orders: data.orders.map((o) => (o.id === orderId ? markPaid(o, partId, how, at) : o)) };
 }
 
 /** Runs every automatic charge that's due. Returns what was paid so the wallet can be credited. */
-export function chargeDueParts(data: CommerceData, outcome: 'succeeds' | 'fails', now = Date.now()): {data: CommerceData;paid: {order: Order;part: InstalmentPart;}[];} {
-  const paid: {order: Order;part: InstalmentPart;}[] = [];
+export function chargeDueParts(data: CommerceData, outcome: 'succeeds' | 'fails', now = Date.now()): { data: CommerceData; paid: { order: Order; part: InstalmentPart }[] } {
+  const paid: { order: Order; part: InstalmentPart }[] = [];
   const at = new Date(now).toISOString();
   const orders = data.orders.map((o) => {
     if (!o.instalments || o.instalments.status !== 'active' || o.sample || o.status === 'cancelled' || o.status === 'refunded') return o;
@@ -223,18 +223,18 @@ export function chargeDueParts(data: CommerceData, outcome: 'succeeds' | 'fails'
       }
       const retries = part.status === 'failed' ? part.retries + 1 : 0;
       const defaulted = part.status === 'failed' && retries >= INSTALMENT_RETRY_DAYS.length;
-      const parts = next.instalments!.parts.map((p) => p.id === part.id ? { ...p, status: 'failed' as const, failedAt: p.failedAt ?? at, retries } : p);
+      const parts = next.instalments!.parts.map((p) => (p.id === part.id ? { ...p, status: 'failed' as const, failedAt: p.failedAt ?? at, retries } : p));
       next = {
         ...next,
         instalments: { ...next.instalments!, parts, status: defaulted ? 'defaulted' : 'active' },
         events: stamp(
           next,
           'payment',
-          defaulted ?
-          `Instalment ${part.n} still unpaid after every retry — marked as defaulted. Contact the customer or cancel what’s left.` :
-          `Instalment ${part.n} — card declined (test). ${part.status === 'failed' ? 'Retry' : 'Trying again'} in ${INSTALMENT_RETRY_DAYS[retries]} day${INSTALMENT_RETRY_DAYS[retries] === 1 ? '' : 's'}.`,
-          at
-        )
+          defaulted
+            ? `Instalment ${part.n} still unpaid after every retry — marked as defaulted. Contact the customer or cancel what’s left.`
+            : `Instalment ${part.n} — card declined (test). ${part.status === 'failed' ? 'Retry' : 'Trying again'} in ${INSTALMENT_RETRY_DAYS[retries]} day${INSTALMENT_RETRY_DAYS[retries] === 1 ? '' : 's'}.`,
+          at,
+        ),
       };
       break; // later parts wait for this one
     }
@@ -252,17 +252,17 @@ export function cancelRemaining(data: CommerceData, orderId: string, reason: str
       const left = instalmentsOwed(o);
       return {
         ...o,
-        instalments: { ...o.instalments, status: 'cancelled', parts: o.instalments.parts.map((p) => p.status === 'scheduled' || p.status === 'failed' ? { ...p, status: 'cancelled' as const } : p) },
-        events: stamp(o, 'note', `Remaining instalments (${formatNgn(left)}) cancelled${reason ? ` — ${reason}` : ''}. Nothing more will be charged.`)
+        instalments: { ...o.instalments, status: 'cancelled', parts: o.instalments.parts.map((p) => (p.status === 'scheduled' || p.status === 'failed' ? { ...p, status: 'cancelled' as const } : p)) },
+        events: stamp(o, 'note', `Remaining instalments (${formatNgn(left)}) cancelled${reason ? ` — ${reason}` : ''}. Nothing more will be charged.`),
       };
-    })
+    }),
   };
 }
 
-export function updateInstalmentCard(data: CommerceData, orderId: string, card: {brand: 'Visa' | 'Mastercard' | 'Verve';last4: string;}): CommerceData {
+export function updateInstalmentCard(data: CommerceData, orderId: string, card: { brand: 'Visa' | 'Mastercard' | 'Verve'; last4: string }): CommerceData {
   return {
     ...data,
-    orders: data.orders.map((o) => o.id === orderId && o.instalments ? { ...o, instalments: { ...o.instalments, card }, events: stamp(o, 'note', `Customer updated the card for instalments to ${card.brand} ····${card.last4}`) } : o)
+    orders: data.orders.map((o) => (o.id === orderId && o.instalments ? { ...o, instalments: { ...o.instalments, card }, events: stamp(o, 'note', `Customer updated the card for instalments to ${card.brand} ····${card.last4}`) } : o)),
   };
 }
 

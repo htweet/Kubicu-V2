@@ -1,30 +1,30 @@
 export type Role = 'owner' | 'admin' | 'editor' | 'sales' | 'viewer';
 
 export type Permission =
-'pages.edit' |
-'pages.publish' |
-'spaces.manage' |
-'media.manage' |
-'products.edit' |
-'prices.edit' |
-'orders.manage' |
-'orders.refund' |
-'tickets.checkin' |
-'discounts.manage' |
-'commerce.settings' |
-'payouts.manage' |
-'paylinks.manage' |
-'bookings.manage' |
-'contacts.manage' |
-'automations.manage' |
-'analytics.view' |
-'domains.manage' |
-'team.manage' |
-'approvals.review' |
-'extensions.manage' |
-'billing.manage' |
-'ownership.transfer' |
-'workspace.delete';
+  | 'pages.edit'
+  | 'pages.publish'
+  | 'spaces.manage'
+  | 'media.manage'
+  | 'products.edit'
+  | 'prices.edit'
+  | 'orders.manage'
+  | 'orders.refund'
+  | 'tickets.checkin'
+  | 'discounts.manage'
+  | 'commerce.settings'
+  | 'payouts.manage'
+  | 'paylinks.manage'
+  | 'bookings.manage'
+  | 'contacts.manage'
+  | 'automations.manage'
+  | 'analytics.view'
+  | 'domains.manage'
+  | 'team.manage'
+  | 'approvals.review'
+  | 'extensions.manage'
+  | 'billing.manage'
+  | 'ownership.transfer'
+  | 'workspace.delete';
 
 export interface Member {
   id: string;

@@ -22,7 +22,7 @@ export interface TrustSignal {
   /** D126: when this check lapses unless renewed (verification) or refreshed (reviews). ISO date. */
   validUntil?: string;
   /** D245: not met yet, but something is under way — shown so it doesn't look untouched. */
-  progress?: {label: string;tone: 'info' | 'warning' | 'danger';at?: string;};
+  progress?: { label: string; tone: 'info' | 'warning' | 'danger'; at?: string };
 }
 
 const kycProgress = (k: MoneyData['kyc']): TrustSignal['progress'] => {
@@ -48,14 +48,14 @@ export const levelLabels: Record<TrustLevel, string> = {
   starting: 'Just starting',
   building: 'Building trust',
   established: 'Established',
-  trusted: 'Trusted seller'
+  trusted: 'Trusted seller',
 };
 
 export const levelTones: Record<TrustLevel, 'neutral' | 'info' | 'success' | 'warning'> = {
   starting: 'neutral',
   building: 'info',
   established: 'info',
-  trusted: 'success'
+  trusted: 'success',
 };
 
 export function levelFor(score: number): TrustLevel {
@@ -88,7 +88,7 @@ export function computePassport(orders: Order[], money: MoneyData, proof: ProofD
   const escrowClosed = money.escrow.filter((c) => c.stage === 'closed');
   const escrowReleased = escrowClosed.filter((c) => c.outcome === 'released').length;
   const escrowLost = escrowClosed.filter((c) => c.outcome === 'refunded' && !!c.dispute).length;
-  const first = real.reduce<string | null>((m, o) => !m || o.createdAt < m ? o.createdAt : m, null);
+  const first = real.reduce<string | null>((m, o) => (!m || o.createdAt < m ? o.createdAt : m), null);
   const days = first ? Math.floor((now - new Date(first).getTime()) / 86_400_000) : 0;
   const kyc = money.kyc;
   const verifiedUntil = kyc.status === 'approved' && kyc.decidedAt ? new Date(Date.parse(kyc.decidedAt) + VERIFY_VALID_DAYS * DAY).toISOString() : undefined;
@@ -96,82 +96,82 @@ export function computePassport(orders: Order[], money: MoneyData, proof: ProofD
   const rate = completed.length ? issues / completed.length : 0;
 
   const signals: TrustSignal[] = [
-  {
-    id: 'verified',
-    title: 'Business verified',
-    points: 30,
-    met: kyc.status === 'approved' && !verifiedLapsed,
-    evidence: verifiedLapsed ?
-    'Verification is over a year old and needs renewing' :
-    kyc.status === 'approved' ?
-    `${kyc.entity ? entityLabels[kyc.entity] : 'Verified'} · checked by KUBICU` :
-    kyc.status === 'in_review' ?
-    'Submitted — KUBICU is checking your details' :
-    kyc.status === 'needs_info' ?
-    `KUBICU asked for ${kyc.requests.length || 'some'} change${kyc.requests.length === 1 ? '' : 's'}` :
-    kyc.status === 'rejected' ?
-    'Verification wasn’t approved' :
-    'Not started',
-    next: verifiedLapsed ?
-    'Renew verification: confirm your details are still correct.' :
-    kyc.status === 'in_review' ?
-    'Nothing to do — the points are added once it’s approved, usually within 24 hours.' :
-    kyc.status === 'needs_info' ?
-    'Fix what was asked and resubmit.' :
-    kyc.status === 'rejected' ?
-    'See KUBICU’s reason on the Verification page.' :
-    'Complete business verification.',
-    to: '/app/commerce/verification',
-    validUntil: verifiedUntil,
-    progress: verifiedLapsed ? undefined : kycProgress(kyc)
-  },
-  {
-    id: 'reviews',
-    title: 'Verified reviews',
-    points: 20,
-    met: reviews.length >= MIN_REVIEWS && avg >= MIN_RATING,
-    evidence: reviews.length ? `${reviews.length} review${reviews.length === 1 ? '' : 's'} in the last 12 months · ${avg.toFixed(1)} average` : 'No verified reviews in the last 12 months',
-    next: `Ask customers for reviews: at least ${MIN_REVIEWS} in the last 12 months, averaging ${MIN_RATING}+.`,
-    to: '/app/proof',
-    validUntil: reviews.length >= MIN_REVIEWS ? reviewsUntil : undefined
-  },
-  {
-    id: 'orders',
-    title: 'Completed orders',
-    points: 15,
-    met: completed.length >= MIN_ORDERS,
-    evidence: `${Math.min(completed.length, MIN_ORDERS)} of ${MIN_ORDERS} completed orders`,
-    next: 'Mark delivered orders as completed.',
-    to: '/app/commerce/orders'
-  },
-  {
-    id: 'escrow',
-    title: 'Escrow track record',
-    points: 15,
-    met: escrowReleased >= MIN_ESCROW && escrowLost === 0,
-    evidence: escrowClosed.length ? `${escrowReleased} released to you${escrowLost ? ` · ${escrowLost} dispute${escrowLost === 1 ? '' : 's'} refunded` : ''}` : 'No escrow orders yet',
-    next: escrowLost ? 'Disputes decided against you hold this back for now.' : `Complete ${MIN_ESCROW} escrow orders without a lost dispute.`,
-    to: '/app/commerce/payments'
-  },
-  {
-    id: 'issues',
-    title: 'Few refunds and disputes',
-    points: 10,
-    met: completed.length >= 5 && rate <= MAX_ISSUE_RATE,
-    evidence: completed.length >= 5 ? `${Math.round(rate * 100)}% of completed orders` : 'Needs 5 completed orders to measure',
-    next: `Keep refunds and disputes under ${MAX_ISSUE_RATE * 100}% of orders.`,
-    to: '/app/commerce/orders'
-  },
-  {
-    id: 'tenure',
-    title: `Selling for ${MIN_DAYS} days`,
-    points: 10,
-    met: days >= MIN_DAYS,
-    evidence: first ? `First order ${days} day${days === 1 ? '' : 's'} ago` : 'No orders yet',
-    next: 'Time on KUBICU builds this on its own.',
-    to: '/app/commerce/orders'
-  }];
-
+    {
+      id: 'verified',
+      title: 'Business verified',
+      points: 30,
+      met: kyc.status === 'approved' && !verifiedLapsed,
+      evidence: verifiedLapsed
+        ? 'Verification is over a year old and needs renewing'
+        : kyc.status === 'approved'
+          ? `${kyc.entity ? entityLabels[kyc.entity] : 'Verified'} · checked by KUBICU`
+          : kyc.status === 'in_review'
+            ? 'Submitted — KUBICU is checking your details'
+            : kyc.status === 'needs_info'
+              ? `KUBICU asked for ${kyc.requests.length || 'some'} change${kyc.requests.length === 1 ? '' : 's'}`
+              : kyc.status === 'rejected'
+                ? 'Verification wasn’t approved'
+                : 'Not started',
+      next: verifiedLapsed
+        ? 'Renew verification: confirm your details are still correct.'
+        : kyc.status === 'in_review'
+          ? 'Nothing to do — the points are added once it’s approved, usually within 24 hours.'
+          : kyc.status === 'needs_info'
+            ? 'Fix what was asked and resubmit.'
+            : kyc.status === 'rejected'
+              ? 'See KUBICU’s reason on the Verification page.'
+              : 'Complete business verification.',
+      to: '/app/commerce/verification',
+      validUntil: verifiedUntil,
+      progress: verifiedLapsed ? undefined : kycProgress(kyc),
+    },
+    {
+      id: 'reviews',
+      title: 'Verified reviews',
+      points: 20,
+      met: reviews.length >= MIN_REVIEWS && avg >= MIN_RATING,
+      evidence: reviews.length ? `${reviews.length} review${reviews.length === 1 ? '' : 's'} in the last 12 months · ${avg.toFixed(1)} average` : 'No verified reviews in the last 12 months',
+      next: `Ask customers for reviews: at least ${MIN_REVIEWS} in the last 12 months, averaging ${MIN_RATING}+.`,
+      to: '/app/proof',
+      validUntil: reviews.length >= MIN_REVIEWS ? reviewsUntil : undefined,
+    },
+    {
+      id: 'orders',
+      title: 'Completed orders',
+      points: 15,
+      met: completed.length >= MIN_ORDERS,
+      evidence: `${Math.min(completed.length, MIN_ORDERS)} of ${MIN_ORDERS} completed orders`,
+      next: 'Mark delivered orders as completed.',
+      to: '/app/commerce/orders',
+    },
+    {
+      id: 'escrow',
+      title: 'Escrow track record',
+      points: 15,
+      met: escrowReleased >= MIN_ESCROW && escrowLost === 0,
+      evidence: escrowClosed.length ? `${escrowReleased} released to you${escrowLost ? ` · ${escrowLost} dispute${escrowLost === 1 ? '' : 's'} refunded` : ''}` : 'No escrow orders yet',
+      next: escrowLost ? 'Disputes decided against you hold this back for now.' : `Complete ${MIN_ESCROW} escrow orders without a lost dispute.`,
+      to: '/app/commerce/payments',
+    },
+    {
+      id: 'issues',
+      title: 'Few refunds and disputes',
+      points: 10,
+      met: completed.length >= 5 && rate <= MAX_ISSUE_RATE,
+      evidence: completed.length >= 5 ? `${Math.round(rate * 100)}% of completed orders` : 'Needs 5 completed orders to measure',
+      next: `Keep refunds and disputes under ${MAX_ISSUE_RATE * 100}% of orders.`,
+      to: '/app/commerce/orders',
+    },
+    {
+      id: 'tenure',
+      title: `Selling for ${MIN_DAYS} days`,
+      points: 10,
+      met: days >= MIN_DAYS,
+      evidence: first ? `First order ${days} day${days === 1 ? '' : 's'} ago` : 'No orders yet',
+      next: 'Time on KUBICU builds this on its own.',
+      to: '/app/commerce/orders',
+    },
+  ];
 
   const score = signals.reduce((s, x) => s + (x.met ? x.points : 0), 0);
   return { signals, score, level: levelFor(score), stats: { completed: completed.length, reviews: reviews.length, avg, escrowReleased, days } };
@@ -188,8 +188,8 @@ export interface EvidencePhrase {
 }
 
 export function publicSignals(
-p: ReturnType<typeof computePassport>)
-: {id: SignalId;title: string;evidence: string;evidencePhrase: EvidencePhrase;validUntil?: string;}[] {
+  p: ReturnType<typeof computePassport>,
+): { id: SignalId; title: string; evidence: string; evidencePhrase: EvidencePhrase; validUntil?: string }[] {
   const s = p.stats;
   const words: Record<SignalId, string> = {
     verified: 'Identity and business details checked by KUBICU',
@@ -197,7 +197,7 @@ p: ReturnType<typeof computePassport>)
     orders: `${s.completed}+ orders completed`,
     escrow: `${s.escrowReleased} protected (escrow) order${s.escrowReleased === 1 ? '' : 's'} completed without a lost dispute`,
     issues: 'Few refunds and disputes',
-    tenure: `Selling on KUBICU for ${s.days}+ days`
+    tenure: `Selling on KUBICU for ${s.days}+ days`,
   };
   // The same lines as phrases with {placeholders}, so visitors read them in their language (D511).
   const phrases: Record<SignalId, EvidencePhrase> = {
@@ -206,11 +206,11 @@ p: ReturnType<typeof computePassport>)
     orders: { t: 'Orders completed: {n}+', v: { n: s.completed } },
     escrow: { t: 'Protected (escrow) orders completed without a lost dispute: {n}', v: { n: s.escrowReleased } },
     issues: { t: 'Few refunds and disputes' },
-    tenure: { t: 'Days selling on KUBICU: {n}+', v: { n: s.days } }
+    tenure: { t: 'Days selling on KUBICU: {n}+', v: { n: s.days } },
   };
-  return p.signals.
-  filter((x) => x.met).
-  map((x) => ({ id: x.id, title: x.title, evidence: words[x.id], evidencePhrase: phrases[x.id], validUntil: x.id === 'verified' ? x.validUntil : undefined }));
+  return p.signals
+    .filter((x) => x.met)
+    .map((x) => ({ id: x.id, title: x.title, evidence: words[x.id], evidencePhrase: phrases[x.id], validUntil: x.id === 'verified' ? x.validUntil : undefined }));
 }
 
 export function passportSummary(business: string, url: string, p: ReturnType<typeof computePassport>): string {

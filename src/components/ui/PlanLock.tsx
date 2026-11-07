@@ -15,11 +15,11 @@ export function PlanLock({ kind, children, className }: PlanLockProps) {
       className={cn(
         'inline-flex items-center gap-1 whitespace-nowrap text-meta font-medium',
         kind === 'plan' ? 'text-accent' : 'text-fg-subtle',
-        className
-      )}>
-      
+        className,
+      )}
+    >
       <Icon size={11} aria-hidden />
       {children}
-    </span>);
-
+    </span>
+  );
 }

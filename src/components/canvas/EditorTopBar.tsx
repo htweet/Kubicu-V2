@@ -15,8 +15,8 @@ import {
   SmartphoneIcon,
   TabletIcon,
   TabletSmartphoneIcon,
-  Undo2Icon } from
-'lucide-react';
+  Undo2Icon,
+} from 'lucide-react';
 import type { Viewport } from '../../types/page';
 import { useEditor } from '../../contexts/EditorContext';
 import { useT } from '../../contexts/LocaleContext';
@@ -70,8 +70,8 @@ export function EditorTopBar({ viewport, onViewportChange, onOpenVersions, onOpe
           to="/app/spaces"
           aria-label={tr('Back to My Spaces')}
           title={tr('Back to My Spaces')}
-          className="group flex h-9 items-center gap-1.5 rounded-md px-1.5 text-fg-muted transition-colors duration-150 hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-          
+          className="group flex h-9 items-center gap-1.5 rounded-md px-1.5 text-fg-muted transition-colors duration-150 hover:bg-sunken hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+        >
           <ArrowLeftIcon size={15} aria-hidden />
           <KubicuLogo withWordmark={false} />
         </Link>
@@ -81,8 +81,8 @@ export function EditorTopBar({ viewport, onViewportChange, onOpenVersions, onOpe
           type="button"
           onClick={() => actions.select(null)}
           className="min-w-0 rounded-md px-1.5 py-1 text-left transition-colors duration-150 hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
-          title={tr('Page settings')}>
-          
+          title={tr('Page settings')}
+        >
           <span className="block truncate text-label font-semibold text-fg">{draft.title || tr('Untitled page')}</span>
           <span className="block truncate text-caption text-fg-subtle">
             {publicUrl(draft.handle)}
@@ -97,53 +97,53 @@ export function EditorTopBar({ viewport, onViewportChange, onOpenVersions, onOpe
       </div>
 
       <div className="flex items-center gap-2">
-        {onToggleLeft && onToggleRight &&
-        <>
+        {onToggleLeft && onToggleRight && (
+          <>
             <div role="group" aria-label={tr('Panels')} className="flex items-center rounded-md border border-line p-0.5">
               <Tooltip content={leftOpen ? tr('Hide blocks panel') : tr('Show blocks panel')} side="bottom">
                 <button
-                type="button"
-                aria-expanded={leftOpen}
-                aria-controls="canvas-left-panel"
-                aria-label={tr('Blocks panel')}
-                onClick={onToggleLeft}
-                className={cn('flex h-8 w-8 items-center justify-center rounded-[5px] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus', leftOpen ? 'bg-sunken text-fg' : 'text-fg-subtle hover:text-fg')}>
-                
+                  type="button"
+                  aria-expanded={leftOpen}
+                  aria-controls="canvas-left-panel"
+                  aria-label={tr('Blocks panel')}
+                  onClick={onToggleLeft}
+                  className={cn('flex h-8 w-8 items-center justify-center rounded-[5px] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus', leftOpen ? 'bg-sunken text-fg' : 'text-fg-subtle hover:text-fg')}
+                >
                   <PanelLeftIcon size={17} strokeWidth={2.1} aria-hidden />
                 </button>
               </Tooltip>
               <Tooltip content={<span className="inline-flex items-center gap-1">{tr('Focus mode')} <Kbd>⌘</Kbd><Kbd>\</Kbd></span>} side="bottom">
                 <button
-                type="button"
-                aria-pressed={!leftOpen && !rightOpen}
-                aria-controls="canvas-left-panel canvas-right-panel"
-                aria-label={tr('Focus mode — hide both panels')}
-                onClick={() => {
-                  const hide = leftOpen || rightOpen;
-                  if (leftOpen === hide) onToggleLeft();
-                  if (rightOpen === hide) onToggleRight();
-                }}
-                className={cn('flex h-8 w-8 items-center justify-center rounded-[5px] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus', !leftOpen && !rightOpen ? 'bg-sunken text-fg' : 'text-fg-subtle hover:text-fg')}>
-                
+                  type="button"
+                  aria-pressed={!leftOpen && !rightOpen}
+                  aria-controls="canvas-left-panel canvas-right-panel"
+                  aria-label={tr('Focus mode — hide both panels')}
+                  onClick={() => {
+                    const hide = leftOpen || rightOpen;
+                    if (leftOpen === hide) onToggleLeft();
+                    if (rightOpen === hide) onToggleRight();
+                  }}
+                  className={cn('flex h-8 w-8 items-center justify-center rounded-[5px] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus', !leftOpen && !rightOpen ? 'bg-sunken text-fg' : 'text-fg-subtle hover:text-fg')}
+                >
                   {!leftOpen && !rightOpen ? <Minimize2Icon size={16} strokeWidth={2.1} aria-hidden /> : <Maximize2Icon size={16} strokeWidth={2.1} aria-hidden />}
                 </button>
               </Tooltip>
               <Tooltip content={rightOpen ? tr('Hide inspector') : tr('Show inspector')} side="bottom">
                 <button
-                type="button"
-                aria-expanded={rightOpen}
-                aria-controls="canvas-right-panel"
-                aria-label={tr('Inspector panel')}
-                onClick={onToggleRight}
-                className={cn('flex h-8 w-8 items-center justify-center rounded-[5px] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus', rightOpen ? 'bg-sunken text-fg' : 'text-fg-subtle hover:text-fg')}>
-                
+                  type="button"
+                  aria-expanded={rightOpen}
+                  aria-controls="canvas-right-panel"
+                  aria-label={tr('Inspector panel')}
+                  onClick={onToggleRight}
+                  className={cn('flex h-8 w-8 items-center justify-center rounded-[5px] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus', rightOpen ? 'bg-sunken text-fg' : 'text-fg-subtle hover:text-fg')}
+                >
                   <PanelRightIcon size={17} strokeWidth={2.1} aria-hidden />
                 </button>
               </Tooltip>
             </div>
             <span aria-hidden className="mx-1 h-6 w-px bg-line" />
           </>
-        }
+        )}
         <Tooltip content={<span className="inline-flex items-center gap-1">{tr('Undo')} <Kbd>⌘</Kbd><Kbd>Z</Kbd></span>} side="bottom">
           <IconButton icon={Undo2Icon} label={tr('Undo')} title="" disabled={!canUndo} onClick={actions.undo} />
         </Tooltip>
@@ -156,12 +156,12 @@ export function EditorTopBar({ viewport, onViewportChange, onOpenVersions, onOpe
           value={viewport}
           onChange={onViewportChange}
           options={[
-          { value: 'phone', label: `${tr('Phone')} · 390px`, icon: SmartphoneIcon, iconOnly: true },
-          { value: 'widePhone', label: `${tr('Wide phone')} · 430px`, icon: TabletSmartphoneIcon, iconOnly: true },
-          { value: 'tablet', label: `${tr('Tablet')} · 768px`, icon: TabletIcon, iconOnly: true },
-          { value: 'desktop', label: `${tr('Desktop')} · 1180px`, icon: MonitorIcon, iconOnly: true }]
-          } />
-        
+            { value: 'phone', label: `${tr('Phone')} · 390px`, icon: SmartphoneIcon, iconOnly: true },
+            { value: 'widePhone', label: `${tr('Wide phone')} · 430px`, icon: TabletSmartphoneIcon, iconOnly: true },
+            { value: 'tablet', label: `${tr('Tablet')} · 768px`, icon: TabletIcon, iconOnly: true },
+            { value: 'desktop', label: `${tr('Desktop')} · 1180px`, icon: MonitorIcon, iconOnly: true },
+          ]}
+        />
       </div>
 
       <div className="flex items-center justify-end gap-2">
@@ -181,14 +181,14 @@ export function EditorTopBar({ viewport, onViewportChange, onOpenVersions, onOpe
         <Button variant="secondary" leadingIcon={EyeIcon} onClick={() => navigate(`${pageHref(draft.handle, activePath)}?draft=1${previewSource ? `&as=${previewSource}` : ''}`)}>
           {tr('Preview')}
         </Button>
-        {hasUnpublishedChanges ?
-        <Button onClick={onOpenPublish}>{tr('Publish')}</Button> :
-
-        <Button variant="secondary" leadingIcon={CheckIcon} onClick={onOpenPublish}>
+        {hasUnpublishedChanges ? (
+          <Button onClick={onOpenPublish}>{tr('Publish')}</Button>
+        ) : (
+          <Button variant="secondary" leadingIcon={CheckIcon} onClick={onOpenPublish}>
             {tr('Published')}
           </Button>
-        }
+        )}
       </div>
-    </header>);
-
+    </header>
+  );
 }

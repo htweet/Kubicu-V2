@@ -11,10 +11,10 @@ const KEY = 'kubicu.consent';
  * TikTok Pixel or Microsoft Clarity (D232). Tags load only after Accept (D230); the choice is remembered
  * on this device. Paused or uninstalled extensions load nothing and show no notice.
  */
-export function ConsentStrip({ workspaceId, theme }: {workspaceId: string;theme: PageTheme;}) {
+export function ConsentStrip({ workspaceId, theme }: { workspaceId: string; theme: PageTheme }) {
   const { t: tr } = useT();
   const market = readMarketplace(workspaceId);
-  const setting = (id: string, key: string) => extensionActive(market, id) ? (market.installed[id]?.settings[key] ?? '').trim() : '';
+  const setting = (id: string, key: string) => (extensionActive(market, id) ? (market.installed[id]?.settings[key] ?? '').trim() : '');
   const pixelId = setting('meta-pixel', 'pixelId');
   const tagId = setting('google-tag', 'tagId');
   const tiktokId = setting('tiktok-pixel', 'pixelId');
@@ -42,9 +42,9 @@ export function ConsentStrip({ workspaceId, theme }: {workspaceId: string;theme:
     try {
       window.localStorage.setItem(KEY, v);
     } catch {
-
       // Remember for this visit only.
-    }setChoice(v);
+    }
+    setChoice(v);
   };
 
   // Brand names joined with commas so the sentence needs no English "and" (D502).
@@ -61,6 +61,6 @@ export function ConsentStrip({ workspaceId, theme }: {workspaceId: string;theme:
           {tr('Accept')}
         </button>
       </div>
-    </div>);
-
+    </div>
+  );
 }

@@ -38,7 +38,7 @@ export interface KycIdentity {
   idExpiry: string;
   idFront: KycDoc | null;
   selfie: boolean;
-  checks: {bvn: CheckResult;nin: CheckResult;liveness: CheckResult;nameOnBvn: string;};
+  checks: { bvn: CheckResult; nin: CheckResult; liveness: CheckResult; nameOnBvn: string };
 }
 
 export interface KycAddress {
@@ -63,7 +63,7 @@ export interface KycBusiness {
   statusReport: KycDoc | null;
   /** Memorandum & articles — companies only. */
   memart: KycDoc | null;
-  checks: {cac: CheckResult;registeredNameOnCac: string;tin: CheckResult;};
+  checks: { cac: CheckResult; registeredNameOnCac: string; tin: CheckResult };
 }
 
 export type PersonRole = 'director' | 'owner' | 'both';

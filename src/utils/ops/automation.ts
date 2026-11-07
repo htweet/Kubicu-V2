@@ -3,7 +3,7 @@ import { actionLabels, conditionLabels, triggerLabels } from '../../data/automat
 import { uid } from '../id';
 
 /** Sample event used for test runs, per trigger. */
-const sampleSubject: Record<Automation['trigger'], {subject: string;vars: Record<string, string>;total: number;source: string;subscribed: boolean;}> = {
+const sampleSubject: Record<Automation['trigger'], { subject: string; vars: Record<string, string>; total: number; source: string; subscribed: boolean }> = {
   order_paid: { subject: 'Test order #9999 from Ada Test', vars: { first_name: 'Ada', name: 'Ada Test', order_number: '#9999', total: '₦45,000', item: 'Ankara wrap dress', product: 'Ankara wrap dress', link: 'kub.icu/…', order_link: 'kub.icu/…/order/…' }, total: 45000, source: 'order', subscribed: false },
   booking_created: { subject: 'Test booking for Ada Test', vars: { first_name: 'Ada', name: 'Ada Test', service: 'Fitting', time: 'Tue 10:00am', ref: 'BK-TEST' }, total: 0, source: 'booking', subscribed: false },
   checkout_abandoned: { subject: 'Test cart left by Ada Test', vars: { first_name: 'Ada', name: 'Ada Test', order_number: '#9998', total: '₦32,000', cart_link: 'kub.icu/…/order/…' }, total: 32000, source: 'order', subscribed: true },
@@ -16,7 +16,7 @@ const sampleSubject: Record<Automation['trigger'], {subject: string;vars: Record
   stage_due: { subject: 'Test: “Trial session” is due on Ada Test’s bridal quote', vars: { first_name: 'Ada', name: 'Ada Test', stage: 'Trial session', total: '₦48,000', amount: '₦48,000', pay_link: 'kub.icu/ada/pay/…' }, total: 48000, source: 'order', subscribed: false },
   campaign_started: { subject: 'Test: “Owambe Season Drop” went live', vars: { campaign: 'Owambe Season Drop', link: 'kub.icu/…/owambe' }, total: 0, source: 'order', subscribed: true },
   campaign_ended: { subject: 'Test: “Owambe Season Drop” ended — 14 orders, ₦486,000', vars: { campaign: 'Owambe Season Drop', orders: '14', revenue: '₦486,000' }, total: 486000, source: 'order', subscribed: true },
-  contact_quiet: { subject: 'Test: Ada Test hasn’t bought in 45 days', vars: { first_name: 'Ada', days: '45', last_item: 'Ankara wrap dress' }, total: 0, source: 'order', subscribed: true }
+  contact_quiet: { subject: 'Test: Ada Test hasn’t bought in 45 days', vars: { first_name: 'Ada', days: '45', last_item: 'Ankara wrap dress' }, total: 0, source: 'order', subscribed: true },
 };
 
 /** Rule-based "AI preview" draft for test runs (D125) — never sent without the owner's approval. */
@@ -71,13 +71,13 @@ export function testRun(a: Automation, paused: boolean, memberName: (id: string 
   }
   if (!blocked) {
     for (const step of a.steps) {
-      if (step.kind === 'delay') steps.push({ label: stepLabel(step), status: 'done', detail: 'Skipped in test runs' });else
-      if (step.action === 'notify_member') steps.push({ label: stepLabel(step), status: 'done', detail: `Preview: ${memberName(step.memberId)} would get “${fill(step.value, s.vars)}” in KUBICU — not sent` });else
-      if (step.action === 'create_task' && step.memberId) steps.push({ label: stepLabel(step), status: 'done', detail: `Preview: follow-up “${fill(step.value, s.vars)}” for ${memberName(step.memberId)} — not created` });else
-      if (step.action === 'ai_draft') steps.push({ label: stepLabel(step), status: 'waiting', detail: `AI preview draft: “${aiDraft(step.value, s.vars)}” — waits in your notifications for you to approve, edit or discard. Uses 1 AI credit on live runs.` });else
-      if (step.action === 'send_report') steps.push({ label: stepLabel(step), status: 'done', detail: `Preview: “${step.value}” for ${s.subject.replace(/^Test:\s*/, '')} would arrive in your notifications — not sent` });else
-      if (step.action === 'call_webhook') steps.push({ label: stepLabel(step), status: 'done', detail: `Preview: POST ${step.value.trim()} with the ${a.trigger} event, signed with your webhook secret — not called in test runs` });else
-      steps.push({ label: stepLabel(step), status: 'done', detail: `Preview: “${fill(step.value, s.vars)}” — not sent` });
+      if (step.kind === 'delay') steps.push({ label: stepLabel(step), status: 'done', detail: 'Skipped in test runs' });
+      else if (step.action === 'notify_member') steps.push({ label: stepLabel(step), status: 'done', detail: `Preview: ${memberName(step.memberId)} would get “${fill(step.value, s.vars)}” in KUBICU — not sent` });
+      else if (step.action === 'create_task' && step.memberId) steps.push({ label: stepLabel(step), status: 'done', detail: `Preview: follow-up “${fill(step.value, s.vars)}” for ${memberName(step.memberId)} — not created` });
+      else if (step.action === 'ai_draft') steps.push({ label: stepLabel(step), status: 'waiting', detail: `AI preview draft: “${aiDraft(step.value, s.vars)}” — waits in your notifications for you to approve, edit or discard. Uses 1 AI credit on live runs.` });
+      else if (step.action === 'send_report') steps.push({ label: stepLabel(step), status: 'done', detail: `Preview: “${step.value}” for ${s.subject.replace(/^Test:\s*/, '')} would arrive in your notifications — not sent` });
+      else if (step.action === 'call_webhook') steps.push({ label: stepLabel(step), status: 'done', detail: `Preview: POST ${step.value.trim()} with the ${a.trigger} event, signed with your webhook secret — not called in test runs` });
+      else steps.push({ label: stepLabel(step), status: 'done', detail: `Preview: “${fill(step.value, s.vars)}” — not sent` });
     }
   }
   if (paused) steps.push({ label: 'Workspace automations paused', status: 'skipped', detail: 'Live runs wouldn’t happen while paused' });
@@ -86,9 +86,9 @@ export function testRun(a: Automation, paused: boolean, memberName: (id: string 
 
 /** Test runs keep only the latest one per automation, so pressing Test run again replaces it instead of piling up history. */
 export function addTestRun(data: OpsData, automationId: string, run: AutomationRun): OpsData {
-  return { ...data, automations: data.automations.map((a) => a.id === automationId ? { ...a, runs: [run, ...a.runs.filter((r) => !r.test)].slice(0, 50) } : a) };
+  return { ...data, automations: data.automations.map((a) => (a.id === automationId ? { ...a, runs: [run, ...a.runs.filter((r) => !r.test)].slice(0, 50) } : a)) };
 }
 
 export function addRun(data: OpsData, automationId: string, run: AutomationRun): OpsData {
-  return { ...data, automations: data.automations.map((a) => a.id === automationId ? { ...a, runs: [run, ...a.runs].slice(0, 50) } : a) };
+  return { ...data, automations: data.automations.map((a) => (a.id === automationId ? { ...a, runs: [run, ...a.runs].slice(0, 50) } : a)) };
 }

@@ -32,29 +32,29 @@ export const payoutRules: Record<CountryCode, PayoutRules> = {
     manualFee: 50,
     settleHours: 24,
     minAuto: 1_000,
-    walletMaxPerTransfer: null
+    walletMaxPerTransfer: null,
   },
   KE: {
     limits: { 0: { daily: 0, cap: 25_000 }, 1: { daily: 5_000, cap: 25_000 }, 2: { daily: 150_000, cap: 800_000 }, 3: { daily: 1_500_000, cap: null } },
     manualFee: 10,
     settleHours: 24,
     minAuto: 100,
-    walletMaxPerTransfer: 250_000
+    walletMaxPerTransfer: 250_000,
   },
   GH: {
     limits: { 0: { daily: 0, cap: 2_500 }, 1: { daily: 400, cap: 2_500 }, 2: { daily: 15_000, cap: 80_000 }, 3: { daily: 150_000, cap: null } },
     manualFee: 1,
     settleHours: 24,
     minAuto: 10,
-    walletMaxPerTransfer: 20_000
+    walletMaxPerTransfer: 20_000,
   },
   ZA: {
     limits: { 0: { daily: 0, cap: 3_500 }, 1: { daily: 600, cap: 3_500 }, 2: { daily: 25_000, cap: 120_000 }, 3: { daily: 250_000, cap: null } },
     manualFee: 5,
     settleHours: 24,
     minAuto: 15,
-    walletMaxPerTransfer: null
-  }
+    walletMaxPerTransfer: null,
+  },
 };
 
 // Staff can change every figure above in Super admin → Figures & names (D466).

@@ -26,7 +26,7 @@ const monthLabel = (m: string) => new Date(`${m}-01T12:00:00Z`).toLocaleDateStri
  * Tax collected by country and month (D435), for filing in each country you're registered in. Older orders without a
  * tax country count as the shop's own country. Export as a spreadsheet for your accountant.
  */
-export function TaxByCountryCard({ orders, business }: {orders: Order[];business: string;}) {
+export function TaxByCountryCard({ orders, business }: { orders: Order[]; business: string }) {
   const { t: tr } = useT();
   const home = activeCountry();
   const rows = useMemo(() => {
@@ -49,7 +49,7 @@ export function TaxByCountryCard({ orders, business }: {orders: Order[];business
   const exportCsv = () => {
     const csv = toCsv(
       ['Country', 'Month', 'Rate', 'Sales before tax', 'Tax collected', 'Orders'],
-      rows.map((r) => [countryInfo(r.country).name, r.month, `${r.ratePct}%`, r.sales, r.tax, r.orders])
+      rows.map((r) => [countryInfo(r.country).name, r.month, `${r.ratePct}%`, r.sales, r.tax, r.orders]),
     );
     downloadCsv(`tax-by-country-${business.toLowerCase().replace(/\W+/g, '-')}.csv`, csv);
   };
@@ -62,13 +62,13 @@ export function TaxByCountryCard({ orders, business }: {orders: Order[];business
       title="Tax by country"
       description="What you collected for each country and month, to file where you’re registered."
       actions={
-      <Button size="sm" variant="secondary" leadingIcon={DownloadIcon} onClick={exportCsv}>
+        <Button size="sm" variant="secondary" leadingIcon={DownloadIcon} onClick={exportCsv}>
           {tr('Export')}
         </Button>
       }
       body="flush"
-      footer={<p className="text-caption text-fg-subtle">{tr('For your records — check with your accountant before filing.')}</p>}>
-      
+      footer={<p className="text-caption text-fg-subtle">{tr('For your records — check with your accountant before filing.')}</p>}
+    >
       <div className="overflow-x-auto">
         <table className="w-full min-w-[520px]">
           <caption className="sr-only">{tr('Tax by country')}</caption>
@@ -82,18 +82,18 @@ export function TaxByCountryCard({ orders, business }: {orders: Order[];business
             </tr>
           </thead>
           <tbody className="divide-y divide-line">
-            {rows.map((r) =>
-            <tr key={r.key}>
+            {rows.map((r) => (
+              <tr key={r.key}>
                 <th scope="row" className="px-3 py-2.5 pl-5 text-left text-label font-medium text-fg md:pl-6">{tr(countryInfo(r.country).name)}</th>
                 <td className="px-3 py-2.5 text-label text-fg-muted">{monthLabel(r.month)}</td>
                 <td className="px-3 py-2.5 text-right text-label tabular-nums text-fg-muted">{vatRateLabel(r.ratePct)}</td>
                 <td className="px-3 py-2.5 text-right text-label tabular-nums text-fg">{formatNgn(r.sales)}</td>
                 <td className="px-3 py-2.5 pr-5 text-right text-label font-semibold tabular-nums text-fg md:pr-6">{formatNgn(r.tax)}</td>
               </tr>
-            )}
+            ))}
           </tbody>
         </table>
       </div>
-    </Card>);
-
+    </Card>
+  );
 }

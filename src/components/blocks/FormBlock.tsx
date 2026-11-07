@@ -33,8 +33,8 @@ export function FormBlock({ block, theme, mode }: BlockProps<'form'>) {
         <p className="text-[14px]" style={{ color: theme.mutedText }}>
           {mode === 'edit' ? 'Choose a form in the inspector.' : 'This form isn’t available.'}
         </p>
-      </section>);
-
+      </section>
+    );
   }
 
   const addOnOff = mode === 'live' && pageOps.workspaceId ? !formsAddOnActive(pageOps.workspaceId) : false;
@@ -49,8 +49,8 @@ export function FormBlock({ block, theme, mode }: BlockProps<'form'>) {
         closed={mode === 'edit' ? null : closed}
         showTitle={block.content.showTitle}
         onStart={() => live && pageOps.actions?.trackForm?.(form.id, 'start')}
-        onSubmit={({ answers, paymentNgn }) => live ? pageOps.actions!.submitForm!(form, answers, paymentNgn) : true} />
-      
-    </section>);
-
+        onSubmit={({ answers, paymentNgn }) => (live ? pageOps.actions!.submitForm!(form, answers, paymentNgn) : true)}
+      />
+    </section>
+  );
 }

@@ -53,7 +53,7 @@ export function OrderInstalmentsPanel({ order, handle, business, workspaceId, ap
           </h3>
           <p className="text-caption text-fg-muted">
             {owed > 0 ? `${formatNgn(owed)} still to come, ${everyLabels[inst.every]} on ${inst.card.brand} ····${inst.card.last4}. ` : ''}
-            {inst.ship === 'last' ? owed > 0 && inst.status !== 'cancelled' ? 'You chose to send it after the last part.' : 'Ready to send.' : 'You chose to send it after the first part.'}
+            {inst.ship === 'last' ? (owed > 0 && inst.status !== 'cancelled' ? 'You chose to send it after the last part.' : 'Ready to send.') : 'You chose to send it after the first part.'}
           </p>
         </div>
       </div>
@@ -68,33 +68,33 @@ export function OrderInstalmentsPanel({ order, handle, business, workspaceId, ap
               <span className="min-w-0 flex-1">
                 <span className="block font-semibold tabular-nums text-fg">{formatNgn(p.amountNgn)}</span>
                 <span className="block text-caption text-fg-subtle">
-                  {p.status === 'paid' && p.paidAt ? `${p.how === 'recorded' ? 'Recorded' : 'Paid'} ${formatTimestamp(p.paidAt)}` : p.status === 'failed' ? attempt ? `Retry ${formatTimestamp(attempt)}` : 'No retries left' : p.status === 'scheduled' ? `Due ${formatTimestamp(p.dueAt)}` : 'Won’t be charged'}
+                  {p.status === 'paid' && p.paidAt ? `${p.how === 'recorded' ? 'Recorded' : 'Paid'} ${formatTimestamp(p.paidAt)}` : p.status === 'failed' ? (attempt ? `Retry ${formatTimestamp(attempt)}` : 'No retries left') : p.status === 'scheduled' ? `Due ${formatTimestamp(p.dueAt)}` : 'Won’t be charged'}
                 </span>
               </span>
               <Badge tone={partTone[p.status]}>{partLabel[p.status]}</Badge>
-              {live && next?.id === p.id &&
-              <span className="flex w-full flex-wrap gap-2 sm:w-auto">
-                  {p.status === 'failed' &&
-                <Button size="sm" variant="secondary" onClick={() => retry(p)}>
+              {live && next?.id === p.id && (
+                <span className="flex w-full flex-wrap gap-2 sm:w-auto">
+                  {p.status === 'failed' && (
+                    <Button size="sm" variant="secondary" onClick={() => retry(p)}>
                       Retry now
                     </Button>
-                }
+                  )}
                   <Button size="sm" variant="tertiary" onClick={() => record(p)}>
                     Record as paid
                   </Button>
                 </span>
-              }
-            </li>);
-
+              )}
+            </li>
+          );
         })}
       </ol>
-      {live && next &&
-      <div className="flex flex-wrap gap-2">
-          {order.customer.phone &&
-        <Button size="sm" variant="secondary" leadingIcon={MessageCircleIcon} onClick={() => window.open(whatsappLink(order.customer.phone, nudge), '_blank', 'noopener,noreferrer')}>
+      {live && next && (
+        <div className="flex flex-wrap gap-2">
+          {order.customer.phone && (
+            <Button size="sm" variant="secondary" leadingIcon={MessageCircleIcon} onClick={() => window.open(whatsappLink(order.customer.phone, nudge), '_blank', 'noopener,noreferrer')}>
               WhatsApp
             </Button>
-        }
+          )}
           <Button size="sm" variant="tertiary" leadingIcon={CopyIcon} onClick={() => navigator.clipboard?.writeText(link).then(() => toast.success('Order page link copied'), () => undefined)}>
             Copy pay link
           </Button>
@@ -102,33 +102,33 @@ export function OrderInstalmentsPanel({ order, handle, business, workspaceId, ap
             Cancel remaining parts
           </Button>
         </div>
-      }
+      )}
       <Dialog
         open={cancelling}
         onClose={() => setCancelling(false)}
         title="Cancel the remaining parts?"
         description={`${formatNgn(owed)} won’t be charged. What’s been paid stays paid — refund it from the order if you’re taking the item back.`}
         footer={
-        <>
+          <>
             <Button variant="tertiary" onClick={() => setCancelling(false)}>
               Keep them
             </Button>
             <Button
-            variant="destructive"
-            onClick={() => {
-              if (apply((d) => cancelRemaining(d, order.id, reason.trim()))) {
-                toast('Remaining instalments cancelled');
-                setCancelling(false);
-              }
-            }}>
-            
+              variant="destructive"
+              onClick={() => {
+                if (apply((d) => cancelRemaining(d, order.id, reason.trim()))) {
+                  toast('Remaining instalments cancelled');
+                  setCancelling(false);
+                }
+              }}
+            >
               Cancel remaining parts
             </Button>
           </>
-        }>
-        
+        }
+      >
         <TextInput id={`inst-reason-${order.id}`} label="Reason" optional value={reason} onChange={(e) => setReason(e.target.value)} placeholder="e.g. Agreed with the customer" />
       </Dialog>
-    </section>);
-
+    </section>
+  );
 }

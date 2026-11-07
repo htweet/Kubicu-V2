@@ -17,7 +17,7 @@ export interface MembersValue {
 
 const MembersContext = createContext<MembersValue | null>(null);
 
-export function MembersProvider({ value, children }: {value: MembersValue | null;children: React.ReactNode;}) {
+export function MembersProvider({ value, children }: { value: MembersValue | null; children: React.ReactNode }) {
   return <MembersContext.Provider value={value}>{children}</MembersContext.Provider>;
 }
 

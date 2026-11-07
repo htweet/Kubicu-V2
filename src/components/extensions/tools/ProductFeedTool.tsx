@@ -25,19 +25,19 @@ export function ProductFeedTool() {
         <ToolStat label="Products in the feed" value={feed.included} />
         <ToolStat label="Left out" value={feed.skipped.length} />
       </dl>
-      {feed.skipped.length > 0 &&
-      <div>
+      {feed.skipped.length > 0 && (
+        <div>
           <h4 className="text-caption font-semibold text-fg">Left out, and why</h4>
           <ul className="mt-1.5 flex max-h-48 flex-col divide-y divide-line overflow-y-auto">
-            {feed.skipped.map((s) =>
-          <li key={s.id} className="flex items-baseline justify-between gap-3 py-2 text-label">
+            {feed.skipped.map((s) => (
+              <li key={s.id} className="flex items-baseline justify-between gap-3 py-2 text-label">
                 <span className="min-w-0 truncate text-fg">{s.name}</span>
                 <span className="shrink-0 text-caption text-fg-muted">{s.reason}</span>
               </li>
-          )}
+            ))}
           </ul>
         </div>
-      }
+      )}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-caption text-fg-muted">Upload in {feedChannels[channel].where}.</p>
         <Button
@@ -47,11 +47,11 @@ export function ProductFeedTool() {
           onClick={() => {
             downloadCsv(`kubicu-${channel}-product-feed.csv`, feed.csv);
             toast.success('Feed downloaded', { description: `${feed.included} products` });
-          }}>
-          
+          }}
+        >
           Download feed
         </Button>
       </div>
-    </ToolSection>);
-
+    </ToolSection>
+  );
 }

@@ -43,7 +43,7 @@ export function Verification() {
   const banks = useMemo(() => data.banks.map((b) => ({ ...b, nameMatch: nameMatchOf(b.accountName, verifiedName(k)) })), [data.banks, k]);
   const flagged = k.status === 'needs_info' ? k.requests.map((r) => r.step) : [];
 
-  const [step, setStep] = useState<KycStepId>(() => k.status === 'needs_info' && k.requests[0] ? k.requests[0].step : readyToSubmit(k, banks) ?? 'review');
+  const [step, setStep] = useState<KycStepId>(() => (k.status === 'needs_info' && k.requests[0] ? k.requests[0].step : readyToSubmit(k, banks) ?? 'review'));
   const [tried, setTried] = useState<Set<KycStepId>>(new Set());
   const [bankOpen, setBankOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -55,10 +55,10 @@ export function Verification() {
   }, [steps, step]);
 
   const set = (fn: (c: KycCase) => KycCase) =>
-  update((d) => {
-    const next = fn(d.kyc);
-    return { ...d, kyc: next.status === 'not_started' ? withEvent({ ...next, status: 'in_progress' }, 'Started verification') : next };
-  });
+    update((d) => {
+      const next = fn(d.kyc);
+      return { ...d, kyc: next.status === 'not_started' ? withEvent({ ...next, status: 'in_progress' }, 'Started verification') : next };
+    });
 
   const errors = tried.has(step) ? stepErrors(k, step, banks) : {};
   const idx = steps.indexOf(step);
@@ -113,33 +113,33 @@ export function Verification() {
       <PageHeader
         title="Verification"
         description="Confirm who you are and who owns the business. Payouts turn on once KUBICU approves it — sales arrive in your wallet either way."
-        actions={<Badge tone={statusTones[k.status]} dot>{tr(statusLabels[k.status])}</Badge>} />
-      
+        actions={<Badge tone={statusTones[k.status]} dot>{tr(statusLabels[k.status])}</Badge>}
+      />
       <PartnerNote className="mt-6">{tr('Checks run through our licensed partner’s identity service (simulated). KUBICU keeps the results, not your documents.')}</PartnerNote>
 
-      {!perm.allowed &&
-      <InlineAlert className="mt-4" tone="info" title="Only the Owner can verify the business">
+      {!perm.allowed && (
+        <InlineAlert className="mt-4" tone="info" title="Only the Owner can verify the business">
           {perm.reason}
         </InlineAlert>
-      }
+      )}
 
-      {k.status === 'needs_info' &&
-      <InlineAlert className="mt-4" tone="warning" title="KUBICU asked for a few changes">
+      {k.status === 'needs_info' && (
+        <InlineAlert className="mt-4" tone="warning" title="KUBICU asked for a few changes">
           <ul className="mt-1 flex flex-col gap-1.5">
-            {k.requests.map((r, i) =>
-          <li key={i} className="flex flex-wrap items-baseline gap-x-2">
+            {k.requests.map((r, i) => (
+              <li key={i} className="flex flex-wrap items-baseline gap-x-2">
                 <button type="button" className="font-semibold text-fg underline underline-offset-2" onClick={() => go(r.step)}>
                   {tr(stepLabels[r.step].label)}
                 </button>
                 <span>“{r.message}”</span>
               </li>
-          )}
+            ))}
           </ul>
         </InlineAlert>
-      }
+      )}
 
-      {showStatus ?
-      <div className="mt-6 grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
+      {showStatus ? (
+        <div className="mt-6 grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
           <div className="flex flex-col gap-6">
             <KycStatusPanel k={k} canEdit={perm.allowed} onRestart={restart} />
             <Card id="kyc-sent" title="What you sent">
@@ -147,9 +147,9 @@ export function Verification() {
             </Card>
           </div>
           <LimitsAside entity={k.entity} />
-        </div> :
-
-      <div className="mt-6 grid items-start gap-6 lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-10">
+        </div>
+      ) : (
+        <div className="mt-6 grid items-start gap-6 lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-10">
           <div className="lg:sticky lg:top-6">
             <KycStepper steps={steps} current={step} done={(s) => stepDone(k, s, banks)} flagged={flagged} locked={(s) => s !== 'type' && !k.entity} onSelect={go} />
           </div>
@@ -173,57 +173,57 @@ export function Verification() {
               {step === 'people' && <PeopleStep {...stepProps} />}
               {step === 'payout' && <PayoutStep {...stepProps} banks={banks} onAddBank={() => setBankOpen(true)} />}
               {step === 'declarations' && <DeclarationsStep {...stepProps} />}
-              {step === 'review' &&
-            <>
-                  {readyToSubmit(k, banks) &&
-              <InlineAlert className="mb-5" tone="warning" title="A few steps aren’t finished">
+              {step === 'review' && (
+                <>
+                  {readyToSubmit(k, banks) && (
+                    <InlineAlert className="mb-5" tone="warning" title="A few steps aren’t finished">
                       {tr('Steps marked without a tick still need details.')}
                     </InlineAlert>
-              }
+                  )}
                   <KycSummary k={k} banks={banks} onEdit={editable ? go : undefined} flagged={flagged} />
                 </>
-            }
+              )}
             </div>
 
             <footer className="sticky bottom-0 flex items-center justify-between gap-3 rounded-b-lg border-t border-line bg-raised/95 px-5 py-3.5 backdrop-blur md:px-6">
               <Button variant="tertiary" leadingIcon={ArrowLeftIcon} onClick={() => go(steps[Math.max(0, idx - 1)])} disabled={idx === 0}>
                 Back
               </Button>
-              {!editable ?
-            <span className="inline-flex items-center gap-1.5 text-caption text-fg-subtle">
+              {!editable ? (
+                <span className="inline-flex items-center gap-1.5 text-caption text-fg-subtle">
                   <LockIcon size={13} aria-hidden /> {tr('View only')}
-                </span> :
-            step === 'review' ?
-            <Button leadingIcon={SendIcon} onClick={submit} loading={submitting}>
+                </span>
+              ) : step === 'review' ? (
+                <Button leadingIcon={SendIcon} onClick={submit} loading={submitting}>
                   {submitting ? 'Running checks…' : k.status === 'needs_info' ? 'Send changes' : 'Send for review'}
-                </Button> :
-
-            <Button trailingIcon={ArrowRightIcon} onClick={next}>
+                </Button>
+              ) : (
+                <Button trailingIcon={ArrowRightIcon} onClick={next}>
                   {idx === steps.length - 2 ? 'Review' : 'Save and continue'}
                 </Button>
-            }
+              )}
             </footer>
           </div>
         </div>
-      }
+      )}
 
       <BankAccountDialog open={bankOpen} onClose={() => setBankOpen(false)} data={data} update={update} businessName={verifiedName(k) || current.name} />
-    </>);
-
+    </>
+  );
 }
 
-function LimitsAside({ entity }: {entity: KycCase['entity'];}) {
+function LimitsAside({ entity }: { entity: KycCase['entity'] }) {
   const { t: tr } = useT();
   return (
     <Card id="kyc-limits" title="What verification unlocks">
       <DetailList
         items={(['individual', 'company'] as const).map((e) => ({
           label: tr(e === 'individual' ? 'Individuals' : 'Registered businesses'),
-          value: tr(e === 'individual' ? '₦2m a day · ₦10m balance' : '₦20m a day · no balance limit')
-        }))} />
-      
+          value: tr(e === 'individual' ? '₦2m a day · ₦10m balance' : '₦20m a day · no balance limit'),
+        }))}
+      />
       {entity && <p className="mt-4 text-caption text-fg-subtle">{tr('You applied as: {type}.', { type: tr(entityInfo[entity].short) })}</p>}
       <p className="mt-2 text-caption text-fg-subtle">{tr('Example figures — final limits depend on the payment partner.')}</p>
-    </Card>);
-
+    </Card>
+  );
 }

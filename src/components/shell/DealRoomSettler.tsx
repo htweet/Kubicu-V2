@@ -12,15 +12,15 @@ export function DealRoomSettler() {
   const { state } = useEditor();
   const rooms = useMemo(
     () =>
-    activeExtraSpaces(current).
-    filter((s) => s.kind === 'dealroom').
-    map((s) => {
-      // The open room uses the editor's published copy so changes apply straight away.
-      const doc = s.id === currentSpace.id ? state.published : readSpacePage(current.id, s.id)?.published;
-      return doc?.dealRoom ? { room: doc.dealRoom, handle: doc.handle } : null;
-    }).
-    filter((r): r is NonNullable<typeof r> => !!r),
-    [current, currentSpace.id, state.published]
+      activeExtraSpaces(current)
+        .filter((s) => s.kind === 'dealroom')
+        .map((s) => {
+          // The open room uses the editor's published copy so changes apply straight away.
+          const doc = s.id === currentSpace.id ? state.published : readSpacePage(current.id, s.id)?.published;
+          return doc?.dealRoom ? { room: doc.dealRoom, handle: doc.handle } : null;
+        })
+        .filter((r): r is NonNullable<typeof r> => !!r),
+    [current, currentSpace.id, state.published],
   );
   useDealRoomSettlement(data, apply, rooms);
   return null;

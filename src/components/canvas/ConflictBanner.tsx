@@ -14,15 +14,15 @@ export function ConflictBanner() {
 
   return (
     <AnimatePresence initial={false}>
-      {open &&
-      <motion.div
-        role="alert"
-        initial={{ height: 0, opacity: 0 }}
-        animate={{ height: 'auto', opacity: 1 }}
-        exit={{ height: 0, opacity: 0 }}
-        transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
-        className="shrink-0 overflow-hidden border-b border-line bg-warning-soft">
-        
+      {open && (
+        <motion.div
+          role="alert"
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: 'auto', opacity: 1 }}
+          exit={{ height: 0, opacity: 0 }}
+          transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+          className="shrink-0 overflow-hidden border-b border-line bg-warning-soft"
+        >
           <div className="flex flex-col gap-2 px-4 py-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
             <p className="flex items-start gap-2 text-label text-fg">
               <CopyIcon size={15} className="mt-0.5 shrink-0 text-warning" aria-hidden />
@@ -33,28 +33,28 @@ export function ConflictBanner() {
             </p>
             <div className="flex shrink-0 gap-2">
               <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => {
-                actions.loadTheirs();
-                toast('Loaded the other tab’s version');
-              }}>
-              
+                size="sm"
+                variant="secondary"
+                onClick={() => {
+                  actions.loadTheirs();
+                  toast('Loaded the other tab’s version');
+                }}
+              >
                 Load other version
               </Button>
               <Button
-              size="sm"
-              onClick={() => {
-                actions.keepMine();
-                toast('Kept this version', { description: 'It replaced the copy from the other tab.' });
-              }}>
-              
+                size="sm"
+                onClick={() => {
+                  actions.keepMine();
+                  toast('Kept this version', { description: 'It replaced the copy from the other tab.' });
+                }}
+              >
                 Keep this version
               </Button>
             </div>
           </div>
         </motion.div>
-      }
-    </AnimatePresence>);
-
+      )}
+    </AnimatePresence>
+  );
 }

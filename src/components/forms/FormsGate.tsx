@@ -9,7 +9,7 @@ import { PageHeader } from '../shell/PageHeader';
 import { Button } from '../ui/Button';
 
 /** Shown on the Forms screens until the paid add-on is installed (or while it's paused) (D79). */
-export function FormsGate({ children }: {children: React.ReactNode;}) {
+export function FormsGate({ children }: { children: React.ReactNode }) {
   const market = useMarketplace();
   if (market.isActive(FORMS_EXTENSION_ID)) return <>{children}</>;
   const info = extensionById[FORMS_EXTENSION_ID];
@@ -26,9 +26,9 @@ export function FormsGate({ children }: {children: React.ReactNode;}) {
           <div>
             <h2 className="text-heading font-semibold text-fg">{paused ? 'The Forms add-on is paused' : 'Forms is a paid add-on'}</h2>
             <p className="mt-1.5 max-w-md text-body text-fg-muted">
-              {paused ?
-              'Your forms and responses are safe. Form blocks on your pages aren’t accepting responses until you resume it in Extensions.' :
-              `${formatNgn(info.priceNgn)} a month, on Creator and above. Install it from Extensions — you’ll see exactly what it can access first.`}
+              {paused
+                ? 'Your forms and responses are safe. Form blocks on your pages aren’t accepting responses until you resume it in Extensions.'
+                : `${formatNgn(info.priceNgn)} a month, on Creator and above. Install it from Extensions — you’ll see exactly what it can access first.`}
             </p>
           </div>
           <Link to={`/app/extensions?ext=${FORMS_EXTENSION_ID}`}>
@@ -37,14 +37,14 @@ export function FormsGate({ children }: {children: React.ReactNode;}) {
           <p className="text-caption text-fg-subtle">The free Lead form and Newsletter blocks keep working without it.</p>
         </div>
         <ul className="flex flex-col gap-3 border-t border-line pt-6 md:border-l md:border-t-0 md:pl-8 md:pt-0">
-          {info.adds.map((a) =>
-          <li key={a} className="flex items-start gap-2.5 text-label text-fg">
+          {info.adds.map((a) => (
+            <li key={a} className="flex items-start gap-2.5 text-label text-fg">
               <CheckIcon size={16} className="mt-0.5 shrink-0 text-success" aria-hidden />
               {a}
             </li>
-          )}
+          ))}
         </ul>
       </section>
-    </div>);
-
+    </div>
+  );
 }

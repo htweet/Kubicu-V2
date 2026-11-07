@@ -6,26 +6,26 @@ import { type Answers, answerText } from './logic';
 export const defaultConfirmation = (): FormConfirmation => ({
   enabled: false,
   subject: 'We got your response to “{form}”',
-  body: 'Hi {first_name},\n\nThanks — we’ve received your response to “{form}”. Here’s a copy of what you sent:\n\n{answers}\n\nWe’ll be in touch soon.'
+  body: 'Hi {first_name},\n\nThanks — we’ve received your response to “{form}”. Here’s a copy of what you sent:\n\n{answers}\n\nWe’ll be in touch soon.',
 });
 
 /** Fields that never go into an email copy: private, decorative or machine-filled. */
 const PRIVATE = new Set(['payment', 'consent', 'section', 'hidden', 'bank', 'signature', 'file']);
 
 export function answersSummary(form: FormDef, answers: Answers): string {
-  return form.fields.
-  filter((f) => !PRIVATE.has(f.type)).
-  map((f) => {
-    const v = answerText(answers[f.id], f).trim();
-    return v ? `${f.label}: ${v}` : null;
-  }).
-  filter((x): x is string => !!x).
-  join('\n');
+  return form.fields
+    .filter((f) => !PRIVATE.has(f.type))
+    .map((f) => {
+      const v = answerText(answers[f.id], f).trim();
+      return v ? `${f.label}: ${v}` : null;
+    })
+    .filter((x): x is string => !!x)
+    .join('\n');
 }
 
-export function fillConfirmation(text: string, vars: {name: string;form: string;answers: string;}): string {
+export function fillConfirmation(text: string, vars: { name: string; form: string; answers: string }): string {
   const first = vars.name.trim().split(/\s+/)[0] || 'there';
-  return text.replace(/\{(first_name|name|form|answers)\}/g, (_, k: string) => k === 'first_name' ? first : k === 'name' ? vars.name || 'there' : k === 'form' ? vars.form : vars.answers);
+  return text.replace(/\{(first_name|name|form|answers)\}/g, (_, k: string) => (k === 'first_name' ? first : k === 'name' ? vars.name || 'there' : k === 'form' ? vars.form : vars.answers));
 }
 
 /**

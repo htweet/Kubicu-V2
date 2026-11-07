@@ -4,7 +4,7 @@ import { useMediaSrc } from '../../hooks/useMediaSrc';
 import { useDataSaver } from '../../contexts/DataSaverContext';
 import { cn } from '../../utils/cn';
 
-type MediaImageProps = Omit<React.ImgHTMLAttributes<HTMLImageElement>, 'src'> & {src: string;};
+type MediaImageProps = Omit<React.ImgHTMLAttributes<HTMLImageElement>, 'src'> & { src: string };
 
 /**
  * `<img>` that understands library references. A missing library image shows a quiet placeholder, never a broken icon.
@@ -23,8 +23,8 @@ export function MediaImage({ src, className, style, alt, ...rest }: MediaImagePr
           <ImageIcon size={16} aria-hidden className="shrink-0" />
           {alt && <span className="line-clamp-2 text-[11px] leading-tight">{alt}</span>}
         </span>
-      </span>);
-
+      </span>
+    );
   }
   return <img src={resolved} alt={alt} className={className} style={style} {...rest} />;
 }

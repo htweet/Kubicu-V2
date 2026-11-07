@@ -37,7 +37,7 @@ export function linkPayWays(link: PaymentLink, shop: ShopSettings, naira: boolea
     card: m.card,
     account: naira && m.transfer,
     own: naira && m.transfer && shop.methods.transferOwn && ownAccounts > 0,
-    ussd: USSD_AVAILABLE && naira && m.ussd
+    ussd: USSD_AVAILABLE && naira && m.ussd,
   };
 }
 
@@ -59,9 +59,9 @@ export function safeRedirect(url: string): string {
 }
 
 /** A payer says they've transferred to the seller's own account. Nothing counts until the seller confirms. */
-export function addPendingTransfer(d: MoneyData, linkId: string, payment: PendingTransfer['payment']): {data: MoneyData;pending: PendingTransfer;} {
+export function addPendingTransfer(d: MoneyData, linkId: string, payment: PendingTransfer['payment']): { data: MoneyData; pending: PendingTransfer } {
   const pending: PendingTransfer = { id: uid('lpt'), at: new Date().toISOString(), payment, status: 'waiting' };
-  return { data: { ...d, links: d.links.map((l) => l.id === linkId ? { ...l, pendingTransfers: [pending, ...(l.pendingTransfers ?? [])] } : l) }, pending };
+  return { data: { ...d, links: d.links.map((l) => (l.id === linkId ? { ...l, pendingTransfers: [pending, ...(l.pendingTransfers ?? [])] } : l)) }, pending };
 }
 
 /** The seller saw the money arrive: it becomes a normal payment with a receipt. */
@@ -70,17 +70,17 @@ export function confirmPendingTransfer(d: MoneyData, linkId: string, pendingId: 
   const p = link?.pendingTransfers?.find((x) => x.id === pendingId);
   if (!link || !p) return d;
   // Confirm even if the link has since closed — the money already arrived.
-  const open: MoneyData = { ...d, links: d.links.map((l) => l.id === linkId ? { ...l, status: 'active', expiresAt: null, maxUses: null } : l) };
+  const open: MoneyData = { ...d, links: d.links.map((l) => (l.id === linkId ? { ...l, status: 'active', expiresAt: null, maxUses: null } : l)) };
   const res = recordLinkPayment(open, linkId, p.payment);
   if (!res) return d;
   return {
     ...res.data,
-    links: res.data.links.map((l) => l.id === linkId ? { ...l, status: link.status, expiresAt: link.expiresAt, maxUses: link.maxUses, pendingTransfers: (l.pendingTransfers ?? []).filter((x) => x.id !== pendingId) } : l)
+    links: res.data.links.map((l) => (l.id === linkId ? { ...l, status: link.status, expiresAt: link.expiresAt, maxUses: link.maxUses, pendingTransfers: (l.pendingTransfers ?? []).filter((x) => x.id !== pendingId) } : l)),
   };
 }
 
 export function markTransferNotReceived(d: MoneyData, linkId: string, pendingId: string): MoneyData {
-  return { ...d, links: d.links.map((l) => l.id === linkId ? { ...l, pendingTransfers: (l.pendingTransfers ?? []).map((x) => x.id === pendingId ? { ...x, status: 'not_received' } : x) } : l) };
+  return { ...d, links: d.links.map((l) => (l.id === linkId ? { ...l, pendingTransfers: (l.pendingTransfers ?? []).map((x) => (x.id === pendingId ? { ...x, status: 'not_received' } : x)) } : l)) };
 }
 
 /** Full or partial refund of one payment, with a reason (D224). Test mode — the wallet records it. */
@@ -96,7 +96,7 @@ export function refundLinkPart(d: MoneyData, linkId: string, paymentId: string, 
   return {
     ...d,
     ledger: [entry, ...d.ledger],
-    links: d.links.map((l) => l.id === linkId ? { ...l, payments: l.payments.map((x) => x.id === paymentId ? { ...x, refundedNgn: (x.refundedNgn ?? 0) + amount, refundedAt: at, refundReason: reason.trim() || x.refundReason } : x) } : l)
+    links: d.links.map((l) => (l.id === linkId ? { ...l, payments: l.payments.map((x) => (x.id === paymentId ? { ...x, refundedNgn: (x.refundedNgn ?? 0) + amount, refundedAt: at, refundReason: reason.trim() || x.refundReason } : x)) } : l)),
   };
 }
 
@@ -105,19 +105,19 @@ export function linkPaymentRows(link: PaymentLink): (string | number)[][] {
   const qLabels = (link.questions ?? []).map((q) => q.label);
   const head = ['Receipt', 'Paid at', 'Name', 'Phone', 'Email', 'Address', 'Amount (NGN)', 'Fee paid by payer', 'VAT', 'Paid by', 'Refunded', 'Note', ...qLabels];
   const rows = link.payments.map((p: LinkPayment) => [
-  p.receipt,
-  p.at,
-  p.payerName,
-  p.payerPhone,
-  p.payerEmail ?? '',
-  p.payerAddress ?? '',
-  p.amountNgn,
-  p.feeNgn ?? 0,
-  p.vatNgn ?? 0,
-  p.payBy ?? 'card',
-  p.refundedNgn ?? 0,
-  p.note,
-  ...qLabels.map((label) => p.answers?.find((a) => a.label === label)?.value ?? '')]
-  );
+    p.receipt,
+    p.at,
+    p.payerName,
+    p.payerPhone,
+    p.payerEmail ?? '',
+    p.payerAddress ?? '',
+    p.amountNgn,
+    p.feeNgn ?? 0,
+    p.vatNgn ?? 0,
+    p.payBy ?? 'card',
+    p.refundedNgn ?? 0,
+    p.note,
+    ...qLabels.map((label) => p.answers?.find((a) => a.label === label)?.value ?? ''),
+  ]);
   return [head, ...rows];
 }

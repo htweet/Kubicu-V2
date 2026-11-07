@@ -36,8 +36,8 @@ export function TrustPassport() {
       <PageHeader
         title="Trust Passport"
         context={current.name}
-        description="What buyers can rely on, built only from records KUBICU can check — verification, real orders, escrow and verified reviews. You can’t add or edit signals yourself." />
-      
+        description="What buyers can rely on, built only from records KUBICU can check — verification, real orders, escrow and verified reviews. You can’t add or edit signals yourself."
+      />
 
       <InlineAlert tone="info" title="Independent partner checks are simulated" className="mt-6">
         Scores use your real KUBICU records. Checks with credit bureaus and trade associations wait for a chosen partner.
@@ -69,18 +69,18 @@ export function TrustPassport() {
             </p>
           </div>
 
-          {tick.shown ?
-          <p className="flex items-start gap-2 text-caption text-fg-muted">
+          {tick.shown ? (
+            <p className="flex items-start gap-2 text-caption text-fg-muted">
               <BadgeCheckIcon size={16} className="mt-px shrink-0 text-action" aria-hidden />
               <span>
                 <span className="font-semibold text-fg">Verified tick is on.</span> It shows after your name on Profile and Brand header blocks. Add a Trust Passport badge set to “Verified” to show the seal on its own.
               </span>
-            </p> :
-          tick.hiddenByKubicu ?
-          <InlineAlert tone="warning" title="KUBICU has hidden your verified tick">
+            </p>
+          ) : tick.hiddenByKubicu ? (
+            <InlineAlert tone="warning" title="KUBICU has hidden your verified tick">
               Your verification, payouts and score aren’t affected. Contact support if you think this is a mistake.
-            </InlineAlert> :
-          null}
+            </InlineAlert>
+          ) : null}
 
           <div className="flex flex-col gap-3">
             <h2 className="text-label font-semibold text-fg">Share it</h2>
@@ -89,83 +89,83 @@ export function TrustPassport() {
         </section>
 
         <div className="flex flex-col gap-8">
-          {todo.length > 0 &&
-          <section aria-labelledby="tp-next" className="flex flex-col gap-3">
+          {todo.length > 0 && (
+            <section aria-labelledby="tp-next" className="flex flex-col gap-3">
               <h2 id="tp-next" className="text-heading font-semibold text-fg">
                 To raise your level
               </h2>
               <ul className="divide-y divide-line rounded-lg border border-line bg-raised">
-                {todo.map((s) =>
-              <SignalRow key={s.id} signal={s} />
-              )}
+                {todo.map((s) => (
+                  <SignalRow key={s.id} signal={s} />
+                ))}
               </ul>
             </section>
-          }
+          )}
           <section aria-labelledby="tp-met" className="flex flex-col gap-3">
             <h2 id="tp-met" className="text-heading font-semibold text-fg">
               Already met
             </h2>
-            {met.length === 0 ?
-            <p className="rounded-lg border border-dashed border-line-strong px-4 py-6 text-center text-body text-fg-muted">Nothing yet. Verification is the quickest first step.</p> :
-
-            <ul className="divide-y divide-line rounded-lg border border-line bg-raised">
-                {met.map((s) =>
-              <SignalRow key={s.id} signal={s} />
-              )}
+            {met.length === 0 ? (
+              <p className="rounded-lg border border-dashed border-line-strong px-4 py-6 text-center text-body text-fg-muted">Nothing yet. Verification is the quickest first step.</p>
+            ) : (
+              <ul className="divide-y divide-line rounded-lg border border-line bg-raised">
+                {met.map((s) => (
+                  <SignalRow key={s.id} signal={s} />
+                ))}
               </ul>
-            }
+            )}
           </section>
           <p className="text-caption text-fg-subtle">Sample data never counts. Thresholds and points are example figures (D99).</p>
         </div>
       </div>
-    </div>);
-
+    </div>
+  );
 }
 
 const progressIcon = { info: ClockIcon, warning: AlertCircleIcon, danger: XCircleIcon } as const;
 const progressColor = { info: 'text-info', warning: 'text-warning', danger: 'text-danger' } as const;
 
-function SignalRow({ signal: s }: {signal: ReturnType<typeof computePassport>['signals'][number];}) {
+function SignalRow({ signal: s }: { signal: ReturnType<typeof computePassport>['signals'][number] }) {
   const soon = lapsingSoon(s);
   const pr = !s.met ? s.progress : undefined;
   const PrIcon = pr ? progressIcon[pr.tone] : null;
   return (
     <li className={cn('flex items-start gap-3 px-4 py-4', pr && 'bg-sunken')}>
-      {s.met ?
-      <CheckCircle2Icon size={18} className="mt-0.5 shrink-0 text-success" aria-hidden /> :
-      PrIcon && pr ?
-      <PrIcon size={18} className={cn('mt-0.5 shrink-0', progressColor[pr.tone])} aria-hidden /> :
-
-      <CircleIcon size={18} className="mt-0.5 shrink-0 text-fg-subtle" aria-hidden />
-      }
+      {s.met ? (
+        <CheckCircle2Icon size={18} className="mt-0.5 shrink-0 text-success" aria-hidden />
+      ) : PrIcon && pr ? (
+        <PrIcon size={18} className={cn('mt-0.5 shrink-0', progressColor[pr.tone])} aria-hidden />
+      ) : (
+        <CircleIcon size={18} className="mt-0.5 shrink-0 text-fg-subtle" aria-hidden />
+      )}
       <div className="min-w-0 flex-1">
         <p className="flex flex-wrap items-center gap-2">
           <span className="text-label font-semibold text-fg">{s.title}</span>
-          {pr &&
-          <Badge tone={pr.tone} dot>
+          {pr && (
+            <Badge tone={pr.tone} dot>
               {pr.label}
             </Badge>
-          }
+          )}
           <Badge tone={s.met ? 'success' : 'neutral'}>{`${s.met ? '+' : ''}${s.points} pts`}</Badge>
         </p>
         <p className="mt-0.5 text-caption text-fg-muted">
           {s.evidence}
           {pr?.at && ` · ${pr.tone === 'info' ? 'submitted' : 'updated'} ${formatRelative(pr.at)}`}
         </p>
-        {s.met && s.validUntil &&
-        <p className={cn('mt-1 text-caption', soon ? 'font-medium text-warning' : 'text-fg-subtle')}>
+        {s.met && s.validUntil && (
+          <p className={cn('mt-1 text-caption', soon ? 'font-medium text-warning' : 'text-fg-subtle')}>
             {soon ? 'Lapses' : 'Valid until'} {formatDate(s.validUntil)}
             {soon && (s.id === 'verified' ? ' — renew verification to keep these points.' : ' — ask recent customers for reviews to keep these points.')}
           </p>
-        }
+        )}
         {!s.met && <p className="mt-1 text-caption text-fg">{s.next}</p>}
       </div>
-      {(!s.met || soon) &&
-      <Link to={s.to} className={cn('inline-flex shrink-0 items-center gap-1 self-center text-label font-medium text-fg underline-offset-2 hover:underline')}>
+      {(!s.met || soon) && (
+        <Link to={s.to} className={cn('inline-flex shrink-0 items-center gap-1 self-center text-label font-medium text-fg underline-offset-2 hover:underline')}>
           {pr?.tone === 'info' ? 'View' : pr ? 'Fix' : 'Open'} <ArrowRightIcon size={14} aria-hidden />
           <span className="sr-only">{s.title}</span>
         </Link>
-      }
-    </li>);
-
+      )}
+    </li>
+  );
 }

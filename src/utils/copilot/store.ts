@@ -19,9 +19,9 @@ function notify() {
   try {
     window.dispatchEvent(new Event(CHATS_EVENT));
   } catch {
-
     // Not in a browser — nothing to tell.
-  }}
+  }
+}
 
 /** Example figures: unclaimed drafts last 7 days; 3 drafts and 10 changes a day per phone number or browser. */
 export const DRAFT_DAYS = 7;
@@ -31,7 +31,7 @@ export const CHANGES_PER_DAY = 10;
 function read<T>(key: string, fallback: T): T {
   try {
     const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) as T : fallback;
+    return raw ? (JSON.parse(raw) as T) : fallback;
   } catch {
     return fallback;
   }
@@ -86,9 +86,9 @@ export function saveSession(s: CopilotSession): boolean {
 
 /** Chats someone has actually started (said something in), newest first. */
 export function listSessions(channel: CopilotSession['channel']): CopilotSession[] {
-  return Object.values(read<Record<string, CopilotSession>>(SESSIONS, {})).
-  filter((s) => s.channel === channel && s.messages.some((m) => m.from === 'user')).
-  sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  return Object.values(read<Record<string, CopilotSession>>(SESSIONS, {}))
+    .filter((s) => s.channel === channel && s.messages.some((m) => m.from === 'user'))
+    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 }
 
 /** A short name for a chat: the business name once known, otherwise their first words. */
@@ -128,8 +128,8 @@ export function currentSessionId(channel: CopilotSession['channel']): string | n
 
 export function setCurrentSession(channel: CopilotSession['channel'], id: string | null) {
   const all = read<Record<string, string>>(CURRENT, {});
-  if (id) all[channel] = id;else
-  delete all[channel];
+  if (id) all[channel] = id;
+  else delete all[channel];
   write(CURRENT, all);
 }
 
@@ -147,14 +147,14 @@ export function isExpired(d: CopilotDraft, now = Date.now()): boolean {
   return !d.claimed && new Date(d.expiresAt).getTime() <= now;
 }
 
-export function newDraftIds(): {id: string;claimCode: string;expiresAt: string;} {
+export function newDraftIds(): { id: string; claimCode: string; expiresAt: string } {
   const code = Array.from({ length: 3 }, () => Math.random().toString(36).slice(2, 6)).join('');
   return { id: uid('cp'), claimCode: code, expiresAt: new Date(Date.now() + DRAFT_DAYS * 86_400_000).toISOString() };
 }
 
 interface Usage {
   day: string;
-  counts: Record<string, {drafts: number;changes: number;}>;
+  counts: Record<string, { drafts: number; changes: number }>;
 }
 
 const today = () => new Date().toISOString().slice(0, 10);
@@ -170,7 +170,7 @@ export function usageKey(s: Pick<CopilotSession, 'channel' | 'chatPhone'>): stri
   return s.channel === 'whatsapp' && s.chatPhone ? `wa:${s.chatPhone}` : 'web';
 }
 
-export function remaining(key: string): {drafts: number;changes: number;} {
+export function remaining(key: string): { drafts: number; changes: number } {
   const { c } = usageFor(key);
   return { drafts: Math.max(0, DRAFTS_PER_DAY - c.drafts), changes: Math.max(0, CHANGES_PER_DAY - c.changes) };
 }

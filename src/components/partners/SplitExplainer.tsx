@@ -24,19 +24,19 @@ interface SplitExplainerProps {
 export function SplitExplainer({ leadName, partnerName, leadSharePct, exampleNgn = 100_000, viewer = 'neutral', compact, className }: SplitExplainerProps) {
   const { t: tr } = useT();
   const partnerPct = 100 - leadSharePct;
-  const leadAmt = Math.round(exampleNgn * leadSharePct / 100);
+  const leadAmt = Math.round((exampleNgn * leadSharePct) / 100);
   const partnerAmt = exampleNgn - leadAmt;
   const them = partnerName || tr('your partner');
   const you = ` (${tr('you')})`;
-  const rules =
-  <ul className="flex flex-col gap-2 text-caption text-fg-muted">
+  const rules = (
+    <ul className="flex flex-col gap-2 text-caption text-fg-muted">
       <Rule title={tr('Who decides')}>{tr('{lead} proposed the starting split when inviting {partner}. It only applies once both accept. Either business can propose a new split later — the current one stays until the other accepts. KUBICU never changes it.', { lead: leadName, partner: them })}</Rule>
       <Rule title={tr('What it’s worked out on')}>{tr('What the customer actually pays for the things you sell together — after any discount, before delivery fees. Delivery money goes to whoever delivers.')}</Rule>
       <Rule title={tr('Fees')}>{tr('Each business pays its own KUBICU fee on its own share, at its own plan’s rate (guest partners: 2%). The payment provider’s fee is shared in the same proportion as the money.')}</Rule>
       <Rule title={tr('Refunds')}>{tr('A refund comes back from each share in the same proportion. A partial refund on one business’s item comes from that business only.')}</Rule>
       <Rule title={tr('Bundles')}>{tr('A bundle can use exact naira amounts per item instead of the percentage. Both businesses accept those amounts before the bundle can go live.')}</Rule>
-    </ul>;
-
+    </ul>
+  );
 
   return (
     <div className={cn('flex flex-col gap-3 rounded-lg border border-line bg-sunken/60 p-4', className)}>
@@ -71,25 +71,25 @@ export function SplitExplainer({ leadName, partnerName, leadSharePct, exampleNgn
       </dl>
       <p className="text-caption text-fg-subtle">{tr('Example: a customer pays {amount} for something you sell together. Each share lands in that business’s wallet the moment it’s paid, before each pays its own fees.', { amount: formatNgn(exampleNgn) })}</p>
 
-      {compact ?
-      <details className="group border-t border-line pt-3">
+      {compact ? (
+        <details className="group border-t border-line pt-3">
           <summary className="flex cursor-pointer list-none items-center gap-1.5 text-caption font-semibold text-action focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
             <InfoIcon size={13} aria-hidden /> {tr('Who decides, fees and refunds')}
           </summary>
           <div className="mt-3">{rules}</div>
-        </details> :
-
-      <div className="border-t border-line pt-3">{rules}</div>
-      }
-    </div>);
-
+        </details>
+      ) : (
+        <div className="border-t border-line pt-3">{rules}</div>
+      )}
+    </div>
+  );
 }
 
-function Rule({ title, children }: {title: string;children: React.ReactNode;}) {
+function Rule({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <li className="grid gap-0.5">
       <span className="font-semibold text-fg">{title}</span>
       <span>{children}</span>
-    </li>);
-
+    </li>
+  );
 }

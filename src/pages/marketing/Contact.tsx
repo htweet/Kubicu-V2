@@ -12,11 +12,11 @@ import { useT } from '../../contexts/LocaleContext';
 import { officeHoursLocal } from '../../utils/schedule';
 
 const channels = [
-{ icon: MailIcon, title: 'Email', text: '{email} — we reply within 1 working day.', email: 'hello@kub.icu' },
-{ icon: ShieldIcon, title: 'Legal & privacy', text: '{email} for legal notices and data requests under the NDPA.', email: 'legal@kub.icu' },
-{ icon: BriefcaseIcon, title: 'Sales', text: '{email} for Enterprise plans and partnerships.', email: 'sales@kub.icu' },
-{ icon: FlagIcon, title: 'A page you’ve seen', text: 'Use Report a page so our moderation team sees it.', to: '/about/report' }];
-
+  { icon: MailIcon, title: 'Email', text: '{email} — we reply within 1 working day.', email: 'hello@kub.icu' },
+  { icon: ShieldIcon, title: 'Legal & privacy', text: '{email} for legal notices and data requests under the NDPA.', email: 'legal@kub.icu' },
+  { icon: BriefcaseIcon, title: 'Sales', text: '{email} for Enterprise plans and partnerships.', email: 'sales@kub.icu' },
+  { icon: FlagIcon, title: 'A page you’ve seen', text: 'Use Report a page so our moderation team sees it.', to: '/about/report' },
+];
 
 const str = (v: string | string[] | undefined) => (Array.isArray(v) ? v.join(', ') : v ?? '').trim();
 
@@ -47,7 +47,7 @@ export function Contact() {
         label: tr(f.label),
         help: f.help ? tr(f.help) : '',
         options: f.options.map((o) => tr(o)),
-        rule: f.rule ? { ...f.rule, value: tr(f.rule.value) } : null
+        rule: f.rule ? { ...f.rule, value: tr(f.rule.value) } : null,
       })),
       settings: {
         ...contactFormDef.settings,
@@ -55,10 +55,10 @@ export function Contact() {
         successTitle: tr(contactFormDef.settings.successTitle),
         // The thank-you message adds the visitor's own time for office hours too (D486).
         successText: [tr(contactFormDef.settings.successText), localHours ? tr('That’s {hours} where you are.', { hours: localHours }) : ''].filter(Boolean).join(' '),
-        privacyNote: tr(contactFormDef.settings.privacyNote)
-      }
+        privacyNote: tr(contactFormDef.settings.privacyNote),
+      },
     }),
-    [tr, localHours]
+    [tr, localHours],
   );
 
   const submit = ({ answers }: RunnerSubmit) => {
@@ -73,21 +73,21 @@ export function Contact() {
     return updateAdminStore((s) => ({
       ...s,
       tickets: [
-      {
-        id: uid('tkt'),
-        number: Math.max(1000, ...s.tickets.map((t) => t.number)) + 1,
-        workspaceId: 'website',
-        workspaceName: str(answers.handle) || 'Website visitor',
-        from: name,
-        topic,
-        subject: topic === 'legal' && aboutDoc ? `${topicLabel} — about ${aboutDoc.title}` : `${topicLabel} — from the website`,
-        status: 'open',
-        createdAt: now,
-        updatedAt: now,
-        messages: [{ id: uid('msg'), by: 'customer', name, text: lines.join('\n'), at: now }]
-      },
-      ...s.tickets]
-
+        {
+          id: uid('tkt'),
+          number: Math.max(1000, ...s.tickets.map((t) => t.number)) + 1,
+          workspaceId: 'website',
+          workspaceName: str(answers.handle) || 'Website visitor',
+          from: name,
+          topic,
+          subject: topic === 'legal' && aboutDoc ? `${topicLabel} — about ${aboutDoc.title}` : `${topicLabel} — from the website`,
+          status: 'open',
+          createdAt: now,
+          updatedAt: now,
+          messages: [{ id: uid('msg'), by: 'customer', name, text: lines.join('\n'), at: now }],
+        },
+        ...s.tickets,
+      ],
     }));
   };
 
@@ -97,8 +97,8 @@ export function Contact() {
       <div className="mx-auto grid w-full max-w-6xl gap-12 px-5 py-14 md:px-8 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] lg:gap-16">
         <div className="nm-frame rounded-2xl">
           <div className="rounded-[15px] bg-raised p-6 md:p-8">
-            {aboutDoc &&
-            <p className="mb-6 border-b border-line pb-4 text-label text-fg-muted">
+            {aboutDoc && (
+              <p className="mb-6 border-b border-line pb-4 text-label text-fg-muted">
                 {tr('About:')}{' '}
                 <Link to={`/about/${aboutDoc.slug}`} className="font-semibold text-fg underline">
                   {tr(aboutDoc.title)}
@@ -109,7 +109,7 @@ export function Contact() {
                 </a>
                 .
               </p>
-            }
+            )}
             <FormRunner form={form} skin={appSkin} mode="live" headingLevel="h2" onSubmit={submit} initialAnswers={initialAnswers} />
           </div>
         </div>
@@ -119,28 +119,28 @@ export function Contact() {
             {tr('Other ways to reach us')}
           </h2>
           <ul className="mt-4 divide-y divide-line border-y border-line">
-            {channels.map((c) =>
-            <li key={c.title} className="flex gap-4 py-5">
+            {channels.map((c) => (
+              <li key={c.title} className="flex gap-4 py-5">
                 <c.icon size={20} strokeWidth={2.2} className="mt-0.5 shrink-0 text-[rgb(var(--nm-1))]" aria-hidden />
                 <div>
                   <h3 className="text-label font-semibold text-fg">{tr(c.title)}</h3>
                   <p className="mt-1 text-label text-fg-muted">
                     {'email' in c && c.email ? tr(c.text, { email: c.email }) : tr(c.text)}{' '}
-                    {c.to &&
-                  <Link to={c.to} className="font-semibold text-fg underline">
+                    {c.to && (
+                      <Link to={c.to} className="font-semibold text-fg underline">
                         {tr('Report a page')}
                       </Link>
-                  }
+                    )}
                   </p>
                 </div>
               </li>
-            )}
+            ))}
           </ul>
           <p className="mt-6 text-caption text-fg-subtle">{tr('KUBICU · Lagos, Nigeria — serving Nigeria, Kenya, Ghana and South Africa. Office hours Monday–Friday, 9am–6pm WAT. Messages land in our support queue — you’ll get a reference by email.')}
             {localHours && ` ${tr('That’s {hours} where you are.', { hours: localHours })}`}
           </p>
         </aside>
       </div>
-    </>);
-
+    </>
+  );
 }

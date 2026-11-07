@@ -30,36 +30,36 @@ export function Roadmap() {
             <p className="text-caption text-fg-subtle">{tr('Complete: {n} of {total}', { n: done, total: roadmapBatches.length })}</p>
           </div>
           <ol className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7">
-            {roadmapBatches.map((b) =>
-            <li key={b.batch} className={cn('rounded-xl border px-3 py-3', b.done ? 'border-transparent bg-raised' : 'border-line')}>
+            {roadmapBatches.map((b) => (
+              <li key={b.batch} className={cn('rounded-xl border px-3 py-3', b.done ? 'border-transparent bg-raised' : 'border-line')}>
                 <span className="flex items-center gap-1.5 text-caption text-fg-subtle">
                   {b.done && <CheckIcon size={12} strokeWidth={3} className="text-success" aria-hidden />}
                   {tr('Batch {n}', { n: b.batch })}
                 </span>
                 <span className="mt-1 block text-label font-semibold text-fg">{tr(b.name)}</span>
               </li>
-            )}
+            ))}
           </ol>
         </section>
 
         <div className="mt-6 flex flex-wrap gap-4 text-caption text-fg-muted" aria-label={tr('Legend')}>
-          {(Object.keys(statusLabel) as RoadmapStatus[]).map((s) =>
-          <span key={s} className="inline-flex items-center gap-1.5">
+          {(Object.keys(statusLabel) as RoadmapStatus[]).map((s) => (
+            <span key={s} className="inline-flex items-center gap-1.5">
               <span aria-hidden className={cn('h-2 w-2 rounded-full', dotTone[s])} />
               {tr(statusLabel[s])}
             </span>
-          )}
+          ))}
         </div>
 
         <div className="mt-12 grid gap-x-12 gap-y-12 lg:grid-cols-2">
-          {roadmapItems.map((g) =>
-          <section key={g.area} aria-labelledby={`rm-${g.area}`}>
+          {roadmapItems.map((g) => (
+            <section key={g.area} aria-labelledby={`rm-${g.area}`}>
               <h2 id={`rm-${g.area}`} className="font-display text-[22px] font-semibold tracking-[-0.015em] text-fg">
                 {tr(g.area)}
               </h2>
               <ul className="mt-4 divide-y divide-line border-y border-line">
-                {g.items.map((it) =>
-              <li key={it.name} className="flex items-start justify-between gap-4 py-4">
+                {g.items.map((it) => (
+                  <li key={it.name} className="flex items-start justify-between gap-4 py-4">
                     <div>
                       <p className="text-label font-medium text-fg">{tr(it.name)}</p>
                       {it.note && <p className="mt-0.5 text-caption text-fg-subtle">{tr(it.note)}</p>}
@@ -69,12 +69,12 @@ export function Roadmap() {
                       {tr(statusLabel[it.status])}
                     </span>
                   </li>
-              )}
+                ))}
               </ul>
             </section>
-          )}
+          ))}
         </div>
       </div>
-    </>);
-
+    </>
+  );
 }

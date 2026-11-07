@@ -22,7 +22,7 @@ export interface ResolvedPage {
    * contacts come from the live workspace data (shared by all its spaces).
    */
   isOwn: boolean;
-  example?: {id: string;name: string;category: string;};
+  example?: { id: string; name: string; category: string };
   /** Archived space: forward to this handle. */
   redirectTo?: string;
 }

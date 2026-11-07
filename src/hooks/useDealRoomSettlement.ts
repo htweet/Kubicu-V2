@@ -7,7 +7,7 @@ import { settleRoom } from '../utils/dealRoom';
  * Releases held orders when a group goal is reached and refunds everyone when it's missed.
  * In production this runs on the server at the deadline; here it runs while KUBICU is open.
  */
-export function useDealRoomSettlement(data: CommerceData | null, apply: ((fn: (d: CommerceData) => CommerceData) => boolean) | null, rooms: {room: DealRoomSettings;handle: string;}[]) {
+export function useDealRoomSettlement(data: CommerceData | null, apply: ((fn: (d: CommerceData) => CommerceData) => boolean) | null, rooms: { room: DealRoomSettings; handle: string }[]) {
   const key = rooms.map((r) => `${r.handle}:${r.room.deadline}:${r.room.endedAt}:${r.room.goal}`).join('|');
   useEffect(() => {
     if (!data || !apply || rooms.length === 0) return;

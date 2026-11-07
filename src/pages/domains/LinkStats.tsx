@@ -57,7 +57,7 @@ export function LinkStats() {
     return { from: start.getTime(), to, compare: false };
   }, [period, link, analytics.events]);
 
-  const stats = useMemo(() => link ? linkStats(analytics.events, link.slug, range.from, range.to, range.compare) : null, [link, analytics.events, range]);
+  const stats = useMemo(() => (link ? linkStats(analytics.events, link.slug, range.from, range.to, range.compare) : null), [link, analytics.events, range]);
 
   if (!link || !stats) {
     return (
@@ -66,9 +66,9 @@ export function LinkStats() {
         icon={Link2Icon}
         title="This link doesn’t exist"
         description="It may have been deleted. Clicks already counted stay in Analytics."
-        action={<Button onClick={() => navigate('/app/links')}>Back to Short links</Button>} />);
-
-
+        action={<Button onClick={() => navigate('/app/links')}>Back to Short links</Button>}
+      />
+    );
   }
 
   const display = shortDisplay(mainHandle, link.slug, host);
@@ -77,7 +77,7 @@ export function LinkStats() {
   const goesTo = linkGoesTo(current, commerce, link);
   const offsite = linkOffsite(link);
   const leftLabel = link.whatsapp ? 'Opened WhatsApp' : 'Went to the website';
-  const outcomeLabel = (o: ClickOutcome) => o === 'left' ? leftLabel : outcomeLabels[o];
+  const outcomeLabel = (o: ClickOutcome) => (o === 'left' ? leftLabel : outcomeLabels[o]);
   const health = checkLinkHealth(current, commerce, link);
   const allTaps = analytics.events.filter((e) => e.campaign === link.slug && e.type === 'link_click').length;
   const filteredTotal = stats.filtered.bots + stats.filtered.bursts;
@@ -88,10 +88,10 @@ export function LinkStats() {
     toast(tr('Click data deleted'), { description: tr('Taps deleted: {n}. Visits it brought stay in Analytics, no longer tied to the link.', { n: removed.toLocaleString() }) });
     setConfirmDelete(false);
   };
-  const change = stats.previousClicks === null ? null : stats.previousClicks === 0 ? stats.clicks > 0 ? tr('New this period') : null : tr('{pct} vs previous {n} days', { pct: `${stats.clicks >= stats.previousClicks ? '+' : ''}${Math.round((stats.clicks - stats.previousClicks) / stats.previousClicks * 100)}%`, n: period });
-  const pct = (n: number) => stats.clicks ? `${Math.round(n / stats.clicks * 100)}%` : '—';
+  const change = stats.previousClicks === null ? null : stats.previousClicks === 0 ? (stats.clicks > 0 ? tr('New this period') : null) : tr('{pct} vs previous {n} days', { pct: `${stats.clicks >= stats.previousClicks ? '+' : ''}${Math.round(((stats.clicks - stats.previousClicks) / stats.previousClicks) * 100)}%`, n: period });
+  const pct = (n: number) => (stats.clicks ? `${Math.round((n / stats.clicks) * 100)}%` : '—');
   const maxHour = Math.max(1, ...stats.hours);
-  const pageName = (pageId: string | null) => pageId === null ? tr('Home') : pageId === 'shop' ? tr('Shop') : tr('Page “{name}”', { name: pageId });
+  const pageName = (pageId: string | null) => (pageId === null ? tr('Home') : pageId === 'shop' ? tr('Shop') : tr('Page “{name}”', { name: pageId }));
   const periodLabel = period === 'all' ? tr('since it was created') : tr('in the last {n} days', { n: period });
 
   const togglePause = () => {
@@ -102,9 +102,9 @@ export function LinkStats() {
 
   // Every click in the period, not just the latest 20 shown on screen.
   const exportCsv = () => {
-    const rows = linkClicks(analytics.events, link.slug).
-    filter((c) => c.at >= range.from && c.at < range.to).
-    map((c) => [new Date(c.at).toISOString(), c.device ?? '', c.via ? viaLabels[c.via] : '', c.outcome === 'left' ? link.whatsapp ? 'WhatsApp' : 'Website' : pageName(c.pageId), outcomeLabel(c.outcome), c.sample ? 'yes' : '']);
+    const rows = linkClicks(analytics.events, link.slug)
+      .filter((c) => c.at >= range.from && c.at < range.to)
+      .map((c) => [new Date(c.at).toISOString(), c.device ?? '', c.via ? viaLabels[c.via] : '', c.outcome === 'left' ? (link.whatsapp ? 'WhatsApp' : 'Website') : pageName(c.pageId), outcomeLabel(c.outcome), c.sample ? 'yes' : '']);
     downloadCsv(`short-link-${link.slug}-clicks.csv`, toCsv(['clicked_at', 'device', 'came_from', 'landed_on', 'what_happened', 'sample'], rows));
   };
 
@@ -131,12 +131,12 @@ export function LinkStats() {
             <h1 className="mt-1 truncate font-display text-title font-semibold text-fg">{link.name}</h1>
             <p className="mt-1 truncate font-mono text-label text-fg">{display}</p>
             <p className="mt-0.5 truncate text-caption text-fg-muted">→ {goesTo}</p>
-            {!health.ok &&
-            <p className="mt-1 flex items-start gap-1 text-caption text-danger">
+            {!health.ok && (
+              <p className="mt-1 flex items-start gap-1 text-caption text-danger">
                 <AlertTriangleIcon size={12} aria-hidden className="mt-0.5 shrink-0" />
                 {tr(health.reason ?? '')} {tr('Edit to choose another.')}
               </p>
-            }
+            )}
             {(link.tags?.length ?? 0) > 0 && <p className="mt-1 text-caption text-fg-subtle">{link.tags!.map((t) => `#${t}`).join(' ')}</p>}
           </div>
           <div className="flex flex-wrap gap-2">
@@ -146,16 +146,16 @@ export function LinkStats() {
             <Button variant="secondary" size="sm" leadingIcon={ExternalLinkIcon} onClick={() => window.open(shortHref(mainHandle, link.slug), '_blank')}>
               Test
             </Button>
-            {!link.archivedAt &&
-            <Button variant="secondary" size="sm" leadingIcon={QrCodeIcon} onClick={() => navigate(`/app/qr?link=${link.id}`)}>
+            {!link.archivedAt && (
+              <Button variant="secondary" size="sm" leadingIcon={QrCodeIcon} onClick={() => navigate(`/app/qr?link=${link.id}`)}>
                 QR code
               </Button>
-            }
-            {!link.archivedAt &&
-            <Button variant="secondary" size="sm" leadingIcon={link.pausedAt ? PlayIcon : PauseIcon} disabled={!can.allowed} onClick={togglePause}>
+            )}
+            {!link.archivedAt && (
+              <Button variant="secondary" size="sm" leadingIcon={link.pausedAt ? PlayIcon : PauseIcon} disabled={!can.allowed} onClick={togglePause}>
                 {link.pausedAt ? 'Resume' : 'Pause'}
               </Button>
-            }
+            )}
             <Button size="sm" leadingIcon={PencilIcon} disabled={!can.allowed} title={can.allowed ? undefined : can.reason} onClick={() => setEditing(true)}>
               Edit
             </Button>
@@ -170,12 +170,12 @@ export function LinkStats() {
           value={period}
           onChange={setPeriod}
           options={[
-          { value: '7', label: '7 days' },
-          { value: '30', label: '30 days' },
-          { value: '90', label: '90 days' },
-          { value: 'all', label: 'All time' }]
-          } />
-        
+            { value: '7', label: '7 days' },
+            { value: '30', label: '30 days' },
+            { value: '90', label: '90 days' },
+            { value: 'all', label: 'All time' },
+          ]}
+        />
         <div className="flex flex-wrap gap-2">
           <Button size="sm" variant="tertiary" leadingIcon={Trash2Icon} onClick={() => setConfirmDelete(true)} disabled={!can.allowed || allTaps === 0} title={can.allowed ? undefined : can.reason}>
             Delete click data
@@ -197,40 +197,40 @@ export function LinkStats() {
             {change && <p className="mt-2 text-caption text-fg-muted">{change}</p>}
             <p className="mt-2 text-caption text-fg-subtle">
               {tr('One per visit — tapping twice in 30 minutes counts once.')}{' '}
-              {filteredTotal > 0 ?
-              `${tr('Taps left out: {n}', { n: filteredTotal.toLocaleString() })} — ${[stats.filtered.bots ? tr('{n} from bots or link previews', { n: stats.filtered.bots }) : '', stats.filtered.bursts ? tr('{n} rapid repeats from one browser', { n: stats.filtered.bursts }) : ''].filter(Boolean).join(', ')}.` :
-              tr('Bots, link previews and rapid repeats are left out.')}
+              {filteredTotal > 0
+                ? `${tr('Taps left out: {n}', { n: filteredTotal.toLocaleString() })} — ${[stats.filtered.bots ? tr('{n} from bots or link previews', { n: stats.filtered.bots }) : '', stats.filtered.bursts ? tr('{n} rapid repeats from one browser', { n: stats.filtered.bursts }) : ''].filter(Boolean).join(', ')}.`
+                : tr('Bots, link previews and rapid repeats are left out.')}
             </p>
           </div>
           <dl className="grid grid-cols-2 gap-x-6 gap-y-4">
             <Figure label="Unique people" value={stats.visitors.toLocaleString()} note="Estimated from a random browser ID" />
-            {offsite ?
-            <Figure label={leftLabel} value={stats.clicks.toLocaleString()} note={link.whatsapp ? 'Whether they sent the message isn’t tracked' : 'What they do there isn’t tracked'} /> :
-
-            <Figure label="Did something" value={pct(stats.engaged)} note={tr('{n} tapped, browsed or more', { n: stats.engaged })} />
-            }
+            {offsite ? (
+              <Figure label={leftLabel} value={stats.clicks.toLocaleString()} note={link.whatsapp ? 'Whether they sent the message isn’t tracked' : 'What they do there isn’t tracked'} />
+            ) : (
+              <Figure label="Did something" value={pct(stats.engaged)} note={tr('{n} tapped, browsed or more', { n: stats.engaged })} />
+            )}
             {!offsite && <Figure label="Orders" value={stats.orders.toLocaleString()} note="Test mode" />}
             {!offsite && <Figure label="Revenue" value={formatNgn(stats.revenueNgn)} note={tr('{pct} of clicks bought, booked or signed up', { pct: pct(stats.conversions) })} />}
           </dl>
         </div>
         <div className="min-w-0">
-          {stats.clicks === 0 ?
-          <div className="flex h-64 flex-col items-center justify-center gap-2 rounded-lg bg-sunken px-6 text-center">
+          {stats.clicks === 0 ? (
+            <div className="flex h-64 flex-col items-center justify-center gap-2 rounded-lg bg-sunken px-6 text-center">
               <p className="text-label font-semibold text-fg">{tr('No clicks')} {periodLabel}</p>
               <p className="max-w-sm text-caption text-fg-muted">{tr('Share the link or print its QR code. Use “Test” to try it yourself — your own taps count unless you turn that off in Settings → Privacy.')}</p>
-            </div> :
-
-          <VisitsChart
-            data={stats.daily}
-            compare={range.compare}
-            summary={`${stats.clicks} ${tr(link.source === 'qr' ? 'scans' : 'clicks')} ${periodLabel}${stats.busiestDay ? ` · ${tr('busiest day:')} ${stats.busiestDay}` : ''}.`} />
-
-          }
+            </div>
+          ) : (
+            <VisitsChart
+              data={stats.daily}
+              compare={range.compare}
+              summary={`${stats.clicks} ${tr(link.source === 'qr' ? 'scans' : 'clicks')} ${periodLabel}${stats.busiestDay ? ` · ${tr('busiest day:')} ${stats.busiestDay}` : ''}.`}
+            />
+          )}
         </div>
       </section>
 
-      {stats.clicks > 0 &&
-      <div className="grid gap-10 border-t border-line pt-8 md:grid-cols-2">
+      {stats.clicks > 0 && (
+        <div className="grid gap-10 border-t border-line pt-8 md:grid-cols-2">
           <section aria-labelledby="ls-outcomes" className="flex flex-col gap-3">
             <h2 id="ls-outcomes" className="text-label font-semibold text-fg">
               {tr('What happened after the click')}
@@ -260,9 +260,9 @@ export function LinkStats() {
               {tr('Time of day')}
             </h2>
             <div className="flex h-24 items-end gap-[3px]" aria-hidden>
-              {stats.hours.map((h, i) =>
-            <div key={i} className="flex-1 rounded-t-[2px] bg-action" style={{ height: `${Math.max(3, h / maxHour * 100)}%`, opacity: h ? 1 : 0.15 }} />
-            )}
+              {stats.hours.map((h, i) => (
+                <div key={i} className="flex-1 rounded-t-[2px] bg-action" style={{ height: `${Math.max(3, (h / maxHour) * 100)}%`, opacity: h ? 1 : 0.15 }} />
+              ))}
             </div>
             <div className="flex justify-between text-caption text-fg-subtle" aria-hidden>
               <span>12am</span>
@@ -277,19 +277,19 @@ export function LinkStats() {
             </p>
           </section>
 
-          {!offsite && stats.landed.length > 0 &&
-        <section aria-labelledby="ls-landed" className="flex flex-col gap-3">
+          {!offsite && stats.landed.length > 0 && (
+            <section aria-labelledby="ls-landed" className="flex flex-col gap-3">
               <h2 id="ls-landed" className="text-label font-semibold text-fg">
                 {tr('Where they landed')}
               </h2>
               <Bars rows={stats.landed.map((l) => ({ label: pageName(l.pageId), count: l.count }))} total={stats.clicks} />
             </section>
-        }
+          )}
         </div>
-      }
+      )}
 
-      {stats.recent.length > 0 &&
-      <section aria-labelledby="ls-recent" className="flex flex-col gap-3 border-t border-line pt-8">
+      {stats.recent.length > 0 && (
+        <section aria-labelledby="ls-recent" className="flex flex-col gap-3 border-t border-line pt-8">
           <div>
             <h2 id="ls-recent" className="text-label font-semibold text-fg">
               {tr('Latest clicks')}
@@ -308,35 +308,35 @@ export function LinkStats() {
                 </tr>
               </thead>
               <tbody>
-                {stats.recent.map((c) =>
-              <tr key={c.session} className="border-b border-line last:border-0">
+                {stats.recent.map((c) => (
+                  <tr key={c.session} className="border-b border-line last:border-0">
                     <td className="py-2.5 pr-4 tabular-nums text-fg">{new Date(c.at).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</td>
                     <td className="py-2.5 pr-4 text-fg-muted">{c.device ? tr({ phone: 'Phone', tablet: 'Tablet', desktop: 'Computer' }[c.device]) : '—'}</td>
                     <td className="py-2.5 pr-4 text-fg-muted">{c.via ? tr(viaLabels[c.via]) : '—'}</td>
-                    <td className="py-2.5 pr-4 text-fg-muted">{c.outcome === 'left' ? link.whatsapp ? 'WhatsApp' : tr('Website') : pageName(c.pageId)}</td>
+                    <td className="py-2.5 pr-4 text-fg-muted">{c.outcome === 'left' ? (link.whatsapp ? 'WhatsApp' : tr('Website')) : pageName(c.pageId)}</td>
                     <td className="py-2.5 text-fg">{tr(outcomeLabel(c.outcome))}</td>
                   </tr>
-              )}
+                ))}
               </tbody>
             </table>
           </div>
         </section>
-      }
+      )}
 
-      {link.history && link.history.length > 0 &&
-      <section aria-labelledby="ls-history" className="flex flex-col gap-2 border-t border-line pt-8">
+      {link.history && link.history.length > 0 && (
+        <section aria-labelledby="ls-history" className="flex flex-col gap-2 border-t border-line pt-8">
           <h2 id="ls-history" className="text-label font-semibold text-fg">
             {tr('Destination history')}
           </h2>
           <ol className="flex flex-col gap-1 text-caption text-fg-muted">
-            {link.history.map((h) =>
-          <li key={h.at}>
+            {link.history.map((h) => (
+              <li key={h.at}>
                 {new Date(h.at).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })} · {tr('now goes to')} <span className="text-fg">{h.to}</span> · {tr('by {name}', { name: h.by })}
               </li>
-          )}
+            ))}
           </ol>
         </section>
-      }
+      )}
 
       <p className="text-caption text-fg-subtle">{tr('Counts follow your Privacy settings and are kept for your analytics retention period. Location isn’t recorded, and the app a tap came from is kept only as its kind (Instagram, WhatsApp…), never the address.')}</p>
 
@@ -346,7 +346,7 @@ export function LinkStats() {
         title="Delete this link’s click data?"
         description={tr('All {n} recorded taps on {link} are removed, including sample ones. Visits it brought stay in Analytics, no longer tied to this link. The link keeps working and starts counting again from zero. This can’t be undone.', { n: allTaps.toLocaleString(), link: display })}
         footer={
-        <>
+          <>
             <Button variant="secondary" onClick={() => setConfirmDelete(false)}>
               Cancel
             </Button>
@@ -354,15 +354,15 @@ export function LinkStats() {
               Delete click data
             </Button>
           </>
-        } />
-      
+        }
+      />
 
       <CampaignLinkDialog open={editing} onClose={() => setEditing(false)} link={link} />
-    </div>);
-
+    </div>
+  );
 }
 
-function Figure({ label, value, note }: {label: string;value: string;note: string;}) {
+function Figure({ label, value, note }: { label: string; value: string; note: string }) {
   const { t } = useT();
   label = t(label);
   note = t(note);
@@ -371,30 +371,30 @@ function Figure({ label, value, note }: {label: string;value: string;note: strin
       <dt className="text-caption text-fg-muted">{label}</dt>
       <dd className="mt-0.5 text-heading font-semibold tabular-nums text-fg">{value}</dd>
       <dd className="text-caption text-fg-subtle">{note}</dd>
-    </div>);
-
+    </div>
+  );
 }
 
-function Bars({ rows, total }: {rows: {label: string;count: number;}[];total: number;}) {
+function Bars({ rows, total }: { rows: { label: string; count: number }[]; total: number }) {
   const { t } = useT();
   rows = rows.map((r) => ({ ...r, label: t(r.label) }));
   return (
     <ul className="flex flex-col gap-2.5">
-      {rows.map((r) =>
-      <li key={r.label} className="flex flex-col gap-1">
+      {rows.map((r) => (
+        <li key={r.label} className="flex flex-col gap-1">
           <div className="flex items-baseline justify-between gap-3 text-label">
             <span className="truncate text-fg">{r.label}</span>
             <span className="shrink-0 tabular-nums text-fg-muted">
-              {r.count.toLocaleString()} <span className="text-fg-subtle">· {Math.round(r.count / Math.max(1, total) * 100)}%</span>
+              {r.count.toLocaleString()} <span className="text-fg-subtle">· {Math.round((r.count / Math.max(1, total)) * 100)}%</span>
             </span>
           </div>
           <div className="h-1.5 overflow-hidden rounded-full bg-sunken" aria-hidden>
-            <div className="h-full rounded-full bg-action" style={{ width: `${r.count / Math.max(1, total) * 100}%` }} />
+            <div className="h-full rounded-full bg-action" style={{ width: `${(r.count / Math.max(1, total)) * 100}%` }} />
           </div>
         </li>
-      )}
-    </ul>);
-
+      ))}
+    </ul>
+  );
 }
 
 function formatHour(h: number): string {

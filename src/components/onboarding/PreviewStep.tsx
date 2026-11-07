@@ -40,38 +40,38 @@ export function PreviewStep({ state, update, built, go, onFinish }: PreviewStepP
         <StepHeading title="Here’s your page" description={`It will live at ${publicUrl(state.handle)}. Check it the way a visitor on a phone would.`} />
 
         <ul className="mt-8 flex flex-col divide-y divide-line border-y border-line">
-          {!state.actionType &&
-          <Gap icon={AlertTriangleIcon} tone="warning" title="No main action yet">
+          {!state.actionType && (
+            <Gap icon={AlertTriangleIcon} tone="warning" title="No main action yet">
               Visitors won’t have an obvious next step. <button type="button" className="font-semibold text-action underline underline-offset-2" onClick={() => go(3)}>Add one</button>
             </Gap>
-          }
-          {built.unpricedCount > 0 &&
-          <Gap icon={InfoIcon} tone="info" title={`${built.unpricedCount} item${built.unpricedCount === 1 ? '' : 's'} without a price`}>
+          )}
+          {built.unpricedCount > 0 && (
+            <Gap icon={InfoIcon} tone="info" title={`${built.unpricedCount} item${built.unpricedCount === 1 ? '' : 's'} without a price`}>
               They’ll show “Price on request”. Add prices in the canvas when you’re ready.
             </Gap>
-          }
-          {built.hidden.length > 0 &&
-          <Gap icon={EyeOffIcon} tone="info" title={`${built.hidden.length} block${built.hidden.length === 1 ? '' : 's'} hidden until you add details`}>
+          )}
+          {built.hidden.length > 0 && (
+            <Gap icon={EyeOffIcon} tone="info" title={`${built.hidden.length} block${built.hidden.length === 1 ? '' : 's'} hidden until you add details`}>
               {built.hidden.map((h) => h.name).join(', ')}. They’re on your page in the canvas, just not visible to visitors yet.
             </Gap>
-          }
-          {!state.avatarUrl &&
-          <Gap icon={InfoIcon} tone="info" title="No photo or logo">
+          )}
+          {!state.avatarUrl && (
+            <Gap icon={InfoIcon} tone="info" title="No photo or logo">
               Pages with a face or logo feel more trustworthy. <button type="button" className="font-semibold text-action underline underline-offset-2" onClick={() => go(2)}>Add one</button>
             </Gap>
-          }
+          )}
         </ul>
 
-        {errors.length > 0 &&
-        <InlineAlert tone="danger" title="Fix these before publishing" className="mt-6">
+        {errors.length > 0 && (
+          <InlineAlert tone="danger" title="Fix these before publishing" className="mt-6">
             <ul className="list-disc pl-4">
-              {errors.map((e) =>
-            <li key={e.id}>{e.message}</li>
-            )}
+              {errors.map((e) => (
+                <li key={e.id}>{e.message}</li>
+              ))}
             </ul>
             You can still open the canvas and fix them there.
           </InlineAlert>
-        }
+        )}
 
         <DemoDataChoice on={!!state.demoData} onChange={(on) => update({ demoData: on })} />
 
@@ -87,11 +87,11 @@ export function PreviewStep({ state, update, built, go, onFinish }: PreviewStepP
           Back
         </Button>
       </div>
-    </div>);
-
+    </div>
+  );
 }
 
-function Gap({ icon: Icon, tone, title, children }: {icon: typeof InfoIcon;tone: 'warning' | 'info';title: string;children: React.ReactNode;}) {
+function Gap({ icon: Icon, tone, title, children }: { icon: typeof InfoIcon; tone: 'warning' | 'info'; title: string; children: React.ReactNode }) {
   return (
     <li className="flex gap-3 py-4">
       <Icon size={17} className={tone === 'warning' ? 'mt-0.5 shrink-0 text-warning' : 'mt-0.5 shrink-0 text-fg-subtle'} aria-hidden />
@@ -99,6 +99,6 @@ function Gap({ icon: Icon, tone, title, children }: {icon: typeof InfoIcon;tone:
         <p className="text-label font-semibold text-fg">{title}</p>
         <p className="mt-0.5 text-label text-fg-muted">{children}</p>
       </div>
-    </li>);
-
+    </li>
+  );
 }

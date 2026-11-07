@@ -32,42 +32,42 @@ export function NotificationsTab() {
       <Section
         id="notif-table"
         title="What reaches you, and where"
-        description={`${tr('Your own settings, {name}.', { name: team.me.name.split(' ')[0] })}${hidden > 0 ? ` ${tr('Events your role can’t act on are hidden ({n}).', { n: hidden })}` : ''}`}>
-        
+        description={`${tr('Your own settings, {name}.', { name: team.me.name.split(' ')[0] })}${hidden > 0 ? ` ${tr('Events your role can’t act on are hidden ({n}).', { n: hidden })}` : ''}`}
+      >
         <Card as="div" body="flush" className="overflow-hidden">
           <div className="hidden grid-cols-[minmax(0,1fr)_repeat(3,84px)] gap-2 border-b border-line bg-sunken px-5 py-2 text-caption font-semibold text-fg-subtle md:grid md:px-6">
             <span>{tr('Event')}</span>
-            {channels.map((c) =>
-            <span key={c} className="text-center">
+            {channels.map((c) => (
+              <span key={c} className="text-center">
                 {tr(channelLabels[c])}
               </span>
-            )}
+            ))}
           </div>
-          {(Object.keys(grouped) as NotifArea[]).map((area) =>
-          <div key={area} className="border-b border-line last:border-0">
+          {(Object.keys(grouped) as NotifArea[]).map((area) => (
+            <div key={area} className="border-b border-line last:border-0">
               <p className="px-5 pb-1 pt-3 text-caption font-semibold text-fg-subtle md:px-6">{tr(notifAreas[area].label)}</p>
               <ul aria-label={tr(notifAreas[area].label)}>
-                {grouped[area]!.map((e) =>
-              <li key={e.id} className="flex min-h-[44px] flex-col gap-2 px-5 py-2.5 md:grid md:px-6 md:grid-cols-[minmax(0,1fr)_repeat(3,84px)] md:items-center md:gap-2">
+                {grouped[area]!.map((e) => (
+                  <li key={e.id} className="flex min-h-[44px] flex-col gap-2 px-5 py-2.5 md:grid md:px-6 md:grid-cols-[minmax(0,1fr)_repeat(3,84px)] md:items-center md:gap-2">
                     <span className="text-label text-fg">{tr(e.label)}</span>
                     <div className="flex flex-wrap gap-4 md:contents">
                       {channels.map((c) => {
-                    const id = `nt-${e.id}-${c}`;
-                    return (
-                      <label key={c} htmlFor={id} className="flex items-center gap-2 md:justify-center">
+                        const id = `nt-${e.id}-${c}`;
+                        return (
+                          <label key={c} htmlFor={id} className="flex items-center gap-2 md:justify-center">
                             <input id={id} type="checkbox" className="h-4 w-4 cursor-pointer" checked={channelOn(n.prefs, e.id, c)} onChange={(ev) => n.setChannel(e.id, c, ev.target.checked)} />
                             <span className="text-caption text-fg-muted md:sr-only">
                               {tr('{channel} for {event}', { channel: tr(channelLabels[c]), event: tr(e.label) })}
                             </span>
-                          </label>);
-
-                  })}
+                          </label>
+                        );
+                      })}
                     </div>
                   </li>
-              )}
+                ))}
               </ul>
             </div>
-          )}
+          ))}
         </Card>
       </Section>
 
@@ -85,21 +85,21 @@ export function NotificationsTab() {
           <div className="flex flex-col gap-5">
           <Switch id="nt-digest" label="Daily digest" description="One email at 8:00 with everything from the day before, instead of one per event. Urgent items (payments, disputes) still come straight away." checked={n.prefs.digest} onChange={(digest) => n.updatePrefs({ digest })} />
           <Switch
-              id="nt-quiet"
-              label="Quiet hours"
-              description="No email or WhatsApp in this window. The in-app inbox still collects everything."
-              checked={n.prefs.quietHours.on}
-              onChange={(on) => n.updatePrefs({ quietHours: { ...n.prefs.quietHours, on } })} />
-            
-          {n.prefs.quietHours.on &&
+            id="nt-quiet"
+            label="Quiet hours"
+            description="No email or WhatsApp in this window. The in-app inbox still collects everything."
+            checked={n.prefs.quietHours.on}
+            onChange={(on) => n.updatePrefs({ quietHours: { ...n.prefs.quietHours, on } })}
+          />
+          {n.prefs.quietHours.on && (
             <div className="grid grid-cols-2 gap-3">
               <TextInput id="nt-from" label="From" type="time" value={n.prefs.quietHours.from} onChange={(e) => n.updatePrefs({ quietHours: { ...n.prefs.quietHours, from: e.target.value } })} />
               <TextInput id="nt-to" label="Until" type="time" value={n.prefs.quietHours.to} onChange={(e) => n.updatePrefs({ quietHours: { ...n.prefs.quietHours, to: e.target.value } })} />
             </div>
-            }
+          )}
           </div>
         </Card>
       </aside>
-    </div>);
-
+    </div>
+  );
 }

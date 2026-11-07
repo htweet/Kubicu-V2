@@ -43,13 +43,13 @@ export function CourseOutline({ theme: t, course, enrolment, open, currentLesson
             </div>
             <ol className="flex flex-col" style={{ borderTop: `1px solid ${mix(t.text, 10)}` }}>
               {m.lessons.map((l) => {
-                const canOpen = l.preview || open && !opensAt;
+                const canOpen = l.preview || (open && !opensAt);
                 const isDone = done.has(l.id);
                 const current = currentLessonId === l.id;
                 const Kind = icons[l.kind];
-                const status = isDone ? 'Done' : canOpen ? l.preview && !open ? 'Free preview' : 'Not started' : opensAt ? `Opens ${openDate(opensAt)}` : 'Locked';
-                const inner =
-                <>
+                const status = isDone ? 'Done' : canOpen ? (l.preview && !open ? 'Free preview' : 'Not started') : opensAt ? `Opens ${openDate(opensAt)}` : 'Locked';
+                const inner = (
+                  <>
                     <span aria-hidden className="flex h-5 w-5 shrink-0 items-center justify-center">
                       {isDone ? <CheckCircle2Icon size={17} style={{ color: t.accent }} /> : canOpen ? <CircleIcon size={15} style={muted} /> : <LockIcon size={14} style={muted} />}
                     </span>
@@ -65,32 +65,32 @@ export function CourseOutline({ theme: t, course, enrolment, open, currentLesson
                       </span>
                     </span>
                     <span className="sr-only">, {status}</span>
-                  </>;
-
+                  </>
+                );
                 return (
                   <li key={l.id} style={{ borderBottom: `1px solid ${mix(t.text, 8)}` }}>
-                    {canOpen ?
-                    <button
-                      type="button"
-                      onClick={() => onOpen(l.id)}
-                      aria-current={current ? 'step' : undefined}
-                      className="flex min-h-[52px] w-full items-center gap-3 px-2 py-2 text-left focus-visible:outline-none focus-visible:ring-2"
-                      style={{ background: current ? mix(t.text, 6) : undefined, borderRadius: 8 }}>
-                      
+                    {canOpen ? (
+                      <button
+                        type="button"
+                        onClick={() => onOpen(l.id)}
+                        aria-current={current ? 'step' : undefined}
+                        className="flex min-h-[52px] w-full items-center gap-3 px-2 py-2 text-left focus-visible:outline-none focus-visible:ring-2"
+                        style={{ background: current ? mix(t.text, 6) : undefined, borderRadius: 8 }}
+                      >
                         {inner}
-                      </button> :
-
-                    <div className="flex min-h-[52px] items-center gap-3 px-2 py-2" aria-disabled>
+                      </button>
+                    ) : (
+                      <div className="flex min-h-[52px] items-center gap-3 px-2 py-2" aria-disabled>
                         {inner}
                       </div>
-                    }
-                  </li>);
-
+                    )}
+                  </li>
+                );
               })}
             </ol>
-          </section>);
-
+          </section>
+        );
       })}
-    </nav>);
-
+    </nav>
+  );
 }

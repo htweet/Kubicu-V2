@@ -12,24 +12,24 @@ import { TextInput } from '../../components/ui/TextInput';
 import { Badge } from '../../components/ui/Badge';
 import { ReasonDialog } from '../../components/admin/ReasonDialog';
 
-type Pending = {kind: 'figure';f: AdjustableFigure;value: number | null;} | {kind: 'plan';plan: WorkspacePlan;name: string;intendedFor: string;} | null;
+type Pending = { kind: 'figure'; f: AdjustableFigure; value: number | null } | { kind: 'plan'; plan: WorkspacePlan; name: string; intendedFor: string } | null;
 
 const unitLabel = (f: AdjustableFigure, v: number) =>
-f.unit === 'naira' ?
-formatNaira(v) :
-f.unit === 'amount' ?
-v === 0 && f.key.includes('.cap') ?
-'no cap' :
-`${f.symbol ?? ''} ${v.toLocaleString('en')}`.trim() :
-f.unit === 'percent' ?
-`${v}%` :
-f.unit === 'days' ?
-`${v} days` :
-f.unit === 'hours' ?
-`${v} hours` :
-f.unit === 'minutes' ?
-`${v} minutes` :
-String(v);
+  f.unit === 'naira'
+    ? formatNaira(v)
+    : f.unit === 'amount'
+      ? v === 0 && f.key.includes('.cap')
+        ? 'no cap'
+        : `${f.symbol ?? ''} ${v.toLocaleString('en')}`.trim()
+      : f.unit === 'percent'
+        ? `${v}%`
+        : f.unit === 'days'
+          ? `${v} days`
+          : f.unit === 'hours'
+            ? `${v} hours`
+            : f.unit === 'minutes'
+              ? `${v} minutes`
+              : String(v);
 
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-');
 
@@ -42,7 +42,7 @@ export function AdminFigures() {
   const [store, setStore] = useAdminStore();
   const [pending, setPending] = useState<Pending>(null);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
-  const [planDrafts, setPlanDrafts] = useState<Partial<Record<WorkspacePlan, {name: string;intendedFor: string;}>>>({});
+  const [planDrafts, setPlanDrafts] = useState<Partial<Record<WorkspacePlan, { name: string; intendedFor: string }>>>({});
   // Staff console search links here with ?q= (D472).
   const [params] = useSearchParams();
   const [query, setQuery] = useState(() => params.get('q') ?? '');
@@ -70,8 +70,8 @@ export function AdminFigures() {
       const { f, value } = pending;
       setStore((s) => {
         const figures = { ...s.figures };
-        if (value === null) delete figures[f.key];else
-        figures[f.key] = value;
+        if (value === null) delete figures[f.key];
+        else figures[f.key] = value;
         return audit({ ...s, figures }, { area: 'plans', action: value === null ? `Reset “${f.label}” to ${unitLabel(f, f.default)}` : `Set “${f.label}” to ${unitLabel(f, value)}`, target: f.area, reason });
       });
       setDrafts((d) => ({ ...d, [f.key]: '' }));
@@ -111,17 +111,17 @@ export function AdminFigures() {
 
       {!areas.length && !showPlans && <p className="mt-10 text-label text-fg-muted">{changedOnly && !q ? 'Nothing has been changed yet — every figure is at its original value.' : 'No figure matches that search.'}</p>}
 
-      {areas.length > 1 &&
-      <nav aria-label="Jump to a group" className="mt-6 flex flex-wrap gap-x-4 gap-y-1 text-caption">
-          {areas.map((a) =>
-        <a key={a} href={`#fig-${slug(a)}`} className="text-action hover:underline">
+      {areas.length > 1 && (
+        <nav aria-label="Jump to a group" className="mt-6 flex flex-wrap gap-x-4 gap-y-1 text-caption">
+          {areas.map((a) => (
+            <a key={a} href={`#fig-${slug(a)}`} className="text-action hover:underline">
               {a}
             </a>
-        )}
+          ))}
         </nav>
-      }
+      )}
 
-      {showPlans &&
+      {showPlans && (
       <section aria-labelledby="plan-names" className="mt-10">
         <h2 id="plan-names" className="text-heading font-semibold text-fg">
           Plan names
@@ -138,30 +138,30 @@ export function AdminFigures() {
                 <Button size="sm" variant="secondary" disabled={d.name === (saved?.name ?? '') && d.intendedFor === (saved?.intendedFor ?? '')} onClick={() => setPending({ kind: 'plan', plan: p, name: d.name, intendedFor: d.intendedFor })}>
                   Save
                 </Button>
-              </li>);
-
+              </li>
+            );
           })}
         </ul>
         <p className="mt-2 text-caption text-fg-subtle">Leave a box empty to use the original. Translations follow the English name until each language is updated in Localisation.</p>
       </section>
-      }
+      )}
 
-      {areas.map((area) =>
-      <section key={area} aria-labelledby={`fig-${slug(area)}`} className="mt-10 scroll-mt-28">
+      {areas.map((area) => (
+        <section key={area} aria-labelledby={`fig-${slug(area)}`} className="mt-10 scroll-mt-28">
           <h2 id={`fig-${slug(area)}`} className="text-heading font-semibold text-fg">
             {area}
           </h2>
           <ul className="mt-4 divide-y divide-line border-y border-line">
-            {shown.
-          filter((f) => f.area === area).
-          map((f) => {
-            const value = current(f);
-            const changed = typeof store.figures?.[f.key] === 'number';
-            const draft = drafts[f.key] ?? '';
-            const n = Number(draft.replace(/[^\d.]/g, ''));
-            const err = draft && (!Number.isFinite(n) || n < f.min || n > f.max) ? `Between ${unitLabel(f, f.min)} and ${unitLabel(f, f.max)}` : undefined;
-            return (
-              <li key={f.key} className="grid gap-3 py-4 sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_auto] sm:items-end">
+            {shown
+              .filter((f) => f.area === area)
+              .map((f) => {
+                const value = current(f);
+                const changed = typeof store.figures?.[f.key] === 'number';
+                const draft = drafts[f.key] ?? '';
+                const n = Number(draft.replace(/[^\d.]/g, ''));
+                const err = draft && (!Number.isFinite(n) || n < f.min || n > f.max) ? `Between ${unitLabel(f, f.min)} and ${unitLabel(f, f.max)}` : undefined;
+                return (
+                  <li key={f.key} className="grid gap-3 py-4 sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_auto] sm:items-end">
                     <div className="min-w-0">
                       <p className="flex flex-wrap items-center gap-2 text-label font-semibold text-fg">
                         {f.label} {changed && <Badge tone="info">Changed</Badge>}
@@ -174,28 +174,28 @@ export function AdminFigures() {
                       <Button size="sm" variant="secondary" disabled={!draft || !!err || n === value} onClick={() => setPending({ kind: 'figure', f, value: n })}>
                         Save
                       </Button>
-                      {changed &&
-                  <Button size="sm" variant="tertiary" onClick={() => setPending({ kind: 'figure', f, value: null })}>
+                      {changed && (
+                        <Button size="sm" variant="tertiary" onClick={() => setPending({ kind: 'figure', f, value: null })}>
                           Reset
                         </Button>
-                  }
+                      )}
                     </div>
-                  </li>);
-
-          })}
+                  </li>
+                );
+              })}
           </ul>
         </section>
-      )}
+      ))}
 
       <ReasonDialog
         open={!!pending}
         onClose={() => setPending(null)}
         onConfirm={confirm}
         destructive={false}
-        title={pending?.kind === 'figure' ? pending.value === null ? `Reset ${pending.f.label}` : `Change ${pending.f.label}` : pending ? `Rename ${originalPlanText[pending.plan].name}` : ''}
+        title={pending?.kind === 'figure' ? (pending.value === null ? `Reset ${pending.f.label}` : `Change ${pending.f.label}`) : pending ? `Rename ${originalPlanText[pending.plan].name}` : ''}
         description="Applies straight away for every workspace."
-        confirmLabel="Apply change" />
-      
-    </div>);
-
+        confirmLabel="Apply change"
+      />
+    </div>
+  );
 }

@@ -27,7 +27,7 @@ export function IdentityStep({ k, set, errors, disabled }: KycStepProps) {
 
   // National ID, tax number and ID types follow the workspace's country (D424).
   const rules = kycRules();
-  const clean = (rule: IdNumberRule, v: string) => rule.numeric ? v.replace(/\D/g, '') : v.toUpperCase().replace(/[^A-Z0-9-]/g, '');
+  const clean = (rule: IdNumberRule, v: string) => (rule.numeric ? v.replace(/\D/g, '') : v.toUpperCase().replace(/[^A-Z0-9-]/g, ''));
 
   const setBvn = (bvn: string) => {
     const result = simulateIdCheck(bvn, rules.primary.pattern);
@@ -83,24 +83,24 @@ export function IdentityStep({ k, set, errors, disabled }: KycStepProps) {
               disabled={disabled}
               placeholder={activeCountry() === 'NG' ? '0803 123 4567' : phonePlaceholder()}
               fieldClassName="flex-1"
-              autoComplete="tel" />
-            
-            {i.phoneVerified ?
-            <span className="inline-flex h-10 items-center gap-1.5 text-label font-medium text-success">
+              autoComplete="tel"
+            />
+            {i.phoneVerified ? (
+              <span className="inline-flex h-10 items-center gap-1.5 text-label font-medium text-success">
                 <CheckCircle2Icon size={16} aria-hidden /> {tr('Confirmed')}
-              </span> :
-
-            <Button variant="secondary" onClick={sendCode} disabled={disabled}>
+              </span>
+            ) : (
+              <Button variant="secondary" onClick={sendCode} disabled={disabled}>
                 {tr(codeSent ? 'Send again' : 'Send code')}
               </Button>
-            }
+            )}
           </div>
-          {codeSent && !i.phoneVerified &&
-          <div className="mt-3 flex flex-col gap-2 md:flex-row md:items-end">
+          {codeSent && !i.phoneVerified && (
+            <div className="mt-3 flex flex-col gap-2 md:flex-row md:items-end">
               <TextInput id="kyc-phone-code" label="6-digit code" inputMode="numeric" maxLength={6} value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))} fieldClassName="md:w-48" autoComplete="one-time-code" />
               <Button onClick={confirmCode}>Confirm</Button>
             </div>
-          }
+          )}
           {codeError && <p role="alert" className="mt-1.5 text-caption font-medium text-danger">{codeError}</p>}
         </div>
       </section>
@@ -115,20 +115,20 @@ export function IdentityStep({ k, set, errors, disabled }: KycStepProps) {
         <div className="grid gap-4 md:grid-cols-2">
           <div className="flex flex-col gap-2">
             <TextInput id="kyc-bvn" label={rules.primary.label} inputMode={rules.primary.numeric ? 'numeric' : 'text'} maxLength={rules.primary.maxLength} placeholder={rules.primary.placeholder || undefined} value={i.bvn} onChange={(e) => setBvn(clean(rules.primary, e.target.value))} error={errors.bvn} disabled={disabled} hint={rules.primary.hint} />
-            {i.checks.bvn !== 'not_run' &&
-            <div className="flex flex-wrap items-center gap-2">
+            {i.checks.bvn !== 'not_run' && (
+              <div className="flex flex-wrap items-center gap-2">
                 <CheckBadge result={i.checks.bvn} />
                 {i.checks.nameOnBvn && <span className="text-caption text-fg-muted">{tr(rules.nameOnRecord, { name: i.checks.nameOnBvn })}</span>}
               </div>
-            }
+            )}
             {i.checks.bvn === 'review' && <p className="text-caption text-fg-muted">{tr('The name is a partial match. You can continue — a reviewer will compare it with your ID.')}</p>}
           </div>
-          {rules.secondary &&
-          <div className="flex flex-col gap-2">
+          {rules.secondary && (
+            <div className="flex flex-col gap-2">
               <TextInput id="kyc-nin" label={rules.secondary.label} inputMode={rules.secondary.numeric ? 'numeric' : 'text'} maxLength={rules.secondary.maxLength} placeholder={rules.secondary.placeholder || undefined} value={i.nin} onChange={(e) => setNin(clean(rules.secondary as IdNumberRule, e.target.value))} error={errors.nin} disabled={disabled} hint={rules.secondary.hint} />
               {i.checks.nin !== 'not_run' && <CheckBadge result={i.checks.nin} />}
             </div>
-          }
+          )}
         </div>
         <p className="text-caption text-fg-subtle">{tr('Prototype: numbers ending in 0000 fail; ending in 9 need a closer look.')}</p>
       </section>
@@ -147,24 +147,24 @@ export function IdentityStep({ k, set, errors, disabled }: KycStepProps) {
           <p className="text-label font-medium text-fg">{tr('Liveness selfie')}</p>
           <p className="mt-0.5 text-caption text-fg-subtle">{tr('You’ll be asked to turn your head slowly. We compare it with your ID photo.')}</p>
           <div className="mt-2 flex flex-wrap items-center gap-3">
-            {i.selfie ?
-            <>
+            {i.selfie ? (
+              <>
                 <CheckBadge result={i.checks.liveness} label={tr('Liveness')} />
-                {!disabled &&
-              <Button size="sm" variant="tertiary" leadingIcon={CameraIcon} onClick={liveness}>
+                {!disabled && (
+                  <Button size="sm" variant="tertiary" leadingIcon={CameraIcon} onClick={liveness}>
                     Retake
                   </Button>
-              }
-              </> :
-
-            <Button variant="secondary" leadingIcon={ScanFaceIcon} onClick={liveness} loading={scanning} disabled={disabled}>
+                )}
+              </>
+            ) : (
+              <Button variant="secondary" leadingIcon={ScanFaceIcon} onClick={liveness} loading={scanning} disabled={disabled}>
                 {tr(scanning ? 'Checking…' : 'Start selfie check')}
               </Button>
-            }
+            )}
           </div>
           {errors.selfie && <p role="alert" className="mt-1.5 text-caption font-medium text-danger">{tr(errors.selfie)}</p>}
         </div>
       </section>
-    </div>);
-
+    </div>
+  );
 }

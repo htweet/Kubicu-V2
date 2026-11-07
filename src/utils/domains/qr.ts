@@ -38,14 +38,14 @@ export function styleOf(d: Partial<QrDesign>, initials: string): QrStyle {
     ecLevel: d.ecLevel ?? 'M',
     margin: d.margin ?? 2,
     centreKind: kind,
-    centreText: kind === 'initials' ? initials : d.centreText ?? '',
+    centreText: kind === 'initials' ? initials : (d.centreText ?? ''),
     centreImage: d.centreImage ?? '',
     centreSize: d.centreSize ?? 'md',
     frameText: d.frameText ?? '',
     captionPosition: d.captionPosition ?? 'bottom',
     captionColor: d.captionColor ?? fg,
     captionSize: d.captionSize ?? 'md',
-    frame: d.frame ?? 'none'
+    frame: d.frame ?? 'none',
   };
 }
 
@@ -65,14 +65,14 @@ export interface QrCheck {
 }
 
 /** Scannability checks (D62). `fail` blocks downloads; `warn` explains the risk. */
-export function qrChecks(s: QrStyle): {ratio: number;contrast: QrCheck;others: QrCheck[];} {
+export function qrChecks(s: QrStyle): { ratio: number; contrast: QrCheck; others: QrCheck[] } {
   const surface = s.transparent ? '#FFFFFF' : s.bg;
   const ratio = Math.min(contrastRatio(s.fg, surface), contrastRatio(s.eyeColor, surface));
   let contrast: QrCheck;
-  if (ratio < 3) contrast = { level: 'fail', message: 'Too little contrast to scan reliably. Make the code darker or the background lighter.' };else
-  if (luminance(s.fg) > luminance(surface)) contrast = { level: 'warn', message: 'Light code on a dark background — some phone cameras can’t read inverted codes.' };else
-  if (ratio < 4.5) contrast = { level: 'warn', message: 'Scans in good light. More contrast helps in dim markets and shops.' };else
-  contrast = { level: 'ok', message: 'Good contrast — scans easily.' };
+  if (ratio < 3) contrast = { level: 'fail', message: 'Too little contrast to scan reliably. Make the code darker or the background lighter.' };
+  else if (luminance(s.fg) > luminance(surface)) contrast = { level: 'warn', message: 'Light code on a dark background — some phone cameras can’t read inverted codes.' };
+  else if (ratio < 4.5) contrast = { level: 'warn', message: 'Scans in good light. More contrast helps in dim markets and shops.' };
+  else contrast = { level: 'ok', message: 'Good contrast — scans easily.' };
 
   const others: QrCheck[] = [];
   if (s.transparent) others.push({ level: 'warn', message: 'Transparent background: contrast is checked against white. Print it on a plain, light surface.' });
@@ -101,7 +101,7 @@ function circle(cx: number, cy: number, r: number): string {
 }
 
 /** One finder pattern ("eye") at module position x, y. */
-function eye(x: number, y: number, style: QrEyeStyle): {ring: string;dot: string;} {
+function eye(x: number, y: number, style: QrEyeStyle): { ring: string; dot: string } {
   if (style === 'circle') return { ring: circle(x + 3.5, y + 3.5, 3.5) + circle(x + 3.5, y + 3.5, 2.5), dot: circle(x + 3.5, y + 3.5, 1.5) };
   const r = style === 'rounded' ? 1 : 0;
   return { ring: roundedRect(x, y, 7, 7, r * 1.8) + roundedRect(x + 1, y + 1, 5, 5, r * 1.2), dot: roundedRect(x + 2, y + 2, 3, 3, r * 0.8) };
@@ -122,7 +122,7 @@ export async function qrSvg(url: string, s: QrStyle): Promise<string> {
   const cb = ratio * size;
   const c0 = (size - cb) / 2 - 0.5;
   const c1 = (size + cb) / 2 + 0.5;
-  const isEye = (r: number, c: number) => r < 7 && c < 7 || r < 7 && c >= n - 7 || r >= n - 7 && c < 7;
+  const isEye = (r: number, c: number) => (r < 7 && c < 7) || (r < 7 && c >= n - 7) || (r >= n - 7 && c < 7);
 
   let squares = '';
   let shapes = '';
@@ -132,21 +132,21 @@ export async function qrSvg(url: string, s: QrStyle): Promise<string> {
       const x = c + m;
       const y = r + m;
       if (hasCentre && x + 1 > c0 && x < c1 && y + 1 > c0 && y < c1) continue;
-      if (s.moduleStyle === 'square') squares += `M${x} ${y}h1v1h-1z`;else
-      if (s.moduleStyle === 'dots') shapes += `<circle cx="${x + 0.5}" cy="${y + 0.5}" r="0.45"/>`;else
-      shapes += `<rect x="${x + 0.04}" y="${y + 0.04}" width="0.92" height="0.92" rx="0.32"/>`;
+      if (s.moduleStyle === 'square') squares += `M${x} ${y}h1v1h-1z`;
+      else if (s.moduleStyle === 'dots') shapes += `<circle cx="${x + 0.5}" cy="${y + 0.5}" r="0.45"/>`;
+      else shapes += `<rect x="${x + 0.04}" y="${y + 0.04}" width="0.92" height="0.92" rx="0.32"/>`;
     }
   }
   const eyes = [
-  [m, m],
-  [m + n - 7, m],
-  [m, m + n - 7]].
-  map(([x, y]) => eye(x, y, s.eyeStyle));
+    [m, m],
+    [m + n - 7, m],
+    [m, m + n - 7],
+  ].map(([x, y]) => eye(x, y, s.eyeStyle));
 
   const code =
-  `<g fill="${s.fg}">${squares ? `<path d="${squares}"/>` : ''}${shapes}</g>` +
-  `<path fill="${s.eyeColor}" fill-rule="evenodd" d="${eyes.map((e) => e.ring).join('')}"/>` +
-  `<path fill="${s.eyeColor}" d="${eyes.map((e) => e.dot).join('')}"/>`;
+    `<g fill="${s.fg}">${squares ? `<path d="${squares}"/>` : ''}${shapes}</g>` +
+    `<path fill="${s.eyeColor}" fill-rule="evenodd" d="${eyes.map((e) => e.ring).join('')}"/>` +
+    `<path fill="${s.eyeColor}" d="${eyes.map((e) => e.dot).join('')}"/>`;
 
   // Layout in a 1000-wide canvas.
   const S = 1000;
@@ -169,11 +169,11 @@ export async function qrSvg(url: string, s: QrStyle): Promise<string> {
     if (s.centreKind === 'image') {
       const inset = box * 0.1;
       centre +=
-      `<clipPath id="qrc"><rect x="${bx + inset}" y="${by + inset}" width="${box - inset * 2}" height="${box - inset * 2}" rx="${box * 0.12}"/></clipPath>` +
-      `<image href="${esc(s.centreImage)}" x="${bx + inset}" y="${by + inset}" width="${box - inset * 2}" height="${box - inset * 2}" preserveAspectRatio="xMidYMid slice" clip-path="url(#qrc)"/>`;
+        `<clipPath id="qrc"><rect x="${bx + inset}" y="${by + inset}" width="${box - inset * 2}" height="${box - inset * 2}" rx="${box * 0.12}"/></clipPath>` +
+        `<image href="${esc(s.centreImage)}" x="${bx + inset}" y="${by + inset}" width="${box - inset * 2}" height="${box - inset * 2}" preserveAspectRatio="xMidYMid slice" clip-path="url(#qrc)"/>`;
     } else {
       const text = s.centreText.trim().slice(0, 8);
-      const fs = Math.min(box * 0.42, box * 1.55 / Math.max(1, text.length));
+      const fs = Math.min(box * 0.42, (box * 1.55) / Math.max(1, text.length));
       centre += `<text x="${bx + box / 2}" y="${by + box / 2}" dy="0.35em" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-weight="700" font-size="${fs}" fill="${s.fg}">${esc(text)}</text>`;
     }
   }
@@ -191,14 +191,14 @@ export async function qrSvg(url: string, s: QrStyle): Promise<string> {
   if (s.frame === 'border') frame += `<rect x="10" y="10" width="${W - 20}" height="${H - 20}" rx="48" fill="none" stroke="${s.fg}" stroke-width="20"/>`;
 
   return (
-    `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}">` + (
-    s.transparent ? '' : `<rect width="${W}" height="${H}" fill="${s.bg}"/>`) +
+    `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}">` +
+    (s.transparent ? '' : `<rect width="${W}" height="${H}" fill="${s.bg}"/>`) +
     `<svg x="${pad}" y="${codeY}" width="${S}" height="${S}" viewBox="0 0 ${size} ${size}" shape-rendering="${s.moduleStyle === 'square' && s.eyeStyle === 'square' ? 'crispEdges' : 'geometricPrecision'}">${code}</svg>` +
     centre +
     frame +
     captionSvg +
-    `</svg>`);
-
+    `</svg>`
+  );
 }
 
 export const svgDataUrl = (svg: string) => `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
@@ -227,7 +227,7 @@ export function downloadPng(svg: string, filename: string, width = 1024): Promis
       const h0 = img.naturalHeight || 1000;
       const canvas = document.createElement('canvas');
       canvas.width = width;
-      canvas.height = Math.round(h0 / w0 * width);
+      canvas.height = Math.round((h0 / w0) * width);
       const ctx = canvas.getContext('2d');
       if (!ctx) return reject(new Error('no canvas'));
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
@@ -267,11 +267,11 @@ export function readCentreImage(file: File, max = 240): Promise<string> {
 
 export type PrintFormat = 'card' | 'poster' | 'tent';
 
-export const printFormats: {id: PrintFormat;label: string;detail: string;}[] = [
-{ id: 'card', label: 'A6 card', detail: '105 × 148 mm — counters and packages' },
-{ id: 'poster', label: 'A4 poster', detail: 'Walls, windows and stalls' },
-{ id: 'tent', label: 'Table tent', detail: 'A4 folded in half — tables and shelves' }];
-
+export const printFormats: { id: PrintFormat; label: string; detail: string }[] = [
+  { id: 'card', label: 'A6 card', detail: '105 × 148 mm — counters and packages' },
+  { id: 'poster', label: 'A4 poster', detail: 'Walls, windows and stalls' },
+  { id: 'tent', label: 'Table tent', detail: 'A4 folded in half — tables and shelves' },
+];
 
 /** Opens a print-ready sheet in a new window. Returns false if the browser blocked it. */
 export function printSheet(svg: string, format: PrintFormat, title: string, address: string): boolean {
@@ -279,11 +279,11 @@ export function printSheet(svg: string, format: PrintFormat, title: string, addr
   if (!w) return false;
   const img = `<img src="${svgDataUrl(svg)}" alt="QR code"/>`;
   const page =
-  format === 'card' ?
-  { size: 'A6', body: `<div class="one">${img}<p>${esc(address)}</p></div>` } :
-  format === 'poster' ?
-  { size: 'A4', body: `<div class="one big"><h1>${esc(title)}</h1>${img}<p>${esc(address)}</p></div>` } :
-  { size: 'A4 landscape', body: `<div class="tent"><div class="half flip">${img}</div><div class="half">${img}</div></div>` };
+    format === 'card'
+      ? { size: 'A6', body: `<div class="one">${img}<p>${esc(address)}</p></div>` }
+      : format === 'poster'
+        ? { size: 'A4', body: `<div class="one big"><h1>${esc(title)}</h1>${img}<p>${esc(address)}</p></div>` }
+        : { size: 'A4 landscape', body: `<div class="tent"><div class="half flip">${img}</div><div class="half">${img}</div></div>` };
   w.document.write(`<!doctype html><html><head><title>${esc(title)} — print</title><style>
 @page{size:${page.size};margin:10mm}
 html,body{margin:0;font-family:Inter,Arial,sans-serif;color:#111}

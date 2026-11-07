@@ -49,29 +49,29 @@ export function BlockCard({ type, theme, status, favourite, touch, note, onOpen,
         className={cn(
           'absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-overlay/90 shadow-1 transition-opacity duration-150 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
           favourite ? 'text-warning opacity-100' : 'text-fg-subtle opacity-0 group-hover:opacity-100',
-          touch && 'opacity-100'
-        )}>
-        
+          touch && 'opacity-100',
+        )}
+      >
         <StarIcon size={13} fill={favourite ? 'currentColor' : 'none'} aria-hidden />
       </button>
-      {canAdd &&
-      <button
-        type="button"
-        onClick={onAdd}
-        aria-label={tr('Add {name}', { name })}
-        className={cn(
-          'absolute left-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-action text-action-fg shadow-1 transition-opacity duration-150 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
-          touch ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-        )}>
-        
+      {canAdd && (
+        <button
+          type="button"
+          onClick={onAdd}
+          aria-label={tr('Add {name}', { name })}
+          className={cn(
+            'absolute left-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-action text-action-fg shadow-1 transition-opacity duration-150 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus',
+            touch ? 'opacity-100' : 'opacity-0 group-hover:opacity-100',
+          )}
+        >
           <PlusIcon size={14} aria-hidden />
         </button>
-      }
-    </li>);
-
+      )}
+    </li>
+  );
 }
 
-function PreviewBox({ type, theme, touch }: {type: BlockType;theme: PageTheme;touch?: boolean;}) {
+function PreviewBox({ type, theme, touch }: { type: BlockType; theme: PageTheme; touch?: boolean }) {
   const ref = React.useRef<HTMLSpanElement>(null);
   const [w, setW] = React.useState(140);
   React.useLayoutEffect(() => {
@@ -84,6 +84,6 @@ function PreviewBox({ type, theme, touch }: {type: BlockType;theme: PageTheme;to
   return (
     <span ref={ref} className="block w-full">
       <BlockMiniPreview type={type} theme={theme} width={w} height={touch ? 104 : 88} />
-    </span>);
-
+    </span>
+  );
 }

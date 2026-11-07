@@ -18,9 +18,9 @@ const ngBanks = ['Wema Bank', 'Titan Trust Bank', 'Providus Bank'];
  * A stable, made-up one-time account for this checkout (simulated — a real provider issues it).
  * Uses a bank and account length from the seller's country (D355): NUBAN in Nigeria, EFT in South Africa.
  */
-export function transferAccountFor(holder: string): {bank: string;account: string;} {
+export function transferAccountFor(holder: string): { bank: string; account: string } {
   let h = 7;
-  for (let i = 0; i < holder.length; i++) h = h * 31 + holder.charCodeAt(i) >>> 0;
+  for (let i = 0; i < holder.length; i++) h = (h * 31 + holder.charCodeAt(i)) >>> 0;
   const c = activeCountryInfo();
   const banks = c.code === 'NG' ? ngBanks : c.banks.slice(0, 3);
   const len = c.accountNumber.min;
@@ -31,7 +31,7 @@ export function transferAccountFor(holder: string): {bank: string;account: strin
 interface TransferAccountPayProps {
   theme: PageTheme;
   amount: number;
-  account: {bank: string;account: string;};
+  account: { bank: string; account: string };
   onBack: () => void;
   onPaid: () => void;
 }
@@ -72,15 +72,15 @@ export function TransferAccountPay({ theme, amount, account, onBack, onPaid }: T
   };
 
   if (checking)
-  return (
-    <div className="flex flex-col items-center gap-3 py-12 text-center" role="status" aria-live="polite">
+    return (
+      <div className="flex flex-col items-center gap-3 py-12 text-center" role="status" aria-live="polite">
         <Loader2Icon size={28} className="animate-spin" aria-hidden />
         <p className="text-[16px] font-medium">{tr('Checking for your transfer…')}</p>
         <p className="text-[13px]" style={muted}>
           {tr('This usually takes a few seconds.')}
         </p>
-      </div>);
-
+      </div>
+    );
 
   return (
     <div className="flex flex-col gap-4">
@@ -88,12 +88,12 @@ export function TransferAccountPay({ theme, amount, account, onBack, onPaid }: T
         {tr('Transfer {amount}', { amount: formatNgn(amount) })}
       </CheckoutHeading>
 
-      {expired ?
-      <p className="rounded-md p-3 text-[14px] font-medium" style={cardStyle(theme)} role="alert">
+      {expired ? (
+        <p className="rounded-md p-3 text-[14px] font-medium" style={cardStyle(theme)} role="alert">
           {tr('This account has expired. Don’t send money to it — get a new one.')}
-        </p> :
-
-      <div className="flex flex-col gap-3 p-4" style={{ ...cardStyle(theme), background: mix(theme.text, 4) }}>
+        </p>
+      ) : (
+        <div className="flex flex-col gap-3 p-4" style={{ ...cardStyle(theme), background: mix(theme.text, 4) }}>
           <dl className="grid grid-cols-[auto_1fr] items-center gap-x-4 gap-y-2 text-[14px]">
             <dt style={muted}>{tr('Bank')}</dt>
             <dd className="font-medium">{account.bank}</dd>
@@ -115,38 +115,38 @@ export function TransferAccountPay({ theme, amount, account, onBack, onPaid }: T
             </span>
           </p>
         </div>
-      }
+      )}
 
       <p className="text-[12.5px] leading-snug" style={muted}>
         {tr('Send the exact amount. Your order confirms automatically when it lands — no need to send proof.')}
       </p>
       <TestModeNote theme={theme} />
       <SheetActions theme={theme}>
-        {expired ?
-        <PrimaryButton
-          theme={theme}
-          onClick={() => {
-            setIssuedAt(Date.now());
-            warned.current = false;
-          }}>
-          
+        {expired ? (
+          <PrimaryButton
+            theme={theme}
+            onClick={() => {
+              setIssuedAt(Date.now());
+              warned.current = false;
+            }}
+          >
             {tr('Get a new account')}
-          </PrimaryButton> :
-
-        <PrimaryButton
-          theme={theme}
-          onClick={() => {
-            setChecking(true);
-            window.setTimeout(onPaid, 1400);
-          }}>
-          
+          </PrimaryButton>
+        ) : (
+          <PrimaryButton
+            theme={theme}
+            onClick={() => {
+              setChecking(true);
+              window.setTimeout(onPaid, 1400);
+            }}
+          >
             {tr('I’ve sent the money (test)')}
           </PrimaryButton>
-        }
+        )}
         <SecondaryButton theme={theme} onClick={onBack}>
           {tr('Choose another way to pay')}
         </SecondaryButton>
       </SheetActions>
-    </div>);
-
+    </div>
+  );
 }

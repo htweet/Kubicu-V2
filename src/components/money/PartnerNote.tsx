@@ -7,7 +7,7 @@ import { useT } from '../../contexts/LocaleContext';
  * Regulatory framing on every money screen (D92): KUBICU never holds funds itself.
  * Balances sit with a licensed payment partner that is still to be chosen.
  */
-export function PartnerNote({ className, children }: {className?: string;children?: React.ReactNode;}) {
+export function PartnerNote({ className, children }: { className?: string; children?: React.ReactNode }) {
   const { t } = useT();
   const body = typeof children === 'string' ? t(children) : children ?? t('No real money moves. KUBICU shows and instructs balances; it doesn’t hold them. Going live needs regulatory sign-off.');
   return (
@@ -16,6 +16,6 @@ export function PartnerNote({ className, children }: {className?: string;childre
       <span>
         <span className="font-semibold">{t('Held by our licensed payment partner · Test mode.')}</span> {body}
       </span>
-    </p>);
-
+    </p>
+  );
 }

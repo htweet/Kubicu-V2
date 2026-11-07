@@ -54,12 +54,12 @@ export const emptyCoach = (): CoachData => ({ briefAt: null, done: [], dismissed
 export const coachKey = (workspaceId: string) => `kubicu.coach.${workspaceId}`;
 
 export const coachQuestions = [
-{ id: 'restock', label: 'What should I restock?' },
-{ id: 'sell_more', label: 'How can I sell more this week?' },
-{ id: 'slow', label: 'Which products aren’t selling?' },
-{ id: 'customers', label: 'Who are my best customers?' },
-{ id: 'money', label: 'Where is money waiting for me?' }] as
-const;
+  { id: 'restock', label: 'What should I restock?' },
+  { id: 'sell_more', label: 'How can I sell more this week?' },
+  { id: 'slow', label: 'Which products aren’t selling?' },
+  { id: 'customers', label: 'Who are my best customers?' },
+  { id: 'money', label: 'Where is money waiting for me?' },
+] as const;
 
 export type CoachQuestionId = (typeof coachQuestions)[number]['id'];
 
@@ -73,7 +73,7 @@ const stockOf = (p: Product) => p.variants.reduce((s, v) => s + v.stock, 0);
 const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? '' : 's'}`;
 
 function productSales(orders: Order[]) {
-  const map = new Map<string, {name: string;qty: number;revenue: number;}>();
+  const map = new Map<string, { name: string; qty: number; revenue: number }>();
   for (const o of orders) {
     for (const i of o.items) {
       if (i.kind === 'ticket') continue;
@@ -87,7 +87,7 @@ function productSales(orders: Order[]) {
 }
 
 function bestCustomers(orders: Order[]) {
-  const map = new Map<string, {name: string;phone: string;count: number;spent: number;}>();
+  const map = new Map<string, { name: string; phone: string; count: number; spent: number }>();
   for (const o of orders) {
     const key = o.customer.phone.replace(/\D/g, '') || o.customer.email || o.customer.name;
     const cur = map.get(key) ?? { name: o.customer.name, phone: o.customer.phone, count: 0, spent: 0 };
@@ -108,7 +108,7 @@ function waitingMoney(c: CommerceData, money: MoneyData, now: number) {
     balancesDue,
     balancesNgn: balancesDue.reduce((s, o) => s + (o.balance?.dueNgn ?? 0), 0),
     wallet: b,
-    verified: isVerified(money)
+    verified: isVerified(money),
   };
 }
 
@@ -166,11 +166,11 @@ export function buildBrief(c: CommerceData, money: MoneyData, now = Date.now()):
     ordersPrev7: prev7.length,
     usedSample: c.orders.some((o) => o.sample) || c.products.some((p) => p.sample),
     moves: moves.slice(0, 6),
-    basis: `${plural(all.length, 'paid order')} and ${plural(products.length, 'product')}`
+    basis: `${plural(all.length, 'paid order')} and ${plural(products.length, 'product')}`,
   };
 }
 
-export function answer(q: CoachQuestionId, c: CommerceData, money: MoneyData, now = Date.now()): {answer: string[];basis: string;} {
+export function answer(q: CoachQuestionId, c: CommerceData, money: MoneyData, now = Date.now()): { answer: string[]; basis: string } {
   const all = c.orders.filter(paid);
   const last30 = all.filter((o) => within(o, now - 30 * DAY, now + 1));
   const sales30 = productSales(last30);
@@ -178,16 +178,16 @@ export function answer(q: CoachQuestionId, c: CommerceData, money: MoneyData, no
   const basis30 = `${plural(last30.length, 'paid order')} in the last 30 days`;
 
   if (q === 'restock') {
-    const rows = products.
-    filter((p) => p.trackStock && sales30.has(p.id)).
-    map((p) => {
-      const s = sales30.get(p.id)!;
-      const left = stockOf(p);
-      const perWeek = s.qty / 4.3;
-      return { p, left, perWeek, weeks: perWeek ? left / perWeek : Infinity };
-    }).
-    sort((a, b) => a.weeks - b.weeks).
-    slice(0, 4);
+    const rows = products
+      .filter((p) => p.trackStock && sales30.has(p.id))
+      .map((p) => {
+        const s = sales30.get(p.id)!;
+        const left = stockOf(p);
+        const perWeek = s.qty / 4.3;
+        return { p, left, perWeek, weeks: perWeek ? left / perWeek : Infinity };
+      })
+      .sort((a, b) => a.weeks - b.weeks)
+      .slice(0, 4);
     if (!rows.length) return { answer: ['Nothing that’s selling is running low. Products that track stock and sold in the last 30 days would appear here.'], basis: basis30 };
     return { answer: rows.map((r) => `${r.p.name}: ${r.left} left, selling about ${r.perWeek.toFixed(1)} a week${Number.isFinite(r.weeks) ? ` — roughly ${Math.max(0, Math.floor(r.weeks))} week${Math.floor(r.weeks) === 1 ? '' : 's'} of stock` : ''}.`), basis: basis30 };
   }

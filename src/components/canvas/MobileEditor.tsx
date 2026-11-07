@@ -35,12 +35,12 @@ const tabs: {
   label: string;
   icon: BoxIcon;
 }[] = [
-{ id: 'blocks', label: 'Blocks', icon: SquarePlusIcon },
-{ id: 'design', label: 'Design', icon: PaletteIcon },
-{ id: 'layers', label: 'Layers', icon: LayersIcon },
-{ id: 'pages', label: 'Pages', icon: FilesIcon },
-{ id: 'settings', label: 'Settings', icon: SettingsIcon }];
-
+  { id: 'blocks', label: 'Blocks', icon: SquarePlusIcon },
+  { id: 'design', label: 'Design', icon: PaletteIcon },
+  { id: 'layers', label: 'Layers', icon: LayersIcon },
+  { id: 'pages', label: 'Pages', icon: FilesIcon },
+  { id: 'settings', label: 'Settings', icon: SettingsIcon },
+];
 
 /** Phone editor. Translated in D317, with the language picker in Page settings (the top bar has no room for it). */
 export function MobileEditor() {
@@ -55,7 +55,7 @@ export function MobileEditor() {
   const navigate = useNavigate();
   const [sheet, setSheet] = useState<MobileSheet>(null);
   const [publishOpen, setPublishOpen] = useState(false);
-  const selected = state.draft.blocks.find((b) => b.id === state.selectedId);
+  const selected = state.draft.blocks.find(b => b.id === state.selectedId);
   const close = () => setSheet(null);
   return <div className="flex h-[100dvh] flex-col bg-canvas text-fg">
       <header className="flex h-14 shrink-0 items-center gap-1 border-b border-line bg-raised px-1.5">
@@ -91,7 +91,7 @@ export function MobileEditor() {
 
       <nav aria-label={tr('Editor tools')} className="safe-bottom shrink-0 border-t border-line bg-raised">
         <ul className="grid h-16 grid-cols-5">
-          {tabs.map((t) => {
+          {tabs.map(t => {
           const Icon = t.icon;
           const active = sheet === t.id;
           return <li key={t.id} className="min-w-0">
@@ -152,7 +152,7 @@ export function MobileEditor() {
         {selected && <BlockInspector key={selected.id} block={selected} showHeader={false} />}
       </Sheet>
 
-      <PublishDialog open={publishOpen} onClose={() => setPublishOpen(false)} onGoToBlock={(id) => {
+      <PublishDialog open={publishOpen} onClose={() => setPublishOpen(false)} onGoToBlock={id => {
       actions.select(id);
       setSheet('block');
     }} onOpenTheme={() => setSheet('design')} />

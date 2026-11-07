@@ -21,7 +21,7 @@ const statusCopy = {
   invalid: 'Use 3–30 lowercase letters, numbers or hyphens.',
   reserved: 'That address is reserved by KUBICU.',
   taken: 'Someone already has that link.',
-  available: 'Available'
+  available: 'Available',
 } as const;
 
 export function IdentityStep({ state, update, go }: StepProps) {
@@ -54,35 +54,35 @@ export function IdentityStep({ state, update, go }: StepProps) {
             spellCheck={false}
             value={state.handle}
             onChange={(e) => update({ handle: e.target.value.toLowerCase().replace(/\s+/g, ''), handleEdited: true })}
-            error={status === 'invalid' || status === 'reserved' || status === 'taken' ? statusCopy[status] : undefined} />
-          
-          {(status === 'available' || status === 'empty') &&
-          <p className="mt-1.5 flex items-center gap-1.5 text-caption" aria-live="polite">
-              {status === 'available' ?
-            <>
+            error={status === 'invalid' || status === 'reserved' || status === 'taken' ? statusCopy[status] : undefined}
+          />
+          {(status === 'available' || status === 'empty') && (
+            <p className="mt-1.5 flex items-center gap-1.5 text-caption" aria-live="polite">
+              {status === 'available' ? (
+                <>
                   <CheckCircle2Icon size={13} className="text-success" aria-hidden />
                   <span className="font-medium text-success">kub.icu/{state.handle} is available</span>
-                </> :
-
-            <span className="text-fg-subtle">{statusCopy.empty}</span>
-            }
+                </>
+              ) : (
+                <span className="text-fg-subtle">{statusCopy.empty}</span>
+              )}
             </p>
-          }
-          {suggestions.length > 0 && state.handle &&
-          <div className="mt-2 flex flex-wrap items-center gap-1.5">
+          )}
+          {suggestions.length > 0 && state.handle && (
+            <div className="mt-2 flex flex-wrap items-center gap-1.5">
               <span className="text-caption text-fg-subtle">Try:</span>
-              {suggestions.map((s) =>
-            <button
-              key={s}
-              type="button"
-              onClick={() => update({ handle: s, handleEdited: true })}
-              className="h-7 rounded-full border border-line px-2.5 font-mono text-caption text-fg hover:border-line-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
-              
+              {suggestions.map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => update({ handle: s, handleEdited: true })}
+                  className="h-7 rounded-full border border-line px-2.5 font-mono text-caption text-fg hover:border-line-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+                >
                   {s}
                 </button>
-            )}
+              ))}
             </div>
-          }
+          )}
         </div>
         <MediaPicker id="ob-avatar" label="Photo or logo" optional round aspect="1:1" folder="brand" value={state.avatarUrl} onChange={(avatarUrl) => update({ avatarUrl })} />
         <TextArea
@@ -94,11 +94,11 @@ export function IdentityStep({ state, update, go }: StepProps) {
           placeholder="What you do and who it’s for"
           hint={`${state.bio.length}/${BIO_MAX}`}
           value={state.bio}
-          onChange={(e) => update({ bio: e.target.value })} />
-        
+          onChange={(e) => update({ bio: e.target.value })}
+        />
         <TextInput id="ob-city" label="City or area" optional placeholder="e.g. Surulere, Lagos" value={state.city} onChange={(e) => update({ city: e.target.value })} />
       </div>
       <StepNav onBack={() => go(1)} onSkip={skip} onNext={() => go(3)} nextDisabled={!nextOk} />
-    </>);
-
+    </>
+  );
 }
