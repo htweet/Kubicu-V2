@@ -13,7 +13,8 @@ const ease = [0.23, 1, 0.32, 1] as const;
 
 /**
  * Copilot and KUBICU AI screens have their own chat, so the bar stays out of them (D374). Sellers' published pages
- * and shared shops are the seller's own space, so buyers never see KUBICU's bar there (D431).
+ * and shared shops are the seller's own space, so buyers never see KUBICU's bar there (D431). Draft previews
+ * (/d/ and the server drafts at /app/drafts/) show the page exactly as visitors would see it.
  */
 function hiddenOn(path: string): boolean {
   return (
@@ -22,6 +23,7 @@ function hiddenOn(path: string): boolean {
     path === '/copilot' ||
     path.startsWith('/copilot/') ||
     path.startsWith('/d/') ||
+    path.startsWith('/app/drafts/') ||
     path === '/ai' ||
     path.startsWith('/app/assistant') ||
     path.startsWith('/app/coach') ||

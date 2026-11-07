@@ -75,6 +75,7 @@ import { CopilotLanding } from './pages/marketing/CopilotLanding';
 import { CopilotWeb } from './pages/copilot/CopilotWeb';
 import { CopilotWhatsApp } from './pages/copilot/CopilotWhatsApp';
 import { CopilotPreview } from './pages/copilot/CopilotPreview';
+import { ServerDraftPreview } from './pages/drafts/ServerDraftPreview';
 import { CopilotContinue } from './pages/copilot/CopilotContinue';
 import { Onboarding } from './pages/Onboarding';
 import { Home } from './pages/marketing/Home';
@@ -302,6 +303,7 @@ export function App({ visualDirection = 'darkStudio', workspacePlan = 'free', vi
               </Route>
               <Route path="/app/canvas/:pageId" element={guard(<CanvasPage />)} />
               <Route path="/app/assistant" element={guard(<Assistant />)} />
+              <Route path="/app/drafts/:wsId/:draftId" element={guard(<ServerDraftPreview />)} />
 
               {StaffConsole && <Route path="/admin/*" element={<Suspense fallback={null}><StaffConsole /></Suspense>} />}
 
